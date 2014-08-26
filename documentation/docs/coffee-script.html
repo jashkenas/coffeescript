@@ -16,83 +16,85 @@
           <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
           <a class="small" href="javascript:void(0);">+</a>
           <div id="jump_wrapper">
-          <div id="jump_page">
-            
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
               
-              <a class="source" href="browser.html">
-                browser.coffee
-              </a>
-            
+                
+                <a class="source" href="browser.html">
+                  browser.coffee
+                </a>
               
-              <a class="source" href="cake.html">
-                cake.coffee
-              </a>
-            
+                
+                <a class="source" href="cake.html">
+                  cake.coffee
+                </a>
               
-              <a class="source" href="coffee-script.html">
-                coffee-script.coffee
-              </a>
-            
+                
+                <a class="source" href="coffee-script.html">
+                  coffee-script.coffee
+                </a>
               
-              <a class="source" href="command.html">
-                command.coffee
-              </a>
-            
+                
+                <a class="source" href="command.html">
+                  command.coffee
+                </a>
               
-              <a class="source" href="grammar.html">
-                grammar.coffee
-              </a>
-            
+                
+                <a class="source" href="grammar.html">
+                  grammar.coffee
+                </a>
               
-              <a class="source" href="helpers.html">
-                helpers.coffee
-              </a>
-            
+                
+                <a class="source" href="helpers.html">
+                  helpers.coffee
+                </a>
               
-              <a class="source" href="index.html">
-                index.coffee
-              </a>
-            
+                
+                <a class="source" href="index.html">
+                  index.coffee
+                </a>
               
-              <a class="source" href="lexer.html">
-                lexer.coffee
-              </a>
-            
+                
+                <a class="source" href="lexer.html">
+                  lexer.coffee
+                </a>
               
-              <a class="source" href="nodes.html">
-                nodes.coffee
-              </a>
-            
+                
+                <a class="source" href="nodes.html">
+                  nodes.coffee
+                </a>
               
-              <a class="source" href="optparse.html">
-                optparse.coffee
-              </a>
-            
+                
+                <a class="source" href="optparse.html">
+                  optparse.coffee
+                </a>
               
-              <a class="source" href="register.html">
-                register.coffee
-              </a>
-            
+                
+                <a class="source" href="register.html">
+                  register.coffee
+                </a>
               
-              <a class="source" href="repl.html">
-                repl.coffee
-              </a>
-            
+                
+                <a class="source" href="repl.html">
+                  repl.coffee
+                </a>
               
-              <a class="source" href="rewriter.html">
-                rewriter.coffee
-              </a>
-            
+                
+                <a class="source" href="rewriter.html">
+                  rewriter.coffee
+                </a>
               
-              <a class="source" href="scope.html">
-                scope.litcoffee
-              </a>
-            
+                
+                <a class="source" href="scope.html">
+                  scope.litcoffee
+                </a>
               
-              <a class="source" href="sourcemap.html">
-                sourcemap.litcoffee
-              </a>
-            
+                
+                <a class="source" href="sourcemap.html">
+                  sourcemap.litcoffee
+                </a>
+              
+            </div>
           </div>
         </li>
       </ul>
@@ -120,7 +122,8 @@ source CoffeeScript into JavaScript.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>fs            = <span class="hljs-built_in">require</span> <span class="hljs-string">'fs'</span>
+            <div class="content"><div class='highlight'><pre>
+fs            = <span class="hljs-built_in">require</span> <span class="hljs-string">'fs'</span>
 vm            = <span class="hljs-built_in">require</span> <span class="hljs-string">'vm'</span>
 path          = <span class="hljs-built_in">require</span> <span class="hljs-string">'path'</span>
 {Lexer}       = <span class="hljs-built_in">require</span> <span class="hljs-string">'./lexer'</span>
@@ -141,7 +144,7 @@ SourceMap     = <span class="hljs-built_in">require</span> <span class="hljs-str
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.VERSION = <span class="hljs-string">'1.7.1'</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.VERSION = <span class="hljs-string">'1.8.0'</span>
 
 <span class="hljs-built_in">exports</span>.FILE_EXTENSIONS = [<span class="hljs-string">'.coffee'</span>, <span class="hljs-string">'.litcoffee'</span>, <span class="hljs-string">'.coffee.md'</span>]</pre></div></div>
             
@@ -466,7 +469,27 @@ The CoffeeScript REPL uses this to run the input.</p>
   <span class="hljs-keyword">else</span>
     vm.runInContext js, sandbox
 
-<span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">register</span> = -&gt;</span> <span class="hljs-built_in">require</span> <span class="hljs-string">'./register'</span>
+<span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">register</span> = -&gt;</span> <span class="hljs-built_in">require</span> <span class="hljs-string">'./register'</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>Throw error with deprecation warning when depending upon implicit <code>require.extensions</code> registration</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">if</span> <span class="hljs-built_in">require</span>.extensions
+  <span class="hljs-keyword">for</span> ext <span class="hljs-keyword">in</span> <span class="hljs-property">@FILE_EXTENSIONS</span>
+    <span class="hljs-built_in">require</span>.extensions[ext] ?=<span class="hljs-function"> -&gt;</span>
+      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">"""
+      Use CoffeeScript.register() or require the coffee-script/register module to require <span class="hljs-subst">#{ext}</span> files.
+      """</span>
 
 <span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">_compileFile</span> = <span class="hljs-params">(filename, sourceMap = <span class="hljs-literal">no</span>)</span> -&gt;</span>
   raw = fs.readFileSync filename, <span class="hljs-string">'utf8'</span>
@@ -479,11 +502,11 @@ The CoffeeScript REPL uses this to run the input.</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>As the filename and code of a dynamically loaded file will be different
 from the original file compiled with CoffeeScript.run, add that
@@ -498,11 +521,11 @@ information to error so it can be pretty-printed later.</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Instantiate a Lexer for our use here.</p>
 
@@ -513,15 +536,15 @@ information to error so it can be pretty-printed later.</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>The real Lexer produces a generic stream of tokens. This object provides a
 thin wrapper around it, compatible with the Jison API. We can then pass it
-directly as a &quot;Jison lexer&quot;.</p>
+directly as a “Jison lexer”.</p>
 
             </div>
             
@@ -544,11 +567,11 @@ directly as a &quot;Jison lexer&quot;.</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Make all the AST nodes visible to the parser.</p>
 
@@ -559,13 +582,13 @@ directly as a &quot;Jison lexer&quot;.</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
-              <p>Override Jison&#39;s default error handling function.</p>
+              <p>Override Jison’s default error handling function.</p>
 
             </div>
             
@@ -574,13 +597,13 @@ directly as a &quot;Jison lexer&quot;.</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
-              <p>Disregard Jison&#39;s message, it contains redundant line numer information.
+              <p>Disregard Jison’s message, it contains redundant line numer information.
 Disregard the token, we take its value directly from the lexer in case
 the error is caused by a generated token which might refer to its origin.</p>
 
@@ -599,11 +622,11 @@ the error is caused by a generated token which might refer to its origin.</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>The second argument has a <code>loc</code> property, which should have the location
 data for this token. Unfortunately, Jison seems to send an outdated <code>loc</code>
@@ -617,11 +640,11 @@ from the lexer.</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Based on <a href="http://v8.googlecode.com/svn/branches/bleeding_edge/src/messages.js">http://v8.googlecode.com/svn/branches/bleeding_edge/src/messages.js</a>
 Modified to handle sourceMap</p>
@@ -649,11 +672,11 @@ Modified to handle sourceMap</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>Check for a sourceMap position</p>
 
@@ -694,11 +717,11 @@ Modified to handle sourceMap</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>Map of filenames -&gt; sourceMap object.</p>
 
@@ -709,11 +732,11 @@ Modified to handle sourceMap</p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Generates the source map for a coffee file and stores it in the local cache variable.</p>
 
@@ -728,11 +751,11 @@ Modified to handle sourceMap</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Based on <a href="http://goo.gl/ZTx1p">michaelficarra/CoffeeScriptRedux</a>
 NodeJS / V8 have no support for transforming positions in stack traces using
@@ -751,7 +774,7 @@ positions.</p>
     <span class="hljs-keyword">break</span> <span class="hljs-keyword">if</span> frame.getFunction() <span class="hljs-keyword">is</span> <span class="hljs-built_in">exports</span>.run
     <span class="hljs-string">"  at <span class="hljs-subst">#{formatSourcePosition frame, getSourceMapping}</span>"</span>
 
-  <span class="hljs-string">"<span class="hljs-subst">#{err.name}</span>: <span class="hljs-subst">#{err.message ? <span class="hljs-string">''</span>}</span>\n<span class="hljs-subst">#{frames.join <span class="hljs-string">'\n'</span>}</span>\n"</span></pre></div></div>
+  <span class="hljs-string">"<span class="hljs-subst">#{err.toString()}</span>\n<span class="hljs-subst">#{frames.join <span class="hljs-string">'\n'</span>}</span>\n"</span></pre></div></div>
             
         </li>
         

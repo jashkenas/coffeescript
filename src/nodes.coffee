@@ -434,8 +434,7 @@ class exports.Bool extends Base
 # A `return` is a *pureStatement* -- wrapping it in a closure wouldn't
 # make sense.
 exports.Return = class Return extends Base
-  constructor: (expr) ->
-    @expression = expr if expr and not expr.unwrap().isUndefined
+  constructor: (@expression) ->
 
   children: ['expression']
 
@@ -2194,7 +2193,7 @@ UTILITIES =
   "
 
   modulo: -> """
-    function(a, b) { return (a % b + +b) % b; }
+    function(a, b) { return (+a % (b = +b) + b) % b; }
   """
 
   # Shortcuts to speed up the lookup time for native functions.

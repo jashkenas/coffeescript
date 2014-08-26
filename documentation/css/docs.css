@@ -81,14 +81,15 @@ code, pre, tt, textarea {
       padding-left: 0;
     }
 .timestamp {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: normal;
-  color: black;
+  text-transform: uppercase;
 }
-  .timestamp small {
-    font-size: 11px;
-    text-transform: uppercase;
-  }
+div.anchor {
+  position: relative;
+  top: -90px;
+  margin: 0 0 -20px;
+}
 div.code {
   position: relative;
   background: #fff;
@@ -154,22 +155,6 @@ div.code {
     #logo img {
       margin: 5px 0 0 3px;
     }
-  #error {
-    position: absolute;
-    -webkit-border-radius: 2px; -moz-border-radius: 2px; border-radius: 2px;
-    -webkit-border-top-left-radius: 0; -moz-border-radius-topleft: 0; border-top-left-radius: 0;
-    -webkit-border-bottom-left-radius: 0; -moz-border-radius-bottomleft: 0; border-bottom-left-radius: 0;
-    right: 0px; top: 0px; left: 726px; bottom: 0;
-    padding: 0 0 0 15px;
-    background: #fdcdcc;
-    background: -webkit-gradient(linear, left top, left bottom, from(#ffedec), to(#ff9a95));
-    background: -moz-linear-gradient(top, #f8f8f8, #dadada);
-    color: #862322;
-    font-size: 10px;
-    line-height: 50px;
-    overflow: hidden;
-    text-transform: uppercase;
-  }
   .navigation {
     height: 50px;
     font-size: 11px;
@@ -321,6 +306,9 @@ div.code {
     margin-bottom: 0;
     top: 10px; left: 10px; right: 10px; bottom: 15px;
   }
+    #repl_results.error {
+      color: red
+    }
     #repl_source_wrap {
       margin-left: 5px;
       width: 47%; right: 50%;
@@ -383,3 +371,9 @@ div.code {
     background-image: url(../images/button_bg_dark.gif);
     text-shadow: none;
   }
+  .minibutton.error {
+     opacity: 0.5;
+     color: #600;
+     cursor: not-allowed;
+  }
+

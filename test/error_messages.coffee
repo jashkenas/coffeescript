@@ -41,6 +41,17 @@ test "compiler error formatting", ->
                  ^^^^
   '''
 
+test "compiler error formatting with mixed tab and space", ->
+  assertErrorFormat """
+    \t  if a
+    \t  test
+  """,
+  '''
+    [stdin]:1:4: error: unexpected if
+    \t  if a
+    \t  ^^
+  '''
+
 
 if require?
   fs   = require 'fs'
@@ -50,11 +61,18 @@ if require?
     err = new Error 'error'
     ok err.stack.match /test[\/\\]error_messages\.coffee:\d+:\d+\b/
 
+  test "patchStackTrace stack prelude consistent with V8", ->
+    err = new Error
+    ok err.stack.match /^Error\n/ # Notice no colon when no message.
+
+    err = new Error 'error'
+    ok err.stack.match /^Error: error\n/
+
   test "#2849: compilation error in a require()d file", ->
     # Create a temporary file to require().
     ok not fs.existsSync 'test/syntax-error.coffee'
     fs.writeFileSync 'test/syntax-error.coffee', 'foo in bar or in baz'
-  
+
     try
       assertErrorFormat '''
         require './test/syntax-error'
@@ -67,7 +85,7 @@ if require?
     finally
       fs.unlink 'test/syntax-error.coffee'
 
-  
+
 test "#1096: unexpected generated tokens", ->
   # Unexpected interpolation
   assertErrorFormat '{"#{key}": val}', '''

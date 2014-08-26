@@ -16,83 +16,85 @@
           <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
           <a class="small" href="javascript:void(0);">+</a>
           <div id="jump_wrapper">
-          <div id="jump_page">
-            
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
               
-              <a class="source" href="browser.html">
-                browser.coffee
-              </a>
-            
+                
+                <a class="source" href="browser.html">
+                  browser.coffee
+                </a>
               
-              <a class="source" href="cake.html">
-                cake.coffee
-              </a>
-            
+                
+                <a class="source" href="cake.html">
+                  cake.coffee
+                </a>
               
-              <a class="source" href="coffee-script.html">
-                coffee-script.coffee
-              </a>
-            
+                
+                <a class="source" href="coffee-script.html">
+                  coffee-script.coffee
+                </a>
               
-              <a class="source" href="command.html">
-                command.coffee
-              </a>
-            
+                
+                <a class="source" href="command.html">
+                  command.coffee
+                </a>
               
-              <a class="source" href="grammar.html">
-                grammar.coffee
-              </a>
-            
+                
+                <a class="source" href="grammar.html">
+                  grammar.coffee
+                </a>
               
-              <a class="source" href="helpers.html">
-                helpers.coffee
-              </a>
-            
+                
+                <a class="source" href="helpers.html">
+                  helpers.coffee
+                </a>
               
-              <a class="source" href="index.html">
-                index.coffee
-              </a>
-            
+                
+                <a class="source" href="index.html">
+                  index.coffee
+                </a>
               
-              <a class="source" href="lexer.html">
-                lexer.coffee
-              </a>
-            
+                
+                <a class="source" href="lexer.html">
+                  lexer.coffee
+                </a>
               
-              <a class="source" href="nodes.html">
-                nodes.coffee
-              </a>
-            
+                
+                <a class="source" href="nodes.html">
+                  nodes.coffee
+                </a>
               
-              <a class="source" href="optparse.html">
-                optparse.coffee
-              </a>
-            
+                
+                <a class="source" href="optparse.html">
+                  optparse.coffee
+                </a>
               
-              <a class="source" href="register.html">
-                register.coffee
-              </a>
-            
+                
+                <a class="source" href="register.html">
+                  register.coffee
+                </a>
               
-              <a class="source" href="repl.html">
-                repl.coffee
-              </a>
-            
+                
+                <a class="source" href="repl.html">
+                  repl.coffee
+                </a>
               
-              <a class="source" href="rewriter.html">
-                rewriter.coffee
-              </a>
-            
+                
+                <a class="source" href="rewriter.html">
+                  rewriter.coffee
+                </a>
               
-              <a class="source" href="scope.html">
-                scope.litcoffee
-              </a>
-            
+                
+                <a class="source" href="scope.html">
+                  scope.litcoffee
+                </a>
               
-              <a class="source" href="sourcemap.html">
-                sourcemap.litcoffee
-              </a>
-            
+                
+                <a class="source" href="sourcemap.html">
+                  sourcemap.litcoffee
+                </a>
+              
+            </div>
           </div>
         </li>
       </ul>
@@ -118,7 +120,19 @@ into various forms: saved into <code>.js</code> files or printed to stdout
 or recompiled every time the source is saved,
 printed as a token stream or as the syntax tree, or launch an
 interactive REPL.</p>
-<p>External dependencies.</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>External dependencies.</p>
 
             </div>
             
@@ -136,11 +150,11 @@ useWinPathSep  = path.sep <span class="hljs-keyword">is</span> <span class="hljs
         </li>
         
         
-        <li id="section-2">
+        <li id="section-3">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-2">&#182;</a>
+                <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
               <p>Allow CoffeeScript to emit Node.js events.</p>
 
@@ -156,11 +170,11 @@ useWinPathSep  = path.sep <span class="hljs-keyword">is</span> <span class="hljs
         </li>
         
         
-        <li id="section-3">
+        <li id="section-4">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-3">&#182;</a>
+                <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
               <p>The help banner that is printed in conjunction with <code>-h</code>/<code>--help</code>.</p>
 
@@ -175,11 +189,11 @@ useWinPathSep  = path.sep <span class="hljs-keyword">is</span> <span class="hljs
         </li>
         
         
-        <li id="section-4">
+        <li id="section-5">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-4">&#182;</a>
+                <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
               <p>The list of all the valid option flags that <code>coffee</code> knows how to handle.</p>
 
@@ -192,7 +206,7 @@ useWinPathSep  = path.sep <span class="hljs-keyword">is</span> <span class="hljs
   [<span class="hljs-string">'-h'</span>, <span class="hljs-string">'--help'</span>,            <span class="hljs-string">'display this help message'</span>]
   [<span class="hljs-string">'-i'</span>, <span class="hljs-string">'--interactive'</span>,     <span class="hljs-string">'run an interactive CoffeeScript REPL'</span>]
   [<span class="hljs-string">'-j'</span>, <span class="hljs-string">'--join [FILE]'</span>,     <span class="hljs-string">'concatenate the source CoffeeScript before compiling'</span>]
-  [<span class="hljs-string">'-m'</span>, <span class="hljs-string">'--map'</span>,             <span class="hljs-string">'generate source map and save as .map files'</span>]
+  [<span class="hljs-string">'-m'</span>, <span class="hljs-string">'--map'</span>,             <span class="hljs-string">'generate source map and save as .js.map files'</span>]
   [<span class="hljs-string">'-n'</span>, <span class="hljs-string">'--nodes'</span>,           <span class="hljs-string">'print out the parse tree that the parser produces'</span>]
   [      <span class="hljs-string">'--nodejs [ARGS]'</span>,   <span class="hljs-string">'pass options directly to the "node" binary'</span>]
   [      <span class="hljs-string">'--no-header'</span>,       <span class="hljs-string">'suppress the "Generated by" header'</span>]
@@ -208,11 +222,11 @@ useWinPathSep  = path.sep <span class="hljs-keyword">is</span> <span class="hljs
         </li>
         
         
-        <li id="section-5">
+        <li id="section-6">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
+                <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
               <p>Top-level objects shared by all the functions.</p>
 
@@ -228,11 +242,11 @@ optionParser = <span class="hljs-literal">null</span></pre></div></div>
         </li>
         
         
-        <li id="section-6">
+        <li id="section-7">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-6">&#182;</a>
+                <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
               <p>Run <code>coffee</code> by parsing passed options and determining what action to take.
 Many flags cause us to divert before compiling anything. Flags passed after
@@ -246,15 +260,15 @@ Many flags cause us to divert before compiling anything. Flags passed after
         </li>
         
         
-        <li id="section-7">
+        <li id="section-8">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
+                <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
-              <p>Make the REPL <em>CLI</em> use the global context so as to (a) be consistent with the 
+              <p>Make the REPL <em>CLI</em> use the global context so as to (a) be consistent with the
 <code>node</code> REPL CLI and, therefore, (b) make packages that modify native prototypes
-(such as &#39;colors&#39; and &#39;sugar&#39;) work as expected.</p>
+(such as ‘colors’ and ‘sugar’) work as expected.</p>
 
             </div>
             
@@ -271,7 +285,22 @@ Many flags cause us to divert before compiling anything. Flags passed after
   process.argv[<span class="hljs-number">0</span>] = <span class="hljs-string">'coffee'</span>
 
   opts.output = path.resolve opts.output  <span class="hljs-keyword">if</span> opts.output
-  opts.join   = path.resolve opts.join    <span class="hljs-keyword">if</span> opts.join
+  <span class="hljs-keyword">if</span> opts.join
+    opts.join = path.resolve opts.join
+    <span class="hljs-built_in">console</span>.error <span class="hljs-string">'''
+
+    The --join option is deprecated and will be removed in a future version.
+
+    If for some reason it's necessary to share local variables between files,
+    replace...
+
+        $ coffee --compile --join bundle.js -- a.coffee b.coffee c.coffee
+
+    with...
+
+        $ cat a.coffee b.coffee c.coffee | coffee --compile --stdio &gt; bundle.js
+
+    '''</span>
   <span class="hljs-keyword">for</span> source <span class="hljs-keyword">in</span> opts.arguments
     source = path.resolve source
     compilePath source, <span class="hljs-literal">yes</span>, source</pre></div></div>
@@ -279,14 +308,14 @@ Many flags cause us to divert before compiling anything. Flags passed after
         </li>
         
         
-        <li id="section-8">
+        <li id="section-9">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>Compile a path, which could be a script or a directory. If a directory
-is passed, recursively compile all &#39;.coffee&#39;, &#39;.litcoffee&#39;, and &#39;.coffee.md&#39;
+is passed, recursively compile all ‘.coffee’, ‘.litcoffee’, and ‘.coffee.md’
 extension source files in it and all subdirectories.</p>
 
             </div>
@@ -342,15 +371,15 @@ extension source files in it and all subdirectories.</p>
         </li>
         
         
-        <li id="section-9">
+        <li id="section-10">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+                <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>Compile a single source script, containing the given code, according to the
 requested options. If evaluating the script directly sets <code>__filename</code>,
-<code>__dirname</code> and <code>module.filename</code> to be correct relative to the script&#39;s path.</p>
+<code>__dirname</code> and <code>module.filename</code> to be correct relative to the script’s path.</p>
 
             </div>
             
@@ -396,11 +425,11 @@ requested options. If evaluating the script directly sets <code>__filename</code
         </li>
         
         
-        <li id="section-10">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>Attach the appropriate listeners to compile scripts incoming over <strong>stdin</strong>,
 and write them back to <strong>stdout</strong>.</p>
@@ -418,11 +447,11 @@ and write them back to <strong>stdout</strong>.</p>
         </li>
         
         
-        <li id="section-11">
+        <li id="section-12">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <p>If all of the source files are done being read, concatenate and compile
 them together.</p>
@@ -440,11 +469,11 @@ them together.</p>
         </li>
         
         
-        <li id="section-12">
+        <li id="section-13">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
               <p>Watch a source CoffeeScript file using <code>fs.watch</code>, recompiling it every
 time the file is updated. May be used in combination with other options,
@@ -500,11 +529,11 @@ such as <code>--print</code>.</p>
         </li>
         
         
-        <li id="section-13">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <p>Watch a directory of files for new additions.</p>
 
@@ -551,11 +580,11 @@ such as <code>--print</code>.</p>
         </li>
         
         
-        <li id="section-14">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>Remove a file from our source list, and source code cache. Optionally remove
 the compiled JS version as well.</p>
@@ -568,7 +597,7 @@ the compiled JS version as well.</p>
   sourceCode.splice index, <span class="hljs-number">1</span>
   <span class="hljs-keyword">unless</span> opts.join
     silentUnlink outputPath source, base
-    silentUnlink outputPath source, base, <span class="hljs-string">'.map'</span>
+    silentUnlink outputPath source, base, <span class="hljs-string">'.js.map'</span>
     timeLog <span class="hljs-string">"removed <span class="hljs-subst">#{source}</span>"</span>
 
 <span class="hljs-function"><span class="hljs-title">silentUnlink</span> = <span class="hljs-params">(path)</span> -&gt;</span>
@@ -580,11 +609,11 @@ the compiled JS version as well.</p>
         </li>
         
         
-        <li id="section-15">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>Get the corresponding output JavaScript path for a source file.</p>
 
@@ -604,22 +633,22 @@ the compiled JS version as well.</p>
         </li>
         
         
-        <li id="section-16">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Write out a JavaScript source file with the compiled code. By default, files
 are written out in <code>cwd</code> as <code>.js</code> files with the same name, but the output
 directory can be customized with <code>--output</code>.</p>
-<p>If <code>generatedSourceMap</code> is provided, this will write a <code>.map</code> file into the
+<p>If <code>generatedSourceMap</code> is provided, this will write a <code>.js.map</code> file into the
 same directory as the <code>.js</code> file.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">writeJs</span> = <span class="hljs-params">(base, sourcePath, js, jsPath, generatedSourceMap = <span class="hljs-literal">null</span>)</span> -&gt;</span>
-  sourceMapPath = outputPath sourcePath, base, <span class="hljs-string">".map"</span>
+  sourceMapPath = outputPath sourcePath, base, <span class="hljs-string">".js.map"</span>
   jsDir  = path.dirname jsPath
   <span class="hljs-function"><span class="hljs-title">compile</span> = -&gt;</span>
     <span class="hljs-keyword">if</span> opts.compile
@@ -628,29 +657,16 @@ same directory as the <code>.js</code> file.</p>
       fs.writeFile jsPath, js, <span class="hljs-function"><span class="hljs-params">(err)</span> -&gt;</span>
         <span class="hljs-keyword">if</span> err
           printLine err.message
+          process.exit <span class="hljs-number">1</span>
         <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> opts.compile <span class="hljs-keyword">and</span> opts.watch
           timeLog <span class="hljs-string">"compiled <span class="hljs-subst">#{sourcePath}</span>"</span>
     <span class="hljs-keyword">if</span> generatedSourceMap
       fs.writeFile sourceMapPath, generatedSourceMap, <span class="hljs-function"><span class="hljs-params">(err)</span> -&gt;</span>
         <span class="hljs-keyword">if</span> err
           printLine <span class="hljs-string">"Could not write source map: <span class="hljs-subst">#{err.message}</span>"</span>
+          process.exit <span class="hljs-number">1</span>
   fs.exists jsDir, <span class="hljs-function"><span class="hljs-params">(itExists)</span> -&gt;</span>
     <span class="hljs-keyword">if</span> itExists <span class="hljs-keyword">then</span> compile() <span class="hljs-keyword">else</span> mkdirp jsDir, compile</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-17">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
-              </div>
-              <p>Convenience for cleaner setTimeouts.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">wait</span> = <span class="hljs-params">(milliseconds, func)</span> -&gt;</span> setTimeout func, milliseconds</pre></div></div>
             
         </li>
         
@@ -661,12 +677,11 @@ same directory as the <code>.js</code> file.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
-              <p>When watching scripts, it&#39;s useful to log changes with the timestamp.</p>
+              <p>Convenience for cleaner setTimeouts.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">timeLog</span> = <span class="hljs-params">(message)</span> -&gt;</span>
-  <span class="hljs-built_in">console</span>.log <span class="hljs-string">"<span class="hljs-subst">#{(<span class="hljs-keyword">new</span> Date).toLocaleTimeString()}</span> - <span class="hljs-subst">#{message}</span>"</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">wait</span> = <span class="hljs-params">(milliseconds, func)</span> -&gt;</span> setTimeout func, milliseconds</pre></div></div>
             
         </li>
         
@@ -676,6 +691,22 @@ same directory as the <code>.js</code> file.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>When watching scripts, it’s useful to log changes with the timestamp.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">timeLog</span> = <span class="hljs-params">(message)</span> -&gt;</span>
+  <span class="hljs-built_in">console</span>.log <span class="hljs-string">"<span class="hljs-subst">#{(<span class="hljs-keyword">new</span> Date).toLocaleTimeString()}</span> - <span class="hljs-subst">#{message}</span>"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Pretty-print a stream of tokens, sans location data.</p>
 
@@ -691,11 +722,11 @@ same directory as the <code>.js</code> file.</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Use the <a href="optparse.html">OptionParser module</a> to extract all options from
 <code>process.argv</code> that are specified in <code>SWITCHES</code>.</p>
@@ -712,11 +743,11 @@ same directory as the <code>.js</code> file.</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>The compile-time options to pass to the CoffeeScript compiler.</p>
 
@@ -751,11 +782,11 @@ same directory as the <code>.js</code> file.</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Start up a new Node.js instance with the arguments in <code>--nodejs</code> passed to
 the <code>node</code> binary, preserving the other options.</p>
@@ -775,11 +806,11 @@ the <code>node</code> binary, preserving the other options.</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Print the <code>--help</code> usage message and exit. Deprecated switches are not
 shown.</p>
@@ -792,11 +823,11 @@ shown.</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Print the <code>--version</code> message and exit.</p>
 

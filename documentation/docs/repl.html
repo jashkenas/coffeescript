@@ -16,83 +16,85 @@
           <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
           <a class="small" href="javascript:void(0);">+</a>
           <div id="jump_wrapper">
-          <div id="jump_page">
-            
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
               
-              <a class="source" href="browser.html">
-                browser.coffee
-              </a>
-            
+                
+                <a class="source" href="browser.html">
+                  browser.coffee
+                </a>
               
-              <a class="source" href="cake.html">
-                cake.coffee
-              </a>
-            
+                
+                <a class="source" href="cake.html">
+                  cake.coffee
+                </a>
               
-              <a class="source" href="coffee-script.html">
-                coffee-script.coffee
-              </a>
-            
+                
+                <a class="source" href="coffee-script.html">
+                  coffee-script.coffee
+                </a>
               
-              <a class="source" href="command.html">
-                command.coffee
-              </a>
-            
+                
+                <a class="source" href="command.html">
+                  command.coffee
+                </a>
               
-              <a class="source" href="grammar.html">
-                grammar.coffee
-              </a>
-            
+                
+                <a class="source" href="grammar.html">
+                  grammar.coffee
+                </a>
               
-              <a class="source" href="helpers.html">
-                helpers.coffee
-              </a>
-            
+                
+                <a class="source" href="helpers.html">
+                  helpers.coffee
+                </a>
               
-              <a class="source" href="index.html">
-                index.coffee
-              </a>
-            
+                
+                <a class="source" href="index.html">
+                  index.coffee
+                </a>
               
-              <a class="source" href="lexer.html">
-                lexer.coffee
-              </a>
-            
+                
+                <a class="source" href="lexer.html">
+                  lexer.coffee
+                </a>
               
-              <a class="source" href="nodes.html">
-                nodes.coffee
-              </a>
-            
+                
+                <a class="source" href="nodes.html">
+                  nodes.coffee
+                </a>
               
-              <a class="source" href="optparse.html">
-                optparse.coffee
-              </a>
-            
+                
+                <a class="source" href="optparse.html">
+                  optparse.coffee
+                </a>
               
-              <a class="source" href="register.html">
-                register.coffee
-              </a>
-            
+                
+                <a class="source" href="register.html">
+                  register.coffee
+                </a>
               
-              <a class="source" href="repl.html">
-                repl.coffee
-              </a>
-            
+                
+                <a class="source" href="repl.html">
+                  repl.coffee
+                </a>
               
-              <a class="source" href="rewriter.html">
-                rewriter.coffee
-              </a>
-            
+                
+                <a class="source" href="rewriter.html">
+                  rewriter.coffee
+                </a>
               
-              <a class="source" href="scope.html">
-                scope.litcoffee
-              </a>
-            
+                
+                <a class="source" href="scope.html">
+                  scope.litcoffee
+                </a>
               
-              <a class="source" href="sourcemap.html">
-                sourcemap.litcoffee
-              </a>
-            
+                
+                <a class="source" href="sourcemap.html">
+                  sourcemap.litcoffee
+                </a>
+              
+            </div>
           </div>
         </li>
       </ul>
@@ -153,7 +155,7 @@ replDefaults =
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p>Node&#39;s REPL sends the input ending with a newline and then wrapped in
+              <p>Node’s REPL sends the input ending with a newline and then wrapped in
 parens. Unwrap all that.</p>
 
             </div>
@@ -210,7 +212,7 @@ parens. Unwrap all that.</p>
       ]
       js = ast.compile <span class="hljs-attribute">bare</span>: <span class="hljs-literal">yes</span>, <span class="hljs-attribute">locals</span>: Object.keys(context)
       result = <span class="hljs-keyword">if</span> context <span class="hljs-keyword">is</span> <span class="hljs-built_in">global</span>
-        vm.runInThisContext js, filename 
+        vm.runInThisContext js, filename
       <span class="hljs-keyword">else</span>
         vm.runInContext js, context, filename
       cb <span class="hljs-literal">null</span>, result
@@ -225,7 +227,7 @@ parens. Unwrap all that.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
-              <p>AST&#39;s <code>compile</code> does not add source code information to syntax errors.</p>
+              <p>AST’s <code>compile</code> does not add source code information to syntax errors.</p>
 
             </div>
             
@@ -233,13 +235,7 @@ parens. Unwrap all that.</p>
       cb err
 
 <span class="hljs-function"><span class="hljs-title">addMultilineHandler</span> = <span class="hljs-params">(repl)</span> -&gt;</span>
-  {rli, inputStream, outputStream} = repl
-
-  multiline =
-    <span class="hljs-attribute">enabled</span>: <span class="hljs-literal">off</span>
-    <span class="hljs-attribute">initialPrompt</span>: repl.prompt.replace <span class="hljs-regexp">/^[^&gt; ]*/</span>, <span class="hljs-function"><span class="hljs-params">(x)</span> -&gt;</span> x.replace <span class="hljs-regexp">/./g</span>, <span class="hljs-string">'-'</span>
-    <span class="hljs-attribute">prompt</span>: repl.prompt.replace <span class="hljs-regexp">/^[^&gt; ]*&gt;?/</span>, <span class="hljs-function"><span class="hljs-params">(x)</span> -&gt;</span> x.replace <span class="hljs-regexp">/./g</span>, <span class="hljs-string">'.'</span>
-    <span class="hljs-attribute">buffer</span>: <span class="hljs-string">''</span></pre></div></div>
+  {rli, inputStream, outputStream} = repl</pre></div></div>
             
         </li>
         
@@ -250,7 +246,28 @@ parens. Unwrap all that.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
-              <p>Proxy node&#39;s line listener</p>
+              <p>Node 0.11.12 changed API, prompt is now _prompt.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  origPrompt = repl._prompt ? repl.prompt
+
+  multiline =
+    <span class="hljs-attribute">enabled</span>: <span class="hljs-literal">off</span>
+    <span class="hljs-attribute">initialPrompt</span>: origPrompt.replace <span class="hljs-regexp">/^[^&gt; ]*/</span>, <span class="hljs-function"><span class="hljs-params">(x)</span> -&gt;</span> x.replace <span class="hljs-regexp">/./g</span>, <span class="hljs-string">'-'</span>
+    <span class="hljs-attribute">prompt</span>: origPrompt.replace <span class="hljs-regexp">/^[^&gt; ]*&gt;?/</span>, <span class="hljs-function"><span class="hljs-params">(x)</span> -&gt;</span> x.replace <span class="hljs-regexp">/./g</span>, <span class="hljs-string">'.'</span>
+    <span class="hljs-attribute">buffer</span>: <span class="hljs-string">''</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Proxy node’s line listener</p>
 
             </div>
             
@@ -262,17 +279,18 @@ parens. Unwrap all that.</p>
       rli.setPrompt multiline.prompt
       rli.prompt <span class="hljs-literal">true</span>
     <span class="hljs-keyword">else</span>
+      rli.setPrompt origPrompt
       nodeLineListener cmd
     <span class="hljs-keyword">return</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-9">
+        <li id="section-10">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+                <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>Handle Ctrl-v</p>
 
@@ -285,11 +303,11 @@ parens. Unwrap all that.</p>
         </li>
         
         
-        <li id="section-10">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>allow arbitrarily switching between modes any time before multiple lines are entered</p>
 
@@ -297,18 +315,18 @@ parens. Unwrap all that.</p>
             
             <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">unless</span> multiline.buffer.match <span class="hljs-regexp">/\n/</span>
         multiline.enabled = <span class="hljs-keyword">not</span> multiline.enabled
-        rli.setPrompt repl.prompt
+        rli.setPrompt origPrompt
         rli.prompt <span class="hljs-literal">true</span>
         <span class="hljs-keyword">return</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-11">
+        <li id="section-12">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <p>no-op unless the current line is empty</p>
 
@@ -319,11 +337,11 @@ parens. Unwrap all that.</p>
         </li>
         
         
-        <li id="section-12">
+        <li id="section-13">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
               <p>eval, print, loop</p>
 
@@ -338,11 +356,11 @@ parens. Unwrap all that.</p>
         </li>
         
         
-        <li id="section-13">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <p>XXX: multiline hack</p>
 
@@ -360,11 +378,11 @@ parens. Unwrap all that.</p>
         </li>
         
         
-        <li id="section-14">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>Store and load command history from a file</p>
 
@@ -377,11 +395,11 @@ parens. Unwrap all that.</p>
         </li>
         
         
-        <li id="section-15">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>Get file info and at most maxSize of command history</p>
 
@@ -393,11 +411,11 @@ parens. Unwrap all that.</p>
         </li>
         
         
-        <li id="section-16">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Read last <code>size</code> bytes from the file</p>
 
@@ -410,11 +428,11 @@ parens. Unwrap all that.</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Set the history on the interpreter</p>
 
@@ -425,11 +443,11 @@ parens. Unwrap all that.</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>If the history file was truncated we should pop off a potential partial line</p>
 
@@ -440,11 +458,11 @@ parens. Unwrap all that.</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Shift off the final blank newline</p>
 
@@ -462,11 +480,11 @@ parens. Unwrap all that.</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Save the latest command in the file</p>
 
@@ -480,21 +498,39 @@ parens. Unwrap all that.</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Add a command to show the history stack</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  repl.commands[<span class="hljs-string">'.history'</span>] =
+            <div class="content"><div class='highlight'><pre>  repl.commands[getCommandId(repl, <span class="hljs-string">'history'</span>)] =
     <span class="hljs-attribute">help</span>: <span class="hljs-string">'Show command history'</span>
     <span class="hljs-attribute">action</span>:<span class="hljs-function"> -&gt;</span>
       repl.outputStream.write <span class="hljs-string">"<span class="hljs-subst">#{repl.rli.history[..].reverse().join <span class="hljs-string">'\n'</span>}</span>\n"</span>
       repl.displayPrompt()
+
+<span class="hljs-function"><span class="hljs-title">getCommandId</span> = <span class="hljs-params">(repl, commandName)</span> -&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>Node 0.11 changed API, a command such as ‘.help’ is now stored as ‘help’</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  commandsHaveLeadingDot = repl.commands[<span class="hljs-string">'.help'</span>]?
+  <span class="hljs-keyword">if</span> commandsHaveLeadingDot <span class="hljs-keyword">then</span> <span class="hljs-string">".<span class="hljs-subst">#{commandName}</span>"</span> <span class="hljs-keyword">else</span> commandName
 
 <span class="hljs-built_in">module</span>.<span class="hljs-built_in">exports</span> =
   <span class="hljs-attribute">start</span>: <span class="hljs-function"><span class="hljs-params">(opts = {})</span> -&gt;</span>
@@ -510,7 +546,22 @@ parens. Unwrap all that.</p>
     repl = nodeREPL.start opts
     repl.<span class="hljs-literal">on</span> <span class="hljs-string">'exit'</span>,<span class="hljs-function"> -&gt;</span> repl.outputStream.write <span class="hljs-string">'\n'</span>
     addMultilineHandler repl
-    addHistory repl, opts.historyFile, opts.historyMaxInputSize <span class="hljs-keyword">if</span> opts.historyFile
+    addHistory repl, opts.historyFile, opts.historyMaxInputSize <span class="hljs-keyword">if</span> opts.historyFile</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>Adapt help inherited from the node REPL</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    repl.commands[getCommandId(repl, <span class="hljs-string">'load'</span>)].help = <span class="hljs-string">'Load code from a file into this REPL session'</span>
     repl</pre></div></div>
             
         </li>

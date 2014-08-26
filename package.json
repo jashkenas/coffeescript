@@ -8,7 +8,7 @@
     "compiler"
   ],
   "author": "Jeremy Ashkenas",
-  "version": "1.7.1",
+  "version": "1.8.0",
   "license": "MIT",
   "engines": {
     "node": ">=0.8.0"
@@ -21,6 +21,7 @@
     "coffee": "./bin/coffee",
     "cake": "./bin/cake"
   },
+  "preferGlobal": true,
   "scripts": {
     "test": "node ./bin/cake test"
   },
@@ -34,10 +35,10 @@
     "uglify-js": "~2.2",
     "jison": ">=0.2.0",
     "highlight.js": "~8.0.0",
-    "underscore": "~1.5.2"
+    "underscore": "~1.5.2",
+    "docco": "~0.6.2"
   },
   "dependencies": {
-    "mkdirp": "~0.3.5",
-    "docco": "~0.6.2"
+    "mkdirp": "~0.3.5"
   }
 }
