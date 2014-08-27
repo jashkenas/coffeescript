@@ -46,7 +46,7 @@ test "the `compact` helper removes falsey values from an array, preserves truthy
 
 # `count`
 
-test "the `count` helper counts the number of occurances of a string in another string", ->
+test "the `count` helper counts the number of occurrences of a string in another string", ->
   eq 1/0, count('abc', '')
   eq 0, count('abc', 'z')
   eq 1, count('abc', 'a')
