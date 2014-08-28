@@ -1115,8 +1115,8 @@ Expressions
         the Bolo tank game for modern browsers.
       </li>
       <li>
-        <b>josh</b>'s <a href="http://josh.github.com/nack/">nack</a>, a Node.js-powered
-        <a href="http://rack.rubyforge.org/">Rack</a> server.
+        <b>github</b>'s <a href="https://atom.io/">Atom</a>,
+        a hackable text editor built on web technologies.
       </li>
     </ul>
 
