@@ -10,7 +10,8 @@ if vm = require? 'vm'
     eq fhqwhgads, 'global superpower!'
 
   test "CoffeeScript.eval can run in, and modify, a Script context sandbox", ->
-    sandbox = vm.Script.createContext()
+    createContext = vm.Script.createContext ? vm.createContext
+    sandbox = createContext()
     sandbox.foo = 'bar'
     code = '''
     global.foo = 'not bar!'
@@ -24,6 +25,7 @@ if vm = require? 'vm'
     code = '''
     global.foo = 'not bar!'
     '''
+
     result = CoffeeScript.eval code, {sandbox}
     eq result, 'not bar!'
     eq sandbox.foo, 'bar'

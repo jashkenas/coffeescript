@@ -109,6 +109,11 @@ exports.Lexer = class Lexer
     if id is 'own' and @tag() is 'FOR'
       @token 'OWN', id
       return id.length
+
+    if id is 'from' and @tag() is 'YIELD'
+      @token 'FROM', id
+      return id.length
+
     forcedIdentifier = colon or
       (prev = last @tokens) and (prev[0] in ['.', '?.', '::', '?::'] or
       not prev.spaced and prev[0] is '@')
@@ -729,7 +734,7 @@ exports.Lexer = class Lexer
 JS_KEYWORDS = [
   'true', 'false', 'null', 'this'
   'new', 'delete', 'typeof', 'in', 'instanceof'
-  'return', 'throw', 'break', 'continue', 'debugger'
+  'return', 'throw', 'break', 'continue', 'debugger', 'yield'
   'if', 'else', 'switch', 'for', 'while', 'do', 'try', 'catch', 'finally'
   'class', 'extends', 'super'
 ]
@@ -758,7 +763,7 @@ RESERVED = [
   'case', 'default', 'function', 'var', 'void', 'with', 'const', 'let', 'enum'
   'export', 'import', 'native', '__hasProp', '__extends', '__slice', '__bind'
   '__indexOf', 'implements', 'interface', 'package', 'private', 'protected'
-  'public', 'static', 'yield'
+  'public', 'static'
 ]
 
 STRICT_PROSCRIBED = ['arguments', 'eval']
