@@ -1114,6 +1114,10 @@ Expressions
         <b>stephank</b>'s <a href="https://github.com/stephank/orona">Orona</a>, a remake of
         the Bolo tank game for modern browsers.
       </li>
+      <li>
+        <b>github</b>'s <a href="https://atom.io/">Atom</a>,
+        a hackable text editor built on web technologies.
+      </li>
     </ul>
 
     <h2>
