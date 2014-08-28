@@ -109,6 +109,9 @@ exports.Lexer = class Lexer
     if id is 'own' and @tag() is 'FOR'
       @token 'OWN', id
       return id.length
+    if id is 'from' and @tag() is 'YIELD'
+      @token 'FROM', id
+      return id.length
     forcedIdentifier = colon or
       (prev = last @tokens) and (prev[0] in ['.', '?.', '::', '?::'] or
       not prev.spaced and prev[0] is '@')
@@ -729,7 +732,7 @@ exports.Lexer = class Lexer
 JS_KEYWORDS = [
   'true', 'false', 'null', 'this'
   'new', 'delete', 'typeof', 'in', 'instanceof'
-  'return', 'throw', 'break', 'continue', 'debugger'
+  'return', 'throw', 'break', 'continue', 'yield', 'debugger'
   'if', 'else', 'switch', 'for', 'while', 'do', 'try', 'catch', 'finally'
   'class', 'extends', 'super'
 ]
@@ -758,7 +761,7 @@ RESERVED = [
   'case', 'default', 'function', 'var', 'void', 'with', 'const', 'let', 'enum'
   'export', 'import', 'native', '__hasProp', '__extends', '__slice', '__bind'
   '__indexOf', 'implements', 'interface', 'package', 'private', 'protected'
-  'public', 'static', 'yield'
+  'public', 'static'
 ]
 
 STRICT_PROSCRIBED = ['arguments', 'eval']
@@ -789,11 +792,11 @@ NUMBER     = ///
 HEREDOC    = /// ^ ("""|''') ((?: \\[\s\S] | [^\\] )*?) (?:\n[^\n\S]*)? \1 ///
 
 OPERATOR   = /// ^ (
-  ?: [-=]>             # function
+  ?: (-|=)\1?>         # function
    | [-+*/%<>&|^!?=]=  # compound assign / compare
    | >>>=?             # zero-fill right shift
-   | ([-+:])\1         # doubles
-   | ([&|<>*/%])\2=?   # logic / shift / power / floor division / modulo
+   | ([-+:])\2         # doubles
+   | ([&|<>*/%])\3=?   # logic / shift / power / floor division / modulo
    | \?(\.|::)         # soak access
    | \.{2,3}           # range or splat
 ) ///
@@ -802,7 +805,7 @@ WHITESPACE = /^[^\n\S]+/
 
 COMMENT    = /^###([^#][\s\S]*?)(?:###[^\n\S]*|###$)|^(?:\s*#(?!##[^#]).*)+/
 
-CODE       = /^[-=]>/
+CODE       = /^(-|=)\1?>/
 
 MULTI_DENT = /^(?:\n[^\n\S]*)+/
 
