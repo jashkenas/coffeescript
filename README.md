@@ -17,6 +17,8 @@
     |                 |              |_____/ \___|_|  |_| .__/ \__|
      `-.._________..-'                                  | |
                                                         |_|
+## Warning
+This is an experimental build for Harmony generator function.
 
 CoffeeScript is a little language that compiles into JavaScript.
 
