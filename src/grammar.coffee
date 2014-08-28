@@ -105,6 +105,7 @@ grammar =
     o 'Invocation'
     o 'Code'
     o 'Operation'
+    o 'Yield'
     o 'Assign'
     o 'If'
     o 'Try'
@@ -191,9 +192,12 @@ grammar =
 
   # CoffeeScript has two different symbols for functions. `->` is for ordinary
   # functions, and `=>` is for functions bound to the current value of *this*.
+  # Double greater-than sign denotes a generator, i.e. ->> and =>>.
   FuncGlyph: [
     o '->',                                     -> 'func'
+    o '->>',                                    -> 'generator'
     o '=>',                                     -> 'boundfunc'
+    o '=>>',                                    -> 'boundgenerator'
   ]
 
   # An optional, trailing comma.
@@ -525,6 +529,12 @@ grammar =
     o 'Expression POST_IF Expression',          -> new If $3, LOC(1)(Block.wrap [$1]), type: $2, statement: true
   ]
 
+  # Yield and yield from expression.
+  Yield: [
+    o 'YIELD Expression',                       -> new Yield $2
+    o 'YIELD FROM Expression',                  -> new Yield $3, true
+  ]
+
   # Arithmetic and logical operators, working on one or more operands.
   # Here they are grouped by order of precedence. The actual precedence rules
   # are defined at the bottom of the page. It would be shorter if we could
@@ -585,7 +595,7 @@ operators = [
   ['left',      'CALL_START', 'CALL_END']
   ['nonassoc',  '++', '--']
   ['left',      '?']
-  ['right',     'UNARY']
+  ['right',     'UNARY', 'YIELD']
   ['right',     '**']
   ['right',     'UNARY_MATH']
   ['left',      'MATH']
