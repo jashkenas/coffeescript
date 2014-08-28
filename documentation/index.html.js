@@ -1114,10 +1114,6 @@ Expressions
         <b>stephank</b>'s <a href="https://github.com/stephank/orona">Orona</a>, a remake of
         the Bolo tank game for modern browsers.
       </li>
-      <li>
-        <b>josh</b>'s <a href="http://josh.github.com/nack/">nack</a>, a Node.js-powered
-        <a href="http://rack.rubyforge.org/">Rack</a> server.
-      </li>
     </ul>
 
     <h2>
