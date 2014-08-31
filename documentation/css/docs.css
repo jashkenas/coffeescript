@@ -246,6 +246,18 @@ div.code {
           .navigation.active .repl_bridge {
             display: block;
           }
+        .navigation .code .literate_check_label {
+          position: absolute;
+          left: -15px;
+          top: -15px;
+          line-height: 1;
+          text-transform: none;
+        }
+          .navigation .code .literate_check_label input {
+            margin: 0;
+            padding: 0;
+            vertical-align: text-bottom;
+          }
         .navigation .code .minibutton {
           top: 10px; right: 10px;
           width: 40px;

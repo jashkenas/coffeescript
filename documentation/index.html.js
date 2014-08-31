@@ -58,6 +58,9 @@
           <div class="screenshadow tr"></div>
           <div class="screenshadow bl"></div>
           <div class="screenshadow br"></div>
+          <label class="literate_check_label">
+            <input type="checkbox" id="literate_check"> Literate CoffeeScript
+          </label>
           <div id="repl_source_wrap">
             <textarea id="repl_source" rows="100" spellcheck="false">alert "Hello CoffeeScript!"</textarea>
           </div>
@@ -1964,9 +1967,12 @@ Expressions
     compileSource = ->
       source = $('#repl_source').val()
       results = $('#repl_results')
+      is_literate = $('#literate_check').is(':checked')
       window.compiledJS = ''
       try
-        window.compiledJS = CoffeeScript.compile source, bare: on
+        window.compiledJS = CoffeeScript.compile source,
+          bare: on
+          literate: is_literate
         el = results[0]
         if el.innerText
           el.innerText = window.compiledJS
@@ -2008,7 +2014,7 @@ Expressions
     # Bind navigation buttons to open the menus.
     $('.navigation').click (e) ->
       return if e.target.tagName.toLowerCase() is 'a'
-      return false if $(e.target).closest('.repl_wrapper').length
+      return e.stopPropagation() if $(e.target).closest('.repl_wrapper').length
       if $(this).hasClass('active')
         closeMenus()
       else
@@ -2032,6 +2038,9 @@ Expressions
     $("#repl_permalink").click (e) ->
         window.location = $(this).attr("href")
         false
+
+    $("#literate_check").change ->
+      compileSource()
 
     # If source code is included in location.hash, display it.
     hash = decodeURIComponent location.hash.replace(/^#/, '')
