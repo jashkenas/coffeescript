@@ -1760,9 +1760,9 @@ exports.Op = class Op extends Base
     if 'expression' in Object.keys @first
       parts.push @first.expression.compileToFragments o, LEVEL_OP if @first.expression?
     else 
-      parts.push [@makeCode op] 
-      parts.push [@makeCode(' ')]
+      parts.push [@makeCode "(#{op} "] 
       parts.push @first.compileToFragments o, LEVEL_OP
+      parts.push [@makeCode ")"] 
     @joinFragmentArrays parts, ''
 
   compilePower: (o) ->
