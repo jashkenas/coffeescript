@@ -536,6 +536,7 @@ grammar =
     o 'UNARY_MATH Expression',                  -> new Op $1 , $2
     o '-     Expression',                      (-> new Op '-', $2), prec: 'UNARY_MATH'
     o '+     Expression',                      (-> new Op '+', $2), prec: 'UNARY_MATH'
+    o 'YIELD Statement',                        -> new Op $1 , $2
     o 'YIELD Expression',                       -> new Op $1 , $2
     o 'YIELD FROM Expression',                  -> new Op $1.concat($2) , $3
 
