@@ -16,78 +16,85 @@
           <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
           <a class="small" href="javascript:void(0);">+</a>
           <div id="jump_wrapper">
-          <div id="jump_page">
-            
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
               
-              <a class="source" href="browser.html">
-                browser.coffee
-              </a>
-            
+                
+                <a class="source" href="browser.html">
+                  browser.coffee
+                </a>
               
-              <a class="source" href="cake.html">
-                cake.coffee
-              </a>
-            
+                
+                <a class="source" href="cake.html">
+                  cake.coffee
+                </a>
               
-              <a class="source" href="coffee-script.html">
-                coffee-script.coffee
-              </a>
-            
+                
+                <a class="source" href="coffee-script.html">
+                  coffee-script.coffee
+                </a>
               
-              <a class="source" href="command.html">
-                command.coffee
-              </a>
-            
+                
+                <a class="source" href="command.html">
+                  command.coffee
+                </a>
               
-              <a class="source" href="grammar.html">
-                grammar.coffee
-              </a>
-            
+                
+                <a class="source" href="grammar.html">
+                  grammar.coffee
+                </a>
               
-              <a class="source" href="helpers.html">
-                helpers.coffee
-              </a>
-            
+                
+                <a class="source" href="helpers.html">
+                  helpers.coffee
+                </a>
               
-              <a class="source" href="index.html">
-                index.coffee
-              </a>
-            
+                
+                <a class="source" href="index.html">
+                  index.coffee
+                </a>
               
-              <a class="source" href="lexer.html">
-                lexer.coffee
-              </a>
-            
+                
+                <a class="source" href="lexer.html">
+                  lexer.coffee
+                </a>
               
-              <a class="source" href="nodes.html">
-                nodes.coffee
-              </a>
-            
+                
+                <a class="source" href="nodes.html">
+                  nodes.coffee
+                </a>
               
-              <a class="source" href="optparse.html">
-                optparse.coffee
-              </a>
-            
+                
+                <a class="source" href="optparse.html">
+                  optparse.coffee
+                </a>
               
-              <a class="source" href="repl.html">
-                repl.coffee
-              </a>
-            
+                
+                <a class="source" href="register.html">
+                  register.coffee
+                </a>
               
-              <a class="source" href="rewriter.html">
-                rewriter.coffee
-              </a>
-            
+                
+                <a class="source" href="repl.html">
+                  repl.coffee
+                </a>
               
-              <a class="source" href="scope.html">
-                scope.litcoffee
-              </a>
-            
+                
+                <a class="source" href="rewriter.html">
+                  rewriter.coffee
+                </a>
               
-              <a class="source" href="sourcemap.html">
-                sourcemap.litcoffee
-              </a>
-            
+                
+                <a class="source" href="scope.html">
+                  scope.litcoffee
+                </a>
+              
+                
+                <a class="source" href="sourcemap.html">
+                  sourcemap.litcoffee
+                </a>
+              
+            </div>
           </div>
         </li>
       </ul>
@@ -111,7 +118,7 @@
               
             </div>
             
-            <div class="content"><div class='highlight'><pre>{repeat} = require <span class="string">'./helpers'</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>{repeat} = <span class="hljs-built_in">require</span> <span class="hljs-string">'./helpers'</span></pre></div></div>
             
         </li>
         
@@ -123,18 +130,15 @@
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
               <p>A simple <strong>OptionParser</strong> class to parse option flags from the command-line.
-Use it like so:
-
-</p>
-<pre><code>parser  = new OptionParser switches, helpBanner
-options = parser.parse process.argv</code></pre>
-<p>The first non-option is considered to be the start of the file (and file
-option) list, and all subsequent arguments are left unparsed.
-</p>
+Use it like so:</p>
+<pre><code>parser  = <span class="hljs-keyword">new</span> OptionParser switches, helpBanner
+options = parser.parse process.argv
+</code></pre><p>The first non-option is considered to be the start of the file (and file
+option) list, and all subsequent arguments are left unparsed.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.OptionParser = <span class="class"><span class="keyword">class</span> <span class="title">OptionParser</span></span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.OptionParser = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">OptionParser</span></span></pre></div></div>
             
         </li>
         
@@ -145,17 +149,14 @@ option) list, and all subsequent arguments are left unparsed.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p>Initialize with a list of valid options, in the form:
-
-</p>
-<pre><code>[short-flag, long-flag, description]</code></pre>
-<p>Along with an an optional banner for the usage help.
-</p>
+              <p>Initialize with a list of valid options, in the form:</p>
+<pre><code>[short-flag, long-flag, description]
+</code></pre><p>Along with an an optional banner for the usage help.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  constructor: (rules, <span class="property">@banner</span>) -&gt;
-    <span class="property">@rules</span> = buildRules rules</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(rules, <span class="hljs-property">@banner</span>)</span> -&gt;</span>
+    <span class="hljs-property">@rules</span> = buildRules rules</pre></div></div>
             
         </li>
         
@@ -171,25 +172,24 @@ specified options, and return it. Options after the first non-option
 argument are treated as arguments. <code>options.arguments</code> will be an array
 containing the remaining arguments. This is a simpler API than many option
 parsers that allow you to attach callback actions for every flag. Instead,
-you&#39;re responsible for interpreting the options object.
-</p>
+you’re responsible for interpreting the options object.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  parse: (args) -&gt;
-    options = arguments: []
-    skippingArgument = <span class="literal">no</span>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">parse</span>: <span class="hljs-function"><span class="hljs-params">(args)</span> -&gt;</span>
+    options = <span class="hljs-attribute">arguments</span>: []
+    skippingArgument = <span class="hljs-literal">no</span>
     originalArgs = args
     args = normalizeArguments args
-    <span class="keyword">for</span> arg, i <span class="keyword">in</span> args
-      <span class="keyword">if</span> skippingArgument
-        skippingArgument = <span class="literal">no</span>
-        <span class="keyword">continue</span>
-      <span class="keyword">if</span> arg <span class="keyword">is</span> <span class="string">'--'</span>
-        pos = originalArgs.indexOf <span class="string">'--'</span>
-        options.arguments = options.arguments.concat originalArgs[(pos + <span class="number">1</span>)..]
-        <span class="keyword">break</span>
-      isOption = !!(arg.match(LONG_FLAG) <span class="keyword">or</span> arg.match(SHORT_FLAG))</pre></div></div>
+    <span class="hljs-keyword">for</span> arg, i <span class="hljs-keyword">in</span> args
+      <span class="hljs-keyword">if</span> skippingArgument
+        skippingArgument = <span class="hljs-literal">no</span>
+        <span class="hljs-keyword">continue</span>
+      <span class="hljs-keyword">if</span> arg <span class="hljs-keyword">is</span> <span class="hljs-string">'--'</span>
+        pos = originalArgs.indexOf <span class="hljs-string">'--'</span>
+        options.arguments = options.arguments.concat originalArgs[(pos + <span class="hljs-number">1</span>)..]
+        <span class="hljs-keyword">break</span>
+      isOption = !!(arg.match(LONG_FLAG) <span class="hljs-keyword">or</span> arg.match(SHORT_FLAG))</pre></div></div>
             
         </li>
         
@@ -201,25 +201,24 @@ you&#39;re responsible for interpreting the options object.
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
               <p>the CS option parser is a little odd; options after the first
-non-option argument are treated as non-option arguments themselves
-</p>
+non-option argument are treated as non-option arguments themselves</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      seenNonOptionArg = options.arguments.length &gt; <span class="number">0</span>
-      <span class="keyword">unless</span> seenNonOptionArg
-        matchedRule = <span class="literal">no</span>
-        <span class="keyword">for</span> rule <span class="keyword">in</span> <span class="property">@rules</span>
-          <span class="keyword">if</span> rule.shortFlag <span class="keyword">is</span> arg <span class="keyword">or</span> rule.longFlag <span class="keyword">is</span> arg
-            value = <span class="literal">true</span>
-            <span class="keyword">if</span> rule.hasArgument
-              skippingArgument = <span class="literal">yes</span>
-              value = args[i + <span class="number">1</span>]
-            options[rule.name] = <span class="keyword">if</span> rule.isList <span class="keyword">then</span> (options[rule.name] <span class="keyword">or</span> []).concat value <span class="keyword">else</span> value
-            matchedRule = <span class="literal">yes</span>
-            <span class="keyword">break</span>
-        <span class="keyword">throw</span> <span class="keyword">new</span> Error <span class="string">"unrecognized option: <span class="subst">#{arg}</span>"</span> <span class="keyword">if</span> isOption <span class="keyword">and</span> <span class="keyword">not</span> matchedRule
-      <span class="keyword">if</span> seenNonOptionArg <span class="keyword">or</span> <span class="keyword">not</span> isOption
+            <div class="content"><div class='highlight'><pre>      seenNonOptionArg = options.arguments.length &gt; <span class="hljs-number">0</span>
+      <span class="hljs-keyword">unless</span> seenNonOptionArg
+        matchedRule = <span class="hljs-literal">no</span>
+        <span class="hljs-keyword">for</span> rule <span class="hljs-keyword">in</span> <span class="hljs-property">@rules</span>
+          <span class="hljs-keyword">if</span> rule.shortFlag <span class="hljs-keyword">is</span> arg <span class="hljs-keyword">or</span> rule.longFlag <span class="hljs-keyword">is</span> arg
+            value = <span class="hljs-literal">true</span>
+            <span class="hljs-keyword">if</span> rule.hasArgument
+              skippingArgument = <span class="hljs-literal">yes</span>
+              value = args[i + <span class="hljs-number">1</span>]
+            options[rule.name] = <span class="hljs-keyword">if</span> rule.isList <span class="hljs-keyword">then</span> (options[rule.name] <span class="hljs-keyword">or</span> []).concat value <span class="hljs-keyword">else</span> value
+            matchedRule = <span class="hljs-literal">yes</span>
+            <span class="hljs-keyword">break</span>
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">"unrecognized option: <span class="hljs-subst">#{arg}</span>"</span> <span class="hljs-keyword">if</span> isOption <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> matchedRule
+      <span class="hljs-keyword">if</span> seenNonOptionArg <span class="hljs-keyword">or</span> <span class="hljs-keyword">not</span> isOption
         options.arguments.push arg
     options</pre></div></div>
             
@@ -233,20 +232,19 @@ non-option argument are treated as non-option arguments themselves
                 <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
               <p>Return the help text for this <strong>OptionParser</strong>, listing and describing all
-of the valid options, for <code>--help</code> and such.
-</p>
+of the valid options, for <code>--help</code> and such.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  help: -&gt;
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">help</span>:<span class="hljs-function"> -&gt;</span>
     lines = []
-    lines.unshift <span class="string">"<span class="subst">#{@banner}</span>\n"</span> <span class="keyword">if</span> <span class="property">@banner</span>
-    <span class="keyword">for</span> rule <span class="keyword">in</span> <span class="property">@rules</span>
-      spaces  = <span class="number">15</span> - rule.longFlag.length
-      spaces  = <span class="keyword">if</span> spaces &gt; <span class="number">0</span> <span class="keyword">then</span> repeat <span class="string">' '</span>, spaces <span class="keyword">else</span> <span class="string">''</span>
-      letPart = <span class="keyword">if</span> rule.shortFlag <span class="keyword">then</span> rule.shortFlag + <span class="string">', '</span> <span class="keyword">else</span> <span class="string">'    '</span>
-      lines.push <span class="string">'  '</span> + letPart + rule.longFlag + spaces + rule.description
-    <span class="string">"\n<span class="subst">#{ lines.join('\n') }</span>\n"</span></pre></div></div>
+    lines.unshift <span class="hljs-string">"<span class="hljs-subst">#{<span class="hljs-property">@banner</span>}</span>\n"</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@banner</span>
+    <span class="hljs-keyword">for</span> rule <span class="hljs-keyword">in</span> <span class="hljs-property">@rules</span>
+      spaces  = <span class="hljs-number">15</span> - rule.longFlag.length
+      spaces  = <span class="hljs-keyword">if</span> spaces &gt; <span class="hljs-number">0</span> <span class="hljs-keyword">then</span> repeat <span class="hljs-string">' '</span>, spaces <span class="hljs-keyword">else</span> <span class="hljs-string">''</span>
+      letPart = <span class="hljs-keyword">if</span> rule.shortFlag <span class="hljs-keyword">then</span> rule.shortFlag + <span class="hljs-string">', '</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'    '</span>
+      lines.push <span class="hljs-string">'  '</span> + letPart + rule.longFlag + spaces + rule.description
+    <span class="hljs-string">"\n<span class="hljs-subst">#{ lines.join(<span class="hljs-string">'\n'</span>) }</span>\n"</span></pre></div></div>
             
         </li>
         
@@ -254,10 +252,10 @@ of the valid options, for <code>--help</code> and such.
         <li id="section-7">
             <div class="annotation">
               
-              <div class="pilwrap for-h2">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
-              <h2>Helpers</h2>
+              <h2 id="helpers">Helpers</h2>
 
             </div>
             
@@ -282,15 +280,14 @@ of the valid options, for <code>--help</code> and such.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
-              <p>Regex matchers for option flags.
-</p>
+              <p>Regex matchers for option flags.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>LONG_FLAG  = <span class="regexp">/^(--\w[\w\-]*)/</span>
-SHORT_FLAG = <span class="regexp">/^(-\w)$/</span>
-MULTI_FLAG = <span class="regexp">/^-(\w{2,})/</span>
-OPTIONAL   = <span class="regexp">/\[(\w+(\*?))\]/</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>LONG_FLAG  = <span class="hljs-regexp">/^(--\w[\w\-]*)/</span>
+SHORT_FLAG = <span class="hljs-regexp">/^(-\w)$/</span>
+MULTI_FLAG = <span class="hljs-regexp">/^-(\w{2,})/</span>
+OPTIONAL   = <span class="hljs-regexp">/\[(\w+(\*?))\]/</span></pre></div></div>
             
         </li>
         
@@ -302,14 +299,13 @@ OPTIONAL   = <span class="regexp">/\[(\w+(\*?))\]/</span></pre></div></div>
                 <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>Build and return the list of option rules. If the optional <em>short-flag</em> is
-unspecified, leave it out by padding with <code>null</code>.
-</p>
+unspecified, leave it out by padding with <code>null</code>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">buildRules</span></span> = (rules) -&gt;
-  <span class="keyword">for</span> tuple <span class="keyword">in</span> rules
-    tuple.unshift <span class="literal">null</span> <span class="keyword">if</span> tuple.length &lt; <span class="number">3</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">buildRules</span> = <span class="hljs-params">(rules)</span> -&gt;</span>
+  <span class="hljs-keyword">for</span> tuple <span class="hljs-keyword">in</span> rules
+    tuple.unshift <span class="hljs-literal">null</span> <span class="hljs-keyword">if</span> tuple.length &lt; <span class="hljs-number">3</span>
     buildRule tuple...</pre></div></div>
             
         </li>
@@ -322,21 +318,20 @@ unspecified, leave it out by padding with <code>null</code>.
                 <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>Build a rule from a <code>-o</code> short flag, a <code>--output [DIR]</code> long flag, and the
-description of what the option does.
-</p>
+description of what the option does.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">buildRule</span></span> = (shortFlag, longFlag, description, options = {}) -&gt;
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">buildRule</span> = <span class="hljs-params">(shortFlag, longFlag, description, options = {})</span> -&gt;</span>
   match     = longFlag.match(OPTIONAL)
-  longFlag  = longFlag.match(LONG_FLAG)[<span class="number">1</span>]
+  longFlag  = longFlag.match(LONG_FLAG)[<span class="hljs-number">1</span>]
   {
-    name:         longFlag.substr <span class="number">2</span>
-    shortFlag:    shortFlag
-    longFlag:     longFlag
-    description:  description
-    hasArgument:  !!(match <span class="keyword">and</span> match[<span class="number">1</span>])
-    isList:       !!(match <span class="keyword">and</span> match[<span class="number">2</span>])
+    <span class="hljs-attribute">name</span>:         longFlag.substr <span class="hljs-number">2</span>
+    <span class="hljs-attribute">shortFlag</span>:    shortFlag
+    <span class="hljs-attribute">longFlag</span>:     longFlag
+    <span class="hljs-attribute">description</span>:  description
+    <span class="hljs-attribute">hasArgument</span>:  !!(match <span class="hljs-keyword">and</span> match[<span class="hljs-number">1</span>])
+    <span class="hljs-attribute">isList</span>:       !!(match <span class="hljs-keyword">and</span> match[<span class="hljs-number">2</span>])
   }</pre></div></div>
             
         </li>
@@ -349,18 +344,17 @@ description of what the option does.
                 <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <p>Normalize arguments by expanding merged flags into multiple flags. This allows
-you to have <code>-wl</code> be the same as <code>--watch --lint</code>.
-</p>
+you to have <code>-wl</code> be the same as <code>--watch --lint</code>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">normalizeArguments</span></span> = (args) -&gt;
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">normalizeArguments</span> = <span class="hljs-params">(args)</span> -&gt;</span>
   args = args[..]
   result = []
-  <span class="keyword">for</span> arg <span class="keyword">in</span> args
-    <span class="keyword">if</span> match = arg.match MULTI_FLAG
-      result.push <span class="string">'-'</span> + l <span class="keyword">for</span> l <span class="keyword">in</span> match[<span class="number">1</span>].split <span class="string">''</span>
-    <span class="keyword">else</span>
+  <span class="hljs-keyword">for</span> arg <span class="hljs-keyword">in</span> args
+    <span class="hljs-keyword">if</span> match = arg.match MULTI_FLAG
+      result.push <span class="hljs-string">'-'</span> + l <span class="hljs-keyword">for</span> l <span class="hljs-keyword">in</span> match[<span class="hljs-number">1</span>].split <span class="hljs-string">''</span>
+    <span class="hljs-keyword">else</span>
       result.push arg
   result</pre></div></div>
             

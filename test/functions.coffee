@@ -240,3 +240,16 @@ test "#1435 Indented property access", ->
             rec.rec()
           .rec()
     1
+
+test "#1038 Optimize trailing return statements", ->
+  compile = (code) -> CoffeeScript.compile(code, bare: yes).trim().replace(/\s+/g, " ")
+
+  eq "(function() {});",                 compile("->")
+  eq "(function() {});",                 compile("-> return")
+  eq "(function() { return void 0; });", compile("-> undefined")
+  eq "(function() { return void 0; });", compile("-> return undefined")
+  eq "(function() { foo(); });",         compile("""
+                                                 ->
+                                                   foo()
+                                                   return
+                                                 """)

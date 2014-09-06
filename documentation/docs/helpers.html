@@ -16,78 +16,85 @@
           <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
           <a class="small" href="javascript:void(0);">+</a>
           <div id="jump_wrapper">
-          <div id="jump_page">
-            
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
               
-              <a class="source" href="browser.html">
-                browser.coffee
-              </a>
-            
+                
+                <a class="source" href="browser.html">
+                  browser.coffee
+                </a>
               
-              <a class="source" href="cake.html">
-                cake.coffee
-              </a>
-            
+                
+                <a class="source" href="cake.html">
+                  cake.coffee
+                </a>
               
-              <a class="source" href="coffee-script.html">
-                coffee-script.coffee
-              </a>
-            
+                
+                <a class="source" href="coffee-script.html">
+                  coffee-script.coffee
+                </a>
               
-              <a class="source" href="command.html">
-                command.coffee
-              </a>
-            
+                
+                <a class="source" href="command.html">
+                  command.coffee
+                </a>
               
-              <a class="source" href="grammar.html">
-                grammar.coffee
-              </a>
-            
+                
+                <a class="source" href="grammar.html">
+                  grammar.coffee
+                </a>
               
-              <a class="source" href="helpers.html">
-                helpers.coffee
-              </a>
-            
+                
+                <a class="source" href="helpers.html">
+                  helpers.coffee
+                </a>
               
-              <a class="source" href="index.html">
-                index.coffee
-              </a>
-            
+                
+                <a class="source" href="index.html">
+                  index.coffee
+                </a>
               
-              <a class="source" href="lexer.html">
-                lexer.coffee
-              </a>
-            
+                
+                <a class="source" href="lexer.html">
+                  lexer.coffee
+                </a>
               
-              <a class="source" href="nodes.html">
-                nodes.coffee
-              </a>
-            
+                
+                <a class="source" href="nodes.html">
+                  nodes.coffee
+                </a>
               
-              <a class="source" href="optparse.html">
-                optparse.coffee
-              </a>
-            
+                
+                <a class="source" href="optparse.html">
+                  optparse.coffee
+                </a>
               
-              <a class="source" href="repl.html">
-                repl.coffee
-              </a>
-            
+                
+                <a class="source" href="register.html">
+                  register.coffee
+                </a>
               
-              <a class="source" href="rewriter.html">
-                rewriter.coffee
-              </a>
-            
+                
+                <a class="source" href="repl.html">
+                  repl.coffee
+                </a>
               
-              <a class="source" href="scope.html">
-                scope.litcoffee
-              </a>
-            
+                
+                <a class="source" href="rewriter.html">
+                  rewriter.coffee
+                </a>
               
-              <a class="source" href="sourcemap.html">
-                sourcemap.litcoffee
-              </a>
-            
+                
+                <a class="source" href="scope.html">
+                  scope.litcoffee
+                </a>
+              
+                
+                <a class="source" href="sourcemap.html">
+                  sourcemap.litcoffee
+                </a>
+              
+            </div>
           </div>
         </li>
       </ul>
@@ -108,10 +115,9 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              <p>This file contains the common helper functions that we&#39;d like to share among
+              <p>This file contains the common helper functions that we’d like to share among
 the <strong>Lexer</strong>, <strong>Rewriter</strong>, and the <strong>Nodes</strong>. Merge objects, flatten
-arrays, count characters, that sort of thing.
-</p>
+arrays, count characters, that sort of thing.</p>
 
             </div>
             
@@ -124,13 +130,12 @@ arrays, count characters, that sort of thing.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <p>Peek at the beginning of a given string to see if it matches a sequence.
-</p>
+              <p>Peek at the beginning of a given string to see if it matches a sequence.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">starts</span></span> = (string, literal, start) -&gt;
-  literal <span class="keyword">is</span> string.substr start, literal.length</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">starts</span> = <span class="hljs-params">(string, literal, start)</span> -&gt;</span>
+  literal <span class="hljs-keyword">is</span> string.substr start, literal.length</pre></div></div>
             
         </li>
         
@@ -141,14 +146,13 @@ arrays, count characters, that sort of thing.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p>Peek at the end of a given string to see if it matches a sequence.
-</p>
+              <p>Peek at the end of a given string to see if it matches a sequence.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">ends</span></span> = (string, literal, back) -&gt;
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">ends</span> = <span class="hljs-params">(string, literal, back)</span> -&gt;</span>
   len = literal.length
-  literal <span class="keyword">is</span> string.substr string.length - len - (back <span class="keyword">or</span> <span class="number">0</span>), len</pre></div></div>
+  literal <span class="hljs-keyword">is</span> string.substr string.length - len - (back <span class="hljs-keyword">or</span> <span class="hljs-number">0</span>), len</pre></div></div>
             
         </li>
         
@@ -159,12 +163,11 @@ arrays, count characters, that sort of thing.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>Repeat a string <code>n</code> times.
-</p>
+              <p>Repeat a string <code>n</code> times.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.repeat = <span class="function"><span class="title">repeat</span></span> = (str, n) -&gt;</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.repeat = <span class="hljs-function"><span class="hljs-title">repeat</span> = <span class="hljs-params">(str, n)</span> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -175,15 +178,14 @@ arrays, count characters, that sort of thing.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
-              <p>Use clever algorithm to have O(log(n)) string concatenation operations.
-</p>
+              <p>Use clever algorithm to have O(log(n)) string concatenation operations.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  res = <span class="string">''</span>
-  <span class="keyword">while</span> n &gt; <span class="number">0</span>
-    res += str <span class="keyword">if</span> n &amp; <span class="number">1</span>
-    n &gt;&gt;&gt;= <span class="number">1</span>
+            <div class="content"><div class='highlight'><pre>  res = <span class="hljs-string">''</span>
+  <span class="hljs-keyword">while</span> n &gt; <span class="hljs-number">0</span>
+    res += str <span class="hljs-keyword">if</span> n &amp; <span class="hljs-number">1</span>
+    n &gt;&gt;&gt;= <span class="hljs-number">1</span>
     str += str
   res</pre></div></div>
             
@@ -196,13 +198,12 @@ arrays, count characters, that sort of thing.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
-              <p>Trim out all falsy values from an array.
-</p>
+              <p>Trim out all falsy values from an array.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">compact</span></span> = (array) -&gt;
-  item <span class="keyword">for</span> item <span class="keyword">in</span> array <span class="keyword">when</span> item</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">compact</span> = <span class="hljs-params">(array)</span> -&gt;</span>
+  item <span class="hljs-keyword">for</span> item <span class="hljs-keyword">in</span> array <span class="hljs-keyword">when</span> item</pre></div></div>
             
         </li>
         
@@ -213,15 +214,14 @@ arrays, count characters, that sort of thing.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
-              <p>Count the number of occurrences of a string in a string.
-</p>
+              <p>Count the number of occurrences of a string in a string.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">count</span></span> = (string, substr) -&gt;
-  num = pos = <span class="number">0</span>
-  <span class="keyword">return</span> <span class="number">1</span>/<span class="number">0</span> <span class="keyword">unless</span> substr.length
-  num++ <span class="keyword">while</span> pos = <span class="number">1</span> + string.indexOf substr, pos
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">count</span> = <span class="hljs-params">(string, substr)</span> -&gt;</span>
+  num = pos = <span class="hljs-number">0</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>/<span class="hljs-number">0</span> <span class="hljs-keyword">unless</span> substr.length
+  num++ <span class="hljs-keyword">while</span> pos = <span class="hljs-number">1</span> + string.indexOf substr, pos
   num</pre></div></div>
             
         </li>
@@ -235,12 +235,11 @@ arrays, count characters, that sort of thing.
               </div>
               <p>Merge objects, returning a fresh copy with attributes from both sides.
 Used every time <code>Base#compile</code> is called, to allow properties in the
-options hash to propagate down the tree without polluting other branches.
-</p>
+options hash to propagate down the tree without polluting other branches.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">merge</span></span> = (options, overrides) -&gt;
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">merge</span> = <span class="hljs-params">(options, overrides)</span> -&gt;</span>
   extend (extend {}, options), overrides</pre></div></div>
             
         </li>
@@ -252,13 +251,12 @@ options hash to propagate down the tree without polluting other branches.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
-              <p>Extend a source object with the properties of another object (shallow copy).
-</p>
+              <p>Extend a source object with the properties of another object (shallow copy).</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>extend = exports.<span class="function"><span class="title">extend</span></span> = (object, properties) -&gt;
-  <span class="keyword">for</span> key, val <span class="keyword">of</span> properties
+            <div class="content"><div class='highlight'><pre>extend = <span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">extend</span> = <span class="hljs-params">(object, properties)</span> -&gt;</span>
+  <span class="hljs-keyword">for</span> key, val <span class="hljs-keyword">of</span> properties
     object[key] = val
   object</pre></div></div>
             
@@ -272,17 +270,16 @@ options hash to propagate down the tree without polluting other branches.
                 <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>Return a flattened version of an array.
-Handy for getting a list of <code>children</code> from the nodes.
-</p>
+Handy for getting a list of <code>children</code> from the nodes.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.flatten = <span class="function"><span class="title">flatten</span></span> = (array) -&gt;
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.flatten = <span class="hljs-function"><span class="hljs-title">flatten</span> = <span class="hljs-params">(array)</span> -&gt;</span>
   flattened = []
-  <span class="keyword">for</span> element <span class="keyword">in</span> array
-    <span class="keyword">if</span> element <span class="keyword">instanceof</span> Array
+  <span class="hljs-keyword">for</span> element <span class="hljs-keyword">in</span> array
+    <span class="hljs-keyword">if</span> element <span class="hljs-keyword">instanceof</span> Array
       flattened = flattened.concat flatten element
-    <span class="keyword">else</span>
+    <span class="hljs-keyword">else</span>
       flattened.push element
   flattened</pre></div></div>
             
@@ -296,14 +293,13 @@ Handy for getting a list of <code>children</code> from the nodes.
                 <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>Delete a key from an object, returning the value. Useful when a node is
-looking for a particular method in an options hash.
-</p>
+looking for a particular method in an options hash.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">del</span></span> = (obj, key) -&gt;
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">del</span> = <span class="hljs-params">(obj, key)</span> -&gt;</span>
   val =  obj[key]
-  <span class="keyword">delete</span> obj[key]
+  <span class="hljs-keyword">delete</span> obj[key]
   val</pre></div></div>
             
         </li>
@@ -315,12 +311,11 @@ looking for a particular method in an options hash.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
-              <p>Gets the last item of an array(-like) object.
-</p>
+              <p>Gets the last item of an array(-like) object.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.last = <span class="function"><span class="title">last</span></span> = (array, back) -&gt; array[array.length - (back <span class="keyword">or</span> <span class="number">0</span>) - <span class="number">1</span>]</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.last = <span class="hljs-function"><span class="hljs-title">last</span> = <span class="hljs-params">(array, back)</span> -&gt;</span> array[array.length - (back <span class="hljs-keyword">or</span> <span class="hljs-number">0</span>) - <span class="hljs-number">1</span>]</pre></div></div>
             
         </li>
         
@@ -331,14 +326,13 @@ looking for a particular method in an options hash.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
-              <p>Typical Array::some
-</p>
+              <p>Typical Array::some</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.some = Array::some ? (fn) -&gt;
-  <span class="keyword">return</span> <span class="literal">true</span> <span class="keyword">for</span> e <span class="keyword">in</span> <span class="keyword">this</span> <span class="keyword">when</span> fn e
-  <span class="literal">false</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.some = <span class="hljs-attribute">Array</span>::some ? <span class="hljs-function"><span class="hljs-params">(fn)</span> -&gt;</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span> <span class="hljs-keyword">for</span> e <span class="hljs-keyword">in</span> <span class="hljs-keyword">this</span> <span class="hljs-keyword">when</span> fn e
+  <span class="hljs-literal">false</span></pre></div></div>
             
         </li>
         
@@ -351,21 +345,20 @@ looking for a particular method in an options hash.
               </div>
               <p>Simple function for inverting Literate CoffeeScript code by putting the
 documentation in comments, producing a string of CoffeeScript code that
-can be compiled &quot;normally&quot;.
-</p>
+can be compiled “normally”.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">invertLiterate</span></span> = (code) -&gt;
-  maybe_code = <span class="literal">true</span>
-  lines = <span class="keyword">for</span> line <span class="keyword">in</span> code.split(<span class="string">'\n'</span>)
-    <span class="keyword">if</span> maybe_code <span class="keyword">and</span> <span class="regexp">/^([ ]{4}|[ ]{0,3}\t)/</span>.test line
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">invertLiterate</span> = <span class="hljs-params">(code)</span> -&gt;</span>
+  maybe_code = <span class="hljs-literal">true</span>
+  lines = <span class="hljs-keyword">for</span> line <span class="hljs-keyword">in</span> code.split(<span class="hljs-string">'\n'</span>)
+    <span class="hljs-keyword">if</span> maybe_code <span class="hljs-keyword">and</span> <span class="hljs-regexp">/^([ ]{4}|[ ]{0,3}\t)/</span>.test line
       line
-    <span class="keyword">else</span> <span class="keyword">if</span> maybe_code = <span class="regexp">/^\s*$/</span>.test line
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> maybe_code = <span class="hljs-regexp">/^\s*$/</span>.test line
       line
-    <span class="keyword">else</span>
-      <span class="string">'# '</span> + line
-  lines.join <span class="string">'\n'</span></pre></div></div>
+    <span class="hljs-keyword">else</span>
+      <span class="hljs-string">'# '</span> + line
+  lines.join <span class="hljs-string">'\n'</span></pre></div></div>
             
         </li>
         
@@ -377,19 +370,18 @@ can be compiled &quot;normally&quot;.
                 <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>Merge two jison-style location data objects together.
-If <code>last</code> is not provided, this will simply return <code>first</code>.
-</p>
+If <code>last</code> is not provided, this will simply return <code>first</code>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">buildLocationData</span></span> = (first, last) -&gt;
-  <span class="keyword">if</span> <span class="keyword">not</span> last
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">buildLocationData</span> = <span class="hljs-params">(first, last)</span> -&gt;</span>
+  <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> last
     first
-  <span class="keyword">else</span>
-    first_line: first.first_line
-    first_column: first.first_column
-    last_line: last.last_line
-    last_column: last.last_column</pre></div></div>
+  <span class="hljs-keyword">else</span>
+    <span class="hljs-attribute">first_line</span>: first.first_line
+    <span class="hljs-attribute">first_column</span>: first.first_column
+    <span class="hljs-attribute">last_line</span>: last.last_line
+    <span class="hljs-attribute">last_column</span>: last.last_column</pre></div></div>
             
         </li>
         
@@ -401,18 +393,17 @@ If <code>last</code> is not provided, this will simply return <code>first</code>
                 <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>This returns a function which takes an object as a parameter, and if that
-object is an AST node, updates that object&#39;s locationData.
-The object is returned either way.
-</p>
+object is an AST node, updates that object’s locationData.
+The object is returned either way.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">addLocationDataFn</span></span> = (first, last) -&gt;
-    (obj) -&gt;
-      <span class="keyword">if</span> ((<span class="keyword">typeof</span> obj) <span class="keyword">is</span> <span class="string">'object'</span>) <span class="keyword">and</span> (!!obj[<span class="string">'updateLocationDataIfMissing'</span>])
-        obj.updateLocationDataIfMissing buildLocationData(first, last)
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">addLocationDataFn</span> = <span class="hljs-params">(first, last)</span> -&gt;</span>
+  <span class="hljs-function"><span class="hljs-params">(obj)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> ((<span class="hljs-keyword">typeof</span> obj) <span class="hljs-keyword">is</span> <span class="hljs-string">'object'</span>) <span class="hljs-keyword">and</span> (!!obj[<span class="hljs-string">'updateLocationDataIfMissing'</span>])
+      obj.updateLocationDataIfMissing buildLocationData(first, last)
 
-      <span class="keyword">return</span> obj</pre></div></div>
+    <span class="hljs-keyword">return</span> obj</pre></div></div>
             
         </li>
         
@@ -424,20 +415,19 @@ The object is returned either way.
                 <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Convert jison location data to a string.
-<code>obj</code> can be a token, or a locationData.
-</p>
+<code>obj</code> can be a token, or a locationData.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">locationDataToString</span></span> = (obj) -&gt;
-    <span class="keyword">if</span> (<span class="string">"2"</span> <span class="keyword">of</span> obj) <span class="keyword">and</span> (<span class="string">"first_line"</span> <span class="keyword">of</span> obj[<span class="number">2</span>]) <span class="keyword">then</span> locationData = obj[<span class="number">2</span>]
-    <span class="keyword">else</span> <span class="keyword">if</span> <span class="string">"first_line"</span> <span class="keyword">of</span> obj <span class="keyword">then</span> locationData = obj
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">locationDataToString</span> = <span class="hljs-params">(obj)</span> -&gt;</span>
+  <span class="hljs-keyword">if</span> (<span class="hljs-string">"2"</span> <span class="hljs-keyword">of</span> obj) <span class="hljs-keyword">and</span> (<span class="hljs-string">"first_line"</span> <span class="hljs-keyword">of</span> obj[<span class="hljs-number">2</span>]) <span class="hljs-keyword">then</span> locationData = obj[<span class="hljs-number">2</span>]
+  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-string">"first_line"</span> <span class="hljs-keyword">of</span> obj <span class="hljs-keyword">then</span> locationData = obj
 
-    <span class="keyword">if</span> locationData
-      <span class="string">"<span class="subst">#{locationData.first_line + <span class="number">1</span>}</span>:<span class="subst">#{locationData.first_column + <span class="number">1</span>}</span>-"</span> +
-      <span class="string">"<span class="subst">#{locationData.last_line + <span class="number">1</span>}</span>:<span class="subst">#{locationData.last_column + <span class="number">1</span>}</span>"</span>
-    <span class="keyword">else</span>
-      <span class="string">"No location data"</span></pre></div></div>
+  <span class="hljs-keyword">if</span> locationData
+    <span class="hljs-string">"<span class="hljs-subst">#{locationData.first_line + <span class="hljs-number">1</span>}</span>:<span class="hljs-subst">#{locationData.first_column + <span class="hljs-number">1</span>}</span>-"</span> +
+    <span class="hljs-string">"<span class="hljs-subst">#{locationData.last_line + <span class="hljs-number">1</span>}</span>:<span class="hljs-subst">#{locationData.last_column + <span class="hljs-number">1</span>}</span>"</span>
+  <span class="hljs-keyword">else</span>
+    <span class="hljs-string">"No location data"</span></pre></div></div>
             
         </li>
         
@@ -448,20 +438,19 @@ The object is returned either way.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
-              <p>A <code>.coffee.md</code> compatible version of <code>basename</code>, that returns the file sans-extension.
-</p>
+              <p>A <code>.coffee.md</code> compatible version of <code>basename</code>, that returns the file sans-extension.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">baseFileName</span></span> = (file, stripExt = <span class="literal">no</span>, useWinPathSep = <span class="literal">no</span>) -&gt;
-  pathSep = <span class="keyword">if</span> useWinPathSep <span class="keyword">then</span> <span class="regexp">/\\|\// else /\//</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">baseFileName</span> = <span class="hljs-params">(file, stripExt = <span class="hljs-literal">no</span>, useWinPathSep = <span class="hljs-literal">no</span>)</span> -&gt;</span>
+  pathSep = <span class="hljs-keyword">if</span> useWinPathSep <span class="hljs-keyword">then</span> <span class="hljs-regexp">/\\|\//</span> <span class="hljs-keyword">else</span> <span class="hljs-regexp">/\/</span>/
   parts = file.split(pathSep)
-  file = parts[parts.length - <span class="number">1</span>]
-  <span class="keyword">return</span> file <span class="keyword">unless</span> stripExt
-  parts = file.split(<span class="string">'.'</span>)
+  file = parts[parts.length - <span class="hljs-number">1</span>]
+  <span class="hljs-keyword">return</span> file <span class="hljs-keyword">unless</span> stripExt <span class="hljs-keyword">and</span> file.indexOf(<span class="hljs-string">'.'</span>) &gt;= <span class="hljs-number">0</span>
+  parts = file.split(<span class="hljs-string">'.'</span>)
   parts.pop()
-  parts.pop() <span class="keyword">if</span> parts[parts.length - <span class="number">1</span>] <span class="keyword">is</span> <span class="string">'coffee'</span> <span class="keyword">and</span> parts.length &gt; <span class="number">1</span>
-  parts.join(<span class="string">'.'</span>)</pre></div></div>
+  parts.pop() <span class="hljs-keyword">if</span> parts[parts.length - <span class="hljs-number">1</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'coffee'</span> <span class="hljs-keyword">and</span> parts.length &gt; <span class="hljs-number">1</span>
+  parts.join(<span class="hljs-string">'.'</span>)</pre></div></div>
             
         </li>
         
@@ -472,12 +461,11 @@ The object is returned either way.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
-              <p>Determine if a filename represents a CoffeeScript file.
-</p>
+              <p>Determine if a filename represents a CoffeeScript file.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">isCoffee</span></span> = (file) -&gt; <span class="regexp">/\.((lit)?coffee|coffee\.md)$/</span>.test file</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">isCoffee</span> = <span class="hljs-params">(file)</span> -&gt;</span> <span class="hljs-regexp">/\.((lit)?coffee|coffee\.md)$/</span>.test file</pre></div></div>
             
         </li>
         
@@ -488,12 +476,11 @@ The object is returned either way.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
-              <p>Determine if a filename represents a Literate CoffeeScript file.
-</p>
+              <p>Determine if a filename represents a Literate CoffeeScript file.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">isLiterate</span></span> = (file) -&gt; <span class="regexp">/\.(litcoffee|coffee\.md)$/</span>.test file</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">isLiterate</span> = <span class="hljs-params">(file)</span> -&gt;</span> <span class="hljs-regexp">/\.(litcoffee|coffee\.md)$/</span>.test file</pre></div></div>
             
         </li>
         
@@ -504,18 +491,17 @@ The object is returned either way.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
-              <p>Throws a SyntaxError with a source file location data attached to it in a
-property called <code>location</code>.
-</p>
+              <p>Throws a SyntaxError from a given location.
+The error’s <code>toString</code> will return an error message following the “standard”
+format <filename>:<line>:<col>: <message> plus the line with the error and a
+marker showing where the error is.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">throwSyntaxError</span></span> = (message, location) -&gt;
-  location.last_line ?= location.first_line
-  location.last_column ?= location.first_column
-  error = <span class="keyword">new</span> SyntaxError message
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">throwSyntaxError</span> = <span class="hljs-params">(message, location)</span> -&gt;</span>
+  error = <span class="hljs-keyword">new</span> SyntaxError message
   error.location = location
-  <span class="keyword">throw</span> error</pre></div></div>
+  error.toString = syntaxErrorToString</pre></div></div>
             
         </li>
         
@@ -526,20 +512,15 @@ property called <code>location</code>.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
-              <p>Creates a nice error message like, following the &quot;standard&quot; format
-</p>
-<p><filename>:<line>:<col>: <message> plus the line with the error and a marker
-showing where the error is.
-</p>
+              <p>Instead of showing the compiler’s stacktrace, show our custom error message
+(this is useful when the error bubbles up in Node.js applications that
+compile CoffeeScript for example).</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">prettyErrorMessage</span></span> = (error, fileName, code, useColors) -&gt;
-  <span class="keyword">return</span> error.stack <span class="keyword">or</span> <span class="string">"<span class="subst">#{error}</span>"</span> <span class="keyword">unless</span> error.location
+            <div class="content"><div class='highlight'><pre>  error.stack = error.toString()
 
-  {first_line, first_column, last_line, last_column} = error.location
-  codeLine = code.split(<span class="string">'\n'</span>)[first_line]
-  start    = first_column</pre></div></div>
+  <span class="hljs-keyword">throw</span> error</pre></div></div>
             
         </li>
         
@@ -550,24 +531,12 @@ showing where the error is.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
-              <p>Show only the first line on multi-line errors.
-</p>
+              <p>Update a compiler SyntaxError with source code information if it didn’t have
+it already.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  end      = <span class="keyword">if</span> first_line <span class="keyword">is</span> last_line <span class="keyword">then</span> last_column + <span class="number">1</span> <span class="keyword">else</span> codeLine.length
-  marker   = repeat(<span class="string">' '</span>, start) + repeat(<span class="string">'^'</span>, end - start)
-
-  <span class="keyword">if</span> useColors
-    <span class="function"><span class="title">colorize</span></span>  = (str) -&gt; <span class="string">"\x1B[1;31m<span class="subst">#{str}</span>\x1B[0m"</span>
-    codeLine = codeLine[...start] + colorize(codeLine[start...end]) + codeLine[end..]
-    marker    = colorize marker
-
-  message = <span class="string">"""
-  <span class="subst">#{fileName}</span>:<span class="subst">#{first_line + <span class="number">1</span>}</span>:<span class="subst">#{first_column + <span class="number">1</span>}</span>: error: <span class="subst">#{error.message}</span>
-  <span class="subst">#{codeLine}</span>
-  <span class="subst">#{marker}</span>
-            """</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">updateSyntaxError</span> = <span class="hljs-params">(error, code, filename)</span> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -578,14 +547,77 @@ showing where the error is.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
-              <p>Uncomment to add stacktrace.
-message += &quot;\n#{error.stack}&quot;
-</p>
+              <p>Avoid screwing up the <code>stack</code> property of other errors (i.e. possible bugs).</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>
-  message</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">if</span> error.toString <span class="hljs-keyword">is</span> syntaxErrorToString
+    error.code <span class="hljs-keyword">or</span>= code
+    error.filename <span class="hljs-keyword">or</span>= filename
+    error.stack = error.toString()
+  error
+
+<span class="hljs-function"><span class="hljs-title">syntaxErrorToString</span> = -&gt;</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-attribute">Error</span>::toString.call @ <span class="hljs-keyword">unless</span> <span class="hljs-property">@code</span> <span class="hljs-keyword">and</span> <span class="hljs-property">@location</span>
+
+  {first_line, first_column, last_line, last_column} = <span class="hljs-property">@location</span>
+  last_line ?= first_line
+  last_column ?= first_column
+
+  filename = <span class="hljs-property">@filename</span> <span class="hljs-keyword">or</span> <span class="hljs-string">'[stdin]'</span>
+  codeLine = <span class="hljs-property">@code</span>.split(<span class="hljs-string">'\n'</span>)[first_line]
+  start    = first_column</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>Show only the first line on multi-line errors.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  end      = <span class="hljs-keyword">if</span> first_line <span class="hljs-keyword">is</span> last_line <span class="hljs-keyword">then</span> last_column + <span class="hljs-number">1</span> <span class="hljs-keyword">else</span> codeLine.length
+  marker   = codeLine[...start].replace(<span class="hljs-regexp">/[^\s]/g</span>, <span class="hljs-string">' '</span>) + repeat(<span class="hljs-string">'^'</span>, end - start)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>Check to see if we’re running on a color-enabled TTY.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">if</span> process?
+    colorsEnabled = process.stdout.isTTY <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> process.env.NODE_DISABLE_COLORS
+
+  <span class="hljs-keyword">if</span> <span class="hljs-property">@colorful</span> ? colorsEnabled
+    <span class="hljs-function"><span class="hljs-title">colorize</span> = <span class="hljs-params">(str)</span> -&gt;</span> <span class="hljs-string">"\x1B[1;31m<span class="hljs-subst">#{str}</span>\x1B[0m"</span>
+    codeLine = codeLine[...start] + colorize(codeLine[start...end]) + codeLine[end..]
+    marker   = colorize marker
+
+  <span class="hljs-string">"""
+    <span class="hljs-subst">#{filename}</span>:<span class="hljs-subst">#{first_line + <span class="hljs-number">1</span>}</span>:<span class="hljs-subst">#{first_column + <span class="hljs-number">1</span>}</span>: error: <span class="hljs-subst">#{<span class="hljs-property">@message</span>}</span>
+    <span class="hljs-subst">#{codeLine}</span>
+    <span class="hljs-subst">#{marker}</span>
+  """</span>
+
+<span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">nameWhitespaceCharacter</span> = <span class="hljs-params">(string)</span> -&gt;</span>
+  <span class="hljs-keyword">switch</span> string
+    <span class="hljs-keyword">when</span> <span class="hljs-string">' '</span> <span class="hljs-keyword">then</span> <span class="hljs-string">'space'</span>
+    <span class="hljs-keyword">when</span> <span class="hljs-string">'\n'</span> <span class="hljs-keyword">then</span> <span class="hljs-string">'newline'</span>
+    <span class="hljs-keyword">when</span> <span class="hljs-string">'\r'</span> <span class="hljs-keyword">then</span> <span class="hljs-string">'carriage return'</span>
+    <span class="hljs-keyword">when</span> <span class="hljs-string">'\t'</span> <span class="hljs-keyword">then</span> <span class="hljs-string">'tab'</span>
+    <span class="hljs-keyword">else</span> string</pre></div></div>
             
         </li>
         

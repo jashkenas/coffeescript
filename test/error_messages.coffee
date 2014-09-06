@@ -41,29 +41,50 @@ test "compiler error formatting", ->
                  ^^^^
   '''
 
-test "patchStackTrace line patching", ->
-  err = new Error 'error'
-  ok err.stack.match /test[\/\\]error_messages\.coffee:\d+:\d+\b/
+test "compiler error formatting with mixed tab and space", ->
+  assertErrorFormat """
+    \t  if a
+    \t  test
+  """,
+  '''
+    [stdin]:1:4: error: unexpected if
+    \t  if a
+    \t  ^^
+  '''
 
-fs   = require 'fs'
-path = require 'path'
 
-test "#2849: compilation error in a require()d file", ->
-  # Create a temporary file to require().
-  ok not fs.existsSync 'test/syntax-error.coffee'
-  fs.writeFileSync 'test/syntax-error.coffee', 'foo in bar or in baz'
+if require?
+  fs   = require 'fs'
+  path = require 'path'
 
-  try
-    assertErrorFormat '''
-      require './test/syntax-error'
-    ''',
-    """
-      #{path.join __dirname, 'syntax-error.coffee'}:1:15: error: unexpected in
-      foo in bar or in baz
-                    ^^
-    """
-  finally
-    fs.unlink 'test/syntax-error.coffee'
+  test "patchStackTrace line patching", ->
+    err = new Error 'error'
+    ok err.stack.match /test[\/\\]error_messages\.coffee:\d+:\d+\b/
+
+  test "patchStackTrace stack prelude consistent with V8", ->
+    err = new Error
+    ok err.stack.match /^Error\n/ # Notice no colon when no message.
+
+    err = new Error 'error'
+    ok err.stack.match /^Error: error\n/
+
+  test "#2849: compilation error in a require()d file", ->
+    # Create a temporary file to require().
+    ok not fs.existsSync 'test/syntax-error.coffee'
+    fs.writeFileSync 'test/syntax-error.coffee', 'foo in bar or in baz'
+
+    try
+      assertErrorFormat '''
+        require './test/syntax-error'
+      ''',
+      """
+        #{path.join __dirname, 'syntax-error.coffee'}:1:15: error: unexpected in
+        foo in bar or in baz
+                      ^^
+      """
+    finally
+      fs.unlink 'test/syntax-error.coffee'
+
 
 test "#1096: unexpected generated tokens", ->
   # Unexpected interpolation
@@ -98,4 +119,23 @@ test "#1096: unexpected generated tokens", ->
     [stdin]:1:13: error: unexpected :
     for i in [1]:
                 ^
+  '''
+
+test "#3325: implicit indentation errors", ->
+  assertErrorFormat '''
+    i for i in a then i
+  ''', '''
+    [stdin]:1:14: error: unexpected then
+    i for i in a then i
+                 ^^^^
+  '''
+
+test "explicit indentation errors", ->
+  assertErrorFormat '''
+    a = b
+      c
+  ''', '''
+    [stdin]:2:1: error: unexpected indentation
+      c
+    ^^
   '''

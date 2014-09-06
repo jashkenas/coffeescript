@@ -28,7 +28,7 @@ replDefaults =
       ]
       js = ast.compile bare: yes, locals: Object.keys(context)
       result = if context is global
-        vm.runInThisContext js, filename 
+        vm.runInThisContext js, filename
       else
         vm.runInContext js, context, filename
       cb null, result
@@ -39,11 +39,13 @@ replDefaults =
 
 addMultilineHandler = (repl) ->
   {rli, inputStream, outputStream} = repl
+  # Node 0.11.12 changed API, prompt is now _prompt.
+  origPrompt = repl._prompt ? repl.prompt
 
   multiline =
     enabled: off
-    initialPrompt: repl.prompt.replace /^[^> ]*/, (x) -> x.replace /./g, '-'
-    prompt: repl.prompt.replace /^[^> ]*>?/, (x) -> x.replace /./g, '.'
+    initialPrompt: origPrompt.replace /^[^> ]*/, (x) -> x.replace /./g, '-'
+    prompt: origPrompt.replace /^[^> ]*>?/, (x) -> x.replace /./g, '.'
     buffer: ''
 
   # Proxy node's line listener
@@ -55,6 +57,7 @@ addMultilineHandler = (repl) ->
       rli.setPrompt multiline.prompt
       rli.prompt true
     else
+      rli.setPrompt origPrompt
       nodeLineListener cmd
     return
 
@@ -65,7 +68,7 @@ addMultilineHandler = (repl) ->
       # allow arbitrarily switching between modes any time before multiple lines are entered
       unless multiline.buffer.match /\n/
         multiline.enabled = not multiline.enabled
-        rli.setPrompt repl.prompt
+        rli.setPrompt origPrompt
         rli.prompt true
         return
       # no-op unless the current line is empty
@@ -117,11 +120,16 @@ addHistory = (repl, filename, maxSize) ->
   repl.rli.on 'exit', -> fs.close fd
 
   # Add a command to show the history stack
-  repl.commands['.history'] =
+  repl.commands[getCommandId(repl, 'history')] =
     help: 'Show command history'
     action: ->
       repl.outputStream.write "#{repl.rli.history[..].reverse().join '\n'}\n"
       repl.displayPrompt()
+
+getCommandId = (repl, commandName) ->
+  # Node 0.11 changed API, a command such as '.help' is now stored as 'help'
+  commandsHaveLeadingDot = repl.commands['.help']?
+  if commandsHaveLeadingDot then ".#{commandName}" else commandName
 
 module.exports =
   start: (opts = {}) ->
@@ -138,4 +146,6 @@ module.exports =
     repl.on 'exit', -> repl.outputStream.write '\n'
     addMultilineHandler repl
     addHistory repl, opts.historyFile, opts.historyMaxInputSize if opts.historyFile
+    # Adapt help inherited from the node REPL
+    repl.commands[getCommandId(repl, 'load')].help = 'Load code from a file into this REPL session'
     repl

@@ -428,6 +428,18 @@ test "#2207: Immediate implicit closes don't close implicit objects", ->
 
   eq func().key.join(' '), '1 2 3'
 
+test "#3216: For loop declaration as a value of an implicit object", ->
+  test = [0..2]
+  ob =
+    a: for v, i in test then i
+    b: for v, i in test then i
+    c: for v in test by 1 then v
+    d: for v in test when true then v
+  arrayEq ob.a, test
+  arrayEq ob.b, test
+  arrayEq ob.c, test
+  arrayEq ob.d, test
+
 test 'inline implicit object literals within multiline implicit object literals', ->
   x =
     a: aa: 0

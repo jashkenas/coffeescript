@@ -16,78 +16,85 @@
           <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
           <a class="small" href="javascript:void(0);">+</a>
           <div id="jump_wrapper">
-          <div id="jump_page">
-            
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
               
-              <a class="source" href="browser.html">
-                browser.coffee
-              </a>
-            
+                
+                <a class="source" href="browser.html">
+                  browser.coffee
+                </a>
               
-              <a class="source" href="cake.html">
-                cake.coffee
-              </a>
-            
+                
+                <a class="source" href="cake.html">
+                  cake.coffee
+                </a>
               
-              <a class="source" href="coffee-script.html">
-                coffee-script.coffee
-              </a>
-            
+                
+                <a class="source" href="coffee-script.html">
+                  coffee-script.coffee
+                </a>
               
-              <a class="source" href="command.html">
-                command.coffee
-              </a>
-            
+                
+                <a class="source" href="command.html">
+                  command.coffee
+                </a>
               
-              <a class="source" href="grammar.html">
-                grammar.coffee
-              </a>
-            
+                
+                <a class="source" href="grammar.html">
+                  grammar.coffee
+                </a>
               
-              <a class="source" href="helpers.html">
-                helpers.coffee
-              </a>
-            
+                
+                <a class="source" href="helpers.html">
+                  helpers.coffee
+                </a>
               
-              <a class="source" href="index.html">
-                index.coffee
-              </a>
-            
+                
+                <a class="source" href="index.html">
+                  index.coffee
+                </a>
               
-              <a class="source" href="lexer.html">
-                lexer.coffee
-              </a>
-            
+                
+                <a class="source" href="lexer.html">
+                  lexer.coffee
+                </a>
               
-              <a class="source" href="nodes.html">
-                nodes.coffee
-              </a>
-            
+                
+                <a class="source" href="nodes.html">
+                  nodes.coffee
+                </a>
               
-              <a class="source" href="optparse.html">
-                optparse.coffee
-              </a>
-            
+                
+                <a class="source" href="optparse.html">
+                  optparse.coffee
+                </a>
               
-              <a class="source" href="repl.html">
-                repl.coffee
-              </a>
-            
+                
+                <a class="source" href="register.html">
+                  register.coffee
+                </a>
               
-              <a class="source" href="rewriter.html">
-                rewriter.coffee
-              </a>
-            
+                
+                <a class="source" href="repl.html">
+                  repl.coffee
+                </a>
               
-              <a class="source" href="scope.html">
-                scope.litcoffee
-              </a>
-            
+                
+                <a class="source" href="rewriter.html">
+                  rewriter.coffee
+                </a>
               
-              <a class="source" href="sourcemap.html">
-                sourcemap.litcoffee
-              </a>
-            
+                
+                <a class="source" href="scope.html">
+                  scope.litcoffee
+                </a>
+              
+                
+                <a class="source" href="sourcemap.html">
+                  sourcemap.litcoffee
+                </a>
+              
+            </div>
           </div>
         </li>
       </ul>
@@ -111,14 +118,13 @@
               <p>This <strong>Browser</strong> compatibility layer extends core CoffeeScript functions
 to make things work smoothly when compiling code directly in the browser.
 We add support for loading remote Coffee scripts via <strong>XHR</strong>, and
-<code>text/coffeescript</code> script tags, source maps via data-URLs, and so on.
-</p>
+<code>text/coffeescript</code> script tags, source maps via data-URLs, and so on.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>
-CoffeeScript = require <span class="string">'./coffee-script'</span>
-CoffeeScript.require = require
+CoffeeScript = <span class="hljs-built_in">require</span> <span class="hljs-string">'./coffee-script'</span>
+CoffeeScript.<span class="hljs-built_in">require</span> = <span class="hljs-built_in">require</span>
 compile = CoffeeScript.compile</pre></div></div>
             
         </li>
@@ -130,13 +136,12 @@ compile = CoffeeScript.compile</pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <p>Use standard JavaScript <code>eval</code> to eval code.
-</p>
+              <p>Use standard JavaScript <code>eval</code> to eval code.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>CoffeeScript.<span class="function"><span class="title">eval</span></span> = (code, options = {}) -&gt;
-  options.bare ?= <span class="literal">on</span>
+            <div class="content"><div class='highlight'><pre>CoffeeScript.<span class="hljs-function"><span class="hljs-title">eval</span> = <span class="hljs-params">(code, options = {})</span> -&gt;</span>
+  options.bare ?= <span class="hljs-literal">on</span>
   eval compile code, options</pre></div></div>
             
         </li>
@@ -148,14 +153,13 @@ compile = CoffeeScript.compile</pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p>Running code does not provide access to this scope.
-</p>
+              <p>Running code does not provide access to this scope.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>CoffeeScript.<span class="function"><span class="title">run</span></span> = (code, options = {}) -&gt;
-  options.bare = <span class="literal">on</span>
-  options.shiftLine = <span class="literal">on</span>
+            <div class="content"><div class='highlight'><pre>CoffeeScript.<span class="hljs-function"><span class="hljs-title">run</span> = <span class="hljs-params">(code, options = {})</span> -&gt;</span>
+  options.bare = <span class="hljs-literal">on</span>
+  options.shiftLine = <span class="hljs-literal">on</span>
   Function(compile code, options)()</pre></div></div>
             
         </li>
@@ -167,12 +171,11 @@ compile = CoffeeScript.compile</pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>If we&#39;re not in a browser environment, we&#39;re finished with the public API.
-</p>
+              <p>If we’re not in a browser environment, we’re finished with the public API.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="keyword">return</span> <span class="keyword">unless</span> window?</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">return</span> <span class="hljs-keyword">unless</span> <span class="hljs-built_in">window</span>?</pre></div></div>
             
         </li>
         
@@ -183,19 +186,18 @@ compile = CoffeeScript.compile</pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
-              <p>Include source maps where possible. If we&#39;ve got a base64 encoder, a
-JSON serializer, and tools for escaping unicode characters, we&#39;re good to go.
-Ported from <a href="https://developer.mozilla.org/en-US/docs/DOM/window.btoa">https://developer.mozilla.org/en-US/docs/DOM/window.btoa</a>
-</p>
+              <p>Include source maps where possible. If we’ve got a base64 encoder, a
+JSON serializer, and tools for escaping unicode characters, we’re good to go.
+Ported from <a href="https://developer.mozilla.org/en-US/docs/DOM/window.btoa">https://developer.mozilla.org/en-US/docs/DOM/window.btoa</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="keyword">if</span> btoa? <span class="keyword">and</span> JSON? <span class="keyword">and</span> unescape? <span class="keyword">and</span> encodeURIComponent?
-  <span class="function"><span class="title">compile</span></span> = (code, options = {}) -&gt;
-    options.sourceMap = <span class="literal">true</span>
-    options.inline = <span class="literal">true</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">if</span> btoa? <span class="hljs-keyword">and</span> JSON? <span class="hljs-keyword">and</span> unescape? <span class="hljs-keyword">and</span> encodeURIComponent?
+  <span class="hljs-function"><span class="hljs-title">compile</span> = <span class="hljs-params">(code, options = {})</span> -&gt;</span>
+    options.sourceMap = <span class="hljs-literal">true</span>
+    options.inline = <span class="hljs-literal">true</span>
     {js, v3SourceMap} = CoffeeScript.compile code, options
-    <span class="string">"<span class="subst">#{js}</span>\n//@ sourceMappingURL=data:application/json;base64,<span class="subst">#{btoa unescape encodeURIComponent v3SourceMap}</span>\n//@ sourceURL=coffeescript"</span></pre></div></div>
+    <span class="hljs-string">"<span class="hljs-subst">#{js}</span>\n//# sourceMappingURL=data:application/json;base64,<span class="hljs-subst">#{btoa unescape encodeURIComponent v3SourceMap}</span>\n//# sourceURL=coffeescript"</span></pre></div></div>
             
         </li>
         
@@ -206,27 +208,27 @@ Ported from <a href="https://developer.mozilla.org/en-US/docs/DOM/window.btoa">h
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
-              <p>Load a remote script from the current domain via XHR.
-</p>
+              <p>Load a remote script from the current domain via XHR.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>CoffeeScript.<span class="function"><span class="title">load</span></span> = (url, callback, options = {}) -&gt;
+            <div class="content"><div class='highlight'><pre>CoffeeScript.<span class="hljs-function"><span class="hljs-title">load</span> = <span class="hljs-params">(url, callback, options = {}, hold = <span class="hljs-literal">false</span>)</span> -&gt;</span>
   options.sourceFiles = [url]
-  xhr = <span class="keyword">if</span> window.ActiveXObject
-    <span class="keyword">new</span> window.ActiveXObject(<span class="string">'Microsoft.XMLHTTP'</span>)
-  <span class="keyword">else</span>
-    <span class="keyword">new</span> window.XMLHttpRequest()
-  xhr.open <span class="string">'GET'</span>, url, <span class="literal">true</span>
-  xhr.overrideMimeType <span class="string">'text/plain'</span> <span class="keyword">if</span> <span class="string">'overrideMimeType'</span> <span class="keyword">of</span> xhr
-  xhr.<span class="function"><span class="title">onreadystatechange</span></span> = -&gt;
-    <span class="keyword">if</span> xhr.readyState <span class="keyword">is</span> <span class="number">4</span>
-      <span class="keyword">if</span> xhr.status <span class="keyword">in</span> [<span class="number">0</span>, <span class="number">200</span>]
-        CoffeeScript.run xhr.responseText, options
-      <span class="keyword">else</span>
-        <span class="keyword">throw</span> <span class="keyword">new</span> Error <span class="string">"Could not load <span class="subst">#{url}</span>"</span>
-      callback() <span class="keyword">if</span> callback
-  xhr.send <span class="literal">null</span></pre></div></div>
+  xhr = <span class="hljs-keyword">if</span> <span class="hljs-built_in">window</span>.ActiveXObject
+    <span class="hljs-keyword">new</span> <span class="hljs-built_in">window</span>.ActiveXObject(<span class="hljs-string">'Microsoft.XMLHTTP'</span>)
+  <span class="hljs-keyword">else</span>
+    <span class="hljs-keyword">new</span> <span class="hljs-built_in">window</span>.XMLHttpRequest()
+  xhr.open <span class="hljs-string">'GET'</span>, url, <span class="hljs-literal">true</span>
+  xhr.overrideMimeType <span class="hljs-string">'text/plain'</span> <span class="hljs-keyword">if</span> <span class="hljs-string">'overrideMimeType'</span> <span class="hljs-keyword">of</span> xhr
+  xhr.<span class="hljs-function"><span class="hljs-title">onreadystatechange</span> = -&gt;</span>
+    <span class="hljs-keyword">if</span> xhr.readyState <span class="hljs-keyword">is</span> <span class="hljs-number">4</span>
+      <span class="hljs-keyword">if</span> xhr.status <span class="hljs-keyword">in</span> [<span class="hljs-number">0</span>, <span class="hljs-number">200</span>]
+        param = [xhr.responseText, options]
+        CoffeeScript.run param... <span class="hljs-keyword">unless</span> hold
+      <span class="hljs-keyword">else</span>
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">"Could not load <span class="hljs-subst">#{url}</span>"</span>
+      callback param <span class="hljs-keyword">if</span> callback
+  xhr.send <span class="hljs-literal">null</span></pre></div></div>
             
         </li>
         
@@ -239,29 +241,38 @@ Ported from <a href="https://developer.mozilla.org/en-US/docs/DOM/window.btoa">h
               </div>
               <p>Activate CoffeeScript in the browser by having it compile and evaluate
 all script tags with a content-type of <code>text/coffeescript</code>.
-This happens on page load.
-</p>
+This happens on page load.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">runScripts</span></span> = -&gt;
-  scripts = window.document.getElementsByTagName <span class="string">'script'</span>
-  coffeetypes = [<span class="string">'text/coffeescript'</span>, <span class="string">'text/literate-coffeescript'</span>]
-  coffees = (s <span class="keyword">for</span> s <span class="keyword">in</span> scripts <span class="keyword">when</span> s.type <span class="keyword">in</span> coffeetypes)
-  index = <span class="number">0</span>
-  length = coffees.length
-  <span class="keyword">do</span> <span class="function"><span class="title">execute</span></span> = -&gt;
-    script = coffees[index++]
-    mediatype = script?.type
-    <span class="keyword">if</span> mediatype <span class="keyword">in</span> coffeetypes
-      options = {literate: mediatype <span class="keyword">is</span> <span class="string">'text/literate-coffeescript'</span>}
-      <span class="keyword">if</span> script.src
-        CoffeeScript.load script.src, execute, options
-      <span class="keyword">else</span>
-        options.sourceFiles = [<span class="string">'embedded'</span>]
-        CoffeeScript.run script.innerHTML, options
-        execute()
-  <span class="literal">null</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">runScripts</span> = -&gt;</span>
+  scripts = <span class="hljs-built_in">window</span>.<span class="hljs-built_in">document</span>.getElementsByTagName <span class="hljs-string">'script'</span>
+  coffeetypes = [<span class="hljs-string">'text/coffeescript'</span>, <span class="hljs-string">'text/literate-coffeescript'</span>]
+  coffees = (s <span class="hljs-keyword">for</span> s <span class="hljs-keyword">in</span> scripts <span class="hljs-keyword">when</span> s.type <span class="hljs-keyword">in</span> coffeetypes)
+  index = <span class="hljs-number">0</span>
+
+  <span class="hljs-function"><span class="hljs-title">execute</span> = -&gt;</span>
+    param = coffees[index]
+    <span class="hljs-keyword">if</span> param <span class="hljs-keyword">instanceof</span> Array
+      CoffeeScript.run param...
+      index++
+      execute()
+
+  <span class="hljs-keyword">for</span> script, i <span class="hljs-keyword">in</span> coffees
+    <span class="hljs-keyword">do</span> <span class="hljs-function"><span class="hljs-params">(script, i)</span> -&gt;</span>
+      options = <span class="hljs-attribute">literate</span>: script.type <span class="hljs-keyword">is</span> coffeetypes[<span class="hljs-number">1</span>]
+      <span class="hljs-keyword">if</span> script.src
+        CoffeeScript.load script.src,
+          <span class="hljs-function"><span class="hljs-params">(param)</span> -&gt;</span>
+            coffees[i] = param
+            execute()
+          options
+          <span class="hljs-literal">true</span>
+      <span class="hljs-keyword">else</span>
+        options.sourceFiles = [<span class="hljs-string">'embedded'</span>]
+        coffees[i] = [script.innerHTML, options]
+
+  execute()</pre></div></div>
             
         </li>
         
@@ -272,15 +283,14 @@ This happens on page load.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
-              <p>Listen for window load, both in decent browsers and in IE.
-</p>
+              <p>Listen for window load, both in decent browsers and in IE.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="keyword">if</span> window.addEventListener
-  window.addEventListener <span class="string">'DOMContentLoaded'</span>, runScripts, <span class="literal">no</span>
-<span class="keyword">else</span>
-  window.attachEvent <span class="string">'onload'</span>, runScripts</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">if</span> <span class="hljs-built_in">window</span>.addEventListener
+  <span class="hljs-built_in">window</span>.addEventListener <span class="hljs-string">'DOMContentLoaded'</span>, runScripts, <span class="hljs-literal">no</span>
+<span class="hljs-keyword">else</span>
+  <span class="hljs-built_in">window</span>.attachEvent <span class="hljs-string">'onload'</span>, runScripts</pre></div></div>
             
         </li>
         

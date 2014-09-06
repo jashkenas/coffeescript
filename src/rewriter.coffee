@@ -160,11 +160,6 @@ class exports.Rewriter
         tokens.splice i, 0, generate 'CALL_END', ')'
         i += 1
 
-      endAllImplicitCalls = ->
-        while inImplicitCall()
-          endImplicitCall()
-        return
-
       startImplicitObject = (j, startsLine = yes) ->
         idx = j ? i
         stack.push ['{', idx, sameLine: yes, startsLine: startsLine, ours: yes]
@@ -262,6 +257,9 @@ class exports.Rewriter
         if @tag(i - 2) is '@' then s = i - 2 else s = i - 1
         s -= 2 while @tag(s - 2) is 'HERECOMMENT'
 
+        # Mark if the value is a for loop
+        @insideForDeclaration = nextTag is 'FOR'
+
         startsLine = s is 0 or @tag(s - 1) in LINEBREAKS or tokens[s - 1].newLine
         # Are we just continuing an already declared object?
         if stackTop()
@@ -287,15 +285,11 @@ class exports.Rewriter
       #     f a
       #     .g b
       #     .h a
-      #
-      if inImplicitCall() and tag in CALL_CLOSERS and
-         (prevTag is 'OUTDENT' or prevToken.newLine)
-        endAllImplicitCalls()
-        return forward(1)
 
       stackTop()[2].sameLine = no if inImplicitObject() and tag in LINEBREAKS
 
-      if tag in IMPLICIT_END
+      newLine = prevTag is 'OUTDENT' or prevToken.newLine
+      if tag in IMPLICIT_END or tag in CALL_CLOSERS and newLine
         while inImplicit()
           [stackTag, stackIdx, {sameLine, startsLine}] = stackTop()
           # Close implicit calls when reached end of argument list
@@ -303,8 +297,8 @@ class exports.Rewriter
             endImplicitCall()
           # Close implicit objects such as:
           # return a: 1, b: 2 unless true
-          else if inImplicitObject() and sameLine and
-                  tag isnt 'TERMINATOR' and prevTag isnt ':'
+          else if inImplicitObject() and not @insideForDeclaration and sameLine and
+                  tag isnt 'TERMINATOR' and prevTag isnt ':' and
             endImplicitObject()
           # Close implicit objects when at end of line, line didn't end with a comma
           # and the implicit object didn't start the line or the next line doesn't look like
@@ -329,6 +323,7 @@ class exports.Rewriter
       #     f a, b: c, d: e, f, g: h: i, j
       #
       if tag is ',' and not @looksObjectish(i + 1) and inImplicitObject() and
+         not @insideForDeclaration and
          (nextTag isnt 'TERMINATOR' or not @looksObjectish(i + 2))
         # When nextTag is OUTDENT the comma is insignificant and
         # should just be ignored so embed it in the implicit object.
@@ -393,7 +388,7 @@ class exports.Rewriter
       if tag in SINGLE_LINERS and @tag(i + 1) isnt 'INDENT' and
          not (tag is 'ELSE' and @tag(i + 1) is 'IF')
         starter = tag
-        [indent, outdent] = @indentation yes
+        [indent, outdent] = @indentation tokens[i]
         indent.fromThen   = true if starter is 'THEN'
         tokens.splice i + 1, 0, indent
         @detectEnd i + 2, condition, action
@@ -423,11 +418,14 @@ class exports.Rewriter
       return 1
 
   # Generate the indentation tokens, based on another token on the same line.
-  indentation: (implicit = no) ->
+  indentation: (origin) ->
     indent  = ['INDENT', 2]
     outdent = ['OUTDENT', 2]
-    indent.generated = outdent.generated = yes if implicit
-    indent.explicit = outdent.explicit = yes if not implicit
+    if origin
+      indent.generated = outdent.generated = yes
+      indent.origin = outdent.origin = origin
+    else
+      indent.explicit = outdent.explicit = yes
     [indent, outdent]
 
   generate: generate
@@ -489,4 +487,4 @@ SINGLE_CLOSERS   = ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADIN
 LINEBREAKS       = ['TERMINATOR', 'INDENT', 'OUTDENT']
 
 # Tokens that close open calls when they follow a newline.
-CALL_CLOSERS = ['.', '?.', '::', '?::']
+CALL_CLOSERS     = ['.', '?.', '::', '?::']

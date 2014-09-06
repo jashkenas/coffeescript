@@ -16,78 +16,85 @@
           <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
           <a class="small" href="javascript:void(0);">+</a>
           <div id="jump_wrapper">
-          <div id="jump_page">
-            
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
               
-              <a class="source" href="browser.html">
-                browser.coffee
-              </a>
-            
+                
+                <a class="source" href="browser.html">
+                  browser.coffee
+                </a>
               
-              <a class="source" href="cake.html">
-                cake.coffee
-              </a>
-            
+                
+                <a class="source" href="cake.html">
+                  cake.coffee
+                </a>
               
-              <a class="source" href="coffee-script.html">
-                coffee-script.coffee
-              </a>
-            
+                
+                <a class="source" href="coffee-script.html">
+                  coffee-script.coffee
+                </a>
               
-              <a class="source" href="command.html">
-                command.coffee
-              </a>
-            
+                
+                <a class="source" href="command.html">
+                  command.coffee
+                </a>
               
-              <a class="source" href="grammar.html">
-                grammar.coffee
-              </a>
-            
+                
+                <a class="source" href="grammar.html">
+                  grammar.coffee
+                </a>
               
-              <a class="source" href="helpers.html">
-                helpers.coffee
-              </a>
-            
+                
+                <a class="source" href="helpers.html">
+                  helpers.coffee
+                </a>
               
-              <a class="source" href="index.html">
-                index.coffee
-              </a>
-            
+                
+                <a class="source" href="index.html">
+                  index.coffee
+                </a>
               
-              <a class="source" href="lexer.html">
-                lexer.coffee
-              </a>
-            
+                
+                <a class="source" href="lexer.html">
+                  lexer.coffee
+                </a>
               
-              <a class="source" href="nodes.html">
-                nodes.coffee
-              </a>
-            
+                
+                <a class="source" href="nodes.html">
+                  nodes.coffee
+                </a>
               
-              <a class="source" href="optparse.html">
-                optparse.coffee
-              </a>
-            
+                
+                <a class="source" href="optparse.html">
+                  optparse.coffee
+                </a>
               
-              <a class="source" href="repl.html">
-                repl.coffee
-              </a>
-            
+                
+                <a class="source" href="register.html">
+                  register.coffee
+                </a>
               
-              <a class="source" href="rewriter.html">
-                rewriter.coffee
-              </a>
-            
+                
+                <a class="source" href="repl.html">
+                  repl.coffee
+                </a>
               
-              <a class="source" href="scope.html">
-                scope.litcoffee
-              </a>
-            
+                
+                <a class="source" href="rewriter.html">
+                  rewriter.coffee
+                </a>
               
-              <a class="source" href="sourcemap.html">
-                sourcemap.litcoffee
-              </a>
-            
+                
+                <a class="source" href="scope.html">
+                  scope.litcoffee
+                </a>
+              
+                
+                <a class="source" href="sourcemap.html">
+                  sourcemap.litcoffee
+                </a>
+              
+            </div>
           </div>
         </li>
       </ul>
@@ -111,12 +118,9 @@
               <p><code>cake</code> is a simplified version of <a href="http://www.gnu.org/software/make/">Make</a>
 (<a href="http://rake.rubyforge.org/">Rake</a>, <a href="http://github.com/280north/jake">Jake</a>)
 for CoffeeScript. You define tasks with names and descriptions in a Cakefile,
-and can call them from the command line, or invoke them from other tasks.
-
-</p>
+and can call them from the command line, or invoke them from other tasks.</p>
 <p>Running <code>cake</code> with no arguments will print out a list of all the tasks in the
-current directory&#39;s Cakefile.
-</p>
+current directory’s Cakefile.</p>
 
             </div>
             
@@ -129,18 +133,15 @@ current directory&#39;s Cakefile.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <p>External dependencies.
-</p>
+              <p>External dependencies.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>fs           = require <span class="string">'fs'</span>
-path         = require <span class="string">'path'</span>
-helpers      = require <span class="string">'./helpers'</span>
-optparse     = require <span class="string">'./optparse'</span>
-CoffeeScript = require <span class="string">'./coffee-script'</span>
-
-existsSync   = fs.existsSync <span class="keyword">or</span> path.existsSync</pre></div></div>
+            <div class="content"><div class='highlight'><pre>fs           = <span class="hljs-built_in">require</span> <span class="hljs-string">'fs'</span>
+path         = <span class="hljs-built_in">require</span> <span class="hljs-string">'path'</span>
+helpers      = <span class="hljs-built_in">require</span> <span class="hljs-string">'./helpers'</span>
+optparse     = <span class="hljs-built_in">require</span> <span class="hljs-string">'./optparse'</span>
+CoffeeScript = <span class="hljs-built_in">require</span> <span class="hljs-string">'./coffee-script'</span></pre></div></div>
             
         </li>
         
@@ -151,15 +152,11 @@ existsSync   = fs.existsSync <span class="keyword">or</span> path.existsSync</pr
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p>Keep track of the list of defined tasks, the accepted options, and so on.
-</p>
+              <p>Register .coffee extension</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>tasks     = {}
-options   = {}
-switches  = []
-oparse    = <span class="literal">null</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>CoffeeScript.register()</pre></div></div>
             
         </li>
         
@@ -170,12 +167,14 @@ oparse    = <span class="literal">null</span></pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>Mixin the top-level Cake functions for Cakefiles to use directly.
-</p>
+              <p>Keep track of the list of defined tasks, the accepted options, and so on.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>helpers.extend global,</pre></div></div>
+            <div class="content"><div class='highlight'><pre>tasks     = {}
+options   = {}
+switches  = []
+oparse    = <span class="hljs-literal">null</span></pre></div></div>
             
         </li>
         
@@ -186,15 +185,11 @@ oparse    = <span class="literal">null</span></pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
-              <p>Define a Cake task with a short name, an optional sentence description,
-and the function to run as the action itself.
-</p>
+              <p>Mixin the top-level Cake functions for Cakefiles to use directly.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  task: (name, description, action) -&gt;
-    [action, description] = [description, action] <span class="keyword">unless</span> action
-    tasks[name] = {name, description, action}</pre></div></div>
+            <div class="content"><div class='highlight'><pre>helpers.extend <span class="hljs-built_in">global</span>,</pre></div></div>
             
         </li>
         
@@ -205,15 +200,14 @@ and the function to run as the action itself.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
-              <p>Define an option that the Cakefile accepts. The parsed options hash,
-containing all of the command-line options passed, will be made available
-as the first argument to the action.
-</p>
+              <p>Define a Cake task with a short name, an optional sentence description,
+and the function to run as the action itself.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  option: (letter, flag, description) -&gt;
-    switches.push [letter, flag, description]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">task</span>: <span class="hljs-function"><span class="hljs-params">(name, description, action)</span> -&gt;</span>
+    [action, description] = [description, action] <span class="hljs-keyword">unless</span> action
+    tasks[name] = {name, description, action}</pre></div></div>
             
         </li>
         
@@ -224,14 +218,14 @@ as the first argument to the action.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
-              <p>Invoke another task in the current Cakefile.
-</p>
+              <p>Define an option that the Cakefile accepts. The parsed options hash,
+containing all of the command-line options passed, will be made available
+as the first argument to the action.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  invoke: (name) -&gt;
-    missingTask name <span class="keyword">unless</span> tasks[name]
-    tasks[name].action options</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">option</span>: <span class="hljs-function"><span class="hljs-params">(letter, flag, description)</span> -&gt;</span>
+    switches.push [letter, flag, description]</pre></div></div>
             
         </li>
         
@@ -242,26 +236,13 @@ as the first argument to the action.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
-              <p>Run <code>cake</code>. Executes all of the tasks you pass, in order. Note that Node&#39;s
-asynchrony may cause tasks to execute in a different order than you&#39;d expect.
-If no tasks are passed, print the help screen. Keep a reference to the
-original directory name, when running Cake tasks from subdirectories.
-</p>
+              <p>Invoke another task in the current Cakefile.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">run</span></span> = -&gt;
-  global.__originalDirname = fs.realpathSync <span class="string">'.'</span>
-  process.chdir cakefileDirectory __originalDirname
-  args = process.argv[<span class="number">2.</span>.]
-  CoffeeScript.run fs.readFileSync(<span class="string">'Cakefile'</span>).toString(), filename: <span class="string">'Cakefile'</span>
-  oparse = <span class="keyword">new</span> optparse.OptionParser switches
-  <span class="keyword">return</span> printTasks() <span class="keyword">unless</span> args.length
-  <span class="keyword">try</span>
-    options = oparse.parse(args)
-  <span class="keyword">catch</span> e
-    <span class="keyword">return</span> fatalError <span class="string">"<span class="subst">#{e}</span>"</span>
-  invoke arg <span class="keyword">for</span> arg <span class="keyword">in</span> options.arguments</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">invoke</span>: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
+    missingTask name <span class="hljs-keyword">unless</span> tasks[name]
+    tasks[name].action options</pre></div></div>
             
         </li>
         
@@ -272,21 +253,25 @@ original directory name, when running Cake tasks from subdirectories.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
-              <p>Display the list of Cake tasks in a format similar to <code>rake -T</code>
-</p>
+              <p>Run <code>cake</code>. Executes all of the tasks you pass, in order. Note that Node’s
+asynchrony may cause tasks to execute in a different order than you’d expect.
+If no tasks are passed, print the help screen. Keep a reference to the
+original directory name, when running Cake tasks from subdirectories.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">printTasks</span></span> = -&gt;
-  relative = path.relative <span class="keyword">or</span> path.resolve
-  cakefilePath = path.join relative(__originalDirname, process.cwd()), <span class="string">'Cakefile'</span>
-  console.log <span class="string">"<span class="subst">#{cakefilePath}</span> defines the following tasks:\n"</span>
-  <span class="keyword">for</span> name, task <span class="keyword">of</span> tasks
-    spaces = <span class="number">20</span> - name.length
-    spaces = <span class="keyword">if</span> spaces &gt; <span class="number">0</span> <span class="keyword">then</span> Array(spaces + <span class="number">1</span>).join(<span class="string">' '</span>) <span class="keyword">else</span> <span class="string">''</span>
-    desc   = <span class="keyword">if</span> task.description <span class="keyword">then</span> <span class="string">"# <span class="subst">#{task.description}</span>"</span> <span class="keyword">else</span> <span class="string">''</span>
-    console.log <span class="string">"cake <span class="subst">#{name}</span><span class="subst">#{spaces}</span> <span class="subst">#{desc}</span>"</span>
-  console.log oparse.help() <span class="keyword">if</span> switches.length</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">run</span> = -&gt;</span>
+  <span class="hljs-built_in">global</span>.__originalDirname = fs.realpathSync <span class="hljs-string">'.'</span>
+  process.chdir cakefileDirectory __originalDirname
+  args = process.argv[<span class="hljs-number">2.</span>.]
+  CoffeeScript.run fs.readFileSync(<span class="hljs-string">'Cakefile'</span>).toString(), <span class="hljs-attribute">filename</span>: <span class="hljs-string">'Cakefile'</span>
+  oparse = <span class="hljs-keyword">new</span> optparse.OptionParser switches
+  <span class="hljs-keyword">return</span> printTasks() <span class="hljs-keyword">unless</span> args.length
+  <span class="hljs-keyword">try</span>
+    options = oparse.parse(args)
+  <span class="hljs-keyword">catch</span> e
+    <span class="hljs-keyword">return</span> fatalError <span class="hljs-string">"<span class="hljs-subst">#{e}</span>"</span>
+  invoke arg <span class="hljs-keyword">for</span> arg <span class="hljs-keyword">in</span> options.arguments</pre></div></div>
             
         </li>
         
@@ -297,17 +282,20 @@ original directory name, when running Cake tasks from subdirectories.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
-              <p>Print an error and exit when attempting to use an invalid task/option.
-</p>
+              <p>Display the list of Cake tasks in a format similar to <code>rake -T</code></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">fatalError</span></span> = (message) -&gt;
-  console.error message + <span class="string">'\n'</span>
-  console.log <span class="string">'To see a list of all tasks/options, run "cake"'</span>
-  process.exit <span class="number">1</span>
-
-<span class="function"><span class="title">missingTask</span></span> = (task) -&gt; fatalError <span class="string">"No such task: <span class="subst">#{task}</span>"</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">printTasks</span> = -&gt;</span>
+  relative = path.relative <span class="hljs-keyword">or</span> path.resolve
+  cakefilePath = path.join relative(__originalDirname, process.cwd()), <span class="hljs-string">'Cakefile'</span>
+  <span class="hljs-built_in">console</span>.log <span class="hljs-string">"<span class="hljs-subst">#{cakefilePath}</span> defines the following tasks:\n"</span>
+  <span class="hljs-keyword">for</span> name, task <span class="hljs-keyword">of</span> tasks
+    spaces = <span class="hljs-number">20</span> - name.length
+    spaces = <span class="hljs-keyword">if</span> spaces &gt; <span class="hljs-number">0</span> <span class="hljs-keyword">then</span> Array(spaces + <span class="hljs-number">1</span>).join(<span class="hljs-string">' '</span>) <span class="hljs-keyword">else</span> <span class="hljs-string">''</span>
+    desc   = <span class="hljs-keyword">if</span> task.description <span class="hljs-keyword">then</span> <span class="hljs-string">"# <span class="hljs-subst">#{task.description}</span>"</span> <span class="hljs-keyword">else</span> <span class="hljs-string">''</span>
+    <span class="hljs-built_in">console</span>.log <span class="hljs-string">"cake <span class="hljs-subst">#{name}</span><span class="hljs-subst">#{spaces}</span> <span class="hljs-subst">#{desc}</span>"</span>
+  <span class="hljs-built_in">console</span>.log oparse.help() <span class="hljs-keyword">if</span> switches.length</pre></div></div>
             
         </li>
         
@@ -318,17 +306,36 @@ original directory name, when running Cake tasks from subdirectories.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
-              <p>When <code>cake</code> is invoked, search in the current and all parent directories
-to find the relevant Cakefile.
-</p>
+              <p>Print an error and exit when attempting to use an invalid task/option.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">cakefileDirectory</span></span> = (dir) -&gt;
-  <span class="keyword">return</span> dir <span class="keyword">if</span> existsSync path.join dir, <span class="string">'Cakefile'</span>
-  parent = path.normalize path.join dir, <span class="string">'..'</span>
-  <span class="keyword">return</span> cakefileDirectory parent <span class="keyword">unless</span> parent <span class="keyword">is</span> dir
-  <span class="keyword">throw</span> <span class="keyword">new</span> Error <span class="string">"Cakefile not found in <span class="subst">#{process.cwd()}</span>"</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">fatalError</span> = <span class="hljs-params">(message)</span> -&gt;</span>
+  <span class="hljs-built_in">console</span>.error message + <span class="hljs-string">'\n'</span>
+  <span class="hljs-built_in">console</span>.log <span class="hljs-string">'To see a list of all tasks/options, run "cake"'</span>
+  process.exit <span class="hljs-number">1</span>
+
+<span class="hljs-function"><span class="hljs-title">missingTask</span> = <span class="hljs-params">(task)</span> -&gt;</span> fatalError <span class="hljs-string">"No such task: <span class="hljs-subst">#{task}</span>"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>When <code>cake</code> is invoked, search in the current and all parent directories
+to find the relevant Cakefile.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">cakefileDirectory</span> = <span class="hljs-params">(dir)</span> -&gt;</span>
+  <span class="hljs-keyword">return</span> dir <span class="hljs-keyword">if</span> fs.existsSync path.join dir, <span class="hljs-string">'Cakefile'</span>
+  parent = path.normalize path.join dir, <span class="hljs-string">'..'</span>
+  <span class="hljs-keyword">return</span> cakefileDirectory parent <span class="hljs-keyword">unless</span> parent <span class="hljs-keyword">is</span> dir
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">"Cakefile not found in <span class="hljs-subst">#{process.cwd()}</span>"</span></pre></div></div>
             
         </li>
         

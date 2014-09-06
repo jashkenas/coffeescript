@@ -16,78 +16,85 @@
           <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
           <a class="small" href="javascript:void(0);">+</a>
           <div id="jump_wrapper">
-          <div id="jump_page">
-            
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
               
-              <a class="source" href="browser.html">
-                browser.coffee
-              </a>
-            
+                
+                <a class="source" href="browser.html">
+                  browser.coffee
+                </a>
               
-              <a class="source" href="cake.html">
-                cake.coffee
-              </a>
-            
+                
+                <a class="source" href="cake.html">
+                  cake.coffee
+                </a>
               
-              <a class="source" href="coffee-script.html">
-                coffee-script.coffee
-              </a>
-            
+                
+                <a class="source" href="coffee-script.html">
+                  coffee-script.coffee
+                </a>
               
-              <a class="source" href="command.html">
-                command.coffee
-              </a>
-            
+                
+                <a class="source" href="command.html">
+                  command.coffee
+                </a>
               
-              <a class="source" href="grammar.html">
-                grammar.coffee
-              </a>
-            
+                
+                <a class="source" href="grammar.html">
+                  grammar.coffee
+                </a>
               
-              <a class="source" href="helpers.html">
-                helpers.coffee
-              </a>
-            
+                
+                <a class="source" href="helpers.html">
+                  helpers.coffee
+                </a>
               
-              <a class="source" href="index.html">
-                index.coffee
-              </a>
-            
+                
+                <a class="source" href="index.html">
+                  index.coffee
+                </a>
               
-              <a class="source" href="lexer.html">
-                lexer.coffee
-              </a>
-            
+                
+                <a class="source" href="lexer.html">
+                  lexer.coffee
+                </a>
               
-              <a class="source" href="nodes.html">
-                nodes.coffee
-              </a>
-            
+                
+                <a class="source" href="nodes.html">
+                  nodes.coffee
+                </a>
               
-              <a class="source" href="optparse.html">
-                optparse.coffee
-              </a>
-            
+                
+                <a class="source" href="optparse.html">
+                  optparse.coffee
+                </a>
               
-              <a class="source" href="repl.html">
-                repl.coffee
-              </a>
-            
+                
+                <a class="source" href="register.html">
+                  register.coffee
+                </a>
               
-              <a class="source" href="rewriter.html">
-                rewriter.coffee
-              </a>
-            
+                
+                <a class="source" href="repl.html">
+                  repl.coffee
+                </a>
               
-              <a class="source" href="scope.html">
-                scope.litcoffee
-              </a>
-            
+                
+                <a class="source" href="rewriter.html">
+                  rewriter.coffee
+                </a>
               
-              <a class="source" href="sourcemap.html">
-                sourcemap.litcoffee
-              </a>
-            
+                
+                <a class="source" href="scope.html">
+                  scope.litcoffee
+                </a>
+              
+                
+                <a class="source" href="sourcemap.html">
+                  sourcemap.litcoffee
+                </a>
+              
+            </div>
           </div>
         </li>
       </ul>
@@ -111,20 +118,18 @@
               <p>CoffeeScript can be used both on the server, as a command-line compiler based
 on Node.js/V8, or to run CoffeeScript directly in the browser. This module
 contains the main entry functions for tokenizing, parsing, and compiling
-source CoffeeScript into JavaScript.
-</p>
+source CoffeeScript into JavaScript.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>
-fs            = require <span class="string">'fs'</span>
-vm            = require <span class="string">'vm'</span>
-path          = require <span class="string">'path'</span>
-child_process = require <span class="string">'child_process'</span>
-{Lexer}       = require <span class="string">'./lexer'</span>
-{parser}      = require <span class="string">'./parser'</span>
-helpers       = require <span class="string">'./helpers'</span>
-SourceMap     = require <span class="string">'./sourcemap'</span></pre></div></div>
+fs            = <span class="hljs-built_in">require</span> <span class="hljs-string">'fs'</span>
+vm            = <span class="hljs-built_in">require</span> <span class="hljs-string">'vm'</span>
+path          = <span class="hljs-built_in">require</span> <span class="hljs-string">'path'</span>
+{Lexer}       = <span class="hljs-built_in">require</span> <span class="hljs-string">'./lexer'</span>
+{parser}      = <span class="hljs-built_in">require</span> <span class="hljs-string">'./parser'</span>
+helpers       = <span class="hljs-built_in">require</span> <span class="hljs-string">'./helpers'</span>
+SourceMap     = <span class="hljs-built_in">require</span> <span class="hljs-string">'./sourcemap'</span></pre></div></div>
             
         </li>
         
@@ -135,12 +140,13 @@ SourceMap     = require <span class="string">'./sourcemap'</span></pre></div></d
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <p>The current CoffeeScript version number.
-</p>
+              <p>The current CoffeeScript version number.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.VERSION = <span class="string">'1.6.3'</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.VERSION = <span class="hljs-string">'1.8.0'</span>
+
+<span class="hljs-built_in">exports</span>.FILE_EXTENSIONS = [<span class="hljs-string">'.coffee'</span>, <span class="hljs-string">'.litcoffee'</span>, <span class="hljs-string">'.coffee.md'</span>]</pre></div></div>
             
         </li>
         
@@ -151,12 +157,11 @@ SourceMap     = require <span class="string">'./sourcemap'</span></pre></div></d
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p>Expose helpers for testing.
-</p>
+              <p>Expose helpers for testing.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.helpers = helpers</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.helpers = helpers</pre></div></div>
             
         </li>
         
@@ -167,35 +172,17 @@ SourceMap     = require <span class="string">'./sourcemap'</span></pre></div></d
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>Compile CoffeeScript code to JavaScript, using the Coffee/Jison compiler.
-
-</p>
-<p>If <code>options.sourceMap</code> is specified, then <code>options.filename</code> must also be specified.  All
-options that can be passed to <code>SourceMap#generate</code> may also be passed here.
-
-</p>
-<p>This returns a javascript string, unless <code>options.sourceMap</code> is passed,
-in which case this returns a <code>{js, v3SourceMap, sourceMap}</code>
-object, where sourceMap is a sourcemap.coffee#SourceMap object, handy for doing programatic
-lookups.
-</p>
+              <p>Function wrapper to add source file information to SyntaxErrors thrown by the
+lexer/parser/compiler.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.compile = <span class="function"><span class="title">compile</span></span> = (code, options = {}) -&gt;
-  {merge} = helpers
-
-  <span class="keyword">if</span> options.sourceMap
-    map = <span class="keyword">new</span> SourceMap
-
-  fragments = parser.parse(lexer.tokenize code, options).compileToFragments options
-
-  currentLine = <span class="number">0</span>
-  currentLine += <span class="number">1</span> <span class="keyword">if</span> options.header
-  currentLine += <span class="number">1</span> <span class="keyword">if</span> options.shiftLine
-  currentColumn = <span class="number">0</span>
-  js = <span class="string">""</span>
-  <span class="keyword">for</span> fragment <span class="keyword">in</span> fragments</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">withPrettyErrors</span> = <span class="hljs-params">(fn)</span> -&gt;</span>
+  <span class="hljs-function"><span class="hljs-params">(code, options = {})</span> -&gt;</span>
+    <span class="hljs-keyword">try</span>
+      fn.call @, code, options
+    <span class="hljs-keyword">catch</span> err
+      <span class="hljs-keyword">throw</span> helpers.updateSyntaxError err, code, options.filename</pre></div></div>
             
         </li>
         
@@ -206,20 +193,31 @@ lookups.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
-              <p>Update the sourcemap with data from each fragment
-</p>
+              <p>Compile CoffeeScript code to JavaScript, using the Coffee/Jison compiler.</p>
+<p>If <code>options.sourceMap</code> is specified, then <code>options.filename</code> must also be specified.  All
+options that can be passed to <code>SourceMap#generate</code> may also be passed here.</p>
+<p>This returns a javascript string, unless <code>options.sourceMap</code> is passed,
+in which case this returns a <code>{js, v3SourceMap, sourceMap}</code>
+object, where sourceMap is a sourcemap.coffee#SourceMap object, handy for doing programatic
+lookups.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> options.sourceMap
-      <span class="keyword">if</span> fragment.locationData
-        map.add(
-          [fragment.locationData.first_line, fragment.locationData.first_column]
-          [currentLine, currentColumn]
-          {noReplace: <span class="literal">true</span>})
-      newLines = helpers.count fragment.code, <span class="string">"\n"</span>
-      currentLine += newLines
-      currentColumn = fragment.code.length - (<span class="keyword">if</span> newLines <span class="keyword">then</span> fragment.code.lastIndexOf <span class="string">"\n"</span> <span class="keyword">else</span> <span class="number">0</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.compile = compile = withPrettyErrors <span class="hljs-function"><span class="hljs-params">(code, options)</span> -&gt;</span>
+  {merge, extend} = helpers
+  options = extend {}, options
+
+  <span class="hljs-keyword">if</span> options.sourceMap
+    map = <span class="hljs-keyword">new</span> SourceMap
+
+  fragments = parser.parse(lexer.tokenize code, options).compileToFragments options
+
+  currentLine = <span class="hljs-number">0</span>
+  currentLine += <span class="hljs-number">1</span> <span class="hljs-keyword">if</span> options.header
+  currentLine += <span class="hljs-number">1</span> <span class="hljs-keyword">if</span> options.shiftLine
+  currentColumn = <span class="hljs-number">0</span>
+  js = <span class="hljs-string">""</span>
+  <span class="hljs-keyword">for</span> fragment <span class="hljs-keyword">in</span> fragments</pre></div></div>
             
         </li>
         
@@ -230,24 +228,22 @@ lookups.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
-              <p>Copy the code from each fragment into the final JavaScript.
-</p>
+              <p>Update the sourcemap with data from each fragment</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    js += fragment.code
-
-  <span class="keyword">if</span> options.header
-    header = <span class="string">"Generated by CoffeeScript <span class="subst">#{@VERSION}</span>"</span>
-    js = <span class="string">"// <span class="subst">#{header}</span>\n<span class="subst">#{js}</span>"</span>
-
-  <span class="keyword">if</span> options.sourceMap
-    answer = {js}
-    answer.sourceMap = map
-    answer.v3SourceMap = map.generate(options, code)
-    answer
-  <span class="keyword">else</span>
-    js</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> options.sourceMap
+      <span class="hljs-keyword">if</span> fragment.locationData
+        map.add(
+          [fragment.locationData.first_line, fragment.locationData.first_column]
+          [currentLine, currentColumn]
+          {<span class="hljs-attribute">noReplace</span>: <span class="hljs-literal">true</span>})
+      newLines = helpers.count fragment.code, <span class="hljs-string">"\n"</span>
+      currentLine += newLines
+      <span class="hljs-keyword">if</span> newLines
+        currentColumn = fragment.code.length - (fragment.code.lastIndexOf(<span class="hljs-string">"\n"</span>) + <span class="hljs-number">1</span>)
+      <span class="hljs-keyword">else</span>
+        currentColumn += fragment.code.length</pre></div></div>
             
         </li>
         
@@ -258,13 +254,23 @@ lookups.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
-              <p>Tokenize a string of CoffeeScript code, and return the array of tokens.
-</p>
+              <p>Copy the code from each fragment into the final JavaScript.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">tokens</span></span> = (code, options) -&gt;
-  lexer.tokenize code, options</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    js += fragment.code
+
+  <span class="hljs-keyword">if</span> options.header
+    header = <span class="hljs-string">"Generated by CoffeeScript <span class="hljs-subst">#{<span class="hljs-property">@VERSION</span>}</span>"</span>
+    js = <span class="hljs-string">"// <span class="hljs-subst">#{header}</span>\n<span class="hljs-subst">#{js}</span>"</span>
+
+  <span class="hljs-keyword">if</span> options.sourceMap
+    answer = {js}
+    answer.sourceMap = map
+    answer.v3SourceMap = map.generate(options, code)
+    answer
+  <span class="hljs-keyword">else</span>
+    js</pre></div></div>
             
         </li>
         
@@ -275,18 +281,12 @@ lookups.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
-              <p>Parse a string of CoffeeScript code or an array of lexed tokens, and
-return the AST. You can then compile it by calling <code>.compile()</code> on the root,
-or traverse it by using <code>.traverseChildren()</code> with a callback.
-</p>
+              <p>Tokenize a string of CoffeeScript code, and return the array of tokens.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">nodes</span></span> = (source, options) -&gt;
-  <span class="keyword">if</span> <span class="keyword">typeof</span> source <span class="keyword">is</span> <span class="string">'string'</span>
-    parser.parse lexer.tokenize source, options
-  <span class="keyword">else</span>
-    parser.parse source</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.tokens = withPrettyErrors <span class="hljs-function"><span class="hljs-params">(code, options)</span> -&gt;</span>
+  lexer.tokenize code, options</pre></div></div>
             
         </li>
         
@@ -297,15 +297,17 @@ or traverse it by using <code>.traverseChildren()</code> with a callback.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
-              <p>Compile and execute a string of CoffeeScript (on the server), correctly
-setting <code>__filename</code>, <code>__dirname</code>, and relative <code>require()</code>.
-</p>
+              <p>Parse a string of CoffeeScript code or an array of lexed tokens, and
+return the AST. You can then compile it by calling <code>.compile()</code> on the root,
+or traverse it by using <code>.traverseChildren()</code> with a callback.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">run</span></span> = (code, options = {}) -&gt;
-  mainModule = require.main
-  options.sourceMap ?= <span class="literal">true</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.nodes = withPrettyErrors <span class="hljs-function"><span class="hljs-params">(source, options)</span> -&gt;</span>
+  <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> source <span class="hljs-keyword">is</span> <span class="hljs-string">'string'</span>
+    parser.parse lexer.tokenize source, options
+  <span class="hljs-keyword">else</span>
+    parser.parse source</pre></div></div>
             
         </li>
         
@@ -316,13 +318,13 @@ setting <code>__filename</code>, <code>__dirname</code>, and relative <code>requ
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
-              <p>Set the filename.
-</p>
+              <p>Compile and execute a string of CoffeeScript (on the server), correctly
+setting <code>__filename</code>, <code>__dirname</code>, and relative <code>require()</code>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  mainModule.filename = process.argv[<span class="number">1</span>] =
-    <span class="keyword">if</span> options.filename <span class="keyword">then</span> fs.realpathSync(options.filename) <span class="keyword">else</span> <span class="string">'.'</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">run</span> = <span class="hljs-params">(code, options = {})</span> -&gt;</span>
+  mainModule = <span class="hljs-built_in">require</span>.main</pre></div></div>
             
         </li>
         
@@ -333,12 +335,12 @@ setting <code>__filename</code>, <code>__dirname</code>, and relative <code>requ
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
-              <p>Clear the module cache.
-</p>
+              <p>Set the filename.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  mainModule.moduleCache <span class="keyword">and</span>= {}</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  mainModule.filename = process.argv[<span class="hljs-number">1</span>] =
+    <span class="hljs-keyword">if</span> options.filename <span class="hljs-keyword">then</span> fs.realpathSync(options.filename) <span class="hljs-keyword">else</span> <span class="hljs-string">'.'</span></pre></div></div>
             
         </li>
         
@@ -349,12 +351,11 @@ setting <code>__filename</code>, <code>__dirname</code>, and relative <code>requ
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
-              <p>Assign paths for node_modules loading
-</p>
+              <p>Clear the module cache.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  mainModule.paths = require(<span class="string">'module'</span>)._nodeModulePaths path.dirname fs.realpathSync options.filename <span class="keyword">or</span> <span class="string">'.'</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  mainModule.moduleCache <span class="hljs-keyword">and</span>= {}</pre></div></div>
             
         </li>
         
@@ -365,13 +366,15 @@ setting <code>__filename</code>, <code>__dirname</code>, and relative <code>requ
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
-              <p>Compile.
-</p>
+              <p>Assign paths for node_modules loading</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="keyword">if</span> <span class="keyword">not</span> helpers.isCoffee(mainModule.filename) <span class="keyword">or</span> require.extensions
-    answer = compile(code, options)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  dir = <span class="hljs-keyword">if</span> options.filename
+    path.dirname fs.realpathSync options.filename
+  <span class="hljs-keyword">else</span>
+    fs.realpathSync <span class="hljs-string">'.'</span>
+  mainModule.paths = <span class="hljs-built_in">require</span>(<span class="hljs-string">'module'</span>)._nodeModulePaths dir</pre></div></div>
             
         </li>
         
@@ -382,17 +385,15 @@ setting <code>__filename</code>, <code>__dirname</code>, and relative <code>requ
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
-              <p>Attach sourceMap object to sourceMaps[options.filename] so that
-it is accessible by Error.prepareStackTrace.
-</p>
+              <p>Compile.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">do</span> patchStackTrace
-    sourceMaps[mainModule.filename] = answer.sourceMap
-    mainModule._compile answer.js, mainModule.filename
-  <span class="keyword">else</span>
-    mainModule._compile code, mainModule.filename</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> helpers.isCoffee(mainModule.filename) <span class="hljs-keyword">or</span> <span class="hljs-built_in">require</span>.extensions
+    answer = compile code, options
+    code = answer.js ? answer
+
+  mainModule._compile code, mainModule.filename</pre></div></div>
             
         </li>
         
@@ -404,25 +405,24 @@ it is accessible by Error.prepareStackTrace.
                 <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>Compile and evaluate a string of CoffeeScript (in a Node.js-like environment).
-The CoffeeScript REPL uses this to run the input.
-</p>
+The CoffeeScript REPL uses this to run the input.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.<span class="function"><span class="title">eval</span></span> = (code, options = {}) -&gt;
-  <span class="keyword">return</span> <span class="keyword">unless</span> code = code.trim()
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">eval</span> = <span class="hljs-params">(code, options = {})</span> -&gt;</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">unless</span> code = code.trim()
   Script = vm.Script
-  <span class="keyword">if</span> Script
-    <span class="keyword">if</span> options.sandbox?
-      <span class="keyword">if</span> options.sandbox <span class="keyword">instanceof</span> Script.createContext().constructor
+  <span class="hljs-keyword">if</span> Script
+    <span class="hljs-keyword">if</span> options.sandbox?
+      <span class="hljs-keyword">if</span> options.sandbox <span class="hljs-keyword">instanceof</span> Script.createContext().constructor
         sandbox = options.sandbox
-      <span class="keyword">else</span>
+      <span class="hljs-keyword">else</span>
         sandbox = Script.createContext()
-        sandbox[k] = v <span class="keyword">for</span> own k, v <span class="keyword">of</span> options.sandbox
-      sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
-    <span class="keyword">else</span>
-      sandbox = global
-    sandbox.__filename = options.filename || <span class="string">'eval'</span>
+        sandbox[k] = v <span class="hljs-keyword">for</span> own k, v <span class="hljs-keyword">of</span> options.sandbox
+      sandbox.<span class="hljs-built_in">global</span> = sandbox.root = sandbox.GLOBAL = sandbox
+    <span class="hljs-keyword">else</span>
+      sandbox = <span class="hljs-built_in">global</span>
+    sandbox.__filename = options.filename || <span class="hljs-string">'eval'</span>
     sandbox.__dirname  = path.dirname sandbox.__filename</pre></div></div>
             
         </li>
@@ -434,17 +434,16 @@ The CoffeeScript REPL uses this to run the input.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
-              <p>define module/require only if they chose not to specify their own
-</p>
+              <p>define module/require only if they chose not to specify their own</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">unless</span> sandbox <span class="keyword">isnt</span> global <span class="keyword">or</span> sandbox.module <span class="keyword">or</span> sandbox.require
-      Module = require <span class="string">'module'</span>
-      sandbox.module  = _module  = <span class="keyword">new</span> Module(options.modulename || <span class="string">'eval'</span>)
-      sandbox.require = <span class="function"><span class="title">_require</span></span> = (path) -&gt;  Module._load path, _module, <span class="literal">true</span>
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">unless</span> sandbox <span class="hljs-keyword">isnt</span> <span class="hljs-built_in">global</span> <span class="hljs-keyword">or</span> sandbox.<span class="hljs-built_in">module</span> <span class="hljs-keyword">or</span> sandbox.<span class="hljs-built_in">require</span>
+      Module = <span class="hljs-built_in">require</span> <span class="hljs-string">'module'</span>
+      sandbox.<span class="hljs-built_in">module</span>  = _module  = <span class="hljs-keyword">new</span> Module(options.modulename || <span class="hljs-string">'eval'</span>)
+      sandbox.<span class="hljs-built_in">require</span> = <span class="hljs-function"><span class="hljs-title">_require</span> = <span class="hljs-params">(path)</span> -&gt;</span>  Module._load path, _module, <span class="hljs-literal">true</span>
       _module.filename = sandbox.__filename
-      _require[r] = require[r] <span class="keyword">for</span> r <span class="keyword">in</span> Object.getOwnPropertyNames require <span class="keyword">when</span> r <span class="keyword">isnt</span> <span class="string">'paths'</span></pre></div></div>
+      _require[r] = <span class="hljs-built_in">require</span>[r] <span class="hljs-keyword">for</span> r <span class="hljs-keyword">in</span> Object.getOwnPropertyNames <span class="hljs-built_in">require</span> <span class="hljs-keyword">when</span> r <span class="hljs-keyword">isnt</span> <span class="hljs-string">'paths'</span></pre></div></div>
             
         </li>
         
@@ -455,21 +454,22 @@ The CoffeeScript REPL uses this to run the input.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
-              <p>use the same hack node currently uses for their own REPL
-</p>
+              <p>use the same hack node currently uses for their own REPL</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>      _require.paths = _module.paths = Module._nodeModulePaths process.cwd()
-      _require.<span class="function"><span class="title">resolve</span></span> = (request) -&gt; Module._resolveFilename request, _module
+      _require.<span class="hljs-function"><span class="hljs-title">resolve</span> = <span class="hljs-params">(request)</span> -&gt;</span> Module._resolveFilename request, _module
   o = {}
-  o[k] = v <span class="keyword">for</span> own k, v <span class="keyword">of</span> options
-  o.bare = <span class="literal">on</span> <span class="comment"># ensure return value</span>
+  o[k] = v <span class="hljs-keyword">for</span> own k, v <span class="hljs-keyword">of</span> options
+  o.bare = <span class="hljs-literal">on</span> <span class="hljs-comment"># ensure return value</span>
   js = compile code, o
-  <span class="keyword">if</span> sandbox <span class="keyword">is</span> global
+  <span class="hljs-keyword">if</span> sandbox <span class="hljs-keyword">is</span> <span class="hljs-built_in">global</span>
     vm.runInThisContext js
-  <span class="keyword">else</span>
-    vm.runInContext js, sandbox</pre></div></div>
+  <span class="hljs-keyword">else</span>
+    vm.runInContext js, sandbox
+
+<span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">register</span> = -&gt;</span> <span class="hljs-built_in">require</span> <span class="hljs-string">'./register'</span></pre></div></div>
             
         </li>
         
@@ -480,17 +480,24 @@ The CoffeeScript REPL uses this to run the input.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
-              <p>Load and run a CoffeeScript file for Node, stripping any <code>BOM</code>s.
-</p>
+              <p>Throw error with deprecation warning when depending upon implicit <code>require.extensions</code> registration</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">loadFile</span></span> = (module, filename) -&gt;
-  raw = fs.readFileSync filename, <span class="string">'utf8'</span>
-  stripped = <span class="keyword">if</span> raw.charCodeAt(<span class="number">0</span>) <span class="keyword">is</span> <span class="number">0xFEFF</span> <span class="keyword">then</span> raw.substring <span class="number">1</span> <span class="keyword">else</span> raw
-  answer = compile(stripped, {filename, sourceMap: <span class="literal">true</span>, literate: helpers.isLiterate filename})
-  sourceMaps[filename] = answer.sourceMap
-  module._compile answer.js, filename</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">if</span> <span class="hljs-built_in">require</span>.extensions
+  <span class="hljs-keyword">for</span> ext <span class="hljs-keyword">in</span> <span class="hljs-property">@FILE_EXTENSIONS</span>
+    <span class="hljs-built_in">require</span>.extensions[ext] ?=<span class="hljs-function"> -&gt;</span>
+      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">"""
+      Use CoffeeScript.register() or require the coffee-script/register module to require <span class="hljs-subst">#{ext}</span> files.
+      """</span>
+
+<span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">_compileFile</span> = <span class="hljs-params">(filename, sourceMap = <span class="hljs-literal">no</span>)</span> -&gt;</span>
+  raw = fs.readFileSync filename, <span class="hljs-string">'utf8'</span>
+  stripped = <span class="hljs-keyword">if</span> raw.charCodeAt(<span class="hljs-number">0</span>) <span class="hljs-keyword">is</span> <span class="hljs-number">0xFEFF</span> <span class="hljs-keyword">then</span> raw.substring <span class="hljs-number">1</span> <span class="hljs-keyword">else</span> raw
+
+  <span class="hljs-keyword">try</span>
+    answer = compile(stripped, {filename, sourceMap, <span class="hljs-attribute">literate</span>: helpers.isLiterate filename})
+  <span class="hljs-keyword">catch</span> err</pre></div></div>
             
         </li>
         
@@ -501,15 +508,15 @@ The CoffeeScript REPL uses this to run the input.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
-              <p>If the installed version of Node supports <code>require.extensions</code>, register
-CoffeeScript as an extension.
-</p>
+              <p>As the filename and code of a dynamically loaded file will be different
+from the original file compiled with CoffeeScript.run, add that
+information to error so it can be pretty-printed later.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="keyword">if</span> require.extensions
-  <span class="keyword">for</span> ext <span class="keyword">in</span> [<span class="string">'.coffee'</span>, <span class="string">'.litcoffee'</span>, <span class="string">'.coffee.md'</span>]
-    require.extensions[ext] = loadFile</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">throw</span> helpers.updateSyntaxError err, stripped, filename
+
+  answer</pre></div></div>
             
         </li>
         
@@ -520,18 +527,11 @@ CoffeeScript as an extension.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
-              <p>Patch Node&#39;s module loader to be able to handle mult-dot extensions.
-This is a horrible thing that should not be required. Perhaps, one day,
-when a truly benevolent dictator comes to rule over the Republik of Node,
-it won&#39;t be.
-</p>
+              <p>Instantiate a Lexer for our use here.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  Module = require <span class="string">'module'</span>
-
-  <span class="function"><span class="title">findExtension</span></span> = (filename) -&gt;
-    extensions = path.basename(filename).split <span class="string">'.'</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>lexer = <span class="hljs-keyword">new</span> Lexer</pre></div></div>
             
         </li>
         
@@ -542,12 +542,27 @@ it won&#39;t be.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
-              <p>Remove the initial dot from dotfiles.
-</p>
+              <p>The real Lexer produces a generic stream of tokens. This object provides a
+thin wrapper around it, compatible with the Jison API. We can then pass it
+directly as a “Jison lexer”.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    extensions.shift() <span class="keyword">if</span> extensions[<span class="number">0</span>] <span class="keyword">is</span> <span class="string">''</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>parser.lexer =
+  <span class="hljs-attribute">lex</span>:<span class="hljs-function"> -&gt;</span>
+    token = <span class="hljs-property">@tokens</span>[<span class="hljs-property">@pos</span>++]
+    <span class="hljs-keyword">if</span> token
+      [tag, <span class="hljs-property">@yytext</span>, <span class="hljs-property">@yylloc</span>] = token
+      <span class="hljs-property">@errorToken</span> = token.origin <span class="hljs-keyword">or</span> token
+      <span class="hljs-property">@yylineno</span> = <span class="hljs-property">@yylloc</span>.first_line
+    <span class="hljs-keyword">else</span>
+      tag = <span class="hljs-string">''</span>
+
+    tag
+  <span class="hljs-attribute">setInput</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@tokens</span>)</span> -&gt;</span>
+    <span class="hljs-property">@pos</span> = <span class="hljs-number">0</span>
+  <span class="hljs-attribute">upcomingInput</span>:<span class="hljs-function"> -&gt;</span>
+    <span class="hljs-string">""</span></pre></div></div>
             
         </li>
         
@@ -558,22 +573,11 @@ it won&#39;t be.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
-              <p>Start with the longest possible extension and work our way shortwards.
-</p>
+              <p>Make all the AST nodes visible to the parser.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">while</span> extensions.shift()
-      curExtension = <span class="string">'.'</span> + extensions.join <span class="string">'.'</span>
-      <span class="keyword">return</span> curExtension <span class="keyword">if</span> Module._extensions[curExtension]
-    <span class="string">'.js'</span>
-
-  Module::<span class="function"><span class="title">load</span></span> = (filename) -&gt;
-    <span class="property">@filename</span> = filename
-    <span class="property">@paths</span> = Module._nodeModulePaths path.dirname filename
-    extension = findExtension filename
-    Module._extensions[extension](<span class="keyword">this</span>, filename)
-    <span class="property">@loaded</span> = <span class="literal">true</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>parser.yy = <span class="hljs-built_in">require</span> <span class="hljs-string">'./nodes'</span></pre></div></div>
             
         </li>
         
@@ -584,21 +588,11 @@ it won&#39;t be.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
-              <p>If we&#39;re on Node, patch <code>child_process.fork</code> so that Coffee scripts are able
-to fork both CoffeeScript files, and JavaScript files, directly.
-</p>
+              <p>Override Jison’s default error handling function.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="keyword">if</span> child_process
-  {fork} = child_process
-  child_process.<span class="function"><span class="title">fork</span></span> = (path, args = [], options = {}) -&gt;
-    execPath = <span class="keyword">if</span> helpers.isCoffee(path) <span class="keyword">then</span> <span class="string">'coffee'</span> <span class="keyword">else</span> <span class="literal">null</span>
-    <span class="keyword">if</span> <span class="keyword">not</span> Array.isArray args
-      args = []
-      options = args <span class="keyword">or</span> {}
-    options.execPath <span class="keyword">or</span>= execPath
-    fork path, args, options</pre></div></div>
+            <div class="content"><div class='highlight'><pre>parser.yy.<span class="hljs-function"><span class="hljs-title">parseError</span> = <span class="hljs-params">(message, {token})</span> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -609,12 +603,21 @@ to fork both CoffeeScript files, and JavaScript files, directly.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
-              <p>Instantiate a Lexer for our use here.
-</p>
+              <p>Disregard Jison’s message, it contains redundant line numer information.
+Disregard the token, we take its value directly from the lexer in case
+the error is caused by a generated token which might refer to its origin.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>lexer = <span class="keyword">new</span> Lexer</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  {errorToken, tokens} = parser.lexer
+  [errorTag, errorText, errorLoc] = errorToken
+
+  errorText = <span class="hljs-keyword">if</span> errorToken <span class="hljs-keyword">is</span> tokens[tokens.length - <span class="hljs-number">1</span>]
+    <span class="hljs-string">'end of input'</span>
+  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> errorTag <span class="hljs-keyword">in</span> [<span class="hljs-string">'INDENT'</span>, <span class="hljs-string">'OUTDENT'</span>]
+    <span class="hljs-string">'indentation'</span>
+  <span class="hljs-keyword">else</span>
+    helpers.nameWhitespaceCharacter errorText</pre></div></div>
             
         </li>
         
@@ -625,27 +628,14 @@ to fork both CoffeeScript files, and JavaScript files, directly.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
-              <p>The real Lexer produces a generic stream of tokens. This object provides a
-thin wrapper around it, compatible with the Jison API. We can then pass it
-directly as a &quot;Jison lexer&quot;.
-</p>
+              <p>The second argument has a <code>loc</code> property, which should have the location
+data for this token. Unfortunately, Jison seems to send an outdated <code>loc</code>
+(from the previous token), so we take the location information directly
+from the lexer.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>parser.lexer =
-  lex: -&gt;
-    token = <span class="property">@tokens</span>[<span class="property">@pos</span>++]
-    <span class="keyword">if</span> token
-      [tag, <span class="property">@yytext</span>, <span class="property">@yylloc</span>] = token
-      <span class="property">@yylineno</span> = <span class="property">@yylloc</span>.first_line
-    <span class="keyword">else</span>
-      tag = <span class="string">''</span>
-
-    tag
-  setInput: (<span class="property">@tokens</span>) -&gt;
-    <span class="property">@pos</span> = <span class="number">0</span>
-  upcomingInput: -&gt;
-    <span class="string">""</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  helpers.throwSyntaxError <span class="hljs-string">"unexpected <span class="hljs-subst">#{errorText}</span>"</span>, errorLoc</pre></div></div>
             
         </li>
         
@@ -656,12 +646,28 @@ directly as a &quot;Jison lexer&quot;.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
-              <p>Make all the AST nodes visible to the parser.
-</p>
+              <p>Based on <a href="http://v8.googlecode.com/svn/branches/bleeding_edge/src/messages.js">http://v8.googlecode.com/svn/branches/bleeding_edge/src/messages.js</a>
+Modified to handle sourceMap</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>parser.yy = require <span class="string">'./nodes'</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">formatSourcePosition</span> = <span class="hljs-params">(frame, getSourceMapping)</span> -&gt;</span>
+  fileName = <span class="hljs-literal">undefined</span>
+  fileLocation = <span class="hljs-string">''</span>
+
+  <span class="hljs-keyword">if</span> frame.isNative()
+    fileLocation = <span class="hljs-string">"native"</span>
+  <span class="hljs-keyword">else</span>
+    <span class="hljs-keyword">if</span> frame.isEval()
+      fileName = frame.getScriptNameOrSourceURL()
+      fileLocation = <span class="hljs-string">"<span class="hljs-subst">#{frame.getEvalOrigin()}</span>, "</span> <span class="hljs-keyword">unless</span> fileName
+    <span class="hljs-keyword">else</span>
+      fileName = frame.getFileName()
+
+    fileName <span class="hljs-keyword">or</span>= <span class="hljs-string">"&lt;anonymous&gt;"</span>
+
+    line = frame.getLineNumber()
+    column = frame.getColumnNumber()</pre></div></div>
             
         </li>
         
@@ -672,12 +678,41 @@ directly as a &quot;Jison lexer&quot;.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
-              <p>Override Jison&#39;s default error handling function.
-</p>
+              <p>Check for a sourceMap position</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>parser.yy.<span class="function"><span class="title">parseError</span></span> = (message, {token}) -&gt;</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    source = getSourceMapping fileName, line, column
+    fileLocation =
+      <span class="hljs-keyword">if</span> source
+        <span class="hljs-string">"<span class="hljs-subst">#{fileName}</span>:<span class="hljs-subst">#{source[<span class="hljs-number">0</span>]}</span>:<span class="hljs-subst">#{source[<span class="hljs-number">1</span>]}</span>"</span>
+      <span class="hljs-keyword">else</span>
+        <span class="hljs-string">"<span class="hljs-subst">#{fileName}</span>:<span class="hljs-subst">#{line}</span>:<span class="hljs-subst">#{column}</span>"</span>
+
+  functionName = frame.getFunctionName()
+  isConstructor = frame.isConstructor()
+  isMethodCall = <span class="hljs-keyword">not</span> (frame.isToplevel() <span class="hljs-keyword">or</span> isConstructor)
+
+  <span class="hljs-keyword">if</span> isMethodCall
+    methodName = frame.getMethodName()
+    typeName = frame.getTypeName()
+
+    <span class="hljs-keyword">if</span> functionName
+      tp = as = <span class="hljs-string">''</span>
+      <span class="hljs-keyword">if</span> typeName <span class="hljs-keyword">and</span> functionName.indexOf typeName
+        tp = <span class="hljs-string">"<span class="hljs-subst">#{typeName}</span>."</span>
+      <span class="hljs-keyword">if</span> methodName <span class="hljs-keyword">and</span> functionName.indexOf(<span class="hljs-string">".<span class="hljs-subst">#{methodName}</span>"</span>) <span class="hljs-keyword">isnt</span> functionName.length - methodName.length - <span class="hljs-number">1</span>
+        as = <span class="hljs-string">" [as <span class="hljs-subst">#{methodName}</span>]"</span>
+
+      <span class="hljs-string">"<span class="hljs-subst">#{tp}</span><span class="hljs-subst">#{functionName}</span><span class="hljs-subst">#{as}</span> (<span class="hljs-subst">#{fileLocation}</span>)"</span>
+    <span class="hljs-keyword">else</span>
+      <span class="hljs-string">"<span class="hljs-subst">#{typeName}</span>.<span class="hljs-subst">#{methodName <span class="hljs-keyword">or</span> <span class="hljs-string">'&lt;anonymous&gt;'</span>}</span> (<span class="hljs-subst">#{fileLocation}</span>)"</span>
+  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> isConstructor
+    <span class="hljs-string">"new <span class="hljs-subst">#{functionName <span class="hljs-keyword">or</span> <span class="hljs-string">'&lt;anonymous&gt;'</span>}</span> (<span class="hljs-subst">#{fileLocation}</span>)"</span>
+  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> functionName
+    <span class="hljs-string">"<span class="hljs-subst">#{functionName}</span> (<span class="hljs-subst">#{fileLocation}</span>)"</span>
+  <span class="hljs-keyword">else</span>
+    fileLocation</pre></div></div>
             
         </li>
         
@@ -688,12 +723,11 @@ directly as a &quot;Jison lexer&quot;.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
-              <p>Disregard Jison&#39;s message, it contains redundant line numer information.
-</p>
+              <p>Map of filenames -&gt; sourceMap object.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  message = <span class="string">"unexpected <span class="subst">#{<span class="keyword">if</span> token <span class="keyword">is</span> <span class="number">1</span> <span class="keyword">then</span> 'end <span class="keyword">of</span> input' <span class="keyword">else</span> token}</span>"</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>sourceMaps = {}</pre></div></div>
             
         </li>
         
@@ -704,15 +738,15 @@ directly as a &quot;Jison lexer&quot;.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
-              <p>The second argument has a <code>loc</code> property, which should have the location
-data for this token. Unfortunately, Jison seems to send an outdated <code>loc</code>
-(from the previous token), so we take the location information directly
-from the lexer.
-</p>
+              <p>Generates the source map for a coffee file and stores it in the local cache variable.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  helpers.throwSyntaxError message, parser.lexer.yylloc</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">getSourceMap</span> = <span class="hljs-params">(filename)</span> -&gt;</span>
+  <span class="hljs-keyword">return</span> sourceMaps[filename] <span class="hljs-keyword">if</span> sourceMaps[filename]
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">unless</span> path?.extname(filename) <span class="hljs-keyword">in</span> <span class="hljs-built_in">exports</span>.FILE_EXTENSIONS
+  answer = <span class="hljs-built_in">exports</span>._compileFile filename, <span class="hljs-literal">true</span>
+  sourceMaps[filename] = answer.sourceMap</pre></div></div>
             
         </li>
         
@@ -726,145 +760,21 @@ from the lexer.
               <p>Based on <a href="http://goo.gl/ZTx1p">michaelficarra/CoffeeScriptRedux</a>
 NodeJS / V8 have no support for transforming positions in stack traces using
 sourceMap, so we must monkey-patch Error to display CoffeeScript source
-positions.
-</p>
+positions.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>
-patched = <span class="literal">false</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-31">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
-              </div>
-              <p>Map of filenames -&gt; sourceMap object.
-</p>
+            <div class="content"><div class='highlight'><pre>Error.<span class="hljs-function"><span class="hljs-title">prepareStackTrace</span> = <span class="hljs-params">(err, stack)</span> -&gt;</span>
+  <span class="hljs-function"><span class="hljs-title">getSourceMapping</span> = <span class="hljs-params">(filename, line, column)</span> -&gt;</span>
+    sourceMap = getSourceMap filename
+    answer = sourceMap.sourceLocation [line - <span class="hljs-number">1</span>, column - <span class="hljs-number">1</span>] <span class="hljs-keyword">if</span> sourceMap
+    <span class="hljs-keyword">if</span> answer <span class="hljs-keyword">then</span> [answer[<span class="hljs-number">0</span>] + <span class="hljs-number">1</span>, answer[<span class="hljs-number">1</span>] + <span class="hljs-number">1</span>] <span class="hljs-keyword">else</span> <span class="hljs-literal">null</span>
 
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>sourceMaps = {}
+  frames = <span class="hljs-keyword">for</span> frame <span class="hljs-keyword">in</span> stack
+    <span class="hljs-keyword">break</span> <span class="hljs-keyword">if</span> frame.getFunction() <span class="hljs-keyword">is</span> <span class="hljs-built_in">exports</span>.run
+    <span class="hljs-string">"  at <span class="hljs-subst">#{formatSourcePosition frame, getSourceMapping}</span>"</span>
 
-<span class="function"><span class="title">patchStackTrace</span></span> = -&gt;
-  <span class="keyword">return</span> <span class="keyword">if</span> patched
-  patched = <span class="literal">true</span>
-  mainModule = require.main</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-32">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
-              </div>
-              <p>(Assigning to a property of the Module object in the normal module cache is
-unsuitable, because node deletes those objects from the cache if an
-exception is thrown in the module body.)
-</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>
-  Error.<span class="function"><span class="title">prepareStackTrace</span></span> = (err, stack) -&gt;
-    sourceFiles = {}
-
-    <span class="function"><span class="title">getSourceMapping</span></span> = (filename, line, column) -&gt;
-      sourceMap = sourceMaps[filename]
-      answer = sourceMap.sourceLocation [line - <span class="number">1</span>, column - <span class="number">1</span>] <span class="keyword">if</span> sourceMap
-      <span class="keyword">if</span> answer <span class="keyword">then</span> [answer[<span class="number">0</span>] + <span class="number">1</span>, answer[<span class="number">1</span>] + <span class="number">1</span>] <span class="keyword">else</span> <span class="literal">null</span>
-
-    frames = <span class="keyword">for</span> frame <span class="keyword">in</span> stack
-      <span class="keyword">break</span> <span class="keyword">if</span> frame.getFunction() <span class="keyword">is</span> exports.run
-      <span class="string">"  at <span class="subst">#{formatSourcePosition frame, getSourceMapping}</span>"</span>
-
-    <span class="string">"<span class="subst">#{err.name}</span>: <span class="subst">#{err.message ? ''}</span>\n<span class="subst">#{frames.join '\n'}</span>\n"</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-33">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
-              </div>
-              <p>Based on <a href="http://v8.googlecode.com/svn/branches/bleeding_edge/src/messages.js">http://v8.googlecode.com/svn/branches/bleeding_edge/src/messages.js</a>
-Modified to handle sourceMap
-</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">formatSourcePosition</span></span> = (frame, getSourceMapping) -&gt;
-  fileName = <span class="literal">undefined</span>
-  fileLocation = <span class="string">''</span>
-
-  <span class="keyword">if</span> frame.isNative()
-    fileLocation = <span class="string">"native"</span>
-  <span class="keyword">else</span>
-    <span class="keyword">if</span> frame.isEval()
-      fileName = frame.getScriptNameOrSourceURL()
-      fileLocation = <span class="string">"<span class="subst">#{frame.getEvalOrigin()}</span>, "</span> <span class="keyword">unless</span> fileName
-    <span class="keyword">else</span>
-      fileName = frame.getFileName()
-
-    fileName <span class="keyword">or</span>= <span class="string">"&lt;anonymous&gt;"</span>
-
-    line = frame.getLineNumber()
-    column = frame.getColumnNumber()</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-34">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
-              </div>
-              <p>Check for a sourceMap position
-</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    source = getSourceMapping fileName, line, column
-    fileLocation =
-      <span class="keyword">if</span> source
-        <span class="string">"<span class="subst">#{fileName}</span>:<span class="subst">#{source[<span class="number">0</span>]}</span>:<span class="subst">#{source[<span class="number">1</span>]}</span>, &lt;js&gt;:<span class="subst">#{line}</span>:<span class="subst">#{column}</span>"</span>
-      <span class="keyword">else</span>
-        <span class="string">"<span class="subst">#{fileName}</span>:<span class="subst">#{line}</span>:<span class="subst">#{column}</span>"</span>
-
-
-  functionName = frame.getFunctionName()
-  isConstructor = frame.isConstructor()
-  isMethodCall = <span class="keyword">not</span> (frame.isToplevel() <span class="keyword">or</span> isConstructor)
-
-  <span class="keyword">if</span> isMethodCall
-    methodName = frame.getMethodName()
-    typeName = frame.getTypeName()
-
-    <span class="keyword">if</span> functionName
-      tp = as = <span class="string">''</span>
-      <span class="keyword">if</span> typeName <span class="keyword">and</span> functionName.indexOf typeName
-        tp = <span class="string">"<span class="subst">#{typeName}</span>."</span>
-      <span class="keyword">if</span> methodName <span class="keyword">and</span> functionName.indexOf(<span class="string">".<span class="subst">#{methodName}</span>"</span>) <span class="keyword">isnt</span> functionName.length - methodName.length - <span class="number">1</span>
-        as = <span class="string">" [as <span class="subst">#{methodName}</span>]"</span>
-
-      <span class="string">"<span class="subst">#{tp}</span><span class="subst">#{functionName}</span><span class="subst">#{as}</span> (<span class="subst">#{fileLocation}</span>)"</span>
-    <span class="keyword">else</span>
-      <span class="string">"<span class="subst">#{typeName}</span>.<span class="subst">#{methodName <span class="keyword">or</span> '&lt;anonymous&gt;'}</span> (<span class="subst">#{fileLocation}</span>)"</span>
-  <span class="keyword">else</span> <span class="keyword">if</span> isConstructor
-    <span class="string">"new <span class="subst">#{functionName <span class="keyword">or</span> '&lt;anonymous&gt;'}</span> (<span class="subst">#{fileLocation}</span>)"</span>
-  <span class="keyword">else</span> <span class="keyword">if</span> functionName
-    <span class="string">"<span class="subst">#{functionName}</span> (<span class="subst">#{fileLocation}</span>)"</span>
-  <span class="keyword">else</span>
-    fileLocation</pre></div></div>
+  <span class="hljs-string">"<span class="hljs-subst">#{err.toString()}</span>\n<span class="hljs-subst">#{frames.join <span class="hljs-string">'\n'</span>}</span>\n"</span></pre></div></div>
             
         </li>
         

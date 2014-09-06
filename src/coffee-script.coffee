@@ -12,7 +12,7 @@ helpers       = require './helpers'
 SourceMap     = require './sourcemap'
 
 # The current CoffeeScript version number.
-exports.VERSION = '1.6.3'
+exports.VERSION = '1.8.0'
 
 exports.FILE_EXTENSIONS = ['.coffee', '.litcoffee', '.coffee.md']
 
@@ -107,7 +107,7 @@ exports.run = (code, options = {}) ->
   mainModule.moduleCache and= {}
 
   # Assign paths for node_modules loading
-  dir = if options.fileName
+  dir = if options.filename
     path.dirname fs.realpathSync options.filename
   else
     fs.realpathSync '.'
@@ -158,6 +158,14 @@ exports.eval = (code, options = {}) ->
 
 exports.register = -> require './register'
 
+# Throw error with deprecation warning when depending upon implicit `require.extensions` registration
+if require.extensions
+  for ext in @FILE_EXTENSIONS
+    require.extensions[ext] ?= ->
+      throw new Error """
+      Use CoffeeScript.register() or require the coffee-script/register module to require #{ext} files.
+      """
+
 exports._compileFile = (filename, sourceMap = no) ->
   raw = fs.readFileSync filename, 'utf8'
   stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
@@ -202,10 +210,12 @@ parser.yy.parseError = (message, {token}) ->
   # Disregard the token, we take its value directly from the lexer in case
   # the error is caused by a generated token which might refer to its origin.
   {errorToken, tokens} = parser.lexer
-  [ignored, errorText, errorLoc] = errorToken
+  [errorTag, errorText, errorLoc] = errorToken
 
   errorText = if errorToken is tokens[tokens.length - 1]
     'end of input'
+  else if errorTag in ['INDENT', 'OUTDENT']
+    'indentation'
   else
     helpers.nameWhitespaceCharacter errorText
 
@@ -292,5 +302,5 @@ Error.prepareStackTrace = (err, stack) ->
     break if frame.getFunction() is exports.run
     "  at #{formatSourcePosition frame, getSourceMapping}"
 
-  "#{err.name}: #{err.message ? ''}\n#{frames.join '\n'}\n"
+  "#{err.toString()}\n#{frames.join '\n'}\n"
 

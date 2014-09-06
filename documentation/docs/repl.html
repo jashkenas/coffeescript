@@ -16,78 +16,85 @@
           <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
           <a class="small" href="javascript:void(0);">+</a>
           <div id="jump_wrapper">
-          <div id="jump_page">
-            
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
               
-              <a class="source" href="browser.html">
-                browser.coffee
-              </a>
-            
+                
+                <a class="source" href="browser.html">
+                  browser.coffee
+                </a>
               
-              <a class="source" href="cake.html">
-                cake.coffee
-              </a>
-            
+                
+                <a class="source" href="cake.html">
+                  cake.coffee
+                </a>
               
-              <a class="source" href="coffee-script.html">
-                coffee-script.coffee
-              </a>
-            
+                
+                <a class="source" href="coffee-script.html">
+                  coffee-script.coffee
+                </a>
               
-              <a class="source" href="command.html">
-                command.coffee
-              </a>
-            
+                
+                <a class="source" href="command.html">
+                  command.coffee
+                </a>
               
-              <a class="source" href="grammar.html">
-                grammar.coffee
-              </a>
-            
+                
+                <a class="source" href="grammar.html">
+                  grammar.coffee
+                </a>
               
-              <a class="source" href="helpers.html">
-                helpers.coffee
-              </a>
-            
+                
+                <a class="source" href="helpers.html">
+                  helpers.coffee
+                </a>
               
-              <a class="source" href="index.html">
-                index.coffee
-              </a>
-            
+                
+                <a class="source" href="index.html">
+                  index.coffee
+                </a>
               
-              <a class="source" href="lexer.html">
-                lexer.coffee
-              </a>
-            
+                
+                <a class="source" href="lexer.html">
+                  lexer.coffee
+                </a>
               
-              <a class="source" href="nodes.html">
-                nodes.coffee
-              </a>
-            
+                
+                <a class="source" href="nodes.html">
+                  nodes.coffee
+                </a>
               
-              <a class="source" href="optparse.html">
-                optparse.coffee
-              </a>
-            
+                
+                <a class="source" href="optparse.html">
+                  optparse.coffee
+                </a>
               
-              <a class="source" href="repl.html">
-                repl.coffee
-              </a>
-            
+                
+                <a class="source" href="register.html">
+                  register.coffee
+                </a>
               
-              <a class="source" href="rewriter.html">
-                rewriter.coffee
-              </a>
-            
+                
+                <a class="source" href="repl.html">
+                  repl.coffee
+                </a>
               
-              <a class="source" href="scope.html">
-                scope.litcoffee
-              </a>
-            
+                
+                <a class="source" href="rewriter.html">
+                  rewriter.coffee
+                </a>
               
-              <a class="source" href="sourcemap.html">
-                sourcemap.litcoffee
-              </a>
-            
+                
+                <a class="source" href="scope.html">
+                  scope.litcoffee
+                </a>
+              
+                
+                <a class="source" href="sourcemap.html">
+                  sourcemap.litcoffee
+                </a>
+              
+            </div>
           </div>
         </li>
       </ul>
@@ -111,18 +118,18 @@
               
             </div>
             
-            <div class="content"><div class='highlight'><pre>fs = require <span class="string">'fs'</span>
-path = require <span class="string">'path'</span>
-vm = require <span class="string">'vm'</span>
-nodeREPL = require <span class="string">'repl'</span>
-CoffeeScript = require <span class="string">'./coffee-script'</span>
-{merge, prettyErrorMessage} = require <span class="string">'./helpers'</span>
+            <div class="content"><div class='highlight'><pre>fs = <span class="hljs-built_in">require</span> <span class="hljs-string">'fs'</span>
+path = <span class="hljs-built_in">require</span> <span class="hljs-string">'path'</span>
+vm = <span class="hljs-built_in">require</span> <span class="hljs-string">'vm'</span>
+nodeREPL = <span class="hljs-built_in">require</span> <span class="hljs-string">'repl'</span>
+CoffeeScript = <span class="hljs-built_in">require</span> <span class="hljs-string">'./coffee-script'</span>
+{merge, updateSyntaxError} = <span class="hljs-built_in">require</span> <span class="hljs-string">'./helpers'</span>
 
 replDefaults =
-  prompt: <span class="string">'coffee&gt; '</span>,
-  historyFile: path.join process.env.HOME, <span class="string">'.coffee_history'</span> <span class="keyword">if</span> process.env.HOME
-  historyMaxInputSize: <span class="number">10240</span>
-  eval: (input, context, filename, cb) -&gt;</pre></div></div>
+  <span class="hljs-attribute">prompt</span>: <span class="hljs-string">'coffee&gt; '</span>,
+  <span class="hljs-attribute">historyFile</span>: path.join process.env.HOME, <span class="hljs-string">'.coffee_history'</span> <span class="hljs-keyword">if</span> process.env.HOME
+  <span class="hljs-attribute">historyMaxInputSize</span>: <span class="hljs-number">10240</span>
+  <span class="hljs-attribute">eval</span>: <span class="hljs-function"><span class="hljs-params">(input, context, filename, cb)</span> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -133,12 +140,11 @@ replDefaults =
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <p>XXX: multiline hack.
-</p>
+              <p>XXX: multiline hack.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    input = input.replace <span class="regexp">/\uFF00/g</span>, <span class="string">'\n'</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>    input = input.replace <span class="hljs-regexp">/\uFF00/g</span>, <span class="hljs-string">'\n'</span></pre></div></div>
             
         </li>
         
@@ -149,13 +155,12 @@ replDefaults =
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p>Node&#39;s REPL sends the input ending with a newline and then wrapped in
-parens. Unwrap all that.
-</p>
+              <p>Node’s REPL sends the input ending with a newline and then wrapped in
+parens. Unwrap all that.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    input = input.replace <span class="regexp">/^\(([\s\S]*)\n\)$/m</span>, <span class="string">'$1'</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>    input = input.replace <span class="hljs-regexp">/^\(([\s\S]*)\n\)$/m</span>, <span class="hljs-string">'$1'</span></pre></div></div>
             
         </li>
         
@@ -166,14 +171,13 @@ parens. Unwrap all that.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>Require AST nodes to do some AST manipulation.
-</p>
+              <p>Require AST nodes to do some AST manipulation.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    {Block, Assign, Value, Literal} = require <span class="string">'./nodes'</span>
+            <div class="content"><div class='highlight'><pre>    {Block, Assign, Value, Literal} = <span class="hljs-built_in">require</span> <span class="hljs-string">'./nodes'</span>
 
-    <span class="keyword">try</span></pre></div></div>
+    <span class="hljs-keyword">try</span></pre></div></div>
             
         </li>
         
@@ -184,8 +188,7 @@ parens. Unwrap all that.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
-              <p>Generate the AST of the clean input.
-</p>
+              <p>Generate the AST of the clean input.</p>
 
             </div>
             
@@ -200,27 +203,20 @@ parens. Unwrap all that.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
-              <p>Add assignment to <code>_</code> variable to force the input to be an expression.
-</p>
+              <p>Add assignment to <code>_</code> variable to force the input to be an expression.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      ast = <span class="keyword">new</span> Block [
-        <span class="keyword">new</span> Assign (<span class="keyword">new</span> Value <span class="keyword">new</span> Literal <span class="string">'_'</span>), ast, <span class="string">'='</span>
+            <div class="content"><div class='highlight'><pre>      ast = <span class="hljs-keyword">new</span> Block [
+        <span class="hljs-keyword">new</span> Assign (<span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> Literal <span class="hljs-string">'_'</span>), ast, <span class="hljs-string">'='</span>
       ]
-      js = ast.compile bare: <span class="literal">yes</span>, locals: Object.keys(context)
-      cb <span class="literal">null</span>, vm.runInContext(js, context, filename)
-    <span class="keyword">catch</span> err
-      cb prettyErrorMessage(err, filename, input, <span class="literal">yes</span>)
-
-<span class="function"><span class="title">addMultilineHandler</span></span> = (repl) -&gt;
-  {rli, inputStream, outputStream} = repl
-
-  multiline =
-    enabled: <span class="literal">off</span>
-    initialPrompt: repl.prompt.replace <span class="regexp">/^[^&gt; ]*/, (x) -&gt; x.replace /./g</span>, <span class="string">'-'</span>
-    prompt: repl.prompt.replace <span class="regexp">/^[^&gt; ]*&gt;?/, (x) -&gt; x.replace /./g</span>, <span class="string">'.'</span>
-    buffer: <span class="string">''</span></pre></div></div>
+      js = ast.compile <span class="hljs-attribute">bare</span>: <span class="hljs-literal">yes</span>, <span class="hljs-attribute">locals</span>: Object.keys(context)
+      result = <span class="hljs-keyword">if</span> context <span class="hljs-keyword">is</span> <span class="hljs-built_in">global</span>
+        vm.runInThisContext js, filename
+      <span class="hljs-keyword">else</span>
+        vm.runInContext js, context, filename
+      cb <span class="hljs-literal">null</span>, result
+    <span class="hljs-keyword">catch</span> err</pre></div></div>
             
         </li>
         
@@ -231,21 +227,15 @@ parens. Unwrap all that.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
-              <p>Proxy node&#39;s line listener
-</p>
+              <p>AST’s <code>compile</code> does not add source code information to syntax errors.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  nodeLineListener = rli.listeners(<span class="string">'line'</span>)[<span class="number">0</span>]
-  rli.removeListener <span class="string">'line'</span>, nodeLineListener
-  rli.<span class="literal">on</span> <span class="string">'line'</span>, (cmd) -&gt;
-    <span class="keyword">if</span> multiline.enabled
-      multiline.buffer += <span class="string">"<span class="subst">#{cmd}</span>\n"</span>
-      rli.setPrompt multiline.prompt
-      rli.prompt <span class="literal">true</span>
-    <span class="keyword">else</span>
-      nodeLineListener cmd
-    <span class="keyword">return</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      updateSyntaxError err, input
+      cb err
+
+<span class="hljs-function"><span class="hljs-title">addMultilineHandler</span> = <span class="hljs-params">(repl)</span> -&gt;</span>
+  {rli, inputStream, outputStream} = repl</pre></div></div>
             
         </li>
         
@@ -256,14 +246,17 @@ parens. Unwrap all that.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
-              <p>Handle Ctrl-v
-</p>
+              <p>Node 0.11.12 changed API, prompt is now _prompt.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  inputStream.<span class="literal">on</span> <span class="string">'keypress'</span>, (char, key) -&gt;
-    <span class="keyword">return</span> <span class="keyword">unless</span> key <span class="keyword">and</span> key.ctrl <span class="keyword">and</span> <span class="keyword">not</span> key.meta <span class="keyword">and</span> <span class="keyword">not</span> key.shift <span class="keyword">and</span> key.name <span class="keyword">is</span> <span class="string">'v'</span>
-    <span class="keyword">if</span> multiline.enabled</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  origPrompt = repl._prompt ? repl.prompt
+
+  multiline =
+    <span class="hljs-attribute">enabled</span>: <span class="hljs-literal">off</span>
+    <span class="hljs-attribute">initialPrompt</span>: origPrompt.replace <span class="hljs-regexp">/^[^&gt; ]*/</span>, <span class="hljs-function"><span class="hljs-params">(x)</span> -&gt;</span> x.replace <span class="hljs-regexp">/./g</span>, <span class="hljs-string">'-'</span>
+    <span class="hljs-attribute">prompt</span>: origPrompt.replace <span class="hljs-regexp">/^[^&gt; ]*&gt;?/</span>, <span class="hljs-function"><span class="hljs-params">(x)</span> -&gt;</span> x.replace <span class="hljs-regexp">/./g</span>, <span class="hljs-string">'.'</span>
+    <span class="hljs-attribute">buffer</span>: <span class="hljs-string">''</span></pre></div></div>
             
         </li>
         
@@ -274,16 +267,21 @@ parens. Unwrap all that.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
-              <p>allow arbitrarily switching between modes any time before multiple lines are entered
-</p>
+              <p>Proxy node’s line listener</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      <span class="keyword">unless</span> multiline.buffer.match <span class="regexp">/\n/</span>
-        multiline.enabled = <span class="keyword">not</span> multiline.enabled
-        rli.setPrompt repl.prompt
-        rli.prompt <span class="literal">true</span>
-        <span class="keyword">return</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  nodeLineListener = rli.listeners(<span class="hljs-string">'line'</span>)[<span class="hljs-number">0</span>]
+  rli.removeListener <span class="hljs-string">'line'</span>, nodeLineListener
+  rli.<span class="hljs-literal">on</span> <span class="hljs-string">'line'</span>, <span class="hljs-function"><span class="hljs-params">(cmd)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> multiline.enabled
+      multiline.buffer += <span class="hljs-string">"<span class="hljs-subst">#{cmd}</span>\n"</span>
+      rli.setPrompt multiline.prompt
+      rli.prompt <span class="hljs-literal">true</span>
+    <span class="hljs-keyword">else</span>
+      rli.setPrompt origPrompt
+      nodeLineListener cmd
+    <span class="hljs-keyword">return</span></pre></div></div>
             
         </li>
         
@@ -294,12 +292,13 @@ parens. Unwrap all that.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
-              <p>no-op unless the current line is empty
-</p>
+              <p>Handle Ctrl-v</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      <span class="keyword">return</span> <span class="keyword">if</span> rli.line? <span class="keyword">and</span> <span class="keyword">not</span> rli.line.match <span class="regexp">/^\s*$/</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  inputStream.<span class="hljs-literal">on</span> <span class="hljs-string">'keypress'</span>, <span class="hljs-function"><span class="hljs-params">(char, key)</span> -&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">unless</span> key <span class="hljs-keyword">and</span> key.ctrl <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> key.meta <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> key.shift <span class="hljs-keyword">and</span> key.name <span class="hljs-keyword">is</span> <span class="hljs-string">'v'</span>
+    <span class="hljs-keyword">if</span> multiline.enabled</pre></div></div>
             
         </li>
         
@@ -310,16 +309,15 @@ parens. Unwrap all that.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
-              <p>eval, print, loop
-</p>
+              <p>allow arbitrarily switching between modes any time before multiple lines are entered</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      multiline.enabled = <span class="keyword">not</span> multiline.enabled
-      rli.line = <span class="string">''</span>
-      rli.cursor = <span class="number">0</span>
-      rli.output.cursorTo <span class="number">0</span>
-      rli.output.clearLine <span class="number">1</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">unless</span> multiline.buffer.match <span class="hljs-regexp">/\n/</span>
+        multiline.enabled = <span class="hljs-keyword">not</span> multiline.enabled
+        rli.setPrompt origPrompt
+        rli.prompt <span class="hljs-literal">true</span>
+        <span class="hljs-keyword">return</span></pre></div></div>
             
         </li>
         
@@ -330,19 +328,11 @@ parens. Unwrap all that.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
-              <p>XXX: multiline hack
-</p>
+              <p>no-op unless the current line is empty</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      multiline.buffer = multiline.buffer.replace <span class="regexp">/\n/g</span>, <span class="string">'\uFF00'</span>
-      rli.emit <span class="string">'line'</span>, multiline.buffer
-      multiline.buffer = <span class="string">''</span>
-    <span class="keyword">else</span>
-      multiline.enabled = <span class="keyword">not</span> multiline.enabled
-      rli.setPrompt multiline.initialPrompt
-      rli.prompt <span class="literal">true</span>
-    <span class="keyword">return</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">return</span> <span class="hljs-keyword">if</span> rli.line? <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> rli.line.match <span class="hljs-regexp">/^\s*$/</span></pre></div></div>
             
         </li>
         
@@ -353,14 +343,15 @@ parens. Unwrap all that.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
-              <p>Store and load command history from a file
-</p>
+              <p>eval, print, loop</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">addHistory</span></span> = (repl, filename, maxSize) -&gt;
-  lastLine = <span class="literal">null</span>
-  <span class="keyword">try</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      multiline.enabled = <span class="hljs-keyword">not</span> multiline.enabled
+      rli.line = <span class="hljs-string">''</span>
+      rli.cursor = <span class="hljs-number">0</span>
+      rli.output.cursorTo <span class="hljs-number">0</span>
+      rli.output.clearLine <span class="hljs-number">1</span></pre></div></div>
             
         </li>
         
@@ -371,13 +362,18 @@ parens. Unwrap all that.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
-              <p>Get file info and at most maxSize of command history
-</p>
+              <p>XXX: multiline hack</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    stat = fs.statSync filename
-    size = Math.min maxSize, stat.size</pre></div></div>
+            <div class="content"><div class='highlight'><pre>      multiline.buffer = multiline.buffer.replace <span class="hljs-regexp">/\n/g</span>, <span class="hljs-string">'\uFF00'</span>
+      rli.emit <span class="hljs-string">'line'</span>, multiline.buffer
+      multiline.buffer = <span class="hljs-string">''</span>
+    <span class="hljs-keyword">else</span>
+      multiline.enabled = <span class="hljs-keyword">not</span> multiline.enabled
+      rli.setPrompt multiline.initialPrompt
+      rli.prompt <span class="hljs-literal">true</span>
+    <span class="hljs-keyword">return</span></pre></div></div>
             
         </li>
         
@@ -388,14 +384,13 @@ parens. Unwrap all that.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
-              <p>Read last <code>size</code> bytes from the file
-</p>
+              <p>Store and load command history from a file</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    readFd = fs.openSync filename, <span class="string">'r'</span>
-    buffer = <span class="keyword">new</span> Buffer(size)
-    fs.readSync readFd, buffer, <span class="number">0</span>, size, stat.size - size</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">addHistory</span> = <span class="hljs-params">(repl, filename, maxSize)</span> -&gt;</span>
+  lastLine = <span class="hljs-literal">null</span>
+  <span class="hljs-keyword">try</span></pre></div></div>
             
         </li>
         
@@ -406,12 +401,12 @@ parens. Unwrap all that.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
-              <p>Set the history on the interpreter
-</p>
+              <p>Get file info and at most maxSize of command history</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    repl.rli.history = buffer.toString().split(<span class="string">'\n'</span>).reverse()</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    stat = fs.statSync filename
+    size = Math.min maxSize, stat.size</pre></div></div>
             
         </li>
         
@@ -422,12 +417,13 @@ parens. Unwrap all that.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
-              <p>If the history file was truncated we should pop off a potential partial line
-</p>
+              <p>Read last <code>size</code> bytes from the file</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    repl.rli.history.pop() <span class="keyword">if</span> stat.size &gt; maxSize</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    readFd = fs.openSync filename, <span class="hljs-string">'r'</span>
+    buffer = <span class="hljs-keyword">new</span> Buffer(size)
+    fs.readSync readFd, buffer, <span class="hljs-number">0</span>, size, stat.size - size</pre></div></div>
             
         </li>
         
@@ -438,19 +434,11 @@ parens. Unwrap all that.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
-              <p>Shift off the final blank newline
-</p>
+              <p>Set the history on the interpreter</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    repl.rli.history.shift() <span class="keyword">if</span> repl.rli.history[<span class="number">0</span>] <span class="keyword">is</span> <span class="string">''</span>
-    repl.rli.historyIndex = -<span class="number">1</span>
-    lastLine = repl.rli.history[<span class="number">0</span>]
-
-  fd = fs.openSync filename, <span class="string">'a'</span>
-
-  repl.rli.addListener <span class="string">'line'</span>, (code) -&gt;
-    <span class="keyword">if</span> code <span class="keyword">and</span> code.length <span class="keyword">and</span> code <span class="keyword">isnt</span> <span class="string">'.history'</span> <span class="keyword">and</span> lastLine <span class="keyword">isnt</span> code</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    repl.rli.history = buffer.toString().split(<span class="hljs-string">'\n'</span>).reverse()</pre></div></div>
             
         </li>
         
@@ -461,15 +449,11 @@ parens. Unwrap all that.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
-              <p>Save the latest command in the file
-</p>
+              <p>If the history file was truncated we should pop off a potential partial line</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      fs.write fd, <span class="string">"<span class="subst">#{code}</span>\n"</span>
-      lastLine = code
-
-  repl.rli.<span class="literal">on</span> <span class="string">'exit'</span>, -&gt; fs.close fd</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    repl.rli.history.pop() <span class="hljs-keyword">if</span> stat.size &gt; maxSize</pre></div></div>
             
         </li>
         
@@ -480,30 +464,104 @@ parens. Unwrap all that.
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
-              <p>Add a command to show the history stack
-</p>
+              <p>Shift off the final blank newline</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  repl.commands[<span class="string">'.history'</span>] =
-    help: <span class="string">'Show command history'</span>
-    action: -&gt;
-      repl.outputStream.write <span class="string">"<span class="subst">#{repl.rli.history[..].reverse().join '\n'}</span>\n"</span>
+            <div class="content"><div class='highlight'><pre>    repl.rli.history.shift() <span class="hljs-keyword">if</span> repl.rli.history[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">''</span>
+    repl.rli.historyIndex = -<span class="hljs-number">1</span>
+    lastLine = repl.rli.history[<span class="hljs-number">0</span>]
+
+  fd = fs.openSync filename, <span class="hljs-string">'a'</span>
+
+  repl.rli.addListener <span class="hljs-string">'line'</span>, <span class="hljs-function"><span class="hljs-params">(code)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> code <span class="hljs-keyword">and</span> code.length <span class="hljs-keyword">and</span> code <span class="hljs-keyword">isnt</span> <span class="hljs-string">'.history'</span> <span class="hljs-keyword">and</span> lastLine <span class="hljs-keyword">isnt</span> code</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>Save the latest command in the file</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      fs.write fd, <span class="hljs-string">"<span class="hljs-subst">#{code}</span>\n"</span>
+      lastLine = code
+
+  repl.rli.<span class="hljs-literal">on</span> <span class="hljs-string">'exit'</span>,<span class="hljs-function"> -&gt;</span> fs.close fd</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>Add a command to show the history stack</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  repl.commands[getCommandId(repl, <span class="hljs-string">'history'</span>)] =
+    <span class="hljs-attribute">help</span>: <span class="hljs-string">'Show command history'</span>
+    <span class="hljs-attribute">action</span>:<span class="hljs-function"> -&gt;</span>
+      repl.outputStream.write <span class="hljs-string">"<span class="hljs-subst">#{repl.rli.history[..].reverse().join <span class="hljs-string">'\n'</span>}</span>\n"</span>
       repl.displayPrompt()
 
-module.exports =
-  start: (opts = {}) -&gt;
-    [major, minor, build] = process.versions.node.split(<span class="string">'.'</span>).map (n) -&gt; parseInt(n)
+<span class="hljs-function"><span class="hljs-title">getCommandId</span> = <span class="hljs-params">(repl, commandName)</span> -&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>Node 0.11 changed API, a command such as ‘.help’ is now stored as ‘help’</p>
 
-    <span class="keyword">if</span> major <span class="keyword">is</span> <span class="number">0</span> <span class="keyword">and</span> minor &lt; <span class="number">8</span>
-      console.warn <span class="string">"Node 0.8.0+ required for CoffeeScript REPL"</span>
-      process.exit <span class="number">1</span>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  commandsHaveLeadingDot = repl.commands[<span class="hljs-string">'.help'</span>]?
+  <span class="hljs-keyword">if</span> commandsHaveLeadingDot <span class="hljs-keyword">then</span> <span class="hljs-string">".<span class="hljs-subst">#{commandName}</span>"</span> <span class="hljs-keyword">else</span> commandName
 
+<span class="hljs-built_in">module</span>.<span class="hljs-built_in">exports</span> =
+  <span class="hljs-attribute">start</span>: <span class="hljs-function"><span class="hljs-params">(opts = {})</span> -&gt;</span>
+    [major, minor, build] = process.versions.node.split<span class="hljs-function"><span class="hljs-params">(<span class="hljs-string">'.'</span>)</span>.<span class="hljs-title">map</span> <span class="hljs-params">(n)</span> -&gt;</span> parseInt(n)
+
+    <span class="hljs-keyword">if</span> major <span class="hljs-keyword">is</span> <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> minor &lt; <span class="hljs-number">8</span>
+      <span class="hljs-built_in">console</span>.warn <span class="hljs-string">"Node 0.8.0+ required for CoffeeScript REPL"</span>
+      process.exit <span class="hljs-number">1</span>
+
+    CoffeeScript.register()
+    process.argv = [<span class="hljs-string">'coffee'</span>].concat process.argv[<span class="hljs-number">2.</span>.]
     opts = merge replDefaults, opts
     repl = nodeREPL.start opts
-    repl.<span class="literal">on</span> <span class="string">'exit'</span>, -&gt; repl.outputStream.write <span class="string">'\n'</span>
+    repl.<span class="hljs-literal">on</span> <span class="hljs-string">'exit'</span>,<span class="hljs-function"> -&gt;</span> repl.outputStream.write <span class="hljs-string">'\n'</span>
     addMultilineHandler repl
-    addHistory repl, opts.historyFile, opts.historyMaxInputSize <span class="keyword">if</span> opts.historyFile
+    addHistory repl, opts.historyFile, opts.historyMaxInputSize <span class="hljs-keyword">if</span> opts.historyFile</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>Adapt help inherited from the node REPL</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    repl.commands[getCommandId(repl, <span class="hljs-string">'load'</span>)].help = <span class="hljs-string">'Load code from a file into this REPL session'</span>
     repl</pre></div></div>
             
         </li>

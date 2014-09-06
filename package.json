@@ -1,34 +1,43 @@
 {
-  "name":         "coffee-script",
-  "description":  "Unfancy JavaScript",
-  "keywords":     ["javascript", "language", "coffeescript", "compiler"],
-  "author":       "Jeremy Ashkenas",
-  "version":      "1.6.3",
-  "license":      "MIT",
-  "engines":      {
-    "node":       ">=0.8.0"
+  "name": "coffee-script",
+  "description": "Unfancy JavaScript",
+  "keywords": [
+    "javascript",
+    "language",
+    "coffeescript",
+    "compiler"
+  ],
+  "author": "Jeremy Ashkenas",
+  "version": "1.8.0",
+  "license": "MIT",
+  "engines": {
+    "node": ">=0.8.0"
   },
-  "directories" : {
-    "lib" : "./lib/coffee-script"
+  "directories": {
+    "lib": "./lib/coffee-script"
   },
-  "main" : "./lib/coffee-script/coffee-script",
-  "bin":          {
-    "coffee":     "./bin/coffee",
-    "cake":       "./bin/cake"
+  "main": "./lib/coffee-script/coffee-script",
+  "bin": {
+    "coffee": "./bin/coffee",
+    "cake": "./bin/cake"
   },
+  "preferGlobal": true,
   "scripts": {
     "test":         "node ./bin/cake test",
     "test-harmony": "node --harmony ./bin/cake test"
   },
-  "homepage":     "http://coffeescript.org",
-  "bugs":         "https://github.com/jashkenas/coffee-script/issues",
-  "repository":   {
+  "homepage": "http://coffeescript.org",
+  "bugs": "https://github.com/jashkenas/coffeescript/issues",
+  "repository": {
     "type": "git",
-    "url": "git://github.com/jashkenas/coffee-script.git"
+    "url": "git://github.com/jashkenas/coffeescript.git"
   },
   "devDependencies": {
-    "uglify-js":  "~2.2",
-    "jison":      ">=0.2.0"
+    "uglify-js": "~2.2",
+    "jison": ">=0.2.0",
+    "highlight.js": "~8.0.0",
+    "underscore": "~1.5.2",
+    "docco": "~0.6.2"
   },
   "dependencies": {
     "mkdirp": "~0.3.5"
