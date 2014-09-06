@@ -4,15 +4,14 @@
 # * Generator Definition
 
 test "generator as argument", ->
-  ok ->* 1
+  ok -> yield 0
 
 test "generator definition", ->
-  x = ->*
+  x = ->
     yield 0
     yield 1
     yield 2
-  y = do ->*
-    yield* x()
+  y = x()
   z = y.next()
   eq z.value, 0
   eq z.done, false
@@ -29,16 +28,16 @@ test "generator definition", ->
 test "bound generator", ->
   obj =
     bound: ->
-      do =>*
-        this
+      do =>
+        yield this
     unbound: ->
-      do ->*
-        this
+      do ->
+        yield this
     nested: ->
-      do =>*
-        do =>*
-          do =>*
-            this
+      do =>
+        yield do =>
+          yield do =>
+            yield this
 
   eq obj, obj.bound().next().value
   ok obj isnt obj.unbound().next().value
