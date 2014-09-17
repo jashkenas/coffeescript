@@ -399,3 +399,22 @@ test "#3132: Place block-comments nicely", ->
   
   """
   eq CoffeeScript.compile(input, bare: on), result
+
+test "#3638: Demand a whitespace after # symbol", ->
+  input = """
+  ###
+  #No
+  #whitespace
+  ###"""
+
+  result = """
+
+  /*
+  #No
+  #whitespace
+   */
+
+
+  """
+
+  eq CoffeeScript.compile(input, bare: on), result
