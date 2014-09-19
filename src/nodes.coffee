@@ -455,7 +455,6 @@ exports.Return = class Return extends Base
     answer.push @makeCode ";"
     return answer
 
-
 #### Value
 
 # A value, variable or literal or parenthesized, indexed or dotted into,
@@ -1315,9 +1314,11 @@ exports.Assign = class Assign extends Base
 # has no *children* -- they're within the inner scope.
 exports.Code = class Code extends Base
   constructor: (params, body, tag) ->
-    @params  = params or []
-    @body    = body or new Block
-    @bound   = tag is 'boundfunc'
+    @params      = params or []
+    @body        = body or new Block
+    @bound       = tag is 'boundfunc'
+    @isGenerator = @body.contains (node) ->
+      node instanceof Op and node.operator in ['yield', 'yield*']
 
   children: ['params', 'body']
 
@@ -1384,9 +1385,10 @@ exports.Code = class Code extends Base
       node.error "multiple parameters named '#{name}'" if name in uniqs
       uniqs.push name
     @body.makeReturn() unless wasEmpty or @noReturn
-    code  = 'function'
-    code  += ' ' + @name if @ctor
-    code  += '('
+    code = 'function'
+    code += '*' if @isGenerator
+    code += ' ' + @name if @ctor
+    code += '('
     answer = [@makeCode(code)]
     for p, i in params
       if i then answer.push @makeCode ", "
@@ -1612,9 +1614,10 @@ exports.Op = class Op extends Base
 
   # The map of conversions from CoffeeScript to JavaScript symbols.
   CONVERSIONS =
-    '==': '==='
-    '!=': '!=='
-    'of': 'in'
+    '==':        '==='
+    '!=':        '!=='
+    'of':        'in'
+    'yieldfrom': 'yield*'
 
   # The map of invertible operators.
   INVERSIONS =
@@ -1624,6 +1627,9 @@ exports.Op = class Op extends Base
   children: ['first', 'second']
 
   isSimpleNumber: NO
+
+  isYield: ->
+    @operator in ['yield', 'yield*']
 
   isUnary: ->
     not @second
@@ -1691,6 +1697,7 @@ exports.Op = class Op extends Base
       @error 'delete operand may not be argument or var'
     if @operator in ['--', '++'] and @first.unwrapAll().value in STRICT_PROSCRIBED
       @error "cannot increment/decrement \"#{@first.unwrapAll().value}\""
+    return @compileYield     o if @isYield()
     return @compileUnary     o if @isUnary()
     return @compileChain     o if isChain
     switch @operator
@@ -1743,6 +1750,19 @@ exports.Op = class Op extends Base
       @first = new Parens @first
     parts.push @first.compileToFragments o, LEVEL_OP
     parts.reverse() if @flip
+    @joinFragmentArrays parts, ''
+
+  compileYield: (o) ->
+    parts = []
+    op = @operator
+    if not o.scope.parent?
+      @error 'yield statements must occur within a function generator.'
+    if 'expression' in Object.keys @first
+      parts.push @first.expression.compileToFragments o, LEVEL_OP if @first.expression?
+    else 
+      parts.push [@makeCode "(#{op} "] 
+      parts.push @first.compileToFragments o, LEVEL_OP
+      parts.push [@makeCode ")"] 
     @joinFragmentArrays parts, ''
 
   compilePower: (o) ->

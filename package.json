@@ -23,7 +23,8 @@
   },
   "preferGlobal": true,
   "scripts": {
-    "test": "node ./bin/cake test"
+    "test":         "node ./bin/cake test",
+    "test-harmony": "node --harmony ./bin/cake test"
   },
   "homepage": "http://coffeescript.org",
   "bugs": "https://github.com/jashkenas/coffeescript/issues",

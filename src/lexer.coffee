@@ -109,6 +109,9 @@ exports.Lexer = class Lexer
     if id is 'own' and @tag() is 'FOR'
       @token 'OWN', id
       return id.length
+    if id is 'from' and @tag() is 'YIELD'
+      @token 'FROM', id
+      return id.length
     forcedIdentifier = colon or
       (prev = last @tokens) and (prev[0] in ['.', '?.', '::', '?::'] or
       not prev.spaced and prev[0] is '@')
@@ -688,7 +691,7 @@ exports.Lexer = class Lexer
   # Are we in the midst of an unfinished expression?
   unfinished: ->
     LINE_CONTINUER.test(@chunk) or
-    @tag() in ['\\', '.', '?.', '?::', 'UNARY', 'MATH', 'UNARY_MATH', '+', '-',
+    @tag() in ['\\', '.', '?.', '?::', 'UNARY', 'MATH', 'UNARY_MATH', '+', '-', 'YIELD',
                '**', 'SHIFT', 'RELATION', 'COMPARE', 'LOGIC', 'THROW', 'EXTENDS']
 
   # Remove newlines from beginning and (non escaped) from end of string literals.
@@ -729,7 +732,7 @@ exports.Lexer = class Lexer
 JS_KEYWORDS = [
   'true', 'false', 'null', 'this'
   'new', 'delete', 'typeof', 'in', 'instanceof'
-  'return', 'throw', 'break', 'continue', 'debugger'
+  'return', 'throw', 'break', 'continue', 'debugger', 'yield'
   'if', 'else', 'switch', 'for', 'while', 'do', 'try', 'catch', 'finally'
   'class', 'extends', 'super'
 ]
@@ -758,10 +761,10 @@ RESERVED = [
   'case', 'default', 'function', 'var', 'void', 'with', 'const', 'let', 'enum'
   'export', 'import', 'native', '__hasProp', '__extends', '__slice', '__bind'
   '__indexOf', 'implements', 'interface', 'package', 'private', 'protected'
-  'public', 'static', 'yield'
+  'public', 'static'
 ]
 
-STRICT_PROSCRIBED = ['arguments', 'eval']
+STRICT_PROSCRIBED = ['arguments', 'eval', 'yield*']
 
 # The superset of both JavaScript keywords and reserved words, none of which may
 # be used as identifiers or properties.
