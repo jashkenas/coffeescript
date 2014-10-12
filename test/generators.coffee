@@ -79,3 +79,25 @@ test "yield in if statements", ->
 
   y = x.next 1
   ok y.value is 3 and y.done is true
+
+test "symbolic operators has precedence over the `yield`", ->
+
+  symbolic   = '+ - * / << >> & | || && ** ^ \\ or and'.split ' '
+  compound   = ("#{op}=" for op in symbolic)
+  relations  = '< > == != <= >= is isnt'.split ' '
+
+  operators  = []
+  operators.push symbolic...
+  operators.push compound...
+  operators.push relations...
+
+  allOf = (gen) -> ref.value until (ref = gen.next()).done
+
+  values = [0, 1, 2, 3]
+
+  for op in operators
+    generator = CoffeeScript.eval "(arr) -> yield i #{op} 2 for i in arr"
+    transform = CoffeeScript.eval "(i) -> i #{op} 2"
+    expected = values.map transform
+    actual = allOf generator values
+    arrayEq actual, expected
