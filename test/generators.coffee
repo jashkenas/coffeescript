@@ -63,7 +63,7 @@ test "empty generator", ->
   x = do -> yield return
 
   y = x.next()
-  ok y.value is undefined and y.done is true 
+  ok y.value is undefined and y.done is true
 
 test "`yield` by itself not at the end of a function errors", ->
   throws -> CoffeeScript.compile 'x = -> yield; return'
