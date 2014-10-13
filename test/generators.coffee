@@ -63,7 +63,7 @@ test "empty generator", ->
   x = do -> yield return
 
   y = x.next()
-  ok y.value is undefined and y.done is true 
+  ok y.value is undefined and y.done is true
 
 test "`yield` by itself not at the end of a function errors", ->
   throws -> CoffeeScript.compile 'x = -> yield; return'
@@ -79,3 +79,27 @@ test "yield in if statements", ->
 
   y = x.next 1
   ok y.value is 3 and y.done is true
+
+test "symbolic operators has precedence over the `yield`", ->
+
+  symbolic   = '+ - * / << >> & | || && ** ^ // or and'.split ' '
+  compound   = ("#{op}=" for op in symbolic)
+  relations  = '< > == != <= >= is isnt'.split ' '
+
+  operators  = [symbolic..., '=', compound..., relations...]
+
+  collect = (gen) -> ref.value until (ref = gen.next()).done
+
+  values = [0, 1, 2, 3]
+
+  for op in operators
+
+    expression = "i #{op} 2"
+
+    yielded    = CoffeeScript.eval "(arr) ->  yield #{expression} for i in arr"
+    mapped     = CoffeeScript.eval "(arr) ->       (#{expression} for i in arr)"
+
+    expected   = mapped values
+    actual     = collect yielded values
+
+    arrayEq actual, expected
