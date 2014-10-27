@@ -185,7 +185,7 @@ compileScript = (file, input, base = null) ->
         sourceMap.sourcesContent = [input]
         sourceMapJson = JSON.stringify sourceMap
         sourceMapDataUri = 'data:application/json;charset=utf-8;base64,' + btoa(sourceMapJson)
-        t.output = compiled.js + "\n//@ sourceMappingURL=" + sourceMapDataUri
+        t.output = compiled.js + "\n//# sourceMappingURL=" + sourceMapDataUri
 
       CoffeeScript.emit 'success', task
       if o.print
