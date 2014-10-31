@@ -69,8 +69,9 @@ runScripts = ->
   for script, i in coffees
     do (script, i) ->
       options = literate: script.type is coffeetypes[1]
-      if script.src
-        CoffeeScript.load script.src,
+      source = script.src or script.getAttribute('data-src')
+      if source
+        CoffeeScript.load source,
           (param) ->
             coffees[i] = param
             execute()
