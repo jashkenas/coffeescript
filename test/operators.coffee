@@ -7,6 +7,7 @@
 # * Aliased Operators
 # * [not] in/of
 # * Chained Comparison
+# * void
 
 test "binary (2-ary) math operators do not require spaces", ->
   a = 1
@@ -370,3 +371,11 @@ test "#3363: Modulo operator coercing order", ->
   b = valueOf: -> count += 1
   eq 4, a %% b
   eq 5, count
+
+test "void operator evaluates to undefined", ->
+  eq (void 42), undefined
+
+test "void operator evaluates the given expression", ->
+  x = 0
+  void x = 1
+  eq x, 1
