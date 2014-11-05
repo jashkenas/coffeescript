@@ -1876,6 +1876,24 @@ exports.Throw = class Throw extends Base
   compileNode: (o) ->
     [].concat @makeCode(@tab + "throw "), @expression.compileToFragments(o), @makeCode(";")
 
+#### Void
+
+# An operator that evaluates an expression and returns undefined.
+exports.Void = class Void extends Base
+  constructor: (@expression) ->
+
+  children: ['expression']
+
+  compileNode: (o) ->
+    expr = @expression || new Literal '0'
+    [
+      @makeCode("void(")
+      expr.compileToFragments(o, LEVEL_LIST)...
+      @makeCode(")")
+    ]
+
+###
+
 #### Existence
 
 # Checks a variable for existence -- not *null* and not *undefined*. This is

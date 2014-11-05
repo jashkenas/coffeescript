@@ -373,9 +373,14 @@ test "#3363: Modulo operator coercing order", ->
   eq 5, count
 
 test "void operator evaluates to undefined", ->
-  eq (void 42), undefined
+  eq void, undefined
+  eq void 42, undefined
 
 test "void operator evaluates the given expression", ->
   x = 0
   void x = 1
   eq x, 1
+
+test "void is a keyword", ->
+  throws ->
+    CoffeeScript.compile "void = 42"
