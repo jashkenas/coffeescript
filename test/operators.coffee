@@ -384,3 +384,25 @@ test "void operator evaluates the given expression", ->
 test "void is a keyword", ->
   throws ->
     CoffeeScript.compile "void = 42"
+
+test "void as last expression in block does not generate a return statement", ->
+  called = no
+  fn = ->
+    void called = yes
+
+  eq fn(), undefined
+  ok called
+  ok not /return/.test(fn), 'expected function not to return'
+
+test "void as last expression can avoid creating and returning arrays", ->
+  counter = 0
+  fn = (arr) ->
+    void for a in arr
+      counter++
+
+  result = fn [1..5]
+
+  eq result, undefined
+  eq counter, 5
+  ok not /return/.test(fn), 'expected function not to return'
+  ok not /\[\]/.test(fn), 'expected function not to create an array'
