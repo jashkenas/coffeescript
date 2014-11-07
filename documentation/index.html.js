@@ -684,6 +684,7 @@ Expressions
     <%= codeFor('aliases') %>
 
     <p>
+      <span id="operators-existential" class="bookmark"></span>
       <b class="header">The Existential Operator</b>
       It's a little difficult to check for the existence of a variable in
       JavaScript. <tt>if (variable) ...</tt> comes close, but fails for zero,
