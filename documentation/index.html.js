@@ -1045,13 +1045,17 @@ Expressions
       </li>
       <li>
         <a href="http://www.packtpub.com/coffeescript-application-development/book">CoffeeScript Application Development</a>
-        is a new book from Packt Publishing that introduces CoffeeScript while
+        from Packt, introduces CoffeeScript while
         walking through the process of building a demonstration web application.
       </li>
       <li>
         <a href="http://www.manning.com/lee/">CoffeeScript in Action</a>
-        is a new book from Manning Publications that covers CoffeeScript syntax, composition techniques
+        from Manning Publications, covers CoffeeScript syntax, composition techniques
         and application development.
+      </li>
+      <li>
+        <a href="http://www.dpunkt.de/buecher/4021/coffeescript.html">CoffeeScript: Die Alternative zu JavaScript</a>
+        from dpunkt.verlag, is the first CoffeeScript book in Deutsch.
       </li>
     </ul>
 
