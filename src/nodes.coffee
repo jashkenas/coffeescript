@@ -262,7 +262,8 @@ exports.Block = class Block extends Base
     while len--
       expr = @expressions[len]
       if expr not instanceof Comment
-        @expressions[len] = expr.makeReturn res
+        expr = expr.makeReturn res
+        @expressions[len] = expr
         @expressions.splice(len, 1) if expr instanceof Return and not expr.expression
         break
     this
@@ -1875,6 +1876,32 @@ exports.Throw = class Throw extends Base
 
   compileNode: (o) ->
     [].concat @makeCode(@tab + "throw "), @expression.compileToFragments(o), @makeCode(";")
+
+#### Void
+
+# An operator that evaluates an expression and returns undefined.
+exports.Void = class Void extends Base
+  constructor: (@expression) ->
+
+  children: ['expression']
+
+  # Void expressions don't generate a return statement when they are last in a
+  # block.
+  makeReturn: (res) ->
+    if res
+      super
+    else
+      @expression or new Return
+
+  compileNode: (o) ->
+    expr = @expression || new Literal '0'
+    [
+      @makeCode("void(")
+      expr.compileToFragments(o, LEVEL_LIST)...
+      @makeCode(")")
+    ]
+
+###
 
 #### Existence
 

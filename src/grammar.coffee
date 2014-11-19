@@ -113,6 +113,7 @@ grammar =
     o 'Switch'
     o 'Class'
     o 'Throw'
+    o 'Void'
   ]
 
   # An indented block of expressions. Note that the [Rewriter](rewriter.html)
@@ -410,6 +411,11 @@ grammar =
     o 'THROW Expression',                       -> new Throw $2
   ]
 
+  Void: [
+    o 'VOID Expression',                        -> new Void $2
+    o 'VOID',                                   -> new Void
+  ]
+
   # Parenthetical expressions. Note that the **Parenthetical** is a **Value**,
   # not an **Expression**, so if you need to use an expression in a place
   # where only values are accepted, wrapping it in parentheses will always do
@@ -602,6 +608,7 @@ operators = [
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
   ['right',     'FORIN', 'FOROF', 'BY', 'WHEN']
   ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
+  ['right',     'VOID']
   ['left',      'POST_IF']
 ]
 

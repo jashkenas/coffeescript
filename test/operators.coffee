@@ -7,6 +7,7 @@
 # * Aliased Operators
 # * [not] in/of
 # * Chained Comparison
+# * void
 
 test "binary (2-ary) math operators do not require spaces", ->
   a = 1
@@ -370,3 +371,38 @@ test "#3363: Modulo operator coercing order", ->
   b = valueOf: -> count += 1
   eq 4, a %% b
   eq 5, count
+
+test "void operator evaluates to undefined", ->
+  eq void, undefined
+  eq void 42, undefined
+
+test "void operator evaluates the given expression", ->
+  x = 0
+  void x = 1
+  eq x, 1
+
+test "void is a keyword", ->
+  throws ->
+    CoffeeScript.compile "void = 42"
+
+test "void as last expression in block does not generate a return statement", ->
+  called = no
+  fn = ->
+    void called = yes
+
+  eq fn(), undefined
+  ok called
+  ok not /return/.test(fn), 'expected function not to return'
+
+test "void as last expression can avoid creating and returning arrays", ->
+  counter = 0
+  fn = (arr) ->
+    void for a in arr
+      counter++
+
+  result = fn [1..5]
+
+  eq result, undefined
+  eq counter, 5
+  ok not /return/.test(fn), 'expected function not to return'
+  ok not /\[\]/.test(fn), 'expected function not to create an array'
