@@ -81,7 +81,6 @@ test "yield in if statements", ->
   ok y.value is 3 and y.done is true
 
 test "symbolic operators has precedence over the `yield`", ->
-
   symbolic   = '+ - * / << >> & | || && ** ^ // or and'.split ' '
   compound   = ("#{op}=" for op in symbolic)
   relations  = '< > == != <= >= is isnt'.split ' '
@@ -91,15 +90,37 @@ test "symbolic operators has precedence over the `yield`", ->
   collect = (gen) -> ref.value until (ref = gen.next()).done
 
   values = [0, 1, 2, 3]
-
   for op in operators
-
     expression = "i #{op} 2"
 
-    yielded    = CoffeeScript.eval "(arr) ->  yield #{expression} for i in arr"
-    mapped     = CoffeeScript.eval "(arr) ->       (#{expression} for i in arr)"
+    yielded = CoffeeScript.eval "(arr) ->  yield #{expression} for i in arr"
+    mapped  = CoffeeScript.eval "(arr) ->       (#{expression} for i in arr)"
 
-    expected   = mapped values
-    actual     = collect yielded values
+    arrayEq mapped(values), collect yielded values
 
-    arrayEq actual, expected
+test "for loop expressions", ->
+  x = do ->
+    y = for i in [1..3]
+      yield i * 2
+
+  z = x.next()
+  ok z.value is 2 and z.done is false
+  z = x.next 10
+  ok z.value is 4 and z.done is false
+  z = x.next 20
+  ok z.value is 6 and z.done is false
+  z = x.next 30
+  arrayEq z.value, [10, 20, 30]
+  ok z.done is true
+
+test "switch expressions", ->
+  x = do ->
+    y = switch yield 1
+      when 2 then yield 1337
+
+  z = x.next()
+  ok z.value is 1 and z.done is false
+  z = x.next 2
+  ok z.value is 1337 and z.done is false
+  z = x.next 3
+  ok z.value is 3 and z.done is true
