@@ -201,6 +201,18 @@ test "arguments vs parameters", ->
   f = (g) -> g()
   eq 5, f (x) -> 5
 
+test "reserved keyword as parameters", ->
+  f = (_case, @case) -> [_case, @case]
+  [a, b] = f(1, 2)
+  eq 1, a
+  eq 2, b
+
+  f = (@case, _case...) -> [@case, _case...]
+  [a, b, c] = f(1, 2, 3)
+  eq 1, a
+  eq 2, b
+  eq 3, c
+
 test "#1844: bound functions in nested comprehensions causing empty var statements", ->
   a = ((=>) for a in [0] for b in [0])
   eq 1, a.length
