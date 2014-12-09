@@ -160,7 +160,7 @@ exports.register = -> require './register'
 
 # Throw error with deprecation warning when depending upon implicit `require.extensions` registration
 if require.extensions
-  for ext in @FILE_EXTENSIONS
+  for ext in exports.FILE_EXTENSIONS
     require.extensions[ext] ?= ->
       throw new Error """
       Use CoffeeScript.register() or require the coffee-script/register module to require #{ext} files.
