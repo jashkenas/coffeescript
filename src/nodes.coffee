@@ -1718,7 +1718,7 @@ exports.Op = class Op extends Base
       @error 'delete operand may not be argument or var'
     if @operator in ['--', '++'] and @first.unwrapAll().value in STRICT_PROSCRIBED
       @error "cannot increment/decrement \"#{@first.unwrapAll().value}\""
-    return @compileContinuation o if @isYield() or @isAsync()
+    return @compileContinuation o if @isYield() or @isAwait()
     return @compileUnary        o if @isUnary()
     return @compileChain        o if isChain
     switch @operator
@@ -1782,7 +1782,7 @@ exports.Op = class Op extends Base
     if 'expression' in Object.keys @first
       parts.push @first.expression.compileToFragments o, LEVEL_OP if @first.expression?
     else
-      parts.push [@makeCode "(#{@operator} "]
+      parts.push [@makeCode "(#{op} "]
       parts.push @first.compileToFragments o, LEVEL_OP
       parts.push [@makeCode ")"]
     @joinFragmentArrays parts, ''
@@ -2201,12 +2201,12 @@ UTILITIES =
   # for async functions containing `await`
   async: -> "
     (function(){
-      var async = function(generator) {
+      var async = function(gennerator) {
         return function() {
           var args = arguments, self = this;
           return new Promise(function(win, fail){
             var tracker = new Tracker();
-            tracker.iterator = generator.apply(self, args);
+            tracker.iterator = gennerator.apply(self, args);
             tracker.win = win;
             tracker.fail = fail;
             tracker.tick();
