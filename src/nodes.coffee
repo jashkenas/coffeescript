@@ -80,6 +80,7 @@ exports.Base = class Base
       jumpNode.error 'cannot use a pure statement in an expression'
     o.sharedScope = yes
     func = new Code [], Block.wrap [this]
+    func.purify() # make sure function is kept simple for closure modification
     args = []
     if (argumentsNode = @contains isLiteralArguments) or @contains isLiteralThis
       args = [new Literal 'this']
@@ -1321,10 +1322,17 @@ exports.Code = class Code extends Base
     @params      = params or []
     @body        = body or new Block
     @bound       = tag is 'boundfunc'
+    @wrap        = yes # wrap function declarations in modifier invokation (async)
     @isGenerator = !!@body.contains (node) ->
-      node instanceof Op and node.operator in ['yield', 'yield*']
+      node instanceof Op and node.isYield()
+    @isAsync     = !!@body.contains (node) ->
+      node instanceof Op and node.isAwait()
 
   children: ['params', 'body']
+
+  # a closure containing `await` should simply compile to a generator function
+  purify: ->
+    @wrap = no
 
   isStatement: -> !!@ctor
 
@@ -1389,8 +1397,11 @@ exports.Code = class Code extends Base
       node.error "multiple parameters named '#{name}'" if name in uniqs
       uniqs.push name
     @body.makeReturn() unless wasEmpty or @noReturn
-    code = 'function'
-    code += '*' if @isGenerator
+    asyncify = @isAsync and @wrap
+    code = ''
+    code += "#{utility 'async'}(" if asyncify
+    code += 'function'
+    code += '*' if @isGenerator or @isAsync
     code += ' ' + @name if @ctor
     code += '('
     answer = [@makeCode(code)]
@@ -1400,6 +1411,7 @@ exports.Code = class Code extends Base
     answer.push @makeCode ') {'
     answer = answer.concat(@makeCode("\n"), @body.compileWithDeclarations(o), @makeCode("\n#{@tab}")) unless @body.isEmpty()
     answer.push @makeCode '}'
+    answer.push @makeCode ')' if asyncify
 
     return [@makeCode(@tab), answer...] if @ctor
     if @front or (o.level >= LEVEL_ACCESS) then @wrapInBraces answer else answer
@@ -1611,6 +1623,7 @@ exports.Op = class Op extends Base
       return first.newInstance() if first instanceof Call and not first.do and not first.isNew
       first = new Parens first   if first instanceof Code and first.bound or first.do
     @operator = CONVERSIONS[op] or op
+    @originalOperator = op
     @first    = first
     @second   = second
     @flip     = !!flip
@@ -1621,6 +1634,7 @@ exports.Op = class Op extends Base
     '==':        '==='
     '!=':        '!=='
     'of':        'in'
+    'await':     'yield'
     'yieldfrom': 'yield*'
 
   # The map of invertible operators.
@@ -1632,8 +1646,11 @@ exports.Op = class Op extends Base
 
   isSimpleNumber: NO
 
+  isAwait: ->
+    @originalOperator is 'await'
+
   isYield: ->
-    @operator in ['yield', 'yield*']
+    @originalOperator in ['yield', 'yieldfrom']
 
   isUnary: ->
     not @second
@@ -1701,9 +1718,9 @@ exports.Op = class Op extends Base
       @error 'delete operand may not be argument or var'
     if @operator in ['--', '++'] and @first.unwrapAll().value in STRICT_PROSCRIBED
       @error "cannot increment/decrement \"#{@first.unwrapAll().value}\""
-    return @compileYield     o if @isYield()
-    return @compileUnary     o if @isUnary()
-    return @compileChain     o if isChain
+    return @compileContinuation o if @isYield() or @isAsync()
+    return @compileUnary        o if @isUnary()
+    return @compileChain        o if isChain
     switch @operator
       when '?'  then @compileExistence o
       when '**' then @compilePower o
@@ -1756,15 +1773,16 @@ exports.Op = class Op extends Base
     parts.reverse() if @flip
     @joinFragmentArrays parts, ''
 
-  compileYield: (o) ->
+  compileContinuation: (o) ->
     parts = []
     op = @operator
     if not o.scope.parent?
-      @error 'yield statements must occur within a function generator.'
+      # all continuations must occur inside function body
+      @error "#{@originalOperator} statements must occur within a function body."
     if 'expression' in Object.keys @first
       parts.push @first.expression.compileToFragments o, LEVEL_OP if @first.expression?
     else
-      parts.push [@makeCode "(#{op} "]
+      parts.push [@makeCode "(#{@operator} "]
       parts.push @first.compileToFragments o, LEVEL_OP
       parts.push [@makeCode ")"]
     @joinFragmentArrays parts, ''
@@ -2179,6 +2197,64 @@ exports.If = class If extends Base
 # ---------
 
 UTILITIES =
+
+  # for async functions containing `await`
+  async: -> "
+    (function(){
+      var async = function(generator) {
+        return function() {
+          var args = arguments, self = this;
+          return new Promise(function(win, fail){
+            var tracker = new Tracker();
+            tracker.iterator = generator.apply(self, args);
+            tracker.win = win;
+            tracker.fail = fail;
+            tracker.tick();
+          });
+        };
+      };
+
+      function Tracker() {
+        var self = this;
+
+        this.thenHandle = function(value) {
+          self.result = value;
+          self.tick();
+        };
+
+        this.failHandle = function(value) {
+          self.fail(value);
+        };
+
+        this.send     = false;
+        this.result   = undefined;
+
+        this.iterator = undefined;
+        this.win      = undefined;
+        this.fail     = undefined;
+      };
+
+      Tracker.prototype = {
+        tick: function() {
+          var next;
+          if (this.send) {
+            next = this.iterator.next(this.result);
+          } else {
+            next = this.iterator.next();
+            this.send = true;
+          }
+
+          if (next.done) {
+            this.win(next.value);
+          } else {
+            next.value.then(this.thenHandle, this.failHandle);
+          }
+        }
+      };
+
+      return async;
+    }())
+  " 
 
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls, and copies of any static properties.
