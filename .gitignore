@@ -8,3 +8,4 @@ test/*.js
 examples/beautiful_code/parse.coffee
 *.gem
 /node_modules
+build.sh

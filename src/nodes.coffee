@@ -91,7 +91,7 @@ exports.Base = class Base
         meth = 'call'
       func = new Value func, [new Access new Literal meth]
     parts = (new Call func, args).compileNode o
-    if func.isGenerator
+    if func.isGenerator or func.isAsync
       parts.unshift @makeCode "(yield* "
       parts.push    @makeCode ")"
     parts
@@ -2201,12 +2201,12 @@ UTILITIES =
   # for async functions containing `await`
   async: -> "
     (function(){
-      var async = function(gennerator) {
+      var async = function(generator) {
         return function() {
           var args = arguments, self = this;
           return new Promise(function(win, fail){
             var tracker = new Tracker();
-            tracker.iterator = gennerator.apply(self, args);
+            tracker.iterator = generator.apply(self, args);
             tracker.win = win;
             tracker.fail = fail;
             tracker.tick();
