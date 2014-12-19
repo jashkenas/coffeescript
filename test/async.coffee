@@ -162,22 +162,19 @@ test "error throwing", ->
 
 test "error handling", ->
 	res = null
+	val = 0
 	a = ->
 		try
-			await failing(2)
+			await failing("fail")
 		catch e
-			7
+			val = 7	# to assure the catch block runs
+			return e
+
 
 	do ->
 		res = await a()
 
-	eq res, 7
+	eq val, 7
 
-
-
-
-
-
-
-
-
+	ok res.message?
+	eq res.message, "fail"
