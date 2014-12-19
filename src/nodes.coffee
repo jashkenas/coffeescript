@@ -2249,8 +2249,6 @@ UTILITIES =
             next = this.iterator.next(this.result);
           }
 
-          this.type = 1;
-
           if (next.done) {
             this.win(next.value);
           } else {
