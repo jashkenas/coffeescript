@@ -2225,11 +2225,13 @@ UTILITIES =
           self.tick();
         };
 
-        this.failHandle = function(value) {
-          self.fail(value);
+        this.failHandle = function(err) {
+          self.result = err;
+          self.throw = true;
+          self.tick();
         };
 
-        this.send     = false;
+        this.throw    = false;
         this.result   = undefined;
 
         this.iterator = undefined;
@@ -2240,12 +2242,14 @@ UTILITIES =
       Tracker.prototype = {
         tick: function() {
           var next;
-          if (this.send) {
-            next = this.iterator.next(this.result);
+          if (this.throw) {
+            next = this.iterator.throw(this.result);
+            this.throw = false;
           } else {
-            next = this.iterator.next();
-            this.send = true;
+            next = this.iterator.next(this.result);
           }
+
+          this.type = 1;
 
           if (next.done) {
             this.win(next.value);

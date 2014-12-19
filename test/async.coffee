@@ -16,7 +16,7 @@ winning = (val)->
 # always is rejected
 failing = (val)->
 	new Promise (win, fail)->
-		fail(val)
+		fail(new Error(val))
 		return
 
 test "async as argument", ->
@@ -156,32 +156,22 @@ test "error if function contains both `await`, and `yield` or `yieldfrom`", ->
 test "error if `await` occurs outside of a function", ->
 	throws -> CoffeeScript.compile 'await 1'
 
-test "error propagation", ->
+test "error throwing", ->
+	throws ->
+		await failing(2)
+
+test "error handling", ->
 	res = null
 	a = ->
-		v1 = await winning(3)
-		v2 = await failing("err")
-		v3 = await failing(5)
-		return 5
+		try
+			await failing(2)
+		catch e
+			7
 
-	b = ->
-		v1 = await winning(1)
-		v2 = await a()
-		v3 = await failing(6)
-		return v2
+	do ->
+		res = await a()
 
-	promise = b()
-	promise.then(
-		(val) -> 
-			res = val
-		,
-		(err) ->
-			res = err
-	)
-
-	ok res isnt 5
-	eq res, "err"
-
+	eq res, 7
 
 
 
