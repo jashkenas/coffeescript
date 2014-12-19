@@ -34,7 +34,7 @@ test "implicit async", ->
 		x = await winning(5)
 		y = await winning(4)
 		z = await winning(3)
-		return [x, y, z]
+		[x, y, z]
 
 	eq a.constructor, Promise
 
@@ -44,7 +44,7 @@ test "async return value (implicit)", ->
 		x = await winning(5)
 		y = await winning(4)
 		z = await winning(3)
-		return [x, y, z]
+		[x, y, z]
 
 	do ->
 		out = await a()
@@ -149,11 +149,12 @@ test "`await` inside IIFEs", ->
 
 	arrayEq z, [0, 1, 4, 9, 16, 25]
 
-
-
+test "error if function contains both `await`, and `yield` or `yieldfrom`", ->
+	throws -> CoffeeScript.compile '()-> yield 5; await a;'
+	throws -> CoffeeScript.compile '()-> yield from a; await b;'
 
 test "error if `await` occurs outside of a function", ->
-  throws -> CoffeeScript.compile 'await 1'
+	throws -> CoffeeScript.compile 'await 1'
 
 test "error propagation", ->
 	res = null

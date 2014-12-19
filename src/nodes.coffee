@@ -1328,6 +1328,9 @@ exports.Code = class Code extends Base
     @isAsync     = !!@body.contains (node) ->
       node instanceof Op and node.isAwait()
 
+    if @isAsync and @isGenerator
+      @err "funtion can be a generator or async, but not both"
+
   children: ['params', 'body']
 
   # a closure containing `await` should simply compile to a generator function
