@@ -1320,7 +1320,8 @@ exports.Code = class Code extends Base
   constructor: (params, body, tag) ->
     @params      = params or []
     @body        = body or new Block
-    @bound       = tag is 'boundfunc'
+    @bound       = tag in ['boundfunc','noretboundfunc']
+    @noReturn    = tag in ['noretfunc','noretboundfunc']
     @isGenerator = !!@body.contains (node) ->
       node instanceof Op and node.operator in ['yield', 'yield*']
 
@@ -1346,6 +1347,7 @@ exports.Code = class Code extends Base
     if @bound and not @context
       @context = '_this'
       wrapper = new Code [new Param new Literal @context], new Block [this]
+      wrapper.noReturn = @noReturn
       boundfunc = new Call(wrapper, [new Literal 'this'])
       boundfunc.updateLocationDataIfMissing @locationData
       return boundfunc.compileNode(o)
