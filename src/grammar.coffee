@@ -192,6 +192,8 @@ grammar =
   # CoffeeScript has two different symbols for functions. `->` is for ordinary
   # functions, and `=>` is for functions bound to the current value of *this*.
   FuncGlyph: [
+    o '->>',                                    -> 'noretfunc'
+    o '=>>',                                    -> 'noretboundfunc'
     o '->',                                     -> 'func'
     o '=>',                                     -> 'boundfunc'
   ]
