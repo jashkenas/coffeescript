@@ -198,6 +198,17 @@ test "#748: trailing reserved identifiers", ->
     nonce
   eq nonce, result
 
+test 'if-else within an assignment, condition parenthesized', ->
+  result = if (1 == 1) then 'right'
+  eq result, 'right'
+
+  result = if ('whatever' ? no) then 'right'
+  eq result, 'right'
+
+  f = -> 'wrong'
+  result = if (f?()) then 'right' else 'wrong'
+  eq result, 'right'
+
 # Postfix
 
 test "#3056: multiple postfix conditionals", ->
