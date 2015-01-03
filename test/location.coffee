@@ -83,8 +83,8 @@ test 'Verify locations in string interpolation (in "string")', ->
 test 'Verify locations in string interpolation (in "string", multiple interpolation)', ->
   tokens = CoffeeScript.tokens '"#{a}b#{c}"'
 
-  eq tokens.length, 10
-  [{}, {}, {}, a, {}, b, {}, c] = tokens
+  eq tokens.length, 8
+  [{}, a, {}, b, {}, c] = tokens
 
   eq a[2].first_line, 0
   eq a[2].first_column, 3
@@ -104,8 +104,8 @@ test 'Verify locations in string interpolation (in "string", multiple interpolat
 test 'Verify locations in string interpolation (in "string", multiple interpolation and line breaks)', ->
   tokens = CoffeeScript.tokens '"#{a}\nb\n#{c}"'
 
-  eq tokens.length, 10
-  [{}, {}, {}, a, {}, b, {}, c] = tokens
+  eq tokens.length, 8
+  [{}, a, {}, b, {}, c] = tokens
 
   eq a[2].first_line, 0
   eq a[2].first_column, 3
@@ -125,8 +125,8 @@ test 'Verify locations in string interpolation (in "string", multiple interpolat
 test 'Verify locations in string interpolation (in "string", multiple interpolation and starting with line breaks)', ->
   tokens = CoffeeScript.tokens '"\n#{a}\nb\n#{c}"'
 
-  eq tokens.length, 10
-  [{}, {}, {}, a, {}, b, {}, c] = tokens
+  eq tokens.length, 8
+  [{}, a, {}, b, {}, c] = tokens
 
   eq a[2].first_line, 1
   eq a[2].first_column, 2
@@ -146,8 +146,8 @@ test 'Verify locations in string interpolation (in "string", multiple interpolat
 test 'Verify locations in string interpolation (in "string", multiple interpolation and starting with line breaks)', ->
   tokens = CoffeeScript.tokens '"\n\n#{a}\n\nb\n\n#{c}"'
 
-  eq tokens.length, 10
-  [{}, {}, {}, a, {}, b, {}, c] = tokens
+  eq tokens.length, 8
+  [{}, a, {}, b, {}, c] = tokens
 
   eq a[2].first_line, 2
   eq a[2].first_column, 2
@@ -167,8 +167,8 @@ test 'Verify locations in string interpolation (in "string", multiple interpolat
 test 'Verify locations in string interpolation (in "string", multiple interpolation and starting with line breaks)', ->
   tokens = CoffeeScript.tokens '"\n\n\n#{a}\n\n\nb\n\n\n#{c}"'
 
-  eq tokens.length, 10
-  [{}, {}, {}, a, {}, b, {}, c] = tokens
+  eq tokens.length, 8
+  [{}, a, {}, b, {}, c] = tokens
 
   eq a[2].first_line, 3
   eq a[2].first_column, 2
@@ -209,13 +209,8 @@ test 'Verify locations in string interpolation (in """string""", line breaks)', 
 test 'Verify locations in string interpolation (in """string""", starting with a line break)', ->
   tokens = CoffeeScript.tokens '"""\n#{b}\nc"""'
 
-  eq tokens.length, 8
-  [{}, a, {}, b, {}, c] = tokens
-
-  eq a[2].first_line, 0
-  eq a[2].first_column, 0
-  eq a[2].last_line, 0
-  eq a[2].last_column, 0
+  eq tokens.length, 6
+  [{}, b, {}, c] = tokens
 
   eq b[2].first_line, 1
   eq b[2].first_column, 2
@@ -233,8 +228,8 @@ test 'Verify locations in string interpolation (in """string""", starting with l
   eq tokens.length, 8
   [{}, a, {}, b, {}, c] = tokens
 
-  eq a[2].first_line, 1
-  eq a[2].first_column, 0
+  eq a[2].first_line, 0
+  eq a[2].first_column, 3
   eq a[2].last_line, 1
   eq a[2].last_column, 0
 
@@ -251,8 +246,8 @@ test 'Verify locations in string interpolation (in """string""", starting with l
 test 'Verify locations in string interpolation (in """string""", multiple interpolation)', ->
   tokens = CoffeeScript.tokens '"""#{a}\nb\n#{c}"""'
 
-  eq tokens.length, 10
-  [{}, {}, {}, a, {}, b, {}, c] = tokens
+  eq tokens.length, 8
+  [{}, a, {}, b, {}, c] = tokens
 
   eq a[2].first_line, 0
   eq a[2].first_column, 5
@@ -315,7 +310,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   tokens = CoffeeScript.tokens '///#{a}b#{c}///'
 
   eq tokens.length, 11
-  [{}, {}, {}, {}, a, {}, b, {}, c] = tokens
+  [{}, {}, {}, a, {}, b, {}, c] = tokens
 
   eq a[2].first_line, 0
   eq a[2].first_column, 5
@@ -335,8 +330,8 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation)', ->
   tokens = CoffeeScript.tokens '///a#{b}c///'
 
-  eq tokens.length, 9
-  [{}, {}, a, {}, b, {}, c] = tokens
+  eq tokens.length, 11
+  [{}, {}, {}, a, {}, b, {}, c] = tokens
 
   eq a[2].first_line, 0
   eq a[2].first_column, 3
@@ -357,7 +352,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   tokens = CoffeeScript.tokens '///#{a}\nb\n#{c}///'
 
   eq tokens.length, 11
-  [{}, {}, {}, {}, a, {}, b, {}, c] = tokens
+  [{}, {}, {}, a, {}, b, {}, c] = tokens
 
   eq a[2].first_line, 0
   eq a[2].first_column, 5
@@ -378,7 +373,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   tokens = CoffeeScript.tokens '///#{a}\n\n\nb\n\n\n#{c}///'
 
   eq tokens.length, 11
-  [{}, {}, {}, {}, a, {}, b, {}, c] = tokens
+  [{}, {}, {}, a, {}, b, {}, c] = tokens
 
   eq a[2].first_line, 0
   eq a[2].first_column, 5
@@ -398,8 +393,8 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks)', ->
   tokens = CoffeeScript.tokens '///a\n\n\n#{b}\n\n\nc///'
 
-  eq tokens.length, 9
-  [{}, {}, a, {}, b, {}, c] = tokens
+  eq tokens.length, 11
+  [{}, {}, {}, a, {}, b, {}, c] = tokens
 
   eq a[2].first_line, 0
   eq a[2].first_column, 3
@@ -416,11 +411,11 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].last_line, 6
   eq c[2].last_column, 0
 
-test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks and stating with linebreak)', ->
+test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks and starting with linebreak)', ->
   tokens = CoffeeScript.tokens '///\n#{a}\nb\n#{c}///'
 
   eq tokens.length, 11
-  [{}, {}, {}, {}, a, {}, b, {}, c] = tokens
+  [{}, {}, {}, a, {}, b, {}, c] = tokens
 
   eq a[2].first_line, 1
   eq a[2].first_column, 2
@@ -437,11 +432,11 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].last_line, 3
   eq c[2].last_column, 2
 
-test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks and stating with linebreak)', ->
+test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks and starting with linebreak)', ->
   tokens = CoffeeScript.tokens '///\n\n\n#{a}\n\n\nb\n\n\n#{c}///'
 
   eq tokens.length, 11
-  [{}, {}, {}, {}, a, {}, b, {}, c] = tokens
+  [{}, {}, {}, a, {}, b, {}, c] = tokens
 
   eq a[2].first_line, 3
   eq a[2].first_column, 2
@@ -458,11 +453,11 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].last_line, 9
   eq c[2].last_column, 2
 
-test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks and stating with linebreak)', ->
+test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks and starting with linebreak)', ->
   tokens = CoffeeScript.tokens '///\n\n\na\n\n\n#{b}\n\n\nc///'
 
-  eq tokens.length, 9
-  [{}, {}, a, {}, b, {}, c] = tokens
+  eq tokens.length, 11
+  [{}, {}, {}, a, {}, b, {}, c] = tokens
 
   eq a[2].first_line, 0
   eq a[2].first_column, 3
@@ -478,6 +473,19 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].first_column, 4
   eq c[2].last_line, 9
   eq c[2].last_column, 0
+
+test "#3621: Multiline regex and manual `Regex` call with interpolation should
+      result in the same tokens", ->
+  tokensA = CoffeeScript.tokens 'RegExp(".*#{a}[0-9]")'
+  tokensB = CoffeeScript.tokens '///.*#{a}[0-9]///'
+  eq tokensA.length, tokensB.length
+  for i in [0...tokensA.length] by 1
+    tokenA = tokensA[i]
+    tokenB = tokensB[i]
+    eq tokenA[0], tokenB[0]
+    eq tokenA[1], tokenB[1]
+    eq tokenA.origin?[1], tokenB.origin?[1]
+    eq tokenA.stringEnd, tokenB.stringEnd
 
 test "Verify all tokens get a location", ->
   doesNotThrow ->

@@ -38,8 +38,8 @@ test "#764: regular expressions should be indexable", ->
 test "#584: slashes are allowed unescaped in character classes", ->
   ok /^a\/[/]b$/.test 'a//b'
 
-test "#1724: regular expressions beginning with `*`", ->
-  throws -> CoffeeScript.compile '/*/'
+test "does not allow to escape newlines", ->
+  throws -> CoffeeScript.compile '/a\\\nb/'
 
 
 # Heregexe(n|s)
@@ -52,6 +52,14 @@ test "a heregex will ignore whitespace and comments", ->
 
 test "an empty heregex will compile to an empty, non-capturing group", ->
   eq /(?:)/ + '', ///  /// + ''
+  eq /(?:)/ + '', ////// + ''
 
-test "#1724: regular expressions beginning with `*`", ->
-  throws -> CoffeeScript.compile '/// * ///'
+test "heregex starting with slashes", ->
+  ok /////a/\////.test ' //a// '
+
+test '#2388: `///` in heregex interpolations', ->
+  ok ///a#{///b///}c///.test ' /a/b/c/ '
+  ws = ' \t'
+  scan = (regex) -> regex.exec('\t  foo')[0]
+  eq '/\t  /', /// #{scan /// [#{ws}]* ///} /// + ''
+
