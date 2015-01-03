@@ -360,3 +360,48 @@ test "invalid regex flags", ->
            ^
   '''
   doesNotThrow -> CoffeeScript.compile '/a/ymgi'
+
+test "missing `)`, `}`, `]`", ->
+  assertErrorFormat '''
+    (
+  ''', '''
+    [stdin]:1:1: error: missing )
+    (
+    ^
+  '''
+  assertErrorFormat '''
+    {
+  ''', '''
+    [stdin]:1:1: error: missing }
+    {
+    ^
+  '''
+  assertErrorFormat '''
+    [
+  ''', '''
+    [stdin]:1:1: error: missing ]
+    [
+    ^
+  '''
+  assertErrorFormat '''
+    obj = {a: [1, (2+
+  ''', '''
+    [stdin]:1:15: error: missing )
+    obj = {a: [1, (2+
+                  ^
+  '''
+  assertErrorFormat '''
+    "#{
+  ''', '''
+    [stdin]:1:3: error: missing }
+    "#{
+      ^
+  '''
+  assertErrorFormat '''
+    """
+      foo#{ bar "#{1}"
+  ''', '''
+    [stdin]:2:7: error: missing }
+      foo#{ bar "#{1}"
+          ^
+  '''

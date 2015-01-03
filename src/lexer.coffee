@@ -73,8 +73,7 @@ exports.Lexer = class Lexer
       return {@tokens, index: i} if opts.untilBalanced and @ends.length is 0
 
     @closeIndentation()
-    # TODO: Make this error point to the opener!
-    @error "missing #{tag}" if tag = @ends.pop()
+    throwSyntaxError "missing #{end.tag}", end.origin[2] if end = @ends.pop()
     return @tokens if opts.rewrite is off
     (new Rewriter).rewrite @tokens
 
@@ -319,7 +318,7 @@ exports.Lexer = class Lexer
       diff = size - @indent + @outdebt
       @token 'INDENT', diff, indent.length - size, size
       @indents.push diff
-      @ends.push 'OUTDENT'
+      @ends.push {tag: 'OUTDENT'}
       @outdebt = @indebt = 0
       @indent = size
     else if size < @baseIndent
@@ -419,10 +418,11 @@ exports.Lexer = class Lexer
         tag = 'INDEX_START'
         switch prev[0]
           when '?'  then prev[0] = 'INDEX_SOAK'
+    token = @makeToken tag, value
     switch value
-      when '(', '{', '[' then @ends.push INVERSES[value]
+      when '(', '{', '[' then @ends.push {tag: INVERSES[value], origin: token}
       when ')', '}', ']' then @pair value
-    @token tag, value
+    @tokens.push token
     value.length
 
   # Token Manipulators
@@ -572,7 +572,7 @@ exports.Lexer = class Lexer
   # Pairs up a closing token, ensuring that all listed pairs of tokens are
   # correctly balanced throughout the course of the token stream.
   pair: (tag) ->
-    unless tag is wanted = last @ends
+    unless tag is wanted = last(@ends)?.tag
       @error "unmatched #{tag}" unless 'OUTDENT' is wanted
       # Auto-close INDENT to support syntax like this:
       #
