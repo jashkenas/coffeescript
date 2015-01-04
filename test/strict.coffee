@@ -55,6 +55,17 @@ test "octal escape sequences prohibited", ->
   strictOk  "`'\\1'`"
   eq "\\" + "1", `"\\1"`
 
+  # Also test other string types.
+  strict           "'\\\\\\1'"
+  eq "\x008",      '\08'
+  eq "\\\\" + "1", '\\\\1'
+  strict           "'''\\\\\\1'''"
+  eq "\x008",      '''\08'''
+  eq "\\\\" + "1", '''\\\\1'''
+  strict           '"""\\\\\\1"""'
+  eq "\x008",      """\08"""
+  eq "\\\\" + "1", """\\\\1"""
+
 test "duplicate formal parameters are prohibited", ->
   nonce = {}
   # a Param can be an Identifier, ThisProperty( @-param ), Array, or Object
