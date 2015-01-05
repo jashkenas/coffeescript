@@ -124,13 +124,17 @@ exports.run = (code, options = {}) ->
 # The CoffeeScript REPL uses this to run the input.
 exports.eval = (code, options = {}) ->
   return unless code = code.trim()
-  Script = vm.Script
-  if Script
+  createContext = vm.Script.createContext ? vm.createContext
+
+  isContext = vm.isContext ? (ctx) ->
+    options.sandbox instanceof createContext().constructor
+
+  if createContext
     if options.sandbox?
-      if options.sandbox instanceof Script.createContext().constructor
+      if isContext options.sandbox
         sandbox = options.sandbox
       else
-        sandbox = Script.createContext()
+        sandbox = createContext()
         sandbox[k] = v for own k, v of options.sandbox
       sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
     else
@@ -303,4 +307,3 @@ Error.prepareStackTrace = (err, stack) ->
     "  at #{formatSourcePosition frame, getSourceMapping}"
 
   "#{err.toString()}\n#{frames.join '\n'}\n"
-
