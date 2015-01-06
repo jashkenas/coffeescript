@@ -731,7 +731,8 @@ BOM = 65279
 
 # Token matching regexes.
 IDENTIFIER = /// ^
-  ( [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]* )
+  (?!\d)
+  ( (?: (?!\s)[$\w\x7f-\uffff] )+ )
   ( [^\n\S]* : (?!:) )?  # Is this a property name?
 ///
 
