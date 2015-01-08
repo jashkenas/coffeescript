@@ -1639,7 +1639,8 @@ exports.Op = class Op extends Base
     not @second
 
   isComplex: ->
-    not (@isUnary() and @operator in ['+', '-']) or @first.isComplex()
+    not (@isUnary() and @operator in ['+', '-'] and
+         @first instanceof Value and @first.isSimpleNumber())
 
   # Am I capable of
   # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin)?
