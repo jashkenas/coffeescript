@@ -451,7 +451,8 @@ grammar =
   ]
 
   ForBody: [
-    o 'FOR Range',                              -> source: LOC(2) new Value($2)
+    o 'FOR Range',                              -> source: (LOC(2) new Value($2))
+    o 'FOR Range BY Expression',                -> source: (LOC(2) new Value($2)), step: $4
     o 'ForStart ForSource',                     -> $2.own = $1.own; $2.name = $1[0]; $2.index = $1[1]; $2
   ]
 
