@@ -258,10 +258,15 @@ exports.Lexer = class Lexer
       when @chunk[...3] is '///'
         {tokens, index} = @matchWithInterpolations @chunk[3..], HEREGEX, '///', 3
       when match = REGEX.exec @chunk
-        [regex] = match
+        [regex, closed] = match
         index = regex.length
         prev = last @tokens
-        return 0 if prev and (prev[0] in (if prev.spaced then NOT_REGEX else NOT_SPACED_REGEX))
+        if prev
+          if prev.spaced and prev[0] in CALLABLE
+            return 0 if not closed or POSSIBLY_DIVISION.test regex
+          else if prev[0] in NOT_REGEX
+            return 0
+        @error 'missing / (unclosed regex)' unless closed
       else
         return 0
 
@@ -776,13 +781,13 @@ HEREDOC_INDENT = /\n+([^\n\S]*)(?=\S)/g
 
 # Regex-matching-regexes.
 REGEX = /// ^
-  / (?! [\s=] ) (    # disallow leading whitespace or equals sign
+  / (?!/) (
   ?: [^ [ / \n \\ ]  # every other thing
    | \\.             # anything (but newlines) escaped
    | \[              # character class
        (?: \\. | [^ \] \n \\ ] )*
      ]
-  )+ /
+  )* (/)?
 ///
 
 REGEX_FLAGS  = /^\w*/
@@ -797,6 +802,8 @@ HEREGEX_OMIT = ///
 ///g
 
 REGEX_ILLEGAL = /// ^ ( / | /{3}\s*) (\*) ///
+
+POSSIBLY_DIVISION   = /// ^ /=?\s ///
 
 # Other regexes.
 MULTILINER          = /\n/g
@@ -841,23 +848,17 @@ RELATION = ['IN', 'OF', 'INSTANCEOF']
 # Boolean tokens.
 BOOL = ['TRUE', 'FALSE']
 
-# Tokens which a regular expression will never immediately follow, but which
-# a division operator might.
-#
-# See: http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions
-#
-# Our list is shorter, due to sans-parentheses method calls.
-NOT_REGEX = ['NUMBER', 'REGEX', 'BOOL', 'NULL', 'UNDEFINED', '++', '--']
-
-# If the previous token is not spaced, there are more preceding tokens that
-# force a division parse:
-NOT_SPACED_REGEX = NOT_REGEX.concat ')', '}', 'THIS', 'IDENTIFIER', 'STRING', ']'
-
 # Tokens which could legitimately be invoked or indexed. An opening
 # parentheses or bracket following these tokens will be recorded as the start
 # of a function invocation or indexing operation.
-CALLABLE  = ['IDENTIFIER', 'STRING', 'REGEX', ')', ']', '}', '?', '::', '@', 'THIS', 'SUPER']
-INDEXABLE = CALLABLE.concat 'NUMBER', 'BOOL', 'NULL', 'UNDEFINED'
+CALLABLE  = ['IDENTIFIER', ')', ']', '?', '@', 'THIS', 'SUPER']
+INDEXABLE = CALLABLE.concat ['NUMBER', 'STRING', 'REGEX', 'BOOL', 'NULL', 'UNDEFINED', '}', '::']
+
+# Tokens which a regular expression will never immediately follow (except spaced
+# CALLABLEs in some cases), but which a division operator can.
+#
+# See: http://www-archive.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions
+NOT_REGEX = INDEXABLE.concat ['++', '--']
 
 # Tokens that, when immediately preceding a `WHEN`, indicate that the `WHEN`
 # occurs at the start of a line. We disambiguate these from trailing whens to

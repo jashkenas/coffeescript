@@ -405,3 +405,29 @@ test "missing `)`, `}`, `]`", ->
       foo#{ bar "#{1}"
           ^
   '''
+
+test "unclosed regexes", ->
+  assertErrorFormat '''
+    /
+  ''', '''
+    [stdin]:1:1: error: missing / (unclosed regex)
+    /
+    ^
+  '''
+  assertErrorFormat '''
+    # Note the double escaping; this would be `/a\/` real code.
+    /a\\/
+  ''', '''
+    [stdin]:2:1: error: missing / (unclosed regex)
+    /a\\/
+    ^
+  '''
+  assertErrorFormat '''
+    /// ^
+      a #{""" ""#{if /[/].test "|" then 1 else 0}"" """}
+    ///
+  ''', '''
+    [stdin]:2:18: error: missing / (unclosed regex)
+      a #{""" ""#{if /[/].test "|" then 1 else 0}"" """}
+                     ^
+  '''
