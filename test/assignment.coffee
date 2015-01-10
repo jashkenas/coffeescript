@@ -6,6 +6,7 @@
 # * Destructuring Assignment
 # * Context Property (@) Assignment
 # * Existential Assignment (?=)
+# * Assignment to variables similar to generated variables
 
 test "context property assignment (using @)", ->
   nonce = {}
@@ -405,3 +406,34 @@ test "#2181: conditional assignment as a subexpression", ->
   false && a or= true
   eq false, a
   eq false, not a or= true
+
+test "#1500: Assignment to variables similar to generated variables", ->
+  _len = 0
+  x = ((_results = null; i) for i in [1, 2, 3])
+  arrayEq [1, 2, 3], x
+  eq 0, _len
+
+  for x in [1, 2, 3]
+    f = ->
+      _i = 0
+    f()
+    eq 'undefined', typeof _i
+
+  _ref = 2
+  x = _ref * 2 ? 1
+  eq x, 4
+  eq 'undefined', typeof _ref1
+
+  x = {}
+  _base = -> x
+  _name = -1
+  _base()[-_name] ?= 2
+  eq x[1], 2
+  eq _base(), x
+  eq _name, -1
+
+  f = (@a, _at_a, a) -> [@a, _at_a, a]
+  arrayEq [1, 2, 3], f.call scope = {}, 1, 2, 3
+  eq 1, scope.a
+
+  doesNotThrow -> CoffeeScript.compile '(@_slice...) ->'

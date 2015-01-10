@@ -156,6 +156,7 @@ exports.Lexer = class Lexer
         else  tag
 
     tagToken = @token tag, id, 0, idLength
+    tagToken.variable = not forcedIdentifier
     if poppedToken
       [tagToken[2].first_line, tagToken[2].first_column] =
         [poppedToken[2].first_line, poppedToken[2].first_column]
