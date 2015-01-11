@@ -437,3 +437,23 @@ test "#1500: Assignment to variables similar to generated variables", ->
   eq 1, scope.a
 
   doesNotThrow -> CoffeeScript.compile '(@_slice...) ->'
+
+test "Assignment to variables similar to helper functions", ->
+  f = (__slice...) -> __slice
+  arrayEq [1, 2, 3], f 1, 2, 3
+  eq 'undefined', typeof __slice1
+
+  class A
+  class B extends A
+    __extends = 3
+    __hasProp = 4
+    value: 5
+    method: (__bind, __bind1) => [__bind, __bind1, __extends, __hasProp, @value]
+  {method} = new B
+  arrayEq [1, 2, 3, 4, 5], method 1, 2
+
+  __modulo = -1 %% 3
+  eq 2, __modulo
+
+  __indexOf = [1, 2, 3]
+  ok 2 in __indexOf

@@ -718,9 +718,8 @@ COFFEE_KEYWORDS = COFFEE_KEYWORDS.concat COFFEE_ALIASES
 # to avoid having a JavaScript error at runtime.
 RESERVED = [
   'case', 'default', 'function', 'var', 'void', 'with', 'const', 'let', 'enum'
-  'export', 'import', 'native', '__hasProp', '__extends', '__slice', '__bind'
-  '__indexOf', 'implements', 'interface', 'package', 'private', 'protected'
-  'public', 'static'
+  'export', 'import', 'native', 'implements', 'interface', 'package', 'private'
+  'protected', 'public', 'static'
 ]
 
 STRICT_PROSCRIBED = ['arguments', 'eval', 'yield*']

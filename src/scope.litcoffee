@@ -24,7 +24,9 @@ and therefore should be avoided when generating variables.
       constructor: (@parent, @expressions, @method, @referencedVars) ->
         @variables = [{name: 'arguments', type: 'arguments'}]
         @positions = {}
-        Scope.root = this unless @parent
+        unless @parent
+          @utilities = {}
+          Scope.root = this
 
 Adds a new variable or overrides an existing one.
 

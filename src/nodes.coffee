@@ -2260,9 +2260,12 @@ IS_REGEX = /^\//
 
 # Helper for ensuring that utility functions are assigned at the top level.
 utility = (name) ->
-  ref = "__#{name}"
-  Scope.root.assign ref, UTILITIES[name]()
-  ref
+  if name of Scope.root.utilities
+    Scope.root.utilities[name]
+  else
+    ref = Scope.root.freeVariable "_#{name}"
+    Scope.root.assign ref, UTILITIES[name]()
+    Scope.root.utilities[name] = ref
 
 multident = (code, tab) ->
   code = code.replace /\n/g, '$&' + tab
