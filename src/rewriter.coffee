@@ -157,7 +157,7 @@ class exports.Rewriter
 
       endImplicitCall = ->
         stack.pop()
-        tokens.splice i, 0, generate 'CALL_END', ')'
+        tokens.splice i, 0, generate 'CALL_END', ')', ['', 'end of input', token[2]]
         i += 1
 
       startImplicitObject = (j, startsLine = yes) ->

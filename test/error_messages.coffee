@@ -111,6 +111,11 @@ test "#1096: unexpected generated tokens", ->
     a:
       ^
   '''
+  assertErrorFormat 'a +', '''
+    [stdin]:1:4: error: unexpected end of input
+    a +
+       ^
+  '''
   # Unexpected implicit object
   assertErrorFormat '''
     for i in [1]:
