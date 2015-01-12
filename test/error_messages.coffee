@@ -121,6 +121,72 @@ test "#1096: unexpected generated tokens", ->
                 ^
   '''
 
+test "#1316: unexpected end of interpolation", ->
+  assertErrorFormat '''
+    "#{+}"
+  ''', '''
+    [stdin]:1:5: error: unexpected end of interpolation
+    "#{+}"
+        ^
+  '''
+  assertErrorFormat '''
+    "#{++}"
+  ''', '''
+    [stdin]:1:6: error: unexpected end of interpolation
+    "#{++}"
+         ^
+  '''
+  assertErrorFormat '''
+    "#{-}"
+  ''', '''
+    [stdin]:1:5: error: unexpected end of interpolation
+    "#{-}"
+        ^
+  '''
+  assertErrorFormat '''
+    "#{--}"
+  ''', '''
+    [stdin]:1:6: error: unexpected end of interpolation
+    "#{--}"
+         ^
+  '''
+  assertErrorFormat '''
+    "#{~}"
+  ''', '''
+    [stdin]:1:5: error: unexpected end of interpolation
+    "#{~}"
+        ^
+  '''
+  assertErrorFormat '''
+    "#{!}"
+  ''', '''
+    [stdin]:1:5: error: unexpected end of interpolation
+    "#{!}"
+        ^
+  '''
+  assertErrorFormat '''
+    "#{not}"
+  ''', '''
+    [stdin]:1:7: error: unexpected end of interpolation
+    "#{not}"
+          ^
+  '''
+  assertErrorFormat '''
+    "#{5) + (4}_"
+  ''', '''
+    [stdin]:1:5: error: unmatched )
+    "#{5) + (4}_"
+        ^
+  '''
+  # #2918
+  assertErrorFormat '''
+    "#{foo.}"
+  ''', '''
+    [stdin]:1:8: error: unexpected end of interpolation
+    "#{foo.}"
+           ^
+  '''
+
 test "#3325: implicit indentation errors", ->
   assertErrorFormat '''
     i for i in a then i

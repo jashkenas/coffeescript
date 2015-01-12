@@ -499,16 +499,16 @@ exports.Lexer = class Lexer
       # Skip the trailing `}`.
       index += 1
 
-      # Remove leading and trailing `{` and `}`.
-      nested.shift()
-      nested.pop()
+      # Turn the leading and trailing `{` and `}` into parentheses. Unnecessary
+      # parentheses will be removed later.
+      [open, ..., close] = nested
+      open[0]  = open[1]  = '('
+      close[0] = close[1] = ')'
+      close.origin = ['', 'end of interpolation', close[2]]
 
       # Remove leading 'TERMINATOR' (if any).
-      nested.shift() if nested[0]?[0] is 'TERMINATOR'
+      nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
 
-      if nested.length > 1
-        nested.unshift @makeToken '(', '(', offsetInChunk + 1, 0
-        nested.push    @makeToken ')', ')', offsetInChunk + 1 + index, 0
       # Push a fake 'TOKENS' token, which will get turned into real tokens later.
       tokens.push ['TOKENS', nested]
 
@@ -535,8 +535,8 @@ exports.Lexer = class Lexer
       [tag, value] = token
       switch tag
         when 'TOKENS'
-          # Optimize out empty interpolations.
-          continue if value.length is 0
+          # Optimize out empty interpolations (an empty pair of parentheses).
+          continue if value.length is 2
           # Push all the tokens in the fake 'TOKENS' token. These already have
           # sane location data.
           locationToken = value[0]
