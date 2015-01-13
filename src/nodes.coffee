@@ -736,7 +736,7 @@ exports.Extends = class Extends extends Base
 
   # Hooks one constructor into another's prototype chain.
   compileToFragments: (o) ->
-    new Call(new Value(new Literal utility 'extends'), [@child, @parent]).compileToFragments o
+    new Call(new Value(new Literal utility 'extends', o), [@child, @parent]).compileToFragments o
 
 #### Access
 
@@ -1017,7 +1017,7 @@ exports.Class = class Class extends Base
   addBoundFunctions: (o) ->
     for bvar in @boundFuncs
       lhs = (new Value (new Literal "this"), [new Access bvar]).compile o
-      @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind'}(#{lhs}, this)"
+      @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind', o}(#{lhs}, this)"
     return
 
   # Merge the properties from a top-level object as prototypal properties
@@ -1231,7 +1231,7 @@ exports.Assign = class Assign extends Base
       if not expandedIdx and obj instanceof Splat
         name = obj.name.unwrap().value
         obj = obj.unwrap()
-        val = "#{olen} <= #{vvarText}.length ? #{ utility 'slice' }.call(#{vvarText}, #{i}"
+        val = "#{olen} <= #{vvarText}.length ? #{ utility 'slice', o }.call(#{vvarText}, #{i}"
         if rest = olen - i - 1
           ivar = o.scope.freeVariable 'i'
           val += ", #{ivar} = #{vvarText}.length - #{rest}) : (#{ivar} = #{i}, [])"
@@ -1506,12 +1506,12 @@ exports.Splat = class Splat extends Base
       node = list[0]
       fragments = node.compileToFragments o, LEVEL_LIST
       return fragments if apply
-      return [].concat node.makeCode("#{ utility 'slice' }.call("), fragments, node.makeCode(")")
+      return [].concat node.makeCode("#{ utility 'slice', o }.call("), fragments, node.makeCode(")")
     args = list[index..]
     for node, i in args
       compiledNode = node.compileToFragments o, LEVEL_LIST
       args[i] = if node instanceof Splat
-      then [].concat node.makeCode("#{ utility 'slice' }.call("), compiledNode, node.makeCode(")")
+      then [].concat node.makeCode("#{ utility 'slice', o }.call("), compiledNode, node.makeCode(")")
       else [].concat node.makeCode("["), compiledNode, node.makeCode("]")
     if index is 0
       node = list[0]
@@ -1777,7 +1777,7 @@ exports.Op = class Op extends Base
     new Call(floor, [div]).compileToFragments o
 
   compileModulo: (o) ->
-    mod = new Value new Literal utility 'modulo'
+    mod = new Value new Literal utility 'modulo', o
     new Call(mod, [@first, @second]).compileToFragments o
 
   toString: (idt) ->
@@ -1811,7 +1811,7 @@ exports.In = class In extends Base
 
   compileLoopTest: (o) ->
     [sub, ref] = @object.cache o, LEVEL_LIST
-    fragments = [].concat @makeCode(utility('indexOf') + ".call("), @array.compileToFragments(o, LEVEL_LIST),
+    fragments = [].concat @makeCode(utility('indexOf', o) + ".call("), @array.compileToFragments(o, LEVEL_LIST),
       @makeCode(", "), ref, @makeCode(") " + if @negated then '< 0' else '>= 0')
     return fragments if fragmentsToText(sub) is fragmentsToText(ref)
     fragments = sub.concat @makeCode(', '), fragments
@@ -2020,7 +2020,7 @@ exports.For = class For extends While
     varPart = "\n#{idt1}#{namePart};" if namePart
     if @object
       forPartFragments   = [@makeCode("#{kvar} in #{svar}")]
-      guardPart = "\n#{idt1}if (!#{utility 'hasProp'}.call(#{svar}, #{kvar})) continue;" if @own
+      guardPart = "\n#{idt1}if (!#{utility 'hasProp', o}.call(#{svar}, #{kvar})) continue;" if @own
     bodyFragments = body.compileToFragments merge(o, indent: idt1), LEVEL_TOP
     if bodyFragments and (bodyFragments.length > 0)
       bodyFragments = [].concat @makeCode("\n"), bodyFragments, @makeCode("\n")
@@ -2179,10 +2179,10 @@ UTILITIES =
 
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls, and copies of any static properties.
-  extends: -> "
+  extends: (o) -> "
     function(child, parent) {
       for (var key in parent) {
-        if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key];
+        if (#{utility 'hasProp', o}.call(parent, key)) child[key] = parent[key];
       }
       function ctor() {
         this.constructor = child;
@@ -2259,13 +2259,14 @@ IS_REGEX = /^\//
 # ----------------
 
 # Helper for ensuring that utility functions are assigned at the top level.
-utility = (name) ->
-  if name of Scope.root.utilities
-    Scope.root.utilities[name]
+utility = (name, o) ->
+  {root} = o.scope
+  if name of root.utilities
+    root.utilities[name]
   else
-    ref = Scope.root.freeVariable "_#{name}"
-    Scope.root.assign ref, UTILITIES[name]()
-    Scope.root.utilities[name] = ref
+    ref = root.freeVariable "_#{name}"
+    root.assign ref, UTILITIES[name] o
+    root.utilities[name] = ref
 
 multident = (code, tab) ->
   code = code.replace /\n/g, '$&' + tab
