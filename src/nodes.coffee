@@ -1360,8 +1360,8 @@ exports.Code = class Code extends Base
     for param in @params when param not instanceof Expansion
       o.scope.parameter param.asReference o
     for param in @params when param.splat or param instanceof Expansion
-      for {name: p} in @params when param not instanceof Expansion
-        if p.value then o.scope.add p.value, 'var', yes
+      for p in @params when p not instanceof Expansion and p.name.value
+        o.scope.add p.name.value, 'var', yes
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
                           new Value new Literal 'arguments'
       break
