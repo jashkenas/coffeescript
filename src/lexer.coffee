@@ -156,6 +156,7 @@ exports.Lexer = class Lexer
         else  tag
 
     tagToken = @token tag, id, 0, idLength
+    tagToken.variable = not forcedIdentifier
     if poppedToken
       [tagToken[2].first_line, tagToken[2].first_column] =
         [poppedToken[2].first_line, poppedToken[2].first_column]
@@ -717,9 +718,8 @@ COFFEE_KEYWORDS = COFFEE_KEYWORDS.concat COFFEE_ALIASES
 # to avoid having a JavaScript error at runtime.
 RESERVED = [
   'case', 'default', 'function', 'var', 'void', 'with', 'const', 'let', 'enum'
-  'export', 'import', 'native', '__hasProp', '__extends', '__slice', '__bind'
-  '__indexOf', 'implements', 'interface', 'package', 'private', 'protected'
-  'public', 'static'
+  'export', 'import', 'native', 'implements', 'interface', 'package', 'private'
+  'protected', 'public', 'static'
 ]
 
 STRICT_PROSCRIBED = ['arguments', 'eval', 'yield*']

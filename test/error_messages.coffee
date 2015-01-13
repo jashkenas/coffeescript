@@ -436,3 +436,19 @@ test "unclosed regexes", ->
       a #{""" ""#{if /[/].test "|" then 1 else 0}"" """}
                      ^
   '''
+
+test "duplicate function arguments", ->
+  assertErrorFormat '''
+    (foo, bar, foo) ->
+  ''', '''
+    [stdin]:1:12: error: multiple parameters named foo
+    (foo, bar, foo) ->
+               ^^^
+  '''
+  assertErrorFormat '''
+    (@foo, bar, @foo) ->
+  ''', '''
+    [stdin]:1:13: error: multiple parameters named @foo
+    (@foo, bar, @foo) ->
+                ^^^^
+  '''

@@ -320,7 +320,7 @@ exports.Block = class Block extends Base
     o.indent  = if o.bare then '' else TAB
     o.level   = LEVEL_TOP
     @spaced   = yes
-    o.scope   = new Scope null, this, null
+    o.scope   = new Scope null, this, null, o.referencedVars
     # Mark given local variables in the root scope as parameters so they don't
     # end up being declared on this block.
     o.scope.parameter name for name in o.locals or []
@@ -1361,7 +1361,6 @@ exports.Code = class Code extends Base
       o.scope.parameter param.asReference o
     for param in @params when param.splat or param instanceof Expansion
       for {name: p} in @params when param not instanceof Expansion
-        if p.this then p = p.properties[0].name
         if p.value then o.scope.add p.value, 'var', yes
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
                           new Value new Literal 'arguments'
@@ -1386,7 +1385,7 @@ exports.Code = class Code extends Base
       o.scope.parameter fragmentsToText params[i]
     uniqs = []
     @eachParamName (name, node) ->
-      node.error "multiple parameters named '#{name}'" if name in uniqs
+      node.error "multiple parameters named #{name}" if name in uniqs
       uniqs.push name
     @body.makeReturn() unless wasEmpty or @noReturn
     code = 'function'
@@ -1431,9 +1430,8 @@ exports.Param = class Param extends Base
     return @reference if @reference
     node = @name
     if node.this
-      node = node.properties[0].name
-      if node.value.reserved
-        node = new Literal o.scope.freeVariable node.value
+      name = "at_#{node.properties[0].name.value}"
+      node = new Literal o.scope.freeVariable name
     else if node.isComplex()
       node = new Literal o.scope.freeVariable 'arg'
     node = new Value node
@@ -1451,9 +1449,7 @@ exports.Param = class Param extends Base
   # `name` is the name of the parameter and `node` is the AST node corresponding
   # to that name.
   eachName: (iterator, name = @name)->
-    atParam = (obj) ->
-      node = obj.properties[0].name
-      iterator node.value, node unless node.value.reserved
+    atParam = (obj) -> iterator "@#{obj.properties[0].name.value}", obj
     # * simple literals `foo`
     return iterator name.value, name if name instanceof Literal
     # * at-params `@foo`
@@ -2264,9 +2260,12 @@ IS_REGEX = /^\//
 
 # Helper for ensuring that utility functions are assigned at the top level.
 utility = (name) ->
-  ref = "__#{name}"
-  Scope.root.assign ref, UTILITIES[name]()
-  ref
+  if name of Scope.root.utilities
+    Scope.root.utilities[name]
+  else
+    ref = Scope.root.freeVariable "_#{name}"
+    Scope.root.assign ref, UTILITIES[name]()
+    Scope.root.utilities[name] = ref
 
 multident = (code, tab) ->
   code = code.replace /\n/g, '$&' + tab
