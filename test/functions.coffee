@@ -198,6 +198,20 @@ test "#156: parameter lists with expansion in array destructuring", ->
     last
   eq 3, expandArray 1, 2, 3, [1, 2, 3]
 
+test "#3502: variable definitions and expansion", ->
+  a = b = 0
+  f = (a, ..., b) -> [a, b]
+  arrayEq [1, 5], f 1, 2, 3, 4, 5
+  eq 0, a
+  eq 0, b
+
+test "variable definitions and splat", ->
+  a = b = 0
+  f = (a, middle..., b) -> [a, middle, b]
+  arrayEq [1, [2, 3, 4], 5], f 1, 2, 3, 4, 5
+  eq 0, a
+  eq 0, b
+
 test "default values with function calls", ->
   doesNotThrow -> CoffeeScript.compile "(x = f()) ->"
 
