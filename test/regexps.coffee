@@ -128,6 +128,10 @@ test "always division and never regex after some tokens", ->
   eq 2, "4"/b/g
   eq 2, "4"/ b/g
   eq 2, "4" /b/g
+  eq 20, "4#{0}" / b/g
+  eq 20, "4#{0}"/b/g
+  eq 20, "4#{0}"/ b/g
+  eq 20, "4#{0}" /b/g
   ok isNaN /a/ / b/g
   ok isNaN /a/i / b/g
   ok isNaN /a//b/g

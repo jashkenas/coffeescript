@@ -263,7 +263,7 @@ exports.Lexer = class Lexer
         index = regex.length
         prev = last @tokens
         if prev
-          if prev.spaced and prev[0] in CALLABLE
+          if prev.spaced and prev[0] in CALLABLE and not prev.stringEnd
             return 0 if not closed or POSSIBLY_DIVISION.test regex
           else if prev[0] in NOT_REGEX
             return 0
@@ -417,7 +417,7 @@ exports.Lexer = class Lexer
     else if value in SHIFT           then tag = 'SHIFT'
     else if value in LOGIC or value is '?' and prev?.spaced then tag = 'LOGIC'
     else if prev and not prev.spaced
-      if value is '(' and prev[0] in CALLABLE
+      if value is '(' and prev[0] in CALLABLE and not prev.stringEnd
         prev[0] = 'FUNC_EXIST' if prev[0] is '?'
         tag = 'CALL_START'
       else if value is '[' and prev[0] in INDEXABLE
