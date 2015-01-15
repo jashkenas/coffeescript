@@ -209,7 +209,7 @@ class exports.Rewriter
 
       # Recognize standard implicit calls like
       # f a, f() b, f? c, h[0] d etc.
-      if (tag in IMPLICIT_FUNC and token.spaced and not token.stringEnd or
+      if (tag in IMPLICIT_FUNC and token.spaced and not token.stringEnd and not token.regexEnd or
           tag is '?' and i > 0 and not tokens[i - 1].spaced) and
          (nextTag in IMPLICIT_CALL or
           nextTag in IMPLICIT_UNSPACED_CALL and
@@ -243,7 +243,7 @@ class exports.Rewriter
       # which is probably always unintended.
       # Furthermore don't allow this in literal arrays, as
       # that creates grammatical ambiguities.
-      if tag in IMPLICIT_FUNC and not token.stringEnd and
+      if tag in IMPLICIT_FUNC and not token.stringEnd and not token.regexEnd and
          @matchTags(i + 1, 'INDENT', null, ':') and
          not @findTagsBackwards(i, ['CLASS', 'EXTENDS', 'IF', 'CATCH',
           'SWITCH', 'LEADING_WHEN', 'FOR', 'WHILE', 'UNTIL'])

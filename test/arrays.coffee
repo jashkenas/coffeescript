@@ -91,3 +91,19 @@ test "#3194: string interpolation in array", ->
   eq 2, arr.length
   eq 'ab', arr[0]
   eq 'value', arr[1].key
+
+test "regex interpolation in array", ->
+  arr = [ /a/
+          key: 'value'
+        ]
+  eq 2, arr.length
+  eq 'a', arr[0].source
+  eq 'value', arr[1].key
+
+  b = 'b'
+  arr = [ ///a#{b}///
+          key: 'value'
+        ]
+  eq 2, arr.length
+  eq 'ab', arr[0].source
+  eq 'value', arr[1].key
