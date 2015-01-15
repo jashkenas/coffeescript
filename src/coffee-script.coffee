@@ -202,16 +202,17 @@ lexer = new Lexer
 # directly as a "Jison lexer".
 parser.lexer =
   lex: ->
-    token = @tokens[@pos++]
+    token = parser.tokens[@pos++]
     if token
       [tag, @yytext, @yylloc] = token
-      @errorToken = token.origin or token
+      parser.errorToken = token.origin or token
       @yylineno = @yylloc.first_line
     else
       tag = ''
 
     tag
-  setInput: (@tokens) ->
+  setInput: (tokens) ->
+    parser.tokens = tokens
     @pos = 0
   upcomingInput: ->
     ""
@@ -223,7 +224,7 @@ parser.yy.parseError = (message, {token}) ->
   # Disregard Jison's message, it contains redundant line numer information.
   # Disregard the token, we take its value directly from the lexer in case
   # the error is caused by a generated token which might refer to its origin.
-  {errorToken, tokens} = parser.lexer
+  {errorToken, tokens} = parser
   [errorTag, errorText, errorLoc] = errorToken
 
   errorText = if errorToken is tokens[tokens.length - 1]
