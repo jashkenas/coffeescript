@@ -128,6 +128,10 @@ test "always division and never regex after some tokens", ->
   eq 2, "4"/b/g
   eq 2, "4"/ b/g
   eq 2, "4" /b/g
+  eq 20, "4#{0}" / b/g
+  eq 20, "4#{0}"/b/g
+  eq 20, "4#{0}"/ b/g
+  eq 20, "4#{0}" /b/g
   ok isNaN /a/ / b/g
   ok isNaN /a/i / b/g
   ok isNaN /a//b/g
@@ -248,3 +252,16 @@ test '#2388: `///` in heregex interpolations', ->
   scan = (regex) -> regex.exec('\t  foo')[0]
   eq '/\t  /', /// #{scan /// [#{ws}]* ///} /// + ''
 
+test "regexes are not callable", ->
+  throws -> CoffeeScript.compile '/a/()'
+  throws -> CoffeeScript.compile '///a#{b}///()'
+  throws -> CoffeeScript.compile '/a/ 1'
+  throws -> CoffeeScript.compile '///a#{b}/// 1'
+  throws -> CoffeeScript.compile '''
+    /a/
+       k: v
+  '''
+  throws -> CoffeeScript.compile '''
+    ///a#{b}///
+       k: v
+  '''

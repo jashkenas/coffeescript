@@ -345,3 +345,17 @@ eq '''  <- keep these spaces ->  ''', '  <- keep these spaces ->  '
 
 test "#1046, empty string interpolations", ->
   eq "#{ }", ''
+
+test "strings are not callable", ->
+  throws -> CoffeeScript.compile '"a"()'
+  throws -> CoffeeScript.compile '"a#{b}"()'
+  throws -> CoffeeScript.compile '"a" 1'
+  throws -> CoffeeScript.compile '"a#{b}" 1'
+  throws -> CoffeeScript.compile '''
+    "a"
+       k: v
+  '''
+  throws -> CoffeeScript.compile '''
+    "a#{b}"
+       k: v
+  '''
