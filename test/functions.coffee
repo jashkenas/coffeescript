@@ -116,8 +116,13 @@ test "@-parameters: automatically assign an argument's value to a property of th
   ((@prop...) ->).call context = {}, 0, nonce, 0
   eq nonce, context.prop[1]
 
-  # the argument should still be able to be referenced normally
-  eq nonce, (((@prop) -> prop).call {}, nonce)
+  # the argument should not be able to be referenced normally
+  code = '((@prop) -> prop).call {}'
+  doesNotThrow -> CoffeeScript.compile code
+  throws (-> CoffeeScript.run code), ReferenceError
+  code = '((@prop) -> _at_prop).call {}'
+  doesNotThrow -> CoffeeScript.compile code
+  throws (-> CoffeeScript.run code), ReferenceError
 
 test "@-parameters and splats with constructors", ->
   a = {}
@@ -193,6 +198,20 @@ test "#156: parameter lists with expansion in array destructuring", ->
     last
   eq 3, expandArray 1, 2, 3, [1, 2, 3]
 
+test "#3502: variable definitions and expansion", ->
+  a = b = 0
+  f = (a, ..., b) -> [a, b]
+  arrayEq [1, 5], f 1, 2, 3, 4, 5
+  eq 0, a
+  eq 0, b
+
+test "variable definitions and splat", ->
+  a = b = 0
+  f = (a, middle..., b) -> [a, middle, b]
+  arrayEq [1, [2, 3, 4], 5], f 1, 2, 3, 4, 5
+  eq 0, a
+  eq 0, b
+
 test "default values with function calls", ->
   doesNotThrow -> CoffeeScript.compile "(x = f()) ->"
 
@@ -200,6 +219,28 @@ test "arguments vs parameters", ->
   doesNotThrow -> CoffeeScript.compile "f(x) ->"
   f = (g) -> g()
   eq 5, f (x) -> 5
+
+test "reserved keyword as parameters", ->
+  f = (_case, @case) -> [_case, @case]
+  [a, b] = f(1, 2)
+  eq 1, a
+  eq 2, b
+
+  f = (@case, _case...) -> [@case, _case...]
+  [a, b, c] = f(1, 2, 3)
+  eq 1, a
+  eq 2, b
+  eq 3, c
+
+test "reserved keyword at-splat", ->
+  f = (@case...) -> @case
+  [a, b] = f(1, 2)
+  eq 1, a
+  eq 2, b
+
+test "#1574: Destructuring and a parameter named _arg", ->
+  f = ({a, b}, _arg, _arg1) -> [a, b, _arg, _arg1]
+  arrayEq [1, 2, 3, 4], f a: 1, b: 2, 3, 4
 
 test "#1844: bound functions in nested comprehensions causing empty var statements", ->
   a = ((=>) for a in [0] for b in [0])

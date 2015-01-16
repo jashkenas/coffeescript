@@ -5,6 +5,7 @@ test.litcoffee
 parser.output
 test/fixtures/underscore
 test/*.js
+!test/promise.js
 examples/beautiful_code/parse.coffee
 *.gem
 /node_modules

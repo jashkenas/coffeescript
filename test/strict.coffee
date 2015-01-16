@@ -55,25 +55,31 @@ test "octal escape sequences prohibited", ->
   strictOk  "`'\\1'`"
   eq "\\" + "1", `"\\1"`
 
+  # Also test other string types.
+  strict           "'\\\\\\1'"
+  eq "\x008",      '\08'
+  eq "\\\\" + "1", '\\\\1'
+  strict           "'''\\\\\\1'''"
+  eq "\x008",      '''\08'''
+  eq "\\\\" + "1", '''\\\\1'''
+  strict           '"""\\\\\\1"""'
+  eq "\x008",      """\08"""
+  eq "\\\\" + "1", """\\\\1"""
+
 test "duplicate formal parameters are prohibited", ->
   nonce = {}
   # a Param can be an Identifier, ThisProperty( @-param ), Array, or Object
   # a Param can also be a splat (...) or an assignment (param=value)
   # the following function expressions should throw errors
   strict '(_,_)->',          'param, param'
-  strict '(_,@_)->',         'param, @param'
   strict '(_,_...)->',       'param, param...'
-  strict '(@_,_...)->',      '@param, param...'
   strict '(_,_ = true)->',   'param, param='
   strict '(@_,@_)->',        'two @params'
-  strict '(_,@_ = true)->',  'param, @param='
+  strict '(@case,@case)->',  'two @reserved'
   strict '(_,{_})->',        'param, {param}'
-  strict '(@_,{_})->',       '@param, {param}'
   strict '({_,_})->',        '{param, param}'
-  strict '({_,@_})->',       '{param, @param}'
   strict '(_,[_])->',        'param, [param]'
   strict '([_,_])->',        '[param, param]'
-  strict '([_,@_])->',       '[param, @param]'
   strict '(_,[_]=true)->',   'param, [param]='
   strict '(_,[@_,{_}])->',   'param, [@param, {param}]'
   strict '(_,[_,{@_}])->',   'param, [param, {@param}]'
@@ -84,6 +90,12 @@ test "duplicate formal parameters are prohibited", ->
   strict '(0:a,1:a)->',      '0:param,1:param'
   strict '({0:a,1:a})->',    '{0:param,1:param}'
   # the following function expressions should **not** throw errors
+  strictOk '(_,@_)->'
+  strictOk '(@_,_...)->'
+  strictOk '(_,@_ = true)->'
+  strictOk '(@_,{_})->'
+  strictOk '({_,@_})->'
+  strictOk '([_,@_])->'
   strictOk '({},_arg)->'
   strictOk '({},{})->'
   strictOk '([]...,_arg)->'
@@ -102,7 +114,6 @@ test "`delete` operand restrictions", ->
   strict 'a = 1; delete a'
   strictOk 'delete a' #noop
   strict '(a) -> delete a'
-  strict '(@a) -> delete a'
   strict '(a...) -> delete a'
   strict '(a = 1) -> delete a'
   strict '([a]) -> delete a'

@@ -246,6 +246,17 @@ test "Optimized range comprehensions.", ->
   ok exxes.join(' ') is 'x x x x x x x x x x'
 
 
+test "#3671: Allow step in optimized range comprehensions.", ->
+
+  exxes = ('x' for [0...10] by 2)
+  eq exxes.join(' ') , 'x x x x x'
+
+
+test "#3671: Disallow guard in optimized range comprehensions.", ->
+
+  throws -> CoffeeScript.compile "exxes = ('x' for [0...10] when a)"
+
+
 test "Loop variables should be able to reference outer variables", ->
   outer = 1
   do ->
