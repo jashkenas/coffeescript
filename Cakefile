@@ -80,6 +80,11 @@ monthNames = [
   'December'
 ]
 
+harmonyFiles = [
+  'async.coffee'
+  'generators.coffee'
+]
+
 formatDate = (date) ->
   date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
     "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
@@ -280,8 +285,9 @@ runTests = (CoffeeScript) ->
   # Ignore generator dependent test files if generators are not available
   generatorsAreAvailable = '--harmony' in process.execArgv or
     '--harmony-generators' in process.execArgv
-  files.splice files.indexOf('generators.coffee'), 1 if not generatorsAreAvailable
-  files.splice files.indexOf('async.coffee'), 1 if not generatorsAreAvailable
+  unless generatorsAreAvailable
+    for harmonyFile in harmonyFiles
+      files.splice files.indexOf(harmonyFile), 1
 
   for file in files when helpers.isCoffee file
     literate = helpers.isLiterate file
