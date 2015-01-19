@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>fileTypes</key>
+  <array>
+    <string>js.md</string>
+  </array>
+  <key>name</key>
+  <string>Literate Javascript</string>
+  <key>patterns</key>
+  <array>
+
+    <dict>
+      <key>match</key>
+      <string>^(?!([ ]{4}|\t)).*$</string>
+      <key>name</key>
+      <string>punctuation.definition.comment.litjs</string>
+    </dict>
+
+    <dict>
+      <key>begin</key>
+      <string>^([ ]{4}|\t)(?!$)</string>
+      <key>end</key>
+      <string>$</string>
+      <key>name</key>
+      <string>source.js.litjs</string>
+      <key>patterns</key>
+      <array>
+        <dict>
+          <key>include</key>
+          <string>source.js</string>
+        </dict>
+      </array>
+    </dict>
+
+  </dict>
+  <key>scopeName</key>
+  <string>source.js.litjs</string>
+  <key>uuid</key>
+  <string>df425cd1-34c4-49d2-ba09-f8445676ccd2</string>
+  
+</dict>
+</plist>
