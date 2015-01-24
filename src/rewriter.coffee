@@ -305,6 +305,7 @@ class exports.Rewriter
           # the continuation of an object.
           else if inImplicitObject() and tag is 'TERMINATOR' and prevTag isnt ',' and
                   not (startsLine and @looksObjectish(i + 1))
+            return forward 1 if nextTag is 'HERECOMMENT'
             endImplicitObject()
           else
             break
