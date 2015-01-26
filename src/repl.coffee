@@ -26,7 +26,7 @@ replDefaults =
       ast = new Block [
         new Assign (new Value new Literal '_'), ast, '='
       ]
-      js = ast.compile bare: yes, locals: Object.keys(context)
+      js = ast.compile bare: yes, locals: Object.keys(context), referencedVars: []
       result = if context is global
         vm.runInThisContext js, filename
       else
