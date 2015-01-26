@@ -320,7 +320,7 @@ exports.Block = class Block extends Base
     o.indent  = if o.bare then '' else TAB
     o.level   = LEVEL_TOP
     @spaced   = yes
-    o.scope   = new Scope null, this, null, o.referencedVars
+    o.scope   = new Scope null, this, null, o.referencedVars ? []
     # Mark given local variables in the root scope as parameters so they don't
     # end up being declared on this block.
     o.scope.parameter name for name in o.locals or []
