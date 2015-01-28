@@ -4,6 +4,7 @@ fs = require 'fs'
 
 test "mkdirp", ->
   deepDir = 'test/mkdirp/deep/dir'
+
   process.argv = [
     'node', 'coffee'
     '-o', deepDir
@@ -11,20 +12,16 @@ test "mkdirp", ->
   ]
   command.run()
 
-  compiledPath = path.join(
-    deepDir
-    path.basename(__filename, '.coffee') + '.js'
-  )
-
-  # Coffee's test suit doesn't support async task.
-  # Here some hack.
-  setTimeout ->
-    ok fs.existsSync(compiledPath)
-  , 1000
+  name = path.basename __filename, '.coffee'
+  compiledPath = path.join deepDir, "#{name}.js"
 
   process.on 'exit', ->
-    fs.unlinkSync compiledPath
-    fs.rmdirSync 'test/mkdirp/deep/dir'
-    fs.rmdirSync 'test/mkdirp/deep'
-    fs.rmdirSync 'test/mkdirp'
+    exists = fs.existsSync compiledPath
 
+    try
+      fs.unlinkSync compiledPath
+      fs.rmdirSync 'test/mkdirp/deep/dir'
+      fs.rmdirSync 'test/mkdirp/deep'
+      fs.rmdirSync 'test/mkdirp'
+
+    ok exists
