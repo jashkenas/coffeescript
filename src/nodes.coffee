@@ -617,7 +617,7 @@ exports.Call = class Call extends Base
       accesses.push new Access new Literal 'constructor' if method.static
       accesses.push new Access new Literal method.name
       (new Value (new Literal method.klass), accesses).compile o
-    else if method?.ctor
+    else if method?.ctor or method?.asynctor
       "#{method.name}.__super__.constructor"
     else
       @error 'cannot call super outside of an instance method.'
@@ -1034,9 +1034,15 @@ exports.Class = class Class extends Base
             assign.error 'cannot define more than one constructor in a class'
           if func.bound
             assign.error 'cannot define a constructor as a bound function'
+          external = yes
           if func instanceof Code
-            assign = @ctor = func
-          else
+            if func.async
+              func.asynctor = yes
+              func.name = 'constructor'
+            else
+              assign = @ctor = func
+              external = no
+          if external
             @externalCtor = o.classScope.freeVariable 'class'
             assign = new Assign new Literal(@externalCtor), func
         else
@@ -1320,8 +1326,13 @@ exports.Code = class Code extends Base
   constructor: (params, body, tag) ->
     @params      = params or []
     @body        = body or new Block
-    @bound       = tag is 'boundfunc'
-    @isGenerator = !!@body.contains (node) ->
+    if tag?
+      @bound       = tag.bound
+      @async       = tag.async
+    else
+      @bound       = false
+      @async       = false
+    @isGenerator = @async or !!@body.contains (node) ->
       node instanceof Op and node.operator in ['yield', 'yield*']
 
   children: ['params', 'body']
@@ -1377,6 +1388,13 @@ exports.Code = class Code extends Base
           val = new Assign new Value(param.name), param.value, '='
           exprs.push new If lit, val
       params.push ref unless splats
+
+    if @asynctor
+      # TODO: Align this with return semantics of ES constructors
+      # should wrap all explicit returns in body with chek whether the value returned
+      # is primitive or not and replace it with `this` value if necessary.
+      @body.expressions.push new Return new Literal 'this'
+
     wasEmpty = @body.isEmpty()
     exprs.unshift splats if splats
     @body.expressions.unshift exprs... if exprs.length
@@ -1388,7 +1406,8 @@ exports.Code = class Code extends Base
       node.error "multiple parameters named #{name}" if name in uniqs
       uniqs.push name
     @body.makeReturn() unless wasEmpty or @noReturn
-    code = 'function'
+    code = if @async then "#{utility 'async', o}(" else ''
+    code += 'function'
     code += '*' if @isGenerator
     code += ' ' + @name if @ctor
     code += '('
@@ -1399,6 +1418,7 @@ exports.Code = class Code extends Base
     answer.push @makeCode ') {'
     answer = answer.concat(@makeCode("\n"), @body.compileWithDeclarations(o), @makeCode("\n#{@tab}")) unless @body.isEmpty()
     answer.push @makeCode '}'
+    answer.push @makeCode ')' if @async
 
     return [@makeCode(@tab), answer...] if @ctor
     if @front or (o.level >= LEVEL_ACCESS) then @wrapInBraces answer else answer
@@ -2220,6 +2240,32 @@ UTILITIES =
   # Shortcuts to speed up the lookup time for native functions.
   hasProp: -> '{}.hasOwnProperty'
   slice  : -> '[].slice'
+
+  # Create async function from generator (Heavily dependent on Promises/A+ semantics)
+  async: -> "
+    function (fn) {
+      return function () {
+        var gen = fn.apply(this, arguments);
+        try {
+          return resolved();
+        } catch (e) {
+          return Promise.reject(e);
+        }
+        function resolved(res) { return next(gen.next(res)); }
+        function rejected(err) { return next(gen.throw(err)); }
+        function next(ret) {
+          var val = ret.value;
+          if (ret.done) {
+            return Promise.resolve(val);
+          } else try {
+            return val.then(resolved, rejected);
+          } catch (_) {
+            throw new Error('Expected Promise/A+');
+          }
+        }
+      };
+    }
+  "
 
 # Levels indicate a node's position in the AST. Useful for knowing if
 # parens are necessary or superfluous.

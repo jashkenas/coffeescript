@@ -125,8 +125,9 @@ task 'build:full', 'rebuild the source twice, and run the tests', ->
       for mod of require.cache when csDir is mod[0 ... csDir.length]
         delete require.cache[mod]
 
-      unless runTests require csPath
-        process.exit 1
+      runTests (require csPath), (success) ->
+        unless success
+          process.exit 1
 
 
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
@@ -215,12 +216,13 @@ task 'bench', 'quick benchmark of compilation time', ->
 
 
 # Run the CoffeeScript test suite.
-runTests = (CoffeeScript) ->
+runTests = (CoffeeScript, cb) ->
   CoffeeScript.register()
   startTime   = Date.now()
   currentFile = null
   passedTests = 0
   failures    = []
+  promises    = []
 
   global[name] = func for name, func of require 'assert'
 
@@ -228,18 +230,29 @@ runTests = (CoffeeScript) ->
   global.CoffeeScript = CoffeeScript
   global.Repl = require './lib/coffee-script/repl'
 
+  # Simple chek if value is Promise-like (thenable)
+  isPromise = (p) -> typeof p?.then is 'function'
+
   # Our test helper function for delimiting different test cases.
   global.test = (description, fn) ->
-    try
-      fn.test = {description, currentFile}
-      fn.call(fn)
-      ++passedTests
-    catch e
-      failures.push
-        filename: currentFile
-        error: e
-        description: description if description?
-        source: fn.toString() if fn.toString?
+    do (currentFile) ->
+      resolve = ->
+        ++passedTests
+      reject = (e) ->
+        failures.push
+          filename: currentFile
+          error: e
+          description: description if description?
+          source: fn.toString() if fn.toString?
+      try
+        fn.test = {description, currentFile}
+        res = fn.call(fn)
+        if isPromise res
+          promises.push res.then resolve, reject
+        else
+          resolve()
+      catch e
+        reject e
 
   # See http://wiki.ecmascript.org/doku.php?id=harmony:egal
   egal = (a, b) ->
@@ -277,10 +290,15 @@ runTests = (CoffeeScript) ->
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
 
-  # Ignore generators test file if generators are not available
-  generatorsAreAvailable = '--harmony' in process.execArgv or
-    '--harmony-generators' in process.execArgv
-  files.splice files.indexOf('generators.coffee'), 1 if not generatorsAreAvailable
+  try
+    # Test if generators are available (throws if they aren't)
+    eval "(function*(){})"
+
+    # Extend the list of tests for generator-dependent features
+    generatorTests = fs.readdirSync path.join 'test', 'generators'
+    [].push.apply files, generatorTests.map (file) ->
+      path.join 'generators', file
+
 
   for file in files when helpers.isCoffee file
     literate = helpers.isLiterate file
@@ -290,7 +308,13 @@ runTests = (CoffeeScript) ->
       CoffeeScript.run code.toString(), {filename, literate}
     catch error
       failures.push {filename, error}
-  return !failures.length
+
+  done = -> cb? !failures.length
+
+  if global.Promise?
+    global.Promise.all(promises).then done, done
+  else
+    done()
 
 
 task 'test', 'run the CoffeeScript language test suite', ->
