@@ -1212,13 +1212,17 @@ Expressions
           that <tt>yield</tt>s. 
         </li>
         <li>
-          Improved error reporting for string interpolation.
+          More robust parsing and improved error messages for strings and regexes — 
+          especially with respect to interpolation.
         </li>
         <li>
           Changed strategy for the generation of internal compiler variable names.
         </li>
         <li>
-          Fixed REPL compatibility with latest versions of Node and IO.js.
+          Fixed REPL compatibility with latest versions of Node and Io.js.
+        </li>
+        <li>
+          Various minor bug fixes.
         </li>
       </ul>
     </p>
