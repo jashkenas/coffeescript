@@ -34,7 +34,7 @@
         <a href="#operators">Operators and Aliases</a>
         <a href="#classes">Classes, Inheritance, and Super</a>
         <a href="#destructuring">Destructuring Assignment</a>
-        <a href="#fat-arrow">Function Binding</a>
+        <a href="#fat-arrow">Bound and Generator Functions</a>
         <a href="#embedded">Embedded JavaScript</a>
         <a href="#switch">Switch and Try/Catch</a>
         <a href="#comparisons">Chained Comparisons</a>
@@ -416,13 +416,6 @@ Expressions
       if the incoming argument is missing (<tt>null</tt> or <tt>undefined</tt>).
     </p>
     <%= codeFor('default_args', 'fill("cup")') %>
-    <p>
-      CoffeeScript function support 
-      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">ES6 generator functions</a>
-      through the <tt>yield</tt> keyword. There's no <tt>function*(){}</tt> 
-      nonsense &mdash; a generator in CoffeeScript is simply a function that yields.
-    </p>
-    <%= codeFor('generators', 'ps.next().value') %>
 
     <p>
       <span id="objects_and_arrays" class="bookmark"></span>
@@ -800,7 +793,7 @@ Expressions
 
     <p>
       <span id="fat-arrow" class="bookmark"></span>
-      <b class="header">Function binding</b>
+      <b class="header">Bound Functions, Generator Functions</b>
       In JavaScript, the <tt>this</tt> keyword is dynamically scoped to mean the
       object that the current function is attached to. If you pass a function as
       a callback or attach it to a different object, the original value of <tt>this</tt>
@@ -827,6 +820,13 @@ Expressions
       be automatically bound to each instance of the class when the instance is
       constructed.
     </p>
+    <p>
+      CoffeeScript functions also support 
+      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">ES6 generator functions</a>
+      through the <tt>yield</tt> keyword. There's no <tt>function*(){}</tt> 
+      nonsense &mdash; a generator in CoffeeScript is simply a function that yields.
+    </p>
+    <%= codeFor('generators', 'ps.next().value') %>
 
     <p>
       <span id="embedded" class="bookmark"></span>
