@@ -618,7 +618,7 @@ exports.Call = class Call extends Base
       accesses.push new Access new Literal 'constructor' if method.static
       accesses.push new Access new Literal method.name
       (new Value (new Literal method.klass), accesses).compile o
-    else if method?.ctor
+    else if method? and (method.ctor or method.asyncCtor)
       "#{method.name}.__super__.constructor"
     else
       @error 'cannot call super outside of an instance method.'
@@ -1035,11 +1035,19 @@ exports.Class = class Class extends Base
             assign.error 'cannot define more than one constructor in a class'
           if func.bound
             assign.error 'cannot define a constructor as a bound function'
+          
+          external = yes
           if func instanceof Code
-            assign = @ctor = func
-          else
+            if func.isAsync
+              func.asyncCtor  = yes
+              func.name       = 'constructor'
+            else
+              assign = @ctor = func
+              external = no
+          if external
             @externalCtor = o.classScope.freeVariable 'class'
             assign = new Assign new Literal(@externalCtor), func
+
         else
           if assign.variable.this
             func.static = yes

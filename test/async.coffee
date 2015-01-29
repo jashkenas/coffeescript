@@ -178,3 +178,46 @@ test "error handling", ->
 
 	ok res.message?
 	eq res.message, "fail"
+
+test "async constructor definition", ->
+	class DeferedCtr
+		constructor: ()->
+			await return @
+		otherasyncfunc: ()->
+			await winning(4)
+			return 2
+
+test "async constructor initialization", ->
+	class DeferedCtr
+		constructor: ()->
+			await return @
+		otherasyncfunc: ()->
+			await winning(4)
+			return 2
+	do ->
+		instance = await new DeferedCtr()
+		a = await instance.otherasyncfunc()
+		eq a, 2
+
+test "async inheritance", ->
+	class DeferedCtr
+		constructor: ()->
+			await return @
+		otherasyncfunc: ()->
+			await winning(4)
+			return 2
+
+	class Defered2 extends DeferedCtr
+		constructor: (a, b)->
+			await winning(2)
+			await winning(1)
+			await super
+		otherasyncfunc: ()->
+			b = await winning(2)
+			a = await super
+			return a + b
+
+	do ->
+		instance = await new Defered2()
+		a = await instance.otherasyncfunc()
+		eq a, 4
