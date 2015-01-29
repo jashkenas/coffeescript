@@ -1430,7 +1430,7 @@ exports.Param = class Param extends Base
     return @reference if @reference
     node = @name
     if node.this
-      name = "at_#{node.properties[0].name.value}"
+      name = node.properties[0].name.value
       node = new Literal o.scope.freeVariable name
     else if node.isComplex()
       node = new Literal o.scope.freeVariable 'arg'

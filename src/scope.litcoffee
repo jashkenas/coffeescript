@@ -69,10 +69,12 @@ walks up to the root scope.
 Generate a temporary variable name at the given index.
 
       temporary: (name, index) ->
-        if name.length > 1
-          '_' + name + if index > 1 then index - 1 else ''
-        else
+        if name.charAt(0) is '_' 
+          name + (index or '')
+        else if name.length is 1
           '_' + (index + parseInt name, 36).toString(36).replace /\d/g, 'a'
+        else 
+          "_#{name}#{index or ''}"
 
 Gets the type of a variable.
 
