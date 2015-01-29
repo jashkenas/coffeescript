@@ -157,8 +157,8 @@ addLocationDataFn, locationDataToString, throwSyntaxError} = <span class="hljs-b
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.extend = extend
-<span class="hljs-built_in">exports</span>.addLocationDataFn = addLocationDataFn</pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.extend = extend
+exports.addLocationDataFn = addLocationDataFn</pre></div></div>
             
         </li>
         
@@ -207,7 +207,7 @@ all the CodeFragments’ <code>code</code> snippets, in order.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.CodeFragment = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">CodeFragment</span></span>
+            <div class="content"><div class='highlight'><pre>exports.CodeFragment = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">CodeFragment</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(parent, code)</span> -&gt;</span>
     <span class="hljs-property">@code</span> = <span class="hljs-string">"<span class="hljs-subst">#{code}</span>"</span>
     <span class="hljs-property">@locationData</span> = parent?.locationData
@@ -266,7 +266,7 @@ scope, and indentation level.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Base = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Base = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Base</span></span>
 
   <span class="hljs-attribute">compile</span>: <span class="hljs-function"><span class="hljs-params">(o, lvl)</span> -&gt;</span>
     fragmentsToText <span class="hljs-property">@compileToFragments</span> o, lvl</pre></div></div>
@@ -327,7 +327,11 @@ object with their parent closure, to preserve the expected lexical scope.</p>
       <span class="hljs-keyword">else</span>
         meth = <span class="hljs-string">'call'</span>
       func = <span class="hljs-keyword">new</span> Value func, [<span class="hljs-keyword">new</span> Access <span class="hljs-keyword">new</span> Literal meth]
-    (<span class="hljs-keyword">new</span> Call func, args).compileNode o</pre></div></div>
+    parts = (<span class="hljs-keyword">new</span> Call func, args).compileNode o
+    <span class="hljs-keyword">if</span> func.isGenerator
+      parts.unshift <span class="hljs-property">@makeCode</span> <span class="hljs-string">"(yield* "</span>
+      parts.push    <span class="hljs-property">@makeCode</span> <span class="hljs-string">")"</span>
+    parts</pre></div></div>
             
         </li>
         
@@ -609,7 +613,7 @@ indented block of code — the implementation of a function, a clause in an
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Block = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Block</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Block = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Block</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(nodes)</span> -&gt;</span>
     <span class="hljs-property">@expressions</span> = compact flatten nodes <span class="hljs-keyword">or</span> []
 
@@ -829,7 +833,7 @@ clean up obvious double-parentheses.</p>
     o.indent  = <span class="hljs-keyword">if</span> o.bare <span class="hljs-keyword">then</span> <span class="hljs-string">''</span> <span class="hljs-keyword">else</span> TAB
     o.level   = LEVEL_TOP
     <span class="hljs-property">@spaced</span>   = <span class="hljs-literal">yes</span>
-    o.scope   = <span class="hljs-keyword">new</span> Scope <span class="hljs-literal">null</span>, <span class="hljs-keyword">this</span>, <span class="hljs-literal">null</span></pre></div></div>
+    o.scope   = <span class="hljs-keyword">new</span> Scope <span class="hljs-literal">null</span>, <span class="hljs-keyword">this</span>, <span class="hljs-literal">null</span>, o.referencedVars ? []</pre></div></div>
             
         </li>
         
@@ -951,7 +955,7 @@ JavaScript without translation, such as: strings, numbers,
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Literal = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Literal</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Literal = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Literal</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@value</span>)</span> -&gt;</span>
 
   <span class="hljs-attribute">makeReturn</span>:<span class="hljs-function"> -&gt;</span>
@@ -1029,7 +1033,7 @@ make sense.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Return = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Return</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Return = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Return</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@expression</span>)</span> -&gt;</span>
 
   <span class="hljs-attribute">children</span>: [<span class="hljs-string">'expression'</span>]
@@ -1091,7 +1095,7 @@ or vanilla.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Value = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Value</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Value = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Value</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(base, props, tag)</span> -&gt;</span>
     <span class="hljs-keyword">return</span> base <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> props <span class="hljs-keyword">and</span> base <span class="hljs-keyword">instanceof</span> Value
     <span class="hljs-property">@base</span>       = base
@@ -1254,7 +1258,7 @@ evaluate anything twice when building the soak chain.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">unfoldSoak</span>: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
-    <span class="hljs-property">@unfoldedSoak</span> ?= <span class="hljs-keyword">do</span><span class="hljs-function"> =&gt;</span>
+    <span class="hljs-property">@unfoldedSoak</span> ?= <span class="hljs-keyword">do</span> <span class="hljs-function">=&gt;</span>
       <span class="hljs-keyword">if</span> ifn = <span class="hljs-property">@base</span>.unfoldSoak o
         ifn.body.properties.push <span class="hljs-property">@properties</span>...
         <span class="hljs-keyword">return</span> ifn
@@ -1296,14 +1300,14 @@ at the same position.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Comment = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Comment</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Comment = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Comment</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@comment</span>)</span> -&gt;</span>
 
   <span class="hljs-attribute">isStatement</span>:     YES
   <span class="hljs-attribute">makeReturn</span>:      THIS
 
   <span class="hljs-attribute">compileNode</span>: <span class="hljs-function"><span class="hljs-params">(o, level)</span> -&gt;</span>
-    comment = <span class="hljs-property">@comment</span>.replace <span class="hljs-regexp">/^(\s*)#/gm</span>, <span class="hljs-string">"$1 *"</span>
+    comment = <span class="hljs-property">@comment</span>.replace <span class="hljs-regexp">/^(\s*)# /gm</span>, <span class="hljs-string">"$1 * "</span>
     code = <span class="hljs-string">"/*<span class="hljs-subst">#{multident comment, <span class="hljs-property">@tab</span>}</span><span class="hljs-subst">#{<span class="hljs-keyword">if</span> <span class="hljs-string">'\n'</span> <span class="hljs-keyword">in</span> comment <span class="hljs-keyword">then</span> <span class="hljs-string">"\n<span class="hljs-subst">#{<span class="hljs-property">@tab</span>}</span>"</span> <span class="hljs-keyword">else</span> <span class="hljs-string">''</span>}</span> */"</span>
     code = o.indent + code <span class="hljs-keyword">if</span> (level <span class="hljs-keyword">or</span> o.level) <span class="hljs-keyword">is</span> LEVEL_TOP
     [<span class="hljs-property">@makeCode</span>(<span class="hljs-string">"\n"</span>), <span class="hljs-property">@makeCode</span>(code)]</pre></div></div>
@@ -1335,7 +1339,7 @@ calls against the prototype’s function of the same name.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Call = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Call</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Call = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Call</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(variable, <span class="hljs-property">@args</span> = [], <span class="hljs-property">@soak</span>)</span> -&gt;</span>
     <span class="hljs-property">@isNew</span>    = <span class="hljs-literal">false</span>
     <span class="hljs-property">@isSuper</span>  = variable <span class="hljs-keyword">is</span> <span class="hljs-string">'super'</span>
@@ -1569,7 +1573,7 @@ After <code>goog.inherits</code> from the
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Extends = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Extends</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Extends = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Extends</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@child</span>, <span class="hljs-property">@parent</span>)</span> -&gt;</span>
 
   <span class="hljs-attribute">children</span>: [<span class="hljs-string">'child'</span>, <span class="hljs-string">'parent'</span>]</pre></div></div>
@@ -1588,7 +1592,7 @@ After <code>goog.inherits</code> from the
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">compileToFragments</span>: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
-    <span class="hljs-keyword">new</span> Call(<span class="hljs-keyword">new</span> Value(<span class="hljs-keyword">new</span> Literal utility <span class="hljs-string">'extends'</span>), [<span class="hljs-property">@child</span>, <span class="hljs-property">@parent</span>]).compileToFragments o</pre></div></div>
+    <span class="hljs-keyword">new</span> Call(<span class="hljs-keyword">new</span> Value(<span class="hljs-keyword">new</span> Literal utility <span class="hljs-string">'extends'</span>, o), [<span class="hljs-property">@child</span>, <span class="hljs-property">@parent</span>]).compileToFragments o</pre></div></div>
             
         </li>
         
@@ -1617,7 +1621,7 @@ an access into the object’s prototype.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Access = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Access</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Access = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Access</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@name</span>, tag)</span> -&gt;</span>
     <span class="hljs-property">@name</span>.asKey = <span class="hljs-literal">yes</span>
     <span class="hljs-property">@soak</span>  = tag <span class="hljs-keyword">is</span> <span class="hljs-string">'soak'</span>
@@ -1661,7 +1665,7 @@ an access into the object’s prototype.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Index = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Index</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Index = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Index</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@index</span>)</span> -&gt;</span>
 
   <span class="hljs-attribute">children</span>: [<span class="hljs-string">'index'</span>]
@@ -1700,7 +1704,7 @@ corresponding array of integers at runtime.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Range = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Range</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Range = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Range</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
 
   <span class="hljs-attribute">children</span>: [<span class="hljs-string">'from'</span>, <span class="hljs-string">'to'</span>]
 
@@ -1866,7 +1870,7 @@ needed to iterate over the values in the range. Used by comprehensions.</p>
       cond    = <span class="hljs-string">"<span class="hljs-subst">#{<span class="hljs-property">@fromVar</span>}</span> &lt;= <span class="hljs-subst">#{<span class="hljs-property">@toVar</span>}</span>"</span>
       body    = <span class="hljs-string">"var <span class="hljs-subst">#{vars}</span>; <span class="hljs-subst">#{cond}</span> ? <span class="hljs-subst">#{i}</span> &lt;<span class="hljs-subst">#{<span class="hljs-property">@equals</span>}</span> <span class="hljs-subst">#{<span class="hljs-property">@toVar</span>}</span> : <span class="hljs-subst">#{i}</span> &gt;<span class="hljs-subst">#{<span class="hljs-property">@equals</span>}</span> <span class="hljs-subst">#{<span class="hljs-property">@toVar</span>}</span>; <span class="hljs-subst">#{cond}</span> ? <span class="hljs-subst">#{i}</span>++ : <span class="hljs-subst">#{i}</span>--"</span>
     post   = <span class="hljs-string">"{ <span class="hljs-subst">#{result}</span>.push(<span class="hljs-subst">#{i}</span>); }\n<span class="hljs-subst">#{idt}</span>return <span class="hljs-subst">#{result}</span>;\n<span class="hljs-subst">#{o.indent}</span>"</span>
-    <span class="hljs-function"><span class="hljs-title">hasArgs</span> = <span class="hljs-params">(node)</span> -&gt;</span> node?.contains isLiteralArguments
+<span class="hljs-function">    <span class="hljs-title">hasArgs</span> = <span class="hljs-params">(node)</span> -&gt;</span> node?.contains isLiteralArguments
     args   = <span class="hljs-string">', arguments'</span> <span class="hljs-keyword">if</span> hasArgs(<span class="hljs-property">@from</span>) <span class="hljs-keyword">or</span> hasArgs(<span class="hljs-property">@to</span>)
     [<span class="hljs-property">@makeCode</span> <span class="hljs-string">"(function() {<span class="hljs-subst">#{pre}</span>\n<span class="hljs-subst">#{idt}</span>for (<span class="hljs-subst">#{body}</span>)<span class="hljs-subst">#{post}</span>}).apply(this<span class="hljs-subst">#{args ? <span class="hljs-string">''</span>}</span>)"</span>]</pre></div></div>
             
@@ -1898,7 +1902,7 @@ is the index of the beginning.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Slice = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Slice</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Slice = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Slice</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
 
   <span class="hljs-attribute">children</span>: [<span class="hljs-string">'range'</span>]
 
@@ -1976,7 +1980,7 @@ is the index of the beginning.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Obj = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Obj</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Obj = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Obj</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(props, <span class="hljs-property">@generated</span> = <span class="hljs-literal">false</span>)</span> -&gt;</span>
     <span class="hljs-property">@objects</span> = <span class="hljs-property">@properties</span> = props <span class="hljs-keyword">or</span> []
 
@@ -2044,7 +2048,7 @@ is the index of the beginning.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Arr = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Arr</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Arr = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Arr</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(objs)</span> -&gt;</span>
     <span class="hljs-property">@objects</span> = objs <span class="hljs-keyword">or</span> []
 
@@ -2102,7 +2106,7 @@ list of prototype property assignments.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Class = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Class</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Class = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Class</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@variable</span>, <span class="hljs-property">@parent</span>, <span class="hljs-property">@body</span> = <span class="hljs-keyword">new</span> Block)</span> -&gt;</span>
     <span class="hljs-property">@boundFuncs</span> = []
     <span class="hljs-property">@body</span>.classBody = <span class="hljs-literal">yes</span>
@@ -2172,7 +2176,7 @@ constructor.</p>
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">addBoundFunctions</span>: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
     <span class="hljs-keyword">for</span> bvar <span class="hljs-keyword">in</span> <span class="hljs-property">@boundFuncs</span>
       lhs = (<span class="hljs-keyword">new</span> Value (<span class="hljs-keyword">new</span> Literal <span class="hljs-string">"this"</span>), [<span class="hljs-keyword">new</span> Access bvar]).compile o
-      <span class="hljs-property">@ctor</span>.body.unshift <span class="hljs-keyword">new</span> Literal <span class="hljs-string">"<span class="hljs-subst">#{lhs}</span> = <span class="hljs-subst">#{utility <span class="hljs-string">'bind'</span>}</span>(<span class="hljs-subst">#{lhs}</span>, this)"</span>
+      <span class="hljs-property">@ctor</span>.body.unshift <span class="hljs-keyword">new</span> Literal <span class="hljs-string">"<span class="hljs-subst">#{lhs}</span> = <span class="hljs-subst">#{utility <span class="hljs-string">'bind'</span>, o}</span>(<span class="hljs-subst">#{lhs}</span>, this)"</span>
     <span class="hljs-keyword">return</span></pre></div></div>
             
         </li>
@@ -2369,7 +2373,7 @@ property of an object — including within object literals.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Assign = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Assign</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Assign = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Assign</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@variable</span>, <span class="hljs-property">@value</span>, <span class="hljs-property">@context</span>, options)</span> -&gt;</span>
     <span class="hljs-property">@param</span> = options <span class="hljs-keyword">and</span> options.param
     <span class="hljs-property">@subpattern</span> = options <span class="hljs-keyword">and</span> options.subpattern
@@ -2558,7 +2562,7 @@ for details.</p>
       <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> expandedIdx <span class="hljs-keyword">and</span> obj <span class="hljs-keyword">instanceof</span> Splat
         name = obj.name.unwrap().value
         obj = obj.unwrap()
-        val = <span class="hljs-string">"<span class="hljs-subst">#{olen}</span> &lt;= <span class="hljs-subst">#{vvarText}</span>.length ? <span class="hljs-subst">#{ utility <span class="hljs-string">'slice'</span> }</span>.call(<span class="hljs-subst">#{vvarText}</span>, <span class="hljs-subst">#{i}</span>"</span>
+        val = <span class="hljs-string">"<span class="hljs-subst">#{olen}</span> &lt;= <span class="hljs-subst">#{vvarText}</span>.length ? <span class="hljs-subst">#{ utility <span class="hljs-string">'slice'</span>, o }</span>.call(<span class="hljs-subst">#{vvarText}</span>, <span class="hljs-subst">#{i}</span>"</span>
         <span class="hljs-keyword">if</span> rest = olen - i - <span class="hljs-number">1</span>
           ivar = o.scope.freeVariable <span class="hljs-string">'i'</span>
           val += <span class="hljs-string">", <span class="hljs-subst">#{ivar}</span> = <span class="hljs-subst">#{vvarText}</span>.length - <span class="hljs-subst">#{rest}</span>) : (<span class="hljs-subst">#{ivar}</span> = <span class="hljs-subst">#{i}</span>, [])"</span>
@@ -2715,11 +2719,13 @@ has no <em>children</em> — they’re within the inner scope.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Code = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Code</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Code = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Code</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(params, body, tag)</span> -&gt;</span>
-    <span class="hljs-property">@params</span>  = params <span class="hljs-keyword">or</span> []
-    <span class="hljs-property">@body</span>    = body <span class="hljs-keyword">or</span> <span class="hljs-keyword">new</span> Block
-    <span class="hljs-property">@bound</span>   = tag <span class="hljs-keyword">is</span> <span class="hljs-string">'boundfunc'</span>
+    <span class="hljs-property">@params</span>      = params <span class="hljs-keyword">or</span> []
+    <span class="hljs-property">@body</span>        = body <span class="hljs-keyword">or</span> <span class="hljs-keyword">new</span> Block
+    <span class="hljs-property">@bound</span>       = tag <span class="hljs-keyword">is</span> <span class="hljs-string">'boundfunc'</span>
+    <span class="hljs-property">@isGenerator</span> = !!<span class="hljs-property">@body</span>.contains <span class="hljs-function"><span class="hljs-params">(node)</span> -&gt;</span>
+      node <span class="hljs-keyword">instanceof</span> Op <span class="hljs-keyword">and</span> node.operator <span class="hljs-keyword">in</span> [<span class="hljs-string">'yield'</span>, <span class="hljs-string">'yield*'</span>]
 
   <span class="hljs-attribute">children</span>: [<span class="hljs-string">'params'</span>, <span class="hljs-string">'body'</span>]
 
@@ -2781,9 +2787,8 @@ a closure.</p>
     <span class="hljs-keyword">for</span> param <span class="hljs-keyword">in</span> <span class="hljs-property">@params</span> <span class="hljs-keyword">when</span> param <span class="hljs-keyword">not</span> <span class="hljs-keyword">instanceof</span> Expansion
       o.scope.parameter param.asReference o
     <span class="hljs-keyword">for</span> param <span class="hljs-keyword">in</span> <span class="hljs-property">@params</span> <span class="hljs-keyword">when</span> param.splat <span class="hljs-keyword">or</span> param <span class="hljs-keyword">instanceof</span> Expansion
-      <span class="hljs-keyword">for</span> {<span class="hljs-attribute">name</span>: p} <span class="hljs-keyword">in</span> <span class="hljs-property">@params</span> <span class="hljs-keyword">when</span> param <span class="hljs-keyword">not</span> <span class="hljs-keyword">instanceof</span> Expansion
-        <span class="hljs-keyword">if</span> p.<span class="hljs-keyword">this</span> <span class="hljs-keyword">then</span> p = p.properties[<span class="hljs-number">0</span>].name
-        <span class="hljs-keyword">if</span> p.value <span class="hljs-keyword">then</span> o.scope.add p.value, <span class="hljs-string">'var'</span>, <span class="hljs-literal">yes</span>
+      <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> <span class="hljs-property">@params</span> <span class="hljs-keyword">when</span> p <span class="hljs-keyword">not</span> <span class="hljs-keyword">instanceof</span> Expansion <span class="hljs-keyword">and</span> p.name.value
+        o.scope.add p.name.value, <span class="hljs-string">'var'</span>, <span class="hljs-literal">yes</span>
       splats = <span class="hljs-keyword">new</span> Assign <span class="hljs-keyword">new</span> Value(<span class="hljs-keyword">new</span> Arr(p.asReference o <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> <span class="hljs-property">@params</span>)),
                           <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> Literal <span class="hljs-string">'arguments'</span>
       <span class="hljs-keyword">break</span>
@@ -2807,12 +2812,13 @@ a closure.</p>
       o.scope.parameter fragmentsToText params[i]
     uniqs = []
     <span class="hljs-property">@eachParamName</span> <span class="hljs-function"><span class="hljs-params">(name, node)</span> -&gt;</span>
-      node.error <span class="hljs-string">"multiple parameters named '<span class="hljs-subst">#{name}</span>'"</span> <span class="hljs-keyword">if</span> name <span class="hljs-keyword">in</span> uniqs
+      node.error <span class="hljs-string">"multiple parameters named <span class="hljs-subst">#{name}</span>"</span> <span class="hljs-keyword">if</span> name <span class="hljs-keyword">in</span> uniqs
       uniqs.push name
     <span class="hljs-property">@body</span>.makeReturn() <span class="hljs-keyword">unless</span> wasEmpty <span class="hljs-keyword">or</span> <span class="hljs-property">@noReturn</span>
-    code  = <span class="hljs-string">'function'</span>
-    code  += <span class="hljs-string">' '</span> + <span class="hljs-property">@name</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@ctor</span>
-    code  += <span class="hljs-string">'('</span>
+    code = <span class="hljs-string">'function'</span>
+    code += <span class="hljs-string">'*'</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@isGenerator</span>
+    code += <span class="hljs-string">' '</span> + <span class="hljs-property">@name</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@ctor</span>
+    code += <span class="hljs-string">'('</span>
     answer = [<span class="hljs-property">@makeCode</span>(code)]
     <span class="hljs-keyword">for</span> p, i <span class="hljs-keyword">in</span> params
       <span class="hljs-keyword">if</span> i <span class="hljs-keyword">then</span> answer.push <span class="hljs-property">@makeCode</span> <span class="hljs-string">", "</span>
@@ -2872,7 +2878,7 @@ as well as be a splat, gathering up a group of parameters into an array.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Param = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Param</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Param = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Param</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@name</span>, <span class="hljs-property">@value</span>, <span class="hljs-property">@splat</span>)</span> -&gt;</span>
     <span class="hljs-keyword">if</span> (name = <span class="hljs-property">@name</span>.unwrapAll().value) <span class="hljs-keyword">in</span> STRICT_PROSCRIBED
       <span class="hljs-property">@name</span>.error <span class="hljs-string">"parameter name \"<span class="hljs-subst">#{name}</span>\" is not allowed"</span>
@@ -2886,9 +2892,8 @@ as well as be a splat, gathering up a group of parameters into an array.</p>
     <span class="hljs-keyword">return</span> <span class="hljs-property">@reference</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@reference</span>
     node = <span class="hljs-property">@name</span>
     <span class="hljs-keyword">if</span> node.<span class="hljs-keyword">this</span>
-      node = node.properties[<span class="hljs-number">0</span>].name
-      <span class="hljs-keyword">if</span> node.value.reserved
-        node = <span class="hljs-keyword">new</span> Literal o.scope.freeVariable node.value
+      name = <span class="hljs-string">"at_<span class="hljs-subst">#{node.properties[<span class="hljs-number">0</span>].name.value}</span>"</span>
+      node = <span class="hljs-keyword">new</span> Literal o.scope.freeVariable name
     <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> node.isComplex()
       node = <span class="hljs-keyword">new</span> Literal o.scope.freeVariable <span class="hljs-string">'arg'</span>
     node = <span class="hljs-keyword">new</span> Value node
@@ -2918,9 +2923,7 @@ to that name.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">eachName</span>: <span class="hljs-function"><span class="hljs-params">(iterator, name = <span class="hljs-property">@name</span>)</span>-&gt;</span>
-    <span class="hljs-function"><span class="hljs-title">atParam</span> = <span class="hljs-params">(obj)</span> -&gt;</span>
-      node = obj.properties[<span class="hljs-number">0</span>].name
-      iterator node.value, node <span class="hljs-keyword">unless</span> node.value.reserved</pre></div></div>
+<span class="hljs-function">    <span class="hljs-title">atParam</span> = <span class="hljs-params">(obj)</span> -&gt;</span> iterator <span class="hljs-string">"@<span class="hljs-subst">#{obj.properties[<span class="hljs-number">0</span>].name.value}</span>"</span>, obj</pre></div></div>
             
         </li>
         
@@ -3078,7 +3081,7 @@ or as part of a destructuring assignment.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Splat = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Splat</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Splat = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Splat</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
 
   <span class="hljs-attribute">children</span>: [<span class="hljs-string">'name'</span>]
 
@@ -3117,12 +3120,12 @@ splats, to a proper array.</p>
       node = list[<span class="hljs-number">0</span>]
       fragments = node.compileToFragments o, LEVEL_LIST
       <span class="hljs-keyword">return</span> fragments <span class="hljs-keyword">if</span> apply
-      <span class="hljs-keyword">return</span> [].concat node.makeCode(<span class="hljs-string">"<span class="hljs-subst">#{ utility <span class="hljs-string">'slice'</span> }</span>.call("</span>), fragments, node.makeCode(<span class="hljs-string">")"</span>)
+      <span class="hljs-keyword">return</span> [].concat node.makeCode(<span class="hljs-string">"<span class="hljs-subst">#{ utility <span class="hljs-string">'slice'</span>, o }</span>.call("</span>), fragments, node.makeCode(<span class="hljs-string">")"</span>)
     args = list[index..]
     <span class="hljs-keyword">for</span> node, i <span class="hljs-keyword">in</span> args
       compiledNode = node.compileToFragments o, LEVEL_LIST
       args[i] = <span class="hljs-keyword">if</span> node <span class="hljs-keyword">instanceof</span> Splat
-      <span class="hljs-keyword">then</span> [].concat node.makeCode(<span class="hljs-string">"<span class="hljs-subst">#{ utility <span class="hljs-string">'slice'</span> }</span>.call("</span>), compiledNode, node.makeCode(<span class="hljs-string">")"</span>)
+      <span class="hljs-keyword">then</span> [].concat node.makeCode(<span class="hljs-string">"<span class="hljs-subst">#{ utility <span class="hljs-string">'slice'</span>, o }</span>.call("</span>), compiledNode, node.makeCode(<span class="hljs-string">")"</span>)
       <span class="hljs-keyword">else</span> [].concat node.makeCode(<span class="hljs-string">"["</span>), compiledNode, node.makeCode(<span class="hljs-string">"]"</span>)
     <span class="hljs-keyword">if</span> index <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>
       node = list[<span class="hljs-number">0</span>]
@@ -3160,7 +3163,7 @@ parameter list.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Expansion = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Expansion</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Expansion = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Expansion</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
 
   <span class="hljs-attribute">isComplex</span>: NO
 
@@ -3200,7 +3203,7 @@ flexibility or more speed than a comprehension can provide.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.While = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">While</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.While = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">While</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(condition, options)</span> -&gt;</span>
     <span class="hljs-property">@condition</span> = <span class="hljs-keyword">if</span> options?.invert <span class="hljs-keyword">then</span> condition.invert() <span class="hljs-keyword">else</span> condition
     <span class="hljs-property">@guard</span>     = options?.guard
@@ -3290,7 +3293,7 @@ CoffeeScript operations into their JavaScript equivalents.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Op = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Op</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Op = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Op</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(op, first, second, flip )</span> -&gt;</span>
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> In first, second <span class="hljs-keyword">if</span> op <span class="hljs-keyword">is</span> <span class="hljs-string">'in'</span>
     <span class="hljs-keyword">if</span> op <span class="hljs-keyword">is</span> <span class="hljs-string">'do'</span>
@@ -3318,9 +3321,10 @@ CoffeeScript operations into their JavaScript equivalents.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  CONVERSIONS =
-    <span class="hljs-string">'=='</span>: <span class="hljs-string">'==='</span>
-    <span class="hljs-string">'!='</span>: <span class="hljs-string">'!=='</span>
-    <span class="hljs-string">'of'</span>: <span class="hljs-string">'in'</span></pre></div></div>
+    <span class="hljs-string">'=='</span>:        <span class="hljs-string">'==='</span>
+    <span class="hljs-string">'!='</span>:        <span class="hljs-string">'!=='</span>
+    <span class="hljs-string">'of'</span>:        <span class="hljs-string">'in'</span>
+    <span class="hljs-string">'yieldfrom'</span>: <span class="hljs-string">'yield*'</span></pre></div></div>
             
         </li>
         
@@ -3343,11 +3347,15 @@ CoffeeScript operations into their JavaScript equivalents.</p>
 
   <span class="hljs-attribute">isSimpleNumber</span>: NO
 
+  <span class="hljs-attribute">isYield</span>:<span class="hljs-function"> -&gt;</span>
+    <span class="hljs-property">@operator</span> <span class="hljs-keyword">in</span> [<span class="hljs-string">'yield'</span>, <span class="hljs-string">'yield*'</span>]
+
   <span class="hljs-attribute">isUnary</span>:<span class="hljs-function"> -&gt;</span>
     <span class="hljs-keyword">not</span> <span class="hljs-property">@second</span>
 
   <span class="hljs-attribute">isComplex</span>:<span class="hljs-function"> -&gt;</span>
-    <span class="hljs-keyword">not</span> (<span class="hljs-property">@isUnary</span>() <span class="hljs-keyword">and</span> <span class="hljs-property">@operator</span> <span class="hljs-keyword">in</span> [<span class="hljs-string">'+'</span>, <span class="hljs-string">'-'</span>]) <span class="hljs-keyword">or</span> <span class="hljs-property">@first</span>.isComplex()</pre></div></div>
+    <span class="hljs-keyword">not</span> (<span class="hljs-property">@isUnary</span>() <span class="hljs-keyword">and</span> <span class="hljs-property">@operator</span> <span class="hljs-keyword">in</span> [<span class="hljs-string">'+'</span>, <span class="hljs-string">'-'</span>] <span class="hljs-keyword">and</span>
+         <span class="hljs-property">@first</span> <span class="hljs-keyword">instanceof</span> Value <span class="hljs-keyword">and</span> <span class="hljs-property">@first</span>.isSimpleNumber())</pre></div></div>
             
         </li>
         
@@ -3434,6 +3442,7 @@ as the chained expression is wrapped.</p>
       <span class="hljs-property">@error</span> <span class="hljs-string">'delete operand may not be argument or var'</span>
     <span class="hljs-keyword">if</span> <span class="hljs-property">@operator</span> <span class="hljs-keyword">in</span> [<span class="hljs-string">'--'</span>, <span class="hljs-string">'++'</span>] <span class="hljs-keyword">and</span> <span class="hljs-property">@first</span>.unwrapAll().value <span class="hljs-keyword">in</span> STRICT_PROSCRIBED
       <span class="hljs-property">@error</span> <span class="hljs-string">"cannot increment/decrement \"<span class="hljs-subst">#{<span class="hljs-property">@first</span>.unwrapAll().value}</span>\""</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-property">@compileYield</span>     o <span class="hljs-keyword">if</span> <span class="hljs-property">@isYield</span>()
     <span class="hljs-keyword">return</span> <span class="hljs-property">@compileUnary</span>     o <span class="hljs-keyword">if</span> <span class="hljs-property">@isUnary</span>()
     <span class="hljs-keyword">return</span> <span class="hljs-property">@compileChain</span>     o <span class="hljs-keyword">if</span> isChain
     <span class="hljs-keyword">switch</span> <span class="hljs-property">@operator</span>
@@ -3523,6 +3532,19 @@ used sequentially. For example:</p>
     parts.reverse() <span class="hljs-keyword">if</span> <span class="hljs-property">@flip</span>
     <span class="hljs-property">@joinFragmentArrays</span> parts, <span class="hljs-string">''</span>
 
+  <span class="hljs-attribute">compileYield</span>: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
+    parts = []
+    op = <span class="hljs-property">@operator</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> o.scope.parent?
+      <span class="hljs-property">@error</span> <span class="hljs-string">'yield statements must occur within a function generator.'</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-string">'expression'</span> <span class="hljs-keyword">in</span> Object.keys <span class="hljs-property">@first</span>
+      parts.push <span class="hljs-property">@first</span>.expression.compileToFragments o, LEVEL_OP <span class="hljs-keyword">if</span> <span class="hljs-property">@first</span>.expression?
+    <span class="hljs-keyword">else</span>
+      parts.push [<span class="hljs-property">@makeCode</span> <span class="hljs-string">"(<span class="hljs-subst">#{op}</span> "</span>]
+      parts.push <span class="hljs-property">@first</span>.compileToFragments o, LEVEL_OP
+      parts.push [<span class="hljs-property">@makeCode</span> <span class="hljs-string">")"</span>]
+    <span class="hljs-property">@joinFragmentArrays</span> parts, <span class="hljs-string">''</span>
+
   <span class="hljs-attribute">compilePower</span>: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span></pre></div></div>
             
         </li>
@@ -3547,7 +3569,7 @@ used sequentially. For example:</p>
     <span class="hljs-keyword">new</span> Call(floor, [div]).compileToFragments o
 
   <span class="hljs-attribute">compileModulo</span>: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
-    mod = <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> Literal utility <span class="hljs-string">'modulo'</span>
+    mod = <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> Literal utility <span class="hljs-string">'modulo'</span>, o
     <span class="hljs-keyword">new</span> Call(mod, [<span class="hljs-property">@first</span>, <span class="hljs-property">@second</span>]).compileToFragments o
 
   <span class="hljs-attribute">toString</span>: <span class="hljs-function"><span class="hljs-params">(idt)</span> -&gt;</span>
@@ -3566,7 +3588,7 @@ used sequentially. For example:</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.In = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">In</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.In = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">In</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@object</span>, <span class="hljs-property">@array</span>)</span> -&gt;</span>
 
   <span class="hljs-attribute">children</span>: [<span class="hljs-string">'object'</span>, <span class="hljs-string">'array'</span>]
@@ -3606,7 +3628,7 @@ used sequentially. For example:</p>
 
   <span class="hljs-attribute">compileLoopTest</span>: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
     [sub, ref] = <span class="hljs-property">@object</span>.cache o, LEVEL_LIST
-    fragments = [].concat <span class="hljs-property">@makeCode</span>(utility(<span class="hljs-string">'indexOf'</span>) + <span class="hljs-string">".call("</span>), <span class="hljs-property">@array</span>.compileToFragments(o, LEVEL_LIST),
+    fragments = [].concat <span class="hljs-property">@makeCode</span>(utility(<span class="hljs-string">'indexOf'</span>, o) + <span class="hljs-string">".call("</span>), <span class="hljs-property">@array</span>.compileToFragments(o, LEVEL_LIST),
       <span class="hljs-property">@makeCode</span>(<span class="hljs-string">", "</span>), ref, <span class="hljs-property">@makeCode</span>(<span class="hljs-string">") "</span> + <span class="hljs-keyword">if</span> <span class="hljs-property">@negated</span> <span class="hljs-keyword">then</span> <span class="hljs-string">'&lt; 0'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'&gt;= 0'</span>)
     <span class="hljs-keyword">return</span> fragments <span class="hljs-keyword">if</span> fragmentsToText(sub) <span class="hljs-keyword">is</span> fragmentsToText(ref)
     fragments = sub.concat <span class="hljs-property">@makeCode</span>(<span class="hljs-string">', '</span>), fragments
@@ -3641,7 +3663,7 @@ used sequentially. For example:</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Try = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Try</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Try = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Try</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@attempt</span>, <span class="hljs-property">@errorVariable</span>, <span class="hljs-property">@recovery</span>, <span class="hljs-property">@ensure</span>)</span> -&gt;</span>
 
   <span class="hljs-attribute">children</span>: [<span class="hljs-string">'attempt'</span>, <span class="hljs-string">'recovery'</span>, <span class="hljs-string">'ensure'</span>]
@@ -3716,7 +3738,7 @@ is optional, the <em>catch</em> is not.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Throw = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Throw</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Throw = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Throw</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@expression</span>)</span> -&gt;</span>
 
   <span class="hljs-attribute">children</span>: [<span class="hljs-string">'expression'</span>]
@@ -3770,7 +3792,7 @@ table.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Existence = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Existence</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Existence = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Existence</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@expression</span>)</span> -&gt;</span>
 
   <span class="hljs-attribute">children</span>: [<span class="hljs-string">'expression'</span>]
@@ -3830,7 +3852,7 @@ parentheses, but no longer — you can put in as many as you please.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Parens = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Parens</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Parens = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Parens</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@body</span>)</span> -&gt;</span>
 
   <span class="hljs-attribute">children</span>: [<span class="hljs-string">'body'</span>]
@@ -3879,7 +3901,7 @@ you can map and filter in a single pass.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.For = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">For</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">While</span></span>
+            <div class="content"><div class='highlight'><pre>exports.For = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">For</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">While</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(body, source)</span> -&gt;</span>
     {<span class="hljs-property">@source</span>, <span class="hljs-property">@guard</span>, <span class="hljs-property">@step</span>, <span class="hljs-property">@name</span>, <span class="hljs-property">@index</span>} = source
     <span class="hljs-property">@body</span>    = Block.wrap [body]
@@ -3977,7 +3999,7 @@ some cannot.</p>
     varPart = <span class="hljs-string">"\n<span class="hljs-subst">#{idt1}</span><span class="hljs-subst">#{namePart}</span>;"</span> <span class="hljs-keyword">if</span> namePart
     <span class="hljs-keyword">if</span> <span class="hljs-property">@object</span>
       forPartFragments   = [<span class="hljs-property">@makeCode</span>(<span class="hljs-string">"<span class="hljs-subst">#{kvar}</span> in <span class="hljs-subst">#{svar}</span>"</span>)]
-      guardPart = <span class="hljs-string">"\n<span class="hljs-subst">#{idt1}</span>if (!<span class="hljs-subst">#{utility <span class="hljs-string">'hasProp'</span>}</span>.call(<span class="hljs-subst">#{svar}</span>, <span class="hljs-subst">#{kvar}</span>)) continue;"</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@own</span>
+      guardPart = <span class="hljs-string">"\n<span class="hljs-subst">#{idt1}</span>if (!<span class="hljs-subst">#{utility <span class="hljs-string">'hasProp'</span>, o}</span>.call(<span class="hljs-subst">#{svar}</span>, <span class="hljs-subst">#{kvar}</span>)) continue;"</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@own</span>
     bodyFragments = body.compileToFragments merge(o, <span class="hljs-attribute">indent</span>: idt1), LEVEL_TOP
     <span class="hljs-keyword">if</span> bodyFragments <span class="hljs-keyword">and</span> (bodyFragments.length &gt; <span class="hljs-number">0</span>)
       bodyFragments = [].concat <span class="hljs-property">@makeCode</span>(<span class="hljs-string">"\n"</span>), bodyFragments, <span class="hljs-property">@makeCode</span>(<span class="hljs-string">"\n"</span>)
@@ -4031,7 +4053,7 @@ some cannot.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Switch = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Switch</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.Switch = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Switch</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@subject</span>, <span class="hljs-property">@cases</span>, <span class="hljs-property">@otherwise</span>)</span> -&gt;</span>
 
   <span class="hljs-attribute">children</span>: [<span class="hljs-string">'subject'</span>, <span class="hljs-string">'cases'</span>, <span class="hljs-string">'otherwise'</span>]
@@ -4098,7 +4120,7 @@ because ternaries are already proper expressions, and don’t need conversion.</
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.If = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">If</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+            <div class="content"><div class='highlight'><pre>exports.If = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">If</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(condition, <span class="hljs-property">@body</span>, options = {})</span> -&gt;</span>
     <span class="hljs-property">@condition</span> = <span class="hljs-keyword">if</span> options.type <span class="hljs-keyword">is</span> <span class="hljs-string">'unless'</span> <span class="hljs-keyword">then</span> condition.invert() <span class="hljs-keyword">else</span> condition
     <span class="hljs-property">@elseBody</span>  = <span class="hljs-literal">null</span>
@@ -4264,10 +4286,10 @@ to the superclass for <code>super()</code> calls, and copies of any static prope
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">extends</span>:<span class="hljs-function"> -&gt;</span> <span class="hljs-string">"
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">extends</span>: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span> <span class="hljs-string">"
     function(child, parent) {
       for (var key in parent) {
-        if (<span class="hljs-subst">#{utility <span class="hljs-string">'hasProp'</span>}</span>.call(parent, key)) child[key] = parent[key];
+        if (<span class="hljs-subst">#{utility <span class="hljs-string">'hasProp'</span>, o}</span>.call(parent, key)) child[key] = parent[key];
       }
       function ctor() {
         this.constructor = child;
@@ -4450,12 +4472,16 @@ IS_REGEX = <span class="hljs-regexp">/^\//</span></pre></div></div>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">utility</span> = <span class="hljs-params">(name)</span> -&gt;</span>
-  ref = <span class="hljs-string">"__<span class="hljs-subst">#{name}</span>"</span>
-  Scope.root.assign ref, UTILITIES[name]()
-  ref
-
-<span class="hljs-function"><span class="hljs-title">multident</span> = <span class="hljs-params">(code, tab)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">utility</span> = <span class="hljs-params">(name, o)</span> -&gt;</span>
+  {root} = o.scope
+  <span class="hljs-keyword">if</span> name <span class="hljs-keyword">of</span> root.utilities
+    root.utilities[name]
+  <span class="hljs-keyword">else</span>
+    ref = root.freeVariable <span class="hljs-string">"_<span class="hljs-subst">#{name}</span>"</span>
+    root.assign ref, UTILITIES[name] o
+    root.utilities[name] = ref
+<span class="hljs-function">
+<span class="hljs-title">multident</span> = <span class="hljs-params">(code, tab)</span> -&gt;</span>
   code = code.replace <span class="hljs-regexp">/\n/g</span>, <span class="hljs-string">'$&amp;'</span> + tab
   code.replace <span class="hljs-regexp">/\s+$/</span>, <span class="hljs-string">''</span></pre></div></div>
             
@@ -4480,11 +4506,11 @@ Examples: 0, -1, 1, 2e3, 2e-3, -0xfe, 0xfe</p>
     parseInt x, <span class="hljs-number">16</span>
   <span class="hljs-keyword">else</span>
     parseFloat x
-
-<span class="hljs-function"><span class="hljs-title">isLiteralArguments</span> = <span class="hljs-params">(node)</span> -&gt;</span>
+<span class="hljs-function">
+<span class="hljs-title">isLiteralArguments</span> = <span class="hljs-params">(node)</span> -&gt;</span>
   node <span class="hljs-keyword">instanceof</span> Literal <span class="hljs-keyword">and</span> node.value <span class="hljs-keyword">is</span> <span class="hljs-string">'arguments'</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> node.asKey
-
-<span class="hljs-function"><span class="hljs-title">isLiteralThis</span> = <span class="hljs-params">(node)</span> -&gt;</span>
+<span class="hljs-function">
+<span class="hljs-title">isLiteralThis</span> = <span class="hljs-params">(node)</span> -&gt;</span>
   (node <span class="hljs-keyword">instanceof</span> Literal <span class="hljs-keyword">and</span> node.value <span class="hljs-keyword">is</span> <span class="hljs-string">'this'</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> node.asKey) <span class="hljs-keyword">or</span>
     (node <span class="hljs-keyword">instanceof</span> Code <span class="hljs-keyword">and</span> node.bound) <span class="hljs-keyword">or</span>
     (node <span class="hljs-keyword">instanceof</span> Call <span class="hljs-keyword">and</span> node.isSuper)</pre></div></div>

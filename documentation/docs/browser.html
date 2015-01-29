@@ -140,7 +140,7 @@ compile = CoffeeScript.compile</pre></div></div>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>CoffeeScript.<span class="hljs-function"><span class="hljs-title">eval</span> = <span class="hljs-params">(code, options = {})</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>CoffeeScript.e<span class="hljs-function"><span class="hljs-title">val</span> = <span class="hljs-params">(code, options = {})</span> -&gt;</span>
   options.bare ?= <span class="hljs-literal">on</span>
   eval compile code, options</pre></div></div>
             
@@ -157,7 +157,7 @@ compile = CoffeeScript.compile</pre></div></div>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>CoffeeScript.<span class="hljs-function"><span class="hljs-title">run</span> = <span class="hljs-params">(code, options = {})</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>CoffeeScript.r<span class="hljs-function"><span class="hljs-title">un</span> = <span class="hljs-params">(code, options = {})</span> -&gt;</span>
   options.bare = <span class="hljs-literal">on</span>
   options.shiftLine = <span class="hljs-literal">on</span>
   Function(compile code, options)()</pre></div></div>
@@ -193,7 +193,7 @@ Ported from <a href="https://developer.mozilla.org/en-US/docs/DOM/window.btoa">h
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">if</span> btoa? <span class="hljs-keyword">and</span> JSON? <span class="hljs-keyword">and</span> unescape? <span class="hljs-keyword">and</span> encodeURIComponent?
-  <span class="hljs-function"><span class="hljs-title">compile</span> = <span class="hljs-params">(code, options = {})</span> -&gt;</span>
+<span class="hljs-function">  <span class="hljs-title">compile</span> = <span class="hljs-params">(code, options = {})</span> -&gt;</span>
     options.sourceMap = <span class="hljs-literal">true</span>
     options.inline = <span class="hljs-literal">true</span>
     {js, v3SourceMap} = CoffeeScript.compile code, options
@@ -212,7 +212,7 @@ Ported from <a href="https://developer.mozilla.org/en-US/docs/DOM/window.btoa">h
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>CoffeeScript.<span class="hljs-function"><span class="hljs-title">load</span> = <span class="hljs-params">(url, callback, options = {}, hold = <span class="hljs-literal">false</span>)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>CoffeeScript.l<span class="hljs-function"><span class="hljs-title">oad</span> = <span class="hljs-params">(url, callback, options = {}, hold = <span class="hljs-literal">false</span>)</span> -&gt;</span>
   options.sourceFiles = [url]
   xhr = <span class="hljs-keyword">if</span> <span class="hljs-built_in">window</span>.ActiveXObject
     <span class="hljs-keyword">new</span> <span class="hljs-built_in">window</span>.ActiveXObject(<span class="hljs-string">'Microsoft.XMLHTTP'</span>)
@@ -220,7 +220,7 @@ Ported from <a href="https://developer.mozilla.org/en-US/docs/DOM/window.btoa">h
     <span class="hljs-keyword">new</span> <span class="hljs-built_in">window</span>.XMLHttpRequest()
   xhr.open <span class="hljs-string">'GET'</span>, url, <span class="hljs-literal">true</span>
   xhr.overrideMimeType <span class="hljs-string">'text/plain'</span> <span class="hljs-keyword">if</span> <span class="hljs-string">'overrideMimeType'</span> <span class="hljs-keyword">of</span> xhr
-  xhr.<span class="hljs-function"><span class="hljs-title">onreadystatechange</span> = -&gt;</span>
+  xhr.o<span class="hljs-function"><span class="hljs-title">nreadystatechange</span> = -&gt;</span>
     <span class="hljs-keyword">if</span> xhr.readyState <span class="hljs-keyword">is</span> <span class="hljs-number">4</span>
       <span class="hljs-keyword">if</span> xhr.status <span class="hljs-keyword">in</span> [<span class="hljs-number">0</span>, <span class="hljs-number">200</span>]
         param = [xhr.responseText, options]
@@ -250,8 +250,8 @@ This happens on page load.</p>
   coffeetypes = [<span class="hljs-string">'text/coffeescript'</span>, <span class="hljs-string">'text/literate-coffeescript'</span>]
   coffees = (s <span class="hljs-keyword">for</span> s <span class="hljs-keyword">in</span> scripts <span class="hljs-keyword">when</span> s.type <span class="hljs-keyword">in</span> coffeetypes)
   index = <span class="hljs-number">0</span>
-
-  <span class="hljs-function"><span class="hljs-title">execute</span> = -&gt;</span>
+<span class="hljs-function">
+  <span class="hljs-title">execute</span> = -&gt;</span>
     param = coffees[index]
     <span class="hljs-keyword">if</span> param <span class="hljs-keyword">instanceof</span> Array
       CoffeeScript.run param...
@@ -263,7 +263,7 @@ This happens on page load.</p>
       options = <span class="hljs-attribute">literate</span>: script.type <span class="hljs-keyword">is</span> coffeetypes[<span class="hljs-number">1</span>]
       <span class="hljs-keyword">if</span> script.src
         CoffeeScript.load script.src,
-          <span class="hljs-function"><span class="hljs-params">(param)</span> -&gt;</span>
+<span class="hljs-function">          <span class="hljs-params">(param)</span> -&gt;</span>
             coffees[i] = param
             execute()
           options

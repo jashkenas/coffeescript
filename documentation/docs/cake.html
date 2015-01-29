@@ -260,7 +260,7 @@ original directory name, when running Cake tasks from subdirectories.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">run</span> = -&gt;</span>
+            <div class="content"><div class='highlight'><pre>exports.r<span class="hljs-function"><span class="hljs-title">un</span> = -&gt;</span>
   <span class="hljs-built_in">global</span>.__originalDirname = fs.realpathSync <span class="hljs-string">'.'</span>
   process.chdir cakefileDirectory __originalDirname
   args = process.argv[<span class="hljs-number">2.</span>.]
@@ -314,8 +314,8 @@ original directory name, when running Cake tasks from subdirectories.</p>
   <span class="hljs-built_in">console</span>.error message + <span class="hljs-string">'\n'</span>
   <span class="hljs-built_in">console</span>.log <span class="hljs-string">'To see a list of all tasks/options, run "cake"'</span>
   process.exit <span class="hljs-number">1</span>
-
-<span class="hljs-function"><span class="hljs-title">missingTask</span> = <span class="hljs-params">(task)</span> -&gt;</span> fatalError <span class="hljs-string">"No such task: <span class="hljs-subst">#{task}</span>"</span></pre></div></div>
+<span class="hljs-function">
+<span class="hljs-title">missingTask</span> = <span class="hljs-params">(task)</span> -&gt;</span> fatalError <span class="hljs-string">"No such task: <span class="hljs-subst">#{task}</span>"</span></pre></div></div>
             
         </li>
         

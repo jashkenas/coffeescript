@@ -110,7 +110,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffeescript/tarball/1.8.0">1.8.0</a>
+      <a href="http://github.com/jashkenas/coffeescript/tarball/1.9.0">1.9.0</a>
     </p>
 
     <pre>npm install -g coffee-script</pre>
@@ -416,6 +416,13 @@ Expressions
       if the incoming argument is missing (<tt>null</tt> or <tt>undefined</tt>).
     </p>
     <%= codeFor('default_args', 'fill("cup")') %>
+    <p>
+      CoffeeScript function support 
+      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">ES6 generator functions</a>
+      through the <tt>yield</tt> keyword. A generator in CoffeeScript is simply a function 
+      that yields.
+    </p>
+    <%= codeFor('generators', 'ps.next().value') %>
 
     <p>
       <span id="objects_and_arrays" class="bookmark"></span>
@@ -1195,6 +1202,25 @@ Expressions
       <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
+
+    <p>
+      <%= releaseHeader('2015-01-29', '1.9.0', '1.8.0') %>
+      <ul>
+        <li>
+          CoffeeScript now supports ES6 generators. A generator is simply a function
+          that <tt>yield</tt>s. 
+        </li>
+        <li>
+          Improved error reporting for string interpolation.
+        </li>
+        <li>
+          Changed strategy for the generation of internal compiler variable names.
+        </li>
+        <li>
+          Fixed REPL compatibility with latest versions of Node and IO.js.
+        </li>
+      </ul>
+    </p>
 
     <p>
       <%= releaseHeader('2014-08-26', '1.8.0', '1.7.1') %>
