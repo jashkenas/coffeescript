@@ -20,13 +20,19 @@ replDefaults =
     {Block, Assign, Value, Literal} = require './nodes'
 
     try
-      # Generate the AST of the clean input.
-      ast = CoffeeScript.nodes input
+      # Tokenize the clean input.
+      tokens = CoffeeScript.tokens input
+      # Collect referenced variable names just like in `CoffeeScript.compile`.
+      referencedVars = (
+        token[1] for token in tokens when token.variable and token[1].charAt(0) is '_'
+      )
+      # Generate the AST of the tokens.
+      ast = CoffeeScript.nodes tokens
       # Add assignment to `_` variable to force the input to be an expression.
       ast = new Block [
         new Assign (new Value new Literal '_'), ast, '='
       ]
-      js = ast.compile bare: yes, locals: Object.keys(context)
+      js = ast.compile {bare: yes, locals: Object.keys(context), referencedVars}
       result = if context is global
         vm.runInThisContext js, filename
       else

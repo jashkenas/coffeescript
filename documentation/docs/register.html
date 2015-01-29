@@ -173,8 +173,8 @@ This is a horrible thing that should not be required.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  Module = <span class="hljs-built_in">require</span> <span class="hljs-string">'module'</span>
-
-  <span class="hljs-function"><span class="hljs-title">findExtension</span> = <span class="hljs-params">(filename)</span> -&gt;</span>
+<span class="hljs-function">
+  <span class="hljs-title">findExtension</span> = <span class="hljs-params">(filename)</span> -&gt;</span>
     extensions = path.basename(filename).split <span class="hljs-string">'.'</span></pre></div></div>
             
         </li>
@@ -210,7 +210,7 @@ This is a horrible thing that should not be required.</p>
       <span class="hljs-keyword">return</span> curExtension <span class="hljs-keyword">if</span> Module._extensions[curExtension]
     <span class="hljs-string">'.js'</span>
 
-  <span class="hljs-attribute">Module</span>::<span class="hljs-function"><span class="hljs-title">load</span> = <span class="hljs-params">(filename)</span> -&gt;</span>
+  <span class="hljs-attribute">Module</span>::l<span class="hljs-function"><span class="hljs-title">oad</span> = <span class="hljs-params">(filename)</span> -&gt;</span>
     <span class="hljs-property">@filename</span> = filename
     <span class="hljs-property">@paths</span> = Module._nodeModulePaths path.dirname filename
     extension = findExtension filename
@@ -234,7 +234,7 @@ to fork both CoffeeScript files, and JavaScript files, directly.</p>
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">if</span> child_process
   {fork} = child_process
   binary = <span class="hljs-built_in">require</span>.resolve <span class="hljs-string">'../../bin/coffee'</span>
-  child_process.<span class="hljs-function"><span class="hljs-title">fork</span> = <span class="hljs-params">(path, args, options)</span> -&gt;</span>
+  child_process.f<span class="hljs-function"><span class="hljs-title">ork</span> = <span class="hljs-params">(path, args, options)</span> -&gt;</span>
     <span class="hljs-keyword">if</span> helpers.isCoffee path
       <span class="hljs-keyword">unless</span> Array.isArray args
         options = args <span class="hljs-keyword">or</span> {}

@@ -89,7 +89,11 @@ exports.Base = class Base
       else
         meth = 'call'
       func = new Value func, [new Access new Literal meth]
-    (new Call func, args).compileNode o
+    parts = (new Call func, args).compileNode o
+    if func.isGenerator
+      parts.unshift @makeCode "(yield* "
+      parts.push    @makeCode ")"
+    parts
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -316,7 +320,7 @@ exports.Block = class Block extends Base
     o.indent  = if o.bare then '' else TAB
     o.level   = LEVEL_TOP
     @spaced   = yes
-    o.scope   = new Scope null, this, null
+    o.scope   = new Scope null, this, null, o.referencedVars ? []
     # Mark given local variables in the root scope as parameters so they don't
     # end up being declared on this block.
     o.scope.parameter name for name in o.locals or []
@@ -455,7 +459,6 @@ exports.Return = class Return extends Base
     answer.push @makeCode ";"
     return answer
 
-
 #### Value
 
 # A value, variable or literal or parenthesized, indexed or dotted into,
@@ -577,7 +580,7 @@ exports.Comment = class Comment extends Base
   makeReturn:      THIS
 
   compileNode: (o, level) ->
-    comment = @comment.replace /^(\s*)#/gm, "$1 *"
+    comment = @comment.replace /^(\s*)# /gm, "$1 * "
     code = "/*#{multident comment, @tab}#{if '\n' in comment then "\n#{@tab}" else ''} */"
     code = o.indent + code if (level or o.level) is LEVEL_TOP
     [@makeCode("\n"), @makeCode(code)]
@@ -733,7 +736,7 @@ exports.Extends = class Extends extends Base
 
   # Hooks one constructor into another's prototype chain.
   compileToFragments: (o) ->
-    new Call(new Value(new Literal utility 'extends'), [@child, @parent]).compileToFragments o
+    new Call(new Value(new Literal utility 'extends', o), [@child, @parent]).compileToFragments o
 
 #### Access
 
@@ -1014,7 +1017,7 @@ exports.Class = class Class extends Base
   addBoundFunctions: (o) ->
     for bvar in @boundFuncs
       lhs = (new Value (new Literal "this"), [new Access bvar]).compile o
-      @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind'}(#{lhs}, this)"
+      @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind', o}(#{lhs}, this)"
     return
 
   # Merge the properties from a top-level object as prototypal properties
@@ -1228,7 +1231,7 @@ exports.Assign = class Assign extends Base
       if not expandedIdx and obj instanceof Splat
         name = obj.name.unwrap().value
         obj = obj.unwrap()
-        val = "#{olen} <= #{vvarText}.length ? #{ utility 'slice' }.call(#{vvarText}, #{i}"
+        val = "#{olen} <= #{vvarText}.length ? #{ utility 'slice', o }.call(#{vvarText}, #{i}"
         if rest = olen - i - 1
           ivar = o.scope.freeVariable 'i'
           val += ", #{ivar} = #{vvarText}.length - #{rest}) : (#{ivar} = #{i}, [])"
@@ -1315,9 +1318,11 @@ exports.Assign = class Assign extends Base
 # has no *children* -- they're within the inner scope.
 exports.Code = class Code extends Base
   constructor: (params, body, tag) ->
-    @params  = params or []
-    @body    = body or new Block
-    @bound   = tag is 'boundfunc'
+    @params      = params or []
+    @body        = body or new Block
+    @bound       = tag is 'boundfunc'
+    @isGenerator = !!@body.contains (node) ->
+      node instanceof Op and node.operator in ['yield', 'yield*']
 
   children: ['params', 'body']
 
@@ -1355,9 +1360,8 @@ exports.Code = class Code extends Base
     for param in @params when param not instanceof Expansion
       o.scope.parameter param.asReference o
     for param in @params when param.splat or param instanceof Expansion
-      for {name: p} in @params when param not instanceof Expansion
-        if p.this then p = p.properties[0].name
-        if p.value then o.scope.add p.value, 'var', yes
+      for p in @params when p not instanceof Expansion and p.name.value
+        o.scope.add p.name.value, 'var', yes
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
                           new Value new Literal 'arguments'
       break
@@ -1381,12 +1385,13 @@ exports.Code = class Code extends Base
       o.scope.parameter fragmentsToText params[i]
     uniqs = []
     @eachParamName (name, node) ->
-      node.error "multiple parameters named '#{name}'" if name in uniqs
+      node.error "multiple parameters named #{name}" if name in uniqs
       uniqs.push name
     @body.makeReturn() unless wasEmpty or @noReturn
-    code  = 'function'
-    code  += ' ' + @name if @ctor
-    code  += '('
+    code = 'function'
+    code += '*' if @isGenerator
+    code += ' ' + @name if @ctor
+    code += '('
     answer = [@makeCode(code)]
     for p, i in params
       if i then answer.push @makeCode ", "
@@ -1425,9 +1430,8 @@ exports.Param = class Param extends Base
     return @reference if @reference
     node = @name
     if node.this
-      node = node.properties[0].name
-      if node.value.reserved
-        node = new Literal o.scope.freeVariable node.value
+      name = "at_#{node.properties[0].name.value}"
+      node = new Literal o.scope.freeVariable name
     else if node.isComplex()
       node = new Literal o.scope.freeVariable 'arg'
     node = new Value node
@@ -1445,9 +1449,7 @@ exports.Param = class Param extends Base
   # `name` is the name of the parameter and `node` is the AST node corresponding
   # to that name.
   eachName: (iterator, name = @name)->
-    atParam = (obj) ->
-      node = obj.properties[0].name
-      iterator node.value, node unless node.value.reserved
+    atParam = (obj) -> iterator "@#{obj.properties[0].name.value}", obj
     # * simple literals `foo`
     return iterator name.value, name if name instanceof Literal
     # * at-params `@foo`
@@ -1504,12 +1506,12 @@ exports.Splat = class Splat extends Base
       node = list[0]
       fragments = node.compileToFragments o, LEVEL_LIST
       return fragments if apply
-      return [].concat node.makeCode("#{ utility 'slice' }.call("), fragments, node.makeCode(")")
+      return [].concat node.makeCode("#{ utility 'slice', o }.call("), fragments, node.makeCode(")")
     args = list[index..]
     for node, i in args
       compiledNode = node.compileToFragments o, LEVEL_LIST
       args[i] = if node instanceof Splat
-      then [].concat node.makeCode("#{ utility 'slice' }.call("), compiledNode, node.makeCode(")")
+      then [].concat node.makeCode("#{ utility 'slice', o }.call("), compiledNode, node.makeCode(")")
       else [].concat node.makeCode("["), compiledNode, node.makeCode("]")
     if index is 0
       node = list[0]
@@ -1612,9 +1614,10 @@ exports.Op = class Op extends Base
 
   # The map of conversions from CoffeeScript to JavaScript symbols.
   CONVERSIONS =
-    '==': '==='
-    '!=': '!=='
-    'of': 'in'
+    '==':        '==='
+    '!=':        '!=='
+    'of':        'in'
+    'yieldfrom': 'yield*'
 
   # The map of invertible operators.
   INVERSIONS =
@@ -1625,11 +1628,15 @@ exports.Op = class Op extends Base
 
   isSimpleNumber: NO
 
+  isYield: ->
+    @operator in ['yield', 'yield*']
+
   isUnary: ->
     not @second
 
   isComplex: ->
-    not (@isUnary() and @operator in ['+', '-']) or @first.isComplex()
+    not (@isUnary() and @operator in ['+', '-'] and
+         @first instanceof Value and @first.isSimpleNumber())
 
   # Am I capable of
   # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin)?
@@ -1691,6 +1698,7 @@ exports.Op = class Op extends Base
       @error 'delete operand may not be argument or var'
     if @operator in ['--', '++'] and @first.unwrapAll().value in STRICT_PROSCRIBED
       @error "cannot increment/decrement \"#{@first.unwrapAll().value}\""
+    return @compileYield     o if @isYield()
     return @compileUnary     o if @isUnary()
     return @compileChain     o if isChain
     switch @operator
@@ -1745,6 +1753,19 @@ exports.Op = class Op extends Base
     parts.reverse() if @flip
     @joinFragmentArrays parts, ''
 
+  compileYield: (o) ->
+    parts = []
+    op = @operator
+    if not o.scope.parent?
+      @error 'yield statements must occur within a function generator.'
+    if 'expression' in Object.keys @first
+      parts.push @first.expression.compileToFragments o, LEVEL_OP if @first.expression?
+    else
+      parts.push [@makeCode "(#{op} "]
+      parts.push @first.compileToFragments o, LEVEL_OP
+      parts.push [@makeCode ")"]
+    @joinFragmentArrays parts, ''
+
   compilePower: (o) ->
     # Make a Math.pow call
     pow = new Value new Literal('Math'), [new Access new Literal 'pow']
@@ -1756,7 +1777,7 @@ exports.Op = class Op extends Base
     new Call(floor, [div]).compileToFragments o
 
   compileModulo: (o) ->
-    mod = new Value new Literal utility 'modulo'
+    mod = new Value new Literal utility 'modulo', o
     new Call(mod, [@first, @second]).compileToFragments o
 
   toString: (idt) ->
@@ -1790,7 +1811,7 @@ exports.In = class In extends Base
 
   compileLoopTest: (o) ->
     [sub, ref] = @object.cache o, LEVEL_LIST
-    fragments = [].concat @makeCode(utility('indexOf') + ".call("), @array.compileToFragments(o, LEVEL_LIST),
+    fragments = [].concat @makeCode(utility('indexOf', o) + ".call("), @array.compileToFragments(o, LEVEL_LIST),
       @makeCode(", "), ref, @makeCode(") " + if @negated then '< 0' else '>= 0')
     return fragments if fragmentsToText(sub) is fragmentsToText(ref)
     fragments = sub.concat @makeCode(', '), fragments
@@ -1999,7 +2020,7 @@ exports.For = class For extends While
     varPart = "\n#{idt1}#{namePart};" if namePart
     if @object
       forPartFragments   = [@makeCode("#{kvar} in #{svar}")]
-      guardPart = "\n#{idt1}if (!#{utility 'hasProp'}.call(#{svar}, #{kvar})) continue;" if @own
+      guardPart = "\n#{idt1}if (!#{utility 'hasProp', o}.call(#{svar}, #{kvar})) continue;" if @own
     bodyFragments = body.compileToFragments merge(o, indent: idt1), LEVEL_TOP
     if bodyFragments and (bodyFragments.length > 0)
       bodyFragments = [].concat @makeCode("\n"), bodyFragments, @makeCode("\n")
@@ -2158,10 +2179,10 @@ UTILITIES =
 
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls, and copies of any static properties.
-  extends: -> "
+  extends: (o) -> "
     function(child, parent) {
       for (var key in parent) {
-        if (#{utility 'hasProp'}.call(parent, key)) child[key] = parent[key];
+        if (#{utility 'hasProp', o}.call(parent, key)) child[key] = parent[key];
       }
       function ctor() {
         this.constructor = child;
@@ -2238,10 +2259,14 @@ IS_REGEX = /^\//
 # ----------------
 
 # Helper for ensuring that utility functions are assigned at the top level.
-utility = (name) ->
-  ref = "__#{name}"
-  Scope.root.assign ref, UTILITIES[name]()
-  ref
+utility = (name, o) ->
+  {root} = o.scope
+  if name of root.utilities
+    root.utilities[name]
+  else
+    ref = root.freeVariable "_#{name}"
+    root.assign ref, UTILITIES[name] o
+    root.utilities[name] = ref
 
 multident = (code, tab) ->
   code = code.replace /\n/g, '$&' + tab

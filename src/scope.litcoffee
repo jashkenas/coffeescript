@@ -11,19 +11,20 @@ Import the helpers we plan to use.
 
     exports.Scope = class Scope
 
-The `root` is the top-level **Scope** object for a given file.
-
-      @root: null
-
 Initialize a scope with its parent, for lookups up the chain,
 as well as a reference to the **Block** node it belongs to, which is
-where it should declare its variables, and a reference to the function that
-it belongs to.
+where it should declare its variables, a reference to the function that
+it belongs to, and a list of variables referenced in the source code
+and therefore should be avoided when generating variables.
 
-      constructor: (@parent, @expressions, @method) ->
+      constructor: (@parent, @expressions, @method, @referencedVars) ->
         @variables = [{name: 'arguments', type: 'arguments'}]
         @positions = {}
-        Scope.root = this unless @parent
+        @utilities = {} unless @parent
+
+The `@root` is the top-level **Scope** object for a given file.
+
+        @root = @parent?.root ? this
 
 Adds a new variable or overrides an existing one.
 
@@ -84,7 +85,10 @@ compiler-generated variable. `_var`, `_var2`, and so on...
 
       freeVariable: (name, reserve=true) ->
         index = 0
-        index++ while @check((temp = @temporary name, index))
+        loop
+          temp = @temporary name, index
+          break unless @check(temp) or temp in @root.referencedVars
+          index++
         @add temp, 'var', yes if reserve
         temp
 

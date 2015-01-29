@@ -34,7 +34,7 @@
         <a href="#operators">Operators and Aliases</a>
         <a href="#classes">Classes, Inheritance, and Super</a>
         <a href="#destructuring">Destructuring Assignment</a>
-        <a href="#fat-arrow">Function Binding</a>
+        <a href="#fat-arrow">Bound and Generator Functions</a>
         <a href="#embedded">Embedded JavaScript</a>
         <a href="#switch">Switch and Try/Catch</a>
         <a href="#comparisons">Chained Comparisons</a>
@@ -110,7 +110,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffeescript/tarball/1.8.0">1.8.0</a>
+      <a href="http://github.com/jashkenas/coffeescript/tarball/1.9.0">1.9.0</a>
     </p>
 
     <pre>npm install -g coffee-script</pre>
@@ -142,8 +142,8 @@
 
     <p>
       To install, first make sure you have a working copy of the latest stable version of
-      <a href="http://nodejs.org/">Node.js</a>, and <a href="http://npmjs.org">npm</a>
-      (the Node Package Manager). You can then install CoffeeScript globally with npm:
+      <a href="http://nodejs.org/">Node.js</a>. You can then install CoffeeScript globally
+      with <a href="http://npmjs.org">npm</a>:
     </p>
 
     <pre>
@@ -708,7 +708,7 @@ Expressions
     <%= codeFor('soaks') %>
     <p>
       Soaking up nulls is similar to Ruby's
-      <a href="http://andand.rubyforge.org/">andand gem</a>, and to the
+      <a href="https://rubygems.org/gems/andand">andand gem</a>, and to the
       <a href="http://groovy.codehaus.org/Operators#Operators-SafeNavigationOperator%28%3F.%29">safe navigation operator</a>
       in Groovy.
     </p>
@@ -794,7 +794,7 @@ Expressions
 
     <p>
       <span id="fat-arrow" class="bookmark"></span>
-      <b class="header">Function binding</b>
+      <b class="header">Bound Functions, Generator Functions</b>
       In JavaScript, the <tt>this</tt> keyword is dynamically scoped to mean the
       object that the current function is attached to. If you pass a function as
       a callback or attach it to a different object, the original value of <tt>this</tt>
@@ -821,6 +821,13 @@ Expressions
       be automatically bound to each instance of the class when the instance is
       constructed.
     </p>
+    <p>
+      CoffeeScript functions also support 
+      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">ES6 generator functions</a>
+      through the <tt>yield</tt> keyword. There's no <tt>function*(){}</tt> 
+      nonsense &mdash; a generator in CoffeeScript is simply a function that yields.
+    </p>
+    <%= codeFor('generators', 'ps.next().value') %>
 
     <p>
       <span id="embedded" class="bookmark"></span>
@@ -1046,13 +1053,17 @@ Expressions
       </li>
       <li>
         <a href="http://www.packtpub.com/coffeescript-application-development/book">CoffeeScript Application Development</a>
-        is a new book from Packt Publishing that introduces CoffeeScript while
+        from Packt, introduces CoffeeScript while
         walking through the process of building a demonstration web application.
       </li>
       <li>
         <a href="http://www.manning.com/lee/">CoffeeScript in Action</a>
-        is a new book from Manning Publications that covers CoffeeScript syntax, composition techniques
+        from Manning Publications, covers CoffeeScript syntax, composition techniques
         and application development.
+      </li>
+      <li>
+        <a href="http://www.dpunkt.de/buecher/4021/coffeescript.html">CoffeeScript: Die Alternative zu JavaScript</a>
+        from dpunkt.verlag, is the first CoffeeScript book in Deutsch.
       </li>
     </ul>
 
@@ -1116,8 +1127,8 @@ Expressions
         the Bolo tank game for modern browsers.
       </li>
       <li>
-        <b>josh</b>'s <a href="http://josh.github.com/nack/">nack</a>, a Node.js-powered
-        <a href="http://rack.rubyforge.org/">Rack</a> server.
+        <b>github</b>'s <a href="https://atom.io/">Atom</a>,
+        a hackable text editor built on web technologies.
       </li>
     </ul>
 
@@ -1192,6 +1203,25 @@ Expressions
       <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
+
+    <p>
+      <%= releaseHeader('2015-01-29', '1.9.0', '1.8.0') %>
+      <ul>
+        <li>
+          CoffeeScript now supports ES6 generators. A generator is simply a function
+          that <tt>yield</tt>s. 
+        </li>
+        <li>
+          Improved error reporting for string interpolation.
+        </li>
+        <li>
+          Changed strategy for the generation of internal compiler variable names.
+        </li>
+        <li>
+          Fixed REPL compatibility with latest versions of Node and IO.js.
+        </li>
+      </ul>
+    </p>
 
     <p>
       <%= releaseHeader('2014-08-26', '1.8.0', '1.7.1') %>

@@ -12,7 +12,7 @@ helpers       = require './helpers'
 SourceMap     = require './sourcemap'
 
 # The current CoffeeScript version number.
-exports.VERSION = '1.8.0'
+exports.VERSION = '1.9.0'
 
 exports.FILE_EXTENSIONS = ['.coffee', '.litcoffee', '.coffee.md']
 
@@ -44,7 +44,17 @@ exports.compile = compile = withPrettyErrors (code, options) ->
   if options.sourceMap
     map = new SourceMap
 
-  fragments = parser.parse(lexer.tokenize code, options).compileToFragments options
+  tokens = lexer.tokenize code, options
+
+  # Pass a list of referenced variables, so that generated variables won't get
+  # the same name. Since all generated variables start with an underscore only
+  # referenced variables also starting with an underscore are passed, as an
+  # optimization.
+  options.referencedVars = (
+    token[1] for token in tokens when token.variable and token[1].charAt(0) is '_'
+  )
+
+  fragments = parser.parse(tokens).compileToFragments options
 
   currentLine = 0
   currentLine += 1 if options.header
@@ -124,13 +134,17 @@ exports.run = (code, options = {}) ->
 # The CoffeeScript REPL uses this to run the input.
 exports.eval = (code, options = {}) ->
   return unless code = code.trim()
-  Script = vm.Script
-  if Script
+  createContext = vm.Script.createContext ? vm.createContext
+
+  isContext = vm.isContext ? (ctx) ->
+    options.sandbox instanceof createContext().constructor
+
+  if createContext
     if options.sandbox?
-      if options.sandbox instanceof Script.createContext().constructor
+      if isContext options.sandbox
         sandbox = options.sandbox
       else
-        sandbox = Script.createContext()
+        sandbox = createContext()
         sandbox[k] = v for own k, v of options.sandbox
       sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
     else
@@ -188,16 +202,17 @@ lexer = new Lexer
 # directly as a "Jison lexer".
 parser.lexer =
   lex: ->
-    token = @tokens[@pos++]
+    token = parser.tokens[@pos++]
     if token
       [tag, @yytext, @yylloc] = token
-      @errorToken = token.origin or token
+      parser.errorToken = token.origin or token
       @yylineno = @yylloc.first_line
     else
       tag = ''
 
     tag
-  setInput: (@tokens) ->
+  setInput: (tokens) ->
+    parser.tokens = tokens
     @pos = 0
   upcomingInput: ->
     ""
@@ -209,7 +224,7 @@ parser.yy.parseError = (message, {token}) ->
   # Disregard Jison's message, it contains redundant line numer information.
   # Disregard the token, we take its value directly from the lexer in case
   # the error is caused by a generated token which might refer to its origin.
-  {errorToken, tokens} = parser.lexer
+  {errorToken, tokens} = parser
   [errorTag, errorText, errorLoc] = errorToken
 
   errorText = if errorToken is tokens[tokens.length - 1]
@@ -303,4 +318,3 @@ Error.prepareStackTrace = (err, stack) ->
     "  at #{formatSourcePosition frame, getSourceMapping}"
 
   "#{err.toString()}\n#{frames.join '\n'}\n"
-
