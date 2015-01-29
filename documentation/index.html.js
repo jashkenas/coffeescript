@@ -419,8 +419,8 @@ Expressions
     <p>
       CoffeeScript function support 
       <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">ES6 generator functions</a>
-      through the <tt>yield</tt> keyword. A generator in CoffeeScript is simply a function 
-      that yields.
+      through the <tt>yield</tt> keyword. There's no <tt>function*(){}</tt> 
+      nonsense &mdash; a generator in CoffeeScript is simply a function that yields.
     </p>
     <%= codeFor('generators', 'ps.next().value') %>
 
