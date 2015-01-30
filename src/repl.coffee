@@ -24,7 +24,7 @@ replDefaults =
       tokens = CoffeeScript.tokens input
       # Collect referenced variable names just like in `CoffeeScript.compile`.
       referencedVars = (
-        token[1] for token in tokens when token.variable and token[1].charAt(0) is '_'
+        token[1] for token in tokens when token.variable
       )
       # Generate the AST of the tokens.
       ast = CoffeeScript.nodes tokens

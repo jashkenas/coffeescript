@@ -47,11 +47,9 @@ exports.compile = compile = withPrettyErrors (code, options) ->
   tokens = lexer.tokenize code, options
 
   # Pass a list of referenced variables, so that generated variables won't get
-  # the same name. Since all generated variables start with an underscore only
-  # referenced variables also starting with an underscore are passed, as an
-  # optimization.
+  # the same name.
   options.referencedVars = (
-    token[1] for token in tokens when token.variable and token[1].charAt(0) is '_'
+    token[1] for token in tokens when token.variable
   )
 
   fragments = parser.parse(tokens).compileToFragments options

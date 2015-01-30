@@ -68,13 +68,11 @@ walks up to the root scope.
 
 Generate a temporary variable name at the given index.
 
-      temporary: (name, index) ->
-        if name.charAt(0) is '_' 
+      temporary: (name, index, single=false) ->
+        if single
+          (index + parseInt name, 36).toString(36).replace /\d/g, 'a'
+        else
           name + (index or '')
-        else if name.length is 1
-          '_' + (index + parseInt name, 36).toString(36).replace /\d/g, 'a'
-        else 
-          "_#{name}#{index or ''}"
 
 Gets the type of a variable.
 
@@ -85,13 +83,13 @@ Gets the type of a variable.
 If we need to store an intermediate result, find an available name for a
 compiler-generated variable. `_var`, `_var2`, and so on...
 
-      freeVariable: (name, reserve=true) ->
+      freeVariable: (name, options={}) ->
         index = 0
         loop
-          temp = @temporary name, index
+          temp = @temporary name, index, options.single
           break unless @check(temp) or temp in @root.referencedVars
           index++
-        @add temp, 'var', yes if reserve
+        @add temp, 'var', yes if options.reserve ? true
         temp
 
 Ensure that an assignment is made at the top of this scope
@@ -109,11 +107,7 @@ Does this scope have any declared variables?
 Return the list of variables first declared in this scope.
 
       declaredVariables: ->
-        realVars = []
-        tempVars = []
-        for v in @variables when v.type is 'var'
-          (if v.name.charAt(0) is '_' then tempVars else realVars).push v.name
-        realVars.sort().concat tempVars.sort()
+        (v.name for v in @variables when v.type is 'var').sort()
 
 Return the list of assignments that are supposed to be made at the top
 of this scope.
