@@ -1216,8 +1216,6 @@ Expressions
         </li>
         <li>
           Changed strategy for the generation of internal compiler variable names.
-          Note that this means that <tt>@example</tt> function parameters are no longer
-          available as naked <tt>example</tt> variables within the function body.
         </li>
         <li>
           Fixed REPL compatibility with latest versions of Node and Io.js.
@@ -1245,6 +1243,10 @@ Expressions
         </li>
         <li>
           Fixed location data for string interpolations, which made source maps out of sync.
+        </li>
+        <li>
+          This-assigning <tt>@example</tt> function parameters are no longer also
+          available as naked <tt>example</tt> variables within the function body.
         </li>
         <li>
           The error marker in error messages is now correctly positioned if the code is indented with tabs.
