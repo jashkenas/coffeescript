@@ -151,7 +151,7 @@ alert <span class="string">"I knew it!"</span> <span class="keyword">if</span> e
 <span class="comment"># Array comprehensions:</span>
 cubes = (math.cube num <span class="keyword">for</span> num <span class="keyword">in</span> list)
 </code></pre><pre><code><span class="keyword">var</span> cubes, list, math, num, number, opposite, race, square,
-  __slice = [].slice;
+  _slice = [].slice;
 
 number = <span class="number">42</span>;
 
@@ -177,7 +177,7 @@ math = {
 
 race = <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
   <span class="keyword">var</span> runners, winner;
-  winner = <span class="built_in">arguments</span>[<span class="number">0</span>], runners = <span class="number">2</span> &lt;= <span class="built_in">arguments</span>.length ? __slice.call(<span class="built_in">arguments</span>, <span class="number">1</span>) : [];
+  winner = <span class="built_in">arguments</span>[<span class="number">0</span>], runners = <span class="number">2</span> &lt;= <span class="built_in">arguments</span>.length ? _slice.call(<span class="built_in">arguments</span>, <span class="number">1</span>) : [];
   <span class="keyword">return</span> print(winner, runners);
 };
 
@@ -195,7 +195,7 @@ cubes = (<span class="function"><span class="keyword">function</span><span class
   <span class="keyword">return</span> _results;
 })();
 </code></pre><script>window.example1 = "# Assignment:\nnumber   = 42\nopposite = true\n\n# Conditions:\nnumber = -42 if opposite\n\n# Functions:\nsquare = (x) -> x * x\n\n# Arrays:\nlist = [1, 2, 3, 4, 5]\n\n# Objects:\nmath =\n  root:   Math.sqrt\n  square: square\n  cube:   (x) -> x * square x\n\n# Splats:\nrace = (winner, runners...) ->\n  print winner, runners\n\n# Existence:\nalert \"I knew it!\" if elvis?\n\n# Array comprehensions:\ncubes = (math.cube num for num in list)\n"</script><div class='minibutton ok' onclick='javascript: var cubes, list, math, num, number, opposite, race, square,
-  __slice = [].slice;
+  _slice = [].slice;
 
 number = 42;
 
@@ -221,7 +221,7 @@ math = {
 
 race = function() {
   var runners, winner;
-  winner = arguments[0], runners = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+  winner = arguments[0], runners = 2 <= arguments.length ? _slice.call(arguments, 1) : [];
   return print(winner, runners);
 };
 
@@ -807,13 +807,13 @@ alert <span class="string">"The Field: "</span> + rest
 
 
 </code></pre><pre><code><span class="keyword">var</span> awardMedals, contenders, gold, rest, silver,
-  __slice = [].slice;
+  _slice = [].slice;
 
 gold = silver = rest = <span class="string">"unknown"</span>;
 
 awardMedals = <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
   <span class="keyword">var</span> first, others, second;
-  first = <span class="built_in">arguments</span>[<span class="number">0</span>], second = <span class="built_in">arguments</span>[<span class="number">1</span>], others = <span class="number">3</span> &lt;= <span class="built_in">arguments</span>.length ? __slice.call(<span class="built_in">arguments</span>, <span class="number">2</span>) : [];
+  first = <span class="built_in">arguments</span>[<span class="number">0</span>], second = <span class="built_in">arguments</span>[<span class="number">1</span>], others = <span class="number">3</span> &lt;= <span class="built_in">arguments</span>.length ? _slice.call(<span class="built_in">arguments</span>, <span class="number">2</span>) : [];
   gold = first;
   silver = second;
   <span class="keyword">return</span> rest = others;
@@ -829,13 +829,13 @@ alert(<span class="string">"Silver: "</span> + silver);
 
 alert(<span class="string">"The Field: "</span> + rest);
 </code></pre><script>window.example8 = "gold = silver = rest = \"unknown\"\n\nawardMedals = (first, second, others...) ->\n  gold   = first\n  silver = second\n  rest   = others\n\ncontenders = [\n  \"Michael Phelps\"\n  \"Liu Xiang\"\n  \"Yao Ming\"\n  \"Allyson Felix\"\n  \"Shawn Johnson\"\n  \"Roman Sebrle\"\n  \"Guo Jingjing\"\n  \"Tyson Gay\"\n  \"Asafa Powell\"\n  \"Usain Bolt\"\n]\n\nawardMedals contenders...\n\nalert \"Gold: \" + gold\nalert \"Silver: \" + silver\nalert \"The Field: \" + rest\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example8);'>load</div><div class='minibutton ok' onclick='javascript: var awardMedals, contenders, gold, rest, silver,
-  __slice = [].slice;
+  _slice = [].slice;
 
 gold = silver = rest = "unknown";
 
 awardMedals = function() {
   var first, others, second;
-  first = arguments[0], second = arguments[1], others = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+  first = arguments[0], second = arguments[1], others = 3 <= arguments.length ? _slice.call(arguments, 2) : [];
   gold = first;
   silver = second;
   return rest = others;
@@ -1502,12 +1502,12 @@ tom.move()
 
 
 </code></pre><pre><code><span class="keyword">var</span> Animal, Horse, Snake, sam, tom,
-  __extends = <span class="function"><span class="keyword">function</span><span class="params">(child, parent)</span> {</span> <span class="keyword">for</span> (<span class="keyword">var</span> key <span class="keyword">in</span> parent) { <span class="keyword">if</span> (__hasProp.call(parent, key)) child[key] = parent[key]; } <span class="function"><span class="keyword">function</span> <span class="title">ctor</span><span class="params">()</span> {</span> <span class="keyword">this</span>.constructor = child; } ctor.prototype = parent.prototype; child.prototype = <span class="keyword">new</span> ctor(); child.__super__ = parent.prototype; <span class="keyword">return</span> child; },
-  __hasProp = {}.hasOwnProperty;
+  _extends = <span class="function"><span class="keyword">function</span><span class="params">(child, parent)</span> {</span> <span class="keyword">for</span> (<span class="keyword">var</span> key <span class="keyword">in</span> parent) { <span class="keyword">if</span> (_hasProp.call(parent, key)) child[key] = parent[key]; } <span class="function"><span class="keyword">function</span> <span class="title">ctor</span><span class="params">()</span> {</span> <span class="keyword">this</span>.constructor = child; } ctor.prototype = parent.prototype; child.prototype = <span class="keyword">new</span> ctor(); child.__super__ = parent.prototype; <span class="keyword">return</span> child; },
+  _hasProp = {}.hasOwnProperty;
 
 Animal = (<span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
-  <span class="function"><span class="keyword">function</span> <span class="title">Animal</span><span class="params">(_at_name)</span> {</span>
-    <span class="keyword">this</span>.name = _at_name;
+  <span class="function"><span class="keyword">function</span> <span class="title">Animal</span><span class="params">(_name)</span> {</span>
+    <span class="keyword">this</span>.name = _name;
   }
 
   Animal.prototype.move = <span class="function"><span class="keyword">function</span><span class="params">(meters)</span> {</span>
@@ -1519,7 +1519,7 @@ Animal = (<span class="function"><span class="keyword">function</span><span clas
 })();
 
 Snake = (<span class="function"><span class="keyword">function</span><span class="params">(_super)</span> {</span>
-  __extends(Snake, _super);
+  _extends(Snake, _super);
 
   <span class="function"><span class="keyword">function</span> <span class="title">Snake</span><span class="params">()</span> {</span>
     <span class="keyword">return</span> Snake.__super__.constructor.apply(<span class="keyword">this</span>, <span class="built_in">arguments</span>);
@@ -1535,7 +1535,7 @@ Snake = (<span class="function"><span class="keyword">function</span><span class
 })(Animal);
 
 Horse = (<span class="function"><span class="keyword">function</span><span class="params">(_super)</span> {</span>
-  __extends(Horse, _super);
+  _extends(Horse, _super);
 
   <span class="function"><span class="keyword">function</span> <span class="title">Horse</span><span class="params">()</span> {</span>
     <span class="keyword">return</span> Horse.__super__.constructor.apply(<span class="keyword">this</span>, <span class="built_in">arguments</span>);
@@ -1558,12 +1558,12 @@ sam.move();
 
 tom.move();
 </code></pre><script>window.example23 = "class Animal\n  constructor: (@name) ->\n\n  move: (meters) ->\n    alert @name + \" moved #{meters}m.\"\n\nclass Snake extends Animal\n  move: ->\n    alert \"Slithering...\"\n    super 5\n\nclass Horse extends Animal\n  move: ->\n    alert \"Galloping...\"\n    super 45\n\nsam = new Snake \"Sammy the Python\"\ntom = new Horse \"Tommy the Palomino\"\n\nsam.move()\ntom.move()\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example23);'>load</div><div class='minibutton ok' onclick='javascript: var Animal, Horse, Snake, sam, tom,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  __hasProp = {}.hasOwnProperty;
+  _extends = function(child, parent) { for (var key in parent) { if (_hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  _hasProp = {}.hasOwnProperty;
 
 Animal = (function() {
-  function Animal(_at_name) {
-    this.name = _at_name;
+  function Animal(_name) {
+    this.name = _name;
   }
 
   Animal.prototype.move = function(meters) {
@@ -1575,7 +1575,7 @@ Animal = (function() {
 })();
 
 Snake = (function(_super) {
-  __extends(Snake, _super);
+  _extends(Snake, _super);
 
   function Snake() {
     return Snake.__super__.constructor.apply(this, arguments);
@@ -1591,7 +1591,7 @@ Snake = (function(_super) {
 })(Animal);
 
 Horse = (function(_super) {
-  __extends(Horse, _super);
+  _extends(Horse, _super);
 
   function Horse() {
     return Horse.__super__.constructor.apply(this, arguments);
@@ -1758,17 +1758,17 @@ _ref = futurists.poet, name = _ref.name, (_ref1 = _ref.address, street = _ref1[0
 
 
 </code></pre><pre><code><span class="keyword">var</span> close, contents, open, tag, _i, _ref,
-  __slice = [].slice;
+  _slice = [].slice;
 
 tag = <span class="string">"&lt;impossible&gt;"</span>;
 
-_ref = tag.split(<span class="string">""</span>), open = _ref[<span class="number">0</span>], contents = <span class="number">3</span> &lt;= _ref.length ? __slice.call(_ref, <span class="number">1</span>, _i = _ref.length - <span class="number">1</span>) : (_i = <span class="number">1</span>, []), close = _ref[_i++];
+_ref = tag.split(<span class="string">""</span>), open = _ref[<span class="number">0</span>], contents = <span class="number">3</span> &lt;= _ref.length ? _slice.call(_ref, <span class="number">1</span>, _i = _ref.length - <span class="number">1</span>) : (_i = <span class="number">1</span>, []), close = _ref[_i++];
 </code></pre><script>window.example28 = "tag = \"<impossible>\"\n\n[open, contents..., close] = tag.split(\"\")\n\n\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example28);'>load</div><div class='minibutton ok' onclick='javascript: var close, contents, open, tag, _i, _ref,
-  __slice = [].slice;
+  _slice = [].slice;
 
 tag = "<impossible>";
 
-_ref = tag.split(""), open = _ref[0], contents = 3 <= _ref.length ? __slice.call(_ref, 1, _i = _ref.length - 1) : (_i = 1, []), close = _ref[_i++];
+_ref = tag.split(""), open = _ref[0], contents = 3 <= _ref.length ? _slice.call(_ref, 1, _i = _ref.length - 1) : (_i = 1, []), close = _ref[_i++];
 ;alert(contents.join(""));'>run: contents.join("")</div><br class='clear' /></div>
     <p>
       Expansion can be used to retrieve elements from the end of an array without having to assign the rest of its values. It works in function parameter lists as well.
@@ -2509,6 +2509,8 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
         </li>
         <li>
           Changed strategy for the generation of internal compiler variable names.
+          Note that this means that <tt>@example</tt> function parameters are no longer
+          available as naked <tt>example</tt> variables within the function body.
         </li>
         <li>
           Fixed REPL compatibility with latest versions of Node and Io.js.

@@ -1217,6 +1217,8 @@ Expressions
         </li>
         <li>
           Changed strategy for the generation of internal compiler variable names.
+          Note that this means that <tt>@example</tt> function parameters are no longer
+          available as naked <tt>example</tt> variables within the function body.
         </li>
         <li>
           Fixed REPL compatibility with latest versions of Node and Io.js.
