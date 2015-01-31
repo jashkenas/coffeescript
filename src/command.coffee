@@ -68,6 +68,9 @@ exports.run = ->
   # `node` REPL CLI and, therefore, (b) make packages that modify native prototypes
   # (such as 'colors' and 'sugar') work as expected.
   replCliOpts = useGlobal: yes
+  # As `node`, let the REPL be rlwrap-friendly.
+  replCliOpts.terminal = no if parseInt process.env.NODE_NO_READLINE, 10
+
   return forkNode()                             if opts.nodejs
   return usage()                                if opts.help
   return version()                              if opts.version
