@@ -513,7 +513,7 @@ exports.Value = class Value extends Base
     last(@properties) instanceof Slice
 
   looksStatic: (className) ->
-    @base.value is className and @properties.length and
+    @base.value is className and @properties.length is 1 and
       @properties[0].name?.value isnt 'prototype'
 
   # The value can be unwrapped as its inner node, if there are no attached
@@ -614,10 +614,21 @@ exports.Call = class Call extends Base
   superReference: (o) ->
     method = o.scope.namedMethod()
     if method?.klass
-      accesses = [new Access(new Literal '__super__')]
+      {klass, name, variable} = method
+      if klass.isComplex()
+        bref = new Literal o.scope.parent.freeVariable 'base'
+        base = new Value new Parens new Assign bref, klass
+        variable.base = base
+        variable.properties.splice 0, klass.properties.length
+      if name.isComplex() or (name instanceof Index and name.index.isAssignable())
+        nref = new Literal o.scope.parent.freeVariable 'name'
+        name = new Index new Assign nref, name.index
+        variable.properties.pop()
+        variable.properties.push name
+      accesses = [new Access new Literal '__super__']
       accesses.push new Access new Literal 'constructor' if method.static
-      accesses.push new Access new Literal method.name
-      (new Value (new Literal method.klass), accesses).compile o
+      accesses.push if nref? then new Index nref else name
+      (new Value bref ? klass, accesses).compile o
     else if method?.ctor
       "#{method.name}.__super__.constructor"
     else
@@ -1011,7 +1022,6 @@ exports.Class = class Class extends Base
       if node instanceof Literal and node.value is 'this'
         node.value    = name
       else if node instanceof Code
-        node.klass    = name
         node.context  = name if node.bound
 
   # Ensure that all functions bound to the instance are proxied in the
@@ -1162,21 +1172,28 @@ exports.Assign = class Assign extends Base
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
       return @compileSpecialMath  o if @context in ['**=', '//=', '%%=']
-    compiledName = @variable.compileToFragments o, LEVEL_LIST
-    name = fragmentsToText compiledName
+    if @value instanceof Code
+      if @value.static
+        @value.klass = @variable.base
+        @value.name  = @variable.properties[0]
+        @value.variable = @variable
+      else if @variable.properties?.length >= 2
+        [properties..., prototype, name] = @variable.properties
+        if prototype.name?.value is 'prototype'
+          @value.klass = new Value @variable.base, properties
+          @value.name  = name
+          @value.variable = @variable
     unless @context
       varBase = @variable.unwrapAll()
       unless varBase.isAssignable()
         @variable.error "\"#{@variable.compile o}\" cannot be assigned"
       unless varBase.hasProperties?()
         if @param
-          o.scope.add name, 'var'
+          o.scope.add varBase.value, 'var'
         else
-          o.scope.find name
-    if @value instanceof Code and match = METHOD_DEF.exec name
-      @value.klass = match[1] if match[2]
-      @value.name  = match[3] ? match[4] ? match[5]
+          o.scope.find varBase.value
     val = @value.compileToFragments o, LEVEL_LIST
+    compiledName = @variable.compileToFragments o, LEVEL_LIST
     return (compiledName.concat @makeCode(": "), val) if @context is 'object'
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
     if o.level <= LEVEL_LIST then answer else @wrapInBraces answer
@@ -2237,23 +2254,13 @@ LEVEL_ACCESS = 6  # ...[0]
 # Tabs are two spaces for pretty printing.
 TAB = '  '
 
-IDENTIFIER_STR = "[$A-Za-z_\\x7f-\\uffff][$\\w\\x7f-\\uffff]*"
-IDENTIFIER = /// ^ #{IDENTIFIER_STR} $ ///
+IDENTIFIER = /// ^ (?!\d) [$\w\x7f-\uffff]+ $ ///
 SIMPLENUM  = /^[+-]?\d+$/
 HEXNUM = /^[+-]?0x[\da-f]+/i
 NUMBER    = ///^[+-]?(?:
   0x[\da-f]+ |              # hex
   \d*\.?\d+ (?:e[+-]?\d+)?  # decimal
 )$///i
-
-METHOD_DEF = /// ^
-  (#{IDENTIFIER_STR})
-  (\.prototype)?
-  (?: \.(#{IDENTIFIER_STR})
-    | \[("(?:[^\\"\r\n]|\\.)*"|'(?:[^\\'\r\n]|\\.)*')\]
-    | \[(0x[\da-fA-F]+ | \d*\.?\d+ (?:[eE][+-]?\d+)?)\]
-  )
-$ ///
 
 # Is a literal value a string/regex?
 IS_STRING = /^['"]/
