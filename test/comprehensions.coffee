@@ -555,3 +555,20 @@ test "splats in destructuring in comprehensions", ->
 test "#156: expansion in destructuring in comprehensions", ->
   list = [[0, 1, 2], [2, 3, 4], [4, 5, 6]]
   arrayEq (last for [..., last] in list), [2, 4, 6]
+
+test "disallows pattern matching on index", ->
+  throws -> CoffeeScript.compile "n for n, {i} in list"
+  throws -> CoffeeScript.compile "key for {key} of object"
+  throws -> CoffeeScript.compile "key for {key}, value of object"
+
+test "disallows indexes on range loops", ->
+  throws -> CoffeeScript.compile "n for n, i in [0..5]"
+
+test "disallows this-properties on range loops", ->
+  throws -> CoffeeScript.compile "@foo for @foo in [0..5]"
+
+test "disallows pattern matching on range loops", ->
+  throws -> CoffeeScript.compile "n for {n} in [0..5]"
+
+test "disallows own on for-in loops", ->
+  throws -> CoffeeScript.compile "n for own n in list"
