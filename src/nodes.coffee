@@ -102,14 +102,15 @@ exports.Base = class Base
   # If `level` is passed, then returns `[val, ref]`, where `val` is the compiled value, and `ref`
   # is the compiled reference. If `level` is not passed, this returns `[val, ref]` where
   # the two values are raw nodes which have not been compiled.
-  cache: (o, level, reused) ->
-    unless @isComplex()
-      ref = if level then @compileToFragments o, level else this
-      [ref, ref]
-    else
-      ref = new Literal reused or o.scope.freeVariable 'ref'
+  cache: (o, level, isComplex) ->
+    complex = if isComplex? then isComplex this else @isComplex()
+    if complex
+      ref = new Literal o.scope.freeVariable 'ref'
       sub = new Assign ref, this
       if level then [sub.compileToFragments(o, level), [@makeCode(ref.value)]] else [sub, ref]
+    else
+      ref = if level then @compileToFragments o, level else this
+      [ref, ref]
 
   cacheToCodeFragments: (cacheValues) ->
     [fragmentsToText(cacheValues[0]), fragmentsToText(cacheValues[1])]
@@ -793,9 +794,10 @@ exports.Range = class Range extends Base
   # But only if they need to be cached to avoid double evaluation.
   compileVariables: (o) ->
     o = merge o, top: true
-    [@fromC, @fromVar]  =  @cacheToCodeFragments @from.cache o, LEVEL_LIST
-    [@toC, @toVar]      =  @cacheToCodeFragments @to.cache o, LEVEL_LIST
-    [@step, @stepVar]   =  @cacheToCodeFragments step.cache o, LEVEL_LIST if step = del o, 'step'
+    isComplex = del o, 'isComplex'
+    [@fromC, @fromVar]  =  @cacheToCodeFragments @from.cache o, LEVEL_LIST, isComplex
+    [@toC, @toVar]      =  @cacheToCodeFragments @to.cache o, LEVEL_LIST, isComplex
+    [@step, @stepVar]   =  @cacheToCodeFragments step.cache o, LEVEL_LIST, isComplex if step = del o, 'step'
     [@fromNum, @toNum]  = [@fromVar.match(NUMBER), @toVar.match(NUMBER)]
     @stepNum            = @stepVar.match(NUMBER) if @stepVar
 
@@ -1971,7 +1973,7 @@ exports.For = class For extends While
     kvar      = (@range and name) or index or ivar
     kvarAssign = if kvar isnt ivar then "#{kvar} = " else ""
     if @step and not @range
-      [step, stepVar] = @cacheToCodeFragments @step.cache o, LEVEL_LIST
+      [step, stepVar] = @cacheToCodeFragments @step.cache o, LEVEL_LIST, isComplexOrAssignable
       stepNum = stepVar.match NUMBER
     name      = ivar if @pattern
     varPart   = ''
@@ -1979,7 +1981,8 @@ exports.For = class For extends While
     defPart   = ''
     idt1      = @tab + TAB
     if @range
-      forPartFragments = source.compileToFragments merge(o, {index: ivar, name, @step})
+      forPartFragments = source.compileToFragments merge o,
+        {index: ivar, name, @step, isComplex: isComplexOrAssignable}
     else
       svar    = @source.compile o, LEVEL_LIST
       if (name or @own) and not IDENTIFIER.test svar
@@ -2290,6 +2293,8 @@ isLiteralThis = (node) ->
   (node instanceof Literal and node.value is 'this' and not node.asKey) or
     (node instanceof Code and node.bound) or
     (node instanceof Call and node.isSuper)
+
+isComplexOrAssignable = (node) -> node.isComplex() or node.isAssignable?()
 
 # Unfold a node's child if soak, then tuck the node under created `If`
 unfoldSoak = (o, parent, name) ->
