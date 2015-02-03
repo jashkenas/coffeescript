@@ -199,8 +199,7 @@ exports.Lexer = class Lexer
       when '"""' then HEREDOC_DOUBLE
     heredoc = quote.length is 3
 
-    start = quote.length
-    {tokens, index: end} = @matchWithInterpolations @chunk[start..], regex, quote, start
+    {tokens, index: end} = @matchWithInterpolations regex, quote
     $ = tokens.length - 1
 
     if heredoc
@@ -211,7 +210,7 @@ exports.Lexer = class Lexer
         attempt = match[1]
         indent = attempt if indent is null or 0 < attempt.length < indent.length
       indentRegex = /// ^#{indent} ///gm if indent
-      @mergeInterpolationTokens tokens, {quote: quote[0], start, end}, (value, i) =>
+      @mergeInterpolationTokens tokens, quote[0], (value, i) =>
         value = @formatString value
         value = value.replace LEADING_BLANK_LINE,  '' if i is 0
         value = value.replace TRAILING_BLANK_LINE, '' if i is $
@@ -219,7 +218,7 @@ exports.Lexer = class Lexer
         value = value.replace MULTILINER, '\\n'
         value
     else
-      @mergeInterpolationTokens tokens, {quote, start, end}, (value, i) =>
+      @mergeInterpolationTokens tokens, quote, (value, i) =>
         value = @formatString value
         value = value.replace STRING_OMIT, (match, offset) ->
           if (i is 0 and offset is 0) or
@@ -256,8 +255,8 @@ exports.Lexer = class Lexer
     switch
       when match = REGEX_ILLEGAL.exec @chunk
         @error "regular expressions cannot begin with #{match[2]}", match.index + match[1].length
-      when @chunk[...3] is '///'
-        {tokens, index} = @matchWithInterpolations @chunk[3..], HEREGEX, '///', 3
+      when match = @matchWithInterpolations HEREGEX, '///'
+        {tokens, index} = match
       when match = REGEX.exec @chunk
         [regex, closed] = match
         index = regex.length
@@ -284,7 +283,7 @@ exports.Lexer = class Lexer
       else
         @token 'IDENTIFIER', 'RegExp', 0, 0
         @token 'CALL_START', '(', 0, 0
-        @mergeInterpolationTokens tokens, {quote: '"', start: 3, end}, (value) =>
+        @mergeInterpolationTokens tokens, '"', (value) =>
           @formatHeregex(value).replace(/\\/g, '\\\\')
         if flags
           @token ',', ',', index, 0
@@ -469,20 +468,18 @@ exports.Lexer = class Lexer
   # If it encounters an interpolation, this method will recursively create a new
   # Lexer and tokenize until the `{` of `#{` is balanced with a `}`.
   #
-  #  - `str` is the start of the token contents (with the starting delimiter
-  #    stripped off.)
   #  - `regex` matches the contents of a token (but not `end`, and not `#{` if
   #    interpolations are desired).
-  #  - `end` is the terminator of the token.
-  #  - `offsetInChunk` is the start of the interpolated string in the current
-  #    chunk, including the starting delimiter.
-  #
-  # Examples of delimiters are `'`, `"`, `'''`, `"""` and `///`.
+  #  - `delimiter` is the delimiter of the token. Examples are `'`, `"`, `'''`,
+  #    `"""` and `///`.
   #
   # This method allows us to have strings within interpolations within strings,
   # ad infinitum.
-  matchWithInterpolations: (str, regex, end, offsetInChunk) ->
+  matchWithInterpolations: (regex, delimiter) ->
     tokens = []
+    offsetInChunk = delimiter.length
+    return null unless @chunk[...offsetInChunk] is delimiter
+    str = @chunk[offsetInChunk..]
     loop
       [strPart] = regex.exec str
 
@@ -517,19 +514,28 @@ exports.Lexer = class Lexer
       str = str[index..]
       offsetInChunk += index
 
-    unless str[...end.length] is end
-      @error "missing #{end}"
+    unless str[...delimiter.length] is delimiter
+      @error "missing #{delimiter}"
 
-    {tokens, index: offsetInChunk + end.length}
+    [firstToken, ..., lastToken] = tokens
+    firstToken[2].first_column -= delimiter.length
+    lastToken[2].last_column += delimiter.length
+
+    {tokens, index: offsetInChunk + delimiter.length}
 
   # Merge the array `tokens` of the fake token types 'TOKENS' and 'NEOSTRING'
   # (as returned by `matchWithInterpolations`) into the token stream. The value
   # of 'NEOSTRING's are converted using `fn` and turned into strings using
-  # `quote` first.  The tokens are wrapped in parentheses if needed, using
-  # `start` and `end` for their location data.
-  mergeInterpolationTokens: (tokens, {quote, start, end}, fn) ->
+  # `quote` first.
+  mergeInterpolationTokens: (tokens, quote, fn) ->
     if interpolated = tokens.length > 1
-      errorToken = @makeToken '', 'interpolation', start + tokens[0][1].length, 2
+      [firstToken] = tokens
+      errorToken = ['', 'interpolation',
+        first_line:   firstToken[2].last_line
+        first_column: firstToken[2].last_column
+        last_line:    firstToken[2].last_line
+        last_column:  firstToken[2].last_column + 1
+      ]
       @token '(', '(', 0, 0, errorToken
 
     firstIndex = @tokens.length
@@ -573,7 +579,14 @@ exports.Lexer = class Lexer
       @tokens.push tokensToPush...
 
     if interpolated
-      rparen = @token ')', ')', end, 0
+      [..., lastToken] = @tokens
+      rparen = @token ')', ')'
+      rparen[2] = [')', ')',
+        first_line:   lastToken[2].last_line
+        first_column: lastToken[2].last_column + 1
+        last_line:    lastToken[2].last_line
+        last_column:  lastToken[2].last_column + 1
+      ]
       rparen.stringEnd = true
 
   # Pairs up a closing token, ensuring that all listed pairs of tokens are
