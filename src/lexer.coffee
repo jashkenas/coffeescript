@@ -272,6 +272,7 @@ exports.Lexer = class Lexer
 
     [flags] = REGEX_FLAGS.exec @chunk[index..]
     end = index + flags.length
+    errorToken = @makeToken 'REGEX', @chunk[...end], 0, end
     switch
       when not VALID_FLAGS.test flags
         @error "invalid regular expression flags #{flags}", index
@@ -279,10 +280,10 @@ exports.Lexer = class Lexer
         @token 'REGEX', "#{regex}#{flags}"
       when tokens.length is 1
         re = @formatHeregex(tokens[0][1]).replace(/\//g, '\\/')
-        @token 'REGEX', "/#{ re or '(?:)' }/#{flags}"
+        @token 'REGEX', "/#{ re or '(?:)' }/#{flags}", 0, end, errorToken
       else
         @token 'IDENTIFIER', 'RegExp', 0, 0
-        @token 'CALL_START', '(', 0, 0
+        @token 'CALL_START', '(', 0, 0, errorToken
         @mergeInterpolationTokens tokens, '"', (value) =>
           @formatHeregex(value).replace(/\\/g, '\\\\')
         if flags

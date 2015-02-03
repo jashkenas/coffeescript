@@ -446,7 +446,7 @@ test "#3621: Multiline regex and manual `Regex` call with interpolation should
     tokenB = tokensB[i]
     eq tokenA[0], tokenB[0]
     eq tokenA[1], tokenB[1]
-    eq tokenA.origin?[1], tokenB.origin?[1]
+    eq tokenA.origin?[1], tokenB.origin?[1] unless tokenA[0] is 'CALL_START'
     eq tokenA.stringEnd, tokenB.stringEnd
 
 test "Verify all tokens get a location", ->
