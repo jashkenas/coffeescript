@@ -134,7 +134,7 @@ arrays, count characters, that sort of thing.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.s<span class="hljs-function"><span class="hljs-title">tarts</span> = <span class="hljs-params">(string, literal, start)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">starts</span> = <span class="hljs-params">(string, literal, start)</span> -&gt;</span>
   literal <span class="hljs-keyword">is</span> string.substr start, literal.length</pre></div></div>
             
         </li>
@@ -150,7 +150,7 @@ arrays, count characters, that sort of thing.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.e<span class="hljs-function"><span class="hljs-title">nds</span> = <span class="hljs-params">(string, literal, back)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">ends</span> = <span class="hljs-params">(string, literal, back)</span> -&gt;</span>
   len = literal.length
   literal <span class="hljs-keyword">is</span> string.substr string.length - len - (back <span class="hljs-keyword">or</span> <span class="hljs-number">0</span>), len</pre></div></div>
             
@@ -167,7 +167,7 @@ arrays, count characters, that sort of thing.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.repeat = r<span class="hljs-function"><span class="hljs-title">epeat</span> = <span class="hljs-params">(str, n)</span> -&gt;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.repeat = <span class="hljs-function"><span class="hljs-title">repeat</span> = <span class="hljs-params">(str, n)</span> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -202,7 +202,7 @@ arrays, count characters, that sort of thing.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.c<span class="hljs-function"><span class="hljs-title">ompact</span> = <span class="hljs-params">(array)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">compact</span> = <span class="hljs-params">(array)</span> -&gt;</span>
   item <span class="hljs-keyword">for</span> item <span class="hljs-keyword">in</span> array <span class="hljs-keyword">when</span> item</pre></div></div>
             
         </li>
@@ -218,7 +218,7 @@ arrays, count characters, that sort of thing.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.c<span class="hljs-function"><span class="hljs-title">ount</span> = <span class="hljs-params">(string, substr)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">count</span> = <span class="hljs-params">(string, substr)</span> -&gt;</span>
   num = pos = <span class="hljs-number">0</span>
   <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>/<span class="hljs-number">0</span> <span class="hljs-keyword">unless</span> substr.length
   num++ <span class="hljs-keyword">while</span> pos = <span class="hljs-number">1</span> + string.indexOf substr, pos
@@ -239,7 +239,7 @@ options hash to propagate down the tree without polluting other branches.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.m<span class="hljs-function"><span class="hljs-title">erge</span> = <span class="hljs-params">(options, overrides)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">merge</span> = <span class="hljs-params">(options, overrides)</span> -&gt;</span>
   extend (extend {}, options), overrides</pre></div></div>
             
         </li>
@@ -255,7 +255,7 @@ options hash to propagate down the tree without polluting other branches.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>extend = exports.e<span class="hljs-function"><span class="hljs-title">xtend</span> = <span class="hljs-params">(object, properties)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>extend = <span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">extend</span> = <span class="hljs-params">(object, properties)</span> -&gt;</span>
   <span class="hljs-keyword">for</span> key, val <span class="hljs-keyword">of</span> properties
     object[key] = val
   object</pre></div></div>
@@ -274,7 +274,7 @@ Handy for getting a list of <code>children</code> from the nodes.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.flatten = f<span class="hljs-function"><span class="hljs-title">latten</span> = <span class="hljs-params">(array)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.flatten = <span class="hljs-function"><span class="hljs-title">flatten</span> = <span class="hljs-params">(array)</span> -&gt;</span>
   flattened = []
   <span class="hljs-keyword">for</span> element <span class="hljs-keyword">in</span> array
     <span class="hljs-keyword">if</span> element <span class="hljs-keyword">instanceof</span> Array
@@ -297,7 +297,7 @@ looking for a particular method in an options hash.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.d<span class="hljs-function"><span class="hljs-title">el</span> = <span class="hljs-params">(obj, key)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">del</span> = <span class="hljs-params">(obj, key)</span> -&gt;</span>
   val =  obj[key]
   <span class="hljs-keyword">delete</span> obj[key]
   val</pre></div></div>
@@ -315,7 +315,7 @@ looking for a particular method in an options hash.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.last = l<span class="hljs-function"><span class="hljs-title">ast</span> = <span class="hljs-params">(array, back)</span> -&gt;</span> array[array.length - (back <span class="hljs-keyword">or</span> <span class="hljs-number">0</span>) - <span class="hljs-number">1</span>]</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.last = <span class="hljs-function"><span class="hljs-title">last</span> = <span class="hljs-params">(array, back)</span> -&gt;</span> array[array.length - (back <span class="hljs-keyword">or</span> <span class="hljs-number">0</span>) - <span class="hljs-number">1</span>]</pre></div></div>
             
         </li>
         
@@ -330,7 +330,7 @@ looking for a particular method in an options hash.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.some = <span class="hljs-attribute">Array</span>::some ? <span class="hljs-function"><span class="hljs-params">(fn)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.some = <span class="hljs-attribute">Array</span>::some ? <span class="hljs-function"><span class="hljs-params">(fn)</span> -&gt;</span>
   <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span> <span class="hljs-keyword">for</span> e <span class="hljs-keyword">in</span> <span class="hljs-keyword">this</span> <span class="hljs-keyword">when</span> fn e
   <span class="hljs-literal">false</span></pre></div></div>
             
@@ -349,7 +349,7 @@ can be compiled “normally”.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.i<span class="hljs-function"><span class="hljs-title">nvertLiterate</span> = <span class="hljs-params">(code)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">invertLiterate</span> = <span class="hljs-params">(code)</span> -&gt;</span>
   maybe_code = <span class="hljs-literal">true</span>
   lines = <span class="hljs-keyword">for</span> line <span class="hljs-keyword">in</span> code.split(<span class="hljs-string">'\n'</span>)
     <span class="hljs-keyword">if</span> maybe_code <span class="hljs-keyword">and</span> <span class="hljs-regexp">/^([ ]{4}|[ ]{0,3}\t)/</span>.test line
@@ -398,8 +398,8 @@ The object is returned either way.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.a<span class="hljs-function"><span class="hljs-title">ddLocationDataFn</span> = <span class="hljs-params">(first, last)</span> -&gt;</span>
-<span class="hljs-function">  <span class="hljs-params">(obj)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">addLocationDataFn</span> = <span class="hljs-params">(first, last)</span> -&gt;</span>
+  <span class="hljs-function"><span class="hljs-params">(obj)</span> -&gt;</span>
     <span class="hljs-keyword">if</span> ((<span class="hljs-keyword">typeof</span> obj) <span class="hljs-keyword">is</span> <span class="hljs-string">'object'</span>) <span class="hljs-keyword">and</span> (!!obj[<span class="hljs-string">'updateLocationDataIfMissing'</span>])
       obj.updateLocationDataIfMissing buildLocationData(first, last)
 
@@ -419,7 +419,7 @@ The object is returned either way.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.l<span class="hljs-function"><span class="hljs-title">ocationDataToString</span> = <span class="hljs-params">(obj)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">locationDataToString</span> = <span class="hljs-params">(obj)</span> -&gt;</span>
   <span class="hljs-keyword">if</span> (<span class="hljs-string">"2"</span> <span class="hljs-keyword">of</span> obj) <span class="hljs-keyword">and</span> (<span class="hljs-string">"first_line"</span> <span class="hljs-keyword">of</span> obj[<span class="hljs-number">2</span>]) <span class="hljs-keyword">then</span> locationData = obj[<span class="hljs-number">2</span>]
   <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-string">"first_line"</span> <span class="hljs-keyword">of</span> obj <span class="hljs-keyword">then</span> locationData = obj
 
@@ -442,8 +442,8 @@ The object is returned either way.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.b<span class="hljs-function"><span class="hljs-title">aseFileName</span> = <span class="hljs-params">(file, stripExt = <span class="hljs-literal">no</span>, useWinPathSep = <span class="hljs-literal">no</span>)</span> -&gt;</span>
-  pathSep = <span class="hljs-keyword">if</span> useWinPathSep <span class="hljs-keyword">then</span> <span class="hljs-regexp">/\\|\//</span> <span class="hljs-keyword">else</span> <span class="hljs-regexp">/\//</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">baseFileName</span> = <span class="hljs-params">(file, stripExt = <span class="hljs-literal">no</span>, useWinPathSep = <span class="hljs-literal">no</span>)</span> -&gt;</span>
+  pathSep = <span class="hljs-keyword">if</span> useWinPathSep <span class="hljs-keyword">then</span> <span class="hljs-regexp">/\\|\//</span> <span class="hljs-keyword">else</span> <span class="hljs-regexp">/\/</span>/
   parts = file.split(pathSep)
   file = parts[parts.length - <span class="hljs-number">1</span>]
   <span class="hljs-keyword">return</span> file <span class="hljs-keyword">unless</span> stripExt <span class="hljs-keyword">and</span> file.indexOf(<span class="hljs-string">'.'</span>) &gt;= <span class="hljs-number">0</span>
@@ -465,7 +465,7 @@ The object is returned either way.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.i<span class="hljs-function"><span class="hljs-title">sCoffee</span> = <span class="hljs-params">(file)</span> -&gt;</span> <span class="hljs-regexp">/\.((lit)?coffee|coffee\.md)$/</span>.test file</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">isCoffee</span> = <span class="hljs-params">(file)</span> -&gt;</span> <span class="hljs-regexp">/\.((lit)?coffee|coffee\.md)$/</span>.test file</pre></div></div>
             
         </li>
         
@@ -480,7 +480,7 @@ The object is returned either way.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.i<span class="hljs-function"><span class="hljs-title">sLiterate</span> = <span class="hljs-params">(file)</span> -&gt;</span> <span class="hljs-regexp">/\.(litcoffee|coffee\.md)$/</span>.test file</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">isLiterate</span> = <span class="hljs-params">(file)</span> -&gt;</span> <span class="hljs-regexp">/\.(litcoffee|coffee\.md)$/</span>.test file</pre></div></div>
             
         </li>
         
@@ -498,7 +498,7 @@ marker showing where the error is.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.t<span class="hljs-function"><span class="hljs-title">hrowSyntaxError</span> = <span class="hljs-params">(message, location)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">throwSyntaxError</span> = <span class="hljs-params">(message, location)</span> -&gt;</span>
   error = <span class="hljs-keyword">new</span> SyntaxError message
   error.location = location
   error.toString = syntaxErrorToString</pre></div></div>
@@ -536,7 +536,7 @@ it already.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.u<span class="hljs-function"><span class="hljs-title">pdateSyntaxError</span> = <span class="hljs-params">(error, code, filename)</span> -&gt;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">updateSyntaxError</span> = <span class="hljs-params">(error, code, filename)</span> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -556,8 +556,8 @@ it already.</p>
     error.filename <span class="hljs-keyword">or</span>= filename
     error.stack = error.toString()
   error
-<span class="hljs-function">
-<span class="hljs-title">syntaxErrorToString</span> = -&gt;</span>
+
+<span class="hljs-function"><span class="hljs-title">syntaxErrorToString</span> = -&gt;</span>
   <span class="hljs-keyword">return</span> <span class="hljs-attribute">Error</span>::toString.call @ <span class="hljs-keyword">unless</span> <span class="hljs-property">@code</span> <span class="hljs-keyword">and</span> <span class="hljs-property">@location</span>
 
   {first_line, first_column, last_line, last_column} = <span class="hljs-property">@location</span>
@@ -601,7 +601,7 @@ it already.</p>
     colorsEnabled = process.stdout.isTTY <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> process.env.NODE_DISABLE_COLORS
 
   <span class="hljs-keyword">if</span> <span class="hljs-property">@colorful</span> ? colorsEnabled
-<span class="hljs-function">    <span class="hljs-title">colorize</span> = <span class="hljs-params">(str)</span> -&gt;</span> <span class="hljs-string">"\x1B[1;31m<span class="hljs-subst">#{str}</span>\x1B[0m"</span>
+    <span class="hljs-function"><span class="hljs-title">colorize</span> = <span class="hljs-params">(str)</span> -&gt;</span> <span class="hljs-string">"\x1B[1;31m<span class="hljs-subst">#{str}</span>\x1B[0m"</span>
     codeLine = codeLine[...start] + colorize(codeLine[start...end]) + codeLine[end..]
     marker   = colorize marker
 
@@ -611,7 +611,7 @@ it already.</p>
     <span class="hljs-subst">#{marker}</span>
   """</span>
 
-exports.n<span class="hljs-function"><span class="hljs-title">ameWhitespaceCharacter</span> = <span class="hljs-params">(string)</span> -&gt;</span>
+<span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">nameWhitespaceCharacter</span> = <span class="hljs-params">(string)</span> -&gt;</span>
   <span class="hljs-keyword">switch</span> string
     <span class="hljs-keyword">when</span> <span class="hljs-string">' '</span> <span class="hljs-keyword">then</span> <span class="hljs-string">'space'</span>
     <span class="hljs-keyword">when</span> <span class="hljs-string">'\n'</span> <span class="hljs-keyword">then</span> <span class="hljs-string">'newline'</span>
