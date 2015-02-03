@@ -160,11 +160,11 @@ useWinPathSep  = path.sep <span class="hljs-keyword">is</span> <span class="hljs
             </div>
             
             <div class="content"><div class='highlight'><pre>helpers.extend CoffeeScript, <span class="hljs-keyword">new</span> EventEmitter
-<span class="hljs-function">
-<span class="hljs-title">printLine</span> = <span class="hljs-params">(line)</span> -&gt;</span> process.stdout.write line + <span class="hljs-string">'\n'</span>
+
+<span class="hljs-function"><span class="hljs-title">printLine</span> = <span class="hljs-params">(line)</span> -&gt;</span> process.stdout.write line + <span class="hljs-string">'\n'</span>
 <span class="hljs-function"><span class="hljs-title">printWarn</span> = <span class="hljs-params">(line)</span> -&gt;</span> process.stderr.write line + <span class="hljs-string">'\n'</span>
-<span class="hljs-function">
-<span class="hljs-title">hidden</span> = <span class="hljs-params">(file)</span> -&gt;</span> <span class="hljs-regexp">/^\.|~$/</span>.test file</pre></div></div>
+
+<span class="hljs-function"><span class="hljs-title">hidden</span> = <span class="hljs-params">(file)</span> -&gt;</span> <span class="hljs-regexp">/^\.|~$/</span>.test file</pre></div></div>
             
         </li>
         
@@ -253,7 +253,7 @@ Many flags cause us to divert before compiling anything. Flags passed after
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.r<span class="hljs-function"><span class="hljs-title">un</span> = -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">run</span> = -&gt;</span>
   parseOptions()</pre></div></div>
             
         </li>
@@ -356,8 +356,8 @@ extension source files in it and all subdirectories.</p>
     compileScript(source, code.toString(), base)
   <span class="hljs-keyword">else</span>
     notSources[source] = <span class="hljs-literal">yes</span>
-<span class="hljs-function">
-<span class="hljs-title">findDirectoryIndex</span> = <span class="hljs-params">(source)</span> -&gt;</span>
+
+<span class="hljs-function"><span class="hljs-title">findDirectoryIndex</span> = <span class="hljs-params">(source)</span> -&gt;</span>
   <span class="hljs-keyword">for</span> ext <span class="hljs-keyword">in</span> CoffeeScript.FILE_EXTENSIONS
     index = path.join source, <span class="hljs-string">"index<span class="hljs-subst">#{ext}</span>"</span>
     <span class="hljs-keyword">try</span>
@@ -460,9 +460,9 @@ them together.</p>
             <div class="content"><div class='highlight'><pre>joinTimeout = <span class="hljs-literal">null</span>
 <span class="hljs-function"><span class="hljs-title">compileJoin</span> = -&gt;</span>
   <span class="hljs-keyword">return</span> <span class="hljs-keyword">unless</span> opts.join
-  <span class="hljs-keyword">unless</span> sourceCode.some(<span class="hljs-function"><span class="hljs-params">(code)</span> -&gt;</span> code <span class="hljs-keyword">is</span> <span class="hljs-literal">null</span>)
-    clearTimeout joinTimeout
-    joinTimeout = wait <span class="hljs-number">100</span>,<span class="hljs-function"> -&gt;</span>
+  <span class="hljs-keyword">unless</span> sourceCode.some<span class="hljs-function"><span class="hljs-params">((code) -&gt; code <span class="hljs-keyword">is</span> <span class="hljs-literal">null</span>)</span>
+    <span class="hljs-title">clearTimeout</span> <span class="hljs-title">joinTimeout</span>
+    <span class="hljs-title">joinTimeout</span> = <span class="hljs-title">wait</span> 100, -&gt;</span>
       compileScript opts.join, sourceCode.join(<span class="hljs-string">'\n'</span>), opts.join</pre></div></div>
             
         </li>
@@ -484,8 +484,8 @@ such as <code>--print</code>.</p>
   watcher        = <span class="hljs-literal">null</span>
   prevStats      = <span class="hljs-literal">null</span>
   compileTimeout = <span class="hljs-literal">null</span>
-<span class="hljs-function">
-  <span class="hljs-title">watchErr</span> = <span class="hljs-params">(err)</span> -&gt;</span>
+
+  <span class="hljs-function"><span class="hljs-title">watchErr</span> = <span class="hljs-params">(err)</span> -&gt;</span>
     <span class="hljs-keyword">throw</span> err <span class="hljs-keyword">unless</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">'ENOENT'</span>
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">unless</span> source <span class="hljs-keyword">in</span> sources
     <span class="hljs-keyword">try</span>
@@ -494,8 +494,8 @@ such as <code>--print</code>.</p>
     <span class="hljs-keyword">catch</span>
       removeSource source, base
       compileJoin()
-<span class="hljs-function">
-  <span class="hljs-title">compile</span> = -&gt;</span>
+
+  <span class="hljs-function"><span class="hljs-title">compile</span> = -&gt;</span>
     clearTimeout compileTimeout
     compileTimeout = wait <span class="hljs-number">25</span>,<span class="hljs-function"> -&gt;</span>
       fs.stat source, <span class="hljs-function"><span class="hljs-params">(err, stats)</span> -&gt;</span>
@@ -508,15 +508,15 @@ such as <code>--print</code>.</p>
           <span class="hljs-keyword">return</span> watchErr err <span class="hljs-keyword">if</span> err
           compileScript(source, code.toString(), base)
           rewatch()
-<span class="hljs-function">
-  <span class="hljs-title">startWatcher</span> = -&gt;</span>
+
+  <span class="hljs-function"><span class="hljs-title">startWatcher</span> = -&gt;</span>
     watcher = fs.watch source
     .<span class="hljs-literal">on</span> <span class="hljs-string">'change'</span>, compile
     .<span class="hljs-literal">on</span> <span class="hljs-string">'error'</span>, <span class="hljs-function"><span class="hljs-params">(err)</span> -&gt;</span>
       <span class="hljs-keyword">throw</span> err <span class="hljs-keyword">unless</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">'EPERM'</span>
       removeSource source, base
-<span class="hljs-function">
-  <span class="hljs-title">rewatch</span> = -&gt;</span>
+
+  <span class="hljs-function"><span class="hljs-title">rewatch</span> = -&gt;</span>
     watcher?.close()
     startWatcher()
 
@@ -541,8 +541,8 @@ such as <code>--print</code>.</p>
             <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">watchDir</span> = <span class="hljs-params">(source, base)</span> -&gt;</span>
   watcher        = <span class="hljs-literal">null</span>
   readdirTimeout = <span class="hljs-literal">null</span>
-<span class="hljs-function">
-  <span class="hljs-title">startWatcher</span> = -&gt;</span>
+
+  <span class="hljs-function"><span class="hljs-title">startWatcher</span> = -&gt;</span>
     watcher = fs.watch source
     .<span class="hljs-literal">on</span> <span class="hljs-string">'error'</span>, <span class="hljs-function"><span class="hljs-params">(err)</span> -&gt;</span>
       <span class="hljs-keyword">throw</span> err <span class="hljs-keyword">unless</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">'EPERM'</span>
@@ -557,8 +557,8 @@ such as <code>--print</code>.</p>
           <span class="hljs-keyword">return</span> stopWatcher()
         <span class="hljs-keyword">for</span> file <span class="hljs-keyword">in</span> files
           compilePath (path.join source, file), <span class="hljs-literal">no</span>, base
-<span class="hljs-function">
-  <span class="hljs-title">stopWatcher</span> = -&gt;</span>
+
+  <span class="hljs-function"><span class="hljs-title">stopWatcher</span> = -&gt;</span>
     watcher.close()
     removeSourceDir source, base
 
@@ -567,8 +567,8 @@ such as <code>--print</code>.</p>
     startWatcher()
   <span class="hljs-keyword">catch</span> err
     <span class="hljs-keyword">throw</span> err <span class="hljs-keyword">unless</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">'ENOENT'</span>
-<span class="hljs-function">
-<span class="hljs-title">removeSourceDir</span> = <span class="hljs-params">(source, base)</span> -&gt;</span>
+
+<span class="hljs-function"><span class="hljs-title">removeSourceDir</span> = <span class="hljs-params">(source, base)</span> -&gt;</span>
   <span class="hljs-keyword">delete</span> watchedDirs[source]
   sourcesChanged = <span class="hljs-literal">no</span>
   <span class="hljs-keyword">for</span> file <span class="hljs-keyword">in</span> sources <span class="hljs-keyword">when</span> source <span class="hljs-keyword">is</span> path.dirname file
@@ -598,8 +598,8 @@ the compiled JS version as well.</p>
     silentUnlink outputPath source, base
     silentUnlink outputPath source, base, <span class="hljs-string">'.js.map'</span>
     timeLog <span class="hljs-string">"removed <span class="hljs-subst">#{source}</span>"</span>
-<span class="hljs-function">
-<span class="hljs-title">silentUnlink</span> = <span class="hljs-params">(path)</span> -&gt;</span>
+
+<span class="hljs-function"><span class="hljs-title">silentUnlink</span> = <span class="hljs-params">(path)</span> -&gt;</span>
   <span class="hljs-keyword">try</span>
     fs.unlinkSync path
   <span class="hljs-keyword">catch</span> err
@@ -645,7 +645,7 @@ the compiled JS version as well.</p>
             <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">mkdirp</span> = <span class="hljs-params">(dir, fn)</span> -&gt;</span>
   mode = <span class="hljs-number">0</span>o777 &amp; ~process.umask()
 
-  <span class="hljs-keyword">do</span> m<span class="hljs-function"><span class="hljs-title">kdirs</span> = <span class="hljs-params">(p = dir, fn)</span> -&gt;</span>
+  <span class="hljs-keyword">do</span> <span class="hljs-function"><span class="hljs-title">mkdirs</span> = <span class="hljs-params">(p = dir, fn)</span> -&gt;</span>
     fs.exists p, <span class="hljs-function"><span class="hljs-params">(exists)</span> -&gt;</span>
       <span class="hljs-keyword">if</span> exists
         fn()
@@ -675,7 +675,7 @@ same directory as the <code>.js</code> file.</p>
             <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">writeJs</span> = <span class="hljs-params">(base, sourcePath, js, jsPath, generatedSourceMap = <span class="hljs-literal">null</span>)</span> -&gt;</span>
   sourceMapPath = outputPath sourcePath, base, <span class="hljs-string">".js.map"</span>
   jsDir  = path.dirname jsPath
-<span class="hljs-function">  <span class="hljs-title">compile</span> = -&gt;</span>
+  <span class="hljs-function"><span class="hljs-title">compile</span> = -&gt;</span>
     <span class="hljs-keyword">if</span> opts.compile
       js = <span class="hljs-string">' '</span> <span class="hljs-keyword">if</span> js.length &lt;= <span class="hljs-number">0</span>
       <span class="hljs-keyword">if</span> generatedSourceMap <span class="hljs-keyword">then</span> js = <span class="hljs-string">"<span class="hljs-subst">#{js}</span>\n//# sourceMappingURL=<span class="hljs-subst">#{helpers.baseFileName sourceMapPath, <span class="hljs-literal">no</span>, useWinPathSep}</span>\n"</span>

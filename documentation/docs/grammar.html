@@ -243,7 +243,7 @@ just be passed through unaffected.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-function">  <span class="hljs-title">addLocationDataFn</span> = <span class="hljs-params">(first, last)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-function"><span class="hljs-title">addLocationDataFn</span> = <span class="hljs-params">(first, last)</span> -&gt;</span>
     <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> last
       <span class="hljs-string">"yy.addLocationDataFn(@<span class="hljs-subst">#{first}</span>)"</span>
     <span class="hljs-keyword">else</span>
@@ -1593,7 +1593,7 @@ precedence from low to high, and we have it high to low
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.parser = <span class="hljs-keyword">new</span> Parser
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.parser = <span class="hljs-keyword">new</span> Parser
   tokens      : tokens.join <span class="hljs-string">' '</span>
   bnf         : grammar
   operators   : operators.reverse()

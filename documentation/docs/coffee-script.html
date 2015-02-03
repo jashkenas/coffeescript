@@ -144,9 +144,9 @@ SourceMap     = <span class="hljs-built_in">require</span> <span class="hljs-str
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.VERSION = <span class="hljs-string">'1.9.0'</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.VERSION = <span class="hljs-string">'1.9.0'</span>
 
-exports.FILE_EXTENSIONS = [<span class="hljs-string">'.coffee'</span>, <span class="hljs-string">'.litcoffee'</span>, <span class="hljs-string">'.coffee.md'</span>]</pre></div></div>
+<span class="hljs-built_in">exports</span>.FILE_EXTENSIONS = [<span class="hljs-string">'.coffee'</span>, <span class="hljs-string">'.litcoffee'</span>, <span class="hljs-string">'.coffee.md'</span>]</pre></div></div>
             
         </li>
         
@@ -161,7 +161,7 @@ exports.FILE_EXTENSIONS = [<span class="hljs-string">'.coffee'</span>, <span cla
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.helpers = helpers</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.helpers = helpers</pre></div></div>
             
         </li>
         
@@ -178,7 +178,7 @@ lexer/parser/compiler.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">withPrettyErrors</span> = <span class="hljs-params">(fn)</span> -&gt;</span>
-<span class="hljs-function">  <span class="hljs-params">(code, options = {})</span> -&gt;</span>
+  <span class="hljs-function"><span class="hljs-params">(code, options = {})</span> -&gt;</span>
     <span class="hljs-keyword">try</span>
       fn.call @, code, options
     <span class="hljs-keyword">catch</span> err
@@ -203,7 +203,7 @@ lookups.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.compile = compile = withPrettyErrors <span class="hljs-function"><span class="hljs-params">(code, options)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.compile = compile = withPrettyErrors <span class="hljs-function"><span class="hljs-params">(code, options)</span> -&gt;</span>
   {merge, extend} = helpers
   options = extend {}, options
 
@@ -307,7 +307,7 @@ optimization.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.tokens = withPrettyErrors <span class="hljs-function"><span class="hljs-params">(code, options)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.tokens = withPrettyErrors <span class="hljs-function"><span class="hljs-params">(code, options)</span> -&gt;</span>
   lexer.tokenize code, options</pre></div></div>
             
         </li>
@@ -325,7 +325,7 @@ or traverse it by using <code>.traverseChildren()</code> with a callback.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.nodes = withPrettyErrors <span class="hljs-function"><span class="hljs-params">(source, options)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.nodes = withPrettyErrors <span class="hljs-function"><span class="hljs-params">(source, options)</span> -&gt;</span>
   <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> source <span class="hljs-keyword">is</span> <span class="hljs-string">'string'</span>
     parser.parse lexer.tokenize source, options
   <span class="hljs-keyword">else</span>
@@ -345,7 +345,7 @@ setting <code>__filename</code>, <code>__dirname</code>, and relative <code>requ
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.r<span class="hljs-function"><span class="hljs-title">un</span> = <span class="hljs-params">(code, options = {})</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">run</span> = <span class="hljs-params">(code, options = {})</span> -&gt;</span>
   mainModule = <span class="hljs-built_in">require</span>.main</pre></div></div>
             
         </li>
@@ -431,7 +431,7 @@ The CoffeeScript REPL uses this to run the input.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.e<span class="hljs-function"><span class="hljs-title">val</span> = <span class="hljs-params">(code, options = {})</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">eval</span> = <span class="hljs-params">(code, options = {})</span> -&gt;</span>
   <span class="hljs-keyword">return</span> <span class="hljs-keyword">unless</span> code = code.trim()
   createContext = vm.Script.createContext ? vm.createContext
 
@@ -467,7 +467,7 @@ The CoffeeScript REPL uses this to run the input.</p>
             <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">unless</span> sandbox <span class="hljs-keyword">isnt</span> <span class="hljs-built_in">global</span> <span class="hljs-keyword">or</span> sandbox.<span class="hljs-built_in">module</span> <span class="hljs-keyword">or</span> sandbox.<span class="hljs-built_in">require</span>
       Module = <span class="hljs-built_in">require</span> <span class="hljs-string">'module'</span>
       sandbox.<span class="hljs-built_in">module</span>  = _module  = <span class="hljs-keyword">new</span> Module(options.modulename || <span class="hljs-string">'eval'</span>)
-      sandbox.<span class="hljs-built_in">require</span> = _<span class="hljs-function"><span class="hljs-title">require</span> = <span class="hljs-params">(path)</span> -&gt;</span>  Module._load path, _module, <span class="hljs-literal">true</span>
+      sandbox.<span class="hljs-built_in">require</span> = <span class="hljs-function"><span class="hljs-title">_require</span> = <span class="hljs-params">(path)</span> -&gt;</span>  Module._load path, _module, <span class="hljs-literal">true</span>
       _module.filename = sandbox.__filename
       _require[r] = <span class="hljs-built_in">require</span>[r] <span class="hljs-keyword">for</span> r <span class="hljs-keyword">in</span> Object.getOwnPropertyNames <span class="hljs-built_in">require</span> <span class="hljs-keyword">when</span> r <span class="hljs-keyword">isnt</span> <span class="hljs-string">'paths'</span></pre></div></div>
             
@@ -485,7 +485,7 @@ The CoffeeScript REPL uses this to run the input.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>      _require.paths = _module.paths = Module._nodeModulePaths process.cwd()
-      _require.r<span class="hljs-function"><span class="hljs-title">esolve</span> = <span class="hljs-params">(request)</span> -&gt;</span> Module._resolveFilename request, _module
+      _require.<span class="hljs-function"><span class="hljs-title">resolve</span> = <span class="hljs-params">(request)</span> -&gt;</span> Module._resolveFilename request, _module
   o = {}
   o[k] = v <span class="hljs-keyword">for</span> own k, v <span class="hljs-keyword">of</span> options
   o.bare = <span class="hljs-literal">on</span> <span class="hljs-comment"># ensure return value</span>
@@ -495,7 +495,7 @@ The CoffeeScript REPL uses this to run the input.</p>
   <span class="hljs-keyword">else</span>
     vm.runInContext js, sandbox
 
-exports.r<span class="hljs-function"><span class="hljs-title">egister</span> = -&gt;</span> <span class="hljs-built_in">require</span> <span class="hljs-string">'./register'</span></pre></div></div>
+<span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">register</span> = -&gt;</span> <span class="hljs-built_in">require</span> <span class="hljs-string">'./register'</span></pre></div></div>
             
         </li>
         
@@ -517,7 +517,7 @@ exports.r<span class="hljs-function"><span class="hljs-title">egister</span> = -
       Use CoffeeScript.register() or require the coffee-script/register module to require <span class="hljs-subst">#{ext}</span> files.
       """</span>
 
-exports._<span class="hljs-function"><span class="hljs-title">compileFile</span> = <span class="hljs-params">(filename, sourceMap = <span class="hljs-literal">no</span>)</span> -&gt;</span>
+<span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">_compileFile</span> = <span class="hljs-params">(filename, sourceMap = <span class="hljs-literal">no</span>)</span> -&gt;</span>
   raw = fs.readFileSync filename, <span class="hljs-string">'utf8'</span>
   stripped = <span class="hljs-keyword">if</span> raw.charCodeAt(<span class="hljs-number">0</span>) <span class="hljs-keyword">is</span> <span class="hljs-number">0xFEFF</span> <span class="hljs-keyword">then</span> raw.substring <span class="hljs-number">1</span> <span class="hljs-keyword">else</span> raw
 
@@ -619,7 +619,7 @@ directly as a “Jison lexer”.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>parser.yy.p<span class="hljs-function"><span class="hljs-title">arseError</span> = <span class="hljs-params">(message, {token})</span> -&gt;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>parser.yy.<span class="hljs-function"><span class="hljs-title">parseError</span> = <span class="hljs-params">(message, {token})</span> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -771,8 +771,8 @@ Modified to handle sourceMap</p>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">getSourceMap</span> = <span class="hljs-params">(filename)</span> -&gt;</span>
   <span class="hljs-keyword">return</span> sourceMaps[filename] <span class="hljs-keyword">if</span> sourceMaps[filename]
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">unless</span> path?.extname(filename) <span class="hljs-keyword">in</span> exports.FILE_EXTENSIONS
-  answer = exports._compileFile filename, <span class="hljs-literal">true</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">unless</span> path?.extname(filename) <span class="hljs-keyword">in</span> <span class="hljs-built_in">exports</span>.FILE_EXTENSIONS
+  answer = <span class="hljs-built_in">exports</span>._compileFile filename, <span class="hljs-literal">true</span>
   sourceMaps[filename] = answer.sourceMap</pre></div></div>
             
         </li>
@@ -791,14 +791,14 @@ positions.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>Error.p<span class="hljs-function"><span class="hljs-title">repareStackTrace</span> = <span class="hljs-params">(err, stack)</span> -&gt;</span>
-<span class="hljs-function">  <span class="hljs-title">getSourceMapping</span> = <span class="hljs-params">(filename, line, column)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>Error.<span class="hljs-function"><span class="hljs-title">prepareStackTrace</span> = <span class="hljs-params">(err, stack)</span> -&gt;</span>
+  <span class="hljs-function"><span class="hljs-title">getSourceMapping</span> = <span class="hljs-params">(filename, line, column)</span> -&gt;</span>
     sourceMap = getSourceMap filename
     answer = sourceMap.sourceLocation [line - <span class="hljs-number">1</span>, column - <span class="hljs-number">1</span>] <span class="hljs-keyword">if</span> sourceMap
     <span class="hljs-keyword">if</span> answer <span class="hljs-keyword">then</span> [answer[<span class="hljs-number">0</span>] + <span class="hljs-number">1</span>, answer[<span class="hljs-number">1</span>] + <span class="hljs-number">1</span>] <span class="hljs-keyword">else</span> <span class="hljs-literal">null</span>
 
   frames = <span class="hljs-keyword">for</span> frame <span class="hljs-keyword">in</span> stack
-    <span class="hljs-keyword">break</span> <span class="hljs-keyword">if</span> frame.getFunction() <span class="hljs-keyword">is</span> exports.run
+    <span class="hljs-keyword">break</span> <span class="hljs-keyword">if</span> frame.getFunction() <span class="hljs-keyword">is</span> <span class="hljs-built_in">exports</span>.run
     <span class="hljs-string">"  at <span class="hljs-subst">#{formatSourcePosition frame, getSourceMapping}</span>"</span>
 
   <span class="hljs-string">"<span class="hljs-subst">#{err.toString()}</span>\n<span class="hljs-subst">#{frames.join <span class="hljs-string">'\n'</span>}</span>\n"</span></pre></div></div>

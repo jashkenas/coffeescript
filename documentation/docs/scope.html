@@ -127,7 +127,7 @@ with external scopes.</p>
             
             <div class="content"><div class='highlight'><pre>{extend, last} = <span class="hljs-built_in">require</span> <span class="hljs-string">'./helpers'</span>
 
-exports.Scope = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Scope</span></span></pre></div></div>
+<span class="hljs-built_in">exports</span>.Scope = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Scope</span></span></pre></div></div>
             
         </li>
         
@@ -275,10 +275,12 @@ walks up to the root scope.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">temporary</span>: <span class="hljs-function"><span class="hljs-params">(name, index)</span> -&gt;</span>
-    <span class="hljs-keyword">if</span> name.length &gt; <span class="hljs-number">1</span>
-      <span class="hljs-string">'_'</span> + name + <span class="hljs-keyword">if</span> index &gt; <span class="hljs-number">1</span> <span class="hljs-keyword">then</span> index - <span class="hljs-number">1</span> <span class="hljs-keyword">else</span> <span class="hljs-string">''</span>
-    <span class="hljs-keyword">else</span>
-      <span class="hljs-string">'_'</span> + (index + parseInt name, <span class="hljs-number">36</span>).toString(<span class="hljs-number">36</span>).replace <span class="hljs-regexp">/\d/g</span>, <span class="hljs-string">'a'</span></pre></div></div>
+    <span class="hljs-keyword">if</span> name.charAt(<span class="hljs-number">0</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'_'</span> 
+      name + (index <span class="hljs-keyword">or</span> <span class="hljs-string">''</span>)
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> name.length <span class="hljs-keyword">is</span> <span class="hljs-number">1</span>
+      <span class="hljs-string">'_'</span> + (index + parseInt name, <span class="hljs-number">36</span>).toString(<span class="hljs-number">36</span>).replace <span class="hljs-regexp">/\d/g</span>, <span class="hljs-string">'a'</span>
+    <span class="hljs-keyword">else</span> 
+      <span class="hljs-string">"_<span class="hljs-subst">#{name}</span><span class="hljs-subst">#{index <span class="hljs-keyword">or</span> <span class="hljs-string">''</span>}</span>"</span></pre></div></div>
             
         </li>
         

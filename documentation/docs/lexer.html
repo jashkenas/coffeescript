@@ -185,7 +185,7 @@ pushing some extra smarts into the Lexer.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.Lexer = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Lexer</span></span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Lexer = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Lexer</span></span></pre></div></div>
             
         </li>
         
@@ -608,20 +608,22 @@ borrow some basic heuristics from JavaScript and Ruby.</p>
       <span class="hljs-keyword">when</span> regex
         <span class="hljs-property">@token</span> <span class="hljs-string">'REGEX'</span>, <span class="hljs-string">"<span class="hljs-subst">#{regex}</span><span class="hljs-subst">#{flags}</span>"</span>
       <span class="hljs-keyword">when</span> tokens.length <span class="hljs-keyword">is</span> <span class="hljs-number">1</span>
-        re = <span class="hljs-property">@formatHeregex</span>(tokens[<span class="hljs-number">0</span>][<span class="hljs-number">1</span>]).replace(<span class="hljs-regexp">/\//g</span>, <span class="hljs-string">'\\/'</span>)
-        <span class="hljs-property">@token</span> <span class="hljs-string">'REGEX'</span>, <span class="hljs-string">"/<span class="hljs-subst">#{ re <span class="hljs-keyword">or</span> <span class="hljs-string">'(?:)'</span> }</span>/<span class="hljs-subst">#{flags}</span>"</span>
-      <span class="hljs-keyword">else</span>
-        <span class="hljs-property">@token</span> <span class="hljs-string">'IDENTIFIER'</span>, <span class="hljs-string">'RegExp'</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>
-        <span class="hljs-property">@token</span> <span class="hljs-string">'CALL_START'</span>, <span class="hljs-string">'('</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>
-        <span class="hljs-property">@mergeInterpolationTokens</span> tokens, {<span class="hljs-attribute">quote</span>: <span class="hljs-string">'"'</span>, <span class="hljs-attribute">start</span>: <span class="hljs-number">3</span>, end}, <span class="hljs-function"><span class="hljs-params">(value)</span> =&gt;</span>
-          <span class="hljs-property">@formatHeregex</span>(value).replace(<span class="hljs-regexp">/\\/g</span>, <span class="hljs-string">'\\\\'</span>)
-        <span class="hljs-keyword">if</span> flags
-          <span class="hljs-property">@token</span> <span class="hljs-string">','</span>, <span class="hljs-string">','</span>, index, <span class="hljs-number">0</span>
-          <span class="hljs-property">@token</span> <span class="hljs-string">'STRING'</span>, <span class="hljs-string">'"'</span> + flags + <span class="hljs-string">'"'</span>, index, flags.length
-        rparen = <span class="hljs-property">@token</span> <span class="hljs-string">')'</span>, <span class="hljs-string">')'</span>, end, <span class="hljs-number">0</span>
-        rparen.regexEnd = <span class="hljs-literal">true</span>
+        re = <span class="hljs-property">@formatHeregex</span>(tokens[<span class="hljs-number">0</span>][<span class="hljs-number">1</span>]).replace(<span class="hljs-regexp">/\/</span><span class="hljs-regexp">/g, '\\/</span><span class="hljs-string">')
+        @token '</span>REGEX<span class="hljs-string">', "/#{ re or '</span>(?:)<span class="hljs-string">' }/#{flags}"
+      else
+        @token '</span>IDENTIFIER<span class="hljs-string">', '</span>RegExp<span class="hljs-string">', 0, 0
+        @token '</span>CALL_START<span class="hljs-string">', '</span>(<span class="hljs-string">', 0, 0
+        @mergeInterpolationTokens tokens, {quote: '</span><span class="hljs-string">"', start: 3, end}, (value) =&gt;
+          @formatHeregex(value).replace(/\\/g, '\\\\')
+        if flags
+          @token ',', ',', index, 0
+          @token 'STRING', '"</span><span class="hljs-string">' + flags + '</span><span class="hljs-string">"', index, flags.length
+        rparen = @token ')', ')', end, 0
+        rparen.regexEnd = true
 
-    end</pre></div></div>
+    end
+
+</span></pre></div></div>
             
         </li>
         
@@ -1234,8 +1236,8 @@ correctly balanced throughout the course of the token stream.</p>
                 <a class="pilcrow" href="#section-46">&#182;</a>
               </div>
               <p>Auto-close INDENT to support syntax like this:</p>
-<pre><code>el.click(<span class="hljs-function"><span class="hljs-params">(event)</span> -&gt;</span>
-  el.hide())
+<pre><code>el.click<span class="hljs-function"><span class="hljs-params">((event) -&gt;
+  el.hide())</span></span>
 </code></pre>
             </div>
             
@@ -1619,8 +1621,8 @@ be used as identifiers or properties.</p>
             
             <div class="content"><div class='highlight'><pre>JS_FORBIDDEN = JS_KEYWORDS.concat(RESERVED).concat(STRICT_PROSCRIBED)
 
-exports.RESERVED = RESERVED.concat(JS_KEYWORDS).concat(COFFEE_KEYWORDS).concat(STRICT_PROSCRIBED)
-exports.STRICT_PROSCRIBED = STRICT_PROSCRIBED</pre></div></div>
+<span class="hljs-built_in">exports</span>.RESERVED = RESERVED.concat(JS_KEYWORDS).concat(COFFEE_KEYWORDS).concat(STRICT_PROSCRIBED)
+<span class="hljs-built_in">exports</span>.STRICT_PROSCRIBED = STRICT_PROSCRIBED</pre></div></div>
             
         </li>
         
