@@ -125,6 +125,22 @@ test "#1096: unexpected generated tokens", ->
     for i in [1]:
                 ^
   '''
+  # Unexpected regex
+  assertErrorFormat '{/a/i: val}', '''
+    [stdin]:1:2: error: unexpected /a/i
+    {/a/i: val}
+     ^^^^
+  '''
+  assertErrorFormat '{///a///i: val}', '''
+    [stdin]:1:2: error: unexpected ///a///i
+    {///a///i: val}
+     ^^^^^^^^
+  '''
+  assertErrorFormat '{///#{a}///i: val}', '''
+    [stdin]:1:2: error: unexpected ///#{a}///i
+    {///#{a}///i: val}
+     ^^^^^^^^^^^
+  '''
 
 test "#1316: unexpected end of interpolation", ->
   assertErrorFormat '''
