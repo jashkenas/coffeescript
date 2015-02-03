@@ -736,7 +736,7 @@ exports.Extends = class Extends extends Base
 
   # Hooks one constructor into another's prototype chain.
   compileToFragments: (o) ->
-    new Call(new Value(new Literal utility 'extends', o), [@child, @parent]).compileToFragments o
+    new Call(new Value(new Literal utility 'extend', o), [@child, @parent]).compileToFragments o
 
 #### Access
 
@@ -853,7 +853,7 @@ exports.Range = class Range extends Base
       range.pop() if @exclusive
       return [@makeCode "[#{ range.join(', ') }]"]
     idt    = @tab + TAB
-    i      = o.scope.freeVariable 'i'
+    i      = o.scope.freeVariable 'i', single: true
     result = o.scope.freeVariable 'results'
     pre    = "\n#{idt}#{result} = [];"
     if @fromNum and @toNum
@@ -1116,7 +1116,7 @@ exports.Class = class Class extends Base
     @body.expressions.push lname
 
     if @parent
-      superClass = new Literal o.classScope.freeVariable 'super', no
+      superClass = new Literal o.classScope.freeVariable 'superClass', reserve: no
       @body.expressions.unshift new Extends lname, superClass
       func.params.push new Param superClass
       args.push @parent
@@ -1233,7 +1233,7 @@ exports.Assign = class Assign extends Base
         obj = obj.unwrap()
         val = "#{olen} <= #{vvarText}.length ? #{ utility 'slice', o }.call(#{vvarText}, #{i}"
         if rest = olen - i - 1
-          ivar = o.scope.freeVariable 'i'
+          ivar = o.scope.freeVariable 'i', single: true
           val += ", #{ivar} = #{vvarText}.length - #{rest}) : (#{ivar} = #{i}, [])"
         else
           val += ") : []"
@@ -1244,7 +1244,7 @@ exports.Assign = class Assign extends Base
           if rest is 1
             expandedIdx = "#{vvarText}.length - 1"
           else
-            ivar = o.scope.freeVariable 'i'
+            ivar = o.scope.freeVariable 'i', single: true
             val = new Literal "#{ivar} = #{vvarText}.length - #{rest}"
             expandedIdx = "#{ivar}++"
             assigns.push val.compileToFragments o, LEVEL_LIST
@@ -1431,6 +1431,7 @@ exports.Param = class Param extends Base
     node = @name
     if node.this
       name = node.properties[0].name.value
+      name = "_#{name}" if name.reserved
       node = new Literal o.scope.freeVariable name
     else if node.isComplex()
       node = new Literal o.scope.freeVariable 'arg'
@@ -1966,7 +1967,7 @@ exports.For = class For extends While
     scope.find(name)  if name and not @pattern
     scope.find(index) if index
     rvar      = scope.freeVariable 'results' if @returns
-    ivar      = (@object and index) or scope.freeVariable 'i'
+    ivar      = (@object and index) or scope.freeVariable 'i', single: true
     kvar      = (@range and name) or index or ivar
     kvarAssign = if kvar isnt ivar then "#{kvar} = " else ""
     if @step and not @range
@@ -2179,7 +2180,7 @@ UTILITIES =
 
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls, and copies of any static properties.
-  extends: (o) -> "
+  extend: (o) -> "
     function(child, parent) {
       for (var key in parent) {
         if (#{utility 'hasProp', o}.call(parent, key)) child[key] = parent[key];
@@ -2264,7 +2265,7 @@ utility = (name, o) ->
   if name of root.utilities
     root.utilities[name]
   else
-    ref = root.freeVariable "_#{name}"
+    ref = root.freeVariable name
     root.assign ref, UTILITIES[name] o
     root.utilities[name] = ref
 
