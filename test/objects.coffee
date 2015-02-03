@@ -446,3 +446,15 @@ test 'inline implicit object literals within multiline implicit object literals'
     b: 0
   eq 0, x.b
   eq 0, x.a.aa
+
+
+test '#3520: string literals as object properties', ->
+  obj =
+    'abc': 1
+    'def-ghi': 2
+
+  eq obj.abc, 1
+  eq obj.'abc', 1
+  eq obj['abc'], 1
+  eq obj['def-ghi'], 2
+  eq obj.'def-ghi', 2

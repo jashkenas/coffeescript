@@ -262,6 +262,7 @@ grammar =
   # or by array index or slice.
   Accessor: [
     o '.  Identifier',                          -> new Access $2
+    o '. STRING',                               -> new Access (new Literal $2)
     o '?. Identifier',                          -> new Access $2, 'soak'
     o ':: Identifier',                          -> [LOC(1)(new Access new Literal('prototype')), LOC(2)(new Access $2)]
     o '?:: Identifier',                         -> [LOC(1)(new Access new Literal('prototype'), 'soak'), LOC(2)(new Access $2)]
