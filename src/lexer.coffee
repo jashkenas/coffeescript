@@ -582,12 +582,12 @@ exports.Lexer = class Lexer
     if interpolated
       [..., lastToken] = @tokens
       rparen = @token ')', ')'
-      rparen[2] = [')', ')',
+      rparen[2] = {
         first_line:   lastToken[2].last_line
         first_column: lastToken[2].last_column + 1
         last_line:    lastToken[2].last_line
         last_column:  lastToken[2].last_column + 1
-      ]
+      }
       rparen.stringEnd = true
 
   # Pairs up a closing token, ensuring that all listed pairs of tokens are
