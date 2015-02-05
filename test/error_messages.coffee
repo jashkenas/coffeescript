@@ -380,6 +380,70 @@ test "octal escapes", ->
     "a\\0\\tb\\\\\\07c"
       \  \   \ \ ^
   '''
+  assertErrorFormat '''
+    "a
+      #{b} \\1"
+  ''', '''
+    [stdin]:2:8: error: octal escape sequences are not allowed \\1
+      #{b} \\1"
+           ^
+  '''
+  assertErrorFormat '''
+    /a\\0\\tb\\\\\\07c/
+  ''', '''
+    [stdin]:1:10: error: octal escape sequences are not allowed \\07
+    /a\\0\\tb\\\\\\07c/
+      \  \   \ \ ^
+  '''
+  assertErrorFormat '''
+    ///a
+      #{b} \\01///
+  ''', '''
+    [stdin]:2:8: error: octal escape sequences are not allowed \\01
+      #{b} \\01///
+           ^
+  '''
+
+test "#3795: invalid escapes", ->
+  assertErrorFormat '''
+    "a\\0\\tb\\\\\\x7g"
+  ''', '''
+    [stdin]:1:10: error: invalid escape sequence \\x7g
+    "a\\0\\tb\\\\\\x7g"
+      \  \   \ \ ^
+  '''
+  assertErrorFormat '''
+    "a
+      #{b} \\uA02
+     c"
+  ''', '''
+    [stdin]:2:8: error: invalid escape sequence \\uA02
+      #{b} \\uA02
+           ^
+  '''
+  assertErrorFormat '''
+    /a\\u002space/
+  ''', '''
+    [stdin]:1:3: error: invalid escape sequence \\u002s
+    /a\\u002space/
+      ^
+  '''
+  assertErrorFormat '''
+    ///a \\u002 0 space///
+  ''', '''
+    [stdin]:1:6: error: invalid escape sequence \\u002 
+    ///a \\u002 0 space///
+         ^
+  '''
+  assertErrorFormat '''
+    ///a
+      #{b} \\x0
+     c///
+  ''', '''
+    [stdin]:2:8: error: invalid escape sequence \\x0
+      #{b} \\x0
+           ^
+  '''
 
 test "illegal herecomment", ->
   assertErrorFormat '''
