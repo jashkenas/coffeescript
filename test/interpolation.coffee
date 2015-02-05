@@ -146,11 +146,11 @@ ok /^a[\s\S]+b$/.test "a#{ (x) -> x ** 2 }b"
 # TODO: improve heregex interpolation tests
 
 test "heregex interpolation", ->
-  eq /\\#{}\\\"/ + '', ///
+  eq /\\#{}\\"/ + '', ///
    #{
      "#{ '\\' }" # normal comment
    }
    # regex comment
    \#{}
-   \\ \"
+   \\ "
   /// + ''

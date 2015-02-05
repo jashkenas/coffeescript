@@ -202,6 +202,7 @@ exports.Lexer = class Lexer
     {tokens, index: end} = @matchWithInterpolations regex, quote
     $ = tokens.length - 1
 
+    delimiter = quote[0]
     if heredoc
       # Find the smallest indentation. It will be removed from all lines later.
       indent = null
@@ -210,17 +211,16 @@ exports.Lexer = class Lexer
         attempt = match[1]
         indent = attempt if indent is null or 0 < attempt.length < indent.length
       indentRegex = /// ^#{indent} ///gm if indent
-      @mergeInterpolationTokens tokens, quote[0], (value, i) =>
+      @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
         value = @formatString value
         value = value.replace LEADING_BLANK_LINE,  '' if i is 0
         value = value.replace TRAILING_BLANK_LINE, '' if i is $
         value = value.replace indentRegex, ''
-        value = value.replace MULTILINER, '\\n'
         value
     else
-      @mergeInterpolationTokens tokens, quote, (value, i) =>
+      @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
         value = @formatString value
-        value = value.replace STRING_OMIT, (match, offset) ->
+        value = value.replace SIMPLE_STRING_OMIT, (match, offset) ->
           if (i is 0 and offset is 0) or
              (i is $ and offset + match.length is value.length)
             ''
@@ -258,7 +258,8 @@ exports.Lexer = class Lexer
       when match = @matchWithInterpolations HEREGEX, '///'
         {tokens, index} = match
       when match = REGEX.exec @chunk
-        [regex, closed] = match
+        [regex, body, closed] = match
+        @validateEscapes regex, isRegex: yes
         index = regex.length
         prev = last @tokens
         if prev
@@ -276,16 +277,13 @@ exports.Lexer = class Lexer
     switch
       when not VALID_FLAGS.test flags
         @error "invalid regular expression flags #{flags}", index
-      when regex
-        @token 'REGEX', "#{regex}#{flags}"
-      when tokens.length is 1
-        re = @formatHeregex(tokens[0][1]).replace(/\//g, '\\/')
-        @token 'REGEX', "/#{ re or '(?:)' }/#{flags}", 0, end, errorToken
+      when regex or tokens.length is 1
+        body ?= @formatHeregex tokens[0][1]
+        @token 'REGEX', "#{@makeDelimitedLiteral body, delimiter: '/'}#{flags}", 0, end, errorToken
       else
         @token 'IDENTIFIER', 'RegExp', 0, 0
         @token 'CALL_START', '(', 0, 0, errorToken
-        @mergeInterpolationTokens tokens, '"', (value) =>
-          @formatHeregex(value).replace(/\\/g, '\\\\')
+        @mergeInterpolationTokens tokens, {delimiter: '"', double: yes}, @formatHeregex
         if flags
           @token ',', ',', index, 0
           @token 'STRING', '"' + flags + '"', index, flags.length
@@ -484,6 +482,8 @@ exports.Lexer = class Lexer
     loop
       [strPart] = regex.exec str
 
+      @validateEscapes strPart, {isRegex: delimiter.charAt(0) is '/', offsetInChunk}
+
       # Push a fake 'NEOSTRING' token, which will get turned into a real string later.
       tokens.push @makeToken 'NEOSTRING', strPart, offsetInChunk
 
@@ -527,8 +527,8 @@ exports.Lexer = class Lexer
   # Merge the array `tokens` of the fake token types 'TOKENS' and 'NEOSTRING'
   # (as returned by `matchWithInterpolations`) into the token stream. The value
   # of 'NEOSTRING's are converted using `fn` and turned into strings using
-  # `quote` first.
-  mergeInterpolationTokens: (tokens, quote, fn) ->
+  # `options` first.
+  mergeInterpolationTokens: (tokens, options, fn) ->
     if interpolated = tokens.length > 1
       [firstToken] = tokens
       errorToken = ['', 'interpolation',
@@ -566,7 +566,7 @@ exports.Lexer = class Lexer
           if i is 2 and firstEmptyStringIndex?
             @tokens.splice firstEmptyStringIndex, 2 # Remove empty string and the plus.
           token[0] = 'STRING'
-          token[1] = @makeString converted, quote
+          token[1] = @makeDelimitedLiteral converted, options
           locationToken = token
           tokensToPush = [token]
       if @tokens.length > firstIndex
@@ -674,23 +674,45 @@ exports.Lexer = class Lexer
                '**', 'SHIFT', 'RELATION', 'COMPARE', 'LOGIC', 'THROW', 'EXTENDS']
 
   formatString: (str) ->
-    # Ignore escaped backslashes and remove escaped newlines.
-    str.replace /\\[^\S\n]*(\n|\\)\s*/g, (escaped, character) ->
-      if character is '\n' then '' else escaped
+    str.replace STRING_OMIT, '$1'
 
   formatHeregex: (str) ->
-    str.replace(HEREGEX_OMIT, '$1$2').replace(MULTILINER, '\\n')
+    str.replace HEREGEX_OMIT, '$1$2'
 
-  # Constructs a string token by escaping quotes.
-  makeString: (body, quote) ->
-    return quote + quote unless body
-    # Ignore escaped backslashes and unescape quotes.
-    body = body.replace /// \\( #{quote} | \\ ) ///g, (match, contents) ->
-      if contents is quote then contents else match
-    body = body.replace /// #{quote} ///g, '\\$&'
-    if match = OCTAL_ESCAPE.exec body
-      @error "octal escape sequences are not allowed #{match[2]}", match.index + match[1].length + 1
-    quote + body + quote
+  # Validates escapes in strings and regexes.
+  validateEscapes: (str, options = {}) ->
+    match = INVALID_ESCAPE.exec str
+    return unless match
+    [[], before, octal, hex, unicode] = match
+    return if options.isRegex and octal and octal.charAt(0) isnt '0'
+    message =
+      if octal
+        "octal escape sequences are not allowed \\#{octal}"
+      else
+        "invalid escape sequence \\#{hex or unicode}"
+    @error message, (options.offsetInChunk ? 0) + match.index + before.length
+
+  # Constructs a string or regex by escaping certain characters.
+  makeDelimitedLiteral: (body, options = {}) ->
+    body = '(?:)' if body is '' and options.delimiter is '/'
+    regex = ///
+        (\\\\)                               # escaped backslash
+      | (\\0(?=[1-7]))                       # nul character mistaken as octal escape
+      | \\?(#{options.delimiter})            # (possibly escaped) delimiter
+      | \\?(?: (\n)|(\r)|(\u2028)|(\u2029) ) # (possibly escaped) newlines
+      | (\\.)                                # other escapes
+    ///g
+    body = body.replace regex, (match, backslash, nul, delimiter, lf, cr, ls, ps, other) -> switch
+      # Ignore escaped backslashes.
+      when backslash then (if options.double then backslash + backslash else backslash)
+      when nul       then '\\x00'
+      when delimiter then "\\#{delimiter}"
+      when lf        then '\\n'
+      when cr        then '\\r'
+      when ls        then '\\u2028'
+      when ps        then '\\u2029'
+      when other     then (if options.double then "\\#{other}" else other)
+    "#{options.delimiter}#{body}#{options.delimiter}"
 
   # Throws a compiler error on the current position.
   error: (message, offset = 0) ->
@@ -791,18 +813,22 @@ STRING_DOUBLE  = /// ^(?: [^\\"#] | \\[\s\S] |           \#(?!\{) )* ///
 HEREDOC_SINGLE = /// ^(?: [^\\']  | \\[\s\S] | '(?!'')            )* ///
 HEREDOC_DOUBLE = /// ^(?: [^\\"#] | \\[\s\S] | "(?!"") | \#(?!\{) )* ///
 
-STRING_OMIT    = /\s*\n\s*/g
-HEREDOC_INDENT = /\n+([^\n\S]*)(?=\S)/g
+STRING_OMIT    = ///
+    ((?:\\\\)+)      # consume (and preserve) an even number of backslashes
+  | \\[^\S\n]*\n\s*  # remove escaped newlines
+///g
+SIMPLE_STRING_OMIT = /\s*\n\s*/g
+HEREDOC_INDENT     = /\n+([^\n\S]*)(?=\S)/g
 
 # Regex-matching-regexes.
 REGEX = /// ^
-  / (?!/) (
+  / (?!/) ((
   ?: [^ [ / \n \\ ]  # every other thing
-   | \\.             # anything (but newlines) escaped
+   | \\[^\n]         # anything but newlines escaped
    | \[              # character class
-       (?: \\. | [^ \] \n \\ ] )*
+       (?: \\[^\n] | [^ \] \n \\ ] )*
      ]
-  )* (/)?
+  )*) (/)?
 ///
 
 REGEX_FLAGS  = /^\w*/
@@ -812,7 +838,7 @@ HEREGEX      = /// ^(?: [^\\/#] | \\[\s\S] | /(?!//) | \#(?!\{) )* ///
 
 HEREGEX_OMIT = ///
     ((?:\\\\)+)     # consume (and preserve) an even number of backslashes
-  | \\(\s|/)        # preserve escaped whitespace and "de-escape" slashes
+  | \\(\s)          # preserve escaped whitespace
   | \s+(?:#.*)?     # remove whitespace and comments
 ///g
 
@@ -821,13 +847,18 @@ REGEX_ILLEGAL = /// ^ ( / | /{3}\s*) (\*) ///
 POSSIBLY_DIVISION   = /// ^ /=?\s ///
 
 # Other regexes.
-MULTILINER          = /\n/g
-
 HERECOMMENT_ILLEGAL = /\*\//
 
 LINE_CONTINUER      = /// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///
 
-OCTAL_ESCAPE        = /// ^ ((?: \\. | [^\\] )*) (\\ (?: 0[0-7] | [1-7] )) ///
+INVALID_ESCAPE      = ///
+  ( (?:^|[^\\]) (?:\\\\)* )        # make sure the escape isn’t escaped
+  \\ (
+     ?: (0[0-7]|[1-7])             # octal escape
+      | (x(?![\da-fA-F]{2}).{0,2}) # hex escape
+      | (u(?![\da-fA-F]{4}).{0,4}) # unicode escape
+  )
+///
 
 LEADING_BLANK_LINE  = /^[^\n\S]*\n/
 TRAILING_BLANK_LINE = /\n[^\n\S]*$/
