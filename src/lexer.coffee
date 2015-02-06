@@ -73,7 +73,7 @@ exports.Lexer = class Lexer
       return {@tokens, index: i} if opts.untilBalanced and @ends.length is 0
 
     @closeIndentation()
-    throwSyntaxError "missing #{end.tag}", end.origin[2] if end = @ends.pop()
+    @error "missing #{end.tag}", end.origin[2] if end = @ends.pop()
     return @tokens if opts.rewrite is off
     (new Rewriter).rewrite @tokens
 
@@ -143,7 +143,7 @@ exports.Lexer = class Lexer
         id  = new String id
         id.reserved = yes
       else if id in RESERVED
-        @error "reserved word \"#{id}\""
+        @error "reserved word '#{id}'", length: id.length
 
     unless forcedIdentifier
       id  = COFFEE_ALIAS_MAP[id] if id in COFFEE_ALIASES
@@ -171,15 +171,16 @@ exports.Lexer = class Lexer
   numberToken: ->
     return 0 unless match = NUMBER.exec @chunk
     number = match[0]
-    if /^0[BOX]/.test number
-      @error "radix prefix '#{number}' must be lowercase"
-    else if /E/.test(number) and not /^0x/.test number
-      @error "exponential notation '#{number}' must be indicated with a lowercase 'e'"
-    else if /^0\d*[89]/.test number
-      @error "decimal literal '#{number}' must not be prefixed with '0'"
-    else if /^0\d+/.test number
-      @error "octal literal '#{number}' must be prefixed with '0o'"
     lexedLength = number.length
+    if /^0[BOX]/.test number
+      @error "radix prefix in '#{number}' must be lowercase", offset: 1
+    else if /E/.test(number) and not /^0x/.test number
+      @error "exponential notation in '#{number}' must be indicated with a lowercase 'e'",
+        offset: number.indexOf('E')
+    else if /^0\d*[89]/.test number
+      @error "decimal literal '#{number}' must not be prefixed with '0'", length: lexedLength
+    else if /^0\d+/.test number
+      @error "octal literal '#{number}' must be prefixed with '0o'", length: lexedLength
     if octalLiteral = /^0o([0-7]+)/.exec number
       number = '0x' + parseInt(octalLiteral[1], 8).toString 16
     if binaryLiteral = /^0b([01]+)/.exec number
@@ -236,7 +237,8 @@ exports.Lexer = class Lexer
     [comment, here] = match
     if here
       if match = HERECOMMENT_ILLEGAL.exec comment
-        @error "block comments cannot contain #{match[0]}", match.index
+        @error "block comments cannot contain #{match[0]}",
+          offset: match.index, length: match[0].length
       if here.indexOf('\n') >= 0
         here = here.replace /// \n #{repeat ' ', @indent} ///g, '\n'
       @token 'HERECOMMENT', here, 0, comment.length
@@ -254,7 +256,8 @@ exports.Lexer = class Lexer
   regexToken: ->
     switch
       when match = REGEX_ILLEGAL.exec @chunk
-        @error "regular expressions cannot begin with #{match[2]}", match.index + match[1].length
+        @error "regular expressions cannot begin with #{match[2]}",
+          offset: match.index + match[1].length
       when match = @matchWithInterpolations HEREGEX, '///'
         {tokens, index} = match
       when match = REGEX.exec @chunk
@@ -276,7 +279,7 @@ exports.Lexer = class Lexer
     errorToken = @makeToken 'REGEX', @chunk[...end], 0, end
     switch
       when not VALID_FLAGS.test flags
-        @error "invalid regular expression flags #{flags}", index
+        @error "invalid regular expression flags #{flags}", offset: index, length: flags.length
       when regex or tokens.length is 1
         body ?= @formatHeregex tokens[0][1]
         @token 'REGEX', "#{@makeDelimitedLiteral body, delimiter: '/'}#{flags}", 0, end, errorToken
@@ -327,7 +330,7 @@ exports.Lexer = class Lexer
       @outdebt = @indebt = 0
       @indent = size
     else if size < @baseIndent
-      @error 'missing indentation', indent.length
+      @error 'missing indentation', offset: indent.length
     else
       @indebt = 0
       @outdentToken @indent - size, noNewlines, indent.length
@@ -400,7 +403,7 @@ exports.Lexer = class Lexer
     prev = last @tokens
     if value is '=' and prev
       if not prev[1].reserved and prev[1] in JS_FORBIDDEN
-        @error "reserved word \"#{@value()}\" can't be assigned"
+        @error "reserved word '#{prev[1]}' can't be assigned", prev[2]
       if prev[1] in ['||', '&&']
         prev[0] = 'COMPOUND_ASSIGN'
         prev[1] += '='
@@ -516,7 +519,7 @@ exports.Lexer = class Lexer
       offsetInChunk += index
 
     unless str[...delimiter.length] is delimiter
-      @error "missing #{delimiter}"
+      @error "missing #{delimiter}", length: delimiter.length
 
     [firstToken, ..., lastToken] = tokens
     firstToken[2].first_column -= delimiter.length
@@ -687,10 +690,13 @@ exports.Lexer = class Lexer
     return if options.isRegex and octal and octal.charAt(0) isnt '0'
     message =
       if octal
-        "octal escape sequences are not allowed \\#{octal}"
+        "octal escape sequences are not allowed"
       else
-        "invalid escape sequence \\#{hex or unicode}"
-    @error message, (options.offsetInChunk ? 0) + match.index + before.length
+        "invalid escape sequence"
+    invalidEscape = "\\#{octal or hex or unicode}"
+    @error "#{message} #{invalidEscape}",
+      offset: (options.offsetInChunk ? 0) + match.index + before.length
+      length: invalidEscape.length
 
   # Constructs a string or regex by escaping certain characters.
   makeDelimitedLiteral: (body, options = {}) ->
@@ -714,12 +720,16 @@ exports.Lexer = class Lexer
       when other     then (if options.double then "\\#{other}" else other)
     "#{options.delimiter}#{body}#{options.delimiter}"
 
-  # Throws a compiler error on the current position.
-  error: (message, offset = 0) ->
-    # TODO: Are there some cases we could improve the error line number by
-    # passing the offset in the chunk where the error happened?
-    [first_line, first_column] = @getLineAndColumnFromChunk offset
-    throwSyntaxError message, {first_line, first_column}
+  # Throws an error at either a given offset from the current chunk or at the
+  # location of a token (`token[2]`).
+  error: (message, options = {}) ->
+    location =
+      if 'first_line' of options
+        options
+      else
+        [first_line, first_column] = @getLineAndColumnFromChunk options.offset ? 0
+        {first_line, first_column, last_column: first_column + (options.length ? 1) - 1}
+    throwSyntaxError message, location
 
 # Constants
 # ---------
