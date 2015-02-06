@@ -258,14 +258,20 @@ grammar =
     o 'This'
   ]
 
+  # The symbols that can be used to access an object member:
+  # identifiers, string literals, and numbers.
+  AccessorIdentifier: [
+    o 'Identifier'
+    o 'AlphaNumeric'
+  ]
+
   # The general group of accessors into an object, by property, by prototype
   # or by array index or slice.
   Accessor: [
-    o '.  Identifier',                          -> new Access $2
-    o '. STRING',                               -> new Access (new Literal $2)
-    o '?. Identifier',                          -> new Access $2, 'soak'
-    o ':: Identifier',                          -> [LOC(1)(new Access new Literal('prototype')), LOC(2)(new Access $2)]
-    o '?:: Identifier',                         -> [LOC(1)(new Access new Literal('prototype'), 'soak'), LOC(2)(new Access $2)]
+    o '.  AccessorIdentifier',                  -> new Access $2
+    o '?. AccessorIdentifier',                  -> new Access $2, 'soak'
+    o ':: AccessorIdentifier',                  -> [LOC(1)(new Access new Literal('prototype')), LOC(2)(new Access $2)]
+    o '?:: AccessorIdentifierIdentifier',       -> [LOC(1)(new Access new Literal('prototype'), 'soak'), LOC(2)(new Access $2)]
     o '::',                                     -> new Access new Literal 'prototype'
     o 'Index'
   ]
