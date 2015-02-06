@@ -247,14 +247,14 @@ test "unclosed strings", ->
   """, """
     [stdin]:1:1: error: missing '''
     '''
-    ^
+    ^^^
   """
   assertErrorFormat '''
     """
   ''', '''
     [stdin]:1:1: error: missing """
     """
-    ^
+    ^^^
   '''
   assertErrorFormat '''
     "#{"
@@ -275,21 +275,21 @@ test "unclosed strings", ->
   ''', '''
     [stdin]:1:4: error: missing """
     "#{"""
-       ^
+       ^^^
   '''
   assertErrorFormat '''
     """#{"""
   ''', '''
     [stdin]:1:6: error: missing """
     """#{"""
-         ^
+         ^^^
   '''
   assertErrorFormat '''
     ///#{"""
   ''', '''
     [stdin]:1:6: error: missing """
     ///#{"""
-         ^
+         ^^^
   '''
   assertErrorFormat '''
     "a
@@ -310,7 +310,7 @@ test "unclosed strings", ->
   ''', '''
     [stdin]:2:1: error: missing """
     """a\\"""
-    ^
+    ^^^
   '''
 
 test "unclosed heregexes", ->
@@ -319,7 +319,7 @@ test "unclosed heregexes", ->
   ''', '''
     [stdin]:1:1: error: missing ///
     ///
-    ^
+    ^^^
   '''
   # https://github.com/jashkenas/coffeescript/issues/3301#issuecomment-31735168
   assertErrorFormat '''
@@ -328,7 +328,7 @@ test "unclosed heregexes", ->
   ''', '''
     [stdin]:2:1: error: missing ///
     ///a\\///
-    ^
+    ^^^
   '''
 
 test "unexpected token after string", ->
@@ -378,7 +378,7 @@ test "octal escapes", ->
   ''', '''
     [stdin]:1:10: error: octal escape sequences are not allowed \\07
     "a\\0\\tb\\\\\\07c"
-      \  \   \ \ ^
+      \  \   \ \ ^\^^
   '''
   assertErrorFormat '''
     "a
@@ -386,14 +386,14 @@ test "octal escapes", ->
   ''', '''
     [stdin]:2:8: error: octal escape sequences are not allowed \\1
       #{b} \\1"
-           ^
+           ^\^
   '''
   assertErrorFormat '''
     /a\\0\\tb\\\\\\07c/
   ''', '''
     [stdin]:1:10: error: octal escape sequences are not allowed \\07
     /a\\0\\tb\\\\\\07c/
-      \  \   \ \ ^
+      \  \   \ \ ^\^^
   '''
   assertErrorFormat '''
     ///a
@@ -401,7 +401,7 @@ test "octal escapes", ->
   ''', '''
     [stdin]:2:8: error: octal escape sequences are not allowed \\01
       #{b} \\01///
-           ^
+           ^\^^
   '''
 
 test "#3795: invalid escapes", ->
@@ -410,7 +410,7 @@ test "#3795: invalid escapes", ->
   ''', '''
     [stdin]:1:10: error: invalid escape sequence \\x7g
     "a\\0\\tb\\\\\\x7g"
-      \  \   \ \ ^
+      \  \   \ \ ^\^^^
   '''
   assertErrorFormat '''
     "a
@@ -419,21 +419,21 @@ test "#3795: invalid escapes", ->
   ''', '''
     [stdin]:2:8: error: invalid escape sequence \\uA02
       #{b} \\uA02
-           ^
+           ^\^^^^
   '''
   assertErrorFormat '''
     /a\\u002space/
   ''', '''
     [stdin]:1:3: error: invalid escape sequence \\u002s
     /a\\u002space/
-      ^
+      ^\^^^^^
   '''
   assertErrorFormat '''
     ///a \\u002 0 space///
   ''', '''
     [stdin]:1:6: error: invalid escape sequence \\u002 
     ///a \\u002 0 space///
-         ^
+         ^\^^^^^
   '''
   assertErrorFormat '''
     ///a
@@ -442,7 +442,7 @@ test "#3795: invalid escapes", ->
   ''', '''
     [stdin]:2:8: error: invalid escape sequence \\x0
       #{b} \\x0
-           ^
+           ^\^^
   '''
 
 test "illegal herecomment", ->
@@ -453,7 +453,7 @@ test "illegal herecomment", ->
   ''', '''
     [stdin]:2:12: error: block comments cannot contain */
       Regex: /a*/g
-               ^
+               ^^
   '''
 
 test "#1724: regular expressions beginning with *", ->
@@ -480,7 +480,7 @@ test "invalid regex flags", ->
   ''', '''
     [stdin]:1:4: error: invalid regular expression flags ii
     /a/ii
-       ^
+       ^^
   '''
   assertErrorFormat '''
     /a/G
@@ -494,21 +494,21 @@ test "invalid regex flags", ->
   ''', '''
     [stdin]:1:4: error: invalid regular expression flags gimi
     /a/gimi
-       ^
+       ^^^^
   '''
   assertErrorFormat '''
     /a/g_
   ''', '''
     [stdin]:1:4: error: invalid regular expression flags g_
     /a/g_
-       ^
+       ^^
   '''
   assertErrorFormat '''
     ///a///ii
   ''', '''
     [stdin]:1:8: error: invalid regular expression flags ii
     ///a///ii
-           ^
+           ^^
   '''
   doesNotThrow -> CoffeeScript.compile '/a/ymgi'
 
@@ -597,4 +597,50 @@ test "duplicate function arguments", ->
     [stdin]:1:13: error: multiple parameters named @foo
     (@foo, bar, @foo) ->
                 ^^^^
+  '''
+
+test "reserved words", ->
+  assertErrorFormat '''
+    case
+  ''', '''
+    [stdin]:1:1: error: reserved word 'case'
+    case
+    ^^^^
+  '''
+  assertErrorFormat '''
+    for = 1
+  ''', '''
+    [stdin]:1:1: error: reserved word 'for' can't be assigned
+    for = 1
+    ^^^
+  '''
+
+test "invalid numbers", ->
+  assertErrorFormat '''
+    0X0
+  ''', '''
+    [stdin]:1:2: error: radix prefix in '0X0' must be lowercase
+    0X0
+     ^
+  '''
+  assertErrorFormat '''
+    10E0
+  ''', '''
+    [stdin]:1:3: error: exponential notation in '10E0' must be indicated with a lowercase 'e'
+    10E0
+      ^
+  '''
+  assertErrorFormat '''
+    018
+  ''', '''
+    [stdin]:1:1: error: decimal literal '018' must not be prefixed with '0'
+    018
+    ^^^
+  '''
+  assertErrorFormat '''
+    010
+  ''', '''
+    [stdin]:1:1: error: octal literal '010' must be prefixed with '0o'
+    010
+    ^^^
   '''
