@@ -132,7 +132,17 @@ grammar =
   # they can also serve as keys in object literals.
   AlphaNumeric: [
     o 'NUMBER',                                 -> new Literal $1
+    o 'String'
+  ]
+
+  String: [
     o 'STRING',                                 -> new Literal $1
+    o 'STRING_START Body STRING_END',           -> new Parens $2
+  ]
+
+  Regex: [
+    o 'REGEX',                                  -> new Literal $1
+    o 'REGEX_START Invocation REGEX_END',       -> $2
   ]
 
   # All of our immediate values. Generally these can be passed straight
@@ -140,7 +150,7 @@ grammar =
   Literal: [
     o 'AlphaNumeric'
     o 'JS',                                     -> new Literal $1
-    o 'REGEX',                                  -> new Literal $1
+    o 'Regex'
     o 'DEBUGGER',                               -> new Literal $1
     o 'UNDEFINED',                              -> new Undefined
     o 'NULL',                                   -> new Null

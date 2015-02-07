@@ -438,15 +438,16 @@ test "#3822: Simple string/regex start/end should include delimiters", ->
 
 test "#3621: Multiline regex and manual `Regex` call with interpolation should
       result in the same tokens", ->
-  tokensA = CoffeeScript.tokens 'RegExp(".*#{a}[0-9]")'
+  tokensA = CoffeeScript.tokens '(RegExp(".*#{a}[0-9]"))'
   tokensB = CoffeeScript.tokens '///.*#{a}[0-9]///'
   eq tokensA.length, tokensB.length
   for i in [0...tokensA.length] by 1
     tokenA = tokensA[i]
     tokenB = tokensB[i]
-    eq tokenA[0], tokenB[0]
+    eq tokenA[0], tokenB[0] unless tokenB[0] in ['REGEX_START', 'REGEX_END']
     eq tokenA[1], tokenB[1]
-    eq tokenA.origin?[1], tokenB.origin?[1] unless tokenA[0] is 'CALL_START'
+    unless tokenA[0] is 'STRING_START' or tokenB[0] is 'REGEX_START'
+      eq tokenA.origin?[1], tokenB.origin?[1]
     eq tokenA.stringEnd, tokenB.stringEnd
 
 test "Verify all tokens get a location", ->
