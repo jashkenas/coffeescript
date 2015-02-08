@@ -9,7 +9,7 @@ Error.stackTraceLimit = Infinity
 {RESERVED, STRICT_PROSCRIBED} = require './lexer'
 
 # Import the helpers we plan to use.
-{compact, flatten, extend, merge, del, starts, ends, last, some,
+{compact, flatten, extend, merge, del, starts, ends, some,
 addLocationDataFn, locationDataToString, throwSyntaxError} = require './helpers'
 
 # Functions required by parser
@@ -510,7 +510,8 @@ exports.Value = class Value extends Base
     (@base instanceof Obj) and (not onlyGenerated or @base.generated)
 
   isSplice: ->
-    last(@properties) instanceof Slice
+    [..., lastProp] = @properties
+    lastProp instanceof Slice
 
   looksStatic: (className) ->
     @base.value is className and @properties.length is 1 and
@@ -525,7 +526,7 @@ exports.Value = class Value extends Base
   # We cache them separately for compiling complex expressions.
   # `a()[b()] ?= c` -> `(_base = a())[_name = b()] ? _base[_name] = c`
   cacheReference: (o) ->
-    name = last @properties
+    [..., name] = @properties
     if @properties.length < 2 and not @base.isComplex() and not name?.isComplex()
       return [this, this]  # `a` `a.b`
     base = new Value @base, @properties[...-1]
@@ -1006,7 +1007,8 @@ exports.Class = class Class extends Base
   # Figure out the appropriate name for the constructor function of this class.
   determineName: ->
     return null unless @variable
-    decl = if tail = last @variable.properties
+    [..., tail] = @variable.properties
+    decl = if tail
       tail instanceof Access and tail.name.value
     else
       @variable.base.value
@@ -1540,7 +1542,8 @@ exports.Splat = class Splat extends Base
     base = (node.compileToFragments o, LEVEL_LIST for node in list[...index])
     base = list[0].joinFragmentArrays base, ', '
     concatPart = list[index].joinFragmentArrays args, ', '
-    [].concat list[0].makeCode("["), base, list[index].makeCode("].concat("), concatPart, (last list).makeCode(")")
+    [..., last] = list
+    [].concat list[0].makeCode("["), base, list[index].makeCode("].concat("), concatPart, last.makeCode(")")
 
 #### Expansion
 
@@ -1976,27 +1979,27 @@ exports.For = class For extends While
   # comprehensions. Some of the generated code can be shared in common, and
   # some cannot.
   compileNode: (o) ->
-    body      = Block.wrap [@body]
-    lastJumps = last(body.expressions)?.jumps()
-    @returns  = no if lastJumps and lastJumps instanceof Return
-    source    = if @range then @source.base else @source
-    scope     = o.scope
-    name      = @name  and (@name.compile o, LEVEL_LIST) if not @pattern
-    index     = @index and (@index.compile o, LEVEL_LIST)
+    body        = Block.wrap [@body]
+    [..., last] = body.expressions
+    @returns    = no if last?.jumps() instanceof Return
+    source      = if @range then @source.base else @source
+    scope       = o.scope
+    name        = @name  and (@name.compile o, LEVEL_LIST) if not @pattern
+    index       = @index and (@index.compile o, LEVEL_LIST)
     scope.find(name)  if name and not @pattern
     scope.find(index) if index
-    rvar      = scope.freeVariable 'results' if @returns
-    ivar      = (@object and index) or scope.freeVariable 'i', single: true
-    kvar      = (@range and name) or index or ivar
-    kvarAssign = if kvar isnt ivar then "#{kvar} = " else ""
+    rvar        = scope.freeVariable 'results' if @returns
+    ivar        = (@object and index) or scope.freeVariable 'i', single: true
+    kvar        = (@range and name) or index or ivar
+    kvarAssign  = if kvar isnt ivar then "#{kvar} = " else ""
     if @step and not @range
       [step, stepVar] = @cacheToCodeFragments @step.cache o, LEVEL_LIST, isComplexOrAssignable
       stepNum = stepVar.match NUMBER
-    name      = ivar if @pattern
-    varPart   = ''
-    guardPart = ''
-    defPart   = ''
-    idt1      = @tab + TAB
+    name        = ivar if @pattern
+    varPart     = ''
+    guardPart   = ''
+    defPart     = ''
+    idt1        = @tab + TAB
     if @range
       forPartFragments = source.compileToFragments merge o,
         {index: ivar, name, @step, isComplex: isComplexOrAssignable}

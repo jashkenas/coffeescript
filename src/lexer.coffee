@@ -12,7 +12,7 @@
 {Rewriter, INVERSES} = require './rewriter'
 
 # Import the helpers we need.
-{count, starts, compact, last, repeat, invertLiterate,
+{count, starts, compact, repeat, invertLiterate,
 locationDataToString,  throwSyntaxError} = require './helpers'
 
 # The Lexer Class
@@ -112,8 +112,9 @@ exports.Lexer = class Lexer
     if id is 'from' and @tag() is 'YIELD'
       @token 'FROM', id
       return id.length
-    forcedIdentifier = colon or
-      (prev = last @tokens) and (prev[0] in ['.', '?.', '::', '?::'] or
+    [..., prev] = @tokens
+    forcedIdentifier = colon or prev? and
+      (prev[0] in ['.', '?.', '::', '?::'] or
       not prev.spaced and prev[0] is '@')
     tag = 'IDENTIFIER'
 
@@ -264,7 +265,7 @@ exports.Lexer = class Lexer
         [regex, body, closed] = match
         @validateEscapes regex, isRegex: yes
         index = regex.length
-        prev = last @tokens
+        [..., prev] = @tokens
         if prev
           if prev.spaced and prev[0] in CALLABLE and not prev.stringEnd and not prev.regexEnd
             return 0 if not closed or POSSIBLY_DIVISION.test regex
@@ -372,7 +373,7 @@ exports.Lexer = class Lexer
   whitespaceToken: ->
     return 0 unless (match = WHITESPACE.exec @chunk) or
                     (nline = @chunk.charAt(0) is '\n')
-    prev = last @tokens
+    [..., prev] = @tokens
     prev[if match then 'spaced' else 'newLine'] = true if prev
     if match then match[0].length else 0
 
@@ -400,7 +401,7 @@ exports.Lexer = class Lexer
     else
       value = @chunk.charAt 0
     tag  = value
-    prev = last @tokens
+    [..., prev] = @tokens
     if value is '=' and prev
       if not prev[1].reserved and prev[1] in JS_FORBIDDEN
         @error "reserved word '#{prev[1]}' can't be assigned", prev[2]
@@ -596,14 +597,16 @@ exports.Lexer = class Lexer
   # Pairs up a closing token, ensuring that all listed pairs of tokens are
   # correctly balanced throughout the course of the token stream.
   pair: (tag) ->
-    unless tag is wanted = last(@ends)?.tag
+    [..., prev] = @ends
+    unless tag is wanted = prev?.tag
       @error "unmatched #{tag}" unless 'OUTDENT' is wanted
       # Auto-close INDENT to support syntax like this:
       #
       #     el.click((event) ->
       #       el.hide())
       #
-      @outdentToken last(@indents), true
+      [..., lastIndent] = @indents
+      @outdentToken lastIndent, true
       return @pair tag
     @ends.pop()
 
@@ -626,8 +629,8 @@ exports.Lexer = class Lexer
 
     column = @chunkColumn
     if lineCount > 0
-      lines = string.split '\n'
-      column = last(lines).length
+      [..., lastLine] = string.split '\n'
+      column = lastLine.length
     else
       column += string.length
 
@@ -662,13 +665,15 @@ exports.Lexer = class Lexer
     @tokens.push token
     token
 
-  # Peek at a tag in the current token stream.
-  tag: (index, tag) ->
-    (tok = last @tokens, index) and if tag then tok[0] = tag else tok[0]
+  # Peek at the last tag in the token stream.
+  tag: ->
+    [..., token] = @tokens
+    token?[0]
 
-  # Peek at a value in the current token stream.
-  value: (index, val) ->
-    (tok = last @tokens, index) and if val then tok[1] = val else tok[1]
+  # Peek at the last value in the token stream.
+  value: ->
+    [..., token] = @tokens
+    token?[1]
 
   # Are we in the midst of an unfinished expression?
   unfinished: ->

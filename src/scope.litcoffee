@@ -5,10 +5,6 @@ and has a reference to its parent enclosing scope. In this way, we know which
 variables are new and need to be declared with `var`, and which are shared
 with external scopes.
 
-Import the helpers we plan to use.
-
-    {extend, last} = require './helpers'
-
     exports.Scope = class Scope
 
 Initialize a scope with its parent, for lookups up the chain,
