@@ -446,3 +446,43 @@ test 'inline implicit object literals within multiline implicit object literals'
     b: 0
   eq 0, x.b
   eq 0, x.a.aa
+
+
+test '#3520, #3828: literals as object properties', ->
+  obj =
+    'abc': 1
+    'def-ghi': 2
+    42: 3
+    prototype:
+      'jkl': 4
+      43: 5
+
+  eq obj.abc, 1
+
+  eq obj.'abc', 1
+  eq obj."abc", 1
+  eq obj.'''abc''', 1
+  eq obj."""abc""", 1
+
+  eq obj.'def-ghi', 2
+
+  eq obj?.'def-ghi', 2
+  eq obj?."def-ghi", 2
+  eq obj?.'''def-ghi''', 2
+  eq obj?."""def-ghi""", 2
+
+  # eq obj.42, 3
+  eq obj?.42, 3
+
+  eq obj::"jkl", 4
+  eq obj::'jkl', 4
+  eq obj::'''jkl''', 4
+  eq obj::"""jkl""", 4
+
+  eq obj?::'jkl', 4
+  eq obj?::"jkl", 4
+  eq obj?::'''jkl''', 4
+  eq obj?::"""jkl""", 4
+
+  eq obj::43, 5
+  eq obj?::43, 5
