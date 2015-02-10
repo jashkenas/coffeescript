@@ -285,6 +285,13 @@ test "#156: destructuring with expansion", ->
   throws (-> CoffeeScript.compile "[..., a, b...] = c"), null, "prohibit expansion and a splat"
   throws (-> CoffeeScript.compile "[...] = c"),          null, "prohibit lone expansion"
 
+test "destructuring with dynamic keys", ->
+  {"#{'a'}": a, """#{'b'}""": b, c} = {a: 1, b: 2, c: 3}
+  eq 1, a
+  eq 2, b
+  eq 3, c
+  throws -> CoffeeScript.compile '{"#{a}"} = b'
+
 
 # Existential Assignment
 

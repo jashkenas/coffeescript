@@ -860,6 +860,7 @@ test "dynamic method names and super", ->
   class Base
     @m: -> 6
     m: -> 5
+    m2: -> 4.5
     n: -> 4
   A = ->
   A extends Base
@@ -877,14 +878,17 @@ test "dynamic method names and super", ->
   eq 1, count
 
   m = 'm'
+  m2 = 'm2'
   count = 0
   class B extends Base
     @[name()] = -> super
     @::[m] = -> super
+    "#{m2}": -> super
   b = new B
-  m = 'n'
+  m = m2 = 'n'
   eq 6, B.m()
   eq 5, b.m()
+  eq 4.5, b.m2()
   eq 1, count
 
   class C extends B

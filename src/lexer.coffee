@@ -267,7 +267,7 @@ exports.Lexer = class Lexer
         index = regex.length
         [..., prev] = @tokens
         if prev
-          if prev.spaced and prev[0] in CALLABLE and not prev.stringEnd and not prev.regexEnd
+          if prev.spaced and prev[0] in CALLABLE
             return 0 if not closed or POSSIBLY_DIVISION.test regex
           else if prev[0] in NOT_REGEX
             return 0
@@ -277,22 +277,23 @@ exports.Lexer = class Lexer
 
     [flags] = REGEX_FLAGS.exec @chunk[index..]
     end = index + flags.length
-    errorToken = @makeToken 'REGEX', @chunk[...end], 0, end
+    origin = @makeToken 'REGEX', null, 0, end
     switch
       when not VALID_FLAGS.test flags
         @error "invalid regular expression flags #{flags}", offset: index, length: flags.length
       when regex or tokens.length is 1
         body ?= @formatHeregex tokens[0][1]
-        @token 'REGEX', "#{@makeDelimitedLiteral body, delimiter: '/'}#{flags}", 0, end, errorToken
+        @token 'REGEX', "#{@makeDelimitedLiteral body, delimiter: '/'}#{flags}", 0, end, origin
       else
+        @token 'REGEX_START', '(', 0, 0, origin
         @token 'IDENTIFIER', 'RegExp', 0, 0
-        @token 'CALL_START', '(', 0, 0, errorToken
+        @token 'CALL_START', '(', 0, 0
         @mergeInterpolationTokens tokens, {delimiter: '"', double: yes}, @formatHeregex
         if flags
           @token ',', ',', index, 0
           @token 'STRING', '"' + flags + '"', index, flags.length
-        rparen = @token ')', ')', end, 0
-        rparen.regexEnd = true
+        @token ')', ')', end, 0
+        @token 'REGEX_END', ')', end, 0
 
     end
 
@@ -420,7 +421,7 @@ exports.Lexer = class Lexer
     else if value in SHIFT           then tag = 'SHIFT'
     else if value in LOGIC or value is '?' and prev?.spaced then tag = 'LOGIC'
     else if prev and not prev.spaced
-      if value is '(' and prev[0] in CALLABLE and not prev.stringEnd and not prev.regexEnd
+      if value is '(' and prev[0] in CALLABLE
         prev[0] = 'FUNC_EXIST' if prev[0] is '?'
         tag = 'CALL_START'
       else if value is '[' and prev[0] in INDEXABLE
@@ -471,8 +472,8 @@ exports.Lexer = class Lexer
   # If it encounters an interpolation, this method will recursively create a new
   # Lexer and tokenize until the `{` of `#{` is balanced with a `}`.
   #
-  #  - `regex` matches the contents of a token (but not `end`, and not `#{` if
-  #    interpolations are desired).
+  #  - `regex` matches the contents of a token (but not `delimiter`, and not
+  #    `#{` if interpolations are desired).
   #  - `delimiter` is the delimiter of the token. Examples are `'`, `"`, `'''`,
   #    `"""` and `///`.
   #
@@ -525,6 +526,7 @@ exports.Lexer = class Lexer
     [firstToken, ..., lastToken] = tokens
     firstToken[2].first_column -= delimiter.length
     lastToken[2].last_column += delimiter.length
+    lastToken[2].last_column -= 1 if lastToken[1].length is 0
 
     {tokens, index: offsetInChunk + delimiter.length}
 
@@ -533,15 +535,8 @@ exports.Lexer = class Lexer
   # of 'NEOSTRING's are converted using `fn` and turned into strings using
   # `options` first.
   mergeInterpolationTokens: (tokens, options, fn) ->
-    if interpolated = tokens.length > 1
-      [firstToken] = tokens
-      errorToken = ['', 'interpolation',
-        first_line:   firstToken[2].last_line
-        first_column: firstToken[2].last_column
-        last_line:    firstToken[2].last_line
-        last_column:  firstToken[2].last_column + 1
-      ]
-      @token '(', '(', 0, 0, errorToken
+    if tokens.length > 1
+      lparen = @token 'STRING_START', '(', 0, 0
 
     firstIndex = @tokens.length
     for token, i in tokens
@@ -583,16 +578,20 @@ exports.Lexer = class Lexer
           last_column:  locationToken[2].first_column
       @tokens.push tokensToPush...
 
-    if interpolated
-      [..., lastToken] = @tokens
-      rparen = @token ')', ')'
-      rparen[2] = {
-        first_line:   lastToken[2].last_line
-        first_column: lastToken[2].last_column + 1
+    if lparen
+      [..., lastToken] = tokens
+      lparen.origin = ['STRING', null,
+        first_line:   lparen[2].first_line
+        first_column: lparen[2].first_column
         last_line:    lastToken[2].last_line
-        last_column:  lastToken[2].last_column + 1
-      }
-      rparen.stringEnd = true
+        last_column:  lastToken[2].last_column
+      ]
+      rparen = @token 'STRING_END', ')'
+      rparen[2] =
+        first_line:   lastToken[2].last_line
+        first_column: lastToken[2].last_column
+        last_line:    lastToken[2].last_line
+        last_column:  lastToken[2].last_column
 
   # Pairs up a closing token, ensuring that all listed pairs of tokens are
   # correctly balanced throughout the course of the token stream.
@@ -913,7 +912,10 @@ BOOL = ['TRUE', 'FALSE']
 # parentheses or bracket following these tokens will be recorded as the start
 # of a function invocation or indexing operation.
 CALLABLE  = ['IDENTIFIER', ')', ']', '?', '@', 'THIS', 'SUPER']
-INDEXABLE = CALLABLE.concat ['NUMBER', 'STRING', 'REGEX', 'BOOL', 'NULL', 'UNDEFINED', '}', '::']
+INDEXABLE = CALLABLE.concat [
+  'NUMBER', 'STRING', 'STRING_END', 'REGEX', 'REGEX_END'
+  'BOOL', 'NULL', 'UNDEFINED', '}', '::'
+]
 
 # Tokens which a regular expression will never immediately follow (except spaced
 # CALLABLEs in some cases), but which a division operator can.

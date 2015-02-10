@@ -225,12 +225,15 @@ parser.yy.parseError = (message, {token}) ->
   {errorToken, tokens} = parser
   [errorTag, errorText, errorLoc] = errorToken
 
-  errorText = if errorToken is tokens[tokens.length - 1]
-    'end of input'
-  else if errorTag in ['INDENT', 'OUTDENT']
-    'indentation'
-  else
-    helpers.nameWhitespaceCharacter errorText
+  errorText = switch
+    when errorToken is tokens[tokens.length - 1]
+      'end of input'
+    when errorTag in ['INDENT', 'OUTDENT']
+      'indentation'
+    when errorTag in ['IDENTIFIER', 'NUMBER', 'STRING', 'STRING_START', 'REGEX', 'REGEX_START']
+      errorTag.replace(/_START$/, '').toLowerCase()
+    else
+      helpers.nameWhitespaceCharacter errorText
 
   # The second argument has a `loc` property, which should have the location
   # data for this token. Unfortunately, Jison seems to send an outdated `loc`

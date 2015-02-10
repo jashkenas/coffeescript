@@ -87,12 +87,6 @@ if require?
 
 
 test "#1096: unexpected generated tokens", ->
-  # Unexpected interpolation
-  assertErrorFormat '{"#{key}": val}', '''
-    [stdin]:1:3: error: unexpected interpolation
-    {"#{key}": val}
-      ^^
-  '''
   # Implicit ends
   assertErrorFormat 'a:, b', '''
     [stdin]:1:3: error: unexpected ,
@@ -116,30 +110,78 @@ test "#1096: unexpected generated tokens", ->
     a +
        ^
   '''
-  # Unexpected implicit object
+  # Unexpected key in implicit object (an implicit object itself is _not_
+  # unexpected here)
   assertErrorFormat '''
     for i in [1]:
       1
   ''', '''
-    [stdin]:1:13: error: unexpected :
+    [stdin]:1:10: error: unexpected [
     for i in [1]:
-                ^
+             ^
   '''
   # Unexpected regex
   assertErrorFormat '{/a/i: val}', '''
-    [stdin]:1:2: error: unexpected /a/i
+    [stdin]:1:2: error: unexpected regex
     {/a/i: val}
      ^^^^
   '''
   assertErrorFormat '{///a///i: val}', '''
-    [stdin]:1:2: error: unexpected ///a///i
+    [stdin]:1:2: error: unexpected regex
     {///a///i: val}
      ^^^^^^^^
   '''
   assertErrorFormat '{///#{a}///i: val}', '''
-    [stdin]:1:2: error: unexpected ///#{a}///i
+    [stdin]:1:2: error: unexpected regex
     {///#{a}///i: val}
      ^^^^^^^^^^^
+  '''
+  # Unexpected string
+  assertErrorFormat "a''", '''
+    [stdin]:1:2: error: unexpected string
+    a''
+     ^^
+  '''
+  assertErrorFormat 'a""', '''
+    [stdin]:1:2: error: unexpected string
+    a""
+     ^^
+  '''
+  assertErrorFormat "a'b'", '''
+    [stdin]:1:2: error: unexpected string
+    a'b'
+     ^^^
+  '''
+  assertErrorFormat 'a"b"', '''
+    [stdin]:1:2: error: unexpected string
+    a"b"
+     ^^^
+  '''
+  assertErrorFormat "a'''b'''", """
+    [stdin]:1:2: error: unexpected string
+    a'''b'''
+     ^^^^^^^
+  """
+  assertErrorFormat 'a"""b"""', '''
+    [stdin]:1:2: error: unexpected string
+    a"""b"""
+     ^^^^^^^
+  '''
+  assertErrorFormat 'a"#{b}"', '''
+    [stdin]:1:2: error: unexpected string
+    a"#{b}"
+     ^^^^^^
+  '''
+  assertErrorFormat 'a"""#{b}"""', '''
+    [stdin]:1:2: error: unexpected string
+    a"""#{b}"""
+     ^^^^^^^^^^
+  '''
+  # Unexpected number
+  assertErrorFormat '"a"0x00Af2', '''
+    [stdin]:1:4: error: unexpected number
+    "a"0x00Af2
+       ^^^^^^^
   '''
 
 test "#1316: unexpected end of interpolation", ->
@@ -336,14 +378,14 @@ test "unexpected token after string", ->
   assertErrorFormat '''
     'foo'bar
   ''', '''
-    [stdin]:1:6: error: unexpected bar
+    [stdin]:1:6: error: unexpected identifier
     'foo'bar
          ^^^
   '''
   assertErrorFormat '''
     "foo"bar
   ''', '''
-    [stdin]:1:6: error: unexpected bar
+    [stdin]:1:6: error: unexpected identifier
     "foo"bar
          ^^^
   '''
@@ -365,11 +407,11 @@ test "unexpected token after string", ->
 
 test "#3348: Location data is wrong in interpolations with leading whitespace", ->
   assertErrorFormat '''
-    "#{ {"#{key}": val} }"
+    "#{ * }"
   ''', '''
-    [stdin]:1:7: error: unexpected interpolation
-    "#{ {"#{key}": val} }"
-          ^^
+    [stdin]:1:5: error: unexpected *
+    "#{ * }"
+        ^
   '''
 
 test "octal escapes", ->
@@ -643,4 +685,62 @@ test "invalid numbers", ->
     [stdin]:1:1: error: octal literal '010' must be prefixed with '0o'
     010
     ^^^
+'''
+
+test "unexpected object keys", ->
+  assertErrorFormat '''
+    {[[]]}
+  ''', '''
+    [stdin]:1:2: error: unexpected [
+    {[[]]}
+     ^
+  '''
+  assertErrorFormat '''
+    {[[]]: 1}
+  ''', '''
+    [stdin]:1:2: error: unexpected [
+    {[[]]: 1}
+     ^
+  '''
+  assertErrorFormat '''
+    [[]]: 1
+  ''', '''
+    [stdin]:1:1: error: unexpected [
+    [[]]: 1
+    ^
+  '''
+  assertErrorFormat '''
+    {(a + "b")}
+  ''', '''
+    [stdin]:1:2: error: unexpected (
+    {(a + "b")}
+     ^
+  '''
+  assertErrorFormat '''
+    {(a + "b"): 1}
+  ''', '''
+    [stdin]:1:2: error: unexpected (
+    {(a + "b"): 1}
+     ^
+  '''
+  assertErrorFormat '''
+    (a + "b"): 1
+  ''', '''
+    [stdin]:1:1: error: unexpected (
+    (a + "b"): 1
+    ^
+  '''
+  assertErrorFormat '''
+    a: 1, [[]]: 2
+  ''', '''
+    [stdin]:1:7: error: unexpected [
+    a: 1, [[]]: 2
+          ^
+  '''
+  assertErrorFormat '''
+    {a: 1, [[]]: 2}
+  ''', '''
+    [stdin]:1:8: error: unexpected [
+    {a: 1, [[]]: 2}
+           ^
   '''
