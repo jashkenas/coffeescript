@@ -263,7 +263,7 @@ exports.Lexer = class Lexer
         {tokens, index} = match
       when match = REGEX.exec @chunk
         [regex, body, closed] = match
-        @validateEscapes regex, isRegex: yes
+        @validateEscapes body, isRegex: yes, offsetInChunk: 1
         index = regex.length
         [..., prev] = @tokens
         if prev

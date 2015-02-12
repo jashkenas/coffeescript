@@ -486,6 +486,13 @@ test "#3795: invalid escapes", ->
       #{b} \\x0
            ^\^^
   '''
+  assertErrorFormat '''
+    /ab\\u/
+  ''', '''
+    [stdin]:1:4: error: invalid escape sequence \\u
+    /ab\\u/
+       ^\^
+  '''
 
 test "illegal herecomment", ->
   assertErrorFormat '''
