@@ -171,7 +171,9 @@ class exports.Rewriter
       startImplicitObject = (j, startsLine = yes) ->
         idx = j ? i
         stack.push ['{', idx, sameLine: yes, startsLine: startsLine, ours: yes]
-        tokens.splice idx, 0, generate '{', generate(new String('{')), token
+        val = new String '{'
+        val.generated = yes
+        tokens.splice idx, 0, generate '{', val, token
         i += 1 if not j?
 
       endImplicitObject = (j) ->
