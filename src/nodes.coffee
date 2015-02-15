@@ -1801,7 +1801,7 @@ exports.Op = class Op extends Base
     op = @operator
     if not o.scope.parent?
       @error 'yield statements must occur within a function generator.'
-    if 'expression' in Object.keys @first
+    if 'expression' in Object.keys(@first) and not (@first instanceof Throw)
       parts.push @first.expression.compileToFragments o, LEVEL_OP if @first.expression?
     else
       parts.push [@makeCode "(#{op} "]
