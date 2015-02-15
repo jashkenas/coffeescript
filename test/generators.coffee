@@ -124,3 +124,14 @@ test "switch expressions", ->
   ok z.value is 1337 and z.done is false
   z = x.next 3
   ok z.value is 3 and z.done is true
+
+test "`yield` can be thrown", ->
+  x = do ->
+    throw yield null
+  x.next()
+  throws -> x.next new Error "boom"
+
+test "`throw` can be yielded", ->
+  x = do ->
+    yield throw new Error "boom"
+  throws -> x.next()
