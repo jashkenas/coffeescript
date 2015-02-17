@@ -38,6 +38,18 @@ test "last line yields are returned", ->
   y = x.next 42
   ok y.value is 42 and y.done is true
 
+test "yield return can be used anywhere in the function body", ->
+  x = do ->
+    if 2 is yield 1
+      yield return 42
+    throw new Error "this code shouldn't be reachable"
+
+  y = x.next()
+  ok y.value is 1 and y.done is false
+
+  y = x.next 2
+  ok y.value is 42 and y.done is true
+
 test "bound generator", ->
   obj =
     bound: ->
