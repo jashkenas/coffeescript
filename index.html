@@ -110,7 +110,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffeescript/tarball/1.9.0">1.9.0</a>
+      <a href="http://github.com/jashkenas/coffeescript/tarball/1.9.1">1.9.1</a>
     </p>
 
     <pre>npm install -g coffee-script</pre>
@@ -151,7 +151,7 @@ alert <span class="string">"I knew it!"</span> <span class="keyword">if</span> e
 <span class="comment"># Array comprehensions:</span>
 cubes = (math.cube num <span class="keyword">for</span> num <span class="keyword">in</span> list)
 </code></pre><pre><code><span class="keyword">var</span> cubes, list, math, num, number, opposite, race, square,
-  _slice = [].slice;
+  slice = [].slice;
 
 number = <span class="number">42</span>;
 
@@ -177,7 +177,7 @@ math = {
 
 race = <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
   <span class="keyword">var</span> runners, winner;
-  winner = <span class="built_in">arguments</span>[<span class="number">0</span>], runners = <span class="number">2</span> &lt;= <span class="built_in">arguments</span>.length ? _slice.call(<span class="built_in">arguments</span>, <span class="number">1</span>) : [];
+  winner = <span class="built_in">arguments</span>[<span class="number">0</span>], runners = <span class="number">2</span> &lt;= <span class="built_in">arguments</span>.length ? slice.call(<span class="built_in">arguments</span>, <span class="number">1</span>) : [];
   <span class="keyword">return</span> print(winner, runners);
 };
 
@@ -186,16 +186,16 @@ race = <span class="function"><span class="keyword">function</span><span class="
 }
 
 cubes = (<span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
-  <span class="keyword">var</span> _i, _len, _results;
-  _results = [];
-  <span class="keyword">for</span> (_i = <span class="number">0</span>, _len = list.length; _i &lt; _len; _i++) {
-    num = list[_i];
-    _results.push(math.cube(num));
+  <span class="keyword">var</span> i, len, results;
+  results = [];
+  <span class="keyword">for</span> (i = <span class="number">0</span>, len = list.length; i &lt; len; i++) {
+    num = list[i];
+    results.push(math.cube(num));
   }
-  <span class="keyword">return</span> _results;
+  <span class="keyword">return</span> results;
 })();
 </code></pre><script>window.example1 = "# Assignment:\nnumber   = 42\nopposite = true\n\n# Conditions:\nnumber = -42 if opposite\n\n# Functions:\nsquare = (x) -> x * x\n\n# Arrays:\nlist = [1, 2, 3, 4, 5]\n\n# Objects:\nmath =\n  root:   Math.sqrt\n  square: square\n  cube:   (x) -> x * square x\n\n# Splats:\nrace = (winner, runners...) ->\n  print winner, runners\n\n# Existence:\nalert \"I knew it!\" if elvis?\n\n# Array comprehensions:\ncubes = (math.cube num for num in list)\n"</script><div class='minibutton ok' onclick='javascript: var cubes, list, math, num, number, opposite, race, square,
-  _slice = [].slice;
+  slice = [].slice;
 
 number = 42;
 
@@ -221,7 +221,7 @@ math = {
 
 race = function() {
   var runners, winner;
-  winner = arguments[0], runners = 2 <= arguments.length ? _slice.call(arguments, 1) : [];
+  winner = arguments[0], runners = 2 <= arguments.length ? slice.call(arguments, 1) : [];
   return print(winner, runners);
 };
 
@@ -230,13 +230,13 @@ if (typeof elvis !== "undefined" && elvis !== null) {
 }
 
 cubes = (function() {
-  var _i, _len, _results;
-  _results = [];
-  for (_i = 0, _len = list.length; _i < _len; _i++) {
-    num = list[_i];
-    _results.push(math.cube(num));
+  var i, len, results;
+  results = [];
+  for (i = 0, len = list.length; i < len; i++) {
+    num = list[i];
+    results.push(math.cube(num));
   }
-  return _results;
+  return results;
 })();
 ;alert(cubes);'>run: cubes</div><br class='clear' /></div>
 
@@ -807,13 +807,13 @@ alert <span class="string">"The Field: "</span> + rest
 
 
 </code></pre><pre><code><span class="keyword">var</span> awardMedals, contenders, gold, rest, silver,
-  _slice = [].slice;
+  slice = [].slice;
 
 gold = silver = rest = <span class="string">"unknown"</span>;
 
 awardMedals = <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
   <span class="keyword">var</span> first, others, second;
-  first = <span class="built_in">arguments</span>[<span class="number">0</span>], second = <span class="built_in">arguments</span>[<span class="number">1</span>], others = <span class="number">3</span> &lt;= <span class="built_in">arguments</span>.length ? _slice.call(<span class="built_in">arguments</span>, <span class="number">2</span>) : [];
+  first = <span class="built_in">arguments</span>[<span class="number">0</span>], second = <span class="built_in">arguments</span>[<span class="number">1</span>], others = <span class="number">3</span> &lt;= <span class="built_in">arguments</span>.length ? slice.call(<span class="built_in">arguments</span>, <span class="number">2</span>) : [];
   gold = first;
   silver = second;
   <span class="keyword">return</span> rest = others;
@@ -829,13 +829,13 @@ alert(<span class="string">"Silver: "</span> + silver);
 
 alert(<span class="string">"The Field: "</span> + rest);
 </code></pre><script>window.example8 = "gold = silver = rest = \"unknown\"\n\nawardMedals = (first, second, others...) ->\n  gold   = first\n  silver = second\n  rest   = others\n\ncontenders = [\n  \"Michael Phelps\"\n  \"Liu Xiang\"\n  \"Yao Ming\"\n  \"Allyson Felix\"\n  \"Shawn Johnson\"\n  \"Roman Sebrle\"\n  \"Guo Jingjing\"\n  \"Tyson Gay\"\n  \"Asafa Powell\"\n  \"Usain Bolt\"\n]\n\nawardMedals contenders...\n\nalert \"Gold: \" + gold\nalert \"Silver: \" + silver\nalert \"The Field: \" + rest\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example8);'>load</div><div class='minibutton ok' onclick='javascript: var awardMedals, contenders, gold, rest, silver,
-  _slice = [].slice;
+  slice = [].slice;
 
 gold = silver = rest = "unknown";
 
 awardMedals = function() {
   var first, others, second;
-  first = arguments[0], second = arguments[1], others = 3 <= arguments.length ? _slice.call(arguments, 2) : [];
+  first = arguments[0], second = arguments[1], others = 3 <= arguments.length ? slice.call(arguments, 2) : [];
   gold = first;
   silver = second;
   return rest = others;
@@ -871,25 +871,25 @@ menu i + <span class="number">1</span>, dish <span class="keyword">for</span> di
 <span class="comment"># Health conscious meal.</span>
 foods = [<span class="string">'broccoli'</span>, <span class="string">'spinach'</span>, <span class="string">'chocolate'</span>]
 eat food <span class="keyword">for</span> food <span class="keyword">in</span> foods <span class="keyword">when</span> food <span class="keyword">isnt</span> <span class="string">'chocolate'</span>
-</code></pre><pre><code><span class="keyword">var</span> courses, dish, food, foods, i, _i, _j, _k, _len, _len1, _len2, _ref;
+</code></pre><pre><code><span class="keyword">var</span> courses, dish, food, foods, i, j, k, l, len, len1, len2, ref;
 
-_ref = [<span class="string">'toast'</span>, <span class="string">'cheese'</span>, <span class="string">'wine'</span>];
-<span class="keyword">for</span> (_i = <span class="number">0</span>, _len = _ref.length; _i &lt; _len; _i++) {
-  food = _ref[_i];
+ref = [<span class="string">'toast'</span>, <span class="string">'cheese'</span>, <span class="string">'wine'</span>];
+<span class="keyword">for</span> (j = <span class="number">0</span>, len = ref.length; j &lt; len; j++) {
+  food = ref[j];
   eat(food);
 }
 
 courses = [<span class="string">'greens'</span>, <span class="string">'caviar'</span>, <span class="string">'truffles'</span>, <span class="string">'roast'</span>, <span class="string">'cake'</span>];
 
-<span class="keyword">for</span> (i = _j = <span class="number">0</span>, _len1 = courses.length; _j &lt; _len1; i = ++_j) {
+<span class="keyword">for</span> (i = k = <span class="number">0</span>, len1 = courses.length; k &lt; len1; i = ++k) {
   dish = courses[i];
   menu(i + <span class="number">1</span>, dish);
 }
 
 foods = [<span class="string">'broccoli'</span>, <span class="string">'spinach'</span>, <span class="string">'chocolate'</span>];
 
-<span class="keyword">for</span> (_k = <span class="number">0</span>, _len2 = foods.length; _k &lt; _len2; _k++) {
-  food = foods[_k];
+<span class="keyword">for</span> (l = <span class="number">0</span>, len2 = foods.length; l &lt; len2; l++) {
+  food = foods[l];
   <span class="keyword">if</span> (food !== <span class="string">'chocolate'</span>) {
     eat(food);
   }
@@ -908,22 +908,22 @@ foods = [<span class="string">'broccoli'</span>, <span class="string">'spinach'<
 </code></pre><pre><code><span class="keyword">var</span> countdown, num;
 
 countdown = (<span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
-  <span class="keyword">var</span> _i, _results;
-  _results = [];
-  <span class="keyword">for</span> (num = _i = <span class="number">10</span>; _i &gt;= <span class="number">1</span>; num = --_i) {
-    _results.push(num);
+  <span class="keyword">var</span> i, results;
+  results = [];
+  <span class="keyword">for</span> (num = i = <span class="number">10</span>; i &gt;= <span class="number">1</span>; num = --i) {
+    results.push(num);
   }
-  <span class="keyword">return</span> _results;
+  <span class="keyword">return</span> results;
 })();
 </code></pre><script>window.example10 = "countdown = (num for num in [10..1])\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example10);'>load</div><div class='minibutton ok' onclick='javascript: var countdown, num;
 
 countdown = (function() {
-  var _i, _results;
-  _results = [];
-  for (num = _i = 10; _i >= 1; num = --_i) {
-    _results.push(num);
+  var i, results;
+  results = [];
+  for (num = i = 10; i >= 1; num = --i) {
+    results.push(num);
   }
-  return _results;
+  return results;
 })();
 ;alert(countdown);'>run: countdown</div><br class='clear' /></div>
     <p>
@@ -958,13 +958,13 @@ yearsOld = {
 };
 
 ages = (<span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
-  <span class="keyword">var</span> _results;
-  _results = [];
+  <span class="keyword">var</span> results;
+  results = [];
   <span class="keyword">for</span> (child <span class="keyword">in</span> yearsOld) {
     age = yearsOld[child];
-    _results.push(child + <span class="string">" is "</span> + age);
+    results.push(child + <span class="string">" is "</span> + age);
   }
-  <span class="keyword">return</span> _results;
+  <span class="keyword">return</span> results;
 })();
 </code></pre><script>window.example11 = "yearsOld = max: 10, ida: 9, tim: 11\n\nages = for child, age of yearsOld\n  \"#{child} is #{age}\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example11);'>load</div><div class='minibutton ok' onclick='javascript: var age, ages, child, yearsOld;
 
@@ -975,13 +975,13 @@ yearsOld = {
 };
 
 ages = (function() {
-  var _results;
-  _results = [];
+  var results;
+  results = [];
   for (child in yearsOld) {
     age = yearsOld[child];
-    _results.push(child + " is " + age);
+    results.push(child + " is " + age);
   }
-  return _results;
+  return results;
 })();
 ;alert(ages.join(", "));'>run: ages.join(", ")</div><br class='clear' /></div>
     <p>
@@ -1020,12 +1020,12 @@ lyrics = <span class="keyword">while</span> num -= <span class="number">1</span>
 num = <span class="number">6</span>;
 
 lyrics = (<span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
-  <span class="keyword">var</span> _results;
-  _results = [];
+  <span class="keyword">var</span> results;
+  results = [];
   <span class="keyword">while</span> (num -= <span class="number">1</span>) {
-    _results.push(num + <span class="string">" little monkeys, jumping on the bed. One fell out and bumped his head."</span>);
+    results.push(num + <span class="string">" little monkeys, jumping on the bed. One fell out and bumped his head."</span>);
   }
-  <span class="keyword">return</span> _results;
+  <span class="keyword">return</span> results;
 })();
 </code></pre><script>window.example12 = "# Econ 101\nif this.studyingEconomics\n  buy()  while supply > demand\n  sell() until supply > demand\n\n# Nursery Rhyme\nnum = 6\nlyrics = while num -= 1\n  \"#{num} little monkeys, jumping on the bed.\n    One fell out and bumped his head.\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example12);'>load</div><div class='minibutton ok' onclick='javascript: var lyrics, num;
 
@@ -1041,12 +1041,12 @@ if (this.studyingEconomics) {
 num = 6;
 
 lyrics = (function() {
-  var _results;
-  _results = [];
+  var results;
+  results = [];
   while (num -= 1) {
-    _results.push(num + " little monkeys, jumping on the bed. One fell out and bumped his head.");
+    results.push(num + " little monkeys, jumping on the bed. One fell out and bumped his head.");
   }
-  return _results;
+  return results;
 })();
 ;alert(lyrics.join("
 "));'>run: lyrics.join("
@@ -1065,16 +1065,16 @@ lyrics = (function() {
     <div class='code'><pre><code><span class="keyword">for</span> filename <span class="keyword">in</span> list
   <span class="keyword">do</span> <span class="function"><span class="params">(filename)</span> -&gt;</span>
     fs.readFile filename, <span class="function"><span class="params">(err, contents)</span> -&gt;</span>
-      compile filename, contents.toString()</code></pre><pre><code><span class="keyword">var</span> filename, _fn, _i, _len;
+      compile filename, contents.toString()</code></pre><pre><code><span class="keyword">var</span> filename, fn, i, len;
 
-_fn = <span class="function"><span class="keyword">function</span><span class="params">(filename)</span> {</span>
+fn = <span class="function"><span class="keyword">function</span><span class="params">(filename)</span> {</span>
   <span class="keyword">return</span> fs.readFile(filename, <span class="function"><span class="keyword">function</span><span class="params">(err, contents)</span> {</span>
     <span class="keyword">return</span> compile(filename, contents.toString());
   });
 };
-<span class="keyword">for</span> (_i = <span class="number">0</span>, _len = list.length; _i &lt; _len; _i++) {
-  filename = list[_i];
-  _fn(filename);
+<span class="keyword">for</span> (i = <span class="number">0</span>, len = list.length; i &lt; len; i++) {
+  filename = list[i];
+  fn(filename);
 }
 </code></pre><script>window.example13 = "for filename in list\n  do (filename) ->\n    fs.readFile filename, (err, contents) ->\n      compile filename, contents.toString()"</script><div class='minibutton load' onclick='javascript: loadConsole(example13);'>load</div><br class='clear' /></div>
 
@@ -1129,16 +1129,16 @@ numbers[<span class="number">3.</span><span class="number">.6</span>] = [-<span 
 
 
 
- </code></pre><pre><code><span class="keyword">var</span> numbers, _ref;
+ </code></pre><pre><code><span class="keyword">var</span> numbers, ref;
 
 numbers = [<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>];
 
-[].splice.apply(numbers, [<span class="number">3</span>, <span class="number">4</span>].concat(_ref = [-<span class="number">3</span>, -<span class="number">4</span>, -<span class="number">5</span>, -<span class="number">6</span>])), _ref;
-</code></pre><script>window.example15 = "numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nnumbers[3..6] = [-3, -4, -5, -6]\n\n\n\n "</script><div class='minibutton load' onclick='javascript: loadConsole(example15);'>load</div><div class='minibutton ok' onclick='javascript: var numbers, _ref;
+[].splice.apply(numbers, [<span class="number">3</span>, <span class="number">4</span>].concat(ref = [-<span class="number">3</span>, -<span class="number">4</span>, -<span class="number">5</span>, -<span class="number">6</span>])), ref;
+</code></pre><script>window.example15 = "numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nnumbers[3..6] = [-3, -4, -5, -6]\n\n\n\n "</script><div class='minibutton load' onclick='javascript: loadConsole(example15);'>load</div><div class='minibutton ok' onclick='javascript: var numbers, ref;
 
 numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-[].splice.apply(numbers, [3, 4].concat(_ref = [-3, -4, -5, -6])), _ref;
+[].splice.apply(numbers, [3, 4].concat(ref = [-3, -4, -5, -6])), ref;
 ;alert(numbers);'>run: numbers</div><br class='clear' /></div>
     <p>
       Note that JavaScript strings are immutable, and can't be spliced.
@@ -1226,22 +1226,22 @@ six = (one = 1) + (two = 2) + (three = 3);
 globals = (name <span class="keyword">for</span> name <span class="keyword">of</span> <span class="built_in">window</span>)[<span class="number">0.</span>.<span class="number">.10</span>]</code></pre><pre><code><span class="keyword">var</span> globals, name;
 
 globals = ((<span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
-  <span class="keyword">var</span> _results;
-  _results = [];
+  <span class="keyword">var</span> results;
+  results = [];
   <span class="keyword">for</span> (name <span class="keyword">in</span> window) {
-    _results.push(name);
+    results.push(name);
   }
-  <span class="keyword">return</span> _results;
+  <span class="keyword">return</span> results;
 })()).slice(<span class="number">0</span>, <span class="number">10</span>);
 </code></pre><script>window.example18 = "# The first ten global properties.\n\nglobals = (name for name of window)[0...10]"</script><div class='minibutton load' onclick='javascript: loadConsole(example18);'>load</div><div class='minibutton ok' onclick='javascript: var globals, name;
 
 globals = ((function() {
-  var _results;
-  _results = [];
+  var results;
+  results = [];
   for (name in window) {
-    _results.push(name);
+    results.push(name);
   }
-  return _results;
+  return results;
 })()).slice(0, 10);
 ;alert(globals);'>run: globals</div><br class='clear' /></div>
     <p>
@@ -1380,7 +1380,6 @@ print(inspect(<span class="string">"My name is "</span> + <span class="keyword">
 </code></pre><script>window.example20 = "launch() if ignition is on\n\nvolume = 10 if band isnt SpinalTap\n\nletTheWildRumpusBegin() unless answer is no\n\nif car.speed < limit then accelerate()\n\nwinner = yes if pick in [47, 92, 13]\n\nprint inspect \"My name is #{@name}\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example20);'>load</div><br class='clear' /></div>
 
     <p>
-      <span id="operators-existential" class="bookmark"></span>
       <b class="header">The Existential Operator</b>
       It's a little difficult to check for the existence of a variable in
       JavaScript. <tt>if (variable) ...</tt> comes close, but fails for zero,
@@ -1440,9 +1439,9 @@ footprints = typeof yeti !== "undefined" && yeti !== null ? yeti : "bear";
       the <b>TypeError</b> that would be raised otherwise.
     </p>
     <div class='code'><pre><code>zip = lottery.drawWinner?().address?.zipcode
-</code></pre><pre><code><span class="keyword">var</span> zip, _ref;
+</code></pre><pre><code><span class="keyword">var</span> ref, zip;
 
-zip = <span class="keyword">typeof</span> lottery.drawWinner === <span class="string">"function"</span> ? (_ref = lottery.drawWinner().address) != <span class="literal">null</span> ? _ref.zipcode : <span class="keyword">void</span> <span class="number">0</span> : <span class="keyword">void</span> <span class="number">0</span>;
+zip = <span class="keyword">typeof</span> lottery.drawWinner === <span class="string">"function"</span> ? (ref = lottery.drawWinner().address) != <span class="literal">null</span> ? ref.zipcode : <span class="keyword">void</span> <span class="number">0</span> : <span class="keyword">void</span> <span class="number">0</span>;
 </code></pre><script>window.example22 = "zip = lottery.drawWinner?().address?.zipcode\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example22);'>load</div><br class='clear' /></div>
     <p>
       Soaking up nulls is similar to Ruby's
@@ -1502,12 +1501,12 @@ tom.move()
 
 
 </code></pre><pre><code><span class="keyword">var</span> Animal, Horse, Snake, sam, tom,
-  _extends = <span class="function"><span class="keyword">function</span><span class="params">(child, parent)</span> {</span> <span class="keyword">for</span> (<span class="keyword">var</span> key <span class="keyword">in</span> parent) { <span class="keyword">if</span> (_hasProp.call(parent, key)) child[key] = parent[key]; } <span class="function"><span class="keyword">function</span> <span class="title">ctor</span><span class="params">()</span> {</span> <span class="keyword">this</span>.constructor = child; } ctor.prototype = parent.prototype; child.prototype = <span class="keyword">new</span> ctor(); child.__super__ = parent.prototype; <span class="keyword">return</span> child; },
-  _hasProp = {}.hasOwnProperty;
+  extend = <span class="function"><span class="keyword">function</span><span class="params">(child, parent)</span> {</span> <span class="keyword">for</span> (<span class="keyword">var</span> key <span class="keyword">in</span> parent) { <span class="keyword">if</span> (hasProp.call(parent, key)) child[key] = parent[key]; } <span class="function"><span class="keyword">function</span> <span class="title">ctor</span><span class="params">()</span> {</span> <span class="keyword">this</span>.constructor = child; } ctor.prototype = parent.prototype; child.prototype = <span class="keyword">new</span> ctor(); child.__super__ = parent.prototype; <span class="keyword">return</span> child; },
+  hasProp = {}.hasOwnProperty;
 
 Animal = (<span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
-  <span class="function"><span class="keyword">function</span> <span class="title">Animal</span><span class="params">(_name)</span> {</span>
-    <span class="keyword">this</span>.name = _name;
+  <span class="function"><span class="keyword">function</span> <span class="title">Animal</span><span class="params">(name)</span> {</span>
+    <span class="keyword">this</span>.name = name;
   }
 
   Animal.prototype.move = <span class="function"><span class="keyword">function</span><span class="params">(meters)</span> {</span>
@@ -1518,8 +1517,8 @@ Animal = (<span class="function"><span class="keyword">function</span><span clas
 
 })();
 
-Snake = (<span class="function"><span class="keyword">function</span><span class="params">(_super)</span> {</span>
-  _extends(Snake, _super);
+Snake = (<span class="function"><span class="keyword">function</span><span class="params">(superClass)</span> {</span>
+  extend(Snake, superClass);
 
   <span class="function"><span class="keyword">function</span> <span class="title">Snake</span><span class="params">()</span> {</span>
     <span class="keyword">return</span> Snake.__super__.constructor.apply(<span class="keyword">this</span>, <span class="built_in">arguments</span>);
@@ -1534,8 +1533,8 @@ Snake = (<span class="function"><span class="keyword">function</span><span class
 
 })(Animal);
 
-Horse = (<span class="function"><span class="keyword">function</span><span class="params">(_super)</span> {</span>
-  _extends(Horse, _super);
+Horse = (<span class="function"><span class="keyword">function</span><span class="params">(superClass)</span> {</span>
+  extend(Horse, superClass);
 
   <span class="function"><span class="keyword">function</span> <span class="title">Horse</span><span class="params">()</span> {</span>
     <span class="keyword">return</span> Horse.__super__.constructor.apply(<span class="keyword">this</span>, <span class="built_in">arguments</span>);
@@ -1558,12 +1557,12 @@ sam.move();
 
 tom.move();
 </code></pre><script>window.example23 = "class Animal\n  constructor: (@name) ->\n\n  move: (meters) ->\n    alert @name + \" moved #{meters}m.\"\n\nclass Snake extends Animal\n  move: ->\n    alert \"Slithering...\"\n    super 5\n\nclass Horse extends Animal\n  move: ->\n    alert \"Galloping...\"\n    super 45\n\nsam = new Snake \"Sammy the Python\"\ntom = new Horse \"Tommy the Palomino\"\n\nsam.move()\ntom.move()\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example23);'>load</div><div class='minibutton ok' onclick='javascript: var Animal, Horse, Snake, sam, tom,
-  _extends = function(child, parent) { for (var key in parent) { if (_hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  _hasProp = {}.hasOwnProperty;
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
 
 Animal = (function() {
-  function Animal(_name) {
-    this.name = _name;
+  function Animal(name) {
+    this.name = name;
   }
 
   Animal.prototype.move = function(meters) {
@@ -1574,8 +1573,8 @@ Animal = (function() {
 
 })();
 
-Snake = (function(_super) {
-  _extends(Snake, _super);
+Snake = (function(superClass) {
+  extend(Snake, superClass);
 
   function Snake() {
     return Snake.__super__.constructor.apply(this, arguments);
@@ -1590,8 +1589,8 @@ Snake = (function(_super) {
 
 })(Animal);
 
-Horse = (function(_super) {
-  _extends(Horse, _super);
+Horse = (function(superClass) {
+  extend(Horse, superClass);
 
   function Horse() {
     return Horse.__super__.constructor.apply(this, arguments);
@@ -1659,20 +1658,20 @@ theSwitch = <span class="number">0</span>
 
 
 
- </code></pre><pre><code><span class="keyword">var</span> theBait, theSwitch, _ref;
+ </code></pre><pre><code><span class="keyword">var</span> ref, theBait, theSwitch;
 
 theBait = <span class="number">1000</span>;
 
 theSwitch = <span class="number">0</span>;
 
-_ref = [theSwitch, theBait], theBait = _ref[<span class="number">0</span>], theSwitch = _ref[<span class="number">1</span>];
-</code></pre><script>window.example25 = "theBait   = 1000\ntheSwitch = 0\n\n[theBait, theSwitch] = [theSwitch, theBait]\n\n\n\n\n "</script><div class='minibutton load' onclick='javascript: loadConsole(example25);'>load</div><div class='minibutton ok' onclick='javascript: var theBait, theSwitch, _ref;
+ref = [theSwitch, theBait], theBait = ref[<span class="number">0</span>], theSwitch = ref[<span class="number">1</span>];
+</code></pre><script>window.example25 = "theBait   = 1000\ntheSwitch = 0\n\n[theBait, theSwitch] = [theSwitch, theBait]\n\n\n\n\n "</script><div class='minibutton load' onclick='javascript: loadConsole(example25);'>load</div><div class='minibutton ok' onclick='javascript: var ref, theBait, theSwitch;
 
 theBait = 1000;
 
 theSwitch = 0;
 
-_ref = [theSwitch, theBait], theBait = _ref[0], theSwitch = _ref[1];
+ref = [theSwitch, theBait], theBait = ref[0], theSwitch = ref[1];
 ;alert(theBait);'>run: theBait</div><br class='clear' /></div>
     <p>
       But it's also helpful for dealing with functions that return multiple
@@ -1687,20 +1686,20 @@ _ref = [theSwitch, theBait], theBait = _ref[0], theSwitch = _ref[1];
 
 
 
-</code></pre><pre><code><span class="keyword">var</span> city, forecast, temp, weatherReport, _ref;
+</code></pre><pre><code><span class="keyword">var</span> city, forecast, ref, temp, weatherReport;
 
 weatherReport = <span class="function"><span class="keyword">function</span><span class="params">(location)</span> {</span>
   <span class="keyword">return</span> [location, <span class="number">72</span>, <span class="string">"Mostly Sunny"</span>];
 };
 
-_ref = weatherReport(<span class="string">"Berkeley, CA"</span>), city = _ref[<span class="number">0</span>], temp = _ref[<span class="number">1</span>], forecast = _ref[<span class="number">2</span>];
-</code></pre><script>window.example26 = "weatherReport = (location) ->\n  # Make an Ajax request to fetch the weather...\n  [location, 72, \"Mostly Sunny\"]\n\n[city, temp, forecast] = weatherReport \"Berkeley, CA\"\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example26);'>load</div><div class='minibutton ok' onclick='javascript: var city, forecast, temp, weatherReport, _ref;
+ref = weatherReport(<span class="string">"Berkeley, CA"</span>), city = ref[<span class="number">0</span>], temp = ref[<span class="number">1</span>], forecast = ref[<span class="number">2</span>];
+</code></pre><script>window.example26 = "weatherReport = (location) ->\n  # Make an Ajax request to fetch the weather...\n  [location, 72, \"Mostly Sunny\"]\n\n[city, temp, forecast] = weatherReport \"Berkeley, CA\"\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example26);'>load</div><div class='minibutton ok' onclick='javascript: var city, forecast, ref, temp, weatherReport;
 
 weatherReport = function(location) {
   return [location, 72, "Mostly Sunny"];
 };
 
-_ref = weatherReport("Berkeley, CA"), city = _ref[0], temp = _ref[1], forecast = _ref[2];
+ref = weatherReport("Berkeley, CA"), city = ref[0], temp = ref[1], forecast = ref[2];
 ;alert(forecast);'>run: forecast</div><br class='clear' /></div>
     <p>
       Destructuring assignment can be used with any depth of array and object nesting,
@@ -1720,7 +1719,7 @@ _ref = weatherReport("Berkeley, CA"), city = _ref[0], temp = _ref[1], forecast =
 
 
 
-</code></pre><pre><code><span class="keyword">var</span> city, futurists, name, street, _ref, _ref1;
+</code></pre><pre><code><span class="keyword">var</span> city, futurists, name, ref, ref1, street;
 
 futurists = {
   sculptor: <span class="string">"Umberto Boccioni"</span>,
@@ -1731,8 +1730,8 @@ futurists = {
   }
 };
 
-_ref = futurists.poet, name = _ref.name, (_ref1 = _ref.address, street = _ref1[<span class="number">0</span>], city = _ref1[<span class="number">1</span>]);
-</code></pre><script>window.example27 = "futurists =\n  sculptor: \"Umberto Boccioni\"\n  painter:  \"Vladimir Burliuk\"\n  poet:\n    name:   \"F.T. Marinetti\"\n    address: [\n      \"Via Roma 42R\"\n      \"Bellagio, Italy 22021\"\n    ]\n\n{poet: {name, address: [street, city]}} = futurists\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example27);'>load</div><div class='minibutton ok' onclick='javascript: var city, futurists, name, street, _ref, _ref1;
+ref = futurists.poet, name = ref.name, (ref1 = ref.address, street = ref1[<span class="number">0</span>], city = ref1[<span class="number">1</span>]);
+</code></pre><script>window.example27 = "futurists =\n  sculptor: \"Umberto Boccioni\"\n  painter:  \"Vladimir Burliuk\"\n  poet:\n    name:   \"F.T. Marinetti\"\n    address: [\n      \"Via Roma 42R\"\n      \"Bellagio, Italy 22021\"\n    ]\n\n{poet: {name, address: [street, city]}} = futurists\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example27);'>load</div><div class='minibutton ok' onclick='javascript: var city, futurists, name, ref, ref1, street;
 
 futurists = {
   sculptor: "Umberto Boccioni",
@@ -1743,7 +1742,7 @@ futurists = {
   }
 };
 
-_ref = futurists.poet, name = _ref.name, (_ref1 = _ref.address, street = _ref1[0], city = _ref1[1]);
+ref = futurists.poet, name = ref.name, (ref1 = ref.address, street = ref1[0], city = ref1[1]);
 ;alert(name + "-" + street);'>run: name + "-" + street</div><br class='clear' /></div>
     <p>
       Destructuring assignment can even be combined with splats.
@@ -1757,18 +1756,18 @@ _ref = futurists.poet, name = _ref.name, (_ref1 = _ref.address, street = _ref1[0
 
 
 
-</code></pre><pre><code><span class="keyword">var</span> close, contents, open, tag, _i, _ref,
-  _slice = [].slice;
+</code></pre><pre><code><span class="keyword">var</span> close, contents, i, open, ref, tag,
+  slice = [].slice;
 
 tag = <span class="string">"&lt;impossible&gt;"</span>;
 
-_ref = tag.split(<span class="string">""</span>), open = _ref[<span class="number">0</span>], contents = <span class="number">3</span> &lt;= _ref.length ? _slice.call(_ref, <span class="number">1</span>, _i = _ref.length - <span class="number">1</span>) : (_i = <span class="number">1</span>, []), close = _ref[_i++];
-</code></pre><script>window.example28 = "tag = \"<impossible>\"\n\n[open, contents..., close] = tag.split(\"\")\n\n\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example28);'>load</div><div class='minibutton ok' onclick='javascript: var close, contents, open, tag, _i, _ref,
-  _slice = [].slice;
+ref = tag.split(<span class="string">""</span>), open = ref[<span class="number">0</span>], contents = <span class="number">3</span> &lt;= ref.length ? slice.call(ref, <span class="number">1</span>, i = ref.length - <span class="number">1</span>) : (i = <span class="number">1</span>, []), close = ref[i++];
+</code></pre><script>window.example28 = "tag = \"<impossible>\"\n\n[open, contents..., close] = tag.split(\"\")\n\n\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example28);'>load</div><div class='minibutton ok' onclick='javascript: var close, contents, i, open, ref, tag,
+  slice = [].slice;
 
 tag = "<impossible>";
 
-_ref = tag.split(""), open = _ref[0], contents = 3 <= _ref.length ? _slice.call(_ref, 1, _i = _ref.length - 1) : (_i = 1, []), close = _ref[_i++];
+ref = tag.split(""), open = ref[0], contents = 3 <= ref.length ? slice.call(ref, 1, i = ref.length - 1) : (i = 1, []), close = ref[i++];
 ;alert(contents.join(""));'>run: contents.join("")</div><br class='clear' /></div>
     <p>
       Expansion can be used to retrieve elements from the end of an array without having to assign the rest of its values. It works in function parameter lists as well.
@@ -1780,16 +1779,16 @@ _ref = tag.split(""), open = _ref[0], contents = 3 <= _ref.length ? _slice.call(
 
 
 
-</code></pre><pre><code><span class="keyword">var</span> first, last, text, _ref;
+</code></pre><pre><code><span class="keyword">var</span> first, last, ref, text;
 
 text = <span class="string">"Every literary critic believes he will outwit history and have the last word"</span>;
 
-_ref = text.split(<span class="string">" "</span>), first = _ref[<span class="number">0</span>], last = _ref[_ref.length - <span class="number">1</span>];
-</code></pre><script>window.example29 = "text = \"Every literary critic believes he will\n        outwit history and have the last word\"\n\n[first, ..., last] = text.split \" \"\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example29);'>load</div><div class='minibutton ok' onclick='javascript: var first, last, text, _ref;
+ref = text.split(<span class="string">" "</span>), first = ref[<span class="number">0</span>], last = ref[ref.length - <span class="number">1</span>];
+</code></pre><script>window.example29 = "text = \"Every literary critic believes he will\n        outwit history and have the last word\"\n\n[first, ..., last] = text.split \" \"\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example29);'>load</div><div class='minibutton ok' onclick='javascript: var first, last, ref, text;
 
 text = "Every literary critic believes he will outwit history and have the last word";
 
-_ref = text.split(" "), first = _ref[0], last = _ref[_ref.length - 1];
+ref = text.split(" "), first = ref[0], last = ref[ref.length - 1];
 ;alert(first + " " + last);'>run: first + " " + last</div><br class='clear' /></div>
     <p>
       Destructuring assignment is also useful when combined with class constructors
@@ -2491,6 +2490,32 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
       <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
+
+    <p>
+      <div class="anchor" id="1.9.1"></div>
+<b class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.9.0...1.9.1">1.9.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2015-02-18">February 18, 2015</time></span>
+</b>
+      <ul>
+        <li>
+          Interpolation now works in object literal keys (again). You can use this to 
+          dynamically name properties.
+        </li>
+        <li>
+          Internal compiler names no longer start with underscores. This makes
+          the generated JavaScript a bit prettier, and also fixes an issue with
+          the completely broken and ungodly way that AngularJS "parses" function
+          arguments.
+        </li>
+        <li>
+          Fixed a few <tt>yield</tt>-related bugs.
+        </li>
+        <li>
+          Minor bug fixes and various improvements to compiler error messages.
+        </li>
+      </ul>
+    </p>
 
     <p>
       <div class="anchor" id="1.9.0"></div>

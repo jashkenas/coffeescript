@@ -285,6 +285,13 @@ test "#156: destructuring with expansion", ->
   throws (-> CoffeeScript.compile "[..., a, b...] = c"), null, "prohibit expansion and a splat"
   throws (-> CoffeeScript.compile "[...] = c"),          null, "prohibit lone expansion"
 
+test "destructuring with dynamic keys", ->
+  {"#{'a'}": a, """#{'b'}""": b, c} = {a: 1, b: 2, c: 3}
+  eq 1, a
+  eq 2, b
+  eq 3, c
+  throws -> CoffeeScript.compile '{"#{a}"} = b'
+
 
 # Existential Assignment
 
@@ -408,52 +415,52 @@ test "#2181: conditional assignment as a subexpression", ->
   eq false, not a or= true
 
 test "#1500: Assignment to variables similar to generated variables", ->
-  _len = 0
-  x = ((_results = null; i) for i in [1, 2, 3])
+  len = 0
+  x = ((results = null; n) for n in [1, 2, 3])
   arrayEq [1, 2, 3], x
-  eq 0, _len
+  eq 0, len
 
   for x in [1, 2, 3]
     f = ->
-      _i = 0
+      i = 0
     f()
-    eq 'undefined', typeof _i
+    eq 'undefined', typeof i
 
-  _ref = 2
-  x = _ref * 2 ? 1
+  ref = 2
+  x = ref * 2 ? 1
   eq x, 4
-  eq 'undefined', typeof _ref1
+  eq 'undefined', typeof ref1
 
   x = {}
-  _base = -> x
-  _name = -1
-  _base()[-_name] ?= 2
+  base = -> x
+  name = -1
+  base()[-name] ?= 2
   eq x[1], 2
-  eq _base(), x
-  eq _name, -1
+  eq base(), x
+  eq name, -1
 
-  f = (@a, _at_a, a) -> [@a, _at_a, a]
-  arrayEq [1, 2, 3], f.call scope = {}, 1, 2, 3
+  f = (@a, a) -> [@a, a]
+  arrayEq [1, 2], f.call scope = {}, 1, 2
   eq 1, scope.a
 
-  doesNotThrow -> CoffeeScript.compile '(@_slice...) ->'
+  doesNotThrow -> CoffeeScript.compile '(@slice...) ->'
 
 test "Assignment to variables similar to helper functions", ->
-  f = (__slice...) -> __slice
+  f = (slice...) -> slice
   arrayEq [1, 2, 3], f 1, 2, 3
-  eq 'undefined', typeof __slice1
+  eq 'undefined', typeof slice1
 
   class A
   class B extends A
-    __extends = 3
-    __hasProp = 4
+    extend = 3
+    hasProp = 4
     value: 5
-    method: (__bind, __bind1) => [__bind, __bind1, __extends, __hasProp, @value]
+    method: (bind, bind1) => [bind, bind1, extend, hasProp, @value]
   {method} = new B
   arrayEq [1, 2, 3, 4, 5], method 1, 2
 
-  __modulo = -1 %% 3
-  eq 2, __modulo
+  modulo = -1 %% 3
+  eq 2, modulo
 
-  __indexOf = [1, 2, 3]
-  ok 2 in __indexOf
+  indexOf = [1, 2, 3]
+  ok 2 in indexOf

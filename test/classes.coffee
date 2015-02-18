@@ -828,3 +828,69 @@ test "#3232: super in static methods (not object-assigned)", ->
 
   ok Bar.baz()
   ok Bar.qux()
+
+test "#1392 calling `super` in methods defined on namespaced classes", ->
+  class Base
+    m: -> 5
+    n: -> 4
+  namespace =
+    A: ->
+    B: ->
+  namespace.A extends Base
+
+  namespace.A::m = -> super
+  eq 5, (new namespace.A).m()
+  namespace.B::m = namespace.A::m
+  namespace.A::m = null
+  eq 5, (new namespace.B).m()
+
+  count = 0
+  getNamespace = -> count++; namespace
+  getNamespace().A::n = -> super
+  eq 4, (new namespace.A).n()
+  eq 1, count
+
+  class C
+    @a: ->
+    @a extends Base
+    @a::m = -> super
+  eq 5, (new C.a).m()
+
+test "dynamic method names and super", ->
+  class Base
+    @m: -> 6
+    m: -> 5
+    m2: -> 4.5
+    n: -> 4
+  A = ->
+  A extends Base
+
+  m = 'm'
+  A::[m] = -> super
+  m = 'n'
+  eq 5, (new A).m()
+
+  name = -> count++; 'n'
+
+  count = 0
+  A::[name()] = -> super
+  eq 4, (new A).n()
+  eq 1, count
+
+  m = 'm'
+  m2 = 'm2'
+  count = 0
+  class B extends Base
+    @[name()] = -> super
+    @::[m] = -> super
+    "#{m2}": -> super
+  b = new B
+  m = m2 = 'n'
+  eq 6, B.m()
+  eq 5, b.m()
+  eq 4.5, b.m2()
+  eq 1, count
+
+  class C extends B
+    m: -> super
+  eq 5, (new C).m()

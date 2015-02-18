@@ -2,7 +2,7 @@
 # -------
 
 # pull the helpers from `CoffeeScript.helpers` into local variables
-{starts, ends, repeat, compact, count, merge, extend, flatten, del, last, baseFileName} = CoffeeScript.helpers
+{starts, ends, repeat, compact, count, merge, extend, flatten, del, baseFileName} = CoffeeScript.helpers
 
 
 # `starts`
@@ -93,16 +93,6 @@ test "the `del` helper deletes a property from an object and returns the deleted
   eq 1, del(obj, 1)
   ok 1 not of obj
 
-
-# `last`
-
-test "the `last` helper returns the last item of an array-like object", ->
-  ary = [0, 1, 2, 3, 4]
-  eq 4, last(ary)
-
-test "the `last` helper allows one to specify an optional offset", ->
-  ary = [0, 1, 2, 3, 4]
-  eq 2, last(ary, 2)
 
 # `baseFileName`
 

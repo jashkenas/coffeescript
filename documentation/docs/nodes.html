@@ -141,7 +141,7 @@ Error.stackTraceLimit = Infinity
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>{compact, flatten, extend, merge, del, starts, ends, last, some,
+            <div class="content"><div class='highlight'><pre>{compact, flatten, extend, merge, del, starts, ends, some,
 addLocationDataFn, locationDataToString, throwSyntaxError} = <span class="hljs-built_in">require</span> <span class="hljs-string">'./helpers'</span></pre></div></div>
             
         </li>
@@ -351,14 +351,15 @@ the two values are raw nodes which have not been compiled.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">cache</span>: <span class="hljs-function"><span class="hljs-params">(o, level, reused)</span> -&gt;</span>
-    <span class="hljs-keyword">unless</span> <span class="hljs-property">@isComplex</span>()
-      ref = <span class="hljs-keyword">if</span> level <span class="hljs-keyword">then</span> <span class="hljs-property">@compileToFragments</span> o, level <span class="hljs-keyword">else</span> <span class="hljs-keyword">this</span>
-      [ref, ref]
-    <span class="hljs-keyword">else</span>
-      ref = <span class="hljs-keyword">new</span> Literal reused <span class="hljs-keyword">or</span> o.scope.freeVariable <span class="hljs-string">'ref'</span>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">cache</span>: <span class="hljs-function"><span class="hljs-params">(o, level, isComplex)</span> -&gt;</span>
+    complex = <span class="hljs-keyword">if</span> isComplex? <span class="hljs-keyword">then</span> isComplex <span class="hljs-keyword">this</span> <span class="hljs-keyword">else</span> <span class="hljs-property">@isComplex</span>()
+    <span class="hljs-keyword">if</span> complex
+      ref = <span class="hljs-keyword">new</span> Literal o.scope.freeVariable <span class="hljs-string">'ref'</span>
       sub = <span class="hljs-keyword">new</span> Assign ref, <span class="hljs-keyword">this</span>
       <span class="hljs-keyword">if</span> level <span class="hljs-keyword">then</span> [sub.compileToFragments(o, level), [<span class="hljs-property">@makeCode</span>(ref.value)]] <span class="hljs-keyword">else</span> [sub, ref]
+    <span class="hljs-keyword">else</span>
+      ref = <span class="hljs-keyword">if</span> level <span class="hljs-keyword">then</span> <span class="hljs-property">@compileToFragments</span> o, level <span class="hljs-keyword">else</span> <span class="hljs-keyword">this</span>
+      [ref, ref]
 
   <span class="hljs-attribute">cacheToCodeFragments</span>: <span class="hljs-function"><span class="hljs-params">(cacheValues)</span> -&gt;</span>
     [fragmentsToText(cacheValues[<span class="hljs-number">0</span>]), fragmentsToText(cacheValues[<span class="hljs-number">1</span>])]</pre></div></div>
@@ -1047,7 +1048,8 @@ make sense.</p>
     <span class="hljs-keyword">if</span> expr <span class="hljs-keyword">and</span> expr <span class="hljs-keyword">not</span> <span class="hljs-keyword">instanceof</span> Return <span class="hljs-keyword">then</span> expr.compileToFragments o, level <span class="hljs-keyword">else</span> <span class="hljs-keyword">super</span> o, level
 
   <span class="hljs-attribute">compileNode</span>: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
-    answer = []</pre></div></div>
+    answer = []
+    exprIsYieldReturn = <span class="hljs-property">@expression</span>?.isYieldReturn?()</pre></div></div>
             
         </li>
         
@@ -1062,10 +1064,11 @@ make sense.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    answer.push <span class="hljs-property">@makeCode</span> <span class="hljs-property">@tab</span> + <span class="hljs-string">"return<span class="hljs-subst">#{<span class="hljs-keyword">if</span> <span class="hljs-property">@expression</span> <span class="hljs-keyword">then</span> <span class="hljs-string">" "</span> <span class="hljs-keyword">else</span> <span class="hljs-string">""</span>}</span>"</span>
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">unless</span> exprIsYieldReturn
+      answer.push <span class="hljs-property">@makeCode</span> <span class="hljs-property">@tab</span> + <span class="hljs-string">"return<span class="hljs-subst">#{<span class="hljs-keyword">if</span> <span class="hljs-property">@expression</span> <span class="hljs-keyword">then</span> <span class="hljs-string">" "</span> <span class="hljs-keyword">else</span> <span class="hljs-string">""</span>}</span>"</span>
     <span class="hljs-keyword">if</span> <span class="hljs-property">@expression</span>
       answer = answer.concat <span class="hljs-property">@expression</span>.compileToFragments o, LEVEL_PAREN
-    answer.push <span class="hljs-property">@makeCode</span> <span class="hljs-string">";"</span>
+    answer.push <span class="hljs-property">@makeCode</span> <span class="hljs-string">";"</span> <span class="hljs-keyword">unless</span> exprIsYieldReturn
     <span class="hljs-keyword">return</span> answer</pre></div></div>
             
         </li>
@@ -1165,10 +1168,11 @@ or vanilla.</p>
     (<span class="hljs-property">@base</span> <span class="hljs-keyword">instanceof</span> Obj) <span class="hljs-keyword">and</span> (<span class="hljs-keyword">not</span> onlyGenerated <span class="hljs-keyword">or</span> <span class="hljs-property">@base</span>.generated)
 
   <span class="hljs-attribute">isSplice</span>:<span class="hljs-function"> -&gt;</span>
-    last(<span class="hljs-property">@properties</span>) <span class="hljs-keyword">instanceof</span> Slice
+    [..., lastProp] = <span class="hljs-property">@properties</span>
+    lastProp <span class="hljs-keyword">instanceof</span> Slice
 
   <span class="hljs-attribute">looksStatic</span>: <span class="hljs-function"><span class="hljs-params">(className)</span> -&gt;</span>
-    <span class="hljs-property">@base</span>.value <span class="hljs-keyword">is</span> className <span class="hljs-keyword">and</span> <span class="hljs-property">@properties</span>.length <span class="hljs-keyword">and</span>
+    <span class="hljs-property">@base</span>.value <span class="hljs-keyword">is</span> className <span class="hljs-keyword">and</span> <span class="hljs-property">@properties</span>.length <span class="hljs-keyword">is</span> <span class="hljs-number">1</span> <span class="hljs-keyword">and</span>
       <span class="hljs-property">@properties</span>[<span class="hljs-number">0</span>].name?.value <span class="hljs-keyword">isnt</span> <span class="hljs-string">'prototype'</span></pre></div></div>
             
         </li>
@@ -1204,7 +1208,7 @@ We cache them separately for compiling complex expressions.
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">cacheReference</span>: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
-    name = last <span class="hljs-property">@properties</span>
+    [..., name] = <span class="hljs-property">@properties</span>
     <span class="hljs-keyword">if</span> <span class="hljs-property">@properties</span>.length &lt; <span class="hljs-number">2</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> <span class="hljs-property">@base</span>.isComplex() <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> name?.isComplex()
       <span class="hljs-keyword">return</span> [<span class="hljs-keyword">this</span>, <span class="hljs-keyword">this</span>]  <span class="hljs-comment"># `a` `a.b`</span>
     base = <span class="hljs-keyword">new</span> Value <span class="hljs-property">@base</span>, <span class="hljs-property">@properties</span>[...-<span class="hljs-number">1</span>]
@@ -1387,10 +1391,21 @@ method.</p>
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">superReference</span>: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
     method = o.scope.namedMethod()
     <span class="hljs-keyword">if</span> method?.klass
-      accesses = [<span class="hljs-keyword">new</span> Access(<span class="hljs-keyword">new</span> Literal <span class="hljs-string">'__super__'</span>)]
+      {klass, name, variable} = method
+      <span class="hljs-keyword">if</span> klass.isComplex()
+        bref = <span class="hljs-keyword">new</span> Literal o.scope.parent.freeVariable <span class="hljs-string">'base'</span>
+        base = <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> Parens <span class="hljs-keyword">new</span> Assign bref, klass
+        variable.base = base
+        variable.properties.splice <span class="hljs-number">0</span>, klass.properties.length
+      <span class="hljs-keyword">if</span> name.isComplex() <span class="hljs-keyword">or</span> (name <span class="hljs-keyword">instanceof</span> Index <span class="hljs-keyword">and</span> name.index.isAssignable())
+        nref = <span class="hljs-keyword">new</span> Literal o.scope.parent.freeVariable <span class="hljs-string">'name'</span>
+        name = <span class="hljs-keyword">new</span> Index <span class="hljs-keyword">new</span> Assign nref, name.index
+        variable.properties.pop()
+        variable.properties.push name
+      accesses = [<span class="hljs-keyword">new</span> Access <span class="hljs-keyword">new</span> Literal <span class="hljs-string">'__super__'</span>]
       accesses.push <span class="hljs-keyword">new</span> Access <span class="hljs-keyword">new</span> Literal <span class="hljs-string">'constructor'</span> <span class="hljs-keyword">if</span> method.static
-      accesses.push <span class="hljs-keyword">new</span> Access <span class="hljs-keyword">new</span> Literal method.name
-      (<span class="hljs-keyword">new</span> Value (<span class="hljs-keyword">new</span> Literal method.klass), accesses).compile o
+      accesses.push <span class="hljs-keyword">if</span> nref? <span class="hljs-keyword">then</span> <span class="hljs-keyword">new</span> Index nref <span class="hljs-keyword">else</span> name
+      (<span class="hljs-keyword">new</span> Value bref ? klass, accesses).compile o
     <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> method?.ctor
       <span class="hljs-string">"<span class="hljs-subst">#{method.name}</span>.__super__.constructor"</span>
     <span class="hljs-keyword">else</span>
@@ -1592,7 +1607,7 @@ After <code>goog.inherits</code> from the
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">compileToFragments</span>: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
-    <span class="hljs-keyword">new</span> Call(<span class="hljs-keyword">new</span> Value(<span class="hljs-keyword">new</span> Literal utility <span class="hljs-string">'extends'</span>, o), [<span class="hljs-property">@child</span>, <span class="hljs-property">@parent</span>]).compileToFragments o</pre></div></div>
+    <span class="hljs-keyword">new</span> Call(<span class="hljs-keyword">new</span> Value(<span class="hljs-keyword">new</span> Literal utility <span class="hljs-string">'extend'</span>, o), [<span class="hljs-property">@child</span>, <span class="hljs-property">@parent</span>]).compileToFragments o</pre></div></div>
             
         </li>
         
@@ -1728,9 +1743,10 @@ But only if they need to be cached to avoid double evaluation.</p>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">compileVariables</span>: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
     o = merge o, <span class="hljs-attribute">top</span>: <span class="hljs-literal">true</span>
-    [<span class="hljs-property">@fromC</span>, <span class="hljs-property">@fromVar</span>]  =  <span class="hljs-property">@cacheToCodeFragments</span> <span class="hljs-property">@from</span>.cache o, LEVEL_LIST
-    [<span class="hljs-property">@toC</span>, <span class="hljs-property">@toVar</span>]      =  <span class="hljs-property">@cacheToCodeFragments</span> <span class="hljs-property">@to</span>.cache o, LEVEL_LIST
-    [<span class="hljs-property">@step</span>, <span class="hljs-property">@stepVar</span>]   =  <span class="hljs-property">@cacheToCodeFragments</span> step.cache o, LEVEL_LIST <span class="hljs-keyword">if</span> step = del o, <span class="hljs-string">'step'</span>
+    isComplex = del o, <span class="hljs-string">'isComplex'</span>
+    [<span class="hljs-property">@fromC</span>, <span class="hljs-property">@fromVar</span>]  =  <span class="hljs-property">@cacheToCodeFragments</span> <span class="hljs-property">@from</span>.cache o, LEVEL_LIST, isComplex
+    [<span class="hljs-property">@toC</span>, <span class="hljs-property">@toVar</span>]      =  <span class="hljs-property">@cacheToCodeFragments</span> <span class="hljs-property">@to</span>.cache o, LEVEL_LIST, isComplex
+    [<span class="hljs-property">@step</span>, <span class="hljs-property">@stepVar</span>]   =  <span class="hljs-property">@cacheToCodeFragments</span> step.cache o, LEVEL_LIST, isComplex <span class="hljs-keyword">if</span> step = del o, <span class="hljs-string">'step'</span>
     [<span class="hljs-property">@fromNum</span>, <span class="hljs-property">@toNum</span>]  = [<span class="hljs-property">@fromVar</span>.match(NUMBER), <span class="hljs-property">@toVar</span>.match(NUMBER)]
     <span class="hljs-property">@stepNum</span>            = <span class="hljs-property">@stepVar</span>.match(NUMBER) <span class="hljs-keyword">if</span> <span class="hljs-property">@stepVar</span></pre></div></div>
             
@@ -1859,7 +1875,7 @@ needed to iterate over the values in the range. Used by comprehensions.</p>
       range.pop() <span class="hljs-keyword">if</span> <span class="hljs-property">@exclusive</span>
       <span class="hljs-keyword">return</span> [<span class="hljs-property">@makeCode</span> <span class="hljs-string">"[<span class="hljs-subst">#{ range.join(<span class="hljs-string">', '</span>) }</span>]"</span>]
     idt    = <span class="hljs-property">@tab</span> + TAB
-    i      = o.scope.freeVariable <span class="hljs-string">'i'</span>
+    i      = o.scope.freeVariable <span class="hljs-string">'i'</span>, <span class="hljs-attribute">single</span>: <span class="hljs-literal">true</span>
     result = o.scope.freeVariable <span class="hljs-string">'results'</span>
     pre    = <span class="hljs-string">"\n<span class="hljs-subst">#{idt}</span><span class="hljs-subst">#{result}</span> = [];"</span>
     <span class="hljs-keyword">if</span> <span class="hljs-property">@fromNum</span> <span class="hljs-keyword">and</span> <span class="hljs-property">@toNum</span>
@@ -1988,35 +2004,54 @@ is the index of the beginning.</p>
 
   <span class="hljs-attribute">compileNode</span>: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
     props = <span class="hljs-property">@properties</span>
-    <span class="hljs-keyword">return</span> [<span class="hljs-property">@makeCode</span>(<span class="hljs-keyword">if</span> <span class="hljs-property">@front</span> <span class="hljs-keyword">then</span> <span class="hljs-string">'({})'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'{}'</span>)] <span class="hljs-keyword">unless</span> props.length
     <span class="hljs-keyword">if</span> <span class="hljs-property">@generated</span>
       <span class="hljs-keyword">for</span> node <span class="hljs-keyword">in</span> props <span class="hljs-keyword">when</span> node <span class="hljs-keyword">instanceof</span> Value
         node.error <span class="hljs-string">'cannot have an implicit value in an implicit object'</span>
+    <span class="hljs-keyword">break</span> <span class="hljs-keyword">for</span> prop, dynamicIndex <span class="hljs-keyword">in</span> props <span class="hljs-keyword">when</span> (prop.variable <span class="hljs-keyword">or</span> prop).base <span class="hljs-keyword">instanceof</span> Parens
+    hasDynamic  = dynamicIndex &lt; props.length
     idt         = o.indent += TAB
     lastNoncom  = <span class="hljs-property">@lastNonComment</span> <span class="hljs-property">@properties</span>
     answer = []
+    <span class="hljs-keyword">if</span> hasDynamic
+      oref = o.scope.freeVariable <span class="hljs-string">'obj'</span>
+      answer.push <span class="hljs-property">@makeCode</span> <span class="hljs-string">"(\n<span class="hljs-subst">#{idt}</span><span class="hljs-subst">#{oref}</span> = "</span>
+    answer.push <span class="hljs-property">@makeCode</span> <span class="hljs-string">"{<span class="hljs-subst">#{<span class="hljs-keyword">if</span> props.length <span class="hljs-keyword">is</span> <span class="hljs-number">0</span> <span class="hljs-keyword">or</span> dynamicIndex <span class="hljs-keyword">is</span> <span class="hljs-number">0</span> <span class="hljs-keyword">then</span> <span class="hljs-string">'}'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'\n'</span>}</span>"</span>
     <span class="hljs-keyword">for</span> prop, i <span class="hljs-keyword">in</span> props
-      join = <span class="hljs-keyword">if</span> i <span class="hljs-keyword">is</span> props.length - <span class="hljs-number">1</span>
+      <span class="hljs-keyword">if</span> i <span class="hljs-keyword">is</span> dynamicIndex
+        answer.push <span class="hljs-property">@makeCode</span> <span class="hljs-string">"\n<span class="hljs-subst">#{idt}</span>}"</span> <span class="hljs-keyword">unless</span> i <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>
+        answer.push <span class="hljs-property">@makeCode</span> <span class="hljs-string">',\n'</span>
+      join = <span class="hljs-keyword">if</span> i <span class="hljs-keyword">is</span> props.length - <span class="hljs-number">1</span> <span class="hljs-keyword">or</span> i <span class="hljs-keyword">is</span> dynamicIndex - <span class="hljs-number">1</span>
         <span class="hljs-string">''</span>
       <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">is</span> lastNoncom <span class="hljs-keyword">or</span> prop <span class="hljs-keyword">instanceof</span> Comment
         <span class="hljs-string">'\n'</span>
       <span class="hljs-keyword">else</span>
         <span class="hljs-string">',\n'</span>
       indent = <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">instanceof</span> Comment <span class="hljs-keyword">then</span> <span class="hljs-string">''</span> <span class="hljs-keyword">else</span> idt
+      indent += TAB <span class="hljs-keyword">if</span> hasDynamic <span class="hljs-keyword">and</span> i &lt; dynamicIndex
       <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">instanceof</span> Assign <span class="hljs-keyword">and</span> prop.variable <span class="hljs-keyword">instanceof</span> Value <span class="hljs-keyword">and</span> prop.variable.hasProperties()
         prop.variable.error <span class="hljs-string">'Invalid object key'</span>
       <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">instanceof</span> Value <span class="hljs-keyword">and</span> prop.<span class="hljs-keyword">this</span>
         prop = <span class="hljs-keyword">new</span> Assign prop.properties[<span class="hljs-number">0</span>].name, prop, <span class="hljs-string">'object'</span>
       <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">not</span> <span class="hljs-keyword">instanceof</span> Comment
-        <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">not</span> <span class="hljs-keyword">instanceof</span> Assign
-          prop = <span class="hljs-keyword">new</span> Assign prop, prop, <span class="hljs-string">'object'</span>
-        (prop.variable.base <span class="hljs-keyword">or</span> prop.variable).asKey = <span class="hljs-literal">yes</span>
+        <span class="hljs-keyword">if</span> i &lt; dynamicIndex
+          <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">not</span> <span class="hljs-keyword">instanceof</span> Assign
+            prop = <span class="hljs-keyword">new</span> Assign prop, prop, <span class="hljs-string">'object'</span>
+          (prop.variable.base <span class="hljs-keyword">or</span> prop.variable).asKey = <span class="hljs-literal">yes</span>
+        <span class="hljs-keyword">else</span>
+          <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">instanceof</span> Assign
+            key = prop.variable
+            value = prop.value
+          <span class="hljs-keyword">else</span>
+            [key, value] = prop.base.cache o
+          prop = <span class="hljs-keyword">new</span> Assign (<span class="hljs-keyword">new</span> Value (<span class="hljs-keyword">new</span> Literal oref), [<span class="hljs-keyword">new</span> Access key]), value
       <span class="hljs-keyword">if</span> indent <span class="hljs-keyword">then</span> answer.push <span class="hljs-property">@makeCode</span> indent
       answer.push prop.compileToFragments(o, LEVEL_TOP)...
       <span class="hljs-keyword">if</span> join <span class="hljs-keyword">then</span> answer.push <span class="hljs-property">@makeCode</span> join
-    answer.unshift <span class="hljs-property">@makeCode</span> <span class="hljs-string">"{<span class="hljs-subst">#{ props.length <span class="hljs-keyword">and</span> <span class="hljs-string">'\n'</span> }</span>"</span>
-    answer.push <span class="hljs-property">@makeCode</span> <span class="hljs-string">"<span class="hljs-subst">#{ props.length <span class="hljs-keyword">and</span> <span class="hljs-string">'\n'</span> + <span class="hljs-property">@tab</span> }</span>}"</span>
-    <span class="hljs-keyword">if</span> <span class="hljs-property">@front</span> <span class="hljs-keyword">then</span> <span class="hljs-property">@wrapInBraces</span> answer <span class="hljs-keyword">else</span> answer
+    <span class="hljs-keyword">if</span> hasDynamic
+      answer.push <span class="hljs-property">@makeCode</span> <span class="hljs-string">",\n<span class="hljs-subst">#{idt}</span><span class="hljs-subst">#{oref}</span>\n<span class="hljs-subst">#{<span class="hljs-property">@tab</span>}</span>)"</span>
+    <span class="hljs-keyword">else</span>
+      answer.push <span class="hljs-property">@makeCode</span> <span class="hljs-string">"\n<span class="hljs-subst">#{<span class="hljs-property">@tab</span>}</span>}"</span> <span class="hljs-keyword">unless</span> props.length <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@front</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> hasDynamic <span class="hljs-keyword">then</span> <span class="hljs-property">@wrapInBraces</span> answer <span class="hljs-keyword">else</span> answer
 
   <span class="hljs-attribute">assigns</span>: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
     <span class="hljs-keyword">for</span> prop <span class="hljs-keyword">in</span> <span class="hljs-property">@properties</span> <span class="hljs-keyword">when</span> prop.assigns name <span class="hljs-keyword">then</span> <span class="hljs-keyword">return</span> <span class="hljs-literal">yes</span>
@@ -2128,7 +2163,8 @@ list of prototype property assignments.</p>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">determineName</span>:<span class="hljs-function"> -&gt;</span>
     <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span> <span class="hljs-keyword">unless</span> <span class="hljs-property">@variable</span>
-    decl = <span class="hljs-keyword">if</span> tail = last <span class="hljs-property">@variable</span>.properties
+    [..., tail] = <span class="hljs-property">@variable</span>.properties
+    decl = <span class="hljs-keyword">if</span> tail
       tail <span class="hljs-keyword">instanceof</span> Access <span class="hljs-keyword">and</span> tail.name.value
     <span class="hljs-keyword">else</span>
       <span class="hljs-property">@variable</span>.base.value
@@ -2156,7 +2192,6 @@ list of prototype property assignments.</p>
       <span class="hljs-keyword">if</span> node <span class="hljs-keyword">instanceof</span> Literal <span class="hljs-keyword">and</span> node.value <span class="hljs-keyword">is</span> <span class="hljs-string">'this'</span>
         node.value    = name
       <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> node <span class="hljs-keyword">instanceof</span> Code
-        node.klass    = name
         node.context  = name <span class="hljs-keyword">if</span> node.bound</pre></div></div>
             
         </li>
@@ -2214,7 +2249,8 @@ on the class.</p>
           <span class="hljs-keyword">if</span> assign.variable.<span class="hljs-keyword">this</span>
             func.static = <span class="hljs-literal">yes</span>
           <span class="hljs-keyword">else</span>
-            assign.variable = <span class="hljs-keyword">new</span> Value(<span class="hljs-keyword">new</span> Literal(name), [(<span class="hljs-keyword">new</span> Access <span class="hljs-keyword">new</span> Literal <span class="hljs-string">'prototype'</span>), <span class="hljs-keyword">new</span> Access base])
+            acc = <span class="hljs-keyword">if</span> base.isComplex() <span class="hljs-keyword">then</span> <span class="hljs-keyword">new</span> Index base <span class="hljs-keyword">else</span> <span class="hljs-keyword">new</span> Access base
+            assign.variable = <span class="hljs-keyword">new</span> Value(<span class="hljs-keyword">new</span> Literal(name), [(<span class="hljs-keyword">new</span> Access <span class="hljs-keyword">new</span> Literal <span class="hljs-string">'prototype'</span>), acc])
             <span class="hljs-keyword">if</span> func <span class="hljs-keyword">instanceof</span> Code <span class="hljs-keyword">and</span> func.bound
               <span class="hljs-property">@boundFuncs</span>.push base
               func.bound = <span class="hljs-literal">no</span>
@@ -2335,7 +2371,7 @@ constructor, property assignments, and inheritance getting built out below.</p>
     <span class="hljs-property">@body</span>.expressions.push lname
 
     <span class="hljs-keyword">if</span> <span class="hljs-property">@parent</span>
-      superClass = <span class="hljs-keyword">new</span> Literal o.classScope.freeVariable <span class="hljs-string">'super'</span>, <span class="hljs-literal">no</span>
+      superClass = <span class="hljs-keyword">new</span> Literal o.classScope.freeVariable <span class="hljs-string">'superClass'</span>, <span class="hljs-attribute">reserve</span>: <span class="hljs-literal">no</span>
       <span class="hljs-property">@body</span>.expressions.unshift <span class="hljs-keyword">new</span> Extends lname, superClass
       func.params.push <span class="hljs-keyword">new</span> Param superClass
       args.push <span class="hljs-property">@parent</span>
@@ -2414,21 +2450,28 @@ has not been seen yet within the current scope, declare it.</p>
       <span class="hljs-keyword">return</span> <span class="hljs-property">@compileSplice</span>       o <span class="hljs-keyword">if</span> <span class="hljs-property">@variable</span>.isSplice()
       <span class="hljs-keyword">return</span> <span class="hljs-property">@compileConditional</span>  o <span class="hljs-keyword">if</span> <span class="hljs-property">@context</span> <span class="hljs-keyword">in</span> [<span class="hljs-string">'||='</span>, <span class="hljs-string">'&amp;&amp;='</span>, <span class="hljs-string">'?='</span>]
       <span class="hljs-keyword">return</span> <span class="hljs-property">@compileSpecialMath</span>  o <span class="hljs-keyword">if</span> <span class="hljs-property">@context</span> <span class="hljs-keyword">in</span> [<span class="hljs-string">'**='</span>, <span class="hljs-string">'//='</span>, <span class="hljs-string">'%%='</span>]
-    compiledName = <span class="hljs-property">@variable</span>.compileToFragments o, LEVEL_LIST
-    name = fragmentsToText compiledName
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@value</span> <span class="hljs-keyword">instanceof</span> Code
+      <span class="hljs-keyword">if</span> <span class="hljs-property">@value</span>.static
+        <span class="hljs-property">@value</span>.klass = <span class="hljs-property">@variable</span>.base
+        <span class="hljs-property">@value</span>.name  = <span class="hljs-property">@variable</span>.properties[<span class="hljs-number">0</span>]
+        <span class="hljs-property">@value</span>.variable = <span class="hljs-property">@variable</span>
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@variable</span>.properties?.length &gt;= <span class="hljs-number">2</span>
+        [properties..., prototype, name] = <span class="hljs-property">@variable</span>.properties
+        <span class="hljs-keyword">if</span> prototype.name?.value <span class="hljs-keyword">is</span> <span class="hljs-string">'prototype'</span>
+          <span class="hljs-property">@value</span>.klass = <span class="hljs-keyword">new</span> Value <span class="hljs-property">@variable</span>.base, properties
+          <span class="hljs-property">@value</span>.name  = name
+          <span class="hljs-property">@value</span>.variable = <span class="hljs-property">@variable</span>
     <span class="hljs-keyword">unless</span> <span class="hljs-property">@context</span>
       varBase = <span class="hljs-property">@variable</span>.unwrapAll()
       <span class="hljs-keyword">unless</span> varBase.isAssignable()
         <span class="hljs-property">@variable</span>.error <span class="hljs-string">"\"<span class="hljs-subst">#{<span class="hljs-property">@variable</span>.compile o}</span>\" cannot be assigned"</span>
       <span class="hljs-keyword">unless</span> varBase.hasProperties?()
         <span class="hljs-keyword">if</span> <span class="hljs-property">@param</span>
-          o.scope.add name, <span class="hljs-string">'var'</span>
+          o.scope.add varBase.value, <span class="hljs-string">'var'</span>
         <span class="hljs-keyword">else</span>
-          o.scope.find name
-    <span class="hljs-keyword">if</span> <span class="hljs-property">@value</span> <span class="hljs-keyword">instanceof</span> Code <span class="hljs-keyword">and</span> match = METHOD_DEF.exec name
-      <span class="hljs-property">@value</span>.klass = match[<span class="hljs-number">1</span>] <span class="hljs-keyword">if</span> match[<span class="hljs-number">2</span>]
-      <span class="hljs-property">@value</span>.name  = match[<span class="hljs-number">3</span>] ? match[<span class="hljs-number">4</span>] ? match[<span class="hljs-number">5</span>]
+          o.scope.find varBase.value
     val = <span class="hljs-property">@value</span>.compileToFragments o, LEVEL_LIST
+    compiledName = <span class="hljs-property">@variable</span>.compileToFragments o, LEVEL_LIST
     <span class="hljs-keyword">return</span> (compiledName.concat <span class="hljs-property">@makeCode</span>(<span class="hljs-string">": "</span>), val) <span class="hljs-keyword">if</span> <span class="hljs-property">@context</span> <span class="hljs-keyword">is</span> <span class="hljs-string">'object'</span>
     answer = compiledName.concat <span class="hljs-property">@makeCode</span>(<span class="hljs-string">" <span class="hljs-subst">#{ <span class="hljs-property">@context</span> <span class="hljs-keyword">or</span> <span class="hljs-string">'='</span> }</span> "</span>), val
     <span class="hljs-keyword">if</span> o.level &lt;= LEVEL_LIST <span class="hljs-keyword">then</span> answer <span class="hljs-keyword">else</span> <span class="hljs-property">@wrapInBraces</span> answer</pre></div></div>
@@ -2564,7 +2607,7 @@ for details.</p>
         obj = obj.unwrap()
         val = <span class="hljs-string">"<span class="hljs-subst">#{olen}</span> &lt;= <span class="hljs-subst">#{vvarText}</span>.length ? <span class="hljs-subst">#{ utility <span class="hljs-string">'slice'</span>, o }</span>.call(<span class="hljs-subst">#{vvarText}</span>, <span class="hljs-subst">#{i}</span>"</span>
         <span class="hljs-keyword">if</span> rest = olen - i - <span class="hljs-number">1</span>
-          ivar = o.scope.freeVariable <span class="hljs-string">'i'</span>
+          ivar = o.scope.freeVariable <span class="hljs-string">'i'</span>, <span class="hljs-attribute">single</span>: <span class="hljs-literal">true</span>
           val += <span class="hljs-string">", <span class="hljs-subst">#{ivar}</span> = <span class="hljs-subst">#{vvarText}</span>.length - <span class="hljs-subst">#{rest}</span>) : (<span class="hljs-subst">#{ivar}</span> = <span class="hljs-subst">#{i}</span>, [])"</span>
         <span class="hljs-keyword">else</span>
           val += <span class="hljs-string">") : []"</span>
@@ -2575,7 +2618,7 @@ for details.</p>
           <span class="hljs-keyword">if</span> rest <span class="hljs-keyword">is</span> <span class="hljs-number">1</span>
             expandedIdx = <span class="hljs-string">"<span class="hljs-subst">#{vvarText}</span>.length - 1"</span>
           <span class="hljs-keyword">else</span>
-            ivar = o.scope.freeVariable <span class="hljs-string">'i'</span>
+            ivar = o.scope.freeVariable <span class="hljs-string">'i'</span>, <span class="hljs-attribute">single</span>: <span class="hljs-literal">true</span>
             val = <span class="hljs-keyword">new</span> Literal <span class="hljs-string">"<span class="hljs-subst">#{ivar}</span> = <span class="hljs-subst">#{vvarText}</span>.length - <span class="hljs-subst">#{rest}</span>"</span>
             expandedIdx = <span class="hljs-string">"<span class="hljs-subst">#{ivar}</span>++"</span>
             assigns.push val.compileToFragments o, LEVEL_LIST
@@ -2893,6 +2936,7 @@ as well as be a splat, gathering up a group of parameters into an array.</p>
     node = <span class="hljs-property">@name</span>
     <span class="hljs-keyword">if</span> node.<span class="hljs-keyword">this</span>
       name = node.properties[<span class="hljs-number">0</span>].name.value
+      name = <span class="hljs-string">"_<span class="hljs-subst">#{name}</span>"</span> <span class="hljs-keyword">if</span> name.reserved
       node = <span class="hljs-keyword">new</span> Literal o.scope.freeVariable name
     <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> node.isComplex()
       node = <span class="hljs-keyword">new</span> Literal o.scope.freeVariable <span class="hljs-string">'arg'</span>
@@ -3134,7 +3178,8 @@ splats, to a proper array.</p>
     base = (node.compileToFragments o, LEVEL_LIST <span class="hljs-keyword">for</span> node <span class="hljs-keyword">in</span> list[...index])
     base = list[<span class="hljs-number">0</span>].joinFragmentArrays base, <span class="hljs-string">', '</span>
     concatPart = list[index].joinFragmentArrays args, <span class="hljs-string">', '</span>
-    [].concat list[<span class="hljs-number">0</span>].makeCode(<span class="hljs-string">"["</span>), base, list[index].makeCode(<span class="hljs-string">"].concat("</span>), concatPart, (last list).makeCode(<span class="hljs-string">")"</span>)</pre></div></div>
+    [..., last] = list
+    [].concat list[<span class="hljs-number">0</span>].makeCode(<span class="hljs-string">"["</span>), base, list[index].makeCode(<span class="hljs-string">"].concat("</span>), concatPart, last.makeCode(<span class="hljs-string">")"</span>)</pre></div></div>
             
         </li>
         
@@ -3350,6 +3395,9 @@ CoffeeScript operations into their JavaScript equivalents.</p>
   <span class="hljs-attribute">isYield</span>:<span class="hljs-function"> -&gt;</span>
     <span class="hljs-property">@operator</span> <span class="hljs-keyword">in</span> [<span class="hljs-string">'yield'</span>, <span class="hljs-string">'yield*'</span>]
 
+  <span class="hljs-attribute">isYieldReturn</span>:<span class="hljs-function"> -&gt;</span>
+    <span class="hljs-property">@isYield</span>() <span class="hljs-keyword">and</span> <span class="hljs-property">@first</span> <span class="hljs-keyword">instanceof</span> Return
+
   <span class="hljs-attribute">isUnary</span>:<span class="hljs-function"> -&gt;</span>
     <span class="hljs-keyword">not</span> <span class="hljs-property">@second</span>
 
@@ -3537,8 +3585,11 @@ used sequentially. For example:</p>
     op = <span class="hljs-property">@operator</span>
     <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> o.scope.parent?
       <span class="hljs-property">@error</span> <span class="hljs-string">'yield statements must occur within a function generator.'</span>
-    <span class="hljs-keyword">if</span> <span class="hljs-string">'expression'</span> <span class="hljs-keyword">in</span> Object.keys <span class="hljs-property">@first</span>
-      parts.push <span class="hljs-property">@first</span>.expression.compileToFragments o, LEVEL_OP <span class="hljs-keyword">if</span> <span class="hljs-property">@first</span>.expression?
+    <span class="hljs-keyword">if</span> <span class="hljs-string">'expression'</span> <span class="hljs-keyword">in</span> Object.keys(<span class="hljs-property">@first</span>) <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> (<span class="hljs-property">@first</span> <span class="hljs-keyword">instanceof</span> Throw)
+      <span class="hljs-keyword">if</span> <span class="hljs-property">@isYieldReturn</span>()
+        parts.push <span class="hljs-property">@first</span>.compileToFragments o, LEVEL_TOP
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@first</span>.expression?
+        parts.push <span class="hljs-property">@first</span>.expression.compileToFragments o, LEVEL_OP
     <span class="hljs-keyword">else</span>
       parts.push [<span class="hljs-property">@makeCode</span> <span class="hljs-string">"(<span class="hljs-subst">#{op}</span> "</span>]
       parts.push <span class="hljs-property">@first</span>.compileToFragments o, LEVEL_OP
@@ -3935,29 +3986,30 @@ some cannot.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">compileNode</span>: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
-    body      = Block.wrap [<span class="hljs-property">@body</span>]
-    lastJumps = last(body.expressions)?.jumps()
-    <span class="hljs-property">@returns</span>  = <span class="hljs-literal">no</span> <span class="hljs-keyword">if</span> lastJumps <span class="hljs-keyword">and</span> lastJumps <span class="hljs-keyword">instanceof</span> Return
-    source    = <span class="hljs-keyword">if</span> <span class="hljs-property">@range</span> <span class="hljs-keyword">then</span> <span class="hljs-property">@source</span>.base <span class="hljs-keyword">else</span> <span class="hljs-property">@source</span>
-    scope     = o.scope
-    name      = <span class="hljs-property">@name</span>  <span class="hljs-keyword">and</span> (<span class="hljs-property">@name</span>.compile o, LEVEL_LIST) <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> <span class="hljs-property">@pattern</span>
-    index     = <span class="hljs-property">@index</span> <span class="hljs-keyword">and</span> (<span class="hljs-property">@index</span>.compile o, LEVEL_LIST)
+    body        = Block.wrap [<span class="hljs-property">@body</span>]
+    [..., last] = body.expressions
+    <span class="hljs-property">@returns</span>    = <span class="hljs-literal">no</span> <span class="hljs-keyword">if</span> last?.jumps() <span class="hljs-keyword">instanceof</span> Return
+    source      = <span class="hljs-keyword">if</span> <span class="hljs-property">@range</span> <span class="hljs-keyword">then</span> <span class="hljs-property">@source</span>.base <span class="hljs-keyword">else</span> <span class="hljs-property">@source</span>
+    scope       = o.scope
+    name        = <span class="hljs-property">@name</span>  <span class="hljs-keyword">and</span> (<span class="hljs-property">@name</span>.compile o, LEVEL_LIST) <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> <span class="hljs-property">@pattern</span>
+    index       = <span class="hljs-property">@index</span> <span class="hljs-keyword">and</span> (<span class="hljs-property">@index</span>.compile o, LEVEL_LIST)
     scope.find(name)  <span class="hljs-keyword">if</span> name <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> <span class="hljs-property">@pattern</span>
     scope.find(index) <span class="hljs-keyword">if</span> index
-    rvar      = scope.freeVariable <span class="hljs-string">'results'</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@returns</span>
-    ivar      = (<span class="hljs-property">@object</span> <span class="hljs-keyword">and</span> index) <span class="hljs-keyword">or</span> scope.freeVariable <span class="hljs-string">'i'</span>
-    kvar      = (<span class="hljs-property">@range</span> <span class="hljs-keyword">and</span> name) <span class="hljs-keyword">or</span> index <span class="hljs-keyword">or</span> ivar
-    kvarAssign = <span class="hljs-keyword">if</span> kvar <span class="hljs-keyword">isnt</span> ivar <span class="hljs-keyword">then</span> <span class="hljs-string">"<span class="hljs-subst">#{kvar}</span> = "</span> <span class="hljs-keyword">else</span> <span class="hljs-string">""</span>
+    rvar        = scope.freeVariable <span class="hljs-string">'results'</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@returns</span>
+    ivar        = (<span class="hljs-property">@object</span> <span class="hljs-keyword">and</span> index) <span class="hljs-keyword">or</span> scope.freeVariable <span class="hljs-string">'i'</span>, <span class="hljs-attribute">single</span>: <span class="hljs-literal">true</span>
+    kvar        = (<span class="hljs-property">@range</span> <span class="hljs-keyword">and</span> name) <span class="hljs-keyword">or</span> index <span class="hljs-keyword">or</span> ivar
+    kvarAssign  = <span class="hljs-keyword">if</span> kvar <span class="hljs-keyword">isnt</span> ivar <span class="hljs-keyword">then</span> <span class="hljs-string">"<span class="hljs-subst">#{kvar}</span> = "</span> <span class="hljs-keyword">else</span> <span class="hljs-string">""</span>
     <span class="hljs-keyword">if</span> <span class="hljs-property">@step</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> <span class="hljs-property">@range</span>
-      [step, stepVar] = <span class="hljs-property">@cacheToCodeFragments</span> <span class="hljs-property">@step</span>.cache o, LEVEL_LIST
+      [step, stepVar] = <span class="hljs-property">@cacheToCodeFragments</span> <span class="hljs-property">@step</span>.cache o, LEVEL_LIST, isComplexOrAssignable
       stepNum = stepVar.match NUMBER
-    name      = ivar <span class="hljs-keyword">if</span> <span class="hljs-property">@pattern</span>
-    varPart   = <span class="hljs-string">''</span>
-    guardPart = <span class="hljs-string">''</span>
-    defPart   = <span class="hljs-string">''</span>
-    idt1      = <span class="hljs-property">@tab</span> + TAB
+    name        = ivar <span class="hljs-keyword">if</span> <span class="hljs-property">@pattern</span>
+    varPart     = <span class="hljs-string">''</span>
+    guardPart   = <span class="hljs-string">''</span>
+    defPart     = <span class="hljs-string">''</span>
+    idt1        = <span class="hljs-property">@tab</span> + TAB
     <span class="hljs-keyword">if</span> <span class="hljs-property">@range</span>
-      forPartFragments = source.compileToFragments merge(o, {<span class="hljs-attribute">index</span>: ivar, name, <span class="hljs-property">@step</span>})
+      forPartFragments = source.compileToFragments merge o,
+        {<span class="hljs-attribute">index</span>: ivar, name, <span class="hljs-property">@step</span>, <span class="hljs-attribute">isComplex</span>: isComplexOrAssignable}
     <span class="hljs-keyword">else</span>
       svar    = <span class="hljs-property">@source</span>.compile o, LEVEL_LIST
       <span class="hljs-keyword">if</span> (name <span class="hljs-keyword">or</span> <span class="hljs-property">@own</span>) <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> IDENTIFIER.test svar
@@ -4286,7 +4338,7 @@ to the superclass for <code>super()</code> calls, and copies of any static prope
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">extends</span>: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span> <span class="hljs-string">"
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">extend</span>: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span> <span class="hljs-string">"
     function(child, parent) {
       for (var key in parent) {
         if (<span class="hljs-subst">#{utility <span class="hljs-string">'hasProp'</span>, o}</span>.call(parent, key)) child[key] = parent[key];
@@ -4400,23 +4452,13 @@ LEVEL_ACCESS = <span class="hljs-number">6</span>  <span class="hljs-comment"># 
             
             <div class="content"><div class='highlight'><pre>TAB = <span class="hljs-string">'  '</span>
 
-IDENTIFIER_STR = <span class="hljs-string">"[$A-Za-z_\\x7f-\\uffff][$\\w\\x7f-\\uffff]*"</span>
-IDENTIFIER = <span class="hljs-regexp">/// ^ <span class="hljs-subst">#{IDENTIFIER_STR}</span> $ ///</span>
+IDENTIFIER = <span class="hljs-regexp">/// ^ (?!\d) [$\w\x7f-\uffff]+ $ ///</span>
 SIMPLENUM  = <span class="hljs-regexp">/^[+-]?\d+$/</span>
 HEXNUM = <span class="hljs-regexp">/^[+-]?0x[\da-f]+/i</span>
 NUMBER    = <span class="hljs-regexp">///^[+-]?(?:
   0x[\da-f]+ |              <span class="hljs-comment"># hex</span>
   \d*\.?\d+ (?:e[+-]?\d+)?  <span class="hljs-comment"># decimal</span>
-)$///</span>i
-
-METHOD_DEF = <span class="hljs-regexp">/// ^
-  (<span class="hljs-subst">#{IDENTIFIER_STR}</span>)
-  (\.prototype)?
-  (?: \.(<span class="hljs-subst">#{IDENTIFIER_STR}</span>)
-    | \[("(?:[^\\"\r\n]|\\.)*"|'(?:[^\\'\r\n]|\\.)*')\]
-    | \[(0x[\da-fA-F]+ | \d*\.?\d+ (?:[eE][+-]?\d+)?)\]
-  )
-$ ///</span></pre></div></div>
+)$///</span>i</pre></div></div>
             
         </li>
         
@@ -4477,7 +4519,7 @@ IS_REGEX = <span class="hljs-regexp">/^\//</span></pre></div></div>
   <span class="hljs-keyword">if</span> name <span class="hljs-keyword">of</span> root.utilities
     root.utilities[name]
   <span class="hljs-keyword">else</span>
-    ref = root.freeVariable <span class="hljs-string">"_<span class="hljs-subst">#{name}</span>"</span>
+    ref = root.freeVariable name
     root.assign ref, UTILITIES[name] o
     root.utilities[name] = ref
 
@@ -4513,7 +4555,9 @@ Examples: 0, -1, 1, 2e3, 2e-3, -0xfe, 0xfe</p>
 <span class="hljs-function"><span class="hljs-title">isLiteralThis</span> = <span class="hljs-params">(node)</span> -&gt;</span>
   (node <span class="hljs-keyword">instanceof</span> Literal <span class="hljs-keyword">and</span> node.value <span class="hljs-keyword">is</span> <span class="hljs-string">'this'</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> node.asKey) <span class="hljs-keyword">or</span>
     (node <span class="hljs-keyword">instanceof</span> Code <span class="hljs-keyword">and</span> node.bound) <span class="hljs-keyword">or</span>
-    (node <span class="hljs-keyword">instanceof</span> Call <span class="hljs-keyword">and</span> node.isSuper)</pre></div></div>
+    (node <span class="hljs-keyword">instanceof</span> Call <span class="hljs-keyword">and</span> node.isSuper)
+
+<span class="hljs-function"><span class="hljs-title">isComplexOrAssignable</span> = <span class="hljs-params">(node)</span> -&gt;</span> node.isComplex() <span class="hljs-keyword">or</span> node.isAssignable?()</pre></div></div>
             
         </li>
         

@@ -62,9 +62,6 @@ exports.del = (obj, key) ->
   delete obj[key]
   val
 
-# Gets the last item of an array(-like) object.
-exports.last = last = (array, back) -> array[array.length - (back or 0) - 1]
-
 # Typical Array::some
 exports.some = Array::some ? (fn) ->
   return true for e in this when fn e

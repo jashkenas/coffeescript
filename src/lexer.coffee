@@ -12,7 +12,7 @@
 {Rewriter, INVERSES} = require './rewriter'
 
 # Import the helpers we need.
-{count, starts, compact, last, repeat, invertLiterate,
+{count, starts, compact, repeat, invertLiterate,
 locationDataToString,  throwSyntaxError} = require './helpers'
 
 # The Lexer Class
@@ -73,7 +73,7 @@ exports.Lexer = class Lexer
       return {@tokens, index: i} if opts.untilBalanced and @ends.length is 0
 
     @closeIndentation()
-    throwSyntaxError "missing #{end.tag}", end.origin[2] if end = @ends.pop()
+    @error "missing #{end.tag}", end.origin[2] if end = @ends.pop()
     return @tokens if opts.rewrite is off
     (new Rewriter).rewrite @tokens
 
@@ -112,8 +112,9 @@ exports.Lexer = class Lexer
     if id is 'from' and @tag() is 'YIELD'
       @token 'FROM', id
       return id.length
-    forcedIdentifier = colon or
-      (prev = last @tokens) and (prev[0] in ['.', '?.', '::', '?::'] or
+    [..., prev] = @tokens
+    forcedIdentifier = colon or prev? and
+      (prev[0] in ['.', '?.', '::', '?::'] or
       not prev.spaced and prev[0] is '@')
     tag = 'IDENTIFIER'
 
@@ -143,7 +144,7 @@ exports.Lexer = class Lexer
         id  = new String id
         id.reserved = yes
       else if id in RESERVED
-        @error "reserved word \"#{id}\""
+        @error "reserved word '#{id}'", length: id.length
 
     unless forcedIdentifier
       id  = COFFEE_ALIAS_MAP[id] if id in COFFEE_ALIASES
@@ -171,15 +172,16 @@ exports.Lexer = class Lexer
   numberToken: ->
     return 0 unless match = NUMBER.exec @chunk
     number = match[0]
-    if /^0[BOX]/.test number
-      @error "radix prefix '#{number}' must be lowercase"
-    else if /E/.test(number) and not /^0x/.test number
-      @error "exponential notation '#{number}' must be indicated with a lowercase 'e'"
-    else if /^0\d*[89]/.test number
-      @error "decimal literal '#{number}' must not be prefixed with '0'"
-    else if /^0\d+/.test number
-      @error "octal literal '#{number}' must be prefixed with '0o'"
     lexedLength = number.length
+    if /^0[BOX]/.test number
+      @error "radix prefix in '#{number}' must be lowercase", offset: 1
+    else if /E/.test(number) and not /^0x/.test number
+      @error "exponential notation in '#{number}' must be indicated with a lowercase 'e'",
+        offset: number.indexOf('E')
+    else if /^0\d*[89]/.test number
+      @error "decimal literal '#{number}' must not be prefixed with '0'", length: lexedLength
+    else if /^0\d+/.test number
+      @error "octal literal '#{number}' must be prefixed with '0o'", length: lexedLength
     if octalLiteral = /^0o([0-7]+)/.exec number
       number = '0x' + parseInt(octalLiteral[1], 8).toString 16
     if binaryLiteral = /^0b([01]+)/.exec number
@@ -199,10 +201,10 @@ exports.Lexer = class Lexer
       when '"""' then HEREDOC_DOUBLE
     heredoc = quote.length is 3
 
-    start = quote.length
-    {tokens, index: end} = @matchWithInterpolations @chunk[start..], regex, quote, start
+    {tokens, index: end} = @matchWithInterpolations regex, quote
     $ = tokens.length - 1
 
+    delimiter = quote[0]
     if heredoc
       # Find the smallest indentation. It will be removed from all lines later.
       indent = null
@@ -211,17 +213,16 @@ exports.Lexer = class Lexer
         attempt = match[1]
         indent = attempt if indent is null or 0 < attempt.length < indent.length
       indentRegex = /// ^#{indent} ///gm if indent
-      @mergeInterpolationTokens tokens, {quote: quote[0], start, end}, (value, i) =>
+      @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
         value = @formatString value
         value = value.replace LEADING_BLANK_LINE,  '' if i is 0
         value = value.replace TRAILING_BLANK_LINE, '' if i is $
-        value = value.replace indentRegex, ''
-        value = value.replace MULTILINER, '\\n'
+        value = value.replace indentRegex, '' if indentRegex
         value
     else
-      @mergeInterpolationTokens tokens, {quote, start, end}, (value, i) =>
+      @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
         value = @formatString value
-        value = value.replace STRING_OMIT, (match, offset) ->
+        value = value.replace SIMPLE_STRING_OMIT, (match, offset) ->
           if (i is 0 and offset is 0) or
              (i is $ and offset + match.length is value.length)
             ''
@@ -237,7 +238,8 @@ exports.Lexer = class Lexer
     [comment, here] = match
     if here
       if match = HERECOMMENT_ILLEGAL.exec comment
-        @error "block comments cannot contain #{match[0]}", match.index
+        @error "block comments cannot contain #{match[0]}",
+          offset: match.index, length: match[0].length
       if here.indexOf('\n') >= 0
         here = here.replace /// \n #{repeat ' ', @indent} ///g, '\n'
       @token 'HERECOMMENT', here, 0, comment.length
@@ -255,15 +257,17 @@ exports.Lexer = class Lexer
   regexToken: ->
     switch
       when match = REGEX_ILLEGAL.exec @chunk
-        @error "regular expressions cannot begin with #{match[2]}", match.index + match[1].length
-      when @chunk[...3] is '///'
-        {tokens, index} = @matchWithInterpolations @chunk[3..], HEREGEX, '///', 3
+        @error "regular expressions cannot begin with #{match[2]}",
+          offset: match.index + match[1].length
+      when match = @matchWithInterpolations HEREGEX, '///'
+        {tokens, index} = match
       when match = REGEX.exec @chunk
-        [regex, closed] = match
+        [regex, body, closed] = match
+        @validateEscapes body, isRegex: yes, offsetInChunk: 1
         index = regex.length
-        prev = last @tokens
+        [..., prev] = @tokens
         if prev
-          if prev.spaced and prev[0] in CALLABLE and not prev.stringEnd and not prev.regexEnd
+          if prev.spaced and prev[0] in CALLABLE
             return 0 if not closed or POSSIBLY_DIVISION.test regex
           else if prev[0] in NOT_REGEX
             return 0
@@ -273,24 +277,23 @@ exports.Lexer = class Lexer
 
     [flags] = REGEX_FLAGS.exec @chunk[index..]
     end = index + flags.length
+    origin = @makeToken 'REGEX', null, 0, end
     switch
       when not VALID_FLAGS.test flags
-        @error "invalid regular expression flags #{flags}", index
-      when regex
-        @token 'REGEX', "#{regex}#{flags}"
-      when tokens.length is 1
-        re = @formatHeregex(tokens[0][1]).replace(/\//g, '\\/')
-        @token 'REGEX', "/#{ re or '(?:)' }/#{flags}"
+        @error "invalid regular expression flags #{flags}", offset: index, length: flags.length
+      when regex or tokens.length is 1
+        body ?= @formatHeregex tokens[0][1]
+        @token 'REGEX', "#{@makeDelimitedLiteral body, delimiter: '/'}#{flags}", 0, end, origin
       else
+        @token 'REGEX_START', '(', 0, 0, origin
         @token 'IDENTIFIER', 'RegExp', 0, 0
         @token 'CALL_START', '(', 0, 0
-        @mergeInterpolationTokens tokens, {quote: '"', start: 3, end}, (value) =>
-          @formatHeregex(value).replace(/\\/g, '\\\\')
+        @mergeInterpolationTokens tokens, {delimiter: '"', double: yes}, @formatHeregex
         if flags
           @token ',', ',', index, 0
           @token 'STRING', '"' + flags + '"', index, flags.length
-        rparen = @token ')', ')', end, 0
-        rparen.regexEnd = true
+        @token ')', ')', end, 0
+        @token 'REGEX_END', ')', end, 0
 
     end
 
@@ -329,7 +332,7 @@ exports.Lexer = class Lexer
       @outdebt = @indebt = 0
       @indent = size
     else if size < @baseIndent
-      @error 'missing indentation', indent.length
+      @error 'missing indentation', offset: indent.length
     else
       @indebt = 0
       @outdentToken @indent - size, noNewlines, indent.length
@@ -371,7 +374,7 @@ exports.Lexer = class Lexer
   whitespaceToken: ->
     return 0 unless (match = WHITESPACE.exec @chunk) or
                     (nline = @chunk.charAt(0) is '\n')
-    prev = last @tokens
+    [..., prev] = @tokens
     prev[if match then 'spaced' else 'newLine'] = true if prev
     if match then match[0].length else 0
 
@@ -399,10 +402,10 @@ exports.Lexer = class Lexer
     else
       value = @chunk.charAt 0
     tag  = value
-    prev = last @tokens
+    [..., prev] = @tokens
     if value is '=' and prev
       if not prev[1].reserved and prev[1] in JS_FORBIDDEN
-        @error "reserved word \"#{@value()}\" can't be assigned"
+        @error "reserved word '#{prev[1]}' can't be assigned", prev[2]
       if prev[1] in ['||', '&&']
         prev[0] = 'COMPOUND_ASSIGN'
         prev[1] += '='
@@ -418,7 +421,7 @@ exports.Lexer = class Lexer
     else if value in SHIFT           then tag = 'SHIFT'
     else if value in LOGIC or value is '?' and prev?.spaced then tag = 'LOGIC'
     else if prev and not prev.spaced
-      if value is '(' and prev[0] in CALLABLE and not prev.stringEnd and not prev.regexEnd
+      if value is '(' and prev[0] in CALLABLE
         prev[0] = 'FUNC_EXIST' if prev[0] is '?'
         tag = 'CALL_START'
       else if value is '[' and prev[0] in INDEXABLE
@@ -469,22 +472,22 @@ exports.Lexer = class Lexer
   # If it encounters an interpolation, this method will recursively create a new
   # Lexer and tokenize until the `{` of `#{` is balanced with a `}`.
   #
-  #  - `str` is the start of the token contents (with the starting delimiter
-  #    stripped off.)
-  #  - `regex` matches the contents of a token (but not `end`, and not `#{` if
-  #    interpolations are desired).
-  #  - `end` is the terminator of the token.
-  #  - `offsetInChunk` is the start of the interpolated string in the current
-  #    chunk, including the starting delimiter.
-  #
-  # Examples of delimiters are `'`, `"`, `'''`, `"""` and `///`.
+  #  - `regex` matches the contents of a token (but not `delimiter`, and not
+  #    `#{` if interpolations are desired).
+  #  - `delimiter` is the delimiter of the token. Examples are `'`, `"`, `'''`,
+  #    `"""` and `///`.
   #
   # This method allows us to have strings within interpolations within strings,
   # ad infinitum.
-  matchWithInterpolations: (str, regex, end, offsetInChunk) ->
+  matchWithInterpolations: (regex, delimiter) ->
     tokens = []
+    offsetInChunk = delimiter.length
+    return null unless @chunk[...offsetInChunk] is delimiter
+    str = @chunk[offsetInChunk..]
     loop
       [strPart] = regex.exec str
+
+      @validateEscapes strPart, {isRegex: delimiter.charAt(0) is '/', offsetInChunk}
 
       # Push a fake 'NEOSTRING' token, which will get turned into a real string later.
       tokens.push @makeToken 'NEOSTRING', strPart, offsetInChunk
@@ -517,20 +520,23 @@ exports.Lexer = class Lexer
       str = str[index..]
       offsetInChunk += index
 
-    unless str[...end.length] is end
-      @error "missing #{end}"
+    unless str[...delimiter.length] is delimiter
+      @error "missing #{delimiter}", length: delimiter.length
 
-    {tokens, index: offsetInChunk + end.length}
+    [firstToken, ..., lastToken] = tokens
+    firstToken[2].first_column -= delimiter.length
+    lastToken[2].last_column += delimiter.length
+    lastToken[2].last_column -= 1 if lastToken[1].length is 0
+
+    {tokens, index: offsetInChunk + delimiter.length}
 
   # Merge the array `tokens` of the fake token types 'TOKENS' and 'NEOSTRING'
   # (as returned by `matchWithInterpolations`) into the token stream. The value
   # of 'NEOSTRING's are converted using `fn` and turned into strings using
-  # `quote` first.  The tokens are wrapped in parentheses if needed, using
-  # `start` and `end` for their location data.
-  mergeInterpolationTokens: (tokens, {quote, start, end}, fn) ->
-    if interpolated = tokens.length > 1
-      errorToken = @makeToken '', 'interpolation', start + tokens[0][1].length, 2
-      @token '(', '(', 0, 0, errorToken
+  # `options` first.
+  mergeInterpolationTokens: (tokens, options, fn) ->
+    if tokens.length > 1
+      lparen = @token 'STRING_START', '(', 0, 0
 
     firstIndex = @tokens.length
     for token, i in tokens
@@ -559,7 +565,7 @@ exports.Lexer = class Lexer
           if i is 2 and firstEmptyStringIndex?
             @tokens.splice firstEmptyStringIndex, 2 # Remove empty string and the plus.
           token[0] = 'STRING'
-          token[1] = @makeString converted, quote
+          token[1] = @makeDelimitedLiteral converted, options
           locationToken = token
           tokensToPush = [token]
       if @tokens.length > firstIndex
@@ -572,21 +578,34 @@ exports.Lexer = class Lexer
           last_column:  locationToken[2].first_column
       @tokens.push tokensToPush...
 
-    if interpolated
-      rparen = @token ')', ')', end, 0
-      rparen.stringEnd = true
+    if lparen
+      [..., lastToken] = tokens
+      lparen.origin = ['STRING', null,
+        first_line:   lparen[2].first_line
+        first_column: lparen[2].first_column
+        last_line:    lastToken[2].last_line
+        last_column:  lastToken[2].last_column
+      ]
+      rparen = @token 'STRING_END', ')'
+      rparen[2] =
+        first_line:   lastToken[2].last_line
+        first_column: lastToken[2].last_column
+        last_line:    lastToken[2].last_line
+        last_column:  lastToken[2].last_column
 
   # Pairs up a closing token, ensuring that all listed pairs of tokens are
   # correctly balanced throughout the course of the token stream.
   pair: (tag) ->
-    unless tag is wanted = last(@ends)?.tag
+    [..., prev] = @ends
+    unless tag is wanted = prev?.tag
       @error "unmatched #{tag}" unless 'OUTDENT' is wanted
       # Auto-close INDENT to support syntax like this:
       #
       #     el.click((event) ->
       #       el.hide())
       #
-      @outdentToken last(@indents), true
+      [..., lastIndent] = @indents
+      @outdentToken lastIndent, true
       return @pair tag
     @ends.pop()
 
@@ -609,8 +628,8 @@ exports.Lexer = class Lexer
 
     column = @chunkColumn
     if lineCount > 0
-      lines = string.split '\n'
-      column = last(lines).length
+      [..., lastLine] = string.split '\n'
+      column = lastLine.length
     else
       column += string.length
 
@@ -645,13 +664,15 @@ exports.Lexer = class Lexer
     @tokens.push token
     token
 
-  # Peek at a tag in the current token stream.
-  tag: (index, tag) ->
-    (tok = last @tokens, index) and if tag then tok[0] = tag else tok[0]
+  # Peek at the last tag in the token stream.
+  tag: ->
+    [..., token] = @tokens
+    token?[0]
 
-  # Peek at a value in the current token stream.
-  value: (index, val) ->
-    (tok = last @tokens, index) and if val then tok[1] = val else tok[1]
+  # Peek at the last value in the token stream.
+  value: ->
+    [..., token] = @tokens
+    token?[1]
 
   # Are we in the midst of an unfinished expression?
   unfinished: ->
@@ -660,30 +681,59 @@ exports.Lexer = class Lexer
                '**', 'SHIFT', 'RELATION', 'COMPARE', 'LOGIC', 'THROW', 'EXTENDS']
 
   formatString: (str) ->
-    # Ignore escaped backslashes and remove escaped newlines.
-    str.replace /\\[^\S\n]*(\n|\\)\s*/g, (escaped, character) ->
-      if character is '\n' then '' else escaped
+    str.replace STRING_OMIT, '$1'
 
   formatHeregex: (str) ->
-    str.replace(HEREGEX_OMIT, '$1$2').replace(MULTILINER, '\\n')
+    str.replace HEREGEX_OMIT, '$1$2'
 
-  # Constructs a string token by escaping quotes.
-  makeString: (body, quote) ->
-    return quote + quote unless body
-    # Ignore escaped backslashes and unescape quotes.
-    body = body.replace /// \\( #{quote} | \\ ) ///g, (match, contents) ->
-      if contents is quote then contents else match
-    body = body.replace /// #{quote} ///g, '\\$&'
-    if match = OCTAL_ESCAPE.exec body
-      @error "octal escape sequences are not allowed #{match[2]}", match.index + match[1].length + 1
-    quote + body + quote
+  # Validates escapes in strings and regexes.
+  validateEscapes: (str, options = {}) ->
+    match = INVALID_ESCAPE.exec str
+    return unless match
+    [[], before, octal, hex, unicode] = match
+    return if options.isRegex and octal and octal.charAt(0) isnt '0'
+    message =
+      if octal
+        "octal escape sequences are not allowed"
+      else
+        "invalid escape sequence"
+    invalidEscape = "\\#{octal or hex or unicode}"
+    @error "#{message} #{invalidEscape}",
+      offset: (options.offsetInChunk ? 0) + match.index + before.length
+      length: invalidEscape.length
 
-  # Throws a compiler error on the current position.
-  error: (message, offset = 0) ->
-    # TODO: Are there some cases we could improve the error line number by
-    # passing the offset in the chunk where the error happened?
-    [first_line, first_column] = @getLineAndColumnFromChunk offset
-    throwSyntaxError message, {first_line, first_column}
+  # Constructs a string or regex by escaping certain characters.
+  makeDelimitedLiteral: (body, options = {}) ->
+    body = '(?:)' if body is '' and options.delimiter is '/'
+    regex = ///
+        (\\\\)                               # escaped backslash
+      | (\\0(?=[1-7]))                       # nul character mistaken as octal escape
+      | \\?(#{options.delimiter})            # (possibly escaped) delimiter
+      | \\?(?: (\n)|(\r)|(\u2028)|(\u2029) ) # (possibly escaped) newlines
+      | (\\.)                                # other escapes
+    ///g
+    body = body.replace regex, (match, backslash, nul, delimiter, lf, cr, ls, ps, other) -> switch
+      # Ignore escaped backslashes.
+      when backslash then (if options.double then backslash + backslash else backslash)
+      when nul       then '\\x00'
+      when delimiter then "\\#{delimiter}"
+      when lf        then '\\n'
+      when cr        then '\\r'
+      when ls        then '\\u2028'
+      when ps        then '\\u2029'
+      when other     then (if options.double then "\\#{other}" else other)
+    "#{options.delimiter}#{body}#{options.delimiter}"
+
+  # Throws an error at either a given offset from the current chunk or at the
+  # location of a token (`token[2]`).
+  error: (message, options = {}) ->
+    location =
+      if 'first_line' of options
+        options
+      else
+        [first_line, first_column] = @getLineAndColumnFromChunk options.offset ? 0
+        {first_line, first_column, last_column: first_column + (options.length ? 1) - 1}
+    throwSyntaxError message, location
 
 # Constants
 # ---------
@@ -777,18 +827,22 @@ STRING_DOUBLE  = /// ^(?: [^\\"#] | \\[\s\S] |           \#(?!\{) )* ///
 HEREDOC_SINGLE = /// ^(?: [^\\']  | \\[\s\S] | '(?!'')            )* ///
 HEREDOC_DOUBLE = /// ^(?: [^\\"#] | \\[\s\S] | "(?!"") | \#(?!\{) )* ///
 
-STRING_OMIT    = /\s*\n\s*/g
-HEREDOC_INDENT = /\n+([^\n\S]*)(?=\S)/g
+STRING_OMIT    = ///
+    ((?:\\\\)+)      # consume (and preserve) an even number of backslashes
+  | \\[^\S\n]*\n\s*  # remove escaped newlines
+///g
+SIMPLE_STRING_OMIT = /\s*\n\s*/g
+HEREDOC_INDENT     = /\n+([^\n\S]*)(?=\S)/g
 
 # Regex-matching-regexes.
 REGEX = /// ^
-  / (?!/) (
+  / (?!/) ((
   ?: [^ [ / \n \\ ]  # every other thing
-   | \\.             # anything (but newlines) escaped
+   | \\[^\n]         # anything but newlines escaped
    | \[              # character class
-       (?: \\. | [^ \] \n \\ ] )*
+       (?: \\[^\n] | [^ \] \n \\ ] )*
      ]
-  )* (/)?
+  )*) (/)?
 ///
 
 REGEX_FLAGS  = /^\w*/
@@ -798,7 +852,7 @@ HEREGEX      = /// ^(?: [^\\/#] | \\[\s\S] | /(?!//) | \#(?!\{) )* ///
 
 HEREGEX_OMIT = ///
     ((?:\\\\)+)     # consume (and preserve) an even number of backslashes
-  | \\(\s|/)        # preserve escaped whitespace and "de-escape" slashes
+  | \\(\s)          # preserve escaped whitespace
   | \s+(?:#.*)?     # remove whitespace and comments
 ///g
 
@@ -807,13 +861,18 @@ REGEX_ILLEGAL = /// ^ ( / | /{3}\s*) (\*) ///
 POSSIBLY_DIVISION   = /// ^ /=?\s ///
 
 # Other regexes.
-MULTILINER          = /\n/g
-
 HERECOMMENT_ILLEGAL = /\*\//
 
 LINE_CONTINUER      = /// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///
 
-OCTAL_ESCAPE        = /// ^ ((?: \\. | [^\\] )*) (\\ (?: 0[0-7] | [1-7] )) ///
+INVALID_ESCAPE      = ///
+  ( (?:^|[^\\]) (?:\\\\)* )        # make sure the escape isn’t escaped
+  \\ (
+     ?: (0[0-7]|[1-7])             # octal escape
+      | (x(?![\da-fA-F]{2}).{0,2}) # hex escape
+      | (u(?![\da-fA-F]{4}).{0,4}) # unicode escape
+  )
+///
 
 LEADING_BLANK_LINE  = /^[^\n\S]*\n/
 TRAILING_BLANK_LINE = /\n[^\n\S]*$/
@@ -853,7 +912,10 @@ BOOL = ['TRUE', 'FALSE']
 # parentheses or bracket following these tokens will be recorded as the start
 # of a function invocation or indexing operation.
 CALLABLE  = ['IDENTIFIER', ')', ']', '?', '@', 'THIS', 'SUPER']
-INDEXABLE = CALLABLE.concat ['NUMBER', 'STRING', 'REGEX', 'BOOL', 'NULL', 'UNDEFINED', '}', '::']
+INDEXABLE = CALLABLE.concat [
+  'NUMBER', 'STRING', 'STRING_END', 'REGEX', 'REGEX_END'
+  'BOOL', 'NULL', 'UNDEFINED', '}', '::'
+]
 
 # Tokens which a regular expression will never immediately follow (except spaced
 # CALLABLEs in some cases), but which a division operator can.

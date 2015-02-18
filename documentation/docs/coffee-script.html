@@ -144,7 +144,7 @@ SourceMap     = <span class="hljs-built_in">require</span> <span class="hljs-str
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.VERSION = <span class="hljs-string">'1.9.0'</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.VERSION = <span class="hljs-string">'1.9.1'</span>
 
 <span class="hljs-built_in">exports</span>.FILE_EXTENSIONS = [<span class="hljs-string">'.coffee'</span>, <span class="hljs-string">'.litcoffee'</span>, <span class="hljs-string">'.coffee.md'</span>]</pre></div></div>
             
@@ -222,14 +222,12 @@ lookups.</p>
                 <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
               <p>Pass a list of referenced variables, so that generated variables won’t get
-the same name. Since all generated variables start with an underscore only
-referenced variables also starting with an underscore are passed, as an
-optimization.</p>
+the same name.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  options.referencedVars = (
-    token[<span class="hljs-number">1</span>] <span class="hljs-keyword">for</span> token <span class="hljs-keyword">in</span> tokens <span class="hljs-keyword">when</span> token.variable <span class="hljs-keyword">and</span> token[<span class="hljs-number">1</span>].charAt(<span class="hljs-number">0</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'_'</span>
+    token[<span class="hljs-number">1</span>] <span class="hljs-keyword">for</span> token <span class="hljs-keyword">in</span> tokens <span class="hljs-keyword">when</span> token.variable
   )
 
   fragments = parser.parse(tokens).compileToFragments options
@@ -639,12 +637,15 @@ the error is caused by a generated token which might refer to its origin.</p>
             <div class="content"><div class='highlight'><pre>  {errorToken, tokens} = parser
   [errorTag, errorText, errorLoc] = errorToken
 
-  errorText = <span class="hljs-keyword">if</span> errorToken <span class="hljs-keyword">is</span> tokens[tokens.length - <span class="hljs-number">1</span>]
-    <span class="hljs-string">'end of input'</span>
-  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> errorTag <span class="hljs-keyword">in</span> [<span class="hljs-string">'INDENT'</span>, <span class="hljs-string">'OUTDENT'</span>]
-    <span class="hljs-string">'indentation'</span>
-  <span class="hljs-keyword">else</span>
-    helpers.nameWhitespaceCharacter errorText</pre></div></div>
+  errorText = <span class="hljs-keyword">switch</span>
+    <span class="hljs-keyword">when</span> errorToken <span class="hljs-keyword">is</span> tokens[tokens.length - <span class="hljs-number">1</span>]
+      <span class="hljs-string">'end of input'</span>
+    <span class="hljs-keyword">when</span> errorTag <span class="hljs-keyword">in</span> [<span class="hljs-string">'INDENT'</span>, <span class="hljs-string">'OUTDENT'</span>]
+      <span class="hljs-string">'indentation'</span>
+    <span class="hljs-keyword">when</span> errorTag <span class="hljs-keyword">in</span> [<span class="hljs-string">'IDENTIFIER'</span>, <span class="hljs-string">'NUMBER'</span>, <span class="hljs-string">'STRING'</span>, <span class="hljs-string">'STRING_START'</span>, <span class="hljs-string">'REGEX'</span>, <span class="hljs-string">'REGEX_START'</span>]
+      errorTag.replace(<span class="hljs-regexp">/_START$/</span>, <span class="hljs-string">''</span>).toLowerCase()
+    <span class="hljs-keyword">else</span>
+      helpers.nameWhitespaceCharacter errorText</pre></div></div>
             
         </li>
         

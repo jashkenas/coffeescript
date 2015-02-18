@@ -12,7 +12,7 @@ helpers       = require './helpers'
 SourceMap     = require './sourcemap'
 
 # The current CoffeeScript version number.
-exports.VERSION = '1.9.0'
+exports.VERSION = '1.9.1'
 
 exports.FILE_EXTENSIONS = ['.coffee', '.litcoffee', '.coffee.md']
 
@@ -47,11 +47,9 @@ exports.compile = compile = withPrettyErrors (code, options) ->
   tokens = lexer.tokenize code, options
 
   # Pass a list of referenced variables, so that generated variables won't get
-  # the same name. Since all generated variables start with an underscore only
-  # referenced variables also starting with an underscore are passed, as an
-  # optimization.
+  # the same name.
   options.referencedVars = (
-    token[1] for token in tokens when token.variable and token[1].charAt(0) is '_'
+    token[1] for token in tokens when token.variable
   )
 
   fragments = parser.parse(tokens).compileToFragments options
@@ -227,12 +225,15 @@ parser.yy.parseError = (message, {token}) ->
   {errorToken, tokens} = parser
   [errorTag, errorText, errorLoc] = errorToken
 
-  errorText = if errorToken is tokens[tokens.length - 1]
-    'end of input'
-  else if errorTag in ['INDENT', 'OUTDENT']
-    'indentation'
-  else
-    helpers.nameWhitespaceCharacter errorText
+  errorText = switch
+    when errorToken is tokens[tokens.length - 1]
+      'end of input'
+    when errorTag in ['INDENT', 'OUTDENT']
+      'indentation'
+    when errorTag in ['IDENTIFIER', 'NUMBER', 'STRING', 'STRING_START', 'REGEX', 'REGEX_START']
+      errorTag.replace(/_START$/, '').toLowerCase()
+    else
+      helpers.nameWhitespaceCharacter errorText
 
   # The second argument has a `loc` property, which should have the location
   # data for this token. Unfortunately, Jison seems to send an outdated `loc`

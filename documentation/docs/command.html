@@ -236,7 +236,8 @@ sources      = []
 sourceCode   = []
 notSources   = {}
 watchedDirs  = {}
-optionParser = <span class="hljs-literal">null</span></pre></div></div>
+optionParser = <span class="hljs-literal">null</span>
+jsToSources  = {}</pre></div></div>
             
         </li>
         
@@ -675,6 +676,12 @@ same directory as the <code>.js</code> file.</p>
             <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">writeJs</span> = <span class="hljs-params">(base, sourcePath, js, jsPath, generatedSourceMap = <span class="hljs-literal">null</span>)</span> -&gt;</span>
   sourceMapPath = outputPath sourcePath, base, <span class="hljs-string">".js.map"</span>
   jsDir  = path.dirname jsPath
+  <span class="hljs-keyword">if</span> jsPath <span class="hljs-keyword">of</span> jsToSources
+      printLine <span class="hljs-string">"Error: The two following source files have the same output file:"</span>
+      printLine <span class="hljs-string">"    "</span> + jsToSources[jsPath]
+      printLine <span class="hljs-string">"    "</span> + sourcePath
+      process.exit <span class="hljs-number">1</span>
+  jsToSources[jsPath] = sourcePath
   <span class="hljs-function"><span class="hljs-title">compile</span> = -&gt;</span>
     <span class="hljs-keyword">if</span> opts.compile
       js = <span class="hljs-string">' '</span> <span class="hljs-keyword">if</span> js.length &lt;= <span class="hljs-number">0</span>

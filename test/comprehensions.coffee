@@ -555,3 +555,14 @@ test "splats in destructuring in comprehensions", ->
 test "#156: expansion in destructuring in comprehensions", ->
   list = [[0, 1, 2], [2, 3, 4], [4, 5, 6]]
   arrayEq (last for [..., last] in list), [2, 4, 6]
+
+test "#3778: Consistently always cache for loop range boundaries and steps, even
+      if they are simple identifiers", ->
+  a = 1; arrayEq [1, 2, 3], (for n in [1, 2, 3] by  a then a = 4; n)
+  a = 1; arrayEq [1, 2, 3], (for n in [1, 2, 3] by +a then a = 4; n)
+  a = 1; arrayEq [1, 2, 3], (for n in [a..3]          then a = 4; n)
+  a = 1; arrayEq [1, 2, 3], (for n in [+a..3]         then a = 4; n)
+  a = 3; arrayEq [1, 2, 3], (for n in [1..a]          then a = 4; n)
+  a = 3; arrayEq [1, 2, 3], (for n in [1..+a]         then a = 4; n)
+  a = 1; arrayEq [1, 2, 3], (for n in [1..3] by  a    then a = 4; n)
+  a = 1; arrayEq [1, 2, 3], (for n in [1..3] by +a    then a = 4; n)
