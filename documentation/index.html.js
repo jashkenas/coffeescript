@@ -1211,7 +1211,7 @@ Expressions
           dynamically name properties.
         </li>
         <li>
-          Internal compiler names no longer start with underscores. This makes
+          Internal compiler variable names no longer start with underscores. This makes
           the generated JavaScript a bit prettier, and also fixes an issue with
           the completely broken and ungodly way that AngularJS "parses" function
           arguments.
