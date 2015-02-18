@@ -342,6 +342,9 @@ eq """ "\\\" """, ' "\\" '
 
 eq '''  <- keep these spaces ->  ''', '  <- keep these spaces ->  '
 
+eq '''undefined''', 'undefined'
+eq """undefined""", 'undefined'
+
 
 test "#1046, empty string interpolations", ->
   eq "#{ }", ''

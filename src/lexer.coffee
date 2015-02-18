@@ -217,7 +217,7 @@ exports.Lexer = class Lexer
         value = @formatString value
         value = value.replace LEADING_BLANK_LINE,  '' if i is 0
         value = value.replace TRAILING_BLANK_LINE, '' if i is $
-        value = value.replace indentRegex, ''
+        value = value.replace indentRegex, '' if indentRegex
         value
     else
       @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
