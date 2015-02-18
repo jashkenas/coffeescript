@@ -1217,7 +1217,8 @@ Expressions
           arguments.
         </li>
         <li>
-          Fixed a few <tt>yield</tt>-related bugs.
+          Fixed a few <tt>yield</tt>-related edge cases with <tt>yield return</tt>
+          and <tt>yield throw</tt>.
         </li>
         <li>
           Minor bug fixes and various improvements to compiler error messages.
