@@ -460,7 +460,17 @@ they can also serve as keys in object literals.</p>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">AlphaNumeric</span>: [
     o <span class="hljs-string">'NUMBER'</span>,<span class="hljs-function">                                 -&gt;</span> <span class="hljs-keyword">new</span> Literal $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'String'</span>
+  ]
+
+  <span class="hljs-attribute">String</span>: [
     o <span class="hljs-string">'STRING'</span>,<span class="hljs-function">                                 -&gt;</span> <span class="hljs-keyword">new</span> Literal $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'STRING_START Body STRING_END'</span>,<span class="hljs-function">           -&gt;</span> <span class="hljs-keyword">new</span> Parens $<span class="hljs-number">2</span>
+  ]
+
+  <span class="hljs-attribute">Regex</span>: [
+    o <span class="hljs-string">'REGEX'</span>,<span class="hljs-function">                                  -&gt;</span> <span class="hljs-keyword">new</span> Literal $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'REGEX_START Invocation REGEX_END'</span>,<span class="hljs-function">       -&gt;</span> $<span class="hljs-number">2</span>
   ]</pre></div></div>
             
         </li>
@@ -480,7 +490,7 @@ through and printed to JavaScript.</p>
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">Literal</span>: [
     o <span class="hljs-string">'AlphaNumeric'</span>
     o <span class="hljs-string">'JS'</span>,<span class="hljs-function">                                     -&gt;</span> <span class="hljs-keyword">new</span> Literal $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'REGEX'</span>,<span class="hljs-function">                                  -&gt;</span> <span class="hljs-keyword">new</span> Literal $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'Regex'</span>
     o <span class="hljs-string">'DEBUGGER'</span>,<span class="hljs-function">                               -&gt;</span> <span class="hljs-keyword">new</span> Literal $<span class="hljs-number">1</span>
     o <span class="hljs-string">'UNDEFINED'</span>,<span class="hljs-function">                              -&gt;</span> <span class="hljs-keyword">new</span> Undefined
     o <span class="hljs-string">'NULL'</span>,<span class="hljs-function">                                   -&gt;</span> <span class="hljs-keyword">new</span> Null
