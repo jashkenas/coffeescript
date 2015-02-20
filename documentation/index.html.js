@@ -806,7 +806,7 @@ Expressions
       it to the current value of <tt>this</tt>, right on the spot. This is helpful
       when using callback-based libraries like Prototype or jQuery, for creating
       iterator functions to pass to <tt>each</tt>, or event-handler functions
-      to use with <tt>bind</tt>. Functions created with the fat arrow are able to access
+      to use with <tt>on</tt>. Functions created with the fat arrow are able to access
       properties of the <tt>this</tt> where they're defined.
     </p>
     <%= codeFor('fat_arrow') %>
