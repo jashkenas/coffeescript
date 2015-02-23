@@ -162,7 +162,7 @@ test "variable swapping to verify caching of RHS values when appropriate", ->
   eq nonceB, b
   eq nonceC, c
 
-test "#713", ->
+test "#713: destructuring assignment should return right-hand-side value", ->
   nonces = [nonceA={},nonceB={}]
   eq nonces, [a, b] = [c, d] = nonces
   eq nonceA, a
@@ -247,7 +247,7 @@ test "destructuring assignment with context (@) properties", ->
   eq d, obj.d
   eq e, obj.e
 
-test "#1024", ->
+test "#1024: destructure empty assignments to produce javascript-like results", ->
   eq 2 * [] = 3 + 5, 16
 
 test "#1005: invalid identifiers allowed on LHS of destructuring assignment", ->

@@ -81,7 +81,7 @@ test "#2516: Unicode spaces should not be part of identifiers", ->
 test "don't accidentally stringify keywords", ->
   ok (-> this == 'this')() is false
 
-test "#1026", ->
+test "#1026: no if/else/else allowed", ->
   cantCompile '''
     if a
       b
@@ -91,7 +91,7 @@ test "#1026", ->
       d
   '''
 
-test "#1050", ->
+test "#1050: no closing asterisk comments from within block comments", ->
   cantCompile "### */ ###"
 
 test "#1273: escaping quotes at the end of heredocs", ->
