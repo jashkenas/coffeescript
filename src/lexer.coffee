@@ -837,11 +837,11 @@ HEREDOC_INDENT     = /\n+([^\n\S]*)(?=\S)/g
 # Regex-matching-regexes.
 REGEX = /// ^
   / (?!/) ((
-  ?: [^ \[ / \n \\ ] # every other thing
+  ?: [^ [ / \n \\ ]  # every other thing
    | \\[^\n]         # anything but newlines escaped
    | \[              # character class
        (?: \\[^\n] | [^ \] \n \\ ] )*
-     \]
+     ]
   )*) (/)?
 ///
 
