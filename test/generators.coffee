@@ -218,3 +218,50 @@ test "symbolic operators has precedence over the `yield`", ->
     mapped  = CoffeeScript.eval "(arr) ->       (#{expression} for i in arr)"
 
     arrayEq mapped(values), collect yielded values
+
+test "yield handles 'this' correctly", ->
+  x = ->
+    yield switch
+      when true then yield => this
+    yield for item in [1]
+      yield => this
+    yield if true then yield => this
+    yield try throw yield => this
+    throw yield => this
+
+  y = x.call [1, 2, 3]
+
+  z = y.next()
+  arrayEq z.value(), [1, 2, 3]
+  ok z.done is false
+
+  z = y.next 123
+  ok z.value is 123 and z.done is false
+
+  z = y.next()
+  arrayEq z.value(), [1, 2, 3]
+  ok z.done is false
+
+  z = y.next 42
+  arrayEq z.value, [42]
+  ok z.done is false
+
+  z = y.next()
+  arrayEq z.value(), [1, 2, 3]
+  ok z.done is false
+
+  z = y.next 456
+  ok z.value is 456 and z.done is false
+
+  z = y.next()
+  arrayEq z.value(), [1, 2, 3]
+  ok z.done is false
+
+  z = y.next new Error "ignore me"
+  ok z.value is undefined and z.done is false
+
+  z = y.next()
+  arrayEq z.value(), [1, 2, 3]
+  ok z.done is false
+
+  throws -> y.next new Error "boom"
