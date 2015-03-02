@@ -165,7 +165,7 @@ syntaxErrorToString = ->
   last_column ?= first_column
 
   filename = @filename or '[stdin]'
-  if typeof this.code == 'string'
+  if typeof @code == 'string'
     codeLine = @code.split('\n')[first_line]
   else
     codeLine = ""
