@@ -59,7 +59,6 @@ sourceCode   = []
 notSources   = {}
 watchedDirs  = {}
 optionParser = null
-jsToSources  = {}
 
 # Run `coffee` by parsing passed options and determining what action to take.
 # Many flags cause us to divert before compiling anything. Flags passed after
@@ -364,12 +363,6 @@ mkdirp = (dir, fn) ->
 writeJs = (base, sourcePath, js, jsPath, generatedSourceMap = null) ->
   sourceMapPath = outputPath sourcePath, base, ".js.map"
   jsDir  = path.dirname jsPath
-  if jsPath of jsToSources
-      printLine "Error: The two following source files have the same output file:"
-      printLine "    " + jsToSources[jsPath]
-      printLine "    " + sourcePath
-      process.exit 1
-  jsToSources[jsPath] = sourcePath
   compile = ->
     if opts.compile
       js = ' ' if js.length <= 0
