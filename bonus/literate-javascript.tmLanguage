@@ -12,15 +12,25 @@
   <array>
 
     <dict>
-      <key>match</key>
-      <string>^(?!([ ]{4}|\t)).*$</string>
+      <key>begin</key>
+      <string>^[^ \t\n]</string>
+      <key>end</key>
+      <string>^(?=([ ]{4}|\t))</string>
       <key>name</key>
-      <string>punctuation.definition.comment.litjs</string>
+      <string>comment.line.double-slash.litjs</string>
     </dict>
 
     <dict>
       <key>begin</key>
       <string>^([ ]{4}|\t)(?!$)</string>
+      <key>beginCaptures</key>
+      <dict>
+        <key>1</key>
+        <dict>
+          <key>name</key>
+          <string>source.js.litjs</string>
+        </dict>
+      </dict>
       <key>end</key>
       <string>$</string>
       <key>name</key>

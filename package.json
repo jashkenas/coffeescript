@@ -1,5 +1,29 @@
 {
   "name": "illiterate",
   "version": "0.1.0",
-  "dependencies": {}
+  "dependencies": {},
+  "description": "Extract code block from markdown à la coffeescript - but for any language",
+  "main": "readme.js.md",
+  "bin": {
+    "illiterate": "illiterate"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/billymoon/illiterate"
+  },
+  "keywords": [
+    "illiterate",
+    "literate",
+    "javascript",
+    "markdown"
+  ],
+  "author": "Billy Moon <billy@itaccess.org> (http://billy.itaccess.org)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/billymoon/illiterate/issues"
+  },
+  "homepage": "https://github.com/billymoon/illiterate"
 }

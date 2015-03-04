@@ -1,12 +1,10 @@
 # Illiterate
 
-This file is both the source and the documentation for the `illiterate` binary. Perhaps it will become the main executable one day too... who knows ,~)
+Extract code block from markdown à la coffeescript - but for **any** language.
 
 ## Usage
 
-Extract code block from markdown: `illiterate file.lang.md`
-
-This is useful to compile literate style code à la coffeescript, but for **any** language: `illiterate file.js.md > file.js`
+> illiterate file.js.md > file.js
 
 After being processed by `illiterate`, this readme file contains only the indented javascript code blocks. The output can be seen in [bin/illiterate.js](./bin/illiterate.js).
 
@@ -20,7 +18,7 @@ There is no real build process to speak of. I tend to do something like...
 
 ## Source
 
-This file is itself the source for a binary which is capable of compiling itself. Anything in this file which is indented is interpreted by markdown as code, and ends up in the compiled output.
+This file is the documentation, and also is itself the source for a binary which is capable of compiling itself. Anything in this file which is indented is interpreted by markdown as code, and ends up in the compiled output.
 
 ### Initialize environment
 
