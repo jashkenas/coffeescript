@@ -1,6 +1,6 @@
 {
   "name": "illiterate",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "dependencies": {},
   "description": "Extract code block from markdown à la coffeescript - but for any language",
   "main": "readme.js.md",
