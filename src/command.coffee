@@ -438,10 +438,13 @@ forkNode = ->
   nodeArgs = opts.nodejs.split /\s+/
   args     = process.argv[1..]
   args.splice args.indexOf('--nodejs'), 2
+  customFds = [0, 1, 2]
+  customFds = customFds.concat('ipc') if process.send
   p = spawn process.execPath, nodeArgs.concat(args),
     cwd:        process.cwd()
     env:        process.env
-    customFds:  [0, 1, 2]
+    customFds:  customFds
+  p.on('message', (code) -> process.send code) if process.send
   p.on 'exit', (code) -> process.exit code
 
 # Print the `--help` usage message and exit. Deprecated switches are not
