@@ -5,7 +5,7 @@
   "description": "Extract code block from markdown à la coffeescript - but for any language",
   "main": "readme.js.md",
   "bin": {
-    "illiterate": "illiterate"
+    "illiterate": "bin/illiterate"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
