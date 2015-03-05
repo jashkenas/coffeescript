@@ -1,3 +1,11 @@
 #!/usr/bin/env node
 
-require('./illiterate.js');
+var path = require('path'),
+	fs = require('fs'),
+	lib  = path.join(path.dirname(fs.realpathSync(__filename)), '../lib'),
+	illiterate = require(lib + '/illiterate.js');
+
+process.argv.slice(2).forEach(function(filename){
+	var file_contents = fs.readFileSync(filename).toString('UTF-8');
+	console.log(illiterate.parse(file_contents));
+});
