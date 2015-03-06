@@ -2,25 +2,31 @@
 
 Extract code block from markdown à la coffeescript - but for **any** language.
 
+## Installation
+
+> npm install -g illiterate
+
 ## Usage
 
-> illiterate file.js.md > file.js
+Run `illiterate` on a markdown file and the code blocks will be extracted and output in the console.
 
-After being processed by `illiterate`, this readme file contains only the indented javascript code blocks. The output can be seen in [bin/illiterate.js](./bin/illiterate.js).
+> illiterate <filename.ext.md>
+
+For example, the build command for parsing this markdown file into the actual `illiterate.js` library...
+
+> illiterate src/illiterate.js.md > lib/illiterate.js
+
+After being processed by `illiterate`, only the code blocks are output, which can be seen in [lib/illiterate.js](../lib/illiterate.js).
 
 ## Build
 
-In order to build, you must have `illiterate` installed, and then do...
+The build command is set in the `package.json` file so you can...
 
 > npm run build
 
-> ./bin/illiterate readme.md > temp && rm bin/illiterate.js && mv temp bin/illiterate.js
-
-(temp file is used to prevent issues with overwriting currently executing file)
-
 ## Source
 
-This file is the documentation, and also is itself the source for a binary which is capable of compiling itself. Anything in this file which is indented is interpreted by markdown as code, and ends up in the compiled output.
+This file is the main library, which compiles into [lib/illiterate.js](../lib/illiterate.js). There is also a command line tool wrapper in (bin/illiterate](../bin/illiterate).
 
 ### Initialize environment
 
@@ -41,18 +47,19 @@ Load dependencies.
 		var _ = require('lodash'),
 			marked = require('marked');
 
-		illiterate.parse = function(file_contents){
+Define main parse method, which accepts a string.
 
-Create a variable to store output as it is built up from input files
+		illiterate.parse = function(text){
+
+Create a variable to store output as it is built up from input files.
 
 			var out = [];
 
 ### Main loop
 
+Pass the input text through a markdown parser, then reduce the tokens to extract only code blocks, joining with newlines, and pushing onto the output array.
 
-Read each file, and loop through each line
-
-			out.push( _.reduce(marked.lexer(file_contents, {}), function(memo, item){
+			out.push( _.reduce(marked.lexer(text, {}), function(memo, item){
 				if(item.type === 'code'){
 					memo.push(item.text);
 				}
@@ -61,7 +68,7 @@ Read each file, and loop through each line
 
 ### Output
 
-Finally, output all lines
+Output extracted code blocks
 
 			return out.join('\n');
 
