@@ -441,7 +441,7 @@ forkNode = ->
   p = spawn process.execPath, nodeArgs.concat(args),
     cwd:        process.cwd()
     env:        process.env
-    customFds:  [0, 1, 2]
+    stdio:      [0, 1, 2]
   p.on 'exit', (code) -> process.exit code
 
 # Print the `--help` usage message and exit. Deprecated switches are not
