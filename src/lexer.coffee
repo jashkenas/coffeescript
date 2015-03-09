@@ -841,7 +841,7 @@ REGEX = /// ^
    | \\[^\n]         # anything but newlines escaped
    | \[              # character class
        (?: \\[^\n] | [^ \] \n \\ ] )*
-     ]
+     \]
   )*) (/)?
 ///
 
