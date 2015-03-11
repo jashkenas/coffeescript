@@ -510,14 +510,14 @@ grammar =
   ]
 
   Whens: [
-    o 'When'
-    o 'Whens When',                             -> $1.concat $2
+    o 'When',                                   -> [$1]
+    o 'Whens When',                             -> $1.concat [$2]
   ]
 
   # An individual **When** clause, with action.
   When: [
-    o 'LEADING_WHEN SimpleArgs Block',            -> [[$2, $3]]
-    o 'LEADING_WHEN SimpleArgs Block TERMINATOR', -> [[$2, $3]]
+    o 'LEADING_WHEN SimpleArgs Block',            -> [$2, $3]
+    o 'LEADING_WHEN SimpleArgs Block TERMINATOR', -> [$2, $3]
   ]
 
   # The most basic form of *if* is a condition and an action. The following
