@@ -34,7 +34,7 @@
         <a href="#operators">Operators and Aliases</a>
         <a href="#classes">Classes, Inheritance, and Super</a>
         <a href="#destructuring">Destructuring Assignment</a>
-        <a href="#fat-arrow">Function Binding</a>
+        <a href="#fat-arrow">Bound and Generator Functions</a>
         <a href="#embedded">Embedded JavaScript</a>
         <a href="#switch">Switch and Try/Catch</a>
         <a href="#comparisons">Chained Comparisons</a>
@@ -110,7 +110,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffeescript/tarball/1.7.1">1.7.1</a>
+      <a href="http://github.com/jashkenas/coffeescript/tarball/1.9.1">1.9.1</a>
     </p>
 
     <pre>npm install -g coffee-script</pre>
@@ -142,8 +142,8 @@
 
     <p>
       To install, first make sure you have a working copy of the latest stable version of
-      <a href="http://nodejs.org/">Node.js</a>, and <a href="http://npmjs.org">npm</a>
-      (the Node Package Manager). You can then install CoffeeScript globally with npm:
+      <a href="http://nodejs.org/">Node.js</a>. You can then install CoffeeScript globally
+      with <a href="http://npmjs.org">npm</a>:
     </p>
 
     <pre>
@@ -707,7 +707,7 @@ Expressions
     <%= codeFor('soaks') %>
     <p>
       Soaking up nulls is similar to Ruby's
-      <a href="http://andand.rubyforge.org/">andand gem</a>, and to the
+      <a href="https://rubygems.org/gems/andand">andand gem</a>, and to the
       <a href="http://groovy.codehaus.org/Operators#Operators-SafeNavigationOperator%28%3F.%29">safe navigation operator</a>
       in Groovy.
     </p>
@@ -793,7 +793,7 @@ Expressions
 
     <p>
       <span id="fat-arrow" class="bookmark"></span>
-      <b class="header">Function binding</b>
+      <b class="header">Bound Functions, Generator Functions</b>
       In JavaScript, the <tt>this</tt> keyword is dynamically scoped to mean the
       object that the current function is attached to. If you pass a function as
       a callback or attach it to a different object, the original value of <tt>this</tt>
@@ -806,7 +806,7 @@ Expressions
       it to the current value of <tt>this</tt>, right on the spot. This is helpful
       when using callback-based libraries like Prototype or jQuery, for creating
       iterator functions to pass to <tt>each</tt>, or event-handler functions
-      to use with <tt>bind</tt>. Functions created with the fat arrow are able to access
+      to use with <tt>on</tt>. Functions created with the fat arrow are able to access
       properties of the <tt>this</tt> where they're defined.
     </p>
     <%= codeFor('fat_arrow') %>
@@ -820,6 +820,13 @@ Expressions
       be automatically bound to each instance of the class when the instance is
       constructed.
     </p>
+    <p>
+      CoffeeScript functions also support 
+      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">ES6 generator functions</a>
+      through the <tt>yield</tt> keyword. There's no <tt>function*(){}</tt> 
+      nonsense &mdash; a generator in CoffeeScript is simply a function that yields.
+    </p>
+    <%= codeFor('generators', 'ps.next().value') %>
 
     <p>
       <span id="embedded" class="bookmark"></span>
@@ -1045,13 +1052,17 @@ Expressions
       </li>
       <li>
         <a href="http://www.packtpub.com/coffeescript-application-development/book">CoffeeScript Application Development</a>
-        is a new book from Packt Publishing that introduces CoffeeScript while
+        from Packt, introduces CoffeeScript while
         walking through the process of building a demonstration web application.
       </li>
       <li>
         <a href="http://www.manning.com/lee/">CoffeeScript in Action</a>
-        is a new book from Manning Publications that covers CoffeeScript syntax, composition techniques
+        from Manning Publications, covers CoffeeScript syntax, composition techniques
         and application development.
+      </li>
+      <li>
+        <a href="http://www.dpunkt.de/buecher/4021/coffeescript.html">CoffeeScript: Die Alternative zu JavaScript</a>
+        from dpunkt.verlag, is the first CoffeeScript book in Deutsch.
       </li>
     </ul>
 
@@ -1115,8 +1126,8 @@ Expressions
         the Bolo tank game for modern browsers.
       </li>
       <li>
-        <b>josh</b>'s <a href="http://josh.github.com/nack/">nack</a>, a Node.js-powered
-        <a href="http://rack.rubyforge.org/">Rack</a> server.
+        <b>github</b>'s <a href="https://atom.io/">Atom</a>,
+        a hackable text editor built on web technologies.
       </li>
     </ul>
 
@@ -1191,6 +1202,93 @@ Expressions
       <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
+
+    <p>
+      <%= releaseHeader('2015-02-18', '1.9.1', '1.9.0') %>
+      <ul>
+        <li>
+          Interpolation now works in object literal keys (again). You can use this to 
+          dynamically name properties.
+        </li>
+        <li>
+          Internal compiler variable names no longer start with underscores. This makes
+          the generated JavaScript a bit prettier, and also fixes an issue with
+          the completely broken and ungodly way that AngularJS "parses" function
+          arguments.
+        </li>
+        <li>
+          Fixed a few <tt>yield</tt>-related edge cases with <tt>yield return</tt>
+          and <tt>yield throw</tt>.
+        </li>
+        <li>
+          Minor bug fixes and various improvements to compiler error messages.
+        </li>
+      </ul>
+    </p>
+
+    <p>
+      <%= releaseHeader('2015-01-29', '1.9.0', '1.8.0') %>
+      <ul>
+        <li>
+          CoffeeScript now supports ES6 generators. A generator is simply a function
+          that <tt>yield</tt>s. 
+        </li>
+        <li>
+          More robust parsing and improved error messages for strings and regexes — 
+          especially with respect to interpolation.
+        </li>
+        <li>
+          Changed strategy for the generation of internal compiler variable names.
+          Note that this means that <tt>@example</tt> function parameters are no longer
+          available as naked <tt>example</tt> variables within the function body.
+        </li>
+        <li>
+          Fixed REPL compatibility with latest versions of Node and Io.js.
+        </li>
+        <li>
+          Various minor bug fixes.
+        </li>
+      </ul>
+    </p>
+
+    <p>
+      <%= releaseHeader('2014-08-26', '1.8.0', '1.7.1') %>
+      <ul>
+        <li>
+          The <tt>--join</tt> option of the CLI is now deprecated.
+        </li>
+        <li>
+          Source maps now use <tt>.js.map</tt> as file extension, instead of just <tt>.map</tt>.
+        </li>
+        <li>
+          The CLI now exits with the exit code 1 when it fails to write a file to disk.
+        </li>
+        <li>
+          The compiler no longer crashes on unterminated, single-quoted strings.
+        </li>
+        <li>
+          Fixed location data for string interpolations, which made source maps out of sync.
+        </li>
+        <li>
+          The error marker in error messages is now correctly positioned if the code is indented with tabs.
+        </li>
+        <li>
+          Fixed a slight formatting error in CoffeeScript’s source map-patched stack traces.
+        </li>
+        <li>
+          The <tt>%%</tt> operator now coerces its right operand only once.
+        </li>
+        <li>
+          It is now possible to require CoffeeScript files from Cakefiles without having to register the compiler first.
+        </li>
+        <li>
+          The CoffeeScript REPL is now exported and can be required using <tt>require 'coffee-script/repl'</tt>.
+        </li>
+        <li>
+          Fixes for the REPL in Node 0.11.
+        </li>
+      </ul>
+    </p>
 
     <p>
       <%= releaseHeader('2014-01-29', '1.7.1', '1.7.0') %>
@@ -1424,7 +1522,7 @@ Expressions
           effectively creating a shallow copy of the list.
         </li>
         <li>
-          Additional tweaks and improvments to <tt>coffee --watch</tt> under
+          Additional tweaks and improvements to <tt>coffee --watch</tt> under
           Node's "new" file watching API. Watch will now beep by default
           if you introduce a syntax error into a watched script. We also now
           ignore hidden directories by default when watching recursively.

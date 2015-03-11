@@ -16,83 +16,85 @@
           <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
           <a class="small" href="javascript:void(0);">+</a>
           <div id="jump_wrapper">
-          <div id="jump_page">
-            
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
               
-              <a class="source" href="browser.html">
-                browser.coffee
-              </a>
-            
+                
+                <a class="source" href="browser.html">
+                  browser.coffee
+                </a>
               
-              <a class="source" href="cake.html">
-                cake.coffee
-              </a>
-            
+                
+                <a class="source" href="cake.html">
+                  cake.coffee
+                </a>
               
-              <a class="source" href="coffee-script.html">
-                coffee-script.coffee
-              </a>
-            
+                
+                <a class="source" href="coffee-script.html">
+                  coffee-script.coffee
+                </a>
               
-              <a class="source" href="command.html">
-                command.coffee
-              </a>
-            
+                
+                <a class="source" href="command.html">
+                  command.coffee
+                </a>
               
-              <a class="source" href="grammar.html">
-                grammar.coffee
-              </a>
-            
+                
+                <a class="source" href="grammar.html">
+                  grammar.coffee
+                </a>
               
-              <a class="source" href="helpers.html">
-                helpers.coffee
-              </a>
-            
+                
+                <a class="source" href="helpers.html">
+                  helpers.coffee
+                </a>
               
-              <a class="source" href="index.html">
-                index.coffee
-              </a>
-            
+                
+                <a class="source" href="index.html">
+                  index.coffee
+                </a>
               
-              <a class="source" href="lexer.html">
-                lexer.coffee
-              </a>
-            
+                
+                <a class="source" href="lexer.html">
+                  lexer.coffee
+                </a>
               
-              <a class="source" href="nodes.html">
-                nodes.coffee
-              </a>
-            
+                
+                <a class="source" href="nodes.html">
+                  nodes.coffee
+                </a>
               
-              <a class="source" href="optparse.html">
-                optparse.coffee
-              </a>
-            
+                
+                <a class="source" href="optparse.html">
+                  optparse.coffee
+                </a>
               
-              <a class="source" href="register.html">
-                register.coffee
-              </a>
-            
+                
+                <a class="source" href="register.html">
+                  register.coffee
+                </a>
               
-              <a class="source" href="repl.html">
-                repl.coffee
-              </a>
-            
+                
+                <a class="source" href="repl.html">
+                  repl.coffee
+                </a>
               
-              <a class="source" href="rewriter.html">
-                rewriter.coffee
-              </a>
-            
+                
+                <a class="source" href="rewriter.html">
+                  rewriter.coffee
+                </a>
               
-              <a class="source" href="scope.html">
-                scope.litcoffee
-              </a>
-            
+                
+                <a class="source" href="scope.html">
+                  scope.litcoffee
+                </a>
               
-              <a class="source" href="sourcemap.html">
-                sourcemap.litcoffee
-              </a>
-            
+                
+                <a class="source" href="sourcemap.html">
+                  sourcemap.litcoffee
+                </a>
+              
+            </div>
           </div>
         </li>
       </ul>
@@ -129,7 +131,7 @@
               </div>
               <p>A simple <strong>OptionParser</strong> class to parse option flags from the command-line.
 Use it like so:</p>
-<pre><code>parser  = new OptionParser switches, helpBanner
+<pre><code>parser  = <span class="hljs-keyword">new</span> OptionParser switches, helpBanner
 options = parser.parse process.argv
 </code></pre><p>The first non-option is considered to be the start of the file (and file
 option) list, and all subsequent arguments are left unparsed.</p>
@@ -170,7 +172,7 @@ specified options, and return it. Options after the first non-option
 argument are treated as arguments. <code>options.arguments</code> will be an array
 containing the remaining arguments. This is a simpler API than many option
 parsers that allow you to attach callback actions for every flag. Instead,
-you&#39;re responsible for interpreting the options object.</p>
+you’re responsible for interpreting the options object.</p>
 
             </div>
             
@@ -266,6 +268,18 @@ of the valid options, for <code>--help</code> and such.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
+              
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
               <p>Regex matchers for option flags.</p>
 
             </div>
@@ -278,11 +292,11 @@ OPTIONAL   = <span class="hljs-regexp">/\[(\w+(\*?))\]/</span></pre></div></div>
         </li>
         
         
-        <li id="section-9">
+        <li id="section-10">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+                <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>Build and return the list of option rules. If the optional <em>short-flag</em> is
 unspecified, leave it out by padding with <code>null</code>.</p>
@@ -297,11 +311,11 @@ unspecified, leave it out by padding with <code>null</code>.</p>
         </li>
         
         
-        <li id="section-10">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>Build a rule from a <code>-o</code> short flag, a <code>--output [DIR]</code> long flag, and the
 description of what the option does.</p>
@@ -323,11 +337,11 @@ description of what the option does.</p>
         </li>
         
         
-        <li id="section-11">
+        <li id="section-12">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <p>Normalize arguments by expanding merged flags into multiple flags. This allows
 you to have <code>-wl</code> be the same as <code>--watch --lint</code>.</p>

@@ -37,5 +37,5 @@ test "SourceMap tests", ->
   # Look up a generated column - should get back the original source position.
   arrayEq map.sourceLocation([2,8]), [1,9]
 
-  # Look up a point futher along on the same line - should get back the same source position.
+  # Look up a point further along on the same line - should get back the same source position.
   arrayEq map.sourceLocation([2,10]), [1,9]

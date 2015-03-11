@@ -16,83 +16,85 @@
           <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
           <a class="small" href="javascript:void(0);">+</a>
           <div id="jump_wrapper">
-          <div id="jump_page">
-            
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
               
-              <a class="source" href="browser.html">
-                browser.coffee
-              </a>
-            
+                
+                <a class="source" href="browser.html">
+                  browser.coffee
+                </a>
               
-              <a class="source" href="cake.html">
-                cake.coffee
-              </a>
-            
+                
+                <a class="source" href="cake.html">
+                  cake.coffee
+                </a>
               
-              <a class="source" href="coffee-script.html">
-                coffee-script.coffee
-              </a>
-            
+                
+                <a class="source" href="coffee-script.html">
+                  coffee-script.coffee
+                </a>
               
-              <a class="source" href="command.html">
-                command.coffee
-              </a>
-            
+                
+                <a class="source" href="command.html">
+                  command.coffee
+                </a>
               
-              <a class="source" href="grammar.html">
-                grammar.coffee
-              </a>
-            
+                
+                <a class="source" href="grammar.html">
+                  grammar.coffee
+                </a>
               
-              <a class="source" href="helpers.html">
-                helpers.coffee
-              </a>
-            
+                
+                <a class="source" href="helpers.html">
+                  helpers.coffee
+                </a>
               
-              <a class="source" href="index.html">
-                index.coffee
-              </a>
-            
+                
+                <a class="source" href="index.html">
+                  index.coffee
+                </a>
               
-              <a class="source" href="lexer.html">
-                lexer.coffee
-              </a>
-            
+                
+                <a class="source" href="lexer.html">
+                  lexer.coffee
+                </a>
               
-              <a class="source" href="nodes.html">
-                nodes.coffee
-              </a>
-            
+                
+                <a class="source" href="nodes.html">
+                  nodes.coffee
+                </a>
               
-              <a class="source" href="optparse.html">
-                optparse.coffee
-              </a>
-            
+                
+                <a class="source" href="optparse.html">
+                  optparse.coffee
+                </a>
               
-              <a class="source" href="register.html">
-                register.coffee
-              </a>
-            
+                
+                <a class="source" href="register.html">
+                  register.coffee
+                </a>
               
-              <a class="source" href="repl.html">
-                repl.coffee
-              </a>
-            
+                
+                <a class="source" href="repl.html">
+                  repl.coffee
+                </a>
               
-              <a class="source" href="rewriter.html">
-                rewriter.coffee
-              </a>
-            
+                
+                <a class="source" href="rewriter.html">
+                  rewriter.coffee
+                </a>
               
-              <a class="source" href="scope.html">
-                scope.litcoffee
-              </a>
-            
+                
+                <a class="source" href="scope.html">
+                  scope.litcoffee
+                </a>
               
-              <a class="source" href="sourcemap.html">
-                sourcemap.litcoffee
-              </a>
-            
+                
+                <a class="source" href="sourcemap.html">
+                  sourcemap.litcoffee
+                </a>
+              
+            </div>
           </div>
         </li>
       </ul>
@@ -115,7 +117,7 @@
               </div>
               <p>Source maps allow JavaScript runtimes to match running JavaScript back to
 the original source code that corresponds to it. This can be minified
-JavaScript, but in our case, we&#39;re concerned with mapping pretty-printed
+JavaScript, but in our case, we’re concerned with mapping pretty-printed
 JavaScript back to CoffeeScript.</p>
 <p>In order to produce maps, we must keep track of positions (line number, column number)
 that originated every node in the syntax tree, and be able to generate a
@@ -178,7 +180,7 @@ positions for a single line of output JavaScript code.
               <p>Maps locations in a single generated JavaScript file back to locations in
 the original CoffeeScript source file.</p>
 <p>This is intentionally agnostic towards how a source map might be represented on
-disk. Once the compiler is ready to produce a &quot;v3&quot;-style source map, we can walk
+disk. Once the compiler is ready to produce a “v3”-style source map, we can walk
 through the arrays of line and column buffer to produce it.</p>
 
             </div>
@@ -251,7 +253,7 @@ code.</p>
               <p>Builds up a V3 source map, returning the generated JSON as a string.
 <code>options.sourceRoot</code> may be used to specify the sourceRoot written to the source
 map.  Also, <code>options.sourceFiles</code> and <code>options.generatedFile</code> may be passed to
-set &quot;sources&quot; and &quot;file&quot;, respectively.</p>
+set “sources” and “file”, respectively.</p>
 
             </div>
             
@@ -280,7 +282,7 @@ set &quot;sources&quot; and &quot;file&quot;, respectively.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
-              <p>Write a comma if we&#39;ve already written a segment on this line.</p>
+              <p>Write a comma if we’ve already written a segment on this line.</p>
 
             </div>
             
@@ -298,7 +300,7 @@ set &quot;sources&quot; and &quot;file&quot;, respectively.</p>
                 <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>Write the next segment. Segments can be 1, 4, or 5 values.  If just one, then it
-is a generated column which doesn&#39;t match anything in the source code.</p>
+is a generated column which doesn’t match anything in the source code.</p>
 <p>The starting column in the generated source, relative to any previous recorded
 column for the current line:</p>
 
@@ -364,7 +366,7 @@ column for the current line:</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
-              <p>Produce the canonical JSON object format for a &quot;v3&quot; source map.</p>
+              <p>Produce the canonical JSON object format for a “v3” source map.</p>
 
             </div>
             
@@ -402,7 +404,7 @@ column for the current line:</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
-              <p>Note that SourceMap VLQ encoding is &quot;backwards&quot;.  MIDI-style VLQ encoding puts
+              <p>Note that SourceMap VLQ encoding is “backwards”.  MIDI-style VLQ encoding puts
 the most-significant-bit (MSB) from the original value into the MSB of the VLQ
 encoded value (see <a href="http://en.wikipedia.org/wiki/File:Uintvar_coding.svg">Wikipedia</a>).
 SourceMap VLQ does things the other way around, with the least significat four

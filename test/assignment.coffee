@@ -6,6 +6,7 @@
 # * Destructuring Assignment
 # * Context Property (@) Assignment
 # * Existential Assignment (?=)
+# * Assignment to variables similar to generated variables
 
 test "context property assignment (using @)", ->
   nonce = {}
@@ -161,7 +162,7 @@ test "variable swapping to verify caching of RHS values when appropriate", ->
   eq nonceB, b
   eq nonceC, c
 
-test "#713", ->
+test "#713: destructuring assignment should return right-hand-side value", ->
   nonces = [nonceA={},nonceB={}]
   eq nonces, [a, b] = [c, d] = nonces
   eq nonceA, a
@@ -246,7 +247,7 @@ test "destructuring assignment with context (@) properties", ->
   eq d, obj.d
   eq e, obj.e
 
-test "#1024", ->
+test "#1024: destructure empty assignments to produce javascript-like results", ->
   eq 2 * [] = 3 + 5, 16
 
 test "#1005: invalid identifiers allowed on LHS of destructuring assignment", ->
@@ -283,6 +284,13 @@ test "#156: destructuring with expansion", ->
   throws (-> CoffeeScript.compile "[1, ..., 3]"),        null, "prohibit expansion outside of assignment"
   throws (-> CoffeeScript.compile "[..., a, b...] = c"), null, "prohibit expansion and a splat"
   throws (-> CoffeeScript.compile "[...] = c"),          null, "prohibit lone expansion"
+
+test "destructuring with dynamic keys", ->
+  {"#{'a'}": a, """#{'b'}""": b, c} = {a: 1, b: 2, c: 3}
+  eq 1, a
+  eq 2, b
+  eq 3, c
+  throws -> CoffeeScript.compile '{"#{a}"} = b'
 
 
 # Existential Assignment
@@ -405,3 +413,54 @@ test "#2181: conditional assignment as a subexpression", ->
   false && a or= true
   eq false, a
   eq false, not a or= true
+
+test "#1500: Assignment to variables similar to generated variables", ->
+  len = 0
+  x = ((results = null; n) for n in [1, 2, 3])
+  arrayEq [1, 2, 3], x
+  eq 0, len
+
+  for x in [1, 2, 3]
+    f = ->
+      i = 0
+    f()
+    eq 'undefined', typeof i
+
+  ref = 2
+  x = ref * 2 ? 1
+  eq x, 4
+  eq 'undefined', typeof ref1
+
+  x = {}
+  base = -> x
+  name = -1
+  base()[-name] ?= 2
+  eq x[1], 2
+  eq base(), x
+  eq name, -1
+
+  f = (@a, a) -> [@a, a]
+  arrayEq [1, 2], f.call scope = {}, 1, 2
+  eq 1, scope.a
+
+  doesNotThrow -> CoffeeScript.compile '(@slice...) ->'
+
+test "Assignment to variables similar to helper functions", ->
+  f = (slice...) -> slice
+  arrayEq [1, 2, 3], f 1, 2, 3
+  eq 'undefined', typeof slice1
+
+  class A
+  class B extends A
+    extend = 3
+    hasProp = 4
+    value: 5
+    method: (bind, bind1) => [bind, bind1, extend, hasProp, @value]
+  {method} = new B
+  arrayEq [1, 2, 3, 4, 5], method 1, 2
+
+  modulo = -1 %% 3
+  eq 2, modulo
+
+  indexOf = [1, 2, 3]
+  ok 2 in indexOf

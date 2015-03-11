@@ -20,22 +20,30 @@ replDefaults =
     {Block, Assign, Value, Literal} = require './nodes'
 
     try
-      # Generate the AST of the clean input.
-      ast = CoffeeScript.nodes input
+      # Tokenize the clean input.
+      tokens = CoffeeScript.tokens input
+      # Collect referenced variable names just like in `CoffeeScript.compile`.
+      referencedVars = (
+        token[1] for token in tokens when token.variable
+      )
+      # Generate the AST of the tokens.
+      ast = CoffeeScript.nodes tokens
       # Add assignment to `_` variable to force the input to be an expression.
       ast = new Block [
         new Assign (new Value new Literal '_'), ast, '='
       ]
-      js = ast.compile bare: yes, locals: Object.keys(context)
-      result = if context is global
-        vm.runInThisContext js, filename
-      else
-        vm.runInContext js, context, filename
-      cb null, result
+      js = ast.compile {bare: yes, locals: Object.keys(context), referencedVars}
+      cb null, runInContext js, context, filename
     catch err
       # AST's `compile` does not add source code information to syntax errors.
       updateSyntaxError err, input
       cb err
+
+runInContext = (js, context, filename) ->
+  if context is global
+    vm.runInThisContext js, filename
+  else
+    vm.runInContext js, context, filename
 
 addMultilineHandler = (repl) ->
   {rli, inputStream, outputStream} = repl
@@ -143,6 +151,7 @@ module.exports =
     process.argv = ['coffee'].concat process.argv[2..]
     opts = merge replDefaults, opts
     repl = nodeREPL.start opts
+    runInContext opts.prelude, repl.context, 'prelude' if opts.prelude
     repl.on 'exit', -> repl.outputStream.write '\n'
     addMultilineHandler repl
     addHistory repl, opts.historyFile, opts.historyMaxInputSize if opts.historyFile

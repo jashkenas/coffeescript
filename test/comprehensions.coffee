@@ -246,6 +246,17 @@ test "Optimized range comprehensions.", ->
   ok exxes.join(' ') is 'x x x x x x x x x x'
 
 
+test "#3671: Allow step in optimized range comprehensions.", ->
+
+  exxes = ('x' for [0...10] by 2)
+  eq exxes.join(' ') , 'x x x x x'
+
+
+test "#3671: Disallow guard in optimized range comprehensions.", ->
+
+  throws -> CoffeeScript.compile "exxes = ('x' for [0...10] when a)"
+
+
 test "Loop variables should be able to reference outer variables", ->
   outer = 1
   do ->
@@ -544,3 +555,14 @@ test "splats in destructuring in comprehensions", ->
 test "#156: expansion in destructuring in comprehensions", ->
   list = [[0, 1, 2], [2, 3, 4], [4, 5, 6]]
   arrayEq (last for [..., last] in list), [2, 4, 6]
+
+test "#3778: Consistently always cache for loop range boundaries and steps, even
+      if they are simple identifiers", ->
+  a = 1; arrayEq [1, 2, 3], (for n in [1, 2, 3] by  a then a = 4; n)
+  a = 1; arrayEq [1, 2, 3], (for n in [1, 2, 3] by +a then a = 4; n)
+  a = 1; arrayEq [1, 2, 3], (for n in [a..3]          then a = 4; n)
+  a = 1; arrayEq [1, 2, 3], (for n in [+a..3]         then a = 4; n)
+  a = 3; arrayEq [1, 2, 3], (for n in [1..a]          then a = 4; n)
+  a = 3; arrayEq [1, 2, 3], (for n in [1..+a]         then a = 4; n)
+  a = 1; arrayEq [1, 2, 3], (for n in [1..3] by  a    then a = 4; n)
+  a = 1; arrayEq [1, 2, 3], (for n in [1..3] by +a    then a = 4; n)

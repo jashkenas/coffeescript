@@ -93,24 +93,31 @@ class exports.Rewriter
       @detectEnd i + 1, condition, action if token[0] is 'INDEX_START'
       1
 
-  # Match tags in token stream starting at i with pattern, skipping HERECOMMENTs
-  # Pattern may consist of strings (equality), an array of strings (one of)
-  # or null (wildcard)
-  matchTags: (i, pattern...) ->
+  # Match tags in token stream starting at `i` with `pattern`, skipping 'HERECOMMENT's.
+  # `pattern` may consist of strings (equality), an array of strings (one of)
+  # or null (wildcard). Returns the index of the match or -1 if no match.
+  indexOfTag: (i, pattern...) ->
     fuzz = 0
     for j in [0 ... pattern.length]
       fuzz += 2 while @tag(i + j + fuzz) is 'HERECOMMENT'
       continue if not pattern[j]?
       pattern[j] = [pattern[j]] if typeof pattern[j] is 'string'
-      return no if @tag(i + j + fuzz) not in pattern[j]
-    yes
+      return -1 if @tag(i + j + fuzz) not in pattern[j]
+    i + j + fuzz - 1
 
-  # yes iff standing in front of something looking like
-  # @<x>: or <x>:, skipping over 'HERECOMMENT's
+  # Returns `yes` if standing in front of something looking like
+  # `@<x>:`, `<x>:` or `<EXPRESSION_START><x>...<EXPRESSION_END>:`,
+  # skipping over 'HERECOMMENT's.
   looksObjectish: (j) ->
-    @matchTags(j, '@', null, ':') or @matchTags(j, null, ':')
+    return yes if @indexOfTag(j, '@', null, ':') > -1 or @indexOfTag(j, null, ':') > -1
+    index = @indexOfTag(j, EXPRESSION_START)
+    if index > -1
+      end = null
+      @detectEnd index + 1, ((token) -> token[0] in EXPRESSION_END), ((token, i) -> end = i)
+      return yes if @tag(end + 1) is ':'
+    no
 
-  # yes iff current line of tokens contain an element of tags on same
+  # Returns `yes` if current line of tokens contain an element of tags on same
   # expression level. Stop searching at LINEBREAKS or explicit start of
   # containing balanced expression.
   findTagsBackwards: (i, tags) ->
@@ -129,6 +136,7 @@ class exports.Rewriter
   addImplicitBracesAndParens: ->
     # Track current balancing depth (both implicit and explicit) on stack.
     stack = []
+    start = null
 
     @scanTokens (token, i, tokens) ->
       [tag]     = token
@@ -157,13 +165,15 @@ class exports.Rewriter
 
       endImplicitCall = ->
         stack.pop()
-        tokens.splice i, 0, generate 'CALL_END', ')'
+        tokens.splice i, 0, generate 'CALL_END', ')', ['', 'end of input', token[2]]
         i += 1
 
       startImplicitObject = (j, startsLine = yes) ->
         idx = j ? i
         stack.push ['{', idx, sameLine: yes, startsLine: startsLine, ours: yes]
-        tokens.splice idx, 0, generate '{', generate(new String('{')), token
+        val = new String '{'
+        val.generated = yes
+        tokens.splice idx, 0, generate '{', val, token
         i += 1 if not j?
 
       endImplicitObject = (j) ->
@@ -205,11 +215,11 @@ class exports.Rewriter
             endImplicitObject()
           else
             stack.pop()
-        stack.pop()
+        start = stack.pop()
 
       # Recognize standard implicit calls like
       # f a, f() b, f? c, h[0] d etc.
-      if (tag in IMPLICIT_FUNC and token.spaced and not token.stringEnd or
+      if (tag in IMPLICIT_FUNC and token.spaced or
           tag is '?' and i > 0 and not tokens[i - 1].spaced) and
          (nextTag in IMPLICIT_CALL or
           nextTag in IMPLICIT_UNSPACED_CALL and
@@ -243,7 +253,8 @@ class exports.Rewriter
       # which is probably always unintended.
       # Furthermore don't allow this in literal arrays, as
       # that creates grammatical ambiguities.
-      if tag in IMPLICIT_FUNC and @matchTags(i + 1, 'INDENT', null, ':') and
+      if tag in IMPLICIT_FUNC and
+         @indexOfTag(i + 1, 'INDENT', null, ':') > -1 and
          not @findTagsBackwards(i, ['CLASS', 'EXTENDS', 'IF', 'CATCH',
           'SWITCH', 'LEADING_WHEN', 'FOR', 'WHILE', 'UNTIL'])
         startImplicitCall i + 1
@@ -253,7 +264,10 @@ class exports.Rewriter
       # Implicit objects start here
       if tag is ':'
         # Go back to the (implicit) start of the object
-        if @tag(i - 2) is '@' then s = i - 2 else s = i - 1
+        s = switch
+          when @tag(i - 1) in EXPRESSION_END then start[1]
+          when @tag(i - 2) is '@' then i - 2
+          else i - 1
         s -= 2 while @tag(s - 2) is 'HERECOMMENT'
 
         # Mark if the value is a for loop
@@ -297,13 +311,14 @@ class exports.Rewriter
           # Close implicit objects such as:
           # return a: 1, b: 2 unless true
           else if inImplicitObject() and not @insideForDeclaration and sameLine and
-                  tag isnt 'TERMINATOR' and prevTag isnt ':' and
+                  tag isnt 'TERMINATOR' and prevTag isnt ':'
             endImplicitObject()
           # Close implicit objects when at end of line, line didn't end with a comma
           # and the implicit object didn't start the line or the next line doesn't look like
           # the continuation of an object.
           else if inImplicitObject() and tag is 'TERMINATOR' and prevTag isnt ',' and
                   not (startsLine and @looksObjectish(i + 1))
+            return forward 1 if nextTag is 'HERECOMMENT'
             endImplicitObject()
           else
             break
@@ -444,6 +459,8 @@ BALANCED_PAIRS = [
   ['CALL_START', 'CALL_END']
   ['PARAM_START', 'PARAM_END']
   ['INDEX_START', 'INDEX_END']
+  ['STRING_START', 'STRING_END']
+  ['REGEX_START', 'REGEX_END']
 ]
 
 # The inverse mappings of `BALANCED_PAIRS` we're trying to fix up, so we can
@@ -466,9 +483,10 @@ IMPLICIT_FUNC    = ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@
 
 # If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
 IMPLICIT_CALL    = [
-  'IDENTIFIER', 'NUMBER', 'STRING', 'JS', 'REGEX', 'NEW', 'PARAM_START', 'CLASS'
-  'IF', 'TRY', 'SWITCH', 'THIS', 'BOOL', 'NULL', 'UNDEFINED', 'UNARY',
-  'UNARY_MATH', 'SUPER', 'THROW', '@', '->', '=>', '[', '(', '{', '--', '++'
+  'IDENTIFIER', 'NUMBER', 'STRING', 'STRING_START', 'JS', 'REGEX', 'REGEX_START'
+  'NEW', 'PARAM_START', 'CLASS', 'IF', 'TRY', 'SWITCH', 'THIS', 'BOOL', 'NULL'
+  'UNDEFINED', 'UNARY', 'YIELD', 'UNARY_MATH', 'SUPER', 'THROW'
+  '@', '->', '=>', '[', '(', '{', '--', '++'
 ]
 
 IMPLICIT_UNSPACED_CALL = ['+', '-']

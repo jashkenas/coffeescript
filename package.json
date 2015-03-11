@@ -8,7 +8,7 @@
     "compiler"
   ],
   "author": "Jeremy Ashkenas",
-  "version": "1.7.1",
+  "version": "1.9.1",
   "license": "MIT",
   "engines": {
     "node": ">=0.8.0"
@@ -23,7 +23,8 @@
   },
   "preferGlobal": true,
   "scripts": {
-    "test": "node ./bin/cake test"
+    "test":         "node ./bin/cake test",
+    "test-harmony": "node --harmony ./bin/cake test"
   },
   "homepage": "http://coffeescript.org",
   "bugs": "https://github.com/jashkenas/coffeescript/issues",
@@ -36,9 +37,6 @@
     "jison": ">=0.2.0",
     "highlight.js": "~8.0.0",
     "underscore": "~1.5.2",
-    "docco": "~0.6.2"
-  },
-  "dependencies": {
-    "mkdirp": "~0.3.5"
+    "docco": "~0.7.0"
   }
 }

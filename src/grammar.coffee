@@ -133,7 +133,17 @@ grammar =
   # they can also serve as keys in object literals.
   AlphaNumeric: [
     o 'NUMBER',                                 -> new Literal $1
+    o 'String'
+  ]
+
+  String: [
     o 'STRING',                                 -> new Literal $1
+    o 'STRING_START Body STRING_END',           -> new Parens $2
+  ]
+
+  Regex: [
+    o 'REGEX',                                  -> new Literal $1
+    o 'REGEX_START Invocation REGEX_END',       -> $2
   ]
 
   # All of our immediate values. Generally these can be passed straight
@@ -141,7 +151,7 @@ grammar =
   Literal: [
     o 'AlphaNumeric'
     o 'JS',                                     -> new Literal $1
-    o 'REGEX',                                  -> new Literal $1
+    o 'Regex'
     o 'DEBUGGER',                               -> new Literal $1
     o 'UNDEFINED',                              -> new Undefined
     o 'NULL',                                   -> new Null
@@ -452,7 +462,8 @@ grammar =
   ]
 
   ForBody: [
-    o 'FOR Range',                              -> source: LOC(2) new Value($2)
+    o 'FOR Range',                              -> source: (LOC(2) new Value($2))
+    o 'FOR Range BY Expression',                -> source: (LOC(2) new Value($2)), step: $4
     o 'ForStart ForSource',                     -> $2.own = $1.own; $2.name = $1[0]; $2.index = $1[1]; $2
   ]
 
@@ -537,6 +548,9 @@ grammar =
     o 'UNARY_MATH Expression',                  -> new Op $1 , $2
     o '-     Expression',                      (-> new Op '-', $2), prec: 'UNARY_MATH'
     o '+     Expression',                      (-> new Op '+', $2), prec: 'UNARY_MATH'
+    o 'YIELD Statement',                        -> new Op $1 , $2
+    o 'YIELD Expression',                       -> new Op $1 , $2
+    o 'YIELD FROM Expression',                  -> new Op $1.concat($2) , $3
 
     o '-- SimpleAssignable',                    -> new Op '--', $2
     o '++ SimpleAssignable',                    -> new Op '++', $2
@@ -597,6 +611,7 @@ operators = [
   ['left',      'COMPARE']
   ['left',      'LOGIC']
   ['nonassoc',  'INDENT', 'OUTDENT']
+  ['right',     'YIELD']
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
   ['right',     'FORIN', 'FOROF', 'BY', 'WHEN']
   ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']

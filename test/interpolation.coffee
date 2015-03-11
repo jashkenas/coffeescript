@@ -34,6 +34,17 @@ eq "#{6/2}
 eq "#{/// "'/'"/" ///}",     '/"\'\\/\'"\\/"/' # heregex, stuffed with spicy characters
 eq "#{/\\'/}",               "/\\\\'/"
 
+# Issue #2321: Regex/division conflict in interpolation
+eq "#{4/2}/", '2/'
+curWidth = 4
+eq "<i style='left:#{ curWidth/2 }%;'></i>",   "<i style='left:2%;'></i>"
+throws -> CoffeeScript.compile '''
+   "<i style='left:#{ curWidth /2 }%;'></i>"'''
+#                 valid regex--^^^^^^^^^^^ ^--unclosed string
+eq "<i style='left:#{ curWidth/2 }%;'></i>",   "<i style='left:2%;'></i>"
+eq "<i style='left:#{ curWidth/ 2 }%;'></i>",  "<i style='left:2%;'></i>"
+eq "<i style='left:#{ curWidth / 2 }%;'></i>", "<i style='left:2%;'></i>"
+
 hello = 'Hello'
 world = 'World'
 ok '#{hello} #{world}!' is '#{hello} #{world}!'
@@ -42,6 +53,10 @@ ok "[#{hello}#{world}]" is '[HelloWorld]'
 ok "#{hello}##{world}" is 'Hello#World'
 ok "Hello #{ 1 + 2 } World" is 'Hello 3 World'
 ok "#{hello} #{ 1 + 2 } #{world}" is "Hello 3 World"
+ok 1 + "#{2}px" is '12px'
+ok isNaN "a#{2}" * 2
+ok "#{2}" is '2'
+ok "#{2}#{2}" is '22'
 
 [s, t, r, i, n, g] = ['s', 't', 'r', 'i', 'n', 'g']
 ok "#{s}#{t}#{r}#{i}#{n}#{g}" is 'string'
@@ -122,17 +137,20 @@ eq 'multiline nested "interpolations" work', """multiline #{
   )()}"
 } work"""
 
+eq 'function(){}', "#{->}".replace /\s/g, ''
+ok /^a[\s\S]+b$/.test "a#{=>}b"
+ok /^a[\s\S]+b$/.test "a#{ (x) -> x ** 2 }b"
 
 # Regular Expression Interpolation
 
 # TODO: improve heregex interpolation tests
 
 test "heregex interpolation", ->
-  eq /\\#{}\\\"/ + '', ///
+  eq /\\#{}\\"/ + '', ///
    #{
      "#{ '\\' }" # normal comment
    }
    # regex comment
    \#{}
-   \\ \"
+   \\ "
   /// + ''
