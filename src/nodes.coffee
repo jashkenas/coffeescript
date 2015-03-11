@@ -10,11 +10,13 @@ Error.stackTraceLimit = Infinity
 
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, some,
-addLocationDataFn, locationDataToString, throwSyntaxError} = require './helpers'
+addLocationDataFn, locationDataToString, throwSyntaxError,
+allowLocation} = require './helpers'
 
 # Functions required by parser
 exports.extend = extend
 exports.addLocationDataFn = addLocationDataFn
+exports.allowLocation = allowLocation
 
 # Constant functions for nodes that don't need customization.
 YES     = -> yes

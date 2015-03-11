@@ -38,7 +38,7 @@ o = (patternString, action, options) ->
 
   # All runtime functions we need are defined on "yy"
   action = action.replace /\bnew /g, '$&yy.'
-  action = action.replace /\b(?:Block\.wrap|extend)\b/g, 'yy.$&'
+  action = action.replace /\b(?:Block\.wrap|extend|allowLocation)\b/g, 'yy.$&'
 
   # Returns a function which adds location data to the first parameter passed
   # in, and returns the parameter.  If the parameter is not a node, it will
@@ -516,8 +516,8 @@ grammar =
 
   # An individual **When** clause, with action.
   When: [
-    o 'LEADING_WHEN SimpleArgs Block',            -> [$2, $3]
-    o 'LEADING_WHEN SimpleArgs Block TERMINATOR', -> [$2, $3]
+    o 'LEADING_WHEN SimpleArgs Block',            -> allowLocation [$2, $3]
+    o 'LEADING_WHEN SimpleArgs Block TERMINATOR', -> allowLocation [$2, $3]
   ]
 
   # The most basic form of *if* is a condition and an action. The following
