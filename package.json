@@ -23,7 +23,7 @@
   },
   "preferGlobal": true,
   "scripts": {
-    "test":         "node ./bin/cake test",
+    "test": "node ./bin/cake test",
     "test-harmony": "node --harmony ./bin/cake test"
   },
   "homepage": "http://coffeescript.org",
@@ -38,5 +38,8 @@
     "highlight.js": "~8.0.0",
     "underscore": "~1.5.2",
     "docco": "~0.7.0"
+  },
+  "dependencies": {
+    "marked": "~0.3.3"
   }
 }
