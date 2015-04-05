@@ -103,7 +103,14 @@ exports.run = ->
     source = path.resolve source
     compilePath source, yes, source
 
+ADD_GLOBAL_PATHS = "
+  process.env.NODE_PATH = (process.env.NODE_PATH || '')
+    + require('path').delimiter
+    + require('path').resolve(process.execPath, '..', '..', 'lib', 'node_modules');
+  require('module')._initPaths();
+"
 makePrelude = (requires) ->
+  ADD_GLOBAL_PATHS +
   requires.map (module) ->
     [_, name, module] = match if match = module.match(/^(.*)=(.*)$/)
     name ||= helpers.baseFileName module, yes, useWinPathSep
