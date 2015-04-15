@@ -204,7 +204,7 @@ exports.Lexer = class Lexer
     {tokens, index: end} = @matchWithInterpolations regex, quote
     $ = tokens.length - 1
 
-    delimiter = quote[0]
+    delimiter = quote.charAt(0)
     if heredoc
       # Find the smallest indentation. It will be removed from all lines later.
       indent = null
@@ -841,7 +841,7 @@ REGEX = /// ^
    | \\[^\n]         # anything but newlines escaped
    | \[              # character class
        (?: \\[^\n] | [^ \] \n \\ ] )*
-     ]
+     \]
   )*) (/)?
 ///
 

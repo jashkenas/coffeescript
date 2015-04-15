@@ -110,7 +110,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffeescript/tarball/1.9.1">1.9.1</a>
+      <a href="http://github.com/jashkenas/coffeescript/tarball/1.9.2">1.9.2</a>
     </p>
 
     <pre>npm install -g coffee-script</pre>
@@ -806,7 +806,7 @@ Expressions
       it to the current value of <tt>this</tt>, right on the spot. This is helpful
       when using callback-based libraries like Prototype or jQuery, for creating
       iterator functions to pass to <tt>each</tt>, or event-handler functions
-      to use with <tt>bind</tt>. Functions created with the fat arrow are able to access
+      to use with <tt>on</tt>. Functions created with the fat arrow are able to access
       properties of the <tt>this</tt> where they're defined.
     </p>
     <%= codeFor('fat_arrow') %>
@@ -821,9 +821,9 @@ Expressions
       constructed.
     </p>
     <p>
-      CoffeeScript functions also support 
+      CoffeeScript functions also support
       <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">ES6 generator functions</a>
-      through the <tt>yield</tt> keyword. There's no <tt>function*(){}</tt> 
+      through the <tt>yield</tt> keyword. There's no <tt>function*(){}</tt>
       nonsense &mdash; a generator in CoffeeScript is simply a function that yields.
     </p>
     <%= codeFor('generators', 'ps.next().value') %>
@@ -1204,10 +1204,37 @@ Expressions
     </h2>
 
     <p>
+      <%= releaseHeader('2015-04-15', '1.9.2', '1.9.1') %>
+      <ul>
+        <li>
+          Fixed a <b>watch</b> mode error introduced in 1.9.1 when compiling
+          multiple files with the same filename.
+        </li>
+        <li>
+          Bugfix for <tt>yield</tt> around expressions containing
+          <tt>this</tt>.
+        </li>
+        <li>
+          Added a Ruby-style <tt>-r</tt> option to the REPL, which allows
+          requiring a module before execution with <tt>--eval</tt> or
+          <tt>--interactive</tt>.
+        </li>
+        <li>
+          In <tt>&lt;script type="text/coffeescript"&gt;</tt> tags, to avoid
+          possible duplicate browser requests for .coffee files, 
+          you can now use the <tt>data-src</tt> attribute instead of <tt>src</tt>.
+        </li>
+        <li>
+          Minor bug fixes for IE8, strict ES5 regular expressions and Browserify.
+        </li>
+      </ul>
+    </p>
+
+    <p>
       <%= releaseHeader('2015-02-18', '1.9.1', '1.9.0') %>
       <ul>
         <li>
-          Interpolation now works in object literal keys (again). You can use this to 
+          Interpolation now works in object literal keys (again). You can use this to
           dynamically name properties.
         </li>
         <li>
@@ -1231,10 +1258,10 @@ Expressions
       <ul>
         <li>
           CoffeeScript now supports ES6 generators. A generator is simply a function
-          that <tt>yield</tt>s. 
+          that <tt>yield</tt>s.
         </li>
         <li>
-          More robust parsing and improved error messages for strings and regexes — 
+          More robust parsing and improved error messages for strings and regexes —
           especially with respect to interpolation.
         </li>
         <li>

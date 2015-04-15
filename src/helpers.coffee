@@ -173,7 +173,7 @@ syntaxErrorToString = ->
 
   # Check to see if we're running on a color-enabled TTY.
   if process?
-    colorsEnabled = process.stdout.isTTY and not process.env.NODE_DISABLE_COLORS
+    colorsEnabled = process.stdout?.isTTY and not process.env?.NODE_DISABLE_COLORS
 
   if @colorful ? colorsEnabled
     colorize = (str) -> "\x1B[1;31m#{str}\x1B[0m"

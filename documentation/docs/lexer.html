@@ -484,7 +484,7 @@ interpolation.</p>
     {tokens, <span class="hljs-attribute">index</span>: end} = <span class="hljs-property">@matchWithInterpolations</span> regex, quote
     $ = tokens.length - <span class="hljs-number">1</span>
 
-    delimiter = quote[<span class="hljs-number">0</span>]
+    delimiter = quote.charAt(<span class="hljs-number">0</span>)
     <span class="hljs-keyword">if</span> heredoc</pre></div></div>
             
         </li>
@@ -1766,7 +1766,7 @@ HEREDOC_INDENT     = <span class="hljs-regexp">/\n+([^\n\S]*)(?=\S)/g</span></pr
    | \\[^\n]         <span class="hljs-comment"># anything but newlines escaped</span>
    | \[              <span class="hljs-comment"># character class</span>
        (?: \\[^\n] | [^ \] \n \\ ] )*
-     ]
+     \]
   )*) (/)?
 ///</span>
 

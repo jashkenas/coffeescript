@@ -186,7 +186,7 @@ test "tight formatting with leading `then`", ->
   then nonce
   else undefined
 
-test "#738", ->
+test "#738: inline function defintion", ->
   nonce = {}
   fn = if true then -> nonce
   eq nonce, fn()

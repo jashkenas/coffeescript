@@ -90,7 +90,7 @@ exports.Base = class Base
         meth = 'call'
       func = new Value func, [new Access new Literal meth]
     parts = (new Call func, args).compileNode o
-    if func.isGenerator
+    if func.isGenerator or func.base?.isGenerator
       parts.unshift @makeCode "(yield* "
       parts.push    @makeCode ")"
     parts
