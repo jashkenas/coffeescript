@@ -1207,24 +1207,25 @@ Expressions
       <%= releaseHeader('2015-04-15', '1.9.2', '1.9.1') %>
       <ul>
         <li>
-          Fixed the watch mode error
-          <tt>The two following source files have the same output file</tt>.
+          Fixed a <b>watch</b> mode error introduced in 1.9.1 when compiling
+          multiple files with the same filename.
         </li>
         <li>
-          <tt>yield</tt> now behaves as expected around expressions containing
+          Bugfix for <tt>yield</tt> around expressions containing
           <tt>this</tt>.
         </li>
         <li>
-          Added a Ruby-style <tt>-r</tt> option to the cli, which allows
+          Added a Ruby-style <tt>-r</tt> option to the REPL, which allows
           requiring a module before execution with <tt>--eval</tt> or
           <tt>--interactive</tt>.
         </li>
         <li>
-          To avoid dublicate browser requests for .coffee files, you can now
-          use script tags with the <tt>data-src</tt> attribute.
+          In <tt>&lt;script type="text/coffeescript"&gt;</tt> tags, to avoid
+          possible duplicate browser requests for .coffee files, 
+          you can now use the <tt>data-src</tt> attribute instead of <tt>src</tt>.
         </li>
         <li>
-          Minor bug fixes for IE8, strict ES5 regexp and browserify support.
+          Minor bug fixes for IE8, strict ES5 regular expressions and Browserify.
         </li>
       </ul>
     </p>
