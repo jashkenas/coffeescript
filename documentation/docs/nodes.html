@@ -328,7 +328,7 @@ object with their parent closure, to preserve the expected lexical scope.</p>
         meth = <span class="hljs-string">'call'</span>
       func = <span class="hljs-keyword">new</span> Value func, [<span class="hljs-keyword">new</span> Access <span class="hljs-keyword">new</span> Literal meth]
     parts = (<span class="hljs-keyword">new</span> Call func, args).compileNode o
-    <span class="hljs-keyword">if</span> func.isGenerator
+    <span class="hljs-keyword">if</span> func.isGenerator <span class="hljs-keyword">or</span> func.base?.isGenerator
       parts.unshift <span class="hljs-property">@makeCode</span> <span class="hljs-string">"(yield* "</span>
       parts.push    <span class="hljs-property">@makeCode</span> <span class="hljs-string">")"</span>
     parts</pre></div></div>

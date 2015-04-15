@@ -583,7 +583,7 @@ it already.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">if</span> process?
-    colorsEnabled = process.stdout.isTTY <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> process.env.NODE_DISABLE_COLORS
+    colorsEnabled = process.stdout?.isTTY <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> process.env?.NODE_DISABLE_COLORS
 
   <span class="hljs-keyword">if</span> <span class="hljs-property">@colorful</span> ? colorsEnabled
     <span class="hljs-function"><span class="hljs-title">colorize</span> = <span class="hljs-params">(str)</span> -&gt;</span> <span class="hljs-string">"\x1B[1;31m<span class="hljs-subst">#{str}</span>\x1B[0m"</span>

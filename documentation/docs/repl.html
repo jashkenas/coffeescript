@@ -243,11 +243,7 @@ parens. Unwrap all that.</p>
         <span class="hljs-keyword">new</span> Assign (<span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> Literal <span class="hljs-string">'_'</span>), ast, <span class="hljs-string">'='</span>
       ]
       js = ast.compile {<span class="hljs-attribute">bare</span>: <span class="hljs-literal">yes</span>, <span class="hljs-attribute">locals</span>: Object.keys(context), referencedVars}
-      result = <span class="hljs-keyword">if</span> context <span class="hljs-keyword">is</span> <span class="hljs-built_in">global</span>
-        vm.runInThisContext js, filename
-      <span class="hljs-keyword">else</span>
-        vm.runInContext js, context, filename
-      cb <span class="hljs-literal">null</span>, result
+      cb <span class="hljs-literal">null</span>, runInContext js, context, filename
     <span class="hljs-keyword">catch</span> err</pre></div></div>
             
         </li>
@@ -265,6 +261,12 @@ parens. Unwrap all that.</p>
             
             <div class="content"><div class='highlight'><pre>      updateSyntaxError err, input
       cb err
+
+<span class="hljs-function"><span class="hljs-title">runInContext</span> = <span class="hljs-params">(js, context, filename)</span> -&gt;</span>
+  <span class="hljs-keyword">if</span> context <span class="hljs-keyword">is</span> <span class="hljs-built_in">global</span>
+    vm.runInThisContext js, filename
+  <span class="hljs-keyword">else</span>
+    vm.runInContext js, context, filename
 
 <span class="hljs-function"><span class="hljs-title">addMultilineHandler</span> = <span class="hljs-params">(repl)</span> -&gt;</span>
   {rli, inputStream, outputStream} = repl</pre></div></div>
@@ -576,6 +578,7 @@ parens. Unwrap all that.</p>
     process.argv = [<span class="hljs-string">'coffee'</span>].concat process.argv[<span class="hljs-number">2.</span>.]
     opts = merge replDefaults, opts
     repl = nodeREPL.start opts
+    runInContext opts.prelude, repl.context, <span class="hljs-string">'prelude'</span> <span class="hljs-keyword">if</span> opts.prelude
     repl.<span class="hljs-literal">on</span> <span class="hljs-string">'exit'</span>,<span class="hljs-function"> -&gt;</span> repl.outputStream.write <span class="hljs-string">'\n'</span>
     addMultilineHandler repl
     addHistory repl, opts.historyFile, opts.historyMaxInputSize <span class="hljs-keyword">if</span> opts.historyFile</pre></div></div>

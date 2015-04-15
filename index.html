@@ -110,7 +110,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffeescript/tarball/1.9.1">1.9.1</a>
+      <a href="http://github.com/jashkenas/coffeescript/tarball/1.9.2">1.9.2</a>
     </p>
 
     <pre>npm install -g coffee-script</pre>
@@ -1845,26 +1845,26 @@ tim = new Person({
       it to the current value of <tt>this</tt>, right on the spot. This is helpful
       when using callback-based libraries like Prototype or jQuery, for creating
       iterator functions to pass to <tt>each</tt>, or event-handler functions
-      to use with <tt>bind</tt>. Functions created with the fat arrow are able to access
+      to use with <tt>on</tt>. Functions created with the fat arrow are able to access
       properties of the <tt>this</tt> where they're defined.
     </p>
     <div class='code'><pre><code><span class="function"><span class="title">Account</span> = <span class="params">(customer, cart)</span> -&gt;</span>
   <span class="property">@customer</span> = customer
   <span class="property">@cart</span> = cart
 
-  $<span class="function"><span class="params">(<span class="string">'.shopping_cart'</span>)</span>.<span class="title">bind</span> '<span class="title">click</span>', <span class="params">(event)</span> =&gt;</span>
+  $<span class="function"><span class="params">(<span class="string">'.shopping_cart'</span>)</span>.<span class="title">on</span> '<span class="title">click</span>', <span class="params">(event)</span> =&gt;</span>
     <span class="property">@customer</span>.purchase <span class="property">@cart</span></code></pre><pre><code><span class="keyword">var</span> Account;
 
 Account = <span class="function"><span class="keyword">function</span><span class="params">(customer, cart)</span> {</span>
   <span class="keyword">this</span>.customer = customer;
   <span class="keyword">this</span>.cart = cart;
-  <span class="keyword">return</span> $(<span class="string">'.shopping_cart'</span>).bind(<span class="string">'click'</span>, (<span class="function"><span class="keyword">function</span><span class="params">(_this)</span> {</span>
+  <span class="keyword">return</span> $(<span class="string">'.shopping_cart'</span>).on(<span class="string">'click'</span>, (<span class="function"><span class="keyword">function</span><span class="params">(_this)</span> {</span>
     <span class="keyword">return</span> <span class="function"><span class="keyword">function</span><span class="params">(event)</span> {</span>
       <span class="keyword">return</span> _this.customer.purchase(_this.cart);
     };
   })(<span class="keyword">this</span>));
 };
-</code></pre><script>window.example31 = "Account = (customer, cart) ->\n  @customer = customer\n  @cart = cart\n\n  $('.shopping_cart').bind 'click', (event) =>\n    @customer.purchase @cart"</script><div class='minibutton load' onclick='javascript: loadConsole(example31);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example31 = "Account = (customer, cart) ->\n  @customer = customer\n  @cart = cart\n\n  $('.shopping_cart').on 'click', (event) =>\n    @customer.purchase @cart"</script><div class='minibutton load' onclick='javascript: loadConsole(example31);'>load</div><br class='clear' /></div>
     <p>
       If we had used <tt>-&gt;</tt> in the callback above, <tt>@customer</tt> would
       have referred to the undefined "customer" property of the DOM element,
@@ -1876,9 +1876,9 @@ Account = <span class="function"><span class="keyword">function</span><span clas
       constructed.
     </p>
     <p>
-      CoffeeScript functions also support 
+      CoffeeScript functions also support
       <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">ES6 generator functions</a>
-      through the <tt>yield</tt> keyword. There's no <tt>function*(){}</tt> 
+      through the <tt>yield</tt> keyword. There's no <tt>function*(){}</tt>
       nonsense &mdash; a generator in CoffeeScript is simply a function that yields.
     </p>
     <div class='code'><pre><code><span class="function"><span class="title">perfectSquares</span> = -&gt;</span>
@@ -2492,6 +2492,36 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
     </h2>
 
     <p>
+      <div class="anchor" id="1.9.2"></div>
+<b class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.9.1...1.9.2">1.9.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2015-04-15">April 15, 2015</time></span>
+</b>
+      <ul>
+        <li>
+          Fixed the watch mode error
+          <tt>The two following source files have the same output file</tt>.
+        </li>
+        <li>
+          <tt>yield</tt> now behaves as expected around expressions containing
+          <tt>this</tt>.
+        </li>
+        <li>
+          Added a Ruby-style <tt>-r</tt> option to the cli, which allows
+          requiring a module before execution with <tt>--eval</tt> or
+          <tt>--interactive</tt>.
+        </li>
+        <li>
+          To avoid dublicate browser requests for .coffee files, you can now
+          use script tags with the <tt>data-src</tt> attribute.
+        </li>
+        <li>
+          Minor bug fixes for IE8, strict ES5 regexp and browserify support.
+        </li>
+      </ul>
+    </p>
+
+    <p>
       <div class="anchor" id="1.9.1"></div>
 <b class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/1.9.0...1.9.1">1.9.1</a>
@@ -2499,7 +2529,7 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
 </b>
       <ul>
         <li>
-          Interpolation now works in object literal keys (again). You can use this to 
+          Interpolation now works in object literal keys (again). You can use this to
           dynamically name properties.
         </li>
         <li>
@@ -2527,10 +2557,10 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
       <ul>
         <li>
           CoffeeScript now supports ES6 generators. A generator is simply a function
-          that <tt>yield</tt>s. 
+          that <tt>yield</tt>s.
         </li>
         <li>
-          More robust parsing and improved error messages for strings and regexes — 
+          More robust parsing and improved error messages for strings and regexes —
           especially with respect to interpolation.
         </li>
         <li>
