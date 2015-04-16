@@ -1,4 +1,4 @@
-{repeat} = require './helpers'
+{repeat, isCoffee} = require './helpers'
 
 # A simple **OptionParser** class to parse option flags from the command-line.
 # Use it like so:
@@ -25,6 +25,14 @@ exports.OptionParser = class OptionParser
   # parsers that allow you to attach callback actions for every flag. Instead,
   # you're responsible for interpreting the options object.
   parse: (args) ->
+    # Pass all arguments to script unchanged if first argument is the script to
+    # be run; assume no options are for the coffeescript compiler. This allows
+    # the use of '#!/usr/bin/env coffee' to run executable scripts on Linux
+    # systems, which do not parse the '--' argument in the first line correctly.
+    if (args.indexOf '--' is -1) and
+       (args.length > 0) and
+       (isCoffee args[0])
+      return arguments: args
     options = arguments: []
     skippingArgument = no
     originalArgs = args
