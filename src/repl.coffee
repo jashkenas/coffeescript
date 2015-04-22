@@ -152,7 +152,7 @@ module.exports =
     opts = merge replDefaults, opts
     repl = nodeREPL.start opts
     runInContext opts.prelude, repl.context, 'prelude' if opts.prelude
-    repl.on 'exit', -> repl.outputStream.write '\n'
+    repl.on 'exit', -> repl.outputStream.write '\n' if not repl.rli.closed
     addMultilineHandler repl
     addHistory repl, opts.historyFile, opts.historyMaxInputSize if opts.historyFile
     # Adapt help inherited from the node REPL
