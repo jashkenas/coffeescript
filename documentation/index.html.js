@@ -874,9 +874,8 @@ Expressions
     <p>
       <span id="try" class="bookmark"></span>
       <b class="header">Try/Catch/Finally</b>
-      Try/catch statements are just about the same as in JavaScript, with a few
-      additions: They work as expressions, and you may omit saving the error in
-      the catch—or the entire catch itself—if you don't need it.
+      Try-expressions have the same semantics as try-statements in JavaScript,
+      though in CoffeeScript, the catch and finally parts are both optional.
     </p>
     <%= codeFor('try') %>
 
