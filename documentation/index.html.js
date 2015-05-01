@@ -887,7 +887,8 @@ Expressions
       <b class="header">String Interpolation, Block Strings, and Block Comments</b>
       Ruby-style string interpolation is included in CoffeeScript. Double-quoted
       strings allow for interpolated values, using <tt>#{ ... }</tt>,
-      and single-quoted strings are literal.
+      and single-quoted strings are literal. You may even use interpolation in
+      object keys.
     </p>
     <%= codeFor('interpolation', 'sentence') %>
     <p>
