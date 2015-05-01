@@ -875,7 +875,8 @@ Expressions
       <span id="try" class="bookmark"></span>
       <b class="header">Try/Catch/Finally</b>
       Try-expressions have the same semantics as try-statements in JavaScript,
-      though in CoffeeScript, the catch and finally parts are both optional.
+      though in CoffeeScript, you may omit *both* the catch and finally parts.
+      The catch part may also omit the error parameter if it is not needed.
     </p>
     <%= codeFor('try') %>
 
