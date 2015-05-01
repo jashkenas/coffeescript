@@ -674,3 +674,24 @@ test "Non-callable literals shouldn't compile", ->
   cantCompile '[2..9](2)'
   cantCompile '[1..10][2..9] 2'
   cantCompile '[1..10][2..9](2)'
+
+test 'implicit invocation with implicit object literal', ->
+  f = (obj) -> eq 1, obj.a
+
+  f
+    a: 1
+  obj =
+    if f
+      a: 2
+    else
+      a: 1
+  eq 2, obj.a
+
+  f
+    "a": 1
+  obj =
+    if f
+      "a": 2
+    else
+      "a": 1
+  eq 2, obj.a
