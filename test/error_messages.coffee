@@ -751,3 +751,20 @@ test "unexpected object keys", ->
     {a: 1, [[]]: 2}
            ^
   '''
+
+test "invalid object keys", ->
+  assertErrorFormat '''
+    @a: 1
+  ''', '''
+    [stdin]:1:1: error: invalid object key
+    @a: 1
+    ^^
+  '''
+  assertErrorFormat '''
+    f
+      @a: 1
+  ''', '''
+    [stdin]:2:3: error: invalid object key
+      @a: 1
+      ^^
+  '''
