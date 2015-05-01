@@ -26,6 +26,7 @@ withPrettyErrors = (fn) ->
     try
       fn.call @, code, options
     catch err
+      throw err if typeof code isnt 'string' # Support `CoffeeScript.nodes(tokens)`.
       throw helpers.updateSyntaxError err, code, options.filename
 
 # Compile CoffeeScript code to JavaScript, using the Coffee/Jison compiler.
