@@ -147,7 +147,9 @@ exports.Lexer = class Lexer
         @error "reserved word '#{id}'", length: id.length
 
     unless forcedIdentifier
-      id  = COFFEE_ALIAS_MAP[id] if id in COFFEE_ALIASES
+      if id in COFFEE_ALIASES
+        alias = id
+        id = COFFEE_ALIAS_MAP[id]
       tag = switch id
         when '!'                 then 'UNARY'
         when '==', '!='          then 'COMPARE'
@@ -157,6 +159,7 @@ exports.Lexer = class Lexer
         else  tag
 
     tagToken = @token tag, id, 0, idLength
+    tagToken.origin = [tag, alias, tagToken[2]] if alias
     tagToken.variable = not forcedIdentifier
     if poppedToken
       [tagToken[2].first_line, tagToken[2].first_column] =
@@ -405,6 +408,7 @@ exports.Lexer = class Lexer
     [..., prev] = @tokens
     if value is '=' and prev
       if not prev[1].reserved and prev[1] in JS_FORBIDDEN
+        prev = prev.origin if prev.origin
         @error "reserved word '#{prev[1]}' can't be assigned", prev[2]
       if prev[1] in ['||', '&&']
         prev[0] = 'COMPOUND_ASSIGN'
