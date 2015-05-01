@@ -831,6 +831,10 @@ Expressions
       nonsense &mdash; a generator in CoffeeScript is simply a function that yields.
     </p>
     <%= codeFor('generators', 'ps.next().value') %>
+    <p>
+      <tt>yield*</tt> is called <tt>yield from</tt>, and <tt>yield return</tt>
+      may be used if you need to force a generator that doesn't yield.
+    </p>
 
     <p>
       <span id="embedded" class="bookmark"></span>
