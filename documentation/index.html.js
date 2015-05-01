@@ -862,8 +862,9 @@ Expressions
     <p>
       <span id="try" class="bookmark"></span>
       <b class="header">Try/Catch/Finally</b>
-      Try/catch statements are just about the same as JavaScript (although
-      they work as expressions).
+      Try/catch statements are just about the same as in JavaScript, with a few
+      additions: They work as expressions, and you may omit saving the error in
+      the catch—or the entire catch itself—if you don't need it.
     </p>
     <%= codeFor('try') %>
 
