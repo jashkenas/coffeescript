@@ -532,6 +532,10 @@ Expressions
       <tt>evens = (x for x in [0..10] by 2)</tt>
     </p>
     <p>
+      If you don't need the current iteration value you may omit it:<br />
+      <tt>browser.closeCurrentTab() for [0...count]</tt>
+    </p>
+    <p>
       Comprehensions can also be used to iterate over the keys and values in
       an object. Use <tt>of</tt> to signal comprehension over the properties of
       an object instead of the values in an array.
