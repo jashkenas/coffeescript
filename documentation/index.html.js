@@ -532,6 +532,10 @@ Expressions
       <tt>evens = (x for x in [0..10] by 2)</tt>
     </p>
     <p>
+      If you don't need the current iteration value you may omit it:<br />
+      <tt>browser.closeCurrentTab() for [0...count]</tt>
+    </p>
+    <p>
       Comprehensions can also be used to iterate over the keys and values in
       an object. Use <tt>of</tt> to signal comprehension over the properties of
       an object instead of the values in an array.
@@ -658,8 +662,12 @@ Expressions
       test for JavaScript object-key presence.
     </p>
     <p>
-      To simplify math expressions, <tt>**</tt> can be used for exponentiation, <tt>//</tt> performs integer division and <tt>%%</tt> provides true mathematical modulo.
+      To simplify math expressions, <tt>**</tt> can be used for exponentiation
+      and <tt>//</tt> performs integer division. <tt>%</tt> works just like in
+      JavaScript, while <tt>%%</tt> provides
+      <a href="http://en.wikipedia.org/wiki/Modulo_operation">“dividend dependent modulo”</a>:
     </p>
+    <%= codeFor('modulo') %>
     <p>
       All together now:
     </p>
@@ -827,6 +835,10 @@ Expressions
       nonsense &mdash; a generator in CoffeeScript is simply a function that yields.
     </p>
     <%= codeFor('generators', 'ps.next().value') %>
+    <p>
+      <tt>yield*</tt> is called <tt>yield from</tt>, and <tt>yield return</tt>
+      may be used if you need to force a generator that doesn't yield.
+    </p>
 
     <p>
       <span id="embedded" class="bookmark"></span>
@@ -862,8 +874,9 @@ Expressions
     <p>
       <span id="try" class="bookmark"></span>
       <b class="header">Try/Catch/Finally</b>
-      Try/catch statements are just about the same as JavaScript (although
-      they work as expressions).
+      Try/catch statements are just about the same as in JavaScript, with a few
+      additions: They work as expressions, and you may omit saving the error in
+      the catch—or the entire catch itself—if you don't need it.
     </p>
     <%= codeFor('try') %>
 
@@ -882,7 +895,8 @@ Expressions
       <b class="header">String Interpolation, Block Strings, and Block Comments</b>
       Ruby-style string interpolation is included in CoffeeScript. Double-quoted
       strings allow for interpolated values, using <tt>#{ ... }</tt>,
-      and single-quoted strings are literal.
+      and single-quoted strings are literal. You may even use interpolation in
+      object keys.
     </p>
     <%= codeFor('interpolation', 'sentence') %>
     <p>
