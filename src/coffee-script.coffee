@@ -63,7 +63,8 @@ exports.compile = compile = withPrettyErrors (code, options) ->
   for fragment in fragments
     # Update the sourcemap with data from each fragment
     if options.sourceMap
-      if fragment.locationData
+      # Do not include empty, whitespace, or semicolon-only fragments.
+      if fragment.locationData and not /^[;\s]*$/.test fragment.code
         map.add(
           [fragment.locationData.first_line, fragment.locationData.first_column]
           [currentLine, currentColumn]
