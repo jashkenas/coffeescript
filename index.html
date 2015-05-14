@@ -110,7 +110,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffeescript/tarball/1.9.2">1.9.2</a>
+      <a href="http://github.com/jashkenas/coffeescript/tarball/1.9.3">1.9.3</a>
     </p>
 
     <pre>npm install -g coffee-script</pre>
@@ -941,6 +941,10 @@ countdown = (function() {
       <tt>evens = (x for x in [0..10] by 2)</tt>
     </p>
     <p>
+      If you don't need the current iteration value you may omit it:<br />
+      <tt>browser.closeCurrentTab() for [0...count]</tt>
+    </p>
+    <p>
       Comprehensions can also be used to iterate over the keys and values in
       an object. Use <tt>of</tt> to signal comprehension over the properties of
       an object instead of the values in an array.
@@ -1320,8 +1324,12 @@ alert((function() {
       test for JavaScript object-key presence.
     </p>
     <p>
-      To simplify math expressions, <tt>**</tt> can be used for exponentiation, <tt>//</tt> performs integer division and <tt>%%</tt> provides true mathematical modulo.
+      To simplify math expressions, <tt>**</tt> can be used for exponentiation
+      and <tt>//</tt> performs integer division. <tt>%</tt> works just like in
+      JavaScript, while <tt>%%</tt> provides
+      <a href="http://en.wikipedia.org/wiki/Modulo_operation">“dividend dependent modulo”</a>:
     </p>
+    
     <p>
       All together now:
     </p>
@@ -1377,7 +1385,7 @@ winner = <span class="literal">yes</span> <span class="keyword">if</span> pick <
 }
 
 print(inspect(<span class="string">"My name is "</span> + <span class="keyword">this</span>.name));
-</code></pre><script>window.example20 = "launch() if ignition is on\n\nvolume = 10 if band isnt SpinalTap\n\nletTheWildRumpusBegin() unless answer is no\n\nif car.speed < limit then accelerate()\n\nwinner = yes if pick in [47, 92, 13]\n\nprint inspect \"My name is #{@name}\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example20);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example21 = "launch() if ignition is on\n\nvolume = 10 if band isnt SpinalTap\n\nletTheWildRumpusBegin() unless answer is no\n\nif car.speed < limit then accelerate()\n\nwinner = yes if pick in [47, 92, 13]\n\nprint inspect \"My name is #{@name}\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example21);'>load</div><br class='clear' /></div>
 
     <p>
       <b class="header">The Existential Operator</b>
@@ -1416,7 +1424,7 @@ speed = <span class="number">0</span>;
 }
 
 footprints = <span class="keyword">typeof</span> yeti !== <span class="string">"undefined"</span> &amp;&amp; yeti !== <span class="literal">null</span> ? yeti : <span class="string">"bear"</span>;
-</code></pre><script>window.example21 = "solipsism = true if mind? and not world?\n\nspeed = 0\nspeed ?= 15\n\nfootprints = yeti ? \"bear\"\n\n\n\n\n\n\n "</script><div class='minibutton load' onclick='javascript: loadConsole(example21);'>load</div><div class='minibutton ok' onclick='javascript: var footprints, solipsism, speed;
+</code></pre><script>window.example22 = "solipsism = true if mind? and not world?\n\nspeed = 0\nspeed ?= 15\n\nfootprints = yeti ? \"bear\"\n\n\n\n\n\n\n "</script><div class='minibutton load' onclick='javascript: loadConsole(example22);'>load</div><div class='minibutton ok' onclick='javascript: var footprints, solipsism, speed;
 
 if ((typeof mind !== "undefined" && mind !== null) && (typeof world === "undefined" || world === null)) {
   solipsism = true;
@@ -1442,7 +1450,7 @@ footprints = typeof yeti !== "undefined" && yeti !== null ? yeti : "bear";
 </code></pre><pre><code><span class="keyword">var</span> ref, zip;
 
 zip = <span class="keyword">typeof</span> lottery.drawWinner === <span class="string">"function"</span> ? (ref = lottery.drawWinner().address) != <span class="literal">null</span> ? ref.zipcode : <span class="keyword">void</span> <span class="number">0</span> : <span class="keyword">void</span> <span class="number">0</span>;
-</code></pre><script>window.example22 = "zip = lottery.drawWinner?().address?.zipcode\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example22);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example23 = "zip = lottery.drawWinner?().address?.zipcode\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example23);'>load</div><br class='clear' /></div>
     <p>
       Soaking up nulls is similar to Ruby's
       <a href="https://rubygems.org/gems/andand">andand gem</a>, and to the
@@ -1556,7 +1564,7 @@ tom = <span class="keyword">new</span> Horse(<span class="string">"Tommy the Pal
 sam.move();
 
 tom.move();
-</code></pre><script>window.example23 = "class Animal\n  constructor: (@name) ->\n\n  move: (meters) ->\n    alert @name + \" moved #{meters}m.\"\n\nclass Snake extends Animal\n  move: ->\n    alert \"Slithering...\"\n    super 5\n\nclass Horse extends Animal\n  move: ->\n    alert \"Galloping...\"\n    super 45\n\nsam = new Snake \"Sammy the Python\"\ntom = new Horse \"Tommy the Palomino\"\n\nsam.move()\ntom.move()\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example23);'>load</div><div class='minibutton ok' onclick='javascript: var Animal, Horse, Snake, sam, tom,
+</code></pre><script>window.example24 = "class Animal\n  constructor: (@name) ->\n\n  move: (meters) ->\n    alert @name + \" moved #{meters}m.\"\n\nclass Snake extends Animal\n  move: ->\n    alert \"Slithering...\"\n    super 5\n\nclass Horse extends Animal\n  move: ->\n    alert \"Galloping...\"\n    super 45\n\nsam = new Snake \"Sammy the Python\"\ntom = new Horse \"Tommy the Palomino\"\n\nsam.move()\ntom.move()\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example24);'>load</div><div class='minibutton ok' onclick='javascript: var Animal, Horse, Snake, sam, tom,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -1627,7 +1635,7 @@ tom.move();
 </code></pre><pre><code><span class="built_in">String</span>.prototype.dasherize = <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
   <span class="keyword">return</span> <span class="keyword">this</span>.replace(<span class="regexp">/_/g</span>, <span class="string">"-"</span>);
 };
-</code></pre><script>window.example24 = "String::dasherize = ->\n  this.replace /_/g, \"-\"\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example24);'>load</div><div class='minibutton ok' onclick='javascript: String.prototype.dasherize = function() {
+</code></pre><script>window.example25 = "String::dasherize = ->\n  this.replace /_/g, \"-\"\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example25);'>load</div><div class='minibutton ok' onclick='javascript: String.prototype.dasherize = function() {
   return this.replace(/_/g, "-");
 };
 ;alert("one_two".dasherize());'>run: "one_two".dasherize()</div><br class='clear' /></div>
@@ -1665,7 +1673,7 @@ theBait = <span class="number">1000</span>;
 theSwitch = <span class="number">0</span>;
 
 ref = [theSwitch, theBait], theBait = ref[<span class="number">0</span>], theSwitch = ref[<span class="number">1</span>];
-</code></pre><script>window.example25 = "theBait   = 1000\ntheSwitch = 0\n\n[theBait, theSwitch] = [theSwitch, theBait]\n\n\n\n\n "</script><div class='minibutton load' onclick='javascript: loadConsole(example25);'>load</div><div class='minibutton ok' onclick='javascript: var ref, theBait, theSwitch;
+</code></pre><script>window.example26 = "theBait   = 1000\ntheSwitch = 0\n\n[theBait, theSwitch] = [theSwitch, theBait]\n\n\n\n\n "</script><div class='minibutton load' onclick='javascript: loadConsole(example26);'>load</div><div class='minibutton ok' onclick='javascript: var ref, theBait, theSwitch;
 
 theBait = 1000;
 
@@ -1693,7 +1701,7 @@ weatherReport = <span class="function"><span class="keyword">function</span><spa
 };
 
 ref = weatherReport(<span class="string">"Berkeley, CA"</span>), city = ref[<span class="number">0</span>], temp = ref[<span class="number">1</span>], forecast = ref[<span class="number">2</span>];
-</code></pre><script>window.example26 = "weatherReport = (location) ->\n  # Make an Ajax request to fetch the weather...\n  [location, 72, \"Mostly Sunny\"]\n\n[city, temp, forecast] = weatherReport \"Berkeley, CA\"\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example26);'>load</div><div class='minibutton ok' onclick='javascript: var city, forecast, ref, temp, weatherReport;
+</code></pre><script>window.example27 = "weatherReport = (location) ->\n  # Make an Ajax request to fetch the weather...\n  [location, 72, \"Mostly Sunny\"]\n\n[city, temp, forecast] = weatherReport \"Berkeley, CA\"\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example27);'>load</div><div class='minibutton ok' onclick='javascript: var city, forecast, ref, temp, weatherReport;
 
 weatherReport = function(location) {
   return [location, 72, "Mostly Sunny"];
@@ -1731,7 +1739,7 @@ futurists = {
 };
 
 ref = futurists.poet, name = ref.name, (ref1 = ref.address, street = ref1[<span class="number">0</span>], city = ref1[<span class="number">1</span>]);
-</code></pre><script>window.example27 = "futurists =\n  sculptor: \"Umberto Boccioni\"\n  painter:  \"Vladimir Burliuk\"\n  poet:\n    name:   \"F.T. Marinetti\"\n    address: [\n      \"Via Roma 42R\"\n      \"Bellagio, Italy 22021\"\n    ]\n\n{poet: {name, address: [street, city]}} = futurists\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example27);'>load</div><div class='minibutton ok' onclick='javascript: var city, futurists, name, ref, ref1, street;
+</code></pre><script>window.example28 = "futurists =\n  sculptor: \"Umberto Boccioni\"\n  painter:  \"Vladimir Burliuk\"\n  poet:\n    name:   \"F.T. Marinetti\"\n    address: [\n      \"Via Roma 42R\"\n      \"Bellagio, Italy 22021\"\n    ]\n\n{poet: {name, address: [street, city]}} = futurists\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example28);'>load</div><div class='minibutton ok' onclick='javascript: var city, futurists, name, ref, ref1, street;
 
 futurists = {
   sculptor: "Umberto Boccioni",
@@ -1762,7 +1770,7 @@ ref = futurists.poet, name = ref.name, (ref1 = ref.address, street = ref1[0], ci
 tag = <span class="string">"&lt;impossible&gt;"</span>;
 
 ref = tag.split(<span class="string">""</span>), open = ref[<span class="number">0</span>], contents = <span class="number">3</span> &lt;= ref.length ? slice.call(ref, <span class="number">1</span>, i = ref.length - <span class="number">1</span>) : (i = <span class="number">1</span>, []), close = ref[i++];
-</code></pre><script>window.example28 = "tag = \"<impossible>\"\n\n[open, contents..., close] = tag.split(\"\")\n\n\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example28);'>load</div><div class='minibutton ok' onclick='javascript: var close, contents, i, open, ref, tag,
+</code></pre><script>window.example29 = "tag = \"<impossible>\"\n\n[open, contents..., close] = tag.split(\"\")\n\n\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example29);'>load</div><div class='minibutton ok' onclick='javascript: var close, contents, i, open, ref, tag,
   slice = [].slice;
 
 tag = "<impossible>";
@@ -1784,7 +1792,7 @@ ref = tag.split(""), open = ref[0], contents = 3 <= ref.length ? slice.call(ref,
 text = <span class="string">"Every literary critic believes he will outwit history and have the last word"</span>;
 
 ref = text.split(<span class="string">" "</span>), first = ref[<span class="number">0</span>], last = ref[ref.length - <span class="number">1</span>];
-</code></pre><script>window.example29 = "text = \"Every literary critic believes he will\n        outwit history and have the last word\"\n\n[first, ..., last] = text.split \" \"\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example29);'>load</div><div class='minibutton ok' onclick='javascript: var first, last, ref, text;
+</code></pre><script>window.example30 = "text = \"Every literary critic believes he will\n        outwit history and have the last word\"\n\n[first, ..., last] = text.split \" \"\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example30);'>load</div><div class='minibutton ok' onclick='javascript: var first, last, ref, text;
 
 text = "Every literary critic believes he will outwit history and have the last word";
 
@@ -1814,7 +1822,7 @@ Person = (<span class="function"><span class="keyword">function</span><span clas
 tim = <span class="keyword">new</span> Person({
   age: <span class="number">4</span>
 });
-</code></pre><script>window.example30 = "class Person\n  constructor: (options) -> \n    {@name, @age, @height} = options\n\ntim = new Person age: 4\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example30);'>load</div><div class='minibutton ok' onclick='javascript: var Person, tim;
+</code></pre><script>window.example31 = "class Person\n  constructor: (options) -> \n    {@name, @age, @height} = options\n\ntim = new Person age: 4\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example31);'>load</div><div class='minibutton ok' onclick='javascript: var Person, tim;
 
 Person = (function() {
   function Person(options) {
@@ -1864,7 +1872,7 @@ Account = <span class="function"><span class="keyword">function</span><span clas
     };
   })(<span class="keyword">this</span>));
 };
-</code></pre><script>window.example31 = "Account = (customer, cart) ->\n  @customer = customer\n  @cart = cart\n\n  $('.shopping_cart').on 'click', (event) =>\n    @customer.purchase @cart"</script><div class='minibutton load' onclick='javascript: loadConsole(example31);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example32 = "Account = (customer, cart) ->\n  @customer = customer\n  @cart = cart\n\n  $('.shopping_cart').on 'click', (event) =>\n    @customer.purchase @cart"</script><div class='minibutton load' onclick='javascript: loadConsole(example32);'>load</div><br class='clear' /></div>
     <p>
       If we had used <tt>-&gt;</tt> in the callback above, <tt>@customer</tt> would
       have referred to the undefined "customer" property of the DOM element,
@@ -1900,7 +1908,7 @@ perfectSquares = <span class="function"><span class="keyword">function</span>*<s
 };
 
 window.ps || (window.ps = perfectSquares());
-</code></pre><script>window.example32 = "perfectSquares = ->\n  num = 0\n  loop\n    num += 1\n    yield num * num\n  return\n\nwindow.ps or= perfectSquares()"</script><div class='minibutton load' onclick='javascript: loadConsole(example32);'>load</div><div class='minibutton ok' onclick='javascript: var perfectSquares;
+</code></pre><script>window.example33 = "perfectSquares = ->\n  num = 0\n  loop\n    num += 1\n    yield num * num\n  return\n\nwindow.ps or= perfectSquares()"</script><div class='minibutton load' onclick='javascript: loadConsole(example33);'>load</div><div class='minibutton ok' onclick='javascript: var perfectSquares;
 
 perfectSquares = function*() {
   var num;
@@ -1913,6 +1921,10 @@ perfectSquares = function*() {
 
 window.ps || (window.ps = perfectSquares());
 ;alert(ps.next().value);'>run: ps.next().value</div><br class='clear' /></div>
+    <p>
+      <tt>yield*</tt> is called <tt>yield from</tt>, and <tt>yield return</tt>
+      may be used if you need to force a generator that doesn't yield.
+    </p>
 
     <p>
       <span id="embedded" class="bookmark"></span>
@@ -1932,7 +1944,7 @@ window.ps || (window.ps = perfectSquares());
 hi = <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
   <span class="keyword">return</span> [document.title, <span class="string">"Hello JavaScript"</span>].join(<span class="string">": "</span>);
 };
-</code></pre><script>window.example33 = "hi = `function() {\n  return [document.title, \"Hello JavaScript\"].join(\": \");\n}`\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example33);'>load</div><div class='minibutton ok' onclick='javascript: var hi;
+</code></pre><script>window.example34 = "hi = `function() {\n  return [document.title, \"Hello JavaScript\"].join(\": \");\n}`\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example34);'>load</div><div class='minibutton ok' onclick='javascript: var hi;
 
 hi = function() {
   return [document.title, "Hello JavaScript"].join(": ");
@@ -1986,7 +1998,7 @@ hi = function() {
   <span class="keyword">default</span>:
     go(work);
 }
-</code></pre><script>window.example34 = "switch day\n  when \"Mon\" then go work\n  when \"Tue\" then go relax\n  when \"Thu\" then go iceFishing\n  when \"Fri\", \"Sat\"\n    if day is bingoDay\n      go bingo\n      go dancing\n  when \"Sun\" then go church\n  else go work"</script><div class='minibutton load' onclick='javascript: loadConsole(example34);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example35 = "switch day\n  when \"Mon\" then go work\n  when \"Tue\" then go relax\n  when \"Thu\" then go iceFishing\n  when \"Fri\", \"Sat\"\n    if day is bingoDay\n      go bingo\n      go dancing\n  when \"Sun\" then go church\n  else go work"</script><div class='minibutton load' onclick='javascript: loadConsole(example35);'>load</div><br class='clear' /></div>
 
     <p>
       Switch statements can also be used without a control expression, turning them in to a cleaner alternative to if/else chains.
@@ -2017,13 +2029,14 @@ grade = (<span class="function"><span class="keyword">function</span><span class
       <span class="keyword">return</span> <span class="string">'A'</span>;
   }
 })();
-</code></pre><script>window.example35 = "score = 76\ngrade = switch\n  when score < 60 then 'F'\n  when score < 70 then 'D'\n  when score < 80 then 'C'\n  when score < 90 then 'B'\n  else 'A'\n# grade == 'C'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example35);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example36 = "score = 76\ngrade = switch\n  when score < 60 then 'F'\n  when score < 70 then 'D'\n  when score < 80 then 'C'\n  when score < 90 then 'B'\n  else 'A'\n# grade == 'C'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example36);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="try" class="bookmark"></span>
       <b class="header">Try/Catch/Finally</b>
-      Try/catch statements are just about the same as JavaScript (although
-      they work as expressions).
+      Try-expressions have the same semantics as try-statements in JavaScript,
+      though in CoffeeScript, you may omit <em>both</em> the catch and finally
+      parts. The catch part may also omit the error parameter if it is not needed.
     </p>
     <div class='code'><pre><code><span class="keyword">try</span>
   allHellBreaksLoose()
@@ -2044,7 +2057,7 @@ grade = (<span class="function"><span class="keyword">function</span><span class
 } <span class="keyword">finally</span> {
   cleanUp();
 }
-</code></pre><script>window.example36 = "try\n  allHellBreaksLoose()\n  catsAndDogsLivingTogether()\ncatch error\n  print error\nfinally\n  cleanUp()\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example36);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example37 = "try\n  allHellBreaksLoose()\n  catsAndDogsLivingTogether()\ncatch error\n  print error\nfinally\n  cleanUp()\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example37);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="comparisons" class="bookmark"></span>
@@ -2064,7 +2077,7 @@ healthy = <span class="number">200</span> &gt; cholesterol &gt; <span class="num
 cholesterol = <span class="number">127</span>;
 
 healthy = (<span class="number">200</span> &gt; cholesterol &amp;&amp; cholesterol &gt; <span class="number">60</span>);
-</code></pre><script>window.example37 = "cholesterol = 127\n\nhealthy = 200 > cholesterol > 60\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example37);'>load</div><div class='minibutton ok' onclick='javascript: var cholesterol, healthy;
+</code></pre><script>window.example38 = "cholesterol = 127\n\nhealthy = 200 > cholesterol > 60\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example38);'>load</div><div class='minibutton ok' onclick='javascript: var cholesterol, healthy;
 
 cholesterol = 127;
 
@@ -2076,17 +2089,16 @@ healthy = (200 > cholesterol && cholesterol > 60);
       <b class="header">String Interpolation, Block Strings, and Block Comments</b>
       Ruby-style string interpolation is included in CoffeeScript. Double-quoted
       strings allow for interpolated values, using <tt>#{ ... }</tt>,
-      and single-quoted strings are literal.
+      and single-quoted strings are literal. You may even use interpolation in
+      object keys.
     </p>
     <div class='code'><pre><code>author = <span class="string">"Wittgenstein"</span>
 quote  = <span class="string">"A picture is a fact. -- <span class="subst">#{ author }</span>"</span>
 
 sentence = <span class="string">"<span class="subst">#{ <span class="number">22</span> / <span class="number">7</span> }</span> is a decent approximation of π"</span>
 
-
-
-
-
+direction = <span class="string">"top"</span>
+<span class="built_in">window</span>.scrollBy <span class="string">"<span class="subst">#{direction}</span>"</span>: <span class="number">100</span>
 </code></pre><pre><code><span class="keyword">var</span> author, quote, sentence;
 
 author = <span class="string">"Wittgenstein"</span>;
@@ -2094,7 +2106,7 @@ author = <span class="string">"Wittgenstein"</span>;
 quote = <span class="string">"A picture is a fact. -- "</span> + author;
 
 sentence = (<span class="number">22</span> / <span class="number">7</span>) + <span class="string">" is a decent approximation of π"</span>;
-</code></pre><script>window.example38 = "author = \"Wittgenstein\"\nquote  = \"A picture is a fact. -- #{ author }\"\n\nsentence = \"#{ 22 / 7 } is a decent approximation of π\"\n\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example38);'>load</div><div class='minibutton ok' onclick='javascript: var author, quote, sentence;
+</code></pre><script>window.example39 = "author = \"Wittgenstein\"\nquote  = \"A picture is a fact. -- #{ author }\"\n\nsentence = \"#{ 22 / 7 } is a decent approximation of π\"\n\ndirection = \"top\"\nwindow.scrollBy \"#{direction}\": 100\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example39);'>load</div><div class='minibutton ok' onclick='javascript: var author, quote, sentence;
 
 author = "Wittgenstein";
 
@@ -2114,7 +2126,7 @@ sentence = (22 / 7) + " is a decent approximation of π";
 </code></pre><pre><code><span class="keyword">var</span> mobyDick;
 
 mobyDick = <span class="string">"Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world..."</span>;
-</code></pre><script>window.example39 = "mobyDick = \"Call me Ishmael. Some years ago --\n  never mind how long precisely -- having little\n  or no money in my purse, and nothing particular\n  to interest me on shore, I thought I would sail\n  about a little and see the watery part of the\n  world...\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example39);'>load</div><div class='minibutton ok' onclick='javascript: var mobyDick;
+</code></pre><script>window.example40 = "mobyDick = \"Call me Ishmael. Some years ago --\n  never mind how long precisely -- having little\n  or no money in my purse, and nothing particular\n  to interest me on shore, I thought I would sail\n  about a little and see the watery part of the\n  world...\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example40);'>load</div><div class='minibutton ok' onclick='javascript: var mobyDick;
 
 mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world...";
 ;alert(mobyDick);'>run: mobyDick</div><br class='clear' /></div>
@@ -2133,7 +2145,7 @@ mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- 
 </code></pre><pre><code><span class="keyword">var</span> html;
 
 html = <span class="string">"&lt;strong&gt;\n  cup of coffeescript\n&lt;/strong&gt;"</span>;
-</code></pre><script>window.example40 = "html = \"\"\"\n       <strong>\n         cup of coffeescript\n       </strong>\n       \"\"\"\n       \n"</script><div class='minibutton load' onclick='javascript: loadConsole(example40);'>load</div><div class='minibutton ok' onclick='javascript: var html;
+</code></pre><script>window.example41 = "html = \"\"\"\n       <strong>\n         cup of coffeescript\n       </strong>\n       \"\"\"\n       \n"</script><div class='minibutton load' onclick='javascript: loadConsole(example41);'>load</div><div class='minibutton ok' onclick='javascript: var html;
 
 html = "<strong>\n  cup of coffeescript\n</strong>";
 ;alert(html);'>run: html</div><br class='clear' /></div>
@@ -2158,7 +2170,7 @@ SkinnyMochaHalfCaffScript Compiler v1.0
 Released under the MIT License
  */</span>
 
-</code></pre><script>window.example41 = "###\nSkinnyMochaHalfCaffScript Compiler v1.0\nReleased under the MIT License\n###\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example41);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example42 = "###\nSkinnyMochaHalfCaffScript Compiler v1.0\nReleased under the MIT License\n###\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example42);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="regexes" class="bookmark"></span>
@@ -2183,7 +2195,7 @@ Released under the MIT License
 </code></pre><pre><code><span class="keyword">var</span> OPERATOR;
 
 OPERATOR = <span class="regexp">/^(?:[-=]&gt;|[-+*\/%&lt;&gt;&amp;|^!?=]=|&gt;&gt;&gt;=?|([-+:])\1|([&amp;|&lt;&gt;])\2=?|\?\.|\.{2,3})/</span>;
-</code></pre><script>window.example42 = "OPERATOR = /// ^ (\n  ?: [-=]>             # function\n   | [-+*/%<>&|^!?=]=  # compound assign / compare\n   | >>>=?             # zero-fill right shift\n   | ([-+:])\\1         # doubles\n   | ([&|<>])\\2=?      # logic / shift\n   | \\?\\.              # soak access\n   | \\.{2,3}           # range or splat\n) ///\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example42);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example43 = "OPERATOR = /// ^ (\n  ?: [-=]>             # function\n   | [-+*/%<>&|^!?=]=  # compound assign / compare\n   | >>>=?             # zero-fill right shift\n   | ([-+:])\\1         # doubles\n   | ([&|<>])\\2=?      # logic / shift\n   | \\?\\.              # soak access\n   | \\.{2,3}           # range or splat\n) ///\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example43);'>load</div><br class='clear' /></div>
 
 
     <h2>
@@ -2230,7 +2242,7 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
   dir = options.output || <span class="string">'lib'</span>;
   <span class="keyword">return</span> fs.writeFile(dir + <span class="string">"/parser.js"</span>, code);
 });
-</code></pre><script>window.example43 = "fs = require 'fs'\n\noption '-o', '--output [DIR]', 'directory for compiled code'\n\ntask 'build:parser', 'rebuild the Jison parser', (options) ->\n  require 'jison'\n  code = require('./lib/grammar').parser.generate()\n  dir  = options.output or 'lib'\n  fs.writeFile \"#{dir}/parser.js\", code"</script><div class='minibutton load' onclick='javascript: loadConsole(example43);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example44 = "fs = require 'fs'\n\noption '-o', '--output [DIR]', 'directory for compiled code'\n\ntask 'build:parser', 'rebuild the Jison parser', (options) ->\n  require 'jison'\n  code = require('./lib/grammar').parser.generate()\n  dir  = options.output or 'lib'\n  fs.writeFile \"#{dir}/parser.js\", code"</script><div class='minibutton load' onclick='javascript: loadConsole(example44);'>load</div><br class='clear' /></div>
     <p>
       If you need to invoke one task before another &mdash; for example, running
       <tt>build</tt> before <tt>test</tt>, you can use the <tt>invoke</tt> function:
@@ -2494,6 +2506,36 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
     </h2>
 
     <p>
+      <div class="anchor" id="1.9.3"></div>
+<b class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.9.2...1.9.3">1.9.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2015-05-14">May 14, 2015</time></span>
+</b>
+      <ul>
+        <li>
+          Bugfix for interpolation in the first key of an object literal in an
+          implicit call.
+        </li>
+        <li>
+          Fixed broken error messages in the REPL, as well as a few minor bugs
+          with the REPL.
+        </li>
+        <li>
+          Fixed source mappings for tokens at the beginning of lines when
+          compiling with the <tt>--bare</tt> option. This has the nice side
+          effect of generating smaller source maps.
+        </li>
+        <li>
+          Slight formatting improvement of compiled block comments.
+        </li>
+        <li>
+          Better error messages for <tt>on</tt>, <tt>off</tt>, <tt>yes</tt> and
+          <tt>no</tt>.
+        </li>
+      </ul>
+    </p>
+
+    <p>
       <div class="anchor" id="1.9.2"></div>
 <b class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/1.9.1...1.9.2">1.9.2</a>
@@ -2663,7 +2705,7 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
 </code></pre><pre><code>$(<span class="string">'body'</span>).click(<span class="function"><span class="keyword">function</span><span class="params">(e)</span> {</span>
   <span class="keyword">return</span> $(<span class="string">'.box'</span>).fadeIn(<span class="string">'fast'</span>).addClass(<span class="string">'.active'</span>);
 }).css(<span class="string">'background'</span>, <span class="string">'white'</span>);
-</code></pre><script>window.example44 = "$ 'body'\n.click (e) ->\n  $ '.box'\n  .fadeIn 'fast'\n  .addClass '.active'\n.css 'background', 'white'\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example44);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example45 = "$ 'body'\n.click (e) ->\n  $ '.box'\n  .fadeIn 'fast'\n  .addClass '.active'\n.css 'background', 'white'\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example45);'>load</div><br class='clear' /></div>
       <ul>
         <li>
           Added <tt>**</tt>, <tt>//</tt> and <tt>%%</tt> operators and <tt>...</tt> expansion in parameter lists and destructuring expressions.
