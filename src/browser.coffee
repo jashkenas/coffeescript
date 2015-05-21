@@ -61,7 +61,7 @@ runScripts = ->
 
   execute = ->
     param = coffees[index]
-    if param instanceof Array
+    if Array.isArray param
       CoffeeScript.run param...
       index++
       execute()
