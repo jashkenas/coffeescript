@@ -49,7 +49,7 @@ extend = exports.extend = (object, properties) ->
 exports.flatten = flatten = (array) ->
   flattened = []
   for element in array
-    if element instanceof Array
+    if '[object Array]' is Object::toString.call element
       flattened = flattened.concat flatten element
     else
       flattened.push element
