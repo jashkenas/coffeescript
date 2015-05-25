@@ -31,7 +31,7 @@
   "bugs": "https://github.com/jashkenas/coffeescript/issues",
   "repository": {
     "type": "git",
-    "url": "gi:t//github.com/jashkenas/coffeescript.git"
+    "url": "git://github.com/jashkenas/coffeescript.git"
   },
   "devDependencies": {
     "docco": "~0.7.0",
