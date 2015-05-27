@@ -1220,7 +1220,7 @@ Expressions
     </h2>
 
     <p>
-      <%= releaseHeader('2015-05-14', '1.9.3', '1.9.2') %>
+      <%= releaseHeader('2015-05-27', '1.9.3', '1.9.2') %>
       <ul>
         <li>
           Bugfix for interpolation in the first key of an object literal in an
