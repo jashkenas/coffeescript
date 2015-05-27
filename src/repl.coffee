@@ -108,6 +108,7 @@ addHistory = (repl, filename, maxSize) ->
     readFd = fs.openSync filename, 'r'
     buffer = new Buffer(size)
     fs.readSync readFd, buffer, 0, size, stat.size - size
+    fs.close readFd
     # Set the history on the interpreter
     repl.rli.history = buffer.toString().split('\n').reverse()
     # If the history file was truncated we should pop off a potential partial line
@@ -125,7 +126,7 @@ addHistory = (repl, filename, maxSize) ->
       fs.write fd, "#{code}\n"
       lastLine = code
 
-  repl.rli.on 'exit', -> fs.close fd
+  repl.on 'exit', -> fs.close fd
 
   # Add a command to show the history stack
   repl.commands[getCommandId(repl, 'history')] =
@@ -152,7 +153,7 @@ module.exports =
     opts = merge replDefaults, opts
     repl = nodeREPL.start opts
     runInContext opts.prelude, repl.context, 'prelude' if opts.prelude
-    repl.on 'exit', -> repl.outputStream.write '\n'
+    repl.on 'exit', -> repl.outputStream.write '\n' if not repl.rli.closed
     addMultilineHandler repl
     addHistory repl, opts.historyFile, opts.historyMaxInputSize if opts.historyFile
     # Adapt help inherited from the node REPL

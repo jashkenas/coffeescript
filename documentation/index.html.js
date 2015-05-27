@@ -110,7 +110,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffeescript/tarball/1.9.2">1.9.2</a>
+      <a href="http://github.com/jashkenas/coffeescript/tarball/1.9.3">1.9.3</a>
     </p>
 
     <pre>npm install -g coffee-script</pre>
@@ -532,6 +532,10 @@ Expressions
       <tt>evens = (x for x in [0..10] by 2)</tt>
     </p>
     <p>
+      If you don't need the current iteration value you may omit it:<br />
+      <tt>browser.closeCurrentTab() for [0...count]</tt>
+    </p>
+    <p>
       Comprehensions can also be used to iterate over the keys and values in
       an object. Use <tt>of</tt> to signal comprehension over the properties of
       an object instead of the values in an array.
@@ -658,8 +662,12 @@ Expressions
       test for JavaScript object-key presence.
     </p>
     <p>
-      To simplify math expressions, <tt>**</tt> can be used for exponentiation, <tt>//</tt> performs integer division and <tt>%%</tt> provides true mathematical modulo.
+      To simplify math expressions, <tt>**</tt> can be used for exponentiation
+      and <tt>//</tt> performs integer division. <tt>%</tt> works just like in
+      JavaScript, while <tt>%%</tt> provides
+      <a href="http://en.wikipedia.org/wiki/Modulo_operation">“dividend dependent modulo”</a>:
     </p>
+    <%= codeFor('modulo') %>
     <p>
       All together now:
     </p>
@@ -827,6 +835,10 @@ Expressions
       nonsense &mdash; a generator in CoffeeScript is simply a function that yields.
     </p>
     <%= codeFor('generators', 'ps.next().value') %>
+    <p>
+      <tt>yield*</tt> is called <tt>yield from</tt>, and <tt>yield return</tt>
+      may be used if you need to force a generator that doesn't yield.
+    </p>
 
     <p>
       <span id="embedded" class="bookmark"></span>
@@ -862,8 +874,9 @@ Expressions
     <p>
       <span id="try" class="bookmark"></span>
       <b class="header">Try/Catch/Finally</b>
-      Try/catch statements are just about the same as JavaScript (although
-      they work as expressions).
+      Try-expressions have the same semantics as try-statements in JavaScript,
+      though in CoffeeScript, you may omit <em>both</em> the catch and finally
+      parts. The catch part may also omit the error parameter if it is not needed.
     </p>
     <%= codeFor('try') %>
 
@@ -882,7 +895,8 @@ Expressions
       <b class="header">String Interpolation, Block Strings, and Block Comments</b>
       Ruby-style string interpolation is included in CoffeeScript. Double-quoted
       strings allow for interpolated values, using <tt>#{ ... }</tt>,
-      and single-quoted strings are literal.
+      and single-quoted strings are literal. You may even use interpolation in
+      object keys.
     </p>
     <%= codeFor('interpolation', 'sentence') %>
     <p>
@@ -1204,6 +1218,32 @@ Expressions
       <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
+
+    <p>
+      <%= releaseHeader('2015-05-14', '1.9.3', '1.9.2') %>
+      <ul>
+        <li>
+          Bugfix for interpolation in the first key of an object literal in an
+          implicit call.
+        </li>
+        <li>
+          Fixed broken error messages in the REPL, as well as a few minor bugs
+          with the REPL.
+        </li>
+        <li>
+          Fixed source mappings for tokens at the beginning of lines when
+          compiling with the <tt>--bare</tt> option. This has the nice side
+          effect of generating smaller source maps.
+        </li>
+        <li>
+          Slight formatting improvement of compiled block comments.
+        </li>
+        <li>
+          Better error messages for <tt>on</tt>, <tt>off</tt>, <tt>yes</tt> and
+          <tt>no</tt>.
+        </li>
+      </ul>
+    </p>
 
     <p>
       <%= releaseHeader('2015-04-15', '1.9.2', '1.9.1') %>

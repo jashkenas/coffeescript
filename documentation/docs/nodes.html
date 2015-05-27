@@ -1311,7 +1311,7 @@ at the same position.</p>
   <span class="hljs-attribute">makeReturn</span>:      THIS
 
   <span class="hljs-attribute">compileNode</span>: <span class="hljs-function"><span class="hljs-params">(o, level)</span> -&gt;</span>
-    comment = <span class="hljs-property">@comment</span>.replace <span class="hljs-regexp">/^(\s*)# /gm</span>, <span class="hljs-string">"$1 * "</span>
+    comment = <span class="hljs-property">@comment</span>.replace <span class="hljs-regexp">/^(\s*)#(?=\s)/gm</span>, <span class="hljs-string">"$1 *"</span>
     code = <span class="hljs-string">"/*<span class="hljs-subst">#{multident comment, <span class="hljs-property">@tab</span>}</span><span class="hljs-subst">#{<span class="hljs-keyword">if</span> <span class="hljs-string">'\n'</span> <span class="hljs-keyword">in</span> comment <span class="hljs-keyword">then</span> <span class="hljs-string">"\n<span class="hljs-subst">#{<span class="hljs-property">@tab</span>}</span>"</span> <span class="hljs-keyword">else</span> <span class="hljs-string">''</span>}</span> */"</span>
     code = o.indent + code <span class="hljs-keyword">if</span> (level <span class="hljs-keyword">or</span> o.level) <span class="hljs-keyword">is</span> LEVEL_TOP
     [<span class="hljs-property">@makeCode</span>(<span class="hljs-string">"\n"</span>), <span class="hljs-property">@makeCode</span>(code)]</pre></div></div>
@@ -2029,7 +2029,7 @@ is the index of the beginning.</p>
       indent = <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">instanceof</span> Comment <span class="hljs-keyword">then</span> <span class="hljs-string">''</span> <span class="hljs-keyword">else</span> idt
       indent += TAB <span class="hljs-keyword">if</span> hasDynamic <span class="hljs-keyword">and</span> i &lt; dynamicIndex
       <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">instanceof</span> Assign <span class="hljs-keyword">and</span> prop.variable <span class="hljs-keyword">instanceof</span> Value <span class="hljs-keyword">and</span> prop.variable.hasProperties()
-        prop.variable.error <span class="hljs-string">'Invalid object key'</span>
+        prop.variable.error <span class="hljs-string">'invalid object key'</span>
       <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">instanceof</span> Value <span class="hljs-keyword">and</span> prop.<span class="hljs-keyword">this</span>
         prop = <span class="hljs-keyword">new</span> Assign prop.properties[<span class="hljs-number">0</span>].name, prop, <span class="hljs-string">'object'</span>
       <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">not</span> <span class="hljs-keyword">instanceof</span> Comment

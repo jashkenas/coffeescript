@@ -12,7 +12,7 @@ helpers       = require './helpers'
 SourceMap     = require './sourcemap'
 
 # The current CoffeeScript version number.
-exports.VERSION = '1.9.2'
+exports.VERSION = '1.9.3'
 
 exports.FILE_EXTENSIONS = ['.coffee', '.litcoffee', '.coffee.md']
 
@@ -26,6 +26,7 @@ withPrettyErrors = (fn) ->
     try
       fn.call @, code, options
     catch err
+      throw err if typeof code isnt 'string' # Support `CoffeeScript.nodes(tokens)`.
       throw helpers.updateSyntaxError err, code, options.filename
 
 # Compile CoffeeScript code to JavaScript, using the Coffee/Jison compiler.
@@ -62,7 +63,8 @@ exports.compile = compile = withPrettyErrors (code, options) ->
   for fragment in fragments
     # Update the sourcemap with data from each fragment
     if options.sourceMap
-      if fragment.locationData
+      # Do not include empty, whitespace, or semicolon-only fragments.
+      if fragment.locationData and not /^[;\s]*$/.test fragment.code
         map.add(
           [fragment.locationData.first_line, fragment.locationData.first_column]
           [currentLine, currentColumn]

@@ -663,6 +663,14 @@ test "reserved words", ->
     for = 1
     ^^^
   '''
+  # #2306: Show unaliased name in error messages.
+  assertErrorFormat '''
+    on = 1
+  ''', '''
+    [stdin]:1:1: error: reserved word 'on' can't be assigned
+    on = 1
+    ^^
+  '''
 
 test "invalid numbers", ->
   assertErrorFormat '''
@@ -750,4 +758,21 @@ test "unexpected object keys", ->
     [stdin]:1:8: error: unexpected [
     {a: 1, [[]]: 2}
            ^
+  '''
+
+test "invalid object keys", ->
+  assertErrorFormat '''
+    @a: 1
+  ''', '''
+    [stdin]:1:1: error: invalid object key
+    @a: 1
+    ^^
+  '''
+  assertErrorFormat '''
+    f
+      @a: 1
+  ''', '''
+    [stdin]:2:3: error: invalid object key
+      @a: 1
+      ^^
   '''

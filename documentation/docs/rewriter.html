@@ -632,7 +632,7 @@ that creates grammatical ambiguities.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">in</span> IMPLICIT_FUNC <span class="hljs-keyword">and</span>
-         <span class="hljs-property">@indexOfTag</span>(i + <span class="hljs-number">1</span>, <span class="hljs-string">'INDENT'</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">':'</span>) &gt; -<span class="hljs-number">1</span> <span class="hljs-keyword">and</span>
+         <span class="hljs-property">@indexOfTag</span>(i + <span class="hljs-number">1</span>, <span class="hljs-string">'INDENT'</span>) &gt; -<span class="hljs-number">1</span> <span class="hljs-keyword">and</span> <span class="hljs-property">@looksObjectish</span>(i + <span class="hljs-number">2</span>) <span class="hljs-keyword">and</span>
          <span class="hljs-keyword">not</span> <span class="hljs-property">@findTagsBackwards</span>(i, [<span class="hljs-string">'CLASS'</span>, <span class="hljs-string">'EXTENDS'</span>, <span class="hljs-string">'IF'</span>, <span class="hljs-string">'CATCH'</span>,
           <span class="hljs-string">'SWITCH'</span>, <span class="hljs-string">'LEADING_WHEN'</span>, <span class="hljs-string">'FOR'</span>, <span class="hljs-string">'WHILE'</span>, <span class="hljs-string">'UNTIL'</span>])
         startImplicitCall i + <span class="hljs-number">1</span>

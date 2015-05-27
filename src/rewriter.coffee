@@ -254,7 +254,7 @@ class exports.Rewriter
       # Furthermore don't allow this in literal arrays, as
       # that creates grammatical ambiguities.
       if tag in IMPLICIT_FUNC and
-         @indexOfTag(i + 1, 'INDENT', null, ':') > -1 and
+         @indexOfTag(i + 1, 'INDENT') > -1 and @looksObjectish(i + 2) and
          not @findTagsBackwards(i, ['CLASS', 'EXTENDS', 'IF', 'CATCH',
           'SWITCH', 'LEADING_WHEN', 'FOR', 'WHILE', 'UNTIL'])
         startImplicitCall i + 1
