@@ -1,6 +1,6 @@
 {
   "name": "coffee-script",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "main": [
     "lib/coffee-script/coffee-script.js"
   ],

@@ -403,7 +403,9 @@ though <code>is</code> means <code>===</code> otherwise.</p>
         <span class="hljs-property">@error</span> <span class="hljs-string">"reserved word '<span class="hljs-subst">#{id}</span>'"</span>, <span class="hljs-attribute">length</span>: id.length
 
     <span class="hljs-keyword">unless</span> forcedIdentifier
-      id  = COFFEE_ALIAS_MAP[id] <span class="hljs-keyword">if</span> id <span class="hljs-keyword">in</span> COFFEE_ALIASES
+      <span class="hljs-keyword">if</span> id <span class="hljs-keyword">in</span> COFFEE_ALIASES
+        alias = id
+        id = COFFEE_ALIAS_MAP[id]
       tag = <span class="hljs-keyword">switch</span> id
         <span class="hljs-keyword">when</span> <span class="hljs-string">'!'</span>                 <span class="hljs-keyword">then</span> <span class="hljs-string">'UNARY'</span>
         <span class="hljs-keyword">when</span> <span class="hljs-string">'=='</span>, <span class="hljs-string">'!='</span>          <span class="hljs-keyword">then</span> <span class="hljs-string">'COMPARE'</span>
@@ -413,6 +415,7 @@ though <code>is</code> means <code>===</code> otherwise.</p>
         <span class="hljs-keyword">else</span>  tag
 
     tagToken = <span class="hljs-property">@token</span> tag, id, <span class="hljs-number">0</span>, idLength
+    tagToken.origin = [tag, alias, tagToken[<span class="hljs-number">2</span>]] <span class="hljs-keyword">if</span> alias
     tagToken.variable = <span class="hljs-keyword">not</span> forcedIdentifier
     <span class="hljs-keyword">if</span> poppedToken
       [tagToken[<span class="hljs-number">2</span>].first_line, tagToken[<span class="hljs-number">2</span>].first_column] =
@@ -817,6 +820,7 @@ parentheses that indicate a method call from regular parentheses, and so on.</p>
     [..., prev] = <span class="hljs-property">@tokens</span>
     <span class="hljs-keyword">if</span> value <span class="hljs-keyword">is</span> <span class="hljs-string">'='</span> <span class="hljs-keyword">and</span> prev
       <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> prev[<span class="hljs-number">1</span>].reserved <span class="hljs-keyword">and</span> prev[<span class="hljs-number">1</span>] <span class="hljs-keyword">in</span> JS_FORBIDDEN
+        prev = prev.origin <span class="hljs-keyword">if</span> prev.origin
         <span class="hljs-property">@error</span> <span class="hljs-string">"reserved word '<span class="hljs-subst">#{prev[<span class="hljs-number">1</span>]}</span>' can't be assigned"</span>, prev[<span class="hljs-number">2</span>]
       <span class="hljs-keyword">if</span> prev[<span class="hljs-number">1</span>] <span class="hljs-keyword">in</span> [<span class="hljs-string">'||'</span>, <span class="hljs-string">'&amp;&amp;'</span>]
         prev[<span class="hljs-number">0</span>] = <span class="hljs-string">'COMPOUND_ASSIGN'</span>

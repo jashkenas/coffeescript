@@ -110,7 +110,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffeescript/tarball/1.9.2">1.9.2</a>
+      <a href="http://github.com/jashkenas/coffeescript/tarball/1.9.3">1.9.3</a>
     </p>
 
     <pre>npm install -g coffee-script</pre>
@@ -1218,6 +1218,32 @@ Expressions
       <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
+
+    <p>
+      <%= releaseHeader('2015-05-14', '1.9.3', '1.9.2') %>
+      <ul>
+        <li>
+          Bugfix for interpolation in the first key of an object literal in an
+          implicit call.
+        </li>
+        <li>
+          Fixed broken error messages in the REPL, as well as a few minor bugs
+          with the REPL.
+        </li>
+        <li>
+          Fixed source mappings for tokens at the beginning of lines when
+          compiling with the <tt>--bare</tt> option. This has the nice side
+          effect of generating smaller source maps.
+        </li>
+        <li>
+          Slight formatting improvement of compiled block comments.
+        </li>
+        <li>
+          Better error messages for <tt>on</tt>, <tt>off</tt>, <tt>yes</tt> and
+          <tt>no</tt>.
+        </li>
+      </ul>
+    </p>
 
     <p>
       <%= releaseHeader('2015-04-15', '1.9.2', '1.9.1') %>
