@@ -1329,7 +1329,18 @@ alert((function() {
       JavaScript, while <tt>%%</tt> provides
       <a href="http://en.wikipedia.org/wiki/Modulo_operation">“dividend dependent modulo”</a>:
     </p>
-    
+    <div class='code'><pre><code>-<span class="number">7</span> % <span class="number">5</span> == -<span class="number">2</span> <span class="comment"># The remainder of 7 / 5</span>
+-<span class="number">7</span> %% <span class="number">5</span> == <span class="number">3</span> <span class="comment"># n %% 5 is always between 0 and 4</span>
+
+tabs.selectTabAtIndex((tabs.currentIndex - count) %% tabs.length)
+</code></pre><pre><code><span class="keyword">var</span> modulo = <span class="function"><span class="keyword">function</span><span class="params">(a, b)</span> {</span> <span class="keyword">return</span> (+a % (b = +b) + b) % b; };
+
+-<span class="number">7</span> % <span class="number">5</span> === -<span class="number">2</span>;
+
+modulo(-<span class="number">7</span>, <span class="number">5</span>) === <span class="number">3</span>;
+
+tabs.selectTabAtIndex(modulo(tabs.currentIndex - count, tabs.length));
+</code></pre><script>window.example20 = "-7 % 5 == -2 # The remainder of 7 / 5\n-7 %% 5 == 3 # n %% 5 is always between 0 and 4\n\ntabs.selectTabAtIndex((tabs.currentIndex - count) %% tabs.length)\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example20);'>load</div><br class='clear' /></div>
     <p>
       All together now:
     </p>
@@ -2097,8 +2108,9 @@ quote  = <span class="string">"A picture is a fact. -- <span class="subst">#{ au
 
 sentence = <span class="string">"<span class="subst">#{ <span class="number">22</span> / <span class="number">7</span> }</span> is a decent approximation of π"</span>
 
-direction = <span class="string">"top"</span>
-<span class="built_in">window</span>.scrollBy <span class="string">"<span class="subst">#{direction}</span>"</span>: <span class="number">100</span>
+
+
+
 </code></pre><pre><code><span class="keyword">var</span> author, quote, sentence;
 
 author = <span class="string">"Wittgenstein"</span>;
@@ -2106,7 +2118,7 @@ author = <span class="string">"Wittgenstein"</span>;
 quote = <span class="string">"A picture is a fact. -- "</span> + author;
 
 sentence = (<span class="number">22</span> / <span class="number">7</span>) + <span class="string">" is a decent approximation of π"</span>;
-</code></pre><script>window.example39 = "author = \"Wittgenstein\"\nquote  = \"A picture is a fact. -- #{ author }\"\n\nsentence = \"#{ 22 / 7 } is a decent approximation of π\"\n\ndirection = \"top\"\nwindow.scrollBy \"#{direction}\": 100\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example39);'>load</div><div class='minibutton ok' onclick='javascript: var author, quote, sentence;
+</code></pre><script>window.example39 = "author = \"Wittgenstein\"\nquote  = \"A picture is a fact. -- #{ author }\"\n\nsentence = \"#{ 22 / 7 } is a decent approximation of π\"\n\n\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example39);'>load</div><div class='minibutton ok' onclick='javascript: var author, quote, sentence;
 
 author = "Wittgenstein";
 
@@ -2123,10 +2135,12 @@ sentence = (22 / 7) + " is a decent approximation of π";
   to interest me on shore, I thought I would sail
   about a little and see the watery part of the
   world..."</span>
+
+
 </code></pre><pre><code><span class="keyword">var</span> mobyDick;
 
 mobyDick = <span class="string">"Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world..."</span>;
-</code></pre><script>window.example40 = "mobyDick = \"Call me Ishmael. Some years ago --\n  never mind how long precisely -- having little\n  or no money in my purse, and nothing particular\n  to interest me on shore, I thought I would sail\n  about a little and see the watery part of the\n  world...\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example40);'>load</div><div class='minibutton ok' onclick='javascript: var mobyDick;
+</code></pre><script>window.example40 = "mobyDick = \"Call me Ishmael. Some years ago --\n  never mind how long precisely -- having little\n  or no money in my purse, and nothing particular\n  to interest me on shore, I thought I would sail\n  about a little and see the watery part of the\n  world...\"\n\n\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example40);'>load</div><div class='minibutton ok' onclick='javascript: var mobyDick;
 
 mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world...";
 ;alert(mobyDick);'>run: mobyDick</div><br class='clear' /></div>
