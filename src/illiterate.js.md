@@ -26,7 +26,7 @@ The build command is set in the `package.json` file so you can...
 
 ## Source
 
-This file is the main library, which compiles into [lib/illiterate.js](../lib/illiterate.js). There is also a command line tool wrapper in (bin/illiterate](../bin/illiterate).
+This file is the main library, which compiles into [lib/illiterate.js](../lib/illiterate.js). There is also a command line tool wrapper in [bin/illiterate](../bin/illiterate).
 
 ### Initialize environment
 
