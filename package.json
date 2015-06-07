@@ -1,6 +1,6 @@
 {
   "name": "illiterate",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "dependencies": {
     "lodash": "~3.4.0",
     "marked": "~0.3.3"
