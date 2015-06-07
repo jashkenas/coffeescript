@@ -34,15 +34,18 @@ Create self executing enclosure - convert function into expression by prefixing 
 
 	!function(){
 
-		var illiterate = {};
+		var root = this,
+			illiterate = {};
 
 		if (typeof exports !== 'undefined') {
 			if (typeof module !== 'undefined' && module.exports) {
 				exports = module.exports = illiterate;
 			}
+		} else {
+			root.illiterate = illiterate;
 		}
 
-Load dependencies.
+Load dependencies... but how to handle this in the browser context..?
 
 		var _ = require('lodash'),
 			marked = require('marked');
