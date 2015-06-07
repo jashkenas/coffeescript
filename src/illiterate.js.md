@@ -35,15 +35,7 @@ Create self executing enclosure - convert function into expression by prefixing 
 	!function(){
 
 		var root = this,
-			illiterate = {};
-
-		if (typeof exports !== 'undefined') {
-			if (typeof module !== 'undefined' && module.exports) {
-				exports = module.exports = illiterate;
-			}
-		} else {
-			root.illiterate = illiterate;
-		}
+			illiterate;
 
 Load dependencies... but how to handle this in the browser context..?
 
@@ -52,7 +44,7 @@ Load dependencies... but how to handle this in the browser context..?
 
 Define main parse method, which accepts a string.
 
-		illiterate.parse = function(text){
+		illiterate = function(text){
 
 Create a variable to store output as it is built up from input files.
 
@@ -79,6 +71,14 @@ Output extracted code blocks
 
 
 ### Fin
+
+		if (typeof exports !== 'undefined') {
+			if (typeof module !== 'undefined' && module.exports) {
+				exports = module.exports = illiterate;
+			}
+		} else {
+			root.illiterate = illiterate;
+		}
 
 		if (typeof define === 'function' && define.amd) {
 			define('illiterate', [], function() {

@@ -7,5 +7,5 @@ var path = require('path'),
 
 process.argv.slice(2).forEach(function(filename){
 	var file_contents = fs.readFileSync(filename).toString('UTF-8');
-	console.log(illiterate.parse(file_contents));
+	console.log(illiterate(file_contents));
 });

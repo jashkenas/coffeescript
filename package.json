@@ -1,12 +1,12 @@
 {
   "name": "illiterate",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "dependencies": {
     "lodash": "~3.4.0",
     "marked": "~0.3.3"
   },
   "description": "Extract code block from markdown à la coffeescript - but for any language",
-  "main": "readme.js.md",
+  "main": "lib/illiterate.js",
   "bin": {
     "illiterate": "bin/illiterate"
   },
