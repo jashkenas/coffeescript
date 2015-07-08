@@ -51,7 +51,15 @@ coffee -c /path/to/script.coffee
 
 For documentation, usage, and examples, see: http://coffeescript.org/
 
+## Contributing
 To suggest a feature or report a bug: http://github.com/jashkenas/coffeescript/issues
+
+#### Compile from Source
+1. Clone this repository: `git clone https://github.com/jashkenas/coffeescript.git`
+2. From the root of the respository install build dependencies: `npm install`
+3. Install the cake build tool, either globally or locally: `npm install cake` or `npm install -g cake`
+4. Run the build: `cake build` if cake is installed globally, otherwise: `./node_modules/.bin/cake build`
+5. If no errors appear then make sure the tests pass: `cake test` or `./node_modules/.bin/cake test`
 
 If you'd like to chat, drop by #coffeescript on Freenode IRC.
 
