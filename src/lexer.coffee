@@ -42,6 +42,7 @@ exports.Lexer = class Lexer
     @indents    = []             # The stack of all current indentation levels.
     @ends       = []             # The stack for pairing up tokens.
     @tokens     = []             # Stream of parsed tokens in the form `['TYPE', value, location data]`.
+    @seenFor    = no             # Used to recognize FORIN and FOROF tokens.
 
     @chunkLine =
       opts.line or 0         # The start line for the current @chunk.
