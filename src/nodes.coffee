@@ -121,7 +121,7 @@ exports.Base = class Base
   makeReturn: (res) ->
     me = @unwrapAll()
     if res
-      new Call new Literal("#{res}.push"), [me]
+      new Call new Value(new Literal res).add(new Access new Literal "push"), [me]
     else
       new Return me
 
@@ -1284,7 +1284,7 @@ exports.Assign = class Assign extends Base
       idx = i
       if not expandedIdx and obj instanceof Splat
         name = obj.name.unwrap().value
-        obj = obj.unwrap()
+        obj = obj.name
         val = "#{olen} <= #{vvarText}.length ? #{ utility 'slice', o }.call(#{vvarText}, #{i}"
         if rest = olen - i - 1
           ivar = o.scope.freeVariable 'i', single: true
@@ -1507,7 +1507,7 @@ exports.Param = class Param extends Base
     else if node.isComplex()
       node = new Literal o.scope.freeVariable 'arg'
     node = new Value node
-    node = new Splat node if @splat
+    node = new Splat node, true if @splat
     node.updateLocationDataIfMissing @locationData
     @reference = node
 
@@ -1563,16 +1563,20 @@ exports.Splat = class Splat extends Base
 
   isAssignable: YES
 
-  constructor: (name) ->
+  constructor: (name, @safe = false) ->
     @name = if name.compile then name else new Literal name
 
   assigns: (name) ->
     @name.assigns name
 
-  compileToFragments: (o) ->
-    @name.compileToFragments o
+  compileToFragments: ->
+    if @safe
+      @compileSplat arguments...
+    else
+      @error 'Splats are not allowed here'
 
-  unwrap: -> @name
+  compileSplat: (o, level) ->
+    @name.compileToFragments o, level
 
   # Utility function that converts an arbitrary number of elements, mixed with
   # splats, to a proper array.
@@ -1582,12 +1586,14 @@ exports.Splat = class Splat extends Base
     return [] if index >= list.length
     if list.length is 1
       node = list[0]
-      fragments = node.compileToFragments o, LEVEL_LIST
+      fragments = node.compileSplat o, LEVEL_LIST
       return fragments if apply
       return [].concat node.makeCode("#{ utility 'slice', o }.call("), fragments, node.makeCode(")")
     args = list[index..]
     for node, i in args
-      compiledNode = node.compileToFragments o, LEVEL_LIST
+      compiledNode = if node instanceof Splat
+      then node.compileSplat o, LEVEL_LIST
+      else node.compileToFragments o, LEVEL_LIST
       args[i] = if node instanceof Splat
       then [].concat node.makeCode("#{ utility 'slice', o }.call("), compiledNode, node.makeCode(")")
       else [].concat node.makeCode("["), compiledNode, node.makeCode("]")

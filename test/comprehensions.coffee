@@ -566,3 +566,17 @@ test "#3778: Consistently always cache for loop range boundaries and steps, even
   a = 3; arrayEq [1, 2, 3], (for n in [1..+a]         then a = 4; n)
   a = 1; arrayEq [1, 2, 3], (for n in [1..3] by  a    then a = 4; n)
   a = 1; arrayEq [1, 2, 3], (for n in [1..3] by +a    then a = 4; n)
+
+test "splats as last expression in comprehension", ->
+  outer = [[0, 1], [2, 3], [4, 5]]
+
+  arrayEq [0..5], ((inner...) for inner in outer)
+  arrayEq [0..5], (for inner in outer then (item for item in inner)...)
+  arrayEq [0..5], (i = 0 ; (inner...) while inner = outer[i++])
+
+  result = for inner in outer when inner[0] > 0 then inner...
+  arrayEq [2..5], result
+
+  result = for inner in outer
+    if inner[0] is 2 then inner... else inner
+  arrayEq [[0, 1], 2, 3, [4, 5]], result

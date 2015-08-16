@@ -88,6 +88,7 @@ grammar =
   # grammar.
   Line: [
     o 'Expression'
+    o 'Splat'
     o 'Statement'
     o 'YieldReturn'
   ]
