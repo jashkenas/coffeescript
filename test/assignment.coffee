@@ -443,6 +443,18 @@ test "#1500: Assignment to variables similar to generated variables", ->
   arrayEq [1, 2], f.call scope = {}, 1, 2
   eq 1, scope.a
 
+  try throw 'foo'
+  catch _error
+    eq _error, 'foo'
+
+  eq _error, 'foo'
+
+  try throw 'bar'
+  catch __error
+    eq __error, 'bar'
+
+  eq __error, 'bar'
+
   doesNotThrow -> CoffeeScript.compile '(@slice...) ->'
 
 test "Assignment to variables similar to helper functions", ->

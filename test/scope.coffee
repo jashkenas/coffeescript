@@ -33,15 +33,6 @@ test "catch statements should introduce their argument to scope", ->
     do -> e = 5
     eq 5, e
 
-test "#4036 catch statements' error variable should not clash with user-defined variable", ->
-  compile = (code) -> CoffeeScript.compile(code, bare: yes).trim().replace(/\s+/g, " ")
-
-  eq "var _error; try { something(); } catch (__error) { _error = __error; console.log(_error); }", compile("try something()\ncatch _error\n  console.log _error")
-
-  eq "var __error; try { something(); } catch (_error) { __error = _error; console.log(__error); }", compile("try something()\ncatch __error\n  console.log __error")
-
-  eq "var error; try { something(); } catch (_error) { error = _error; console.log(error); }", compile("try something()\ncatch error\n  console.log error")
-
 test "loop variable should be accessible after for-of loop", ->
   d = (x for x of {1:'a',2:'b'})
   ok x in ['1','2']
