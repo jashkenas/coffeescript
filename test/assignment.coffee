@@ -444,16 +444,10 @@ test "#1500: Assignment to variables similar to generated variables", ->
   eq 1, scope.a
 
   try throw 'foo'
-  catch _error
-    eq _error, 'foo'
+  catch error
+    eq error, 'foo'
 
-  eq _error, 'foo'
-
-  try throw 'bar'
-  catch __error
-    eq __error, 'bar'
-
-  eq __error, 'bar'
+  eq error, 'foo'
 
   doesNotThrow -> CoffeeScript.compile '(@slice...) ->'
 
