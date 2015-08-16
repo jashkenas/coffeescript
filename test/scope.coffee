@@ -33,6 +33,15 @@ test "catch statements should introduce their argument to scope", ->
     do -> e = 5
     eq 5, e
 
+test "#4036 catch statements' error variable should not clash with user-defined variable", ->
+  compile = (code) -> CoffeeScript.compile(code, bare: yes).trim().replace(/\s+/g, " ")
+
+  eq "var _error; try { something(); } catch (__error) { _error = __error; console.log(_error); }", compile("try something()\ncatch _error\n  console.log _error")
+
+  eq "var __error; try { something(); } catch (_error) { __error = _error; console.log(__error); }", compile("try something()\ncatch __error\n  console.log __error")
+
+  eq "var error; try { something(); } catch (_error) { error = _error; console.log(error); }", compile("try something()\ncatch error\n  console.log error")
+
 test "loop variable should be accessible after for-of loop", ->
   d = (x for x of {1:'a',2:'b'})
   ok x in ['1','2']
@@ -62,8 +71,8 @@ test "#1183: super + fat arrows", ->
   	constructor: ->
   		@_i = 0
   	foo : (cb) ->
-  		dolater => 
-  			@_i += 1 
+  		dolater =>
+  			@_i += 1
   			cb()
 
   class B extends A
@@ -74,19 +83,19 @@ test "#1183: super + fat arrows", ->
   			dolater =>
   				@_i += 2
   				super cb
-          
+
   b = new B
   b.foo => eq b._i, 3
 
 test "#1183: super + wrap", ->
   class A
     m : -> 10
-    
+
   class B extends A
     constructor : -> super
-    
+
   B::m = -> r = try super()
-  
+
   eq (new B).m(), 10
 
 test "#1183: super + closures", ->
@@ -94,7 +103,7 @@ test "#1183: super + closures", ->
     constructor: ->
       @i = 10
     foo : -> @i
-    
+
   class B extends A
     foo : ->
       ret = switch 1
@@ -102,15 +111,15 @@ test "#1183: super + closures", ->
         when 1 then super()
       ret
   eq (new B).foo(), 10
- 
+
 test "#2331: bound super regression", ->
   class A
     @value = 'A'
     method: -> @constructor.value
-    
+
   class B extends A
     method: => super
-  
+
   eq (new B).method(), 'A'
 
 test "#3259: leak with @-params within destructured parameters", ->

@@ -1895,12 +1895,17 @@ exports.Try = class Try extends Base
     tryPart   = @attempt.compileToFragments o, LEVEL_TOP
 
     catchPart = if @recovery
-      placeholder = new Literal '_error'
+      # Prevent user-defined error variable clashing with the generated one
+      if not @errorVariable or @errorVariable.value isnt '_error'
+        generatedErrorVariableName = '_error'
+      else
+        generatedErrorVariableName = '__error'
+      placeholder = new Literal generatedErrorVariableName
       @recovery.unshift new Assign @errorVariable, placeholder if @errorVariable
       [].concat @makeCode(" catch ("), placeholder.compileToFragments(o), @makeCode(") {\n"),
         @recovery.compileToFragments(o, LEVEL_TOP), @makeCode("\n#{@tab}}")
     else unless @ensure or @recovery
-      [@makeCode(' catch (_error) {}')]
+      [@makeCode(" catch (#{generatedErrorVariableName}) {}")]
     else
       []
 
