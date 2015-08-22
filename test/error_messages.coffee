@@ -776,6 +776,22 @@ test "invalid object keys", ->
       @a: 1
       ^^
   '''
+  assertErrorFormat '''
+    {a=2}
+  ''', '''
+    [stdin]:1:3: error: unexpected =
+    {a=2}
+      ^
+  '''
+
+test "invalid destructuring default target", ->
+  assertErrorFormat '''
+    {'a' = 2} = obj
+  ''', '''
+    [stdin]:1:6: error: unexpected =
+    {'a' = 2} = obj
+         ^
+  '''
 
 test "#4070: lone expansion", ->
   assertErrorFormat '''
