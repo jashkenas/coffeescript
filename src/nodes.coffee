@@ -1217,6 +1217,7 @@ exports.Assign = class Assign extends Base
         else
           o.scope.find varBase.value
     val = @value.compileToFragments o, LEVEL_LIST
+    @variable.front = true if isValue and @variable.base instanceof Obj
     compiledName = @variable.compileToFragments o, LEVEL_LIST
     return (compiledName.concat @makeCode(": "), val) if @context is 'object'
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val

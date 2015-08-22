@@ -131,6 +131,13 @@ test "more compound assignment", ->
   val ?= true
   eq c, val
 
+test "#1192: assignment starting with object literals", ->
+  doesNotThrow (-> CoffeeScript.run "{}.p = 0")
+  doesNotThrow (-> CoffeeScript.run "{}.p++")
+  doesNotThrow (-> CoffeeScript.run "{}[0] = 1")
+  doesNotThrow (-> CoffeeScript.run """{a: 1, 'b', "#{1}": 2}.p = 0""")
+  doesNotThrow (-> CoffeeScript.run "{a:{0:{}}}.a[0] = 0")
+
 
 # Destructuring Assignment
 
