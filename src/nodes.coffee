@@ -1234,8 +1234,11 @@ exports.Assign = class Assign extends Base
     unless olen = objects.length
       code = value.compileToFragments o
       return if o.level >= LEVEL_OP then @wrapInBraces code else code
+    [obj] = objects
+    if olen is 1 and obj instanceof Expansion
+      obj.error 'Destructuring assignment has no target'
     isObject = @variable.isObject()
-    if top and olen is 1 and (obj = objects[0]) not instanceof Splat
+    if top and olen is 1 and obj not instanceof Splat
       # Unroll simplest cases: `{v} = x` -> `v = x.v`
       if obj instanceof Assign
         {variable: {base: idx}, value: obj} = obj

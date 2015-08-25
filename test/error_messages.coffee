@@ -776,3 +776,19 @@ test "invalid object keys", ->
       @a: 1
       ^^
   '''
+
+test "#4070: lone expansion", ->
+  assertErrorFormat '''
+    [...] = a
+  ''', '''
+    [stdin]:1:2: error: Destructuring assignment has no target
+    [...] = a
+     ^^^
+  '''
+  assertErrorFormat '''
+    [ ..., ] = a
+  ''', '''
+    [stdin]:1:3: error: Destructuring assignment has no target
+    [ ..., ] = a
+      ^^^
+  '''
