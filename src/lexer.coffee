@@ -35,6 +35,7 @@ exports.Lexer = class Lexer
   # Before returning the token stream, run it through the [Rewriter](rewriter.html).
   tokenize: (code, opts = {}) ->
     @literate   = opts.literate  # Are we lexing literate CoffeeScript?
+    @preserveComments = opts.preserveComments ? false # Should we keep comments in the token stream?
     @indent     = 0              # The current indentation level.
     @baseIndent = 0              # The overall minimum indentation level
     @indebt     = 0              # The over-indentation at the current level.
@@ -247,6 +248,8 @@ exports.Lexer = class Lexer
       if here.indexOf('\n') >= 0
         here = here.replace /// \n #{repeat ' ', @indent} ///g, '\n'
       @token 'HERECOMMENT', here, 0, comment.length
+    else if @preserveComments
+      @token 'COMMENT', comment, 0, comment.length
     comment.length
 
   # Matches JavaScript interpolated directly into the source via backticks.
@@ -364,7 +367,7 @@ exports.Lexer = class Lexer
         @outdebt = 0
         # pair might call outdentToken, so preserve decreasedIndent
         @pair 'OUTDENT'
-        @token 'OUTDENT', moveOut, 0, outdentLength
+        @token 'OUTDENT', moveOut, 0, 1 #outdentLength
         moveOut -= dent
     @outdebt -= moveOut if dent
     @tokens.pop() while @value() is ';'

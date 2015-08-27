@@ -102,6 +102,11 @@ exports.addLocationDataFn = (first, last) ->
 
     return obj
 
+exports.allowLocation = (obj) ->
+  obj.updateLocationDataIfMissing = (d) ->
+    if not @locationData then @locationData = d
+  return obj
+
 # Convert jison location data to a string.
 # `obj` can be a token, or a locationData.
 exports.locationDataToString = (obj) ->

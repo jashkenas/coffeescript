@@ -38,7 +38,7 @@ o = (patternString, action, options) ->
 
   # All runtime functions we need are defined on "yy"
   action = action.replace /\bnew /g, '$&yy.'
-  action = action.replace /\b(?:Block\.wrap|extend)\b/g, 'yy.$&'
+  action = action.replace /\b(?:Block\.wrap|extend|allowLocation)\b/g, 'yy.$&'
 
   # Returns a function which adds location data to the first parameter passed
   # in, and returns the parameter.  If the parameter is not a node, it will
@@ -51,6 +51,7 @@ o = (patternString, action, options) ->
 
   action = action.replace /LOC\(([0-9]*)\)/g, addLocationDataFn('$1')
   action = action.replace /LOC\(([0-9]*),\s*([0-9]*)\)/g, addLocationDataFn('$1', '$2')
+  action = action.replace /LOC_OBJ\(([0-9]*)\)/g, '@$1'
 
   [patternString, "$$ = #{addLocationDataFn(1, patternCount)}(#{action});", options]
 
@@ -281,7 +282,7 @@ grammar =
 
   # Indexing into an object or array using bracket notation.
   Index: [
-    o 'INDEX_START IndexValue INDEX_END',       -> $2
+    o 'INDEX_START IndexValue INDEX_END',       -> $2.wipeLocationData()
     o 'INDEX_SOAK  Index',                      -> extend $2, soak : yes
   ]
 
@@ -509,14 +510,14 @@ grammar =
   ]
 
   Whens: [
-    o 'When'
-    o 'Whens When',                             -> $1.concat $2
+    o 'When',                                   -> [$1]
+    o 'Whens When',                             -> $1.concat [$2]
   ]
 
   # An individual **When** clause, with action.
   When: [
-    o 'LEADING_WHEN SimpleArgs Block',            -> [[$2, $3]]
-    o 'LEADING_WHEN SimpleArgs Block TERMINATOR', -> [[$2, $3]]
+    o 'LEADING_WHEN SimpleArgs Block',            -> allowLocation [$2, $3]
+    o 'LEADING_WHEN SimpleArgs Block TERMINATOR', -> allowLocation [$2, $3]
   ]
 
   # The most basic form of *if* is a condition and an action. The following
@@ -524,14 +525,14 @@ grammar =
   # ambiguity.
   IfBlock: [
     o 'IF Expression Block',                    -> new If $2, $3, type: $1
-    o 'IfBlock ELSE IF Expression Block',       -> $1.addElse LOC(3,5) new If $4, $5, type: $3
+    o 'IfBlock ELSE IF Expression Block',       -> $1.addElse LOC(3,5)(new If $4, $5, type: $3), LOC_OBJ(2)
   ]
 
   # The full complement of *if* expressions, including postfix one-liner
   # *if* and *unless*.
   If: [
     o 'IfBlock'
-    o 'IfBlock ELSE Block',                     -> $1.addElse $3
+    o 'IfBlock ELSE Block',                     -> $1.addElse $3, LOC_OBJ(2)
     o 'Statement  POST_IF Expression',          -> new If $3, LOC(1)(Block.wrap [$1]), type: $2, statement: true
     o 'Expression POST_IF Expression',          -> new If $3, LOC(1)(Block.wrap [$1]), type: $2, statement: true
   ]
@@ -555,6 +556,7 @@ grammar =
     o '++ SimpleAssignable',                    -> new Op '++', $2
     o 'SimpleAssignable --',                    -> new Op '--', $1, null, true
     o 'SimpleAssignable ++',                    -> new Op '++', $1, null, true
+
 
     # [The existential operator](http://jashkenas.github.com/coffee-script/#existence).
     o 'Expression ?',                           -> new Existence $1

@@ -10,11 +10,13 @@ Error.stackTraceLimit = Infinity
 
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, some,
-addLocationDataFn, locationDataToString, throwSyntaxError} = require './helpers'
+addLocationDataFn, locationDataToString, throwSyntaxError,
+allowLocation} = require './helpers'
 
 # Functions required by parser
 exports.extend = extend
 exports.addLocationDataFn = addLocationDataFn
+exports.allowLocation = allowLocation
 
 # Constant functions for nodes that don't need customization.
 YES     = -> yes
@@ -29,6 +31,8 @@ NEGATE  = -> @negated = not @negated; this
 # came from. CodeFragments can be assembled together into working code just by catting together
 # all the CodeFragments' `code` snippets, in order.
 exports.CodeFragment = class CodeFragment
+  nodeType: -> 'CodeFragment'
+
   constructor: (parent, code) ->
     @code = "#{code}"
     @locationData = parent?.locationData
@@ -53,9 +57,14 @@ fragmentsToText = (fragments) ->
 # being requested by the surrounding function), information about the current
 # scope, and indentation level.
 exports.Base = class Base
+  nodeType: -> 'Base'
 
   compile: (o, lvl) ->
     fragmentsToText @compileToFragments o, lvl
+
+  wipeLocationData: ->
+    @locationData = undefined
+    return this
 
   # Common logic for determining whether to wrap this node in a closure before
   # compiling it, or to compile directly. We need to wrap if this node is a
@@ -223,6 +232,8 @@ exports.Base = class Base
 # indented block of code -- the implementation of a function, a clause in an
 # `if`, `switch`, or `try`, and so on...
 exports.Block = class Block extends Base
+  nodeType: -> 'Block'
+
   constructor: (nodes) ->
     @expressions = compact flatten nodes or []
 
@@ -384,6 +395,8 @@ exports.Block = class Block extends Base
 # JavaScript without translation, such as: strings, numbers,
 # `true`, `false`, `null`...
 exports.Literal = class Literal extends Base
+  nodeType: -> 'Literal'
+
   constructor: (@value) ->
 
   makeReturn: ->
@@ -439,6 +452,8 @@ class exports.Bool extends Base
 # A `return` is a *pureStatement* -- wrapping it in a closure wouldn't
 # make sense.
 exports.Return = class Return extends Base
+  nodeType: -> 'Return'
+
   constructor: (@expression) ->
 
   children: ['expression']
@@ -467,6 +482,8 @@ exports.Return = class Return extends Base
 # A value, variable or literal or parenthesized, indexed or dotted into,
 # or vanilla.
 exports.Value = class Value extends Base
+  nodeType: -> 'Value'
+
   constructor: (base, props, tag) ->
     return base if not props and base instanceof Value
     @base       = base
@@ -578,6 +595,8 @@ exports.Value = class Value extends Base
 # CoffeeScript passes through block comments as JavaScript block comments
 # at the same position.
 exports.Comment = class Comment extends Base
+  nodeType: -> 'Comment'
+
   constructor: (@comment) ->
 
   isStatement:     YES
@@ -594,6 +613,8 @@ exports.Comment = class Comment extends Base
 # Node for a function invocation. Takes care of converting `super()` calls into
 # calls against the prototype's function of the same name.
 exports.Call = class Call extends Base
+  nodeType: -> 'Call'
+
   constructor: (variable, @args = [], @soak) ->
     @isNew    = false
     @isSuper  = variable is 'super'
@@ -745,6 +766,8 @@ exports.Call = class Call extends Base
 # After `goog.inherits` from the
 # [Closure Library](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.html).
 exports.Extends = class Extends extends Base
+  nodeType: -> 'Extends'
+
   constructor: (@child, @parent) ->
 
   children: ['child', 'parent']
@@ -758,6 +781,8 @@ exports.Extends = class Extends extends Base
 # A `.` access into a property of a value, or the `::` shorthand for
 # an access into the object's prototype.
 exports.Access = class Access extends Base
+  nodeType: -> 'Access'
+
   constructor: (@name, tag) ->
     @name.asKey = yes
     @soak  = tag is 'soak'
@@ -779,6 +804,8 @@ exports.Access = class Access extends Base
 
 # A `[ ... ]` indexed access into an array or object.
 exports.Index = class Index extends Base
+  nodeType: -> 'Index'
+
   constructor: (@index) ->
 
   children: ['index']
@@ -795,6 +822,8 @@ exports.Index = class Index extends Base
 # to specify a range for comprehensions, or as a value, to be expanded into the
 # corresponding array of integers at runtime.
 exports.Range = class Range extends Base
+  nodeType: -> 'Range'
+
 
   children: ['from', 'to']
 
@@ -890,6 +919,8 @@ exports.Range = class Range extends Base
 # specifies the index of the end of the slice, just as the first parameter
 # is the index of the beginning.
 exports.Slice = class Slice extends Base
+  nodeType: -> 'Slice'
+
 
   children: ['range']
 
@@ -920,6 +951,8 @@ exports.Slice = class Slice extends Base
 
 # An object literal, nothing fancy.
 exports.Obj = class Obj extends Base
+  nodeType: -> 'Obj'
+
   constructor: (props, @generated = false) ->
     @objects = @properties = props or []
 
@@ -984,6 +1017,8 @@ exports.Obj = class Obj extends Base
 
 # An array literal.
 exports.Arr = class Arr extends Base
+  nodeType: -> 'Arr'
+
   constructor: (objs) ->
     @objects = objs or []
 
@@ -1019,6 +1054,8 @@ exports.Arr = class Arr extends Base
 # Initialize a **Class** with its name, an optional superclass, and a
 # list of prototype property assignments.
 exports.Class = class Class extends Base
+  nodeType: -> 'Class'
+
   constructor: (@variable, @parent, @body = new Block) ->
     @boundFuncs = []
     @body.classBody = yes
@@ -1168,6 +1205,8 @@ exports.Class = class Class extends Base
 # The **Assign** is used to assign a local variable to value, or to set the
 # property of an object -- including within object literals.
 exports.Assign = class Assign extends Base
+  nodeType: -> 'Assign'
+
   constructor: (@variable, @value, @context, options) ->
     @param = options and options.param
     @subpattern = options and options.subpattern
@@ -1364,6 +1403,8 @@ exports.Assign = class Assign extends Base
 # When for the purposes of walking the contents of a function body, the Code
 # has no *children* -- they're within the inner scope.
 exports.Code = class Code extends Base
+  nodeType: -> 'Code'
+
   constructor: (params, body, tag) ->
     @params      = params or []
     @body        = body or new Block
@@ -1464,6 +1505,8 @@ exports.Code = class Code extends Base
 # these parameters can also attach themselves to the context of the function,
 # as well as be a splat, gathering up a group of parameters into an array.
 exports.Param = class Param extends Base
+  nodeType: -> 'Param'
+
   constructor: (@name, @value, @splat) ->
     if (name = @name.unwrapAll().value) in STRICT_PROSCRIBED
       @name.error "parameter name \"#{name}\" is not allowed"
@@ -1528,6 +1571,8 @@ exports.Param = class Param extends Base
 # A splat, either as a parameter to a function, an argument to a call,
 # or as part of a destructuring assignment.
 exports.Splat = class Splat extends Base
+  nodeType: -> 'Splat'
+
 
   children: ['name']
 
@@ -1576,6 +1621,8 @@ exports.Splat = class Splat extends Base
 # Used to skip values inside an array destructuring (pattern matching) or
 # parameter list.
 exports.Expansion = class Expansion extends Base
+  nodeType: -> 'Expansion'
+
 
   isComplex: NO
 
@@ -1593,7 +1640,10 @@ exports.Expansion = class Expansion extends Base
 # it, all other loops can be manufactured. Useful in cases where you need more
 # flexibility or more speed than a comprehension can provide.
 exports.While = class While extends Base
+  nodeType: -> 'While'
+
   constructor: (condition, options) ->
+    @rawCondition = condition
     @condition = if options?.invert then condition.invert() else condition
     @guard     = options?.guard
 
@@ -1648,12 +1698,19 @@ exports.While = class While extends Base
 # Simple Arithmetic and logical operations. Performs some conversion from
 # CoffeeScript operations into their JavaScript equivalents.
 exports.Op = class Op extends Base
+  nodeType: -> 'Op'
+
   constructor: (op, first, second, flip ) ->
     return new In first, second if op is 'in'
     if op is 'do'
       return @generateDo first
     if op is 'new'
-      return first.newInstance() if first instanceof Call and not first.do and not first.isNew
+      if first instanceof Call and not first.do and not first.isNew
+        # Delete location data so that parser
+        # re-assigns location data to ours
+        first.locationData = undefined
+        return first.newInstance()
+
       first = new Parens first   if first instanceof Code and first.bound or first.do
     @operator = CONVERSIONS[op] or op
     @first    = first
@@ -1840,6 +1897,8 @@ exports.Op = class Op extends Base
 
 #### In
 exports.In = class In extends Base
+  nodeType: -> 'In'
+
   constructor: (@object, @array) ->
 
   children: ['object', 'array']
@@ -1879,6 +1938,8 @@ exports.In = class In extends Base
 
 # A classic *try/catch/finally* block.
 exports.Try = class Try extends Base
+  nodeType: -> 'Try'
+
   constructor: (@attempt, @errorVariable, @recovery, @ensure) ->
 
   children: ['attempt', 'recovery', 'ensure']
@@ -1920,6 +1981,8 @@ exports.Try = class Try extends Base
 
 # Simple node to throw an exception.
 exports.Throw = class Throw extends Base
+  nodeType: -> 'Throw'
+
   constructor: (@expression) ->
 
   children: ['expression']
@@ -1939,6 +2002,8 @@ exports.Throw = class Throw extends Base
 # similar to `.nil?` in Ruby, and avoids having to consult a JavaScript truth
 # table.
 exports.Existence = class Existence extends Base
+  nodeType: -> 'Existence'
+
   constructor: (@expression) ->
 
   children: ['expression']
@@ -1964,6 +2029,8 @@ exports.Existence = class Existence extends Base
 #
 # Parentheses are a good way to force any statement to become an expression.
 exports.Parens = class Parens extends Base
+  nodeType: -> 'Parens'
+
   constructor: (@body) ->
 
   children: ['body']
@@ -1991,6 +2058,8 @@ exports.Parens = class Parens extends Base
 # the current index of the loop as a second parameter. Unlike Ruby blocks,
 # you can map and filter in a single pass.
 exports.For = class For extends While
+  nodeType: -> 'For'
+
   constructor: (body, source) ->
     {@source, @guard, @step, @name, @index} = source
     @body    = Block.wrap [body]
@@ -2109,6 +2178,8 @@ exports.For = class For extends While
 
 # A JavaScript *switch* statement. Converts into a returnable expression on-demand.
 exports.Switch = class Switch extends Base
+  nodeType: -> 'Switch'
+
   constructor: (@subject, @cases, @otherwise) ->
 
   children: ['subject', 'cases', 'otherwise']
@@ -2154,9 +2225,13 @@ exports.Switch = class Switch extends Base
 # Single-expression **Ifs** are compiled into conditional operators if possible,
 # because ternaries are already proper expressions, and don't need conversion.
 exports.If = class If extends Base
+  nodeType: -> 'If'
+
   constructor: (condition, @body, options = {}) ->
+    @rawCondition = condition
     @condition = if options.type is 'unless' then condition.invert() else condition
     @elseBody  = null
+    @elseToken = null
     @isChain   = false
     {@soak}    = options
 
@@ -2166,13 +2241,14 @@ exports.If = class If extends Base
   elseBodyNode: -> @elseBody?.unwrap()
 
   # Rewrite a chain of **Ifs** to add a default case as the final *else*.
-  addElse: (elseBody) ->
+  addElse: (elseBody, elseToken) ->
     if @isChain
-      @elseBodyNode().addElse elseBody
+      @elseBodyNode().addElse elseBody, elseToken
     else
       @isChain  = elseBody instanceof If
       @elseBody = @ensureBlock elseBody
       @elseBody.updateLocationDataIfMissing elseBody.locationData
+      @elseToken = elseToken
     this
 
   # The **If** only compiles into a statement if either of its bodies needs
