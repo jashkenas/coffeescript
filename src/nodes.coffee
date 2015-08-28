@@ -1482,6 +1482,9 @@ exports.Param = class Param extends Base
   constructor: (@name, @value, @splat) ->
     if (name = @name.unwrapAll().value) in STRICT_PROSCRIBED
       @name.error "parameter name \"#{name}\" is not allowed"
+    if @name instanceof Obj and @name.generated
+      token = @name.objects[0].operatorToken
+      token.error "unexpected #{token.value}"
 
   children: ['name', 'value']
 
