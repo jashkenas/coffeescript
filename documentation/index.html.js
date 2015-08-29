@@ -766,9 +766,7 @@ Expressions
     <p>
       <span id="destructuring" class="bookmark"></span>
       <b class="header">Destructuring Assignment</b>
-      To make extracting values from complex arrays and objects more convenient,
-      CoffeeScript implements ECMAScript Harmony's proposed
-      <a href="http://wiki.ecmascript.org/doku.php?id=harmony:destructuring">destructuring assignment</a>
+      Just like JavaScript (since ES2015), CoffeeScript has destructuring assignment
       syntax. When you assign an array or object literal to a value, CoffeeScript
       breaks up and matches both sides against each other, assigning the values
       on the right to the variables on the left. In the simplest case, it can be
@@ -797,7 +795,13 @@ Expressions
       Destructuring assignment is also useful when combined with class constructors
       to assign properties to your instance from an options object passed to the constructor.
     </p>
-    <%= codeFor('constructor_destructuring', 'tim.age') %>
+    <%= codeFor('constructor_destructuring', 'tim.age + " " + tim.height') %>
+    <p>
+      The above example also demonstrates that if properties are missing in the
+      destructured object or array, you can, just like in JavaScript, provide
+      defaults. The difference with JavaScript is that CoffeeScript, as always,
+      treats both null and undefined the same.
+    </p>
 
     <p>
       <span id="fat-arrow" class="bookmark"></span>
