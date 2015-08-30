@@ -4,5 +4,3 @@ mobyDick = "Call me Ishmael. Some years ago --
   to interest me on shore, I thought I would sail
   about a little and see the watery part of the
   world..."
-
-
