@@ -57,7 +57,7 @@ table.definitions {
     text-align: center;
     padding: 5px 20px;
   }
-code, pre, tt, textarea {
+code, pre, textarea {
   font-family: Monaco, Consolas, "Lucida Console", monospace;
   font-size: 12px;
   line-height: 18px;
@@ -65,7 +65,7 @@ code, pre, tt, textarea {
   white-space: pre-wrap;
   word-wrap: break-word;
 }
-  tt {
+  p > code, li > code {
     display: inline-block;
     background: #fff;
     border: 1px solid #dedede;
