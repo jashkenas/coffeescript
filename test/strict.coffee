@@ -93,7 +93,6 @@ test "duplicate formal parameters are prohibited", ->
   strict '(_,[_,{__}])->',   'param, [param, {param2}]'
   strict '(_,[__,{_}])->',   'param, [param2, {param}]'
   strict '(__,[_,{_}])->',   'param, [param2, {param2}]'
-  strict '(0:a,1:a)->',      '0:param,1:param'
   strict '({0:a,1:a})->',    '{0:param,1:param}'
   # the following function expressions should **not** throw errors
   strictOk '(_,@_)->'
@@ -115,8 +114,8 @@ test "duplicate formal parameters are prohibited", ->
   strictOk '(@case...,_case)->'
   strictOk '(_case,@case)->'
   strictOk '(_case,@case...)->'
-  strictOk '(a:a)->'
-  strictOk '(a:a,a:b)->'
+  strictOk '({a:a})->'
+  strictOk '({a:a,a:b})->'
 
 test "`delete` operand restrictions", ->
   strict 'a = 1; delete a'
