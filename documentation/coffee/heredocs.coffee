@@ -3,4 +3,3 @@ html = """
          cup of coffeescript
        </strong>
        """
-       

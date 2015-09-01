@@ -19,7 +19,3 @@ tom = new Horse "Tommy the Palomino"
 
 sam.move()
 tom.move()
-
-
-
-

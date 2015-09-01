@@ -9,6 +9,7 @@ body {
   width: 950px;
   margin: 0;
   padding: 80px 0px 50px 50px;
+  clear: both;
 }
 p, li {
   width: 625px;
@@ -56,7 +57,7 @@ table.definitions {
     text-align: center;
     padding: 5px 20px;
   }
-code, pre, tt, textarea {
+code, pre, textarea {
   font-family: Monaco, Consolas, "Lucida Console", monospace;
   font-size: 12px;
   line-height: 18px;
@@ -64,7 +65,7 @@ code, pre, tt, textarea {
   white-space: pre-wrap;
   word-wrap: break-word;
 }
-  tt {
+  p > code, li > code {
     display: inline-block;
     background: #fff;
     border: 1px solid #dedede;
@@ -111,9 +112,12 @@ div.code {
     float: left;
     width: 450px;
     background: #fff;
-    border-left: 1px dotted #d0d0d0;
-    margin: 10px 0 15px 3px;
-    padding: 0 0 0 12px;
+    border: 1px dotted #d0d0d0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    border-right-width: 0;
+    margin: 0 3px 15px 3px;
+    padding: 10px 0 0 12px;
   }
     div.code pre:first-child {
       border-left: 0;
@@ -134,7 +138,6 @@ div.code {
   height: 50px;
   min-width: 490px;
   left: 40px; right: 40px; top: 25px;
-  padding-left: 252px;
   background: #eee;
   background: -webkit-gradient(linear, left top, left bottom, from(#f8f8f8), to(#dadada));
   background: -moz-linear-gradient(top, #f8f8f8, #dadada);
@@ -149,8 +152,9 @@ div.code {
   #logo {
     display: block;
     outline: none;
-    position: absolute;
-    top: 0px; left: 10px;
+    float: left;
+    width: 242px;
+    margin-left: 10px;
   }
     #logo img {
       margin: 5px 0 0 3px;
@@ -221,6 +225,7 @@ div.code {
         display: block;
       }
       .navigation .contents.menu {
+        z-index: 100;
         border-top: 0;
         -webkit-border-top-left-radius: 0; -moz-border-radius-topleft: 0; border-top-left-radius: 0;
         -webkit-border-top-right-radius: 0; -moz-border-radius-topright: 0; border-top-right-radius: 0;
@@ -377,3 +382,36 @@ div.code {
      cursor: not-allowed;
   }
 
+@media (max-width: 820px) {
+  .container {
+    width: auto;
+    padding: 1em;
+  }
+  p, li, table {
+    width: auto;
+  }
+  #fadeout {
+    display: none;
+  }
+  #flybar {
+    position: static;
+    height: auto;
+    min-width: 245px;
+  }
+    #logo {
+      float: none;
+    }
+    .navigation {
+      float: none;
+      border: none;
+    }
+  div.code pre, div.code textarea {
+    border-left: none;
+    border-top-width: 1px;
+    width: auto;
+    float: none;
+  }
+    div.code pre:first-child {
+      border-top: none;
+    }
+}

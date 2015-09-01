@@ -5,4 +5,3 @@ catch error
   print error
 finally
   cleanUp()
-
