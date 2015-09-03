@@ -776,3 +776,51 @@ test "invalid object keys", ->
       @a: 1
       ^^
   '''
+  assertErrorFormat '''
+    {a=2}
+  ''', '''
+    [stdin]:1:3: error: unexpected =
+    {a=2}
+      ^
+  '''
+
+test "invalid destructuring default target", ->
+  assertErrorFormat '''
+    {'a' = 2} = obj
+  ''', '''
+    [stdin]:1:6: error: unexpected =
+    {'a' = 2} = obj
+         ^
+  '''
+
+test "#4070: lone expansion", ->
+  assertErrorFormat '''
+    [...] = a
+  ''', '''
+    [stdin]:1:2: error: Destructuring assignment has no target
+    [...] = a
+     ^^^
+  '''
+  assertErrorFormat '''
+    [ ..., ] = a
+  ''', '''
+    [stdin]:1:3: error: Destructuring assignment has no target
+    [ ..., ] = a
+      ^^^
+  '''
+
+test "#3926: implicit object in parameter list", ->
+  assertErrorFormat '''
+    (a: b) ->
+  ''', '''
+    [stdin]:1:3: error: unexpected :
+    (a: b) ->
+      ^
+  '''
+  assertErrorFormat '''
+    (one, two, {three, four: five}, key: value) ->
+  ''', '''
+    [stdin]:1:36: error: unexpected :
+    (one, two, {three, four: five}, key: value) ->
+                                       ^
+  '''

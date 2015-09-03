@@ -168,16 +168,27 @@ grammar =
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
     o 'ObjAssignable',                          -> new Value $1
-    o 'ObjAssignable : Expression',             -> new Assign LOC(1)(new Value($1)), $3, 'object'
+    o 'ObjAssignable : Expression',             -> new Assign LOC(1)(new Value $1), $3, 'object',
+                                                              operatorToken: LOC(2)(new Literal $2)
     o 'ObjAssignable :
-       INDENT Expression OUTDENT',              -> new Assign LOC(1)(new Value($1)), $4, 'object'
+       INDENT Expression OUTDENT',              -> new Assign LOC(1)(new Value $1), $4, 'object',
+                                                              operatorToken: LOC(2)(new Literal $2)
+    o 'SimpleObjAssignable = Expression',       -> new Assign LOC(1)(new Value $1), $3, null,
+                                                              operatorToken: LOC(2)(new Literal $2)
+    o 'SimpleObjAssignable =
+       INDENT Expression OUTDENT',              -> new Assign LOC(1)(new Value $1), $4, null,
+                                                              operatorToken: LOC(2)(new Literal $2)
     o 'Comment'
   ]
 
-  ObjAssignable: [
+  SimpleObjAssignable: [
     o 'Identifier'
-    o 'AlphaNumeric'
     o 'ThisProperty'
+  ]
+
+  ObjAssignable: [
+    o 'SimpleObjAssignable'
+    o 'AlphaNumeric'
   ]
 
   # A return statement from a function body.

@@ -951,8 +951,11 @@ exports.Obj = class Obj extends Base
         ',\n'
       indent = if prop instanceof Comment then '' else idt
       indent += TAB if hasDynamic and i < dynamicIndex
-      if prop instanceof Assign and prop.variable instanceof Value and prop.variable.hasProperties()
-        prop.variable.error 'invalid object key'
+      if prop instanceof Assign
+        if prop.context isnt 'object'
+          prop.operatorToken.error "unexpected #{prop.operatorToken.value}"
+        if prop.variable instanceof Value and prop.variable.hasProperties()
+          prop.variable.error 'invalid object key'
       if prop instanceof Value and prop.this
         prop = new Assign prop.properties[0].name, prop, 'object'
       if prop not instanceof Comment
@@ -1168,9 +1171,8 @@ exports.Class = class Class extends Base
 # The **Assign** is used to assign a local variable to value, or to set the
 # property of an object -- including within object literals.
 exports.Assign = class Assign extends Base
-  constructor: (@variable, @value, @context, options) ->
-    @param = options and options.param
-    @subpattern = options and options.subpattern
+  constructor: (@variable, @value, @context, options = {}) ->
+    {@param, @subpattern, @operatorToken} = options
     forbidden = (name = @variable.unwrapAll().value) in STRICT_PROSCRIBED
     if forbidden and @context isnt 'object'
       @variable.error "variable name may not be \"#{name}\""
@@ -1217,6 +1219,7 @@ exports.Assign = class Assign extends Base
         else
           o.scope.find varBase.value
     val = @value.compileToFragments o, LEVEL_LIST
+    @variable.front = true if isValue and @variable.base instanceof Obj
     compiledName = @variable.compileToFragments o, LEVEL_LIST
     return (compiledName.concat @makeCode(": "), val) if @context is 'object'
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
@@ -1224,8 +1227,6 @@ exports.Assign = class Assign extends Base
 
   # Brief implementation of recursive pattern matching, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
-  # See the [ECMAScript Harmony Wiki](http://wiki.ecmascript.org/doku.php?id=harmony:destructuring)
-  # for details.
   compilePatternMatch: (o) ->
     top       = o.level is LEVEL_TOP
     {value}   = this
@@ -1233,21 +1234,36 @@ exports.Assign = class Assign extends Base
     unless olen = objects.length
       code = value.compileToFragments o
       return if o.level >= LEVEL_OP then @wrapInBraces code else code
+    [obj] = objects
+    if olen is 1 and obj instanceof Expansion
+      obj.error 'Destructuring assignment has no target'
     isObject = @variable.isObject()
-    if top and olen is 1 and (obj = objects[0]) not instanceof Splat
-      # Unroll simplest cases: `{v} = x` -> `v = x.v`
-      if obj instanceof Assign
+    if top and olen is 1 and obj not instanceof Splat
+      # Pick the property straight off the value when there’s just one to pick
+      # (no need to cache the value into a variable).
+      defaultValue = null
+      if obj instanceof Assign and obj.context is 'object'
+        # A regular object pattern-match.
         {variable: {base: idx}, value: obj} = obj
+        if obj instanceof Assign
+          defaultValue = obj.value
+          obj = obj.variable
       else
+        if obj instanceof Assign
+          defaultValue = obj.value
+          obj = obj.variable
         idx = if isObject
+          # A shorthand `{a, b, @c} = val` pattern-match.
           if obj.this then obj.properties[0].name else obj
         else
+          # A regular array pattern-match.
           new Literal 0
-      acc   = IDENTIFIER.test idx.unwrap().value or 0
+      acc   = IDENTIFIER.test idx.unwrap().value
       value = new Value value
       value.properties.push new (if acc then Access else Index) idx
       if obj.unwrap().value in RESERVED
         obj.error "assignment to a reserved word: #{obj.compile o}"
+      value = new Op '?', value, defaultValue if defaultValue
       return new Assign(obj, value, null, param: @param).compileToFragments o, LEVEL_TOP
     vvar     = value.compileToFragments o, LEVEL_LIST
     vvarText = fragmentsToText vvar
@@ -1259,18 +1275,7 @@ exports.Assign = class Assign extends Base
       vvar = [@makeCode ref]
       vvarText = ref
     for obj, i in objects
-      # A regular array pattern-match.
       idx = i
-      if isObject
-        if obj instanceof Assign
-          # A regular object pattern-match.
-          {variable: {base: idx}, value: obj} = obj
-        else
-          # A shorthand `{a, b, @c} = val` pattern-match.
-          if obj.base instanceof Parens
-            [obj, idx] = new Value(obj.unwrapAll()).cacheReference o
-          else
-            idx = if obj.this then obj.properties[0].name else obj
       if not expandedIdx and obj instanceof Splat
         name = obj.name.unwrap().value
         obj = obj.unwrap()
@@ -1293,15 +1298,29 @@ exports.Assign = class Assign extends Base
             assigns.push val.compileToFragments o, LEVEL_LIST
         continue
       else
-        name = obj.unwrap().value
         if obj instanceof Splat or obj instanceof Expansion
           obj.error "multiple splats/expansions are disallowed in an assignment"
-        if typeof idx is 'number'
-          idx = new Literal expandedIdx or idx
-          acc = no
+        defaultValue = null
+        if obj instanceof Assign and obj.context is 'object'
+          # A regular object pattern-match.
+          {variable: {base: idx}, value: obj} = obj
+          if obj instanceof Assign
+            defaultValue = obj.value
+            obj = obj.variable
         else
-          acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
+          if obj instanceof Assign
+            defaultValue = obj.value
+            obj = obj.variable
+          idx = if isObject
+            # A shorthand `{a, b, @c} = val` pattern-match.
+            if obj.this then obj.properties[0].name else obj
+          else
+            # A regular array pattern-match.
+            new Literal expandedIdx or idx
+        name = obj.unwrap().value
+        acc = IDENTIFIER.test idx.unwrap().value
         val = new Value new Literal(vvarText), [new (if acc then Access else Index) idx]
+        val = new Op '?', val, defaultValue if defaultValue
       if name? and name in RESERVED
         obj.error "assignment to a reserved word: #{obj.compile o}"
       assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
@@ -1463,6 +1482,9 @@ exports.Param = class Param extends Base
   constructor: (@name, @value, @splat) ->
     if (name = @name.unwrapAll().value) in STRICT_PROSCRIBED
       @name.error "parameter name \"#{name}\" is not allowed"
+    if @name instanceof Obj and @name.generated
+      token = @name.objects[0].operatorToken
+      token.error "unexpected #{token.value}"
 
   children: ['name', 'value']
 
@@ -1499,6 +1521,9 @@ exports.Param = class Param extends Base
     # * at-params `@foo`
     return atParam name if name instanceof Value
     for obj in name.objects
+      # * destructured parameter with default value
+      if obj instanceof Assign and not obj.context?
+        obj = obj.variable
       # * assignments within destructured parameters `{foo:bar}`
       if obj instanceof Assign
         @eachName iterator, obj.value.unwrap()
@@ -1895,12 +1920,13 @@ exports.Try = class Try extends Base
     tryPart   = @attempt.compileToFragments o, LEVEL_TOP
 
     catchPart = if @recovery
-      placeholder = new Literal '_error'
+      generatedErrorVariableName = o.scope.freeVariable 'error'
+      placeholder = new Literal generatedErrorVariableName
       @recovery.unshift new Assign @errorVariable, placeholder if @errorVariable
       [].concat @makeCode(" catch ("), placeholder.compileToFragments(o), @makeCode(") {\n"),
         @recovery.compileToFragments(o, LEVEL_TOP), @makeCode("\n#{@tab}}")
     else unless @ensure or @recovery
-      [@makeCode(' catch (_error) {}')]
+      [@makeCode(" catch (#{generatedErrorVariableName}) {}")]
     else
       []
 
