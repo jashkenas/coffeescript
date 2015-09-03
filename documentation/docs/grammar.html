@@ -532,16 +532,27 @@ the ordinary <strong>Assign</strong> is that these allow numbers and strings as 
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">AssignObj</span>: [
     o <span class="hljs-string">'ObjAssignable'</span>,<span class="hljs-function">                          -&gt;</span> <span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'ObjAssignable : Expression'</span>,<span class="hljs-function">             -&gt;</span> <span class="hljs-keyword">new</span> Assign LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Value($<span class="hljs-number">1</span>)), $<span class="hljs-number">3</span>, <span class="hljs-string">'object'</span>
+    o <span class="hljs-string">'ObjAssignable : Expression'</span>,<span class="hljs-function">             -&gt;</span> <span class="hljs-keyword">new</span> Assign LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>), $<span class="hljs-number">3</span>, <span class="hljs-string">'object'</span>,
+                                                              <span class="hljs-attribute">operatorToken</span>: LOC(<span class="hljs-number">2</span>)(<span class="hljs-keyword">new</span> Literal $<span class="hljs-number">2</span>)
     o <span class="hljs-string">'ObjAssignable :
-       INDENT Expression OUTDENT'</span>,<span class="hljs-function">              -&gt;</span> <span class="hljs-keyword">new</span> Assign LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Value($<span class="hljs-number">1</span>)), $<span class="hljs-number">4</span>, <span class="hljs-string">'object'</span>
+       INDENT Expression OUTDENT'</span>,<span class="hljs-function">              -&gt;</span> <span class="hljs-keyword">new</span> Assign LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>), $<span class="hljs-number">4</span>, <span class="hljs-string">'object'</span>,
+                                                              <span class="hljs-attribute">operatorToken</span>: LOC(<span class="hljs-number">2</span>)(<span class="hljs-keyword">new</span> Literal $<span class="hljs-number">2</span>)
+    o <span class="hljs-string">'SimpleObjAssignable = Expression'</span>,<span class="hljs-function">       -&gt;</span> <span class="hljs-keyword">new</span> Assign LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>), $<span class="hljs-number">3</span>, <span class="hljs-literal">null</span>,
+                                                              <span class="hljs-attribute">operatorToken</span>: LOC(<span class="hljs-number">2</span>)(<span class="hljs-keyword">new</span> Literal $<span class="hljs-number">2</span>)
+    o <span class="hljs-string">'SimpleObjAssignable =
+       INDENT Expression OUTDENT'</span>,<span class="hljs-function">              -&gt;</span> <span class="hljs-keyword">new</span> Assign LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>), $<span class="hljs-number">4</span>, <span class="hljs-literal">null</span>,
+                                                              <span class="hljs-attribute">operatorToken</span>: LOC(<span class="hljs-number">2</span>)(<span class="hljs-keyword">new</span> Literal $<span class="hljs-number">2</span>)
     o <span class="hljs-string">'Comment'</span>
   ]
 
-  <span class="hljs-attribute">ObjAssignable</span>: [
+  <span class="hljs-attribute">SimpleObjAssignable</span>: [
     o <span class="hljs-string">'Identifier'</span>
-    o <span class="hljs-string">'AlphaNumeric'</span>
     o <span class="hljs-string">'ThisProperty'</span>
+  ]
+
+  <span class="hljs-attribute">ObjAssignable</span>: [
+    o <span class="hljs-string">'SimpleObjAssignable'</span>
+    o <span class="hljs-string">'AlphaNumeric'</span>
   ]</pre></div></div>
             
         </li>
