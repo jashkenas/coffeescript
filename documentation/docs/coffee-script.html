@@ -144,7 +144,7 @@ SourceMap     = <span class="hljs-built_in">require</span> <span class="hljs-str
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.VERSION = <span class="hljs-string">'1.9.3'</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.VERSION = <span class="hljs-string">'1.10.0'</span>
 
 <span class="hljs-built_in">exports</span>.FILE_EXTENSIONS = [<span class="hljs-string">'.coffee'</span>, <span class="hljs-string">'.litcoffee'</span>, <span class="hljs-string">'.coffee.md'</span>]</pre></div></div>
             
@@ -482,7 +482,8 @@ The CoffeeScript REPL uses this to run the input.</p>
       sandbox.<span class="hljs-built_in">module</span>  = _module  = <span class="hljs-keyword">new</span> Module(options.modulename || <span class="hljs-string">'eval'</span>)
       sandbox.<span class="hljs-built_in">require</span> = <span class="hljs-function"><span class="hljs-title">_require</span> = <span class="hljs-params">(path)</span> -&gt;</span>  Module._load path, _module, <span class="hljs-literal">true</span>
       _module.filename = sandbox.__filename
-      _require[r] = <span class="hljs-built_in">require</span>[r] <span class="hljs-keyword">for</span> r <span class="hljs-keyword">in</span> Object.getOwnPropertyNames <span class="hljs-built_in">require</span> <span class="hljs-keyword">when</span> r <span class="hljs-keyword">isnt</span> <span class="hljs-string">'paths'</span></pre></div></div>
+      <span class="hljs-keyword">for</span> r <span class="hljs-keyword">in</span> Object.getOwnPropertyNames <span class="hljs-built_in">require</span> <span class="hljs-keyword">when</span> r <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> [<span class="hljs-string">'paths'</span>, <span class="hljs-string">'arguments'</span>, <span class="hljs-string">'caller'</span>]
+        _require[r] = <span class="hljs-built_in">require</span>[r]</pre></div></div>
             
         </li>
         

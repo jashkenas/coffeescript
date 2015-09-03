@@ -111,7 +111,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffeescript/tarball/1.9.3">1.9.3</a>
+      <a href="http://github.com/jashkenas/coffeescript/tarball/1.10.0">1.10.0</a>
     </p>
 
     <pre>npm install -g coffee-script</pre>
@@ -1223,6 +1223,40 @@ Expressions
       <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
+
+    <p>
+      <%= releaseHeader('2015-09-04', '1.10.0', '1.9.3') %>
+      <ul>
+        <li>
+          CoffeeScript now supports ES6-style destructuring defaults.
+        </li>
+        <li>
+          <code>(offsetHeight: height) -&gt;</code> no longer compiles. That
+          syntax was accidental and partly broken. Use <code>({offsetHeight:
+          height}) -&gt;</code> instead. Object destructuring always requires
+          braces.
+        </li>
+        <li>
+          <p>Several minor bug fixes, including:</p>
+          <ul>
+            <li>
+              A bug where the REPL would sometimes report valid code as invalid,
+              based on what you had typed earlier.
+            </li>
+            <li>
+              A problem with multiple JS contexts in the jest test framework.
+            </li>
+            <li>
+              An error in io.js where strict mode is set on internal modules.
+            </li>
+            <li>
+              A variable name clash for the caught error in <code>catch</code>
+              blocks.
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </p>
 
     <p>
       <%= releaseHeader('2015-05-27', '1.9.3', '1.9.2') %>
