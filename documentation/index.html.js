@@ -884,6 +884,10 @@ Expressions
       parts. The catch part may also omit the error parameter if it is not needed.
     </p>
     <%= codeFor('try') %>
+    <p>
+      Omitting both is a useful idiom for performing an operation and suppressing all exceptions:
+    </p>
+    <%= codeFor('try-optional') %>
 
     <p>
       <span id="comparisons" class="bookmark"></span>
