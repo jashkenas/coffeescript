@@ -1225,16 +1225,15 @@ Expressions
     </h2>
 
     <p>
-      <%= releaseHeader('2015-09-04', '1.10.0', '1.9.3') %>
+      <%= releaseHeader('2015-09-03', '1.10.0', '1.9.3') %>
       <ul>
         <li>
           CoffeeScript now supports ES6-style destructuring defaults.
         </li>
         <li>
           <code>(offsetHeight: height) -&gt;</code> no longer compiles. That
-          syntax was accidental and partly broken. Use <code>({offsetHeight:
-          height}) -&gt;</code> instead. Object destructuring always requires
-          braces.
+          syntax was accidental and partly broken. Use <code>({offsetHeight: height}) -&gt;</code>
+          instead. Object destructuring always requires braces.
         </li>
         <li>
           <p>Several minor bug fixes, including:</p>
