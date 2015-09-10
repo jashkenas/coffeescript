@@ -1920,7 +1920,7 @@ exports.Try = class Try extends Base
     tryPart   = @attempt.compileToFragments o, LEVEL_TOP
 
     catchPart = if @recovery
-      generatedErrorVariableName = o.scope.freeVariable 'error'
+      generatedErrorVariableName = o.scope.freeVariable 'error', reserve: no
       placeholder = new Literal generatedErrorVariableName
       @recovery.unshift new Assign @errorVariable, placeholder if @errorVariable
       [].concat @makeCode(" catch ("), placeholder.compileToFragments(o), @makeCode(") {\n"),
