@@ -4,7 +4,7 @@
 # * Generator Definition
 
 test "most basic generator support", ->
-  ok -> yield 0
+  ok -> yield
 
 test "empty generator", ->
   x = do -> yield return
@@ -15,19 +15,21 @@ test "empty generator", ->
 test "generator iteration", ->
   x = do ->
     yield 0
-    yield 1
+    yield
     yield 2
+    3
+
   y = x.next()
   ok y.value is 0 and y.done is false
 
   y = x.next()
-  ok y.value is 1 and y.done is false
+  ok y.value is undefined and y.done is false
 
   y = x.next()
   ok y.value is 2 and y.done is false
 
   y = x.next()
-  ok y.value is undefined and y.done is true
+  ok y.value is 3 and y.done is true
 
 test "last line yields are returned", ->
   x = do ->
@@ -70,9 +72,6 @@ test "bound generator", ->
 
 test "error if `yield` occurs outside of a function", ->
   throws -> CoffeeScript.compile 'yield 1'
-
-test "`yield` by itself not at the end of a function errors", ->
-  throws -> CoffeeScript.compile 'x = -> yield; return'
 
 test "`yield from` support", ->
   x = do ->
@@ -130,18 +129,6 @@ test "yield in for loop expressions", ->
   z = x.next 30
   arrayEq z.value, [10, 20, 30]
   ok z.done is true
-
-test "yielding for loop expressions", ->
-  x = do ->
-    yield for i in [1..3]
-      i * 2
-
-  y = x.next()
-  arrayEq y.value, [2, 4, 6]
-  ok y.done is false
-
-  y = x.next 42
-  ok y.value is 42 and y.done is true
 
 test "yield in switch expressions", ->
   x = do ->
@@ -223,8 +210,9 @@ test "yield handles 'this' correctly", ->
   x = ->
     yield switch
       when true then yield => this
-    yield for item in [1]
+    array = for item in [1]
       yield => this
+    yield array
     yield if true then yield => this
     yield try throw yield => this
     throw yield => this

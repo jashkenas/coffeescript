@@ -113,6 +113,14 @@ grammar =
     o 'Switch'
     o 'Class'
     o 'Throw'
+    o 'Yield'
+  ]
+
+  Yield: [
+    o 'YIELD',                                  -> new Op $1, new Value new Literal ''
+    o 'YIELD Statement',                        -> new Op $1, $2
+    o 'YIELD Expression',                       -> new Op $1, $2
+    o 'YIELD FROM Expression',                  -> new Op $1.concat($2), $3
   ]
 
   # An indented block of expressions. Note that the [Rewriter](rewriter.html)
@@ -558,9 +566,6 @@ grammar =
     o 'UNARY_MATH Expression',                  -> new Op $1 , $2
     o '-     Expression',                      (-> new Op '-', $2), prec: 'UNARY_MATH'
     o '+     Expression',                      (-> new Op '+', $2), prec: 'UNARY_MATH'
-    o 'YIELD Statement',                        -> new Op $1 , $2
-    o 'YIELD Expression',                       -> new Op $1 , $2
-    o 'YIELD FROM Expression',                  -> new Op $1.concat($2) , $3
 
     o '-- SimpleAssignable',                    -> new Op '--', $2
     o '++ SimpleAssignable',                    -> new Op '++', $2
