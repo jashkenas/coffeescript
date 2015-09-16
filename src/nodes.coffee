@@ -453,14 +453,20 @@ exports.Return = class Return extends Base
 
   compileNode: (o) ->
     answer = []
-    exprIsYieldReturn = @expression?.isYieldReturn?()
     # TODO: If we call expression.compile() here twice, we'll sometimes get back different results!
-    unless exprIsYieldReturn
-      answer.push @makeCode @tab + "return#{if @expression then " " else ""}"
+    answer.push @makeCode @tab + "return#{if @expression then " " else ""}"
     if @expression
       answer = answer.concat @expression.compileToFragments o, LEVEL_PAREN
-    answer.push @makeCode ";" unless exprIsYieldReturn
+    answer.push @makeCode ";"
     return answer
+
+# `yield return` works exactly like `return`, except that it turns the function
+# into a generator.
+exports.YieldReturn = class YieldReturn extends Return
+  compileNode: (o) ->
+    unless o.scope.parent?
+      @error 'yield can only occur inside functions'
+    super
 
 #### Value
 
@@ -1384,7 +1390,7 @@ exports.Code = class Code extends Base
     @body        = body or new Block
     @bound       = tag is 'boundfunc'
     @isGenerator = !!@body.contains (node) ->
-      node instanceof Op and node.operator in ['yield', 'yield*']
+      (node instanceof Op and node.isYield()) or node instanceof YieldReturn
 
   children: ['params', 'body']
 
@@ -1701,9 +1707,6 @@ exports.Op = class Op extends Base
   isYield: ->
     @operator in ['yield', 'yield*']
 
-  isYieldReturn: ->
-    @isYield() and @first instanceof Return
-
   isUnary: ->
     not @second
 
@@ -1829,13 +1832,10 @@ exports.Op = class Op extends Base
   compileYield: (o) ->
     parts = []
     op = @operator
-    if not o.scope.parent?
-      @error 'yield statements must occur within a function generator.'
+    unless o.scope.parent?
+      @error 'yield can only occur inside functions'
     if 'expression' in Object.keys(@first) and not (@first instanceof Throw)
-      if @isYieldReturn()
-        parts.push @first.compileToFragments o, LEVEL_TOP
-      else if @first.expression?
-        parts.push @first.expression.compileToFragments o, LEVEL_OP
+      parts.push @first.expression.compileToFragments o, LEVEL_OP if @first.expression?
     else
       parts.push [@makeCode "("] if o.level >= LEVEL_PAREN
       parts.push [@makeCode op]
