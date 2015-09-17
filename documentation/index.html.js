@@ -1055,8 +1055,8 @@ Expressions
       <li>
         <a href="http://www.packtpub.com/coffeescript-programming-with-jquery-rails-nodejs/book">CoffeeScript Programming with jQuery, Rails, and Node.js</a>
         is a new book by Michael Erasmus that covers CoffeeScript with an eye
-        towards real-world usage both in the browser (jQuery) and on the server
-        size (Rails, Node).
+        towards real-world usage both in the browser (jQuery) and on the
+        server-side (Rails, Node).
       </li>
       <li>
         <a href="https://leanpub.com/coffeescript-ristretto/read">CoffeeScript Ristretto</a>
@@ -1117,7 +1117,7 @@ Expressions
     <p>
       The <a href="https://github.com/trending?l=coffeescript&amp;since=monthly">best list of
       open-source CoffeeScript examples</a> can be found on GitHub. But just
-      to throw out few more:
+      to throw out a few more:
     </p>
 
     <ul>
@@ -1301,7 +1301,7 @@ Expressions
         </li>
         <li>
           In <code>&lt;script type="text/coffeescript"&gt;</code> tags, to avoid
-          possible duplicate browser requests for .coffee files, 
+          possible duplicate browser requests for .coffee files,
           you can now use the <code>data-src</code> attribute instead of <code>src</code>.
         </li>
         <li>
