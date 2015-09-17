@@ -717,7 +717,7 @@ Expressions
     <p>
       Soaking up nulls is similar to Ruby's
       <a href="https://rubygems.org/gems/andand">andand gem</a>, and to the
-      <a href="http://groovy.codehaus.org/Operators#Operators-SafeNavigationOperator%28%3F.%29">safe navigation operator</a>
+      <a href="http://docs.groovy-lang.org/latest/html/documentation/index.html#_safe_navigation_operator">safe navigation operator</a>
       in Groovy.
     </p>
 
