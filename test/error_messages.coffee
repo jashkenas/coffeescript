@@ -824,3 +824,28 @@ test "#3926: implicit object in parameter list", ->
     (one, two, {three, four: five}, key: value) ->
                                        ^
   '''
+
+test "`yield` outside of a function", ->
+  assertErrorFormat '''
+    yield 1
+  ''', '''
+    [stdin]:1:1: error: yield can only occur inside functions
+    yield 1
+    ^^^^^^^
+  '''
+  assertErrorFormat '''
+    yield return
+  ''', '''
+    [stdin]:1:1: error: yield can only occur inside functions
+    yield return
+    ^^^^^^^^^^^^
+  '''
+
+test "#4097: `yield return` as an expression", ->
+  assertErrorFormat '''
+    -> (yield return)
+  ''', '''
+    [stdin]:1:5: error: cannot use a pure statement in an expression
+    -> (yield return)
+        ^^^^^^^^^^^^
+  '''

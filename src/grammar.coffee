@@ -83,10 +83,13 @@ grammar =
     o 'Body TERMINATOR'
   ]
 
-  # Block and statements, which make up a line in a body.
+  # Block and statements, which make up a line in a body. YieldReturn is a
+  # statement, but not included in Statement because that results in an ambigous
+  # grammar.
   Line: [
     o 'Expression'
     o 'Statement'
+    o 'YieldReturn'
   ]
 
   # Pure statements which cannot be expressions.
@@ -118,7 +121,6 @@ grammar =
 
   Yield: [
     o 'YIELD',                                  -> new Op $1, new Value new Literal ''
-    o 'YIELD Statement',                        -> new Op $1, $2
     o 'YIELD Expression',                       -> new Op $1, $2
     o 'YIELD FROM Expression',                  -> new Op $1.concat($2), $3
   ]
@@ -203,6 +205,11 @@ grammar =
   Return: [
     o 'RETURN Expression',                      -> new Return $2
     o 'RETURN',                                 -> new Return
+  ]
+
+  YieldReturn: [
+    o 'YIELD RETURN Expression',                -> new YieldReturn $3
+    o 'YIELD RETURN',                           -> new YieldReturn
   ]
 
   # A block comment.

@@ -70,9 +70,6 @@ test "bound generator", ->
   ok obj isnt obj.unbound().next().value
   eq obj, obj.nested().next().value.next().value.next().value
 
-test "error if `yield` occurs outside of a function", ->
-  throws -> CoffeeScript.compile 'yield 1'
-
 test "`yield from` support", ->
   x = do ->
     yield from do ->
