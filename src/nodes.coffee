@@ -1532,6 +1532,9 @@ exports.Param = class Param extends Base
         obj = obj.variable
       # * assignments within destructured parameters `{foo:bar}`
       if obj instanceof Assign
+        # ... possibly with a default value
+        if obj.value instanceof Assign
+          obj = obj.value
         @eachName iterator, obj.value.unwrap()
       # * splats within destructured parameters `[xs...]`
       else if obj instanceof Splat
