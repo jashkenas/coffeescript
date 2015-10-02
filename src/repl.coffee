@@ -12,9 +12,6 @@ replDefaults =
   eval: (input, context, filename, cb) ->
     # XXX: multiline hack.
     input = input.replace /\uFF00/g, '\n'
-    # Node's REPL sends the input ending with a newline and then wrapped in
-    # parens. Unwrap all that.
-    input = input.replace /^\(([\s\S]*)\n\)$/m, '$1'
 
     # Require AST nodes to do some AST manipulation.
     {Block, Assign, Value, Literal} = require './nodes'
