@@ -94,6 +94,8 @@ test "duplicate formal parameters are prohibited", ->
   strict '(_,[__,{_}])->',   'param, [param2, {param}]'
   strict '(__,[_,{_}])->',   'param, [param2, {param2}]'
   strict '({0:a,1:a})->',    '{0:param,1:param}'
+  strict '(a=b=true,a)->',   'param=assignment, param'
+  strict '({a=b=true},a)->', '{param=assignment}, param'
   # the following function expressions should **not** throw errors
   strictOk '(_,@_)->'
   strictOk '(@_,_...)->'

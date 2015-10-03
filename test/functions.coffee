@@ -149,6 +149,11 @@ test "destructuring in function definition", ->
     eq e, 4
   ).call context, {a: [1], d: 3}
 
+  (({a: aa = 1, b: bb = 2}) ->
+    eq 5, aa
+    eq 2, bb
+  ) {a: 5}
+
   ajax = (url, {
     async = true,
     beforeSend = (->),
