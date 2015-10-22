@@ -1526,7 +1526,7 @@ exports.Param = class Param extends Base
     return iterator name.value, name if name instanceof Literal
     # * at-params `@foo`
     return atParam name if name instanceof Value
-    for obj in name.objects
+    for obj in name.objects ? []
       # * destructured parameter with default value
       if obj instanceof Assign and not obj.context?
         obj = obj.variable

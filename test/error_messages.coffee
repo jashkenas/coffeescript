@@ -825,6 +825,46 @@ test "#3926: implicit object in parameter list", ->
                                        ^
   '''
 
+test "#4130: unassignable in destructured param", ->
+  assertErrorFormat '''
+    fun = ({
+      @param : null
+    }) ->
+      console.log "Oh hello!"
+  ''', '''
+    [stdin]:2:12: error: "null" cannot be assigned
+      @param : null
+               ^^^^
+  '''
+  assertErrorFormat '''
+    ({a: null}) ->
+  ''', '''
+    [stdin]:1:6: error: "null" cannot be assigned
+    ({a: null}) ->
+         ^^^^
+  '''
+  assertErrorFormat '''
+    ({a: 1}) ->
+  ''', '''
+    [stdin]:1:6: error: "1" cannot be assigned
+    ({a: 1}) ->
+         ^
+  '''
+  assertErrorFormat '''
+    ({1}) ->
+  ''', '''
+    [stdin]:1:3: error: "1" cannot be assigned
+    ({1}) ->
+      ^
+  '''
+  assertErrorFormat '''
+    ({a: true = 1}) ->
+  ''', '''
+    [stdin]:1:6: error: reserved word 'true' can't be assigned
+    ({a: true = 1}) ->
+         ^^^^
+  '''
+
 test "`yield` outside of a function", ->
   assertErrorFormat '''
     yield 1
