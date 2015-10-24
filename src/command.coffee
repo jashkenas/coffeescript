@@ -197,7 +197,7 @@ compileScript = (file, input, base = null) ->
   catch err
     CoffeeScript.emit 'failure', err, task
     return if CoffeeScript.listeners('failure').length
-    message = err.stack or "#{err}"
+    message = err?.stack or "#{err}"
     if o.watch
       printLine message + '\x07'
     else
