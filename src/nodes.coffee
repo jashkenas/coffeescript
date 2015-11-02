@@ -1931,6 +1931,7 @@ exports.Try = class Try extends Base
       [].concat @makeCode(" catch ("), placeholder.compileToFragments(o), @makeCode(") {\n"),
         @recovery.compileToFragments(o, LEVEL_TOP), @makeCode("\n#{@tab}}")
     else unless @ensure or @recovery
+      generatedErrorVariableName = o.scope.freeVariable 'error', reserve: no
       [@makeCode(" catch (#{generatedErrorVariableName}) {}")]
     else
       []
