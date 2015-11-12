@@ -27,3 +27,13 @@ test "Pipe chain", ->
   eq 45, 4 |> mul(10) |> add 5
   eq 70, 4 |> add(10) |> mul 5
 
+test "Pipe on the next line", ->
+
+  fn = (x,y) -> "#{x},#{y}"
+
+  eq '1,2', 1
+    |> fn(2)
+
+  eq '1,2', 1
+    |> fn 2
+

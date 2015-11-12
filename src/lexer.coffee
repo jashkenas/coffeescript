@@ -377,6 +377,7 @@ exports.Lexer = class Lexer
   # as being "spaced", because there are some cases where it makes a difference.
   whitespaceToken: ->
     return 0 unless (match = WHITESPACE.exec @chunk) or
+                    (match = /^\s+(?=\|>)/.exec @chunk) or
                     (nline = @chunk.charAt(0) is '\n')
     [..., prev] = @tokens
     prev[if match then 'spaced' else 'newLine'] = true if prev
