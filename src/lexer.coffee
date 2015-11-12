@@ -420,6 +420,7 @@ exports.Lexer = class Lexer
       tag = 'TERMINATOR'
     else if value in MATH            then tag = 'MATH'
     else if value in COMPARE         then tag = 'COMPARE'
+    else if value in PIPE            then tag = 'PIPE'
     else if value in COMPOUND_ASSIGN then tag = 'COMPOUND_ASSIGN'
     else if value in UNARY           then tag = 'UNARY'
     else if value in UNARY_MATH      then tag = 'UNARY_MATH'
@@ -683,7 +684,7 @@ exports.Lexer = class Lexer
   unfinished: ->
     LINE_CONTINUER.test(@chunk) or
     @tag() in ['\\', '.', '?.', '?::', 'UNARY', 'MATH', 'UNARY_MATH', '+', '-',
-               '**', 'SHIFT', 'RELATION', 'COMPARE', 'LOGIC', 'THROW', 'EXTENDS']
+               '**', 'SHIFT', 'RELATION', 'COMPARE', 'LOGIC', 'THROW', 'EXTENDS', 'PIPE']
 
   formatString: (str) ->
     str.replace STRING_OMIT, '$1'
@@ -806,6 +807,7 @@ NUMBER     = ///
 
 OPERATOR   = /// ^ (
   ?: [-=]>             # function
+   | \|>               # pipe
    | [-+*/%<>&|^!?=]=  # compound assign / compare
    | >>>=?             # zero-fill right shift
    | ([-+:])\1         # doubles
@@ -900,6 +902,8 @@ LOGIC = ['&&', '||', '&', '|', '^']
 
 # Bit-shifting tokens.
 SHIFT = ['<<', '>>', '>>>']
+
+PIPE = ['|>']
 
 # Comparison tokens.
 COMPARE = ['==', '!=', '<', '>', '<=', '>=']

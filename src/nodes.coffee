@@ -609,6 +609,10 @@ exports.Call = class Call extends Base
 
   children: ['variable', 'args']
 
+  pipe: (arg) ->
+    @args.unshift arg
+    this
+
   # Tag this invocation as creating a new instance.
   newInstance: ->
     base = @variable?.base or @variable
