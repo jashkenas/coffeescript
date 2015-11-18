@@ -14,7 +14,7 @@ exports.OptionParser = class OptionParser
   #
   #     [short-flag, long-flag, description]
   #
-  # Along with an an optional banner for the usage help.
+  # Along with an optional banner for the usage help.
   constructor: (rules, @banner) ->
     @rules = buildRules rules
 
