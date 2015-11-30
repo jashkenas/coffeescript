@@ -328,7 +328,7 @@ exports.Block = class Block extends Base
     prelude   = []
     unless o.bare
       preludeExps = for exp, i in @expressions
-        break unless exp.unwrap() instanceof Comment
+        break unless ((n = exp.unwrap()) instanceof Comment && !n.isAnnotate())
         exp
       rest = @expressions[preludeExps.length...]
       @expressions = preludeExps
@@ -347,7 +347,7 @@ exports.Block = class Block extends Base
     post = []
     for exp, i in @expressions
       exp = exp.unwrap()
-      break unless exp instanceof Comment or exp instanceof Literal
+      break unless ((n = exp) instanceof Comment && !n.isAnnotate()) or exp instanceof Literal
     o = merge(o, level: LEVEL_TOP)
     if i
       rest = @expressions.splice i, 9e9
@@ -584,16 +584,24 @@ exports.Value = class Value extends Base
 # CoffeeScript passes through block comments as JavaScript block comments
 # at the same position.
 exports.Comment = class Comment extends Base
-  constructor: (@comment) ->
+  constructor: (@comment, @_isAnnotate) ->
 
   isStatement:     YES
   makeReturn:      THIS
 
+  isAnnotate: ->
+    @_isAnnotate
+
   compileNode: (o, level) ->
-    comment = @comment.replace /^(\s*)#(?=\s)/gm, "$1 *"
-    code = "/*#{multident comment, @tab}#{if '\n' in comment then "\n#{@tab}" else ''} */"
-    code = o.indent + code if (level or o.level) is LEVEL_TOP
-    [@makeCode("\n"), @makeCode(code)]
+    if @isAnnotate()
+      code = "/* #{@comment} */"
+      code = o.indent + code if (level or o.level) is LEVEL_TOP
+      [@makeCode(code)]
+    else
+      comment = @comment.replace /^(\s*)#(?=\s)/gm, "$1 *"
+      code = "/*#{multident comment, @tab}#{if '\n' in comment then "\n#{@tab}" else ''} */"
+      code = o.indent + code if (level or o.level) is LEVEL_TOP
+      [@makeCode("\n"), @makeCode(code)]
 
 #### Call
 
@@ -959,7 +967,7 @@ exports.Obj = class Obj extends Base
       indent += TAB if hasDynamic and i < dynamicIndex
       if prop instanceof Assign
         if prop.context isnt 'object'
-          prop.operatorToken.error "unexpected #{prop.operatorToken.value}"
+          prop.operatorToken.error "unexpected aaa #{prop.operatorToken.value}"
         if prop.variable instanceof Value and prop.variable.hasProperties()
           prop.variable.error 'invalid object key'
       if prop instanceof Value and prop.this
@@ -1117,8 +1125,9 @@ exports.Class = class Class extends Base
   hoistDirectivePrologue: ->
     index = 0
     {expressions} = @body
-    ++index while (node = expressions[index]) and node instanceof Comment or
-      node instanceof Value and node.isString()
+    ++index while (node = expressions[index]) and
+      (node instanceof Comment and not node.isAnnotate()) or
+      (node instanceof Value and node.isString())
     @directives = expressions.splice 0, index
 
   # Make sure that a constructor is defined for the class, and properly
@@ -1152,7 +1161,7 @@ exports.Class = class Class extends Base
     args  = []
     o.classScope = func.makeScope o.scope
 
-    @hoistDirectivePrologue()
+    #@hoistDirectivePrologue()
     @setContext name
     @walkBody name, o
     @ensureConstructor name
@@ -1490,7 +1499,7 @@ exports.Param = class Param extends Base
       @name.error "parameter name \"#{name}\" is not allowed"
     if @name instanceof Obj and @name.generated
       token = @name.objects[0].operatorToken
-      token.error "unexpected #{token.value}"
+      token.error "unexpected aaaabb #{token.value}"
 
   children: ['name', 'value']
 
