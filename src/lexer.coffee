@@ -672,7 +672,7 @@ exports.Lexer = class Lexer
     if @annotation
       [..., locationData] = token
       locationData.annotation = @annotation
-      console.log("set", locationData)
+      #console.log("set", locationData)
       @annotation = undefined
     @tokens.push token
     token

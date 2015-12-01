@@ -32,7 +32,6 @@ exports.CodeFragment = class CodeFragment
   constructor: (parent, code) ->
     @code = "#{code}"
     @locationData = parent?.locationData
-    console.log("got", @locationData)
     @type = parent?.constructor?.name or 'unknown'
 
   annotateCode: ->
@@ -198,7 +197,6 @@ exports.Base = class Base
   # if the location data is not already set.
   updateLocationDataIfMissing: (locationData) ->
     return this if @locationData
-    console.log("got", locationData)
     @locationData = locationData
 
     @eachChild (child) ->
@@ -1431,7 +1429,6 @@ exports.Code = class Code extends Base
       @context = '_this'
       wrapper = new Code [new Param new Literal @context], new Block [this]
       boundfunc = new Call(wrapper, [new Literal 'this'])
-      console.log("got", @locationData)
       boundfunc.updateLocationDataIfMissing @locationData
       return boundfunc.compileNode(o)
 

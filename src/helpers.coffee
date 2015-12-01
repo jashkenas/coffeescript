@@ -84,7 +84,7 @@ exports.invertLiterate = (code) ->
 # Merge two jison-style location data objects together.
 # If `last` is not provided, this will simply return `first`.
 buildLocationData = (first, last) ->
-  console.log("build:", first, last)
+  #console.log("build:", first, last)
   if not last
     first
   else
