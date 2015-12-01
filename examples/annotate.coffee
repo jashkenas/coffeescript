@@ -1,9 +1,6 @@
 #`@ngInject`
-3
-class Hello
-  say: ->
-    console.log("say hello")
-
+MainCtrl = (Page) ->
+  console.log("say hello")
 
 #following is more advanced annotations
 #
@@ -18,8 +15,12 @@ class Hello
 #    resolve: { data: function(Service) {} },
 #};
 
-#x = #`@ngInject` ($scope) ->
+x = #`@ngInject` ($scope) ->
+obj = controller: #`@ngInject` ($scope) ->
+obj.bar = #`@ngInject` ($scope) ->
 
-#obj =
-#  controller: #`@ngInject`
-#    ($scope)
+obj = #`@ngInject` {
+  controller: ($scope) ->
+  resolve:
+    data: (Service) ->
+}
