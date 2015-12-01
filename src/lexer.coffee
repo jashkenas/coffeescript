@@ -44,6 +44,14 @@ exports.Lexer = class Lexer
     @tokens     = []             # Stream of parsed tokens in the form `['TYPE', value, location data]`.
     @seenFor    = no             # Used to recognize FORIN and FOROF tokens.
 
+    @tokens.push = (args...) =>
+      if @annotation
+        [firstToken, ...] = args
+        firstToken[2].annotation = @annotation
+        @annotation = undefined
+
+      [].push.call(@tokens, args...)
+
     @chunkLine =
       opts.line or 0         # The start line for the current @chunk.
     @chunkColumn =
@@ -248,7 +256,7 @@ exports.Lexer = class Lexer
         here = here.replace /// \n #{repeat ' ', @indent} ///g, '\n'
       @token 'HERECOMMENT', here, 0, comment.length
     if annotate
-      @annotation = annotate[2...-2]
+      @annotation = annotate.trim()[2...-1]
 
     comment.length
 
@@ -666,10 +674,10 @@ exports.Lexer = class Lexer
   # not specified, the length of `value` will be used.
   #
   # Returns the new token.
-  token: (tag, value, offsetInChunk, length, origin) ->
+  token: (tag, value, offsetInChunk, length, origin, originalToken = undefined) ->
     token = @makeToken tag, value, offsetInChunk, length
     token.origin = origin if origin
-    if @annotation
+    if annotation = (@annotation || originalToken?[2]?.annotation)
       [..., locationData] = token
       locationData.annotation = @annotation
       #console.log("set", locationData)
@@ -824,7 +832,7 @@ OPERATOR   = /// ^ (
 
 WHITESPACE = /^[^\n\S]+/
 
-COMMENT    = /^###([^#][\s\S]*?)(?:###[^\n\S]*|###$)|^(\s*#\`[^`]*\`\n)+|^(?:\s*#(?!##[^#]).*)+/
+COMMENT    = /^###([^#][\s\S]*?)(?:###[^\n\S]*|###$)|^(\s*#\`[^`]*\`[\n ])+|^(?:\s*#(?!##[^#]).*)+/
 
 CODE       = /^[-=]>/
 

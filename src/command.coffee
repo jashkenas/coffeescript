@@ -393,7 +393,11 @@ printTokens = (tokens) ->
   strings = for token in tokens
     tag = token[0]
     value = token[1].toString().replace(/\n/, '\\n')
-    "[#{tag} #{value}]"
+    if annotation = token[2]?.annotation
+      string = "[#{tag} #{value}|#{annotation}]"
+    else
+      string = "[#{tag} #{value}]"
+    string
   printLine strings.join(' ')
 
 # Use the [OptionParser module](optparse.html) to extract all options from

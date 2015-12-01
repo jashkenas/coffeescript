@@ -35,7 +35,7 @@ exports.CodeFragment = class CodeFragment
     @type = parent?.constructor?.name or 'unknown'
 
   annotateCode: ->
-    if @locationData.annotation
+    if @locationData?.annotation
       console.log("got222", @locationData)
       @code = "/* #{@locationData.annotation} */ #{@code}"
 
