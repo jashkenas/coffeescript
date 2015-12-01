@@ -52,7 +52,9 @@ o = (patternString, action, options) ->
   action = action.replace /LOC\(([0-9]*)\)/g, addLocationDataFn('$1')
   action = action.replace /LOC\(([0-9]*),\s*([0-9]*)\)/g, addLocationDataFn('$1', '$2')
 
-  [patternString, "$$ = #{addLocationDataFn(1, patternCount)}(#{action});", options]
+  a = [patternString, "$$ = #{addLocationDataFn(1, patternCount)}(#{action});", options]
+  #console.log(a)
+  a
 
 # Grammatical Rules
 # -----------------

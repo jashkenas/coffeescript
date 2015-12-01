@@ -248,7 +248,8 @@ exports.Lexer = class Lexer
         here = here.replace /// \n #{repeat ' ', @indent} ///g, '\n'
       @token 'HERECOMMENT', here, 0, comment.length
     if annotate
-      @token 'ANNOTATECOMMENT', annotate[2...-2], 0, comment.length
+      @annotation = annotate[2...-2]
+
     comment.length
 
   # Matches JavaScript interpolated directly into the source via backticks.
@@ -668,6 +669,11 @@ exports.Lexer = class Lexer
   token: (tag, value, offsetInChunk, length, origin) ->
     token = @makeToken tag, value, offsetInChunk, length
     token.origin = origin if origin
+    if @annotation
+      [..., locationData] = token
+      locationData.annotation = @annotation
+      console.log("set", locationData)
+      @annotation = undefined
     @tokens.push token
     token
 

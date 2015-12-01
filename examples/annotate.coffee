@@ -1,4 +1,5 @@
 #`@ngInject`
+3
 class Hello
   say: ->
     console.log("say hello")
