@@ -394,7 +394,7 @@ printTokens = (tokens) ->
     tag = token[0]
     value = token[1].toString().replace(/\n/, '\\n')
     if annotation = token[2]?.annotation
-      string = "[#{tag} #{value}|#{annotation}]"
+      string = "[#{tag} #{value}|#{annotation.text}]"
     else
       string = "[#{tag} #{value}]"
     string

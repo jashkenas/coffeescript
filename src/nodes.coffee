@@ -35,9 +35,13 @@ exports.CodeFragment = class CodeFragment
     @type = parent?.constructor?.name or 'unknown'
 
   annotateCode: ->
-    if @locationData?.annotation
+    if @locationData?.annotation and not @locationData.annotation.emitted
+      @locationData.annotation.emitted = true
       console.log("got222", @locationData)
-      @code = "/* #{@locationData.annotation} */ #{@code}"
+      if @locationData.annotation.type == "word"
+        @code = "/* #{@locationData.annotation.text} */ #{@code}"
+      else if @locationData.annotation.type == "line"
+        @code = "/* #{@locationData.annotation.text} */\n#{@code}"
 
   toString:   ->
     "#{@code}#{if @locationData then ": " + locationDataToString(@locationData) else ''}"
@@ -151,7 +155,11 @@ exports.Base = class Base
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
   toString: (idt = '', name = @constructor.name) ->
-    tree = '\n' + idt + name
+    if annotation = @locationData.annotation
+      annotationString = "|#{annotation.text}"
+    else
+      annotationString = ""
+    tree = '\n' + idt + name + annotationString
     tree += '?' if @soak
     @eachChild (node) -> tree += node.toString idt + TAB
     tree
@@ -1044,6 +1052,11 @@ exports.Class = class Class extends Base
   constructor: (@variable, @parent, @body = new Block) ->
     @boundFuncs = []
     @body.classBody = yes
+    if @parent?.locationData?.annotation
+      console.log("aaa")
+    if @locationData
+      console.log("bbb")
+
 
   children: ['variable', 'parent', 'body']
 

@@ -256,7 +256,9 @@ exports.Lexer = class Lexer
         here = here.replace /// \n #{repeat ' ', @indent} ///g, '\n'
       @token 'HERECOMMENT', here, 0, comment.length
     if annotate
-      @annotation = annotate.trim()[2...-1]
+      @annotation =
+        text: annotate.trim()[2...-1]
+        type: (if annotate.match(/\n$/) then "line" else "word")
 
     comment.length
 
