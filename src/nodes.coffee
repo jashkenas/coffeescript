@@ -37,7 +37,6 @@ exports.CodeFragment = class CodeFragment
   annotateCode: ->
     if @locationData?.annotation and not @locationData.annotation.emitted
       @locationData.annotation.emitted = true
-      console.log("got222", @locationData)
       if @locationData.annotation.type == "word"
         @code = "/* #{@locationData.annotation.text} */ #{@code}"
       else if @locationData.annotation.type == "line"
@@ -155,7 +154,7 @@ exports.Base = class Base
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
   toString: (idt = '', name = @constructor.name) ->
-    if annotation = @locationData.annotation
+    if annotation = @locationData?.annotation
       annotationString = "|#{annotation.text}"
     else
       annotationString = ""
@@ -1175,11 +1174,15 @@ exports.Class = class Class extends Base
     name  = @determineName() or '_Class'
     name  = "_#{name}" if name.reserved
     lname = new Literal name
+    lname.locationData = @locationData
+    @variable?.locationData = @locationData
+    @body?.locationData = @locationData
     func  = new Code [], Block.wrap [@body]
+    func.locationData = @locationData
     args  = []
     o.classScope = func.makeScope o.scope
 
-    #@hoistDirectivePrologue()
+    @hoistDirectivePrologue()
     @setContext name
     @walkBody name, o
     @ensureConstructor name
@@ -1195,8 +1198,17 @@ exports.Class = class Class extends Base
 
     @body.expressions.unshift @directives...
 
-    klass = new Parens new Call func, args
-    klass = new Assign @variable, klass if @variable
+    call = new Call func, args
+    call.locationData = @locationData
+    klass = new Parens call
+    if @variable
+      @variable.base.locationData = @locationData
+      klass.locationData = @locationData
+      klass = new Assign @variable, klass
+      @variable.locationData = @locationData
+      klass.locationData = @locationData
+
+    klass.locationData = @locationData
     klass.compileToFragments o
 
 #### Assign
