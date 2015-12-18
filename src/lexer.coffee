@@ -56,6 +56,7 @@ exports.Lexer = class Lexer
     i = 0
     while @chunk = code[i..]
       consumed = \
+           @moduleToken()     or
            @identifierToken() or
            @commentToken()    or
            @whitespaceToken() or
@@ -253,6 +254,12 @@ exports.Lexer = class Lexer
   jsToken: ->
     return 0 unless @chunk.charAt(0) is '`' and match = JSTOKEN.exec @chunk
     @token 'JS', (script = match[0])[1...-1], 0, script.length
+    script.length
+
+  # Matches JavaScript interpolated directly into the source via module syntax.
+  moduleToken: ->
+    return 0 unless match = MODULETOKEN.exec @chunk
+    @token 'JS', (script = match[0]), 0, script.length
     script.length
 
   # Matches regular expression literals, as well as multiline extended ones.
@@ -823,6 +830,8 @@ CODE       = /^[-=]>/
 MULTI_DENT = /^(?:\n[^\n\S]*)+/
 
 JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
+
+MODULETOKEN   = /^(import|export)\s+[^#\\\n]*/
 
 # String-matching-regexes.
 STRING_START   = /^(?:'''|"""|'|")/
