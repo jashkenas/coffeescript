@@ -554,7 +554,7 @@ Expressions
       as an expression, returning an array containing the result of each iteration
       through the loop.
     </p>
-    <%= codeFor('while', 'lyrics.join("\n")') %>
+    <%= codeFor('while', 'lyrics.join("\\n")') %>
     <p>
       For readability, the <b>until</b> keyword is equivalent to <code>while not</code>,
       and the <b>loop</b> keyword is equivalent to <code>while true</code>.
