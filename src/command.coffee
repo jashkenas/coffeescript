@@ -207,12 +207,12 @@ compileScript = (file, input, base = null) ->
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,
 # and write them back to **stdout**.
 compileStdio = ->
-  code = ''
+  buffers = []
   stdin = process.openStdin()
   stdin.on 'data', (buffer) ->
-    code += buffer.toString() if buffer
+    buffers.push buffer if buffer
   stdin.on 'end', ->
-    compileScript null, code
+    compileScript null, Buffer.concat(buffers).toString()
 
 # If all of the source files are done being read, concatenate and compile
 # them together.
