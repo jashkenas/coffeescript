@@ -34,6 +34,14 @@ exports.CodeFragment = class CodeFragment
     @locationData = parent?.locationData
     @type = parent?.constructor?.name or 'unknown'
 
+  annotateCode: ->
+    if @locationData?.annotation and not @locationData.annotation.emitted
+      @locationData.annotation.emitted = true
+      if @locationData.annotation.type == "word"
+        @code = "/* #{@locationData.annotation.text} */ #{@code}"
+      else if @locationData.annotation.type == "line"
+        @code = "/* #{@locationData.annotation.text} */\n#{@code}"
+
   toString:   ->
     "#{@code}#{if @locationData then ": " + locationDataToString(@locationData) else ''}"
 
@@ -146,7 +154,11 @@ exports.Base = class Base
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
   toString: (idt = '', name = @constructor.name) ->
-    tree = '\n' + idt + name
+    if annotation = @locationData?.annotation
+      annotationString = "|#{annotation.text}"
+    else
+      annotationString = ""
+    tree = '\n' + idt + name + annotationString
     tree += '?' if @soak
     @eachChild (node) -> tree += node.toString idt + TAB
     tree
@@ -328,7 +340,7 @@ exports.Block = class Block extends Base
     prelude   = []
     unless o.bare
       preludeExps = for exp, i in @expressions
-        break unless exp.unwrap() instanceof Comment
+        break unless ((n = exp.unwrap()) instanceof Comment && !n.isAnnotate())
         exp
       rest = @expressions[preludeExps.length...]
       @expressions = preludeExps
@@ -347,7 +359,7 @@ exports.Block = class Block extends Base
     post = []
     for exp, i in @expressions
       exp = exp.unwrap()
-      break unless exp instanceof Comment or exp instanceof Literal
+      break unless ((n = exp) instanceof Comment && !n.isAnnotate()) or exp instanceof Literal
     o = merge(o, level: LEVEL_TOP)
     if i
       rest = @expressions.splice i, 9e9
@@ -584,16 +596,24 @@ exports.Value = class Value extends Base
 # CoffeeScript passes through block comments as JavaScript block comments
 # at the same position.
 exports.Comment = class Comment extends Base
-  constructor: (@comment) ->
+  constructor: (@comment, @_isAnnotate) ->
 
   isStatement:     YES
   makeReturn:      THIS
 
+  isAnnotate: ->
+    @_isAnnotate
+
   compileNode: (o, level) ->
-    comment = @comment.replace /^(\s*)#(?=\s)/gm, "$1 *"
-    code = "/*#{multident comment, @tab}#{if '\n' in comment then "\n#{@tab}" else ''} */"
-    code = o.indent + code if (level or o.level) is LEVEL_TOP
-    [@makeCode("\n"), @makeCode(code)]
+    if @isAnnotate()
+      code = "/* #{@comment} */"
+      code = o.indent + code if (level or o.level) is LEVEL_TOP
+      [@makeCode(code)]
+    else
+      comment = @comment.replace /^(\s*)#(?=\s)/gm, "$1 *"
+      code = "/*#{multident comment, @tab}#{if '\n' in comment then "\n#{@tab}" else ''} */"
+      code = o.indent + code if (level or o.level) is LEVEL_TOP
+      [@makeCode("\n"), @makeCode(code)]
 
 #### Call
 
@@ -959,7 +979,7 @@ exports.Obj = class Obj extends Base
       indent += TAB if hasDynamic and i < dynamicIndex
       if prop instanceof Assign
         if prop.context isnt 'object'
-          prop.operatorToken.error "unexpected #{prop.operatorToken.value}"
+          prop.operatorToken.error "unexpected aaa #{prop.operatorToken.value}"
         if prop.variable instanceof Value and prop.variable.hasProperties()
           prop.variable.error 'invalid object key'
       if prop instanceof Value and prop.this
@@ -1031,6 +1051,11 @@ exports.Class = class Class extends Base
   constructor: (@variable, @parent, @body = new Block) ->
     @boundFuncs = []
     @body.classBody = yes
+    if @parent?.locationData?.annotation
+      console.log("aaa")
+    if @locationData
+      console.log("bbb")
+
 
   children: ['variable', 'parent', 'body']
 
@@ -1117,8 +1142,9 @@ exports.Class = class Class extends Base
   hoistDirectivePrologue: ->
     index = 0
     {expressions} = @body
-    ++index while (node = expressions[index]) and node instanceof Comment or
-      node instanceof Value and node.isString()
+    ++index while (node = expressions[index]) and
+      (node instanceof Comment and not node.isAnnotate()) or
+      (node instanceof Value and node.isString())
     @directives = expressions.splice 0, index
 
   # Make sure that a constructor is defined for the class, and properly
@@ -1148,7 +1174,11 @@ exports.Class = class Class extends Base
     name  = @determineName() or '_Class'
     name  = "_#{name}" if name.reserved
     lname = new Literal name
+    lname.locationData = @locationData
+    @variable?.locationData = @locationData
+    @body?.locationData = @locationData
     func  = new Code [], Block.wrap [@body]
+    func.locationData = @locationData
     args  = []
     o.classScope = func.makeScope o.scope
 
@@ -1168,8 +1198,17 @@ exports.Class = class Class extends Base
 
     @body.expressions.unshift @directives...
 
-    klass = new Parens new Call func, args
-    klass = new Assign @variable, klass if @variable
+    call = new Call func, args
+    call.locationData = @locationData
+    klass = new Parens call
+    if @variable
+      @variable.base.locationData = @locationData
+      klass.locationData = @locationData
+      klass = new Assign @variable, klass
+      @variable.locationData = @locationData
+      klass.locationData = @locationData
+
+    klass.locationData = @locationData
     klass.compileToFragments o
 
 #### Assign
@@ -1490,7 +1529,7 @@ exports.Param = class Param extends Base
       @name.error "parameter name \"#{name}\" is not allowed"
     if @name instanceof Obj and @name.generated
       token = @name.objects[0].operatorToken
-      token.error "unexpected #{token.value}"
+      token.error "unexpected aaaabb #{token.value}"
 
   children: ['name', 'value']
 

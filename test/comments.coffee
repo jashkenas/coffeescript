@@ -244,6 +244,15 @@ test "#3132: Format multi-line block comment nicely", ->
   """
   eq CoffeeScript.compile(input, bare: on), result
 
+test "annotation comment", ->
+  input = """
+a = #`@ngInject` -> console.log("hello")
+"""
+
+  result = "/* @ngInject */"
+
+  eq CoffeeScript.compile(input, bare: on), result
+
 test "#3132: Format simple block comment nicely", ->
   input = """
   ###

@@ -44,6 +44,14 @@ exports.Lexer = class Lexer
     @tokens     = []             # Stream of parsed tokens in the form `['TYPE', value, location data]`.
     @seenFor    = no             # Used to recognize FORIN and FOROF tokens.
 
+    @tokens.push = (args...) =>
+      if @annotation
+        [firstToken, ...] = args
+        firstToken[2].annotation = @annotation
+        @annotation = undefined
+
+      [].push.call(@tokens, args...)
+
     @chunkLine =
       opts.line or 0         # The start line for the current @chunk.
     @chunkColumn =
@@ -239,7 +247,7 @@ exports.Lexer = class Lexer
   # Matches and consumes comments.
   commentToken: ->
     return 0 unless match = @chunk.match COMMENT
-    [comment, here] = match
+    [comment, here, annotate] = match
     if here
       if match = HERECOMMENT_ILLEGAL.exec comment
         @error "block comments cannot contain #{match[0]}",
@@ -247,6 +255,11 @@ exports.Lexer = class Lexer
       if here.indexOf('\n') >= 0
         here = here.replace /// \n #{repeat ' ', @indent} ///g, '\n'
       @token 'HERECOMMENT', here, 0, comment.length
+    if annotate
+      @annotation =
+        text: annotate.trim()[2...-1]
+        type: (if annotate.match(/\n$/) then "line" else "word")
+
     comment.length
 
   # Matches JavaScript interpolated directly into the source via backticks.
@@ -663,9 +676,14 @@ exports.Lexer = class Lexer
   # not specified, the length of `value` will be used.
   #
   # Returns the new token.
-  token: (tag, value, offsetInChunk, length, origin) ->
+  token: (tag, value, offsetInChunk, length, origin, originalToken = undefined) ->
     token = @makeToken tag, value, offsetInChunk, length
     token.origin = origin if origin
+    if annotation = (@annotation || originalToken?[2]?.annotation)
+      [..., locationData] = token
+      locationData.annotation = @annotation
+      #console.log("set", locationData)
+      @annotation = undefined
     @tokens.push token
     token
 
@@ -816,7 +834,7 @@ OPERATOR   = /// ^ (
 
 WHITESPACE = /^[^\n\S]+/
 
-COMMENT    = /^###([^#][\s\S]*?)(?:###[^\n\S]*|###$)|^(?:\s*#(?!##[^#]).*)+/
+COMMENT    = /^###([^#][\s\S]*?)(?:###[^\n\S]*|###$)|^(\s*#\`[^`]*\`[\n ])+|^(?:\s*#(?!##[^#]).*)+/
 
 CODE       = /^[-=]>/
 

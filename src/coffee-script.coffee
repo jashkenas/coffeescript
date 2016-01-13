@@ -62,6 +62,7 @@ exports.compile = compile = withPrettyErrors (code, options) ->
   js = ""
   for fragment in fragments
     # Update the sourcemap with data from each fragment
+    fragment.annotateCode()
     if options.sourceMap
       # Do not include empty, whitespace, or semicolon-only fragments.
       if fragment.locationData and not /^[;\s]*$/.test fragment.code

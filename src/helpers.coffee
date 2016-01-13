@@ -84,6 +84,7 @@ exports.invertLiterate = (code) ->
 # Merge two jison-style location data objects together.
 # If `last` is not provided, this will simply return `first`.
 buildLocationData = (first, last) ->
+  #console.log("build:", first, last)
   if not last
     first
   else
@@ -91,6 +92,7 @@ buildLocationData = (first, last) ->
     first_column: first.first_column
     last_line: last.last_line
     last_column: last.last_column
+    annotation: first.annotation || last.annotation # Bad?
 
 # This returns a function which takes an object as a parameter, and if that
 # object is an AST node, updates that object's locationData.
