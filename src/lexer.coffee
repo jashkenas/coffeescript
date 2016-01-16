@@ -377,7 +377,6 @@ exports.Lexer = class Lexer
   # as being "spaced", because there are some cases where it makes a difference.
   whitespaceToken: ->
     return 0 unless (match = WHITESPACE.exec @chunk) or
-                    (match = /^\s+(?=\|>)/.exec @chunk) or
                     (nline = @chunk.charAt(0) is '\n')
     [..., prev] = @tokens
     prev[if match then 'spaced' else 'newLine'] = true if prev
@@ -685,7 +684,7 @@ exports.Lexer = class Lexer
   unfinished: ->
     LINE_CONTINUER.test(@chunk) or
     @tag() in ['\\', '.', '?.', '?::', 'UNARY', 'MATH', 'UNARY_MATH', '+', '-',
-               '**', 'SHIFT', 'RELATION', 'COMPARE', 'LOGIC', 'THROW', 'EXTENDS', 'PIPE']
+               '**', 'SHIFT', 'RELATION', 'COMPARE', 'LOGIC', 'THROW', 'EXTENDS']
 
   formatString: (str) ->
     str.replace STRING_OMIT, '$1'
@@ -871,7 +870,7 @@ POSSIBLY_DIVISION   = /// ^ /=?\s ///
 # Other regexes.
 HERECOMMENT_ILLEGAL = /\*\//
 
-LINE_CONTINUER      = /// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///
+LINE_CONTINUER      = /// ^ \s* (?: , | \??\.(?![.\d]) | :: | \|> ) ///
 
 INVALID_ESCAPE      = ///
   ( (?:^|[^\\]) (?:\\\\)* )        # make sure the escape isn’t escaped
