@@ -19,6 +19,15 @@ exports.FILE_EXTENSIONS = ['.coffee', '.litcoffee', '.coffee.md']
 # Expose helpers for testing.
 exports.helpers = helpers
 
+# Function that allows for btoa in both nodejs and the browser.
+base64encode = (src) -> switch
+  when typeof Buffer is 'function'
+    new Buffer(src).toString('base64')
+  when typeof btoa is 'function'
+    btoa(src)
+  else
+    throw new Error('Unable to base64 encode inline sourcemap.')
+
 # Function wrapper to add source file information to SyntaxErrors thrown by the
 # lexer/parser/compiler.
 withPrettyErrors = (fn) ->
@@ -42,7 +51,10 @@ exports.compile = compile = withPrettyErrors (code, options) ->
   {merge, extend} = helpers
   options = extend {}, options
 
-  if options.sourceMap
+  if options.inlineMap
+    options.sourceMap ?= yes
+
+  if options.sourceMap 
     map = new SourceMap
 
   tokens = lexer.tokenize code, options
@@ -84,10 +96,17 @@ exports.compile = compile = withPrettyErrors (code, options) ->
     js = "// #{header}\n#{js}"
 
   if options.sourceMap
-    answer = {js}
-    answer.sourceMap = map
-    answer.v3SourceMap = map.generate(options, code)
-    answer
+    v3SourceMap = map.generate(options, code)
+
+    if options.inlineMap
+      sourceMapDataURI = "//# sourceMappingURL=data:application/json;base64,#{base64encode v3SourceMap}"
+      sourceURL        = "//# sourceURL=#{options.filename ? 'coffeescript'}"
+      "#{js}\n#{sourceMapDataURI}\n#{sourceURL}"
+    else 
+      answer = {js}
+      answer.sourceMap = map
+      answer.v3SourceMap = map.generate(options, code)
+      answer
   else
     js
 
@@ -181,12 +200,12 @@ if require.extensions
       Use CoffeeScript.register() or require the coffee-script/register module to require #{ext} files.
       """
 
-exports._compileFile = (filename, sourceMap = no) ->
+exports._compileFile = (filename, sourceMap = no, inlineMap = no) ->
   raw = fs.readFileSync filename, 'utf8'
   stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
 
   try
-    answer = compile(stripped, {filename, sourceMap, literate: helpers.isLiterate filename})
+    answer = compile(stripped, {filename, sourceMap, inlineMap, literate: helpers.isLiterate filename})
   catch err
     # As the filename and code of a dynamically loaded file will be different
     # from the original file compiled with CoffeeScript.run, add that
