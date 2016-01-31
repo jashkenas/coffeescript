@@ -96,7 +96,7 @@ grammar =
   Statement: [
     o 'Return'
     o 'Comment'
-    o 'STATEMENT',                              -> new Literal $1
+    o 'STATEMENT',                              -> new StatementLiteral $1
   ]
 
   # All the different types of expressions in our language. The basic unit of
@@ -135,36 +135,36 @@ grammar =
 
   # A literal identifier, a variable name or property.
   Identifier: [
-    o 'IDENTIFIER',                             -> new Literal $1
+    o 'IDENTIFIER',                             -> new IdentifierLiteral $1
   ]
 
   # Alphanumerics are separated from the other **Literal** matchers because
   # they can also serve as keys in object literals.
   AlphaNumeric: [
-    o 'NUMBER',                                 -> new Literal $1
+    o 'NUMBER',                                 -> new NumberLiteral $1
+    o 'INFINITY',                               -> new InfinityLiteral $1
     o 'String'
   ]
 
   String: [
-    o 'STRING',                                 -> new Literal $1
-    o 'STRING_START Body STRING_END',           -> new Parens $2
+    o 'STRING',                                 -> new StringLiteral $1
+    o 'STRING_START Body STRING_END',           -> new StringWithInterpolations $2
   ]
 
   Regex: [
-    o 'REGEX',                                  -> new Literal $1
-    o 'REGEX_START Invocation REGEX_END',       -> $2
+    o 'REGEX',                                  -> new RegexLiteral $1
+    o 'REGEX_START Invocation REGEX_END',       -> new RegexWithInterpolations $2.args
   ]
 
   # All of our immediate values. Generally these can be passed straight
   # through and printed to JavaScript.
   Literal: [
     o 'AlphaNumeric'
-    o 'JS',                                     -> new Literal $1
+    o 'JS',                                     -> new PassthroughLiteral $1
     o 'Regex'
-    o 'DEBUGGER',                               -> new Literal $1
-    o 'UNDEFINED',                              -> new Undefined
-    o 'NULL',                                   -> new Null
-    o 'BOOL',                                   -> new Bool $1
+    o 'UNDEFINED',                              -> new UndefinedLiteral
+    o 'NULL',                                   -> new NullLiteral
+    o 'BOOL',                                   -> new BooleanLiteral $1
   ]
 
   # Assignment of a variable, property, or index to a value.
@@ -299,9 +299,9 @@ grammar =
   Accessor: [
     o '.  Identifier',                          -> new Access $2
     o '?. Identifier',                          -> new Access $2, 'soak'
-    o ':: Identifier',                          -> [LOC(1)(new Access new Literal('prototype')), LOC(2)(new Access $2)]
-    o '?:: Identifier',                         -> [LOC(1)(new Access new Literal('prototype'), 'soak'), LOC(2)(new Access $2)]
-    o '::',                                     -> new Access new Literal 'prototype'
+    o ':: Identifier',                          -> [LOC(1)(new Access new IdentifierLiteral('prototype')), LOC(2)(new Access $2)]
+    o '?:: Identifier',                         -> [LOC(1)(new Access new IdentifierLiteral('prototype'), 'soak'), LOC(2)(new Access $2)]
+    o '::',                                     -> new Access new IdentifierLiteral 'prototype'
     o 'Index'
   ]
 
@@ -348,8 +348,12 @@ grammar =
   Invocation: [
     o 'Value OptFuncExist Arguments',           -> new Call $1, $3, $2
     o 'Invocation OptFuncExist Arguments',      -> new Call $1, $3, $2
-    o 'SUPER',                                  -> new Call 'super', [new Splat new Literal 'arguments']
-    o 'SUPER Arguments',                        -> new Call 'super', $2
+    o 'Super'
+  ]
+
+  Super: [
+    o 'SUPER',                                  -> new SuperCall
+    o 'SUPER Arguments',                        -> new SuperCall $2
   ]
 
   # An optional existence check on a function.
@@ -366,13 +370,13 @@ grammar =
 
   # A reference to the *this* current object.
   This: [
-    o 'THIS',                                   -> new Value new Literal 'this'
-    o '@',                                      -> new Value new Literal 'this'
+    o 'THIS',                                   -> new Value new ThisLiteral
+    o '@',                                      -> new Value new ThisLiteral
   ]
 
   # A reference to a property on *this*.
   ThisProperty: [
-    o '@ Identifier',                           -> new Value LOC(1)(new Literal('this')), [LOC(2)(new Access($2))], 'this'
+    o '@ Identifier',                           -> new Value LOC(1)(new ThisLiteral), [LOC(2)(new Access($2))], 'this'
   ]
 
   # The array literal.
@@ -473,8 +477,8 @@ grammar =
   ]
 
   Loop: [
-    o 'LOOP Block',                             -> new While(LOC(1) new Literal 'true').addBody $2
-    o 'LOOP Expression',                        -> new While(LOC(1) new Literal 'true').addBody LOC(2) Block.wrap [$2]
+    o 'LOOP Block',                             -> new While(LOC(1) new BooleanLiteral 'true').addBody $2
+    o 'LOOP Expression',                        -> new While(LOC(1) new BooleanLiteral 'true').addBody LOC(2) Block.wrap [$2]
   ]
 
   # Array, object, and range comprehensions, at the most generic level.

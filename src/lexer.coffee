@@ -142,8 +142,6 @@ exports.Lexer = class Lexer
     if id in JS_FORBIDDEN
       if forcedIdentifier
         tag = 'IDENTIFIER'
-        id  = new String id
-        id.reserved = yes
       else if id in RESERVED
         @error "reserved word '#{id}'", length: id.length
 
@@ -156,7 +154,8 @@ exports.Lexer = class Lexer
         when '==', '!='          then 'COMPARE'
         when '&&', '||'          then 'LOGIC'
         when 'true', 'false'     then 'BOOL'
-        when 'break', 'continue' then 'STATEMENT'
+        when 'break', 'continue', \
+             'debugger'          then 'STATEMENT'
         else  tag
 
     tagToken = @token tag, id, 0, idLength
@@ -187,10 +186,15 @@ exports.Lexer = class Lexer
     else if /^0\d+/.test number
       @error "octal literal '#{number}' must be prefixed with '0o'", length: lexedLength
     if octalLiteral = /^0o([0-7]+)/.exec number
-      number = '0x' + parseInt(octalLiteral[1], 8).toString 16
-    if binaryLiteral = /^0b([01]+)/.exec number
-      number = '0x' + parseInt(binaryLiteral[1], 2).toString 16
-    @token 'NUMBER', number, 0, lexedLength
+      numberValue = parseInt(octalLiteral[1], 8)
+      number = "0x#{numberValue.toString 16}"
+    else if binaryLiteral = /^0b([01]+)/.exec number
+      numberValue = parseInt(binaryLiteral[1], 2)
+      number = "0x#{numberValue.toString 16}"
+    else
+      numberValue = parseFloat(number)
+    tag = if numberValue is Infinity then 'INFINITY' else 'NUMBER'
+    @token tag, number, 0, lexedLength
     lexedLength
 
   # Matches strings, including multi-line strings, as well as heredocs, with or without
@@ -408,7 +412,7 @@ exports.Lexer = class Lexer
     tag  = value
     [..., prev] = @tokens
     if value is '=' and prev
-      if not prev[1].reserved and prev[1] in JS_FORBIDDEN
+      if prev.variable and prev[1] in JS_FORBIDDEN
         prev = prev.origin if prev.origin
         @error "reserved word '#{prev[1]}' can't be assigned", prev[2]
       if prev[1] in ['||', '&&']
@@ -786,6 +790,7 @@ JS_FORBIDDEN = JS_KEYWORDS.concat(RESERVED).concat(STRICT_PROSCRIBED)
 
 exports.RESERVED = RESERVED.concat(JS_KEYWORDS).concat(COFFEE_KEYWORDS).concat(STRICT_PROSCRIBED)
 exports.STRICT_PROSCRIBED = STRICT_PROSCRIBED
+exports.JS_FORBIDDEN = JS_FORBIDDEN
 
 # The character code of the nasty Microsoft madness otherwise known as the BOM.
 BOM = 65279
@@ -918,7 +923,7 @@ BOOL = ['TRUE', 'FALSE']
 # of a function invocation or indexing operation.
 CALLABLE  = ['IDENTIFIER', ')', ']', '?', '@', 'THIS', 'SUPER']
 INDEXABLE = CALLABLE.concat [
-  'NUMBER', 'STRING', 'STRING_END', 'REGEX', 'REGEX_END'
+  'NUMBER', 'INFINITY', 'STRING', 'STRING_END', 'REGEX', 'REGEX_END'
   'BOOL', 'NULL', 'UNDEFINED', '}', '::'
 ]
 

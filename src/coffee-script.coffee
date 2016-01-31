@@ -251,7 +251,7 @@ parser.yy.parseError = (message, {token}) ->
       'end of input'
     when errorTag in ['INDENT', 'OUTDENT']
       'indentation'
-    when errorTag in ['IDENTIFIER', 'NUMBER', 'STRING', 'STRING_START', 'REGEX', 'REGEX_START']
+    when errorTag in ['IDENTIFIER', 'NUMBER', 'INFINITY', 'STRING', 'STRING_START', 'REGEX', 'REGEX_START']
       errorTag.replace(/_START$/, '').toLowerCase()
     else
       helpers.nameWhitespaceCharacter errorText

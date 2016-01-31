@@ -483,7 +483,7 @@ IMPLICIT_FUNC    = ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@
 
 # If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
 IMPLICIT_CALL    = [
-  'IDENTIFIER', 'NUMBER', 'STRING', 'STRING_START', 'JS', 'REGEX', 'REGEX_START'
+  'IDENTIFIER', 'NUMBER', 'INFINITY', 'STRING', 'STRING_START', 'JS', 'REGEX', 'REGEX_START'
   'NEW', 'PARAM_START', 'CLASS', 'IF', 'TRY', 'SWITCH', 'THIS', 'BOOL', 'NULL'
   'UNDEFINED', 'UNARY', 'YIELD', 'UNARY_MATH', 'SUPER', 'THROW'
   '@', '->', '=>', '[', '(', '{', '--', '++'
