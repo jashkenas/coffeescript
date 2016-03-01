@@ -811,7 +811,7 @@ Expressions
       object that the current function is attached to. If you pass a function as
       a callback or attach it to a different object, the original value of <code>this</code>
       will be lost. If you're not familiar with this behavior,
-      <a href="http://www.digital-web.com/articles/scope_in_javascript/">this Digital Web article</a>
+      <a href="http://64.13.255.16/articles/scope_in_javascript/">this Digital Web article</a>
       gives a good overview of the quirks.
     </p>
     <p>
