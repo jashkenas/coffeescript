@@ -133,9 +133,12 @@ grammar =
     o 'INDENT Body OUTDENT',                    -> $2
   ]
 
-  # A literal identifier, a variable name or property.
   Identifier: [
     o 'IDENTIFIER',                             -> new IdentifierLiteral $1
+  ]
+
+  Property: [
+    o 'PROPERTY',                               -> new PropertyName $1
   ]
 
   # Alphanumerics are separated from the other **Literal** matchers because
@@ -193,6 +196,7 @@ grammar =
 
   SimpleObjAssignable: [
     o 'Identifier'
+    o 'Property'
     o 'ThisProperty'
   ]
 
@@ -297,11 +301,11 @@ grammar =
   # The general group of accessors into an object, by property, by prototype
   # or by array index or slice.
   Accessor: [
-    o '.  Identifier',                          -> new Access $2
-    o '?. Identifier',                          -> new Access $2, 'soak'
-    o ':: Identifier',                          -> [LOC(1)(new Access new IdentifierLiteral('prototype')), LOC(2)(new Access $2)]
-    o '?:: Identifier',                         -> [LOC(1)(new Access new IdentifierLiteral('prototype'), 'soak'), LOC(2)(new Access $2)]
-    o '::',                                     -> new Access new IdentifierLiteral 'prototype'
+    o '.  Property',                            -> new Access $2
+    o '?. Property',                            -> new Access $2, 'soak'
+    o ':: Property',                            -> [LOC(1)(new Access new PropertyName('prototype')), LOC(2)(new Access $2)]
+    o '?:: Property',                           -> [LOC(1)(new Access new PropertyName('prototype'), 'soak'), LOC(2)(new Access $2)]
+    o '::',                                     -> new Access new PropertyName 'prototype'
     o 'Index'
   ]
 
@@ -376,7 +380,7 @@ grammar =
 
   # A reference to a property on *this*.
   ThisProperty: [
-    o '@ Identifier',                           -> new Value LOC(1)(new ThisLiteral), [LOC(2)(new Access($2))], 'this'
+    o '@ Property',                             -> new Value LOC(1)(new ThisLiteral), [LOC(2)(new Access($2))], 'this'
   ]
 
   # The array literal.
