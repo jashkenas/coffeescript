@@ -36,7 +36,7 @@ test "compiler error formatting", ->
     evil = (foo, eval, bar) ->
   ''',
   '''
-    [stdin]:1:14: error: parameter name "eval" is not allowed
+    [stdin]:1:14: error: 'eval' can't be assigned
     evil = (foo, eval, bar) ->
                  ^^^^
   '''
@@ -657,19 +657,85 @@ test "reserved words", ->
     ^^^^
   '''
   assertErrorFormat '''
+    case = 1
+  ''', '''
+    [stdin]:1:1: error: reserved word 'case'
+    case = 1
+    ^^^^
+  '''
+  assertErrorFormat '''
     for = 1
   ''', '''
-    [stdin]:1:1: error: reserved word 'for' can't be assigned
+    [stdin]:1:1: error: keyword 'for' can't be assigned
     for = 1
+    ^^^
+  '''
+  assertErrorFormat '''
+    unless = 1
+  ''', '''
+    [stdin]:1:1: error: keyword 'unless' can't be assigned
+    unless = 1
+    ^^^^^^
+  '''
+  assertErrorFormat '''
+    for += 1
+  ''', '''
+    [stdin]:1:1: error: keyword 'for' can't be assigned
+    for += 1
+    ^^^
+  '''
+  assertErrorFormat '''
+    for &&= 1
+  ''', '''
+    [stdin]:1:1: error: keyword 'for' can't be assigned
+    for &&= 1
+    ^^^
+  '''
+  # Make sure token look-behind doesn't go out of range.
+  assertErrorFormat '''
+    &&= 1
+  ''', '''
+    [stdin]:1:1: error: unexpected &&=
+    &&= 1
     ^^^
   '''
   # #2306: Show unaliased name in error messages.
   assertErrorFormat '''
     on = 1
   ''', '''
-    [stdin]:1:1: error: reserved word 'on' can't be assigned
+    [stdin]:1:1: error: keyword 'on' can't be assigned
     on = 1
     ^^
+  '''
+
+test "strict mode errors", ->
+  assertErrorFormat '''
+    eval = 1
+  ''', '''
+    [stdin]:1:1: error: 'eval' can't be assigned
+    eval = 1
+    ^^^^
+  '''
+  assertErrorFormat '''
+    class eval
+  ''', '''
+    [stdin]:1:7: error: 'eval' can't be assigned
+    class eval
+          ^^^^
+  '''
+  assertErrorFormat '''
+    arguments++
+  ''', '''
+    [stdin]:1:1: error: 'arguments' can't be assigned
+    arguments++
+    ^^^^^^^^^
+  '''
+  assertErrorFormat '''
+    --arguments
+  ''', '''
+    [stdin]:1:3: error: 'arguments' can't be assigned
+    --arguments
+      ^^^^^^^^^
   '''
 
 test "invalid numbers", ->
@@ -832,35 +898,35 @@ test "#4130: unassignable in destructured param", ->
     }) ->
       console.log "Oh hello!"
   ''', '''
-    [stdin]:2:12: error: assignment to a reserved word: null
+    [stdin]:2:12: error: keyword 'null' can't be assigned
       @param : null
                ^^^^
   '''
   assertErrorFormat '''
     ({a: null}) ->
   ''', '''
-    [stdin]:1:6: error: assignment to a reserved word: null
+    [stdin]:1:6: error: keyword 'null' can't be assigned
     ({a: null}) ->
          ^^^^
   '''
   assertErrorFormat '''
     ({a: 1}) ->
   ''', '''
-    [stdin]:1:6: error: "1" cannot be assigned
+    [stdin]:1:6: error: '1' can't be assigned
     ({a: 1}) ->
          ^
   '''
   assertErrorFormat '''
     ({1}) ->
   ''', '''
-    [stdin]:1:3: error: "1" cannot be assigned
+    [stdin]:1:3: error: '1' can't be assigned
     ({1}) ->
       ^
   '''
   assertErrorFormat '''
     ({a: true = 1}) ->
   ''', '''
-    [stdin]:1:6: error: reserved word 'true' can't be assigned
+    [stdin]:1:6: error: keyword 'true' can't be assigned
     ({a: true = 1}) ->
          ^^^^
   '''
@@ -888,4 +954,38 @@ test "#4097: `yield return` as an expression", ->
     [stdin]:1:5: error: cannot use a pure statement in an expression
     -> (yield return)
         ^^^^^^^^^^^^
+  '''
+
+test "`&&=` and `||=` with a space in-between", ->
+  assertErrorFormat '''
+    a = 0
+    a && = 1
+  ''', '''
+    [stdin]:2:6: error: unexpected =
+    a && = 1
+         ^
+  '''
+  assertErrorFormat '''
+    a = 0
+    a and = 1
+  ''', '''
+    [stdin]:2:7: error: unexpected =
+    a and = 1
+          ^
+  '''
+  assertErrorFormat '''
+    a = 0
+    a || = 1
+  ''', '''
+    [stdin]:2:6: error: unexpected =
+    a || = 1
+         ^
+  '''
+  assertErrorFormat '''
+    a = 0
+    a or = 1
+  ''', '''
+    [stdin]:2:6: error: unexpected =
+    a or = 1
+         ^
   '''
