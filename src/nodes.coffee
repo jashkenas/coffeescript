@@ -402,7 +402,7 @@ exports.NumberLiteral = class NumberLiteral extends Literal
 
 exports.InfinityLiteral = class InfinityLiteral extends NumberLiteral
   compileNode: ->
-    [@makeCode 'Infinity']
+    [@makeCode '2e308']
 
 exports.StringLiteral = class StringLiteral extends Literal
 
