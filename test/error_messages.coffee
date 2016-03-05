@@ -832,14 +832,14 @@ test "#4130: unassignable in destructured param", ->
     }) ->
       console.log "Oh hello!"
   ''', '''
-    [stdin]:2:12: error: "null" cannot be assigned
+    [stdin]:2:12: error: assignment to a reserved word: null
       @param : null
                ^^^^
   '''
   assertErrorFormat '''
     ({a: null}) ->
   ''', '''
-    [stdin]:1:6: error: "null" cannot be assigned
+    [stdin]:1:6: error: assignment to a reserved word: null
     ({a: null}) ->
          ^^^^
   '''
