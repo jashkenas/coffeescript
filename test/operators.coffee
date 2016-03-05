@@ -259,7 +259,7 @@ test "chained operations should evaluate each value only once", ->
 
 test "#891: incorrect inversion of chained comparisons", ->
   ok (true unless 0 > 1 > 2)
-  ok (true unless (NaN = 0/0) < 0/0 < NaN)
+  ok (true unless (this.NaN = 0/0) < 0/0 < this.NaN)
 
 test "#1234: Applying a splat to :: applies the splat to the wrong object", ->
   nonce = {}

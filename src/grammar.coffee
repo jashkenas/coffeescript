@@ -145,7 +145,6 @@ grammar =
   # they can also serve as keys in object literals.
   AlphaNumeric: [
     o 'NUMBER',                                 -> new NumberLiteral $1
-    o 'INFINITY',                               -> new InfinityLiteral $1
     o 'String'
   ]
 
@@ -168,6 +167,8 @@ grammar =
     o 'UNDEFINED',                              -> new UndefinedLiteral
     o 'NULL',                                   -> new NullLiteral
     o 'BOOL',                                   -> new BooleanLiteral $1
+    o 'INFINITY',                               -> new InfinityLiteral $1
+    o 'NAN',                                    -> new NaNLiteral
   ]
 
   # Assignment of a variable, property, or index to a value.

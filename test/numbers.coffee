@@ -83,3 +83,6 @@ test "Infinity", ->
   eq Infinity, CoffeeScript.eval "0x#{Array(256 + 1).join('f')}"
   eq Infinity, CoffeeScript.eval Array(500 + 1).join('9')
   eq Infinity, 2e308
+
+test "NaN", ->
+  ok isNaN 1/NaN

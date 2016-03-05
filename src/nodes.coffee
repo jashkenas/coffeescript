@@ -404,6 +404,14 @@ exports.InfinityLiteral = class InfinityLiteral extends NumberLiteral
   compileNode: ->
     [@makeCode '2e308']
 
+exports.NaNLiteral = class NaNLiteral extends NumberLiteral
+  constructor: ->
+    super 'NaN'
+
+  compileNode: (o) ->
+    code = [@makeCode '0/0']
+    if o.level >= LEVEL_OP then @wrapInBraces code else code
+
 exports.StringLiteral = class StringLiteral extends Literal
 
 exports.RegexLiteral = class RegexLiteral extends Literal
