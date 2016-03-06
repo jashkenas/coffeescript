@@ -6,7 +6,7 @@
 Error.stackTraceLimit = Infinity
 
 {Scope} = require './scope'
-{RESERVED, STRICT_PROSCRIBED, JS_FORBIDDEN} = require './lexer'
+{isUnassignable, JS_FORBIDDEN} = require './lexer'
 
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, some,
@@ -411,7 +411,7 @@ exports.RegexLiteral = class RegexLiteral extends Literal
 exports.PassthroughLiteral = class PassthroughLiteral extends Literal
 
 exports.IdentifierLiteral = class IdentifierLiteral extends Literal
-  isAssignable: -> @value not in RESERVED
+  isAssignable: YES
 
 exports.StatementLiteral = class StatementLiteral extends Literal
   isStatement: YES
@@ -1081,6 +1081,9 @@ exports.Class = class Class extends Base
       @variable.base
     return @defaultClassVariableName unless node instanceof IdentifierLiteral
     name = node.value
+    unless tail
+      message = isUnassignable name
+      @variable.error message if message
     if name in JS_FORBIDDEN then "_#{name}" else name
 
   # For all `this`-references and bound functions in the class definition,
@@ -1215,9 +1218,6 @@ exports.Class = class Class extends Base
 exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options = {}) ->
     {@param, @subpattern, @operatorToken} = options
-    forbidden = (name = @variable.unwrapAll().value) in STRICT_PROSCRIBED
-    if forbidden and @context isnt 'object'
-      @variable.error "variable name may not be \"#{name}\""
 
   children: ['variable', 'value']
 
@@ -1254,7 +1254,7 @@ exports.Assign = class Assign extends Base
     unless @context
       varBase = @variable.unwrapAll()
       unless varBase.isAssignable()
-        @variable.error "\"#{@variable.compile o}\" cannot be assigned"
+        @variable.error "'#{@variable.compile o}' can't be assigned"
       unless varBase.hasProperties?()
         if @param
           o.scope.add varBase.value, 'var'
@@ -1309,8 +1309,8 @@ exports.Assign = class Assign extends Base
       acc   = idx.unwrap() instanceof IdentifierLiteral
       value = new Value value
       value.properties.push new (if acc then Access else Index) idx
-      if obj.unwrap().value in RESERVED
-        obj.error "assignment to a reserved word: #{obj.compile o}"
+      message = isUnassignable obj.unwrap().value
+      obj.error message if message
       value = new Op '?', value, defaultValue if defaultValue
       return new Assign(obj, value, null, param: @param).compileToFragments o, LEVEL_TOP
     vvar     = value.compileToFragments o, LEVEL_LIST
@@ -1369,8 +1369,9 @@ exports.Assign = class Assign extends Base
         acc = idx.unwrap() instanceof IdentifierLiteral
         val = new Value new Literal(vvarText), [new (if acc then Access else Index) idx]
         val = new Op '?', val, defaultValue if defaultValue
-      if name? and name in RESERVED
-        obj.error "assignment to a reserved word: #{obj.compile o}"
+      if name?
+        message = isUnassignable name
+        obj.error message if message
       assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
     assigns.push vvar unless top or @subpattern
     fragments = @joinFragmentArrays assigns, ', '
@@ -1527,8 +1528,8 @@ exports.Code = class Code extends Base
 # as well as be a splat, gathering up a group of parameters into an array.
 exports.Param = class Param extends Base
   constructor: (@name, @value, @splat) ->
-    if (name = @name.unwrapAll().value) in STRICT_PROSCRIBED
-      @name.error "parameter name \"#{name}\" is not allowed"
+    message = isUnassignable @name.unwrapAll().value
+    @name.error message if message
     if @name instanceof Obj and @name.generated
       token = @name.objects[0].operatorToken
       token.error "unexpected #{token.value}"
@@ -1817,8 +1818,9 @@ exports.Op = class Op extends Base
     @first.front = @front unless isChain
     if @operator is 'delete' and o.scope.check(@first.unwrapAll().value)
       @error 'delete operand may not be argument or var'
-    if @operator in ['--', '++'] and @first.unwrapAll().value in STRICT_PROSCRIBED
-      @error "cannot increment/decrement \"#{@first.unwrapAll().value}\""
+    if @operator in ['--', '++']
+      message = isUnassignable @first.unwrapAll().value
+      @first.error message if message
     return @compileYield     o if @isYield()
     return @compileUnary     o if @isUnary()
     return @compileChain     o if isChain
@@ -1969,7 +1971,10 @@ exports.Try = class Try extends Base
     catchPart = if @recovery
       generatedErrorVariableName = o.scope.freeVariable 'error', reserve: no
       placeholder = new IdentifierLiteral generatedErrorVariableName
-      @recovery.unshift new Assign @errorVariable, placeholder if @errorVariable
+      if @errorVariable
+        message = isUnassignable @errorVariable.unwrapAll().value
+        @errorVariable.error message if message
+        @recovery.unshift new Assign @errorVariable, placeholder
       [].concat @makeCode(" catch ("), placeholder.compileToFragments(o), @makeCode(") {\n"),
         @recovery.compileToFragments(o, LEVEL_TOP), @makeCode("\n#{@tab}}")
     else unless @ensure or @recovery
