@@ -97,15 +97,17 @@ exports.compile = compile = withPrettyErrors (code, options) ->
     v3SourceMap = map.generate(options, code)
 
   if options.inlineMap
-    sourceMapDataURI = "//# sourceMappingURL=data:application/json;base64,#{base64encode v3SourceMap}"
+    encoded = base64encode JSON.stringify v3SourceMap
+    sourceMapDataURI = "//# sourceMappingURL=data:application/json;base64,#{encoded}"
     sourceURL = "//# sourceURL=#{options.filename ? 'coffeescript'}"
     js = "#{js}\n#{sourceMapDataURI}\n#{sourceURL}"
 
   if options.sourceMap
-    answer = {js}
-    answer.sourceMap = map
-    answer.v3SourceMap = v3SourceMap
-    answer
+    {
+      js
+      sourceMap: map
+      v3SourceMap: JSON.stringify v3SourceMap, null, 2
+    }
   else
     js
 
@@ -204,7 +206,11 @@ exports._compileFile = (filename, sourceMap = no, inlineMap = no) ->
   stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
 
   try
-    answer = compile(stripped, {filename, sourceMap, inlineMap, literate: helpers.isLiterate filename})
+    answer = compile stripped, {
+      filename, sourceMap, inlineMap
+      sourceFiles: [filename]
+      literate: helpers.isLiterate filename
+    }
   catch err
     # As the filename and code of a dynamically loaded file will be different
     # from the original file compiled with CoffeeScript.run, add that
