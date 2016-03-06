@@ -114,12 +114,15 @@ exports.Lexer = class Lexer
       @token 'FROM', id
       return id.length
     [..., prev] = @tokens
-    forcedIdentifier = colon or prev? and
-      (prev[0] in ['.', '?.', '::', '?::'] or
-      not prev.spaced and prev[0] is '@')
-    tag = 'IDENTIFIER'
+    tag =
+      if colon or prev? and
+         (prev[0] in ['.', '?.', '::', '?::'] or
+         not prev.spaced and prev[0] is '@')
+        'PROPERTY'
+      else
+        'IDENTIFIER'
 
-    if not forcedIdentifier and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS)
+    if tag is 'IDENTIFIER' and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS)
       tag = id.toUpperCase()
       if tag is 'WHEN' and @tag() in LINE_BREAK
         tag = 'LEADING_WHEN'
@@ -139,13 +142,10 @@ exports.Lexer = class Lexer
             poppedToken = @tokens.pop()
             id = '!' + id
 
-    if id in JS_FORBIDDEN
-      if forcedIdentifier
-        tag = 'IDENTIFIER'
-      else if id in RESERVED
-        @error "reserved word '#{id}'", length: id.length
+    if tag is 'IDENTIFIER' and id in RESERVED
+      @error "reserved word '#{id}'", length: id.length
 
-    unless forcedIdentifier
+    unless tag is 'PROPERTY'
       if id in COFFEE_ALIASES
         alias = id
         id = COFFEE_ALIAS_MAP[id]
@@ -160,7 +160,6 @@ exports.Lexer = class Lexer
 
     tagToken = @token tag, id, 0, idLength
     tagToken.origin = [tag, alias, tagToken[2]] if alias
-    tagToken.variable = not forcedIdentifier
     if poppedToken
       [tagToken[2].first_line, tagToken[2].first_column] =
         [poppedToken[2].first_line, poppedToken[2].first_column]
@@ -419,7 +418,7 @@ exports.Lexer = class Lexer
         prev[1] += '='
         prev = @tokens[@tokens.length - 2]
         skipToken = true
-      if prev and prev.variable
+      if prev and prev[0] isnt 'PROPERTY'
         origin = prev.origin ? prev
         message = isUnassignable prev[1], origin[1]
         @error message, origin[2] if message
@@ -807,7 +806,6 @@ STRICT_PROSCRIBED = ['arguments', 'eval']
 
 # The superset of both JavaScript keywords and reserved words, none of which may
 # be used as identifiers or properties.
-JS_FORBIDDEN = JS_KEYWORDS.concat(RESERVED).concat(STRICT_PROSCRIBED)
 exports.JS_FORBIDDEN = JS_KEYWORDS.concat(RESERVED).concat(STRICT_PROSCRIBED)
 
 # The character code of the nasty Microsoft madness otherwise known as the BOM.
@@ -939,7 +937,7 @@ BOOL = ['TRUE', 'FALSE']
 # Tokens which could legitimately be invoked or indexed. An opening
 # parentheses or bracket following these tokens will be recorded as the start
 # of a function invocation or indexing operation.
-CALLABLE  = ['IDENTIFIER', ')', ']', '?', '@', 'THIS', 'SUPER']
+CALLABLE  = ['IDENTIFIER', 'PROPERTY', ')', ']', '?', '@', 'THIS', 'SUPER']
 INDEXABLE = CALLABLE.concat [
   'NUMBER', 'INFINITY', 'STRING', 'STRING_END', 'REGEX', 'REGEX_END'
   'BOOL', 'NULL', 'UNDEFINED', '}', '::'

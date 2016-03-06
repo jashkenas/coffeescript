@@ -479,11 +479,11 @@ for [left, rite] in BALANCED_PAIRS
 EXPRESSION_CLOSE = ['CATCH', 'THEN', 'ELSE', 'FINALLY'].concat EXPRESSION_END
 
 # Tokens that, if followed by an `IMPLICIT_CALL`, indicate a function invocation.
-IMPLICIT_FUNC    = ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@', 'THIS']
+IMPLICIT_FUNC    = ['IDENTIFIER', 'PROPERTY', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@', 'THIS']
 
 # If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
 IMPLICIT_CALL    = [
-  'IDENTIFIER', 'NUMBER', 'INFINITY', 'STRING', 'STRING_START', 'JS', 'REGEX', 'REGEX_START'
+  'IDENTIFIER', 'PROPERTY', 'NUMBER', 'INFINITY', 'STRING', 'STRING_START', 'JS', 'REGEX', 'REGEX_START'
   'NEW', 'PARAM_START', 'CLASS', 'IF', 'TRY', 'SWITCH', 'THIS', 'BOOL', 'NULL'
   'UNDEFINED', 'UNARY', 'YIELD', 'UNARY_MATH', 'SUPER', 'THROW'
   '@', '->', '=>', '[', '(', '{', '--', '++'

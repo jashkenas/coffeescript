@@ -88,7 +88,7 @@ exports.Base = class Base
         args.push new IdentifierLiteral 'arguments'
       else
         meth = 'call'
-      func = new Value func, [new Access new IdentifierLiteral meth]
+      func = new Value func, [new Access new PropertyName meth]
     parts = (new Call func, args).compileNode o
     if func.isGenerator or func.base?.isGenerator
       parts.unshift @makeCode "(yield* "
@@ -411,6 +411,9 @@ exports.RegexLiteral = class RegexLiteral extends Literal
 exports.PassthroughLiteral = class PassthroughLiteral extends Literal
 
 exports.IdentifierLiteral = class IdentifierLiteral extends Literal
+  isAssignable: YES
+
+exports.PropertyName = class PropertyName extends Literal
   isAssignable: YES
 
 exports.StatementLiteral = class StatementLiteral extends Literal
@@ -754,8 +757,8 @@ exports.SuperCall = class SuperCall extends Call
         name = new Index new Assign nref, name.index
         variable.properties.pop()
         variable.properties.push name
-      accesses = [new Access new IdentifierLiteral '__super__']
-      accesses.push new Access new IdentifierLiteral 'constructor' if method.static
+      accesses = [new Access new PropertyName '__super__']
+      accesses.push new Access new PropertyName 'constructor' if method.static
       accesses.push if nref? then new Index nref else name
       (new Value bref ? klass, accesses).compile o
     else if method?.ctor
@@ -804,7 +807,7 @@ exports.Access = class Access extends Base
   compileToFragments: (o) ->
     name = @name.compileToFragments o
     node = @name.unwrap()
-    if node instanceof IdentifierLiteral
+    if node instanceof PropertyName
       if node.value in JS_FORBIDDEN
         [@makeCode('["'), name..., @makeCode('"]')]
       else
@@ -1079,7 +1082,8 @@ exports.Class = class Class extends Base
       tail instanceof Access and tail.name
     else
       @variable.base
-    return @defaultClassVariableName unless node instanceof IdentifierLiteral
+    unless node instanceof IdentifierLiteral or node instanceof PropertyName
+      return @defaultClassVariableName
     name = node.value
     unless tail
       message = isUnassignable name
@@ -1121,14 +1125,14 @@ exports.Class = class Class extends Base
           if func instanceof Code
             assign = @ctor = func
           else
-            @externalCtor = o.classScope.freeVariable 'class'
+            @externalCtor = o.classScope.freeVariable 'ctor'
             assign = new Assign new IdentifierLiteral(@externalCtor), func
         else
           if assign.variable.this
             func.static = yes
           else
             acc = if base.isComplex() then new Index base else new Access base
-            assign.variable = new Value(new IdentifierLiteral(name), [(new Access new IdentifierLiteral 'prototype'), acc])
+            assign.variable = new Value(new IdentifierLiteral(name), [(new Access new PropertyName 'prototype'), acc])
             if func instanceof Code and func.bound
               @boundFuncs.push base
               func.bound = no
@@ -1302,11 +1306,14 @@ exports.Assign = class Assign extends Base
           obj = obj.variable
         idx = if isObject
           # A shorthand `{a, b, @c} = val` pattern-match.
-          if obj.this then obj.properties[0].name else obj
+          if obj.this
+            obj.properties[0].name
+          else
+            new PropertyName obj.unwrap().value
         else
           # A regular array pattern-match.
           new NumberLiteral 0
-      acc   = idx.unwrap() instanceof IdentifierLiteral
+      acc   = idx.unwrap() instanceof PropertyName
       value = new Value value
       value.properties.push new (if acc then Access else Index) idx
       message = isUnassignable obj.unwrap().value
@@ -1361,12 +1368,15 @@ exports.Assign = class Assign extends Base
             obj = obj.variable
           idx = if isObject
             # A shorthand `{a, b, @c} = val` pattern-match.
-            if obj.this then obj.properties[0].name else obj
+            if obj.this
+              obj.properties[0].name
+            else
+              new PropertyName obj.unwrap().value
           else
             # A regular array pattern-match.
             new Literal expandedIdx or idx
         name = obj.unwrap().value
-        acc = idx.unwrap() instanceof IdentifierLiteral
+        acc = idx.unwrap() instanceof PropertyName
         val = new Value new Literal(vvarText), [new (if acc then Access else Index) idx]
         val = new Op '?', val, defaultValue if defaultValue
       if name?
@@ -1893,11 +1903,11 @@ exports.Op = class Op extends Base
 
   compilePower: (o) ->
     # Make a Math.pow call
-    pow = new Value new IdentifierLiteral('Math'), [new Access new IdentifierLiteral 'pow']
+    pow = new Value new IdentifierLiteral('Math'), [new Access new PropertyName 'pow']
     new Call(pow, [@first, @second]).compileToFragments o
 
   compileFloorDivision: (o) ->
-    floor = new Value new IdentifierLiteral('Math'), [new Access new IdentifierLiteral 'floor']
+    floor = new Value new IdentifierLiteral('Math'), [new Access new PropertyName 'floor']
     div = new Op '/', @first, @second
     new Call(floor, [div]).compileToFragments o
 
