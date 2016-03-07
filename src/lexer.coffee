@@ -777,7 +777,10 @@ JS_KEYWORDS = [
 ]
 
 # CoffeeScript-only keywords.
-COFFEE_KEYWORDS = ['undefined', 'then', 'unless', 'until', 'loop', 'of', 'by', 'when']
+COFFEE_KEYWORDS = [
+  'undefined', 'Infinity', 'NaN'
+  'then', 'unless', 'until', 'loop', 'of', 'by', 'when'
+]
 
 COFFEE_ALIAS_MAP =
   and  : '&&'
@@ -939,7 +942,7 @@ BOOL = ['TRUE', 'FALSE']
 # of a function invocation or indexing operation.
 CALLABLE  = ['IDENTIFIER', 'PROPERTY', ')', ']', '?', '@', 'THIS', 'SUPER']
 INDEXABLE = CALLABLE.concat [
-  'NUMBER', 'INFINITY', 'STRING', 'STRING_END', 'REGEX', 'REGEX_END'
+  'NUMBER', 'INFINITY', 'NAN', 'STRING', 'STRING_END', 'REGEX', 'REGEX_END'
   'BOOL', 'NULL', 'UNDEFINED', '}', '::'
 ]
 
