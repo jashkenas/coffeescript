@@ -84,7 +84,7 @@ grammar =
   ]
 
   # Block and statements, which make up a line in a body. YieldReturn is a
-  # statement, but not included in Statement because that results in an ambigous
+  # statement, but not included in Statement because that results in an ambiguous
   # grammar.
   Line: [
     o 'Expression'
