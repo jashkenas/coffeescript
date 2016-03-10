@@ -1150,6 +1150,10 @@ Expressions
         <b>github</b>'s <a href="https://atom.io/">Atom</a>,
         a hackable text editor built on web technologies.
       </li>
+      <li>
+        <b>Basecamp</b>'s <a href="https://github.com/basecamp/trix">Trix</a>,
+        a rich text editor for the web.
+      </li>
     </ul>
 
     <h2>
