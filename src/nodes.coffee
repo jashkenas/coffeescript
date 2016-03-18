@@ -1076,6 +1076,7 @@ exports.Arr = class Arr extends Base
 exports.Class = class Class extends Base
   constructor: (@variable, @parent, @body = new Block) ->
     @boundFuncs = []
+    @overloads = []
     @body.classBody = yes
 
   children: ['variable', 'parent', 'body']
@@ -1116,16 +1117,82 @@ exports.Class = class Class extends Base
       @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind', o}(#{lhs}, this)"
     return
 
+  overloadMethodName: (method_name, property_name, is_static) ->
+    prefix = "__#{method_name}"
+    if is_static then "#{prefix}_static_#{property_name}" else "#{prefix}_#{property_name}"
+
+  # save references to overloads
+  makePropertyOverload: (assignment) ->
+    func = assignment.value
+    variable = assignment.variable
+    is_getter = func.params.length == 0
+    is_static = assignment.variable.this == true
+    method_name = if is_getter then "get" else "set"
+
+    if is_static
+      property_name = variable.properties[0].name.value
+    else
+      property_name = variable.base.value
+
+    match = (o for o in @overloads when o.property_name == property_name and o.static == is_static)[0]
+    safe_name = @overloadMethodName method_name, property_name, is_static
+
+    if match
+      match.overloads.push method_name
+    else
+      match = {static: is_static, property_name: property_name, overloads: [method_name]}
+      @overloads.push match
+
+    new Assign new IdentifierLiteral(safe_name), func
+
+  addOverloads: (o) ->
+    for overload in @overloads
+      property_name = overload.property_name
+      is_static = overload.static
+
+      mappings = []
+
+      if is_static
+        target = new Literal @determineName()
+      else
+        access = [
+          new Access new PropertyName "prototype"
+        ]
+        target = new Value new Literal(@determineName()), access
+
+      if (overload.overloads.indexOf "get") != -1
+        fn_name = @overloadMethodName "get", property_name, is_static
+        mappings.push new Assign new Literal("get"), new Literal(fn_name), "object"
+
+      if (overload.overloads.indexOf "set") != -1
+        fn_name = @overloadMethodName "set", property_name, is_static
+        mappings.push new Assign new Literal("set"), new Literal(fn_name), "object"
+
+      value = new Value new Literal("Object"), [
+        new Call (new Access new PropertyName "defineProperty"), [
+          target
+          new Literal "\"#{property_name}\""
+          new Obj mappings
+        ]
+      ]
+      
+      @body.expressions.push value
+
+    true
+
   # Merge the properties from a top-level object as prototypal properties
   # on the class.
   addProperties: (node, name, o) ->
     props = node.base.properties[..]
+    {overloads} = this
     exprs = while assign = props.shift()
       if assign instanceof Assign
         base = assign.variable.base
         delete assign.context
         func = assign.value
-        if base.value is 'constructor'
+        if func.overload and func instanceof Code
+          assign = @makePropertyOverload assign
+        else if base.value is 'constructor'
           if @ctor
             assign.error 'cannot define more than one constructor in a class'
           if func.bound
@@ -1202,6 +1269,7 @@ exports.Class = class Class extends Base
     func  = new Code [], Block.wrap [@body]
     args  = []
     o.classScope = func.makeScope o.scope
+    {overloads} = this
 
     @hoistDirectivePrologue()
     @setContext name
@@ -1209,6 +1277,9 @@ exports.Class = class Class extends Base
     @ensureConstructor name
     @addBoundFunctions o
     @body.spaced = yes
+
+    @addOverloads o
+
     @body.expressions.push lname
 
     if @parent
@@ -1449,6 +1520,8 @@ exports.Code = class Code extends Base
     @params      = params or []
     @body        = body or new Block
     @bound       = tag is 'boundfunc'
+    @overload    = tag is "propfunc"
+
     @isGenerator = !!@body.contains (node) ->
       (node instanceof Op and node.isYield()) or node instanceof YieldReturn
 
@@ -1466,7 +1539,6 @@ exports.Code = class Code extends Base
   # arrow, generates a wrapper that saves the current value of `this` through
   # a closure.
   compileNode: (o) ->
-
     if @bound and o.scope.method?.bound
       @context = o.scope.method.context
 
