@@ -74,10 +74,13 @@ class exports.Rewriter
       token[0] is 'OUTDENT' and @tag(i - 1) is ')'
 
     action = (token, i) ->
-      @tokens[if token[0] is 'OUTDENT' then i - 1 else i][0] = 'CALL_END'
+      target = @tokens[if token[0] is 'OUTDENT' then i - 1 else i]
+      target[0] = 'CALL_END'
+      
 
     @scanTokens (token, i) ->
-      @detectEnd i + 1, condition, action if token[0] is 'CALL_START'
+      return true unless token[0] is 'CALL_START'
+      @detectEnd i + 1, condition, action
       1
 
   # The lexer has tagged the opening parenthesis of an indexing operation call.
@@ -499,7 +502,7 @@ IMPLICIT_END     = ['POST_IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY',
 
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.
-SINGLE_LINERS    = ['ELSE', '->', '=>', 'TRY', 'FINALLY', 'THEN']
+SINGLE_LINERS    = ['ELSE', '->', '=>', 'TRY', 'FINALLY', 'THEN', '~>']
 SINGLE_CLOSERS   = ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_WHEN']
 
 # Tokens that end a line.

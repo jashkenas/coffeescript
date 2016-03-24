@@ -76,7 +76,9 @@ exports.Lexer = class Lexer
     @closeIndentation()
     @error "missing #{end.tag}", end.origin[2] if end = @ends.pop()
     return @tokens if opts.rewrite is off
-    (new Rewriter).rewrite @tokens
+    results = (new Rewriter).rewrite @tokens
+    results
+
 
   # Preprocess the code to remove leading and trailing whitespace, carriage
   # returns, etc. If we're lexing literate CoffeeScript, strip external Markdown
@@ -113,6 +115,7 @@ exports.Lexer = class Lexer
     if id is 'from' and @tag() is 'YIELD'
       @token 'FROM', id
       return id.length
+
     [..., prev] = @tokens
     tag =
       if colon or prev? and
@@ -408,6 +411,7 @@ exports.Lexer = class Lexer
       @tagParameters() if CODE.test value
     else
       value = @chunk.charAt 0
+
     tag  = value
     [..., prev] = @tokens
 
@@ -442,10 +446,13 @@ exports.Lexer = class Lexer
         tag = 'INDEX_START'
         switch prev[0]
           when '?'  then prev[0] = 'INDEX_SOAK'
+
     token = @makeToken tag, value
+
     switch value
       when '(', '{', '[' then @ends.push {tag: INVERSES[value], origin: token}
       when ')', '}', ']' then @pair value
+
     @tokens.push token
     value.length
 
@@ -456,7 +463,9 @@ exports.Lexer = class Lexer
   # definitions versus argument lists in function calls. Walk backwards, tagging
   # parameters specially in order to make things easier for the parser.
   tagParameters: ->
-    return this if @tag() isnt ')'
+    if @tag() isnt ")"
+      return this
+
     stack = []
     {tokens} = this
     i = tokens.length
@@ -829,7 +838,7 @@ NUMBER     = ///
 ///i
 
 OPERATOR   = /// ^ (
-  ?: [-=]>             # function
+  ?: [-=~]>            # function
    | [-+*/%<>&|^!?=]=  # compound assign / compare
    | >>>=?             # zero-fill right shift
    | ([-+:])\1         # doubles
@@ -842,7 +851,7 @@ WHITESPACE = /^[^\n\S]+/
 
 COMMENT    = /^###([^#][\s\S]*?)(?:###[^\n\S]*|###$)|^(?:\s*#(?!##[^#]).*)+/
 
-CODE       = /^[-=]>/
+CODE       = /^[-~=]>/
 
 MULTI_DENT = /^(?:\n[^\n\S]*)+/
 

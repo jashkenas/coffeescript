@@ -235,6 +235,7 @@ grammar =
   FuncGlyph: [
     o '->',                                     -> 'func'
     o '=>',                                     -> 'boundfunc'
+    o '~>',                                     -> 'propfunc'
   ]
 
   # An optional, trailing comma.
