@@ -1541,7 +1541,7 @@ exports.Code = class Code extends Base
 
 #### Param
 
-# A parameter in a function definition. Beyond a typical Javascript parameter,
+# A parameter in a function definition. Beyond a typical JavaScript parameter,
 # these parameters can also attach themselves to the context of the function,
 # as well as be a splat, gathering up a group of parameters into an array.
 exports.Param = class Param extends Base

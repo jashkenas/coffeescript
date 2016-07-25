@@ -1,5 +1,5 @@
-# Error Formating
-# ---------------
+# Error Formatting
+# ----------------
 
 # Ensure that errors of different kinds (lexer, parser and compiler) are shown
 # in a consistent way.
@@ -10,7 +10,7 @@ assertErrorFormat = (code, expectedErrorFormat) ->
     eq expectedErrorFormat, "#{err}"
     yes
 
-test "lexer errors formating", ->
+test "lexer errors formatting", ->
   assertErrorFormat '''
     normalObject    = {}
     insideOutObject = }{
@@ -21,7 +21,7 @@ test "lexer errors formating", ->
                       ^
   '''
 
-test "parser error formating", ->
+test "parser error formatting", ->
   assertErrorFormat '''
     foo in bar or in baz
   ''',
