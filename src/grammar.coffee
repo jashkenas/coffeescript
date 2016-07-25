@@ -117,6 +117,8 @@ grammar =
     o 'Class'
     o 'Throw'
     o 'Yield'
+    o 'Import'
+    o 'Export'
   ]
 
   Yield: [
@@ -347,6 +349,10 @@ grammar =
     o 'CLASS SimpleAssignable Block',                    -> new Class $2, null, $3
     o 'CLASS SimpleAssignable EXTENDS Expression',       -> new Class $2, $4
     o 'CLASS SimpleAssignable EXTENDS Expression Block', -> new Class $2, $4, $5
+  ]
+
+  Import: [
+    o 'IMPORT Expression',                      -> new Import $2
   ]
 
   # Ordinary function invocation, or a chained series of calls.
@@ -644,7 +650,7 @@ operators = [
   ['right',     'YIELD']
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
   ['right',     'FORIN', 'FOROF', 'BY', 'WHEN']
-  ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
+  ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS', 'IMPORT', 'EXPORT']
   ['left',      'POST_IF']
 ]
 

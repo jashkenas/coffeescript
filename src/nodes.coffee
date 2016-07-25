@@ -1223,6 +1223,22 @@ exports.Class = class Class extends Base
     klass = new Assign @variable, klass if @variable
     klass.compileToFragments o
 
+#### Import
+
+exports.Import = class Import extends Base
+  constructor: (@expression) ->
+
+  children: ['expression']
+
+  isStatement: YES
+  jumps:       NO
+
+  makeReturn: THIS
+
+  compileNode: (o) ->
+    [].concat @makeCode(@tab + 'import '), @expression.compileToFragments(o), @makeCode(';')
+
+
 #### Assign
 
 # The **Assign** is used to assign a local variable to value, or to set the
