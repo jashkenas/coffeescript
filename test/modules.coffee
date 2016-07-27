@@ -21,15 +21,15 @@ test "import module", ->
   # console.log toJS input
   eq toJS(input), output
 
-# test "module import test, syntax #1", ->
-#   input = "import foo from 'lib'"
-#   output = "import foo from 'lib';"
-#   eq toJS(input), output
+test "module import test, syntax #1", ->
+  input = "import foo from 'lib'"
+  output = "import foo from 'lib';"
+  eq toJS(input), output
 
-# test "module import test, syntax #2", ->
-#   input = "import { foo } from 'lib'"
-#   output = "import { foo } from 'lib';"
-#   eq toJS(input), output
+test "module import test, syntax #2", ->
+  input = "import { foo } from 'lib'"
+  output = "import { foo } from 'lib';"
+  eq toJS(input), output
 
 # test "module import test, syntax #3", ->
 #   input = "import { default as foo } from 'lib'"

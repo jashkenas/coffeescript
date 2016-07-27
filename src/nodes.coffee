@@ -1226,9 +1226,9 @@ exports.Class = class Class extends Base
 #### Import
 
 exports.Import = class Import extends Base
-  constructor: (@expression) ->
+  constructor: (@expression, @identifier) ->
 
-  children: ['expression']
+  children: ['expression', 'identifier']
 
   isStatement: YES
   jumps:       NO
@@ -1236,8 +1236,22 @@ exports.Import = class Import extends Base
   makeReturn: THIS
 
   compileNode: (o) ->
-    [].concat @makeCode(@tab + 'import '), @expression.compileToFragments(o), @makeCode(';')
+    code = []
 
+    code.push @makeCode(@tab + 'import ')
+
+
+    if @identifier
+      code.push @makeCode("#{@identifier.value} from ")
+
+
+    if @expression.base.value?
+      code.push @makeCode(@expression.base.value)
+    else
+      code.push @makeCode(@expression.base)
+    code.push @makeCode(';')
+
+    code
 
 #### Assign
 

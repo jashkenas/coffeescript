@@ -97,6 +97,8 @@ grammar =
     o 'Return'
     o 'Comment'
     o 'STATEMENT',                              -> new StatementLiteral $1
+    o 'Import'
+    o 'Export'
   ]
 
   # All the different types of expressions in our language. The basic unit of
@@ -117,8 +119,6 @@ grammar =
     o 'Class'
     o 'Throw'
     o 'Yield'
-    o 'Import'
-    o 'Export'
   ]
 
   Yield: [
@@ -353,6 +353,7 @@ grammar =
 
   Import: [
     o 'IMPORT Expression',                      -> new Import $2
+    o 'IMPORT Assignable FROM Expression',      -> new Import $4, $2
   ]
 
   # Ordinary function invocation, or a chained series of calls.

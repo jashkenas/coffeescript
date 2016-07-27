@@ -258,6 +258,13 @@ exports.Lexer = class Lexer
     @token 'JS', (script = match[0])[1...-1], 0, script.length
     script.length
 
+  importToken: ->
+    match = @chunk.match(IMPORT)
+
+    return 0 unless match
+
+    @token('IMPORT', match[0], 0, match[0].length)
+
   # Matches regular expression literals, as well as multiline extended ones.
   # Lexing regular expressions is difficult to distinguish from division, so we
   # borrow some basic heuristics from JavaScript and Ruby.
@@ -774,7 +781,7 @@ JS_KEYWORDS = [
   'return', 'throw', 'break', 'continue', 'debugger', 'yield'
   'if', 'else', 'switch', 'for', 'while', 'do', 'try', 'catch', 'finally'
   'class', 'extends', 'super'
-  'export', 'import', 'default'
+  'export', 'import', 'from', 'default'
 ]
 
 # CoffeeScript-only keywords.
@@ -848,6 +855,8 @@ CODE       = /^[-=]>/
 MULTI_DENT = /^(?:\n[^\n\S]*)+/
 
 JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
+
+IMPORT     = /^import .+/
 
 # String-matching-regexes.
 STRING_START   = /^(?:'''|"""|'|")/
