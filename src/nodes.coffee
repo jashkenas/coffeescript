@@ -1253,7 +1253,7 @@ exports.Import = class Import extends Base
     code.push @makeCode(';')
     code
 
-exports.IdentifierList = class IdentifierList extends Base
+exports.ImportsList = class ImportsList extends Base
   constructor: (identifiers) ->
     @identifiers = identifiers or []
 
@@ -1279,6 +1279,14 @@ exports.IdentifierList = class IdentifierList extends Base
       code.push    @makeCode(" }")
 
     code
+
+exports.ImportSpecifier = class ImportSpecifier extends Base
+  constructor: (@original, @alias) ->
+
+  children: ['from', 'as']
+
+  compileNode: (o) ->
+    return [@makeCode("#{@original.value} as #{@alias.value}")]
 
 #### Assign
 

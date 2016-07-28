@@ -139,14 +139,6 @@ grammar =
     o 'IDENTIFIER',                             -> new IdentifierLiteral $1
   ]
 
-  IdentifierList: [
-    o 'Identifier',                                                     -> [$1]
-    o 'IdentifierList , Identifier',                                    -> $1.concat $3
-    o 'IdentifierList OptComma TERMINATOR Identifier',                  -> $1.concat $4
-    o 'INDENT IdentifierList OptComma OUTDENT',                         -> $2
-    o 'IdentifierList OptComma INDENT IdentifierList OptComma OUTDENT', -> $1.concat $4
-  ]
-
   Property: [
     o 'PROPERTY',                               -> new PropertyName $1
   ]
@@ -360,13 +352,27 @@ grammar =
   ]
 
   NamedImports: [
-    o '{ }',                          -> new IdentifierList []
-    o '{ IdentifierList OptComma }',  -> new IdentifierList $2
+    o '{ }',                      -> new ImportsList []
+    o '{ ImportsList OptComma }', -> new ImportsList $2
   ]
 
   ImportClause: [
     o 'NamedImports'
+    o 'ImportSpecifier'
+    o '* IMPORT_AS Identifier'
+  ]
+
+  ImportSpecifier: [
     o 'Identifier'
+    o 'Identifier IMPORT_AS Identifier', -> new ImportSpecifier $1, $3
+  ]
+
+  ImportsList: [
+    o 'ImportSpecifier',                                          -> [$1]
+    o 'ImportsList , ImportSpecifier',                            -> $1.concat $3
+    o 'ImportsList OptComma TERMINATOR ImportSpecifier',          -> $1.concat $4
+    o 'INDENT ImportsList OptComma OUTDENT',                      -> $2
+    o 'ImportsList OptComma INDENT ImportsList OptComma OUTDENT', -> $1.concat $4
   ]
 
   Import: [

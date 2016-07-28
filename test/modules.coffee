@@ -31,20 +31,25 @@ test "module import test, syntax #2", ->
   output = "import { foo } from 'lib';"
   eq toJS(input), output
 
-# test "module import test, syntax #3", ->
-#   input = "import { default as foo } from 'lib'"
-#   output = "import { default as foo } from 'lib';"
-#   eq toJS(input), output
+test "module import test, syntax #3", ->
+  input = "import { bar as foo } from 'lib'"
+  output = "import { bar as foo } from 'lib';"
+  eq toJS(input), output
 
-# test "module import test, syntax #4", ->
-#   input = "import { square, diag } from 'lib'"
-#   output = "import { square, diag } from 'lib';"
-#   eq toJS(input), output
+test "module import test, syntax #3", ->
+  input = "import { oof, bar as foo } from 'lib'"
+  output = "import { oof, bar as foo } from 'lib';"
+  eq toJS(input), output
 
-# test "module import test, syntax #5", ->
-#   input = "import { foo } from 'lib' # with a comment"
-#   output = "import { foo } from 'lib' ;"
-#   eq toJS(input), output
+test "module import test, syntax #4", ->
+  input = "import { square, diag } from 'lib'"
+  output = "import { square, diag } from 'lib';"
+  eq toJS(input), output
+
+test "module import test, syntax #5", ->
+  input = "import { foo } from 'lib' # with a comment"
+  output = "import { foo } from 'lib';"
+  eq toJS(input), output
 
 # test "module export test, syntax #1", ->
 #   input = "export default mixin"
