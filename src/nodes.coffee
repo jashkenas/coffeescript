@@ -1238,16 +1238,12 @@ exports.Import = class Import extends Base
   compileNode: (o) ->
     code = []
 
-    console.log('@expression: ', @expression, '@identifier: ', @identifier)
-
     code.push @makeCode(@tab + 'import ')
 
     if @identifier
       if @identifier.value?
         code.push @makeCode("#{@identifier.value} from ")
       else
-        console.log @identifier.compileNode(o)
-
         code.push fragment for fragment in @identifier.compileNode(o)
         code.push @makeCode(' from ')
 
