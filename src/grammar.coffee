@@ -139,6 +139,14 @@ grammar =
     o 'IDENTIFIER',                             -> new IdentifierLiteral $1
   ]
 
+  IdentifierList: [
+    o 'Identifier',                                                     -> [$1]
+    o 'IdentifierList , Identifier',                                    -> $1.concat $3
+    o 'IdentifierList OptComma TERMINATOR Identifier',                  -> $1.concat $4
+    o 'INDENT IdentifierList OptComma OUTDENT',                         -> $2
+    o 'IdentifierList OptComma INDENT IdentifierList OptComma OUTDENT', -> $1.concat $4
+  ]
+
   Property: [
     o 'PROPERTY',                               -> new PropertyName $1
   ]
@@ -351,9 +359,19 @@ grammar =
     o 'CLASS SimpleAssignable EXTENDS Expression Block', -> new Class $2, $4, $5
   ]
 
+  NamedImports: [
+    o '{ }',                          -> new IdentifierList []
+    o '{ IdentifierList OptComma }',  -> new IdentifierList $2
+  ]
+
+  ImportClause: [
+    o 'NamedImports'
+    o 'Identifier'
+  ]
+
   Import: [
-    o 'IMPORT Expression',                      -> new Import $2
-    o 'IMPORT Assignable FROM Expression',      -> new Import $4, $2
+    o 'IMPORT String',                          -> new Import $2
+    o 'IMPORT ImportClause IMPORT_FROM String', -> new Import $4, $2
   ]
 
   # Ordinary function invocation, or a chained series of calls.

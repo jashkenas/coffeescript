@@ -1238,18 +1238,49 @@ exports.Import = class Import extends Base
   compileNode: (o) ->
     code = []
 
+    console.log('@expression: ', @expression, '@identifier: ', @identifier)
+
     code.push @makeCode(@tab + 'import ')
 
-
     if @identifier
-      code.push @makeCode("#{@identifier.value} from ")
+      if @identifier.value?
+        code.push @makeCode("#{@identifier.value} from ")
+      else
+        console.log @identifier.compileNode(o)
 
+        code.push fragment for fragment in @identifier.compileNode(o)
+        code.push @makeCode(' from ')
 
-    if @expression.base.value?
-      code.push @makeCode(@expression.base.value)
-    else
-      code.push @makeCode(@expression.base)
+    if @expression.value?
+      code.push @makeCode(@expression.value)
+
     code.push @makeCode(';')
+    code
+
+exports.IdentifierList = class IdentifierList extends Base
+  constructor: (identifiers) ->
+    @identifiers = identifiers or []
+
+  children: ['identifiers']
+
+  compileNode: (o) ->
+    return [@makeCode('[]')] unless @identifiers.length
+
+    o.indent += TAB
+
+    code = []
+    compiledList = (identifier.compileToFragments o, LEVEL_LIST for identifier in @identifiers)
+
+    for fragments, index in compiledList
+      code.push @makeCode(', ') if index
+      code.push fragments...
+
+    if fragmentsToText(code).includes('\n')
+      code.unshift @makeCode("{\n#{o.indent}")
+      code.push    @makeCode("\n#{@tab}}")
+    else
+      code.unshift @makeCode("{ ")
+      code.push    @makeCode(" }")
 
     code
 

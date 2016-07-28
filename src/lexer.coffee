@@ -43,6 +43,7 @@ exports.Lexer = class Lexer
     @ends       = []             # The stack for pairing up tokens.
     @tokens     = []             # Stream of parsed tokens in the form `['TYPE', value, location data]`.
     @seenFor    = no             # Used to recognize FORIN and FOROF tokens.
+    @seenImport = no             # Used to recognize IMPORT FROM? AS? tokens.
 
     @chunkLine =
       opts.line or 0         # The start line for the current @chunk.
@@ -113,7 +114,22 @@ exports.Lexer = class Lexer
     if id is 'from' and @tag() is 'YIELD'
       @token 'FROM', id
       return id.length
+
+    if id is 'import'
+      @seenImport = yes
+      @token 'IMPORT', id, 0, idLength
+      return idLength
+
+    if id is 'from' and @seenImport
+      @token 'IMPORT_FROM', id
+      return idLength
+
+    if id is 'as' and @seenImport
+      @token 'IMPORT_AS', id
+      return idLength
+
     [..., prev] = @tokens
+
     tag =
       if colon or prev? and
          (prev[0] in ['.', '?.', '::', '?::'] or
@@ -258,13 +274,6 @@ exports.Lexer = class Lexer
     @token 'JS', (script = match[0])[1...-1], 0, script.length
     script.length
 
-  importToken: ->
-    match = @chunk.match(IMPORT)
-
-    return 0 unless match
-
-    @token('IMPORT', match[0], 0, match[0].length)
-
   # Matches regular expression literals, as well as multiline extended ones.
   # Lexing regular expressions is difficult to distinguish from division, so we
   # borrow some basic heuristics from JavaScript and Ruby.
@@ -324,9 +333,13 @@ exports.Lexer = class Lexer
   lineToken: ->
     return 0 unless match = MULTI_DENT.exec @chunk
     indent = match[0]
+
     @seenFor = no
+    @seenImport = no
+
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()
+
     if size - @indebt is @indent
       if noNewlines then @suppressNewlines() else @newlineToken 0
       return indent.length
