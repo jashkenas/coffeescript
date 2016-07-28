@@ -869,8 +869,6 @@ MULTI_DENT = /^(?:\n[^\n\S]*)+/
 
 JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 
-IMPORT     = /^import .+/
-
 # String-matching-regexes.
 STRING_START   = /^(?:'''|"""|'|")/
 
