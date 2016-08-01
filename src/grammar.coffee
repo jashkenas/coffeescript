@@ -351,20 +351,25 @@ grammar =
     o 'CLASS SimpleAssignable EXTENDS Expression Block', -> new Class $2, $4, $5
   ]
 
-  NamedImports: [
-    o '{ }',                      -> new ImportsList []
-    o '{ ImportsList OptComma }', -> new ImportsList $2
+  Import: [
+    o 'IMPORT String',                          -> new Import null, $2
+    o 'IMPORT ImportClause IMPORT_FROM String', -> new Import $2, $4
   ]
 
   ImportClause: [
-    o 'NamedImports'
     o 'ImportSpecifier'
-    o '* IMPORT_AS Identifier'
+    o 'NamedImports'
   ]
 
   ImportSpecifier: [
     o 'Identifier'
-    o 'Identifier IMPORT_AS Identifier', -> new ImportSpecifier $1, $3
+    o 'Identifier IMPORT_AS Identifier',        -> new ImportSpecifier $1, $3
+    o '* IMPORT_AS Identifier',                 -> new ImportSpecifier {value: '*'}, $3
+  ]
+
+  NamedImports: [
+    o '{ }',                                    -> new ImportsList []
+    o '{ ImportsList OptComma }',               -> new ImportsList $2
   ]
 
   ImportsList: [
@@ -373,11 +378,6 @@ grammar =
     o 'ImportsList OptComma TERMINATOR ImportSpecifier',          -> $1.concat $4
     o 'INDENT ImportsList OptComma OUTDENT',                      -> $2
     o 'ImportsList OptComma INDENT ImportsList OptComma OUTDENT', -> $1.concat $4
-  ]
-
-  Import: [
-    o 'IMPORT String',                          -> new Import null, $2
-    o 'IMPORT ImportClause IMPORT_FROM String', -> new Import $2, $4
   ]
 
   # Ordinary function invocation, or a chained series of calls.

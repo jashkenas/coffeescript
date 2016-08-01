@@ -1282,7 +1282,7 @@ exports.ImportsList = class ImportsList extends Base
 exports.ImportSpecifier = class ImportSpecifier extends Base
   constructor: (@original, @alias) ->
 
-  children: ['from', 'as']
+  children: ['original', 'alias']
 
   compileNode: (o) ->
     return [@makeCode("#{@original.value} as #{@alias.value}")]
