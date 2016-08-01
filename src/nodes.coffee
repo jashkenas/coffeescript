@@ -1226,31 +1226,30 @@ exports.Class = class Class extends Base
 #### Import
 
 exports.Import = class Import extends Base
-  constructor: (@expression, @identifier) ->
+  constructor: (@importClause, @moduleName) ->
 
-  children: ['expression', 'identifier']
+  children: ['importClause', 'moduleName']
 
   isStatement: YES
-  jumps:       NO
-
-  makeReturn: THIS
+  jumps:       THIS
+  makeReturn:  THIS
 
   compileNode: (o) ->
     code = []
 
     code.push @makeCode(@tab + 'import ')
 
-    if @identifier
-      if @identifier.value?
-        code.push @makeCode("#{@identifier.value} from ")
+    if @importClause?
+      if @importClause.value?
+        code.push @makeCode "#{@importClause.value} from "
       else
-        code.push fragment for fragment in @identifier.compileNode(o)
-        code.push @makeCode(' from ')
+        code.push fragment for fragment in @importClause.compileNode(o)
+        code.push @makeCode ' from '
 
-    if @expression.value?
-      code.push @makeCode(@expression.value)
+    if @moduleName.value?
+      code.push @makeCode @moduleName.value
 
-    code.push @makeCode(';')
+    code.push @makeCode ';'
     code
 
 exports.ImportsList = class ImportsList extends Base

@@ -376,8 +376,8 @@ grammar =
   ]
 
   Import: [
-    o 'IMPORT String',                          -> new Import $2
-    o 'IMPORT ImportClause IMPORT_FROM String', -> new Import $4, $2
+    o 'IMPORT String',                          -> new Import null, $2
+    o 'IMPORT ImportClause IMPORT_FROM String', -> new Import $2, $4
   ]
 
   # Ordinary function invocation, or a chained series of calls.
