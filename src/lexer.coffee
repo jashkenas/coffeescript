@@ -44,6 +44,7 @@ exports.Lexer = class Lexer
     @tokens     = []             # Stream of parsed tokens in the form `['TYPE', value, location data]`.
     @seenFor    = no             # Used to recognize FORIN and FOROF tokens.
     @seenImport = no             # Used to recognize IMPORT FROM? AS? tokens.
+    @seenExport = no             # Used to recognize EXPORT FROM? AS? tokens.
 
     @chunkLine =
       opts.line or 0         # The start line for the current @chunk.
@@ -114,19 +115,15 @@ exports.Lexer = class Lexer
     if id is 'from' and @tag() is 'YIELD'
       @token 'FROM', id
       return id.length
-
-    if id is 'import'
-      @seenImport = yes
-      @token 'IMPORT', id, 0, idLength
-      return idLength
-
-    if id is 'from' and @seenImport
+    if id is 'from' and (@seenImport or @seenExport)
       @token 'IMPORT_FROM', id
-      return idLength
-
+      return id.length
     if id is 'as' and @seenImport
       @token 'IMPORT_AS', id
-      return idLength
+      return id.length
+    if id is 'as' and @seenExport
+      @token 'EXPORT_AS', id
+      return id.length
 
     [..., prev] = @tokens
 
@@ -146,6 +143,10 @@ exports.Lexer = class Lexer
         @seenFor = yes
       else if tag is 'UNLESS'
         tag = 'IF'
+      else if tag is 'IMPORT'
+        @seenImport = yes
+      else if tag is 'EXPORT'
+        @seenExport = yes
       else if tag in UNARY
         tag = 'UNARY'
       else if tag in RELATION
