@@ -1270,7 +1270,7 @@ exports.ImportsList = class ImportsList extends Base
       code.push @makeCode(', ') if index
       code.push fragments...
 
-    if fragmentsToText(code).includes('\n')
+    if fragmentsToText(code).indexOf('\n') isnt -1
       code.unshift @makeCode("{\n#{o.indent}")
       code.push    @makeCode("\n#{@tab}}")
     else
