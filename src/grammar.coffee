@@ -359,6 +359,8 @@ grammar =
   ImportClause: [
     o 'ImportSpecifier'
     o 'NamedImports'
+    o 'ImportSpecifier , ImportSpecifier OptComma'
+    o 'ImportSpecifier , NamedImports OptComma'
   ]
 
   ImportSpecifier: [
