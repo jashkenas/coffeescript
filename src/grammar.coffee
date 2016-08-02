@@ -364,7 +364,7 @@ grammar =
   ImportSpecifier: [
     o 'Identifier'
     o 'Identifier IMPORT_AS Identifier',        -> new ImportSpecifier $1, $3
-    o '* IMPORT_AS Identifier',                 -> new ImportSpecifier {value: '*'}, $3
+    o 'IMPORT_ALL IMPORT_AS Identifier',        -> new ImportSpecifier null, $3
   ]
 
   NamedImports: [

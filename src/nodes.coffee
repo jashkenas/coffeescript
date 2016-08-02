@@ -1285,7 +1285,7 @@ exports.ImportSpecifier = class ImportSpecifier extends Base
   children: ['original', 'alias']
 
   compileNode: (o) ->
-    return [@makeCode("#{@original.value} as #{@alias.value}")]
+    return [@makeCode("#{if @original? then @original.value else '*'} as #{@alias.value}")]
 
 #### Assign
 
