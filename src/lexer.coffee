@@ -446,7 +446,7 @@ exports.Lexer = class Lexer
       return value.length if skipToken
 
     if value is ';'
-      @seenFor = no
+      @seenFor = @seenImport = @seenExport = no
       tag = 'TERMINATOR'
     else if value in MATH            then tag = 'MATH'
     else if value in COMPARE         then tag = 'COMPARE'
