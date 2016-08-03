@@ -357,29 +357,25 @@ grammar =
   ]
 
   ImportClause: [
-    o 'ImportSpecifier'
-    o 'NamedImports'
-    o 'ImportSpecifier , ImportSpecifier OptComma'
-    o 'ImportSpecifier , NamedImports OptComma'
+    o '{ }',                                    -> new ImportList [], yes
+    o 'ImportList OptComma',                    -> new ImportList $1, no
+    o 'ImportList , { ImportList OptComma }',   -> new ImportList $1, no, $4, yes
+    o '{ ImportList OptComma } , ImportList',   -> new ImportList $2, yes, $6, no
+    o '{ ImportList OptComma }',                -> new ImportList $2, yes
+  ]
+
+  ImportList: [
+    o 'ImportSpecifier',                                         -> [$1]
+    o 'ImportList , ImportSpecifier',                            -> $1.concat $3
+    o 'ImportList OptComma TERMINATOR ImportSpecifier',          -> $1.concat $4
+    o 'INDENT ImportList OptComma OUTDENT',                      -> $2
+    o 'ImportList OptComma INDENT ImportList OptComma OUTDENT',  -> $1.concat $4
   ]
 
   ImportSpecifier: [
     o 'Identifier'
     o 'Identifier IMPORT_AS Identifier',        -> new ImportSpecifier $1, $3
     o 'IMPORT_ALL IMPORT_AS Identifier',        -> new ImportSpecifier null, $3
-  ]
-
-  NamedImports: [
-    o '{ }',                                    -> new ImportsList []
-    o '{ ImportsList OptComma }',               -> new ImportsList $2
-  ]
-
-  ImportsList: [
-    o 'ImportSpecifier',                                          -> [$1]
-    o 'ImportsList , ImportSpecifier',                            -> $1.concat $3
-    o 'ImportsList OptComma TERMINATOR ImportSpecifier',          -> $1.concat $4
-    o 'INDENT ImportsList OptComma OUTDENT',                      -> $2
-    o 'ImportsList OptComma INDENT ImportsList OptComma OUTDENT', -> $1.concat $4
   ]
 
   # Ordinary function invocation, or a chained series of calls.

@@ -1240,11 +1240,8 @@ exports.Import = class Import extends Base
     code.push @makeCode(@tab + 'import ')
 
     if @importClause?
-      if @importClause.value?
-        code.push @makeCode "#{@importClause.value} from "
-      else
-        code.push fragment for fragment in @importClause.compileNode(o)
-        code.push @makeCode ' from '
+      code.push fragment for fragment in @importClause.compileNode(o)
+      code.push @makeCode ' from '
 
     if @moduleName.value?
       code.push @makeCode @moduleName.value
@@ -1252,30 +1249,39 @@ exports.Import = class Import extends Base
     code.push @makeCode ';'
     code
 
-exports.ImportsList = class ImportsList extends Base
-  constructor: (identifiers) ->
-    @identifiers = identifiers or []
+exports.ImportList = class ImportList extends Base
+  constructor: (@firstIdentifiers = [], @firstWrapped = no, @secondIdentifiers = [], @secondWrapped = no) ->
 
-  children: ['identifiers']
+  children: ['firstIdentifiers', 'secondIdentifiers']
 
   compileNode: (o) ->
-    return [@makeCode('[]')] unless @identifiers.length
-
-    o.indent += TAB
+    return [@makeCode('[]')] unless @firstIdentifiers.length
 
     code = []
-    compiledList = (identifier.compileToFragments o, LEVEL_LIST for identifier in @identifiers)
+    o.indent += TAB
+
+    code = code.concat @compileIdentifiers o, @firstIdentifiers, @firstWrapped
+    if @secondIdentifiers.length
+      code.push @makeCode(', ')
+      code = code.concat @compileIdentifiers o, @secondIdentifiers, @secondWrapped
+
+    code
+
+  compileIdentifiers: (o, identifiers, wrapped) ->
+    code = []
+    compiledList = (identifier.compileToFragments o, LEVEL_LIST for identifier in identifiers)
 
     for fragments, index in compiledList
       code.push @makeCode(', ') if index
       code.push fragments...
 
-    if fragmentsToText(code).indexOf('\n') isnt -1
-      code.unshift @makeCode("{\n#{o.indent}")
-      code.push    @makeCode("\n#{@tab}}")
-    else
-      code.unshift @makeCode("{ ")
-      code.push    @makeCode(" }")
+    if wrapped
+      if fragmentsToText(code).indexOf('\n') isnt -1
+        code.unshift @makeCode("{\n#{o.indent}")
+        code.push    @makeCode("\n#{@tab}}")
+      else
+        code.unshift @makeCode("{ ")
+        code.push    @makeCode(" }")
 
     code
 
