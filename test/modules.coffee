@@ -47,43 +47,48 @@ test "import an entire module for side effects only, without importing any bindi
   eq toJS(input), output
 
 test "import default member from module, adding the member to the current scope", ->
-  input = "import foo from 'lib'"
-  output = "import foo from 'lib';"
+  input = "import foo from 'lib'\nfoo.fooMethod()"
+  output = "import foo from 'lib';\n\nfoo.fooMethod();"
   eq toJS(input), output
 
 test "import an entire module's contents as an alias, adding the alias to the current scope", ->
-  input = "import * as foo from 'lib'"
-  output = "import * as foo from 'lib';"
+  input = "import * as foo from 'lib'\nfoo.fooMethod()"
+  output = "import * as foo from 'lib';\n\nfoo.fooMethod();"
   eq toJS(input), output
 
 test "import a single member of a module, adding the member to the current scope", ->
-  input = "import { foo } from 'lib'"
-  output = "import { foo } from 'lib';"
+  input = "import { foo } from 'lib'\nfoo.fooMethod()"
+  output = "import { foo } from 'lib';\n\nfoo.fooMethod();"
   eq toJS(input), output
 
 test "import a single member of a module as an alias, adding the alias to the current scope", ->
-  input = "import { foo as bar } from 'lib'"
-  output = "import { foo as bar } from 'lib';"
+  input = "import { foo as bar } from 'lib'\nbar.barMethod()"
+  output = "import { foo as bar } from 'lib';\n\nbar.barMethod();"
   eq toJS(input), output
 
 test "import a multiple members of a module, adding the members to the current scope", ->
-  input = "import { foo, bar } from 'lib'"
-  output = "import { foo, bar } from 'lib';"
+  input = "import { foo, bar } from 'lib'\nfoo.fooMethod()\nbar.barMethod()"
+  output = "import { foo, bar } from 'lib';\n\nfoo.fooMethod();\n\nbar.barMethod();"
   eq toJS(input), output
 
 test "import a multiple members of a module where some are aliased, adding the members or aliases to the current scope", ->
-  input = "import { foo, bar as baz } from 'lib'"
-  output = "import { foo, bar as baz } from 'lib';"
+  input = "import { foo, bar as baz } from 'lib'\nfoo.fooMethod()\nbaz.bazMethod()"
+  output = "import { foo, bar as baz } from 'lib';\n\nfoo.fooMethod();\n\nbaz.bazMethod();"
   eq toJS(input), output
 
 test "import default member and other members of a module, adding the members to the current scope", ->
-  input = "import foo, { bar, baz as qux } from 'lib'"
-  output = "import foo, { bar, baz as qux } from 'lib';"
+  input = "import foo, { bar, baz as qux } from 'lib'\nfoo.fooMethod()\nbar.barMethod()\nqux.quxMethod()"
+  output = "import foo, { bar, baz as qux } from 'lib';\n\nfoo.fooMethod();\n\nbar.barMethod();\n\nqux.quxMethod();"
+  eq toJS(input), output
+
+test "import members of a module and a default member, adding the members to the current scope", ->
+  input = "import { bar, baz as qux }, * as foo from 'lib'\nbar.barMethod()\nqux.quxMethod()\nfoo.fooMethod()"
+  output = "import { bar, baz as qux }, * as foo from 'lib';\n\nbar.barMethod();\n\nqux.quxMethod();\n\nfoo.fooMethod();"
   eq toJS(input), output
 
 test "import default member from a module as well as the entire module's contents as an alias, adding the member and alias to the current scope", ->
-  input = "import foo, * as bar from 'lib'"
-  output = "import foo, * as bar from 'lib';"
+  input = "import foo, * as bar from 'lib'\nfoo.fooMethod()\nbar.barMethod()"
+  output = "import foo, * as bar from 'lib';\n\nfoo.fooMethod();\n\nbar.barMethod();"
   eq toJS(input), output
 
 
