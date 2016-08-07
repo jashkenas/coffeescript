@@ -360,7 +360,6 @@ grammar =
     o '{ }',                                    -> new ImportList [], yes
     o 'ImportList OptComma',                    -> new ImportList $1, no
     o 'ImportList , { ImportList OptComma }',   -> new ImportList $1, no, $4, yes
-    o '{ ImportList OptComma } , ImportList',   -> new ImportList $2, yes, $6, no
     o '{ ImportList OptComma }',                -> new ImportList $2, yes
   ]
 

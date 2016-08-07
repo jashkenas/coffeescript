@@ -81,11 +81,6 @@ test "import default member and other members of a module, adding the members to
   output = "import foo, { bar, baz as qux } from 'lib';\n\nfoo.fooMethod();\n\nbar.barMethod();\n\nqux.quxMethod();"
   eq toJS(input), output
 
-test "import members of a module and a default member, adding the members to the current scope", ->
-  input = "import { bar, baz as qux }, * as foo from 'lib'\nbar.barMethod()\nqux.quxMethod()\nfoo.fooMethod()"
-  output = "import { bar, baz as qux }, * as foo from 'lib';\n\nbar.barMethod();\n\nqux.quxMethod();\n\nfoo.fooMethod();"
-  eq toJS(input), output
-
 test "import default member from a module as well as the entire module's contents as an alias, adding the member and alias to the current scope", ->
   input = "import foo, * as bar from 'lib'\nfoo.fooMethod()\nbar.barMethod()"
   output = "import foo, * as bar from 'lib';\n\nfoo.fooMethod();\n\nbar.barMethod();"
