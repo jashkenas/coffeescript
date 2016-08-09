@@ -354,6 +354,7 @@ grammar =
   Import: [
     o 'IMPORT String',                          -> new Import null, $2
     o 'IMPORT ImportClause IMPORT_FROM String', -> new Import $2, $4
+    o 'EXPORT ImportClause IMPORT_FROM String', -> new Import $2, $4, yes
   ]
 
   ImportClause: [
@@ -373,8 +374,11 @@ grammar =
 
   ImportIdentifier: [
     o 'Identifier'
-    o 'Identifier IMPORT_AS Identifier',        -> new ImportIdentifier $1, $3
+    o 'IMPORT_ALL',                             -> new ImportIdentifier null, null
     o 'IMPORT_ALL IMPORT_AS Identifier',        -> new ImportIdentifier null, $3
+    o 'Identifier IMPORT_AS Identifier',        -> new ImportIdentifier $1, $3
+    o 'Identifier EXPORT_AS Identifier',        -> new ImportIdentifier $1, $3
+  ]
   ]
 
   # Ordinary function invocation, or a chained series of calls.

@@ -1226,7 +1226,7 @@ exports.Class = class Class extends Base
 #### Import
 
 exports.Import = class Import extends Base
-  constructor: (@importClause, @moduleName) ->
+  constructor: (@importClause, @moduleName, @export = no) ->
 
   children: ['importClause', 'moduleName']
 
@@ -1237,7 +1237,7 @@ exports.Import = class Import extends Base
   compileNode: (o) ->
     code = []
 
-    code.push @makeCode(@tab + 'import ')
+    code.push @makeCode(@tab + (unless @export then 'import ' else 'export '))
 
     if @importClause?
       code.push fragment for fragment in @importClause.compileNode(o)
@@ -1291,7 +1291,12 @@ exports.ImportIdentifier = class ImportIdentifier extends Base
   children: ['original', 'alias']
 
   compileNode: (o) ->
-    return [@makeCode("#{if @original? then @original.value else '*'} as #{@alias.value}")]
+    if @original? and @alias?
+      return [@makeCode "#{@original.value} as #{@alias.value}"]
+    else if @alias?
+      return [@makeCode "* as #{@alias.value}"]
+    else # This case only occurs in `export * from 'lib'`
+      return [@makeCode '*']
 
 #### Assign
 
