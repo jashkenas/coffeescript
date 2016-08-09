@@ -380,6 +380,22 @@ grammar =
     o 'Identifier EXPORT_AS Identifier',        -> new ModuleIdentifier $1, $3
     o 'Identifier EXPORT_AS EXPORT_DEFAULT',    -> new ModuleIdentifier $1, null, no, yes
   ]
+
+  Export: [
+    o 'EXPORT ExportClause',                    -> new Export $2
+    o 'EXPORT EXPORT_DEFAULT Expression',       -> new Export $3, yes
+  ]
+
+  ExportClause: [
+    o '{ ExportList OptComma }',                -> new ExportList $2, yes
+  ]
+
+  ExportList: [
+    o 'ModuleIdentifier',                                       -> [$1]
+    o 'ExportList , ModuleIdentifier',                          -> $1.concat $3
+    o 'ExportList OptComma TERMINATOR ModuleIdentifier',        -> $1.concat $4
+    o 'INDENT ExportList OptComma OUTDENT',                     -> $2
+    o 'ExportList OptComma INDENT ExportList OptComma OUTDENT', -> $1.concat $4
   ]
 
   # Ordinary function invocation, or a chained series of calls.

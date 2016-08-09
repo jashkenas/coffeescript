@@ -1301,6 +1301,61 @@ exports.ModuleIdentifier = class ModuleIdentifier extends Base
 
     code
 
+#### Export
+
+exports.Export = class Export extends Base
+  constructor: (@exportClause, @default = no) ->
+
+  children: ['exportClause']
+
+  isStatement:  YES
+  jumps:        THIS
+  makeReturn:   THIS
+
+  compileNode: (o) ->
+    code = []
+
+    code.push @makeCode(@tab + "export #{if @default then 'default ' else ''}")
+
+    if @exportClause?
+      code.push fragment for fragment in @exportClause.compileNode(o)
+
+    code.push @makeCode ';'
+    code
+
+exports.ExportList = class ExportList extends Base
+  constructor: (@identifiers = [], @wrapped = no) ->
+
+  children: ['identifiers']
+
+  compileNode: (o) ->
+    return [@makeCode('[]')] unless @identifiers.length
+
+    code = []
+    o.indent += TAB
+
+    code = code.concat @compileIdentifiers o, @identifiers, @wrapped
+    code
+
+  compileIdentifiers: (o, identifiers, wrapped) ->
+    code = []
+
+    compiledList = (identifier.compileToFragments o, LEVEL_LIST for identifier in identifiers)
+
+    for fragments, index in compiledList
+      code.push @makeCode(', ') if index
+      code.push fragments...
+
+    if wrapped
+      if fragmentsToText(code).indexOf('\n') isnt -1
+        code.unshift @makeCode("{\n#{o.indent}")
+        code.push    @makeCode("\n#{@tab}}")
+      else
+        code.unshift @makeCode("{ ")
+        code.push    @makeCode(" }")
+
+    code
+
 #### Assign
 
 # The **Assign** is used to assign a local variable to value, or to set the
@@ -1346,10 +1401,14 @@ exports.Assign = class Assign extends Base
       unless varBase.isAssignable()
         @variable.error "'#{@variable.compile o}' can't be assigned"
       unless varBase.hasProperties?()
-        if @param
-          o.scope.add varBase.value, 'var'
-        else
-          o.scope.find varBase.value
+        insideExport = no
+        for expression in o.scope.expressions.expressions
+          insideExport = yes if expression instanceof Export
+        unless insideExport
+          if @param
+            o.scope.add varBase.value, 'var'
+          else
+            o.scope.find varBase.value
     val = @value.compileToFragments o, LEVEL_LIST
     @variable.front = true if isValue and @variable.base instanceof Obj
     compiledName = @variable.compileToFragments o, LEVEL_LIST

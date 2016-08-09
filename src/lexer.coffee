@@ -124,6 +124,9 @@ exports.Lexer = class Lexer
     if id is 'as' and @seenExport
       @token 'EXPORT_AS', id
       return id.length
+    if id is 'default' and @seenExport
+      @token 'EXPORT_DEFAULT', id
+      return id.length
 
     [..., prev] = @tokens
 
