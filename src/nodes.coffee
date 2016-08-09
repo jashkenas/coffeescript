@@ -1285,18 +1285,21 @@ exports.ImportList = class ImportList extends Base
 
     code
 
-exports.ImportIdentifier = class ImportIdentifier extends Base
-  constructor: (@original, @alias) ->
+exports.ModuleIdentifier = class ModuleIdentifier extends Base
+  constructor: (@original, @alias, @originalIsAll = no, @aliasIsDefault = no) ->
 
   children: ['original', 'alias']
 
   compileNode: (o) ->
-    if @original? and @alias?
-      return [@makeCode "#{@original.value} as #{@alias.value}"]
-    else if @alias?
-      return [@makeCode "* as #{@alias.value}"]
-    else # This case only occurs in `export * from 'lib'`
-      return [@makeCode '*']
+    code = []
+
+    code.push @makeCode(unless @originalIsAll then @original.value else '*')
+
+    if @alias? or @aliasIsDefault
+      code.push @makeCode ' as '
+      code.push @makeCode(unless @aliasIsDefault then @alias.value else 'default')
+
+    code
 
 #### Assign
 

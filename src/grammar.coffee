@@ -365,19 +365,20 @@ grammar =
   ]
 
   ImportList: [
-    o 'ImportIdentifier',                                       -> [$1]
-    o 'ImportList , ImportIdentifier',                          -> $1.concat $3
-    o 'ImportList OptComma TERMINATOR ImportIdentifier',        -> $1.concat $4
+    o 'ModuleIdentifier',                                       -> [$1]
+    o 'ImportList , ModuleIdentifier',                          -> $1.concat $3
+    o 'ImportList OptComma TERMINATOR ModuleIdentifier',        -> $1.concat $4
     o 'INDENT ImportList OptComma OUTDENT',                     -> $2
     o 'ImportList OptComma INDENT ImportList OptComma OUTDENT', -> $1.concat $4
   ]
 
-  ImportIdentifier: [
+  ModuleIdentifier: [
     o 'Identifier'
-    o 'IMPORT_ALL',                             -> new ImportIdentifier null, null
-    o 'IMPORT_ALL IMPORT_AS Identifier',        -> new ImportIdentifier null, $3
-    o 'Identifier IMPORT_AS Identifier',        -> new ImportIdentifier $1, $3
-    o 'Identifier EXPORT_AS Identifier',        -> new ImportIdentifier $1, $3
+    o 'IMPORT_ALL',                             -> new ModuleIdentifier null, null, yes
+    o 'IMPORT_ALL IMPORT_AS Identifier',        -> new ModuleIdentifier null, $3, yes
+    o 'Identifier IMPORT_AS Identifier',        -> new ModuleIdentifier $1, $3
+    o 'Identifier EXPORT_AS Identifier',        -> new ModuleIdentifier $1, $3
+    o 'Identifier EXPORT_AS EXPORT_DEFAULT',    -> new ModuleIdentifier $1, null, no, yes
   ]
   ]
 
