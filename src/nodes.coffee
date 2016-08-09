@@ -1223,12 +1223,14 @@ exports.Class = class Class extends Base
     klass = new Assign @variable, klass if @variable
     klass.compileToFragments o
 
-#### Import
+#### Import and Export
 
-exports.Import = class Import extends Base
-  constructor: (@importClause, @moduleName, @export = no) ->
+exports.Module = class Module extends Base
+  constructor: (@type, @clause, @default = no, @moduleName) ->
+    if @type isnt 'import' and @type isnt 'export'
+      @error 'module type must be import or export'
 
-  children: ['importClause', 'moduleName']
+  children: ['clause', 'moduleName']
 
   isStatement: YES
   jumps:       THIS
@@ -1237,13 +1239,17 @@ exports.Import = class Import extends Base
   compileNode: (o) ->
     code = []
 
-    code.push @makeCode(@tab + (unless @export then 'import ' else 'export '))
+    code.push @makeCode "#{@tab}#{@type} "
 
-    if @importClause?
-      code.push fragment for fragment in @importClause.compileNode(o)
-      code.push @makeCode ' from '
+    if @default
+      code.push @makeCode 'default '
+
+    if @clause? and @clause.length isnt 0
+      code.push fragment for fragment in @clause.compileNode(o)
 
     if @moduleName?.value?
+      unless @type is 'import' and @clause is null
+        code.push @makeCode ' from '
       code.push @makeCode @moduleName.value
 
     code.push @makeCode ';'
@@ -1296,31 +1302,6 @@ exports.ModuleIdentifier = class ModuleIdentifier extends Base
     code.push @makeCode " as #{@alias.value}" if @alias?
     code
 
-#### Export
-
-exports.Export = class Export extends Base
-  constructor: (@exportClause, @default = no, @moduleName) ->
-
-  children: ['exportClause', 'moduleName']
-
-  isStatement:  YES
-  jumps:        THIS
-  makeReturn:   THIS
-
-  compileNode: (o) ->
-    code = []
-
-    code.push @makeCode(@tab + "export #{if @default then 'default ' else ''}")
-
-    if @exportClause?
-      code.push fragment for fragment in @exportClause.compileNode(o)
-
-    if @moduleName?.value?
-      code.push @makeCode " from #{@moduleName.value}"
-
-    code.push @makeCode ';'
-    code
-
 #### Assign
 
 # The **Assign** is used to assign a local variable to value, or to set the
@@ -1366,10 +1347,10 @@ exports.Assign = class Assign extends Base
       unless varBase.isAssignable()
         @variable.error "'#{@variable.compile o}' can't be assigned"
       unless varBase.hasProperties?()
-        insideExport = no
+        insideModuleStatement = no
         for expression in o.scope.expressions.expressions
-          insideExport = yes if expression instanceof Export
-        unless insideExport
+          insideModuleStatement = yes if expression instanceof Module
+        unless insideModuleStatement
           if @param
             o.scope.add varBase.value, 'var'
           else

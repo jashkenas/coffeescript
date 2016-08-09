@@ -352,14 +352,25 @@ grammar =
   ]
 
   Import: [
-    o 'IMPORT String',                          -> new Import null, $2
-    o 'IMPORT ImportClause IMPORT_FROM String', -> new Import $2, $4
+    o 'IMPORT String',                          -> new Module 'import', null, no, $2
+    o 'IMPORT ImportClause IMPORT_FROM String', -> new Module 'import', $2, no, $4
   ]
 
   ImportClause: [
     o '{ }',                                    -> new ModuleList [], yes
     o 'ModuleList OptComma',                    -> new ModuleList $1, no
     o 'ModuleList , { ModuleList OptComma }',   -> new ModuleList $1, no, $4, yes
+    o '{ ModuleList OptComma }',                -> new ModuleList $2, yes
+  ]
+
+  Export: [
+    o 'EXPORT ExportClause',                    -> new Module 'export', $2
+    o 'EXPORT EXPORT_DEFAULT Expression',       -> new Module 'export', $3, yes
+    o 'EXPORT ExportClause IMPORT_FROM String', -> new Module 'export', $2, no, $4
+  ]
+
+  ExportClause: [
+    o 'IMPORT_ALL',                             -> new Literal $1
     o '{ ModuleList OptComma }',                -> new ModuleList $2, yes
   ]
 
@@ -378,17 +389,6 @@ grammar =
     o 'Identifier IMPORT_AS Identifier',        -> new ModuleIdentifier $1, $3
     o 'Identifier EXPORT_AS Identifier',        -> new ModuleIdentifier $1, $3
     o 'Identifier EXPORT_AS EXPORT_DEFAULT',    -> new ModuleIdentifier $1, new Literal($3)
-  ]
-
-  Export: [
-    o 'EXPORT ExportClause',                    -> new Export $2
-    o 'EXPORT EXPORT_DEFAULT Expression',       -> new Export $3, yes
-    o 'EXPORT ExportClause IMPORT_FROM String', -> new Export $2, no, $4
-  ]
-
-  ExportClause: [
-    o 'IMPORT_ALL',                             -> new Literal $1
-    o '{ ModuleList OptComma }',                -> new ModuleList $2, yes
   ]
 
   # Ordinary function invocation, or a chained series of calls.
