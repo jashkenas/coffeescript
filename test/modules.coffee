@@ -88,6 +88,28 @@ test "import default member from a module as well as the entire module's content
   output = "import foo, * as bar from 'lib';\n\nfoo.fooMethod();\n\nbar.barMethod();"
   eq toJS(input), output
 
+# test "multiline simple import", ->
+#   input = """import {
+#       foo,
+#       bar as baz
+#     } from 'lib'"""
+#   output = """import {
+#       foo,
+#       bar as baz
+#     } from 'lib';"""
+#   eq toJS(input), output
+
+# test "multiline complex import", ->
+#   input = """import foo, {
+#       bar,
+#       baz as qux
+#     } from 'lib'"""
+#   output = """import foo, {
+#       bar,
+#       baz as qux
+#     } from 'lib';"""
+#   eq toJS(input), output
+
 
 # Export statements
 
@@ -101,15 +123,15 @@ test "export named members as aliases, within an object", ->
   output = "export { foo as bar, baz as qux };"
   eq toJS(input), output
 
-test "export named members", ->
-  input = "export foo, bar"
-  output = "export foo, bar;"
-  eq toJS(input), output
+# test "export named members", ->
+#   input = "export foo, bar"
+#   output = "export foo, bar;"
+#   eq toJS(input), output
 
-test "export assigned expressions", ->
-  input = "export foo = 'bar', baz = 'qux'"
-  output = "export var foo = 'bar', baz = 'qux';"
-  eq toJS(input), output
+# test "export assigned expressions", ->
+#   input = "export foo = 'bar', baz = 'qux'"
+#   output = "export var foo = 'bar', baz = 'qux';"
+#   eq toJS(input), output
 
 test "export default expression", ->
   input = "export default foo = 'bar'"
