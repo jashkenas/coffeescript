@@ -36,6 +36,8 @@ toJS = (str) ->
   .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace
 
 
+# Import statements
+
 test "backticked import statement", ->
   input = "`import { foo, bar as baz } from 'lib'`"
   output = "import { foo, bar as baz } from 'lib';"
@@ -87,6 +89,8 @@ test "import default member from a module as well as the entire module's content
   eq toJS(input), output
 
 
+# Export statements
+
 test "export named members within an object", ->
   input = "export { foo, bar }"
   output = "export { foo, bar };"
@@ -121,6 +125,9 @@ test "export default named member, within an object", ->
   input = "export { foo as default, bar }"
   output = "export { foo as default, bar };"
   eq toJS(input), output
+
+
+# Import and export in the same statement
 
 test "export an entire module's contents", ->
   input = "export * from 'lib'"

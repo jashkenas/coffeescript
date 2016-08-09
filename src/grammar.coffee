@@ -354,7 +354,6 @@ grammar =
   Import: [
     o 'IMPORT String',                          -> new Import null, $2
     o 'IMPORT ImportClause IMPORT_FROM String', -> new Import $2, $4
-    o 'EXPORT ImportClause IMPORT_FROM String', -> new Import $2, $4, yes
   ]
 
   ImportClause: [
@@ -384,9 +383,11 @@ grammar =
   Export: [
     o 'EXPORT ExportClause',                    -> new Export $2
     o 'EXPORT EXPORT_DEFAULT Expression',       -> new Export $3, yes
+    o 'EXPORT ExportClause IMPORT_FROM String', -> new Export $2, no, $4
   ]
 
   ExportClause: [
+    o 'IMPORT_ALL',                             -> new Literal $1
     o '{ ExportList OptComma }',                -> new ExportList $2, yes
   ]
 

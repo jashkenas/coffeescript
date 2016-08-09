@@ -1243,7 +1243,7 @@ exports.Import = class Import extends Base
       code.push fragment for fragment in @importClause.compileNode(o)
       code.push @makeCode ' from '
 
-    if @moduleName.value?
+    if @moduleName?.value?
       code.push @makeCode @moduleName.value
 
     code.push @makeCode ';'
@@ -1304,9 +1304,9 @@ exports.ModuleIdentifier = class ModuleIdentifier extends Base
 #### Export
 
 exports.Export = class Export extends Base
-  constructor: (@exportClause, @default = no) ->
+  constructor: (@exportClause, @default = no, @moduleName) ->
 
-  children: ['exportClause']
+  children: ['exportClause', 'moduleName']
 
   isStatement:  YES
   jumps:        THIS
@@ -1319,6 +1319,9 @@ exports.Export = class Export extends Base
 
     if @exportClause?
       code.push fragment for fragment in @exportClause.compileNode(o)
+
+    if @moduleName?.value?
+      code.push @makeCode " from #{@moduleName.value}"
 
     code.push @makeCode ';'
     code
