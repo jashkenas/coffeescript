@@ -373,11 +373,11 @@ grammar =
 
   ModuleIdentifier: [
     o 'Identifier'
-    o 'IMPORT_ALL',                             -> new ModuleIdentifier null, null, yes
-    o 'IMPORT_ALL IMPORT_AS Identifier',        -> new ModuleIdentifier null, $3, yes
+    o 'IMPORT_ALL',                             -> new ModuleIdentifier new Literal($1), null, yes
+    o 'IMPORT_ALL IMPORT_AS Identifier',        -> new ModuleIdentifier new Literal($1), $3, yes
     o 'Identifier IMPORT_AS Identifier',        -> new ModuleIdentifier $1, $3
     o 'Identifier EXPORT_AS Identifier',        -> new ModuleIdentifier $1, $3
-    o 'Identifier EXPORT_AS EXPORT_DEFAULT',    -> new ModuleIdentifier $1, null, no, yes
+    o 'Identifier EXPORT_AS EXPORT_DEFAULT',    -> new ModuleIdentifier $1, new Literal($3)
   ]
 
   Export: [

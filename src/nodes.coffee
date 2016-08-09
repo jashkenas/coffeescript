@@ -1292,13 +1292,8 @@ exports.ModuleIdentifier = class ModuleIdentifier extends Base
 
   compileNode: (o) ->
     code = []
-
-    code.push @makeCode(unless @originalIsAll then @original.value else '*')
-
-    if @alias? or @aliasIsDefault
-      code.push @makeCode ' as '
-      code.push @makeCode(unless @aliasIsDefault then @alias.value else 'default')
-
+    code.push @makeCode @original.value
+    code.push @makeCode " as #{@alias.value}" if @alias?
     code
 
 #### Export
