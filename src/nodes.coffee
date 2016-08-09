@@ -1249,7 +1249,7 @@ exports.Import = class Import extends Base
     code.push @makeCode ';'
     code
 
-exports.ImportList = class ImportList extends Base
+exports.ModuleList = class ModuleList extends Base
   constructor: (@firstIdentifiers = [], @firstWrapped = no, @secondIdentifiers = [], @secondWrapped = no) ->
 
   children: ['firstIdentifiers', 'secondIdentifiers']
@@ -1324,39 +1324,6 @@ exports.Export = class Export extends Base
       code.push @makeCode " from #{@moduleName.value}"
 
     code.push @makeCode ';'
-    code
-
-exports.ExportList = class ExportList extends Base
-  constructor: (@identifiers = [], @wrapped = no) ->
-
-  children: ['identifiers']
-
-  compileNode: (o) ->
-    return [@makeCode('[]')] unless @identifiers.length
-
-    code = []
-    o.indent += TAB
-
-    code = code.concat @compileIdentifiers o, @identifiers, @wrapped
-    code
-
-  compileIdentifiers: (o, identifiers, wrapped) ->
-    code = []
-
-    compiledList = (identifier.compileToFragments o, LEVEL_LIST for identifier in identifiers)
-
-    for fragments, index in compiledList
-      code.push @makeCode(', ') if index
-      code.push fragments...
-
-    if wrapped
-      if fragmentsToText(code).indexOf('\n') isnt -1
-        code.unshift @makeCode("{\n#{o.indent}")
-        code.push    @makeCode("\n#{@tab}}")
-      else
-        code.unshift @makeCode("{ ")
-        code.push    @makeCode(" }")
-
     code
 
 #### Assign

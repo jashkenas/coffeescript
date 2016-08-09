@@ -357,18 +357,18 @@ grammar =
   ]
 
   ImportClause: [
-    o '{ }',                                    -> new ImportList [], yes
-    o 'ImportList OptComma',                    -> new ImportList $1, no
-    o 'ImportList , { ImportList OptComma }',   -> new ImportList $1, no, $4, yes
-    o '{ ImportList OptComma }',                -> new ImportList $2, yes
+    o '{ }',                                    -> new ModuleList [], yes
+    o 'ModuleList OptComma',                    -> new ModuleList $1, no
+    o 'ModuleList , { ModuleList OptComma }',   -> new ModuleList $1, no, $4, yes
+    o '{ ModuleList OptComma }',                -> new ModuleList $2, yes
   ]
 
-  ImportList: [
+  ModuleList: [
     o 'ModuleIdentifier',                                       -> [$1]
-    o 'ImportList , ModuleIdentifier',                          -> $1.concat $3
-    o 'ImportList OptComma TERMINATOR ModuleIdentifier',        -> $1.concat $4
-    o 'INDENT ImportList OptComma OUTDENT',                     -> $2
-    o 'ImportList OptComma INDENT ImportList OptComma OUTDENT', -> $1.concat $4
+    o 'ModuleList , ModuleIdentifier',                          -> $1.concat $3
+    o 'ModuleList OptComma TERMINATOR ModuleIdentifier',        -> $1.concat $4
+    o 'INDENT ModuleList OptComma OUTDENT',                     -> $2
+    o 'ModuleList OptComma INDENT ModuleList OptComma OUTDENT', -> $1.concat $4
   ]
 
   ModuleIdentifier: [
@@ -388,15 +388,7 @@ grammar =
 
   ExportClause: [
     o 'IMPORT_ALL',                             -> new Literal $1
-    o '{ ExportList OptComma }',                -> new ExportList $2, yes
-  ]
-
-  ExportList: [
-    o 'ModuleIdentifier',                                       -> [$1]
-    o 'ExportList , ModuleIdentifier',                          -> $1.concat $3
-    o 'ExportList OptComma TERMINATOR ModuleIdentifier',        -> $1.concat $4
-    o 'INDENT ExportList OptComma OUTDENT',                     -> $2
-    o 'ExportList OptComma INDENT ExportList OptComma OUTDENT', -> $1.concat $4
+    o '{ ModuleList OptComma }',                -> new ModuleList $2, yes
   ]
 
   # Ordinary function invocation, or a chained series of calls.
