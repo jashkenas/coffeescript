@@ -1285,7 +1285,7 @@ exports.ImportList = class ImportList extends Base
 
     code
 
-exports.ImportSpecifier = class ImportSpecifier extends Base
+exports.ImportIdentifier = class ImportIdentifier extends Base
   constructor: (@original, @alias) ->
 
   children: ['original', 'alias']

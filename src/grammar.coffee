@@ -364,17 +364,17 @@ grammar =
   ]
 
   ImportList: [
-    o 'ImportSpecifier',                                         -> [$1]
-    o 'ImportList , ImportSpecifier',                            -> $1.concat $3
-    o 'ImportList OptComma TERMINATOR ImportSpecifier',          -> $1.concat $4
-    o 'INDENT ImportList OptComma OUTDENT',                      -> $2
-    o 'ImportList OptComma INDENT ImportList OptComma OUTDENT',  -> $1.concat $4
+    o 'ImportIdentifier',                                       -> [$1]
+    o 'ImportList , ImportIdentifier',                          -> $1.concat $3
+    o 'ImportList OptComma TERMINATOR ImportIdentifier',        -> $1.concat $4
+    o 'INDENT ImportList OptComma OUTDENT',                     -> $2
+    o 'ImportList OptComma INDENT ImportList OptComma OUTDENT', -> $1.concat $4
   ]
 
-  ImportSpecifier: [
+  ImportIdentifier: [
     o 'Identifier'
-    o 'Identifier IMPORT_AS Identifier',        -> new ImportSpecifier $1, $3
-    o 'IMPORT_ALL IMPORT_AS Identifier',        -> new ImportSpecifier null, $3
+    o 'Identifier IMPORT_AS Identifier',        -> new ImportIdentifier $1, $3
+    o 'IMPORT_ALL IMPORT_AS Identifier',        -> new ImportIdentifier null, $3
   ]
 
   # Ordinary function invocation, or a chained series of calls.
