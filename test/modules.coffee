@@ -109,6 +109,28 @@ test "multiline complex import", ->
 
   eq toJS(input), output
 
+# test "multiline simple import", ->
+#   input = """import {
+#       foo,
+#       bar as baz
+#     } from 'lib'"""
+#   output = """import {
+#       foo,
+#       bar as baz
+#     } from 'lib';"""
+#   eq toJS(input), output
+
+# test "multiline complex import", ->
+#   input = """import foo, {
+#       bar,
+#       baz as qux
+#     } from 'lib'"""
+#   output = """import foo, {
+#       bar,
+#       baz as qux
+#     } from 'lib';"""
+#   eq toJS(input), output
+
 
 # Export statements
 
