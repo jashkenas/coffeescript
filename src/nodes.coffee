@@ -1226,7 +1226,7 @@ exports.Class = class Class extends Base
 #### Import and Export
 
 exports.Module = class Module extends Base
-  constructor: (@type, @clause, @default = no, @moduleName) ->
+  constructor: (@type, @clause, @moduleName, @default = no) ->
     if @type isnt 'import' and @type isnt 'export'
       @error 'module type must be import or export'
 
