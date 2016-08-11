@@ -469,6 +469,24 @@ test "Verify tokens have locations that are in order", ->
         ok token[2].first_column >= lastToken[2].last_column
     lastToken = token
 
+test "Verify OUTDENT tokens are located at the end of the previous token", ->
+  source = '''
+    SomeArr = [ ->
+      if something
+        lol =
+          count: 500
+    ]
+  '''
+  tokens = CoffeeScript.tokens source
+  [..., number, curly, outdent1, outdent2, outdent3, bracket, terminator] = tokens
+  eq number[0], 'NUMBER'
+  for outdent in [outdent1, outdent2, outdent3]
+    eq outdent[0], 'OUTDENT'
+    eq outdent[2].first_line, number[2].last_line
+    eq outdent[2].first_column, number[2].last_column
+    eq outdent[2].last_line, number[2].last_line
+    eq outdent[2].last_column, number[2].last_column
+
 test "Verify all tokens get a location", ->
   doesNotThrow ->
     tokens = CoffeeScript.tokens testScript
