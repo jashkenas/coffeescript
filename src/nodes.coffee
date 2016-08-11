@@ -1245,7 +1245,10 @@ exports.Module = class Module extends Base
       code.push @makeCode 'default '
 
     if @clause? and @clause.length isnt 0
-      code.push fragment for fragment in @clause.compileNode(o)
+      if @clause.body? and @clause.body instanceof Block
+        code = code.concat @clause.compileToFragments o, LEVEL_TOP
+      else
+        code = code.concat @clause.compileNode o
 
     if @moduleName?.value?
       unless @type is 'import' and @clause is null

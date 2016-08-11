@@ -136,14 +136,15 @@ test "export default function", ->
   output = "export default function() {};"
   eq toJS(input), output
 
-# test "export default multiline function", ->
-#   input = """export default (foo) ->
-#     console.log foo
-#     """
-#   output = "export default function(foo) {
-#       console.log(foo);
-#     };"
-#   eq toJS(input), output
+test "export default multiline function", ->
+  input = """
+    export default (foo) ->
+      console.log foo"""
+  output = """
+    export default function(foo) {
+      return console.log(foo);
+    };"""
+  eq toJS(input), output
 
 test "export default named member, within an object", ->
   input = "export { foo as default, bar }"
