@@ -63,6 +63,13 @@ exports.compile = compile = withPrettyErrors (code, options) ->
     token[1] for token in tokens when token[0] is 'IDENTIFIER'
   )
 
+  # Check for import or export; if found, force bare mode
+  unless options.bare? and options.bare is yes
+    for token in tokens
+      if token[0] is 'IMPORT' or token[0] is 'EXPORT'
+        options.bare = yes
+        break
+
   fragments = parser.parse(tokens).compileToFragments options
 
   currentLine = 0
