@@ -339,7 +339,6 @@ exports.Lexer = class Lexer
     indent = match[0]
 
     @seenFor = no
-    @seenImport = no
 
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()

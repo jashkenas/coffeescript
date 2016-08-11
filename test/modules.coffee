@@ -91,27 +91,23 @@ test "import default member from a module as well as the entire module's content
   output = "import foo, * as bar from 'lib';\n\nfoo.fooMethod();\n\nbar.barMethod();"
   eq toJS(input), output
 
-# test "multiline simple import", ->
-#   input = """import {
-#       foo,
-#       bar as baz
-#     } from 'lib'"""
-#   output = """import {
-#       foo,
-#       bar as baz
-#     } from 'lib';"""
-#   eq toJS(input), output
+test "multiline simple import", ->
+  input = """import {
+    foo,
+    bar as baz
+  } from 'lib'"""
+  output = "import { foo, bar as baz } from 'lib';"
 
-# test "multiline complex import", ->
-#   input = """import foo, {
-#       bar,
-#       baz as qux
-#     } from 'lib'"""
-#   output = """import foo, {
-#       bar,
-#       baz as qux
-#     } from 'lib';"""
-#   eq toJS(input), output
+  eq toJS(input), output
+
+test "multiline complex import", ->
+  input = """import foo, {
+      bar,
+      baz as qux
+    } from 'lib'"""
+  output = "import foo, { bar, baz as qux } from 'lib';"
+
+  eq toJS(input), output
 
 
 # Export statements
