@@ -20,14 +20,17 @@
 
 # export { name1, name2, …, nameN }
 # export { variable1 as name1, variable2 as name2, …, nameN }
-# export name1, name2, …, nameN
-# export name1 = …, name2 = …, …, nameN
 # export default expression
 # export default ->
 # export { name1 as default, … }
+
 # export * from …
 # export { name1, name2, …, nameN } from …
 # export { import1 as name1, import2 as name2, …, nameN } from …
+
+# Syntaxes from the MDN documentation that are *not* supported, because of ambiguous grammar and similarity to unsupported `var foo, bar = 'baz'`:
+# export name1, name2, …, nameN
+# export name1 = …, name2 = …, …, nameN
 
 
 # Helper function
@@ -122,16 +125,6 @@ test "export named members as aliases, within an object", ->
   input = "export { foo as bar, baz as qux }"
   output = "export { foo as bar, baz as qux };"
   eq toJS(input), output
-
-# test "export named members", ->
-#   input = "export foo, bar"
-#   output = "export foo, bar;"
-#   eq toJS(input), output
-
-# test "export assigned expressions", ->
-#   input = "export foo = 'bar', baz = 'qux'"
-#   output = "export var foo = 'bar', baz = 'qux';"
-#   eq toJS(input), output
 
 test "export default expression", ->
   input = "export default foo = 'bar'"
