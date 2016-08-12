@@ -275,3 +275,14 @@ test "export as aliases members imported from another module", ->
       baz as qux
     } from 'lib';"""
   eq toJS(input), output
+
+
+# Edge cases
+
+test "`from` not part of an import or export statement can still be assigned", ->
+  input = "from = yes"
+  output = """
+    var from;
+
+    from = true;"""
+  eq toJS(input), output
