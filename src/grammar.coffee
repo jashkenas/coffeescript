@@ -365,7 +365,7 @@ grammar =
 
   Export: [
     o 'EXPORT ExportClause',                    -> new Module 'export', $2
-    o 'EXPORT EXPORT_DEFAULT Expression',       -> new Module 'export', $3, null, yes
+    o 'EXPORT DEFAULT Expression',              -> new Module 'export', $3, null, yes
     o 'EXPORT ExportClause FROM String',        -> new Module 'export', $2, $4
   ]
 
@@ -385,10 +385,9 @@ grammar =
   ModuleIdentifier: [
     o 'Identifier'
     o 'IMPORT_ALL',                             -> new ModuleIdentifier new Literal($1), null, yes
-    o 'IMPORT_ALL IMPORT_AS Identifier',        -> new ModuleIdentifier new Literal($1), $3, yes
-    o 'Identifier IMPORT_AS Identifier',        -> new ModuleIdentifier $1, $3
-    o 'Identifier EXPORT_AS Identifier',        -> new ModuleIdentifier $1, $3
-    o 'Identifier EXPORT_AS EXPORT_DEFAULT',    -> new ModuleIdentifier $1, new Literal($3)
+    o 'IMPORT_ALL AS Identifier',               -> new ModuleIdentifier new Literal($1), $3, yes
+    o 'Identifier AS Identifier',               -> new ModuleIdentifier $1, $3
+    o 'Identifier AS DEFAULT',                  -> new ModuleIdentifier $1, new Literal($3)
   ]
 
   # Ordinary function invocation, or a chained series of calls.
