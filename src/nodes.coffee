@@ -1285,7 +1285,7 @@ exports.ModuleList = class ModuleList extends Base
       code.push fragments...
 
     if wrapped
-      if fragmentsToText(code).indexOf('\n') isnt -1
+      if "\n" in fragmentsToText code
         code.unshift @makeCode("{\n#{o.indent}")
         code.push    @makeCode("\n#{@tab}}")
       else
