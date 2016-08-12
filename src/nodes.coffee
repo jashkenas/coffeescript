@@ -1277,21 +1277,20 @@ exports.ModuleList = class ModuleList extends Base
     code
 
   compileIdentifiers: (o, identifiers, wrapped) ->
-    code = []
     compiledList = (identifier.compileToFragments o, LEVEL_LIST for identifier in identifiers)
+    code = []
+
+    code.push @makeCode("{\n#{o.indent}") if wrapped
 
     for fragments, index in compiledList
-      code.push @makeCode(', ') if index
+      if index
+        if wrapped
+          code.push @makeCode(",\n#{o.indent}")
+        else
+          code.push @makeCode(', ')
       code.push fragments...
 
-    if wrapped
-      if "\n" in fragmentsToText code
-        code.unshift @makeCode("{\n#{o.indent}")
-        code.push    @makeCode("\n#{@tab}}")
-      else
-        code.unshift @makeCode("{ ")
-        code.push    @makeCode(" }")
-
+    code.push @makeCode("\n}") if wrapped
     code
 
 exports.ModuleIdentifier = class ModuleIdentifier extends Base

@@ -52,96 +52,158 @@ test "import an entire module for side effects only, without importing any bindi
   eq toJS(input), output
 
 test "import default member from module, adding the member to the current scope", ->
-  input = "import foo from 'lib'\nfoo.fooMethod()"
-  output = "import foo from 'lib';\n\nfoo.fooMethod();"
+  input = """
+    import foo from 'lib'
+    foo.fooMethod()"""
+  output = """
+    import foo from 'lib';
+
+    foo.fooMethod();"""
   eq toJS(input), output
 
 test "import an entire module's contents as an alias, adding the alias to the current scope", ->
-  input = "import * as foo from 'lib'\nfoo.fooMethod()"
-  output = "import * as foo from 'lib';\n\nfoo.fooMethod();"
+  input = """
+    import * as foo from 'lib'
+    foo.fooMethod()"""
+  output = """
+    import * as foo from 'lib';
+
+    foo.fooMethod();"""
   eq toJS(input), output
 
 test "import a single member of a module, adding the member to the current scope", ->
-  input = "import { foo } from 'lib'\nfoo.fooMethod()"
-  output = "import { foo } from 'lib';\n\nfoo.fooMethod();"
+  input = """
+    import { foo } from 'lib'
+    foo.fooMethod()"""
+  output = """
+    import {
+      foo
+    } from 'lib';
+
+    foo.fooMethod();"""
   eq toJS(input), output
 
 test "import a single member of a module as an alias, adding the alias to the current scope", ->
-  input = "import { foo as bar } from 'lib'\nbar.barMethod()"
-  output = "import { foo as bar } from 'lib';\n\nbar.barMethod();"
+  input = """
+    import { foo as bar } from 'lib'
+    bar.barMethod()"""
+  output = """
+    import {
+      foo as bar
+    } from 'lib';
+
+    bar.barMethod();"""
   eq toJS(input), output
 
 test "import a multiple members of a module, adding the members to the current scope", ->
-  input = "import { foo, bar } from 'lib'\nfoo.fooMethod()\nbar.barMethod()"
-  output = "import { foo, bar } from 'lib';\n\nfoo.fooMethod();\n\nbar.barMethod();"
+  input = """
+    import { foo, bar } from 'lib'
+    foo.fooMethod()
+    bar.barMethod()"""
+  output = """
+    import {
+      foo,
+      bar
+    } from 'lib';
+
+    foo.fooMethod();
+
+    bar.barMethod();"""
   eq toJS(input), output
 
 test "import a multiple members of a module where some are aliased, adding the members or aliases to the current scope", ->
-  input = "import { foo, bar as baz } from 'lib'\nfoo.fooMethod()\nbaz.bazMethod()"
-  output = "import { foo, bar as baz } from 'lib';\n\nfoo.fooMethod();\n\nbaz.bazMethod();"
+  input = """
+    import { foo, bar as baz } from 'lib'
+    foo.fooMethod()
+    baz.bazMethod()"""
+  output = """
+    import {
+      foo,
+      bar as baz
+    } from 'lib';
+
+    foo.fooMethod();
+
+    baz.bazMethod();"""
   eq toJS(input), output
 
 test "import default member and other members of a module, adding the members to the current scope", ->
-  input = "import foo, { bar, baz as qux } from 'lib'\nfoo.fooMethod()\nbar.barMethod()\nqux.quxMethod()"
-  output = "import foo, { bar, baz as qux } from 'lib';\n\nfoo.fooMethod();\n\nbar.barMethod();\n\nqux.quxMethod();"
+  input = """
+    import foo, { bar, baz as qux } from 'lib'
+    foo.fooMethod()
+    bar.barMethod()
+    qux.quxMethod()"""
+  output = """
+    import foo, {
+      bar,
+      baz as qux
+    } from 'lib';
+
+    foo.fooMethod();
+
+    bar.barMethod();
+
+    qux.quxMethod();"""
   eq toJS(input), output
 
 test "import default member from a module as well as the entire module's contents as an alias, adding the member and alias to the current scope", ->
-  input = "import foo, * as bar from 'lib'\nfoo.fooMethod()\nbar.barMethod()"
-  output = "import foo, * as bar from 'lib';\n\nfoo.fooMethod();\n\nbar.barMethod();"
+  input = """
+    import foo, * as bar from 'lib'
+    foo.fooMethod()
+    bar.barMethod()"""
+  output = """
+    import foo, * as bar from 'lib';
+
+    foo.fooMethod();
+
+    bar.barMethod();"""
   eq toJS(input), output
 
 test "multiline simple import", ->
-  input = """import {
-    foo,
-    bar as baz
-  } from 'lib'"""
-  output = "import { foo, bar as baz } from 'lib';"
-
+  input = """
+    import {
+      foo,
+      bar as baz
+    } from 'lib'"""
+  output = """
+    import {
+      foo,
+      bar as baz
+    } from 'lib';"""
   eq toJS(input), output
 
 test "multiline complex import", ->
-  input = """import foo, {
+  input = """
+    import foo, {
       bar,
       baz as qux
     } from 'lib'"""
-  output = "import foo, { bar, baz as qux } from 'lib';"
-
+  output = """
+    import foo, {
+      bar,
+      baz as qux
+    } from 'lib';"""
   eq toJS(input), output
-
-# test "multiline simple import", ->
-#   input = """import {
-#       foo,
-#       bar as baz
-#     } from 'lib'"""
-#   output = """import {
-#       foo,
-#       bar as baz
-#     } from 'lib';"""
-#   eq toJS(input), output
-
-# test "multiline complex import", ->
-#   input = """import foo, {
-#       bar,
-#       baz as qux
-#     } from 'lib'"""
-#   output = """import foo, {
-#       bar,
-#       baz as qux
-#     } from 'lib';"""
-#   eq toJS(input), output
 
 
 # Export statements
 
 test "export named members within an object", ->
   input = "export { foo, bar }"
-  output = "export { foo, bar };"
+  output = """
+    export {
+      foo,
+      bar
+    };"""
   eq toJS(input), output
 
 test "export named members as aliases, within an object", ->
   input = "export { foo as bar, baz as qux }"
-  output = "export { foo as bar, baz as qux };"
+  output = """
+    export {
+      foo as bar,
+      baz as qux
+    };"""
   eq toJS(input), output
 
 test "export default expression", ->
@@ -166,7 +228,11 @@ test "export default multiline function", ->
 
 test "export default named member, within an object", ->
   input = "export { foo as default, bar }"
-  output = "export { foo as default, bar };"
+  output = """
+    export {
+      foo as default,
+      bar
+    };"""
   eq toJS(input), output
 
 
@@ -179,10 +245,18 @@ test "export an entire module's contents", ->
 
 test "export members imported from another module", ->
   input = "export { foo, bar } from 'lib'"
-  output = "export { foo, bar } from 'lib';"
+  output = """
+    export {
+      foo,
+      bar
+    } from 'lib';"""
   eq toJS(input), output
 
 test "export as aliases members imported from another module", ->
   input = "export { foo as bar, baz as qux } from 'lib'"
-  output = "export { foo as bar, baz as qux } from 'lib';"
+  output = """
+    export {
+      foo as bar,
+      baz as qux
+    } from 'lib';"""
   eq toJS(input), output
