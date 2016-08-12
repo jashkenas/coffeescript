@@ -116,7 +116,7 @@ exports.Lexer = class Lexer
       @token 'FROM', id
       return id.length
     if id is 'from' and (@seenImport or @seenExport)
-      @token 'IMPORT_FROM', id
+      @token 'FROM', id
       return id.length
     if id is 'as' and @seenImport
       @token 'IMPORT_AS', id

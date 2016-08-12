@@ -353,7 +353,7 @@ grammar =
 
   Import: [
     o 'IMPORT String',                          -> new Module 'import', null, $2
-    o 'IMPORT ImportClause IMPORT_FROM String', -> new Module 'import', $2, $4
+    o 'IMPORT ImportClause FROM String',        -> new Module 'import', $2, $4
   ]
 
   ImportClause: [
@@ -366,7 +366,7 @@ grammar =
   Export: [
     o 'EXPORT ExportClause',                    -> new Module 'export', $2
     o 'EXPORT EXPORT_DEFAULT Expression',       -> new Module 'export', $3, null, yes
-    o 'EXPORT ExportClause IMPORT_FROM String', -> new Module 'export', $2, $4
+    o 'EXPORT ExportClause FROM String',        -> new Module 'export', $2, $4
   ]
 
   ExportClause: [
