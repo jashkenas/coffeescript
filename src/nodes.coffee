@@ -1349,10 +1349,11 @@ exports.Assign = class Assign extends Base
       unless varBase.isAssignable()
         @variable.error "'#{@variable.compile o}' can't be assigned"
       unless varBase.hasProperties?()
-        insideModuleStatement = no
+        insideImportStatement = no
         for expression in o.scope.expressions.expressions
-          insideModuleStatement = yes if expression instanceof Module
-        unless insideModuleStatement
+          if expression instanceof Module and (expression.type is 'import' or (expression.type is 'export' and expression.moduleName?))
+            insideImportStatement = yes
+        unless insideImportStatement
           if @param
             o.scope.add varBase.value, 'var'
           else

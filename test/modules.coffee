@@ -208,7 +208,10 @@ test "export named members as aliases, within an object", ->
 
 test "export default expression", ->
   input = "export default foo = 'bar'"
-  output = "export default foo = 'bar';"
+  output = """
+    var foo;
+
+    export default foo = 'bar';"""
   eq toJS(input), output
 
 test "export default function", ->
