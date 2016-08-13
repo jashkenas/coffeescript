@@ -369,8 +369,9 @@ grammar =
 
   Export: [
     o 'EXPORT ExportClause',                    -> new Module 'export', $2
-    o 'EXPORT DEFAULT Expression',              -> new Module 'export', $3, null, yes
     o 'EXPORT ExportClause FROM SimpleString',  -> new Module 'export', $2, $4
+    o 'EXPORT DEFAULT Expression',              -> new Module 'export', $3, null, yes
+    o 'EXPORT Class',                           -> new Module 'export', $2
   ]
 
   ExportClause: [
