@@ -291,9 +291,5 @@ test "export as aliases members imported from another module", ->
 # Edge cases
 
 test "`from` not part of an import or export statement can still be assigned", ->
-  input = "from = yes"
-  output = """
-    var from;
-
-    from = true;"""
-  eq toJS(input), output
+  from = 5
+  eq 5, from
