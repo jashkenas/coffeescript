@@ -241,6 +241,14 @@ test "export default multiline function", ->
 #     }"""
 #   eq toJS(input), output
 
+# Very limited test for now, testing that `export default class foo` either compiles identically (ES2015+) or at least into some function, leaving the specifics vague in case the CoffeeScript `class` interpretation changes
+test "export default class", ->
+  input = """
+    export default class foo extends bar
+      baz: ->
+        console.log 'hello, world!'"""
+  ok /export default (class foo|foo = \(function)/.test toJS input
+
 test "export default named member, within an object", ->
   input = "export { foo as default, bar }"
   output = """
