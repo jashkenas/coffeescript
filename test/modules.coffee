@@ -206,6 +206,25 @@ test "export named members as aliases, within an object", ->
     };"""
   eq toJS(input), output
 
+test "export default string", ->
+  input = "export default 'foo'"
+  output = "export default 'foo';"
+  eq toJS(input), output
+
+test "export default number", ->
+  input = "export default 5"
+  output = "export default 5;"
+  eq toJS(input), output
+
+test "export default object", ->
+  input = "export default { foo: 'bar', baz: 'qux' }"
+  output = """
+    export default {
+      foo: 'bar',
+      baz: 'qux'
+    };"""
+  eq toJS(input), output
+
 test "export default expression", ->
   input = "export default foo = 'bar'"
   output = """
