@@ -177,11 +177,8 @@ test "#1096: unexpected generated tokens", ->
     a"""#{b}"""
      ^^^^^^^^^^
   '''
-  assertErrorFormat 'import foo from "lib-#{version}"', '''
-    [stdin]:1:17: error: unexpected string
-    import foo from "lib-#{version}"
-                    ^^^^^^^^^^^^^^^^
-  '''
+  assertErrorFormat 'import foo from "lib-#{version}"', 'SyntaxError: the name of the module to be imported from must be an uninterpolated string'
+
   # Unexpected number
   assertErrorFormat '"a"0x00Af2', '''
     [stdin]:1:4: error: unexpected number

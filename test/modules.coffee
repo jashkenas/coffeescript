@@ -278,7 +278,9 @@ test "export predefined function", ->
 #     }"""
 #   eq toJS(input), output
 
-# Very limited tests for now, testing that `export class foo` either compiles identically (ES2015+) or at least into some function, leaving the specifics vague in case the CoffeeScript `class` interpretation changes
+# Very limited tests for now, testing that `export class foo` either compiles
+# identically (ES2015+) or at least into some function, leaving the specifics
+# vague in case the CoffeeScript `class` interpretation changes
 test "export class", ->
   input = """
     export class foo extends bar

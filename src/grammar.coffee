@@ -150,10 +150,6 @@ grammar =
     o 'String'
   ]
 
-  SimpleString: [
-    o 'STRING',                                 -> new StringLiteral $1
-  ]
-
   String: [
     o 'STRING',                                 -> new StringLiteral $1
     o 'STRING_START Body STRING_END',           -> new StringWithInterpolations $2
@@ -356,8 +352,8 @@ grammar =
   ]
 
   Import: [
-    o 'IMPORT SimpleString',                    -> new Module 'import', null, $2
-    o 'IMPORT ImportClause FROM SimpleString',  -> new Module 'import', $2, $4
+    o 'IMPORT String',                          -> new Module 'import', null, $2
+    o 'IMPORT ImportClause FROM String',        -> new Module 'import', $2, $4
   ]
 
   ImportClause: [
@@ -369,7 +365,7 @@ grammar =
 
   Export: [
     o 'EXPORT ExportClause',                    -> new Module 'export', $2
-    o 'EXPORT ExportClause FROM SimpleString',  -> new Module 'export', $2, $4
+    o 'EXPORT ExportClause FROM String',        -> new Module 'export', $2, $4
     o 'EXPORT Identifier',                      -> new Module 'export', $2
     o 'EXPORT Class',                           -> new Module 'export', $2
     o 'EXPORT DEFAULT Value',                   -> new Module 'export', $3, null, yes
