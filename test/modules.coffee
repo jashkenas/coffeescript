@@ -248,6 +248,21 @@ test "export default multiline function", ->
     };"""
   eq toJS(input), output
 
+test "export predefined function", ->
+  input = """
+    foo = (bar) ->
+      console.log bar
+    export foo"""
+  output = """
+    var foo;
+
+    foo = function(bar) {
+      return console.log(bar);
+    };
+
+    export foo;"""
+  eq toJS(input), output
+
 # Uncomment this test once ES2015+ `class` support is added
 
 # test "export default class", ->

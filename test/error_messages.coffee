@@ -994,3 +994,20 @@ test "`&&=` and `||=` with a space in-between", ->
     a or = 1
          ^
   '''
+
+test "anonymous functions cannot be exported", ->
+  assertErrorFormat '''
+    export ->
+      console.log 'hello, world!'
+  ''', '''
+    [stdin]:1:8: error: unexpected ->
+    export ->
+           ^^
+  '''
+
+test "anonymous classes cannot be exported", ->
+  assertErrorFormat '''
+    export class
+      @constructor: ->
+        console.log 'hello, world!'
+  ''', 'SyntaxError: anonymous classes cannot be exported'

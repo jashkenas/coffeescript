@@ -1230,6 +1230,10 @@ exports.Module = class Module extends Base
     if @type isnt 'import' and @type isnt 'export'
       @error 'module type must be import or export'
 
+    if @type is 'export' and @default is no and @clause instanceof Class and not @clause.variable?
+      @error 'anonymous classes cannot be exported'
+
+
   children: ['clause', 'moduleName']
 
   isStatement: YES
