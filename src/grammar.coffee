@@ -367,6 +367,7 @@ grammar =
     o 'EXPORT ExportClause',                    -> new Module 'export', $2
     o 'EXPORT ExportClause FROM String',        -> new Module 'export', $2, $4
     o 'EXPORT Identifier',                      -> new Module 'export', $2
+    o 'EXPORT Identifier = Expression',         -> new Module 'export', new Assign($2, $4)
     o 'EXPORT Class',                           -> new Module 'export', $2
     o 'EXPORT DEFAULT Value',                   -> new Module 'export', $3, null, yes
     o 'EXPORT DEFAULT Code',                    -> new Module 'export', $3, null, yes

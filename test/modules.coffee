@@ -225,12 +225,20 @@ test "export default object", ->
     };"""
   eq toJS(input), output
 
-test "export default expression", ->
+test "export default assignment expression", ->
   input = "export default foo = 'bar'"
   output = """
     var foo;
 
     export default foo = 'bar';"""
+  eq toJS(input), output
+
+test "export assignment expression", ->
+  input = "export foo = 'bar'"
+  output = """
+    var foo;
+
+    export foo = 'bar';"""
   eq toJS(input), output
 
 test "export default function", ->
@@ -245,6 +253,18 @@ test "export default multiline function", ->
   output = """
     export default function(foo) {
       return console.log(foo);
+    };"""
+  eq toJS(input), output
+
+test "export assignment function", ->
+  input = """
+    export foo = (bar) ->
+      console.log bar"""
+  output = """
+    var foo;
+
+    export foo = function(bar) {
+      return console.log(bar);
     };"""
   eq toJS(input), output
 
