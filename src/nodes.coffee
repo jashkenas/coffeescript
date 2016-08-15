@@ -1251,6 +1251,8 @@ exports.Module = class Module extends Base
       code.push @makeCode 'default '
 
     if @clause? and @clause.length isnt 0
+      if @default is no and @clause instanceof Assign
+        code.push @makeCode 'var '
       if @clause.body? and @clause.body instanceof Block
         code = code.concat @clause.compileToFragments o, LEVEL_TOP
       else

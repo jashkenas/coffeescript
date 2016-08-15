@@ -235,10 +235,7 @@ test "export default assignment expression", ->
 
 test "export assignment expression", ->
   input = "export foo = 'bar'"
-  output = """
-    var foo;
-
-    export foo = 'bar';"""
+  output = "export var foo = 'bar';"
   eq toJS(input), output
 
 test "export default function", ->
@@ -261,18 +258,29 @@ test "export assignment function", ->
     export foo = (bar) ->
       console.log bar"""
   output = """
-    var foo;
-
-    export foo = function(bar) {
+    export var foo = function(bar) {
       return console.log(bar);
     };"""
   eq toJS(input), output
 
-test "export predefined function", ->
+test "export assignment function which contains assignments in its body", ->
+  input = """
+    export foo = (bar) ->
+      baz = '!'
+      console.log bar + baz"""
+  output = """
+    export var foo = function(bar) {
+      var baz;
+      baz = '!';
+      return console.log(bar + baz);
+    };"""
+  eq toJS(input), output
+
+test "export default predefined function", ->
   input = """
     foo = (bar) ->
       console.log bar
-    export foo"""
+    export default foo"""
   output = """
     var foo;
 
@@ -280,7 +288,7 @@ test "export predefined function", ->
       return console.log(bar);
     };
 
-    export foo;"""
+    export default foo;"""
   eq toJS(input), output
 
 # Uncomment this test once ES2015+ `class` support is added
