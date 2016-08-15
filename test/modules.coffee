@@ -185,6 +185,33 @@ test "multiline complex import", ->
     } from 'lib';"""
   eq toJS(input), output
 
+test "a variable can be assigned after an import", ->
+  input = """
+    import { foo } from 'lib'
+    bar = 5"""
+  output = """
+    var bar;
+
+    import {
+      foo
+    } from 'lib';
+    bar = 5;"""
+  eq toJS(input), output
+
+test "variables can be assigned before and after an import", ->
+  input = """
+    foo = 5
+    import { bar } from 'lib'
+    baz = 7"""
+  output = """
+    var foo, baz;
+
+    foo = 5;
+    import {
+      bar
+    } from 'lib';
+    baz = 7;"""
+  eq toJS(input), output
 
 # Export statements
 
@@ -365,14 +392,31 @@ test "`from` not part of an import or export statement can still be assigned", -
   from = 5
   eq 5, from
 
-test "`from` can be assigned after an import", ->
+test "a variable named `from` can be assigned after an import", ->
   input = """
     import { foo } from 'lib'
     from = 5"""
   output = """
     var from;
 
-    import { foo } from 'lib';
+    import {
+      foo
+    } from 'lib';
+    from = 5;"""
+  eq toJS(input), output
+
+test "`from` can be assigned after a multiline import", ->
+  input = """
+    import {
+      foo
+    } from 'lib'
+    from = 5"""
+  output = """
+    var from;
+
+    import {
+      foo
+    } from 'lib';
     from = 5;"""
   eq toJS(input), output
 
