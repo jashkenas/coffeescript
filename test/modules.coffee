@@ -378,31 +378,49 @@ test "`from` can be assigned after an import", ->
 
 test "`from` can be imported as a member name", ->
   input = "import { from } from 'lib'"
-  output = "import { from } from 'lib';"
+  output = """
+    import {
+      from
+    } from 'lib';"""
   eq toJS(input), output
 
 test "`from` can be imported as a member name and aliased", ->
   input = "import { from as foo } from 'lib'"
-  output = "import { from as foo } from 'lib';"
+  output = """
+    import {
+      from as foo
+    } from 'lib';"""
   eq toJS(input), output
 
 test "`from` can be used as an alias name", ->
   input = "import { foo as from } from 'lib'"
-  output = "import { foo as from } from 'lib';"
+  output = """
+    import {
+      foo as from
+    } from 'lib';"""
   eq toJS(input), output
 
 test "`as` can be imported as a member name", ->
   input = "import { as } from 'lib'"
-  output = "import { as } from 'lib';"
+  output = """
+    import {
+      as
+    } from 'lib';"""
   eq toJS(input), output
 
 test "`as` can be imported as a member name and aliased", ->
   input = "import { as as foo } from 'lib'"
-  output = "import { as as foo } from 'lib';"
+  output = """
+    import {
+      as as foo
+    } from 'lib';"""
   eq toJS(input), output
 
 test "`as` can be used as an alias name", ->
   input = "import { foo as as } from 'lib'"
-  output = "import { foo as as } from 'lib';"
+  output = """
+    import {
+      foo as as
+    } from 'lib';"""
   eq toJS(input), output
 
