@@ -1236,7 +1236,6 @@ exports.Module = class Module extends Base
     if @type is 'export' and @default is no and @clause instanceof Class and not @clause.variable?
       @error 'anonymous classes cannot be exported'
 
-
   children: ['clause', 'moduleName']
 
   isStatement: YES
@@ -1264,6 +1263,22 @@ exports.Module = class Module extends Base
 
     code.push @makeCode ';'
     code
+
+exports.Import = class Import extends Module
+  constructor: (@clause, @moduleName) ->
+    super 'import', @clause, @moduleName, no
+
+exports.Export = class Export extends Module
+  constructor: (@clause, @moduleName, @default = no) ->
+    super 'export', @clause, @moduleName, @default
+
+exports.ExportDefault = class ExportDefault extends Module
+  constructor: (@clause) ->
+    super 'export', @clause, null, yes
+
+exports.ExportImport = class ExportImport extends Module
+  constructor: (@clause, @moduleName) ->
+    super 'export', @clause, @moduleName, no
 
 exports.ModuleList = class ModuleList extends Base
   constructor: (@firstIdentifiers = [], @firstWrapped = no, @secondIdentifiers = [], @secondWrapped = no) ->
@@ -1356,11 +1371,11 @@ exports.Assign = class Assign extends Base
       unless varBase.isAssignable()
         @variable.error "'#{@variable.compile o}' can't be assigned"
       unless varBase.hasProperties?()
-        insideImportStatement = no
+        insideModuleStatement = no
         for expression in o.scope.expressions.expressions
-          if expression instanceof Module and (expression.type is 'import' or (expression.type is 'export' and expression.moduleName?))
-            insideImportStatement = yes
-        unless insideImportStatement
+          if expression instanceof Import or expression instanceof Export or expression instanceof ExportImport # But *not* ExportDefault
+            insideModuleStatement = yes
+        unless insideModuleStatement
           if @param
             o.scope.add varBase.value, 'var'
           else

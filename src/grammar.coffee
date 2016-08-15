@@ -352,8 +352,8 @@ grammar =
   ]
 
   Import: [
-    o 'IMPORT String',                          -> new Module 'import', null, $2
-    o 'IMPORT ImportClause FROM String',        -> new Module 'import', $2, $4
+    o 'IMPORT String',                          -> new Import null, $2
+    o 'IMPORT ImportClause FROM String',        -> new Import $2, $4
   ]
 
   ImportClause: [
@@ -364,18 +364,14 @@ grammar =
   ]
 
   Export: [
-    o 'EXPORT ExportClause',                    -> new Module 'export', $2
-    o 'EXPORT ExportClause FROM String',        -> new Module 'export', $2, $4
-    o 'EXPORT Identifier',                      -> new Module 'export', $2
-    o 'EXPORT Identifier = Expression',         -> new Module 'export', new Assign($2, $4)
-    o 'EXPORT Class',                           -> new Module 'export', $2
-    o 'EXPORT DEFAULT Value',                   -> new Module 'export', $3, null, yes
-    o 'EXPORT DEFAULT Code',                    -> new Module 'export', $3, null, yes
-    o 'EXPORT DEFAULT Assign',                  -> new Module 'export', $3, null, yes
-    o 'EXPORT DEFAULT Class',                   -> new Module 'export', $3, null, yes
+    o 'EXPORT Class',                           -> new Export $2
+    o 'EXPORT Identifier = Expression',         -> new Export new Assign($2, $4)
+    o 'EXPORT DEFAULT Expression',              -> new ExportDefault $3
+    o 'EXPORT ExportImportClause',              -> new ExportImport $2
+    o 'EXPORT ExportImportClause FROM String',  -> new ExportImport $2, $4
   ]
 
-  ExportClause: [
+  ExportImportClause: [
     o 'IMPORT_ALL',                             -> new Literal $1
     o '{ ModuleList OptComma }',                -> new ModuleList $2, yes
   ]
