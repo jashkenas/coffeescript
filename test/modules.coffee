@@ -195,6 +195,7 @@ test "a variable can be assigned after an import", ->
     import {
       foo
     } from 'lib';
+
     bar = 5;"""
   eq toJS(input), output
 
@@ -204,12 +205,14 @@ test "variables can be assigned before and after an import", ->
     import { bar } from 'lib'
     baz = 7"""
   output = """
-    var foo, baz;
+    var baz, foo;
 
     foo = 5;
+
     import {
       bar
     } from 'lib';
+
     baz = 7;"""
   eq toJS(input), output
 
@@ -402,6 +405,7 @@ test "a variable named `from` can be assigned after an import", ->
     import {
       foo
     } from 'lib';
+
     from = 5;"""
   eq toJS(input), output
 
@@ -417,6 +421,7 @@ test "`from` can be assigned after a multiline import", ->
     import {
       foo
     } from 'lib';
+
     from = 5;"""
   eq toJS(input), output
 

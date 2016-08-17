@@ -1323,6 +1323,8 @@ exports.ModuleIdentifier = class ModuleIdentifier extends Base
   children: ['original', 'alias']
 
   compileNode: (o) ->
+    variableName = @alias.value or @original.value
+    o.scope.add variableName, 'import'
     code = []
     code.push @makeCode @original.value
     code.push @makeCode " as #{@alias.value}" if @alias?
@@ -1368,20 +1370,18 @@ exports.Assign = class Assign extends Base
           @value.klass = new Value @variable.base, properties
           @value.name  = name
           @value.variable = @variable
-    unless @context
+    if (not @context) or @context in ['import', 'export']
       varBase = @variable.unwrapAll()
       unless varBase.isAssignable()
         @variable.error "'#{@variable.compile o}' can't be assigned"
       unless varBase.hasProperties?()
-        insideModuleStatement = no
-        for expression in o.scope.expressions.expressions
-          if expression instanceof Import or expression instanceof Export or expression instanceof ExportImport # But *not* ExportDefault
-            insideModuleStatement = yes
-        unless insideModuleStatement
-          if @param
-            o.scope.add varBase.value, 'var'
-          else
-            o.scope.find varBase.value
+        if @context in ['import', 'export']
+          o.scope.add varBase.value, @context
+        else if @param
+          o.scope.add varBase.value, 'var'
+        else
+          o.scope.find varBase.value
+
     val = @value.compileToFragments o, LEVEL_LIST
     @variable.front = true if isValue and @variable.base instanceof Obj
     compiledName = @variable.compileToFragments o, LEVEL_LIST
@@ -1392,7 +1392,7 @@ exports.Assign = class Assign extends Base
         compiledName.push @makeCode '"'
       return compiledName.concat @makeCode(": "), val
 
-    answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
+    answer = compiledName.concat @makeCode(" #{ if @context and @context isnt 'export' then @context else '=' } "), val
     if o.level <= LEVEL_LIST then answer else @wrapInBraces answer
 
   # Brief implementation of recursive pattern matching, when assigning array or
