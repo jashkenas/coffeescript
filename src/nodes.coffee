@@ -1336,12 +1336,12 @@ exports.ModuleIdentifier = class ModuleIdentifier extends Base
 # property of an object -- including within object literals.
 exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options = {}) ->
-    {@param, @subpattern, @operatorToken} = options
+    {@param, @subpattern, @operatorToken, @moduleStatement} = options
 
   children: ['variable', 'value']
 
   isStatement: (o) ->
-    o?.level is LEVEL_TOP and @context? and "?" in @context
+    o?.level is LEVEL_TOP and @context? and (@moduleStatement or "?" in @context)
 
   assigns: (name) ->
     @[if @context is 'object' then 'value' else 'variable'].assigns name
@@ -1370,13 +1370,13 @@ exports.Assign = class Assign extends Base
           @value.klass = new Value @variable.base, properties
           @value.name  = name
           @value.variable = @variable
-    if (not @context) or @context in ['import', 'export']
+    unless @context
       varBase = @variable.unwrapAll()
       unless varBase.isAssignable()
         @variable.error "'#{@variable.compile o}' can't be assigned"
       unless varBase.hasProperties?()
-        if @context in ['import', 'export']
-          o.scope.add varBase.value, @context
+        if @moduleStatement # 'import' or 'export'
+          o.scope.add varBase.value, @moduleStatement
         else if @param
           o.scope.add varBase.value, 'var'
         else
@@ -1392,7 +1392,7 @@ exports.Assign = class Assign extends Base
         compiledName.push @makeCode '"'
       return compiledName.concat @makeCode(": "), val
 
-    answer = compiledName.concat @makeCode(" #{ if @context and @context isnt 'export' then @context else '=' } "), val
+    answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
     if o.level <= LEVEL_LIST then answer else @wrapInBraces answer
 
   # Brief implementation of recursive pattern matching, when assigning array or
