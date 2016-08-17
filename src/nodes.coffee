@@ -1323,7 +1323,7 @@ exports.ModuleIdentifier = class ModuleIdentifier extends Base
   children: ['original', 'alias']
 
   compileNode: (o) ->
-    variableName = @alias.value or @original.value
+    variableName = if @alias? then @alias.value else @original.value
     o.scope.add variableName, 'import'
     code = []
     code.push @makeCode @original.value
