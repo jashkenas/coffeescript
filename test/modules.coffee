@@ -20,6 +20,8 @@
 
 # export { name1, name2, …, nameN }
 # export { variable1 as name1, variable2 as name2, …, nameN }
+# export name1 = …
+# export class …
 # export default expression
 # export default ->
 # export { name1 as default, … }
