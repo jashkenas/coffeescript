@@ -1008,3 +1008,22 @@ test "anonymous classes cannot be exported", ->
       @constructor: ->
         console.log 'hello, world!'
   ''', 'SyntaxError: anonymous classes cannot be exported'
+
+test "imports and exports must be top-level", ->
+  assertErrorFormat '''
+    if foo
+      import { bar } from 'lib'
+  ''', '''
+    [stdin]:2:3: error: import statements must be at top-level scope
+      import { bar } from 'lib'
+      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    foo = ->
+      export { bar }
+  ''', '''
+    [stdin]:2:3: error: export statements must be at top-level scope
+      export { bar }
+      ^^^^^^^^^^^^^^
+  '''

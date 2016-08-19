@@ -1243,6 +1243,9 @@ exports.Module = class Module extends Base
   makeReturn:  THIS
 
   compileNode: (o) ->
+    if o.indent.length isnt 0
+      @error "#{@type} statements must be at top-level scope"
+
     code = []
 
     code.push @makeCode "#{@tab}#{@type} "
