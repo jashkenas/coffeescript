@@ -475,3 +475,18 @@ test "`as` can be used as an alias name", ->
     } from 'lib';"""
   eq toJS(input), output
 
+test "`*` and `from` can be used in an export default expression", ->
+  input = """
+    export default foo.extend
+      bar: ->
+        from = 5
+        from = from * 3"""
+  output = """
+    export default foo.extend({
+      bar: function() {
+        var from;
+        from = 5;
+        return from = from * 3;
+      }
+    });"""
+  eq toJS(input), output

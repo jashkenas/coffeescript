@@ -450,7 +450,7 @@ exports.Lexer = class Lexer
     if value is ';'
       @seenFor = @seenImport = @seenExport = no
       tag = 'TERMINATOR'
-    else if value is '*' and (@seenImport or @seenExport)
+    else if value is '*' and (@seenImport or @seenExport) and @indent is 0
       tag = 'IMPORT_ALL'
     else if value in MATH            then tag = 'MATH'
     else if value in COMPARE         then tag = 'COMPARE'
