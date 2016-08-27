@@ -208,7 +208,7 @@ parens. Unwrap all that.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>      referencedVars = (
-        token[<span class="hljs-number">1</span>] <span class="hljs-keyword">for</span> token <span class="hljs-keyword">in</span> tokens <span class="hljs-keyword">when</span> token.variable
+        token[<span class="hljs-number">1</span>] <span class="hljs-keyword">for</span> token <span class="hljs-keyword">in</span> tokens <span class="hljs-keyword">when</span> token[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'IDENTIFIER'</span>
       )</pre></div></div>
             
         </li>
@@ -510,7 +510,7 @@ parens. Unwrap all that.</p>
   fd = fs.openSync filename, <span class="hljs-string">'a'</span>
 
   repl.rli.addListener <span class="hljs-string">'line'</span>, <span class="hljs-function"><span class="hljs-params">(code)</span> -&gt;</span>
-    <span class="hljs-keyword">if</span> code <span class="hljs-keyword">and</span> code.length <span class="hljs-keyword">and</span> code <span class="hljs-keyword">isnt</span> <span class="hljs-string">'.history'</span> <span class="hljs-keyword">and</span> lastLine <span class="hljs-keyword">isnt</span> code</pre></div></div>
+    <span class="hljs-keyword">if</span> code <span class="hljs-keyword">and</span> code.length <span class="hljs-keyword">and</span> code <span class="hljs-keyword">isnt</span> <span class="hljs-string">'.history'</span> <span class="hljs-keyword">and</span> code <span class="hljs-keyword">isnt</span> <span class="hljs-string">'.exit'</span> <span class="hljs-keyword">and</span> lastLine <span class="hljs-keyword">isnt</span> code</pre></div></div>
             
         </li>
         

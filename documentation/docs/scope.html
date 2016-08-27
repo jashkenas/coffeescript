@@ -273,9 +273,15 @@ walks up to the root scope.</p>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">temporary</span>: <span class="hljs-function"><span class="hljs-params">(name, index, single=<span class="hljs-literal">false</span>)</span> -&gt;</span>
     <span class="hljs-keyword">if</span> single
-      (index + parseInt name, <span class="hljs-number">36</span>).toString(<span class="hljs-number">36</span>).replace <span class="hljs-regexp">/\d/g</span>, <span class="hljs-string">'a'</span>
+      startCode = name.charCodeAt(<span class="hljs-number">0</span>)
+      endCode = <span class="hljs-string">'z'</span>.charCodeAt(<span class="hljs-number">0</span>)
+      diff = endCode - startCode
+      newCode = startCode + index % (diff + <span class="hljs-number">1</span>)
+      letter = String.fromCharCode(newCode)
+      num = index <span class="hljs-regexp">//</span> (diff + <span class="hljs-number">1</span>)
+      <span class="hljs-string">"<span class="hljs-subst">#{letter}</span><span class="hljs-subst">#{num <span class="hljs-keyword">or</span> <span class="hljs-string">''</span>}</span>"</span>
     <span class="hljs-keyword">else</span>
-      name + (index <span class="hljs-keyword">or</span> <span class="hljs-string">''</span>)</pre></div></div>
+      <span class="hljs-string">"<span class="hljs-subst">#{name}</span><span class="hljs-subst">#{index <span class="hljs-keyword">or</span> <span class="hljs-string">''</span>}</span>"</span></pre></div></div>
             
         </li>
         

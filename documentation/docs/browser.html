@@ -158,7 +158,7 @@ compile = CoffeeScript.compile</pre></div></div>
             </div>
             
             <div class="content"><div class='highlight'><pre>CoffeeScript.<span class="hljs-function"><span class="hljs-title">run</span> = <span class="hljs-params">(code, options = {})</span> -&gt;</span>
-  options.bare = <span class="hljs-literal">on</span>
+  options.bare      = <span class="hljs-literal">on</span>
   options.shiftLine = <span class="hljs-literal">on</span>
   Function(compile code, options)()</pre></div></div>
             
@@ -192,12 +192,10 @@ Ported from <a href="https://developer.mozilla.org/en-US/docs/DOM/window.btoa">h
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">if</span> btoa? <span class="hljs-keyword">and</span> JSON? <span class="hljs-keyword">and</span> unescape? <span class="hljs-keyword">and</span> encodeURIComponent?
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">if</span> btoa? <span class="hljs-keyword">and</span> JSON?
   <span class="hljs-function"><span class="hljs-title">compile</span> = <span class="hljs-params">(code, options = {})</span> -&gt;</span>
-    options.sourceMap = <span class="hljs-literal">true</span>
-    options.inline = <span class="hljs-literal">true</span>
-    {js, v3SourceMap} = CoffeeScript.compile code, options
-    <span class="hljs-string">"<span class="hljs-subst">#{js}</span>\n//# sourceMappingURL=data:application/json;base64,<span class="hljs-subst">#{btoa unescape encodeURIComponent v3SourceMap}</span>\n//# sourceURL=coffeescript"</span></pre></div></div>
+    options.inlineMap = <span class="hljs-literal">true</span>
+    CoffeeScript.compile code, options</pre></div></div>
             
         </li>
         

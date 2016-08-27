@@ -185,7 +185,7 @@ its internal array of tokens.</p>
               <p>Rewrite the token stream in multiple passes, one logical filter at
 a time. This could certainly be changed into a single pass through the
 stream, with a big ol’ efficient switch, but it’s much nicer to work with
-like this. The order of these passes matters — indentation must be
+like this. The order of these passes matters – indentation must be
 corrected before implicit parentheses can be wrapped around blocks of code.</p>
 
             </div>
@@ -1117,7 +1117,7 @@ EXPRESSION_END   = []
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>IMPLICIT_FUNC    = [<span class="hljs-string">'IDENTIFIER'</span>, <span class="hljs-string">'SUPER'</span>, <span class="hljs-string">')'</span>, <span class="hljs-string">'CALL_END'</span>, <span class="hljs-string">']'</span>, <span class="hljs-string">'INDEX_END'</span>, <span class="hljs-string">'@'</span>, <span class="hljs-string">'THIS'</span>]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>IMPLICIT_FUNC    = [<span class="hljs-string">'IDENTIFIER'</span>, <span class="hljs-string">'PROPERTY'</span>, <span class="hljs-string">'SUPER'</span>, <span class="hljs-string">')'</span>, <span class="hljs-string">'CALL_END'</span>, <span class="hljs-string">']'</span>, <span class="hljs-string">'INDEX_END'</span>, <span class="hljs-string">'@'</span>, <span class="hljs-string">'THIS'</span>]</pre></div></div>
             
         </li>
         
@@ -1133,9 +1133,11 @@ EXPRESSION_END   = []
             </div>
             
             <div class="content"><div class='highlight'><pre>IMPLICIT_CALL    = [
-  <span class="hljs-string">'IDENTIFIER'</span>, <span class="hljs-string">'NUMBER'</span>, <span class="hljs-string">'STRING'</span>, <span class="hljs-string">'STRING_START'</span>, <span class="hljs-string">'JS'</span>, <span class="hljs-string">'REGEX'</span>, <span class="hljs-string">'REGEX_START'</span>
-  <span class="hljs-string">'NEW'</span>, <span class="hljs-string">'PARAM_START'</span>, <span class="hljs-string">'CLASS'</span>, <span class="hljs-string">'IF'</span>, <span class="hljs-string">'TRY'</span>, <span class="hljs-string">'SWITCH'</span>, <span class="hljs-string">'THIS'</span>, <span class="hljs-string">'BOOL'</span>, <span class="hljs-string">'NULL'</span>
-  <span class="hljs-string">'UNDEFINED'</span>, <span class="hljs-string">'UNARY'</span>, <span class="hljs-string">'YIELD'</span>, <span class="hljs-string">'UNARY_MATH'</span>, <span class="hljs-string">'SUPER'</span>, <span class="hljs-string">'THROW'</span>
+  <span class="hljs-string">'IDENTIFIER'</span>, <span class="hljs-string">'PROPERTY'</span>, <span class="hljs-string">'NUMBER'</span>, <span class="hljs-string">'INFINITY'</span>, <span class="hljs-string">'NAN'</span>
+  <span class="hljs-string">'STRING'</span>, <span class="hljs-string">'STRING_START'</span>, <span class="hljs-string">'REGEX'</span>, <span class="hljs-string">'REGEX_START'</span>, <span class="hljs-string">'JS'</span>
+  <span class="hljs-string">'NEW'</span>, <span class="hljs-string">'PARAM_START'</span>, <span class="hljs-string">'CLASS'</span>, <span class="hljs-string">'IF'</span>, <span class="hljs-string">'TRY'</span>, <span class="hljs-string">'SWITCH'</span>, <span class="hljs-string">'THIS'</span>
+  <span class="hljs-string">'UNDEFINED'</span>, <span class="hljs-string">'NULL'</span>, <span class="hljs-string">'BOOL'</span>
+  <span class="hljs-string">'UNARY'</span>, <span class="hljs-string">'YIELD'</span>, <span class="hljs-string">'UNARY_MATH'</span>, <span class="hljs-string">'SUPER'</span>, <span class="hljs-string">'THROW'</span>
   <span class="hljs-string">'@'</span>, <span class="hljs-string">'-&gt;'</span>, <span class="hljs-string">'=&gt;'</span>, <span class="hljs-string">'['</span>, <span class="hljs-string">'('</span>, <span class="hljs-string">'{'</span>, <span class="hljs-string">'--'</span>, <span class="hljs-string">'++'</span>
 ]
 
