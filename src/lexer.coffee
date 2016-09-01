@@ -115,7 +115,7 @@ exports.Lexer = class Lexer
     if id is 'from' and @tag() is 'YIELD'
       @token 'FROM', id
       return id.length
-    if id is 'as' and (@seenImport or @seenExport) and @tokens[@tokens.length - 1][0] in ['IDENTIFIER', 'IMPORT_ALL']
+    if id is 'as' and (@seenImport or @seenExport) and @tag() in ['IDENTIFIER', 'IMPORT_ALL']
       @token 'AS', id
       return id.length
     if id is 'default' and @seenExport
@@ -218,7 +218,7 @@ exports.Lexer = class Lexer
 
     # If the preceding token is `from` and this is an import or export statement,
     # properly tag the `from`.
-    if @tokens.length and @tokens[@tokens.length - 1][1] is 'from' and (@seenImport or @seenExport)
+    if @tokens.length and @value() is 'from' and (@seenImport or @seenExport)
       @tokens[@tokens.length - 1][0] = 'FROM'
 
     regex = switch quote
