@@ -188,6 +188,15 @@ test "multiline complex import", ->
     } from 'lib';"""
   eq toJS(input), output
 
+test "import with optional commas", ->
+  input = "import { foo, bar, } from 'lib'"
+  output = """
+    import {
+      foo,
+      bar
+    } from 'lib';"""
+  eq toJS(input), output
+
 test "multiline import without commas", ->
   input = """
     import {
@@ -262,6 +271,15 @@ test "export named members as aliases, within an object", ->
     export {
       foo as bar,
       baz as qux
+    };"""
+  eq toJS(input), output
+
+test "export named members within an object, with an optional comma", ->
+  input = "export { foo, bar, }"
+  output = """
+    export {
+      foo,
+      bar
     };"""
   eq toJS(input), output
 
