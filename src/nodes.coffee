@@ -1220,7 +1220,7 @@ exports.Class = class Class extends Base
     @body.expressions.unshift @directives...
 
     klass = new Parens new Call func, args
-    klass = new Assign @variable, klass if @variable
+    klass = new Assign @variable, klass, null, { @moduleStatement } if @variable
     klass.compileToFragments o
 
 #### Import and Export
@@ -1254,8 +1254,10 @@ exports.Module = class Module extends Base
       code.push @makeCode 'default '
 
     if @clause? and @clause.length isnt 0
-      if @default is no and @clause instanceof Assign
+      if @default is no and (@clause instanceof Assign or @clause instanceof Class)
+        # When the ES2015 `class` keyword is supported, don’t add a `var` here
         code.push @makeCode 'var '
+        @clause.moduleStatement = @type
       if @clause.body? and @clause.body instanceof Block
         code = code.concat @clause.compileToFragments o, LEVEL_TOP
       else

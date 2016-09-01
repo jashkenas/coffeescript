@@ -396,12 +396,22 @@ test "export default predefined function", ->
 # vague in case the CoffeeScript `class` interpretation changes
 test "export class", ->
   input = """
+    export class foo
+      baz: ->
+        console.log 'hello, world!'"""
+  output = toJS input
+  ok /^export (class foo|var foo = \(function)/.test toJS input
+
+test "export class that extends", ->
+  input = """
     export class foo extends bar
       baz: ->
         console.log 'hello, world!'"""
-  ok /export (class foo|foo = \(function)/.test toJS input
+  output = toJS input
+  ok /export (class foo|var foo = \(function)/.test(output) and \
+    not /var foo(;|,)/.test output
 
-test "export default class", ->
+test "export default class that extends", ->
   input = """
     export default class foo extends bar
       baz: ->
