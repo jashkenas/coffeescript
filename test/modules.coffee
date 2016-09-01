@@ -11,24 +11,29 @@
 # import "module-name"
 # import defaultMember from "module-name"
 # import * as name from "module-name"
+# import { } from "module-name"
 # import { member } from "module-name"
 # import { member as alias } from "module-name"
-# import { member1 , member2 } from "module-name"
-# import { member1 , member2 as alias2 , [...] } from "module-name"
-# import defaultMember, { member [ , [...] ] } from "module-name"
+# import { member1, member2 as alias2, … } from "module-name"
 # import defaultMember, * as name from "module-name"
+# import defaultMember, { … } from "module-name"
 
-# export { name1, name2, …, nameN }
-# export { variable1 as name1, variable2 as name2, …, nameN }
-# export name1 = …
-# export class …
 # export default expression
-# export default ->
-# export { name1 as default, … }
+# export class name
+# export { }
+# export { name }
+# export { name as exportedName }
+# export { name as default }
+# export { name1, name2 as exportedName2, name3 as default, … }
+#
+# export * from "module-name"
+# export { … } from "module-name"
+#
+# As a subsitute for `export var name = …` and `export function name {}`,
+# CoffeeScript also supports:
+# export name = …
 
-# export * from …
-# export { name1, name2, …, nameN } from …
-# export { import1 as name1, import2 as name2, …, nameN } from …
+# CoffeeScript also supports optional commas within `{ … }`.
 
 
 # Helper function
