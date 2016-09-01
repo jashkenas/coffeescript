@@ -30,10 +30,6 @@
 # export { name1, name2, …, nameN } from …
 # export { import1 as name1, import2 as name2, …, nameN } from …
 
-# Syntaxes from the MDN documentation that are *not* supported, because of ambiguous grammar and similarity to unsupported `var foo, bar = 'baz'`:
-# export name1, name2, …, nameN
-# export name1 = …, name2 = …, …, nameN
-
 
 # Helper function
 toJS = (str) ->
@@ -97,7 +93,7 @@ test "import a single member of a module as an alias, adding the alias to the cu
     bar.barMethod();"""
   eq toJS(input), output
 
-test "import a multiple members of a module, adding the members to the current scope", ->
+test "import multiple members of a module, adding the members to the current scope", ->
   input = """
     import { foo, bar } from 'lib'
     foo.fooMethod()
@@ -113,7 +109,7 @@ test "import a multiple members of a module, adding the members to the current s
     bar.barMethod();"""
   eq toJS(input), output
 
-test "import a multiple members of a module where some are aliased, adding the members or aliases to the current scope", ->
+test "import multiple members of a module where some are aliased, adding the members or aliases to the current scope", ->
   input = """
     import { foo, bar as baz } from 'lib'
     foo.fooMethod()
