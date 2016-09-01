@@ -177,7 +177,11 @@ test "#1096: unexpected generated tokens", ->
     a"""#{b}"""
      ^^^^^^^^^^
   '''
-  assertErrorFormat 'import foo from "lib-#{version}"', 'SyntaxError: the name of the module to be imported from must be an uninterpolated string'
+  assertErrorFormat 'import foo from "lib-#{version}"', '''
+    [stdin]:1:17: error: the name of the module to be imported from must be an uninterpolated string
+    import foo from "lib-#{version}"
+                    ^^^^^^^^^^^^^^^^
+  '''
 
   # Unexpected number
   assertErrorFormat '"a"0x00Af2', '''
@@ -1005,9 +1009,13 @@ test "anonymous functions cannot be exported", ->
 test "anonymous classes cannot be exported", ->
   assertErrorFormat '''
     export class
-      @constructor: ->
+      constructor: ->
         console.log 'hello, world!'
-  ''', 'SyntaxError: anonymous classes cannot be exported'
+  ''', '''
+    [stdin]:1:8: error: anonymous classes cannot be exported
+    export class
+           ^^^^^
+  '''
 
 test "imports and exports must be top-level", ->
   assertErrorFormat '''

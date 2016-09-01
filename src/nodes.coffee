@@ -1227,14 +1227,14 @@ exports.Class = class Class extends Base
 
 exports.Module = class Module extends Base
   constructor: (@type, @clause, @moduleName, @default = no) ->
-    if @type isnt 'import' and @type isnt 'export'
+    if @type not in ['import', 'export']
       @error 'module type must be import or export'
 
     if @moduleName? and @moduleName instanceof StringWithInterpolations
-      @error 'the name of the module to be imported from must be an uninterpolated string'
+      @moduleName.error 'the name of the module to be imported from must be an uninterpolated string'
 
     if @type is 'export' and @default is no and @clause instanceof Class and not @clause.variable?
-      @error 'anonymous classes cannot be exported'
+      @clause.error 'anonymous classes cannot be exported'
 
   children: ['clause', 'moduleName']
 
