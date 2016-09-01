@@ -456,6 +456,19 @@ test "export as aliases members imported from another module", ->
 
 # Edge cases
 
+test "multiline import with comments", ->
+  input = """
+    import {
+      foo, # Not as good as bar
+      bar as baz # I prefer qux
+    } from 'lib'"""
+  output = """
+    import {
+      foo,
+      bar as baz
+    } from 'lib';"""
+  eq toJS(input), output
+
 test "`from` not part of an import or export statement can still be assigned", ->
   from = 5
   eq 5, from
