@@ -40,8 +40,13 @@ toJS = (str) ->
 # Import statements
 
 test "backticked import statement", ->
-  input = "`import { foo, bar as baz } from 'lib'`"
-  output = "import { foo, bar as baz } from 'lib';"
+  input = """
+    if Meteor.isServer
+      `import { foo, bar as baz } from 'lib'`"""
+  output = """
+    if (Meteor.isServer) {
+      import { foo, bar as baz } from 'lib';
+    }"""
   eq toJS(input), output
 
 test "import an entire module for side effects only, without importing any bindings", ->
