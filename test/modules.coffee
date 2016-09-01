@@ -261,6 +261,16 @@ test "variables can be assigned before and after an import", ->
 
 # Export statements
 
+test "export empty object", ->
+  input = "export { }"
+  output = "export {};"
+  eq toJS(input), output
+
+test "export empty object", ->
+  input = "export {}"
+  output = "export {};"
+  eq toJS(input), output
+
 test "export named members within an object", ->
   input = "export { foo, bar }"
   output = """

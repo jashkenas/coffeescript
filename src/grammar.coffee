@@ -357,7 +357,6 @@ grammar =
   ]
 
   ImportClause: [
-    o '{ }',                                    -> new ModuleList [], yes
     o 'ModuleList',                             -> new ModuleList $1, no
     o 'ModuleList , { ModuleList OptComma }',   -> new ModuleList $1, no, $4, yes
     o '{ ModuleList OptComma }',                -> new ModuleList $2, yes
@@ -374,6 +373,7 @@ grammar =
 
   ExportImportClause: [
     o 'IMPORT_ALL',                             -> new Literal $1
+    o '{ }',                                    -> new Literal $1.concat $2
     o '{ ModuleList OptComma }',                -> new ModuleList $2, yes
   ]
 
