@@ -254,3 +254,11 @@ test "#1275: allow indentation before closing brackets", ->
     a = 1
    )
   eq 1, a
+
+test "allow mixing of spaces and tabs for indentation by passing a width for tabs to the lexer", ->
+  doesNotThrow -> CoffeeScript.compile '''
+    new Layer
+    		x: 0
+        y: 1
+    	 	z: 2
+  ''', tabSize: 2 
