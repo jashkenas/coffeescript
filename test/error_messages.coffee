@@ -1017,6 +1017,15 @@ test "anonymous classes cannot be exported", ->
            ^^^^^
   '''
 
+test "only certain members can be imported", ->
+  assertErrorFormat '''
+    import foo as bar from 'lib'
+  ''', '''
+    [stdin]:1:8: error: unless enclosed by curly braces, only * can be aliased
+    import foo as bar from 'lib'
+           ^^^
+  '''
+
 test "imports and exports must be top-level", ->
   assertErrorFormat '''
     if foo

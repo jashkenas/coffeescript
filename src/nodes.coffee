@@ -1293,7 +1293,7 @@ exports.ModuleList = class ModuleList extends Base
   children: ['firstIdentifiers', 'secondIdentifiers']
 
   compileNode: (o) ->
-    return [@makeCode('[]')] unless @firstIdentifiers.length
+    return [] unless @firstIdentifiers.length
 
     code = []
     o.indent += TAB
@@ -1306,6 +1306,7 @@ exports.ModuleList = class ModuleList extends Base
     code
 
   compileIdentifiers: (o, identifiers, wrapped) ->
+    o.wrapped = wrapped
     compiledList = (identifier.compileToFragments o, LEVEL_LIST for identifier in identifiers)
     code = []
 
@@ -1328,6 +1329,9 @@ exports.ModuleIdentifier = class ModuleIdentifier extends Base
   children: ['original', 'alias']
 
   compileNode: (o) ->
+    if o.wrapped is no and @alias? and @originalIsAll is no
+      @original.error 'unless enclosed by curly braces, only * can be aliased'
+
     variableName = if @alias? then @alias.value else @original.value
     o.scope.add variableName, 'import'
     code = []
