@@ -1295,6 +1295,19 @@ exports.ModuleList = class ModuleList extends Base
   compileNode: (o) ->
     return [] unless @firstIdentifiers.length
 
+    # Only the first group of identifiers can be unwrapped, e.g. without curly braces;
+    # the second group by definition is a wrapped group that starts after the first group.
+    # If the first group is unwrapped, the only allowable syntaxes for that group are:
+    # - defaultMember
+    # - * as name
+    # - defaultMember, * as name
+    if @firstWrapped is no and @firstIdentifiers.length > 1
+      if @firstIdentifiers.length is 2
+        unless @firstIdentifiers[1].originalIsAll
+          @firstIdentifiers[1].error 'unless wrapped in curly braces, a second imported member can only be of the form: * as name'
+      else
+        @firstIdentifiers[2].error 'unless wrapped in curly braces, no more than two members can be imported'
+
     code = []
     o.indent += TAB
 

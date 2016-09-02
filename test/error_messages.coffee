@@ -1026,6 +1026,29 @@ test "only certain members can be imported", ->
            ^^^
   '''
 
+test "unwrapped imports must follow constrained syntax", ->
+  assertErrorFormat '''
+    import foo, bar, baz from 'lib'
+  ''', '''
+    [stdin]:1:18: error: unless wrapped in curly braces, no more than two members can be imported
+    import foo, bar, baz from 'lib'
+                     ^^^
+  '''
+  assertErrorFormat '''
+    import foo, bar from 'lib'
+  ''', '''
+    [stdin]:1:13: error: unless wrapped in curly braces, a second imported member can only be of the form: * as name
+    import foo, bar from 'lib'
+                ^^^
+  '''
+  assertErrorFormat '''
+    import foo, bar as baz from 'lib'
+  ''', '''
+    [stdin]:1:13: error: unless wrapped in curly braces, a second imported member can only be of the form: * as name
+    import foo, bar as baz from 'lib'
+                ^^^^^^^^^^
+  '''
+
 test "imports and exports must be top-level", ->
   assertErrorFormat '''
     if foo
