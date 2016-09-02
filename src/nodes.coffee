@@ -1285,6 +1285,9 @@ exports.ExportDefault = class ExportDefault extends Module
 
 exports.ExportImport = class ExportImport extends Module
   constructor: (@clause, @moduleName) ->
+    if @clause instanceof Literal and @clause.value is '*' and not @moduleName?
+      @clause.error 'missing module name to export * from'
+
     super 'export', @clause, @moduleName, no
 
 exports.ModuleList = class ModuleList extends Base

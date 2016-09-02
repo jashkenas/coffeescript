@@ -1049,6 +1049,15 @@ test "unwrapped imports must follow constrained syntax", ->
                 ^^^^^^^^^^
   '''
 
+test "cannot export * without a module to export from", ->
+  assertErrorFormat '''
+    export *
+  ''', '''
+    [stdin]:1:8: error: missing module name to export * from
+    export *
+           ^
+  '''
+
 test "imports and exports must be top-level", ->
   assertErrorFormat '''
     if foo
