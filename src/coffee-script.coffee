@@ -66,7 +66,7 @@ exports.compile = compile = withPrettyErrors (code, options) ->
   # Check for import or export; if found, force bare mode
   unless options.bare? and options.bare is yes
     for token in tokens
-      if token[0] is 'IMPORT' or token[0] is 'EXPORT'
+      if token[0] in ['IMPORT', 'EXPORT']
         options.bare = yes
         break
 

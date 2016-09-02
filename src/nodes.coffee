@@ -1291,7 +1291,7 @@ exports.ExportImport = class ExportImport extends Module
     super 'export', @clause, @moduleName, no
 
 exports.ModuleList = class ModuleList extends Base
-  constructor: (@firstIdentifiers = [], @firstWrapped = no, @secondIdentifiers = [], @secondWrapped = no) ->
+  constructor: (@firstIdentifiers = [], @firstWrapped = no, @secondIdentifiers = []) ->
 
   children: ['firstIdentifiers', 'secondIdentifiers']
 
@@ -1317,7 +1317,7 @@ exports.ModuleList = class ModuleList extends Base
     code = code.concat @compileIdentifiers o, @firstIdentifiers, @firstWrapped
     if @secondIdentifiers.length
       code.push @makeCode(', ')
-      code = code.concat @compileIdentifiers o, @secondIdentifiers, @secondWrapped
+      code = code.concat @compileIdentifiers o, @secondIdentifiers, yes
 
     code
 

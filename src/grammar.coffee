@@ -358,7 +358,7 @@ grammar =
 
   ImportClause: [
     o 'ModuleList',                             -> new ModuleList $1, no
-    o 'ModuleList , { ModuleList OptComma }',   -> new ModuleList $1, no, $4, yes
+    o 'ModuleList , { ModuleList OptComma }',   -> new ModuleList $1, no, $4
     o '{ ModuleList OptComma }',                -> new ModuleList $2, yes
   ]
 
