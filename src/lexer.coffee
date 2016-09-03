@@ -44,6 +44,8 @@ exports.Lexer = class Lexer
     @tokens     = []             # Stream of parsed tokens in the form `['TYPE', value, location data]`.
     @seenFor    = no             # Used to recognize FORIN and FOROF tokens.
 
+    @tabSize    = opts.tabSize or 1 # Width of tab stop
+
     @chunkLine =
       opts.line or 0         # The start line for the current @chunk.
     @chunkColumn =
@@ -318,31 +320,43 @@ exports.Lexer = class Lexer
     return 0 unless match = MULTI_DENT.exec @chunk
     indent = match[0]
     @seenFor = no
-    size = indent.length - 1 - indent.lastIndexOf '\n'
+    width = size = indent.length - 1 - indent.lastIndexOf '\n'
+
+    if @tabSize > 1
+      width = 0
+      beforeStop = 0
+      for i in [1..size]
+        if indent[i] isnt '\t'
+          beforeStop++
+        if indent[i] is '\t' or beforeStop is @tabSize
+          width += @tabSize
+          beforeStop = 0
+      width += beforeStop
+
     noNewlines = @unfinished()
-    if size - @indebt is @indent
+    if width - @indebt is @indent
       if noNewlines then @suppressNewlines() else @newlineToken 0
       return indent.length
 
-    if size > @indent
+    if width > @indent
       if noNewlines
-        @indebt = size - @indent
+        @indebt = width - @indent
         @suppressNewlines()
         return indent.length
       unless @tokens.length
-        @baseIndent = @indent = size
+        @baseIndent = @indent = width
         return indent.length
-      diff = size - @indent + @outdebt
+      diff = width - @indent + @outdebt
       @token 'INDENT', diff, indent.length - size, size
       @indents.push diff
       @ends.push {tag: 'OUTDENT'}
       @outdebt = @indebt = 0
-      @indent = size
-    else if size < @baseIndent
+      @indent = width
+    else if width < @baseIndent
       @error 'missing indentation', offset: indent.length
     else
       @indebt = 0
-      @outdentToken @indent - size, noNewlines, indent.length
+      @outdentToken @indent - width, noNewlines, indent.length
     indent.length
 
   # Record an outdent token or multiple tokens, if we happen to be moving back
