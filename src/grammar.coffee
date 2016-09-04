@@ -352,45 +352,58 @@ grammar =
   ]
 
   Import: [
-    o 'IMPORT String',                          -> new Import null, $2
-    o 'IMPORT ImportClause FROM String',        -> new Import $2, $4
+    o 'IMPORT String',                                                                -> new ImportDeclaration null, $2
+    o 'IMPORT ImportDefaultSpecifier FROM String',                                    -> new ImportDeclaration [$2], $4
+    o 'IMPORT ImportNamespaceSpecifier FROM String',                                  -> new ImportDeclaration [$2], $4
+    o 'IMPORT { ImportSpecifierList OptComma } FROM String',                          -> new ImportDeclaration [new ImportSpecifierList $3], $7
+    o 'IMPORT ImportDefaultSpecifier , ImportNamespaceSpecifier FROM String',         -> new ImportDeclaration [$2, new Literal(', '), $4], $6
+    o 'IMPORT ImportDefaultSpecifier , { ImportSpecifierList OptComma } FROM String', -> new ImportDeclaration [$2, new Literal(', '), new ImportSpecifierList($5)], $9
   ]
 
-  ImportClause: [
-    o 'ModuleList',                             -> new ModuleList $1, no
-    o 'ModuleList , { ModuleList OptComma }',   -> new ModuleList $1, no, $4
-    o '{ ModuleList OptComma }',                -> new ModuleList $2, yes
+  ImportSpecifierList: [
+    o 'ImportSpecifier',                                                          -> [$1]
+    o 'ImportSpecifierList , ImportSpecifier',                                    -> $1.concat $3
+    o 'ImportSpecifierList OptComma TERMINATOR ImportSpecifier',                  -> $1.concat $4
+    o 'INDENT ImportSpecifierList OptComma OUTDENT',                              -> $2
+    o 'ImportSpecifierList OptComma INDENT ImportSpecifierList OptComma OUTDENT', -> $1.concat $4
+  ]
+
+  ImportSpecifier: [
+    o 'Identifier',                             -> new ImportSpecifier $1
+    o 'Identifier AS Identifier',               -> new ImportSpecifier $1, $3
+  ]
+
+  ImportDefaultSpecifier: [
+    o 'Identifier',                             -> new ImportSpecifier $1
+  ]
+
+  ImportNamespaceSpecifier: [
+    o 'IMPORT_ALL AS Identifier',               -> new ImportSpecifier new Literal($1), $3
   ]
 
   Export: [
-    o 'EXPORT Class',                           -> new Export $2
-    o 'EXPORT Identifier = Expression',         -> new Export new Assign $2, $4, null,
-                                                                         moduleStatement: 'export'
-    o 'EXPORT DEFAULT Expression',              -> new ExportDefault $3
-    o 'EXPORT ExportImportClause',              -> new ExportImport $2
-    o 'EXPORT ExportImportClause FROM String',  -> new ExportImport $2, $4
+    o 'EXPORT { }',                                          -> new ExportNamedDeclaration new Literal '{}'
+    o 'EXPORT { ExportSpecifierList OptComma }',             -> new ExportNamedDeclaration new ExportSpecifierList $3
+    o 'EXPORT Class',                                        -> new ExportNamedDeclaration $2
+    o 'EXPORT Identifier = Expression',                      -> new ExportNamedDeclaration new Assign $2, $4, null,
+                                                                                                      moduleDeclaration: 'export'
+    o 'EXPORT DEFAULT Expression',                           -> new ExportDefaultDeclaration $3
+    o 'EXPORT EXPORT_ALL FROM String',                       -> new ExportAllDeclaration new Literal($2), $4
+    o 'EXPORT { ExportSpecifierList OptComma } FROM String', -> new ExportNamedDeclaration new ExportSpecifierList($3), $7
   ]
 
-  ExportImportClause: [
-    o 'IMPORT_ALL',                             -> new Literal $1
-    o '{ }',                                    -> new Literal $1.concat $2
-    o '{ ModuleList OptComma }',                -> new ModuleList $2, yes
+  ExportSpecifierList: [
+    o 'ExportSpecifier',                                                          -> [$1]
+    o 'ExportSpecifierList , ExportSpecifier',                                    -> $1.concat $3
+    o 'ExportSpecifierList OptComma TERMINATOR ExportSpecifier',                  -> $1.concat $4
+    o 'INDENT ExportSpecifierList OptComma OUTDENT',                              -> $2
+    o 'ExportSpecifierList OptComma INDENT ExportSpecifierList OptComma OUTDENT', -> $1.concat $4
   ]
 
-  ModuleList: [
-    o 'ModuleIdentifier',                                       -> [$1]
-    o 'ModuleList , ModuleIdentifier',                          -> $1.concat $3
-    o 'ModuleList OptComma TERMINATOR ModuleIdentifier',        -> $1.concat $4
-    o 'INDENT ModuleList OptComma OUTDENT',                     -> $2
-    o 'ModuleList OptComma INDENT ModuleList OptComma OUTDENT', -> $1.concat $4
-  ]
-
-  ModuleIdentifier: [
-    o 'Identifier'
-    o 'IMPORT_ALL',                             -> new ModuleIdentifier new Literal($1), null, yes
-    o 'IMPORT_ALL AS Identifier',               -> new ModuleIdentifier new Literal($1), $3, yes
-    o 'Identifier AS Identifier',               -> new ModuleIdentifier $1, $3
-    o 'Identifier AS DEFAULT',                  -> new ModuleIdentifier $1, new Literal($3)
+  ExportSpecifier: [
+    o 'Identifier',                             -> new ExportSpecifier $1
+    o 'Identifier AS Identifier',               -> new ExportSpecifier $1, $3
+    o 'Identifier AS DEFAULT',                  -> new ExportSpecifier $1, new Literal($3)
   ]
 
   # Ordinary function invocation, or a chained series of calls.

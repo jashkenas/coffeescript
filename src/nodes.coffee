@@ -1220,21 +1220,14 @@ exports.Class = class Class extends Base
     @body.expressions.unshift @directives...
 
     klass = new Parens new Call func, args
-    klass = new Assign @variable, klass, null, { @moduleStatement } if @variable
+    klass = new Assign @variable, klass, null, { @moduleDeclaration } if @variable
     klass.compileToFragments o
 
 #### Import and Export
 
-exports.Module = class Module extends Base
-  constructor: (@type, @clause, @moduleName, @default = no) ->
-    if @type not in ['import', 'export']
-      @error 'module type must be import or export'
-
-    if @moduleName? and @moduleName instanceof StringWithInterpolations
-      @moduleName.error 'the name of the module to be imported from must be an uninterpolated string'
-
-    if @type is 'export' and @default is no and @clause instanceof Class and not @clause.variable?
-      @clause.error 'anonymous classes cannot be exported'
+exports.ModuleDeclaration = class ModuleDeclaration extends Base
+  constructor: (@clause, @moduleName) ->
+    @checkModuleName()
 
   children: ['clause', 'moduleName']
 
@@ -1242,118 +1235,108 @@ exports.Module = class Module extends Base
   jumps:       THIS
   makeReturn:  THIS
 
-  compileNode: (o) ->
+  checkModuleName: ->
+    if @moduleName? and @moduleName instanceof StringWithInterpolations
+      @moduleName.error 'the name of the module to be imported from must be an uninterpolated string'
+
+  checkScope: (o, moduleDeclarationType) ->
     if o.indent.length isnt 0
-      @error "#{@type} statements must be at top-level scope"
+      @error "#{moduleDeclarationType} statements must be at top-level scope"
+
+exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
+  compileNode: (o) ->
+    @checkScope o, 'import'
 
     code = []
-
-    code.push @makeCode "#{@tab}#{@type} "
-
-    if @default
-      code.push @makeCode 'default '
+    code.push @makeCode "#{@tab}import "
 
     if @clause? and @clause.length isnt 0
-      if @default is no and (@clause instanceof Assign or @clause instanceof Class)
-        # When the ES2015 `class` keyword is supported, don’t add a `var` here
-        code.push @makeCode 'var '
-        @clause.moduleStatement = @type
-      if @clause.body? and @clause.body instanceof Block
-        code = code.concat @clause.compileToFragments o, LEVEL_TOP
-      else
-        code = code.concat @clause.compileNode o
+      for subclause in @clause
+        code = code.concat subclause.compileNode o
 
     if @moduleName?.value?
-      unless @type is 'import' and @clause is null
-        code.push @makeCode ' from '
+      code.push @makeCode ' from ' unless @clause is null
       code.push @makeCode @moduleName.value
 
     code.push @makeCode ';'
     code
 
-exports.Import = class Import extends Module
-  constructor: (@clause, @moduleName) ->
-    super 'import', @clause, @moduleName, no
-
-exports.Export = class Export extends Module
+exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
   constructor: (@clause, @moduleName, @default = no) ->
-    super 'export', @clause, @moduleName, @default
-
-exports.ExportDefault = class ExportDefault extends Module
-  constructor: (@clause) ->
-    super 'export', @clause, null, yes
-
-exports.ExportImport = class ExportImport extends Module
-  constructor: (@clause, @moduleName) ->
-    if @clause instanceof Literal and @clause.value is '*' and not @moduleName?
-      @clause.error 'missing module name to export * from'
-
-    super 'export', @clause, @moduleName, no
-
-exports.ModuleList = class ModuleList extends Base
-  constructor: (@firstIdentifiers = [], @firstWrapped = no, @secondIdentifiers = []) ->
-
-  children: ['firstIdentifiers', 'secondIdentifiers']
+    super @clause, @moduleName
 
   compileNode: (o) ->
-    return [] unless @firstIdentifiers.length
+    @checkScope o, 'export'
 
-    # Only the first group of identifiers can be unwrapped, e.g. without curly braces;
-    # the second group by definition is a wrapped group that starts after the first group.
-    # If the first group is unwrapped, the only allowable syntaxes for that group are:
-    # - defaultMember
-    # - * as name
-    # - defaultMember, * as name
-    if @firstWrapped is no and @firstIdentifiers.length > 1
-      if @firstIdentifiers.length is 2
-        unless @firstIdentifiers[1].originalIsAll
-          @firstIdentifiers[1].error 'unless wrapped in curly braces, a second imported member can only be of the form: * as name'
-      else
-        @firstIdentifiers[2].error 'unless wrapped in curly braces, no more than two members can be imported'
+    code = []
+    code.push @makeCode "#{@tab}export "
+    code.push @makeCode 'default ' if @default
 
+    if @default is no and (@clause instanceof Assign or @clause instanceof Class)
+      # When the ES2015 `class` keyword is supported, don’t add a `var` here
+      code.push @makeCode 'var '
+      @clause.moduleDeclaration = 'export'
+
+    if @clause.body? and @clause.body instanceof Block
+      code = code.concat @clause.compileToFragments o, LEVEL_TOP
+    else
+      code = code.concat @clause.compileNode o
+
+    code.push @makeCode " from #{@moduleName.value}" if @moduleName?.value?
+    code.push @makeCode ';'
+    code
+
+exports.ExportNamedDeclaration = class ExportNamedDeclaration extends ExportDeclaration
+
+exports.ExportDefaultDeclaration = class ExportDefaultDeclaration extends ExportDeclaration
+  constructor: (clause, moduleName) ->
+    super clause, moduleName, yes
+
+exports.ExportAllDeclaration = class ExportAllDeclaration extends ExportDeclaration
+
+exports.ModuleSpecifierList = class ModuleSpecifierList extends Base
+  constructor: (@specifiers) ->
+
+  children: ['specifiers']
+
+  compileNode: (o) ->
     code = []
     o.indent += TAB
+    compiledList = (specifier.compileToFragments o, LEVEL_LIST for specifier in @specifiers)
 
-    code = code.concat @compileIdentifiers o, @firstIdentifiers, @firstWrapped
-    if @secondIdentifiers.length
-      code.push @makeCode(', ')
-      code = code.concat @compileIdentifiers o, @secondIdentifiers, yes
-
-    code
-
-  compileIdentifiers: (o, identifiers, wrapped) ->
-    o.wrapped = wrapped
-    compiledList = (identifier.compileToFragments o, LEVEL_LIST for identifier in identifiers)
-    code = []
-
-    code.push @makeCode("{\n#{o.indent}") if wrapped
+    code.push @makeCode("{\n#{o.indent}")
 
     for fragments, index in compiledList
-      if index
-        if wrapped
-          code.push @makeCode(",\n#{o.indent}")
-        else
-          code.push @makeCode(', ')
+      code.push @makeCode(",\n#{o.indent}") if index
       code.push fragments...
 
-    code.push @makeCode("\n}") if wrapped
+    code.push @makeCode("\n}")
     code
 
-exports.ModuleIdentifier = class ModuleIdentifier extends Base
-  constructor: (@original, @alias, @originalIsAll = no, @aliasIsDefault = no) ->
+exports.ImportSpecifierList = class ImportSpecifierList extends ModuleSpecifierList
+
+exports.ExportSpecifierList = class ExportSpecifierList extends ModuleSpecifierList
+
+exports.ModuleSpecifier = class ModuleSpecifier extends Base
+  constructor: (@original, @alias, @moduleDeclarationType) ->
 
   children: ['original', 'alias']
 
   compileNode: (o) ->
-    if o.wrapped is no and @alias? and @originalIsAll is no
-      @original.error 'unless enclosed by curly braces, only * can be aliased'
-
     variableName = if @alias? then @alias.value else @original.value
-    o.scope.add variableName, 'import'
+    o.scope.add variableName, @moduleDeclarationType
     code = []
     code.push @makeCode @original.value
     code.push @makeCode " as #{@alias.value}" if @alias?
     code
+
+exports.ImportSpecifier = class ImportSpecifier extends ModuleSpecifier
+  constructor: (original, alias) ->
+    super original, alias, 'import'
+
+exports.ExportSpecifier = class ExportSpecifier extends ModuleSpecifier
+  constructor: (original, alias) ->
+    super original, alias, 'export'
 
 #### Assign
 
@@ -1361,12 +1344,12 @@ exports.ModuleIdentifier = class ModuleIdentifier extends Base
 # property of an object -- including within object literals.
 exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options = {}) ->
-    {@param, @subpattern, @operatorToken, @moduleStatement} = options
+    {@param, @subpattern, @operatorToken, @moduleDeclaration} = options
 
   children: ['variable', 'value']
 
   isStatement: (o) ->
-    o?.level is LEVEL_TOP and @context? and (@moduleStatement or "?" in @context)
+    o?.level is LEVEL_TOP and @context? and (@moduleDeclaration or "?" in @context)
 
   assigns: (name) ->
     @[if @context is 'object' then 'value' else 'variable'].assigns name
@@ -1400,8 +1383,8 @@ exports.Assign = class Assign extends Base
       unless varBase.isAssignable()
         @variable.error "'#{@variable.compile o}' can't be assigned"
       unless varBase.hasProperties?()
-        if @moduleStatement # 'import' or 'export'
-          o.scope.add varBase.value, @moduleStatement
+        if @moduleDeclaration # `moduleDeclaration` can be `'import'` or `'export'`
+          o.scope.add varBase.value, @moduleDeclaration
         else if @param
           o.scope.add varBase.value, 'var'
         else

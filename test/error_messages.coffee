@@ -1012,50 +1012,48 @@ test "anonymous classes cannot be exported", ->
       constructor: ->
         console.log 'hello, world!'
   ''', '''
-    [stdin]:1:8: error: anonymous classes cannot be exported
-    export class
-           ^^^^^
+    SyntaxError: Unexpected token export
   '''
 
-test "only certain members can be imported", ->
+test "unless enclosed by curly braces, only * can be aliased", ->
   assertErrorFormat '''
     import foo as bar from 'lib'
   ''', '''
-    [stdin]:1:8: error: unless enclosed by curly braces, only * can be aliased
+    [stdin]:1:12: error: unexpected as
     import foo as bar from 'lib'
-           ^^^
+               ^^
   '''
 
 test "unwrapped imports must follow constrained syntax", ->
   assertErrorFormat '''
-    import foo, bar, baz from 'lib'
+    import foo, bar from 'lib'
   ''', '''
-    [stdin]:1:18: error: unless wrapped in curly braces, no more than two members can be imported
-    import foo, bar, baz from 'lib'
-                     ^^^
+    [stdin]:1:13: error: unexpected identifier
+    import foo, bar from 'lib'
+                ^^^
   '''
   assertErrorFormat '''
-    import foo, bar from 'lib'
+    import foo, bar, baz from 'lib'
   ''', '''
-    [stdin]:1:13: error: unless wrapped in curly braces, a second imported member can only be of the form: * as name
-    import foo, bar from 'lib'
+    [stdin]:1:13: error: unexpected identifier
+    import foo, bar, baz from 'lib'
                 ^^^
   '''
   assertErrorFormat '''
     import foo, bar as baz from 'lib'
   ''', '''
-    [stdin]:1:13: error: unless wrapped in curly braces, a second imported member can only be of the form: * as name
+    [stdin]:1:13: error: unexpected identifier
     import foo, bar as baz from 'lib'
-                ^^^^^^^^^^
+                ^^^
   '''
 
 test "cannot export * without a module to export from", ->
   assertErrorFormat '''
     export *
   ''', '''
-    [stdin]:1:8: error: missing module name to export * from
+    [stdin]:1:9: error: unexpected end of input
     export *
-           ^
+            ^
   '''
 
 test "imports and exports must be top-level", ->
