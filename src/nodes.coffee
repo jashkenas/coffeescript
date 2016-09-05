@@ -1246,6 +1246,7 @@ exports.ModuleDeclaration = class ModuleDeclaration extends Base
 exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
   compileNode: (o) ->
     @checkScope o, 'import'
+    o.importedSymbols = []
 
     code = []
     code.push @makeCode "#{@tab}import "
@@ -1319,12 +1320,13 @@ exports.ExportSpecifierList = class ExportSpecifierList extends ModuleSpecifierL
 
 exports.ModuleSpecifier = class ModuleSpecifier extends Base
   constructor: (@original, @alias, @moduleDeclarationType) ->
+    # The name of the variable entering the local scope
+    @identifier = if @alias? then @alias.value else @original.value
 
   children: ['original', 'alias']
 
   compileNode: (o) ->
-    variableName = if @alias? then @alias.value else @original.value
-    o.scope.add variableName, @moduleDeclarationType
+    o.scope.add @identifier, @moduleDeclarationType
     code = []
     code.push @makeCode @original.value
     code.push @makeCode " as #{@alias.value}" if @alias?
@@ -1333,6 +1335,15 @@ exports.ModuleSpecifier = class ModuleSpecifier extends Base
 exports.ImportSpecifier = class ImportSpecifier extends ModuleSpecifier
   constructor: (original, alias) ->
     super original, alias, 'import'
+
+  compileNode: (o) ->
+    # Per the spec, symbols can’t be imported multiple times
+    # (e.g. `import { foo, foo } from 'lib'` is invalid)
+    if o.importedSymbols.indexOf(@identifier) isnt -1
+      @error 'already imported'
+    else
+      o.importedSymbols.push @identifier
+    super o
 
 exports.ExportSpecifier = class ExportSpecifier extends ModuleSpecifier
   constructor: (original, alias) ->

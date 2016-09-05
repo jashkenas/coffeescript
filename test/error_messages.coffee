@@ -1065,7 +1065,6 @@ test "imports and exports must be top-level", ->
       import { bar } from 'lib'
       ^^^^^^^^^^^^^^^^^^^^^^^^^
   '''
-
   assertErrorFormat '''
     foo = ->
       export { bar }
@@ -1073,4 +1072,41 @@ test "imports and exports must be top-level", ->
     [stdin]:2:3: error: export statements must be at top-level scope
       export { bar }
       ^^^^^^^^^^^^^^
+  '''
+
+test "cannot import the same member more than once", ->
+  assertErrorFormat '''
+    import { foo, foo } from 'lib'
+  ''', '''
+    [stdin]:1:15: error: already imported
+    import { foo, foo } from 'lib'
+                  ^^^
+  '''
+  assertErrorFormat '''
+    import { foo, bar, foo } from 'lib'
+  ''', '''
+    [stdin]:1:20: error: already imported
+    import { foo, bar, foo } from 'lib'
+                       ^^^
+  '''
+  assertErrorFormat '''
+    import { foo, bar as foo } from 'lib'
+  ''', '''
+    [stdin]:1:15: error: already imported
+    import { foo, bar as foo } from 'lib'
+                  ^^^^^^^^^^
+  '''
+  assertErrorFormat '''
+    import foo, { foo } from 'lib'
+  ''', '''
+    [stdin]:1:15: error: already imported
+    import foo, { foo } from 'lib'
+                  ^^^
+  '''
+  assertErrorFormat '''
+    import foo, { bar as foo } from 'lib'
+  ''', '''
+    [stdin]:1:15: error: already imported
+    import foo, { bar as foo } from 'lib'
+                  ^^^^^^^^^^
   '''

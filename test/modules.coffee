@@ -613,3 +613,20 @@ test "`*` and `from` can be used in an export default expression", ->
       }
     });"""
   eq toJS(input), output
+
+test "wrapped members can be imported multiple times if aliased", ->
+  input = "import { foo, foo as bar } from 'lib'"
+  output = """
+    import {
+      foo,
+      foo as bar
+    } from 'lib';"""
+  eq toJS(input), output
+
+test "default and wrapped members can be imported multiple times if aliased", ->
+  input = "import foo, { foo as bar } from 'lib'"
+  output = """
+    import foo, {
+      foo as bar
+    } from 'lib';"""
+  eq toJS(input), output
