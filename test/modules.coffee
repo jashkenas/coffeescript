@@ -356,6 +356,20 @@ test "export assignment expression", ->
   output = "export var foo = 'bar';"
   eq toJS(input), output
 
+test "export multiline assignment expression", ->
+  input = """
+    export foo =
+    'bar'"""
+  output = "export var foo = 'bar';"
+  eq toJS(input), output
+
+test "export multiline indented assignment expression", ->
+  input = """
+    export foo =
+      'bar'"""
+  output = "export var foo = 'bar';"
+  eq toJS(input), output
+
 test "export default function", ->
   input = "export default ->"
   output = "export default function() {};"

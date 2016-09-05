@@ -387,6 +387,10 @@ grammar =
     o 'EXPORT Class',                                        -> new ExportNamedDeclaration $2
     o 'EXPORT Identifier = Expression',                      -> new ExportNamedDeclaration new Assign $2, $4, null,
                                                                                                       moduleDeclaration: 'export'
+    o 'EXPORT Identifier = TERMINATOR Expression',           -> new ExportNamedDeclaration new Assign $2, $5, null,
+                                                                                                      moduleDeclaration: 'export'
+    o 'EXPORT Identifier = INDENT Expression OUTDENT',       -> new ExportNamedDeclaration new Assign $2, $5, null,
+                                                                                                      moduleDeclaration: 'export'
     o 'EXPORT DEFAULT Expression',                           -> new ExportDefaultDeclaration $3
     o 'EXPORT EXPORT_ALL FROM String',                       -> new ExportAllDeclaration new Literal($2), $4
     o 'EXPORT { ExportSpecifierList OptComma } FROM String', -> new ExportNamedDeclaration new ExportSpecifierList($3), $7
