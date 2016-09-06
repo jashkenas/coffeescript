@@ -1341,6 +1341,8 @@ exports.ImportSpecifier = class ImportSpecifier extends ModuleSpecifier
     # (e.g. `import { foo, foo } from 'lib'` is invalid)
     if o.importedSymbols.indexOf(@identifier) isnt -1
       @error 'already imported'
+    else if o.scope.check(@identifier)
+      @error 'duplicate declaration'
     else
       o.importedSymbols.push @identifier
     super o

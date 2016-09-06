@@ -1110,3 +1110,19 @@ test "cannot import the same member more than once", ->
     import foo, { bar as foo } from 'lib'
                   ^^^^^^^^^^
   '''
+  assertErrorFormat '''
+    import foo from 'libA'
+    import foo from 'libB'
+  ''', '''
+    [stdin]:2:8: error: duplicate declaration
+    import foo from 'libB'
+           ^^^
+  '''
+  assertErrorFormat '''
+    import * as foo from 'libA'
+    import { foo } from 'libB'
+  ''', '''
+    [stdin]:2:10: error: duplicate declaration
+    import { foo } from 'libB'
+             ^^^
+  '''
