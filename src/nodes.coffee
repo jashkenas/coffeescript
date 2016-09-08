@@ -1403,6 +1403,9 @@ exports.Assign = class Assign extends Base
         else if @param
           o.scope.add varBase.value, 'var'
         else
+          if Object::hasOwnProperty.call(o.scope.positions, varBase.value) and
+          o.scope.variables[o.scope.positions[varBase.value]].type is 'import'
+            varBase.error "'#{varBase.value}' is read-only"
           o.scope.find varBase.value
 
     val = @value.compileToFragments o, LEVEL_LIST

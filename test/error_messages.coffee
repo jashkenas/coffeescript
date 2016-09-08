@@ -1126,3 +1126,13 @@ test "cannot import the same member more than once", ->
     import { foo } from 'libB'
              ^^^
   '''
+
+test "imported members cannot be reassigned", ->
+  assertErrorFormat '''
+    import { foo } from 'lib'
+    foo = 'bar'
+  ''', '''
+    [stdin]:2:1: error: 'foo' is read-only
+    foo = 'bar'
+    ^^^
+  '''
