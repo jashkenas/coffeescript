@@ -1337,7 +1337,7 @@ exports.ImportSpecifier = class ImportSpecifier extends ModuleSpecifier
   compileNode: (o) ->
     # Per the spec, symbols can’t be imported multiple times
     # (e.g. `import { foo, foo } from 'lib'` is invalid)
-    if o.importedSymbols.indexOf(@identifier) isnt -1
+    if @identifier in o.importedSymbols
       @error 'already imported'
     else if o.scope.check(@identifier)
       @error 'duplicate declaration'
@@ -1365,6 +1365,11 @@ exports.Assign = class Assign extends Base
 
   isStatement: (o) ->
     o?.level is LEVEL_TOP and @context? and (@moduleDeclaration or "?" in @context)
+
+  checkAssignability: (o, varBase) ->
+    if Object::hasOwnProperty.call(o.scope.positions, varBase.value) and
+    o.scope.variables[o.scope.positions[varBase.value]].type is 'import'
+      varBase.error "'#{varBase.value}' is read-only"
 
   assigns: (name) ->
     @[if @context is 'object' then 'value' else 'variable'].assigns name
@@ -1399,13 +1404,12 @@ exports.Assign = class Assign extends Base
         @variable.error "'#{@variable.compile o}' can't be assigned"
       unless varBase.hasProperties?()
         if @moduleDeclaration # `moduleDeclaration` can be `'import'` or `'export'`
+          @checkAssignability o, varBase
           o.scope.add varBase.value, @moduleDeclaration
         else if @param
           o.scope.add varBase.value, 'var'
         else
-          if Object::hasOwnProperty.call(o.scope.positions, varBase.value) and
-          o.scope.variables[o.scope.positions[varBase.value]].type is 'import'
-            varBase.error "'#{varBase.value}' is read-only"
+          @checkAssignability o, varBase
           o.scope.find varBase.value
 
     val = @value.compileToFragments o, LEVEL_LIST

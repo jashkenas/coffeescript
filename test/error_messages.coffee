@@ -1136,3 +1136,19 @@ test "imported members cannot be reassigned", ->
     foo = 'bar'
     ^^^
   '''
+  assertErrorFormat '''
+    import { foo } from 'lib'
+    export default foo = 'bar'
+  ''', '''
+    [stdin]:2:16: error: 'foo' is read-only
+    export default foo = 'bar'
+                   ^^^
+  '''
+  assertErrorFormat '''
+    import { foo } from 'lib'
+    export foo = 'bar'
+  ''', '''
+    [stdin]:2:8: error: 'foo' is read-only
+    export foo = 'bar'
+           ^^^
+  '''
