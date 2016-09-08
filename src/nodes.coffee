@@ -1226,18 +1226,18 @@ exports.Class = class Class extends Base
 #### Import and Export
 
 exports.ModuleDeclaration = class ModuleDeclaration extends Base
-  constructor: (@clause, @moduleName) ->
-    @checkModuleName()
+  constructor: (@clause, @source) ->
+    @checkSource()
 
-  children: ['clause', 'moduleName']
+  children: ['clause', 'source']
 
   isStatement: YES
   jumps:       THIS
   makeReturn:  THIS
 
-  checkModuleName: ->
-    if @moduleName? and @moduleName instanceof StringWithInterpolations
-      @moduleName.error 'the name of the module to be imported from must be an uninterpolated string'
+  checkSource: ->
+    if @source? and @source instanceof StringWithInterpolations
+      @source.error 'the name of the module to be imported from must be an uninterpolated string'
 
   checkScope: (o, moduleDeclarationType) ->
     if o.indent.length isnt 0
@@ -1255,25 +1255,25 @@ exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
       for subclause in @clause
         code = code.concat subclause.compileNode o
 
-    if @moduleName?.value?
+    if @source?.value?
       code.push @makeCode ' from ' unless @clause is null
-      code.push @makeCode @moduleName.value
+      code.push @makeCode @source.value
 
     code.push @makeCode ';'
     code
 
 exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
-  constructor: (@clause, @moduleName, @default = no) ->
-    super @clause, @moduleName
+  constructor: (@clause, @source) ->
+    super @clause, @source
 
   compileNode: (o) ->
     @checkScope o, 'export'
 
     code = []
     code.push @makeCode "#{@tab}export "
-    code.push @makeCode 'default ' if @default
+    code.push @makeCode 'default ' if @ instanceof ExportDefaultDeclaration
 
-    if @default is no and (@clause instanceof Assign or @clause instanceof Class)
+    if @ instanceof ExportDefaultDeclaration is no and (@clause instanceof Assign or @clause instanceof Class)
       # When the ES2015 `class` keyword is supported, don’t add a `var` here
       code.push @makeCode 'var '
       @clause.moduleDeclaration = 'export'
@@ -1283,15 +1283,13 @@ exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
     else
       code = code.concat @clause.compileNode o
 
-    code.push @makeCode " from #{@moduleName.value}" if @moduleName?.value?
+    code.push @makeCode " from #{@source.value}" if @source?.value?
     code.push @makeCode ';'
     code
 
 exports.ExportNamedDeclaration = class ExportNamedDeclaration extends ExportDeclaration
 
 exports.ExportDefaultDeclaration = class ExportDefaultDeclaration extends ExportDeclaration
-  constructor: (clause, moduleName) ->
-    super clause, moduleName, yes
 
 exports.ExportAllDeclaration = class ExportAllDeclaration extends ExportDeclaration
 
@@ -1333,8 +1331,8 @@ exports.ModuleSpecifier = class ModuleSpecifier extends Base
     code
 
 exports.ImportSpecifier = class ImportSpecifier extends ModuleSpecifier
-  constructor: (original, alias) ->
-    super original, alias, 'import'
+  constructor: (imported, local) ->
+    super imported, local, 'import'
 
   compileNode: (o) ->
     # Per the spec, symbols can’t be imported multiple times
@@ -1347,9 +1345,13 @@ exports.ImportSpecifier = class ImportSpecifier extends ModuleSpecifier
       o.importedSymbols.push @identifier
     super o
 
+exports.ImportDefaultSpecifier = class ImportDefaultSpecifier extends ImportSpecifier
+
+exports.ImportNamespaceSpecifier = class ImportNamespaceSpecifier extends ImportSpecifier
+
 exports.ExportSpecifier = class ExportSpecifier extends ModuleSpecifier
-  constructor: (original, alias) ->
-    super original, alias, 'export'
+  constructor: (local, exported) ->
+    super local, exported, 'export'
 
 #### Assign
 

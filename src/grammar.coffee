@@ -374,11 +374,11 @@ grammar =
   ]
 
   ImportDefaultSpecifier: [
-    o 'Identifier',                             -> new ImportSpecifier $1
+    o 'Identifier',                             -> new ImportDefaultSpecifier $1
   ]
 
   ImportNamespaceSpecifier: [
-    o 'IMPORT_ALL AS Identifier',               -> new ImportSpecifier new Literal($1), $3
+    o 'IMPORT_ALL AS Identifier',               -> new ImportNamespaceSpecifier new Literal($1), $3
   ]
 
   Export: [
