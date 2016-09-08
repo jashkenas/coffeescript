@@ -1335,9 +1335,7 @@ exports.ImportSpecifier = class ImportSpecifier extends ModuleSpecifier
   compileNode: (o) ->
     # Per the spec, symbols can’t be imported multiple times
     # (e.g. `import { foo, foo } from 'lib'` is invalid)
-    if @identifier in o.importedSymbols
-      @error 'already imported'
-    else if o.scope.check(@identifier)
+    if @identifier in o.importedSymbols or o.scope.check(@identifier)
       @error 'duplicate declaration'
     else
       o.importedSymbols.push @identifier
