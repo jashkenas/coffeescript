@@ -1263,9 +1263,6 @@ exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
     code
 
 exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
-  constructor: (@clause, @source) ->
-    super @clause, @source
-
   compileNode: (o) ->
     @checkScope o, 'export'
 
@@ -1273,7 +1270,8 @@ exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
     code.push @makeCode "#{@tab}export "
     code.push @makeCode 'default ' if @ instanceof ExportDefaultDeclaration
 
-    if @ instanceof ExportDefaultDeclaration is no and (@clause instanceof Assign or @clause instanceof Class)
+    if @ instanceof ExportDefaultDeclaration is no and
+    (@clause instanceof Assign or @clause instanceof Class)
       # When the ES2015 `class` keyword is supported, don’t add a `var` here
       code.push @makeCode 'var '
       @clause.moduleDeclaration = 'export'
