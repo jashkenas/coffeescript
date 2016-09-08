@@ -1270,8 +1270,8 @@ exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
     code.push @makeCode "#{@tab}export "
     code.push @makeCode 'default ' if @ instanceof ExportDefaultDeclaration
 
-    if @ instanceof ExportDefaultDeclaration is no and
-    (@clause instanceof Assign or @clause instanceof Class)
+    if @ not instanceof ExportDefaultDeclaration and
+       (@clause instanceof Assign or @clause instanceof Class)
       # When the ES2015 `class` keyword is supported, don’t add a `var` here
       code.push @makeCode 'var '
       @clause.moduleDeclaration = 'export'
@@ -1366,7 +1366,7 @@ exports.Assign = class Assign extends Base
 
   checkAssignability: (o, varBase) ->
     if Object::hasOwnProperty.call(o.scope.positions, varBase.value) and
-    o.scope.variables[o.scope.positions[varBase.value]].type is 'import'
+       o.scope.variables[o.scope.positions[varBase.value]].type is 'import'
       varBase.error "'#{varBase.value}' is read-only"
 
   assigns: (name) ->
