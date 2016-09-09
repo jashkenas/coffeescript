@@ -1301,13 +1301,14 @@ exports.ModuleSpecifierList = class ModuleSpecifierList extends Base
     o.indent += TAB
     compiledList = (specifier.compileToFragments o, LEVEL_LIST for specifier in @specifiers)
 
-    code.push @makeCode("{\n#{o.indent}")
-
-    for fragments, index in compiledList
-      code.push @makeCode(",\n#{o.indent}") if index
-      code.push fragments...
-
-    code.push @makeCode("\n}")
+    if @specifiers.length isnt 0
+      code.push @makeCode "{\n#{o.indent}"
+      for fragments, index in compiledList
+        code.push @makeCode(",\n#{o.indent}") if index
+        code.push fragments...
+      code.push @makeCode "\n}"
+    else
+      code.push @makeCode '{}'
     code
 
 exports.ImportSpecifierList = class ImportSpecifierList extends ModuleSpecifierList

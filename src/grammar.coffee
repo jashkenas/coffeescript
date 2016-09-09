@@ -355,6 +355,7 @@ grammar =
     o 'IMPORT String',                                                                -> new ImportDeclaration null, $2
     o 'IMPORT ImportDefaultSpecifier FROM String',                                    -> new ImportDeclaration [$2], $4
     o 'IMPORT ImportNamespaceSpecifier FROM String',                                  -> new ImportDeclaration [$2], $4
+    o 'IMPORT { } FROM String',                                                       -> new ImportDeclaration [new ImportSpecifierList []], $5
     o 'IMPORT { ImportSpecifierList OptComma } FROM String',                          -> new ImportDeclaration [new ImportSpecifierList $3], $7
     o 'IMPORT ImportDefaultSpecifier , ImportNamespaceSpecifier FROM String',         -> new ImportDeclaration [$2, new Literal(', '), $4], $6
     o 'IMPORT ImportDefaultSpecifier , { ImportSpecifierList OptComma } FROM String', -> new ImportDeclaration [$2, new Literal(', '), new ImportSpecifierList($5)], $9
@@ -382,7 +383,7 @@ grammar =
   ]
 
   Export: [
-    o 'EXPORT { }',                                          -> new ExportNamedDeclaration new Literal '{}'
+    o 'EXPORT { }',                                          -> new ExportNamedDeclaration new ExportSpecifierList []
     o 'EXPORT { ExportSpecifierList OptComma }',             -> new ExportNamedDeclaration new ExportSpecifierList $3
     o 'EXPORT Class',                                        -> new ExportNamedDeclaration $2
     o 'EXPORT Identifier = Expression',                      -> new ExportNamedDeclaration new Assign $2, $4, null,

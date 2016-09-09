@@ -79,6 +79,16 @@ test "import an entire module's contents as an alias, adding the alias to the cu
     foo.fooMethod();"""
   eq toJS(input), output
 
+test "import empty object", ->
+  input = "import { } from 'lib'"
+  output = "import {} from 'lib';"
+  eq toJS(input), output
+
+test "import empty object", ->
+  input = "import {} from 'lib'"
+  output = "import {} from 'lib';"
+  eq toJS(input), output
+
 test "import a single member of a module, adding the member to the current scope", ->
   input = """
     import { foo } from 'lib'
