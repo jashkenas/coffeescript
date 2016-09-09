@@ -5,7 +5,62 @@ execute the then method snchronously when sync promises are used.
 All promises used here are sync, as they resolve/reject immediately,
 and use no callbacks.
 ###
-global.Promise = require "./promise.js" # override native Promise
+class Promise
+	constructor: (fn) ->
+		@_fulfilled = no
+		@_rejected = no
+		@_value = null
+		@_thens = []
+
+		fn @_win.bind(this), @_fail.bind(this)
+ 	
+	_empty: ->
+
+	_win: (val) ->
+		@_fulfilled = true
+		@_value = val
+		while @_thens.length > 0
+			{fulfill, win} = @_thens.shift()
+			fulfill win val
+		1
+		
+	
+
+	_fail: (val) ->
+		@_rejected = true
+		@_value = val
+		while @_thens.length > 0
+			{fail, reject} = @_thens.shift()
+			fail val
+			reject val
+		0
+	
+
+	_iscomplete: ->
+		@_fulfilled or @_rejected
+	
+
+	then: (win, fail = @_empty) ->
+		self = this
+		fulfill = null
+		reject = null
+		promise = new Promise (win, fail) ->
+			fulfill = win
+			reject = fail
+
+		if @_iscomplete()
+			if @_fulfilled
+				fulfill win @_value
+			else
+				fail @_value
+				reject @_value
+		else
+			@_thens.push
+				win		: win
+				fail	: fail
+				fulfill	: fulfill
+				reject	: reject
+		promise
 
 # always fulfills
 winning = (val)->
