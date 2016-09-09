@@ -1337,7 +1337,7 @@ exports.ImportSpecifier = class ImportSpecifier extends ModuleSpecifier
     # Per the spec, symbols can’t be imported multiple times
     # (e.g. `import { foo, foo } from 'lib'` is invalid)
     if @identifier in o.importedSymbols or o.scope.check(@identifier)
-      @error 'duplicate declaration'
+      @error "'#{@identifier}' has already been declared"
     else
       o.importedSymbols.push @identifier
     super o

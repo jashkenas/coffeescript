@@ -1078,35 +1078,35 @@ test "cannot import the same member more than once", ->
   assertErrorFormat '''
     import { foo, foo } from 'lib'
   ''', '''
-    [stdin]:1:15: error: duplicate declaration
+    [stdin]:1:15: error: 'foo' has already been declared
     import { foo, foo } from 'lib'
                   ^^^
   '''
   assertErrorFormat '''
     import { foo, bar, foo } from 'lib'
   ''', '''
-    [stdin]:1:20: error: duplicate declaration
+    [stdin]:1:20: error: 'foo' has already been declared
     import { foo, bar, foo } from 'lib'
                        ^^^
   '''
   assertErrorFormat '''
     import { foo, bar as foo } from 'lib'
   ''', '''
-    [stdin]:1:15: error: duplicate declaration
+    [stdin]:1:15: error: 'foo' has already been declared
     import { foo, bar as foo } from 'lib'
                   ^^^^^^^^^^
   '''
   assertErrorFormat '''
     import foo, { foo } from 'lib'
   ''', '''
-    [stdin]:1:15: error: duplicate declaration
+    [stdin]:1:15: error: 'foo' has already been declared
     import foo, { foo } from 'lib'
                   ^^^
   '''
   assertErrorFormat '''
     import foo, { bar as foo } from 'lib'
   ''', '''
-    [stdin]:1:15: error: duplicate declaration
+    [stdin]:1:15: error: 'foo' has already been declared
     import foo, { bar as foo } from 'lib'
                   ^^^^^^^^^^
   '''
@@ -1114,7 +1114,7 @@ test "cannot import the same member more than once", ->
     import foo from 'libA'
     import foo from 'libB'
   ''', '''
-    [stdin]:2:8: error: duplicate declaration
+    [stdin]:2:8: error: 'foo' has already been declared
     import foo from 'libB'
            ^^^
   '''
@@ -1122,7 +1122,7 @@ test "cannot import the same member more than once", ->
     import * as foo from 'libA'
     import { foo } from 'libB'
   ''', '''
-    [stdin]:2:10: error: duplicate declaration
+    [stdin]:2:10: error: 'foo' has already been declared
     import { foo } from 'libB'
              ^^^
   '''
