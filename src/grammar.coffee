@@ -357,8 +357,8 @@ grammar =
     o 'IMPORT ImportNamespaceSpecifier FROM String',                                  -> new ImportDeclaration [$2], $4
     o 'IMPORT { } FROM String',                                                       -> new ImportDeclaration [new ImportSpecifierList []], $5
     o 'IMPORT { ImportSpecifierList OptComma } FROM String',                          -> new ImportDeclaration [new ImportSpecifierList $3], $7
-    o 'IMPORT ImportDefaultSpecifier , ImportNamespaceSpecifier FROM String',         -> new ImportDeclaration [$2, new Literal(', '), $4], $6
-    o 'IMPORT ImportDefaultSpecifier , { ImportSpecifierList OptComma } FROM String', -> new ImportDeclaration [$2, new Literal(', '), new ImportSpecifierList($5)], $9
+    o 'IMPORT ImportDefaultSpecifier , ImportNamespaceSpecifier FROM String',         -> new ImportDeclaration [$2, $4], $6
+    o 'IMPORT ImportDefaultSpecifier , { ImportSpecifierList OptComma } FROM String', -> new ImportDeclaration [$2, new ImportSpecifierList($5)], $9
   ]
 
   ImportSpecifierList: [
@@ -408,7 +408,7 @@ grammar =
   ExportSpecifier: [
     o 'Identifier',                             -> new ExportSpecifier $1
     o 'Identifier AS Identifier',               -> new ExportSpecifier $1, $3
-    o 'Identifier AS DEFAULT',                  -> new ExportSpecifier $1, new Literal($3)
+    o 'Identifier AS DEFAULT',                  -> new ExportSpecifier $1, new Literal $3
   ]
 
   # Ordinary function invocation, or a chained series of calls.

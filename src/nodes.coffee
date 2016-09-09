@@ -1252,7 +1252,8 @@ exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
     code.push @makeCode "#{@tab}import "
 
     if @clause? and @clause.length isnt 0
-      for subclause in @clause
+      for subclause, index in @clause
+        code.push @makeCode ', ' if index isnt 0
         code = code.concat subclause.compileNode o
 
     if @source?.value?
