@@ -131,6 +131,13 @@ test "more compound assignment", ->
   val ?= true
   eq c, val
 
+test "#1192: assignment starting with object literals", ->
+  doesNotThrow (-> CoffeeScript.run "{}.p = 0")
+  doesNotThrow (-> CoffeeScript.run "{}.p++")
+  doesNotThrow (-> CoffeeScript.run "{}[0] = 1")
+  doesNotThrow (-> CoffeeScript.run """{a: 1, 'b', "#{1}": 2}.p = 0""")
+  doesNotThrow (-> CoffeeScript.run "{a:{0:{}}}.a[0] = 0")
+
 
 # Destructuring Assignment
 
@@ -162,7 +169,7 @@ test "variable swapping to verify caching of RHS values when appropriate", ->
   eq nonceB, b
   eq nonceC, c
 
-test "#713", ->
+test "#713: destructuring assignment should return right-hand-side value", ->
   nonces = [nonceA={},nonceB={}]
   eq nonces, [a, b] = [c, d] = nonces
   eq nonceA, a
@@ -247,7 +254,7 @@ test "destructuring assignment with context (@) properties", ->
   eq d, obj.d
   eq e, obj.e
 
-test "#1024", ->
+test "#1024: destructure empty assignments to produce javascript-like results", ->
   eq 2 * [] = 3 + 5, 16
 
 test "#1005: invalid identifiers allowed on LHS of destructuring assignment", ->
@@ -284,6 +291,106 @@ test "#156: destructuring with expansion", ->
   throws (-> CoffeeScript.compile "[1, ..., 3]"),        null, "prohibit expansion outside of assignment"
   throws (-> CoffeeScript.compile "[..., a, b...] = c"), null, "prohibit expansion and a splat"
   throws (-> CoffeeScript.compile "[...] = c"),          null, "prohibit lone expansion"
+
+test "destructuring with dynamic keys", ->
+  {"#{'a'}": a, """#{'b'}""": b, c} = {a: 1, b: 2, c: 3}
+  eq 1, a
+  eq 2, b
+  eq 3, c
+  throws -> CoffeeScript.compile '{"#{a}"} = b'
+
+test "simple array destructuring defaults", ->
+  [a = 1] = []
+  eq 1, a
+  [a = 2] = [undefined]
+  eq 2, a
+  [a = 3] = [null]
+  eq 3, a
+  [a = 4] = [0]
+  eq 0, a
+  arr = [a = 5]
+  eq 5, a
+  arrayEq [5], arr
+
+test "simple object destructuring defaults", ->
+  {b = 1} = {}
+  eq b, 1
+  {b = 2} = {b: undefined}
+  eq b, 2
+  {b = 3} = {b: null}
+  eq b, 3
+  {b = 4} = {b: 0}
+  eq b, 0
+
+  {b: c = 1} = {}
+  eq c, 1
+  {b: c = 2} = {b: undefined}
+  eq c, 2
+  {b: c = 3} = {b: null}
+  eq c, 3
+  {b: c = 4} = {b: 0}
+  eq c, 0
+
+test "multiple array destructuring defaults", ->
+  [a = 1, b = 2, c] = [null, 12, 13]
+  eq a, 1
+  eq b, 12
+  eq c, 13
+  [a, b = 2, c = 3] = [null, 12, 13]
+  eq a, null
+  eq b, 12
+  eq c, 13
+  [a = 1, b, c = 3] = [11, 12]
+  eq a, 11
+  eq b, 12
+  eq c, 3
+
+test "multiple object destructuring defaults", ->
+  {a = 1, b: bb = 2, 'c': c = 3, "#{0}": d = 4} = {"#{'b'}": 12}
+  eq a, 1
+  eq bb, 12
+  eq c, 3
+  eq d, 4
+
+test "array destructuring defaults with splats", ->
+  [..., a = 9] = []
+  eq a, 9
+  [..., b = 9] = [19]
+  eq b, 19
+
+test "deep destructuring assignment with defaults", ->
+  [a, [{b = 1, c = 3}] = [c: 2]] = [0]
+  eq a, 0
+  eq b, 1
+  eq c, 2
+
+test "destructuring assignment with context (@) properties and defaults", ->
+  a={}; b={}; c={}; d={}; e={}
+  obj =
+    fn: () ->
+      local = [a, {b, c: null}, d]
+      [@a, {b: @b = b, @c = c}, @d, @e = e] = local
+  eq undefined, obj[key] for key in ['a','b','c','d','e']
+  obj.fn()
+  eq a, obj.a
+  eq b, obj.b
+  eq c, obj.c
+  eq d, obj.d
+  eq e, obj.e
+
+test "destructuring assignment with defaults single evaluation", ->
+  callCount = 0
+  fn = -> callCount++
+  [a = fn()] = []
+  eq 0, a
+  eq 1, callCount
+  [a = fn()] = [10]
+  eq 10, a
+  eq 1, callCount
+  {a = fn(), b: c = fn()} = {a: 20, b: null}
+  eq 20, a
+  eq c, 1
+  eq callCount, 2
 
 
 # Existential Assignment
@@ -408,52 +515,58 @@ test "#2181: conditional assignment as a subexpression", ->
   eq false, not a or= true
 
 test "#1500: Assignment to variables similar to generated variables", ->
-  _len = 0
-  x = ((_results = null; i) for i in [1, 2, 3])
+  len = 0
+  x = ((results = null; n) for n in [1, 2, 3])
   arrayEq [1, 2, 3], x
-  eq 0, _len
+  eq 0, len
 
   for x in [1, 2, 3]
     f = ->
-      _i = 0
+      i = 0
     f()
-    eq 'undefined', typeof _i
+    eq 'undefined', typeof i
 
-  _ref = 2
-  x = _ref * 2 ? 1
+  ref = 2
+  x = ref * 2 ? 1
   eq x, 4
-  eq 'undefined', typeof _ref1
+  eq 'undefined', typeof ref1
 
   x = {}
-  _base = -> x
-  _name = -1
-  _base()[-_name] ?= 2
+  base = -> x
+  name = -1
+  base()[-name] ?= 2
   eq x[1], 2
-  eq _base(), x
-  eq _name, -1
+  eq base(), x
+  eq name, -1
 
-  f = (@a, _at_a, a) -> [@a, _at_a, a]
-  arrayEq [1, 2, 3], f.call scope = {}, 1, 2, 3
+  f = (@a, a) -> [@a, a]
+  arrayEq [1, 2], f.call scope = {}, 1, 2
   eq 1, scope.a
 
-  doesNotThrow -> CoffeeScript.compile '(@_slice...) ->'
+  try throw 'foo'
+  catch error
+    eq error, 'foo'
+
+  eq error, 'foo'
+
+  doesNotThrow -> CoffeeScript.compile '(@slice...) ->'
 
 test "Assignment to variables similar to helper functions", ->
-  f = (__slice...) -> __slice
+  f = (slice...) -> slice
   arrayEq [1, 2, 3], f 1, 2, 3
-  eq 'undefined', typeof __slice1
+  eq 'undefined', typeof slice1
 
   class A
   class B extends A
-    __extends = 3
-    __hasProp = 4
+    extend = 3
+    hasProp = 4
     value: 5
-    method: (__bind, __bind1) => [__bind, __bind1, __extends, __hasProp, @value]
+    method: (bind, bind1) => [bind, bind1, extend, hasProp, @value]
   {method} = new B
   arrayEq [1, 2, 3, 4, 5], method 1, 2
 
-  __modulo = -1 %% 3
-  eq 2, __modulo
+  modulo = -1 %% 3
+  eq 2, modulo
 
-  __indexOf = [1, 2, 3]
-  ok 2 in __indexOf
+  indexOf = [1, 2, 3]
+  ok 2 in indexOf

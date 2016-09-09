@@ -261,8 +261,9 @@ This happens on page load.</p>
   <span class="hljs-keyword">for</span> script, i <span class="hljs-keyword">in</span> coffees
     <span class="hljs-keyword">do</span> <span class="hljs-function"><span class="hljs-params">(script, i)</span> -&gt;</span>
       options = <span class="hljs-attribute">literate</span>: script.type <span class="hljs-keyword">is</span> coffeetypes[<span class="hljs-number">1</span>]
-      <span class="hljs-keyword">if</span> script.src
-        CoffeeScript.load script.src,
+      source = script.src <span class="hljs-keyword">or</span> script.getAttribute(<span class="hljs-string">'data-src'</span>)
+      <span class="hljs-keyword">if</span> source
+        CoffeeScript.load source,
           <span class="hljs-function"><span class="hljs-params">(param)</span> -&gt;</span>
             coffees[i] = param
             execute()

@@ -460,7 +460,17 @@ they can also serve as keys in object literals.</p>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">AlphaNumeric</span>: [
     o <span class="hljs-string">'NUMBER'</span>,<span class="hljs-function">                                 -&gt;</span> <span class="hljs-keyword">new</span> Literal $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'String'</span>
+  ]
+
+  <span class="hljs-attribute">String</span>: [
     o <span class="hljs-string">'STRING'</span>,<span class="hljs-function">                                 -&gt;</span> <span class="hljs-keyword">new</span> Literal $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'STRING_START Body STRING_END'</span>,<span class="hljs-function">           -&gt;</span> <span class="hljs-keyword">new</span> Parens $<span class="hljs-number">2</span>
+  ]
+
+  <span class="hljs-attribute">Regex</span>: [
+    o <span class="hljs-string">'REGEX'</span>,<span class="hljs-function">                                  -&gt;</span> <span class="hljs-keyword">new</span> Literal $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'REGEX_START Invocation REGEX_END'</span>,<span class="hljs-function">       -&gt;</span> $<span class="hljs-number">2</span>
   ]</pre></div></div>
             
         </li>
@@ -480,7 +490,7 @@ through and printed to JavaScript.</p>
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">Literal</span>: [
     o <span class="hljs-string">'AlphaNumeric'</span>
     o <span class="hljs-string">'JS'</span>,<span class="hljs-function">                                     -&gt;</span> <span class="hljs-keyword">new</span> Literal $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'REGEX'</span>,<span class="hljs-function">                                  -&gt;</span> <span class="hljs-keyword">new</span> Literal $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'Regex'</span>
     o <span class="hljs-string">'DEBUGGER'</span>,<span class="hljs-function">                               -&gt;</span> <span class="hljs-keyword">new</span> Literal $<span class="hljs-number">1</span>
     o <span class="hljs-string">'UNDEFINED'</span>,<span class="hljs-function">                              -&gt;</span> <span class="hljs-keyword">new</span> Undefined
     o <span class="hljs-string">'NULL'</span>,<span class="hljs-function">                                   -&gt;</span> <span class="hljs-keyword">new</span> Null
@@ -522,16 +532,27 @@ the ordinary <strong>Assign</strong> is that these allow numbers and strings as 
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">AssignObj</span>: [
     o <span class="hljs-string">'ObjAssignable'</span>,<span class="hljs-function">                          -&gt;</span> <span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'ObjAssignable : Expression'</span>,<span class="hljs-function">             -&gt;</span> <span class="hljs-keyword">new</span> Assign LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Value($<span class="hljs-number">1</span>)), $<span class="hljs-number">3</span>, <span class="hljs-string">'object'</span>
+    o <span class="hljs-string">'ObjAssignable : Expression'</span>,<span class="hljs-function">             -&gt;</span> <span class="hljs-keyword">new</span> Assign LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>), $<span class="hljs-number">3</span>, <span class="hljs-string">'object'</span>,
+                                                              <span class="hljs-attribute">operatorToken</span>: LOC(<span class="hljs-number">2</span>)(<span class="hljs-keyword">new</span> Literal $<span class="hljs-number">2</span>)
     o <span class="hljs-string">'ObjAssignable :
-       INDENT Expression OUTDENT'</span>,<span class="hljs-function">              -&gt;</span> <span class="hljs-keyword">new</span> Assign LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Value($<span class="hljs-number">1</span>)), $<span class="hljs-number">4</span>, <span class="hljs-string">'object'</span>
+       INDENT Expression OUTDENT'</span>,<span class="hljs-function">              -&gt;</span> <span class="hljs-keyword">new</span> Assign LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>), $<span class="hljs-number">4</span>, <span class="hljs-string">'object'</span>,
+                                                              <span class="hljs-attribute">operatorToken</span>: LOC(<span class="hljs-number">2</span>)(<span class="hljs-keyword">new</span> Literal $<span class="hljs-number">2</span>)
+    o <span class="hljs-string">'SimpleObjAssignable = Expression'</span>,<span class="hljs-function">       -&gt;</span> <span class="hljs-keyword">new</span> Assign LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>), $<span class="hljs-number">3</span>, <span class="hljs-literal">null</span>,
+                                                              <span class="hljs-attribute">operatorToken</span>: LOC(<span class="hljs-number">2</span>)(<span class="hljs-keyword">new</span> Literal $<span class="hljs-number">2</span>)
+    o <span class="hljs-string">'SimpleObjAssignable =
+       INDENT Expression OUTDENT'</span>,<span class="hljs-function">              -&gt;</span> <span class="hljs-keyword">new</span> Assign LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>), $<span class="hljs-number">4</span>, <span class="hljs-literal">null</span>,
+                                                              <span class="hljs-attribute">operatorToken</span>: LOC(<span class="hljs-number">2</span>)(<span class="hljs-keyword">new</span> Literal $<span class="hljs-number">2</span>)
     o <span class="hljs-string">'Comment'</span>
   ]
 
-  <span class="hljs-attribute">ObjAssignable</span>: [
+  <span class="hljs-attribute">SimpleObjAssignable</span>: [
     o <span class="hljs-string">'Identifier'</span>
-    o <span class="hljs-string">'AlphaNumeric'</span>
     o <span class="hljs-string">'ThisProperty'</span>
+  ]
+
+  <span class="hljs-attribute">ObjAssignable</span>: [
+    o <span class="hljs-string">'SimpleObjAssignable'</span>
+    o <span class="hljs-string">'AlphaNumeric'</span>
   ]</pre></div></div>
             
         </li>
@@ -1247,7 +1268,8 @@ or postfix, with a single expression.</p>
   ]
 
   <span class="hljs-attribute">ForBody</span>: [
-    o <span class="hljs-string">'FOR Range'</span>,<span class="hljs-function">                              -&gt;</span> <span class="hljs-attribute">source</span>: LOC(<span class="hljs-number">2</span>) <span class="hljs-keyword">new</span> Value($<span class="hljs-number">2</span>)
+    o <span class="hljs-string">'FOR Range'</span>,<span class="hljs-function">                              -&gt;</span> <span class="hljs-attribute">source</span>: (LOC(<span class="hljs-number">2</span>) <span class="hljs-keyword">new</span> Value($<span class="hljs-number">2</span>))
+    o <span class="hljs-string">'FOR Range BY Expression'</span>,<span class="hljs-function">                -&gt;</span> <span class="hljs-attribute">source</span>: (LOC(<span class="hljs-number">2</span>) <span class="hljs-keyword">new</span> Value($<span class="hljs-number">2</span>)), <span class="hljs-attribute">step</span>: $<span class="hljs-number">4</span>
     o <span class="hljs-string">'ForStart ForSource'</span>,<span class="hljs-function">                     -&gt;</span> $<span class="hljs-number">2.</span>own = $<span class="hljs-number">1.</span>own; $<span class="hljs-number">2.</span>name = $<span class="hljs-number">1</span>[<span class="hljs-number">0</span>]; $<span class="hljs-number">2.</span>index = $<span class="hljs-number">1</span>[<span class="hljs-number">1</span>]; $<span class="hljs-number">2</span>
   ]
 
@@ -1416,6 +1438,9 @@ rules are necessary.</p>
     o <span class="hljs-string">'UNARY_MATH Expression'</span>,<span class="hljs-function">                  -&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1</span> , $<span class="hljs-number">2</span>
     o <span class="hljs-string">'-     Expression'</span>,                      (<span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op <span class="hljs-string">'-'</span>, $<span class="hljs-number">2</span>), <span class="hljs-attribute">prec</span>: <span class="hljs-string">'UNARY_MATH'</span>
     o <span class="hljs-string">'+     Expression'</span>,                      (<span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op <span class="hljs-string">'+'</span>, $<span class="hljs-number">2</span>), <span class="hljs-attribute">prec</span>: <span class="hljs-string">'UNARY_MATH'</span>
+    o <span class="hljs-string">'YIELD Statement'</span>,<span class="hljs-function">                        -&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1</span> , $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'YIELD Expression'</span>,<span class="hljs-function">                       -&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1</span> , $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'YIELD FROM Expression'</span>,<span class="hljs-function">                  -&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1.</span>concat($<span class="hljs-number">2</span>) , $<span class="hljs-number">3</span>
 
     o <span class="hljs-string">'-- SimpleAssignable'</span>,<span class="hljs-function">                    -&gt;</span> <span class="hljs-keyword">new</span> Op <span class="hljs-string">'--'</span>, $<span class="hljs-number">2</span>
     o <span class="hljs-string">'++ SimpleAssignable'</span>,<span class="hljs-function">                    -&gt;</span> <span class="hljs-keyword">new</span> Op <span class="hljs-string">'++'</span>, $<span class="hljs-number">2</span>
@@ -1517,6 +1542,7 @@ down. Following these rules is what makes <code>2 + 3 * 4</code> parse as:</p>
   [<span class="hljs-string">'left'</span>,      <span class="hljs-string">'COMPARE'</span>]
   [<span class="hljs-string">'left'</span>,      <span class="hljs-string">'LOGIC'</span>]
   [<span class="hljs-string">'nonassoc'</span>,  <span class="hljs-string">'INDENT'</span>, <span class="hljs-string">'OUTDENT'</span>]
+  [<span class="hljs-string">'right'</span>,     <span class="hljs-string">'YIELD'</span>]
   [<span class="hljs-string">'right'</span>,     <span class="hljs-string">'='</span>, <span class="hljs-string">':'</span>, <span class="hljs-string">'COMPOUND_ASSIGN'</span>, <span class="hljs-string">'RETURN'</span>, <span class="hljs-string">'THROW'</span>, <span class="hljs-string">'EXTENDS'</span>]
   [<span class="hljs-string">'right'</span>,     <span class="hljs-string">'FORIN'</span>, <span class="hljs-string">'FOROF'</span>, <span class="hljs-string">'BY'</span>, <span class="hljs-string">'WHEN'</span>]
   [<span class="hljs-string">'right'</span>,     <span class="hljs-string">'IF'</span>, <span class="hljs-string">'ELSE'</span>, <span class="hljs-string">'FOR'</span>, <span class="hljs-string">'WHILE'</span>, <span class="hljs-string">'UNTIL'</span>, <span class="hljs-string">'LOOP'</span>, <span class="hljs-string">'SUPER'</span>, <span class="hljs-string">'CLASS'</span>]

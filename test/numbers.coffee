@@ -29,6 +29,8 @@ eq Number::toString, 42['toString']
 
 eq Number::toString, 42.toString
 
+eq Number::toString, 2e308['toString'] # Infinity
+
 
 # Non-Integer Literals
 
@@ -74,3 +76,13 @@ test "#2224: hex literals with 0b or B or E", ->
   eq 176, 0x0b0
   eq 177, 0x0B1
   eq 225, 0xE1
+
+test "Infinity", ->
+  eq Infinity, CoffeeScript.eval "0b#{Array(1024 + 1).join('1')}"
+  eq Infinity, CoffeeScript.eval "0o#{Array(342 + 1).join('7')}"
+  eq Infinity, CoffeeScript.eval "0x#{Array(256 + 1).join('f')}"
+  eq Infinity, CoffeeScript.eval Array(500 + 1).join('9')
+  eq Infinity, 2e308
+
+test "NaN", ->
+  ok isNaN 1/NaN

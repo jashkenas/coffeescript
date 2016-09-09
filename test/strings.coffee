@@ -342,6 +342,9 @@ eq """ "\\\" """, ' "\\" '
 
 eq '''  <- keep these spaces ->  ''', '  <- keep these spaces ->  '
 
+eq '''undefined''', 'undefined'
+eq """undefined""", 'undefined'
+
 
 test "#1046, empty string interpolations", ->
   eq "#{ }", ''
@@ -359,3 +362,31 @@ test "strings are not callable", ->
     "a#{b}"
        k: v
   '''
+
+test "#3795: Escape otherwise invalid characters", ->
+  eq ' ', '\u2028'
+  eq ' ', '\u2029'
+  eq '\0\
+      1', '\x001'
+  eq " ", '\u2028'
+  eq " ", '\u2029'
+  eq "\0\
+      1", '\x001'
+  eq ''' ''', '\u2028'
+  eq ''' ''', '\u2029'
+  eq '''\0\
+      1''', '\x001'
+  eq """ """, '\u2028'
+  eq """ """, '\u2029'
+  eq """\0\
+      1""", '\x001'
+
+  a = 'a'
+  eq "#{a} ", 'a\u2028'
+  eq "#{a} ", 'a\u2029'
+  eq "#{a}\0\
+      1", 'a\0' + '1'
+  eq """#{a} """, 'a\u2028'
+  eq """#{a} """, 'a\u2029'
+  eq """#{a}\0\
+      1""", 'a\0' + '1'

@@ -418,3 +418,12 @@ test "#3638: Demand a whitespace after # symbol", ->
   """
 
   eq CoffeeScript.compile(input, bare: on), result
+
+test "#3761: Multiline comment at end of an object", ->
+  anObject =
+    x: 3
+    ###
+    #Comment
+    ###
+
+  ok anObject.x is 3

@@ -8,7 +8,7 @@
     "compiler"
   ],
   "author": "Jeremy Ashkenas",
-  "version": "1.8.0",
+  "version": "1.10.0",
   "license": "MIT",
   "engines": {
     "node": ">=0.8.0"
@@ -37,9 +37,6 @@
     "jison": ">=0.2.0",
     "highlight.js": "~8.0.0",
     "underscore": "~1.5.2",
-    "docco": "~0.6.2"
-  },
-  "dependencies": {
-    "mkdirp": "~0.3.5"
+    "docco": "~0.7.0"
   }
 }

@@ -4,5 +4,3 @@ $ 'body'
   .fadeIn 'fast'
   .addClass '.active'
 .css 'background', 'white'
-
-

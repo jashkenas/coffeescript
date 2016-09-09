@@ -265,3 +265,24 @@ test "regexes are not callable", ->
     ///a#{b}///
        k: v
   '''
+
+test "backreferences", ->
+  ok /(a)(b)\2\1/.test 'abba'
+
+test "#3795: Escape otherwise invalid characters", ->
+  ok (/ /).test '\u2028'
+  ok (/ /).test '\u2029'
+  ok ///\ ///.test '\u2028'
+  ok ///\ ///.test '\u2029'
+  ok ///a b///.test 'ab' # The space is U+2028.
+  ok ///a b///.test 'ab' # The space is U+2029.
+  ok ///\0
+      1///.test '\x001'
+
+  a = 'a'
+  ok ///#{a} b///.test 'ab' # The space is U+2028.
+  ok ///#{a} b///.test 'ab' # The space is U+2029.
+  ok ///#{a}\ ///.test 'a\u2028'
+  ok ///#{a}\ ///.test 'a\u2029'
+  ok ///#{a}\0
+      1///.test 'a\x001'

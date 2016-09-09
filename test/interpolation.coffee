@@ -137,17 +137,20 @@ eq 'multiline nested "interpolations" work', """multiline #{
   )()}"
 } work"""
 
+eq 'function(){}', "#{->}".replace /\s/g, ''
+ok /^a[\s\S]+b$/.test "a#{=>}b"
+ok /^a[\s\S]+b$/.test "a#{ (x) -> x ** 2 }b"
 
 # Regular Expression Interpolation
 
 # TODO: improve heregex interpolation tests
 
 test "heregex interpolation", ->
-  eq /\\#{}\\\"/ + '', ///
+  eq /\\#{}\\"/ + '', ///
    #{
      "#{ '\\' }" # normal comment
    }
    # regex comment
    \#{}
-   \\ \"
+   \\ "
   /// + ''

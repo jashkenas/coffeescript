@@ -282,13 +282,6 @@ runTests = (CoffeeScript) ->
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
 
-  # Ignore generator dependent test files if generators are not available
-  generatorsAreAvailable = '--harmony' in process.execArgv or
-    '--harmony-generators' in process.execArgv
-  unless generatorsAreAvailable
-    for harmonyFile in harmonyFiles
-      files.splice files.indexOf(harmonyFile), 1
-
   for file in files when helpers.isCoffee file
     literate = helpers.isLiterate file
     currentFile = filename = path.join 'test', file

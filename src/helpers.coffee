@@ -49,7 +49,7 @@ extend = exports.extend = (object, properties) ->
 exports.flatten = flatten = (array) ->
   flattened = []
   for element in array
-    if element instanceof Array
+    if '[object Array]' is Object::toString.call element
       flattened = flattened.concat flatten element
     else
       flattened.push element
@@ -61,9 +61,6 @@ exports.del = (obj, key) ->
   val =  obj[key]
   delete obj[key]
   val
-
-# Gets the last item of an array(-like) object.
-exports.last = last = (array, back) -> array[array.length - (back or 0) - 1]
 
 # Typical Array::some
 exports.some = Array::some ? (fn) ->
@@ -176,7 +173,7 @@ syntaxErrorToString = ->
 
   # Check to see if we're running on a color-enabled TTY.
   if process?
-    colorsEnabled = process.stdout.isTTY and not process.env.NODE_DISABLE_COLORS
+    colorsEnabled = process.stdout?.isTTY and not process.env?.NODE_DISABLE_COLORS
 
   if @colorful ? colorsEnabled
     colorize = (str) -> "\x1B[1;31m#{str}\x1B[0m"
