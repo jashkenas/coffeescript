@@ -535,7 +535,7 @@ grammar =
     o 'FORIN Expression WHEN Expression BY Expression', -> source: $2, guard: $4, step: $6
     o 'FORIN Expression BY Expression WHEN Expression', -> source: $2, step:  $4, guard: $6
     o 'FORFROM Expression',                             -> source: $2, from: yes
-    o 'FORFROM Expression WHEN Expression',               -> source: $2, guard: $4, from: yes
+    o 'FORFROM Expression WHEN Expression',             -> source: $2, guard: $4, from: yes
   ]
 
   Switch: [
