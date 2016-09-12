@@ -534,6 +534,8 @@ grammar =
     o 'FORIN Expression BY Expression',                 -> source: $2, step:  $4
     o 'FORIN Expression WHEN Expression BY Expression', -> source: $2, guard: $4, step: $6
     o 'FORIN Expression BY Expression WHEN Expression', -> source: $2, step:  $4, guard: $6
+    o 'FORFROM Expression',                             -> source: $2, from: yes
+    o 'FORFROM Expression WHEN Expression',               -> source: $2, guard: $4, from: yes
   ]
 
   Switch: [
@@ -643,7 +645,7 @@ operators = [
   ['nonassoc',  'INDENT', 'OUTDENT']
   ['right',     'YIELD']
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
-  ['right',     'FORIN', 'FOROF', 'BY', 'WHEN']
+  ['right',     'FORIN', 'FOROF', 'FORFROM', 'BY', 'WHEN']
   ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
   ['left',      'POST_IF']
 ]

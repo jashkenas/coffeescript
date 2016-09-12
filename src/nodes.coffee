@@ -2095,13 +2095,15 @@ exports.For = class For extends While
     @body    = Block.wrap [body]
     @own     = !!source.own
     @object  = !!source.object
-    [@name, @index] = [@index, @name] if @object
+    @from    = !!source.from
+    [@name, @index] = [@index, @name] if @object or @from
     @index.error 'index cannot be a pattern matching expression' if @index instanceof Value
     @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length
     @pattern = @name instanceof Value
     @index.error 'indexes do not apply to range loops' if @range and @index
     @name.error 'cannot pattern match over range loops' if @range and @pattern
     @name.error 'cannot use own with for-in' if @own and not @object
+    @name.error 'cannot use index with for-from' if @from and @name
     @returns = false
 
   children: ['body', 'source', 'guard', 'step']
@@ -2121,7 +2123,7 @@ exports.For = class For extends While
     scope.find(name)  if name and not @pattern
     scope.find(index) if index
     rvar        = scope.freeVariable 'results' if @returns
-    ivar        = (@object and index) or scope.freeVariable 'i', single: true
+    ivar        = ((@object or @from) and index) or scope.freeVariable 'i', single: true
     kvar        = (@range and name) or index or ivar
     kvarAssign  = if kvar isnt ivar then "#{kvar} = " else ""
     if @step and not @range
@@ -2142,7 +2144,7 @@ exports.For = class For extends While
         svar       = ref
       if name and not @pattern
         namePart   = "#{name} = #{svar}[#{kvar}]"
-      if not @object
+      if not (@object or @from)
         defPart += "#{@tab}#{step};\n" if step isnt stepVar
         down = stepNum < 0
         lvar = scope.freeVariable 'len' unless @step and stepNum? and down
@@ -2178,6 +2180,9 @@ exports.For = class For extends While
     if @object
       forPartFragments   = [@makeCode("#{kvar} in #{svar}")]
       guardPart = "\n#{idt1}if (!#{utility 'hasProp', o}.call(#{svar}, #{kvar})) continue;" if @own
+    if @from
+      forPartFragments   = [@makeCode("#{kvar} of #{svar}")]
+      guardPart = "\n"
     bodyFragments = body.compileToFragments merge(o, indent: idt1), LEVEL_TOP
     if bodyFragments and (bodyFragments.length > 0)
       bodyFragments = [].concat @makeCode("\n"), bodyFragments, @makeCode("\n")

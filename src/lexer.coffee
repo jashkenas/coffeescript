@@ -42,7 +42,7 @@ exports.Lexer = class Lexer
     @indents    = []             # The stack of all current indentation levels.
     @ends       = []             # The stack for pairing up tokens.
     @tokens     = []             # Stream of parsed tokens in the form `['TYPE', value, location data]`.
-    @seenFor    = no             # Used to recognize FORIN and FOROF tokens.
+    @seenFor    = no             # Used to recognize FORIN, FOROF and FORFROM tokens.
 
     @chunkLine =
       opts.line or 0         # The start line for the current @chunk.
@@ -121,7 +121,11 @@ exports.Lexer = class Lexer
         'PROPERTY'
       else
         'IDENTIFIER'
-
+    
+    if tag is 'IDENTIFIER' and @seenFor and id is 'from'
+      tag = 'FORFROM'
+      @seenFor = no
+    
     if tag is 'IDENTIFIER' and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS)
       tag = id.toUpperCase()
       if tag is 'WHEN' and @tag() in LINE_BREAK

@@ -123,3 +123,10 @@ test "#3001: `own` shouldn't be allowed in a `for`-`in` loop", ->
 
 test "#2994: single-line `if` requires `then`", ->
   cantCompile "if b else x"
+
+test "indexes are not supported in for-from loops", ->
+  cantCompile "x for x, i from [1, 2, 3]"
+
+test "own is not supported in for-from loops", ->
+  cantCompile "x for own x from [1, 2, 3]"
+

@@ -107,3 +107,21 @@ test "regex interpolation in array", ->
   eq 2, arr.length
   eq 'ab', arr[0].source
   eq 'value', arr[1].key
+
+
+test "for-from loops over Array", ->
+  array1 = [50, 30, 70, 20]
+  array2 = []
+  for x from array1
+    array2.push(x)
+  arrayEq array1, array2
+
+
+test "for-from comprehensions over Array", ->
+
+  array1 = (x + 10 for x from [10, 20, 30])
+  ok array1.join(' ') is '20 30 40'
+
+  array2 = (x for x from [30, 41, 57] when x %% 3 == 0)
+  ok array2.join(' ') is '30 57'
+
