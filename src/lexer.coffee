@@ -122,32 +122,32 @@ exports.Lexer = class Lexer
       else
         'IDENTIFIER'
     
-    if tag is 'IDENTIFIER' and @seenFor and id is 'from'
-      tag = 'FORFROM'
-      @seenFor = no
-    
-    if tag is 'IDENTIFIER' and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS)
-      tag = id.toUpperCase()
-      if tag is 'WHEN' and @tag() in LINE_BREAK
-        tag = 'LEADING_WHEN'
-      else if tag is 'FOR'
-        @seenFor = yes
-      else if tag is 'UNLESS'
-        tag = 'IF'
-      else if tag in UNARY
-        tag = 'UNARY'
-      else if tag in RELATION
-        if tag isnt 'INSTANCEOF' and @seenFor
-          tag = 'FOR' + tag
-          @seenFor = no
-        else
-          tag = 'RELATION'
-          if @value() is '!'
-            poppedToken = @tokens.pop()
-            id = '!' + id
-
-    if tag is 'IDENTIFIER' and id in RESERVED
-      @error "reserved word '#{id}'", length: id.length
+    if tag is 'IDENTIFIER'
+      if @seenFor and id is 'from'
+        tag = 'FORFROM'
+        @seenFor = no
+      else if id in JS_KEYWORDS or id in COFFEE_KEYWORDS
+        tag = id.toUpperCase()
+        if tag is 'WHEN' and @tag() in LINE_BREAK
+          tag = 'LEADING_WHEN'
+        else if tag is 'FOR'
+          @seenFor = yes
+        else if tag is 'UNLESS'
+          tag = 'IF'
+        else if tag in UNARY
+          tag = 'UNARY'
+        else if tag in RELATION
+          if tag isnt 'INSTANCEOF' and @seenFor
+            tag = 'FOR' + tag
+            @seenFor = no
+          else
+            tag = 'RELATION'
+            if @value() is '!'
+              poppedToken = @tokens.pop()
+              id = '!' + id
+      
+      if id in RESERVED
+        @error "reserved word '#{id}'", length: id.length
 
     unless tag is 'PROPERTY'
       if id in COFFEE_ALIASES
