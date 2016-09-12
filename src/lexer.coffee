@@ -121,7 +121,7 @@ exports.Lexer = class Lexer
         'PROPERTY'
       else
         'IDENTIFIER'
-    
+
     if tag is 'IDENTIFIER'
       if @seenFor and id is 'from'
         tag = 'FORFROM'
@@ -145,7 +145,7 @@ exports.Lexer = class Lexer
             if @value() is '!'
               poppedToken = @tokens.pop()
               id = '!' + id
-      
+
       if id in RESERVED
         @error "reserved word '#{id}'", length: id.length
 

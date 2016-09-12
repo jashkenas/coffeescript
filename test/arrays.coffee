@@ -116,6 +116,19 @@ test "for-from loops over Array", ->
     array2.push(x)
   arrayEq array1, array2
 
+  array1 = [[20, 30], [40, 50]]
+  array2 = []
+  for [a, b] from array1
+    array2.push(b)
+    array2.push(a)
+  arrayEq array2, [30, 20, 50, 40]
+
+  array1 = [{a: 10, b: 20, c: 30}, {a: 40, b: 50, c: 60}]
+  array2 = []
+  for {a: a, b, c: d} from array1
+    array2.push([a, b, d])
+  arrayEq array2, [[10, 20, 30], [40, 50, 60]]
+
 
 test "for-from comprehensions over Array", ->
 
@@ -125,3 +138,8 @@ test "for-from comprehensions over Array", ->
   array2 = (x for x from [30, 41, 57] when x %% 3 == 0)
   ok array2.join(' ') is '30 57'
 
+  array1 = (b + 5 for [a, b] from [[20, 30], [40, 50]])
+  ok array1.join(' ') is '35 55'
+
+  array2 = (a + b for [a, b] from [[10, 20], [30, 40], [50, 60]] when a + b >= 70)
+  ok array2.join(' ') is '70 110'
