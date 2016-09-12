@@ -2098,7 +2098,7 @@ exports.For = class For extends While
     @from    = !!source.from
     [@name, @index] = [@index, @name] if @object or @from
     @index.error 'index cannot be a pattern matching expression' if @index instanceof Value
-    @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length
+    @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length and not @from
     @pattern = @name instanceof Value
     @index.error 'indexes do not apply to range loops' if @range and @index
     @name.error 'cannot pattern match over range loops' if @range and @pattern
@@ -2182,7 +2182,6 @@ exports.For = class For extends While
       guardPart = "\n#{idt1}if (!#{utility 'hasProp', o}.call(#{svar}, #{kvar})) continue;" if @own
     if @from
       forPartFragments   = [@makeCode("#{kvar} of #{svar}")]
-      guardPart = "\n"
     bodyFragments = body.compileToFragments merge(o, indent: idt1), LEVEL_TOP
     if bodyFragments and (bodyFragments.length > 0)
       bodyFragments = [].concat @makeCode("\n"), bodyFragments, @makeCode("\n")
