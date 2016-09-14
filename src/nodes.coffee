@@ -1250,17 +1250,30 @@ exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
 
     code = []
     code.push @makeCode "#{@tab}import "
-
-    if @clause? and @clause.length isnt 0
-      for subclause, index in @clause
-        code.push @makeCode ', ' if index isnt 0
-        code = code.concat subclause.compileNode o
+    code.push @clause.compileNode(o)... if @clause?
 
     if @source?.value?
       code.push @makeCode ' from ' unless @clause is null
       code.push @makeCode @source.value
 
     code.push @makeCode ';'
+    code
+
+exports.ImportClause = class ImportClause extends Base
+  constructor: (@defaultBinding, @namedImports) ->
+
+  children: ['defaultBinding', 'namedImports']
+
+  compileNode: (o) ->
+    code = []
+
+    if @defaultBinding?
+      code.push @defaultBinding.compileNode(o)...
+      code.push @makeCode ', ' if @namedImports?
+
+    if @namedImports?
+      code.push @namedImports.compileNode(o)...
+
     code
 
 exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration

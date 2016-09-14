@@ -353,12 +353,12 @@ grammar =
 
   Import: [
     o 'IMPORT String',                                                                -> new ImportDeclaration null, $2
-    o 'IMPORT ImportDefaultSpecifier FROM String',                                    -> new ImportDeclaration [$2], $4
-    o 'IMPORT ImportNamespaceSpecifier FROM String',                                  -> new ImportDeclaration [$2], $4
-    o 'IMPORT { } FROM String',                                                       -> new ImportDeclaration [new ImportSpecifierList []], $5
-    o 'IMPORT { ImportSpecifierList OptComma } FROM String',                          -> new ImportDeclaration [new ImportSpecifierList $3], $7
-    o 'IMPORT ImportDefaultSpecifier , ImportNamespaceSpecifier FROM String',         -> new ImportDeclaration [$2, $4], $6
-    o 'IMPORT ImportDefaultSpecifier , { ImportSpecifierList OptComma } FROM String', -> new ImportDeclaration [$2, new ImportSpecifierList($5)], $9
+    o 'IMPORT ImportDefaultSpecifier FROM String',                                    -> new ImportDeclaration new ImportClause($2, null), $4
+    o 'IMPORT ImportNamespaceSpecifier FROM String',                                  -> new ImportDeclaration new ImportClause(null, $2), $4
+    o 'IMPORT { } FROM String',                                                       -> new ImportDeclaration new ImportClause(null, new ImportSpecifierList []), $5
+    o 'IMPORT { ImportSpecifierList OptComma } FROM String',                          -> new ImportDeclaration new ImportClause(null, new ImportSpecifierList $3), $7
+    o 'IMPORT ImportDefaultSpecifier , ImportNamespaceSpecifier FROM String',         -> new ImportDeclaration new ImportClause($2, $4), $6
+    o 'IMPORT ImportDefaultSpecifier , { ImportSpecifierList OptComma } FROM String', -> new ImportDeclaration new ImportClause($2, new ImportSpecifierList $5), $9
   ]
 
   ImportSpecifierList: [
