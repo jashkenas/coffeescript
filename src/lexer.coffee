@@ -683,7 +683,7 @@ exports.Lexer = class Lexer
 
     # Use length - 1 for the final offset - we're supplying the last_line and the last_column,
     # so if last_column == first_column, then we're looking at a character of length 1.
-    lastCharacter = Math.max 0, length - 1
+    lastCharacter = if length > 0 then (length - 1) else 0
     [locationData.last_line, locationData.last_column] =
       @getLineAndColumnFromChunk offsetInChunk + lastCharacter
 

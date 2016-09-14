@@ -450,6 +450,25 @@ test "#3621: Multiline regex and manual `Regex` call with interpolation should
       eq tokenA.origin?[1], tokenB.origin?[1]
     eq tokenA.stringEnd, tokenB.stringEnd
 
+test "Verify tokens have locations that are in order", ->
+  source = '''
+    a {
+      b: ->
+        return c d,
+          if e
+            f
+    }
+    g
+  '''
+  tokens = CoffeeScript.tokens source
+  lastToken = null
+  for token in tokens
+    if lastToken
+      ok token[2].first_line >= lastToken[2].last_line
+      if token[2].first_line == lastToken[2].last_line
+        ok token[2].first_column >= lastToken[2].last_column
+    lastToken = token
+
 test "Verify all tokens get a location", ->
   doesNotThrow ->
     tokens = CoffeeScript.tokens testScript
