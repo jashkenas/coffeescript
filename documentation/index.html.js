@@ -41,6 +41,7 @@
         <a href="#comparisons">Chained Comparisons</a>
         <a href="#strings">String Interpolation, Block Strings, and Block Comments</a>
         <a href="#regexes">Block Regular Expressions</a>
+        <a href="#modules">Modules</a>
         <a href="#cake">Cake, and Cakefiles</a>
         <a href="#source-maps">Source Maps</a>
         <a href="#scripts">"text/coffeescript" Script Tags</a>
@@ -936,6 +937,24 @@ Expressions
       regular expressions readable. To quote from the CoffeeScript source:
     </p>
     <%= codeFor('heregexes') %>
+
+    <p>
+      <span id="modules" class="bookmark"></span>
+      <b class="header">Modules</b>
+      ES2015 modules are supported in CoffeeScript, with a very similar <code>import</code>
+      and <code>export</code> syntax:
+    </p>
+    <%= codeFor('modules') %>
+    <p>
+      Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an
+      <code>import</code> or <code>export</code> statement in CoffeeScript will produce an
+      <code>import</code> or <code>export</code> statement in the resulting output JavaScript.
+      It is your responsibility attach another transpiler, such as
+      <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>,
+      <a href="http://babeljs.io/">Babel</a>&nbsp;or
+      <a href="https://github.com/rollup/rollup">Rollup</a>, to convert this ES2015 syntax into
+      code that will work in your target runtimes.
+    </p>
 
 
     <h2>
