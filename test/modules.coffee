@@ -608,6 +608,22 @@ test "`as` can be used as an alias name", ->
     } from 'lib';"""
   eq toJS(input), output
 
+test "`*` can be used in an expression on the same line as an export keyword", ->
+  input = "export foo = (x) -> x * x"
+  output = """
+    export var foo = function(x) {
+      return x * x;
+    };"""
+  eq toJS(input), output
+  input = "export default foo = (x) -> x * x"
+  output = """
+    var foo;
+
+    export default foo = function(x) {
+      return x * x;
+    };"""
+  eq toJS(input), output
+
 test "`*` and `from` can be used in an export default expression", ->
   input = """
     export default foo.extend
