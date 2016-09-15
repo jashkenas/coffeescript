@@ -23,8 +23,9 @@
   },
   "preferGlobal": true,
   "scripts": {
-    "test":         "node ./bin/cake test",
-    "test-harmony": "node --harmony ./bin/cake test"
+    "test": "node ./bin/cake test",
+    "test-harmony": "node --harmony ./bin/cake test",
+    "coverage": "nyc npm test && nyc report"
   },
   "homepage": "http://coffeescript.org",
   "bugs": "https://github.com/jashkenas/coffeescript/issues",
@@ -33,10 +34,11 @@
     "url": "git://github.com/jashkenas/coffeescript.git"
   },
   "devDependencies": {
-    "uglify-js": "~2.2",
-    "jison": ">=0.2.0",
+    "docco": "~0.7.0",
     "highlight.js": "~8.0.0",
-    "underscore": "~1.5.2",
-    "docco": "~0.7.0"
+    "jison": ">=0.2.0",
+    "nyc": "^2.1.3",
+    "uglify-js": "~2.2",
+    "underscore": "~1.5.2"
   }
 }
