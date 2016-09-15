@@ -115,7 +115,11 @@ exports.Lexer = class Lexer
     if id is 'from' and @tag() is 'YIELD'
       @token 'FROM', id
       return id.length
-    if id is 'as' and (@seenImport or @seenExport) and @tag() in ['IDENTIFIER', 'IMPORT_ALL', 'EXPORT_ALL']
+    if id is 'as' and @seenImport and (@tag() is 'IDENTIFIER' or @value() is '*')
+      @tokens[@tokens.length - 1][0] = 'IMPORT_ALL' if @value() is '*'
+      @token 'AS', id
+      return id.length
+    if id is 'as' and @seenExport and @tag() is 'IDENTIFIER'
       @token 'AS', id
       return id.length
     if id is 'default' and @seenExport
@@ -450,8 +454,8 @@ exports.Lexer = class Lexer
     if value is ';'
       @seenFor = @seenImport = @seenExport = no
       tag = 'TERMINATOR'
-    else if value is '*' and @indent is 0 and (@seenImport or @seenExport)
-      tag = if @seenImport then 'IMPORT_ALL' else 'EXPORT_ALL'
+    else if value is '*' and prev[0] is 'EXPORT'
+      tag = 'EXPORT_ALL'
     else if value in MATH            then tag = 'MATH'
     else if value in COMPARE         then tag = 'COMPARE'
     else if value in COMPOUND_ASSIGN then tag = 'COMPOUND_ASSIGN'
