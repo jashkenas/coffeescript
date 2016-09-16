@@ -468,10 +468,11 @@ Expressions
     </p>
     <p>
       If you'd like to create top-level variables for other scripts to use,
-      attach them as properties on <b>window</b>, or on the <b>exports</b>
-      object in CommonJS. The <b>existential operator</b> (covered below), gives you a
-      reliable way to figure out where to add them; if you're targeting both
-      CommonJS and the browser: <code>exports ? this</code>
+      attach them as properties on <b>window</b>; attach them as properties on the
+      <b>exports</b> object in CommonJS; or use an <a href="#modules"><code>export</code>
+      statement</a>. If you’re targeting both CommonJS and the browser, the
+      <b>existential operator</b> (covered below), gives you a
+      reliable way to figure out where to add them: <code>exports ? this</code>
     </p>
 
     <p>
