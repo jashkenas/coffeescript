@@ -14,7 +14,7 @@
   "devDependencies": {
     "uglify-js": "~2.2",
     "jison": ">=0.2.0",
-    "highlight.js": "~8.0.0",
+    "highlight.js": "~9.6.0",
     "underscore": "~1.5.2",
     "docco": "~0.6.2"
   },
