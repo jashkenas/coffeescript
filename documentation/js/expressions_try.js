@@ -2,6 +2,7 @@
 var error;
 
 alert((function() {
+  var error1;
   try {
     return nonexistent / void 0;
   } catch (error1) {
