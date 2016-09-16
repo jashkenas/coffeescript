@@ -6,7 +6,7 @@ perfectSquares = function*() {
   num = 0;
   while (true) {
     num += 1;
-    (yield num * num);
+    yield num * num;
   }
 };
 
