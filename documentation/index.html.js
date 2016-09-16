@@ -948,14 +948,19 @@ Expressions
     <p>
       Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an
       <code>import</code> or <code>export</code> statement in CoffeeScript will produce an
-      <code>import</code> or <code>export</code> statement in the resulting output JavaScript.
+      <code>import</code> or <code>export</code> statement in the resulting output.
       It is your responsibility attach another transpiler, such as
       <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>,
       <a href="http://babeljs.io/">Babel</a>&nbsp;or
       <a href="https://github.com/rollup/rollup">Rollup</a>, to convert this ES2015 syntax into
       code that will work in your target runtimes.
     </p>
-
+    <p>
+      Also note that any file with an <code>import</code> or <code>export</code> statement will
+      be output without a <a href="#lexical-scope">top-level function safety wrapper</a>;
+      in other words, importing or exporting modules will automatically trigger
+      <a href="#usage">bare</a> mode for that file. This is because per the ES2015 spec,
+      <code>import</code> or <code>export</code> statements must occur at the topmost scope.
 
     <h2>
       <span id="cake" class="bookmark"></span>
