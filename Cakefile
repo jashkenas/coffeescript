@@ -56,8 +56,7 @@ codeFor = ->
     cshtml = "<pre><code>#{hljs.highlight('coffeescript', cs).value}</code></pre>"
     # Temporary fix until highlight.js adds support for newer CoffeeScript reserved words
     if file is 'modules'
-      for reservedWord in ['import', 'export', 'from', 'as', 'default']
-        cshtml = cshtml.replace new RegExp("#{reservedWord} ", 'g'), "<span class=\"reserved\">#{reservedWord}</span> "
+      cshtml = cshtml.replace /(import|export|from|as|default) /g, '<span class="reserved">$1</span> '
     jshtml = "<pre><code>#{hljs.highlight('javascript', js).value}</code></pre>"
     append = if executable is yes then '' else "alert(#{executable});"
     if executable and executable != yes

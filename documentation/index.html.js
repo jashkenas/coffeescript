@@ -942,7 +942,7 @@ Expressions
     <p>
       <span id="modules" class="bookmark"></span>
       <b class="header">Modules</b>
-      ES2015 modules are supported in CoffeeScript, with a very similar <code>import</code>
+      ES2015 modules are supported in CoffeeScript, with very similar <code>import</code>
       and <code>export</code> syntax:
     </p>
     <%= codeFor('modules') %>
