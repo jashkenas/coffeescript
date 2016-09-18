@@ -129,6 +129,11 @@ test "for-from loops over Array", ->
     array2.push([a, b, d])
   arrayEq array2, [[10, 20, 30], [40, 50, 60]]
 
+  array1 = [[10, 20, 30, 40, 50]]
+  for [a, b..., c] from array1
+    eq 10, a
+    arrayEq [20, 30, 40], b
+    eq 50, c
 
 test "for-from comprehensions over Array", ->
 
