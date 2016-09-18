@@ -41,6 +41,7 @@
         <a href="#comparisons">Chained Comparisons</a>
         <a href="#strings">String Interpolation, Block Strings, and Block Comments</a>
         <a href="#regexes">Block Regular Expressions</a>
+        <a href="#modules">Modules</a>
         <a href="#cake">Cake, and Cakefiles</a>
         <a href="#source-maps">Source Maps</a>
         <a href="#scripts">"text/coffeescript" Script Tags</a>
@@ -467,10 +468,11 @@ Expressions
     </p>
     <p>
       If you'd like to create top-level variables for other scripts to use,
-      attach them as properties on <b>window</b>, or on the <b>exports</b>
-      object in CommonJS. The <b>existential operator</b> (covered below), gives you a
-      reliable way to figure out where to add them; if you're targeting both
-      CommonJS and the browser: <code>exports ? this</code>
+      attach them as properties on <b>window</b>; attach them as properties on the
+      <b>exports</b> object in CommonJS; or use an <a href="#modules"><code>export</code>
+      statement</a>. If you’re targeting both CommonJS and the browser, the
+      <b>existential operator</b> (covered below), gives you a
+      reliable way to figure out where to add them: <code>exports ? this</code>
     </p>
 
     <p>
@@ -937,6 +939,29 @@ Expressions
     </p>
     <%= codeFor('heregexes') %>
 
+    <p>
+      <span id="modules" class="bookmark"></span>
+      <b class="header">Modules</b>
+      ES2015 modules are supported in CoffeeScript, with very similar <code>import</code>
+      and <code>export</code> syntax:
+    </p>
+    <%= codeFor('modules') %>
+    <p>
+      Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an
+      <code>import</code> or <code>export</code> statement in CoffeeScript will produce an
+      <code>import</code> or <code>export</code> statement in the resulting output.
+      It is your responsibility attach another transpiler, such as
+      <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>,
+      <a href="http://babeljs.io/">Babel</a>&nbsp;or
+      <a href="https://github.com/rollup/rollup">Rollup</a>, to convert this ES2015 syntax into
+      code that will work in your target runtimes.
+    </p>
+    <p>
+      Also note that any file with an <code>import</code> or <code>export</code> statement will
+      be output without a <a href="#lexical-scope">top-level function safety wrapper</a>;
+      in other words, importing or exporting modules will automatically trigger
+      <a href="#usage">bare</a> mode for that file. This is because per the ES2015 spec,
+      <code>import</code> or <code>export</code> statements must occur at the topmost scope.
 
     <h2>
       <span id="cake" class="bookmark"></span>
