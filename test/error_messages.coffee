@@ -177,6 +177,12 @@ test "#1096: unexpected generated tokens", ->
     a"""#{b}"""
      ^^^^^^^^^^
   '''
+  assertErrorFormat 'import foo from "lib-#{version}"', '''
+    [stdin]:1:17: error: the name of the module to be imported from must be an uninterpolated string
+    import foo from "lib-#{version}"
+                    ^^^^^^^^^^^^^^^^
+  '''
+
   # Unexpected number
   assertErrorFormat '"a"0x00Af2', '''
     [stdin]:1:4: error: unexpected number
@@ -988,4 +994,161 @@ test "`&&=` and `||=` with a space in-between", ->
     [stdin]:2:6: error: unexpected =
     a or = 1
          ^
+  '''
+
+test "anonymous functions cannot be exported", ->
+  assertErrorFormat '''
+    export ->
+      console.log 'hello, world!'
+  ''', '''
+    [stdin]:1:8: error: unexpected ->
+    export ->
+           ^^
+  '''
+
+test "anonymous classes cannot be exported", ->
+  assertErrorFormat '''
+    export class
+      constructor: ->
+        console.log 'hello, world!'
+  ''', '''
+    SyntaxError: Unexpected token export
+  '''
+
+test "unless enclosed by curly braces, only * can be aliased", ->
+  assertErrorFormat '''
+    import foo as bar from 'lib'
+  ''', '''
+    [stdin]:1:12: error: unexpected as
+    import foo as bar from 'lib'
+               ^^
+  '''
+
+test "unwrapped imports must follow constrained syntax", ->
+  assertErrorFormat '''
+    import foo, bar from 'lib'
+  ''', '''
+    [stdin]:1:13: error: unexpected identifier
+    import foo, bar from 'lib'
+                ^^^
+  '''
+  assertErrorFormat '''
+    import foo, bar, baz from 'lib'
+  ''', '''
+    [stdin]:1:13: error: unexpected identifier
+    import foo, bar, baz from 'lib'
+                ^^^
+  '''
+  assertErrorFormat '''
+    import foo, bar as baz from 'lib'
+  ''', '''
+    [stdin]:1:13: error: unexpected identifier
+    import foo, bar as baz from 'lib'
+                ^^^
+  '''
+
+test "cannot export * without a module to export from", ->
+  assertErrorFormat '''
+    export *
+  ''', '''
+    [stdin]:1:9: error: unexpected end of input
+    export *
+            ^
+  '''
+
+test "imports and exports must be top-level", ->
+  assertErrorFormat '''
+    if foo
+      import { bar } from 'lib'
+  ''', '''
+    [stdin]:2:3: error: import statements must be at top-level scope
+      import { bar } from 'lib'
+      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  '''
+  assertErrorFormat '''
+    foo = ->
+      export { bar }
+  ''', '''
+    [stdin]:2:3: error: export statements must be at top-level scope
+      export { bar }
+      ^^^^^^^^^^^^^^
+  '''
+
+test "cannot import the same member more than once", ->
+  assertErrorFormat '''
+    import { foo, foo } from 'lib'
+  ''', '''
+    [stdin]:1:15: error: 'foo' has already been declared
+    import { foo, foo } from 'lib'
+                  ^^^
+  '''
+  assertErrorFormat '''
+    import { foo, bar, foo } from 'lib'
+  ''', '''
+    [stdin]:1:20: error: 'foo' has already been declared
+    import { foo, bar, foo } from 'lib'
+                       ^^^
+  '''
+  assertErrorFormat '''
+    import { foo, bar as foo } from 'lib'
+  ''', '''
+    [stdin]:1:15: error: 'foo' has already been declared
+    import { foo, bar as foo } from 'lib'
+                  ^^^^^^^^^^
+  '''
+  assertErrorFormat '''
+    import foo, { foo } from 'lib'
+  ''', '''
+    [stdin]:1:15: error: 'foo' has already been declared
+    import foo, { foo } from 'lib'
+                  ^^^
+  '''
+  assertErrorFormat '''
+    import foo, { bar as foo } from 'lib'
+  ''', '''
+    [stdin]:1:15: error: 'foo' has already been declared
+    import foo, { bar as foo } from 'lib'
+                  ^^^^^^^^^^
+  '''
+  assertErrorFormat '''
+    import foo from 'libA'
+    import foo from 'libB'
+  ''', '''
+    [stdin]:2:8: error: 'foo' has already been declared
+    import foo from 'libB'
+           ^^^
+  '''
+  assertErrorFormat '''
+    import * as foo from 'libA'
+    import { foo } from 'libB'
+  ''', '''
+    [stdin]:2:10: error: 'foo' has already been declared
+    import { foo } from 'libB'
+             ^^^
+  '''
+
+test "imported members cannot be reassigned", ->
+  assertErrorFormat '''
+    import { foo } from 'lib'
+    foo = 'bar'
+  ''', '''
+    [stdin]:2:1: error: 'foo' is read-only
+    foo = 'bar'
+    ^^^
+  '''
+  assertErrorFormat '''
+    import { foo } from 'lib'
+    export default foo = 'bar'
+  ''', '''
+    [stdin]:2:16: error: 'foo' is read-only
+    export default foo = 'bar'
+                   ^^^
+  '''
+  assertErrorFormat '''
+    import { foo } from 'lib'
+    export foo = 'bar'
+  ''', '''
+    [stdin]:2:8: error: 'foo' is read-only
+    export foo = 'bar'
+           ^^^
   '''
