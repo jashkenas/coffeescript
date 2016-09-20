@@ -254,3 +254,33 @@ test "#1275: allow indentation before closing brackets", ->
     a = 1
    )
   eq 1, a
+
+test "don’t allow mixing of spaces and tabs for indentation", ->
+  try
+    CoffeeScript.compile '''
+      new Layer
+       x: 0
+      	y: 1
+    '''
+    ok no
+  catch e
+    eq 'indentation mismatch', e.message
+
+test "indentation can be a mix of spaces and tabs, if each line is the same", ->
+  doesNotThrow ->
+    CoffeeScript.compile '''
+      new Layer
+      	 x: 0
+      	 y: 1
+    '''
+
+test "each code block that starts at indentation 0 can use a different style", ->
+    doesNotThrow ->
+      CoffeeScript.compile '''
+        new Layer
+         x: 0
+         y: 1
+        new Layer
+        	x: 0
+        	y: 1
+      '''
