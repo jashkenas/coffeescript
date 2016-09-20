@@ -349,6 +349,10 @@ exports.Lexer = class Lexer
     noNewlines = @unfinished()
 
     newIndentLiteral = if size > 0 then indent[-size..] else ''
+    unless /^(.?)\1*$/.exec newIndentLiteral
+      @error 'mixed indentation', offset: indent.length
+      return indent.length
+
     minLiteralLength = Math.min newIndentLiteral.length, @indentLiteral.length
     if newIndentLiteral[...minLiteralLength] isnt @indentLiteral[...minLiteralLength]
       @error 'indentation mismatch', offset: indent.length
