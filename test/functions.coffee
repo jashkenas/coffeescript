@@ -86,15 +86,6 @@ test "self-referencing functions", ->
   changeMe()
   eq changeMe, 2
 
-test "#2009: don't touch `` `this` ``", ->
-  nonceA = {}
-  nonceB = {}
-  fn = null
-  (->
-    fn = => this is nonceA and `this` is nonceB
-  ).call nonceA
-  ok fn.call nonceB
-
 
 # Parameter List Features
 
