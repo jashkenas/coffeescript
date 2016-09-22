@@ -2017,8 +2017,8 @@ exports.Op = class Op extends Base
       message = isUnassignable @first.unwrapAll().value
       @first.error message if message
     return @compileContinuation o if @isYield() or @isAwait()
-    return @compileUnary     		o if @isUnary()
-    return @compileChain     		o if isChain
+    return @compileUnary        o if @isUnary()
+    return @compileChain        o if isChain
     switch @operator
       when '?'  then @compileExistence o
       when '**' then @compilePower o

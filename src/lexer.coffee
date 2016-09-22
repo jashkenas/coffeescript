@@ -800,7 +800,7 @@ exports.isUnassignable = isUnassignable
 JS_KEYWORDS = [
   'true', 'false', 'null', 'this'
   'new', 'delete', 'typeof', 'in', 'instanceof'
-  'return', 'throw', 'break', 'continue', 'debugger', 'yield'
+  'return', 'throw', 'break', 'continue', 'debugger', 'yield', 'await'
   'if', 'else', 'switch', 'for', 'while', 'do', 'try', 'catch', 'finally'
   'class', 'extends', 'super'
   'import', 'export', 'default'
@@ -809,7 +809,7 @@ JS_KEYWORDS = [
 # CoffeeScript-only keywords.
 COFFEE_KEYWORDS = [
   'undefined', 'Infinity', 'NaN',
-  'then', 'unless', 'until', 'loop', 'of', 'by', 'when', 'await'
+  'then', 'unless', 'until', 'loop', 'of', 'by', 'when'
 ]
 
 COFFEE_ALIAS_MAP =

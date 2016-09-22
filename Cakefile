@@ -83,11 +83,6 @@ monthNames = [
   'December'
 ]
 
-harmonyFiles = [
-  'async.coffee'
-  'generators.coffee'
-]
-
 formatDate = (date) ->
   date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
     "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
