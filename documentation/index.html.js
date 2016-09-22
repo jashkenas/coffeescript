@@ -1271,6 +1271,98 @@ Block
     </h2>
 
     <p>
+      <%= releaseHeader('2016-09-24', '1.11.0', '1.10.0') %>
+      <ul>
+        <li>
+          CoffeeScript now supports ES2015
+          <a href="#modules"><code>import</code> and <code>export</code> syntax</a>.
+        </li>
+        <li>
+          Added the <code>-M, --inline-map</code> flag to the compiler, allowing
+          you embed the source map directly into the output JavaScript, rather
+          than as a separate file.
+        </li>
+        <li>
+          <p>A bunch of fixes for <code>yield</code>:</p>
+          <ul>
+            <li>
+              <code>yield return</code> can no longer mistakenly be used as an expression.
+            </li>
+            <li>
+              <p>
+                <code>yield</code> now mirrors <code>return</code> in that it
+                can be used stand-alone as well as with expressions. Where you
+                previously wrote <code>yield undefined</code>, you may now write
+                simply <code>yield</code>. However, this means also inheriting
+                the same syntax limitations that <code>return</code> has, so
+                these examples no longer compile:
+              </p>
+              <pre class="no_bar">doubles = -&gt;
+  yield for i in [1..3]
+    i * 2
+
+six = -&gt;
+  yield
+    2 * 3</pre>
+            </li>
+            <li>
+              The JavaScript output is a bit nicer, with unnecessary parentheses
+              and spaces, double indentation and double semicolons around
+              <code>yield</code> no longer present.
+            </li>
+          </ul>
+        </li>
+        <li>
+          Improved several error messages.
+        </li>
+        <li>
+          Just like <code>undefined</code> compiles to <code>void 0</code>,
+          <code>NaN</code> now compiles into <code>0/0</code> and
+          <code>Infinity</code> into <code>2e308</code>.
+        </li>
+        <li>
+          Bugfix for renamed destrucured parameters with defaults.
+          <code>({a: b = 1}) -&gt;</code> no longer crashes the compiler.
+        </li>
+        <li>
+          Improved the internal representation of a CoffeeScript program. This
+          is only noticeable to tools that use <code>CoffeeScript.tokens</code>
+          or <code>CoffeeScript.nodes</code>. Such tools need to update to take
+          account for changed or added tokens and nodes.
+        </li>
+        <li>
+          <p>Several minor bug fixes, including:</p>
+          <ul>
+            <li>
+              The caught error in <code>catch</code> blocks is no longer
+              declared unnecessarily, and no longer mistakenly named
+              <code>undefined</code> for <code>catch</code>-less
+              <code>try</code> blocks.
+            </li>
+            <li>
+              Unassignable parameter destructuring no longer crashes the compiler.
+            </li>
+            <li>
+              Source maps are now used correctly for errors thrown from .coffee.md files.
+            </li>
+            <li>
+              <code>coffee -e 'throw null'</code> no longer crashes.
+            </li>
+            <li>
+              The REPL no longer crashes when using <code>.exit</code> to exit it.
+            </li>
+            <li>
+              Invalid JavaScript is no longer output when lots of
+              <code>for</code> loops are used in the same scope.
+            </li>
+            <li>
+              A unicode issue when using stdin with the CLI.
+            </li>
+          </ul>
+      </ul>
+    </p>
+
+    <p>
       <%= releaseHeader('2015-09-03', '1.10.0', '1.9.3') %>
       <ul>
         <li>
