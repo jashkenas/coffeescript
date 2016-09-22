@@ -1229,8 +1229,149 @@ exports.Class = class Class extends Base
     @body.expressions.unshift @directives...
 
     klass = new Parens new Call func, args
-    klass = new Assign @variable, klass if @variable
+    klass = new Assign @variable, klass, null, { @moduleDeclaration } if @variable
     klass.compileToFragments o
+
+#### Import and Export
+
+exports.ModuleDeclaration = class ModuleDeclaration extends Base
+  constructor: (@clause, @source) ->
+    @checkSource()
+
+  children: ['clause', 'source']
+
+  isStatement: YES
+  jumps:       THIS
+  makeReturn:  THIS
+
+  checkSource: ->
+    if @source? and @source instanceof StringWithInterpolations
+      @source.error 'the name of the module to be imported from must be an uninterpolated string'
+
+  checkScope: (o, moduleDeclarationType) ->
+    if o.indent.length isnt 0
+      @error "#{moduleDeclarationType} statements must be at top-level scope"
+
+exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
+  compileNode: (o) ->
+    @checkScope o, 'import'
+    o.importedSymbols = []
+
+    code = []
+    code.push @makeCode "#{@tab}import "
+    code.push @clause.compileNode(o)... if @clause?
+
+    if @source?.value?
+      code.push @makeCode ' from ' unless @clause is null
+      code.push @makeCode @source.value
+
+    code.push @makeCode ';'
+    code
+
+exports.ImportClause = class ImportClause extends Base
+  constructor: (@defaultBinding, @namedImports) ->
+
+  children: ['defaultBinding', 'namedImports']
+
+  compileNode: (o) ->
+    code = []
+
+    if @defaultBinding?
+      code.push @defaultBinding.compileNode(o)...
+      code.push @makeCode ', ' if @namedImports?
+
+    if @namedImports?
+      code.push @namedImports.compileNode(o)...
+
+    code
+
+exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
+  compileNode: (o) ->
+    @checkScope o, 'export'
+
+    code = []
+    code.push @makeCode "#{@tab}export "
+    code.push @makeCode 'default ' if @ instanceof ExportDefaultDeclaration
+
+    if @ not instanceof ExportDefaultDeclaration and
+       (@clause instanceof Assign or @clause instanceof Class)
+      # When the ES2015 `class` keyword is supported, don’t add a `var` here
+      code.push @makeCode 'var '
+      @clause.moduleDeclaration = 'export'
+
+    if @clause.body? and @clause.body instanceof Block
+      code = code.concat @clause.compileToFragments o, LEVEL_TOP
+    else
+      code = code.concat @clause.compileNode o
+
+    code.push @makeCode " from #{@source.value}" if @source?.value?
+    code.push @makeCode ';'
+    code
+
+exports.ExportNamedDeclaration = class ExportNamedDeclaration extends ExportDeclaration
+
+exports.ExportDefaultDeclaration = class ExportDefaultDeclaration extends ExportDeclaration
+
+exports.ExportAllDeclaration = class ExportAllDeclaration extends ExportDeclaration
+
+exports.ModuleSpecifierList = class ModuleSpecifierList extends Base
+  constructor: (@specifiers) ->
+
+  children: ['specifiers']
+
+  compileNode: (o) ->
+    code = []
+    o.indent += TAB
+    compiledList = (specifier.compileToFragments o, LEVEL_LIST for specifier in @specifiers)
+
+    if @specifiers.length isnt 0
+      code.push @makeCode "{\n#{o.indent}"
+      for fragments, index in compiledList
+        code.push @makeCode(",\n#{o.indent}") if index
+        code.push fragments...
+      code.push @makeCode "\n}"
+    else
+      code.push @makeCode '{}'
+    code
+
+exports.ImportSpecifierList = class ImportSpecifierList extends ModuleSpecifierList
+
+exports.ExportSpecifierList = class ExportSpecifierList extends ModuleSpecifierList
+
+exports.ModuleSpecifier = class ModuleSpecifier extends Base
+  constructor: (@original, @alias, @moduleDeclarationType) ->
+    # The name of the variable entering the local scope
+    @identifier = if @alias? then @alias.value else @original.value
+
+  children: ['original', 'alias']
+
+  compileNode: (o) ->
+    o.scope.add @identifier, @moduleDeclarationType
+    code = []
+    code.push @makeCode @original.value
+    code.push @makeCode " as #{@alias.value}" if @alias?
+    code
+
+exports.ImportSpecifier = class ImportSpecifier extends ModuleSpecifier
+  constructor: (imported, local) ->
+    super imported, local, 'import'
+
+  compileNode: (o) ->
+    # Per the spec, symbols can’t be imported multiple times
+    # (e.g. `import { foo, foo } from 'lib'` is invalid)
+    if @identifier in o.importedSymbols or o.scope.check(@identifier)
+      @error "'#{@identifier}' has already been declared"
+    else
+      o.importedSymbols.push @identifier
+    super o
+
+exports.ImportDefaultSpecifier = class ImportDefaultSpecifier extends ImportSpecifier
+
+exports.ImportNamespaceSpecifier = class ImportNamespaceSpecifier extends ImportSpecifier
+
+exports.ExportSpecifier = class ExportSpecifier extends ModuleSpecifier
+  constructor: (local, exported) ->
+    super local, exported, 'export'
 
 #### Assign
 
@@ -1238,12 +1379,17 @@ exports.Class = class Class extends Base
 # property of an object -- including within object literals.
 exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options = {}) ->
-    {@param, @subpattern, @operatorToken} = options
+    {@param, @subpattern, @operatorToken, @moduleDeclaration} = options
 
   children: ['variable', 'value']
 
   isStatement: (o) ->
-    o?.level is LEVEL_TOP and @context? and "?" in @context
+    o?.level is LEVEL_TOP and @context? and (@moduleDeclaration or "?" in @context)
+
+  checkAssignability: (o, varBase) ->
+    if Object::hasOwnProperty.call(o.scope.positions, varBase.value) and
+       o.scope.variables[o.scope.positions[varBase.value]].type is 'import'
+      varBase.error "'#{varBase.value}' is read-only"
 
   assigns: (name) ->
     @[if @context is 'object' then 'value' else 'variable'].assigns name
@@ -1277,10 +1423,15 @@ exports.Assign = class Assign extends Base
       unless varBase.isAssignable()
         @variable.error "'#{@variable.compile o}' can't be assigned"
       unless varBase.hasProperties?()
-        if @param
+        if @moduleDeclaration # `moduleDeclaration` can be `'import'` or `'export'`
+          @checkAssignability o, varBase
+          o.scope.add varBase.value, @moduleDeclaration
+        else if @param
           o.scope.add varBase.value, 'var'
         else
+          @checkAssignability o, varBase
           o.scope.find varBase.value
+
     val = @value.compileToFragments o, LEVEL_LIST
     @variable.front = true if isValue and @variable.base instanceof Obj
     compiledName = @variable.compileToFragments o, LEVEL_LIST

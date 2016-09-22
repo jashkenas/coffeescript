@@ -102,6 +102,8 @@ grammar =
     o 'Return'
     o 'Comment'
     o 'STATEMENT',                              -> new StatementLiteral $1
+    o 'Import'
+    o 'Export'
   ]
 
   # All the different types of expressions in our language. The basic unit of
@@ -358,6 +360,66 @@ grammar =
     o 'CLASS SimpleAssignable Block',                    -> new Class $2, null, $3
     o 'CLASS SimpleAssignable EXTENDS Expression',       -> new Class $2, $4
     o 'CLASS SimpleAssignable EXTENDS Expression Block', -> new Class $2, $4, $5
+  ]
+
+  Import: [
+    o 'IMPORT String',                                                                -> new ImportDeclaration null, $2
+    o 'IMPORT ImportDefaultSpecifier FROM String',                                    -> new ImportDeclaration new ImportClause($2, null), $4
+    o 'IMPORT ImportNamespaceSpecifier FROM String',                                  -> new ImportDeclaration new ImportClause(null, $2), $4
+    o 'IMPORT { } FROM String',                                                       -> new ImportDeclaration new ImportClause(null, new ImportSpecifierList []), $5
+    o 'IMPORT { ImportSpecifierList OptComma } FROM String',                          -> new ImportDeclaration new ImportClause(null, new ImportSpecifierList $3), $7
+    o 'IMPORT ImportDefaultSpecifier , ImportNamespaceSpecifier FROM String',         -> new ImportDeclaration new ImportClause($2, $4), $6
+    o 'IMPORT ImportDefaultSpecifier , { ImportSpecifierList OptComma } FROM String', -> new ImportDeclaration new ImportClause($2, new ImportSpecifierList $5), $9
+  ]
+
+  ImportSpecifierList: [
+    o 'ImportSpecifier',                                                          -> [$1]
+    o 'ImportSpecifierList , ImportSpecifier',                                    -> $1.concat $3
+    o 'ImportSpecifierList OptComma TERMINATOR ImportSpecifier',                  -> $1.concat $4
+    o 'INDENT ImportSpecifierList OptComma OUTDENT',                              -> $2
+    o 'ImportSpecifierList OptComma INDENT ImportSpecifierList OptComma OUTDENT', -> $1.concat $4
+  ]
+
+  ImportSpecifier: [
+    o 'Identifier',                             -> new ImportSpecifier $1
+    o 'Identifier AS Identifier',               -> new ImportSpecifier $1, $3
+  ]
+
+  ImportDefaultSpecifier: [
+    o 'Identifier',                             -> new ImportDefaultSpecifier $1
+  ]
+
+  ImportNamespaceSpecifier: [
+    o 'IMPORT_ALL AS Identifier',               -> new ImportNamespaceSpecifier new Literal($1), $3
+  ]
+
+  Export: [
+    o 'EXPORT { }',                                          -> new ExportNamedDeclaration new ExportSpecifierList []
+    o 'EXPORT { ExportSpecifierList OptComma }',             -> new ExportNamedDeclaration new ExportSpecifierList $3
+    o 'EXPORT Class',                                        -> new ExportNamedDeclaration $2
+    o 'EXPORT Identifier = Expression',                      -> new ExportNamedDeclaration new Assign $2, $4, null,
+                                                                                                      moduleDeclaration: 'export'
+    o 'EXPORT Identifier = TERMINATOR Expression',           -> new ExportNamedDeclaration new Assign $2, $5, null,
+                                                                                                      moduleDeclaration: 'export'
+    o 'EXPORT Identifier = INDENT Expression OUTDENT',       -> new ExportNamedDeclaration new Assign $2, $5, null,
+                                                                                                      moduleDeclaration: 'export'
+    o 'EXPORT DEFAULT Expression',                           -> new ExportDefaultDeclaration $3
+    o 'EXPORT EXPORT_ALL FROM String',                       -> new ExportAllDeclaration new Literal($2), $4
+    o 'EXPORT { ExportSpecifierList OptComma } FROM String', -> new ExportNamedDeclaration new ExportSpecifierList($3), $7
+  ]
+
+  ExportSpecifierList: [
+    o 'ExportSpecifier',                                                          -> [$1]
+    o 'ExportSpecifierList , ExportSpecifier',                                    -> $1.concat $3
+    o 'ExportSpecifierList OptComma TERMINATOR ExportSpecifier',                  -> $1.concat $4
+    o 'INDENT ExportSpecifierList OptComma OUTDENT',                              -> $2
+    o 'ExportSpecifierList OptComma INDENT ExportSpecifierList OptComma OUTDENT', -> $1.concat $4
+  ]
+
+  ExportSpecifier: [
+    o 'Identifier',                             -> new ExportSpecifier $1
+    o 'Identifier AS Identifier',               -> new ExportSpecifier $1, $3
+    o 'Identifier AS DEFAULT',                  -> new ExportSpecifier $1, new Literal $3
   ]
 
   # Ordinary function invocation, or a chained series of calls.
@@ -658,7 +720,7 @@ operators = [
   ['right',     'YIELD']
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
   ['right',     'FORIN', 'FOROF', 'BY', 'WHEN']
-  ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS']
+  ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS', 'IMPORT', 'EXPORT']
   ['left',      'POST_IF']
 ]
 
