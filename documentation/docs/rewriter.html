@@ -169,7 +169,7 @@ its internal array of tokens.</p>
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
               <p>Helpful snippet for debugging:</p>
-<pre><code><span class="hljs-built_in">console</span>.log (t[<span class="hljs-number">0</span>] + <span class="hljs-string">'/'</span> + t[<span class="hljs-number">1</span>] <span class="hljs-keyword">for</span> t <span class="hljs-keyword">in</span> <span class="hljs-property">@tokens</span>).join <span class="hljs-string">' '</span>
+<pre><code><span class="hljs-built_in">console</span>.log (t[<span class="hljs-number">0</span>] + <span class="hljs-string">'/'</span> + t[<span class="hljs-number">1</span>] <span class="hljs-keyword">for</span> t <span class="hljs-keyword">in</span> @tokens).join <span class="hljs-string">' '</span>
 </code></pre>
             </div>
             
@@ -185,20 +185,20 @@ its internal array of tokens.</p>
               <p>Rewrite the token stream in multiple passes, one logical filter at
 a time. This could certainly be changed into a single pass through the
 stream, with a big ol’ efficient switch, but it’s much nicer to work with
-like this. The order of these passes matters — indentation must be
+like this. The order of these passes matters – indentation must be
 corrected before implicit parentheses can be wrapped around blocks of code.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">rewrite</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@tokens</span>)</span> -&gt;</span>
-    <span class="hljs-property">@removeLeadingNewlines</span>()
-    <span class="hljs-property">@closeOpenCalls</span>()
-    <span class="hljs-property">@closeOpenIndexes</span>()
-    <span class="hljs-property">@normalizeLines</span>()
-    <span class="hljs-property">@tagPostfixConditionals</span>()
-    <span class="hljs-property">@addImplicitBracesAndParens</span>()
-    <span class="hljs-property">@addLocationDataToGeneratedTokens</span>()
-    <span class="hljs-property">@tokens</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  rewrite: <span class="hljs-function"><span class="hljs-params">(@tokens)</span> -&gt;</span>
+    @removeLeadingNewlines()
+    @closeOpenCalls()
+    @closeOpenIndexes()
+    @normalizeLines()
+    @tagPostfixConditionals()
+    @addImplicitBracesAndParens()
+    @addLocationDataToGeneratedTokens()
+    @tokens</pre></div></div>
             
         </li>
         
@@ -217,13 +217,13 @@ our feet.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">scanTokens</span>: <span class="hljs-function"><span class="hljs-params">(block)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  scanTokens: <span class="hljs-function"><span class="hljs-params">(block)</span> -&gt;</span>
     {tokens} = <span class="hljs-keyword">this</span>
     i = <span class="hljs-number">0</span>
     i += block.call <span class="hljs-keyword">this</span>, token, i, tokens <span class="hljs-keyword">while</span> token = tokens[i]
     <span class="hljs-literal">true</span>
 
-  <span class="hljs-attribute">detectEnd</span>: <span class="hljs-function"><span class="hljs-params">(i, condition, action)</span> -&gt;</span>
+  detectEnd: <span class="hljs-function"><span class="hljs-params">(i, condition, action)</span> -&gt;</span>
     {tokens} = <span class="hljs-keyword">this</span>
     levels = <span class="hljs-number">0</span>
     <span class="hljs-keyword">while</span> token = tokens[i]
@@ -250,9 +250,9 @@ dispatch them here.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">removeLeadingNewlines</span>:<span class="hljs-function"> -&gt;</span>
-    <span class="hljs-keyword">break</span> <span class="hljs-keyword">for</span> [tag], i <span class="hljs-keyword">in</span> <span class="hljs-property">@tokens</span> <span class="hljs-keyword">when</span> tag <span class="hljs-keyword">isnt</span> <span class="hljs-string">'TERMINATOR'</span>
-    <span class="hljs-property">@tokens</span>.splice <span class="hljs-number">0</span>, i <span class="hljs-keyword">if</span> i</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  removeLeadingNewlines: <span class="hljs-function">-&gt;</span>
+    <span class="hljs-keyword">break</span> <span class="hljs-keyword">for</span> [tag], i <span class="hljs-keyword">in</span> @tokens <span class="hljs-keyword">when</span> tag <span class="hljs-keyword">isnt</span> <span class="hljs-string">'TERMINATOR'</span>
+    @tokens.splice <span class="hljs-number">0</span>, i <span class="hljs-keyword">if</span> i</pre></div></div>
             
         </li>
         
@@ -269,16 +269,16 @@ calls that close on the same line, just before their outdent.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">closeOpenCalls</span>:<span class="hljs-function"> -&gt;</span>
-    <span class="hljs-function"><span class="hljs-title">condition</span> = <span class="hljs-params">(token, i)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  closeOpenCalls: <span class="hljs-function">-&gt;</span>
+<span class="hljs-function">    <span class="hljs-title">condition</span> = <span class="hljs-params">(token, i)</span> -&gt;</span>
       token[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> [<span class="hljs-string">')'</span>, <span class="hljs-string">'CALL_END'</span>] <span class="hljs-keyword">or</span>
-      token[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'OUTDENT'</span> <span class="hljs-keyword">and</span> <span class="hljs-property">@tag</span>(i - <span class="hljs-number">1</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">')'</span>
+      token[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'OUTDENT'</span> <span class="hljs-keyword">and</span> @tag(i - <span class="hljs-number">1</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">')'</span>
+<span class="hljs-function">
+    <span class="hljs-title">action</span> = <span class="hljs-params">(token, i)</span> -&gt;</span>
+      @tokens[<span class="hljs-keyword">if</span> token[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'OUTDENT'</span> <span class="hljs-keyword">then</span> i - <span class="hljs-number">1</span> <span class="hljs-keyword">else</span> i][<span class="hljs-number">0</span>] = <span class="hljs-string">'CALL_END'</span>
 
-    <span class="hljs-function"><span class="hljs-title">action</span> = <span class="hljs-params">(token, i)</span> -&gt;</span>
-      <span class="hljs-property">@tokens</span>[<span class="hljs-keyword">if</span> token[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'OUTDENT'</span> <span class="hljs-keyword">then</span> i - <span class="hljs-number">1</span> <span class="hljs-keyword">else</span> i][<span class="hljs-number">0</span>] = <span class="hljs-string">'CALL_END'</span>
-
-    <span class="hljs-property">@scanTokens</span> <span class="hljs-function"><span class="hljs-params">(token, i)</span> -&gt;</span>
-      <span class="hljs-property">@detectEnd</span> i + <span class="hljs-number">1</span>, condition, action <span class="hljs-keyword">if</span> token[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'CALL_START'</span>
+    @scanTokens (token, i) -&gt;
+      @detectEnd i + <span class="hljs-number">1</span>, condition, action <span class="hljs-keyword">if</span> token[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'CALL_START'</span>
       <span class="hljs-number">1</span></pre></div></div>
             
         </li>
@@ -295,15 +295,15 @@ Match it with its paired close.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">closeOpenIndexes</span>:<span class="hljs-function"> -&gt;</span>
-    <span class="hljs-function"><span class="hljs-title">condition</span> = <span class="hljs-params">(token, i)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  closeOpenIndexes: <span class="hljs-function">-&gt;</span>
+<span class="hljs-function">    <span class="hljs-title">condition</span> = <span class="hljs-params">(token, i)</span> -&gt;</span>
       token[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> [<span class="hljs-string">']'</span>, <span class="hljs-string">'INDEX_END'</span>]
-
-    <span class="hljs-function"><span class="hljs-title">action</span> = <span class="hljs-params">(token, i)</span> -&gt;</span>
+<span class="hljs-function">
+    <span class="hljs-title">action</span> = <span class="hljs-params">(token, i)</span> -&gt;</span>
       token[<span class="hljs-number">0</span>] = <span class="hljs-string">'INDEX_END'</span>
 
-    <span class="hljs-property">@scanTokens</span> <span class="hljs-function"><span class="hljs-params">(token, i)</span> -&gt;</span>
-      <span class="hljs-property">@detectEnd</span> i + <span class="hljs-number">1</span>, condition, action <span class="hljs-keyword">if</span> token[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'INDEX_START'</span>
+    @scanTokens (token, i) -&gt;
+      @detectEnd i + <span class="hljs-number">1</span>, condition, action <span class="hljs-keyword">if</span> token[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'INDEX_START'</span>
       <span class="hljs-number">1</span></pre></div></div>
             
         </li>
@@ -321,13 +321,13 @@ or null (wildcard). Returns the index of the match or -1 if no match.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">indexOfTag</span>: <span class="hljs-function"><span class="hljs-params">(i, pattern...)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  indexOfTag: <span class="hljs-function"><span class="hljs-params">(i, pattern...)</span> -&gt;</span>
     fuzz = <span class="hljs-number">0</span>
     <span class="hljs-keyword">for</span> j <span class="hljs-keyword">in</span> [<span class="hljs-number">0</span> ... pattern.length]
-      fuzz += <span class="hljs-number">2</span> <span class="hljs-keyword">while</span> <span class="hljs-property">@tag</span>(i + j + fuzz) <span class="hljs-keyword">is</span> <span class="hljs-string">'HERECOMMENT'</span>
+      fuzz += <span class="hljs-number">2</span> <span class="hljs-keyword">while</span> @tag(i + j + fuzz) <span class="hljs-keyword">is</span> <span class="hljs-string">'HERECOMMENT'</span>
       <span class="hljs-keyword">continue</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> pattern[j]?
       pattern[j] = [pattern[j]] <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> pattern[j] <span class="hljs-keyword">is</span> <span class="hljs-string">'string'</span>
-      <span class="hljs-keyword">return</span> -<span class="hljs-number">1</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@tag</span>(i + j + fuzz) <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> pattern[j]
+      <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span> <span class="hljs-keyword">if</span> @tag(i + j + fuzz) <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> pattern[j]
     i + j + fuzz - <span class="hljs-number">1</span></pre></div></div>
             
         </li>
@@ -345,16 +345,14 @@ skipping over ‘HERECOMMENT’s.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">looksObjectish</span>: <span class="hljs-function"><span class="hljs-params">(j)</span> -&gt;</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-literal">yes</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@indexOfTag</span>(j, <span class="hljs-string">'@'</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">':'</span>) &gt; -<span class="hljs-number">1</span> <span class="hljs-keyword">or</span> <span class="hljs-property">@indexOfTag</span>(j, <span class="hljs-literal">null</span>, <span class="hljs-string">':'</span>) &gt; -<span class="hljs-number">1</span>
-    index = <span class="hljs-property">@indexOfTag</span>(j, EXPRESSION_START)
-    <span class="hljs-keyword">if</span> index &gt; -<span class="hljs-number">1</span>
+            <div class="content"><div class='highlight'><pre>  looksObjectish: <span class="hljs-function"><span class="hljs-params">(j)</span> -&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">yes</span> <span class="hljs-keyword">if</span> @indexOfTag(j, <span class="hljs-string">'@'</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">':'</span>) &gt; <span class="hljs-number">-1</span> <span class="hljs-keyword">or</span> @indexOfTag(j, <span class="hljs-literal">null</span>, <span class="hljs-string">':'</span>) &gt; <span class="hljs-number">-1</span>
+    index = @indexOfTag(j, EXPRESSION_START)
+    <span class="hljs-keyword">if</span> index &gt; <span class="hljs-number">-1</span>
       end = <span class="hljs-literal">null</span>
-      <span class="hljs-property">@detectEnd</span> index + <span class="hljs-number">1</span>, <span class="hljs-function"><span class="hljs-params">((token) -&gt; token[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> EXPRESSION_END)</span>, <span class="hljs-params">((token, i) -&gt; end = i)</span>
-      <span class="hljs-title">return</span> <span class="hljs-title">yes</span> <span class="hljs-title">if</span> @<span class="hljs-title">tag</span><span class="hljs-params">(end + <span class="hljs-number">1</span>)</span> <span class="hljs-title">is</span> ':'
-    <span class="hljs-title">no</span>
-
-</span></pre></div></div>
+      @detectEnd index + <span class="hljs-number">1</span>, <span class="hljs-function">(<span class="hljs-params">(token)</span> -&gt;</span> token[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> EXPRESSION_END), <span class="hljs-function">(<span class="hljs-params">(token, i)</span> -&gt;</span> end = i)
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">yes</span> <span class="hljs-keyword">if</span> @tag(end + <span class="hljs-number">1</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">':'</span>
+    <span class="hljs-literal">no</span></pre></div></div>
             
         </li>
         
@@ -371,16 +369,16 @@ containing balanced expression.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">findTagsBackwards</span>: <span class="hljs-function"><span class="hljs-params">(i, tags)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  findTagsBackwards: <span class="hljs-function"><span class="hljs-params">(i, tags)</span> -&gt;</span>
     backStack = []
     <span class="hljs-keyword">while</span> i &gt;= <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> (backStack.length <span class="hljs-keyword">or</span>
-          <span class="hljs-property">@tag</span>(i) <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> tags <span class="hljs-keyword">and</span>
-          (<span class="hljs-property">@tag</span>(i) <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> EXPRESSION_START <span class="hljs-keyword">or</span> <span class="hljs-property">@tokens</span>[i].generated) <span class="hljs-keyword">and</span>
-          <span class="hljs-property">@tag</span>(i) <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> LINEBREAKS)
-      backStack.push <span class="hljs-property">@tag</span>(i) <span class="hljs-keyword">if</span> <span class="hljs-property">@tag</span>(i) <span class="hljs-keyword">in</span> EXPRESSION_END
-      backStack.pop() <span class="hljs-keyword">if</span> <span class="hljs-property">@tag</span>(i) <span class="hljs-keyword">in</span> EXPRESSION_START <span class="hljs-keyword">and</span> backStack.length
+          @tag(i) <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> tags <span class="hljs-keyword">and</span>
+          (@tag(i) <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> EXPRESSION_START <span class="hljs-keyword">or</span> @tokens[i].generated) <span class="hljs-keyword">and</span>
+          @tag(i) <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> LINEBREAKS)
+      backStack.push @tag(i) <span class="hljs-keyword">if</span> @tag(i) <span class="hljs-keyword">in</span> EXPRESSION_END
+      backStack.pop() <span class="hljs-keyword">if</span> @tag(i) <span class="hljs-keyword">in</span> EXPRESSION_START <span class="hljs-keyword">and</span> backStack.length
       i -= <span class="hljs-number">1</span>
-    <span class="hljs-property">@tag</span>(i) <span class="hljs-keyword">in</span> tags</pre></div></div>
+    @tag(i) <span class="hljs-keyword">in</span> tags</pre></div></div>
             
         </li>
         
@@ -396,7 +394,7 @@ add them.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">addImplicitBracesAndParens</span>:<span class="hljs-function"> -&gt;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  addImplicitBracesAndParens: <span class="hljs-function">-&gt;</span></pre></div></div>
             
         </li>
         
@@ -414,11 +412,11 @@ add them.</p>
             <div class="content"><div class='highlight'><pre>    stack = []
     start = <span class="hljs-literal">null</span>
 
-    <span class="hljs-property">@scanTokens</span> <span class="hljs-function"><span class="hljs-params">(token, i, tokens)</span> -&gt;</span>
+    @scanTokens (token, i, tokens) -&gt;
       [tag]     = token
       [prevTag] = prevToken = <span class="hljs-keyword">if</span> i &gt; <span class="hljs-number">0</span> <span class="hljs-keyword">then</span> tokens[i - <span class="hljs-number">1</span>] <span class="hljs-keyword">else</span> []
       [nextTag] = <span class="hljs-keyword">if</span> i &lt; tokens.length - <span class="hljs-number">1</span> <span class="hljs-keyword">then</span> tokens[i + <span class="hljs-number">1</span>] <span class="hljs-keyword">else</span> []
-      <span class="hljs-function"><span class="hljs-title">stackTop</span>  = -&gt;</span> stack[stack.length - <span class="hljs-number">1</span>]
+<span class="hljs-function">      <span class="hljs-title">stackTop</span>  = -&gt;</span> stack[stack.length - <span class="hljs-number">1</span>]
       startIdx  = i</pre></div></div>
             
         </li>
@@ -435,7 +433,7 @@ and spliced, when returning for getting a new token.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      <span class="hljs-function"><span class="hljs-title">forward</span>   = <span class="hljs-params">(n)</span> -&gt;</span> i - startIdx + n</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-function">      <span class="hljs-title">forward</span>   = <span class="hljs-params">(n)</span> -&gt;</span> i - startIdx + n</pre></div></div>
             
         </li>
         
@@ -450,9 +448,9 @@ and spliced, when returning for getting a new token.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      <span class="hljs-function"><span class="hljs-title">inImplicit</span>        = -&gt;</span> stackTop()?[<span class="hljs-number">2</span>]?.ours
-      <span class="hljs-function"><span class="hljs-title">inImplicitCall</span>    = -&gt;</span> inImplicit() <span class="hljs-keyword">and</span> stackTop()?[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'('</span>
-      <span class="hljs-function"><span class="hljs-title">inImplicitObject</span>  = -&gt;</span> inImplicit() <span class="hljs-keyword">and</span> stackTop()?[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'{'</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-function">      <span class="hljs-title">inImplicit</span>        = -&gt;</span> stackTop()?[<span class="hljs-number">2</span>]?.ours
+<span class="hljs-function">      <span class="hljs-title">inImplicitCall</span>    = -&gt;</span> inImplicit() <span class="hljs-keyword">and</span> stackTop()?[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'('</span>
+<span class="hljs-function">      <span class="hljs-title">inImplicitObject</span>  = -&gt;</span> inImplicit() <span class="hljs-keyword">and</span> stackTop()?[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'{'</span></pre></div></div>
             
         </li>
         
@@ -468,28 +466,28 @@ class declaration or if-conditionals)</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      <span class="hljs-function"><span class="hljs-title">inImplicitControl</span> = -&gt;</span> inImplicit <span class="hljs-keyword">and</span> stackTop()?[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'CONTROL'</span>
-
-      <span class="hljs-function"><span class="hljs-title">startImplicitCall</span> = <span class="hljs-params">(j)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-function">      <span class="hljs-title">inImplicitControl</span> = -&gt;</span> inImplicit <span class="hljs-keyword">and</span> stackTop()?[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'CONTROL'</span>
+<span class="hljs-function">
+      <span class="hljs-title">startImplicitCall</span> = <span class="hljs-params">(j)</span> -&gt;</span>
         idx = j ? i
-        stack.push [<span class="hljs-string">'('</span>, idx, <span class="hljs-attribute">ours</span>: <span class="hljs-literal">yes</span>]
+        stack.push [<span class="hljs-string">'('</span>, idx, ours: <span class="hljs-literal">yes</span>]
         tokens.splice idx, <span class="hljs-number">0</span>, generate <span class="hljs-string">'CALL_START'</span>, <span class="hljs-string">'('</span>
         i += <span class="hljs-number">1</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> j?
-
-      <span class="hljs-function"><span class="hljs-title">endImplicitCall</span> = -&gt;</span>
+<span class="hljs-function">
+      <span class="hljs-title">endImplicitCall</span> = -&gt;</span>
         stack.pop()
         tokens.splice i, <span class="hljs-number">0</span>, generate <span class="hljs-string">'CALL_END'</span>, <span class="hljs-string">')'</span>, [<span class="hljs-string">''</span>, <span class="hljs-string">'end of input'</span>, token[<span class="hljs-number">2</span>]]
         i += <span class="hljs-number">1</span>
-
-      <span class="hljs-function"><span class="hljs-title">startImplicitObject</span> = <span class="hljs-params">(j, startsLine = <span class="hljs-literal">yes</span>)</span> -&gt;</span>
+<span class="hljs-function">
+      <span class="hljs-title">startImplicitObject</span> = <span class="hljs-params">(j, startsLine = <span class="hljs-literal">yes</span>)</span> -&gt;</span>
         idx = j ? i
-        stack.push [<span class="hljs-string">'{'</span>, idx, <span class="hljs-attribute">sameLine</span>: <span class="hljs-literal">yes</span>, <span class="hljs-attribute">startsLine</span>: startsLine, <span class="hljs-attribute">ours</span>: <span class="hljs-literal">yes</span>]
+        stack.push [<span class="hljs-string">'{'</span>, idx, sameLine: <span class="hljs-literal">yes</span>, startsLine: startsLine, ours: <span class="hljs-literal">yes</span>]
         val = <span class="hljs-keyword">new</span> String <span class="hljs-string">'{'</span>
         val.generated = <span class="hljs-literal">yes</span>
         tokens.splice idx, <span class="hljs-number">0</span>, generate <span class="hljs-string">'{'</span>, val, token
         i += <span class="hljs-number">1</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> j?
-
-      <span class="hljs-function"><span class="hljs-title">endImplicitObject</span> = <span class="hljs-params">(j)</span> -&gt;</span>
+<span class="hljs-function">
+      <span class="hljs-title">endImplicitObject</span> = <span class="hljs-params">(j)</span> -&gt;</span>
         j = j ? i
         stack.pop()
         tokens.splice j, <span class="hljs-number">0</span>, generate <span class="hljs-string">'}'</span>, <span class="hljs-string">'}'</span>, token
@@ -510,7 +508,7 @@ class declaration or if-conditionals)</p>
             
             <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">if</span> inImplicitCall() <span class="hljs-keyword">and</span> tag <span class="hljs-keyword">in</span> [<span class="hljs-string">'IF'</span>, <span class="hljs-string">'TRY'</span>, <span class="hljs-string">'FINALLY'</span>, <span class="hljs-string">'CATCH'</span>,
         <span class="hljs-string">'CLASS'</span>, <span class="hljs-string">'SWITCH'</span>]
-        stack.push [<span class="hljs-string">'CONTROL'</span>, i, <span class="hljs-attribute">ours</span>: <span class="hljs-literal">true</span>]
+        stack.push [<span class="hljs-string">'CONTROL'</span>, i, ours: <span class="hljs-literal">true</span>]
         <span class="hljs-keyword">return</span> forward(<span class="hljs-number">1</span>)
 
       <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'INDENT'</span> <span class="hljs-keyword">and</span> inImplicit()</pre></div></div>
@@ -612,19 +610,19 @@ f a, f() b, f? c, h[0] d etc.</p>
               </div>
               <p>Implicit call taking an implicit indented object as first argument.</p>
 <pre><code>f
-  <span class="hljs-attribute">a</span>: b
-  <span class="hljs-attribute">c</span>: d
+  a: b
+  c: d
 </code></pre><p>and</p>
 <pre><code>f
   <span class="hljs-number">1</span>
-  <span class="hljs-attribute">a</span>: b
-  <span class="hljs-attribute">b</span>: c
+  a: b
+  b: c
 </code></pre><p>Don’t accept implicit calls of this type, when on the same line
 as the control strucutures below as that may misinterpret constructs like:</p>
 <pre><code><span class="hljs-keyword">if</span> f
-   <span class="hljs-attribute">a</span>: <span class="hljs-number">1</span>
+   a: <span class="hljs-number">1</span>
 </code></pre><p>as</p>
-<pre><code><span class="hljs-keyword">if</span> f(<span class="hljs-attribute">a</span>: <span class="hljs-number">1</span>)
+<pre><code><span class="hljs-keyword">if</span> f(a: <span class="hljs-number">1</span>)
 </code></pre><p>which is probably always unintended.
 Furthermore don’t allow this in literal arrays, as
 that creates grammatical ambiguities.</p>
@@ -632,8 +630,8 @@ that creates grammatical ambiguities.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">in</span> IMPLICIT_FUNC <span class="hljs-keyword">and</span>
-         <span class="hljs-property">@indexOfTag</span>(i + <span class="hljs-number">1</span>, <span class="hljs-string">'INDENT'</span>) &gt; -<span class="hljs-number">1</span> <span class="hljs-keyword">and</span> <span class="hljs-property">@looksObjectish</span>(i + <span class="hljs-number">2</span>) <span class="hljs-keyword">and</span>
-         <span class="hljs-keyword">not</span> <span class="hljs-property">@findTagsBackwards</span>(i, [<span class="hljs-string">'CLASS'</span>, <span class="hljs-string">'EXTENDS'</span>, <span class="hljs-string">'IF'</span>, <span class="hljs-string">'CATCH'</span>,
+         @indexOfTag(i + <span class="hljs-number">1</span>, <span class="hljs-string">'INDENT'</span>) &gt; <span class="hljs-number">-1</span> <span class="hljs-keyword">and</span> @looksObjectish(i + <span class="hljs-number">2</span>) <span class="hljs-keyword">and</span>
+         <span class="hljs-keyword">not</span> @findTagsBackwards(i, [<span class="hljs-string">'CLASS'</span>, <span class="hljs-string">'EXTENDS'</span>, <span class="hljs-string">'IF'</span>, <span class="hljs-string">'CATCH'</span>,
           <span class="hljs-string">'SWITCH'</span>, <span class="hljs-string">'LEADING_WHEN'</span>, <span class="hljs-string">'FOR'</span>, <span class="hljs-string">'WHILE'</span>, <span class="hljs-string">'UNTIL'</span>])
         startImplicitCall i + <span class="hljs-number">1</span>
         stack.push [<span class="hljs-string">'INDENT'</span>, i + <span class="hljs-number">2</span>]
@@ -668,10 +666,10 @@ that creates grammatical ambiguities.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>        s = <span class="hljs-keyword">switch</span>
-          <span class="hljs-keyword">when</span> <span class="hljs-property">@tag</span>(i - <span class="hljs-number">1</span>) <span class="hljs-keyword">in</span> EXPRESSION_END <span class="hljs-keyword">then</span> start[<span class="hljs-number">1</span>]
-          <span class="hljs-keyword">when</span> <span class="hljs-property">@tag</span>(i - <span class="hljs-number">2</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'@'</span> <span class="hljs-keyword">then</span> i - <span class="hljs-number">2</span>
+          <span class="hljs-keyword">when</span> @tag(i - <span class="hljs-number">1</span>) <span class="hljs-keyword">in</span> EXPRESSION_END <span class="hljs-keyword">then</span> start[<span class="hljs-number">1</span>]
+          <span class="hljs-keyword">when</span> @tag(i - <span class="hljs-number">2</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'@'</span> <span class="hljs-keyword">then</span> i - <span class="hljs-number">2</span>
           <span class="hljs-keyword">else</span> i - <span class="hljs-number">1</span>
-        s -= <span class="hljs-number">2</span> <span class="hljs-keyword">while</span> <span class="hljs-property">@tag</span>(s - <span class="hljs-number">2</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'HERECOMMENT'</span></pre></div></div>
+        s -= <span class="hljs-number">2</span> <span class="hljs-keyword">while</span> @tag(s - <span class="hljs-number">2</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'HERECOMMENT'</span></pre></div></div>
             
         </li>
         
@@ -686,9 +684,9 @@ that creates grammatical ambiguities.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        <span class="hljs-property">@insideForDeclaration</span> = nextTag <span class="hljs-keyword">is</span> <span class="hljs-string">'FOR'</span>
+            <div class="content"><div class='highlight'><pre>        @insideForDeclaration = nextTag <span class="hljs-keyword">is</span> <span class="hljs-string">'FOR'</span>
 
-        startsLine = s <span class="hljs-keyword">is</span> <span class="hljs-number">0</span> <span class="hljs-keyword">or</span> <span class="hljs-property">@tag</span>(s - <span class="hljs-number">1</span>) <span class="hljs-keyword">in</span> LINEBREAKS <span class="hljs-keyword">or</span> tokens[s - <span class="hljs-number">1</span>].newLine</pre></div></div>
+        startsLine = s <span class="hljs-keyword">is</span> <span class="hljs-number">0</span> <span class="hljs-keyword">or</span> @tag(s - <span class="hljs-number">1</span>) <span class="hljs-keyword">in</span> LINEBREAKS <span class="hljs-keyword">or</span> tokens[s - <span class="hljs-number">1</span>].newLine</pre></div></div>
             
         </li>
         
@@ -705,8 +703,8 @@ that creates grammatical ambiguities.</p>
             
             <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> stackTop()
           [stackTag, stackIdx] = stackTop()
-          <span class="hljs-keyword">if</span> (stackTag <span class="hljs-keyword">is</span> <span class="hljs-string">'{'</span> <span class="hljs-keyword">or</span> stackTag <span class="hljs-keyword">is</span> <span class="hljs-string">'INDENT'</span> <span class="hljs-keyword">and</span> <span class="hljs-property">@tag</span>(stackIdx - <span class="hljs-number">1</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'{'</span>) <span class="hljs-keyword">and</span>
-             (startsLine <span class="hljs-keyword">or</span> <span class="hljs-property">@tag</span>(s - <span class="hljs-number">1</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">','</span> <span class="hljs-keyword">or</span> <span class="hljs-property">@tag</span>(s - <span class="hljs-number">1</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'{'</span>)
+          <span class="hljs-keyword">if</span> (stackTag <span class="hljs-keyword">is</span> <span class="hljs-string">'{'</span> <span class="hljs-keyword">or</span> stackTag <span class="hljs-keyword">is</span> <span class="hljs-string">'INDENT'</span> <span class="hljs-keyword">and</span> @tag(stackIdx - <span class="hljs-number">1</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'{'</span>) <span class="hljs-keyword">and</span>
+             (startsLine <span class="hljs-keyword">or</span> @tag(s - <span class="hljs-number">1</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">','</span> <span class="hljs-keyword">or</span> @tag(s - <span class="hljs-number">1</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'{'</span>)
             <span class="hljs-keyword">return</span> forward(<span class="hljs-number">1</span>)
 
         startImplicitObject(s, !!startsLine)
@@ -723,9 +721,9 @@ that creates grammatical ambiguities.</p>
               </div>
               <p>End implicit calls when chaining method calls
 like e.g.:</p>
-<pre><code>f<span class="hljs-function"> -&gt;</span>
+<pre><code>f -&gt;
   a
-.g b,<span class="hljs-function"> -&gt;</span>
+.g b, <span class="hljs-function">-&gt;</span>
   c
 .h a
 </code></pre><p>and also</p>
@@ -773,7 +771,7 @@ return a: 1, b: 2 unless true</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>          <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> inImplicitObject() <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> <span class="hljs-property">@insideForDeclaration</span> <span class="hljs-keyword">and</span> sameLine <span class="hljs-keyword">and</span>
+            <div class="content"><div class='highlight'><pre>          <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> inImplicitObject() <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @insideForDeclaration <span class="hljs-keyword">and</span> sameLine <span class="hljs-keyword">and</span>
                   tag <span class="hljs-keyword">isnt</span> <span class="hljs-string">'TERMINATOR'</span> <span class="hljs-keyword">and</span> prevTag <span class="hljs-keyword">isnt</span> <span class="hljs-string">':'</span>
             endImplicitObject()</pre></div></div>
             
@@ -793,7 +791,7 @@ the continuation of an object.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>          <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> inImplicitObject() <span class="hljs-keyword">and</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'TERMINATOR'</span> <span class="hljs-keyword">and</span> prevTag <span class="hljs-keyword">isnt</span> <span class="hljs-string">','</span> <span class="hljs-keyword">and</span>
-                  <span class="hljs-keyword">not</span> (startsLine <span class="hljs-keyword">and</span> <span class="hljs-property">@looksObjectish</span>(i + <span class="hljs-number">1</span>))
+                  <span class="hljs-keyword">not</span> (startsLine <span class="hljs-keyword">and</span> @looksObjectish(i + <span class="hljs-number">1</span>))
             <span class="hljs-keyword">return</span> forward <span class="hljs-number">1</span> <span class="hljs-keyword">if</span> nextTag <span class="hljs-keyword">is</span> <span class="hljs-string">'HERECOMMENT'</span>
             endImplicitObject()
           <span class="hljs-keyword">else</span>
@@ -812,17 +810,17 @@ the continuation of an object.</p>
 and what comes after doesn’t look like it belongs.
 This is used for trailing commas and calls, like:</p>
 <pre><code>x =
-    <span class="hljs-attribute">a</span>: b,
-    <span class="hljs-attribute">c</span>: d,
+    a: b,
+    c: d,
 e = <span class="hljs-number">2</span>
 </code></pre><p>and</p>
-<pre><code>f a, <span class="hljs-attribute">b</span>: c, <span class="hljs-attribute">d</span>: e, f, <span class="hljs-attribute">g</span>: <span class="hljs-attribute">h</span>: i, j
+<pre><code>f a, b: c, d: e, f, g: h: i, j
 </code></pre>
             </div>
             
-            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">','</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> <span class="hljs-property">@looksObjectish</span>(i + <span class="hljs-number">1</span>) <span class="hljs-keyword">and</span> inImplicitObject() <span class="hljs-keyword">and</span>
-         <span class="hljs-keyword">not</span> <span class="hljs-property">@insideForDeclaration</span> <span class="hljs-keyword">and</span>
-         (nextTag <span class="hljs-keyword">isnt</span> <span class="hljs-string">'TERMINATOR'</span> <span class="hljs-keyword">or</span> <span class="hljs-keyword">not</span> <span class="hljs-property">@looksObjectish</span>(i + <span class="hljs-number">2</span>))</pre></div></div>
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">','</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @looksObjectish(i + <span class="hljs-number">1</span>) <span class="hljs-keyword">and</span> inImplicitObject() <span class="hljs-keyword">and</span>
+         <span class="hljs-keyword">not</span> @insideForDeclaration <span class="hljs-keyword">and</span>
+         (nextTag <span class="hljs-keyword">isnt</span> <span class="hljs-string">'TERMINATOR'</span> <span class="hljs-keyword">or</span> <span class="hljs-keyword">not</span> @looksObjectish(i + <span class="hljs-number">2</span>))</pre></div></div>
             
         </li>
         
@@ -859,21 +857,21 @@ array further up the stack, so give it a chance.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">addLocationDataToGeneratedTokens</span>:<span class="hljs-function"> -&gt;</span>
-    <span class="hljs-property">@scanTokens</span> <span class="hljs-function"><span class="hljs-params">(token, i, tokens)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  addLocationDataToGeneratedTokens: <span class="hljs-function">-&gt;</span>
+    @scanTokens (token, i, tokens) -&gt;
       <span class="hljs-keyword">return</span> <span class="hljs-number">1</span> <span class="hljs-keyword">if</span>     token[<span class="hljs-number">2</span>]
       <span class="hljs-keyword">return</span> <span class="hljs-number">1</span> <span class="hljs-keyword">unless</span> token.generated <span class="hljs-keyword">or</span> token.explicit
       <span class="hljs-keyword">if</span> token[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'{'</span> <span class="hljs-keyword">and</span> nextLocation=tokens[i + <span class="hljs-number">1</span>]?[<span class="hljs-number">2</span>]
-        {<span class="hljs-attribute">first_line</span>: line, <span class="hljs-attribute">first_column</span>: column} = nextLocation
+        {first_line: line, first_column: column} = nextLocation
       <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> prevLocation = tokens[i - <span class="hljs-number">1</span>]?[<span class="hljs-number">2</span>]
-        {<span class="hljs-attribute">last_line</span>: line, <span class="hljs-attribute">last_column</span>: column} = prevLocation
+        {last_line: line, last_column: column} = prevLocation
       <span class="hljs-keyword">else</span>
         line = column = <span class="hljs-number">0</span>
       token[<span class="hljs-number">2</span>] =
-        <span class="hljs-attribute">first_line</span>:   line
-        <span class="hljs-attribute">first_column</span>: column
-        <span class="hljs-attribute">last_line</span>:    line
-        <span class="hljs-attribute">last_column</span>:  column
+        first_line:   line
+        first_column: column
+        last_line:    line
+        last_column:  column
       <span class="hljs-keyword">return</span> <span class="hljs-number">1</span></pre></div></div>
             
         </li>
@@ -893,39 +891,39 @@ blocks are added.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">normalizeLines</span>:<span class="hljs-function"> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  normalizeLines: <span class="hljs-function">-&gt;</span>
     starter = indent = outdent = <span class="hljs-literal">null</span>
-
-    <span class="hljs-function"><span class="hljs-title">condition</span> = <span class="hljs-params">(token, i)</span> -&gt;</span>
+<span class="hljs-function">
+    <span class="hljs-title">condition</span> = <span class="hljs-params">(token, i)</span> -&gt;</span>
       token[<span class="hljs-number">1</span>] <span class="hljs-keyword">isnt</span> <span class="hljs-string">';'</span> <span class="hljs-keyword">and</span> token[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> SINGLE_CLOSERS <span class="hljs-keyword">and</span>
-      <span class="hljs-keyword">not</span> (token[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'TERMINATOR'</span> <span class="hljs-keyword">and</span> <span class="hljs-property">@tag</span>(i + <span class="hljs-number">1</span>) <span class="hljs-keyword">in</span> EXPRESSION_CLOSE) <span class="hljs-keyword">and</span>
+      <span class="hljs-keyword">not</span> (token[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'TERMINATOR'</span> <span class="hljs-keyword">and</span> @tag(i + <span class="hljs-number">1</span>) <span class="hljs-keyword">in</span> EXPRESSION_CLOSE) <span class="hljs-keyword">and</span>
       <span class="hljs-keyword">not</span> (token[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'ELSE'</span> <span class="hljs-keyword">and</span> starter <span class="hljs-keyword">isnt</span> <span class="hljs-string">'THEN'</span>) <span class="hljs-keyword">and</span>
       <span class="hljs-keyword">not</span> (token[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> [<span class="hljs-string">'CATCH'</span>, <span class="hljs-string">'FINALLY'</span>] <span class="hljs-keyword">and</span> starter <span class="hljs-keyword">in</span> [<span class="hljs-string">'-&gt;'</span>, <span class="hljs-string">'=&gt;'</span>]) <span class="hljs-keyword">or</span>
-      token[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> CALL_CLOSERS <span class="hljs-keyword">and</span> <span class="hljs-property">@tokens</span>[i - <span class="hljs-number">1</span>].newLine
+      token[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> CALL_CLOSERS <span class="hljs-keyword">and</span> @tokens[i - <span class="hljs-number">1</span>].newLine
+<span class="hljs-function">
+    <span class="hljs-title">action</span> = <span class="hljs-params">(token, i)</span> -&gt;</span>
+      @tokens.splice (<span class="hljs-keyword">if</span> @tag(i - <span class="hljs-number">1</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">','</span> <span class="hljs-keyword">then</span> i - <span class="hljs-number">1</span> <span class="hljs-keyword">else</span> i), <span class="hljs-number">0</span>, outdent
 
-    <span class="hljs-function"><span class="hljs-title">action</span> = <span class="hljs-params">(token, i)</span> -&gt;</span>
-      <span class="hljs-property">@tokens</span>.splice (<span class="hljs-keyword">if</span> <span class="hljs-property">@tag</span>(i - <span class="hljs-number">1</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">','</span> <span class="hljs-keyword">then</span> i - <span class="hljs-number">1</span> <span class="hljs-keyword">else</span> i), <span class="hljs-number">0</span>, outdent
-
-    <span class="hljs-property">@scanTokens</span> <span class="hljs-function"><span class="hljs-params">(token, i, tokens)</span> -&gt;</span>
+    @scanTokens (token, i, tokens) -&gt;
       [tag] = token
       <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'TERMINATOR'</span>
-        <span class="hljs-keyword">if</span> <span class="hljs-property">@tag</span>(i + <span class="hljs-number">1</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'ELSE'</span> <span class="hljs-keyword">and</span> <span class="hljs-property">@tag</span>(i - <span class="hljs-number">1</span>) <span class="hljs-keyword">isnt</span> <span class="hljs-string">'OUTDENT'</span>
-          tokens.splice i, <span class="hljs-number">1</span>, <span class="hljs-property">@indentation</span>()...
+        <span class="hljs-keyword">if</span> @tag(i + <span class="hljs-number">1</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'ELSE'</span> <span class="hljs-keyword">and</span> @tag(i - <span class="hljs-number">1</span>) <span class="hljs-keyword">isnt</span> <span class="hljs-string">'OUTDENT'</span>
+          tokens.splice i, <span class="hljs-number">1</span>, @indentation()...
           <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>
-        <span class="hljs-keyword">if</span> <span class="hljs-property">@tag</span>(i + <span class="hljs-number">1</span>) <span class="hljs-keyword">in</span> EXPRESSION_CLOSE
+        <span class="hljs-keyword">if</span> @tag(i + <span class="hljs-number">1</span>) <span class="hljs-keyword">in</span> EXPRESSION_CLOSE
           tokens.splice i, <span class="hljs-number">1</span>
           <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>
       <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'CATCH'</span>
-        <span class="hljs-keyword">for</span> j <span class="hljs-keyword">in</span> [<span class="hljs-number">1.</span><span class="hljs-number">.2</span>] <span class="hljs-keyword">when</span> <span class="hljs-property">@tag</span>(i + j) <span class="hljs-keyword">in</span> [<span class="hljs-string">'OUTDENT'</span>, <span class="hljs-string">'TERMINATOR'</span>, <span class="hljs-string">'FINALLY'</span>]
-          tokens.splice i + j, <span class="hljs-number">0</span>, <span class="hljs-property">@indentation</span>()...
+        <span class="hljs-keyword">for</span> j <span class="hljs-keyword">in</span> [<span class="hljs-number">1.</span><span class="hljs-number">.2</span>] <span class="hljs-keyword">when</span> @tag(i + j) <span class="hljs-keyword">in</span> [<span class="hljs-string">'OUTDENT'</span>, <span class="hljs-string">'TERMINATOR'</span>, <span class="hljs-string">'FINALLY'</span>]
+          tokens.splice i + j, <span class="hljs-number">0</span>, @indentation()...
           <span class="hljs-keyword">return</span> <span class="hljs-number">2</span> + j
-      <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">in</span> SINGLE_LINERS <span class="hljs-keyword">and</span> <span class="hljs-property">@tag</span>(i + <span class="hljs-number">1</span>) <span class="hljs-keyword">isnt</span> <span class="hljs-string">'INDENT'</span> <span class="hljs-keyword">and</span>
-         <span class="hljs-keyword">not</span> (tag <span class="hljs-keyword">is</span> <span class="hljs-string">'ELSE'</span> <span class="hljs-keyword">and</span> <span class="hljs-property">@tag</span>(i + <span class="hljs-number">1</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'IF'</span>)
+      <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">in</span> SINGLE_LINERS <span class="hljs-keyword">and</span> @tag(i + <span class="hljs-number">1</span>) <span class="hljs-keyword">isnt</span> <span class="hljs-string">'INDENT'</span> <span class="hljs-keyword">and</span>
+         <span class="hljs-keyword">not</span> (tag <span class="hljs-keyword">is</span> <span class="hljs-string">'ELSE'</span> <span class="hljs-keyword">and</span> @tag(i + <span class="hljs-number">1</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'IF'</span>)
         starter = tag
-        [indent, outdent] = <span class="hljs-property">@indentation</span> tokens[i]
+        [indent, outdent] = @indentation tokens[i]
         indent.fromThen   = <span class="hljs-literal">true</span> <span class="hljs-keyword">if</span> starter <span class="hljs-keyword">is</span> <span class="hljs-string">'THEN'</span>
         tokens.splice i + <span class="hljs-number">1</span>, <span class="hljs-number">0</span>, indent
-        <span class="hljs-property">@detectEnd</span> i + <span class="hljs-number">2</span>, condition, action
+        @detectEnd i + <span class="hljs-number">2</span>, condition, action
         tokens.splice i, <span class="hljs-number">1</span> <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'THEN'</span>
         <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>
       <span class="hljs-keyword">return</span> <span class="hljs-number">1</span></pre></div></div>
@@ -944,23 +942,23 @@ different precedence.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">tagPostfixConditionals</span>:<span class="hljs-function"> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  tagPostfixConditionals: <span class="hljs-function">-&gt;</span>
 
     original = <span class="hljs-literal">null</span>
-
-    <span class="hljs-function"><span class="hljs-title">condition</span> = <span class="hljs-params">(token, i)</span> -&gt;</span>
+<span class="hljs-function">
+    <span class="hljs-title">condition</span> = <span class="hljs-params">(token, i)</span> -&gt;</span>
       [tag] = token
-      [prevTag] = <span class="hljs-property">@tokens</span>[i - <span class="hljs-number">1</span>]
+      [prevTag] = @tokens[i - <span class="hljs-number">1</span>]
       tag <span class="hljs-keyword">is</span> <span class="hljs-string">'TERMINATOR'</span> <span class="hljs-keyword">or</span> (tag <span class="hljs-keyword">is</span> <span class="hljs-string">'INDENT'</span> <span class="hljs-keyword">and</span> prevTag <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> SINGLE_LINERS)
-
-    <span class="hljs-function"><span class="hljs-title">action</span> = <span class="hljs-params">(token, i)</span> -&gt;</span>
+<span class="hljs-function">
+    <span class="hljs-title">action</span> = <span class="hljs-params">(token, i)</span> -&gt;</span>
       <span class="hljs-keyword">if</span> token[<span class="hljs-number">0</span>] <span class="hljs-keyword">isnt</span> <span class="hljs-string">'INDENT'</span> <span class="hljs-keyword">or</span> (token.generated <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> token.fromThen)
         original[<span class="hljs-number">0</span>] = <span class="hljs-string">'POST_'</span> + original[<span class="hljs-number">0</span>]
 
-    <span class="hljs-property">@scanTokens</span> <span class="hljs-function"><span class="hljs-params">(token, i)</span> -&gt;</span>
+    @scanTokens (token, i) -&gt;
       <span class="hljs-keyword">return</span> <span class="hljs-number">1</span> <span class="hljs-keyword">unless</span> token[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'IF'</span>
       original = token
-      <span class="hljs-property">@detectEnd</span> i + <span class="hljs-number">1</span>, condition, action
+      @detectEnd i + <span class="hljs-number">1</span>, condition, action
       <span class="hljs-keyword">return</span> <span class="hljs-number">1</span></pre></div></div>
             
         </li>
@@ -976,7 +974,7 @@ different precedence.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">indentation</span>: <span class="hljs-function"><span class="hljs-params">(origin)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  indentation: <span class="hljs-function"><span class="hljs-params">(origin)</span> -&gt;</span>
     indent  = [<span class="hljs-string">'INDENT'</span>, <span class="hljs-number">2</span>]
     outdent = [<span class="hljs-string">'OUTDENT'</span>, <span class="hljs-number">2</span>]
     <span class="hljs-keyword">if</span> origin
@@ -986,7 +984,7 @@ different precedence.</p>
       indent.explicit = outdent.explicit = <span class="hljs-literal">yes</span>
     [indent, outdent]
 
-  <span class="hljs-attribute">generate</span>: generate</pre></div></div>
+  generate: generate</pre></div></div>
             
         </li>
         
@@ -1001,7 +999,7 @@ different precedence.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">tag</span>: <span class="hljs-function"><span class="hljs-params">(i)</span> -&gt;</span> <span class="hljs-property">@tokens</span>[i]?[<span class="hljs-number">0</span>]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  tag: <span class="hljs-function"><span class="hljs-params">(i)</span> -&gt;</span> @tokens[i]?[<span class="hljs-number">0</span>]</pre></div></div>
             
         </li>
         
@@ -1067,7 +1065,7 @@ look things up from either end.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.INVERSES = INVERSES = {}</pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.INVERSES = INVERSES = {}</pre></div></div>
             
         </li>
         
@@ -1117,7 +1115,7 @@ EXPRESSION_END   = []
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>IMPLICIT_FUNC    = [<span class="hljs-string">'IDENTIFIER'</span>, <span class="hljs-string">'SUPER'</span>, <span class="hljs-string">')'</span>, <span class="hljs-string">'CALL_END'</span>, <span class="hljs-string">']'</span>, <span class="hljs-string">'INDEX_END'</span>, <span class="hljs-string">'@'</span>, <span class="hljs-string">'THIS'</span>]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>IMPLICIT_FUNC    = [<span class="hljs-string">'IDENTIFIER'</span>, <span class="hljs-string">'PROPERTY'</span>, <span class="hljs-string">'SUPER'</span>, <span class="hljs-string">')'</span>, <span class="hljs-string">'CALL_END'</span>, <span class="hljs-string">']'</span>, <span class="hljs-string">'INDEX_END'</span>, <span class="hljs-string">'@'</span>, <span class="hljs-string">'THIS'</span>]</pre></div></div>
             
         </li>
         
@@ -1133,9 +1131,11 @@ EXPRESSION_END   = []
             </div>
             
             <div class="content"><div class='highlight'><pre>IMPLICIT_CALL    = [
-  <span class="hljs-string">'IDENTIFIER'</span>, <span class="hljs-string">'NUMBER'</span>, <span class="hljs-string">'STRING'</span>, <span class="hljs-string">'STRING_START'</span>, <span class="hljs-string">'JS'</span>, <span class="hljs-string">'REGEX'</span>, <span class="hljs-string">'REGEX_START'</span>
-  <span class="hljs-string">'NEW'</span>, <span class="hljs-string">'PARAM_START'</span>, <span class="hljs-string">'CLASS'</span>, <span class="hljs-string">'IF'</span>, <span class="hljs-string">'TRY'</span>, <span class="hljs-string">'SWITCH'</span>, <span class="hljs-string">'THIS'</span>, <span class="hljs-string">'BOOL'</span>, <span class="hljs-string">'NULL'</span>
-  <span class="hljs-string">'UNDEFINED'</span>, <span class="hljs-string">'UNARY'</span>, <span class="hljs-string">'YIELD'</span>, <span class="hljs-string">'UNARY_MATH'</span>, <span class="hljs-string">'SUPER'</span>, <span class="hljs-string">'THROW'</span>
+  <span class="hljs-string">'IDENTIFIER'</span>, <span class="hljs-string">'PROPERTY'</span>, <span class="hljs-string">'NUMBER'</span>, <span class="hljs-string">'INFINITY'</span>, <span class="hljs-string">'NAN'</span>
+  <span class="hljs-string">'STRING'</span>, <span class="hljs-string">'STRING_START'</span>, <span class="hljs-string">'REGEX'</span>, <span class="hljs-string">'REGEX_START'</span>, <span class="hljs-string">'JS'</span>
+  <span class="hljs-string">'NEW'</span>, <span class="hljs-string">'PARAM_START'</span>, <span class="hljs-string">'CLASS'</span>, <span class="hljs-string">'IF'</span>, <span class="hljs-string">'TRY'</span>, <span class="hljs-string">'SWITCH'</span>, <span class="hljs-string">'THIS'</span>
+  <span class="hljs-string">'UNDEFINED'</span>, <span class="hljs-string">'NULL'</span>, <span class="hljs-string">'BOOL'</span>
+  <span class="hljs-string">'UNARY'</span>, <span class="hljs-string">'YIELD'</span>, <span class="hljs-string">'UNARY_MATH'</span>, <span class="hljs-string">'SUPER'</span>, <span class="hljs-string">'THROW'</span>
   <span class="hljs-string">'@'</span>, <span class="hljs-string">'-&gt;'</span>, <span class="hljs-string">'=&gt;'</span>, <span class="hljs-string">'['</span>, <span class="hljs-string">'('</span>, <span class="hljs-string">'{'</span>, <span class="hljs-string">'--'</span>, <span class="hljs-string">'++'</span>
 ]
 
