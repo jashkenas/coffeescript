@@ -218,12 +218,13 @@ task 'bench', 'quick benchmark of compilation time', ->
 
 
 # Run the CoffeeScript test suite.
-runTests = (CoffeeScript) ->
+runTests = helpers.async (CoffeeScript) ->
   CoffeeScript.register()
   startTime   = Date.now()
   currentFile = null
   passedTests = 0
   failures    = []
+  testCases   = []
 
   global[name] = func for name, func of require 'assert'
 
@@ -233,16 +234,7 @@ runTests = (CoffeeScript) ->
 
   # Our test helper function for delimiting different test cases.
   global.test = (description, fn) ->
-    try
-      fn.test = {description, currentFile}
-      fn.call(fn)
-      ++passedTests
-    catch e
-      failures.push
-        filename: currentFile
-        error: e
-        description: description if description?
-        source: fn.toString() if fn.toString?
+    testCases.push {description, fn}
 
   # See http://wiki.ecmascript.org/doku.php?id=harmony:egal
   egal = (a, b) ->
@@ -265,6 +257,7 @@ runTests = (CoffeeScript) ->
   # When all the tests have run, collect and print errors.
   # If a stacktrace is available, output the compiled function source.
   process.on 'exit', ->
+
     time = ((Date.now() - startTime) / 1000).toFixed(2)
     message = "passed #{passedTests} tests in #{time} seconds#{reset}"
     return log(message, green) unless failures.length
@@ -284,10 +277,25 @@ runTests = (CoffeeScript) ->
     literate = helpers.isLiterate file
     currentFile = filename = path.join 'test', file
     code = fs.readFileSync filename
+    testCases = []
     try
       CoffeeScript.run code.toString(), {filename, literate}
+      for {description, fn} in testCases
+        try
+          fn.test = {description, currentFile}
+          val = fn.call(fn)
+          if typeof val?.then == 'function'
+            yield val
+          ++passedTests
+        catch e
+          failures.push
+            filename: currentFile
+            error: e
+            description: description if description?
+            source: fn.toString() if fn.toString?
     catch error
       failures.push {filename, error}
+  
   return !failures.length
 
 
