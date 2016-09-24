@@ -20,4 +20,3 @@ export { Mathematics as default, sqrt as squareRoot }
 
 export * from 'underscore'
 export { max, min } from 'underscore'
-
