@@ -808,7 +808,7 @@ JS_KEYWORDS = [
 
 # CoffeeScript-only keywords.
 COFFEE_KEYWORDS = [
-  'undefined', 'Infinity', 'NaN',
+  'undefined', 'Infinity', 'NaN'
   'then', 'unless', 'until', 'loop', 'of', 'by', 'when'
 ]
 
