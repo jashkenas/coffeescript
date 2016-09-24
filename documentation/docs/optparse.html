@@ -138,7 +138,7 @@ option) list, and all subsequent arguments are left unparsed.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.OptionParser = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">OptionParser</span></span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.OptionParser = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">OptionParser</span></span></pre></div></div>
             
         </li>
         
@@ -151,12 +151,12 @@ option) list, and all subsequent arguments are left unparsed.</p>
               </div>
               <p>Initialize with a list of valid options, in the form:</p>
 <pre><code>[short-flag, long-flag, description]
-</code></pre><p>Along with an an optional banner for the usage help.</p>
+</code></pre><p>Along with an optional banner for the usage help.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(rules, <span class="hljs-property">@banner</span>)</span> -&gt;</span>
-    <span class="hljs-property">@rules</span> = buildRules rules</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  constructor: <span class="hljs-function"><span class="hljs-params">(rules, @banner)</span> -&gt;</span>
+    @rules = buildRules rules</pre></div></div>
             
         </li>
         
@@ -176,8 +176,8 @@ you’re responsible for interpreting the options object.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">parse</span>: <span class="hljs-function"><span class="hljs-params">(args)</span> -&gt;</span>
-    options = <span class="hljs-attribute">arguments</span>: []
+            <div class="content"><div class='highlight'><pre>  parse: <span class="hljs-function"><span class="hljs-params">(args)</span> -&gt;</span>
+    options = arguments: []
     skippingArgument = <span class="hljs-literal">no</span>
     originalArgs = args
     args = normalizeArguments args
@@ -208,7 +208,7 @@ non-option argument are treated as non-option arguments themselves</p>
             <div class="content"><div class='highlight'><pre>      seenNonOptionArg = options.arguments.length &gt; <span class="hljs-number">0</span>
       <span class="hljs-keyword">unless</span> seenNonOptionArg
         matchedRule = <span class="hljs-literal">no</span>
-        <span class="hljs-keyword">for</span> rule <span class="hljs-keyword">in</span> <span class="hljs-property">@rules</span>
+        <span class="hljs-keyword">for</span> rule <span class="hljs-keyword">in</span> @rules
           <span class="hljs-keyword">if</span> rule.shortFlag <span class="hljs-keyword">is</span> arg <span class="hljs-keyword">or</span> rule.longFlag <span class="hljs-keyword">is</span> arg
             value = <span class="hljs-literal">true</span>
             <span class="hljs-keyword">if</span> rule.hasArgument
@@ -236,10 +236,10 @@ of the valid options, for <code>--help</code> and such.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">help</span>:<span class="hljs-function"> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  help: <span class="hljs-function">-&gt;</span>
     lines = []
-    lines.unshift <span class="hljs-string">"<span class="hljs-subst">#{<span class="hljs-property">@banner</span>}</span>\n"</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@banner</span>
-    <span class="hljs-keyword">for</span> rule <span class="hljs-keyword">in</span> <span class="hljs-property">@rules</span>
+    lines.unshift <span class="hljs-string">"<span class="hljs-subst">#{@banner}</span>\n"</span> <span class="hljs-keyword">if</span> @banner
+    <span class="hljs-keyword">for</span> rule <span class="hljs-keyword">in</span> @rules
       spaces  = <span class="hljs-number">15</span> - rule.longFlag.length
       spaces  = <span class="hljs-keyword">if</span> spaces &gt; <span class="hljs-number">0</span> <span class="hljs-keyword">then</span> repeat <span class="hljs-string">' '</span>, spaces <span class="hljs-keyword">else</span> <span class="hljs-string">''</span>
       letPart = <span class="hljs-keyword">if</span> rule.shortFlag <span class="hljs-keyword">then</span> rule.shortFlag + <span class="hljs-string">', '</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'    '</span>
@@ -326,12 +326,12 @@ description of what the option does.</p>
   match     = longFlag.match(OPTIONAL)
   longFlag  = longFlag.match(LONG_FLAG)[<span class="hljs-number">1</span>]
   {
-    <span class="hljs-attribute">name</span>:         longFlag.substr <span class="hljs-number">2</span>
-    <span class="hljs-attribute">shortFlag</span>:    shortFlag
-    <span class="hljs-attribute">longFlag</span>:     longFlag
-    <span class="hljs-attribute">description</span>:  description
-    <span class="hljs-attribute">hasArgument</span>:  !!(match <span class="hljs-keyword">and</span> match[<span class="hljs-number">1</span>])
-    <span class="hljs-attribute">isList</span>:       !!(match <span class="hljs-keyword">and</span> match[<span class="hljs-number">2</span>])
+    name:         longFlag.substr <span class="hljs-number">2</span>
+    shortFlag:    shortFlag
+    longFlag:     longFlag
+    description:  description
+    hasArgument:  !!(match <span class="hljs-keyword">and</span> match[<span class="hljs-number">1</span>])
+    isList:       !!(match <span class="hljs-keyword">and</span> match[<span class="hljs-number">2</span>])
   }</pre></div></div>
             
         </li>

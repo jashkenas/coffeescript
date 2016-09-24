@@ -144,15 +144,15 @@ positions for a single line of output JavaScript code.
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">LineMap</span></span>
-  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@line</span>)</span> -&gt;</span>
-    <span class="hljs-property">@columns</span> = []
+  constructor: <span class="hljs-function"><span class="hljs-params">(@line)</span> -&gt;</span>
+    @columns = []
 
-  <span class="hljs-attribute">add</span>: <span class="hljs-function"><span class="hljs-params">(column, [sourceLine, sourceColumn], options={})</span> -&gt;</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@columns</span>[column] <span class="hljs-keyword">and</span> options.noReplace
-    <span class="hljs-property">@columns</span>[column] = {<span class="hljs-attribute">line</span>: <span class="hljs-property">@line</span>, column, sourceLine, sourceColumn}
+  add: <span class="hljs-function"><span class="hljs-params">(column, [sourceLine, sourceColumn], options={})</span> -&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">if</span> @columns[column] <span class="hljs-keyword">and</span> options.noReplace
+    @columns[column] = {line: @line, column, sourceLine, sourceColumn}
 
-  <span class="hljs-attribute">sourceLocation</span>: <span class="hljs-function"><span class="hljs-params">(column)</span> -&gt;</span>
-    column-- <span class="hljs-keyword">until</span> (mapping = <span class="hljs-property">@columns</span>[column]) <span class="hljs-keyword">or</span> (column &lt;= <span class="hljs-number">0</span>)
+  sourceLocation: <span class="hljs-function"><span class="hljs-params">(column)</span> -&gt;</span>
+    column-- <span class="hljs-keyword">until</span> (mapping = @columns[column]) <span class="hljs-keyword">or</span> (column &lt;= <span class="hljs-number">0</span>)
     mapping <span class="hljs-keyword">and</span> [mapping.sourceLine, mapping.sourceColumn]</pre></div></div>
             
         </li>
@@ -186,8 +186,8 @@ through the arrays of line and column buffer to produce it.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SourceMap</span></span>
-  <span class="hljs-attribute">constructor</span>:<span class="hljs-function"> -&gt;</span>
-    <span class="hljs-property">@lines</span> = []</pre></div></div>
+  constructor: <span class="hljs-function">-&gt;</span>
+    @lines = []</pre></div></div>
             
         </li>
         
@@ -205,9 +205,9 @@ effect.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">add</span>: <span class="hljs-function"><span class="hljs-params">(sourceLocation, generatedLocation, options = {})</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  add: <span class="hljs-function"><span class="hljs-params">(sourceLocation, generatedLocation, options = {})</span> -&gt;</span>
     [line, column] = generatedLocation
-    lineMap = (<span class="hljs-property">@lines</span>[line] <span class="hljs-keyword">or</span>= <span class="hljs-keyword">new</span> LineMap(line))
+    lineMap = (@lines[line] <span class="hljs-keyword">or</span>= <span class="hljs-keyword">new</span> LineMap(line))
     lineMap.add column, sourceLocation, options</pre></div></div>
             
         </li>
@@ -224,8 +224,8 @@ code.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">sourceLocation</span>: <span class="hljs-function"><span class="hljs-params">([line, column])</span> -&gt;</span>
-    line-- <span class="hljs-keyword">until</span> (lineMap = <span class="hljs-property">@lines</span>[line]) <span class="hljs-keyword">or</span> (line &lt;= <span class="hljs-number">0</span>)
+            <div class="content"><div class='highlight'><pre>  sourceLocation: <span class="hljs-function"><span class="hljs-params">([line, column])</span> -&gt;</span>
+    line-- <span class="hljs-keyword">until</span> (lineMap = @lines[line]) <span class="hljs-keyword">or</span> (line &lt;= <span class="hljs-number">0</span>)
     lineMap <span class="hljs-keyword">and</span> lineMap.sourceLocation column</pre></div></div>
             
         </li>
@@ -257,7 +257,7 @@ set “sources” and “file”, respectively.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">generate</span>: <span class="hljs-function"><span class="hljs-params">(options = {}, code = <span class="hljs-literal">null</span>)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  generate: <span class="hljs-function"><span class="hljs-params">(options = {}, code = <span class="hljs-literal">null</span>)</span> -&gt;</span>
     writingline       = <span class="hljs-number">0</span>
     lastColumn        = <span class="hljs-number">0</span>
     lastSourceLine    = <span class="hljs-number">0</span>
@@ -265,7 +265,7 @@ set “sources” and “file”, respectively.</p>
     needComma         = <span class="hljs-literal">no</span>
     buffer            = <span class="hljs-string">""</span>
 
-    <span class="hljs-keyword">for</span> lineMap, lineNumber <span class="hljs-keyword">in</span> <span class="hljs-property">@lines</span> <span class="hljs-keyword">when</span> lineMap
+    <span class="hljs-keyword">for</span> lineMap, lineNumber <span class="hljs-keyword">in</span> @lines <span class="hljs-keyword">when</span> lineMap
       <span class="hljs-keyword">for</span> mapping <span class="hljs-keyword">in</span> lineMap.columns <span class="hljs-keyword">when</span> mapping
         <span class="hljs-keyword">while</span> writingline &lt; mapping.line
           lastColumn = <span class="hljs-number">0</span>
@@ -306,7 +306,7 @@ column for the current line:</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        buffer += <span class="hljs-property">@encodeVlq</span> mapping.column - lastColumn
+            <div class="content"><div class='highlight'><pre>        buffer += @encodeVlq mapping.column - lastColumn
         lastColumn = mapping.column</pre></div></div>
             
         </li>
@@ -322,7 +322,7 @@ column for the current line:</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        buffer += <span class="hljs-property">@encodeVlq</span> <span class="hljs-number">0</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>        buffer += @encodeVlq <span class="hljs-number">0</span></pre></div></div>
             
         </li>
         
@@ -337,7 +337,7 @@ column for the current line:</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        buffer += <span class="hljs-property">@encodeVlq</span> mapping.sourceLine - lastSourceLine
+            <div class="content"><div class='highlight'><pre>        buffer += @encodeVlq mapping.sourceLine - lastSourceLine
         lastSourceLine = mapping.sourceLine</pre></div></div>
             
         </li>
@@ -353,7 +353,7 @@ column for the current line:</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        buffer += <span class="hljs-property">@encodeVlq</span> mapping.sourceColumn - lastSourceColumn
+            <div class="content"><div class='highlight'><pre>        buffer += @encodeVlq mapping.sourceColumn - lastSourceColumn
         lastSourceColumn = mapping.sourceColumn
         needComma = <span class="hljs-literal">yes</span></pre></div></div>
             
@@ -371,16 +371,16 @@ column for the current line:</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    v3 =
-      <span class="hljs-attribute">version</span>:    <span class="hljs-number">3</span>
-      <span class="hljs-attribute">file</span>:       options.generatedFile <span class="hljs-keyword">or</span> <span class="hljs-string">''</span>
-      <span class="hljs-attribute">sourceRoot</span>: options.sourceRoot <span class="hljs-keyword">or</span> <span class="hljs-string">''</span>
-      <span class="hljs-attribute">sources</span>:    options.sourceFiles <span class="hljs-keyword">or</span> [<span class="hljs-string">''</span>]
-      <span class="hljs-attribute">names</span>:      []
-      <span class="hljs-attribute">mappings</span>:   buffer
+      version:    <span class="hljs-number">3</span>
+      file:       options.generatedFile <span class="hljs-keyword">or</span> <span class="hljs-string">''</span>
+      sourceRoot: options.sourceRoot <span class="hljs-keyword">or</span> <span class="hljs-string">''</span>
+      sources:    options.sourceFiles <span class="hljs-keyword">or</span> [<span class="hljs-string">''</span>]
+      names:      []
+      mappings:   buffer
 
-    v3.sourcesContent = [code] <span class="hljs-keyword">if</span> options.inline
+    v3.sourcesContent = [code] <span class="hljs-keyword">if</span> options.inlineMap
 
-    JSON.stringify v3, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span></pre></div></div>
+    v3</pre></div></div>
             
         </li>
         
@@ -416,7 +416,7 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
   VLQ_CONTINUATION_BIT = <span class="hljs-number">1</span> &lt;&lt; VLQ_SHIFT             <span class="hljs-comment"># 0010 0000</span>
   VLQ_VALUE_MASK       = VLQ_CONTINUATION_BIT - <span class="hljs-number">1</span>   <span class="hljs-comment"># 0001 1111</span>
 
-  <span class="hljs-attribute">encodeVlq</span>: <span class="hljs-function"><span class="hljs-params">(value)</span> -&gt;</span>
+  encodeVlq: <span class="hljs-function"><span class="hljs-params">(value)</span> -&gt;</span>
     answer = <span class="hljs-string">''</span></pre></div></div>
             
         </li>
@@ -466,7 +466,7 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
       nextChunk = valueToEncode &amp; VLQ_VALUE_MASK
       valueToEncode = valueToEncode &gt;&gt; VLQ_SHIFT
       nextChunk |= VLQ_CONTINUATION_BIT <span class="hljs-keyword">if</span> valueToEncode
-      answer += <span class="hljs-property">@encodeBase64</span> nextChunk
+      answer += @encodeBase64 nextChunk
 
     answer</pre></div></div>
             
@@ -497,7 +497,7 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
             
             <div class="content"><div class='highlight'><pre>  BASE64_CHARS = <span class="hljs-string">'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'</span>
 
-  <span class="hljs-attribute">encodeBase64</span>: <span class="hljs-function"><span class="hljs-params">(value)</span> -&gt;</span>
+  encodeBase64: <span class="hljs-function"><span class="hljs-params">(value)</span> -&gt;</span>
     BASE64_CHARS[value] <span class="hljs-keyword">or</span> <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">"Cannot Base64 encode value: <span class="hljs-subst">#{value}</span>"</span></pre></div></div>
             
         </li>
@@ -513,7 +513,7 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">module</span>.<span class="hljs-built_in">exports</span> = SourceMap</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">module</span>.exports = SourceMap</pre></div></div>
             
         </li>
         

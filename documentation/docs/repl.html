@@ -126,10 +126,10 @@ CoffeeScript = <span class="hljs-built_in">require</span> <span class="hljs-stri
 {merge, updateSyntaxError} = <span class="hljs-built_in">require</span> <span class="hljs-string">'./helpers'</span>
 
 replDefaults =
-  <span class="hljs-attribute">prompt</span>: <span class="hljs-string">'coffee&gt; '</span>,
-  <span class="hljs-attribute">historyFile</span>: path.join process.env.HOME, <span class="hljs-string">'.coffee_history'</span> <span class="hljs-keyword">if</span> process.env.HOME
-  <span class="hljs-attribute">historyMaxInputSize</span>: <span class="hljs-number">10240</span>
-  <span class="hljs-attribute">eval</span>: <span class="hljs-function"><span class="hljs-params">(input, context, filename, cb)</span> -&gt;</span></pre></div></div>
+  prompt: <span class="hljs-string">'coffee&gt; '</span>,
+  historyFile: path.join process.env.HOME, <span class="hljs-string">'.coffee_history'</span> <span class="hljs-keyword">if</span> process.env.HOME
+  historyMaxInputSize: <span class="hljs-number">10240</span>
+  eval: <span class="hljs-function"><span class="hljs-params">(input, context, filename, cb)</span> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -208,7 +208,7 @@ parens. Unwrap all that.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>      referencedVars = (
-        token[<span class="hljs-number">1</span>] <span class="hljs-keyword">for</span> token <span class="hljs-keyword">in</span> tokens <span class="hljs-keyword">when</span> token.variable
+        token[<span class="hljs-number">1</span>] <span class="hljs-keyword">for</span> token <span class="hljs-keyword">in</span> tokens <span class="hljs-keyword">when</span> token[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'IDENTIFIER'</span>
       )</pre></div></div>
             
         </li>
@@ -242,7 +242,7 @@ parens. Unwrap all that.</p>
             <div class="content"><div class='highlight'><pre>      ast = <span class="hljs-keyword">new</span> Block [
         <span class="hljs-keyword">new</span> Assign (<span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> Literal <span class="hljs-string">'_'</span>), ast, <span class="hljs-string">'='</span>
       ]
-      js = ast.compile {<span class="hljs-attribute">bare</span>: <span class="hljs-literal">yes</span>, <span class="hljs-attribute">locals</span>: Object.keys(context), referencedVars}
+      js = ast.compile {bare: <span class="hljs-literal">yes</span>, locals: Object.keys(context), referencedVars}
       cb <span class="hljs-literal">null</span>, runInContext js, context, filename
     <span class="hljs-keyword">catch</span> err</pre></div></div>
             
@@ -261,14 +261,14 @@ parens. Unwrap all that.</p>
             
             <div class="content"><div class='highlight'><pre>      updateSyntaxError err, input
       cb err
-
-<span class="hljs-function"><span class="hljs-title">runInContext</span> = <span class="hljs-params">(js, context, filename)</span> -&gt;</span>
+<span class="hljs-function">
+<span class="hljs-title">runInContext</span> = <span class="hljs-params">(js, context, filename)</span> -&gt;</span>
   <span class="hljs-keyword">if</span> context <span class="hljs-keyword">is</span> <span class="hljs-built_in">global</span>
     vm.runInThisContext js, filename
   <span class="hljs-keyword">else</span>
     vm.runInContext js, context, filename
-
-<span class="hljs-function"><span class="hljs-title">addMultilineHandler</span> = <span class="hljs-params">(repl)</span> -&gt;</span>
+<span class="hljs-function">
+<span class="hljs-title">addMultilineHandler</span> = <span class="hljs-params">(repl)</span> -&gt;</span>
   {rli, inputStream, outputStream} = repl</pre></div></div>
             
         </li>
@@ -287,10 +287,10 @@ parens. Unwrap all that.</p>
             <div class="content"><div class='highlight'><pre>  origPrompt = repl._prompt ? repl.prompt
 
   multiline =
-    <span class="hljs-attribute">enabled</span>: <span class="hljs-literal">off</span>
-    <span class="hljs-attribute">initialPrompt</span>: origPrompt.replace <span class="hljs-regexp">/^[^&gt; ]*/</span>, <span class="hljs-function"><span class="hljs-params">(x)</span> -&gt;</span> x.replace <span class="hljs-regexp">/./g</span>, <span class="hljs-string">'-'</span>
-    <span class="hljs-attribute">prompt</span>: origPrompt.replace <span class="hljs-regexp">/^[^&gt; ]*&gt;?/</span>, <span class="hljs-function"><span class="hljs-params">(x)</span> -&gt;</span> x.replace <span class="hljs-regexp">/./g</span>, <span class="hljs-string">'.'</span>
-    <span class="hljs-attribute">buffer</span>: <span class="hljs-string">''</span></pre></div></div>
+    enabled: <span class="hljs-literal">off</span>
+    initialPrompt: origPrompt.replace <span class="hljs-regexp">/^[^&gt; ]*/</span>, <span class="hljs-function"><span class="hljs-params">(x)</span> -&gt;</span> x.replace <span class="hljs-regexp">/./g</span>, <span class="hljs-string">'-'</span>
+    prompt: origPrompt.replace <span class="hljs-regexp">/^[^&gt; ]*&gt;?/</span>, <span class="hljs-function"><span class="hljs-params">(x)</span> -&gt;</span> x.replace <span class="hljs-regexp">/./g</span>, <span class="hljs-string">'.'</span>
+    buffer: <span class="hljs-string">''</span></pre></div></div>
             
         </li>
         
@@ -504,13 +504,13 @@ parens. Unwrap all that.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    repl.rli.history.shift() <span class="hljs-keyword">if</span> repl.rli.history[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">''</span>
-    repl.rli.historyIndex = -<span class="hljs-number">1</span>
+    repl.rli.historyIndex = <span class="hljs-number">-1</span>
     lastLine = repl.rli.history[<span class="hljs-number">0</span>]
 
   fd = fs.openSync filename, <span class="hljs-string">'a'</span>
 
   repl.rli.addListener <span class="hljs-string">'line'</span>, <span class="hljs-function"><span class="hljs-params">(code)</span> -&gt;</span>
-    <span class="hljs-keyword">if</span> code <span class="hljs-keyword">and</span> code.length <span class="hljs-keyword">and</span> code <span class="hljs-keyword">isnt</span> <span class="hljs-string">'.history'</span> <span class="hljs-keyword">and</span> lastLine <span class="hljs-keyword">isnt</span> code</pre></div></div>
+    <span class="hljs-keyword">if</span> code <span class="hljs-keyword">and</span> code.length <span class="hljs-keyword">and</span> code <span class="hljs-keyword">isnt</span> <span class="hljs-string">'.history'</span> <span class="hljs-keyword">and</span> code <span class="hljs-keyword">isnt</span> <span class="hljs-string">'.exit'</span> <span class="hljs-keyword">and</span> lastLine <span class="hljs-keyword">isnt</span> code</pre></div></div>
             
         </li>
         
@@ -528,7 +528,7 @@ parens. Unwrap all that.</p>
             <div class="content"><div class='highlight'><pre>      fs.write fd, <span class="hljs-string">"<span class="hljs-subst">#{code}</span>\n"</span>
       lastLine = code
 
-  repl.<span class="hljs-literal">on</span> <span class="hljs-string">'exit'</span>,<span class="hljs-function"> -&gt;</span> fs.close fd</pre></div></div>
+  repl.<span class="hljs-literal">on</span> <span class="hljs-string">'exit'</span>, <span class="hljs-function">-&gt;</span> fs.close fd</pre></div></div>
             
         </li>
         
@@ -544,12 +544,12 @@ parens. Unwrap all that.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  repl.commands[getCommandId(repl, <span class="hljs-string">'history'</span>)] =
-    <span class="hljs-attribute">help</span>: <span class="hljs-string">'Show command history'</span>
-    <span class="hljs-attribute">action</span>:<span class="hljs-function"> -&gt;</span>
+    help: <span class="hljs-string">'Show command history'</span>
+    action: <span class="hljs-function">-&gt;</span>
       repl.outputStream.write <span class="hljs-string">"<span class="hljs-subst">#{repl.rli.history[..].reverse().join <span class="hljs-string">'\n'</span>}</span>\n"</span>
       repl.displayPrompt()
-
-<span class="hljs-function"><span class="hljs-title">getCommandId</span> = <span class="hljs-params">(repl, commandName)</span> -&gt;</span></pre></div></div>
+<span class="hljs-function">
+<span class="hljs-title">getCommandId</span> = <span class="hljs-params">(repl, commandName)</span> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -567,9 +567,9 @@ parens. Unwrap all that.</p>
             <div class="content"><div class='highlight'><pre>  commandsHaveLeadingDot = repl.commands[<span class="hljs-string">'.help'</span>]?
   <span class="hljs-keyword">if</span> commandsHaveLeadingDot <span class="hljs-keyword">then</span> <span class="hljs-string">".<span class="hljs-subst">#{commandName}</span>"</span> <span class="hljs-keyword">else</span> commandName
 
-<span class="hljs-built_in">module</span>.<span class="hljs-built_in">exports</span> =
-  <span class="hljs-attribute">start</span>: <span class="hljs-function"><span class="hljs-params">(opts = {})</span> -&gt;</span>
-    [major, minor, build] = process.versions.node.split<span class="hljs-function"><span class="hljs-params">(<span class="hljs-string">'.'</span>)</span>.<span class="hljs-title">map</span> <span class="hljs-params">(n)</span> -&gt;</span> parseInt(n)
+<span class="hljs-built_in">module</span>.exports =
+  start: <span class="hljs-function"><span class="hljs-params">(opts = {})</span> -&gt;</span>
+    [major, minor, build] = process.versions.node.split(<span class="hljs-string">'.'</span>).map (n) -&gt; parseInt(n)
 
     <span class="hljs-keyword">if</span> major <span class="hljs-keyword">is</span> <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> minor &lt; <span class="hljs-number">8</span>
       <span class="hljs-built_in">console</span>.warn <span class="hljs-string">"Node 0.8.0+ required for CoffeeScript REPL"</span>
@@ -580,7 +580,7 @@ parens. Unwrap all that.</p>
     opts = merge replDefaults, opts
     repl = nodeREPL.start opts
     runInContext opts.prelude, repl.context, <span class="hljs-string">'prelude'</span> <span class="hljs-keyword">if</span> opts.prelude
-    repl.<span class="hljs-literal">on</span> <span class="hljs-string">'exit'</span>,<span class="hljs-function"> -&gt;</span> repl.outputStream.write <span class="hljs-string">'\n'</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> repl.rli.closed
+    repl.<span class="hljs-literal">on</span> <span class="hljs-string">'exit'</span>, <span class="hljs-function">-&gt;</span> repl.outputStream.write <span class="hljs-string">'\n'</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> repl.rli.closed
     addMultilineHandler repl
     addHistory repl, opts.historyFile, opts.historyMaxInputSize <span class="hljs-keyword">if</span> opts.historyFile</pre></div></div>
             
