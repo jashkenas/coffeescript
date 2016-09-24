@@ -254,6 +254,7 @@ runTests = helpers.async (CoffeeScript) ->
   global.eq      = (a, b, msg) -> ok egal(a, b), msg ? "Expected #{a} to equal #{b}"
   global.arrayEq = (a, b, msg) -> ok arrayEgal(a,b), msg ? "Expected #{a} to deep equal #{b}"
 
+
   # When all the tests have run, collect and print errors.
   # If a stacktrace is available, output the compiled function source.
   process.on 'exit', ->
@@ -273,7 +274,14 @@ runTests = helpers.async (CoffeeScript) ->
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
 
+  asyncIsAvailable = '--harmony' in process.execArgv or
+    '--harmony_async_await' in process.execArgv
+
   for file in files when helpers.isCoffee file
+    # skip async/await tests if JS runtime doesn't support it
+    if not asyncIsAvailable and file == 'async.coffee'
+      continue
+
     literate = helpers.isLiterate file
     currentFile = filename = path.join 'test', file
     code = fs.readFileSync filename
@@ -284,8 +292,7 @@ runTests = helpers.async (CoffeeScript) ->
         try
           fn.test = {description, currentFile}
           val = fn.call(fn)
-          if typeof val?.then == 'function'
-            yield val
+          yield val
           ++passedTests
         catch e
           failures.push
