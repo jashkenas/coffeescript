@@ -39,7 +39,7 @@ li {
 }
 table {
   margin: 16px 0 0 13px; padding: 0;
-  width: 625px;
+  width: 690px;
 }
   tr, td {
     margin: 0; padding: 0;
@@ -116,8 +116,8 @@ div.code {
     border-top-width: 0;
     border-bottom-width: 0;
     border-right-width: 0;
-    margin: 0 3px 15px 3px;
-    padding: 10px 0 0 12px;
+    margin: 15px 3px;
+    padding: 0 0 26px 12px;
   }
     div.code pre:first-child {
       border-left: 0;
@@ -410,6 +410,8 @@ div.code {
     border-top-width: 1px;
     width: auto;
     float: none;
+    margin: 5px;
+    padding: 10px 5px;
   }
     div.code pre:first-child {
       border-top: none;

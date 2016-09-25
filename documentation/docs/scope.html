@@ -124,7 +124,7 @@ with external scopes.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Scope = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Scope</span></span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.Scope = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Scope</span></span></pre></div></div>
             
         </li>
         
@@ -143,10 +143,10 @@ and therefore should be avoided when generating variables.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@parent</span>, <span class="hljs-property">@expressions</span>, <span class="hljs-property">@method</span>, <span class="hljs-property">@referencedVars</span>)</span> -&gt;</span>
-    <span class="hljs-property">@variables</span> = [{<span class="hljs-attribute">name</span>: <span class="hljs-string">'arguments'</span>, <span class="hljs-attribute">type</span>: <span class="hljs-string">'arguments'</span>}]
-    <span class="hljs-property">@positions</span> = {}
-    <span class="hljs-property">@utilities</span> = {} <span class="hljs-keyword">unless</span> <span class="hljs-property">@parent</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  constructor: <span class="hljs-function"><span class="hljs-params">(@parent, @expressions, @method, @referencedVars)</span> -&gt;</span>
+    @variables = [{name: <span class="hljs-string">'arguments'</span>, type: <span class="hljs-string">'arguments'</span>}]
+    @positions = {}
+    @utilities = {} <span class="hljs-keyword">unless</span> @parent</pre></div></div>
             
         </li>
         
@@ -161,7 +161,7 @@ and therefore should be avoided when generating variables.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-property">@root</span> = <span class="hljs-property">@parent</span>?.root ? <span class="hljs-keyword">this</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>    @root = @parent?.root ? <span class="hljs-keyword">this</span></pre></div></div>
             
         </li>
         
@@ -176,12 +176,12 @@ and therefore should be avoided when generating variables.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">add</span>: <span class="hljs-function"><span class="hljs-params">(name, type, immediate)</span> -&gt;</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-property">@parent</span>.add name, type, immediate <span class="hljs-keyword">if</span> <span class="hljs-property">@shared</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> immediate
-    <span class="hljs-keyword">if</span> <span class="hljs-attribute">Object</span>::hasOwnProperty.call <span class="hljs-property">@positions</span>, name
-      <span class="hljs-property">@variables</span>[<span class="hljs-property">@positions</span>[name]].type = type
+            <div class="content"><div class='highlight'><pre>  add: <span class="hljs-function"><span class="hljs-params">(name, type, immediate)</span> -&gt;</span>
+    <span class="hljs-keyword">return</span> @parent.add name, type, immediate <span class="hljs-keyword">if</span> @shared <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> immediate
+    <span class="hljs-keyword">if</span> Object::hasOwnProperty.call @positions, name
+      @variables[@positions[name]].type = type
     <span class="hljs-keyword">else</span>
-      <span class="hljs-property">@positions</span>[name] = <span class="hljs-property">@variables</span>.push({name, type}) - <span class="hljs-number">1</span></pre></div></div>
+      @positions[name] = @variables.push({name, type}) - <span class="hljs-number">1</span></pre></div></div>
             
         </li>
         
@@ -200,9 +200,9 @@ function object that has a name filled in, or bottoms out.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">namedMethod</span>:<span class="hljs-function"> -&gt;</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-property">@method</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@method</span>?.name <span class="hljs-keyword">or</span> !<span class="hljs-property">@parent</span>
-    <span class="hljs-property">@parent</span>.namedMethod()</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  namedMethod: <span class="hljs-function">-&gt;</span>
+    <span class="hljs-keyword">return</span> @method <span class="hljs-keyword">if</span> @method?.name <span class="hljs-keyword">or</span> !@parent
+    @parent.namedMethod()</pre></div></div>
             
         </li>
         
@@ -218,9 +218,9 @@ already exist.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">find</span>: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-literal">yes</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@check</span> name
-    <span class="hljs-property">@add</span> name, <span class="hljs-string">'var'</span>
+            <div class="content"><div class='highlight'><pre>  find: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">yes</span> <span class="hljs-keyword">if</span> @check name
+    @add name, <span class="hljs-string">'var'</span>
     <span class="hljs-literal">no</span></pre></div></div>
             
         </li>
@@ -237,9 +237,9 @@ scope. No <code>var</code> required for internal references.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">parameter</span>: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@shared</span> <span class="hljs-keyword">and</span> <span class="hljs-property">@parent</span>.check name, <span class="hljs-literal">yes</span>
-    <span class="hljs-property">@add</span> name, <span class="hljs-string">'param'</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  parameter: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">if</span> @shared <span class="hljs-keyword">and</span> @parent.check name, <span class="hljs-literal">yes</span>
+    @add name, <span class="hljs-string">'param'</span></pre></div></div>
             
         </li>
         
@@ -255,8 +255,8 @@ walks up to the root scope.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">check</span>: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
-    !!(<span class="hljs-property">@type</span>(name) <span class="hljs-keyword">or</span> <span class="hljs-property">@parent</span>?.check(name))</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  check: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
+    !!(@type(name) <span class="hljs-keyword">or</span> @parent?.check(name))</pre></div></div>
             
         </li>
         
@@ -271,11 +271,17 @@ walks up to the root scope.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">temporary</span>: <span class="hljs-function"><span class="hljs-params">(name, index, single=<span class="hljs-literal">false</span>)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  temporary: <span class="hljs-function"><span class="hljs-params">(name, index, single=<span class="hljs-literal">false</span>)</span> -&gt;</span>
     <span class="hljs-keyword">if</span> single
-      (index + parseInt name, <span class="hljs-number">36</span>).toString(<span class="hljs-number">36</span>).replace <span class="hljs-regexp">/\d/g</span>, <span class="hljs-string">'a'</span>
+      startCode = name.charCodeAt(<span class="hljs-number">0</span>)
+      endCode = <span class="hljs-string">'z'</span>.charCodeAt(<span class="hljs-number">0</span>)
+      diff = endCode - startCode
+      newCode = startCode + index % (diff + <span class="hljs-number">1</span>)
+      letter = String.fromCharCode(newCode)
+      num = index <span class="hljs-regexp">//</span> (diff + <span class="hljs-number">1</span>)
+      <span class="hljs-string">"<span class="hljs-subst">#{letter}</span><span class="hljs-subst">#{num <span class="hljs-keyword">or</span> <span class="hljs-string">''</span>}</span>"</span>
     <span class="hljs-keyword">else</span>
-      name + (index <span class="hljs-keyword">or</span> <span class="hljs-string">''</span>)</pre></div></div>
+      <span class="hljs-string">"<span class="hljs-subst">#{name}</span><span class="hljs-subst">#{index <span class="hljs-keyword">or</span> <span class="hljs-string">''</span>}</span>"</span></pre></div></div>
             
         </li>
         
@@ -290,8 +296,8 @@ walks up to the root scope.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">type</span>: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
-    <span class="hljs-keyword">return</span> v.type <span class="hljs-keyword">for</span> v <span class="hljs-keyword">in</span> <span class="hljs-property">@variables</span> <span class="hljs-keyword">when</span> v.name <span class="hljs-keyword">is</span> name
+            <div class="content"><div class='highlight'><pre>  type: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
+    <span class="hljs-keyword">return</span> v.type <span class="hljs-keyword">for</span> v <span class="hljs-keyword">in</span> @variables <span class="hljs-keyword">when</span> v.name <span class="hljs-keyword">is</span> name
     <span class="hljs-literal">null</span></pre></div></div>
             
         </li>
@@ -308,13 +314,13 @@ compiler-generated variable. <code>_var</code>, <code>_var2</code>, and so on…
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">freeVariable</span>: <span class="hljs-function"><span class="hljs-params">(name, options={})</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  freeVariable: <span class="hljs-function"><span class="hljs-params">(name, options={})</span> -&gt;</span>
     index = <span class="hljs-number">0</span>
     <span class="hljs-keyword">loop</span>
-      temp = <span class="hljs-property">@temporary</span> name, index, options.single
-      <span class="hljs-keyword">break</span> <span class="hljs-keyword">unless</span> <span class="hljs-property">@check</span>(temp) <span class="hljs-keyword">or</span> temp <span class="hljs-keyword">in</span> <span class="hljs-property">@root</span>.referencedVars
+      temp = @temporary name, index, options.single
+      <span class="hljs-keyword">break</span> <span class="hljs-keyword">unless</span> @check(temp) <span class="hljs-keyword">or</span> temp <span class="hljs-keyword">in</span> @root.referencedVars
       index++
-    <span class="hljs-property">@add</span> temp, <span class="hljs-string">'var'</span>, <span class="hljs-literal">yes</span> <span class="hljs-keyword">if</span> options.reserve ? <span class="hljs-literal">true</span>
+    @add temp, <span class="hljs-string">'var'</span>, <span class="hljs-literal">yes</span> <span class="hljs-keyword">if</span> options.reserve ? <span class="hljs-literal">true</span>
     temp</pre></div></div>
             
         </li>
@@ -331,9 +337,9 @@ compiler-generated variable. <code>_var</code>, <code>_var2</code>, and so on…
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">assign</span>: <span class="hljs-function"><span class="hljs-params">(name, value)</span> -&gt;</span>
-    <span class="hljs-property">@add</span> name, {value, <span class="hljs-attribute">assigned</span>: <span class="hljs-literal">yes</span>}, <span class="hljs-literal">yes</span>
-    <span class="hljs-property">@hasAssignments</span> = <span class="hljs-literal">yes</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  assign: <span class="hljs-function"><span class="hljs-params">(name, value)</span> -&gt;</span>
+    @add name, {value, assigned: <span class="hljs-literal">yes</span>}, <span class="hljs-literal">yes</span>
+    @hasAssignments = <span class="hljs-literal">yes</span></pre></div></div>
             
         </li>
         
@@ -348,8 +354,8 @@ compiler-generated variable. <code>_var</code>, <code>_var2</code>, and so on…
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">hasDeclarations</span>:<span class="hljs-function"> -&gt;</span>
-    !!<span class="hljs-property">@declaredVariables</span>().length</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  hasDeclarations: <span class="hljs-function">-&gt;</span>
+    !!@declaredVariables().length</pre></div></div>
             
         </li>
         
@@ -364,8 +370,8 @@ compiler-generated variable. <code>_var</code>, <code>_var2</code>, and so on…
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">declaredVariables</span>:<span class="hljs-function"> -&gt;</span>
-    (v.name <span class="hljs-keyword">for</span> v <span class="hljs-keyword">in</span> <span class="hljs-property">@variables</span> <span class="hljs-keyword">when</span> v.type <span class="hljs-keyword">is</span> <span class="hljs-string">'var'</span>).sort()</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  declaredVariables: <span class="hljs-function">-&gt;</span>
+    (v.name <span class="hljs-keyword">for</span> v <span class="hljs-keyword">in</span> @variables <span class="hljs-keyword">when</span> v.type <span class="hljs-keyword">is</span> <span class="hljs-string">'var'</span>).sort()</pre></div></div>
             
         </li>
         
@@ -381,8 +387,8 @@ of this scope.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">assignedVariables</span>:<span class="hljs-function"> -&gt;</span>
-    <span class="hljs-string">"<span class="hljs-subst">#{v.name}</span> = <span class="hljs-subst">#{v.type.value}</span>"</span> <span class="hljs-keyword">for</span> v <span class="hljs-keyword">in</span> <span class="hljs-property">@variables</span> <span class="hljs-keyword">when</span> v.type.assigned</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  assignedVariables: <span class="hljs-function">-&gt;</span>
+    <span class="hljs-string">"<span class="hljs-subst">#{v.name}</span> = <span class="hljs-subst">#{v.type.value}</span>"</span> <span class="hljs-keyword">for</span> v <span class="hljs-keyword">in</span> @variables <span class="hljs-keyword">when</span> v.type.assigned</pre></div></div>
             
         </li>
         
