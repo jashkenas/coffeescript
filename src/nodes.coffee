@@ -1628,9 +1628,9 @@ exports.Code = class Code extends Base
     delete o.isExistentialEquals
     params = []
     exprs  = []
-    for param in @params when param not instanceof Expansion
+    for param in @params when param.splat or param not instanceof Expansion
       o.scope.parameter param.asReference o
-    for param in @params when param.splat or param instanceof Expansion
+    for param in @params when param instanceof Expansion
       for p in @params when p not instanceof Expansion and p.name.value
         o.scope.add p.name.value, 'var', yes
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
@@ -1668,7 +1668,8 @@ exports.Code = class Code extends Base
     code += '('
     answer = [@makeCode(code)]
     for p, i in params
-      if i then answer.push @makeCode ", "
+      answer.push @makeCode ', ' if i
+      answer.push @makeCode '...' if @params[i].splat
       answer.push p...
     answer.push @makeCode unless @bound then ') {' else ') => {'
     answer = answer.concat(@makeCode("\n"), @body.compileWithDeclarations(o), @makeCode("\n#{@tab}")) unless @body.isEmpty()
@@ -1713,7 +1714,6 @@ exports.Param = class Param extends Base
     else if node.isComplex()
       node = new IdentifierLiteral o.scope.freeVariable 'arg'
     node = new Value node
-    node = new Splat node if @splat
     node.updateLocationDataIfMissing @locationData
     @reference = node
 
