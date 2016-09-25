@@ -205,7 +205,7 @@ and the function to run as the action itself.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">task</span>: <span class="hljs-function"><span class="hljs-params">(name, description, action)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  task: <span class="hljs-function"><span class="hljs-params">(name, description, action)</span> -&gt;</span>
     [action, description] = [description, action] <span class="hljs-keyword">unless</span> action
     tasks[name] = {name, description, action}</pre></div></div>
             
@@ -224,7 +224,7 @@ as the first argument to the action.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">option</span>: <span class="hljs-function"><span class="hljs-params">(letter, flag, description)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  option: <span class="hljs-function"><span class="hljs-params">(letter, flag, description)</span> -&gt;</span>
     switches.push [letter, flag, description]</pre></div></div>
             
         </li>
@@ -240,7 +240,7 @@ as the first argument to the action.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">invoke</span>: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  invoke: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
     missingTask name <span class="hljs-keyword">unless</span> tasks[name]
     tasks[name].action options</pre></div></div>
             
@@ -260,11 +260,11 @@ original directory name, when running Cake tasks from subdirectories.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.<span class="hljs-function"><span class="hljs-title">run</span> = -&gt;</span>
+            <div class="content"><div class='highlight'><pre>exports.run = <span class="hljs-function">-&gt;</span>
   <span class="hljs-built_in">global</span>.__originalDirname = fs.realpathSync <span class="hljs-string">'.'</span>
   process.chdir cakefileDirectory __originalDirname
   args = process.argv[<span class="hljs-number">2.</span>.]
-  CoffeeScript.run fs.readFileSync(<span class="hljs-string">'Cakefile'</span>).toString(), <span class="hljs-attribute">filename</span>: <span class="hljs-string">'Cakefile'</span>
+  CoffeeScript.run fs.readFileSync(<span class="hljs-string">'Cakefile'</span>).toString(), filename: <span class="hljs-string">'Cakefile'</span>
   oparse = <span class="hljs-keyword">new</span> optparse.OptionParser switches
   <span class="hljs-keyword">return</span> printTasks() <span class="hljs-keyword">unless</span> args.length
   <span class="hljs-keyword">try</span>
@@ -314,8 +314,8 @@ original directory name, when running Cake tasks from subdirectories.</p>
   <span class="hljs-built_in">console</span>.error message + <span class="hljs-string">'\n'</span>
   <span class="hljs-built_in">console</span>.log <span class="hljs-string">'To see a list of all tasks/options, run "cake"'</span>
   process.exit <span class="hljs-number">1</span>
-
-<span class="hljs-function"><span class="hljs-title">missingTask</span> = <span class="hljs-params">(task)</span> -&gt;</span> fatalError <span class="hljs-string">"No such task: <span class="hljs-subst">#{task}</span>"</span></pre></div></div>
+<span class="hljs-function">
+<span class="hljs-title">missingTask</span> = <span class="hljs-params">(task)</span> -&gt;</span> fatalError <span class="hljs-string">"No such task: <span class="hljs-subst">#{task}</span>"</span></pre></div></div>
             
         </li>
         

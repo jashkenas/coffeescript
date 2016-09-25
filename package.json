@@ -8,7 +8,7 @@
     "compiler"
   ],
   "author": "Jeremy Ashkenas",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "license": "MIT",
   "engines": {
     "node": ">=0.8.0"
@@ -21,6 +21,12 @@
     "coffee": "./bin/coffee",
     "cake": "./bin/cake"
   },
+  "files": [
+    "bin",
+    "lib",
+    "register.js",
+    "repl.js"
+  ],
   "preferGlobal": true,
   "scripts": {
     "test": "node ./bin/cake test",
