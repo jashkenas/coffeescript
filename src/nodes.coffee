@@ -80,7 +80,6 @@ exports.Base = class Base
       jumpNode.error 'cannot use a pure statement in an expression'
     o.sharedScope = yes
     func = new Code [], Block.wrap [this]
-    func.wrap = no
     args = []
     if (argumentsNode = @contains isLiteralArguments) or @contains isLiteralThis
       args = [new ThisLiteral]
@@ -91,9 +90,14 @@ exports.Base = class Base
         meth = 'call'
       func = new Value func, [new Access new PropertyName meth]
     parts = (new Call func, args).compileNode o
-    if func.isContinuation or func.base?.isContinuation
-      parts.unshift @makeCode "(yield* "
-      parts.push    @makeCode ")"
+
+    switch
+      when func.isGenerator or func.base?.isGenerator
+        parts.unshift @makeCode "(yield* "
+        parts.push    @makeCode ")"
+      when func.isAsync or func.base?.isAsync
+        parts.unshift @makeCode "(await "
+        parts.push    @makeCode ")"
     parts
 
   # If the code generation wishes to use the result of a complex expression
@@ -1609,7 +1613,6 @@ exports.Code = class Code extends Base
     @params      = params or []
     @body        = body or new Block
     @bound       = tag is 'boundfunc'
-    @wrap        = yes # wrap function declarations in modifier invokation (async)
     @isGenerator = !!@body.contains (node) ->
       (node instanceof Op and node.isYield()) or node instanceof YieldReturn
     @isAsync     = !!@body.contains (node) ->
@@ -1684,11 +1687,10 @@ exports.Code = class Code extends Base
       node.error "multiple parameters named #{name}" if name in uniqs
       uniqs.push name
     @body.makeReturn() unless wasEmpty or @noReturn
-    asyncify = @isAsync and @wrap
     code = ''
-    code += "#{utility 'async', o}(" if asyncify
+    code += "async " if @isAsync
     code += 'function'
-    code += '*' if @isGenerator or @isAsync
+    code += '*' if @isGenerator
     code += ' ' + @name if @ctor
     code += '('
     answer = [@makeCode(code)]
@@ -1698,7 +1700,6 @@ exports.Code = class Code extends Base
     answer.push @makeCode ') {'
     answer = answer.concat(@makeCode("\n"), @body.compileWithDeclarations(o), @makeCode("\n#{@tab}")) unless @body.isEmpty()
     answer.push @makeCode '}'
-    answer.push @makeCode ')' if asyncify
 
     return [@makeCode(@tab), answer...] if @ctor
     if @front or (o.level >= LEVEL_ACCESS) then @wrapInBraces answer else answer
@@ -1918,7 +1919,6 @@ exports.Op = class Op extends Base
       return first.newInstance() if first instanceof Call and not first.do and not first.isNew
       first = new Parens first   if first instanceof Code and first.bound or first.do
     @operator = CONVERSIONS[op] or op
-    @originalOperator = op
     @first    = first
     @second   = second
     @flip     = !!flip
@@ -1929,7 +1929,6 @@ exports.Op = class Op extends Base
     '==':        '==='
     '!=':        '!=='
     'of':        'in'
-    'await':     'yield'
     'yieldfrom': 'yield*'
 
   # The map of invertible operators.
@@ -1944,10 +1943,10 @@ exports.Op = class Op extends Base
       @first instanceof Value and @first.isNumber()
 
   isAwait: ->
-    @originalOperator is 'await'
+    @operator is 'await'
 
   isYield: ->
-    @originalOperator isnt 'await' and @operator in ['yield', 'yield*']
+    @operator in ['yield', 'yield*']
 
   isUnary: ->
     not @second
@@ -2076,7 +2075,7 @@ exports.Op = class Op extends Base
     op = @operator
     unless o.scope.parent?
       # all continuations must occur inside function body
-      @error "#{@originalOperator} can only occur inside functions"
+      @error "#{@operator} can only occur inside functions"
     if 'expression' in Object.keys(@first) and not (@first instanceof Throw)
       parts.push @first.expression.compileToFragments o, LEVEL_OP if @first.expression?
     else
@@ -2511,66 +2510,6 @@ exports.If = class If extends Base
 # ---------
 
 UTILITIES =
-
-  # for async functions containing `await`
-  async: -> "
-    (function(){
-      var async = function(generator) {
-        return function() {
-          var args = arguments, self = this;
-          return new Promise(function(win, fail){
-            var tracker = new Tracker();
-            tracker.iterator = generator.apply(self, args);
-            tracker.win = win;
-            tracker.fail = fail;
-            tracker.tick();
-          });
-        };
-      };
-
-      function Tracker() {
-        var self = this;
-
-        this.thenHandle = function(value) {
-          self.result = value;
-          self.tick();
-        };
-
-        this.failHandle = function(err) {
-          self.result = err;
-          self.throw = true;
-          self.tick();
-        };
-
-        this.throw    = false;
-        this.result   = undefined;
-
-        this.iterator = undefined;
-        this.win      = undefined;
-        this.fail     = undefined;
-      };
-
-      Tracker.prototype = {
-        tick: function() {
-          var next;
-          if (this.throw) {
-            next = this.iterator.throw(this.result);
-            this.throw = false;
-          } else {
-            next = this.iterator.next(this.result);
-          }
-
-          if (next.done) {
-            this.win(next.value);
-          } else {
-            next.value.then(this.thenHandle, this.failHandle);
-          }
-        }
-      };
-
-      return async;
-    }())
-  " 
 
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls, and copies of any static properties.
