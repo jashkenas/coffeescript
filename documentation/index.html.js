@@ -1326,7 +1326,7 @@ six = -&gt;
           <code>Infinity</code> into <code>2e308</code>.
         </li>
         <li>
-          Bugfix for renamed destrucured parameters with defaults.
+          Bugfix for renamed destructured parameters with defaults.
           <code>({a: b = 1}) -&gt;</code> no longer crashes the compiler.
         </li>
         <li>
