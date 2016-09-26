@@ -1313,6 +1313,11 @@ six = -&gt;
           </ul>
         </li>
         <li>
+          <code>&amp;&amp;=</code>, <code>||=</code>, <code>and=</code> and
+          <code>or=</code> no longer accidentally allow a space before the
+          equals sign.
+        </li>
+        <li>
           Improved several error messages.
         </li>
         <li>
