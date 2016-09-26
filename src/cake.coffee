@@ -46,7 +46,7 @@ helpers.extend global,
 # asynchrony may cause tasks to execute in a different order than you'd expect.
 # If no tasks are passed, print the help screen. Keep a reference to the
 # original directory name, when running Cake tasks from subdirectories.
-exports.run = helpers.async ->
+exports.run = ->
   global.__originalDirname = fs.realpathSync '.'
   process.chdir cakefileDirectory __originalDirname
   args = process.argv[2..]
@@ -57,7 +57,7 @@ exports.run = helpers.async ->
     options = oparse.parse(args)
   catch e
     return fatalError "#{e}"
-  yield invoke arg for arg in options.arguments
+  await invoke arg for arg in options.arguments
 
 # Display the list of Cake tasks in a format similar to `rake -T`
 printTasks = ->

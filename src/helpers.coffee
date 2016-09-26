@@ -2,22 +2,6 @@
 # the **Lexer**, **Rewriter**, and the **Nodes**. Merge objects, flatten
 # arrays, count characters, that sort of thing.
 
-# async/await for test-suite
-exports.async = (generatorFunction) ->
-  return (args...) ->
-    proceed = ({done, value}) ->
-      promise = Promise.resolve value
-      if done
-        promise
-      else 
-        promise.then resolver, rejector
-    resolver = (value) ->
-      proceed generator.next value
-    rejector = (error) ->
-      proceed generator.throw error
-
-    generator = generatorFunction.apply this, args
-    proceed generator.next()
 
 # Peek at the beginning of a given string to see if it matches a sequence.
 exports.starts = (string, literal, start) ->

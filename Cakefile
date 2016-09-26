@@ -218,7 +218,7 @@ task 'bench', 'quick benchmark of compilation time', ->
 
 
 # Run the CoffeeScript test suite.
-runTests = helpers.async (CoffeeScript) ->
+runTests = (CoffeeScript) ->
   CoffeeScript.register()
   startTime   = Date.now()
   currentFile = null
@@ -274,14 +274,7 @@ runTests = helpers.async (CoffeeScript) ->
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
 
-  asyncIsAvailable = '--harmony' in process.execArgv or
-    '--harmony_async_await' in process.execArgv
-
   for file in files when helpers.isCoffee file
-    # skip async/await tests if JS runtime doesn't support it
-    if not asyncIsAvailable and file == 'async.coffee'
-      continue
-
     literate = helpers.isLiterate file
     currentFile = filename = path.join 'test', file
     code = fs.readFileSync filename
@@ -291,8 +284,7 @@ runTests = helpers.async (CoffeeScript) ->
       for {description, fn} in testCases
         try
           fn.test = {description, currentFile}
-          val = fn.call(fn)
-          yield val
+          await fn.call(fn)
           ++passedTests
         catch e
           failures.push

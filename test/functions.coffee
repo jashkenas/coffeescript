@@ -164,17 +164,17 @@ test "destructuring in function definition", ->
   ) {a: 5}
 
   ajax = (url, {
-    async = true,
+    isAsync = true,
     beforeSend = (->),
     cache = true,
     method = 'get',
     data = {}
   }) ->
-    {url, async, beforeSend, cache, method, data}
+    {url, isAsync, beforeSend, cache, method, data}
 
   fn = ->
   deepEqual ajax('/home', beforeSend: fn, cache: null, method: 'post'), {
-    url: '/home', async: true, beforeSend: fn, cache: true, method: 'post', data: {}
+    url: '/home', isAsync: true, beforeSend: fn, cache: true, method: 'post', data: {}
   }
 
 test "#4005: `([a = {}]..., b) ->` weirdness", ->
