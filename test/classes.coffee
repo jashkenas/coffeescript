@@ -712,6 +712,11 @@ test "#2630: class bodies can't reference arguments", ->
   throws ->
     CoffeeScript.compile('class Test then arguments')
 
+  # #4320: Don't be too eager when checking, though.
+  class Test
+    arguments: 5
+  eq 5, Test::arguments
+
 test "#2319: fn class n extends o.p [INDENT] x = 123", ->
   first = ->
 
