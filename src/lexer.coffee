@@ -248,12 +248,12 @@ exports.Lexer = class Lexer
       while match = HEREDOC_INDENT.exec doc
         attempt = match[1]
         indent = attempt if indent is null or 0 < attempt.length < indent.length
-      indentRegex = /// ^#{indent} ///gm if indent
+      indentRegex = /// \n#{indent} ///g if indent
       @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
         value = @formatString value
+        value = value.replace indentRegex, '\n' if indentRegex
         value = value.replace LEADING_BLANK_LINE,  '' if i is 0
         value = value.replace TRAILING_BLANK_LINE, '' if i is $
-        value = value.replace indentRegex, '' if indentRegex
         value
     else
       @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
