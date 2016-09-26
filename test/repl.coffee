@@ -42,31 +42,31 @@ ctrlV = { ctrl: true, name: 'v'}
 
 testRepl 'reads history file', (input, output, repl) ->
   input.emitLine repl.rli.history[0]
-  eq '3', output.lastWrite()
+  eq '3', output.lastWrite().trim()
 
 testRepl "starts with coffee prompt", (input, output) ->
   eq 'coffee> ', output.lastWrite(0)
 
 testRepl "writes eval to output", (input, output) ->
   input.emitLine '1+1'
-  eq '2', output.lastWrite()
+  eq '2', output.lastWrite().trim()
 
 testRepl "comments are ignored", (input, output) ->
   input.emitLine '1 + 1 #foo'
-  eq '2', output.lastWrite()
+  eq '2', output.lastWrite().trim()
 
 testRepl "output in inspect mode", (input, output) ->
   input.emitLine '"1 + 1\\n"'
-  eq "'1 + 1\\n'", output.lastWrite()
+  eq "'1 + 1\\n'", output.lastWrite().trim()
 
 testRepl "variables are saved", (input, output) ->
   input.emitLine "foo = 'foo'"
   input.emitLine 'foobar = "#{foo}bar"'
-  eq "'foobar'", output.lastWrite()
+  eq "'foobar'", output.lastWrite().trim()
 
 testRepl "empty command evaluates to undefined", (input, output) ->
   input.emitLine ''
-  eq 'undefined', output.lastWrite()
+  eq 'undefined', output.lastWrite().trim()
 
 testRepl "ctrl-v toggles multiline prompt", (input, output) ->
   input.emit 'keypress', null, ctrlV
@@ -88,23 +88,24 @@ testRepl "evaluates multiline", (input, output) ->
   input.emitLine 'do ->'
   input.emitLine '  1 + 1'
   input.emit 'keypress', null, ctrlV
-  eq '2', output.lastWrite()
+  eq '2', output.lastWrite().trim()
 
 testRepl "variables in scope are preserved", (input, output) ->
   input.emitLine 'a = 1'
   input.emitLine 'do -> a = 2'
   input.emitLine 'a'
-  eq '2', output.lastWrite()
+  eq '2', output.lastWrite().trim()
 
 testRepl "existential assignment of previously declared variable", (input, output) ->
   input.emitLine 'a = null'
   input.emitLine 'a ?= 42'
-  eq '42', output.lastWrite()
+  eq '42', output.lastWrite().trim()
 
 testRepl "keeps running after runtime error", (input, output) ->
   input.emitLine 'a = b'
   input.emitLine 'a'
-  eq 'undefined', output.lastWrite()
+
+  eq 'undefined', output.lastWrite().trim()
 
 process.on 'exit', ->
   fs.unlinkSync historyFile
