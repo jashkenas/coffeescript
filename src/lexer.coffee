@@ -211,9 +211,8 @@ exports.Lexer = class Lexer
       when 'o' then 8
       when 'x' then 16
       else null
+
     numberValue = if base? then parseInt(number[2..], base) else parseFloat(number)
-    if number.charAt(1) in ['b', 'o']
-      number = "0x#{numberValue.toString 16}"
 
     tag = if numberValue is Infinity then 'INFINITY' else 'NUMBER'
     @token tag, number, 0, lexedLength
