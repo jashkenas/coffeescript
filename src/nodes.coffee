@@ -807,7 +807,6 @@ exports.Extends = class Extends extends Base
 # an access into the object's prototype.
 exports.Access = class Access extends Base
   constructor: (@name, tag) ->
-    @name.asKey = yes
     @soak  = tag is 'soak'
 
   children: ['name']
@@ -1014,7 +1013,6 @@ exports.Obj = class Obj extends Base
         if i < dynamicIndex
           if prop not instanceof Assign
             prop = new Assign prop, prop, 'object'
-          (prop.variable.base or prop.variable).asKey = yes
         else
           if prop instanceof Assign
             key = prop.variable
@@ -2556,10 +2554,10 @@ multident = (code, tab) ->
   code.replace /\s+$/, ''
 
 isLiteralArguments = (node) ->
-  node instanceof Literal and node.value is 'arguments' and not node.asKey
+  node instanceof IdentifierLiteral and node.value is 'arguments'
 
 isLiteralThis = (node) ->
-  (node instanceof ThisLiteral and not node.asKey) or
+  node instanceof ThisLiteral or
     (node instanceof Code and node.bound) or
     node instanceof SuperCall
 

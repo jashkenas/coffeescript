@@ -191,25 +191,30 @@ exports.Lexer = class Lexer
   # Be careful not to interfere with ranges-in-progress.
   numberToken: ->
     return 0 unless match = NUMBER.exec @chunk
+
     number = match[0]
     lexedLength = number.length
-    if /^0[BOX]/.test number
-      @error "radix prefix in '#{number}' must be lowercase", offset: 1
-    else if /E/.test(number) and not /^0x/.test number
-      @error "exponential notation in '#{number}' must be indicated with a lowercase 'e'",
-        offset: number.indexOf('E')
-    else if /^0\d*[89]/.test number
-      @error "decimal literal '#{number}' must not be prefixed with '0'", length: lexedLength
-    else if /^0\d+/.test number
-      @error "octal literal '#{number}' must be prefixed with '0o'", length: lexedLength
-    if octalLiteral = /^0o([0-7]+)/.exec number
-      numberValue = parseInt(octalLiteral[1], 8)
+
+    switch
+      when /^0[BOX]/.test number
+        @error "radix prefix in '#{number}' must be lowercase", offset: 1
+      when /^(?!0x).*E/.test number
+        @error "exponential notation in '#{number}' must be indicated with a lowercase 'e'",
+          offset: number.indexOf('E')
+      when /^0\d*[89]/.test number
+        @error "decimal literal '#{number}' must not be prefixed with '0'", length: lexedLength
+      when /^0\d+/.test number
+        @error "octal literal '#{number}' must be prefixed with '0o'", length: lexedLength
+
+    base = switch number.charAt 1
+      when 'b' then 2
+      when 'o' then 8
+      when 'x' then 16
+      else null
+    numberValue = if base? then parseInt(number[2..], base) else parseFloat(number)
+    if number.charAt(1) in ['b', 'o']
       number = "0x#{numberValue.toString 16}"
-    else if binaryLiteral = /^0b([01]+)/.exec number
-      numberValue = parseInt(binaryLiteral[1], 2)
-      number = "0x#{numberValue.toString 16}"
-    else
-      numberValue = parseFloat(number)
+
     tag = if numberValue is Infinity then 'INFINITY' else 'NUMBER'
     @token tag, number, 0, lexedLength
     lexedLength
@@ -243,12 +248,12 @@ exports.Lexer = class Lexer
       while match = HEREDOC_INDENT.exec doc
         attempt = match[1]
         indent = attempt if indent is null or 0 < attempt.length < indent.length
-      indentRegex = /// ^#{indent} ///gm if indent
+      indentRegex = /// \n#{indent} ///g if indent
       @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
         value = @formatString value
+        value = value.replace indentRegex, '\n' if indentRegex
         value = value.replace LEADING_BLANK_LINE,  '' if i is 0
         value = value.replace TRAILING_BLANK_LINE, '' if i is $
-        value = value.replace indentRegex, '' if indentRegex
         value
     else
       @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
