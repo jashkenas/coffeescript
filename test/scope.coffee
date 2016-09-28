@@ -59,21 +59,21 @@ test "#1183: super + fat arrows", ->
   dolater = (cb) -> cb()
 
   class A
-  	constructor: ->
-  		@_i = 0
-  	foo : (cb) ->
-  		dolater =>
-  			@_i += 1
-  			cb()
+    constructor: ->
+      @_i = 0
+    foo : (cb) ->
+      dolater =>
+        @_i += 1
+        cb()
 
   class B extends A
-  	constructor : ->
-  		super
-  	foo : (cb) ->
-  		dolater =>
-  			dolater =>
-  				@_i += 2
-  				super cb
+    constructor : ->
+      super
+    foo : (cb) ->
+      dolater =>
+        dolater =>
+          @_i += 2
+          super cb
 
   b = new B
   b.foo => eq b._i, 3
