@@ -1626,28 +1626,32 @@ exports.Code = class Code extends Base
     delete o.isExistentialEquals
     params = []
     exprs  = []
-    for param in @params when param.splat or param not instanceof Expansion
+
+    # If `...` was used with a parameter, which parameter was it used with?
+    for param, i in @params when param.splat or param instanceof Expansion
+      splatParam = param
+      splatIndex = i
+      splatIsExpansion = param instanceof Expansion
+      splatNotLast = i isnt @params.length - 1
+      break # Only one splat/expansion parameter is permitted
+
+    for param in @params when not param.splat and param not instanceof Expansion
+      # Add named parameters to the scope
       o.scope.parameter param.asReference o
-    for param in @params when param instanceof Expansion
-      for p in @params when p not instanceof Expansion and p.name.value
-        o.scope.add p.name.value, 'var', yes
-      splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
-                          new Value new IdentifierLiteral 'arguments'
-      break
-    for param in @params
-      if param.isComplex()
-        val = ref = param.asReference o
-        val = new Op '?', ref, param.value if param.value
-        exprs.push new Assign new Value(param.name), val, '=', param: yes
+      # Prepare the parameters for output
+      if param.isComplex() # Parameter is destructured
+        # TODO: Anything else to do here?
+        params.push param
       else
-        ref = param
-        if param.value
-          lit = new Literal ref.name.value + ' == null'
-          val = new Assign new Value(param.name), param.value, '='
-          exprs.push new If lit, val
-      params.push ref unless splats
+        if param.value? # Parameter has a default value
+          params.push new Assign new Value(param.name), param.value, '='
+        else
+          params.push param
+
+    if splatNotLast and not splatIsExpansion
+      params.push splatParam
+
     wasEmpty = @body.isEmpty()
-    exprs.unshift splats if splats
     @body.expressions.unshift exprs... if exprs.length
     for p, i in params
       params[i] = p.compileToFragments o
@@ -1667,9 +1671,23 @@ exports.Code = class Code extends Base
     answer = [@makeCode(code)]
     for p, i in params
       answer.push @makeCode ', ' if i
-      answer.push @makeCode '...' if @params[i].splat
+      answer.push @makeCode '...' if splatIndex? and i is params.length - 1 # Rest syntax is always on the last parameter
       answer.push p...
     answer.push @makeCode unless @bound then ') {' else ') => {'
+
+    # ES2015 allows `...` to be used only in the final parameter. CoffeeScript allows it in any parameter, so we need
+    # to apply some gymnastics to move the `...` to the final parameter and reassign the parameter values accordingly.
+    if splatNotLast
+      answer.push @makeCode "\n#{o.indent}["
+      for param, i in @params when i > splatIndex
+        answer.push @makeCode ', ' if i isnt splatIndex + 1
+        answer = answer.concat param.compileToFragments o
+      answer.push @makeCode ", ...#{splatParam.name.value}] = #{splatParam.name.value}.slice(-#{@params.length - 1 - splatIndex}).concat(["
+      for param, i in @params when i > splatIndex
+        answer.push @makeCode ', ' if i isnt splatIndex + 1
+        answer.push @makeCode param.name.value
+      answer.push @makeCode "], #{splatParam.name.value}.slice(0, -#{@params.length - 1 - splatIndex}));\n"
+
     answer = answer.concat(@makeCode("\n"), @body.compileWithDeclarations(o), @makeCode("\n#{@tab}")) unless @body.isEmpty()
     answer.push @makeCode '}'
 
