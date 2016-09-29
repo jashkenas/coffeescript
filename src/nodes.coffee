@@ -1019,6 +1019,7 @@ exports.Obj = class Obj extends Base
             value = prop.value
           else
             [key, value] = prop.base.cache o
+            key = new PropertyName key.value if key instanceof IdentifierLiteral
           prop = new Assign (new Value (new IdentifierLiteral oref), [new Access key]), value
       if indent then answer.push @makeCode indent
       answer.push prop.compileToFragments(o, LEVEL_TOP)...
