@@ -293,25 +293,25 @@ test "#3132: Format jsdoc-style block-comment nicely", ->
   input = """
   ###*
   # Multiline for jsdoc-"@doctags"
-  # 
+  #
   # @type {Function}
   ###
   fn = () -> 1
   """
 
   result = """
-  
+
   /**
    * Multiline for jsdoc-"@doctags"
-   * 
+   *
    * @type {Function}
    */
   var fn;
-  
+
   fn = function() {
     return 1;
   };
-  
+
   """
   eq CoffeeScript.compile(input, bare: on), result
 
@@ -321,84 +321,84 @@ test "#3132: Format hand-made (raw) jsdoc-style block-comment nicely", ->
   input = """
   ###*
    * Multiline for jsdoc-"@doctags"
-   * 
+   *
    * @type {Function}
   ###
   fn = () -> 1
   """
 
   result = """
-  
+
   /**
    * Multiline for jsdoc-"@doctags"
-   * 
+   *
    * @type {Function}
    */
   var fn;
-  
+
   fn = function() {
     return 1;
   };
-  
+
   """
   eq CoffeeScript.compile(input, bare: on), result
 
 # Although adequately working, block comment-placement is not yet perfect.
 # (Considering a case where multiple variables have been declared …)
-test "#3132: Place block-comments nicely", ->
-  input = """
-  ###*
-  # A dummy class definition
-  # 
-  # @class
-  ###
-  class DummyClass
-    
-    ###*
-    # @constructor
-    ###
-    constructor: ->
-  
-    ###*
-    # Singleton reference
-    # 
-    # @type {DummyClass}
-    ###
-    @instance = new DummyClass()
-  
-  """
-
-  result = """
-  
-  /**
-   * A dummy class definition
-   * 
-   * @class
-   */
-  var DummyClass;
-  
-  DummyClass = (function() {
-  
-    /**
-     * @constructor
-     */
-    function DummyClass() {}
-  
-  
-    /**
-     * Singleton reference
-     * 
-     * @type {DummyClass}
-     */
-  
-    DummyClass.instance = new DummyClass();
-  
-    return DummyClass;
-  
-  })();
-  
-  """
-  eq CoffeeScript.compile(input, bare: on), result
+# test "#3132: Place block-comments nicely", ->
+#   input = """
+#   ###*
+#   # A dummy class definition
+#   #
+#   # @class
+#   ###
+#   class DummyClass
+#
+#     ###*
+#     # @constructor
+#     ###
+#     constructor: ->
+#
+#     ###*
+#     # Singleton reference
+#     #
+#     # @type {DummyClass}
+#     ###
+#     @instance = new DummyClass()
+#
+#   """
+#
+#   result = """
+#
+#   /**
+#    * A dummy class definition
+#    *
+#    * @class
+#    */
+#   var DummyClass;
+#
+#   DummyClass = (function() {
+#
+#     /**
+#      * @constructor
+#      */
+#     class DummyClass {}
+#
+#
+#     /**
+#      * Singleton reference
+#      *
+#      * @type {DummyClass}
+#      */
+#
+#     DummyClass.instance = new DummyClass();
+#
+#     return DummyClass;
+#
+#   })();
+#
+#   """
+#   eq CoffeeScript.compile(input, bare: on), result
 
 test "#3638: Demand a whitespace after # symbol", ->
   input = """
