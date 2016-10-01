@@ -112,7 +112,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffeescript/tarball/1.11.0">1.11.0</a>
+      <a href="http://github.com/jashkenas/coffeescript/tarball/1.11.1">1.11.1</a>
     </p>
 
     <pre>npm install -g coffee-script</pre>
