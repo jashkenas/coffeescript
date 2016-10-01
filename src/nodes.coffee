@@ -1635,21 +1635,28 @@ exports.Code = class Code extends Base
       splatNotLast = i isnt @params.length - 1
       break # Only one splat/expansion parameter is permitted
 
-    for param in @params when not param.splat and param not instanceof Expansion
+    for param in @params when param not instanceof Expansion
       # Add named parameters to the scope
       o.scope.parameter param.asReference o
+
       # Prepare the parameters for output
-      if param.isComplex() # Parameter is destructured
-        # TODO: Anything else to do here?
-        params.push param
+      if param.isComplex() # Parameter is destructured or attached to `this`
+        val = ref = param.asReference o
+        val = new Op '?', ref, param.value if param.value
+        exprs.push new Assign new Value(param.name), val, '=', param: yes
       else
         if param.value? # Parameter has a default value
-          params.push new Assign new Value(param.name), param.value, '='
+          ref = new Assign new Value(param.name), param.value, '='
         else
-          params.push param
+          ref = param
 
-    if splatNotLast and not splatIsExpansion
-      params.push splatParam
+      # Add to the list of parameters, except if the param is a splat which must go last
+      unless param.splat
+        params.push ref
+      else
+        splatParamReference = ref
+
+    params.push splatParamReference if splatParamReference?
 
     wasEmpty = @body.isEmpty()
     @body.expressions.unshift exprs... if exprs.length
