@@ -1635,9 +1635,10 @@ exports.Code = class Code extends Base
       splatNotLast = i isnt @params.length - 1
       break # Only one splat/expansion parameter is permitted
 
+    # Parse the parameters
     for param in @params when param not instanceof Expansion
       # Add named parameters to the scope
-      o.scope.parameter param.asReference o
+      o.scope.parameter fragmentsToText param.compileToFragments o
 
       # Prepare the parameters for output
       if param.isComplex() # Parameter is destructured or attached to `this`
@@ -1655,20 +1656,21 @@ exports.Code = class Code extends Base
         params.push ref
       else
         splatParamReference = ref
-
+    # If we have a splat parameter, add it to the end
     params.push splatParamReference if splatParamReference?
 
-    wasEmpty = @body.isEmpty()
-    @body.expressions.unshift exprs... if exprs.length
-    for p, i in params
-      params[i] = p.compileToFragments o
-      o.scope.parameter fragmentsToText params[i]
+    # Check for duplicate parameters
     uniqs = []
     @eachParamName (name, node) =>
       node.error "multiple parameters named '#{name}'" if name in uniqs
       uniqs.push name
+
+    # Add new expressions to the function body
+    wasEmpty = @body.isEmpty()
+    @body.expressions.unshift exprs... if exprs.length
     @body.makeReturn() unless wasEmpty or @noReturn
 
+    # Assemble the output
     code = ''
     unless @bound
       code += 'function'
@@ -1676,10 +1678,10 @@ exports.Code = class Code extends Base
       code += ' ' + @name if @ctor
     code += '('
     answer = [@makeCode(code)]
-    for p, i in params
+    for param, i in params
       answer.push @makeCode ', ' if i
       answer.push @makeCode '...' if splatIndex? and i is params.length - 1 # Rest syntax is always on the last parameter
-      answer.push p...
+      answer.push param.compileToFragments(o)...
     answer.push @makeCode unless @bound then ') {' else ') => {'
 
     # ES2015 allows `...` to be used only in the final parameter. CoffeeScript allows it in any parameter, so we need
