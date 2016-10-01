@@ -1638,9 +1638,6 @@ exports.Code = class Code extends Base
 
     # Parse the parameters
     for param in @params when param not instanceof Expansion
-      # Add named parameters to the scope
-      o.scope.parameter fragmentsToText param.compileToFragments o
-
       # Prepare the parameters for output
       if param.isComplex() # Parameter is destructured or attached to `this`
         val = ref = param.asReference o
@@ -1652,7 +1649,10 @@ exports.Code = class Code extends Base
         else
           ref = param
 
-      # Add to the list of parameters, except if the param is a splat which must go last
+      # Add this parameter’s reference to the function scope
+      o.scope.parameter fragmentsToText (if param.value? then param else ref).compileToFragments o
+
+      # Add this parameter to the list of parameters, except if the param is a splat which must go last
       unless param.splat
         params.push ref
       else
