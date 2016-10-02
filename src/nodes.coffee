@@ -1631,13 +1631,13 @@ exports.Code = class Code extends Base
     # If `...` was used with a parameter, which parameter was it used with?
     for param, i in @params when param.splat or param instanceof Expansion
       splatParam = param
+      expansionParamName = o.scope.freeVariable 'args' if param instanceof Expansion
       splatIndex = i
-      splatIsExpansion = param instanceof Expansion
       splatNotLast = i isnt @params.length - 1
       break # Only one splat/expansion parameter is permitted
 
     # Parse the parameters
-    for param in @params when param not instanceof Expansion
+    for param, i in @params when param not instanceof Expansion
       # Prepare the parameters for output
       if param.isComplex() # Parameter is destructured or attached to `this`
         val = ref = param.asReference o
@@ -1652,13 +1652,35 @@ exports.Code = class Code extends Base
       # Add this parameter’s reference to the function scope
       o.scope.parameter fragmentsToText (if param.value? then param else ref).compileToFragments o
 
-      # Add this parameter to the list of parameters, except if the param is a splat which must go last
+      # Add this parameter to the list of parameters, except if the param is a splat which must go last;
+      # or if one of the parameters is an expansion, all post-expansion parameters are declared in the body.
       unless param.splat
-        params.push ref
+        if splatParam instanceof Expansion and i > splatIndex
+          # This parameter was after an expansion, so it won’t be in the function parameter list.
+          # Declare it based on the index of the expansion object `args` that will become the last parameter.
+          exprs.push new Assign param.name, new Value new IdentifierLiteral(expansionParamName), [
+              new Index new Op '-',
+                new Value(new IdentifierLiteral(expansionParamName), [new Access new PropertyName 'length']),
+                new NumberLiteral @params.length - i
+            ]
+          # If this parameter had a default value, since it’s no longer in the function parameter list
+          # we need to assign its default value (if necessary) as an expression in the body.
+          if param.value
+            lit = new Literal param.name.value + ' == null'
+            exprs.push new If lit, ref
+          # Add this parameter to the scope, since it wouldn’t have been added yet since it was skipped earlier.
+          o.scope.add param.name.value, 'var', yes
+        else
+          params.push ref
       else
         splatParamReference = ref
-    # If we have a splat parameter, add it to the end
-    params.push splatParamReference if splatParamReference?
+
+    # If we have a splat parameter, or one of the parameters was an expansion, add it to the end
+    if splatParamReference?
+      params.push splatParamReference
+    else if splatParam? # If we’ve reached this point, `splatParam` is an Expansion
+      o.scope.parameter expansionParamName
+      params.push new Value new IdentifierLiteral expansionParamName
 
     # Check for duplicate parameters
     uniqs = []
@@ -1687,7 +1709,7 @@ exports.Code = class Code extends Base
 
     # ES2015 allows `...` to be used only in the final parameter. CoffeeScript allows it in any parameter, so we need
     # to apply some gymnastics to move the `...` to the final parameter and reassign the parameter values accordingly.
-    if splatNotLast
+    if splatNotLast and splatParam not instanceof Expansion
       answer.push @makeCode "\n#{o.indent}["
       for param, i in @params when i > splatIndex
         answer.push @makeCode ', ' if i isnt splatIndex + 1
