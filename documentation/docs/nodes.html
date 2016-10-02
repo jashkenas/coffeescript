@@ -1757,7 +1757,6 @@ an access into the object’s prototype.</p>
             
             <div class="content"><div class='highlight'><pre>exports.Access = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Access</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   constructor: <span class="hljs-function"><span class="hljs-params">(@name, tag)</span> -&gt;</span>
-    @name.asKey = <span class="hljs-literal">yes</span>
     @soak  = tag <span class="hljs-keyword">is</span> <span class="hljs-string">'soak'</span>
 
   children: [<span class="hljs-string">'name'</span>]
@@ -2162,13 +2161,13 @@ is the index of the beginning.</p>
         <span class="hljs-keyword">if</span> i &lt; dynamicIndex
           <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">not</span> <span class="hljs-keyword">instanceof</span> Assign
             prop = <span class="hljs-keyword">new</span> Assign prop, prop, <span class="hljs-string">'object'</span>
-          (prop.variable.base <span class="hljs-keyword">or</span> prop.variable).asKey = <span class="hljs-literal">yes</span>
         <span class="hljs-keyword">else</span>
           <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">instanceof</span> Assign
             key = prop.variable
             value = prop.value
           <span class="hljs-keyword">else</span>
             [key, value] = prop.base.cache o
+            key = <span class="hljs-keyword">new</span> PropertyName key.value <span class="hljs-keyword">if</span> key <span class="hljs-keyword">instanceof</span> IdentifierLiteral
           prop = <span class="hljs-keyword">new</span> Assign (<span class="hljs-keyword">new</span> Value (<span class="hljs-keyword">new</span> IdentifierLiteral oref), [<span class="hljs-keyword">new</span> Access key]), value
       <span class="hljs-keyword">if</span> indent <span class="hljs-keyword">then</span> answer.push @makeCode indent
       answer.push prop.compileToFragments(o, LEVEL_TOP)...
@@ -4974,10 +4973,10 @@ SIMPLENUM = <span class="hljs-regexp">/^[+-]?\d+$/</span></pre></div></div>
   code.replace <span class="hljs-regexp">/\s+$/</span>, <span class="hljs-string">''</span>
 <span class="hljs-function">
 <span class="hljs-title">isLiteralArguments</span> = <span class="hljs-params">(node)</span> -&gt;</span>
-  node <span class="hljs-keyword">instanceof</span> Literal <span class="hljs-keyword">and</span> node.value <span class="hljs-keyword">is</span> <span class="hljs-string">'arguments'</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> node.asKey
+  node <span class="hljs-keyword">instanceof</span> IdentifierLiteral <span class="hljs-keyword">and</span> node.value <span class="hljs-keyword">is</span> <span class="hljs-string">'arguments'</span>
 <span class="hljs-function">
 <span class="hljs-title">isLiteralThis</span> = <span class="hljs-params">(node)</span> -&gt;</span>
-  (node <span class="hljs-keyword">instanceof</span> ThisLiteral <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> node.asKey) <span class="hljs-keyword">or</span>
+  node <span class="hljs-keyword">instanceof</span> ThisLiteral <span class="hljs-keyword">or</span>
     (node <span class="hljs-keyword">instanceof</span> Code <span class="hljs-keyword">and</span> node.bound) <span class="hljs-keyword">or</span>
     node <span class="hljs-keyword">instanceof</span> SuperCall
 <span class="hljs-function">
