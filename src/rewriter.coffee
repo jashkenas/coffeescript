@@ -31,6 +31,7 @@ class exports.Rewriter
     @closeOpenIndexes()
     @normalizeLines()
     @tagPostfixConditionals()
+    @adjustCoffeeTags()
     @addImplicitBracesAndParens()
     @addLocationDataToGeneratedTokens()
     @tokens
@@ -130,6 +131,18 @@ class exports.Rewriter
       backStack.pop() if @tag(i) in EXPRESSION_START and backStack.length
       i -= 1
     @tag(i) in tags
+
+  # Adjust token stream so that CoffeeTags look like normal function calls.
+  adjustCoffeeTags: ->
+    @scanTokens (token, i, tokens) ->
+      if token[0] is 'CSX'
+        h = generate 'IDENTIFIER', 'h'; h.spaced = true
+        s = generate 'STRING', "'#{token[1]}'"
+        c = generate ',', ',' if i < tokens.length - 1 and tokens[i + 1][0] isnt 'TERMINATOR'
+        tokens.splice i + 0, 1, h, s
+        tokens.splice i + 2, 0, c if c
+        return if c then 3 else 2
+      return 1
 
   # Look for signs of implicit calls and objects in the token stream and
   # add them.

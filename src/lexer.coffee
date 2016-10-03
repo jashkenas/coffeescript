@@ -66,6 +66,7 @@ exports.Lexer = class Lexer
            @numberToken()     or
            @regexToken()      or
            @jsToken()         or
+           @csxToken()        or
            @literalToken()
 
       # Update position
@@ -286,6 +287,12 @@ exports.Lexer = class Lexer
     return 0 unless @chunk.charAt(0) is '`' and match = JSTOKEN.exec @chunk
     @token 'JS', (script = match[0])[1...-1], 0, script.length
     script.length
+
+  # Matches CoffeeTags.
+  csxToken: ->
+    return 0 unless @chunk.charAt(0) is '<' and match = CSXTOKEN.exec @chunk
+    @token 'CSX', (csx = match[0])[1...-1], 0, csx.length
+    csx.length
 
   # Matches regular expression literals, as well as multiline extended ones.
   # Lexing regular expressions is difficult to distinguish from division, so we
@@ -882,6 +889,9 @@ CODE       = /^[-=]>/
 MULTI_DENT = /^(?:\n[^\n\S]*)+/
 
 JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
+
+# See https://www.w3.org/TR/CSS21/grammar.html
+CSXTOKEN   = /^<((?:[a-zA-Z][-\w]*)?)>/
 
 # String-matching-regexes.
 STRING_START   = /^(?:'''|"""|'|")/
