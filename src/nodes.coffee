@@ -1643,6 +1643,10 @@ exports.Code = class Code extends Base
         if param.name.value?
           splatParamName = param.name.value
           params.push param
+        else if param.isComplex() # Parameter is destructured or attached to `this`
+          splatParamName = param.name.properties[0].name
+          exprs.push new Assign new Value(param.name), splatParamName, '=', param: yes
+          params.push splatParamName
         else
           splatParamName = o.scope.freeVariable 'args'
           params.push new Value new IdentifierLiteral splatParamName
