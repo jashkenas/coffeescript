@@ -1647,17 +1647,16 @@ exports.Code = class Code extends Base
       # Splat/expansion parameters cannot have default values, so we need not worry about that.
       if param.splat or param instanceof Expansion
         haveSplatParam = yes
-        splatParamName = paramNames[i].replace /@|this\.(.*)/, '$1'
-        if param.name?.value?
-          params.push param
-        else if param.isComplex() # Parameter is destructured or attached to `this`
-          if param.name.properties?[0]?.name?
-            params.push param.name.properties[0].name
-          else
+        if param.splat
+          if param.name?.this? # Parameter is attached to `this`
+            splatParamName = paramNames[i].replace /@|this\.(.*)/, '$1'
             params.push new Value new IdentifierLiteral splatParamName
-          exprs.push new Assign new Value(param.name),
-            new Value(new IdentifierLiteral(splatParamName)), '=', param: yes
-        else
+            exprs.push new Assign new Value(param.name),
+              new Value(new IdentifierLiteral(splatParamName)), '=', param: yes
+          else
+            splatParamName = paramNames[i]
+            params.push param
+        else # `param` is an Expansion
           splatParamName = o.scope.freeVariable 'args'
           params.push new Value new IdentifierLiteral splatParamName
         o.scope.parameter splatParamName
