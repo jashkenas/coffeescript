@@ -1631,6 +1631,13 @@ exports.Code = class Code extends Base
     haveSplatParam   = no
     paramsAfterSplat = 0
 
+    # Check for duplicate parameters, and save the names so that we can pull
+    # the name of the splat parameter if we have one.
+    paramNames = []
+    @eachParamName (name, node) =>
+      node.error "multiple parameters named '#{name}'" if name in paramNames
+      paramNames.push name
+
     # Parse the parameters, adding them to the list of parameters to put in the
     # function definition; and dealing with splats or expansions, including
     # adding expressions to the function body to declare all parameter
@@ -1640,13 +1647,16 @@ exports.Code = class Code extends Base
       # Splat/expansion parameters cannot have default values, so we need not worry about that.
       if param.splat or param instanceof Expansion
         haveSplatParam = yes
-        if param.name.value?
-          splatParamName = param.name.value
+        splatParamName = paramNames[i].replace /@|this\.(.*)/, '$1'
+        if param.name?.value?
           params.push param
         else if param.isComplex() # Parameter is destructured or attached to `this`
-          splatParamName = param.name.properties[0].name
-          exprs.push new Assign new Value(param.name), splatParamName, '=', param: yes
-          params.push splatParamName
+          if param.name.properties?[0]?.name?
+            params.push param.name.properties[0].name
+          else
+            params.push new Value new IdentifierLiteral splatParamName
+          exprs.push new Assign new Value(param.name),
+            new Value(new IdentifierLiteral(splatParamName)), '=', param: yes
         else
           splatParamName = o.scope.freeVariable 'args'
           params.push new Value new IdentifierLiteral splatParamName
@@ -1711,12 +1721,6 @@ exports.Code = class Code extends Base
               ),
               new NumberLiteral paramsAfterSplat)
           ]
-
-    # Check for duplicate parameters
-    uniqs = []
-    @eachParamName (name, node) =>
-      node.error "multiple parameters named '#{name}'" if name in uniqs
-      uniqs.push name
 
     # Add new expressions to the function body
     wasEmpty = @body.isEmpty()
