@@ -653,6 +653,9 @@ grammar =
     # [The existential operator](http://jashkenas.github.com/coffee-script/#existence).
     o 'Expression ?',                           -> new Existence $1
 
+    o 'Expression PIPE Value',                  -> new Call $3, [$1]
+    o 'Expression PIPE Invocation',             -> $3.pipe $1
+
     o 'Expression +  Expression',               -> new Op '+' , $1, $3
     o 'Expression -  Expression',               -> new Op '-' , $1, $3
 
@@ -702,6 +705,7 @@ operators = [
   ['left',      'RELATION']
   ['left',      'COMPARE']
   ['left',      'LOGIC']
+  ['left',      'PIPE']
   ['nonassoc',  'INDENT', 'OUTDENT']
   ['right',     'YIELD']
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
