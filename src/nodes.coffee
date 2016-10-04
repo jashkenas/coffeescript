@@ -1697,8 +1697,9 @@ exports.Code = class Code extends Base
 
           # If this parameter had a default value, since it’s no longer in the function parameter list
           # we need to assign its default value (if necessary) as an expression in the body.
-          if param.value
+          if param.value?
             lit = new Literal param.name.value + ' == null'
+            ref = new Assign new Value(param.name), param.value, '='
             exprs.push new If lit, ref
           # Add this parameter to the scope, since it wouldn’t have been added yet since it was skipped earlier.
           o.scope.add param.name.value, 'var', yes unless param.isComplex() # Don’t add a `this.` param to the scope.
