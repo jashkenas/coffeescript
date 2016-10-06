@@ -255,7 +255,7 @@ class exports.Rewriter
       #       b: c
       #
       # Don't accept implicit calls of this type, when on the same line
-      # as the control strucutures below as that may misinterpret constructs like:
+      # as the control structures below as that may misinterpret constructs like:
       #
       #     if f
       #        a: 1
