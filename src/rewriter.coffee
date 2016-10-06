@@ -118,6 +118,15 @@ class exports.Rewriter
       return yes if @tag(end + 1) is ':'
     no
 
+  # Returns `yes` if standing in front of something that can be
+  # implicitly appended to the prior line with a comma.
+  looksAppendable: (j, stack) ->
+    if (@looksObjectish(j) or @indexOfTag(j, IMPLICIT_CALL) > -1)
+      return not @findTagsBackwards(j - 2, ['CLASS', 'EXTENDS', 'IF',
+        ':', 'FINALLY', # should we also add 'TRY'?
+        'CATCH', 'SWITCH', 'LEADING_WHEN', 'FOR', 'WHILE', 'UNTIL'])
+    no
+
   # Returns `yes` if current line of tokens contain an element of tags on same
   # expression level. Stop searching at LINEBREAKS or explicit start of
   # containing balanced expression.
@@ -206,9 +215,14 @@ class exports.Rewriter
         # An `INDENT` closes an implicit call unless
         #
         #  1. We have seen a `CONTROL` argument on the line.
-        #  2. The last token before the indent is part of the list below
+        #  2. The last token before the indent is part of the list below.
+        #  3. We are able to add this token to the prior line with a comma.
         #
         if prevTag not in ['=>', '->', '[', '(', ',', '{', 'TRY', 'ELSE', '=']
+          if @looksAppendable(i + 1, stack)
+            tokens.splice i, 0, generate ',', ',' # insert comma before indent
+            stack.push [tag, i]
+            return forward(2)
           endImplicitCall() while inImplicitCall()
         stack.pop() if inImplicitControl()
         stack.push [tag, i]
