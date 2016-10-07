@@ -146,12 +146,14 @@ class exports.Rewriter
     @scanTokens (token, i, tokens) ->
       if token[0] is 'CSX'
         func = generate 'IDENTIFIER', 'h'; func.spaced = true
-        list = token[1].split '.'
+        myid = undefined
+        text = token[1].replace /@[-\w]*/g, (item) -> myid or= item[1..-1]; ''
+        list = text.split '.'
         elem = generate 'STRING', "'#{list.shift()}'"
         uniq = {}; uniq[name] = true for name in list when name.length if list.length
         clas = Object.keys(uniq).join ' '
         more = generate ',', ',' if tokens[i + 1][0] isnt 'TERMINATOR'
-        offs = if clas then 6 else 2
+        offs = 2; offs += 4 if clas; offs += 4 if myid
 
         tokens.splice i + 0, 1, func, elem
         tokens.splice(i + 2, 0,
@@ -160,6 +162,12 @@ class exports.Rewriter
           generate ':'       , ':'
           generate 'STRING'  , "'#{clas}'"
         ) if clas
+        tokens.splice(i + 2, 0,
+          generate ','       , ','
+          generate 'PROPERTY', 'id'
+          generate ':'       , ':'
+          generate 'STRING'  , "'#{myid}'"
+        ) if myid
         tokens.splice i + offs++, 0, more if more
         return offs
       return 1

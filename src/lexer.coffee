@@ -892,7 +892,7 @@ MULTI_DENT = /^(?:\n[^\n\S]*)+/
 JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 
 # CoffeeTags, like <div>, <div.active>, or <div.active.expanded>
-CSXTOKEN   = /^<([a-zA-Z][-\w.]*)>/
+CSXTOKEN   = /^<([a-zA-Z][-\w.@]*)>/
 
 # String-matching-regexes.
 STRING_START   = /^(?:'''|"""|'|")/
