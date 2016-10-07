@@ -145,12 +145,23 @@ class exports.Rewriter
   adjustCoffeeTags: ->
     @scanTokens (token, i, tokens) ->
       if token[0] is 'CSX'
-        h = generate 'IDENTIFIER', 'h'; h.spaced = true
-        s = generate 'STRING', "'#{token[1]}'"
-        c = generate ',', ',' if i < tokens.length - 1 and tokens[i + 1][0] isnt 'TERMINATOR'
-        tokens.splice i + 0, 1, h, s
-        tokens.splice i + 2, 0, c if c
-        return if c then 3 else 2
+        func = generate 'IDENTIFIER', 'h'; func.spaced = true
+        list = token[1].split '.'
+        elem = generate 'STRING', "'#{list.shift()}'"
+        uniq = {}; uniq[name] = true for name in list when name.length if list.length
+        clas = Object.keys(uniq).join ' '
+        more = generate ',', ',' if tokens[i + 1][0] isnt 'TERMINATOR'
+        offs = if clas then 6 else 2
+
+        tokens.splice i + 0, 1, func, elem
+        tokens.splice(i + 2, 0,
+          generate ','       , ','
+          generate 'PROPERTY', 'class'
+          generate ':'       , ':'
+          generate 'STRING'  , "'#{clas}'"
+        ) if clas
+        tokens.splice i + offs++, 0, more if more
+        return offs
       return 1
 
   # Look for signs of implicit calls and objects in the token stream and
