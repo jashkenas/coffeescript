@@ -145,6 +145,13 @@ class exports.Rewriter
   adjustCoffeeTags: ->
     @scanTokens (token, i, tokens) ->
       if token[0] is 'CSX'
+        # h = generate 'IDENTIFIER', 'h'; h.spaced = true
+        # s = generate 'STRING', "'#{token[1]}'"
+        # c = generate ',', ',' if i < tokens.length - 1 and tokens[i + 1][0] isnt 'TERMINATOR'
+        # tokens.splice i + 0, 1, h, s
+        # tokens.splice i + 2, 0, c if c
+        # return if c then 3 else 2
+
         func = generate 'IDENTIFIER', 'h'; func.spaced = true
         myid = undefined
         text = token[1].replace /@[-\w]*/g, (item) -> myid or= item[1..-1]; ''
