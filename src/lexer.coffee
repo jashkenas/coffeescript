@@ -291,9 +291,8 @@ exports.Lexer = class Lexer
   # Matches CoffeeTags.
   csxToken: ->
     return 0 unless @chunk.charAt(0) is '<' and match = CSXTOKEN.exec @chunk
-    [full, csx] = match
-    @token 'CSX', csx, 0, full.length
-    full.length
+    @token 'CSX', (csx = match[0])[1...-1], 0, csx.length
+    csx.length
 
   # Matches regular expression literals, as well as multiline extended ones.
   # Lexing regular expressions is difficult to distinguish from division, so we
@@ -892,7 +891,7 @@ MULTI_DENT = /^(?:\n[^\n\S]*)+/
 JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 
 # CoffeeTags, like <div>, <div.active>, or <div.active.expanded>
-CSXTOKEN   = /^<([a-zA-Z][-\w.@]*)>/
+CSXTOKEN   = /^<[a-zA-Z][-\w.@]*>/
 
 # String-matching-regexes.
 STRING_START   = /^(?:'''|"""|'|")/
