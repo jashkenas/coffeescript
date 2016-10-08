@@ -144,43 +144,42 @@ class exports.Rewriter
   # Adjust token stream so that CoffeeTags look like normal function calls.
   adjustCoffeeTags: ->
     @scanTokens (token, i, tokens) ->
-      if token[0] is 'CSX'
-        # h = generate 'IDENTIFIER', 'h'; h.spaced = true
-        # s = generate 'STRING', "'#{token[1]}'"
-        # c = generate ',', ',' if i < tokens.length - 1 and tokens[i + 1][0] isnt 'TERMINATOR'
-        # tokens.splice i + 0, 1, h, s
-        # tokens.splice i + 2, 0, c if c
-        # return if c then 3 else 2
+      if token[0] is 'CT'
+        tag = null; cls = {}; id = null; pos = 0
 
-        func = generate 'IDENTIFIER', 'h'; func.spaced = true
-        myid = undefined
-        text = token[1].replace /@[-\w]*/g, (item) -> myid or= item[1..-1]; ''
-        list = text.split '.'
-        elem = generate 'STRING', "'#{list.shift()}'"
-        uniq = {}; uniq[name] = true for name in list when name.length if list.length
-        clas = Object.keys(uniq).join ' '
-        more = generate ',', ',' if tokens[i + 1][0] isnt 'TERMINATOR'
-        offs = 2; offs += 4 if clas; offs += 8 if myid
+        # parse CoffeeTag specifier
+        for str in token[1].split /(?=[.@])/
+          switch str.charAt 0
+            when '.' then cls[item[1..-1]] = true
+            when '@' then id or= item[1..-1]
+            else tag or= str
 
-        tokens.splice i + 0, 1, func, elem
-        tokens.splice(i + 2, 0,
+        # inject desired tokens
+        tokens.splice(i + 0, 1,
+          generate 'IDENTIFIER', 'h'
+          generate 'STRING'    , "'#{tag ? 'div'}'"
+        ) and pos += 2; tokens[i].spaced = true
+        tokens.splice(i + pos, 0,
           generate ','       , ','
           generate 'PROPERTY', 'staticClass'
           generate ':'       , ':'
-          generate 'STRING'  , "'#{clas}'"
-        ) if clas
-        tokens.splice(i + 2, 0,
+          generate 'STRING'  , "'#{cls}'"
+        ) and pos += 4 if cls = Object.keys(cls).join(' ')
+        tokens.splice(i + pos, 0,
           generate ','       , ','
           generate 'PROPERTY', 'attrs'
           generate ':'       , ':'
           generate '{'       , '{'
           generate 'PROPERTY', 'id'
           generate ':'       , ':'
-          generate 'STRING'  , "'#{myid}'"
+          generate 'STRING'  , "'#{id}'"
           generate '}'       , '}'
-        ) if myid
-        tokens.splice i + offs++, 0, more if more
-        return offs
+        ) and pos += 8 if id
+        tokens.splice(i + pos, 0,
+          generate ','       , ','
+        ) and pos += 1 if tokens[i + 1][0] isnt 'TERMINATOR'
+
+        return pos
       return 1
 
   # Look for signs of implicit calls and objects in the token stream and
