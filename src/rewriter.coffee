@@ -150,8 +150,8 @@ class exports.Rewriter
         # parse CoffeeTag specifier
         for str in token[1].split /(?=[.@])/
           switch str.charAt 0
-            when '.' then cls[item[1..-1]] = true
-            when '@' then id or= item[1..-1]
+            when '.' then cls[str[1..-1]] = true
+            when '@' then id or= str[1..-1]
             else tag or= str
 
         # inject desired tokens
@@ -244,8 +244,8 @@ class exports.Rewriter
         # An `INDENT` closes an implicit call unless
         #
         #  1. We have seen a `CONTROL` argument on the line.
-        #  2. The last token before the indent is part of the list below.
-        #  3. We are able to add this token to the prior line with a comma.
+        #  2. The last token before the indent is part of the list below
+        #  3. We are able to add this token to the prior line with a comma
         #
         if prevTag not in ['=>', '->', '[', '(', ',', '{', 'TRY', 'ELSE', '=']
           if @looksAppendable(i + 1, stack)
