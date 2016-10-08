@@ -145,10 +145,11 @@ class exports.Rewriter
   adjustCoffeeTags: ->
     @scanTokens (token, i, tokens) ->
       if token[0] is 'CT'
-        tag = null; cls = {}; id = null; pos = 0
+        tag = null; cls = {}; id = null; pos = 0; raw = null
 
         # parse CoffeeTag specifier
-        for str in token[1].split /(?=[.@])/
+        str = token[1].replace /!$/, -> raw = true; ''
+        for str in str.split /(?=[.@])/
           switch str.charAt 0
             when '.' then cls[str[1..-1]] = true
             when '@' then id or= str[1..-1]
@@ -177,7 +178,14 @@ class exports.Rewriter
         ) and pos += 4 if cls = Object.keys(cls).join(' ')
         tokens.splice(i + pos, 0,
           generate ','       , ','
-        ) and pos += 1 if tokens[i + 1][0] isnt 'TERMINATOR'
+          generate 'PROPERTY', 'domProps'
+          generate ':'       , ':'
+          generate 'PROPERTY', 'innerHTML'
+          generate ':'       , ':'
+        ) and pos += 5 if raw
+        tokens.splice(i + pos, 0,
+          generate ','       , ','
+        ) and pos += 1 if not raw and tokens[i + 1][0] isnt 'TERMINATOR'
 
         return pos
       return 1
