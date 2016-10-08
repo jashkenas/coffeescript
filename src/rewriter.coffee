@@ -157,7 +157,7 @@ class exports.Rewriter
         # inject desired tokens
         tokens.splice(i + 0, 1,
           generate 'IDENTIFIER', 'h'
-          generate 'STRING'    , "'#{tag ? 'div'}'"
+          generate 'STRING'    , "'#{tag || 'div'}'"
         ) and pos += 2; tokens[i].spaced = true
         tokens.splice(i + pos, 0,
           generate ','       , ','
