@@ -161,12 +161,6 @@ class exports.Rewriter
         ) and pos += 2; tokens[i].spaced = true
         tokens.splice(i + pos, 0,
           generate ','       , ','
-          generate 'PROPERTY', 'staticClass'
-          generate ':'       , ':'
-          generate 'STRING'  , "'#{cls}'"
-        ) and pos += 4 if cls = Object.keys(cls).join(' ')
-        tokens.splice(i + pos, 0,
-          generate ','       , ','
           generate 'PROPERTY', 'attrs'
           generate ':'       , ':'
           generate '{'       , '{'
@@ -175,6 +169,12 @@ class exports.Rewriter
           generate 'STRING'  , "'#{id}'"
           generate '}'       , '}'
         ) and pos += 8 if id
+        tokens.splice(i + pos, 0,
+          generate ','       , ','
+          generate 'PROPERTY', 'staticClass'
+          generate ':'       , ':'
+          generate 'STRING'  , "'#{cls}'"
+        ) and pos += 4 if cls = Object.keys(cls).join(' ')
         tokens.splice(i + pos, 0,
           generate ','       , ','
         ) and pos += 1 if tokens[i + 1][0] isnt 'TERMINATOR'
