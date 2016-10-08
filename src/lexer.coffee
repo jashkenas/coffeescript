@@ -891,7 +891,7 @@ MULTI_DENT = /^(?:\n[^\n\S]*)+/
 JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 
 # CoffeeTags loosely matches <tag.class1.class2@id>
-CTTOKEN    = /^<[\w\-.@]*>/
+CTTOKEN    = /^<[\w\-.@]*!?>/
 
 # String-matching-regexes.
 STRING_START   = /^(?:'''|"""|'|")/
