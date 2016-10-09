@@ -1670,15 +1670,22 @@ exports.Code = class Code extends Base
       # encountered, add these other parameters to the list to be output in
       # the function definition.
       else
+        # If the parameter is attached to `this`, add a statement to the body
+        # that assigns it as such.
+        if param.isComplex()
+          val = ref = param.asReference o
+          val = new Op '?', ref, param.value if param.value
+          exprs.push new Assign new Value(param.name), val, '=', param: yes
+
+        # If this parameter comes before the splat or expansion, it will go
+        # in the function definition parameter list.
         unless haveSplatParam
-          # This parameter comes before the splat or expansion, so it will go
-          # in the function definition parameter list.
-          if param.isComplex() # Parameter is destructured or attached to `this`
-            val = ref = param.asReference o
-            val = new Op '?', ref, param.value if param.value
-            exprs.push new Assign new Value(param.name), val, '=', param: yes
-          else
-            if param.value? # Parameter has a default value
+          # If this parameter has a default value, and it hasn’t already been
+          # set by the `isComplex()` block above, define it as a statement in
+          # the function body. This parameter comes after the splat parameter,
+          # so we can’t define its default value in the parameter list.
+          unless param.isComplex()
+            if param.value?
               ref = new Assign new Value(param.name), param.value, '='
             else
               ref = param
@@ -1691,12 +1698,12 @@ exports.Code = class Code extends Base
           paramsAfterSplat.push param
           # If this parameter had a default value, since it’s no longer in the function parameter list
           # we need to assign its default value (if necessary) as an expression in the body.
-          if param.value?
+          if param.value? and not param.isComplex()
             condition = new Literal param.name.value + ' == null'
             ifTrue = new Assign new Value(param.name), param.value, '='
             exprs.push new If condition, ifTrue
           # Add this parameter to the scope, since it wouldn’t have been added yet since it was skipped earlier.
-          o.scope.add param.name.value, 'var', yes if param.name?.value? and not param.name.this?
+          o.scope.add param.name.value, 'var', yes if param.name?.value?
 
     # If there were parameters after the splat or expansion parameter, those
     # parameters need to be assigned in the body of the function.
