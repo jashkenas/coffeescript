@@ -1654,13 +1654,12 @@ exports.Code = class Code extends Base
         haveSplatParam = yes
         if param.splat
           if param.name?.this? # Parameter is attached to `this`
-            splatParamName = paramNames[i].replace /@|this\.(.*)/, '$1'
-            params.push new Value new IdentifierLiteral splatParamName
-            exprs.push new Assign new Value(param.name),
-              new Value(new IdentifierLiteral(splatParamName)), '=', param: yes
+            params.push param.asReference o
+            splatParamName = fragmentsToText param.reference.compileNode o
+            exprs.push new Assign new Value(param.name), param.reference, '=', param: yes
           else
-            splatParamName = paramNames[i]
             params.push param
+            splatParamName = fragmentsToText param.asReference(o).compileNode o
         else # `param` is an Expansion
           splatParamName = o.scope.freeVariable 'args'
           params.push new Value new IdentifierLiteral splatParamName
