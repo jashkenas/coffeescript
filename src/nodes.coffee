@@ -1646,6 +1646,11 @@ exports.Code = class Code extends Base
       # Was `...` used with this parameter? (Only one such parameter is allowed per function.)
       # Splat/expansion parameters cannot have default values, so we need not worry about that.
       if param.splat or param instanceof Expansion
+        if haveSplatParam
+          param.error 'only one splat or expansion parameter is allowed per function definition'
+        else if param instanceof Expansion and @params.length is 1
+          param.error 'an expansion parameter cannot be the only parameter in a function definition'
+
         haveSplatParam = yes
         if param.splat
           if param.name?.this? # Parameter is attached to `this`
