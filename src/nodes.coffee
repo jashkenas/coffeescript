@@ -1628,8 +1628,8 @@ exports.Code = class Code extends Base
     delete o.isExistentialEquals
     params           = []
     exprs            = []
+    paramsAfterSplat = []
     haveSplatParam   = no
-    paramsAfterSplat = 0
 
     # Check for duplicate parameters, and save the names so that we can pull
     # the name of the splat parameter if we have one.
@@ -1683,18 +1683,7 @@ exports.Code = class Code extends Base
 
           params.push ref
         else
-          paramsAfterSplat = paramsAfterSplat + 1
-          # This parameter was after a splat or expansion, so it won’t be in
-          # the function parameter list. Declare it based on the index of the
-          # splat/expansion argument that will become the last parameter.
-          exprs.push new Assign param.name,
-            new Value (
-              new Call (
-                new Value new IdentifierLiteral(splatParamName),
-                [new Access new PropertyName 'slice']),
-                [new NumberLiteral (i - @params.length)]
-              ), [new Index new NumberLiteral 0]
-
+          paramsAfterSplat.push param
           # If this parameter had a default value, since it’s no longer in the function parameter list
           # we need to assign its default value (if necessary) as an expression in the body.
           if param.value?
@@ -1705,22 +1694,12 @@ exports.Code = class Code extends Base
           o.scope.add param.name.value, 'var', yes unless param.name?.this?
 
     # If there were parameters after the splat or expansion parameter, those
-    # parameters need to be sliced off the end of the splat parameter’s
-    # array of arguments passed into the function.
-    if paramsAfterSplat isnt 0
-      exprs.push new Assign new IdentifierLiteral(splatParamName),
-        new Call (
-          new Value new IdentifierLiteral(splatParamName),
-          [new Access new PropertyName 'slice']),
-          [
-            new NumberLiteral 0
-            (new Op '-',
-              new Value(
-                new IdentifierLiteral(splatParamName),
-                [new Access new PropertyName 'length']
-              ),
-              new NumberLiteral paramsAfterSplat)
-          ]
+    # parameters need to be assigned in the body of the function.
+    if paramsAfterSplat.length isnt 0
+      # Create a destructured assignment, e.g. `[a, b, c] = [args..., b, c]`
+      exprs.unshift new Assign new Value(
+          new Arr [new Splat(new IdentifierLiteral(splatParamName)), (param.asReference o for param in paramsAfterSplat)...]
+        ), new Value new IdentifierLiteral splatParamName
 
     # Add new expressions to the function body
     wasEmpty = @body.isEmpty()
