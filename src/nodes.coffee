@@ -1691,7 +1691,7 @@ exports.Code = class Code extends Base
             ifTrue = new Assign new Value(param.name), param.value, '='
             exprs.push new If condition, ifTrue
           # Add this parameter to the scope, since it wouldn’t have been added yet since it was skipped earlier.
-          o.scope.add param.name.value, 'var', yes unless param.name?.this?
+          o.scope.add param.name.value, 'var', yes if param.name?.value? and not param.name.this?
 
     # If there were parameters after the splat or expansion parameter, those
     # parameters need to be assigned in the body of the function.
