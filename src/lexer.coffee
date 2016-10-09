@@ -170,10 +170,10 @@ exports.Lexer = class Lexer
       tag = switch id
         when '!'                 then 'UNARY'
         when '==', '!='          then 'COMPARE'
-        when '&&', '||'          then 'LOGIC'
         when 'true', 'false'     then 'BOOL'
         when 'break', 'continue', \
              'debugger'          then 'STATEMENT'
+        when '&&', '||'          then id
         else  tag
 
     tagToken = @token tag, id, 0, idLength
@@ -467,7 +467,7 @@ exports.Lexer = class Lexer
     else if value in UNARY           then tag = 'UNARY'
     else if value in UNARY_MATH      then tag = 'UNARY_MATH'
     else if value in SHIFT           then tag = 'SHIFT'
-    else if value in LOGIC or value is '?' and prev?.spaced then tag = 'LOGIC'
+    else if value is '?' and prev?.spaced then tag = 'BIN?'
     else if prev and not prev.spaced
       if value is '(' and prev[0] in CALLABLE
         prev[0] = 'FUNC_EXIST' if prev[0] is '?'
@@ -726,7 +726,8 @@ exports.Lexer = class Lexer
   unfinished: ->
     LINE_CONTINUER.test(@chunk) or
     @tag() in ['\\', '.', '?.', '?::', 'UNARY', 'MATH', 'UNARY_MATH', '+', '-',
-               '**', 'SHIFT', 'RELATION', 'COMPARE', 'LOGIC', 'THROW', 'EXTENDS']
+               '**', 'SHIFT', 'RELATION', 'COMPARE', '&', '^', '|', '&&', '||',
+               'BIN?', 'THROW', 'EXTENDS']
 
   formatString: (str) ->
     str.replace STRING_OMIT, '$1'
@@ -953,9 +954,6 @@ COMPOUND_ASSIGN = [
 UNARY = ['NEW', 'TYPEOF', 'DELETE', 'DO']
 
 UNARY_MATH = ['!', '~']
-
-# Logical tokens.
-LOGIC = ['&&', '||', '&', '|', '^']
 
 # Bit-shifting tokens.
 SHIFT = ['<<', '>>', '>>>']
