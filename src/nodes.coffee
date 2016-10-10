@@ -1653,24 +1653,14 @@ exports.Code = class Code extends Base
 
         haveSplatParam = yes
         if param.splat
-          ref = param.asReference o
+          params.push ref = param.asReference o
           splatParamName = fragmentsToText ref.compileNode o
-
-          if param.name instanceof Arr or param.name instanceof Obj
-            # ES supports destructured parameters, so pass such parameters
-            # as is; unless they aren’t the last parameter, in which case
-            # we need a usable splatParamName below to pull post-splat
-            # parameters from.
-            if i is @params.length - 1
-              params.push param
-            else
-              params.push ref
-              exprs.push new Assign new Value(param.name), ref, '=', param: yes
-          else
-            params.push ref
-
-          if param.name?.this? # Parameter is attached to `this`
+          if param.isComplex() # Parameter is destructured or attached to `this`
             exprs.push new Assign new Value(param.name), ref, '=', param: yes
+            # TODO: output destrucutred parameters as is, *unless* they contain
+            # `this` parameters; and fix destructuring of objects with default
+            # values to work in this context (see Obj.compileNode
+            # `if prop.context isnt 'object'`)
 
         else # `param` is an Expansion
           splatParamName = o.scope.freeVariable 'args'
@@ -1684,8 +1674,9 @@ exports.Code = class Code extends Base
       else
         if param.isComplex()
           # This parameter is attached to `this`, which ES doesn’t allow;
-          # so add a statement to the function body assigning it, e.g.
-          # `(a) => { this.a = a; }` or with a default value if it has one.
+          # or it’s destructured. So add a statement to the function body
+          # assigning it, e.g. `(a) => { this.a = a; }` or with a default
+          # value if it has one.
           val = ref = param.asReference o
           val = new Op '?', ref, param.value if param.value
           exprs.push new Assign new Value(param.name), val, '=', param: yes
