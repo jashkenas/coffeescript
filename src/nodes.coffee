@@ -1631,8 +1631,7 @@ exports.Code = class Code extends Base
     paramsAfterSplat = []
     haveSplatParam   = no
 
-    # Check for duplicate parameters, and save the names so that we can pull
-    # the name of the splat parameter if we have one.
+    # Check for duplicate parameters.
     paramNames = []
     @eachParamName (name, node) =>
       node.error "multiple parameters named '#{name}'" if name in paramNames
@@ -1643,8 +1642,9 @@ exports.Code = class Code extends Base
     # adding expressions to the function body to declare all parameter
     # variables that would have been after the splat/expansion parameter.
     for param, i in @params
-      # Was `...` used with this parameter? (Only one such parameter is allowed per function.)
-      # Splat/expansion parameters cannot have default values, so we need not worry about that.
+      # Was `...` used with this parameter? (Only one such parameter is allowed
+      # per function.) Splat/expansion parameters cannot have default values,
+      # so we need not worry about that.
       if param.splat or param instanceof Expansion
         if haveSplatParam
           param.error 'only one splat or expansion parameter is allowed per function definition'
@@ -1708,7 +1708,8 @@ exports.Code = class Code extends Base
           o.scope.parameter fragmentsToText (if param.value? then param else ref).compileToFragments o
         else
           paramsAfterSplat.push param
-          # Add this parameter to the scope, since it wouldn’t have been added yet since it was skipped earlier.
+          # Add this parameter to the scope, since it wouldn’t have been
+          # added yet since it was skipped earlier.
           o.scope.add param.name.value, 'var', yes if param.name?.value?
 
     # If there were parameters after the splat or expansion parameter, those
@@ -1746,8 +1747,8 @@ exports.Code = class Code extends Base
   eachParamName: (iterator) ->
     param.eachName iterator for param in @params
 
-  # Short-circuit `traverseChildren` method to prevent it from crossing scope boundaries
-  # unless `crossScope` is `true`.
+  # Short-circuit `traverseChildren` method to prevent it from crossing scope
+  # boundaries unless `crossScope` is `true`.
   traverseChildren: (crossScope, func) ->
     super(crossScope, func) if crossScope
 
