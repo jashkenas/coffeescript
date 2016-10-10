@@ -145,14 +145,12 @@ class exports.Rewriter
   adjustCoffeeTags: ->
     @scanTokens (token, i, tokens) ->
       if token[0] is 'CT'
-        tokens.splice(i + 0, 1,
-          generate 'IDENTIFIER', 'coffeeTags'
-          generate 'STRING'    , "'#{token[1]}'"
-        ) and pos = 2; tokens[i].spaced = true
-        tokens.splice(i + pos, 0,
-          generate ','       , ','
-        ) and pos += 1 if tokens[i + pos][0] isnt 'TERMINATOR'
-        return pos
+        f = generate 'IDENTIFIER', 'coffeeTags'; f.spaced = true
+        s = generate 'STRING', "'#{token[1]}'"
+        c = generate ',', ',' if tokens[i + 1][0] isnt 'TERMINATOR'
+        tokens.splice i + 0, 1, f, s
+        tokens.splice i + 2, 0, c if c
+        return if c then 3 else 2
       return 1
 
   # Look for signs of implicit calls and objects in the token stream and
