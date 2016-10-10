@@ -151,7 +151,7 @@ class exports.Rewriter
         ) and pos = 2; tokens[i].spaced = true
         tokens.splice(i + pos, 0,
           generate ','       , ','
-        ) and pos += 1 if tokens[i + 1][0] isnt 'TERMINATOR'
+        ) and pos += 1 if tokens[i + pos][0] isnt 'TERMINATOR'
         return pos
       return 1
 
