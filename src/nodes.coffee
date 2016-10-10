@@ -1653,16 +1653,29 @@ exports.Code = class Code extends Base
 
         haveSplatParam = yes
         if param.splat
-          if param.name?.this? # Parameter is attached to `this`
-            params.push param.asReference o
-            splatParamName = fragmentsToText param.reference.compileNode o
-            exprs.push new Assign new Value(param.name), param.reference, '=', param: yes
+          ref = param.asReference o
+          splatParamName = fragmentsToText ref.compileNode o
+
+          if param.name instanceof Arr or param.name instanceof Obj
+            # ES supports destructured parameters, so pass such parameters
+            # as is; unless they aren’t the last parameter, in which case
+            # we need a usable splatParamName below to pull post-splat
+            # parameters from.
+            if i is @params.length - 1
+              params.push param
+            else
+              params.push ref
+              exprs.push new Assign new Value(param.name), ref, '=', param: yes
           else
-            params.push param
-            splatParamName = fragmentsToText param.asReference(o).compileNode o
+            params.push ref
+
+          if param.name?.this? # Parameter is attached to `this`
+            exprs.push new Assign new Value(param.name), ref, '=', param: yes
+
         else # `param` is an Expansion
           splatParamName = o.scope.freeVariable 'args'
           params.push new Value new IdentifierLiteral splatParamName
+
         o.scope.parameter splatParamName
 
       # Parse all other parameters; if a splat paramater has not yet been
