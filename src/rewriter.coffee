@@ -145,48 +145,13 @@ class exports.Rewriter
   adjustCoffeeTags: ->
     @scanTokens (token, i, tokens) ->
       if token[0] is 'CT'
-        tag = null; cls = {}; id = null; pos = 0; raw = null
-
-        # parse CoffeeTag specifier
-        str = token[1].replace /!$/, -> raw = true; ''
-        for str in str.split /(?=[.@])/
-          switch str.charAt 0
-            when '.' then cls[str[1..-1]] = true
-            when '@' then id or= str[1..-1]
-            else tag or= str
-
-        # inject desired tokens
         tokens.splice(i + 0, 1,
-          generate 'IDENTIFIER', 'h'
-          generate 'STRING'    , "'#{tag || 'div'}'"
-        ) and pos += 2; tokens[i].spaced = true
+          generate 'IDENTIFIER', 'coffeeTags'
+          generate 'STRING'    , "'#{token[1]}'"
+        ) and pos = 2; tokens[i].spaced = true
         tokens.splice(i + pos, 0,
           generate ','       , ','
-          generate 'PROPERTY', 'attrs'
-          generate ':'       , ':'
-          generate '{'       , '{'
-          generate 'PROPERTY', 'id'
-          generate ':'       , ':'
-          generate 'STRING'  , "'#{id}'"
-          generate '}'       , '}'
-        ) and pos += 8 if id
-        tokens.splice(i + pos, 0,
-          generate ','       , ','
-          generate 'PROPERTY', 'staticClass'
-          generate ':'       , ':'
-          generate 'STRING'  , "'#{cls}'"
-        ) and pos += 4 if cls = Object.keys(cls).join(' ')
-        tokens.splice(i + pos, 0,
-          generate ','       , ','
-          generate 'PROPERTY', 'domProps'
-          generate ':'       , ':'
-          generate 'PROPERTY', 'innerHTML'
-          generate ':'       , ':'
-        ) and pos += 5 if raw
-        tokens.splice(i + pos, 0,
-          generate ','       , ','
-        ) and pos += 1 if not raw and tokens[i + 1][0] isnt 'TERMINATOR'
-
+        ) and pos += 1 if tokens[i + 1][0] isnt 'TERMINATOR'
         return pos
       return 1
 
