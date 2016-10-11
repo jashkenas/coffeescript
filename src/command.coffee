@@ -180,7 +180,7 @@ compileScript = (file, input, base = null) ->
       CoffeeScript.eval opts.prelude, t.options if opts.prelude
       CoffeeScript.run t.input, t.options
     else if o.join and t.file isnt o.join
-      t.input = helpers.invertLiterate t.input if helpers.isLiterate file
+      t.input = helpers.invertLiterate t.input if helpers.isLiterate t.file
       sourceCode[sources.indexOf(t.file)] = t.input
       compileJoin()
     else
