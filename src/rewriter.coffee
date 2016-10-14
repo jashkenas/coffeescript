@@ -145,7 +145,7 @@ class exports.Rewriter
   adjustCoffeeTags: ->
     @scanTokens (token, i, tokens) ->
       if token[0] is 'CT'
-        f = generate 'IDENTIFIER', 'coffeeTags'; f.spaced = true
+        f = generate 'IDENTIFIER', 'h'; f.spaced = true
         s = generate 'STRING', "'#{token[1]}'"
         c = generate ',', ',' if tokens[i + 1][0] isnt 'TERMINATOR'
         tokens.splice i + 0, 1, f, s
