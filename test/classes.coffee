@@ -471,6 +471,12 @@ test "`new` shouldn't add extra parens", ->
   ok new Date().constructor is Date
 
 
+test "`new` works against bare function", ->
+
+  eq Date, new ->
+    Date
+
+
 test "#1182: a subclass should be able to set its constructor to an external function", ->
   ctor = ->
     @val = 1
