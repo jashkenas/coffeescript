@@ -1012,7 +1012,9 @@ test "anonymous classes cannot be exported", ->
       constructor: ->
         console.log 'hello, world!'
   ''', '''
-    SyntaxError: Unexpected token export
+    [stdin]:1:8: error: anonymous classes cannot be exported
+    export class
+           ^^^^^
   '''
 
 test "unless enclosed by curly braces, only * can be aliased", ->
