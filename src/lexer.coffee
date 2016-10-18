@@ -573,7 +573,11 @@ exports.Lexer = class Lexer
 
     [firstToken, ..., lastToken] = tokens
     firstToken[2].first_column -= delimiter.length
-    lastToken[2].last_column += delimiter.length
+    if lastToken[1].substr(-1) == '\n'
+      lastToken[2].last_line += 1
+      lastToken[2].last_column = delimiter.length - 1
+    else
+      lastToken[2].last_column += delimiter.length
     lastToken[2].last_column -= 1 if lastToken[1].length is 0
 
     {tokens, index: offsetInChunk + delimiter.length}
