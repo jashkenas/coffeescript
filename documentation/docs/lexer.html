@@ -459,25 +459,30 @@ Be careful not to interfere with ranges-in-progress.</p>
             
             <div class="content"><div class='highlight'><pre>  numberToken: <span class="hljs-function">-&gt;</span>
     <span class="hljs-keyword">return</span> <span class="hljs-number">0</span> <span class="hljs-keyword">unless</span> match = NUMBER.exec @chunk
+
     number = match[<span class="hljs-number">0</span>]
     lexedLength = number.length
-    <span class="hljs-keyword">if</span> <span class="hljs-regexp">/^0[BOX]/</span>.test number
-      @error <span class="hljs-string">"radix prefix in '<span class="hljs-subst">#{number}</span>' must be lowercase"</span>, offset: <span class="hljs-number">1</span>
-    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-regexp">/E/</span>.test(number) <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> <span class="hljs-regexp">/^0x/</span>.test number
-      @error <span class="hljs-string">"exponential notation in '<span class="hljs-subst">#{number}</span>' must be indicated with a lowercase 'e'"</span>,
-        offset: number.indexOf(<span class="hljs-string">'E'</span>)
-    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-regexp">/^0\d*[89]/</span>.test number
-      @error <span class="hljs-string">"decimal literal '<span class="hljs-subst">#{number}</span>' must not be prefixed with '0'"</span>, length: lexedLength
-    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-regexp">/^0\d+/</span>.test number
-      @error <span class="hljs-string">"octal literal '<span class="hljs-subst">#{number}</span>' must be prefixed with '0o'"</span>, length: lexedLength
-    <span class="hljs-keyword">if</span> octalLiteral = <span class="hljs-regexp">/^0o([0-7]+)/</span>.exec number
-      numberValue = parseInt(octalLiteral[<span class="hljs-number">1</span>], <span class="hljs-number">8</span>)
+
+    <span class="hljs-keyword">switch</span>
+      <span class="hljs-keyword">when</span> <span class="hljs-regexp">/^0[BOX]/</span>.test number
+        @error <span class="hljs-string">"radix prefix in '<span class="hljs-subst">#{number}</span>' must be lowercase"</span>, offset: <span class="hljs-number">1</span>
+      <span class="hljs-keyword">when</span> <span class="hljs-regexp">/^(?!0x).*E/</span>.test number
+        @error <span class="hljs-string">"exponential notation in '<span class="hljs-subst">#{number}</span>' must be indicated with a lowercase 'e'"</span>,
+          offset: number.indexOf(<span class="hljs-string">'E'</span>)
+      <span class="hljs-keyword">when</span> <span class="hljs-regexp">/^0\d*[89]/</span>.test number
+        @error <span class="hljs-string">"decimal literal '<span class="hljs-subst">#{number}</span>' must not be prefixed with '0'"</span>, length: lexedLength
+      <span class="hljs-keyword">when</span> <span class="hljs-regexp">/^0\d+/</span>.test number
+        @error <span class="hljs-string">"octal literal '<span class="hljs-subst">#{number}</span>' must be prefixed with '0o'"</span>, length: lexedLength
+
+    base = <span class="hljs-keyword">switch</span> number.charAt <span class="hljs-number">1</span>
+      <span class="hljs-keyword">when</span> <span class="hljs-string">'b'</span> <span class="hljs-keyword">then</span> <span class="hljs-number">2</span>
+      <span class="hljs-keyword">when</span> <span class="hljs-string">'o'</span> <span class="hljs-keyword">then</span> <span class="hljs-number">8</span>
+      <span class="hljs-keyword">when</span> <span class="hljs-string">'x'</span> <span class="hljs-keyword">then</span> <span class="hljs-number">16</span>
+      <span class="hljs-keyword">else</span> <span class="hljs-literal">null</span>
+    numberValue = <span class="hljs-keyword">if</span> base? <span class="hljs-keyword">then</span> parseInt(number[<span class="hljs-number">2.</span>.], base) <span class="hljs-keyword">else</span> parseFloat(number)
+    <span class="hljs-keyword">if</span> number.charAt(<span class="hljs-number">1</span>) <span class="hljs-keyword">in</span> [<span class="hljs-string">'b'</span>, <span class="hljs-string">'o'</span>]
       number = <span class="hljs-string">"0x<span class="hljs-subst">#{numberValue.toString <span class="hljs-number">16</span>}</span>"</span>
-    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> binaryLiteral = <span class="hljs-regexp">/^0b([01]+)/</span>.exec number
-      numberValue = parseInt(binaryLiteral[<span class="hljs-number">1</span>], <span class="hljs-number">2</span>)
-      number = <span class="hljs-string">"0x<span class="hljs-subst">#{numberValue.toString <span class="hljs-number">16</span>}</span>"</span>
-    <span class="hljs-keyword">else</span>
-      numberValue = parseFloat(number)
+
     tag = <span class="hljs-keyword">if</span> numberValue <span class="hljs-keyword">is</span> Infinity <span class="hljs-keyword">then</span> <span class="hljs-string">'INFINITY'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'NUMBER'</span>
     @token tag, number, <span class="hljs-number">0</span>, lexedLength
     lexedLength</pre></div></div>
@@ -548,12 +553,12 @@ properly tag the <code>from</code>.</p>
       <span class="hljs-keyword">while</span> match = HEREDOC_INDENT.exec doc
         attempt = match[<span class="hljs-number">1</span>]
         indent = attempt <span class="hljs-keyword">if</span> indent <span class="hljs-keyword">is</span> <span class="hljs-literal">null</span> <span class="hljs-keyword">or</span> <span class="hljs-number">0</span> &lt; attempt.length &lt; indent.length
-      indentRegex = <span class="hljs-regexp">/// ^<span class="hljs-subst">#{indent}</span> ///</span>gm <span class="hljs-keyword">if</span> indent
+      indentRegex = <span class="hljs-regexp">/// \n<span class="hljs-subst">#{indent}</span> ///</span>g <span class="hljs-keyword">if</span> indent
       @mergeInterpolationTokens tokens, {delimiter}, <span class="hljs-function"><span class="hljs-params">(value, i)</span> =&gt;</span>
         value = @formatString value
+        value = value.replace indentRegex, <span class="hljs-string">'\n'</span> <span class="hljs-keyword">if</span> indentRegex
         value = value.replace LEADING_BLANK_LINE,  <span class="hljs-string">''</span> <span class="hljs-keyword">if</span> i <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>
         value = value.replace TRAILING_BLANK_LINE, <span class="hljs-string">''</span> <span class="hljs-keyword">if</span> i <span class="hljs-keyword">is</span> $
-        value = value.replace indentRegex, <span class="hljs-string">''</span> <span class="hljs-keyword">if</span> indentRegex
         value
     <span class="hljs-keyword">else</span>
       @mergeInterpolationTokens tokens, {delimiter}, <span class="hljs-function"><span class="hljs-params">(value, i)</span> =&gt;</span>
