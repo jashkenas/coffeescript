@@ -659,7 +659,12 @@ grammar =
     o 'Expression **       Expression',         -> new Op $2, $1, $3
     o 'Expression SHIFT    Expression',         -> new Op $2, $1, $3
     o 'Expression COMPARE  Expression',         -> new Op $2, $1, $3
-    o 'Expression LOGIC    Expression',         -> new Op $2, $1, $3
+    o 'Expression &        Expression',         -> new Op $2, $1, $3
+    o 'Expression ^        Expression',         -> new Op $2, $1, $3
+    o 'Expression |        Expression',         -> new Op $2, $1, $3
+    o 'Expression &&       Expression',         -> new Op $2, $1, $3
+    o 'Expression ||       Expression',         -> new Op $2, $1, $3
+    o 'Expression BIN?     Expression',         -> new Op $2, $1, $3
     o 'Expression RELATION Expression',         ->
       if $2.charAt(0) is '!'
         new Op($2[1..], $1, $3).invert()
@@ -700,7 +705,12 @@ operators = [
   ['left',      'SHIFT']
   ['left',      'RELATION']
   ['left',      'COMPARE']
-  ['left',      'LOGIC']
+  ['left',      '&']
+  ['left',      '^']
+  ['left',      '|']
+  ['left',      '&&']
+  ['left',      '||']
+  ['left',      'BIN?']
   ['nonassoc',  'INDENT', 'OUTDENT']
   ['right',     'YIELD']
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
