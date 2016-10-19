@@ -79,6 +79,21 @@ test "even more fancy bound functions", ->
   eq obj.one(), 3
 
 
+test "arguments in bound functions inherit from parent function", ->
+  # The `arguments` object in an ES arrow function refers to the `arguments`
+  # of the parent scope, just like `this`. In the CoffeeScript 1.x
+  # implementation of `=>`, the `arguments` object referred to the arguments
+  # of the arrow function; but per the ES2015 spec, `arguments` should refer
+  # to the parent.
+  arrayEq ((a...) -> a)([1, 2, 3]), ((a...) => a)([1, 2, 3])
+
+  parent = (a, b, c) ->
+    (bound = =>
+      [arguments[0], arguments[1], arguments[2]]
+    )()
+  arrayEq [1, 2, 3], parent(1, 2, 3)
+
+
 test "self-referencing functions", ->
   changeMe = ->
     changeMe = 2
