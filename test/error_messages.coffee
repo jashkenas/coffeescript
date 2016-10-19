@@ -83,7 +83,7 @@ if require?
                       ^^
       """
     finally
-      fs.unlink 'test/syntax-error.coffee'
+      fs.unlinkSync 'test/syntax-error.coffee'
 
 
 test "#1096: unexpected generated tokens", ->
