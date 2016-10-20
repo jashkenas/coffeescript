@@ -390,3 +390,13 @@ test "#3795: Escape otherwise invalid characters", ->
   eq """#{a} """, 'a\u2029'
   eq """#{a}\0\
       1""", 'a\0' + '1'
+
+test "#4314: Whitespace less than or equal to stripped indentation", ->
+  # The odd indentation is intentional here, to test 1-space indentation.
+  eq ' ', """
+ #{} #{}
+"""
+
+  eq '1 2  3   4    5     end\na 0     b', """
+    #{1} #{2}  #{3}   #{4}    #{5}     end
+    a #{0}     b"""

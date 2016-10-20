@@ -569,3 +569,9 @@ test "object keys with interpolations", ->
     interpolated:
       nested:
         123: 456
+
+test "#4324: Shorthand after interpolated key", ->
+  a = 2
+  obj = {"#{1}": 1, a}
+  eq 1, obj[1]
+  eq 2, obj.a
