@@ -1685,35 +1685,28 @@ exports.Code = class Code extends Base
           val = new Op '?', ref, param.value if param.value
           exprs.push new Assign new Value(param.name), val, '=', param: yes
 
-        else if param.value?
-          # This parameter isn’t attached to `this` but it has a default value.
-          # ES supports default values in function parameter lists, but treats
-          # `null` differently than CoffeeScript does: in CS, passing `null`
-          # as a function argument for a parameter that has a default value
-          # will cause the default value to be used, whereas in ES the
-          # parameter will get the value of `null`. ES applies default values
-          # only when a parameter is `undefined`. Because of this, even though
-          # we’re defining the default value in the parameter list, we also
-          # need to add a statement to the function body that sets the value
-          # in the event that a parameter is `null`.
-          ref = new Assign new Value(param.name), param.value, '='
-
-          condition = new Literal param.name.value + ' == null'
-          ifTrue = new Assign new Value(param.name), param.value, '='
-          exprs.push new If condition, ifTrue
-        else
-          ref = param
-
         # If this parameter comes before the splat or expansion, it will go
         # in the function definition parameter list.
         unless haveSplatParam
-          params.push ref
+          # If this parameter has a default value, and it hasn’t already been
+          # set by the `isComplex()` block above, define it as a statement in
+          # the function body. This parameter comes after the splat parameter,
+          # so we can’t define its default value in the parameter list.
+          unless param.isComplex()
+            ref = if param.value? then new Assign new Value(param.name), param.value, '=' else param
           # Add this parameter’s reference to the function scope
           o.scope.parameter fragmentsToText (if param.value? then param else ref).compileToFragments o
+          params.push ref
         else
           paramsAfterSplat.push param
-          # Add this parameter to the scope, since it wouldn’t have been
-          # added yet since it was skipped earlier.
+          # If this parameter had a default value, since it’s no longer in the
+          # function parameter list we need to assign its default value
+          # (if necessary) as an expression in the body.
+          if param.value? and not param.isComplex()
+            condition = new Literal param.name.value + ' == undefined'
+            ifTrue = new Assign new Value(param.name), param.value, '='
+            exprs.push new If condition, ifTrue
+          # Add this parameter to the scope, since it wouldn’t have been added yet since it was skipped earlier.
           o.scope.add param.name.value, 'var', yes if param.name?.value?
 
     # If there were parameters after the splat or expansion parameter, those

@@ -195,7 +195,7 @@ test "default values", ->
   eq nonceA, a(0)
   eq nonceB, a(0,0,nonceB)
   eq nonceA, a(0,0,undefined)
-  eq nonceA, a(0,0,null)
+  eq null, a(0,0,null) # Per ES2015, `null` doesn’t trigger a parameter default value
   eq false , a(0,0,false)
   eq nonceB, a(undefined,undefined,nonceB,undefined)
   b = (_,arg=nonceA,_1,_2) -> arg
@@ -203,7 +203,7 @@ test "default values", ->
   eq nonceA, b(0)
   eq nonceB, b(0,nonceB)
   eq nonceA, b(0,undefined)
-  eq nonceA, b(0,null)
+  eq null, b(0,null)
   eq false , b(0,false)
   eq nonceB, b(undefined,nonceB,undefined)
   c = (arg=nonceA,_,_1) -> arg
@@ -211,7 +211,7 @@ test "default values", ->
   eq      0, c(0)
   eq nonceB, c(nonceB)
   eq nonceA, c(undefined)
-  eq nonceA, c(null)
+  eq null, c(null)
   eq false , c(false)
   eq nonceB, c(nonceB,undefined,undefined)
 
