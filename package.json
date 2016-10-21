@@ -8,10 +8,10 @@
     "compiler"
   ],
   "author": "Jeremy Ashkenas",
-  "version": "1.11.1",
+  "version": "2.0.0-alpha",
   "license": "MIT",
   "engines": {
-    "node": ">=0.8.0"
+    "node": ">=6.9.1"
   },
   "directories": {
     "lib": "./lib/coffee-script"
