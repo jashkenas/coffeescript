@@ -79,8 +79,8 @@ exports.some = Array::some ? (fn) ->
   false
 
 # Simple function for extracting code from Literate CoffeeScript by stripping
-# out all non-code blocks,  producing a string of CoffeeScript code that can
-# be compiled "normally".
+# out all non-code blocks, producing a string of CoffeeScript code that can
+# be compiled “normally.”
 exports.invertLiterate = (code) ->
   # Create a placeholder for tabs, that isn’t used anywhere in `code`, and then
   # re-insert the tabs after code extraction.
@@ -93,7 +93,7 @@ exports.invertLiterate = (code) ->
   # Parse as markdown, discard everything except code blocks.
   out = ""
   for item in marked.lexer code, {}
-    out += "#{item.text}\n" if item.type == 'code'
+    out += "#{item.text}\n" if item.type is 'code'
   # Put the tabs back in.
   out.replace token, "\t"
   out
