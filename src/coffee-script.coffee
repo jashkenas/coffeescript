@@ -22,7 +22,7 @@ exports.helpers = helpers
 # Function that allows for btoa in both nodejs and the browser.
 base64encode = (src) -> switch
   when typeof Buffer is 'function'
-    new Buffer(src).toString('base64')
+    Buffer.from(src).toString('base64')
   when typeof btoa is 'function'
     btoa(src)
   else

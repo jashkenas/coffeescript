@@ -41,18 +41,6 @@ test "compiler error formatting", ->
                  ^^^^
   '''
 
-test "compiler error formatting with mixed tab and space", ->
-  assertErrorFormat """
-    \t  if a
-    \t  test
-  """,
-  '''
-    [stdin]:1:4: error: unexpected if
-    \t  if a
-    \t  ^^
-  '''
-
-
 if require?
   fs   = require 'fs'
   path = require 'path'
@@ -642,14 +630,14 @@ test "duplicate function arguments", ->
   assertErrorFormat '''
     (foo, bar, foo) ->
   ''', '''
-    [stdin]:1:12: error: multiple parameters named foo
+    [stdin]:1:12: error: multiple parameters named 'foo'
     (foo, bar, foo) ->
                ^^^
   '''
   assertErrorFormat '''
     (@foo, bar, @foo) ->
   ''', '''
-    [stdin]:1:13: error: multiple parameters named @foo
+    [stdin]:1:13: error: multiple parameters named '@foo'
     (@foo, bar, @foo) ->
                 ^^^^
   '''

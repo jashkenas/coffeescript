@@ -1686,8 +1686,8 @@ exports.Code = class Code extends Base
       params[i] = p.compileToFragments o
       o.scope.parameter fragmentsToText params[i]
     uniqs = []
-    @eachParamName (name, node) ->
-      node.error "multiple parameters named #{name}" if name in uniqs
+    @eachParamName (name, node) =>
+      node.error "multiple parameters named '#{name}'" if name in uniqs
       uniqs.push name
     @body.makeReturn() unless wasEmpty or @noReturn
     code = ''
@@ -1756,7 +1756,7 @@ exports.Param = class Param extends Base
   # The `iterator` function will be called as `iterator(name, node)` where
   # `name` is the name of the parameter and `node` is the AST node corresponding
   # to that name.
-  eachName: (iterator, name = @name)->
+  eachName: (iterator, name = @name) ->
     atParam = (obj) -> iterator "@#{obj.properties[0].name.value}", obj
     # * simple literals `foo`
     return iterator name.value, name if name instanceof Literal

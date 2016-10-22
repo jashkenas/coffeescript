@@ -40,6 +40,7 @@ exports.Lexer = class Lexer
     @indebt     = 0              # The over-indentation at the current level.
     @outdebt    = 0              # The under-outdentation at the current level.
     @indents    = []             # The stack of all current indentation levels.
+    @indentLiteral = ''          # The indentation
     @ends       = []             # The stack for pairing up tokens.
     @tokens     = []             # Stream of parsed tokens in the form `['TYPE', value, location data]`.
     @seenFor    = no             # Used to recognize FORIN and FOROF tokens.
@@ -211,9 +212,8 @@ exports.Lexer = class Lexer
       when 'o' then 8
       when 'x' then 16
       else null
+
     numberValue = if base? then parseInt(number[2..], base) else parseFloat(number)
-    if number.charAt(1) in ['b', 'o']
-      number = "0x#{numberValue.toString 16}"
 
     tag = if numberValue is Infinity then 'INFINITY' else 'NUMBER'
     @token tag, number, 0, lexedLength
@@ -352,6 +352,16 @@ exports.Lexer = class Lexer
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()
 
+    newIndentLiteral = if size > 0 then indent[-size..] else ''
+    unless /^(.?)\1*$/.exec newIndentLiteral
+      @error 'mixed indentation', offset: indent.length
+      return indent.length
+
+    minLiteralLength = Math.min newIndentLiteral.length, @indentLiteral.length
+    if newIndentLiteral[...minLiteralLength] isnt @indentLiteral[...minLiteralLength]
+      @error 'indentation mismatch', offset: indent.length
+      return indent.length
+
     if size - @indebt is @indent
       if noNewlines then @suppressNewlines() else @newlineToken 0
       return indent.length
@@ -363,6 +373,7 @@ exports.Lexer = class Lexer
         return indent.length
       unless @tokens.length
         @baseIndent = @indent = size
+        @indentLiteral = newIndentLiteral
         return indent.length
       diff = size - @indent + @outdebt
       @token 'INDENT', diff, indent.length - size, size
@@ -370,6 +381,7 @@ exports.Lexer = class Lexer
       @ends.push {tag: 'OUTDENT'}
       @outdebt = @indebt = 0
       @indent = size
+      @indentLiteral = newIndentLiteral
     else if size < @baseIndent
       @error 'missing indentation', offset: indent.length
     else
@@ -406,6 +418,7 @@ exports.Lexer = class Lexer
 
     @token 'TERMINATOR', '\n', outdentLength, 0 unless @tag() is 'TERMINATOR' or noNewlines
     @indent = decreasedIndent
+    @indentLiteral = @indentLiteral[...decreasedIndent]
     this
 
   # Matches and consumes non-meaningful whitespace. Tag the previous token
