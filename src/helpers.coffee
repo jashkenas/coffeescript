@@ -3,7 +3,7 @@
 # arrays, count characters, that sort of thing.
 
 
-# pollyfill for async/await
+# Adds async/await like functionality for Cake
 exports.async = (generatorFunction) ->
   return (args...) ->
     next = (val) -> proceed generator.next val 
