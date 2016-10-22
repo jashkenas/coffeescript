@@ -3,6 +3,21 @@
 # arrays, count characters, that sort of thing.
 
 
+# pollyfill for async/await
+exports.async = (generatorFunction) ->
+  return (args...) ->
+    next = (val) -> proceed generator.next val 
+    raise = (err) -> proceed generator.throw err
+    proceed = ({done, value}) ->
+      promise = Promise.resolve value
+      if done
+        promise
+      else
+        promise.then next, raise
+
+    generator = generatorFunction.apply this, args
+    proceed generator.next()
+
 # Peek at the beginning of a given string to see if it matches a sequence.
 exports.starts = (string, literal, start) ->
   literal is string.substr start, literal.length
