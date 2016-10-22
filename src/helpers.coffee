@@ -82,16 +82,19 @@ exports.some = Array::some ? (fn) ->
 # out all non-code blocks,  producing a string of CoffeeScript code that can
 # be compiled "normally".
 exports.invertLiterate = (code) ->
-  # don't know how to avoid this hack using token as placeholder for tabs, then
-  # re-inserting tabs after code extraction. The token has been split in two
-  # so that it does not end up getting parsed in this src code
-  token = '9ddb1d26184bdaf8'+'d4de55835d82eb56'
+  # Create a placeholder for tabs, that isn’t used anywhere in `code`, and then
+  # re-insert the tabs after code extraction.
+  generateRandomToken = ->
+    "#{Math.random() * Date.now()}"
+  while token is undefined or code.indexOf(token) isnt -1
+    token = generateRandomToken()
+
   code = code.replace "\t", token
-  # parse as markdown, discard everything except code blocks
+  # Parse as markdown, discard everything except code blocks.
   out = ""
   for item in marked.lexer code, {}
     out += "#{item.text}\n" if item.type == 'code'
-  # put the tabs back in
+  # Put the tabs back in.
   out.replace token, "\t"
   out
 
