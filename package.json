@@ -8,10 +8,10 @@
     "compiler"
   ],
   "author": "Jeremy Ashkenas",
-  "version": "1.11.0",
+  "version": "2.0.0-alpha",
   "license": "MIT",
   "engines": {
-    "node": ">=0.8.0"
+    "node": ">=6.9.1"
   },
   "directories": {
     "lib": "./lib/coffee-script"
@@ -39,10 +39,10 @@
     "url": "git://github.com/jashkenas/coffeescript.git"
   },
   "devDependencies": {
-    "uglify-js": "~2.2",
-    "jison": ">=0.2.0",
-    "highlight.js": "~9.6.0",
-    "underscore": "~1.5.2",
+    "uglify-js": "~2.7",
+    "jison": ">=0.4.17",
+    "highlight.js": "~9.7.0",
+    "underscore": "~1.8.3",
     "docco": "~0.7.0"
   }
 }

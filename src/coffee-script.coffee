@@ -12,7 +12,7 @@ helpers       = require './helpers'
 SourceMap     = require './sourcemap'
 
 # The current CoffeeScript version number.
-exports.VERSION = '1.11.0'
+exports.VERSION = '2.0.0-alpha'
 
 exports.FILE_EXTENSIONS = ['.coffee', '.litcoffee', '.coffee.md']
 
@@ -22,7 +22,7 @@ exports.helpers = helpers
 # Function that allows for btoa in both nodejs and the browser.
 base64encode = (src) -> switch
   when typeof Buffer is 'function'
-    new Buffer(src).toString('base64')
+    Buffer.from(src).toString('base64')
   when typeof btoa is 'function'
     btoa(src)
   else

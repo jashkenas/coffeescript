@@ -106,9 +106,9 @@ addHistory = (repl, filename, maxSize) ->
     size = Math.min maxSize, stat.size
     # Read last `size` bytes from the file
     readFd = fs.openSync filename, 'r'
-    buffer = new Buffer(size)
+    buffer = Buffer.alloc size
     fs.readSync readFd, buffer, 0, size, stat.size - size
-    fs.close readFd
+    fs.closeSync readFd
     # Set the history on the interpreter
     repl.rli.history = buffer.toString().split('\n').reverse()
     # If the history file was truncated we should pop off a potential partial line
@@ -123,10 +123,10 @@ addHistory = (repl, filename, maxSize) ->
   repl.rli.addListener 'line', (code) ->
     if code and code.length and code isnt '.history' and code isnt '.exit' and lastLine isnt code
       # Save the latest command in the file
-      fs.write fd, "#{code}\n"
+      fs.writeSync fd, "#{code}\n"
       lastLine = code
 
-  repl.on 'exit', -> fs.close fd
+  repl.on 'exit', -> fs.closeSync fd
 
   # Add a command to show the history stack
   repl.commands[getCommandId(repl, 'history')] =
@@ -144,8 +144,8 @@ module.exports =
   start: (opts = {}) ->
     [major, minor, build] = process.versions.node.split('.').map (n) -> parseInt(n)
 
-    if major is 0 and minor < 8
-      console.warn "Node 0.8.0+ required for CoffeeScript REPL"
+    if major < 6
+      console.warn "Node 6+ required for CoffeeScript REPL"
       process.exit 1
 
     CoffeeScript.register()

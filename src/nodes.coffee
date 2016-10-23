@@ -1268,6 +1268,10 @@ exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
 
     if @ not instanceof ExportDefaultDeclaration and
        (@clause instanceof Assign or @clause instanceof Class)
+      # Prevent exporting an anonymous class; all exported members must be named
+      if @clause instanceof Class and not @clause.variable
+        @clause.error 'anonymous classes cannot be exported'
+
       # When the ES2015 `class` keyword is supported, don’t add a `var` here
       code.push @makeCode 'var '
       @clause.moduleDeclaration = 'export'

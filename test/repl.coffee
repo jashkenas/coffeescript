@@ -13,7 +13,7 @@ class MockInputStream extends Stream
   resume: ->
 
   emitLine: (val) ->
-    @emit 'data', new Buffer("#{val}\n")
+    @emit 'data', Buffer.from("#{val}\n")
 
 class MockOutputStream extends Stream
   constructor: ->
@@ -21,11 +21,11 @@ class MockOutputStream extends Stream
     @written = []
 
   write: (data) ->
-    #console.log 'output write', arguments
+    # console.log 'output write', arguments
     @written.push data
 
   lastWrite: (fromEnd = -1) ->
-    @written[@written.length - 1 + fromEnd].replace /\n$/, ''
+    @written[@written.length - 1 + fromEnd].replace /\r?\n$/, ''
 
 # Create a dummy history file
 historyFile = '.coffee_history_test'

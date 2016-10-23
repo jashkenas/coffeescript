@@ -112,7 +112,7 @@
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffeescript/tarball/1.11.0">1.11.0</a>
+      <a href="http://github.com/jashkenas/coffeescript/tarball/1.11.1">1.11.1</a>
     </p>
 
     <pre>npm install -g coffee-script</pre>
@@ -1269,6 +1269,26 @@ Block
       <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
+
+    <p>
+      <%= releaseHeader('2016-10-02', '1.11.1', '1.11.0') %>
+      <ul>
+        <li>
+          Bugfix for shorthand object syntax after interpolated keys.
+        </li>
+        <li>
+          Bugfix for indentation-stripping in <code>"""</code> strings.
+        </li>
+        <li>
+          Bugfix for not being able to use the name "arguments" for a prototype
+          property of class.
+        </li>
+        <li>
+          Correctly compile large hexadecimal numbers literals to
+          <code>2e308</code> (just like all other large number literals do).
+        </li>
+      </ul>
+    </p>
 
     <p>
       <%= releaseHeader('2016-09-24', '1.11.0', '1.10.0') %>
