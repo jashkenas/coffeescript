@@ -44,5 +44,8 @@
     "highlight.js": "~9.7.0",
     "underscore": "~1.8.3",
     "docco": "~0.7.0"
+  },
+  "dependencies": {
+    "marked": "~0.3.6"
   }
 }
