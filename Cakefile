@@ -280,10 +280,10 @@ runTests = (CoffeeScript) ->
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
 
-  # Ignore generators test file if generators are not available
-  generatorsAreAvailable = '--harmony' in process.execArgv or
-    '--harmony-generators' in process.execArgv
-  files.splice files.indexOf('generators.coffee'), 1 if not generatorsAreAvailable
+  # Ignore async test file if async/await is not available
+  asyncSupported = parseInt(process.versions.node.split('.')[0]) >= 7 and
+    ('--harmony' in process.execArgv or '--harmony-async-await' in process.execArgv)
+  files.splice files.indexOf('async.coffee'), 1 unless asyncSupported
 
   for file in files when helpers.isCoffee file
     literate = helpers.isLiterate file
