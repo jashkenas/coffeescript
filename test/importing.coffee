@@ -2,7 +2,6 @@
 # ---------
 
 unless window? or testingBrowser?
-
   test "javascript modules can be imported", ->
     magicVal = 1
     for module in 'import.js import2 .import2 import.extension.js import.unknownextension .coffee .coffee.md'.split ' '
