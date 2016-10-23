@@ -1,3 +1,22 @@
+# Functions that contain the `await` keyword will compile into async
+# functions, which currently only Node 7+ in harmony mode can even
+# evaluate, much less run. Therefore we need to prevent runtimes
+# which will choke on such code from even loading it. This file is
+# only loaded by async-capable environments, so we redefine `test`
+# here even though it is based on `test` defined in `Cakefile`.
+# It replaces `test` for this file, and adds to the tracked
+# `passedTests` and `failures` arrays which are global objects.
+test = (description, fn) ->
+  try
+    fn.test = {description, currentFile}
+    await fn.call(fn)
+    ++passedTests
+  catch e
+    failures.push
+      filename: currentFile
+      error: e
+      description: description if description?
+      source: fn.toString() if fn.toString?
 
 
 # always fulfills
@@ -77,7 +96,7 @@ test "async `this` scoping", ->
   bnd = null
   ubnd = null
   nst = null
-  obj = 
+  obj =
     bound: ->
       return do =>
         await return this
@@ -131,7 +150,7 @@ test "`await` inside IIFEs", ->
       await winning(1)
     catch e
       await winning(4)
-    
+
     z = for i in [0..5]
       a = i * i
       await winning(a)
