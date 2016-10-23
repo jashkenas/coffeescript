@@ -1142,3 +1142,10 @@ test "imported members cannot be reassigned", ->
     export foo = 'bar'
            ^^^
   '''
+
+test "function cannot contain both `await`, and `yield` or `yieldfrom`", ->
+  throws -> CoffeeScript.compile '()-> yield 5; await a;'
+  throws -> CoffeeScript.compile '()-> yield from a; await b;'
+
+test "Cannnot have `await` outside a function", ->
+  throws -> CoffeeScript.compile 'await 1'

@@ -161,14 +161,6 @@ test "`await` inside IIFEs", ->
 
     arrayEq z, [0, 1, 4, 9, 16, 25]
 
-test "error if function contains both `await`, and `yield` or `yieldfrom`", ->
-  throws -> CoffeeScript.compile '()-> yield 5; await a;'
-  throws -> CoffeeScript.compile '()-> yield from a; await b;'
-
-test "error if `await` occurs outside of a function", ->
-  throws -> CoffeeScript.compile 'await 1'
-
-
 test "error handling", ->
   res = null
   val = 0
@@ -188,3 +180,14 @@ test "error handling", ->
 
     ok res.message?
     eq res.message, "fail"
+
+test "await expression evaluates to argument if not A+", ->
+  eq(await 4, 4)
+
+
+test "implicit call with `await`", ->
+  addOne = (arg) -> arg + 1
+
+  a = addOne await 3
+  eq a, 4
+
