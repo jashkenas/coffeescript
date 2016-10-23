@@ -220,10 +220,14 @@ task 'bench', 'quick benchmark of compilation time', ->
 # Run the CoffeeScript test suite.
 runTests = (CoffeeScript) ->
   CoffeeScript.register()
-  startTime   = Date.now()
-  currentFile = null
-  passedTests = 0
-  failures    = []
+  startTime = Date.now()
+
+  # These are attached to `global` so that they’re accessible from within
+  # `test/async.coffee`, which has an async-capable version of
+  # `global.test`.
+  global.currentFile = null
+  global.passedTests = 0
+  global.failures    = []
 
   global[name] = func for name, func of require 'assert'
 
