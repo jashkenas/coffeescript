@@ -9,12 +9,6 @@
 
 # TODO: refactor comprehension tests
 
-evens = ->
-  for num in [1, 2, 3, 4, 5, 6] when not (num & 1)
-    num *= -1
-    num -= 2
-    num * -1
-
 test "Basic array comprehensions.", ->
 
   nums    = (n * n for n in [1, 2, 3] when n & 1)
@@ -82,11 +76,17 @@ test "Range comprehension gymnastics.", ->
 
 
 test "Multiline array comprehension with filter.", ->
-  eq evens() + '', '4,6,8'
+
+  evens = for num in [1, 2, 3, 4, 5, 6] when not (num & 1)
+             num *= -1
+             num -= 2
+             num * -1
+  eq evens + '', '4,6,8'
 
 
-test "The in operator still works, standalone.", ->
-  ok 2 of evens()
+  test "The in operator still works, standalone.", ->
+
+    ok 2 of evens
 
 
 test "all isn't reserved.", ->

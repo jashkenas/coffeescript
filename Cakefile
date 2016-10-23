@@ -218,13 +218,12 @@ task 'bench', 'quick benchmark of compilation time', ->
 
 
 # Run the CoffeeScript test suite.
-runTests = helpers.async (CoffeeScript) ->
+runTests = (CoffeeScript) ->
   CoffeeScript.register()
   startTime   = Date.now()
   currentFile = null
   passedTests = 0
   failures    = []
-  testCases   = []
 
   global[name] = func for name, func of require 'assert'
 
@@ -234,7 +233,16 @@ runTests = helpers.async (CoffeeScript) ->
 
   # Our test helper function for delimiting different test cases.
   global.test = (description, fn) ->
-    testCases.push {description, fn}
+    try
+      fn.test = {description, currentFile}
+      fn.call(fn)
+      ++passedTests
+    catch e
+      failures.push
+        filename: currentFile
+        error: e
+        description: description if description?
+        source: fn.toString() if fn.toString?
 
   # See http://wiki.ecmascript.org/doku.php?id=harmony:egal
   egal = (a, b) ->
@@ -254,11 +262,9 @@ runTests = helpers.async (CoffeeScript) ->
   global.eq      = (a, b, msg) -> ok egal(a, b), msg ? "Expected #{a} to equal #{b}"
   global.arrayEq = (a, b, msg) -> ok arrayEgal(a,b), msg ? "Expected #{a} to deep equal #{b}"
 
-
   # When all the tests have run, collect and print errors.
   # If a stacktrace is available, output the compiled function source.
   process.on 'exit', ->
-
     time = ((Date.now() - startTime) / 1000).toFixed(2)
     message = "passed #{passedTests} tests in #{time} seconds#{reset}"
     return log(message, green) unless failures.length
@@ -273,33 +279,20 @@ runTests = helpers.async (CoffeeScript) ->
 
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
-  harmonySupport = '--harmony' in process.execArgv
-  harmonyFiles = new Set ['async.coffee']
+
+  # Ignore generators test file if generators are not available
+  generatorsAreAvailable = '--harmony' in process.execArgv or
+    '--harmony-generators' in process.execArgv
+  files.splice files.indexOf('generators.coffee'), 1 if not generatorsAreAvailable
 
   for file in files when helpers.isCoffee file
-    # skip file if harmony only when harmony support is abscent
-    if harmonyFiles.has(file) and not harmonySupport
-      continue
     literate = helpers.isLiterate file
     currentFile = filename = path.join 'test', file
     code = fs.readFileSync filename
-    testCases = []
     try
       CoffeeScript.run code.toString(), {filename, literate}
-      for {description, fn} in testCases
-        try
-          fn.test = {description, currentFile}
-          yield fn.call(fn)
-          ++passedTests
-        catch e
-          failures.push
-            filename: currentFile
-            error: e
-            description: description if description?
-            source: fn.toString() if fn.toString?
     catch error
       failures.push {filename, error}
-  
   return !failures.length
 
 
