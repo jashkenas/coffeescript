@@ -981,27 +981,18 @@ exports.Obj = class Obj extends Base
     if @generated
       for node in props when node instanceof Value
         node.error 'cannot have an implicit value in an implicit object'
-    break for prop, dynamicIndex in props when (prop.variable or prop).base instanceof Parens
-    hasDynamic  = dynamicIndex < props.length
-    idt         = o.indent += TAB
-    lastNoncom  = @lastNonComment @properties
+    idt        = o.indent += TAB
+    lastNoncom = @lastNonComment @properties
     answer = []
-    if hasDynamic
-      oref = o.scope.freeVariable 'obj'
-      answer.push @makeCode "(\n#{idt}#{oref} = "
-    answer.push @makeCode "{#{if props.length is 0 or dynamicIndex is 0 then '}' else '\n'}"
+    answer.push @makeCode "{#{if props.length is 0 then '}' else '\n'}"
     for prop, i in props
-      if i is dynamicIndex
-        answer.push @makeCode "\n#{idt}}" unless i is 0
-        answer.push @makeCode ',\n'
-      join = if i is props.length - 1 or i is dynamicIndex - 1
+      join = if i is props.length - 1
         ''
       else if prop is lastNoncom or prop instanceof Comment
         '\n'
       else
         ',\n'
       indent = if prop instanceof Comment then '' else idt
-      indent += TAB if hasDynamic and i < dynamicIndex
       if prop instanceof Assign
         if prop.context isnt 'object'
           prop.operatorToken.error "unexpected #{prop.operatorToken.value}"
@@ -1009,26 +1000,18 @@ exports.Obj = class Obj extends Base
           prop.variable.error 'invalid object key'
       if prop instanceof Value and prop.this
         prop = new Assign prop.properties[0].name, prop, 'object'
-      if prop not instanceof Comment
-        if i < dynamicIndex
-          if prop not instanceof Assign
-            prop = new Assign prop, prop, 'object'
+      if prop not instanceof Comment and prop not instanceof Assign
+        if prop.isComplex()
+          [key, value] = prop.base.cache o
+          key  = new PropertyName key.value if key instanceof IdentifierLiteral
+          prop = new Assign key, value, 'object'
         else
-          if prop instanceof Assign
-            key = prop.variable
-            value = prop.value
-          else
-            [key, value] = prop.base.cache o
-            key = new PropertyName key.value if key instanceof IdentifierLiteral
-          prop = new Assign (new Value (new IdentifierLiteral oref), [new Access key]), value
+          prop = new Assign prop, prop, 'object'
       if indent then answer.push @makeCode indent
       answer.push prop.compileToFragments(o, LEVEL_TOP)...
       if join then answer.push @makeCode join
-    if hasDynamic
-      answer.push @makeCode ",\n#{idt}#{oref}\n#{@tab})"
-    else
-      answer.push @makeCode "\n#{@tab}}" unless props.length is 0
-    if @front and not hasDynamic then @wrapInBraces answer else answer
+    answer.push @makeCode "\n#{@tab}}" unless props.length is 0
+    if @front then @wrapInBraces answer else answer
 
   assigns: (name) ->
     for prop in @properties when prop.assigns name then return yes
@@ -1431,7 +1414,10 @@ exports.Assign = class Assign extends Base
     compiledName = @variable.compileToFragments o, LEVEL_LIST
 
     if @context is 'object'
-      if fragmentsToText(compiledName) in JS_FORBIDDEN
+      if @variable.isComplex()
+        compiledName.unshift @makeCode '['
+        compiledName.push @makeCode ']'
+      else if fragmentsToText(compiledName) in JS_FORBIDDEN
         compiledName.unshift @makeCode '"'
         compiledName.push @makeCode '"'
       return compiledName.concat @makeCode(": "), val
