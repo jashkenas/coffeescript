@@ -1142,3 +1142,10 @@ test "imported members cannot be reassigned", ->
     export foo = 'bar'
            ^^^
   '''
+
+test "bound functions cannot be generators", ->
+  assertErrorFormat 'f = => yield this', '''
+    [stdin]:1:5: error: bound (fat arrow) functions cannot contain 'yield'
+    f = => yield this
+        ^^^^^^^^^^^^^
+  '''

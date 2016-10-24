@@ -1608,6 +1608,8 @@ exports.Code = class Code extends Base
   # function body.
   compileNode: (o) ->
     if @bound
+      if @isGenerator
+        @error "bound (fat arrow) functions cannot contain 'yield'"
       @context = o.scope.method.context if o.scope.method?.bound
       @context = 'this' unless @context
 
