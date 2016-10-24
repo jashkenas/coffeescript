@@ -1608,8 +1608,6 @@ exports.Code = class Code extends Base
   # function body.
   compileNode: (o) ->
     if @bound
-      if @isGenerator
-        @error "bound (fat arrow) functions cannot contain 'yield'"
       @context = o.scope.method.context if o.scope.method?.bound
       @context = 'this' unless @context
 
@@ -2096,6 +2094,8 @@ exports.Op = class Op extends Base
     op = @operator
     unless o.scope.parent?
       @error 'yield can only occur inside functions'
+    if o.scope.method?.bound and o.scope.method.isGenerator
+      @error 'yield cannot occur inside bound (fat arrow) functions'
     if 'expression' in Object.keys(@first) and not (@first instanceof Throw)
       parts.push @first.expression.compileToFragments o, LEVEL_OP if @first.expression?
     else
