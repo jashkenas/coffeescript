@@ -528,6 +528,42 @@ test "Verify real CALL_END tokens have the right position", ->
   eq callEnd[2].first_column, startIndex + 2
   eq callEnd[2].last_column, startIndex + 2
 
+test "Verify normal heredocs have the right position", ->
+  source = '''
+    """
+    a"""
+  '''
+  [stringToken] = CoffeeScript.tokens source
+  eq stringToken[2].first_line, 0
+  eq stringToken[2].first_column, 0
+  eq stringToken[2].last_line, 1
+  eq stringToken[2].last_column, 3
+
+test "Verify heredocs ending with a newline have the right position", ->
+  source = '''
+    """
+    a
+    """
+  '''
+  [stringToken] = CoffeeScript.tokens source
+  eq stringToken[2].first_line, 0
+  eq stringToken[2].first_column, 0
+  eq stringToken[2].last_line, 2
+  eq stringToken[2].last_column, 2
+
+test "Verify indented heredocs have the right position", ->
+  source = '''
+    ->
+      """
+        a
+      """
+  '''
+  [arrow, indent, stringToken] = CoffeeScript.tokens source
+  eq stringToken[2].first_line, 1
+  eq stringToken[2].first_column, 2
+  eq stringToken[2].last_line, 3
+  eq stringToken[2].last_column, 4
+
 test "Verify all tokens get a location", ->
   doesNotThrow ->
     tokens = CoffeeScript.tokens testScript
