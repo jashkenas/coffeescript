@@ -191,3 +191,19 @@ test "implicit call with `await`", ->
   a = addOne await 3
   eq a, 4
 
+test "function cannot contain both `await`, and `yield` or `yieldfrom`", ->
+  throws -> CoffeeScript.compile '()-> yield 5; await a;'
+  throws -> CoffeeScript.compile '()-> yield from a; await b;'
+
+test "Cannnot have `await` outside a function", ->
+  throws -> CoffeeScript.compile 'await 1'
+
+test "ignore await in import lists", ->
+  CoffeeScript.compile "import {await as otherVar} from 'lib'"
+  throws ->
+    CoffeeScript.compile "import await from 'lib'"
+
+test "ignore await in export lists", ->
+  CoffeeScript.compile "export {otherVar as await}"
+  throws ->
+    CoffeeScript.compile "export {await as otherVar}"
