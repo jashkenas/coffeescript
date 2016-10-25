@@ -143,12 +143,17 @@ class exports.Rewriter
 
   # Adjust token stream so that CoffeeTags look like normal function calls.
   adjustCoffeeTags: ->
+    # return
     @scanTokens (token, i, tokens) ->
       if token[0] is 'CT'
-        f = generate 'IDENTIFIER', 'h'; f.spaced = true
+        t = token[1]
+        switch t.charAt(0)
+          when '!' then @h = t[1...-1]; tokens.splice i + 0, 1; return 0 # needs work!
+          when '/' then                 tokens.splice i + 0, 1; return 0 # needs work!
+        h = generate 'IDENTIFIER', (@h or= 'h'); h.spaced = true
         s = generate 'STRING', "'#{token[1]}'"
         c = generate ',', ',' if tokens[i + 1][0] isnt 'TERMINATOR'
-        tokens.splice i + 0, 1, f, s
+        tokens.splice i + 0, 1, h, s
         tokens.splice i + 2, 0, c if c
         return if c then 3 else 2
       return 1
