@@ -197,13 +197,3 @@ test "function cannot contain both `await`, and `yield` or `yieldfrom`", ->
 
 test "Cannnot have `await` outside a function", ->
   throws -> CoffeeScript.compile 'await 1'
-
-test "ignore await in import lists", ->
-  CoffeeScript.compile "import {await as otherVar} from 'lib'"
-  throws ->
-    CoffeeScript.compile "import await from 'lib'"
-
-test "ignore await in export lists", ->
-  CoffeeScript.compile "export {otherVar as await}"
-  throws ->
-    CoffeeScript.compile "export {await as otherVar}"
