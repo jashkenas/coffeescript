@@ -40,11 +40,13 @@ exports.Lexer = class Lexer
     @indebt     = 0              # The over-indentation at the current level.
     @outdebt    = 0              # The under-outdentation at the current level.
     @indents    = []             # The stack of all current indentation levels.
+    @indentLiteral = ''          # The indentation
     @ends       = []             # The stack for pairing up tokens.
     @tokens     = []             # Stream of parsed tokens in the form `['TYPE', value, location data]`.
     @seenFor    = no             # Used to recognize FORIN and FOROF tokens.
     @seenImport = no             # Used to recognize IMPORT FROM? AS? tokens.
     @seenExport = no             # Used to recognize EXPORT FROM? AS? tokens.
+    @exportList = no             # Used to identify when in an EXPORT {...} FROM? ...
 
     @chunkLine =
       opts.line or 0         # The start line for the current @chunk.
@@ -115,10 +117,18 @@ exports.Lexer = class Lexer
     if id is 'from' and @tag() is 'YIELD'
       @token 'FROM', id
       return id.length
-    if id is 'as' and @seenImport and (@tag() is 'IDENTIFIER' or @value() is '*')
-      @tokens[@tokens.length - 1][0] = 'IMPORT_ALL' if @value() is '*'
-      @token 'AS', id
-      return id.length
+    if id is 'as' and @seenImport
+      # loop hack
+      loop
+        if @value() is '*'
+          @tokens[@tokens.length - 1][0] = 'IMPORT_ALL'
+        else if @value() in COFFEE_KEYWORDS
+          @tokens[@tokens.length - 1][0] = 'IDENTIFIER'
+        else if @tag() isnt 'IDENTIFIER'
+          break
+
+        @token 'AS', id
+        return id.length
     if id is 'as' and @seenExport and @tag() is 'IDENTIFIER'
       @token 'AS', id
       return id.length
@@ -136,29 +146,31 @@ exports.Lexer = class Lexer
       else
         'IDENTIFIER'
 
+
     if tag is 'IDENTIFIER' and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS)
-      tag = id.toUpperCase()
-      if tag is 'WHEN' and @tag() in LINE_BREAK
-        tag = 'LEADING_WHEN'
-      else if tag is 'FOR'
-        @seenFor = yes
-      else if tag is 'UNLESS'
-        tag = 'IF'
-      else if tag is 'IMPORT'
-        @seenImport = yes
-      else if tag is 'EXPORT'
-        @seenExport = yes
-      else if tag in UNARY
-        tag = 'UNARY'
-      else if tag in RELATION
-        if tag isnt 'INSTANCEOF' and @seenFor
-          tag = 'FOR' + tag
-          @seenFor = no
-        else
-          tag = 'RELATION'
-          if @value() is '!'
-            poppedToken = @tokens.pop()
-            id = '!' + id
+      unless @exportList and id in COFFEE_KEYWORDS
+        tag = id.toUpperCase()
+        if tag is 'WHEN' and @tag() in LINE_BREAK
+          tag = 'LEADING_WHEN'
+        else if tag is 'FOR'
+          @seenFor = yes
+        else if tag is 'UNLESS'
+          tag = 'IF'
+        else if tag is 'IMPORT'
+          @seenImport = yes
+        else if tag is 'EXPORT'
+          @seenExport = yes
+        else if tag in UNARY
+          tag = 'UNARY'
+        else if tag in RELATION
+          if tag isnt 'INSTANCEOF' and @seenFor
+            tag = 'FOR' + tag
+            @seenFor = no
+          else
+            tag = 'RELATION'
+            if @value() is '!'
+              poppedToken = @tokens.pop()
+              id = '!' + id
 
     if tag is 'IDENTIFIER' and id in RESERVED
       @error "reserved word '#{id}'", length: id.length
@@ -211,9 +223,8 @@ exports.Lexer = class Lexer
       when 'o' then 8
       when 'x' then 16
       else null
+
     numberValue = if base? then parseInt(number[2..], base) else parseFloat(number)
-    if number.charAt(1) in ['b', 'o']
-      number = "0x#{numberValue.toString 16}"
 
     tag = if numberValue is Infinity then 'INFINITY' else 'NUMBER'
     @token tag, number, 0, lexedLength
@@ -352,6 +363,16 @@ exports.Lexer = class Lexer
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()
 
+    newIndentLiteral = if size > 0 then indent[-size..] else ''
+    unless /^(.?)\1*$/.exec newIndentLiteral
+      @error 'mixed indentation', offset: indent.length
+      return indent.length
+
+    minLiteralLength = Math.min newIndentLiteral.length, @indentLiteral.length
+    if newIndentLiteral[...minLiteralLength] isnt @indentLiteral[...minLiteralLength]
+      @error 'indentation mismatch', offset: indent.length
+      return indent.length
+
     if size - @indebt is @indent
       if noNewlines then @suppressNewlines() else @newlineToken 0
       return indent.length
@@ -363,6 +384,7 @@ exports.Lexer = class Lexer
         return indent.length
       unless @tokens.length
         @baseIndent = @indent = size
+        @indentLiteral = newIndentLiteral
         return indent.length
       diff = size - @indent + @outdebt
       @token 'INDENT', diff, indent.length - size, size
@@ -370,6 +392,7 @@ exports.Lexer = class Lexer
       @ends.push {tag: 'OUTDENT'}
       @outdebt = @indebt = 0
       @indent = size
+      @indentLiteral = newIndentLiteral
     else if size < @baseIndent
       @error 'missing indentation', offset: indent.length
     else
@@ -406,6 +429,7 @@ exports.Lexer = class Lexer
 
     @token 'TERMINATOR', '\n', outdentLength, 0 unless @tag() is 'TERMINATOR' or noNewlines
     @indent = decreasedIndent
+    @indentLiteral = @indentLiteral[...decreasedIndent]
     this
 
   # Matches and consumes non-meaningful whitespace. Tag the previous token
@@ -455,6 +479,11 @@ exports.Lexer = class Lexer
         message = isUnassignable prev[1], origin[1]
         @error message, origin[2] if message
       return value.length if skipToken
+
+    if value is '{' and prev?[0] is 'EXPORT'
+      @exportList = yes
+    if value is '}'
+      @exportList = no
 
     if value is ';'
       @seenFor = @seenImport = @seenExport = no
