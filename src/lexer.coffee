@@ -45,7 +45,7 @@ exports.Lexer = class Lexer
     @seenFor    = no             # Used to recognize FORIN and FOROF tokens.
     @seenImport = no             # Used to recognize IMPORT FROM? AS? tokens.
     @seenExport = no             # Used to recognize EXPORT FROM? AS? tokens.
-    @exportList = no             # Used to identify when in an EXPORT {...} FROM? ...
+    @exportSpecifierList = no    # Used to identify when in an EXPORT {...} FROM? ...
 
     @chunkLine =
       opts.line or 0         # The start line for the current @chunk.
@@ -142,7 +142,7 @@ exports.Lexer = class Lexer
         'IDENTIFIER'
 
     if tag is 'IDENTIFIER' and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS) and
-    not (@exportList and id in COFFEE_KEYWORDS)
+       not (@exportSpecifierList and id in COFFEE_KEYWORDS)
       tag = id.toUpperCase()
       if tag is 'WHEN' and @tag() in LINE_BREAK
         tag = 'LEADING_WHEN'
@@ -463,9 +463,9 @@ exports.Lexer = class Lexer
       return value.length if skipToken
 
     if value is '{' and prev?[0] is 'EXPORT'
-      @exportList = yes
-    if value is '}'
-      @exportList = no
+      @exportSpecifierList = yes
+    else if @exportSpecifierList and value is '}'
+      @exportSpecifierList = no
 
     if value is ';'
       @seenFor = @seenImport = @seenExport = no
