@@ -1155,7 +1155,7 @@ test "imported members cannot be reassigned", ->
            ^^^
   '''
 
-test "CS only keywords can't be used as unaliased names in import lists", ->
+test "CoffeeScript keywords cannot be used as unaliased names in import lists", ->
   assertErrorFormat """
     import { unless, baz as bar } from 'lib'
     bar.barMethod()
@@ -1165,7 +1165,7 @@ test "CS only keywords can't be used as unaliased names in import lists", ->
              ^^^^^^
   '''
 
-test "CS only keywords can't be used as local names in import list aliases", ->
+test "CoffeeScript keywords cannot be used as local names in import list aliases", ->
   assertErrorFormat """
     import { bar as unless, baz as bar } from 'lib'
     bar.barMethod()

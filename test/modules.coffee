@@ -510,7 +510,7 @@ test "export as aliases members imported from another module", ->
     } from 'lib';"""
   eq toJS(input), output
 
-test "export list can contain CS only keywords", ->
+test "export list can contain CoffeeScript keywords", ->
   input = "export { unless } from 'lib'"
   output = """
     export {
@@ -518,7 +518,7 @@ test "export list can contain CS only keywords", ->
     } from 'lib';"""
   eq toJS(input), output
 
-test "export list can contain CS only keywords when aliasing", ->
+test "export list can contain CoffeeScript keywords when aliasing", ->
   input = "export { when as bar, baz as unless } from 'lib'"
   output = """
     export {
@@ -625,7 +625,7 @@ test "`as` can be used as an alias name", ->
     } from 'lib';"""
   eq toJS(input), output
 
-test "CS only keywords can be used as imported names in import lists", ->
+test "CoffeeScript keywords can be used as imported names in import lists", ->
   input = """
     import { unless as bar } from 'lib'
     bar.barMethod()"""
