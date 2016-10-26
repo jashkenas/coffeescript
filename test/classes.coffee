@@ -474,7 +474,6 @@ test "`new` shouldn't add extra parens", ->
 test "`new` works against bare function", ->
 
   eq Date, new ->
-    eq this, new => this
     Date
 
 

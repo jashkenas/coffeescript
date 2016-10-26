@@ -1601,70 +1601,126 @@ exports.Code = class Code extends Base
   makeScope: (parentScope) -> new Scope parentScope, @body, this
 
   # Compilation creates a new scope unless explicitly asked to share with the
-  # outer scope. Handles splat parameters in the parameter list by peeking at
-  # the JavaScript `arguments` object. If the function is bound with the `=>`
-  # arrow, generates a wrapper that saves the current value of `this` through
-  # a closure.
+  # outer scope. Handles splat parameters in the parameter list by setting
+  # such parameters to be the final parameter in the function definition, as
+  # required per the ES2015 spec. If the CoffeeScript function definition had
+  # parameters after the splat, they are declared via expressions in the
+  # function body.
   compileNode: (o) ->
-
-    if @bound and o.scope.method?.bound
-      @context = o.scope.method.context
-
-    # Handle bound functions early.
-    if @bound and not @context
-      @context = '_this'
-      wrapper = new Code [new Param new IdentifierLiteral @context], new Block [this]
-      boundfunc = new Call(wrapper, [new ThisLiteral])
-      boundfunc.updateLocationDataIfMissing @locationData
-      return boundfunc.compileNode(o)
+    if @bound
+      @context = o.scope.method.context if o.scope.method?.bound
+      @context = 'this' unless @context
 
     o.scope         = del(o, 'classScope') or @makeScope o.scope
     o.scope.shared  = del(o, 'sharedScope')
     o.indent        += TAB
     delete o.bare
     delete o.isExistentialEquals
-    params = []
-    exprs  = []
-    for param in @params when param not instanceof Expansion
-      o.scope.parameter param.asReference o
-    for param in @params when param.splat or param instanceof Expansion
-      for p in @params when p not instanceof Expansion and p.name.value
-        o.scope.add p.name.value, 'var', yes
-      splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
-                          new Value new IdentifierLiteral 'arguments'
-      break
-    for param in @params
-      if param.isComplex()
-        val = ref = param.asReference o
-        val = new Op '?', ref, param.value if param.value
-        exprs.push new Assign new Value(param.name), val, '=', param: yes
-      else
-        ref = param
-        if param.value
-          lit = new Literal ref.name.value + ' == null'
-          val = new Assign new Value(param.name), param.value, '='
-          exprs.push new If lit, val
-      params.push ref unless splats
-    wasEmpty = @body.isEmpty()
-    exprs.unshift splats if splats
-    @body.expressions.unshift exprs... if exprs.length
-    for p, i in params
-      params[i] = p.compileToFragments o
-      o.scope.parameter fragmentsToText params[i]
-    uniqs = []
+    params           = []
+    exprs            = []
+    paramsAfterSplat = []
+    haveSplatParam   = no
+
+    # Check for duplicate parameters.
+    paramNames = []
     @eachParamName (name, node) =>
-      node.error "multiple parameters named '#{name}'" if name in uniqs
-      uniqs.push name
+      node.error "multiple parameters named '#{name}'" if name in paramNames
+      paramNames.push name
+
+    # Parse the parameters, adding them to the list of parameters to put in the
+    # function definition; and dealing with splats or expansions, including
+    # adding expressions to the function body to declare all parameter
+    # variables that would have been after the splat/expansion parameter.
+    for param, i in @params
+      # Was `...` used with this parameter? (Only one such parameter is allowed
+      # per function.) Splat/expansion parameters cannot have default values,
+      # so we need not worry about that.
+      if param.splat or param instanceof Expansion
+        if haveSplatParam
+          param.error 'only one splat or expansion parameter is allowed per function definition'
+        else if param instanceof Expansion and @params.length is 1
+          param.error 'an expansion parameter cannot be the only parameter in a function definition'
+
+        haveSplatParam = yes
+        if param.splat
+          params.push ref = param.asReference o
+          splatParamName = fragmentsToText ref.compileNode o
+          if param.isComplex() # Parameter is destructured or attached to `this`
+            exprs.push new Assign new Value(param.name), ref, '=', param: yes
+            # TODO: output destrucutred parameters as is, *unless* they contain
+            # `this` parameters; and fix destructuring of objects with default
+            # values to work in this context (see Obj.compileNode
+            # `if prop.context isnt 'object'`)
+
+        else # `param` is an Expansion
+          splatParamName = o.scope.freeVariable 'args'
+          params.push new Value new IdentifierLiteral splatParamName
+
+        o.scope.parameter splatParamName
+
+      # Parse all other parameters; if a splat paramater has not yet been
+      # encountered, add these other parameters to the list to be output in
+      # the function definition.
+      else
+        if param.isComplex()
+          # This parameter is attached to `this`, which ES doesn’t allow;
+          # or it’s destructured. So add a statement to the function body
+          # assigning it, e.g. `(a) => { this.a = a; }` or with a default
+          # value if it has one.
+          val = ref = param.asReference o
+          val = new Op '?', ref, param.value if param.value
+          exprs.push new Assign new Value(param.name), val, '=', param: yes
+
+        # If this parameter comes before the splat or expansion, it will go
+        # in the function definition parameter list.
+        unless haveSplatParam
+          # If this parameter has a default value, and it hasn’t already been
+          # set by the `isComplex()` block above, define it as a statement in
+          # the function body. This parameter comes after the splat parameter,
+          # so we can’t define its default value in the parameter list.
+          unless param.isComplex()
+            ref = if param.value? then new Assign new Value(param.name), param.value, '=' else param
+          # Add this parameter’s reference to the function scope
+          o.scope.parameter fragmentsToText (if param.value? then param else ref).compileToFragments o
+          params.push ref
+        else
+          paramsAfterSplat.push param
+          # If this parameter had a default value, since it’s no longer in the
+          # function parameter list we need to assign its default value
+          # (if necessary) as an expression in the body.
+          if param.value? and not param.isComplex()
+            condition = new Literal param.name.value + ' === undefined'
+            ifTrue = new Assign new Value(param.name), param.value, '='
+            exprs.push new If condition, ifTrue
+          # Add this parameter to the scope, since it wouldn’t have been added yet since it was skipped earlier.
+          o.scope.add param.name.value, 'var', yes if param.name?.value?
+
+    # If there were parameters after the splat or expansion parameter, those
+    # parameters need to be assigned in the body of the function.
+    if paramsAfterSplat.length isnt 0
+      # Create a destructured assignment, e.g. `[a, b, c] = [args..., b, c]`
+      exprs.unshift new Assign new Value(
+          new Arr [new Splat(new IdentifierLiteral(splatParamName)), (param.asReference o for param in paramsAfterSplat)...]
+        ), new Value new IdentifierLiteral splatParamName
+
+    # Add new expressions to the function body
+    wasEmpty = @body.isEmpty()
+    @body.expressions.unshift exprs... if exprs.length
     @body.makeReturn() unless wasEmpty or @noReturn
-    code = 'function'
-    code += '*' if @isGenerator
-    code += ' ' + @name if @ctor
+
+    # Assemble the output
+    code = ''
+    unless @bound
+      code += 'function'
+      code += '*' if @isGenerator # Arrow functions can’t be generators
+      code += ' ' + @name if @ctor
     code += '('
     answer = [@makeCode(code)]
-    for p, i in params
-      if i then answer.push @makeCode ", "
-      answer.push p...
-    answer.push @makeCode ') {'
+    for param, i in params
+      answer.push @makeCode ', ' if i
+      answer.push @makeCode '...' if haveSplatParam and i is params.length - 1 # Rest syntax is always on the last parameter
+      answer.push param.compileToFragments(o)...
+    answer.push @makeCode unless @bound then ') {' else ') => {'
     answer = answer.concat(@makeCode("\n"), @body.compileWithDeclarations(o), @makeCode("\n#{@tab}")) unless @body.isEmpty()
     answer.push @makeCode '}'
 
@@ -1674,8 +1730,8 @@ exports.Code = class Code extends Base
   eachParamName: (iterator) ->
     param.eachName iterator for param in @params
 
-  # Short-circuit `traverseChildren` method to prevent it from crossing scope boundaries
-  # unless `crossScope` is `true`.
+  # Short-circuit `traverseChildren` method to prevent it from crossing scope
+  # boundaries unless `crossScope` is `true`.
   traverseChildren: (crossScope, func) ->
     super(crossScope, func) if crossScope
 
@@ -1707,7 +1763,6 @@ exports.Param = class Param extends Base
     else if node.isComplex()
       node = new IdentifierLiteral o.scope.freeVariable 'arg'
     node = new Value node
-    node = new Splat node if @splat
     node.updateLocationDataIfMissing @locationData
     @reference = node
 
@@ -2039,6 +2094,8 @@ exports.Op = class Op extends Base
     op = @operator
     unless o.scope.parent?
       @error 'yield can only occur inside functions'
+    if o.scope.method?.bound and o.scope.method.isGenerator
+      @error 'yield cannot occur inside bound (fat arrow) functions'
     if 'expression' in Object.keys(@first) and not (@first instanceof Throw)
       parts.push @first.expression.compileToFragments o, LEVEL_OP if @first.expression?
     else

@@ -52,24 +52,6 @@ test "yield return can be used anywhere in the function body", ->
   y = x.next 2
   ok y.value is 42 and y.done is true
 
-test "bound generator", ->
-  obj =
-    bound: ->
-      do =>
-        yield this
-    unbound: ->
-      do ->
-        yield this
-    nested: ->
-      do =>
-        yield do =>
-          yield do =>
-            yield this
-
-  eq obj, obj.bound().next().value
-  ok obj isnt obj.unbound().next().value
-  eq obj, obj.nested().next().value.next().value.next().value
-
 test "`yield from` support", ->
   x = do ->
     yield from do ->
