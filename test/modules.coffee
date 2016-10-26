@@ -528,7 +528,6 @@ test "export list can contain CS only keywords when aliasing", ->
   eq toJS(input), output
 
 
-
 # Edge cases
 
 test "multiline import with comments", ->

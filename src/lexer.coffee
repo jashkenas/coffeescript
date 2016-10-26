@@ -148,7 +148,6 @@ exports.Lexer = class Lexer
 
     if tag is 'IDENTIFIER' and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS) and
     not (@exportList and id in COFFEE_KEYWORDS)
-      
       tag = id.toUpperCase()
       if tag is 'WHEN' and @tag() in LINE_BREAK
         tag = 'LEADING_WHEN'
