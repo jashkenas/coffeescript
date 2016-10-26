@@ -117,16 +117,11 @@ exports.Lexer = class Lexer
       @token 'FROM', id
       return id.length
     if id is 'as' and @seenImport
-      # loop hack
-      loop
-        if @value() is '*'
-          @tokens[@tokens.length - 1][0] = 'IMPORT_ALL'
-        else if @value() in COFFEE_KEYWORDS
-          @tokens[@tokens.length - 1][0] = 'IDENTIFIER'
-        else if @tag() isnt 'IDENTIFIER'
-          # at this point continue if we not preceded by identifier
-          break
-
+      if @value() is '*'
+        @tokens[@tokens.length - 1][0] = 'IMPORT_ALL'
+      else if @value() in COFFEE_KEYWORDS
+        @tokens[@tokens.length - 1][0] = 'IDENTIFIER'
+      if @tag() in ['IMPORT_ALL', 'IDENTIFIER']
         @token 'AS', id
         return id.length
     if id is 'as' and @seenExport and @tag() is 'IDENTIFIER'
@@ -148,7 +143,6 @@ exports.Lexer = class Lexer
 
     if tag is 'IDENTIFIER' and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS) and
     not (@exportList and id in COFFEE_KEYWORDS)
-      
       tag = id.toUpperCase()
       if tag is 'WHEN' and @tag() in LINE_BREAK
         tag = 'LEADING_WHEN'
