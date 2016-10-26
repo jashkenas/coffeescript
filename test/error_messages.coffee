@@ -1149,3 +1149,23 @@ test "bound functions cannot be generators", ->
     f = => yield this
            ^^^^^^^^^^
   '''
+
+test "CoffeeScript keywords cannot be used as unaliased names in import lists", ->
+  assertErrorFormat """
+    import { unless, baz as bar } from 'lib'
+    bar.barMethod()
+  """, '''
+    [stdin]:1:10: error: unexpected unless
+    import { unless, baz as bar } from 'lib'
+             ^^^^^^
+  '''
+
+test "CoffeeScript keywords cannot be used as local names in import list aliases", ->
+  assertErrorFormat """
+    import { bar as unless, baz as bar } from 'lib'
+    bar.barMethod()
+  """, '''
+    [stdin]:1:17: error: unexpected unless
+    import { bar as unless, baz as bar } from 'lib'
+                    ^^^^^^
+  '''
