@@ -1154,3 +1154,23 @@ test "imported members cannot be reassigned", ->
     export foo = 'bar'
            ^^^
   '''
+
+test "CS only keywords can't be used as unaliased names in import lists", ->
+  assertErrorFormat """
+    import { unless, baz as bar } from 'lib'
+    bar.barMethod()
+  """, '''
+    [stdin]:1:10: error: unexpected unless
+    import { unless, baz as bar } from 'lib'
+             ^^^^^^
+  '''
+
+test "CS only keywords can't be used as local names in import list aliases", ->
+  assertErrorFormat """
+    import { bar as unless, baz as bar } from 'lib'
+    bar.barMethod()
+  """, '''
+    [stdin]:1:17: error: unexpected unless
+    import { bar as unless, baz as bar } from 'lib'
+                    ^^^^^^
+  '''

@@ -510,6 +510,23 @@ test "export as aliases members imported from another module", ->
     } from 'lib';"""
   eq toJS(input), output
 
+test "export list can contain CS only keywords", ->
+  input = "export { unless } from 'lib'"
+  output = """
+    export {
+      unless
+    } from 'lib';"""
+  eq toJS(input), output
+
+test "export list can contain CS only keywords when aliasing", ->
+  input = "export { when as bar, baz as unless } from 'lib'"
+  output = """
+    export {
+      when as bar,
+      baz as unless
+    } from 'lib';"""
+  eq toJS(input), output
+
 
 # Edge cases
 
@@ -606,6 +623,18 @@ test "`as` can be used as an alias name", ->
     import {
       foo as as
     } from 'lib';"""
+  eq toJS(input), output
+
+test "CS only keywords can be used as imported names in import lists", ->
+  input = """
+    import { unless as bar } from 'lib'
+    bar.barMethod()"""
+  output = """
+    import {
+      unless as bar
+    } from 'lib';
+
+    bar.barMethod();"""
   eq toJS(input), output
 
 test "`*` can be used in an expression on the same line as an export keyword", ->
