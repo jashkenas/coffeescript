@@ -638,18 +638,6 @@ test "CS only keywords can be used as imported names in import lists", ->
     bar.barMethod();"""
   eq toJS(input), output
 
-test "CS only keywords can't be used as unaliased names in import lists", ->
-  throws ->
-    CoffeeScript.compile """
-      import { unless, baz as bar } from 'lib'
-      bar.barMethod()"""
-
-test "CS only keywords can't be used as local names in import list aliases", ->
-  throws ->
-    CoffeeScript.compile """
-      import { bar as unless, baz as bar } from 'lib'
-      bar.barMethod()"""
-
 test "`*` can be used in an expression on the same line as an export keyword", ->
   input = "export foo = (x) -> x * x"
   output = """
