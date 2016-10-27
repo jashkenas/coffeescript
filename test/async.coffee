@@ -190,10 +190,3 @@ test "implicit call with `await`", ->
 
   a = addOne await 3
   eq a, 4
-
-test "function cannot contain both `await`, and `yield` or `yieldfrom`", ->
-  throws -> CoffeeScript.compile '()-> yield 5; await a;'
-  throws -> CoffeeScript.compile '()-> yield from a; await b;'
-
-test "Cannnot have `await` outside a function", ->
-  throws -> CoffeeScript.compile 'await 1'

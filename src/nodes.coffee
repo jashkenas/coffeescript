@@ -1604,13 +1604,12 @@ exports.Code = class Code extends Base
     @bound       = tag is 'boundfunc'
     @isGenerator = !!@body.contains (node) ->
       (node instanceof Op and node.isYield()) or node instanceof YieldReturn
-    @isAsync     = !!@body.contains (node) ->
-      (node instanceof Op and node.isAwait()) or node instanceof AwaitReturn
-
-    @isContinuation = @isGenerator or @isAsync
-
-    if @isAsync and @isGenerator
-      @error "function can't contain both yield and await"
+    @isAsync     = !!@body.contains (node) =>
+      if (node instanceof Op and node.isAwait()) or node instanceof AwaitReturn
+        node.error "generator function can't contain await" if @isGenerator
+        true
+      else
+        false
 
   children: ['params', 'body']
 
