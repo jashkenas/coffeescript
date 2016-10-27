@@ -46,6 +46,7 @@ exports.Lexer = class Lexer
     @seenFor    = no             # Used to recognize FORIN and FOROF tokens.
     @seenImport = no             # Used to recognize IMPORT FROM? AS? tokens.
     @seenExport = no             # Used to recognize EXPORT FROM? AS? tokens.
+    @exportSpecifierList = no    # Used to identify when in an EXPORT {...} FROM? ...
 
     @chunkLine =
       opts.line or 0         # The start line for the current @chunk.
@@ -116,10 +117,14 @@ exports.Lexer = class Lexer
     if id is 'from' and @tag() is 'YIELD'
       @token 'FROM', id
       return id.length
-    if id is 'as' and @seenImport and (@tag() is 'IDENTIFIER' or @value() is '*')
-      @tokens[@tokens.length - 1][0] = 'IMPORT_ALL' if @value() is '*'
-      @token 'AS', id
-      return id.length
+    if id is 'as' and @seenImport
+      if @value() is '*'
+        @tokens[@tokens.length - 1][0] = 'IMPORT_ALL'
+      else if @value() in COFFEE_KEYWORDS
+        @tokens[@tokens.length - 1][0] = 'IDENTIFIER'
+      if @tag() in ['IMPORT_ALL', 'IDENTIFIER']
+        @token 'AS', id
+        return id.length
     if id is 'as' and @seenExport and @tag() is 'IDENTIFIER'
       @token 'AS', id
       return id.length
@@ -137,7 +142,8 @@ exports.Lexer = class Lexer
       else
         'IDENTIFIER'
 
-    if tag is 'IDENTIFIER' and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS)
+    if tag is 'IDENTIFIER' and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS) and
+       not (@exportSpecifierList and id in COFFEE_KEYWORDS)
       tag = id.toUpperCase()
       if tag is 'WHEN' and @tag() in LINE_BREAK
         tag = 'LEADING_WHEN'
@@ -468,6 +474,11 @@ exports.Lexer = class Lexer
         message = isUnassignable prev[1], origin[1]
         @error message, origin[2] if message
       return value.length if skipToken
+
+    if value is '{' and prev?[0] is 'EXPORT'
+      @exportSpecifierList = yes
+    else if @exportSpecifierList and value is '}'
+      @exportSpecifierList = no
 
     if value is ';'
       @seenFor = @seenImport = @seenExport = no
