@@ -193,8 +193,9 @@ compileScript = (file, input, base = null) ->
       if process.env.COFFEE_BUILD
         require("coffee-coverage/register-istanbul")
         code = fs.instrumentFile(t.file)
-        console.error(code[1..100])
-        console.error(t.output[1..100])
+        #console.error(code[1..100])
+        #console.error(t.output[1..100])
+        t.output = code
 
       CoffeeScript.emit 'success', task
       if o.print
