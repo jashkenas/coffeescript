@@ -32,8 +32,10 @@ test "async as argument", ->
 
 test "explicit async", ->
   a = do ->
-    await return [1, 2, 3]
+    await return 5
   eq a.constructor, Promise
+  a.then (val) ->
+    eq val, 5
 
 test "implicit async", ->
   a = do ->
@@ -170,7 +172,6 @@ test "error handling", ->
     catch e
       val = 7  # to assure the catch block runs
       return e
-
 
   b = do ->
     res = await a()

@@ -1176,7 +1176,7 @@ test "function cannot contain both `await` and `yield`", ->
       yield 5
       await a
   ''', '''
-    [stdin]:3:3: error: generator function can't contain await
+    [stdin]:3:3: error: function can't contain both yield and await
       await a
       ^^^^^^^
   '''
@@ -1187,7 +1187,7 @@ test "function cannot contain both `await` and `yieldfrom`", ->
       yield from a
       await b
   ''', '''
-    [stdin]:3:3: error: generator function can't contain await
+    [stdin]:3:3: error: function can't contain both yield and await
       await b
       ^^^^^^^
   '''
