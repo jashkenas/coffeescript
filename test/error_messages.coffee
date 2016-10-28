@@ -1181,7 +1181,7 @@ test "function cannot contain both `await` and `yield`", ->
       ^^^^^^^
   '''
 
-test "function cannot contain both `await` and `yieldfrom`", ->
+test "function cannot contain both `await` and `yield from`", ->
   assertErrorFormat '''
     f = () ->
       yield from a
