@@ -266,7 +266,6 @@ test "for-from loops over generators", ->
     break if x is 30
   
   for x from iterator
-    console.log('found', x)
     array3.push(x)
   
   for x from iterator
