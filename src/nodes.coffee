@@ -807,7 +807,6 @@ exports.Extends = class Extends extends Base
 # an access into the object's prototype.
 exports.Access = class Access extends Base
   constructor: (@name, tag) ->
-    @name.asKey = yes
     @soak  = tag is 'soak'
 
   children: ['name']
@@ -1014,13 +1013,13 @@ exports.Obj = class Obj extends Base
         if i < dynamicIndex
           if prop not instanceof Assign
             prop = new Assign prop, prop, 'object'
-          (prop.variable.base or prop.variable).asKey = yes
         else
           if prop instanceof Assign
             key = prop.variable
             value = prop.value
           else
             [key, value] = prop.base.cache o
+            key = new PropertyName key.value if key instanceof IdentifierLiteral
           prop = new Assign (new Value (new IdentifierLiteral oref), [new Access key]), value
       if indent then answer.push @makeCode indent
       answer.push prop.compileToFragments(o, LEVEL_TOP)...
@@ -1286,6 +1285,10 @@ exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
 
     if @ not instanceof ExportDefaultDeclaration and
        (@clause instanceof Assign or @clause instanceof Class)
+      # Prevent exporting an anonymous class; all exported members must be named
+      if @clause instanceof Class and not @clause.variable
+        @clause.error 'anonymous classes cannot be exported'
+
       # When the ES2015 `class` keyword is supported, don’t add a `var` here
       code.push @makeCode 'var '
       @clause.moduleDeclaration = 'export'
@@ -2575,10 +2578,10 @@ multident = (code, tab) ->
   code.replace /\s+$/, ''
 
 isLiteralArguments = (node) ->
-  node instanceof Literal and node.value is 'arguments' and not node.asKey
+  node instanceof IdentifierLiteral and node.value is 'arguments'
 
 isLiteralThis = (node) ->
-  (node instanceof ThisLiteral and not node.asKey) or
+  node instanceof ThisLiteral or
     (node instanceof Code and node.bound) or
     node instanceof SuperCall
 

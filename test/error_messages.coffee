@@ -83,7 +83,7 @@ if require?
                       ^^
       """
     finally
-      fs.unlink 'test/syntax-error.coffee'
+      fs.unlinkSync 'test/syntax-error.coffee'
 
 
 test "#1096: unexpected generated tokens", ->
@@ -1012,7 +1012,9 @@ test "anonymous classes cannot be exported", ->
       constructor: ->
         console.log 'hello, world!'
   ''', '''
-    SyntaxError: Unexpected token export
+    [stdin]:1:8: error: anonymous classes cannot be exported
+    export class
+           ^^^^^
   '''
 
 test "unless enclosed by curly braces, only * can be aliased", ->
@@ -1151,4 +1153,24 @@ test "imported members cannot be reassigned", ->
     [stdin]:2:8: error: 'foo' is read-only
     export foo = 'bar'
            ^^^
+  '''
+
+test "CoffeeScript keywords cannot be used as unaliased names in import lists", ->
+  assertErrorFormat """
+    import { unless, baz as bar } from 'lib'
+    bar.barMethod()
+  """, '''
+    [stdin]:1:10: error: unexpected unless
+    import { unless, baz as bar } from 'lib'
+             ^^^^^^
+  '''
+
+test "CoffeeScript keywords cannot be used as local names in import list aliases", ->
+  assertErrorFormat """
+    import { bar as unless, baz as bar } from 'lib'
+    bar.barMethod()
+  """, '''
+    [stdin]:1:17: error: unexpected unless
+    import { bar as unless, baz as bar } from 'lib'
+                    ^^^^^^
   '''

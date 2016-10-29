@@ -25,7 +25,7 @@ class MockOutputStream extends Stream
     @written.push data
 
   lastWrite: (fromEnd = -1) ->
-    @written[@written.length - 1 + fromEnd].replace /\n$/, ''
+    @written[@written.length - 1 + fromEnd].replace /\r?\n$/, ''
 
 # Create a dummy history file
 historyFile = '.coffee_history_test'
