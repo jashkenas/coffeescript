@@ -2251,16 +2251,17 @@ exports.For = class For extends While
     @object  = !!source.object
     @from    = !!source.from
     @index.error 'cannot use index with for-from' if @from and @index
-    
+
     [@name, @index] = [@index, @name] if @object
-    
+
     @index.error 'index cannot be a pattern matching expression' if @index instanceof Value
     @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length and not @from
     @pattern = @name instanceof Value
     @index.error 'indexes do not apply to range loops' if @range and @index
     @name.error 'cannot pattern match over range loops' if @range and @pattern
-    @name.error 'cannot use own with for-in' if @own and not @object
-    
+    if @own and not @object
+      @name.error 'cannot use own with for-from' if @from
+      @name.error 'cannot use own with for-in' if not @from
     @returns = false
 
   children: ['body', 'source', 'guard', 'step']

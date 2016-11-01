@@ -275,7 +275,7 @@ test "for-from loops over generators", ->
   # Different JS engines have different opinions on the value of array3:
   # https://github.com/jashkenas/coffeescript/pull/4306#issuecomment-257066877
   # As a temporary measure, either result is accepted.
-  ok array3.length == 0 or array3.join(',') == '70,20'
+  ok array3.length is 0 or array3.join(',') is '70,20'
   arrayEq array4, []
 
 
@@ -285,7 +285,7 @@ test "for-from comprehensions over generators", ->
     yield from [30, 41, 51, 60]
 
   iterator = gen()
-  array1 = (x for x from iterator when x %% 2 == 1)
+  array1 = (x for x from iterator when x %% 2 is 1)
   array2 = (x for x from iterator)
 
   ok array1.join(' ') is '41 51'
