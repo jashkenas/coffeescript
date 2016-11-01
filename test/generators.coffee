@@ -255,22 +255,22 @@ test "yield handles 'this' correctly", ->
 test "for-from loops over generators", ->
   array1 = [50, 30, 70, 20]
   gen = -> yield from array1
-  
+
   array2 = []
   array3 = []
   array4 = []
-  
+
   iterator = gen()
   for x from iterator
     array2.push(x)
     break if x is 30
-  
+
   for x from iterator
     array3.push(x)
-  
+
   for x from iterator
     array4.push(x)
-  
+
   arrayEq array2, [50, 30]
   # Different JS engines have different opinions on the value of array3:
   # https://github.com/jashkenas/coffeescript/pull/4306#issuecomment-257066877
@@ -280,7 +280,6 @@ test "for-from loops over generators", ->
 
 
 test "for-from comprehensions over generators", ->
-
   gen = ->
     yield from [30, 41, 51, 60]
 

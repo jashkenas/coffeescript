@@ -136,11 +136,10 @@ test "for-from loops over Array", ->
     eq 50, c
 
 test "for-from comprehensions over Array", ->
-
   array1 = (x + 10 for x from [10, 20, 30])
   ok array1.join(' ') is '20 30 40'
 
-  array2 = (x for x from [30, 41, 57] when x %% 3 == 0)
+  array2 = (x for x from [30, 41, 57] when x %% 3 is 0)
   ok array2.join(' ') is '30 57'
 
   array1 = (b + 5 for [a, b] from [[20, 30], [40, 50]])

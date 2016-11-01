@@ -2299,14 +2299,14 @@ exports.For = class For extends While
       forPartFragments = source.compileToFragments merge o,
         {index: ivar, name, @step, isComplex: isComplexOrAssignable}
     else
-      svar    = @source.compile o, LEVEL_LIST
+      svar = @source.compile o, LEVEL_LIST
       if (name or @own) and @source.unwrap() not instanceof IdentifierLiteral
-        defPart    += "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
-        svar       = ref
-      if not @from
+        defPart += "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
+        svar = ref
+      unless @from
         if name and not @pattern
           namePart   = "#{name} = #{svar}[#{kvar}]"
-        if not @object
+        unless @object
           defPart += "#{@tab}#{step};\n" if step isnt stepVar
           down = stepNum < 0
           lvar = scope.freeVariable 'len' unless @step and stepNum? and down
@@ -2325,7 +2325,7 @@ exports.For = class For extends While
             increment = "#{ivar} += #{stepVar}"
           else
             increment = "#{if kvar isnt ivar then "++#{ivar}" else "#{ivar}++"}"
-          forPartFragments  = [@makeCode("#{declare}; #{compare}; #{kvarAssign}#{increment}")]
+          forPartFragments = [@makeCode("#{declare}; #{compare}; #{kvarAssign}#{increment}")]
     if @returns
       resultPart   = "#{@tab}#{rvar} = [];\n"
       returnResult = "\n#{@tab}return #{rvar};"
@@ -2343,12 +2343,12 @@ exports.For = class For extends While
     defPartFragments = [].concat @makeCode(defPart), @pluckDirectCall(o, body)
     varPart = "\n#{idt1}#{namePart};" if namePart
     if @object
-      forPartFragments   = [@makeCode("#{kvar} in #{svar}")]
+      forPartFragments = [@makeCode("#{kvar} in #{svar}")]
       guardPart = "\n#{idt1}if (!#{utility 'hasProp', o}.call(#{svar}, #{kvar})) continue;" if @own
-    if @from
-      forPartFragments   = [@makeCode("#{kvar} of #{svar}")]
+    else if @from
+      forPartFragments = [@makeCode("#{kvar} of #{svar}")]
     bodyFragments = body.compileToFragments merge(o, indent: idt1), LEVEL_TOP
-    if bodyFragments and (bodyFragments.length > 0)
+    if bodyFragments and bodyFragments.length > 0
       bodyFragments = [].concat @makeCode("\n"), bodyFragments, @makeCode("\n")
     [].concat defPartFragments, @makeCode("#{resultPart or ''}#{@tab}for ("),
       forPartFragments, @makeCode(") {#{guardPart}#{varPart}"), bodyFragments,

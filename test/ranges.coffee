@@ -79,8 +79,7 @@ test "for-from loops over ranges", ->
   array1 = []
   for x from [20..30]
     array1.push(x)
-    if x == 25
-      break
+    break if x == 25
   arrayEq array1, [20, 21, 22, 23, 24, 25]
 
 test "for-from comprehensions over ranges", ->
