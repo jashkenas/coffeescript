@@ -75,6 +75,20 @@ test "large ranges are generated with looping constructs", ->
   eq 100, (len = up.length)
   eq  99, up[len - 1]
 
+test "for-from loops over ranges", ->
+  array1 = []
+  for x from [20..30]
+    array1.push(x)
+    break if x == 25
+  arrayEq array1, [20, 21, 22, 23, 24, 25]
+
+test "for-from comprehensions over ranges", ->
+  array1 = (x + 10 for x from [20..25])
+  ok array1.join(' ') is '30 31 32 33 34 35'
+
+  array2 = (x for x from [20..30] when x %% 2 == 0)
+  ok array2.join(' ') is '20 22 24 26 28 30'
+
 test "#1012 slices with arguments object", ->
   expected = [0..9]
   argsAtStart = (-> [arguments[0]..9]) 0
