@@ -141,10 +141,7 @@ exports.Lexer = class Lexer
       else
         'IDENTIFIER'
 
-    if tag is 'IDENTIFIER' and @seenFor and id is 'from'
-      tag = 'FORFROM'
-      @seenFor = no
-    else if tag is 'IDENTIFIER' and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS) and
+    if tag is 'IDENTIFIER' and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS) and
        not (@exportSpecifierList and id in COFFEE_KEYWORDS)
       tag = id.toUpperCase()
       if tag is 'WHEN' and @tag() in LINE_BREAK
@@ -168,6 +165,9 @@ exports.Lexer = class Lexer
           if @value() is '!'
             poppedToken = @tokens.pop()
             id = '!' + id
+    else if tag is 'IDENTIFIER' and @seenFor and id is 'from'
+      tag = 'FORFROM'
+      @seenFor = no
 
     if tag is 'IDENTIFIER' and id in RESERVED
       @error "reserved word '#{id}'", length: id.length
