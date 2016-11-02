@@ -89,7 +89,12 @@ grammar =
   Line: [
     o 'Expression'
     o 'Statement'
+    o 'FuncDirective'
+  ]
+
+  FuncDirective: [
     o 'YieldReturn'
+    o 'AwaitReturn'
   ]
 
   # Pure statements which cannot be expressions.
@@ -218,6 +223,12 @@ grammar =
     o 'YIELD RETURN Expression',                -> new YieldReturn $3
     o 'YIELD RETURN',                           -> new YieldReturn
   ]
+
+  AwaitReturn: [
+    o 'AWAIT RETURN Expression',                -> new AwaitReturn $3
+    o 'AWAIT RETURN',                           -> new AwaitReturn
+  ]
+
 
   # A block comment.
   Comment: [
@@ -644,6 +655,8 @@ grammar =
     o '-     Expression',                      (-> new Op '-', $2), prec: 'UNARY_MATH'
     o '+     Expression',                      (-> new Op '+', $2), prec: 'UNARY_MATH'
 
+    o 'AWAIT Expression',                       -> new Op $1 , $2
+
     o '-- SimpleAssignable',                    -> new Op '--', $2
     o '++ SimpleAssignable',                    -> new Op '++', $2
     o 'SimpleAssignable --',                    -> new Op '--', $1, null, true
@@ -698,6 +711,7 @@ operators = [
   ['nonassoc',  '++', '--']
   ['left',      '?']
   ['right',     'UNARY']
+  ['right',     'AWAIT']
   ['right',     '**']
   ['right',     'UNARY_MATH']
   ['left',      'MATH']

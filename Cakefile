@@ -228,10 +228,14 @@ task 'bench', 'quick benchmark of compilation time', ->
 # Run the CoffeeScript test suite.
 runTests = (CoffeeScript) ->
   CoffeeScript.register()
-  startTime   = Date.now()
-  currentFile = null
-  passedTests = 0
-  failures    = []
+  startTime = Date.now()
+
+  # These are attached to `global` so that they’re accessible from within
+  # `test/async.coffee`, which has an async-capable version of
+  # `global.test`.
+  global.currentFile = null
+  global.passedTests = 0
+  global.failures    = []
 
   global[name] = func for name, func of require 'assert'
 
@@ -288,10 +292,10 @@ runTests = (CoffeeScript) ->
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
 
-  # Ignore generators test file if generators are not available
-  generatorsAreAvailable = '--harmony' in process.execArgv or
-    '--harmony-generators' in process.execArgv
-  files.splice files.indexOf('generators.coffee'), 1 if not generatorsAreAvailable
+  # Ignore async test file if async/await is not available
+  asyncSupported = parseInt(process.versions.node.split('.')[0]) >= 7 and
+    ('--harmony' in process.execArgv or '--harmony-async-await' in process.execArgv)
+  files.splice files.indexOf('async.coffee'), 1 unless asyncSupported
 
   for file in files when helpers.isCoffee file
     literate = helpers.isLiterate file

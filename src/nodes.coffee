@@ -90,9 +90,14 @@ exports.Base = class Base
         meth = 'call'
       func = new Value func, [new Access new PropertyName meth]
     parts = (new Call func, args).compileNode o
-    if func.isGenerator or func.base?.isGenerator
-      parts.unshift @makeCode "(yield* "
-      parts.push    @makeCode ")"
+
+    switch
+      when func.isGenerator or func.base?.isGenerator
+        parts.unshift @makeCode "(yield* "
+        parts.push    @makeCode ")"
+      when func.isAsync or func.base?.isAsync
+        parts.unshift @makeCode "(await "
+        parts.push    @makeCode ")"
     parts
 
   # If the code generation wishes to use the result of a complex expression
@@ -490,6 +495,14 @@ exports.YieldReturn = class YieldReturn extends Return
     unless o.scope.parent?
       @error 'yield can only occur inside functions'
     super
+
+
+exports.AwaitReturn = class AwaitReturn extends Return
+  compileNode: (o) ->
+    unless o.scope.parent?
+      @error 'await can only occur inside functions'
+    super
+
 
 #### Value
 
@@ -1589,8 +1602,16 @@ exports.Code = class Code extends Base
     @params      = params or []
     @body        = body or new Block
     @bound       = tag is 'boundfunc'
-    @isGenerator = !!@body.contains (node) ->
-      (node instanceof Op and node.isYield()) or node instanceof YieldReturn
+    @isGenerator = no
+    @isAsync     = no
+
+    @body.traverseChildren no, (node) =>
+      if (node instanceof Op and node.isYield()) or node instanceof YieldReturn
+        @isGenerator = yes
+      if (node instanceof Op and node.isAwait()) or node instanceof AwaitReturn
+        @isAsync = yes
+      if @isGenerator and @isAsync
+        node.error "function can't contain both yield and await"
 
   children: ['params', 'body']
 
@@ -1710,6 +1731,7 @@ exports.Code = class Code extends Base
 
     # Assemble the output
     code = ''
+    code += 'async ' if @isAsync
     unless @bound
       code += 'function'
       code += '*' if @isGenerator # Arrow functions can’t be generators
@@ -1964,6 +1986,9 @@ exports.Op = class Op extends Base
     @isUnary() and @operator in ['+', '-'] and
       @first instanceof Value and @first.isNumber()
 
+  isAwait: ->
+    @operator is 'await'
+
   isYield: ->
     @operator in ['yield', 'yield*']
 
@@ -2034,9 +2059,9 @@ exports.Op = class Op extends Base
     if @operator in ['--', '++']
       message = isUnassignable @first.unwrapAll().value
       @first.error message if message
-    return @compileYield     o if @isYield()
-    return @compileUnary     o if @isUnary()
-    return @compileChain     o if isChain
+    return @compileContinuation o if @isYield() or @isAwait()
+    return @compileUnary        o if @isUnary()
+    return @compileChain        o if isChain
     switch @operator
       when '?'  then @compileExistence o
       when '**' then @compilePower o
@@ -2089,11 +2114,11 @@ exports.Op = class Op extends Base
     parts.reverse() if @flip
     @joinFragmentArrays parts, ''
 
-  compileYield: (o) ->
+  compileContinuation: (o) ->
     parts = []
     op = @operator
     unless o.scope.parent?
-      @error 'yield can only occur inside functions'
+      @error "#{@operator} can only occur inside functions"
     if o.scope.method?.bound and o.scope.method.isGenerator
       @error 'yield cannot occur inside bound (fat arrow) functions'
     if 'expression' in Object.keys(@first) and not (@first instanceof Throw)
