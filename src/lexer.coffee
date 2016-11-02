@@ -236,12 +236,13 @@ exports.Lexer = class Lexer
       when '"'   then STRING_DOUBLE
       when "'''" then HEREDOC_SINGLE
       when '"""' then HEREDOC_DOUBLE
+      when '<*>' then HERETAG_DOUBLE
     heredoc = quote.length is 3
 
     {tokens, index: end} = @matchWithInterpolations regex, quote
     $ = tokens.length - 1
 
-    delimiter = quote.charAt(0)
+    delimiter = if quote.charAt(0) is '<' then '"' else quote.charAt(0)
     if heredoc
       # Find the smallest indentation. It will be removed from all lines later.
       indent = null
@@ -894,12 +895,13 @@ JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 CTTOKEN    = /^<[\w\-.@]*[!?]?>/
 
 # String-matching-regexes.
-STRING_START   = /^(?:'''|"""|'|")/
+STRING_START   = /^(?:'''|"""|'|"|<\*>)/
 
 STRING_SINGLE  = /// ^(?: [^\\']  | \\[\s\S]                      )* ///
 STRING_DOUBLE  = /// ^(?: [^\\"#] | \\[\s\S] |           \#(?!\{) )* ///
 HEREDOC_SINGLE = /// ^(?: [^\\']  | \\[\s\S] | '(?!'')            )* ///
 HEREDOC_DOUBLE = /// ^(?: [^\\"#] | \\[\s\S] | "(?!"") | \#(?!\{) )* ///
+HERETAG_DOUBLE = /// ^(?: [^\\<#] | \\[\s\S] | <(?!\*>)| \#(?!\{) )* ///
 
 STRING_OMIT    = ///
     ((?:\\\\)+)      # consume (and preserve) an even number of backslashes
