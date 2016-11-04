@@ -829,7 +829,7 @@ Block
 
     <p>
       <span id="fat-arrow" class="bookmark"></span>
-      <b class="header">Bound Functions, Generator Functions</b>
+      <b class="header">Function Modifiers</b>
       In JavaScript, the <code>this</code> keyword is dynamically scoped to mean the
       object that the current function is attached to. If you pass a function as
       a callback or attach it to a different object, the original value of <code>this</code>
@@ -857,15 +857,24 @@ Block
       constructed.
     </p>
     <p>
-      CoffeeScript functions also support
-      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">ES6 generator functions</a>
-      through the <code>yield</code> keyword. There's no <code>function*(){}</code>
+      CoffeeScript also supports
+      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">generator functions</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function">async functions</a>
+      through the <code>yield</code> and <code>await</code> keywords respectively. There's no <code>function*(){}</code> or <code>async function(){}</code>
       nonsense &mdash; a generator in CoffeeScript is simply a function that yields.
     </p>
     <%= codeFor('generators', 'ps.next().value') %>
     <p>
       <code>yield*</code> is called <code>yield from</code>, and <code>yield return</code>
       may be used if you need to force a generator that doesn't yield.
+    </p>
+
+    <p>
+      Likewise, an async function in CoffeeScript is simply a function that awaits.
+    </p>
+    <%= codeFor('async') %>
+    <p>
+      Similar to how <code>yield return</code> forces a generator, <code>await return</code>
+      may be used to force a function to be async.
     </p>
 
     <p>
