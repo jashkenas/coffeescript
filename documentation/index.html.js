@@ -860,7 +860,7 @@ Block
       CoffeeScript also supports
       <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">generator functions</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function">async functions</a>
       through the <code>yield</code> and <code>await</code> keywords respectively. There's no <code>function*(){}</code> or <code>async function(){}</code>
-      nonsense &mdash; a generator in CoffeeScript is simply a function that yields.
+      nonsense &mdash; a generator in CoffeeScript is simply a function that yields, and an async function in CoffeeScript is simply a function that awaits.
     </p>
     <%= codeFor('generators', 'ps.next().value') %>
     <p>
@@ -868,9 +868,6 @@ Block
       may be used if you need to force a generator that doesn't yield.
     </p>
 
-    <p>
-      Likewise, an async function in CoffeeScript is simply a function that awaits.
-    </p>
     <%= codeFor('async') %>
     <p>
       Similar to how <code>yield return</code> forces a generator, <code>await return</code>
