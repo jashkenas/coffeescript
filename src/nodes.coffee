@@ -414,6 +414,10 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
 
 exports.StringLiteral = class StringLiteral extends Literal
 
+exports.TemplateLiteral = class TemplateLiteral extends Literal
+  constructor: (value) ->
+    super "`#{value.slice(1, -1)}`"
+
 exports.RegexLiteral = class RegexLiteral extends Literal
 
 exports.PassthroughLiteral = class PassthroughLiteral extends Literal
@@ -786,6 +790,28 @@ exports.SuperCall = class SuperCall extends Call
 exports.RegexWithInterpolations = class RegexWithInterpolations extends Call
   constructor: (args = []) ->
     super (new Value new IdentifierLiteral 'RegExp'), args, false
+
+
+#### TaggedTemplateLiteral
+
+exports.TaggedTemplateLiteral = class TaggedTemplateLiteral extends Call
+  constructor: (variable, arg) ->
+    #TODO: Ensure variable is function?
+    #TODO: Ensure argsis string?
+    #TODO: Don't just extend Call, and write own version. Call is too complicated and does too much
+    #TODO: What is soak argument at end?
+    super (new Value new IdentifierLiteral variable), [ (new TemplateLiteral arg) ], false
+
+  compileNode: (o) ->
+    #TODO: What does front do?
+    @variable?.front = @front
+
+    #TODO: Clean this up further?
+    fragments = []
+    fragments.push @variable.compileToFragments(o, LEVEL_ACCESS)...
+    fragments.push (@args[0].compileToFragments o, LEVEL_LIST)...
+    fragments
+
 
 #### Extends
 

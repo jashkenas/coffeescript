@@ -136,47 +136,48 @@ test "#1096: unexpected generated tokens", ->
     {///#{a}///i: val}
      ^^^^^^^^^^^
   '''
-  # Unexpected string
-  assertErrorFormat "a''", '''
-    [stdin]:1:2: error: unexpected string
-    a''
-     ^^
-  '''
-  assertErrorFormat 'a""', '''
-    [stdin]:1:2: error: unexpected string
-    a""
-     ^^
-  '''
-  assertErrorFormat "a'b'", '''
-    [stdin]:1:2: error: unexpected string
-    a'b'
-     ^^^
-  '''
-  assertErrorFormat 'a"b"', '''
-    [stdin]:1:2: error: unexpected string
-    a"b"
-     ^^^
-  '''
-  assertErrorFormat "a'''b'''", """
-    [stdin]:1:2: error: unexpected string
-    a'''b'''
-     ^^^^^^^
-  """
-  assertErrorFormat 'a"""b"""', '''
-    [stdin]:1:2: error: unexpected string
-    a"""b"""
-     ^^^^^^^
-  '''
-  assertErrorFormat 'a"#{b}"', '''
-    [stdin]:1:2: error: unexpected string
-    a"#{b}"
-     ^^^^^^
-  '''
-  assertErrorFormat 'a"""#{b}"""', '''
-    [stdin]:1:2: error: unexpected string
-    a"""#{b}"""
-     ^^^^^^^^^^
-  '''
+# TODO: Tagged template literals impl: disabling these tests, as now valid 'tagged template literals'
+#  # Unexpected string
+#  assertErrorFormat "a''", '''
+#    [stdin]:1:2: error: unexpected string
+#    a''
+#     ^^
+#  '''
+#  assertErrorFormat 'a""', '''
+#    [stdin]:1:2: error: unexpected string
+#    a""
+#     ^^
+#  '''
+#  assertErrorFormat "a'b'", '''
+#    [stdin]:1:2: error: unexpected string
+#    a'b'
+#     ^^^
+#  '''
+#  assertErrorFormat 'a"b"', '''
+#    [stdin]:1:2: error: unexpected string
+#    a"b"
+#     ^^^
+#  '''
+#  assertErrorFormat "a'''b'''", """
+#    [stdin]:1:2: error: unexpected string
+#    a'''b'''
+#     ^^^^^^^
+#  """
+#  assertErrorFormat 'a"""b"""', '''
+#    [stdin]:1:2: error: unexpected string
+#    a"""b"""
+#     ^^^^^^^
+#  '''
+#  assertErrorFormat 'a"#{b}"', '''
+#    [stdin]:1:2: error: unexpected string
+#    a"#{b}"
+#     ^^^^^^
+#  '''
+#  assertErrorFormat 'a"""#{b}"""', '''
+#    [stdin]:1:2: error: unexpected string
+#    a"""#{b}"""
+#     ^^^^^^^^^^
+#  '''
   assertErrorFormat 'import foo from "lib-#{version}"', '''
     [stdin]:1:17: error: the name of the module to be imported from must be an uninterpolated string
     import foo from "lib-#{version}"

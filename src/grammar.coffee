@@ -151,8 +151,9 @@ grammar =
   ]
 
   String: [
-    o 'STRING',                                 -> new StringLiteral $1
-    o 'STRING_START Body STRING_END',           -> new StringWithInterpolations $2
+    o 'IDENTIFIER STRING',                       -> new TaggedTemplateLiteral $1, $2
+    o 'STRING',                                  -> new StringLiteral $1
+    o 'STRING_START Body STRING_END',            -> new StringWithInterpolations $2
   ]
 
   Regex: [
