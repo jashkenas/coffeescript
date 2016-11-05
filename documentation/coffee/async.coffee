@@ -1,10 +1,9 @@
-concatPages = (urls) ->
-  string = ""
-  for url in urls
-    # fetchURL returns a 'thenable' A+/Promise object
-    string += await fetchURL(url)
-  string
+sleep = (ms) ->
+  new Promise (resolve) ->
+    window.setTimeout resolve, ms
 
-concatPages([page, otherPage, yetAnother])
-  .then (string) ->
-    console.log "Concatenation result: #{string}"
+window.countdown = (seconds) ->
+  for i in [seconds..1]
+    alert("#{i} second(s) to go...")
+    await sleep(1000)  # wait one second
+  alert("done!")
