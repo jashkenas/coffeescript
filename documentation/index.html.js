@@ -868,7 +868,7 @@ Block
       may be used if you need to force a generator that doesn't yield.
     </p>
 
-    <%= codeFor('async') %>
+    <%= codeFor('async', 'countdown(3)') %>
     <p>
       Similar to how <code>yield return</code> forces a generator, <code>await return</code>
       may be used to force a function to be async.
