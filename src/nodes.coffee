@@ -690,9 +690,6 @@ exports.Call = class Call extends Base
   # Compile a vanilla function call.
   compileNode: (o) ->
     @variable?.front = @front
-    compiledArray = Splat.compileSplattedArray o, @args, true
-    if compiledArray.length
-      return @compileSplat o, compiledArray
     compiledArgs = []
     for arg, argIndex in @args
       if argIndex then compiledArgs.push @makeCode ", "
@@ -710,47 +707,6 @@ exports.Call = class Call extends Base
     fragments.push compiledArgs...
     fragments.push @makeCode ")"
     fragments
-
-  # If you call a function with a splat, it's converted into a JavaScript
-  # `.apply()` call to allow an array of arguments to be passed.
-  # If it's a constructor, then things get real tricky. We have to inject an
-  # inner constructor in order to be able to pass the varargs.
-  #
-  # splatArgs is an array of CodeFragments to put into the 'apply'.
-  compileSplat: (o, splatArgs) ->
-    if this instanceof SuperCall
-      return [].concat @makeCode("#{ @superReference o }.apply(#{@superThis(o)}, "),
-        splatArgs, @makeCode(")")
-
-    if @isNew
-      idt = @tab + TAB
-      return [].concat @makeCode("""
-        (function(func, args, ctor) {
-        #{idt}ctor.prototype = func.prototype;
-        #{idt}var child = new ctor, result = func.apply(child, args);
-        #{idt}return Object(result) === result ? result : child;
-        #{@tab}})("""),
-        (@variable.compileToFragments o, LEVEL_LIST),
-        @makeCode(", "), splatArgs, @makeCode(", function(){})")
-
-    answer = []
-    base = new Value @variable
-    if (name = base.properties.pop()) and base.isComplex()
-      ref = o.scope.freeVariable 'ref'
-      answer = answer.concat @makeCode("(#{ref} = "),
-        (base.compileToFragments o, LEVEL_LIST),
-        @makeCode(")"),
-        name.compileToFragments(o)
-    else
-      fun = base.compileToFragments o, LEVEL_ACCESS
-      fun = @wrapInBraces fun if SIMPLENUM.test fragmentsToText fun
-      if name
-        ref = fragmentsToText fun
-        fun.push (name.compileToFragments o)...
-      else
-        ref = 'null'
-      answer = answer.concat fun
-    answer = answer.concat @makeCode(".apply(#{ref}, "), splatArgs, @makeCode(")")
 
 #### Super
 
@@ -1042,8 +998,6 @@ exports.Arr = class Arr extends Base
   compileNode: (o) ->
     return [@makeCode '[]'] unless @objects.length
     o.indent += TAB
-    answer = Splat.compileSplattedArray o, @objects
-    return answer if answer.length
 
     answer = []
     compiledObjs = (obj.compileToFragments o, LEVEL_LIST for obj in @objects)
@@ -1847,36 +1801,10 @@ exports.Splat = class Splat extends Base
     @name.assigns name
 
   compileToFragments: (o) ->
-    @name.compileToFragments o
+    [ @makeCode('...')
+      @name.compileToFragments(o)... ]
 
   unwrap: -> @name
-
-  # Utility function that converts an arbitrary number of elements, mixed with
-  # splats, to a proper array.
-  @compileSplattedArray: (o, list, apply) ->
-    index = -1
-    continue while (node = list[++index]) and node not instanceof Splat
-    return [] if index >= list.length
-    if list.length is 1
-      node = list[0]
-      fragments = node.compileToFragments o, LEVEL_LIST
-      return fragments if apply
-      return [].concat node.makeCode("#{ utility 'slice', o }.call("), fragments, node.makeCode(")")
-    args = list[index..]
-    for node, i in args
-      compiledNode = node.compileToFragments o, LEVEL_LIST
-      args[i] = if node instanceof Splat
-      then [].concat node.makeCode("#{ utility 'slice', o }.call("), compiledNode, node.makeCode(")")
-      else [].concat node.makeCode("["), compiledNode, node.makeCode("]")
-    if index is 0
-      node = list[0]
-      concatPart = (node.joinFragmentArrays args[1..], ', ')
-      return args[0].concat node.makeCode(".concat("), concatPart, node.makeCode(")")
-    base = (node.compileToFragments o, LEVEL_LIST for node in list[...index])
-    base = list[0].joinFragmentArrays base, ', '
-    concatPart = list[index].joinFragmentArrays args, ', '
-    [..., last] = list
-    [].concat list[0].makeCode("["), base, list[index].makeCode("].concat("), concatPart, last.makeCode(")")
 
 #### Expansion
 

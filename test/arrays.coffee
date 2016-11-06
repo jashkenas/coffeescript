@@ -107,3 +107,10 @@ test "regex interpolation in array", ->
   eq 2, arr.length
   eq 'ab', arr[0].source
   eq 'value', arr[1].key
+
+test "splat extraction from generators", ->
+  gen = ->
+    yield 1
+    yield 2
+    yield 3
+  arrayEq [ gen()... ], [ 1, 2, 3 ]
