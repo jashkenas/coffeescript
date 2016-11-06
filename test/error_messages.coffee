@@ -139,7 +139,7 @@ test "#1096: unexpected generated tokens", ->
   # Unexpected string
   # TODO: Various tests below have switched errors from 'unexpected string' to 'literal is not a function'
   #       This is correct, as tagged template literals are functions directly followed by a string.
-  #       Need to decide whether new 'unexpect string' tests are need to replace these ones.
+  #       Need to decide whether new 'unexpected string' tests are need to replace these ones.
   assertErrorFormat "1''", '''
     [stdin]:1:1: error: literal is not a function
     1''
