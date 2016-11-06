@@ -796,9 +796,9 @@ exports.RegexWithInterpolations = class RegexWithInterpolations extends Call
 
 exports.TaggedTemplateCall = class TaggedTemplateCall extends Call
   constructor: (variable, arg, soak) ->
-    #TODO: eventually need more checking that arg is a StringLiteral (or interpolated in future)
-    #      At present, it's a raw string
-    super variable, [ new TemplateLiteral arg ], soak
+    # TODO: This currently assumes that arg is a StringLiteral, but it can also be a StringWithInterpolations
+    #       Need to add StringWithInterpolations support.
+    super variable, [ new TemplateLiteral arg.value ], soak
 
   compileNode: (o) ->
     #TODO: What does front do?

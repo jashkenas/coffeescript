@@ -19,7 +19,7 @@ assertErrorFormat = (code, expectedErrorFormat) ->
     yes
 
 func = (text, expressions...) ->
-  "text: [#{text.join ','}] expressions: [#{expressions.join ','}]"
+  "text: [#{text.join '|'}] expressions: [#{expressions.join '|'}]"
 
 outerobj =
   obj:
@@ -45,14 +45,13 @@ test "tagged template literals: non-interpolated strings", ->
                                                                 block string
                                                              """
 
-## TODO: implement this case
-#test "tagged template literals: interpolated strings and tag function", ->
-#  # TODO: single-line single quotes
-#  # TODO: single-line double quotes
-#  # TODO: single-line block string
-#  # TODO: multi-line single quotes
-#  # TODO: multi-line double quotes
-#  # TODO: multi-line block string
+test "tagged template literals: interpolated strings and tag function", ->
+
+#  eq 'text: [single-line double quotes | interpolation] expressions: [42]', func"single-line double quotes #{6 * 7} interpolation"
+
+#  # TODO: single-line block string interpolation
+#  # TODO: multi-line double quotes interpolation
+#  # TODO: multi-line block string interpolation
 
 test "tagged template literals: string prefix must be a callable function", ->
 
@@ -61,6 +60,9 @@ test "tagged template literals: string prefix must be a callable function", ->
   eq 'text: [bracket notation] expressions: []', outerobj['obj']['func']'bracket notation'
 
   eq 'text: [mixed notation] expressions: []', outerobj['obj'].func'mixed notation'
+
+  # TODO: Put tests below in test/error_messages.coffee?
+  #       Currently here as they show invalid forms of tagged template literals
 
   assertErrorFormat "nofunc''", 'ReferenceError: nofunc is not defined'
 
