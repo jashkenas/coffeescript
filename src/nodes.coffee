@@ -792,15 +792,13 @@ exports.RegexWithInterpolations = class RegexWithInterpolations extends Call
     super (new Value new IdentifierLiteral 'RegExp'), args, false
 
 
-#### TaggedTemplateLiteral
+#### TaggedTemplateCall
 
-exports.TaggedTemplateLiteral = class TaggedTemplateLiteral extends Call
-  constructor: (variable, arg) ->
-    #TODO: Ensure variable is function?
-    #TODO: Ensure argsis string?
-    #TODO: Don't just extend Call, and write own version. Call is too complicated and does too much
-    #TODO: What is soak argument at end?
-    super (new Value new IdentifierLiteral variable), [ (new TemplateLiteral arg) ], false
+exports.TaggedTemplateCall = class TaggedTemplateCall extends Call
+  constructor: (variable, arg, soak) ->
+    #TODO: eventually need more checking that arg is a StringLiteral (or interpolated in future)
+    #      At present, it's a raw string
+    super variable, [ new TemplateLiteral arg ], soak
 
   compileNode: (o) ->
     #TODO: What does front do?

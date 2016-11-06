@@ -151,7 +151,6 @@ grammar =
   ]
 
   String: [
-    o 'IDENTIFIER STRING',                       -> new TaggedTemplateLiteral $1, $2
     o 'STRING',                                  -> new StringLiteral $1
     o 'STRING_START Body STRING_END',            -> new StringWithInterpolations $2
   ]
@@ -414,6 +413,7 @@ grammar =
 
   # Ordinary function invocation, or a chained series of calls.
   Invocation: [
+    o 'Value OptFuncExist STRING',              -> new TaggedTemplateCall $1, $3, $2
     o 'Value OptFuncExist Arguments',           -> new Call $1, $3, $2
     o 'Invocation OptFuncExist Arguments',      -> new Call $1, $3, $2
     o 'Super'
