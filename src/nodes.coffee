@@ -791,7 +791,6 @@ exports.RegexWithInterpolations = class RegexWithInterpolations extends Call
   constructor: (args = []) ->
     super (new Value new IdentifierLiteral 'RegExp'), args, false
 
-
 #### TaggedTemplateCall
 
 exports.TaggedTemplateCall = class TaggedTemplateCall extends Call
@@ -809,7 +808,6 @@ exports.TaggedTemplateCall = class TaggedTemplateCall extends Call
     fragments.push @variable.compileToFragments(o, LEVEL_ACCESS)...
     fragments.push (@args[0].compileToFragments o, LEVEL_LIST)...
     fragments
-
 
 #### Extends
 
