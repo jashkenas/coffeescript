@@ -2315,6 +2315,16 @@ six = -&gt;
     # Listen for keypresses and recompile.
     $('#repl_source').keyup -> compileSource()
 
+    # Use tab key to insert tabs
+    $('#repl_source').keydown (e) ->
+      if e.keyCode is 9
+        e.preventDefault()
+        textbox = e.target
+        # Insert tab character at caret or in selection
+        textbox.value = textbox.value[0...textbox.selectionStart] + "\t" + textbox.value[textbox.selectionEnd...]
+        # Put caret in correct position
+        textbox.selectionEnd = ++textbox.selectionStart
+
     # Eval the compiled js.
     evalJS = ->
       try
