@@ -101,6 +101,7 @@ exports.run = ->
 
     '''
   for source in opts.arguments
+    console.error("hello!")
     source = path.resolve source
     compilePath source, yes, source
 
@@ -189,6 +190,12 @@ compileScript = (file, input, base = null) ->
       if o.map
         t.output = compiled.js
         t.sourceMap = compiled.v3SourceMap
+      if process.env.COFFEE_BUILD
+        require("coffee-coverage/register-istanbul")
+        code = fs.instrumentFile(t.file)
+        #console.error(code[1..100])
+        #console.error(t.output[1..100])
+        t.output = code
 
       CoffeeScript.emit 'success', task
       if o.print

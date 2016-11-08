@@ -5,6 +5,8 @@ CoffeeScript  = require './lib/coffee-script'
 {spawn, exec} = require 'child_process'
 helpers       = require './lib/coffee-script/helpers'
 
+require("coffee-coverage/register-istanbul")
+
 # ANSI Terminal Colors.
 bold = red = green = reset = ''
 unless process.env.NODE_DISABLE_COLORS
@@ -288,16 +290,26 @@ runTests = (CoffeeScript) ->
   for file in files when helpers.isCoffee file
     literate = helpers.isLiterate file
     currentFile = filename = path.join 'test', file
-    code = fs.readFileSync filename
+    #code = fs.readFileSync filename
+
+    console.log "start", filename
+    code = fs.instrumentFile(filename)
+
     try
-      CoffeeScript.run code.toString(), {filename, literate}
+      #eval(code)
+      mainModule = require.main
+      mainModule._compile code, mainModule.filename
+      console.log "end", filename
+      #CoffeeScript.run code.toString(), {filename, literate}
     catch error
       failures.push {filename, error}
+  console.log "finish!"
   return !failures.length
 
 
 task 'test', 'run the CoffeeScript language test suite', ->
   runTests CoffeeScript
+  process.exit()
 
 
 task 'test:browser', 'run the test suite against the merged browser script', ->
