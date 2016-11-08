@@ -1181,3 +1181,10 @@ test "indexes are not supported in for-from loops", ->
     x for x, i from [1, 2, 3]
              ^
   '''
+
+test "own is not supported in for-from loops", ->
+  assertErrorFormat "x for own x from [1, 2, 3]", '''
+    [stdin]:1:7: error: cannot use own with for-from
+    x for own x from [1, 2, 3]
+          ^^^
+    '''

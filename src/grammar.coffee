@@ -560,12 +560,12 @@ grammar =
   ForBody: [
     o 'FOR Range',                              -> source: (LOC(2) new Value($2))
     o 'FOR Range BY Expression',                -> source: (LOC(2) new Value($2)), step: $4
-    o 'ForStart ForSource',                     -> $2.own = $1.own; $2.name = $1[0]; $2.index = $1[1]; $2
+    o 'ForStart ForSource',                     -> $2.own = $1.own; $2.ownTag = $1.ownTag; $2.name = $1[0]; $2.index = $1[1]; $2
   ]
 
   ForStart: [
     o 'FOR ForVariables',                       -> $2
-    o 'FOR OWN ForVariables',                   -> $3.own = yes; $3
+    o 'FOR OWN ForVariables',                   -> $3.own = yes; $3.ownTag = (LOC(2) new Literal($2)); $3
   ]
 
   # An array of all accepted values for a variable inside the loop.

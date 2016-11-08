@@ -2251,6 +2251,7 @@ exports.For = class For extends While
     @object  = !!source.object
     @from    = !!source.from
     @index.error 'cannot use index with for-from' if @from and @index
+    source.ownTag.error "cannot use own with for-#{if @from then 'from' else 'in'}" if @own and not @object
 
     [@name, @index] = [@index, @name] if @object
 
@@ -2259,7 +2260,6 @@ exports.For = class For extends While
     @pattern = @name instanceof Value
     @index.error 'indexes do not apply to range loops' if @range and @index
     @name.error 'cannot pattern match over range loops' if @range and @pattern
-    @name.error "cannot use own with for-#{if @from then 'from' else 'in'}" if @own and not @object
     @returns = false
 
   children: ['body', 'source', 'guard', 'step']
