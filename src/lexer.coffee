@@ -165,7 +165,7 @@ exports.Lexer = class Lexer
           if @value() is '!'
             poppedToken = @tokens.pop()
             id = '!' + id
-    else if id is 'from' and @seenFor
+    else if tag is 'IDENTIFIER' and @seenFor and id is 'from'
       tag = 'FORFROM'
       @seenFor = no
 

@@ -2259,8 +2259,7 @@ exports.For = class For extends While
     @pattern = @name instanceof Value
     @index.error 'indexes do not apply to range loops' if @range and @index
     @name.error 'cannot pattern match over range loops' if @range and @pattern
-    @name.error 'cannot use own with for-in' if @own and not @object
-
+    @name.error "cannot use own with for-#{if @from then 'from' else 'in'}" if @own and not @object
     @returns = false
 
   children: ['body', 'source', 'guard', 'step']
@@ -2324,7 +2323,7 @@ exports.For = class For extends While
             increment = "#{ivar} += #{stepVar}"
           else
             increment = "#{if kvar isnt ivar then "++#{ivar}" else "#{ivar}++"}"
-          forPartFragments  = [@makeCode("#{declare}; #{compare}; #{kvarAssign}#{increment}")]
+          forPartFragments = [@makeCode("#{declare}; #{compare}; #{kvarAssign}#{increment}")]
     if @returns
       resultPart   = "#{@tab}#{rvar} = [];\n"
       returnResult = "\n#{@tab}return #{rvar};"

@@ -1174,3 +1174,10 @@ test "CoffeeScript keywords cannot be used as local names in import list aliases
     import { bar as unless, baz as bar } from 'lib'
                     ^^^^^^
   '''
+
+test "indexes are not supported in for-from loops", ->
+  assertErrorFormat "x for x, i from [1, 2, 3]", '''
+    [stdin]:1:10: error: cannot use index with for-from
+    x for x, i from [1, 2, 3]
+             ^
+  '''
