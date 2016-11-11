@@ -1192,7 +1192,7 @@ test "function cannot contain both `await` and `yield from`", ->
       ^^^^^^^
   '''
 
-test "Cannnot have `await` outside a function", ->
+test "cannot have `await` outside a function", ->
   assertErrorFormat '''
     await 1
   ''', '''
@@ -1200,3 +1200,17 @@ test "Cannnot have `await` outside a function", ->
     await 1
     ^^^^^^^
   '''
+
+test "indexes are not supported in for-from loops", ->
+  assertErrorFormat "x for x, i from [1, 2, 3]", '''
+    [stdin]:1:10: error: cannot use index with for-from
+    x for x, i from [1, 2, 3]
+             ^
+  '''
+
+test "own is not supported in for-from loops", ->
+  assertErrorFormat "x for own x from [1, 2, 3]", '''
+    [stdin]:1:7: error: cannot use own with for-from
+    x for own x from [1, 2, 3]
+          ^^^
+    '''

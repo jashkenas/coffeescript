@@ -41,6 +41,10 @@ test "loop variable should be accessible after for-in loop", ->
   d = (x for x in [1,2])
   eq x, 2
 
+test "loop variable should be accessible after for-from loop", ->
+  d = (x for x from [1,2])
+  eq x, 2
+
 class Array then slice: fail # needs to be global
 class Object then hasOwnProperty: fail
 test "#1973: redefining Array/Object constructors shouldn't confuse __X helpers", ->

@@ -12,7 +12,7 @@ test "ensure that carriage returns don't break compilation on Windows", ->
 test "#3089 - don't mutate passed in options to compile", ->
   opts = {}
   CoffeeScript.compile '1 + 1', opts
-  ok !opts.scope 
+  ok !opts.scope
 
 test "--bare", ->
   eq -1, CoffeeScript.compile('x = y', bare: on).indexOf 'function'
