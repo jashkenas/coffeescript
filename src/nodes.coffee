@@ -414,10 +414,6 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
 
 exports.StringLiteral = class StringLiteral extends Literal
 
-exports.TemplateLiteral = class TemplateLiteral extends Literal
-  constructor: (value) ->
-    super "`#{value.slice(1, -1)}`"
-
 exports.RegexLiteral = class RegexLiteral extends Literal
 
 exports.PassthroughLiteral = class PassthroughLiteral extends Literal
@@ -795,12 +791,12 @@ exports.RegexWithInterpolations = class RegexWithInterpolations extends Call
 
 exports.TaggedTemplateCall = class TaggedTemplateCall extends Call
   constructor: (variable, arg, soak) ->
+    #TODO: We assume arg instanceof StringLiteral or StringWithInterpolations. Explicit check needed?
+    #TODO: We convert a StringLiteral into a StringWithInterpolations form. Nicer way to do this?
+
     templateLiteral = if arg instanceof StringLiteral
-      # Explicitly convert StringLiteral into a template literal ('hi' -> `hi`)
-      new TemplateLiteral arg.value
+      new StringWithInterpolations Block.wrap([ new Value arg ])
     else
-      #TODO: We assume arg is instanceof StringWithInterpolations. Should we check explicitly?
-      # StringWithInterpolations are output as template literals, to just pass through
       arg
 
     super variable, [ templateLiteral ], soak
