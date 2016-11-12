@@ -47,11 +47,20 @@ test "tagged template literals: non-interpolated strings", ->
 
 test "tagged template literals: interpolated strings and tag function", ->
 
-#  eq 'text: [single-line double quotes | interpolation] expressions: [42]', func"single-line double quotes #{6 * 7} interpolation"
+  eq 'text: [single-line double quotes | interpolation] expressions: [42]', func"single-line double quotes #{6 * 7} interpolation"
 
-#  # TODO: single-line block string interpolation
-#  # TODO: multi-line double quotes interpolation
-#  # TODO: multi-line block string interpolation
+  eq 'text: [single-line block string | interpolation] expressions: [48]', func"""single-line block string ${6 * 8} interpolation"""
+
+  eq 'text: [multi-line double quotes | interpolation] expressions: [awesome]', func"multi-line
+                                                                                     double quotes #{'awesome'} interpolation"
+
+  eq 'text: [multi-line\nblock string |] expressions: [32]', func"""
+                                                                 multi-line
+                                                                 block string #{2 * 16}
+                                                                 """
+
+  #TODO: Interpolation edge cases: multiple, empty, nested and expressions on end (ensure matches ES6)
+  #TODO: Double check that _all_ interpolated strings are being output as ES6. Nice way of testing this?
 
 test "tagged template literals: string prefix must be a callable function", ->
 

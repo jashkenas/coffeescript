@@ -2258,16 +2258,30 @@ exports.Parens = class Parens extends Base
 
 exports.StringWithInterpolations = class StringWithInterpolations extends Parens
   compileNode: (o) ->
+    # Assumption: expr is Value>StringLiteral or Op
     expr = @body.unwrap()
 
-    # Assumption: expr is Value>StringLiteral or Op
+    elements = []
+    expr.traverseChildren false, (node) ->
+      if node instanceof StringLiteral
+        elements.push node
+        return true
+      else if node instanceof Parens
+        elements.push node
+        return false
 
-    if expr instanceof Value and expr.isString() #actually StringLiteral
-      expr.front = @front
-      return  [ @makeCode('`'), @makeCode(expr.base.value.slice(1, -1)), @makeCode('`') ]
+      return true
 
-    #TODO: Add custom output for Op tree form of interpolated String
-    fragments = expr.compileToFragments o, LEVEL_PAREN
+    fragments = []
+    fragments.push @makeCode('`')
+    for element in elements
+      if element instanceof StringLiteral
+        fragments.push @makeCode(element.value.slice(1, -1))
+      else
+        fragments.push @makeCode('${')
+        fragments.push element.compileToFragments(o, LEVEL_PAREN)...
+        fragments.push @makeCode('}')
+    fragments.push @makeCode('`')
 
     if o.level < LEVEL_OP then fragments else @wrapInBraces fragments
 
