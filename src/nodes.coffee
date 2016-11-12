@@ -795,9 +795,15 @@ exports.RegexWithInterpolations = class RegexWithInterpolations extends Call
 
 exports.TaggedTemplateCall = class TaggedTemplateCall extends Call
   constructor: (variable, arg, soak) ->
-    # TODO: This currently assumes that arg is a StringLiteral, but it can also be a StringWithInterpolations
-    #       Need to add StringWithInterpolations support.
-    super variable, [ new TemplateLiteral arg.value ], soak
+    templateLiteral = if arg instanceof StringLiteral
+      # Explicitly convert StringLiteral into a template literal ('hi' -> `hi`)
+      new TemplateLiteral arg.value
+    else
+      #TODO: We assume arg is instanceof StringWithInterpolations. Should we check explicitly?
+      # StringWithInterpolations are output as template literals, to just pass through
+      arg
+
+    super variable, [ templateLiteral ], soak
 
   compileNode: (o) ->
     #TODO: What does front do?
