@@ -2264,10 +2264,16 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Parens
   compileNode: (o) ->
     expr = @body.unwrap()
 
-    #TODO: Change compilation to output template literal
-    fragments = expr.compileToFragments o, LEVEL_PAREN
+    if expr instanceof Value and expr.isString() #StringLiteral
+      return  [ @makeCode('`'), @makeCode(expr.base.value.slice(1, -1)), @makeCode('`') ]
 
-    if o.level < LEVEL_OP then fragments else @wrapInBraces fragments
+    if expr instanceof Value and expr.isAtomic()
+      expr.front = @front
+      return expr.compileToFragments o
+    fragments = expr.compileToFragments o, LEVEL_PAREN
+    bare = o.level < LEVEL_OP and (expr instanceof Op or expr instanceof Call or
+      (expr instanceof For and expr.returns))
+    if bare then fragments else @wrapInBraces fragments
 
 #### For
 
