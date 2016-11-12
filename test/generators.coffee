@@ -250,3 +250,41 @@ test "yield handles 'this' correctly", ->
   ok z.done is false
 
   throws -> y.next new Error "boom"
+
+test "for-from loops over generators", ->
+  array1 = [50, 30, 70, 20]
+  gen = -> yield from array1
+
+  array2 = []
+  array3 = []
+  array4 = []
+
+  iterator = gen()
+  for x from iterator
+    array2.push(x)
+    break if x is 30
+
+  for x from iterator
+    array3.push(x)
+
+  for x from iterator
+    array4.push(x)
+
+  arrayEq array2, [50, 30]
+  # Different JS engines have different opinions on the value of array3:
+  # https://github.com/jashkenas/coffeescript/pull/4306#issuecomment-257066877
+  # As a temporary measure, either result is accepted.
+  ok array3.length is 0 or array3.join(',') is '70,20'
+  arrayEq array4, []
+
+
+test "for-from comprehensions over generators", ->
+  gen = ->
+    yield from [30, 41, 51, 60]
+
+  iterator = gen()
+  array1 = (x for x from iterator when x %% 2 is 1)
+  array2 = (x for x from iterator)
+
+  ok array1.join(' ') is '41 51'
+  ok array2.length is 0

@@ -2300,13 +2300,15 @@ exports.For = class For extends While
     @body    = Block.wrap [body]
     @own     = !!source.own
     @object  = !!source.object
+    @from    = !!source.from
+    @index.error 'cannot use index with for-from' if @from and @index
+    source.ownTag.error "cannot use own with for-#{if @from then 'from' else 'in'}" if @own and not @object
     [@name, @index] = [@index, @name] if @object
     @index.error 'index cannot be a pattern matching expression' if @index instanceof Value
-    @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length
+    @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length and not @from
     @pattern = @name instanceof Value
     @index.error 'indexes do not apply to range loops' if @range and @index
     @name.error 'cannot pattern match over range loops' if @range and @pattern
-    @name.error 'cannot use own with for-in' if @own and not @object
     @returns = false
 
   children: ['body', 'source', 'guard', 'step']
@@ -2326,8 +2328,11 @@ exports.For = class For extends While
     scope.find(name)  if name and not @pattern
     scope.find(index) if index
     rvar        = scope.freeVariable 'results' if @returns
-    ivar        = (@object and index) or scope.freeVariable 'i', single: true
-    kvar        = (@range and name) or index or ivar
+    if @from
+      ivar = scope.freeVariable 'x', single: true if @pattern
+    else
+      ivar = (@object and index) or scope.freeVariable 'i', single: true
+    kvar        = ((@range or @from) and name) or index or ivar
     kvarAssign  = if kvar isnt ivar then "#{kvar} = " else ""
     if @step and not @range
       [step, stepVar] = @cacheToCodeFragments @step.cache o, LEVEL_LIST, isComplexOrAssignable
@@ -2345,9 +2350,9 @@ exports.For = class For extends While
       if (name or @own) and @source.unwrap() not instanceof IdentifierLiteral
         defPart    += "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
         svar       = ref
-      if name and not @pattern
+      if name and not @pattern and not @from
         namePart   = "#{name} = #{svar}[#{kvar}]"
-      if not @object
+      if not @object and not @from
         defPart += "#{@tab}#{step};\n" if step isnt stepVar
         down = stepNum < 0
         lvar = scope.freeVariable 'len' unless @step and stepNum? and down
@@ -2366,7 +2371,7 @@ exports.For = class For extends While
           increment = "#{ivar} += #{stepVar}"
         else
           increment = "#{if kvar isnt ivar then "++#{ivar}" else "#{ivar}++"}"
-        forPartFragments  = [@makeCode("#{declare}; #{compare}; #{kvarAssign}#{increment}")]
+        forPartFragments = [@makeCode("#{declare}; #{compare}; #{kvarAssign}#{increment}")]
     if @returns
       resultPart   = "#{@tab}#{rvar} = [];\n"
       returnResult = "\n#{@tab}return #{rvar};"
@@ -2377,14 +2382,16 @@ exports.For = class For extends While
       else
         body = Block.wrap [new If @guard, body] if @guard
     if @pattern
-      body.expressions.unshift new Assign @name, new Literal "#{svar}[#{kvar}]"
+      body.expressions.unshift new Assign @name, if @from then new IdentifierLiteral kvar else new Literal "#{svar}[#{kvar}]"
     defPartFragments = [].concat @makeCode(defPart), @pluckDirectCall(o, body)
     varPart = "\n#{idt1}#{namePart};" if namePart
     if @object
-      forPartFragments   = [@makeCode("#{kvar} in #{svar}")]
+      forPartFragments = [@makeCode("#{kvar} in #{svar}")]
       guardPart = "\n#{idt1}if (!#{utility 'hasProp', o}.call(#{svar}, #{kvar})) continue;" if @own
+    else if @from
+      forPartFragments = [@makeCode("#{kvar} of #{svar}")]
     bodyFragments = body.compileToFragments merge(o, indent: idt1), LEVEL_TOP
-    if bodyFragments and (bodyFragments.length > 0)
+    if bodyFragments and bodyFragments.length > 0
       bodyFragments = [].concat @makeCode("\n"), bodyFragments, @makeCode("\n")
     [].concat defPartFragments, @makeCode("#{resultPart or ''}#{@tab}for ("),
       forPartFragments, @makeCode(") {#{guardPart}#{varPart}"), bodyFragments,
