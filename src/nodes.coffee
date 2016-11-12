@@ -2261,6 +2261,13 @@ exports.Parens = class Parens extends Base
 # string concatenation inside.
 
 exports.StringWithInterpolations = class StringWithInterpolations extends Parens
+  compileNode: (o) ->
+    expr = @body.unwrap()
+
+    #TODO: Change compilation to output template literal
+    fragments = expr.compileToFragments o, LEVEL_PAREN
+
+    if o.level < LEVEL_OP then fragments else @wrapInBraces fragments
 
 #### For
 
