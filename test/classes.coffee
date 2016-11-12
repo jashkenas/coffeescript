@@ -4,6 +4,7 @@
 # * Class Definition
 # * Class Instantiation
 # * Inheritance and Super
+# * ES2015+ Class Interoperability
 
 test "classes with a four-level inheritance chain", ->
 
@@ -880,3 +881,97 @@ test "dynamic method names and super", ->
   class C extends B
     m: -> super
   eq 5, (new C).m()
+
+# ES2015+ class interoperability
+# Based on https://github.com/balupton/es6-javascript-class-interop
+# Helper functions to generate true ES classes to extend:
+getBasicClass = ->
+  ```
+  class BasicClass {
+    constructor (greeting) {
+      this.greeting = greeting || 'hi'
+    }
+  }
+  ```
+  BasicClass
+
+getExtendedClass = (BaseClass) ->
+  ```
+  class ExtendedClass extends BaseClass {
+    constructor (greeting, name) {
+      super(greeting || 'hello')
+      this.name = name
+    }
+  }
+  ```
+  ExtendedClass
+
+test "can instantiate a basic ES class", ->
+  BasicClass = getBasicClass()
+  i = new BasicClass 'howdy!'
+  eq i.greeting, 'howdy!'
+
+test "can instantiate an extended ES class", ->
+  BasicClass = getBasicClass()
+  ExtendedClass = getExtendedClass BasicClass
+  i = new ExtendedClass 'yo', 'buddy'
+  eq i.greeting, 'yo'
+  eq i.name, 'buddy'
+
+test "can extend a basic ES class", ->
+  BasicClass = getBasicClass()
+  class ExtendedClass extends BasicClass
+    constructor: (@name) ->
+  i = new ExtendedClass 'dude'
+  eq i.name, 'dude'
+
+test "can extend an extended ES class", ->
+  BasicClass = getBasicClass()
+  ExtendedClass = getExtendedClass BasicClass
+
+  class ExtendedExtendedClass extends ExtendedClass
+    constructor: (@value) ->
+    getDoubledValue: ->
+      @value * 2
+
+  i = new ExtendedExtendedClass 7
+  eq i.getDoubledValue(), 14
+
+test "CoffeeScript class can be extended in ES", ->
+  class CoffeeClass
+    constructor: (@favoriteDrink = 'latte', @size = 'grande') ->
+    getDrinkOrder: ->
+      "#{@size} #{@favoriteDrink}"
+
+  ```
+  class ECMAScriptClass extends CoffeeClass {
+    constructor (favoriteDrink) {
+      super(favoriteDrink);
+      this.favoriteDrink = this.favoriteDrink + ' with a dash of semicolons';
+    }
+  }
+  ```
+
+  e = new ECMAScriptClass 'coffee'
+  eq e.getDrinkOrder(), 'grande coffee with a dash of semicolons'
+
+test "extended CoffeeScript class can be extended in ES", ->
+  class CoffeeClass
+    constructor: (@favoriteDrink = 'latte') ->
+
+  class CoffeeClassWithDrinkOrder extends CoffeeClass
+    constructor: (@favoriteDrink, @size = 'grande') ->
+    getDrinkOrder: ->
+      "#{@size} #{@favoriteDrink}"
+
+  ```
+  class ECMAScriptClass extends CoffeeClassWithDrinkOrder {
+    constructor (favoriteDrink) {
+      super(favoriteDrink);
+      this.favoriteDrink = this.favoriteDrink + ' with a dash of semicolons';
+    }
+  }
+  ```
+
+  e = new ECMAScriptClass 'coffee'
+  eq e.getDrinkOrder(), 'grande coffee with a dash of semicolons'
