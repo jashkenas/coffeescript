@@ -137,46 +137,6 @@ test "#1096: unexpected generated tokens", ->
      ^^^^^^^^^^^
   '''
   # Unexpected string
-  assertErrorFormat "1''", '''
-    [stdin]:1:1: error: literal is not a function
-    1''
-    ^
-  '''
-  assertErrorFormat '1""', '''
-    [stdin]:1:1: error: literal is not a function
-    1""
-    ^
-  '''
-  assertErrorFormat "1'b'", '''
-    [stdin]:1:1: error: literal is not a function
-    1'b'
-    ^
-  '''
-  assertErrorFormat '1"b"', '''
-    [stdin]:1:1: error: literal is not a function
-    1"b"
-    ^
-  '''
-  assertErrorFormat "1'''b'''", """
-    [stdin]:1:1: error: literal is not a function
-    1'''b'''
-    ^
-  """
-  assertErrorFormat '1"""b"""', '''
-    [stdin]:1:1: error: literal is not a function
-    1"""b"""
-    ^
-  '''
-  assertErrorFormat '1"#{b}"', '''
-    [stdin]:1:1: error: literal is not a function
-    1"#{b}"
-    ^
-  '''
-  assertErrorFormat '1"""#{b}"""', '''
-    [stdin]:1:1: error: literal is not a function
-    1"""#{b}"""
-    ^
-  '''
   assertErrorFormat 'import foo from "lib-#{version}"', '''
     [stdin]:1:17: error: the name of the module to be imported from must be an uninterpolated string
     import foo from "lib-#{version}"
@@ -1195,9 +1155,38 @@ test "tagged template literals must be called by an identifier", ->
     1''
     ^
   '''
-
-  assertErrorFormat "[1]''", '''
+  assertErrorFormat '1""', '''
     [stdin]:1:1: error: literal is not a function
-    [1]''
-    ^^^
+    1""
+    ^
+  '''
+  assertErrorFormat "1'b'", '''
+    [stdin]:1:1: error: literal is not a function
+    1'b'
+    ^
+  '''
+  assertErrorFormat '1"b"', '''
+    [stdin]:1:1: error: literal is not a function
+    1"b"
+    ^
+  '''
+  assertErrorFormat "1'''b'''", """
+    [stdin]:1:1: error: literal is not a function
+    1'''b'''
+    ^
+  """
+  assertErrorFormat '1"""b"""', '''
+    [stdin]:1:1: error: literal is not a function
+    1"""b"""
+    ^
+  '''
+  assertErrorFormat '1"#{b}"', '''
+    [stdin]:1:1: error: literal is not a function
+    1"#{b}"
+    ^
+  '''
+  assertErrorFormat '1"""#{b}"""', '''
+    [stdin]:1:1: error: literal is not a function
+    1"""#{b}"""
+    ^
   '''
