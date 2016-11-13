@@ -62,31 +62,27 @@ test "tagged template literal with a multi-line double-quote block string", ->
 
 # Interpolated strings with expressions
 test "tagged template literal with a single-line double-quote interpolated string", ->
-  eq 'text: [single-line double quotes | interpolation] expressions: [42]',
-  func"single-line double quotes #{6 * 7} interpolation"
+  eq 'text: [single-line | double quotes | interpolation] expressions: [36|42]',
+  func"single-line #{6 * 6} double quotes #{6 * 7} interpolation"
 
 test "tagged template literal with a single-line double-quote block interpolated string", ->
-  eq 'text: [single-line block string | interpolation] expressions: [48]',
-  func"""single-line block string #{6 * 8} interpolation"""
+  eq 'text: [single-line | block string | interpolation] expressions: [incredible|48]',
+  func"""single-line #{'incredible'} block string #{6 * 8} interpolation"""
 
 test "tagged template literal with a multi-line double-quote interpolated string", ->
-  eq 'text: [multi-line double quotes | interpolation] expressions: [awesome]',
-  func"multi-line
+  eq 'text: [multi-line | double quotes | interpolation] expressions: [2|awesome]',
+  func"multi-line #{4/2}
        double quotes #{'awesome'} interpolation"
 
 test "tagged template literal with a multi-line double-quote block interpolated string", ->
-  eq 'text: [multi-line\nblock string |] expressions: [32]',
+  eq 'text: [multi-line |\nblock string |] expressions: [/abc/|32]',
   func"""
-      multi-line
+      multi-line #{/abc/}
       block string #{2 * 16}
       """
 
-# TODO: Interpolation edge cases: multiple, empty, nested and expressions on end (ensure matches ES6)
-# TODO: Double check that _all_ interpolated strings are being output as ES6. Nice way of testing this?
 
-# The function calling the string must be properly parsed
-test "tagged template literals: string prefix must be a callable function", ->
-
+# Tagged template literal must use a callable function
 test "tagged template literal dot notation recognized as a callable function", ->
   eq 'text: [dot notation] expressions: []',
   outerobj.obj.func'dot notation'
@@ -99,6 +95,7 @@ test "tagged template literal mixed dot and bracket notation recognized as a cal
   eq 'text: [mixed notation] expressions: []',
   outerobj['obj'].func'mixed notation'
 
+
 # Edge cases
 test "tagged template literal with an empty string", ->
   eq 'text: [] expressions: []',
@@ -107,6 +104,10 @@ test "tagged template literal with an empty string", ->
 test "tagged template literal with an empty interpolated string", ->
   eq 'text: [] expressions: []',
   func"#{}"
+
+test "tagged template literal as single interpolated expression", ->
+  eq 'text: [|] expressions: [3]',
+  func"#{3}"
 
 test "tagged template literal with an interpolated string that itself contains an interpolated string", ->
   eq 'text: [inner | string] expressions: [interpolated]',
