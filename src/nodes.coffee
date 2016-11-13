@@ -2244,6 +2244,8 @@ exports.Parens = class Parens extends Base
 # string concatenation inside.
 
 exports.StringWithInterpolations = class StringWithInterpolations extends Parens
+  unwrap: -> this
+
   compileNode: (o) ->
     # This method produces an interpolated string using the new ES2015 syntax,
     # which is opt-in by using tagged template literals. If this
