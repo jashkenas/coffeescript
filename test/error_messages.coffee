@@ -1192,3 +1192,16 @@ test "own is not supported in for-from loops", ->
     x for own x from [1, 2, 3]
           ^^^
     '''
+
+test "tagged template literals must be called by an identifier", ->
+  assertErrorFormat "1''", '''
+    [stdin]:1:1: error: literal is not a function
+    1''
+    ^
+  '''
+
+  assertErrorFormat "[1]''", '''
+    [stdin]:1:1: error: literal is not a function
+    [1]''
+    ^^^
+  '''

@@ -12,12 +12,6 @@
 # - String is single-line or multi-line
 # - String is interpolated or not
 
-assertErrorFormat = (code, expectedErrorFormat) ->
-  throws (-> CoffeeScript.run code), (err) ->
-    err.colorful = no
-    eq expectedErrorFormat, "#{err}"
-    yes
-
 func = (text, expressions...) ->
   "text: [#{text.join '|'}] expressions: [#{expressions.join '|'}]"
 
@@ -69,21 +63,3 @@ test "tagged template literals: string prefix must be a callable function", ->
   eq 'text: [bracket notation] expressions: []', outerobj['obj']['func']'bracket notation'
 
   eq 'text: [mixed notation] expressions: []', outerobj['obj'].func'mixed notation'
-
-  # TODO: Put tests below in test/error_messages.coffee?
-  #       Currently here as they show invalid forms of tagged template literals
-
-  assertErrorFormat "nofunc''", 'ReferenceError: nofunc is not defined'
-
-  assertErrorFormat "1''", '''
-    [stdin]:1:1: error: literal is not a function
-    1''
-    ^
-  '''
-
-  assertErrorFormat "[1]''", '''
-    [stdin]:1:1: error: literal is not a function
-    [1]''
-    ^^^
-  '''
-
