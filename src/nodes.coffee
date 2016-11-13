@@ -795,6 +795,7 @@ exports.TaggedTemplateCall = class TaggedTemplateCall extends Call
     super variable, [ arg ], soak
 
   compileNode: (o) ->
+    o.inTaggedTemplateCall = yes # Tell StringWithInterpolations whether to compile as ES2015 or not; remove in CoffeeScript 2
     @variable.compileToFragments(o, LEVEL_ACCESS).concat @args[0].compileToFragments(o, LEVEL_LIST)
 
 #### Extends
@@ -2244,6 +2245,14 @@ exports.Parens = class Parens extends Base
 
 exports.StringWithInterpolations = class StringWithInterpolations extends Parens
   compileNode: (o) ->
+    # This method produces an interpolated string using the new ES2015 syntax,
+    # which is opt-in by using tagged template literals. If this
+    # StringWithInterpolations isn’t inside a tagged template literal,
+    # fall back to the CoffeeScript 1.x output.
+    # (Remove this check in CoffeeScript 2.)
+    unless o.inTaggedTemplateCall
+      return super
+
     # Assumption: expr is Value>StringLiteral or Op
     expr = @body.unwrap()
 
