@@ -2279,7 +2279,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Parens
         fragments.push @makeCode '}'
     fragments.push @makeCode '`'
 
-    if o.level < LEVEL_OP then fragments else @wrapInBraces fragments
+    fragments
 
 #### For
 
