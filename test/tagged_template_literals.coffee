@@ -83,3 +83,10 @@ test "tagged template literal bracket notation recognized as a callable function
 
 test "tagged template literal mixed dot and bracket notation recognized as a callable function", ->
   eq 'text: [mixed notation] expressions: []', outerobj['obj'].func'mixed notation'
+
+# Edge cases
+test "tagged template literal with an interpolated string that itself contains an interpolated string", ->
+  eq 'text: [inner | string] expressions: [interpolated]', func"inner #{"#{'inter'}polated"} string"
+
+test "tagged template literal with an interpolated string that contains a tagged template literal", ->
+  eq 'text: [inner tagged | literal] expressions: [text: [|] expressions: [template]]', func"inner tagged #{func"#{'template'}"} literal"
