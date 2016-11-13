@@ -137,9 +137,6 @@ test "#1096: unexpected generated tokens", ->
      ^^^^^^^^^^^
   '''
   # Unexpected string
-  # TODO: Various tests below have switched errors from 'unexpected string' to 'literal is not a function'
-  #       This is correct, as tagged template literals are functions directly followed by a string.
-  #       Need to decide whether new 'unexpected string' tests are need to replace these ones.
   assertErrorFormat "1''", '''
     [stdin]:1:1: error: literal is not a function
     1''
@@ -170,17 +167,16 @@ test "#1096: unexpected generated tokens", ->
     1"""b"""
     ^
   '''
-# TODO: Currently commented out whilst tagged template literals + interpolated strings are implemented
-#  assertErrorFormat '1"#{b}"', '''
-#    [stdin]:1:2: error: unexpected string
-#    1"#{b}"
-#     ^^^^^^
-#  '''
-#  assertErrorFormat '1"""#{b}"""', '''
-#    [stdin]:1:2: error: unexpected string
-#    1"""#{b}"""
-#     ^^^^^^^^^^
-#  '''
+  assertErrorFormat '1"#{b}"', '''
+    [stdin]:1:1: error: literal is not a function
+    1"#{b}"
+    ^
+  '''
+  assertErrorFormat '1"""#{b}"""', '''
+    [stdin]:1:1: error: literal is not a function
+    1"""#{b}"""
+    ^
+  '''
   assertErrorFormat 'import foo from "lib-#{version}"', '''
     [stdin]:1:17: error: the name of the module to be imported from must be an uninterpolated string
     import foo from "lib-#{version}"
