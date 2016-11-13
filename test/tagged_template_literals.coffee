@@ -29,7 +29,11 @@ test "tagged template literal for html templating", ->
     name: 'Greg'
     adjective: 'awesome'
 
-  eq "<p>\n  Hi Greg. You're looking awesome!\n</p>",
+  eq """
+      <p>
+        Hi Greg. You're looking awesome!
+      </p>
+    """,
     html"""
       <p>
         Hi ${state.name}. You're looking ${state.adjective}!
