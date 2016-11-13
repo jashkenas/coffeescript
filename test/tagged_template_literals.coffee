@@ -19,6 +19,23 @@ outerobj =
   obj:
     func: func
 
+# Example use
+test "tagged template literal for html templating", ->
+  html = (htmlFragments, expressions...) ->
+    htmlFragments.reduce (fullHtml, htmlFragment, i) ->
+      fullHtml + "#{expressions[i - 1]}#{htmlFragment}"
+
+  state =
+    name: 'Greg'
+    adjective: 'awesome'
+
+  eq "<p>\n  Hi Greg. You're looking awesome!\n</p>",
+    html"""
+      <p>
+        Hi ${state.name}. You're looking ${state.adjective}!
+      </p>
+    """
+
 # Simple, non-interpolated strings
 test "tagged template literal with a single-line single-quote string", ->
   eq 'text: [single-line single quotes] expressions: []',
