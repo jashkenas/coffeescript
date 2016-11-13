@@ -100,6 +100,14 @@ test "tagged template literal mixed dot and bracket notation recognized as a cal
   outerobj['obj'].func'mixed notation'
 
 # Edge cases
+test "tagged template literal with an empty string", ->
+  eq 'text: [] expressions: []',
+  func''
+
+test "tagged template literal with an empty interpolated string", ->
+  eq 'text: [] expressions: []',
+  func"#{}"
+
 test "tagged template literal with an interpolated string that itself contains an interpolated string", ->
   eq 'text: [inner | string] expressions: [interpolated]',
   func"inner #{"#{'inter'}polated"} string"
