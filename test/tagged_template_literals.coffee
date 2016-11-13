@@ -21,53 +21,65 @@ outerobj =
 
 # Simple, non-interpolated strings
 test "tagged template literal with a single-line single-quote string", ->
-  eq 'text: [single-line single quotes] expressions: []', func'single-line single quotes'
+  eq 'text: [single-line single quotes] expressions: []',
+  func'single-line single quotes'
 
 test "tagged template literal with a single-line double-quote string", ->
-  eq 'text: [single-line double quotes] expressions: []', func"single-line double quotes"
+  eq 'text: [single-line double quotes] expressions: []',
+  func"single-line double quotes"
 
 test "tagged template literal with a single-line single-quote block string", ->
-  eq 'text: [single-line block string] expressions: []', func'''single-line block string'''
+  eq 'text: [single-line block string] expressions: []',
+  func'''single-line block string'''
 
 test "tagged template literal with a single-line double-quote block string", ->
-  eq 'text: [single-line block string] expressions: []', func"""single-line block string"""
+  eq 'text: [single-line block string] expressions: []',
+  func"""single-line block string"""
 
 test "tagged template literal with a multi-line single-quote string", ->
-  eq 'text: [multi-line single quotes] expressions: []', func'multi-line
+  eq 'text: [multi-line single quotes] expressions: []',
+  func'multi-line
                                                               single quotes'
 
 test "tagged template literal with a multi-line double-quote string", ->
-  eq 'text: [multi-line double quotes] expressions: []', func"multi-line
-                                                              double quotes"
+  eq 'text: [multi-line double quotes] expressions: []',
+  func"multi-line
+       double quotes"
 
 test "tagged template literal with a multi-line single-quote block string", ->
-  eq 'text: [multi-line\nblock string] expressions: []', func'''
-                                                                multi-line
-                                                                block string
-                                                             '''
+  eq 'text: [multi-line\nblock string] expressions: []',
+  func'''
+      multi-line
+      block string
+      '''
 
 test "tagged template literal with a multi-line double-quote block string", ->
-  eq 'text: [multi-line\nblock string] expressions: []', func"""
-                                                                multi-line
-                                                                block string
-                                                             """
+  eq 'text: [multi-line\nblock string] expressions: []',
+  func"""
+      multi-line
+      block string
+      """
 
 # Interpolated strings with expressions
 test "tagged template literal with a single-line double-quote interpolated string", ->
-  eq 'text: [single-line double quotes | interpolation] expressions: [42]', func"single-line double quotes #{6 * 7} interpolation"
+  eq 'text: [single-line double quotes | interpolation] expressions: [42]',
+  func"single-line double quotes #{6 * 7} interpolation"
 
 test "tagged template literal with a single-line double-quote block interpolated string", ->
-  eq 'text: [single-line block string | interpolation] expressions: [48]', func"""single-line block string #{6 * 8} interpolation"""
+  eq 'text: [single-line block string | interpolation] expressions: [48]',
+  func"""single-line block string #{6 * 8} interpolation"""
 
 test "tagged template literal with a multi-line double-quote interpolated string", ->
-  eq 'text: [multi-line double quotes | interpolation] expressions: [awesome]', func"multi-line
-                                                                                     double quotes #{'awesome'} interpolation"
+  eq 'text: [multi-line double quotes | interpolation] expressions: [awesome]',
+  func"multi-line
+       double quotes #{'awesome'} interpolation"
 
 test "tagged template literal with a multi-line double-quote block interpolated string", ->
-  eq 'text: [multi-line\nblock string |] expressions: [32]', func"""
-                                                                 multi-line
-                                                                 block string #{2 * 16}
-                                                                 """
+  eq 'text: [multi-line\nblock string |] expressions: [32]',
+  func"""
+      multi-line
+      block string #{2 * 16}
+      """
 
 # TODO: Interpolation edge cases: multiple, empty, nested and expressions on end (ensure matches ES6)
 # TODO: Double check that _all_ interpolated strings are being output as ES6. Nice way of testing this?
@@ -76,17 +88,22 @@ test "tagged template literal with a multi-line double-quote block interpolated 
 test "tagged template literals: string prefix must be a callable function", ->
 
 test "tagged template literal dot notation recognized as a callable function", ->
-  eq 'text: [dot notation] expressions: []', outerobj.obj.func'dot notation'
+  eq 'text: [dot notation] expressions: []',
+  outerobj.obj.func'dot notation'
 
 test "tagged template literal bracket notation recognized as a callable function", ->
-  eq 'text: [bracket notation] expressions: []', outerobj['obj']['func']'bracket notation'
+  eq 'text: [bracket notation] expressions: []',
+  outerobj['obj']['func']'bracket notation'
 
 test "tagged template literal mixed dot and bracket notation recognized as a callable function", ->
-  eq 'text: [mixed notation] expressions: []', outerobj['obj'].func'mixed notation'
+  eq 'text: [mixed notation] expressions: []',
+  outerobj['obj'].func'mixed notation'
 
 # Edge cases
 test "tagged template literal with an interpolated string that itself contains an interpolated string", ->
-  eq 'text: [inner | string] expressions: [interpolated]', func"inner #{"#{'inter'}polated"} string"
+  eq 'text: [inner | string] expressions: [interpolated]',
+  func"inner #{"#{'inter'}polated"} string"
 
 test "tagged template literal with an interpolated string that contains a tagged template literal", ->
-  eq 'text: [inner tagged | literal] expressions: [text: [|] expressions: [template]]', func"inner tagged #{func"#{'template'}"} literal"
+  eq 'text: [inner tagged | literal] expressions: [text: [|] expressions: [template]]',
+  func"inner tagged #{func"#{'template'}"} literal"
