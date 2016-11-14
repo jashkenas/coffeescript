@@ -2244,7 +2244,9 @@ exports.Parens = class Parens extends Base
 # string concatenation inside.
 
 exports.StringWithInterpolations = class StringWithInterpolations extends Parens
-  unwrap: -> this
+  # Uncomment the following line in CoffeeScript 2, to allow all interpolated
+  # strings to be output using the ES2015 syntax:
+  # unwrap: -> this
 
   compileNode: (o) ->
     # This method produces an interpolated string using the new ES2015 syntax,
