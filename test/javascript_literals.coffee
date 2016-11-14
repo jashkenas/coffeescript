@@ -1,8 +1,5 @@
-# Javascript Literals
+# JavaScript Literals
 # -------------------
-
-# TODO: refactor javascript literal tests
-# TODO: add indexing and method invocation tests: `[1]`[0] is 1, `function(){}`.call()
 
 test "inline JavaScript is evaluated", ->
   eq '\\`', `
