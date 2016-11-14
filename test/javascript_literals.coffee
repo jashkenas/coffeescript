@@ -10,6 +10,10 @@ test "inline JavaScript is evaluated", ->
     "\\\`"
   `
 
+test "escaped backticks are output correctly", ->
+  `var a = 'foo\`bar';`
+  eq a, 'foo`bar'
+
 test "block inline JavaScript is evaluated", ->
   ```
   var a = 1;
