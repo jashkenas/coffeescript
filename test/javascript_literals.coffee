@@ -38,3 +38,10 @@ test "block inline JavaScript containing backticks", ->
   eq a + c, 45
   eq b, 'foo bar'
   eq d, 'foo`bar`'
+
+test "block JavaScript can end with an escaped backtick character", ->
+  ```var a = \`hello\````
+  ```
+  var b = \`world${'!'}\````
+  eq a, 'hello'
+  eq b, 'world!'
