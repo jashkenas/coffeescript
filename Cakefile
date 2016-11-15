@@ -176,10 +176,10 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
 
   do renderIndex = ->
     codeSnippetCounter = 0
-    rendered = _.template fs.readFileSync(source, 'utf-8'),
+    render = _.template fs.readFileSync(source, 'utf-8')
+    fs.writeFileSync 'index.html', render
       codeFor: codeFor()
       releaseHeader: releaseHeader
-    fs.writeFileSync 'index.html', rendered
     log "compiled", green, "#{source}"
 
   fs.watchFile source, interval: 200, renderIndex
