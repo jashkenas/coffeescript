@@ -300,6 +300,7 @@ exports.Lexer = class Lexer
     else
       script = js[1...-1]
       length = js.length
+    script = script.replace /\\`/g, '`' # Convert escaped backticks to backticks
     @token 'JS', script, 0, length
     length
 

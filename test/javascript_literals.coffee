@@ -8,8 +8,15 @@ test "inline JavaScript is evaluated", ->
   `
 
 test "escaped backticks are output correctly", ->
-  `var a = 'foo\`bar';`
-  eq a, 'foo`bar'
+  `var a = \`2 + 2 = ${4}\``
+  eq a, '2 + 2 = 4'
+
+test "backslashes before a newline don’t break JavaScript blocks", ->
+  `var a = \`To be, or not\\
+  to be.\``
+  eq a, '''
+  To be, or not\\
+    to be.'''
 
 test "block inline JavaScript is evaluated", ->
   ```
@@ -29,4 +36,5 @@ test "block inline JavaScript containing backticks", ->
   var d = 'foo`bar`';
   ```
   eq a + c, 45
+  eq b, 'foo bar'
   eq d, 'foo`bar`'
