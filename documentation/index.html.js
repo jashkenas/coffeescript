@@ -5,16 +5,16 @@
   <title>CoffeeScript</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="canonical" href="http://coffeescript.org" />
-  <link rel="stylesheet" type="text/css" href="documentation/css/docs.css" />
-  <link rel="stylesheet" type="text/css" href="documentation/css/tomorrow.css" />
-  <link rel="shortcut icon" href="documentation/images/favicon.ico" />
+  <link rel="stylesheet" type="text/css" href="v1/css/docs.css" />
+  <link rel="stylesheet" type="text/css" href="v1/css/tomorrow.css" />
+  <link rel="shortcut icon" href="v1/images/favicon.ico" />
 </head>
 <body>
 
   <div id="fadeout"></div>
 
   <div id="flybar">
-    <a id="logo" href="#top"><img src="documentation/images/logo.png" width="225" height="39" alt="CoffeeScript" /></a>
+    <a id="logo" href="#top"><img src="v1/images/logo.png" width="225" height="39" alt="CoffeeScript" /></a>
     <div class="navigation toc">
       <div class="button">
         Table of Contents
@@ -2373,7 +2373,7 @@ six = -&gt;
   </script>
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-  <script src="extras/coffee-script.js"></script>
+  <script src="v1/extras/coffee-script.js"></script>
 
 </body>
 </html>

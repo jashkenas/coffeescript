@@ -171,19 +171,20 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
 
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
+  majorVersion = CoffeeScript.VERSION.split('.')[0]
   source = 'documentation/index.html.js'
   exec 'bin/coffee -bc -o documentation/js documentation/coffee/*.coffee'
 
   do renderIndex = ->
-    codeSnippetCounter = 0
     render = _.template fs.readFileSync(source, 'utf-8')
-    fs.writeFileSync 'index.html', render
+    output = render
       codeFor: codeFor()
       releaseHeader: releaseHeader
-    log "compiled", green, "#{source}"
+    fs.writeFileSync "docs/v#{majorVersion}/index.html", output
+    log 'compiled', green, "#{source} → docs/v#{majorVersion}/index.html"
 
   fs.watchFile source, interval: 200, renderIndex
-  log "watching..." , green
+  log 'watching...' , green
 
 
 task 'doc:source', 'rebuild the internal documentation', ->
