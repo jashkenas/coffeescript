@@ -4,7 +4,7 @@
   <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
   <title>CoffeeScript</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="canonical" href="http://coffeescript.org" />
+  <link rel="canonical" href="https://coffeescript.org" />
   <link rel="stylesheet" type="text/css" href="v1/css/docs.css" />
   <link rel="stylesheet" type="text/css" href="v1/css/tomorrow.css" />
   <link rel="shortcut icon" href="v1/images/favicon.ico" />
