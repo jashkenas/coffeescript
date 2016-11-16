@@ -551,25 +551,7 @@ Block
     </p>
     <div class='code'><pre><code><span class="function"><span class="title">square</span> = <span class="params">(x)</span> -&gt;</span> x * x
 <span class="function"><span class="title">cube</span>   = <span class="params">(x)</span> -&gt;</span> square(x) * x
-</code></pre><pre><code><span class="keyword">var</span> cube, square;
-
-square = <span class="function"><span class="keyword">function</span>(<span class="params">x</span>) </span>{
-  <span class="keyword">return</span> x * x;
-};
-
-cube = <span class="function"><span class="keyword">function</span>(<span class="params">x</span>) </span>{
-  <span class="keyword">return</span> square(x) * x;
-};
-</code></pre><script>window.example2 = "square = (x) -> x * x\ncube   = (x) -> square(x) * x\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example2);'>load</div><div class='minibutton ok' onclick='javascript: var cube, square;
-
-square = function(x) {
-  return x * x;
-};
-
-cube = function(x) {
-  return square(x) * x;
-};
-;alert(cube(5));'>run: cube(5)</div><br class='clear' /></div>
+</code></pre><pre><code></code></pre><script>window.example2 = "square = (x) -> x * x\ncube   = (x) -> square(x) * x\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example2);'>load</div><div class='minibutton ok' onclick='javascript: ;alert(cube(5));'>run: cube(5)</div><br class='clear' /></div>
     <p>
       Functions may also have default values for arguments, which will be used
       if the incoming argument is missing (<code>null</code> or <code>undefined</code>).
@@ -603,7 +585,49 @@ kids =
   sister:
     name: <span class="string">"Ida"</span>
     age:  <span class="number">9</span>
-</code></pre><pre><code></code></pre><script>window.example4 = "song = [\"do\", \"re\", \"mi\", \"fa\", \"so\"]\n\nsingers = {Jagger: \"Rock\", Elvis: \"Roll\"}\n\nbitlist = [\n  1, 0, 1\n  0, 0, 1\n  1, 1, 0\n]\n\nkids =\n  brother:\n    name: \"Max\"\n    age:  11\n  sister:\n    name: \"Ida\"\n    age:  9\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example4);'>load</div><div class='minibutton ok' onclick='javascript: ;alert(song.join(" ... "));'>run: song.join(" ... ")</div><br class='clear' /></div>
+</code></pre><pre><code><span class="keyword">var</span> bitlist, kids, singers, song;
+
+song = [<span class="string">"do"</span>, <span class="string">"re"</span>, <span class="string">"mi"</span>, <span class="string">"fa"</span>, <span class="string">"so"</span>];
+
+singers = {
+  <span class="attr">Jagger</span>: <span class="string">"Rock"</span>,
+  <span class="attr">Elvis</span>: <span class="string">"Roll"</span>
+};
+
+bitlist = [<span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>];
+
+kids = {
+  <span class="attr">brother</span>: {
+    <span class="attr">name</span>: <span class="string">"Max"</span>,
+    <span class="attr">age</span>: <span class="number">11</span>
+  },
+  <span class="attr">sister</span>: {
+    <span class="attr">name</span>: <span class="string">"Ida"</span>,
+    <span class="attr">age</span>: <span class="number">9</span>
+  }
+};
+</code></pre><script>window.example4 = "song = [\"do\", \"re\", \"mi\", \"fa\", \"so\"]\n\nsingers = {Jagger: \"Rock\", Elvis: \"Roll\"}\n\nbitlist = [\n  1, 0, 1\n  0, 0, 1\n  1, 1, 0\n]\n\nkids =\n  brother:\n    name: \"Max\"\n    age:  11\n  sister:\n    name: \"Ida\"\n    age:  9\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example4);'>load</div><div class='minibutton ok' onclick='javascript: var bitlist, kids, singers, song;
+
+song = ["do", "re", "mi", "fa", "so"];
+
+singers = {
+  Jagger: "Rock",
+  Elvis: "Roll"
+};
+
+bitlist = [1, 0, 1, 0, 0, 1, 1, 1, 0];
+
+kids = {
+  brother: {
+    name: "Max",
+    age: 11
+  },
+  sister: {
+    name: "Ida",
+    age: 9
+  }
+};
+;alert(song.join(" ... "));'>run: song.join(" ... ")</div><br class='clear' /></div>
     <p>
       In JavaScript, you can't use reserved words, like <code>class</code>, as properties
       of an object, without quoting them as strings. CoffeeScript notices reserved words
