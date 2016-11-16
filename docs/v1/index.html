@@ -170,9 +170,9 @@ square = <span class="function"><span class="keyword">function</span>(<span clas
 list = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];
 
 math = {
-  <span class="attr">root</span>: <span class="built_in">Math</span>.sqrt,
-  <span class="attr">square</span>: square,
-  <span class="attr">cube</span>: <span class="function"><span class="keyword">function</span>(<span class="params">x</span>) </span>{
+  root: <span class="built_in">Math</span>.sqrt,
+  square: square,
+  cube: <span class="function"><span class="keyword">function</span>(<span class="params">x</span>) </span>{
     <span class="keyword">return</span> x * square(x);
   }
 };
@@ -551,14 +551,48 @@ Block
     </p>
     <div class='code'><pre><code><span class="function"><span class="title">square</span> = <span class="params">(x)</span> -&gt;</span> x * x
 <span class="function"><span class="title">cube</span>   = <span class="params">(x)</span> -&gt;</span> square(x) * x
-</code></pre><pre><code></code></pre><script>window.example2 = "square = (x) -> x * x\ncube   = (x) -> square(x) * x\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example2);'>load</div><div class='minibutton ok' onclick='javascript: ;alert(cube(5));'>run: cube(5)</div><br class='clear' /></div>
+</code></pre><pre><code><span class="keyword">var</span> cube, square;
+
+square = <span class="function"><span class="keyword">function</span>(<span class="params">x</span>) </span>{
+  <span class="keyword">return</span> x * x;
+};
+
+cube = <span class="function"><span class="keyword">function</span>(<span class="params">x</span>) </span>{
+  <span class="keyword">return</span> square(x) * x;
+};
+</code></pre><script>window.example2 = "square = (x) -> x * x\ncube   = (x) -> square(x) * x\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example2);'>load</div><div class='minibutton ok' onclick='javascript: var cube, square;
+
+square = function(x) {
+  return x * x;
+};
+
+cube = function(x) {
+  return square(x) * x;
+};
+;alert(cube(5));'>run: cube(5)</div><br class='clear' /></div>
     <p>
       Functions may also have default values for arguments, which will be used
       if the incoming argument is missing (<code>null</code> or <code>undefined</code>).
     </p>
     <div class='code'><pre><code><span class="function"><span class="title">fill</span> = <span class="params">(container, liquid = <span class="string">"coffee"</span>)</span> -&gt;</span>
   <span class="string">"Filling the <span class="subst">#{container}</span> with <span class="subst">#{liquid}</span>..."</span>
-</code></pre><pre><code></code></pre><script>window.example3 = "fill = (container, liquid = \"coffee\") ->\n  \"Filling the #{container} with #{liquid}...\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example3);'>load</div><div class='minibutton ok' onclick='javascript: ;alert(fill("cup"));'>run: fill("cup")</div><br class='clear' /></div>
+</code></pre><pre><code><span class="keyword">var</span> fill;
+
+fill = <span class="function"><span class="keyword">function</span>(<span class="params">container, liquid</span>) </span>{
+  <span class="keyword">if</span> (liquid == <span class="literal">null</span>) {
+    liquid = <span class="string">"coffee"</span>;
+  }
+  <span class="keyword">return</span> <span class="string">"Filling the "</span> + container + <span class="string">" with "</span> + liquid + <span class="string">"..."</span>;
+};
+</code></pre><script>window.example3 = "fill = (container, liquid = \"coffee\") ->\n  \"Filling the #{container} with #{liquid}...\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example3);'>load</div><div class='minibutton ok' onclick='javascript: var fill;
+
+fill = function(container, liquid) {
+  if (liquid == null) {
+    liquid = "coffee";
+  }
+  return "Filling the " + container + " with " + liquid + "...";
+};
+;alert(fill("cup"));'>run: fill("cup")</div><br class='clear' /></div>
 
     <p>
       <span id="objects_and_arrays" class="bookmark"></span>
@@ -590,20 +624,20 @@ kids =
 song = [<span class="string">"do"</span>, <span class="string">"re"</span>, <span class="string">"mi"</span>, <span class="string">"fa"</span>, <span class="string">"so"</span>];
 
 singers = {
-  <span class="attr">Jagger</span>: <span class="string">"Rock"</span>,
-  <span class="attr">Elvis</span>: <span class="string">"Roll"</span>
+  Jagger: <span class="string">"Rock"</span>,
+  Elvis: <span class="string">"Roll"</span>
 };
 
 bitlist = [<span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>];
 
 kids = {
-  <span class="attr">brother</span>: {
-    <span class="attr">name</span>: <span class="string">"Max"</span>,
-    <span class="attr">age</span>: <span class="number">11</span>
+  brother: {
+    name: <span class="string">"Max"</span>,
+    age: <span class="number">11</span>
   },
-  <span class="attr">sister</span>: {
-    <span class="attr">name</span>: <span class="string">"Ida"</span>,
-    <span class="attr">age</span>: <span class="number">9</span>
+  sister: {
+    name: <span class="string">"Ida"</span>,
+    age: <span class="number">9</span>
   }
 };
 </code></pre><script>window.example4 = "song = [\"do\", \"re\", \"mi\", \"fa\", \"so\"]\n\nsingers = {Jagger: \"Rock\", Elvis: \"Roll\"}\n\nbitlist = [\n  1, 0, 1\n  0, 0, 1\n  1, 1, 0\n]\n\nkids =\n  brother:\n    name: \"Max\"\n    age:  11\n  sister:\n    name: \"Ida\"\n    age:  9\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example4);'>load</div><div class='minibutton ok' onclick='javascript: var bitlist, kids, singers, song;
@@ -931,9 +965,9 @@ ages = <span class="keyword">for</span> child, age <span class="keyword">of</spa
 </code></pre><pre><code><span class="keyword">var</span> age, ages, child, yearsOld;
 
 yearsOld = {
-  <span class="attr">max</span>: <span class="number">10</span>,
-  <span class="attr">ida</span>: <span class="number">9</span>,
-  <span class="attr">tim</span>: <span class="number">11</span>
+  max: <span class="number">10</span>,
+  ida: <span class="number">9</span>,
+  tim: <span class="number">11</span>
 };
 
 ages = (<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>{
@@ -1687,11 +1721,11 @@ ref = weatherReport("Berkeley, CA"), city = ref[0], temp = ref[1], forecast = re
 </code></pre><pre><code><span class="keyword">var</span> city, futurists, name, ref, ref1, street;
 
 futurists = {
-  <span class="attr">sculptor</span>: <span class="string">"Umberto Boccioni"</span>,
-  <span class="attr">painter</span>: <span class="string">"Vladimir Burliuk"</span>,
-  <span class="attr">poet</span>: {
-    <span class="attr">name</span>: <span class="string">"F.T. Marinetti"</span>,
-    <span class="attr">address</span>: [<span class="string">"Via Roma 42R"</span>, <span class="string">"Bellagio, Italy 22021"</span>]
+  sculptor: <span class="string">"Umberto Boccioni"</span>,
+  painter: <span class="string">"Vladimir Burliuk"</span>,
+  poet: {
+    name: <span class="string">"F.T. Marinetti"</span>,
+    address: [<span class="string">"Via Roma 42R"</span>, <span class="string">"Bellagio, Italy 22021"</span>]
   }
 };
 
@@ -1768,8 +1802,8 @@ Person = (<span class="function"><span class="keyword">function</span>(<span cla
 })();
 
 tim = <span class="keyword">new</span> Person({
-  <span class="attr">name</span>: <span class="string">'Tim'</span>,
-  <span class="attr">age</span>: <span class="number">4</span>
+  name: <span class="string">'Tim'</span>,
+  age: <span class="number">4</span>
 });
 </code></pre><script>window.example31 = "class Person\n  constructor: (options) ->\n    {@name, @age, @height = 'average'} = options\n\ntim = new Person name: 'Tim', age: 4\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example31);'>load</div><div class='minibutton ok' onclick='javascript: var Person, tim;
 
