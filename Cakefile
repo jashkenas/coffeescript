@@ -38,7 +38,7 @@ run = (args, cb) ->
   proc =         spawn 'node', ['bin/coffee'].concat(args)
   proc.stderr.on 'data', (buffer) -> console.log buffer.toString()
   proc.on        'exit', (status) ->
-    process.exit(1) if status != 0
+    process.exit(1) if status isnt 0
     cb() if typeof cb is 'function'
 
 # Log a message with a color.
@@ -62,7 +62,7 @@ codeFor = ->
       cshtml = cshtml.replace /(import|export|from|as|default) /g, '<span class="reserved">$1</span> '
     jshtml = "<pre><code>#{hljs.highlight('javascript', js).value}</code></pre>"
     append = if executable is yes then '' else "alert(#{executable});"
-    if executable and executable != yes
+    if executable and executable isnt yes
       cs.replace /(\S)\s*\Z/m, "$1\n\nalert #{executable}"
     run    = if executable is true then 'run' else "run: #{executable}"
     name   = "example#{counter}"
@@ -105,9 +105,9 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
   lib  = "#{base}/lib/coffee-script"
   bin  = "#{base}/bin"
   node = "~/.node_libraries/coffee-script"
-  console.log   "Installing CoffeeScript to #{lib}"
-  console.log   "Linking to #{node}"
-  console.log   "Linking 'coffee' to #{bin}/coffee"
+  console.log "Installing CoffeeScript to #{lib}"
+  console.log "Linking to #{node}"
+  console.log "Linking 'coffee' to #{bin}/coffee"
   exec([
     "mkdir -p #{lib} #{bin}"
     "cp -rf bin lib LICENSE README.md package.json src #{lib}"
@@ -140,6 +140,7 @@ task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   require 'jison'
   parser = require('./lib/coffee-script/grammar').parser
   fs.writeFileSync 'lib/coffee-script/parser.js', parser.generate()
+
 
 task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
   code = ''
@@ -278,11 +279,6 @@ runTests = (CoffeeScript) ->
 
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
-
-  # Ignore generators test file if generators are not available
-  generatorsAreAvailable = '--harmony' in process.execArgv or
-    '--harmony-generators' in process.execArgv
-  files.splice files.indexOf('generators.coffee'), 1 if not generatorsAreAvailable
 
   for file in files when helpers.isCoffee file
     literate = helpers.isLiterate file
