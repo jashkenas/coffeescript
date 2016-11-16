@@ -24,6 +24,9 @@ header = """
    */
 """
 
+# Used in folder names like docs/v1
+majorVersion = CoffeeScript.VERSION.split('.')[0]
+
 # Build the CoffeeScript language from source.
 build = (cb) ->
   files = fs.readdirSync 'src'
@@ -171,7 +174,6 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
 
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
-  majorVersion = CoffeeScript.VERSION.split('.')[0]
   source = 'documentation/index.html.js'
   exec 'bin/coffee -bc -o documentation/js documentation/coffee/*.coffee'
 
@@ -187,14 +189,10 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
   log 'watching...' , green
 
 
-task 'doc:source', 'rebuild the internal documentation', ->
-  exec 'node_modules/.bin/docco src/*.*coffee && cp -rf docs documentation && rm -r docs', (err) ->
-    throw err if err
+task 'doc:source', 'rebuild the annotated source documentation', ->
+  for source in ['src/*.*coffee', 'examples/underscore.coffee']
+    exec "node_modules/docco/bin/docco #{source} --output docs/v#{majorVersion}/annotated-source", (err) -> throw err if err
 
-
-task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
-  exec 'node_modules/.bin/docco examples/underscore.coffee && cp -rf docs documentation && rm -r docs', (err) ->
-    throw err if err
 
 task 'bench', 'quick benchmark of compilation time', ->
   {Rewriter} = require './lib/coffee-script/rewriter'
