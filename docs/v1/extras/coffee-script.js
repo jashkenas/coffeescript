@@ -1,6 +1,6 @@
 /**
  * CoffeeScript Compiler v1.11.1
- * https://coffeescript.org
+ * http://coffeescript.org
  *
  * Copyright 2011, Jeremy Ashkenas
  * Released under the MIT License
