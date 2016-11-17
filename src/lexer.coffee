@@ -294,11 +294,14 @@ exports.Lexer = class Lexer
   jsToken: ->
     return 0 unless @chunk.charAt(0) is '`' and
       (match = HERE_JSTOKEN.exec(@chunk) or JSTOKEN.exec(@chunk))
-    [js] = match
-    script = if js[0..2] is '```' then js[3...-3] else js[1...-1]
-    script = script.replace /\\`/g, '`' # Convert escaped backticks to backticks
-    @token 'JS', script, 0, js.length
-    js.length
+    # Convert escaped backticks to backticks, and escaped backslashes
+    # just before escaped backticks to backslashes
+    script = match[1].replace /\\+(`|$)/g, (string) ->
+      # `string` is always a value like '\`', '\\\`', '\\\\\`', etc.
+      # By reducing it to its latter half, we turn '\`' to '`', '\\\`' to '\`', etc.
+      string[-Math.ceil(string.length / 2)..]
+    @token 'JS', script, 0, match[0].length
+    match[0].length
 
   # Matches regular expression literals, as well as multiline extended ones.
   # Lexing regular expressions is difficult to distinguish from division, so we

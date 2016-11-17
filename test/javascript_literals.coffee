@@ -4,7 +4,7 @@
 test "inline JavaScript is evaluated", ->
   eq '\\`', `
     // Inline JS
-    "\\\`"
+    "\\\\\`"
   `
 
 test "escaped backticks are output correctly", ->
@@ -45,3 +45,23 @@ test "block JavaScript can end with an escaped backtick character", ->
   var b = \`world${'!'}\````
   eq a, 'hello'
   eq b, 'world!'
+
+test "escaped JavaScript blocks speed round", ->
+  # The following has escaped backslashes because they’re required in strings, but the intent is this:
+  # `hello`                                       → hello;
+  # `\`hello\``                                   → `hello`;
+  # `\`Escaping backticks in JS: \\\`hello\\\`\`` → `Escaping backticks in JS: \`hello\``;
+  # `Single backslash: \ `                        → Single backslash: \ ;
+  # `Double backslash: \\ `                       → Double backslash: \\ ;
+  # `Single backslash at EOS: \\`                 → Single backslash at EOS: \;
+  # `Double backslash at EOS: \\\\`               → Double backslash at EOS: \\;
+  for [input, output] in [
+    ['`hello`',                                               'hello;']
+    ['`\\`hello\\``',                                         '`hello`;']
+    ['`\\`Escaping backticks in JS: \\\\\\`hello\\\\\\`\\``', '`Escaping backticks in JS: \\`hello\\``;']
+    ['`Single backslash: \\ `',                               'Single backslash: \\ ;']
+    ['`Double backslash: \\\\ `',                             'Double backslash: \\\\ ;']
+    ['`Single backslash at EOS: \\\\`',                       'Single backslash at EOS: \\;']
+    ['`Double backslash at EOS: \\\\\\\\`',                   'Double backslash at EOS: \\\\;']
+  ]
+    eq CoffeeScript.compile(input, bare: yes), "#{output}\n\n"
