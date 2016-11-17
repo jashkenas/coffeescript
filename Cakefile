@@ -17,7 +17,7 @@ unless process.env.NODE_DISABLE_COLORS
 header = """
   /**
    * CoffeeScript Compiler v#{CoffeeScript.VERSION}
-   * https://coffeescript.org
+   * http://coffeescript.org
    *
    * Copyright 2011, Jeremy Ashkenas
    * Released under the MIT License
