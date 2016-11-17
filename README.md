@@ -49,7 +49,7 @@ Compile a script:
 coffee -c /path/to/script.coffee
 ```
 
-For documentation, usage, and examples, see: http://coffeescript.org/
+For documentation, usage, and examples, see: https://coffeescript.org/
 
 To suggest a feature or report a bug: http://github.com/jashkenas/coffeescript/issues
 
@@ -57,6 +57,6 @@ If you'd like to chat, drop by #coffeescript on Freenode IRC.
 
 The source repository: https://github.com/jashkenas/coffeescript.git
 
-Changelog: http://coffeescript.org/#changelog
+Changelog: https://coffeescript.org/#changelog
 
 Our lovely and talented contributors are listed here: http://github.com/jashkenas/coffeescript/contributors

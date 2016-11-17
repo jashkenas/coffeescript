@@ -32,17 +32,17 @@
     "test":         "node ./bin/cake test",
     "test-harmony": "node --harmony ./bin/cake test"
   },
-  "homepage": "http://coffeescript.org",
+  "homepage": "https://coffeescript.org",
   "bugs": "https://github.com/jashkenas/coffeescript/issues",
   "repository": {
     "type": "git",
     "url": "git://github.com/jashkenas/coffeescript.git"
   },
   "devDependencies": {
-    "uglify-js": "~2.2",
-    "jison": ">=0.2.0",
-    "highlight.js": "~9.6.0",
-    "underscore": "~1.5.2",
+    "uglify-js": "~2.7",
+    "jison": ">=0.4.17",
+    "highlight.js": "~9.8.0",
+    "underscore": "~1.8.3",
     "docco": "~0.7.0"
   }
 }
