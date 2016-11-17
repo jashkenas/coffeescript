@@ -46,6 +46,9 @@ test "block JavaScript can end with an escaped backtick character", ->
   eq a, 'hello'
   eq b, 'world!'
 
+test "JavaScript block only escapes backslashes followed by backticks", ->
+  eq `'\\\n'`, '\\\n'
+
 test "escaped JavaScript blocks speed round", ->
   # The following has escaped backslashes because they’re required in strings, but the intent is this:
   # `hello`                                       → hello;
