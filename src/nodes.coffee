@@ -787,6 +787,17 @@ exports.RegexWithInterpolations = class RegexWithInterpolations extends Call
   constructor: (args = []) ->
     super (new Value new IdentifierLiteral 'RegExp'), args, false
 
+#### TaggedTemplateCall
+
+exports.TaggedTemplateCall = class TaggedTemplateCall extends Call
+  constructor: (variable, arg, soak) ->
+    arg = new StringWithInterpolations Block.wrap([ new Value arg ]) if arg instanceof StringLiteral
+    super variable, [ arg ], soak
+
+  compileNode: (o) ->
+    o.inTaggedTemplateCall = yes # Tell StringWithInterpolations whether to compile as ES2015 or not; remove in CoffeeScript 2
+    @variable.compileToFragments(o, LEVEL_ACCESS).concat @args[0].compileToFragments(o, LEVEL_LIST)
+
 #### Extends
 
 # Node to extend an object's prototype with an ancestor object.
@@ -2233,6 +2244,44 @@ exports.Parens = class Parens extends Base
 # string concatenation inside.
 
 exports.StringWithInterpolations = class StringWithInterpolations extends Parens
+  # Uncomment the following line in CoffeeScript 2, to allow all interpolated
+  # strings to be output using the ES2015 syntax:
+  # unwrap: -> this
+
+  compileNode: (o) ->
+    # This method produces an interpolated string using the new ES2015 syntax,
+    # which is opt-in by using tagged template literals. If this
+    # StringWithInterpolations isn’t inside a tagged template literal,
+    # fall back to the CoffeeScript 1.x output.
+    # (Remove this check in CoffeeScript 2.)
+    unless o.inTaggedTemplateCall
+      return super
+
+    # Assumption: expr is Value>StringLiteral or Op
+    expr = @body.unwrap()
+
+    elements = []
+    expr.traverseChildren no, (node) ->
+      if node instanceof StringLiteral
+        elements.push node
+        return yes
+      else if node instanceof Parens
+        elements.push node
+        return no
+      return yes
+
+    fragments = []
+    fragments.push @makeCode '`'
+    for element in elements
+      if element instanceof StringLiteral
+        fragments.push @makeCode element.value.slice(1, -1)
+      else
+        fragments.push @makeCode '${'
+        fragments.push element.compileToFragments(o, LEVEL_PAREN)...
+        fragments.push @makeCode '}'
+    fragments.push @makeCode '`'
+
+    fragments
 
 #### For
 

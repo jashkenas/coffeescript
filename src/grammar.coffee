@@ -413,6 +413,7 @@ grammar =
 
   # Ordinary function invocation, or a chained series of calls.
   Invocation: [
+    o 'Value OptFuncExist String',              -> new TaggedTemplateCall $1, $3, $2
     o 'Value OptFuncExist Arguments',           -> new Call $1, $3, $2
     o 'Invocation OptFuncExist Arguments',      -> new Call $1, $3, $2
     o 'Super'
