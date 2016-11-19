@@ -171,9 +171,9 @@ square = <span class="function"><span class="keyword">function</span>(<span clas
 list = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];
 
 math = {
-  root: <span class="built_in">Math</span>.sqrt,
-  square: square,
-  cube: <span class="function"><span class="keyword">function</span>(<span class="params">x</span>) </span>{
+  <span class="attr">root</span>: <span class="built_in">Math</span>.sqrt,
+  <span class="attr">square</span>: square,
+  <span class="attr">cube</span>: <span class="function"><span class="keyword">function</span>(<span class="params">x</span>) </span>{
     <span class="keyword">return</span> x * square(x);
   }
 };
@@ -625,20 +625,20 @@ kids =
 song = [<span class="string">"do"</span>, <span class="string">"re"</span>, <span class="string">"mi"</span>, <span class="string">"fa"</span>, <span class="string">"so"</span>];
 
 singers = {
-  Jagger: <span class="string">"Rock"</span>,
-  Elvis: <span class="string">"Roll"</span>
+  <span class="attr">Jagger</span>: <span class="string">"Rock"</span>,
+  <span class="attr">Elvis</span>: <span class="string">"Roll"</span>
 };
 
 bitlist = [<span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>];
 
 kids = {
-  brother: {
-    name: <span class="string">"Max"</span>,
-    age: <span class="number">11</span>
+  <span class="attr">brother</span>: {
+    <span class="attr">name</span>: <span class="string">"Max"</span>,
+    <span class="attr">age</span>: <span class="number">11</span>
   },
-  sister: {
-    name: <span class="string">"Ida"</span>,
-    age: <span class="number">9</span>
+  <span class="attr">sister</span>: {
+    <span class="attr">name</span>: <span class="string">"Ida"</span>,
+    <span class="attr">age</span>: <span class="number">9</span>
   }
 };
 </code></pre><script>window.example4 = "song = [\"do\", \"re\", \"mi\", \"fa\", \"so\"]\n\nsingers = {Jagger: \"Rock\", Elvis: \"Roll\"}\n\nbitlist = [\n  1, 0, 1\n  0, 0, 1\n  1, 1, 0\n]\n\nkids =\n  brother:\n    name: \"Max\"\n    age:  11\n  sister:\n    name: \"Ida\"\n    age:  9\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example4);'>load</div><div class='minibutton ok' onclick='javascript: var bitlist, kids, singers, song;
@@ -966,9 +966,9 @@ ages = <span class="keyword">for</span> child, age <span class="keyword">of</spa
 </code></pre><pre><code><span class="keyword">var</span> age, ages, child, yearsOld;
 
 yearsOld = {
-  max: <span class="number">10</span>,
-  ida: <span class="number">9</span>,
-  tim: <span class="number">11</span>
+  <span class="attr">max</span>: <span class="number">10</span>,
+  <span class="attr">ida</span>: <span class="number">9</span>,
+  <span class="attr">tim</span>: <span class="number">11</span>
 };
 
 ages = (<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>{
@@ -1723,11 +1723,11 @@ ref = weatherReport("Berkeley, CA"), city = ref[0], temp = ref[1], forecast = re
 </code></pre><pre><code><span class="keyword">var</span> city, futurists, name, ref, ref1, street;
 
 futurists = {
-  sculptor: <span class="string">"Umberto Boccioni"</span>,
-  painter: <span class="string">"Vladimir Burliuk"</span>,
-  poet: {
-    name: <span class="string">"F.T. Marinetti"</span>,
-    address: [<span class="string">"Via Roma 42R"</span>, <span class="string">"Bellagio, Italy 22021"</span>]
+  <span class="attr">sculptor</span>: <span class="string">"Umberto Boccioni"</span>,
+  <span class="attr">painter</span>: <span class="string">"Vladimir Burliuk"</span>,
+  <span class="attr">poet</span>: {
+    <span class="attr">name</span>: <span class="string">"F.T. Marinetti"</span>,
+    <span class="attr">address</span>: [<span class="string">"Via Roma 42R"</span>, <span class="string">"Bellagio, Italy 22021"</span>]
   }
 };
 
@@ -1804,8 +1804,8 @@ Person = (<span class="function"><span class="keyword">function</span>(<span cla
 })();
 
 tim = <span class="keyword">new</span> Person({
-  name: <span class="string">'Tim'</span>,
-  age: <span class="number">4</span>
+  <span class="attr">name</span>: <span class="string">'Tim'</span>,
+  <span class="attr">age</span>: <span class="number">4</span>
 });
 </code></pre><script>window.example31 = "class Person\n  constructor: (options) ->\n    {@name, @age, @height = 'average'} = options\n\ntim = new Person name: 'Tim', age: 4\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example31);'>load</div><div class='minibutton ok' onclick='javascript: var Person, tim;
 
