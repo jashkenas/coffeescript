@@ -1,9 +1,9 @@
-fs            = require 'fs'
-path          = require 'path'
-_             = require 'underscore'
-CoffeeScript  = require './lib/coffee-script'
-{spawn, exec} = require 'child_process'
-helpers       = require './lib/coffee-script/helpers'
+fs                        = require 'fs'
+path                      = require 'path'
+_                         = require 'underscore'
+{ spawn, exec, execSync } = require 'child_process'
+CoffeeScript              = require './lib/coffee-script'
+helpers                   = require './lib/coffee-script/helpers'
 
 # ANSI Terminal Colors.
 bold = red = green = reset = ''
@@ -175,9 +175,11 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
 
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
-  source = 'documentation/index.html.js'
-  exec "bin/coffee -bc -o docs/v#{majorVersion}/js documentation/coffee/*.coffee"
+  generatedJavaScriptFolder = "docs/v#{majorVersion}/js"
+  fs.mkdirSync generatedJavaScriptFolder unless fs.existsSync generatedJavaScriptFolder
+  execSync "bin/coffee -bc -o #{generatedJavaScriptFolder} documentation/coffee/*.coffee"
 
+  source = 'documentation/index.html.js'
   do renderIndex = ->
     render = _.template fs.readFileSync(source, 'utf-8')
     output = render
