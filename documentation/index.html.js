@@ -33,6 +33,7 @@
         <a href="#slices">Array Slicing and Splicing</a>
         <a href="#expressions">Everything is an Expression</a>
         <a href="#operators">Operators and Aliases</a>
+        <a href="#existential-operator">Existential Operator</a>
         <a href="#classes">Classes, Inheritance, and Super</a>
         <a href="#destructuring">Destructuring Assignment</a>
         <a href="#fat-arrow">Bound and Generator Functions</a>
@@ -716,6 +717,7 @@ Block
     <%= codeFor('aliases') %>
 
     <p>
+      <span id="existential-operator" class="bookmark"></span>
       <b class="header">The Existential Operator</b>
       It's a little difficult to check for the existence of a variable in
       JavaScript. <code>if (variable) ...</code> comes close, but fails for zero,
