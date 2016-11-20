@@ -107,8 +107,17 @@
       compiles one-to-one into the equivalent JS, and there is
       no interpretation at runtime. You can use any existing JavaScript library
       seamlessly from CoffeeScript (and vice-versa). The compiled output is
-      readable and pretty-printed, will work in every JavaScript runtime, and tends
-      to run as fast or faster than the equivalent handwritten JavaScript.
+      readable, pretty-printed, and tends to run as fast or faster than the
+      equivalent handwritten JavaScript.
+    </p>
+
+    <p>
+      The CoffeeScript compiler goes to great lengths to generate output JavaScript
+      that runs in every JavaScript runtime, but there are exceptions. Use
+      <a href="#generator-functions">generator functions</a> only if you know that your
+      <a href="http://kangax.github.io/compat-table/es6/#test-generators">target
+      runtimes can support them</a>. If you use <a href="#modules">modules</a>, you
+      will need to <a href="#modules-note">use an additional tool to resolve them</a>.
     </p>
 
     <p>
@@ -862,6 +871,7 @@ Block
       constructed.
     </p>
     <p>
+      <span id="generator-functions" class="bookmark"></span>
       CoffeeScript functions also support
       <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">ES2015 generator functions</a>
       through the <code>yield</code> keyword. There's no <code>function*(){}</code>
@@ -978,6 +988,7 @@ Block
     </p>
     <%= codeFor('modules') %>
     <p>
+      <span id="modules-note" class="bookmark"></span>
       Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an
       <code>import</code> or <code>export</code> statement in CoffeeScript will produce an
       <code>import</code> or <code>export</code> statement in the resulting output.
