@@ -375,7 +375,8 @@ class exports.Rewriter
   fixOutdentLocationData: ->
     @scanTokens (token, i, tokens) ->
       return 1 unless token[0] is 'OUTDENT' or
-        (token.generated and token[0] is 'CALL_END')
+        (token.generated and token[0] is 'CALL_END') or
+        (token.generated and token[0] is '}')
       prevLocationData = tokens[i - 1][2]
       token[2] =
         first_line:   prevLocationData.last_line

@@ -125,46 +125,6 @@ test "#1096: unexpected generated tokens", ->
      ^^^^^^^^^^^
   '''
   # Unexpected string
-  assertErrorFormat "a''", '''
-    [stdin]:1:2: error: unexpected string
-    a''
-     ^^
-  '''
-  assertErrorFormat 'a""', '''
-    [stdin]:1:2: error: unexpected string
-    a""
-     ^^
-  '''
-  assertErrorFormat "a'b'", '''
-    [stdin]:1:2: error: unexpected string
-    a'b'
-     ^^^
-  '''
-  assertErrorFormat 'a"b"', '''
-    [stdin]:1:2: error: unexpected string
-    a"b"
-     ^^^
-  '''
-  assertErrorFormat "a'''b'''", """
-    [stdin]:1:2: error: unexpected string
-    a'''b'''
-     ^^^^^^^
-  """
-  assertErrorFormat 'a"""b"""', '''
-    [stdin]:1:2: error: unexpected string
-    a"""b"""
-     ^^^^^^^
-  '''
-  assertErrorFormat 'a"#{b}"', '''
-    [stdin]:1:2: error: unexpected string
-    a"#{b}"
-     ^^^^^^
-  '''
-  assertErrorFormat 'a"""#{b}"""', '''
-    [stdin]:1:2: error: unexpected string
-    a"""#{b}"""
-     ^^^^^^^^^^
-  '''
   assertErrorFormat 'import foo from "lib-#{version}"', '''
     [stdin]:1:17: error: the name of the module to be imported from must be an uninterpolated string
     import foo from "lib-#{version}"
@@ -1192,11 +1152,67 @@ test "function cannot contain both `await` and `yield from`", ->
       ^^^^^^^
   '''
 
-test "Cannnot have `await` outside a function", ->
+test "cannot have `await` outside a function", ->
   assertErrorFormat '''
     await 1
   ''', '''
     [stdin]:1:1: error: await can only occur inside functions
     await 1
     ^^^^^^^
+  '''
+
+test "indexes are not supported in for-from loops", ->
+  assertErrorFormat "x for x, i from [1, 2, 3]", '''
+    [stdin]:1:10: error: cannot use index with for-from
+    x for x, i from [1, 2, 3]
+             ^
+  '''
+
+test "own is not supported in for-from loops", ->
+  assertErrorFormat "x for own x from [1, 2, 3]", '''
+    [stdin]:1:7: error: cannot use own with for-from
+    x for own x from [1, 2, 3]
+          ^^^
+    '''
+
+test "tagged template literals must be called by an identifier", ->
+  assertErrorFormat "1''", '''
+    [stdin]:1:1: error: literal is not a function
+    1''
+    ^
+  '''
+  assertErrorFormat '1""', '''
+    [stdin]:1:1: error: literal is not a function
+    1""
+    ^
+  '''
+  assertErrorFormat "1'b'", '''
+    [stdin]:1:1: error: literal is not a function
+    1'b'
+    ^
+  '''
+  assertErrorFormat '1"b"', '''
+    [stdin]:1:1: error: literal is not a function
+    1"b"
+    ^
+  '''
+  assertErrorFormat "1'''b'''", """
+    [stdin]:1:1: error: literal is not a function
+    1'''b'''
+    ^
+  """
+  assertErrorFormat '1"""b"""', '''
+    [stdin]:1:1: error: literal is not a function
+    1"""b"""
+    ^
+  '''
+  assertErrorFormat '1"#{b}"', '''
+    [stdin]:1:1: error: literal is not a function
+    1"#{b}"
+    ^
+  '''
+  assertErrorFormat '1"""#{b}"""', '''
+    [stdin]:1:1: error: literal is not a function
+    1"""#{b}"""
+    ^
   '''

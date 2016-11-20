@@ -690,9 +690,6 @@ exports.Call = class Call extends Base
   # Compile a vanilla function call.
   compileNode: (o) ->
     @variable?.front = @front
-    compiledArray = Splat.compileSplattedArray o, @args, true
-    if compiledArray.length
-      return @compileSplat o, compiledArray
     compiledArgs = []
     for arg, argIndex in @args
       if argIndex then compiledArgs.push @makeCode ", "
@@ -710,47 +707,6 @@ exports.Call = class Call extends Base
     fragments.push compiledArgs...
     fragments.push @makeCode ")"
     fragments
-
-  # If you call a function with a splat, it's converted into a JavaScript
-  # `.apply()` call to allow an array of arguments to be passed.
-  # If it's a constructor, then things get real tricky. We have to inject an
-  # inner constructor in order to be able to pass the varargs.
-  #
-  # splatArgs is an array of CodeFragments to put into the 'apply'.
-  compileSplat: (o, splatArgs) ->
-    if this instanceof SuperCall
-      return [].concat @makeCode("#{ @superReference o }.apply(#{@superThis(o)}, "),
-        splatArgs, @makeCode(")")
-
-    if @isNew
-      idt = @tab + TAB
-      return [].concat @makeCode("""
-        (function(func, args, ctor) {
-        #{idt}ctor.prototype = func.prototype;
-        #{idt}var child = new ctor, result = func.apply(child, args);
-        #{idt}return Object(result) === result ? result : child;
-        #{@tab}})("""),
-        (@variable.compileToFragments o, LEVEL_LIST),
-        @makeCode(", "), splatArgs, @makeCode(", function(){})")
-
-    answer = []
-    base = new Value @variable
-    if (name = base.properties.pop()) and base.isComplex()
-      ref = o.scope.freeVariable 'ref'
-      answer = answer.concat @makeCode("(#{ref} = "),
-        (base.compileToFragments o, LEVEL_LIST),
-        @makeCode(")"),
-        name.compileToFragments(o)
-    else
-      fun = base.compileToFragments o, LEVEL_ACCESS
-      fun = @wrapInBraces fun if SIMPLENUM.test fragmentsToText fun
-      if name
-        ref = fragmentsToText fun
-        fun.push (name.compileToFragments o)...
-      else
-        ref = 'null'
-      answer = answer.concat fun
-    answer = answer.concat @makeCode(".apply(#{ref}, "), splatArgs, @makeCode(")")
 
 #### Super
 
@@ -799,6 +755,17 @@ exports.SuperCall = class SuperCall extends Call
 exports.RegexWithInterpolations = class RegexWithInterpolations extends Call
   constructor: (args = []) ->
     super (new Value new IdentifierLiteral 'RegExp'), args, false
+
+#### TaggedTemplateCall
+
+exports.TaggedTemplateCall = class TaggedTemplateCall extends Call
+  constructor: (variable, arg, soak) ->
+    arg = new StringWithInterpolations Block.wrap([ new Value arg ]) if arg instanceof StringLiteral
+    super variable, [ arg ], soak
+
+  compileNode: (o) ->
+    o.inTaggedTemplateCall = yes # Tell StringWithInterpolations whether to compile as ES2015 or not; remove in CoffeeScript 2
+    @variable.compileToFragments(o, LEVEL_ACCESS).concat @args[0].compileToFragments(o, LEVEL_LIST)
 
 #### Extends
 
@@ -1042,8 +1009,6 @@ exports.Arr = class Arr extends Base
   compileNode: (o) ->
     return [@makeCode '[]'] unless @objects.length
     o.indent += TAB
-    answer = Splat.compileSplattedArray o, @objects
-    return answer if answer.length
 
     answer = []
     compiledObjs = (obj.compileToFragments o, LEVEL_LIST for obj in @objects)
@@ -1847,36 +1812,10 @@ exports.Splat = class Splat extends Base
     @name.assigns name
 
   compileToFragments: (o) ->
-    @name.compileToFragments o
+    [ @makeCode('...')
+      @name.compileToFragments(o)... ]
 
   unwrap: -> @name
-
-  # Utility function that converts an arbitrary number of elements, mixed with
-  # splats, to a proper array.
-  @compileSplattedArray: (o, list, apply) ->
-    index = -1
-    continue while (node = list[++index]) and node not instanceof Splat
-    return [] if index >= list.length
-    if list.length is 1
-      node = list[0]
-      fragments = node.compileToFragments o, LEVEL_LIST
-      return fragments if apply
-      return [].concat node.makeCode("#{ utility 'slice', o }.call("), fragments, node.makeCode(")")
-    args = list[index..]
-    for node, i in args
-      compiledNode = node.compileToFragments o, LEVEL_LIST
-      args[i] = if node instanceof Splat
-      then [].concat node.makeCode("#{ utility 'slice', o }.call("), compiledNode, node.makeCode(")")
-      else [].concat node.makeCode("["), compiledNode, node.makeCode("]")
-    if index is 0
-      node = list[0]
-      concatPart = (node.joinFragmentArrays args[1..], ', ')
-      return args[0].concat node.makeCode(".concat("), concatPart, node.makeCode(")")
-    base = (node.compileToFragments o, LEVEL_LIST for node in list[...index])
-    base = list[0].joinFragmentArrays base, ', '
-    concatPart = list[index].joinFragmentArrays args, ', '
-    [..., last] = list
-    [].concat list[0].makeCode("["), base, list[index].makeCode("].concat("), concatPart, last.makeCode(")")
 
 #### Expansion
 
@@ -2301,6 +2240,44 @@ exports.Parens = class Parens extends Base
 # string concatenation inside.
 
 exports.StringWithInterpolations = class StringWithInterpolations extends Parens
+  # Uncomment the following line in CoffeeScript 2, to allow all interpolated
+  # strings to be output using the ES2015 syntax:
+  # unwrap: -> this
+
+  compileNode: (o) ->
+    # This method produces an interpolated string using the new ES2015 syntax,
+    # which is opt-in by using tagged template literals. If this
+    # StringWithInterpolations isn’t inside a tagged template literal,
+    # fall back to the CoffeeScript 1.x output.
+    # (Remove this check in CoffeeScript 2.)
+    unless o.inTaggedTemplateCall
+      return super
+
+    # Assumption: expr is Value>StringLiteral or Op
+    expr = @body.unwrap()
+
+    elements = []
+    expr.traverseChildren no, (node) ->
+      if node instanceof StringLiteral
+        elements.push node
+        return yes
+      else if node instanceof Parens
+        elements.push node
+        return no
+      return yes
+
+    fragments = []
+    fragments.push @makeCode '`'
+    for element in elements
+      if element instanceof StringLiteral
+        fragments.push @makeCode element.value.slice(1, -1)
+      else
+        fragments.push @makeCode '${'
+        fragments.push element.compileToFragments(o, LEVEL_PAREN)...
+        fragments.push @makeCode '}'
+    fragments.push @makeCode '`'
+
+    fragments
 
 #### For
 
@@ -2317,13 +2294,15 @@ exports.For = class For extends While
     @body    = Block.wrap [body]
     @own     = !!source.own
     @object  = !!source.object
+    @from    = !!source.from
+    @index.error 'cannot use index with for-from' if @from and @index
+    source.ownTag.error "cannot use own with for-#{if @from then 'from' else 'in'}" if @own and not @object
     [@name, @index] = [@index, @name] if @object
     @index.error 'index cannot be a pattern matching expression' if @index instanceof Value
-    @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length
+    @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length and not @from
     @pattern = @name instanceof Value
     @index.error 'indexes do not apply to range loops' if @range and @index
     @name.error 'cannot pattern match over range loops' if @range and @pattern
-    @name.error 'cannot use own with for-in' if @own and not @object
     @returns = false
 
   children: ['body', 'source', 'guard', 'step']
@@ -2343,8 +2322,11 @@ exports.For = class For extends While
     scope.find(name)  if name and not @pattern
     scope.find(index) if index
     rvar        = scope.freeVariable 'results' if @returns
-    ivar        = (@object and index) or scope.freeVariable 'i', single: true
-    kvar        = (@range and name) or index or ivar
+    if @from
+      ivar = scope.freeVariable 'x', single: true if @pattern
+    else
+      ivar = (@object and index) or scope.freeVariable 'i', single: true
+    kvar        = ((@range or @from) and name) or index or ivar
     kvarAssign  = if kvar isnt ivar then "#{kvar} = " else ""
     if @step and not @range
       [step, stepVar] = @cacheToCodeFragments @step.cache o, LEVEL_LIST, isComplexOrAssignable
@@ -2362,9 +2344,9 @@ exports.For = class For extends While
       if (name or @own) and @source.unwrap() not instanceof IdentifierLiteral
         defPart    += "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
         svar       = ref
-      if name and not @pattern
+      if name and not @pattern and not @from
         namePart   = "#{name} = #{svar}[#{kvar}]"
-      if not @object
+      if not @object and not @from
         defPart += "#{@tab}#{step};\n" if step isnt stepVar
         down = stepNum < 0
         lvar = scope.freeVariable 'len' unless @step and stepNum? and down
@@ -2383,7 +2365,7 @@ exports.For = class For extends While
           increment = "#{ivar} += #{stepVar}"
         else
           increment = "#{if kvar isnt ivar then "++#{ivar}" else "#{ivar}++"}"
-        forPartFragments  = [@makeCode("#{declare}; #{compare}; #{kvarAssign}#{increment}")]
+        forPartFragments = [@makeCode("#{declare}; #{compare}; #{kvarAssign}#{increment}")]
     if @returns
       resultPart   = "#{@tab}#{rvar} = [];\n"
       returnResult = "\n#{@tab}return #{rvar};"
@@ -2394,14 +2376,16 @@ exports.For = class For extends While
       else
         body = Block.wrap [new If @guard, body] if @guard
     if @pattern
-      body.expressions.unshift new Assign @name, new Literal "#{svar}[#{kvar}]"
+      body.expressions.unshift new Assign @name, if @from then new IdentifierLiteral kvar else new Literal "#{svar}[#{kvar}]"
     defPartFragments = [].concat @makeCode(defPart), @pluckDirectCall(o, body)
     varPart = "\n#{idt1}#{namePart};" if namePart
     if @object
-      forPartFragments   = [@makeCode("#{kvar} in #{svar}")]
+      forPartFragments = [@makeCode("#{kvar} in #{svar}")]
       guardPart = "\n#{idt1}if (!#{utility 'hasProp', o}.call(#{svar}, #{kvar})) continue;" if @own
+    else if @from
+      forPartFragments = [@makeCode("#{kvar} of #{svar}")]
     bodyFragments = body.compileToFragments merge(o, indent: idt1), LEVEL_TOP
-    if bodyFragments and (bodyFragments.length > 0)
+    if bodyFragments and bodyFragments.length > 0
       bodyFragments = [].concat @makeCode("\n"), bodyFragments, @makeCode("\n")
     [].concat defPartFragments, @makeCode("#{resultPart or ''}#{@tab}for ("),
       forPartFragments, @makeCode(") {#{guardPart}#{varPart}"), bodyFragments,
