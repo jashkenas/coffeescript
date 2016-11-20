@@ -176,20 +176,25 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
 
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
-  generatedJavaScriptFolder = "docs/v#{majorVersion}/examples"
-  fs.mkdirSync generatedJavaScriptFolder unless fs.existsSync generatedJavaScriptFolder
-  execSync "bin/coffee -bc -o #{generatedJavaScriptFolder} documentation/examples/*.coffee"
+  examplesSourceFolder = 'documentation/examples'
+  examplesOutputFolder = "docs/v#{majorVersion}/examples"
+  fs.mkdirSync examplesOutputFolder unless fs.existsSync examplesOutputFolder
+  do renderExamples = ->
+    execSync "bin/coffee -bc -o #{examplesOutputFolder} #{examplesSourceFolder}/*.coffee"
 
-  source = 'documentation/index.html.js'
+  indexFile = 'documentation/index.html.js'
   do renderIndex = ->
-    render = _.template fs.readFileSync(source, 'utf-8')
+    render = _.template fs.readFileSync(indexFile, 'utf-8')
     output = render
       codeFor: codeFor()
       releaseHeader: releaseHeader
     fs.writeFileSync "docs/v#{majorVersion}/index.html", output
-    log 'compiled', green, "#{source} → docs/v#{majorVersion}/index.html"
+    log 'compiled', green, "#{indexFile} → docs/v#{majorVersion}/index.html"
 
-  fs.watchFile source, interval: 200, renderIndex
+  fs.watch examplesSourceFolder, interval: 200, ->
+    renderExamples()
+    renderIndex()
+  fs.watch indexFile, interval: 200, renderIndex
   log 'watching...' , green
 
 
