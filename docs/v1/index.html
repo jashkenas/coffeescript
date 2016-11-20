@@ -1887,7 +1887,7 @@ Account = <span class="function"><span class="keyword">function</span>(<span cla
   num = <span class="number">0</span>
   <span class="keyword">loop</span>
     num += <span class="number">1</span>
-    yield num * num
+    <span class="keyword">yield</span> num * num
   <span class="keyword">return</span>
 
 <span class="built_in">window</span>.ps <span class="keyword">or</span>= perfectSquares()
@@ -2185,28 +2185,28 @@ OPERATOR = <span class="regexp">/^(?:[-=]&gt;|[-+*\/%&lt;&gt;&amp;|^!?=]=|&gt;&g
       ES2015 modules are supported in CoffeeScript, with very similar <code>import</code>
       and <code>export</code> syntax:
     </p>
-    <div class='code'><pre><code><span class="reserved">import</span> <span class="string">'local-file.coffee'</span>
-<span class="reserved">import</span> <span class="string">'coffee-script'</span>
+    <div class='code'><pre><code><span class="keyword">import</span> <span class="string">'local-file.coffee'</span>
+<span class="keyword">import</span> <span class="string">'coffee-script'</span>
 
-<span class="reserved">import</span> _ <span class="reserved">from</span> <span class="string">'underscore'</span>
-<span class="reserved">import</span> * <span class="reserved">as</span> underscore <span class="reserved">from</span> <span class="string">'underscore'</span>
+<span class="keyword">import</span> _ <span class="keyword">from</span> <span class="string">'underscore'</span>
+<span class="keyword">import</span> * <span class="keyword">as</span> underscore <span class="keyword">from</span> <span class="string">'underscore'</span>
 
-<span class="reserved">import</span> { now } <span class="reserved">from</span> <span class="string">'underscore'</span>
-<span class="reserved">import</span> { now <span class="reserved">as</span> currentTimestamp } <span class="reserved">from</span> <span class="string">'underscore'</span>
-<span class="reserved">import</span> { first, last } <span class="reserved">from</span> <span class="string">'underscore'</span>
-<span class="reserved">import</span> utilityBelt, { each } <span class="reserved">from</span> <span class="string">'underscore'</span>
+<span class="keyword">import</span> { now } <span class="keyword">from</span> <span class="string">'underscore'</span>
+<span class="keyword">import</span> { now <span class="keyword">as</span> currentTimestamp } <span class="keyword">from</span> <span class="string">'underscore'</span>
+<span class="keyword">import</span> { first, last } <span class="keyword">from</span> <span class="string">'underscore'</span>
+<span class="keyword">import</span> utilityBelt, { each } <span class="keyword">from</span> <span class="string">'underscore'</span>
 
-<span class="reserved">export</span> <span class="reserved">default</span> Math
-<span class="reserved">export</span> square = <span class="function"><span class="params">(x)</span> -&gt;</span> x * x
-<span class="reserved">export</span> <span class="class"><span class="keyword">class</span> <span class="title">Mathematics</span></span>
+<span class="keyword">export</span> <span class="keyword">default</span> Math
+<span class="keyword">export</span> square = <span class="function"><span class="params">(x)</span> -&gt;</span> x * x
+<span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">Mathematics</span></span>
   least: <span class="function"><span class="params">(x, y)</span> -&gt;</span> <span class="keyword">if</span> x &lt; y <span class="keyword">then</span> x <span class="keyword">else</span> y
 
-<span class="reserved">export</span> { sqrt }
-<span class="reserved">export</span> { sqrt <span class="reserved">as</span> squareRoot }
-<span class="reserved">export</span> { Mathematics <span class="reserved">as</span> default, sqrt <span class="reserved">as</span> squareRoot }
+<span class="keyword">export</span> { sqrt }
+<span class="keyword">export</span> { sqrt <span class="keyword">as</span> squareRoot }
+<span class="keyword">export</span> { Mathematics <span class="keyword">as</span> default, sqrt <span class="keyword">as</span> squareRoot }
 
-<span class="reserved">export</span> * <span class="reserved">from</span> <span class="string">'underscore'</span>
-<span class="reserved">export</span> { max, min } <span class="reserved">from</span> <span class="string">'underscore'</span>
+<span class="keyword">export</span> * <span class="keyword">from</span> <span class="string">'underscore'</span>
+<span class="keyword">export</span> { max, min } <span class="keyword">from</span> <span class="string">'underscore'</span>
 </code></pre><pre><code><span class="keyword">import</span> <span class="string">'local-file.coffee'</span>;
 
 <span class="keyword">import</span> <span class="string">'coffee-script'</span>;
