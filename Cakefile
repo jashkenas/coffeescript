@@ -51,9 +51,9 @@ codeFor = ->
   hljs.configure classPrefix: ''
   (file, executable = false, showLoad = true) ->
     counter++
-    return unless fs.existsSync "docs/v#{majorVersion}/js/#{file}.js"
-    cs = fs.readFileSync "documentation/coffee/#{file}.coffee", 'utf-8'
-    js = fs.readFileSync "docs/v#{majorVersion}/js/#{file}.js", 'utf-8'
+    return unless fs.existsSync "docs/v#{majorVersion}/examples/#{file}.js"
+    cs = fs.readFileSync "documentation/examples/#{file}.coffee", 'utf-8'
+    js = fs.readFileSync "docs/v#{majorVersion}/examples/#{file}.js", 'utf-8'
     js = js.replace /^\/\/ generated.*?\n/i, ''
 
     cshtml = "<pre><code>#{hljs.highlight('coffeescript', cs).value}</code></pre>"
@@ -175,9 +175,9 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
 
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
-  generatedJavaScriptFolder = "docs/v#{majorVersion}/js"
+  generatedJavaScriptFolder = "docs/v#{majorVersion}/examples"
   fs.mkdirSync generatedJavaScriptFolder unless fs.existsSync generatedJavaScriptFolder
-  execSync "bin/coffee -bc -o #{generatedJavaScriptFolder} documentation/coffee/*.coffee"
+  execSync "bin/coffee -bc -o #{generatedJavaScriptFolder} documentation/examples/*.coffee"
 
   source = 'documentation/index.html.js'
   do renderIndex = ->
