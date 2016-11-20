@@ -573,6 +573,9 @@ Block
       <code>for own key, value of object</code>
     </p>
     <p>
+      To iterate a generator function, use <code>from</code>.
+      See <a href="#generator-iteration">Generator Functions</a>.
+    <p>
       The only low-level loop that CoffeeScript provides is the <b>while</b> loop. The
       main difference from JavaScript is that the <b>while</b> loop can be used
       as an expression, returning an array containing the result of each iteration
@@ -860,7 +863,7 @@ Block
     </p>
     <p>
       CoffeeScript functions also support
-      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">ES6 generator functions</a>
+      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">ES2015 generator functions</a>
       through the <code>yield</code> keyword. There's no <code>function*(){}</code>
       nonsense &mdash; a generator in CoffeeScript is simply a function that yields.
     </p>
@@ -869,6 +872,11 @@ Block
       <code>yield*</code> is called <code>yield from</code>, and <code>yield return</code>
       may be used if you need to force a generator that doesn't yield.
     </p>
+    <p>
+      <span id="generator-iteration" class="bookmark"></span>
+      You can iterate over a generator function using <code>for&hellip;from</code>.
+    </p>
+    <%= codeFor('generator_iteration', 'getFibonacciNumbers(10)') %>
 
     <p>
       <span id="embedded" class="bookmark"></span>
@@ -1388,7 +1396,7 @@ six = -&gt;
       <%= releaseHeader('2015-09-03', '1.10.0', '1.9.3') %>
       <ul>
         <li>
-          CoffeeScript now supports ES6-style destructuring defaults.
+          CoffeeScript now supports ES2015-style destructuring defaults.
         </li>
         <li>
           <code>(offsetHeight: height) -&gt;</code> no longer compiles. That
@@ -1497,7 +1505,7 @@ six = -&gt;
       <%= releaseHeader('2015-01-29', '1.9.0', '1.8.0') %>
       <ul>
         <li>
-          CoffeeScript now supports ES6 generators. A generator is simply a function
+          CoffeeScript now supports ES2015 generators. A generator is simply a function
           that <code>yield</code>s.
         </li>
         <li>
