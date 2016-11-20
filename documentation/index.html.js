@@ -1186,11 +1186,6 @@ Block
         a headless, full-stack, faux-browser testing library for Node.js.
       </li>
       <li>
-        <b>jashkenas</b>' <a href="v1/annotated-source/underscore.html">Underscore.coffee</a>, a port
-        of the <a href="http://documentcloud.github.com/underscore/">Underscore.js</a>
-        library of helper functions.
-      </li>
-      <li>
         <b>stephank</b>'s <a href="https://github.com/stephank/orona">Orona</a>, a remake of
         the Bolo tank game for modern browsers.
       </li>

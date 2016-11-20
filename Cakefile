@@ -199,8 +199,7 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
 
 
 task 'doc:source', 'rebuild the annotated source documentation', ->
-  for source in ['src/*.*coffee', 'examples/underscore.coffee']
-    exec "node_modules/docco/bin/docco #{source} --output docs/v#{majorVersion}/annotated-source", (err) -> throw err if err
+  exec "node_modules/docco/bin/docco src/*.*coffee --output docs/v#{majorVersion}/annotated-source", (err) -> throw err if err
 
 
 task 'bench', 'quick benchmark of compilation time', ->
