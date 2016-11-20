@@ -878,6 +878,19 @@ Block
       use backticks to pass it straight through.
     </p>
     <%= codeFor('embedded', 'hi()') %>
+    <p>
+      Escape backticks with backslashes: <code>\`</code> becomes <code>`</code>.
+    </p>
+    <p>
+      Escape backslashes before backticks with more backslashes: <code>\\\`</code>
+      becomes <code>\`</code>.
+    </p>
+    <%= codeFor('embedded_escaped', 'markdown()') %>
+    <p>
+      You can embed blocks of JavaScript using triple backticks. Within triple-backtick
+      blocks, single backticks are ignored.
+    </p>
+    <%= codeFor('embedded_block', 'time()') %>
 
     <p>
       <span id="switch" class="bookmark"></span>
