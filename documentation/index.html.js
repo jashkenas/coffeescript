@@ -33,6 +33,7 @@
         <a href="#slices">Array Slicing and Splicing</a>
         <a href="#expressions">Everything is an Expression</a>
         <a href="#operators">Operators and Aliases</a>
+        <a href="#existential-operator">Existential Operator</a>
         <a href="#classes">Classes, Inheritance, and Super</a>
         <a href="#destructuring">Destructuring Assignment</a>
         <a href="#fat-arrow">Bound and Generator Functions</a>
@@ -716,6 +717,7 @@ Block
     <%= codeFor('aliases') %>
 
     <p>
+      <span id="existential-operator" class="bookmark"></span>
       <b class="header">The Existential Operator</b>
       It's a little difficult to check for the existence of a variable in
       JavaScript. <code>if (variable) ...</code> comes close, but fails for zero,
@@ -1188,11 +1190,6 @@ Block
       <li>
         <b>assaf</b>'s <a href="http://zombie.labnotes.org/">Zombie.js</a>,
         a headless, full-stack, faux-browser testing library for Node.js.
-      </li>
-      <li>
-        <b>jashkenas</b>' <a href="v1/annotated-source/underscore.html">Underscore.coffee</a>, a port
-        of the <a href="http://documentcloud.github.com/underscore/">Underscore.js</a>
-        library of helper functions.
       </li>
       <li>
         <b>stephank</b>'s <a href="https://github.com/stephank/orona">Orona</a>, a remake of
@@ -2320,6 +2317,16 @@ six = -&gt;
 
     # Listen for keypresses and recompile.
     $('#repl_source').keyup -> compileSource()
+
+    # Use tab key to insert tabs
+    $('#repl_source').keydown (e) ->
+      if e.keyCode is 9
+        e.preventDefault()
+        textbox = e.target
+        # Insert tab character at caret or in selection
+        textbox.value = textbox.value[0...textbox.selectionStart] + "\t" + textbox.value[textbox.selectionEnd...]
+        # Put caret in correct position
+        textbox.selectionEnd = ++textbox.selectionStart
 
     # Eval the compiled js.
     evalJS = ->

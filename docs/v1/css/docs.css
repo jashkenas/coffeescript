@@ -304,6 +304,10 @@ div.code {
   outline: none;
   margin: 5px 0 20px;
   color: #def;
+  -webkit-tab-size: 2;
+  -moz-tab-size: 2;
+  -o-tab-size: 2;
+  tab-size: 2;
 }
   #repl_results, #repl_source_wrap {
     width: auto; height: auto;
