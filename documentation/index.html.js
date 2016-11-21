@@ -5,16 +5,16 @@
   <title>CoffeeScript</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="canonical" href="http://coffeescript.org" />
-  <link rel="stylesheet" type="text/css" href="documentation/css/docs.css" />
-  <link rel="stylesheet" type="text/css" href="documentation/css/tomorrow.css" />
-  <link rel="shortcut icon" href="documentation/images/favicon.ico" />
+  <link rel="stylesheet" type="text/css" href="v1/css/docs.css" />
+  <link rel="stylesheet" type="text/css" href="v1/css/tomorrow.css" />
+  <link rel="shortcut icon" href="v1/images/favicon.ico" />
 </head>
 <body>
 
   <div id="fadeout"></div>
 
   <div id="flybar">
-    <a id="logo" href="#top"><img src="documentation/images/logo.png" width="225" height="39" alt="CoffeeScript" /></a>
+    <a id="logo" href="#top"><img src="v1/images/logo.png" width="225" height="39" alt="CoffeeScript" /></a>
     <div class="navigation toc">
       <div class="button">
         Table of Contents
@@ -33,6 +33,7 @@
         <a href="#slices">Array Slicing and Splicing</a>
         <a href="#expressions">Everything is an Expression</a>
         <a href="#operators">Operators and Aliases</a>
+        <a href="#existential-operator">Existential Operator</a>
         <a href="#classes">Classes, Inheritance, and Super</a>
         <a href="#destructuring">Destructuring Assignment</a>
         <a href="#fat-arrow">Bound and Generator Functions</a>
@@ -75,18 +76,18 @@
         Annotated Source
       </div>
       <div class="contents menu">
-        <a href="documentation/docs/grammar.html">Grammar Rules &mdash; src/grammar</a>
-        <a href="documentation/docs/lexer.html">Lexing Tokens &mdash; src/lexer</a>
-        <a href="documentation/docs/rewriter.html">The Rewriter &mdash; src/rewriter</a>
-        <a href="documentation/docs/nodes.html">The Syntax Tree &mdash; src/nodes</a>
-        <a href="documentation/docs/scope.html">Lexical Scope &mdash; src/scope</a>
-        <a href="documentation/docs/helpers.html">Helpers &amp; Utility Functions &mdash; src/helpers</a>
-        <a href="documentation/docs/coffee-script.html">The CoffeeScript Module &mdash; src/coffee-script</a>
-        <a href="documentation/docs/cake.html">Cake &amp; Cakefiles &mdash; src/cake</a>
-        <a href="documentation/docs/command.html">"coffee" Command-Line Utility &mdash; src/command</a>
-        <a href="documentation/docs/optparse.html">Option Parsing &mdash; src/optparse</a>
-        <a href="documentation/docs/repl.html">Interactive REPL &mdash; src/repl</a>
-        <a href="documentation/docs/sourcemap.html">Source Maps &mdash; src/sourcemap</a>
+        <a href="v1/annotated-source/grammar.html">Grammar Rules &mdash; src/grammar</a>
+        <a href="v1/annotated-source/lexer.html">Lexing Tokens &mdash; src/lexer</a>
+        <a href="v1/annotated-source/rewriter.html">The Rewriter &mdash; src/rewriter</a>
+        <a href="v1/annotated-source/nodes.html">The Syntax Tree &mdash; src/nodes</a>
+        <a href="v1/annotated-source/scope.html">Lexical Scope &mdash; src/scope</a>
+        <a href="v1/annotated-source/helpers.html">Helpers &amp; Utility Functions &mdash; src/helpers</a>
+        <a href="v1/annotated-source/coffee-script.html">The CoffeeScript Module &mdash; src/coffee-script</a>
+        <a href="v1/annotated-source/cake.html">Cake &amp; Cakefiles &mdash; src/cake</a>
+        <a href="v1/annotated-source/command.html">"coffee" Command-Line Utility &mdash; src/command</a>
+        <a href="v1/annotated-source/optparse.html">Option Parsing &mdash; src/optparse</a>
+        <a href="v1/annotated-source/repl.html">Interactive REPL &mdash; src/repl</a>
+        <a href="v1/annotated-source/sourcemap.html">Source Maps &mdash; src/sourcemap</a>
       </div>
     </div>
   </div>
@@ -133,7 +134,7 @@
 
     <p>
       The CoffeeScript compiler is itself
-      <a href="documentation/docs/grammar.html">written in CoffeeScript</a>,
+      <a href="v1/annotated-source/grammar.html">written in CoffeeScript</a>,
       using the <a href="http://jison.org">Jison parser generator</a>. The
       command-line version of <code>coffee</code> is available as a
       <a href="http://nodejs.org/">Node.js</a> utility. The
@@ -721,6 +722,7 @@ Block
     <%= codeFor('aliases') %>
 
     <p>
+      <span id="existential-operator" class="bookmark"></span>
       <b class="header">The Existential Operator</b>
       It's a little difficult to check for the existence of a variable in
       JavaScript. <code>if (variable) ...</code> comes close, but fails for zero,
@@ -1018,7 +1020,7 @@ Block
       <code>build</code> before <code>test</code>, you can use the <code>invoke</code> function:
       <code>invoke 'build'</code>. Cake tasks are a minimal way to expose your
       CoffeeScript functions to the command line, so
-      <a href="documentation/docs/cake.html">don't expect any fanciness built-in</a>.
+      <a href="v1/annotated-source/cake.html">don't expect any fanciness built-in</a>.
       If you need dependencies, or async callbacks, it's best to put them in your
       code itself &mdash; not the cake task.
     </p>
@@ -1187,11 +1189,6 @@ Block
       <li>
         <b>assaf</b>'s <a href="http://zombie.labnotes.org/">Zombie.js</a>,
         a headless, full-stack, faux-browser testing library for Node.js.
-      </li>
-      <li>
-        <b>jashkenas</b>' <a href="documentation/docs/underscore.html">Underscore.coffee</a>, a port
-        of the <a href="http://documentcloud.github.com/underscore/">Underscore.js</a>
-        library of helper functions.
       </li>
       <li>
         <b>stephank</b>'s <a href="https://github.com/stephank/orona">Orona</a>, a remake of
@@ -2320,6 +2317,16 @@ six = -&gt;
     # Listen for keypresses and recompile.
     $('#repl_source').keyup -> compileSource()
 
+    # Use tab key to insert tabs
+    $('#repl_source').keydown (e) ->
+      if e.keyCode is 9
+        e.preventDefault()
+        textbox = e.target
+        # Insert tab character at caret or in selection
+        textbox.value = textbox.value[0...textbox.selectionStart] + "\t" + textbox.value[textbox.selectionEnd...]
+        # Put caret in correct position
+        textbox.selectionEnd = ++textbox.selectionStart
+
     # Eval the compiled js.
     evalJS = ->
       try
@@ -2377,8 +2384,8 @@ six = -&gt;
 
   </script>
 
-  <script src="documentation/vendor/jquery-1.6.4.js"></script>
-  <script src="extras/coffee-script.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="v1/extras/coffee-script.js"></script>
 
 </body>
 </html>

@@ -5,16 +5,16 @@
   <title>CoffeeScript</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="canonical" href="http://coffeescript.org" />
-  <link rel="stylesheet" type="text/css" href="documentation/css/docs.css" />
-  <link rel="stylesheet" type="text/css" href="documentation/css/tomorrow.css" />
-  <link rel="shortcut icon" href="documentation/images/favicon.ico" />
+  <link rel="stylesheet" type="text/css" href="v1/css/docs.css" />
+  <link rel="stylesheet" type="text/css" href="v1/css/tomorrow.css" />
+  <link rel="shortcut icon" href="v1/images/favicon.ico" />
 </head>
 <body>
 
   <div id="fadeout"></div>
 
   <div id="flybar">
-    <a id="logo" href="#top"><img src="documentation/images/logo.png" width="225" height="39" alt="CoffeeScript" /></a>
+    <a id="logo" href="#top"><img src="v1/images/logo.png" width="225" height="39" alt="CoffeeScript" /></a>
     <div class="navigation toc">
       <div class="button">
         Table of Contents
@@ -33,6 +33,7 @@
         <a href="#slices">Array Slicing and Splicing</a>
         <a href="#expressions">Everything is an Expression</a>
         <a href="#operators">Operators and Aliases</a>
+        <a href="#existential-operator">Existential Operator</a>
         <a href="#classes">Classes, Inheritance, and Super</a>
         <a href="#destructuring">Destructuring Assignment</a>
         <a href="#fat-arrow">Bound and Generator Functions</a>
@@ -75,18 +76,18 @@
         Annotated Source
       </div>
       <div class="contents menu">
-        <a href="documentation/docs/grammar.html">Grammar Rules &mdash; src/grammar</a>
-        <a href="documentation/docs/lexer.html">Lexing Tokens &mdash; src/lexer</a>
-        <a href="documentation/docs/rewriter.html">The Rewriter &mdash; src/rewriter</a>
-        <a href="documentation/docs/nodes.html">The Syntax Tree &mdash; src/nodes</a>
-        <a href="documentation/docs/scope.html">Lexical Scope &mdash; src/scope</a>
-        <a href="documentation/docs/helpers.html">Helpers &amp; Utility Functions &mdash; src/helpers</a>
-        <a href="documentation/docs/coffee-script.html">The CoffeeScript Module &mdash; src/coffee-script</a>
-        <a href="documentation/docs/cake.html">Cake &amp; Cakefiles &mdash; src/cake</a>
-        <a href="documentation/docs/command.html">"coffee" Command-Line Utility &mdash; src/command</a>
-        <a href="documentation/docs/optparse.html">Option Parsing &mdash; src/optparse</a>
-        <a href="documentation/docs/repl.html">Interactive REPL &mdash; src/repl</a>
-        <a href="documentation/docs/sourcemap.html">Source Maps &mdash; src/sourcemap</a>
+        <a href="v1/annotated-source/grammar.html">Grammar Rules &mdash; src/grammar</a>
+        <a href="v1/annotated-source/lexer.html">Lexing Tokens &mdash; src/lexer</a>
+        <a href="v1/annotated-source/rewriter.html">The Rewriter &mdash; src/rewriter</a>
+        <a href="v1/annotated-source/nodes.html">The Syntax Tree &mdash; src/nodes</a>
+        <a href="v1/annotated-source/scope.html">Lexical Scope &mdash; src/scope</a>
+        <a href="v1/annotated-source/helpers.html">Helpers &amp; Utility Functions &mdash; src/helpers</a>
+        <a href="v1/annotated-source/coffee-script.html">The CoffeeScript Module &mdash; src/coffee-script</a>
+        <a href="v1/annotated-source/cake.html">Cake &amp; Cakefiles &mdash; src/cake</a>
+        <a href="v1/annotated-source/command.html">"coffee" Command-Line Utility &mdash; src/command</a>
+        <a href="v1/annotated-source/optparse.html">Option Parsing &mdash; src/optparse</a>
+        <a href="v1/annotated-source/repl.html">Interactive REPL &mdash; src/repl</a>
+        <a href="v1/annotated-source/sourcemap.html">Source Maps &mdash; src/sourcemap</a>
       </div>
     </div>
   </div>
@@ -170,9 +171,9 @@ square = <span class="function"><span class="keyword">function</span>(<span clas
 list = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];
 
 math = {
-  root: <span class="built_in">Math</span>.sqrt,
-  square: square,
-  cube: <span class="function"><span class="keyword">function</span>(<span class="params">x</span>) </span>{
+  <span class="attr">root</span>: <span class="built_in">Math</span>.sqrt,
+  <span class="attr">square</span>: square,
+  <span class="attr">cube</span>: <span class="function"><span class="keyword">function</span>(<span class="params">x</span>) </span>{
     <span class="keyword">return</span> x * square(x);
   }
 };
@@ -249,7 +250,7 @@ cubes = (function() {
 
     <p>
       The CoffeeScript compiler is itself
-      <a href="documentation/docs/grammar.html">written in CoffeeScript</a>,
+      <a href="v1/annotated-source/grammar.html">written in CoffeeScript</a>,
       using the <a href="http://jison.org">Jison parser generator</a>. The
       command-line version of <code>coffee</code> is available as a
       <a href="http://nodejs.org/">Node.js</a> utility. The
@@ -624,20 +625,20 @@ kids =
 song = [<span class="string">"do"</span>, <span class="string">"re"</span>, <span class="string">"mi"</span>, <span class="string">"fa"</span>, <span class="string">"so"</span>];
 
 singers = {
-  Jagger: <span class="string">"Rock"</span>,
-  Elvis: <span class="string">"Roll"</span>
+  <span class="attr">Jagger</span>: <span class="string">"Rock"</span>,
+  <span class="attr">Elvis</span>: <span class="string">"Roll"</span>
 };
 
 bitlist = [<span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>];
 
 kids = {
-  brother: {
-    name: <span class="string">"Max"</span>,
-    age: <span class="number">11</span>
+  <span class="attr">brother</span>: {
+    <span class="attr">name</span>: <span class="string">"Max"</span>,
+    <span class="attr">age</span>: <span class="number">11</span>
   },
-  sister: {
-    name: <span class="string">"Ida"</span>,
-    age: <span class="number">9</span>
+  <span class="attr">sister</span>: {
+    <span class="attr">name</span>: <span class="string">"Ida"</span>,
+    <span class="attr">age</span>: <span class="number">9</span>
   }
 };
 </code></pre><script>window.example4 = "song = [\"do\", \"re\", \"mi\", \"fa\", \"so\"]\n\nsingers = {Jagger: \"Rock\", Elvis: \"Roll\"}\n\nbitlist = [\n  1, 0, 1\n  0, 0, 1\n  1, 1, 0\n]\n\nkids =\n  brother:\n    name: \"Max\"\n    age:  11\n  sister:\n    name: \"Ida\"\n    age:  9\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example4);'>load</div><div class='minibutton ok' onclick='javascript: var bitlist, kids, singers, song;
@@ -965,9 +966,9 @@ ages = <span class="keyword">for</span> child, age <span class="keyword">of</spa
 </code></pre><pre><code><span class="keyword">var</span> age, ages, child, yearsOld;
 
 yearsOld = {
-  max: <span class="number">10</span>,
-  ida: <span class="number">9</span>,
-  tim: <span class="number">11</span>
+  <span class="attr">max</span>: <span class="number">10</span>,
+  <span class="attr">ida</span>: <span class="number">9</span>,
+  <span class="attr">tim</span>: <span class="number">11</span>
 };
 
 ages = (<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>{
@@ -1403,6 +1404,7 @@ print(inspect(<span class="string">"My name is "</span> + <span class="keyword">
 </code></pre><script>window.example21 = "launch() if ignition is on\n\nvolume = 10 if band isnt SpinalTap\n\nletTheWildRumpusBegin() unless answer is no\n\nif car.speed < limit then accelerate()\n\nwinner = yes if pick in [47, 92, 13]\n\nprint inspect \"My name is #{@name}\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example21);'>load</div><br class='clear' /></div>
 
     <p>
+      <span id="existential-operator" class="bookmark"></span>
       <b class="header">The Existential Operator</b>
       It's a little difficult to check for the existence of a variable in
       JavaScript. <code>if (variable) ...</code> comes close, but fails for zero,
@@ -1721,11 +1723,11 @@ ref = weatherReport("Berkeley, CA"), city = ref[0], temp = ref[1], forecast = re
 </code></pre><pre><code><span class="keyword">var</span> city, futurists, name, ref, ref1, street;
 
 futurists = {
-  sculptor: <span class="string">"Umberto Boccioni"</span>,
-  painter: <span class="string">"Vladimir Burliuk"</span>,
-  poet: {
-    name: <span class="string">"F.T. Marinetti"</span>,
-    address: [<span class="string">"Via Roma 42R"</span>, <span class="string">"Bellagio, Italy 22021"</span>]
+  <span class="attr">sculptor</span>: <span class="string">"Umberto Boccioni"</span>,
+  <span class="attr">painter</span>: <span class="string">"Vladimir Burliuk"</span>,
+  <span class="attr">poet</span>: {
+    <span class="attr">name</span>: <span class="string">"F.T. Marinetti"</span>,
+    <span class="attr">address</span>: [<span class="string">"Via Roma 42R"</span>, <span class="string">"Bellagio, Italy 22021"</span>]
   }
 };
 
@@ -1802,8 +1804,8 @@ Person = (<span class="function"><span class="keyword">function</span>(<span cla
 })();
 
 tim = <span class="keyword">new</span> Person({
-  name: <span class="string">'Tim'</span>,
-  age: <span class="number">4</span>
+  <span class="attr">name</span>: <span class="string">'Tim'</span>,
+  <span class="attr">age</span>: <span class="number">4</span>
 });
 </code></pre><script>window.example31 = "class Person\n  constructor: (options) ->\n    {@name, @age, @height = 'average'} = options\n\ntim = new Person name: 'Tim', age: 4\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example31);'>load</div><div class='minibutton ok' onclick='javascript: var Person, tim;
 
@@ -1885,7 +1887,7 @@ Account = <span class="function"><span class="keyword">function</span>(<span cla
   num = <span class="number">0</span>
   <span class="keyword">loop</span>
     num += <span class="number">1</span>
-    yield num * num
+    <span class="keyword">yield</span> num * num
   <span class="keyword">return</span>
 
 <span class="built_in">window</span>.ps <span class="keyword">or</span>= perfectSquares()
@@ -2183,28 +2185,28 @@ OPERATOR = <span class="regexp">/^(?:[-=]&gt;|[-+*\/%&lt;&gt;&amp;|^!?=]=|&gt;&g
       ES2015 modules are supported in CoffeeScript, with very similar <code>import</code>
       and <code>export</code> syntax:
     </p>
-    <div class='code'><pre><code><span class="reserved">import</span> <span class="string">'local-file.coffee'</span>
-<span class="reserved">import</span> <span class="string">'coffee-script'</span>
+    <div class='code'><pre><code><span class="keyword">import</span> <span class="string">'local-file.coffee'</span>
+<span class="keyword">import</span> <span class="string">'coffee-script'</span>
 
-<span class="reserved">import</span> _ <span class="reserved">from</span> <span class="string">'underscore'</span>
-<span class="reserved">import</span> * <span class="reserved">as</span> underscore <span class="reserved">from</span> <span class="string">'underscore'</span>
+<span class="keyword">import</span> _ <span class="keyword">from</span> <span class="string">'underscore'</span>
+<span class="keyword">import</span> * <span class="keyword">as</span> underscore <span class="keyword">from</span> <span class="string">'underscore'</span>
 
-<span class="reserved">import</span> { now } <span class="reserved">from</span> <span class="string">'underscore'</span>
-<span class="reserved">import</span> { now <span class="reserved">as</span> currentTimestamp } <span class="reserved">from</span> <span class="string">'underscore'</span>
-<span class="reserved">import</span> { first, last } <span class="reserved">from</span> <span class="string">'underscore'</span>
-<span class="reserved">import</span> utilityBelt, { each } <span class="reserved">from</span> <span class="string">'underscore'</span>
+<span class="keyword">import</span> { now } <span class="keyword">from</span> <span class="string">'underscore'</span>
+<span class="keyword">import</span> { now <span class="keyword">as</span> currentTimestamp } <span class="keyword">from</span> <span class="string">'underscore'</span>
+<span class="keyword">import</span> { first, last } <span class="keyword">from</span> <span class="string">'underscore'</span>
+<span class="keyword">import</span> utilityBelt, { each } <span class="keyword">from</span> <span class="string">'underscore'</span>
 
-<span class="reserved">export</span> <span class="reserved">default</span> Math
-<span class="reserved">export</span> square = <span class="function"><span class="params">(x)</span> -&gt;</span> x * x
-<span class="reserved">export</span> <span class="class"><span class="keyword">class</span> <span class="title">Mathematics</span></span>
+<span class="keyword">export</span> <span class="keyword">default</span> Math
+<span class="keyword">export</span> square = <span class="function"><span class="params">(x)</span> -&gt;</span> x * x
+<span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">Mathematics</span></span>
   least: <span class="function"><span class="params">(x, y)</span> -&gt;</span> <span class="keyword">if</span> x &lt; y <span class="keyword">then</span> x <span class="keyword">else</span> y
 
-<span class="reserved">export</span> { sqrt }
-<span class="reserved">export</span> { sqrt <span class="reserved">as</span> squareRoot }
-<span class="reserved">export</span> { Mathematics <span class="reserved">as</span> default, sqrt <span class="reserved">as</span> squareRoot }
+<span class="keyword">export</span> { sqrt }
+<span class="keyword">export</span> { sqrt <span class="keyword">as</span> squareRoot }
+<span class="keyword">export</span> { Mathematics <span class="keyword">as</span> default, sqrt <span class="keyword">as</span> squareRoot }
 
-<span class="reserved">export</span> * <span class="reserved">from</span> <span class="string">'underscore'</span>
-<span class="reserved">export</span> { max, min } <span class="reserved">from</span> <span class="string">'underscore'</span>
+<span class="keyword">export</span> * <span class="keyword">from</span> <span class="string">'underscore'</span>
+<span class="keyword">export</span> { max, min } <span class="keyword">from</span> <span class="string">'underscore'</span>
 </code></pre><pre><code><span class="keyword">import</span> <span class="string">'local-file.coffee'</span>;
 
 <span class="keyword">import</span> <span class="string">'coffee-script'</span>;
@@ -2339,7 +2341,7 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
       <code>build</code> before <code>test</code>, you can use the <code>invoke</code> function:
       <code>invoke 'build'</code>. Cake tasks are a minimal way to expose your
       CoffeeScript functions to the command line, so
-      <a href="documentation/docs/cake.html">don't expect any fanciness built-in</a>.
+      <a href="v1/annotated-source/cake.html">don't expect any fanciness built-in</a>.
       If you need dependencies, or async callbacks, it's best to put them in your
       code itself &mdash; not the cake task.
     </p>
@@ -2508,11 +2510,6 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
       <li>
         <b>assaf</b>'s <a href="http://zombie.labnotes.org/">Zombie.js</a>,
         a headless, full-stack, faux-browser testing library for Node.js.
-      </li>
-      <li>
-        <b>jashkenas</b>' <a href="documentation/docs/underscore.html">Underscore.coffee</a>, a port
-        of the <a href="http://documentcloud.github.com/underscore/">Underscore.js</a>
-        library of helper functions.
       </li>
       <li>
         <b>stephank</b>'s <a href="https://github.com/stephank/orona">Orona</a>, a remake of
@@ -3890,6 +3887,16 @@ six = -&gt;
     # Listen for keypresses and recompile.
     $('#repl_source').keyup -> compileSource()
 
+    # Use tab key to insert tabs
+    $('#repl_source').keydown (e) ->
+      if e.keyCode is 9
+        e.preventDefault()
+        textbox = e.target
+        # Insert tab character at caret or in selection
+        textbox.value = textbox.value[0...textbox.selectionStart] + "\t" + textbox.value[textbox.selectionEnd...]
+        # Put caret in correct position
+        textbox.selectionEnd = ++textbox.selectionStart
+
     # Eval the compiled js.
     evalJS = ->
       try
@@ -3947,8 +3954,8 @@ six = -&gt;
 
   </script>
 
-  <script src="documentation/vendor/jquery-1.6.4.js"></script>
-  <script src="extras/coffee-script.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="v1/extras/coffee-script.js"></script>
 
 </body>
 </html>
