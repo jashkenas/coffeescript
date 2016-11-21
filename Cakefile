@@ -1,9 +1,9 @@
-fs            = require 'fs'
-path          = require 'path'
-_             = require 'underscore'
-CoffeeScript  = require './lib/coffee-script'
-{spawn, exec} = require 'child_process'
-helpers       = require './lib/coffee-script/helpers'
+fs                        = require 'fs'
+path                      = require 'path'
+_                         = require 'underscore'
+{ spawn, exec, execSync } = require 'child_process'
+CoffeeScript              = require './lib/coffee-script'
+helpers                   = require './lib/coffee-script/helpers'
 
 # ANSI Terminal Colors.
 bold = red = green = reset = ''
@@ -51,15 +51,16 @@ codeFor = ->
   hljs.configure classPrefix: ''
   (file, executable = false, showLoad = true) ->
     counter++
-    return unless fs.existsSync "documentation/js/#{file}.js"
-    cs = fs.readFileSync "documentation/coffee/#{file}.coffee", 'utf-8'
-    js = fs.readFileSync "documentation/js/#{file}.js", 'utf-8'
+    return unless fs.existsSync "docs/v#{majorVersion}/examples/#{file}.js"
+    cs = fs.readFileSync "documentation/examples/#{file}.coffee", 'utf-8'
+    js = fs.readFileSync "docs/v#{majorVersion}/examples/#{file}.js", 'utf-8'
     js = js.replace /^\/\/ generated.*?\n/i, ''
 
     cshtml = "<pre><code>#{hljs.highlight('coffeescript', cs).value}</code></pre>"
-    # Temporary fix until highlight.js adds support for newer CoffeeScript reserved words
-    if file is 'modules'
-      cshtml = cshtml.replace /(import|export|from|as|default) /g, '<span class="reserved">$1</span> '
+    # Temporary fix until highlight.js adds support for newer CoffeeScript keywords
+    # Added in https://github.com/isagalaev/highlight.js/pull/1357, awaiting release
+    if file in ['generators', 'modules']
+      cshtml = cshtml.replace /(yield|import|export|from|as|default) /g, '<span class="keyword">$1</span> '
     jshtml = "<pre><code>#{hljs.highlight('javascript', js).value}</code></pre>"
     append = if executable is yes then '' else "alert(#{executable});"
     if executable and executable isnt yes
@@ -183,24 +184,30 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
 
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
-  source = 'documentation/index.html.js'
-  exec 'bin/coffee -bc -o documentation/js documentation/coffee/*.coffee'
+  examplesSourceFolder = 'documentation/examples'
+  examplesOutputFolder = "docs/v#{majorVersion}/examples"
+  fs.mkdirSync examplesOutputFolder unless fs.existsSync examplesOutputFolder
+  do renderExamples = ->
+    execSync "bin/coffee -bc -o #{examplesOutputFolder} #{examplesSourceFolder}/*.coffee"
 
+  indexFile = 'documentation/index.html.js'
   do renderIndex = ->
-    render = _.template fs.readFileSync(source, 'utf-8')
+    render = _.template fs.readFileSync(indexFile, 'utf-8')
     output = render
       codeFor: codeFor()
       releaseHeader: releaseHeader
     fs.writeFileSync "docs/v#{majorVersion}/index.html", output
-    log 'compiled', green, "#{source} → docs/v#{majorVersion}/index.html"
+    log 'compiled', green, "#{indexFile} → docs/v#{majorVersion}/index.html"
 
-  fs.watchFile source, interval: 200, renderIndex
+  fs.watch examplesSourceFolder, interval: 200, ->
+    renderExamples()
+    renderIndex()
+  fs.watch indexFile, interval: 200, renderIndex
   log 'watching...' , green
 
 
 task 'doc:source', 'rebuild the annotated source documentation', ->
-  for source in ['src/*.*coffee', 'examples/underscore.coffee']
-    exec "node_modules/docco/bin/docco #{source} --output docs/v#{majorVersion}/annotated-source", (err) -> throw err if err
+  exec "node_modules/docco/bin/docco src/*.*coffee --output docs/v#{majorVersion}/annotated-source", (err) -> throw err if err
 
 
 task 'bench', 'quick benchmark of compilation time', ->
