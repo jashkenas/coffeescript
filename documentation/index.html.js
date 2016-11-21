@@ -461,7 +461,7 @@ Block
       CoffeeScript has a shortcut for creating objects when you want the key
       to be set with a variable of the same name.
     </p>
-    <%= code_for('objects_shorthand') %>
+    <%= codeFor('objects_shorthand') %>
 
     <p>
       <span id="lexical-scope" class="bookmark"></span>
