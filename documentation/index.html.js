@@ -457,6 +457,11 @@ Block
       about it (say, when using jQuery).
     </p>
     <%= codeFor('objects_reserved') %>
+    <p>
+      CoffeeScript has a shortcut for creating objects when you want the key
+      to be set with a variable of the same name.
+    </p>
+    <%= codeFor('objects_shorthand') %>
 
     <p>
       <span id="lexical-scope" class="bookmark"></span>
