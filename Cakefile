@@ -59,7 +59,7 @@ codeFor = ->
     cshtml = "<pre><code>#{hljs.highlight('coffeescript', cs).value}</code></pre>"
     # Temporary fix until highlight.js adds support for newer CoffeeScript keywords
     # Added in https://github.com/isagalaev/highlight.js/pull/1357, awaiting release
-    if file in ['generators', 'modules']
+    if file in ['generator_iteration', 'generators', 'modules']
       cshtml = cshtml.replace /(yield|import|export|from|as|default) /g, '<span class="keyword">$1</span> '
     jshtml = "<pre><code>#{hljs.highlight('javascript', js).value}</code></pre>"
     append = if executable is yes then '' else "alert(#{executable});"
