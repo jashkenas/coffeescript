@@ -887,8 +887,8 @@ Block
     </p>
     <%= codeFor('embedded_escaped', 'markdown()') %>
     <p>
-      You can embed blocks of JavaScript using triple backticks. Within triple-backtick
-      blocks, single backticks are ignored.
+      You can also embed blocks of JavaScript using triple backticks. That's easier
+      than escaping backticks, if you need them inside your JavaScript block.
     </p>
     <%= codeFor('embedded_block', 'time()') %>
 
