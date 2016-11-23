@@ -901,6 +901,19 @@ Block
       use backticks to pass it straight through.
     </p>
     <%= codeFor('embedded', 'hi()') %>
+    <p>
+      Escape backticks with backslashes: <code>\`</code> becomes <code>`</code>.
+    </p>
+    <p>
+      Escape backslashes before backticks with more backslashes: <code>\\\`</code>
+      becomes <code>\`</code>.
+    </p>
+    <%= codeFor('embedded_escaped', 'markdown()') %>
+    <p>
+      You can also embed blocks of JavaScript using triple backticks. That's easier
+      than escaping backticks, if you need them inside your JavaScript block.
+    </p>
+    <%= codeFor('embedded_block', 'time()') %>
 
     <p>
       <span id="switch" class="bookmark"></span>
