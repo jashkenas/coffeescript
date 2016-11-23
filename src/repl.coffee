@@ -24,7 +24,7 @@ replDefaults =
       tokens = CoffeeScript.tokens input
       # Collect referenced variable names just like in `CoffeeScript.compile`.
       referencedVars = (
-        token[1] for token in tokens when token.variable
+        token[1] for token in tokens when token[0] is 'IDENTIFIER'
       )
       # Generate the AST of the tokens.
       ast = CoffeeScript.nodes tokens
@@ -108,7 +108,7 @@ addHistory = (repl, filename, maxSize) ->
     readFd = fs.openSync filename, 'r'
     buffer = new Buffer(size)
     fs.readSync readFd, buffer, 0, size, stat.size - size
-    fs.close readFd
+    fs.closeSync readFd
     # Set the history on the interpreter
     repl.rli.history = buffer.toString().split('\n').reverse()
     # If the history file was truncated we should pop off a potential partial line
@@ -121,12 +121,12 @@ addHistory = (repl, filename, maxSize) ->
   fd = fs.openSync filename, 'a'
 
   repl.rli.addListener 'line', (code) ->
-    if code and code.length and code isnt '.history' and lastLine isnt code
+    if code and code.length and code isnt '.history' and code isnt '.exit' and lastLine isnt code
       # Save the latest command in the file
-      fs.write fd, "#{code}\n"
+      fs.writeSync fd, "#{code}\n"
       lastLine = code
 
-  repl.on 'exit', -> fs.close fd
+  repl.on 'exit', -> fs.closeSync fd
 
   # Add a command to show the history stack
   repl.commands[getCommandId(repl, 'history')] =

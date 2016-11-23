@@ -1,5 +1,5 @@
-# Error Formating
-# ---------------
+# Error Formatting
+# ----------------
 
 # Ensure that errors of different kinds (lexer, parser and compiler) are shown
 # in a consistent way.
@@ -10,7 +10,7 @@ assertErrorFormat = (code, expectedErrorFormat) ->
     eq expectedErrorFormat, "#{err}"
     yes
 
-test "lexer errors formating", ->
+test "lexer errors formatting", ->
   assertErrorFormat '''
     normalObject    = {}
     insideOutObject = }{
@@ -21,7 +21,7 @@ test "lexer errors formating", ->
                       ^
   '''
 
-test "parser error formating", ->
+test "parser error formatting", ->
   assertErrorFormat '''
     foo in bar or in baz
   ''',
@@ -36,7 +36,7 @@ test "compiler error formatting", ->
     evil = (foo, eval, bar) ->
   ''',
   '''
-    [stdin]:1:14: error: parameter name "eval" is not allowed
+    [stdin]:1:14: error: 'eval' can't be assigned
     evil = (foo, eval, bar) ->
                  ^^^^
   '''
@@ -83,7 +83,7 @@ if require?
                       ^^
       """
     finally
-      fs.unlink 'test/syntax-error.coffee'
+      fs.unlinkSync 'test/syntax-error.coffee'
 
 
 test "#1096: unexpected generated tokens", ->
@@ -137,46 +137,12 @@ test "#1096: unexpected generated tokens", ->
      ^^^^^^^^^^^
   '''
   # Unexpected string
-  assertErrorFormat "a''", '''
-    [stdin]:1:2: error: unexpected string
-    a''
-     ^^
+  assertErrorFormat 'import foo from "lib-#{version}"', '''
+    [stdin]:1:17: error: the name of the module to be imported from must be an uninterpolated string
+    import foo from "lib-#{version}"
+                    ^^^^^^^^^^^^^^^^
   '''
-  assertErrorFormat 'a""', '''
-    [stdin]:1:2: error: unexpected string
-    a""
-     ^^
-  '''
-  assertErrorFormat "a'b'", '''
-    [stdin]:1:2: error: unexpected string
-    a'b'
-     ^^^
-  '''
-  assertErrorFormat 'a"b"', '''
-    [stdin]:1:2: error: unexpected string
-    a"b"
-     ^^^
-  '''
-  assertErrorFormat "a'''b'''", """
-    [stdin]:1:2: error: unexpected string
-    a'''b'''
-     ^^^^^^^
-  """
-  assertErrorFormat 'a"""b"""', '''
-    [stdin]:1:2: error: unexpected string
-    a"""b"""
-     ^^^^^^^
-  '''
-  assertErrorFormat 'a"#{b}"', '''
-    [stdin]:1:2: error: unexpected string
-    a"#{b}"
-     ^^^^^^
-  '''
-  assertErrorFormat 'a"""#{b}"""', '''
-    [stdin]:1:2: error: unexpected string
-    a"""#{b}"""
-     ^^^^^^^^^^
-  '''
+
   # Unexpected number
   assertErrorFormat '"a"0x00Af2', '''
     [stdin]:1:4: error: unexpected number
@@ -657,19 +623,85 @@ test "reserved words", ->
     ^^^^
   '''
   assertErrorFormat '''
+    case = 1
+  ''', '''
+    [stdin]:1:1: error: reserved word 'case'
+    case = 1
+    ^^^^
+  '''
+  assertErrorFormat '''
     for = 1
   ''', '''
-    [stdin]:1:1: error: reserved word 'for' can't be assigned
+    [stdin]:1:1: error: keyword 'for' can't be assigned
     for = 1
+    ^^^
+  '''
+  assertErrorFormat '''
+    unless = 1
+  ''', '''
+    [stdin]:1:1: error: keyword 'unless' can't be assigned
+    unless = 1
+    ^^^^^^
+  '''
+  assertErrorFormat '''
+    for += 1
+  ''', '''
+    [stdin]:1:1: error: keyword 'for' can't be assigned
+    for += 1
+    ^^^
+  '''
+  assertErrorFormat '''
+    for &&= 1
+  ''', '''
+    [stdin]:1:1: error: keyword 'for' can't be assigned
+    for &&= 1
+    ^^^
+  '''
+  # Make sure token look-behind doesn't go out of range.
+  assertErrorFormat '''
+    &&= 1
+  ''', '''
+    [stdin]:1:1: error: unexpected &&=
+    &&= 1
     ^^^
   '''
   # #2306: Show unaliased name in error messages.
   assertErrorFormat '''
     on = 1
   ''', '''
-    [stdin]:1:1: error: reserved word 'on' can't be assigned
+    [stdin]:1:1: error: keyword 'on' can't be assigned
     on = 1
     ^^
+  '''
+
+test "strict mode errors", ->
+  assertErrorFormat '''
+    eval = 1
+  ''', '''
+    [stdin]:1:1: error: 'eval' can't be assigned
+    eval = 1
+    ^^^^
+  '''
+  assertErrorFormat '''
+    class eval
+  ''', '''
+    [stdin]:1:7: error: 'eval' can't be assigned
+    class eval
+          ^^^^
+  '''
+  assertErrorFormat '''
+    arguments++
+  ''', '''
+    [stdin]:1:1: error: 'arguments' can't be assigned
+    arguments++
+    ^^^^^^^^^
+  '''
+  assertErrorFormat '''
+    --arguments
+  ''', '''
+    [stdin]:1:3: error: 'arguments' can't be assigned
+    --arguments
+      ^^^^^^^^^
   '''
 
 test "invalid numbers", ->
@@ -775,4 +807,386 @@ test "invalid object keys", ->
     [stdin]:2:3: error: invalid object key
       @a: 1
       ^^
+  '''
+  assertErrorFormat '''
+    {a=2}
+  ''', '''
+    [stdin]:1:3: error: unexpected =
+    {a=2}
+      ^
+  '''
+
+test "invalid destructuring default target", ->
+  assertErrorFormat '''
+    {'a' = 2} = obj
+  ''', '''
+    [stdin]:1:6: error: unexpected =
+    {'a' = 2} = obj
+         ^
+  '''
+
+test "#4070: lone expansion", ->
+  assertErrorFormat '''
+    [...] = a
+  ''', '''
+    [stdin]:1:2: error: Destructuring assignment has no target
+    [...] = a
+     ^^^
+  '''
+  assertErrorFormat '''
+    [ ..., ] = a
+  ''', '''
+    [stdin]:1:3: error: Destructuring assignment has no target
+    [ ..., ] = a
+      ^^^
+  '''
+
+test "#3926: implicit object in parameter list", ->
+  assertErrorFormat '''
+    (a: b) ->
+  ''', '''
+    [stdin]:1:3: error: unexpected :
+    (a: b) ->
+      ^
+  '''
+  assertErrorFormat '''
+    (one, two, {three, four: five}, key: value) ->
+  ''', '''
+    [stdin]:1:36: error: unexpected :
+    (one, two, {three, four: five}, key: value) ->
+                                       ^
+  '''
+
+test "#4130: unassignable in destructured param", ->
+  assertErrorFormat '''
+    fun = ({
+      @param : null
+    }) ->
+      console.log "Oh hello!"
+  ''', '''
+    [stdin]:2:12: error: keyword 'null' can't be assigned
+      @param : null
+               ^^^^
+  '''
+  assertErrorFormat '''
+    ({a: null}) ->
+  ''', '''
+    [stdin]:1:6: error: keyword 'null' can't be assigned
+    ({a: null}) ->
+         ^^^^
+  '''
+  assertErrorFormat '''
+    ({a: 1}) ->
+  ''', '''
+    [stdin]:1:6: error: '1' can't be assigned
+    ({a: 1}) ->
+         ^
+  '''
+  assertErrorFormat '''
+    ({1}) ->
+  ''', '''
+    [stdin]:1:3: error: '1' can't be assigned
+    ({1}) ->
+      ^
+  '''
+  assertErrorFormat '''
+    ({a: true = 1}) ->
+  ''', '''
+    [stdin]:1:6: error: keyword 'true' can't be assigned
+    ({a: true = 1}) ->
+         ^^^^
+  '''
+
+test "`yield` outside of a function", ->
+  assertErrorFormat '''
+    yield 1
+  ''', '''
+    [stdin]:1:1: error: yield can only occur inside functions
+    yield 1
+    ^^^^^^^
+  '''
+  assertErrorFormat '''
+    yield return
+  ''', '''
+    [stdin]:1:1: error: yield can only occur inside functions
+    yield return
+    ^^^^^^^^^^^^
+  '''
+
+test "#4097: `yield return` as an expression", ->
+  assertErrorFormat '''
+    -> (yield return)
+  ''', '''
+    [stdin]:1:5: error: cannot use a pure statement in an expression
+    -> (yield return)
+        ^^^^^^^^^^^^
+  '''
+
+test "`&&=` and `||=` with a space in-between", ->
+  assertErrorFormat '''
+    a = 0
+    a && = 1
+  ''', '''
+    [stdin]:2:6: error: unexpected =
+    a && = 1
+         ^
+  '''
+  assertErrorFormat '''
+    a = 0
+    a and = 1
+  ''', '''
+    [stdin]:2:7: error: unexpected =
+    a and = 1
+          ^
+  '''
+  assertErrorFormat '''
+    a = 0
+    a || = 1
+  ''', '''
+    [stdin]:2:6: error: unexpected =
+    a || = 1
+         ^
+  '''
+  assertErrorFormat '''
+    a = 0
+    a or = 1
+  ''', '''
+    [stdin]:2:6: error: unexpected =
+    a or = 1
+         ^
+  '''
+
+test "anonymous functions cannot be exported", ->
+  assertErrorFormat '''
+    export ->
+      console.log 'hello, world!'
+  ''', '''
+    [stdin]:1:8: error: unexpected ->
+    export ->
+           ^^
+  '''
+
+test "anonymous classes cannot be exported", ->
+  assertErrorFormat '''
+    export class
+      constructor: ->
+        console.log 'hello, world!'
+  ''', '''
+    [stdin]:1:8: error: anonymous classes cannot be exported
+    export class
+           ^^^^^
+  '''
+
+test "unless enclosed by curly braces, only * can be aliased", ->
+  assertErrorFormat '''
+    import foo as bar from 'lib'
+  ''', '''
+    [stdin]:1:12: error: unexpected as
+    import foo as bar from 'lib'
+               ^^
+  '''
+
+test "unwrapped imports must follow constrained syntax", ->
+  assertErrorFormat '''
+    import foo, bar from 'lib'
+  ''', '''
+    [stdin]:1:13: error: unexpected identifier
+    import foo, bar from 'lib'
+                ^^^
+  '''
+  assertErrorFormat '''
+    import foo, bar, baz from 'lib'
+  ''', '''
+    [stdin]:1:13: error: unexpected identifier
+    import foo, bar, baz from 'lib'
+                ^^^
+  '''
+  assertErrorFormat '''
+    import foo, bar as baz from 'lib'
+  ''', '''
+    [stdin]:1:13: error: unexpected identifier
+    import foo, bar as baz from 'lib'
+                ^^^
+  '''
+
+test "cannot export * without a module to export from", ->
+  assertErrorFormat '''
+    export *
+  ''', '''
+    [stdin]:1:9: error: unexpected end of input
+    export *
+            ^
+  '''
+
+test "imports and exports must be top-level", ->
+  assertErrorFormat '''
+    if foo
+      import { bar } from 'lib'
+  ''', '''
+    [stdin]:2:3: error: import statements must be at top-level scope
+      import { bar } from 'lib'
+      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  '''
+  assertErrorFormat '''
+    foo = ->
+      export { bar }
+  ''', '''
+    [stdin]:2:3: error: export statements must be at top-level scope
+      export { bar }
+      ^^^^^^^^^^^^^^
+  '''
+
+test "cannot import the same member more than once", ->
+  assertErrorFormat '''
+    import { foo, foo } from 'lib'
+  ''', '''
+    [stdin]:1:15: error: 'foo' has already been declared
+    import { foo, foo } from 'lib'
+                  ^^^
+  '''
+  assertErrorFormat '''
+    import { foo, bar, foo } from 'lib'
+  ''', '''
+    [stdin]:1:20: error: 'foo' has already been declared
+    import { foo, bar, foo } from 'lib'
+                       ^^^
+  '''
+  assertErrorFormat '''
+    import { foo, bar as foo } from 'lib'
+  ''', '''
+    [stdin]:1:15: error: 'foo' has already been declared
+    import { foo, bar as foo } from 'lib'
+                  ^^^^^^^^^^
+  '''
+  assertErrorFormat '''
+    import foo, { foo } from 'lib'
+  ''', '''
+    [stdin]:1:15: error: 'foo' has already been declared
+    import foo, { foo } from 'lib'
+                  ^^^
+  '''
+  assertErrorFormat '''
+    import foo, { bar as foo } from 'lib'
+  ''', '''
+    [stdin]:1:15: error: 'foo' has already been declared
+    import foo, { bar as foo } from 'lib'
+                  ^^^^^^^^^^
+  '''
+  assertErrorFormat '''
+    import foo from 'libA'
+    import foo from 'libB'
+  ''', '''
+    [stdin]:2:8: error: 'foo' has already been declared
+    import foo from 'libB'
+           ^^^
+  '''
+  assertErrorFormat '''
+    import * as foo from 'libA'
+    import { foo } from 'libB'
+  ''', '''
+    [stdin]:2:10: error: 'foo' has already been declared
+    import { foo } from 'libB'
+             ^^^
+  '''
+
+test "imported members cannot be reassigned", ->
+  assertErrorFormat '''
+    import { foo } from 'lib'
+    foo = 'bar'
+  ''', '''
+    [stdin]:2:1: error: 'foo' is read-only
+    foo = 'bar'
+    ^^^
+  '''
+  assertErrorFormat '''
+    import { foo } from 'lib'
+    export default foo = 'bar'
+  ''', '''
+    [stdin]:2:16: error: 'foo' is read-only
+    export default foo = 'bar'
+                   ^^^
+  '''
+  assertErrorFormat '''
+    import { foo } from 'lib'
+    export foo = 'bar'
+  ''', '''
+    [stdin]:2:8: error: 'foo' is read-only
+    export foo = 'bar'
+           ^^^
+  '''
+
+test "CoffeeScript keywords cannot be used as unaliased names in import lists", ->
+  assertErrorFormat """
+    import { unless, baz as bar } from 'lib'
+    bar.barMethod()
+  """, '''
+    [stdin]:1:10: error: unexpected unless
+    import { unless, baz as bar } from 'lib'
+             ^^^^^^
+  '''
+
+test "CoffeeScript keywords cannot be used as local names in import list aliases", ->
+  assertErrorFormat """
+    import { bar as unless, baz as bar } from 'lib'
+    bar.barMethod()
+  """, '''
+    [stdin]:1:17: error: unexpected unless
+    import { bar as unless, baz as bar } from 'lib'
+                    ^^^^^^
+  '''
+
+test "indexes are not supported in for-from loops", ->
+  assertErrorFormat "x for x, i from [1, 2, 3]", '''
+    [stdin]:1:10: error: cannot use index with for-from
+    x for x, i from [1, 2, 3]
+             ^
+  '''
+
+test "own is not supported in for-from loops", ->
+  assertErrorFormat "x for own x from [1, 2, 3]", '''
+    [stdin]:1:7: error: cannot use own with for-from
+    x for own x from [1, 2, 3]
+          ^^^
+    '''
+
+test "tagged template literals must be called by an identifier", ->
+  assertErrorFormat "1''", '''
+    [stdin]:1:1: error: literal is not a function
+    1''
+    ^
+  '''
+  assertErrorFormat '1""', '''
+    [stdin]:1:1: error: literal is not a function
+    1""
+    ^
+  '''
+  assertErrorFormat "1'b'", '''
+    [stdin]:1:1: error: literal is not a function
+    1'b'
+    ^
+  '''
+  assertErrorFormat '1"b"', '''
+    [stdin]:1:1: error: literal is not a function
+    1"b"
+    ^
+  '''
+  assertErrorFormat "1'''b'''", """
+    [stdin]:1:1: error: literal is not a function
+    1'''b'''
+    ^
+  """
+  assertErrorFormat '1"""b"""', '''
+    [stdin]:1:1: error: literal is not a function
+    1"""b"""
+    ^
+  '''
+  assertErrorFormat '1"#{b}"', '''
+    [stdin]:1:1: error: literal is not a function
+    1"#{b}"
+    ^
+  '''
+  assertErrorFormat '1"""#{b}"""', '''
+    [stdin]:1:1: error: literal is not a function
+    1"""#{b}"""
+    ^
   '''

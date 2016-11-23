@@ -33,6 +33,7 @@ class exports.Rewriter
     @tagPostfixConditionals()
     @addImplicitBracesAndParens()
     @addLocationDataToGeneratedTokens()
+    @fixOutdentLocationData()
     @tokens
 
   # Rewrite the token stream, looking one token ahead and behind.
@@ -242,7 +243,7 @@ class exports.Rewriter
       #       b: c
       #
       # Don't accept implicit calls of this type, when on the same line
-      # as the control strucutures below as that may misinterpret constructs like:
+      # as the control structures below as that may misinterpret constructs like:
       #
       #     if f
       #        a: 1
@@ -368,6 +369,22 @@ class exports.Rewriter
         last_column:  column
       return 1
 
+  # OUTDENT tokens should always be positioned at the last character of the
+  # previous token, so that AST nodes ending in an OUTDENT token end up with a
+  # location corresponding to the last "real" token under the node.
+  fixOutdentLocationData: ->
+    @scanTokens (token, i, tokens) ->
+      return 1 unless token[0] is 'OUTDENT' or
+        (token.generated and token[0] is 'CALL_END') or
+        (token.generated and token[0] is '}')
+      prevLocationData = tokens[i - 1][2]
+      token[2] =
+        first_line:   prevLocationData.last_line
+        first_column: prevLocationData.last_column
+        last_line:    prevLocationData.last_line
+        last_column:  prevLocationData.last_column
+      return 1
+
   # Because our grammar is LALR(1), it can't handle some single-line
   # expressions that lack ending delimiters. The **Rewriter** adds the implicit
   # blocks, so it doesn't need to. To keep the grammar clean and tidy, trailing
@@ -479,13 +496,15 @@ for [left, rite] in BALANCED_PAIRS
 EXPRESSION_CLOSE = ['CATCH', 'THEN', 'ELSE', 'FINALLY'].concat EXPRESSION_END
 
 # Tokens that, if followed by an `IMPLICIT_CALL`, indicate a function invocation.
-IMPLICIT_FUNC    = ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@', 'THIS']
+IMPLICIT_FUNC    = ['IDENTIFIER', 'PROPERTY', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@', 'THIS']
 
 # If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
 IMPLICIT_CALL    = [
-  'IDENTIFIER', 'NUMBER', 'STRING', 'STRING_START', 'JS', 'REGEX', 'REGEX_START'
-  'NEW', 'PARAM_START', 'CLASS', 'IF', 'TRY', 'SWITCH', 'THIS', 'BOOL', 'NULL'
-  'UNDEFINED', 'UNARY', 'YIELD', 'UNARY_MATH', 'SUPER', 'THROW'
+  'IDENTIFIER', 'PROPERTY', 'NUMBER', 'INFINITY', 'NAN'
+  'STRING', 'STRING_START', 'REGEX', 'REGEX_START', 'JS'
+  'NEW', 'PARAM_START', 'CLASS', 'IF', 'TRY', 'SWITCH', 'THIS'
+  'UNDEFINED', 'NULL', 'BOOL'
+  'UNARY', 'YIELD', 'UNARY_MATH', 'SUPER', 'THROW'
   '@', '->', '=>', '[', '(', '{', '--', '++'
 ]
 

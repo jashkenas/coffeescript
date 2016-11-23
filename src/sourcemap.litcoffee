@@ -126,9 +126,9 @@ Produce the canonical JSON object format for a "v3" source map.
           names:      []
           mappings:   buffer
 
-        v3.sourcesContent = [code] if options.inline
+        v3.sourcesContent = [code] if options.inlineMap
 
-        JSON.stringify v3, null, 2
+        v3
 
 
 Base64 VLQ Encoding

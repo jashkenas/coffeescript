@@ -6,7 +6,7 @@
 Error.stackTraceLimit = Infinity
 
 {Scope} = require './scope'
-{RESERVED, STRICT_PROSCRIBED} = require './lexer'
+{isUnassignable, JS_FORBIDDEN} = require './lexer'
 
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, some,
@@ -82,13 +82,13 @@ exports.Base = class Base
     func = new Code [], Block.wrap [this]
     args = []
     if (argumentsNode = @contains isLiteralArguments) or @contains isLiteralThis
-      args = [new Literal 'this']
+      args = [new ThisLiteral]
       if argumentsNode
         meth = 'apply'
-        args.push new Literal 'arguments'
+        args.push new IdentifierLiteral 'arguments'
       else
         meth = 'call'
-      func = new Value func, [new Access new Literal meth]
+      func = new Value func, [new Access new PropertyName meth]
     parts = (new Call func, args).compileNode o
     if func.isGenerator or func.base?.isGenerator
       parts.unshift @makeCode "(yield* "
@@ -105,7 +105,7 @@ exports.Base = class Base
   cache: (o, level, isComplex) ->
     complex = if isComplex? then isComplex this else @isComplex()
     if complex
-      ref = new Literal o.scope.freeVariable 'ref'
+      ref = new IdentifierLiteral o.scope.freeVariable 'ref'
       sub = new Assign ref, this
       if level then [sub.compileToFragments(o, level), [@makeCode(ref.value)]] else [sub, ref]
     else
@@ -181,6 +181,7 @@ exports.Base = class Base
   isComplex       : YES
   isChainable     : NO
   isAssignable    : NO
+  isNumber        : NO
 
   unwrap     : THIS
   unfoldSoak : NO
@@ -380,59 +381,81 @@ exports.Block = class Block extends Base
 
 #### Literal
 
-# Literals are static values that can be passed through directly into
-# JavaScript without translation, such as: strings, numbers,
+# `Literal` is a base class for static values that can be passed through
+# directly into JavaScript without translation, such as: strings, numbers,
 # `true`, `false`, `null`...
 exports.Literal = class Literal extends Base
   constructor: (@value) ->
-
-  makeReturn: ->
-    if @isStatement() then this else super
-
-  isAssignable: ->
-    IDENTIFIER.test @value
-
-  isStatement: ->
-    @value in ['break', 'continue', 'debugger']
 
   isComplex: NO
 
   assigns: (name) ->
     name is @value
 
+  compileNode: (o) ->
+    [@makeCode @value]
+
+  toString: ->
+    " #{if @isStatement() then super else @constructor.name}: #{@value}"
+
+exports.NumberLiteral = class NumberLiteral extends Literal
+
+exports.InfinityLiteral = class InfinityLiteral extends NumberLiteral
+  compileNode: ->
+    [@makeCode '2e308']
+
+exports.NaNLiteral = class NaNLiteral extends NumberLiteral
+  constructor: ->
+    super 'NaN'
+
+  compileNode: (o) ->
+    code = [@makeCode '0/0']
+    if o.level >= LEVEL_OP then @wrapInBraces code else code
+
+exports.StringLiteral = class StringLiteral extends Literal
+
+exports.RegexLiteral = class RegexLiteral extends Literal
+
+exports.PassthroughLiteral = class PassthroughLiteral extends Literal
+
+exports.IdentifierLiteral = class IdentifierLiteral extends Literal
+  isAssignable: YES
+
+exports.PropertyName = class PropertyName extends Literal
+  isAssignable: YES
+
+exports.StatementLiteral = class StatementLiteral extends Literal
+  isStatement: YES
+
+  makeReturn: THIS
+
   jumps: (o) ->
     return this if @value is 'break' and not (o?.loop or o?.block)
     return this if @value is 'continue' and not o?.loop
 
   compileNode: (o) ->
-    code = if @value is 'this'
-      if o.scope.method?.bound then o.scope.method.context else @value
-    else if @value.reserved
-      "\"#{@value}\""
-    else
-      @value
-    answer = if @isStatement() then "#{@tab}#{code};" else code
-    [@makeCode answer]
+    [@makeCode "#{@tab}#{@value};"]
 
-  toString: ->
-    ' "' + @value + '"'
+exports.ThisLiteral = class ThisLiteral extends Literal
+  constructor: ->
+    super 'this'
 
-class exports.Undefined extends Base
-  isAssignable: NO
-  isComplex: NO
+  compileNode: (o) ->
+    code = if o.scope.method?.bound then o.scope.method.context else @value
+    [@makeCode code]
+
+exports.UndefinedLiteral = class UndefinedLiteral extends Literal
+  constructor: ->
+    super 'undefined'
+
   compileNode: (o) ->
     [@makeCode if o.level >= LEVEL_ACCESS then '(void 0)' else 'void 0']
 
-class exports.Null extends Base
-  isAssignable: NO
-  isComplex: NO
-  compileNode: -> [@makeCode "null"]
+exports.NullLiteral = class NullLiteral extends Literal
+  constructor: ->
+    super 'null'
 
-class exports.Bool extends Base
-  isAssignable: NO
-  isComplex: NO
-  compileNode: -> [@makeCode @val]
-  constructor: (@val) ->
+exports.BooleanLiteral = class BooleanLiteral extends Literal
 
 #### Return
 
@@ -453,14 +476,20 @@ exports.Return = class Return extends Base
 
   compileNode: (o) ->
     answer = []
-    exprIsYieldReturn = @expression?.isYieldReturn?()
     # TODO: If we call expression.compile() here twice, we'll sometimes get back different results!
-    unless exprIsYieldReturn
-      answer.push @makeCode @tab + "return#{if @expression then " " else ""}"
+    answer.push @makeCode @tab + "return#{if @expression then " " else ""}"
     if @expression
       answer = answer.concat @expression.compileToFragments o, LEVEL_PAREN
-    answer.push @makeCode ";" unless exprIsYieldReturn
+    answer.push @makeCode ";"
     return answer
+
+# `yield return` works exactly like `return`, except that it turns the function
+# into a generator.
+exports.YieldReturn = class YieldReturn extends Return
+  compileNode: (o) ->
+    unless o.scope.parent?
+      @error 'yield can only occur inside functions'
+    super
 
 #### Value
 
@@ -492,16 +521,20 @@ exports.Value = class Value extends Base
   isRange        : -> @bareLiteral(Range)
   isComplex      : -> @hasProperties() or @base.isComplex()
   isAssignable   : -> @hasProperties() or @base.isAssignable()
-  isSimpleNumber : -> @bareLiteral(Literal) and SIMPLENUM.test @base.value
-  isString       : -> @bareLiteral(Literal) and IS_STRING.test @base.value
-  isRegex        : -> @bareLiteral(Literal) and IS_REGEX.test @base.value
+  isNumber       : -> @bareLiteral(NumberLiteral)
+  isString       : -> @bareLiteral(StringLiteral)
+  isRegex        : -> @bareLiteral(RegexLiteral)
+  isUndefined    : -> @bareLiteral(UndefinedLiteral)
+  isNull         : -> @bareLiteral(NullLiteral)
+  isBoolean      : -> @bareLiteral(BooleanLiteral)
   isAtomic       : ->
     for node in @properties.concat @base
       return no if node.soak or node instanceof Call
     yes
 
-  isNotCallable  : -> @isSimpleNumber() or @isString() or @isRegex() or
-                      @isArray() or @isRange() or @isSplice() or @isObject()
+  isNotCallable  : -> @isNumber() or @isString() or @isRegex() or
+                      @isArray() or @isRange() or @isSplice() or @isObject() or
+                      @isUndefined() or @isNull() or @isBoolean()
 
   isStatement : (o)    -> not @properties.length and @base.isStatement o
   assigns     : (name) -> not @properties.length and @base.assigns name
@@ -533,11 +566,11 @@ exports.Value = class Value extends Base
       return [this, this]  # `a` `a.b`
     base = new Value @base, @properties[...-1]
     if base.isComplex()  # `a().b`
-      bref = new Literal o.scope.freeVariable 'base'
+      bref = new IdentifierLiteral o.scope.freeVariable 'base'
       base = new Value new Parens new Assign bref, base
     return [base, bref] unless name  # `a()`
     if name.isComplex()  # `a[b()]`
-      nref = new Literal o.scope.freeVariable 'name'
+      nref = new IdentifierLiteral o.scope.freeVariable 'name'
       name = new Index new Assign nref, name.index
       nref = new Index nref
     [base.add(name), new Value(bref or base.base, [nref or name])]
@@ -550,7 +583,7 @@ exports.Value = class Value extends Base
     @base.front = @front
     props = @properties
     fragments = @base.compileToFragments o, (if props.length then LEVEL_ACCESS else null)
-    if (@base instanceof Parens or props.length) and SIMPLENUM.test fragmentsToText fragments
+    if props.length and SIMPLENUM.test fragmentsToText fragments
       fragments.push @makeCode '.'
     for prop in props
       fragments.push (prop.compileToFragments o)...
@@ -567,7 +600,7 @@ exports.Value = class Value extends Base
         fst = new Value @base, @properties[...i]
         snd = new Value @base, @properties[i..]
         if fst.isComplex()
-          ref = new Literal o.scope.freeVariable 'ref'
+          ref = new IdentifierLiteral o.scope.freeVariable 'ref'
           fst = new Parens new Assign ref, fst
           snd.base = ref
         return new If new Existence(fst), snd, soak: on
@@ -591,15 +624,12 @@ exports.Comment = class Comment extends Base
 
 #### Call
 
-# Node for a function invocation. Takes care of converting `super()` calls into
-# calls against the prototype's function of the same name.
+# Node for a function invocation.
 exports.Call = class Call extends Base
-  constructor: (variable, @args = [], @soak) ->
+  constructor: (@variable, @args = [], @soak) ->
     @isNew    = false
-    @isSuper  = variable is 'super'
-    @variable = if @isSuper then null else variable
-    if variable instanceof Value and variable.isNotCallable()
-      variable.error "literal is not a function"
+    if @variable instanceof Value and @variable.isNotCallable()
+      @variable.error "literal is not a function"
 
   children: ['variable', 'args']
 
@@ -612,45 +642,15 @@ exports.Call = class Call extends Base
       @isNew = true
     this
 
-  # Grab the reference to the superclass's implementation of the current
-  # method.
-  superReference: (o) ->
-    method = o.scope.namedMethod()
-    if method?.klass
-      {klass, name, variable} = method
-      if klass.isComplex()
-        bref = new Literal o.scope.parent.freeVariable 'base'
-        base = new Value new Parens new Assign bref, klass
-        variable.base = base
-        variable.properties.splice 0, klass.properties.length
-      if name.isComplex() or (name instanceof Index and name.index.isAssignable())
-        nref = new Literal o.scope.parent.freeVariable 'name'
-        name = new Index new Assign nref, name.index
-        variable.properties.pop()
-        variable.properties.push name
-      accesses = [new Access new Literal '__super__']
-      accesses.push new Access new Literal 'constructor' if method.static
-      accesses.push if nref? then new Index nref else name
-      (new Value bref ? klass, accesses).compile o
-    else if method?.ctor
-      "#{method.name}.__super__.constructor"
-    else
-      @error 'cannot call super outside of an instance method.'
-
-  # The appropriate `this` value for a `super` call.
-  superThis : (o) ->
-    method = o.scope.method
-    (method and not method.klass and method.context) or "this"
-
   # Soaked chained invocations unfold into if/else ternary structures.
   unfoldSoak: (o) ->
     if @soak
-      if @variable
-        return ifn if ifn = unfoldSoak o, this, 'variable'
-        [left, rite] = new Value(@variable).cacheReference o
-      else
+      if this instanceof SuperCall
         left = new Literal @superReference o
         rite = new Value left
+      else
+        return ifn if ifn = unfoldSoak o, this, 'variable'
+        [left, rite] = new Value(@variable).cacheReference o
       rite = new Call rite, @args
       rite.isNew = @isNew
       left = new Literal "typeof #{ left.compile o } === \"function\""
@@ -686,7 +686,7 @@ exports.Call = class Call extends Base
       compiledArgs.push (arg.compileToFragments o, LEVEL_LIST)...
 
     fragments = []
-    if @isSuper
+    if this instanceof SuperCall
       preface = @superReference(o) + ".call(#{@superThis(o)}"
       if compiledArgs.length then preface += ", "
       fragments.push @makeCode preface
@@ -705,7 +705,7 @@ exports.Call = class Call extends Base
   #
   # splatArgs is an array of CodeFragments to put into the 'apply'.
   compileSplat: (o, splatArgs) ->
-    if @isSuper
+    if this instanceof SuperCall
       return [].concat @makeCode("#{ @superReference o }.apply(#{@superThis(o)}, "),
         splatArgs, @makeCode(")")
 
@@ -739,6 +739,65 @@ exports.Call = class Call extends Base
       answer = answer.concat fun
     answer = answer.concat @makeCode(".apply(#{ref}, "), splatArgs, @makeCode(")")
 
+#### Super
+
+# Takes care of converting `super()` calls into calls against the prototype's
+# function of the same name.
+exports.SuperCall = class SuperCall extends Call
+  constructor: (args) ->
+    super null, args ? [new Splat new IdentifierLiteral 'arguments']
+    # Allow to recognize a bare `super` call without parentheses and arguments.
+    @isBare = args?
+
+  # Grab the reference to the superclass's implementation of the current
+  # method.
+  superReference: (o) ->
+    method = o.scope.namedMethod()
+    if method?.klass
+      {klass, name, variable} = method
+      if klass.isComplex()
+        bref = new IdentifierLiteral o.scope.parent.freeVariable 'base'
+        base = new Value new Parens new Assign bref, klass
+        variable.base = base
+        variable.properties.splice 0, klass.properties.length
+      if name.isComplex() or (name instanceof Index and name.index.isAssignable())
+        nref = new IdentifierLiteral o.scope.parent.freeVariable 'name'
+        name = new Index new Assign nref, name.index
+        variable.properties.pop()
+        variable.properties.push name
+      accesses = [new Access new PropertyName '__super__']
+      accesses.push new Access new PropertyName 'constructor' if method.static
+      accesses.push if nref? then new Index nref else name
+      (new Value bref ? klass, accesses).compile o
+    else if method?.ctor
+      "#{method.name}.__super__.constructor"
+    else
+      @error 'cannot call super outside of an instance method.'
+
+  # The appropriate `this` value for a `super` call.
+  superThis : (o) ->
+    method = o.scope.method
+    (method and not method.klass and method.context) or "this"
+
+#### RegexWithInterpolations
+
+# Regexes with interpolations are in fact just a variation of a `Call` (a
+# `RegExp()` call to be precise) with a `StringWithInterpolations` inside.
+exports.RegexWithInterpolations = class RegexWithInterpolations extends Call
+  constructor: (args = []) ->
+    super (new Value new IdentifierLiteral 'RegExp'), args, false
+
+#### TaggedTemplateCall
+
+exports.TaggedTemplateCall = class TaggedTemplateCall extends Call
+  constructor: (variable, arg, soak) ->
+    arg = new StringWithInterpolations Block.wrap([ new Value arg ]) if arg instanceof StringLiteral
+    super variable, [ arg ], soak
+
+  compileNode: (o) ->
+    o.inTaggedTemplateCall = yes # Tell StringWithInterpolations whether to compile as ES2015 or not; remove in CoffeeScript 2
+    @variable.compileToFragments(o, LEVEL_ACCESS).concat @args[0].compileToFragments(o, LEVEL_LIST)
+
 #### Extends
 
 # Node to extend an object's prototype with an ancestor object.
@@ -759,19 +818,20 @@ exports.Extends = class Extends extends Base
 # an access into the object's prototype.
 exports.Access = class Access extends Base
   constructor: (@name, tag) ->
-    @name.asKey = yes
     @soak  = tag is 'soak'
 
   children: ['name']
 
   compileToFragments: (o) ->
     name = @name.compileToFragments o
-    if IDENTIFIER.test fragmentsToText name
-      name.unshift @makeCode "."
+    node = @name.unwrap()
+    if node instanceof PropertyName
+      if node.value in JS_FORBIDDEN
+        [@makeCode('["'), name..., @makeCode('"]')]
+      else
+        [@makeCode('.'), name...]
     else
-      name.unshift @makeCode "["
-      name.push @makeCode "]"
-    name
+      [@makeCode('['), name..., @makeCode(']')]
 
   isComplex: NO
 
@@ -812,8 +872,9 @@ exports.Range = class Range extends Base
     [@fromC, @fromVar]  =  @cacheToCodeFragments @from.cache o, LEVEL_LIST, isComplex
     [@toC, @toVar]      =  @cacheToCodeFragments @to.cache o, LEVEL_LIST, isComplex
     [@step, @stepVar]   =  @cacheToCodeFragments step.cache o, LEVEL_LIST, isComplex if step = del o, 'step'
-    [@fromNum, @toNum]  = [@fromVar.match(NUMBER), @toVar.match(NUMBER)]
-    @stepNum            = @stepVar.match(NUMBER) if @stepVar
+    @fromNum = if @from.isNumber() then Number @fromVar else null
+    @toNum   = if @to.isNumber()   then Number @toVar   else null
+    @stepNum = if step?.isNumber() then Number @stepVar else null
 
   # When compiled normally, the range returns the contents of the *for loop*
   # needed to iterate over the values in the range. Used by comprehensions.
@@ -822,7 +883,7 @@ exports.Range = class Range extends Base
     return @compileArray(o) unless o.index
 
     # Set up endpoints.
-    known    = @fromNum and @toNum
+    known    = @fromNum? and @toNum?
     idx      = del o, 'index'
     idxName  = del o, 'name'
     namedIndex = idxName and idxName isnt idx
@@ -832,10 +893,10 @@ exports.Range = class Range extends Base
     [lt, gt] = ["#{idx} <#{@equals}", "#{idx} >#{@equals}"]
 
     # Generate the condition.
-    condPart = if @stepNum
-      if parseNum(@stepNum[0]) > 0 then "#{lt} #{@toVar}" else "#{gt} #{@toVar}"
+    condPart = if @stepNum?
+      if @stepNum > 0 then "#{lt} #{@toVar}" else "#{gt} #{@toVar}"
     else if known
-      [from, to] = [parseNum(@fromNum[0]), parseNum(@toNum[0])]
+      [from, to] = [@fromNum, @toNum]
       if from <= to then "#{lt} #{to}" else "#{gt} #{to}"
     else
       cond = if @stepVar then "#{@stepVar} > 0" else "#{@fromVar} <= #{@toVar}"
@@ -864,15 +925,16 @@ exports.Range = class Range extends Base
 
   # When used as a value, expand the range into the equivalent array.
   compileArray: (o) ->
-    if @fromNum and @toNum and Math.abs(@fromNum - @toNum) <= 20
-      range = [+@fromNum..+@toNum]
+    known = @fromNum? and @toNum?
+    if known and Math.abs(@fromNum - @toNum) <= 20
+      range = [@fromNum..@toNum]
       range.pop() if @exclusive
       return [@makeCode "[#{ range.join(', ') }]"]
     idt    = @tab + TAB
     i      = o.scope.freeVariable 'i', single: true
     result = o.scope.freeVariable 'results'
     pre    = "\n#{idt}#{result} = [];"
-    if @fromNum and @toNum
+    if known
       o.index = i
       body    = fragmentsToText @compileNode o
     else
@@ -909,7 +971,7 @@ exports.Slice = class Slice extends Base
       if not (not @range.exclusive and +compiledText is -1)
         toStr = ', ' + if @range.exclusive
           compiledText
-        else if SIMPLENUM.test compiledText
+        else if to.isNumber()
           "#{+compiledText + 1}"
         else
           compiled = to.compileToFragments o, LEVEL_ACCESS
@@ -951,22 +1013,25 @@ exports.Obj = class Obj extends Base
         ',\n'
       indent = if prop instanceof Comment then '' else idt
       indent += TAB if hasDynamic and i < dynamicIndex
-      if prop instanceof Assign and prop.variable instanceof Value and prop.variable.hasProperties()
-        prop.variable.error 'invalid object key'
+      if prop instanceof Assign
+        if prop.context isnt 'object'
+          prop.operatorToken.error "unexpected #{prop.operatorToken.value}"
+        if prop.variable instanceof Value and prop.variable.hasProperties()
+          prop.variable.error 'invalid object key'
       if prop instanceof Value and prop.this
         prop = new Assign prop.properties[0].name, prop, 'object'
       if prop not instanceof Comment
         if i < dynamicIndex
           if prop not instanceof Assign
             prop = new Assign prop, prop, 'object'
-          (prop.variable.base or prop.variable).asKey = yes
         else
           if prop instanceof Assign
             key = prop.variable
             value = prop.value
           else
             [key, value] = prop.base.cache o
-          prop = new Assign (new Value (new Literal oref), [new Access key]), value
+            key = new PropertyName key.value if key instanceof IdentifierLiteral
+          prop = new Assign (new Value (new IdentifierLiteral oref), [new Access key]), value
       if indent then answer.push @makeCode indent
       answer.push prop.compileToFragments(o, LEVEL_TOP)...
       if join then answer.push @makeCode join
@@ -1025,24 +1090,30 @@ exports.Class = class Class extends Base
 
   children: ['variable', 'parent', 'body']
 
+  defaultClassVariableName: '_Class'
+
   # Figure out the appropriate name for the constructor function of this class.
   determineName: ->
-    return null unless @variable
+    return @defaultClassVariableName unless @variable
     [..., tail] = @variable.properties
-    decl = if tail
-      tail instanceof Access and tail.name.value
+    node = if tail
+      tail instanceof Access and tail.name
     else
-      @variable.base.value
-    if decl in STRICT_PROSCRIBED
-      @variable.error "class variable name may not be #{decl}"
-    decl and= IDENTIFIER.test(decl) and decl
+      @variable.base
+    unless node instanceof IdentifierLiteral or node instanceof PropertyName
+      return @defaultClassVariableName
+    name = node.value
+    unless tail
+      message = isUnassignable name
+      @variable.error message if message
+    if name in JS_FORBIDDEN then "_#{name}" else name
 
   # For all `this`-references and bound functions in the class definition,
   # `this` is the Class being constructed.
   setContext: (name) ->
     @body.traverseChildren false, (node) ->
       return false if node.classBody
-      if node instanceof Literal and node.value is 'this'
+      if node instanceof ThisLiteral
         node.value    = name
       else if node instanceof Code
         node.context  = name if node.bound
@@ -1051,7 +1122,7 @@ exports.Class = class Class extends Base
   # constructor.
   addBoundFunctions: (o) ->
     for bvar in @boundFuncs
-      lhs = (new Value (new Literal "this"), [new Access bvar]).compile o
+      lhs = (new Value (new ThisLiteral), [new Access bvar]).compile o
       @ctor.body.unshift new Literal "#{lhs} = #{utility 'bind', o}(#{lhs}, this)"
     return
 
@@ -1072,14 +1143,14 @@ exports.Class = class Class extends Base
           if func instanceof Code
             assign = @ctor = func
           else
-            @externalCtor = o.classScope.freeVariable 'class'
-            assign = new Assign new Literal(@externalCtor), func
+            @externalCtor = o.classScope.freeVariable 'ctor'
+            assign = new Assign new IdentifierLiteral(@externalCtor), func
         else
           if assign.variable.this
             func.static = yes
           else
             acc = if base.isComplex() then new Index base else new Access base
-            assign.variable = new Value(new Literal(name), [(new Access new Literal 'prototype'), acc])
+            assign.variable = new Value(new IdentifierLiteral(name), [(new Access new PropertyName 'prototype'), acc])
             if func instanceof Code and func.bound
               @boundFuncs.push base
               func.bound = no
@@ -1136,9 +1207,8 @@ exports.Class = class Class extends Base
     if argumentsNode = @body.contains isLiteralArguments
       argumentsNode.error "Class bodies shouldn't reference arguments"
 
-    name  = @determineName() or '_Class'
-    name  = "_#{name}" if name.reserved
-    lname = new Literal name
+    name  = @determineName()
+    lname = new IdentifierLiteral name
     func  = new Code [], Block.wrap [@body]
     args  = []
     o.classScope = func.makeScope o.scope
@@ -1152,7 +1222,7 @@ exports.Class = class Class extends Base
     @body.expressions.push lname
 
     if @parent
-      superClass = new Literal o.classScope.freeVariable 'superClass', reserve: no
+      superClass = new IdentifierLiteral o.classScope.freeVariable 'superClass', reserve: no
       @body.expressions.unshift new Extends lname, superClass
       func.params.push new Param superClass
       args.push @parent
@@ -1160,25 +1230,171 @@ exports.Class = class Class extends Base
     @body.expressions.unshift @directives...
 
     klass = new Parens new Call func, args
-    klass = new Assign @variable, klass if @variable
+    klass = new Assign @variable, klass, null, { @moduleDeclaration } if @variable
     klass.compileToFragments o
+
+#### Import and Export
+
+exports.ModuleDeclaration = class ModuleDeclaration extends Base
+  constructor: (@clause, @source) ->
+    @checkSource()
+
+  children: ['clause', 'source']
+
+  isStatement: YES
+  jumps:       THIS
+  makeReturn:  THIS
+
+  checkSource: ->
+    if @source? and @source instanceof StringWithInterpolations
+      @source.error 'the name of the module to be imported from must be an uninterpolated string'
+
+  checkScope: (o, moduleDeclarationType) ->
+    if o.indent.length isnt 0
+      @error "#{moduleDeclarationType} statements must be at top-level scope"
+
+exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
+  compileNode: (o) ->
+    @checkScope o, 'import'
+    o.importedSymbols = []
+
+    code = []
+    code.push @makeCode "#{@tab}import "
+    code.push @clause.compileNode(o)... if @clause?
+
+    if @source?.value?
+      code.push @makeCode ' from ' unless @clause is null
+      code.push @makeCode @source.value
+
+    code.push @makeCode ';'
+    code
+
+exports.ImportClause = class ImportClause extends Base
+  constructor: (@defaultBinding, @namedImports) ->
+
+  children: ['defaultBinding', 'namedImports']
+
+  compileNode: (o) ->
+    code = []
+
+    if @defaultBinding?
+      code.push @defaultBinding.compileNode(o)...
+      code.push @makeCode ', ' if @namedImports?
+
+    if @namedImports?
+      code.push @namedImports.compileNode(o)...
+
+    code
+
+exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
+  compileNode: (o) ->
+    @checkScope o, 'export'
+
+    code = []
+    code.push @makeCode "#{@tab}export "
+    code.push @makeCode 'default ' if @ instanceof ExportDefaultDeclaration
+
+    if @ not instanceof ExportDefaultDeclaration and
+       (@clause instanceof Assign or @clause instanceof Class)
+      # Prevent exporting an anonymous class; all exported members must be named
+      if @clause instanceof Class and not @clause.variable
+        @clause.error 'anonymous classes cannot be exported'
+
+      # When the ES2015 `class` keyword is supported, don’t add a `var` here
+      code.push @makeCode 'var '
+      @clause.moduleDeclaration = 'export'
+
+    if @clause.body? and @clause.body instanceof Block
+      code = code.concat @clause.compileToFragments o, LEVEL_TOP
+    else
+      code = code.concat @clause.compileNode o
+
+    code.push @makeCode " from #{@source.value}" if @source?.value?
+    code.push @makeCode ';'
+    code
+
+exports.ExportNamedDeclaration = class ExportNamedDeclaration extends ExportDeclaration
+
+exports.ExportDefaultDeclaration = class ExportDefaultDeclaration extends ExportDeclaration
+
+exports.ExportAllDeclaration = class ExportAllDeclaration extends ExportDeclaration
+
+exports.ModuleSpecifierList = class ModuleSpecifierList extends Base
+  constructor: (@specifiers) ->
+
+  children: ['specifiers']
+
+  compileNode: (o) ->
+    code = []
+    o.indent += TAB
+    compiledList = (specifier.compileToFragments o, LEVEL_LIST for specifier in @specifiers)
+
+    if @specifiers.length isnt 0
+      code.push @makeCode "{\n#{o.indent}"
+      for fragments, index in compiledList
+        code.push @makeCode(",\n#{o.indent}") if index
+        code.push fragments...
+      code.push @makeCode "\n}"
+    else
+      code.push @makeCode '{}'
+    code
+
+exports.ImportSpecifierList = class ImportSpecifierList extends ModuleSpecifierList
+
+exports.ExportSpecifierList = class ExportSpecifierList extends ModuleSpecifierList
+
+exports.ModuleSpecifier = class ModuleSpecifier extends Base
+  constructor: (@original, @alias, @moduleDeclarationType) ->
+    # The name of the variable entering the local scope
+    @identifier = if @alias? then @alias.value else @original.value
+
+  children: ['original', 'alias']
+
+  compileNode: (o) ->
+    o.scope.add @identifier, @moduleDeclarationType
+    code = []
+    code.push @makeCode @original.value
+    code.push @makeCode " as #{@alias.value}" if @alias?
+    code
+
+exports.ImportSpecifier = class ImportSpecifier extends ModuleSpecifier
+  constructor: (imported, local) ->
+    super imported, local, 'import'
+
+  compileNode: (o) ->
+    # Per the spec, symbols can’t be imported multiple times
+    # (e.g. `import { foo, foo } from 'lib'` is invalid)
+    if @identifier in o.importedSymbols or o.scope.check(@identifier)
+      @error "'#{@identifier}' has already been declared"
+    else
+      o.importedSymbols.push @identifier
+    super o
+
+exports.ImportDefaultSpecifier = class ImportDefaultSpecifier extends ImportSpecifier
+
+exports.ImportNamespaceSpecifier = class ImportNamespaceSpecifier extends ImportSpecifier
+
+exports.ExportSpecifier = class ExportSpecifier extends ModuleSpecifier
+  constructor: (local, exported) ->
+    super local, exported, 'export'
 
 #### Assign
 
 # The **Assign** is used to assign a local variable to value, or to set the
 # property of an object -- including within object literals.
 exports.Assign = class Assign extends Base
-  constructor: (@variable, @value, @context, options) ->
-    @param = options and options.param
-    @subpattern = options and options.subpattern
-    forbidden = (name = @variable.unwrapAll().value) in STRICT_PROSCRIBED
-    if forbidden and @context isnt 'object'
-      @variable.error "variable name may not be \"#{name}\""
+  constructor: (@variable, @value, @context, options = {}) ->
+    {@param, @subpattern, @operatorToken, @moduleDeclaration} = options
 
   children: ['variable', 'value']
 
   isStatement: (o) ->
-    o?.level is LEVEL_TOP and @context? and "?" in @context
+    o?.level is LEVEL_TOP and @context? and (@moduleDeclaration or "?" in @context)
+
+  checkAssignability: (o, varBase) ->
+    if Object::hasOwnProperty.call(o.scope.positions, varBase.value) and
+       o.scope.variables[o.scope.positions[varBase.value]].type is 'import'
+      varBase.error "'#{varBase.value}' is read-only"
 
   assigns: (name) ->
     @[if @context is 'object' then 'value' else 'variable'].assigns name
@@ -1210,22 +1426,32 @@ exports.Assign = class Assign extends Base
     unless @context
       varBase = @variable.unwrapAll()
       unless varBase.isAssignable()
-        @variable.error "\"#{@variable.compile o}\" cannot be assigned"
+        @variable.error "'#{@variable.compile o}' can't be assigned"
       unless varBase.hasProperties?()
-        if @param
+        if @moduleDeclaration # `moduleDeclaration` can be `'import'` or `'export'`
+          @checkAssignability o, varBase
+          o.scope.add varBase.value, @moduleDeclaration
+        else if @param
           o.scope.add varBase.value, 'var'
         else
+          @checkAssignability o, varBase
           o.scope.find varBase.value
+
     val = @value.compileToFragments o, LEVEL_LIST
+    @variable.front = true if isValue and @variable.base instanceof Obj
     compiledName = @variable.compileToFragments o, LEVEL_LIST
-    return (compiledName.concat @makeCode(": "), val) if @context is 'object'
+
+    if @context is 'object'
+      if fragmentsToText(compiledName) in JS_FORBIDDEN
+        compiledName.unshift @makeCode '"'
+        compiledName.push @makeCode '"'
+      return compiledName.concat @makeCode(": "), val
+
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
     if o.level <= LEVEL_LIST then answer else @wrapInBraces answer
 
   # Brief implementation of recursive pattern matching, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
-  # See the [ECMAScript Harmony Wiki](http://wiki.ecmascript.org/doku.php?id=harmony:destructuring)
-  # for details.
   compilePatternMatch: (o) ->
     top       = o.level is LEVEL_TOP
     {value}   = this
@@ -1233,44 +1459,51 @@ exports.Assign = class Assign extends Base
     unless olen = objects.length
       code = value.compileToFragments o
       return if o.level >= LEVEL_OP then @wrapInBraces code else code
+    [obj] = objects
+    if olen is 1 and obj instanceof Expansion
+      obj.error 'Destructuring assignment has no target'
     isObject = @variable.isObject()
-    if top and olen is 1 and (obj = objects[0]) not instanceof Splat
-      # Unroll simplest cases: `{v} = x` -> `v = x.v`
-      if obj instanceof Assign
+    if top and olen is 1 and obj not instanceof Splat
+      # Pick the property straight off the value when there’s just one to pick
+      # (no need to cache the value into a variable).
+      defaultValue = null
+      if obj instanceof Assign and obj.context is 'object'
+        # A regular object pattern-match.
         {variable: {base: idx}, value: obj} = obj
+        if obj instanceof Assign
+          defaultValue = obj.value
+          obj = obj.variable
       else
+        if obj instanceof Assign
+          defaultValue = obj.value
+          obj = obj.variable
         idx = if isObject
-          if obj.this then obj.properties[0].name else obj
+          # A shorthand `{a, b, @c} = val` pattern-match.
+          if obj.this
+            obj.properties[0].name
+          else
+            new PropertyName obj.unwrap().value
         else
-          new Literal 0
-      acc   = IDENTIFIER.test idx.unwrap().value or 0
+          # A regular array pattern-match.
+          new NumberLiteral 0
+      acc   = idx.unwrap() instanceof PropertyName
       value = new Value value
       value.properties.push new (if acc then Access else Index) idx
-      if obj.unwrap().value in RESERVED
-        obj.error "assignment to a reserved word: #{obj.compile o}"
+      message = isUnassignable obj.unwrap().value
+      obj.error message if message
+      value = new Op '?', value, defaultValue if defaultValue
       return new Assign(obj, value, null, param: @param).compileToFragments o, LEVEL_TOP
     vvar     = value.compileToFragments o, LEVEL_LIST
     vvarText = fragmentsToText vvar
     assigns  = []
     expandedIdx = false
     # Make vvar into a simple variable if it isn't already.
-    if not IDENTIFIER.test(vvarText) or @variable.assigns(vvarText)
+    if value.unwrap() not instanceof IdentifierLiteral or @variable.assigns(vvarText)
       assigns.push [@makeCode("#{ ref = o.scope.freeVariable 'ref' } = "), vvar...]
       vvar = [@makeCode ref]
       vvarText = ref
     for obj, i in objects
-      # A regular array pattern-match.
       idx = i
-      if isObject
-        if obj instanceof Assign
-          # A regular object pattern-match.
-          {variable: {base: idx}, value: obj} = obj
-        else
-          # A shorthand `{a, b, @c} = val` pattern-match.
-          if obj.base instanceof Parens
-            [obj, idx] = new Value(obj.unwrapAll()).cacheReference o
-          else
-            idx = if obj.this then obj.properties[0].name else obj
       if not expandedIdx and obj instanceof Splat
         name = obj.name.unwrap().value
         obj = obj.unwrap()
@@ -1293,17 +1526,35 @@ exports.Assign = class Assign extends Base
             assigns.push val.compileToFragments o, LEVEL_LIST
         continue
       else
-        name = obj.unwrap().value
         if obj instanceof Splat or obj instanceof Expansion
           obj.error "multiple splats/expansions are disallowed in an assignment"
-        if typeof idx is 'number'
-          idx = new Literal expandedIdx or idx
-          acc = no
+        defaultValue = null
+        if obj instanceof Assign and obj.context is 'object'
+          # A regular object pattern-match.
+          {variable: {base: idx}, value: obj} = obj
+          if obj instanceof Assign
+            defaultValue = obj.value
+            obj = obj.variable
         else
-          acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
+          if obj instanceof Assign
+            defaultValue = obj.value
+            obj = obj.variable
+          idx = if isObject
+            # A shorthand `{a, b, @c} = val` pattern-match.
+            if obj.this
+              obj.properties[0].name
+            else
+              new PropertyName obj.unwrap().value
+          else
+            # A regular array pattern-match.
+            new Literal expandedIdx or idx
+        name = obj.unwrap().value
+        acc = idx.unwrap() instanceof PropertyName
         val = new Value new Literal(vvarText), [new (if acc then Access else Index) idx]
-      if name? and name in RESERVED
-        obj.error "assignment to a reserved word: #{obj.compile o}"
+        val = new Op '?', val, defaultValue if defaultValue
+      if name?
+        message = isUnassignable name
+        obj.error message if message
       assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
     assigns.push vvar unless top or @subpattern
     fragments = @joinFragmentArrays assigns, ', '
@@ -1316,7 +1567,7 @@ exports.Assign = class Assign extends Base
     [left, right] = @variable.cacheReference o
     # Disallow conditional assignment of undefined variables.
     if not left.properties.length and left.base instanceof Literal and
-           left.base.value != "this" and not o.scope.check left.base.value
+           left.base not instanceof ThisLiteral and not o.scope.check left.base.value
       @variable.error "the variable \"#{left.base.value}\" can't be assigned with #{@context} because it has not been declared before"
     if "?" in @context
       o.isExistentialEquals = true
@@ -1341,8 +1592,7 @@ exports.Assign = class Assign extends Base
     else
       fromDecl = fromRef = '0'
     if to
-      if from instanceof Value and from.isSimpleNumber() and
-         to instanceof Value and to.isSimpleNumber()
+      if from?.isNumber() and to.isNumber()
         to = to.compile(o) - fromRef
         to += 1 unless exclusive
       else
@@ -1365,7 +1615,7 @@ exports.Code = class Code extends Base
     @body        = body or new Block
     @bound       = tag is 'boundfunc'
     @isGenerator = !!@body.contains (node) ->
-      node instanceof Op and node.operator in ['yield', 'yield*']
+      (node instanceof Op and node.isYield()) or node instanceof YieldReturn
 
   children: ['params', 'body']
 
@@ -1388,8 +1638,8 @@ exports.Code = class Code extends Base
     # Handle bound functions early.
     if @bound and not @context
       @context = '_this'
-      wrapper = new Code [new Param new Literal @context], new Block [this]
-      boundfunc = new Call(wrapper, [new Literal 'this'])
+      wrapper = new Code [new Param new IdentifierLiteral @context], new Block [this]
+      boundfunc = new Call(wrapper, [new ThisLiteral])
       boundfunc.updateLocationDataIfMissing @locationData
       return boundfunc.compileNode(o)
 
@@ -1406,7 +1656,7 @@ exports.Code = class Code extends Base
       for p in @params when p not instanceof Expansion and p.name.value
         o.scope.add p.name.value, 'var', yes
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
-                          new Value new Literal 'arguments'
+                          new Value new IdentifierLiteral 'arguments'
       break
     for param in @params
       if param.isComplex()
@@ -1456,13 +1706,16 @@ exports.Code = class Code extends Base
 
 #### Param
 
-# A parameter in a function definition. Beyond a typical Javascript parameter,
+# A parameter in a function definition. Beyond a typical JavaScript parameter,
 # these parameters can also attach themselves to the context of the function,
 # as well as be a splat, gathering up a group of parameters into an array.
 exports.Param = class Param extends Base
   constructor: (@name, @value, @splat) ->
-    if (name = @name.unwrapAll().value) in STRICT_PROSCRIBED
-      @name.error "parameter name \"#{name}\" is not allowed"
+    message = isUnassignable @name.unwrapAll().value
+    @name.error message if message
+    if @name instanceof Obj and @name.generated
+      token = @name.objects[0].operatorToken
+      token.error "unexpected #{token.value}"
 
   children: ['name', 'value']
 
@@ -1474,10 +1727,10 @@ exports.Param = class Param extends Base
     node = @name
     if node.this
       name = node.properties[0].name.value
-      name = "_#{name}" if name.reserved
-      node = new Literal o.scope.freeVariable name
+      name = "_#{name}" if name in JS_FORBIDDEN
+      node = new IdentifierLiteral o.scope.freeVariable name
     else if node.isComplex()
-      node = new Literal o.scope.freeVariable 'arg'
+      node = new IdentifierLiteral o.scope.freeVariable 'arg'
     node = new Value node
     node = new Splat node if @splat
     node.updateLocationDataIfMissing @locationData
@@ -1498,9 +1751,15 @@ exports.Param = class Param extends Base
     return iterator name.value, name if name instanceof Literal
     # * at-params `@foo`
     return atParam name if name instanceof Value
-    for obj in name.objects
+    for obj in name.objects ? []
+      # * destructured parameter with default value
+      if obj instanceof Assign and not obj.context?
+        obj = obj.variable
       # * assignments within destructured parameters `{foo:bar}`
       if obj instanceof Assign
+        # ... possibly with a default value
+        if obj.value instanceof Assign
+          obj = obj.value
         @eachName iterator, obj.value.unwrap()
       # * splats within destructured parameters `[xs...]`
       else if obj instanceof Splat
@@ -1629,7 +1888,7 @@ exports.While = class While extends Base
         set  = "#{@tab}#{rvar} = [];\n"
       if @guard
         if body.expressions.length > 1
-          body.expressions.unshift new If (new Parens @guard).invert(), new Literal "continue"
+          body.expressions.unshift new If (new Parens @guard).invert(), new StatementLiteral "continue"
         else
           body = Block.wrap [new If @guard, body] if @guard
       body = [].concat @makeCode("\n"), (body.compileToFragments o, LEVEL_TOP), @makeCode("\n#{@tab}")
@@ -1671,20 +1930,18 @@ exports.Op = class Op extends Base
 
   children: ['first', 'second']
 
-  isSimpleNumber: NO
+  isNumber: ->
+    @isUnary() and @operator in ['+', '-'] and
+      @first instanceof Value and @first.isNumber()
 
   isYield: ->
     @operator in ['yield', 'yield*']
-
-  isYieldReturn: ->
-    @isYield() and @first instanceof Return
 
   isUnary: ->
     not @second
 
   isComplex: ->
-    not (@isUnary() and @operator in ['+', '-'] and
-         @first instanceof Value and @first.isSimpleNumber())
+    not @isNumber()
 
   # Am I capable of
   # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin)?
@@ -1744,8 +2001,9 @@ exports.Op = class Op extends Base
     @first.front = @front unless isChain
     if @operator is 'delete' and o.scope.check(@first.unwrapAll().value)
       @error 'delete operand may not be argument or var'
-    if @operator in ['--', '++'] and @first.unwrapAll().value in STRICT_PROSCRIBED
-      @error "cannot increment/decrement \"#{@first.unwrapAll().value}\""
+    if @operator in ['--', '++']
+      message = isUnassignable @first.unwrapAll().value
+      @first.error message if message
     return @compileYield     o if @isYield()
     return @compileUnary     o if @isUnary()
     return @compileChain     o if isChain
@@ -1775,7 +2033,7 @@ exports.Op = class Op extends Base
   # Keep reference to the left expression, unless this an existential assignment
   compileExistence: (o) ->
     if @first.isComplex()
-      ref = new Literal o.scope.freeVariable 'ref'
+      ref = new IdentifierLiteral o.scope.freeVariable 'ref'
       fst = new Parens new Assign ref, @first
     else
       fst = @first
@@ -1804,26 +2062,25 @@ exports.Op = class Op extends Base
   compileYield: (o) ->
     parts = []
     op = @operator
-    if not o.scope.parent?
-      @error 'yield statements must occur within a function generator.'
+    unless o.scope.parent?
+      @error 'yield can only occur inside functions'
     if 'expression' in Object.keys(@first) and not (@first instanceof Throw)
-      if @isYieldReturn()
-        parts.push @first.compileToFragments o, LEVEL_TOP
-      else if @first.expression?
-        parts.push @first.expression.compileToFragments o, LEVEL_OP
+      parts.push @first.expression.compileToFragments o, LEVEL_OP if @first.expression?
     else
-      parts.push [@makeCode "(#{op} "]
+      parts.push [@makeCode "("] if o.level >= LEVEL_PAREN
+      parts.push [@makeCode op]
+      parts.push [@makeCode " "] if @first.base?.value isnt ''
       parts.push @first.compileToFragments o, LEVEL_OP
-      parts.push [@makeCode ")"]
+      parts.push [@makeCode ")"] if o.level >= LEVEL_PAREN
     @joinFragmentArrays parts, ''
 
   compilePower: (o) ->
     # Make a Math.pow call
-    pow = new Value new Literal('Math'), [new Access new Literal 'pow']
+    pow = new Value new IdentifierLiteral('Math'), [new Access new PropertyName 'pow']
     new Call(pow, [@first, @second]).compileToFragments o
 
   compileFloorDivision: (o) ->
-    floor = new Value new Literal('Math'), [new Access new Literal 'floor']
+    floor = new Value new IdentifierLiteral('Math'), [new Access new PropertyName 'floor']
     div = new Op '/', @first, @second
     new Call(floor, [div]).compileToFragments o
 
@@ -1895,12 +2152,17 @@ exports.Try = class Try extends Base
     tryPart   = @attempt.compileToFragments o, LEVEL_TOP
 
     catchPart = if @recovery
-      placeholder = new Literal '_error'
-      @recovery.unshift new Assign @errorVariable, placeholder if @errorVariable
+      generatedErrorVariableName = o.scope.freeVariable 'error', reserve: no
+      placeholder = new IdentifierLiteral generatedErrorVariableName
+      if @errorVariable
+        message = isUnassignable @errorVariable.unwrapAll().value
+        @errorVariable.error message if message
+        @recovery.unshift new Assign @errorVariable, placeholder
       [].concat @makeCode(" catch ("), placeholder.compileToFragments(o), @makeCode(") {\n"),
         @recovery.compileToFragments(o, LEVEL_TOP), @makeCode("\n#{@tab}}")
     else unless @ensure or @recovery
-      [@makeCode(' catch (_error) {}')]
+      generatedErrorVariableName = o.scope.freeVariable 'error', reserve: no
+      [@makeCode(" catch (#{generatedErrorVariableName}) {}")]
     else
       []
 
@@ -1943,7 +2205,7 @@ exports.Existence = class Existence extends Base
   compileNode: (o) ->
     @expression.front = @front
     code = @expression.compile o, LEVEL_OP
-    if IDENTIFIER.test(code) and not o.scope.check code
+    if @expression.unwrap() instanceof IdentifierLiteral and not o.scope.check code
       [cmp, cnj] = if @negated then ['===', '||'] else ['!==', '&&']
       code = "typeof #{code} #{cmp} \"undefined\" #{cnj} #{code} #{cmp} null"
     else
@@ -1976,6 +2238,51 @@ exports.Parens = class Parens extends Base
       (expr instanceof For and expr.returns))
     if bare then fragments else @wrapInBraces fragments
 
+#### StringWithInterpolations
+
+# Strings with interpolations are in fact just a variation of `Parens` with
+# string concatenation inside.
+
+exports.StringWithInterpolations = class StringWithInterpolations extends Parens
+  # Uncomment the following line in CoffeeScript 2, to allow all interpolated
+  # strings to be output using the ES2015 syntax:
+  # unwrap: -> this
+
+  compileNode: (o) ->
+    # This method produces an interpolated string using the new ES2015 syntax,
+    # which is opt-in by using tagged template literals. If this
+    # StringWithInterpolations isn’t inside a tagged template literal,
+    # fall back to the CoffeeScript 1.x output.
+    # (Remove this check in CoffeeScript 2.)
+    unless o.inTaggedTemplateCall
+      return super
+
+    # Assumption: expr is Value>StringLiteral or Op
+    expr = @body.unwrap()
+
+    elements = []
+    expr.traverseChildren no, (node) ->
+      if node instanceof StringLiteral
+        elements.push node
+        return yes
+      else if node instanceof Parens
+        elements.push node
+        return no
+      return yes
+
+    fragments = []
+    fragments.push @makeCode '`'
+    for element in elements
+      if element instanceof StringLiteral
+        fragments.push @makeCode element.value.slice(1, -1)
+      else
+        fragments.push @makeCode '${'
+        fragments.push element.compileToFragments(o, LEVEL_PAREN)...
+        fragments.push @makeCode '}'
+    fragments.push @makeCode '`'
+
+    fragments
+
 #### For
 
 # CoffeeScript's replacement for the *for* loop is our array and object
@@ -1991,13 +2298,15 @@ exports.For = class For extends While
     @body    = Block.wrap [body]
     @own     = !!source.own
     @object  = !!source.object
+    @from    = !!source.from
+    @index.error 'cannot use index with for-from' if @from and @index
+    source.ownTag.error "cannot use own with for-#{if @from then 'from' else 'in'}" if @own and not @object
     [@name, @index] = [@index, @name] if @object
     @index.error 'index cannot be a pattern matching expression' if @index instanceof Value
-    @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length
+    @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length and not @from
     @pattern = @name instanceof Value
     @index.error 'indexes do not apply to range loops' if @range and @index
     @name.error 'cannot pattern match over range loops' if @range and @pattern
-    @name.error 'cannot use own with for-in' if @own and not @object
     @returns = false
 
   children: ['body', 'source', 'guard', 'step']
@@ -2017,12 +2326,15 @@ exports.For = class For extends While
     scope.find(name)  if name and not @pattern
     scope.find(index) if index
     rvar        = scope.freeVariable 'results' if @returns
-    ivar        = (@object and index) or scope.freeVariable 'i', single: true
-    kvar        = (@range and name) or index or ivar
+    if @from
+      ivar = scope.freeVariable 'x', single: true if @pattern
+    else
+      ivar = (@object and index) or scope.freeVariable 'i', single: true
+    kvar        = ((@range or @from) and name) or index or ivar
     kvarAssign  = if kvar isnt ivar then "#{kvar} = " else ""
     if @step and not @range
       [step, stepVar] = @cacheToCodeFragments @step.cache o, LEVEL_LIST, isComplexOrAssignable
-      stepNum = stepVar.match NUMBER
+      stepNum   = Number stepVar if @step.isNumber()
     name        = ivar if @pattern
     varPart     = ''
     guardPart   = ''
@@ -2033,20 +2345,21 @@ exports.For = class For extends While
         {index: ivar, name, @step, isComplex: isComplexOrAssignable}
     else
       svar    = @source.compile o, LEVEL_LIST
-      if (name or @own) and not IDENTIFIER.test svar
+      if (name or @own) and @source.unwrap() not instanceof IdentifierLiteral
         defPart    += "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
         svar       = ref
-      if name and not @pattern
+      if name and not @pattern and not @from
         namePart   = "#{name} = #{svar}[#{kvar}]"
-      if not @object
+      if not @object and not @from
         defPart += "#{@tab}#{step};\n" if step isnt stepVar
-        lvar = scope.freeVariable 'len' unless @step and stepNum and down = (parseNum(stepNum[0]) < 0)
+        down = stepNum < 0
+        lvar = scope.freeVariable 'len' unless @step and stepNum? and down
         declare = "#{kvarAssign}#{ivar} = 0, #{lvar} = #{svar}.length"
         declareDown = "#{kvarAssign}#{ivar} = #{svar}.length - 1"
         compare = "#{ivar} < #{lvar}"
         compareDown = "#{ivar} >= 0"
         if @step
-          if stepNum
+          if stepNum?
             if down
               compare = compareDown
               declare = declareDown
@@ -2056,25 +2369,27 @@ exports.For = class For extends While
           increment = "#{ivar} += #{stepVar}"
         else
           increment = "#{if kvar isnt ivar then "++#{ivar}" else "#{ivar}++"}"
-        forPartFragments  = [@makeCode("#{declare}; #{compare}; #{kvarAssign}#{increment}")]
+        forPartFragments = [@makeCode("#{declare}; #{compare}; #{kvarAssign}#{increment}")]
     if @returns
       resultPart   = "#{@tab}#{rvar} = [];\n"
       returnResult = "\n#{@tab}return #{rvar};"
       body.makeReturn rvar
     if @guard
       if body.expressions.length > 1
-        body.expressions.unshift new If (new Parens @guard).invert(), new Literal "continue"
+        body.expressions.unshift new If (new Parens @guard).invert(), new StatementLiteral "continue"
       else
         body = Block.wrap [new If @guard, body] if @guard
     if @pattern
-      body.expressions.unshift new Assign @name, new Literal "#{svar}[#{kvar}]"
+      body.expressions.unshift new Assign @name, if @from then new IdentifierLiteral kvar else new Literal "#{svar}[#{kvar}]"
     defPartFragments = [].concat @makeCode(defPart), @pluckDirectCall(o, body)
     varPart = "\n#{idt1}#{namePart};" if namePart
     if @object
-      forPartFragments   = [@makeCode("#{kvar} in #{svar}")]
+      forPartFragments = [@makeCode("#{kvar} in #{svar}")]
       guardPart = "\n#{idt1}if (!#{utility 'hasProp', o}.call(#{svar}, #{kvar})) continue;" if @own
+    else if @from
+      forPartFragments = [@makeCode("#{kvar} of #{svar}")]
     bodyFragments = body.compileToFragments merge(o, indent: idt1), LEVEL_TOP
-    if bodyFragments and (bodyFragments.length > 0)
+    if bodyFragments and bodyFragments.length > 0
       bodyFragments = [].concat @makeCode("\n"), bodyFragments, @makeCode("\n")
     [].concat defPartFragments, @makeCode("#{resultPart or ''}#{@tab}for ("),
       forPartFragments, @makeCode(") {#{guardPart}#{varPart}"), bodyFragments,
@@ -2092,7 +2407,7 @@ exports.For = class For extends While
                       val.properties.length is 1 and
                       val.properties[0].name?.value in ['call', 'apply'])
       fn    = val.base?.unwrapAll() or val
-      ref   = new Literal o.scope.freeVariable 'fn'
+      ref   = new IdentifierLiteral o.scope.freeVariable 'fn'
       base  = new Value ref
       if val.base
         [val.base, base] = [base, val]
@@ -2285,17 +2600,7 @@ LEVEL_ACCESS = 6  # ...[0]
 # Tabs are two spaces for pretty printing.
 TAB = '  '
 
-IDENTIFIER = /// ^ (?!\d) [$\w\x7f-\uffff]+ $ ///
-SIMPLENUM  = /^[+-]?\d+$/
-HEXNUM = /^[+-]?0x[\da-f]+/i
-NUMBER    = ///^[+-]?(?:
-  0x[\da-f]+ |              # hex
-  \d*\.?\d+ (?:e[+-]?\d+)?  # decimal
-)$///i
-
-# Is a literal value a string/regex?
-IS_STRING = /^['"]/
-IS_REGEX = /^\//
+SIMPLENUM = /^[+-]?\d+$/
 
 # Helper Functions
 # ----------------
@@ -2314,23 +2619,13 @@ multident = (code, tab) ->
   code = code.replace /\n/g, '$&' + tab
   code.replace /\s+$/, ''
 
-# Parse a number (+- decimal/hexadecimal)
-# Examples: 0, -1, 1, 2e3, 2e-3, -0xfe, 0xfe
-parseNum = (x) ->
-  if not x?
-    0
-  else if x.match HEXNUM
-    parseInt x, 16
-  else
-    parseFloat x
-
 isLiteralArguments = (node) ->
-  node instanceof Literal and node.value is 'arguments' and not node.asKey
+  node instanceof IdentifierLiteral and node.value is 'arguments'
 
 isLiteralThis = (node) ->
-  (node instanceof Literal and node.value is 'this' and not node.asKey) or
+  node instanceof ThisLiteral or
     (node instanceof Code and node.bound) or
-    (node instanceof Call and node.isSuper)
+    node instanceof SuperCall
 
 isComplexOrAssignable = (node) -> node.isComplex() or node.isAssignable?()
 

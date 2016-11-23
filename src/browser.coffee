@@ -14,7 +14,7 @@ CoffeeScript.eval = (code, options = {}) ->
 
 # Running code does not provide access to this scope.
 CoffeeScript.run = (code, options = {}) ->
-  options.bare = on
+  options.bare      = on
   options.shiftLine = on
   Function(compile code, options)()
 
@@ -24,12 +24,10 @@ return unless window?
 # Include source maps where possible. If we've got a base64 encoder, a
 # JSON serializer, and tools for escaping unicode characters, we're good to go.
 # Ported from https://developer.mozilla.org/en-US/docs/DOM/window.btoa
-if btoa? and JSON? and unescape? and encodeURIComponent?
+if btoa? and JSON?
   compile = (code, options = {}) ->
-    options.sourceMap = true
-    options.inline = true
-    {js, v3SourceMap} = CoffeeScript.compile code, options
-    "#{js}\n//# sourceMappingURL=data:application/json;base64,#{btoa unescape encodeURIComponent v3SourceMap}\n//# sourceURL=coffeescript"
+    options.inlineMap = true
+    CoffeeScript.compile code, options
 
 # Load a remote script from the current domain via XHR.
 CoffeeScript.load = (url, callback, options = {}, hold = false) ->

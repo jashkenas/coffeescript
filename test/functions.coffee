@@ -86,6 +86,15 @@ test "self-referencing functions", ->
   changeMe()
   eq changeMe, 2
 
+test "#2009: don't touch `` `this` ``", ->
+  nonceA = {}
+  nonceB = {}
+  fn = null
+  (->
+    fn = => this is nonceA and `this` is nonceB
+  ).call nonceA
+  ok fn.call nonceB
+
 
 # Parameter List Features
 
@@ -139,6 +148,38 @@ test "destructuring in function definition", ->
     eq 1, b
     eq 2, c
   ) {a: [1], c: 2}
+
+  context = {}
+  (([{a: [b, c = 2], @d, e = 4}]...) ->
+    eq 1, b
+    eq 2, c
+    eq @d, 3
+    eq context.d, 3
+    eq e, 4
+  ).call context, {a: [1], d: 3}
+
+  (({a: aa = 1, b: bb = 2}) ->
+    eq 5, aa
+    eq 2, bb
+  ) {a: 5}
+
+  ajax = (url, {
+    async = true,
+    beforeSend = (->),
+    cache = true,
+    method = 'get',
+    data = {}
+  }) ->
+    {url, async, beforeSend, cache, method, data}
+
+  fn = ->
+  deepEqual ajax('/home', beforeSend: fn, cache: null, method: 'post'), {
+    url: '/home', async: true, beforeSend: fn, cache: true, method: 'post', data: {}
+  }
+
+test "#4005: `([a = {}]..., b) ->` weirdness", ->
+  fn = ([a = {}]..., b) -> [a, b]
+  deepEqual fn(5), [{}, 5]
 
 test "default values", ->
   nonceA = {}

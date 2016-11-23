@@ -1,9 +1,9 @@
-fs            = require 'fs'
-path          = require 'path'
-_             = require 'underscore'
-CoffeeScript  = require './lib/coffee-script'
-{spawn, exec} = require 'child_process'
-helpers       = require './lib/coffee-script/helpers'
+fs                        = require 'fs'
+path                      = require 'path'
+_                         = require 'underscore'
+{ spawn, exec, execSync } = require 'child_process'
+CoffeeScript              = require './lib/coffee-script'
+helpers                   = require './lib/coffee-script/helpers'
 
 # ANSI Terminal Colors.
 bold = red = green = reset = ''
@@ -24,6 +24,9 @@ header = """
    */
 """
 
+# Used in folder names like docs/v1
+majorVersion = CoffeeScript.VERSION.split('.')[0]
+
 # Build the CoffeeScript language from source.
 build = (cb) ->
   files = fs.readdirSync 'src'
@@ -35,7 +38,7 @@ run = (args, cb) ->
   proc =         spawn 'node', ['bin/coffee'].concat(args)
   proc.stderr.on 'data', (buffer) -> console.log buffer.toString()
   proc.on        'exit', (status) ->
-    process.exit(1) if status != 0
+    process.exit(1) if status isnt 0
     cb() if typeof cb is 'function'
 
 # Log a message with a color.
@@ -48,15 +51,19 @@ codeFor = ->
   hljs.configure classPrefix: ''
   (file, executable = false, showLoad = true) ->
     counter++
-    return unless fs.existsSync "documentation/js/#{file}.js"
-    cs = fs.readFileSync "documentation/coffee/#{file}.coffee", 'utf-8'
-    js = fs.readFileSync "documentation/js/#{file}.js", 'utf-8'
+    return unless fs.existsSync "docs/v#{majorVersion}/examples/#{file}.js"
+    cs = fs.readFileSync "documentation/examples/#{file}.coffee", 'utf-8'
+    js = fs.readFileSync "docs/v#{majorVersion}/examples/#{file}.js", 'utf-8'
     js = js.replace /^\/\/ generated.*?\n/i, ''
 
     cshtml = "<pre><code>#{hljs.highlight('coffeescript', cs).value}</code></pre>"
+    # Temporary fix until highlight.js adds support for newer CoffeeScript keywords
+    # Added in https://github.com/isagalaev/highlight.js/pull/1357, awaiting release
+    if file in ['generator_iteration', 'generators', 'modules']
+      cshtml = cshtml.replace /(yield|import|export|from|as|default) /g, '<span class="keyword">$1</span> '
     jshtml = "<pre><code>#{hljs.highlight('javascript', js).value}</code></pre>"
     append = if executable is yes then '' else "alert(#{executable});"
-    if executable and executable != yes
+    if executable and executable isnt yes
       cs.replace /(\S)\s*\Z/m, "$1\n\nalert #{executable}"
     run    = if executable is true then 'run' else "run: #{executable}"
     name   = "example#{counter}"
@@ -99,9 +106,9 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
   lib  = "#{base}/lib/coffee-script"
   bin  = "#{base}/bin"
   node = "~/.node_libraries/coffee-script"
-  console.log   "Installing CoffeeScript to #{lib}"
-  console.log   "Linking to #{node}"
-  console.log   "Linking 'coffee' to #{bin}/coffee"
+  console.log "Installing CoffeeScript to #{lib}"
+  console.log "Linking to #{node}"
+  console.log "Linking 'coffee' to #{bin}/coffee"
   exec([
     "mkdir -p #{lib} #{bin}"
     "cp -rf bin lib LICENSE README.md package.json src #{lib}"
@@ -133,7 +140,8 @@ task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   helpers.extend global, require('util')
   require 'jison'
   parser = require('./lib/coffee-script/grammar').parser
-  fs.writeFile 'lib/coffee-script/parser.js', parser.generate()
+  fs.writeFileSync 'lib/coffee-script/parser.js', parser.generate()
+
 
 task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
   code = ''
@@ -162,35 +170,37 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
   """
   unless process.env.MINIFY is 'false'
     {code} = require('uglify-js').minify code, fromString: true
-  fs.writeFileSync 'extras/coffee-script.js', header + '\n' + code
+  fs.writeFileSync "docs/v#{majorVersion}/extras/coffee-script.js", header + '\n' + code
   console.log "built ... running browser tests:"
   invoke 'test:browser'
 
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
-  source = 'documentation/index.html.js'
-  exec 'bin/coffee -bc -o documentation/js documentation/coffee/*.coffee'
+  examplesSourceFolder = 'documentation/examples'
+  examplesOutputFolder = "docs/v#{majorVersion}/examples"
+  fs.mkdirSync examplesOutputFolder unless fs.existsSync examplesOutputFolder
+  do renderExamples = ->
+    execSync "bin/coffee -bc -o #{examplesOutputFolder} #{examplesSourceFolder}/*.coffee"
 
+  indexFile = 'documentation/index.html.js'
   do renderIndex = ->
-    codeSnippetCounter = 0
-    rendered = _.template fs.readFileSync(source, 'utf-8'),
+    render = _.template fs.readFileSync(indexFile, 'utf-8')
+    output = render
       codeFor: codeFor()
       releaseHeader: releaseHeader
-    fs.writeFileSync 'index.html', rendered
-    log "compiled", green, "#{source}"
+    fs.writeFileSync "docs/v#{majorVersion}/index.html", output
+    log 'compiled', green, "#{indexFile} → docs/v#{majorVersion}/index.html"
 
-  fs.watchFile source, interval: 200, renderIndex
-  log "watching..." , green
-
-
-task 'doc:source', 'rebuild the internal documentation', ->
-  exec 'node_modules/.bin/docco src/*.*coffee && cp -rf docs documentation && rm -r docs', (err) ->
-    throw err if err
+  fs.watch examplesSourceFolder, interval: 200, ->
+    renderExamples()
+    renderIndex()
+  fs.watch indexFile, interval: 200, renderIndex
+  log 'watching...' , green
 
 
-task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
-  exec 'node_modules/.bin/docco examples/underscore.coffee && cp -rf docs documentation && rm -r docs', (err) ->
-    throw err if err
+task 'doc:source', 'rebuild the annotated source documentation', ->
+  exec "node_modules/docco/bin/docco src/*.*coffee --output docs/v#{majorVersion}/annotated-source", (err) -> throw err if err
+
 
 task 'bench', 'quick benchmark of compilation time', ->
   {Rewriter} = require './lib/coffee-script/rewriter'
@@ -277,11 +287,6 @@ runTests = (CoffeeScript) ->
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
 
-  # Ignore generators test file if generators are not available
-  generatorsAreAvailable = '--harmony' in process.execArgv or
-    '--harmony-generators' in process.execArgv
-  files.splice files.indexOf('generators.coffee'), 1 if not generatorsAreAvailable
-
   for file in files when helpers.isCoffee file
     literate = helpers.isLiterate file
     currentFile = filename = path.join 'test', file
@@ -298,7 +303,7 @@ task 'test', 'run the CoffeeScript language test suite', ->
 
 
 task 'test:browser', 'run the test suite against the merged browser script', ->
-  source = fs.readFileSync 'extras/coffee-script.js', 'utf-8'
+  source = fs.readFileSync "docs/v#{majorVersion}/extras/coffee-script.js", 'utf-8'
   result = {}
   global.testingBrowser = yes
   (-> eval source).call result

@@ -66,9 +66,15 @@ Generate a temporary variable name at the given index.
 
       temporary: (name, index, single=false) ->
         if single
-          (index + parseInt name, 36).toString(36).replace /\d/g, 'a'
+          startCode = name.charCodeAt(0)
+          endCode = 'z'.charCodeAt(0)
+          diff = endCode - startCode
+          newCode = startCode + index % (diff + 1)
+          letter = String.fromCharCode(newCode)
+          num = index // (diff + 1)
+          "#{letter}#{num or ''}"
         else
-          name + (index or '')
+          "#{name}#{index or ''}"
 
 Gets the type of a variable.
 

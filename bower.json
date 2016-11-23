@@ -11,11 +11,11 @@
     "compiler"
   ],
   "devDependencies": {
-    "uglify-js": "~2.2",
-    "jison": ">=0.2.0",
-    "highlight.js": "~8.0.0",
-    "underscore": "~1.5.2",
-    "docco": "~0.6.2"
+    "uglify-js": "~2.7",
+    "jison": ">=0.4.17",
+    "highlight.js": "~9.8.0",
+    "underscore": "~1.8.3",
+    "docco": "~0.7.0"
   },
   "author": {
     "name": "Jeremy Ashkenas"

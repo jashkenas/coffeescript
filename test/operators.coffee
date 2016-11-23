@@ -215,6 +215,10 @@ test "#1714: lexer bug with raw range `for` followed by `in`", ->
   0 for [1..10] # comment ending
   ok not ('a' in ['b'])
 
+  # lexer state (specifically @seenFor) should be reset before each compilation
+  CoffeeScript.compile "0 for [1..2]"
+  CoffeeScript.compile "'a' in ['b']"
+
 test "#1099: statically determined `not in []` reporting incorrect result", ->
   ok 0 not in []
 
@@ -255,7 +259,7 @@ test "chained operations should evaluate each value only once", ->
 
 test "#891: incorrect inversion of chained comparisons", ->
   ok (true unless 0 > 1 > 2)
-  ok (true unless (NaN = 0/0) < 0/0 < NaN)
+  ok (true unless (this.NaN = 0/0) < 0/0 < this.NaN)
 
 test "#1234: Applying a splat to :: applies the splat to the wrong object", ->
   nonce = {}
