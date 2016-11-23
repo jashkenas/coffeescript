@@ -999,7 +999,7 @@ Block
       the function is called, with the parameters being the input text and expression parts that make up the interpolated string.
       The function can then assemble these parts into an output string, providing custom string interpolation.
     </p>
-    <%= codeFor('tagged-template-literals', 'sentence') %>
+    <%= codeFor('tagged-template-literals', 'text') %>
 
     <p>
       <span id="regexes" class="bookmark"></span>
