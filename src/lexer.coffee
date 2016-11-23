@@ -292,9 +292,16 @@ exports.Lexer = class Lexer
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
-    return 0 unless @chunk.charAt(0) is '`' and match = JSTOKEN.exec @chunk
-    @token 'JS', (script = match[0])[1...-1], 0, script.length
-    script.length
+    return 0 unless @chunk.charAt(0) is '`' and
+      (match = HERE_JSTOKEN.exec(@chunk) or JSTOKEN.exec(@chunk))
+    # Convert escaped backticks to backticks, and escaped backslashes
+    # just before escaped backticks to backslashes
+    script = match[1].replace /\\+(`|$)/g, (string) ->
+      # `string` is always a value like '\`', '\\\`', '\\\\\`', etc.
+      # By reducing it to its latter half, we turn '\`' to '`', '\\\`' to '\`', etc.
+      string[-Math.ceil(string.length / 2)..]
+    @token 'JS', script, 0, match[0].length
+    match[0].length
 
   # Matches regular expression literals, as well as multiline extended ones.
   # Lexing regular expressions is difficult to distinguish from division, so we
@@ -913,7 +920,8 @@ CODE       = /^[-=]>/
 
 MULTI_DENT = /^(?:\n[^\n\S]*)+/
 
-JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
+JSTOKEN      = ///^ `(?!``) ((?: [^`\\] | \\[\s\S]           )*) `   ///
+HERE_JSTOKEN = ///^ ```     ((?: [^`\\] | \\[\s\S] | `(?!``) )*) ``` ///
 
 # String-matching-regexes.
 STRING_START   = /^(?:'''|"""|'|")/
