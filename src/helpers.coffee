@@ -2,6 +2,17 @@
 # the **Lexer**, **Rewriter**, and the **Nodes**. Merge objects, flatten
 # arrays, count characters, that sort of thing.
 
+marked = require 'marked'
+# marked.setOptions
+#   renderer: new marked.Renderer()
+#   gfm: true
+#   tables: true
+#   breaks: false
+#   pedantic: false
+#   sanitize: true
+#   smartLists: true
+#   smartypants: false
+
 # Peek at the beginning of a given string to see if it matches a sequence.
 exports.starts = (string, literal, start) ->
   literal is string.substr start, literal.length
@@ -67,19 +78,22 @@ exports.some = Array::some ? (fn) ->
   return true for e in this when fn e
   false
 
-# Simple function for inverting Literate CoffeeScript code by putting the
-# documentation in comments, producing a string of CoffeeScript code that
-# can be compiled "normally".
+# Simple function for extracting code from Literate CoffeeScript by stripping
+# out all non-code blocks,  producing a string of CoffeeScript code that can
+# be compiled "normally".
 exports.invertLiterate = (code) ->
-  maybe_code = true
-  lines = for line in code.split('\n')
-    if maybe_code and /^([ ]{4}|[ ]{0,3}\t)/.test line
-      line
-    else if maybe_code = /^\s*$/.test line
-      line
-    else
-      '# ' + line
-  lines.join '\n'
+  # don't know how to avoid this hack using token as placeholder for tabs, then
+  # re-inserting tabs after code extraction. The token has been split in two
+  # so that it does not end up getting parsed in this src code
+  token = '9ddb1d26184bdaf8'+'d4de55835d82eb56'
+  code = code.replace "\t", token
+  # parse as markdown, discard everything except code blocks
+  out = ""
+  for item in marked.lexer code, {}
+    out += "#{item.text}\n" if item.type == 'code'
+  # put the tabs back in
+  out.replace token, "\t"
+  out
 
 # Merge two jison-style location data objects together.
 # If `last` is not provided, this will simply return `first`.
