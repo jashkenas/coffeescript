@@ -10,13 +10,6 @@
     "coffeescript",
     "compiler"
   ],
-  "devDependencies": {
-    "uglify-js": "~2.7",
-    "jison": ">=0.4.17",
-    "highlight.js": "~9.8.0",
-    "underscore": "~1.8.3",
-    "docco": "~0.7.0"
-  },
   "author": {
     "name": "Jeremy Ashkenas"
   },
