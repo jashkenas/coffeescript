@@ -41,6 +41,7 @@
         <a href="#switch">Switch and Try/Catch</a>
         <a href="#comparisons">Chained Comparisons</a>
         <a href="#strings">String Interpolation, Block Strings, and Block Comments</a>
+        <a href="#tagged-template-literals">Tagged Template Literals</a>
         <a href="#regexes">Block Regular Expressions</a>
         <a href="#modules">Modules</a>
         <a href="#cake">Cake, and Cakefiles</a>
@@ -986,6 +987,19 @@ Block
       are preserved in the generated code.
     </p>
     <%= codeFor('block_comment') %>
+
+    <p>
+      <span id="tagged-template-literals" class="bookmark"></span>
+      <b class="header">Tagged Template Literals</b>
+      Coffeescript supports
+      <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals">ES2015 tagged template literals</a>,
+      which enable customized string interpolation. If you immediately prefix a string with a function (no space between
+      the two), Coffeescript will interpret this 'function plus string' combination as an ES2015 tagged template literal,
+      and <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals">behave accordingly</a>:
+      the function is called, with the parameters being the input text and expression parts that make up the interpolated string.
+      The function can then assemble these parts into an output string, providing custom string interpolation.
+    </p>
+    <%= codeFor('tagged-template-literals', 'sentence') %>
 
     <p>
       <span id="regexes" class="bookmark"></span>
