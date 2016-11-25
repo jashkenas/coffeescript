@@ -1008,7 +1008,7 @@ Block
       expression parts that make up the interpolated string. The function can then
       assemble these parts into an output string, providing custom string interpolation.
     </p>
-    <%= codeFor('tagged_template_literals', 'text') %>
+    <%= codeFor('tagged_template_literals', 'greet("greg", "awesome")') %>
 
     <p>
       <span id="regexes" class="bookmark"></span>
