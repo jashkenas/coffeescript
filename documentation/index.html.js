@@ -993,13 +993,20 @@ Block
     <p>
       <span id="tagged-template-literals" class="bookmark"></span>
       <b class="header">Tagged Template Literals</b>
-      Coffeescript supports
+      CoffeeScript supports
       <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals">ES2015 tagged template literals</a>,
-      which enable customized string interpolation. If you immediately prefix a string with a function (no space between
-      the two), Coffeescript will interpret this 'function plus string' combination as an ES2015 tagged template literal,
-      and <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals">behave accordingly</a>:
-      the function is called, with the parameters being the input text and expression parts that make up the interpolated string.
-      The function can then assemble these parts into an output string, providing custom string interpolation.
+      which enable customized string interpolation. If you immediately prefix a string
+      with a function name (no space between the two), CoffeeScript will output this
+      'function plus string' combination as an ES2015 tagged template literal.
+      Then, if your runtime supports tagged template literals or you use a tool such as
+      <a href="http://babeljs.io/">Babel</a> or
+      <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>
+      to convert them to code that your target runtimes support, the tagged template
+      literal will
+      <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals">behave accordingly</a>:
+      the function will be called, with the parameters being the input text and
+      expression parts that make up the interpolated string. The function can then
+      assemble these parts into an output string, providing custom string interpolation.
     </p>
     <%= codeFor('tagged_template_literals', 'text') %>
 
