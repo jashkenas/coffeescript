@@ -66,25 +66,6 @@ test "constructors with inheritance and super", ->
   ok (new SubClass).prop is 'top-super-sub'
 
 
-test "Overriding the static property new doesn't clobber Function::new", ->
-
-  class OneClass
-    @new: 'new'
-    function: 'function'
-    constructor: (name) -> @name = name
-
-  class TwoClass extends OneClass
-  delete TwoClass.new
-
-  Function.prototype.new = -> new this arguments...
-
-  ok (TwoClass.new('three')).name is 'three'
-  ok (new OneClass).function is 'function'
-  ok OneClass.new is 'new'
-
-  delete Function.prototype.new
-
-
 test "basic classes, again, but in the manual prototype style", ->
 
   Base = ->
@@ -464,7 +445,7 @@ test "ensure that constructors invoked with splats return a new object", ->
   # Ensure that constructors invoked with splats cache the function.
   called = 0
   get = -> if called++ then false else class Type
-  new get() args...
+  new (get()) args...
 
 test "`new` shouldn't add extra parens", ->
 
@@ -480,6 +461,7 @@ test "`new` works against bare function", ->
 test "#1182: a subclass should be able to set its constructor to an external function", ->
   ctor = ->
     @val = 1
+    return
   class A
   class B extends A
     constructor: ctor
@@ -738,21 +720,21 @@ test "#2599: other typed constructors should be inherited", ->
   ok (new Derived) not instanceof Base
   ok (new Base) not instanceof Base
 
-test "#2359: extending native objects that use other typed constructors requires defining a constructor", ->
-  class BrokenArray extends Array
-    method: -> 'no one will call me'
+test "extending native objects works with and without defining a constructor", ->
+  class MyArray extends Array
+    method: -> 'yes!'
 
-  brokenArray = new BrokenArray
-  ok brokenArray not instanceof BrokenArray
-  ok typeof brokenArray.method is 'undefined'
+  myArray = new MyArray
+  ok myArray instanceof MyArray
+  ok 'yes!', myArray.method()
 
-  class WorkingArray extends Array
+  class OverrideArray extends Array
     constructor: -> super
     method: -> 'yes!'
 
-  workingArray = new WorkingArray
-  ok workingArray instanceof WorkingArray
-  eq 'yes!', workingArray.method()
+  overrideArray = new OverrideArray
+  ok overrideArray instanceof OverrideArray
+  eq 'yes!', overrideArray.method()
 
 
 test "#2782: non-alphanumeric-named bound functions", ->
@@ -855,7 +837,7 @@ test "#1392 calling `super` in methods defined on namespaced classes", ->
   eq 1, count
 
   class C
-    @a: ->
+    @a: (->)
     @a extends Base
     @a::m = -> super
   eq 5, (new C.a).m()
