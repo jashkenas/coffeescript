@@ -2238,19 +2238,17 @@ exports.Parens = class Parens extends Base
 exports.StringWithInterpolations = class StringWithInterpolations extends Base
   constructor: (@body) ->
 
-  #TODO: Is this needed / correct?
   children: ['body']
 
-  #NOTE: unwrap returns this to stop ancestor nodes reaching in to grab @body, and using
-  #      @body.compileNode. StringWithInterpolations.compileNode is _the_ custom logic to
-  #      output interpolated strings as code.
+  # `unwrap` returns `this` to stop ancestor nodes reaching in to grab @body,
+  # and using @body.compileNode. `StringWithInterpolations.compileNode` is
+  # _the_ custom logic to output interpolated strings as code.
   unwrap: -> this
 
-  #TODO: Is this needed / correct?
   isComplex : -> @body.isComplex()
 
   compileNode: (o) ->
-    # Assumption: expr is Value>StringLiteral or Op
+    # Assumes that `expr` is `Value` » `StringLiteral` or `Op`
     expr = @body.unwrap()
 
     elements = []
