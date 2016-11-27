@@ -36,7 +36,7 @@ test "tagged template literal for html templating", ->
     """,
     html"""
       <p>
-        Hi ${state.name}. You're looking ${state.adjective}!
+        Hi #{state.name}. You're looking #{state.adjective}!
       </p>
     """
 
