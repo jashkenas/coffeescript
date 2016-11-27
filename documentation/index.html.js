@@ -41,6 +41,7 @@
         <a href="#switch">Switch and Try/Catch</a>
         <a href="#comparisons">Chained Comparisons</a>
         <a href="#strings">String Interpolation, Block Strings, and Block Comments</a>
+        <a href="#tagged-template-literals">Tagged Template Literals</a>
         <a href="#regexes">Block Regular Expressions</a>
         <a href="#modules">Modules</a>
         <a href="#cake">Cake, and Cakefiles</a>
@@ -114,10 +115,12 @@
     <p>
       The CoffeeScript compiler goes to great lengths to generate output JavaScript
       that runs in every JavaScript runtime, but there are exceptions. Use
-      <a href="#generator-functions">generator functions</a> only if you know that your
-      <a href="http://kangax.github.io/compat-table/es6/#test-generators">target
-      runtimes can support them</a>. If you use <a href="#modules">modules</a>, you
-      will need to <a href="#modules-note">use an additional tool to resolve them</a>.
+      <a href="#generator-functions">generator functions</a> or
+      <a href="#tagged-template-literals">tagged template literals</a> only if you
+      know that your <a href="http://kangax.github.io/compat-table/es6/">target
+      runtimes can support them</a>. If you use <a href="#modules">modules</a>,
+      you will need to <a href="#modules-note">use an additional tool to resolve
+      them</a>.
     </p>
 
     <p>
@@ -986,6 +989,28 @@ Block
       are preserved in the generated code.
     </p>
     <%= codeFor('block_comment') %>
+
+    <p>
+      <span id="tagged-template-literals" class="bookmark"></span>
+      <b class="header">Tagged Template Literals</b>
+      CoffeeScript supports
+      <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals">ES2015 tagged template literals</a>,
+      which enable customized string interpolation. If you immediately prefix a string
+      with a function name (no space between the two), CoffeeScript will output this
+      'function plus string' combination as an ES2015 tagged template literal, which will
+      <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals">behave accordingly</a>:
+      the function is called, with the parameters being the input text and expression parts
+      that make up the interpolated string. The function can then assemble these parts
+      into an output string, providing custom string interpolation.
+    </p>
+    <p>
+      Be aware that the CoffeeScript compiler is outputting ES2015 syntax for this feature,
+      so your target JavaScript runtime(s) must support this syntax for your code to work;
+      or you could use tools like <a href="http://babeljs.io/">Babel</a> or
+      <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a> to convert
+      this ES2015 syntax into compatible JavaScript.
+    </p>
+    <%= codeFor('tagged_template_literals', 'greet("greg", "awesome")') %>
 
     <p>
       <span id="regexes" class="bookmark"></span>
