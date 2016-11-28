@@ -254,7 +254,7 @@ cubes = (function() {
       using the <a href="http://jison.org">Jison parser generator</a>. The
       command-line version of <code>coffee</code> is available as a
       <a href="http://nodejs.org/">Node.js</a> utility. The
-      <a href="extras/coffee-script.js">core compiler</a> however, does not
+      <a href="v1/browser-compiler/coffee-script.js">core compiler</a> however, does not
       depend on Node, and can be run in any JavaScript environment, or in the
       browser (see "Try CoffeeScript", above).
     </p>
@@ -2375,8 +2375,8 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
       While it's not recommended for serious use, CoffeeScripts may be included
       directly within the browser using <code>&lt;script type="text/coffeescript"&gt;</code>
       tags. The source includes a compressed and minified version of the compiler
-      (<a href="extras/coffee-script.js">Download current version here, 39k when gzipped</a>)
-      as <code>extras/coffee-script.js</code>. Include this file on a page with
+      (<a href="v1/browser-compiler/coffee-script.js">Download current version here, 39k when gzipped</a>)
+      as <code>v1/browser-compiler/coffee-script.js</code>. Include this file on a page with
       inline CoffeeScript tags, and it will compile and evaluate them in order.
     </p>
 
@@ -3610,7 +3610,7 @@ six = -&gt;
   <span class="timestamp"> &mdash; <time datetime="2010-02-25">February 25, 2010</time></span>
 </b>
       Added a compressed version of the compiler for inclusion in web pages as
-      <br  /><code>extras/coffee-script.js</code>. It'll automatically run any script tags
+      <br  /><code>v1/browser-compiler/coffee-script.js</code>. It'll automatically run any script tags
       with type <code>text/coffeescript</code> for you. Added a <code>--stdio</code> option
       to the <code>coffee</code> command, for piped-in compiles.
     </p>
@@ -3955,7 +3955,7 @@ six = -&gt;
   </script>
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-  <script src="v1/extras/coffee-script.js"></script>
+  <script src="v1/browser-compiler/coffee-script.js"></script>
 
 </body>
 </html>
