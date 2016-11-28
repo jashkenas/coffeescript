@@ -77,18 +77,18 @@
         Annotated Source
       </div>
       <div class="contents menu">
-        <a href="v1/annotated-source/grammar.html">Grammar Rules &mdash; src/grammar</a>
-        <a href="v1/annotated-source/lexer.html">Lexing Tokens &mdash; src/lexer</a>
-        <a href="v1/annotated-source/rewriter.html">The Rewriter &mdash; src/rewriter</a>
-        <a href="v1/annotated-source/nodes.html">The Syntax Tree &mdash; src/nodes</a>
-        <a href="v1/annotated-source/scope.html">Lexical Scope &mdash; src/scope</a>
-        <a href="v1/annotated-source/helpers.html">Helpers &amp; Utility Functions &mdash; src/helpers</a>
-        <a href="v1/annotated-source/coffee-script.html">The CoffeeScript Module &mdash; src/coffee-script</a>
-        <a href="v1/annotated-source/cake.html">Cake &amp; Cakefiles &mdash; src/cake</a>
-        <a href="v1/annotated-source/command.html">"coffee" Command-Line Utility &mdash; src/command</a>
-        <a href="v1/annotated-source/optparse.html">Option Parsing &mdash; src/optparse</a>
-        <a href="v1/annotated-source/repl.html">Interactive REPL &mdash; src/repl</a>
-        <a href="v1/annotated-source/sourcemap.html">Source Maps &mdash; src/sourcemap</a>
+        <a href="v<%= majorVersion %>/annotated-source/grammar.html">Grammar Rules &mdash; src/grammar</a>
+        <a href="v<%= majorVersion %>/annotated-source/lexer.html">Lexing Tokens &mdash; src/lexer</a>
+        <a href="v<%= majorVersion %>/annotated-source/rewriter.html">The Rewriter &mdash; src/rewriter</a>
+        <a href="v<%= majorVersion %>/annotated-source/nodes.html">The Syntax Tree &mdash; src/nodes</a>
+        <a href="v<%= majorVersion %>/annotated-source/scope.html">Lexical Scope &mdash; src/scope</a>
+        <a href="v<%= majorVersion %>/annotated-source/helpers.html">Helpers &amp; Utility Functions &mdash; src/helpers</a>
+        <a href="v<%= majorVersion %>/annotated-source/coffee-script.html">The CoffeeScript Module &mdash; src/coffee-script</a>
+        <a href="v<%= majorVersion %>/annotated-source/cake.html">Cake &amp; Cakefiles &mdash; src/cake</a>
+        <a href="v<%= majorVersion %>/annotated-source/command.html">"coffee" Command-Line Utility &mdash; src/command</a>
+        <a href="v<%= majorVersion %>/annotated-source/optparse.html">Option Parsing &mdash; src/optparse</a>
+        <a href="v<%= majorVersion %>/annotated-source/repl.html">Interactive REPL &mdash; src/repl</a>
+        <a href="v<%= majorVersion %>/annotated-source/sourcemap.html">Source Maps &mdash; src/sourcemap</a>
       </div>
     </div>
   </div>
@@ -146,11 +146,11 @@
 
     <p>
       The CoffeeScript compiler is itself
-      <a href="v1/annotated-source/grammar.html">written in CoffeeScript</a>,
+      <a href="v<%= majorVersion %>/annotated-source/grammar.html">written in CoffeeScript</a>,
       using the <a href="http://jison.org">Jison parser generator</a>. The
       command-line version of <code>coffee</code> is available as a
       <a href="http://nodejs.org/">Node.js</a> utility. The
-      <a href="extras/coffee-script.js">core compiler</a> however, does not
+      <a href="v<%= majorVersion %>/browser-compiler/coffee-script.js">core compiler</a> however, does not
       depend on Node, and can be run in any JavaScript environment, or in the
       browser (see "Try CoffeeScript", above).
     </p>
@@ -1077,7 +1077,7 @@ Block
       <code>build</code> before <code>test</code>, you can use the <code>invoke</code> function:
       <code>invoke 'build'</code>. Cake tasks are a minimal way to expose your
       CoffeeScript functions to the command line, so
-      <a href="v1/annotated-source/cake.html">don't expect any fanciness built-in</a>.
+      <a href="v<%= majorVersion %>/annotated-source/cake.html">don't expect any fanciness built-in</a>.
       If you need dependencies, or async callbacks, it's best to put them in your
       code itself &mdash; not the cake task.
     </p>
@@ -1111,8 +1111,8 @@ Block
       While it's not recommended for serious use, CoffeeScripts may be included
       directly within the browser using <code>&lt;script type="text/coffeescript"&gt;</code>
       tags. The source includes a compressed and minified version of the compiler
-      (<a href="extras/coffee-script.js">Download current version here, 39k when gzipped</a>)
-      as <code>extras/coffee-script.js</code>. Include this file on a page with
+      (<a href="v<%= majorVersion %>/browser-compiler/coffee-script.js">Download current version here, 39k when gzipped</a>)
+      as <code>v<%= majorVersion %>/browser-compiler/coffee-script.js</code>. Include this file on a page with
       inline CoffeeScript tags, and it will compile and evaluate them in order.
     </p>
 
@@ -2169,7 +2169,7 @@ six = -&gt;
     <p>
       <%= releaseHeader('2010-02-25', '0.5.2', '0.5.1') %>
       Added a compressed version of the compiler for inclusion in web pages as
-      <br  /><code>extras/coffee-script.js</code>. It'll automatically run any script tags
+      <br  /><code>v<%= majorVersion %>/browser-compiler/coffee-script.js</code>. It'll automatically run any script tags
       with type <code>text/coffeescript</code> for you. Added a <code>--stdio</code> option
       to the <code>coffee</code> command, for piped-in compiles.
     </p>
@@ -2442,7 +2442,7 @@ six = -&gt;
   </script>
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-  <script src="v1/extras/coffee-script.js"></script>
+  <script src="v<%= majorVersion %>/browser-compiler/coffee-script.js"></script>
 
 </body>
 </html>
