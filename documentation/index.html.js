@@ -41,6 +41,7 @@
         <a href="#switch">Switch and Try/Catch</a>
         <a href="#comparisons">Chained Comparisons</a>
         <a href="#strings">String Interpolation, Block Strings, and Block Comments</a>
+        <a href="#tagged-template-literals">Tagged Template Literals</a>
         <a href="#regexes">Block Regular Expressions</a>
         <a href="#modules">Modules</a>
         <a href="#cake">Cake, and Cakefiles</a>
@@ -107,8 +108,19 @@
       compiles one-to-one into the equivalent JS, and there is
       no interpretation at runtime. You can use any existing JavaScript library
       seamlessly from CoffeeScript (and vice-versa). The compiled output is
-      readable and pretty-printed, will work in every JavaScript runtime, and tends
-      to run as fast or faster than the equivalent handwritten JavaScript.
+      readable, pretty-printed, and tends to run as fast or faster than the
+      equivalent handwritten JavaScript.
+    </p>
+
+    <p>
+      The CoffeeScript compiler goes to great lengths to generate output JavaScript
+      that runs in every JavaScript runtime, but there are exceptions. Use
+      <a href="#generator-functions">generator functions</a> or
+      <a href="#tagged-template-literals">tagged template literals</a> only if you
+      know that your <a href="http://kangax.github.io/compat-table/es6/">target
+      runtimes can support them</a>. If you use <a href="#modules">modules</a>,
+      you will need to <a href="#modules-note">use an additional tool to resolve
+      them</a>.
     </p>
 
     <p>
@@ -457,6 +469,11 @@ Block
       about it (say, when using jQuery).
     </p>
     <%= codeFor('objects_reserved') %>
+    <p>
+      CoffeeScript has a shortcut for creating objects when you want the key
+      to be set with a variable of the same name.
+    </p>
+    <%= codeFor('objects_shorthand') %>
 
     <p>
       <span id="lexical-scope" class="bookmark"></span>
@@ -572,6 +589,9 @@ Block
       check to avoid properties that may be inherited from the prototype, use<br />
       <code>for own key, value of object</code>
     </p>
+    <p>
+      To iterate a generator function, use <code>from</code>.
+      See <a href="#generator-iteration">Generator Functions</a>.
     <p>
       The only low-level loop that CoffeeScript provides is the <b>while</b> loop. The
       main difference from JavaScript is that the <b>while</b> loop can be used
@@ -869,6 +889,11 @@ Block
       <code>yield*</code> is called <code>yield from</code>, and <code>yield return</code>
       may be used if you need to force a generator that doesn't yield.
     </p>
+    <p>
+      <span id="generator-iteration" class="bookmark"></span>
+      You can iterate over a generator function using <code>for&hellip;from</code>.
+    </p>
+    <%= codeFor('generator_iteration', 'getFibonacciNumbers(10)') %>
 
     <%= codeFor('async', true) %>
     <p>
@@ -884,6 +909,19 @@ Block
       use backticks to pass it straight through.
     </p>
     <%= codeFor('embedded', 'hi()') %>
+    <p>
+      Escape backticks with backslashes: <code>\`</code> becomes <code>`</code>.
+    </p>
+    <p>
+      Escape backslashes before backticks with more backslashes: <code>\\\`</code>
+      becomes <code>\`</code>.
+    </p>
+    <%= codeFor('embedded_escaped', 'markdown()') %>
+    <p>
+      You can also embed blocks of JavaScript using triple backticks. That's easier
+      than escaping backticks, if you need them inside your JavaScript block.
+    </p>
+    <%= codeFor('embedded_block', 'time()') %>
 
     <p>
       <span id="switch" class="bookmark"></span>
@@ -958,6 +996,28 @@ Block
     <%= codeFor('block_comment') %>
 
     <p>
+      <span id="tagged-template-literals" class="bookmark"></span>
+      <b class="header">Tagged Template Literals</b>
+      CoffeeScript supports
+      <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals">ES2015 tagged template literals</a>,
+      which enable customized string interpolation. If you immediately prefix a string
+      with a function name (no space between the two), CoffeeScript will output this
+      'function plus string' combination as an ES2015 tagged template literal, which will
+      <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals">behave accordingly</a>:
+      the function is called, with the parameters being the input text and expression parts
+      that make up the interpolated string. The function can then assemble these parts
+      into an output string, providing custom string interpolation.
+    </p>
+    <p>
+      Be aware that the CoffeeScript compiler is outputting ES2015 syntax for this feature,
+      so your target JavaScript runtime(s) must support this syntax for your code to work;
+      or you could use tools like <a href="http://babeljs.io/">Babel</a> or
+      <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a> to convert
+      this ES2015 syntax into compatible JavaScript.
+    </p>
+    <%= codeFor('tagged_template_literals', 'greet("greg", "awesome")') %>
+
+    <p>
       <span id="regexes" class="bookmark"></span>
       <b class="header">Block Regular Expressions</b>
       Similar to block strings and comments, CoffeeScript supports block regexes &mdash;
@@ -976,6 +1036,7 @@ Block
     </p>
     <%= codeFor('modules') %>
     <p>
+      <span id="modules-note" class="bookmark"></span>
       Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an
       <code>import</code> or <code>export</code> statement in CoffeeScript will produce an
       <code>import</code> or <code>export</code> statement in the resulting output.
@@ -1394,7 +1455,7 @@ six = -&gt;
       <%= releaseHeader('2015-09-03', '1.10.0', '1.9.3') %>
       <ul>
         <li>
-          CoffeeScript now supports ES6-style destructuring defaults.
+          CoffeeScript now supports ES2015-style destructuring defaults.
         </li>
         <li>
           <code>(offsetHeight: height) -&gt;</code> no longer compiles. That
@@ -1503,7 +1564,7 @@ six = -&gt;
       <%= releaseHeader('2015-01-29', '1.9.0', '1.8.0') %>
       <ul>
         <li>
-          CoffeeScript now supports ES6 generators. A generator is simply a function
+          CoffeeScript now supports ES2015 generators. A generator is simply a function
           that <code>yield</code>s.
         </li>
         <li>
