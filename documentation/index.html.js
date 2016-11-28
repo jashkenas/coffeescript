@@ -895,11 +895,11 @@ Block
     </p>
     <%= codeFor('generator_iteration', 'getFibonacciNumbers(10)') %>
 
-    <%= codeFor('async', true) %>
     <p>
       Similar to how <code>yield return</code> forces a generator, <code>await return</code>
       may be used to force a function to be async.
     </p>
+    <%= codeFor('async', true) %>
 
     <p>
       <span id="embedded" class="bookmark"></span>
