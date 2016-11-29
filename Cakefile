@@ -45,60 +45,6 @@ run = (args, cb) ->
 log = (message, color, explanation) ->
   console.log color + message + reset + ' ' + (explanation or '')
 
-codeFor = ->
-  counter = 0
-  hljs = require 'highlight.js'
-  hljs.configure classPrefix: ''
-  (file, executable = false, showLoad = true) ->
-    counter++
-    return unless fs.existsSync "docs/v#{majorVersion}/examples/#{file}.js"
-    cs = fs.readFileSync "documentation/examples/#{file}.coffee", 'utf-8'
-    js = fs.readFileSync "docs/v#{majorVersion}/examples/#{file}.js", 'utf-8'
-    js = js.replace /^\/\/ generated.*?\n/i, ''
-
-    cshtml = "<pre><code>#{hljs.highlight('coffeescript', cs).value}</code></pre>"
-    # Temporary fix until highlight.js adds support for newer CoffeeScript keywords
-    # Added in https://github.com/isagalaev/highlight.js/pull/1357, awaiting release
-    if file in ['generator_iteration', 'generators', 'modules']
-      cshtml = cshtml.replace /(yield|import|export|from|as|default) /g, '<span class="keyword">$1</span> '
-    jshtml = "<pre><code>#{hljs.highlight('javascript', js).value}</code></pre>"
-    append = if executable is yes then '' else "alert(#{executable});"
-    if executable and executable isnt yes
-      cs.replace /(\S)\s*\Z/m, "$1\n\nalert #{executable}"
-    run    = if executable is true then 'run' else "run: #{executable}"
-    name   = "example#{counter}"
-    script = "<script>window.#{name} = #{JSON.stringify cs}</script>"
-    load   = if showLoad then "<div class='minibutton load' onclick='javascript: loadConsole(#{name});'>load</div>" else ''
-    button = if executable then "<div class='minibutton ok' onclick='javascript: #{js};#{append}'>#{run}</div>" else ''
-    "<div class='code'>#{cshtml}#{jshtml}#{script}#{load}#{button}<br class='clear' /></div>"
-
-monthNames = [
-  'January'
-  'February'
-  'March'
-  'April'
-  'May'
-  'June'
-  'July'
-  'August'
-  'September'
-  'October'
-  'November'
-  'December'
-]
-
-formatDate = (date) ->
-  date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
-    "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
-
-releaseHeader = (date, version, prevVersion) -> """
-  <div class="anchor" id="#{version}"></div>
-  <b class="header">
-    #{prevVersion and "<a href=\"https://github.com/jashkenas/coffeescript/compare/#{prevVersion}...#{version}\">#{version}</a>" or version}
-    <span class="timestamp"> &mdash; <time datetime="#{date}">#{formatDate date}</time></span>
-  </b>
-"""
-
 option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
 
 task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) ->
@@ -182,6 +128,62 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
 
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
+  # Helpers
+  codeFor = ->
+    counter = 0
+    hljs = require 'highlight.js'
+    hljs.configure classPrefix: ''
+    (file, executable = false, showLoad = true) ->
+      counter++
+      return unless fs.existsSync "docs/v#{majorVersion}/examples/#{file}.js"
+      cs = fs.readFileSync "documentation/examples/#{file}.coffee", 'utf-8'
+      js = fs.readFileSync "docs/v#{majorVersion}/examples/#{file}.js", 'utf-8'
+      js = js.replace /^\/\/ generated.*?\n/i, ''
+
+      cshtml = "<pre><code>#{hljs.highlight('coffeescript', cs).value}</code></pre>"
+      # Temporary fix until highlight.js adds support for newer CoffeeScript keywords
+      # Added in https://github.com/isagalaev/highlight.js/pull/1357, awaiting release
+      if file in ['generator_iteration', 'generators', 'modules']
+        cshtml = cshtml.replace /(yield|import|export|from|as|default) /g, '<span class="keyword">$1</span> '
+      jshtml = "<pre><code>#{hljs.highlight('javascript', js).value}</code></pre>"
+      append = if executable is yes then '' else "alert(#{executable});"
+      if executable and executable isnt yes
+        cs.replace /(\S)\s*\Z/m, "$1\n\nalert #{executable}"
+      run    = if executable is true then 'run' else "run: #{executable}"
+      name   = "example#{counter}"
+      script = "<script>window.#{name} = #{JSON.stringify cs}</script>"
+      load   = if showLoad then "<div class='minibutton load' onclick='javascript: loadConsole(#{name});'>load</div>" else ''
+      button = if executable then "<div class='minibutton ok' onclick='javascript: #{js};#{append}'>#{run}</div>" else ''
+      "<div class='code'>#{cshtml}#{jshtml}#{script}#{load}#{button}<br class='clear' /></div>"
+
+  monthNames = [
+    'January'
+    'February'
+    'March'
+    'April'
+    'May'
+    'June'
+    'July'
+    'August'
+    'September'
+    'October'
+    'November'
+    'December'
+  ]
+
+  formatDate = (date) ->
+    date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
+      "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
+
+  releaseHeader = (date, version, prevVersion) -> """
+    <div class="anchor" id="#{version}"></div>
+    <b class="header">
+      #{prevVersion and "<a href=\"https://github.com/jashkenas/coffeescript/compare/#{prevVersion}...#{version}\">#{version}</a>" or version}
+      <span class="timestamp"> &mdash; <time datetime="#{date}">#{formatDate date}</time></span>
+    </b>
+  """
+
+  # Task
   examplesSourceFolder = 'documentation/examples'
   examplesOutputFolder = "docs/v#{majorVersion}/examples"
   fs.mkdirSync examplesOutputFolder unless fs.existsSync examplesOutputFolder
