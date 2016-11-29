@@ -29,7 +29,7 @@
   ],
   "preferGlobal": true,
   "scripts": {
-    "test":         "node ./bin/cake test",
+    "test": "node ./bin/cake test",
     "test-harmony": "node --harmony ./bin/cake test"
   },
   "homepage": "http://coffeescript.org",
@@ -39,11 +39,11 @@
     "url": "git://github.com/jashkenas/coffeescript.git"
   },
   "devDependencies": {
-    "uglify-js": "~2.7",
-    "jison": ">=0.4.17",
+    "docco": "~0.7.0",
+    "google-closure-compiler-js": "^20161024.0.0",
     "highlight.js": "~9.8.0",
-    "underscore": "~1.8.3",
-    "docco": "~0.7.0"
+    "jison": ">=0.4.17",
+    "underscore": "~1.8.3"
   },
   "dependencies": {
     "marked": "~0.3.6"
