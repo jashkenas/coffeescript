@@ -190,7 +190,7 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
   do renderExamples = ->
     execSync "bin/coffee -bc -o #{examplesOutputFolder} #{examplesSourceFolder}/*.coffee"
 
-  indexFile = 'documentation/index.html.js'
+  indexFile = 'documentation/index.html'
   do renderIndex = ->
     render = _.template fs.readFileSync(indexFile, 'utf-8')
     output = render
