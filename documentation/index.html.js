@@ -115,7 +115,8 @@
     <p>
       The CoffeeScript compiler goes to great lengths to generate output JavaScript
       that runs in every JavaScript runtime, but there are exceptions. Use
-      <a href="#generator-functions">generator functions</a> or
+      <a href="#generator-functions">generator functions</a>,
+      <a href="#generator-iteration"><code>for&hellip;from</code></a>, or
       <a href="#tagged-template-literals">tagged template literals</a> only if you
       know that your <a href="http://kangax.github.io/compat-table/es6/">target
       runtimes can support them</a>. If you use <a href="#modules">modules</a>,
