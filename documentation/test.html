@@ -23,6 +23,10 @@
     .bad {
       color: #eb6864
     }
+    .subtle {
+      font-size: 0.7em;
+      color: #999999
+    }
   </style>
 </head>
 <body>
@@ -33,30 +37,29 @@
 
 <script type="text/coffeescript">
 @global = window
+@testingBrowser = yes
+
 stdout  = document.getElementById 'stdout'
 desc    = ''
+fnStr   = ''
 start   = new Date
 success = total = done = failed = 0
 
-say = (msg, emphasis) ->
+say = (msg, className) ->
   div = document.createElement 'div'
-  if emphasis?
-    div.className = if emphasis then 'good' else 'bad'
+  div.className = className if className?
   div.appendChild document.createTextNode msg
   stdout.appendChild div
   msg
 
 @test = (description, fn) ->
-  desc = description
+  desc  = description
+  fnStr = fn.toString() if fn.toString?
   fn()
 
 @ok = (good, msg) ->
   ++total
-  if good
-    ++success
-  else
-    say "#{desc}:", no
-    throw Error say msg, no
+  if good then ++success else throw Error msg
 
 <%= testHelpers %>
 
@@ -82,15 +85,19 @@ for test in document.getElementsByClassName 'test'
     options = {}
     options.literate = yes if test.type is 'text/x-literate-coffeescript'
     CoffeeScript.run test.innerHTML
-  catch error
-    console.error error
+  catch exception
+    # debugger
+    say "#{desc}:", 'bad'
+    say fnStr, 'subtle'
+    say exception, 'bad'
+    console.error exception
 
 # Finish up
 yay = success is total and not failed
 sec = (new Date - start) / 1000
 msg = "passed #{success} tests in #{ sec.toFixed 2 } seconds"
 msg = "failed #{ total - success } tests and #{msg}" unless yay
-say msg, yay
+say msg, (if yay then 'good' else 'bad')
 </script>
 
 <%= tests %>
