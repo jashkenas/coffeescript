@@ -33,6 +33,7 @@
 
 <script type="text/coffeescript">
 stdout  = document.getElementById 'stdout'
+desc    = ''
 start   = new Date
 success = total = done = failed = 0
 
@@ -44,12 +45,17 @@ say = (msg, emphasis) ->
   stdout.appendChild div
   msg
 
-@test = (desc, fn) ->
+@test = (description, fn) ->
+  desc = description
   fn()
 
 @ok = (good, msg) ->
   ++total
-  if good then ++success else throw Error say msg, no
+  if good
+    ++success
+  else
+    say "#{desc}:", no
+    throw Error say msg, no
 
 @eq = (x, y, msg) -> ok x is y, msg ? x + ' isnt ' + y
 
@@ -88,8 +94,8 @@ for test in document.getElementsByClassName 'test'
   say '\u2714 ' + test.id
   try
     CoffeeScript.run test.innerHTML
-  catch exception
-    console.error exception
+  catch error
+    console.error error
 
 # Finish up
 yay = success is total and not failed
