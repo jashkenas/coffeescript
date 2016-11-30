@@ -183,6 +183,25 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
     </b>
   """
 
+  testsInScriptBlocks = ->
+    output = ''
+    for filename in fs.readdirSync 'test'
+      if filename.indexOf('.coffee') isnt -1
+        type = 'coffeescript'
+      else if filename.indexOf('.litcoffee') isnt -1
+        type = 'literate-coffeescript'
+      else
+        continue
+
+      # Set the type to text/x-coffeescript or text/x-literate-coffeescript
+      # to prevent the browser compiler from automatically running the script
+      output += """
+        <script type="text/x-#{type}" class="test" id="#{filename.split('.')[0]}">
+        #{fs.readFileSync "test/#{filename}", 'utf-8'}
+        </script>\n
+      """
+    output
+
   # Task
   examplesSourceFolder = 'documentation/examples'
   examplesOutputFolder = "docs/v#{majorVersion}/examples"
@@ -200,10 +219,20 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
     fs.writeFileSync "docs/v#{majorVersion}/index.html", output
     log 'compiled', green, "#{indexFile} → docs/v#{majorVersion}/index.html"
 
+  testFile = 'documentation/test.html'
+  do renderTest = ->
+    render = _.template fs.readFileSync(testFile, 'utf-8')
+    output = render
+      tests: testsInScriptBlocks()
+      majorVersion: majorVersion
+    fs.writeFileSync "docs/v#{majorVersion}/test.html", output
+    log 'compiled', green, "#{testFile} → docs/v#{majorVersion}/test.html"
+
   fs.watch examplesSourceFolder, interval: 200, ->
     renderExamples()
     renderIndex()
   fs.watch indexFile, interval: 200, renderIndex
+  fs.watch testFile, interval: 200, renderTest
   log 'watching...' , green
 
 

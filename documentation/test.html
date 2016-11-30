@@ -3,119 +3,103 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
   <title>CoffeeScript Test Suite</title>
-  <script src="../docs/current/browser-compiler/coffee-script.js"></script>
+  <script src="browser-compiler/coffee-script.js"></script>
   <style>
+    body, pre {
+      font-family: Consolas, Menlo, Monaco, monospace;
+    }
     body {
-      margin: 30px;
-      font-family: Menlo, Monaco, monospace;
+      margin: 1em;
     }
     h1 {
-      font-size: 20px;
+      font-size: 1.3em;
     }
-    #stdout {
+    div {
+      margin: 0.6em;
+    }
+    .good {
+      color: #22b24c
+    }
+    .bad {
+      color: #eb6864
     }
   </style>
 </head>
 <body>
 
-  <h1>CoffeeScript Test Suite</h1>
-  <pre id="stdout"></pre>
+<h1>CoffeeScript Test Suite</h1>
 
-  <script type="text/coffeescript">
+<pre id="stdout"></pre>
 
-  stdout  = document.getElementById 'stdout'
-  start   = new Date
-  success = total = done = failed = 0
+<script type="text/coffeescript">
+stdout  = document.getElementById 'stdout'
+start   = new Date
+success = total = done = failed = 0
 
-  say = (msg) ->
-    div = document.createElement 'div'
-    div.appendChild document.createTextNode msg
-    stdout.appendChild div
-    msg
+say = (msg, emphasis) ->
+  div = document.createElement 'div'
+  if emphasis?
+    div.className = if emphasis then 'good' else 'bad'
+  div.appendChild document.createTextNode msg
+  stdout.appendChild div
+  msg
 
-  @test = (desc, fn) ->
-    fn()
+@test = (desc, fn) ->
+  fn()
 
-  @ok = (good, msg) ->
-    ++total
-    if good then ++success else throw Error say msg
+@ok = (good, msg) ->
+  ++total
+  if good then ++success else throw Error say msg, no
 
-  @eq = (x, y, msg) -> ok x is y, msg ? x + ' !== ' + y
+@eq = (x, y, msg) -> ok x is y, msg ? x + ' isnt ' + y
 
-  arrayEqual = (a, b) ->
-    if a is b
-      # 0 isnt -0
-      a isnt 0 or 1/a is 1/b
-    else if a instanceof Array and b instanceof Array
-      return no unless a.length is b.length
-      return no for el, idx in a when not arrayEq el, b[idx]
-      yes
+arrayEqual = (a, b) ->
+  if a is b
+    # 0 isnt -0
+    a isnt 0 or 1/a is 1/b
+  else if a instanceof Array and b instanceof Array
+    return no unless a.length is b.length
+    return no for el, idx in a when not arrayEq el, b[idx]
+    yes
+  else
+    # NaN is NaN
+    a isnt a and b isnt b
+
+@doesNotThrow = (fn) ->
+  fn()
+  ok true
+
+@arrayEq = (a, b, msg) -> ok arrayEqual(a,b), msg
+
+@throws = (fun, err, msg) ->
+  try
+    fun()
+  catch e
+    if err
+      eq e, err
     else
-      # NaN is NaN
-      a isnt a and b isnt b
+      ok yes
+    return
+  ok no
 
-  @doesNotThrow = (fn) ->
-    fn()
-    ok true
 
-  @arrayEq = (a, b, msg) -> ok arrayEqual(a,b), msg
+# Run the tests
+for test in document.getElementsByClassName 'test'
+  say '\u2714 ' + test.id
+  try
+    CoffeeScript.run test.innerHTML
+  catch exception
+    console.error exception
 
-  @throws = (fun, err, msg) ->
-    try
-      fun()
-    catch e
-      if err
-        eq e, err
-      else
-        ok yes
-      return
-    ok no
+# Finish up
+yay = success is total and not failed
+sec = (new Date - start) / 1000
+msg = "passed #{success} tests in #{ sec.toFixed 2 } seconds"
+msg = "failed #{ total - success } tests and #{msg}" unless yay
+say msg, yay
+</script>
 
-  run = (name) ->
-    CoffeeScript.load "#{name}.coffee", ->
-      say '\u2714 ' + name
-      fin() if ++done is names.length
-
-  fin = ->
-    yay = success is total and not failed
-    sec = (new Date - start) / 1000
-    msg = "passed #{success} tests in #{ sec.toFixed 2 } seconds"
-    msg = "failed #{ total - success } tests and #{msg}" unless yay
-    say msg, yay
-
-  run name for name in names = [
-    'arrays'
-    'assignment'
-    'booleans'
-    'classes'
-    'cluster'
-    'comments'
-    'compilation'
-    'comprehensions'
-    'control_flow'
-    'exception_handling'
-    'formatting'
-    'function_invocation'
-    'functions'
-    'helpers'
-    'importing'
-    'interpolation'
-    'javascript_literals'
-    'modules'
-    'numbers'
-    'objects'
-    'operators'
-    'option_parser'
-    'ranges'
-    'regexps'
-    'scope'
-    'slicing_and_splicing'
-    'soaks'
-    'strings'
-  ]
-  # allow utf-8 chars in comments
-  # 智に働けば角が立つ、情に掉させば流される。
-  </script>
+<%= tests %>
 
 </body>
 </html>
