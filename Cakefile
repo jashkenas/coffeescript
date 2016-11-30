@@ -187,7 +187,10 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
 
   testsInScriptBlocks = ->
     output = ''
+    excludedTestFiles = ['error_messages.coffee']
     for filename in fs.readdirSync 'test'
+      continue if filename in excludedTestFiles
+
       if filename.indexOf('.coffee') isnt -1
         type = 'coffeescript'
       else if filename.indexOf('.litcoffee') isnt -1
@@ -236,6 +239,7 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
     renderIndex()
   fs.watch indexFile, interval: 200, renderIndex
   fs.watch testFile, interval: 200, renderTest
+  fs.watch 'test', interval: 200, renderTest
   log 'watching...' , green
 
 
