@@ -83,7 +83,7 @@ task 'build:full', 'rebuild the source twice, and run the tests', ->
 
 
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
-  helpers.extend global, require('util')
+  helpers.extend global, require 'util'
   require 'jison'
   parser = require('./lib/coffee-script/grammar').parser
   fs.writeFileSync 'lib/coffee-script/parser.js', parser.generate()
@@ -183,6 +183,8 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
     </b>
   """
 
+  testHelpers = fs.readFileSync('test/support/helpers.coffee', 'utf-8').replace /exports\./g, '@'
+
   testsInScriptBlocks = ->
     output = ''
     for filename in fs.readdirSync 'test'
@@ -223,6 +225,7 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
   do renderTest = ->
     render = _.template fs.readFileSync(testFile, 'utf-8')
     output = render
+      testHelpers: testHelpers
       tests: testsInScriptBlocks()
       majorVersion: majorVersion
     fs.writeFileSync "docs/v#{majorVersion}/test.html", output
@@ -289,23 +292,7 @@ runTests = (CoffeeScript) ->
         description: description if description?
         source: fn.toString() if fn.toString?
 
-  # See http://wiki.ecmascript.org/doku.php?id=harmony:egal
-  egal = (a, b) ->
-    if a is b
-      a isnt 0 or 1/a is 1/b
-    else
-      a isnt a and b isnt b
-
-  # A recursive functional equivalence helper; uses egal for testing equivalence.
-  arrayEgal = (a, b) ->
-    if egal a, b then yes
-    else if a instanceof Array and b instanceof Array
-      return no unless a.length is b.length
-      return no for el, idx in a when not arrayEgal el, b[idx]
-      yes
-
-  global.eq      = (a, b, msg) -> ok egal(a, b), msg ? "Expected #{a} to equal #{b}"
-  global.arrayEq = (a, b, msg) -> ok arrayEgal(a,b), msg ? "Expected #{a} to deep equal #{b}"
+  helpers.extend global, require './test/support/helpers'
 
   # When all the tests have run, collect and print errors.
   # If a stacktrace is available, output the compiled function source.

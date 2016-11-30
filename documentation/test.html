@@ -32,6 +32,7 @@
 <pre id="stdout"></pre>
 
 <script type="text/coffeescript">
+@global = window
 stdout  = document.getElementById 'stdout'
 desc    = ''
 start   = new Date
@@ -57,25 +58,11 @@ say = (msg, emphasis) ->
     say "#{desc}:", no
     throw Error say msg, no
 
-@eq = (x, y, msg) -> ok x is y, msg ? x + ' isnt ' + y
-
-arrayEqual = (a, b) ->
-  if a is b
-    # 0 isnt -0
-    a isnt 0 or 1/a is 1/b
-  else if a instanceof Array and b instanceof Array
-    return no unless a.length is b.length
-    return no for el, idx in a when not arrayEq el, b[idx]
-    yes
-  else
-    # NaN is NaN
-    a isnt a and b isnt b
+<%= testHelpers %>
 
 @doesNotThrow = (fn) ->
   fn()
   ok true
-
-@arrayEq = (a, b, msg) -> ok arrayEqual(a,b), msg
 
 @throws = (fun, err, msg) ->
   try
@@ -87,7 +74,6 @@ arrayEqual = (a, b) ->
       ok yes
     return
   ok no
-
 
 # Run the tests
 for test in document.getElementsByClassName 'test'
