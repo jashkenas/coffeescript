@@ -93,6 +93,8 @@ arrayEqual = (a, b) ->
 for test in document.getElementsByClassName 'test'
   say '\u2714 ' + test.id
   try
+    options = {}
+    options.literate = yes if test.type is 'text/x-literate-coffeescript'
     CoffeeScript.run test.innerHTML
   catch error
     console.error error
