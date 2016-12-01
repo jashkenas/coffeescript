@@ -1331,6 +1331,84 @@ Block
     </h2>
 
     <p>
+      <%= releaseHeader('2016-12-01', '1.12.0', '1.11.1') %>
+      <ul>
+        <li>
+          CoffeeScript now supports ES2015
+          <a href="#tagged-template-literals">tagged template literals</a>.
+          Note that using tagged template literals in your code
+          makes you responsible for ensuring that either your runtime supports
+          tagged template literals or that you transpile the output JavaScript
+          further to a version your target runtime(s) support.
+        </li>
+        <li>
+          CoffeeScript now provides a
+          <a href="#generator-iteration"><code>for&hellip;from</code></a>
+          syntax for outputting ES2015
+          <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of">
+          <code>for&hellip;of</code></a>. (Sorry they couldn't match,
+          but we came up with <code>for&hellip;of</code> first for something
+          else.) This allows iterating over generators or any other iterable
+          object. Note that using <code>for&hellip;from</code> in your code
+          makes you responsible for ensuring that either your runtime supports
+          <code>for&hellip;from</code> or that you transpile the output
+          JavaScript further to a version your target runtime(s) support.
+        </li>
+        <li>
+          Triple backticks (<code>```</code>) allow the creation of embedded
+          JavaScript blocks where escaping single backticks is not required,
+          which should improve interoperability with ES2015 template literals
+          and with Markdown.
+        </li>
+        <li>
+          Within single-backtick embedded JavaScript, backticks can now be
+          escaped via <code>\`</code>.
+        </li>
+        <li>
+          CoffeeScript's <a href="#objects_and_arrays">shorthand object
+          notation</a> is finally documented.
+        </li>
+        <li>
+          A note was added to the top of the documentation, explaining which
+          features are output with ES2015+ syntax. All such features are
+          "opt in:" if you refrain from using them, your code will still
+          be compatible with all but the most ancient browsers.
+        </li>
+        <li>
+          The browser tests now run in the browser again, and are accessible
+          <a href="v<%= majorVersion %>/test.html">here</a> if you would like
+          to test your browser.
+        </li>
+        <li>
+          The browser version of the compiler is now minified using the
+          <a href="https://github.com/google/closure-compiler-js">JavaScript
+          version of the Google Closure Compiler</a>, which produces a file
+          half the size that Uglify.js did.
+        </li>
+        <li>
+          CoffeeScript-only keywords in ES2015 <code>import</code>s and
+          <code>export</code>s are now ignored.
+        </li>
+        <li>
+          The compiler now throws an error on trying to export an anonymous class.
+        </li>
+        <li>
+          Updated various Node functions in the compiler to make Node 7+
+          deprecation warnings go away.
+        </li>
+        <li>
+          Bugfixes related to tokens and location data, for better source maps
+          and improved compatibility with downstream tools.
+        </li>
+        <li>
+          Many improvements to the documentation and its build process, with
+          an eye toward eventually creating separate documentation for
+          CoffeeScript 2.0.0 (coming soon!).
+        </li>
+      </ul>
+    </p>
+
+    <p>
       <%= releaseHeader('2016-10-02', '1.11.1', '1.11.0') %>
       <ul>
         <li>
