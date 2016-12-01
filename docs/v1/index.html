@@ -28,7 +28,7 @@
         <a href="#literals">Literals: Functions, Objects and Arrays</a>
         <a href="#lexical-scope">Lexical Scoping and Variable Safety</a>
         <a href="#conditionals">If, Else, Unless, and Conditional Assignment</a>
-        <a href="#splats">Splats...</a>
+        <a href="#splats">Splats…</a>
         <a href="#loops">Loops and Comprehensions</a>
         <a href="#slices">Array Slicing and Splicing</a>
         <a href="#expressions">Everything is an Expression</a>
@@ -41,6 +41,7 @@
         <a href="#switch">Switch and Try/Catch</a>
         <a href="#comparisons">Chained Comparisons</a>
         <a href="#strings">String Interpolation, Block Strings, and Block Comments</a>
+        <a href="#tagged-template-literals">Tagged Template Literals</a>
         <a href="#regexes">Block Regular Expressions</a>
         <a href="#modules">Modules</a>
         <a href="#cake">Cake, and Cakefiles</a>
@@ -76,18 +77,18 @@
         Annotated Source
       </div>
       <div class="contents menu">
-        <a href="v1/annotated-source/grammar.html">Grammar Rules &mdash; src/grammar</a>
-        <a href="v1/annotated-source/lexer.html">Lexing Tokens &mdash; src/lexer</a>
-        <a href="v1/annotated-source/rewriter.html">The Rewriter &mdash; src/rewriter</a>
-        <a href="v1/annotated-source/nodes.html">The Syntax Tree &mdash; src/nodes</a>
-        <a href="v1/annotated-source/scope.html">Lexical Scope &mdash; src/scope</a>
-        <a href="v1/annotated-source/helpers.html">Helpers &amp; Utility Functions &mdash; src/helpers</a>
-        <a href="v1/annotated-source/coffee-script.html">The CoffeeScript Module &mdash; src/coffee-script</a>
-        <a href="v1/annotated-source/cake.html">Cake &amp; Cakefiles &mdash; src/cake</a>
-        <a href="v1/annotated-source/command.html">"coffee" Command-Line Utility &mdash; src/command</a>
-        <a href="v1/annotated-source/optparse.html">Option Parsing &mdash; src/optparse</a>
-        <a href="v1/annotated-source/repl.html">Interactive REPL &mdash; src/repl</a>
-        <a href="v1/annotated-source/sourcemap.html">Source Maps &mdash; src/sourcemap</a>
+        <a href="v1/annotated-source/grammar.html">Grammar Rules — src/grammar</a>
+        <a href="v1/annotated-source/lexer.html">Lexing Tokens — src/lexer</a>
+        <a href="v1/annotated-source/rewriter.html">The Rewriter — src/rewriter</a>
+        <a href="v1/annotated-source/nodes.html">The Syntax Tree — src/nodes</a>
+        <a href="v1/annotated-source/scope.html">Lexical Scope — src/scope</a>
+        <a href="v1/annotated-source/helpers.html">Helpers &amp; Utility Functions — src/helpers</a>
+        <a href="v1/annotated-source/coffee-script.html">The CoffeeScript Module — src/coffee-script</a>
+        <a href="v1/annotated-source/cake.html">Cake &amp; Cakefiles — src/cake</a>
+        <a href="v1/annotated-source/command.html">“coffee” Command-Line Utility — src/command</a>
+        <a href="v1/annotated-source/optparse.html">Option Parsing — src/optparse</a>
+        <a href="v1/annotated-source/repl.html">Interactive REPL — src/repl</a>
+        <a href="v1/annotated-source/sourcemap.html">Source Maps — src/sourcemap</a>
       </div>
     </div>
   </div>
@@ -103,17 +104,29 @@
     </p>
 
     <p>
-      The golden rule of CoffeeScript is: <i>"It's just JavaScript"</i>. The code
+      The golden rule of CoffeeScript is: <i>“It’s just JavaScript”</i>. The code
       compiles one-to-one into the equivalent JS, and there is
       no interpretation at runtime. You can use any existing JavaScript library
       seamlessly from CoffeeScript (and vice-versa). The compiled output is
-      readable and pretty-printed, will work in every JavaScript runtime, and tends
-      to run as fast or faster than the equivalent handwritten JavaScript.
+      readable, pretty-printed, and tends to run as fast or faster than the
+      equivalent handwritten JavaScript.
+    </p>
+
+    <p>
+      The CoffeeScript compiler goes to great lengths to generate output JavaScript
+      that runs in every JavaScript runtime, but there are exceptions. Use
+      <a href="#generator-functions">generator functions</a>,
+      <a href="#generator-iteration"><code>for…from</code></a>, or
+      <a href="#tagged-template-literals">tagged template literals</a> only if you
+      know that your <a href="http://kangax.github.io/compat-table/es6/">target
+      runtimes can support them</a>. If you use <a href="#modules">modules</a>,
+      you will need to <a href="#modules-note">use an additional tool to resolve
+      them</a>.
     </p>
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffeescript/tarball/1.11.1">1.11.1</a>
+      <a href="http://github.com/jashkenas/coffeescript/tarball/1.12.0">1.12.0</a>
     </p>
 
     <pre>npm install -g coffee-script</pre>
@@ -197,7 +210,7 @@ cubes = (<span class="function"><span class="keyword">function</span>(<span clas
   }
   <span class="keyword">return</span> results;
 })();
-</code></pre><script>window.example1 = "# Assignment:\nnumber   = 42\nopposite = true\n\n# Conditions:\nnumber = -42 if opposite\n\n# Functions:\nsquare = (x) -> x * x\n\n# Arrays:\nlist = [1, 2, 3, 4, 5]\n\n# Objects:\nmath =\n  root:   Math.sqrt\n  square: square\n  cube:   (x) -> x * square x\n\n# Splats:\nrace = (winner, runners...) ->\n  print winner, runners\n\n# Existence:\nalert \"I knew it!\" if elvis?\n\n# Array comprehensions:\ncubes = (math.cube num for num in list)\n"</script><div class='minibutton ok' onclick='javascript: var cubes, list, math, num, number, opposite, race, square,
+</code></pre><script>window.example1 = "# Assignment:\nnumber   = 42\nopposite = true\n\n# Conditions:\nnumber = -42 if opposite\n\n# Functions:\nsquare = (x) -> x * x\n\n# Arrays:\nlist = [1, 2, 3, 4, 5]\n\n# Objects:\nmath =\n  root:   Math.sqrt\n  square: square\n  cube:   (x) -> x * square x\n\n# Splats:\nrace = (winner, runners...) ->\n  print winner, runners\n\n# Existence:\nalert \"I knew it!\" if elvis?\n\n# Array comprehensions:\ncubes = (math.cube num for num in list)\n"</script><div class="minibutton ok" onclick="javascript: var cubes, list, math, num, number, opposite, race, square,
   slice = [].slice;
 
 number = 42;
@@ -228,8 +241,8 @@ race = function() {
   return print(winner, runners);
 };
 
-if (typeof elvis !== "undefined" && elvis !== null) {
-  alert("I knew it!");
+if (typeof elvis !== &quot;undefined&quot; && elvis !== null) {
+  alert(&quot;I knew it!&quot;);
 }
 
 cubes = (function() {
@@ -241,7 +254,7 @@ cubes = (function() {
   }
   return results;
 })();
-;alert(cubes);'>run: cubes</div><br class='clear' /></div>
+;alert(cubes);">run: cubes</div><br class='clear' /></div>
 
     <h2>
       <span id="installation" class="bookmark"></span>
@@ -256,7 +269,7 @@ cubes = (function() {
       <a href="http://nodejs.org/">Node.js</a> utility. The
       <a href="v1/browser-compiler/coffee-script.js">core compiler</a> however, does not
       depend on Node, and can be run in any JavaScript environment, or in the
-      browser (see "Try CoffeeScript", above).
+      browser (see “Try CoffeeScript”, above).
     </p>
 
     <p>
@@ -276,7 +289,7 @@ npm install -g coffee-script</pre>
 npm install --save coffee-script</pre>
 
     <p>
-      If you'd prefer to install the latest <b>master</b> version of CoffeeScript, you
+      If you’d prefer to install the latest <b>master</b> version of CoffeeScript, you
       can clone the CoffeeScript
       <a href="http://github.com/jashkenas/coffeescript">source repository</a>
       from GitHub, or download
@@ -288,7 +301,7 @@ npm install --save coffee-script</pre>
 npm install -g jashkenas/coffeescript</pre>
 
     <p>
-      Or, if you want to install to <code>/usr/local</code>, and don't want to use
+      Or, if you want to install to <code>/usr/local</code>, and don’t want to use
       npm to manage it, open the <code>coffee-script</code> directory and run:
     </p>
 
@@ -437,7 +450,7 @@ Block
       <tr>
         <td><code>--no-header</code></td>
         <td>
-          Suppress the "Generated by CoffeeScript" header.
+          Suppress the “Generated by CoffeeScript” header.
         </td>
       </tr>
     </table>
@@ -481,10 +494,10 @@ Block
 
     <p>
       Besides being used as an ordinary programming language, CoffeeScript may
-      also be written in "literate" mode. If you name your file with a
-      <code>.litcoffee</code> extension, you can write it as a Markdown document &mdash;
+      also be written in “literate” mode. If you name your file with a
+      <code>.litcoffee</code> extension, you can write it as a Markdown document —
       a document that also happens to be executable CoffeeScript code. The compiler
-      will treat any indented blocks (Markdown's way of indicating source code)
+      will treat any indented blocks (Markdown’s way of indicating source code)
       as code, and ignore the rest as comments.
     </p>
 
@@ -497,7 +510,7 @@ Block
     </p>
 
     <p>
-      I'm fairly excited about this direction for the language, and am looking
+      I’m fairly excited about this direction for the language, and am looking
       forward to writing (and more importantly, reading) more programs in this style.
       More information about Literate CoffeeScript, including an
       <a href="https://github.com/jashkenas/journo">example program</a>,
@@ -522,12 +535,12 @@ Block
     <p>
       <i>
         Many of the examples can be run (where it makes sense) by pressing the <b>run</b>
-        button on the right, and can be loaded into the "Try CoffeeScript"
+        button on the right, and can be loaded into the “Try CoffeeScript”
         console by pressing the <b>load</b> button on the left.
       </i>
     <p>
       First, the basics: CoffeeScript uses significant whitespace to delimit blocks of code.
-      You don't need to use semicolons <code>;</code> to terminate expressions,
+      You don’t need to use semicolons <code>;</code> to terminate expressions,
       ending the line will do just as well (although semicolons can still
       be used to fit multiple expressions onto a single line).
       Instead of using curly braces
@@ -538,7 +551,7 @@ Block
     </p>
 
     <p>
-      You don't need to use parentheses to invoke a function if you're passing
+      You don’t need to use parentheses to invoke a function if you’re passing
       arguments. The implicit call wraps forward to the end of the line or block expression.<br />
       <code>console.log sys.inspect object</code> &rarr; <code>console.log(sys.inspect(object));</code>
     </p>
@@ -561,7 +574,7 @@ square = <span class="function"><span class="keyword">function</span>(<span clas
 cube = <span class="function"><span class="keyword">function</span>(<span class="params">x</span>) </span>{
   <span class="keyword">return</span> square(x) * x;
 };
-</code></pre><script>window.example2 = "square = (x) -> x * x\ncube   = (x) -> square(x) * x\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example2);'>load</div><div class='minibutton ok' onclick='javascript: var cube, square;
+</code></pre><script>window.example2 = "square = (x) -> x * x\ncube   = (x) -> square(x) * x\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example2);'>load</div><div class="minibutton ok" onclick="javascript: var cube, square;
 
 square = function(x) {
   return x * x;
@@ -570,7 +583,7 @@ square = function(x) {
 cube = function(x) {
   return square(x) * x;
 };
-;alert(cube(5));'>run: cube(5)</div><br class='clear' /></div>
+;alert(cube(5));">run: cube(5)</div><br class='clear' /></div>
     <p>
       Functions may also have default values for arguments, which will be used
       if the incoming argument is missing (<code>null</code> or <code>undefined</code>).
@@ -585,15 +598,15 @@ fill = <span class="function"><span class="keyword">function</span>(<span class=
   }
   <span class="keyword">return</span> <span class="string">"Filling the "</span> + container + <span class="string">" with "</span> + liquid + <span class="string">"..."</span>;
 };
-</code></pre><script>window.example3 = "fill = (container, liquid = \"coffee\") ->\n  \"Filling the #{container} with #{liquid}...\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example3);'>load</div><div class='minibutton ok' onclick='javascript: var fill;
+</code></pre><script>window.example3 = "fill = (container, liquid = \"coffee\") ->\n  \"Filling the #{container} with #{liquid}...\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example3);'>load</div><div class="minibutton ok" onclick="javascript: var fill;
 
 fill = function(container, liquid) {
   if (liquid == null) {
-    liquid = "coffee";
+    liquid = &quot;coffee&quot;;
   }
-  return "Filling the " + container + " with " + liquid + "...";
+  return &quot;Filling the &quot; + container + &quot; with &quot; + liquid + &quot;...&quot;;
 };
-;alert(fill("cup"));'>run: fill("cup")</div><br class='clear' /></div>
+;alert(fill(&quot;cup&quot;));">run: fill("cup")</div><br class='clear' /></div>
 
     <p>
       <span id="objects_and_arrays" class="bookmark"></span>
@@ -641,32 +654,32 @@ kids = {
     <span class="attr">age</span>: <span class="number">9</span>
   }
 };
-</code></pre><script>window.example4 = "song = [\"do\", \"re\", \"mi\", \"fa\", \"so\"]\n\nsingers = {Jagger: \"Rock\", Elvis: \"Roll\"}\n\nbitlist = [\n  1, 0, 1\n  0, 0, 1\n  1, 1, 0\n]\n\nkids =\n  brother:\n    name: \"Max\"\n    age:  11\n  sister:\n    name: \"Ida\"\n    age:  9\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example4);'>load</div><div class='minibutton ok' onclick='javascript: var bitlist, kids, singers, song;
+</code></pre><script>window.example4 = "song = [\"do\", \"re\", \"mi\", \"fa\", \"so\"]\n\nsingers = {Jagger: \"Rock\", Elvis: \"Roll\"}\n\nbitlist = [\n  1, 0, 1\n  0, 0, 1\n  1, 1, 0\n]\n\nkids =\n  brother:\n    name: \"Max\"\n    age:  11\n  sister:\n    name: \"Ida\"\n    age:  9\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example4);'>load</div><div class="minibutton ok" onclick="javascript: var bitlist, kids, singers, song;
 
-song = ["do", "re", "mi", "fa", "so"];
+song = [&quot;do&quot;, &quot;re&quot;, &quot;mi&quot;, &quot;fa&quot;, &quot;so&quot;];
 
 singers = {
-  Jagger: "Rock",
-  Elvis: "Roll"
+  Jagger: &quot;Rock&quot;,
+  Elvis: &quot;Roll&quot;
 };
 
 bitlist = [1, 0, 1, 0, 0, 1, 1, 1, 0];
 
 kids = {
   brother: {
-    name: "Max",
+    name: &quot;Max&quot;,
     age: 11
   },
   sister: {
-    name: "Ida",
+    name: &quot;Ida&quot;,
     age: 9
   }
 };
-;alert(song.join(" ... "));'>run: song.join(" ... ")</div><br class='clear' /></div>
+;alert(song.join(&quot; … &quot;));">run: song.join(" … ")</div><br class='clear' /></div>
     <p>
-      In JavaScript, you can't use reserved words, like <code>class</code>, as properties
+      In JavaScript, you can’t use reserved words, like <code>class</code>, as properties
       of an object, without quoting them as strings. CoffeeScript notices reserved words
-      used as keys in objects and quotes them for you, so you don't have to worry
+      used as keys in objects and quotes them for you, so you don’t have to worry
       about it (say, when using jQuery).
     </p>
     <div class='code'><pre><code>$('.account').attr class: 'active'
@@ -678,12 +691,37 @@ log object.class
 
 log(object[<span class="string">"class"</span>]);
 </code></pre><script>window.example5 = "$('.account').attr class: 'active'\n\nlog object.class\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example5);'>load</div><br class='clear' /></div>
+    <p>
+      CoffeeScript has a shortcut for creating objects when you want the key
+      to be set with a variable of the same name.
+    </p>
+    <div class='code'><pre><code>name = <span class="string">"Michelangelo"</span>
+mask = <span class="string">"orange"</span>
+weapon = <span class="string">"nunchuks"</span>
+turtle = {name, mask, weapon}
+output = <span class="string">"<span class="subst">#{turtle.name}</span> wears an <span class="subst">#{turtle.mask}</span> mask. Watch out for his <span class="subst">#{turtle.weapon}</span>!"</span>
+</code></pre><pre><code><span class="keyword">var</span> mask, name, output, turtle, weapon;
+
+name = <span class="string">"Michelangelo"</span>;
+
+mask = <span class="string">"orange"</span>;
+
+weapon = <span class="string">"nunchuks"</span>;
+
+turtle = {
+  <span class="attr">name</span>: name,
+  <span class="attr">mask</span>: mask,
+  <span class="attr">weapon</span>: weapon
+};
+
+output = turtle.name + <span class="string">" wears an "</span> + turtle.mask + <span class="string">" mask. Watch out for his "</span> + turtle.weapon + <span class="string">"!"</span>;
+</code></pre><script>window.example6 = "name = \"Michelangelo\"\nmask = \"orange\"\nweapon = \"nunchuks\"\nturtle = {name, mask, weapon}\noutput = \"#{turtle.name} wears an #{turtle.mask} mask. Watch out for his #{turtle.weapon}!\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example6);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="lexical-scope" class="bookmark"></span>
       <b class="header">Lexical Scoping and Variable Safety</b>
       The CoffeeScript compiler takes care to make sure that all of your variables
-      are properly declared within lexical scope &mdash; you never need to write
+      are properly declared within lexical scope — you never need to write
       <code>var</code> yourself.
     </p>
     <div class='code'><pre><code>outer = <span class="number">1</span>
@@ -702,7 +740,7 @@ changeNumbers = <span class="function"><span class="keyword">function</span>(<sp
 };
 
 inner = changeNumbers();
-</code></pre><script>window.example6 = "outer = 1\nchangeNumbers = ->\n  inner = -1\n  outer = 10\ninner = changeNumbers()\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example6);'>load</div><div class='minibutton ok' onclick='javascript: var changeNumbers, inner, outer;
+</code></pre><script>window.example7 = "outer = 1\nchangeNumbers = ->\n  inner = -1\n  outer = 10\ninner = changeNumbers()\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example7);'>load</div><div class="minibutton ok" onclick="javascript: var changeNumbers, inner, outer;
 
 outer = 1;
 
@@ -713,31 +751,31 @@ changeNumbers = function() {
 };
 
 inner = changeNumbers();
-;alert(inner);'>run: inner</div><br class='clear' /></div>
+;alert(inner);">run: inner</div><br class='clear' /></div>
     <p>
       Notice how all of the variable declarations have been pushed up to
       the top of the closest scope, the first time they appear.
-      <b>outer</b> is not redeclared within the inner function, because it's
+      <b>outer</b> is not redeclared within the inner function, because it’s
       already in scope; <b>inner</b> within the function, on the other hand,
       should not be able to change the value of the external variable of the same name, and
       therefore has a declaration of its own.
     </p>
     <p>
-      This behavior is effectively identical to Ruby's scope for local variables.
-      Because you don't have direct access to the <code>var</code> keyword,
-      it's impossible to shadow an outer variable on purpose, you may only refer
-      to it. So be careful that you're not reusing the name of an external
-      variable accidentally, if you're writing a deeply nested function.
+      This behavior is effectively identical to Ruby’s scope for local variables.
+      Because you don’t have direct access to the <code>var</code> keyword,
+      it’s impossible to shadow an outer variable on purpose, you may only refer
+      to it. So be careful that you’re not reusing the name of an external
+      variable accidentally, if you’re writing a deeply nested function.
     </p>
     <p>
       Although suppressed within this documentation for clarity, all
       CoffeeScript output is wrapped in an anonymous function:
-      <code>(function(){ ... })();</code> This safety wrapper, combined with the
+      <code>(function(){ … })();</code> This safety wrapper, combined with the
       automatic generation of the <code>var</code> keyword, make it exceedingly difficult
       to pollute the global namespace by accident.
     </p>
     <p>
-      If you'd like to create top-level variables for other scripts to use,
+      If you’d like to create top-level variables for other scripts to use,
       attach them as properties on <b>window</b>; attach them as properties on the
       <b>exports</b> object in CommonJS; or use an <a href="#modules"><code>export</code>
       statement</a>. If you’re targeting both CommonJS and the browser, the
@@ -750,13 +788,13 @@ inner = changeNumbers();
       <b class="header">If, Else, Unless, and Conditional Assignment</b>
       <b>If/else</b> statements can be written without the use of parentheses and
       curly brackets. As with functions and other block expressions,
-      multi-line conditionals are delimited by indentation. There's also a handy
+      multi-line conditionals are delimited by indentation. There’s also a handy
       postfix form, with the <code>if</code> or <code>unless</code> at the end.
     </p>
     <p>
       CoffeeScript can compile <b>if</b> statements into JavaScript expressions,
       using the ternary operator when possible, and closure wrapping otherwise. There
-      is no explicit ternary statement in CoffeeScript &mdash; you simply use
+      is no explicit ternary statement in CoffeeScript — you simply use
       a regular <b>if</b> statement on a single line.
     </p>
     <div class='code'><pre><code>mood = greatlyImproved <span class="keyword">if</span> singing
@@ -782,11 +820,11 @@ date = <span class="keyword">if</span> friday <span class="keyword">then</span> 
 }
 
 date = friday ? sue : jill;
-</code></pre><script>window.example7 = "mood = greatlyImproved if singing\n\nif happy and knowsIt\n  clapsHands()\n  chaChaCha()\nelse\n  showIt()\n\ndate = if friday then sue else jill\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example7);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example8 = "mood = greatlyImproved if singing\n\nif happy and knowsIt\n  clapsHands()\n  chaChaCha()\nelse\n  showIt()\n\ndate = if friday then sue else jill\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example8);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="splats" class="bookmark"></span>
-      <b class="header">Splats...</b>
+      <b class="header">Splats…</b>
       The JavaScript <b>arguments object</b> is a useful way to work with
       functions that accept variable numbers of arguments. CoffeeScript provides
       splats <code>...</code>, both for function definition as well as invocation,
@@ -839,10 +877,10 @@ alert(<span class="string">"Gold: "</span> + gold);
 alert(<span class="string">"Silver: "</span> + silver);
 
 alert(<span class="string">"The Field: "</span> + rest);
-</code></pre><script>window.example8 = "gold = silver = rest = \"unknown\"\n\nawardMedals = (first, second, others...) ->\n  gold   = first\n  silver = second\n  rest   = others\n\ncontenders = [\n  \"Michael Phelps\"\n  \"Liu Xiang\"\n  \"Yao Ming\"\n  \"Allyson Felix\"\n  \"Shawn Johnson\"\n  \"Roman Sebrle\"\n  \"Guo Jingjing\"\n  \"Tyson Gay\"\n  \"Asafa Powell\"\n  \"Usain Bolt\"\n]\n\nawardMedals contenders...\n\nalert \"Gold: \" + gold\nalert \"Silver: \" + silver\nalert \"The Field: \" + rest\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example8);'>load</div><div class='minibutton ok' onclick='javascript: var awardMedals, contenders, gold, rest, silver,
+</code></pre><script>window.example9 = "gold = silver = rest = \"unknown\"\n\nawardMedals = (first, second, others...) ->\n  gold   = first\n  silver = second\n  rest   = others\n\ncontenders = [\n  \"Michael Phelps\"\n  \"Liu Xiang\"\n  \"Yao Ming\"\n  \"Allyson Felix\"\n  \"Shawn Johnson\"\n  \"Roman Sebrle\"\n  \"Guo Jingjing\"\n  \"Tyson Gay\"\n  \"Asafa Powell\"\n  \"Usain Bolt\"\n]\n\nawardMedals contenders...\n\nalert \"Gold: \" + gold\nalert \"Silver: \" + silver\nalert \"The Field: \" + rest\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example9);'>load</div><div class="minibutton ok" onclick="javascript: var awardMedals, contenders, gold, rest, silver,
   slice = [].slice;
 
-gold = silver = rest = "unknown";
+gold = silver = rest = &quot;unknown&quot;;
 
 awardMedals = function() {
   var first, others, second;
@@ -852,21 +890,21 @@ awardMedals = function() {
   return rest = others;
 };
 
-contenders = ["Michael Phelps", "Liu Xiang", "Yao Ming", "Allyson Felix", "Shawn Johnson", "Roman Sebrle", "Guo Jingjing", "Tyson Gay", "Asafa Powell", "Usain Bolt"];
+contenders = [&quot;Michael Phelps&quot;, &quot;Liu Xiang&quot;, &quot;Yao Ming&quot;, &quot;Allyson Felix&quot;, &quot;Shawn Johnson&quot;, &quot;Roman Sebrle&quot;, &quot;Guo Jingjing&quot;, &quot;Tyson Gay&quot;, &quot;Asafa Powell&quot;, &quot;Usain Bolt&quot;];
 
 awardMedals.apply(null, contenders);
 
-alert("Gold: " + gold);
+alert(&quot;Gold: &quot; + gold);
 
-alert("Silver: " + silver);
+alert(&quot;Silver: &quot; + silver);
 
-alert("The Field: " + rest);
-;'>run</div><br class='clear' /></div>
+alert(&quot;The Field: &quot; + rest);
+;">run</div><br class='clear' /></div>
 
     <p>
       <span id="loops" class="bookmark"></span>
       <b class="header">Loops and Comprehensions</b>
-      Most of the loops you'll write in CoffeeScript will be <b>comprehensions</b>
+      Most of the loops you’ll write in CoffeeScript will be <b>comprehensions</b>
       over arrays, objects, and ranges. Comprehensions replace (and compile into)
       <b>for</b> loops, with optional guard clauses and the value of the current array index.
       Unlike for loops, array comprehensions are expressions, and can be returned
@@ -905,7 +943,7 @@ foods = [<span class="string">'broccoli'</span>, <span class="string">'spinach'<
     eat(food);
   }
 }
-</code></pre><script>window.example9 = "# Eat lunch.\neat food for food in ['toast', 'cheese', 'wine']\n\n# Fine five course dining.\ncourses = ['greens', 'caviar', 'truffles', 'roast', 'cake']\nmenu i + 1, dish for dish, i in courses\n\n# Health conscious meal.\nfoods = ['broccoli', 'spinach', 'chocolate']\neat food for food in foods when food isnt 'chocolate'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example9);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example10 = "# Eat lunch.\neat food for food in ['toast', 'cheese', 'wine']\n\n# Fine five course dining.\ncourses = ['greens', 'caviar', 'truffles', 'roast', 'cake']\nmenu i + 1, dish for dish, i in courses\n\n# Health conscious meal.\nfoods = ['broccoli', 'spinach', 'chocolate']\neat food for food in foods when food isnt 'chocolate'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example10);'>load</div><br class='clear' /></div>
     <p>
       Comprehensions should be able to handle most places where you otherwise
       would use a loop, <b>each</b>/<b>forEach</b>, <b>map</b>, or <b>select</b>/<b>filter</b>, for example:
@@ -925,7 +963,7 @@ countdown = (<span class="function"><span class="keyword">function</span>(<span 
   }
   <span class="keyword">return</span> results;
 })();
-</code></pre><script>window.example10 = "countdown = (num for num in [10..1])\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example10);'>load</div><div class='minibutton ok' onclick='javascript: var countdown, num;
+</code></pre><script>window.example11 = "countdown = (num for num in [10..1])\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example11);'>load</div><div class="minibutton ok" onclick="javascript: var countdown, num;
 
 countdown = (function() {
   var i, results;
@@ -935,14 +973,14 @@ countdown = (function() {
   }
   return results;
 })();
-;alert(countdown);'>run: countdown</div><br class='clear' /></div>
+;alert(countdown);">run: countdown</div><br class='clear' /></div>
     <p>
       Note how because we are assigning the value of the comprehensions to a
       variable in the example above, CoffeeScript is collecting the result of
       each iteration into an array. Sometimes functions end with loops that are
-      intended to run only for their side-effects. Be careful that you're not
+      intended to run only for their side-effects. Be careful that you’re not
       accidentally returning the results of the comprehension in these cases,
-      by adding a meaningful return value &mdash; like <code>true</code> &mdash; or <code>null</code>,
+      by adding a meaningful return value — like <code>true</code> — or <code>null</code>,
       to the bottom of your function.
     </p>
     <p>
@@ -951,7 +989,7 @@ countdown = (function() {
       <code>evens = (x for x in [0..10] by 2)</code>
     </p>
     <p>
-      If you don't need the current iteration value you may omit it:<br />
+      If you don’t need the current iteration value you may omit it:<br />
       <code>browser.closeCurrentTab() for [0...count]</code>
     </p>
     <p>
@@ -980,7 +1018,7 @@ ages = (<span class="function"><span class="keyword">function</span>(<span class
   }
   <span class="keyword">return</span> results;
 })();
-</code></pre><script>window.example11 = "yearsOld = max: 10, ida: 9, tim: 11\n\nages = for child, age of yearsOld\n  \"#{child} is #{age}\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example11);'>load</div><div class='minibutton ok' onclick='javascript: var age, ages, child, yearsOld;
+</code></pre><script>window.example12 = "yearsOld = max: 10, ida: 9, tim: 11\n\nages = for child, age of yearsOld\n  \"#{child} is #{age}\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example12);'>load</div><div class="minibutton ok" onclick="javascript: var age, ages, child, yearsOld;
 
 yearsOld = {
   max: 10,
@@ -993,17 +1031,20 @@ ages = (function() {
   results = [];
   for (child in yearsOld) {
     age = yearsOld[child];
-    results.push(child + " is " + age);
+    results.push(child + &quot; is &quot; + age);
   }
   return results;
 })();
-;alert(ages.join(", "));'>run: ages.join(", ")</div><br class='clear' /></div>
+;alert(ages.join(&quot;, &quot;));">run: ages.join(", ")</div><br class='clear' /></div>
     <p>
       If you would like to iterate over just the keys that are defined on the
       object itself, by adding a <code>hasOwnProperty</code>
       check to avoid properties that may be inherited from the prototype, use<br />
       <code>for own key, value of object</code>
     </p>
+    <p>
+      To iterate a generator function, use <code>from</code>.
+      See <a href="#generator-iteration">Generator Functions</a>.
     <p>
       The only low-level loop that CoffeeScript provides is the <b>while</b> loop. The
       main difference from JavaScript is that the <b>while</b> loop can be used
@@ -1041,7 +1082,7 @@ lyrics = (<span class="function"><span class="keyword">function</span>(<span cla
   }
   <span class="keyword">return</span> results;
 })();
-</code></pre><script>window.example12 = "# Econ 101\nif this.studyingEconomics\n  buy()  while supply > demand\n  sell() until supply > demand\n\n# Nursery Rhyme\nnum = 6\nlyrics = while num -= 1\n  \"#{num} little monkeys, jumping on the bed.\n    One fell out and bumped his head.\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example12);'>load</div><div class='minibutton ok' onclick='javascript: var lyrics, num;
+</code></pre><script>window.example13 = "# Econ 101\nif this.studyingEconomics\n  buy()  while supply > demand\n  sell() until supply > demand\n\n# Nursery Rhyme\nnum = 6\nlyrics = while num -= 1\n  \"#{num} little monkeys, jumping on the bed.\n    One fell out and bumped his head.\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example13);'>load</div><div class="minibutton ok" onclick="javascript: var lyrics, num;
 
 if (this.studyingEconomics) {
   while (supply > demand) {
@@ -1058,19 +1099,19 @@ lyrics = (function() {
   var results;
   results = [];
   while (num -= 1) {
-    results.push(num + " little monkeys, jumping on the bed. One fell out and bumped his head.");
+    results.push(num + &quot; little monkeys, jumping on the bed. One fell out and bumped his head.&quot;);
   }
   return results;
 })();
-;alert(lyrics.join("\n"));'>run: lyrics.join("\n")</div><br class='clear' /></div>
+;alert(lyrics.join(&quot;\n&quot;));">run: lyrics.join("\n")</div><br class='clear' /></div>
     <p>
       For readability, the <b>until</b> keyword is equivalent to <code>while not</code>,
       and the <b>loop</b> keyword is equivalent to <code>while true</code>.
     </p>
     <p>
-      When using a JavaScript loop to generate functions, it's common to insert
+      When using a JavaScript loop to generate functions, it’s common to insert
       a closure wrapper in order to ensure that loop variables are closed over,
-      and all the generated functions don't just share the final values. CoffeeScript
+      and all the generated functions don’t just share the final values. CoffeeScript
       provides the <code>do</code> keyword, which immediately invokes a passed function,
       forwarding any arguments.
     </p>
@@ -1089,7 +1130,7 @@ fn = <span class="function"><span class="keyword">function</span>(<span class="p
   filename = list[i];
   fn(filename);
 }
-</code></pre><script>window.example13 = "for filename in list\n  do (filename) ->\n    fs.readFile filename, (err, contents) ->\n      compile filename, contents.toString()\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example13);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example14 = "for filename in list\n  do (filename) ->\n    fs.readFile filename, (err, contents) ->\n      compile filename, contents.toString()\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example14);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="slices" class="bookmark"></span>
@@ -1120,7 +1161,7 @@ middle = numbers.slice(<span class="number">3</span>, <span class="number">-2</s
 end = numbers.slice(<span class="number">-2</span>);
 
 copy = numbers.slice(<span class="number">0</span>);
-</code></pre><script>window.example14 = "numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nstart   = numbers[0..2]\n\nmiddle  = numbers[3...-2]\n\nend     = numbers[-2..]\n\ncopy    = numbers[..]\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example14);'>load</div><div class='minibutton ok' onclick='javascript: var copy, end, middle, numbers, start;
+</code></pre><script>window.example15 = "numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nstart   = numbers[0..2]\n\nmiddle  = numbers[3...-2]\n\nend     = numbers[-2..]\n\ncopy    = numbers[..]\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example15);'>load</div><div class="minibutton ok" onclick="javascript: var copy, end, middle, numbers, start;
 
 numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -1131,7 +1172,7 @@ middle = numbers.slice(3, -2);
 end = numbers.slice(-2);
 
 copy = numbers.slice(0);
-;alert(middle);'>run: middle</div><br class='clear' /></div>
+;alert(middle);">run: middle</div><br class='clear' /></div>
     <p>
       The same syntax can be used with assignment to replace a segment of an array
       with new values, splicing it.
@@ -1144,19 +1185,19 @@ numbers[<span class="number">3.</span><span class="number">.6</span>] = [<span c
 numbers = [<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>];
 
 [].splice.apply(numbers, [<span class="number">3</span>, <span class="number">4</span>].concat(ref = [<span class="number">-3</span>, <span class="number">-4</span>, <span class="number">-5</span>, <span class="number">-6</span>])), ref;
-</code></pre><script>window.example15 = "numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nnumbers[3..6] = [-3, -4, -5, -6]\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example15);'>load</div><div class='minibutton ok' onclick='javascript: var numbers, ref;
+</code></pre><script>window.example16 = "numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nnumbers[3..6] = [-3, -4, -5, -6]\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example16);'>load</div><div class="minibutton ok" onclick="javascript: var numbers, ref;
 
 numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 [].splice.apply(numbers, [3, 4].concat(ref = [-3, -4, -5, -6])), ref;
-;alert(numbers);'>run: numbers</div><br class='clear' /></div>
+;alert(numbers);">run: numbers</div><br class='clear' /></div>
     <p>
-      Note that JavaScript strings are immutable, and can't be spliced.
+      Note that JavaScript strings are immutable, and can’t be spliced.
     </p>
     <p>
       <span id="expressions" class="bookmark"></span>
       <b class="header">Everything is an Expression (at least, as much as possible)</b>
-      You might have noticed how even though we don't add return statements
+      You might have noticed how even though we don’t add return statements
       to CoffeeScript functions, they nonetheless return their final value.
       The CoffeeScript compiler tries to make sure that all statements in the
       language can be used as expressions. Watch how the <code>return</code> gets
@@ -1189,41 +1230,41 @@ grade = <span class="function"><span class="keyword">function</span>(<span class
 };
 
 eldest = <span class="number">24</span> &gt; <span class="number">21</span> ? <span class="string">"Liz"</span> : <span class="string">"Ike"</span>;
-</code></pre><script>window.example16 = "grade = (student) ->\n  if student.excellentWork\n    \"A+\"\n  else if student.okayStuff\n    if student.triedHard then \"B\" else \"B-\"\n  else\n    \"C\"\n\neldest = if 24 > 21 then \"Liz\" else \"Ike\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example16);'>load</div><div class='minibutton ok' onclick='javascript: var eldest, grade;
+</code></pre><script>window.example17 = "grade = (student) ->\n  if student.excellentWork\n    \"A+\"\n  else if student.okayStuff\n    if student.triedHard then \"B\" else \"B-\"\n  else\n    \"C\"\n\neldest = if 24 > 21 then \"Liz\" else \"Ike\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example17);'>load</div><div class="minibutton ok" onclick="javascript: var eldest, grade;
 
 grade = function(student) {
   if (student.excellentWork) {
-    return "A+";
+    return &quot;A+&quot;;
   } else if (student.okayStuff) {
     if (student.triedHard) {
-      return "B";
+      return &quot;B&quot;;
     } else {
-      return "B-";
+      return &quot;B-&quot;;
     }
   } else {
-    return "C";
+    return &quot;C&quot;;
   }
 };
 
-eldest = 24 > 21 ? "Liz" : "Ike";
-;alert(eldest);'>run: eldest</div><br class='clear' /></div>
+eldest = 24 > 21 ? &quot;Liz&quot; : &quot;Ike&quot;;
+;alert(eldest);">run: eldest</div><br class='clear' /></div>
     <p>
-      Even though functions will always return their final value, it's both possible
+      Even though functions will always return their final value, it’s both possible
       and encouraged to return early from a function body writing out the explicit
-      return (<code>return value</code>), when you know that you're done.
+      return (<code>return value</code>), when you know that you’re done.
     </p>
     <p>
       Because variable declarations occur at the top of scope, assignment can
-      be used within expressions, even for variables that haven't been seen before:
+      be used within expressions, even for variables that haven’t been seen before:
     </p>
     <div class='code'><pre><code>six = (one = <span class="number">1</span>) + (two = <span class="number">2</span>) + (three = <span class="number">3</span>)
 </code></pre><pre><code><span class="keyword">var</span> one, six, three, two;
 
 six = (one = <span class="number">1</span>) + (two = <span class="number">2</span>) + (three = <span class="number">3</span>);
-</code></pre><script>window.example17 = "six = (one = 1) + (two = 2) + (three = 3)\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example17);'>load</div><div class='minibutton ok' onclick='javascript: var one, six, three, two;
+</code></pre><script>window.example18 = "six = (one = 1) + (two = 2) + (three = 3)\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example18);'>load</div><div class="minibutton ok" onclick="javascript: var one, six, three, two;
 
 six = (one = 1) + (two = 2) + (three = 3);
-;alert(six);'>run: six</div><br class='clear' /></div>
+;alert(six);">run: six</div><br class='clear' /></div>
     <p>
       Things that would otherwise be statements in JavaScript, when used
       as part of an expression in CoffeeScript, are converted into expressions
@@ -1243,7 +1284,7 @@ globals = ((<span class="function"><span class="keyword">function</span>(<span c
   }
   <span class="keyword">return</span> results;
 })()).slice(<span class="number">0</span>, <span class="number">10</span>);
-</code></pre><script>window.example18 = "# The first ten global properties.\n\nglobals = (name for name of window)[0...10]\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example18);'>load</div><div class='minibutton ok' onclick='javascript: var globals, name;
+</code></pre><script>window.example19 = "# The first ten global properties.\n\nglobals = (name for name of window)[0...10]\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example19);'>load</div><div class="minibutton ok" onclick="javascript: var globals, name;
 
 globals = ((function() {
   var results;
@@ -1253,7 +1294,7 @@ globals = ((function() {
   }
   return results;
 })()).slice(0, 10);
-;alert(globals);'>run: globals</div><br class='clear' /></div>
+;alert(globals);">run: globals</div><br class='clear' /></div>
     <p>
       As well as silly things, like passing a <b>try/catch</b> statement directly
       into a function call:
@@ -1274,22 +1315,22 @@ alert((<span class="function"><span class="keyword">function</span>(<span class=
     <span class="keyword">return</span> <span class="string">"And the error is ... "</span> + error;
   }
 })());
-</code></pre><script>window.example19 = "alert(\n  try\n    nonexistent / undefined\n  catch error\n    \"And the error is ... #{error}\"\n)\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example19);'>load</div><div class='minibutton ok' onclick='javascript: var error;
+</code></pre><script>window.example20 = "alert(\n  try\n    nonexistent / undefined\n  catch error\n    \"And the error is ... #{error}\"\n)\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example20);'>load</div><div class="minibutton ok" onclick="javascript: var error;
 
 alert((function() {
   try {
     return nonexistent / void 0;
   } catch (error1) {
     error = error1;
-    return "And the error is ... " + error;
+    return &quot;And the error is ... &quot; + error;
   }
 })());
-;'>run</div><br class='clear' /></div>
+;">run</div><br class='clear' /></div>
     <p>
-      There are a handful of statements in JavaScript that can't be meaningfully
+      There are a handful of statements in JavaScript that can’t be meaningfully
       converted into expressions, namely <code>break</code>, <code>continue</code>,
       and <code>return</code>. If you make use of them within a block of code,
-      CoffeeScript won't try to perform the conversion.
+      CoffeeScript won’t try to perform the conversion.
     </p>
 
     <p>
@@ -1345,7 +1386,7 @@ tabs.selectTabAtIndex((tabs.currentIndex - count) %% tabs.length)
 modulo(<span class="number">-7</span>, <span class="number">5</span>) === <span class="number">3</span>;
 
 tabs.selectTabAtIndex(modulo(tabs.currentIndex - count, tabs.length));
-</code></pre><script>window.example20 = "-7 % 5 == -2 # The remainder of 7 / 5\n-7 %% 5 == 3 # n %% 5 is always between 0 and 4\n\ntabs.selectTabAtIndex((tabs.currentIndex - count) %% tabs.length)\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example20);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example21 = "-7 % 5 == -2 # The remainder of 7 / 5\n-7 %% 5 == 3 # n %% 5 is always between 0 and 4\n\ntabs.selectTabAtIndex((tabs.currentIndex - count) %% tabs.length)\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example21);'>load</div><br class='clear' /></div>
     <p>
       All together now:
     </p>
@@ -1401,16 +1442,16 @@ winner = <span class="literal">yes</span> <span class="keyword">if</span> pick <
 }
 
 print(inspect(<span class="string">"My name is "</span> + <span class="keyword">this</span>.name));
-</code></pre><script>window.example21 = "launch() if ignition is on\n\nvolume = 10 if band isnt SpinalTap\n\nletTheWildRumpusBegin() unless answer is no\n\nif car.speed < limit then accelerate()\n\nwinner = yes if pick in [47, 92, 13]\n\nprint inspect \"My name is #{@name}\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example21);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example22 = "launch() if ignition is on\n\nvolume = 10 if band isnt SpinalTap\n\nletTheWildRumpusBegin() unless answer is no\n\nif car.speed < limit then accelerate()\n\nwinner = yes if pick in [47, 92, 13]\n\nprint inspect \"My name is #{@name}\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example22);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="existential-operator" class="bookmark"></span>
       <b class="header">The Existential Operator</b>
-      It's a little difficult to check for the existence of a variable in
-      JavaScript. <code>if (variable) ...</code> comes close, but fails for zero,
-      the empty string, and false. CoffeeScript's existential operator <code>?</code> returns true unless
+      It’s a little difficult to check for the existence of a variable in
+      JavaScript. <code>if (variable) …</code> comes close, but fails for zero,
+      the empty string, and false. CoffeeScript’s existential operator <code>?</code> returns true unless
       a variable is <b>null</b> or <b>undefined</b>, which makes it analogous
-      to Ruby's <code>nil?</code>
+      to Ruby’s <code>nil?</code>
     </p>
     <p>
       It can also be used for safer conditional assignment than <code>||=</code>
@@ -1435,9 +1476,9 @@ speed = <span class="number">0</span>;
 }
 
 footprints = <span class="keyword">typeof</span> yeti !== <span class="string">"undefined"</span> &amp;&amp; yeti !== <span class="literal">null</span> ? yeti : <span class="string">"bear"</span>;
-</code></pre><script>window.example22 = "solipsism = true if mind? and not world?\n\nspeed = 0\nspeed ?= 15\n\nfootprints = yeti ? \"bear\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example22);'>load</div><div class='minibutton ok' onclick='javascript: var footprints, solipsism, speed;
+</code></pre><script>window.example23 = "solipsism = true if mind? and not world?\n\nspeed = 0\nspeed ?= 15\n\nfootprints = yeti ? \"bear\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example23);'>load</div><div class="minibutton ok" onclick="javascript: var footprints, solipsism, speed;
 
-if ((typeof mind !== "undefined" && mind !== null) && (typeof world === "undefined" || world === null)) {
+if ((typeof mind !== &quot;undefined&quot; && mind !== null) && (typeof world === &quot;undefined&quot; || world === null)) {
   solipsism = true;
 }
 
@@ -1447,13 +1488,13 @@ if (speed == null) {
   speed = 15;
 }
 
-footprints = typeof yeti !== "undefined" && yeti !== null ? yeti : "bear";
-;alert(footprints);'>run: footprints</div><br class='clear' /></div>
+footprints = typeof yeti !== &quot;undefined&quot; && yeti !== null ? yeti : &quot;bear&quot;;
+;alert(footprints);">run: footprints</div><br class='clear' /></div>
     <p>
       The accessor variant of the existential operator <code>?.</code> can be used to soak
       up null references in a chain of properties. Use it instead
       of the dot accessor <code>.</code> in cases where the base value may be <b>null</b>
-      or <b>undefined</b>. If all of the properties exist then you'll get the expected
+      or <b>undefined</b>. If all of the properties exist then you’ll get the expected
       result, if the chain is broken, <b>undefined</b> is returned instead of
       the <b>TypeError</b> that would be raised otherwise.
     </p>
@@ -1461,9 +1502,9 @@ footprints = typeof yeti !== "undefined" && yeti !== null ? yeti : "bear";
 </code></pre><pre><code><span class="keyword">var</span> ref, zip;
 
 zip = <span class="keyword">typeof</span> lottery.drawWinner === <span class="string">"function"</span> ? (ref = lottery.drawWinner().address) != <span class="literal">null</span> ? ref.zipcode : <span class="keyword">void</span> <span class="number">0</span> : <span class="keyword">void</span> <span class="number">0</span>;
-</code></pre><script>window.example23 = "zip = lottery.drawWinner?().address?.zipcode\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example23);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example24 = "zip = lottery.drawWinner?().address?.zipcode\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example24);'>load</div><br class='clear' /></div>
     <p>
-      Soaking up nulls is similar to Ruby's
+      Soaking up nulls is similar to Ruby’s
       <a href="https://rubygems.org/gems/andand">andand gem</a>, and to the
       <a href="http://docs.groovy-lang.org/latest/html/documentation/index.html#_safe_navigation_operator">safe navigation operator</a>
       in Groovy.
@@ -1472,16 +1513,16 @@ zip = <span class="keyword">typeof</span> lottery.drawWinner === <span class="st
     <p>
       <span id="classes" class="bookmark"></span>
       <b class="header">Classes, Inheritance, and Super</b>
-      JavaScript's prototypal inheritance has always been a bit of a
+      JavaScript’s prototypal inheritance has always been a bit of a
       brain-bender, with a whole family tree of libraries that provide a cleaner
-      syntax for classical inheritance on top of JavaScript's prototypes:
+      syntax for classical inheritance on top of JavaScript’s prototypes:
       <a href="http://code.google.com/p/base2/">Base2</a>,
       <a href="http://prototypejs.org/">Prototype.js</a>,
       <a href="http://jsclass.jcoglan.com/">JS.Class</a>, etc.
       The libraries provide syntactic sugar, but the built-in inheritance would
-      be completely usable if it weren't for a couple of small exceptions:
-      it's awkward to call <b>super</b> (the prototype object's
-      implementation of the current function), and it's awkward to correctly
+      be completely usable if it weren’t for a couple of small exceptions:
+      it’s awkward to call <b>super</b> (the prototype object’s
+      implementation of the current function), and it’s awkward to correctly
       set the prototype chain.
     </p>
     <p>
@@ -1571,7 +1612,7 @@ tom = <span class="keyword">new</span> Horse(<span class="string">"Tommy the Pal
 sam.move();
 
 tom.move();
-</code></pre><script>window.example24 = "class Animal\n  constructor: (@name) ->\n\n  move: (meters) ->\n    alert @name + \" moved #{meters}m.\"\n\nclass Snake extends Animal\n  move: ->\n    alert \"Slithering...\"\n    super 5\n\nclass Horse extends Animal\n  move: ->\n    alert \"Galloping...\"\n    super 45\n\nsam = new Snake \"Sammy the Python\"\ntom = new Horse \"Tommy the Palomino\"\n\nsam.move()\ntom.move()\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example24);'>load</div><div class='minibutton ok' onclick='javascript: var Animal, Horse, Snake, sam, tom,
+</code></pre><script>window.example25 = "class Animal\n  constructor: (@name) ->\n\n  move: (meters) ->\n    alert @name + \" moved #{meters}m.\"\n\nclass Snake extends Animal\n  move: ->\n    alert \"Slithering...\"\n    super 5\n\nclass Horse extends Animal\n  move: ->\n    alert \"Galloping...\"\n    super 45\n\nsam = new Snake \"Sammy the Python\"\ntom = new Horse \"Tommy the Palomino\"\n\nsam.move()\ntom.move()\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example25);'>load</div><div class="minibutton ok" onclick="javascript: var Animal, Horse, Snake, sam, tom,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -1581,7 +1622,7 @@ Animal = (function() {
   }
 
   Animal.prototype.move = function(meters) {
-    return alert(this.name + (" moved " + meters + "m."));
+    return alert(this.name + (&quot; moved &quot; + meters + &quot;m.&quot;));
   };
 
   return Animal;
@@ -1596,7 +1637,7 @@ Snake = (function(superClass) {
   }
 
   Snake.prototype.move = function() {
-    alert("Slithering...");
+    alert(&quot;Slithering...&quot;);
     return Snake.__super__.move.call(this, 5);
   };
 
@@ -1612,7 +1653,7 @@ Horse = (function(superClass) {
   }
 
   Horse.prototype.move = function() {
-    alert("Galloping...");
+    alert(&quot;Galloping...&quot;);
     return Horse.__super__.move.call(this, 45);
   };
 
@@ -1620,31 +1661,31 @@ Horse = (function(superClass) {
 
 })(Animal);
 
-sam = new Snake("Sammy the Python");
+sam = new Snake(&quot;Sammy the Python&quot;);
 
-tom = new Horse("Tommy the Palomino");
+tom = new Horse(&quot;Tommy the Palomino&quot;);
 
 sam.move();
 
 tom.move();
-;'>run</div><br class='clear' /></div>
+;">run</div><br class='clear' /></div>
     <p>
-      If structuring your prototypes classically isn't your cup of tea, CoffeeScript
+      If structuring your prototypes classically isn’t your cup of tea, CoffeeScript
       provides a couple of lower-level conveniences. The <code>extends</code> operator
       helps with proper prototype setup, and can be used to create an inheritance
       chain between any pair of constructor functions; <code>::</code> gives you
-      quick access to an object's prototype; and <code>super()</code>
-      is converted into a call against the immediate ancestor's method of the same name.
+      quick access to an object’s prototype; and <code>super()</code>
+      is converted into a call against the immediate ancestor’s method of the same name.
     </p>
     <div class='code'><pre><code>String::dasherize = <span class="function">-&gt;</span>
   <span class="keyword">this</span>.replace <span class="regexp">/_/g</span>, <span class="string">"-"</span>
 </code></pre><pre><code><span class="built_in">String</span>.prototype.dasherize = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>{
   <span class="keyword">return</span> <span class="keyword">this</span>.replace(<span class="regexp">/_/g</span>, <span class="string">"-"</span>);
 };
-</code></pre><script>window.example25 = "String::dasherize = ->\n  this.replace /_/g, \"-\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example25);'>load</div><div class='minibutton ok' onclick='javascript: String.prototype.dasherize = function() {
-  return this.replace(/_/g, "-");
+</code></pre><script>window.example26 = "String::dasherize = ->\n  this.replace /_/g, \"-\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example26);'>load</div><div class="minibutton ok" onclick="javascript: String.prototype.dasherize = function() {
+  return this.replace(/_/g, &quot;-&quot;);
 };
-;alert("one_two".dasherize());'>run: "one_two".dasherize()</div><br class='clear' /></div>
+;alert(&quot;one_two&quot;.dasherize());">run: "one_two".dasherize()</div><br class='clear' /></div>
     <p>
       Finally, class definitions are blocks of executable code, which make for interesting
       metaprogramming possibilities. Because in the context of a class definition,
@@ -1673,16 +1714,16 @@ theBait = <span class="number">1000</span>;
 theSwitch = <span class="number">0</span>;
 
 ref = [theSwitch, theBait], theBait = ref[<span class="number">0</span>], theSwitch = ref[<span class="number">1</span>];
-</code></pre><script>window.example26 = "theBait   = 1000\ntheSwitch = 0\n\n[theBait, theSwitch] = [theSwitch, theBait]\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example26);'>load</div><div class='minibutton ok' onclick='javascript: var ref, theBait, theSwitch;
+</code></pre><script>window.example27 = "theBait   = 1000\ntheSwitch = 0\n\n[theBait, theSwitch] = [theSwitch, theBait]\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example27);'>load</div><div class="minibutton ok" onclick="javascript: var ref, theBait, theSwitch;
 
 theBait = 1000;
 
 theSwitch = 0;
 
 ref = [theSwitch, theBait], theBait = ref[0], theSwitch = ref[1];
-;alert(theBait);'>run: theBait</div><br class='clear' /></div>
+;alert(theBait);">run: theBait</div><br class='clear' /></div>
     <p>
-      But it's also helpful for dealing with functions that return multiple
+      But it’s also helpful for dealing with functions that return multiple
       values.
     </p>
     <div class='code'><pre><code><span class="function"><span class="title">weatherReport</span> = <span class="params">(location)</span> -&gt;</span>
@@ -1697,14 +1738,14 @@ weatherReport = <span class="function"><span class="keyword">function</span>(<sp
 };
 
 ref = weatherReport(<span class="string">"Berkeley, CA"</span>), city = ref[<span class="number">0</span>], temp = ref[<span class="number">1</span>], forecast = ref[<span class="number">2</span>];
-</code></pre><script>window.example27 = "weatherReport = (location) ->\n  # Make an Ajax request to fetch the weather...\n  [location, 72, \"Mostly Sunny\"]\n\n[city, temp, forecast] = weatherReport \"Berkeley, CA\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example27);'>load</div><div class='minibutton ok' onclick='javascript: var city, forecast, ref, temp, weatherReport;
+</code></pre><script>window.example28 = "weatherReport = (location) ->\n  # Make an Ajax request to fetch the weather...\n  [location, 72, \"Mostly Sunny\"]\n\n[city, temp, forecast] = weatherReport \"Berkeley, CA\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example28);'>load</div><div class="minibutton ok" onclick="javascript: var city, forecast, ref, temp, weatherReport;
 
 weatherReport = function(location) {
-  return [location, 72, "Mostly Sunny"];
+  return [location, 72, &quot;Mostly Sunny&quot;];
 };
 
-ref = weatherReport("Berkeley, CA"), city = ref[0], temp = ref[1], forecast = ref[2];
-;alert(forecast);'>run: forecast</div><br class='clear' /></div>
+ref = weatherReport(&quot;Berkeley, CA&quot;), city = ref[0], temp = ref[1], forecast = ref[2];
+;alert(forecast);">run: forecast</div><br class='clear' /></div>
     <p>
       Destructuring assignment can be used with any depth of array and object nesting,
       to help pull out deeply nested properties.
@@ -1732,19 +1773,19 @@ futurists = {
 };
 
 ref = futurists.poet, name = ref.name, (ref1 = ref.address, street = ref1[<span class="number">0</span>], city = ref1[<span class="number">1</span>]);
-</code></pre><script>window.example28 = "futurists =\n  sculptor: \"Umberto Boccioni\"\n  painter:  \"Vladimir Burliuk\"\n  poet:\n    name:   \"F.T. Marinetti\"\n    address: [\n      \"Via Roma 42R\"\n      \"Bellagio, Italy 22021\"\n    ]\n\n{poet: {name, address: [street, city]}} = futurists\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example28);'>load</div><div class='minibutton ok' onclick='javascript: var city, futurists, name, ref, ref1, street;
+</code></pre><script>window.example29 = "futurists =\n  sculptor: \"Umberto Boccioni\"\n  painter:  \"Vladimir Burliuk\"\n  poet:\n    name:   \"F.T. Marinetti\"\n    address: [\n      \"Via Roma 42R\"\n      \"Bellagio, Italy 22021\"\n    ]\n\n{poet: {name, address: [street, city]}} = futurists\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example29);'>load</div><div class="minibutton ok" onclick="javascript: var city, futurists, name, ref, ref1, street;
 
 futurists = {
-  sculptor: "Umberto Boccioni",
-  painter: "Vladimir Burliuk",
+  sculptor: &quot;Umberto Boccioni&quot;,
+  painter: &quot;Vladimir Burliuk&quot;,
   poet: {
-    name: "F.T. Marinetti",
-    address: ["Via Roma 42R", "Bellagio, Italy 22021"]
+    name: &quot;F.T. Marinetti&quot;,
+    address: [&quot;Via Roma 42R&quot;, &quot;Bellagio, Italy 22021&quot;]
   }
 };
 
 ref = futurists.poet, name = ref.name, (ref1 = ref.address, street = ref1[0], city = ref1[1]);
-;alert(name + "-" + street);'>run: name + "-" + street</div><br class='clear' /></div>
+;alert(name + &quot;-&quot; + street);">run: name + "-" + street</div><br class='clear' /></div>
     <p>
       Destructuring assignment can even be combined with splats.
     </p>
@@ -1757,13 +1798,13 @@ ref = futurists.poet, name = ref.name, (ref1 = ref.address, street = ref1[0], ci
 tag = <span class="string">"&lt;impossible&gt;"</span>;
 
 ref = tag.split(<span class="string">""</span>), open = ref[<span class="number">0</span>], contents = <span class="number">3</span> &lt;= ref.length ? slice.call(ref, <span class="number">1</span>, i = ref.length - <span class="number">1</span>) : (i = <span class="number">1</span>, []), close = ref[i++];
-</code></pre><script>window.example29 = "tag = \"<impossible>\"\n\n[open, contents..., close] = tag.split(\"\")\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example29);'>load</div><div class='minibutton ok' onclick='javascript: var close, contents, i, open, ref, tag,
+</code></pre><script>window.example30 = "tag = \"<impossible>\"\n\n[open, contents..., close] = tag.split(\"\")\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example30);'>load</div><div class="minibutton ok" onclick="javascript: var close, contents, i, open, ref, tag,
   slice = [].slice;
 
-tag = "<impossible>";
+tag = &quot;<impossible>&quot;;
 
-ref = tag.split(""), open = ref[0], contents = 3 <= ref.length ? slice.call(ref, 1, i = ref.length - 1) : (i = 1, []), close = ref[i++];
-;alert(contents.join(""));'>run: contents.join("")</div><br class='clear' /></div>
+ref = tag.split(&quot;&quot;), open = ref[0], contents = 3 <= ref.length ? slice.call(ref, 1, i = ref.length - 1) : (i = 1, []), close = ref[i++];
+;alert(contents.join(&quot;&quot;));">run: contents.join("")</div><br class='clear' /></div>
     <p>
       Expansion can be used to retrieve elements from the end of an array without having to assign the rest of its values. It works in function parameter lists as well.
     </p>
@@ -1776,12 +1817,12 @@ ref = tag.split(""), open = ref[0], contents = 3 <= ref.length ? slice.call(ref,
 text = <span class="string">"Every literary critic believes he will outwit history and have the last word"</span>;
 
 ref = text.split(<span class="string">" "</span>), first = ref[<span class="number">0</span>], last = ref[ref.length - <span class="number">1</span>];
-</code></pre><script>window.example30 = "text = \"Every literary critic believes he will\n        outwit history and have the last word\"\n\n[first, ..., last] = text.split \" \"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example30);'>load</div><div class='minibutton ok' onclick='javascript: var first, last, ref, text;
+</code></pre><script>window.example31 = "text = \"Every literary critic believes he will\n        outwit history and have the last word\"\n\n[first, ..., last] = text.split \" \"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example31);'>load</div><div class="minibutton ok" onclick="javascript: var first, last, ref, text;
 
-text = "Every literary critic believes he will outwit history and have the last word";
+text = &quot;Every literary critic believes he will outwit history and have the last word&quot;;
 
-ref = text.split(" "), first = ref[0], last = ref[ref.length - 1];
-;alert(first + " " + last);'>run: first + " " + last</div><br class='clear' /></div>
+ref = text.split(&quot; &quot;), first = ref[0], last = ref[ref.length - 1];
+;alert(first + &quot; &quot; + last);">run: first + " " + last</div><br class='clear' /></div>
     <p>
       Destructuring assignment is also useful when combined with class constructors
       to assign properties to your instance from an options object passed to the constructor.
@@ -1807,7 +1848,7 @@ tim = <span class="keyword">new</span> Person({
   <span class="attr">name</span>: <span class="string">'Tim'</span>,
   <span class="attr">age</span>: <span class="number">4</span>
 });
-</code></pre><script>window.example31 = "class Person\n  constructor: (options) ->\n    {@name, @age, @height = 'average'} = options\n\ntim = new Person name: 'Tim', age: 4\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example31);'>load</div><div class='minibutton ok' onclick='javascript: var Person, tim;
+</code></pre><script>window.example32 = "class Person\n  constructor: (options) ->\n    {@name, @age, @height = 'average'} = options\n\ntim = new Person name: 'Tim', age: 4\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example32);'>load</div><div class="minibutton ok" onclick="javascript: var Person, tim;
 
 Person = (function() {
   function Person(options) {
@@ -1823,7 +1864,7 @@ tim = new Person({
   name: 'Tim',
   age: 4
 });
-;alert(tim.age + " " + tim.height);'>run: tim.age + " " + tim.height</div><br class='clear' /></div>
+;alert(tim.age + &quot; &quot; + tim.height);">run: tim.age + " " + tim.height</div><br class='clear' /></div>
     <p>
       The above example also demonstrates that if properties are missing in the
       destructured object or array, you can, just like in JavaScript, provide
@@ -1837,7 +1878,7 @@ tim = new Person({
       In JavaScript, the <code>this</code> keyword is dynamically scoped to mean the
       object that the current function is attached to. If you pass a function as
       a callback or attach it to a different object, the original value of <code>this</code>
-      will be lost. If you're not familiar with this behavior,
+      will be lost. If you’re not familiar with this behavior,
       <a href="http://64.13.255.16/articles/scope_in_javascript/">this Digital Web article</a>
       gives a good overview of the quirks.
     </p>
@@ -1847,7 +1888,7 @@ tim = new Person({
       when using callback-based libraries like Prototype or jQuery, for creating
       iterator functions to pass to <code>each</code>, or event-handler functions
       to use with <code>on</code>. Functions created with the fat arrow are able to access
-      properties of the <code>this</code> where they're defined.
+      properties of the <code>this</code> where they’re defined.
     </p>
     <div class='code'><pre><code><span class="function"><span class="title">Account</span> = <span class="params">(customer, cart)</span> -&gt;</span>
   @customer = customer
@@ -1866,10 +1907,10 @@ Account = <span class="function"><span class="keyword">function</span>(<span cla
     };
   })(<span class="keyword">this</span>));
 };
-</code></pre><script>window.example32 = "Account = (customer, cart) ->\n  @customer = customer\n  @cart = cart\n\n  $('.shopping_cart').on 'click', (event) =>\n    @customer.purchase @cart\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example32);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example33 = "Account = (customer, cart) ->\n  @customer = customer\n  @cart = cart\n\n  $('.shopping_cart').on 'click', (event) =>\n    @customer.purchase @cart\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example33);'>load</div><br class='clear' /></div>
     <p>
       If we had used <code>-&gt;</code> in the callback above, <code>@customer</code> would
-      have referred to the undefined "customer" property of the DOM element,
+      have referred to the undefined “customer” property of the DOM element,
       and trying to call <code>purchase()</code> on it would have raised an exception.
     </p>
     <p>
@@ -1878,10 +1919,11 @@ Account = <span class="function"><span class="keyword">function</span>(<span cla
       constructed.
     </p>
     <p>
+      <span id="generator-functions" class="bookmark"></span>
       CoffeeScript functions also support
-      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">ES6 generator functions</a>
-      through the <code>yield</code> keyword. There's no <code>function*(){}</code>
-      nonsense &mdash; a generator in CoffeeScript is simply a function that yields.
+      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">ES2015 generator functions</a>
+      through the <code>yield</code> keyword. There’s no <code>function*(){}</code>
+      nonsense — a generator in CoffeeScript is simply a function that yields.
     </p>
     <div class='code'><pre><code><span class="function"><span class="title">perfectSquares</span> = -&gt;</span>
   num = <span class="number">0</span>
@@ -1903,7 +1945,7 @@ perfectSquares = <span class="function"><span class="keyword">function</span>*(<
 };
 
 <span class="built_in">window</span>.ps || (<span class="built_in">window</span>.ps = perfectSquares());
-</code></pre><script>window.example33 = "perfectSquares = ->\n  num = 0\n  loop\n    num += 1\n    yield num * num\n  return\n\nwindow.ps or= perfectSquares()\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example33);'>load</div><div class='minibutton ok' onclick='javascript: var perfectSquares;
+</code></pre><script>window.example34 = "perfectSquares = ->\n  num = 0\n  loop\n    num += 1\n    yield num * num\n  return\n\nwindow.ps or= perfectSquares()\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example34);'>load</div><div class="minibutton ok" onclick="javascript: var perfectSquares;
 
 perfectSquares = function*() {
   var num;
@@ -1915,16 +1957,80 @@ perfectSquares = function*() {
 };
 
 window.ps || (window.ps = perfectSquares());
-;alert(ps.next().value);'>run: ps.next().value</div><br class='clear' /></div>
+;alert(ps.next().value);">run: ps.next().value</div><br class='clear' /></div>
     <p>
       <code>yield*</code> is called <code>yield from</code>, and <code>yield return</code>
-      may be used if you need to force a generator that doesn't yield.
+      may be used if you need to force a generator that doesn’t yield.
     </p>
+    <p>
+      <span id="generator-iteration" class="bookmark"></span>
+      You can iterate over a generator function using <code>for…from</code>.
+    </p>
+    <div class='code'><pre><code><span class="function"><span class="title">fibonacci</span> = -&gt;</span>
+  [previous, current] = [<span class="number">1</span>, <span class="number">1</span>]
+  <span class="keyword">loop</span>
+    [previous, current] = [current, previous + current]
+    <span class="keyword">yield</span> current
+  <span class="keyword">return</span>
+<span class="function">
+<span class="title">getFibonacciNumbers</span> = <span class="params">(length)</span> -&gt;</span>
+  results = [<span class="number">1</span>]
+  <span class="keyword">for</span> n <span class="keyword">from</span> fibonacci()
+    results.push n
+    <span class="keyword">break</span> <span class="keyword">if</span> results.length <span class="keyword">is</span> length
+  results
+</code></pre><pre><code><span class="keyword">var</span> fibonacci, getFibonacciNumbers;
+
+fibonacci = <span class="function"><span class="keyword">function</span>*(<span class="params"></span>) </span>{
+  <span class="keyword">var</span> current, previous, ref, ref1;
+  ref = [<span class="number">1</span>, <span class="number">1</span>], previous = ref[<span class="number">0</span>], current = ref[<span class="number">1</span>];
+  <span class="keyword">while</span> (<span class="literal">true</span>) {
+    ref1 = [current, previous + current], previous = ref1[<span class="number">0</span>], current = ref1[<span class="number">1</span>];
+    <span class="keyword">yield</span> current;
+  }
+};
+
+getFibonacciNumbers = <span class="function"><span class="keyword">function</span>(<span class="params">length</span>) </span>{
+  <span class="keyword">var</span> n, ref, results;
+  results = [<span class="number">1</span>];
+  ref = fibonacci();
+  <span class="keyword">for</span> (n <span class="keyword">of</span> ref) {
+    results.push(n);
+    <span class="keyword">if</span> (results.length === length) {
+      <span class="keyword">break</span>;
+    }
+  }
+  <span class="keyword">return</span> results;
+};
+</code></pre><script>window.example35 = "fibonacci = ->\n  [previous, current] = [1, 1]\n  loop\n    [previous, current] = [current, previous + current]\n    yield current\n  return\n\ngetFibonacciNumbers = (length) ->\n  results = [1]\n  for n from fibonacci()\n    results.push n\n    break if results.length is length\n  results\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example35);'>load</div><div class="minibutton ok" onclick="javascript: var fibonacci, getFibonacciNumbers;
+
+fibonacci = function*() {
+  var current, previous, ref, ref1;
+  ref = [1, 1], previous = ref[0], current = ref[1];
+  while (true) {
+    ref1 = [current, previous + current], previous = ref1[0], current = ref1[1];
+    yield current;
+  }
+};
+
+getFibonacciNumbers = function(length) {
+  var n, ref, results;
+  results = [1];
+  ref = fibonacci();
+  for (n of ref) {
+    results.push(n);
+    if (results.length === length) {
+      break;
+    }
+  }
+  return results;
+};
+;alert(getFibonacciNumbers(10));">run: getFibonacciNumbers(10)</div><br class='clear' /></div>
 
     <p>
       <span id="embedded" class="bookmark"></span>
       <b class="header">Embedded JavaScript</b>
-      Hopefully, you'll never need to use it, but if you ever need to intersperse
+      Hopefully, you’ll never need to use it, but if you ever need to intersperse
       snippets of JavaScript within your CoffeeScript, you can
       use backticks to pass it straight through.
     </p>
@@ -1936,12 +2042,55 @@ window.ps || (window.ps = perfectSquares());
 hi = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>{
   <span class="keyword">return</span> [<span class="built_in">document</span>.title, <span class="string">"Hello JavaScript"</span>].join(<span class="string">": "</span>);
 };
-</code></pre><script>window.example34 = "hi = `function() {\n  return [document.title, \"Hello JavaScript\"].join(\": \");\n}`\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example34);'>load</div><div class='minibutton ok' onclick='javascript: var hi;
+</code></pre><script>window.example36 = "hi = `function() {\n  return [document.title, \"Hello JavaScript\"].join(\": \");\n}`\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example36);'>load</div><div class="minibutton ok" onclick="javascript: var hi;
 
 hi = function() {
-  return [document.title, "Hello JavaScript"].join(": ");
+  return [document.title, &quot;Hello JavaScript&quot;].join(&quot;: &quot;);
 };
-;alert(hi());'>run: hi()</div><br class='clear' /></div>
+;alert(hi());">run: hi()</div><br class='clear' /></div>
+    <p>
+      Escape backticks with backslashes: <code>\`</code> becomes <code>`</code>.
+    </p>
+    <p>
+      Escape backslashes before backticks with more backslashes: <code>\\\`</code>
+      becomes <code>\`</code>.
+    </p>
+    <div class='code'><pre><code>markdown = `<span class="javascript"><span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>{
+  <span class="keyword">return</span> \</span>`In Markdown, write code like \\\`<span class="javascript"><span class="keyword">this</span>\\\</span>`\`<span class="javascript">;
+}</span>`
+</code></pre><pre><code><span class="keyword">var</span> markdown;
+
+markdown = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>{
+  <span class="keyword">return</span> <span class="string">`In Markdown, write code like \`this\``</span>;
+};
+</code></pre><script>window.example37 = "markdown = `function () {\n  return \\`In Markdown, write code like \\\\\\`this\\\\\\`\\`;\n}`\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example37);'>load</div><div class="minibutton ok" onclick="javascript: var markdown;
+
+markdown = function () {
+  return `In Markdown, write code like \`this\``;
+};
+;alert(markdown());">run: markdown()</div><br class='clear' /></div>
+    <p>
+      You can also embed blocks of JavaScript using triple backticks. That’s easier
+      than escaping backticks, if you need them inside your JavaScript block.
+    </p>
+    <div class='code'><pre><code>```<span class="javascript">
+<span class="function"><span class="keyword">function</span> <span class="title">time</span>(<span class="params"></span>) </span>{
+  <span class="keyword">return</span> <span class="string">`The time is <span class="subst">${<span class="keyword">new</span> <span class="built_in">Date</span>().toLocaleTimeString()}</span>`</span>;
+}
+</span>```
+</code></pre><pre><code>
+<span class="function"><span class="keyword">function</span> <span class="title">time</span>(<span class="params"></span>) </span>{
+  <span class="keyword">return</span> <span class="string">`The time is <span class="subst">${<span class="keyword">new</span> <span class="built_in">Date</span>().toLocaleTimeString()}</span>`</span>;
+}
+;
+
+</code></pre><script>window.example38 = "```\nfunction time() {\n  return `The time is ${new Date().toLocaleTimeString()}`;\n}\n```\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example38);'>load</div><div class="minibutton ok" onclick="javascript: 
+function time() {
+  return `The time is ${new Date().toLocaleTimeString()}`;
+}
+;
+
+;alert(time());">run: time()</div><br class='clear' /></div>
 
     <p>
       <span id="switch" class="bookmark"></span>
@@ -1991,7 +2140,7 @@ hi = function() {
   <span class="keyword">default</span>:
     go(work);
 }
-</code></pre><script>window.example35 = "switch day\n  when \"Mon\" then go work\n  when \"Tue\" then go relax\n  when \"Thu\" then go iceFishing\n  when \"Fri\", \"Sat\"\n    if day is bingoDay\n      go bingo\n      go dancing\n  when \"Sun\" then go church\n  else go work\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example35);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example39 = "switch day\n  when \"Mon\" then go work\n  when \"Tue\" then go relax\n  when \"Thu\" then go iceFishing\n  when \"Fri\", \"Sat\"\n    if day is bingoDay\n      go bingo\n      go dancing\n  when \"Sun\" then go church\n  else go work\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example39);'>load</div><br class='clear' /></div>
 
     <p>
       Switch statements can also be used without a control expression, turning them in to a cleaner alternative to if/else chains.
@@ -2022,7 +2171,7 @@ grade = (<span class="function"><span class="keyword">function</span>(<span clas
       <span class="keyword">return</span> <span class="string">'A'</span>;
   }
 })();
-</code></pre><script>window.example36 = "score = 76\ngrade = switch\n  when score < 60 then 'F'\n  when score < 70 then 'D'\n  when score < 80 then 'C'\n  when score < 90 then 'B'\n  else 'A'\n# grade == 'C'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example36);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example40 = "score = 76\ngrade = switch\n  when score < 60 then 'F'\n  when score < 70 then 'D'\n  when score < 80 then 'C'\n  when score < 90 then 'B'\n  else 'A'\n# grade == 'C'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example40);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="try" class="bookmark"></span>
@@ -2049,14 +2198,14 @@ grade = (<span class="function"><span class="keyword">function</span>(<span clas
 } <span class="keyword">finally</span> {
   cleanUp();
 }
-</code></pre><script>window.example37 = "try\n  allHellBreaksLoose()\n  catsAndDogsLivingTogether()\ncatch error\n  print error\nfinally\n  cleanUp()\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example37);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example41 = "try\n  allHellBreaksLoose()\n  catsAndDogsLivingTogether()\ncatch error\n  print error\nfinally\n  cleanUp()\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example41);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="comparisons" class="bookmark"></span>
       <b class="header">Chained Comparisons</b>
       CoffeeScript borrows
       <a href="http://docs.python.org/reference/expressions.html#notin">chained comparisons</a>
-      from Python &mdash; making it easy to test if a value falls within a
+      from Python — making it easy to test if a value falls within a
       certain range.
     </p>
     <div class='code'><pre><code>cholesterol = <span class="number">127</span>
@@ -2067,18 +2216,18 @@ healthy = <span class="number">200</span> &gt; cholesterol &gt; <span class="num
 cholesterol = <span class="number">127</span>;
 
 healthy = (<span class="number">200</span> &gt; cholesterol &amp;&amp; cholesterol &gt; <span class="number">60</span>);
-</code></pre><script>window.example38 = "cholesterol = 127\n\nhealthy = 200 > cholesterol > 60\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example38);'>load</div><div class='minibutton ok' onclick='javascript: var cholesterol, healthy;
+</code></pre><script>window.example42 = "cholesterol = 127\n\nhealthy = 200 > cholesterol > 60\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example42);'>load</div><div class="minibutton ok" onclick="javascript: var cholesterol, healthy;
 
 cholesterol = 127;
 
 healthy = (200 > cholesterol && cholesterol > 60);
-;alert(healthy);'>run: healthy</div><br class='clear' /></div>
+;alert(healthy);">run: healthy</div><br class='clear' /></div>
 
     <p>
       <span id="strings" class="bookmark"></span>
       <b class="header">String Interpolation, Block Strings, and Block Comments</b>
       Ruby-style string interpolation is included in CoffeeScript. Double-quoted
-      strings allow for interpolated values, using <code>#{ ... }</code>,
+      strings allow for interpolated values, using <code>#{ … }</code>,
       and single-quoted strings are literal. You may even use interpolation in
       object keys.
     </p>
@@ -2093,14 +2242,14 @@ author = <span class="string">"Wittgenstein"</span>;
 quote = <span class="string">"A picture is a fact. -- "</span> + author;
 
 sentence = (<span class="number">22</span> / <span class="number">7</span>) + <span class="string">" is a decent approximation of π"</span>;
-</code></pre><script>window.example39 = "author = \"Wittgenstein\"\nquote  = \"A picture is a fact. -- #{ author }\"\n\nsentence = \"#{ 22 / 7 } is a decent approximation of π\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example39);'>load</div><div class='minibutton ok' onclick='javascript: var author, quote, sentence;
+</code></pre><script>window.example43 = "author = \"Wittgenstein\"\nquote  = \"A picture is a fact. -- #{ author }\"\n\nsentence = \"#{ 22 / 7 } is a decent approximation of π\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example43);'>load</div><div class="minibutton ok" onclick="javascript: var author, quote, sentence;
 
-author = "Wittgenstein";
+author = &quot;Wittgenstein&quot;;
 
-quote = "A picture is a fact. -- " + author;
+quote = &quot;A picture is a fact. -- &quot; + author;
 
-sentence = (22 / 7) + " is a decent approximation of π";
-;alert(sentence);'>run: sentence</div><br class='clear' /></div>
+sentence = (22 / 7) + &quot; is a decent approximation of π&quot;;
+;alert(sentence);">run: sentence</div><br class='clear' /></div>
     <p>
       Multiline strings are allowed in CoffeeScript. Lines are joined by a single space unless they end with a backslash. Indentation is ignored.
     </p>
@@ -2113,13 +2262,13 @@ sentence = (22 / 7) + " is a decent approximation of π";
 </code></pre><pre><code><span class="keyword">var</span> mobyDick;
 
 mobyDick = <span class="string">"Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world..."</span>;
-</code></pre><script>window.example40 = "mobyDick = \"Call me Ishmael. Some years ago --\n  never mind how long precisely -- having little\n  or no money in my purse, and nothing particular\n  to interest me on shore, I thought I would sail\n  about a little and see the watery part of the\n  world...\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example40);'>load</div><div class='minibutton ok' onclick='javascript: var mobyDick;
+</code></pre><script>window.example44 = "mobyDick = \"Call me Ishmael. Some years ago --\n  never mind how long precisely -- having little\n  or no money in my purse, and nothing particular\n  to interest me on shore, I thought I would sail\n  about a little and see the watery part of the\n  world...\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example44);'>load</div><div class="minibutton ok" onclick="javascript: var mobyDick;
 
-mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world...";
-;alert(mobyDick);'>run: mobyDick</div><br class='clear' /></div>
+mobyDick = &quot;Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world...&quot;;
+;alert(mobyDick);">run: mobyDick</div><br class='clear' /></div>
     <p>
       Block strings can be used to hold formatted or indentation-sensitive text
-      (or, if you just don't feel like escaping quotes and apostrophes). The
+      (or, if you just don’t feel like escaping quotes and apostrophes). The
       indentation level that begins the block is maintained throughout, so
       you can keep it all aligned with the body of your code.
     </p>
@@ -2131,15 +2280,15 @@ mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- 
 </code></pre><pre><code><span class="keyword">var</span> html;
 
 html = <span class="string">"&lt;strong&gt;\n  cup of coffeescript\n&lt;/strong&gt;"</span>;
-</code></pre><script>window.example41 = "html = \"\"\"\n       <strong>\n         cup of coffeescript\n       </strong>\n       \"\"\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example41);'>load</div><div class='minibutton ok' onclick='javascript: var html;
+</code></pre><script>window.example45 = "html = \"\"\"\n       <strong>\n         cup of coffeescript\n       </strong>\n       \"\"\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example45);'>load</div><div class="minibutton ok" onclick="javascript: var html;
 
-html = "<strong>\n  cup of coffeescript\n</strong>";
-;alert(html);'>run: html</div><br class='clear' /></div>
+html = &quot;<strong>\n  cup of coffeescript\n</strong>&quot;;
+;alert(html);">run: html</div><br class='clear' /></div>
     <p>
       Double-quoted block strings, like other double-quoted strings, allow interpolation.
     </p>
     <p>
-      Sometimes you'd like to pass a block comment through to the generated
+      Sometimes you’d like to pass a block comment through to the generated
       JavaScript. For example, when you need to embed a licensing header at
       the top of a file. Block comments, which mirror the syntax for block strings,
       are preserved in the generated code.
@@ -2154,14 +2303,72 @@ SkinnyMochaHalfCaffScript Compiler v1.0
 Released under the MIT License
  */</span>
 
-</code></pre><script>window.example42 = "###\nSkinnyMochaHalfCaffScript Compiler v1.0\nReleased under the MIT License\n###\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example42);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example46 = "###\nSkinnyMochaHalfCaffScript Compiler v1.0\nReleased under the MIT License\n###\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example46);'>load</div><br class='clear' /></div>
+
+    <p>
+      <span id="tagged-template-literals" class="bookmark"></span>
+      <b class="header">Tagged Template Literals</b>
+      CoffeeScript supports
+      <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals">ES2015 tagged template literals</a>,
+      which enable customized string interpolation. If you immediately prefix a string
+      with a function name (no space between the two), CoffeeScript will output this
+      “function plus string” combination as an ES2015 tagged template literal, which will
+      <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals">behave accordingly</a>:
+      the function is called, with the parameters being the input text and expression parts
+      that make up the interpolated string. The function can then assemble these parts
+      into an output string, providing custom string interpolation.
+    </p>
+    <p>
+      Be aware that the CoffeeScript compiler is outputting ES2015 syntax for this feature,
+      so your target JavaScript runtime(s) must support this syntax for your code to work;
+      or you could use tools like <a href="http://babeljs.io/">Babel</a> or
+      <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a> to convert
+      this ES2015 syntax into compatible JavaScript.
+    </p>
+    <div class='code'><pre><code><span class="function"><span class="title">upperCaseExpr</span> = <span class="params">(textParts, expressions...)</span> -&gt;</span>
+  textParts.reduce (text, textPart, i) -&gt;
+    text + expressions[i - <span class="number">1</span>].toUpperCase() + textPart
+<span class="function">
+<span class="title">greet</span> = <span class="params">(name, adjective)</span> -&gt;</span>
+  upperCaseExpr<span class="string">"""
+               Hi <span class="subst">#{name}</span>. You look <span class="subst">#{adjective}</span>!
+               """</span>
+</code></pre><pre><code><span class="keyword">var</span> greet, upperCaseExpr,
+  slice = [].slice;
+
+upperCaseExpr = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>{
+  <span class="keyword">var</span> expressions, textParts;
+  textParts = <span class="built_in">arguments</span>[<span class="number">0</span>], expressions = <span class="number">2</span> &lt;= <span class="built_in">arguments</span>.length ? slice.call(<span class="built_in">arguments</span>, <span class="number">1</span>) : [];
+  <span class="keyword">return</span> textParts.reduce(<span class="function"><span class="keyword">function</span>(<span class="params">text, textPart, i</span>) </span>{
+    <span class="keyword">return</span> text + expressions[i - <span class="number">1</span>].toUpperCase() + textPart;
+  });
+};
+
+greet = <span class="function"><span class="keyword">function</span>(<span class="params">name, adjective</span>) </span>{
+  <span class="keyword">return</span> upperCaseExpr<span class="string">`Hi <span class="subst">${name}</span>. You look <span class="subst">${adjective}</span>!`</span>;
+};
+</code></pre><script>window.example47 = "upperCaseExpr = (textParts, expressions...) ->\n  textParts.reduce (text, textPart, i) ->\n    text + expressions[i - 1].toUpperCase() + textPart\n\ngreet = (name, adjective) ->\n  upperCaseExpr\"\"\"\n               Hi #{name}. You look #{adjective}!\n               \"\"\"\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example47);'>load</div><div class="minibutton ok" onclick="javascript: var greet, upperCaseExpr,
+  slice = [].slice;
+
+upperCaseExpr = function() {
+  var expressions, textParts;
+  textParts = arguments[0], expressions = 2 <= arguments.length ? slice.call(arguments, 1) : [];
+  return textParts.reduce(function(text, textPart, i) {
+    return text + expressions[i - 1].toUpperCase() + textPart;
+  });
+};
+
+greet = function(name, adjective) {
+  return upperCaseExpr`Hi ${name}. You look ${adjective}!`;
+};
+;alert(greet(&quot;greg&quot;, &quot;awesome&quot;));">run: greet("greg", "awesome")</div><br class='clear' /></div>
 
     <p>
       <span id="regexes" class="bookmark"></span>
       <b class="header">Block Regular Expressions</b>
-      Similar to block strings and comments, CoffeeScript supports block regexes &mdash;
+      Similar to block strings and comments, CoffeeScript supports block regexes —
       extended regular expressions that ignore internal whitespace and can contain
-      comments and interpolation. Modeled after Perl's <code>/x</code> modifier, CoffeeScript's
+      comments and interpolation. Modeled after Perl’s <code>/x</code> modifier, CoffeeScript’s
       block regexes are delimited by <code>///</code> and go a long way towards making complex
       regular expressions readable. To quote from the CoffeeScript source:
     </p>
@@ -2177,7 +2384,7 @@ Released under the MIT License
 </code></pre><pre><code><span class="keyword">var</span> OPERATOR;
 
 OPERATOR = <span class="regexp">/^(?:[-=]&gt;|[-+*\/%&lt;&gt;&amp;|^!?=]=|&gt;&gt;&gt;=?|([-+:])\1|([&amp;|&lt;&gt;])\2=?|\?\.|\.{2,3})/</span>;
-</code></pre><script>window.example43 = "OPERATOR = /// ^ (\n  ?: [-=]>             # function\n   | [-+*/%<>&|^!?=]=  # compound assign / compare\n   | >>>=?             # zero-fill right shift\n   | ([-+:])\\1         # doubles\n   | ([&|<>])\\2=?      # logic / shift\n   | \\?\\.              # soak access\n   | \\.{2,3}           # range or splat\n) ///\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example43);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example48 = "OPERATOR = /// ^ (\n  ?: [-=]>             # function\n   | [-+*/%<>&|^!?=]=  # compound assign / compare\n   | >>>=?             # zero-fill right shift\n   | ([-+:])\\1         # doubles\n   | ([&|<>])\\2=?      # logic / shift\n   | \\?\\.              # soak access\n   | \\.{2,3}           # range or splat\n) ///\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example48);'>load</div><br class='clear' /></div>
 
     <p>
       <span id="modules" class="bookmark"></span>
@@ -2203,7 +2410,7 @@ OPERATOR = <span class="regexp">/^(?:[-=]&gt;|[-+*\/%&lt;&gt;&amp;|^!?=]=|&gt;&g
 
 <span class="keyword">export</span> { sqrt }
 <span class="keyword">export</span> { sqrt <span class="keyword">as</span> squareRoot }
-<span class="keyword">export</span> { Mathematics <span class="keyword">as</span> default, sqrt <span class="keyword">as</span> squareRoot }
+<span class="keyword">export</span> { Mathematics <span class="keyword">as</span> <span class="keyword">default</span>, sqrt <span class="keyword">as</span> squareRoot }
 
 <span class="keyword">export</span> * <span class="keyword">from</span> <span class="string">'underscore'</span>
 <span class="keyword">export</span> { max, min } <span class="keyword">from</span> <span class="string">'underscore'</span>
@@ -2272,8 +2479,9 @@ OPERATOR = <span class="regexp">/^(?:[-=]&gt;|[-+*\/%&lt;&gt;&amp;|^!?=]=|&gt;&g
   max,
   min
 } <span class="keyword">from</span> <span class="string">'underscore'</span>;
-</code></pre><script>window.example44 = "import 'local-file.coffee'\nimport 'coffee-script'\n\nimport _ from 'underscore'\nimport * as underscore from 'underscore'\n\nimport { now } from 'underscore'\nimport { now as currentTimestamp } from 'underscore'\nimport { first, last } from 'underscore'\nimport utilityBelt, { each } from 'underscore'\n\nexport default Math\nexport square = (x) -> x * x\nexport class Mathematics\n  least: (x, y) -> if x < y then x else y\n\nexport { sqrt }\nexport { sqrt as squareRoot }\nexport { Mathematics as default, sqrt as squareRoot }\n\nexport * from 'underscore'\nexport { max, min } from 'underscore'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example44);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example49 = "import 'local-file.coffee'\nimport 'coffee-script'\n\nimport _ from 'underscore'\nimport * as underscore from 'underscore'\n\nimport { now } from 'underscore'\nimport { now as currentTimestamp } from 'underscore'\nimport { first, last } from 'underscore'\nimport utilityBelt, { each } from 'underscore'\n\nexport default Math\nexport square = (x) -> x * x\nexport class Mathematics\n  least: (x, y) -> if x < y then x else y\n\nexport { sqrt }\nexport { sqrt as squareRoot }\nexport { Mathematics as default, sqrt as squareRoot }\n\nexport * from 'underscore'\nexport { max, min } from 'underscore'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example49);'>load</div><br class='clear' /></div>
     <p>
+      <span id="modules-note" class="bookmark"></span>
       Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an
       <code>import</code> or <code>export</code> statement in CoffeeScript will produce an
       <code>import</code> or <code>export</code> statement in the resulting output.
@@ -2299,7 +2507,7 @@ OPERATOR = <span class="regexp">/^(?:[-=]&gt;|[-+*\/%&lt;&gt;&amp;|^!?=]=|&gt;&g
       CoffeeScript includes a (very) simple build system similar to
       <a href="http://www.gnu.org/software/make/">Make</a> and
       <a href="http://rake.rubyforge.org/">Rake</a>. Naturally,
-      it's called Cake, and is used for the tasks that build and test the CoffeeScript
+      it’s called Cake, and is used for the tasks that build and test the CoffeeScript
       language itself. Tasks are defined in a file named <code>Cakefile</code>, and
       can be invoked by running <code>cake [task]</code> from within the directory.
       To print a list of all the tasks and options, just type <code>cake</code>.
@@ -2310,8 +2518,8 @@ OPERATOR = <span class="regexp">/^(?:[-=]&gt;|[-+*\/%&lt;&gt;&amp;|^!?=]=|&gt;&g
       in your Cakefile. Define a task with a name, a long description, and the
       function to invoke when the task is run. If your task takes a command-line
       option, you can define the option with short and long flags, and it will
-      be made available in the <code>options</code> object. Here's a task that uses
-      the Node.js API to rebuild CoffeeScript's parser:
+      be made available in the <code>options</code> object. Here’s a task that uses
+      the Node.js API to rebuild CoffeeScript’s parser:
     </p>
     <div class='code'><pre><code>fs = <span class="built_in">require</span> <span class="string">'fs'</span>
 
@@ -2335,15 +2543,15 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
   dir = options.output || <span class="string">'lib'</span>;
   <span class="keyword">return</span> fs.writeFile(dir + <span class="string">"/parser.js"</span>, code);
 });
-</code></pre><script>window.example45 = "fs = require 'fs'\n\noption '-o', '--output [DIR]', 'directory for compiled code'\n\ntask 'build:parser', 'rebuild the Jison parser', (options) ->\n  require 'jison'\n  code = require('./lib/grammar').parser.generate()\n  dir  = options.output or 'lib'\n  fs.writeFile \"#{dir}/parser.js\", code\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example45);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example50 = "fs = require 'fs'\n\noption '-o', '--output [DIR]', 'directory for compiled code'\n\ntask 'build:parser', 'rebuild the Jison parser', (options) ->\n  require 'jison'\n  code = require('./lib/grammar').parser.generate()\n  dir  = options.output or 'lib'\n  fs.writeFile \"#{dir}/parser.js\", code\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example50);'>load</div><br class='clear' /></div>
     <p>
-      If you need to invoke one task before another &mdash; for example, running
+      If you need to invoke one task before another — for example, running
       <code>build</code> before <code>test</code>, you can use the <code>invoke</code> function:
       <code>invoke 'build'</code>. Cake tasks are a minimal way to expose your
       CoffeeScript functions to the command line, so
-      <a href="v1/annotated-source/cake.html">don't expect any fanciness built-in</a>.
-      If you need dependencies, or async callbacks, it's best to put them in your
-      code itself &mdash; not the cake task.
+      <a href="v1/annotated-source/cake.html">don’t expect any fanciness built-in</a>.
+      If you need dependencies, or async callbacks, it’s best to put them in your
+      code itself — not the cake task.
     </p>
 
     <h2>
@@ -2372,16 +2580,16 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
     </h2>
 
     <p>
-      While it's not recommended for serious use, CoffeeScripts may be included
+      While it’s not recommended for serious use, CoffeeScripts may be included
       directly within the browser using <code>&lt;script type="text/coffeescript"&gt;</code>
       tags. The source includes a compressed and minified version of the compiler
-      (<a href="v1/browser-compiler/coffee-script.js">Download current version here, 39k when gzipped</a>)
+      (<a href="v1/browser-compiler/coffee-script.js">Download current version here, 51k when gzipped</a>)
       as <code>v1/browser-compiler/coffee-script.js</code>. Include this file on a page with
       inline CoffeeScript tags, and it will compile and evaluate them in order.
     </p>
 
     <p>
-      In fact, the little bit of glue script that runs "Try CoffeeScript" above,
+      In fact, the little bit of glue script that runs “Try CoffeeScript” above,
       as well as the jQuery for the menu, is implemented in just this way.
       View source and look at the bottom of the page to see the example.
       Including the script also gives you access to <code>CoffeeScript.compile()</code>
@@ -2389,7 +2597,7 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
     </p>
 
     <p>
-      The usual caveats about CoffeeScript apply &mdash; your inline scripts will
+      The usual caveats about CoffeeScript apply — your inline scripts will
       run within a closure wrapper, so if you want to expose global variables or
       functions, attach them to the <code>window</code> object.
     </p>
@@ -2421,8 +2629,8 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
       </li>
       <li>
         <a href="http://pragprog.com/book/tbcoffee/coffeescript">CoffeeScript: Accelerated JavaScript Development</a>
-        is <a href="http://trevorburnham.com/">Trevor Burnham</a>'s thorough
-        introduction to the language. By the end of the book, you'll have built
+        is <a href="http://trevorburnham.com/">Trevor Burnham</a>’s thorough
+        introduction to the language. By the end of the book, you’ll have built
         a fast-paced multiplayer word game, writing both the client-side and Node.js
         portions in CoffeeScript.
       </li>
@@ -2434,7 +2642,7 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
       </li>
       <li>
         <a href="https://leanpub.com/coffeescript-ristretto/read">CoffeeScript Ristretto</a>
-        is a deep dive into CoffeeScript's semantics from simple functions up through
+        is a deep dive into CoffeeScript’s semantics from simple functions up through
         closures, higher-order functions, objects, classes, combinators, and decorators.
         By <a href="http://braythwayt.com/">Reg Braithwaite</a>.
       </li>
@@ -2448,7 +2656,7 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
         from Packt, introduces CoffeeScript while
         walking through the process of building a demonstration web application.
         A <a href="https://www.packtpub.com/web-development/coffeescript-application-development-cookbook">CoffeeScript Application Development Coookbook</a>
-        with over 90 "recipes" is also available.
+        with over 90 “recipes” is also available.
       </li>
       <li>
         <a href="http://www.manning.com/lee/">CoffeeScript in Action</a>
@@ -2477,7 +2685,7 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
         into the equivalent JS.
       </li>
       <li>
-        If you're looking for less of a time commitment, RailsCasts'
+        If you’re looking for less of a time commitment, RailsCasts’
         <a href="http://railscasts.com/episodes/267-coffeescript-basics">CoffeeScript Basics</a>
         should have you covered, hitting all of the important notes about CoffeeScript
         in 11 minutes.
@@ -2496,27 +2704,27 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
 
     <ul>
       <li>
-        <b>github</b>'s <a href="http://hubot.github.com/">Hubot</a>,
+        <b>github</b>’s <a href="http://hubot.github.com/">Hubot</a>,
         a friendly IRC robot that can perform any number of useful and useless tasks.
       </li>
       <li>
-        <b>sstephenson</b>'s <a href="http://pow.cx/">Pow</a>,
+        <b>sstephenson</b>’s <a href="http://pow.cx/">Pow</a>,
         a zero-configuration Rack server, with comprehensive annotated source.
       </li>
       <li>
-        <b>technoweenie</b>'s <a href="https://github.com/technoweenie/coffee-resque">Coffee-Resque</a>,
+        <b>technoweenie</b>’s <a href="https://github.com/technoweenie/coffee-resque">Coffee-Resque</a>,
         a port of <a href="https://github.com/defunkt/resque">Resque</a> for Node.js.
       </li>
       <li>
-        <b>assaf</b>'s <a href="http://zombie.labnotes.org/">Zombie.js</a>,
+        <b>assaf</b>’s <a href="http://zombie.labnotes.org/">Zombie.js</a>,
         a headless, full-stack, faux-browser testing library for Node.js.
       </li>
       <li>
-        <b>stephank</b>'s <a href="https://github.com/stephank/orona">Orona</a>, a remake of
+        <b>stephank</b>’s <a href="https://github.com/stephank/orona">Orona</a>, a remake of
         the Bolo tank game for modern browsers.
       </li>
       <li>
-        <b>github</b>'s <a href="https://atom.io/">Atom</a>,
+        <b>github</b>’s <a href="https://atom.io/">Atom</a>,
         a hackable text editor built on web technologies.
       </li>
     </ul>
@@ -2531,13 +2739,13 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
         Use <code>bin/coffee</code> to test your changes,<br />
         <code>bin/cake test</code> to run the test suite,<br />
         <code>bin/cake build</code> to rebuild the CoffeeScript compiler, and <br />
-        <code>bin/cake build:parser</code> to regenerate the Jison parser if you're
+        <code>bin/cake build:parser</code> to regenerate the Jison parser if you’re
         working on the grammar. <br /><br />
-        <code>git checkout lib &amp;&amp; bin/cake build:full</code> is a good command to run when you're working
-        on the core language. It'll refresh the lib directory
+        <code>git checkout lib &amp;&amp; bin/cake build:full</code> is a good command to run when you’re working
+        on the core language. It’ll refresh the lib directory
         (in case you broke something), build your altered compiler, use that to
         rebuild itself (a good sanity test) and then run all of the tests. If
-        they pass, there's a good chance you've made a successful change.
+        they pass, there’s a good chance you’ve made a successful change.
       </li>
       <li>
         <a href="http://github.com/jashkenas/coffeescript/issues">CoffeeScript Issues</a><br />
@@ -2545,11 +2753,11 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
       </li>
       <li>
         <a href="https://groups.google.com/forum/#!forum/coffeescript">CoffeeScript Google Group</a><br />
-        If you'd like to ask a question, the mailing list is a good place to get help.
+        If you’d like to ask a question, the mailing list is a good place to get help.
       </li>
       <li>
         <a href="http://github.com/jashkenas/coffeescript/wiki">The CoffeeScript Wiki</a><br />
-        If you've ever learned a neat CoffeeScript tip or trick, or ran into a gotcha &mdash; share it on the wiki.
+        If you’ve ever learned a neat CoffeeScript tip or trick, or ran into a gotcha — share it on the wiki.
         The wiki also serves as a directory of handy
         <a href="http://github.com/jashkenas/coffeescript/wiki/Text-editor-plugins">text editor extensions</a>,
         <a href="http://github.com/jashkenas/coffeescript/wiki/Web-framework-plugins">web framework plugins</a>,
@@ -2561,9 +2769,9 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
       </li>
       <li>
         <a href="http://js2coffee.org">JS2Coffee</a><br />
-        Is a very well done reverse JavaScript-to-CoffeeScript compiler. It's
+        Is a very well done reverse JavaScript-to-CoffeeScript compiler. It’s
         not going to be perfect (infer what your JavaScript classes are, when
-        you need bound functions, and so on...) &mdash; but it's a great starting
+        you need bound functions, and so on…) — but it’s a great starting
         point for converting simple scripts.
       </li>
       <li>
@@ -2594,6 +2802,88 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
     </h2>
 
     <p>
+      <div class="anchor" id="1.12.0"></div>
+<b class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.11.1...1.12.0">1.12.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2016-12-01">December 1, 2016</time></span>
+</b>
+      <ul>
+        <li>
+          CoffeeScript now supports ES2015
+          <a href="#tagged-template-literals">tagged template literals</a>.
+          Note that using tagged template literals in your code
+          makes you responsible for ensuring that either your runtime supports
+          tagged template literals or that you transpile the output JavaScript
+          further to a version your target runtime(s) support.
+        </li>
+        <li>
+          CoffeeScript now provides a
+          <a href="#generator-iteration"><code>for…from</code></a>
+          syntax for outputting ES2015
+          <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of">
+          <code>for…of</code></a>. (Sorry they couldn’t match,
+          but we came up with <code>for…of</code> first for something
+          else.) This allows iterating over generators or any other iterable
+          object. Note that using <code>for…from</code> in your code
+          makes you responsible for ensuring that either your runtime supports
+          <code>for…from</code> or that you transpile the output
+          JavaScript further to a version your target runtime(s) support.
+        </li>
+        <li>
+          Triple backticks (<code>```</code>) allow the creation of embedded
+          JavaScript blocks where escaping single backticks is not required,
+          which should improve interoperability with ES2015 template literals
+          and with Markdown.
+        </li>
+        <li>
+          Within single-backtick embedded JavaScript, backticks can now be
+          escaped via <code>\`</code>.
+        </li>
+        <li>
+          CoffeeScript’s <a href="#objects_and_arrays">shorthand object
+          notation</a> is finally documented.
+        </li>
+        <li>
+          A note was added to the top of the documentation, explaining which
+          features are output with ES2015+ syntax. All such features are
+          “opt in”: if you refrain from using them, your code will still
+          be compatible with all but the most ancient browsers.
+        </li>
+        <li>
+          The browser tests now run in the browser again, and are accessible
+          <a href="v1/test.html">here</a> if you would like
+          to test your browser.
+        </li>
+        <li>
+          The browser version of the compiler is now minified using the
+          <a href="https://github.com/google/closure-compiler-js">JavaScript
+          version of the Google Closure Compiler</a>, which produces a file
+          half the size that Uglify.js did.
+        </li>
+        <li>
+          CoffeeScript-only keywords in ES2015 <code>import</code>s and
+          <code>export</code>s are now ignored.
+        </li>
+        <li>
+          The compiler now throws an error on trying to export an anonymous class.
+        </li>
+        <li>
+          Updated various Node functions in the compiler to make Node 7+
+          deprecation warnings go away.
+        </li>
+        <li>
+          Bugfixes related to tokens and location data, for better source maps
+          and improved compatibility with downstream tools.
+        </li>
+        <li>
+          Many improvements to the documentation and its build process, with
+          an eye toward eventually creating separate documentation for
+          CoffeeScript 2.0.0 (coming soon!).
+        </li>
+      </ul>
+    </p>
+
+    <p>
       <div class="anchor" id="1.11.1"></div>
 <b class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/1.11.0...1.11.1">1.11.1</a>
@@ -2607,7 +2897,7 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
           Bugfix for indentation-stripping in <code>"""</code> strings.
         </li>
         <li>
-          Bugfix for not being able to use the name "arguments" for a prototype
+          Bugfix for not being able to use the name “arguments” for a prototype
           property of class.
         </li>
         <li>
@@ -2726,7 +3016,7 @@ six = -&gt;
 </b>
       <ul>
         <li>
-          CoffeeScript now supports ES6-style destructuring defaults.
+          CoffeeScript now supports ES2015-style destructuring defaults.
         </li>
         <li>
           <code>(offsetHeight: height) -&gt;</code> no longer compiles. That
@@ -2830,7 +3120,7 @@ six = -&gt;
         <li>
           Internal compiler variable names no longer start with underscores. This makes
           the generated JavaScript a bit prettier, and also fixes an issue with
-          the completely broken and ungodly way that AngularJS "parses" function
+          the completely broken and ungodly way that AngularJS “parses” function
           arguments.
         </li>
         <li>
@@ -2851,7 +3141,7 @@ six = -&gt;
 </b>
       <ul>
         <li>
-          CoffeeScript now supports ES6 generators. A generator is simply a function
+          CoffeeScript now supports ES2015 generators. A generator is simply a function
           that <code>yield</code>s.
         </li>
         <li>
@@ -2935,7 +3225,7 @@ six = -&gt;
 </b>
       <ul>
         <li>
-          When requiring CoffeeScript files in Node you must now explicitly register the compiler. This can be done with <code>require 'coffee-script/register'</code> or <code>CoffeeScript.register()</code>. Also for configuration such as Mocha's, use <b>coffee-script/register</b>.
+          When requiring CoffeeScript files in Node you must now explicitly register the compiler. This can be done with <code>require 'coffee-script/register'</code> or <code>CoffeeScript.register()</code>. Also for configuration such as Mocha’s, use <b>coffee-script/register</b>.
         </li>
         <li>
           Improved error messages, source maps and stack traces. Source maps now use the updated <code>//#</code> syntax.
@@ -2953,7 +3243,7 @@ six = -&gt;
 </code></pre><pre><code>$(<span class="string">'body'</span>).click(<span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>{
   <span class="keyword">return</span> $(<span class="string">'.box'</span>).fadeIn(<span class="string">'fast'</span>).addClass(<span class="string">'.active'</span>);
 }).css(<span class="string">'background'</span>, <span class="string">'white'</span>);
-</code></pre><script>window.example46 = "$ 'body'\n.click (e) ->\n  $ '.box'\n  .fadeIn 'fast'\n  .addClass '.active'\n.css 'background', 'white'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example46);'>load</div><br class='clear' /></div>
+</code></pre><script>window.example51 = "$ 'body'\n.click (e) ->\n  $ '.box'\n  .fadeIn 'fast'\n  .addClass '.active'\n.css 'background', 'white'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example51);'>load</div><br class='clear' /></div>
       <ul>
         <li>
           Added <code>**</code>, <code>//</code> and <code>%%</code> operators and <code>...</code> expansion in parameter lists and destructuring expressions.
@@ -2965,7 +3255,7 @@ six = -&gt;
           Closing brackets can now be indented and therefore no longer cause unexpected error.
         </li>
         <li>
-          Several breaking compilation fixes. Non-callable literals (strings, numbers etc.) don't compile in a call now and multiple postfix conditionals compile properly. Postfix conditionals and loops always bind object literals. Conditional assignment compiles properly in subexpressions. <code>super</code> is disallowed outside of methods and works correctly inside <code>for</code> loops.
+          Several breaking compilation fixes. Non-callable literals (strings, numbers etc.) don’t compile in a call now and multiple postfix conditionals compile properly. Postfix conditionals and loops always bind object literals. Conditional assignment compiles properly in subexpressions. <code>super</code> is disallowed outside of methods and works correctly inside <code>for</code> loops.
         </li>
         <li>
           Formatting of compiled block comments has been improved.
@@ -3020,7 +3310,7 @@ six = -&gt;
           running CoffeeScript directly via the <code>coffee</code> command, and
           for automatic line-mapping when running CoffeeScript directly in the
           browser. Also, to provide better error messages for semantic errors
-          thrown by the compiler &mdash;
+          thrown by the compiler —
           <a href="http://cl.ly/NdOA">with colors, even</a>.
         </li>
         <li>
@@ -3053,8 +3343,8 @@ six = -&gt;
         <li>
           Fixed a 1.5.0 regression with multiple implicit calls against an
           indented implicit object. Combinations of implicit function calls
-          and implicit objects should generally be parsed better now &mdash;
-          but it still isn't good <i>style</i> to nest them too heavily.
+          and implicit objects should generally be parsed better now —
+          but it still isn’t good <i>style</i> to nest them too heavily.
         </li>
         <li>
           <code>.coffee.md</code> is now also supported as a Literate CoffeeScript
@@ -3105,7 +3395,7 @@ six = -&gt;
 </b>
       <ul>
         <li>
-          The CoffeeScript compiler now strips Microsoft's UTF-8 BOM if it
+          The CoffeeScript compiler now strips Microsoft’s UTF-8 BOM if it
           exists, allowing you to compile BOM-borked source files.
         </li>
         <li>
@@ -3127,13 +3417,13 @@ six = -&gt;
 </b>
       <ul>
         <li>
-          Due to the new semantics of JavaScript's strict mode, CoffeeScript no
+          Due to the new semantics of JavaScript’s strict mode, CoffeeScript no
           longer guarantees that constructor functions have names in all runtimes.
           See <a href="https://github.com/jashkenas/coffeescript/issues/2052">#2052</a>
           for discussion.
         </li>
         <li>
-          Inside of a nested function inside of an instance method, it's now possible
+          Inside of a nested function inside of an instance method, it’s now possible
           to call <code>super</code> more reliably (walks recursively up).
         </li>
         <li>
@@ -3157,7 +3447,7 @@ six = -&gt;
 </b>
       <ul>
         <li>
-          CoffeeScript now enforces all of JavaScript's <b>Strict Mode</b> early syntax
+          CoffeeScript now enforces all of JavaScript’s <b>Strict Mode</b> early syntax
           errors at compile time. This includes old-style octal literals,
           duplicate property names in object literals, duplicate parameters in
           a function definition, deleting naked variables, setting the value of
@@ -3167,7 +3457,7 @@ six = -&gt;
         </li>
         <li>
           The REPL now has a handy new multi-line mode for entering large
-          blocks of code. It's useful when copy-and-pasting examples into the
+          blocks of code. It’s useful when copy-and-pasting examples into the
           REPL. Enter multi-line mode with <code>Ctrl-V</code>. You may also now
           pipe input directly into the REPL.
         </li>
@@ -3181,7 +3471,7 @@ six = -&gt;
         </li>
         <li>
           A tweak to the semantics of <code>do</code>, which can now be used to
-          more easily simulate a namespace: <code>do (x = 1, y = 2) -> ...</code>
+          more easily simulate a namespace: <code>do (x = 1, y = 2) -> …</code>
         </li>
         <li>
           Loop indices are now mutable within a loop iteration, and immutable
@@ -3193,7 +3483,7 @@ six = -&gt;
         </li>
         <li>
           Additional tweaks and improvements to <code>coffee --watch</code> under
-          Node's "new" file watching API. Watch will now beep by default
+          Node’s “new” file watching API. Watch will now beep by default
           if you introduce a syntax error into a watched script. We also now
           ignore hidden directories by default when watching recursively.
         </li>
@@ -3210,7 +3500,7 @@ six = -&gt;
         <li>
           Multiple improvements to <code>coffee --watch</code> and <code>--join</code>.
           You may now use both together, as well as add and remove
-          files and directories within a <code>--watch</code>'d folder.
+          files and directories within a <code>--watch</code>’d folder.
         </li>
         <li>
           The <code>throw</code> statement can now be used as part of an expression.
@@ -3236,7 +3526,7 @@ six = -&gt;
 </b>
       <ul>
         <li>
-          Ahh, whitespace. CoffeeScript's compiled JS now tries to space things
+          Ahh, whitespace. CoffeeScript’s compiled JS now tries to space things
           out and keep it readable, as you can see in the examples on this page.
         </li>
         <li>
@@ -3255,7 +3545,7 @@ six = -&gt;
           folder to your path: <code>require('coffee-script/lexer')</code>
         </li>
         <li>
-          There's a new "link" feature in Try CoffeeScript on this webpage. Use
+          There’s a new “link” feature in Try CoffeeScript on this webpage. Use
           it to get a shareable permalink for your example script.
         </li>
         <li>
@@ -3306,10 +3596,10 @@ six = -&gt;
       When running via the <code>coffee</code> executable, <code>process.argv</code> and
       friends now report <code>coffee</code> instead of <code>node</code>.
       Better compatibility with <b>Node.js 0.4.x</b> module lookup changes.
-      The output in the REPL is now colorized, like Node's is.
+      The output in the REPL is now colorized, like Node’s is.
       Giving your concatenated CoffeeScripts a name when using <code>--join</code> is now mandatory.
       Fix for lexing compound division <code>/=</code> as a regex accidentally.
-      All <code>text/coffeescript</code> tags should now execute in the order they're included.
+      All <code>text/coffeescript</code> tags should now execute in the order they’re included.
       Fixed an issue with extended subclasses using external constructor functions.
       Fixed an edge-case infinite loop in <code>addImplicitParentheses</code>.
       Fixed exponential slowdown with long chains of function calls.
@@ -3326,7 +3616,7 @@ six = -&gt;
       Fixed a lexer bug with Unicode identifiers. Updated REPL for compatibility
       with Node.js 0.3.7. Fixed requiring relative paths in the REPL. Trailing
       <code>return</code> and <code>return undefined</code> are now optimized away.
-      Stopped requiring the core Node.js <code>"util"</code> module for
+      Stopped requiring the core Node.js <code>util</code> module for
       back-compatibility with Node.js 0.2.5. Fixed a case where a
       conditional <code>return</code> would cause fallthrough in a <code>switch</code>
       statement. Optimized empty objects in destructuring assignment.
@@ -3372,14 +3662,14 @@ six = -&gt;
 </b>
       0.9.5 should be considered the first release candidate for CoffeeScript 1.0.
       There have been a large number of internal changes since the previous release,
-      many contributed from <b>satyr</b>'s <a href="http://github.com/satyr/coco">Coco</a>
+      many contributed from <b>satyr</b>’s <a href="http://github.com/satyr/coco">Coco</a>
       dialect of CoffeeScript. Heregexes (extended regexes) were added. Functions
       can now have default arguments. Class bodies are now executable code.
       Improved syntax errors for invalid CoffeeScript. <code>undefined</code> now
       works like <code>null</code>, and cannot be assigned a new value.
       There was a precedence change with respect to single-line comprehensions:
       <code>result = i for i in list</code><br /> used to parse as <code>result = (i for i in list)</code>
-      by default ... it now parses as <br /><code>(result = i) for i in list</code>.
+      by default … it now parses as <br /><code>(result = i) for i in list</code>.
     </p>
 
     <p>
@@ -3402,7 +3692,7 @@ six = -&gt;
   <span class="timestamp"> &mdash; <time datetime="2010-09-16">September 16, 2010</time></span>
 </b>
       CoffeeScript <code>switch</code> statements now compile into JS <code>switch</code>
-      statements &mdash; they previously compiled into <code>if/else</code> chains
+      statements — they previously compiled into <code>if/else</code> chains
       for JavaScript 1.3 compatibility.
       Soaking a function invocation is now supported. Users of the RubyMine
       editor should now be able to use <code>--watch</code> mode.
@@ -3421,7 +3711,7 @@ six = -&gt;
       Added a custom <code>jsl.conf</code> file for our preferred JavaScriptLint setup.
       Sped up Jison grammar compilation time by flattening rules for operations.
       Block comments can now be used with JavaScript-minifier-friendly syntax.
-      Added JavaScript's compound assignment bitwise operators. Bugfixes to
+      Added JavaScript’s compound assignment bitwise operators. Bugfixes to
       implicit object literals with leading number and string keys, as the subject
       of implicit calls, and as part of compound assignment.
     </p>
@@ -3434,7 +3724,7 @@ six = -&gt;
 </b>
       Bugfix release for <b>0.9.1</b>. Greatly improves the handling of mixed
       implicit objects, implicit function calls, and implicit indentation.
-      String and regex interpolation is now strictly <code>#{ ... }</code> (Ruby style).
+      String and regex interpolation is now strictly <code>#{ … }</code> (Ruby style).
       The compiler now takes a <code>--require</code> flag, which specifies scripts
       to run before compilation.
     </p>
@@ -3446,24 +3736,24 @@ six = -&gt;
   <span class="timestamp"> &mdash; <time datetime="2010-08-04">August 4, 2010</time></span>
 </b>
       The CoffeeScript <b>0.9</b> series is considered to be a release candidate
-      for <b>1.0</b>; let's give her a shakedown cruise. <b>0.9.0</b> introduces a massive
+      for <b>1.0</b>; let’s give her a shakedown cruise. <b>0.9.0</b> introduces a massive
       backwards-incompatible change: Assignment now uses <code>=</code>, and object
       literals use <code>:</code>, as in JavaScript. This allows us to have implicit
       object literals, and YAML-style object definitions. Half assignments are
       removed, in favor of <code>+=</code>, <code>or=</code>, and friends.
       Interpolation now uses a hash mark <code>#</code> instead of the dollar sign
-      <code>$</code> &mdash; because dollar signs may be part of a valid JS identifier.
+      <code>$</code> — because dollar signs may be part of a valid JS identifier.
       Downwards range comprehensions are now safe again, and are optimized to
       straight for loops when created with integer endpoints.
       A fast, unguarded form of object comprehension was added:
       <code>for all key, value of object</code>. Mentioning the <code>super</code> keyword
       with no arguments now forwards all arguments passed to the function,
       as in Ruby. If you extend class <code>B</code> from parent class <code>A</code>, if
-      <code>A</code> has an <code>extended</code> method defined, it will be called, passing in <code>B</code> &mdash;
+      <code>A</code> has an <code>extended</code> method defined, it will be called, passing in <code>B</code> —
       this enables static inheritance, among other things. Cleaner output for
       functions bound with the fat arrow. <code>@variables</code> can now be used
       in parameter lists, with the parameter being automatically set as a property
-      on the object &mdash; useful in constructors and setter functions.
+      on the object — useful in constructors and setter functions.
       Constructor functions can now take splats.
     </p>
 
@@ -3484,7 +3774,7 @@ six = -&gt;
   <span class="timestamp"> &mdash; <time datetime="2010-07-11">July 11, 2010</time></span>
 </b>
       Block-style comments are now passed through and printed as JavaScript block
-      comments -- making them useful for licenses and copyright headers. Better
+      comments – making them useful for licenses and copyright headers. Better
       support for running coffee scripts standalone via hashbangs.
       Improved syntax errors for tokens that are not in the grammar.
     </p>
@@ -3498,7 +3788,7 @@ six = -&gt;
       Official CoffeeScript variable style is now camelCase, as in JavaScript.
       Reserved words are now allowed as object keys, and will be quoted for you.
       Range comprehensions now generate cleaner code, but you have to specify <code>by -1</code>
-      if you'd like to iterate downward. Reporting of syntax errors is greatly
+      if you’d like to iterate downward. Reporting of syntax errors is greatly
       improved from the previous release. Running <code>coffee</code> with no arguments
       now launches the REPL, with Readline support. The <code>&lt;-</code> bind operator
       has been removed from CoffeeScript. The <code>loop</code> keyword was added,
@@ -3519,7 +3809,7 @@ six = -&gt;
       The <code>coffee</code> command will now preserve directory structure when
       compiling a directory full of scripts. Fixed two omissions that were preventing
       the CoffeeScript compiler from running live within Internet Explorer.
-      There's now a syntax for block comments, similar in spirit to CoffeeScript's heredocs.
+      There’s now a syntax for block comments, similar in spirit to CoffeeScript’s heredocs.
       ECMA Harmony DRY-style pattern matching is now supported, where the name
       of the property is the same as the name of the value: <code>{name, length}: func</code>.
       Pattern matching is now allowed within comprehension variables. <code>unless</code>
@@ -3575,7 +3865,7 @@ six = -&gt;
       <a href="http://github.com/StanAngeloff">Stan Angeloff</a>.
       Since <code>--run</code> has been the default since <b>0.5.3</b>, updating
       <code>--stdio</code> and <code>--eval</code> to run by default, pass <code>--compile</code>
-      as well if you'd like to print the result.
+      as well if you’d like to print the result.
     </p>
 
     <p>
@@ -3610,7 +3900,7 @@ six = -&gt;
   <span class="timestamp"> &mdash; <time datetime="2010-02-25">February 25, 2010</time></span>
 </b>
       Added a compressed version of the compiler for inclusion in web pages as
-      <br  /><code>v1/browser-compiler/coffee-script.js</code>. It'll automatically run any script tags
+      <br /><code>v1/browser-compiler/coffee-script.js</code>. It’ll automatically run any script tags
       with type <code>text/coffeescript</code> for you. Added a <code>--stdio</code> option
       to the <code>coffee</code> command, for piped-in compiles.
     </p>
@@ -3647,7 +3937,7 @@ six = -&gt;
 </b>
       <code>@property</code> is now a shorthand for <code>this.property</code>.<br />
       Switched the default JavaScript engine from Narwhal to Node.js. Pass
-      the <code>--narwhal</code> flag if you'd like to continue using it.
+      the <code>--narwhal</code> flag if you’d like to continue using it.
     </p>
 
     <p>
@@ -3688,7 +3978,7 @@ six = -&gt;
   <a href="https://github.com/jashkenas/coffeescript/compare/0.2.4...0.2.5">0.2.5</a>
   <span class="timestamp"> &mdash; <time datetime="2010-01-13">January 13, 2010</time></span>
 </b>
-      The conditions in switch statements can now take multiple values at once &mdash;
+      The conditions in switch statements can now take multiple values at once —
       If any of them are true, the case will run. Added the long arrow <code>==></code>,
       which defines and immediately binds a function to <code>this</code>. While loops can
       now be used as expressions, in the same way that comprehensions can. Splats
@@ -3728,17 +4018,17 @@ six = -&gt;
       <br />
       Added <code>::</code> as a shorthand for saying <code>.prototype.</code>
       <br />
-      The "splat" symbol has been changed from a prefix asterisk <code>*</code>, to
+      The “splat” symbol has been changed from a prefix asterisk <code>*</code>, to
       a postfix ellipsis <code>...</code>
       <br />
-      Added JavaScript's <code>in</code> operator,
+      Added JavaScript’s <code>in</code> operator,
       empty <code>return</code> statements, and empty <code>while</code> loops.
       <br />
       Constructor functions that start with capital letters now include a
       safety check to make sure that the new instance of the object is returned.
       <br />
       The <code>extends</code> keyword now functions identically to <code>goog.inherits</code>
-      in Google's Closure Library.
+      in Google’s Closure Library.
     </p>
 
     <p>
@@ -3760,7 +4050,7 @@ six = -&gt;
       conversion. Splats. Splice literals. Object comprehensions. Blocks.
       The existential operator. Many thanks to all the folks who posted issues,
       with special thanks to
-      <a href="http://github.com/liamoc">Liam O'Connor-Davis</a> for whitespace
+      <a href="http://github.com/liamoc">Liam O’Connor-Davis</a> for whitespace
       and expression help.
     </p>
 
