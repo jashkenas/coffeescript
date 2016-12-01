@@ -981,6 +981,7 @@ and optional references to the superclass.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  Invocation: [
+    o <span class="hljs-string">'Value OptFuncExist String'</span>,              <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> TaggedTemplateCall $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">2</span>
     o <span class="hljs-string">'Value OptFuncExist Arguments'</span>,           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Call $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">2</span>
     o <span class="hljs-string">'Invocation OptFuncExist Arguments'</span>,      <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Call $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">2</span>
     o <span class="hljs-string">'Super'</span>
@@ -1344,12 +1345,12 @@ or postfix, with a single expression.</p>
   ForBody: [
     o <span class="hljs-string">'FOR Range'</span>,                              <span class="hljs-function">-&gt;</span> source: (LOC(<span class="hljs-number">2</span>) <span class="hljs-keyword">new</span> Value($<span class="hljs-number">2</span>))
     o <span class="hljs-string">'FOR Range BY Expression'</span>,                <span class="hljs-function">-&gt;</span> source: (LOC(<span class="hljs-number">2</span>) <span class="hljs-keyword">new</span> Value($<span class="hljs-number">2</span>)), step: $<span class="hljs-number">4</span>
-    o <span class="hljs-string">'ForStart ForSource'</span>,                     <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2.</span>own = $<span class="hljs-number">1.</span>own; $<span class="hljs-number">2.</span>name = $<span class="hljs-number">1</span>[<span class="hljs-number">0</span>]; $<span class="hljs-number">2.</span>index = $<span class="hljs-number">1</span>[<span class="hljs-number">1</span>]; $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'ForStart ForSource'</span>,                     <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2.</span>own = $<span class="hljs-number">1.</span>own; $<span class="hljs-number">2.</span>ownTag = $<span class="hljs-number">1.</span>ownTag; $<span class="hljs-number">2.</span>name = $<span class="hljs-number">1</span>[<span class="hljs-number">0</span>]; $<span class="hljs-number">2.</span>index = $<span class="hljs-number">1</span>[<span class="hljs-number">1</span>]; $<span class="hljs-number">2</span>
   ]
 
   ForStart: [
     o <span class="hljs-string">'FOR ForVariables'</span>,                       <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'FOR OWN ForVariables'</span>,                   <span class="hljs-function">-&gt;</span> $<span class="hljs-number">3.</span>own = <span class="hljs-literal">yes</span>; $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'FOR OWN ForVariables'</span>,                   <span class="hljs-function">-&gt;</span> $<span class="hljs-number">3.</span>own = <span class="hljs-literal">yes</span>; $<span class="hljs-number">3.</span>ownTag = (LOC(<span class="hljs-number">2</span>) <span class="hljs-keyword">new</span> Literal($<span class="hljs-number">2</span>)); $<span class="hljs-number">3</span>
   ]</pre></div></div>
             
         </li>
@@ -1416,6 +1417,8 @@ in fixed-size increments.</p>
     o <span class="hljs-string">'FORIN Expression BY Expression'</span>,                 <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, step:  $<span class="hljs-number">4</span>
     o <span class="hljs-string">'FORIN Expression WHEN Expression BY Expression'</span>, <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, step: $<span class="hljs-number">6</span>
     o <span class="hljs-string">'FORIN Expression BY Expression WHEN Expression'</span>, <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, step:  $<span class="hljs-number">4</span>, guard: $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'FORFROM Expression'</span>,                             <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, from: <span class="hljs-literal">yes</span>
+    o <span class="hljs-string">'FORFROM Expression WHEN Expression'</span>,             <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, from: <span class="hljs-literal">yes</span>
   ]
 
   Switch: [
@@ -1540,7 +1543,12 @@ rules are necessary.</p>
     o <span class="hljs-string">'Expression **       Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
     o <span class="hljs-string">'Expression SHIFT    Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
     o <span class="hljs-string">'Expression COMPARE  Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
-    o <span class="hljs-string">'Expression LOGIC    Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'Expression &amp;        Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'Expression ^        Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'Expression |        Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'Expression &amp;&amp;       Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'Expression ||       Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'Expression BIN?     Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
     o <span class="hljs-string">'Expression RELATION Expression'</span>,         <span class="hljs-function">-&gt;</span>
       <span class="hljs-keyword">if</span> $<span class="hljs-number">2.</span>charAt(<span class="hljs-number">0</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'!'</span>
         <span class="hljs-keyword">new</span> Op($<span class="hljs-number">2</span>[<span class="hljs-number">1.</span>.], $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>).invert()
@@ -1611,11 +1619,16 @@ down. Following these rules is what makes <code>2 + 3 * 4</code> parse as:</p>
   [<span class="hljs-string">'left'</span>,      <span class="hljs-string">'SHIFT'</span>]
   [<span class="hljs-string">'left'</span>,      <span class="hljs-string">'RELATION'</span>]
   [<span class="hljs-string">'left'</span>,      <span class="hljs-string">'COMPARE'</span>]
-  [<span class="hljs-string">'left'</span>,      <span class="hljs-string">'LOGIC'</span>]
+  [<span class="hljs-string">'left'</span>,      <span class="hljs-string">'&amp;'</span>]
+  [<span class="hljs-string">'left'</span>,      <span class="hljs-string">'^'</span>]
+  [<span class="hljs-string">'left'</span>,      <span class="hljs-string">'|'</span>]
+  [<span class="hljs-string">'left'</span>,      <span class="hljs-string">'&amp;&amp;'</span>]
+  [<span class="hljs-string">'left'</span>,      <span class="hljs-string">'||'</span>]
+  [<span class="hljs-string">'left'</span>,      <span class="hljs-string">'BIN?'</span>]
   [<span class="hljs-string">'nonassoc'</span>,  <span class="hljs-string">'INDENT'</span>, <span class="hljs-string">'OUTDENT'</span>]
   [<span class="hljs-string">'right'</span>,     <span class="hljs-string">'YIELD'</span>]
   [<span class="hljs-string">'right'</span>,     <span class="hljs-string">'='</span>, <span class="hljs-string">':'</span>, <span class="hljs-string">'COMPOUND_ASSIGN'</span>, <span class="hljs-string">'RETURN'</span>, <span class="hljs-string">'THROW'</span>, <span class="hljs-string">'EXTENDS'</span>]
-  [<span class="hljs-string">'right'</span>,     <span class="hljs-string">'FORIN'</span>, <span class="hljs-string">'FOROF'</span>, <span class="hljs-string">'BY'</span>, <span class="hljs-string">'WHEN'</span>]
+  [<span class="hljs-string">'right'</span>,     <span class="hljs-string">'FORIN'</span>, <span class="hljs-string">'FOROF'</span>, <span class="hljs-string">'FORFROM'</span>, <span class="hljs-string">'BY'</span>, <span class="hljs-string">'WHEN'</span>]
   [<span class="hljs-string">'right'</span>,     <span class="hljs-string">'IF'</span>, <span class="hljs-string">'ELSE'</span>, <span class="hljs-string">'FOR'</span>, <span class="hljs-string">'WHILE'</span>, <span class="hljs-string">'UNTIL'</span>, <span class="hljs-string">'LOOP'</span>, <span class="hljs-string">'SUPER'</span>, <span class="hljs-string">'CLASS'</span>, <span class="hljs-string">'IMPORT'</span>, <span class="hljs-string">'EXPORT'</span>]
   [<span class="hljs-string">'left'</span>,      <span class="hljs-string">'POST_IF'</span>]
 ]</pre></div></div>
