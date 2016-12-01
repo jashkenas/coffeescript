@@ -221,6 +221,7 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
       codeFor: codeFor()
       releaseHeader: releaseHeader
       majorVersion: majorVersion
+      fullVersion: CoffeeScript.VERSION
     fs.writeFileSync "docs/v#{majorVersion}/index.html", output
     log 'compiled', green, "#{indexFile} → docs/v#{majorVersion}/index.html"
 
