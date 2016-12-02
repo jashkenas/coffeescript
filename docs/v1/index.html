@@ -2704,7 +2704,7 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
 
     <ul>
       <li>
-        <b>github</b>’s <a href="http://hubot.github.com/">Hubot</a>,
+        <b>GitHub</b>’s <a href="http://hubot.github.com/">Hubot</a>,
         a friendly IRC robot that can perform any number of useful and useless tasks.
       </li>
       <li>
@@ -2724,8 +2724,11 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
         the Bolo tank game for modern browsers.
       </li>
       <li>
-        <b>github</b>’s <a href="https://atom.io/">Atom</a>,
+        <b>GitHub</b>’s <a href="https://atom.io/">Atom</a>,
         a hackable text editor built on web technologies.
+      </li>
+      <li>
+        <b>Basecamp</b>’s <a href="https://trix-editor.org/">Trix</a>, a rich text editor for web apps.
       </li>
     </ul>
 
@@ -2844,25 +2847,9 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
           escaped via <code>\`</code>.
         </li>
         <li>
-          CoffeeScript’s <a href="#objects_and_arrays">shorthand object
-          notation</a> is finally documented.
-        </li>
-        <li>
-          A note was added to the top of the documentation, explaining which
-          features are output with ES2015+ syntax. All such features are
-          “opt in”: if you refrain from using them, your code will still
-          be compatible with all but the most ancient browsers.
-        </li>
-        <li>
           The browser tests now run in the browser again, and are accessible
           <a href="v1/test.html">here</a> if you would like
           to test your browser.
-        </li>
-        <li>
-          The browser version of the compiler is now minified using the
-          <a href="https://github.com/google/closure-compiler-js">JavaScript
-          version of the Google Closure Compiler</a>, which produces a file
-          half the size that Uglify.js did.
         </li>
         <li>
           CoffeeScript-only keywords in ES2015 <code>import</code>s and
@@ -2872,17 +2859,8 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
           The compiler now throws an error on trying to export an anonymous class.
         </li>
         <li>
-          Updated various Node functions in the compiler to make Node 7+
-          deprecation warnings go away.
-        </li>
-        <li>
           Bugfixes related to tokens and location data, for better source maps
           and improved compatibility with downstream tools.
-        </li>
-        <li>
-          Many improvements to the documentation and its build process, with
-          an eye toward eventually creating separate documentation for
-          CoffeeScript 2.0.0 (coming soon!).
         </li>
       </ul>
     </p>
