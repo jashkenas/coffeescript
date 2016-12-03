@@ -2274,8 +2274,8 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Parens
     fragments.push @makeCode '`'
     for element in elements
       if element instanceof StringLiteral
-        value = element.value.slice(1, -1)
-        # Backticks or `${` inside template literals must be escaped
+        value = element.value[1...-1]
+        # Backticks and `${` inside template literals must be escaped.
         value = value.replace /(\\*)(`|\$\{)/g, (match, backslashes, toBeEscaped) ->
           if backslashes.length % 2 is 0
             "#{backslashes}\\#{toBeEscaped}"

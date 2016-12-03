@@ -146,7 +146,7 @@ test "tagged template literal with escaped backticks", ->
   eq 'text: [ES template literals look like this: \\`foo bar\\`] expressions: []',
   func"ES template literals look like this: \\`foo bar\\`"
 
-test "tagged template literal with invalidly escaped backticks", ->
+test "tagged template literal with unnecessarily escaped backticks", ->
   eq 'text: [ES template literals look like this: `foo bar`] expressions: []',
   func"ES template literals look like this: \`foo bar\`"
 
@@ -162,7 +162,10 @@ test "tagged template literal with escaped ES interpolation", ->
   eq 'text: [ES template literals also look like this: `3 + 5 = \\${3+5}`] expressions: []',
   func"ES template literals also look like this: `3 + 5 = \\${3+5}`"
 
-test "tagged template literal with invalidly escaped ES interpolation", ->
-  eq 'text: [ES template literals also look like this: `3 + 5 = \${3+5}`] expressions: []',
+test "tagged template literal with unnecessarily escaped ES interpolation", ->
+  eq 'text: [ES template literals also look like this: `3 + 5 = ${3+5}`] expressions: []',
   func"ES template literals also look like this: `3 + 5 = \${3+5}`"
 
+test "tagged template literal special escaping", ->
+  eq 'text: [` ` \\` \\` \\\\` $ { ${ ${ \\${ \\${ \\\\${ | ` ${] expressions: [1]',
+  func"` \` \\` \\\` \\\\` $ { ${ \${ \\${ \\\${ \\\\${ #{1} ` ${"
