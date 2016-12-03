@@ -138,14 +138,31 @@ test "tagged template literal with an interpolated string that contains a tagged
   eq 'text: [inner tagged | literal] expressions: [text: [|] expressions: [template]]',
   func"inner tagged #{func"#{'template'}"} literal"
 
-test "tagged template literal with escaped backticks", ->
+test "tagged template literal with backticks", ->
   eq 'text: [ES template literals look like this: `foo bar`] expressions: []',
   func"ES template literals look like this: `foo bar`"
 
-test "tagged template literal with escaped interpolation", ->
+test "tagged template literal with escaped backticks", ->
+  eq 'text: [ES template literals look like this: \\`foo bar\\`] expressions: []',
+  func"ES template literals look like this: \\`foo bar\\`"
+
+test "tagged template literal with invalidly escaped backticks", ->
+  eq 'text: [ES template literals look like this: `foo bar`] expressions: []',
+  func"ES template literals look like this: \`foo bar\`"
+
+test "tagged template literal with ES interpolation", ->
   eq 'text: [ES template literals also look like this: `3 + 5 = ${3+5}`] expressions: []',
   func"ES template literals also look like this: `3 + 5 = ${3+5}`"
 
-test "tagged template literal with both escaped and unescaped interpolation", ->
+test "tagged template literal with both ES and CoffeeScript interpolation", ->
   eq "text: [ES template literals also look like this: `3 + 5 = ${3+5}` which equals |] expressions: [8]",
   func"ES template literals also look like this: `3 + 5 = ${3+5}` which equals #{3+5}"
+
+test "tagged template literal with escaped ES interpolation", ->
+  eq 'text: [ES template literals also look like this: `3 + 5 = \\${3+5}`] expressions: []',
+  func"ES template literals also look like this: `3 + 5 = \\${3+5}`"
+
+test "tagged template literal with invalidly escaped ES interpolation", ->
+  eq 'text: [ES template literals also look like this: `3 + 5 = \${3+5}`] expressions: []',
+  func"ES template literals also look like this: `3 + 5 = \${3+5}`"
+
