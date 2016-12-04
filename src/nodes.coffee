@@ -803,7 +803,7 @@ exports.TaggedTemplateCall = class TaggedTemplateCall extends Call
 
 # Node to extend an object's prototype with an ancestor object.
 # After `goog.inherits` from the
-# [Closure Library](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.html).
+# [Closure Library](https://github.com/google/closure-library/blob/master/closure/goog/base.js).
 exports.Extends = class Extends extends Base
   constructor: (@child, @parent) ->
 
