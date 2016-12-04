@@ -770,7 +770,7 @@ exports.TaggedTemplateCall = class TaggedTemplateCall extends Call
 
 # Node to extend an object's prototype with an ancestor object.
 # After `goog.inherits` from the
-# [Closure Library](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.html).
+# [Closure Library](https://github.com/google/closure-library/blob/master/closure/goog/base.js).
 exports.Extends = class Extends extends Base
   constructor: (@child, @parent) ->
 
@@ -1377,7 +1377,8 @@ exports.Assign = class Assign extends Base
       unless varBase.isAssignable()
         @variable.error "'#{@variable.compile o}' can't be assigned"
       unless varBase.hasProperties?()
-        if @moduleDeclaration # `moduleDeclaration` can be `'import'` or `'export'`
+        # `moduleDeclaration` can be `'import'` or `'export'`
+        if @moduleDeclaration
           @checkAssignability o, varBase
           o.scope.add varBase.value, @moduleDeclaration
         else if @param
@@ -2265,7 +2266,14 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
     fragments.push @makeCode '`'
     for element in elements
       if element instanceof StringLiteral
-        fragments.push @makeCode element.value.slice(1, -1)
+        value = element.value[1...-1]
+        # Backticks and `${` inside template literals must be escaped.
+        value = value.replace /(\\*)(`|\$\{)/g, (match, backslashes, toBeEscaped) ->
+          if backslashes.length % 2 is 0
+            "#{backslashes}\\#{toBeEscaped}"
+          else
+            match
+        fragments.push @makeCode value
       else
         fragments.push @makeCode '${'
         fragments.push element.compileToFragments(o, LEVEL_PAREN)...

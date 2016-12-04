@@ -24,7 +24,7 @@ base64encode = (src) -> switch
   when typeof Buffer is 'function'
     Buffer.from(src).toString('base64')
   when typeof btoa is 'function'
-    # The contents of a <script> block are encoded via UTF-16, so if any extended
+    # The contents of a `<script>` block are encoded via UTF-16, so if any extended
     # characters are used in the block, btoa will fail as it maxes out at UTF-8.
     # See https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding#The_Unicode_Problem
     # for the gory details, and for the solution implemented here.
