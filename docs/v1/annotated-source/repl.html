@@ -458,7 +458,7 @@ parens. Unwrap all that.</p>
             <div class="content"><div class='highlight'><pre>    readFd = fs.openSync filename, <span class="hljs-string">'r'</span>
     buffer = <span class="hljs-keyword">new</span> Buffer(size)
     fs.readSync readFd, buffer, <span class="hljs-number">0</span>, size, stat.size - size
-    fs.close readFd</pre></div></div>
+    fs.closeSync readFd</pre></div></div>
             
         </li>
         
@@ -525,10 +525,10 @@ parens. Unwrap all that.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      fs.write fd, <span class="hljs-string">"<span class="hljs-subst">#{code}</span>\n"</span>
+            <div class="content"><div class='highlight'><pre>      fs.writeSync fd, <span class="hljs-string">"<span class="hljs-subst">#{code}</span>\n"</span>
       lastLine = code
 
-  repl.<span class="hljs-literal">on</span> <span class="hljs-string">'exit'</span>, <span class="hljs-function">-&gt;</span> fs.close fd</pre></div></div>
+  repl.<span class="hljs-literal">on</span> <span class="hljs-string">'exit'</span>, <span class="hljs-function">-&gt;</span> fs.closeSync fd</pre></div></div>
             
         </li>
         
