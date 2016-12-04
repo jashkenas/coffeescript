@@ -795,7 +795,8 @@ exports.TaggedTemplateCall = class TaggedTemplateCall extends Call
     super variable, [ arg ], soak
 
   compileNode: (o) ->
-    o.inTaggedTemplateCall = yes # Tell StringWithInterpolations whether to compile as ES2015 or not; remove in CoffeeScript 2
+    # Tell `StringWithInterpolations` whether to compile as ES2015 or not; will be removed in CoffeeScript 2.
+    o.inTaggedTemplateCall = yes
     @variable.compileToFragments(o, LEVEL_ACCESS).concat @args[0].compileToFragments(o, LEVEL_LIST)
 
 #### Extends
@@ -1428,7 +1429,8 @@ exports.Assign = class Assign extends Base
       unless varBase.isAssignable()
         @variable.error "'#{@variable.compile o}' can't be assigned"
       unless varBase.hasProperties?()
-        if @moduleDeclaration # `moduleDeclaration` can be `'import'` or `'export'`
+        # `moduleDeclaration` can be `'import'` or `'export'`
+        if @moduleDeclaration
           @checkAssignability o, varBase
           o.scope.add varBase.value, @moduleDeclaration
         else if @param

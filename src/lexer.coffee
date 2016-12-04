@@ -48,10 +48,10 @@ exports.Lexer = class Lexer
     @exportSpecifierList = no    # Used to identify when in an EXPORT {...} FROM? ...
 
     @chunkLine =
-      opts.line or 0         # The start line for the current @chunk.
+      opts.line or 0             # The start line for the current @chunk.
     @chunkColumn =
-      opts.column or 0       # The start column of the current @chunk.
-    code = @clean code         # The stripped, cleaned original source code.
+      opts.column or 0           # The start column of the current @chunk.
+    code = @clean code           # The stripped, cleaned original source code.
 
     # At every position, run through this list of attempted matches,
     # short-circuiting if any of them succeed. Their order determines precedence:
