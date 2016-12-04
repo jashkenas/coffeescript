@@ -12,7 +12,7 @@ helpers       = require './helpers'
 SourceMap     = require './sourcemap'
 
 # The current CoffeeScript version number.
-exports.VERSION = '1.11.1'
+exports.VERSION = '1.12.0'
 
 exports.FILE_EXTENSIONS = ['.coffee', '.litcoffee', '.coffee.md']
 
@@ -24,7 +24,12 @@ base64encode = (src) -> switch
   when typeof Buffer is 'function'
     new Buffer(src).toString('base64')
   when typeof btoa is 'function'
-    btoa(src)
+    # The contents of a `<script>` block are encoded via UTF-16, so if any extended
+    # characters are used in the block, btoa will fail as it maxes out at UTF-8.
+    # See https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding#The_Unicode_Problem
+    # for the gory details, and for the solution implemented here.
+    btoa encodeURIComponent(src).replace /%([0-9A-F]{2})/g, (match, p1) ->
+      String.fromCharCode '0x' + p1
   else
     throw new Error('Unable to base64 encode inline sourcemap.')
 

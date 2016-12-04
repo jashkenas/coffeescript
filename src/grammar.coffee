@@ -413,6 +413,7 @@ grammar =
 
   # Ordinary function invocation, or a chained series of calls.
   Invocation: [
+    o 'Value OptFuncExist String',              -> new TaggedTemplateCall $1, $3, $2
     o 'Value OptFuncExist Arguments',           -> new Call $1, $3, $2
     o 'Invocation OptFuncExist Arguments',      -> new Call $1, $3, $2
     o 'Super'
@@ -560,12 +561,12 @@ grammar =
   ForBody: [
     o 'FOR Range',                              -> source: (LOC(2) new Value($2))
     o 'FOR Range BY Expression',                -> source: (LOC(2) new Value($2)), step: $4
-    o 'ForStart ForSource',                     -> $2.own = $1.own; $2.name = $1[0]; $2.index = $1[1]; $2
+    o 'ForStart ForSource',                     -> $2.own = $1.own; $2.ownTag = $1.ownTag; $2.name = $1[0]; $2.index = $1[1]; $2
   ]
 
   ForStart: [
     o 'FOR ForVariables',                       -> $2
-    o 'FOR OWN ForVariables',                   -> $3.own = yes; $3
+    o 'FOR OWN ForVariables',                   -> $3.own = yes; $3.ownTag = (LOC(2) new Literal($2)); $3
   ]
 
   # An array of all accepted values for a variable inside the loop.
@@ -596,6 +597,8 @@ grammar =
     o 'FORIN Expression BY Expression',                 -> source: $2, step:  $4
     o 'FORIN Expression WHEN Expression BY Expression', -> source: $2, guard: $4, step: $6
     o 'FORIN Expression BY Expression WHEN Expression', -> source: $2, step:  $4, guard: $6
+    o 'FORFROM Expression',                             -> source: $2, from: yes
+    o 'FORFROM Expression WHEN Expression',             -> source: $2, guard: $4, from: yes
   ]
 
   Switch: [
@@ -650,7 +653,7 @@ grammar =
     o 'SimpleAssignable --',                    -> new Op '--', $1, null, true
     o 'SimpleAssignable ++',                    -> new Op '++', $1, null, true
 
-    # [The existential operator](http://jashkenas.github.com/coffee-script/#existence).
+    # [The existential operator](http://coffeescript.org/#existential-operator).
     o 'Expression ?',                           -> new Existence $1
 
     o 'Expression +  Expression',               -> new Op '+' , $1, $3
@@ -715,7 +718,7 @@ operators = [
   ['nonassoc',  'INDENT', 'OUTDENT']
   ['right',     'YIELD']
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
-  ['right',     'FORIN', 'FOROF', 'BY', 'WHEN']
+  ['right',     'FORIN', 'FOROF', 'FORFROM', 'BY', 'WHEN']
   ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS', 'IMPORT', 'EXPORT']
   ['left',      'POST_IF']
 ]

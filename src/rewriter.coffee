@@ -243,7 +243,7 @@ class exports.Rewriter
       #       b: c
       #
       # Don't accept implicit calls of this type, when on the same line
-      # as the control strucutures below as that may misinterpret constructs like:
+      # as the control structures below as that may misinterpret constructs like:
       #
       #     if f
       #        a: 1
@@ -375,7 +375,8 @@ class exports.Rewriter
   fixOutdentLocationData: ->
     @scanTokens (token, i, tokens) ->
       return 1 unless token[0] is 'OUTDENT' or
-        (token.generated and token[0] is 'CALL_END')
+        (token.generated and token[0] is 'CALL_END') or
+        (token.generated and token[0] is '}')
       prevLocationData = tokens[i - 1][2]
       token[2] =
         first_line:   prevLocationData.last_line

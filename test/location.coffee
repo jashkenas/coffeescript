@@ -515,6 +515,27 @@ test "Verify OUTDENT and CALL_END tokens are located at the end of the previous 
     eq token[0], 'CALL_END'
     assertAtCloseCurly(token)
 
+test "Verify generated } tokens are located at the end of the previous token", ->
+  source = '''
+    a(b, ->
+      c: () ->
+        if d
+          e
+    )
+  '''
+  tokens = CoffeeScript.tokens source
+  [..., identifier, outdent1, outdent2, closeCurly, outdent3, callEnd,
+    terminator] = tokens
+  eq identifier[0], 'IDENTIFIER'
+  assertAtIdentifier = (token) ->
+    eq token[2].first_line, identifier[2].last_line
+    eq token[2].first_column, identifier[2].last_column
+    eq token[2].last_line, identifier[2].last_line
+    eq token[2].last_column, identifier[2].last_column
+
+  for token in [outdent1, outdent2, closeCurly, outdent3]
+    assertAtIdentifier(token)
+
 test "Verify real CALL_END tokens have the right position", ->
   source = '''
     a()
@@ -527,6 +548,42 @@ test "Verify real CALL_END tokens have the right position", ->
   eq callStart[2].last_column, startIndex + 1
   eq callEnd[2].first_column, startIndex + 2
   eq callEnd[2].last_column, startIndex + 2
+
+test "Verify normal heredocs have the right position", ->
+  source = '''
+    """
+    a"""
+  '''
+  [stringToken] = CoffeeScript.tokens source
+  eq stringToken[2].first_line, 0
+  eq stringToken[2].first_column, 0
+  eq stringToken[2].last_line, 1
+  eq stringToken[2].last_column, 3
+
+test "Verify heredocs ending with a newline have the right position", ->
+  source = '''
+    """
+    a
+    """
+  '''
+  [stringToken] = CoffeeScript.tokens source
+  eq stringToken[2].first_line, 0
+  eq stringToken[2].first_column, 0
+  eq stringToken[2].last_line, 2
+  eq stringToken[2].last_column, 2
+
+test "Verify indented heredocs have the right position", ->
+  source = '''
+    ->
+      """
+        a
+      """
+  '''
+  [arrow, indent, stringToken] = CoffeeScript.tokens source
+  eq stringToken[2].first_line, 1
+  eq stringToken[2].first_column, 2
+  eq stringToken[2].last_line, 3
+  eq stringToken[2].last_column, 4
 
 test "Verify all tokens get a location", ->
   doesNotThrow ->

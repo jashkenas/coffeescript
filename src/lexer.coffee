@@ -42,15 +42,16 @@ exports.Lexer = class Lexer
     @indents    = []             # The stack of all current indentation levels.
     @ends       = []             # The stack for pairing up tokens.
     @tokens     = []             # Stream of parsed tokens in the form `['TYPE', value, location data]`.
-    @seenFor    = no             # Used to recognize FORIN and FOROF tokens.
+    @seenFor    = no             # Used to recognize FORIN, FOROF and FORFROM tokens.
     @seenImport = no             # Used to recognize IMPORT FROM? AS? tokens.
     @seenExport = no             # Used to recognize EXPORT FROM? AS? tokens.
+    @exportSpecifierList = no    # Used to identify when in an EXPORT {...} FROM? ...
 
     @chunkLine =
-      opts.line or 0         # The start line for the current @chunk.
+      opts.line or 0             # The start line for the current @chunk.
     @chunkColumn =
-      opts.column or 0       # The start column of the current @chunk.
-    code = @clean code         # The stripped, cleaned original source code.
+      opts.column or 0           # The start column of the current @chunk.
+    code = @clean code           # The stripped, cleaned original source code.
 
     # At every position, run through this list of attempted matches,
     # short-circuiting if any of them succeed. Their order determines precedence:
@@ -115,10 +116,14 @@ exports.Lexer = class Lexer
     if id is 'from' and @tag() is 'YIELD'
       @token 'FROM', id
       return id.length
-    if id is 'as' and @seenImport and (@tag() is 'IDENTIFIER' or @value() is '*')
-      @tokens[@tokens.length - 1][0] = 'IMPORT_ALL' if @value() is '*'
-      @token 'AS', id
-      return id.length
+    if id is 'as' and @seenImport
+      if @value() is '*'
+        @tokens[@tokens.length - 1][0] = 'IMPORT_ALL'
+      else if @value() in COFFEE_KEYWORDS
+        @tokens[@tokens.length - 1][0] = 'IDENTIFIER'
+      if @tag() in ['IMPORT_ALL', 'IDENTIFIER']
+        @token 'AS', id
+        return id.length
     if id is 'as' and @seenExport and @tag() is 'IDENTIFIER'
       @token 'AS', id
       return id.length
@@ -136,7 +141,8 @@ exports.Lexer = class Lexer
       else
         'IDENTIFIER'
 
-    if tag is 'IDENTIFIER' and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS)
+    if tag is 'IDENTIFIER' and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS) and
+       not (@exportSpecifierList and id in COFFEE_KEYWORDS)
       tag = id.toUpperCase()
       if tag is 'WHEN' and @tag() in LINE_BREAK
         tag = 'LEADING_WHEN'
@@ -159,6 +165,9 @@ exports.Lexer = class Lexer
           if @value() is '!'
             poppedToken = @tokens.pop()
             id = '!' + id
+    else if tag is 'IDENTIFIER' and @seenFor and id is 'from'
+      tag = 'FORFROM'
+      @seenFor = no
 
     if tag is 'IDENTIFIER' and id in RESERVED
       @error "reserved word '#{id}'", length: id.length
@@ -283,9 +292,16 @@ exports.Lexer = class Lexer
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
-    return 0 unless @chunk.charAt(0) is '`' and match = JSTOKEN.exec @chunk
-    @token 'JS', (script = match[0])[1...-1], 0, script.length
-    script.length
+    return 0 unless @chunk.charAt(0) is '`' and
+      (match = HERE_JSTOKEN.exec(@chunk) or JSTOKEN.exec(@chunk))
+    # Convert escaped backticks to backticks, and escaped backslashes
+    # just before escaped backticks to backslashes
+    script = match[1].replace /\\+(`|$)/g, (string) ->
+      # `string` is always a value like '\`', '\\\`', '\\\\\`', etc.
+      # By reducing it to its latter half, we turn '\`' to '`', '\\\`' to '\`', etc.
+      string[-Math.ceil(string.length / 2)..]
+    @token 'JS', script, 0, match[0].length
+    match[0].length
 
   # Matches regular expression literals, as well as multiline extended ones.
   # Lexing regular expressions is difficult to distinguish from division, so we
@@ -456,6 +472,11 @@ exports.Lexer = class Lexer
         @error message, origin[2] if message
       return value.length if skipToken
 
+    if value is '{' and prev?[0] is 'EXPORT'
+      @exportSpecifierList = yes
+    else if @exportSpecifierList and value is '}'
+      @exportSpecifierList = no
+
     if value is ';'
       @seenFor = @seenImport = @seenExport = no
       tag = 'TERMINATOR'
@@ -573,7 +594,11 @@ exports.Lexer = class Lexer
 
     [firstToken, ..., lastToken] = tokens
     firstToken[2].first_column -= delimiter.length
-    lastToken[2].last_column += delimiter.length
+    if lastToken[1].substr(-1) is '\n'
+      lastToken[2].last_line += 1
+      lastToken[2].last_column = delimiter.length - 1
+    else
+      lastToken[2].last_column += delimiter.length
     lastToken[2].last_column -= 1 if lastToken[1].length is 0
 
     {tokens, index: offsetInChunk + delimiter.length}
@@ -882,7 +907,8 @@ CODE       = /^[-=]>/
 
 MULTI_DENT = /^(?:\n[^\n\S]*)+/
 
-JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
+JSTOKEN      = ///^ `(?!``) ((?: [^`\\] | \\[\s\S]           )*) `   ///
+HERE_JSTOKEN = ///^ ```     ((?: [^`\\] | \\[\s\S] | `(?!``) )*) ``` ///
 
 # String-matching-regexes.
 STRING_START   = /^(?:'''|"""|'|")/

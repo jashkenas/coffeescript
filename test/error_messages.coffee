@@ -83,7 +83,7 @@ if require?
                       ^^
       """
     finally
-      fs.unlink 'test/syntax-error.coffee'
+      fs.unlinkSync 'test/syntax-error.coffee'
 
 
 test "#1096: unexpected generated tokens", ->
@@ -137,46 +137,6 @@ test "#1096: unexpected generated tokens", ->
      ^^^^^^^^^^^
   '''
   # Unexpected string
-  assertErrorFormat "a''", '''
-    [stdin]:1:2: error: unexpected string
-    a''
-     ^^
-  '''
-  assertErrorFormat 'a""', '''
-    [stdin]:1:2: error: unexpected string
-    a""
-     ^^
-  '''
-  assertErrorFormat "a'b'", '''
-    [stdin]:1:2: error: unexpected string
-    a'b'
-     ^^^
-  '''
-  assertErrorFormat 'a"b"', '''
-    [stdin]:1:2: error: unexpected string
-    a"b"
-     ^^^
-  '''
-  assertErrorFormat "a'''b'''", """
-    [stdin]:1:2: error: unexpected string
-    a'''b'''
-     ^^^^^^^
-  """
-  assertErrorFormat 'a"""b"""', '''
-    [stdin]:1:2: error: unexpected string
-    a"""b"""
-     ^^^^^^^
-  '''
-  assertErrorFormat 'a"#{b}"', '''
-    [stdin]:1:2: error: unexpected string
-    a"#{b}"
-     ^^^^^^
-  '''
-  assertErrorFormat 'a"""#{b}"""', '''
-    [stdin]:1:2: error: unexpected string
-    a"""#{b}"""
-     ^^^^^^^^^^
-  '''
   assertErrorFormat 'import foo from "lib-#{version}"', '''
     [stdin]:1:17: error: the name of the module to be imported from must be an uninterpolated string
     import foo from "lib-#{version}"
@@ -1012,7 +972,9 @@ test "anonymous classes cannot be exported", ->
       constructor: ->
         console.log 'hello, world!'
   ''', '''
-    SyntaxError: Unexpected token export
+    [stdin]:1:8: error: anonymous classes cannot be exported
+    export class
+           ^^^^^
   '''
 
 test "unless enclosed by curly braces, only * can be aliased", ->
@@ -1151,4 +1113,80 @@ test "imported members cannot be reassigned", ->
     [stdin]:2:8: error: 'foo' is read-only
     export foo = 'bar'
            ^^^
+  '''
+
+test "CoffeeScript keywords cannot be used as unaliased names in import lists", ->
+  assertErrorFormat """
+    import { unless, baz as bar } from 'lib'
+    bar.barMethod()
+  """, '''
+    [stdin]:1:10: error: unexpected unless
+    import { unless, baz as bar } from 'lib'
+             ^^^^^^
+  '''
+
+test "CoffeeScript keywords cannot be used as local names in import list aliases", ->
+  assertErrorFormat """
+    import { bar as unless, baz as bar } from 'lib'
+    bar.barMethod()
+  """, '''
+    [stdin]:1:17: error: unexpected unless
+    import { bar as unless, baz as bar } from 'lib'
+                    ^^^^^^
+  '''
+
+test "indexes are not supported in for-from loops", ->
+  assertErrorFormat "x for x, i from [1, 2, 3]", '''
+    [stdin]:1:10: error: cannot use index with for-from
+    x for x, i from [1, 2, 3]
+             ^
+  '''
+
+test "own is not supported in for-from loops", ->
+  assertErrorFormat "x for own x from [1, 2, 3]", '''
+    [stdin]:1:7: error: cannot use own with for-from
+    x for own x from [1, 2, 3]
+          ^^^
+    '''
+
+test "tagged template literals must be called by an identifier", ->
+  assertErrorFormat "1''", '''
+    [stdin]:1:1: error: literal is not a function
+    1''
+    ^
+  '''
+  assertErrorFormat '1""', '''
+    [stdin]:1:1: error: literal is not a function
+    1""
+    ^
+  '''
+  assertErrorFormat "1'b'", '''
+    [stdin]:1:1: error: literal is not a function
+    1'b'
+    ^
+  '''
+  assertErrorFormat '1"b"', '''
+    [stdin]:1:1: error: literal is not a function
+    1"b"
+    ^
+  '''
+  assertErrorFormat "1'''b'''", """
+    [stdin]:1:1: error: literal is not a function
+    1'''b'''
+    ^
+  """
+  assertErrorFormat '1"""b"""', '''
+    [stdin]:1:1: error: literal is not a function
+    1"""b"""
+    ^
+  '''
+  assertErrorFormat '1"#{b}"', '''
+    [stdin]:1:1: error: literal is not a function
+    1"#{b}"
+    ^
+  '''
+  assertErrorFormat '1"""#{b}"""', '''
+    [stdin]:1:1: error: literal is not a function
+    1"""#{b}"""
+    ^
   '''
