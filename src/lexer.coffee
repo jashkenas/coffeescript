@@ -121,7 +121,7 @@ exports.Lexer = class Lexer
         @tokens[@tokens.length - 1][0] = 'IMPORT_ALL'
       else if @value() in COFFEE_KEYWORDS
         @tokens[@tokens.length - 1][0] = 'IDENTIFIER'
-      if @tag() in ['IMPORT_ALL', 'IDENTIFIER']
+      if @tag() in ['DEFAULT', 'IMPORT_ALL', 'IDENTIFIER']
         @token 'AS', id
         return id.length
     if id is 'as' and @seenExport and @tag() is 'IDENTIFIER'
