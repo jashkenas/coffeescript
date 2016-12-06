@@ -166,7 +166,7 @@ exports.Lexer = class Lexer
             poppedToken = @tokens.pop()
             id = '!' + id
     else if tag is 'IDENTIFIER' and @seenFor and id is 'from' and
-       fromIsKeywordInForDeclaration(prev)
+       isForFrom(prev)
       tag = 'FORFROM'
       @seenFor = no
 
@@ -829,7 +829,7 @@ exports.isUnassignable = isUnassignable
 # `export` statements (handled above) and in the declaration line of a `for`
 # loop. Try to detect when `from` is a variable identifier and when it is this
 # “sometimes” keyword.
-fromIsKeywordInForDeclaration = (prev) ->
+isForFrom = (prev) ->
   if prev[0] is 'IDENTIFIER'
     # `for i from from`, `for from from iterable`
     if prev[1] is 'from'
@@ -840,11 +840,8 @@ fromIsKeywordInForDeclaration = (prev) ->
   # `for from…`
   else if prev[0] is 'FOR'
     no
-  # `for {from}…`, `for [from]…`
-  else if prev[1] in ['{', '[']
-    no
-  # `for {a, from}…`
-  else if prev[1] is ','
+  # `for {from}…`, `for [from]…`, `for {a, from}…`, `for {a: from}…`
+  else if prev[1] in ['{', '[', ',', ':']
     no
   else
     yes

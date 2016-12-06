@@ -320,6 +320,20 @@ test "from as a destructured object variable name in a for loop declaration", ->
     c.push from
   arrayEq c, [1, 3]
 
+test "from as a destructured, aliased object variable name in a for loop declaration", ->
+  a = [
+      b: 1
+      c: 2
+    ,
+      b: 3
+      c: 4
+  ]
+  out = []
+
+  for {b: from} in a
+    out.push from
+  arrayEq out, [1, 3]
+
 test "from as a destructured array variable name in a for loop declaration", ->
   a = [
     [1, 2]
