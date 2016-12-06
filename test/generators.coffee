@@ -277,7 +277,6 @@ test "for-from loops over generators", ->
   ok array3.length is 0 or array3.join(',') is '70,20'
   arrayEq array4, []
 
-
 test "for-from comprehensions over generators", ->
   gen = ->
     yield from [30, 41, 51, 60]
@@ -288,3 +287,35 @@ test "for-from comprehensions over generators", ->
 
   ok array1.join(' ') is '41 51'
   ok array2.length is 0
+
+test "from as an iterable variable name in a for loop declaration", ->
+  from = [1, 2, 3]
+  out = []
+  for i from from
+    out.push i
+  arrayEq from, out
+
+test "from as an iterator variable name in a for loop declaration", ->
+  a = [1, 2, 3]
+  b = []
+  for from from a
+    b.push from
+  arrayEq a, b
+
+test "from as a destructured variable name in a for loop declaration", ->
+  a = [
+      from: 1
+      to: 2
+    ,
+      from: 3
+      to: 4
+  ]
+  b = []
+  for {from, to} in a
+    b.push from
+  arrayEq b, [1, 3]
+
+  c = []
+  for {to, from} in a
+    c.push from
+  arrayEq c, [1, 3]

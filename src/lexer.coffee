@@ -165,7 +165,8 @@ exports.Lexer = class Lexer
           if @value() is '!'
             poppedToken = @tokens.pop()
             id = '!' + id
-    else if tag is 'IDENTIFIER' and @seenFor and id is 'from'
+    else if tag is 'IDENTIFIER' and @seenFor and id is 'from' and
+       fromIsKeywordInForDeclaration(prev)
       tag = 'FORFROM'
       @seenFor = no
 
@@ -823,6 +824,30 @@ isUnassignable = (name, displayName = name) -> switch
     false
 
 exports.isUnassignable = isUnassignable
+
+# `from` isn’t a CoffeeScript keyword, but it behaves like one in `import` and
+# `export` statements (handled above) and in the declaration line of a `for`
+# loop. Try to detect when `from` is a variable identifier and when it is this
+# “sometimes” keyword.
+fromIsKeywordInForDeclaration = (prev) ->
+  if prev[0] is 'IDENTIFIER'
+    # `for i from from`, `for from from iterable`
+    if prev[1] is 'from'
+      prev[1][0] = 'IDENTIFIER'
+      yes
+    # `for i from iterable`
+    yes
+  # `for from ...`
+  else if prev[0] is 'FOR'
+    no
+  # `for {from} ...`
+  else if prev[1] is '{'
+    no
+  # `for {a, from} ...`
+  else if prev[1] is ','
+    no
+  else
+    yes
 
 # Constants
 # ---------
