@@ -302,7 +302,7 @@ test "from as an iterator variable name in a for loop declaration", ->
     b.push from
   arrayEq a, b
 
-test "from as a destructured variable name in a for loop declaration", ->
+test "from as a destructured object variable name in a for loop declaration", ->
   a = [
       from: 1
       to: 2
@@ -319,3 +319,13 @@ test "from as a destructured variable name in a for loop declaration", ->
   for {to, from} in a
     c.push from
   arrayEq c, [1, 3]
+
+test "from as a destructured array variable name in a for loop declaration", ->
+  a = [
+    [1, 2]
+    [3, 4]
+  ]
+  b = []
+  for [from, to] from a
+    b.push from
+  arrayEq b, [1, 3]

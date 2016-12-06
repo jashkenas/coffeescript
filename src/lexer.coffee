@@ -837,13 +837,13 @@ fromIsKeywordInForDeclaration = (prev) ->
       yes
     # `for i from iterable`
     yes
-  # `for from ...`
+  # `for from…`
   else if prev[0] is 'FOR'
     no
-  # `for {from} ...`
-  else if prev[1] is '{'
+  # `for {from}…`, `for [from]…`
+  else if prev[1] in ['{', '[']
     no
-  # `for {a, from} ...`
+  # `for {a, from}…`
   else if prev[1] is ','
     no
   else
