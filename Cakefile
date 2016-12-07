@@ -129,6 +129,9 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
   # Helpers
+  css = fs.readFileSync('./documentation/css/docs.css', 'utf-8') + '\n' +
+        fs.readFileSync('./documentation/css/tomorrow.css', 'utf-8')
+
   logo = fs.readFileSync './documentation/images/logo.svg', 'utf-8'
 
   codeFor = ->
@@ -220,6 +223,7 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
   do renderIndex = ->
     render = _.template fs.readFileSync(indexFile, 'utf-8')
     output = render
+      css: css
       logo: logo
       codeFor: codeFor()
       releaseHeader: releaseHeader
