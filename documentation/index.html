@@ -5,16 +5,24 @@
   <title>CoffeeScript</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="canonical" href="http://coffeescript.org" />
-  <link rel="stylesheet" type="text/css" href="v1/css/docs.css" />
-  <link rel="stylesheet" type="text/css" href="v1/css/tomorrow.css" />
-  <link rel="shortcut icon" href="v1/images/favicon.ico" />
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+  <meta name="theme-color" content="#ffffff">
+
+  <style>
+  <%= css %>
+  </style>
 </head>
 <body>
 
   <div id="fadeout"></div>
 
   <div id="flybar">
-    <a id="logo" href="#top"><img src="v1/images/logo.png" width="225" height="39" alt="CoffeeScript" /></a>
+    <a id="logo" href="#top"><%= logo %></a>
     <div class="navigation toc">
       <div class="button">
         Table of Contents
@@ -1358,7 +1366,7 @@ Block
           else.) This allows iterating over generators or any other iterable
           object. Note that using <code>for…from</code> in your code
           makes you responsible for ensuring that either your runtime supports
-          <code>for…from</code> or that you transpile the output
+          <code>for…of</code> or that you transpile the output
           JavaScript further to a version your target runtime(s) support.
         </li>
         <li>

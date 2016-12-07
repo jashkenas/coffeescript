@@ -685,3 +685,51 @@ test "default and wrapped members can be imported multiple times if aliased", ->
       foo as bar
     } from 'lib';"""
   eq toJS(input), output
+
+test "import a member named default", ->
+  input = "import { default } from 'lib'"
+  output = """
+    import {
+      default
+    } from 'lib';"""
+  eq toJS(input), output
+
+test "import an aliased member named default", ->
+  input = "import { default as def } from 'lib'"
+  output = """
+    import {
+      default as def
+    } from 'lib';"""
+  eq toJS(input), output
+
+test "export a member named default", ->
+  input = "export { default }"
+  output = """
+    export {
+      default
+    };"""
+  eq toJS(input), output
+
+test "export an aliased member named default", ->
+  input = "export { def as default }"
+  output = """
+    export {
+      def as default
+    };"""
+  eq toJS(input), output
+
+test "export an imported member named default", ->
+  input = "import { default } from 'lib'"
+  output = """
+    import {
+      default
+    } from 'lib';"""
+  eq toJS(input), output
+
+test "export an imported aliased member named default", ->
+  input = "import { default as def } from 'lib'"
+  output = """
+    import {
+      default as def
+    } from 'lib';"""
+  eq toJS(input), output
