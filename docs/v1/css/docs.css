@@ -156,7 +156,9 @@ div.code {
     width: 242px;
     margin-left: 10px;
   }
-    #logo img {
+    #logo svg {
+      width: 225px;
+      height: 40px;
       margin: 5px 0 0 3px;
     }
   .navigation {
