@@ -129,10 +129,10 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
   # Helpers
-  css = fs.readFileSync('./documentation/css/docs.css', 'utf-8') + '\n' +
-        fs.readFileSync('./documentation/css/tomorrow.css', 'utf-8')
+  css = fs.readFileSync('documentation/css/docs.css', 'utf-8') + '\n' +
+        fs.readFileSync('documentation/css/tomorrow.css', 'utf-8')
 
-  logo = fs.readFileSync './documentation/images/logo.svg', 'utf-8'
+  logo = fs.readFileSync 'documentation/images/logo.svg', 'utf-8'
 
   codeFor = ->
     counter = 0
@@ -182,11 +182,32 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
 
   releaseHeader = (date, version, prevVersion) -> """
     <div class="anchor" id="#{version}"></div>
-    <b class="header">
+    <h2 class="header">
       #{prevVersion and "<a href=\"https://github.com/jashkenas/coffeescript/compare/#{prevVersion}...#{version}\">#{version}</a>" or version}
       <span class="timestamp"> &mdash; <time datetime="#{date}">#{formatDate date}</time></span>
-    </b>
+    </h2>
   """
+
+  sectionsSourceFolder = 'documentation/sections'
+  htmlFor = ->
+    marked = require 'marked'
+    markdownRenderer = new marked.Renderer()
+    markdownRenderer.code = (code) ->
+      if code.indexOf('codeFor(') isnt -1 or code.indexOf('releaseHeader(') isnt -1
+        "<%= #{code} %>"
+      else
+        "<pre>\n#{code}\n</pre>"
+
+    (file, bookmark) ->
+      md = fs.readFileSync "#{sectionsSourceFolder}/#{file}.md", 'utf-8'
+      md = md.replace /<%= releaseHeader %>/g, releaseHeader
+      md = md.replace /<%= majorVersion %>/g, majorVersion
+      md = md.replace /<%= fullVersion %>/g, CoffeeScript.VERSION
+      html = marked md, renderer: markdownRenderer
+      html = _.template(html)
+        codeFor: codeFor()
+        releaseHeader: releaseHeader
+      "<span class=\"bookmark\" id=\"#{if bookmark? then bookmark else file.replace(/_/g, '-')}\"></span>\n\n#{html}"
 
   testHelpers = fs.readFileSync('test/support/helpers.coffee', 'utf-8').replace /exports\./g, '@'
 
@@ -225,12 +246,16 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
     output = render
       css: css
       logo: logo
+      htmlFor: htmlFor()
       codeFor: codeFor()
       releaseHeader: releaseHeader
       majorVersion: majorVersion
       fullVersion: CoffeeScript.VERSION
     fs.writeFileSync "docs/v#{majorVersion}/index.html", output
     log 'compiled', green, "#{indexFile} → docs/v#{majorVersion}/index.html"
+  try
+    fs.symlinkSync "v#{majorVersion}/index.html", 'docs/index.html'
+  catch exception
 
   testFile = 'documentation/test.html'
   do renderTest = ->
@@ -246,6 +271,7 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
     renderExamples()
     renderIndex()
   fs.watch indexFile, interval: 200, renderIndex
+  fs.watch sectionsSourceFolder, interval: 200, renderIndex
   fs.watch testFile, interval: 200, renderTest
   fs.watch 'test', interval: 200, renderTest
   log 'watching...' , green
