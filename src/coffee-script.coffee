@@ -349,14 +349,24 @@ getSourceMap = (filename) ->
 # NodeJS / V8 have no support for transforming positions in stack traces using
 # sourceMap, so we must monkey-patch Error to display CoffeeScript source
 # positions.
+prepareStackTraceOrig = Error.prepareStackTrace
 Error.prepareStackTrace = (err, stack) ->
-  getSourceMapping = (filename, line, column) ->
-    sourceMap = getSourceMap filename
-    answer = sourceMap.sourceLocation [line - 1, column - 1] if sourceMap
-    if answer then [answer[0] + 1, answer[1] + 1] else null
+  try
+    getSourceMapping = (filename, line, column) ->
+      sourceMap = getSourceMap filename
+      answer = sourceMap.sourceLocation [line - 1, column - 1] if sourceMap
+      if answer then [answer[0] + 1, answer[1] + 1] else null
 
-  frames = for frame in stack
-    break if frame.getFunction() is exports.run
-    "  at #{formatSourcePosition frame, getSourceMapping}"
+    frames = for frame in stack
+      break if frame.getFunction() is exports.run
+      "  at #{formatSourcePosition frame, getSourceMapping}"
 
-  "#{err.toString()}\n#{frames.join '\n'}\n"
+    "#{err.toString()}\n#{frames.join '\n'}\n"
+  catch
+    try
+      if prepareStackTraceOrig?
+        prepareStackTraceOrig err, stack
+      else
+        "#{err.toString()}\n  at #{stack.join '\n  at '}\n"
+    catch
+      null
