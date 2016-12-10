@@ -140,9 +140,8 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
     hljs.configure classPrefix: ''
     (file, executable = false, showLoad = true) ->
       counter++
-      return unless fs.existsSync "docs/v#{majorVersion}/examples/#{file}.js"
       cs = fs.readFileSync "documentation/examples/#{file}.coffee", 'utf-8'
-      js = fs.readFileSync "docs/v#{majorVersion}/examples/#{file}.js", 'utf-8'
+      js = CoffeeScript.compile cs, bare: yes
       js = js.replace /^\/\/ generated.*?\n/i, ''
 
       cshtml = "<pre><code>#{hljs.highlight('coffeescript', cs).value}</code></pre>"
@@ -234,12 +233,6 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
     output
 
   # Task
-  examplesSourceFolder = 'documentation/examples'
-  examplesOutputFolder = "docs/v#{majorVersion}/examples"
-  fs.mkdirSync examplesOutputFolder unless fs.existsSync examplesOutputFolder
-  do renderExamples = ->
-    execSync "bin/coffee -bc -o #{examplesOutputFolder} #{examplesSourceFolder}/*.coffee"
-
   indexFile = 'documentation/index.html'
   do renderIndex = ->
     render = _.template fs.readFileSync(indexFile, 'utf-8')
@@ -267,11 +260,9 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
     fs.writeFileSync "docs/v#{majorVersion}/test.html", output
     log 'compiled', green, "#{testFile} → docs/v#{majorVersion}/test.html"
 
-  fs.watch examplesSourceFolder, interval: 200, ->
-    renderExamples()
-    renderIndex()
-  fs.watch indexFile, interval: 200, renderIndex
+  fs.watch 'documentation/examples', interval: 200, renderIndex
   fs.watch sectionsSourceFolder, interval: 200, renderIndex
+  fs.watch indexFile, interval: 200, renderIndex
   fs.watch testFile, interval: 200, renderTest
   fs.watch 'test', interval: 200, renderTest
   log 'watching...' , green
