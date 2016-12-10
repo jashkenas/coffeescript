@@ -8,7 +8,7 @@
     "compiler"
   ],
   "author": "Jeremy Ashkenas",
-  "version": "1.12.0",
+  "version": "1.12.1",
   "license": "MIT",
   "engines": {
     "node": ">=0.8.0"

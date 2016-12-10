@@ -632,7 +632,7 @@ pre .xml .cdata {
 
     <p>
       <b>Latest Version:</b>
-      <a href="http://github.com/jashkenas/coffeescript/tarball/1.12.0">1.12.0</a>
+      <a href="http://github.com/jashkenas/coffeescript/tarball/1.12.1">1.12.1</a>
     </p>
 
     <pre>npm install -g coffee-script</pre>
@@ -3288,9 +3288,8 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
         point for converting simple scripts.
       </li>
       <li>
-        <a href="https://github.com/jashkenas/coffeescript/downloads">High-Rez Logo</a><br />
-        The CoffeeScript logo is available in Illustrator, EPS and PSD formats, for use
-        in presentations.
+        <a href="https://github.com/jashkenas/coffeescript/tree/master/documentation/images">High-Rez Logo</a><br />
+        The CoffeeScript logo is available in SVG for use in presentations.
       </li>
     </ul>
 
@@ -3313,6 +3312,32 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
       <span id="changelog" class="bookmark"></span>
       Change Log
     </h2>
+
+    <p>
+      <div class="anchor" id="1.12.1"></div>
+<b class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.12.0...1.12.1">1.12.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2016-12-08">December 8, 2016</time></span>
+</b>
+      <ul>
+        <li>
+          You can now import a module member named <code>default</code>, e.g.
+          <code>import { default } from 'lib'</code>. Though like in ES2015,
+          you cannot import an entire module and name it <code>default</code>
+          (so <code>import default from 'lib'</code> is not allowed).
+        </li>
+        <li>
+          Fix regression where <code>from</code> as a variable name was
+          breaking <code>for</code> loop declarations. For the record,
+          <code>from</code> is not a reserved word in CoffeeScript; you may
+          use it for variable names. <code>from</code> behaves like a keyword
+          within the context of <code>import</code> and <code>export</code>
+          statements, and in the declaration of a <code>for</code> loop; though
+          you should also be able to use variables named <code>from</code> in
+          those contexts, and the compiler should be able to tell the
+          difference.
+      </ul>
+    </p>
 
     <p>
       <div class="anchor" id="1.12.0"></div>
