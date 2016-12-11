@@ -49,12 +49,6 @@ pre .class .title {
   color: #21439C;
 }
 
-pre code {
-  display: block;
-  background: white;
-  color: #000000;
-}
-
 pre .coffeescript .javascript,
 pre .javascript .xml,
 pre .tex .formula,
