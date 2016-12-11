@@ -131,13 +131,9 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
   # Constants
   indexFile = 'documentation/index.html'
   bodyFile = "documentation/v#{majorVersion}/body.html"
-  testFile = 'documentation/test.html'
   sectionsSourceFolder = 'documentation/sections'
   examplesSourceFolder = 'documentation/examples'
-  testsSourceFolder = 'test'
   outputFolder = "docs/v#{majorVersion}"
-  monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December']
   jQueryVersion = if majorVersion is 1 then '1.12.4' else '3.1.1'
 
   # Included in index.html
@@ -155,10 +151,23 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
 
   docsScript = fs.readFileSync "documentation/v#{majorVersion}/docs.coffee", 'utf-8'
 
-  # Included in test.html
-  testHelpers = fs.readFileSync('test/support/helpers.coffee', 'utf-8').replace /exports\./g, '@'
-
   # Helpers
+  releaseHeader = (date, version, prevVersion) ->
+    monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December']
+
+    formatDate = (date) ->
+      date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
+        "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
+
+    """
+      <div class="anchor" id="#{version}"></div>
+      <h2 class="header">
+        #{prevVersion and "<a href=\"https://github.com/jashkenas/coffeescript/compare/#{prevVersion}...#{version}\">#{version}</a>" or version}
+        <span class="timestamp"> &mdash; <time datetime="#{date}">#{formatDate date}</time></span>
+      </h2>
+    """
+
   codeFor = ->
     counter = 0
     hljs = require 'highlight.js'
@@ -184,18 +193,6 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
       load   = if showLoad then "<div class='minibutton load' onclick='javascript: loadConsole(#{name});'>load</div>" else ''
       button = if executable then """<div class="minibutton ok" onclick="javascript: #{js.replace /"/g, '&quot;'};#{append}">#{run}</div>""" else ''
       "<div class='code'>#{cshtml}#{jshtml}#{script}#{load}#{button}<br class='clear' /></div>"
-
-  formatDate = (date) ->
-    date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
-      "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
-
-  releaseHeader = (date, version, prevVersion) -> """
-    <div class="anchor" id="#{version}"></div>
-    <h2 class="header">
-      #{prevVersion and "<a href=\"https://github.com/jashkenas/coffeescript/compare/#{prevVersion}...#{version}\">#{version}</a>" or version}
-      <span class="timestamp"> &mdash; <time datetime="#{date}">#{formatDate date}</time></span>
-    </h2>
-  """
 
   htmlFor = ->
     marked = require 'marked'
@@ -227,10 +224,40 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
       htmlFor: htmlFor()
       codeFor: codeFor()
 
+  # Task
+  do renderIndex = ->
+    render = _.template fs.readFileSync(indexFile, 'utf-8')
+    output = render
+      css: css
+      body: body()
+      script: docsScript
+      jQueryVersion: jQueryVersion
+      majorVersion: majorVersion
+    fs.writeFileSync "#{outputFolder}/index.html", output
+    log 'compiled', green, "#{indexFile} → #{outputFolder}/index.html"
+  try
+    fs.symlinkSync "v#{majorVersion}/index.html", 'docs/index.html'
+  catch exception
+
+  for target in [indexFile, examplesSourceFolder, sectionsSourceFolder]
+    fs.watch target, interval: 200, renderIndex
+  log 'watching...' , green
+
+
+task 'doc:test', 'watch and continually rebuild the browser-based tests', ->
+  # Constants
+  testFile = 'documentation/test.html'
+  testsSourceFolder = 'test'
+  outputFolder = "docs/v#{majorVersion}"
+
+  # Included in test.html
+  testHelpers = fs.readFileSync('test/support/helpers.coffee', 'utf-8').replace /exports\./g, '@'
+
+  # Helpers
   testsInScriptBlocks = ->
     output = ''
     excludedTestFiles = ['error_messages.coffee']
-    for filename in fs.readdirSync 'test'
+    for filename in fs.readdirSync testsSourceFolder
       continue if filename in excludedTestFiles
 
       if filename.indexOf('.coffee') isnt -1
@@ -250,20 +277,6 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
     output
 
   # Task
-  do renderIndex = ->
-    render = _.template fs.readFileSync(indexFile, 'utf-8')
-    output = render
-      css: css
-      body: body()
-      script: docsScript
-      jQueryVersion: jQueryVersion
-      majorVersion: majorVersion
-    fs.writeFileSync "#{outputFolder}/index.html", output
-    log 'compiled', green, "#{indexFile} → #{outputFolder}/index.html"
-  try
-    fs.symlinkSync "v#{majorVersion}/index.html", 'docs/index.html'
-  catch exception
-
   do renderTest = ->
     render = _.template fs.readFileSync(testFile, 'utf-8')
     output = render
@@ -273,8 +286,6 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
     fs.writeFileSync "#{outputFolder}/test.html", output
     log 'compiled', green, "#{testFile} → #{outputFolder}/test.html"
 
-  for target in [indexFile, examplesSourceFolder, sectionsSourceFolder]
-    fs.watch target, interval: 200, renderIndex
   for target in [testFile, testsSourceFolder]
     fs.watch target, interval: 200, renderTest
   log 'watching...' , green
