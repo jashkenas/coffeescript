@@ -223,7 +223,7 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
     fs.symlinkSync "v#{majorVersion}/index.html", 'docs/index.html'
   catch exception
 
-  for target in [indexFile, examplesSourceFolder, sectionsSourceFolder]
+  for target in [indexFile, versionedSourceFolder, examplesSourceFolder, sectionsSourceFolder]
     fs.watch target, interval: 200, renderIndex
   log 'watching...' , green
 
