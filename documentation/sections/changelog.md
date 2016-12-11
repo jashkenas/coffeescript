@@ -39,13 +39,14 @@ releaseHeader('2016-09-24', '1.11.0', '1.10.0')
 
     *   `yield return` can no longer mistakenly be used as an expression.
     *   `yield` now mirrors `return` in that it can be used stand-alone as well as with expressions. Where you previously wrote `yield undefined`, you may now write simply `yield`. However, this means also inheriting the same syntax limitations that `return` has, so these examples no longer compile:
-
-        <pre class="no_bar">doubles = ->
+        ```
+        doubles = ->
           yield for i in [1..3]
             i * 2
         six = ->
           yield
-            2 * 3</pre>
+            2 * 3
+        ```
 
     *   The JavaScript output is a bit nicer, with unnecessary parentheses and spaces, double indentation and double semicolons around `yield` no longer present.
 *   `&&=`, `||=`, `and=` and `or=` no longer accidentally allow a space before the equals sign.

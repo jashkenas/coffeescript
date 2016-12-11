@@ -125,9 +125,10 @@ Once installed, you should have access to the `coffee` command, which can execut
 
 <td>`-n, --nodes`</td>
 
-<td>Instead of compiling the CoffeeScript, just lex and parse it, and print out the parse tree:
+<td>Instead of compiling the CoffeeScript, just lex and parse it, and print out the parse tree:<br>
 
-<pre class="no_bar">Block
+```
+Block
   Assign
     Value IdentifierLiteral: square
     Code
@@ -135,8 +136,8 @@ Once installed, you should have access to the `coffee` command, which can execut
       Block
         Op *
           Value IdentifierLiteral: x
-          Value IdentifierLiteral: x</pre>
-
+          Value IdentifierLiteral: x
+```
 </td>
 
 </tr>

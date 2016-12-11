@@ -184,7 +184,7 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
       if code.indexOf('codeFor(') is 0 or code.indexOf('releaseHeader(') is 0
         "<%= #{code} %>"
       else
-        "<pre>\n#{code}\n</pre>"
+        "<pre><code>#{code}</code></pre>" # Default
 
     (file, bookmark) ->
       md = fs.readFileSync "#{sectionsSourceFolder}/#{file}.md", 'utf-8'

@@ -6,6 +6,6 @@ The CoffeeScript compiler goes to great lengths to generate output JavaScript th
 
 **Latest Version:** [<%= fullVersion %>](http://github.com/jashkenas/coffeescript/tarball/<%= fullVersion %>)
 
-```
+> ```
 npm install -g coffee-script
 ```
