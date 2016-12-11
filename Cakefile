@@ -130,31 +130,14 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
   # Constants
   indexFile = 'documentation/index.html'
-  bodyFile = "documentation/v#{majorVersion}/body.html"
+  versionedSourceFolder = "documentation/v#{majorVersion}"
   sectionsSourceFolder = 'documentation/sections'
   examplesSourceFolder = 'documentation/examples'
   outputFolder = "docs/v#{majorVersion}"
-  jQueryVersion = if majorVersion is 1 then '1.12.4' else '3.1.1'
-
-  # Included in index.html
-  logo = fs.readFileSync 'documentation/images/logo.svg', 'utf-8'
-
-  if majorVersion is 1
-    css = """
-      <style>
-      #{fs.readFileSync('documentation/v1/docs.css', 'utf-8')}
-      #{fs.readFileSync('documentation/v1/tomorrow.css', 'utf-8')}
-      </style>
-    """
-  else
-    css = '' # TODO
-
-  docsScript = fs.readFileSync "documentation/v#{majorVersion}/docs.coffee", 'utf-8'
 
   # Helpers
   releaseHeader = (date, version, prevVersion) ->
-    monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December']
+    monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
     formatDate = (date) ->
       date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
@@ -198,7 +181,7 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
     marked = require 'marked'
     markdownRenderer = new marked.Renderer()
     markdownRenderer.code = (code) ->
-      if code.indexOf('codeFor(') isnt -1 or code.indexOf('releaseHeader(') isnt -1
+      if code.indexOf('codeFor(') is 0 or code.indexOf('releaseHeader(') is 0
         "<%= #{code} %>"
       else
         "<pre>\n#{code}\n</pre>"
@@ -214,25 +197,26 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
         releaseHeader: releaseHeader
       "<span class=\"bookmark\" id=\"#{if bookmark? then bookmark else file.replace(/_/g, '-')}\"></span>\n\n#{html}"
 
-  body = ->
-    render = _.template fs.readFileSync(bodyFile, 'utf-8')
-    output = render
-      logo: logo
-      releaseHeader: releaseHeader
-      majorVersion: majorVersion
-      fullVersion: CoffeeScript.VERSION
-      htmlFor: htmlFor()
-      codeFor: codeFor()
+  include = ->
+    (file) ->
+      file = "#{versionedSourceFolder}/#{file}" if file.indexOf('/') is -1
+      output = fs.readFileSync file, 'utf-8'
+      if /\.html$/.test(file)
+        render = _.template output
+        output = render
+          releaseHeader: releaseHeader
+          majorVersion: majorVersion
+          fullVersion: CoffeeScript.VERSION
+          htmlFor: htmlFor()
+          codeFor: codeFor()
+          include: include()
+      output
 
   # Task
   do renderIndex = ->
     render = _.template fs.readFileSync(indexFile, 'utf-8')
     output = render
-      css: css
-      body: body()
-      script: docsScript
-      jQueryVersion: jQueryVersion
-      majorVersion: majorVersion
+      include: include()
     fs.writeFileSync "#{outputFolder}/index.html", output
     log 'compiled', green, "#{indexFile} → #{outputFolder}/index.html"
   try
