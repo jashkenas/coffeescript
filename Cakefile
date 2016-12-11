@@ -240,10 +240,7 @@ task 'doc:test', 'watch and continually rebuild the browser-based tests', ->
   # Helpers
   testsInScriptBlocks = ->
     output = ''
-    excludedTestFiles = ['error_messages.coffee']
     for filename in fs.readdirSync testsSourceFolder
-      continue if filename in excludedTestFiles
-
       if filename.indexOf('.coffee') isnt -1
         type = 'coffeescript'
       else if filename.indexOf('.litcoffee') isnt -1
@@ -266,7 +263,6 @@ task 'doc:test', 'watch and continually rebuild the browser-based tests', ->
     output = render
       testHelpers: testHelpers
       tests: testsInScriptBlocks()
-      majorVersion: majorVersion
     fs.writeFileSync "#{outputFolder}/test.html", output
     log 'compiled', green, "#{testFile} → #{outputFolder}/test.html"
 
