@@ -85,6 +85,8 @@ say = (msg, className) ->
     if err
       if typeof err is 'function' and e instanceof err # Handle comparing exceptions
         ok yes
+      else if e.toString().indexOf('[stdin]') is 0 # Handle comparing error messages
+        ok err e
       else
         eq e, err
     else

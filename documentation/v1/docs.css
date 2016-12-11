@@ -18,11 +18,16 @@ a {
   color: #191933;
 }
 h1, h2, h3, h4, h5, h6, b.header {
-  font-size: 18px;
   color: #000;
   margin-top: 40px;
   margin-bottom: 15px;
   text-shadow: #fff 0 1px 1px;
+}
+h2 {
+  font-size: 18px;
+}
+h3 {
+  font-size: 14px;
 }
 br.clear {
   height: 0;
