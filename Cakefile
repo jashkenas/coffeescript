@@ -90,7 +90,11 @@ task 'build:parser', 'rebuild the Jison parser (run build first)', ->
 
 
 task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
-  code = ''
+  code = """
+  require['../../package.json'] = (function() {
+    return #{fs.readFileSync "./package.json"};
+  })();
+  """
   for name in ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'nodes', 'sourcemap', 'coffee-script', 'browser']
     code += """
       require['./#{name}'] = (function() {

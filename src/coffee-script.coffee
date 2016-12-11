@@ -10,9 +10,12 @@ path          = require 'path'
 {parser}      = require './parser'
 helpers       = require './helpers'
 SourceMap     = require './sourcemap'
+# Require `package.json`, which is two levels above this file, as this file is
+# evaluated from `lib/coffee-script`.
+packageJson   = require '../../package.json'
 
 # The current CoffeeScript version number.
-exports.VERSION = '1.12.1'
+exports.VERSION = packageJson.version
 
 exports.FILE_EXTENSIONS = ['.coffee', '.litcoffee', '.coffee.md']
 
