@@ -25,7 +25,7 @@ header = """
 """
 
 # Used in folder names like docs/v1
-majorVersion = CoffeeScript.VERSION.split('.')[0]
+majorVersion = parseInt CoffeeScript.VERSION.split('.')[0], 10
 
 # Build the CoffeeScript language from source.
 build = (cb) ->
@@ -128,12 +128,37 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
 
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
-  # Helpers
-  css = fs.readFileSync('documentation/css/docs.css', 'utf-8') + '\n' +
-        fs.readFileSync('documentation/css/tomorrow.css', 'utf-8')
+  # Constants
+  indexFile = 'documentation/index.html'
+  bodyFile = "documentation/v#{majorVersion}/body.html"
+  testFile = 'documentation/test.html'
+  sectionsSourceFolder = 'documentation/sections'
+  examplesSourceFolder = 'documentation/examples'
+  testsSourceFolder = 'test'
+  outputFolder = "docs/v#{majorVersion}"
+  monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December']
+  jQueryVersion = if majorVersion is 1 then '1.12.4' else '3.1.1'
 
+  # Included in index.html
   logo = fs.readFileSync 'documentation/images/logo.svg', 'utf-8'
 
+  if majorVersion is 1
+    css = """
+      <style>
+      #{fs.readFileSync('documentation/v1/docs.css', 'utf-8')}
+      #{fs.readFileSync('documentation/v1/tomorrow.css', 'utf-8')}
+      </style>
+    """
+  else
+    css = '' # TODO
+
+  docsScript = fs.readFileSync "documentation/v#{majorVersion}/docs.coffee", 'utf-8'
+
+  # Included in test.html
+  testHelpers = fs.readFileSync('test/support/helpers.coffee', 'utf-8').replace /exports\./g, '@'
+
+  # Helpers
   codeFor = ->
     counter = 0
     hljs = require 'highlight.js'
@@ -160,21 +185,6 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
       button = if executable then """<div class="minibutton ok" onclick="javascript: #{js.replace /"/g, '&quot;'};#{append}">#{run}</div>""" else ''
       "<div class='code'>#{cshtml}#{jshtml}#{script}#{load}#{button}<br class='clear' /></div>"
 
-  monthNames = [
-    'January'
-    'February'
-    'March'
-    'April'
-    'May'
-    'June'
-    'July'
-    'August'
-    'September'
-    'October'
-    'November'
-    'December'
-  ]
-
   formatDate = (date) ->
     date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
       "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
@@ -187,7 +197,6 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
     </h2>
   """
 
-  sectionsSourceFolder = 'documentation/sections'
   htmlFor = ->
     marked = require 'marked'
     markdownRenderer = new marked.Renderer()
@@ -208,7 +217,15 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
         releaseHeader: releaseHeader
       "<span class=\"bookmark\" id=\"#{if bookmark? then bookmark else file.replace(/_/g, '-')}\"></span>\n\n#{html}"
 
-  testHelpers = fs.readFileSync('test/support/helpers.coffee', 'utf-8').replace /exports\./g, '@'
+  body = ->
+    render = _.template fs.readFileSync(bodyFile, 'utf-8')
+    output = render
+      logo: logo
+      releaseHeader: releaseHeader
+      majorVersion: majorVersion
+      fullVersion: CoffeeScript.VERSION
+      htmlFor: htmlFor()
+      codeFor: codeFor()
 
   testsInScriptBlocks = ->
     output = ''
@@ -233,38 +250,33 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
     output
 
   # Task
-  indexFile = 'documentation/index.html'
   do renderIndex = ->
     render = _.template fs.readFileSync(indexFile, 'utf-8')
     output = render
       css: css
-      logo: logo
-      htmlFor: htmlFor()
-      codeFor: codeFor()
-      releaseHeader: releaseHeader
+      body: body()
+      script: docsScript
+      jQueryVersion: jQueryVersion
       majorVersion: majorVersion
-      fullVersion: CoffeeScript.VERSION
-    fs.writeFileSync "docs/v#{majorVersion}/index.html", output
-    log 'compiled', green, "#{indexFile} → docs/v#{majorVersion}/index.html"
+    fs.writeFileSync "#{outputFolder}/index.html", output
+    log 'compiled', green, "#{indexFile} → #{outputFolder}/index.html"
   try
     fs.symlinkSync "v#{majorVersion}/index.html", 'docs/index.html'
   catch exception
 
-  testFile = 'documentation/test.html'
   do renderTest = ->
     render = _.template fs.readFileSync(testFile, 'utf-8')
     output = render
       testHelpers: testHelpers
       tests: testsInScriptBlocks()
       majorVersion: majorVersion
-    fs.writeFileSync "docs/v#{majorVersion}/test.html", output
-    log 'compiled', green, "#{testFile} → docs/v#{majorVersion}/test.html"
+    fs.writeFileSync "#{outputFolder}/test.html", output
+    log 'compiled', green, "#{testFile} → #{outputFolder}/test.html"
 
-  fs.watch 'documentation/examples', interval: 200, renderIndex
-  fs.watch sectionsSourceFolder, interval: 200, renderIndex
-  fs.watch indexFile, interval: 200, renderIndex
-  fs.watch testFile, interval: 200, renderTest
-  fs.watch 'test', interval: 200, renderTest
+  for target in [indexFile, examplesSourceFolder, sectionsSourceFolder]
+    fs.watch target, interval: 200, renderIndex
+  for target in [testFile, testsSourceFolder]
+    fs.watch target, interval: 200, renderTest
   log 'watching...' , green
 
 
