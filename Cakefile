@@ -180,6 +180,8 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
   htmlFor = ->
     marked = require 'marked'
     markdownRenderer = new marked.Renderer()
+    markdownRenderer.heading = (text, level) ->
+      "<h#{level}>#{text}</h#{level}>" # Don’t let marked add an id
     markdownRenderer.code = (code) ->
       if code.indexOf('codeFor(') is 0 or code.indexOf('releaseHeader(') is 0
         "<%= #{code} %>"
@@ -195,7 +197,6 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
       html = _.template(html)
         codeFor: codeFor()
         releaseHeader: releaseHeader
-      "<span class=\"bookmark\" id=\"#{if bookmark? then bookmark else file.replace(/_/g, '-')}\"></span>\n\n#{html}"
 
   include = ->
     (file) ->
