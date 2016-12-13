@@ -57,17 +57,6 @@ if require?
   fs   = require 'fs'
   path = require 'path'
 
-  test "patchStackTrace line patching", ->
-    err = new Error 'error'
-    ok err.stack.match /test[\/\\]error_messages\.coffee:\d+:\d+\b/
-
-  test "patchStackTrace stack prelude consistent with V8", ->
-    err = new Error
-    ok err.stack.match /^Error\n/ # Notice no colon when no message.
-
-    err = new Error 'error'
-    ok err.stack.match /^Error: error\n/
-
   test "#2849: compilation error in a require()d file", ->
     # Create a temporary file to require().
     ok not fs.existsSync 'test/syntax-error.coffee'
