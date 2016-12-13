@@ -1098,65 +1098,55 @@ exports.Arr = class Arr extends Base
 
 # The CoffeeScript class definition.
 # Initialize a **Class** with its name, an optional superclass, and a body.
+
 exports.Class = class Class extends Base
-  children: [ 'variable', 'parent', 'body' ]
+  children: ['variable', 'parent', 'body']
 
   defaultClassVariableName: '_Class'
 
   constructor: (@variable, @parent, @body = new Block) ->
-    @properties = []
 
   compileNode: (o) ->
-    if jumpNode = @body.jumps()
-      jumpNode.error 'Class bodies cannot contain pure statements'
-    if argumentsNode = @body.contains isLiteralArguments
-      argumentsNode.error "Class bodies shouldn't reference arguments"
+    @name          = @determineName()
+    executableBody = @walkBody()
 
-    name = @determineName()
-
-    [ directives, properties ] = @walkBody name
-    @setContext name
-
-    # TODO Once ES super is being used throughout, the check for `@parent`, and the assignment
-    # below, can be removed.
-    emptyBody = not @parent and not @externalCtor and directives.length is 0 and
-      (@body.isEmpty() or @body.expressions.length <= properties.length)
-
-    if emptyBody
-      klass = new ClassDeclaration name, @parent, new Block properties
+    # TODO Once `super` has been changed over to ES, the check for @parent can be remomved
+    if @parent or executableBody
+      @compileNode = @compileClassDeclaration
+      result = new ExecutableClassBody(@, executableBody).compileToFragments o
+      @compileNode = @constructor::compileNode
     else
-      ident   = new IdentifierLiteral name
-      params  = []
-      args    = []
-      wrapper = new Code params, @body
-      klass   = new Call wrapper, args
-
-      @body.spaced = true
-
-      o.classScope = wrapper.makeScope o.scope
-
-      declaration = new ClassDeclaration name
-      declaration.body.push property.hoist() for property in properties
-
-      if @externalCtor
-        externalCtor = new IdentifierLiteral o.classScope.freeVariable 'ctor', reserve: no
-        declaration.externalCtor = externalCtor
-        @externalCtor.variable.base = externalCtor
-
-      if @parent
-        parent = new IdentifierLiteral o.classScope.freeVariable 'superClass', reserve: no
-        declaration.parent = parent
-        params.push new Param parent
-        args.push @parent
-        @body.unshift new Literal "#{name}.__super__ = #{parent.value}.prototype"
-
-      @body.expressions.unshift directives..., declaration
-      @body.push ident
+      result = @compileClassDeclaration o
 
     if @variable
-      new Assign(@variable, klass, null, { @moduleDeclaration }).compileToFragments o
+      assign = new Assign @variable, new Literal(''), null, { @moduleDeclaration }
+      [ assign.compileToFragments(o)..., result... ]
     else
-      klass.compileToFragments o
+      result
+
+  compileClassDeclaration: (o) ->
+    @ctor ?= @makeDefaultConstructor() if @externalCtor or @boundMethods.length
+    @ctor?.noReturn = true
+
+    @proxyBoundMethods o
+    @ensureConstructorSuperCall()
+
+    o.indent += TAB
+
+    result = []
+    result.push @makeCode "class "
+    result.push @makeCode "#{@name} " if @name
+    result.push @makeCode('extends '), @parent.compileToFragments(o)..., @makeCode ' ' if @parent
+
+    result.push @makeCode '{'
+    unless @body.isEmpty()
+      @body.spaced = true
+      result.push @makeCode '\n'
+      result.push @body.compileToFragments(o, LEVEL_TOP)...
+      result.push @makeCode "\n#{@tab}"
+    result.push @makeCode '}'
+
+    result
 
   # Figure out the appropriate name for this class
   # TODO ES classes can be anonymous, so we shouldn't need a default name
@@ -1175,71 +1165,88 @@ exports.Class = class Class extends Base
       @variable.error message if message
     if name in JS_FORBIDDEN then "_#{name}" else name
 
-  # Traverse the class's children and:
-  # - Hoist valid ES properties into `@properties`
-  # - Hoist static assignments into `@properties`
-  # - Convert invalid ES properties into class or prototype assignments
-  walkBody: (name) ->
-    directives = []
-    properties = []
+  walkBody: ->
+    @ctor          = null
+    @boundMethods  = []
+    executableBody = null
 
-    while expr = @body.expressions[0]
-      break unless expr instanceof Comment or expr instanceof Value and expr.isString()
-      directives.push @body.expressions.shift()
+    initializer     = []
+    { expressions } = @body
 
-    comment = null
-    for expr, i in @body.expressions.slice()
-      if expr instanceof Value and expr.isObject true
-        for assign, i in expr.base.properties
-          if @validInitializerMethod name, assign
-            expr.base.properties[i] = method = @addInitializerMethod name, assign
-            properties.push comment if comment
-            properties.push method
-          comment = if assign instanceof Comment then assign else null
-      else if expr instanceof Assign and expr.variable.looksStatic name
-        if @validInitializerMethod name, expr
-          @body.expressions[i] = method = @addInitializerMethod name, expr
-          properties.push comment if comment
-          properties.push method
+    i = 0
+    for expression in expressions.slice()
+      if expression instanceof Value and expression.isObject true
+        { properties } = expression.base
+        exprs     = []
+        end       = 0
+        start     = 0
+        pushSlice = -> exprs.push new Value new Obj properties[start...end], true if end > start
 
-      comment = if expr instanceof Comment then expr else null
+        while assign = properties[end]
+          if initializerExpression = @addInitializerExpression assign
+            pushSlice()
+            exprs.push initializerExpression
+            initializer.push initializerExpression
+            start = end + 1
+          else if initializer[initializer.length - 1] instanceof Comment
+            # Try to keep comments with their subsequent assign
+            exprs.pop()
+            initializer.pop()
+            start--
+          end++
+        pushSlice()
 
-    @traverseChildren false, (child) =>
-      cont = true
-      return false if child instanceof Class
-      if child instanceof Block
-        for node, i in child.expressions
-          if node instanceof Value and node.isObject(true)
-            cont = false
-            child.expressions[i] = @addProperties node.base.properties
-          else if node instanceof Assign and node.variable.looksStatic name
-            node.value.static = yes
-        child.expressions = flatten child.expressions
-      cont and child not instanceof Class
+        expressions[i..i] = exprs
+        i += exprs.length
+      else
+        if initializerExpression = @addInitializerExpression expression
+          initializer.push initializerExpression
+          expressions[i] = initializerExpression
+        else if initializer[initializer.length - 1] instanceof Comment
+          # Try to keep comments with their subsequent assign
+          initializer.pop()
+        i += 1
 
-    [ directives, properties ]
+    for method in initializer when method instanceof Code
+      if method.ctor
+        method.error 'Cannot define more than one constructor in a class' if @ctor
+        @ctor = method
+      else if method.bound and method.static
+        method.context = @name
+      else if method.bound
+        @boundMethods.push method.name
+        method.bound = false
 
-  setContext: (name) ->
-    @body.traverseChildren false, (node) ->
-      return false if node.classBody
-      if node instanceof ThisLiteral
-        node.value   = name
-      else if node instanceof Code
-        node.context = name if node.bound
+    if initializer.length != expressions.length
+      @body.expressions = (expression.hoist() for expression in initializer)
+      new Block expressions
+
+  # Add an expression to the class initializer
+  #
+  # NOTE Currently, only comments, methods and static methods are valid in ES class initializers.
+  # When additional expressions become valid, this method should be updated to handle them.
+  addInitializerExpression: (node) ->
+    switch
+      when node instanceof Comment
+        node
+      when @validInitializerMethod node
+        @addInitializerMethod node
+      else
+        null
 
   # Checks if the given node is a valid ES class initializer method.
-  validInitializerMethod: (name, node) ->
+  validInitializerMethod: (node) ->
     return false unless node instanceof Assign and node.value instanceof Code
-    return true unless node.variable.hasProperties()
-    return node.variable.looksStatic name
+    return true if node.context is 'object' and not node.variable.hasProperties()
+    return node.variable.looksStatic @name
 
-  # Add a method to the class initializer
-  addInitializerMethod: (name, assign) ->
+  # Returns a configured class initializer method
+  addInitializerMethod: (assign) ->
     variable        = assign.variable
     method          = assign.value
     method.isMethod = yes
-    method.static   = variable.looksStatic name
-    method.klass    = new IdentifierLiteral name
+    method.static   = variable.looksStatic @name
+    method.klass    = new IdentifierLiteral @name
     method.variable = variable
 
     if method.static
@@ -1251,77 +1258,6 @@ exports.Class = class Class extends Base
       method.error 'Cannot define a constructor as a bound function' if method.bound and method.ctor
 
     method
-
-  # Make class/prototype assignments for invalid ES properties
-  addProperties: (assigns) ->
-    result = for assign in assigns
-      variable = assign.variable
-      base     = variable?.base
-      value    = assign.value
-      delete assign.context
-
-      if assign instanceof Comment or assign.isMethod
-        # Passthrough
-      else if base.value is 'constructor'
-        if value instanceof Code
-          base.error "constructors must be defined at the top level of a class body"
-
-        # The class scope is not available yet, so return the assignment to update later
-        assign = @externalCtor = new Assign new Value, value
-      else if not assign.variable.this
-        name      = new (if base.isComplex() then Index else Access) base
-        prototype = new Access new PropertyName 'prototype'
-        variable  = new Value new ThisLiteral(), [ prototype, name ]
-
-        assign.variable = variable
-
-      assign
-    compact result
-
-exports.ClassDeclaration = class ClassDeclaration extends Base
-  children: ['parent', 'body']
-
-  constructor: (@name = null, @parent = null, @body = new Block) ->
-
-  compileNode: (o) ->
-    [ ctor, boundMethods ] = @walkBody()
-
-    ctor ?= @makeDefaultConstructor() if @externalCtor or boundMethods.length
-    ctor?.noReturn = true
-
-    @proxyBoundMethods o, ctor, boundMethods
-    @ensureConstructorSuperCall ctor, boundMethods if @parent
-
-    o.indent += TAB
-
-    result = []
-    result.push @makeCode "class "
-    result.push @makeCode "#{@name} " if @name
-    result.push @makeCode('extends '), @parent.compileToFragments(o)..., @makeCode ' ' if @parent
-    result.push @makeCode "{#{if @body.isEmpty() then '' else '\n'}"
-
-    @body.spaced = true
-    result.push @body.compileToFragments(o, LEVEL_TOP)... unless @body.isEmpty()
-
-    result.push @makeCode "#{if @body.isEmpty() then '' else "\n#{@tab}"}}"
-    result
-
-  walkBody: ->
-    ctor         = null
-    boundMethods = []
-
-    for expression in @body.expressions
-      method = expression.source ? expression
-      continue if method instanceof Comment
-      method.error 'A class declaration can only contain functions' unless method instanceof Code
-      method.error 'Cannot define more than one constructor in a class' if ctor and method.ctor
-
-      if method.bound and not method.static
-        boundMethods.push method.name
-        method.bound = false
-      ctor = method if method.ctor
-
-    [ ctor, boundMethods ]
 
   makeDefaultConstructor: ->
     ctor          = new Code
@@ -1338,30 +1274,141 @@ exports.ClassDeclaration = class ClassDeclaration extends Base
 
     ctor
 
-  proxyBoundMethods: (o, ctor, boundMethods) ->
-    return if not ctor or boundMethods.length is 0
+  proxyBoundMethods: (o) ->
+    return unless @boundMethods.length
 
-    for name in boundMethods by -1
+    for name in @boundMethods by -1
       name = new Value(new ThisLiteral, [ name ]).compile o
-      ctor.body.unshift new Literal "#{name} = #{utility 'bind', o}(#{name}, this)"
+      @ctor.body.unshift new Literal "#{name} = #{utility 'bind', o}(#{name}, this)"
 
     null
 
-  ensureConstructorSuperCall: (ctor, boundMethods) ->
-    return if not ctor
+  ensureConstructorSuperCall: ->
+    return unless @parent and @ctor
 
     hasThisParam = no
-    hasThisParam = yes for param in ctor.params when param.name.this
+    hasThisParam = yes for param in @ctor.params when param.name.this
 
-    superCall    = ctor.superCall()
+    superCall    = @ctor.superCall()
 
     if hasThisParam and superCall
       superCall.error 'super not allowed with `@` parameters in derived constructors'
 
-    if boundMethods.length and superCall
+    if @boundMethods.length and superCall
       superCall.error 'super not allowed with bound functions in derived constructors'
 
-    ctor.body.unshift new SuperCall unless superCall
+    @ctor.body.unshift new SuperCall unless superCall
+
+exports.ExecutableClassBody = class ExecutableClassBody extends Base
+  children: [ 'class', 'body' ]
+
+  constructor: (@class, @body = new Block) ->
+
+  compileNode: (o) ->
+    if jumpNode = @body.jumps()
+      jumpNode.error 'Class bodies cannot contain pure statements'
+    if argumentsNode = @body.contains isLiteralArguments
+      argumentsNode.error "Class bodies shouldn't reference arguments"
+
+    @name      = @class.name
+    directives = @walkBody()
+    @setContext()
+
+    ident   = new IdentifierLiteral @name
+    params  = []
+    args    = []
+    wrapper = new Code params, @body
+    klass   = new Call wrapper, args
+
+    @body.spaced = true
+
+    o.classScope = wrapper.makeScope o.scope
+
+    if @externalCtor
+      externalCtor = new IdentifierLiteral o.classScope.freeVariable 'ctor', reserve: no
+      @class.externalCtor = externalCtor
+      @externalCtor.variable.base = externalCtor
+
+    if @class.parent
+      parent = new IdentifierLiteral o.classScope.freeVariable 'superClass', reserve: no
+      params.push new Param parent
+      args.push @class.parent
+
+      @class.parent = parent
+      @body.unshift new Literal "#{@name}.__super__ = #{parent.value}.prototype"
+
+    if @name != @class.name
+      @body.expressions.unshift new Assign (new IdentifierLiteral @name), @class
+    else
+      @body.expressions.unshift @class
+    @body.expressions.unshift directives...
+    @body.push ident
+
+    klass.compileToFragments o
+
+  # Traverse the class's children and:
+  # - Hoist valid ES properties into `@properties`
+  # - Hoist static assignments into `@properties`
+  # - Convert invalid ES properties into class or prototype assignments
+  walkBody: ->
+    directives  = []
+
+    index = 0
+    while expr = @body.expressions[index]
+      break unless expr instanceof Comment or expr instanceof Value and expr.isString()
+      if expr.hoisted
+        index++
+      else
+        directives.push @body.expressions.splice(index, 1)...
+
+    @traverseChildren false, (child) =>
+      return false if child instanceof Class or child instanceof HoistTarget
+
+      cont = true
+      if child instanceof Block
+        for node, i in child.expressions
+          if node instanceof Value and node.isObject(true)
+            cont = false
+            child.expressions[i] = @addProperties node.base.properties
+          else if node instanceof Assign and node.variable.looksStatic @name
+            node.value.static = yes
+        child.expressions = flatten child.expressions
+      cont
+
+    directives
+
+  setContext: ->
+    @body.traverseChildren false, (node) =>
+      if node instanceof ThisLiteral
+        node.value   = @name
+      else if node instanceof Code and node.bound
+        node.context = @name
+
+  # Make class/prototype assignments for invalid ES properties
+  addProperties: (assigns) ->
+    result = for assign in assigns
+      variable = assign.variable
+      base     = variable?.base
+      value    = assign.value
+      delete assign.context
+
+      if assign instanceof Comment
+        # Passthrough
+      else if base.value is 'constructor'
+        if value instanceof Code
+          base.error 'constructors must be defined at the top level of a class body'
+
+        # The class scope is not available yet, so return the assignment to update later
+        assign = @externalCtor = new Assign new Value, value
+      else if not assign.variable.this
+        name      = new (if base.isComplex() then Index else Access) base
+        prototype = new Access new PropertyName 'prototype'
+        variable  = new Value new ThisLiteral(), [ prototype, name ]
+
+        assign.variable = variable
+
+      assign
+    compact result
 
 #### Import and Export
 
