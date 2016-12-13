@@ -1,6 +1,7 @@
 /* Adapted from https://v4-alpha.getbootstrap.com/examples/dashboard/dashboard.css */
 
 body {
+  /* Required for Scrollspy */
   position: relative;
 }
 
@@ -8,8 +9,8 @@ body {
  * Sidebar
  */
 
-/* Hide for mobile, show later */
 .sidebar {
+  /* Hide for mobile, show later */
   display: none;
 }
 @media (min-width: 768px) {
@@ -28,15 +29,16 @@ body {
   }
 }
 
-/* Sidebar navigation */
 .nav-link.active,
 .nav-link.active, a:hover,
 .nav-link.active, a:focus {
   color: indianred;
 }
+
 .nav .nav {
   margin-left: 1em;
 }
+
 
 /*
  * Main content
@@ -50,4 +52,19 @@ body {
     padding-right: 2em;
     padding-left: 2em;
   }
+}
+
+
+/*
+ * Code examples
+ */
+
+textarea {
+  position: absolute;
+  left: -99999px; /* Hide off canvas, while still remaining visible */
+}
+
+.CodeMirror {
+  /* https://codemirror.net/demo/resize.html */
+  height: auto;
 }

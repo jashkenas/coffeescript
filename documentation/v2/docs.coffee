@@ -12,3 +12,35 @@ $(window).on 'activate.bs.scrollspy', (event, target) -> # Why `window`? https:/
   $target = $(".nav-link[href='#{target.relatedTarget}']")
   # Update the browser address bar on scroll or navigation
   window.history.pushState {}, $target.text(), $target.prop('href')
+
+
+# Initialize CodeMirror for code examples; https://codemirror.net/doc/manual.html
+editors = []
+lastCompilationElapsedTime = 200
+$('textarea').each (index) ->
+  mode = if $(@).hasClass('javascript-output') then 'javascript' else 'coffeescript'
+
+  editors[index] = editor = CodeMirror.fromTextArea @,
+    mode: mode
+    theme: 'default' # TODO: Change
+    indentUnit: 2
+    tabSize: 2
+    lineWrapping: on
+    lineNumbers: off
+    inputStyle: 'contenteditable'
+    # readOnly: (if mode is 'coffeescript' then no else 'nocursor')
+    viewportMargin: Infinity
+
+  if mode is 'coffeescript'
+    pending = null
+    editor.on 'change', (instance, change) ->
+      clearTimeout pending
+      pending = setTimeout ->
+        lastCompilationStartTime = Date.now()
+        try
+          output = CoffeeScript.compile editor.getValue(), bare: yes
+          lastCompilationElapsedTime = Math.max(200, Date.now() - lastCompilationStartTime)
+        catch exception
+          output = "#{exception}"
+        editors[index + 1].setValue output
+      , lastCompilationElapsedTime
