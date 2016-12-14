@@ -28,7 +28,7 @@ $('textarea').each (index) ->
     lineWrapping: on
     lineNumbers: off
     inputStyle: 'contenteditable'
-    # readOnly: (if mode is 'coffeescript' then no else 'nocursor')
+    readOnly: if mode is 'coffeescript' then no else 'nocursor'
     viewportMargin: Infinity
 
   if mode is 'coffeescript'

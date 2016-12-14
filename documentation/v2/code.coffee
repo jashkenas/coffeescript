@@ -1,20 +1,11 @@
 fs           = require 'fs'
+_            = require 'underscore'
 CoffeeScript = require '../../lib/coffee-script'
 
 
 module.exports = ->
-  (file, executable = no, showLoad = yes) ->
+  (file, run = no) ->
     cs = fs.readFileSync "documentation/examples/#{file}.coffee", 'utf-8'
-    js = CoffeeScript.compile cs, bare: yes
-    """
-      <aside class="container-fluid">
-        <div class="row">
-          <div class="col-md-6">
-            <textarea class="coffee-example">#{cs}</textarea>
-          </div>
-          <div class="col-md-6">
-            <textarea class="javascript-output">#{js}</textarea>
-          </div>
-        </div>
-      </aside>
-    """
+    js = CoffeeScript.compile cs, bare: yes # This is just the initial JavaScript output; it is replaced by dynamic compilation on changes of the CoffeeScript pane
+    render = _.template fs.readFileSync('documentation/v2/code.html', 'utf-8')
+    output = render {file, cs, js, run}

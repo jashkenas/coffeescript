@@ -67,4 +67,11 @@ textarea {
 .CodeMirror {
   /* https://codemirror.net/demo/resize.html */
   height: auto;
+  background: transparent;
+}
+
+.code-example {
+  background-color: #f5f5f5;
+  padding: 1em;
+  border-radius: 0.3em;
 }
