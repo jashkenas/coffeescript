@@ -18,6 +18,7 @@ $(window).on 'activate.bs.scrollspy', (event, target) -> # Why `window`? https:/
 editors = []
 lastCompilationElapsedTime = 200
 $('textarea').each (index) ->
+  $(@).data 'index', index
   mode = if $(@).hasClass('javascript-output') then 'javascript' else 'coffeescript'
 
   editors[index] = editor = CodeMirror.fromTextArea @,
@@ -31,6 +32,7 @@ $('textarea').each (index) ->
     readOnly: if mode is 'coffeescript' then no else 'nocursor'
     viewportMargin: Infinity
 
+  # Whenever the user edits the CoffeeScript side of a code example, update the JavaScript output
   if mode is 'coffeescript'
     pending = null
     editor.on 'change', (instance, change) ->
@@ -44,3 +46,12 @@ $('textarea').each (index) ->
           output = "#{exception}"
         editors[index + 1].setValue output
       , lastCompilationElapsedTime
+
+
+# Handle the code example buttons
+$('button').click ->
+  run = $(@).data 'run'
+  index = $("##{$(@).data('example')}-js").data 'index'
+  js = editors[index].getValue()
+  js = "#{js}\nalert(#{unescape run});" unless run is yes
+  eval js
