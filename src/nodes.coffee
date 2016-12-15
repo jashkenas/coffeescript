@@ -1847,10 +1847,14 @@ exports.Code = class Code extends Base
       paramNames.push name
       haveThisParam = yes if node.this
 
-    # If there's a super call as the first expression in a constructor, it needs to stay above any
-    # `this` assignments
-    if @ctor and haveThisParam and @body.expressions[0] instanceof SuperCall
-      exprs.push @body.expressions.shift()
+    if @ctor
+      @variable.error 'Class constructor may not be async' if @isAsync
+      @variable.error 'Class constructor may not be a generator' if @isGenerator
+
+      # If there's a super call as the first expression in a constructor, it needs to stay above any
+      # `this` assignments
+      if haveThisParam and @body.expressions[0] instanceof SuperCall
+        exprs.push @body.expressions.shift()
 
     # Parse the parameters, adding them to the list of parameters to put in the
     # function definition; and dealing with splats or expansions, including
