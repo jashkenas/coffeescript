@@ -2012,7 +2012,8 @@ exports.Op = class Op extends Base
     switch @operator
       when '?'  then @compileExistence o
       when '**' then @compilePower o
-      when '//' then @compileFloorDivision o
+      when '//' then @compileBoundDivision o, 'floor'
+      when '\\\\' then @compileBoundDivision o, 'ceil'
       when '%%' then @compileModulo o
       else
         lhs = @first.compileToFragments o, LEVEL_OP
@@ -2081,10 +2082,10 @@ exports.Op = class Op extends Base
     pow = new Value new IdentifierLiteral('Math'), [new Access new PropertyName 'pow']
     new Call(pow, [@first, @second]).compileToFragments o
 
-  compileFloorDivision: (o) ->
-    floor = new Value new IdentifierLiteral('Math'), [new Access new PropertyName 'floor']
+  compileBoundDivision: (o, op) ->
+    mathRef = new Value new IdentifierLiteral('Math'), [new Access new PropertyName op]
     div = new Op '/', @first, @second
-    new Call(floor, [div]).compileToFragments o
+    new Call(mathRef, [div]).compileToFragments o
 
   compileModulo: (o) ->
     mod = new Value new Literal utility 'modulo', o

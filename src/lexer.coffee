@@ -912,13 +912,13 @@ NUMBER     = ///
 ///i
 
 OPERATOR   = /// ^ (
-  ?: [-=]>             # function
-   | [-+*/%<>&|^!?=]=  # compound assign / compare
-   | >>>=?             # zero-fill right shift
-   | ([-+:])\1         # doubles
-   | ([&|<>*/%])\2=?   # logic / shift / power / floor division / modulo
-   | \?(\.|::)         # soak access
-   | \.{2,3}           # range or splat
+  ?: [-=]>              # function
+   | [-+*/%<>&|^!?=]=   # compound assign / compare
+   | >>>=?              # zero-fill right shift
+   | ([-+:])\1          # doubles
+   | ([&|<>*/\\%])\2=?  # logic / shift / power / floor division / ceil division / modulo
+   | \?(\.|::)          # soak access
+   | \.{2,3}            # range or splat
 ) ///
 
 WHITESPACE = /^[^\n\S]+/
@@ -1010,7 +1010,7 @@ SHIFT = ['<<', '>>', '>>>']
 COMPARE = ['==', '!=', '<', '>', '<=', '>=']
 
 # Mathematical tokens.
-MATH = ['*', '/', '%', '//', '%%']
+MATH = ['*', '/', '%', '//', '%%', '\\\\']
 
 # Relational tokens that are negatable with `not` prefix.
 RELATION = ['IN', 'OF', 'INSTANCEOF']

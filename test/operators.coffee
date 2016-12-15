@@ -328,6 +328,11 @@ test "floor division operator", ->
   eq -3, -7 // 3
   eq NaN, 0 // 0
 
+test "ceil division operator", ->
+  eq 3, 7 \\ 3
+  eq -2, -7 \\ 3
+  eq NaN, 0 \\ 0
+
 test "floor division operator compound assignment", ->
   a = 7
   a //= 2
@@ -335,6 +340,7 @@ test "floor division operator compound assignment", ->
 
 test "modulo operator", ->
   check = (a, b, expected) ->
+
     eq expected, a %% b, "expected #{a} %%%% #{b} to be #{expected}"
   check 0, 1, 0
   check 0, -1, -0
