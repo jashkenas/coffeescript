@@ -1102,16 +1102,13 @@ exports.Arr = class Arr extends Base
 exports.Class = class Class extends Base
   children: ['variable', 'parent', 'body']
 
-  defaultClassName: '_Class'
-
   constructor: (@variable, @parent, @body = new Block) ->
 
   compileNode: (o) ->
     @name          = @determineName()
     executableBody = @walkBody()
 
-    # TODO Once `super` has been changed over to ES, the check for @parent can be removed
-    if @parent or executableBody
+    if executableBody
       @compileNode = @compileClassDeclaration
       result = new ExecutableClassBody(@, executableBody).compileToFragments o
       @compileNode = @constructor::compileNode
@@ -1150,16 +1147,14 @@ exports.Class = class Class extends Base
 
   # Figure out the appropriate name for this class
   determineName: ->
-    # TODO Once `super` has been changed over to ES, the check for @parent can be removed
-    defaultClassName = if @parent then @defaultClassName else null
-    return defaultClassName unless @variable
+    return null unless @variable
     [..., tail] = @variable.properties
     node = if tail
       tail instanceof Access and tail.name
     else
       @variable.base
     unless node instanceof IdentifierLiteral or node instanceof PropertyName
-      return defaultClassName
+      return null
     name = node.value
     unless tail
       message = isUnassignable name
@@ -1213,13 +1208,13 @@ exports.Class = class Class extends Base
         method.error 'Cannot define more than one constructor in a class' if @ctor
         @ctor = method
       else if method.bound and method.isStatic
-        @name ?= @defaultClassName
         method.context = @name
       else if method.bound
         @boundMethods.push method.name
         method.bound = false
 
-    if initializer.length != expressions.length
+    # TODO Once `super` has been changed over to ES, the check for @parent can be removed
+    if @parent or initializer.length != expressions.length
       @body.expressions = (expression.hoist() for expression in initializer)
       new Block expressions
 
@@ -1240,7 +1235,7 @@ exports.Class = class Class extends Base
   validInitializerMethod: (node) ->
     return false unless node instanceof Assign and node.value instanceof Code
     return true if node.context is 'object' and not node.variable.hasProperties()
-    return node.variable.looksStatic @name
+    return node.variable.looksStatic(@name) and (@name or not node.value.bound)
 
   # Returns a configured class initializer method
   addInitializerMethod: (assign) ->
@@ -1376,6 +1371,8 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
             child.expressions[i] = @addProperties node.base.properties
           else if node instanceof Assign and node.variable.looksStatic @name
             node.value.isStatic = yes
+          else if node instanceof Code and node.isMethod
+            node.klass = new IdentifierLiteral @name
         child.expressions = flatten child.expressions
       cont
 
@@ -1410,6 +1407,8 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
         variable  = new Value new ThisLiteral(), [ prototype, name ]
 
         assign.variable = variable
+      else if assign.value instanceof Code
+        assign.value.isStatic = true
 
       assign
     compact result
@@ -1939,7 +1938,7 @@ exports.Code = class Code extends Base
 
     # Assemble the output
     modifiers = []
-    modifiers.push 'static'   if @isStatic
+    modifiers.push 'static'   if @isMethod and @isStatic
     modifiers.push 'async'    if @isAsync
     modifiers.push 'function' if not @isMethod and not @bound
     modifiers.push '*'        if @isGenerator
