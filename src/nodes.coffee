@@ -805,7 +805,7 @@ exports.SuperCall = class SuperCall extends Call
         nref = new IdentifierLiteral o.scope.parent.freeVariable 'name'
         name.index = new Assign nref, name.index
       accesses = [new Access new PropertyName '__super__']
-      accesses.push new Access new PropertyName 'constructor' if method.static
+      accesses.push new Access new PropertyName 'constructor' if method.isStatic
       accesses.push if nref? then new Index nref else name
       (new Value bref ? klass, accesses).compile o
     else
@@ -1211,7 +1211,7 @@ exports.Class = class Class extends Base
       if method.ctor
         method.error 'Cannot define more than one constructor in a class' if @ctor
         @ctor = method
-      else if method.bound and method.static
+      else if method.bound and method.isStatic
         method.context = @name
       else if method.bound
         @boundMethods.push method.name
@@ -1245,11 +1245,11 @@ exports.Class = class Class extends Base
     variable        = assign.variable
     method          = assign.value
     method.isMethod = yes
-    method.static   = variable.looksStatic @name
+    method.isStatic = variable.looksStatic @name
     method.klass    = new IdentifierLiteral @name
     method.variable = variable
 
-    if method.static
+    if method.isStatic
       method.name = variable.properties[0]
     else
       methodName  = variable.base
@@ -1371,7 +1371,7 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
             cont = false
             child.expressions[i] = @addProperties node.base.properties
           else if node instanceof Assign and node.variable.looksStatic @name
-            node.value.static = yes
+            node.value.isStatic = yes
         child.expressions = flatten child.expressions
       cont
 
@@ -1589,7 +1589,7 @@ exports.Assign = class Assign extends Base
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
       return @compileSpecialMath  o if @context in ['**=', '//=', '%%=']
     if @value instanceof Code
-      if @value.static
+      if @value.isStatic
         @value.klass = @variable.base
         @value.name  = @variable.properties[0]
         @value.variable = @variable
@@ -1931,7 +1931,7 @@ exports.Code = class Code extends Base
 
     # Assemble the output
     modifiers = []
-    modifiers.push 'static'   if @static
+    modifiers.push 'static'   if @isStatic
     modifiers.push 'async'    if @isAsync
     modifiers.push 'function' if not @isMethod and not @bound
     modifiers.push '*'        if @isGenerator
