@@ -1102,7 +1102,7 @@ exports.Arr = class Arr extends Base
 exports.Class = class Class extends Base
   children: ['variable', 'parent', 'body']
 
-  defaultClassVariableName: '_Class'
+  defaultClassName: '_Class'
 
   constructor: (@variable, @parent, @body = new Block) ->
 
@@ -1110,7 +1110,7 @@ exports.Class = class Class extends Base
     @name          = @determineName()
     executableBody = @walkBody()
 
-    # TODO Once `super` has been changed over to ES, the check for @parent can be remomved
+    # TODO Once `super` has been changed over to ES, the check for @parent can be removed
     if @parent or executableBody
       @compileNode = @compileClassDeclaration
       result = new ExecutableClassBody(@, executableBody).compileToFragments o
@@ -1149,16 +1149,17 @@ exports.Class = class Class extends Base
     result
 
   # Figure out the appropriate name for this class
-  # TODO ES classes can be anonymous, so we shouldn't need a default name
   determineName: ->
-    return @defaultClassVariableName unless @variable
+    # TODO Once `super` has been changed over to ES, the check for @parent can be removed
+    defaultClassName = if @parent then @defaultClassName else null
+    return defaultClassName unless @variable
     [..., tail] = @variable.properties
     node = if tail
       tail instanceof Access and tail.name
     else
       @variable.base
     unless node instanceof IdentifierLiteral or node instanceof PropertyName
-      return @defaultClassVariableName
+      return defaultClassName
     name = node.value
     unless tail
       message = isUnassignable name
@@ -1212,6 +1213,7 @@ exports.Class = class Class extends Base
         method.error 'Cannot define more than one constructor in a class' if @ctor
         @ctor = method
       else if method.bound and method.isStatic
+        @name ?= @defaultClassName
         method.context = @name
       else if method.bound
         @boundMethods.push method.name
@@ -1302,6 +1304,8 @@ exports.Class = class Class extends Base
 exports.ExecutableClassBody = class ExecutableClassBody extends Base
   children: [ 'class', 'body' ]
 
+  defaultClassVariableName: '_Class'
+
   constructor: (@class, @body = new Block) ->
 
   compileNode: (o) ->
@@ -1310,7 +1314,7 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
     if argumentsNode = @body.contains isLiteralArguments
       argumentsNode.error "Class bodies shouldn't reference arguments"
 
-    @name      = @class.name
+    @name      = @class.name ? @defaultClassVariableName
     directives = @walkBody()
     @setContext()
 
