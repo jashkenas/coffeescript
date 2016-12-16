@@ -1,6 +1,6 @@
+/* Highlight.js syntax highlighting */
 /* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
-/* Original code:; http://softwaremaniacs.org/media/soft/highlight/styles/tomorrow.css */
-/* But forked for CoffeeScript */
+/* Forked from http://softwaremaniacs.org/media/soft/highlight/styles/tomorrow.css */
 .tomorrow-comment, pre .comment, pre .title {
   color: #8e908c;
 }
@@ -47,12 +47,6 @@ pre .property {
 
 pre .class .title {
   color: #21439C;
-}
-
-pre code {
-  display: block;
-  background: white;
-  color: #000000;
 }
 
 pre .coffeescript .javascript,

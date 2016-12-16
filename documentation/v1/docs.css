@@ -18,11 +18,16 @@ a {
   color: #191933;
 }
 h1, h2, h3, h4, h5, h6, b.header {
-  font-size: 18px;
   color: #000;
   margin-top: 40px;
   margin-bottom: 15px;
   text-shadow: #fff 0 1px 1px;
+}
+h2 {
+  font-size: 18px;
+}
+h3 {
+  font-size: 14px;
 }
 br.clear {
   height: 0;
@@ -57,7 +62,11 @@ table.definitions {
     text-align: center;
     padding: 5px 20px;
   }
-code, pre, textarea {
+blockquote {
+  margin-left: 0;
+  margin-right: 0;
+}
+code, pre, pre > code, textarea {
   font-family: Monaco, Consolas, "Lucida Console", monospace;
   font-size: 12px;
   line-height: 18px;
@@ -71,16 +80,12 @@ code, pre, textarea {
     border: 1px solid #dedede;
     padding: 0px 0.2em;
   }
-  pre {
+  blockquote > pre {
+    margin: 0;
     border-left: 5px solid rgba(0,0,0,0.2);
     padding: 3px 0 3px 12px;
     font-size: 12px;
   }
-    pre.no_bar {
-      border-left: 0;
-      margin-left: 0;
-      padding-left: 0;
-    }
 .timestamp {
   font-size: 11px;
   font-weight: normal;
