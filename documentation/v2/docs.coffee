@@ -1,57 +1,63 @@
-# Initialize Scrollspy for sidebar navigation; http://v4-alpha.getbootstrap.com/components/scrollspy/
-$('body').scrollspy
-  target: '#nav'
-  offset: Math.round $('main').css('padding-top').replace('px', '')
-
-if window.location.hash?
-  $(".nav-link.active[href!='#{window.location.hash}']").removeClass 'active'
-
-$(window).on 'activate.bs.scrollspy', (event, target) -> # Why `window`? https://github.com/twbs/bootstrap/issues/20086
-  # We only want one active link in the nav
-  $(".nav-link.active[href!='#{target.relatedTarget}']").removeClass 'active'
-  $target = $(".nav-link[href='#{target.relatedTarget}']")
-  # Update the browser address bar on scroll or navigation
-  window.history.pushState {}, $target.text(), $target.prop('href')
+$(document).ready ->
+  # Mobile navigation
+  $('[data-toggle="offcanvas"]').click ->
+    $('.row-offcanvas').toggleClass 'active'
 
 
-# Initialize CodeMirror for code examples; https://codemirror.net/doc/manual.html
-editors = []
-lastCompilationElapsedTime = 200
-$('textarea').each (index) ->
-  $(@).data 'index', index
-  mode = if $(@).hasClass('javascript-output') then 'javascript' else 'coffeescript'
+  # Initialize Scrollspy for sidebar navigation; http://v4-alpha.getbootstrap.com/components/scrollspy/
+  $('body').scrollspy
+    target: '#nav'
+    offset: Math.round $('main').css('padding-top').replace('px', '')
 
-  editors[index] = editor = CodeMirror.fromTextArea @,
-    mode: mode
-    theme: 'default' # TODO: Change
-    indentUnit: 2
-    tabSize: 2
-    lineWrapping: on
-    lineNumbers: off
-    inputStyle: 'contenteditable'
-    readOnly: if mode is 'coffeescript' then no else 'nocursor'
-    viewportMargin: Infinity
+  if window.location.hash?
+    $(".nav-link.active[href!='#{window.location.hash}']").removeClass 'active'
 
-  # Whenever the user edits the CoffeeScript side of a code example, update the JavaScript output
-  if mode is 'coffeescript'
-    pending = null
-    editor.on 'change', (instance, change) ->
-      clearTimeout pending
-      pending = setTimeout ->
-        lastCompilationStartTime = Date.now()
-        try
-          output = CoffeeScript.compile editor.getValue(), bare: yes
-          lastCompilationElapsedTime = Math.max(200, Date.now() - lastCompilationStartTime)
-        catch exception
-          output = "#{exception}"
-        editors[index + 1].setValue output
-      , lastCompilationElapsedTime
+  $(window).on 'activate.bs.scrollspy', (event, target) -> # Why `window`? https://github.com/twbs/bootstrap/issues/20086
+    # We only want one active link in the nav
+    $(".nav-link.active[href!='#{target.relatedTarget}']").removeClass 'active'
+    $target = $(".nav-link[href='#{target.relatedTarget}']")
+    # Update the browser address bar on scroll or navigation
+    window.history.pushState {}, $target.text(), $target.prop('href')
 
 
-# Handle the code example buttons
-$('button').click ->
-  run = $(@).data 'run'
-  index = $("##{$(@).data('example')}-js").data 'index'
-  js = editors[index].getValue()
-  js = "#{js}\nalert(#{unescape run});" unless run is yes
-  eval js
+  # Initialize CodeMirror for code examples; https://codemirror.net/doc/manual.html
+  editors = []
+  lastCompilationElapsedTime = 200
+  $('textarea').each (index) ->
+    $(@).data 'index', index
+    mode = if $(@).hasClass('javascript-output') then 'javascript' else 'coffeescript'
+
+    editors[index] = editor = CodeMirror.fromTextArea @,
+      mode: mode
+      theme: 'default' # TODO: Change
+      indentUnit: 2
+      tabSize: 2
+      lineWrapping: on
+      lineNumbers: off
+      inputStyle: 'contenteditable'
+      readOnly: if mode is 'coffeescript' then no else 'nocursor'
+      viewportMargin: Infinity
+
+    # Whenever the user edits the CoffeeScript side of a code example, update the JavaScript output
+    if mode is 'coffeescript'
+      pending = null
+      editor.on 'change', (instance, change) ->
+        clearTimeout pending
+        pending = setTimeout ->
+          lastCompilationStartTime = Date.now()
+          try
+            output = CoffeeScript.compile editor.getValue(), bare: yes
+            lastCompilationElapsedTime = Math.max(200, Date.now() - lastCompilationStartTime)
+          catch exception
+            output = "#{exception}"
+          editors[index + 1].setValue output
+        , lastCompilationElapsedTime
+
+
+  # Handle the code example buttons
+  $('[action="run-code-example"]').click ->
+    run = $(@).data 'run'
+    index = $("##{$(@).data('example')}-js").data 'index'
+    js = editors[index].getValue()
+    js = "#{js}\nalert(#{unescape run});" unless run is yes
+    eval js
