@@ -25,7 +25,7 @@ header = """
 """
 
 # Used in folder names like docs/v1
-majorVersion = CoffeeScript.VERSION.split('.')[0]
+majorVersion = parseInt CoffeeScript.VERSION.split('.')[0], 10
 
 # Build the CoffeeScript language from source.
 build = (cb) ->
@@ -90,7 +90,11 @@ task 'build:parser', 'rebuild the Jison parser (run build first)', ->
 
 
 task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
-  code = ''
+  code = """
+  require['../../package.json'] = (function() {
+    return #{fs.readFileSync "./package.json"};
+  })();
+  """
   for {name, src} in [{name: 'marked', src: 'lib/marked.js'}]
     code += """
       require['#{name}'] = (function() {
@@ -136,74 +140,96 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
 
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
+  # Constants
+  indexFile = 'documentation/index.html'
+  versionedSourceFolder = "documentation/v#{majorVersion}"
+  sectionsSourceFolder = 'documentation/sections'
+  examplesSourceFolder = 'documentation/examples'
+  outputFolder = "docs/v#{majorVersion}"
+
   # Helpers
-  css = fs.readFileSync('./documentation/css/docs.css', 'utf-8') + '\n' +
-        fs.readFileSync('./documentation/css/tomorrow.css', 'utf-8')
+  releaseHeader = (date, version, prevVersion) ->
+    monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
-  logo = fs.readFileSync './documentation/images/logo.svg', 'utf-8'
+    formatDate = (date) ->
+      date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
+        "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
 
-  codeFor = ->
-    counter = 0
-    hljs = require 'highlight.js'
-    hljs.configure classPrefix: ''
-    (file, executable = false, showLoad = true) ->
-      counter++
-      return unless fs.existsSync "docs/v#{majorVersion}/examples/#{file}.js"
-      cs = fs.readFileSync "documentation/examples/#{file}.coffee", 'utf-8'
-      js = fs.readFileSync "docs/v#{majorVersion}/examples/#{file}.js", 'utf-8'
-      js = js.replace /^\/\/ generated.*?\n/i, ''
+    """
+      <div class="anchor" id="#{version}"></div>
+      <h2 class="header">
+        #{prevVersion and "<a href=\"https://github.com/jashkenas/coffeescript/compare/#{prevVersion}...#{version}\">#{version}</a>" or version}
+        <span class="timestamp"> &mdash; <time datetime="#{date}">#{formatDate date}</time></span>
+      </h2>
+    """
 
-      cshtml = "<pre><code>#{hljs.highlight('coffeescript', cs).value}</code></pre>"
-      # Temporary fix until highlight.js adds support for newer CoffeeScript keywords
-      # Added in https://github.com/isagalaev/highlight.js/pull/1357, awaiting release
-      if file in ['generator_iteration', 'generators', 'modules']
-        cshtml = cshtml.replace /(yield|import|export|from|as|default) /g, '<span class="keyword">$1</span> '
-      jshtml = "<pre><code>#{hljs.highlight('javascript', js).value}</code></pre>"
-      append = if executable is yes then '' else "alert(#{executable});".replace /"/g, '&quot;'
-      if executable and executable isnt yes
-        cs.replace /(\S)\s*\Z/m, "$1\n\nalert #{executable}"
-      run    = if executable is true then 'run' else "run: #{executable}"
-      name   = "example#{counter}"
-      script = "<script>window.#{name} = #{JSON.stringify cs}</script>"
-      load   = if showLoad then "<div class='minibutton load' onclick='javascript: loadConsole(#{name});'>load</div>" else ''
-      button = if executable then """<div class="minibutton ok" onclick="javascript: #{js.replace /"/g, '&quot;'};#{append}">#{run}</div>""" else ''
-      "<div class='code'>#{cshtml}#{jshtml}#{script}#{load}#{button}<br class='clear' /></div>"
+  codeFor = require "./documentation/v#{majorVersion}/code.coffee"
 
-  monthNames = [
-    'January'
-    'February'
-    'March'
-    'April'
-    'May'
-    'June'
-    'July'
-    'August'
-    'September'
-    'October'
-    'November'
-    'December'
-  ]
+  htmlFor = ->
+    marked = require 'marked'
+    markdownRenderer = new marked.Renderer()
+    markdownRenderer.heading = (text, level) ->
+      "<h#{level}>#{text}</h#{level}>" # Don’t let marked add an id
+    markdownRenderer.code = (code) ->
+      if code.indexOf('codeFor(') is 0 or code.indexOf('releaseHeader(') is 0
+        "<%= #{code} %>"
+      else
+        "<pre><code>#{code}</code></pre>" # Default
 
-  formatDate = (date) ->
-    date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
-      "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
+    (file, bookmark) ->
+      md = fs.readFileSync "#{sectionsSourceFolder}/#{file}.md", 'utf-8'
+      md = md.replace /<%= releaseHeader %>/g, releaseHeader
+      md = md.replace /<%= majorVersion %>/g, majorVersion
+      md = md.replace /<%= fullVersion %>/g, CoffeeScript.VERSION
+      html = marked md, renderer: markdownRenderer
+      html = _.template(html)
+        codeFor: codeFor()
+        releaseHeader: releaseHeader
 
-  releaseHeader = (date, version, prevVersion) -> """
-    <div class="anchor" id="#{version}"></div>
-    <b class="header">
-      #{prevVersion and "<a href=\"https://github.com/jashkenas/coffeescript/compare/#{prevVersion}...#{version}\">#{version}</a>" or version}
-      <span class="timestamp"> &mdash; <time datetime="#{date}">#{formatDate date}</time></span>
-    </b>
-  """
+  include = ->
+    (file) ->
+      file = "#{versionedSourceFolder}/#{file}" if file.indexOf('/') is -1
+      output = fs.readFileSync file, 'utf-8'
+      if /\.html$/.test(file)
+        render = _.template output
+        output = render
+          releaseHeader: releaseHeader
+          majorVersion: majorVersion
+          fullVersion: CoffeeScript.VERSION
+          htmlFor: htmlFor()
+          codeFor: codeFor()
+          include: include()
+      output
 
+  # Task
+  do renderIndex = ->
+    render = _.template fs.readFileSync(indexFile, 'utf-8')
+    output = render
+      include: include()
+    fs.writeFileSync "#{outputFolder}/index.html", output
+    log 'compiled', green, "#{indexFile} → #{outputFolder}/index.html"
+  try
+    fs.symlinkSync "v#{majorVersion}/index.html", 'docs/index.html'
+  catch exception
+
+  for target in [indexFile, versionedSourceFolder, examplesSourceFolder, sectionsSourceFolder]
+    fs.watch target, interval: 200, renderIndex
+  log 'watching...' , green
+
+
+task 'doc:test', 'watch and continually rebuild the browser-based tests', ->
+  # Constants
+  testFile = 'documentation/test.html'
+  testsSourceFolder = 'test'
+  outputFolder = "docs/v#{majorVersion}"
+
+  # Included in test.html
   testHelpers = fs.readFileSync('test/support/helpers.coffee', 'utf-8').replace /exports\./g, '@'
 
+  # Helpers
   testsInScriptBlocks = ->
     output = ''
-    excludedTestFiles = ['error_messages.coffee']
-    for filename in fs.readdirSync 'test'
-      continue if filename in excludedTestFiles
-
+    for filename in fs.readdirSync testsSourceFolder
       if filename.indexOf('.coffee') isnt -1
         type = 'coffeescript'
       else if filename.indexOf('.litcoffee') isnt -1
@@ -221,41 +247,16 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
     output
 
   # Task
-  examplesSourceFolder = 'documentation/examples'
-  examplesOutputFolder = "docs/v#{majorVersion}/examples"
-  fs.mkdirSync examplesOutputFolder unless fs.existsSync examplesOutputFolder
-  do renderExamples = ->
-    execSync "bin/coffee -bc -o #{examplesOutputFolder} #{examplesSourceFolder}/*.coffee"
-
-  indexFile = 'documentation/index.html'
-  do renderIndex = ->
-    render = _.template fs.readFileSync(indexFile, 'utf-8')
-    output = render
-      css: css
-      logo: logo
-      codeFor: codeFor()
-      releaseHeader: releaseHeader
-      majorVersion: majorVersion
-      fullVersion: CoffeeScript.VERSION
-    fs.writeFileSync "docs/v#{majorVersion}/index.html", output
-    log 'compiled', green, "#{indexFile} → docs/v#{majorVersion}/index.html"
-
-  testFile = 'documentation/test.html'
   do renderTest = ->
     render = _.template fs.readFileSync(testFile, 'utf-8')
     output = render
       testHelpers: testHelpers
       tests: testsInScriptBlocks()
-      majorVersion: majorVersion
-    fs.writeFileSync "docs/v#{majorVersion}/test.html", output
-    log 'compiled', green, "#{testFile} → docs/v#{majorVersion}/test.html"
+    fs.writeFileSync "#{outputFolder}/test.html", output
+    log 'compiled', green, "#{testFile} → #{outputFolder}/test.html"
 
-  fs.watch examplesSourceFolder, interval: 200, ->
-    renderExamples()
-    renderIndex()
-  fs.watch indexFile, interval: 200, renderIndex
-  fs.watch testFile, interval: 200, renderTest
-  fs.watch 'test', interval: 200, renderTest
+  for target in [testFile, testsSourceFolder]
+    fs.watch target, interval: 200, renderTest
   log 'watching...' , green
 
 

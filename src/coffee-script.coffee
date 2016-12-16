@@ -10,9 +10,12 @@ path          = require 'path'
 {parser}      = require './parser'
 helpers       = require './helpers'
 SourceMap     = require './sourcemap'
+# Require `package.json`, which is two levels above this file, as this file is
+# evaluated from `lib/coffee-script`.
+packageJson   = require '../../package.json'
 
 # The current CoffeeScript version number.
-exports.VERSION = '2.0.0-alpha'
+exports.VERSION = packageJson.version
 
 exports.FILE_EXTENSIONS = ['.coffee', '.litcoffee', '.coffee.md']
 
@@ -22,7 +25,7 @@ exports.helpers = helpers
 # Function that allows for btoa in both nodejs and the browser.
 base64encode = (src) -> switch
   when typeof Buffer is 'function'
-    Buffer.from(src).toString('base64')
+    new Buffer(src).toString('base64')
   when typeof btoa is 'function'
     # The contents of a `<script>` block are encoded via UTF-16, so if any extended
     # characters are used in the block, btoa will fail as it maxes out at UTF-8.

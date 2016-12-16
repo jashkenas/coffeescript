@@ -40,9 +40,10 @@
   },
   "devDependencies": {
     "docco": "~0.7.0",
-    "google-closure-compiler-js": "^20161024.0.0",
-    "highlight.js": "~9.8.0",
+    "google-closure-compiler-js": "^20161201.0.0",
+    "highlight.js": "~9.9.0",
     "jison": ">=0.4.17",
+    "marked": "^0.3.6",
     "underscore": "~1.8.3"
   },
   "dependencies": {
