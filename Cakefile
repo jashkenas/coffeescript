@@ -90,7 +90,11 @@ task 'build:parser', 'rebuild the Jison parser (run build first)', ->
 
 
 task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
-  code = ''
+  code = """
+  require['../../package.json'] = (function() {
+    return #{fs.readFileSync "./package.json"};
+  })();
+  """
   for {name, src} in [{name: 'marked', src: 'lib/marked.js'}]
     code += """
       require['#{name}'] = (function() {
@@ -123,14 +127,14 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
     }(this));
   """
   unless process.env.MINIFY is 'false'
-    {compiledCode} = require('google-closure-compiler-js').compile
+    {compiledCode: code} = require('google-closure-compiler-js').compile
       jsCode: [
         src: code
         languageOut: if majorVersion is 1 then 'ES5' else 'ES6'
       ]
   outputFolder = "docs/v#{majorVersion}/browser-compiler"
   fs.mkdirSync outputFolder unless fs.existsSync outputFolder
-  fs.writeFileSync "#{outputFolder}/coffee-script.js", header + '\n' + compiledCode
+  fs.writeFileSync "#{outputFolder}/coffee-script.js", header + '\n' + code
   console.log "built ... running browser tests:"
   invoke 'test:browser'
 
