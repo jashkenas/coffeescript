@@ -6,7 +6,7 @@ $(document).ready ->
 
   # Initialize Scrollspy for sidebar navigation; http://v4-alpha.getbootstrap.com/components/scrollspy/
   $('body').scrollspy
-    target: '#nav'
+    target: '#contents'
     offset: Math.round $('main').css('padding-top').replace('px', '')
 
   if window.location.hash?

@@ -128,6 +128,11 @@ svg {
   overflow-x: hidden;
   overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
 }
+@media screen and (max-width: 991px) {
+  .sidebar .contents {
+    position: fixed;
+  }
+}
 
 .nav-link.active,
 .nav-link.active, a:hover,
@@ -243,7 +248,7 @@ textarea {
 <div class="container-fluid" id="top">
   <div class="row row-offcanvas row-offcanvas-left">
     <nav class="sidebar col-xs-12 col-lg-3 sidebar-offcanvas">
-      <nav id="nav">
+      <nav class="contents" id="contents">
   <ul class="nav">
     <li class="nav-item">
       <a href="#overview" class="nav-link active">Overview</a>
@@ -3244,7 +3249,7 @@ $(document).ready ->
 
   # Initialize Scrollspy for sidebar navigation; http://v4-alpha.getbootstrap.com/components/scrollspy/
   $('body').scrollspy
-    target: '#nav'
+    target: '#contents'
     offset: Math.round $('main').css('padding-top').replace('px', '')
 
   if window.location.hash?

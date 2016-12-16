@@ -110,6 +110,11 @@ svg {
   overflow-x: hidden;
   overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
 }
+@media screen and (max-width: 991px) {
+  .sidebar .contents {
+    position: fixed;
+  }
+}
 
 .nav-link.active,
 .nav-link.active, a:hover,
