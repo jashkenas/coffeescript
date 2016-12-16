@@ -604,7 +604,7 @@ pre .xml .cdata {
     <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript”</em>. The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
 <p>The CoffeeScript compiler goes to great lengths to generate output JavaScript that runs in every JavaScript runtime, but there are exceptions. Use <a href="#generator-functions">generator functions</a>, <a href="#generator-iteration"><code>for…from</code></a>, or <a href="#tagged-template-literals">tagged template literals</a> only if you know that your <a href="http://kangax.github.io/compat-table/es6/">target runtimes can support them</a>. If you use <a href="#modules">modules</a>, you will need to <a href="#modules-note">use an additional tool to resolve them</a>.</p>
-<p><strong>Latest Version:</strong> <a href="http://github.com/jashkenas/coffeescript/tarball/1.12.1">1.12.1</a></p>
+<p><strong>Latest Version:</strong> <a href="http://github.com/jashkenas/coffeescript/tarball/1.12.2">1.12.2</a></p>
 <blockquote>
 <pre><code>npm install -g coffee-script</code></pre></blockquote>
 
@@ -2614,7 +2614,17 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
 <button id="open_webchat">click to open #coffeescript</button>
 
   <span class="bookmark" id="changelog"></span>
-    <h2>Change Log</h2><div class="anchor" id="1.12.1"></div>
+    <h2>Change Log</h2><div class="anchor" id="1.12.2"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.12.1...1.12.2">1.12.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2016-12-16">December 16, 2016</time></span>
+</h2><ul>
+<li>The browser compiler can once again be built unminified via <code>MINIFY=false cake build:browser</code>.</li>
+<li>The error-prone patched version of <code>Error.prepareStackTrace</code> has been removed.</li>
+<li>Command completion in the REPL (pressing tab to get suggestions) has been fixed for Node 6.9.1+.</li>
+<li>The <a href="v1/test.html">browser-based tests</a> now include all the tests as the Node-based version.</li>
+</ul>
+<div class="anchor" id="1.12.1"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/1.12.0...1.12.1">1.12.1</a>
   <span class="timestamp"> &mdash; <time datetime="2016-12-07">December 7, 2016</time></span>
