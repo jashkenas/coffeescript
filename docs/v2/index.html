@@ -16,35 +16,113 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/codemirror/4.5.0/codemirror.css" crossorigin="anonymous">
 <style>
-/* Adapted from https://v4-alpha.getbootstrap.com/examples/dashboard/dashboard.css */
+/* Adapted from https://v4-alpha.getbootstrap.com/examples/dashboard/dashboard.css and http://v4-alpha.getbootstrap.com/examples/offcanvas/offcanvas.css */
 
+html,
+body {
+  /* Prevent scroll on narrow devices */
+  overflow-x: hidden;
+}
 body {
   /* Required for Scrollspy */
   position: relative;
 }
+@media screen and (max-width: 991px) {
+  body {
+    padding-top: 3em;
+  }
+}
+
+svg {
+  width: auto;
+  height: 100%;
+}
+
+
+/*
+ * Header
+ */
+.navbar-brand {
+  height: 2em;
+}
+
+.navbar-dark path {
+  fill: #f5f5f5;
+}
+
+/* Adapted from https://codepen.io/GeoffreyBooth/pen/QGzwYK */
+.navbar-menu-button {
+  float: right;
+  width: 2.3em;
+  padding: 0;
+  margin-top: 0.25em;
+}
+.menu-button {
+  width: 2em;
+  height: 1.5em;
+  position: relative;
+  transform: rotate(0deg);
+  transition: .25s ease-in-out;
+  cursor: pointer;
+}
+.menu-button span {
+  display: block;
+  position: absolute;
+  height: 4px;
+  width: 100%;
+  background: #f5f5f5;
+  border-radius: 4px;
+  opacity: 1;
+  left: 0;
+  transform: rotate(0deg);
+  transition: .25s ease-in-out;
+}
+.menu-button span:nth-child(1) {
+  top: 0;
+}
+.menu-button span:nth-child(2),
+.menu-button span:nth-child(3) {
+  top: 0.7em;
+}
+.menu-button span:nth-child(4) {
+  top: 1.4em;
+}
+.menu-button.active span:nth-child(1) {
+  top: 0.7em;
+  width: 0%;
+  left: 50%;
+}
+.menu-button.active span:nth-child(2) {
+  transform: rotate(45deg);
+}
+.menu-button.active span:nth-child(3) {
+  transform: rotate(-45deg);
+}
+.menu-button.active span:nth-child(4) {
+  top: 0.7em;
+  width: 0%;
+  left: 50%;
+}
+
 
 /*
  * Sidebar
  */
 
 .sidebar {
-  /* Hide for mobile, show later */
-  display: none;
-}
-@media (min-width: 768px) {
-  .sidebar {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 1000;
-    display: block;
-    padding: 1.3em;
-    overflow-x: hidden;
-    overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
-    background-color: #f5f5f5;
-    border-right: 1px solid #eee;
-  }
+  background-color: #f5f5f5;
+  border-right: 1px solid #eee;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1000;
+  display: block;
+  padding-top: 1.3em;
+  padding-left: 1.6em;
+  padding-right: 1.6em;
+  overflow-x: hidden;
+  overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
 }
 
 .nav-link.active,
@@ -59,17 +137,57 @@ body {
 
 
 /*
+ * Off Canvas
+ */
+@media screen and (max-width: 991px) {
+  .row-offcanvas {
+    position: relative;
+    transition: all .25s ease-in-out;
+  }
+
+  .row-offcanvas-left {
+    left: 0;
+  }
+
+  .row-offcanvas-left .sidebar-offcanvas {
+    left: -66.667%;
+  }
+  .row-offcanvas-right.active {
+    right: calc(66.667% + 1em);
+  }
+
+  .row-offcanvas-left.active {
+    left: calc(66.667% + 1em);
+  }
+
+  .sidebar-offcanvas {
+    position: absolute;
+    top: 0;
+    width: 66.667%;
+  }
+}
+
+
+/*
  * Main content
  */
 
 .main {
   padding: 1.3em;
 }
-@media (min-width: 768px) {
+@media (min-width: 992px) {
   .main {
     padding-right: 2em;
     padding-left: 2em;
   }
+}
+
+.title-logo {
+  width: 30em;
+  margin: 3em auto;
+}
+.title-logo path {
+  fill: #28334C;
 }
 
 
@@ -100,9 +218,27 @@ textarea {
 </head>
 <body>
 
+<nav class="navbar navbar-dark navbar-fixed-top bg-inverse hidden-lg-up">
+  <a class="navbar-brand" href="#"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-22 347 566 100">
+	<title>
+		CoffeeScript Logo
+	</title>
+	<path d="M21.7 351.1c.1.6-.2 1.1-1.2 1.6-1.3-.7-4.1-1.1-6.4-.9-2.5.2-4.6 1-4.3 2.7.4 1.7 2.8 2.7 7.1 2.3 10.5-.9 10.4-8 25.8-9.4 12-1.1 18.7 2.6 19.6 7.1.7 3.5-2.2 6.9-10.9 7.6-7.7.7-12.2-1.4-12.6-3.5-.2-1.1.4-2.7 4.1-3.1.4 1.7 2.5 3.5 7.5 3 3.6-.3 6.6-1.6 6.2-3.6-.4-2.1-4.2-3.3-10.2-2.8-12.2 1.1-15.2 7.8-25.6 8.7-7.4.7-13.4-2-14.2-6-.3-1.5-.3-5 7.5-5.7 4-.3 7.2.4 7.6 2zm-39 41.8c-3.4 4.3-4.9 9.3-4.6 14.2.3 4.9 2.7 8.9 6.5 12 4 3.1 8.3 4 13.2 3.1 1.9-.3 4-1.3 5.9-1.9-4 0-7.4-1.3-10.8-4-3.7-2.7-6.2-6.5-6.8-11.1-.9-4.3 0-8.3 2.4-11.8 2.7-3.4 6.2-5.3 10.8-5.9 4.6-.3 8.6.9 12.6 3.7-.9-1.3-2.2-2.2-3.4-3.4-4-2.7-8.3-4-13.6-2.7-4.8 1-8.8 3.5-12.2 7.8zm53.6-23.1c-12.9 0-24.4-1.3-32.7-3.1-8.9-2.2-13.6-4.6-13.6-7.7 0-1.3.6-2.4 2.4-3.7-5.6 2.2-8.6 4-8.6 6.8.3 3.1 5.3 6.2 15.5 8.6 9.6 2.4 21.9 3.7 36.7 3.7 15.1 0 27.1-1.3 36.7-3.7 10.2-2.4 15.1-5.6 15.1-8.6 0-2.2-2.2-4.3-6.2-5.9.9.6 1.6 1.6 1.6 2.7 0 3.1-4.6 5.6-13.9 7.7-8.6 1.9-19.6 3.2-33 3.2zm36.8 8.6c-9.6 2.2-21.9 3.7-36.7 3.7-15.1 0-27.4-1.6-37-3.7-8.6-2.2-13.2-4.6-14.8-7.1 1.6 10.8 5.3 21 10.2 30 3.7 5.6 7.4 10.5 11.1 15.8 1.6 3.1 2.7 6.2 3.4 9.3 2.4 3.4 5.9 5.6 10.2 6.8 5.3 1.9 10.8 2.7 16.4 2.4h.6c5.6.3 11.5-.6 16.9-2.4 4-1.3 7.4-3.4 9.9-6.8h.3c.6-3.1 1.6-6.2 3.1-9.3 3.7-5.3 7.4-10.2 11.1-15.8 4.9-8.9 8.3-19.1 10.2-30-2 2.8-6.6 5.2-14.9 7.1zm106.2 30.1c-4.8 12.1-17.6 16.9-25.9 16.9-13.4 0-19.9-6-19.9-22.3 0-16.5 7.9-47.3 31.7-47.3 8.5 0 15.2 3.3 15.2 12.1 0 4.8-1.8 8.3-6.4 8.3-1.5 0-3.4-.4-5.2-2.4 2.2-1.1 4.2-4.9 4.2-8.3 0-2.9-1.5-5.6-5.6-5.6-10 0-18.9 23.9-18.9 42.4 0 8.3 2.2 14.2 10.9 14.2 7.1 0 13.5-3.4 17.7-9.1l2.2 1.1zm32.9-16.3c.4.2.7.2 1 .2 4.2 0 10.1-2.7 14-5.5l.8 2.4c-3.4 3.7-9.5 6.5-16.1 7.5-1.5 16.8-10.6 27.3-21.7 27.3-8.4 0-14.5-4-14.5-14.4 0-10.5 6.2-32.2 24.9-32.2 7.8.3 11.6 5.3 11.6 14.7zm-7.7 5c-1.9-.5-2.4-2-2.4-3.8 0-2.5 1.2-4.2 2.8-4.9-.2-3.8-1.1-5.3-3.4-5.3-6.5 0-12 16.6-12 25.6 0 6 1.2 7.3 4.6 7.3 4.2.1 8.9-8 10.4-18.9zm-6.6 39.7c0-8.3 7.1-11 15.8-13.6l10.9-51.9c2.7-13 10.6-15.5 16.5-15.5 4.1 0 8 2.2 9.7 5.7 3.6-4.6 8.4-5.7 12.4-5.7 5.6 0 10.8 3.9 10.8 9.8 0 1.5-.1 2.6-.3 3.7h-4.3c.1-.9.2-1.7.2-2.4 0-2.1-1.7-3.1-3.4-3.1-2 0-4.8 1.1-6.2 7.1l-1.7 7.4h9.1l-.8 3.6h-9l-10.3 49.1c-2.7 13-10.6 15.5-16.5 15.5-5.2 0-8.3-2.3-9.8-5.7-3.5 4.6-8.3 5.7-12.3 5.7-5.6.1-10.8-3.8-10.8-9.7zm9.1 1.8c1.9 0 4.2-1.8 5.4-7.1l1.1-5.3c-5.7 2-10.1 4.4-10.1 9.4 0 1.2 1.7 3 3.6 3zm21.7 0c1.9 0 4.2-1.8 5.4-7.1l2.2-10.4-9.4 1.8-1.8 8.3c-.5 2.1-1.1 4-1.8 5.6.9 1.3 3 1.8 5.4 1.8zm-1.4-18l9.4-1.7 7.7-36.8h-9l-8.1 38.5zm16.6-56.7c-2 0-4.8 1.1-6.2 7.1l-1.7 7.4h9l2.1-9.5c.2-.7.2-1.3.2-2 .1-2-1.5-3-3.4-3zm37.9 53c7.1 0 11.6-4 16.1-9.2h3.1c-5.2 8.3-12.9 16.8-25 16.8-8.5 0-14.2-4.2-14.2-14.5 0-10.5 5.9-32.3 24.6-32.3 8.1 0 10 4.2 10 8.7 0 10.5-10 18.5-20.9 19.2-.1 1.3-.2 2.5-.2 3.6 0 6.2 2.2 7.7 6.5 7.7zm5.3-34.4c-4.6 0-9.1 9.7-10.9 18.7 7-.5 13.2-7.4 13.2-15 0-2.2-.5-3.7-2.3-3.7zm28.6 33.4c3.4 0 7.8-2.3 10.8-4.8-2 10.4-8.4 13.4-15.8 13.4-8.4 0-14.1-4.2-14.1-14.5 0-10.5 5.9-32.3 24.6-32.3 8.1 0 10 4.2 10 8.7 0 10.6-10 18.5-20.9 19.2-.1.9-.2 2-.2 2.7 0 5.7 2.5 7.6 5.6 7.6zm6.2-33.4c-4.5 0-9.1 10.1-11 18.7 7.1-.4 13.3-7.3 13.3-15 0-2.2-.6-3.7-2.3-3.7zm51.3-6.7c-1.7 0-3-.6-4.2-1.9 2.4-1.5 4.1-4.8 4.1-7.8 0-3.1-1.8-6.1-6.8-6.1s-8.3 2.8-8.3 8.2c0 13.3 20.5 15.2 20.5 34.8 0 15.3-12.3 22.7-25.6 22.7-10.4 0-19.3-4.5-19.3-15.7 0-9.8 7-14.9 13.3-14.9 3.1 0 7.7 1.3 8 6-4.9 0-10.7 2.3-10.7 8.5 0 4.5 2.9 8.7 8.7 8.7 6.1 0 10.6-4.4 10.6-12 0-15.6-18.6-21.1-18.6-34.5 0-9.5 9.3-16.3 21-16.3 4.3 0 14.6.9 14.6 10.9.1 5.5-2.8 9.4-7.3 9.4zm36.2 10.3c0-2.3-.8-3.7-2.5-3.7-5.7 0-11.7 16.6-11.7 26.7 0 6.2 2.2 7.6 6.6 7.6 7.1 0 11.6-4 16.1-9.2h3.1c-5.2 8.3-12.9 16.8-25 16.8-8.5 0-14.2-4.2-14.2-14.5 0-10.6 6-32.3 24.5-32.3 8.1 0 10.1 4.2 10.1 8.3 0 4.4-2.2 6.7-4.8 6.7-1 0-2.1-.4-3.1-1.1.5-1.9.9-3.6.9-5.3zm27.7-7.6l-1.2 5.7c3.1-2.7 6.7-5.7 11-5.7 4.1 0 6.3 3.3 6.3 6.9 0 3.1-2.1 6.7-6.6 6.7-5.1 0-2.5-6-5.3-6-2.7 0-4.4 1.4-6.7 3.4l-7.2 34.6h-13.1l9.6-45.4 13.2-.2zm34.2 0l-6.6 30.9c-.3 1.2-.4 2.1-.4 2.9 0 2.5 1.2 3.3 3.7 3.3 3.5 0 6.9-3.4 8.1-8h3.8c-5.2 14.8-14.2 16.8-19.1 16.8-5.5 0-9.7-3.2-9.7-10.9 0-1.8.3-3.7.7-5.9l6.2-29.2 13.3.1zm-4.1-19.4c4 0 7.2 3.2 7.2 7.2s-3.2 7.1-7.2 7.1-7.1-3.1-7.1-7.1c-.1-4 3.2-7.2 7.1-7.2zm29.1 16l-1.5 6.9c2.6-2.3 6.1-3.9 10.7-3.9 6.2 0 11.1 3.5 11.1 14.4 0 12.2-4.7 32.1-22.3 32.1-4.5 0-6.8-1.6-7.7-3.2l-4.7 22.1-13.7 3.2 15.2-71.5 12.9-.1zm7.8 17c0-7-2.9-7.5-4.5-7.5-2 0-4.5 1.6-6.3 4.4l-5.4 25.5c.4 1 1.4 2.1 3.4 2.1 9.7 0 12.8-15.9 12.8-24.5zm27.8 17.3c-.3 1.1-.5 2.2-.5 3.1 0 1.9.7 3.2 3.1 3.2.7 0 1.7 0 2.4-.3-2.5 7.8-6.6 8.9-9.6 8.9-6.4 0-9.1-4.4-9.1-10.3 0-1.6.2-3.1.6-4.8l5.8-27.2h-3l.7-3.6h3L528 366l13.4-1.9s-1.4 6.2-3.1 14.4h5.5l-.7 3.6h-5.5l-5.7 27.4z"/>
+</svg>
+</a>
+  <button type="button" class="navbar-menu-button" data-toggle="offcanvas" aria-label="Toggle navigation">
+    <div class="menu-button">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </button>
+</nav>
+
 <div class="container-fluid" id="top">
-  <div class="row">
-    <nav class="col-sm-4 col-md-3 sidebar">
+  <div class="row row-offcanvas row-offcanvas-left">
+    <nav class="sidebar col-xs-12 col-lg-3 sidebar-offcanvas">
       <nav id="nav">
   <ul class="nav">
     <li class="nav-item">
@@ -198,7 +334,17 @@ textarea {
 </nav>
 
     </nav>
-    <main class="col-sm-8 offset-sm-4 col-md-9 offset-md-3 main">
+    <main class="main col-xs-12 col-lg-9 offset-lg-3">
+
+      <header class="title-logo hidden-md-down">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="-22 347 566 100">
+	<title>
+		CoffeeScript Logo
+	</title>
+	<path d="M21.7 351.1c.1.6-.2 1.1-1.2 1.6-1.3-.7-4.1-1.1-6.4-.9-2.5.2-4.6 1-4.3 2.7.4 1.7 2.8 2.7 7.1 2.3 10.5-.9 10.4-8 25.8-9.4 12-1.1 18.7 2.6 19.6 7.1.7 3.5-2.2 6.9-10.9 7.6-7.7.7-12.2-1.4-12.6-3.5-.2-1.1.4-2.7 4.1-3.1.4 1.7 2.5 3.5 7.5 3 3.6-.3 6.6-1.6 6.2-3.6-.4-2.1-4.2-3.3-10.2-2.8-12.2 1.1-15.2 7.8-25.6 8.7-7.4.7-13.4-2-14.2-6-.3-1.5-.3-5 7.5-5.7 4-.3 7.2.4 7.6 2zm-39 41.8c-3.4 4.3-4.9 9.3-4.6 14.2.3 4.9 2.7 8.9 6.5 12 4 3.1 8.3 4 13.2 3.1 1.9-.3 4-1.3 5.9-1.9-4 0-7.4-1.3-10.8-4-3.7-2.7-6.2-6.5-6.8-11.1-.9-4.3 0-8.3 2.4-11.8 2.7-3.4 6.2-5.3 10.8-5.9 4.6-.3 8.6.9 12.6 3.7-.9-1.3-2.2-2.2-3.4-3.4-4-2.7-8.3-4-13.6-2.7-4.8 1-8.8 3.5-12.2 7.8zm53.6-23.1c-12.9 0-24.4-1.3-32.7-3.1-8.9-2.2-13.6-4.6-13.6-7.7 0-1.3.6-2.4 2.4-3.7-5.6 2.2-8.6 4-8.6 6.8.3 3.1 5.3 6.2 15.5 8.6 9.6 2.4 21.9 3.7 36.7 3.7 15.1 0 27.1-1.3 36.7-3.7 10.2-2.4 15.1-5.6 15.1-8.6 0-2.2-2.2-4.3-6.2-5.9.9.6 1.6 1.6 1.6 2.7 0 3.1-4.6 5.6-13.9 7.7-8.6 1.9-19.6 3.2-33 3.2zm36.8 8.6c-9.6 2.2-21.9 3.7-36.7 3.7-15.1 0-27.4-1.6-37-3.7-8.6-2.2-13.2-4.6-14.8-7.1 1.6 10.8 5.3 21 10.2 30 3.7 5.6 7.4 10.5 11.1 15.8 1.6 3.1 2.7 6.2 3.4 9.3 2.4 3.4 5.9 5.6 10.2 6.8 5.3 1.9 10.8 2.7 16.4 2.4h.6c5.6.3 11.5-.6 16.9-2.4 4-1.3 7.4-3.4 9.9-6.8h.3c.6-3.1 1.6-6.2 3.1-9.3 3.7-5.3 7.4-10.2 11.1-15.8 4.9-8.9 8.3-19.1 10.2-30-2 2.8-6.6 5.2-14.9 7.1zm106.2 30.1c-4.8 12.1-17.6 16.9-25.9 16.9-13.4 0-19.9-6-19.9-22.3 0-16.5 7.9-47.3 31.7-47.3 8.5 0 15.2 3.3 15.2 12.1 0 4.8-1.8 8.3-6.4 8.3-1.5 0-3.4-.4-5.2-2.4 2.2-1.1 4.2-4.9 4.2-8.3 0-2.9-1.5-5.6-5.6-5.6-10 0-18.9 23.9-18.9 42.4 0 8.3 2.2 14.2 10.9 14.2 7.1 0 13.5-3.4 17.7-9.1l2.2 1.1zm32.9-16.3c.4.2.7.2 1 .2 4.2 0 10.1-2.7 14-5.5l.8 2.4c-3.4 3.7-9.5 6.5-16.1 7.5-1.5 16.8-10.6 27.3-21.7 27.3-8.4 0-14.5-4-14.5-14.4 0-10.5 6.2-32.2 24.9-32.2 7.8.3 11.6 5.3 11.6 14.7zm-7.7 5c-1.9-.5-2.4-2-2.4-3.8 0-2.5 1.2-4.2 2.8-4.9-.2-3.8-1.1-5.3-3.4-5.3-6.5 0-12 16.6-12 25.6 0 6 1.2 7.3 4.6 7.3 4.2.1 8.9-8 10.4-18.9zm-6.6 39.7c0-8.3 7.1-11 15.8-13.6l10.9-51.9c2.7-13 10.6-15.5 16.5-15.5 4.1 0 8 2.2 9.7 5.7 3.6-4.6 8.4-5.7 12.4-5.7 5.6 0 10.8 3.9 10.8 9.8 0 1.5-.1 2.6-.3 3.7h-4.3c.1-.9.2-1.7.2-2.4 0-2.1-1.7-3.1-3.4-3.1-2 0-4.8 1.1-6.2 7.1l-1.7 7.4h9.1l-.8 3.6h-9l-10.3 49.1c-2.7 13-10.6 15.5-16.5 15.5-5.2 0-8.3-2.3-9.8-5.7-3.5 4.6-8.3 5.7-12.3 5.7-5.6.1-10.8-3.8-10.8-9.7zm9.1 1.8c1.9 0 4.2-1.8 5.4-7.1l1.1-5.3c-5.7 2-10.1 4.4-10.1 9.4 0 1.2 1.7 3 3.6 3zm21.7 0c1.9 0 4.2-1.8 5.4-7.1l2.2-10.4-9.4 1.8-1.8 8.3c-.5 2.1-1.1 4-1.8 5.6.9 1.3 3 1.8 5.4 1.8zm-1.4-18l9.4-1.7 7.7-36.8h-9l-8.1 38.5zm16.6-56.7c-2 0-4.8 1.1-6.2 7.1l-1.7 7.4h9l2.1-9.5c.2-.7.2-1.3.2-2 .1-2-1.5-3-3.4-3zm37.9 53c7.1 0 11.6-4 16.1-9.2h3.1c-5.2 8.3-12.9 16.8-25 16.8-8.5 0-14.2-4.2-14.2-14.5 0-10.5 5.9-32.3 24.6-32.3 8.1 0 10 4.2 10 8.7 0 10.5-10 18.5-20.9 19.2-.1 1.3-.2 2.5-.2 3.6 0 6.2 2.2 7.7 6.5 7.7zm5.3-34.4c-4.6 0-9.1 9.7-10.9 18.7 7-.5 13.2-7.4 13.2-15 0-2.2-.5-3.7-2.3-3.7zm28.6 33.4c3.4 0 7.8-2.3 10.8-4.8-2 10.4-8.4 13.4-15.8 13.4-8.4 0-14.1-4.2-14.1-14.5 0-10.5 5.9-32.3 24.6-32.3 8.1 0 10 4.2 10 8.7 0 10.6-10 18.5-20.9 19.2-.1.9-.2 2-.2 2.7 0 5.7 2.5 7.6 5.6 7.6zm6.2-33.4c-4.5 0-9.1 10.1-11 18.7 7.1-.4 13.3-7.3 13.3-15 0-2.2-.6-3.7-2.3-3.7zm51.3-6.7c-1.7 0-3-.6-4.2-1.9 2.4-1.5 4.1-4.8 4.1-7.8 0-3.1-1.8-6.1-6.8-6.1s-8.3 2.8-8.3 8.2c0 13.3 20.5 15.2 20.5 34.8 0 15.3-12.3 22.7-25.6 22.7-10.4 0-19.3-4.5-19.3-15.7 0-9.8 7-14.9 13.3-14.9 3.1 0 7.7 1.3 8 6-4.9 0-10.7 2.3-10.7 8.5 0 4.5 2.9 8.7 8.7 8.7 6.1 0 10.6-4.4 10.6-12 0-15.6-18.6-21.1-18.6-34.5 0-9.5 9.3-16.3 21-16.3 4.3 0 14.6.9 14.6 10.9.1 5.5-2.8 9.4-7.3 9.4zm36.2 10.3c0-2.3-.8-3.7-2.5-3.7-5.7 0-11.7 16.6-11.7 26.7 0 6.2 2.2 7.6 6.6 7.6 7.1 0 11.6-4 16.1-9.2h3.1c-5.2 8.3-12.9 16.8-25 16.8-8.5 0-14.2-4.2-14.2-14.5 0-10.6 6-32.3 24.5-32.3 8.1 0 10.1 4.2 10.1 8.3 0 4.4-2.2 6.7-4.8 6.7-1 0-2.1-.4-3.1-1.1.5-1.9.9-3.6.9-5.3zm27.7-7.6l-1.2 5.7c3.1-2.7 6.7-5.7 11-5.7 4.1 0 6.3 3.3 6.3 6.9 0 3.1-2.1 6.7-6.6 6.7-5.1 0-2.5-6-5.3-6-2.7 0-4.4 1.4-6.7 3.4l-7.2 34.6h-13.1l9.6-45.4 13.2-.2zm34.2 0l-6.6 30.9c-.3 1.2-.4 2.1-.4 2.9 0 2.5 1.2 3.3 3.7 3.3 3.5 0 6.9-3.4 8.1-8h3.8c-5.2 14.8-14.2 16.8-19.1 16.8-5.5 0-9.7-3.2-9.7-10.9 0-1.8.3-3.7.7-5.9l6.2-29.2 13.3.1zm-4.1-19.4c4 0 7.2 3.2 7.2 7.2s-3.2 7.1-7.2 7.1-7.1-3.1-7.1-7.1c-.1-4 3.2-7.2 7.1-7.2zm29.1 16l-1.5 6.9c2.6-2.3 6.1-3.9 10.7-3.9 6.2 0 11.1 3.5 11.1 14.4 0 12.2-4.7 32.1-22.3 32.1-4.5 0-6.8-1.6-7.7-3.2l-4.7 22.1-13.7 3.2 15.2-71.5 12.9-.1zm7.8 17c0-7-2.9-7.5-4.5-7.5-2 0-4.5 1.6-6.3 4.4l-5.4 25.5c.4 1 1.4 2.1 3.4 2.1 9.7 0 12.8-15.9 12.8-24.5zm27.8 17.3c-.3 1.1-.5 2.2-.5 3.1 0 1.9.7 3.2 3.1 3.2.7 0 1.7 0 2.4-.3-2.5 7.8-6.6 8.9-9.6 8.9-6.4 0-9.1-4.4-9.1-10.3 0-1.6.2-3.1.6-4.8l5.8-27.2h-3l.7-3.6h3L528 366l13.4-1.9s-1.4 6.2-3.1 14.4h5.5l-.7 3.6h-5.5l-5.7 27.4z"/>
+</svg>
+
+      </header>
 
       <section id="overview">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
@@ -208,7 +354,7 @@ textarea {
 <blockquote>
 <pre><code>npm install -g coffee-script</code></pre></blockquote>
 
-        <h2>Overview</h2><p><em>CoffeeScript on the left, compiled JavaScript output on the right. The CoffeeScript is editable!</em></p>
+        <h2>Overview</h2><p><em>CoffeeScript on the <span class="hidden-md-up">top</span><span class="hidden-sm-down">left</span>, compiled JavaScript output on the <span class="hidden-md-up">bottom</span><span class="hidden-sm-down">right</span>. The CoffeeScript is editable!</em></p>
 <aside class="code-example container-fluid" data-example="overview">
   <div class="row">
     <div class="col-md-6">
@@ -290,7 +436,7 @@ cubes = (function() {
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="overview" data-run="cubes"><small>▶</small>&ensp;cubes</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="overview" data-run="cubes"><small>▶</small>&ensp;cubes</button>
     </div>
   </div>
   
@@ -528,7 +674,7 @@ cube = function(x) {
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="functions" data-run="cube%285%29"><small>▶</small>&ensp;cube(5)</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="functions" data-run="cube%285%29"><small>▶</small>&ensp;cube(5)</button>
     </div>
   </div>
   
@@ -553,7 +699,7 @@ fill = function(container, liquid = "coffee") {
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="default_args" data-run="fill%28%22cup%22%29"><small>▶</small>&ensp;fill(&quot;cup&quot;)</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="default_args" data-run="fill%28%22cup%22%29"><small>▶</small>&ensp;fill(&quot;cup&quot;)</button>
     </div>
   </div>
   
@@ -612,7 +758,7 @@ kids = {
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="objects_and_arrays" data-run="song.join%28%22%20%u2026%20%22%29"><small>▶</small>&ensp;song.join(&quot; … &quot;)</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="objects_and_arrays" data-run="song.join%28%22%20%u2026%20%22%29"><small>▶</small>&ensp;song.join(&quot; … &quot;)</button>
     </div>
   </div>
   
@@ -701,7 +847,7 @@ inner = changeNumbers();
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="scope" data-run="inner"><small>▶</small>&ensp;inner</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="scope" data-run="inner"><small>▶</small>&ensp;inner</button>
     </div>
   </div>
   
@@ -809,7 +955,7 @@ alert("The Field: " + rest);
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="splats" data-run="true">▶</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="splats" data-run="true">▶</button>
     </div>
   </div>
   
@@ -888,7 +1034,7 @@ countdown = (function() {
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="range_comprehensions" data-run="countdown"><small>▶</small>&ensp;countdown</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="range_comprehensions" data-run="countdown"><small>▶</small>&ensp;countdown</button>
     </div>
   </div>
   
@@ -932,7 +1078,7 @@ ages = (function() {
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="object_comprehensions" data-run="ages.join%28%22%2C%20%22%29"><small>▶</small>&ensp;ages.join(&quot;, &quot;)</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="object_comprehensions" data-run="ages.join%28%22%2C%20%22%29"><small>▶</small>&ensp;ages.join(&quot;, &quot;)</button>
     </div>
   </div>
   
@@ -983,7 +1129,7 @@ lyrics = (function() {
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="while" data-run="lyrics.join%28%22%5Cn%22%29"><small>▶</small>&ensp;lyrics.join(&quot;\n&quot;)</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="while" data-run="lyrics.join%28%22%5Cn%22%29"><small>▶</small>&ensp;lyrics.join(&quot;\n&quot;)</button>
     </div>
   </div>
   
@@ -1052,7 +1198,7 @@ copy = numbers.slice(0);
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="slices" data-run="middle"><small>▶</small>&ensp;middle</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="slices" data-run="middle"><small>▶</small>&ensp;middle</button>
     </div>
   </div>
   
@@ -1078,7 +1224,7 @@ numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="splices" data-run="numbers"><small>▶</small>&ensp;numbers</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="splices" data-run="numbers"><small>▶</small>&ensp;numbers</button>
     </div>
   </div>
   
@@ -1126,7 +1272,7 @@ eldest = 24 > 21 ? "Liz" : "Ike";
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="expressions" data-run="eldest"><small>▶</small>&ensp;eldest</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="expressions" data-run="eldest"><small>▶</small>&ensp;eldest</button>
     </div>
   </div>
   
@@ -1149,7 +1295,7 @@ six = (one = 1) + (two = 2) + (three = 3);
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="expressions_assignment" data-run="six"><small>▶</small>&ensp;six</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="expressions_assignment" data-run="six"><small>▶</small>&ensp;six</button>
     </div>
   </div>
   
@@ -1180,7 +1326,7 @@ globals = ((function() {
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="expressions_comprehension" data-run="globals"><small>▶</small>&ensp;globals</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="expressions_comprehension" data-run="globals"><small>▶</small>&ensp;globals</button>
     </div>
   </div>
   
@@ -1214,7 +1360,7 @@ alert((function() {
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="expressions_try" data-run="true">▶</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="expressions_try" data-run="true">▶</button>
     </div>
   </div>
   
@@ -1456,7 +1602,7 @@ footprints = typeof yeti !== "undefined" && yeti !== null ? yeti : "bear";
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="existence" data-run="footprints"><small>▶</small>&ensp;footprints</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="existence" data-run="footprints"><small>▶</small>&ensp;footprints</button>
     </div>
   </div>
   
@@ -1573,7 +1719,7 @@ tom.move();
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="classes" data-run="true">▶</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="classes" data-run="true">▶</button>
     </div>
   </div>
   
@@ -1596,7 +1742,7 @@ tom.move();
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="prototypes" data-run="%22one_two%22.dasherize%28%29"><small>▶</small>&ensp;&quot;one_two&quot;.dasherize()</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="prototypes" data-run="%22one_two%22.dasherize%28%29"><small>▶</small>&ensp;&quot;one_two&quot;.dasherize()</button>
     </div>
   </div>
   
@@ -1630,7 +1776,7 @@ ref = [theSwitch, theBait], theBait = ref[0], theSwitch = ref[1];
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="parallel_assignment" data-run="theBait"><small>▶</small>&ensp;theBait</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="parallel_assignment" data-run="theBait"><small>▶</small>&ensp;theBait</button>
     </div>
   </div>
   
@@ -1660,7 +1806,7 @@ ref = weatherReport("Berkeley, CA"), city = ref[0], temp = ref[1], forecast = re
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="multiple_return_values" data-run="forecast"><small>▶</small>&ensp;forecast</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="multiple_return_values" data-run="forecast"><small>▶</small>&ensp;forecast</button>
     </div>
   </div>
   
@@ -1701,7 +1847,7 @@ ref = futurists.poet, name = ref.name, (ref1 = ref.address, street = ref1[0], ci
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="object_extraction" data-run="name%20+%20%22-%22%20+%20street"><small>▶</small>&ensp;name + &quot;-&quot; + street</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="object_extraction" data-run="name%20+%20%22-%22%20+%20street"><small>▶</small>&ensp;name + &quot;-&quot; + street</button>
     </div>
   </div>
   
@@ -1728,7 +1874,7 @@ ref = tag.split(""), open = ref[0], contents = 3 <= ref.length ? slice.call(ref,
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="patterns_and_splats" data-run="contents.join%28%22%22%29"><small>▶</small>&ensp;contents.join(&quot;&quot;)</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="patterns_and_splats" data-run="contents.join%28%22%22%29"><small>▶</small>&ensp;contents.join(&quot;&quot;)</button>
     </div>
   </div>
   
@@ -1755,7 +1901,7 @@ ref = text.split(" "), first = ref[0], last = ref[ref.length - 1];
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="expansion" data-run="first%20+%20%22%20%22%20+%20last"><small>▶</small>&ensp;first + &quot; &quot; + last</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="expansion" data-run="first%20+%20%22%20%22%20+%20last"><small>▶</small>&ensp;first + &quot; &quot; + last</button>
     </div>
   </div>
   
@@ -1794,7 +1940,7 @@ tim = new Person({
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="constructor_destructuring" data-run="tim.age%20+%20%22%20%22%20+%20tim.height"><small>▶</small>&ensp;tim.age + &quot; &quot; + tim.height</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="constructor_destructuring" data-run="tim.age%20+%20%22%20%22%20+%20tim.height"><small>▶</small>&ensp;tim.age + &quot; &quot; + tim.height</button>
     </div>
   </div>
   
@@ -1866,7 +2012,7 @@ window.ps || (window.ps = perfectSquares());
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="generators" data-run="ps.next%28%29.value"><small>▶</small>&ensp;ps.next().value</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="generators" data-run="ps.next%28%29.value"><small>▶</small>&ensp;ps.next().value</button>
     </div>
   </div>
   
@@ -1921,7 +2067,7 @@ getFibonacciNumbers = function(length) {
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="generator_iteration" data-run="getFibonacciNumbers%2810%29"><small>▶</small>&ensp;getFibonacciNumbers(10)</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="generator_iteration" data-run="getFibonacciNumbers%2810%29"><small>▶</small>&ensp;getFibonacciNumbers(10)</button>
     </div>
   </div>
   
@@ -1950,7 +2096,7 @@ hi = function() {
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="embedded" data-run="hi%28%29"><small>▶</small>&ensp;hi()</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="embedded" data-run="hi%28%29"><small>▶</small>&ensp;hi()</button>
     </div>
   </div>
   
@@ -1977,7 +2123,7 @@ markdown = function () {
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="embedded_escaped" data-run="markdown%28%29"><small>▶</small>&ensp;markdown()</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="embedded_escaped" data-run="markdown%28%29"><small>▶</small>&ensp;markdown()</button>
     </div>
   </div>
   
@@ -2006,7 +2152,7 @@ function time() {
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="embedded_block" data-run="time%28%29"><small>▶</small>&ensp;time()</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="embedded_block" data-run="time%28%29"><small>▶</small>&ensp;time()</button>
     </div>
   </div>
   
@@ -2155,7 +2301,7 @@ healthy = (200 > cholesterol && cholesterol > 60);
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="comparisons" data-run="healthy"><small>▶</small>&ensp;healthy</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="comparisons" data-run="healthy"><small>▶</small>&ensp;healthy</button>
     </div>
   </div>
   
@@ -2187,7 +2333,7 @@ sentence = `${22 / 7} is a decent approximation of π`;
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="interpolation" data-run="sentence"><small>▶</small>&ensp;sentence</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="interpolation" data-run="sentence"><small>▶</small>&ensp;sentence</button>
     </div>
   </div>
   
@@ -2214,7 +2360,7 @@ mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- 
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="strings" data-run="mobyDick"><small>▶</small>&ensp;mobyDick</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="strings" data-run="mobyDick"><small>▶</small>&ensp;mobyDick</button>
     </div>
   </div>
   
@@ -2240,7 +2386,7 @@ html = "<strong>\n  cup of coffeescript\n</strong>";
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="heredocs" data-run="html"><small>▶</small>&ensp;html</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="heredocs" data-run="html"><small>▶</small>&ensp;html</button>
     </div>
   </div>
   
@@ -2304,7 +2450,7 @@ greet = function(name, adjective) {
   
   <div class="row">
     <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-example="tagged_template_literals" data-run="greet%28%22greg%22%2C%20%22awesome%22%29"><small>▶</small>&ensp;greet(&quot;greg&quot;, &quot;awesome&quot;)</button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="tagged_template_literals" data-run="greet%28%22greg%22%2C%20%22awesome%22%29"><small>▶</small>&ensp;greet(&quot;greg&quot;, &quot;awesome&quot;)</button>
     </div>
   </div>
   
@@ -3086,63 +3232,69 @@ The <code>extends</code> keyword now functions identically to <code>goog.inherit
 
 <script src="browser-compiler/coffee-script.js"></script>
 <script type="text/coffeescript">
-# Initialize Scrollspy for sidebar navigation; http://v4-alpha.getbootstrap.com/components/scrollspy/
-$('body').scrollspy
-  target: '#nav'
-  offset: Math.round $('main').css('padding-top').replace('px', '')
-
-if window.location.hash?
-  $(".nav-link.active[href!='#{window.location.hash}']").removeClass 'active'
-
-$(window).on 'activate.bs.scrollspy', (event, target) -> # Why `window`? https://github.com/twbs/bootstrap/issues/20086
-  # We only want one active link in the nav
-  $(".nav-link.active[href!='#{target.relatedTarget}']").removeClass 'active'
-  $target = $(".nav-link[href='#{target.relatedTarget}']")
-  # Update the browser address bar on scroll or navigation
-  window.history.pushState {}, $target.text(), $target.prop('href')
+$(document).ready ->
+  # Mobile navigation
+  $('[data-toggle="offcanvas"]').click ->
+    $('.menu-button, .row-offcanvas').toggleClass 'active'
 
 
-# Initialize CodeMirror for code examples; https://codemirror.net/doc/manual.html
-editors = []
-lastCompilationElapsedTime = 200
-$('textarea').each (index) ->
-  $(@).data 'index', index
-  mode = if $(@).hasClass('javascript-output') then 'javascript' else 'coffeescript'
+  # Initialize Scrollspy for sidebar navigation; http://v4-alpha.getbootstrap.com/components/scrollspy/
+  $('body').scrollspy
+    target: '#nav'
+    offset: Math.round $('main').css('padding-top').replace('px', '')
 
-  editors[index] = editor = CodeMirror.fromTextArea @,
-    mode: mode
-    theme: 'default' # TODO: Change
-    indentUnit: 2
-    tabSize: 2
-    lineWrapping: on
-    lineNumbers: off
-    inputStyle: 'contenteditable'
-    readOnly: if mode is 'coffeescript' then no else 'nocursor'
-    viewportMargin: Infinity
+  if window.location.hash?
+    $(".nav-link.active[href!='#{window.location.hash}']").removeClass 'active'
 
-  # Whenever the user edits the CoffeeScript side of a code example, update the JavaScript output
-  if mode is 'coffeescript'
-    pending = null
-    editor.on 'change', (instance, change) ->
-      clearTimeout pending
-      pending = setTimeout ->
-        lastCompilationStartTime = Date.now()
-        try
-          output = CoffeeScript.compile editor.getValue(), bare: yes
-          lastCompilationElapsedTime = Math.max(200, Date.now() - lastCompilationStartTime)
-        catch exception
-          output = "#{exception}"
-        editors[index + 1].setValue output
-      , lastCompilationElapsedTime
+  $(window).on 'activate.bs.scrollspy', (event, target) -> # Why `window`? https://github.com/twbs/bootstrap/issues/20086
+    # We only want one active link in the nav
+    $(".nav-link.active[href!='#{target.relatedTarget}']").removeClass 'active'
+    $target = $(".nav-link[href='#{target.relatedTarget}']")
+    # Update the browser address bar on scroll or navigation
+    window.history.pushState {}, $target.text(), $target.prop('href')
 
 
-# Handle the code example buttons
-$('button').click ->
-  run = $(@).data 'run'
-  index = $("##{$(@).data('example')}-js").data 'index'
-  js = editors[index].getValue()
-  js = "#{js}\nalert(#{unescape run});" unless run is yes
-  eval js
+  # Initialize CodeMirror for code examples; https://codemirror.net/doc/manual.html
+  editors = []
+  lastCompilationElapsedTime = 200
+  $('textarea').each (index) ->
+    $(@).data 'index', index
+    mode = if $(@).hasClass('javascript-output') then 'javascript' else 'coffeescript'
+
+    editors[index] = editor = CodeMirror.fromTextArea @,
+      mode: mode
+      theme: 'default' # TODO: Change
+      indentUnit: 2
+      tabSize: 2
+      lineWrapping: on
+      lineNumbers: off
+      inputStyle: 'contenteditable'
+      readOnly: if mode is 'coffeescript' then no else 'nocursor'
+      viewportMargin: Infinity
+
+    # Whenever the user edits the CoffeeScript side of a code example, update the JavaScript output
+    if mode is 'coffeescript'
+      pending = null
+      editor.on 'change', (instance, change) ->
+        clearTimeout pending
+        pending = setTimeout ->
+          lastCompilationStartTime = Date.now()
+          try
+            output = CoffeeScript.compile editor.getValue(), bare: yes
+            lastCompilationElapsedTime = Math.max(200, Date.now() - lastCompilationStartTime)
+          catch exception
+            output = "#{exception}"
+          editors[index + 1].setValue output
+        , lastCompilationElapsedTime
+
+
+  # Handle the code example buttons
+  $('[action="run-code-example"]').click ->
+    run = $(@).data 'run'
+    index = $("##{$(@).data('example')}-js").data 'index'
+    js = editors[index].getValue()
+    js = "#{js}\nalert(#{unescape run});" unless run is yes
+    eval js
 
 </script>
 
