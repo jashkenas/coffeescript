@@ -1,7 +1,7 @@
 $(document).ready ->
   # Mobile navigation
   $('[data-toggle="offcanvas"]').click ->
-    $('.row-offcanvas').toggleClass 'active'
+    $('.menu-button, .row-offcanvas').toggleClass 'active'
 
 
   # Initialize Scrollspy for sidebar navigation; http://v4-alpha.getbootstrap.com/components/scrollspy/

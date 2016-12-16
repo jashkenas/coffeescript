@@ -21,17 +21,65 @@ body {
 .navbar-brand {
   height: 2em;
 }
-
 .navbar-brand svg {
   height: 100%;
 }
-
 .navbar-dark path {
   fill: #f5f5f5;
 }
 
-.navbar button {
-  outline: 0;
+/* Adapted from https://codepen.io/GeoffreyBooth/pen/QGzwYK */
+.navbar-menu-button {
+  float: right;
+  width: 2.3em;
+  padding: 0;
+  margin-top: 0.25em;
+}
+.menu-button {
+  width: 2em;
+  height: 1.5em;
+  position: relative;
+  transform: rotate(0deg);
+  transition: .25s ease-in-out;
+  cursor: pointer;
+}
+.menu-button span {
+  display: block;
+  position: absolute;
+  height: 4px;
+  width: 100%;
+  background: #f5f5f5;
+  border-radius: 4px;
+  opacity: 1;
+  left: 0;
+  transform: rotate(0deg);
+  transition: .25s ease-in-out;
+}
+.menu-button span:nth-child(1) {
+  top: 0;
+}
+.menu-button span:nth-child(2),
+.menu-button span:nth-child(3) {
+  top: 0.7em;
+}
+.menu-button span:nth-child(4) {
+  top: 1.4em;
+}
+.menu-button.active span:nth-child(1) {
+  top: 0.7em;
+  width: 0%;
+  left: 50%;
+}
+.menu-button.active span:nth-child(2) {
+  transform: rotate(45deg);
+}
+.menu-button.active span:nth-child(3) {
+  transform: rotate(-45deg);
+}
+.menu-button.active span:nth-child(4) {
+  top: 0.7em;
+  width: 0%;
+  left: 50%;
 }
 
 
