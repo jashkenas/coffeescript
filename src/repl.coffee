@@ -15,6 +15,9 @@ replDefaults =
     # Node's REPL sends the input ending with a newline and then wrapped in
     # parens. Unwrap all that.
     input = input.replace /^\(([\s\S]*)\n\)$/m, '$1'
+    # Node's REPL v6.9.1+ sends the input wrapped in a try/catch statement.
+    # Unwrap that too.
+    input = input.replace /^\s*try\s*{([\s\S]*)}\s*catch.*$/m, '$1'
 
     # Require AST nodes to do some AST manipulation.
     {Block, Assign, Value, Literal} = require './nodes'
