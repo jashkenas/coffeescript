@@ -10,9 +10,12 @@ path          = require 'path'
 {parser}      = require './parser'
 helpers       = require './helpers'
 SourceMap     = require './sourcemap'
+# Require `package.json`, which is two levels above this file, as this file is
+# evaluated from `lib/coffee-script`.
+packageJson   = require '../../package.json'
 
 # The current CoffeeScript version number.
-exports.VERSION = '1.12.1'
+exports.VERSION = packageJson.version
 
 exports.FILE_EXTENSIONS = ['.coffee', '.litcoffee', '.coffee.md']
 
@@ -280,83 +283,3 @@ parser.yy.parseError = (message, {token}) ->
   # from the lexer.
   helpers.throwSyntaxError "unexpected #{errorText}", errorLoc
 
-# Based on http://v8.googlecode.com/svn/branches/bleeding_edge/src/messages.js
-# Modified to handle sourceMap
-formatSourcePosition = (frame, getSourceMapping) ->
-  fileName = undefined
-  fileLocation = ''
-
-  if frame.isNative()
-    fileLocation = "native"
-  else
-    if frame.isEval()
-      fileName = frame.getScriptNameOrSourceURL()
-      fileLocation = "#{frame.getEvalOrigin()}, " unless fileName
-    else
-      fileName = frame.getFileName()
-
-    fileName or= "<anonymous>"
-
-    line = frame.getLineNumber()
-    column = frame.getColumnNumber()
-
-    # Check for a sourceMap position
-    source = getSourceMapping fileName, line, column
-    fileLocation =
-      if source
-        "#{fileName}:#{source[0]}:#{source[1]}"
-      else
-        "#{fileName}:#{line}:#{column}"
-
-  functionName = frame.getFunctionName()
-  isConstructor = frame.isConstructor()
-  isMethodCall = not (frame.isToplevel() or isConstructor)
-
-  if isMethodCall
-    methodName = frame.getMethodName()
-    typeName = frame.getTypeName()
-
-    if functionName
-      tp = as = ''
-      if typeName and functionName.indexOf typeName
-        tp = "#{typeName}."
-      if methodName and functionName.indexOf(".#{methodName}") isnt functionName.length - methodName.length - 1
-        as = " [as #{methodName}]"
-
-      "#{tp}#{functionName}#{as} (#{fileLocation})"
-    else
-      "#{typeName}.#{methodName or '<anonymous>'} (#{fileLocation})"
-  else if isConstructor
-    "new #{functionName or '<anonymous>'} (#{fileLocation})"
-  else if functionName
-    "#{functionName} (#{fileLocation})"
-  else
-    fileLocation
-
-# Map of filenames -> sourceMap object.
-sourceMaps = {}
-
-# Generates the source map for a coffee file and stores it in the local cache variable.
-getSourceMap = (filename) ->
-  return sourceMaps[filename] if sourceMaps[filename]
-  for ext in exports.FILE_EXTENSIONS
-    if helpers.ends filename, ext
-      answer = exports._compileFile filename, true
-      return sourceMaps[filename] = answer.sourceMap
-  return null
-
-# Based on [michaelficarra/CoffeeScriptRedux](http://goo.gl/ZTx1p)
-# NodeJS / V8 have no support for transforming positions in stack traces using
-# sourceMap, so we must monkey-patch Error to display CoffeeScript source
-# positions.
-Error.prepareStackTrace = (err, stack) ->
-  getSourceMapping = (filename, line, column) ->
-    sourceMap = getSourceMap filename
-    answer = sourceMap.sourceLocation [line - 1, column - 1] if sourceMap
-    if answer then [answer[0] + 1, answer[1] + 1] else null
-
-  frames = for frame in stack
-    break if frame.getFunction() is exports.run
-    "  at #{formatSourcePosition frame, getSourceMapping}"
-
-  "#{err.toString()}\n#{frames.join '\n'}\n"
