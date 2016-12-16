@@ -4,6 +4,25 @@ body {
   /* Required for Scrollspy */
   position: relative;
 }
+/*
+ * Header
+ */
+.navbar-brand {
+  height: 2em;
+}
+
+.navbar-brand svg {
+  height: 100%;
+}
+
+.navbar-dark path {
+  fill: #f5f5f5;
+}
+
+.navbar button {
+  outline: 0;
+}
+
 
 /*
  * Sidebar
