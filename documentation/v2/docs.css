@@ -8,11 +8,8 @@ body {
 body {
   /* Required for Scrollspy */
   position: relative;
-}
-@media screen and (max-width: 991px) {
-  body {
-    padding-top: 3em;
-  }
+  /* Push below header bar */
+  margin-top: 3.5rem;
 }
 
 svg {
@@ -104,15 +101,21 @@ svg {
   left: 0;
   z-index: 1000;
   display: block;
+  /* Push below header bar */
+  margin-top: 3.5rem;
   padding-top: 1.3em;
   padding-left: 1.6em;
   padding-right: 1.6em;
   overflow-x: hidden;
-  overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+  /* Scrollable contents if viewport is shorter than content */
+  overflow-y: auto;
   font-family: 'Alegreya Sans';
   font-weight: 400;
   font-size: 1.2em;
   line-height: 2;
+}
+.sidebar::-webkit-scrollbar {
+  display: none;
 }
 @media screen and (max-width: 991px) {
   .sidebar .contents {
@@ -208,6 +211,12 @@ h2 {
 }
 h3, h2 time {
   font-weight: 400;
+}
+
+.main section {
+  /* Offset the anchor so that clicking on the sidebar links don’t hide the heading under the header bar */
+  padding-top: 2.3rem;
+  margin-top: -2.3rem;
 }
 
 code, button {
