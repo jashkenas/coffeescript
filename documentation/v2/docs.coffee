@@ -29,7 +29,7 @@ $(document).ready ->
 
     editors[index] = editor = CodeMirror.fromTextArea @,
       mode: mode
-      theme: 'default' # TODO: Change
+      theme: 'twilight'
       indentUnit: 2
       tabSize: 2
       lineWrapping: on
@@ -55,7 +55,7 @@ $(document).ready ->
 
 
   # Handle the code example buttons
-  $('[action="run-code-example"]').click ->
+  $('[data-action="run-code-example"]').click ->
     run = $(@).data 'run'
     index = $("##{$(@).data('example')}-js").data 'index'
     js = editors[index].getValue()

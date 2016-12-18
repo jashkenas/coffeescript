@@ -17,6 +17,20 @@ svg {
   height: 100%;
 }
 
+a {
+  color: #1b5e20;
+  transition: 0.1s ease-in-out;
+}
+a:focus, a:hover, a:active {
+  color: #388e3c;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.bg-inverse {
+  background-color: #3e2723 !important;
+}
+
 
 /*
  * Header
@@ -26,7 +40,7 @@ svg {
 }
 
 .navbar-dark path {
-  fill: #f5f5f5;
+  fill: #fff;
 }
 
 /* Adapted from https://codepen.io/GeoffreyBooth/pen/QGzwYK */
@@ -53,7 +67,7 @@ svg {
   position: absolute;
   height: 4px;
   width: 100%;
-  background: #f5f5f5;
+  background: #efebe9;
   border-radius: 4px;
   opacity: 1;
   left: 0;
@@ -93,7 +107,7 @@ svg {
  */
 
 .sidebar {
-  background-color: #f5f5f5;
+  background-color: #efebe9;
   border-right: 1px solid #eee;
   position: fixed;
   top: 0;
@@ -101,8 +115,6 @@ svg {
   left: 0;
   z-index: 1000;
   display: block;
-  /* Push below header bar */
-  margin-top: 3.5rem;
   padding-top: 1.3em;
   padding-left: 1.6em;
   padding-right: 1.6em;
@@ -120,17 +132,25 @@ svg {
 @media screen and (max-width: 991px) {
   .sidebar .contents {
     position: fixed;
+  }0
+}
+@media screen and (min-width: 992px) {
+  .sidebar {
+    /* Push below header bar */
+    margin-top: 3.5rem;
   }
 }
 
 .nav-link.active,
 .nav-link.active, a:hover,
 .nav-link.active, a:focus {
-  color: indianred;
+  font-weight: 800;
 }
 
 .nav .nav {
   margin-left: 1em;
+  font-size: 0.9em;
+  line-height: 1.7;
 }
 
 
@@ -185,19 +205,29 @@ svg {
   margin: 3rem auto;
 }
 .title-logo path {
-  fill: #28334C;
+  fill: #2f2625;
 }
 
-.main p, .main li, .main td {
+.main p, .main li, .main td, .main th {
   font-family: Lato;
   font-size: 1.3rem;
   font-weight: 300;
 }
-.main strong {
+.main strong, .main th {
   font-weight: 700;
 }
+.main a {
+  border-bottom: 2px solid transparent;
+  font-weight: 400;
+}
+.main a:focus, .main a:hover, .main a:active {
+  border-bottom: 2px solid rgba(56, 142, 60, 0.2);
+}
+.main blockquote {
+  font-size: 1.3rem;
+}
 
-p, .code-example {
+p, table, .code-example {
   margin-bottom: 1.3em;
 }
 
@@ -223,6 +253,10 @@ code, button {
   font-family: 'Roboto Mono';
   font-weight: 400;
 }
+code {
+  background-color: #f8f3f0;
+  color: #2f2625;
+}
 
 
 /*
@@ -234,6 +268,30 @@ textarea {
   left: -99999px; /* Hide off canvas, while still remaining visible */
 }
 
+.code-example {
+  background-color: #2f2625;
+  padding: 1em;
+  border-radius: 0.3em;
+  margin-bottom: 1em;
+}
+
+.javascript-output-column {
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-primary {
+  background-color: #69f0ae;
+  color: #0b140f;
+  border-color: #53d88f;
+  transition: 0.2s ease-in-out;
+}
+.btn-primary:active, .btn-primary:focus, .btn-primary:hover, .btn-primary:active:hover, .btn-primary:active:focus {
+  background-color: #61fea8;
+  color: #060a08;
+  border-color: #4de486;
+  outline: 0;
+}
+
 .CodeMirror {
   /* https://codemirror.net/demo/resize.html */
   height: auto;
@@ -241,11 +299,4 @@ textarea {
   font-family: 'Roboto Mono';
   font-weight: 400;
   line-height: 1.25;
-}
-
-.code-example {
-  background-color: #f5f5f5;
-  padding: 1em;
-  border-radius: 0.3em;
-  margin-bottom: 1em;
 }
