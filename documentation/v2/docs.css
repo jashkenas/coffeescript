@@ -11,7 +11,7 @@ body {
 }
 @media screen and (max-width: 991px) {
   body {
-  padding-top: 3em;
+    padding-top: 3em;
   }
 }
 
@@ -109,11 +109,14 @@ svg {
   padding-right: 1.6em;
   overflow-x: hidden;
   overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+  font-family: 'Alegreya Sans';
+  font-weight: 400;
+  font-size: 1.2em;
   line-height: 2;
 }
 @media screen and (max-width: 991px) {
   .sidebar .contents {
-  position: fixed;
+    position: fixed;
   }
 }
 
@@ -133,29 +136,29 @@ svg {
  */
 @media screen and (max-width: 991px) {
   .row-offcanvas {
-  position: relative;
-  transition: all .25s ease-in-out;
+    position: relative;
+    transition: all .25s ease-in-out;
   }
 
   .row-offcanvas-left {
-  left: 0;
+   left: 0;
   }
 
   .row-offcanvas-left .sidebar-offcanvas {
-  left: -66.667%;
+    left: -66.667%;
   }
   .row-offcanvas-right.active {
-  right: calc(66.667% + 1em);
+    right: calc(66.667% + 1em);
   }
 
   .row-offcanvas-left.active {
-  left: calc(66.667% + 1em);
+    left: calc(66.667% + 1em);
   }
 
   .sidebar-offcanvas {
-  position: absolute;
-  top: 0;
-  width: 66.667%;
+    position: absolute;
+    top: 0;
+    width: 66.667%;
   }
 }
 
@@ -169,17 +172,26 @@ svg {
 }
 @media (min-width: 992px) {
   .main {
-  padding-right: 2em;
-  padding-left: 2em;
+    padding-right: 2em;
+    padding-left: 2em;
   }
 }
 
 .title-logo {
-  width: 30em;
-  margin: 3em auto;
+  width: 30rem;
+  margin: 3rem auto;
 }
 .title-logo path {
   fill: #28334C;
+}
+
+.main p, .main li, .main td {
+  font-family: Lato;
+  font-size: 1.3rem;
+  font-weight: 300;
+}
+.main strong {
+  font-weight: 700;
 }
 
 p, .code-example {
@@ -189,6 +201,18 @@ p, .code-example {
 h2, h3 {
   margin-top: 1.3em;
   margin-bottom: 0.6em;
+  font-family: 'Alegreya Sans';
+}
+h2 {
+  font-weight: 800;
+}
+h3, h2 time {
+  font-weight: 400;
+}
+
+code, button {
+  font-family: 'Roboto Mono';
+  font-weight: 400;
 }
 
 
@@ -205,6 +229,8 @@ textarea {
   /* https://codemirror.net/demo/resize.html */
   height: auto;
   background: transparent;
+  font-family: 'Roboto Mono';
+  font-weight: 400;
   line-height: 1.25;
 }
 
