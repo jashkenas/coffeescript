@@ -483,7 +483,7 @@ test "#1313: misplaced __extends", ->
   class A
   class B extends A
     prop: nonce
-    constructor: ->
+    constructor: -> super
   eq nonce, B::prop
 
 test "#1182: execution order needs to be considered as well", ->

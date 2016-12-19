@@ -1311,17 +1311,14 @@ exports.Class = class Class extends Base
       method.name = variable.properties[0]
     else
       methodName  = variable.base
-      method.ctor = methodName.value is 'constructor'
       method.name = new (if methodName.isComplex() then Index else Access) methodName
+      method.ctor = (if @parent then 'derived' else 'base') if methodName.value is 'constructor'
       method.error 'Cannot define a constructor as a bound function' if method.bound and method.ctor
 
     method
 
   makeDefaultConstructor: ->
-    ctor          = new Code
-    ctor.ctor     = true
-    ctor.name     = new Access new PropertyName 'constructor'
-    ctor.isMethod = yes
+    ctor = @addInitializerMethod new Assign (new Value new PropertyName 'constructor'), new Code
     @body.unshift ctor
 
     ctor.body.push new SuperCall if @parent
@@ -1987,8 +1984,8 @@ exports.Code = class Code extends Base
 
     # Add new expressions to the function body
     wasEmpty = @body.isEmpty()
-    if @ctor and superCall = @superCall()
-      superCall.thisAssignments = thisAssignments
+    if @ctor is 'derived'
+      @derivedCtorSuperCall().thisAssignments = thisAssignments
     else if thisAssignments.length
       @body.expressions.unshift thisAssignments...
     @body.expressions.unshift exprs... if exprs.length
@@ -2044,13 +2041,18 @@ exports.Code = class Code extends Base
       false
 
   # Find a super call in this function
-  superCall: ->
+  derivedCtorSuperCall: ->
     superCall = null
-    @traverseChildren true, (child) ->
+    @traverseChildren true, (child) =>
       superCall ?= child if child instanceof SuperCall
+
+      if child instanceof ThisLiteral
+        child.error "Can't reference 'this' before calling super" if not superCall?
 
       # `super` has the same target in bound (arrow) functions, so check them too
       not superCall and (child not instanceof Code or child.bound)
+
+    @error 'Derived class constructors must include a call to super' if not superCall?
     superCall
 
 #### Param
