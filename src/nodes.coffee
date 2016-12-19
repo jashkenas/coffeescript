@@ -192,6 +192,24 @@ exports.Base = class Base
       recur = func(child)
       child.traverseChildren(crossScope, func) unless recur is no
 
+  # `replaceInContext` will traverse children looking for a node for which `match` returns
+  # true. Once found, the matching node will be replaced by the result of calling `replacement`.
+  replaceInContext: (match, replacement) ->
+    return false unless @children
+    for attr in @children when children = @[attr]
+      if Array.isArray children
+        for child, i in children
+          if match child
+            children[i..i] = replacement child, @
+            return true
+          else
+            return true if child.replaceInContext match, replacement
+      else if match children
+        @[attr] = replacement children, @
+        return true
+      else
+        return true if children.replaceInContext match, replacement
+
   invert: ->
     new Op '!', this
 
@@ -1976,6 +1994,14 @@ exports.Code = class Code extends Base
   # boundaries unless `crossScope` is `true`.
   traverseChildren: (crossScope, func) ->
     super(crossScope, func) if crossScope
+
+  # Short-circuit `replaceInContext` method to prevent it from crossing context boundaries. Bound
+  # functions have the same context.
+  replaceInContext: (child, replacement) ->
+    if @bound
+      super child, replacement
+    else
+      false
 
   # Find a super call in this function
   superCall: ->
