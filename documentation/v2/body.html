@@ -1,19 +1,9 @@
-<nav class="navbar navbar-dark navbar-fixed-top bg-inverse">
-  <a class="navbar-brand" href="#"><%= include('documentation/images/logo.svg') %></a>
-  <button type="button" class="navbar-menu-button hidden-lg-up" data-toggle="offcanvas" aria-label="Toggle navigation">
-    <div class="menu-button">
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
-  </button>
-</nav>
+<%= include('navbar.html') %>
 
 <div class="container-fluid" id="top">
   <div class="row row-offcanvas row-offcanvas-left">
-    <nav class="sidebar col-xs-12 col-lg-3 sidebar-offcanvas">
-      <%= include('nav.html') %>
+    <nav class="sidebar sidebar-offcanvas col-xs-12 col-lg-3">
+      <%= include('sidebar.html') %>
     </nav>
     <main class="main col-xs-12 col-lg-9 offset-lg-3">
 

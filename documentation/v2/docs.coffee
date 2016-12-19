@@ -1,10 +1,21 @@
 $(document).ready ->
   # Mobile navigation
-  $('[data-toggle="offcanvas"]').click ->
+  toggleSidebar = ->
     $('.menu-button, .row-offcanvas').toggleClass 'active'
+
+  $('[data-toggle="offcanvas"]').click toggleSidebar
+
+  $('[data-action="sidebar-nav"]').click (event) ->
+    if $('.menu-button').is(':visible')
+      event.preventDefault()
+      toggleSidebar()
+      setTimeout ->
+        window.location = event.target.href
+      , 260 # Wait for the sidebar to slide away before navigating
 
 
   # Initialize Scrollspy for sidebar navigation; http://v4-alpha.getbootstrap.com/components/scrollspy/
+  # See also http://www.codingeverything.com/2014/02/BootstrapDocsSideBar.html and http://jsfiddle.net/KyleMit/v6zhz/
   $('body').scrollspy
     target: '#contents'
     offset: Math.round $('main').css('padding-top').replace('px', '')

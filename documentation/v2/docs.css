@@ -35,12 +35,33 @@ a:focus, a:hover, a:active {
 /*
  * Header
  */
+.navbar-fixed-top {
+  height: 3.5rem;
+}
+
 .navbar-brand {
   height: 2em;
+  margin-right: 2em;
 }
 
 .navbar-dark path {
   fill: #fff;
+}
+
+.navbar-nav {
+  font-family: Lato;
+  font-weight: 400;
+  font-size: 1.1em;
+}
+
+.navbar-nav .nav-link {
+  padding-left: 0.6em;
+  padding-right: 0.6em;
+  border-radius: 0.4em;
+}
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:active {
+  background-color: #4e342e;
 }
 
 /* Adapted from https://codepen.io/GeoffreyBooth/pen/QGzwYK */
@@ -109,41 +130,45 @@ a:focus, a:hover, a:active {
 .sidebar {
   background-color: #efebe9;
   border-right: 1px solid #eee;
-  position: fixed;
-  top: 0;
+  top: 3.5rem;
   bottom: 0;
   left: 0;
   z-index: 1000;
   display: block;
-  padding-top: 1.3em;
-  padding-left: 1.6em;
-  padding-right: 1.6em;
-  overflow-x: hidden;
+  padding: 0;
+}
+.sidebar .contents {
+  height: 100%;
   /* Scrollable contents if viewport is shorter than content */
   overflow-y: auto;
+  overflow-x: hidden;
   font-family: 'Alegreya Sans';
   font-weight: 400;
   font-size: 1.2em;
   line-height: 2;
 }
-.sidebar::-webkit-scrollbar {
-  display: none;
-}
 @media screen and (max-width: 991px) {
   .sidebar .contents {
     position: fixed;
-  }0
+    height: calc(100% - 3.5rem);
+    padding: 1em 1.6em;
+  }
 }
 @media screen and (min-width: 992px) {
   .sidebar {
-    /* Push below header bar */
-    margin-top: 3.5rem;
+    position: fixed;
+  }
+  .sidebar .contents {
+    padding: 1.3em;
+  }
+  .sidebar .contents::-webkit-scrollbar {
+    display: none;
   }
 }
 
-.nav-link.active,
-.nav-link.active, a:hover,
-.nav-link.active, a:focus {
+.sidebar .nav-link.active,
+.sidebar .nav-link.active a:hover,
+.sidebar .nav-link.active a:focus {
   font-weight: 800;
 }
 
@@ -162,25 +187,31 @@ a:focus, a:hover, a:active {
     position: relative;
     transition: all .25s ease-in-out;
   }
-
   .row-offcanvas-left {
-   left: 0;
+    left: 0;
   }
-
-  .row-offcanvas-left .sidebar-offcanvas {
-    left: -66.667%;
-  }
-  .row-offcanvas-right.active {
-    right: calc(66.667% + 1em);
-  }
-
-  .row-offcanvas-left.active {
-    left: calc(66.667% + 1em);
-  }
-
   .sidebar-offcanvas {
     position: absolute;
     top: 0;
+  }
+}
+@media screen and (max-width: 767px) {
+  .row-offcanvas-left .sidebar-offcanvas {
+    left: -100%;
+  }
+  .row-offcanvas-left.active {
+    left: calc(100% + 30px)
+  }
+}
+@media screen and (min-width: 768px) and (max-width: 991px) {
+  .row-offcanvas-left .sidebar-offcanvas {
+    left: calc(-66.667% - 15px);
+    width: 66.667%;
+  }
+  .row-offcanvas-left.active {
+    left: calc(66.667% + 30px);
+  }
+  .row-offcanvas-left .sidebar-offcanvas .contents {
     width: 66.667%;
   }
 }
