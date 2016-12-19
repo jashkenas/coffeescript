@@ -813,10 +813,28 @@ exports.Call = class Call extends Base
 # Takes care of converting `super()` calls into calls against the prototype's
 # function of the same name.
 exports.SuperCall = class SuperCall extends Call
+  children: ['thisAssignments']
+
   constructor: (args) ->
     super null, args ? [new Splat new IdentifierLiteral 'arguments']
     # Allow to recognize a bare `super` call without parentheses and arguments.
     @isBare = args?
+
+  isStatement: (o) ->
+    @thisAssignments?.length and o.level is LEVEL_TOP
+
+  compileNode: (o) ->
+    return super unless @thisAssignments?.length
+
+    superCall   = new Literal fragmentsToText super
+    replacement = new Block @thisAssignments.slice()
+    if o.level is LEVEL_TOP
+      replacement.unshift superCall
+    else
+      [call, ref] = superCall.cache o, null, YES
+      replacement.unshift call
+      replacement.push ref
+    replacement.compileToFragments o
 
   # Grab the reference to the superclass's implementation of the current
   # method.
@@ -1966,8 +1984,8 @@ exports.Code = class Code extends Base
 
     # Add new expressions to the function body
     wasEmpty = @body.isEmpty()
-    if @ctor
-      @expandCtorSuperCall o, thisAssignments
+    if @ctor and superCall = @superCall()
+      superCall.thisAssignments = thisAssignments
     else if thisAssignments.length
       @body.expressions.unshift thisAssignments...
     @body.expressions.unshift exprs... if exprs.length
@@ -2022,22 +2040,15 @@ exports.Code = class Code extends Base
     else
       false
 
-  # Replace the first `super` call with a `Block` containing `thisAssignments`
-  # If there is no `super` call, `thisAssignments` are prepended to the body.
-  expandCtorSuperCall: (o, thisAssignments) ->
-    isSuper     = (child) -> child instanceof SuperCall
-    replacement = (child, parent) ->
-      replacement = new Block thisAssignments
-      if parent instanceof Block
-        replacement.unshift child
-      else
-        [assign, ref] = child.cache o
-        replacement.unshift assign
-        replacement.push ref
-      replacement
+  # Find a super call in this function
+  superCall: ->
+    superCall = null
+    @traverseChildren true, (child) ->
+      superCall ?= child if child instanceof SuperCall
 
-    @body.expressions.unshift thisAssignments... unless @body.replaceInContext isSuper, replacement
-    null
+      # `super` has the same target in bound (arrow) functions, so check them too
+      not superCall and (child not instanceof Code or child.bound)
+    superCall
 
 #### Param
 
