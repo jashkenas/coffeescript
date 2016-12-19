@@ -27,7 +27,9 @@ test "classes with a four-level inheritance chain", ->
     @array = [1, 2, 3]
 
   class ThirdChild extends SecondChild
-    constructor: -> thirdCtor.call this
+    constructor: ->
+      super()
+      thirdCtor.call this
 
     # Gratuitous comment for testing.
     func: (string) ->
@@ -922,6 +924,7 @@ test "can extend a basic ES class", ->
   BasicClass = getBasicClass()
   class ExtendedClass extends BasicClass
     constructor: (@name) ->
+      super()
   i = new ExtendedClass 'dude'
   eq i.name, 'dude'
 
@@ -931,6 +934,7 @@ test "can extend an extended ES class", ->
 
   class ExtendedExtendedClass extends ExtendedClass
     constructor: (@value) ->
+      super()
     getDoubledValue: ->
       @value * 2
 
@@ -961,6 +965,7 @@ test "extended CoffeeScript class can be extended in ES", ->
 
   class CoffeeClassWithDrinkOrder extends CoffeeClass
     constructor: (@favoriteDrink, @size = 'grande') ->
+      super()
     getDrinkOrder: ->
       "#{@size} #{@favoriteDrink}"
 

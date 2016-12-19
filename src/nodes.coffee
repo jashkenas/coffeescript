@@ -276,6 +276,8 @@ exports.HoistTarget = class HoistTarget extends Base
     fragments
 
   constructor: (@source) ->
+    super()
+
     # Holds presentational options to apply when the source node is compiled
     @options = {}
 
@@ -310,6 +312,8 @@ exports.HoistTarget = class HoistTarget extends Base
 # `if`, `switch`, or `try`, and so on...
 exports.Block = class Block extends Base
   constructor: (nodes) ->
+    super()
+
     @expressions = compact flatten nodes or []
 
   children: ['expressions']
@@ -475,6 +479,7 @@ exports.Block = class Block extends Base
 # `true`, `false`, `null`...
 exports.Literal = class Literal extends Base
   constructor: (@value) ->
+    super()
 
   isComplex: NO
 
@@ -552,6 +557,7 @@ exports.BooleanLiteral = class BooleanLiteral extends Literal
 # make sense.
 exports.Return = class Return extends Base
   constructor: (@expression) ->
+    super()
 
   children: ['expression']
 
@@ -595,6 +601,9 @@ exports.AwaitReturn = class AwaitReturn extends Return
 exports.Value = class Value extends Base
   constructor: (base, props, tag) ->
     return base if not props and base instanceof Value
+
+    super()
+
     @base       = base
     @properties = props or []
     @[tag]      = true if tag
@@ -709,6 +718,7 @@ exports.Value = class Value extends Base
 # at the same position.
 exports.Comment = class Comment extends Base
   constructor: (@comment) ->
+    super()
 
   isStatement:     YES
   makeReturn:      THIS
@@ -724,6 +734,8 @@ exports.Comment = class Comment extends Base
 # Node for a function invocation.
 exports.Call = class Call extends Base
   constructor: (@variable, @args = [], @soak) ->
+    super()
+
     @isNew    = false
     if @variable instanceof Value and @variable.isNotCallable()
       @variable.error "literal is not a function"
@@ -859,6 +871,7 @@ exports.TaggedTemplateCall = class TaggedTemplateCall extends Call
 # [Closure Library](https://github.com/google/closure-library/blob/master/closure/goog/base.js).
 exports.Extends = class Extends extends Base
   constructor: (@child, @parent) ->
+    super()
 
   children: ['child', 'parent']
 
@@ -872,6 +885,7 @@ exports.Extends = class Extends extends Base
 # an access into the object's prototype.
 exports.Access = class Access extends Base
   constructor: (@name, tag) ->
+    super()
     @soak  = tag is 'soak'
 
   children: ['name']
@@ -894,6 +908,7 @@ exports.Access = class Access extends Base
 # A `[ ... ]` indexed access into an array or object.
 exports.Index = class Index extends Base
   constructor: (@index) ->
+    super()
 
   children: ['index']
 
@@ -913,6 +928,8 @@ exports.Range = class Range extends Base
   children: ['from', 'to']
 
   constructor: (@from, @to, tag) ->
+    super()
+
     @exclusive = tag is 'exclusive'
     @equals = if @exclusive then '' else '='
 
@@ -1010,6 +1027,7 @@ exports.Slice = class Slice extends Base
   children: ['range']
 
   constructor: (@range) ->
+    super()
 
   # We have to be careful when trying to slice through the end of the array,
   # `9e9` is used because not all implementations respect `undefined` or `1/0`.
@@ -1036,6 +1054,8 @@ exports.Slice = class Slice extends Base
 # An object literal, nothing fancy.
 exports.Obj = class Obj extends Base
   constructor: (props, @generated = false) ->
+    super()
+
     @objects = @properties = props or []
 
   children: ['properties']
@@ -1086,6 +1106,8 @@ exports.Obj = class Obj extends Base
 # An array literal.
 exports.Arr = class Arr extends Base
   constructor: (objs) ->
+    super()
+
     @objects = objs or []
 
   children: ['objects']
@@ -1121,6 +1143,7 @@ exports.Class = class Class extends Base
   children: ['variable', 'parent', 'body']
 
   constructor: (@variable, @parent, @body = new Block) ->
+    super()
 
   compileNode: (o) ->
     @name          = @determineName()
@@ -1143,8 +1166,7 @@ exports.Class = class Class extends Base
     @ctor ?= @makeDefaultConstructor() if @externalCtor or @boundMethods.length
     @ctor?.noReturn = true
 
-    @proxyBoundMethods o
-    @ensureConstructorSuperCall()
+    @proxyBoundMethods o if @boundMethods.length
 
     o.indent += TAB
 
@@ -1281,6 +1303,8 @@ exports.Class = class Class extends Base
     ctor.isMethod = yes
     @body.unshift ctor
 
+    ctor.body.push new SuperCall if @parent
+
     if @externalCtor
       applyCtor = new Value @externalCtor, [ new Access new PropertyName 'apply' ]
       applyArgs = [ new ThisLiteral, new IdentifierLiteral 'arguments' ]
@@ -1290,29 +1314,11 @@ exports.Class = class Class extends Base
     ctor
 
   proxyBoundMethods: (o) ->
-    return unless @boundMethods.length
-
-    for name in @boundMethods by -1
+    @ctor.thisAssignments = for name in @boundMethods by -1
       name = new Value(new ThisLiteral, [ name ]).compile o
-      @ctor.body.unshift new Literal "#{name} = #{utility 'bind', o}(#{name}, this)"
+      new Literal "#{name} = #{utility 'bind', o}(#{name}, this)"
 
     null
-
-  ensureConstructorSuperCall: ->
-    return unless @parent and @ctor
-
-    hasThisParam = no
-    hasThisParam = yes for param in @ctor.params when param.name.this
-
-    superCall    = @ctor.superCall()
-
-    if hasThisParam and superCall
-      superCall.error 'super not allowed with `@` parameters in derived constructors'
-
-    if @boundMethods.length and superCall
-      superCall.error 'super not allowed with bound functions in derived constructors'
-
-    @ctor.body.unshift new SuperCall unless superCall
 
 exports.ExecutableClassBody = class ExecutableClassBody extends Base
   children: [ 'class', 'body' ]
@@ -1320,6 +1326,7 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
   defaultClassVariableName: '_Class'
 
   constructor: (@class, @body = new Block) ->
+    super()
 
   compileNode: (o) ->
     if jumpNode = @body.jumps()
@@ -1435,6 +1442,7 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
 
 exports.ModuleDeclaration = class ModuleDeclaration extends Base
   constructor: (@clause, @source) ->
+    super()
     @checkSource()
 
   children: ['clause', 'source']
@@ -1469,6 +1477,7 @@ exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
 
 exports.ImportClause = class ImportClause extends Base
   constructor: (@defaultBinding, @namedImports) ->
+    super()
 
   children: ['defaultBinding', 'namedImports']
 
@@ -1518,6 +1527,7 @@ exports.ExportAllDeclaration = class ExportAllDeclaration extends ExportDeclarat
 
 exports.ModuleSpecifierList = class ModuleSpecifierList extends Base
   constructor: (@specifiers) ->
+    super()
 
   children: ['specifiers']
 
@@ -1542,6 +1552,8 @@ exports.ExportSpecifierList = class ExportSpecifierList extends ModuleSpecifierL
 
 exports.ModuleSpecifier = class ModuleSpecifier extends Base
   constructor: (@original, @alias, @moduleDeclarationType) ->
+    super()
+
     # The name of the variable entering the local scope
     @identifier = if @alias? then @alias.value else @original.value
 
@@ -1581,6 +1593,7 @@ exports.ExportSpecifier = class ExportSpecifier extends ModuleSpecifier
 # property of an object -- including within object literals.
 exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options = {}) ->
+    super()
     {@param, @subpattern, @operatorToken, @moduleDeclaration} = options
 
   children: ['variable', 'value']
@@ -1812,6 +1825,8 @@ exports.Assign = class Assign extends Base
 # has no *children* -- they're within the inner scope.
 exports.Code = class Code extends Base
   constructor: (params, body, tag) ->
+    super()
+
     @params      = params or []
     @body        = body or new Block
     @bound       = tag is 'boundfunc'
@@ -1842,6 +1857,10 @@ exports.Code = class Code extends Base
   # parameters after the splat, they are declared via expressions in the
   # function body.
   compileNode: (o) ->
+    if @ctor
+      @variable.error 'Class constructor may not be async'       if @isAsync
+      @variable.error 'Class constructor may not be a generator' if @isGenerator
+
     if @bound
       @context = o.scope.method.context if o.scope.method?.bound
       @context = 'this' unless @context
@@ -1853,33 +1872,22 @@ exports.Code = class Code extends Base
     delete o.isExistentialEquals
     params           = []
     exprs            = []
+    thisAssignments  = @thisAssignments?.slice() ? []
     paramsAfterSplat = []
     haveSplatParam   = no
-    haveThisParam    = no
 
     # Check for duplicate parameters and separate `this` assignments
     paramNames = []
-    thisAssignments = []
     @eachParamName (name, node, param) ->
       node.error "multiple parameters named '#{name}'" if name in paramNames
       paramNames.push name
 
       if node.this
-        haveThisParam = yes
         name   = node.properties[0].name.value
         name   = "_#{name}" if name in JS_FORBIDDEN
         target = new IdentifierLiteral o.scope.freeVariable name
         param.renameParam node, target
         thisAssignments.push new Assign node, target
-
-    if @ctor
-      @variable.error 'Class constructor may not be async' if @isAsync
-      @variable.error 'Class constructor may not be a generator' if @isGenerator
-
-      # If there's a super call as the first expression in a constructor, it needs to stay above any
-      # `this` assignments
-      if haveThisParam and @body.expressions[0] instanceof SuperCall
-        exprs.push @body.expressions.shift()
 
     # Parse the parameters, adding them to the list of parameters to put in the
     # function definition; and dealing with splats or expansions, including
@@ -1955,9 +1963,13 @@ exports.Code = class Code extends Base
           new Arr [new Splat(new IdentifierLiteral(splatParamName)), (param.asReference o for param in paramsAfterSplat)...]
         ), new Value new IdentifierLiteral splatParamName
 
+
     # Add new expressions to the function body
     wasEmpty = @body.isEmpty()
-    @body.expressions.unshift thisAssignments... if thisAssignments.length
+    if @ctor
+      @expandCtorSuperCall o, thisAssignments
+    else if thisAssignments.length
+      @body.expressions.unshift thisAssignments...
     @body.expressions.unshift exprs... if exprs.length
     @body.makeReturn() unless wasEmpty or @noReturn
 
@@ -2010,15 +2022,22 @@ exports.Code = class Code extends Base
     else
       false
 
-  # Find a super call in this function
-  superCall: ->
-    superCall = null
-    @traverseChildren true, (child) ->
-      superCall = child if child instanceof SuperCall
+  # Replace the first `super` call with a `Block` containing `thisAssignments`
+  # If there is no `super` call, `thisAssignments` are prepended to the body.
+  expandCtorSuperCall: (o, thisAssignments) ->
+    isSuper     = (child) -> child instanceof SuperCall
+    replacement = (child, parent) ->
+      replacement = new Block thisAssignments
+      if parent instanceof Block
+        replacement.unshift child
+      else
+        [assign, ref] = child.cache o
+        replacement.unshift assign
+        replacement.push ref
+      replacement
 
-      # `super` has the same target in bound (arrow) functions, so check them too
-      not superCall and (child not instanceof Code or child.bound)
-    superCall
+    @body.expressions.unshift thisAssignments... unless @body.replaceInContext isSuper, replacement
+    null
 
 #### Param
 
@@ -2027,6 +2046,8 @@ exports.Code = class Code extends Base
 # as well as be a splat, gathering up a group of parameters into an array.
 exports.Param = class Param extends Base
   constructor: (@name, @value, @splat) ->
+    super()
+
     message = isUnassignable @name.unwrapAll().value
     @name.error message if message
     if @name instanceof Obj and @name.generated
@@ -2118,6 +2139,7 @@ exports.Splat = class Splat extends Base
   isAssignable: YES
 
   constructor: (name) ->
+    super()
     @name = if name.compile then name else new Literal name
 
   assigns: (name) ->
@@ -2152,6 +2174,8 @@ exports.Expansion = class Expansion extends Base
 # flexibility or more speed than a comprehension can provide.
 exports.While = class While extends Base
   constructor: (condition, options) ->
+    super()
+
     @condition = if options?.invert then condition.invert() else condition
     @guard     = options?.guard
 
@@ -2209,10 +2233,13 @@ exports.Op = class Op extends Base
   constructor: (op, first, second, flip ) ->
     return new In first, second if op is 'in'
     if op is 'do'
-      return @generateDo first
+      return Op::generateDo first
     if op is 'new'
       return first.newInstance() if first instanceof Call and not first.do and not first.isNew
       first = new Parens first   if first instanceof Code and first.bound or first.do
+
+    super()
+
     @operator = CONVERSIONS[op] or op
     @first    = first
     @second   = second
@@ -2403,6 +2430,7 @@ exports.Op = class Op extends Base
 #### In
 exports.In = class In extends Base
   constructor: (@object, @array) ->
+    super()
 
   children: ['object', 'array']
 
@@ -2442,6 +2470,7 @@ exports.In = class In extends Base
 # A classic *try/catch/finally* block.
 exports.Try = class Try extends Base
   constructor: (@attempt, @errorVariable, @recovery, @ensure) ->
+    super()
 
   children: ['attempt', 'recovery', 'ensure']
 
@@ -2487,6 +2516,7 @@ exports.Try = class Try extends Base
 # Simple node to throw an exception.
 exports.Throw = class Throw extends Base
   constructor: (@expression) ->
+    super()
 
   children: ['expression']
 
@@ -2506,6 +2536,7 @@ exports.Throw = class Throw extends Base
 # table.
 exports.Existence = class Existence extends Base
   constructor: (@expression) ->
+    super()
 
   children: ['expression']
 
@@ -2531,6 +2562,7 @@ exports.Existence = class Existence extends Base
 # Parentheses are a good way to force any statement to become an expression.
 exports.Parens = class Parens extends Base
   constructor: (@body) ->
+    super()
 
   children: ['body']
 
@@ -2551,6 +2583,7 @@ exports.Parens = class Parens extends Base
 
 exports.StringWithInterpolations = class StringWithInterpolations extends Base
   constructor: (@body) ->
+    super()
 
   children: ['body']
 
@@ -2606,6 +2639,8 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
 # you can map and filter in a single pass.
 exports.For = class For extends While
   constructor: (body, source) ->
+    super()
+
     {@source, @guard, @step, @name, @index} = source
     @body    = Block.wrap [body]
     @own     = !!source.own
@@ -2732,6 +2767,7 @@ exports.For = class For extends While
 # A JavaScript *switch* statement. Converts into a returnable expression on-demand.
 exports.Switch = class Switch extends Base
   constructor: (@subject, @cases, @otherwise) ->
+    super()
 
   children: ['subject', 'cases', 'otherwise']
 
@@ -2777,6 +2813,8 @@ exports.Switch = class Switch extends Base
 # because ternaries are already proper expressions, and don't need conversion.
 exports.If = class If extends Base
   constructor: (condition, @body, options = {}) ->
+    super()
+
     @condition = if options.type is 'unless' then condition.invert() else condition
     @elseBody  = null
     @isChain   = false
