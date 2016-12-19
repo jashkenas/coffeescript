@@ -1174,6 +1174,9 @@ exports.Class = class Class extends Base
     else
       result = @compileClassDeclaration o
 
+      # Anonymous classes are only valid in expressions
+      result = @wrapInBraces result if not @name? and o.level is LEVEL_TOP
+
     if @variable
       assign = new Assign @variable, new Literal(''), null, { @moduleDeclaration }
       [ assign.compileToFragments(o)..., result... ]
