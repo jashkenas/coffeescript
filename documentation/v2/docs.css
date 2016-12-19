@@ -226,9 +226,15 @@ a:focus, a:hover, a:active {
 .main blockquote {
   font-size: 1.3rem;
 }
+.main blockquote pre {
+  background-color: #f8f3f0;
+  color: #2f2625;
+  border-radius: .3em;
+  padding: 0.4em 0.6em;
+}
 
-p, table, .code-example {
-  margin-bottom: 1.3em;
+p, blockquote, table, .code-example {
+  margin-bottom: 1.3rem;
 }
 
 h2, h3 {
