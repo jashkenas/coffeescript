@@ -1205,3 +1205,31 @@ test "tagged template literals must be called by an identifier", ->
     1"""#{b}"""
     ^
   '''
+
+test "constructor functions can't be async", ->
+  assertErrorFormat 'class then constructor: -> await x', '''
+    [stdin]:1:12: error: Class constructor may not be async
+    class then constructor: -> await x
+               ^^^^^^^^^^^
+  '''
+
+test "constructor functions can't be generators", ->
+  assertErrorFormat 'class then constructor: -> yield', '''
+    [stdin]:1:12: error: Class constructor may not be a generator
+    class then constructor: -> yield
+               ^^^^^^^^^^^
+  '''
+
+test "derived constructors must call super", ->
+  assertErrorFormat 'class extends A then constructor: ->', '''
+    [stdin]:1:35: error: Derived class constructors must include a call to super
+    class extends A then constructor: ->
+                                      ^^
+  '''
+
+test "derived constructors can't reference `this` before calling super", ->
+  assertErrorFormat 'class extends A then constructor: -> @', '''
+    [stdin]:1:38: error: Can't reference 'this' before calling super
+    class extends A then constructor: -> @
+                                         ^
+  '''

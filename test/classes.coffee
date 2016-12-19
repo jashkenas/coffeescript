@@ -980,3 +980,28 @@ test "extended CoffeeScript class can be extended in ES", ->
 
   e = new ECMAScriptClass 'coffee'
   eq e.getDrinkOrder(), 'grande coffee with a dash of semicolons'
+
+test "`this` access after `super` in extended classes", ->
+  class Base
+
+  class Test extends Base
+    constructor: (param, @param) ->
+      eq param, nonce
+
+      result = { super: super(), @param, @method }
+      eq result.super, this
+      eq result.param, @param
+      eq result.method, @method
+
+    method: =>
+
+  nonce = {}
+  new Test nonce, {}
+
+test "constructor super in arrow functions", ->
+  class Test extends (class)
+    constructor: (@param) ->
+      do => super
+      eq @param, nonce
+
+  new Test nonce = {}
