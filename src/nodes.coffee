@@ -1857,12 +1857,20 @@ exports.Code = class Code extends Base
     haveSplatParam   = no
     haveThisParam    = no
 
-    # Check for duplicate parameters.
+    # Check for duplicate parameters and separate `this` assignments
     paramNames = []
-    @eachParamName (name, node) =>
+    thisAssignments = []
+    @eachParamName (name, node, param) ->
       node.error "multiple parameters named '#{name}'" if name in paramNames
       paramNames.push name
-      haveThisParam = yes if node.this
+
+      if node.this
+        haveThisParam = yes
+        name   = node.properties[0].name.value
+        name   = "_#{name}" if name in JS_FORBIDDEN
+        target = new IdentifierLiteral o.scope.freeVariable name
+        param.renameParam node, target
+        thisAssignments.push new Assign node, target
 
     if @ctor
       @variable.error 'Class constructor may not be async' if @isAsync
@@ -1891,12 +1899,11 @@ exports.Code = class Code extends Base
         if param.splat
           params.push ref = param.asReference o
           splatParamName = fragmentsToText ref.compileNode o
-          if param.isComplex() # Parameter is destructured or attached to `this`
+          if param.isComplex() # Parameter is destructured
             exprs.push new Assign new Value(param.name), ref, '=', param: yes
-            # TODO: output destrucutred parameters as is, *unless* they contain
-            # `this` parameters; and fix destructuring of objects with default
-            # values to work in this context (see Obj.compileNode
-            # `if prop.context isnt 'object'`)
+            # TODO: output destructured parameters as is, and fix destructuring
+            # of objects with default values to work in this context (see
+            # Obj.compileNode `if prop.context isnt 'object'`)
 
         else # `param` is an Expansion
           splatParamName = o.scope.freeVariable 'args'
@@ -1909,10 +1916,9 @@ exports.Code = class Code extends Base
       # the function definition.
       else
         if param.isComplex()
-          # This parameter is attached to `this`, which ES doesn’t allow;
-          # or it’s destructured. So add a statement to the function body
-          # assigning it, e.g. `(a) => { this.a = a; }` or with a default
-          # value if it has one.
+          # This parameter is destructured. So add a statement to the function
+          # body assigning it, e.g. `(arg) => { var a = arg.a; }` or with a
+          # default value if it has one.
           val = ref = param.asReference o
           val = new Op '?', ref, param.value if param.value
           exprs.push new Assign new Value(param.name), val, '=', param: yes
@@ -1951,6 +1957,7 @@ exports.Code = class Code extends Base
 
     # Add new expressions to the function body
     wasEmpty = @body.isEmpty()
+    @body.expressions.unshift thisAssignments... if thisAssignments.length
     @body.expressions.unshift exprs... if exprs.length
     @body.makeReturn() unless wasEmpty or @noReturn
 
@@ -2054,9 +2061,9 @@ exports.Param = class Param extends Base
   # `name` is the name of the parameter and `node` is the AST node corresponding
   # to that name.
   eachName: (iterator, name = @name) ->
-    atParam = (obj) -> iterator "@#{obj.properties[0].name.value}", obj
+    atParam = (obj) => iterator "@#{obj.properties[0].name.value}", obj, @
     # * simple literals `foo`
-    return iterator name.value, name if name instanceof Literal
+    return iterator name.value, name, @ if name instanceof Literal
     # * at-params `@foo`
     return atParam name if name instanceof Value
     for obj in name.objects ? []
@@ -2072,7 +2079,7 @@ exports.Param = class Param extends Base
       # * splats within destructured parameters `[xs...]`
       else if obj instanceof Splat
         node = obj.name.unwrap()
-        iterator node.value, node
+        iterator node.value, node, @
       else if obj instanceof Value
         # * destructured parameters within destructured parameters `[{a}]`
         if obj.isArray() or obj.isObject()
@@ -2081,10 +2088,24 @@ exports.Param = class Param extends Base
         else if obj.this
           atParam obj
         # * simple destructured parameters {foo}
-        else iterator obj.base.value, obj.base
+        else iterator obj.base.value, obj.base, @
       else if obj not instanceof Expansion
         obj.error "illegal parameter #{obj.compile()}"
     return
+
+  # Rename a param by replacing the given AST node for a name with a new node.
+  # This needs to ensure that the the source for object destructuring does not change.
+  renameParam: (node, newNode) ->
+    isNode      = (candidate) -> candidate is node
+    replacement = (node, parent) =>
+      if parent instanceof Obj
+        key = node
+        key = node.properties[0].name if node.this
+        new Assign new Value(key), newNode, 'object'
+      else
+        newNode
+
+    @replaceInContext isNode, replacement
 
 #### Splat
 
