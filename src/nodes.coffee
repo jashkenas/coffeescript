@@ -1363,7 +1363,7 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
     params  = []
     args    = []
     wrapper = new Code params, @body
-    klass   = new Call wrapper, args
+    klass   = new Parens new Call wrapper, args
 
     @body.spaced = true
 
