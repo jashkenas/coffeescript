@@ -1220,6 +1220,13 @@ test "constructor functions can't be generators", ->
                ^^^^^^^^^^^
   '''
 
+test "non-derived constructors can't call super", ->
+  assertErrorFormat 'class then constructor: -> super', '''
+    [stdin]:1:28: error: 'super' is only allowed in derived class constructors
+    class then constructor: -> super
+                               ^^^^^
+  '''
+
 test "derived constructors must call super", ->
   assertErrorFormat 'class extends A then constructor: ->', '''
     [stdin]:1:35: error: Derived class constructors must include a call to super
@@ -1229,7 +1236,7 @@ test "derived constructors must call super", ->
 
 test "derived constructors can't reference `this` before calling super", ->
   assertErrorFormat 'class extends A then constructor: -> @', '''
-    [stdin]:1:38: error: Can't reference 'this' before calling super
+    [stdin]:1:38: error: Can't reference 'this' before calling super in derived class constructors
     class extends A then constructor: -> @
                                          ^
   '''

@@ -1984,8 +1984,8 @@ exports.Code = class Code extends Base
 
     # Add new expressions to the function body
     wasEmpty = @body.isEmpty()
-    if @ctor is 'derived'
-      @derivedCtorSuperCall().thisAssignments = thisAssignments
+    if @ctor and superCall = @ctorSuperCall()
+      superCall.thisAssignments = thisAssignments
     else if thisAssignments.length
       @body.expressions.unshift thisAssignments...
     @body.expressions.unshift exprs... if exprs.length
@@ -2041,18 +2041,22 @@ exports.Code = class Code extends Base
       false
 
   # Find a super call in this function
-  derivedCtorSuperCall: ->
+  ctorSuperCall: ->
     superCall = null
     @traverseChildren true, (child) =>
       superCall ?= child if child instanceof SuperCall
 
-      if child instanceof ThisLiteral
-        child.error "Can't reference 'this' before calling super" if not superCall?
+      if @ctor is 'derived' and child instanceof ThisLiteral and not superCall?
+        child.error "Can't reference 'this' before calling super in derived class constructors"
 
       # `super` has the same target in bound (arrow) functions, so check them too
       not superCall and (child not instanceof Code or child.bound)
 
-    @error 'Derived class constructors must include a call to super' if not superCall?
+    if @ctor is 'derived' and not superCall?
+      @error 'Derived class constructors must include a call to super'
+    else if @ctor is 'base' and superCall?
+      superCall.error "'super' is only allowed in derived class constructors"
+
     superCall
 
 #### Param
