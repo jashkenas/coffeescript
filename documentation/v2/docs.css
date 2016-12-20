@@ -31,6 +31,15 @@ a:focus, a:hover, a:active {
   background-color: #3e2723 !important;
 }
 
+.bg-ribbed-light {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 3"><path opacity=".03" fill="#000" d="M0 0h1v1H0z"/><path opacity=".005" fill="#000" d="M0 1h1v2H0z"/></svg>');
+  background-size: 1px 3px;
+}
+.bg-ribbed-dark {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 3"><path opacity=".2" fill="#000" d="M0 0h1v1H0z"/><path opacity=".15" fill="#000" d="M0 1h1v2H0z"/></svg>');
+  background-size: 1px 3px;
+}
+
 
 /*
  * Header
@@ -129,7 +138,7 @@ a:focus, a:hover, a:active {
 
 .sidebar {
   background-color: #efebe9;
-  border-right: 1px solid #eee;
+  border-right: 1px solid #efebe9;
   top: 3.5rem;
   bottom: 0;
   left: 0;
