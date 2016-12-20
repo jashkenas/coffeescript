@@ -86,7 +86,7 @@ All together now:
 
 <tr>
 
-<td>`false`, `no`, `off`</td>
+<td>`false`, `no`, `off`&emsp;</td>
 
 <td>`false`</td>
 
