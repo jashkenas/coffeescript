@@ -1,0 +1,40 @@
+/* Adapted from https://github.com/FarhadG/code-mirror-themes/blob/master/themes/twilight.css */
+
+.cm-s-twilight {
+  letter-spacing: 0.3px;
+  color: #f8f8f8;
+}
+.cm-s-twilight .CodeMirror-lines {
+  padding: 0.5em 0;
+}
+.cm-s-twilight div.CodeMirror-cursor {
+  border-left: 3px solid #f8f8f8;
+}
+.cm-s-twilight .CodeMirror-activeline-background {
+  background: #ffffff08;
+}
+.cm-s-twilight .CodeMirror-selected {
+  background: #ddf0ff33;
+}
+.cm-s-twilight .cm-comment {
+  font-style: italic;
+  color: #5f5a60;
+}
+.cm-s-twilight .cm-keyword {
+  color: #cda869;
+}
+.cm-s-twilight .cm-string {
+  color: #8f9d6a;
+}
+.cm-s-twilight .cm-property {
+  color: #dad085;
+}
+.cm-s-twilight .cm-atom {
+  color: #dad085;
+}
+.cm-s-twilight .cm-number {
+  color: #dad085;
+}
+.cm-s-twilight .cm-operator {
+  color: #cda869;
+}

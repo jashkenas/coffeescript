@@ -1,0 +1,3566 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+<title>CoffeeScript</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="canonical" href="http://coffeescript.org" />
+
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="theme-color" content="#ffffff">
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
+<!-- The CoffeeScript logo font is Google’s Galada -->
+<link href="https://fonts.googleapis.com/css?family=Alegreya+Sans:400,800|Lato:300,300i,400,700|Roboto+Mono:400" rel="stylesheet" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/codemirror/4.5.0/codemirror.css" crossorigin="anonymous">
+<style>
+/* Adapted from https://v4-alpha.getbootstrap.com/examples/dashboard/dashboard.css and http://v4-alpha.getbootstrap.com/examples/offcanvas/offcanvas.css */
+
+html,
+body {
+  /* Prevent scroll on narrow devices */
+  overflow-x: hidden;
+}
+body {
+  /* Required for Scrollspy */
+  position: relative;
+  /* Push below header bar */
+  margin-top: 3.5rem;
+}
+
+svg {
+  width: auto;
+  height: 100%;
+}
+
+a {
+  color: #1b5e20;
+  transition: 0.1s ease-in-out;
+}
+a:focus, a:hover, a:active {
+  color: #388e3c;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.bg-inverse {
+  background-color: #3e2723 !important;
+}
+
+
+/*
+ * Header
+ */
+.navbar-fixed-top {
+  height: 3.5rem;
+}
+
+.navbar-brand {
+  height: 2em;
+  margin-right: 2em;
+}
+
+.navbar-dark path {
+  fill: #fff;
+}
+
+.navbar-nav {
+  font-family: Lato;
+  font-weight: 400;
+  font-size: 1.1em;
+}
+
+.navbar-nav .nav-link {
+  padding-left: 0.6em;
+  padding-right: 0.6em;
+  border-radius: 0.4em;
+}
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:active {
+  background-color: #4e342e;
+}
+
+/* Adapted from https://codepen.io/GeoffreyBooth/pen/QGzwYK */
+.navbar-menu-button,
+.navbar-menu-button:focus {
+  float: right;
+  width: 2.3em;
+  padding: 0;
+  margin-top: 0.25em;
+  background: transparent;
+  border: 0;
+  outline: 0;
+}
+.menu-button {
+  width: 2em;
+  height: 1.5em;
+  position: relative;
+  transform: rotate(0deg);
+  transition: .25s ease-in-out;
+  cursor: pointer;
+}
+.menu-button span {
+  display: block;
+  position: absolute;
+  height: 4px;
+  width: 100%;
+  background: #efebe9;
+  border-radius: 4px;
+  opacity: 1;
+  left: 0;
+  transform: rotate(0deg);
+  transition: .25s ease-in-out;
+}
+.menu-button span:nth-child(1) {
+  top: 0;
+}
+.menu-button span:nth-child(2),
+.menu-button span:nth-child(3) {
+  top: 0.7em;
+}
+.menu-button span:nth-child(4) {
+  top: 1.4em;
+}
+.menu-button.active span:nth-child(1) {
+  top: 0.7em;
+  width: 0%;
+  left: 50%;
+}
+.menu-button.active span:nth-child(2) {
+  transform: rotate(45deg);
+}
+.menu-button.active span:nth-child(3) {
+  transform: rotate(-45deg);
+}
+.menu-button.active span:nth-child(4) {
+  top: 0.7em;
+  width: 0%;
+  left: 50%;
+}
+
+
+/*
+ * Sidebar
+ */
+
+.sidebar {
+  background-color: #efebe9;
+  border-right: 1px solid #eee;
+  top: 3.5rem;
+  bottom: 0;
+  left: 0;
+  z-index: 1000;
+  display: block;
+  padding: 0;
+}
+.sidebar .contents {
+  height: 100%;
+  /* Scrollable contents if viewport is shorter than content */
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-family: 'Alegreya Sans';
+  font-weight: 400;
+  font-size: 1.2em;
+  line-height: 2;
+}
+@media screen and (max-width: 991px) {
+  .sidebar .contents {
+    position: fixed;
+    height: calc(100% - 3.5rem);
+    padding: 1em 1.6em;
+  }
+}
+@media screen and (min-width: 992px) {
+  .sidebar {
+    position: fixed;
+  }
+  .sidebar .contents {
+    padding: 1.3em;
+  }
+  .sidebar .contents::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.sidebar .nav-link.active,
+.sidebar .nav-link.active a:hover,
+.sidebar .nav-link.active a:focus {
+  font-weight: 800;
+}
+
+.nav .nav {
+  margin-left: 1em;
+  font-size: 0.9em;
+  line-height: 1.7;
+}
+
+
+/*
+ * Off Canvas
+ */
+@media screen and (max-width: 991px) {
+  .row-offcanvas {
+    position: relative;
+    transition: all .25s ease-in-out;
+  }
+  .row-offcanvas-left {
+    left: 0;
+  }
+  .sidebar-offcanvas {
+    position: absolute;
+    top: 0;
+  }
+}
+@media screen and (max-width: 767px) {
+  .row-offcanvas-left .sidebar-offcanvas {
+    left: -100%;
+  }
+  .row-offcanvas-left.active {
+    left: calc(100% + 30px)
+  }
+}
+@media screen and (min-width: 768px) and (max-width: 991px) {
+  .row-offcanvas-left .sidebar-offcanvas {
+    left: calc(-66.667% - 15px);
+    width: 66.667%;
+  }
+  .row-offcanvas-left.active {
+    left: calc(66.667% + 30px);
+  }
+  .row-offcanvas-left .sidebar-offcanvas .contents {
+    width: 66.667%;
+  }
+}
+
+
+/*
+ * Main content
+ */
+
+.main {
+  padding: 1.3em;
+}
+@media (min-width: 992px) {
+  .main {
+    padding-right: 2em;
+    padding-left: 2em;
+  }
+}
+
+.title-logo {
+  width: 30rem;
+  margin: 3rem auto;
+}
+.title-logo path {
+  fill: #2f2625;
+}
+
+.main p, .main li, .main td, .main th {
+  font-family: Lato;
+  font-size: 1.3rem;
+  font-weight: 300;
+}
+.main strong, .main th {
+  font-weight: 700;
+}
+.main a {
+  border-bottom: 2px solid transparent;
+  font-weight: 400;
+}
+.main a:focus, .main a:hover, .main a:active {
+  border-bottom: 2px solid rgba(56, 142, 60, 0.2);
+}
+.main blockquote {
+  font-size: 1.3rem;
+}
+.main blockquote pre {
+  background-color: #f8f3f0;
+  color: #2f2625;
+  border-radius: .3em;
+  padding: 0.4em 0.6em;
+}
+
+p, blockquote, table, .code-example {
+  margin-bottom: 1.3rem;
+}
+
+h2, h3 {
+  margin-top: 1.3em;
+  margin-bottom: 0.6em;
+  font-family: 'Alegreya Sans';
+}
+h2 {
+  font-weight: 800;
+}
+h3, h2 time {
+  font-weight: 400;
+}
+
+.main section {
+  /* Offset the anchor so that clicking on the sidebar links don’t hide the heading under the header bar */
+  padding-top: 2.3rem;
+  margin-top: -2.3rem;
+}
+
+code, button {
+  font-family: 'Roboto Mono';
+  font-weight: 400;
+}
+code {
+  background-color: #f8f3f0;
+  color: #2f2625;
+}
+
+
+/*
+ * Code examples
+ */
+
+textarea {
+  position: absolute;
+  left: -99999px; /* Hide off canvas, while still remaining visible */
+}
+
+.code-example {
+  background-color: #2f2625;
+  padding: 1em;
+  border-radius: 0.3em;
+  margin-bottom: 1em;
+}
+
+.javascript-output-column {
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-primary {
+  background-color: #69f0ae;
+  color: #0b140f;
+  border-color: #53d88f;
+  transition: 0.2s ease-in-out;
+}
+.btn-primary:active, .btn-primary:focus, .btn-primary:hover, .btn-primary:active:hover, .btn-primary:active:focus {
+  background-color: #61fea8;
+  color: #060a08;
+  border-color: #4de486;
+  outline: 0;
+}
+
+.CodeMirror {
+  /* https://codemirror.net/demo/resize.html */
+  height: auto;
+  background: transparent;
+  font-family: 'Roboto Mono';
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+/* Adapted from https://github.com/FarhadG/code-mirror-themes/blob/master/themes/twilight.css */
+
+.cm-s-twilight {
+  letter-spacing: 0.3px;
+  color: #f8f8f8;
+}
+.cm-s-twilight .CodeMirror-lines {
+  padding: 0.5em 0;
+}
+.cm-s-twilight div.CodeMirror-cursor {
+  border-left: 3px solid #f8f8f8;
+}
+.cm-s-twilight .CodeMirror-activeline-background {
+  background: #ffffff08;
+}
+.cm-s-twilight .CodeMirror-selected {
+  background: #ddf0ff33;
+}
+.cm-s-twilight .cm-comment {
+  font-style: italic;
+  color: #5f5a60;
+}
+.cm-s-twilight .cm-keyword {
+  color: #cda869;
+}
+.cm-s-twilight .cm-string {
+  color: #8f9d6a;
+}
+.cm-s-twilight .cm-property {
+  color: #dad085;
+}
+.cm-s-twilight .cm-atom {
+  color: #dad085;
+}
+.cm-s-twilight .cm-number {
+  color: #dad085;
+}
+.cm-s-twilight .cm-operator {
+  color: #cda869;
+}
+
+</style>
+
+</head>
+<body>
+
+<nav class="navbar navbar-dark navbar-fixed-top bg-inverse">
+  <a class="navbar-brand" href="#"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-22 347 566 100">
+	<title>
+		CoffeeScript Logo
+	</title>
+	<path d="M21.7 351.1c.1.6-.2 1.1-1.2 1.6-1.3-.7-4.1-1.1-6.4-.9-2.5.2-4.6 1-4.3 2.7.4 1.7 2.8 2.7 7.1 2.3 10.5-.9 10.4-8 25.8-9.4 12-1.1 18.7 2.6 19.6 7.1.7 3.5-2.2 6.9-10.9 7.6-7.7.7-12.2-1.4-12.6-3.5-.2-1.1.4-2.7 4.1-3.1.4 1.7 2.5 3.5 7.5 3 3.6-.3 6.6-1.6 6.2-3.6-.4-2.1-4.2-3.3-10.2-2.8-12.2 1.1-15.2 7.8-25.6 8.7-7.4.7-13.4-2-14.2-6-.3-1.5-.3-5 7.5-5.7 4-.3 7.2.4 7.6 2zm-39 41.8c-3.4 4.3-4.9 9.3-4.6 14.2.3 4.9 2.7 8.9 6.5 12 4 3.1 8.3 4 13.2 3.1 1.9-.3 4-1.3 5.9-1.9-4 0-7.4-1.3-10.8-4-3.7-2.7-6.2-6.5-6.8-11.1-.9-4.3 0-8.3 2.4-11.8 2.7-3.4 6.2-5.3 10.8-5.9 4.6-.3 8.6.9 12.6 3.7-.9-1.3-2.2-2.2-3.4-3.4-4-2.7-8.3-4-13.6-2.7-4.8 1-8.8 3.5-12.2 7.8zm53.6-23.1c-12.9 0-24.4-1.3-32.7-3.1-8.9-2.2-13.6-4.6-13.6-7.7 0-1.3.6-2.4 2.4-3.7-5.6 2.2-8.6 4-8.6 6.8.3 3.1 5.3 6.2 15.5 8.6 9.6 2.4 21.9 3.7 36.7 3.7 15.1 0 27.1-1.3 36.7-3.7 10.2-2.4 15.1-5.6 15.1-8.6 0-2.2-2.2-4.3-6.2-5.9.9.6 1.6 1.6 1.6 2.7 0 3.1-4.6 5.6-13.9 7.7-8.6 1.9-19.6 3.2-33 3.2zm36.8 8.6c-9.6 2.2-21.9 3.7-36.7 3.7-15.1 0-27.4-1.6-37-3.7-8.6-2.2-13.2-4.6-14.8-7.1 1.6 10.8 5.3 21 10.2 30 3.7 5.6 7.4 10.5 11.1 15.8 1.6 3.1 2.7 6.2 3.4 9.3 2.4 3.4 5.9 5.6 10.2 6.8 5.3 1.9 10.8 2.7 16.4 2.4h.6c5.6.3 11.5-.6 16.9-2.4 4-1.3 7.4-3.4 9.9-6.8h.3c.6-3.1 1.6-6.2 3.1-9.3 3.7-5.3 7.4-10.2 11.1-15.8 4.9-8.9 8.3-19.1 10.2-30-2 2.8-6.6 5.2-14.9 7.1zm106.2 30.1c-4.8 12.1-17.6 16.9-25.9 16.9-13.4 0-19.9-6-19.9-22.3 0-16.5 7.9-47.3 31.7-47.3 8.5 0 15.2 3.3 15.2 12.1 0 4.8-1.8 8.3-6.4 8.3-1.5 0-3.4-.4-5.2-2.4 2.2-1.1 4.2-4.9 4.2-8.3 0-2.9-1.5-5.6-5.6-5.6-10 0-18.9 23.9-18.9 42.4 0 8.3 2.2 14.2 10.9 14.2 7.1 0 13.5-3.4 17.7-9.1l2.2 1.1zm32.9-16.3c.4.2.7.2 1 .2 4.2 0 10.1-2.7 14-5.5l.8 2.4c-3.4 3.7-9.5 6.5-16.1 7.5-1.5 16.8-10.6 27.3-21.7 27.3-8.4 0-14.5-4-14.5-14.4 0-10.5 6.2-32.2 24.9-32.2 7.8.3 11.6 5.3 11.6 14.7zm-7.7 5c-1.9-.5-2.4-2-2.4-3.8 0-2.5 1.2-4.2 2.8-4.9-.2-3.8-1.1-5.3-3.4-5.3-6.5 0-12 16.6-12 25.6 0 6 1.2 7.3 4.6 7.3 4.2.1 8.9-8 10.4-18.9zm-6.6 39.7c0-8.3 7.1-11 15.8-13.6l10.9-51.9c2.7-13 10.6-15.5 16.5-15.5 4.1 0 8 2.2 9.7 5.7 3.6-4.6 8.4-5.7 12.4-5.7 5.6 0 10.8 3.9 10.8 9.8 0 1.5-.1 2.6-.3 3.7h-4.3c.1-.9.2-1.7.2-2.4 0-2.1-1.7-3.1-3.4-3.1-2 0-4.8 1.1-6.2 7.1l-1.7 7.4h9.1l-.8 3.6h-9l-10.3 49.1c-2.7 13-10.6 15.5-16.5 15.5-5.2 0-8.3-2.3-9.8-5.7-3.5 4.6-8.3 5.7-12.3 5.7-5.6.1-10.8-3.8-10.8-9.7zm9.1 1.8c1.9 0 4.2-1.8 5.4-7.1l1.1-5.3c-5.7 2-10.1 4.4-10.1 9.4 0 1.2 1.7 3 3.6 3zm21.7 0c1.9 0 4.2-1.8 5.4-7.1l2.2-10.4-9.4 1.8-1.8 8.3c-.5 2.1-1.1 4-1.8 5.6.9 1.3 3 1.8 5.4 1.8zm-1.4-18l9.4-1.7 7.7-36.8h-9l-8.1 38.5zm16.6-56.7c-2 0-4.8 1.1-6.2 7.1l-1.7 7.4h9l2.1-9.5c.2-.7.2-1.3.2-2 .1-2-1.5-3-3.4-3zm37.9 53c7.1 0 11.6-4 16.1-9.2h3.1c-5.2 8.3-12.9 16.8-25 16.8-8.5 0-14.2-4.2-14.2-14.5 0-10.5 5.9-32.3 24.6-32.3 8.1 0 10 4.2 10 8.7 0 10.5-10 18.5-20.9 19.2-.1 1.3-.2 2.5-.2 3.6 0 6.2 2.2 7.7 6.5 7.7zm5.3-34.4c-4.6 0-9.1 9.7-10.9 18.7 7-.5 13.2-7.4 13.2-15 0-2.2-.5-3.7-2.3-3.7zm28.6 33.4c3.4 0 7.8-2.3 10.8-4.8-2 10.4-8.4 13.4-15.8 13.4-8.4 0-14.1-4.2-14.1-14.5 0-10.5 5.9-32.3 24.6-32.3 8.1 0 10 4.2 10 8.7 0 10.6-10 18.5-20.9 19.2-.1.9-.2 2-.2 2.7 0 5.7 2.5 7.6 5.6 7.6zm6.2-33.4c-4.5 0-9.1 10.1-11 18.7 7.1-.4 13.3-7.3 13.3-15 0-2.2-.6-3.7-2.3-3.7zm51.3-6.7c-1.7 0-3-.6-4.2-1.9 2.4-1.5 4.1-4.8 4.1-7.8 0-3.1-1.8-6.1-6.8-6.1s-8.3 2.8-8.3 8.2c0 13.3 20.5 15.2 20.5 34.8 0 15.3-12.3 22.7-25.6 22.7-10.4 0-19.3-4.5-19.3-15.7 0-9.8 7-14.9 13.3-14.9 3.1 0 7.7 1.3 8 6-4.9 0-10.7 2.3-10.7 8.5 0 4.5 2.9 8.7 8.7 8.7 6.1 0 10.6-4.4 10.6-12 0-15.6-18.6-21.1-18.6-34.5 0-9.5 9.3-16.3 21-16.3 4.3 0 14.6.9 14.6 10.9.1 5.5-2.8 9.4-7.3 9.4zm36.2 10.3c0-2.3-.8-3.7-2.5-3.7-5.7 0-11.7 16.6-11.7 26.7 0 6.2 2.2 7.6 6.6 7.6 7.1 0 11.6-4 16.1-9.2h3.1c-5.2 8.3-12.9 16.8-25 16.8-8.5 0-14.2-4.2-14.2-14.5 0-10.6 6-32.3 24.5-32.3 8.1 0 10.1 4.2 10.1 8.3 0 4.4-2.2 6.7-4.8 6.7-1 0-2.1-.4-3.1-1.1.5-1.9.9-3.6.9-5.3zm27.7-7.6l-1.2 5.7c3.1-2.7 6.7-5.7 11-5.7 4.1 0 6.3 3.3 6.3 6.9 0 3.1-2.1 6.7-6.6 6.7-5.1 0-2.5-6-5.3-6-2.7 0-4.4 1.4-6.7 3.4l-7.2 34.6h-13.1l9.6-45.4 13.2-.2zm34.2 0l-6.6 30.9c-.3 1.2-.4 2.1-.4 2.9 0 2.5 1.2 3.3 3.7 3.3 3.5 0 6.9-3.4 8.1-8h3.8c-5.2 14.8-14.2 16.8-19.1 16.8-5.5 0-9.7-3.2-9.7-10.9 0-1.8.3-3.7.7-5.9l6.2-29.2 13.3.1zm-4.1-19.4c4 0 7.2 3.2 7.2 7.2s-3.2 7.1-7.2 7.1-7.1-3.1-7.1-7.1c-.1-4 3.2-7.2 7.1-7.2zm29.1 16l-1.5 6.9c2.6-2.3 6.1-3.9 10.7-3.9 6.2 0 11.1 3.5 11.1 14.4 0 12.2-4.7 32.1-22.3 32.1-4.5 0-6.8-1.6-7.7-3.2l-4.7 22.1-13.7 3.2 15.2-71.5 12.9-.1zm7.8 17c0-7-2.9-7.5-4.5-7.5-2 0-4.5 1.6-6.3 4.4l-5.4 25.5c.4 1 1.4 2.1 3.4 2.1 9.7 0 12.8-15.9 12.8-24.5zm27.8 17.3c-.3 1.1-.5 2.2-.5 3.1 0 1.9.7 3.2 3.1 3.2.7 0 1.7 0 2.4-.3-2.5 7.8-6.6 8.9-9.6 8.9-6.4 0-9.1-4.4-9.1-10.3 0-1.6.2-3.1.6-4.8l5.8-27.2h-3l.7-3.6h3L528 366l13.4-1.9s-1.4 6.2-3.1 14.4h5.5l-.7 3.6h-5.5l-5.7 27.4z"/>
+</svg>
+</a>
+  <nav class="nav navbar-nav float-xs-left hidden-md-down">
+    <a href="#try" class="nav-item nav-link">Try CoffeeScript</a>
+    <a href="#language" class="nav-item nav-link">Language Reference</a>
+    <a href="#resources" class="nav-item nav-link">Resources</a>
+    <a href="http://github.com/jashkenas/coffeescript/" class="nav-item nav-link">GitHub</a>
+  </nav>
+  <button type="button" class="navbar-menu-button hidden-lg-up" data-toggle="offcanvas" aria-label="Toggle sidebar">
+    <div class="menu-button">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </button>
+</nav>
+
+
+<div class="container-fluid" id="top">
+  <div class="row row-offcanvas row-offcanvas-left">
+    <nav class="sidebar sidebar-offcanvas col-xs-12 col-lg-3">
+      <nav class="contents" id="contents">
+  <ul class="nav">
+    <li class="nav-item">
+      <a href="#top" class="nav-link" data-action="sidebar-nav">Overview</a>
+    </li>
+    <li class="nav-item">
+      <a href="#coffeescript-2" class="nav-link" data-action="sidebar-nav">CoffeeScript 2</a>
+    </li>
+    <li class="nav-item">
+      <a href="#installation" class="nav-link" data-action="sidebar-nav">Installation</a>
+    </li>
+    <li class="nav-item">
+      <a href="#usage" class="nav-link" data-action="sidebar-nav">Usage</a>
+    </li>
+    <li class="nav-item">
+      <a href="#language" class="nav-link" data-action="sidebar-nav">Language Reference</a>
+      <ul class="nav">
+        <li class="nav-item">
+          <a href="#functions" class="nav-link" data-action="sidebar-nav">Functions</a>
+        </li>
+        <li class="nav-item">
+          <a href="#strings" class="nav-link" data-action="sidebar-nav">Strings</a>
+        </li>
+        <li class="nav-item">
+          <a href="#objects-and-arrays" class="nav-link" data-action="sidebar-nav">Objects and Arrays</a>
+        </li>
+        <li class="nav-item">
+          <a href="#comments" class="nav-link" data-action="sidebar-nav">Comments</a>
+        </li>
+        <li class="nav-item">
+          <a href="#lexical-scope" class="nav-link" data-action="sidebar-nav">Lexical Scoping and Variable Safety</a>
+        </li>
+        <li class="nav-item">
+          <a href="#conditionals" class="nav-link" data-action="sidebar-nav">If, Else, Unless, and Conditional Assignment</a>
+        </li>
+        <li class="nav-item">
+          <a href="#splats" class="nav-link" data-action="sidebar-nav">Splats…</a>
+        </li>
+        <li class="nav-item">
+          <a href="#loops" class="nav-link" data-action="sidebar-nav">Loops and Comprehensions</a>
+        </li>
+        <li class="nav-item">
+          <a href="#slices" class="nav-link" data-action="sidebar-nav">Array Slicing and Splicing</a>
+        </li>
+        <li class="nav-item">
+          <a href="#expressions" class="nav-link" data-action="sidebar-nav">Everything is an Expression</a>
+        </li>
+        <li class="nav-item">
+          <a href="#operators" class="nav-link" data-action="sidebar-nav">Operators and Aliases</a>
+        </li>
+        <li class="nav-item">
+          <a href="#existential-operator" class="nav-link" data-action="sidebar-nav">Existential Operator</a>
+        </li>
+        <li class="nav-item">
+          <a href="#classes" class="nav-link" data-action="sidebar-nav">Classes, Inheritance, and Super</a>
+        </li>
+        <li class="nav-item">
+          <a href="#destructuring" class="nav-link" data-action="sidebar-nav">Destructuring Assignment</a>
+        </li>
+        <li class="nav-item">
+          <a href="#fat-arrow" class="nav-link" data-action="sidebar-nav">Bound and Generator Functions</a>
+        </li>
+        <li class="nav-item">
+          <a href="#embedded" class="nav-link" data-action="sidebar-nav">Embedded JavaScript</a>
+        </li>
+        <li class="nav-item">
+          <a href="#switch" class="nav-link" data-action="sidebar-nav">Switch and Try/Catch</a>
+        </li>
+        <li class="nav-item">
+          <a href="#comparisons" class="nav-link" data-action="sidebar-nav">Chained Comparisons</a>
+        </li>
+        <li class="nav-item">
+          <a href="#regexes" class="nav-link" data-action="sidebar-nav">Block Regular Expressions</a>
+        </li>
+        <li class="nav-item">
+          <a href="#tagged-template-literals" class="nav-link" data-action="sidebar-nav">Tagged Template Literals</a>
+        </li>
+        <li class="nav-item">
+          <a href="#modules" class="nav-link" data-action="sidebar-nav">Modules</a>
+        </li>
+      </ul>
+    </li>
+    <li class="nav-item">
+      <a href="#literate" class="nav-link" data-action="sidebar-nav">Literate CoffeeScript</a>
+    </li>
+    <li class="nav-item">
+      <a href="#source-maps" class="nav-link" data-action="sidebar-nav">Source Maps</a>
+    </li>
+    <li class="nav-item">
+      <a href="#cake" class="nav-link" data-action="sidebar-nav">Cake, and Cakefiles</a>
+    </li>
+    <li class="nav-item">
+      <a href="#scripts" class="nav-link" data-action="sidebar-nav"><code>"text/coffeescript"</code> Script Tags</a>
+    </li>
+    <li class="nav-item">
+      <a href="#test" class="nav-link" data-action="sidebar-nav">Browser-Based Tests</a>
+    </li>
+    <li class="nav-item">
+      <a href="#resources" class="nav-link" data-action="sidebar-nav">Resources</a>
+      <ul class="nav">
+        <li class="nav-item">
+          <a href="#books">Books</a>
+        </li>
+        <li class="nav-item">
+          <a href="#screencasts">Screencasts</a>
+        </li>
+        <li class="nav-item">
+          <a href="#examples">Examples</a>
+        </li>
+        <li class="nav-item">
+          <a href="#chat">Chat</a>
+        </li>
+        <li class="nav-item">
+          <a href="#annotated-source">Annotated Source</a>
+        </li>
+      </ul>
+    </li>
+    <li class="nav-item">
+      <a href="#changelog" class="nav-link" data-action="sidebar-nav">Change Log</a>
+    </li>
+  </ul>
+</nav>
+
+    </nav>
+    <main class="main col-xs-12 col-lg-9 offset-lg-3">
+
+      <header class="title-logo hidden-md-down">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="-22 347 566 100">
+	<title>
+		CoffeeScript Logo
+	</title>
+	<path d="M21.7 351.1c.1.6-.2 1.1-1.2 1.6-1.3-.7-4.1-1.1-6.4-.9-2.5.2-4.6 1-4.3 2.7.4 1.7 2.8 2.7 7.1 2.3 10.5-.9 10.4-8 25.8-9.4 12-1.1 18.7 2.6 19.6 7.1.7 3.5-2.2 6.9-10.9 7.6-7.7.7-12.2-1.4-12.6-3.5-.2-1.1.4-2.7 4.1-3.1.4 1.7 2.5 3.5 7.5 3 3.6-.3 6.6-1.6 6.2-3.6-.4-2.1-4.2-3.3-10.2-2.8-12.2 1.1-15.2 7.8-25.6 8.7-7.4.7-13.4-2-14.2-6-.3-1.5-.3-5 7.5-5.7 4-.3 7.2.4 7.6 2zm-39 41.8c-3.4 4.3-4.9 9.3-4.6 14.2.3 4.9 2.7 8.9 6.5 12 4 3.1 8.3 4 13.2 3.1 1.9-.3 4-1.3 5.9-1.9-4 0-7.4-1.3-10.8-4-3.7-2.7-6.2-6.5-6.8-11.1-.9-4.3 0-8.3 2.4-11.8 2.7-3.4 6.2-5.3 10.8-5.9 4.6-.3 8.6.9 12.6 3.7-.9-1.3-2.2-2.2-3.4-3.4-4-2.7-8.3-4-13.6-2.7-4.8 1-8.8 3.5-12.2 7.8zm53.6-23.1c-12.9 0-24.4-1.3-32.7-3.1-8.9-2.2-13.6-4.6-13.6-7.7 0-1.3.6-2.4 2.4-3.7-5.6 2.2-8.6 4-8.6 6.8.3 3.1 5.3 6.2 15.5 8.6 9.6 2.4 21.9 3.7 36.7 3.7 15.1 0 27.1-1.3 36.7-3.7 10.2-2.4 15.1-5.6 15.1-8.6 0-2.2-2.2-4.3-6.2-5.9.9.6 1.6 1.6 1.6 2.7 0 3.1-4.6 5.6-13.9 7.7-8.6 1.9-19.6 3.2-33 3.2zm36.8 8.6c-9.6 2.2-21.9 3.7-36.7 3.7-15.1 0-27.4-1.6-37-3.7-8.6-2.2-13.2-4.6-14.8-7.1 1.6 10.8 5.3 21 10.2 30 3.7 5.6 7.4 10.5 11.1 15.8 1.6 3.1 2.7 6.2 3.4 9.3 2.4 3.4 5.9 5.6 10.2 6.8 5.3 1.9 10.8 2.7 16.4 2.4h.6c5.6.3 11.5-.6 16.9-2.4 4-1.3 7.4-3.4 9.9-6.8h.3c.6-3.1 1.6-6.2 3.1-9.3 3.7-5.3 7.4-10.2 11.1-15.8 4.9-8.9 8.3-19.1 10.2-30-2 2.8-6.6 5.2-14.9 7.1zm106.2 30.1c-4.8 12.1-17.6 16.9-25.9 16.9-13.4 0-19.9-6-19.9-22.3 0-16.5 7.9-47.3 31.7-47.3 8.5 0 15.2 3.3 15.2 12.1 0 4.8-1.8 8.3-6.4 8.3-1.5 0-3.4-.4-5.2-2.4 2.2-1.1 4.2-4.9 4.2-8.3 0-2.9-1.5-5.6-5.6-5.6-10 0-18.9 23.9-18.9 42.4 0 8.3 2.2 14.2 10.9 14.2 7.1 0 13.5-3.4 17.7-9.1l2.2 1.1zm32.9-16.3c.4.2.7.2 1 .2 4.2 0 10.1-2.7 14-5.5l.8 2.4c-3.4 3.7-9.5 6.5-16.1 7.5-1.5 16.8-10.6 27.3-21.7 27.3-8.4 0-14.5-4-14.5-14.4 0-10.5 6.2-32.2 24.9-32.2 7.8.3 11.6 5.3 11.6 14.7zm-7.7 5c-1.9-.5-2.4-2-2.4-3.8 0-2.5 1.2-4.2 2.8-4.9-.2-3.8-1.1-5.3-3.4-5.3-6.5 0-12 16.6-12 25.6 0 6 1.2 7.3 4.6 7.3 4.2.1 8.9-8 10.4-18.9zm-6.6 39.7c0-8.3 7.1-11 15.8-13.6l10.9-51.9c2.7-13 10.6-15.5 16.5-15.5 4.1 0 8 2.2 9.7 5.7 3.6-4.6 8.4-5.7 12.4-5.7 5.6 0 10.8 3.9 10.8 9.8 0 1.5-.1 2.6-.3 3.7h-4.3c.1-.9.2-1.7.2-2.4 0-2.1-1.7-3.1-3.4-3.1-2 0-4.8 1.1-6.2 7.1l-1.7 7.4h9.1l-.8 3.6h-9l-10.3 49.1c-2.7 13-10.6 15.5-16.5 15.5-5.2 0-8.3-2.3-9.8-5.7-3.5 4.6-8.3 5.7-12.3 5.7-5.6.1-10.8-3.8-10.8-9.7zm9.1 1.8c1.9 0 4.2-1.8 5.4-7.1l1.1-5.3c-5.7 2-10.1 4.4-10.1 9.4 0 1.2 1.7 3 3.6 3zm21.7 0c1.9 0 4.2-1.8 5.4-7.1l2.2-10.4-9.4 1.8-1.8 8.3c-.5 2.1-1.1 4-1.8 5.6.9 1.3 3 1.8 5.4 1.8zm-1.4-18l9.4-1.7 7.7-36.8h-9l-8.1 38.5zm16.6-56.7c-2 0-4.8 1.1-6.2 7.1l-1.7 7.4h9l2.1-9.5c.2-.7.2-1.3.2-2 .1-2-1.5-3-3.4-3zm37.9 53c7.1 0 11.6-4 16.1-9.2h3.1c-5.2 8.3-12.9 16.8-25 16.8-8.5 0-14.2-4.2-14.2-14.5 0-10.5 5.9-32.3 24.6-32.3 8.1 0 10 4.2 10 8.7 0 10.5-10 18.5-20.9 19.2-.1 1.3-.2 2.5-.2 3.6 0 6.2 2.2 7.7 6.5 7.7zm5.3-34.4c-4.6 0-9.1 9.7-10.9 18.7 7-.5 13.2-7.4 13.2-15 0-2.2-.5-3.7-2.3-3.7zm28.6 33.4c3.4 0 7.8-2.3 10.8-4.8-2 10.4-8.4 13.4-15.8 13.4-8.4 0-14.1-4.2-14.1-14.5 0-10.5 5.9-32.3 24.6-32.3 8.1 0 10 4.2 10 8.7 0 10.6-10 18.5-20.9 19.2-.1.9-.2 2-.2 2.7 0 5.7 2.5 7.6 5.6 7.6zm6.2-33.4c-4.5 0-9.1 10.1-11 18.7 7.1-.4 13.3-7.3 13.3-15 0-2.2-.6-3.7-2.3-3.7zm51.3-6.7c-1.7 0-3-.6-4.2-1.9 2.4-1.5 4.1-4.8 4.1-7.8 0-3.1-1.8-6.1-6.8-6.1s-8.3 2.8-8.3 8.2c0 13.3 20.5 15.2 20.5 34.8 0 15.3-12.3 22.7-25.6 22.7-10.4 0-19.3-4.5-19.3-15.7 0-9.8 7-14.9 13.3-14.9 3.1 0 7.7 1.3 8 6-4.9 0-10.7 2.3-10.7 8.5 0 4.5 2.9 8.7 8.7 8.7 6.1 0 10.6-4.4 10.6-12 0-15.6-18.6-21.1-18.6-34.5 0-9.5 9.3-16.3 21-16.3 4.3 0 14.6.9 14.6 10.9.1 5.5-2.8 9.4-7.3 9.4zm36.2 10.3c0-2.3-.8-3.7-2.5-3.7-5.7 0-11.7 16.6-11.7 26.7 0 6.2 2.2 7.6 6.6 7.6 7.1 0 11.6-4 16.1-9.2h3.1c-5.2 8.3-12.9 16.8-25 16.8-8.5 0-14.2-4.2-14.2-14.5 0-10.6 6-32.3 24.5-32.3 8.1 0 10.1 4.2 10.1 8.3 0 4.4-2.2 6.7-4.8 6.7-1 0-2.1-.4-3.1-1.1.5-1.9.9-3.6.9-5.3zm27.7-7.6l-1.2 5.7c3.1-2.7 6.7-5.7 11-5.7 4.1 0 6.3 3.3 6.3 6.9 0 3.1-2.1 6.7-6.6 6.7-5.1 0-2.5-6-5.3-6-2.7 0-4.4 1.4-6.7 3.4l-7.2 34.6h-13.1l9.6-45.4 13.2-.2zm34.2 0l-6.6 30.9c-.3 1.2-.4 2.1-.4 2.9 0 2.5 1.2 3.3 3.7 3.3 3.5 0 6.9-3.4 8.1-8h3.8c-5.2 14.8-14.2 16.8-19.1 16.8-5.5 0-9.7-3.2-9.7-10.9 0-1.8.3-3.7.7-5.9l6.2-29.2 13.3.1zm-4.1-19.4c4 0 7.2 3.2 7.2 7.2s-3.2 7.1-7.2 7.1-7.1-3.1-7.1-7.1c-.1-4 3.2-7.2 7.1-7.2zm29.1 16l-1.5 6.9c2.6-2.3 6.1-3.9 10.7-3.9 6.2 0 11.1 3.5 11.1 14.4 0 12.2-4.7 32.1-22.3 32.1-4.5 0-6.8-1.6-7.7-3.2l-4.7 22.1-13.7 3.2 15.2-71.5 12.9-.1zm7.8 17c0-7-2.9-7.5-4.5-7.5-2 0-4.5 1.6-6.3 4.4l-5.4 25.5c.4 1 1.4 2.1 3.4 2.1 9.7 0 12.8-15.9 12.8-24.5zm27.8 17.3c-.3 1.1-.5 2.2-.5 3.1 0 1.9.7 3.2 3.1 3.2.7 0 1.7 0 2.4-.3-2.5 7.8-6.6 8.9-9.6 8.9-6.4 0-9.1-4.4-9.1-10.3 0-1.6.2-3.1.6-4.8l5.8-27.2h-3l.7-3.6h3L528 366l13.4-1.9s-1.4 6.2-3.1 14.4h5.5l-.7 3.6h-5.5l-5.7 27.4z"/>
+</svg>
+
+      </header>
+
+      <section id="overview">
+        <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
+<p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
+<p><strong>Latest Version:</strong> <a href="http://github.com/jashkenas/coffeescript/tarball/2.0.0-alpha">2.0.0-alpha</a></p>
+<blockquote>
+<pre><code>npm install -g coffee-script</code></pre></blockquote>
+
+        <h2>Overview</h2><p><em>CoffeeScript on the <span class="hidden-md-up">top</span><span class="hidden-sm-down">left</span>, compiled JavaScript output on the <span class="hidden-md-up">bottom</span><span class="hidden-sm-down">right</span>. The CoffeeScript is editable!</em></p>
+<aside class="code-example container-fluid" data-example="overview">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="overview-coffee"># Assignment:
+number   = 42
+opposite = true
+
+# Conditions:
+number = -42 if opposite
+
+# Functions:
+square = (x) -> x * x
+
+# Arrays:
+list = [1, 2, 3, 4, 5]
+
+# Objects:
+math =
+  root:   Math.sqrt
+  square: square
+  cube:   (x) -> x * square x
+
+# Splats:
+race = (winner, runners...) ->
+  print winner, runners
+
+# Existence:
+alert "I knew it!" if elvis?
+
+# Array comprehensions:
+cubes = (math.cube num for num in list)
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="overview-js">var cubes, list, math, num, number, opposite, race, square;
+
+number = 42;
+
+opposite = true;
+
+if (opposite) {
+  number = -42;
+}
+
+square = function(x) {
+  return x * x;
+};
+
+list = [1, 2, 3, 4, 5];
+
+math = {
+  root: Math.sqrt,
+  square: square,
+  cube: function(x) {
+    return x * square(x);
+  }
+};
+
+race = function(winner, ...runners) {
+  return print(winner, runners);
+};
+
+if (typeof elvis !== "undefined" && elvis !== null) {
+  alert("I knew it!");
+}
+
+cubes = (function() {
+  var i, len, results;
+  results = [];
+  for (i = 0, len = list.length; i < len; i++) {
+    num = list[i];
+    results.push(math.cube(num));
+  }
+  return results;
+})();
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="overview" data-run="cubes"><small>▶</small>&ensp;cubes</button>
+    </div>
+  </div>
+  
+</aside>
+
+      </section>
+      <section id="coffeescript-2">
+        <h2>CoffeeScript 2</h2><p>CoffeeScript 2 generates JavaScript that uses the latest ES2015+ features. It is your responsibility to ensure that your target JavaScript runtime(s) support all these features, or that you pass the output through another transpiler like <a href="http://babeljs.io/">Babel</a>, <a href="https://github.com/rollup/rollup">Rollup</a> or <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>. In general, <a href="http://node.green/">CoffeeScript 2’s output is fully supported by Node.js 7+</a>, although async functions require the <code>--harmony</code> or <code>--harmony-async-await</code> flags; and ES2015 modules require an additional transpiler. Output JavaScript intended for browsers generally requires additional transpilation.</p>
+<p>If you’re looking for a single tool that takes CoffeeScript input and generates JavaScript output that runs in any JavaScript runtime, assuming you opt out of certain newer features, stick to the <a href="v1/">CoffeeScript 1.x branch</a>. CoffeeScript 2 <a href="https://github.com/jashkenas/coffeescript/wiki/%5BWIP%5D-Breaking-changes-in-CoffeeScript-2">breaks compatibility</a> with certain CoffeeScript 1.x features in order to conform with the ES2015+ specifications, and generate more idiomatic output (a CoffeeScript <code>=&gt;</code> becomes an ES <code>=&gt;</code>; a CoffeeScript <code>class</code> becomes an ES <code>class</code>; and so on).</p>
+
+      </section>
+      <section id="installation">
+        <h2>Installation</h2><p>The CoffeeScript compiler is itself <a href="v2/annotated-source/grammar.html">written in CoffeeScript</a>, using the <a href="http://jison.org">Jison parser generator</a>. The command-line version of <code>coffee</code> is available as a <a href="http://nodejs.org/">Node.js</a> utility. The <a href="v2/browser-compiler/coffee-script.js">core compiler</a> however, does not depend on Node, and can be run in any JavaScript environment, or in the browser (see “Try CoffeeScript”, above).</p>
+<p>To install, first make sure you have a working copy of the latest stable version of <a href="http://nodejs.org/">Node.js</a>. You can then install CoffeeScript globally with <a href="http://npmjs.org">npm</a>:</p>
+<blockquote>
+<pre><code>npm install -g coffee-script</code></pre></blockquote>
+<p>When you need CoffeeScript as a dependency, install it locally:</p>
+<blockquote>
+<pre><code>npm install --save coffee-script</code></pre></blockquote>
+<p>If you’d prefer to install the latest <strong>master</strong> version of CoffeeScript, you can clone the CoffeeScript <a href="http://github.com/jashkenas/coffeescript">source repository</a> from GitHub, or download <a href="http://github.com/jashkenas/coffeescript/tarball/master">the source</a> directly. To install the latest master CoffeeScript compiler with npm:</p>
+<blockquote>
+<pre><code>npm install -g jashkenas/coffeescript</code></pre></blockquote>
+<p>Or, if you want to install to <code>/usr/local</code>, and don’t want to use npm to manage it, open the <code>coffee-script</code> directory and run:</p>
+<blockquote>
+<pre><code>sudo bin/cake install</code></pre></blockquote>
+
+      </section>
+      <section id="usage">
+        <h2>Usage</h2><p>Once installed, you should have access to the <code>coffee</code> command, which can execute scripts, compile <code>.coffee</code> files into <code>.js</code>, and provide an interactive REPL. The <code>coffee</code> command takes the following options:</p>
+<table>
+
+<tbody>
+
+<tr>
+
+<td><code>-c, --compile</code></td>
+
+<td>Compile a <code>.coffee</code> script into a <code>.js</code> JavaScript file of the same name.</td>
+
+</tr>
+
+<tr>
+
+<td><code>-m, --map</code></td>
+
+<td>Generate source maps alongside the compiled JavaScript files. Adds <code>sourceMappingURL</code> directives to the JavaScript as well.</td>
+
+</tr>
+
+<tr>
+
+<td><code>-M, --inline-map</code></td>
+
+<td>Just like <code>--map</code>, but include the source map directly in the compiled JavaScript files, rather than in a separate file.</td>
+
+</tr>
+
+<tr>
+
+<td width="25%"><code>-i, --interactive</code></td>
+
+<td>Launch an interactive CoffeeScript session to try short snippets. Identical to calling <code>coffee</code> with no arguments.</td>
+
+</tr>
+
+<tr>
+
+<td><code>-o, --output [DIR]</code></td>
+
+<td>Write out all compiled JavaScript files into the specified directory. Use in conjunction with <code>--compile</code> or <code>--watch</code>.</td>
+
+</tr>
+
+<tr>
+
+<td><code>-j, --join [FILE]</code></td>
+
+<td>Before compiling, concatenate all scripts together in the order they were passed, and write them into the specified file. (Deprecated.)</td>
+
+</tr>
+
+<tr>
+
+<td><code>-w, --watch</code></td>
+
+<td>Watch files for changes, rerunning the specified command when any file is updated.</td>
+
+</tr>
+
+<tr>
+
+<td><code>-p, --print</code></td>
+
+<td>Instead of writing out the JavaScript as a file, print it directly to <strong>stdout</strong>.</td>
+
+</tr>
+
+<tr>
+
+<td><code>-s, --stdio</code></td>
+
+<td>Pipe in CoffeeScript to STDIN and get back JavaScript over STDOUT. Good for use with processes written in other languages. An example:<br>
+<code>cat src/cake.coffee | coffee -sc</code></td>
+
+</tr>
+
+<tr>
+
+<td><code>-l, --literate</code></td>
+
+<td>Parses the code as Literate CoffeeScript. You only need to specify this when passing in code directly over <strong>stdio</strong>, or using some sort of extension-less file name.</td>
+
+</tr>
+
+<tr>
+
+<td><code>-e, --eval</code></td>
+
+<td>Compile and print a little snippet of CoffeeScript directly from the command line. For example:<br>
+<code>coffee -e &quot;console.log num for num in [10..1]&quot;</code></td>
+
+</tr>
+
+<tr>
+
+<td><code>-r, --require [MODULE]</code></td>
+
+<td><code>require()</code> the given module before starting the REPL or evaluating the code given with the <code>--eval</code> flag.</td>
+
+</tr>
+
+<tr>
+
+<td><code>-b, --bare</code></td>
+
+<td>Compile the JavaScript without the <a href="#lexical-scope">top-level function safety wrapper</a>.</td>
+
+</tr>
+
+<tr>
+
+<td><code>-t, --tokens</code></td>
+
+<td>Instead of parsing the CoffeeScript, just lex it, and print out the token stream:<br>
+<code>[IDENTIFIER square] [= =] [PARAM_START (]</code> ...</td>
+
+</tr>
+
+<tr>
+
+<td><code>-n, --nodes</code></td>
+
+<td>Instead of compiling the CoffeeScript, just lex and parse it, and print out the parse tree:<br>
+
+<code>Block
+  Assign
+    Value IdentifierLiteral: square
+    Code
+      Param IdentifierLiteral: x
+      Block
+        Op *
+          Value IdentifierLiteral: x
+          Value IdentifierLiteral: x</code>
+</td>
+
+</tr>
+
+<tr>
+
+<td><code>--nodejs</code></td>
+
+<td>The <code>node</code> executable has some useful options you can set, such as<br>
+<code>--debug</code>, <code>--debug-brk</code>, <code>--max-stack-size</code>, and <code>--expose-gc</code>. Use this flag to forward options directly to Node.js. To pass multiple flags, use <code>--nodejs</code> multiple times.</td>
+
+</tr>
+
+<tr>
+
+<td><code>--no-header</code></td>
+
+<td>Suppress the “Generated by CoffeeScript” header.</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+<h3>Examples:</h3><ul>
+<li>Compile a directory tree of <code>.coffee</code> files in <code>src</code> into a parallel tree of <code>.js</code> files in <code>lib</code>:<br>
+<code>coffee --compile --output lib/ src/</code></li>
+<li>Watch a file for changes, and recompile it every time the file is saved:<br>
+<code>coffee --watch --compile experimental.coffee</code></li>
+<li>Concatenate a list of files into a single script:<br>
+<code>coffee --join project.js --compile src/*.coffee</code></li>
+<li>Print out the compiled JS from a one-liner:<br>
+<code>coffee -bpe &quot;alert i for i in [0..10]&quot;</code></li>
+<li>All together now, watch and recompile an entire project as you work on it:<br>
+<code>coffee -o lib/ -cw src/</code></li>
+<li>Start the CoffeeScript REPL (<code>Ctrl-D</code> to exit, <code>Ctrl-V</code>for multi-line):<br>
+<code>coffee</code></li>
+</ul>
+
+      </section>
+      <section id="language">
+        <h2>Language Reference</h2><p><em>This reference is structured so that it can be read from top to bottom, if you like. Later sections use ideas and syntax previously introduced. Familiarity with JavaScript is assumed. In all of the following examples, the source CoffeeScript is provided on the left, and the direct compilation into JavaScript is on the right.</em></p>
+<p><em>Many of the examples can be run (where it makes sense) by pressing the <strong>run</strong> button on the right, and can be loaded into the “Try CoffeeScript” console by pressing the <strong>load</strong> button on the left.</em></p>
+<p>First, the basics: CoffeeScript uses significant whitespace to delimit blocks of code. You don’t need to use semicolons <code>;</code> to terminate expressions, ending the line will do just as well (although semicolons can still be used to fit multiple expressions onto a single line). Instead of using curly braces <code>{ }</code> to surround blocks of code in <a href="#literals">functions</a>, <a href="#conditionals">if-statements</a>, <a href="#switch">switch</a>, and <a href="#try">try/catch</a>, use indentation.</p>
+<p>You don’t need to use parentheses to invoke a function if you’re passing arguments. The implicit call wraps forward to the end of the line or block expression.<br>
+<code>console.log sys.inspect object</code> → <code>console.log(sys.inspect(object));</code></p>
+
+        <section id="functions">
+          <h2>Functions</h2><p>Functions are defined by an optional list of parameters in parentheses, an arrow, and the function body. The empty function looks like this: <code>-&gt;</code></p>
+<aside class="code-example container-fluid" data-example="functions">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="functions-coffee">square = (x) -> x * x
+cube   = (x) -> square(x) * x
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="functions-js">var cube, square;
+
+square = function(x) {
+  return x * x;
+};
+
+cube = function(x) {
+  return square(x) * x;
+};
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="functions" data-run="cube%285%29"><small>▶</small>&ensp;cube(5)</button>
+    </div>
+  </div>
+  
+</aside>
+<p>Functions may also have default values for arguments, which will be used if the incoming argument is missing (<code>undefined</code>).</p>
+<aside class="code-example container-fluid" data-example="default_args">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="default_args-coffee">fill = (container, liquid = "coffee") ->
+  "Filling the #{container} with #{liquid}..."
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="default_args-js">var fill;
+
+fill = function(container, liquid = "coffee") {
+  return `Filling the ${container} with ${liquid}...`;
+};
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="default_args" data-run="fill%28%22cup%22%29"><small>▶</small>&ensp;fill(&quot;cup&quot;)</button>
+    </div>
+  </div>
+  
+</aside>
+
+        </section>
+        <section id="strings">
+          <h2>Strings</h2><p>Like JavaScript and many other languages, CoffeeScript supports strings as delimited by the <code>&quot;</code> or <code>&#39;</code> characters. CoffeeScript also supports string interpolation within <code>&quot;</code>-quoted strings, using <code>#{ … }</code>. Single-quoted strings are literal. You may even use interpolation in object keys.</p>
+<aside class="code-example container-fluid" data-example="interpolation">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="interpolation-coffee">author = "Wittgenstein"
+quote  = "A picture is a fact. -- #{ author }"
+
+sentence = "#{ 22 / 7 } is a decent approximation of π"
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="interpolation-js">var author, quote, sentence;
+
+author = "Wittgenstein";
+
+quote = `A picture is a fact. -- ${author}`;
+
+sentence = `${22 / 7} is a decent approximation of π`;
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="interpolation" data-run="sentence"><small>▶</small>&ensp;sentence</button>
+    </div>
+  </div>
+  
+</aside>
+<p>Multiline strings are allowed in CoffeeScript. Lines are joined by a single space unless they end with a backslash. Indentation is ignored.</p>
+<aside class="code-example container-fluid" data-example="strings">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="strings-coffee">mobyDick = "Call me Ishmael. Some years ago --
+  never mind how long precisely -- having little
+  or no money in my purse, and nothing particular
+  to interest me on shore, I thought I would sail
+  about a little and see the watery part of the
+  world..."
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="strings-js">var mobyDick;
+
+mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world...";
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="strings" data-run="mobyDick"><small>▶</small>&ensp;mobyDick</button>
+    </div>
+  </div>
+  
+</aside>
+<p>Block strings, delimited by <code>&quot;&quot;&quot;</code> or <code>&#39;&#39;&#39;</code>, can be used to hold formatted or indentation-sensitive text (or, if you just don’t feel like escaping quotes and apostrophes). The indentation level that begins the block is maintained throughout, so you can keep it all aligned with the body of your code.</p>
+<aside class="code-example container-fluid" data-example="heredocs">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="heredocs-coffee">html = """
+       <strong>
+         cup of coffeescript
+       </strong>
+       """
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="heredocs-js">var html;
+
+html = "<strong>\n  cup of coffeescript\n</strong>";
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="heredocs" data-run="html"><small>▶</small>&ensp;html</button>
+    </div>
+  </div>
+  
+</aside>
+<p>Double-quoted block strings, like other double-quoted strings, allow interpolation.</p>
+
+        </section>
+        <section id="objects-and-arrays">
+          <h2>Objects and Arrays</h2><p>The CoffeeScript literals for objects and arrays look very similar to their JavaScript cousins. When each property is listed on its own line, the commas are optional. Objects may be created using indentation instead of explicit braces, similar to <a href="http://yaml.org">YAML</a>.</p>
+<aside class="code-example container-fluid" data-example="objects_and_arrays">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="objects_and_arrays-coffee">song = ["do", "re", "mi", "fa", "so"]
+
+singers = {Jagger: "Rock", Elvis: "Roll"}
+
+bitlist = [
+  1, 0, 1
+  0, 0, 1
+  1, 1, 0
+]
+
+kids =
+  brother:
+    name: "Max"
+    age:  11
+  sister:
+    name: "Ida"
+    age:  9
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="objects_and_arrays-js">var bitlist, kids, singers, song;
+
+song = ["do", "re", "mi", "fa", "so"];
+
+singers = {
+  Jagger: "Rock",
+  Elvis: "Roll"
+};
+
+bitlist = [1, 0, 1, 0, 0, 1, 1, 1, 0];
+
+kids = {
+  brother: {
+    name: "Max",
+    age: 11
+  },
+  sister: {
+    name: "Ida",
+    age: 9
+  }
+};
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="objects_and_arrays" data-run="song.join%28%22%20%u2026%20%22%29"><small>▶</small>&ensp;song.join(&quot; … &quot;)</button>
+    </div>
+  </div>
+  
+</aside>
+<p>In JavaScript, you can’t use reserved words, like <code>class</code>, as properties of an object, without quoting them as strings. CoffeeScript notices reserved words used as keys in objects and quotes them for you, so you don’t have to worry about it (say, when using jQuery).</p>
+<aside class="code-example container-fluid" data-example="objects_reserved">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="objects_reserved-coffee">$('.account').attr class: 'active'
+
+log object.class
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="objects_reserved-js">$('.account').attr({
+  "class": 'active'
+});
+
+log(object["class"]);
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+<p>CoffeeScript has a shortcut for creating objects when you want the key to be set with a variable of the same name.</p>
+<aside class="code-example container-fluid" data-example="objects_shorthand">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="objects_shorthand-coffee">name = "Michelangelo"
+mask = "orange"
+weapon = "nunchuks"
+turtle = {name, mask, weapon}
+output = "#{turtle.name} wears an #{turtle.mask} mask. Watch out for his #{turtle.weapon}!"
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="objects_shorthand-js">var mask, name, output, turtle, weapon;
+
+name = "Michelangelo";
+
+mask = "orange";
+
+weapon = "nunchuks";
+
+turtle = {
+  name: name,
+  mask: mask,
+  weapon: weapon
+};
+
+output = `${turtle.name} wears an ${turtle.mask} mask. Watch out for his ${turtle.weapon}!`;
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+
+        </section>
+        <section id="comments">
+          <h2>Comments</h2><p>In CoffeeScript, comments are denoted by the <code>#</code> character. Everything from a <code>#</code> to the end of the line is ignored by the compiler, and will be excluded from the JavaScript output.</p>
+<aside class="code-example container-fluid" data-example="comment">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="comment-coffee">code = 2 * 617 # The code is 1234
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="comment-js">var code;
+
+code = 2 * 617;
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+<p>Sometimes you’d like to pass a block comment through to the generated JavaScript. For example, when you need to embed a licensing header at the top of a file. Block comments, which mirror the syntax for block strings, are preserved in the generated output.</p>
+<aside class="code-example container-fluid" data-example="block_comment">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="block_comment-coffee">###
+SkinnyMochaHalfCaffScript Compiler v1.0
+Released under the MIT License
+###
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="block_comment-js">
+/*
+SkinnyMochaHalfCaffScript Compiler v1.0
+Released under the MIT License
+ */
+
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+
+        </section>
+        <section id="lexical-scope">
+          <h2>Lexical Scoping and Variable Safety</h2><p>The CoffeeScript compiler takes care to make sure that all of your variables are properly declared within lexical scope — you never need to write <code>var</code> yourself.</p>
+<aside class="code-example container-fluid" data-example="scope">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="scope-coffee">outer = 1
+changeNumbers = ->
+  inner = -1
+  outer = 10
+inner = changeNumbers()
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="scope-js">var changeNumbers, inner, outer;
+
+outer = 1;
+
+changeNumbers = function() {
+  var inner;
+  inner = -1;
+  return outer = 10;
+};
+
+inner = changeNumbers();
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="scope" data-run="inner"><small>▶</small>&ensp;inner</button>
+    </div>
+  </div>
+  
+</aside>
+<p>Notice how all of the variable declarations have been pushed up to the top of the closest scope, the first time they appear. <strong>outer</strong> is not redeclared within the inner function, because it’s already in scope; <strong>inner</strong> within the function, on the other hand, should not be able to change the value of the external variable of the same name, and therefore has a declaration of its own.</p>
+<p>This behavior is effectively identical to Ruby’s scope for local variables. Because you don’t have direct access to the <code>var</code> keyword, it’s impossible to shadow an outer variable on purpose, you may only refer to it. So be careful that you’re not reusing the name of an external variable accidentally, if you’re writing a deeply nested function.</p>
+<p>Although suppressed within this documentation for clarity, all CoffeeScript output is wrapped in an anonymous function: <code>(function(){ … })();</code> This safety wrapper, combined with the automatic generation of the <code>var</code> keyword, make it exceedingly difficult to pollute the global namespace by accident.</p>
+<p>If you’d like to create top-level variables for other scripts to use, attach them as properties on <strong>window</strong>; attach them as properties on the <strong>exports</strong> object in CommonJS; or use an <a href="#modules"><code>export</code> statement</a>. If you’re targeting both CommonJS and the browser, the <strong>existential operator</strong> (covered below), gives you a reliable way to figure out where to add them: <code>exports ? this</code></p>
+
+        </section>
+        <section id="conditionals">
+          <h2>If, Else, Unless, and Conditional Assignment</h2><p><strong>If/else</strong> statements can be written without the use of parentheses and curly brackets. As with functions and other block expressions, multi-line conditionals are delimited by indentation. There’s also a handy postfix form, with the <code>if</code> or <code>unless</code> at the end.</p>
+<p>CoffeeScript can compile <strong>if</strong> statements into JavaScript expressions, using the ternary operator when possible, and closure wrapping otherwise. There is no explicit ternary statement in CoffeeScript — you simply use a regular <strong>if</strong> statement on a single line.</p>
+<aside class="code-example container-fluid" data-example="conditionals">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="conditionals-coffee">mood = greatlyImproved if singing
+
+if happy and knowsIt
+  clapsHands()
+  chaChaCha()
+else
+  showIt()
+
+date = if friday then sue else jill
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="conditionals-js">var date, mood;
+
+if (singing) {
+  mood = greatlyImproved;
+}
+
+if (happy && knowsIt) {
+  clapsHands();
+  chaChaCha();
+} else {
+  showIt();
+}
+
+date = friday ? sue : jill;
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+
+        </section>
+        <section id="splats">
+          <h2>Splats…</h2><p>The JavaScript <strong>arguments object</strong> is a useful way to work with functions that accept variable numbers of arguments. CoffeeScript provides splats <code>...</code>, both for function definition as well as invocation, making variable numbers of arguments a little bit more palatable.</p>
+<aside class="code-example container-fluid" data-example="splats">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="splats-coffee">gold = silver = rest = "unknown"
+
+awardMedals = (first, second, others...) ->
+  gold   = first
+  silver = second
+  rest   = others
+
+contenders = [
+  "Michael Phelps"
+  "Liu Xiang"
+  "Yao Ming"
+  "Allyson Felix"
+  "Shawn Johnson"
+  "Roman Sebrle"
+  "Guo Jingjing"
+  "Tyson Gay"
+  "Asafa Powell"
+  "Usain Bolt"
+]
+
+awardMedals contenders...
+
+alert "Gold: " + gold
+alert "Silver: " + silver
+alert "The Field: " + rest
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="splats-js">var awardMedals, contenders, gold, rest, silver;
+
+gold = silver = rest = "unknown";
+
+awardMedals = function(first, second, ...others) {
+  gold = first;
+  silver = second;
+  return rest = others;
+};
+
+contenders = ["Michael Phelps", "Liu Xiang", "Yao Ming", "Allyson Felix", "Shawn Johnson", "Roman Sebrle", "Guo Jingjing", "Tyson Gay", "Asafa Powell", "Usain Bolt"];
+
+awardMedals(...contenders);
+
+alert("Gold: " + gold);
+
+alert("Silver: " + silver);
+
+alert("The Field: " + rest);
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="splats" data-run="true">▶</button>
+    </div>
+  </div>
+  
+</aside>
+
+        </section>
+        <section id="loops">
+          <h2>Loops and Comprehensions</h2><p>Most of the loops you’ll write in CoffeeScript will be <strong>comprehensions</strong> over arrays, objects, and ranges. Comprehensions replace (and compile into) <strong>for</strong> loops, with optional guard clauses and the value of the current array index. Unlike for loops, array comprehensions are expressions, and can be returned and assigned.</p>
+<aside class="code-example container-fluid" data-example="array_comprehensions">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="array_comprehensions-coffee"># Eat lunch.
+eat food for food in ['toast', 'cheese', 'wine']
+
+# Fine five course dining.
+courses = ['greens', 'caviar', 'truffles', 'roast', 'cake']
+menu i + 1, dish for dish, i in courses
+
+# Health conscious meal.
+foods = ['broccoli', 'spinach', 'chocolate']
+eat food for food in foods when food isnt 'chocolate'
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="array_comprehensions-js">var courses, dish, food, foods, i, j, k, l, len, len1, len2, ref;
+
+ref = ['toast', 'cheese', 'wine'];
+for (j = 0, len = ref.length; j < len; j++) {
+  food = ref[j];
+  eat(food);
+}
+
+courses = ['greens', 'caviar', 'truffles', 'roast', 'cake'];
+
+for (i = k = 0, len1 = courses.length; k < len1; i = ++k) {
+  dish = courses[i];
+  menu(i + 1, dish);
+}
+
+foods = ['broccoli', 'spinach', 'chocolate'];
+
+for (l = 0, len2 = foods.length; l < len2; l++) {
+  food = foods[l];
+  if (food !== 'chocolate') {
+    eat(food);
+  }
+}
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+<p>Comprehensions should be able to handle most places where you otherwise would use a loop, <strong>each</strong>/<strong>forEach</strong>, <strong>map</strong>, or <strong>select</strong>/<strong>filter</strong>, for example:<br>
+<code>shortNames = (name for name in list when name.length &lt; 5)</code><br>
+If you know the start and end of your loop, or would like to step through in fixed-size increments, you can use a range to specify the start and end of your comprehension.</p>
+<aside class="code-example container-fluid" data-example="range_comprehensions">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="range_comprehensions-coffee">countdown = (num for num in [10..1])
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="range_comprehensions-js">var countdown, num;
+
+countdown = (function() {
+  var i, results;
+  results = [];
+  for (num = i = 10; i >= 1; num = --i) {
+    results.push(num);
+  }
+  return results;
+})();
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="range_comprehensions" data-run="countdown"><small>▶</small>&ensp;countdown</button>
+    </div>
+  </div>
+  
+</aside>
+<p>Note how because we are assigning the value of the comprehensions to a variable in the example above, CoffeeScript is collecting the result of each iteration into an array. Sometimes functions end with loops that are intended to run only for their side-effects. Be careful that you’re not accidentally returning the results of the comprehension in these cases, by adding a meaningful return value — like <code>true</code> — or <code>null</code>, to the bottom of your function.</p>
+<p>To step through a range comprehension in fixed-size chunks, use <code>by</code>, for example:
+<code>evens = (x for x in [0..10] by 2)</code></p>
+<p>If you don’t need the current iteration value you may omit it:
+<code>browser.closeCurrentTab() for [0...count]</code></p>
+<p>Comprehensions can also be used to iterate over the keys and values in an object. Use <code>of</code> to signal comprehension over the properties of an object instead of the values in an array.</p>
+<aside class="code-example container-fluid" data-example="object_comprehensions">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="object_comprehensions-coffee">yearsOld = max: 10, ida: 9, tim: 11
+
+ages = for child, age of yearsOld
+  "#{child} is #{age}"
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="object_comprehensions-js">var age, ages, child, yearsOld;
+
+yearsOld = {
+  max: 10,
+  ida: 9,
+  tim: 11
+};
+
+ages = (function() {
+  var results;
+  results = [];
+  for (child in yearsOld) {
+    age = yearsOld[child];
+    results.push(`${child} is ${age}`);
+  }
+  return results;
+})();
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="object_comprehensions" data-run="ages.join%28%22%2C%20%22%29"><small>▶</small>&ensp;ages.join(&quot;, &quot;)</button>
+    </div>
+  </div>
+  
+</aside>
+<p>If you would like to iterate over just the keys that are defined on the object itself, by adding a <code>hasOwnProperty</code> check to avoid properties that may be inherited from the prototype, use <code>for own key, value of object</code>.</p>
+<p>To iterate a generator function, use <code>from</code>. See <a href="#generator-iteration">Generator Functions</a>.</p>
+<p>The only low-level loop that CoffeeScript provides is the <strong>while</strong> loop. The main difference from JavaScript is that the <strong>while</strong> loop can be used as an expression, returning an array containing the result of each iteration through the loop.</p>
+<aside class="code-example container-fluid" data-example="while">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="while-coffee"># Econ 101
+if this.studyingEconomics
+  buy()  while supply > demand
+  sell() until supply > demand
+
+# Nursery Rhyme
+num = 6
+lyrics = while num -= 1
+  "#{num} little monkeys, jumping on the bed.
+    One fell out and bumped his head."
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="while-js">var lyrics, num;
+
+if (this.studyingEconomics) {
+  while (supply > demand) {
+    buy();
+  }
+  while (!(supply > demand)) {
+    sell();
+  }
+}
+
+num = 6;
+
+lyrics = (function() {
+  var results;
+  results = [];
+  while (num -= 1) {
+    results.push(`${num} little monkeys, jumping on the bed. One fell out and bumped his head.`);
+  }
+  return results;
+})();
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="while" data-run="lyrics.join%28%22%5Cn%22%29"><small>▶</small>&ensp;lyrics.join(&quot;\n&quot;)</button>
+    </div>
+  </div>
+  
+</aside>
+<p>For readability, the <strong>until</strong> keyword is equivalent to <code>while not</code>, and the <strong>loop</strong> keyword is equivalent to <code>while true</code>.</p>
+<p>When using a JavaScript loop to generate functions, it’s common to insert a closure wrapper in order to ensure that loop variables are closed over, and all the generated functions don’t just share the final values. CoffeeScript provides the <code>do</code> keyword, which immediately invokes a passed function, forwarding any arguments.</p>
+<aside class="code-example container-fluid" data-example="do">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="do-coffee">for filename in list
+  do (filename) ->
+    fs.readFile filename, (err, contents) ->
+      compile filename, contents.toString()
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="do-js">var filename, fn, i, len;
+
+fn = function(filename) {
+  return fs.readFile(filename, function(err, contents) {
+    return compile(filename, contents.toString());
+  });
+};
+for (i = 0, len = list.length; i < len; i++) {
+  filename = list[i];
+  fn(filename);
+}
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+
+        </section>
+        <section id="slices">
+          <h2>Array Slicing and Splicing with Ranges</h2><p>Ranges can also be used to extract slices of arrays. With two dots (<code>3..6</code>), the range is inclusive (<code>3, 4, 5, 6</code>); with three dots (<code>3...6</code>), the range excludes the end (<code>3, 4, 5</code>). Slices indices have useful defaults. An omitted first index defaults to zero and an omitted second index defaults to the size of the array.</p>
+<aside class="code-example container-fluid" data-example="slices">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="slices-coffee">numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+start   = numbers[0..2]
+
+middle  = numbers[3...-2]
+
+end     = numbers[-2..]
+
+copy    = numbers[..]
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="slices-js">var copy, end, middle, numbers, start;
+
+numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+start = numbers.slice(0, 3);
+
+middle = numbers.slice(3, -2);
+
+end = numbers.slice(-2);
+
+copy = numbers.slice(0);
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="slices" data-run="middle"><small>▶</small>&ensp;middle</button>
+    </div>
+  </div>
+  
+</aside>
+<p>The same syntax can be used with assignment to replace a segment of an array with new values, splicing it.</p>
+<aside class="code-example container-fluid" data-example="splices">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="splices-coffee">numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+numbers[3..6] = [-3, -4, -5, -6]
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="splices-js">var numbers, ref;
+
+numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+[].splice.apply(numbers, [3, 4].concat(ref = [-3, -4, -5, -6])), ref;
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="splices" data-run="numbers"><small>▶</small>&ensp;numbers</button>
+    </div>
+  </div>
+  
+</aside>
+<p>Note that JavaScript strings are immutable, and can’t be spliced.</p>
+
+        </section>
+        <section id="expressions">
+          <h2>Everything is an Expression (at least, as much as possible)</h2><p>You might have noticed how even though we don’t add return statements to CoffeeScript functions, they nonetheless return their final value. The CoffeeScript compiler tries to make sure that all statements in the language can be used as expressions. Watch how the <code>return</code> gets pushed down into each possible branch of execution in the function below.</p>
+<aside class="code-example container-fluid" data-example="expressions">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="expressions-coffee">grade = (student) ->
+  if student.excellentWork
+    "A+"
+  else if student.okayStuff
+    if student.triedHard then "B" else "B-"
+  else
+    "C"
+
+eldest = if 24 > 21 then "Liz" else "Ike"
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="expressions-js">var eldest, grade;
+
+grade = function(student) {
+  if (student.excellentWork) {
+    return "A+";
+  } else if (student.okayStuff) {
+    if (student.triedHard) {
+      return "B";
+    } else {
+      return "B-";
+    }
+  } else {
+    return "C";
+  }
+};
+
+eldest = 24 > 21 ? "Liz" : "Ike";
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="expressions" data-run="eldest"><small>▶</small>&ensp;eldest</button>
+    </div>
+  </div>
+  
+</aside>
+<p>Even though functions will always return their final value, it’s both possible and encouraged to return early from a function body writing out the explicit return (<code>return value</code>), when you know that you’re done.</p>
+<p>Because variable declarations occur at the top of scope, assignment can be used within expressions, even for variables that haven’t been seen before:</p>
+<aside class="code-example container-fluid" data-example="expressions_assignment">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="expressions_assignment-coffee">six = (one = 1) + (two = 2) + (three = 3)
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="expressions_assignment-js">var one, six, three, two;
+
+six = (one = 1) + (two = 2) + (three = 3);
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="expressions_assignment" data-run="six"><small>▶</small>&ensp;six</button>
+    </div>
+  </div>
+  
+</aside>
+<p>Things that would otherwise be statements in JavaScript, when used as part of an expression in CoffeeScript, are converted into expressions by wrapping them in a closure. This lets you do useful things, like assign the result of a comprehension to a variable:</p>
+<aside class="code-example container-fluid" data-example="expressions_comprehension">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="expressions_comprehension-coffee"># The first ten global properties.
+
+globals = (name for name of window)[0...10]
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="expressions_comprehension-js">var globals, name;
+
+globals = ((function() {
+  var results;
+  results = [];
+  for (name in window) {
+    results.push(name);
+  }
+  return results;
+})()).slice(0, 10);
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="expressions_comprehension" data-run="globals"><small>▶</small>&ensp;globals</button>
+    </div>
+  </div>
+  
+</aside>
+<p>As well as silly things, like passing a <strong>try/catch</strong> statement directly into a function call:</p>
+<aside class="code-example container-fluid" data-example="expressions_try">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="expressions_try-coffee">alert(
+  try
+    nonexistent / undefined
+  catch error
+    "And the error is ... #{error}"
+)
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="expressions_try-js">var error;
+
+alert((function() {
+  try {
+    return nonexistent / void 0;
+  } catch (error1) {
+    error = error1;
+    return `And the error is ... ${error}`;
+  }
+})());
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="expressions_try" data-run="true">▶</button>
+    </div>
+  </div>
+  
+</aside>
+<p>There are a handful of statements in JavaScript that can’t be meaningfully converted into expressions, namely <code>break</code>, <code>continue</code>, and <code>return</code>. If you make use of them within a block of code, CoffeeScript won’t try to perform the conversion.</p>
+
+        </section>
+        <section id="operators">
+          <h2>Operators and Aliases</h2><p>Because the <code>==</code> operator frequently causes undesirable coercion, is intransitive, and has a different meaning than in other languages, CoffeeScript compiles <code>==</code> into <code>===</code>, and <code>!=</code> into <code>!==</code>. In addition, <code>is</code> compiles into <code>===</code>, and <code>isnt</code> into <code>!==</code>.</p>
+<p>You can use <code>not</code> as an alias for <code>!</code>.</p>
+<p>For logic, <code>and</code> compiles to <code>&amp;&amp;</code>, and <code>or</code> into <code>||</code>.</p>
+<p>Instead of a newline or semicolon, <code>then</code> can be used to separate conditions from expressions, in <strong>while</strong>, <strong>if</strong>/<strong>else</strong>, and <strong>switch</strong>/<strong>when</strong> statements.</p>
+<p>As in <a href="http://yaml.org/">YAML</a>, <code>on</code> and <code>yes</code> are the same as boolean <code>true</code>, while <code>off</code> and <code>no</code> are boolean <code>false</code>.</p>
+<p><code>unless</code> can be used as the inverse of <code>if</code>.</p>
+<p>As a shortcut for <code>this.property</code>, you can use <code>@property</code>.</p>
+<p>You can use <code>in</code> to test for array presence, and <code>of</code> to test for JavaScript object-key presence.</p>
+<p>To simplify math expressions, <code>**</code> can be used for exponentiation and <code>//</code> performs integer division. <code>%</code> works just like in JavaScript, while <code>%%</code> provides <a href="http://en.wikipedia.org/wiki/Modulo_operation">“dividend dependent modulo”</a>:</p>
+<aside class="code-example container-fluid" data-example="modulo">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="modulo-coffee">-7 % 5 == -2 # The remainder of 7 / 5
+-7 %% 5 == 3 # n %% 5 is always between 0 and 4
+
+tabs.selectTabAtIndex((tabs.currentIndex - count) %% tabs.length)
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="modulo-js">var modulo = function(a, b) { return (+a % (b = +b) + b) % b; };
+
+-7 % 5 === -2;
+
+modulo(-7, 5) === 3;
+
+tabs.selectTabAtIndex(modulo(tabs.currentIndex - count, tabs.length));
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+<p>All together now:</p>
+<table class="definitions">
+
+<tbody>
+
+<tr>
+
+<th>CoffeeScript</th>
+
+<th>JavaScript</th>
+
+</tr>
+
+<tr>
+
+<td><code>is</code></td>
+
+<td><code>===</code></td>
+
+</tr>
+
+<tr>
+
+<td><code>isnt</code></td>
+
+<td><code>!==</code></td>
+
+</tr>
+
+<tr>
+
+<td><code>not</code></td>
+
+<td><code>!</code></td>
+
+</tr>
+
+<tr>
+
+<td><code>and</code></td>
+
+<td><code>&amp;&amp;</code></td>
+
+</tr>
+
+<tr>
+
+<td><code>or</code></td>
+
+<td><code>||</code></td>
+
+</tr>
+
+<tr>
+
+<td><code>true</code>, <code>yes</code>, <code>on</code></td>
+
+<td><code>true</code></td>
+
+</tr>
+
+<tr>
+
+<td><code>false</code>, <code>no</code>, <code>off</code></td>
+
+<td><code>false</code></td>
+
+</tr>
+
+<tr>
+
+<td><code>@</code>, <code>this</code></td>
+
+<td><code>this</code></td>
+
+</tr>
+
+<tr>
+
+<td><code>of</code></td>
+
+<td><code>in</code></td>
+
+</tr>
+
+<tr>
+
+<td><code>in</code></td>
+
+<td><em><small>no JS equivalent</small></em></td>
+
+</tr>
+
+<tr>
+
+<td><code>a ** b</code></td>
+
+<td><code>Math.pow(a, b)</code></td>
+
+</tr>
+
+<tr>
+
+<td><code>a // b</code></td>
+
+<td><code>Math.floor(a / b)</code></td>
+
+</tr>
+
+<tr>
+
+<td><code>a %% b</code></td>
+
+<td><code>(a % b + b) % b</code></td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+<aside class="code-example container-fluid" data-example="aliases">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="aliases-coffee">launch() if ignition is on
+
+volume = 10 if band isnt SpinalTap
+
+letTheWildRumpusBegin() unless answer is no
+
+if car.speed < limit then accelerate()
+
+winner = yes if pick in [47, 92, 13]
+
+print inspect "My name is #{@name}"
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="aliases-js">var volume, winner;
+
+if (ignition === true) {
+  launch();
+}
+
+if (band !== SpinalTap) {
+  volume = 10;
+}
+
+if (answer !== false) {
+  letTheWildRumpusBegin();
+}
+
+if (car.speed < limit) {
+  accelerate();
+}
+
+if (pick === 47 || pick === 92 || pick === 13) {
+  winner = true;
+}
+
+print(inspect(`My name is ${this.name}`));
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+
+        </section>
+        <section id="existential-operator">
+          <h2>The Existential Operator</h2><p>It’s a little difficult to check for the existence of a variable in JavaScript. <code>if (variable) …</code> comes close, but fails for zero, the empty string, and false. CoffeeScript’s existential operator <code>?</code> returns true unless a variable is <strong>null</strong> or <strong>undefined</strong>, which makes it analogous to Ruby’s <code>nil?</code></p>
+<p>It can also be used for safer conditional assignment than <code>||=</code> provides, for cases where you may be handling numbers or strings.</p>
+<aside class="code-example container-fluid" data-example="existence">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="existence-coffee">solipsism = true if mind? and not world?
+
+speed = 0
+speed ?= 15
+
+footprints = yeti ? "bear"
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="existence-js">var footprints, solipsism, speed;
+
+if ((typeof mind !== "undefined" && mind !== null) && (typeof world === "undefined" || world === null)) {
+  solipsism = true;
+}
+
+speed = 0;
+
+if (speed == null) {
+  speed = 15;
+}
+
+footprints = typeof yeti !== "undefined" && yeti !== null ? yeti : "bear";
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="existence" data-run="footprints"><small>▶</small>&ensp;footprints</button>
+    </div>
+  </div>
+  
+</aside>
+<p>The accessor variant of the existential operator <code>?.</code> can be used to soak up null references in a chain of properties. Use it instead of the dot accessor <code>.</code> in cases where the base value may be <strong>null</strong> or <strong>undefined</strong>. If all of the properties exist then you’ll get the expected result, if the chain is broken, <strong>undefined</strong> is returned instead of the <strong>TypeError</strong> that would be raised otherwise.</p>
+<aside class="code-example container-fluid" data-example="soaks">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="soaks-coffee">zip = lottery.drawWinner?().address?.zipcode
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="soaks-js">var ref, zip;
+
+zip = typeof lottery.drawWinner === "function" ? (ref = lottery.drawWinner().address) != null ? ref.zipcode : void 0 : void 0;
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+<p>Soaking up nulls is similar to Ruby’s <a href="https://rubygems.org/gems/andand">andand gem</a>, and to the <a href="http://docs.groovy-lang.org/latest/html/documentation/index.html#_safe_navigation_operator">safe navigation operator</a> in Groovy.</p>
+
+        </section>
+        <section id="classes">
+          <h2>Classes, Inheritance, and Super</h2><p>JavaScript’s prototypal inheritance has always been a bit of a brain-bender, with a whole family tree of libraries that provide a cleaner syntax for classical inheritance on top of JavaScript’s prototypes: <a href="http://code.google.com/p/base2/">Base2</a>, <a href="http://prototypejs.org/">Prototype.js</a>, <a href="http://jsclass.jcoglan.com/">JS.Class</a>, etc. The libraries provide syntactic sugar, but the built-in inheritance would be completely usable if it weren’t for a couple of small exceptions: it’s awkward to call <strong>super</strong> (the prototype object’s implementation of the current function), and it’s awkward to correctly set the prototype chain.</p>
+<p>Instead of repetitively attaching functions to a prototype, CoffeeScript provides a basic <code>class</code> structure that allows you to name your class, set the superclass, assign prototypal properties, and define the constructor, in a single assignable expression.</p>
+<p>Constructor functions are named, to better support helpful stack traces. In the first class in the example below, <code>this.constructor.name is &quot;Animal&quot;</code>.</p>
+<aside class="code-example container-fluid" data-example="classes">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="classes-coffee">class Animal
+  constructor: (@name) ->
+
+  move: (meters) ->
+    alert @name + " moved #{meters}m."
+
+class Snake extends Animal
+  move: ->
+    alert "Slithering..."
+    super 5
+
+class Horse extends Animal
+  move: ->
+    alert "Galloping..."
+    super 45
+
+sam = new Snake "Sammy the Python"
+tom = new Horse "Tommy the Palomino"
+
+sam.move()
+tom.move()
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="classes-js">var Animal, Horse, Snake, sam, tom,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+Animal = (function() {
+  function Animal(name) {
+    this.name = name;
+  }
+
+  Animal.prototype.move = function(meters) {
+    return alert(this.name + ` moved ${meters}m.`);
+  };
+
+  return Animal;
+
+})();
+
+Snake = (function(superClass) {
+  extend(Snake, superClass);
+
+  function Snake() {
+    return Snake.__super__.constructor.apply(this, arguments);
+  }
+
+  Snake.prototype.move = function() {
+    alert("Slithering...");
+    return Snake.__super__.move.call(this, 5);
+  };
+
+  return Snake;
+
+})(Animal);
+
+Horse = (function(superClass) {
+  extend(Horse, superClass);
+
+  function Horse() {
+    return Horse.__super__.constructor.apply(this, arguments);
+  }
+
+  Horse.prototype.move = function() {
+    alert("Galloping...");
+    return Horse.__super__.move.call(this, 45);
+  };
+
+  return Horse;
+
+})(Animal);
+
+sam = new Snake("Sammy the Python");
+
+tom = new Horse("Tommy the Palomino");
+
+sam.move();
+
+tom.move();
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="classes" data-run="true">▶</button>
+    </div>
+  </div>
+  
+</aside>
+<p>If structuring your prototypes classically isn’t your cup of tea, CoffeeScript provides a couple of lower-level conveniences. The <code>extends</code> operator helps with proper prototype setup, and can be used to create an inheritance chain between any pair of constructor functions; <code>::</code> gives you quick access to an object’s prototype; and <code>super()</code> is converted into a call against the immediate ancestor’s method of the same name.</p>
+<aside class="code-example container-fluid" data-example="prototypes">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="prototypes-coffee">String::dasherize = ->
+  this.replace /_/g, "-"
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="prototypes-js">String.prototype.dasherize = function() {
+  return this.replace(/_/g, "-");
+};
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="prototypes" data-run="%22one_two%22.dasherize%28%29"><small>▶</small>&ensp;&quot;one_two&quot;.dasherize()</button>
+    </div>
+  </div>
+  
+</aside>
+<p>Finally, class definitions are blocks of executable code, which make for interesting metaprogramming possibilities. Because in the context of a class definition, <code>this</code> is the class object itself (the constructor function), you can assign static properties by using
+<code>@property: value</code>, and call functions defined in parent classes: <code>@attr &#39;title&#39;, type: &#39;text&#39;</code></p>
+
+        </section>
+        <section id="destructuring">
+          <h2>Destructuring Assignment</h2><p>Just like JavaScript (since ES2015), CoffeeScript has destructuring assignment syntax. When you assign an array or object literal to a value, CoffeeScript breaks up and matches both sides against each other, assigning the values on the right to the variables on the left. In the simplest case, it can be used for parallel assignment:</p>
+<aside class="code-example container-fluid" data-example="parallel_assignment">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="parallel_assignment-coffee">theBait   = 1000
+theSwitch = 0
+
+[theBait, theSwitch] = [theSwitch, theBait]
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="parallel_assignment-js">var ref, theBait, theSwitch;
+
+theBait = 1000;
+
+theSwitch = 0;
+
+ref = [theSwitch, theBait], theBait = ref[0], theSwitch = ref[1];
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="parallel_assignment" data-run="theBait"><small>▶</small>&ensp;theBait</button>
+    </div>
+  </div>
+  
+</aside>
+<p>But it’s also helpful for dealing with functions that return multiple values.</p>
+<aside class="code-example container-fluid" data-example="multiple_return_values">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="multiple_return_values-coffee">weatherReport = (location) ->
+  # Make an Ajax request to fetch the weather...
+  [location, 72, "Mostly Sunny"]
+
+[city, temp, forecast] = weatherReport "Berkeley, CA"
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="multiple_return_values-js">var city, forecast, ref, temp, weatherReport;
+
+weatherReport = function(location) {
+  return [location, 72, "Mostly Sunny"];
+};
+
+ref = weatherReport("Berkeley, CA"), city = ref[0], temp = ref[1], forecast = ref[2];
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="multiple_return_values" data-run="forecast"><small>▶</small>&ensp;forecast</button>
+    </div>
+  </div>
+  
+</aside>
+<p>Destructuring assignment can be used with any depth of array and object nesting, to help pull out deeply nested properties.</p>
+<aside class="code-example container-fluid" data-example="object_extraction">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="object_extraction-coffee">futurists =
+  sculptor: "Umberto Boccioni"
+  painter:  "Vladimir Burliuk"
+  poet:
+    name:   "F.T. Marinetti"
+    address: [
+      "Via Roma 42R"
+      "Bellagio, Italy 22021"
+    ]
+
+{poet: {name, address: [street, city]}} = futurists
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="object_extraction-js">var city, futurists, name, ref, ref1, street;
+
+futurists = {
+  sculptor: "Umberto Boccioni",
+  painter: "Vladimir Burliuk",
+  poet: {
+    name: "F.T. Marinetti",
+    address: ["Via Roma 42R", "Bellagio, Italy 22021"]
+  }
+};
+
+ref = futurists.poet, name = ref.name, (ref1 = ref.address, street = ref1[0], city = ref1[1]);
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="object_extraction" data-run="name%20+%20%22-%22%20+%20street"><small>▶</small>&ensp;name + &quot;-&quot; + street</button>
+    </div>
+  </div>
+  
+</aside>
+<p>Destructuring assignment can even be combined with splats.</p>
+<aside class="code-example container-fluid" data-example="patterns_and_splats">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="patterns_and_splats-coffee">tag = "<impossible>"
+
+[open, contents..., close] = tag.split("")
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="patterns_and_splats-js">var close, contents, i, open, ref, tag,
+  slice = [].slice;
+
+tag = "<impossible>";
+
+ref = tag.split(""), open = ref[0], contents = 3 <= ref.length ? slice.call(ref, 1, i = ref.length - 1) : (i = 1, []), close = ref[i++];
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="patterns_and_splats" data-run="contents.join%28%22%22%29"><small>▶</small>&ensp;contents.join(&quot;&quot;)</button>
+    </div>
+  </div>
+  
+</aside>
+<p>Expansion can be used to retrieve elements from the end of an array without having to assign the rest of its values. It works in function parameter lists as well.</p>
+<aside class="code-example container-fluid" data-example="expansion">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="expansion-coffee">text = "Every literary critic believes he will
+        outwit history and have the last word"
+
+[first, ..., last] = text.split " "
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="expansion-js">var first, last, ref, text;
+
+text = "Every literary critic believes he will outwit history and have the last word";
+
+ref = text.split(" "), first = ref[0], last = ref[ref.length - 1];
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="expansion" data-run="first%20+%20%22%20%22%20+%20last"><small>▶</small>&ensp;first + &quot; &quot; + last</button>
+    </div>
+  </div>
+  
+</aside>
+<p>Destructuring assignment is also useful when combined with class constructors to assign properties to your instance from an options object passed to the constructor.</p>
+<aside class="code-example container-fluid" data-example="constructor_destructuring">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="constructor_destructuring-coffee">class Person
+  constructor: (options) ->
+    {@name, @age, @height = 'average'} = options
+
+tim = new Person name: 'Tim', age: 4
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="constructor_destructuring-js">var Person, tim;
+
+Person = (function() {
+  function Person(options) {
+    var ref;
+    this.name = options.name, this.age = options.age, this.height = (ref = options.height) != null ? ref : 'average';
+  }
+
+  return Person;
+
+})();
+
+tim = new Person({
+  name: 'Tim',
+  age: 4
+});
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="constructor_destructuring" data-run="tim.age%20+%20%22%20%22%20+%20tim.height"><small>▶</small>&ensp;tim.age + &quot; &quot; + tim.height</button>
+    </div>
+  </div>
+  
+</aside>
+<p>The above example also demonstrates that if properties are missing in the destructured object or array, you can, just like in JavaScript, provide defaults. The difference with JavaScript is that CoffeeScript, as always, treats both null and undefined the same.</p>
+
+        </section>
+        <section id="fat-arrow">
+          <h2>Bound Functions, Generator Functions</h2><p>In JavaScript, the <code>this</code> keyword is dynamically scoped to mean the object that the current function is attached to. If you pass a function as a callback or attach it to a different object, the original value of <code>this</code> will be lost. If you’re not familiar with this behavior, <a href="http://64.13.255.16/articles/scope_in_javascript/">this Digital Web article</a> gives a good overview of the quirks.</p>
+<p>The fat arrow <code>=&gt;</code> can be used to both define a function, and to bind it to the current value of <code>this</code>, right on the spot. This is helpful when using callback-based libraries like Prototype or jQuery, for creating iterator functions to pass to <code>each</code>, or event-handler functions to use with <code>on</code>. Functions created with the fat arrow are able to access properties of the <code>this</code> where they’re defined.</p>
+<aside class="code-example container-fluid" data-example="fat_arrow">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="fat_arrow-coffee">Account = (customer, cart) ->
+  @customer = customer
+  @cart = cart
+
+  $('.shopping_cart').on 'click', (event) =>
+    @customer.purchase @cart
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="fat_arrow-js">var Account;
+
+Account = function(customer, cart) {
+  this.customer = customer;
+  this.cart = cart;
+  return $('.shopping_cart').on('click', (event) => {
+    return this.customer.purchase(this.cart);
+  });
+};
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+<p>If we had used <code>-&gt;</code> in the callback above, <code>@customer</code> would have referred to the undefined “customer” property of the DOM element, and trying to call <code>purchase()</code> on it would have raised an exception.</p>
+<p>When used in a class definition, methods declared with the fat arrow will be automatically bound to each instance of the class when the instance is constructed.</p>
+<p>CoffeeScript functions also support <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">ES2015 generator functions</a> through the <code>yield</code> keyword. There’s no <code>function*(){}</code> nonsense — a generator in CoffeeScript is simply a function that yields.</p>
+<aside class="code-example container-fluid" data-example="generators">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="generators-coffee">perfectSquares = ->
+  num = 0
+  loop
+    num += 1
+    yield num * num
+  return
+
+window.ps or= perfectSquares()
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="generators-js">var perfectSquares;
+
+perfectSquares = function*() {
+  var num;
+  num = 0;
+  while (true) {
+    num += 1;
+    yield num * num;
+  }
+};
+
+window.ps || (window.ps = perfectSquares());
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="generators" data-run="ps.next%28%29.value"><small>▶</small>&ensp;ps.next().value</button>
+    </div>
+  </div>
+  
+</aside>
+<p><code>yield*</code> is called <code>yield from</code>, and <code>yield return</code> may be used if you need to force a generator that doesn’t yield.</p>
+<p>You can iterate over a generator function using <code>for…from</code>.</p>
+<aside class="code-example container-fluid" data-example="generator_iteration">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="generator_iteration-coffee">fibonacci = ->
+  [previous, current] = [1, 1]
+  loop
+    [previous, current] = [current, previous + current]
+    yield current
+  return
+
+getFibonacciNumbers = (length) ->
+  results = [1]
+  for n from fibonacci()
+    results.push n
+    break if results.length is length
+  results
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="generator_iteration-js">var fibonacci, getFibonacciNumbers;
+
+fibonacci = function*() {
+  var current, previous, ref, ref1;
+  ref = [1, 1], previous = ref[0], current = ref[1];
+  while (true) {
+    ref1 = [current, previous + current], previous = ref1[0], current = ref1[1];
+    yield current;
+  }
+};
+
+getFibonacciNumbers = function(length) {
+  var n, ref, results;
+  results = [1];
+  ref = fibonacci();
+  for (n of ref) {
+    results.push(n);
+    if (results.length === length) {
+      break;
+    }
+  }
+  return results;
+};
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="generator_iteration" data-run="getFibonacciNumbers%2810%29"><small>▶</small>&ensp;getFibonacciNumbers(10)</button>
+    </div>
+  </div>
+  
+</aside>
+
+        </section>
+        <section id="embedded">
+          <h2>Embedded JavaScript</h2><p>Hopefully, you’ll never need to use it, but if you ever need to intersperse snippets of JavaScript within your CoffeeScript, you can use backticks to pass it straight through.</p>
+<aside class="code-example container-fluid" data-example="embedded">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="embedded-coffee">hi = `function() {
+  return [document.title, "Hello JavaScript"].join(": ");
+}`
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="embedded-js">var hi;
+
+hi = function() {
+  return [document.title, "Hello JavaScript"].join(": ");
+};
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="embedded" data-run="hi%28%29"><small>▶</small>&ensp;hi()</button>
+    </div>
+  </div>
+  
+</aside>
+<p>Escape backticks with backslashes: <code>\`​</code> becomes <code>`​</code>.</p>
+<p>Escape backslashes before backticks with more backslashes: <code>\\\`​</code> becomes <code>\`​</code>.</p>
+<aside class="code-example container-fluid" data-example="embedded_escaped">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="embedded_escaped-coffee">markdown = `function () {
+  return \`In Markdown, write code like \\\`this\\\`\`;
+}`
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="embedded_escaped-js">var markdown;
+
+markdown = function () {
+  return `In Markdown, write code like \`this\``;
+};
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="embedded_escaped" data-run="markdown%28%29"><small>▶</small>&ensp;markdown()</button>
+    </div>
+  </div>
+  
+</aside>
+<p>You can also embed blocks of JavaScript using triple backticks. That’s easier than escaping backticks, if you need them inside your JavaScript block.</p>
+<aside class="code-example container-fluid" data-example="embedded_block">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="embedded_block-coffee">```
+function time() {
+  return `The time is ${new Date().toLocaleTimeString()}`;
+}
+```
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="embedded_block-js">
+function time() {
+  return `The time is ${new Date().toLocaleTimeString()}`;
+}
+;
+
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="embedded_block" data-run="time%28%29"><small>▶</small>&ensp;time()</button>
+    </div>
+  </div>
+  
+</aside>
+
+        </section>
+        <section id="switch">
+          <h2>Switch/When/Else</h2><p><strong>Switch</strong> statements in JavaScript are a bit awkward. You need to remember to <strong>break</strong> at the end of every <strong>case</strong> statement to avoid accidentally falling through to the default case. CoffeeScript prevents accidental fall-through, and can convert the <code>switch</code> into a returnable, assignable expression. The format is: <code>switch</code> condition, <code>when</code> clauses, <code>else</code> the default case.</p>
+<p>As in Ruby, <strong>switch</strong> statements in CoffeeScript can take multiple values for each <strong>when</strong> clause. If any of the values match, the clause runs.</p>
+<aside class="code-example container-fluid" data-example="switch">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="switch-coffee">switch day
+  when "Mon" then go work
+  when "Tue" then go relax
+  when "Thu" then go iceFishing
+  when "Fri", "Sat"
+    if day is bingoDay
+      go bingo
+      go dancing
+  when "Sun" then go church
+  else go work
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="switch-js">switch (day) {
+  case "Mon":
+    go(work);
+    break;
+  case "Tue":
+    go(relax);
+    break;
+  case "Thu":
+    go(iceFishing);
+    break;
+  case "Fri":
+  case "Sat":
+    if (day === bingoDay) {
+      go(bingo);
+      go(dancing);
+    }
+    break;
+  case "Sun":
+    go(church);
+    break;
+  default:
+    go(work);
+}
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+<p>Switch statements can also be used without a control expression, turning them in to a cleaner alternative to if/else chains.</p>
+<aside class="code-example container-fluid" data-example="switch_with_no_expression">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="switch_with_no_expression-coffee">score = 76
+grade = switch
+  when score < 60 then 'F'
+  when score < 70 then 'D'
+  when score < 80 then 'C'
+  when score < 90 then 'B'
+  else 'A'
+# grade == 'C'
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="switch_with_no_expression-js">var grade, score;
+
+score = 76;
+
+grade = (function() {
+  switch (false) {
+    case !(score < 60):
+      return 'F';
+    case !(score < 70):
+      return 'D';
+    case !(score < 80):
+      return 'C';
+    case !(score < 90):
+      return 'B';
+    default:
+      return 'A';
+  }
+})();
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+
+        </section>
+        <section id="try">
+          <h2>Try/Catch/Finally</h2><p>Try-expressions have the same semantics as try-statements in JavaScript, though in CoffeeScript, you may omit <em>both</em> the catch and finally parts. The catch part may also omit the error parameter if it is not needed.</p>
+<aside class="code-example container-fluid" data-example="try">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="try-coffee">try
+  allHellBreaksLoose()
+  catsAndDogsLivingTogether()
+catch error
+  print error
+finally
+  cleanUp()
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="try-js">var error;
+
+try {
+  allHellBreaksLoose();
+  catsAndDogsLivingTogether();
+} catch (error1) {
+  error = error1;
+  print(error);
+} finally {
+  cleanUp();
+}
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+
+        </section>
+        <section id="comparisons">
+          <h2>Chained Comparisons</h2><p>CoffeeScript borrows <a href="http://docs.python.org/reference/expressions.html#notin">chained comparisons</a> from Python — making it easy to test if a value falls within a certain range.</p>
+<aside class="code-example container-fluid" data-example="comparisons">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="comparisons-coffee">cholesterol = 127
+
+healthy = 200 > cholesterol > 60
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="comparisons-js">var cholesterol, healthy;
+
+cholesterol = 127;
+
+healthy = (200 > cholesterol && cholesterol > 60);
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="comparisons" data-run="healthy"><small>▶</small>&ensp;healthy</button>
+    </div>
+  </div>
+  
+</aside>
+
+        </section>
+        <section id="regexes">
+          <h2>Block Regular Expressions</h2><p>Similar to block strings and comments, CoffeeScript supports block regexes — extended regular expressions that ignore internal whitespace and can contain comments and interpolation. Modeled after Perl’s <code>/x</code> modifier, CoffeeScript’s block regexes are delimited by <code>///</code> and go a long way towards making complex regular expressions readable. To quote from the CoffeeScript source:</p>
+<aside class="code-example container-fluid" data-example="heregexes">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="heregexes-coffee">OPERATOR = /// ^ (
+  ?: [-=]>             # function
+   | [-+*/%<>&|^!?=]=  # compound assign / compare
+   | >>>=?             # zero-fill right shift
+   | ([-+:])\1         # doubles
+   | ([&|<>])\2=?      # logic / shift
+   | \?\.              # soak access
+   | \.{2,3}           # range or splat
+) ///
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="heregexes-js">var OPERATOR;
+
+OPERATOR = /^(?:[-=]>|[-+*\/%<>&|^!?=]=|>>>=?|([-+:])\1|([&|<>])\2=?|\?\.|\.{2,3})/;
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+
+        </section>
+        <section id="tagged-template-literals">
+          <h2>Tagged Template Literals</h2><p>CoffeeScript supports <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals">ES2015 tagged template literals</a>, which enable customized string interpolation. If you immediately prefix a string with a function name (no space between the two), CoffeeScript will output this “function plus string” combination as an ES2015 tagged template literal, which will <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals">behave accordingly</a>: the function is called, with the parameters being the input text and expression parts that make up the interpolated string. The function can then assemble these parts into an output string, providing custom string interpolation.</p>
+<p>Be aware that the CoffeeScript compiler is outputting ES2015 syntax for this feature, so your target JavaScript runtime(s) must support this syntax for your code to work; or you could use tools like <a href="http://babeljs.io/">Babel</a> or <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a> to convert this ES2015 syntax into compatible JavaScript.</p>
+<aside class="code-example container-fluid" data-example="tagged_template_literals">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="tagged_template_literals-coffee">upperCaseExpr = (textParts, expressions...) ->
+  textParts.reduce (text, textPart, i) ->
+    text + expressions[i - 1].toUpperCase() + textPart
+
+greet = (name, adjective) ->
+  upperCaseExpr"""
+               Hi #{name}. You look #{adjective}!
+               """
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="tagged_template_literals-js">var greet, upperCaseExpr;
+
+upperCaseExpr = function(textParts, ...expressions) {
+  return textParts.reduce(function(text, textPart, i) {
+    return text + expressions[i - 1].toUpperCase() + textPart;
+  });
+};
+
+greet = function(name, adjective) {
+  return upperCaseExpr`Hi ${name}. You look ${adjective}!`;
+};
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="tagged_template_literals" data-run="greet%28%22greg%22%2C%20%22awesome%22%29"><small>▶</small>&ensp;greet(&quot;greg&quot;, &quot;awesome&quot;)</button>
+    </div>
+  </div>
+  
+</aside>
+
+        </section>
+        <section id="modules">
+          <h2>Modules</h2><p>ES2015 modules are supported in CoffeeScript, with very similar <code>import</code> and <code>export</code> syntax:</p>
+<aside class="code-example container-fluid" data-example="modules">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="modules-coffee">import 'local-file.coffee'
+import 'coffee-script'
+
+import _ from 'underscore'
+import * as underscore from 'underscore'
+
+import { now } from 'underscore'
+import { now as currentTimestamp } from 'underscore'
+import { first, last } from 'underscore'
+import utilityBelt, { each } from 'underscore'
+
+export default Math
+export square = (x) -> x * x
+export class Mathematics
+  least: (x, y) -> if x < y then x else y
+
+export { sqrt }
+export { sqrt as squareRoot }
+export { Mathematics as default, sqrt as squareRoot }
+
+export * from 'underscore'
+export { max, min } from 'underscore'
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="modules-js">import 'local-file.coffee';
+
+import 'coffee-script';
+
+import _ from 'underscore';
+
+import * as underscore from 'underscore';
+
+import {
+  now
+} from 'underscore';
+
+import {
+  now as currentTimestamp
+} from 'underscore';
+
+import {
+  first,
+  last
+} from 'underscore';
+
+import utilityBelt, {
+  each
+} from 'underscore';
+
+export default Math;
+
+export var square = function(x) {
+  return x * x;
+};
+
+export var Mathematics = (function() {
+  function Mathematics() {}
+
+  Mathematics.prototype.least = function(x, y) {
+    if (x < y) {
+      return x;
+    } else {
+      return y;
+    }
+  };
+
+  return Mathematics;
+
+})();
+
+export {
+  sqrt
+};
+
+export {
+  sqrt as squareRoot
+};
+
+export {
+  Mathematics as default,
+  sqrt as squareRoot
+};
+
+export * from 'underscore';
+
+export {
+  max,
+  min
+} from 'underscore';
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+<p>Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an <code>import</code> or <code>export</code> statement in CoffeeScript will produce an <code>import</code> or <code>export</code> statement in the resulting output. It is your responsibility attach another transpiler, such as <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>, <a href="http://babeljs.io/">Babel</a> or <a href="https://github.com/rollup/rollup">Rollup</a>, to convert this ES2015 syntax into code that will work in your target runtimes.</p>
+<p>Also note that any file with an <code>import</code> or <code>export</code> statement will be output without a <a href="#lexical-scope">top-level function safety wrapper</a>; in other words, importing or exporting modules will automatically trigger <a href="#usage">bare</a> mode for that file. This is because per the ES2015 spec, <code>import</code> or <code>export</code> statements must occur at the topmost scope.</p>
+
+        </section>
+      </section>
+      <section id="literate">
+        <h2>Literate CoffeeScript</h2><p>Besides being used as an ordinary programming language, CoffeeScript may also be written in “literate” mode. If you name your file with a <code>.litcoffee</code> extension, you can write it as a Markdown document — a document that also happens to be executable CoffeeScript code. The compiler will treat any indented blocks (Markdown’s way of indicating source code) as code, and ignore the rest as comments.</p>
+<p>Just for kicks, a little bit of the compiler is currently implemented in this fashion: See it <a href="https://gist.github.com/jashkenas/3fc3c1a8b1009c00d9df">as a document</a>, <a href="https://raw.github.com/jashkenas/coffeescript/master/src/scope.litcoffee">raw</a>, and <a href="http://cl.ly/LxEu">properly highlighted in a text editor</a>.</p>
+
+      </section>
+      <section id="source-maps">
+        <h2>Source Maps</h2><p>CoffeeScript 1.6.1 and above include support for generating source maps, a way to tell your JavaScript engine what part of your CoffeeScript program matches up with the code being evaluated. Browsers that support it can automatically use source maps to show your original source code in the debugger. To generate source maps alongside your JavaScript files, pass the <code>--map</code> or <code>-m</code> flag to the compiler.</p>
+<p>For a full introduction to source maps, how they work, and how to hook them up in your browser, read the <a href="http://www.html5rocks.com/en/tutorials/developertools/sourcemaps/">HTML5 Tutorial</a>.</p>
+
+      </section>
+      <section id="cake">
+        <h2>Cake, and Cakefiles</h2><p>CoffeeScript includes a (very) simple build system similar to <a href="http://www.gnu.org/software/make/">Make</a> and <a href="http://rake.rubyforge.org/">Rake</a>. Naturally, it’s called Cake, and is used for the tasks that build and test the CoffeeScript language itself. Tasks are defined in a file named <code>Cakefile</code>, and can be invoked by running <code>cake [task]</code> from within the directory. To print a list of all the tasks and options, just type <code>cake</code>.</p>
+<p>Task definitions are written in CoffeeScript, so you can put arbitrary code in your Cakefile. Define a task with a name, a long description, and the function to invoke when the task is run. If your task takes a command-line option, you can define the option with short and long flags, and it will be made available in the <code>options</code> object. Here’s a task that uses the Node.js API to rebuild CoffeeScript’s parser:</p>
+<aside class="code-example container-fluid" data-example="cake_tasks">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="cake_tasks-coffee">fs = require 'fs'
+
+option '-o', '--output [DIR]', 'directory for compiled code'
+
+task 'build:parser', 'rebuild the Jison parser', (options) ->
+  require 'jison'
+  code = require('./lib/grammar').parser.generate()
+  dir  = options.output or 'lib'
+  fs.writeFile "#{dir}/parser.js", code
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="cake_tasks-js">var fs;
+
+fs = require('fs');
+
+option('-o', '--output [DIR]', 'directory for compiled code');
+
+task('build:parser', 'rebuild the Jison parser', function(options) {
+  var code, dir;
+  require('jison');
+  code = require('./lib/grammar').parser.generate();
+  dir = options.output || 'lib';
+  return fs.writeFile(`${dir}/parser.js`, code);
+});
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+<p>If you need to invoke one task before another — for example, running <code>build</code> before <code>test</code>, you can use the <code>invoke</code> function: <code>invoke &#39;build&#39;</code>. Cake tasks are a minimal way to expose your CoffeeScript functions to the command line, so <a href="v2/annotated-source/cake.html">don’t expect any fanciness built-in</a>. If you need dependencies, or async callbacks, it’s best to put them in your code itself — not the cake task.</p>
+
+      </section>
+      <section id="scripts">
+        <h2><code>&quot;text/coffeescript&quot;</code> Script Tags</h2><p>While it’s not recommended for serious use, CoffeeScripts may be included directly within the browser using <code>&lt;script type=&quot;text/coffeescript&quot;&gt;</code> tags. The source includes a compressed and minified version of the compiler (<a href="v2/browser-compiler/coffee-script.js">Download current version here, 51k when gzipped</a>) as <code>v2/browser-compiler/coffee-script.js</code>. Include this file on a page with inline CoffeeScript tags, and it will compile and evaluate them in order.</p>
+<p>In fact, the little bit of glue script that runs “Try CoffeeScript” above, as well as the jQuery for the menu, is implemented in just this way. View source and look at the bottom of the page to see the example. Including the script also gives you access to <code>CoffeeScript.compile()</code> so you can pop open Firebug and try compiling some strings.</p>
+<p>The usual caveats about CoffeeScript apply — your inline scripts will run within a closure wrapper, so if you want to expose global variables or functions, attach them to the <code>window</code> object.</p>
+
+      </section>
+      <section id="resources">
+        <h2>Resources</h2><ul>
+<li><a href="http://github.com/jashkenas/coffeescript/">CoffeeScript on GitHub</a></li>
+<li><a href="http://github.com/jashkenas/coffeescript/issues">CoffeeScript Issues</a><br>
+Bug reports, feature proposals, and ideas for changes to the language belong here.</li>
+<li><a href="https://groups.google.com/forum/#!forum/coffeescript">CoffeeScript Google Group</a><br>
+If you’d like to ask a question, the mailing list is a good place to get help.</li>
+<li><a href="http://github.com/jashkenas/coffeescript/wiki">The CoffeeScript Wiki</a><br>
+If you’ve ever learned a neat CoffeeScript tip or trick, or ran into a gotcha — share it on the wiki. The wiki also serves as a directory of handy <a href="http://github.com/jashkenas/coffeescript/wiki/Text-editor-plugins">text editor extensions</a>, <a href="http://github.com/jashkenas/coffeescript/wiki/Web-framework-plugins">web framework plugins</a>, and general <a href="http://github.com/jashkenas/coffeescript/wiki/Build-tools">CoffeeScript build tools</a>.</li>
+<li><a href="http://github.com/jashkenas/coffeescript/wiki/FAQ">The FAQ</a><br>
+Perhaps your CoffeeScript-related question has been asked before. Check the FAQ first.</li>
+<li><a href="http://js2.coffee/">JS2Coffee</a><br>
+Is a very well done reverse JavaScript-to-CoffeeScript compiler. It’s not going to be perfect (infer what your JavaScript classes are, when you need bound functions, and so on…) — but it’s a great starting point for converting simple scripts.</li>
+<li><a href="https://github.com/jashkenas/coffeescript/tree/master/documentation/images">High-Rez Logo</a><br>
+The CoffeeScript logo is available in SVG for use in presentations.</li>
+</ul>
+
+        <section id="books">
+          <h2>Books</h2><p>There are a number of excellent resources to help you get started with CoffeeScript, some of which are freely available online.</p>
+<ul>
+<li><a href="http://arcturo.github.com/library/coffeescript/">The Little Book on CoffeeScript</a> is a brief 5-chapter introduction to CoffeeScript, written with great clarity and precision by <a href="http://alexmaccaw.co.uk/">Alex MacCaw</a>.</li>
+<li><a href="http://autotelicum.github.com/Smooth-CoffeeScript/">Smooth CoffeeScript</a> is a reimagination of the excellent book <a href="http://eloquentjavascript.net/">Eloquent JavaScript</a>, as if it had been written in CoffeeScript instead. Covers language features as well as the functional and object oriented programming styles. By <a href="https://github.com/autotelicum">E. Hoigaard</a>.</li>
+<li><a href="http://pragprog.com/book/tbcoffee/coffeescript">CoffeeScript: Accelerated JavaScript Development</a> is <a href="http://trevorburnham.com/">Trevor Burnham</a>’s thorough introduction to the language. By the end of the book, you’ll have built a fast-paced multiplayer word game, writing both the client-side and Node.js portions in CoffeeScript.</li>
+<li><a href="http://www.packtpub.com/coffeescript-programming-with-jquery-rails-nodejs/book">CoffeeScript Programming with jQuery, Rails, and Node.js</a> is a new book by Michael Erasmus that covers CoffeeScript with an eye towards real-world usage both in the browser (jQuery) and on the server-side (Rails, Node).</li>
+<li><a href="https://leanpub.com/coffeescript-ristretto/read">CoffeeScript Ristretto</a> is a deep dive into CoffeeScript’s semantics from simple functions up through closures, higher-order functions, objects, classes, combinators, and decorators. By <a href="http://braythwayt.com/">Reg Braithwaite</a>.</li>
+<li><a href="https://efendibooks.com/minibooks/testing-with-coffeescript">Testing with CoffeeScript</a> is a succinct and freely downloadable guide to building testable applications with CoffeeScript and Jasmine.</li>
+<li><a href="http://www.packtpub.com/coffeescript-application-development/book">CoffeeScript Application Development</a> from Packt, introduces CoffeeScript while walking through the process of building a demonstration web application. A <a href="https://www.packtpub.com/web-development/coffeescript-application-development-cookbook">CoffeeScript Application Development Coookbook</a> with over 90 “recipes” is also available.</li>
+<li><a href="http://www.manning.com/lee/">CoffeeScript in Action</a> from Manning Publications, covers CoffeeScript syntax, composition techniques and application development.</li>
+<li><a href="http://www.dpunkt.de/buecher/4021/coffeescript.html">CoffeeScript: Die Alternative zu JavaScript</a> from dpunkt.verlag, is the first CoffeeScript book in Deutsch.</li>
+</ul>
+
+        </section>
+        <section id="screencasts">
+          <h2>Screencasts</h2><ul>
+<li><a href="http://coffeescript.codeschool.com">A Sip of CoffeeScript</a> is a <a href="http://www.codeschool.com">Code School Course</a> which combines 6 screencasts with in-browser coding to make learning fun. The first level is free to try out.</li>
+<li><a href="http://peepcode.com/products/coffeescript">Meet CoffeeScript</a> is a 75-minute long screencast by <a href="http://peepcode.com/">PeepCode</a>. Highly memorable for its animations which demonstrate transforming CoffeeScript into the equivalent JS.</li>
+<li>If you’re looking for less of a time commitment, RailsCasts’ <a href="http://railscasts.com/episodes/267-coffeescript-basics">CoffeeScript Basics</a> should have you covered, hitting all of the important notes about CoffeeScript in 11 minutes.</li>
+</ul>
+
+        </section>
+        <section id="examples">
+          <h2>Examples</h2><p>The <a href="https://github.com/trending?l=coffeescript&amp;since=monthly">best list of open-source CoffeeScript examples</a> can be found on GitHub. But just to throw out a few more:</p>
+<ul>
+<li><strong>GitHub</strong>’s <a href="http://hubot.github.com/">Hubot</a>, a friendly IRC robot that can perform any number of useful and useless tasks.</li>
+<li><strong>sstephenson</strong>’s <a href="http://pow.cx/">Pow</a>, a zero-configuration Rack server, with comprehensive annotated source.</li>
+<li><strong>technoweenie</strong>’s <a href="https://github.com/technoweenie/coffee-resque">Coffee-Resque</a>, a port of <a href="https://github.com/defunkt/resque">Resque</a> for Node.js.</li>
+<li><strong>assaf</strong>’s <a href="http://zombie.labnotes.org/">Zombie.js</a>, a headless, full-stack, faux-browser testing library for Node.js.</li>
+<li><strong>stephank</strong>’s <a href="https://github.com/stephank/orona">Orona</a>, a remake of the Bolo tank game for modern browsers.</li>
+<li><strong>GitHub</strong>’s <a href="https://atom.io/">Atom</a>, a hackable text editor built on web technologies.</li>
+<li><strong>Basecamp</strong>’s <a href="https://trix-editor.org/">Trix</a>, a rich text editor for web apps.</li>
+</ul>
+
+        </section>
+        <section id="chat">
+          <h2>Web Chat (IRC)</h2><p>Quick help and advice can often be found in the CoffeeScript IRC room <code>#coffeescript</code> on <code>irc.freenode.net</code>, which you can <a href="http://webchat.freenode.net/?channels=coffeescript">join via your web browser</a>.</p>
+
+        </section>
+        <section id="annotated-source">
+          <h2>Annotated Source</h2><p>You can browse the CoffeeScript 2.0.0-alpha source in readable, annotated form <a href="http://coffeescript.org/v2/annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+<ul>
+<li><a href="http://coffeescript.org/v2/annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
+<li><a href="http://coffeescript.org/v2/annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
+<li><a href="http://coffeescript.org/v2/annotated-source/rewriter.html">The Rewriter — src/rewriter</a></li>
+<li><a href="http://coffeescript.org/v2/annotated-source/nodes.html">The Syntax Tree — src/nodes</a></li>
+<li><a href="http://coffeescript.org/v2/annotated-source/scope.html">Lexical Scope — src/scope</a></li>
+<li><a href="http://coffeescript.org/v2/annotated-source/helpers.html">Helpers &amp; Utility Functions — src/helpers</a></li>
+<li><a href="http://coffeescript.org/v2/annotated-source/coffee-script.html">The CoffeeScript Module — src/coffee-script</a></li>
+<li><a href="http://coffeescript.org/v2/annotated-source/cake.html">Cake &amp; Cakefiles — src/cake</a></li>
+<li><a href="http://coffeescript.org/v2/annotated-source/command.html">“coffee” Command-Line Utility — src/command</a></li>
+<li><a href="http://coffeescript.org/v2/annotated-source/optparse.html">Option Parsing — src/optparse</a></li>
+<li><a href="http://coffeescript.org/v2/annotated-source/repl.html">Interactive REPL — src/repl</a></li>
+<li><a href="http://coffeescript.org/v2/annotated-source/sourcemap.html">Source Maps — src/sourcemap</a></li>
+</ul>
+
+        </section>
+      </section>
+      <section id="changelog">
+        <h2>Change Log</h2><div class="anchor" id="1.12.1"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.12.0...1.12.1">1.12.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2016-12-07">December 7, 2016</time></span>
+</h2><ul>
+<li>You can now import a module member named <code>default</code>, e.g. <code>import { default } from &#39;lib&#39;</code>. Though like in ES2015, you cannot import an entire module and name it <code>default</code> (so <code>import default from &#39;lib&#39;</code> is not allowed).</li>
+<li>Fix regression where <code>from</code> as a variable name was breaking <code>for</code> loop declarations. For the record, <code>from</code> is not a reserved word in CoffeeScript; you may use it for variable names. <code>from</code> behaves like a keyword within the context of <code>import</code> and <code>export</code> statements, and in the declaration of a <code>for</code> loop; though you should also be able to use variables named <code>from</code> in those contexts, and the compiler should be able to tell the difference.</li>
+</ul>
+<div class="anchor" id="1.12.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.11.1...1.12.0">1.12.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2016-12-04">December 4, 2016</time></span>
+</h2><ul>
+<li>CoffeeScript now supports ES2015 <a href="#tagged-template-literals">tagged template literals</a>. Note that using tagged template literals in your code makes you responsible for ensuring that either your runtime supports tagged template literals or that you transpile the output JavaScript further to a version your target runtime(s) support.</li>
+<li>CoffeeScript now provides a <a href="#generator-iteration"><code>for…from</code></a> syntax for outputting ES2015 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of"><code>for…of</code></a>. (Sorry they couldn’t match, but we came up with <code>for…of</code> first for something else.) This allows iterating over generators or any other iterable object. Note that using <code>for…from</code> in your code makes you responsible for ensuring that either your runtime supports <code>for…of</code> or that you transpile the output JavaScript further to a version your target runtime(s) support.</li>
+<li>Triple backticks (<code>```​</code>) allow the creation of embedded JavaScript blocks where escaping single backticks is not required, which should improve interoperability with ES2015 template literals and with Markdown.</li>
+<li>Within single-backtick embedded JavaScript, backticks can now be escaped via <code>\`​</code>.</li>
+<li>The browser tests now run in the browser again, and are accessible <a href="v2/test.html">here</a> if you would like to test your browser.</li>
+<li>CoffeeScript-only keywords in ES2015 <code>import</code>s and <code>export</code>s are now ignored.</li>
+<li>The compiler now throws an error on trying to export an anonymous class.</li>
+<li>Bugfixes related to tokens and location data, for better source maps and improved compatibility with downstream tools.</li>
+</ul>
+<div class="anchor" id="1.11.1"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.11.0...1.11.1">1.11.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2016-10-02">October 2, 2016</time></span>
+</h2><ul>
+<li>Bugfix for shorthand object syntax after interpolated keys.</li>
+<li>Bugfix for indentation-stripping in <code>&quot;&quot;&quot;</code> strings.</li>
+<li>Bugfix for not being able to use the name “arguments” for a prototype property of class.</li>
+<li>Correctly compile large hexadecimal numbers literals to <code>2e308</code> (just like all other large number literals do).</li>
+</ul>
+<div class="anchor" id="1.11.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.10.0...1.11.0">1.11.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2016-09-24">September 24, 2016</time></span>
+</h2><ul>
+<li>CoffeeScript now supports ES2015 <a href="#modules"><code>import</code> and <code>export</code> syntax</a>.</li>
+<li>Added the <code>-M, --inline-map</code> flag to the compiler, allowing you embed the source map directly into the output JavaScript, rather than as a separate file.</li>
+<li><p>A bunch of fixes for <code>yield</code>:</p>
+<ul>
+<li><code>yield return</code> can no longer mistakenly be used as an expression.</li>
+<li><p><code>yield</code> now mirrors <code>return</code> in that it can be used stand-alone as well as with expressions. Where you previously wrote <code>yield undefined</code>, you may now write simply <code>yield</code>. However, this means also inheriting the same syntax limitations that <code>return</code> has, so these examples no longer compile:</p>
+<pre><code>doubles = ->
+  yield for i in [1..3]
+    i * 2
+six = ->
+  yield
+    2 * 3</code></pre></li>
+<li><p>The JavaScript output is a bit nicer, with unnecessary parentheses and spaces, double indentation and double semicolons around <code>yield</code> no longer present.</p>
+</li>
+</ul>
+</li>
+<li><code>&amp;&amp;=</code>, <code>||=</code>, <code>and=</code> and <code>or=</code> no longer accidentally allow a space before the equals sign.</li>
+<li>Improved several error messages.</li>
+<li>Just like <code>undefined</code> compiles to <code>void 0</code>, <code>NaN</code> now compiles into <code>0/0</code> and <code>Infinity</code> into <code>2e308</code>.</li>
+<li>Bugfix for renamed destructured parameters with defaults. <code>({a: b = 1}) -&gt;</code> no longer crashes the compiler.</li>
+<li>Improved the internal representation of a CoffeeScript program. This is only noticeable to tools that use <code>CoffeeScript.tokens</code> or <code>CoffeeScript.nodes</code>. Such tools need to update to take account for changed or added tokens and nodes.</li>
+<li><p>Several minor bug fixes, including:</p>
+<ul>
+<li>The caught error in <code>catch</code> blocks is no longer declared unnecessarily, and no longer mistakenly named <code>undefined</code> for <code>catch</code>-less <code>try</code> blocks.</li>
+<li>Unassignable parameter destructuring no longer crashes the compiler.</li>
+<li>Source maps are now used correctly for errors thrown from .coffee.md files.</li>
+<li><code>coffee -e &#39;throw null&#39;</code> no longer crashes.</li>
+<li>The REPL no longer crashes when using <code>.exit</code> to exit it.</li>
+<li>Invalid JavaScript is no longer output when lots of <code>for</code> loops are used in the same scope.</li>
+<li>A unicode issue when using stdin with the CLI.</li>
+</ul>
+</li>
+</ul>
+<div class="anchor" id="1.10.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.9.3...1.10.0">1.10.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2015-09-03">September 3, 2015</time></span>
+</h2><ul>
+<li>CoffeeScript now supports ES2015-style destructuring defaults.</li>
+<li><code>(offsetHeight: height) -&gt;</code> no longer compiles. That syntax was accidental and partly broken. Use <code>({offsetHeight: height}) -&gt;</code> instead. Object destructuring always requires braces.</li>
+<li><p>Several minor bug fixes, including:</p>
+<ul>
+<li>A bug where the REPL would sometimes report valid code as invalid, based on what you had typed earlier.</li>
+<li>A problem with multiple JS contexts in the jest test framework.</li>
+<li>An error in io.js where strict mode is set on internal modules.</li>
+<li>A variable name clash for the caught error in <code>catch</code> blocks.</li>
+</ul>
+</li>
+</ul>
+<div class="anchor" id="1.9.3"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.9.2...1.9.3">1.9.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2015-05-27">May 27, 2015</time></span>
+</h2><ul>
+<li>Bugfix for interpolation in the first key of an object literal in an implicit call.</li>
+<li>Fixed broken error messages in the REPL, as well as a few minor bugs with the REPL.</li>
+<li>Fixed source mappings for tokens at the beginning of lines when compiling with the <code>--bare</code> option. This has the nice side effect of generating smaller source maps.</li>
+<li>Slight formatting improvement of compiled block comments.</li>
+<li>Better error messages for <code>on</code>, <code>off</code>, <code>yes</code> and <code>no</code>.</li>
+</ul>
+<div class="anchor" id="1.9.2"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.9.1...1.9.2">1.9.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2015-04-15">April 15, 2015</time></span>
+</h2><ul>
+<li>Fixed a <strong>watch</strong> mode error introduced in 1.9.1 when compiling multiple files with the same filename.</li>
+<li>Bugfix for <code>yield</code> around expressions containing <code>this</code>.</li>
+<li>Added a Ruby-style <code>-r</code> option to the REPL, which allows requiring a module before execution with <code>--eval</code> or <code>--interactive</code>.</li>
+<li>In <code>&lt;script type=&quot;text/coffeescript&quot;&gt;</code> tags, to avoid possible duplicate browser requests for .coffee files, you can now use the <code>data-src</code> attribute instead of <code>src</code>.</li>
+<li>Minor bug fixes for IE8, strict ES5 regular expressions and Browserify.</li>
+</ul>
+<div class="anchor" id="1.9.1"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.9.0...1.9.1">1.9.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2015-02-18">February 18, 2015</time></span>
+</h2><ul>
+<li>Interpolation now works in object literal keys (again). You can use this to dynamically name properties.</li>
+<li>Internal compiler variable names no longer start with underscores. This makes the generated JavaScript a bit prettier, and also fixes an issue with the completely broken and ungodly way that AngularJS “parses” function arguments.</li>
+<li>Fixed a few <code>yield</code>-related edge cases with <code>yield return</code> and <code>yield throw</code>.</li>
+<li>Minor bug fixes and various improvements to compiler error messages.</li>
+</ul>
+<div class="anchor" id="1.9.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.8.0...1.9.0">1.9.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2015-01-29">January 29, 2015</time></span>
+</h2><ul>
+<li>CoffeeScript now supports ES2015 generators. A generator is simply a function that <code>yield</code>s.</li>
+<li>More robust parsing and improved error messages for strings and regexes — especially with respect to interpolation.</li>
+<li>Changed strategy for the generation of internal compiler variable names. Note that this means that <code>@example</code> function parameters are no longer available as naked <code>example</code> variables within the function body.</li>
+<li>Fixed REPL compatibility with latest versions of Node and Io.js.</li>
+<li>Various minor bug fixes.</li>
+</ul>
+<div class="anchor" id="1.8.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.7.1...1.8.0">1.8.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2014-08-26">August 26, 2014</time></span>
+</h2><ul>
+<li>The <code>--join</code> option of the CLI is now deprecated.</li>
+<li>Source maps now use <code>.js.map</code> as file extension, instead of just <code>.map</code>.</li>
+<li>The CLI now exits with the exit code 1 when it fails to write a file to disk.</li>
+<li>The compiler no longer crashes on unterminated, single-quoted strings.</li>
+<li>Fixed location data for string interpolations, which made source maps out of sync.</li>
+<li>The error marker in error messages is now correctly positioned if the code is indented with tabs.</li>
+<li>Fixed a slight formatting error in CoffeeScript’s source map-patched stack traces.</li>
+<li>The <code>%%</code> operator now coerces its right operand only once.</li>
+<li>It is now possible to require CoffeeScript files from Cakefiles without having to register the compiler first.</li>
+<li>The CoffeeScript REPL is now exported and can be required using <code>require &#39;coffee-script/repl&#39;</code>.</li>
+<li>Fixes for the REPL in Node 0.11.</li>
+</ul>
+<div class="anchor" id="1.7.1"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.7.0...1.7.1">1.7.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2014-01-29">January 29, 2014</time></span>
+</h2><ul>
+<li>Fixed a typo that broke node module lookup when running a script directly with the <code>coffee</code> binary.</li>
+</ul>
+<div class="anchor" id="1.7.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.6.3...1.7.0">1.7.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2014-01-28">January 28, 2014</time></span>
+</h2><ul>
+<li>When requiring CoffeeScript files in Node you must now explicitly register the compiler. This can be done with <code>require &#39;coffee-script/register&#39;</code> or <code>CoffeeScript.register()</code>. Also for configuration such as Mocha’s, use <strong>coffee-script/register</strong>.</li>
+<li>Improved error messages, source maps and stack traces. Source maps now use the updated <code>//#</code> syntax.</li>
+<li>Leading <code>.</code> now closes all open calls, allowing for simpler chaining syntax.</li>
+</ul>
+<aside class="code-example container-fluid" data-example="chaining">
+  <div class="row">
+    <div class="col-md-6 coffee-example-column">
+      <textarea class="coffee-example" id="chaining-coffee">$ 'body'
+.click (e) ->
+  $ '.box'
+  .fadeIn 'fast'
+  .addClass '.active'
+.css 'background', 'white'
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="chaining-js">$('body').click(function(e) {
+  return $('.box').fadeIn('fast').addClass('.active');
+}).css('background', 'white');
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+<ul>
+<li>Added <code>**</code>, <code>//</code> and <code>%%</code> operators and <code>...</code> expansion in parameter lists and destructuring expressions.</li>
+<li>Multiline strings are now joined by a single space and ignore all indentation. A backslash at the end of a line can denote the amount of whitespace between lines, in both strings and heredocs. Backslashes correctly escape whitespace in block regexes.</li>
+<li>Closing brackets can now be indented and therefore no longer cause unexpected error.</li>
+<li>Several breaking compilation fixes. Non-callable literals (strings, numbers etc.) don’t compile in a call now and multiple postfix conditionals compile properly. Postfix conditionals and loops always bind object literals. Conditional assignment compiles properly in subexpressions. <code>super</code> is disallowed outside of methods and works correctly inside <code>for</code> loops.</li>
+<li>Formatting of compiled block comments has been improved.</li>
+<li>No more <code>-p</code> folders on Windows.</li>
+<li>The <code>options</code> object passed to CoffeeScript is no longer mutated.</li>
+</ul>
+<div class="anchor" id="1.6.3"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.6.2...1.6.3">1.6.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2013-06-02">June 2, 2013</time></span>
+</h2><ul>
+<li>The CoffeeScript REPL now remembers your history between sessions. Just like a proper REPL should.</li>
+<li>You can now use <code>require</code> in Node to load <code>.coffee.md</code> Literate CoffeeScript files. In the browser, <code>text/literate-coffeescript</code> script tags.</li>
+<li>The old <code>coffee --lint</code> command has been removed. It was useful while originally working on the compiler, but has been surpassed by JSHint. You may now use <code>-l</code> to pass literate files in over <strong>stdio</strong>.</li>
+<li>Bugfixes for Windows path separators, <code>catch</code> without naming the error, and executable-class-bodies-with- prototypal-property-attachment.</li>
+</ul>
+<div class="anchor" id="1.6.2"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.6.1...1.6.2">1.6.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2013-03-18">March 18, 2013</time></span>
+</h2><ul>
+<li>Source maps have been used to provide automatic line-mapping when running CoffeeScript directly via the <code>coffee</code> command, and for automatic line-mapping when running CoffeeScript directly in the browser. Also, to provide better error messages for semantic errors thrown by the compiler — <a href="http://cl.ly/NdOA">with colors, even</a>.</li>
+<li>Improved support for mixed literate/vanilla-style CoffeeScript projects, and generating source maps for both at the same time.</li>
+<li>Fixes for <strong>1.6.x</strong> regressions with overriding inherited bound functions, and for Windows file path management.</li>
+<li>The <code>coffee</code> command can now correctly <code>fork()</code> both <code>.coffee</code> and <code>.js</code> files. (Requires Node.js 0.9+)</li>
+</ul>
+<div class="anchor" id="1.6.1"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.5.0...1.6.1">1.6.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2013-03-05">March 5, 2013</time></span>
+</h2><ul>
+<li>First release of <a href="#source-maps">source maps</a>. Pass the <code>--map</code> flag to the compiler, and off you go. Direct all your thanks over to <a href="http://github.com/jwalton">Jason Walton</a>.</li>
+<li>Fixed a 1.5.0 regression with multiple implicit calls against an indented implicit object. Combinations of implicit function calls and implicit objects should generally be parsed better now — but it still isn’t good <em>style</em> to nest them too heavily.</li>
+<li><code>.coffee.md</code> is now also supported as a Literate CoffeeScript file extension, for existing tooling. <code>.litcoffee</code> remains the canonical one.</li>
+<li>Several minor fixes surrounding member properties, bound methods and <code>super</code> in class declarations.</li>
+</ul>
+<div class="anchor" id="1.5.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.4.0...1.5.0">1.5.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2013-02-25">February 25, 2013</time></span>
+</h2><ul>
+<li>First release of <a href="#literate">Literate CoffeeScript</a>.</li>
+<li>The CoffeeScript REPL is now based on the Node.js REPL, and should work better and more familiarly.</li>
+<li>Returning explicit values from constructors is now forbidden. If you want to return an arbitrary value, use a function, not a constructor.</li>
+<li>You can now loop over an array backwards, without having to manually deal with the indexes: <code>for item in list by -1</code></li>
+<li>Source locations are now preserved in the CoffeeScript AST, although source maps are not yet being emitted.</li>
+</ul>
+<div class="anchor" id="1.4.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.3.3...1.4.0">1.4.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2012-10-23">October 23, 2012</time></span>
+</h2><ul>
+<li>The CoffeeScript compiler now strips Microsoft’s UTF-8 BOM if it exists, allowing you to compile BOM-borked source files.</li>
+<li>Fix Node/compiler deprecation warnings by removing <code>registerExtension</code>, and moving from <code>path.exists</code> to <code>fs.exists</code>.</li>
+<li>Small tweaks to splat compilation, backticks, slicing, and the error for duplicate keys in object literals.</li>
+</ul>
+<div class="anchor" id="1.3.3"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.3.1...1.3.3">1.3.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2012-05-15">May 15, 2012</time></span>
+</h2><ul>
+<li>Due to the new semantics of JavaScript’s strict mode, CoffeeScript no longer guarantees that constructor functions have names in all runtimes. See <a href="https://github.com/jashkenas/coffeescript/issues/2052">#2052</a> for discussion.</li>
+<li>Inside of a nested function inside of an instance method, it’s now possible to call <code>super</code> more reliably (walks recursively up).</li>
+<li>Named loop variables no longer have different scoping heuristics than other local variables. (Reverts #643)</li>
+<li>Fix for splats nested within the LHS of destructuring assignment.</li>
+<li>Corrections to our compile time strict mode forbidding of octal literals.</li>
+</ul>
+<div class="anchor" id="1.3.1"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.2.0...1.3.1">1.3.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2012-04-10">April 10, 2012</time></span>
+</h2><ul>
+<li>CoffeeScript now enforces all of JavaScript’s <strong>Strict Mode</strong> early syntax errors at compile time. This includes old-style octal literals, duplicate property names in object literals, duplicate parameters in a function definition, deleting naked variables, setting the value of <code>eval</code> or <code>arguments</code>, and more. See a full discussion at <a href="https://github.com/jashkenas/coffeescript/issues/1547">#1547</a>.</li>
+<li>The REPL now has a handy new multi-line mode for entering large blocks of code. It’s useful when copy-and-pasting examples into the REPL. Enter multi-line mode with <code>Ctrl-V</code>. You may also now pipe input directly into the REPL.</li>
+<li>CoffeeScript now prints a <code>Generated by CoffeeScript VERSION</code> header at the top of each compiled file.</li>
+<li>Conditional assignment of previously undefined variables <code>a or= b</code> is now considered a syntax error.</li>
+<li>A tweak to the semantics of <code>do</code>, which can now be used to more easily simulate a namespace: <code>do (x = 1, y = 2) -&gt; …</code></li>
+<li>Loop indices are now mutable within a loop iteration, and immutable between them.</li>
+<li>Both endpoints of a slice are now allowed to be omitted for consistency, effectively creating a shallow copy of the list.</li>
+<li>Additional tweaks and improvements to <code>coffee --watch</code> under Node’s “new” file watching API. Watch will now beep by default if you introduce a syntax error into a watched script. We also now ignore hidden directories by default when watching recursively.</li>
+</ul>
+<div class="anchor" id="1.2.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.1.3...1.2.0">1.2.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2011-12-18">December 18, 2011</time></span>
+</h2><ul>
+<li>Multiple improvements to <code>coffee --watch</code> and <code>--join</code>. You may now use both together, as well as add and remove files and directories within a <code>--watch</code>’d folder.</li>
+<li>The <code>throw</code> statement can now be used as part of an expression.</li>
+<li>Block comments at the top of the file will now appear outside of the safety closure wrapper.</li>
+<li>Fixed a number of minor 1.1.3 regressions having to do with trailing operators and unfinished lines, and a more major 1.1.3 regression that caused bound functions <em>within</em> bound class functions to have the incorrect <code>this</code>.</li>
+</ul>
+<div class="anchor" id="1.1.3"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.1.2...1.1.3">1.1.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2011-11-08">November 8, 2011</time></span>
+</h2><ul>
+<li>Ahh, whitespace. CoffeeScript’s compiled JS now tries to space things out and keep it readable, as you can see in the examples on this page.</li>
+<li>You can now call <code>super</code> in class level methods in class bodies, and bound class methods now preserve their correct context.</li>
+<li>JavaScript has always supported octal numbers <code>010 is 8</code>, and hexadecimal numbers <code>0xf is 15</code>, but CoffeeScript now also supports binary numbers: <code>0b10 is 2</code>.</li>
+<li>The CoffeeScript module has been nested under a subdirectory to make it easier to <code>require</code> individual components separately, without having to use <strong>npm</strong>. For example, after adding the CoffeeScript folder to your path: <code>require(&#39;coffee-script/lexer&#39;)</code></li>
+<li>There’s a new “link” feature in Try CoffeeScript on this webpage. Use it to get a shareable permalink for your example script.</li>
+<li>The <code>coffee --watch</code> feature now only works on Node.js 0.6.0 and higher, but now also works properly on Windows.</li>
+<li>Lots of small bug fixes from <strong><a href="https://github.com/michaelficarra">@michaelficarra</a></strong>, <strong><a href="https://github.com/geraldalewis">@geraldalewis</a></strong>, <strong><a href="https://github.com/satyr">@satyr</a></strong>, and <strong><a href="https://github.com/trevorburnham">@trevorburnham</a></strong>.</li>
+</ul>
+<div class="anchor" id="1.1.2"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.1.1...1.1.2">1.1.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2011-08-04">August 4, 2011</time></span>
+</h2><p>Fixes for block comment formatting, <code>?=</code> compilation, implicit calls against control structures, implicit invocation of a try/catch block, variadic arguments leaking from local scope, line numbers in syntax errors following heregexes, property access on parenthesized number literals, bound class methods and super with reserved names, a REPL overhaul, consecutive compiled semicolons, block comments in implicitly called objects, and a Chrome bug.</p>
+<div class="anchor" id="1.1.1"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.1.0...1.1.1">1.1.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2011-05-10">May 10, 2011</time></span>
+</h2><p>Bugfix release for classes with external constructor functions, see issue #1182.</p>
+<div class="anchor" id="1.1.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.0.1...1.1.0">1.1.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2011-05-01">May 1, 2011</time></span>
+</h2><p>When running via the <code>coffee</code> executable, <code>process.argv</code> and friends now report <code>coffee</code> instead of <code>node</code>. Better compatibility with <strong>Node.js 0.4.x</strong> module lookup changes. The output in the REPL is now colorized, like Node’s is. Giving your concatenated CoffeeScripts a name when using <code>--join</code> is now mandatory. Fix for lexing compound division <code>/=</code> as a regex accidentally. All <code>text/coffeescript</code> tags should now execute in the order they’re included. Fixed an issue with extended subclasses using external constructor functions. Fixed an edge-case infinite loop in <code>addImplicitParentheses</code>. Fixed exponential slowdown with long chains of function calls. Globals no longer leak into the CoffeeScript REPL. Splatted parameters are declared local to the function.</p>
+<div class="anchor" id="1.0.1"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.0.0...1.0.1">1.0.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2011-01-31">January 31, 2011</time></span>
+</h2><p>Fixed a lexer bug with Unicode identifiers. Updated REPL for compatibility with Node.js 0.3.7. Fixed requiring relative paths in the REPL. Trailing <code>return</code> and <code>return undefined</code> are now optimized away. Stopped requiring the core Node.js <code>util</code> module for back-compatibility with Node.js 0.2.5. Fixed a case where a conditional <code>return</code> would cause fallthrough in a <code>switch</code> statement. Optimized empty objects in destructuring assignment.</p>
+<div class="anchor" id="1.0.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.9.6...1.0.0">1.0.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-12-24">December 24, 2010</time></span>
+</h2><p>CoffeeScript loops no longer try to preserve block scope when functions are being generated within the loop body. Instead, you can use the <code>do</code> keyword to create a convenient closure wrapper. Added a <code>--nodejs</code> flag for passing through options directly to the <code>node</code> executable. Better behavior around the use of pure statements within expressions. Fixed inclusive slicing through <code>-1</code>, for all browsers, and splicing with arbitrary expressions as endpoints.</p>
+<div class="anchor" id="0.9.6"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.9.5...0.9.6">0.9.6</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-12-06">December 6, 2010</time></span>
+</h2><p>The REPL now properly formats stacktraces, and stays alive through asynchronous exceptions. Using <code>--watch</code> now prints timestamps as files are compiled. Fixed some accidentally-leaking variables within plucked closure-loops. Constructors now maintain their declaration location within a class body. Dynamic object keys were removed. Nested classes are now supported. Fixes execution context for naked splatted functions. Bugfix for inversion of chained comparisons. Chained class instantiation now works properly with splats.</p>
+<div class="anchor" id="0.9.5"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.9.4...0.9.5">0.9.5</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-11-21">November 21, 2010</time></span>
+</h2><p>0.9.5 should be considered the first release candidate for CoffeeScript 1.0. There have been a large number of internal changes since the previous release, many contributed from <strong>satyr</strong>’s <a href="http://github.com/satyr/coco">Coco</a> dialect of CoffeeScript. Heregexes (extended regexes) were added. Functions can now have default arguments. Class bodies are now executable code. Improved syntax errors for invalid CoffeeScript. <code>undefined</code> now works like <code>null</code>, and cannot be assigned a new value. There was a precedence change with respect to single-line comprehensions: <code>result = i for i in list</code>
+used to parse as <code>result = (i for i in list)</code> by default … it now parses as
+<code>(result = i) for i in list</code>.</p>
+<div class="anchor" id="0.9.4"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.9.3...0.9.4">0.9.4</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-09-21">September 21, 2010</time></span>
+</h2><p>CoffeeScript now uses appropriately-named temporary variables, and recycles their references after use. Added <code>require.extensions</code> support for <strong>Node.js 0.3</strong>. Loading CoffeeScript in the browser now adds just a single <code>CoffeeScript</code> object to global scope. Fixes for implicit object and block comment edge cases.</p>
+<div class="anchor" id="0.9.3"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.9.2...0.9.3">0.9.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-09-16">September 16, 2010</time></span>
+</h2><p>CoffeeScript <code>switch</code> statements now compile into JS <code>switch</code> statements — they previously compiled into <code>if/else</code> chains for JavaScript 1.3 compatibility. Soaking a function invocation is now supported. Users of the RubyMine editor should now be able to use <code>--watch</code> mode.</p>
+<div class="anchor" id="0.9.2"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.9.1...0.9.2">0.9.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-08-23">August 23, 2010</time></span>
+</h2><p>Specifying the start and end of a range literal is now optional, eg. <code>array[3..]</code>. You can now say <code>a not instanceof b</code>. Fixed important bugs with nested significant and non-significant indentation (Issue #637). Added a <code>--require</code> flag that allows you to hook into the <code>coffee</code> command. Added a custom <code>jsl.conf</code> file for our preferred JavaScriptLint setup. Sped up Jison grammar compilation time by flattening rules for operations. Block comments can now be used with JavaScript-minifier-friendly syntax. Added JavaScript’s compound assignment bitwise operators. Bugfixes to implicit object literals with leading number and string keys, as the subject of implicit calls, and as part of compound assignment.</p>
+<div class="anchor" id="0.9.1"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.9.0...0.9.1">0.9.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-08-11">August 11, 2010</time></span>
+</h2><p>Bugfix release for <strong>0.9.1</strong>. Greatly improves the handling of mixed implicit objects, implicit function calls, and implicit indentation. String and regex interpolation is now strictly <code>#{ … }</code> (Ruby style). The compiler now takes a <code>--require</code> flag, which specifies scripts to run before compilation.</p>
+<div class="anchor" id="0.9.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.7.2...0.9.0">0.9.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-08-04">August 4, 2010</time></span>
+</h2><p>The CoffeeScript <strong>0.9</strong> series is considered to be a release candidate for <strong>1.0</strong>; let’s give her a shakedown cruise. <strong>0.9.0</strong> introduces a massive backwards-incompatible change: Assignment now uses <code>=</code>, and object literals use <code>:</code>, as in JavaScript. This allows us to have implicit object literals, and YAML-style object definitions. Half assignments are removed, in favor of <code>+=</code>, <code>or=</code>, and friends. Interpolation now uses a hash mark <code>#</code> instead of the dollar sign <code>$</code> — because dollar signs may be part of a valid JS identifier. Downwards range comprehensions are now safe again, and are optimized to straight for loops when created with integer endpoints. A fast, unguarded form of object comprehension was added: <code>for all key, value of object</code>. Mentioning the <code>super</code> keyword with no arguments now forwards all arguments passed to the function, as in Ruby. If you extend class <code>B</code> from parent class <code>A</code>, if <code>A</code> has an <code>extended</code> method defined, it will be called, passing in <code>B</code> — this enables static inheritance, among other things. Cleaner output for functions bound with the fat arrow. <code>@variables</code> can now be used in parameter lists, with the parameter being automatically set as a property on the object — useful in constructors and setter functions. Constructor functions can now take splats.</p>
+<div class="anchor" id="0.7.2"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.7.1...0.7.2">0.7.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-07-12">July 12, 2010</time></span>
+</h2><p>Quick bugfix (right after 0.7.1) for a problem that prevented <code>coffee</code> command-line options from being parsed in some circumstances.</p>
+<div class="anchor" id="0.7.1"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.7.0...0.7.1">0.7.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-07-11">July 11, 2010</time></span>
+</h2><p>Block-style comments are now passed through and printed as JavaScript block comments – making them useful for licenses and copyright headers. Better support for running coffee scripts standalone via hashbangs. Improved syntax errors for tokens that are not in the grammar.</p>
+<div class="anchor" id="0.7.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.6.2...0.7.0">0.7.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-06-28">June 28, 2010</time></span>
+</h2><p>Official CoffeeScript variable style is now camelCase, as in JavaScript. Reserved words are now allowed as object keys, and will be quoted for you. Range comprehensions now generate cleaner code, but you have to specify <code>by -1</code> if you’d like to iterate downward. Reporting of syntax errors is greatly improved from the previous release. Running <code>coffee</code> with no arguments now launches the REPL, with Readline support. The <code>&lt;-</code> bind operator has been removed from CoffeeScript. The <code>loop</code> keyword was added, which is equivalent to a <code>while true</code> loop. Comprehensions that contain closures will now close over their variables, like the semantics of a <code>forEach</code>. You can now use bound function in class definitions (bound to the instance). For consistency, <code>a in b</code> is now an array presence check, and <code>a of b</code> is an object-key check. Comments are no longer passed through to the generated JavaScript.</p>
+<div class="anchor" id="0.6.2"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.6.1...0.6.2">0.6.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-05-15">May 15, 2010</time></span>
+</h2><p>The <code>coffee</code> command will now preserve directory structure when compiling a directory full of scripts. Fixed two omissions that were preventing the CoffeeScript compiler from running live within Internet Explorer. There’s now a syntax for block comments, similar in spirit to CoffeeScript’s heredocs. ECMA Harmony DRY-style pattern matching is now supported, where the name of the property is the same as the name of the value: <code>{name, length}: func</code>. Pattern matching is now allowed within comprehension variables. <code>unless</code> is now allowed in block form. <code>until</code> loops were added, as the inverse of <code>while</code> loops. <code>switch</code> statements are now allowed without switch object clauses. Compatible with Node.js <strong>v0.1.95</strong>.</p>
+<div class="anchor" id="0.6.1"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.6.0...0.6.1">0.6.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-04-12">April 12, 2010</time></span>
+</h2><p>Upgraded CoffeeScript for compatibility with the new Node.js <strong>v0.1.90</strong> series.</p>
+<div class="anchor" id="0.6.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.5.6...0.6.0">0.6.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-04-03">April 3, 2010</time></span>
+</h2><p>Trailing commas are now allowed, a-la Python. Static properties may be assigned directly within class definitions, using <code>@property</code> notation.</p>
+<div class="anchor" id="0.5.6"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.5.5...0.5.6">0.5.6</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-03-23">March 23, 2010</time></span>
+</h2><p>Interpolation can now be used within regular expressions and heredocs, as well as strings. Added the <code>&lt;-</code> bind operator. Allowing assignment to half-expressions instead of special <code>||=</code>-style operators. The arguments object is no longer automatically converted into an array. After requiring <code>coffee-script</code>, Node.js can now directly load <code>.coffee</code> files, thanks to <strong>registerExtension</strong>. Multiple splats can now be used in function calls, arrays, and pattern matching.</p>
+<div class="anchor" id="0.5.5"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.5.4...0.5.5">0.5.5</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-03-08">March 8, 2010</time></span>
+</h2><p>String interpolation, contributed by <a href="http://github.com/StanAngeloff">Stan Angeloff</a>. Since <code>--run</code> has been the default since <strong>0.5.3</strong>, updating <code>--stdio</code> and <code>--eval</code> to run by default, pass <code>--compile</code> as well if you’d like to print the result.</p>
+<div class="anchor" id="0.5.4"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.5.3...0.5.4">0.5.4</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-03-03">March 3, 2010</time></span>
+</h2><p>Bugfix that corrects the Node.js global constants <code>__filename</code> and <code>__dirname</code>. Tweaks for more flexible parsing of nested function literals and improperly-indented comments. Updates for the latest Node.js API.</p>
+<div class="anchor" id="0.5.3"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.5.2...0.5.3">0.5.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-02-27">February 27, 2010</time></span>
+</h2><p>CoffeeScript now has a syntax for defining classes. Many of the core components (Nodes, Lexer, Rewriter, Scope, Optparse) are using them. Cakefiles can use <code>optparse.coffee</code> to define options for tasks. <code>--run</code> is now the default flag for the <code>coffee</code> command, use <code>--compile</code> to save JavaScripts. Bugfix for an ambiguity between RegExp literals and chained divisions.</p>
+<div class="anchor" id="0.5.2"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.5.1...0.5.2">0.5.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-02-25">February 25, 2010</time></span>
+</h2><p>Added a compressed version of the compiler for inclusion in web pages as
+<code>v2/browser-compiler/coffee-script.js</code>. It’ll automatically run any script tags with type <code>text/coffeescript</code> for you. Added a <code>--stdio</code> option to the <code>coffee</code> command, for piped-in compiles.</p>
+<div class="anchor" id="0.5.1"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.5.0...0.5.1">0.5.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-02-24">February 24, 2010</time></span>
+</h2><p>Improvements to null soaking with the existential operator, including soaks on indexed properties. Added conditions to <code>while</code> loops, so you can use them as filters with <code>when</code>, in the same manner as comprehensions.</p>
+<div class="anchor" id="0.5.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.3.2...0.5.0">0.5.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-02-21">February 21, 2010</time></span>
+</h2><p>CoffeeScript 0.5.0 is a major release, While there are no language changes, the Ruby compiler has been removed in favor of a self-hosting compiler written in pure CoffeeScript.</p>
+<div class="anchor" id="0.3.2"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.3.0...0.3.2">0.3.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-02-08">February 8, 2010</time></span>
+</h2><p><code>@property</code> is now a shorthand for <code>this.property</code>.
+Switched the default JavaScript engine from Narwhal to Node.js. Pass the <code>--narwhal</code> flag if you’d like to continue using it.</p>
+<div class="anchor" id="0.3.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.2.6...0.3.0">0.3.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-01-26">January 26, 2010</time></span>
+</h2><p>CoffeeScript 0.3 includes major syntax changes:
+The function symbol was changed to <code>-&gt;</code>, and the bound function symbol is now <code>=&gt;</code>.
+Parameter lists in function definitions must now be wrapped in parentheses.
+Added property soaking, with the <code>?.</code> operator.
+Made parentheses optional, when invoking functions with arguments.
+Removed the obsolete block literal syntax.</p>
+<div class="anchor" id="0.2.6"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.2.5...0.2.6">0.2.6</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-01-17">January 17, 2010</time></span>
+</h2><p>Added Python-style chained comparisons, the conditional existence operator <code>?=</code>, and some examples from <em>Beautiful Code</em>. Bugfixes relating to statement-to-expression conversion, arguments-to-array conversion, and the TextMate syntax highlighter.</p>
+<div class="anchor" id="0.2.5"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.2.4...0.2.5">0.2.5</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-01-13">January 13, 2010</time></span>
+</h2><p>The conditions in switch statements can now take multiple values at once — If any of them are true, the case will run. Added the long arrow <code>==&gt;</code>, which defines and immediately binds a function to <code>this</code>. While loops can now be used as expressions, in the same way that comprehensions can. Splats can be used within pattern matches to soak up the rest of an array.</p>
+<div class="anchor" id="0.2.4"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.2.3...0.2.4">0.2.4</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-01-12">January 12, 2010</time></span>
+</h2><p>Added ECMAScript Harmony style destructuring assignment, for dealing with extracting values from nested arrays and objects. Added indentation-sensitive heredocs for nicely formatted strings or chunks of code.</p>
+<div class="anchor" id="0.2.3"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.2.2...0.2.3">0.2.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-01-11">January 11, 2010</time></span>
+</h2><p>Axed the unsatisfactory <code>ino</code> keyword, replacing it with <code>of</code> for object comprehensions. They now look like: <code>for prop, value of object</code>.</p>
+<div class="anchor" id="0.2.2"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.2.1...0.2.2">0.2.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-01-10">January 10, 2010</time></span>
+</h2><p>When performing a comprehension over an object, use <code>ino</code>, instead of <code>in</code>, which helps us generate smaller, more efficient code at compile time.
+Added <code>::</code> as a shorthand for saying <code>.prototype.</code>
+The “splat” symbol has been changed from a prefix asterisk <code>*</code>, to a postfix ellipsis <code>...</code>
+Added JavaScript’s <code>in</code> operator, empty <code>return</code> statements, and empty <code>while</code> loops.
+Constructor functions that start with capital letters now include a safety check to make sure that the new instance of the object is returned.
+The <code>extends</code> keyword now functions identically to <code>goog.inherits</code> in Google’s Closure Library.</p>
+<div class="anchor" id="0.2.1"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.2.0...0.2.1">0.2.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-01-05">January 5, 2010</time></span>
+</h2><p>Arguments objects are now converted into real arrays when referenced.</p>
+<div class="anchor" id="0.2.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.1.6...0.2.0">0.2.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-01-05">January 5, 2010</time></span>
+</h2><p>Major release. Significant whitespace. Better statement-to-expression conversion. Splats. Splice literals. Object comprehensions. Blocks. The existential operator. Many thanks to all the folks who posted issues, with special thanks to <a href="http://github.com/liamoc">Liam O’Connor-Davis</a> for whitespace and expression help.</p>
+<div class="anchor" id="0.1.6"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.1.5...0.1.6">0.1.6</a>
+  <span class="timestamp"> &mdash; <time datetime="2009-12-27">December 27, 2009</time></span>
+</h2><p>Bugfix for running <code>coffee --interactive</code> and <code>--run</code> from outside of the CoffeeScript directory. Bugfix for nested function/if-statements.</p>
+<div class="anchor" id="0.1.5"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.1.4...0.1.5">0.1.5</a>
+  <span class="timestamp"> &mdash; <time datetime="2009-12-26">December 26, 2009</time></span>
+</h2><p>Array slice literals and array comprehensions can now both take Ruby-style ranges to specify the start and end. JavaScript variable declaration is now pushed up to the top of the scope, making all assignment statements into expressions. You can use <code>\</code> to escape newlines. The <code>coffee-script</code> command is now called <code>coffee</code>.</p>
+<div class="anchor" id="0.1.4"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.1.3...0.1.4">0.1.4</a>
+  <span class="timestamp"> &mdash; <time datetime="2009-12-25">December 25, 2009</time></span>
+</h2><p>The official CoffeeScript extension is now <code>.coffee</code> instead of <code>.cs</code>, which properly belongs to <a href="http://en.wikipedia.org/wiki/C_Sharp_(programming_language">C#</a>). Due to popular demand, you can now also use <code>=</code> to assign. Unlike JavaScript, <code>=</code> can also be used within object literals, interchangeably with <code>:</code>. Made a grammatical fix for chained function calls like <code>func(1)(2)(3)(4)</code>. Inheritance and super no longer use <code>__proto__</code>, so they should be IE-compatible now.</p>
+<div class="anchor" id="0.1.3"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.1.2...0.1.3">0.1.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2009-12-25">December 25, 2009</time></span>
+</h2><p>The <code>coffee</code> command now includes <code>--interactive</code>, which launches an interactive CoffeeScript session, and <code>--run</code>, which directly compiles and executes a script. Both options depend on a working installation of Narwhal. The <code>aint</code> keyword has been replaced by <code>isnt</code>, which goes together a little smoother with <code>is</code>. Quoted strings are now allowed as identifiers within object literals: eg. <code>{&quot;5+5&quot;: 10}</code>. All assignment operators now use a colon: <code>+:</code>, <code>-:</code>, <code>*:</code>, etc.</p>
+<div class="anchor" id="0.1.2"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.1.1...0.1.2">0.1.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2009-12-24">December 24, 2009</time></span>
+</h2><p>Fixed a bug with calling <code>super()</code> through more than one level of inheritance, with the re-addition of the <code>extends</code> keyword. Added experimental <a href="http://narwhaljs.org/">Narwhal</a> support (as a Tusk package), contributed by <a href="http://blog.tlrobinson.net/">Tom Robinson</a>, including <strong>bin/cs</strong> as a CoffeeScript REPL and interpreter. New <code>--no-wrap</code> option to suppress the safety function wrapper.</p>
+<div class="anchor" id="0.1.1"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/0.1.0...0.1.1">0.1.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2009-12-24">December 24, 2009</time></span>
+</h2><p>Added <code>instanceof</code> and <code>typeof</code> as operators.</p>
+<div class="anchor" id="0.1.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/8e9d637985d2dc9b44922076ad54ffef7fa8e9c2...0.1.0">0.1.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2009-12-24">December 24, 2009</time></span>
+</h2><p>Initial CoffeeScript release.</p>
+
+      </section>
+
+    </main>
+  </div>
+</div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js" integrity="sha384-3ceskX3iaEnIogmQchP8opvBy3Mi7Ce34nWjpBIwVTHfGYWQS9jwHDVRnpKKHJg7" crossorigin="anonymous"></script>
+<script>
+  window.Tether = {}; // Remove if we want to use Bootstrap tooltips
+</script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/g/codemirror@4.5.0(codemirror.min.js+mode/coffeescript/coffeescript.js+addon/lint/coffeescript-lint.js+mode/javascript/javascript.js)" crossorigin="anonymous"></script>
+
+<script src="browser-compiler/coffee-script.js"></script>
+<script type="text/coffeescript">
+$(document).ready ->
+  # Mobile navigation
+  toggleSidebar = ->
+    $('.menu-button, .row-offcanvas').toggleClass 'active'
+
+  $('[data-toggle="offcanvas"]').click toggleSidebar
+
+  $('[data-action="sidebar-nav"]').click (event) ->
+    if $('.menu-button').is(':visible')
+      event.preventDefault()
+      toggleSidebar()
+      setTimeout ->
+        window.location = event.target.href
+      , 260 # Wait for the sidebar to slide away before navigating
+
+
+  # Initialize Scrollspy for sidebar navigation; http://v4-alpha.getbootstrap.com/components/scrollspy/
+  # See also http://www.codingeverything.com/2014/02/BootstrapDocsSideBar.html and http://jsfiddle.net/KyleMit/v6zhz/
+  $('body').scrollspy
+    target: '#contents'
+    offset: Math.round $('main').css('padding-top').replace('px', '')
+
+  if window.location.hash?
+    $(".nav-link.active[href!='#{window.location.hash}']").removeClass 'active'
+
+  $(window).on 'activate.bs.scrollspy', (event, target) -> # Why `window`? https://github.com/twbs/bootstrap/issues/20086
+    # We only want one active link in the nav
+    $(".nav-link.active[href!='#{target.relatedTarget}']").removeClass 'active'
+    $target = $(".nav-link[href='#{target.relatedTarget}']")
+    # Update the browser address bar on scroll or navigation
+    window.history.pushState {}, $target.text(), $target.prop('href')
+
+
+  # Initialize CodeMirror for code examples; https://codemirror.net/doc/manual.html
+  editors = []
+  lastCompilationElapsedTime = 200
+  $('textarea').each (index) ->
+    $(@).data 'index', index
+    mode = if $(@).hasClass('javascript-output') then 'javascript' else 'coffeescript'
+
+    editors[index] = editor = CodeMirror.fromTextArea @,
+      mode: mode
+      theme: 'twilight'
+      indentUnit: 2
+      tabSize: 2
+      lineWrapping: on
+      lineNumbers: off
+      inputStyle: 'contenteditable'
+      readOnly: if mode is 'coffeescript' then no else 'nocursor'
+      viewportMargin: Infinity
+
+    # Whenever the user edits the CoffeeScript side of a code example, update the JavaScript output
+    if mode is 'coffeescript'
+      pending = null
+      editor.on 'change', (instance, change) ->
+        clearTimeout pending
+        pending = setTimeout ->
+          lastCompilationStartTime = Date.now()
+          try
+            output = CoffeeScript.compile editor.getValue(), bare: yes
+            lastCompilationElapsedTime = Math.max(200, Date.now() - lastCompilationStartTime)
+          catch exception
+            output = "#{exception}"
+          editors[index + 1].setValue output
+        , lastCompilationElapsedTime
+
+
+  # Handle the code example buttons
+  $('[data-action="run-code-example"]').click ->
+    run = $(@).data 'run'
+    index = $("##{$(@).data('example')}-js").data 'index'
+    js = editors[index].getValue()
+    js = "#{js}\nalert(#{unescape run});" unless run is yes
+    eval js
+
+</script>
+
+</body>
+</html>

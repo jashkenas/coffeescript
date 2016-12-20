@@ -150,7 +150,7 @@ exports.isLiterate = (file) -> /\.(litcoffee|coffee\.md)$/.test file
 
 # Throws a SyntaxError from a given location.
 # The error's `toString` will return an error message following the "standard"
-# format <filename>:<line>:<col>: <message> plus the line with the error and a
+# format `<filename>:<line>:<col>: <message>` plus the line with the error and a
 # marker showing where the error is.
 exports.throwSyntaxError = (message, location) ->
   error = new SyntaxError message

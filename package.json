@@ -11,7 +11,7 @@
   "version": "2.0.0-alpha",
   "license": "MIT",
   "engines": {
-    "node": ">=6.9.1"
+    "node": ">=7.2.1"
   },
   "directories": {
     "lib": "./lib/coffee-script"
@@ -29,7 +29,7 @@
   ],
   "preferGlobal": true,
   "scripts": {
-    "test":         "node ./bin/cake test",
+    "test": "node ./bin/cake test",
     "test-harmony": "node --harmony ./bin/cake test"
   },
   "homepage": "http://coffeescript.org",
@@ -39,11 +39,12 @@
     "url": "git://github.com/jashkenas/coffeescript.git"
   },
   "devDependencies": {
-    "uglify-js": "~2.7",
+    "docco": "~0.7.0",
+    "google-closure-compiler-js": "^20161201.0.0",
+    "highlight.js": "~9.9.0",
     "jison": ">=0.4.17",
-    "highlight.js": "~9.8.0",
-    "underscore": "~1.8.3",
-    "docco": "~0.7.0"
+    "marked": "^0.3.6",
+    "underscore": "~1.8.3"
   },
   "dependencies": {
     "marked": "~0.3.6"

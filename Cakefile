@@ -25,7 +25,7 @@ header = """
 """
 
 # Used in folder names like docs/v1
-majorVersion = CoffeeScript.VERSION.split('.')[0]
+majorVersion = parseInt CoffeeScript.VERSION.split('.')[0], 10
 
 # Build the CoffeeScript language from source.
 build = (cb) ->
@@ -44,60 +44,6 @@ run = (args, cb) ->
 # Log a message with a color.
 log = (message, color, explanation) ->
   console.log color + message + reset + ' ' + (explanation or '')
-
-codeFor = ->
-  counter = 0
-  hljs = require 'highlight.js'
-  hljs.configure classPrefix: ''
-  (file, executable = false, showLoad = true) ->
-    counter++
-    return unless fs.existsSync "docs/v#{majorVersion}/examples/#{file}.js"
-    cs = fs.readFileSync "documentation/examples/#{file}.coffee", 'utf-8'
-    js = fs.readFileSync "docs/v#{majorVersion}/examples/#{file}.js", 'utf-8'
-    js = js.replace /^\/\/ generated.*?\n/i, ''
-
-    cshtml = "<pre><code>#{hljs.highlight('coffeescript', cs).value}</code></pre>"
-    # Temporary fix until highlight.js adds support for newer CoffeeScript keywords
-    # Added in https://github.com/isagalaev/highlight.js/pull/1357, awaiting release
-    if file in ['generator_iteration', 'generators', 'modules']
-      cshtml = cshtml.replace /(yield|import|export|from|as|default) /g, '<span class="keyword">$1</span> '
-    jshtml = "<pre><code>#{hljs.highlight('javascript', js).value}</code></pre>"
-    append = if executable is yes then '' else "alert(#{executable});"
-    if executable and executable isnt yes
-      cs.replace /(\S)\s*\Z/m, "$1\n\nalert #{executable}"
-    run    = if executable is true then 'run' else "run: #{executable}"
-    name   = "example#{counter}"
-    script = "<script>window.#{name} = #{JSON.stringify cs}</script>"
-    load   = if showLoad then "<div class='minibutton load' onclick='javascript: loadConsole(#{name});'>load</div>" else ''
-    button = if executable then "<div class='minibutton ok' onclick='javascript: #{js};#{append}'>#{run}</div>" else ''
-    "<div class='code'>#{cshtml}#{jshtml}#{script}#{load}#{button}<br class='clear' /></div>"
-
-monthNames = [
-  'January'
-  'February'
-  'March'
-  'April'
-  'May'
-  'June'
-  'July'
-  'August'
-  'September'
-  'October'
-  'November'
-  'December'
-]
-
-formatDate = (date) ->
-  date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
-    "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
-
-releaseHeader = (date, version, prevVersion) -> """
-  <div class="anchor" id="#{version}"></div>
-  <b class="header">
-    #{prevVersion and "<a href=\"https://github.com/jashkenas/coffeescript/compare/#{prevVersion}...#{version}\">#{version}</a>" or version}
-    <span class="timestamp"> &mdash; <time datetime="#{date}">#{formatDate date}</time></span>
-  </b>
-"""
 
 option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
 
@@ -137,14 +83,18 @@ task 'build:full', 'rebuild the source twice, and run the tests', ->
 
 
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
-  helpers.extend global, require('util')
+  helpers.extend global, require 'util'
   require 'jison'
   parser = require('./lib/coffee-script/grammar').parser
   fs.writeFileSync 'lib/coffee-script/parser.js', parser.generate()
 
 
 task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
-  code = ''
+  code = """
+  require['../../package.json'] = (function() {
+    return #{fs.readFileSync "./package.json"};
+  })();
+  """
   for {name, src} in [{name: 'marked', src: 'lib/marked.js'}]
     code += """
       require['#{name}'] = (function() {
@@ -177,32 +127,136 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
     }(this));
   """
   unless process.env.MINIFY is 'false'
-    {code} = require('uglify-js').minify code, fromString: true
-  fs.writeFileSync "docs/v#{majorVersion}/extras/coffee-script.js", header + '\n' + code
+    {compiledCode: code} = require('google-closure-compiler-js').compile
+      jsCode: [
+        src: code
+        languageOut: if majorVersion is 1 then 'ES5' else 'ES6'
+      ]
+  outputFolder = "docs/v#{majorVersion}/browser-compiler"
+  fs.mkdirSync outputFolder unless fs.existsSync outputFolder
+  fs.writeFileSync "#{outputFolder}/coffee-script.js", header + '\n' + code
   console.log "built ... running browser tests:"
   invoke 'test:browser'
 
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
+  # Constants
+  indexFile = 'documentation/index.html'
+  versionedSourceFolder = "documentation/v#{majorVersion}"
+  sectionsSourceFolder = 'documentation/sections'
   examplesSourceFolder = 'documentation/examples'
-  examplesOutputFolder = "docs/v#{majorVersion}/examples"
-  fs.mkdirSync examplesOutputFolder unless fs.existsSync examplesOutputFolder
-  do renderExamples = ->
-    execSync "bin/coffee -bc -o #{examplesOutputFolder} #{examplesSourceFolder}/*.coffee"
+  outputFolder = "docs/v#{majorVersion}"
 
-  indexFile = 'documentation/index.html.js'
+  # Helpers
+  releaseHeader = (date, version, prevVersion) ->
+    monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
+    formatDate = (date) ->
+      date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
+        "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
+
+    """
+      <div class="anchor" id="#{version}"></div>
+      <h2 class="header">
+        #{prevVersion and "<a href=\"https://github.com/jashkenas/coffeescript/compare/#{prevVersion}...#{version}\">#{version}</a>" or version}
+        <span class="timestamp"> &mdash; <time datetime="#{date}">#{formatDate date}</time></span>
+      </h2>
+    """
+
+  codeFor = require "./documentation/v#{majorVersion}/code.coffee"
+
+  htmlFor = ->
+    marked = require 'marked'
+    markdownRenderer = new marked.Renderer()
+    markdownRenderer.heading = (text, level) ->
+      "<h#{level}>#{text}</h#{level}>" # Don’t let marked add an id
+    markdownRenderer.code = (code) ->
+      if code.indexOf('codeFor(') is 0 or code.indexOf('releaseHeader(') is 0
+        "<%= #{code} %>"
+      else
+        "<pre><code>#{code}</code></pre>" # Default
+
+    (file, bookmark) ->
+      md = fs.readFileSync "#{sectionsSourceFolder}/#{file}.md", 'utf-8'
+      md = md.replace /<%= releaseHeader %>/g, releaseHeader
+      md = md.replace /<%= majorVersion %>/g, majorVersion
+      md = md.replace /<%= fullVersion %>/g, CoffeeScript.VERSION
+      html = marked md, renderer: markdownRenderer
+      html = _.template(html)
+        codeFor: codeFor()
+        releaseHeader: releaseHeader
+
+  include = ->
+    (file) ->
+      file = "#{versionedSourceFolder}/#{file}" if file.indexOf('/') is -1
+      output = fs.readFileSync file, 'utf-8'
+      if /\.html$/.test(file)
+        render = _.template output
+        output = render
+          releaseHeader: releaseHeader
+          majorVersion: majorVersion
+          fullVersion: CoffeeScript.VERSION
+          htmlFor: htmlFor()
+          codeFor: codeFor()
+          include: include()
+      output
+
+  # Task
   do renderIndex = ->
     render = _.template fs.readFileSync(indexFile, 'utf-8')
     output = render
-      codeFor: codeFor()
-      releaseHeader: releaseHeader
-    fs.writeFileSync "docs/v#{majorVersion}/index.html", output
-    log 'compiled', green, "#{indexFile} → docs/v#{majorVersion}/index.html"
+      include: include()
+    fs.writeFileSync "#{outputFolder}/index.html", output
+    log 'compiled', green, "#{indexFile} → #{outputFolder}/index.html"
+  try
+    fs.symlinkSync "v#{majorVersion}/index.html", 'docs/index.html'
+  catch exception
 
-  fs.watch examplesSourceFolder, interval: 200, ->
-    renderExamples()
-    renderIndex()
-  fs.watch indexFile, interval: 200, renderIndex
+  for target in [indexFile, versionedSourceFolder, examplesSourceFolder, sectionsSourceFolder]
+    fs.watch target, interval: 200, renderIndex
+  log 'watching...' , green
+
+
+task 'doc:test', 'watch and continually rebuild the browser-based tests', ->
+  # Constants
+  testFile = 'documentation/test.html'
+  testsSourceFolder = 'test'
+  outputFolder = "docs/v#{majorVersion}"
+
+  # Included in test.html
+  testHelpers = fs.readFileSync('test/support/helpers.coffee', 'utf-8').replace /exports\./g, '@'
+
+  # Helpers
+  testsInScriptBlocks = ->
+    output = ''
+    for filename in fs.readdirSync testsSourceFolder
+      if filename.indexOf('.coffee') isnt -1
+        type = 'coffeescript'
+      else if filename.indexOf('.litcoffee') isnt -1
+        type = 'literate-coffeescript'
+      else
+        continue
+
+      # Set the type to text/x-coffeescript or text/x-literate-coffeescript
+      # to prevent the browser compiler from automatically running the script
+      output += """
+        <script type="text/x-#{type}" class="test" id="#{filename.split('.')[0]}">
+        #{fs.readFileSync "test/#{filename}", 'utf-8'}
+        </script>\n
+      """
+    output
+
+  # Task
+  do renderTest = ->
+    render = _.template fs.readFileSync(testFile, 'utf-8')
+    output = render
+      testHelpers: testHelpers
+      tests: testsInScriptBlocks()
+    fs.writeFileSync "#{outputFolder}/test.html", output
+    log 'compiled', green, "#{testFile} → #{outputFolder}/test.html"
+
+  for target in [testFile, testsSourceFolder]
+    fs.watch target, interval: 200, renderTest
   log 'watching...' , green
 
 
@@ -263,23 +317,7 @@ runTests = (CoffeeScript) ->
         description: description if description?
         source: fn.toString() if fn.toString?
 
-  # See http://wiki.ecmascript.org/doku.php?id=harmony:egal
-  egal = (a, b) ->
-    if a is b
-      a isnt 0 or 1/a is 1/b
-    else
-      a isnt a and b isnt b
-
-  # A recursive functional equivalence helper; uses egal for testing equivalence.
-  arrayEgal = (a, b) ->
-    if egal a, b then yes
-    else if a instanceof Array and b instanceof Array
-      return no unless a.length is b.length
-      return no for el, idx in a when not arrayEgal el, b[idx]
-      yes
-
-  global.eq      = (a, b, msg) -> ok egal(a, b), msg ? "Expected #{a} to equal #{b}"
-  global.arrayEq = (a, b, msg) -> ok arrayEgal(a,b), msg ? "Expected #{a} to deep equal #{b}"
+  helpers.extend global, require './test/support/helpers'
 
   # When all the tests have run, collect and print errors.
   # If a stacktrace is available, output the compiled function source.
@@ -320,7 +358,7 @@ task 'test', 'run the CoffeeScript language test suite', ->
 
 
 task 'test:browser', 'run the test suite against the merged browser script', ->
-  source = fs.readFileSync "docs/v#{majorVersion}/extras/coffee-script.js", 'utf-8'
+  source = fs.readFileSync "docs/v#{majorVersion}/browser-compiler/coffee-script.js", 'utf-8'
   result = {}
   global.testingBrowser = yes
   (-> eval source).call result
