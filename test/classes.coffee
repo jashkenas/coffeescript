@@ -992,11 +992,60 @@ test "`this` access after `super` in extended classes", ->
       eq result.super, this
       eq result.param, @param
       eq result.method, @method
+      ok result.method isnt Test::method
 
     method: =>
 
   nonce = {}
   new Test nonce, {}
+
+test "`@`-params and bound methods with multiple `super` paths (blocks)", ->
+  nonce = {}
+
+  class Base
+    constructor: (@name) ->
+
+  class Test extends Base
+    constructor: (param, @param) ->
+      if param
+        super 'param'
+        eq @name, 'param'
+      else
+        super 'not param'
+        eq @name, 'not param'
+      eq @param, nonce
+      ok @method isnt Test::method
+    method: =>
+  new Test true, nonce
+  new Test false, nonce
+
+
+test "`@`-params and bound methods with multiple `super` paths (expressions)", ->
+  nonce = {}
+
+  class Base
+    constructor: (@name) ->
+
+  class Test extends Base
+    constructor: (param, @param) ->
+      # Contrived example: force each path into an expression with inline assertions
+      if param
+        result = (
+          eq (super 'param'), @;
+          eq @name, 'param';
+          eq @param, nonce;
+          ok @method isnt Test::method
+        )
+      else
+        result = (
+          eq (super 'not param'), @;
+          eq @name, 'not param';
+          eq @param, nonce;
+          ok @method isnt Test::method
+        )
+    method: =>
+  new Test true, nonce
+  new Test false, nonce
 
 test "constructor super in arrow functions", ->
   class Test extends (class)

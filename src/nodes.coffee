@@ -812,8 +812,11 @@ exports.Call = class Call extends Base
 
 # Takes care of converting `super()` calls into calls against the prototype's
 # function of the same name.
+# When `expressions` are set the call will be compiled in such a way that the
+# expressions are evaluated without altering the return value of the `SuperCall`
+# expression.
 exports.SuperCall = class SuperCall extends Call
-  children: ['thisAssignments']
+  children: ['expressions']
 
   constructor: (args) ->
     super null, args ? [new Splat new IdentifierLiteral 'arguments']
@@ -821,20 +824,21 @@ exports.SuperCall = class SuperCall extends Call
     @isBare = args?
 
   isStatement: (o) ->
-    @thisAssignments?.length and o.level is LEVEL_TOP
+    @expressions?.length and o.level is LEVEL_TOP
 
   compileNode: (o) ->
-    return super unless @thisAssignments?.length
+    return super unless @expressions?.length
 
     superCall   = new Literal fragmentsToText super
-    replacement = new Block @thisAssignments.slice()
-    if o.level is LEVEL_TOP
-      replacement.unshift superCall
-    else
-      [call, ref] = superCall.cache o, null, YES
-      replacement.unshift call
+    replacement = new Block @expressions.slice()
+
+    if o.level > LEVEL_TOP
+      # If we might be in an expression we need to cache and return the result
+      [superCall, ref] = superCall.cache o, null, YES
       replacement.push ref
-    replacement.compileToFragments o
+
+    replacement.unshift superCall
+    replacement.compileToFragments o, if o.level is LEVEL_TOP then o.level else LEVEL_LIST
 
   # Grab the reference to the superclass's implementation of the current
   # method.
@@ -1981,14 +1985,16 @@ exports.Code = class Code extends Base
           new Arr [new Splat(new IdentifierLiteral(splatParamName)), (param.asReference o for param in paramsAfterSplat)...]
         ), new Value new IdentifierLiteral splatParamName
 
+    # Find and validate constructor super calls
+    superCalls = @superCalls() if @ctor
 
     # Add new expressions to the function body
     wasEmpty = @body.isEmpty()
-    if @ctor and superCall = @ctorSuperCall()
-      superCall.thisAssignments = thisAssignments
-    else if thisAssignments.length
+    if @ctor is 'derived'
+      superCall.expressions = thisAssignments for superCall in superCalls
+    else
       @body.expressions.unshift thisAssignments...
-    @body.expressions.unshift exprs... if exprs.length
+    @body.expressions.unshift exprs...
     @body.makeReturn() unless wasEmpty or @noReturn
 
     # Assemble the output
@@ -2040,24 +2046,24 @@ exports.Code = class Code extends Base
     else
       false
 
-  # Find a super call in this function
-  ctorSuperCall: ->
-    superCall = null
+  # Find all super calls in this function
+  superCalls: ->
+    superCalls = []
     @traverseChildren true, (child) =>
-      superCall ?= child if child instanceof SuperCall
+      superCalls.push child if child instanceof SuperCall
 
-      if @ctor is 'derived' and child instanceof ThisLiteral and not superCall?
+      if @ctor is 'derived' and child instanceof ThisLiteral and not superCalls.length
         child.error "Can't reference 'this' before calling super in derived class constructors"
 
       # `super` has the same target in bound (arrow) functions, so check them too
-      not superCall and (child not instanceof Code or child.bound)
+      child not instanceof SuperCall and (child not instanceof Code or child.bound)
 
-    if @ctor is 'derived' and not superCall?
+    if @ctor is 'derived' and not superCalls.length
       @error 'Derived class constructors must include a call to super'
-    else if @ctor is 'base' and superCall?
-      superCall.error "'super' is only allowed in derived class constructors"
+    else if @ctor is 'base' and superCalls.length
+      superCalls[0].error "'super' is only allowed in derived class constructors"
 
-    superCall
+    superCalls
 
 #### Param
 
