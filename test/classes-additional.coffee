@@ -145,18 +145,15 @@ test "super and external overrides", ->
   # # Bound function with @
 
 test "super in external prototype", ->
-  ctorA = (drink) ->
-    @drink = drink
+    class A 
+      constructor: (@drink) ->
+      make: -> "Making a #{@drink}"
 
-  class A 
-    constructor: (drink) ->
-    make: -> "Making a #{@drink}"
-
-  # Fails
-  class B extends A 
-  B::make = (@flavor) -> super.make() + " with #{@flavor}"
-  b = new B('Machiato')
-  eq b.make('caramel'),  "Making a Machiato with caramel"
+    # Fails
+    class B extends A 
+    B::make = (@flavor) -> super() + " with #{@flavor}"
+    b = new B('Machiato')
+    eq b.make('caramel'),  "Making a Machiato with caramel"
 
 
 test "bound functions without super", ->
@@ -175,7 +172,7 @@ test "bound functions without super", ->
   # extended bound function, extending fails too.
   class B extends A
   b = new B('Machiato')
-  ok (new B('Machiato')).make() isnt  "Making a Machiato" 
+  ok (new B('Machiato')).make() isnt "Making a Machiato" 
 
 test "super in a bound function", ->
   class A 
@@ -190,6 +187,7 @@ test "super in a bound function", ->
   eq b.make('vanilla'),  "Making a Machiato with vanilla" 
 
   # super in a bound function in a bound function
+  # FAILS
   class C extends A
     make: (@flavor) =>
       func = () =>
@@ -197,7 +195,17 @@ test "super in a bound function", ->
       func()
 
   c = new C('Machiato')
-  eq c.make('vanilla'),  "Making a Machiato with vanilla" 
+  eq c.make('vanilla'), "Making a Machiato with vanilla" 
+
+  # bound function in a constructor
+  class D extends A
+    constructor: (drink) ->
+      super(drink)
+      x = =>
+        eq @drink,  "Machiato" 
+      x()
+  d = new D('Machiato')
+  eq d.make(),  "Making a Machiato" 
 
 # duplicate 
 test "super in a try/catch", ->
@@ -225,3 +233,49 @@ test "super in a try/catch", ->
   throws -> CoffeeScript.run classA + throwsB, bare: yes
   throws -> CoffeeScript.run classA + throwsC, bare: yes
      
+test "mixed ES6 and CS6 classes with a four-level inheritance chain", ->
+  # Extended test 
+  # ES2015+ class interoperability
+
+  # ```
+  # class Base {
+  #   constructor (greeting) {
+  #     this.greeting = greeting || 'hii';
+
+  #   }
+  #   func (string) {
+  #     return 'zero/' + string;
+  #   }
+  #   static  staticFunc (string) {
+  #     return 'static/' + string;
+  #   }
+  # }
+  # ```
+  # class FirstChild extends Base
+  #   func: (string) ->
+  #     super('one/') + string
+
+  # ```
+  # class SecondChild extends FirstChild {
+  #   func (string) {
+  #     super.func('two/' + string);
+  #   }
+  # }
+  # ```
+
+  # thirdCtor = ->
+  #   @array = [1, 2, 3]
+
+  # class ThirdChild extends SecondChild
+  #   constructor: -> 
+  #     super()
+  #     thirdCtor.call this
+
+  #   # Gratuitous comment for testing.
+  #   func: (string) ->
+  #     super('three/') + string
+
+  # result = (new ThirdChild).func 'four'
+
+  # ok result is 'zero/one/two/three/four'
+  # ok Base.static('word') is 'static/word'
