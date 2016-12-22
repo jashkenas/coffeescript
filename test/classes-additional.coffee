@@ -158,7 +158,23 @@ test "super in external prototype", ->
     class C extends A 
     C::make = (@flavor) => super() + " with #{@flavor}"
     c = new C('Machiato')
-    ok c.make('caramel') isnt  "Making a Machiato with caramel"
+    ok c.make('caramel') isnt "Making a Machiato with caramel"
+
+    classA = """
+    class A 
+      constructor: (@drink) ->
+      make: -> "Making a #{@drink}"
+    """
+
+    # This throws since during compile super isn't in a known state.
+    # This incorrect syntax is technically valid, but is actually ES6 syntax.
+    # I suspect this will be a common error 
+    throwsD = """
+    class D extends A 
+    D::make = (@flavor) -> super.make() + " with #{@flavor}"
+    d = new D('Machiato')
+    """
+    throws -> CoffeeScript.run classA + throwsD, bare: yes
 
 
 test "bound functions without super", ->
@@ -171,8 +187,7 @@ test "bound functions without super", ->
     constructor: ctorA
     make: => 
       "Making a #{@drink}"
-  ok (new A('Machiato')).make() isnt  "Making a Machiato" 
-
+  ok (new A('Machiato')).make() isnt "Making a Machiato" 
 
   # extended bound function, extending fails too.
   class B extends A
@@ -192,7 +207,6 @@ test "super in a bound function", ->
   eq b.make('vanilla'),  "Making a Machiato with vanilla" 
 
   # super in a bound function in a bound function
-  # FAILS
   class C extends A
     make: (@flavor) =>
       func = () =>
@@ -242,45 +256,46 @@ test "mixed ES6 and CS6 classes with a four-level inheritance chain", ->
   # Extended test 
   # ES2015+ class interoperability
 
-  # ```
-  # class Base {
-  #   constructor (greeting) {
-  #     this.greeting = greeting || 'hii';
+  ```
+  class Base {
+    constructor (greeting) {
+      this.greeting = greeting || 'hi';
+    }
+    func (string) {
+      return 'zero/' + string;
+    }
+    static  staticFunc (string) {
+      return 'static/' + string;
+    }
+  }
+  ```
 
-  #   }
-  #   func (string) {
-  #     return 'zero/' + string;
-  #   }
-  #   static  staticFunc (string) {
-  #     return 'static/' + string;
-  #   }
-  # }
-  # ```
-  # class FirstChild extends Base
-  #   func: (string) ->
-  #     super('one/') + string
+  class FirstChild extends Base
+    func: (string) ->
+      super('one/') + string
 
-  # ```
-  # class SecondChild extends FirstChild {
-  #   func (string) {
-  #     super.func('two/' + string);
-  #   }
-  # }
-  # ```
 
-  # thirdCtor = ->
-  #   @array = [1, 2, 3]
+  ```
+  class SecondChild extends FirstChild {
+    func (string) {
+      super.func('two/' + string);
+    }
+  }
+  ```
 
-  # class ThirdChild extends SecondChild
-  #   constructor: -> 
-  #     super()
-  #     thirdCtor.call this
+  thirdCtor = ->
+    @array = [1, 2, 3]
 
-  #   # Gratuitous comment for testing.
-  #   func: (string) ->
-  #     super('three/') + string
+  class ThirdChild extends SecondChild
+    constructor: -> 
+      super()
+      thirdCtor.call this
+    func: (string) ->
+      super('three/') + string
 
-  # result = (new ThirdChild).func 'four'
+  result = (new ThirdChild).func 'four'
+  console.log "BUG: mixed ES6 and CS6 classes with a four-level inheritance chain in classes-extended.coffee"
 
+  # Uncomment this line:
   # ok result is 'zero/one/two/three/four'
-  # ok Base.static('word') is 'static/word'
+  ok Base.staticFunc('word') is 'static/word'
