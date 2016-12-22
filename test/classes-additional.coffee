@@ -149,11 +149,16 @@ test "super in external prototype", ->
       constructor: (@drink) ->
       make: -> "Making a #{@drink}"
 
-    # Fails
     class B extends A 
     B::make = (@flavor) -> super() + " with #{@flavor}"
     b = new B('Machiato')
     eq b.make('caramel'),  "Making a Machiato with caramel"
+
+    #  Fails, not bound
+    class C extends A 
+    C::make = (@flavor) => super() + " with #{@flavor}"
+    c = new C('Machiato')
+    ok c.make('caramel') isnt  "Making a Machiato with caramel"
 
 
 test "bound functions without super", ->
