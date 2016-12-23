@@ -2083,7 +2083,8 @@ exports.Op = class Op extends Base
 
   compileFloorDivision: (o) ->
     floor = new Value new IdentifierLiteral('Math'), [new Access new PropertyName 'floor']
-    div = new Op '/', @first, @second
+    second = if @second.isComplex() then new Parens @second else @second
+    div = new Op '/', @first, second
     new Call(floor, [div]).compileToFragments o
 
   compileModulo: (o) ->

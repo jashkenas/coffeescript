@@ -330,7 +330,7 @@ test "floor division operator", ->
 
 test "floor division operator compound assignment", ->
   a = 7
-  a //= 2
+  a //= 1 + 1
   eq 3, a
 
 test "modulo operator", ->
