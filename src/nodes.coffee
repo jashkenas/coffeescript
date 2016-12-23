@@ -1582,8 +1582,7 @@ exports.Assign = class Assign extends Base
   # extended form `a = a ** b` and then compiles that.
   compileSpecialMath: (o) ->
     [left, right] = @variable.cacheReference o
-    value = if @context is '//=' then new Parens @value else @value
-    new Assign(left, new Op(@context[...-1], right, value)).compileToFragments o
+    new Assign(left, new Op(@context[...-1], right, @value)).compileToFragments o
 
   # Compile the assignment from an array splice literal, using JavaScript's
   # `Array#splice` method.
@@ -2084,7 +2083,8 @@ exports.Op = class Op extends Base
 
   compileFloorDivision: (o) ->
     floor = new Value new IdentifierLiteral('Math'), [new Access new PropertyName 'floor']
-    div = new Op '/', @first, @second
+    second = if @second.isComplex() then new Parens @second else @second
+    div = new Op '/', @first, second
     new Call(floor, [div]).compileToFragments o
 
   compileModulo: (o) ->
