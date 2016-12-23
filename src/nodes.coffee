@@ -1582,7 +1582,8 @@ exports.Assign = class Assign extends Base
   # extended form `a = a ** b` and then compiles that.
   compileSpecialMath: (o) ->
     [left, right] = @variable.cacheReference o
-    new Assign(left, new Op(@context[...-1], right, @value)).compileToFragments o
+    value = if @context is '//=' then new Parens @value else @value
+    new Assign(left, new Op(@context[...-1], right, value)).compileToFragments o
 
   # Compile the assignment from an array splice literal, using JavaScript's
   # `Array#splice` method.
