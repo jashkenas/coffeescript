@@ -416,7 +416,7 @@ test "#3795: invalid escapes", ->
   assertErrorFormat '''
     ///a \\u002 0 space///
   ''', '''
-    [stdin]:1:6: error: invalid escape sequence \\u002 
+    [stdin]:1:6: error: invalid escape sequence \\u002 \n\
     ///a \\u002 0 space///
          ^\^^^^^
   '''
