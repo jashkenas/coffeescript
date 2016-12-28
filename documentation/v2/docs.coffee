@@ -17,8 +17,11 @@ $(document).ready ->
   # Try CoffeeScript
   toggleTry = ->
     $('#try, #try-link').toggleClass 'active'
+  closeTry = ->
+    $('#try, #try-link').removeClass 'active'
 
   $('[data-toggle="try"]').click toggleTry
+  $('[data-close="try"]').click closeTry
 
 
   # Initialize Scrollspy for sidebar navigation; http://v4-alpha.getbootstrap.com/components/scrollspy/
@@ -80,10 +83,19 @@ $(document).ready ->
     js = "#{js}\nalert(#{unescape run});" unless run is yes
     eval js
 
+  $('[data-action="link"]').click ->
+    index = $("##{$(@).data('example')}-coffee").data 'index'
+    coffee = editors[index].getValue()
+    link = "try:#{encodeURIComponent coffee}"
+    window.history.pushState {}, 'CoffeeScript', "#{location.href.split('#')[0]}##{link}"
+
 
   # Configure the initial state
   if window.location.hash?
     if window.location.hash is '#try'
+      toggleTry()
+    else if window.location.hash.indexOf('#try') is 0
+      editors[0].setValue decodeURIComponent window.location.hash[5..]
       toggleTry()
     else
       initializeScrollspyFromHash window.location.hash

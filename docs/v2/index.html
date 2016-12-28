@@ -355,6 +355,7 @@ textarea {
   color: #0b140f;
   border-color: #53d88f;
   transition: 0.2s ease-in-out;
+  min-width: 3.125rem;
 }
 .btn-primary:active, .btn-primary:focus, .btn-primary:hover, .btn-primary:active:hover, .btn-primary:active:focus {
   background-color: #61fea8;
@@ -390,7 +391,7 @@ textarea {
 }
 
 .try-coffeescript .CodeMirror {
-  height: calc(100vh - 3.5rem);
+  height: calc(100vh - 7rem);
   cursor: text;
 }
 
@@ -402,11 +403,10 @@ textarea {
   color: #2f2625;
 }
 
-.try-coffeescript coffeescript-input-column,
-.try-coffeescript coffeescript-input,
-.try-coffeescript javascript-output-column,
-.try-coffeescript javascript-output {
-  height: 100%;
+.try-coffeescript button svg {
+  height: 1em;
+  transform: scale(1.3) translateY(0.1em);
+  fill: #0b140f;
 }
 
 /* Adapted from https://github.com/FarhadG/code-mirror-themes/blob/master/themes/twilight.css */
@@ -456,7 +456,7 @@ textarea {
 <body>
 
 <nav class="navbar navbar-dark navbar-fixed-top bg-inverse bg-ribbed-dark">
-  <a class="navbar-brand" href="#"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-22 347 566 100">
+  <a class="navbar-brand" href="#" data-close="try"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-22 347 566 100">
 	<title>
 		CoffeeScript Logo
 	</title>
@@ -465,9 +465,9 @@ textarea {
 </a>
   <nav class="nav navbar-nav float-xs-left hidden-md-down">
     <a href="#try" id="try-link" class="nav-item nav-link" data-toggle="try">Try CoffeeScript</a>
-    <a href="#language" class="nav-item nav-link">Language Reference</a>
-    <a href="#resources" class="nav-item nav-link">Resources</a>
-    <a href="http://github.com/jashkenas/coffeescript/" class="nav-item nav-link">GitHub</a>
+    <a href="#language" class="nav-item nav-link" data-close="try">Language Reference</a>
+    <a href="#resources" class="nav-item nav-link" data-close="try">Resources</a>
+    <a href="http://github.com/jashkenas/coffeescript/" class="nav-item nav-link" data-close="try">GitHub</a>
   </nav>
   <button type="button" class="navbar-menu-button hidden-lg-up" data-toggle="offcanvas" aria-label="Toggle sidebar">
     <div class="menu-button">
@@ -480,13 +480,20 @@ textarea {
 </nav>
 
 
-<aside id="try" class="try-coffeescript container-fluid">
+<aside id="try" class="try-coffeescript container-fluid" data-example="try">
   <div class="row">
     <div class="col-md-6 code-column bg-ribbed-dark coffeescript-input-column">
-      <textarea class="coffeescript-input">alert 'Hello CoffeeScript!'</textarea>
+      <textarea class="coffeescript-input" id="try-coffeescript-coffee">alert 'Hello CoffeeScript!'</textarea>
     </div>
     <div class="col-md-6 code-column bg-ribbed-dark javascript-output-column">
-      <textarea class="javascript-output">alert('Hello CoffeeScript!');</textarea>
+      <textarea class="javascript-output" id="try-coffeescript-js">alert('Hello CoffeeScript!');</textarea>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="try-coffeescript" data-run="true">▶</button>&emsp;
+      <button type="button" class="btn btn-primary" data-action="link" data-example="try-coffeescript"><svg aria-hidden="true" version="1.1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg>
+</button>
     </div>
   </div>
 </aside>
@@ -3621,8 +3628,11 @@ $(document).ready ->
   # Try CoffeeScript
   toggleTry = ->
     $('#try, #try-link').toggleClass 'active'
+  closeTry = ->
+    $('#try, #try-link').removeClass 'active'
 
   $('[data-toggle="try"]').click toggleTry
+  $('[data-close="try"]').click closeTry
 
 
   # Initialize Scrollspy for sidebar navigation; http://v4-alpha.getbootstrap.com/components/scrollspy/
@@ -3684,10 +3694,19 @@ $(document).ready ->
     js = "#{js}\nalert(#{unescape run});" unless run is yes
     eval js
 
+  $('[data-action="link"]').click ->
+    index = $("##{$(@).data('example')}-coffee").data 'index'
+    coffee = editors[index].getValue()
+    link = "try:#{encodeURIComponent coffee}"
+    window.history.pushState {}, 'CoffeeScript', "#{location.href.split('#')[0]}##{link}"
+
 
   # Configure the initial state
   if window.location.hash?
     if window.location.hash is '#try'
+      toggleTry()
+    else if window.location.hash.indexOf('#try') is 0
+      editors[0].setValue decodeURIComponent window.location.hash[5..]
       toggleTry()
     else
       initializeScrollspyFromHash window.location.hash
