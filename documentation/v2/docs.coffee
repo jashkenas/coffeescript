@@ -14,14 +14,21 @@ $(document).ready ->
       , 260 # Wait for the sidebar to slide away before navigating
 
 
+  # Try CoffeeScript
+  toggleTry = ->
+    $('#try, #try-link').toggleClass 'active'
+
+  $('[data-toggle="try"]').click toggleTry
+
+
   # Initialize Scrollspy for sidebar navigation; http://v4-alpha.getbootstrap.com/components/scrollspy/
   # See also http://www.codingeverything.com/2014/02/BootstrapDocsSideBar.html and http://jsfiddle.net/KyleMit/v6zhz/
   $('body').scrollspy
     target: '#contents'
     offset: Math.round $('main').css('padding-top').replace('px', '')
 
-  if window.location.hash?
-    $(".nav-link.active[href!='#{window.location.hash}']").removeClass 'active'
+  initializeScrollspyFromHash = (hash) ->
+    $(".nav-link.active[href!='#{hash}']").removeClass 'active'
 
   $(window).on 'activate.bs.scrollspy', (event, target) -> # Why `window`? https://github.com/twbs/bootstrap/issues/20086
     # We only want one active link in the nav
@@ -72,3 +79,11 @@ $(document).ready ->
     js = editors[index].getValue()
     js = "#{js}\nalert(#{unescape run});" unless run is yes
     eval js
+
+
+  # Configure the initial state
+  if window.location.hash?
+    if window.location.hash is '#try'
+      toggleTry()
+    else
+      initializeScrollspyFromHash window.location.hash

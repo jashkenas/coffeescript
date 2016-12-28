@@ -89,7 +89,8 @@ a:focus, a:hover, a:active {
   border-radius: 0.4em;
 }
 .navbar-nav .nav-link:hover,
-.navbar-nav .nav-link:active {
+.navbar-nav .nav-link:active,
+.navbar-nav .nav-link.active {
   background-color: #4e342e;
 }
 
@@ -371,6 +372,43 @@ textarea {
   line-height: 1.25;
 }
 
+/*
+ * Try CoffeeScript
+ */
+.try-coffeescript {
+  position: fixed;
+  height: calc(100% - 3.5rem);
+  top: 3.5rem;
+  left: 0;
+  right: 0;
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+}
+.try-coffeescript.active {
+  opacity: 1;
+  z-index: 1001;
+}
+
+.try-coffeescript .CodeMirror {
+  height: calc(100vh - 3.5rem);
+  cursor: text;
+}
+
+.try-coffeescript .code-column {
+  overflow: hidden;
+  padding-bottom: 100%;
+  margin-bottom: -100%;
+  background-color: #2f2625;
+  color: #2f2625;
+}
+
+.try-coffeescript coffeescript-input-column,
+.try-coffeescript coffeescript-input,
+.try-coffeescript javascript-output-column,
+.try-coffeescript javascript-output {
+  height: 100%;
+}
+
 /* Adapted from https://github.com/FarhadG/code-mirror-themes/blob/master/themes/twilight.css */
 
 .cm-s-twilight {
@@ -426,7 +464,7 @@ textarea {
 </svg>
 </a>
   <nav class="nav navbar-nav float-xs-left hidden-md-down">
-    <a href="#try" class="nav-item nav-link">Try CoffeeScript</a>
+    <a href="#try" id="try-link" class="nav-item nav-link" data-toggle="try">Try CoffeeScript</a>
     <a href="#language" class="nav-item nav-link">Language Reference</a>
     <a href="#resources" class="nav-item nav-link">Resources</a>
     <a href="http://github.com/jashkenas/coffeescript/" class="nav-item nav-link">GitHub</a>
@@ -440,6 +478,18 @@ textarea {
     </div>
   </button>
 </nav>
+
+
+<aside id="try" class="try-coffeescript container-fluid">
+  <div class="row">
+    <div class="col-md-6 code-column bg-ribbed-dark coffeescript-input-column">
+      <textarea class="coffeescript-input">alert 'Hello CoffeeScript!'</textarea>
+    </div>
+    <div class="col-md-6 code-column bg-ribbed-dark javascript-output-column">
+      <textarea class="javascript-output">alert('Hello CoffeeScript!');</textarea>
+    </div>
+  </div>
+</aside>
 
 
 <div class="container-fluid" id="top">
@@ -591,8 +641,8 @@ textarea {
         <h2>Overview</h2><p><em>CoffeeScript on the <span class="hidden-md-up">top</span><span class="hidden-sm-down">left</span>, compiled JavaScript output on the <span class="hidden-md-up">bottom</span><span class="hidden-sm-down">right</span>. The CoffeeScript is editable!</em></p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="overview">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="overview-coffee"># Assignment:
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="overview-coffee"># Assignment:
 number   = 42
 opposite = true
 
@@ -872,8 +922,8 @@ cubes = (function() {
           <h2>Functions</h2><p>Functions are defined by an optional list of parameters in parentheses, an arrow, and the function body. The empty function looks like this: <code>-&gt;</code></p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="functions">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="functions-coffee">square = (x) -> x * x
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="functions-coffee">square = (x) -> x * x
 cube   = (x) -> square(x) * x
 </textarea>
     </div>
@@ -901,8 +951,8 @@ cube = function(x) {
 <p>Functions may also have default values for arguments, which will be used if the incoming argument is missing (<code>undefined</code>).</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="default_args">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="default_args-coffee">fill = (container, liquid = "coffee") ->
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="default_args-coffee">fill = (container, liquid = "coffee") ->
   "Filling the #{container} with #{liquid}..."
 </textarea>
     </div>
@@ -929,8 +979,8 @@ fill = function(container, liquid = "coffee") {
           <h2>Strings</h2><p>Like JavaScript and many other languages, CoffeeScript supports strings as delimited by the <code>&quot;</code> or <code>&#39;</code> characters. CoffeeScript also supports string interpolation within <code>&quot;</code>-quoted strings, using <code>#{ … }</code>. Single-quoted strings are literal. You may even use interpolation in object keys.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="interpolation">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="interpolation-coffee">author = "Wittgenstein"
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="interpolation-coffee">author = "Wittgenstein"
 quote  = "A picture is a fact. -- #{ author }"
 
 sentence = "#{ 22 / 7 } is a decent approximation of π"
@@ -958,8 +1008,8 @@ sentence = `${22 / 7} is a decent approximation of π`;
 <p>Multiline strings are allowed in CoffeeScript. Lines are joined by a single space unless they end with a backslash. Indentation is ignored.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="strings">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="strings-coffee">mobyDick = "Call me Ishmael. Some years ago --
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="strings-coffee">mobyDick = "Call me Ishmael. Some years ago --
   never mind how long precisely -- having little
   or no money in my purse, and nothing particular
   to interest me on shore, I thought I would sail
@@ -985,8 +1035,8 @@ mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- 
 <p>Block strings, delimited by <code>&quot;&quot;&quot;</code> or <code>&#39;&#39;&#39;</code>, can be used to hold formatted or indentation-sensitive text (or, if you just don’t feel like escaping quotes and apostrophes). The indentation level that begins the block is maintained throughout, so you can keep it all aligned with the body of your code.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="heredocs">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="heredocs-coffee">html = """
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="heredocs-coffee">html = """
        <strong>
          cup of coffeescript
        </strong>
@@ -1015,8 +1065,8 @@ html = "<strong>\n  cup of coffeescript\n</strong>";
           <h2>Objects and Arrays</h2><p>The CoffeeScript literals for objects and arrays look very similar to their JavaScript cousins. When each property is listed on its own line, the commas are optional. Objects may be created using indentation instead of explicit braces, similar to <a href="http://yaml.org">YAML</a>.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="objects_and_arrays">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="objects_and_arrays-coffee">song = ["do", "re", "mi", "fa", "so"]
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="objects_and_arrays-coffee">song = ["do", "re", "mi", "fa", "so"]
 
 singers = {Jagger: "Rock", Elvis: "Roll"}
 
@@ -1071,8 +1121,8 @@ kids = {
 <p>In JavaScript, you can’t use reserved words, like <code>class</code>, as properties of an object, without quoting them as strings. CoffeeScript notices reserved words used as keys in objects and quotes them for you, so you don’t have to worry about it (say, when using jQuery).</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="objects_reserved">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="objects_reserved-coffee">$('.account').prop class: 'active'
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="objects_reserved-coffee">$('.account').prop class: 'active'
 
 log object.class
 </textarea>
@@ -1091,8 +1141,8 @@ log(object["class"]);
 <p>CoffeeScript has a shortcut for creating objects when you want the key to be set with a variable of the same name.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="objects_shorthand">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="objects_shorthand-coffee">name = "Michelangelo"
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="objects_shorthand-coffee">name = "Michelangelo"
 mask = "orange"
 weapon = "nunchuks"
 turtle = {name, mask, weapon}
@@ -1126,8 +1176,8 @@ output = `${turtle.name} wears an ${turtle.mask} mask. Watch out for his ${turtl
           <h2>Comments</h2><p>In CoffeeScript, comments are denoted by the <code>#</code> character. Everything from a <code>#</code> to the end of the line is ignored by the compiler, and will be excluded from the JavaScript output.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="comment">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="comment-coffee">code = 2 * 617 # The code is 1234
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="comment-coffee">code = 2 * 617 # The code is 1234
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
@@ -1142,8 +1192,8 @@ code = 2 * 617;
 <p>Sometimes you’d like to pass a block comment through to the generated JavaScript. For example, when you need to embed a licensing header at the top of a file. Block comments, which mirror the syntax for block strings, are preserved in the generated output.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="block_comment">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="block_comment-coffee">###
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="block_comment-coffee">###
 SkinnyMochaHalfCaffScript Compiler v1.0
 Released under the MIT License
 ###
@@ -1167,8 +1217,8 @@ Released under the MIT License
           <h2>Lexical Scoping and Variable Safety</h2><p>The CoffeeScript compiler takes care to make sure that all of your variables are properly declared within lexical scope — you never need to write <code>var</code> yourself.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="scope">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="scope-coffee">outer = 1
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="scope-coffee">outer = 1
 changeNumbers = ->
   inner = -1
   outer = 10
@@ -1209,8 +1259,8 @@ inner = changeNumbers();
 <p>CoffeeScript can compile <strong>if</strong> statements into JavaScript expressions, using the ternary operator when possible, and closure wrapping otherwise. There is no explicit ternary statement in CoffeeScript — you simply use a regular <strong>if</strong> statement on a single line.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="conditionals">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="conditionals-coffee">mood = greatlyImproved if singing
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="conditionals-coffee">mood = greatlyImproved if singing
 
 if happy and knowsIt
   clapsHands()
@@ -1247,8 +1297,8 @@ date = friday ? sue : jill;
           <h2>Splats…</h2><p>The JavaScript <strong>arguments object</strong> is a useful way to work with functions that accept variable numbers of arguments. CoffeeScript provides splats <code>...</code>, both for function definition as well as invocation, making variable numbers of arguments a little bit more palatable.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="splats">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="splats-coffee">gold = silver = rest = "unknown"
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="splats-coffee">gold = silver = rest = "unknown"
 
 awardMedals = (first, second, others...) ->
   gold   = first
@@ -1312,8 +1362,8 @@ alert("The Field: " + rest);
           <h2>Loops and Comprehensions</h2><p>Most of the loops you’ll write in CoffeeScript will be <strong>comprehensions</strong> over arrays, objects, and ranges. Comprehensions replace (and compile into) <strong>for</strong> loops, with optional guard clauses and the value of the current array index. Unlike for loops, array comprehensions are expressions, and can be returned and assigned.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="array_comprehensions">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="array_comprehensions-coffee"># Eat lunch.
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="array_comprehensions-coffee"># Eat lunch.
 eat food for food in ['toast', 'cheese', 'wine']
 
 # Fine five course dining.
@@ -1359,8 +1409,8 @@ for (l = 0, len2 = foods.length; l < len2; l++) {
 If you know the start and end of your loop, or would like to step through in fixed-size increments, you can use a range to specify the start and end of your comprehension.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="range_comprehensions">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="range_comprehensions-coffee">countdown = (num for num in [10..1])
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="range_comprehensions-coffee">countdown = (num for num in [10..1])
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
@@ -1393,8 +1443,8 @@ countdown = (function() {
 <p>Comprehensions can also be used to iterate over the keys and values in an object. Use <code>of</code> to signal comprehension over the properties of an object instead of the values in an array.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="object_comprehensions">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="object_comprehensions-coffee">yearsOld = max: 10, ida: 9, tim: 11
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="object_comprehensions-coffee">yearsOld = max: 10, ida: 9, tim: 11
 
 ages = for child, age of yearsOld
   "#{child} is #{age}"
@@ -1434,8 +1484,8 @@ ages = (function() {
 <p>The only low-level loop that CoffeeScript provides is the <strong>while</strong> loop. The main difference from JavaScript is that the <strong>while</strong> loop can be used as an expression, returning an array containing the result of each iteration through the loop.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="while">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="while-coffee"># Econ 101
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="while-coffee"># Econ 101
 if this.studyingEconomics
   buy()  while supply > demand
   sell() until supply > demand
@@ -1484,8 +1534,8 @@ lyrics = (function() {
 <p>When using a JavaScript loop to generate functions, it’s common to insert a closure wrapper in order to ensure that loop variables are closed over, and all the generated functions don’t just share the final values. CoffeeScript provides the <code>do</code> keyword, which immediately invokes a passed function, forwarding any arguments.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="do">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="do-coffee">for filename in list
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="do-coffee">for filename in list
   do (filename) ->
     fs.readFile filename, (err, contents) ->
       compile filename, contents.toString()
@@ -1514,8 +1564,8 @@ for (i = 0, len = list.length; i < len; i++) {
           <h2>Array Slicing and Splicing with Ranges</h2><p>Ranges can also be used to extract slices of arrays. With two dots (<code>3..6</code>), the range is inclusive (<code>3, 4, 5, 6</code>); with three dots (<code>3...6</code>), the range excludes the end (<code>3, 4, 5</code>). Slices indices have useful defaults. An omitted first index defaults to zero and an omitted second index defaults to the size of the array.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="slices">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="slices-coffee">numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="slices-coffee">numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 start   = numbers[0..2]
 
@@ -1552,8 +1602,8 @@ copy = numbers.slice(0);
 <p>The same syntax can be used with assignment to replace a segment of an array with new values, splicing it.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="splices">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="splices-coffee">numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="splices-coffee">numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 numbers[3..6] = [-3, -4, -5, -6]
 </textarea>
@@ -1582,8 +1632,8 @@ numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
           <h2>Everything is an Expression (at least, as much as possible)</h2><p>You might have noticed how even though we don’t add return statements to CoffeeScript functions, they nonetheless return their final value. The CoffeeScript compiler tries to make sure that all statements in the language can be used as expressions. Watch how the <code>return</code> gets pushed down into each possible branch of execution in the function below.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="expressions">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="expressions-coffee">grade = (student) ->
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="expressions-coffee">grade = (student) ->
   if student.excellentWork
     "A+"
   else if student.okayStuff
@@ -1627,8 +1677,8 @@ eldest = 24 > 21 ? "Liz" : "Ike";
 <p>Because variable declarations occur at the top of scope, assignment can be used within expressions, even for variables that haven’t been seen before:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="expressions_assignment">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="expressions_assignment-coffee">six = (one = 1) + (two = 2) + (three = 3)
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="expressions_assignment-coffee">six = (one = 1) + (two = 2) + (three = 3)
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
@@ -1649,8 +1699,8 @@ six = (one = 1) + (two = 2) + (three = 3);
 <p>Things that would otherwise be statements in JavaScript, when used as part of an expression in CoffeeScript, are converted into expressions by wrapping them in a closure. This lets you do useful things, like assign the result of a comprehension to a variable:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="expressions_comprehension">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="expressions_comprehension-coffee"># The first ten global properties.
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="expressions_comprehension-coffee"># The first ten global properties.
 
 globals = (name for name of window)[0...10]
 </textarea>
@@ -1680,8 +1730,8 @@ globals = ((function() {
 <p>As well as silly things, like passing a <strong>try/catch</strong> statement directly into a function call:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="expressions_try">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="expressions_try-coffee">alert(
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="expressions_try-coffee">alert(
   try
     nonexistent / undefined
   catch error
@@ -1726,8 +1776,8 @@ alert((function() {
 <p>To simplify math expressions, <code>**</code> can be used for exponentiation and <code>//</code> performs integer division. <code>%</code> works just like in JavaScript, while <code>%%</code> provides <a href="http://en.wikipedia.org/wiki/Modulo_operation">“dividend dependent modulo”</a>:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="modulo">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="modulo-coffee">-7 % 5 == -2 # The remainder of 7 / 5
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="modulo-coffee">-7 % 5 == -2 # The remainder of 7 / 5
 -7 %% 5 == 3 # n %% 5 is always between 0 and 4
 
 tabs.selectTabAtIndex((tabs.currentIndex - count) %% tabs.length)
@@ -1869,8 +1919,8 @@ tabs.selectTabAtIndex(modulo(tabs.currentIndex - count, tabs.length));
 
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="aliases">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="aliases-coffee">launch() if ignition is on
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="aliases-coffee">launch() if ignition is on
 
 volume = 10 if band isnt SpinalTap
 
@@ -1919,8 +1969,8 @@ print(inspect(`My name is ${this.name}`));
 <p>It can also be used for safer conditional assignment than <code>||=</code> provides, for cases where you may be handling numbers or strings.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="existence">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="existence-coffee">solipsism = true if mind? and not world?
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="existence-coffee">solipsism = true if mind? and not world?
 
 speed = 0
 speed ?= 15
@@ -1956,8 +2006,8 @@ footprints = typeof yeti !== "undefined" && yeti !== null ? yeti : "bear";
 <p>The accessor variant of the existential operator <code>?.</code> can be used to soak up null references in a chain of properties. Use it instead of the dot accessor <code>.</code> in cases where the base value may be <strong>null</strong> or <strong>undefined</strong>. If all of the properties exist then you’ll get the expected result, if the chain is broken, <strong>undefined</strong> is returned instead of the <strong>TypeError</strong> that would be raised otherwise.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="soaks">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="soaks-coffee">zip = lottery.drawWinner?().address?.zipcode
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="soaks-coffee">zip = lottery.drawWinner?().address?.zipcode
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
@@ -1978,8 +2028,8 @@ zip = typeof lottery.drawWinner === "function" ? (ref = lottery.drawWinner().add
 <p>Constructor functions are named, to better support helpful stack traces. In the first class in the example below, <code>this.constructor.name is &quot;Animal&quot;</code>.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="classes">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="classes-coffee">class Animal
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="classes-coffee">class Animal
   constructor: (@name) ->
 
   move: (meters) ->
@@ -2073,8 +2123,8 @@ tom.move();
 <p>If structuring your prototypes classically isn’t your cup of tea, CoffeeScript provides a couple of lower-level conveniences. The <code>extends</code> operator helps with proper prototype setup, and can be used to create an inheritance chain between any pair of constructor functions; <code>::</code> gives you quick access to an object’s prototype; and <code>super()</code> is converted into a call against the immediate ancestor’s method of the same name.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="prototypes">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="prototypes-coffee">String::dasherize = ->
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="prototypes-coffee">String::dasherize = ->
   this.replace /_/g, "-"
 </textarea>
     </div>
@@ -2101,8 +2151,8 @@ tom.move();
           <h2>Destructuring Assignment</h2><p>Just like JavaScript (since ES2015), CoffeeScript has destructuring assignment syntax. When you assign an array or object literal to a value, CoffeeScript breaks up and matches both sides against each other, assigning the values on the right to the variables on the left. In the simplest case, it can be used for parallel assignment:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="parallel_assignment">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="parallel_assignment-coffee">theBait   = 1000
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="parallel_assignment-coffee">theBait   = 1000
 theSwitch = 0
 
 [theBait, theSwitch] = [theSwitch, theBait]
@@ -2130,8 +2180,8 @@ ref = [theSwitch, theBait], theBait = ref[0], theSwitch = ref[1];
 <p>But it’s also helpful for dealing with functions that return multiple values.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="multiple_return_values">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="multiple_return_values-coffee">weatherReport = (location) ->
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="multiple_return_values-coffee">weatherReport = (location) ->
   # Make an Ajax request to fetch the weather...
   [location, 72, "Mostly Sunny"]
 
@@ -2160,8 +2210,8 @@ ref = weatherReport("Berkeley, CA"), city = ref[0], temp = ref[1], forecast = re
 <p>Destructuring assignment can be used with any depth of array and object nesting, to help pull out deeply nested properties.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="object_extraction">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="object_extraction-coffee">futurists =
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="object_extraction-coffee">futurists =
   sculptor: "Umberto Boccioni"
   painter:  "Vladimir Burliuk"
   poet:
@@ -2201,8 +2251,8 @@ ref = futurists.poet, name = ref.name, (ref1 = ref.address, street = ref1[0], ci
 <p>Destructuring assignment can even be combined with splats.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="patterns_and_splats">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="patterns_and_splats-coffee">tag = "<impossible>"
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="patterns_and_splats-coffee">tag = "<impossible>"
 
 [open, contents..., close] = tag.split("")
 </textarea>
@@ -2228,8 +2278,8 @@ ref = tag.split(""), open = ref[0], contents = 3 <= ref.length ? slice.call(ref,
 <p>Expansion can be used to retrieve elements from the end of an array without having to assign the rest of its values. It works in function parameter lists as well.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="expansion">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="expansion-coffee">text = "Every literary critic believes he will
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="expansion-coffee">text = "Every literary critic believes he will
         outwit history and have the last word"
 
 [first, ..., last] = text.split " "
@@ -2255,8 +2305,8 @@ ref = text.split(" "), first = ref[0], last = ref[ref.length - 1];
 <p>Destructuring assignment is also useful when combined with class constructors to assign properties to your instance from an options object passed to the constructor.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="constructor_destructuring">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="constructor_destructuring-coffee">class Person
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="constructor_destructuring-coffee">class Person
   constructor: (options) ->
     {@name, @age, @height = 'average'} = options
 
@@ -2299,8 +2349,8 @@ tim = new Person({
 <p>The fat arrow <code>=&gt;</code> can be used to both define a function, and to bind it to the current value of <code>this</code>, right on the spot. This is helpful when using callback-based libraries like Prototype or jQuery, for creating iterator functions to pass to <code>each</code>, or event-handler functions to use with <code>on</code>. Functions created with the fat arrow are able to access properties of the <code>this</code> where they’re defined.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="fat_arrow">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="fat_arrow-coffee">Account = (customer, cart) ->
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="fat_arrow-coffee">Account = (customer, cart) ->
   @customer = customer
   @cart = cart
 
@@ -2328,8 +2378,8 @@ Account = function(customer, cart) {
 <p>CoffeeScript also supports <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">generator functions</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function">async functions</a> through the <code>yield</code> and <code>await</code> keywords respectively. There&#39;s no <code>function*(){}</code> or <code>async function(){}</code> nonsense — a generator in CoffeeScript is simply a function that yields, and an async function in CoffeeScript is simply a function that awaits.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="generators">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="generators-coffee">perfectSquares = ->
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="generators-coffee">perfectSquares = ->
   num = 0
   loop
     num += 1
@@ -2367,8 +2417,8 @@ window.ps || (window.ps = perfectSquares());
 <p>You can iterate over a generator function using <code>for…from</code>.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="generator_iteration">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="generator_iteration-coffee">fibonacci = ->
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="generator_iteration-coffee">fibonacci = ->
   [previous, current] = [1, 1]
   loop
     [previous, current] = [current, previous + current]
@@ -2421,8 +2471,8 @@ getFibonacciNumbers = function(length) {
 <p>Similar to how <code>yield return</code> forces a generator, <code>await return</code> may be used to force a function to be async.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="async">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="async-coffee"># Your browser must support async/await and speech synthesis
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="async-coffee"># Your browser must support async/await and speech synthesis
 # to run this example.
 
 sleep = (ms) ->
@@ -2484,8 +2534,8 @@ countdown(3);
 <p>As in Ruby, <strong>switch</strong> statements in CoffeeScript can take multiple values for each <strong>when</strong> clause. If any of the values match, the clause runs.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="switch">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="switch-coffee">switch day
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="switch-coffee">switch day
   when "Mon" then go work
   when "Tue" then go relax
   when "Thu" then go iceFishing
@@ -2529,8 +2579,8 @@ countdown(3);
 <p>Switch statements can also be used without a control expression, turning them in to a cleaner alternative to if/else chains.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="switch_with_no_expression">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="switch_with_no_expression-coffee">score = 76
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="switch_with_no_expression-coffee">score = 76
 grade = switch
   when score < 60 then 'F'
   when score < 70 then 'D'
@@ -2570,8 +2620,8 @@ grade = (function() {
           <h2>Try/Catch/Finally</h2><p>Try-expressions have the same semantics as try-statements in JavaScript, though in CoffeeScript, you may omit <em>both</em> the catch and finally parts. The catch part may also omit the error parameter if it is not needed.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="try">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="try-coffee">try
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="try-coffee">try
   allHellBreaksLoose()
   catsAndDogsLivingTogether()
 catch error
@@ -2603,8 +2653,8 @@ try {
           <h2>Chained Comparisons</h2><p>CoffeeScript borrows <a href="http://docs.python.org/reference/expressions.html#notin">chained comparisons</a> from Python — making it easy to test if a value falls within a certain range.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="comparisons">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="comparisons-coffee">cholesterol = 127
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="comparisons-coffee">cholesterol = 127
 
 healthy = 200 > cholesterol > 60
 </textarea>
@@ -2632,8 +2682,8 @@ healthy = (200 > cholesterol && cholesterol > 60);
           <h2>Block Regular Expressions</h2><p>Similar to block strings and comments, CoffeeScript supports block regexes — extended regular expressions that ignore internal whitespace and can contain comments and interpolation. Modeled after Perl’s <code>/x</code> modifier, CoffeeScript’s block regexes are delimited by <code>///</code> and go a long way towards making complex regular expressions readable. To quote from the CoffeeScript source:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="heregexes">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="heregexes-coffee">OPERATOR = /// ^ (
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="heregexes-coffee">OPERATOR = /// ^ (
   ?: [-=]>             # function
    | [-+*/%<>&|^!?=]=  # compound assign / compare
    | >>>=?             # zero-fill right shift
@@ -2659,8 +2709,8 @@ OPERATOR = /^(?:[-=]>|[-+*\/%<>&|^!?=]=|>>>=?|([-+:])\1|([&|<>])\2=?|\?\.|\.{2,3
           <h2>Tagged Template Literals</h2><p>CoffeeScript supports <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals">ES2015 tagged template literals</a>, which enable customized string interpolation. If you immediately prefix a string with a function name (no space between the two), CoffeeScript will output this “function plus string” combination as an ES2015 tagged template literal, which will <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals">behave accordingly</a>: the function is called, with the parameters being the input text and expression parts that make up the interpolated string. The function can then assemble these parts into an output string, providing custom string interpolation.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="tagged_template_literals">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="tagged_template_literals-coffee">upperCaseExpr = (textParts, expressions...) ->
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="tagged_template_literals-coffee">upperCaseExpr = (textParts, expressions...) ->
   textParts.reduce (text, textPart, i) ->
     text + expressions[i - 1].toUpperCase() + textPart
 
@@ -2699,8 +2749,8 @@ greet = function(name, adjective) {
           <h2>Modules</h2><p>ES2015 modules are supported in CoffeeScript, with very similar <code>import</code> and <code>export</code> syntax:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="modules">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="modules-coffee">import 'local-file.coffee'
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="modules-coffee">import 'local-file.coffee'
 import 'coffee-script'
 
 import _ from 'underscore'
@@ -2803,8 +2853,8 @@ export {
           <h2>Embedded JavaScript</h2><p>Hopefully, you’ll never need to use it, but if you ever need to intersperse snippets of JavaScript within your CoffeeScript, you can use backticks to pass it straight through.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="embedded">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="embedded-coffee">hi = `function() {
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="embedded-coffee">hi = `function() {
   return [document.title, "Hello JavaScript"].join(": ");
 }`
 </textarea>
@@ -2830,8 +2880,8 @@ hi = function() {
 <p>Escape backslashes before backticks with more backslashes: <code>\\\`​</code> becomes <code>\`​</code>.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="embedded_escaped">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="embedded_escaped-coffee">markdown = `function () {
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="embedded_escaped-coffee">markdown = `function () {
   return \`In Markdown, write code like \\\`this\\\`\`;
 }`
 </textarea>
@@ -2856,8 +2906,8 @@ markdown = function () {
 <p>You can also embed blocks of JavaScript using triple backticks. That’s easier than escaping backticks, if you need them inside your JavaScript block.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="embedded_block">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="embedded_block-coffee">```
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="embedded_block-coffee">```
 function time() {
   return `The time is ${new Date().toLocaleTimeString()}`;
 }
@@ -2900,8 +2950,8 @@ function time() {
 <p>Task definitions are written in CoffeeScript, so you can put arbitrary code in your Cakefile. Define a task with a name, a long description, and the function to invoke when the task is run. If your task takes a command-line option, you can define the option with short and long flags, and it will be made available in the <code>options</code> object. Here’s a task that uses the Node.js API to rebuild CoffeeScript’s parser:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="cake_tasks">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="cake_tasks-coffee">fs = require 'fs'
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="cake_tasks-coffee">fs = require 'fs'
 
 option '-o', '--output [DIR]', 'directory for compiled code'
 
@@ -3191,8 +3241,8 @@ six = ->
 </ul>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="chaining">
   <div class="row">
-    <div class="col-md-6 coffee-example-column">
-      <textarea class="coffee-example" id="chaining-coffee">$ 'body'
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="chaining-coffee">$ 'body'
 .click (e) ->
   $ '.box'
   .fadeIn 'fast'
@@ -3568,14 +3618,21 @@ $(document).ready ->
       , 260 # Wait for the sidebar to slide away before navigating
 
 
+  # Try CoffeeScript
+  toggleTry = ->
+    $('#try, #try-link').toggleClass 'active'
+
+  $('[data-toggle="try"]').click toggleTry
+
+
   # Initialize Scrollspy for sidebar navigation; http://v4-alpha.getbootstrap.com/components/scrollspy/
   # See also http://www.codingeverything.com/2014/02/BootstrapDocsSideBar.html and http://jsfiddle.net/KyleMit/v6zhz/
   $('body').scrollspy
     target: '#contents'
     offset: Math.round $('main').css('padding-top').replace('px', '')
 
-  if window.location.hash?
-    $(".nav-link.active[href!='#{window.location.hash}']").removeClass 'active'
+  initializeScrollspyFromHash = (hash) ->
+    $(".nav-link.active[href!='#{hash}']").removeClass 'active'
 
   $(window).on 'activate.bs.scrollspy', (event, target) -> # Why `window`? https://github.com/twbs/bootstrap/issues/20086
     # We only want one active link in the nav
@@ -3626,6 +3683,14 @@ $(document).ready ->
     js = editors[index].getValue()
     js = "#{js}\nalert(#{unescape run});" unless run is yes
     eval js
+
+
+  # Configure the initial state
+  if window.location.hash?
+    if window.location.hash is '#try'
+      toggleTry()
+    else
+      initializeScrollspyFromHash window.location.hash
 
 </script>
 

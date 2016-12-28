@@ -69,7 +69,8 @@ a:focus, a:hover, a:active {
   border-radius: 0.4em;
 }
 .navbar-nav .nav-link:hover,
-.navbar-nav .nav-link:active {
+.navbar-nav .nav-link:active,
+.navbar-nav .nav-link.active {
   background-color: #4e342e;
 }
 
@@ -349,4 +350,41 @@ textarea {
   font-family: 'Roboto Mono';
   font-weight: 400;
   line-height: 1.25;
+}
+
+/*
+ * Try CoffeeScript
+ */
+.try-coffeescript {
+  position: fixed;
+  height: calc(100% - 3.5rem);
+  top: 3.5rem;
+  left: 0;
+  right: 0;
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+}
+.try-coffeescript.active {
+  opacity: 1;
+  z-index: 1001;
+}
+
+.try-coffeescript .CodeMirror {
+  height: calc(100vh - 3.5rem);
+  cursor: text;
+}
+
+.try-coffeescript .code-column {
+  overflow: hidden;
+  padding-bottom: 100%;
+  margin-bottom: -100%;
+  background-color: #2f2625;
+  color: #2f2625;
+}
+
+.try-coffeescript coffeescript-input-column,
+.try-coffeescript coffeescript-input,
+.try-coffeescript javascript-output-column,
+.try-coffeescript javascript-output {
+  height: 100%;
 }
