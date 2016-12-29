@@ -1055,20 +1055,28 @@ test "constructor super in arrow functions", ->
 
   new Test nonce = {}
 
+# Ensure that we always throw if we experience more than one super()
+# call in a constructor.  This ends up being a runtime error.
+# Should be caught at compile time.
 test "multiple super calls", ->
-  # class A
-  #   constructor: (@drink) ->
-  #   make: -> "Making a #{@drink}"
+  throwsA = """
+  class A 
+    constructor: (@drink) ->
+    make: -> "Making a #{@drink}"
 
-  # class MultiSuper extends A
-  #   constructor: (drink) ->
-  #     super(drink)
-  #     super(drink)
-  #     @newDrink = drink
-  # eq (new MultiSuper('Late')).make(), 'Making a Late'
+  class MultiSuper extends A
+    constructor: (drink) ->
+      super(drink)
+      super(drink)
+      @newDrink = drink
+  new MultiSuper('Late').make()
+  """
+  throws -> CoffeeScript.run throwsA, bare: yes
 
+# Basic test to ensure we can pass @params in a constuctor and
+# inheritance works correctly
 test "@ params", ->
-  class A
+  class A 
     constructor: (@drink, @shots, @flavor) ->
     make: -> "Making a #{@flavor} #{@drink} with #{@shots} shot(s)"
 
@@ -1079,8 +1087,9 @@ test "@ params", ->
   b = new B('Machiato', 2, 'chocolate')
   eq b.make(),  "Making a chocolate Machiato with 2 shot(s)"
 
-test "@ params with defaults", ->
-  class A
+# Ensure we can accept @params with default parameters in a constructor
+test "@ params with defaults in a constructor", ->
+  class A 
     # Multiple @ params with defaults
     constructor: (@drink = 'Americano', @shots = '1', @flavor = 'caramel') ->
     make: -> "Making a #{@flavor} #{@drink} with #{@shots} shot(s)"
@@ -1088,173 +1097,172 @@ test "@ params with defaults", ->
   a = new A()
   eq a.make(),  "Making a caramel Americano with 1 shot(s)"
 
+# Ensure we can handle default constructors with class params
 test "@ params with class params", ->
   class Beverage
     drink: 'Americano'
     shots: '1'
     flavor: 'caramel'
 
-  class A
+  class A 
     # Class creation as a default param with `this`
     constructor: (@drink = new Beverage()) ->
   a = new A()
   eq a.drink.drink, 'Americano'
 
   beverage = new Beverage
-  class B
+  class B 
     # class costruction with a default external param
     constructor: (@drink = beverage) ->
 
   b = new B()
   eq b.drink.drink, 'Americano'
 
-  class C
+  class C 
     # Default constructor with anonymous empty class
     constructor: (@meta = class) ->
   c = new C()
   ok c.meta instanceof Function
 
 test "@ params without super, including errors", ->
-  class A
+  classA = """
+  class A 
     constructor: (@drink) ->
     make: -> "Making a #{@drink}"
   a = new A('Machiato')
-  eq a.make(),  "Making a Machiato"
+  """
 
   throwsB = """
   class B extends A
     #implied super
     constructor: (@drink) ->
-      if @drink is 'Machiato'
-        @cost = 'expensive'
-    make: -> "Making an #{@cost} #{@drink}"
-  b = new B('Machiato', 'Cafe Ole', 'Americano')
-  eq b.make(),  "Making an expensive Machiato"
+  b = new B('Machiato')
   """
-  throws -> CoffeeScript.run classA + throwsB, bare: yes
+  throws -> CoffeeScript.compile classA + throwsB, bare: yes
 
+test "@ params super race condition", ->
+  classA = """
+  class A 
+    constructor: (@drink) ->
+    make: -> "Making a #{@drink}"
+  """
+
+  throwsB = """
+  class B extends A
+    constructor: (@params) ->
+
+  b = new B('Machiato')
+  """
+  throws -> CoffeeScript.compile classA + throwsB, bare: yes
+
+  # Race condition with @ and super
   throwsC = """
   class C extends A
-    # super with splats
-    constructor: (@params...) ->
-      super(@params[0])
-      console.log @params
+    constructor: (@params) ->
+      super(@params)
 
-  c = new C('Machiato', 'Cafe Ole', 'Americano')
-  # eq c.make(),  "Making a Machiato"
+  c = new C('Machiato')
   """
-  throws -> CoffeeScript.run classA + throwsC, bare: yes
+  throws -> CoffeeScript.compile classA + throwsC, bare: yes
+
+  
+test "@ with super call", ->  
+  class D
+    make: -> "Making a #{@drink}"
+
+  class E extends D
+    constructor: (@drink) ->
+      super()
+      
+  e = new E('Machiato')
+  eq e.make(),  "Making a Machiato" 
+
+test "@ with splats and super call", ->  
+  class A
+    make: -> "Making a #{@drink}"
+
+  class B extends A
+    constructor: (@drink...) ->
+      super()
+      
+  B = new B('Machiato')
+  eq B.make(),  "Making a Machiato" 
 
 
 test "super and external constructors", ->
+  # external constructor with @ param is allowed
   ctorA = (@drink) ->
-  class A
+  class A 
     constructor: ctorA
     make: -> "Making a #{@drink}"
+  a = new A('Machiato')
+  eq a.make(),  "Making a Machiato"
 
-  # # External constructor with super
-  # ctorB = (drink, flavor) ->
-  #   super(drink)
-  #   @flavor = flavor
+  # External constructor with super
+  throwsC = """
+  class B
+    constructor: (@drink) ->
+    make: -> "Making a #{@drink}"
 
-  # class B extends A
-  #   constructor: ctorB
-  # b = new B('Machiato')
-  # eq b.make(),  "Making a Machiato"
+  ctorC = (drink) ->
+    super(drink)
 
-test "super and external overrides", ->
-  # class A
-  #   constructor: (@drink) ->
-  #   make: -> "Making a #{@drink}"
+  class C extends B
+    constructor: ctorC
+  c = new C('Machiato')
+  """
+  throws -> CoffeeScript.compile throwsC, bare: yes
 
-  # # External method and super
-  # makeB = (@flavor) -> super.make() + " with #{@flavor}"
-
-  # class B extends A
-  #   make: makeB
-  # b = new B('Machiato')
-  # eq b.make('caramel'),  "Making a Machiato with caramel"
-
-  # # External bound method and super
-  # makeC = (@flavor) => super.make() + " with #{@flavor}"
-
-  # class C extends A
-  #   make: makeC
-  # e = new C('Machiato')
-  # eq e.make('caramel'),  "Making a Machiato with caramel"
-
-  # class D extends A
-  # d = new D('Machiato')
-  # d.make = (@flavor) -> super.make() + " with #{@flavor}"
-  # eq d.make('caramel'),  "Making a Machiato with caramel"
-
-  # # class G extends A
-  # # g = new G('Machiato')
-  # # g.make = (@flavor) => super.make() + " with #{@flavor}"
-  # # eq g.make('caramel'),  "Making a Machiato with caramel"
-  # # Bound function with @
 
 test "super in external prototype", ->
-    class A
+    class A 
       constructor: (@drink) ->
       make: -> "Making a #{@drink}"
 
-    class B extends A
+    class B extends A 
     B::make = (@flavor) -> super() + " with #{@flavor}"
     b = new B('Machiato')
     eq b.make('caramel'),  "Making a Machiato with caramel"
 
-    #  Fails, not bound
-    class C extends A
+    #  Fails, bound
+    # TODO: Could this throw a compile error?
+    class C extends A 
     C::make = (@flavor) => super() + " with #{@flavor}"
     c = new C('Machiato')
     ok c.make('caramel') isnt "Making a Machiato with caramel"
 
-    classA = """
-    class A
-      constructor: (@drink) ->
-      make: -> "Making a #{@drink}"
-    """
-
-    # This throws since during compile super isn't in a known state.
-    # This incorrect syntax is technically valid, but is actually ES6 syntax.
-    # I suspect this will be a common error
-    throwsD = """
-    class D extends A
-    D::make = (@flavor) -> super.make() + " with #{@flavor}"
-    d = new D('Machiato')
-    """
-    throws -> CoffeeScript.run classA + throwsD, bare: yes
-
 
 test "bound functions without super", ->
   # Bound function with @
-  # This should throw on compile, since bound
+  # Throw on compile, since bound 
   # constructors are illegal
-  ctorA = (@drink) =>
+  throwsA = """
+  class A 
+    constructor: (drink) => 
+      @drink = drink
 
+  """
+  throws -> CoffeeScript.compile throwsA, bare: yes
+
+test "super in a bound function in a constructor", ->
+  throwsB = """
   class A
-    constructor: ctorA
-    make: =>
-      "Making a #{@drink}"
-  ok (new A('Machiato')).make() isnt "Making a Machiato"
-
-  # extended bound function, extending fails too.
   class B extends A
-  b = new B('Machiato')
-  ok (new B('Machiato')).make() isnt "Making a Machiato"
+    constructor: do => super
+  """
+  throws -> CoffeeScript.compile throwsB, bare: yes
 
 test "super in a bound function", ->
-  class A
+  class A 
     constructor: (@drink) ->
     make: -> "Making a #{@drink}"
-
+  
   class B extends A
     make: (@flavor) =>
       super + " with #{@flavor}"
 
   b = new B('Machiato')
-  eq b.make('vanilla'),  "Making a Machiato with vanilla"
+  eq b.make('vanilla'),  "Making a Machiato with vanilla" 
 
   # super in a bound function in a bound function
   class C extends A
@@ -1264,22 +1272,22 @@ test "super in a bound function", ->
       func()
 
   c = new C('Machiato')
-  eq c.make('vanilla'), "Making a Machiato with vanilla"
+  eq c.make('vanilla'), "Making a Machiato with vanilla" 
 
   # bound function in a constructor
   class D extends A
     constructor: (drink) ->
       super(drink)
       x = =>
-        eq @drink,  "Machiato"
+        eq @drink,  "Machiato" 
       x()
   d = new D('Machiato')
-  eq d.make(),  "Making a Machiato"
+  eq d.make(),  "Making a Machiato" 
 
-# duplicate
+# duplicate 
 test "super in a try/catch", ->
   classA = """
-  class A
+  class A 
     constructor: (param) ->
       throw "" unless param
   """
@@ -1295,15 +1303,15 @@ test "super in a try/catch", ->
   ctor = ->
     try
       super
-
+  
   class C extends A
       constructor: ctor
   """
   throws -> CoffeeScript.run classA + throwsB, bare: yes
   throws -> CoffeeScript.run classA + throwsC, bare: yes
-
+     
 test "mixed ES6 and CS6 classes with a four-level inheritance chain", ->
-  # Extended test
+  # Extended test 
   # ES2015+ class interoperability
 
   ```
@@ -1328,7 +1336,7 @@ test "mixed ES6 and CS6 classes with a four-level inheritance chain", ->
   ```
   class SecondChild extends FirstChild {
     func (string) {
-      super.func('two/' + string);
+      return super.func('two/' + string);
     }
   }
   ```
@@ -1337,15 +1345,40 @@ test "mixed ES6 and CS6 classes with a four-level inheritance chain", ->
     @array = [1, 2, 3]
 
   class ThirdChild extends SecondChild
-    constructor: ->
+    constructor: -> 
       super()
       thirdCtor.call this
     func: (string) ->
       super('three/') + string
 
   result = (new ThirdChild).func 'four'
-  # console.log "BUG: mixed ES6 and CS6 classes with a four-level inheritance chain in classes-extended.coffee"
-
-  # Uncomment this line:
-  # ok result is 'zero/one/two/three/four'
+  ok result is 'zero/one/two/three/four'
   ok Base.staticFunc('word') is 'static/word'
+
+# TODO:  This test has compile errors, and needs resolving.
+# # exercise extends in a nested class
+# test "nested classes with super", ->
+#   class Outer
+#     constructor: ->
+#       @label = 'outer'
+
+#     class @Inner
+#       constructor: ->
+#         @label = 'inner'
+
+#     class @ExtendedInner extends @Inner
+#       constructor: ->
+#         console.log super()
+#         @label = super().label + ' extended'
+
+#     extender: () ->
+#       class @ExtendedSelf extends @
+#         constructor: ->
+#           super()
+#           @label = super + ' from this'
+#       new ExtendedSelf
+
+#   # eq (new Outer).label, 'outer'
+#   # eq (new Outer.Inner).label, 'inner'
+#   # eq (new Outer.ExtendedInner).label, 'inner extended'
+#   # eq (new Outer.extender()).label, 'inner from this'
