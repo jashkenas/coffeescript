@@ -1368,14 +1368,14 @@ test "nested classes with super", ->
     class @ExtendedInner extends @Inner
       constructor: ->
         super()
-        # TODO this should be valid since the `super` will happen before the assignment
+        # TODO this is invalid since `this` is accessed before `super`
         # @label = super().label + ' extended'
 
     extender: () ->
       class @ExtendedSelf extends @
         constructor: ->
           super()
-          # TODO this should be valid since the `super` will happen before the assignment
+          # TODO this is invalid since `this` is accessed before `super`
           # @label = super + ' from this'
       new ExtendedSelf
 
