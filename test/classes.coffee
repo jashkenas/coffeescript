@@ -1060,7 +1060,7 @@ test "constructor super in arrow functions", ->
 # Should be caught at compile time.
 test "multiple super calls", ->
   throwsA = """
-  class A 
+  class A
     constructor: (@drink) ->
     make: -> "Making a #{@drink}"
 
@@ -1076,7 +1076,7 @@ test "multiple super calls", ->
 # Basic test to ensure we can pass @params in a constuctor and
 # inheritance works correctly
 test "@ params", ->
-  class A 
+  class A
     constructor: (@drink, @shots, @flavor) ->
     make: -> "Making a #{@flavor} #{@drink} with #{@shots} shot(s)"
 
@@ -1089,7 +1089,7 @@ test "@ params", ->
 
 # Ensure we can accept @params with default parameters in a constructor
 test "@ params with defaults in a constructor", ->
-  class A 
+  class A
     # Multiple @ params with defaults
     constructor: (@drink = 'Americano', @shots = '1', @flavor = 'caramel') ->
     make: -> "Making a #{@flavor} #{@drink} with #{@shots} shot(s)"
@@ -1104,21 +1104,21 @@ test "@ params with class params", ->
     shots: '1'
     flavor: 'caramel'
 
-  class A 
+  class A
     # Class creation as a default param with `this`
     constructor: (@drink = new Beverage()) ->
   a = new A()
   eq a.drink.drink, 'Americano'
 
   beverage = new Beverage
-  class B 
+  class B
     # class costruction with a default external param
     constructor: (@drink = beverage) ->
 
   b = new B()
   eq b.drink.drink, 'Americano'
 
-  class C 
+  class C
     # Default constructor with anonymous empty class
     constructor: (@meta = class) ->
   c = new C()
@@ -1126,7 +1126,7 @@ test "@ params with class params", ->
 
 test "@ params without super, including errors", ->
   classA = """
-  class A 
+  class A
     constructor: (@drink) ->
     make: -> "Making a #{@drink}"
   a = new A('Machiato')
@@ -1142,7 +1142,7 @@ test "@ params without super, including errors", ->
 
 test "@ params super race condition", ->
   classA = """
-  class A 
+  class A
     constructor: (@drink) ->
     make: -> "Making a #{@drink}"
   """
@@ -1165,34 +1165,34 @@ test "@ params super race condition", ->
   """
   throws -> CoffeeScript.compile classA + throwsC, bare: yes
 
-  
-test "@ with super call", ->  
+
+test "@ with super call", ->
   class D
     make: -> "Making a #{@drink}"
 
   class E extends D
     constructor: (@drink) ->
       super()
-      
-  e = new E('Machiato')
-  eq e.make(),  "Making a Machiato" 
 
-test "@ with splats and super call", ->  
+  e = new E('Machiato')
+  eq e.make(),  "Making a Machiato"
+
+test "@ with splats and super call", ->
   class A
     make: -> "Making a #{@drink}"
 
   class B extends A
     constructor: (@drink...) ->
       super()
-      
+
   B = new B('Machiato')
-  eq B.make(),  "Making a Machiato" 
+  eq B.make(),  "Making a Machiato"
 
 
 test "super and external constructors", ->
   # external constructor with @ param is allowed
   ctorA = (@drink) ->
-  class A 
+  class A
     constructor: ctorA
     make: -> "Making a #{@drink}"
   a = new A('Machiato')
@@ -1215,18 +1215,18 @@ test "super and external constructors", ->
 
 
 test "super in external prototype", ->
-    class A 
+    class A
       constructor: (@drink) ->
       make: -> "Making a #{@drink}"
 
-    class B extends A 
+    class B extends A
     B::make = (@flavor) -> super() + " with #{@flavor}"
     b = new B('Machiato')
     eq b.make('caramel'),  "Making a Machiato with caramel"
 
     #  Fails, bound
     # TODO: Could this throw a compile error?
-    class C extends A 
+    class C extends A
     C::make = (@flavor) => super() + " with #{@flavor}"
     c = new C('Machiato')
     ok c.make('caramel') isnt "Making a Machiato with caramel"
@@ -1234,11 +1234,11 @@ test "super in external prototype", ->
 
 test "bound functions without super", ->
   # Bound function with @
-  # Throw on compile, since bound 
+  # Throw on compile, since bound
   # constructors are illegal
   throwsA = """
-  class A 
-    constructor: (drink) => 
+  class A
+    constructor: (drink) =>
       @drink = drink
 
   """
@@ -1253,16 +1253,16 @@ test "super in a bound function in a constructor", ->
   throws -> CoffeeScript.compile throwsB, bare: yes
 
 test "super in a bound function", ->
-  class A 
+  class A
     constructor: (@drink) ->
     make: -> "Making a #{@drink}"
-  
+
   class B extends A
     make: (@flavor) =>
       super + " with #{@flavor}"
 
   b = new B('Machiato')
-  eq b.make('vanilla'),  "Making a Machiato with vanilla" 
+  eq b.make('vanilla'),  "Making a Machiato with vanilla"
 
   # super in a bound function in a bound function
   class C extends A
@@ -1272,22 +1272,22 @@ test "super in a bound function", ->
       func()
 
   c = new C('Machiato')
-  eq c.make('vanilla'), "Making a Machiato with vanilla" 
+  eq c.make('vanilla'), "Making a Machiato with vanilla"
 
   # bound function in a constructor
   class D extends A
     constructor: (drink) ->
       super(drink)
       x = =>
-        eq @drink,  "Machiato" 
+        eq @drink,  "Machiato"
       x()
   d = new D('Machiato')
-  eq d.make(),  "Making a Machiato" 
+  eq d.make(),  "Making a Machiato"
 
-# duplicate 
+# duplicate
 test "super in a try/catch", ->
   classA = """
-  class A 
+  class A
     constructor: (param) ->
       throw "" unless param
   """
@@ -1303,15 +1303,15 @@ test "super in a try/catch", ->
   ctor = ->
     try
       super
-  
+
   class C extends A
       constructor: ctor
   """
   throws -> CoffeeScript.run classA + throwsB, bare: yes
   throws -> CoffeeScript.run classA + throwsC, bare: yes
-     
+
 test "mixed ES6 and CS6 classes with a four-level inheritance chain", ->
-  # Extended test 
+  # Extended test
   # ES2015+ class interoperability
 
   ```
@@ -1345,7 +1345,7 @@ test "mixed ES6 and CS6 classes with a four-level inheritance chain", ->
     @array = [1, 2, 3]
 
   class ThirdChild extends SecondChild
-    constructor: -> 
+    constructor: ->
       super()
       thirdCtor.call this
     func: (string) ->
@@ -1355,30 +1355,31 @@ test "mixed ES6 and CS6 classes with a four-level inheritance chain", ->
   ok result is 'zero/one/two/three/four'
   ok Base.staticFunc('word') is 'static/word'
 
-# TODO:  This test has compile errors, and needs resolving.
-# # exercise extends in a nested class
-# test "nested classes with super", ->
-#   class Outer
-#     constructor: ->
-#       @label = 'outer'
+# exercise extends in a nested class
+test "nested classes with super", ->
+  class Outer
+    constructor: ->
+      @label = 'outer'
 
-#     class @Inner
-#       constructor: ->
-#         @label = 'inner'
+    class @Inner
+      constructor: ->
+        @label = 'inner'
 
-#     class @ExtendedInner extends @Inner
-#       constructor: ->
-#         console.log super()
-#         @label = super().label + ' extended'
+    class @ExtendedInner extends @Inner
+      constructor: ->
+        super()
+        # TODO this should be valid since the `super` will happen before the assignment
+        # @label = super().label + ' extended'
 
-#     extender: () ->
-#       class @ExtendedSelf extends @
-#         constructor: ->
-#           super()
-#           @label = super + ' from this'
-#       new ExtendedSelf
+    extender: () ->
+      class @ExtendedSelf extends @
+        constructor: ->
+          super()
+          # TODO this should be valid since the `super` will happen before the assignment
+          # @label = super + ' from this'
+      new ExtendedSelf
 
-#   # eq (new Outer).label, 'outer'
-#   # eq (new Outer.Inner).label, 'inner'
-#   # eq (new Outer.ExtendedInner).label, 'inner extended'
-#   # eq (new Outer.extender()).label, 'inner from this'
+  eq (new Outer).label, 'outer'
+  eq (new Outer.Inner).label, 'inner'
+  # eq (new Outer.ExtendedInner).label, 'inner extended'
+  # eq (new Outer.extender()).label, 'inner from this'
