@@ -272,7 +272,7 @@ exports.HoistTarget = class HoistTarget extends Base
   # Expands hoisted fragments in the given array
   @expand = (fragments) ->
     for fragment, i in fragments by -1 when fragment.fragments
-      fragments[i..i] = fragment.fragments
+      fragments[i..i] = @expand fragment.fragments
     fragments
 
   constructor: (@source) ->
