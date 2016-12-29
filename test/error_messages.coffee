@@ -1179,3 +1179,10 @@ test "tagged template literals must be called by an identifier", ->
     1"""#{b}"""
     ^
   '''
+
+test "can't use pattern matches for loop indices", ->
+  assertErrorFormat 'a for b, {c} in d', '''
+    [stdin]:1:10: error: index cannot be a pattern matching expression
+    a for b, {c} in d
+             ^^^
+  '''
