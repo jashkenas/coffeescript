@@ -1367,19 +1367,330 @@ test "nested classes with super", ->
 
     class @ExtendedInner extends @Inner
       constructor: ->
-        super()
-        # TODO this is invalid since `this` is accessed before `super`
-        # @label = super().label + ' extended'
+        tmp = super()
+        @label = tmp.label + ' extended'
 
-    extender: () ->
-      class @ExtendedSelf extends @
+    @extender: () =>
+       class ExtendedSelf extends @
         constructor: ->
-          super()
-          # TODO this is invalid since `this` is accessed before `super`
-          # @label = super + ' from this'
+          tmp = super()
+          @label = tmp.label + ' from this'
       new ExtendedSelf
 
   eq (new Outer).label, 'outer'
   eq (new Outer.Inner).label, 'inner'
-  # eq (new Outer.ExtendedInner).label, 'inner extended'
-  # eq (new Outer.extender()).label, 'inner from this'
+  eq (new Outer.ExtendedInner).label, 'inner extended'
+  eq (Outer.extender()).label, 'outer from this'
+
+# TODO: Currently this test fails.
+test "Static methods generate 'static' keywords", ->
+  compile = """
+  class CheckStatic
+    constructor: (@drink) ->
+    @className: 'CheckStatic'
+
+  c = new CheckStatic('Machiato')
+  """
+  result = CoffeeScript.compile compile, bare: yes
+  ok (result && result.match(' static ') && true) isnt true
+
+test "Static methods in nested classes", ->
+  class Outer
+    @name: -> 'Outer'
+
+    class @Inner
+      @name: -> 'Inner'
+
+  eq Outer.name(), 'Outer'
+  eq Outer.Inner.name(), 'Inner'
+
+
+test "mixed constructors with inheritance and ES6 super", ->  
+  identity = (f) -> f
+
+  class TopClass
+    constructor: (arg) ->
+      @prop = 'top-' + arg
+
+  ```
+  class SuperClass extends TopClass {
+    constructor (arg) {
+      identity(super('super-' + arg));
+    }
+  }
+  ```
+  class SubClass extends SuperClass
+    constructor: ->
+      identity super 'sub'
+
+  ok (new SubClass).prop is 'top-super-sub'
+
+test "ES6 static class methods can be overriden", ->
+  class A
+    @name: -> 'A'
+
+  class B extends A
+    @name: -> 'B'
+
+  eq A.name(), 'A'
+  eq B.name(), 'B'
+
+# If creating static by direct assignment rather than ES6 static keyword
+test "ES6 Static methods should set `this` to undefined // ES6 ", ->
+  class A
+    @test: -> 
+      eq this, undefined
+
+# Ensure that our object prototypes work with ES6
+test "ES6 prototypes can be overriden", ->
+  class A
+    className: 'classA'
+
+  ```
+  class B {
+    test () {return "B";};
+  }
+  ```
+  b = new B
+  a = new A
+  eq a.className, 'classA'
+  eq b.test(), 'B'
+  Object.setPrototypeOf(b, a)
+  eq b.className, 'classA'
+  # This shouldn't throw, 
+  # as we only change inheritance not object construction
+  # This may be an issue with ES, rather than CS construction?
+  #eq b.test(), 'B'
+
+  class D extends B  
+  B::test = () -> 'D'
+  eq (new D).test(), 'D'
+
+
+test "ES6 conformance to extending non-classes", ->
+  A = (@title) ->
+    'Title: ' + @
+
+  class B extends A
+  b = new B('caffeinated') 
+  eq b.title, 'caffeinated'
+
+  # Check inheritance chain 
+  A::getTitle = () -> @title
+  eq b.getTitle(), 'caffeinated'
+
+  throwsC = """
+  C = {title: 'invalid'}
+  class D extends {}
+  """
+  # TODO: This should catch on compile and message should be "class can only extend classes and functions."
+  throws -> CoffeeScript.run throwsC, bare: yes
+
+# TODO: Either restrict valid statements in class bodies OR insert 'use strict'?
+test "Class function environment should be in `strict mode`, ie as if 'use strict' was in use", ->
+  class A
+    # this might be a meaningless test, since these are likely to be runtime errors and different
+    # for every browser.  Thoughts?
+    constructor: () ->
+      # Ivalid: prop reassignment
+      @state = {prop: [1], prop: {a: 'a'}}
+      # eval reassignment
+      @badEval = eval;
+
+  # Should throw, but doesn't
+  a = new A 
+
+# TODO: new.target needs support
+test "ES6 support for new.target (functions and constructors)", ->
+  throwsA = """
+  class A 
+    constructor: () ->
+      a = new.target.name 
+  """
+  throws -> CoffeeScript.compile throwsA, bare: yes
+
+test "only one method named constructor allowed", ->
+  throwsA = """
+  class A 
+    constructor: (@first) ->
+    constructor: (@last) ->
+  """
+  throws -> CoffeeScript.compile throwsA, bare: yes
+
+# TODO: We can't expect super to be enforced for all constructors.  If it's mandetory, 
+# the following is invalid
+test "If the constructor of a child class does not call super, the constructor is expected to return an object. ", ->
+  throwsA = """
+  class A
+  class B extends A
+    constructor: () ->
+      return {}
+  """
+  throws -> CoffeeScript.compile throwsA, bare: yes
+
+
+test "super can only exist in extended classes", ->
+  throwsA = """
+  class A 
+    constructor: (@name) ->
+      super()
+  """
+  throws -> CoffeeScript.compile throwsA, bare: yes
+
+# --- CS1 classes compatability breaks --- 
+test "CS6 Class extends a CS1 compiled class", ->
+  ```
+  // Generated by CoffeeScript 1.11.1
+  var BaseCS1, ExtendedCS1,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  BaseCS1 = (function() {
+    function BaseCS1(drink) {
+      this.drink = drink;
+    }
+
+    BaseCS1.prototype.make = function() {
+      return "making a " + this.drink;
+    };
+
+    BaseCS1.className = function() {
+      return 'BaseCS1';
+    };
+
+    return BaseCS1;
+
+  })();
+
+  ExtendedCS1 = (function(superClass) {
+    extend(ExtendedCS1, superClass);
+
+    function ExtendedCS1(flavor) {
+      this.flavor = flavor;
+      ExtendedCS1.__super__.constructor.call(this, 'cafe ole');
+    }
+    
+    ExtendedCS1.prototype.make = function() {
+      return "making a " + this.drink + " with " + this.flavor;
+    };
+
+    ExtendedCS1.className = function() {
+      return 'ExtendedCS1';
+    };
+
+    return ExtendedCS1;
+
+  })(BaseCS1);
+
+  ```
+  class B extends BaseCS1
+  eq B.className(), 'BaseCS1' 
+  b = new B('machiato')
+  eq b.make(), "making a machiato"
+
+
+test "CS6 Class extends an extended CS1 compiled class", ->
+  ```
+  // Generated by CoffeeScript 1.11.1
+  var BaseCS1, ExtendedCS1,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  BaseCS1 = (function() {
+    function BaseCS1(drink) {
+      this.drink = drink;
+    }
+
+    BaseCS1.prototype.make = function() {
+      return "making a " + this.drink;
+    };
+
+    BaseCS1.className = function() {
+      return 'BaseCS1';
+    };
+
+    return BaseCS1;
+
+  })();
+
+  ExtendedCS1 = (function(superClass) {
+    extend(ExtendedCS1, superClass);
+
+    function ExtendedCS1(flavor) {
+      this.flavor = flavor;
+      ExtendedCS1.__super__.constructor.call(this, 'cafe ole');
+    }
+    
+    ExtendedCS1.prototype.make = function() {
+      return "making a " + this.drink + " with " + this.flavor;
+    };
+
+    ExtendedCS1.className = function() {
+      return 'ExtendedCS1';
+    };
+
+    return ExtendedCS1;
+
+  })(BaseCS1);
+
+  ```
+  class B extends ExtendedCS1
+  eq B.className(), 'ExtendedCS1' 
+  b = new B('vanilla')
+  eq b.make(), "making a cafe ole with vanilla"
+
+test "CS6 Class extends a CS1 compiled class with super()", ->
+  ```
+  // Generated by CoffeeScript 1.11.1
+  var BaseCS1, ExtendedCS1,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  BaseCS1 = (function() {
+    function BaseCS1(drink) {
+      this.drink = drink;
+    }
+
+    BaseCS1.prototype.make = function() {
+      return "making a " + this.drink;
+    };
+
+    BaseCS1.className = function() {
+      return 'BaseCS1';
+    };
+
+    return BaseCS1;
+
+  })();
+
+  ExtendedCS1 = (function(superClass) {
+    extend(ExtendedCS1, superClass);
+
+    function ExtendedCS1(flavor) {
+      this.flavor = flavor;
+      ExtendedCS1.__super__.constructor.call(this, 'cafe ole');
+    }
+    
+    ExtendedCS1.prototype.make = function() {
+      return "making a " + this.drink + " with " + this.flavor;
+    };
+
+    ExtendedCS1.className = function() {
+      return 'ExtendedCS1';
+    };
+
+    return ExtendedCS1;
+
+  })(BaseCS1);
+
+  ```
+  class B extends ExtendedCS1
+    constructor: (@shots) ->
+      super('caramel')
+    make: () ->
+      super + " and #{@shots} shots of espresso"
+
+  eq B.className(), 'ExtendedCS1' 
+  b = new B('three')
+  eq b.make(), "making a cafe ole with caramel and three shots of espresso"
+
