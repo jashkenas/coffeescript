@@ -8,4 +8,6 @@ futurists =
       "Bellagio, Italy 22021"
     ]
 
+{sculptor} = futurists
+
 {poet: {name, address: [street, city]}} = futurists
