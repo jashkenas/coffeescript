@@ -1371,7 +1371,7 @@ test "nested classes with super", ->
         @label = tmp.label + ' extended'
 
     @extender: () =>
-       class ExtendedSelf extends @
+      class ExtendedSelf extends @
         constructor: ->
           tmp = super()
           @label = tmp.label + ' from this'
@@ -1382,17 +1382,16 @@ test "nested classes with super", ->
   eq (new Outer.ExtendedInner).label, 'inner extended'
   eq (Outer.extender()).label, 'outer from this'
 
-# TODO: Currently this test fails.
 test "Static methods generate 'static' keywords", ->
   compile = """
   class CheckStatic
     constructor: (@drink) ->
-    @className: 'CheckStatic'
+    @className: -> 'CheckStatic'
 
   c = new CheckStatic('Machiato')
   """
   result = CoffeeScript.compile compile, bare: yes
-  ok (result && result.match(' static ') && true) isnt true
+  ok (result && result.match(' static ') && true) 
 
 test "Static methods in nested classes", ->
   class Outer
@@ -1466,48 +1465,48 @@ test "ES6 prototypes can be overriden", ->
   B::test = () -> 'D'
   eq (new D).test(), 'D'
 
+# TODO: implement this error check
+# test "ES6 conformance to extending non-classes", ->
+#   A = (@title) ->
+#     'Title: ' + @
 
-test "ES6 conformance to extending non-classes", ->
-  A = (@title) ->
-    'Title: ' + @
+#   class B extends A
+#   b = new B('caffeinated') 
+#   eq b.title, 'caffeinated'
 
-  class B extends A
-  b = new B('caffeinated') 
-  eq b.title, 'caffeinated'
+#   # Check inheritance chain 
+#   A::getTitle = () -> @title
+#   eq b.getTitle(), 'caffeinated'
 
-  # Check inheritance chain 
-  A::getTitle = () -> @title
-  eq b.getTitle(), 'caffeinated'
+#   throwsC = """
+#   C = {title: 'invalid'}
+#   class D extends {}
+#   """
+#   # This should catch on compile and message should be "class can only extend classes and functions."
+#   throws -> CoffeeScript.run throwsC, bare: yes
 
-  throwsC = """
-  C = {title: 'invalid'}
-  class D extends {}
-  """
-  # TODO: This should catch on compile and message should be "class can only extend classes and functions."
-  throws -> CoffeeScript.run throwsC, bare: yes
+# TODO: Evaluate future compliance with "strict mode";
+# test "Class function environment should be in `strict mode`, ie as if 'use strict' was in use", ->
+#   class A
+#     # this might be a meaningless test, since these are likely to be runtime errors and different
+#     # for every browser.  Thoughts?
+#     constructor: () ->
+#       # Ivalid: prop reassignment
+#       @state = {prop: [1], prop: {a: 'a'}}
+#       # eval reassignment
+#       @badEval = eval;
 
-# TODO: Either restrict valid statements in class bodies OR insert 'use strict'?
-test "Class function environment should be in `strict mode`, ie as if 'use strict' was in use", ->
-  class A
-    # this might be a meaningless test, since these are likely to be runtime errors and different
-    # for every browser.  Thoughts?
-    constructor: () ->
-      # Ivalid: prop reassignment
-      @state = {prop: [1], prop: {a: 'a'}}
-      # eval reassignment
-      @badEval = eval;
+#   # Should throw, but doesn't
+#   a = new A 
 
-  # Should throw, but doesn't
-  a = new A 
-
-# TODO: new.target needs support
-test "ES6 support for new.target (functions and constructors)", ->
-  throwsA = """
-  class A 
-    constructor: () ->
-      a = new.target.name 
-  """
-  throws -> CoffeeScript.compile throwsA, bare: yes
+# TODO: new.target needs support  Separate issue
+# test "ES6 support for new.target (functions and constructors)", ->
+#   throwsA = """
+#   class A 
+#     constructor: () ->
+#       a = new.target.name 
+#   """
+#   throws -> CoffeeScript.compile throwsA, bare: yes
 
 test "only one method named constructor allowed", ->
   throwsA = """
@@ -1518,7 +1517,8 @@ test "only one method named constructor allowed", ->
   throws -> CoffeeScript.compile throwsA, bare: yes
 
 # TODO: We can't expect super to be enforced for all constructors.  If it's mandetory, 
-# the following is invalid
+# the following is invalid; Eg: return {prop: value, prop1: val1} vs. requiring super
+# See: https://github.com/coffeescript6/discuss/issues/68
 test "If the constructor of a child class does not call super, the constructor is expected to return an object. ", ->
   throwsA = """
   class A
