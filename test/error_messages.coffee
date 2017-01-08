@@ -1227,13 +1227,6 @@ test "non-derived constructors can't call super", ->
                                ^^^^^
   '''
 
-test "derived constructors must call super", ->
-  assertErrorFormat 'class extends A then constructor: ->', '''
-    [stdin]:1:35: error: Derived class constructors must include a call to super
-    class extends A then constructor: ->
-                                      ^^
-  '''
-
 test "derived constructors can't reference `this` before calling super", ->
   assertErrorFormat 'class extends A then constructor: -> @', '''
     [stdin]:1:38: error: Can't reference 'this' before calling super in derived class constructors

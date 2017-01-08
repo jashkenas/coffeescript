@@ -1516,17 +1516,15 @@ test "only one method named constructor allowed", ->
   """
   throws -> CoffeeScript.compile throwsA, bare: yes
 
-# TODO: We can't expect super to be enforced for all constructors.  If it's mandetory, 
-# the following is invalid; Eg: return {prop: value, prop1: val1} vs. requiring super
-# See: https://github.com/coffeescript6/discuss/issues/68
-test "If the constructor of a child class does not call super, the constructor is expected to return an object. ", ->
-  throwsA = """
+test "If the constructor of a child class does not call super,it should return an object.", ->
+  nonce = {}
+
   class A
   class B extends A
-    constructor: () ->
-      return {}
-  """
-  throws -> CoffeeScript.compile throwsA, bare: yes
+    constructor: ->
+      return nonce
+
+  eq nonce, new B
 
 
 test "super can only exist in extended classes", ->

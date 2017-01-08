@@ -2058,9 +2058,7 @@ exports.Code = class Code extends Base
       # `super` has the same target in bound (arrow) functions, so check them too
       child not instanceof SuperCall and (child not instanceof Code or child.bound)
 
-    if @ctor is 'derived' and not superCalls.length
-      @error 'Derived class constructors must include a call to super'
-    else if @ctor is 'base' and superCalls.length
+    if @ctor is 'base' and superCalls.length
       superCalls[0].error "'super' is only allowed in derived class constructors"
 
     superCalls
