@@ -2050,6 +2050,11 @@ exports.Code = class Code extends Base
       superCall.error "'super' is only allowed in derived class constructors" if @ctor is 'base'
       superCall.expressions = thisAssignments
 
+    haveThisParam = thisAssignments.length and thisAssignments.length != @thisAssignments?.length
+    if @ctor is 'derived' and not seenSuper and haveThisParam
+      param = thisAssignments[0].variable
+      param.error "Can't use @params in derived class constructors without calling super"
+
     seenSuper
 
   # Find all super calls in the given context node

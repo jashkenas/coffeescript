@@ -1234,6 +1234,13 @@ test "derived constructors can't reference `this` before calling super", ->
                                          ^
   '''
 
+test "derived constructors can't use @params without calling super", ->
+  assertErrorFormat 'class extends A then constructor: (@a) ->', '''
+    [stdin]:1:36: error: Can't use @params in derived class constructors without calling super
+    class extends A then constructor: (@a) ->
+                                       ^^
+  '''
+
 test "'super' is not allowed in constructor parameter defaults", ->
   assertErrorFormat 'class extends A then constructor: (a = super) ->', '''
     [stdin]:1:40: error: 'super' is not allowed in constructor parameter defaults
