@@ -1985,15 +1985,9 @@ exports.Code = class Code extends Base
           new Arr [new Splat(new IdentifierLiteral(splatParamName)), (param.asReference o for param in paramsAfterSplat)...]
         ), new Value new IdentifierLiteral splatParamName
 
-    # Find and validate constructor super calls
-    superCalls = @superCalls() if @ctor
-
     # Add new expressions to the function body
     wasEmpty = @body.isEmpty()
-    if @ctor is 'derived'
-      superCall.expressions = thisAssignments for superCall in superCalls
-    else
-      @body.expressions.unshift thisAssignments...
+    @body.expressions.unshift thisAssignments... unless @expandCtorSuper thisAssignments
     @body.expressions.unshift exprs...
     @body.makeReturn() unless wasEmpty or @noReturn
 
@@ -2046,22 +2040,34 @@ exports.Code = class Code extends Base
     else
       false
 
-  # Find all super calls in this function
-  superCalls: ->
-    superCalls = []
-    @traverseChildren true, (child) =>
-      superCalls.push child if child instanceof SuperCall
+  expandCtorSuper: (thisAssignments) ->
+    return false unless @ctor
 
-      if @ctor is 'derived' and child instanceof ThisLiteral and not superCalls.length
+    @eachSuperCall Block.wrap(@params), (superCall) ->
+      superCall.error "'super' is not allowed in constructor parameter defaults"
+
+    seenSuper = @eachSuperCall @body, (superCall) =>
+      superCall.error "'super' is only allowed in derived class constructors" if @ctor is 'base'
+      superCall.expressions = thisAssignments
+
+    seenSuper
+
+  # Find all super calls in the given context node
+  # Returns `true` if `iterator` is called
+  eachSuperCall: (context, iterator) ->
+    seenSuper = no
+
+    context.traverseChildren true, (child) =>
+      if child instanceof SuperCall
+        seenSuper = yes
+        iterator child
+      else if child instanceof ThisLiteral and @ctor is 'derived' and not seenSuper
         child.error "Can't reference 'this' before calling super in derived class constructors"
 
       # `super` has the same target in bound (arrow) functions, so check them too
       child not instanceof SuperCall and (child not instanceof Code or child.bound)
 
-    if @ctor is 'base' and superCalls.length
-      superCalls[0].error "'super' is only allowed in derived class constructors"
-
-    superCalls
+    seenSuper
 
 #### Param
 

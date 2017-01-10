@@ -1233,3 +1233,10 @@ test "derived constructors can't reference `this` before calling super", ->
     class extends A then constructor: -> @
                                          ^
   '''
+
+test "'super' is not allowed in constructor parameter defaults", ->
+  assertErrorFormat 'class extends A then constructor: (a = super) ->', '''
+    [stdin]:1:40: error: 'super' is not allowed in constructor parameter defaults
+    class extends A then constructor: (a = super) ->
+                                           ^^^^^
+  '''
