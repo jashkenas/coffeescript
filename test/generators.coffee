@@ -325,3 +325,20 @@ test "from as a destructured array variable name in a for loop declaration", ->
   for [from, to] from a
     b.push from
   arrayEq b, [1, 3]
+
+test "generator methods in classes", ->
+  class Base
+    @static: ->
+      yield 1
+    method: ->
+      yield 2
+
+  arrayEq [1], Array.from Base.static()
+  arrayEq [2], Array.from new Base().method()
+
+  class Child extends Base
+    @static: -> super
+    method: -> super
+
+  arrayEq [1], Array.from Child.static()
+  arrayEq [2], Array.from new Child().method()

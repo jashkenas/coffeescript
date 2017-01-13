@@ -378,11 +378,15 @@ test "#3132: Place block-comments nicely", ->
   var DummyClass;
 
   DummyClass = (function() {
+    class DummyClass {
 
-    /**
-     * @constructor
-     */
-    function DummyClass() {}
+      /**
+       * @constructor
+       */
+
+      constructor() {}
+
+    };
 
 
     /**

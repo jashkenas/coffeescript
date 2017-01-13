@@ -449,7 +449,7 @@ test "#1591, #1101: splatted expressions in destructuring assignment must be ass
 
 test "#1643: splatted accesses in destructuring assignments should not be declared as variables", ->
   nonce = {}
-  accesses = ['o.a', 'o["a"]', '(o.a)', '(o.a).a', '@o.a', 'C::a', 'C::', 'f().a', 'o?.a', 'o?.a.b', 'f?().a']
+  accesses = ['o.a', 'o["a"]', '(o.a)', '(o.a).a', '@o.a', 'C::a', 'f().a', 'o?.a', 'o?.a.b', 'f?().a']
   for access in accesses
     for i,j in [1,2,3] #position can matter
       code =
