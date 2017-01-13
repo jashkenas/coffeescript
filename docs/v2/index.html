@@ -2060,50 +2060,44 @@ tom.move()
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="classes-js">var Animal, Horse, Snake, sam, tom,
-  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  hasProp = {}.hasOwnProperty;
+      <textarea class="javascript-output" id="classes-js">var Animal, Horse, Snake, sam, tom;
 
-Animal = (function() {
-  function Animal(name) {
+Animal = class Animal {
+  constructor(name) {
     this.name = name;
   }
 
-  Animal.prototype.move = function(meters) {
+  move(meters) {
     return alert(this.name + ` moved ${meters}m.`);
-  };
-
-  return Animal;
-
-})();
-
-Snake = (function(superClass) {
-  extend(Snake, superClass);
-
-  function Snake() {
-    return Snake.__super__.constructor.apply(this, arguments);
   }
 
-  Snake.prototype.move = function() {
-    alert("Slithering...");
-    return Snake.__super__.move.call(this, 5);
+};
+
+Snake = (function(superClass) {
+  class Snake extends superClass {
+    move() {
+      alert("Slithering...");
+      return Snake.__super__.move.call(this, 5);
+    }
+
   };
+
+  Snake.__super__ = superClass.prototype;
 
   return Snake;
 
 })(Animal);
 
 Horse = (function(superClass) {
-  extend(Horse, superClass);
+  class Horse extends superClass {
+    move() {
+      alert("Galloping...");
+      return Horse.__super__.move.call(this, 45);
+    }
 
-  function Horse() {
-    return Horse.__super__.constructor.apply(this, arguments);
-  }
-
-  Horse.prototype.move = function() {
-    alert("Galloping...");
-    return Horse.__super__.move.call(this, 45);
   };
+
+  Horse.__super__ = superClass.prototype;
 
   return Horse;
 
@@ -2323,15 +2317,13 @@ tim = new Person name: 'Tim', age: 4
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="constructor_destructuring-js">var Person, tim;
 
-Person = (function() {
-  function Person(options) {
+Person = class Person {
+  constructor(options) {
     var ref;
     this.name = options.name, this.age = options.age, this.height = (ref = options.height) != null ? ref : 'average';
   }
 
-  return Person;
-
-})();
+};
 
 tim = new Person({
   name: 'Tim',
@@ -2399,7 +2391,7 @@ window.ps or= perfectSquares()
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="generators-js">var perfectSquares;
 
-perfectSquares = function*() {
+perfectSquares = function *() {
   var num;
   num = 0;
   while (true) {
@@ -2443,7 +2435,7 @@ getFibonacciNumbers = (length) ->
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="generator_iteration-js">var fibonacci, getFibonacciNumbers;
 
-fibonacci = function*() {
+fibonacci = function *() {
   var current, previous, ref, ref1;
   ref = [1, 1], previous = ref[0], current = ref[1];
   while (true) {
@@ -2813,20 +2805,16 @@ export var square = function(x) {
   return x * x;
 };
 
-export var Mathematics = (function() {
-  function Mathematics() {}
-
-  Mathematics.prototype.least = function(x, y) {
+export var Mathematics = class Mathematics {
+  least(x, y) {
     if (x < y) {
       return x;
     } else {
       return y;
     }
-  };
+  }
 
-  return Mathematics;
-
-})();
+};
 
 export {
   sqrt
