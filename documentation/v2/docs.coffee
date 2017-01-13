@@ -56,7 +56,7 @@ $(document).ready ->
       lineWrapping: on
       lineNumbers: off
       inputStyle: 'contenteditable'
-      readOnly: if mode is 'coffeescript' then no else 'nocursor'
+      readOnly: mode isnt 'coffeescript' # Can’t use 'nocursor' if we want the JavaScript to be copyable
       viewportMargin: Infinity
 
     # Whenever the user edits the CoffeeScript side of a code example, update the JavaScript output
