@@ -191,3 +191,20 @@ test "implicit call with `await`", ->
 
   a = addOne await 3
   eq a, 4
+
+test "async methods in classes", ->
+  class Base
+    @static: ->
+      await 1
+    method: ->
+      await 2
+
+  eq await Base.static(), 1
+  eq await new Base().method(), 2
+
+  class Child extends Base
+    @static: -> super
+    method: -> super
+
+  eq await Child.static(), 1
+  eq await new Child().method(), 2

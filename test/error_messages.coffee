@@ -416,7 +416,7 @@ test "#3795: invalid escapes", ->
   assertErrorFormat '''
     ///a \\u002 0 space///
   ''', '''
-    [stdin]:1:6: error: invalid escape sequence \\u002 
+    [stdin]:1:6: error: invalid escape sequence \\u002 \n\
     ///a \\u002 0 space///
          ^\^^^^^
   '''
@@ -1204,4 +1204,46 @@ test "tagged template literals must be called by an identifier", ->
     [stdin]:1:1: error: literal is not a function
     1"""#{b}"""
     ^
+  '''
+
+test "constructor functions can't be async", ->
+  assertErrorFormat 'class then constructor: -> await x', '''
+    [stdin]:1:12: error: Class constructor may not be async
+    class then constructor: -> await x
+               ^^^^^^^^^^^
+  '''
+
+test "constructor functions can't be generators", ->
+  assertErrorFormat 'class then constructor: -> yield', '''
+    [stdin]:1:12: error: Class constructor may not be a generator
+    class then constructor: -> yield
+               ^^^^^^^^^^^
+  '''
+
+test "non-derived constructors can't call super", ->
+  assertErrorFormat 'class then constructor: -> super', '''
+    [stdin]:1:28: error: 'super' is only allowed in derived class constructors
+    class then constructor: -> super
+                               ^^^^^
+  '''
+
+test "derived constructors can't reference `this` before calling super", ->
+  assertErrorFormat 'class extends A then constructor: -> @', '''
+    [stdin]:1:38: error: Can't reference 'this' before calling super in derived class constructors
+    class extends A then constructor: -> @
+                                         ^
+  '''
+
+test "derived constructors can't use @params without calling super", ->
+  assertErrorFormat 'class extends A then constructor: (@a) ->', '''
+    [stdin]:1:36: error: Can't use @params in derived class constructors without calling super
+    class extends A then constructor: (@a) ->
+                                       ^^
+  '''
+
+test "'super' is not allowed in constructor parameter defaults", ->
+  assertErrorFormat 'class extends A then constructor: (a = super) ->', '''
+    [stdin]:1:40: error: 'super' is not allowed in constructor parameter defaults
+    class extends A then constructor: (a = super) ->
+                                           ^^^^^
   '''

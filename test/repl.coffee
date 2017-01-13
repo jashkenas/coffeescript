@@ -8,6 +8,7 @@ Stream = require 'stream'
 
 class MockInputStream extends Stream
   constructor: ->
+    super()
     @readable = true
 
   resume: ->
@@ -17,6 +18,7 @@ class MockInputStream extends Stream
 
 class MockOutputStream extends Stream
   constructor: ->
+    super()
     @writable = true
     @written = []
 

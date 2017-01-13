@@ -457,7 +457,7 @@ test "export class", ->
       baz: ->
         console.log 'hello, world!'"""
   output = toJS input
-  ok /^export (class foo|var foo = \(function)/.test toJS input
+  ok /^export (var foo = class foo|var foo = \(function)/.test toJS input
 
 test "export class that extends", ->
   input = """
