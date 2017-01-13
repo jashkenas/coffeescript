@@ -166,6 +166,9 @@ div.code {
       height: 40px;
       margin: 5px 0 0 3px;
     }
+    #logo path {
+      fill: #28334C;
+    }
   .navigation {
     height: 50px;
     font-size: 11px;

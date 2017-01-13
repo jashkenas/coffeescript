@@ -48,14 +48,6 @@ Once installed, you should have access to the `coffee` command, which can execut
 
 <tr>
 
-<td>`-j, --join [FILE]`</td>
-
-<td>Before compiling, concatenate all scripts together in the order they were passed, and write them into the specified file. (Deprecated.)</td>
-
-</tr>
-
-<tr>
-
 <td>`-w, --watch`</td>
 
 <td>Watch files for changes, rerunning the specified command when any file is updated.</td>
