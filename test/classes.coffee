@@ -845,6 +845,22 @@ test "#1392 calling `super` in methods defined on namespaced classes", ->
     @a::m = -> super
   eq 5, (new C.a).m()
 
+
+test "dynamic method names", ->
+  class A
+    "#{name = 'm'}": -> 1
+  eq 1, new A().m()
+
+  class B extends A
+    "#{name = 'm'}": -> super
+  eq 1, new B().m()
+
+  getName = -> 'm'
+  class C
+    "#{name = getName()}": -> 1
+  eq 1, new C().m()
+
+
 test "dynamic method names and super", ->
   class Base
     @m: -> 6

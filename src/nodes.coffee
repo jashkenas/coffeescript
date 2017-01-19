@@ -2009,8 +2009,10 @@ exports.Code = class Code extends Base
 
     # We need to compile the body before method names to ensure super references are handled
     if @isMethod
+      [methodScope, o.scope] = [o.scope, o.scope.parent]
       name = @name.compileToFragments o
       name.shift() if name[0].code is '.'
+      o.scope = methodScope
 
     answer = @joinFragmentArrays (@makeCode m for m in modifiers), ' '
     answer.push @makeCode ' ' if modifiers.length and name
