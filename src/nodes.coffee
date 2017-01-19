@@ -819,13 +819,7 @@ exports.Call = class Call extends Base
 
     fragments = []
     if this instanceof SuperCall
-      preface = @superReference o
-      if preface is 'super'
-        preface += '('
-      else
-        preface += ".call(#{@superThis(o)}"
-        if compiledArgs.length then preface += ", "
-      fragments.push @makeCode preface
+      fragments.push @makeCode(@superReference o), @makeCode('(')
     else
       if @isNew then fragments.push @makeCode 'new '
       fragments.push @variable.compileToFragments(o, LEVEL_ACCESS)...
@@ -872,20 +866,12 @@ exports.SuperCall = class SuperCall extends Call
     method = o.scope.namedMethod()
     if method?.ctor
       'super'
-    else if method?.klass
-      {klass, name, variable} = method
-      if klass.shouldCache()
-        bref = new IdentifierLiteral o.scope.parent.freeVariable 'base'
-        base = new Value new Parens new Assign bref, klass
-        variable.base = base
-        variable.properties.splice 0, klass.properties.length
+    else if method.isMethod
+      {name, variable} = method
       if name.shouldCache() or (name instanceof Index and name.index.isAssignable())
         nref = new IdentifierLiteral o.scope.parent.freeVariable 'name'
         name.index = new Assign nref, name.index
-      accesses = [new Access new PropertyName '__super__']
-      accesses.push new Access new PropertyName 'constructor' if method.isStatic
-      accesses.push if nref? then new Index nref else name
-      (new Value bref ? klass, accesses).compile o
+      (new Value new Literal('super'), [ if nref? then new Index nref else name ]).compile o
     else
       @error 'cannot call super outside of an instance method.'
 
@@ -1302,8 +1288,7 @@ exports.Class = class Class extends Base
         @boundMethods.push method.name
         method.bound = false
 
-    # TODO Once `super` has been changed over to ES, the check for @parent can be removed
-    if @parent or initializer.length != expressions.length
+    if initializer.length != expressions.length
       @body.expressions = (expression.hoist() for expression in initializer)
       new Block expressions
 
@@ -1398,14 +1383,6 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
       externalCtor = new IdentifierLiteral o.classScope.freeVariable 'ctor', reserve: no
       @class.externalCtor = externalCtor
       @externalCtor.variable.base = externalCtor
-
-    if @class.parent
-      parent = new IdentifierLiteral o.classScope.freeVariable 'superClass', reserve: no
-      params.push new Param parent
-      args.push @class.parent
-
-      @class.parent = parent
-      @body.unshift new Literal "#{@name}.__super__ = #{parent.value}.prototype"
 
     if @name != @class.name
       @body.expressions.unshift new Assign (new IdentifierLiteral @name), @class
