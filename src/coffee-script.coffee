@@ -344,8 +344,14 @@ getSourceMap = (filename) ->
   return sourceMaps[filename] if sourceMaps[filename]
   for ext in exports.FILE_EXTENSIONS
     if helpers.ends filename, ext
-      answer = exports._compileFile filename, true
-      return sourceMaps[filename] = answer.sourceMap
+      try
+        # `exports._compileFile` will try to open a file on disk.
+        answer = exports._compileFile filename, true
+        return sourceMaps[filename] = answer.sourceMap
+      catch error
+        # If it can’t, for example because the original file has since disappeared,
+        # just return null rather than throwing an exception.
+        return null
   return null
 
 # Based on [michaelficarra/CoffeeScriptRedux](http://goo.gl/ZTx1p)

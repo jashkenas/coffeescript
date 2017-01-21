@@ -54,6 +54,7 @@ test "compiler error formatting with mixed tab and space", ->
 
 
 if require?
+  os   = require 'os'
   fs   = require 'fs'
   path = require 'path'
 
@@ -84,6 +85,23 @@ if require?
       """
     finally
       fs.unlinkSync 'test/syntax-error.coffee'
+
+  test "#3890 Error.prepareStackTrace doesn't throw an error if a compiled file is deleted", ->
+    # Adapted from https://github.com/atom/coffee-cash/blob/master/spec/coffee-cash-spec.coffee
+    filePath = path.join os.tmpdir(), 'file.coffee'
+    fs.writeFileSync filePath, "module.exports = -> throw new Error('hello world')"
+    throwsAnError = require(filePath)
+    fs.unlinkSync filePath
+
+    caughtError = null
+    try
+      throwsAnError()
+    catch error
+      caughtError = error
+
+    eq caughtError.message, 'hello world'
+    doesNotThrow(-> caughtError.stack)
+    ok caughtError.stack.toString().indexOf(filePath) isnt -1
 
 
 test "#1096: unexpected generated tokens", ->
