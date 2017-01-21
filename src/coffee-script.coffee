@@ -372,6 +372,6 @@ Error.prepareStackTrace = (err, stack) ->
 
   frames = for frame in stack
     break if frame.getFunction() is exports.run
-    "  at #{formatSourcePosition frame, getSourceMapping}"
+    "    at #{formatSourcePosition frame, getSourceMapping}"
 
   "#{err.toString()}\n#{frames.join '\n'}\n"
