@@ -1945,7 +1945,7 @@ exports.Code = class Code extends Base
       # encountered, add these other parameters to the list to be output in
       # the function definition.
       else
-        if param.isComplex()
+        if param.isComplex() or param.isCall()
           # This parameter is destructured. So add a statement to the function
           # body assigning it, e.g. `(arg) => { var a = arg.a; }` or with a
           # default value if it has one.
@@ -1960,7 +1960,7 @@ exports.Code = class Code extends Base
           # set by the `isComplex()` block above, define it as a statement in
           # the function body. This parameter comes after the splat parameter,
           # so we can’t define its default value in the parameter list.
-          unless param.isComplex()
+          unless param.isComplex() or param.isCall()
             ref = if param.value? then new Assign new Value(param.name), param.value, '=' else param
           # Add this parameter’s reference to the function scope
           o.scope.parameter fragmentsToText (if param.value? then param else ref).compileToFragments o
@@ -2109,6 +2109,11 @@ exports.Param = class Param extends Base
 
   isComplex: ->
     @name.isComplex()
+
+  isCall: ->
+    # We need to be careful that parameters whose default value is a function
+    # call do not call that function more than once.
+    @value? and @value instanceof Call
 
   # Iterates the name or names of a `Param`.
   # In a sense, a destructured parameter represents multiple JS parameters. This
