@@ -88,7 +88,7 @@ if require?
 
   test "#3890 Error.prepareStackTrace doesn't throw an error if a compiled file is deleted", ->
     # Adapted from https://github.com/atom/coffee-cash/blob/master/spec/coffee-cash-spec.coffee
-    filePath = path.join os.tmpdir(), 'file.coffee'
+    filePath = path.join os.tmpdir(), 'PrepareStackTraceTestFile.coffee'
     fs.writeFileSync filePath, "module.exports = -> throw new Error('hello world')"
     throwsAnError = require(filePath)
     fs.unlinkSync filePath
@@ -102,6 +102,23 @@ if require?
     eq caughtError.message, 'hello world'
     doesNotThrow(-> caughtError.stack)
     ok caughtError.stack.toString().indexOf(filePath) isnt -1
+
+  test "#4418 stack traces reference the correct line number", ->
+    filePath = path.join os.tmpdir(), 'StackTraceLineNumberTestFile.coffee'
+    fileContents = "module.exports = ->\n"
+    fileContents += "  line = #{i}\n" for i in [2..1337]
+    fileContents += "  throw new Error('hello world')"
+    fs.writeFileSync filePath, fileContents
+    throwsAnError = require(filePath)
+    fs.unlinkSync filePath
+
+    caughtError = null
+    try
+      throwsAnError()
+    catch error
+      caughtError = error
+
+    ok "#{caughtError.stack.toString().indexOf(filePath)}:1339" isnt -1
 
 
 test "#1096: unexpected generated tokens", ->
