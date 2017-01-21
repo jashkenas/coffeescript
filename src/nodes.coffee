@@ -2312,7 +2312,7 @@ exports.For = class For extends While
     @index.error 'cannot use index with for-from' if @from and @index
     source.ownTag.error "cannot use own with for-#{if @from then 'from' else 'in'}" if @own and not @object
     [@name, @index] = [@index, @name] if @object
-    @index.error 'index cannot be a pattern matching expression' if @index instanceof Value
+    @index.error 'index cannot be a pattern matching expression' if @index instanceof Value and not @index.isAssignable()
     @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length and not @from
     @pattern = @name instanceof Value
     @index.error 'indexes do not apply to range loops' if @range and @index
@@ -2334,7 +2334,7 @@ exports.For = class For extends While
     name        = @name  and (@name.compile o, LEVEL_LIST) if not @pattern
     index       = @index and (@index.compile o, LEVEL_LIST)
     scope.find(name)  if name and not @pattern
-    scope.find(index) if index
+    scope.find(index) if index and @index not instanceof Value
     rvar        = scope.freeVariable 'results' if @returns
     if @from
       ivar = scope.freeVariable 'x', single: true if @pattern
