@@ -216,12 +216,24 @@ if require.extensions
       Use CoffeeScript.register() or require the coffee-script/register module to require #{ext} files.
       """
 
+# For each compiled file, save its source in memory in case we need to recompile it later.
+# We might need to recompile if the first compilation didn’t create a source map (faster)
+# but something went wrong and we need a stack trace. Assuming that most of the time, code
+# isn’t throwing exceptions, it’s probably more efficient to compile twice only when we
+# need a stack trace, rather than always generating a source map even when it’s not likely
+# to be used.
+compiledFiles = {}
+
 exports._compileFile = (filename, sourceMap = no, inlineMap = no) ->
   raw = fs.readFileSync filename, 'utf8'
+  # Strip the Unicode byte order mark, if this file begins with one.
   stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
+  compiledFiles[filename] = stripped
+  compileCode stripped, filename, sourceMap, inlineMap
 
+compileCode = (code, filename, sourceMap = no, inlineMap = no) ->
   try
-    answer = compile stripped, {
+    answer = compile code, {
       filename, sourceMap, inlineMap
       sourceFiles: [filename]
       literate: helpers.isLiterate filename
@@ -230,7 +242,7 @@ exports._compileFile = (filename, sourceMap = no, inlineMap = no) ->
     # As the filename and code of a dynamically loaded file will be different
     # from the original file compiled with CoffeeScript.run, add that
     # information to error so it can be pretty-printed later.
-    throw helpers.updateSyntaxError err, stripped, filename
+    throw helpers.updateSyntaxError err, code, filename
 
   answer
 
@@ -336,23 +348,17 @@ formatSourcePosition = (frame, getSourceMapping) ->
   else
     fileLocation
 
-# Map of filenames -> sourceMap object.
+# Map of filenames: sourceMap objects.
 sourceMaps = {}
-
 # Generates the source map for a coffee file and stores it in the local cache variable.
 getSourceMap = (filename) ->
-  return sourceMaps[filename] if sourceMaps[filename]
-  for ext in exports.FILE_EXTENSIONS
-    if helpers.ends filename, ext
-      try
-        # `exports._compileFile` will try to open a file on disk.
-        answer = exports._compileFile filename, true
-        return sourceMaps[filename] = answer.sourceMap
-      catch error
-        # If it can’t, for example because the original file has since disappeared,
-        # just return null rather than throwing an exception.
-        return null
-  return null
+  if sourceMaps[filename]?
+    sourceMaps[filename]
+  else if compiledFiles[filename]?
+    answer = compileCode compiledFiles[filename], filename, yes, no
+    sourceMaps[filename] = answer.sourceMap
+  else
+    null
 
 # Based on [michaelficarra/CoffeeScriptRedux](http://goo.gl/ZTx1p)
 # NodeJS / V8 have no support for transforming positions in stack traces using
