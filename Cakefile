@@ -85,8 +85,14 @@ task 'build:full', 'rebuild the source twice, and run the tests', ->
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   helpers.extend global, require 'util'
   require 'jison'
-  parser = require('./lib/coffee-script/grammar').parser
-  fs.writeFileSync 'lib/coffee-script/parser.js', parser.generate()
+  parser = require('./lib/coffee-script/grammar').parser.generate()
+  # Patch Jison’s output, until https://github.com/zaach/jison/pull/339 is accepted,
+  # to ensure that the CommonJS output is only generated in a true CommonJS
+  # environment and not a browser that happens to have `require` and `exports`
+  # defined as global variables (such as via require.js).
+  # CommonJS/Node.js detection method via http://stackoverflow.com/a/31090240/223225.
+  parser = parser.replace "if (typeof require !== 'undefined' && typeof exports !== 'undefined')", "if (typeof require !== 'undefined' && typeof exports !== 'undefined' && new Function('try{return this===global;}catch(e){return false;}')())"
+  fs.writeFileSync 'lib/coffee-script/parser.js', parser
 
 
 task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
