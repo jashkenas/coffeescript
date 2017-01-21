@@ -87,11 +87,12 @@ task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   require 'jison'
   parser = require('./lib/coffee-script/grammar').parser.generate()
   # Patch Jison’s output, until https://github.com/zaach/jison/pull/339 is accepted,
-  # to ensure that the CommonJS output is only generated in a true CommonJS
-  # environment and not a browser that happens to have `require` and `exports`
-  # defined as global variables (such as via require.js).
-  # CommonJS/Node.js detection method via http://stackoverflow.com/a/31090240/223225.
-  parser = parser.replace "if (typeof require !== 'undefined' && typeof exports !== 'undefined')", "if (typeof require !== 'undefined' && typeof exports !== 'undefined' && new Function('try{return this===global;}catch(e){return false;}')())"
+  # to ensure that require('fs') is only called where it exists.
+  parser = parser.replace "var source = require('fs')", """
+      var source = null;
+          var fs = require('fs');
+          if (typeof fs !== 'undefined' && fs !== null)
+              source = fs"""
   fs.writeFileSync 'lib/coffee-script/parser.js', parser
 
 
