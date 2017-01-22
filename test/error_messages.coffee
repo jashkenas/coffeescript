@@ -54,8 +54,20 @@ test "compiler error formatting with mixed tab and space", ->
 
 
 if require?
+  os   = require 'os'
   fs   = require 'fs'
   path = require 'path'
+
+  test "patchStackTrace line patching", ->
+    err = new Error 'error'
+    ok err.stack.match /test[\/\\]error_messages\.coffee:\d+:\d+\b/
+
+  test "patchStackTrace stack prelude consistent with V8", ->
+    err = new Error
+    ok err.stack.match /^Error\n/ # Notice no colon when no message.
+
+    err = new Error 'error'
+    ok err.stack.match /^Error: error\n/
 
   test "#2849: compilation error in a require()d file", ->
     # Create a temporary file to require().
@@ -73,6 +85,57 @@ if require?
       """
     finally
       fs.unlinkSync 'test/syntax-error.coffee'
+
+  test "#3890 Error.prepareStackTrace doesn't throw an error if a compiled file is deleted", ->
+    # Adapted from https://github.com/atom/coffee-cash/blob/master/spec/coffee-cash-spec.coffee
+    filePath = path.join os.tmpdir(), 'PrepareStackTraceTestFile.coffee'
+    fs.writeFileSync filePath, "module.exports = -> throw new Error('hello world')"
+    throwsAnError = require filePath
+    fs.unlinkSync filePath
+
+    try
+      throwsAnError()
+    catch error
+
+    eq error.message, 'hello world'
+    doesNotThrow(-> error.stack)
+    notEqual error.stack.toString().indexOf(filePath), -1
+
+  test "#4418 stack traces for compiled files reference the correct line number", ->
+    filePath = path.join os.tmpdir(), 'StackTraceLineNumberTestFile.coffee'
+    fileContents = """
+      testCompiledFileStackTraceLineNumber = ->
+        # `a` on the next line is undefined and should throw a ReferenceError
+        console.log a if true
+
+      do testCompiledFileStackTraceLineNumber
+      """
+    fs.writeFileSync filePath, fileContents
+
+    try
+      require filePath
+    catch error
+    fs.unlinkSync filePath
+
+    # Make sure the line number reported is line 3 (the original Coffee source)
+    # and not line 6 (the generated JavaScript).
+    eq /StackTraceLineNumberTestFile.coffee:(\d)/.exec(error.stack.toString())[1], '3'
+
+
+test "#4418 stack traces for compiled strings reference the correct line number", ->
+  try
+    CoffeeScript.run """
+      testCompiledStringStackTraceLineNumber = ->
+        # `a` on the next line is undefined and should throw a ReferenceError
+        console.log a if true
+
+      do testCompiledStringStackTraceLineNumber
+      """
+  catch error
+
+  # Make sure the line number reported is line 3 (the original Coffee source)
+  # and not line 6 (the generated JavaScript).
+  eq /at testCompiledStringStackTraceLineNumber.*:(\d):/.exec(error.stack.toString())[1], '3'
 
 
 test "#1096: unexpected generated tokens", ->
