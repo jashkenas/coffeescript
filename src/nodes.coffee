@@ -1993,10 +1993,12 @@ exports.Code = class Code extends Base
 
     # Assemble the output
     modifiers = []
-    modifiers.push 'static'   if @isMethod and @isStatic
-    modifiers.push 'async'    if @isAsync
-    modifiers.push 'function' if not @isMethod and not @bound
-    modifiers.push '*'        if @isGenerator
+    modifiers.push 'static' if @isMethod and @isStatic
+    modifiers.push 'async'  if @isAsync
+    unless @isMethod or @bound
+      modifiers.push "function#{if @isGenerator then '*' else ''}"
+    else if @isGenerator
+      modifiers.push '*'
 
     signature = [@makeCode '(']
     for param, i in params
@@ -2110,7 +2112,7 @@ exports.Param = class Param extends Base
     @reference = node
 
   isComplex: ->
-    @name.isComplex()
+    @name.isComplex() or @value instanceof Call
 
   # Iterates the name or names of a `Param`.
   # In a sense, a destructured parameter represents multiple JS parameters. This

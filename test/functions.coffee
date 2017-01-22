@@ -341,3 +341,9 @@ test "#1038 Optimize trailing return statements", ->
                                                    foo()
                                                    return
                                                  """)
+
+test "#4406 Destructured parameter default evaluation order", ->
+  current = 0
+  next    = -> ++current
+  foo = ({ a = next() }, b = next()) -> [ a, b ]
+  arrayEq foo({}), [1, 2]
