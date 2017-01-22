@@ -8,7 +8,7 @@
     "compiler"
   ],
   "author": "Jeremy Ashkenas",
-  "version": "1.12.2",
+  "version": "1.12.3",
   "license": "MIT",
   "engines": {
     "node": ">=0.8.0"
@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "docco": "~0.7.0",
-    "google-closure-compiler-js": "^20161201.0.0",
+    "google-closure-compiler-js": "^20161201.0.1",
     "highlight.js": "~9.9.0",
     "jison": ">=0.4.17",
     "marked": "^0.3.6",
