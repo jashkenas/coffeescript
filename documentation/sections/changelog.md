@@ -1,6 +1,12 @@
 ## Change Log
 
 ```
+releaseHeader('2017-01-22', '1.12.3', '1.12.2')
+```
+
+*   CoffeeScript’s patched `Error.prepareStackTrace` has been restored, with some revisions that should prevent the erroneous exceptions that were making life difficult for some downstream projects. This fixes the incorrect line numbers in stack traces since 1.12.2.
+
+```
 releaseHeader('2016-12-16', '1.12.2', '1.12.1')
 ```
 
