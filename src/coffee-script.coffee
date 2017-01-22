@@ -74,7 +74,7 @@ exports.compile = compile = withPrettyErrors (code, options) ->
   # a filename we have no way to retrieve this source later in the event that
   # we need to recompile it to get a source map for `prepareStackTrace`.
   generateSourceMap = options.sourceMap or options.inlineMap or not options.filename?
-  filename = options.filename or '.'
+  filename = options.filename or '<anonymous>'
 
   sources[filename] = code
   map = new SourceMap if generateSourceMap
@@ -87,7 +87,7 @@ exports.compile = compile = withPrettyErrors (code, options) ->
     token[1] for token in tokens when token[0] is 'IDENTIFIER'
   )
 
-  # Check for import or export; if found, force bare mode
+  # Check for import or export; if found, force bare mode.
   unless options.bare? and options.bare is yes
     for token in tokens
       if token[0] in ['IMPORT', 'EXPORT']
@@ -102,7 +102,7 @@ exports.compile = compile = withPrettyErrors (code, options) ->
   currentColumn = 0
   js = ""
   for fragment in fragments
-    # Update the sourcemap with data from each fragment
+    # Update the sourcemap with data from each fragment.
     if generateSourceMap
       # Do not include empty, whitespace, or semicolon-only fragments.
       if fragment.locationData and not /^[;\s]*$/.test fragment.code
@@ -163,7 +163,7 @@ exports.run = (code, options = {}) ->
 
   # Set the filename.
   mainModule.filename = process.argv[1] =
-    if options.filename then fs.realpathSync(options.filename) else '.'
+    if options.filename then fs.realpathSync(options.filename) else '<anonymous>'
 
   # Clear the module cache.
   mainModule.moduleCache and= {}
@@ -357,6 +357,11 @@ formatSourcePosition = (frame, getSourceMapping) ->
 getSourceMap = (filename) ->
   if sourceMaps[filename]?
     sourceMaps[filename]
+  # CoffeeScript compiled in a browser may get compiled with `options.filename`
+  # of `<anonymous>`, but the browser may request the stack trace with the
+  # filename of the script file.
+  else if sourceMaps['<anonymous>']?
+    sourceMaps['<anonymous>']
   else if sources[filename]?
     answer = compile sources[filename],
       filename: filename

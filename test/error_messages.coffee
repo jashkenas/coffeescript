@@ -135,7 +135,7 @@ test "#4418 stack traces for compiled strings reference the correct line number"
 
   # Make sure the line number reported is line 3 (the original Coffee source)
   # and not line 6 (the generated JavaScript).
-  eq /at testCompiledStringStackTraceLineNumber \(\.:(\d)/.exec(error.stack.toString())[1], '3'
+  eq /at testCompiledStringStackTraceLineNumber.*:(\d):/.exec(error.stack.toString())[1], '3'
 
 
 test "#1096: unexpected generated tokens", ->
