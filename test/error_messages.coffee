@@ -90,35 +90,52 @@ if require?
     # Adapted from https://github.com/atom/coffee-cash/blob/master/spec/coffee-cash-spec.coffee
     filePath = path.join os.tmpdir(), 'PrepareStackTraceTestFile.coffee'
     fs.writeFileSync filePath, "module.exports = -> throw new Error('hello world')"
-    throwsAnError = require(filePath)
+    throwsAnError = require filePath
     fs.unlinkSync filePath
 
-    caughtError = null
     try
       throwsAnError()
     catch error
-      caughtError = error
 
-    eq caughtError.message, 'hello world'
-    doesNotThrow(-> caughtError.stack)
-    ok caughtError.stack.toString().indexOf(filePath) isnt -1
+    eq error.message, 'hello world'
+    doesNotThrow(-> error.stack)
+    notEqual error.stack.toString().indexOf(filePath), -1
 
-  test "#4418 stack traces reference the correct line number", ->
+  test "#4418 stack traces for compiled files reference the correct line number", ->
     filePath = path.join os.tmpdir(), 'StackTraceLineNumberTestFile.coffee'
-    fileContents = "module.exports = ->\n"
-    fileContents += "  line = #{i}\n" for i in [2..1337]
-    fileContents += "  throw new Error('hello world')"
+    fileContents = """
+      testCompiledFileStackTraceLineNumber = ->
+        # `a` on the next line is undefined and should throw a ReferenceError
+        console.log a if true
+
+      do testCompiledFileStackTraceLineNumber
+      """
     fs.writeFileSync filePath, fileContents
-    throwsAnError = require(filePath)
+
+    try
+      require filePath
+    catch error
     fs.unlinkSync filePath
 
-    caughtError = null
-    try
-      throwsAnError()
-    catch error
-      caughtError = error
+    # Make sure the line number reported is line 3 (the original Coffee source)
+    # and not line 6 (the generated JavaScript).
+    eq /StackTraceLineNumberTestFile.coffee:(\d)/.exec(error.stack.toString())[1], '3'
 
-    ok "#{caughtError.stack.toString().indexOf(filePath)}:1339" isnt -1
+
+test "#4418 stack traces for compiled strings reference the correct line number", ->
+  try
+    CoffeeScript.run """
+      testCompiledStringStackTraceLineNumber = ->
+        # `a` on the next line is undefined and should throw a ReferenceError
+        console.log a if true
+
+      do testCompiledStringStackTraceLineNumber
+      """
+  catch error
+
+  # Make sure the line number reported is line 3 (the original Coffee source)
+  # and not line 6 (the generated JavaScript).
+  eq /at testCompiledStringStackTraceLineNumber \(\.:(\d)/.exec(error.stack.toString())[1], '3'
 
 
 test "#1096: unexpected generated tokens", ->
