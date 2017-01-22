@@ -89,7 +89,7 @@ task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   # Patch Jison’s output, until https://github.com/zaach/jison/pull/339 is accepted,
   # to ensure that require('fs') is only called where it exists.
   parser = parser.replace "var source = require('fs')", """
-      var source = null;
+      var source = '';
           var fs = require('fs');
           if (typeof fs !== 'undefined' && fs !== null)
               source = fs"""
