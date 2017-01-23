@@ -2614,7 +2614,9 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
   <a href="https://github.com/jashkenas/coffeescript/compare/1.12.2...1.12.3">1.12.3</a>
   <span class="timestamp"> &mdash; <time datetime="2017-01-22">January 22, 2017</time></span>
 </h2><ul>
+<li><code>@</code> values can now be used as indices in <code>for</code> expressions. This loosens the compilation of <code>for</code> expressions to allow the index variable to be an <code>@</code> value, e.g. <code>do @visit for @node, @index in nodes</code>. Within <code>@visit</code>, the index of the current node (<code>@node</code>) would be available as <code>@index</code>.</li>
 <li>CoffeeScript’s patched <code>Error.prepareStackTrace</code> has been restored, with some revisions that should prevent the erroneous exceptions that were making life difficult for some downstream projects. This fixes the incorrect line numbers in stack traces since 1.12.2.</li>
+<li>The <code>//=</code> operator’s output now wraps parentheses around the right operand, like the other assignment operators.</li>
 </ul>
 <div class="anchor" id="1.12.2"></div>
 <h2 class="header">
