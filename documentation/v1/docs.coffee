@@ -66,6 +66,9 @@ $('.navigation').click (e) ->
     $(this).addClass 'active'
   false
 
+$(document).on 'click', '[href="#try"]', (e) ->
+  $('.navigation.try').addClass 'active'
+
 # Dismiss console if Escape pressed or click falls outside console
 # Trigger Run button on Ctrl-Enter
 $(document.body)

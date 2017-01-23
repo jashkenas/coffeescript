@@ -46,22 +46,38 @@ withPrettyErrors = (fn) ->
       throw err if typeof code isnt 'string' # Support `CoffeeScript.nodes(tokens)`.
       throw helpers.updateSyntaxError err, code, options.filename
 
+# For each compiled file, save its source in memory in case we need to
+# recompile it later. We might need to recompile if the first compilation
+# didn’t create a source map (faster) but something went wrong and we need
+# a stack trace. Assuming that most of the time, code isn’t throwing
+# exceptions, it’s probably more efficient to compile twice only when we
+# need a stack trace, rather than always generating a source map even when
+# it’s not likely to be used. Save in form of `filename`: `(source)`
+sources = {}
+# Also save source maps if generated, in form of `filename`: `(source map)`.
+sourceMaps = {}
+
 # Compile CoffeeScript code to JavaScript, using the Coffee/Jison compiler.
 #
-# If `options.sourceMap` is specified, then `options.filename` must also be specified.  All
-# options that can be passed to `SourceMap#generate` may also be passed here.
+# If `options.sourceMap` is specified, then `options.filename` must also be
+# specified. All options that can be passed to `SourceMap#generate` may also
+# be passed here.
 #
 # This returns a javascript string, unless `options.sourceMap` is passed,
 # in which case this returns a `{js, v3SourceMap, sourceMap}`
-# object, where sourceMap is a sourcemap.coffee#SourceMap object, handy for doing programatic
-# lookups.
+# object, where sourceMap is a sourcemap.coffee#SourceMap object, handy for
+# doing programmatic lookups.
 exports.compile = compile = withPrettyErrors (code, options) ->
   {merge, extend} = helpers
   options = extend {}, options
-  generateSourceMap = options.sourceMap or options.inlineMap
+  # Always generate a source map if no filename is passed in, since without a
+  # a filename we have no way to retrieve this source later in the event that
+  # we need to recompile it to get a source map for `prepareStackTrace`.
+  generateSourceMap = options.sourceMap or options.inlineMap or not options.filename?
+  filename = options.filename or '<anonymous>'
 
-  if generateSourceMap
-    map = new SourceMap
+  sources[filename] = code
+  map = new SourceMap if generateSourceMap
 
   tokens = lexer.tokenize code, options
 
@@ -71,7 +87,7 @@ exports.compile = compile = withPrettyErrors (code, options) ->
     token[1] for token in tokens when token[0] is 'IDENTIFIER'
   )
 
-  # Check for import or export; if found, force bare mode
+  # Check for import or export; if found, force bare mode.
   unless options.bare? and options.bare is yes
     for token in tokens
       if token[0] in ['IMPORT', 'EXPORT']
@@ -86,7 +102,7 @@ exports.compile = compile = withPrettyErrors (code, options) ->
   currentColumn = 0
   js = ""
   for fragment in fragments
-    # Update the sourcemap with data from each fragment
+    # Update the sourcemap with data from each fragment.
     if generateSourceMap
       # Do not include empty, whitespace, or semicolon-only fragments.
       if fragment.locationData and not /^[;\s]*$/.test fragment.code
@@ -110,6 +126,7 @@ exports.compile = compile = withPrettyErrors (code, options) ->
 
   if generateSourceMap
     v3SourceMap = map.generate(options, code)
+    sourceMaps[filename] = map
 
   if options.inlineMap
     encoded = base64encode JSON.stringify v3SourceMap
@@ -146,13 +163,13 @@ exports.run = (code, options = {}) ->
 
   # Set the filename.
   mainModule.filename = process.argv[1] =
-    if options.filename then fs.realpathSync(options.filename) else '.'
+    if options.filename then fs.realpathSync(options.filename) else '<anonymous>'
 
   # Clear the module cache.
   mainModule.moduleCache and= {}
 
   # Assign paths for node_modules loading
-  dir = if options.filename
+  dir = if options.filename?
     path.dirname fs.realpathSync options.filename
   else
     fs.realpathSync '.'
@@ -218,6 +235,7 @@ if require.extensions
 
 exports._compileFile = (filename, sourceMap = no, inlineMap = no) ->
   raw = fs.readFileSync filename, 'utf8'
+  # Strip the Unicode byte order mark, if this file begins with one.
   stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
 
   try
@@ -283,3 +301,87 @@ parser.yy.parseError = (message, {token}) ->
   # from the lexer.
   helpers.throwSyntaxError "unexpected #{errorText}", errorLoc
 
+# Based on http://v8.googlecode.com/svn/branches/bleeding_edge/src/messages.js
+# Modified to handle sourceMap
+formatSourcePosition = (frame, getSourceMapping) ->
+  filename = undefined
+  fileLocation = ''
+
+  if frame.isNative()
+    fileLocation = "native"
+  else
+    if frame.isEval()
+      filename = frame.getScriptNameOrSourceURL()
+      fileLocation = "#{frame.getEvalOrigin()}, " unless filename
+    else
+      filename = frame.getFileName()
+
+    filename or= "<anonymous>"
+
+    line = frame.getLineNumber()
+    column = frame.getColumnNumber()
+
+    # Check for a sourceMap position
+    source = getSourceMapping filename, line, column
+    fileLocation =
+      if source
+        "#{filename}:#{source[0]}:#{source[1]}"
+      else
+        "#{filename}:#{line}:#{column}"
+
+  functionName = frame.getFunctionName()
+  isConstructor = frame.isConstructor()
+  isMethodCall = not (frame.isToplevel() or isConstructor)
+
+  if isMethodCall
+    methodName = frame.getMethodName()
+    typeName = frame.getTypeName()
+
+    if functionName
+      tp = as = ''
+      if typeName and functionName.indexOf typeName
+        tp = "#{typeName}."
+      if methodName and functionName.indexOf(".#{methodName}") isnt functionName.length - methodName.length - 1
+        as = " [as #{methodName}]"
+
+      "#{tp}#{functionName}#{as} (#{fileLocation})"
+    else
+      "#{typeName}.#{methodName or '<anonymous>'} (#{fileLocation})"
+  else if isConstructor
+    "new #{functionName or '<anonymous>'} (#{fileLocation})"
+  else if functionName
+    "#{functionName} (#{fileLocation})"
+  else
+    fileLocation
+
+getSourceMap = (filename) ->
+  if sourceMaps[filename]?
+    sourceMaps[filename]
+  # CoffeeScript compiled in a browser may get compiled with `options.filename`
+  # of `<anonymous>`, but the browser may request the stack trace with the
+  # filename of the script file.
+  else if sourceMaps['<anonymous>']?
+    sourceMaps['<anonymous>']
+  else if sources[filename]?
+    answer = compile sources[filename],
+      filename: filename
+      sourceMap: yes
+    answer.sourceMap
+  else
+    null
+
+# Based on [michaelficarra/CoffeeScriptRedux](http://goo.gl/ZTx1p)
+# NodeJS / V8 have no support for transforming positions in stack traces using
+# sourceMap, so we must monkey-patch Error to display CoffeeScript source
+# positions.
+Error.prepareStackTrace = (err, stack) ->
+  getSourceMapping = (filename, line, column) ->
+    sourceMap = getSourceMap filename
+    answer = sourceMap.sourceLocation [line - 1, column - 1] if sourceMap?
+    if answer? then [answer[0] + 1, answer[1] + 1] else null
+
+  frames = for frame in stack
+    break if frame.getFunction() is exports.run
+    "    at #{formatSourcePosition frame, getSourceMapping}"
+
+  "#{err.toString()}\n#{frames.join '\n'}\n"
