@@ -372,7 +372,7 @@ textarea {
   font-weight: 400;
   line-height: 1.25;
 }
-.CodeMirror-cursor {
+.javascript-output-column .CodeMirror-cursor {
   /* https://github.com/codemirror/CodeMirror/issues/2568 */
   display: none;
 }
@@ -2226,11 +2226,13 @@ ref = weatherReport("Berkeley, CA"), city = ref[0], temp = ref[1], forecast = re
       "Bellagio, Italy 22021"
     ]
 
+{sculptor} = futurists
+
 {poet: {name, address: [street, city]}} = futurists
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="object_extraction-js">var city, futurists, name, ref, ref1, street;
+      <textarea class="javascript-output" id="object_extraction-js">var city, futurists, name, ref, ref1, sculptor, street;
 
 futurists = {
   sculptor: "Umberto Boccioni",
@@ -2240,6 +2242,8 @@ futurists = {
     address: ["Via Roma 42R", "Bellagio, Italy 22021"]
   }
 };
+
+sculptor = futurists.sculptor;
 
 ref = futurists.poet, name = ref.name, (ref1 = ref.address, street = ref1[0], city = ref1[1]);
 </textarea>
@@ -2395,7 +2399,7 @@ window.ps or= perfectSquares()
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="generators-js">var perfectSquares;
 
-perfectSquares = function *() {
+perfectSquares = function*() {
   var num;
   num = 0;
   while (true) {
@@ -2439,7 +2443,7 @@ getFibonacciNumbers = (length) ->
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="generator_iteration-js">var fibonacci, getFibonacciNumbers;
 
-fibonacci = function *() {
+fibonacci = function*() {
   var current, previous, ref, ref1;
   ref = [1, 1], previous = ref[0], current = ref[1];
   while (true) {

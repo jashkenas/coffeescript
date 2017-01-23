@@ -352,7 +352,7 @@ textarea {
   font-weight: 400;
   line-height: 1.25;
 }
-.CodeMirror-cursor {
+.javascript-output-column .CodeMirror-cursor {
   /* https://github.com/codemirror/CodeMirror/issues/2568 */
   display: none;
 }
