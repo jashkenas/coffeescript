@@ -2112,7 +2112,7 @@ exports.Param = class Param extends Base
     @reference = node
 
   isComplex: ->
-    @name.isComplex() or @value instanceof Call
+    @name.isComplex() or (@value?.isComplex? and @value.isComplex())
 
   # Iterates the name or names of a `Param`.
   # In a sense, a destructured parameter represents multiple JS parameters. This
