@@ -1,7 +1,7 @@
 ## Change Log
 
 ```
-releaseHeader('2017-01-22', '1.12.3', '1.12.2')
+releaseHeader('2017-01-24', '1.12.3', '1.12.2')
 ```
 
 *   `@` values can now be used as indices in `for` expressions. This loosens the compilation of `for` expressions to allow the index variable to be an `@` value, e.g. `do @visit for @node, @index in nodes`. Within `@visit`, the index of the current node (`@node`) would be available as `@index`.
