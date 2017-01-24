@@ -515,6 +515,16 @@ test "#2274: Allow @values as loop variables", ->
   obj.method()
   eq obj.item, 3
 
+test "#4411: Allow @values as loop indices", ->
+  obj =
+    index: null
+    get: -> @index
+    method: ->
+      @get() for _, @index in [1, 2, 3]
+  eq obj.index, null
+  arrayEq obj.method(), [0, 1, 2]
+  eq obj.index, 3
+
 test "#2525, #1187, #1208, #1758, looping over an array forwards", ->
   list = [0, 1, 2, 3, 4]
 

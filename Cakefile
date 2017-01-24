@@ -85,8 +85,15 @@ task 'build:full', 'rebuild the source twice, and run the tests', ->
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   helpers.extend global, require 'util'
   require 'jison'
-  parser = require('./lib/coffee-script/grammar').parser
-  fs.writeFileSync 'lib/coffee-script/parser.js', parser.generate()
+  parser = require('./lib/coffee-script/grammar').parser.generate()
+  # Patch Jison’s output, until https://github.com/zaach/jison/pull/339 is accepted,
+  # to ensure that require('fs') is only called where it exists.
+  parser = parser.replace "var source = require('fs')", """
+      var source = '';
+          var fs = require('fs');
+          if (typeof fs !== 'undefined' && fs !== null)
+              source = fs"""
+  fs.writeFileSync 'lib/coffee-script/parser.js', parser
 
 
 task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->

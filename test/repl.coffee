@@ -1,6 +1,8 @@
 return if global.testingBrowser
 
+os = require 'os'
 fs = require 'fs'
+path = require 'path'
 
 # REPL
 # ----
@@ -30,7 +32,7 @@ class MockOutputStream extends Stream
     @written[@written.length - 1 + fromEnd].replace /\r?\n$/, ''
 
 # Create a dummy history file
-historyFile = '.coffee_history_test'
+historyFile = path.join os.tmpdir(), '.coffee_history_test'
 fs.writeFileSync historyFile, '1 + 2\n'
 
 testRepl = (desc, fn) ->
