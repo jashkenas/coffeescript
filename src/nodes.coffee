@@ -220,17 +220,39 @@ exports.Base = class Base
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
+
+  # `children` are the properties to recurse into when tree walking. The
+  # `children` list *is* the structure of the AST. The `parent` pointer, and
+  # the pointer to the `children` are how you can traverse the tree.
   children: []
 
-  isStatement     : NO
-  jumps           : NO
-  isComplex       : YES
-  isChainable     : NO
-  isAssignable    : NO
-  isNumber        : NO
+  # `isStatement` has to do with “everything is an expression”. A few things
+  # can’t be expressions, such as `break`. Things that `isStatement` returns
+  # `true` for are things that can’t be used as expressions. There are some
+  # error messages that come from `nodes.coffee` due to statements ending up
+  # in expression position.
+  isStatement: NO
 
-  unwrap     : THIS
-  unfoldSoak : NO
+  # `jumps` tells you if an expression, or an internal part of an expression
+  # has a flow control construct (like `break`, or `continue`, or `return`,
+  # or `throw`) that jumps out of the normal flow of control and can’t be
+  # used as a value. This is important because things like this make no sense;
+  # we have to disallow them.
+  jumps: NO
+
+  # If `node.isComplex() is false`, it is safe to use `node` more than once.
+  # Otherwise you need to store the value of `node` in a variable and output
+  # that variable several times instead. Kind of like this: `5` is not complex.
+  # `returnFive()` is complex. It’s all about “do we need to cache this
+  # expression?”
+  isComplex: YES
+
+  isChainable: NO
+  isAssignable: NO
+  isNumber: NO
+
+  unwrap: THIS
+  unfoldSoak: NO
 
   # Is this node used to assign a certain variable?
   assigns: NO
@@ -2112,6 +2134,11 @@ exports.Param = class Param extends Base
     @reference = node
 
   isComplex: ->
+    # Should this parameter be declared in the function body, rather than in
+    # the parameter list? We don’t want to pull out any parameter that
+    # isComplex, or else we break default values; but we want things like
+    # generator functions and iterators to evaluate in the correct order,
+    # which they might not do unless we pull them out into the function body.
     @name.isComplex() or
     @value instanceof Call or
     @value instanceof Op or
