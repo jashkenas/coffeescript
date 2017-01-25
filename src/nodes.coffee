@@ -2148,20 +2148,28 @@ exports.Param = class Param extends Base
     if @name.isComplex()
       yes
     else if @value? and @value.isComplex()
-      # Objects and arrays are always complex, but unless they contain any
-      # complex children, they’re safe to leave in the parameter list.
-      if @value instanceof Value and
-      (@value.base instanceof Arr or @value.base instanceof Obj)
-        hasComplexChild = no
-        @value.base.traverseChildren no, (node) ->
-          if node.isComplex()
-            # This can be further refined. An empty object will evaluate as
-            # not having any complex children, but as long as it has at least
-            # one property it will be considered complex.
-            hasComplexChild = yes
-            no # Stop traversing
-        hasComplexChild
+      if @value instanceof Value
+        unless @value.base.isComplex()
+          no
+        else
+          # Objects and arrays are always complex, but unless they contain any
+          # complex children, they’re safe to leave in the parameter list.
+          if @value.base instanceof Arr or @value.base instanceof Obj
+            hasComplexChild = no
+            @value.base.traverseChildren no, (node) ->
+              if node.isComplex()
+                # This can be further refined. An empty object will evaluate as
+                # not having any complex children, but as long as it has at least
+                # one property it will be considered complex.
+                hasComplexChild = yes
+                no # Stop traversing.
+            hasComplexChild
+          else
+            yes
       else
+        # Other types of `@value`s in the CoffeeScript codebase:
+        # `Call`, `Class`, `SuperCall`, `Op`.
+        # All of these should be declared and assigned in the function body.
         yes
     else
       no
