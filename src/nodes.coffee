@@ -1183,7 +1183,11 @@ exports.Class = class Class extends Base
     @name          = @determineName()
     executableBody = @walkBody()
 
-    if executableBody
+    # Special handling to allow `class expr.A extends A` declarations
+    parentName    = @parent.base.value if @parent instanceof Value and not @parent.hasProperties()
+    @hasNameClash = @name? and @name == parentName
+
+    if executableBody or @hasNameClash
       @compileNode = @compileClassDeclaration
       result = new ExecutableClassBody(@, executableBody).compileToFragments o
       @compileNode = @constructor::compileNode
@@ -1380,6 +1384,12 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
     @body.spaced = true
 
     o.classScope = wrapper.makeScope o.scope
+
+    if @class.hasNameClash
+      parent = new IdentifierLiteral o.classScope.freeVariable 'superClass'
+      wrapper.params.push new Param parent
+      args.push @class.parent
+      @class.parent = parent
 
     if @externalCtor
       externalCtor = new IdentifierLiteral o.classScope.freeVariable 'ctor', reserve: no
