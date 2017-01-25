@@ -4114,7 +4114,8 @@ used sequentially. For example:</p>
 
   compileFloorDivision: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
     floor = <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> IdentifierLiteral(<span class="hljs-string">'Math'</span>), [<span class="hljs-keyword">new</span> Access <span class="hljs-keyword">new</span> PropertyName <span class="hljs-string">'floor'</span>]
-    div = <span class="hljs-keyword">new</span> Op <span class="hljs-string">'/'</span>, @first, @second
+    second = <span class="hljs-keyword">if</span> @second.isComplex() <span class="hljs-keyword">then</span> <span class="hljs-keyword">new</span> Parens @second <span class="hljs-keyword">else</span> @second
+    div = <span class="hljs-keyword">new</span> Op <span class="hljs-string">'/'</span>, @first, second
     <span class="hljs-keyword">new</span> Call(floor, [div]).compileToFragments o
 
   compileModulo: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
@@ -4591,7 +4592,7 @@ you can map and filter in a single pass.</p>
     @index.error <span class="hljs-string">'cannot use index with for-from'</span> <span class="hljs-keyword">if</span> @from <span class="hljs-keyword">and</span> @index
     source.ownTag.error <span class="hljs-string">"cannot use own with for-<span class="hljs-subst">#{<span class="hljs-keyword">if</span> @from <span class="hljs-keyword">then</span> <span class="hljs-string">'from'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'in'</span>}</span>"</span> <span class="hljs-keyword">if</span> @own <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @object
     [@name, @index] = [@index, @name] <span class="hljs-keyword">if</span> @object
-    @index.error <span class="hljs-string">'index cannot be a pattern matching expression'</span> <span class="hljs-keyword">if</span> @index <span class="hljs-keyword">instanceof</span> Value
+    @index.error <span class="hljs-string">'index cannot be a pattern matching expression'</span> <span class="hljs-keyword">if</span> @index <span class="hljs-keyword">instanceof</span> Value <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @index.isAssignable()
     @range   = @source <span class="hljs-keyword">instanceof</span> Value <span class="hljs-keyword">and</span> @source.base <span class="hljs-keyword">instanceof</span> Range <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @source.properties.length <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @from
     @pattern = @name <span class="hljs-keyword">instanceof</span> Value
     @index.error <span class="hljs-string">'indexes do not apply to range loops'</span> <span class="hljs-keyword">if</span> @range <span class="hljs-keyword">and</span> @index
@@ -4625,7 +4626,7 @@ some cannot.</p>
     name        = @name  <span class="hljs-keyword">and</span> (@name.compile o, LEVEL_LIST) <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> @pattern
     index       = @index <span class="hljs-keyword">and</span> (@index.compile o, LEVEL_LIST)
     scope.find(name)  <span class="hljs-keyword">if</span> name <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @pattern
-    scope.find(index) <span class="hljs-keyword">if</span> index
+    scope.find(index) <span class="hljs-keyword">if</span> index <span class="hljs-keyword">and</span> @index <span class="hljs-keyword">not</span> <span class="hljs-keyword">instanceof</span> Value
     rvar        = scope.freeVariable <span class="hljs-string">'results'</span> <span class="hljs-keyword">if</span> @returns
     <span class="hljs-keyword">if</span> @from
       ivar = scope.freeVariable <span class="hljs-string">'x'</span>, single: <span class="hljs-literal">true</span> <span class="hljs-keyword">if</span> @pattern
