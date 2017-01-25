@@ -821,7 +821,9 @@ exports.Call = class Call extends Base
       compiledArgs.push (arg.compileToFragments o, LEVEL_LIST)...
 
     fragments = []
-    fragments.push @makeCode 'new ' if @isNew and @variable not instanceof Super
+    if @isNew
+      @variable.error "Unsupported reference to 'super'" if @variable instanceof Super
+      fragments.push @makeCode 'new '
     fragments.push @variable.compileToFragments(o, LEVEL_ACCESS)...
     fragments.push @makeCode('('), compiledArgs..., @makeCode(')')
     fragments
