@@ -2142,13 +2142,29 @@ exports.Param = class Param extends Base
   isComplex: ->
     # Should this parameter be declared in the function body, rather than in
     # the parameter list? We don’t want to pull out any parameter that
-    # isComplex, or else we break default values; but we want things like
+    # has a value, or else we break default values; but we want things like
     # generator functions and iterators to evaluate in the correct order,
     # which they might not do unless we pull them out into the function body.
-    @name.isComplex() or
-    @value instanceof Call or
-    @value instanceof Op or
-    @value instanceof Parens
+    if @name.isComplex()
+      yes
+    else if @value? and @value.isComplex()
+      # Objects and arrays are always complex, but unless they contain any
+      # complex children, they’re safe to leave in the parameter list.
+      if @value instanceof Value and
+      (@value.base instanceof Arr or @value.base instanceof Obj)
+        hasComplexChild = no
+        @value.base.traverseChildren no, (node) ->
+          if node.isComplex()
+            # This can be further refined. An empty object will evaluate as
+            # not having any complex children, but as long as it has at least
+            # one property it will be considered complex.
+            hasComplexChild = yes
+            no # Stop traversing
+        hasComplexChild
+      else
+        yes
+    else
+      no
 
   # Iterates the name or names of a `Param`.
   # In a sense, a destructured parameter represents multiple JS parameters. This
