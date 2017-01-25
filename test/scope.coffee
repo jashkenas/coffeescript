@@ -88,8 +88,8 @@ test "#1183: super + wrap", ->
 
   class B extends A
     constructor : -> super
-
-  B::m = -> r = try super()
+    m: -> r = try super()
+    m: -> r = super()
 
   eq (new B).m(), 10
 

@@ -465,7 +465,7 @@ test "export class that extends", ->
       baz: ->
         console.log 'hello, world!'"""
   output = toJS input
-  ok /export (class foo|var foo = \(function)/.test(output) and \
+  ok /export var foo = class foo/.test(output) and \
     not /var foo(;|,)/.test output
 
 test "export default class that extends", ->
@@ -473,7 +473,7 @@ test "export default class that extends", ->
     export default class foo extends bar
       baz: ->
         console.log 'hello, world!'"""
-  ok /export default (class foo|foo = \(function)/.test toJS input
+  ok /export default foo = class foo/.test toJS input
 
 test "export default named member, within an object", ->
   input = "export { foo as default, bar }"

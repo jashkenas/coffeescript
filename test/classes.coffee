@@ -40,13 +40,6 @@ test "classes with a four-level inheritance chain", ->
   ok result is 'zero/one/two/three/four'
   ok Base.static('word') is 'static/word'
 
-  FirstChild::func = (string) ->
-    super('one/').length + string
-
-  result = (new ThirdChild).func 'four'
-
-  ok result is '9two/three/four'
-
   ok (new ThirdChild).array.join(' ') is '1 2 3'
 
 
@@ -67,57 +60,6 @@ test "constructors with inheritance and super", ->
       identity super 'sub'
 
   ok (new SubClass).prop is 'top-super-sub'
-
-
-test "basic classes, again, but in the manual prototype style", ->
-
-  Base = ->
-  Base::func = (string) ->
-    'zero/' + string
-  Base::['func-func'] = (string) ->
-    "dynamic-#{string}"
-
-  FirstChild = ->
-  SecondChild = ->
-  ThirdChild = ->
-    @array = [1, 2, 3]
-    this
-
-  ThirdChild extends SecondChild extends FirstChild extends Base
-
-  FirstChild::func = (string) ->
-    super('one/') + string
-
-  SecondChild::func = (string) ->
-    super('two/') + string
-
-  ThirdChild::func = (string) ->
-    super('three/') + string
-
-  result = (new ThirdChild).func 'four'
-
-  ok result is 'zero/one/two/three/four'
-
-  ok (new ThirdChild)['func-func']('thing') is 'dynamic-thing'
-
-
-test "super with plain ol' prototypes", ->
-
-  TopClass = ->
-  TopClass::func = (arg) ->
-    'top-' + arg
-
-  SuperClass = ->
-  SuperClass extends TopClass
-  SuperClass::func = (arg) ->
-    super 'super-' + arg
-
-  SubClass = ->
-  SubClass extends SuperClass
-  SubClass::func = ->
-    super 'sub'
-
-  eq (new SubClass).func(), 'top-super-sub'
 
 
 test "'@' referring to the current instance, and not being coerced into a call", ->
@@ -825,24 +767,17 @@ test "#1392 calling `super` in methods defined on namespaced classes", ->
   namespace =
     A: ->
     B: ->
-  namespace.A extends Base
+  class namespace.A extends Base
+    m: -> super
 
-  namespace.A::m = -> super
   eq 5, (new namespace.A).m()
   namespace.B::m = namespace.A::m
   namespace.A::m = null
   eq 5, (new namespace.B).m()
 
-  count = 0
-  getNamespace = -> count++; namespace
-  getNamespace().A::n = -> super
-  eq 4, (new namespace.A).n()
-  eq 1, count
-
   class C
-    @a: (->)
-    @a extends Base
-    @a::m = -> super
+    @a: class extends Base
+      m: -> super
   eq 5, (new C.a).m()
 
 
@@ -867,18 +802,18 @@ test "dynamic method names and super", ->
     m: -> 5
     m2: -> 4.5
     n: -> 4
-  A = ->
-  A extends Base
+
+  name = -> count++; 'n'
+  count = 0
 
   m = 'm'
-  A::[m] = -> super
+  class A extends Base
+    "#{m}": -> super
+    "#{name()}": -> super
+
   m = 'n'
   eq 5, (new A).m()
 
-  name = -> count++; 'n'
-
-  count = 0
-  A::[name()] = -> super
   eq 4, (new A).n()
   eq 1, count
 
@@ -887,7 +822,7 @@ test "dynamic method names and super", ->
   count = 0
   class B extends Base
     @[name()] = -> super
-    @::[m] = -> super
+    "#{m}": -> super
     "#{m2}": -> super
   b = new B
   m = m2 = 'n'
@@ -1228,24 +1163,6 @@ test "super and external constructors", ->
   c = new C('Machiato')
   """
   throws -> CoffeeScript.compile throwsC, bare: yes
-
-
-test "super in external prototype", ->
-    class A
-      constructor: (@drink) ->
-      make: -> "Making a #{@drink}"
-
-    class B extends A
-    B::make = (@flavor) -> super() + " with #{@flavor}"
-    b = new B('Machiato')
-    eq b.make('caramel'),  "Making a Machiato with caramel"
-
-    #  Fails, bound
-    # TODO: Could this throw a compile error?
-    class C extends A
-    C::make = (@flavor) => super() + " with #{@flavor}"
-    c = new C('Machiato')
-    ok c.make('caramel') isnt "Making a Machiato with caramel"
 
 
 test "bound functions without super", ->
