@@ -1968,12 +1968,18 @@ exports.Code = class Code extends Base
       # the function definition.
       else
         if param.isComplex()
-          # This parameter is destructured. So add a statement to the function
-          # body assigning it, e.g. `(arg) => { var a = arg.a; }` or with a
-          # default value if it has one.
+          # This parameter cannot be declared or assigned in the parameter
+          # list. So add a statement to the function body assigning it, e.g.
+          # `(arg) => { var a = arg.a; }` or with a default value if it has
+          # one.
           val = ref = param.asReference o
-          val = new Op '?', ref, param.value if param.value
-          exprs.push new Assign new Value(param.name), val, '=', param: yes
+          if param.value?
+            condition = new Literal param.name.value + ' === undefined'
+            ifTrue = new Assign new Value(param.name), param.value, '=', param: yes
+            exprs.push new If condition, ifTrue
+          else
+            val = new Op '?', ref, param.value if param.value
+            exprs.push new Assign new Value(param.name), val, '=', param: yes
 
         # If this parameter comes before the splat or expansion, it will go
         # in the function definition parameter list.
