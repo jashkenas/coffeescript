@@ -81,7 +81,9 @@ exports.Base = class Base
     o.sharedScope = yes
     func = new Code [], Block.wrap [this]
     args = []
-    if (argumentsNode = @contains isLiteralArguments) or @contains isLiteralThis
+    if @contains ((node) -> node instanceof SuperCall)
+      func.bound = yes
+    else if (argumentsNode = @contains isLiteralArguments) or @contains isLiteralThis
       args = [new ThisLiteral]
       if argumentsNode
         meth = 'apply'
@@ -3029,9 +3031,7 @@ isLiteralArguments = (node) ->
   node instanceof IdentifierLiteral and node.value is 'arguments'
 
 isLiteralThis = (node) ->
-  node instanceof ThisLiteral or
-    (node instanceof Code and node.bound) or
-    node instanceof SuperCall
+  node instanceof ThisLiteral or (node instanceof Code and node.bound)
 
 shouldCacheOrIsAssignable = (node) -> node.shouldCache() or node.isAssignable?()
 
