@@ -1324,3 +1324,10 @@ test "bare 'super' is no longer allowed", ->
     class extends A then constructor: -> super
                                       ^^
   '''
+
+test "soaked 'super' in constructor", ->
+  assertErrorFormat 'class extends A then constructor: -> super?()', '''
+    [stdin]:1:38: error: Unsupported reference to 'super'
+    class extends A then constructor: -> super?()
+                                         ^^^^^
+  '''

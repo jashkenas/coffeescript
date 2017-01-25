@@ -309,6 +309,13 @@ grammar =
     o 'Parenthetical',                          -> new Value $1
     o 'Range',                                  -> new Value $1
     o 'This'
+    o 'Super'
+  ]
+
+  # A `super`-based expression that can be used as a value.
+  Super: [
+    o 'SUPER . Property',                       -> new Super LOC(3) new Access $3
+    o 'SUPER INDEX_START Expression INDEX_END', -> new Super LOC(3) new Index $3
   ]
 
   # The general group of accessors into an object, by property, by prototype
@@ -429,11 +436,7 @@ grammar =
     o 'Value OptFuncExist String',              -> new TaggedTemplateCall $1, $3, $2
     o 'Value OptFuncExist Arguments',           -> new Call $1, $3, $2
     o 'Invocation OptFuncExist Arguments',      -> new Call $1, $3, $2
-    o 'Super'
-  ]
-
-  Super: [
-    o 'SUPER Arguments',                        -> new SuperCall $2
+    o 'SUPER OptFuncExist Arguments',           -> new SuperCall LOC(1)(new Super), $3, $2
   ]
 
   # An optional existence check on a function.

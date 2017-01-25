@@ -782,9 +782,10 @@ exports.Call = class Call extends Base
   # Soaked chained invocations unfold into if/else ternary structures.
   unfoldSoak: (o) ->
     if @soak
-      if this instanceof SuperCall
-        left = new Literal @superReference o
+      if @variable instanceof Super
+        left = new Literal @variable.compile o
         rite = new Value left
+        @variable.error "Unsupported reference to 'super'" unless @variable.accessor?
       else
         return ifn if ifn = unfoldSoak o, this, 'variable'
         [left, rite] = new Value(@variable).cacheReference o
@@ -820,14 +821,9 @@ exports.Call = class Call extends Base
       compiledArgs.push (arg.compileToFragments o, LEVEL_LIST)...
 
     fragments = []
-    if this instanceof SuperCall
-      fragments.push @makeCode(@superReference o), @makeCode('(')
-    else
-      if @isNew then fragments.push @makeCode 'new '
-      fragments.push @variable.compileToFragments(o, LEVEL_ACCESS)...
-      fragments.push @makeCode "("
-    fragments.push compiledArgs...
-    fragments.push @makeCode ")"
+    fragments.push @makeCode 'new ' if @isNew and @variable not instanceof Super
+    fragments.push @variable.compileToFragments(o, LEVEL_ACCESS)...
+    fragments.push @makeCode('('), compiledArgs..., @makeCode(')')
     fragments
 
 #### Super
@@ -838,10 +834,7 @@ exports.Call = class Call extends Base
 # expressions are evaluated without altering the return value of the `SuperCall`
 # expression.
 exports.SuperCall = class SuperCall extends Call
-  children: ['expressions']
-
-  constructor: (args) ->
-    super null, args ? [new Splat new IdentifierLiteral 'arguments']
+  children: Call::children.concat ['expressions']
 
   isStatement: (o) ->
     @expressions?.length and o.level is LEVEL_TOP
@@ -860,25 +853,26 @@ exports.SuperCall = class SuperCall extends Call
     replacement.unshift superCall
     replacement.compileToFragments o, if o.level is LEVEL_TOP then o.level else LEVEL_LIST
 
-  # Grab the reference to the superclass's implementation of the current
-  # method.
-  superReference: (o) ->
+exports.Super = class Super extends Base
+  children: ['accessor']
+
+  constructor: (@accessor) ->
+    super()
+
+  compileNode: (o) ->
     method = o.scope.namedMethod()
-    if method?.ctor
-      'super'
-    else if method.isMethod
+    @error 'cannot use super outside of an instance method' unless method?.isMethod
+
+    @inCtor = !!method.ctor
+
+    unless @inCtor or @accessor?
       {name, variable} = method
       if name.shouldCache() or (name instanceof Index and name.index.isAssignable())
         nref = new IdentifierLiteral o.scope.parent.freeVariable 'name'
         name.index = new Assign nref, name.index
-      (new Value new Literal('super'), [ if nref? then new Index nref else name ]).compile o
-    else
-      @error 'cannot call super outside of an instance method.'
+      @accessor = if nref? then new Index nref else name
 
-  # The appropriate `this` value for a `super` call.
-  superThis : (o) ->
-    method = o.scope.method
-    (method and not method.klass and method.context) or "this"
+    (new Value (new Literal 'super'), if @accessor then [ @accessor ] else []).compileToFragments o
 
 #### RegexWithInterpolations
 
@@ -1338,7 +1332,8 @@ exports.Class = class Class extends Base
     ctor = @addInitializerMethod new Assign (new Value new PropertyName 'constructor'), new Code
     @body.unshift ctor
 
-    ctor.body.push new SuperCall if @parent
+    if @parent
+      ctor.body.push new SuperCall new Super, [new Splat new IdentifierLiteral 'arguments']
 
     if @externalCtor
       applyCtor = new Value @externalCtor, [ new Access new PropertyName 'apply' ]

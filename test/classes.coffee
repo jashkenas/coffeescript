@@ -62,6 +62,47 @@ test "constructors with inheritance and super", ->
   ok (new SubClass).prop is 'top-super-sub'
 
 
+test "'super' with accessors", ->
+  class Base
+    m: -> 4
+    n: -> 5
+    o: -> 6
+
+  name = 'o'
+  class A extends Base
+    m: -> super()
+    n: -> super.n()
+    "#{name}": -> super()
+    p: -> super[name]()
+
+  a = new A
+  eq 4, a.m()
+  eq 5, a.n()
+  eq 6, a.o()
+  eq 6, a.p()
+
+
+test "soaked 'super' invocation", ->
+  class Base
+    method: -> 2
+
+  class A extends Base
+    method: -> super?()
+    noMethod: -> super?()
+
+  a = new A
+  eq 2, a.method()
+  eq undefined, a.noMethod()
+
+  name = 'noMethod'
+  class B extends Base
+    "#{'method'}": -> super?()
+    "#{'noMethod'}": -> super?() ? super['method']()
+
+  b = new B
+  eq 2, b.method()
+  eq 2, b.noMethod()
+
 test "'@' referring to the current instance, and not being coerced into a call", ->
 
   class ClassName
