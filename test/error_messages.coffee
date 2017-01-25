@@ -1284,10 +1284,10 @@ test "constructor functions can't be generators", ->
   '''
 
 test "non-derived constructors can't call super", ->
-  assertErrorFormat 'class then constructor: -> super', '''
+  assertErrorFormat 'class then constructor: -> super()', '''
     [stdin]:1:28: error: 'super' is only allowed in derived class constructors
-    class then constructor: -> super
-                               ^^^^^
+    class then constructor: -> super()
+                               ^^^^^^^
   '''
 
 test "derived constructors can't reference `this` before calling super", ->
@@ -1305,10 +1305,10 @@ test "derived constructors can't use @params without calling super", ->
   '''
 
 test "'super' is not allowed in constructor parameter defaults", ->
-  assertErrorFormat 'class extends A then constructor: (a = super) ->', '''
+  assertErrorFormat 'class extends A then constructor: (a = super()) ->', '''
     [stdin]:1:40: error: 'super' is not allowed in constructor parameter defaults
-    class extends A then constructor: (a = super) ->
-                                           ^^^^^
+    class extends A then constructor: (a = super()) ->
+                                           ^^^^^^^
   '''
 
 test "can't use pattern matches for loop indices", ->
@@ -1316,4 +1316,11 @@ test "can't use pattern matches for loop indices", ->
     [stdin]:1:10: error: index cannot be a pattern matching expression
     a for b, {c} in d
              ^^^
+  '''
+
+test "bare 'super' is no longer allowed", ->
+  assertErrorFormat 'class extends A then constructor: -> super', '''
+    [stdin]:1:35: error: unexpected ->
+    class extends A then constructor: -> super
+                                      ^^
   '''

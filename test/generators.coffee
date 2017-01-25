@@ -337,8 +337,8 @@ test "generator methods in classes", ->
   arrayEq [2], Array.from new Base().method()
 
   class Child extends Base
-    @static: -> super
-    method: -> super
+    @static: -> super()
+    method: -> super()
 
   arrayEq [1], Array.from Child.static()
   arrayEq [2], Array.from new Child().method()

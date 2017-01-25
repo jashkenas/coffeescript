@@ -72,7 +72,7 @@ test "#1183: super + fat arrows", ->
 
   class B extends A
     constructor : ->
-      super
+      super()
     foo : (cb) ->
       dolater =>
         dolater =>
@@ -87,7 +87,7 @@ test "#1183: super + wrap", ->
     m : -> 10
 
   class B extends A
-    constructor : -> super
+    constructor : -> super()
     m: -> r = try super()
     m: -> r = super()
 
@@ -113,7 +113,7 @@ test "#2331: bound super regression", ->
     method: -> @constructor.value
 
   class B extends A
-    method: => super
+    method: => super()
 
   eq (new B).method(), 'A'
 

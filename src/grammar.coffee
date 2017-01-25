@@ -433,7 +433,6 @@ grammar =
   ]
 
   Super: [
-    o 'SUPER',                                  -> new SuperCall
     o 'SUPER Arguments',                        -> new SuperCall $2
   ]
 

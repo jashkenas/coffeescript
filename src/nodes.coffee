@@ -518,7 +518,7 @@ exports.Literal = class Literal extends Base
     [@makeCode @value]
 
   toString: ->
-    " #{if @isStatement() then super else @constructor.name}: #{@value}"
+    " #{if @isStatement() then super() else @constructor.name}: #{@value}"
 
 exports.NumberLiteral = class NumberLiteral extends Literal
 
@@ -612,14 +612,14 @@ exports.YieldReturn = class YieldReturn extends Return
   compileNode: (o) ->
     unless o.scope.parent?
       @error 'yield can only occur inside functions'
-    super
+    super o
 
 
 exports.AwaitReturn = class AwaitReturn extends Return
   compileNode: (o) ->
     unless o.scope.parent?
       @error 'await can only occur inside functions'
-    super
+    super o
 
 
 #### Value
@@ -842,16 +842,14 @@ exports.SuperCall = class SuperCall extends Call
 
   constructor: (args) ->
     super null, args ? [new Splat new IdentifierLiteral 'arguments']
-    # Allow to recognize a bare `super` call without parentheses and arguments.
-    @isBare = args?
 
   isStatement: (o) ->
     @expressions?.length and o.level is LEVEL_TOP
 
   compileNode: (o) ->
-    return super unless @expressions?.length
+    return super o unless @expressions?.length
 
-    superCall   = new Literal fragmentsToText super
+    superCall   = new Literal fragmentsToText super o
     replacement = new Block @expressions.slice()
 
     if o.level > LEVEL_TOP
@@ -2252,7 +2250,7 @@ exports.While = class While extends Base
 
   makeReturn: (res) ->
     if res
-      super
+      super res
     else
       @returns = not @jumps loop: yes
       this
