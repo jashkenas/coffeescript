@@ -1974,7 +1974,7 @@ exports.Code = class Code extends Base
           # one.
           val = ref = param.asReference o
           if param.value?
-            condition = new Literal param.name.value + ' === undefined'
+            condition = new Op '==', param, new UndefinedLiteral
             ifTrue = new Assign new Value(param.name), param.value, '=', param: yes
             exprs.push new If condition, ifTrue
           else
@@ -1999,7 +1999,7 @@ exports.Code = class Code extends Base
           # function parameter list we need to assign its default value
           # (if necessary) as an expression in the body.
           if param.value? and not param.isComplex()
-            condition = new Literal param.name.value + ' === undefined'
+            condition = new Op '==', param, new UndefinedLiteral
             ifTrue = new Assign new Value(param.name), param.value, '='
             exprs.push new If condition, ifTrue
           # Add this parameter to the scope, since it wouldn’t have been added yet since it was skipped earlier.
