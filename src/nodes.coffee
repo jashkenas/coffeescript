@@ -1313,18 +1313,16 @@ exports.Class = class Class extends Base
 
   # Returns a configured class initializer method
   addInitializerMethod: (assign) ->
-    variable        = assign.variable
-    method          = assign.value
+    { variable, value: method } = assign
     method.isMethod = yes
     method.isStatic = variable.looksStatic @name
-    method.klass    = new IdentifierLiteral @name
-    method.variable = variable
 
     if method.isStatic
       method.name = variable.properties[0]
     else
       methodName  = variable.base
       method.name = new (if methodName.shouldCache() then Index else Access) methodName
+      method.name.updateLocationDataIfMissing methodName.locationData
       method.ctor = (if @parent then 'derived' else 'base') if methodName.value is 'constructor'
       method.error 'Cannot define a constructor as a bound function' if method.bound and method.ctor
 
@@ -1426,8 +1424,6 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
             child.expressions[i] = @addProperties node.base.properties
           else if node instanceof Assign and node.variable.looksStatic @name
             node.value.isStatic = yes
-          else if node instanceof Code and node.isMethod
-            node.klass = new IdentifierLiteral @name
         child.expressions = flatten child.expressions
       cont
 
@@ -1654,15 +1650,10 @@ exports.Assign = class Assign extends Base
       return @compileSpecialMath  o if @context in ['**=', '//=', '%%=']
     if @value instanceof Code
       if @value.isStatic
-        @value.klass = @variable.base
-        @value.name  = @variable.properties[0]
-        @value.variable = @variable
+        @value.name = @variable.properties[0]
       else if @variable.properties?.length >= 2
         [properties..., prototype, name] = @variable.properties
-        if prototype.name?.value is 'prototype'
-          @value.klass = new Value @variable.base, properties
-          @value.name  = name
-          @value.variable = @variable
+        @value.name = name if prototype.name?.value is 'prototype'
     unless @context
       varBase = @variable.unwrapAll()
       unless varBase.isAssignable()
@@ -1888,8 +1879,8 @@ exports.Code = class Code extends Base
   # function body.
   compileNode: (o) ->
     if @ctor
-      @variable.error 'Class constructor may not be async'       if @isAsync
-      @variable.error 'Class constructor may not be a generator' if @isGenerator
+      @name.error 'Class constructor may not be async'       if @isAsync
+      @name.error 'Class constructor may not be a generator' if @isGenerator
 
     if @bound
       @context = o.scope.method.context if o.scope.method?.bound
@@ -2969,7 +2960,6 @@ UTILITIES =
       }
       ctor.prototype = parent.prototype;
       child.prototype = new ctor();
-      child.__super__ = parent.prototype;
       return child;
     }
   "
