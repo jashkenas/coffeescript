@@ -1919,6 +1919,7 @@ exports.Code = class Code extends Base
     thisAssignments  = @thisAssignments?.slice() ? []
     paramsAfterSplat = []
     haveSplatParam   = no
+    haveBodyParam    = no
 
     # Check for duplicate parameters and separate `this` assignments
     paramNames = []
@@ -1937,6 +1938,10 @@ exports.Code = class Code extends Base
     # function definition; and dealing with splats or expansions, including
     # adding expressions to the function body to declare all parameter
     # variables that would have been after the splat/expansion parameter.
+    # If we encounter a parameter that needs to be declared in the function
+    # body for any reason, for example it’s destructured with `this`, also
+    # declare and assign all subsequent parameters in the function body so that
+    # any non-idempotent parameters are evaluated in the correct order.
     for param, i in @params
       # Was `...` used with this parameter? (Only one such parameter is allowed
       # per function.) Splat/expansion parameters cannot have default values,
@@ -1956,7 +1961,6 @@ exports.Code = class Code extends Base
             # TODO: output destructured parameters as is, and fix destructuring
             # of objects with default values to work in this context (see
             # Obj.compileNode `if prop.context isnt 'object'`)
-
         else # `param` is an Expansion
           splatParamName = o.scope.freeVariable 'args'
           params.push new Value new IdentifierLiteral splatParamName
@@ -1967,19 +1971,19 @@ exports.Code = class Code extends Base
       # encountered, add these other parameters to the list to be output in
       # the function definition.
       else
-        if param.isComplex()
+        if param.isComplex() or haveBodyParam
+          param.assignedInBody = yes
+          haveBodyParam = yes
           # This parameter cannot be declared or assigned in the parameter
-          # list. So add a statement to the function body assigning it, e.g.
-          # `(arg) => { var a = arg.a; }` or with a default value if it has
-          # one.
-          val = ref = param.asReference o
+          # list. So put a reference in the parameter list and add a statement
+          # to the function body assigning it, e.g.
+          # `(arg) => { var a = arg.a; }`, with a default value if it has one.
           if param.value?
             condition = new Op '==', param, new UndefinedLiteral
             ifTrue = new Assign new Value(param.name), param.value, '=', param: yes
             exprs.push new If condition, ifTrue
           else
-            val = new Op '?', ref, param.value if param.value
-            exprs.push new Assign new Value(param.name), val, '=', param: yes
+            exprs.push new Assign new Value(param.name), param.asReference(o), '=', param: yes
 
         # If this parameter comes before the splat or expansion, it will go
         # in the function definition parameter list.
@@ -1988,8 +1992,13 @@ exports.Code = class Code extends Base
           # set by the `isComplex()` block above, define it as a statement in
           # the function body. This parameter comes after the splat parameter,
           # so we can’t define its default value in the parameter list.
-          unless param.isComplex()
-            ref = if param.value? then new Assign new Value(param.name), param.value, '=' else param
+          if param.isComplex()
+            ref = param.asReference o
+          else
+            if param.value? and not param.assignedInBody
+              ref = new Assign new Value(param.name), param.value, '='
+            else
+              ref = param
           # Add this parameter’s reference to the function scope
           o.scope.parameter fragmentsToText (if param.value? then param else ref).compileToFragments o
           params.push ref
@@ -2140,39 +2149,7 @@ exports.Param = class Param extends Base
     @reference = node
 
   isComplex: ->
-    # Should this parameter be declared in the function body, rather than in
-    # the parameter list? We don’t want to pull out any parameter that
-    # has a value, or else we break default values; but we want things like
-    # generator functions and iterators to evaluate in the correct order,
-    # which they might not do unless we pull them out into the function body.
-    if @name.isComplex()
-      yes
-    else if @value? and @value.isComplex()
-      if @value instanceof Value
-        unless @value.base.isComplex()
-          no
-        else
-          # Objects and arrays are always complex, but unless they contain any
-          # complex children, they’re safe to leave in the parameter list.
-          if @value.base instanceof Arr or @value.base instanceof Obj
-            hasComplexChild = no
-            @value.base.traverseChildren no, (node) ->
-              if node.isComplex()
-                # This can be further refined. An empty object will evaluate as
-                # not having any complex children, but as long as it has at least
-                # one property it will be considered complex.
-                hasComplexChild = yes
-                no # Stop traversing.
-            hasComplexChild
-          else
-            yes
-      else
-        # Other types of `@value`s in the CoffeeScript codebase:
-        # `Call`, `Class`, `SuperCall`, `Op`.
-        # All of these should be declared and assigned in the function body.
-        yes
-    else
-      no
+    @name.isComplex()
 
   # Iterates the name or names of a `Param`.
   # In a sense, a destructured parameter represents multiple JS parameters. This
