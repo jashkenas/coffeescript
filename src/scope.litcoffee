@@ -44,9 +44,9 @@ function object that has a name filled in, or bottoms out.
 Look up a variable name in lexical scope, and declare it if it does not
 already exist.
 
-      find: (name) ->
+      find: (name, type = 'var') ->
         return yes if @check name
-        @add name, 'var'
+        @add name, type
         no
 
 Reserve a variable name as originating from a function parameter for this
@@ -116,4 +116,3 @@ of this scope.
 
       assignedVariables: ->
         "#{v.name} = #{v.type.value}" for v in @variables when v.type.assigned
-
