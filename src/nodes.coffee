@@ -1352,7 +1352,7 @@ exports.ModuleSpecifier = class ModuleSpecifier extends Base
   children: ['original', 'alias']
 
   compileNode: (o) ->
-    o.scope.add @identifier, @moduleDeclarationType
+    o.scope.find @identifier, @moduleDeclarationType
     code = []
     code.push @makeCode @original.value
     code.push @makeCode " as #{@alias.value}" if @alias?
