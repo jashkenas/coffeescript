@@ -342,7 +342,12 @@ test "#1038 Optimize trailing return statements", ->
                                                    return
                                                  """)
 
-test "#4406 Destructured parameter default evaluation order", ->
+test "#4406 Destructured parameter default evaluation order with incrementing variable", ->
+  i = 0
+  f = ({ a = ++i }, b = ++i) -> [a, b]
+  arrayEq f({}), [1, 2]
+
+test "#4406 Destructured parameter default evaluation order with generator function", ->
   current = 0
   next    = -> ++current
   foo = ({ a = next() }, b = next()) -> [ a, b ]

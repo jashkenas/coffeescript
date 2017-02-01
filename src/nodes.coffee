@@ -107,8 +107,8 @@ exports.Base = class Base
   # If `level` is passed, then returns `[val, ref]`, where `val` is the compiled value, and `ref`
   # is the compiled reference. If `level` is not passed, this returns `[val, ref]` where
   # the two values are raw nodes which have not been compiled.
-  cache: (o, level, isComplex) ->
-    complex = if isComplex? then isComplex this else @isComplex()
+  cache: (o, level, shouldCache) ->
+    complex = if shouldCache? then shouldCache this else @shouldCache()
     if complex
       ref = new IdentifierLiteral o.scope.freeVariable 'ref'
       sub = new Assign ref, this
@@ -220,17 +220,43 @@ exports.Base = class Base
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
+
+  # `children` are the properties to recurse into when tree walking. The
+  # `children` list *is* the structure of the AST. The `parent` pointer, and
+  # the pointer to the `children` are how you can traverse the tree.
   children: []
 
-  isStatement     : NO
-  jumps           : NO
-  isComplex       : YES
-  isChainable     : NO
-  isAssignable    : NO
-  isNumber        : NO
+  # `isStatement` has to do with “everything is an expression”. A few things
+  # can’t be expressions, such as `break`. Things that `isStatement` returns
+  # `true` for are things that can’t be used as expressions. There are some
+  # error messages that come from `nodes.coffee` due to statements ending up
+  # in expression position.
+  isStatement: NO
 
-  unwrap     : THIS
-  unfoldSoak : NO
+  # `jumps` tells you if an expression, or an internal part of an expression
+  # has a flow control construct (like `break`, or `continue`, or `return`,
+  # or `throw`) that jumps out of the normal flow of control and can’t be
+  # used as a value. This is important because things like this make no sense;
+  # we have to disallow them.
+  jumps: NO
+
+  # If `node.shouldCache() is false`, it is safe to use `node` more than once.
+  # Otherwise you need to store the value of `node` in a variable and output
+  # that variable several times instead. Kind of like this: `5` need not be
+  # cached. `returnFive()`, however, could have side effects as a result of
+  # evaluating it more than once, and therefore we need to cache it. The
+  # parameter is named `shouldCache` rather than `mustCache` because there are
+  # also cases where we might not need to cache but where we want to, for
+  # example a long expression that may well be idempotent but we want to cache
+  # for brevity.
+  shouldCache: YES
+
+  isChainable: NO
+  isAssignable: NO
+  isNumber: NO
+
+  unwrap: THIS
+  unfoldSoak: NO
 
   # Is this node used to assign a certain variable?
   assigns: NO
@@ -481,7 +507,7 @@ exports.Literal = class Literal extends Base
   constructor: (@value) ->
     super()
 
-  isComplex: NO
+  shouldCache: NO
 
   assigns: (name) ->
     name is @value
@@ -625,7 +651,7 @@ exports.Value = class Value extends Base
   # Some boolean checks for the benefit of other nodes.
   isArray        : -> @bareLiteral(Arr)
   isRange        : -> @bareLiteral(Range)
-  isComplex      : -> @hasProperties() or @base.isComplex()
+  shouldCache    : -> @hasProperties() or @base.shouldCache()
   isAssignable   : -> @hasProperties() or @base.isAssignable()
   isNumber       : -> @bareLiteral(NumberLiteral)
   isString       : -> @bareLiteral(StringLiteral)
@@ -668,14 +694,14 @@ exports.Value = class Value extends Base
   # `a()[b()] ?= c` -> `(_base = a())[_name = b()] ? _base[_name] = c`
   cacheReference: (o) ->
     [..., name] = @properties
-    if @properties.length < 2 and not @base.isComplex() and not name?.isComplex()
+    if @properties.length < 2 and not @base.shouldCache() and not name?.shouldCache()
       return [this, this]  # `a` `a.b`
     base = new Value @base, @properties[...-1]
-    if base.isComplex()  # `a().b`
+    if base.shouldCache()  # `a().b`
       bref = new IdentifierLiteral o.scope.freeVariable 'base'
       base = new Value new Parens new Assign bref, base
     return [base, bref] unless name  # `a()`
-    if name.isComplex()  # `a[b()]`
+    if name.shouldCache()  # `a[b()]`
       nref = new IdentifierLiteral o.scope.freeVariable 'name'
       name = new Index new Assign nref, name.index
       nref = new Index nref
@@ -705,7 +731,7 @@ exports.Value = class Value extends Base
         prop.soak = off
         fst = new Value @base, @properties[...i]
         snd = new Value @base, @properties[i..]
-        if fst.isComplex()
+        if fst.shouldCache()
           ref = new IdentifierLiteral o.scope.freeVariable 'ref'
           fst = new Parens new Assign ref, fst
           snd.base = ref
@@ -848,12 +874,12 @@ exports.SuperCall = class SuperCall extends Call
       'super'
     else if method?.klass
       {klass, name, variable} = method
-      if klass.isComplex()
+      if klass.shouldCache()
         bref = new IdentifierLiteral o.scope.parent.freeVariable 'base'
         base = new Value new Parens new Assign bref, klass
         variable.base = base
         variable.properties.splice 0, klass.properties.length
-      if name.isComplex() or (name instanceof Index and name.index.isAssignable())
+      if name.shouldCache() or (name instanceof Index and name.index.isAssignable())
         nref = new IdentifierLiteral o.scope.parent.freeVariable 'name'
         name.index = new Assign nref, name.index
       accesses = [new Access new PropertyName '__super__']
@@ -923,7 +949,7 @@ exports.Access = class Access extends Base
     else
       [@makeCode('['), name..., @makeCode(']')]
 
-  isComplex: NO
+  shouldCache: NO
 
 #### Index
 
@@ -937,8 +963,8 @@ exports.Index = class Index extends Base
   compileToFragments: (o) ->
     [].concat @makeCode("["), @index.compileToFragments(o, LEVEL_PAREN), @makeCode("]")
 
-  isComplex: ->
-    @index.isComplex()
+  shouldCache: ->
+    @index.shouldCache()
 
 #### Range
 
@@ -955,16 +981,14 @@ exports.Range = class Range extends Base
     @exclusive = tag is 'exclusive'
     @equals = if @exclusive then '' else '='
 
-
-
   # Compiles the range's source variables -- where it starts and where it ends.
   # But only if they need to be cached to avoid double evaluation.
   compileVariables: (o) ->
     o = merge o, top: true
-    isComplex = del o, 'isComplex'
-    [@fromC, @fromVar]  =  @cacheToCodeFragments @from.cache o, LEVEL_LIST, isComplex
-    [@toC, @toVar]      =  @cacheToCodeFragments @to.cache o, LEVEL_LIST, isComplex
-    [@step, @stepVar]   =  @cacheToCodeFragments step.cache o, LEVEL_LIST, isComplex if step = del o, 'step'
+    shouldCache = del o, 'shouldCache'
+    [@fromC, @fromVar] = @cacheToCodeFragments @from.cache o, LEVEL_LIST, shouldCache
+    [@toC, @toVar]     = @cacheToCodeFragments @to.cache o, LEVEL_LIST, shouldCache
+    [@step, @stepVar]  = @cacheToCodeFragments step.cache o, LEVEL_LIST, shouldCache if step = del o, 'step'
     @fromNum = if @from.isNumber() then Number @fromVar else null
     @toNum   = if @to.isNumber()   then Number @toVar   else null
     @stepNum = if step?.isNumber() then Number @stepVar else null
@@ -1107,7 +1131,7 @@ exports.Obj = class Obj extends Base
       if prop instanceof Value and prop.this
         prop = new Assign prop.properties[0].name, prop, 'object'
       if prop not instanceof Comment and prop not instanceof Assign
-        if prop.isComplex()
+        if prop.shouldCache()
           [key, value] = prop.base.cache o
           key  = new PropertyName key.value if key instanceof IdentifierLiteral
           prop = new Assign key, value, 'object'
@@ -1315,7 +1339,7 @@ exports.Class = class Class extends Base
       method.name = variable.properties[0]
     else
       methodName  = variable.base
-      method.name = new (if methodName.isComplex() then Index else Access) methodName
+      method.name = new (if methodName.shouldCache() then Index else Access) methodName
       method.ctor = (if @parent then 'derived' else 'base') if methodName.value is 'constructor'
       method.error 'Cannot define a constructor as a bound function' if method.bound and method.ctor
 
@@ -1449,7 +1473,7 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
         # The class scope is not available yet, so return the assignment to update later
         assign = @externalCtor = new Assign new Value, value
       else if not assign.variable.this
-        name      = new (if base.isComplex() then Index else Access) base
+        name      = new (if base.shouldCache() then Index else Access) base
         prototype = new Access new PropertyName 'prototype'
         variable  = new Value new ThisLiteral(), [ prototype, name ]
 
@@ -1675,7 +1699,7 @@ exports.Assign = class Assign extends Base
     compiledName = @variable.compileToFragments o, LEVEL_LIST
 
     if @context is 'object'
-      if @variable.isComplex()
+      if @variable.shouldCache()
         compiledName.unshift @makeCode '['
         compiledName.push @makeCode ']'
       else if fragmentsToText(compiledName) in JS_FORBIDDEN
@@ -1897,6 +1921,7 @@ exports.Code = class Code extends Base
     thisAssignments  = @thisAssignments?.slice() ? []
     paramsAfterSplat = []
     haveSplatParam   = no
+    haveBodyParam    = no
 
     # Check for duplicate parameters and separate `this` assignments
     paramNames = []
@@ -1915,6 +1940,10 @@ exports.Code = class Code extends Base
     # function definition; and dealing with splats or expansions, including
     # adding expressions to the function body to declare all parameter
     # variables that would have been after the splat/expansion parameter.
+    # If we encounter a parameter that needs to be declared in the function
+    # body for any reason, for example it’s destructured with `this`, also
+    # declare and assign all subsequent parameters in the function body so that
+    # any non-idempotent parameters are evaluated in the correct order.
     for param, i in @params
       # Was `...` used with this parameter? (Only one such parameter is allowed
       # per function.) Splat/expansion parameters cannot have default values,
@@ -1929,12 +1958,11 @@ exports.Code = class Code extends Base
         if param.splat
           params.push ref = param.asReference o
           splatParamName = fragmentsToText ref.compileNode o
-          if param.isComplex() # Parameter is destructured
+          if param.shouldCache()
             exprs.push new Assign new Value(param.name), ref, '=', param: yes
             # TODO: output destructured parameters as is, and fix destructuring
             # of objects with default values to work in this context (see
-            # Obj.compileNode `if prop.context isnt 'object'`)
-
+            # Obj.compileNode `if prop.context isnt 'object'`).
         else # `param` is an Expansion
           splatParamName = o.scope.freeVariable 'args'
           params.push new Value new IdentifierLiteral splatParamName
@@ -1945,23 +1973,34 @@ exports.Code = class Code extends Base
       # encountered, add these other parameters to the list to be output in
       # the function definition.
       else
-        if param.isComplex()
-          # This parameter is destructured. So add a statement to the function
-          # body assigning it, e.g. `(arg) => { var a = arg.a; }` or with a
-          # default value if it has one.
-          val = ref = param.asReference o
-          val = new Op '?', ref, param.value if param.value
-          exprs.push new Assign new Value(param.name), val, '=', param: yes
+        if param.shouldCache() or haveBodyParam
+          param.assignedInBody = yes
+          haveBodyParam = yes
+          # This parameter cannot be declared or assigned in the parameter
+          # list. So put a reference in the parameter list and add a statement
+          # to the function body assigning it, e.g.
+          # `(arg) => { var a = arg.a; }`, with a default value if it has one.
+          if param.value?
+            condition = new Op '==', param, new UndefinedLiteral
+            ifTrue = new Assign new Value(param.name), param.value, '=', param: yes
+            exprs.push new If condition, ifTrue
+          else
+            exprs.push new Assign new Value(param.name), param.asReference(o), '=', param: yes
 
         # If this parameter comes before the splat or expansion, it will go
         # in the function definition parameter list.
         unless haveSplatParam
           # If this parameter has a default value, and it hasn’t already been
-          # set by the `isComplex()` block above, define it as a statement in
+          # set by the `shouldCache()` block above, define it as a statement in
           # the function body. This parameter comes after the splat parameter,
           # so we can’t define its default value in the parameter list.
-          unless param.isComplex()
-            ref = if param.value? then new Assign new Value(param.name), param.value, '=' else param
+          if param.shouldCache()
+            ref = param.asReference o
+          else
+            if param.value? and not param.assignedInBody
+              ref = new Assign new Value(param.name), param.value, '='
+            else
+              ref = param
           # Add this parameter’s reference to the function scope
           o.scope.parameter fragmentsToText (if param.value? then param else ref).compileToFragments o
           params.push ref
@@ -1970,8 +2009,8 @@ exports.Code = class Code extends Base
           # If this parameter had a default value, since it’s no longer in the
           # function parameter list we need to assign its default value
           # (if necessary) as an expression in the body.
-          if param.value? and not param.isComplex()
-            condition = new Literal param.name.value + ' === undefined'
+          if param.value? and not param.shouldCache()
+            condition = new Op '==', param, new UndefinedLiteral
             ifTrue = new Assign new Value(param.name), param.value, '='
             exprs.push new If condition, ifTrue
           # Add this parameter to the scope, since it wouldn’t have been added yet since it was skipped earlier.
@@ -2105,14 +2144,14 @@ exports.Param = class Param extends Base
       name = node.properties[0].name.value
       name = "_#{name}" if name in JS_FORBIDDEN
       node = new IdentifierLiteral o.scope.freeVariable name
-    else if node.isComplex()
+    else if node.shouldCache()
       node = new IdentifierLiteral o.scope.freeVariable 'arg'
     node = new Value node
     node.updateLocationDataIfMissing @locationData
     @reference = node
 
-  isComplex: ->
-    @name.isComplex() or @value instanceof Call
+  shouldCache: ->
+    @name.shouldCache()
 
   # Iterates the name or names of a `Param`.
   # In a sense, a destructured parameter represents multiple JS parameters. This
@@ -2196,7 +2235,7 @@ exports.Splat = class Splat extends Base
 # parameter list.
 exports.Expansion = class Expansion extends Base
 
-  isComplex: NO
+  shouldCache: NO
 
   compileNode: (o) ->
     @error 'Expansion must be used inside a destructuring assignment or parameter list'
@@ -2312,7 +2351,7 @@ exports.Op = class Op extends Base
   isUnary: ->
     not @second
 
-  isComplex: ->
+  shouldCache: ->
     not @isNumber()
 
   # Am I capable of
@@ -2404,7 +2443,7 @@ exports.Op = class Op extends Base
 
   # Keep reference to the left expression, unless this an existential assignment
   compileExistence: (o) ->
-    if @first.isComplex()
+    if @first.shouldCache()
       ref = new IdentifierLiteral o.scope.freeVariable 'ref'
       fst = new Parens new Assign ref, @first
     else
@@ -2455,7 +2494,7 @@ exports.Op = class Op extends Base
 
   compileFloorDivision: (o) ->
     floor = new Value new IdentifierLiteral('Math'), [new Access new PropertyName 'floor']
-    second = if @second.isComplex() then new Parens @second else @second
+    second = if @second.shouldCache() then new Parens @second else @second
     div = new Op '/', @first, second
     new Call(floor, [div]).compileToFragments o
 
@@ -2605,8 +2644,9 @@ exports.Parens = class Parens extends Base
 
   children: ['body']
 
-  unwrap    : -> @body
-  isComplex : -> @body.isComplex()
+  unwrap: -> @body
+
+  shouldCache: -> @body.shouldCache()
 
   compileNode: (o) ->
     expr = @body.unwrap()
@@ -2631,7 +2671,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
   # _the_ custom logic to output interpolated strings as code.
   unwrap: -> this
 
-  isComplex : -> @body.isComplex()
+  shouldCache: -> @body.shouldCache()
 
   compileNode: (o) ->
     # Assumes that `expr` is `Value` » `StringLiteral` or `Op`
@@ -2719,7 +2759,7 @@ exports.For = class For extends While
     kvar        = ((@range or @from) and name) or index or ivar
     kvarAssign  = if kvar isnt ivar then "#{kvar} = " else ""
     if @step and not @range
-      [step, stepVar] = @cacheToCodeFragments @step.cache o, LEVEL_LIST, isComplexOrAssignable
+      [step, stepVar] = @cacheToCodeFragments @step.cache o, LEVEL_LIST, shouldCacheOrIsAssignable
       stepNum   = Number stepVar if @step.isNumber()
     name        = ivar if @pattern
     varPart     = ''
@@ -2728,7 +2768,7 @@ exports.For = class For extends While
     idt1        = @tab + TAB
     if @range
       forPartFragments = source.compileToFragments merge o,
-        {index: ivar, name, @step, isComplex: isComplexOrAssignable}
+        {index: ivar, name, @step, shouldCache: shouldCacheOrIsAssignable}
     else
       svar    = @source.compile o, LEVEL_LIST
       if (name or @own) and @source.unwrap() not instanceof IdentifierLiteral
@@ -3016,7 +3056,7 @@ isLiteralThis = (node) ->
     (node instanceof Code and node.bound) or
     node instanceof SuperCall
 
-isComplexOrAssignable = (node) -> node.isComplex() or node.isAssignable?()
+shouldCacheOrIsAssignable = (node) -> node.shouldCache() or node.isAssignable?()
 
 # Unfold a node's child if soak, then tuck the node under created `If`
 unfoldSoak = (o, parent, name) ->
