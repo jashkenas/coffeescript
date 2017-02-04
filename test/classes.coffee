@@ -1047,6 +1047,11 @@ test "constructor super in arrow functions", ->
 
   new Test nonce = {}
 
+# TODO Some of these tests use CoffeeScript.compile and CoffeeScript.run when they could use
+# regular test mechanics.
+# TODO Some of these tests might be better placed in `test/error_messages.coffee`.
+# TODO Some of these tests are duplicates.
+
 # Ensure that we always throw if we experience more than one super()
 # call in a constructor.  This ends up being a runtime error.
 # Should be caught at compile time.
