@@ -733,3 +733,19 @@ test "export an imported aliased member named default", ->
       default as def
     } from 'lib';"""
   eq toJS(input), output
+
+test "#4394: export shouldn't prevent variable declarations", ->
+  input = """
+    x = 1
+    export { x }
+  """
+  output = """
+    var x;
+
+    x = 1;
+
+    export {
+      x
+    };
+  """
+  eq toJS(input), output
