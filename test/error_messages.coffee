@@ -1319,6 +1319,7 @@ test "can't use pattern matches for loop indices", ->
   '''
 
 test "bare 'super' is no longer allowed", ->
+  # TODO Improve this error message (it should at least be 'unexpected super')
   assertErrorFormat 'class extends A then constructor: -> super', '''
     [stdin]:1:35: error: unexpected ->
     class extends A then constructor: -> super
