@@ -81,7 +81,9 @@ exports.Base = class Base
     o.sharedScope = yes
     func = new Code [], Block.wrap [this]
     args = []
-    if (argumentsNode = @contains isLiteralArguments) or @contains isLiteralThis
+    if @contains ((node) -> node instanceof SuperCall)
+      func.bound = yes
+    else if (argumentsNode = @contains isLiteralArguments) or @contains isLiteralThis
       args = [new ThisLiteral]
       if argumentsNode
         meth = 'apply'
@@ -516,7 +518,7 @@ exports.Literal = class Literal extends Base
     [@makeCode @value]
 
   toString: ->
-    " #{if @isStatement() then super else @constructor.name}: #{@value}"
+    " #{if @isStatement() then super() else @constructor.name}: #{@value}"
 
 exports.NumberLiteral = class NumberLiteral extends Literal
 
@@ -610,14 +612,14 @@ exports.YieldReturn = class YieldReturn extends Return
   compileNode: (o) ->
     unless o.scope.parent?
       @error 'yield can only occur inside functions'
-    super
+    super o
 
 
 exports.AwaitReturn = class AwaitReturn extends Return
   compileNode: (o) ->
     unless o.scope.parent?
       @error 'await can only occur inside functions'
-    super
+    super o
 
 
 #### Value
@@ -780,9 +782,10 @@ exports.Call = class Call extends Base
   # Soaked chained invocations unfold into if/else ternary structures.
   unfoldSoak: (o) ->
     if @soak
-      if this instanceof SuperCall
-        left = new Literal @superReference o
+      if @variable instanceof Super
+        left = new Literal @variable.compile o
         rite = new Value left
+        @variable.error "Unsupported reference to 'super'" unless @variable.accessor?
       else
         return ifn if ifn = unfoldSoak o, this, 'variable'
         [left, rite] = new Value(@variable).cacheReference o
@@ -818,20 +821,11 @@ exports.Call = class Call extends Base
       compiledArgs.push (arg.compileToFragments o, LEVEL_LIST)...
 
     fragments = []
-    if this instanceof SuperCall
-      preface = @superReference o
-      if preface is 'super'
-        preface += '('
-      else
-        preface += ".call(#{@superThis(o)}"
-        if compiledArgs.length then preface += ", "
-      fragments.push @makeCode preface
-    else
-      if @isNew then fragments.push @makeCode 'new '
-      fragments.push @variable.compileToFragments(o, LEVEL_ACCESS)...
-      fragments.push @makeCode "("
-    fragments.push compiledArgs...
-    fragments.push @makeCode ")"
+    if @isNew
+      @variable.error "Unsupported reference to 'super'" if @variable instanceof Super
+      fragments.push @makeCode 'new '
+    fragments.push @variable.compileToFragments(o, LEVEL_ACCESS)...
+    fragments.push @makeCode('('), compiledArgs..., @makeCode(')')
     fragments
 
 #### Super
@@ -842,20 +836,15 @@ exports.Call = class Call extends Base
 # expressions are evaluated without altering the return value of the `SuperCall`
 # expression.
 exports.SuperCall = class SuperCall extends Call
-  children: ['expressions']
-
-  constructor: (args) ->
-    super null, args ? [new Splat new IdentifierLiteral 'arguments']
-    # Allow to recognize a bare `super` call without parentheses and arguments.
-    @isBare = args?
+  children: Call::children.concat ['expressions']
 
   isStatement: (o) ->
     @expressions?.length and o.level is LEVEL_TOP
 
   compileNode: (o) ->
-    return super unless @expressions?.length
+    return super o unless @expressions?.length
 
-    superCall   = new Literal fragmentsToText super
+    superCall   = new Literal fragmentsToText super o
     replacement = new Block @expressions.slice()
 
     if o.level > LEVEL_TOP
@@ -866,33 +855,26 @@ exports.SuperCall = class SuperCall extends Call
     replacement.unshift superCall
     replacement.compileToFragments o, if o.level is LEVEL_TOP then o.level else LEVEL_LIST
 
-  # Grab the reference to the superclass's implementation of the current
-  # method.
-  superReference: (o) ->
+exports.Super = class Super extends Base
+  children: ['accessor']
+
+  constructor: (@accessor) ->
+    super()
+
+  compileNode: (o) ->
     method = o.scope.namedMethod()
-    if method?.ctor
-      'super'
-    else if method?.klass
-      {klass, name, variable} = method
-      if klass.shouldCache()
-        bref = new IdentifierLiteral o.scope.parent.freeVariable 'base'
-        base = new Value new Parens new Assign bref, klass
-        variable.base = base
-        variable.properties.splice 0, klass.properties.length
+    @error 'cannot use super outside of an instance method' unless method?.isMethod
+
+    @inCtor = !!method.ctor
+
+    unless @inCtor or @accessor?
+      {name, variable} = method
       if name.shouldCache() or (name instanceof Index and name.index.isAssignable())
         nref = new IdentifierLiteral o.scope.parent.freeVariable 'name'
         name.index = new Assign nref, name.index
-      accesses = [new Access new PropertyName '__super__']
-      accesses.push new Access new PropertyName 'constructor' if method.isStatic
-      accesses.push if nref? then new Index nref else name
-      (new Value bref ? klass, accesses).compile o
-    else
-      @error 'cannot call super outside of an instance method.'
+      @accessor = if nref? then new Index nref else name
 
-  # The appropriate `this` value for a `super` call.
-  superThis : (o) ->
-    method = o.scope.method
-    (method and not method.klass and method.context) or "this"
+    (new Value (new Literal 'super'), if @accessor then [ @accessor ] else []).compileToFragments o
 
 #### RegexWithInterpolations
 
@@ -1195,7 +1177,11 @@ exports.Class = class Class extends Base
     @name          = @determineName()
     executableBody = @walkBody()
 
-    if executableBody
+    # Special handling to allow `class expr.A extends A` declarations
+    parentName    = @parent.base.value if @parent instanceof Value and not @parent.hasProperties()
+    @hasNameClash = @name? and @name == parentName
+
+    if executableBody or @hasNameClash
       @compileNode = @compileClassDeclaration
       result = new ExecutableClassBody(@, executableBody).compileToFragments o
       @compileNode = @constructor::compileNode
@@ -1302,8 +1288,7 @@ exports.Class = class Class extends Base
         @boundMethods.push method.name
         method.bound = false
 
-    # TODO Once `super` has been changed over to ES, the check for @parent can be removed
-    if @parent or initializer.length != expressions.length
+    if initializer.length != expressions.length
       @body.expressions = (expression.hoist() for expression in initializer)
       new Block expressions
 
@@ -1328,18 +1313,16 @@ exports.Class = class Class extends Base
 
   # Returns a configured class initializer method
   addInitializerMethod: (assign) ->
-    variable        = assign.variable
-    method          = assign.value
+    { variable, value: method } = assign
     method.isMethod = yes
     method.isStatic = variable.looksStatic @name
-    method.klass    = new IdentifierLiteral @name
-    method.variable = variable
 
     if method.isStatic
       method.name = variable.properties[0]
     else
       methodName  = variable.base
       method.name = new (if methodName.shouldCache() then Index else Access) methodName
+      method.name.updateLocationDataIfMissing methodName.locationData
       method.ctor = (if @parent then 'derived' else 'base') if methodName.value is 'constructor'
       method.error 'Cannot define a constructor as a bound function' if method.bound and method.ctor
 
@@ -1349,7 +1332,8 @@ exports.Class = class Class extends Base
     ctor = @addInitializerMethod new Assign (new Value new PropertyName 'constructor'), new Code
     @body.unshift ctor
 
-    ctor.body.push new SuperCall if @parent
+    if @parent
+      ctor.body.push new SuperCall new Super, [new Splat new IdentifierLiteral 'arguments']
 
     if @externalCtor
       applyCtor = new Value @externalCtor, [ new Access new PropertyName 'apply' ]
@@ -1394,18 +1378,16 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
 
     o.classScope = wrapper.makeScope o.scope
 
+    if @class.hasNameClash
+      parent = new IdentifierLiteral o.classScope.freeVariable 'superClass'
+      wrapper.params.push new Param parent
+      args.push @class.parent
+      @class.parent = parent
+
     if @externalCtor
       externalCtor = new IdentifierLiteral o.classScope.freeVariable 'ctor', reserve: no
       @class.externalCtor = externalCtor
       @externalCtor.variable.base = externalCtor
-
-    if @class.parent
-      parent = new IdentifierLiteral o.classScope.freeVariable 'superClass', reserve: no
-      params.push new Param parent
-      args.push @class.parent
-
-      @class.parent = parent
-      @body.unshift new Literal "#{@name}.__super__ = #{parent.value}.prototype"
 
     if @name != @class.name
       @body.expressions.unshift new Assign (new IdentifierLiteral @name), @class
@@ -1442,8 +1424,6 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
             child.expressions[i] = @addProperties node.base.properties
           else if node instanceof Assign and node.variable.looksStatic @name
             node.value.isStatic = yes
-          else if node instanceof Code and node.isMethod
-            node.klass = new IdentifierLiteral @name
         child.expressions = flatten child.expressions
       cont
 
@@ -1670,15 +1650,10 @@ exports.Assign = class Assign extends Base
       return @compileSpecialMath  o if @context in ['**=', '//=', '%%=']
     if @value instanceof Code
       if @value.isStatic
-        @value.klass = @variable.base
-        @value.name  = @variable.properties[0]
-        @value.variable = @variable
+        @value.name = @variable.properties[0]
       else if @variable.properties?.length >= 2
         [properties..., prototype, name] = @variable.properties
-        if prototype.name?.value is 'prototype'
-          @value.klass = new Value @variable.base, properties
-          @value.name  = name
-          @value.variable = @variable
+        @value.name = name if prototype.name?.value is 'prototype'
     unless @context
       varBase = @variable.unwrapAll()
       unless varBase.isAssignable()
@@ -1904,8 +1879,8 @@ exports.Code = class Code extends Base
   # function body.
   compileNode: (o) ->
     if @ctor
-      @variable.error 'Class constructor may not be async'       if @isAsync
-      @variable.error 'Class constructor may not be a generator' if @isGenerator
+      @name.error 'Class constructor may not be async'       if @isAsync
+      @name.error 'Class constructor may not be a generator' if @isGenerator
 
     if @bound
       @context = o.scope.method.context if o.scope.method?.bound
@@ -2263,7 +2238,7 @@ exports.While = class While extends Base
 
   makeReturn: (res) ->
     if res
-      super
+      super res
     else
       @returns = not @jumps loop: yes
       this
@@ -2985,7 +2960,6 @@ UTILITIES =
       }
       ctor.prototype = parent.prototype;
       child.prototype = new ctor();
-      child.__super__ = parent.prototype;
       return child;
     }
   "
@@ -3052,9 +3026,7 @@ isLiteralArguments = (node) ->
   node instanceof IdentifierLiteral and node.value is 'arguments'
 
 isLiteralThis = (node) ->
-  node instanceof ThisLiteral or
-    (node instanceof Code and node.bound) or
-    node instanceof SuperCall
+  node instanceof ThisLiteral or (node instanceof Code and node.bound)
 
 shouldCacheOrIsAssignable = (node) -> node.shouldCache() or node.isAssignable?()
 

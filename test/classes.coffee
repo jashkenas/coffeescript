@@ -40,13 +40,6 @@ test "classes with a four-level inheritance chain", ->
   ok result is 'zero/one/two/three/four'
   ok Base.static('word') is 'static/word'
 
-  FirstChild::func = (string) ->
-    super('one/').length + string
-
-  result = (new ThirdChild).func 'four'
-
-  ok result is '9two/three/four'
-
   ok (new ThirdChild).array.join(' ') is '1 2 3'
 
 
@@ -69,56 +62,46 @@ test "constructors with inheritance and super", ->
   ok (new SubClass).prop is 'top-super-sub'
 
 
-test "basic classes, again, but in the manual prototype style", ->
+test "'super' with accessors", ->
+  class Base
+    m: -> 4
+    n: -> 5
+    o: -> 6
 
-  Base = ->
-  Base::func = (string) ->
-    'zero/' + string
-  Base::['func-func'] = (string) ->
-    "dynamic-#{string}"
+  name = 'o'
+  class A extends Base
+    m: -> super()
+    n: -> super.n()
+    "#{name}": -> super()
+    p: -> super[name]()
 
-  FirstChild = ->
-  SecondChild = ->
-  ThirdChild = ->
-    @array = [1, 2, 3]
-    this
-
-  ThirdChild extends SecondChild extends FirstChild extends Base
-
-  FirstChild::func = (string) ->
-    super('one/') + string
-
-  SecondChild::func = (string) ->
-    super('two/') + string
-
-  ThirdChild::func = (string) ->
-    super('three/') + string
-
-  result = (new ThirdChild).func 'four'
-
-  ok result is 'zero/one/two/three/four'
-
-  ok (new ThirdChild)['func-func']('thing') is 'dynamic-thing'
+  a = new A
+  eq 4, a.m()
+  eq 5, a.n()
+  eq 6, a.o()
+  eq 6, a.p()
 
 
-test "super with plain ol' prototypes", ->
+test "soaked 'super' invocation", ->
+  class Base
+    method: -> 2
 
-  TopClass = ->
-  TopClass::func = (arg) ->
-    'top-' + arg
+  class A extends Base
+    method: -> super?()
+    noMethod: -> super?()
 
-  SuperClass = ->
-  SuperClass extends TopClass
-  SuperClass::func = (arg) ->
-    super 'super-' + arg
+  a = new A
+  eq 2, a.method()
+  eq undefined, a.noMethod()
 
-  SubClass = ->
-  SubClass extends SuperClass
-  SubClass::func = ->
-    super 'sub'
+  name = 'noMethod'
+  class B extends Base
+    "#{'method'}": -> super?()
+    "#{'noMethod'}": -> super?() ? super['method']()
 
-  eq (new SubClass).func(), 'top-super-sub'
-
+  b = new B
+  eq 2, b.method()
+  eq 2, b.noMethod()
 
 test "'@' referring to the current instance, and not being coerced into a call", ->
 
@@ -136,7 +119,7 @@ test "super() calls in constructors of classes that are defined as object proper
     constructor: (name) -> @name = name
 
   class Hive.Bee extends Hive
-    constructor: (name) -> super
+    constructor: (name) -> super name
 
   maya = new Hive.Bee 'Maya'
   ok maya.name is 'Maya'
@@ -210,7 +193,7 @@ test "calling super and passing along all arguments", ->
     method: (args...) -> @args = args
 
   class Child extends Parent
-    method: -> super
+    method: -> super arguments...
 
   c = new Child
   c.method 1, 2, 3, 4
@@ -421,7 +404,7 @@ test "`class extends this`", ->
   B = null
   makeClass = ->
     B = class extends this
-      func: -> super + ' B'
+      func: -> super() + ' B'
 
   makeClass.call A
 
@@ -483,7 +466,7 @@ test "#1313: misplaced __extends", ->
   class A
   class B extends A
     prop: nonce
-    constructor: -> super
+    constructor: -> super()
   eq nonce, B::prop
 
 test "#1182: execution order needs to be considered as well", ->
@@ -510,11 +493,11 @@ test "#1372: bound class methods with reserved names", ->
 
 test "#1380: `super` with reserved names", ->
   class C
-    do: -> super
+    do: -> super()
   ok C::do
 
   class B
-    0: -> super
+    0: -> super()
   ok B::[0]
 
 test "#1464: bound class methods should keep context", ->
@@ -550,7 +533,7 @@ test "#1598: super works for static methods too", ->
 
   class Child extends Parent
     @method: ->
-      'pass? ' + super
+      'pass? ' + super()
 
   eq Child.method(), 'pass? yes'
 
@@ -732,7 +715,7 @@ test "extending native objects works with and without defining a constructor", -
   ok 'yes!', myArray.method()
 
   class OverrideArray extends Array
-    constructor: -> super
+    constructor: -> super()
     method: -> 'yes!'
 
   overrideArray = new OverrideArray
@@ -802,7 +785,7 @@ test "#2949: super in static method with reserved name", ->
     @static: -> 'baz'
 
   class Bar extends Foo
-    @static: -> super
+    @static: -> super()
 
   eq Bar.static(), 'baz'
 
@@ -812,8 +795,8 @@ test "#3232: super in static methods (not object-assigned)", ->
     @qux = -> true
 
   class Bar extends Foo
-    @baz = -> super
-    Bar.qux = -> super
+    @baz = -> super()
+    Bar.qux = -> super()
 
   ok Bar.baz()
   ok Bar.qux()
@@ -825,24 +808,17 @@ test "#1392 calling `super` in methods defined on namespaced classes", ->
   namespace =
     A: ->
     B: ->
-  namespace.A extends Base
+  class namespace.A extends Base
+    m: -> super()
 
-  namespace.A::m = -> super
   eq 5, (new namespace.A).m()
   namespace.B::m = namespace.A::m
   namespace.A::m = null
   eq 5, (new namespace.B).m()
 
-  count = 0
-  getNamespace = -> count++; namespace
-  getNamespace().A::n = -> super
-  eq 4, (new namespace.A).n()
-  eq 1, count
-
   class C
-    @a: (->)
-    @a extends Base
-    @a::m = -> super
+    @a: class extends Base
+      m: -> super()
   eq 5, (new C.a).m()
 
 
@@ -852,7 +828,7 @@ test "dynamic method names", ->
   eq 1, new A().m()
 
   class B extends A
-    "#{name = 'm'}": -> super
+    "#{name = 'm'}": -> super()
   eq 1, new B().m()
 
   getName = -> 'm'
@@ -867,18 +843,18 @@ test "dynamic method names and super", ->
     m: -> 5
     m2: -> 4.5
     n: -> 4
-  A = ->
-  A extends Base
+
+  name = -> count++; 'n'
+  count = 0
 
   m = 'm'
-  A::[m] = -> super
+  class A extends Base
+    "#{m}": -> super()
+    "#{name()}": -> super()
+
   m = 'n'
   eq 5, (new A).m()
 
-  name = -> count++; 'n'
-
-  count = 0
-  A::[name()] = -> super
   eq 4, (new A).n()
   eq 1, count
 
@@ -886,9 +862,9 @@ test "dynamic method names and super", ->
   m2 = 'm2'
   count = 0
   class B extends Base
-    @[name()] = -> super
-    @::[m] = -> super
-    "#{m2}": -> super
+    @[name()] = -> super()
+    "#{m}": -> super()
+    "#{m2}": -> super()
   b = new B
   m = m2 = 'n'
   eq 6, B.m()
@@ -897,7 +873,7 @@ test "dynamic method names and super", ->
   eq 1, count
 
   class C extends B
-    m: -> super
+    m: -> super()
   eq 5, (new C).m()
 
 # ES2015+ class interoperability
@@ -1066,10 +1042,15 @@ test "`@`-params and bound methods with multiple `super` paths (expressions)", -
 test "constructor super in arrow functions", ->
   class Test extends (class)
     constructor: (@param) ->
-      do => super
+      do => super()
       eq @param, nonce
 
   new Test nonce = {}
+
+# TODO Some of these tests use CoffeeScript.compile and CoffeeScript.run when they could use
+# regular test mechanics.
+# TODO Some of these tests might be better placed in `test/error_messages.coffee`.
+# TODO Some of these tests are duplicates.
 
 # Ensure that we always throw if we experience more than one super()
 # call in a constructor.  This ends up being a runtime error.
@@ -1230,24 +1211,6 @@ test "super and external constructors", ->
   throws -> CoffeeScript.compile throwsC, bare: yes
 
 
-test "super in external prototype", ->
-    class A
-      constructor: (@drink) ->
-      make: -> "Making a #{@drink}"
-
-    class B extends A
-    B::make = (@flavor) -> super() + " with #{@flavor}"
-    b = new B('Machiato')
-    eq b.make('caramel'),  "Making a Machiato with caramel"
-
-    #  Fails, bound
-    # TODO: Could this throw a compile error?
-    class C extends A
-    C::make = (@flavor) => super() + " with #{@flavor}"
-    c = new C('Machiato')
-    ok c.make('caramel') isnt "Making a Machiato with caramel"
-
-
 test "bound functions without super", ->
   # Bound function with @
   # Throw on compile, since bound
@@ -1275,7 +1238,7 @@ test "super in a bound function", ->
 
   class B extends A
     make: (@flavor) =>
-      super + " with #{@flavor}"
+      super() + " with #{@flavor}"
 
   b = new B('Machiato')
   eq b.make('vanilla'),  "Making a Machiato with vanilla"
@@ -1284,7 +1247,7 @@ test "super in a bound function", ->
   class C extends A
     make: (@flavor) =>
       func = () =>
-        super + " with #{@flavor}"
+        super() + " with #{@flavor}"
       func()
 
   c = new C('Machiato')
@@ -1312,13 +1275,13 @@ test "super in a try/catch", ->
   class B extends A
       constructor: ->
         try
-          super
+          super()
   """
 
   throwsC = """
   ctor = ->
     try
-      super
+      super()
 
   class C extends A
       constructor: ctor
@@ -1702,7 +1665,7 @@ test "CS6 Class extends a CS1 compiled class with super()", ->
     constructor: (@shots) ->
       super('caramel')
     make: () ->
-      super + " and #{@shots} shots of espresso"
+      super() + " and #{@shots} shots of espresso"
 
   eq B.className(), 'ExtendedCS1'
   b = new B('three')
