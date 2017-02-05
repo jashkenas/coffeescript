@@ -1800,7 +1800,8 @@ exports.Assign = class Assign extends Base
     expandedIdx = false
     # Make vvar into a simple variable if it isn't already.
     if value.unwrap() not instanceof IdentifierLiteral or @variable.assigns(vvarText)
-      assigns.push [@makeCode("#{ ref = o.scope.freeVariable 'ref' } = "), vvar...]
+      ref = o.scope.freeVariable 'ref'
+      assigns.push [@makeCode(ref + ' = '), vvar...]
       vvar = [@makeCode ref]
       vvarText = ref
     for obj, i in objects
