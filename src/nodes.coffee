@@ -1458,13 +1458,23 @@ exports.Assign = class Assign extends Base
     top       = o.level is LEVEL_TOP
     {value}   = this
     {objects} = @variable.base
+
+    # Special-case for `{} = a` and `[] = a` (empty patterns). Compile to simply
+    # `a`.
     unless olen = objects.length
       code = value.compileToFragments o
       return if o.level >= LEVEL_OP then @wrapInBraces code else code
+
     [obj] = objects
+
+    # Disallow `[...] = a` for some reason. (Could be equivalent to `[] = a`?)
     if olen is 1 and obj instanceof Expansion
       obj.error 'Destructuring assignment has no target'
+
     isObject = @variable.isObject()
+
+    # Special case for when there's only one thing destructured off of
+    # something. `{b} = a` and `[b] = a`.
     if top and olen is 1 and obj not instanceof Splat
       # Pick the property straight off the value when there’s just one to pick
       # (no need to cache the value into a variable).
@@ -1495,15 +1505,30 @@ exports.Assign = class Assign extends Base
       obj.error message if message
       value = new Op '?', value, defaultValue if defaultValue
       return new Assign(obj, value, null, param: @param).compileToFragments o, LEVEL_TOP
+
     vvar     = value.compileToFragments o, LEVEL_LIST
     vvarText = fragmentsToText vvar
     assigns  = []
     expandedIdx = false
-    # Make vvar into a simple variable if it isn't already.
+
+    # At this point, there are several things to destructure. So the `fn()` in
+    # `{a, b} = fn()` must be cached, for example. Make vvar into a simple
+    # variable if it isn't already.
     if value.unwrap() not instanceof IdentifierLiteral or @variable.assigns(vvarText)
       assigns.push [@makeCode("#{ ref = o.scope.freeVariable 'ref' } = "), vvar...]
       vvar = [@makeCode ref]
       vvarText = ref
+
+    # And here comes the big loop that handles all of these cases:
+    # `[a, b] = c`
+    # `[a..., b] = c`
+    # `[..., a, b] = c`
+    # `[@a, b] = c`
+    # `[a = 1, b] = c`
+    # `{a, b} = c`
+    # `{@a, b} = c`
+    # `{a = 1, b} = c`
+    # etc.
     for obj, i in objects
       idx = i
       if not expandedIdx and obj instanceof Splat
@@ -1558,6 +1583,7 @@ exports.Assign = class Assign extends Base
         message = isUnassignable name
         obj.error message if message
       assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
+
     assigns.push vvar unless top or @subpattern
     fragments = @joinFragmentArrays assigns, ', '
     if o.level < LEVEL_LIST then fragments else @wrapInBraces fragments
