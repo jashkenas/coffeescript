@@ -203,8 +203,8 @@ test "async methods in classes", ->
   eq await new Base().method(), 2
 
   class Child extends Base
-    @static: -> super
-    method: -> super
+    @static: -> super()
+    method: -> super()
 
   eq await Child.static(), 1
   eq await new Child().method(), 2
