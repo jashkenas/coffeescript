@@ -2034,9 +2034,7 @@ zip = typeof lottery.drawWinner === "function" ? (ref = lottery.drawWinner().add
 
         </section>
         <section id="classes">
-          <h2>Classes, Inheritance, and Super</h2><p>JavaScript’s prototypal inheritance has always been a bit of a brain-bender, with a whole family tree of libraries that provide a cleaner syntax for classical inheritance on top of JavaScript’s prototypes: <a href="http://code.google.com/p/base2/">Base2</a>, <a href="http://prototypejs.org/">Prototype.js</a>, <a href="http://jsclass.jcoglan.com/">JS.Class</a>, etc. The libraries provide syntactic sugar, but the built-in inheritance would be completely usable if it weren’t for a couple of small exceptions: it’s awkward to call <strong>super</strong> (the prototype object’s implementation of the current function), and it’s awkward to correctly set the prototype chain.</p>
-<p>Instead of repetitively attaching functions to a prototype, CoffeeScript provides a basic <code>class</code> structure that allows you to name your class, set the superclass, assign prototypal properties, and define the constructor, in a single assignable expression.</p>
-<p>Constructor functions are named, to better support helpful stack traces. In the first class in the example below, <code>this.constructor.name is &quot;Animal&quot;</code>.</p>
+          <h2>Classes, Inheritance, and Super</h2><p>CoffeeScript 1 provided the <code>class</code> and <code>extends</code> keywords as syntactic sugar for working with prototypal functions. With ES2015, JavaScript has adopted those keywords; so CoffeeScript 2 compiles its <code>class</code> and <code>extends</code> keywords to ES2015 classes.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="classes">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
@@ -2077,35 +2075,21 @@ Animal = class Animal {
 
 };
 
-Snake = (function(superClass) {
-  class Snake extends superClass {
-    move() {
-      alert("Slithering...");
-      return Snake.__super__.move.call(this, 5);
-    }
+Snake = class Snake extends Animal {
+  move() {
+    alert("Slithering...");
+    return super.move(5);
+  }
 
-  };
+};
 
-  Snake.__super__ = superClass.prototype;
+Horse = class Horse extends Animal {
+  move() {
+    alert("Galloping...");
+    return super.move(45);
+  }
 
-  return Snake;
-
-})(Animal);
-
-Horse = (function(superClass) {
-  class Horse extends superClass {
-    move() {
-      alert("Galloping...");
-      return Horse.__super__.move.call(this, 45);
-    }
-
-  };
-
-  Horse.__super__ = superClass.prototype;
-
-  return Horse;
-
-})(Animal);
+};
 
 sam = new Snake("Sammy the Python");
 
@@ -2125,7 +2109,53 @@ tom.move();
   </div>
   
 </aside>
-<p>If structuring your prototypes classically isn’t your cup of tea, CoffeeScript provides a couple of lower-level conveniences. The <code>extends</code> operator helps with proper prototype setup, and can be used to create an inheritance chain between any pair of constructor functions; <code>::</code> gives you quick access to an object’s prototype; and <code>super()</code> is converted into a call against the immediate ancestor’s method of the same name.</p>
+<p>Static methods can be defined using <code>@</code> before the method name:</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="static">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="static-coffee">class Teenager
+	@say: (speech) ->
+		words = speech.split ' '
+		fillers = ['uh', 'um', 'like', 'actually', 'so', 'maybe']
+		output = []
+		for word, index in words
+			output.push word
+			output.push fillers[Math.floor(Math.random() * fillers.length)] unless index is words.length - 1
+		output.join ', '
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="static-js">var Teenager;
+
+Teenager = class Teenager {
+  static say(speech) {
+    var fillers, i, index, len, output, word, words;
+    words = speech.split(' ');
+    fillers = ['uh', 'um', 'like', 'actually', 'so', 'maybe'];
+    output = [];
+    for (index = i = 0, len = words.length; i < len; index = ++i) {
+      word = words[index];
+      output.push(word);
+      if (index !== words.length - 1) {
+        output.push(fillers[Math.floor(Math.random() * fillers.length)]);
+      }
+    }
+    return output.join(', ');
+  }
+
+};
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="static" data-run="Teenager.say%28%22Are%20we%20there%20yet%3F%22%29"><small>▶</small>&ensp;Teenager.say(&quot;Are we there yet?&quot;)</button>
+    </div>
+  </div>
+  
+</aside>
+<p>And <code>::</code> gives you quick access to an object’s prototype:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="prototypes">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
@@ -2148,8 +2178,6 @@ tom.move();
   </div>
   
 </aside>
-<p>Finally, class definitions are blocks of executable code, which make for interesting metaprogramming possibilities. Because in the context of a class definition, <code>this</code> is the class object itself (the constructor function), you can assign static properties by using
-<code>@property: value</code>, and call functions defined in parent classes: <code>@attr &#39;title&#39;, type: &#39;text&#39;</code></p>
 
         </section>
         <section id="destructuring">
@@ -3070,7 +3098,16 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
       </section>
       <section id="changelog">
-        <h2>Change Log</h2><div class="anchor" id="1.12.2"></div>
+        <h2>Change Log</h2><div class="anchor" id="1.12.3"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.12.2...1.12.3">1.12.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-01-24">January 24, 2017</time></span>
+</h2><ul>
+<li><code>@</code> values can now be used as indices in <code>for</code> expressions. This loosens the compilation of <code>for</code> expressions to allow the index variable to be an <code>@</code> value, e.g. <code>do @visit for @node, @index in nodes</code>. Within <code>@visit</code>, the index of the current node (<code>@node</code>) would be available as <code>@index</code>.</li>
+<li>CoffeeScript’s patched <code>Error.prepareStackTrace</code> has been restored, with some revisions that should prevent the erroneous exceptions that were making life difficult for some downstream projects. This fixes the incorrect line numbers in stack traces since 1.12.2.</li>
+<li>The <code>//=</code> operator’s output now wraps parentheses around the right operand, like the other assignment operators.</li>
+</ul>
+<div class="anchor" id="1.12.2"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/1.12.1...1.12.2">1.12.2</a>
   <span class="timestamp"> &mdash; <time datetime="2016-12-16">December 16, 2016</time></span>
