@@ -366,6 +366,7 @@ getSourceMap = (filename) ->
     answer = compile sources[filename],
       filename: filename
       sourceMap: yes
+      literate: helpers.isLiterate filename
     answer.sourceMap
   else
     null
