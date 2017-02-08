@@ -589,6 +589,9 @@ textarea {
       </ul>
     </li>
     <li class="nav-item">
+      <a href="#breaking-changes" class="nav-link" data-action="sidebar-nav">Breaking Changes From 1.x</a>
+    </li>
+    <li class="nav-item">
       <a href="#literate" class="nav-link" data-action="sidebar-nav">Literate CoffeeScript</a>
     </li>
     <li class="nav-item">
@@ -2965,6 +2968,66 @@ function time() {
 </aside>
 
         </section>
+      </section>
+      <section id="breaking-changes">
+        <h2>Breaking Changes</h2><p>CoffeeScript 2 aims to output as much idiomatic ES2015+ syntax as possible with as few breaking changes from CoffeeScript 1.x as possible. Some breaking changes, unfortunately, were unavoidable.</p>
+<h3>Function parameter default values</h3><p>Per the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters">ES2015 spec regarding default parameters</a>, default values are only applied when a parameter value is missing or <code>undefined</code>. In CoffeeScript 1.x, the default value would be applied in those cases but also if the parameter value was <code>null</code>.</p>
+<blockquote>
+<pre><code>f = (a = 1) -> a
+f(null)  # Returns 1 in CoffeeScript 1.x, null in CoffeeScript 2</code></pre></blockquote>
+<h3>Bound generator functions</h3><p>Bound generator functions, a.k.a. generator arrow functions, <a href="http://stackoverflow.com/questions/27661306/can-i-use-es6s-arrow-function-syntax-with-generators-arrow-notation">aren’t allowed in ECMAScript</a>. You can write <code>function*</code> or <code>=&gt;</code>, but not both. Therefore, CoffeeScript code like this:</p>
+<blockquote>
+<pre><code>f = => yield this</code></pre></blockquote>
+<p>Needs to be rewritten the old-fashioned way:</p>
+<blockquote>
+<pre><code>self = this
+f = -> yield self</code></pre></blockquote>
+<h3>Classes are compiled to ES2015 classes</h3><p>ES2015 classes and their methods have some restrictions beyond those on regular functions.</p>
+<p>Class constructors can’t be invoked without <code>new</code>:</p>
+<blockquote>
+<pre><code>(class)()  # throws a TypeError at runtime</code></pre></blockquote>
+<p>Derived (extended) class <code>constructor</code>s cannot use <code>this</code> before calling <code>super</code>:</p>
+<blockquote>
+<pre><code>class B extends A
+  constructor: -> this  # throws a compiler error</code></pre></blockquote>
+<p>Class methods can’t be used with <code>new</code> (uncommon):</p>
+<blockquote>
+<pre><code>class Namespace
+  Klass: ->
+new Namespace::Klass  # throws a TypeError at runtime</code></pre></blockquote>
+<h3>Bare <code>super</code></h3><p>Due to a syntax clash with <code>super</code> with accessors, bare <code>super</code> no longer compiles to a super call forwarding all arguments.</p>
+<blockquote>
+<pre><code>class B extends A
+  foo: -> super</code></pre></blockquote>
+<p>Arguments can be forwarded explicitly using splats:</p>
+<blockquote>
+<pre><code>class B extends A
+  foo: -> super arguments...</code></pre></blockquote>
+<h3><code>super</code> in non-class methods</h3><p>In CoffeeScript 1.x it is possible to use <code>super</code> in more than just class methods, such as in manually prototype-assigned functions:</p>
+<blockquote>
+<pre><code>A = ->
+B = ->
+B extends A
+B.prototype.foo = -> super arguments...</code></pre></blockquote>
+<p>Due to the switch to ES2015 <code>super</code>, this is no longer supported. The above case could be refactored for 2.x to:</p>
+<blockquote>
+<pre><code>A = ->
+B = ->
+B extends A
+B.prototype.foo = -> A::foo.apply this, arguments
+
+# OR
+
+class A
+class B extends A
+  foo: -> super arguments...</code></pre></blockquote>
+<h3>Dynamic class keys exclude executable class scope</h3><p>Due to the hoisting required to compile to ES2015 classes, dynamic keys in class methods can’t use values from the executable class body unless the methods are assigned in prototype style.</p>
+<blockquote>
+<pre><code>class A
+  name = 'method'
+  "#{name}": ->   # This method will be named 'undefined'
+  @::[name] = ->  # This will work; assigns to `A.prototype.method`</code></pre></blockquote>
+
       </section>
       <section id="literate">
         <h2>Literate CoffeeScript</h2><p>Besides being used as an ordinary programming language, CoffeeScript may also be written in “literate” mode. If you name your file with a <code>.litcoffee</code> extension, you can write it as a Markdown document — a document that also happens to be executable CoffeeScript code. The compiler will treat any indented blocks (Markdown’s way of indicating source code) as code, and ignore the rest as comments.</p>
