@@ -1773,10 +1773,11 @@ exports.Assign = class Assign extends Base
     top       = o.level is LEVEL_TOP
     {value}   = this
     {objects} = @variable.base
+    olen      = objects.length
 
-    # Special-case for `{} = a` and `[] = a` (empty patterns). Compile to simply
-    # `a`.
-    unless olen = objects.length
+    # Special-case for `{} = a` and `[] = a` (empty patterns).
+    # Compile to simply `a`.
+    if olen is 0
       code = value.compileToFragments o
       return if o.level >= LEVEL_OP then @wrapInParentheses code else code
     [obj] = objects
@@ -1850,7 +1851,8 @@ exports.Assign = class Assign extends Base
         name = obj.name.unwrap().value
         obj = obj.unwrap()
         val = "#{olen} <= #{vvarText}.length ? #{ utility 'slice', o }.call(#{vvarText}, #{i}"
-        if rest = olen - i - 1
+        rest = olen - i - 1
+        if rest isnt 0
           ivar = o.scope.freeVariable 'i', single: true
           val += ", #{ivar} = #{vvarText}.length - #{rest}) : (#{ivar} = #{i}, [])"
         else
@@ -1858,7 +1860,8 @@ exports.Assign = class Assign extends Base
         val   = new Literal val
         expandedIdx = "#{ivar}++"
       else if not expandedIdx and obj instanceof Expansion
-        if rest = olen - i - 1
+        rest = olen - i - 1
+        if rest isnt 0
           if rest is 1
             expandedIdx = "#{vvarText}.length - 1"
           else
