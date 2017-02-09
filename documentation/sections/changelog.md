@@ -1,6 +1,22 @@
 ## Change Log
 
 ```
+releaseHeader('2017-02-10', '2.0.0-alpha1', '1.12.3')
+```
+*   Initial alpha release of CoffeeScript 2. The CoffeeScript compiler now outputs ES2015+ syntax whenever possible.
+*   Classes are output using ES2015 `class` and `extends` keywords.
+*   Added support for `async`/`await`.
+*   Bound (arrow) functions now output as `=>` functions.
+*   Function parameters with default values now use ES2015 default values syntax.
+*   Splat function parameters now use ES2015 spread syntax.
+*   Computed properties now use ES2015 syntax.
+*   Interpolated strings (template literals) now use ES2015 backtick syntax.
+*   Improved support for recognizing Markdown in Literate CoffeeScript files.
+*   Mixing tabs and spaces in indentation is now disallowed.
+*   Browser compiler is now minified using the Google Closure Compiler (JavaScript version).
+*   Node 7+ required for CoffeeScript 2.
+
+```
 releaseHeader('2017-01-24', '1.12.3', '1.12.2')
 ```
 
