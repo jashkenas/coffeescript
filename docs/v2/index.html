@@ -560,7 +560,10 @@ textarea {
           <a href="#existential-operator" class="nav-link" data-action="sidebar-nav">Existential Operator</a>
         </li>
         <li class="nav-item">
-          <a href="#classes" class="nav-link" data-action="sidebar-nav">Classes, Inheritance, and Super</a>
+          <a href="#classes" class="nav-link" data-action="sidebar-nav">Classes</a>
+        </li>
+        <li class="nav-item">
+          <a href="#prototypal-inheritance" class="nav-link" data-action="sidebar-nav">Prototypal Inheritance</a>
         </li>
         <li class="nav-item">
           <a href="#destructuring" class="nav-link" data-action="sidebar-nav">Destructuring Assignment</a>
@@ -587,6 +590,9 @@ textarea {
           <a href="#embedded" class="nav-link" data-action="sidebar-nav">Embedded JavaScript</a>
         </li>
       </ul>
+    </li>
+    <li class="nav-item">
+      <a href="#breaking-changes" class="nav-link" data-action="sidebar-nav">Breaking Changes From 1.x</a>
     </li>
     <li class="nav-item">
       <a href="#literate" class="nav-link" data-action="sidebar-nav">Literate CoffeeScript</a>
@@ -740,7 +746,7 @@ cubes = (function() {
       </section>
       <section id="coffeescript-2">
         <h2>CoffeeScript 2</h2><p>CoffeeScript 2 generates JavaScript that uses the latest ES2015+ features. It is your responsibility to ensure that your target JavaScript runtime(s) support all these features, or that you pass the output through another transpiler like <a href="http://babeljs.io/">Babel</a>, <a href="https://github.com/rollup/rollup">Rollup</a> or <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>. In general, <a href="http://node.green/">CoffeeScript 2’s output is fully supported by Node.js 7+</a>, although async functions require the <code>--harmony</code> or <code>--harmony-async-await</code> flags; and ES2015 modules require an additional transpiler. Output JavaScript intended for browsers generally requires additional transpilation.</p>
-<p>If you’re looking for a single tool that takes CoffeeScript input and generates JavaScript output that runs in any JavaScript runtime, assuming you opt out of certain newer features, stick to the <a href="v1/">CoffeeScript 1.x branch</a>. CoffeeScript 2 <a href="https://github.com/jashkenas/coffeescript/wiki/%5BWIP%5D-Breaking-changes-in-CoffeeScript-2">breaks compatibility</a> with certain CoffeeScript 1.x features in order to conform with the ES2015+ specifications, and generate more idiomatic output (a CoffeeScript <code>=&gt;</code> becomes an ES <code>=&gt;</code>; a CoffeeScript <code>class</code> becomes an ES <code>class</code>; and so on).</p>
+<p>If you’re looking for a single tool that takes CoffeeScript input and generates JavaScript output that runs in any JavaScript runtime, assuming you opt out of certain newer features, stick to the <a href="v1/">CoffeeScript 1.x branch</a>. CoffeeScript 2 <a href="#breaking-changes">breaks compatibility</a> with certain CoffeeScript 1.x features in order to conform with the ES2015+ specifications, and generate more idiomatic output (a CoffeeScript <code>=&gt;</code> becomes an ES <code>=&gt;</code>; a CoffeeScript <code>class</code> becomes an ES <code>class</code>; and so on).</p>
 
       </section>
       <section id="installation">
@@ -2034,9 +2040,7 @@ zip = typeof lottery.drawWinner === "function" ? (ref = lottery.drawWinner().add
 
         </section>
         <section id="classes">
-          <h2>Classes, Inheritance, and Super</h2><p>JavaScript’s prototypal inheritance has always been a bit of a brain-bender, with a whole family tree of libraries that provide a cleaner syntax for classical inheritance on top of JavaScript’s prototypes: <a href="http://code.google.com/p/base2/">Base2</a>, <a href="http://prototypejs.org/">Prototype.js</a>, <a href="http://jsclass.jcoglan.com/">JS.Class</a>, etc. The libraries provide syntactic sugar, but the built-in inheritance would be completely usable if it weren’t for a couple of small exceptions: it’s awkward to call <strong>super</strong> (the prototype object’s implementation of the current function), and it’s awkward to correctly set the prototype chain.</p>
-<p>Instead of repetitively attaching functions to a prototype, CoffeeScript provides a basic <code>class</code> structure that allows you to name your class, set the superclass, assign prototypal properties, and define the constructor, in a single assignable expression.</p>
-<p>Constructor functions are named, to better support helpful stack traces. In the first class in the example below, <code>this.constructor.name is &quot;Animal&quot;</code>.</p>
+          <h2>Classes</h2><p>CoffeeScript 1 provided the <code>class</code> and <code>extends</code> keywords as syntactic sugar for working with prototypal functions. With ES2015, JavaScript has adopted those keywords; so CoffeeScript 2 compiles its <code>class</code> and <code>extends</code> keywords to ES2015 classes.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="classes">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
@@ -2077,35 +2081,21 @@ Animal = class Animal {
 
 };
 
-Snake = (function(superClass) {
-  class Snake extends superClass {
-    move() {
-      alert("Slithering...");
-      return Snake.__super__.move.call(this, 5);
-    }
+Snake = class Snake extends Animal {
+  move() {
+    alert("Slithering...");
+    return super.move(5);
+  }
 
-  };
+};
 
-  Snake.__super__ = superClass.prototype;
+Horse = class Horse extends Animal {
+  move() {
+    alert("Galloping...");
+    return super.move(45);
+  }
 
-  return Snake;
-
-})(Animal);
-
-Horse = (function(superClass) {
-  class Horse extends superClass {
-    move() {
-      alert("Galloping...");
-      return Horse.__super__.move.call(this, 45);
-    }
-
-  };
-
-  Horse.__super__ = superClass.prototype;
-
-  return Horse;
-
-})(Animal);
+};
 
 sam = new Snake("Sammy the Python");
 
@@ -2125,7 +2115,57 @@ tom.move();
   </div>
   
 </aside>
-<p>If structuring your prototypes classically isn’t your cup of tea, CoffeeScript provides a couple of lower-level conveniences. The <code>extends</code> operator helps with proper prototype setup, and can be used to create an inheritance chain between any pair of constructor functions; <code>::</code> gives you quick access to an object’s prototype; and <code>super()</code> is converted into a call against the immediate ancestor’s method of the same name.</p>
+<p>Static methods can be defined using <code>@</code> before the method name:</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="static">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="static-coffee">class Teenager
+	@say: (speech) ->
+		words = speech.split ' '
+		fillers = ['uh', 'um', 'like', 'actually', 'so', 'maybe']
+		output = []
+		for word, index in words
+			output.push word
+			output.push fillers[Math.floor(Math.random() * fillers.length)] unless index is words.length - 1
+		output.join ', '
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="static-js">var Teenager;
+
+Teenager = class Teenager {
+  static say(speech) {
+    var fillers, i, index, len, output, word, words;
+    words = speech.split(' ');
+    fillers = ['uh', 'um', 'like', 'actually', 'so', 'maybe'];
+    output = [];
+    for (index = i = 0, len = words.length; i < len; index = ++i) {
+      word = words[index];
+      output.push(word);
+      if (index !== words.length - 1) {
+        output.push(fillers[Math.floor(Math.random() * fillers.length)]);
+      }
+    }
+    return output.join(', ');
+  }
+
+};
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="static" data-run="Teenager.say%28%22Are%20we%20there%20yet%3F%22%29"><small>▶</small>&ensp;Teenager.say(&quot;Are we there yet?&quot;)</button>
+    </div>
+  </div>
+  
+</aside>
+<p>Finally, class definitions are blocks of executable code, which make for interesting metaprogramming possibilities. In the context of a class definition, <code>this</code> is the class object itself; therefore, you can assign static properties by using <code>@property: value</code>.</p>
+
+        </section>
+        <section id="prototypal-inheritance">
+          <h2>Prototypal Inheritance</h2><p>In addition to supporting ES2015 classes, CoffeeScript provides a few shortcuts for working with prototypes. The <code>extends</code> operator can be used to create an inheritance chain between any pair of constructor functions, and <code>::</code> gives you quick access to an object’s prototype:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="prototypes">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
@@ -2148,8 +2188,6 @@ tom.move();
   </div>
   
 </aside>
-<p>Finally, class definitions are blocks of executable code, which make for interesting metaprogramming possibilities. Because in the context of a class definition, <code>this</code> is the class object itself (the constructor function), you can assign static properties by using
-<code>@property: value</code>, and call functions defined in parent classes: <code>@attr &#39;title&#39;, type: &#39;text&#39;</code></p>
 
         </section>
         <section id="destructuring">
@@ -2938,6 +2976,189 @@ function time() {
 
         </section>
       </section>
+      <section id="breaking-changes">
+        <h2>Breaking Changes From CoffeeScript 1.x to 2</h2><p>CoffeeScript 2 aims to output as much idiomatic ES2015+ syntax as possible with as few breaking changes from CoffeeScript 1.x as possible. Some breaking changes, unfortunately, were unavoidable.</p>
+<h3>Function parameter default values</h3><p>Per the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters">ES2015 spec regarding default parameters</a>, default values are only applied when a parameter value is missing or <code>undefined</code>. In CoffeeScript 1.x, the default value would be applied in those cases but also if the parameter value was <code>null</code>.</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="breaking_change_function_parameter_default_values">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="breaking_change_function_parameter_default_values-coffee">f = (a = 1) -> a
+
+f(null)  # Returns 1 in CoffeeScript 1.x, null in CoffeeScript 2
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="breaking_change_function_parameter_default_values-js">var f;
+
+f = function(a = 1) {
+  return a;
+};
+
+f(null);
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="breaking_change_function_parameter_default_values" data-run="f%28null%29"><small>▶</small>&ensp;f(null)</button>
+    </div>
+  </div>
+  
+</aside>
+<h3>Bound generator functions</h3><p>Bound generator functions, a.k.a. generator arrow functions, <a href="http://stackoverflow.com/questions/27661306/can-i-use-es6s-arrow-function-syntax-with-generators-arrow-notation">aren’t allowed in ECMAScript</a>. You can write <code>function*</code> or <code>=&gt;</code>, but not both. Therefore, CoffeeScript code like this:</p>
+<blockquote>
+<pre><code>f = => yield this  # Throws a compiler error</code></pre></blockquote>
+<p>Needs to be rewritten the old-fashioned way:</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="breaking_change_bound_generator_function">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="breaking_change_bound_generator_function-coffee">self = this
+f = -> yield self
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="breaking_change_bound_generator_function-js">var f, self;
+
+self = this;
+
+f = function*() {
+  return (yield self);
+};
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+<h3>Classes are compiled to ES2015 classes</h3><p>ES2015 classes and their methods have some restrictions beyond those on regular functions.</p>
+<p>Class constructors can’t be invoked without <code>new</code>:</p>
+<blockquote>
+<pre><code>(class)()  # Throws a TypeError at runtime</code></pre></blockquote>
+<p>Derived (extended) class <code>constructor</code>s cannot use <code>this</code> before calling <code>super</code>:</p>
+<blockquote>
+<pre><code>class B extends A
+  constructor: -> this  # Throws a compiler error</code></pre></blockquote>
+<p>Class methods can’t be used with <code>new</code> (uncommon):</p>
+<blockquote>
+<pre><code>class Namespace
+  @Klass = ->
+new Namespace.Klass  # Throws a TypeError at runtime</code></pre></blockquote>
+<h3>Bare <code>super</code></h3><p>Due to a syntax clash with <code>super</code> with accessors, bare <code>super</code> no longer compiles to a super call forwarding all arguments.</p>
+<blockquote>
+<pre><code>class B extends A
+  foo: -> super    # Throws a compiler error</code></pre></blockquote>
+<p>Arguments can be forwarded explicitly using splats:</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="breaking_change_super_with_arguments">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="breaking_change_super_with_arguments-coffee">class B extends A
+  foo: -> super arguments...
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="breaking_change_super_with_arguments-js">var B;
+
+B = class B extends A {
+  foo() {
+    return super.foo(...arguments);
+  }
+
+};
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+<p>Or if you know that the parent function doesn’t require arguments, just call <code>super()</code>:</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="breaking_change_super_without_arguments">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="breaking_change_super_without_arguments-coffee">class B extends A
+  foo: -> super()
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="breaking_change_super_without_arguments-js">var B;
+
+B = class B extends A {
+  foo() {
+    return super.foo();
+  }
+
+};
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+<h3><code>super</code> in non-class methods</h3><p>In CoffeeScript 1.x it is possible to use <code>super</code> in more than just class methods, such as in manually prototype-assigned functions:</p>
+<blockquote>
+<pre><code>A = ->
+B = ->
+B extends A
+B.prototype.foo = -> super arguments...  # Throws a compiler error</code></pre></blockquote>
+<p>Due to the switch to ES2015 <code>super</code>, this is no longer supported. The above case could be refactored to:</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="breaking_change_super_in_non-class_methods_refactor_with_apply">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="breaking_change_super_in_non-class_methods_refactor_with_apply-coffee">A = ->
+B = ->
+B extends A
+B.prototype.foo = -> A::foo.apply this, arguments
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="breaking_change_super_in_non-class_methods_refactor_with_apply-js">var A, B,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); return child; },
+  hasProp = {}.hasOwnProperty;
+
+A = function() {};
+
+B = function() {};
+
+extend(B, A);
+
+B.prototype.foo = function() {
+  return A.prototype.foo.apply(this, arguments);
+};
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+<p>or</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="breaking_change_super_in_non-class_methods_refactor_with_class">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="breaking_change_super_in_non-class_methods_refactor_with_class-coffee">class A
+class B extends A
+  foo: -> super arguments...
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="breaking_change_super_in_non-class_methods_refactor_with_class-js">var A, B;
+
+A = class A {};
+
+B = class B extends A {
+  foo() {
+    return super.foo(...arguments);
+  }
+
+};
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+<h3>Dynamic class keys exclude executable class scope</h3><p>Due to the hoisting required to compile to ES2015 classes, dynamic keys in class methods can’t use values from the executable class body unless the methods are assigned in prototype style.</p>
+<blockquote>
+<pre><code>class A
+  name = 'method'
+  "#{name}": ->   # This method will be named 'undefined'
+  @::[name] = ->  # This will work; assigns to `A.prototype.method`</code></pre></blockquote>
+
+      </section>
       <section id="literate">
         <h2>Literate CoffeeScript</h2><p>Besides being used as an ordinary programming language, CoffeeScript may also be written in “literate” mode. If you name your file with a <code>.litcoffee</code> extension, you can write it as a Markdown document — a document that also happens to be executable CoffeeScript code. The compiler will treat any indented blocks (Markdown’s way of indicating source code) as code, and ignore the rest as comments.</p>
 <p>Just for kicks, a little bit of the compiler is currently implemented in this fashion: See it <a href="https://gist.github.com/jashkenas/3fc3c1a8b1009c00d9df">as a document</a>, <a href="https://raw.github.com/jashkenas/coffeescript/master/src/scope.litcoffee">raw</a>, and <a href="http://cl.ly/LxEu">properly highlighted in a text editor</a>.</p>
@@ -3070,7 +3291,16 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
       </section>
       <section id="changelog">
-        <h2>Change Log</h2><div class="anchor" id="1.12.2"></div>
+        <h2>Change Log</h2><div class="anchor" id="1.12.3"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.12.2...1.12.3">1.12.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-01-24">January 24, 2017</time></span>
+</h2><ul>
+<li><code>@</code> values can now be used as indices in <code>for</code> expressions. This loosens the compilation of <code>for</code> expressions to allow the index variable to be an <code>@</code> value, e.g. <code>do @visit for @node, @index in nodes</code>. Within <code>@visit</code>, the index of the current node (<code>@node</code>) would be available as <code>@index</code>.</li>
+<li>CoffeeScript’s patched <code>Error.prepareStackTrace</code> has been restored, with some revisions that should prevent the erroneous exceptions that were making life difficult for some downstream projects. This fixes the incorrect line numbers in stack traces since 1.12.2.</li>
+<li>The <code>//=</code> operator’s output now wraps parentheses around the right operand, like the other assignment operators.</li>
+</ul>
+<div class="anchor" id="1.12.2"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/1.12.1...1.12.2">1.12.2</a>
   <span class="timestamp"> &mdash; <time datetime="2016-12-16">December 16, 2016</time></span>
