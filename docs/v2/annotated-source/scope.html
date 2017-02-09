@@ -218,9 +218,9 @@ already exist.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  find: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  find: <span class="hljs-function"><span class="hljs-params">(name, type = <span class="hljs-string">'var'</span>)</span> -&gt;</span>
     <span class="hljs-keyword">return</span> <span class="hljs-literal">yes</span> <span class="hljs-keyword">if</span> @check name
-    @add name, <span class="hljs-string">'var'</span>
+    @add name, type
     <span class="hljs-literal">no</span></pre></div></div>
             
         </li>
