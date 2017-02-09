@@ -1066,8 +1066,8 @@ test "async methods in classes", ->
   eq await new Base().method(), 2
 
   class Child extends Base
-    @static: -> super
-    method: -> super
+    @static: -> super()
+    method: -> super()
 
   eq await Child.static(), 1
   eq await new Child().method(), 2
@@ -1140,13 +1140,6 @@ test "classes with a four-level inheritance chain", ->
   ok result is 'zero/one/two/three/four'
   ok Base.static('word') is 'static/word'
 
-  FirstChild::func = (string) ->
-    super('one/').length + string
-
-  result = (new ThirdChild).func 'four'
-
-  ok result is '9two/three/four'
-
   ok (new ThirdChild).array.join(' ') is '1 2 3'
 
 
@@ -1169,56 +1162,46 @@ test "constructors with inheritance and super", ->
   ok (new SubClass).prop is 'top-super-sub'
 
 
-test "basic classes, again, but in the manual prototype style", ->
+test "'super' with accessors", ->
+  class Base
+    m: -> 4
+    n: -> 5
+    o: -> 6
 
-  Base = ->
-  Base::func = (string) ->
-    'zero/' + string
-  Base::['func-func'] = (string) ->
-    "dynamic-#{string}"
+  name = 'o'
+  class A extends Base
+    m: -> super()
+    n: -> super.n()
+    "#{name}": -> super()
+    p: -> super[name]()
 
-  FirstChild = ->
-  SecondChild = ->
-  ThirdChild = ->
-    @array = [1, 2, 3]
-    this
-
-  ThirdChild extends SecondChild extends FirstChild extends Base
-
-  FirstChild::func = (string) ->
-    super('one/') + string
-
-  SecondChild::func = (string) ->
-    super('two/') + string
-
-  ThirdChild::func = (string) ->
-    super('three/') + string
-
-  result = (new ThirdChild).func 'four'
-
-  ok result is 'zero/one/two/three/four'
-
-  ok (new ThirdChild)['func-func']('thing') is 'dynamic-thing'
+  a = new A
+  eq 4, a.m()
+  eq 5, a.n()
+  eq 6, a.o()
+  eq 6, a.p()
 
 
-test "super with plain ol' prototypes", ->
+test "soaked 'super' invocation", ->
+  class Base
+    method: -> 2
 
-  TopClass = ->
-  TopClass::func = (arg) ->
-    'top-' + arg
+  class A extends Base
+    method: -> super?()
+    noMethod: -> super?()
 
-  SuperClass = ->
-  SuperClass extends TopClass
-  SuperClass::func = (arg) ->
-    super 'super-' + arg
+  a = new A
+  eq 2, a.method()
+  eq undefined, a.noMethod()
 
-  SubClass = ->
-  SubClass extends SuperClass
-  SubClass::func = ->
-    super 'sub'
+  name = 'noMethod'
+  class B extends Base
+    "#{'method'}": -> super?()
+    "#{'noMethod'}": -> super?() ? super['method']()
 
-  eq (new SubClass).func(), 'top-super-sub'
-
+  b = new B
+  eq 2, b.method()
+  eq 2, b.noMethod()
 
 test "'@' referring to the current instance, and not being coerced into a call", ->
 
@@ -1236,7 +1219,7 @@ test "super() calls in constructors of classes that are defined as object proper
     constructor: (name) -> @name = name
 
   class Hive.Bee extends Hive
-    constructor: (name) -> super
+    constructor: (name) -> super name
 
   maya = new Hive.Bee 'Maya'
   ok maya.name is 'Maya'
@@ -1310,7 +1293,7 @@ test "calling super and passing along all arguments", ->
     method: (args...) -> @args = args
 
   class Child extends Parent
-    method: -> super
+    method: -> super arguments...
 
   c = new Child
   c.method 1, 2, 3, 4
@@ -1521,7 +1504,7 @@ test "`class extends this`", ->
   B = null
   makeClass = ->
     B = class extends this
-      func: -> super + ' B'
+      func: -> super() + ' B'
 
   makeClass.call A
 
@@ -1583,7 +1566,7 @@ test "#1313: misplaced __extends", ->
   class A
   class B extends A
     prop: nonce
-    constructor: -> super
+    constructor: -> super()
   eq nonce, B::prop
 
 test "#1182: execution order needs to be considered as well", ->
@@ -1610,11 +1593,11 @@ test "#1372: bound class methods with reserved names", ->
 
 test "#1380: `super` with reserved names", ->
   class C
-    do: -> super
+    do: -> super()
   ok C::do
 
   class B
-    0: -> super
+    0: -> super()
   ok B::[0]
 
 test "#1464: bound class methods should keep context", ->
@@ -1650,7 +1633,7 @@ test "#1598: super works for static methods too", ->
 
   class Child extends Parent
     @method: ->
-      'pass? ' + super
+      'pass? ' + super()
 
   eq Child.method(), 'pass? yes'
 
@@ -1832,7 +1815,7 @@ test "extending native objects works with and without defining a constructor", -
   ok 'yes!', myArray.method()
 
   class OverrideArray extends Array
-    constructor: -> super
+    constructor: -> super()
     method: -> 'yes!'
 
   overrideArray = new OverrideArray
@@ -1902,7 +1885,7 @@ test "#2949: super in static method with reserved name", ->
     @static: -> 'baz'
 
   class Bar extends Foo
-    @static: -> super
+    @static: -> super()
 
   eq Bar.static(), 'baz'
 
@@ -1912,8 +1895,8 @@ test "#3232: super in static methods (not object-assigned)", ->
     @qux = -> true
 
   class Bar extends Foo
-    @baz = -> super
-    Bar.qux = -> super
+    @baz = -> super()
+    Bar.qux = -> super()
 
   ok Bar.baz()
   ok Bar.qux()
@@ -1925,25 +1908,34 @@ test "#1392 calling `super` in methods defined on namespaced classes", ->
   namespace =
     A: ->
     B: ->
-  namespace.A extends Base
+  class namespace.A extends Base
+    m: -> super()
 
-  namespace.A::m = -> super
   eq 5, (new namespace.A).m()
   namespace.B::m = namespace.A::m
   namespace.A::m = null
   eq 5, (new namespace.B).m()
 
-  count = 0
-  getNamespace = -> count++; namespace
-  getNamespace().A::n = -> super
-  eq 4, (new namespace.A).n()
-  eq 1, count
-
   class C
-    @a: (->)
-    @a extends Base
-    @a::m = -> super
+    @a: class extends Base
+      m: -> super()
   eq 5, (new C.a).m()
+
+
+test "dynamic method names", ->
+  class A
+    "#{name = 'm'}": -> 1
+  eq 1, new A().m()
+
+  class B extends A
+    "#{name = 'm'}": -> super()
+  eq 1, new B().m()
+
+  getName = -> 'm'
+  class C
+    "#{name = getName()}": -> 1
+  eq 1, new C().m()
+
 
 test "dynamic method names and super", ->
   class Base
@@ -1951,18 +1943,18 @@ test "dynamic method names and super", ->
     m: -> 5
     m2: -> 4.5
     n: -> 4
-  A = ->
-  A extends Base
+
+  name = -> count++; 'n'
+  count = 0
 
   m = 'm'
-  A::[m] = -> super
+  class A extends Base
+    "#{m}": -> super()
+    "#{name()}": -> super()
+
   m = 'n'
   eq 5, (new A).m()
 
-  name = -> count++; 'n'
-
-  count = 0
-  A::[name()] = -> super
   eq 4, (new A).n()
   eq 1, count
 
@@ -1970,9 +1962,9 @@ test "dynamic method names and super", ->
   m2 = 'm2'
   count = 0
   class B extends Base
-    @[name()] = -> super
-    @::[m] = -> super
-    "#{m2}": -> super
+    @[name()] = -> super()
+    "#{m}": -> super()
+    "#{m2}": -> super()
   b = new B
   m = m2 = 'n'
   eq 6, B.m()
@@ -1981,7 +1973,7 @@ test "dynamic method names and super", ->
   eq 1, count
 
   class C extends B
-    m: -> super
+    m: -> super()
   eq 5, (new C).m()
 
 # ES2015+ class interoperability
@@ -2150,10 +2142,15 @@ test "`@`-params and bound methods with multiple `super` paths (expressions)", -
 test "constructor super in arrow functions", ->
   class Test extends (class)
     constructor: (@param) ->
-      do => super
+      do => super()
       eq @param, nonce
 
   new Test nonce = {}
+
+# TODO Some of these tests use CoffeeScript.compile and CoffeeScript.run when they could use
+# regular test mechanics.
+# TODO Some of these tests might be better placed in `test/error_messages.coffee`.
+# TODO Some of these tests are duplicates.
 
 # Ensure that we always throw if we experience more than one super()
 # call in a constructor.  This ends up being a runtime error.
@@ -2314,24 +2311,6 @@ test "super and external constructors", ->
   throws -> CoffeeScript.compile throwsC, bare: yes
 
 
-test "super in external prototype", ->
-    class A
-      constructor: (@drink) ->
-      make: -> "Making a #{@drink}"
-
-    class B extends A
-    B::make = (@flavor) -> super() + " with #{@flavor}"
-    b = new B('Machiato')
-    eq b.make('caramel'),  "Making a Machiato with caramel"
-
-    #  Fails, bound
-    # TODO: Could this throw a compile error?
-    class C extends A
-    C::make = (@flavor) => super() + " with #{@flavor}"
-    c = new C('Machiato')
-    ok c.make('caramel') isnt "Making a Machiato with caramel"
-
-
 test "bound functions without super", ->
   # Bound function with @
   # Throw on compile, since bound
@@ -2359,7 +2338,7 @@ test "super in a bound function", ->
 
   class B extends A
     make: (@flavor) =>
-      super + " with #{@flavor}"
+      super() + " with #{@flavor}"
 
   b = new B('Machiato')
   eq b.make('vanilla'),  "Making a Machiato with vanilla"
@@ -2368,7 +2347,7 @@ test "super in a bound function", ->
   class C extends A
     make: (@flavor) =>
       func = () =>
-        super + " with #{@flavor}"
+        super() + " with #{@flavor}"
       func()
 
   c = new C('Machiato')
@@ -2396,13 +2375,13 @@ test "super in a try/catch", ->
   class B extends A
       constructor: ->
         try
-          super
+          super()
   """
 
   throwsC = """
   ctor = ->
     try
-      super
+      super()
 
   class C extends A
       constructor: ctor
@@ -2786,7 +2765,7 @@ test "CS6 Class extends a CS1 compiled class with super()", ->
     constructor: (@shots) ->
       super('caramel')
     make: () ->
-      super + " and #{@shots} shots of espresso"
+      super() + " and #{@shots} shots of espresso"
 
   eq B.className(), 'ExtendedCS1'
   b = new B('three')
@@ -3897,6 +3876,16 @@ test "#2274: Allow @values as loop variables", ->
   obj.method()
   eq obj.item, 3
 
+test "#4411: Allow @values as loop indices", ->
+  obj =
+    index: null
+    get: -> @index
+    method: ->
+      @get() for _, @index in [1, 2, 3]
+  eq obj.index, null
+  arrayEq obj.method(), [0, 1, 2]
+  eq obj.index, 3
+
 test "#2525, #1187, #1208, #1758, looping over an array forwards", ->
   list = [0, 1, 2, 3, 4]
 
@@ -4473,8 +4462,20 @@ test "compiler error formatting", ->
   '''
 
 if require?
+  os   = require 'os'
   fs   = require 'fs'
   path = require 'path'
+
+  test "patchStackTrace line patching", ->
+    err = new Error 'error'
+    ok err.stack.match /test[\/\\]error_messages\.coffee:\d+:\d+\b/
+
+  test "patchStackTrace stack prelude consistent with V8", ->
+    err = new Error
+    ok err.stack.match /^Error\n/ # Notice no colon when no message.
+
+    err = new Error 'error'
+    ok err.stack.match /^Error: error\n/
 
   test "#2849: compilation error in a require()d file", ->
     # Create a temporary file to require().
@@ -4492,6 +4493,57 @@ if require?
       """
     finally
       fs.unlinkSync 'test/syntax-error.coffee'
+
+  test "#3890 Error.prepareStackTrace doesn't throw an error if a compiled file is deleted", ->
+    # Adapted from https://github.com/atom/coffee-cash/blob/master/spec/coffee-cash-spec.coffee
+    filePath = path.join os.tmpdir(), 'PrepareStackTraceTestFile.coffee'
+    fs.writeFileSync filePath, "module.exports = -> throw new Error('hello world')"
+    throwsAnError = require filePath
+    fs.unlinkSync filePath
+
+    try
+      throwsAnError()
+    catch error
+
+    eq error.message, 'hello world'
+    doesNotThrow(-> error.stack)
+    notEqual error.stack.toString().indexOf(filePath), -1
+
+  test "#4418 stack traces for compiled files reference the correct line number", ->
+    filePath = path.join os.tmpdir(), 'StackTraceLineNumberTestFile.coffee'
+    fileContents = """
+      testCompiledFileStackTraceLineNumber = ->
+        # `a` on the next line is undefined and should throw a ReferenceError
+        console.log a if true
+
+      do testCompiledFileStackTraceLineNumber
+      """
+    fs.writeFileSync filePath, fileContents
+
+    try
+      require filePath
+    catch error
+    fs.unlinkSync filePath
+
+    # Make sure the line number reported is line 3 (the original Coffee source)
+    # and not line 6 (the generated JavaScript).
+    eq /StackTraceLineNumberTestFile.coffee:(\d)/.exec(error.stack.toString())[1], '3'
+
+
+test "#4418 stack traces for compiled strings reference the correct line number", ->
+  try
+    CoffeeScript.run """
+      testCompiledStringStackTraceLineNumber = ->
+        # `a` on the next line is undefined and should throw a ReferenceError
+        console.log a if true
+
+      do testCompiledStringStackTraceLineNumber
+      """
+  catch error
+
+  # Make sure the line number reported is line 3 (the original Coffee source)
+  # and not line 6 (the generated JavaScript).
+  eq /at testCompiledStringStackTraceLineNumber.*:(\d):/.exec(error.stack.toString())[1], '3'
 
 
 test "#1096: unexpected generated tokens", ->
@@ -5652,10 +5704,10 @@ test "constructor functions can't be generators", ->
   '''
 
 test "non-derived constructors can't call super", ->
-  assertErrorFormat 'class then constructor: -> super', '''
+  assertErrorFormat 'class then constructor: -> super()', '''
     [stdin]:1:28: error: 'super' is only allowed in derived class constructors
-    class then constructor: -> super
-                               ^^^^^
+    class then constructor: -> super()
+                               ^^^^^^^
   '''
 
 test "derived constructors can't reference `this` before calling super", ->
@@ -5673,10 +5725,39 @@ test "derived constructors can't use @params without calling super", ->
   '''
 
 test "'super' is not allowed in constructor parameter defaults", ->
-  assertErrorFormat 'class extends A then constructor: (a = super) ->', '''
+  assertErrorFormat 'class extends A then constructor: (a = super()) ->', '''
     [stdin]:1:40: error: 'super' is not allowed in constructor parameter defaults
-    class extends A then constructor: (a = super) ->
-                                           ^^^^^
+    class extends A then constructor: (a = super()) ->
+                                           ^^^^^^^
+  '''
+
+test "can't use pattern matches for loop indices", ->
+  assertErrorFormat 'a for b, {c} in d', '''
+    [stdin]:1:10: error: index cannot be a pattern matching expression
+    a for b, {c} in d
+             ^^^
+  '''
+
+test "bare 'super' is no longer allowed", ->
+  # TODO Improve this error message (it should at least be 'unexpected super')
+  assertErrorFormat 'class extends A then constructor: -> super', '''
+    [stdin]:1:35: error: unexpected ->
+    class extends A then constructor: -> super
+                                      ^^
+  '''
+
+test "soaked 'super' in constructor", ->
+  assertErrorFormat 'class extends A then constructor: -> super?()', '''
+    [stdin]:1:38: error: Unsupported reference to 'super'
+    class extends A then constructor: -> super?()
+                                         ^^^^^
+  '''
+
+test "new with 'super'", ->
+  assertErrorFormat 'class extends A then foo: -> new super()', '''
+    [stdin]:1:34: error: Unsupported reference to 'super'
+    class extends A then foo: -> new super()
+                                     ^^^^^
   '''
 
 </script>
@@ -7206,6 +7287,17 @@ test "#1038 Optimize trailing return statements", ->
                                                    return
                                                  """)
 
+test "#4406 Destructured parameter default evaluation order with incrementing variable", ->
+  i = 0
+  f = ({ a = ++i }, b = ++i) -> [a, b]
+  arrayEq f({}), [1, 2]
+
+test "#4406 Destructured parameter default evaluation order with generator function", ->
+  current = 0
+  next    = -> ++current
+  foo = ({ a = next() }, b = next()) -> [ a, b ]
+  arrayEq foo({}), [1, 2]
+
 </script>
 <script type="text/x-coffeescript" class="test" id="generators">
 # Generators
@@ -7547,8 +7639,8 @@ test "generator methods in classes", ->
   arrayEq [2], Array.from new Base().method()
 
   class Child extends Base
-    @static: -> super
-    method: -> super
+    @static: -> super()
+    method: -> super()
 
   arrayEq [1], Array.from Child.static()
   arrayEq [2], Array.from new Child().method()
@@ -9182,7 +9274,7 @@ test "export class that extends", ->
       baz: ->
         console.log 'hello, world!'"""
   output = toJS input
-  ok /export (class foo|var foo = \(function)/.test(output) and \
+  ok /export var foo = class foo/.test(output) and \
     not /var foo(;|,)/.test output
 
 test "export default class that extends", ->
@@ -9190,7 +9282,7 @@ test "export default class that extends", ->
     export default class foo extends bar
       baz: ->
         console.log 'hello, world!'"""
-  ok /export default (class foo|foo = \(function)/.test toJS input
+  ok /export default foo = class foo/.test toJS input
 
 test "export default named member, within an object", ->
   input = "export { foo as default, bar }"
@@ -9449,6 +9541,22 @@ test "export an imported aliased member named default", ->
     import {
       default as def
     } from 'lib';"""
+  eq toJS(input), output
+
+test "#4394: export shouldn't prevent variable declarations", ->
+  input = """
+    x = 1
+    export { x }
+  """
+  output = """
+    var x;
+
+    x = 1;
+
+    export {
+      x
+    };
+  """
   eq toJS(input), output
 
 </script>
@@ -10895,9 +11003,9 @@ test "division vs regex after a callable token", ->
     p: (regex) -> if regex then r regex else 4
   class B extends A
     p: ->
-      eq 2, super / b/g
-      eq 2, super/b/g
-      eq 2, super/ b/g
+      eq 2, super() / b/g
+      eq 2, super()/b/g
+      eq 2, super()/ b/g
       eq true, super /b/g
   new B().p()
 
@@ -11076,7 +11184,9 @@ test "#3795: Escape otherwise invalid characters", ->
 <script type="text/x-coffeescript" class="test" id="repl">
 return if global.testingBrowser
 
+os = require 'os'
 fs = require 'fs'
+path = require 'path'
 
 # REPL
 # ----
@@ -11106,7 +11216,7 @@ class MockOutputStream extends Stream
     @written[@written.length - 1 + fromEnd].replace /\r?\n$/, ''
 
 # Create a dummy history file
-historyFile = '.coffee_history_test'
+historyFile = path.join os.tmpdir(), '.coffee_history_test'
 fs.writeFileSync historyFile, '1 + 2\n'
 
 testRepl = (desc, fn) ->
@@ -11263,7 +11373,7 @@ test "#1183: super + fat arrows", ->
 
   class B extends A
     constructor : ->
-      super
+      super()
     foo : (cb) ->
       dolater =>
         dolater =>
@@ -11278,9 +11388,9 @@ test "#1183: super + wrap", ->
     m : -> 10
 
   class B extends A
-    constructor : -> super
-
-  B::m = -> r = try super()
+    constructor : -> super()
+    m: -> r = try super()
+    m: -> r = super()
 
   eq (new B).m(), 10
 
@@ -11304,7 +11414,7 @@ test "#2331: bound super regression", ->
     method: -> @constructor.value
 
   class B extends A
-    method: => super
+    method: => super()
 
   eq (new B).method(), 'A'
 
