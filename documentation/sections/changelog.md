@@ -1,9 +1,9 @@
 ## Change Log
 
 ```
-releaseHeader('2017-02-10', '2.0.0-alpha1', '1.12.3')
+releaseHeader('2017-02-13', '2.0.0-alpha1', '1.12.3')
 ```
-*   Initial alpha release of CoffeeScript 2. The CoffeeScript compiler now outputs ES2015+ syntax whenever possible.
+*   Initial alpha release of CoffeeScript 2. The CoffeeScript compiler now outputs ES2015+ syntax whenever possible. See [breaking changes](#breaking-changes).
 *   Classes are output using ES2015 `class` and `extends` keywords.
 *   Added support for `async`/`await`.
 *   Bound (arrow) functions now output as `=>` functions.
