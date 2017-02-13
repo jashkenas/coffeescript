@@ -162,7 +162,7 @@ releaseHeader('2014-08-26', '1.8.0', '1.7.1')
 *   Fixed a slight formatting error in CoffeeScript’s source map-patched stack traces.
 *   The `%%` operator now coerces its right operand only once.
 *   It is now possible to require CoffeeScript files from Cakefiles without having to register the compiler first.
-*   The CoffeeScript REPL is now exported and can be required using `require 'coffee-script/repl'`.
+*   The CoffeeScript REPL is now exported and can be required using `require 'coffeescript/repl'`.
 *   Fixes for the REPL in Node 0.11.
 
 ```
@@ -175,7 +175,7 @@ releaseHeader('2014-01-29', '1.7.1', '1.7.0')
 releaseHeader('2014-01-28', '1.7.0', '1.6.3')
 ```
 
-*   When requiring CoffeeScript files in Node you must now explicitly register the compiler. This can be done with `require 'coffee-script/register'` or `CoffeeScript.register()`. Also for configuration such as Mocha’s, use **coffee-script/register**.
+*   When requiring CoffeeScript files in Node you must now explicitly register the compiler. This can be done with `require 'coffeescript/register'` or `CoffeeScript.register()`. Also for configuration such as Mocha’s, use **coffeescript/register**.
 *   Improved error messages, source maps and stack traces. Source maps now use the updated `//#` syntax.
 *   Leading `.` now closes all open calls, allowing for simpler chaining syntax.
 
@@ -275,7 +275,7 @@ releaseHeader('2011-11-08', '1.1.3', '1.1.2')
 *   Ahh, whitespace. CoffeeScript’s compiled JS now tries to space things out and keep it readable, as you can see in the examples on this page.
 *   You can now call `super` in class level methods in class bodies, and bound class methods now preserve their correct context.
 *   JavaScript has always supported octal numbers `010 is 8`, and hexadecimal numbers `0xf is 15`, but CoffeeScript now also supports binary numbers: `0b10 is 2`.
-*   The CoffeeScript module has been nested under a subdirectory to make it easier to `require` individual components separately, without having to use **npm**. For example, after adding the CoffeeScript folder to your path: `require('coffee-script/lexer')`
+*   The CoffeeScript module has been nested under a subdirectory to make it easier to `require` individual components separately, without having to use **npm**. For example, after adding the CoffeeScript folder to your path: `require('coffeescript/lexer')`
 *   There’s a new “link” feature in Try CoffeeScript on this webpage. Use it to get a shareable permalink for your example script.
 *   The `coffee --watch` feature now only works on Node.js 0.6.0 and higher, but now also works properly on Windows.
 *   Lots of small bug fixes from **[@michaelficarra](https://github.com/michaelficarra)**, **[@geraldalewis](https://github.com/geraldalewis)**, **[@satyr](https://github.com/satyr)**, and **[@trevorburnham](https://github.com/trevorburnham)**.
@@ -394,7 +394,7 @@ Trailing commas are now allowed, a-la Python. Static properties may be assigned 
 releaseHeader('2010-03-23', '0.5.6', '0.5.5')
 ```
 
-Interpolation can now be used within regular expressions and heredocs, as well as strings. Added the `<-` bind operator. Allowing assignment to half-expressions instead of special `||=`-style operators. The arguments object is no longer automatically converted into an array. After requiring `coffee-script`, Node.js can now directly load `.coffee` files, thanks to **registerExtension**. Multiple splats can now be used in function calls, arrays, and pattern matching.
+Interpolation can now be used within regular expressions and heredocs, as well as strings. Added the `<-` bind operator. Allowing assignment to half-expressions instead of special `||=`-style operators. The arguments object is no longer automatically converted into an array. After requiring `coffeescript`, Node.js can now directly load `.coffee` files, thanks to **registerExtension**. Multiple splats can now be used in function calls, arrays, and pattern matching.
 
 ```
 releaseHeader('2010-03-08', '0.5.5', '0.5.4')
@@ -419,7 +419,7 @@ releaseHeader('2010-02-25', '0.5.2', '0.5.1')
 ```
 
 Added a compressed version of the compiler for inclusion in web pages as
-`v<%= majorVersion %>/browser-compiler/coffee-script.js`. It’ll automatically run any script tags with type `text/coffeescript` for you. Added a `--stdio` option to the `coffee` command, for piped-in compiles.
+`v<%= majorVersion %>/browser-compiler/coffeescript.js`. It’ll automatically run any script tags with type `text/coffeescript` for you. Added a `--stdio` option to the `coffee` command, for piped-in compiles.
 
 ```
 releaseHeader('2010-02-24', '0.5.1', '0.5.0')
@@ -508,7 +508,7 @@ Bugfix for running `coffee --interactive` and `--run` from outside of the Coffee
 releaseHeader('2009-12-26', '0.1.5', '0.1.4')
 ```
 
-Array slice literals and array comprehensions can now both take Ruby-style ranges to specify the start and end. JavaScript variable declaration is now pushed up to the top of the scope, making all assignment statements into expressions. You can use `\` to escape newlines. The `coffee-script` command is now called `coffee`.
+Array slice literals and array comprehensions can now both take Ruby-style ranges to specify the start and end. JavaScript variable declaration is now pushed up to the top of the scope, making all assignment statements into expressions. You can use `\` to escape newlines. The `coffeescript` command is now called `coffee`.
 
 ```
 releaseHeader('2009-12-25', '0.1.4', '0.1.3')

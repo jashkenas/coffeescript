@@ -1,5 +1,5 @@
 {
-  "name": "coffee-script",
+  "name": "coffeescript",
   "description": "Unfancy JavaScript",
   "keywords": [
     "javascript",
@@ -14,9 +14,9 @@
     "node": ">=7.2.1"
   },
   "directories": {
-    "lib": "./lib/coffee-script"
+    "lib": "./lib/coffeescript"
   },
-  "main": "./lib/coffee-script/coffee-script",
+  "main": "./lib/coffeescript/coffeescript",
   "bin": {
     "coffee": "./bin/coffee",
     "cake": "./bin/cake"

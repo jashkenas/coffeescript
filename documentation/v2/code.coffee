@@ -1,6 +1,6 @@
 fs           = require 'fs'
 _            = require 'underscore'
-CoffeeScript = require '../../lib/coffee-script'
+CoffeeScript = require '../../lib/coffeescript'
 
 
 module.exports = ->
