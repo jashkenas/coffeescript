@@ -401,16 +401,34 @@ textarea {
 
 .try-coffeescript .code-column {
   overflow: hidden;
-  padding-bottom: 100%;
-  margin-bottom: -100%;
   background-color: #2f2625;
   color: #2f2625;
+}
+
+@media screen and (max-width: 767px) {
+  .try-coffeescript .code-column {
+    height: calc(50vh - 0.5 * 3.5rem);
+  }
+}
+@media screen and (min-width: 768px) {
+  .try-coffeescript .code-column {
+    padding-bottom: 100%;
+    margin-bottom: -100%;
+  }
 }
 
 .try-coffeescript button svg {
   height: 1em;
   transform: scale(1.3) translateY(0.1em);
   fill: #0b140f;
+}
+
+@media screen and (max-width: 767px) {
+  .try-coffeescript .try-buttons {
+    position: absolute;
+    bottom: 1em;
+    z-index: 1002;
+  }
 }
 
 /* Adapted from https://github.com/FarhadG/code-mirror-themes/blob/master/themes/twilight.css */
@@ -494,7 +512,7 @@ textarea {
     </div>
   </div>
   <div class="row">
-    <div class="col-xs-12 text-xs-right">
+    <div class="col-xs-12 text-xs-right try-buttons">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="try-coffeescript" data-run="true">▶</button>&emsp;
       <button type="button" class="btn btn-primary" data-action="link" data-example="try-coffeescript"><svg aria-hidden="true" version="1.1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg>
 </button>
@@ -651,7 +669,7 @@ textarea {
       <section id="overview">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="http://github.com/jashkenas/coffeescript/tarball/2.0.0-alpha1">2.0.0-alpha1</a></p>
+<p><strong>Latest Version:</strong> <a href="http://github.com/jashkenas/coffeescript/tarball/2.0.0-alpha">2.0.0-alpha</a></p>
 <blockquote>
 <pre><code>npm install -g coffeescript</code></pre></blockquote>
 
@@ -3272,7 +3290,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
 
         </section>
         <section id="annotated-source">
-          <h2>Annotated Source</h2><p>You can browse the CoffeeScript 2.0.0-alpha1 source in readable, annotated form <a href="http://coffeescript.org/v2/annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+          <h2>Annotated Source</h2><p>You can browse the CoffeeScript 2.0.0-alpha source in readable, annotated form <a href="http://coffeescript.org/v2/annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="http://coffeescript.org/v2/annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
 <li><a href="http://coffeescript.org/v2/annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
