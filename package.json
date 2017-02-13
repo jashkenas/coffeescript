@@ -39,6 +39,7 @@
     "url": "git://github.com/jashkenas/coffeescript.git"
   },
   "devDependencies": {
+    "coffeelib": "^1.0.0",
     "docco": "~0.7.0",
     "google-closure-compiler-js": "^20161201.0.1",
     "highlight.js": "~9.9.0",

@@ -39,6 +39,7 @@ SWITCHES = [
   ['-i', '--interactive',     'run an interactive CoffeeScript REPL']
   ['-j', '--join [FILE]',     'concatenate the source CoffeeScript before compiling']
   ['-m', '--map',             'generate source map and save as .js.map files']
+  [      '--import-helpers',  'import emit helpers (e.g. `extend`, `hasProp`, etc.) from `coffelib`']
   ['-M', '--inline-map',      'generate source map and include it directly in output']
   ['-n', '--nodes',           'print out the parse tree that the parser produces']
   [      '--nodejs [ARGS]',   'pass options directly to the "node" binary']
@@ -415,6 +416,7 @@ compileOptions = (filename, base) ->
     header: opts.compile and not opts['no-header']
     sourceMap: opts.map
     inlineMap: opts['inline-map']
+    importHelpers: opts['import-helpers']
   }
   if filename
     if base
