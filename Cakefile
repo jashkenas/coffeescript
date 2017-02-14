@@ -117,7 +117,7 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
   invoke 'test:browser'
 
 
-task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
+buildDocs = (watch = no) ->
   # Constants
   indexFile = 'documentation/index.html'
   versionedSourceFolder = "documentation/v#{majorVersion}"
@@ -190,12 +190,19 @@ task 'doc:site', 'watch and continually rebuild the documentation for the websit
     fs.symlinkSync "v#{majorVersion}/index.html", 'docs/index.html'
   catch exception
 
-  for target in [indexFile, versionedSourceFolder, examplesSourceFolder, sectionsSourceFolder]
-    fs.watch target, interval: 200, renderIndex
-  log 'watching...' , green
+  if watch
+    for target in [indexFile, versionedSourceFolder, examplesSourceFolder, sectionsSourceFolder]
+      fs.watch target, interval: 200, renderIndex
+    log 'watching...' , green
+
+task 'doc:site', 'build the documentation for the website', ->
+  buildDocs()
+
+task 'doc:site:watch', 'watch and continually rebuild the documentation for the website', ->
+  buildDocs yes
 
 
-task 'doc:test', 'watch and continually rebuild the browser-based tests', ->
+buildDocTests = (watch = no) ->
   # Constants
   testFile = 'documentation/test.html'
   testsSourceFolder = 'test'
@@ -233,13 +240,32 @@ task 'doc:test', 'watch and continually rebuild the browser-based tests', ->
     fs.writeFileSync "#{outputFolder}/test.html", output
     log 'compiled', green, "#{testFile} → #{outputFolder}/test.html"
 
-  for target in [testFile, testsSourceFolder]
-    fs.watch target, interval: 200, renderTest
-  log 'watching...' , green
+  if watch
+    for target in [testFile, testsSourceFolder]
+      fs.watch target, interval: 200, renderTest
+    log 'watching...' , green
+
+task 'doc:test', 'build the browser-based tests', ->
+  buildDocTests()
+
+task 'doc:test:watch', 'watch and continually rebuild the browser-based tests', ->
+  buildDocTests yes
 
 
-task 'doc:source', 'rebuild the annotated source documentation', ->
-  exec "node_modules/docco/bin/docco src/*.*coffee --output docs/v#{majorVersion}/annotated-source", (err) -> throw err if err
+buildAnnotatedSource = (watch = no) ->
+  do generateAnnotatedSource = ->
+    exec "node_modules/docco/bin/docco src/*.*coffee --output docs/v#{majorVersion}/annotated-source", (err) -> throw err if err
+    log 'generated', green, "annotated source in docs/v#{majorVersion}/annotated-source/"
+
+  if watch
+    fs.watch 'src/', interval: 200, generateAnnotatedSource
+    log 'watching...' , green
+
+task 'doc:source', 'build the annotated source documentation', ->
+  buildAnnotatedSource()
+
+task 'doc:source:watch', 'watch and continually rebuild the annotated source documentation', ->
+  buildAnnotatedSource yes
 
 
 task 'bench', 'quick benchmark of compilation time', ->
