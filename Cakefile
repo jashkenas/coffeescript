@@ -51,6 +51,17 @@ build = (cb) ->
   buildParser()
   buildExceptParser cb
 
+testBuiltCode = (watch = no) ->
+  csPath = './lib/coffee-script'
+  csDir  = path.dirname require.resolve csPath
+
+  for mod of require.cache when csDir is mod[0 ... csDir.length]
+    delete require.cache[mod]
+
+  testResults = runTests require csPath
+  unless watch
+    process.exit 1 unless testResults
+
 
 # Run a CoffeeScript through our node/coffee interpreter.
 run = (args, cb) ->
@@ -74,15 +85,7 @@ task 'build:except-parser', 'build the CoffeeScript compiler, except for the Jis
 
 task 'build:full', 'build the CoffeeScript compiler from source twice, and run the tests', ->
   build ->
-    build ->
-      csPath = './lib/coffee-script'
-      csDir  = path.dirname require.resolve csPath
-
-      for mod of require.cache when csDir is mod[0 ... csDir.length]
-        delete require.cache[mod]
-
-      unless runTests require csPath
-        process.exit 1
+    build testBuiltCode
 
 task 'build:browser', 'build the merged script for inclusion in the browser', ->
   code = """
@@ -202,7 +205,7 @@ buildDocs = (watch = no) ->
   if watch
     for target in [indexFile, versionedSourceFolder, examplesSourceFolder, sectionsSourceFolder]
       fs.watch target, interval: 200, renderIndex
-    log 'watching...' , green
+    log 'watching...', green
 
 task 'doc:site', 'build the documentation for the website', ->
   buildDocs()
@@ -252,7 +255,7 @@ buildDocTests = (watch = no) ->
   if watch
     for target in [testFile, testsSourceFolder]
       fs.watch target, interval: 200, renderTest
-    log 'watching...' , green
+    log 'watching...', green
 
 task 'doc:test', 'build the browser-based tests', ->
   buildDocTests()
@@ -268,7 +271,7 @@ buildAnnotatedSource = (watch = no) ->
 
   if watch
     fs.watch 'src/', interval: 200, generateAnnotatedSource
-    log 'watching...' , green
+    log 'watching...', green
 
 task 'doc:source', 'build the annotated source documentation', ->
   buildAnnotatedSource()
