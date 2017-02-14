@@ -280,6 +280,13 @@ task 'doc:source:watch', 'watch and continually rebuild the annotated source doc
   buildAnnotatedSource yes
 
 
+task 'release', 'build and test the CoffeeScript source, and build the documentation', ->
+  invoke 'build:full'
+  invoke 'build:browser'
+  invoke 'doc:site'
+  invoke 'doc:test'
+  invoke 'doc:source'
+
 task 'bench', 'quick benchmark of compilation time', ->
   {Rewriter} = require './lib/coffee-script/rewriter'
   sources = ['coffee-script', 'grammar', 'helpers', 'lexer', 'nodes', 'rewriter']
