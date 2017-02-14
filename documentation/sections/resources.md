@@ -3,10 +3,10 @@
 *   [Source Code](http://github.com/jashkenas/coffeescript/)<br>
     Use `bin/coffee` to test your changes,<br>
     `bin/cake test` to run the test suite,<br>
-    `bin/cake build` to rebuild the CoffeeScript compiler, and<br>
-    `bin/cake build:parser` to regenerate the Jison parser if you’re working on the grammar.
+    `bin/cake build` to rebuild the full CoffeeScript compiler, and<br>
+    `bin/cake build:except-parser` to recompile much faster if you’re not editing `grammar.coffee`.
 
-    `git checkout lib && bin/cake build:full` is a good command to run when you’re working on the core language. It’ll refresh the lib directory (in case you broke something), build your altered compiler, use that to rebuild itself (a good sanity test) and then run all of the tests. If they pass, there’s a good chance you’ve made a successful change.
+    `git checkout lib && bin/cake build:full` is a good command to run when you’re working on the core language. It’ll refresh the `lib` folder (in case you broke something), build your altered compiler, use that to rebuild itself (a good sanity test) and then run all of the tests. If they pass, there’s a good chance you’ve made a successful change.
 *   [Browser Tests](v<%= majorVersion %>/test.html)<br>
     Run CoffeeScript’s test suite in your current browser.
 *   [CoffeeScript Issues](http://github.com/jashkenas/coffeescript/issues)<br>

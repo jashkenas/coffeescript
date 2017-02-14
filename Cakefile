@@ -24,44 +24,12 @@ header = """
    */
 """
 
-# Used in folder names like docs/v1
+# Used in folder names like `docs/v1`.
 majorVersion = parseInt CoffeeScript.VERSION.split('.')[0], 10
 
+
 # Build the CoffeeScript language from source.
-build = (cb) ->
-  files = fs.readdirSync 'src'
-  files = ('src/' + file for file in files when file.match(/\.(lit)?coffee$/))
-  run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
-
-# Run a CoffeeScript through our node/coffee interpreter.
-run = (args, cb) ->
-  proc =         spawn 'node', ['bin/coffee'].concat(args)
-  proc.stderr.on 'data', (buffer) -> console.log buffer.toString()
-  proc.on        'exit', (status) ->
-    process.exit(1) if status isnt 0
-    cb() if typeof cb is 'function'
-
-# Log a message with a color.
-log = (message, color, explanation) ->
-  console.log color + message + reset + ' ' + (explanation or '')
-
-
-task 'build', 'build the CoffeeScript language from source', build
-
-task 'build:full', 'rebuild the source twice, and run the tests', ->
-  build ->
-    build ->
-      csPath = './lib/coffee-script'
-      csDir  = path.dirname require.resolve csPath
-
-      for mod of require.cache when csDir is mod[0 ... csDir.length]
-        delete require.cache[mod]
-
-      unless runTests require csPath
-        process.exit 1
-
-
-task 'build:parser', 'rebuild the Jison parser (run build first)', ->
+buildParser = ->
   helpers.extend global, require 'util'
   require 'jison'
   parser = require('./lib/coffee-script/grammar').parser.generate()
@@ -74,8 +42,49 @@ task 'build:parser', 'rebuild the Jison parser (run build first)', ->
               source = fs"""
   fs.writeFileSync 'lib/coffee-script/parser.js', parser
 
+buildExceptParser = (cb) ->
+  files = fs.readdirSync 'src'
+  files = ('src/' + file for file in files when file.match(/\.(lit)?coffee$/))
+  run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
 
-task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
+build = (cb) ->
+  buildParser()
+  buildExceptParser cb
+
+
+# Run a CoffeeScript through our node/coffee interpreter.
+run = (args, cb) ->
+  proc =         spawn 'node', ['bin/coffee'].concat(args)
+  proc.stderr.on 'data', (buffer) -> console.log buffer.toString()
+  proc.on        'exit', (status) ->
+    process.exit(1) if status isnt 0
+    cb() if typeof cb is 'function'
+
+
+# Log a message with a color.
+log = (message, color, explanation) ->
+  console.log color + message + reset + ' ' + (explanation or '')
+
+
+task 'build', 'build the CoffeeScript compiler from source', build
+
+task 'build:parser', 'build the Jison parser only', buildParser
+
+task 'build:except-parser', 'build the CoffeeScript compiler, except for the Jison parser', buildExceptParser
+
+task 'build:full', 'build the CoffeeScript compiler from source twice, and run the tests', ->
+  build ->
+    build ->
+      csPath = './lib/coffee-script'
+      csDir  = path.dirname require.resolve csPath
+
+      for mod of require.cache when csDir is mod[0 ... csDir.length]
+        delete require.cache[mod]
+
+      unless runTests require csPath
+        process.exit 1
+
+task 'build:browser', 'build the merged script for inclusion in the browser', ->
   code = """
   require['../../package.json'] = (function() {
     return #{fs.readFileSync "./package.json"};
