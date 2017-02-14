@@ -45,27 +45,6 @@ run = (args, cb) ->
 log = (message, color, explanation) ->
   console.log color + message + reset + ' ' + (explanation or '')
 
-option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
-
-task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) ->
-  base = options.prefix or '/usr/local'
-  lib  = "#{base}/lib/coffee-script"
-  bin  = "#{base}/bin"
-  node = "~/.node_libraries/coffee-script"
-  console.log "Installing CoffeeScript to #{lib}"
-  console.log "Linking to #{node}"
-  console.log "Linking 'coffee' to #{bin}/coffee"
-  exec([
-    "mkdir -p #{lib} #{bin}"
-    "cp -rf bin lib LICENSE README.md package.json src #{lib}"
-    "ln -sfn #{lib}/bin/coffee #{bin}/coffee"
-    "ln -sfn #{lib}/bin/cake #{bin}/cake"
-    "mkdir -p ~/.node_libraries"
-    "ln -sfn #{lib}/lib/coffee-script #{node}"
-  ].join(' && '), (err, stdout, stderr) ->
-    if err then console.log stderr.trim() else log 'done', green
-  )
-
 
 task 'build', 'build the CoffeeScript language from source', build
 
