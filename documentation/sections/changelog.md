@@ -1,6 +1,14 @@
 ## Change Log
 
 ```
+releaseHeader('2017-02-15', '1.12.4', '1.12.3')
+```
+
+*   The `cake` commands have been updated, with new `watch` options for most tasks. Clone the [CoffeeScript repo](https://github.com/jashkenas/coffeescript) and run `cake` at the root of the repo to see the options.
+*   Fixed a bug where `export`ing a referenced variable was preventing the variable from being declared.
+*   Fixed a bug where the `coffee` command wasn’t working for a `.litcoffee` file.
+
+```
 releaseHeader('2017-01-24', '1.12.3', '1.12.2')
 ```
 
