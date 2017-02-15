@@ -28,6 +28,25 @@ header = """
 majorVersion = parseInt CoffeeScript.VERSION.split('.')[0], 10
 
 
+# Log a message with a color.
+log = (message, color, explanation) ->
+  console.log color + message + reset + ' ' + (explanation or '')
+
+
+spawnNodeProcess = (args, output = 'stderr', callback) ->
+  relayOutput = (buffer) -> console.log buffer.toString()
+  proc =         spawn 'node', args
+  proc.stdout.on 'data', relayOutput if output is 'both' or output is 'stdout'
+  proc.stderr.on 'data', relayOutput if output is 'both' or output is 'stderr'
+  proc.on        'exit', (status) -> callback(status) if typeof callback is 'function'
+
+# Run a CoffeeScript through our node/coffee interpreter.
+run = (args, callback) ->
+  spawnNodeProcess ['bin/coffee'].concat(args), 'stderr', (status) ->
+    process.exit(1) if status isnt 0
+    callback() if typeof callback is 'function'
+
+
 # Build the CoffeeScript language from source.
 buildParser = ->
   helpers.extend global, require 'util'
@@ -42,14 +61,14 @@ buildParser = ->
               source = fs"""
   fs.writeFileSync 'lib/coffee-script/parser.js', parser
 
-buildExceptParser = (cb) ->
+buildExceptParser = (callback) ->
   files = fs.readdirSync 'src'
   files = ('src/' + file for file in files when file.match(/\.(lit)?coffee$/))
-  run ['-c', '-o', 'lib/coffee-script'].concat(files), cb
+  run ['-c', '-o', 'lib/coffee-script'].concat(files), callback
 
-build = (cb) ->
+build = (callback) ->
   buildParser()
-  buildExceptParser cb
+  buildExceptParser callback
 
 testBuiltCode = (watch = no) ->
   csPath = './lib/coffee-script'
@@ -62,19 +81,32 @@ testBuiltCode = (watch = no) ->
   unless watch
     process.exit 1 unless testResults
 
+buildAndTest = (includingParser = yes, harmony = no) ->
+  process.stdout.write '\x1Bc' # Clear terminal screen.
+  execSync 'git checkout lib/*', stdio: [0,1,2] # Reset the generated compiler.
 
-# Run a CoffeeScript through our node/coffee interpreter.
-run = (args, cb) ->
-  proc =         spawn 'node', ['bin/coffee'].concat(args)
-  proc.stderr.on 'data', (buffer) -> console.log buffer.toString()
-  proc.on        'exit', (status) ->
-    process.exit(1) if status isnt 0
-    cb() if typeof cb is 'function'
+  buildArgs = ['bin/cake']
+  buildArgs.push if includingParser then 'build' else 'build:except-parser'
+  log "building#{if includingParser then ', including parser' else ''}...", green
+  spawnNodeProcess buildArgs, 'both', ->
+    log 'testing...', green
+    testArgs = if harmony then ['--harmony'] else []
+    testArgs = testArgs.concat ['bin/cake', 'test']
+    spawnNodeProcess testArgs, 'both'
 
-
-# Log a message with a color.
-log = (message, color, explanation) ->
-  console.log color + message + reset + ' ' + (explanation or '')
+watchAndBuildAndTest = (harmony = no) ->
+  buildAndTest yes, harmony
+  fs.watch 'src/', interval: 200, (eventType, filename) ->
+    if eventType is 'change'
+      log "src/#{filename} changed, rebuilding..."
+      buildAndTest (filename is 'grammar.coffee'), harmony
+  fs.watch 'test/',
+    interval: 200
+    recursive: yes
+  , (eventType, filename) ->
+    if eventType is 'change'
+      log "test/#{filename} changed, rebuilding..."
+      buildAndTest no, harmony
 
 
 task 'build', 'build the CoffeeScript compiler from source', build
@@ -127,6 +159,12 @@ task 'build:browser', 'build the merged script for inclusion in the browser', ->
   fs.writeFileSync "#{outputFolder}/coffee-script.js", header + '\n' + code
   console.log "built ... running browser tests:"
   invoke 'test:browser'
+
+task 'build:watch', 'watch and continually rebuild the CoffeeScript compiler, running tests on each build', ->
+  watchAndBuildAndTest()
+
+task 'build:watch:harmony', 'watch and continually rebuild the CoffeeScript compiler, running harmony tests on each build', ->
+  watchAndBuildAndTest yes
 
 
 buildDocs = (watch = no) ->
