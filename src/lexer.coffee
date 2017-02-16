@@ -892,6 +892,9 @@ MULTI_DENT = /^(?:\n[^\n\S]*)+/
 JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 
 # CoffeeTags loosely matches <tag.class1.class2@id>
+# Use trailing '!' for unescaped content
+# Use trailing '?' for debugging output
+# Use <!myRenderer!> to set the custom render function to myRenderer()
 CTTOKEN    = /^<(?:[\w\-.@]*!?|\/[\w-]*|!\w+!)>/
 
 # String-matching-regexes.
