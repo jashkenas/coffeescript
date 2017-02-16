@@ -787,11 +787,23 @@ exports.RegexWithInterpolations = class RegexWithInterpolations extends Call
   constructor: (args = []) ->
     super (new Value new IdentifierLiteral 'RegExp'), args, false
 
+#### TaggedTemplateCall
+
+exports.TaggedTemplateCall = class TaggedTemplateCall extends Call
+  constructor: (variable, arg, soak) ->
+    arg = new StringWithInterpolations Block.wrap([ new Value arg ]) if arg instanceof StringLiteral
+    super variable, [ arg ], soak
+
+  compileNode: (o) ->
+    # Tell `StringWithInterpolations` whether to compile as ES2015 or not; will be removed in CoffeeScript 2.
+    o.inTaggedTemplateCall = yes
+    @variable.compileToFragments(o, LEVEL_ACCESS).concat @args[0].compileToFragments(o, LEVEL_LIST)
+
 #### Extends
 
 # Node to extend an object's prototype with an ancestor object.
 # After `goog.inherits` from the
-# [Closure Library](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.html).
+# [Closure Library](https://github.com/google/closure-library/blob/master/closure/goog/base.js).
 exports.Extends = class Extends extends Base
   constructor: (@child, @parent) ->
 
@@ -1285,6 +1297,10 @@ exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
 
     if @ not instanceof ExportDefaultDeclaration and
        (@clause instanceof Assign or @clause instanceof Class)
+      # Prevent exporting an anonymous class; all exported members must be named
+      if @clause instanceof Class and not @clause.variable
+        @clause.error 'anonymous classes cannot be exported'
+
       # When the ES2015 `class` keyword is supported, don’t add a `var` here
       code.push @makeCode 'var '
       @clause.moduleDeclaration = 'export'
@@ -1336,7 +1352,7 @@ exports.ModuleSpecifier = class ModuleSpecifier extends Base
   children: ['original', 'alias']
 
   compileNode: (o) ->
-    o.scope.add @identifier, @moduleDeclarationType
+    o.scope.find @identifier, @moduleDeclarationType
     code = []
     code.push @makeCode @original.value
     code.push @makeCode " as #{@alias.value}" if @alias?
@@ -1413,7 +1429,8 @@ exports.Assign = class Assign extends Base
       unless varBase.isAssignable()
         @variable.error "'#{@variable.compile o}' can't be assigned"
       unless varBase.hasProperties?()
-        if @moduleDeclaration # `moduleDeclaration` can be `'import'` or `'export'`
+        # `moduleDeclaration` can be `'import'` or `'export'`
+        if @moduleDeclaration
           @checkAssignability o, varBase
           o.scope.add varBase.value, @moduleDeclaration
         else if @param
@@ -2066,7 +2083,8 @@ exports.Op = class Op extends Base
 
   compileFloorDivision: (o) ->
     floor = new Value new IdentifierLiteral('Math'), [new Access new PropertyName 'floor']
-    div = new Op '/', @first, @second
+    second = if @second.isComplex() then new Parens @second else @second
+    div = new Op '/', @first, second
     new Call(floor, [div]).compileToFragments o
 
   compileModulo: (o) ->
@@ -2229,6 +2247,51 @@ exports.Parens = class Parens extends Base
 # string concatenation inside.
 
 exports.StringWithInterpolations = class StringWithInterpolations extends Parens
+  # Uncomment the following line in CoffeeScript 2, to allow all interpolated
+  # strings to be output using the ES2015 syntax:
+  # unwrap: -> this
+
+  compileNode: (o) ->
+    # This method produces an interpolated string using the new ES2015 syntax,
+    # which is opt-in by using tagged template literals. If this
+    # StringWithInterpolations isn’t inside a tagged template literal,
+    # fall back to the CoffeeScript 1.x output.
+    # (Remove this check in CoffeeScript 2.)
+    unless o.inTaggedTemplateCall
+      return super
+
+    # Assumption: expr is Value>StringLiteral or Op
+    expr = @body.unwrap()
+
+    elements = []
+    expr.traverseChildren no, (node) ->
+      if node instanceof StringLiteral
+        elements.push node
+        return yes
+      else if node instanceof Parens
+        elements.push node
+        return no
+      return yes
+
+    fragments = []
+    fragments.push @makeCode '`'
+    for element in elements
+      if element instanceof StringLiteral
+        value = element.value[1...-1]
+        # Backticks and `${` inside template literals must be escaped.
+        value = value.replace /(\\*)(`|\$\{)/g, (match, backslashes, toBeEscaped) ->
+          if backslashes.length % 2 is 0
+            "#{backslashes}\\#{toBeEscaped}"
+          else
+            match
+        fragments.push @makeCode value
+      else
+        fragments.push @makeCode '${'
+        fragments.push element.compileToFragments(o, LEVEL_PAREN)...
+        fragments.push @makeCode '}'
+    fragments.push @makeCode '`'
+
+    fragments
 
 #### For
 
@@ -2245,13 +2308,15 @@ exports.For = class For extends While
     @body    = Block.wrap [body]
     @own     = !!source.own
     @object  = !!source.object
+    @from    = !!source.from
+    @index.error 'cannot use index with for-from' if @from and @index
+    source.ownTag.error "cannot use own with for-#{if @from then 'from' else 'in'}" if @own and not @object
     [@name, @index] = [@index, @name] if @object
-    @index.error 'index cannot be a pattern matching expression' if @index instanceof Value
-    @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length
+    @index.error 'index cannot be a pattern matching expression' if @index instanceof Value and not @index.isAssignable()
+    @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length and not @from
     @pattern = @name instanceof Value
     @index.error 'indexes do not apply to range loops' if @range and @index
     @name.error 'cannot pattern match over range loops' if @range and @pattern
-    @name.error 'cannot use own with for-in' if @own and not @object
     @returns = false
 
   children: ['body', 'source', 'guard', 'step']
@@ -2269,10 +2334,13 @@ exports.For = class For extends While
     name        = @name  and (@name.compile o, LEVEL_LIST) if not @pattern
     index       = @index and (@index.compile o, LEVEL_LIST)
     scope.find(name)  if name and not @pattern
-    scope.find(index) if index
+    scope.find(index) if index and @index not instanceof Value
     rvar        = scope.freeVariable 'results' if @returns
-    ivar        = (@object and index) or scope.freeVariable 'i', single: true
-    kvar        = (@range and name) or index or ivar
+    if @from
+      ivar = scope.freeVariable 'x', single: true if @pattern
+    else
+      ivar = (@object and index) or scope.freeVariable 'i', single: true
+    kvar        = ((@range or @from) and name) or index or ivar
     kvarAssign  = if kvar isnt ivar then "#{kvar} = " else ""
     if @step and not @range
       [step, stepVar] = @cacheToCodeFragments @step.cache o, LEVEL_LIST, isComplexOrAssignable
@@ -2290,9 +2358,9 @@ exports.For = class For extends While
       if (name or @own) and @source.unwrap() not instanceof IdentifierLiteral
         defPart    += "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
         svar       = ref
-      if name and not @pattern
+      if name and not @pattern and not @from
         namePart   = "#{name} = #{svar}[#{kvar}]"
-      if not @object
+      if not @object and not @from
         defPart += "#{@tab}#{step};\n" if step isnt stepVar
         down = stepNum < 0
         lvar = scope.freeVariable 'len' unless @step and stepNum? and down
@@ -2311,7 +2379,7 @@ exports.For = class For extends While
           increment = "#{ivar} += #{stepVar}"
         else
           increment = "#{if kvar isnt ivar then "++#{ivar}" else "#{ivar}++"}"
-        forPartFragments  = [@makeCode("#{declare}; #{compare}; #{kvarAssign}#{increment}")]
+        forPartFragments = [@makeCode("#{declare}; #{compare}; #{kvarAssign}#{increment}")]
     if @returns
       resultPart   = "#{@tab}#{rvar} = [];\n"
       returnResult = "\n#{@tab}return #{rvar};"
@@ -2322,14 +2390,16 @@ exports.For = class For extends While
       else
         body = Block.wrap [new If @guard, body] if @guard
     if @pattern
-      body.expressions.unshift new Assign @name, new Literal "#{svar}[#{kvar}]"
+      body.expressions.unshift new Assign @name, if @from then new IdentifierLiteral kvar else new Literal "#{svar}[#{kvar}]"
     defPartFragments = [].concat @makeCode(defPart), @pluckDirectCall(o, body)
     varPart = "\n#{idt1}#{namePart};" if namePart
     if @object
-      forPartFragments   = [@makeCode("#{kvar} in #{svar}")]
+      forPartFragments = [@makeCode("#{kvar} in #{svar}")]
       guardPart = "\n#{idt1}if (!#{utility 'hasProp', o}.call(#{svar}, #{kvar})) continue;" if @own
+    else if @from
+      forPartFragments = [@makeCode("#{kvar} of #{svar}")]
     bodyFragments = body.compileToFragments merge(o, indent: idt1), LEVEL_TOP
-    if bodyFragments and (bodyFragments.length > 0)
+    if bodyFragments and bodyFragments.length > 0
       bodyFragments = [].concat @makeCode("\n"), bodyFragments, @makeCode("\n")
     [].concat defPartFragments, @makeCode("#{resultPart or ''}#{@tab}for ("),
       forPartFragments, @makeCode(") {#{guardPart}#{varPart}"), bodyFragments,

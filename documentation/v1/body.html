@@ -1,0 +1,155 @@
+<div id="fadeout"></div>
+
+<div id="flybar">
+  <a id="logo" href="#top"><%= include('documentation/images/logo.svg') %></a>
+  <div class="navigation toc">
+    <div class="button">
+      Table of Contents
+    </div>
+    <div class="contents menu">
+      <a href="#overview">Overview</a>
+      <a href="#installation">Installation</a>
+      <a href="#usage">Usage</a>
+      <a href="#literate">Literate CoffeeScript</a>
+      <a href="#language">Language Reference</a>
+      <a href="#literals">Literals: Functions, Objects and Arrays</a>
+      <a href="#lexical-scope">Lexical Scoping and Variable Safety</a>
+      <a href="#conditionals">If, Else, Unless, and Conditional Assignment</a>
+      <a href="#splats">Splats…</a>
+      <a href="#loops">Loops and Comprehensions</a>
+      <a href="#slices">Array Slicing and Splicing</a>
+      <a href="#expressions">Everything is an Expression</a>
+      <a href="#operators">Operators and Aliases</a>
+      <a href="#existential-operator">Existential Operator</a>
+      <a href="#classes">Classes, Inheritance, and Super</a>
+      <a href="#destructuring">Destructuring Assignment</a>
+      <a href="#fat-arrow">Bound and Generator Functions</a>
+      <a href="#embedded">Embedded JavaScript</a>
+      <a href="#switch">Switch and Try/Catch</a>
+      <a href="#comparisons">Chained Comparisons</a>
+      <a href="#strings">String Interpolation, Block Strings, and Block Comments</a>
+      <a href="#tagged-template-literals">Tagged Template Literals</a>
+      <a href="#regexes">Block Regular Expressions</a>
+      <a href="#modules">Modules</a>
+      <a href="#cake">Cake, and Cakefiles</a>
+      <a href="#source-maps">Source Maps</a>
+      <a href="#scripts">"text/coffeescript" Script Tags</a>
+      <a href="#resources">Books, Screencasts, Examples and Resources</a>
+      <a href="#changelog">Change Log</a>
+    </div>
+  </div>
+  <div class="navigation try">
+    <div class="button">
+      Try CoffeeScript
+      <div class="repl_bridge"></div>
+    </div>
+    <div class="contents repl_wrapper">
+      <div class="code">
+        <div class="screenshadow tl"></div>
+        <div class="screenshadow tr"></div>
+        <div class="screenshadow bl"></div>
+        <div class="screenshadow br"></div>
+        <div id="repl_source_wrap">
+          <textarea id="repl_source" rows="100" spellcheck="false">alert "Hello CoffeeScript!"</textarea>
+        </div>
+        <div id="repl_results_wrap"><pre id="repl_results"></pre></div>
+        <div class="minibutton dark run" title="Ctrl-Enter">Run</div>
+        <a class="minibutton permalink" id="repl_permalink">Link</a>
+        <br class="clear" />
+      </div>
+    </div>
+  </div>
+  <div class="navigation annotated">
+    <div class="button">
+      Annotated Source
+    </div>
+    <div class="contents menu">
+      <a href="v<%= majorVersion %>/annotated-source/grammar.html">Grammar Rules — src/grammar</a>
+      <a href="v<%= majorVersion %>/annotated-source/lexer.html">Lexing Tokens — src/lexer</a>
+      <a href="v<%= majorVersion %>/annotated-source/rewriter.html">The Rewriter — src/rewriter</a>
+      <a href="v<%= majorVersion %>/annotated-source/nodes.html">The Syntax Tree — src/nodes</a>
+      <a href="v<%= majorVersion %>/annotated-source/scope.html">Lexical Scope — src/scope</a>
+      <a href="v<%= majorVersion %>/annotated-source/helpers.html">Helpers &amp; Utility Functions — src/helpers</a>
+      <a href="v<%= majorVersion %>/annotated-source/coffee-script.html">The CoffeeScript Module — src/coffee-script</a>
+      <a href="v<%= majorVersion %>/annotated-source/cake.html">Cake &amp; Cakefiles — src/cake</a>
+      <a href="v<%= majorVersion %>/annotated-source/command.html">“coffee” Command-Line Utility — src/command</a>
+      <a href="v<%= majorVersion %>/annotated-source/optparse.html">Option Parsing — src/optparse</a>
+      <a href="v<%= majorVersion %>/annotated-source/repl.html">Interactive REPL — src/repl</a>
+      <a href="v<%= majorVersion %>/annotated-source/sourcemap.html">Source Maps — src/sourcemap</a>
+    </div>
+  </div>
+</div>
+
+<div id="top" class="container">
+  <span class="bookmark" id="overview"></span>
+    <%= htmlFor('introduction') %>
+    <%= htmlFor('overview') %>
+  <span class="bookmark" id="installation"></span>
+    <%= htmlFor('installation') %>
+  <span class="bookmark" id="usage"></span>
+    <%= htmlFor('usage') %>
+  <span class="bookmark" id="literate"></span>
+    <%= htmlFor('literate') %>
+  <span class="bookmark" id="language"></span>
+    <%= htmlFor('language') %>
+    <span class="bookmark" id="literals"></span>
+      <%= htmlFor('functions') %>
+    <span class="bookmark" id="objects-and-arrays"></span>
+      <%= htmlFor('objects_and_arrays') %>
+    <span class="bookmark" id="lexical-scope"></span>
+      <%= htmlFor('lexical_scope') %>
+    <span class="bookmark" id="conditionals"></span>
+      <%= htmlFor('conditionals') %>
+    <span class="bookmark" id="splats"></span>
+      <%= htmlFor('splats') %>
+    <span class="bookmark" id="loops"></span>
+      <%= htmlFor('loops') %>
+    <span class="bookmark" id="slices"></span>
+      <%= htmlFor('slices') %>
+    <span class="bookmark" id="expressions"></span>
+      <%= htmlFor('expressions') %>
+    <span class="bookmark" id="operators"></span>
+      <%= htmlFor('operators') %>
+    <span class="bookmark" id="existential-operator"></span>
+      <%= htmlFor('existential_operator') %>
+    <span class="bookmark" id="classes"></span>
+      <%= htmlFor('classes') %>
+    <span class="bookmark" id="destructuring"></span>
+      <%= htmlFor('destructuring') %>
+    <span class="bookmark" id="fat-arrow"></span>
+      <%= htmlFor('fat_arrow') %>
+    <span class="bookmark" id="embedded"></span>
+      <%= htmlFor('embedded') %>
+    <span class="bookmark" id="switch"></span>
+      <%= htmlFor('switch') %>
+    <span class="bookmark" id="try-catch"></span>
+      <%= htmlFor('try') %>
+    <span class="bookmark" id="comparisons"></span>
+      <%= htmlFor('comparisons') %>
+    <span class="bookmark" id="strings"></span>
+      <%= htmlFor('strings') %>
+    <span class="bookmark" id="tagged-template-literals"></span>
+      <%= htmlFor('tagged_template_literals') %>
+    <span class="bookmark" id="regexes"></span>
+      <%= htmlFor('heregexes') %>
+    <span class="bookmark" id="modules"></span>
+      <%= htmlFor('modules') %>
+  <span class="bookmark" id="cake"></span>
+    <%= htmlFor('cake') %>
+  <span class="bookmark" id="source-maps"></span>
+    <%= htmlFor('source_maps') %>
+  <span class="bookmark" id="scripts"></span>
+    <%= htmlFor('scripts') %>
+  <span class="bookmark" id="resources"></span>
+    <%= htmlFor('books') %>
+  <span class="bookmark" id="screencasts"></span>
+    <%= htmlFor('screencasts') %>
+  <span class="bookmark" id="examples"></span>
+    <%= htmlFor('examples') %>
+  <span class="bookmark" id="additional-resources"></span>
+    <%= htmlFor('resources') %>
+  <span class="bookmark" id="chat"></span>
+    <%= htmlFor('chat') %>
+  <span class="bookmark" id="changelog"></span>
+    <%= htmlFor('changelog') %>
+</div>

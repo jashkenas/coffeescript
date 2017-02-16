@@ -469,6 +469,122 @@ test "Verify tokens have locations that are in order", ->
         ok token[2].first_column >= lastToken[2].last_column
     lastToken = token
 
+test "Verify OUTDENT tokens are located at the end of the previous token", ->
+  source = '''
+    SomeArr = [ ->
+      if something
+        lol =
+          count: 500
+    ]
+  '''
+  tokens = CoffeeScript.tokens source
+  [..., number, curly, outdent1, outdent2, outdent3, bracket, terminator] = tokens
+  eq number[0], 'NUMBER'
+  for outdent in [outdent1, outdent2, outdent3]
+    eq outdent[0], 'OUTDENT'
+    eq outdent[2].first_line, number[2].last_line
+    eq outdent[2].first_column, number[2].last_column
+    eq outdent[2].last_line, number[2].last_line
+    eq outdent[2].last_column, number[2].last_column
+
+test "Verify OUTDENT and CALL_END tokens are located at the end of the previous token", ->
+  source = '''
+    a = b {
+      c: ->
+        d e,
+          if f
+            g {},
+              if h
+                i {}
+    }
+  '''
+  tokens = CoffeeScript.tokens source
+  [..., closeCurly1, callEnd1, outdent1, outdent2, callEnd2, outdent3, outdent4,
+    callEnd3, outdent5, outdent6, closeCurly2, callEnd4, terminator] = tokens
+  eq closeCurly1[0], '}'
+  assertAtCloseCurly = (token) ->
+    eq token[2].first_line, closeCurly1[2].last_line
+    eq token[2].first_column, closeCurly1[2].last_column
+    eq token[2].last_line, closeCurly1[2].last_line
+    eq token[2].last_column, closeCurly1[2].last_column
+
+  for token in [outdent1, outdent2, outdent3, outdent4, outdent5, outdent6]
+    eq token[0], 'OUTDENT'
+    assertAtCloseCurly(token)
+  for token in [callEnd1, callEnd2, callEnd3]
+    eq token[0], 'CALL_END'
+    assertAtCloseCurly(token)
+
+test "Verify generated } tokens are located at the end of the previous token", ->
+  source = '''
+    a(b, ->
+      c: () ->
+        if d
+          e
+    )
+  '''
+  tokens = CoffeeScript.tokens source
+  [..., identifier, outdent1, outdent2, closeCurly, outdent3, callEnd,
+    terminator] = tokens
+  eq identifier[0], 'IDENTIFIER'
+  assertAtIdentifier = (token) ->
+    eq token[2].first_line, identifier[2].last_line
+    eq token[2].first_column, identifier[2].last_column
+    eq token[2].last_line, identifier[2].last_line
+    eq token[2].last_column, identifier[2].last_column
+
+  for token in [outdent1, outdent2, closeCurly, outdent3]
+    assertAtIdentifier(token)
+
+test "Verify real CALL_END tokens have the right position", ->
+  source = '''
+    a()
+  '''
+  tokens = CoffeeScript.tokens source
+  [identifier, callStart, callEnd, terminator] = tokens
+  startIndex = identifier[2].first_column
+  eq identifier[2].last_column, startIndex
+  eq callStart[2].first_column, startIndex + 1
+  eq callStart[2].last_column, startIndex + 1
+  eq callEnd[2].first_column, startIndex + 2
+  eq callEnd[2].last_column, startIndex + 2
+
+test "Verify normal heredocs have the right position", ->
+  source = '''
+    """
+    a"""
+  '''
+  [stringToken] = CoffeeScript.tokens source
+  eq stringToken[2].first_line, 0
+  eq stringToken[2].first_column, 0
+  eq stringToken[2].last_line, 1
+  eq stringToken[2].last_column, 3
+
+test "Verify heredocs ending with a newline have the right position", ->
+  source = '''
+    """
+    a
+    """
+  '''
+  [stringToken] = CoffeeScript.tokens source
+  eq stringToken[2].first_line, 0
+  eq stringToken[2].first_column, 0
+  eq stringToken[2].last_line, 2
+  eq stringToken[2].last_column, 2
+
+test "Verify indented heredocs have the right position", ->
+  source = '''
+    ->
+      """
+        a
+      """
+  '''
+  [arrow, indent, stringToken] = CoffeeScript.tokens source
+  eq stringToken[2].first_line, 1
+  eq stringToken[2].first_column, 2
+  eq stringToken[2].last_line, 3
+  eq stringToken[2].last_column, 4
+
 test "Verify all tokens get a location", ->
   doesNotThrow ->
     tokens = CoffeeScript.tokens testScript

@@ -1,0 +1,2242 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>lexer.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="browser.html">
+                  browser.coffee
+                </a>
+              
+                
+                <a class="source" href="cake.html">
+                  cake.coffee
+                </a>
+              
+                
+                <a class="source" href="coffee-script.html">
+                  coffee-script.coffee
+                </a>
+              
+                
+                <a class="source" href="command.html">
+                  command.coffee
+                </a>
+              
+                
+                <a class="source" href="grammar.html">
+                  grammar.coffee
+                </a>
+              
+                
+                <a class="source" href="helpers.html">
+                  helpers.coffee
+                </a>
+              
+                
+                <a class="source" href="index.html">
+                  index.coffee
+                </a>
+              
+                
+                <a class="source" href="lexer.html">
+                  lexer.coffee
+                </a>
+              
+                
+                <a class="source" href="nodes.html">
+                  nodes.coffee
+                </a>
+              
+                
+                <a class="source" href="optparse.html">
+                  optparse.coffee
+                </a>
+              
+                
+                <a class="source" href="register.html">
+                  register.coffee
+                </a>
+              
+                
+                <a class="source" href="repl.html">
+                  repl.coffee
+                </a>
+              
+                
+                <a class="source" href="rewriter.html">
+                  rewriter.coffee
+                </a>
+              
+                
+                <a class="source" href="scope.html">
+                  scope.litcoffee
+                </a>
+              
+                
+                <a class="source" href="sourcemap.html">
+                  sourcemap.litcoffee
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>lexer.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <p>The CoffeeScript Lexer. Uses a series of token-matching regexes to attempt
+matches against the beginning of the source code. When a match is found,
+a token is produced, we consume the match, and start again. Tokens are in the
+form:</p>
+<pre><code>[tag, value, locationData]
+</code></pre><p>where locationData is {first_line, first_column, last_line, last_column}, which is a
+format that can be fed directly into <a href="http://github.com/zaach/jison">Jison</a>.  These
+are read by jison in the <code>parser.lexer</code> function defined in coffee-script.coffee.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+{Rewriter, INVERSES} = <span class="hljs-built_in">require</span> <span class="hljs-string">'./rewriter'</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Import the helpers we need.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>{count, starts, compact, repeat, invertLiterate,
+locationDataToString,  throwSyntaxError} = <span class="hljs-built_in">require</span> <span class="hljs-string">'./helpers'</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <h2 id="the-lexer-class">The Lexer Class</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>The Lexer class reads a stream of CoffeeScript and divvies it up into tagged
+tokens. Some potential ambiguity in the grammar has been avoided by
+pushing some extra smarts into the Lexer.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>exports.Lexer = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Lexer</span></span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p><strong>tokenize</strong> is the Lexer’s main method. Scan by attempting to match tokens
+one at a time, using a regular expression anchored at the start of the
+remaining code, or a custom recursive token-matching method
+(for interpolations). When the next token has been recorded, we move forward
+within the code past the token, and begin again.</p>
+<p>Each tokenizing method is responsible for returning the number of characters
+it has consumed.</p>
+<p>Before returning the token stream, run it through the <a href="rewriter.html">Rewriter</a>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  tokenize: <span class="hljs-function"><span class="hljs-params">(code, opts = {})</span> -&gt;</span>
+    @literate   = opts.literate  <span class="hljs-comment"># Are we lexing literate CoffeeScript?</span>
+    @indent     = <span class="hljs-number">0</span>              <span class="hljs-comment"># The current indentation level.</span>
+    @baseIndent = <span class="hljs-number">0</span>              <span class="hljs-comment"># The overall minimum indentation level</span>
+    @indebt     = <span class="hljs-number">0</span>              <span class="hljs-comment"># The over-indentation at the current level.</span>
+    @outdebt    = <span class="hljs-number">0</span>              <span class="hljs-comment"># The under-outdentation at the current level.</span>
+    @indents    = []             <span class="hljs-comment"># The stack of all current indentation levels.</span>
+    @ends       = []             <span class="hljs-comment"># The stack for pairing up tokens.</span>
+    @tokens     = []             <span class="hljs-comment"># Stream of parsed tokens in the form `['TYPE', value, location data]`.</span>
+    @seenFor    = <span class="hljs-literal">no</span>             <span class="hljs-comment"># Used to recognize FORIN, FOROF and FORFROM tokens.</span>
+    @seenImport = <span class="hljs-literal">no</span>             <span class="hljs-comment"># Used to recognize IMPORT FROM? AS? tokens.</span>
+    @seenExport = <span class="hljs-literal">no</span>             <span class="hljs-comment"># Used to recognize EXPORT FROM? AS? tokens.</span>
+    @exportSpecifierList = <span class="hljs-literal">no</span>    <span class="hljs-comment"># Used to identify when in an EXPORT {...} FROM? ...</span>
+
+    @chunkLine =
+      opts.line <span class="hljs-keyword">or</span> <span class="hljs-number">0</span>             <span class="hljs-comment"># The start line for the current @chunk.</span>
+    @chunkColumn =
+      opts.column <span class="hljs-keyword">or</span> <span class="hljs-number">0</span>           <span class="hljs-comment"># The start column of the current @chunk.</span>
+    code = @clean code           <span class="hljs-comment"># The stripped, cleaned original source code.</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>At every position, run through this list of attempted matches,
+short-circuiting if any of them succeed. Their order determines precedence:
+<code>@literalToken</code> is the fallback catch-all.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    i = <span class="hljs-number">0</span>
+    <span class="hljs-keyword">while</span> @chunk = code[i..]
+      consumed = \
+           @identifierToken() <span class="hljs-keyword">or</span>
+           @commentToken()    <span class="hljs-keyword">or</span>
+           @whitespaceToken() <span class="hljs-keyword">or</span>
+           @lineToken()       <span class="hljs-keyword">or</span>
+           @stringToken()     <span class="hljs-keyword">or</span>
+           @numberToken()     <span class="hljs-keyword">or</span>
+           @regexToken()      <span class="hljs-keyword">or</span>
+           @jsToken()         <span class="hljs-keyword">or</span>
+           @literalToken()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Update position</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      [@chunkLine, @chunkColumn] = @getLineAndColumnFromChunk consumed
+
+      i += consumed
+
+      <span class="hljs-keyword">return</span> {@tokens, index: i} <span class="hljs-keyword">if</span> opts.untilBalanced <span class="hljs-keyword">and</span> @ends.length <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>
+
+    @closeIndentation()
+    @error <span class="hljs-string">"missing <span class="hljs-subst">#{end.tag}</span>"</span>, end.origin[<span class="hljs-number">2</span>] <span class="hljs-keyword">if</span> end = @ends.pop()
+    <span class="hljs-keyword">return</span> @tokens <span class="hljs-keyword">if</span> opts.rewrite <span class="hljs-keyword">is</span> <span class="hljs-literal">off</span>
+    (<span class="hljs-keyword">new</span> Rewriter).rewrite @tokens</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Preprocess the code to remove leading and trailing whitespace, carriage
+returns, etc. If we’re lexing literate CoffeeScript, strip external Markdown
+by removing all lines that aren’t indented by at least four spaces or a tab.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  clean: <span class="hljs-function"><span class="hljs-params">(code)</span> -&gt;</span>
+    code = code.slice(<span class="hljs-number">1</span>) <span class="hljs-keyword">if</span> code.charCodeAt(<span class="hljs-number">0</span>) <span class="hljs-keyword">is</span> BOM
+    code = code.replace(<span class="hljs-regexp">/\r/g</span>, <span class="hljs-string">''</span>).replace TRAILING_SPACES, <span class="hljs-string">''</span>
+    <span class="hljs-keyword">if</span> WHITESPACE.test code
+      code = <span class="hljs-string">"\n<span class="hljs-subst">#{code}</span>"</span>
+      @chunkLine--
+    code = invertLiterate code <span class="hljs-keyword">if</span> @literate
+    code</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <h2 id="tokenizers">Tokenizers</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Matches identifying literals: variables, keywords, method names, etc.
+Check to ensure that JavaScript reserved words aren’t being used as
+identifiers. Because CoffeeScript reserves a handful of keywords that are
+allowed in JavaScript, we’re careful not to tag them as keywords when
+referenced as property names here, so you can still do <code>jQuery.is()</code> even
+though <code>is</code> means <code>===</code> otherwise.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  identifierToken: <span class="hljs-function">-&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span> <span class="hljs-keyword">unless</span> match = IDENTIFIER.exec @chunk
+    [input, id, colon] = match</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Preserve length of id for location data</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    idLength = id.length
+    poppedToken = <span class="hljs-literal">undefined</span>
+
+    <span class="hljs-keyword">if</span> id <span class="hljs-keyword">is</span> <span class="hljs-string">'own'</span> <span class="hljs-keyword">and</span> @tag() <span class="hljs-keyword">is</span> <span class="hljs-string">'FOR'</span>
+      @token <span class="hljs-string">'OWN'</span>, id
+      <span class="hljs-keyword">return</span> id.length
+    <span class="hljs-keyword">if</span> id <span class="hljs-keyword">is</span> <span class="hljs-string">'from'</span> <span class="hljs-keyword">and</span> @tag() <span class="hljs-keyword">is</span> <span class="hljs-string">'YIELD'</span>
+      @token <span class="hljs-string">'FROM'</span>, id
+      <span class="hljs-keyword">return</span> id.length
+    <span class="hljs-keyword">if</span> id <span class="hljs-keyword">is</span> <span class="hljs-string">'as'</span> <span class="hljs-keyword">and</span> @seenImport
+      <span class="hljs-keyword">if</span> @value() <span class="hljs-keyword">is</span> <span class="hljs-string">'*'</span>
+        @tokens[@tokens.length - <span class="hljs-number">1</span>][<span class="hljs-number">0</span>] = <span class="hljs-string">'IMPORT_ALL'</span>
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> @value() <span class="hljs-keyword">in</span> COFFEE_KEYWORDS
+        @tokens[@tokens.length - <span class="hljs-number">1</span>][<span class="hljs-number">0</span>] = <span class="hljs-string">'IDENTIFIER'</span>
+      <span class="hljs-keyword">if</span> @tag() <span class="hljs-keyword">in</span> [<span class="hljs-string">'DEFAULT'</span>, <span class="hljs-string">'IMPORT_ALL'</span>, <span class="hljs-string">'IDENTIFIER'</span>]
+        @token <span class="hljs-string">'AS'</span>, id
+        <span class="hljs-keyword">return</span> id.length
+    <span class="hljs-keyword">if</span> id <span class="hljs-keyword">is</span> <span class="hljs-string">'as'</span> <span class="hljs-keyword">and</span> @seenExport <span class="hljs-keyword">and</span> @tag() <span class="hljs-keyword">is</span> <span class="hljs-string">'IDENTIFIER'</span>
+      @token <span class="hljs-string">'AS'</span>, id
+      <span class="hljs-keyword">return</span> id.length
+    <span class="hljs-keyword">if</span> id <span class="hljs-keyword">is</span> <span class="hljs-string">'default'</span> <span class="hljs-keyword">and</span> @seenExport
+      @token <span class="hljs-string">'DEFAULT'</span>, id
+      <span class="hljs-keyword">return</span> id.length
+
+    [..., prev] = @tokens
+
+    tag =
+      <span class="hljs-keyword">if</span> colon <span class="hljs-keyword">or</span> prev? <span class="hljs-keyword">and</span>
+         (prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> [<span class="hljs-string">'.'</span>, <span class="hljs-string">'?.'</span>, <span class="hljs-string">'::'</span>, <span class="hljs-string">'?::'</span>] <span class="hljs-keyword">or</span>
+         <span class="hljs-keyword">not</span> prev.spaced <span class="hljs-keyword">and</span> prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'@'</span>)
+        <span class="hljs-string">'PROPERTY'</span>
+      <span class="hljs-keyword">else</span>
+        <span class="hljs-string">'IDENTIFIER'</span>
+
+    <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'IDENTIFIER'</span> <span class="hljs-keyword">and</span> (id <span class="hljs-keyword">in</span> JS_KEYWORDS <span class="hljs-keyword">or</span> id <span class="hljs-keyword">in</span> COFFEE_KEYWORDS) <span class="hljs-keyword">and</span>
+       <span class="hljs-keyword">not</span> (@exportSpecifierList <span class="hljs-keyword">and</span> id <span class="hljs-keyword">in</span> COFFEE_KEYWORDS)
+      tag = id.toUpperCase()
+      <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'WHEN'</span> <span class="hljs-keyword">and</span> @tag() <span class="hljs-keyword">in</span> LINE_BREAK
+        tag = <span class="hljs-string">'LEADING_WHEN'</span>
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'FOR'</span>
+        @seenFor = <span class="hljs-literal">yes</span>
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'UNLESS'</span>
+        tag = <span class="hljs-string">'IF'</span>
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'IMPORT'</span>
+        @seenImport = <span class="hljs-literal">yes</span>
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'EXPORT'</span>
+        @seenExport = <span class="hljs-literal">yes</span>
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">in</span> UNARY
+        tag = <span class="hljs-string">'UNARY'</span>
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">in</span> RELATION
+        <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">isnt</span> <span class="hljs-string">'INSTANCEOF'</span> <span class="hljs-keyword">and</span> @seenFor
+          tag = <span class="hljs-string">'FOR'</span> + tag
+          @seenFor = <span class="hljs-literal">no</span>
+        <span class="hljs-keyword">else</span>
+          tag = <span class="hljs-string">'RELATION'</span>
+          <span class="hljs-keyword">if</span> @value() <span class="hljs-keyword">is</span> <span class="hljs-string">'!'</span>
+            poppedToken = @tokens.pop()
+            id = <span class="hljs-string">'!'</span> + id
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'IDENTIFIER'</span> <span class="hljs-keyword">and</span> @seenFor <span class="hljs-keyword">and</span> id <span class="hljs-keyword">is</span> <span class="hljs-string">'from'</span> <span class="hljs-keyword">and</span>
+       isForFrom(prev)
+      tag = <span class="hljs-string">'FORFROM'</span>
+      @seenFor = <span class="hljs-literal">no</span>
+
+    <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'IDENTIFIER'</span> <span class="hljs-keyword">and</span> id <span class="hljs-keyword">in</span> RESERVED
+      @error <span class="hljs-string">"reserved word '<span class="hljs-subst">#{id}</span>'"</span>, length: id.length
+
+    <span class="hljs-keyword">unless</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'PROPERTY'</span>
+      <span class="hljs-keyword">if</span> id <span class="hljs-keyword">in</span> COFFEE_ALIASES
+        alias = id
+        id = COFFEE_ALIAS_MAP[id]
+      tag = <span class="hljs-keyword">switch</span> id
+        <span class="hljs-keyword">when</span> <span class="hljs-string">'!'</span>                 <span class="hljs-keyword">then</span> <span class="hljs-string">'UNARY'</span>
+        <span class="hljs-keyword">when</span> <span class="hljs-string">'=='</span>, <span class="hljs-string">'!='</span>          <span class="hljs-keyword">then</span> <span class="hljs-string">'COMPARE'</span>
+        <span class="hljs-keyword">when</span> <span class="hljs-string">'true'</span>, <span class="hljs-string">'false'</span>     <span class="hljs-keyword">then</span> <span class="hljs-string">'BOOL'</span>
+        <span class="hljs-keyword">when</span> <span class="hljs-string">'break'</span>, <span class="hljs-string">'continue'</span>, \
+             <span class="hljs-string">'debugger'</span>          <span class="hljs-keyword">then</span> <span class="hljs-string">'STATEMENT'</span>
+        <span class="hljs-keyword">when</span> <span class="hljs-string">'&amp;&amp;'</span>, <span class="hljs-string">'||'</span>          <span class="hljs-keyword">then</span> id
+        <span class="hljs-keyword">else</span>  tag
+
+    tagToken = @token tag, id, <span class="hljs-number">0</span>, idLength
+    tagToken.origin = [tag, alias, tagToken[<span class="hljs-number">2</span>]] <span class="hljs-keyword">if</span> alias
+    <span class="hljs-keyword">if</span> poppedToken
+      [tagToken[<span class="hljs-number">2</span>].first_line, tagToken[<span class="hljs-number">2</span>].first_column] =
+        [poppedToken[<span class="hljs-number">2</span>].first_line, poppedToken[<span class="hljs-number">2</span>].first_column]
+    <span class="hljs-keyword">if</span> colon
+      colonOffset = input.lastIndexOf <span class="hljs-string">':'</span>
+      @token <span class="hljs-string">':'</span>, <span class="hljs-string">':'</span>, colonOffset, colon.length
+
+    input.length</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Matches numbers, including decimals, hex, and exponential notation.
+Be careful not to interfere with ranges-in-progress.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  numberToken: <span class="hljs-function">-&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span> <span class="hljs-keyword">unless</span> match = NUMBER.exec @chunk
+
+    number = match[<span class="hljs-number">0</span>]
+    lexedLength = number.length
+
+    <span class="hljs-keyword">switch</span>
+      <span class="hljs-keyword">when</span> <span class="hljs-regexp">/^0[BOX]/</span>.test number
+        @error <span class="hljs-string">"radix prefix in '<span class="hljs-subst">#{number}</span>' must be lowercase"</span>, offset: <span class="hljs-number">1</span>
+      <span class="hljs-keyword">when</span> <span class="hljs-regexp">/^(?!0x).*E/</span>.test number
+        @error <span class="hljs-string">"exponential notation in '<span class="hljs-subst">#{number}</span>' must be indicated with a lowercase 'e'"</span>,
+          offset: number.indexOf(<span class="hljs-string">'E'</span>)
+      <span class="hljs-keyword">when</span> <span class="hljs-regexp">/^0\d*[89]/</span>.test number
+        @error <span class="hljs-string">"decimal literal '<span class="hljs-subst">#{number}</span>' must not be prefixed with '0'"</span>, length: lexedLength
+      <span class="hljs-keyword">when</span> <span class="hljs-regexp">/^0\d+/</span>.test number
+        @error <span class="hljs-string">"octal literal '<span class="hljs-subst">#{number}</span>' must be prefixed with '0o'"</span>, length: lexedLength
+
+    base = <span class="hljs-keyword">switch</span> number.charAt <span class="hljs-number">1</span>
+      <span class="hljs-keyword">when</span> <span class="hljs-string">'b'</span> <span class="hljs-keyword">then</span> <span class="hljs-number">2</span>
+      <span class="hljs-keyword">when</span> <span class="hljs-string">'o'</span> <span class="hljs-keyword">then</span> <span class="hljs-number">8</span>
+      <span class="hljs-keyword">when</span> <span class="hljs-string">'x'</span> <span class="hljs-keyword">then</span> <span class="hljs-number">16</span>
+      <span class="hljs-keyword">else</span> <span class="hljs-literal">null</span>
+    numberValue = <span class="hljs-keyword">if</span> base? <span class="hljs-keyword">then</span> parseInt(number[<span class="hljs-number">2.</span>.], base) <span class="hljs-keyword">else</span> parseFloat(number)
+    <span class="hljs-keyword">if</span> number.charAt(<span class="hljs-number">1</span>) <span class="hljs-keyword">in</span> [<span class="hljs-string">'b'</span>, <span class="hljs-string">'o'</span>]
+      number = <span class="hljs-string">"0x<span class="hljs-subst">#{numberValue.toString <span class="hljs-number">16</span>}</span>"</span>
+
+    tag = <span class="hljs-keyword">if</span> numberValue <span class="hljs-keyword">is</span> Infinity <span class="hljs-keyword">then</span> <span class="hljs-string">'INFINITY'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'NUMBER'</span>
+    @token tag, number, <span class="hljs-number">0</span>, lexedLength
+    lexedLength</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>Matches strings, including multi-line strings, as well as heredocs, with or without
+interpolation.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  stringToken: <span class="hljs-function">-&gt;</span>
+    [quote] = STRING_START.exec(@chunk) || []
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span> <span class="hljs-keyword">unless</span> quote</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>If the preceding token is <code>from</code> and this is an import or export statement,
+properly tag the <code>from</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> @tokens.length <span class="hljs-keyword">and</span> @value() <span class="hljs-keyword">is</span> <span class="hljs-string">'from'</span> <span class="hljs-keyword">and</span> (@seenImport <span class="hljs-keyword">or</span> @seenExport)
+      @tokens[@tokens.length - <span class="hljs-number">1</span>][<span class="hljs-number">0</span>] = <span class="hljs-string">'FROM'</span>
+
+    regex = <span class="hljs-keyword">switch</span> quote
+      <span class="hljs-keyword">when</span> <span class="hljs-string">"'"</span>   <span class="hljs-keyword">then</span> STRING_SINGLE
+      <span class="hljs-keyword">when</span> <span class="hljs-string">'"'</span>   <span class="hljs-keyword">then</span> STRING_DOUBLE
+      <span class="hljs-keyword">when</span> <span class="hljs-string">"'''"</span> <span class="hljs-keyword">then</span> HEREDOC_SINGLE
+      <span class="hljs-keyword">when</span> <span class="hljs-string">'"""'</span> <span class="hljs-keyword">then</span> HEREDOC_DOUBLE
+    heredoc = quote.length <span class="hljs-keyword">is</span> <span class="hljs-number">3</span>
+
+    {tokens, index: end} = @matchWithInterpolations regex, quote
+    $ = tokens.length - <span class="hljs-number">1</span>
+
+    delimiter = quote.charAt(<span class="hljs-number">0</span>)
+    <span class="hljs-keyword">if</span> heredoc</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Find the smallest indentation. It will be removed from all lines later.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      indent = <span class="hljs-literal">null</span>
+      doc = (token[<span class="hljs-number">1</span>] <span class="hljs-keyword">for</span> token, i <span class="hljs-keyword">in</span> tokens <span class="hljs-keyword">when</span> token[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'NEOSTRING'</span>).join <span class="hljs-string">'#{}'</span>
+      <span class="hljs-keyword">while</span> match = HEREDOC_INDENT.exec doc
+        attempt = match[<span class="hljs-number">1</span>]
+        indent = attempt <span class="hljs-keyword">if</span> indent <span class="hljs-keyword">is</span> <span class="hljs-literal">null</span> <span class="hljs-keyword">or</span> <span class="hljs-number">0</span> &lt; attempt.length &lt; indent.length
+      indentRegex = <span class="hljs-regexp">/// \n<span class="hljs-subst">#{indent}</span> ///</span>g <span class="hljs-keyword">if</span> indent
+      @mergeInterpolationTokens tokens, {delimiter}, <span class="hljs-function"><span class="hljs-params">(value, i)</span> =&gt;</span>
+        value = @formatString value
+        value = value.replace indentRegex, <span class="hljs-string">'\n'</span> <span class="hljs-keyword">if</span> indentRegex
+        value = value.replace LEADING_BLANK_LINE,  <span class="hljs-string">''</span> <span class="hljs-keyword">if</span> i <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>
+        value = value.replace TRAILING_BLANK_LINE, <span class="hljs-string">''</span> <span class="hljs-keyword">if</span> i <span class="hljs-keyword">is</span> $
+        value
+    <span class="hljs-keyword">else</span>
+      @mergeInterpolationTokens tokens, {delimiter}, <span class="hljs-function"><span class="hljs-params">(value, i)</span> =&gt;</span>
+        value = @formatString value
+        value = value.replace SIMPLE_STRING_OMIT, <span class="hljs-function"><span class="hljs-params">(match, offset)</span> -&gt;</span>
+          <span class="hljs-keyword">if</span> (i <span class="hljs-keyword">is</span> <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> offset <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>) <span class="hljs-keyword">or</span>
+             (i <span class="hljs-keyword">is</span> $ <span class="hljs-keyword">and</span> offset + match.length <span class="hljs-keyword">is</span> value.length)
+            <span class="hljs-string">''</span>
+          <span class="hljs-keyword">else</span>
+            <span class="hljs-string">' '</span>
+        value
+
+    end</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>Matches and consumes comments.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  commentToken: <span class="hljs-function">-&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span> <span class="hljs-keyword">unless</span> match = @chunk.match COMMENT
+    [comment, here] = match
+    <span class="hljs-keyword">if</span> here
+      <span class="hljs-keyword">if</span> match = HERECOMMENT_ILLEGAL.exec comment
+        @error <span class="hljs-string">"block comments cannot contain <span class="hljs-subst">#{match[<span class="hljs-number">0</span>]}</span>"</span>,
+          offset: match.index, length: match[<span class="hljs-number">0</span>].length
+      <span class="hljs-keyword">if</span> here.indexOf(<span class="hljs-string">'\n'</span>) &gt;= <span class="hljs-number">0</span>
+        here = here.replace <span class="hljs-regexp">/// \n <span class="hljs-subst">#{repeat <span class="hljs-string">' '</span>, @indent}</span> ///</span>g, <span class="hljs-string">'\n'</span>
+      @token <span class="hljs-string">'HERECOMMENT'</span>, here, <span class="hljs-number">0</span>, comment.length
+    comment.length</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>Matches JavaScript interpolated directly into the source via backticks.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  jsToken: <span class="hljs-function">-&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span> <span class="hljs-keyword">unless</span> @chunk.charAt(<span class="hljs-number">0</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'`'</span> <span class="hljs-keyword">and</span>
+      (match = HERE_JSTOKEN.exec(@chunk) <span class="hljs-keyword">or</span> JSTOKEN.exec(@chunk))</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>Convert escaped backticks to backticks, and escaped backslashes
+just before escaped backticks to backslashes</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    script = match[<span class="hljs-number">1</span>].replace <span class="hljs-regexp">/\\+(`|$)/g</span>, <span class="hljs-function"><span class="hljs-params">(string)</span> -&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p><code>string</code> is always a value like ‘`‘, ‘\`‘, ‘\\`‘, etc.
+By reducing it to its latter half, we turn ‘`‘ to ‘<code>&#39;, &#39;\\\</code>‘ to ‘`‘, etc.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      string[-Math.ceil(string.length / <span class="hljs-number">2</span>)..]
+    @token <span class="hljs-string">'JS'</span>, script, <span class="hljs-number">0</span>, match[<span class="hljs-number">0</span>].length
+    match[<span class="hljs-number">0</span>].length</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>Matches regular expression literals, as well as multiline extended ones.
+Lexing regular expressions is difficult to distinguish from division, so we
+borrow some basic heuristics from JavaScript and Ruby.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  regexToken: <span class="hljs-function">-&gt;</span>
+    <span class="hljs-keyword">switch</span>
+      <span class="hljs-keyword">when</span> match = REGEX_ILLEGAL.exec @chunk
+        @error <span class="hljs-string">"regular expressions cannot begin with <span class="hljs-subst">#{match[<span class="hljs-number">2</span>]}</span>"</span>,
+          offset: match.index + match[<span class="hljs-number">1</span>].length
+      <span class="hljs-keyword">when</span> match = @matchWithInterpolations HEREGEX, <span class="hljs-string">'///'</span>
+        {tokens, index} = match
+      <span class="hljs-keyword">when</span> match = REGEX.exec @chunk
+        [regex, body, closed] = match
+        @validateEscapes body, isRegex: <span class="hljs-literal">yes</span>, offsetInChunk: <span class="hljs-number">1</span>
+        index = regex.length
+        [..., prev] = @tokens
+        <span class="hljs-keyword">if</span> prev
+          <span class="hljs-keyword">if</span> prev.spaced <span class="hljs-keyword">and</span> prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> CALLABLE
+            <span class="hljs-keyword">return</span> <span class="hljs-number">0</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> closed <span class="hljs-keyword">or</span> POSSIBLY_DIVISION.test regex
+          <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> NOT_REGEX
+            <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>
+        @error <span class="hljs-string">'missing / (unclosed regex)'</span> <span class="hljs-keyword">unless</span> closed
+      <span class="hljs-keyword">else</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>
+
+    [flags] = REGEX_FLAGS.exec @chunk[index..]
+    end = index + flags.length
+    origin = @makeToken <span class="hljs-string">'REGEX'</span>, <span class="hljs-literal">null</span>, <span class="hljs-number">0</span>, end
+    <span class="hljs-keyword">switch</span>
+      <span class="hljs-keyword">when</span> <span class="hljs-keyword">not</span> VALID_FLAGS.test flags
+        @error <span class="hljs-string">"invalid regular expression flags <span class="hljs-subst">#{flags}</span>"</span>, offset: index, length: flags.length
+      <span class="hljs-keyword">when</span> regex <span class="hljs-keyword">or</span> tokens.length <span class="hljs-keyword">is</span> <span class="hljs-number">1</span>
+        body ?= @formatHeregex tokens[<span class="hljs-number">0</span>][<span class="hljs-number">1</span>]
+        @token <span class="hljs-string">'REGEX'</span>, <span class="hljs-string">"<span class="hljs-subst">#{@makeDelimitedLiteral body, delimiter: <span class="hljs-string">'/'</span>}</span><span class="hljs-subst">#{flags}</span>"</span>, <span class="hljs-number">0</span>, end, origin
+      <span class="hljs-keyword">else</span>
+        @token <span class="hljs-string">'REGEX_START'</span>, <span class="hljs-string">'('</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, origin
+        @token <span class="hljs-string">'IDENTIFIER'</span>, <span class="hljs-string">'RegExp'</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>
+        @token <span class="hljs-string">'CALL_START'</span>, <span class="hljs-string">'('</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>
+        @mergeInterpolationTokens tokens, {delimiter: <span class="hljs-string">'"'</span>, double: <span class="hljs-literal">yes</span>}, @formatHeregex
+        <span class="hljs-keyword">if</span> flags
+          @token <span class="hljs-string">','</span>, <span class="hljs-string">','</span>, index, <span class="hljs-number">0</span>
+          @token <span class="hljs-string">'STRING'</span>, <span class="hljs-string">'"'</span> + flags + <span class="hljs-string">'"'</span>, index, flags.length
+        @token <span class="hljs-string">')'</span>, <span class="hljs-string">')'</span>, end, <span class="hljs-number">0</span>
+        @token <span class="hljs-string">'REGEX_END'</span>, <span class="hljs-string">')'</span>, end, <span class="hljs-number">0</span>
+
+    end</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>Matches newlines, indents, and outdents, and determines which is which.
+If we can detect that the current line is continued onto the next line,
+then the newline is suppressed:</p>
+<pre><code>elements
+  .each( ... )
+  .map( ... )
+</code></pre><p>Keeps track of the level of indentation, because a single outdent token
+can close multiple indents, so we need to know how far in we happen to be.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  lineToken: <span class="hljs-function">-&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span> <span class="hljs-keyword">unless</span> match = MULTI_DENT.exec @chunk
+    indent = match[<span class="hljs-number">0</span>]
+
+    @seenFor = <span class="hljs-literal">no</span>
+
+    size = indent.length - <span class="hljs-number">1</span> - indent.lastIndexOf <span class="hljs-string">'\n'</span>
+    noNewlines = @unfinished()
+
+    <span class="hljs-keyword">if</span> size - @indebt <span class="hljs-keyword">is</span> @indent
+      <span class="hljs-keyword">if</span> noNewlines <span class="hljs-keyword">then</span> @suppressNewlines() <span class="hljs-keyword">else</span> @newlineToken <span class="hljs-number">0</span>
+      <span class="hljs-keyword">return</span> indent.length
+
+    <span class="hljs-keyword">if</span> size &gt; @indent
+      <span class="hljs-keyword">if</span> noNewlines
+        @indebt = size - @indent
+        @suppressNewlines()
+        <span class="hljs-keyword">return</span> indent.length
+      <span class="hljs-keyword">unless</span> @tokens.length
+        @baseIndent = @indent = size
+        <span class="hljs-keyword">return</span> indent.length
+      diff = size - @indent + @outdebt
+      @token <span class="hljs-string">'INDENT'</span>, diff, indent.length - size, size
+      @indents.push diff
+      @ends.push {tag: <span class="hljs-string">'OUTDENT'</span>}
+      @outdebt = @indebt = <span class="hljs-number">0</span>
+      @indent = size
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> size &lt; @baseIndent
+      @error <span class="hljs-string">'missing indentation'</span>, offset: indent.length
+    <span class="hljs-keyword">else</span>
+      @indebt = <span class="hljs-number">0</span>
+      @outdentToken @indent - size, noNewlines, indent.length
+    indent.length</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>Record an outdent token or multiple tokens, if we happen to be moving back
+inwards past several recorded indents. Sets new @indent value.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  outdentToken: <span class="hljs-function"><span class="hljs-params">(moveOut, noNewlines, outdentLength)</span> -&gt;</span>
+    decreasedIndent = @indent - moveOut
+    <span class="hljs-keyword">while</span> moveOut &gt; <span class="hljs-number">0</span>
+      lastIndent = @indents[@indents.length - <span class="hljs-number">1</span>]
+      <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> lastIndent
+        moveOut = <span class="hljs-number">0</span>
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> lastIndent <span class="hljs-keyword">is</span> @outdebt
+        moveOut -= @outdebt
+        @outdebt = <span class="hljs-number">0</span>
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> lastIndent &lt; @outdebt
+        @outdebt -= lastIndent
+        moveOut  -= lastIndent
+      <span class="hljs-keyword">else</span>
+        dent = @indents.pop() + @outdebt
+        <span class="hljs-keyword">if</span> outdentLength <span class="hljs-keyword">and</span> @chunk[outdentLength] <span class="hljs-keyword">in</span> INDENTABLE_CLOSERS
+          decreasedIndent -= dent - moveOut
+          moveOut = dent
+        @outdebt = <span class="hljs-number">0</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>pair might call outdentToken, so preserve decreasedIndent</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        @pair <span class="hljs-string">'OUTDENT'</span>
+        @token <span class="hljs-string">'OUTDENT'</span>, moveOut, <span class="hljs-number">0</span>, outdentLength
+        moveOut -= dent
+    @outdebt -= moveOut <span class="hljs-keyword">if</span> dent
+    @tokens.pop() <span class="hljs-keyword">while</span> @value() <span class="hljs-keyword">is</span> <span class="hljs-string">';'</span>
+
+    @token <span class="hljs-string">'TERMINATOR'</span>, <span class="hljs-string">'\n'</span>, outdentLength, <span class="hljs-number">0</span> <span class="hljs-keyword">unless</span> @tag() <span class="hljs-keyword">is</span> <span class="hljs-string">'TERMINATOR'</span> <span class="hljs-keyword">or</span> noNewlines
+    @indent = decreasedIndent
+    <span class="hljs-keyword">this</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>Matches and consumes non-meaningful whitespace. Tag the previous token
+as being “spaced”, because there are some cases where it makes a difference.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  whitespaceToken: <span class="hljs-function">-&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span> <span class="hljs-keyword">unless</span> (match = WHITESPACE.exec @chunk) <span class="hljs-keyword">or</span>
+                    (nline = @chunk.charAt(<span class="hljs-number">0</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'\n'</span>)
+    [..., prev] = @tokens
+    prev[<span class="hljs-keyword">if</span> match <span class="hljs-keyword">then</span> <span class="hljs-string">'spaced'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'newLine'</span>] = <span class="hljs-literal">true</span> <span class="hljs-keyword">if</span> prev
+    <span class="hljs-keyword">if</span> match <span class="hljs-keyword">then</span> match[<span class="hljs-number">0</span>].length <span class="hljs-keyword">else</span> <span class="hljs-number">0</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <p>Generate a newline token. Consecutive newlines get merged together.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  newlineToken: <span class="hljs-function"><span class="hljs-params">(offset)</span> -&gt;</span>
+    @tokens.pop() <span class="hljs-keyword">while</span> @value() <span class="hljs-keyword">is</span> <span class="hljs-string">';'</span>
+    @token <span class="hljs-string">'TERMINATOR'</span>, <span class="hljs-string">'\n'</span>, offset, <span class="hljs-number">0</span> <span class="hljs-keyword">unless</span> @tag() <span class="hljs-keyword">is</span> <span class="hljs-string">'TERMINATOR'</span>
+    <span class="hljs-keyword">this</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>Use a <code>\</code> at a line-ending to suppress the newline.
+The slash is removed here once its job is done.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  suppressNewlines: <span class="hljs-function">-&gt;</span>
+    @tokens.pop() <span class="hljs-keyword">if</span> @value() <span class="hljs-keyword">is</span> <span class="hljs-string">'\\'</span>
+    <span class="hljs-keyword">this</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <p>We treat all other single characters as a token. E.g.: <code>( ) , . !</code>
+Multi-character operators are also literal tokens, so that Jison can assign
+the proper order of operations. There are some symbols that we tag specially
+here. <code>;</code> and newlines are both treated as a <code>TERMINATOR</code>, we distinguish
+parentheses that indicate a method call from regular parentheses, and so on.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  literalToken: <span class="hljs-function">-&gt;</span>
+    <span class="hljs-keyword">if</span> match = OPERATOR.exec @chunk
+      [value] = match
+      @tagParameters() <span class="hljs-keyword">if</span> CODE.test value
+    <span class="hljs-keyword">else</span>
+      value = @chunk.charAt <span class="hljs-number">0</span>
+    tag  = value
+    [..., prev] = @tokens
+
+    <span class="hljs-keyword">if</span> prev <span class="hljs-keyword">and</span> value <span class="hljs-keyword">in</span> [<span class="hljs-string">'='</span>, COMPOUND_ASSIGN...]
+      skipToken = <span class="hljs-literal">false</span>
+      <span class="hljs-keyword">if</span> value <span class="hljs-keyword">is</span> <span class="hljs-string">'='</span> <span class="hljs-keyword">and</span> prev[<span class="hljs-number">1</span>] <span class="hljs-keyword">in</span> [<span class="hljs-string">'||'</span>, <span class="hljs-string">'&amp;&amp;'</span>] <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> prev.spaced
+        prev[<span class="hljs-number">0</span>] = <span class="hljs-string">'COMPOUND_ASSIGN'</span>
+        prev[<span class="hljs-number">1</span>] += <span class="hljs-string">'='</span>
+        prev = @tokens[@tokens.length - <span class="hljs-number">2</span>]
+        skipToken = <span class="hljs-literal">true</span>
+      <span class="hljs-keyword">if</span> prev <span class="hljs-keyword">and</span> prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">isnt</span> <span class="hljs-string">'PROPERTY'</span>
+        origin = prev.origin ? prev
+        message = isUnassignable prev[<span class="hljs-number">1</span>], origin[<span class="hljs-number">1</span>]
+        @error message, origin[<span class="hljs-number">2</span>] <span class="hljs-keyword">if</span> message
+      <span class="hljs-keyword">return</span> value.length <span class="hljs-keyword">if</span> skipToken
+
+    <span class="hljs-keyword">if</span> value <span class="hljs-keyword">is</span> <span class="hljs-string">'{'</span> <span class="hljs-keyword">and</span> prev?[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'EXPORT'</span>
+      @exportSpecifierList = <span class="hljs-literal">yes</span>
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> @exportSpecifierList <span class="hljs-keyword">and</span> value <span class="hljs-keyword">is</span> <span class="hljs-string">'}'</span>
+      @exportSpecifierList = <span class="hljs-literal">no</span>
+
+    <span class="hljs-keyword">if</span> value <span class="hljs-keyword">is</span> <span class="hljs-string">';'</span>
+      @seenFor = @seenImport = @seenExport = <span class="hljs-literal">no</span>
+      tag = <span class="hljs-string">'TERMINATOR'</span>
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> value <span class="hljs-keyword">is</span> <span class="hljs-string">'*'</span> <span class="hljs-keyword">and</span> prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'EXPORT'</span>
+      tag = <span class="hljs-string">'EXPORT_ALL'</span>
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> value <span class="hljs-keyword">in</span> MATH            <span class="hljs-keyword">then</span> tag = <span class="hljs-string">'MATH'</span>
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> value <span class="hljs-keyword">in</span> COMPARE         <span class="hljs-keyword">then</span> tag = <span class="hljs-string">'COMPARE'</span>
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> value <span class="hljs-keyword">in</span> COMPOUND_ASSIGN <span class="hljs-keyword">then</span> tag = <span class="hljs-string">'COMPOUND_ASSIGN'</span>
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> value <span class="hljs-keyword">in</span> UNARY           <span class="hljs-keyword">then</span> tag = <span class="hljs-string">'UNARY'</span>
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> value <span class="hljs-keyword">in</span> UNARY_MATH      <span class="hljs-keyword">then</span> tag = <span class="hljs-string">'UNARY_MATH'</span>
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> value <span class="hljs-keyword">in</span> SHIFT           <span class="hljs-keyword">then</span> tag = <span class="hljs-string">'SHIFT'</span>
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> value <span class="hljs-keyword">is</span> <span class="hljs-string">'?'</span> <span class="hljs-keyword">and</span> prev?.spaced <span class="hljs-keyword">then</span> tag = <span class="hljs-string">'BIN?'</span>
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> prev <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> prev.spaced
+      <span class="hljs-keyword">if</span> value <span class="hljs-keyword">is</span> <span class="hljs-string">'('</span> <span class="hljs-keyword">and</span> prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> CALLABLE
+        prev[<span class="hljs-number">0</span>] = <span class="hljs-string">'FUNC_EXIST'</span> <span class="hljs-keyword">if</span> prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'?'</span>
+        tag = <span class="hljs-string">'CALL_START'</span>
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> value <span class="hljs-keyword">is</span> <span class="hljs-string">'['</span> <span class="hljs-keyword">and</span> prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> INDEXABLE
+        tag = <span class="hljs-string">'INDEX_START'</span>
+        <span class="hljs-keyword">switch</span> prev[<span class="hljs-number">0</span>]
+          <span class="hljs-keyword">when</span> <span class="hljs-string">'?'</span>  <span class="hljs-keyword">then</span> prev[<span class="hljs-number">0</span>] = <span class="hljs-string">'INDEX_SOAK'</span>
+    token = @makeToken tag, value
+    <span class="hljs-keyword">switch</span> value
+      <span class="hljs-keyword">when</span> <span class="hljs-string">'('</span>, <span class="hljs-string">'{'</span>, <span class="hljs-string">'['</span> <span class="hljs-keyword">then</span> @ends.push {tag: INVERSES[value], origin: token}
+      <span class="hljs-keyword">when</span> <span class="hljs-string">')'</span>, <span class="hljs-string">'}'</span>, <span class="hljs-string">']'</span> <span class="hljs-keyword">then</span> @pair value
+    @tokens.push token
+    value.length</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              <h2 id="token-manipulators">Token Manipulators</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-32">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>
+              <p>A source of ambiguity in our grammar used to be parameter lists in function
+definitions versus argument lists in function calls. Walk backwards, tagging
+parameters specially in order to make things easier for the parser.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  tagParameters: <span class="hljs-function">-&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span> <span class="hljs-keyword">if</span> @tag() <span class="hljs-keyword">isnt</span> <span class="hljs-string">')'</span>
+    stack = []
+    {tokens} = <span class="hljs-keyword">this</span>
+    i = tokens.length
+    tokens[--i][<span class="hljs-number">0</span>] = <span class="hljs-string">'PARAM_END'</span>
+    <span class="hljs-keyword">while</span> tok = tokens[--i]
+      <span class="hljs-keyword">switch</span> tok[<span class="hljs-number">0</span>]
+        <span class="hljs-keyword">when</span> <span class="hljs-string">')'</span>
+          stack.push tok
+        <span class="hljs-keyword">when</span> <span class="hljs-string">'('</span>, <span class="hljs-string">'CALL_START'</span>
+          <span class="hljs-keyword">if</span> stack.length <span class="hljs-keyword">then</span> stack.pop()
+          <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> tok[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'('</span>
+            tok[<span class="hljs-number">0</span>] = <span class="hljs-string">'PARAM_START'</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>
+          <span class="hljs-keyword">else</span> <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>
+    <span class="hljs-keyword">this</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-33">&#182;</a>
+              </div>
+              <p>Close up all remaining open blocks at the end of the file.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  closeIndentation: <span class="hljs-function">-&gt;</span>
+    @outdentToken @indent</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-34">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-34">&#182;</a>
+              </div>
+              <p>Match the contents of a delimited token and expand variables and expressions
+inside it using Ruby-like notation for substitution of arbitrary
+expressions.</p>
+<pre><code><span class="hljs-string">"Hello <span class="hljs-subst">#{name.capitalize()}</span>."</span>
+</code></pre><p>If it encounters an interpolation, this method will recursively create a new
+Lexer and tokenize until the <code>{</code> of <code>#{</code> is balanced with a <code>}</code>.</p>
+<ul>
+<li><code>regex</code> matches the contents of a token (but not <code>delimiter</code>, and not
+<code>#{</code> if interpolations are desired).</li>
+<li><code>delimiter</code> is the delimiter of the token. Examples are <code>&#39;</code>, <code>&quot;</code>, <code>&#39;&#39;&#39;</code>,
+<code>&quot;&quot;&quot;</code> and <code>///</code>.</li>
+</ul>
+<p>This method allows us to have strings within interpolations within strings,
+ad infinitum.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  matchWithInterpolations: <span class="hljs-function"><span class="hljs-params">(regex, delimiter)</span> -&gt;</span>
+    tokens = []
+    offsetInChunk = delimiter.length
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span> <span class="hljs-keyword">unless</span> @chunk[...offsetInChunk] <span class="hljs-keyword">is</span> delimiter
+    str = @chunk[offsetInChunk..]
+    <span class="hljs-keyword">loop</span>
+      [strPart] = regex.exec str
+
+      @validateEscapes strPart, {isRegex: delimiter.charAt(<span class="hljs-number">0</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'/'</span>, offsetInChunk}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-35">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-35">&#182;</a>
+              </div>
+              <p>Push a fake ‘NEOSTRING’ token, which will get turned into a real string later.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      tokens.push @makeToken <span class="hljs-string">'NEOSTRING'</span>, strPart, offsetInChunk
+
+      str = str[strPart.length..]
+      offsetInChunk += strPart.length
+
+      <span class="hljs-keyword">break</span> <span class="hljs-keyword">unless</span> str[..<span class="hljs-number">.2</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'#{'</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-36">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-36">&#182;</a>
+              </div>
+              <p>The <code>1</code>s are to remove the <code>#</code> in <code>#{</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      [line, column] = @getLineAndColumnFromChunk offsetInChunk + <span class="hljs-number">1</span>
+      {tokens: nested, index} =
+        <span class="hljs-keyword">new</span> Lexer().tokenize str[<span class="hljs-number">1.</span>.], line: line, column: column, untilBalanced: <span class="hljs-literal">on</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-37">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-37">&#182;</a>
+              </div>
+              <p>Skip the trailing <code>}</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      index += <span class="hljs-number">1</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-38">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-38">&#182;</a>
+              </div>
+              <p>Turn the leading and trailing <code>{</code> and <code>}</code> into parentheses. Unnecessary
+parentheses will be removed later.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      [open, ..., close] = nested
+      open[<span class="hljs-number">0</span>]  = open[<span class="hljs-number">1</span>]  = <span class="hljs-string">'('</span>
+      close[<span class="hljs-number">0</span>] = close[<span class="hljs-number">1</span>] = <span class="hljs-string">')'</span>
+      close.origin = [<span class="hljs-string">''</span>, <span class="hljs-string">'end of interpolation'</span>, close[<span class="hljs-number">2</span>]]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-39">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-39">&#182;</a>
+              </div>
+              <p>Remove leading ‘TERMINATOR’ (if any).</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      nested.splice <span class="hljs-number">1</span>, <span class="hljs-number">1</span> <span class="hljs-keyword">if</span> nested[<span class="hljs-number">1</span>]?[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'TERMINATOR'</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-40">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-40">&#182;</a>
+              </div>
+              <p>Push a fake ‘TOKENS’ token, which will get turned into real tokens later.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      tokens.push [<span class="hljs-string">'TOKENS'</span>, nested]
+
+      str = str[index..]
+      offsetInChunk += index
+
+    <span class="hljs-keyword">unless</span> str[...delimiter.length] <span class="hljs-keyword">is</span> delimiter
+      @error <span class="hljs-string">"missing <span class="hljs-subst">#{delimiter}</span>"</span>, length: delimiter.length
+
+    [firstToken, ..., lastToken] = tokens
+    firstToken[<span class="hljs-number">2</span>].first_column -= delimiter.length
+    <span class="hljs-keyword">if</span> lastToken[<span class="hljs-number">1</span>].substr(<span class="hljs-number">-1</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'\n'</span>
+      lastToken[<span class="hljs-number">2</span>].last_line += <span class="hljs-number">1</span>
+      lastToken[<span class="hljs-number">2</span>].last_column = delimiter.length - <span class="hljs-number">1</span>
+    <span class="hljs-keyword">else</span>
+      lastToken[<span class="hljs-number">2</span>].last_column += delimiter.length
+    lastToken[<span class="hljs-number">2</span>].last_column -= <span class="hljs-number">1</span> <span class="hljs-keyword">if</span> lastToken[<span class="hljs-number">1</span>].length <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>
+
+    {tokens, index: offsetInChunk + delimiter.length}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-41">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-41">&#182;</a>
+              </div>
+              <p>Merge the array <code>tokens</code> of the fake token types ‘TOKENS’ and ‘NEOSTRING’
+(as returned by <code>matchWithInterpolations</code>) into the token stream. The value
+of ‘NEOSTRING’s are converted using <code>fn</code> and turned into strings using
+<code>options</code> first.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  mergeInterpolationTokens: <span class="hljs-function"><span class="hljs-params">(tokens, options, fn)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> tokens.length &gt; <span class="hljs-number">1</span>
+      lparen = @token <span class="hljs-string">'STRING_START'</span>, <span class="hljs-string">'('</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>
+
+    firstIndex = @tokens.length
+    <span class="hljs-keyword">for</span> token, i <span class="hljs-keyword">in</span> tokens
+      [tag, value] = token
+      <span class="hljs-keyword">switch</span> tag
+        <span class="hljs-keyword">when</span> <span class="hljs-string">'TOKENS'</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-42">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-42">&#182;</a>
+              </div>
+              <p>Optimize out empty interpolations (an empty pair of parentheses).</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          <span class="hljs-keyword">continue</span> <span class="hljs-keyword">if</span> value.length <span class="hljs-keyword">is</span> <span class="hljs-number">2</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-43">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-43">&#182;</a>
+              </div>
+              <p>Push all the tokens in the fake ‘TOKENS’ token. These already have
+sane location data.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          locationToken = value[<span class="hljs-number">0</span>]
+          tokensToPush = value
+        <span class="hljs-keyword">when</span> <span class="hljs-string">'NEOSTRING'</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-44">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-44">&#182;</a>
+              </div>
+              <p>Convert ‘NEOSTRING’ into ‘STRING’.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          converted = fn token[<span class="hljs-number">1</span>], i</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-45">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-45">&#182;</a>
+              </div>
+              <p>Optimize out empty strings. We ensure that the tokens stream always
+starts with a string token, though, to make sure that the result
+really is a string.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          <span class="hljs-keyword">if</span> converted.length <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>
+            <span class="hljs-keyword">if</span> i <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>
+              firstEmptyStringIndex = @tokens.length
+            <span class="hljs-keyword">else</span>
+              <span class="hljs-keyword">continue</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-46">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-46">&#182;</a>
+              </div>
+              <p>However, there is one case where we can optimize away a starting
+empty string.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          <span class="hljs-keyword">if</span> i <span class="hljs-keyword">is</span> <span class="hljs-number">2</span> <span class="hljs-keyword">and</span> firstEmptyStringIndex?
+            @tokens.splice firstEmptyStringIndex, <span class="hljs-number">2</span> <span class="hljs-comment"># Remove empty string and the plus.</span>
+          token[<span class="hljs-number">0</span>] = <span class="hljs-string">'STRING'</span>
+          token[<span class="hljs-number">1</span>] = @makeDelimitedLiteral converted, options
+          locationToken = token
+          tokensToPush = [token]
+      <span class="hljs-keyword">if</span> @tokens.length &gt; firstIndex</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-47">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-47">&#182;</a>
+              </div>
+              <p>Create a 0-length “+” token.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        plusToken = @token <span class="hljs-string">'+'</span>, <span class="hljs-string">'+'</span>
+        plusToken[<span class="hljs-number">2</span>] =
+          first_line:   locationToken[<span class="hljs-number">2</span>].first_line
+          first_column: locationToken[<span class="hljs-number">2</span>].first_column
+          last_line:    locationToken[<span class="hljs-number">2</span>].first_line
+          last_column:  locationToken[<span class="hljs-number">2</span>].first_column
+      @tokens.push tokensToPush...
+
+    <span class="hljs-keyword">if</span> lparen
+      [..., lastToken] = tokens
+      lparen.origin = [<span class="hljs-string">'STRING'</span>, <span class="hljs-literal">null</span>,
+        first_line:   lparen[<span class="hljs-number">2</span>].first_line
+        first_column: lparen[<span class="hljs-number">2</span>].first_column
+        last_line:    lastToken[<span class="hljs-number">2</span>].last_line
+        last_column:  lastToken[<span class="hljs-number">2</span>].last_column
+      ]
+      rparen = @token <span class="hljs-string">'STRING_END'</span>, <span class="hljs-string">')'</span>
+      rparen[<span class="hljs-number">2</span>] =
+        first_line:   lastToken[<span class="hljs-number">2</span>].last_line
+        first_column: lastToken[<span class="hljs-number">2</span>].last_column
+        last_line:    lastToken[<span class="hljs-number">2</span>].last_line
+        last_column:  lastToken[<span class="hljs-number">2</span>].last_column</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-48">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-48">&#182;</a>
+              </div>
+              <p>Pairs up a closing token, ensuring that all listed pairs of tokens are
+correctly balanced throughout the course of the token stream.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  pair: <span class="hljs-function"><span class="hljs-params">(tag)</span> -&gt;</span>
+    [..., prev] = @ends
+    <span class="hljs-keyword">unless</span> tag <span class="hljs-keyword">is</span> wanted = prev?.tag
+      @error <span class="hljs-string">"unmatched <span class="hljs-subst">#{tag}</span>"</span> <span class="hljs-keyword">unless</span> <span class="hljs-string">'OUTDENT'</span> <span class="hljs-keyword">is</span> wanted</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-49">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-49">&#182;</a>
+              </div>
+              <p>Auto-close INDENT to support syntax like this:</p>
+<pre><code>el.click(<span class="hljs-function"><span class="hljs-params">(event)</span> -&gt;</span>
+  el.hide())
+</code></pre>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      [..., lastIndent] = @indents
+      @outdentToken lastIndent, <span class="hljs-literal">true</span>
+      <span class="hljs-keyword">return</span> @pair tag
+    @ends.pop()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-50">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-50">&#182;</a>
+              </div>
+              <h2 id="helpers">Helpers</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-51">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-51">&#182;</a>
+              </div>
+              
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-52">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-52">&#182;</a>
+              </div>
+              <p>Returns the line and column number from an offset into the current chunk.</p>
+<p><code>offset</code> is a number of characters into @chunk.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  getLineAndColumnFromChunk: <span class="hljs-function"><span class="hljs-params">(offset)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> offset <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>
+      <span class="hljs-keyword">return</span> [@chunkLine, @chunkColumn]
+
+    <span class="hljs-keyword">if</span> offset &gt;= @chunk.length
+      string = @chunk
+    <span class="hljs-keyword">else</span>
+      string = @chunk[..offset<span class="hljs-number">-1</span>]
+
+    lineCount = count string, <span class="hljs-string">'\n'</span>
+
+    column = @chunkColumn
+    <span class="hljs-keyword">if</span> lineCount &gt; <span class="hljs-number">0</span>
+      [..., lastLine] = string.split <span class="hljs-string">'\n'</span>
+      column = lastLine.length
+    <span class="hljs-keyword">else</span>
+      column += string.length
+
+    [@chunkLine + lineCount, column]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-53">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-53">&#182;</a>
+              </div>
+              <p>Same as “token”, exception this just returns the token without adding it
+to the results.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  makeToken: <span class="hljs-function"><span class="hljs-params">(tag, value, offsetInChunk = <span class="hljs-number">0</span>, length = value.length)</span> -&gt;</span>
+    locationData = {}
+    [locationData.first_line, locationData.first_column] =
+      @getLineAndColumnFromChunk offsetInChunk</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-54">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-54">&#182;</a>
+              </div>
+              <p>Use length - 1 for the final offset - we’re supplying the last_line and the last_column,
+so if last_column == first_column, then we’re looking at a character of length 1.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    lastCharacter = <span class="hljs-keyword">if</span> length &gt; <span class="hljs-number">0</span> <span class="hljs-keyword">then</span> (length - <span class="hljs-number">1</span>) <span class="hljs-keyword">else</span> <span class="hljs-number">0</span>
+    [locationData.last_line, locationData.last_column] =
+      @getLineAndColumnFromChunk offsetInChunk + lastCharacter
+
+    token = [tag, value, locationData]
+
+    token</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-55">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-55">&#182;</a>
+              </div>
+              <p>Add a token to the results.
+<code>offset</code> is the offset into the current @chunk where the token starts.
+<code>length</code> is the length of the token in the @chunk, after the offset.  If
+not specified, the length of <code>value</code> will be used.</p>
+<p>Returns the new token.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  token: <span class="hljs-function"><span class="hljs-params">(tag, value, offsetInChunk, length, origin)</span> -&gt;</span>
+    token = @makeToken tag, value, offsetInChunk, length
+    token.origin = origin <span class="hljs-keyword">if</span> origin
+    @tokens.push token
+    token</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-56">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-56">&#182;</a>
+              </div>
+              <p>Peek at the last tag in the token stream.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  tag: <span class="hljs-function">-&gt;</span>
+    [..., token] = @tokens
+    token?[<span class="hljs-number">0</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-57">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-57">&#182;</a>
+              </div>
+              <p>Peek at the last value in the token stream.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  value: <span class="hljs-function">-&gt;</span>
+    [..., token] = @tokens
+    token?[<span class="hljs-number">1</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-58">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-58">&#182;</a>
+              </div>
+              <p>Are we in the midst of an unfinished expression?</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  unfinished: <span class="hljs-function">-&gt;</span>
+    LINE_CONTINUER.test(@chunk) <span class="hljs-keyword">or</span>
+    @tag() <span class="hljs-keyword">in</span> [<span class="hljs-string">'\\'</span>, <span class="hljs-string">'.'</span>, <span class="hljs-string">'?.'</span>, <span class="hljs-string">'?::'</span>, <span class="hljs-string">'UNARY'</span>, <span class="hljs-string">'MATH'</span>, <span class="hljs-string">'UNARY_MATH'</span>, <span class="hljs-string">'+'</span>, <span class="hljs-string">'-'</span>,
+               <span class="hljs-string">'**'</span>, <span class="hljs-string">'SHIFT'</span>, <span class="hljs-string">'RELATION'</span>, <span class="hljs-string">'COMPARE'</span>, <span class="hljs-string">'&amp;'</span>, <span class="hljs-string">'^'</span>, <span class="hljs-string">'|'</span>, <span class="hljs-string">'&amp;&amp;'</span>, <span class="hljs-string">'||'</span>,
+               <span class="hljs-string">'BIN?'</span>, <span class="hljs-string">'THROW'</span>, <span class="hljs-string">'EXTENDS'</span>]
+
+  formatString: <span class="hljs-function"><span class="hljs-params">(str)</span> -&gt;</span>
+    str.replace STRING_OMIT, <span class="hljs-string">'$1'</span>
+
+  formatHeregex: <span class="hljs-function"><span class="hljs-params">(str)</span> -&gt;</span>
+    str.replace HEREGEX_OMIT, <span class="hljs-string">'$1$2'</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-59">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-59">&#182;</a>
+              </div>
+              <p>Validates escapes in strings and regexes.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  validateEscapes: <span class="hljs-function"><span class="hljs-params">(str, options = {})</span> -&gt;</span>
+    match = INVALID_ESCAPE.exec str
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">unless</span> match
+    [[], before, octal, hex, unicode] = match
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">if</span> options.isRegex <span class="hljs-keyword">and</span> octal <span class="hljs-keyword">and</span> octal.charAt(<span class="hljs-number">0</span>) <span class="hljs-keyword">isnt</span> <span class="hljs-string">'0'</span>
+    message =
+      <span class="hljs-keyword">if</span> octal
+        <span class="hljs-string">"octal escape sequences are not allowed"</span>
+      <span class="hljs-keyword">else</span>
+        <span class="hljs-string">"invalid escape sequence"</span>
+    invalidEscape = <span class="hljs-string">"\\<span class="hljs-subst">#{octal <span class="hljs-keyword">or</span> hex <span class="hljs-keyword">or</span> unicode}</span>"</span>
+    @error <span class="hljs-string">"<span class="hljs-subst">#{message}</span> <span class="hljs-subst">#{invalidEscape}</span>"</span>,
+      offset: (options.offsetInChunk ? <span class="hljs-number">0</span>) + match.index + before.length
+      length: invalidEscape.length</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-60">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-60">&#182;</a>
+              </div>
+              <p>Constructs a string or regex by escaping certain characters.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  makeDelimitedLiteral: <span class="hljs-function"><span class="hljs-params">(body, options = {})</span> -&gt;</span>
+    body = <span class="hljs-string">'(?:)'</span> <span class="hljs-keyword">if</span> body <span class="hljs-keyword">is</span> <span class="hljs-string">''</span> <span class="hljs-keyword">and</span> options.delimiter <span class="hljs-keyword">is</span> <span class="hljs-string">'/'</span>
+    regex = <span class="hljs-regexp">///
+        (\\\\)                               <span class="hljs-comment"># escaped backslash</span>
+      | (\\0(?=[1-7]))                       <span class="hljs-comment"># nul character mistaken as octal escape</span>
+      | \\?(<span class="hljs-subst">#{options.delimiter}</span>)            <span class="hljs-comment"># (possibly escaped) delimiter</span>
+      | \\?(?: (\n)|(\r)|(\u2028)|(\u2029) ) <span class="hljs-comment"># (possibly escaped) newlines</span>
+      | (\\.)                                <span class="hljs-comment"># other escapes</span>
+    ///</span>g
+    body = body.replace regex, <span class="hljs-function"><span class="hljs-params">(match, backslash, nul, delimiter, lf, cr, ls, ps, other)</span> -&gt;</span> <span class="hljs-keyword">switch</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-61">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-61">&#182;</a>
+              </div>
+              <p>Ignore escaped backslashes.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">when</span> backslash <span class="hljs-keyword">then</span> (<span class="hljs-keyword">if</span> options.double <span class="hljs-keyword">then</span> backslash + backslash <span class="hljs-keyword">else</span> backslash)
+      <span class="hljs-keyword">when</span> nul       <span class="hljs-keyword">then</span> <span class="hljs-string">'\\x00'</span>
+      <span class="hljs-keyword">when</span> delimiter <span class="hljs-keyword">then</span> <span class="hljs-string">"\\<span class="hljs-subst">#{delimiter}</span>"</span>
+      <span class="hljs-keyword">when</span> lf        <span class="hljs-keyword">then</span> <span class="hljs-string">'\\n'</span>
+      <span class="hljs-keyword">when</span> cr        <span class="hljs-keyword">then</span> <span class="hljs-string">'\\r'</span>
+      <span class="hljs-keyword">when</span> ls        <span class="hljs-keyword">then</span> <span class="hljs-string">'\\u2028'</span>
+      <span class="hljs-keyword">when</span> ps        <span class="hljs-keyword">then</span> <span class="hljs-string">'\\u2029'</span>
+      <span class="hljs-keyword">when</span> other     <span class="hljs-keyword">then</span> (<span class="hljs-keyword">if</span> options.double <span class="hljs-keyword">then</span> <span class="hljs-string">"\\<span class="hljs-subst">#{other}</span>"</span> <span class="hljs-keyword">else</span> other)
+    <span class="hljs-string">"<span class="hljs-subst">#{options.delimiter}</span><span class="hljs-subst">#{body}</span><span class="hljs-subst">#{options.delimiter}</span>"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-62">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-62">&#182;</a>
+              </div>
+              <p>Throws an error at either a given offset from the current chunk or at the
+location of a token (<code>token[2]</code>).</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  error: <span class="hljs-function"><span class="hljs-params">(message, options = {})</span> -&gt;</span>
+    location =
+      <span class="hljs-keyword">if</span> <span class="hljs-string">'first_line'</span> <span class="hljs-keyword">of</span> options
+        options
+      <span class="hljs-keyword">else</span>
+        [first_line, first_column] = @getLineAndColumnFromChunk options.offset ? <span class="hljs-number">0</span>
+        {first_line, first_column, last_column: first_column + (options.length ? <span class="hljs-number">1</span>) - <span class="hljs-number">1</span>}
+    throwSyntaxError message, location</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-63">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-63">&#182;</a>
+              </div>
+              <h2 id="helper-functions">Helper functions</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-64">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-64">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function">
+<span class="hljs-title">isUnassignable</span> = <span class="hljs-params">(name, displayName = name)</span> -&gt;</span> <span class="hljs-keyword">switch</span>
+  <span class="hljs-keyword">when</span> name <span class="hljs-keyword">in</span> [JS_KEYWORDS..., COFFEE_KEYWORDS...]
+    <span class="hljs-string">"keyword '<span class="hljs-subst">#{displayName}</span>' can't be assigned"</span>
+  <span class="hljs-keyword">when</span> name <span class="hljs-keyword">in</span> STRICT_PROSCRIBED
+    <span class="hljs-string">"'<span class="hljs-subst">#{displayName}</span>' can't be assigned"</span>
+  <span class="hljs-keyword">when</span> name <span class="hljs-keyword">in</span> RESERVED
+    <span class="hljs-string">"reserved word '<span class="hljs-subst">#{displayName}</span>' can't be assigned"</span>
+  <span class="hljs-keyword">else</span>
+    <span class="hljs-literal">false</span>
+
+exports.isUnassignable = isUnassignable</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-65">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-65">&#182;</a>
+              </div>
+              <p><code>from</code> isn’t a CoffeeScript keyword, but it behaves like one in <code>import</code> and
+<code>export</code> statements (handled above) and in the declaration line of a <code>for</code>
+loop. Try to detect when <code>from</code> is a variable identifier and when it is this
+“sometimes” keyword.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">isForFrom</span> = <span class="hljs-params">(prev)</span> -&gt;</span>
+  <span class="hljs-keyword">if</span> prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'IDENTIFIER'</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-66">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-66">&#182;</a>
+              </div>
+              <p><code>for i from from</code>, <code>for from from iterable</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> prev[<span class="hljs-number">1</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'from'</span>
+      prev[<span class="hljs-number">1</span>][<span class="hljs-number">0</span>] = <span class="hljs-string">'IDENTIFIER'</span>
+      <span class="hljs-literal">yes</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-67">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-67">&#182;</a>
+              </div>
+              <p><code>for i from iterable</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-literal">yes</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-68">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-68">&#182;</a>
+              </div>
+              <p><code>for from…</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'FOR'</span>
+    <span class="hljs-literal">no</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-69">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-69">&#182;</a>
+              </div>
+              <p><code>for {from}…</code>, <code>for [from]…</code>, <code>for {a, from}…</code>, <code>for {a: from}…</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> prev[<span class="hljs-number">1</span>] <span class="hljs-keyword">in</span> [<span class="hljs-string">'{'</span>, <span class="hljs-string">'['</span>, <span class="hljs-string">','</span>, <span class="hljs-string">':'</span>]
+    <span class="hljs-literal">no</span>
+  <span class="hljs-keyword">else</span>
+    <span class="hljs-literal">yes</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-70">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-70">&#182;</a>
+              </div>
+              <h2 id="constants">Constants</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-71">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-71">&#182;</a>
+              </div>
+              
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-72">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-72">&#182;</a>
+              </div>
+              <p>Keywords that CoffeeScript shares in common with JavaScript.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>JS_KEYWORDS = [
+  <span class="hljs-string">'true'</span>, <span class="hljs-string">'false'</span>, <span class="hljs-string">'null'</span>, <span class="hljs-string">'this'</span>
+  <span class="hljs-string">'new'</span>, <span class="hljs-string">'delete'</span>, <span class="hljs-string">'typeof'</span>, <span class="hljs-string">'in'</span>, <span class="hljs-string">'instanceof'</span>
+  <span class="hljs-string">'return'</span>, <span class="hljs-string">'throw'</span>, <span class="hljs-string">'break'</span>, <span class="hljs-string">'continue'</span>, <span class="hljs-string">'debugger'</span>, <span class="hljs-string">'yield'</span>
+  <span class="hljs-string">'if'</span>, <span class="hljs-string">'else'</span>, <span class="hljs-string">'switch'</span>, <span class="hljs-string">'for'</span>, <span class="hljs-string">'while'</span>, <span class="hljs-string">'do'</span>, <span class="hljs-string">'try'</span>, <span class="hljs-string">'catch'</span>, <span class="hljs-string">'finally'</span>
+  <span class="hljs-string">'class'</span>, <span class="hljs-string">'extends'</span>, <span class="hljs-string">'super'</span>
+  <span class="hljs-string">'import'</span>, <span class="hljs-string">'export'</span>, <span class="hljs-string">'default'</span>
+]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-73">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-73">&#182;</a>
+              </div>
+              <p>CoffeeScript-only keywords.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>COFFEE_KEYWORDS = [
+  <span class="hljs-string">'undefined'</span>, <span class="hljs-string">'Infinity'</span>, <span class="hljs-string">'NaN'</span>
+  <span class="hljs-string">'then'</span>, <span class="hljs-string">'unless'</span>, <span class="hljs-string">'until'</span>, <span class="hljs-string">'loop'</span>, <span class="hljs-string">'of'</span>, <span class="hljs-string">'by'</span>, <span class="hljs-string">'when'</span>
+]
+
+COFFEE_ALIAS_MAP =
+  <span class="hljs-keyword">and</span>  : <span class="hljs-string">'&amp;&amp;'</span>
+  <span class="hljs-keyword">or</span>   : <span class="hljs-string">'||'</span>
+  <span class="hljs-keyword">is</span>   : <span class="hljs-string">'=='</span>
+  <span class="hljs-keyword">isnt</span> : <span class="hljs-string">'!='</span>
+  <span class="hljs-keyword">not</span>  : <span class="hljs-string">'!'</span>
+  <span class="hljs-literal">yes</span>  : <span class="hljs-string">'true'</span>
+  <span class="hljs-literal">no</span>   : <span class="hljs-string">'false'</span>
+  <span class="hljs-literal">on</span>   : <span class="hljs-string">'true'</span>
+  <span class="hljs-literal">off</span>  : <span class="hljs-string">'false'</span>
+
+COFFEE_ALIASES  = (key <span class="hljs-keyword">for</span> key <span class="hljs-keyword">of</span> COFFEE_ALIAS_MAP)
+COFFEE_KEYWORDS = COFFEE_KEYWORDS.concat COFFEE_ALIASES</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-74">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-74">&#182;</a>
+              </div>
+              <p>The list of keywords that are reserved by JavaScript, but not used, or are
+used by CoffeeScript internally. We throw an error when these are encountered,
+to avoid having a JavaScript error at runtime.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>RESERVED = [
+  <span class="hljs-string">'case'</span>, <span class="hljs-string">'function'</span>, <span class="hljs-string">'var'</span>, <span class="hljs-string">'void'</span>, <span class="hljs-string">'with'</span>, <span class="hljs-string">'const'</span>, <span class="hljs-string">'let'</span>, <span class="hljs-string">'enum'</span>
+  <span class="hljs-string">'native'</span>, <span class="hljs-string">'implements'</span>, <span class="hljs-string">'interface'</span>, <span class="hljs-string">'package'</span>, <span class="hljs-string">'private'</span>
+  <span class="hljs-string">'protected'</span>, <span class="hljs-string">'public'</span>, <span class="hljs-string">'static'</span>
+]
+
+STRICT_PROSCRIBED = [<span class="hljs-string">'arguments'</span>, <span class="hljs-string">'eval'</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-75">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-75">&#182;</a>
+              </div>
+              <p>The superset of both JavaScript keywords and reserved words, none of which may
+be used as identifiers or properties.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>exports.JS_FORBIDDEN = JS_KEYWORDS.concat(RESERVED).concat(STRICT_PROSCRIBED)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-76">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-76">&#182;</a>
+              </div>
+              <p>The character code of the nasty Microsoft madness otherwise known as the BOM.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>BOM = <span class="hljs-number">65279</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-77">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-77">&#182;</a>
+              </div>
+              <p>Token matching regexes.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>IDENTIFIER = <span class="hljs-regexp">/// ^
+  (?!\d)
+  ( (?: (?!\s)[$\w\x7f-\uffff] )+ )
+  ( [^\n\S]* : (?!:) )?  <span class="hljs-comment"># Is this a property name?</span>
+///</span>
+
+NUMBER     = <span class="hljs-regexp">///
+  ^ 0b[01]+    |              <span class="hljs-comment"># binary</span>
+  ^ 0o[0-7]+   |              <span class="hljs-comment"># octal</span>
+  ^ 0x[\da-f]+ |              <span class="hljs-comment"># hex</span>
+  ^ \d*\.?\d+ (?:e[+-]?\d+)?  <span class="hljs-comment"># decimal</span>
+///</span>i
+
+OPERATOR   = <span class="hljs-regexp">/// ^ (
+  ?: [-=]&gt;             <span class="hljs-comment"># function</span>
+   | [-+*/%&lt;&gt;&amp;|^!?=]=  <span class="hljs-comment"># compound assign / compare</span>
+   | &gt;&gt;&gt;=?             <span class="hljs-comment"># zero-fill right shift</span>
+   | ([-+:])\1         <span class="hljs-comment"># doubles</span>
+   | ([&amp;|&lt;&gt;*/%])\2=?   <span class="hljs-comment"># logic / shift / power / floor division / modulo</span>
+   | \?(\.|::)         <span class="hljs-comment"># soak access</span>
+   | \.{2,3}           <span class="hljs-comment"># range or splat</span>
+) ///</span>
+
+WHITESPACE = <span class="hljs-regexp">/^[^\n\S]+/</span>
+
+COMMENT    = <span class="hljs-regexp">/^###([^#][\s\S]*?)(?:###[^\n\S]*|###$)|^(?:\s*#(?!##[^#]).*)+/</span>
+
+CODE       = <span class="hljs-regexp">/^[-=]&gt;/</span>
+
+MULTI_DENT = <span class="hljs-regexp">/^(?:\n[^\n\S]*)+/</span>
+
+JSTOKEN      = <span class="hljs-regexp">///^ `(?!``) ((?: [^`\\] | \\[\s\S]           )*) `   ///</span>
+HERE_JSTOKEN = <span class="hljs-regexp">///^ ```     ((?: [^`\\] | \\[\s\S] | `(?!``) )*) ``` ///</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-78">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-78">&#182;</a>
+              </div>
+              <p>String-matching-regexes.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>STRING_START   = <span class="hljs-regexp">/^(?:'''|"""|'|")/</span>
+
+STRING_SINGLE  = <span class="hljs-regexp">/// ^(?: [^\\']  | \\[\s\S]                      )* ///</span>
+STRING_DOUBLE  = <span class="hljs-regexp">/// ^(?: [^\\"<span class="hljs-comment">#] | \\[\s\S] |           \#(?!\{) )* ///</span>
+HEREDOC_SINGLE = ///</span> ^(?: [^\\<span class="hljs-string">']  | \\[\s\S] | '</span>(?!<span class="hljs-string">''</span>)            )* <span class="hljs-regexp">///
+HEREDOC_DOUBLE = ///</span> ^(?: [^\\<span class="hljs-string">"#] | \\[\s\S] | "</span>(?!<span class="hljs-string">""</span>) | \<span class="hljs-comment">#(?!\{) )* ///</span>
+
+STRING_OMIT    = <span class="hljs-regexp">///
+    ((?:\\\\)+)      <span class="hljs-comment"># consume (and preserve) an even number of backslashes</span>
+  | \\[^\S\n]*\n\s*  <span class="hljs-comment"># remove escaped newlines</span>
+///</span>g
+SIMPLE_STRING_OMIT = <span class="hljs-regexp">/\s*\n\s*/g</span>
+HEREDOC_INDENT     = <span class="hljs-regexp">/\n+([^\n\S]*)(?=\S)/g</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-79">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-79">&#182;</a>
+              </div>
+              <p>Regex-matching-regexes.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>REGEX = <span class="hljs-regexp">/// ^
+  / (?!/) ((
+  ?: [^ [ / \n \\ ]  <span class="hljs-comment"># every other thing</span>
+   | \\[^\n]         <span class="hljs-comment"># anything but newlines escaped</span>
+   | \[              <span class="hljs-comment"># character class</span>
+       (?: \\[^\n] | [^ \] \n \\ ] )*
+     \]
+  )*) (/)?
+///</span>
+
+REGEX_FLAGS  = <span class="hljs-regexp">/^\w*/</span>
+VALID_FLAGS  = <span class="hljs-regexp">/^(?!.*(.).*\1)[imgy]*$/</span>
+
+HEREGEX      = <span class="hljs-regexp">/// ^(?: [^\\/<span class="hljs-comment">#] | \\[\s\S] | /(?!//) | \#(?!\{) )* ///</span>
+
+HEREGEX_OMIT = ///</span>
+    ((?:\\\\)+)     <span class="hljs-comment"># consume (and preserve) an even number of backslashes</span>
+  | \\(\s)          <span class="hljs-comment"># preserve escaped whitespace</span>
+  | \s+(?:<span class="hljs-comment">#.*)?     # remove whitespace and comments</span>
+<span class="hljs-regexp">///g
+
+REGEX_ILLEGAL = ///</span> ^ ( / | <span class="hljs-regexp">/{3}\s*) (\*) /</span><span class="hljs-regexp">//</span>
+
+POSSIBLY_DIVISION   = <span class="hljs-regexp">/// ^ /=?\s ///</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-80">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-80">&#182;</a>
+              </div>
+              <p>Other regexes.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>HERECOMMENT_ILLEGAL = <span class="hljs-regexp">/\*\//</span>
+
+LINE_CONTINUER      = <span class="hljs-regexp">/// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///</span>
+
+INVALID_ESCAPE      = <span class="hljs-regexp">///
+  ( (?:^|[^\\]) (?:\\\\)* )        <span class="hljs-comment"># make sure the escape isn’t escaped</span>
+  \\ (
+     ?: (0[0-7]|[1-7])             <span class="hljs-comment"># octal escape</span>
+      | (x(?![\da-fA-F]{2}).{0,2}) <span class="hljs-comment"># hex escape</span>
+      | (u(?![\da-fA-F]{4}).{0,4}) <span class="hljs-comment"># unicode escape</span>
+  )
+///</span>
+
+LEADING_BLANK_LINE  = <span class="hljs-regexp">/^[^\n\S]*\n/</span>
+TRAILING_BLANK_LINE = <span class="hljs-regexp">/\n[^\n\S]*$/</span>
+
+TRAILING_SPACES     = <span class="hljs-regexp">/\s+$/</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-81">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-81">&#182;</a>
+              </div>
+              <p>Compound assignment tokens.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>COMPOUND_ASSIGN = [
+  <span class="hljs-string">'-='</span>, <span class="hljs-string">'+='</span>, <span class="hljs-string">'/='</span>, <span class="hljs-string">'*='</span>, <span class="hljs-string">'%='</span>, <span class="hljs-string">'||='</span>, <span class="hljs-string">'&amp;&amp;='</span>, <span class="hljs-string">'?='</span>, <span class="hljs-string">'&lt;&lt;='</span>, <span class="hljs-string">'&gt;&gt;='</span>, <span class="hljs-string">'&gt;&gt;&gt;='</span>
+  <span class="hljs-string">'&amp;='</span>, <span class="hljs-string">'^='</span>, <span class="hljs-string">'|='</span>, <span class="hljs-string">'**='</span>, <span class="hljs-string">'//='</span>, <span class="hljs-string">'%%='</span>
+]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-82">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-82">&#182;</a>
+              </div>
+              <p>Unary tokens.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>UNARY = [<span class="hljs-string">'NEW'</span>, <span class="hljs-string">'TYPEOF'</span>, <span class="hljs-string">'DELETE'</span>, <span class="hljs-string">'DO'</span>]
+
+UNARY_MATH = [<span class="hljs-string">'!'</span>, <span class="hljs-string">'~'</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-83">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-83">&#182;</a>
+              </div>
+              <p>Bit-shifting tokens.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>SHIFT = [<span class="hljs-string">'&lt;&lt;'</span>, <span class="hljs-string">'&gt;&gt;'</span>, <span class="hljs-string">'&gt;&gt;&gt;'</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-84">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-84">&#182;</a>
+              </div>
+              <p>Comparison tokens.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>COMPARE = [<span class="hljs-string">'=='</span>, <span class="hljs-string">'!='</span>, <span class="hljs-string">'&lt;'</span>, <span class="hljs-string">'&gt;'</span>, <span class="hljs-string">'&lt;='</span>, <span class="hljs-string">'&gt;='</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-85">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-85">&#182;</a>
+              </div>
+              <p>Mathematical tokens.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>MATH = [<span class="hljs-string">'*'</span>, <span class="hljs-string">'/'</span>, <span class="hljs-string">'%'</span>, <span class="hljs-string">'//'</span>, <span class="hljs-string">'%%'</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-86">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-86">&#182;</a>
+              </div>
+              <p>Relational tokens that are negatable with <code>not</code> prefix.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>RELATION = [<span class="hljs-string">'IN'</span>, <span class="hljs-string">'OF'</span>, <span class="hljs-string">'INSTANCEOF'</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-87">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-87">&#182;</a>
+              </div>
+              <p>Boolean tokens.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>BOOL = [<span class="hljs-string">'TRUE'</span>, <span class="hljs-string">'FALSE'</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-88">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-88">&#182;</a>
+              </div>
+              <p>Tokens which could legitimately be invoked or indexed. An opening
+parentheses or bracket following these tokens will be recorded as the start
+of a function invocation or indexing operation.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>CALLABLE  = [<span class="hljs-string">'IDENTIFIER'</span>, <span class="hljs-string">'PROPERTY'</span>, <span class="hljs-string">')'</span>, <span class="hljs-string">']'</span>, <span class="hljs-string">'?'</span>, <span class="hljs-string">'@'</span>, <span class="hljs-string">'THIS'</span>, <span class="hljs-string">'SUPER'</span>]
+INDEXABLE = CALLABLE.concat [
+  <span class="hljs-string">'NUMBER'</span>, <span class="hljs-string">'INFINITY'</span>, <span class="hljs-string">'NAN'</span>, <span class="hljs-string">'STRING'</span>, <span class="hljs-string">'STRING_END'</span>, <span class="hljs-string">'REGEX'</span>, <span class="hljs-string">'REGEX_END'</span>
+  <span class="hljs-string">'BOOL'</span>, <span class="hljs-string">'NULL'</span>, <span class="hljs-string">'UNDEFINED'</span>, <span class="hljs-string">'}'</span>, <span class="hljs-string">'::'</span>
+]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-89">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-89">&#182;</a>
+              </div>
+              <p>Tokens which a regular expression will never immediately follow (except spaced
+CALLABLEs in some cases), but which a division operator can.</p>
+<p>See: <a href="http://www-archive.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions">http://www-archive.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions</a></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>NOT_REGEX = INDEXABLE.concat [<span class="hljs-string">'++'</span>, <span class="hljs-string">'--'</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-90">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-90">&#182;</a>
+              </div>
+              <p>Tokens that, when immediately preceding a <code>WHEN</code>, indicate that the <code>WHEN</code>
+occurs at the start of a line. We disambiguate these from trailing whens to
+avoid an ambiguity in the grammar.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>LINE_BREAK = [<span class="hljs-string">'INDENT'</span>, <span class="hljs-string">'OUTDENT'</span>, <span class="hljs-string">'TERMINATOR'</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-91">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-91">&#182;</a>
+              </div>
+              <p>Additional indent in front of these is ignored.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>INDENTABLE_CLOSERS = [<span class="hljs-string">')'</span>, <span class="hljs-string">'}'</span>, <span class="hljs-string">']'</span>]</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

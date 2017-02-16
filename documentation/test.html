@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+  <title>CoffeeScript Test Suite</title>
+  <script src="browser-compiler/coffee-script.js"></script>
+  <script src="https://cdn.jsdelivr.net/underscorejs/1.8.3/underscore-min.js"></script>
+  <style>
+    body, pre {
+      font-family: Consolas, Menlo, Monaco, monospace;
+    }
+    body {
+      margin: 1em;
+    }
+    h1 {
+      font-size: 1.3em;
+    }
+    div {
+      margin: 0.6em;
+    }
+    .good {
+      color: #22b24c
+    }
+    .bad {
+      color: #eb6864
+    }
+    .subtle {
+      font-size: 0.7em;
+      color: #999999
+    }
+  </style>
+</head>
+<body>
+
+<h1>CoffeeScript Test Suite</h1>
+
+<pre id="stdout"></pre>
+
+<script type="text/coffeescript">
+@testingBrowser = yes
+@global = window
+stdout  = document.getElementById 'stdout'
+start   = new Date
+success = total = done = failed = 0
+
+say = (msg, className) ->
+  div = document.createElement 'div'
+  div.className = className if className?
+  div.appendChild document.createTextNode msg
+  stdout.appendChild div
+  msg
+
+@test = (description, fn) ->
+  ++total
+  try
+    fn.call(fn)
+    ++success
+  catch exception
+    say "#{description}:", 'bad'
+    say fn.toString(), 'subtle' if fn.toString?
+    say exception, 'bad'
+    console.error exception
+
+@ok = (good, msg = 'Error') ->
+  throw Error msg unless good
+
+# Polyfill Node assert's fail
+@fail = ->
+  ok no
+
+# Polyfill Node assert's deepEqual with Underscore's isEqual
+@deepEqual = (a, b) ->
+  ok _.isEqual(a, b), "Expected #{JSON.stringify a} to deep equal #{JSON.stringify b}"
+
+<%= testHelpers %>
+
+@doesNotThrow = (fn) ->
+  fn()
+  ok yes
+
+@throws = (fun, err, msg) ->
+  try
+    fun()
+  catch e
+    if err
+      if typeof err is 'function' and e instanceof err # Handle comparing exceptions
+        ok yes
+      else if e.toString().indexOf('[stdin]') is 0 # Handle comparing error messages
+        ok err e
+      else
+        eq e, err
+    else
+      ok yes
+    return
+  ok no
+
+
+# Run the tests
+for test in document.getElementsByClassName 'test'
+  say '\u2714 ' + test.id
+  options = {}
+  options.literate = yes if test.type is 'text/x-literate-coffeescript'
+  CoffeeScript.run test.innerHTML, options
+
+# Finish up
+yay = success is total and not failed
+sec = (new Date - start) / 1000
+msg = "passed #{success} tests in #{ sec.toFixed 2 } seconds"
+msg = "failed #{ total - success } tests and #{msg}" unless yay
+say msg, (if yay then 'good' else 'bad')
+</script>
+
+<%= tests %>
+
+</body>
+</html>

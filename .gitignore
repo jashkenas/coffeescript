@@ -1,10 +1,10 @@
 raw
 presentation
 test.coffee
+test*.coffee
 test.litcoffee
-parser.output
-test/fixtures/underscore
+test*.litcoffee
 test/*.js
-examples/beautiful_code/parse.coffee
-*.gem
+parser.output
 /node_modules
+npm-debug.log*

@@ -42,15 +42,16 @@ exports.Lexer = class Lexer
     @indents    = []             # The stack of all current indentation levels.
     @ends       = []             # The stack for pairing up tokens.
     @tokens     = []             # Stream of parsed tokens in the form `['TYPE', value, location data]`.
-    @seenFor    = no             # Used to recognize FORIN and FOROF tokens.
+    @seenFor    = no             # Used to recognize FORIN, FOROF and FORFROM tokens.
     @seenImport = no             # Used to recognize IMPORT FROM? AS? tokens.
     @seenExport = no             # Used to recognize EXPORT FROM? AS? tokens.
+    @exportSpecifierList = no    # Used to identify when in an EXPORT {...} FROM? ...
 
     @chunkLine =
-      opts.line or 0         # The start line for the current @chunk.
+      opts.line or 0             # The start line for the current @chunk.
     @chunkColumn =
-      opts.column or 0       # The start column of the current @chunk.
-    code = @clean code         # The stripped, cleaned original source code.
+      opts.column or 0           # The start column of the current @chunk.
+    code = @clean code           # The stripped, cleaned original source code.
 
     # At every position, run through this list of attempted matches,
     # short-circuiting if any of them succeed. Their order determines precedence:
@@ -116,10 +117,14 @@ exports.Lexer = class Lexer
     if id is 'from' and @tag() is 'YIELD'
       @token 'FROM', id
       return id.length
-    if id is 'as' and @seenImport and (@tag() is 'IDENTIFIER' or @value() is '*')
-      @tokens[@tokens.length - 1][0] = 'IMPORT_ALL' if @value() is '*'
-      @token 'AS', id
-      return id.length
+    if id is 'as' and @seenImport
+      if @value() is '*'
+        @tokens[@tokens.length - 1][0] = 'IMPORT_ALL'
+      else if @value() in COFFEE_KEYWORDS
+        @tokens[@tokens.length - 1][0] = 'IDENTIFIER'
+      if @tag() in ['DEFAULT', 'IMPORT_ALL', 'IDENTIFIER']
+        @token 'AS', id
+        return id.length
     if id is 'as' and @seenExport and @tag() is 'IDENTIFIER'
       @token 'AS', id
       return id.length
@@ -137,7 +142,8 @@ exports.Lexer = class Lexer
       else
         'IDENTIFIER'
 
-    if tag is 'IDENTIFIER' and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS)
+    if tag is 'IDENTIFIER' and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS) and
+       not (@exportSpecifierList and id in COFFEE_KEYWORDS)
       tag = id.toUpperCase()
       if tag is 'WHEN' and @tag() in LINE_BREAK
         tag = 'LEADING_WHEN'
@@ -160,6 +166,10 @@ exports.Lexer = class Lexer
           if @value() is '!'
             poppedToken = @tokens.pop()
             id = '!' + id
+    else if tag is 'IDENTIFIER' and @seenFor and id is 'from' and
+       isForFrom(prev)
+      tag = 'FORFROM'
+      @seenFor = no
 
     if tag is 'IDENTIFIER' and id in RESERVED
       @error "reserved word '#{id}'", length: id.length
@@ -171,10 +181,10 @@ exports.Lexer = class Lexer
       tag = switch id
         when '!'                 then 'UNARY'
         when '==', '!='          then 'COMPARE'
-        when '&&', '||'          then 'LOGIC'
         when 'true', 'false'     then 'BOOL'
         when 'break', 'continue', \
              'debugger'          then 'STATEMENT'
+        when '&&', '||'          then id
         else  tag
 
     tagToken = @token tag, id, 0, idLength
@@ -285,9 +295,16 @@ exports.Lexer = class Lexer
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
-    return 0 unless @chunk.charAt(0) is '`' and match = JSTOKEN.exec @chunk
-    @token 'JS', (script = match[0])[1...-1], 0, script.length
-    script.length
+    return 0 unless @chunk.charAt(0) is '`' and
+      (match = HERE_JSTOKEN.exec(@chunk) or JSTOKEN.exec(@chunk))
+    # Convert escaped backticks to backticks, and escaped backslashes
+    # just before escaped backticks to backslashes
+    script = match[1].replace /\\+(`|$)/g, (string) ->
+      # `string` is always a value like '\`', '\\\`', '\\\\\`', etc.
+      # By reducing it to its latter half, we turn '\`' to '`', '\\\`' to '\`', etc.
+      string[-Math.ceil(string.length / 2)..]
+    @token 'JS', script, 0, match[0].length
+    match[0].length
 
   # Matches CoffeeTags.
   ctToken:  ->
@@ -464,6 +481,11 @@ exports.Lexer = class Lexer
         @error message, origin[2] if message
       return value.length if skipToken
 
+    if value is '{' and prev?[0] is 'EXPORT'
+      @exportSpecifierList = yes
+    else if @exportSpecifierList and value is '}'
+      @exportSpecifierList = no
+
     if value is ';'
       @seenFor = @seenImport = @seenExport = no
       tag = 'TERMINATOR'
@@ -475,7 +497,7 @@ exports.Lexer = class Lexer
     else if value in UNARY           then tag = 'UNARY'
     else if value in UNARY_MATH      then tag = 'UNARY_MATH'
     else if value in SHIFT           then tag = 'SHIFT'
-    else if value in LOGIC or value is '?' and prev?.spaced then tag = 'LOGIC'
+    else if value is '?' and prev?.spaced then tag = 'BIN?'
     else if prev and not prev.spaced
       if value is '(' and prev[0] in CALLABLE
         prev[0] = 'FUNC_EXIST' if prev[0] is '?'
@@ -581,7 +603,11 @@ exports.Lexer = class Lexer
 
     [firstToken, ..., lastToken] = tokens
     firstToken[2].first_column -= delimiter.length
-    lastToken[2].last_column += delimiter.length
+    if lastToken[1].substr(-1) is '\n'
+      lastToken[2].last_line += 1
+      lastToken[2].last_column = delimiter.length - 1
+    else
+      lastToken[2].last_column += delimiter.length
     lastToken[2].last_column -= 1 if lastToken[1].length is 0
 
     {tokens, index: offsetInChunk + delimiter.length}
@@ -734,7 +760,8 @@ exports.Lexer = class Lexer
   unfinished: ->
     LINE_CONTINUER.test(@chunk) or
     @tag() in ['\\', '.', '?.', '?::', 'UNARY', 'MATH', 'UNARY_MATH', '+', '-',
-               '**', 'SHIFT', 'RELATION', 'COMPARE', 'LOGIC', 'THROW', 'EXTENDS']
+               '**', 'SHIFT', 'RELATION', 'COMPARE', '&', '^', '|', '&&', '||',
+               'BIN?', 'THROW', 'EXTENDS']
 
   formatString: (str) ->
     str.replace STRING_OMIT, '$1'
@@ -805,6 +832,27 @@ isUnassignable = (name, displayName = name) -> switch
     false
 
 exports.isUnassignable = isUnassignable
+
+# `from` isn’t a CoffeeScript keyword, but it behaves like one in `import` and
+# `export` statements (handled above) and in the declaration line of a `for`
+# loop. Try to detect when `from` is a variable identifier and when it is this
+# “sometimes” keyword.
+isForFrom = (prev) ->
+  if prev[0] is 'IDENTIFIER'
+    # `for i from from`, `for from from iterable`
+    if prev[1] is 'from'
+      prev[1][0] = 'IDENTIFIER'
+      yes
+    # `for i from iterable`
+    yes
+  # `for from…`
+  else if prev[0] is 'FOR'
+    no
+  # `for {from}…`, `for [from]…`, `for {a, from}…`, `for {a: from}…`
+  else if prev[1] in ['{', '[', ',', ':']
+    no
+  else
+    yes
 
 # Constants
 # ---------
@@ -889,7 +937,8 @@ CODE       = /^[-=]>/
 
 MULTI_DENT = /^(?:\n[^\n\S]*)+/
 
-JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
+JSTOKEN      = ///^ `(?!``) ((?: [^`\\] | \\[\s\S]           )*) `   ///
+HERE_JSTOKEN = ///^ ```     ((?: [^`\\] | \\[\s\S] | `(?!``) )*) ``` ///
 
 # CoffeeTags loosely matches <tag.class1.class2@id>
 # Use trailing '!' for unescaped content
@@ -968,9 +1017,6 @@ COMPOUND_ASSIGN = [
 UNARY = ['NEW', 'TYPEOF', 'DELETE', 'DO']
 
 UNARY_MATH = ['!', '~']
-
-# Logical tokens.
-LOGIC = ['&&', '||', '&', '|', '^']
 
 # Bit-shifting tokens.
 SHIFT = ['<<', '>>', '>>>']

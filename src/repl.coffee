@@ -15,6 +15,9 @@ replDefaults =
     # Node's REPL sends the input ending with a newline and then wrapped in
     # parens. Unwrap all that.
     input = input.replace /^\(([\s\S]*)\n\)$/m, '$1'
+    # Node's REPL v6.9.1+ sends the input wrapped in a try/catch statement.
+    # Unwrap that too.
+    input = input.replace /^\s*try\s*{([\s\S]*)}\s*catch.*$/m, '$1'
 
     # Require AST nodes to do some AST manipulation.
     {Block, Assign, Value, Literal} = require './nodes'
@@ -108,7 +111,7 @@ addHistory = (repl, filename, maxSize) ->
     readFd = fs.openSync filename, 'r'
     buffer = new Buffer(size)
     fs.readSync readFd, buffer, 0, size, stat.size - size
-    fs.close readFd
+    fs.closeSync readFd
     # Set the history on the interpreter
     repl.rli.history = buffer.toString().split('\n').reverse()
     # If the history file was truncated we should pop off a potential partial line
@@ -123,10 +126,10 @@ addHistory = (repl, filename, maxSize) ->
   repl.rli.addListener 'line', (code) ->
     if code and code.length and code isnt '.history' and code isnt '.exit' and lastLine isnt code
       # Save the latest command in the file
-      fs.write fd, "#{code}\n"
+      fs.writeSync fd, "#{code}\n"
       lastLine = code
 
-  repl.on 'exit', -> fs.close fd
+  repl.on 'exit', -> fs.closeSync fd
 
   # Add a command to show the history stack
   repl.commands[getCommandId(repl, 'history')] =

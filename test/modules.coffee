@@ -510,6 +510,23 @@ test "export as aliases members imported from another module", ->
     } from 'lib';"""
   eq toJS(input), output
 
+test "export list can contain CoffeeScript keywords", ->
+  input = "export { unless } from 'lib'"
+  output = """
+    export {
+      unless
+    } from 'lib';"""
+  eq toJS(input), output
+
+test "export list can contain CoffeeScript keywords when aliasing", ->
+  input = "export { when as bar, baz as unless } from 'lib'"
+  output = """
+    export {
+      when as bar,
+      baz as unless
+    } from 'lib';"""
+  eq toJS(input), output
+
 
 # Edge cases
 
@@ -608,6 +625,18 @@ test "`as` can be used as an alias name", ->
     } from 'lib';"""
   eq toJS(input), output
 
+test "CoffeeScript keywords can be used as imported names in import lists", ->
+  input = """
+    import { unless as bar } from 'lib'
+    bar.barMethod()"""
+  output = """
+    import {
+      unless as bar
+    } from 'lib';
+
+    bar.barMethod();"""
+  eq toJS(input), output
+
 test "`*` can be used in an expression on the same line as an export keyword", ->
   input = "export foo = (x) -> x * x"
   output = """
@@ -655,4 +684,68 @@ test "default and wrapped members can be imported multiple times if aliased", ->
     import foo, {
       foo as bar
     } from 'lib';"""
+  eq toJS(input), output
+
+test "import a member named default", ->
+  input = "import { default } from 'lib'"
+  output = """
+    import {
+      default
+    } from 'lib';"""
+  eq toJS(input), output
+
+test "import an aliased member named default", ->
+  input = "import { default as def } from 'lib'"
+  output = """
+    import {
+      default as def
+    } from 'lib';"""
+  eq toJS(input), output
+
+test "export a member named default", ->
+  input = "export { default }"
+  output = """
+    export {
+      default
+    };"""
+  eq toJS(input), output
+
+test "export an aliased member named default", ->
+  input = "export { def as default }"
+  output = """
+    export {
+      def as default
+    };"""
+  eq toJS(input), output
+
+test "export an imported member named default", ->
+  input = "import { default } from 'lib'"
+  output = """
+    import {
+      default
+    } from 'lib';"""
+  eq toJS(input), output
+
+test "export an imported aliased member named default", ->
+  input = "import { default as def } from 'lib'"
+  output = """
+    import {
+      default as def
+    } from 'lib';"""
+  eq toJS(input), output
+
+test "#4394: export shouldn't prevent variable declarations", ->
+  input = """
+    x = 1
+    export { x }
+  """
+  output = """
+    var x;
+
+    x = 1;
+
+    export {
+      x
+    };
+  """
   eq toJS(input), output

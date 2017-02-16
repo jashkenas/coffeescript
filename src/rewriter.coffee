@@ -34,6 +34,7 @@ class exports.Rewriter
     @adjustCoffeeTags()
     @addImplicitBracesAndParens()
     @addLocationDataToGeneratedTokens()
+    @fixOutdentLocationData()
     @tokens
 
   # Rewrite the token stream, looking one token ahead and behind.
@@ -397,6 +398,22 @@ class exports.Rewriter
         first_column: column
         last_line:    line
         last_column:  column
+      return 1
+
+  # OUTDENT tokens should always be positioned at the last character of the
+  # previous token, so that AST nodes ending in an OUTDENT token end up with a
+  # location corresponding to the last "real" token under the node.
+  fixOutdentLocationData: ->
+    @scanTokens (token, i, tokens) ->
+      return 1 unless token[0] is 'OUTDENT' or
+        (token.generated and token[0] is 'CALL_END') or
+        (token.generated and token[0] is '}')
+      prevLocationData = tokens[i - 1][2]
+      token[2] =
+        first_line:   prevLocationData.last_line
+        first_column: prevLocationData.last_column
+        last_line:    prevLocationData.last_line
+        last_column:  prevLocationData.last_column
       return 1
 
   # Because our grammar is LALR(1), it can't handle some single-line
