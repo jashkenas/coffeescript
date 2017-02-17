@@ -100,10 +100,7 @@ watchAndBuildAndTest = (harmony = no) ->
     if eventType is 'change'
       log "src/#{filename} changed, rebuilding..."
       buildAndTest (filename is 'grammar.coffee'), harmony
-  fs.watch 'test/',
-    interval: 200
-    recursive: yes
-  , (eventType, filename) ->
+  fs.watch 'test/', {interval: 200, recursive: yes}, (eventType, filename) ->
     if eventType is 'change'
       log "test/#{filename} changed, rebuilding..."
       buildAndTest no, harmony
