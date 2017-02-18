@@ -783,7 +783,7 @@ exports.Call = class Call extends Base
         @variable.locationData.first_column = locationData.first_column
         base.updateLocationDataIfMissing locationData
       delete @needsUpdatedStartLocation
-    super
+    super locationData
 
   # Tag this invocation as creating a new instance.
   newInstance: ->
