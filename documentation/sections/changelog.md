@@ -1,8 +1,9 @@
 ## Change Log
 
 ```
-releaseHeader('2017-02-13', '2.0.0-alpha1', '1.12.3')
+releaseHeader('2017-02-20', '2.0.0-alpha1', '1.12.4')
 ```
+
 *   Initial alpha release of CoffeeScript 2. The CoffeeScript compiler now outputs ES2015+ syntax whenever possible. See [breaking changes](#breaking-changes).
 *   Classes are output using ES2015 `class` and `extends` keywords.
 *   Added support for `async`/`await`.
@@ -15,6 +16,15 @@ releaseHeader('2017-02-13', '2.0.0-alpha1', '1.12.3')
 *   Mixing tabs and spaces in indentation is now disallowed.
 *   Browser compiler is now minified using the Google Closure Compiler (JavaScript version).
 *   Node 7+ required for CoffeeScript 2.
+
+```
+releaseHeader('2017-02-18', '1.12.4', '1.12.3')
+```
+
+*   The `cake` commands have been updated, with new `watch` options for most tasks. Clone the [CoffeeScript repo](https://github.com/jashkenas/coffeescript) and run `cake` at the root of the repo to see the options.
+*   Fixed a bug where `export`ing a referenced variable was preventing the variable from being declared.
+*   Fixed a bug where the `coffee` command wasn’t working for a `.litcoffee` file.
+*   Bugfixes related to tokens and location data, for better source maps and improved compatibility with downstream tools.
 
 ```
 releaseHeader('2017-01-24', '1.12.3', '1.12.2')

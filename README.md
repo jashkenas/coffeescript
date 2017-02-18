@@ -25,15 +25,10 @@ CoffeeScript is a little language that compiles into JavaScript.
 If you have the node package manager, npm, installed:
 
 ```shell
-npm install -g coffeescript
+npm install --global coffee-script
 ```
 
-Leave off the `-g` if you don’t wish to install globally. If you don’t wish to use npm:
-
-```shell
-git clone https://github.com/jashkenas/coffeescript.git
-sudo coffeescript/bin/cake install
-```
+Leave off the `--global` if you don’t wish to install globally.
 
 ## Getting Started
 
