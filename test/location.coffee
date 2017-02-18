@@ -585,6 +585,29 @@ test "Verify indented heredocs have the right position", ->
   eq stringToken[2].last_line, 3
   eq stringToken[2].last_column, 4
 
+test "Verify heregexes with interpolations have the right ending position", ->
+  source = '''
+    [a ///#{b}///g]
+  '''
+  [..., stringEnd, comma, flagsString, regexCallEnd, regexEnd, fnCallEnd,
+    arrayEnd, terminator] = CoffeeScript.tokens source
+
+  eq comma[0], ','
+  eq arrayEnd[0], ']'
+
+  assertColumn = (token, column) ->
+    eq token[2].first_line, 0
+    eq token[2].first_column, column
+    eq token[2].last_line, 0
+    eq token[2].last_column, column
+
+  arrayEndColumn = arrayEnd[2].first_column
+  for token in [comma, flagsString]
+    assertColumn token, arrayEndColumn - 2
+  for token in [regexCallEnd, regexEnd, fnCallEnd]
+    assertColumn token, arrayEndColumn - 1
+  assertColumn arrayEnd, arrayEndColumn
+
 test "Verify all tokens get a location", ->
   doesNotThrow ->
     tokens = CoffeeScript.tokens testScript

@@ -111,4 +111,6 @@ testRepl "keeps running after runtime error", (input, output) ->
   eq 'undefined', output.lastWrite()
 
 process.on 'exit', ->
-  fs.unlinkSync historyFile
+  try
+    fs.unlinkSync historyFile
+  catch exception # Already deleted, nothing else to do.
