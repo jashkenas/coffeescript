@@ -607,7 +607,7 @@ pre .xml .cdata {
     <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript”</em>. The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
 <p>The CoffeeScript compiler goes to great lengths to generate output JavaScript that runs in every JavaScript runtime, but there are exceptions. Use <a href="#generator-functions">generator functions</a>, <a href="#generator-iteration"><code>for…from</code></a>, or <a href="#tagged-template-literals">tagged template literals</a> only if you know that your <a href="http://kangax.github.io/compat-table/es6/">target runtimes can support them</a>. If you use <a href="#modules">modules</a>, you will need to <a href="#modules-note">use an additional tool to resolve them</a>.</p>
-<p><strong>Latest Version:</strong> <a href="http://github.com/jashkenas/coffeescript/tarball/1.12.3">1.12.3</a></p>
+<p><strong>Latest Version:</strong> <a href="http://github.com/jashkenas/coffeescript/tarball/1.12.4">1.12.4</a></p>
 <blockquote>
 <pre><code>npm install -g coffee-script</code></pre></blockquote>
 
@@ -2609,7 +2609,17 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
 <button id="open_webchat">click to open #coffeescript</button>
 
   <span class="bookmark" id="changelog"></span>
-    <h2>Change Log</h2><div class="anchor" id="1.12.3"></div>
+    <h2>Change Log</h2><div class="anchor" id="1.12.4"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.12.3...1.12.4">1.12.4</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-02-18">February 18, 2017</time></span>
+</h2><ul>
+<li>The <code>cake</code> commands have been updated, with new <code>watch</code> options for most tasks. Clone the <a href="https://github.com/jashkenas/coffeescript">CoffeeScript repo</a> and run <code>cake</code> at the root of the repo to see the options.</li>
+<li>Fixed a bug where <code>export</code>ing a referenced variable was preventing the variable from being declared.</li>
+<li>Fixed a bug where the <code>coffee</code> command wasn’t working for a <code>.litcoffee</code> file.</li>
+<li>Bugfixes related to tokens and location data, for better source maps and improved compatibility with downstream tools.</li>
+</ul>
+<div class="anchor" id="1.12.3"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/1.12.2...1.12.3">1.12.3</a>
   <span class="timestamp"> &mdash; <time datetime="2017-01-24">January 24, 2017</time></span>
