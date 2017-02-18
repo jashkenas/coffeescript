@@ -71,20 +71,21 @@ if require?
 
   test "#2849: compilation error in a require()d file", ->
     # Create a temporary file to require().
-    ok not fs.existsSync 'test/syntax-error.coffee'
-    fs.writeFileSync 'test/syntax-error.coffee', 'foo in bar or in baz'
+    tempFile = path.join os.tmpdir(), 'syntax-error.coffee'
+    ok not fs.existsSync tempFile
+    fs.writeFileSync tempFile, 'foo in bar or in baz'
 
     try
-      assertErrorFormat '''
-        require './test/syntax-error'
-      ''',
+      assertErrorFormat """
+        require '#{tempFile}'
+      """,
       """
-        #{path.join __dirname, 'syntax-error.coffee'}:1:15: error: unexpected in
+        #{fs.realpathSync tempFile}:1:15: error: unexpected in
         foo in bar or in baz
                       ^^
       """
     finally
-      fs.unlinkSync 'test/syntax-error.coffee'
+      fs.unlinkSync tempFile
 
   test "#3890 Error.prepareStackTrace doesn't throw an error if a compiled file is deleted", ->
     # Adapted from https://github.com/atom/coffee-cash/blob/master/spec/coffee-cash-spec.coffee
