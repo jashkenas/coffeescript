@@ -39,9 +39,10 @@
 <script type="text/coffeescript">
 @testingBrowser = yes
 @global = window
-stdout  = document.getElementById 'stdout'
-start   = new Date
-success = total = done = failed = 0
+stdout = document.getElementById 'stdout'
+start = new Date
+@currentFile = ''
+@passedTests = failedTests = total = done = 0
 
 say = (msg, className) ->
   div = document.createElement 'div'
@@ -54,12 +55,20 @@ say = (msg, className) ->
   ++total
   try
     fn.call(fn)
-    ++success
-  catch exception
-    say "#{description}:", 'bad'
-    say fn.toString(), 'subtle' if fn.toString?
-    say exception, 'bad'
-    console.error exception
+    ++passedTests
+  catch error
+    failures.push
+      error: error
+      description: description
+      source: fn.toString() if fn.toString?
+
+@failures =
+  push: (failure) -> # Match function called by regular tests
+    ++failedTests
+    say "#{failure.description}:", 'bad'
+    say failure.source, 'subtle' if failure.source?
+    say failure.error, 'bad'
+    console.error failure.error
 
 @ok = (good, msg = 'Error') ->
   throw Error msg unless good
@@ -116,14 +125,15 @@ arrayEgal = (a, b) ->
 for test in document.getElementsByClassName 'test'
   say '\u2714 ' + test.id
   options = {}
+  options.filename = currentFile = test.id
   options.literate = yes if test.type is 'text/x-literate-coffeescript'
   CoffeeScript.run test.innerHTML, options
 
 # Finish up
-yay = success is total and not failed
+yay = passedTests is total and not failedTests
 sec = (new Date - start) / 1000
-msg = "passed #{success} tests in #{ sec.toFixed 2 } seconds"
-msg = "failed #{ total - success } tests and #{msg}" unless yay
+msg = "passed #{passedTests} tests in #{sec.toFixed 2} seconds"
+msg = "failed #{total - passedTests} tests and #{msg}" unless yay
 say msg, (if yay then 'good' else 'bad')
 </script>
 
@@ -4479,20 +4489,21 @@ if require?
 
   test "#2849: compilation error in a require()d file", ->
     # Create a temporary file to require().
-    ok not fs.existsSync 'test/syntax-error.coffee'
-    fs.writeFileSync 'test/syntax-error.coffee', 'foo in bar or in baz'
+    tempFile = path.join os.tmpdir(), 'syntax-error.coffee'
+    ok not fs.existsSync tempFile
+    fs.writeFileSync tempFile, 'foo in bar or in baz'
 
     try
-      assertErrorFormat '''
-        require './test/syntax-error'
-      ''',
+      assertErrorFormat """
+        require '#{tempFile}'
+      """,
       """
-        #{path.join __dirname, 'syntax-error.coffee'}:1:15: error: unexpected in
+        #{fs.realpathSync tempFile}:1:15: error: unexpected in
         foo in bar or in baz
                       ^^
       """
     finally
-      fs.unlinkSync 'test/syntax-error.coffee'
+      fs.unlinkSync tempFile
 
   test "#3890 Error.prepareStackTrace doesn't throw an error if a compiled file is deleted", ->
     # Adapted from https://github.com/atom/coffee-cash/blob/master/spec/coffee-cash-spec.coffee
@@ -4543,7 +4554,7 @@ test "#4418 stack traces for compiled strings reference the correct line number"
 
   # Make sure the line number reported is line 3 (the original Coffee source)
   # and not line 6 (the generated JavaScript).
-  eq /at testCompiledStringStackTraceLineNumber.*:(\d):/.exec(error.stack.toString())[1], '3'
+  eq /testCompiledStringStackTraceLineNumber.*:(\d):/.exec(error.stack.toString())[1], '3'
 
 
 test "#1096: unexpected generated tokens", ->
@@ -8799,6 +8810,29 @@ test "Verify indented heredocs have the right position", ->
   eq stringToken[2].last_line, 3
   eq stringToken[2].last_column, 4
 
+test "Verify heregexes with interpolations have the right ending position", ->
+  source = '''
+    [a ///#{b}///g]
+  '''
+  [..., stringEnd, comma, flagsString, regexCallEnd, regexEnd, fnCallEnd,
+    arrayEnd, terminator] = CoffeeScript.tokens source
+
+  eq comma[0], ','
+  eq arrayEnd[0], ']'
+
+  assertColumn = (token, column) ->
+    eq token[2].first_line, 0
+    eq token[2].first_column, column
+    eq token[2].last_line, 0
+    eq token[2].last_column, column
+
+  arrayEndColumn = arrayEnd[2].first_column
+  for token in [comma, flagsString]
+    assertColumn token, arrayEndColumn - 2
+  for token in [regexCallEnd, regexEnd, fnCallEnd]
+    assertColumn token, arrayEndColumn - 1
+  assertColumn arrayEnd, arrayEndColumn
+
 test "Verify all tokens get a location", ->
   doesNotThrow ->
     tokens = CoffeeScript.tokens testScript
@@ -10784,6 +10818,46 @@ test "operator precedence for binary ? operator", ->
   eq expression.second.operator, '&&'
   eq expression.second.second.base.value, 'c'
 
+test "new calls have a range including the new", ->
+  source = '''
+    a = new B().c(d)
+  '''
+  block = CoffeeScript.nodes source
+
+  assertColumnRange = (node, firstColumn, lastColumn) ->
+    eq node.locationData.first_line, 0
+    eq node.locationData.first_column, firstColumn
+    eq node.locationData.last_line, 0
+    eq node.locationData.last_column, lastColumn
+
+  [assign] = block.expressions
+  outerCall = assign.value
+  innerValue = outerCall.variable
+  innerCall = innerValue.base
+
+  assertColumnRange assign, 0, 15
+  assertColumnRange outerCall, 4, 15
+  assertColumnRange innerValue, 4, 12
+  assertColumnRange innerCall, 4, 10
+
+test "location data is properly set for nested `new`", ->
+  source = '''
+    new new A()()
+  '''
+  block = CoffeeScript.nodes source
+
+  assertColumnRange = (node, firstColumn, lastColumn) ->
+    eq node.locationData.first_line, 0
+    eq node.locationData.first_column, firstColumn
+    eq node.locationData.last_line, 0
+    eq node.locationData.last_column, lastColumn
+
+  [outerCall] = block.expressions
+  innerCall = outerCall.variable
+
+  assertColumnRange outerCall, 0, 12
+  assertColumnRange innerCall, 4, 10
+
 </script>
 <script type="text/x-coffeescript" class="test" id="ranges">
 # Range Literals
@@ -11295,7 +11369,9 @@ testRepl "keeps running after runtime error", (input, output) ->
   eq 'undefined', output.lastWrite()
 
 process.on 'exit', ->
-  fs.unlinkSync historyFile
+  try
+    fs.unlinkSync historyFile
+  catch exception # Already deleted, nothing else to do.
 
 </script>
 <script type="text/x-coffeescript" class="test" id="scope">
