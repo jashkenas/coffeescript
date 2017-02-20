@@ -1,7 +1,7 @@
 ## Change Log
 
 ```
-releaseHeader('2017-02-20', '2.0.0-alpha1', '1.12.4')
+releaseHeader('2017-02-21', '2.0.0-alpha1', '1.12.4')
 ```
 
 *   Initial alpha release of CoffeeScript 2. The CoffeeScript compiler now outputs ES2015+ syntax whenever possible. See [breaking changes](#breaking-changes).
