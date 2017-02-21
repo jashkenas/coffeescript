@@ -1,5 +1,5 @@
 import 'local-file.coffee'
-import 'coffee-script'
+import 'coffeescript'
 
 import _ from 'underscore'
 import * as underscore from 'underscore'

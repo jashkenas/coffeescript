@@ -7,7 +7,7 @@
 #
 # where locationData is {first_line, first_column, last_line, last_column}, which is a
 # format that can be fed directly into [Jison](http://github.com/zaach/jison).  These
-# are read by jison in the `parser.lexer` function defined in coffee-script.coffee.
+# are read by jison in the `parser.lexer` function defined in coffeescript.coffee.
 
 {Rewriter, INVERSES} = require './rewriter'
 

@@ -401,16 +401,34 @@ textarea {
 
 .try-coffeescript .code-column {
   overflow: hidden;
-  padding-bottom: 100%;
-  margin-bottom: -100%;
   background-color: #2f2625;
   color: #2f2625;
+}
+
+@media screen and (max-width: 767px) {
+  .try-coffeescript .code-column {
+    height: calc(50vh - 0.5 * 3.5rem);
+  }
+}
+@media screen and (min-width: 768px) {
+  .try-coffeescript .code-column {
+    padding-bottom: 100%;
+    margin-bottom: -100%;
+  }
 }
 
 .try-coffeescript button svg {
   height: 1em;
   transform: scale(1.3) translateY(0.1em);
   fill: #0b140f;
+}
+
+@media screen and (max-width: 767px) {
+  .try-coffeescript .try-buttons {
+    position: absolute;
+    bottom: 1em;
+    z-index: 1002;
+  }
 }
 
 /* Adapted from https://github.com/FarhadG/code-mirror-themes/blob/master/themes/twilight.css */
@@ -494,7 +512,7 @@ textarea {
     </div>
   </div>
   <div class="row">
-    <div class="col-xs-12 text-xs-right">
+    <div class="col-xs-12 text-xs-right try-buttons">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="try-coffeescript" data-run="true">▶</button>&emsp;
       <button type="button" class="btn btn-primary" data-action="link" data-example="try-coffeescript"><svg aria-hidden="true" version="1.1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg>
 </button>
@@ -607,7 +625,7 @@ textarea {
       <a href="#scripts" class="nav-link" data-action="sidebar-nav"><code>"text/coffeescript"</code> Script Tags</a>
     </li>
     <li class="nav-item">
-      <a href="#test" class="nav-link" data-action="sidebar-nav">Browser-Based Tests</a>
+      <a href="test.html" class="nav-link" data-action="sidebar-nav">Browser-Based Tests</a>
     </li>
     <li class="nav-item">
       <a href="#resources" class="nav-link" data-action="sidebar-nav">Resources</a>
@@ -651,9 +669,9 @@ textarea {
       <section id="overview">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="http://github.com/jashkenas/coffeescript/tarball/2.0.0-alpha">2.0.0-alpha</a></p>
+<p><strong>Latest Version:</strong> <a href="http://github.com/jashkenas/coffeescript/tarball/2.0.0-alpha1">2.0.0-alpha1</a></p>
 <blockquote>
-<pre><code>npm install -g coffee-script</code></pre></blockquote>
+<pre><code>npm install -g coffeescript</code></pre></blockquote>
 
         <h2>Overview</h2><p><em>CoffeeScript on the <span class="hidden-md-up">top</span><span class="hidden-sm-down">left</span>, compiled JavaScript output on the <span class="hidden-md-up">bottom</span><span class="hidden-sm-down">right</span>. The CoffeeScript is editable!</em></p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="overview">
@@ -750,13 +768,13 @@ cubes = (function() {
 
       </section>
       <section id="installation">
-        <h2>Installation</h2><p>The command-line version of <code>coffee</code> is available as a <a href="http://nodejs.org/">Node.js</a> utility. The <a href="v2/browser-compiler/coffee-script.js">core compiler</a> however, does not depend on Node, and can be run in any JavaScript environment, or in the browser (see <a href="#try">Try CoffeeScript</a>).</p>
+        <h2>Installation</h2><p>The command-line version of <code>coffee</code> is available as a <a href="http://nodejs.org/">Node.js</a> utility. The <a href="v2/browser-compiler/coffeescript.js">core compiler</a> however, does not depend on Node, and can be run in any JavaScript environment, or in the browser (see <a href="#try">Try CoffeeScript</a>).</p>
 <p>To install, first make sure you have a working copy of the latest stable version of <a href="http://nodejs.org/">Node.js</a>. You can then install CoffeeScript globally with <a href="http://npmjs.org">npm</a>:</p>
 <blockquote>
-<pre><code>npm install --global coffee-script</code></pre></blockquote>
+<pre><code>npm install --global coffeescript</code></pre></blockquote>
 <p>When you need CoffeeScript as a dependency of a project, within that project’s folder you can install it locally:</p>
 <blockquote>
-<pre><code>npm install --save coffee-script</code></pre></blockquote>
+<pre><code>npm install --save coffeescript</code></pre></blockquote>
 
       </section>
       <section id="usage">
@@ -2796,7 +2814,7 @@ greet = function(name, adjective) {
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
       <textarea class="coffeescript-input" id="modules-coffee">import 'local-file.coffee'
-import 'coffee-script'
+import 'coffeescript'
 
 import _ from 'underscore'
 import * as underscore from 'underscore'
@@ -2822,7 +2840,7 @@ export { max, min } from 'underscore'
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="modules-js">import 'local-file.coffee';
 
-import 'coffee-script';
+import 'coffeescript';
 
 import _ from 'underscore';
 
@@ -3209,7 +3227,7 @@ task('build:parser', 'rebuild the Jison parser', function(options) {
 
       </section>
       <section id="scripts">
-        <h2><code>&quot;text/coffeescript&quot;</code> Script Tags</h2><p>While it’s not recommended for serious use, CoffeeScripts may be included directly within the browser using <code>&lt;script type=&quot;text/coffeescript&quot;&gt;</code> tags. The source includes a compressed and minified version of the compiler (<a href="v2/browser-compiler/coffee-script.js">Download current version here, 51k when gzipped</a>) as <code>v2/browser-compiler/coffee-script.js</code>. Include this file on a page with inline CoffeeScript tags, and it will compile and evaluate them in order.</p>
+        <h2><code>&quot;text/coffeescript&quot;</code> Script Tags</h2><p>While it’s not recommended for serious use, CoffeeScripts may be included directly within the browser using <code>&lt;script type=&quot;text/coffeescript&quot;&gt;</code> tags. The source includes a compressed and minified version of the compiler (<a href="v2/browser-compiler/coffeescript.js">Download current version here, 51k when gzipped</a>) as <code>v2/browser-compiler/coffeescript.js</code>. Include this file on a page with inline CoffeeScript tags, and it will compile and evaluate them in order.</p>
 <p>In fact, the little bit of glue script that runs <a href="#try">Try CoffeeScript</a>, as well as the code examples and other interactive parts of this site, is implemented in just this way. View source and look at the bottom of the page to see the example. Including the script also gives you access to <code>CoffeeScript.compile()</code> so you can pop open your JavaScript console and try compiling some strings.</p>
 <p>The usual caveats about CoffeeScript apply — your inline scripts will run within a closure wrapper, so if you want to expose global variables or functions, attach them to the <code>window</code> object.</p>
 
@@ -3272,7 +3290,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
 
         </section>
         <section id="annotated-source">
-          <h2>Annotated Source</h2><p>You can browse the CoffeeScript 2.0.0-alpha source in readable, annotated form <a href="http://coffeescript.org/v2/annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+          <h2>Annotated Source</h2><p>You can browse the CoffeeScript 2.0.0-alpha1 source in readable, annotated form <a href="http://coffeescript.org/v2/annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="http://coffeescript.org/v2/annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
 <li><a href="http://coffeescript.org/v2/annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
@@ -3280,7 +3298,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
 <li><a href="http://coffeescript.org/v2/annotated-source/nodes.html">The Syntax Tree — src/nodes</a></li>
 <li><a href="http://coffeescript.org/v2/annotated-source/scope.html">Lexical Scope — src/scope</a></li>
 <li><a href="http://coffeescript.org/v2/annotated-source/helpers.html">Helpers &amp; Utility Functions — src/helpers</a></li>
-<li><a href="http://coffeescript.org/v2/annotated-source/coffee-script.html">The CoffeeScript Module — src/coffee-script</a></li>
+<li><a href="http://coffeescript.org/v2/annotated-source/coffeescript.html">The CoffeeScript Module — src/coffeescript</a></li>
 <li><a href="http://coffeescript.org/v2/annotated-source/cake.html">Cake &amp; Cakefiles — src/cake</a></li>
 <li><a href="http://coffeescript.org/v2/annotated-source/command.html">“coffee” Command-Line Utility — src/command</a></li>
 <li><a href="http://coffeescript.org/v2/annotated-source/optparse.html">Option Parsing — src/optparse</a></li>
@@ -3291,7 +3309,35 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
       </section>
       <section id="changelog">
-        <h2>Change Log</h2><div class="anchor" id="1.12.3"></div>
+        <h2>Change Log</h2><div class="anchor" id="2.0.0-alpha1"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.12.4...2.0.0-alpha1">2.0.0-alpha1</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-02-21">February 21, 2017</time></span>
+</h2><ul>
+<li>Initial alpha release of CoffeeScript 2. The CoffeeScript compiler now outputs ES2015+ syntax whenever possible. See <a href="#breaking-changes">breaking changes</a>.</li>
+<li>Classes are output using ES2015 <code>class</code> and <code>extends</code> keywords.</li>
+<li>Added support for <code>async</code>/<code>await</code>.</li>
+<li>Bound (arrow) functions now output as <code>=&gt;</code> functions.</li>
+<li>Function parameters with default values now use ES2015 default values syntax.</li>
+<li>Splat function parameters now use ES2015 spread syntax.</li>
+<li>Computed properties now use ES2015 syntax.</li>
+<li>Interpolated strings (template literals) now use ES2015 backtick syntax.</li>
+<li>Improved support for recognizing Markdown in Literate CoffeeScript files.</li>
+<li>Mixing tabs and spaces in indentation is now disallowed.</li>
+<li>Browser compiler is now minified using the Google Closure Compiler (JavaScript version).</li>
+<li>Node 7+ required for CoffeeScript 2.</li>
+</ul>
+<div class="anchor" id="1.12.4"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.12.3...1.12.4">1.12.4</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-02-18">February 18, 2017</time></span>
+</h2><ul>
+<li>The <code>cake</code> commands have been updated, with new <code>watch</code> options for most tasks. Clone the <a href="https://github.com/jashkenas/coffeescript">CoffeeScript repo</a> and run <code>cake</code> at the root of the repo to see the options.</li>
+<li>Fixed a bug where <code>export</code>ing a referenced variable was preventing the variable from being declared.</li>
+<li>Fixed a bug where the <code>coffee</code> command wasn’t working for a <code>.litcoffee</code> file.</li>
+<li>Bugfixes related to tokens and location data, for better source maps and improved compatibility with downstream tools.</li>
+</ul>
+<div class="anchor" id="1.12.3"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/1.12.2...1.12.3">1.12.3</a>
   <span class="timestamp"> &mdash; <time datetime="2017-01-24">January 24, 2017</time></span>
@@ -3453,7 +3499,7 @@ six = ->
 <li>Fixed a slight formatting error in CoffeeScript’s source map-patched stack traces.</li>
 <li>The <code>%%</code> operator now coerces its right operand only once.</li>
 <li>It is now possible to require CoffeeScript files from Cakefiles without having to register the compiler first.</li>
-<li>The CoffeeScript REPL is now exported and can be required using <code>require &#39;coffee-script/repl&#39;</code>.</li>
+<li>The CoffeeScript REPL is now exported and can be required using <code>require &#39;coffeescript/repl&#39;</code>.</li>
 <li>Fixes for the REPL in Node 0.11.</li>
 </ul>
 <div class="anchor" id="1.7.1"></div>
@@ -3468,7 +3514,7 @@ six = ->
   <a href="https://github.com/jashkenas/coffeescript/compare/1.6.3...1.7.0">1.7.0</a>
   <span class="timestamp"> &mdash; <time datetime="2014-01-28">January 28, 2014</time></span>
 </h2><ul>
-<li>When requiring CoffeeScript files in Node you must now explicitly register the compiler. This can be done with <code>require &#39;coffee-script/register&#39;</code> or <code>CoffeeScript.register()</code>. Also for configuration such as Mocha’s, use <strong>coffee-script/register</strong>.</li>
+<li>When requiring CoffeeScript files in Node you must now explicitly register the compiler. This can be done with <code>require &#39;coffeescript/register&#39;</code> or <code>CoffeeScript.register()</code>. Also for configuration such as Mocha’s, use <strong>coffeescript/register</strong>.</li>
 <li>Improved error messages, source maps and stack traces. Source maps now use the updated <code>//#</code> syntax.</li>
 <li>Leading <code>.</code> now closes all open calls, allowing for simpler chaining syntax.</li>
 </ul>
@@ -3594,7 +3640,7 @@ six = ->
 <li>Ahh, whitespace. CoffeeScript’s compiled JS now tries to space things out and keep it readable, as you can see in the examples on this page.</li>
 <li>You can now call <code>super</code> in class level methods in class bodies, and bound class methods now preserve their correct context.</li>
 <li>JavaScript has always supported octal numbers <code>010 is 8</code>, and hexadecimal numbers <code>0xf is 15</code>, but CoffeeScript now also supports binary numbers: <code>0b10 is 2</code>.</li>
-<li>The CoffeeScript module has been nested under a subdirectory to make it easier to <code>require</code> individual components separately, without having to use <strong>npm</strong>. For example, after adding the CoffeeScript folder to your path: <code>require(&#39;coffee-script/lexer&#39;)</code></li>
+<li>The CoffeeScript module has been nested under a subdirectory to make it easier to <code>require</code> individual components separately, without having to use <strong>npm</strong>. For example, after adding the CoffeeScript folder to your path: <code>require(&#39;coffeescript/lexer&#39;)</code></li>
 <li>There’s a new “link” feature in Try CoffeeScript on this webpage. Use it to get a shareable permalink for your example script.</li>
 <li>The <code>coffee --watch</code> feature now only works on Node.js 0.6.0 and higher, but now also works properly on Windows.</li>
 <li>Lots of small bug fixes from <strong><a href="https://github.com/michaelficarra">@michaelficarra</a></strong>, <strong><a href="https://github.com/geraldalewis">@geraldalewis</a></strong>, <strong><a href="https://github.com/satyr">@satyr</a></strong>, and <strong><a href="https://github.com/trevorburnham">@trevorburnham</a></strong>.</li>
@@ -3695,7 +3741,7 @@ used to parse as <code>result = (i for i in list)</code> by default … it now p
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/0.5.5...0.5.6">0.5.6</a>
   <span class="timestamp"> &mdash; <time datetime="2010-03-23">March 23, 2010</time></span>
-</h2><p>Interpolation can now be used within regular expressions and heredocs, as well as strings. Added the <code>&lt;-</code> bind operator. Allowing assignment to half-expressions instead of special <code>||=</code>-style operators. The arguments object is no longer automatically converted into an array. After requiring <code>coffee-script</code>, Node.js can now directly load <code>.coffee</code> files, thanks to <strong>registerExtension</strong>. Multiple splats can now be used in function calls, arrays, and pattern matching.</p>
+</h2><p>Interpolation can now be used within regular expressions and heredocs, as well as strings. Added the <code>&lt;-</code> bind operator. Allowing assignment to half-expressions instead of special <code>||=</code>-style operators. The arguments object is no longer automatically converted into an array. After requiring <code>coffeescript</code>, Node.js can now directly load <code>.coffee</code> files, thanks to <strong>registerExtension</strong>. Multiple splats can now be used in function calls, arrays, and pattern matching.</p>
 <div class="anchor" id="0.5.5"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/0.5.4...0.5.5">0.5.5</a>
@@ -3716,7 +3762,7 @@ used to parse as <code>result = (i for i in list)</code> by default … it now p
   <a href="https://github.com/jashkenas/coffeescript/compare/0.5.1...0.5.2">0.5.2</a>
   <span class="timestamp"> &mdash; <time datetime="2010-02-25">February 25, 2010</time></span>
 </h2><p>Added a compressed version of the compiler for inclusion in web pages as
-<code>v2/browser-compiler/coffee-script.js</code>. It’ll automatically run any script tags with type <code>text/coffeescript</code> for you. Added a <code>--stdio</code> option to the <code>coffee</code> command, for piped-in compiles.</p>
+<code>v2/browser-compiler/coffeescript.js</code>. It’ll automatically run any script tags with type <code>text/coffeescript</code> for you. Added a <code>--stdio</code> option to the <code>coffee</code> command, for piped-in compiles.</p>
 <div class="anchor" id="0.5.1"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/0.5.0...0.5.1">0.5.1</a>
@@ -3792,7 +3838,7 @@ The <code>extends</code> keyword now functions identically to <code>goog.inherit
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/0.1.4...0.1.5">0.1.5</a>
   <span class="timestamp"> &mdash; <time datetime="2009-12-26">December 26, 2009</time></span>
-</h2><p>Array slice literals and array comprehensions can now both take Ruby-style ranges to specify the start and end. JavaScript variable declaration is now pushed up to the top of the scope, making all assignment statements into expressions. You can use <code>\</code> to escape newlines. The <code>coffee-script</code> command is now called <code>coffee</code>.</p>
+</h2><p>Array slice literals and array comprehensions can now both take Ruby-style ranges to specify the start and end. JavaScript variable declaration is now pushed up to the top of the scope, making all assignment statements into expressions. You can use <code>\</code> to escape newlines. The <code>coffeescript</code> command is now called <code>coffee</code>.</p>
 <div class="anchor" id="0.1.4"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/0.1.3...0.1.4">0.1.4</a>
@@ -3833,7 +3879,7 @@ The <code>extends</code> keyword now functions identically to <code>goog.inherit
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/g/codemirror@4.5.0(codemirror.min.js+mode/coffeescript/coffeescript.js+addon/lint/coffeescript-lint.js+mode/javascript/javascript.js)" crossorigin="anonymous"></script>
 
-<script src="browser-compiler/coffee-script.js"></script>
+<script src="browser-compiler/coffeescript.js"></script>
 <script type="text/coffeescript">
 $(document).ready ->
   # Mobile navigation

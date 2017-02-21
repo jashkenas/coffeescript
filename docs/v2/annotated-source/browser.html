@@ -30,8 +30,8 @@
                 </a>
               
                 
-                <a class="source" href="coffee-script.html">
-                  coffee-script.coffee
+                <a class="source" href="coffeescript.html">
+                  coffeescript.coffee
                 </a>
               
                 
@@ -123,7 +123,7 @@ We add support for loading remote Coffee scripts via <strong>XHR</strong>, and
             </div>
             
             <div class="content"><div class='highlight'><pre>
-CoffeeScript = <span class="hljs-built_in">require</span> <span class="hljs-string">'./coffee-script'</span>
+CoffeeScript = <span class="hljs-built_in">require</span> <span class="hljs-string">'./coffeescript'</span>
 CoffeeScript.<span class="hljs-built_in">require</span> = <span class="hljs-built_in">require</span>
 compile = CoffeeScript.compile</pre></div></div>
             
@@ -261,17 +261,14 @@ This happens on page load.</p>
       options = literate: script.type <span class="hljs-keyword">is</span> coffeetypes[<span class="hljs-number">1</span>]
       source = script.src <span class="hljs-keyword">or</span> script.getAttribute(<span class="hljs-string">'data-src'</span>)
       <span class="hljs-keyword">if</span> source
+        options.filename = source
         CoffeeScript.load source,
           <span class="hljs-function"><span class="hljs-params">(param)</span> -&gt;</span>
             coffees[i] = param
             execute()
           options
           <span class="hljs-literal">true</span>
-      <span class="hljs-keyword">else</span>
-        options.sourceFiles = [<span class="hljs-string">'embedded'</span>]
-        coffees[i] = [script.innerHTML, options]
-
-  execute()</pre></div></div>
+      <span class="hljs-keyword">else</span></pre></div></div>
             
         </li>
         
@@ -281,6 +278,29 @@ This happens on page load.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p><code>options.filename</code> defines the filename the source map appears as
+in Developer Tools. If a script tag has an <code>id</code>, use that as the
+filename; otherwise use <code>coffeescript</code>, or <code>coffeescript1</code> etc.,
+leaving the first one unnumbered for the common case that there’s
+only one CoffeeScript script block to parse.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        options.filename = <span class="hljs-keyword">if</span> script.id <span class="hljs-keyword">and</span> script.id <span class="hljs-keyword">isnt</span> <span class="hljs-string">''</span> <span class="hljs-keyword">then</span> script.id <span class="hljs-keyword">else</span> <span class="hljs-string">"coffeescript<span class="hljs-subst">#{<span class="hljs-keyword">if</span> i <span class="hljs-keyword">isnt</span> <span class="hljs-number">0</span> <span class="hljs-keyword">then</span> i <span class="hljs-keyword">else</span> <span class="hljs-string">''</span>}</span>"</span>
+        options.sourceFiles = [<span class="hljs-string">'embedded'</span>]
+        coffees[i] = [script.innerHTML, options]
+
+  execute()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>Listen for window load, both in decent browsers and in IE.</p>
 
