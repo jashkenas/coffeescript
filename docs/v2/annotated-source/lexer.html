@@ -710,10 +710,10 @@ borrow some basic heuristics from JavaScript and Ruby.</p>
         @token <span class="hljs-string">'CALL_START'</span>, <span class="hljs-string">'('</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>
         @mergeInterpolationTokens tokens, {delimiter: <span class="hljs-string">'"'</span>, double: <span class="hljs-literal">yes</span>}, @formatHeregex
         <span class="hljs-keyword">if</span> flags
-          @token <span class="hljs-string">','</span>, <span class="hljs-string">','</span>, index, <span class="hljs-number">0</span>
-          @token <span class="hljs-string">'STRING'</span>, <span class="hljs-string">'"'</span> + flags + <span class="hljs-string">'"'</span>, index, flags.length
-        @token <span class="hljs-string">')'</span>, <span class="hljs-string">')'</span>, end, <span class="hljs-number">0</span>
-        @token <span class="hljs-string">'REGEX_END'</span>, <span class="hljs-string">')'</span>, end, <span class="hljs-number">0</span>
+          @token <span class="hljs-string">','</span>, <span class="hljs-string">','</span>, index - <span class="hljs-number">1</span>, <span class="hljs-number">0</span>
+          @token <span class="hljs-string">'STRING'</span>, <span class="hljs-string">'"'</span> + flags + <span class="hljs-string">'"'</span>, index - <span class="hljs-number">1</span>, flags.length
+        @token <span class="hljs-string">')'</span>, <span class="hljs-string">')'</span>, end - <span class="hljs-number">1</span>, <span class="hljs-number">0</span>
+        @token <span class="hljs-string">'REGEX_END'</span>, <span class="hljs-string">')'</span>, end - <span class="hljs-number">1</span>, <span class="hljs-number">0</span>
 
     end</pre></div></div>
             
