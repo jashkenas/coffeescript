@@ -651,10 +651,10 @@ grammar =
     o '-     Expression',                      (-> new Op '-', $2), prec: 'UNARY_MATH'
     o '+     Expression',                      (-> new Op '+', $2), prec: 'UNARY_MATH'
 
-    o '-- SimpleAssignable',                    -> new Op '--', $2
-    o '++ SimpleAssignable',                    -> new Op '++', $2
-    o 'SimpleAssignable --',                    -> new Op '--', $1, null, true
-    o 'SimpleAssignable ++',                    -> new Op '++', $1, null, true
+    o '-- Expression',                    -> new Op '--', $2
+    o '++ Expression',                    -> new Op '++', $2
+    o 'Expression --',                    -> new Op '--', $1, null, true
+    o 'Expression ++',                    -> new Op '++', $1, null, true
 
     # [The existential operator](http://coffeescript.org/#existential-operator).
     o 'Expression ?',                           -> new Existence $1

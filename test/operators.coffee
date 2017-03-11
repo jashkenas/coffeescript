@@ -48,6 +48,29 @@ test "bitwise operators", ->
   num = 10; eq  1, (num >>=  3)
   num = 10; eq  1, (num >>>= 3)
 
+test "increment and decrement operators", ->
+  o = {}
+  # prefix increment
+  num =   1; eq 2,     ++num; eq 2, num
+  num =   1; eq 2,   ++(num); eq 2, num
+  o.num = 1; eq 2,   ++o.num; eq 2, o.num
+  o.num = 1; eq 2, ++(o.num); eq 2, o.num
+  # prefix decrement
+  num =   1; eq 0,     --num; eq 0, num
+  num =   1; eq 0,   --(num); eq 0, num
+  o.num = 1; eq 0,   --o.num; eq 0, o.num
+  o.num = 1; eq 0, --(o.num); eq 0, o.num
+  # postfix increment
+  num =   1; eq 1,     num++; eq 2, num
+  num =   1; eq 1,   (num)++; eq 2, num
+  o.num = 1; eq 1,   o.num++; eq 2, o.num
+  o.num = 1; eq 1, (o.num)++; eq 2, o.num
+  # postfix decrement
+  num =   1; eq 1,     num--; eq 0, num
+  num =   1; eq 1,   (num)--; eq 0, num
+  o.num = 1; eq 1,   o.num--; eq 0, o.num
+  o.num = 1; eq 1, (o.num)--; eq 0, o.num
+
 test "`instanceof`", ->
   ok new String instanceof String
   ok new Boolean instanceof Boolean
