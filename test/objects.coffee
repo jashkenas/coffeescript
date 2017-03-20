@@ -43,7 +43,6 @@ ok obj.class + obj.function is 'hötdog'
 pluck = (x) -> x.a
 eq 100, pluck pluck pluck a: a: a: 100
 
-
 test "YAML-style object literals", ->
   obj =
     a: 1

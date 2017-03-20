@@ -1128,7 +1128,7 @@ exports.Obj = class Obj extends Base
           prop.variable.error 'invalid object key'
       if prop instanceof Value and prop.this
         prop = new Assign prop.properties[0].name, prop, 'object'
-      if prop not instanceof Comment and prop not instanceof Assign
+      if prop not instanceof Comment and prop not instanceof Assign and prop not instanceof Splat
         if prop.shouldCache()
           [key, value] = prop.base.cache o
           key  = new PropertyName key.value if key instanceof IdentifierLiteral
