@@ -24,7 +24,7 @@ Let's explore a little.
 
 Quite a lot of time was spent trying to find reasons to generate `let` in our latest branch, and what rules we would need to check.
 
-After quite a bit of testing it turned out that `let` wasn't really much of an advantage over var. CoffeeScript was originally written to help deal with scope leakage and already implements _all variables as var_ and in the correct scope. CoffeeScript doesn't have the issue of accidental global varibles.
+After quite a bit of testing it turned out that `let` wasn't really much of an advantage over var. CoffeeScript was originally written to help deal with scope leakage and already implements _all variables as var_ and in the correct scope. CoffeeScript doesn't have the issue of accidental global variables.
 
 ```coffeescript
 
@@ -60,8 +60,6 @@ Well this is true. But consider [this conversation](https://github.com/jashkenas
 
 > It's certainly possible to accidentally blow away an outer variable within an inner scope, but (in Ruby and Python), this turns out not to be a very common problem. If you don't nest functions too deeply, don't introduce a lot of globals, and give things proper names, it never arises.
 
-> In JavaScript, having var is even more bug-prone. You need to use it once, and only once at the desired level. If you forget it you get an accidental global variable, and it can't be used as part of a larger expression.
-
 And here is another useful comment by jashkenas
 
 > And if they do clash, shadowing the variable is the wrong answer. It completely prevents you from making use of the original value for the remainder of the current scope. Shadowing doesn't fit well in languages with closures-by-default ... if you've closed over that variable, then you should always be able to refer to it.
@@ -72,9 +70,10 @@ Hrmmm. Good point. But what about `const`?!? I REALLY want to make everything co
 
 ### The `const` Keyword
 
-`const` is another typical keyword that doesn't really add significant value.  Primarily `const` is used to avoid accidental reassignments. In practice this is just like `let` above, make sure you are consistant with scope, name your variables well, 
+`const` is another typical keyword that doesn't really add significant value. Primarily `const` is used to avoid accidental reassignments. In practice this is just like `let` above, make sure you are consistant with scope, and name your variables well. 
 
-`const` also causes a dilemma for CoffeeScript, because suddenly we can get block level shadowing, but it's only const!  Well then why not include `let`!  Well hopefully you see why we haven't included `let` by now. So how the heck do I make things constant?
+`const` also causes a dilemma for CoffeeScript, because suddenly we can get block level shadowing, but it's only const!  Well then why not include `let`!  Well hopefully you see why we haven't included `let` by now. 
+So how the heck do I make things constant? 
 
 ```coffeescript
 
@@ -93,18 +92,12 @@ In reality the const keyword refers to the variable itself, _not always the valu
   
 const x = 5;
 const y = {};
-x++;          // error.   Assignment to const
+x++;          // error.  Assignment to const
 y[x] = x;     // {'5': 4}  Wait what!??
-y = x;        // error.   Assignment to const
+y = x;        // error.  Assignment to const
 
 ```
 
 In other words, the statement const x++ doesn't let you change the variable as you would expect. However it WILL let you change the contents of y, because you aren't changing what y is pointing at. It is still the same object! 
 
-It's very common to see ECMASCript code where const is blindly used in place of let, assuming that variable really will be a const, but often it's not.
-
 You actually have to 'freeze' an object to make it a constant. Use [Object.freeze(obj)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze).
-
-In the end this is a surprisingly complex topic, and once again, the TL;DR on this is: 
-
-These keywords don't fit in with the core tennents of CoffeeScript, and are easily mitigated by careful naming and thoughtful design. The benefit is a lot less typing on your part.
