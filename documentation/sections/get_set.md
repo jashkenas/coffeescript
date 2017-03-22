@@ -1,11 +1,22 @@
 ## get and set
-Get and set are intentionally not implemented as keywords in CoffeeScript.
+`get` and `set`, as keywords preceding functions or class methods, are intentionally not implemented in CoffeeScript. 
 
-This is by design. While using get/set is still possible, CoffeeScript considers them anti-patterns.  
+This is to avoid grammatical ambiguity, since in CoffeeScript such a construct looks identical to a function call (e.g. get(function foo() {})) and because there is an alternate syntax that is slightly more verbose but just as effective:
 
-In ECMAScript these convenience function decorators were introduced for very specific uses with the browser DOM.  
+```coffeescript
+screen = 
+  width: 1200
+  ratio: 0.8
 
-If you are still convinced you need to use `get`/`set`, here are some workarounds:
+Object.defineProperty screen, "height", 
+  get: () ->
+    screen.width * screen.ratio
+  set: (val) ->
+    console.log "Can't set the height."
 
-* Use a [Proxy object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy). Also see an [example of using Proxy](https://nemisj.com/why-getterssetters-is-a-bad-idea-in-javascript/). 
-* Add them direcly [the long way round](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty).   
+console.log screen.height   # 960
+```
+
+Check out [the MDN Reference](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty).
+
+Another alternative is to use a [Proxy object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy).
