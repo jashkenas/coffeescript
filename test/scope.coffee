@@ -63,21 +63,21 @@ test "#1183: super + fat arrows", ->
   dolater = (cb) -> cb()
 
   class A
-  	constructor: ->
-  		@_i = 0
-  	foo : (cb) ->
-  		dolater =>
-  			@_i += 1
-  			cb()
+    constructor: ->
+      @_i = 0
+    foo : (cb) ->
+      dolater =>
+        @_i += 1
+        cb()
 
   class B extends A
-  	constructor : ->
-  		super
-  	foo : (cb) ->
-  		dolater =>
-  			dolater =>
-  				@_i += 2
-  				super cb
+    constructor : ->
+      super()
+    foo : (cb) ->
+      dolater =>
+        dolater =>
+          @_i += 2
+          super cb
 
   b = new B
   b.foo => eq b._i, 3
@@ -87,9 +87,9 @@ test "#1183: super + wrap", ->
     m : -> 10
 
   class B extends A
-    constructor : -> super
-
-  B::m = -> r = try super()
+    constructor : -> super()
+    m: -> r = try super()
+    m: -> r = super()
 
   eq (new B).m(), 10
 
@@ -113,7 +113,7 @@ test "#2331: bound super regression", ->
     method: -> @constructor.value
 
   class B extends A
-    method: => super
+    method: => super()
 
   eq (new B).method(), 'A'
 

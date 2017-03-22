@@ -52,24 +52,6 @@ test "yield return can be used anywhere in the function body", ->
   y = x.next 2
   ok y.value is 42 and y.done is true
 
-test "bound generator", ->
-  obj =
-    bound: ->
-      do =>
-        yield this
-    unbound: ->
-      do ->
-        yield this
-    nested: ->
-      do =>
-        yield do =>
-          yield do =>
-            yield this
-
-  eq obj, obj.bound().next().value
-  ok obj isnt obj.unbound().next().value
-  eq obj, obj.nested().next().value.next().value.next().value
-
 test "`yield from` support", ->
   x = do ->
     yield from do ->
@@ -343,3 +325,20 @@ test "from as a destructured array variable name in a for loop declaration", ->
   for [from, to] from a
     b.push from
   arrayEq b, [1, 3]
+
+test "generator methods in classes", ->
+  class Base
+    @static: ->
+      yield 1
+    method: ->
+      yield 2
+
+  arrayEq [1], Array.from Base.static()
+  arrayEq [2], Array.from new Base().method()
+
+  class Child extends Base
+    @static: -> super()
+    method: -> super()
+
+  arrayEq [1], Array.from Child.static()
+  arrayEq [2], Array.from new Child().method()
