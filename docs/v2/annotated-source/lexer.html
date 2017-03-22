@@ -30,8 +30,8 @@
                 </a>
               
                 
-                <a class="source" href="coffee-script.html">
-                  coffee-script.coffee
+                <a class="source" href="coffeescript.html">
+                  coffeescript.coffee
                 </a>
               
                 
@@ -122,7 +122,7 @@ form:</p>
 <pre><code>[tag, value, locationData]
 </code></pre><p>where locationData is {first_line, first_column, last_line, last_column}, which is a
 format that can be fed directly into <a href="http://github.com/zaach/jison">Jison</a>.  These
-are read by jison in the <code>parser.lexer</code> function defined in coffee-script.coffee.</p>
+are read by jison in the <code>parser.lexer</code> function defined in coffeescript.coffee.</p>
 
             </div>
             
@@ -710,10 +710,10 @@ borrow some basic heuristics from JavaScript and Ruby.</p>
         @token <span class="hljs-string">'CALL_START'</span>, <span class="hljs-string">'('</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>
         @mergeInterpolationTokens tokens, {delimiter: <span class="hljs-string">'"'</span>, double: <span class="hljs-literal">yes</span>}, @formatHeregex
         <span class="hljs-keyword">if</span> flags
-          @token <span class="hljs-string">','</span>, <span class="hljs-string">','</span>, index, <span class="hljs-number">0</span>
-          @token <span class="hljs-string">'STRING'</span>, <span class="hljs-string">'"'</span> + flags + <span class="hljs-string">'"'</span>, index, flags.length
-        @token <span class="hljs-string">')'</span>, <span class="hljs-string">')'</span>, end, <span class="hljs-number">0</span>
-        @token <span class="hljs-string">'REGEX_END'</span>, <span class="hljs-string">')'</span>, end, <span class="hljs-number">0</span>
+          @token <span class="hljs-string">','</span>, <span class="hljs-string">','</span>, index - <span class="hljs-number">1</span>, <span class="hljs-number">0</span>
+          @token <span class="hljs-string">'STRING'</span>, <span class="hljs-string">'"'</span> + flags + <span class="hljs-string">'"'</span>, index - <span class="hljs-number">1</span>, flags.length
+        @token <span class="hljs-string">')'</span>, <span class="hljs-string">')'</span>, end - <span class="hljs-number">1</span>, <span class="hljs-number">0</span>
+        @token <span class="hljs-string">'REGEX_END'</span>, <span class="hljs-string">')'</span>, end - <span class="hljs-number">1</span>, <span class="hljs-number">0</span>
 
     end</pre></div></div>
             

@@ -7,7 +7,7 @@
 #
 # where locationData is {first_line, first_column, last_line, last_column}, which is a
 # format that can be fed directly into [Jison](http://github.com/zaach/jison).  These
-# are read by jison in the `parser.lexer` function defined in coffee-script.coffee.
+# are read by jison in the `parser.lexer` function defined in coffeescript.coffee.
 
 {Rewriter, INVERSES} = require './rewriter'
 
@@ -343,10 +343,10 @@ exports.Lexer = class Lexer
         @token 'CALL_START', '(', 0, 0
         @mergeInterpolationTokens tokens, {delimiter: '"', double: yes}, @formatHeregex
         if flags
-          @token ',', ',', index, 0
-          @token 'STRING', '"' + flags + '"', index, flags.length
-        @token ')', ')', end, 0
-        @token 'REGEX_END', ')', end, 0
+          @token ',', ',', index - 1, 0
+          @token 'STRING', '"' + flags + '"', index - 1, flags.length
+        @token ')', ')', end - 1, 0
+        @token 'REGEX_END', ')', end - 1, 0
 
     end
 

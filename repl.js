@@ -1,1 +1,1 @@
-module.exports = require('./lib/coffee-script/repl');
+module.exports = require('./lib/coffeescript/repl');

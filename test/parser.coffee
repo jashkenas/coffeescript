@@ -38,3 +38,43 @@ test "operator precedence for binary ? operator", ->
   eq expression.second.first.base.value, 'b'
   eq expression.second.operator, '&&'
   eq expression.second.second.base.value, 'c'
+
+test "new calls have a range including the new", ->
+  source = '''
+    a = new B().c(d)
+  '''
+  block = CoffeeScript.nodes source
+
+  assertColumnRange = (node, firstColumn, lastColumn) ->
+    eq node.locationData.first_line, 0
+    eq node.locationData.first_column, firstColumn
+    eq node.locationData.last_line, 0
+    eq node.locationData.last_column, lastColumn
+
+  [assign] = block.expressions
+  outerCall = assign.value
+  innerValue = outerCall.variable
+  innerCall = innerValue.base
+
+  assertColumnRange assign, 0, 15
+  assertColumnRange outerCall, 4, 15
+  assertColumnRange innerValue, 4, 12
+  assertColumnRange innerCall, 4, 10
+
+test "location data is properly set for nested `new`", ->
+  source = '''
+    new new A()()
+  '''
+  block = CoffeeScript.nodes source
+
+  assertColumnRange = (node, firstColumn, lastColumn) ->
+    eq node.locationData.first_line, 0
+    eq node.locationData.first_column, firstColumn
+    eq node.locationData.last_line, 0
+    eq node.locationData.last_column, lastColumn
+
+  [outerCall] = block.expressions
+  innerCall = outerCall.variable
+
+  assertColumnRange outerCall, 0, 12
+  assertColumnRange innerCall, 4, 10

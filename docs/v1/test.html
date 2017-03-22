@@ -3497,20 +3497,21 @@ if require?
 
   test "#2849: compilation error in a require()d file", ->
     # Create a temporary file to require().
-    ok not fs.existsSync 'test/syntax-error.coffee'
-    fs.writeFileSync 'test/syntax-error.coffee', 'foo in bar or in baz'
+    tempFile = path.join os.tmpdir(), 'syntax-error.coffee'
+    ok not fs.existsSync tempFile
+    fs.writeFileSync tempFile, 'foo in bar or in baz'
 
     try
-      assertErrorFormat '''
-        require './test/syntax-error'
-      ''',
+      assertErrorFormat """
+        require '#{tempFile}'
+      """,
       """
-        #{path.join __dirname, 'syntax-error.coffee'}:1:15: error: unexpected in
+        #{fs.realpathSync tempFile}:1:15: error: unexpected in
         foo in bar or in baz
                       ^^
       """
     finally
-      fs.unlinkSync 'test/syntax-error.coffee'
+      fs.unlinkSync tempFile
 
   test "#3890 Error.prepareStackTrace doesn't throw an error if a compiled file is deleted", ->
     # Adapted from https://github.com/atom/coffee-cash/blob/master/spec/coffee-cash-spec.coffee
@@ -7558,6 +7559,29 @@ test "Verify indented heredocs have the right position", ->
   eq stringToken[2].last_line, 3
   eq stringToken[2].last_column, 4
 
+test "Verify heregexes with interpolations have the right ending position", ->
+  source = '''
+    [a ///#{b}///g]
+  '''
+  [..., stringEnd, comma, flagsString, regexCallEnd, regexEnd, fnCallEnd,
+    arrayEnd, terminator] = CoffeeScript.tokens source
+
+  eq comma[0], ','
+  eq arrayEnd[0], ']'
+
+  assertColumn = (token, column) ->
+    eq token[2].first_line, 0
+    eq token[2].first_column, column
+    eq token[2].last_line, 0
+    eq token[2].last_column, column
+
+  arrayEndColumn = arrayEnd[2].first_column
+  for token in [comma, flagsString]
+    assertColumn token, arrayEndColumn - 2
+  for token in [regexCallEnd, regexEnd, fnCallEnd]
+    assertColumn token, arrayEndColumn - 1
+  assertColumn arrayEnd, arrayEndColumn
+
 test "Verify all tokens get a location", ->
   doesNotThrow ->
     tokens = CoffeeScript.tokens testScript
@@ -8300,6 +8324,22 @@ test "export an imported aliased member named default", ->
     import {
       default as def
     } from 'lib';"""
+  eq toJS(input), output
+
+test "#4394: export shouldn't prevent variable declarations", ->
+  input = """
+    x = 1
+    export { x }
+  """
+  output = """
+    var x;
+
+    x = 1;
+
+    export {
+      x
+    };
+  """
   eq toJS(input), output
 
 </script>
@@ -9503,6 +9543,46 @@ test "operator precedence for binary ? operator", ->
   eq expression.second.operator, '&&'
   eq expression.second.second.base.value, 'c'
 
+test "new calls have a range including the new", ->
+  source = '''
+    a = new B().c(d)
+  '''
+  block = CoffeeScript.nodes source
+
+  assertColumnRange = (node, firstColumn, lastColumn) ->
+    eq node.locationData.first_line, 0
+    eq node.locationData.first_column, firstColumn
+    eq node.locationData.last_line, 0
+    eq node.locationData.last_column, lastColumn
+
+  [assign] = block.expressions
+  outerCall = assign.value
+  innerValue = outerCall.variable
+  innerCall = innerValue.base
+
+  assertColumnRange assign, 0, 15
+  assertColumnRange outerCall, 4, 15
+  assertColumnRange innerValue, 4, 12
+  assertColumnRange innerCall, 4, 10
+
+test "location data is properly set for nested `new`", ->
+  source = '''
+    new new A()()
+  '''
+  block = CoffeeScript.nodes source
+
+  assertColumnRange = (node, firstColumn, lastColumn) ->
+    eq node.locationData.first_line, 0
+    eq node.locationData.first_column, firstColumn
+    eq node.locationData.last_line, 0
+    eq node.locationData.last_column, lastColumn
+
+  [outerCall] = block.expressions
+  innerCall = outerCall.variable
+
+  assertColumnRange outerCall, 0, 12
+  assertColumnRange innerCall, 4, 10
+
 </script>
 <script type="text/x-coffeescript" class="test" id="ranges">
 # Range Literals
@@ -10012,7 +10092,9 @@ testRepl "keeps running after runtime error", (input, output) ->
   eq 'undefined', output.lastWrite()
 
 process.on 'exit', ->
-  fs.unlinkSync historyFile
+  try
+    fs.unlinkSync historyFile
+  catch exception # Already deleted, nothing else to do.
 
 </script>
 <script type="text/x-coffeescript" class="test" id="scope">

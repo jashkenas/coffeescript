@@ -2,7 +2,7 @@ fs = require 'fs'
 path = require 'path'
 vm = require 'vm'
 nodeREPL = require 'repl'
-CoffeeScript = require './coffee-script'
+CoffeeScript = require './coffeescript'
 {merge, updateSyntaxError} = require './helpers'
 
 replDefaults =

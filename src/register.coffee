@@ -1,4 +1,4 @@
-CoffeeScript  = require './coffee-script'
+CoffeeScript  = require './coffeescript'
 child_process = require 'child_process'
 helpers       = require './helpers'
 path          = require 'path'

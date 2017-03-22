@@ -30,8 +30,8 @@
                 </a>
               
                 
-                <a class="source" href="coffee-script.html">
-                  coffee-script.coffee
+                <a class="source" href="coffeescript.html">
+                  coffeescript.coffee
                 </a>
               
                 
@@ -140,7 +140,7 @@ interactive REPL.</p>
 path           = <span class="hljs-built_in">require</span> <span class="hljs-string">'path'</span>
 helpers        = <span class="hljs-built_in">require</span> <span class="hljs-string">'./helpers'</span>
 optparse       = <span class="hljs-built_in">require</span> <span class="hljs-string">'./optparse'</span>
-CoffeeScript   = <span class="hljs-built_in">require</span> <span class="hljs-string">'./coffee-script'</span>
+CoffeeScript   = <span class="hljs-built_in">require</span> <span class="hljs-string">'./coffeescript'</span>
 {spawn, exec}  = <span class="hljs-built_in">require</span> <span class="hljs-string">'child_process'</span>
 {EventEmitter} = <span class="hljs-built_in">require</span> <span class="hljs-string">'events'</span>
 
@@ -214,7 +214,7 @@ useWinPathSep  = path.sep <span class="hljs-keyword">is</span> <span class="hljs
   [<span class="hljs-string">'-p'</span>, <span class="hljs-string">'--print'</span>,           <span class="hljs-string">'print out the compiled JavaScript'</span>]
   [<span class="hljs-string">'-r'</span>, <span class="hljs-string">'--require [MODULE*]'</span>, <span class="hljs-string">'require the given module before eval or REPL'</span>]
   [<span class="hljs-string">'-s'</span>, <span class="hljs-string">'--stdio'</span>,           <span class="hljs-string">'listen for and compile scripts over stdio'</span>]
-  [<span class="hljs-string">'-l'</span>, <span class="hljs-string">'--literate'</span>,        <span class="hljs-string">'treat stdio as literate style coffee-script'</span>]
+  [<span class="hljs-string">'-l'</span>, <span class="hljs-string">'--literate'</span>,        <span class="hljs-string">'treat stdio as literate style coffeescript'</span>]
   [<span class="hljs-string">'-t'</span>, <span class="hljs-string">'--tokens'</span>,          <span class="hljs-string">'print out the tokens that the lexer/rewriter produce'</span>]
   [<span class="hljs-string">'-v'</span>, <span class="hljs-string">'--version'</span>,         <span class="hljs-string">'display the version number'</span>]
   [<span class="hljs-string">'-w'</span>, <span class="hljs-string">'--watch'</span>,           <span class="hljs-string">'watch scripts for changes and rerun commands'</span>]
