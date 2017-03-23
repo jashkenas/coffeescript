@@ -1748,6 +1748,13 @@ exports.Assign = class Assign extends Base
     vvarText = fragmentsToText vvar
     assigns  = []
     expandedIdx = false
+    # check if variable is object and containes splat, e.g. {a, b, c...}
+    hasSplat = isObject and (i for obj, i in objects when obj instanceof Splat).length == 1
+    # collect non-splat vars, e.g. [a, b] from {a, b, c...}
+    nonSplatKeys = []
+    # store splat var, e.g. "c" from {a, b, c...}
+    splatKey = false
+    
     # Make vvar into a simple variable if it isn't already.
     if value.unwrap() not instanceof IdentifierLiteral or @variable.assigns(vvarText)
       assigns.push [@makeCode("#{ ref = o.scope.freeVariable 'ref' } = "), vvar...]
@@ -1758,14 +1765,18 @@ exports.Assign = class Assign extends Base
       if not expandedIdx and obj instanceof Splat
         name = obj.name.unwrap().value
         obj = obj.unwrap()
-        val = "#{olen} <= #{vvarText}.length ? #{ utility 'slice', o }.call(#{vvarText}, #{i}"
-        if rest = olen - i - 1
-          ivar = o.scope.freeVariable 'i', single: true
-          val += ", #{ivar} = #{vvarText}.length - #{rest}) : (#{ivar} = #{i}, [])"
-        else
-          val += ") : []"
-        val   = new Literal val
-        expandedIdx = "#{ivar}++"
+        # catch splat variable
+        if isObject
+          splatKey = obj
+        else  
+          val = "#{olen} <= #{vvarText}.length ? #{ utility 'slice', o }.call(#{vvarText}, #{i}"
+          if rest = olen - i - 1
+            ivar = o.scope.freeVariable 'i', single: true
+            val += ", #{ivar} = #{vvarText}.length - #{rest}) : (#{ivar} = #{i}, [])"
+          else
+            val += ") : []"
+          val   = new Literal val
+          expandedIdx = "#{ivar}++"
       else if not expandedIdx and obj instanceof Expansion
         if rest = olen - i - 1
           if rest is 1
@@ -1800,13 +1811,29 @@ exports.Assign = class Assign extends Base
             # A regular array pattern-match.
             new Literal expandedIdx or idx
         name = obj.unwrap().value
+        nonSplatKeys.push new Literal("'#{name}'")
         acc = idx.unwrap() instanceof PropertyName
         val = new Value new Literal(vvarText), [new (if acc then Access else Index) idx]
         val = new Op '?', val, defaultValue if defaultValue
       if name?
         message = isUnassignable name
         obj.error message if message
-      assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
+      unless splatKey
+        assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
+        
+    # refactor this    
+    if hasSplat and splatKey
+      # array of varibles 
+      nlitArr = new Arr nonSplatKeys
+      refVar = @makeCode "#{(ref = o.scope.freeVariable('ref'))}"
+      vvarSplatText = ref
+      splatObj = new IdentifierLiteral ref
+      assigns.push new Assign(splatObj, nlitArr, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
+      # assign rest of the values from the object to splat variable
+      # refactor!!!
+      ts = "Object.keys(#{vvarText}).reduce((a,c) => {if (#{vvarSplatText}.indexOf(c) == -1) a[c] = #{vvarText}[c]; return a;}, {})"
+      assigns.push new Assign(splatKey, new Literal(ts), null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
+
     assigns.push vvar unless top or @subpattern
     fragments = @joinFragmentArrays assigns, ', '
     if o.level < LEVEL_LIST then fragments else @wrapInBraces fragments
