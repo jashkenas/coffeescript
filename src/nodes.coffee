@@ -1766,7 +1766,7 @@ exports.Assign = class Assign extends Base
         name = obj.name.unwrap().value
         obj = obj.unwrap()
         # catch splat variable
-        if isObject
+        if hasSplat
           splatKey = obj
         else  
           val = "#{olen} <= #{vvarText}.length ? #{ utility 'slice', o }.call(#{vvarText}, #{i}"
