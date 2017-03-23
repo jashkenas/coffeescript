@@ -227,7 +227,35 @@ test "destructuring assignment with objects and splats", ->
   {a: b: [y, z...]} = obj
   eq a, y
   arrayEq [b,c,d], z
+  
+test "destructuring assignment with objects and splats: ES2015", ->
+  obj = {a:1, b:2, c:3, d:4, e:5}
+  {a:x, b, r...} = obj
+  {a:y, c..., d} = obj
+  eq b, 2
+  eq x, 1
+  eq r.d, d
+  eq c.b, b
+  eq r.e, c.e
 
+test "destructuring assignment with context (@) properties: ES2015", ->
+  futurists =
+    sculptor: "Umberto Boccioni"
+    painter:  "Vladimir Burliuk"
+    poet:
+      name:   "F.T. Marinetti"
+      address: [
+        "Via Roma 42R"
+        "Bellagio, Italy 22021"
+      ]
+
+  {poet: {name:title, addr1...}} = futurists
+  {poet: {addr2..., name:title}} = futurists
+
+  eq addr1.address, futurists.poet.address
+  eq addr2.address, futurists.poet.address  
+  eq addr1.address, addr2.address
+  
 test "destructuring assignment against an expression", ->
   a={}; b={}
   [y, z] = if true then [a, b] else [b, a]

@@ -1792,6 +1792,7 @@ exports.Assign = class Assign extends Base
           obj.error "multiple splats/expansions are disallowed in an assignment"
         defaultValue = null
         if obj instanceof Assign and obj.context is 'object'
+          nonSplatKeys.push new Literal("'#{obj.variable.unwrap().value}'")
           # A regular object pattern-match.
           {variable: {base: idx}, value: obj} = obj
           if obj instanceof Assign
@@ -1801,6 +1802,7 @@ exports.Assign = class Assign extends Base
           if obj instanceof Assign
             defaultValue = obj.value
             obj = obj.variable
+          nonSplatKeys.push(new Literal("'#{obj.unwrap().value}'"));  
           idx = if isObject
             # A shorthand `{a, b, @c} = val` pattern-match.
             if obj.this
@@ -1811,28 +1813,26 @@ exports.Assign = class Assign extends Base
             # A regular array pattern-match.
             new Literal expandedIdx or idx
         name = obj.unwrap().value
-        nonSplatKeys.push new Literal("'#{name}'")
         acc = idx.unwrap() instanceof PropertyName
         val = new Value new Literal(vvarText), [new (if acc then Access else Index) idx]
         val = new Op '?', val, defaultValue if defaultValue
       if name?
         message = isUnassignable name
         obj.error message if message
-      unless splatKey
+      if obj != splatKey
         assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
         
     # refactor this    
     if hasSplat and splatKey
-      # array of varibles 
-      nlitArr = new Arr nonSplatKeys
       refVar = @makeCode "#{(ref = o.scope.freeVariable('ref'))}"
       vvarSplatText = ref
-      splatObj = new IdentifierLiteral ref
-      assigns.push new Assign(splatObj, nlitArr, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
+      splatVarObj = new IdentifierLiteral ref
+      # array of varibles to exclude from rest splat
+      assigns.push new Assign(splatVarObj, new Arr nonSplatKeys, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
       # assign rest of the values from the object to splat variable
       # refactor!!!
       ts = "Object.keys(#{vvarText}).reduce((a,c) => {if (#{vvarSplatText}.indexOf(c) == -1) a[c] = #{vvarText}[c]; return a;}, {})"
-      assigns.push new Assign(splatKey, new Literal(ts), null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
+      assigns.push new Assign(splatKey, new Literal ts, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
 
     assigns.push vvar unless top or @subpattern
     fragments = @joinFragmentArrays assigns, ', '

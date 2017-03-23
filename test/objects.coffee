@@ -43,12 +43,15 @@ ok obj.class + obj.function is 'hötdog'
 pluck = (x) -> x.a
 eq 100, pluck pluck pluck a: a: a: 100
 
-# Object literal spread 
-# obj1 =
-#   a: 1
-#   b: 2
-# obj2 = {obj1..., b: 3}
-# ok obj2.b is 3
+
+test "Object literal spread", ->
+  obj1 =
+    a: 1
+    b: 2
+  # obj2 = "#{{obj1..., b: 3}}"
+  t1 = CoffeeScript.compile "{obj1..., b: 3}", bare: yes
+  t1 = t1.replace(/\s+/g, "")
+  eq t1, "({...obj1,b:3});"
 
 test "YAML-style object literals", ->
   obj =
