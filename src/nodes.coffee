@@ -1724,7 +1724,7 @@ exports.Assign = class Assign extends Base
     isObject = @variable.isObject()
 
     # Special case for when there's only one thing destructured off of
-    # something. `{b} = a` and `[b] = a`.
+    # something. `{a} = b`, `[a] = b`, `{a: b} = c`
     if top and olen is 1 and obj not instanceof Splat
       # Pick the property straight off the value when there’s just one to pick
       # (no need to cache the value into a variable).
