@@ -279,7 +279,7 @@ exports.Base = class Base
   makeCode: (code) ->
     new CodeFragment this, code
 
-  wrapInBraces: (fragments) ->
+  wrapInParentheses: (fragments) ->
     [].concat @makeCode('('), fragments, @makeCode(')')
 
   # `fragmentsList` is an array of arrays of fragments. Each array in fragmentsList will be
@@ -432,7 +432,7 @@ exports.Block = class Block extends Base
       answer = @joinFragmentArrays(compiledNodes, ', ')
     else
       answer = [@makeCode "void 0"]
-    if compiledNodes.length > 1 and o.level >= LEVEL_LIST then @wrapInBraces answer else answer
+    if compiledNodes.length > 1 and o.level >= LEVEL_LIST then @wrapInParentheses answer else answer
 
   # If we happen to be the top-level **Block**, wrap everything in
   # a safety closure, unless requested not to.
@@ -532,7 +532,7 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
 
   compileNode: (o) ->
     code = [@makeCode '0/0']
-    if o.level >= LEVEL_OP then @wrapInBraces code else code
+    if o.level >= LEVEL_OP then @wrapInParentheses code else code
 
 exports.StringLiteral = class StringLiteral extends Literal
 
@@ -1139,7 +1139,7 @@ exports.Obj = class Obj extends Base
       answer.push prop.compileToFragments(o, LEVEL_TOP)...
       if join then answer.push @makeCode join
     answer.push @makeCode "\n#{@tab}}" unless props.length is 0
-    if @front then @wrapInBraces answer else answer
+    if @front then @wrapInParentheses answer else answer
 
   assigns: (name) ->
     for prop in @properties when prop.assigns name then return yes
@@ -1205,7 +1205,7 @@ exports.Class = class Class extends Base
       result = @compileClassDeclaration o
 
       # Anonymous classes are only valid in expressions
-      result = @wrapInBraces result if not @name? and o.level is LEVEL_TOP
+      result = @wrapInParentheses result if not @name? and o.level is LEVEL_TOP
 
     if @variable
       assign = new Assign @variable, new Literal(''), null, { @moduleDeclaration }
@@ -1699,7 +1699,7 @@ exports.Assign = class Assign extends Base
       return compiledName.concat @makeCode(": "), val
 
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
-    if o.level <= LEVEL_LIST then answer else @wrapInBraces answer
+    if o.level <= LEVEL_LIST then answer else @wrapInParentheses answer
 
   # Brief implementation of recursive pattern matching, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
@@ -1713,7 +1713,7 @@ exports.Assign = class Assign extends Base
     # Compile to simply `a`.
     if olen is 0
       code = value.compileToFragments o
-      return if o.level >= LEVEL_OP then @wrapInBraces code else code
+      return if o.level >= LEVEL_OP then @wrapInParentheses code else code
 
     [obj] = objects
 
@@ -1839,7 +1839,7 @@ exports.Assign = class Assign extends Base
 
     assigns.push vvar unless top or @subpattern
     fragments = @joinFragmentArrays assigns, ', '
-    if o.level < LEVEL_LIST then fragments else @wrapInBraces fragments
+    if o.level < LEVEL_LIST then fragments else @wrapInParentheses fragments
 
   # When compiling a conditional assignment, take care to ensure that the
   # operands are only evaluated once, even though we have to reference them
@@ -1855,7 +1855,7 @@ exports.Assign = class Assign extends Base
       new If(new Existence(left), right, type: 'if').addElse(new Assign(right, @value, '=')).compileToFragments o
     else
       fragments = new Op(@context[...-1], left, new Assign(right, @value, '=')).compileToFragments o
-      if o.level <= LEVEL_LIST then fragments else @wrapInBraces fragments
+      if o.level <= LEVEL_LIST then fragments else @wrapInParentheses fragments
 
   # Convert special math assignment operators like `a **= b` to the equivalent
   # extended form `a = a ** b` and then compiles that.
@@ -1883,7 +1883,7 @@ exports.Assign = class Assign extends Base
       to = "9e9"
     [valDef, valRef] = @value.cache o, LEVEL_LIST
     answer = [].concat @makeCode("[].splice.apply(#{name}, [#{fromDecl}, #{to}].concat("), valDef, @makeCode(")), "), valRef
-    if o.level > LEVEL_TOP then @wrapInBraces answer else answer
+    if o.level > LEVEL_TOP then @wrapInParentheses answer else answer
 
 #### Code
 
@@ -2086,7 +2086,7 @@ exports.Code = class Code extends Base
     answer.push @makeCode '}'
 
     return [@makeCode(@tab), answer...] if @isMethod
-    if @front or (o.level >= LEVEL_ACCESS) then @wrapInBraces answer else answer
+    if @front or (o.level >= LEVEL_ACCESS) then @wrapInParentheses answer else answer
 
   eachParamName: (iterator) ->
     param.eachName iterator for param in @params
@@ -2448,7 +2448,7 @@ exports.Op = class Op extends Base
         lhs = @first.compileToFragments o, LEVEL_OP
         rhs = @second.compileToFragments o, LEVEL_OP
         answer = [].concat lhs, @makeCode(" #{@operator} "), rhs
-        if o.level <= LEVEL_OP then answer else @wrapInBraces answer
+        if o.level <= LEVEL_OP then answer else @wrapInParentheses answer
 
   # Mimic Python's chained comparisons when multiple comparison operators are
   # used sequentially. For example:
@@ -2460,7 +2460,7 @@ exports.Op = class Op extends Base
     fst = @first.compileToFragments o, LEVEL_OP
     fragments = fst.concat @makeCode(" #{if @invert then '&&' else '||'} "),
       (shared.compileToFragments o), @makeCode(" #{@operator} "), (@second.compileToFragments o, LEVEL_OP)
-    @wrapInBraces fragments
+    @wrapInParentheses fragments
 
   # Keep reference to the left expression, unless this an existential assignment
   compileExistence: (o) ->
@@ -2551,7 +2551,7 @@ exports.In = class In extends Base
     for item, i in @array.base.objects
       if i then tests.push @makeCode cnj
       tests = tests.concat (if i then ref else sub), @makeCode(cmp), item.compileToFragments(o, LEVEL_ACCESS)
-    if o.level < LEVEL_OP then tests else @wrapInBraces tests
+    if o.level < LEVEL_OP then tests else @wrapInParentheses tests
 
   compileLoopTest: (o) ->
     [sub, ref] = @object.cache o, LEVEL_LIST
@@ -2559,7 +2559,7 @@ exports.In = class In extends Base
       @makeCode(", "), ref, @makeCode(") " + if @negated then '< 0' else '>= 0')
     return fragments if fragmentsToText(sub) is fragmentsToText(ref)
     fragments = sub.concat @makeCode(', '), fragments
-    if o.level < LEVEL_LIST then fragments else @wrapInBraces fragments
+    if o.level < LEVEL_LIST then fragments else @wrapInParentheses fragments
 
   toString: (idt) ->
     super idt, @constructor.name + if @negated then '!' else ''
@@ -2677,7 +2677,7 @@ exports.Parens = class Parens extends Base
     fragments = expr.compileToFragments o, LEVEL_PAREN
     bare = o.level < LEVEL_OP and (expr instanceof Op or expr instanceof Call or
       (expr instanceof For and expr.returns))
-    if bare then fragments else @wrapInBraces fragments
+    if bare then fragments else @wrapInParentheses fragments
 
 #### StringWithInterpolations
 
@@ -2984,7 +2984,7 @@ exports.If = class If extends Base
     body = @bodyNode().compileToFragments o, LEVEL_LIST
     alt  = if @elseBodyNode() then @elseBodyNode().compileToFragments(o, LEVEL_LIST) else [@makeCode('void 0')]
     fragments = cond.concat @makeCode(" ? "), body, @makeCode(" : "), alt
-    if o.level >= LEVEL_COND then @wrapInBraces fragments else fragments
+    if o.level >= LEVEL_COND then @wrapInParentheses fragments else fragments
 
   unfoldSoak: ->
     @soak and this
