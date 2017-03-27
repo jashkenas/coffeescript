@@ -1791,6 +1791,7 @@ exports.Assign = class Assign extends Base
     # 1. multiple splats are disallowed: {a, b, c, x..., y..., c}
     # 2. splat has to be last element: {a, b, x..., c}? 
     #    CS should support rest element everywhere, just as for arrays.
+    #    
     splatList = []
     splatErrors = []
     if isObject
@@ -1798,7 +1799,7 @@ exports.Assign = class Assign extends Base
       [..., lastSplat] = splatList
       # errors?
       splatErrors.push "multiple rest elements are disallowed in object destructuring" if splatList.length > 1
-      splatErrors.push "rest element has to be the last element when destructuring" if lastSplat < olen - 1
+      #splatErrors.push "rest element has to be the last element when destructuring" if lastSplat < olen - 1
       objects[lastSplat].error "\n#{splatErrors.join "\n"}" if splatErrors.length > 0
       # no errors
       splatKey = objects[lastSplat]

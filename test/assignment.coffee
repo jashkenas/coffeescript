@@ -231,7 +231,7 @@ test "destructuring assignment with objects and splats", ->
 test "destructuring assignment with objects and splats: ES2015", ->
   obj = {a:1, b:2, c:3, d:4, e:5}
   
-  throws (-> CoffeeScript.compile "{a, r..., b} = x"), null, "rest element must be the last"
+  # throws (-> CoffeeScript.compile "{a, r..., b} = x"), null, "rest element must be the last"
   throws (-> CoffeeScript.compile "{a, r..., s....} = x"), null, "multiple rest elements are disallowed"
   throws (-> CoffeeScript.compile "{a, r..., s...., b} = x"), null, "multiple rest elements are disallowed"
   
@@ -279,7 +279,7 @@ test "deep destructuring assignment with objects: ES2015", ->
   eq w, a
   eq r['b'], obj.b
   
-  throws (-> CoffeeScript.compile "{a, b: {r..., c}} = x"), null, "rest element must be the last"
+  # throws (-> CoffeeScript.compile "{a, b: {r..., c}} = x"), null, "rest element must be the last"
 
 
   
