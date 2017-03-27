@@ -1841,6 +1841,7 @@ exports.Assign = class Assign extends Base
     # 1. multiple splats are disallowed: {a, b, c, x..., y..., c}
     # 2. splat has to be last element: {a, b, x..., c}? 
     #    CS should support rest element everywhere, just as for arrays.
+    #    
     splatList = []
     splatErrors = []
     if isObject
