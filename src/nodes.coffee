@@ -2509,7 +2509,8 @@ exports.Op = class Op extends Base
     return @compileUnary        o if @isUnary()
     return @compileChain        o if isChain
     switch @operator
-      when '?'  then @compileExistence o
+      when '?'  then @compileExistence o      # Check if not null and not undefined
+      when '??' then @compileExistence o, yes # Check only if not undefined
       when '**' then @compilePower o
       when '//' then @compileFloorDivision o
       when '%%' then @compileModulo o
@@ -2699,12 +2700,13 @@ exports.Throw = class Throw extends Base
 
 #### Existence
 
-# Checks a variable for existence -- not *null* and not *undefined*. This is
+# Checks a variable for existence -- not `null` and not `undefined`. This is
 # similar to `.nil?` in Ruby, and avoids having to consult a JavaScript truth
-# table.
+# table. Optionally only check if a variable is not `undefined`.
 exports.Existence = class Existence extends Base
-  constructor: (@expression) ->
+  constructor: (@expression, onlyNotUndefined = no) ->
     super()
+    @comparisonTarget = if onlyNotUndefined then 'undefined' else 'null'
 
   children: ['expression']
 
@@ -2715,10 +2717,19 @@ exports.Existence = class Existence extends Base
     code = @expression.compile o, LEVEL_OP
     if @expression.unwrap() instanceof IdentifierLiteral and not o.scope.check code
       [cmp, cnj] = if @negated then ['===', '||'] else ['!==', '&&']
-      code = "typeof #{code} #{cmp} \"undefined\" #{cnj} #{code} #{cmp} null"
+      code = "typeof #{code} #{cmp} \"undefined\" #{cnj} #{code} #{cmp} #{@comparisonTarget}"
     else
-      # do not use strict equality here; it will break existing code
-      code = "#{code} #{if @negated then '==' else '!='} null"
+      # We explicity want to use loose equality (`==`) when comparing against `null`,
+      # so that an existence check roughly corresponds to a check for truthiness.
+      # Do *not* change this to `===` for `null`, as this will break mountains of
+      # existing code. When comparing only against `undefined`, however, we want to
+      # use `===` because this use case is for parity with ES2015+ default values,
+      # which only get assigned when the variable is `undefined` (but not `null`).
+      cmp = if @comparisonTarget is 'null'
+        if @negated then '==' else '!='
+      else # `undefined`
+        if @negated then '===' else '!=='
+      code = "#{code} #{cmp} #{@comparisonTarget}"
     [@makeCode(if o.level <= LEVEL_COND then code else "(#{code})")]
 
 #### Parens
