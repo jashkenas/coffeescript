@@ -1128,16 +1128,22 @@ exports.Obj = class Obj extends Base
         node.error 'cannot have an implicit value in an implicit object'
     idt        = o.indent += TAB
     lastNoncom = @lastNonComment @properties
+
+    isCompact = true
+    isCompact = false for prop in @properties when prop instanceof Assign or prop instanceof Comment
+
     answer = []
-    answer.push @makeCode "{#{if props.length is 0 then '}' else '\n'}"
+    answer.push @makeCode "{#{if isCompact then '' else '\n'}"
     for prop, i in props
       join = if i is props.length - 1
         ''
+      else if isCompact
+        ', '
       else if prop is lastNoncom or prop instanceof Comment
         '\n'
       else
         ',\n'
-      indent = if prop instanceof Comment then '' else idt
+      indent = if isCompact or prop instanceof Comment then '' else idt
       if prop instanceof Assign
         if prop.context isnt 'object'
           prop.operatorToken.error "unexpected #{prop.operatorToken.value}"
@@ -1150,12 +1156,12 @@ exports.Obj = class Obj extends Base
           [key, value] = prop.base.cache o
           key  = new PropertyName key.value if key instanceof IdentifierLiteral
           prop = new Assign key, value, 'object'
-        else
+        else if not prop.bareLiteral?(IdentifierLiteral)
           prop = new Assign prop, prop, 'object'
       if indent then answer.push @makeCode indent
       answer.push prop.compileToFragments(o, LEVEL_TOP)...
       if join then answer.push @makeCode join
-    answer.push @makeCode "\n#{@tab}}" unless props.length is 0
+    answer.push @makeCode "#{if isCompact then '' else "\n#{@tab}"}}"
     if @front then @wrapInBraces answer else answer
 
   assigns: (name) ->
