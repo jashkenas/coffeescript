@@ -543,6 +543,9 @@ exports.PassthroughLiteral = class PassthroughLiteral extends Literal
 exports.IdentifierLiteral = class IdentifierLiteral extends Literal
   isAssignable: YES
 
+  eachName: (iterator) ->
+    iterator @
+
 exports.PropertyName = class PropertyName extends Literal
   isAssignable: YES
 
@@ -739,6 +742,14 @@ exports.Value = class Value extends Base
           snd.base = ref
         return new If new Existence(fst), snd, soak: on
       no
+
+  eachName: (iterator) ->
+    if @hasProperties()
+      iterator @
+    else if @base.isAssignable()
+      @base.eachName iterator
+    else
+      @error 'tried to assign to unassignable value'
 
 #### Comment
 
@@ -1156,6 +1167,14 @@ exports.Arr = class Arr extends Base
 
   children: ['objects']
 
+  isAssignable: ->
+    return false unless @objects.length
+
+    for obj, i in @objects
+      return false if obj instanceof Splat and i + 1 != @objects.length
+      return false unless obj.isAssignable() and (not obj.isAtomic or obj.isAtomic())
+    true
+
   compileNode: (o) ->
     return [@makeCode '[]'] unless @objects.length
     o.indent += TAB
@@ -1177,6 +1196,11 @@ exports.Arr = class Arr extends Base
   assigns: (name) ->
     for obj in @objects when obj.assigns name then return yes
     no
+
+  eachName: (iterator) ->
+    for obj in @objects
+      obj = obj.unwrapAll()
+      obj.eachName iterator
 
 #### Class
 
@@ -1660,30 +1684,39 @@ exports.Assign = class Assign extends Base
   # has not been seen yet within the current scope, declare it.
   compileNode: (o) ->
     if isValue = @variable instanceof Value
-      return @compilePatternMatch o if @variable.isArray() or @variable.isObject()
+      if @variable.isArray() or @variable.isObject()
+        return @compilePatternMatch o unless @variable.isAssignable()
+
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
       return @compileSpecialMath  o if @context in ['**=', '//=', '%%=']
+
+    unless @context
+      varBase = @variable.unwrapAll()
+      unless varBase.isAssignable()
+        @variable.error "'#{@variable.compile o}' can't be assigned"
+
+      varBase.eachName (name) =>
+        return if name.hasProperties?()
+
+        name.error message if message = isUnassignable name.value
+
+        # `moduleDeclaration` can be `'import'` or `'export'`
+        if @moduleDeclaration
+          @checkAssignability o, name
+          o.scope.add name.value, @moduleDeclaration
+        else if @param
+          o.scope.add name.value, 'var'
+        else
+          @checkAssignability o, name
+          o.scope.find name.value
+
     if @value instanceof Code
       if @value.isStatic
         @value.name = @variable.properties[0]
       else if @variable.properties?.length >= 2
         [properties..., prototype, name] = @variable.properties
         @value.name = name if prototype.name?.value is 'prototype'
-    unless @context
-      varBase = @variable.unwrapAll()
-      unless varBase.isAssignable()
-        @variable.error "'#{@variable.compile o}' can't be assigned"
-      unless varBase.hasProperties?()
-        # `moduleDeclaration` can be `'import'` or `'export'`
-        if @moduleDeclaration
-          @checkAssignability o, varBase
-          o.scope.add varBase.value, @moduleDeclaration
-        else if @param
-          o.scope.add varBase.value, 'var'
-        else
-          @checkAssignability o, varBase
-          o.scope.find varBase.value
 
     val = @value.compileToFragments o, LEVEL_LIST
     @variable.front = true if isValue and @variable.base instanceof Obj
@@ -1950,7 +1983,7 @@ exports.Code = class Code extends Base
           params.push ref = param.asReference o
           splatParamName = fragmentsToText ref.compileNode o
           if param.shouldCache()
-            exprs.push new Assign new Value(param.name), ref, '=', param: yes
+            exprs.push new Assign new Value(param.name), ref, null, param: yes
             # TODO: output destructured parameters as is, and fix destructuring
             # of objects with default values to work in this context (see
             # Obj.compileNode `if prop.context isnt 'object'`).
@@ -1973,10 +2006,10 @@ exports.Code = class Code extends Base
           # `(arg) => { var a = arg.a; }`, with a default value if it has one.
           if param.value?
             condition = new Op '==', param, new UndefinedLiteral
-            ifTrue = new Assign new Value(param.name), param.value, '=', param: yes
+            ifTrue = new Assign new Value(param.name), param.value, null, param: yes
             exprs.push new If condition, ifTrue
           else
-            exprs.push new Assign new Value(param.name), param.asReference(o), '=', param: yes
+            exprs.push new Assign new Value(param.name), param.asReference(o), null, param: yes
 
         # If this parameter comes before the splat or expansion, it will go
         # in the function definition parameter list.
@@ -1989,7 +2022,7 @@ exports.Code = class Code extends Base
             ref = param.asReference o
           else
             if param.value? and not param.assignedInBody
-              ref = new Assign new Value(param.name), param.value, '='
+              ref = new Assign new Value(param.name), param.value
             else
               ref = param
           # Add this parameter’s reference to the function scope
@@ -2002,7 +2035,7 @@ exports.Code = class Code extends Base
           # (if necessary) as an expression in the body.
           if param.value? and not param.shouldCache()
             condition = new Op '==', param, new UndefinedLiteral
-            ifTrue = new Assign new Value(param.name), param.value, '='
+            ifTrue = new Assign new Value(param.name), param.value
             exprs.push new If condition, ifTrue
           # Add this parameter to the scope, since it wouldn’t have been added yet since it was skipped earlier.
           o.scope.add param.name.value, 'var', yes if param.name?.value?
@@ -2205,7 +2238,8 @@ exports.Splat = class Splat extends Base
 
   children: ['name']
 
-  isAssignable: YES
+  isAssignable: ->
+    @name.isAssignable() and (not @name.isAtomic or @name.isAtomic())
 
   constructor: (name) ->
     super()
