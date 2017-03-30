@@ -1115,6 +1115,12 @@ exports.Obj = class Obj extends Base
 
   children: ['properties']
 
+  isAssignable: ->
+    for prop in @properties
+      prop = prop.value if prop instanceof Assign
+      return false unless prop.isAssignable()
+    true
+
   compileNode: (o) ->
     props = @properties
     if @generated
@@ -1155,6 +1161,12 @@ exports.Obj = class Obj extends Base
   assigns: (name) ->
     for prop in @properties when prop.assigns name then return yes
     no
+
+  eachName: (iterator) ->
+    for prop in @properties
+      prop = prop.value if prop instanceof Assign
+      prop = prop.unwrapAll()
+      prop.eachName iterator
 
 #### Arr
 
@@ -1719,7 +1731,6 @@ exports.Assign = class Assign extends Base
         @value.name = name if prototype.name?.value is 'prototype'
 
     val = @value.compileToFragments o, LEVEL_LIST
-    @variable.front = true if isValue and @variable.base instanceof Obj
     compiledName = @variable.compileToFragments o, LEVEL_LIST
 
     if @context is 'object'
@@ -1732,7 +1743,7 @@ exports.Assign = class Assign extends Base
       return compiledName.concat @makeCode(": "), val
 
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
-    if o.level <= LEVEL_LIST then answer else @wrapInBraces answer
+    if o.level > LEVEL_LIST or (isValue and @variable.base instanceof Obj) then @wrapInBraces answer else answer
 
   # Brief implementation of recursive pattern matching, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
@@ -2753,7 +2764,7 @@ exports.For = class For extends While
     @index.error 'cannot use index with for-from' if @from and @index
     source.ownTag.error "cannot use own with for-#{if @from then 'from' else 'in'}" if @own and not @object
     [@name, @index] = [@index, @name] if @object
-    @index.error 'index cannot be a pattern matching expression' if @index instanceof Value and not @index.isAssignable()
+    @index.error 'index cannot be a pattern matching expression' if @index?.isArray?() or @index?.isObject?()
     @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length and not @from
     @pattern = @name instanceof Value
     @index.error 'indexes do not apply to range loops' if @range and @index
