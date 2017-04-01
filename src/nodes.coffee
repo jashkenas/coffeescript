@@ -279,7 +279,7 @@ exports.Base = class Base
   makeCode: (code) ->
     new CodeFragment this, code
 
-  wrapInParentheses: (fragments) ->
+  wrapInBraces: (fragments) ->
     [].concat @makeCode('('), fragments, @makeCode(')')
 
   # `fragmentsList` is an array of arrays of fragments. Each array in fragmentsList will be
@@ -432,7 +432,7 @@ exports.Block = class Block extends Base
       answer = @joinFragmentArrays(compiledNodes, ', ')
     else
       answer = [@makeCode "void 0"]
-    if compiledNodes.length > 1 and o.level >= LEVEL_LIST then @wrapInParentheses answer else answer
+    if compiledNodes.length > 1 and o.level >= LEVEL_LIST then @wrapInBraces answer else answer
 
   # If we happen to be the top-level **Block**, wrap everything in
   # a safety closure, unless requested not to.
@@ -532,7 +532,7 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
 
   compileNode: (o) ->
     code = [@makeCode '0/0']
-    if o.level >= LEVEL_OP then @wrapInParentheses code else code
+    if o.level >= LEVEL_OP then @wrapInBraces code else code
 
 exports.StringLiteral = class StringLiteral extends Literal
 
@@ -1247,7 +1247,7 @@ exports.Class = class Class extends Base
       result = @compileClassDeclaration o
 
       # Anonymous classes are only valid in expressions
-      result = @wrapInParentheses result if not @name? and o.level is LEVEL_TOP
+      result = @wrapInBraces result if not @name? and o.level is LEVEL_TOP
 
     if @variable
       assign = new Assign @variable, new Literal(''), null, { @moduleDeclaration }
@@ -1705,6 +1705,25 @@ exports.Assign = class Assign extends Base
       if @variable.isArray() or @variable.isObject()
         return @compilePatternMatch o unless @variable.isAssignable()
 
+        # Find rest element in object destructuring.
+        # Steps below can be removed once ES proposal hits stage-4.
+        restElement = false
+        restErrors = []
+        if @variable.isObject()
+          {objects} = @variable.base
+          restList = (key for obj, key in objects when obj instanceof Splat)
+          if restList.length > 0
+            [..., lastSplat] = restList
+            restErrors.push "multiple rest elements are disallowed in object destructuring" if restList.length > 1
+            # ES requires rest element to be the last, but since CS can compile it as the last element, we actually don't have to check the postion
+            # restErrors.push "rest element has to be the last element when destructuring" if lastSplat < objects.length - 1
+            objects[lastSplat].error "\n#{restErrors.join "\n" }" if restErrors.length > 0
+            restElement = objects[lastSplat]
+            # remove rest element from objects
+            objects = (obj for obj in objects when obj not instanceof Splat)
+            # reassign 
+            @variable.base = new Obj objects, false
+
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
       return @compileSpecialMath  o if @context in ['**=', '//=', '%%=']
@@ -1747,9 +1766,31 @@ exports.Assign = class Assign extends Base
         compiledName.unshift @makeCode '"'
         compiledName.push @makeCode '"'
       return compiledName.concat @makeCode(": "), val
+    
+    # When object destructuring containes the rest element, there are at least two values.
+    # Can be removed once ES proposal hits stage-4.
+    answers = []  
+    restAnswer = false
+    # Assing rest element. Can be removed once ES proposal hits stage-4.
+    if restElement
+      # Make val into a simple variable if it isn't already.
+      vvarText = fragmentsToText val
+      if @value.unwrap() not instanceof IdentifierLiteral or @variable.assigns(vvarText)
+        assigns.push [@makeCode("#{ ref = o.scope.freeVariable 'ref' } = "), val...]
+        val = [@makeCode ref]
+        vvarText = ref
+      # Prepare array of keys to be excluded from the object
+      # TODO: refactor
+      excludeProps = ((if obj instanceof Assign then obj.variable.unwrap().value else obj.unwrap().value) for obj of objects)
+      # Fix the quotes.
+      excludeProps = ("'#{prop.replace /\'/g, ""}'" for prop of excludeProps)
+      extractKeys = new Literal "Object.keys(#{vvarText}).reduce(function(a,c) { if (![#{excludeProps}].includes(c)) a[c] = #{vvarText}[c]; return a; }, {})"  
+      restAnswer = new Assign(restElement.unwrap(), extractKeys, null).compileToFragments o, LEVEL_TOP  
 
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
-    if o.level > LEVEL_LIST or (isValue and @variable.base instanceof Obj) then @wrapInBraces answer else answer
+    answers.push if o.level > LEVEL_LIST or (isValue and @variable.base instanceof Obj) then @wrapInBraces answer else answer
+    answers.push restAnswer
+    @joinFragmentArrays answers, ', '
 
   # Brief implementation of recursive pattern matching, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
@@ -1757,24 +1798,13 @@ exports.Assign = class Assign extends Base
     top       = o.level is LEVEL_TOP
     {value}   = this
     {objects} = @variable.base
-    olen      = objects.length
-
-    # Special-case for `{} = a` and `[] = a` (empty patterns).
-    # Compile to simply `a`.
-    if olen is 0
+    unless olen = objects.length
       code = value.compileToFragments o
-      return if o.level >= LEVEL_OP then @wrapInParentheses code else code
-
+      return if o.level >= LEVEL_OP then @wrapInBraces code else code
     [obj] = objects
-
-    # Disallow `[...] = a` for some reason. (Could be equivalent to `[] = a`?)
     if olen is 1 and obj instanceof Expansion
       obj.error 'Destructuring assignment has no target'
-
     isObject = @variable.isObject()
-
-    # Special case for when there's only one thing destructured off of
-    # something. `{a} = b`, `[a] = b`, `{a: b} = c`
     if top and olen is 1 and obj not instanceof Splat
       # Pick the property straight off the value when there’s just one to pick
       # (no need to cache the value into a variable).
@@ -1805,63 +1835,22 @@ exports.Assign = class Assign extends Base
       obj.error message if message
       value = new Op '?', value, defaultValue if defaultValue
       return new Assign(obj, value, null, param: @param).compileToFragments o, LEVEL_TOP
-
     vvar     = value.compileToFragments o, LEVEL_LIST
     vvarText = fragmentsToText vvar
     assigns  = []
     expandedIdx = false
-
-    # At this point, there are several things to destructure. So the `fn()` in
-    # `{a, b} = fn()` must be cached, for example. Make vvar into a simple
-    # variable if it isn't already.
+    # Make vvar into a simple variable if it isn't already.
     if value.unwrap() not instanceof IdentifierLiteral or @variable.assigns(vvarText)
-      ref = o.scope.freeVariable 'ref'
-      assigns.push [@makeCode(ref + ' = '), vvar...]
+      assigns.push [@makeCode("#{ ref = o.scope.freeVariable 'ref' } = "), vvar...]
       vvar = [@makeCode ref]
       vvarText = ref
-
-    # And here comes the big loop that handles all of these cases:
-    # `[a, b] = c`
-    # `[a..., b] = c`
-    # `[..., a, b] = c`
-    # `[@a, b] = c`
-    # `[a = 1, b] = c`
-    # `{a, b} = c`
-    # `{@a, b} = c`
-    # `{a = 1, b} = c`
-    # etc.
-    
-    
-    # check if variable is object destructuring and containes rest element, e.g. {a, b, c...}
-    # collect non-splat vars, e.g. [a, b] from {a, b, c...}
-    nonSplatKeys = []
-    # store rest element, e.g. "c" from {a, b, c...}
-    splatKey = no 
-    # checking for splats in object destructuring before loop so we can show errors in logical order
-    # 1. multiple splats are disallowed: {a, b, c, x..., y..., c}
-    # 2. splat has to be last element: {a, b, x..., c}? 
-    #    CS should support rest element everywhere, just as for arrays.
-    #    
-    splatList = []
-    splatErrors = []
-    if isObject
-      splatList = (i for obj, i in objects when obj instanceof Splat)
-      [..., lastSplat] = splatList
-      # errors?
-      splatErrors.push "multiple rest elements are disallowed in object destructuring" if splatList.length > 1
-      #splatErrors.push "rest element has to be the last element when destructuring" if lastSplat < olen - 1
-      objects[lastSplat].error "\n#{splatErrors.join "\n"}" if splatErrors.length > 0
-      # no errors
-      splatKey = objects[lastSplat]
-      
     for obj, i in objects
       idx = i
-      if not expandedIdx and obj instanceof Splat and not isObject
+      if not expandedIdx and obj instanceof Splat
         name = obj.name.unwrap().value
         obj = obj.unwrap()
         val = "#{olen} <= #{vvarText}.length ? #{ utility 'slice', o }.call(#{vvarText}, #{i}"
-        rest = olen - i - 1
-        if rest isnt 0
+        if rest = olen - i - 1
           ivar = o.scope.freeVariable 'i', single: true
           val += ", #{ivar} = #{vvarText}.length - #{rest}) : (#{ivar} = #{i}, [])"
         else
@@ -1869,8 +1858,7 @@ exports.Assign = class Assign extends Base
         val   = new Literal val
         expandedIdx = "#{ivar}++"
       else if not expandedIdx and obj instanceof Expansion
-        rest = olen - i - 1
-        if rest isnt 0
+        if rest = olen - i - 1
           if rest is 1
             expandedIdx = "#{vvarText}.length - 1"
           else
@@ -1880,11 +1868,10 @@ exports.Assign = class Assign extends Base
             assigns.push val.compileToFragments o, LEVEL_LIST
         continue
       else
-        if (obj instanceof Splat or obj instanceof Expansion) and not isObject
+        if obj instanceof Splat or obj instanceof Expansion
           obj.error "multiple splats/expansions are disallowed in an assignment"
         defaultValue = null
         if obj instanceof Assign and obj.context is 'object'
-          nonSplatKeys.push obj.variable.unwrap().value if obj isnt splatKey
           # A regular object pattern-match.
           {variable: {base: idx}, value: obj} = obj
           if obj instanceof Assign
@@ -1894,7 +1881,6 @@ exports.Assign = class Assign extends Base
           if obj instanceof Assign
             defaultValue = obj.value
             obj = obj.variable
-          nonSplatKeys.push obj.unwrap().value if obj isnt splatKey  
           idx = if isObject
             # A shorthand `{a, b, @c} = val` pattern-match.
             if obj.this
@@ -1911,20 +1897,10 @@ exports.Assign = class Assign extends Base
       if name?
         message = isUnassignable name
         obj.error message if message
-      if obj isnt splatKey  
-        assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
-    
-    # rest element from object destructuring
-    if splatKey
-      # clean quotes from StringLiteral
-      nonSplatKeys = ((if k isnt undefined then "'#{k.replace(/\'/g, '')}'" else k) for k in nonSplatKeys)
-      extractObjectWithoutKeys = new Literal "#{utility('extractObjectWithoutKeys', o)}(#{vvarText}, [#{nonSplatKeys}])"
-      assigns.push new Assign(splatKey.unwrap(), extractObjectWithoutKeys, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
-    
-        
+      assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
     assigns.push vvar unless top or @subpattern
     fragments = @joinFragmentArrays assigns, ', '
-    if o.level < LEVEL_LIST then fragments else @wrapInParentheses fragments
+    if o.level < LEVEL_LIST then fragments else @wrapInBraces fragments
 
   # When compiling a conditional assignment, take care to ensure that the
   # operands are only evaluated once, even though we have to reference them
@@ -1940,7 +1916,7 @@ exports.Assign = class Assign extends Base
       new If(new Existence(left), right, type: 'if').addElse(new Assign(right, @value, '=')).compileToFragments o
     else
       fragments = new Op(@context[...-1], left, new Assign(right, @value, '=')).compileToFragments o
-      if o.level <= LEVEL_LIST then fragments else @wrapInParentheses fragments
+      if o.level <= LEVEL_LIST then fragments else @wrapInBraces fragments
 
   # Convert special math assignment operators like `a **= b` to the equivalent
   # extended form `a = a ** b` and then compiles that.
@@ -1968,7 +1944,7 @@ exports.Assign = class Assign extends Base
       to = "9e9"
     [valDef, valRef] = @value.cache o, LEVEL_LIST
     answer = [].concat @makeCode("[].splice.apply(#{name}, [#{fromDecl}, #{to}].concat("), valDef, @makeCode(")), "), valRef
-    if o.level > LEVEL_TOP then @wrapInParentheses answer else answer
+    if o.level > LEVEL_TOP then @wrapInBraces answer else answer
 
 #### Code
 
@@ -2171,7 +2147,7 @@ exports.Code = class Code extends Base
     answer.push @makeCode '}'
 
     return [@makeCode(@tab), answer...] if @isMethod
-    if @front or (o.level >= LEVEL_ACCESS) then @wrapInParentheses answer else answer
+    if @front or (o.level >= LEVEL_ACCESS) then @wrapInBraces answer else answer
 
   eachParamName: (iterator) ->
     param.eachName iterator for param in @params
@@ -2534,7 +2510,7 @@ exports.Op = class Op extends Base
         lhs = @first.compileToFragments o, LEVEL_OP
         rhs = @second.compileToFragments o, LEVEL_OP
         answer = [].concat lhs, @makeCode(" #{@operator} "), rhs
-        if o.level <= LEVEL_OP then answer else @wrapInParentheses answer
+        if o.level <= LEVEL_OP then answer else @wrapInBraces answer
 
   # Mimic Python's chained comparisons when multiple comparison operators are
   # used sequentially. For example:
@@ -2546,7 +2522,7 @@ exports.Op = class Op extends Base
     fst = @first.compileToFragments o, LEVEL_OP
     fragments = fst.concat @makeCode(" #{if @invert then '&&' else '||'} "),
       (shared.compileToFragments o), @makeCode(" #{@operator} "), (@second.compileToFragments o, LEVEL_OP)
-    @wrapInParentheses fragments
+    @wrapInBraces fragments
 
   # Keep reference to the left expression, unless this an existential assignment
   compileExistence: (o) ->
@@ -2637,7 +2613,7 @@ exports.In = class In extends Base
     for item, i in @array.base.objects
       if i then tests.push @makeCode cnj
       tests = tests.concat (if i then ref else sub), @makeCode(cmp), item.compileToFragments(o, LEVEL_ACCESS)
-    if o.level < LEVEL_OP then tests else @wrapInParentheses tests
+    if o.level < LEVEL_OP then tests else @wrapInBraces tests
 
   compileLoopTest: (o) ->
     [sub, ref] = @object.cache o, LEVEL_LIST
@@ -2645,7 +2621,7 @@ exports.In = class In extends Base
       @makeCode(", "), ref, @makeCode(") " + if @negated then '< 0' else '>= 0')
     return fragments if fragmentsToText(sub) is fragmentsToText(ref)
     fragments = sub.concat @makeCode(', '), fragments
-    if o.level < LEVEL_LIST then fragments else @wrapInParentheses fragments
+    if o.level < LEVEL_LIST then fragments else @wrapInBraces fragments
 
   toString: (idt) ->
     super idt, @constructor.name + if @negated then '!' else ''
@@ -2763,7 +2739,7 @@ exports.Parens = class Parens extends Base
     fragments = expr.compileToFragments o, LEVEL_PAREN
     bare = o.level < LEVEL_OP and (expr instanceof Op or expr instanceof Call or
       (expr instanceof For and expr.returns))
-    if bare then fragments else @wrapInParentheses fragments
+    if bare then fragments else @wrapInBraces fragments
 
 #### StringWithInterpolations
 
@@ -3070,7 +3046,7 @@ exports.If = class If extends Base
     body = @bodyNode().compileToFragments o, LEVEL_LIST
     alt  = if @elseBodyNode() then @elseBodyNode().compileToFragments(o, LEVEL_LIST) else [@makeCode('void 0')]
     fragments = cond.concat @makeCode(" ? "), body, @makeCode(" : "), alt
-    if o.level >= LEVEL_COND then @wrapInParentheses fragments else fragments
+    if o.level >= LEVEL_COND then @wrapInBraces fragments else fragments
 
   unfoldSoak: ->
     @soak and this
@@ -3114,20 +3090,6 @@ UTILITIES =
       return -1;
     }
   "
-  
-  # copy object properties excluding the list of keys
-  extractObjectWithoutKeys: (o) -> "
-    function (obj, keys) { 
-      var target = {}; 
-      for (var i in obj) { 
-        if (keys.indexOf(i) >= 0) continue; 
-        if (!#{utility('hasProp',o)}.call(obj, i)) continue; 
-        target[i] = obj[i]; 
-      } 
-      return target; 
-    }
-  "
-  
 
   modulo: -> """
     function(a, b) { return (+a % (b = +b) + b) % b; }
