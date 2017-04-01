@@ -179,7 +179,7 @@ test "destructuring in function definition", ->
     {url, async, beforeSend, cache, method, data}
 
   fn = ->
-  deepEqual ajax('/home', beforeSend: fn, cache: null, method: 'post'), {
+  deepEqual ajax('/home', beforeSend: fn, method: 'post'), {
     url: '/home', async: true, beforeSend: fn, cache: true, method: 'post', data: {}
   }
 

@@ -302,7 +302,7 @@ test "simple array destructuring defaults", ->
   [a = 2] = [undefined]
   eq 2, a
   [a = 3] = [null]
-  eq 3, a
+  eq null, a
   [a = 4] = [0]
   eq 0, a
   arr = [a = 5]
@@ -315,7 +315,7 @@ test "simple object destructuring defaults", ->
   {b = 2} = {b: undefined}
   eq b, 2
   {b = 3} = {b: null}
-  eq b, 3
+  eq b, null
   {b = 4} = {b: 0}
   eq b, 0
 
@@ -324,17 +324,17 @@ test "simple object destructuring defaults", ->
   {b: c = 2} = {b: undefined}
   eq c, 2
   {b: c = 3} = {b: null}
-  eq c, 3
+  eq c, null
   {b: c = 4} = {b: 0}
   eq c, 0
 
 test "multiple array destructuring defaults", ->
-  [a = 1, b = 2, c] = [null, 12, 13]
+  [a = 1, b = 2, c] = [undefined, 12, 13]
   eq a, 1
   eq b, 12
   eq c, 13
-  [a, b = 2, c = 3] = [null, 12, 13]
-  eq a, null
+  [a, b = 2, c = 3] = [undefined, 12, 13]
+  eq a, undefined
   eq b, 12
   eq c, 13
   [a = 1, b, c = 3] = [11, 12]
@@ -365,7 +365,7 @@ test "destructuring assignment with context (@) properties and defaults", ->
   a={}; b={}; c={}; d={}; e={}
   obj =
     fn: () ->
-      local = [a, {b, c: null}, d]
+      local = [a, {b, c: undefined}, d]
       [@a, {b: @b = b, @c = c}, @d, @e = e] = local
   eq undefined, obj[key] for key in ['a','b','c','d','e']
   obj.fn()
@@ -384,7 +384,7 @@ test "destructuring assignment with defaults single evaluation", ->
   [a = fn()] = [10]
   eq 10, a
   eq 1, callCount
-  {a = fn(), b: c = fn()} = {a: 20, b: null}
+  {a = fn(), b: c = fn()} = {a: 20, b: undefined}
   eq 20, a
   eq c, 1
   eq callCount, 2

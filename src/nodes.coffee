@@ -1116,8 +1116,10 @@ exports.Obj = class Obj extends Base
   children: ['properties']
 
   isAssignable: ->
+    @lhs = true
+
     for prop in @properties
-      prop = prop.value if prop instanceof Assign
+      prop = prop.value if prop instanceof Assign and prop.context is 'object'
       return false unless prop.isAssignable()
     true
 
@@ -1130,7 +1132,9 @@ exports.Obj = class Obj extends Base
     lastNoncom = @lastNonComment @properties
 
     isCompact = true
-    isCompact = false for prop in @properties when prop instanceof Assign or prop instanceof Comment
+    for prop in @properties
+      if prop instanceof Comment or (prop instanceof Assign and prop.context is 'object')
+        isCompact = false
 
     answer = []
     answer.push @makeCode "{#{if isCompact then '' else '\n'}"
@@ -1144,20 +1148,28 @@ exports.Obj = class Obj extends Base
       else
         ',\n'
       indent = if isCompact or prop instanceof Comment then '' else idt
-      if prop instanceof Assign
-        if prop.context isnt 'object'
-          prop.operatorToken.error "unexpected #{prop.operatorToken.value}"
-        if prop.variable instanceof Value and prop.variable.hasProperties()
-          prop.variable.error 'invalid object key'
-      if prop instanceof Value and prop.this
-        prop = new Assign prop.properties[0].name, prop, 'object'
-      if prop not instanceof Comment and prop not instanceof Assign
+
+      key = if prop instanceof Assign and prop.context is 'object'
+        prop.variable
+      else if prop instanceof Assign
+        prop.operatorToken.error "unexpected #{prop.operatorToken.value}" unless @lhs
+        prop.variable
+      else if prop not instanceof Comment
+        prop
+
+      if key instanceof Value and key.hasProperties()
+        key.error 'invalid object key' if prop.context is 'object' or not key.this
+        key  = key.properties[0].name
+        prop = new Assign key, prop, 'object'
+
+      if key == prop
         if prop.shouldCache()
           [key, value] = prop.base.cache o
           key  = new PropertyName key.value if key instanceof IdentifierLiteral
           prop = new Assign key, value, 'object'
         else if not prop.bareLiteral?(IdentifierLiteral)
           prop = new Assign prop, prop, 'object'
+
       if indent then answer.push @makeCode indent
       answer.push prop.compileToFragments(o, LEVEL_TOP)...
       if join then answer.push @makeCode join
@@ -1170,7 +1182,7 @@ exports.Obj = class Obj extends Base
 
   eachName: (iterator) ->
     for prop in @properties
-      prop = prop.value if prop instanceof Assign
+      prop = prop.value if prop instanceof Assign and prop.context is 'object'
       prop = prop.unwrapAll()
       prop.eachName iterator
 
@@ -1682,6 +1694,8 @@ exports.Assign = class Assign extends Base
 
   children: ['variable', 'value']
 
+  isAssignable: YES
+
   isStatement: (o) ->
     o?.level is LEVEL_TOP and @context? and (@moduleDeclaration or "?" in @context)
 
@@ -1904,6 +1918,9 @@ exports.Assign = class Assign extends Base
     [valDef, valRef] = @value.cache o, LEVEL_LIST
     answer = [].concat @makeCode("[].splice.apply(#{name}, [#{fromDecl}, #{to}].concat("), valDef, @makeCode(")), "), valRef
     if o.level > LEVEL_TOP then @wrapInBraces answer else answer
+
+  eachName: (iterator) ->
+    @variable.unwrapAll().eachName iterator
 
 #### Code
 
