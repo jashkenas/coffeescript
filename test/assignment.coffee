@@ -302,7 +302,7 @@ test "simple array destructuring defaults", ->
   [a = 2] = [undefined]
   eq 2, a
   [a = 3] = [null]
-  eq null, a
+  eq null, a # Breaking change in CS2: per ES2015, default values are applied for `undefined` but not for `null`.
   [a = 4] = [0]
   eq 0, a
   arr = [a = 5]
@@ -315,7 +315,7 @@ test "simple object destructuring defaults", ->
   {b = 2} = {b: undefined}
   eq b, 2
   {b = 3} = {b: null}
-  eq b, null
+  eq b, null # Breaking change in CS2: per ES2015, default values are applied for `undefined` but not for `null`.
   {b = 4} = {b: 0}
   eq b, 0
 
@@ -324,7 +324,7 @@ test "simple object destructuring defaults", ->
   {b: c = 2} = {b: undefined}
   eq c, 2
   {b: c = 3} = {b: null}
-  eq c, null
+  eq c, null # Breaking change in CS2: per ES2015, default values are applied for `undefined` but not for `null`.
   {b: c = 4} = {b: 0}
   eq c, 0
 

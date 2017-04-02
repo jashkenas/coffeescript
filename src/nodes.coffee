@@ -1765,6 +1765,8 @@ exports.Assign = class Assign extends Base
       return compiledName.concat @makeCode(": "), val
 
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
+    # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration,
+    # if we’re destructuring without declaring, the destructuring assignment must be wrapped in parentheses.
     if o.level > LEVEL_LIST or (isValue and @variable.base instanceof Obj) then @wrapInParentheses answer else answer
 
   # Brief implementation of recursive pattern matching, when assigning array or
