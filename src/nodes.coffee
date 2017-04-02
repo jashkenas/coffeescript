@@ -279,7 +279,7 @@ exports.Base = class Base
   makeCode: (code) ->
     new CodeFragment this, code
 
-  wrapInBraces: (fragments) ->
+  wrapInParentheses: (fragments) ->
     [].concat @makeCode('('), fragments, @makeCode(')')
 
   # `fragmentsList` is an array of arrays of fragments. Each array in fragmentsList will be
@@ -432,7 +432,7 @@ exports.Block = class Block extends Base
       answer = @joinFragmentArrays(compiledNodes, ', ')
     else
       answer = [@makeCode "void 0"]
-    if compiledNodes.length > 1 and o.level >= LEVEL_LIST then @wrapInBraces answer else answer
+    if compiledNodes.length > 1 and o.level >= LEVEL_LIST then @wrapInParentheses answer else answer
 
   # If we happen to be the top-level **Block**, wrap everything in
   # a safety closure, unless requested not to.
@@ -532,7 +532,7 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
 
   compileNode: (o) ->
     code = [@makeCode '0/0']
-    if o.level >= LEVEL_OP then @wrapInBraces code else code
+    if o.level >= LEVEL_OP then @wrapInParentheses code else code
 
 exports.StringLiteral = class StringLiteral extends Literal
 
@@ -1108,7 +1108,7 @@ exports.Slice = class Slice extends Base
 
 # An object literal, nothing fancy.
 exports.Obj = class Obj extends Base
-  constructor: (props, @generated = false) ->
+  constructor: (props, @generated = no) ->
     super()
 
     @objects = @properties = props or []
@@ -1116,12 +1116,14 @@ exports.Obj = class Obj extends Base
   children: ['properties']
 
   isAssignable: ->
-    @lhs = true
+    # Is this object the left-hand side of an assignment? If it is, this object
+    # is part of a destructuring assignment.
+    @lhs = yes
 
     for prop in @properties
       prop = prop.value if prop instanceof Assign and prop.context is 'object'
-      return false unless prop.isAssignable()
-    true
+      return no unless prop.isAssignable()
+    yes
 
   compileNode: (o) ->
     props = @properties
@@ -1131,10 +1133,10 @@ exports.Obj = class Obj extends Base
     idt        = o.indent += TAB
     lastNoncom = @lastNonComment @properties
 
-    isCompact = true
+    isCompact = yes
     for prop in @properties
       if prop instanceof Comment or (prop instanceof Assign and prop.context is 'object')
-        isCompact = false
+        isCompact = no
 
     answer = []
     answer.push @makeCode "{#{if isCompact then '' else '\n'}"
@@ -1162,7 +1164,7 @@ exports.Obj = class Obj extends Base
         key  = key.properties[0].name
         prop = new Assign key, prop, 'object'
 
-      if key == prop
+      if key is prop
         if prop.shouldCache()
           [key, value] = prop.base.cache o
           key  = new PropertyName key.value if key instanceof IdentifierLiteral
@@ -1174,7 +1176,7 @@ exports.Obj = class Obj extends Base
       answer.push prop.compileToFragments(o, LEVEL_TOP)...
       if join then answer.push @makeCode join
     answer.push @makeCode "#{if isCompact then '' else "\n#{@tab}"}}"
-    if @front then @wrapInBraces answer else answer
+    if @front then @wrapInParentheses answer else answer
 
   assigns: (name) ->
     for prop in @properties when prop.assigns name then return yes
@@ -1201,7 +1203,7 @@ exports.Arr = class Arr extends Base
     return false unless @objects.length
 
     for obj, i in @objects
-      return false if obj instanceof Splat and i + 1 != @objects.length
+      return false if obj instanceof Splat and i + 1 isnt @objects.length
       return false unless obj.isAssignable() and (not obj.isAtomic or obj.isAtomic())
     true
 
@@ -1249,7 +1251,7 @@ exports.Class = class Class extends Base
 
     # Special handling to allow `class expr.A extends A` declarations
     parentName    = @parent.base.value if @parent instanceof Value and not @parent.hasProperties()
-    @hasNameClash = @name? and @name == parentName
+    @hasNameClash = @name? and @name is parentName
 
     if executableBody or @hasNameClash
       @compileNode = @compileClassDeclaration
@@ -1259,7 +1261,7 @@ exports.Class = class Class extends Base
       result = @compileClassDeclaration o
 
       # Anonymous classes are only valid in expressions
-      result = @wrapInBraces result if not @name? and o.level is LEVEL_TOP
+      result = @wrapInParentheses result if not @name? and o.level is LEVEL_TOP
 
     if @variable
       assign = new Assign @variable, new Literal(''), null, { @moduleDeclaration }
@@ -1358,7 +1360,7 @@ exports.Class = class Class extends Base
         @boundMethods.push method.name
         method.bound = false
 
-    if initializer.length != expressions.length
+    if initializer.length isnt expressions.length
       @body.expressions = (expression.hoist() for expression in initializer)
       new Block expressions
 
@@ -1459,7 +1461,7 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
       @class.externalCtor = externalCtor
       @externalCtor.variable.base = externalCtor
 
-    if @name != @class.name
+    if @name isnt @class.name
       @body.expressions.unshift new Assign (new IdentifierLiteral @name), @class
     else
       @body.expressions.unshift @class
@@ -1710,14 +1712,14 @@ exports.Assign = class Assign extends Base
   unfoldSoak: (o) ->
     unfoldSoak o, this, 'variable'
 
-  # Compile an assignment, delegating to `compilePatternMatch` or
+  # Compile an assignment, delegating to `compileDestructuring` or
   # `compileSplice` if appropriate. Keep track of the name of the base object
   # we've been assigned to, for correct internal references. If the variable
   # has not been seen yet within the current scope, declare it.
   compileNode: (o) ->
     if isValue = @variable instanceof Value
       if @variable.isArray() or @variable.isObject()
-        return @compilePatternMatch o unless @variable.isAssignable()
+        return @compileDestructuring o unless @variable.isAssignable()
 
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
@@ -1763,17 +1765,17 @@ exports.Assign = class Assign extends Base
       return compiledName.concat @makeCode(": "), val
 
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
-    if o.level > LEVEL_LIST or (isValue and @variable.base instanceof Obj) then @wrapInBraces answer else answer
+    if o.level > LEVEL_LIST or (isValue and @variable.base instanceof Obj) then @wrapInParentheses answer else answer
 
   # Brief implementation of recursive pattern matching, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
-  compilePatternMatch: (o) ->
+  compileDestructuring: (o) ->
     top       = o.level is LEVEL_TOP
     {value}   = this
     {objects} = @variable.base
     unless olen = objects.length
       code = value.compileToFragments o
-      return if o.level >= LEVEL_OP then @wrapInBraces code else code
+      return if o.level >= LEVEL_OP then @wrapInParentheses code else code
     [obj] = objects
     if olen is 1 and obj instanceof Expansion
       obj.error 'Destructuring assignment has no target'
@@ -1873,7 +1875,7 @@ exports.Assign = class Assign extends Base
       assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
     assigns.push vvar unless top or @subpattern
     fragments = @joinFragmentArrays assigns, ', '
-    if o.level < LEVEL_LIST then fragments else @wrapInBraces fragments
+    if o.level < LEVEL_LIST then fragments else @wrapInParentheses fragments
 
   # When compiling a conditional assignment, take care to ensure that the
   # operands are only evaluated once, even though we have to reference them
@@ -1889,7 +1891,7 @@ exports.Assign = class Assign extends Base
       new If(new Existence(left), right, type: 'if').addElse(new Assign(right, @value, '=')).compileToFragments o
     else
       fragments = new Op(@context[...-1], left, new Assign(right, @value, '=')).compileToFragments o
-      if o.level <= LEVEL_LIST then fragments else @wrapInBraces fragments
+      if o.level <= LEVEL_LIST then fragments else @wrapInParentheses fragments
 
   # Convert special math assignment operators like `a **= b` to the equivalent
   # extended form `a = a ** b` and then compiles that.
@@ -1917,7 +1919,7 @@ exports.Assign = class Assign extends Base
       to = "9e9"
     [valDef, valRef] = @value.cache o, LEVEL_LIST
     answer = [].concat @makeCode("[].splice.apply(#{name}, [#{fromDecl}, #{to}].concat("), valDef, @makeCode(")), "), valRef
-    if o.level > LEVEL_TOP then @wrapInBraces answer else answer
+    if o.level > LEVEL_TOP then @wrapInParentheses answer else answer
 
   eachName: (iterator) ->
     @variable.unwrapAll().eachName iterator
@@ -2123,7 +2125,7 @@ exports.Code = class Code extends Base
     answer.push @makeCode '}'
 
     return [@makeCode(@tab), answer...] if @isMethod
-    if @front or (o.level >= LEVEL_ACCESS) then @wrapInBraces answer else answer
+    if @front or (o.level >= LEVEL_ACCESS) then @wrapInParentheses answer else answer
 
   eachParamName: (iterator) ->
     param.eachName iterator for param in @params
@@ -2151,7 +2153,7 @@ exports.Code = class Code extends Base
       superCall.error "'super' is only allowed in derived class constructors" if @ctor is 'base'
       superCall.expressions = thisAssignments
 
-    haveThisParam = thisAssignments.length and thisAssignments.length != @thisAssignments?.length
+    haveThisParam = thisAssignments.length and thisAssignments.length isnt @thisAssignments?.length
     if @ctor is 'derived' and not seenSuper and haveThisParam
       param = thisAssignments[0].variable
       param.error "Can't use @params in derived class constructors without calling super"
@@ -2486,7 +2488,7 @@ exports.Op = class Op extends Base
         lhs = @first.compileToFragments o, LEVEL_OP
         rhs = @second.compileToFragments o, LEVEL_OP
         answer = [].concat lhs, @makeCode(" #{@operator} "), rhs
-        if o.level <= LEVEL_OP then answer else @wrapInBraces answer
+        if o.level <= LEVEL_OP then answer else @wrapInParentheses answer
 
   # Mimic Python's chained comparisons when multiple comparison operators are
   # used sequentially. For example:
@@ -2498,7 +2500,7 @@ exports.Op = class Op extends Base
     fst = @first.compileToFragments o, LEVEL_OP
     fragments = fst.concat @makeCode(" #{if @invert then '&&' else '||'} "),
       (shared.compileToFragments o), @makeCode(" #{@operator} "), (@second.compileToFragments o, LEVEL_OP)
-    @wrapInBraces fragments
+    @wrapInParentheses fragments
 
   # Keep reference to the left expression, unless this an existential assignment
   compileExistence: (o) ->
@@ -2589,7 +2591,7 @@ exports.In = class In extends Base
     for item, i in @array.base.objects
       if i then tests.push @makeCode cnj
       tests = tests.concat (if i then ref else sub), @makeCode(cmp), item.compileToFragments(o, LEVEL_ACCESS)
-    if o.level < LEVEL_OP then tests else @wrapInBraces tests
+    if o.level < LEVEL_OP then tests else @wrapInParentheses tests
 
   compileLoopTest: (o) ->
     [sub, ref] = @object.cache o, LEVEL_LIST
@@ -2597,7 +2599,7 @@ exports.In = class In extends Base
       @makeCode(", "), ref, @makeCode(") " + if @negated then '< 0' else '>= 0')
     return fragments if fragmentsToText(sub) is fragmentsToText(ref)
     fragments = sub.concat @makeCode(', '), fragments
-    if o.level < LEVEL_LIST then fragments else @wrapInBraces fragments
+    if o.level < LEVEL_LIST then fragments else @wrapInParentheses fragments
 
   toString: (idt) ->
     super idt, @constructor.name + if @negated then '!' else ''
@@ -2715,7 +2717,7 @@ exports.Parens = class Parens extends Base
     fragments = expr.compileToFragments o, LEVEL_PAREN
     bare = o.level < LEVEL_OP and (expr instanceof Op or expr instanceof Call or
       (expr instanceof For and expr.returns))
-    if bare then fragments else @wrapInBraces fragments
+    if bare then fragments else @wrapInParentheses fragments
 
 #### StringWithInterpolations
 
@@ -3022,7 +3024,7 @@ exports.If = class If extends Base
     body = @bodyNode().compileToFragments o, LEVEL_LIST
     alt  = if @elseBodyNode() then @elseBodyNode().compileToFragments(o, LEVEL_LIST) else [@makeCode('void 0')]
     fragments = cond.concat @makeCode(" ? "), body, @makeCode(" : "), alt
-    if o.level >= LEVEL_COND then @wrapInBraces fragments else fragments
+    if o.level >= LEVEL_COND then @wrapInParentheses fragments else fragments
 
   unfoldSoak: ->
     @soak and this
