@@ -629,14 +629,15 @@ exports.AwaitReturn = class AwaitReturn extends Return
 # A value, variable or literal or parenthesized, indexed or dotted into,
 # or vanilla.
 exports.Value = class Value extends Base
-  constructor: (base, props, tag) ->
+  constructor: (base, props, tag, isDefaultValue = no) ->
     return base if not props and base instanceof Value
 
     super()
 
-    @base       = base
-    @properties = props or []
-    @[tag]      = true if tag
+    @base           = base
+    @properties     = props or []
+    @[tag]          = yes if tag
+    @isDefaultValue = isDefaultValue
     return this
 
   children: ['base', 'properties']
@@ -1837,7 +1838,9 @@ exports.Assign = class Assign extends Base
       value.properties.push new (if acc then Access else Index) idx
       message = isUnassignable obj.unwrap().value
       obj.error message if message
-      value = new Op '??', value, defaultValue if defaultValue
+      if defaultValue
+        defaultValue.isDefaultValue = yes
+        value = new Op '?', value, defaultValue
       return new Assign(obj, value, null, param: @param).compileToFragments o, LEVEL_TOP
 
     vvar     = value.compileToFragments o, LEVEL_LIST
@@ -1915,7 +1918,9 @@ exports.Assign = class Assign extends Base
         name = obj.unwrap().value
         acc = idx.unwrap() instanceof PropertyName
         val = new Value new Literal(vvarText), [new (if acc then Access else Index) idx]
-        val = new Op '??', val, defaultValue if defaultValue
+        if defaultValue
+          defaultValue.isDefaultValue = yes
+          val = new Op '?', val, defaultValue
       if name?
         message = isUnassignable name
         obj.error message if message
@@ -2538,8 +2543,7 @@ exports.Op = class Op extends Base
     return @compileUnary        o if @isUnary()
     return @compileChain        o if isChain
     switch @operator
-      when '?'  then @compileExistence o      # Check if not null and not undefined
-      when '??' then @compileExistence o, yes # Check only if not undefined
+      when '?'  then @compileExistence o, @second.isDefaultValue
       when '**' then @compilePower o
       when '//' then @compileFloorDivision o
       when '%%' then @compileModulo o
