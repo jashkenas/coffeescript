@@ -141,6 +141,9 @@ test "#1192: assignment starting with object literals", ->
 
 # Destructuring Assignment
 
+test "empty destructuring assignment", ->
+  {} = [] = undefined
+
 test "chained destructuring assignments", ->
   [a] = {0: b} = {'0': c} = [nonce={}]
   eq nonce, a
@@ -224,50 +227,7 @@ test "destructuring assignment with objects and splats", ->
   {a: b: [y, z...]} = obj
   eq a, y
   arrayEq [b,c,d], z
-  
-test "destructuring assignment with objects and splats: ES2015", ->
-  obj = {a:1, b:2, c:3, d:4, e:5}
-  throws (-> CoffeeScript.compile "{a, r..., s....} = x"), null, "multiple rest elements are disallowed"
-  throws (-> CoffeeScript.compile "{a, r..., s...., b} = x"), null, "multiple rest elements are disallowed"
-  prop = "b"
-  {a, b, r...} = obj
-  eq a, 1
-  eq b, 2
-  eq r.e, obj.e
-  eq r.a, undefined
-  {d, c:x, r...} = obj
-  eq x, 3
-  eq d, 4
-  eq r.c, undefined
-  eq r.b, 2
-  {a, 'b':z, g = 9, r...} = obj
-  eq g, 9
-  eq z, 2
-  eq r.b, undefined
 
-test "deep destructuring assignment with objects: ES2015", ->
-  a1={}; b1={}; c1={}; d1={}
-  obj = {
-    a: a1
-    b: {
-      'c': {
-        d: {
-          b1
-          e: c1
-          f: d1
-        }
-      }
-    }
-    b2: {b1, c1}
-  }
-  {a:w, 'b':{c:{d:{b1:bb, r1...}}}, r2...} = obj
-  eq r1.e, c1
-  eq r2.b, undefined
-  eq bb, b1
-  eq r2.b2, obj.b2
-
-
-  
 test "destructuring assignment against an expression", ->
   a={}; b={}
   [y, z] = if true then [a, b] else [b, a]
@@ -345,7 +305,7 @@ test "simple array destructuring defaults", ->
   [a = 2] = [undefined]
   eq 2, a
   [a = 3] = [null]
-  eq 3, a
+  eq null, a # Breaking change in CS2: per ES2015, default values are applied for `undefined` but not for `null`.
   [a = 4] = [0]
   eq 0, a
   arr = [a = 5]
@@ -358,7 +318,7 @@ test "simple object destructuring defaults", ->
   {b = 2} = {b: undefined}
   eq b, 2
   {b = 3} = {b: null}
-  eq b, 3
+  eq b, null # Breaking change in CS2: per ES2015, default values are applied for `undefined` but not for `null`.
   {b = 4} = {b: 0}
   eq b, 0
 
@@ -372,7 +332,7 @@ test "simple object destructuring defaults", ->
   eq c, 0
 
 test "multiple array destructuring defaults", ->
-  [a = 1, b = 2, c] = [null, 12, 13]
+  [a = 1, b = 2, c] = [undefined, 12, 13]
   eq a, 1
   eq b, 12
   eq c, 13
