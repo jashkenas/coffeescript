@@ -1793,7 +1793,7 @@ exports.Assign = class Assign extends Base
     if top and olen is 1 and obj not instanceof Splat
       # Pick the property straight off the value when there’s just one to pick
       # (no need to cache the value into a variable).
-      defaultValue = null
+      defaultValue = undefined
       if obj instanceof Assign and obj.context is 'object'
         # A regular object pattern-match.
         {variable: {base: idx}, value: obj} = obj
@@ -1818,7 +1818,7 @@ exports.Assign = class Assign extends Base
       value.properties.push new (if acc then Access else Index) idx
       message = isUnassignable obj.unwrap().value
       obj.error message if message
-      value = new Op '?', value, defaultValue if defaultValue
+      value = new Op '??', value, defaultValue if defaultValue
       return new Assign(obj, value, null, param: @param).compileToFragments o, LEVEL_TOP
 
     vvar     = value.compileToFragments o, LEVEL_LIST
@@ -1873,7 +1873,7 @@ exports.Assign = class Assign extends Base
       else
         if obj instanceof Splat or obj instanceof Expansion
           obj.error "multiple splats/expansions are disallowed in an assignment"
-        defaultValue = null
+        defaultValue = undefined
         if obj instanceof Assign and obj.context is 'object'
           # A regular object pattern-match.
           {variable: {base: idx}, value: obj} = obj
@@ -1896,7 +1896,7 @@ exports.Assign = class Assign extends Base
         name = obj.unwrap().value
         acc = idx.unwrap() instanceof PropertyName
         val = new Value new Literal(vvarText), [new (if acc then Access else Index) idx]
-        val = new Op '?', val, defaultValue if defaultValue
+        val = new Op '??', val, defaultValue if defaultValue
       if name?
         message = isUnassignable name
         obj.error message if message
