@@ -1206,12 +1206,15 @@ exports.Arr = class Arr extends Base
   children: ['objects']
 
   isAssignable: ->
-    return false unless @objects.length
+    return no unless @objects.length
 
     for obj, i in @objects
-      return false if obj instanceof Splat and i + 1 isnt @objects.length
-      return false unless obj.isAssignable() and (not obj.isAtomic or obj.isAtomic())
-    true
+      return no if obj instanceof Splat and i + 1 isnt @objects.length
+      return no unless obj.isAssignable() and (not obj.isAtomic or obj.isAtomic())
+    yes
+
+  shouldCache: ->
+    not @isAssignable()
 
   compileNode: (o) ->
     return [@makeCode '[]'] unless @objects.length
@@ -1752,8 +1755,6 @@ exports.Assign = class Assign extends Base
         if @moduleDeclaration
           @checkAssignability o, name
           o.scope.add name.value, @moduleDeclaration
-        else if @param
-          o.scope.add name.value, 'var'
         else
           @checkAssignability o, name
           o.scope.find name.value
@@ -2063,13 +2064,18 @@ exports.Code = class Code extends Base
 
         haveSplatParam = yes
         if param.splat
-          params.push ref = param.asReference o
-          splatParamName = fragmentsToText ref.compileNode o
+          if param.name instanceof Arr
+            # Splat arrays are treated oddly by ES; deal with them the legacy
+            # way in the function body. TODO: Should this be handled in the
+            # function parameter list, and if so, how?
+            splatParamName = o.scope.freeVariable 'arg'
+            params.push ref = new Value new IdentifierLiteral splatParamName
+            exprs.push new Assign new Value(param.name), ref, null, param: yes
+          else
+            params.push ref = param.asReference o
+            splatParamName = fragmentsToText ref.compileNode o
           if param.shouldCache()
             exprs.push new Assign new Value(param.name), ref, null, param: yes
-            # TODO: output destructured parameters as is, and fix destructuring
-            # of objects with default values to work in this context (see
-            # Obj.compileNode `if prop.context isnt 'object'`).
         else # `param` is an Expansion
           splatParamName = o.scope.freeVariable 'args'
           params.push new Value new IdentifierLiteral splatParamName
@@ -2088,7 +2094,7 @@ exports.Code = class Code extends Base
           # to the function body assigning it, e.g.
           # `(arg) => { var a = arg.a; }`, with a default value if it has one.
           if param.value?
-            condition = new Op '==', param, new UndefinedLiteral
+            condition = new Op '===', param, new UndefinedLiteral
             ifTrue = new Assign new Value(param.name), param.value, null, param: yes
             exprs.push new If condition, ifTrue
           else
@@ -2122,7 +2128,7 @@ exports.Code = class Code extends Base
           # function parameter list we need to assign its default value
           # (if necessary) as an expression in the body.
           if param.value? and not param.shouldCache()
-            condition = new Op '==', param, new UndefinedLiteral
+            condition = new Op '===', param, new UndefinedLiteral
             ifTrue = new Assign new Value(param.name), param.value
             exprs.push new If condition, ifTrue
           # Add this parameter to the scope, since it wouldn’t have been added yet since it was skipped earlier.
