@@ -1108,7 +1108,7 @@ exports.Slice = class Slice extends Base
 
 # An object literal, nothing fancy.
 exports.Obj = class Obj extends Base
-  constructor: (props, @generated = no) ->
+  constructor: (props, @generated = no, @lhs = no) ->
     super()
 
     @objects = @properties = props or []
@@ -1116,10 +1116,6 @@ exports.Obj = class Obj extends Base
   children: ['properties']
 
   isAssignable: ->
-    # Is this object the left-hand side of an assignment? If it is, this object
-    # is part of a destructuring assignment.
-    @lhs = yes
-
     for prop in @properties
       # Check for reserved words.
       message = isUnassignable prop.unwrapAll().value
@@ -1199,7 +1195,7 @@ exports.Obj = class Obj extends Base
 
 # An array literal.
 exports.Arr = class Arr extends Base
-  constructor: (objs) ->
+  constructor: (objs, @lhs = no) ->
     super()
 
     @objects = objs or []
@@ -1222,6 +1218,12 @@ exports.Arr = class Arr extends Base
     o.indent += TAB
 
     answer = []
+    # If this array is the left-hand side of an assignment, all its children
+    # are too.
+    if @lhs
+      for obj in @objects
+        unwrappedObj = obj.unwrapAll()
+        unwrappedObj.lhs = yes if unwrappedObj instanceof Arr or unwrappedObj instanceof Obj
     compiledObjs = (obj.compileToFragments o, LEVEL_LIST for obj in @objects)
     for fragments, index in compiledObjs
       if index
@@ -1727,7 +1729,8 @@ exports.Assign = class Assign extends Base
   # we've been assigned to, for correct internal references. If the variable
   # has not been seen yet within the current scope, declare it.
   compileNode: (o) ->
-    if isValue = @variable instanceof Value
+    isValue = @variable instanceof Value
+    if isValue
       # When compiling `@variable`, remember if it is part of a function parameter.
       @variable.param = @param
 
@@ -1736,6 +1739,10 @@ exports.Assign = class Assign extends Base
       # in ES and we can output it as is; otherwise we `@compileDestructuring`
       # and convert this ES-unsupported destructuring into acceptable output.
       if @variable.isArray() or @variable.isObject()
+        # This is the left-hand side of an assignment; let `Arr` and `Obj`
+        # know that, so that those nodes know that they’re assignable as
+        # destructured variables.
+        @variable.base.lhs = yes
         return @compileDestructuring o unless @variable.isAssignable()
 
       return @compileSplice       o if @variable.isSplice()
@@ -1750,14 +1757,14 @@ exports.Assign = class Assign extends Base
       varBase.eachName (name) =>
         return if name.hasProperties?()
 
-        name.error message if message = isUnassignable name.value
+        message = isUnassignable name.value
+        name.error message if message
 
         # `moduleDeclaration` can be `'import'` or `'export'`
+        @checkAssignability o, name
         if @moduleDeclaration
-          @checkAssignability o, name
           o.scope.add name.value, @moduleDeclaration
         else
-          @checkAssignability o, name
           o.scope.find name.value
 
     if @value instanceof Code
@@ -2122,6 +2129,7 @@ exports.Code = class Code extends Base
           # Add this parameter’s reference(s) to the function scope.
           if param.name instanceof Arr or param.name instanceof Obj
             # This parameter is destructured.
+            param.name.lhs = yes
             param.name.eachName (prop) ->
               o.scope.parameter prop.value
           else
