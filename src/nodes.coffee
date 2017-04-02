@@ -2746,9 +2746,7 @@ exports.Existence = class Existence extends Base
     code = @expression.compile o, LEVEL_OP
     if @expression.unwrap() instanceof IdentifierLiteral and not o.scope.check code
       [cmp, cnj] = if @negated then ['===', '||'] else ['!==', '&&']
-      code = "typeof #{code} #{cmp} \"undefined\""
-      if @comparisonTarget isnt 'undefined'
-        code += " #{cnj} #{code} #{cmp} #{@comparisonTarget}"
+      code = "typeof #{code} #{cmp} \"undefined\"" + if @comparisonTarget isnt 'undefined' then " #{cnj} #{code} #{cmp} #{@comparisonTarget}" else ''
     else
       # We explicity want to use loose equality (`==`) when comparing against `null`,
       # so that an existence check roughly corresponds to a check for truthiness.
