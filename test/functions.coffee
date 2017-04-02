@@ -116,7 +116,19 @@ test "destructured splatted parameters", ->
   splatArrayRest = ([a...],b...) -> arrayEq(a,b); b
   arrayEq splatArray(arr), arr
   arrayEq splatArrayRest(arr,0,1,2), arr
+  
 
+test "destructured object parameters", ->
+  a = {}; b = {}; c = {}
+  obj = {a, b, c}
+  destObj = ({a, b}) -> a
+  eq destObj(obj), a
+  eq destObj(obj), obj.a
+  destObj = ({a, r...}) -> r
+  eq destObj(obj).c, c  
+  eq destObj(obj).b, obj.b
+  eq destObj(obj).a, undefined
+  
 test "@-parameters: automatically assign an argument's value to a property of the context", ->
   nonce = {}
 

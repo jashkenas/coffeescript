@@ -1696,33 +1696,19 @@ exports.Assign = class Assign extends Base
   unfoldSoak: (o) ->
     unfoldSoak o, this, 'variable'
 
-  # Compile an assignment, delegating to `compilePatternMatch` or
+  # Compile an assignment, delegating to `compilePatternMatch`, `compileObjectDestruct' or
   # `compileSplice` if appropriate. Keep track of the name of the base object
   # we've been assigned to, for correct internal references. If the variable
   # has not been seen yet within the current scope, declare it.
   compileNode: (o) ->
+    # Store rest elements. Can be removed once ES proposal hits stage-4.
+    answers = []
     if isValue = @variable instanceof Value
       if @variable.isArray() or @variable.isObject()
         return @compilePatternMatch o unless @variable.isAssignable()
-
-        # Find rest element in object destructuring.
-        # Steps below can be removed once ES proposal hits stage-4.
-        restElement = false
-        restErrors = []
-        if @variable.isObject()
-          {objects} = @variable.base
-          restList = (key for obj, key in objects when obj instanceof Splat)
-          if restList.length > 0
-            [..., lastSplat] = restList
-            restErrors.push "multiple rest elements are disallowed in object destructuring" if restList.length > 1
-            # ES requires rest element to be the last, but since CS can compile it as the last element, we actually don't have to check the postion
-            # restErrors.push "rest element has to be the last element when destructuring" if lastSplat < objects.length - 1
-            objects[lastSplat].error "\n#{restErrors.join "\n" }" if restErrors.length > 0
-            restElement = objects[lastSplat]
-            # remove rest element from objects
-            objects = (obj for obj in objects when obj not instanceof Splat)
-            # reassign 
-            @variable.base = new Obj objects, false
+        
+        # Find rest elements in object destructuring. Can be removed once ES proposal hits stage-4.
+        answers = if @variable.isObject() and restElements = @compileObjectDestruct(o) then restElements else []
 
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
@@ -1766,32 +1752,62 @@ exports.Assign = class Assign extends Base
         compiledName.unshift @makeCode '"'
         compiledName.push @makeCode '"'
       return compiledName.concat @makeCode(": "), val
-    
-    # When object destructuring containes the rest element, there are at least two values.
-    # Can be removed once ES proposal hits stage-4.
-    answers = []  
-    restAnswer = false
-    # Assing rest element. Can be removed once ES proposal hits stage-4.
-    if restElement
-      # Make val into a simple variable if it isn't already.
-      vvarText = fragmentsToText val
-      if @value.unwrap() not instanceof IdentifierLiteral or @variable.assigns(vvarText)
-        assigns.push [@makeCode("#{ ref = o.scope.freeVariable 'ref' } = "), val...]
-        val = [@makeCode ref]
-        vvarText = ref
-      # Prepare array of keys to be excluded from the object
-      # TODO: refactor
-      excludeProps = ((if obj instanceof Assign then obj.variable.unwrap().value else obj.unwrap().value) for obj of objects)
-      # Fix the quotes.
-      excludeProps = ("'#{prop.replace /\'/g, ""}'" for prop of excludeProps)
-      extractKeys = new Literal "Object.keys(#{vvarText}).reduce(function(a,c) { if (![#{excludeProps}].includes(c)) a[c] = #{vvarText}[c]; return a; }, {})"  
-      restAnswer = new Assign(restElement.unwrap(), extractKeys, null).compileToFragments o, LEVEL_TOP  
-
+   
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
-    answers.push if o.level > LEVEL_LIST or (isValue and @variable.base instanceof Obj) then @wrapInBraces answer else answer
-    answers.push restAnswer
+    # When ES proposal for rest elements in object destructuring hits stage-4 uncomment the line below ....
+    # return if o.level > LEVEL_LIST or (isValue and @variable.base instanceof Obj) then @wrapInBraces answer else answer
+    # ... and remove these lines:
+    answers.unshift if o.level > LEVEL_LIST or (isValue and @variable.base instanceof Obj) then @wrapInBraces answer else answer
     @joinFragmentArrays answers, ', '
-
+  
+  # Check object destructuring variable for rest elements
+  # Can be remove once ES proposal hots stage-4  
+  compileObjectDestruct: (o) ->
+    # Recursive function for searching and storing rest elements in objects.
+    # Parameter props[] is used to store nested object properties, e.g. {a: {b, c: {d, r1...}, r2...}, r3...} = obj
+    traverseRest = (objects, props = []) ->
+      results = []
+      restElement = no
+      for obj, key in objects
+        if obj instanceof Assign and obj.context == "object" and obj.value.base instanceof Obj
+          props.push obj.variable.base.value
+          results = traverseRest obj.value.base.objects, props
+          props.pop()
+        if obj instanceof Splat
+          obj.error "multiple rest elements are disallowed in object destructuring" if restElement
+          restElement = {key, name: obj.unwrap(), props: [props...]}
+      if restElement
+        # Remove rest element from the object.
+        objects.splice restElement.key, 1
+        # Prepare array of property keys to be excluded from the object
+        # TODO: refactor
+        excludeProps = ((if obj instanceof Assign then obj.variable.unwrap().value else obj.unwrap().value) for obj in objects)
+        # Fix the quotes.
+        excludeProps = ("'#{prop.replace /\'/g, ""}'" for prop in excludeProps)
+        restElement["excludeProps"] = excludeProps
+        results.push restElement 
+      results  
+    {objects} = @variable.base  
+    # Find all rest elements.
+    restList = traverseRest objects
+    answers = []  
+    return answers unless restList.length > 0
+    val = @value.compileToFragments o, LEVEL_LIST
+    vvarText = fragmentsToText val
+    # Make val into a simple variable if it isn't already.
+    if @value.unwrap() not instanceof IdentifierLiteral or @variable.assigns vvarText
+      answers.push [@makeCode("#{(ref = o.scope.freeVariable('ref'))} = "), val...]
+      val = [@makeCode(ref)]
+      vvarText = ref
+    for restElement in restList
+      # Build properties path.
+      varProp = ("['#{prop.replace /\'/g, ""}']" for prop in restElement.props).join ""
+      vvarPropText = "#{vvarText}#{varProp}"
+      # Assign object values to the rest element.
+      extractKeys = new Literal "Object.keys(#{vvarPropText}).reduce(function(a,c) { return ![#{restElement.excludeProps}].includes(c) && (a[c] = #{vvarPropText}[c]), a; }, {})"
+      answers.push new Assign(restElement.name, extractKeys, null).compileToFragments o, LEVEL_TOP 
+    answers  
+      
   # Brief implementation of recursive pattern matching, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
   compilePatternMatch: (o) ->
