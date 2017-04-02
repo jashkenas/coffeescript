@@ -2118,7 +2118,7 @@ exports.Code = class Code extends Base
           if param.name instanceof Arr or param.name instanceof Obj
             # This parameter is destructured.
             param.name.eachName (prop) ->
-              o.scope.parameter fragmentsToText prop.compileToFragments o
+              o.scope.parameter prop.value
           else
             o.scope.parameter fragmentsToText (if param.value? then param else ref).compileToFragments o
           params.push ref
