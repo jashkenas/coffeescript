@@ -2427,7 +2427,7 @@ exports.While = class While extends Base
 # Simple Arithmetic and logical operations. Performs some conversion from
 # CoffeeScript operations into their JavaScript equivalents.
 exports.Op = class Op extends Base
-  constructor: (op, first, second, flip ) ->
+  constructor: (op, first, second, flip) ->
     return new In first, second if op is 'in'
     if op is 'do'
       return Op::generateDo first
@@ -2562,14 +2562,14 @@ exports.Op = class Op extends Base
     @wrapInParentheses fragments
 
   # Keep reference to the left expression, unless this an existential assignment
-  compileExistence: (o) ->
+  compileExistence: (o, checkOnlyUndefined) ->
     if @first.shouldCache()
       ref = new IdentifierLiteral o.scope.freeVariable 'ref'
       fst = new Parens new Assign ref, @first
     else
       fst = @first
       ref = fst
-    new If(new Existence(fst), ref, type: 'if').addElse(@second).compileToFragments o
+    new If(new Existence(fst, checkOnlyUndefined), ref, type: 'if').addElse(@second).compileToFragments o
 
   # Compile a unary **Op**.
   compileUnary: (o) ->
@@ -2746,7 +2746,9 @@ exports.Existence = class Existence extends Base
     code = @expression.compile o, LEVEL_OP
     if @expression.unwrap() instanceof IdentifierLiteral and not o.scope.check code
       [cmp, cnj] = if @negated then ['===', '||'] else ['!==', '&&']
-      code = "typeof #{code} #{cmp} \"undefined\" #{cnj} #{code} #{cmp} #{@comparisonTarget}"
+      code = "typeof #{code} #{cmp} \"undefined\""
+      if @comparisonTarget isnt 'undefined'
+        code += " #{cnj} #{code} #{cmp} #{@comparisonTarget}"
     else
       # We explicity want to use loose equality (`==`) when comparing against `null`,
       # so that an existence check roughly corresponds to a check for truthiness.
