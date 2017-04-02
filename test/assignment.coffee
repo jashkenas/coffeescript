@@ -225,7 +225,6 @@ test "destructuring assignment with objects and splats", ->
   eq a, y
   arrayEq [b,c,d], z
   
-
 test "destructuring assignment with objects and splats: ES2015", ->
   obj = {a:1, b:2, c:3, d:4, e:5}
   throws (-> CoffeeScript.compile "{a, r..., s....} = x"), null, "multiple rest elements are disallowed"
@@ -261,7 +260,6 @@ test "deep destructuring assignment with objects: ES2015", ->
     }
     b2: {b1, c1}
   }
-
   {a:w, 'b':{c:{d:{b1:bb, r1...}}}, r2...} = obj
   eq r1.e, c1
   eq r2.b, undefined
@@ -269,6 +267,7 @@ test "deep destructuring assignment with objects: ES2015", ->
   eq r2.b2, obj.b2
 
 
+  
 test "destructuring assignment against an expression", ->
   a={}; b={}
   [y, z] = if true then [a, b] else [b, a]
