@@ -1763,6 +1763,8 @@ exports.Assign = class Assign extends Base
   # Check object destructuring variable for rest elements
   # Can be remove once ES proposal hots stage-4  
   compileObjectDestruct: (o) ->
+    getPropValue = (obj) ->
+      fragmentsToText (if obj instanceof Assign then obj.variable.unwrapAll() else obj.unwrap()).compileToFragments(o)
     # Recursive function for searching and storing rest elements in objects.
     # Parameter props[] is used to store nested object properties, e.g. {a: {b, c: {d, r1...}, r2...}, r3...} = obj
     traverseRest = (objects, props = []) ->
@@ -1770,7 +1772,7 @@ exports.Assign = class Assign extends Base
       restElement = no
       for obj, key in objects
         if obj instanceof Assign and obj.context == "object" and obj.value.base instanceof Obj
-          props.push obj.variable.base.value
+          props.push getPropValue obj
           results = traverseRest obj.value.base.objects, props
           props.pop()
         if obj instanceof Splat
@@ -1781,9 +1783,9 @@ exports.Assign = class Assign extends Base
         objects.splice restElement.key, 1
         # Prepare array of property keys to be excluded from the object
         # TODO: refactor
-        excludeProps = ((if obj instanceof Assign then obj.variable.unwrap().value else obj.unwrap().value) for obj in objects)
+        excludeProps = (getPropValue(obj) for obj in objects)
         # Fix the quotes.
-        excludeProps = ("'#{prop.replace /\'/g, ""}'" for prop in excludeProps)
+        excludeProps = ((if prop[0] == "`" then prop else "'#{prop.replace /\'/g, ""}'") for prop in excludeProps)
         restElement["excludeProps"] = excludeProps
         results.push restElement 
       results  
@@ -1801,7 +1803,7 @@ exports.Assign = class Assign extends Base
       vvarText = ref
     for restElement in restList
       # Build properties path.
-      varProp = ("['#{prop.replace /\'/g, ""}']" for prop in restElement.props).join ""
+      varProp = ((if prop[0] == "`" then "[#{prop}]" else "['#{prop.replace /\'/g, ""}']") for prop in restElement.props).join ""
       vvarPropText = "#{vvarText}#{varProp}"
       # Assign object values to the rest element.
       extractKeys = new Literal "Object.keys(#{vvarPropText}).reduce(function(a,c) { return ![#{restElement.excludeProps}].includes(c) && (a[c] = #{vvarPropText}[c]), a; }, {})"

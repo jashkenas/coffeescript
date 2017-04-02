@@ -230,6 +230,7 @@ test "destructuring assignment with objects and splats: ES2015", ->
   obj = {a:1, b:2, c:3, d:4, e:5}
   throws (-> CoffeeScript.compile "{a, r..., s....} = x"), null, "multiple rest elements are disallowed"
   throws (-> CoffeeScript.compile "{a, r..., s...., b} = x"), null, "multiple rest elements are disallowed"
+  prop = "b"
   {a, b, r...} = obj
   eq a, 1
   eq b, 2
