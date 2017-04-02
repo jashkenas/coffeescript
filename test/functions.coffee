@@ -352,3 +352,13 @@ test "#4406 Destructured parameter default evaluation order with generator funct
   next    = -> ++current
   foo = ({ a = next() }, b = next()) -> [ a, b ]
   arrayEq foo({}), [1, 2]
+
+test "Destructured parameter with default value, that itself has a default value", ->
+  # Adapted from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment
+  draw = ({size = 'big', coords = {x: 0, y: 0}, radius = 25} = {}) -> "#{size}-#{coords.x}-#{coords.y}-#{radius}"
+  output = draw
+    coords:
+      x: 18
+      y: 30
+    radius: 30
+  eq output, 'big-18-30-30'

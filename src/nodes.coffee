@@ -584,8 +584,7 @@ exports.BooleanLiteral = class BooleanLiteral extends Literal
 
 #### Return
 
-# A `return` is a *pureStatement* -- wrapping it in a closure wouldn't
-# make sense.
+# A `return` is a *pureStatement*—wrapping it in a closure wouldn’t make sense.
 exports.Return = class Return extends Base
   constructor: (@expression) ->
     super()
@@ -1121,9 +1120,16 @@ exports.Obj = class Obj extends Base
     @lhs = yes
 
     for prop in @properties
+      # Check for reserved words.
+      message = isUnassignable prop.unwrapAll().value
+      prop.error message if message
+
       prop = prop.value if prop instanceof Assign and prop.context is 'object'
       return no unless prop.isAssignable()
     yes
+
+  shouldCache: ->
+    not @isAssignable()
 
   compileNode: (o) ->
     props = @properties
@@ -1186,7 +1192,7 @@ exports.Obj = class Obj extends Base
     for prop in @properties
       prop = prop.value if prop instanceof Assign and prop.context is 'object'
       prop = prop.unwrapAll()
-      prop.eachName iterator
+      prop.eachName iterator if prop.eachName?
 
 #### Arr
 
@@ -1718,6 +1724,13 @@ exports.Assign = class Assign extends Base
   # has not been seen yet within the current scope, declare it.
   compileNode: (o) ->
     if isValue = @variable instanceof Value
+      # When compiling `@variable`, remember if it is part of a function parameter.
+      @variable.param = @param
+
+      # If `@variable` is an array or an object, we’re destructuring;
+      # if it’s also `isAssignable()`, the destructuring syntax is supported
+      # in ES and we can output it as is; otherwise we `@compileDestructuring`
+      # and convert this ES-unsupported destructuring into acceptable output.
       if @variable.isArray() or @variable.isObject()
         return @compileDestructuring o unless @variable.isAssignable()
 
@@ -1767,7 +1780,10 @@ exports.Assign = class Assign extends Base
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
     # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration,
     # if we’re destructuring without declaring, the destructuring assignment must be wrapped in parentheses.
-    if o.level > LEVEL_LIST or (isValue and @variable.base instanceof Obj) then @wrapInParentheses answer else answer
+    if o.level > LEVEL_LIST or (isValue and @variable.base instanceof Obj and not @param)
+      @wrapInParentheses answer
+    else
+      answer
 
   # Brief implementation of recursive pattern matching, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
@@ -2089,11 +2105,16 @@ exports.Code = class Code extends Base
             ref = param.asReference o
           else
             if param.value? and not param.assignedInBody
-              ref = new Assign new Value(param.name), param.value
+              ref = new Assign new Value(param.name), param.value, null, param: yes
             else
               ref = param
-          # Add this parameter’s reference to the function scope
-          o.scope.parameter fragmentsToText (if param.value? then param else ref).compileToFragments o
+          # Add this parameter’s reference(s) to the function scope.
+          if param.name instanceof Arr or param.name instanceof Obj
+            # This parameter is destructured.
+            param.name.eachName (prop) ->
+              o.scope.parameter fragmentsToText prop.compileToFragments o
+          else
+            o.scope.parameter fragmentsToText (if param.value? then param else ref).compileToFragments o
           params.push ref
         else
           paramsAfterSplat.push param
