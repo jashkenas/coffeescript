@@ -718,7 +718,7 @@ test "export an aliased member named default", ->
     };"""
   eq toJS(input), output
 
-test "export an imported member named default", ->
+test "import an imported member named default", ->
   input = "import { default } from 'lib'"
   output = """
     import {
@@ -726,10 +726,26 @@ test "export an imported member named default", ->
     } from 'lib';"""
   eq toJS(input), output
 
-test "export an imported aliased member named default", ->
+test "import an imported aliased member named default", ->
   input = "import { default as def } from 'lib'"
   output = """
     import {
+      default as def
+    } from 'lib';"""
+  eq toJS(input), output
+
+test "export an imported member named default", ->
+  input = "export { default } from 'lib'"
+  output = """
+    export {
+      default
+    } from 'lib';"""
+  eq toJS(input), output
+
+test "export an imported aliased member named default", ->
+  input = "export { default as def } from 'lib'"
+  output = """
+    export {
       default as def
     } from 'lib';"""
   eq toJS(input), output
@@ -749,3 +765,11 @@ test "#4394: export shouldn't prevent variable declarations", ->
     };
   """
   eq toJS(input), output
+
+test "#4451: `default` in an export statement is only treated as a keyword when it follows `export` or `as`", ->
+  input = "export default { default: 1 }"
+  output = """
+    export default {
+      "default": 1
+    };
+  """

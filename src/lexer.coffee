@@ -124,10 +124,10 @@ exports.Lexer = class Lexer
       if @tag() in ['DEFAULT', 'IMPORT_ALL', 'IDENTIFIER']
         @token 'AS', id
         return id.length
-    if id is 'as' and @seenExport and @tag() is 'IDENTIFIER'
+    if id is 'as' and @seenExport and @tag() in ['IDENTIFIER', 'DEFAULT']
       @token 'AS', id
       return id.length
-    if id is 'default' and @seenExport
+    if id is 'default' and @seenExport and @tag() in ['EXPORT', 'AS']
       @token 'DEFAULT', id
       return id.length
 
