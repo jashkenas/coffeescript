@@ -771,7 +771,7 @@ cubes = (function() {
       <section id="coffeescript-2">
         <h2>CoffeeScript 2</h2><h3>Why CoffeeScript When There’s ES2015+?</h3><p>CoffeeScript introduced many new features to the JavaScript world, such as <a href="#fat-arrow"><code>=&gt;</code></a> and <a href="#destructuring">destructuring</a> and <a href="#classes">classes</a>. We are happy that ECMA has seen their utility and adopted them into ECMAScript.</p>
 <p>CoffeeScript’s intent, however, was never to be a superset of JavaScript. One of the guiding principles of CoffeeScript has been <em>simplicity:</em> not just removing JavaScript’s “bad parts,” but providing a cleaner, terser syntax that uses less punctuation and enforces indentation, to make code easier to read and reason about. Increased clarity leads to increased quality, and fewer bugs. This benefit of CoffeeScript remains, even in an ES2015+ world.</p>
-<h3>ES2015+ Output</h3><p>CoffeeScript 2 supports many of the latest ES2015+ features, output using ES2015+ syntax. If you’re looking for a single tool that takes CoffeeScript input and generates JavaScript output that runs in any JavaScript runtime, assuming you opt out of certain newer features, stick to the <a href="v1/">CoffeeScript 1.x branch</a>. CoffeeScript 2 <a href="#breaking-changes">breaks compatibility</a> with certain CoffeeScript 1.x features in order to conform with the ES2015+ specifications, and generate more idiomatic output (a CoffeeScript <code>=&gt;</code> becomes an ES <code>=&gt;</code>; a CoffeeScript <code>class</code> becomes an ES <code>class</code>; and so on).</p>
+<h3>ES2015+ Output</h3><p>CoffeeScript 2 supports many of the latest ES2015+ features, output using ES2015+ syntax. If you’re looking for a single tool that takes CoffeeScript input and generates JavaScript output that runs in any JavaScript runtime, assuming you opt out of certain newer features, stick to the <a href="/v1/">CoffeeScript 1.x branch</a>. CoffeeScript 2 <a href="#breaking-changes">breaks compatibility</a> with certain CoffeeScript 1.x features in order to conform with the ES2015+ specifications, and generate more idiomatic output (a CoffeeScript <code>=&gt;</code> becomes an ES <code>=&gt;</code>; a CoffeeScript <code>class</code> becomes an ES <code>class</code>; and so on).</p>
 <p>Since the CoffeeScript 2 compiler outputs ES2015+ syntax, it is your responsibility to either ensure that your target JavaScript runtime(s) support all these features, or that you pass the output through another transpiler like <a href="http://babeljs.io/">Babel</a>, <a href="https://github.com/rollup/rollup">Rollup</a> or <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>. In general, <a href="http://node.green/">CoffeeScript 2’s output is supported as is by Node.js 7.6+</a>, except for modules which require transpilation.</p>
 <p>There are many great task runners for setting up JavaScript build chains, such as <a href="http://gulpjs.com/">Gulp</a>, <a href="https://webpack.github.io/">Webpack</a>, <a href="https://gruntjs.com/">Grunt</a> and <a href="http://broccolijs.com/">Broccoli</a>. If you’re looking for a very minimal solution to get started, you can use <a href="https://babeljs.io/docs/plugins/preset-env/">babel-preset-env</a> and the command line:</p>
 <blockquote>
@@ -781,7 +781,7 @@ coffee -p *.coffee | babel --presets env > app.js</code></pre></blockquote>
 
       </section>
       <section id="installation">
-        <h2>Installation</h2><p>The command-line version of <code>coffee</code> is available as a <a href="http://nodejs.org/">Node.js</a> utility. The <a href="v2/browser-compiler/coffeescript.js">core compiler</a> however, does not depend on Node, and can be run in any JavaScript environment, or in the browser (see <a href="#try">Try CoffeeScript</a>).</p>
+        <h2>Installation</h2><p>The command-line version of <code>coffee</code> is available as a <a href="http://nodejs.org/">Node.js</a> utility. The <a href="/v2/browser-compiler/coffeescript.js">core compiler</a> however, does not depend on Node, and can be run in any JavaScript environment, or in the browser (see <a href="#try">Try CoffeeScript</a>).</p>
 <p>To install, first make sure you have a working copy of the latest stable version of <a href="http://nodejs.org/">Node.js</a>. You can then install CoffeeScript globally with <a href="http://npmjs.org">npm</a>:</p>
 <blockquote>
 <pre><code>npm install --global coffeescript@next</code></pre></blockquote>
@@ -3290,11 +3290,11 @@ task('build:parser', 'rebuild the Jison parser', function(options) {
   </div>
   
 </aside>
-<p>If you need to invoke one task before another — for example, running <code>build</code> before <code>test</code>, you can use the <code>invoke</code> function: <code>invoke &#39;build&#39;</code>. Cake tasks are a minimal way to expose your CoffeeScript functions to the command line, so <a href="v2/annotated-source/cake.html">don’t expect any fanciness built-in</a>. If you need dependencies, or async callbacks, it’s best to put them in your code itself — not the cake task.</p>
+<p>If you need to invoke one task before another — for example, running <code>build</code> before <code>test</code>, you can use the <code>invoke</code> function: <code>invoke &#39;build&#39;</code>. Cake tasks are a minimal way to expose your CoffeeScript functions to the command line, so <a href="/v2/annotated-source/cake.html">don’t expect any fanciness built-in</a>. If you need dependencies, or async callbacks, it’s best to put them in your code itself — not the cake task.</p>
 
       </section>
       <section id="scripts">
-        <h2><code>&quot;text/coffeescript&quot;</code> Script Tags</h2><p>While it’s not recommended for serious use, CoffeeScripts may be included directly within the browser using <code>&lt;script type=&quot;text/coffeescript&quot;&gt;</code> tags. The source includes a compressed and minified version of the compiler (<a href="v2/browser-compiler/coffeescript.js">Download current version here, 51k when gzipped</a>) as <code>v2/browser-compiler/coffeescript.js</code>. Include this file on a page with inline CoffeeScript tags, and it will compile and evaluate them in order.</p>
+        <h2><code>&quot;text/coffeescript&quot;</code> Script Tags</h2><p>While it’s not recommended for serious use, CoffeeScripts may be included directly within the browser using <code>&lt;script type=&quot;text/coffeescript&quot;&gt;</code> tags. The source includes a compressed and minified version of the compiler (<a href="/v2/browser-compiler/coffeescript.js">Download current version here, 51k when gzipped</a>) as <code>v2/browser-compiler/coffeescript.js</code>. Include this file on a page with inline CoffeeScript tags, and it will compile and evaluate them in order.</p>
 <p>In fact, the little bit of glue script that runs <a href="#try">Try CoffeeScript</a>, as well as the code examples and other interactive parts of this site, is implemented in just this way. View source and look at the bottom of the page to see the example. Including the script also gives you access to <code>CoffeeScript.compile()</code> so you can pop open your JavaScript console and try compiling some strings.</p>
 <p>The usual caveats about CoffeeScript apply — your inline scripts will run within a closure wrapper, so if you want to expose global variables or functions, attach them to the <code>window</code> object.</p>
 
@@ -3435,7 +3435,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
 <li>The browser compiler can once again be built unminified via <code>MINIFY=false cake build:browser</code>.</li>
 <li>The error-prone patched version of <code>Error.prepareStackTrace</code> has been removed.</li>
 <li>Command completion in the REPL (pressing tab to get suggestions) has been fixed for Node 6.9.1+.</li>
-<li>The <a href="v2/test.html">browser-based tests</a> now include all the tests as the Node-based version.</li>
+<li>The <a href="/v2/test.html">browser-based tests</a> now include all the tests as the Node-based version.</li>
 </ul>
 <div class="anchor" id="1.12.1"></div>
 <h2 class="header">
@@ -3454,7 +3454,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
 <li>CoffeeScript now provides a <a href="#generator-iteration"><code>for…from</code></a> syntax for outputting ES2015 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of"><code>for…of</code></a>. (Sorry they couldn’t match, but we came up with <code>for…of</code> first for something else.) This allows iterating over generators or any other iterable object. Note that using <code>for…from</code> in your code makes you responsible for ensuring that either your runtime supports <code>for…of</code> or that you transpile the output JavaScript further to a version your target runtime(s) support.</li>
 <li>Triple backticks (<code>```​</code>) allow the creation of embedded JavaScript blocks where escaping single backticks is not required, which should improve interoperability with ES2015 template literals and with Markdown.</li>
 <li>Within single-backtick embedded JavaScript, backticks can now be escaped via <code>\`​</code>.</li>
-<li>The browser tests now run in the browser again, and are accessible <a href="v2/test.html">here</a> if you would like to test your browser.</li>
+<li>The browser tests now run in the browser again, and are accessible <a href="/v2/test.html">here</a> if you would like to test your browser.</li>
 <li>CoffeeScript-only keywords in ES2015 <code>import</code>s and <code>export</code>s are now ignored.</li>
 <li>The compiler now throws an error on trying to export an anonymous class.</li>
 <li>Bugfixes related to tokens and location data, for better source maps and improved compatibility with downstream tools.</li>
