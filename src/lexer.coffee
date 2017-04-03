@@ -67,6 +67,7 @@ exports.Lexer = class Lexer
            @numberToken()     or
            @regexToken()      or
            @jsToken()         or
+           @ctToken()         or
            @literalToken()
 
       # Update position
@@ -245,12 +246,13 @@ exports.Lexer = class Lexer
       when '"'   then STRING_DOUBLE
       when "'''" then HEREDOC_SINGLE
       when '"""' then HEREDOC_DOUBLE
+      when '<*>' then HERETAG_DOUBLE
     heredoc = quote.length is 3
 
     {tokens, index: end} = @matchWithInterpolations regex, quote
     $ = tokens.length - 1
 
-    delimiter = quote.charAt(0)
+    delimiter = if quote.charAt(0) is '<' then '"' else quote.charAt(0)
     if heredoc
       # Find the smallest indentation. It will be removed from all lines later.
       indent = null
@@ -303,6 +305,12 @@ exports.Lexer = class Lexer
       string[-Math.ceil(string.length / 2)..]
     @token 'JS', script, 0, match[0].length
     match[0].length
+
+  # Matches CoffeeTags.
+  ctToken:  ->
+    return 0 unless @chunk.charAt(0) is '<' and match = CTTOKEN.exec @chunk
+    @token 'CT', (ct = match[0])[1...-1], 0, ct.length
+    ct.length
 
   # Matches regular expression literals, as well as multiline extended ones.
   # Lexing regular expressions is difficult to distinguish from division, so we
@@ -932,13 +940,20 @@ MULTI_DENT = /^(?:\n[^\n\S]*)+/
 JSTOKEN      = ///^ `(?!``) ((?: [^`\\] | \\[\s\S]           )*) `   ///
 HERE_JSTOKEN = ///^ ```     ((?: [^`\\] | \\[\s\S] | `(?!``) )*) ``` ///
 
+# CoffeeTags loosely matches <tag.class1.class2@id>
+# Use trailing '!' for unescaped content
+# Use trailing '?' for debugging output
+# Use <!myRenderer!> to set the custom render function to myRenderer()
+CTTOKEN    = /^<(?:[\w\-.@]*!?|\/[\w-]*|!\w+!)>/
+
 # String-matching-regexes.
-STRING_START   = /^(?:'''|"""|'|")/
+STRING_START   = /^(?:'''|"""|'|"|<\*>)/
 
 STRING_SINGLE  = /// ^(?: [^\\']  | \\[\s\S]                      )* ///
 STRING_DOUBLE  = /// ^(?: [^\\"#] | \\[\s\S] |           \#(?!\{) )* ///
 HEREDOC_SINGLE = /// ^(?: [^\\']  | \\[\s\S] | '(?!'')            )* ///
 HEREDOC_DOUBLE = /// ^(?: [^\\"#] | \\[\s\S] | "(?!"") | \#(?!\{) )* ///
+HERETAG_DOUBLE = /// ^(?: [^\\<#] | \\[\s\S] | <(?!\*>)| \#(?!\{) )* ///
 
 STRING_OMIT    = ///
     ((?:\\\\)+)      # consume (and preserve) an even number of backslashes
