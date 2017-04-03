@@ -412,6 +412,7 @@ grammar =
     o 'Identifier AS Identifier',               -> new ExportSpecifier $1, $3
     o 'Identifier AS DEFAULT',                  -> new ExportSpecifier $1, new Literal $3
     o 'DEFAULT',                                -> new ExportSpecifier new Literal $1
+    o 'DEFAULT AS Identifier',                  -> new ExportSpecifier new Literal($1), $3
   ]
 
   # Ordinary function invocation, or a chained series of calls.
