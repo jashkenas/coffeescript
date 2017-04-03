@@ -607,6 +607,9 @@ textarea {
         <li class="nav-item">
           <a href="#embedded" class="nav-link" data-action="sidebar-nav">Embedded JavaScript</a>
         </li>
+        <li class="nav-item">
+          <a href="#unsupported" class="nav-link" data-action="sidebar-nav">Unsupported ECMAScript Features</a>
+        </li>
       </ul>
     </li>
     <li class="nav-item">
@@ -644,6 +647,9 @@ textarea {
         </li>
         <li class="nav-item">
           <a href="#annotated-source" class="nav-link" data-action="sidebar-nav">Annotated Source</a>
+        </li>
+        <li class="nav-item">
+          <a href="#contributing" class="nav-link" data-action="sidebar-nav">Contributing</a>
         </li>
       </ul>
     </li>
@@ -763,8 +769,15 @@ cubes = (function() {
 
       </section>
       <section id="coffeescript-2">
-        <h2>CoffeeScript 2</h2><p>CoffeeScript 2 generates JavaScript that uses the latest ES2015+ features. It is your responsibility to ensure that your target JavaScript runtime(s) support all these features, or that you pass the output through another transpiler like <a href="http://babeljs.io/">Babel</a>, <a href="https://github.com/rollup/rollup">Rollup</a> or <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>. In general, <a href="http://node.green/">CoffeeScript 2’s output is fully supported by Node.js 7+</a>, although async functions require the <code>--harmony</code> or <code>--harmony-async-await</code> flags; and ES2015 modules require an additional transpiler. Output JavaScript intended for browsers generally requires additional transpilation.</p>
-<p>If you’re looking for a single tool that takes CoffeeScript input and generates JavaScript output that runs in any JavaScript runtime, assuming you opt out of certain newer features, stick to the <a href="v1/">CoffeeScript 1.x branch</a>. CoffeeScript 2 <a href="#breaking-changes">breaks compatibility</a> with certain CoffeeScript 1.x features in order to conform with the ES2015+ specifications, and generate more idiomatic output (a CoffeeScript <code>=&gt;</code> becomes an ES <code>=&gt;</code>; a CoffeeScript <code>class</code> becomes an ES <code>class</code>; and so on).</p>
+        <h2>CoffeeScript 2</h2><h3>Why CoffeeScript When There’s ES2015+?</h3><p>CoffeeScript introduced many new features to the JavaScript world, such as <a href="#fat-arrow"><code>=&gt;</code></a> and <a href="#destructuring">destructuring</a> and <a href="#classes">classes</a>. We are happy that ECMA has seen their utility and adopted them into ECMAScript.</p>
+<p>CoffeeScript’s intent, however, was never to be a superset of JavaScript. One of the guiding principles of CoffeeScript has been <em>simplicity:</em> not just removing JavaScript’s “bad parts,” but providing a cleaner, terser syntax that uses less punctuation and enforces indentation, to make code easier to read and reason about. Increased clarity leads to increased quality, and fewer bugs. This benefit of CoffeeScript remains, even in an ES2015+ world.</p>
+<h3>ES2015+ Output</h3><p>CoffeeScript 2 supports many of the latest ES2015+ features, output using ES2015+ syntax. If you’re looking for a single tool that takes CoffeeScript input and generates JavaScript output that runs in any JavaScript runtime, assuming you opt out of certain newer features, stick to the <a href="v1/">CoffeeScript 1.x branch</a>. CoffeeScript 2 <a href="#breaking-changes">breaks compatibility</a> with certain CoffeeScript 1.x features in order to conform with the ES2015+ specifications, and generate more idiomatic output (a CoffeeScript <code>=&gt;</code> becomes an ES <code>=&gt;</code>; a CoffeeScript <code>class</code> becomes an ES <code>class</code>; and so on).</p>
+<p>Since the CoffeeScript 2 compiler outputs ES2015+ syntax, it is your responsibility to either ensure that your target JavaScript runtime(s) support all these features, or that you pass the output through another transpiler like <a href="http://babeljs.io/">Babel</a>, <a href="https://github.com/rollup/rollup">Rollup</a> or <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>. In general, <a href="http://node.green/">CoffeeScript 2’s output is supported as is by Node.js 7.6+</a>, except for modules which require transpilation.</p>
+<p>There are many great task runners for setting up JavaScript build chains, such as <a href="http://gulpjs.com/">Gulp</a>, <a href="https://webpack.github.io/">Webpack</a>, <a href="https://gruntjs.com/">Grunt</a> and <a href="http://broccolijs.com/">Broccoli</a>. If you’re looking for a very minimal solution to get started, you can use <a href="https://babeljs.io/docs/plugins/preset-env/">babel-preset-env</a> and the command line:</p>
+<blockquote>
+<pre><code>npm install --global coffeescript@next
+npm install --save-dev coffeescript@next babel-cli babel-preset-env
+coffee -p *.coffee | babel --presets env > app.js</code></pre></blockquote>
 
       </section>
       <section id="installation">
@@ -2994,6 +3007,60 @@ function time() {
 
         </section>
       </section>
+      <section id="unsupported">
+        <h2>Unsupported ECMAScript Features</h2><p>There are a few ECMAScript features that CoffeeScript intentionally doesn’t support.</p>
+<h3><code>let</code> and <code>const</code>: Block-Scoped and Reassignment-Protected Variables</h3><p>When CoffeeScript was designed, <code>var</code> was <a href="https://github.com/jashkenas/coffeescript/issues/238#issuecomment-153502">intentionally omitted</a>. This was to spare developers the mental housekeeping of needing to worry about variable <em>declaration</em> (<code>var foo</code>) as opposed to variable <em>assignment</em> (<code>foo = 1</code>). The CoffeeScript compiler automatically takes care of declaration for you, by generating <code>var</code> statements at the top of every function scope. This makes it impossible to accidentally declare a global variable.</p>
+<p><code>let</code> and <code>const</code> add a useful ability to JavaScript in that you can use them to declare variables within a <em>block</em> scope, for example within an <code>if</code> statement body or a <code>for</code> loop body, whereas <code>var</code> always declares variables in the scope of an entire function. When CoffeeScript 2 was designed, there was much discussion of whether this functionality was useful enough to outweigh the simplicity offered by never needing to consider variable declaration in CoffeeScript. In the end, it was decided that the simplicity was more valued. In CoffeeScript there remains only one type of variable.</p>
+<p>Keep in mind that <code>const</code> only protects you from <em>reassigning</em> a variable; it doesn’t prevent the variable’s value from changing, the way constants usually do in other languages:</p>
+<blockquote>
+<pre><code>const obj = {foo: 'bar'};
+obj.foo = 'baz'; // Allowed!
+obj = {}; // Throws error</code></pre></blockquote>
+<h3><code>get</code> and <code>set</code> Keyword Shorthand Syntax</h3><p><code>get</code> and <code>set</code>, as keywords preceding functions or class methods, are intentionally unimplemented in CoffeeScript.</p>
+<p>This is to avoid grammatical ambiguity, since in CoffeeScript such a construct looks identical to a function call (e.g. <code>get(function foo() {})</code>); and because there is an <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty">alternate syntax</a> that is slightly more verbose but just as effective:</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="get_set">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="get_set-coffee">screen =
+  width: 1200
+  ratio: 16/9
+
+Object.defineProperty screen, 'height',
+  get: ->
+    this.width / this.ratio
+  set: (val) ->
+    this.width = val / this.ratio
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="get_set-js">var screen;
+
+screen = {
+  width: 1200,
+  ratio: 16 / 9
+};
+
+Object.defineProperty(screen, 'height', {
+  get: function() {
+    return this.width / this.ratio;
+  },
+  set: function(val) {
+    return this.width = val / this.ratio;
+  }
+});
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="get_set" data-run="screen.height"><small>▶</small>&ensp;screen.height</button>
+    </div>
+  </div>
+  
+</aside>
+
+      </section>
       <section id="breaking-changes">
         <h2>Breaking Changes From CoffeeScript 1.x to 2</h2><p>CoffeeScript 2 aims to output as much idiomatic ES2015+ syntax as possible with as few breaking changes from CoffeeScript 1.x as possible. Some breaking changes, unfortunately, were unavoidable.</p>
 <h3>Function parameter default values</h3><p>Per the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters">ES2015 spec regarding default parameters</a>, default values are only applied when a parameter value is missing or <code>undefined</code>. In CoffeeScript 1.x, the default value would be applied in those cases but also if the parameter value was <code>null</code>.</p>
@@ -3305,6 +3372,20 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
 <li><a href="http://coffeescript.org/v2/annotated-source/repl.html">Interactive REPL — src/repl</a></li>
 <li><a href="http://coffeescript.org/v2/annotated-source/sourcemap.html">Source Maps — src/sourcemap</a></li>
 </ul>
+
+        </section>
+        <section id="contributing">
+          <h2>Contributing</h2><p>Contributions are welcome! Feel free to fork <a href="http://github.com/jashkenas/coffeescript">the repo</a> and submit a pull request.</p>
+<p><a href="#unsupported">Some features of ECMAScript are intentionally unsupported</a>. Please review both the open and closed <a href="http://github.com/jashkenas/coffeescript/issues">issues on GitHub</a> to see if the feature you’re looking for has already been discussed. As a general rule, we don’t support ECMAScript syntax for features that aren’t yet finalized (at Stage 4 in the proposal approval process).</p>
+<p>For more resources on adding to CoffeeScript, please see <a href="https://github.com/jashkenas/coffeescript/wiki/%5BHowto%5D-Hacking-on-the-CoffeeScript-Compiler">the Wiki</a>, especially <a href="https://github.com/jashkenas/coffeescript/wiki/%5BHowTo%5D-How-parsing-works">How The Parser Works</a>.</p>
+<p>There are several things you can do to increase your odds of having your pull request accepted:</p>
+<ul>
+<li>Create tests! Any pull request should probably include basic tests to verify you didn’t break anything, or future changes won’t break your code.</li>
+<li>Follow the style of the rest of the CoffeeScript codebase.</li>
+<li>Ensure any ECMAScript syntax is mature (at Stage 4), with no further potential changes.</li>
+<li>Add only features that have broad utility, rather than a feature aimed at a specific use case or framework.</li>
+</ul>
+<p>Of course, it’s entirely possible that you have a great addition, but it doesn’t fit within these constraints. Feel free to roll your own solution; you will have <a href="https://github.com/jashkenas/coffeescript/wiki/In-The-Wild">plenty of company</a>.</p>
 
         </section>
       </section>

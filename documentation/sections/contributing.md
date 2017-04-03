@@ -1,21 +1,16 @@
-## Contributing 
-Contributions are welcome, feel free to fork a copy and submit a pull request.
+## Contributing
 
-If there is a core part of ECMAScript you think we are missing, head on over to [CoffeeScript issues on GitHub](http://github.com/jashkenas/coffeescript/issues), and dig around in the open and closed issues. 
+Contributions are welcome! Feel free to fork [the repo](http://github.com/jashkenas/coffeescript) and submit a pull request.
 
-For more resources on adding to CoffeeScript, please see [the Wiki](https://github.com/jashkenas/coffeescript/wiki/%5BHowto%5D-Hacking-on-the-CoffeeScript-Compiler) or [How The Parser Works](https://github.com/jashkenas/coffeescript/wiki/%5BHowTo%5D-How-parsing-works) if you are interested in learning how the parser works. 
+[Some features of ECMAScript are intentionally unsupported](#unsupported). Please review both the open and closed [issues on GitHub](http://github.com/jashkenas/coffeescript/issues) to see if the feature you’re looking for has already been discussed. As a general rule, we don’t support ECMAScript syntax for features that aren’t yet finalized (at Stage 4 in the proposal approval process).
 
-There are several things you can do to increase your odds of having the pull request accepted: 
+For more resources on adding to CoffeeScript, please see [the Wiki](https://github.com/jashkenas/coffeescript/wiki/%5BHowto%5D-Hacking-on-the-CoffeeScript-Compiler), especially [How The Parser Works](https://github.com/jashkenas/coffeescript/wiki/%5BHowTo%5D-How-parsing-works).
 
-  * Create tests! Any pull request should probably include basic tests to verify you didn't break anything, or future changes won't break your code.
-  * Follow the CoffeeScript style guide
-  * Ensure any ECMAScript addition is mature (at Stage 4), with no further potential syntax changes.
-  * Adding only the features that help the community rather than a specific use case.
+There are several things you can do to increase your odds of having your pull request accepted:
 
-Of course, it's entirely possible that you have a great addition, but it doesn't fit directly with the CoffeeScript code base. 
+  * Create tests! Any pull request should probably include basic tests to verify you didn’t break anything, or future changes won’t break your code.
+  * Follow the style of the rest of the CoffeeScript codebase.
+  * Ensure any ECMAScript syntax is mature (at Stage 4), with no further potential changes.
+  * Add only features that have broad utility, rather than a feature aimed at a specific use case or framework.
 
-This might be the time to... 
-
-## Roll Your Own 
-
-You are of course, welcome to fork the language and add in the features you want. There are [quite a few](https://github.com/jashkenas/coffeescript/wiki/In-The-Wild) really interesting projects that have done so, and more are welcome. 
+Of course, it’s entirely possible that you have a great addition, but it doesn’t fit within these constraints. Feel free to roll your own solution; you will have [plenty of company](https://github.com/jashkenas/coffeescript/wiki/In-The-Wild).
