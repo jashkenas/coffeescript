@@ -127,7 +127,7 @@ exports.Lexer = class Lexer
     if id is 'as' and @seenExport and @tag() is 'IDENTIFIER'
       @token 'AS', id
       return id.length
-    if id is 'default' and @seenExport
+    if id is 'default' and @seenExport and @tag() in ['EXPORT', 'AS']
       @token 'DEFAULT', id
       return id.length
 

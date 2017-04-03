@@ -749,3 +749,11 @@ test "#4394: export shouldn't prevent variable declarations", ->
     };
   """
   eq toJS(input), output
+
+test "#4451: `default` in an export statement is only treated as a keyword when it follows `export` or `as`", ->
+  input = "export default { default: 1 }"
+  output = """
+    export default {
+      "default": 1
+    };
+  """
