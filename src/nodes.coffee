@@ -1162,12 +1162,14 @@ exports.Obj = class Obj extends Base
       else if prop not instanceof Comment
         prop
 
-      if key instanceof Value and key.hasProperties()
+      # Pass the Splat thru.  
+      if key instanceof Value and key.hasProperties() and key not instanceof Splat
         key.error 'invalid object key' if prop.context is 'object' or not key.this
         key  = key.properties[0].name
         prop = new Assign key, prop, 'object'
-
-      if key is prop
+      
+      # Pass the Splat thru.  
+      if key is prop and prop not instanceof Splat
         if prop.shouldCache()
           [key, value] = prop.base.cache o
           key  = new PropertyName key.value if key instanceof IdentifierLiteral
@@ -1748,7 +1750,7 @@ exports.Assign = class Assign extends Base
         return @compileDestructuring o unless @variable.isAssignable()
         # Find rest elements in object destructuring. Can be removed once ES proposal hits stage-4.
         answers = if @variable.isObject() and restElements = @compileObjectDestruct(o) then restElements else []
-
+        
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
       return @compileSpecialMath  o if @context in ['**=', '//=', '%%=']
@@ -1793,20 +1795,17 @@ exports.Assign = class Assign extends Base
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
     # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration,
     # if we’re destructuring without declaring, the destructuring assignment must be wrapped in parentheses.
+    # Remove "answers.unshift()" parts When ES proposal for rest elements in object destructuring hits stage-4.
     if o.level > LEVEL_LIST or (isValue and @variable.base instanceof Obj and not @param)
-      # Remove "answers.unshift()" parts when ES rest elements proposal hits stage-4 and ...
       answers.unshift @wrapInParentheses answer
-      # ... uncomment 
       # @wrapInParentheses answer
     else
       answers.unshift answer
-      # ... uncomment 
       # answer
-    # ... remove
-    @joinFragmentArrays answers, ', '
+    @joinFragmentArrays answers, ', '  
   
   # Check object destructuring variable for rest elements
-  # Can be removed once ES proposal hits stage-4  
+  # Can be removed once ES proposal hits stage-4.
   compileObjectDestruct: (o) ->
     getPropValue = (obj) ->
       fragmentsToText (if obj instanceof Assign then obj.variable.unwrapAll() else obj.unwrap()).compileToFragments(o)

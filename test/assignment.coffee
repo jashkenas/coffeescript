@@ -141,9 +141,6 @@ test "#1192: assignment starting with object literals", ->
 
 # Destructuring Assignment
 
-test "empty destructuring assignment", ->
-  {} = [] = undefined
-
 test "chained destructuring assignments", ->
   [a] = {0: b} = {'0': c} = [nonce={}]
   eq nonce, a
@@ -228,6 +225,47 @@ test "destructuring assignment with objects and splats", ->
   eq a, y
   arrayEq [b,c,d], z
 
+test "destructuring assignment with objects and splats: ES2015", ->
+  obj = {a:1, b:2, c:3, d:4, e:5}
+  throws (-> CoffeeScript.compile "{a, r..., s....} = x"), null, "multiple rest elements are disallowed"
+  throws (-> CoffeeScript.compile "{a, r..., s...., b} = x"), null, "multiple rest elements are disallowed"
+  prop = "b"
+  {a, b, r...} = obj
+  eq a, 1
+  eq b, 2
+  eq r.e, obj.e
+  eq r.a, undefined
+  {d, c:x, r...} = obj
+  eq x, 3
+  eq d, 4
+  eq r.c, undefined
+  eq r.b, 2
+  {a, 'b':z, g = 9, r...} = obj
+  eq g, 9
+  eq z, 2
+  eq r.b, undefined
+
+test "deep destructuring assignment with objects: ES2015", ->
+  a1={}; b1={}; c1={}; d1={}
+  obj = {
+    a: a1
+    b: {
+      'c': {
+        d: {
+          b1
+          e: c1
+          f: d1
+        }
+      }
+    }
+    b2: {b1, c1}
+  }
+  {a:w, 'b':{c:{d:{b1:bb, r1...}}}, r2...} = obj
+  eq r1.e, c1
+  eq r2.b, undefined
+  eq bb, b1
+  eq r2.b2, obj.b2
+  
 test "destructuring assignment against an expression", ->
   a={}; b={}
   [y, z] = if true then [a, b] else [b, a]
@@ -327,7 +365,7 @@ test "simple object destructuring defaults", ->
   {b: c = 2} = {b: undefined}
   eq c, 2
   {b: c = 3} = {b: null}
-  eq c, 3
+  eq c, null # Breaking change in CS2: per ES2015, default values are applied for `undefined` but not for `null`.
   {b: c = 4} = {b: 0}
   eq c, 0
 
@@ -336,8 +374,8 @@ test "multiple array destructuring defaults", ->
   eq a, 1
   eq b, 12
   eq c, 13
-  [a, b = 2, c = 3] = [null, 12, 13]
-  eq a, null
+  [a, b = 2, c = 3] = [undefined, 12, 13]
+  eq a, undefined
   eq b, 12
   eq c, 13
   [a = 1, b, c = 3] = [11, 12]
@@ -368,7 +406,7 @@ test "destructuring assignment with context (@) properties and defaults", ->
   a={}; b={}; c={}; d={}; e={}
   obj =
     fn: () ->
-      local = [a, {b, c: null}, d]
+      local = [a, {b, c: undefined}, d]
       [@a, {b: @b = b, @c = c}, @d, @e = e] = local
   eq undefined, obj[key] for key in ['a','b','c','d','e']
   obj.fn()
@@ -387,7 +425,7 @@ test "destructuring assignment with defaults single evaluation", ->
   [a = fn()] = [10]
   eq 10, a
   eq 1, callCount
-  {a = fn(), b: c = fn()} = {a: 20, b: null}
+  {a = fn(), b: c = fn()} = {a: 20, b: undefined}
   eq 20, a
   eq c, 1
   eq callCount, 2
