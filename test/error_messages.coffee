@@ -1456,3 +1456,23 @@ test "setter keyword in inline class", ->
       class A then set foo: ->
                    ^^^
   '''
+
+test "getter keyword before static method", ->
+  assertErrorFormat '''
+    class A
+      get @foo = ->
+  ''', '''
+    [stdin]:2:3: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      get @foo = ->
+      ^^^
+  '''
+
+test "setter keyword before static method", ->
+  assertErrorFormat '''
+    class A
+      set @foo = ->
+  ''', '''
+    [stdin]:2:3: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      set @foo = ->
+      ^^^
+  '''
