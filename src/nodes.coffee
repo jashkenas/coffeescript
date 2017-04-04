@@ -764,7 +764,7 @@ exports.Call = class Call extends Base
   constructor: (@variable, @args = [], @soak) ->
     super()
 
-    @isNew    = false
+    @isNew = no
     if @variable instanceof Value and @variable.isNotCallable()
       @variable.error "literal is not a function"
 

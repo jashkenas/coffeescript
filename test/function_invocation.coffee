@@ -675,7 +675,7 @@ test "Non-callable literals shouldn't compile", ->
   cantCompile '[1..10][2..9] 2'
   cantCompile '[1..10][2..9](2)'
 
-test 'implicit invocation with implicit object literal', ->
+test "implicit invocation with implicit object literal", ->
   f = (obj) -> eq 1, obj.a
 
   f
@@ -706,3 +706,41 @@ test 'implicit invocation with implicit object literal', ->
     else
       "#{a}": 1
   eq 2, obj.a
+
+test "get and set can be used as function names when not ambiguous with `get`/`set` keywords", ->
+  get = (val) -> val
+  set = (val) -> val
+  eq 2, get(2)
+  eq 3, set(3)
+
+  get = ({val}) -> val
+  set = ({val}) -> val
+  eq 4, get({val: 4})
+  eq 5, set({val: 5})
+
+test "get and set can be used as variable and property names", ->
+  get = 2
+  set = 3
+  eq 2, get
+  eq 3, set
+
+  {get} = {get: 4}
+  {set} = {set: 5}
+  eq 4, get
+  eq 5, set
+
+test "get and set can be used as class method names", ->
+  class A
+    get: -> 2
+    set: -> 3
+
+  a = new A()
+  eq 2, a.get()
+  eq 3, a.set()
+
+  class B
+    @get = -> 4
+    @set = -> 5
+
+  eq 4, B.get()
+  eq 5, B.set()
