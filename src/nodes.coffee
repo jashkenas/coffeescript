@@ -1706,7 +1706,8 @@ exports.ExportSpecifier = class ExportSpecifier extends ModuleSpecifier
 exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options = {}) ->
     super()
-    {@param, @subpattern, @operatorToken, @moduleDeclaration} = options
+    # paramWithSplat is used in case we have a splat in function parameters destructuring.
+    {@param, @paramWithSplat, @subpattern, @operatorToken, @moduleDeclaration} = options
 
   children: ['variable', 'value']
 
@@ -1796,7 +1797,7 @@ exports.Assign = class Assign extends Base
     # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration,
     # if we’re destructuring without declaring, the destructuring assignment must be wrapped in parentheses.
     # Remove "answers.unshift()" parts When ES proposal for rest elements in object destructuring hits stage-4.
-    if o.level > LEVEL_LIST or (isValue and @variable.base instanceof Obj and not @param)
+    if o.level > LEVEL_LIST or (isValue and @variable.base instanceof Obj and (not @param or @paramWithSplat))
       answers.unshift @wrapInParentheses answer
       # @wrapInParentheses answer
     else
@@ -2192,6 +2193,49 @@ exports.Code = class Code extends Base
             param.name.lhs = yes
             param.name.eachName (prop) ->
               o.scope.parameter prop.value
+            # Check if object paramter has splat. Can be removed when ES proposal hits stage-4.  
+            if param.name instanceof Obj
+              # Recursive function for searching rest elements in the object.
+              traverseRest = (objects) ->
+                results = {splats: [], allProps: []}
+                restElement = no
+                propParams = []
+                for obj, key in objects
+                  if obj instanceof Assign and obj.context == "object" and obj.value.base instanceof Obj
+                    results = traverseRest obj.value.base.objects
+                  if obj instanceof Splat
+                    obj.error "multiple rest elements are disallowed in object destructuring" if restElement
+                    restElement = obj.unwrap().value
+                    propParams.push restElement
+                  else
+                    unless obj instanceof Assign
+                      # IdentifierLiteral
+                      propParams.push obj.unwrap().value
+                    else
+                      # Assigning to new variable name
+                      propParams.push obj.value.unwrap().value if obj.value.base instanceof IdentifierLiteral
+                      # Assigning to new variable name with default value
+                      propParams.push obj.value.variable.unwrap().value if obj.value instanceof Assign and obj.value.variable.base instanceof IdentifierLiteral
+                
+                results.allProps.push propParams...
+                results.splats.push restElement if restElement
+                results
+              objParams = traverseRest param.name.objects  
+
+              if objParams.splats.length
+                o.scope.add val, 'var', yes for val in objParams.allProps
+                ref = param.asReference o
+                # Assign object destructuring parameter
+                exprs.push new Assign new Value(param.name), ref, null, {param: yes, paramWithSplat: yes}
+            # Collect object properties and declare them as variables in the function scope.    
+            if param.name instanceof Arr and param.shouldCache()
+              arrParams = []
+              for prop in param.name.objects
+                if prop instanceof Assign
+                  arrParams.push if prop.value.base instanceof IdentifierLiteral then prop.value.base.value else prop.variable.base.value
+                else
+                  arrParams.push if prop instanceof Splat then prop.name.unwrap().value else prop.unwrap().value
+              o.scope.add val, 'var', yes for val in arrParams    
           else
             o.scope.parameter fragmentsToText (if param.value? then param else ref).compileToFragments o
           params.push ref
@@ -2334,8 +2378,9 @@ exports.Param = class Param extends Base
     if node.this
       name = node.properties[0].name.value
       name = "_#{name}" if name in JS_FORBIDDEN
-      node = new IdentifierLiteral o.scope.freeVariable name
-    else if node.shouldCache()
+      node = new IdentifierLiteral o.scope.freeVariable name  
+    else if node.shouldCache() or node.lhs 
+      # node.lhs is checked in case we have object destructuring as function parameter 
       node = new IdentifierLiteral o.scope.freeVariable 'arg'
     node = new Value node
     node.updateLocationDataIfMissing @locationData

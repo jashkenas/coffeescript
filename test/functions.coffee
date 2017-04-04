@@ -182,6 +182,47 @@ test "destructuring in function definition", ->
   deepEqual ajax('/home', beforeSend: fn, method: 'post'), {
     url: '/home', async: true, beforeSend: fn, cache: true, method: 'post', data: {}
   }
+  
+test "rest element destructuring in function definition", ->
+  (({a, b, r...}) ->
+    eq 1, a
+    eq 2, b,
+    deepEqual r, {c:3, d:4, e:5}
+  ) {a:1, b:2, c:3, d:4, e:5}
+  
+  (([a, r..., b]) ->
+    eq 1, a
+    eq 5, b,
+    arrayEq r, [2, 3, 4]
+  ) [1, 2, 3, 4, 5]
+  
+  (({a:p, b, r...}) -> 
+    eq p, 1
+    deepEqual r, {c:3, d:4, e:5}
+  ) {a:1, b:2, c:3, d:4, e:5} 
+  
+  a1={}; b1={}; c1={}; d1={}
+  obj1 = {
+    a: a1
+    b: {
+      'c': {
+        d: {
+          b1
+          e: c1
+          f: d1
+        }
+      }
+    }
+    b2: {b1, c1}
+  }
+
+  (({a:w, 'b':{c:{d:{b1:bb, r1...}}}, r2...}) -> 
+    eq a1, w
+    eq bb, b1
+    eq r2.b, undefined
+    deepEqual r1, {e:c1, f:d1}
+    deepEqual r2.b2, {b1, c1}
+  ) obj1  
 
 test "#4005: `([a = {}]..., b) ->` weirdness", ->
   fn = ([a = {}]..., b) -> [a, b]
