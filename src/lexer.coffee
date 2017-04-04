@@ -170,7 +170,7 @@ exports.Lexer = class Lexer
        isForFrom(prev)
       tag = 'FORFROM'
       @seenFor = no
-    else if tag is 'PROPERTY' and prev and prev.spaced and prev[0] in CALLABLE and /^[g|s]et$/.test(prev[1])
+    else if tag is 'PROPERTY' and prev and prev.spaced and prev[0] in CALLABLE and /^[gs]et$/.test(prev[1])
       @error "'#{prev[1]}' cannot be used as a keyword, or as a function call without parentheses", prev[2]
 
     if tag is 'IDENTIFIER' and id in RESERVED
