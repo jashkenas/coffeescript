@@ -82,20 +82,26 @@ exports.some = Array::some ? (fn) ->
 # out all non-code blocks, producing a string of CoffeeScript code that can
 # be compiled “normally.”
 exports.invertLiterate = (code) ->
-  # Create a placeholder for tabs, that isn’t used anywhere in `code`, and then
-  # re-insert the tabs after code extraction.
-  generateRandomToken = ->
-    "#{Math.random() * Date.now()}"
-  while token is undefined or code.indexOf(token) isnt -1
-    token = generateRandomToken()
+  # `marked` really doesn’t process tabs too well. All this code is headed
+  # into JavaScript anyway, so replace the tabs with two spaces to make
+  # `marked`’s job a little easier.
+  code = code.replace /^(\t)+/gm, (match) ->
+    spaces = ''
+    spaces += '  ' for tab in [0..match.length]
+    spaces
 
-  code = code.replace "\t", token
-  # Parse as markdown, discard everything except code blocks.
-  out = ""
-  for item in marked.lexer code, {}
-    out += "#{item.text}\n" if item.type is 'code'
-  # Put the tabs back in.
-  out.replace token, "\t"
+  out = ''
+  for section in marked.lexer code, {}
+    if section.type is 'code'
+      out += section.text + '\n\n'
+    # Keep the non-code sections (that have text) so as to hopefully
+    # preserve the correct line numbers. Lists can screw this up. For better
+    # stack traces, don’t wrap your own list items like our tests do but rather
+    # let them run free and rely on your editor to wrap your lines for you.
+    else if section.text?
+      out += '# ' + section.text.trim().replace(/\n/g, '\n# ') + '\n\n'
+    else if section.type is 'hr'
+      out += '# ---\n\n'
   out
 
 # Merge two jison-style location data objects together.
