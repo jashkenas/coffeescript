@@ -170,6 +170,9 @@ exports.Lexer = class Lexer
        isForFrom(prev)
       tag = 'FORFROM'
       @seenFor = no
+    # Throw an error on attempts to use `get` or `set` as keywords, or
+    # what CoffeeScript would normally interpret as calls to functions named
+    # `get` or `set`, i.e. `get({foo: function () {}})`
     else if tag is 'PROPERTY' and prev
       if prev.spaced and prev[0] in CALLABLE and /^[gs]et$/.test(prev[1])
         @error "'#{prev[1]}' cannot be used as a keyword, or as a function call without parentheses", prev[2]
@@ -246,8 +249,11 @@ exports.Lexer = class Lexer
 
     # If the preceding token is `from` and this is an import or export statement,
     # properly tag the `from`.
-    if @tokens.length and @value() is 'from' and (@seenImport or @seenExport)
-      @tokens[@tokens.length - 1][0] = 'FROM'
+    if prev and @value() is 'from' and (@seenImport or @seenExport)
+      prev[0] = 'FROM'
+
+    if prev and prev.spaced and prev[0] in CALLABLE and /^[gs]et$/.test(prev[1])
+      @error "'#{prev[1]}' cannot be used as a keyword, or as a function call without parentheses", prev[2]
 
     regex = switch quote
       when "'"   then STRING_SINGLE
