@@ -141,6 +141,10 @@ test "#1192: assignment starting with object literals", ->
 
 # Destructuring Assignment
 
+test "empty destructuring assignment", ->
+  {} = {}
+  [] = []
+
 test "chained destructuring assignments", ->
   [a] = {0: b} = {'0': c} = [nonce={}]
   eq nonce, a
