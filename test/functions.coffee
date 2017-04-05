@@ -150,13 +150,13 @@ test "@-parameters and splats with constructors", ->
   eq b, obj.last
 
 test "destructuring in function definition", ->
-  (({a: [b], c}) ->
+  (([{a: [b], c}]...) ->
     eq 1, b
     eq 2, c
   ) {a: [1], c: 2}
 
   context = {}
-  (({a: [b, c = 2], @d, e = 4}) ->
+  (([{a: [b, c = 2], @d, e = 4}]...) ->
     eq 1, b
     eq 2, c
     eq @d, 3
