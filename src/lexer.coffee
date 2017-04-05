@@ -132,7 +132,7 @@ exports.Lexer = class Lexer
       @token 'DEFAULT', id
       return id.length
 
-    [..., prev] = @tokens
+    prev = @prev()
 
     tag =
       if colon or prev? and
@@ -242,6 +242,8 @@ exports.Lexer = class Lexer
     [quote] = STRING_START.exec(@chunk) || []
     return 0 unless quote
 
+    prev = @prev()
+
     # If the preceding token is `from` and this is an import or export statement,
     # properly tag the `from`.
     if @tokens.length and @value() is 'from' and (@seenImport or @seenExport)
@@ -325,7 +327,7 @@ exports.Lexer = class Lexer
         [regex, body, closed] = match
         @validateEscapes body, isRegex: yes, offsetInChunk: 1
         index = regex.length
-        [..., prev] = @tokens
+        prev = @prev()
         if prev
           if prev.spaced and prev[0] in CALLABLE
             return 0 if not closed or POSSIBLY_DIVISION.test regex
@@ -450,7 +452,7 @@ exports.Lexer = class Lexer
   whitespaceToken: ->
     return 0 unless (match = WHITESPACE.exec @chunk) or
                     (nline = @chunk.charAt(0) is '\n')
-    [..., prev] = @tokens
+    prev = @prev()
     prev[if match then 'spaced' else 'newLine'] = true if prev
     if match then match[0].length else 0
 
@@ -478,7 +480,7 @@ exports.Lexer = class Lexer
     else
       value = @chunk.charAt 0
     tag  = value
-    [..., prev] = @tokens
+    prev = @prev()
 
     if prev and value in ['=', COMPOUND_ASSIGN...]
       skipToken = false
@@ -767,6 +769,11 @@ exports.Lexer = class Lexer
   value: ->
     [..., token] = @tokens
     token?[1]
+
+  # Get the previous token in the token stream.
+  prev: ->
+    [..., token] = @tokens
+    token if token?
 
   # Are we in the midst of an unfinished expression?
   unfinished: ->
