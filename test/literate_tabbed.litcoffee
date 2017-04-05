@@ -1,80 +1,80 @@
-# Literate CoffeeScript Test
+# Tabbed Literate CoffeeScript Test
 
 comment comment
 
-    test "basic literate CoffeeScript parsing", ->
-      ok yes
-      
+	test "basic literate CoffeeScript parsing", ->
+		ok yes
+
 now with a...
-  
-    test "broken up indentation", ->
-    
+
+	test "broken up indentation", ->
+
 ... broken up ...
 
-      do ->
-      
+		do ->
+
 ... nested block.
 
-        ok yes
+			ok yes
 
 Code must be separated from text by a blank line.
 
-    test "code blocks must be preceded by a blank line", ->
+	test "code blocks must be preceded by a blank line", ->
 
 The next line is part of the text and will not be executed.
-      fail()
+    fail()
 
-      ok yes        
-        
+		ok yes
+
 Code in `backticks is not parsed` and...
 
-    test "comments in indented blocks work", ->
-      do ->
-        do ->
-          # Regular comment.
-          
-          ###
-            Block comment.
-          ###
-          
-          ok yes
-          
-Regular [Markdown](http://example.com/markdown) features, like links 
+	test "comments in indented blocks work", ->
+		do ->
+			do ->
+				# Regular comment.
+
+				###
+					Block comment.
+				###
+
+				ok yes
+
+Regular [Markdown](http://example.com/markdown) features, like links
 and unordered lists, are fine:
 
-  * I 
-  
+  * I
+
   * Am
-  
+
   * A
-  
+
   * List
 
-Tabs work too:
+Spaces work too:
 
-				test "tabbed code", ->
-					ok yes
+  test "spaced code", ->
+    ok yes
 
 ---
 
-    # keep track of whether code blocks are executed or not
-    executed = false
+	# keep track of whether code blocks are executed or not
+	executed = false
 
 <p>
 
-    executed = true # should not execute, this is just HTML para, not code!
+	executed = true # should not execute, this is just HTML para, not code!
 
 </p>
 
-    test "should ignore indented sections inside HTML", ->
-      eq executed, false
+	test "should ignore indented sections inside HTML", ->
+		eq executed, false
 
 ---
 
 *   A list item with a code block:
 
-        test "basic literate CoffeeScript parsing", ->
-          ok yes
+		test "basic literate CoffeeScript parsing", ->
+			ok yes
 
 ---
 
@@ -127,38 +127,38 @@ This is [an example][id] reference-style link.
 
 ---
 
-    executed = no
+	executed = no
 
 1986. What a great season.
           executed = yes
 
 and test...
 
-    test "should recognise indented code blocks in lists", ->
-      ok executed
+	test "should recognise indented code blocks in lists", ->
+		ok executed
 
 ---
 
-    executed = no
+	executed = no
 
 1986. What a great season.
 
-          executed = yes
+				executed = yes
 
 and test...
 
-    test "should recognise indented code blocks in lists with empty line as separator", ->
-      ok executed
+	test "should recognise indented code blocks in lists with empty line as separator", ->
+		ok executed
 
 ---
 
-    executed = no
+	executed = no
 
 1986\. What a great season.
-           executed = yes
+				executed = yes
 
 and test...
 
-    test "should ignore indented code in escaped list like number", ->
-      eq executed, no
+	test "should ignore indented code in escaped list like number", ->
+		eq executed, no
 
