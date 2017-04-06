@@ -254,3 +254,20 @@ test "#1275: allow indentation before closing brackets", ->
     a = 1
    )
   eq 1, a
+
+test "#4487: Handle unusual outdentation", ->
+  a =
+    switch 1
+      when 2
+          no
+         when 3 then no
+      when 1 then yes
+  eq yes, a
+
+  b = do ->
+    if no
+      if no
+            1
+       2
+      3
+  eq b, undefined
