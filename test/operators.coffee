@@ -436,3 +436,27 @@ test "#3598: Unary + and - coerce the operand once when it is an identifier", ->
     ok ~a in [0, -2]
   assertOneCoercion (a) ->
     ok a / 2 in [0, 0.5]
+
+test "'new' target", ->
+  nonce = {}
+  ctor  = -> nonce
+
+  eq (new ctor), nonce
+  eq (new ctor()), nonce
+
+  ok new class
+
+  ctor  = class
+  ok (new ctor) instanceof ctor
+  ok (new ctor()) instanceof ctor
+
+  # Force an executable class body
+  ctor  = class then a = 1
+  ok (new ctor) instanceof ctor
+
+  get   = -> ctor
+  ok (new get()) not instanceof ctor
+  ok (new (get())()) instanceof ctor
+
+  # classes must be called with `new`. In this case `new` applies to `get` only
+  throws -> new get()()

@@ -11,7 +11,7 @@ path          = require 'path'
 helpers       = require './helpers'
 SourceMap     = require './sourcemap'
 # Require `package.json`, which is two levels above this file, as this file is
-# evaluated from `lib/coffee-script`.
+# evaluated from `lib/coffeescript`.
 packageJson   = require '../../package.json'
 
 # The current CoffeeScript version number.
@@ -25,7 +25,7 @@ exports.helpers = helpers
 # Function that allows for btoa in both nodejs and the browser.
 base64encode = (src) -> switch
   when typeof Buffer is 'function'
-    new Buffer(src).toString('base64')
+    Buffer.from(src).toString('base64')
   when typeof btoa is 'function'
     # The contents of a `<script>` block are encoded via UTF-16, so if any extended
     # characters are used in the block, btoa will fail as it maxes out at UTF-8.
@@ -230,7 +230,7 @@ if require.extensions
   for ext in @FILE_EXTENSIONS then do (ext) ->
     require.extensions[ext] ?= ->
       throw new Error """
-      Use CoffeeScript.register() or require the coffee-script/register module to require #{ext} files.
+      Use CoffeeScript.register() or require the coffeescript/register module to require #{ext} files.
       """
 
 exports._compileFile = (filename, sourceMap = no, inlineMap = no) ->

@@ -2,7 +2,7 @@ fs = require 'fs'
 path = require 'path'
 vm = require 'vm'
 nodeREPL = require 'repl'
-CoffeeScript = require './coffee-script'
+CoffeeScript = require './coffeescript'
 {merge, updateSyntaxError} = require './helpers'
 
 replDefaults =
@@ -109,7 +109,7 @@ addHistory = (repl, filename, maxSize) ->
     size = Math.min maxSize, stat.size
     # Read last `size` bytes from the file
     readFd = fs.openSync filename, 'r'
-    buffer = new Buffer(size)
+    buffer = Buffer.alloc size
     fs.readSync readFd, buffer, 0, size, stat.size - size
     fs.closeSync readFd
     # Set the history on the interpreter
@@ -147,8 +147,8 @@ module.exports =
   start: (opts = {}) ->
     [major, minor, build] = process.versions.node.split('.').map (n) -> parseInt(n)
 
-    if major is 0 and minor < 8
-      console.warn "Node 0.8.0+ required for CoffeeScript REPL"
+    if major < 6
+      console.warn "Node 6+ required for CoffeeScript REPL"
       process.exit 1
 
     CoffeeScript.register()

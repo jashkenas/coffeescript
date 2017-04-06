@@ -10,20 +10,22 @@ Stream = require 'stream'
 
 class MockInputStream extends Stream
   constructor: ->
+    super()
     @readable = true
 
   resume: ->
 
   emitLine: (val) ->
-    @emit 'data', new Buffer("#{val}\n")
+    @emit 'data', Buffer.from("#{val}\n")
 
 class MockOutputStream extends Stream
   constructor: ->
+    super()
     @writable = true
     @written = []
 
   write: (data) ->
-    #console.log 'output write', arguments
+    # console.log 'output write', arguments
     @written.push data
 
   lastWrite: (fromEnd = -1) ->

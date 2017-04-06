@@ -2,6 +2,8 @@
 # the **Lexer**, **Rewriter**, and the **Nodes**. Merge objects, flatten
 # arrays, count characters, that sort of thing.
 
+md = require('markdown-it')()
+
 # Peek at the beginning of a given string to see if it matches a sequence.
 exports.starts = (string, literal, start) ->
   literal is string.substr start, literal.length
@@ -67,19 +69,20 @@ exports.some = Array::some ? (fn) ->
   return true for e in this when fn e
   false
 
-# Simple function for inverting Literate CoffeeScript code by putting the
-# documentation in comments, producing a string of CoffeeScript code that
-# can be compiled "normally".
+# Simple function for extracting code from Literate CoffeeScript by stripping
+# out all non-code blocks, producing a string of CoffeeScript code that can
+# be compiled “normally.” Uses [MarkdownIt](https://markdown-it.github.io/)
+# to tell the difference between Markdown and code blocks.
 exports.invertLiterate = (code) ->
-  maybe_code = true
-  lines = for line in code.split('\n')
-    if maybe_code and /^([ ]{4}|[ ]{0,3}\t)/.test line
-      line
-    else if maybe_code = /^\s*$/.test line
-      line
-    else
-      '# ' + line
-  lines.join '\n'
+  out = []
+  md.renderer.rules =
+    code_block: (tokens, idx) ->
+      startLine = tokens[idx].map[0]
+      lines = tokens[idx].content.split '\n'
+      for line, i in lines
+        out[startLine + i] = line
+  md.render code
+  out.join '\n'
 
 # Merge two jison-style location data objects together.
 # If `last` is not provided, this will simply return `first`.

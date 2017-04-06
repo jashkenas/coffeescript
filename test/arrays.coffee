@@ -108,6 +108,12 @@ test "regex interpolation in array", ->
   eq 'ab', arr[0].source
   eq 'value', arr[1].key
 
+test "splat extraction from generators", ->
+  gen = ->
+    yield 1
+    yield 2
+    yield 3
+  arrayEq [ gen()... ], [ 1, 2, 3 ]
 
 test "for-from loops over Array", ->
   array1 = [50, 30, 70, 20]

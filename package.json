@@ -1,5 +1,5 @@
 {
-  "name": "coffee-script",
+  "name": "coffeescript",
   "description": "Unfancy JavaScript",
   "keywords": [
     "javascript",
@@ -8,15 +8,15 @@
     "compiler"
   ],
   "author": "Jeremy Ashkenas",
-  "version": "1.12.4",
+  "version": "2.0.0-alpha1",
   "license": "MIT",
   "engines": {
-    "node": ">=0.8.0"
+    "node": ">=7.6.0"
   },
   "directories": {
-    "lib": "./lib/coffee-script"
+    "lib": "./lib/coffeescript"
   },
-  "main": "./lib/coffee-script/coffee-script",
+  "main": "./lib/coffeescript/coffeescript",
   "bin": {
     "coffee": "./bin/coffee",
     "cake": "./bin/cake"
@@ -45,5 +45,8 @@
     "jison": ">=0.4.17",
     "marked": "^0.3.6",
     "underscore": "~1.8.3"
+  },
+  "dependencies": {
+    "markdown-it": "^8.3.1"
   }
 }
