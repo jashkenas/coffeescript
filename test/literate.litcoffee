@@ -118,12 +118,8 @@ Tabs work too:
 
 ---
 
-This next one probably passes because a string is inoffensive in compiled js, also, can't get `marked` to parse it correctly, and not sure if empty line is permitted between title and reference
-
 This is [an example][id] reference-style link.
-[id]: http://example.com/
-
-    "Optional Title Here"
+[id]: http://example.com/  "Optional Title Here"
 
 ---
 
