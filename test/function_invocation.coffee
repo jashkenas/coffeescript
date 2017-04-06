@@ -712,15 +712,23 @@ test "get and set can be used as function names when not ambiguous with `get`/`s
   set = (val) -> val
   eq 2, get(2)
   eq 3, set(3)
+  eq 2, get 2
+  eq 3, set 3
   eq 'a', get('a')
   eq 'b', set('b')
+  eq 'a', get 'a'
+  eq 'b', set 'b'
 
   get = ({val}) -> val
   set = ({val}) -> val
   eq 4, get({val: 4})
   eq 5, set({val: 5})
+  eq 4, get {val: 4}
+  eq 5, set {val: 5}
   eq 'c', get({val: 'c'})
   eq 'd', set({val: 'd'})
+  eq 'c', get {val: 'c'}
+  eq 'd', set {val: 'd'}
 
 test "get and set can be used as variable and property names", ->
   get = 2

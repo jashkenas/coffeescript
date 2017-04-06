@@ -252,7 +252,7 @@ exports.Lexer = class Lexer
     if prev and @value() is 'from' and (@seenImport or @seenExport)
       prev[0] = 'FROM'
 
-    if prev and prev.spaced and prev[0] in CALLABLE and /^[gs]et$/.test(prev[1])
+    if prev and prev.spaced and prev[0] in CALLABLE and /^[gs]et$/.test(prev[1]) and /^\S*:\s/.test(@chunk)
       @error "'#{prev[1]}' cannot be used as a keyword, or as a function call without parentheses", prev[2]
 
     regex = switch quote
