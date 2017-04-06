@@ -50,6 +50,11 @@ and unordered lists, are fine:
 
   * List
 
+Tabs work too:
+
+	test "tabbed code", ->
+		ok yes
+
 ---
 
     # keep track of whether code blocks are executed or not
