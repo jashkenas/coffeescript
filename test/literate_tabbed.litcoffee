@@ -127,18 +127,6 @@ This is [an example][id] reference-style link.
 	executed = no
 
 1986. What a great season.
-          executed = yes
-
-and test...
-
-	test "should recognize indented code blocks in lists", ->
-		ok executed
-
----
-
-	executed = no
-
-1986. What a great season.
 
 	executed = yes
 
