@@ -62,11 +62,12 @@ Tabs work too:
 
 <p>
 
-    executed = true # should not execute, this is just HTML para, not code!
+if true
+  executed = true # should not execute, this is just HTML para, not code!
 
 </p>
 
-    test "should ignore indented sections inside HTML", ->
+    test "should ignore code blocks inside HTML", ->
       eq executed, false
 
 ---
