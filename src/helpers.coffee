@@ -2,16 +2,7 @@
 # the **Lexer**, **Rewriter**, and the **Nodes**. Merge objects, flatten
 # arrays, count characters, that sort of thing.
 
-marked = require 'marked'
-# marked.setOptions
-#   renderer: new marked.Renderer()
-#   gfm: true
-#   tables: true
-#   breaks: false
-#   pedantic: false
-#   sanitize: true
-#   smartLists: true
-#   smartypants: false
+md = require('markdown-it')()
 
 # Peek at the beginning of a given string to see if it matches a sequence.
 exports.starts = (string, literal, start) ->
@@ -80,29 +71,18 @@ exports.some = Array::some ? (fn) ->
 
 # Simple function for extracting code from Literate CoffeeScript by stripping
 # out all non-code blocks, producing a string of CoffeeScript code that can
-# be compiled “normally.”
+# be compiled “normally.” Uses [MarkdownIt](https://markdown-it.github.io/)
+# to tell the difference between Markdown and code blocks.
 exports.invertLiterate = (code) ->
-  # `marked` really doesn’t process tabs too well. All this code is headed
-  # into JavaScript anyway, so replace the tabs with two spaces to make
-  # `marked`’s job a little easier.
-  code = code.replace /^(\t)+/gm, (match) ->
-    spaces = ''
-    spaces += '  ' for tab in [0..match.length]
-    spaces
-
-  out = ''
-  for section in marked.lexer code, {}
-    if section.type is 'code'
-      out += section.text + '\n\n'
-    # Keep the non-code sections (that have text) so as to hopefully
-    # preserve the correct line numbers. Lists can screw this up. For better
-    # stack traces, don’t wrap your own list items like our tests do but rather
-    # let them run free and rely on your editor to wrap your lines for you.
-    else if section.text?
-      out += '# ' + section.text.trim().replace(/\n/g, '\n# ') + '\n\n'
-    else if section.type is 'hr'
-      out += '# ---\n\n'
-  out
+  out = []
+  md.renderer.rules =
+    code_block: (tokens, idx) ->
+      startLine = tokens[idx].map[0]
+      lines = tokens[idx].content.split '\n'
+      for line, i in lines
+        out[startLine + i] = line
+  md.render code
+  out.join '\n'
 
 # Merge two jison-style location data objects together.
 # If `last` is not provided, this will simply return `first`.
