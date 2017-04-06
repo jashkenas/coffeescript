@@ -4,15 +4,15 @@ comment comment
 
     test "basic literate CoffeeScript parsing", ->
       ok yes
-      
+
 now with a...
-  
+
     test "broken up indentation", ->
-    
+
 ... broken up ...
 
       do ->
-      
+
 ... nested block.
 
         ok yes
@@ -24,36 +24,31 @@ Code must be separated from text by a blank line.
 The next line is part of the text and will not be executed.
       fail()
 
-      ok yes        
-        
+      ok yes
+
 Code in `backticks is not parsed` and...
 
     test "comments in indented blocks work", ->
       do ->
         do ->
           # Regular comment.
-          
+
           ###
             Block comment.
           ###
-          
+
           ok yes
-          
-Regular [Markdown](http://example.com/markdown) features, like links 
+
+Regular [Markdown](http://example.com/markdown) features, like links
 and unordered lists, are fine:
 
-  * I 
-  
+  * I
+
   * Am
-  
+
   * A
-  
+
   * List
-
-Tabs work too:
-
-				test "tabbed code", ->
-					ok yes
 
 ---
 
@@ -134,7 +129,7 @@ This is [an example][id] reference-style link.
 
 and test...
 
-    test "should recognise indented code blocks in lists", ->
+    test "should recognize indented code blocks in lists", ->
       ok executed
 
 ---
@@ -147,7 +142,7 @@ and test...
 
 and test...
 
-    test "should recognise indented code blocks in lists with empty line as separator", ->
+    test "should recognize indented code blocks in lists with empty line as separator", ->
       ok executed
 
 ---

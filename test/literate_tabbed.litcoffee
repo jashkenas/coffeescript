@@ -134,7 +134,7 @@ This is [an example][id] reference-style link.
 
 and test...
 
-	test "should recognise indented code blocks in lists", ->
+	test "should recognize indented code blocks in lists", ->
 		ok executed
 
 ---
@@ -147,7 +147,7 @@ and test...
 
 and test...
 
-	test "should recognise indented code blocks in lists with empty line as separator", ->
+	test "should recognize indented code blocks in lists with empty line as separator", ->
 		ok executed
 
 ---
