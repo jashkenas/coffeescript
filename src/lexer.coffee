@@ -763,10 +763,14 @@ exports.Lexer = class Lexer
 
   # Validates escapes in strings and regexes.
   validateEscapes: (str, options = {}) ->
-    match = INVALID_ESCAPE.exec str
+    invalid_escape_regex =
+      if options.isRegex
+        REGEX_INVALID_ESCAPE
+      else
+        STRING_INVALID_ESCAPE
+    match = invalid_escape_regex.exec str
     return unless match
     [[], before, octal, hex, unicode] = match
-    return if options.isRegex and octal and octal.charAt(0) isnt '0'
     message =
       if octal
         "octal escape sequences are not allowed"
@@ -978,10 +982,18 @@ HERECOMMENT_ILLEGAL = /\*\//
 
 LINE_CONTINUER      = /// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///
 
-INVALID_ESCAPE      = ///
+STRING_INVALID_ESCAPE = ///
   ( (?:^|[^\\]) (?:\\\\)* )        # make sure the escape isn’t escaped
   \\ (
      ?: (0[0-7]|[1-7])             # octal escape
+      | (x(?![\da-fA-F]{2}).{0,2}) # hex escape
+      | (u(?![\da-fA-F]{4}).{0,4}) # unicode escape
+  )
+///
+REGEX_INVALID_ESCAPE = ///
+  ( (?:^|[^\\]) (?:\\\\)* )        # make sure the escape isn’t escaped
+  \\ (
+     ?: (0[0-7])                   # octal escape
       | (x(?![\da-fA-F]{2}).{0,2}) # hex escape
       | (u(?![\da-fA-F]{4}).{0,4}) # unicode escape
   )
