@@ -245,15 +245,11 @@ exports.Lexer = class Lexer
     [quote] = STRING_START.exec(@chunk) || []
     return 0 unless quote
 
-    prev = @prev()
-
     # If the preceding token is `from` and this is an import or export statement,
     # properly tag the `from`.
+    prev = @prev()
     if prev and @value() is 'from' and (@seenImport or @seenExport)
       prev[0] = 'FROM'
-
-    if prev and prev.spaced and prev[0] in CALLABLE and /^[gs]et$/.test(prev[1])
-      @error "'#{prev[1]}' cannot be used as a keyword, or as a function call without parentheses", prev[2]
 
     regex = switch quote
       when "'"   then STRING_SINGLE

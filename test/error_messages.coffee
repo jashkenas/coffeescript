@@ -1476,23 +1476,3 @@ test "setter keyword before static method", ->
       set @foo = ->
       ^^^
   '''
-
-test "getter keyword with dynamic property name", ->
-  assertErrorFormat '''
-    class A
-      get "#{'foo'}": ->
-  ''', '''
-    [stdin]:2:3: error: 'get' cannot be used as a keyword, or as a function call without parentheses
-      get "#{'foo'}": ->
-      ^^^
-  '''
-
-test "setter keyword with dynamic property name", ->
-  assertErrorFormat '''
-    class A
-      set "#{'foo'}": ->
-  ''', '''
-    [stdin]:2:3: error: 'set' cannot be used as a keyword, or as a function call without parentheses
-      set "#{'foo'}": ->
-      ^^^
-  '''
