@@ -778,8 +778,7 @@ exports.Lexer = class Lexer
 
   # Get the previous token in the token stream.
   prev: ->
-    [..., token] = @tokens
-    token if token?
+    @tokens[@tokens.length - 1]
 
   # Are we in the midst of an unfinished expression?
   unfinished: ->
