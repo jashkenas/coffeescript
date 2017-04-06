@@ -2,16 +2,7 @@
 # the **Lexer**, **Rewriter**, and the **Nodes**. Merge objects, flatten
 # arrays, count characters, that sort of thing.
 
-marked = require 'marked'
-# marked.setOptions
-#   renderer: new marked.Renderer()
-#   gfm: true
-#   tables: true
-#   breaks: false
-#   pedantic: false
-#   sanitize: true
-#   smartLists: true
-#   smartypants: false
+md = require('markdown-it')()
 
 # Peek at the beginning of a given string to see if it matches a sequence.
 exports.starts = (string, literal, start) ->
@@ -80,23 +71,18 @@ exports.some = Array::some ? (fn) ->
 
 # Simple function for extracting code from Literate CoffeeScript by stripping
 # out all non-code blocks, producing a string of CoffeeScript code that can
-# be compiled “normally.”
+# be compiled “normally.” Uses [MarkdownIt](https://markdown-it.github.io/)
+# to tell the difference between Markdown and code blocks.
 exports.invertLiterate = (code) ->
-  # Create a placeholder for tabs, that isn’t used anywhere in `code`, and then
-  # re-insert the tabs after code extraction.
-  generateRandomToken = ->
-    "#{Math.random() * Date.now()}"
-  while token is undefined or code.indexOf(token) isnt -1
-    token = generateRandomToken()
-
-  code = code.replace "\t", token
-  # Parse as markdown, discard everything except code blocks.
-  out = ""
-  for item in marked.lexer code, {}
-    out += "#{item.text}\n" if item.type is 'code'
-  # Put the tabs back in.
-  out.replace token, "\t"
-  out
+  out = []
+  md.renderer.rules =
+    code_block: (tokens, idx) ->
+      startLine = tokens[idx].map[0]
+      lines = tokens[idx].content.split '\n'
+      for line, i in lines
+        out[startLine + i] = line
+  md.render code
+  out.join '\n'
 
 # Merge two jison-style location data objects together.
 # If `last` is not provided, this will simply return `first`.
