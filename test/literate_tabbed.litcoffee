@@ -162,3 +162,11 @@ and test...
 	test "should ignore indented code in escaped list like number", ->
 		eq executed, no
 
+one last test!
+
+	test "block quotes should render correctly", ->
+		quote = '''
+			foo
+					and bar!
+		'''
+		eq quote, 'foo\n\t\tand bar!'
