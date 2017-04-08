@@ -45,8 +45,8 @@ exports.Lexer = class Lexer
     @seenFor    = no             # Used to recognize FORIN, FOROF and FORFROM tokens.
     @seenImport = no             # Used to recognize IMPORT FROM? AS? tokens.
     @seenExport = no             # Used to recognize EXPORT FROM? AS? tokens.
-    @exportSpecifierList = no    # Used to identify when in an EXPORT {...} FROM? ...
     @importSpecifierList = no    # Used to identify when in an IMPORT {...} FROM? ...
+    @exportSpecifierList = no    # Used to identify when in an EXPORT {...} FROM? ...
 
     @chunkLine =
       opts.line or 0             # The start line for the current @chunk.
@@ -476,14 +476,14 @@ exports.Lexer = class Lexer
         @error message, origin[2] if message
       return value.length if skipToken
 
-    if value is '{' and prev?[0] is 'EXPORT'
-      @exportSpecifierList = yes
-    else if @exportSpecifierList and value is '}'
-      @exportSpecifierList = no
-    else if value is '{' and @seenImport
+    if value is '{' and @seenImport
       @importSpecifierList = yes
     else if @importSpecifierList and value is '}'
       @importSpecifierList = no
+    else if value is '{' and prev?[0] is 'EXPORT'
+      @exportSpecifierList = yes
+    else if @exportSpecifierList and value is '}'
+      @exportSpecifierList = no
 
     if value is ';'
       @seenFor = @seenImport = @seenExport = no
@@ -770,12 +770,12 @@ exports.Lexer = class Lexer
 
   # Validates escapes in strings and regexes.
   validateEscapes: (str, options = {}) ->
-    invalid_escape_regex =
+    invalidEscapeRegex =
       if options.isRegex
         REGEX_INVALID_ESCAPE
       else
         STRING_INVALID_ESCAPE
-    match = invalid_escape_regex.exec str
+    match = invalidEscapeRegex.exec str
     return unless match
     [[], before, octal, hex, unicode] = match
     message =
