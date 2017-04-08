@@ -414,12 +414,9 @@ exports.Lexer = class Lexer
       lastIndent = @indents[@indents.length - 1]
       if not lastIndent
         moveOut = 0
-      else if lastIndent is @outdebt
-        moveOut -= @outdebt
-        @outdebt = 0
-      else if lastIndent < @outdebt
-        @outdebt -= lastIndent
-        moveOut  -= lastIndent
+      else if @outdebt and moveOut <= @outdebt
+        @outdebt -= moveOut
+        moveOut   = 0
       else
         dent = @indents.pop() + @outdebt
         if outdentLength and @chunk[outdentLength] in INDENTABLE_CLOSERS
