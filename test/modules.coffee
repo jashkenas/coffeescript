@@ -781,13 +781,6 @@ test "#4491: import- and export-specific lexing should stop after import/export 
       foo,
       bar as baz
     } from 'lib'
-    import { qux, bar as quux } from 'lib'
-    import * as lib from 'lib'
-    export {
-      foo,
-      bar
-    }
-    export * from 'lib'
 
     foo as
     3 * as 4
@@ -799,18 +792,85 @@ test "#4491: import- and export-specific lexing should stop after import/export 
       bar as baz
     } from 'lib';
 
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
+
+  input = """
+    import { foo, bar as baz } from 'lib'
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
     import {
-      qux,
-      bar as quux
+      foo,
+      bar as baz
     } from 'lib';
 
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
+
+  input = """
+    import * as lib from 'lib'
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
     import * as lib from 'lib';
 
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
+
+  input = """
+    export {
+      foo,
+      bar
+    }
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
     export {
       foo,
       bar
     };
 
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
+
+  input = """
+    export * from 'lib'
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
     export * from 'lib';
 
     foo(as);
