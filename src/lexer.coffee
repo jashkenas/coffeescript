@@ -46,6 +46,7 @@ exports.Lexer = class Lexer
     @seenImport = no             # Used to recognize IMPORT FROM? AS? tokens.
     @seenExport = no             # Used to recognize EXPORT FROM? AS? tokens.
     @exportSpecifierList = no    # Used to identify when in an EXPORT {...} FROM? ...
+    @importSpecifierList = no    # Used to identify when in an IMPORT {...} FROM? ...
 
     @chunkLine =
       opts.line or 0             # The start line for the current @chunk.
@@ -365,6 +366,8 @@ exports.Lexer = class Lexer
     indent = match[0]
 
     @seenFor = no
+    @seenImport = no unless @importSpecifierList
+    @seenExport = no unless @exportSpecifierList
 
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()
@@ -477,6 +480,10 @@ exports.Lexer = class Lexer
       @exportSpecifierList = yes
     else if @exportSpecifierList and value is '}'
       @exportSpecifierList = no
+    else if value is '{' and @seenImport
+      @importSpecifierList = yes
+    else if @importSpecifierList and value is '}'
+      @importSpecifierList = no
 
     if value is ';'
       @seenFor = @seenImport = @seenExport = no
