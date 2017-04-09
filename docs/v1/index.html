@@ -60,7 +60,6 @@ li {
 }
 table {
   margin: 16px 0 0 13px; padding: 0;
-  width: 690px;
 }
   tr, td {
     margin: 0; padding: 0;
@@ -68,6 +67,9 @@ table {
     td {
       padding: 9px 15px 9px 0;
       vertical-align: top;
+    }
+    th {
+      text-align: left;
     }
 table.definitions {
   width: auto;
@@ -101,6 +103,9 @@ code, pre, pre > code, textarea {
     border-left: 5px solid rgba(0,0,0,0.2);
     padding: 3px 0 3px 12px;
     font-size: 12px;
+  }
+  td code {
+    white-space: nowrap;
   }
 .timestamp {
   font-size: 11px;
