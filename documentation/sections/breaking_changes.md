@@ -2,6 +2,8 @@
 
 CoffeeScript 2 aims to output as much idiomatic ES2015+ syntax as possible with as few breaking changes from CoffeeScript 1.x as possible. Some breaking changes, unfortunately, were unavoidable.
 
+<section id="breaking-changes-default-values">
+
 ### Function parameter default values
 
 Per the [ES2015 spec regarding default parameters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters), default values are only applied when a parameter value is missing or `undefined`. In CoffeeScript 1.x, the default value would be applied in those cases but also if the parameter value was `null`.
@@ -9,6 +11,9 @@ Per the [ES2015 spec regarding default parameters](https://developer.mozilla.org
 ```
 codeFor('breaking_change_function_parameter_default_values', 'f(null)')
 ```
+
+</section>
+<section id="breaking-changes-bound-generator-functions">
 
 ### Bound generator functions
 
@@ -23,6 +28,9 @@ Needs to be rewritten the old-fashioned way:
 ```
 codeFor('breaking_change_bound_generator_function')
 ```
+
+</section>
+<section id="breaking-changes-classes">
 
 ### Classes are compiled to ES2015 classes
 
@@ -49,6 +57,9 @@ class Namespace
 new Namespace.Klass  # Throws a TypeError at runtime
 ```
 
+</section>
+<section id="breaking-changes-bare-super">
+
 ### Bare `super`
 
 Due to a syntax clash with `super` with accessors, bare `super` no longer compiles to a super call forwarding all arguments.
@@ -69,6 +80,9 @@ Or if you know that the parent function doesn’t require arguments, just call `
 ```
 codeFor('breaking_change_super_without_arguments')
 ```
+
+</section>
+<section id="breaking-changes-super-in-non-class-methods">
 
 ### `super` in non-class methods
 
@@ -93,6 +107,9 @@ or
 codeFor('breaking_change_super_in_non-class_methods_refactor_with_class')
 ```
 
+</section>
+<section id="breaking-changes-dynamic-class-keys-exclude-executable-class-scope">
+
 ### Dynamic class keys exclude executable class scope
 
 Due to the hoisting required to compile to ES2015 classes, dynamic keys in class methods can’t use values from the executable class body unless the methods are assigned in prototype style.
@@ -103,3 +120,5 @@ class A
   "#{name}": ->   # This method will be named 'undefined'
   @::[name] = ->  # This will work; assigns to `A.prototype.method`
 ```
+
+</section>
