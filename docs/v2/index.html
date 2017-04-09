@@ -3163,8 +3163,8 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         <h2>Breaking Changes From CoffeeScript 1.x to 2</h2>
 <p>CoffeeScript 2 aims to output as much idiomatic ES2015+ syntax as possible with as few breaking changes from CoffeeScript 1.x as possible. Some breaking changes, unfortunately, were unavoidable.</p>
 <section id="breaking-changes-default-values">
-<h3>Function parameter default values</h3>
-<p>Per the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters">ES2015 spec regarding default parameters</a>, default values are only applied when a parameter value is missing or <code>undefined</code>. In CoffeeScript 1.x, the default value would be applied in those cases but also if the parameter value was <code>null</code>.</p>
+<h3>Default values for function parameters and destructured elements</h3>
+<p>Per the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters">ES2015 spec regarding function default parameters</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Default_values">destructuring default values</a>, default values are only applied when a value is missing or <code>undefined</code>. In CoffeeScript 1.x, the default value would be applied in those cases but also if the  value was <code>null</code>.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="breaking_change_function_parameter_default_values">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
@@ -3188,6 +3188,33 @@ f(null);
   <div class="row">
     <div class="col-xs-12 text-xs-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="breaking_change_function_parameter_default_values" data-run="f%28null%29"><small>▶</small>&ensp;f(null)</button>
+    </div>
+  </div>
+  
+</aside>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="breaking_change_destructuring_default_values">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="breaking_change_destructuring_default_values-coffee">{a = 1} = {a: null}
+
+a  # Equals 1 in CoffeeScript 1.x, null in CoffeeScript 2
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="breaking_change_destructuring_default_values-js">var a;
+
+({a = 1} = {
+  a: null
+});
+
+a;
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="breaking_change_destructuring_default_values" data-run="a"><small>▶</small>&ensp;a</button>
     </div>
   </div>
   
