@@ -125,14 +125,14 @@ exports.Lexer = class Lexer
       if @tag() in ['DEFAULT', 'IMPORT_ALL', 'IDENTIFIER']
         @token 'AS', id
         return id.length
-    if id is 'as' and @seenExport and @tag() is 'IDENTIFIER'
+    if id is 'as' and @seenExport and @tag() in ['IDENTIFIER', 'DEFAULT']
       @token 'AS', id
       return id.length
-    if id is 'default' and @seenExport
+    if id is 'default' and @seenExport and @tag() in ['EXPORT', 'AS']
       @token 'DEFAULT', id
       return id.length
 
-    [..., prev] = @tokens
+    prev = @prev()
 
     tag =
       if colon or prev? and
@@ -170,6 +170,16 @@ exports.Lexer = class Lexer
        isForFrom(prev)
       tag = 'FORFROM'
       @seenFor = no
+    # Throw an error on attempts to use `get` or `set` as keywords, or
+    # what CoffeeScript would normally interpret as calls to functions named
+    # `get` or `set`, i.e. `get({foo: function () {}})`
+    else if tag is 'PROPERTY' and prev
+      if prev.spaced and prev[0] in CALLABLE and /^[gs]et$/.test(prev[1])
+        @error "'#{prev[1]}' cannot be used as a keyword, or as a function call without parentheses", prev[2]
+      else
+        prevprev = @tokens[@tokens.length - 2]
+        if prev[0] in ['@', 'THIS'] and prevprev and prevprev.spaced and /^[gs]et$/.test(prevprev[1])
+          @error "'#{prevprev[1]}' cannot be used as a keyword, or as a function call without parentheses", prevprev[2]
 
     if tag is 'IDENTIFIER' and id in RESERVED
       @error "reserved word '#{id}'", length: id.length
@@ -237,8 +247,9 @@ exports.Lexer = class Lexer
 
     # If the preceding token is `from` and this is an import or export statement,
     # properly tag the `from`.
-    if @tokens.length and @value() is 'from' and (@seenImport or @seenExport)
-      @tokens[@tokens.length - 1][0] = 'FROM'
+    prev = @prev()
+    if prev and @value() is 'from' and (@seenImport or @seenExport)
+      prev[0] = 'FROM'
 
     regex = switch quote
       when "'"   then STRING_SINGLE
@@ -318,7 +329,7 @@ exports.Lexer = class Lexer
         [regex, body, closed] = match
         @validateEscapes body, isRegex: yes, offsetInChunk: 1
         index = regex.length
-        [..., prev] = @tokens
+        prev = @prev()
         if prev
           if prev.spaced and prev[0] in CALLABLE
             return 0 if not closed or POSSIBLY_DIVISION.test regex
@@ -414,12 +425,9 @@ exports.Lexer = class Lexer
       lastIndent = @indents[@indents.length - 1]
       if not lastIndent
         moveOut = 0
-      else if lastIndent is @outdebt
-        moveOut -= @outdebt
-        @outdebt = 0
-      else if lastIndent < @outdebt
-        @outdebt -= lastIndent
-        moveOut  -= lastIndent
+      else if @outdebt and moveOut <= @outdebt
+        @outdebt -= moveOut
+        moveOut   = 0
       else
         dent = @indents.pop() + @outdebt
         if outdentLength and @chunk[outdentLength] in INDENTABLE_CLOSERS
@@ -443,7 +451,7 @@ exports.Lexer = class Lexer
   whitespaceToken: ->
     return 0 unless (match = WHITESPACE.exec @chunk) or
                     (nline = @chunk.charAt(0) is '\n')
-    [..., prev] = @tokens
+    prev = @prev()
     prev[if match then 'spaced' else 'newLine'] = true if prev
     if match then match[0].length else 0
 
@@ -471,7 +479,7 @@ exports.Lexer = class Lexer
     else
       value = @chunk.charAt 0
     tag  = value
-    [..., prev] = @tokens
+    prev = @prev()
 
     if prev and value in ['=', COMPOUND_ASSIGN...]
       skipToken = false
@@ -760,6 +768,10 @@ exports.Lexer = class Lexer
   value: ->
     [..., token] = @tokens
     token?[1]
+
+  # Get the previous token in the token stream.
+  prev: ->
+    @tokens[@tokens.length - 1]
 
   # Are we in the midst of an unfinished expression?
   unfinished: ->

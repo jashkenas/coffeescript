@@ -775,7 +775,7 @@ exports.Call = class Call extends Base
   constructor: (@variable, @args = [], @soak) ->
     super()
 
-    @isNew    = false
+    @isNew = no
     if @variable instanceof Value and @variable.isNotCallable()
       @variable.error "literal is not a function"
 
@@ -1161,14 +1161,14 @@ exports.Obj = class Obj extends Base
         prop.variable
       else if prop not instanceof Comment
         prop
-
-      # Pass the Splat thru.  
+      
+      # Pass the Splat thru.    
       if key instanceof Value and key.hasProperties() and key not instanceof Splat
         key.error 'invalid object key' if prop.context is 'object' or not key.this
         key  = key.properties[0].name
         prop = new Assign key, prop, 'object'
-      
-      # Pass the Splat thru.  
+
+      # Pass the Splat thru.    
       if key is prop and prop not instanceof Splat
         if prop.shouldCache()
           [key, value] = prop.base.cache o
@@ -1706,7 +1706,7 @@ exports.ExportSpecifier = class ExportSpecifier extends ModuleSpecifier
 exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options = {}) ->
     super()
-    # paramWithSplat is used in case we have a splat in function parameters destructuring.
+    # paramWithSplat is used in case we have a splat in the function parameters destructuring.
     {@param, @paramWithSplat, @subpattern, @operatorToken, @moduleDeclaration} = options
 
   children: ['variable', 'value']
@@ -1732,9 +1732,9 @@ exports.Assign = class Assign extends Base
   # we've been assigned to, for correct internal references. If the variable
   # has not been seen yet within the current scope, declare it.
   compileNode: (o) ->
-    isValue = @variable instanceof Value
     # Store rest elements. Can be removed once ES proposal hits stage-4.
     answers = []
+    isValue = @variable instanceof Value
     if isValue
       # When compiling `@variable`, remember if it is part of a function parameter.
       @variable.param = @param
@@ -1751,7 +1751,7 @@ exports.Assign = class Assign extends Base
         return @compileDestructuring o unless @variable.isAssignable()
         # Find rest elements in object destructuring. Can be removed once ES proposal hits stage-4.
         answers = if @variable.isObject() and restElements = @compileObjectDestruct(o) then restElements else []
-        
+
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
       return @compileSpecialMath  o if @context in ['**=', '//=', '%%=']
@@ -1803,7 +1803,7 @@ exports.Assign = class Assign extends Base
     else
       answers.unshift answer
       # answer
-    @joinFragmentArrays answers, ', '  
+    @joinFragmentArrays answers, ', '    
   
   # Check object destructuring variable for rest elements
   # Can be removed once ES proposal hits stage-4.
@@ -2216,12 +2216,10 @@ exports.Code = class Code extends Base
                       propParams.push obj.value.unwrap().value if obj.value.base instanceof IdentifierLiteral
                       # Assigning to new variable name with default value
                       propParams.push obj.value.variable.unwrap().value if obj.value instanceof Assign and obj.value.variable.base instanceof IdentifierLiteral
-                
                 results.allProps.push propParams...
                 results.splats.push restElement if restElement
                 results
               objParams = traverseRest param.name.objects  
-
               if objParams.splats.length
                 o.scope.add val, 'var', yes for val in objParams.allProps
                 ref = param.asReference o
@@ -2235,7 +2233,7 @@ exports.Code = class Code extends Base
                   arrParams.push if prop.value.base instanceof IdentifierLiteral then prop.value.base.value else prop.variable.base.value
                 else
                   arrParams.push if prop instanceof Splat then prop.name.unwrap().value else prop.unwrap().value
-              o.scope.add val, 'var', yes for val in arrParams    
+              o.scope.add val, 'var', yes for val in arrParams  
           else
             o.scope.parameter fragmentsToText (if param.value? then param else ref).compileToFragments o
           params.push ref
@@ -2378,9 +2376,9 @@ exports.Param = class Param extends Base
     if node.this
       name = node.properties[0].name.value
       name = "_#{name}" if name in JS_FORBIDDEN
-      node = new IdentifierLiteral o.scope.freeVariable name  
+      node = new IdentifierLiteral o.scope.freeVariable name
     else if node.shouldCache() or node.lhs 
-      # node.lhs is checked in case we have object destructuring as function parameter 
+      # node.lhs is checked in case we have object destructuring as function parameter. Can be removed once ES proposal for object spread hots stage-4.
       node = new IdentifierLiteral o.scope.freeVariable 'arg'
     node = new Value node
     node.updateLocationDataIfMissing @locationData

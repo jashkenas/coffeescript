@@ -150,13 +150,13 @@ test "@-parameters and splats with constructors", ->
   eq b, obj.last
 
 test "destructuring in function definition", ->
-  (({a: [b], c}) ->
+  (([{a: [b], c}]...) ->
     eq 1, b
     eq 2, c
   ) {a: [1], c: 2}
 
   context = {}
-  (({a: [b, c = 2], @d, e = 4}) ->
+  (([{a: [b, c = 2], @d, e = 4}]...) ->
     eq 1, b
     eq 2, c
     eq @d, 3
@@ -182,7 +182,7 @@ test "destructuring in function definition", ->
   deepEqual ajax('/home', beforeSend: fn, method: 'post'), {
     url: '/home', async: true, beforeSend: fn, cache: true, method: 'post', data: {}
   }
-  
+
 test "rest element destructuring in function definition", ->
   (({a, b, r...}) ->
     eq 1, a
@@ -223,7 +223,7 @@ test "rest element destructuring in function definition", ->
     deepEqual r1, {e:c1, f:d1}
     deepEqual r2.b2, {b1, c1}
   ) obj1  
-
+  
 test "#4005: `([a = {}]..., b) ->` weirdness", ->
   fn = ([a = {}]..., b) -> [a, b]
   deepEqual fn(5), [{}, 5]

@@ -141,6 +141,10 @@ test "#1192: assignment starting with object literals", ->
 
 # Destructuring Assignment
 
+test "empty destructuring assignment", ->
+  {} = {}
+  [] = []
+
 test "chained destructuring assignments", ->
   [a] = {0: b} = {'0': c} = [nonce={}]
   eq nonce, a
@@ -225,6 +229,12 @@ test "destructuring assignment with objects and splats", ->
   eq a, y
   arrayEq [b,c,d], z
 
+test "destructuring assignment against an expression", ->
+  a={}; b={}
+  [y, z] = if true then [a, b] else [b, a]
+  eq a, y
+  eq b, z
+  
 test "destructuring assignment with objects and splats: ES2015", ->
   obj = {a:1, b:2, c:3, d:4, e:5}
   throws (-> CoffeeScript.compile "{a, r..., s....} = x"), null, "multiple rest elements are disallowed"
@@ -264,13 +274,7 @@ test "deep destructuring assignment with objects: ES2015", ->
   eq r1.e, c1
   eq r2.b, undefined
   eq bb, b1
-  eq r2.b2, obj.b2
-  
-test "destructuring assignment against an expression", ->
-  a={}; b={}
-  [y, z] = if true then [a, b] else [b, a]
-  eq a, y
-  eq b, z
+  eq r2.b2, obj.b2  
 
 test "bracket insertion when necessary", ->
   [a] = [0] ? [1]

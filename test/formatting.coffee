@@ -287,3 +287,20 @@ test "tabs and spaces cannot be mixed for indentation", ->
     ok no
   catch e
     eq 'mixed indentation', e.message
+
+test "#4487: Handle unusual outdentation", ->
+  a =
+    switch 1
+      when 2
+          no
+         when 3 then no
+      when 1 then yes
+  eq yes, a
+
+  b = do ->
+    if no
+      if no
+            1
+       2
+      3
+  eq b, undefined
