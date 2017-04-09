@@ -773,3 +773,110 @@ test "#4451: `default` in an export statement is only treated as a keyword when 
       "default": 1
     };
   """
+  eq toJS(input), output
+
+test "#4491: import- and export-specific lexing should stop after import/export statement", ->
+  input = """
+    import {
+      foo,
+      bar as baz
+    } from 'lib'
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
+    import {
+      foo,
+      bar as baz
+    } from 'lib';
+
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
+
+  input = """
+    import { foo, bar as baz } from 'lib'
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
+    import {
+      foo,
+      bar as baz
+    } from 'lib';
+
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
+
+  input = """
+    import * as lib from 'lib'
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
+    import * as lib from 'lib';
+
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
+
+  input = """
+    export {
+      foo,
+      bar
+    }
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
+    export {
+      foo,
+      bar
+    };
+
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
+
+  input = """
+    export * from 'lib'
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
+    export * from 'lib';
+
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
