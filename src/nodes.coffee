@@ -1161,7 +1161,7 @@ exports.Obj = class Obj extends Base
         prop.variable
       else if prop not instanceof Comment
         prop
-      
+
       # Pass the Splat thru.    
       if key instanceof Value and key.hasProperties() and key not instanceof Splat
         key.error 'invalid object key' if prop.context is 'object' or not key.this
