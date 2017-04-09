@@ -8,6 +8,7 @@ releaseHeader('2017-04-14', '2.0.0-beta1', '2.0.0-alpha1')
 *   Destructured objects and arrays now output using ES2015+ syntax whenever possible.
 *   Literate CoffeeScript now has much better support for parsing Markdown, thanks to using [Markdown-It](https://github.com/markdown-it/markdown-it) to detect Markdown sections rather than just looking at indentation.
 *   Calling a function named `get` or `set` now requires parentheses, to disambiguate from the `get` or `set` keywords (which are [disallowed](#unsupported-get-set)).
+*   The compiler now requires Node 7.6+, the first version of Node to support asynchronous functions without requiring a flag.
 
 
 ```
