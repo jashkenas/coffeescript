@@ -1,6 +1,13 @@
 ## Change Log
 
 ```
+releaseHeader('2017-04-10', '1.12.5', '1.12.4')
+```
+
+*   Better handling of `default`, `from`, `as` and `*` within `import` and `export` statements. You can now import or export a member named `default` and the compiler won’t interpret it as the `default` keyword.
+*   Fixed a bug where invalid octal escape sequences weren’t throwing errors in the compiler.
+
+```
 releaseHeader('2017-02-18', '1.12.4', '1.12.3')
 ```
 
