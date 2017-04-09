@@ -10,7 +10,7 @@ When CoffeeScript was designed, `var` was [intentionally omitted](https://github
 
 Keep in mind that `const` only protects you from _reassigning_ a variable; it doesn’t prevent the variable’s value from changing, the way constants usually do in other languages:
 
-> ```js
+```js
 const obj = {foo: 'bar'};
 obj.foo = 'baz'; // Allowed!
 obj = {}; // Throws error

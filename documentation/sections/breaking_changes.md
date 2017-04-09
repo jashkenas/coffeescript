@@ -14,7 +14,7 @@ codeFor('breaking_change_function_parameter_default_values', 'f(null)')
 
 Bound generator functions, a.k.a. generator arrow functions, [aren’t allowed in ECMAScript](http://stackoverflow.com/questions/27661306/can-i-use-es6s-arrow-function-syntax-with-generators-arrow-notation). You can write `function*` or `=>`, but not both. Therefore, CoffeeScript code like this:
 
-> ```coffee
+```coffee
 f = => yield this  # Throws a compiler error
 ```
 
@@ -30,20 +30,20 @@ ES2015 classes and their methods have some restrictions beyond those on regular 
 
 Class constructors can’t be invoked without `new`:
 
-> ```coffee
+```coffee
 (class)()  # Throws a TypeError at runtime
 ```
 
 Derived (extended) class `constructor`s cannot use `this` before calling `super`:
 
-> ```coffee
+```coffee
 class B extends A
   constructor: -> this  # Throws a compiler error
 ```
 
 Class methods can’t be used with `new` (uncommon):
 
-> ```coffee
+```coffee
 class Namespace
   @Klass = ->
 new Namespace.Klass  # Throws a TypeError at runtime
@@ -53,7 +53,7 @@ new Namespace.Klass  # Throws a TypeError at runtime
 
 Due to a syntax clash with `super` with accessors, bare `super` no longer compiles to a super call forwarding all arguments.
 
-> ```coffee
+```coffee
 class B extends A
   foo: -> super    # Throws a compiler error
 ```
@@ -74,7 +74,7 @@ codeFor('breaking_change_super_without_arguments')
 
 In CoffeeScript 1.x it is possible to use `super` in more than just class methods, such as in manually prototype-assigned functions:
 
-> ```coffee
+```coffee
 A = ->
 B = ->
 B extends A
@@ -97,7 +97,7 @@ codeFor('breaking_change_super_in_non-class_methods_refactor_with_class')
 
 Due to the hoisting required to compile to ES2015 classes, dynamic keys in class methods can’t use values from the executable class body unless the methods are assigned in prototype style.
 
-> ```coffee
+```coffee
 class A
   name = 'method'
   "#{name}": ->   # This method will be named 'undefined'
