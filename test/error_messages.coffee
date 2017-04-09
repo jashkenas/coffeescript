@@ -1340,3 +1340,139 @@ test "new with 'super'", ->
     class extends A then foo: -> new super()
                                      ^^^^^
   '''
+
+test "getter keyword in object", ->
+  assertErrorFormat '''
+    obj =
+      get foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      get foo: ->
+      ^^^
+  '''
+
+test "setter keyword in object", ->
+  assertErrorFormat '''
+    obj =
+      set foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      set foo: ->
+      ^^^
+  '''
+
+test "getter keyword in inline implicit object", ->
+  assertErrorFormat 'obj = get foo: ->', '''
+    [stdin]:1:7: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+    obj = get foo: ->
+          ^^^
+  '''
+
+test "setter keyword in inline implicit object", ->
+  assertErrorFormat 'obj = set foo: ->', '''
+    [stdin]:1:7: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+    obj = set foo: ->
+          ^^^
+  '''
+
+test "getter keyword in inline explicit object", ->
+  assertErrorFormat 'obj = {get foo: ->}', '''
+    [stdin]:1:8: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+    obj = {get foo: ->}
+           ^^^
+  '''
+
+test "setter keyword in inline explicit object", ->
+  assertErrorFormat 'obj = {set foo: ->}', '''
+    [stdin]:1:8: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+    obj = {set foo: ->}
+           ^^^
+  '''
+
+test "getter keyword in function", ->
+  assertErrorFormat '''
+    f = ->
+      get foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      get foo: ->
+      ^^^
+  '''
+
+test "setter keyword in function", ->
+  assertErrorFormat '''
+    f = ->
+      set foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      set foo: ->
+      ^^^
+  '''
+
+test "getter keyword in inline function", ->
+  assertErrorFormat 'f = -> get foo: ->', '''
+    [stdin]:1:8: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+    f = -> get foo: ->
+           ^^^
+  '''
+
+test "setter keyword in inline function", ->
+  assertErrorFormat 'f = -> set foo: ->', '''
+    [stdin]:1:8: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+    f = -> set foo: ->
+           ^^^
+  '''
+
+test "getter keyword in class", ->
+  assertErrorFormat '''
+    class A
+      get foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      get foo: ->
+      ^^^
+  '''
+
+test "setter keyword in class", ->
+  assertErrorFormat '''
+    class A
+      set foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      set foo: ->
+      ^^^
+  '''
+
+test "getter keyword in inline class", ->
+  assertErrorFormat 'class A then get foo: ->', '''
+      [stdin]:1:14: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      class A then get foo: ->
+                   ^^^
+  '''
+
+test "setter keyword in inline class", ->
+  assertErrorFormat 'class A then set foo: ->', '''
+      [stdin]:1:14: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      class A then set foo: ->
+                   ^^^
+  '''
+
+test "getter keyword before static method", ->
+  assertErrorFormat '''
+    class A
+      get @foo = ->
+  ''', '''
+    [stdin]:2:3: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      get @foo = ->
+      ^^^
+  '''
+
+test "setter keyword before static method", ->
+  assertErrorFormat '''
+    class A
+      set @foo = ->
+  ''', '''
+    [stdin]:2:3: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      set @foo = ->
+      ^^^
+  '''
