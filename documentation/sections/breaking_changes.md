@@ -20,7 +20,8 @@ codeFor('breaking_change_function_parameter_default_values', 'f(null)')
 Bound generator functions, a.k.a. generator arrow functions, [aren’t allowed in ECMAScript](http://stackoverflow.com/questions/27661306/can-i-use-es6s-arrow-function-syntax-with-generators-arrow-notation). You can write `function*` or `=>`, but not both. Therefore, CoffeeScript code like this:
 
 ```coffee
-f = => yield this  # Throws a compiler error
+f = => yield this
+# Throws a compiler error
 ```
 
 Needs to be rewritten the old-fashioned way:
@@ -39,14 +40,16 @@ ES2015 classes and their methods have some restrictions beyond those on regular 
 Class constructors can’t be invoked without `new`:
 
 ```coffee
-(class)()  # Throws a TypeError at runtime
+(class)()
+# Throws a TypeError at runtime
 ```
 
 Derived (extended) class `constructor`s cannot use `this` before calling `super`:
 
 ```coffee
 class B extends A
-  constructor: -> this  # Throws a compiler error
+  constructor: -> this
+  # Throws a compiler error
 ```
 
 Class methods can’t be used with `new` (uncommon):
@@ -54,7 +57,8 @@ Class methods can’t be used with `new` (uncommon):
 ```coffee
 class Namespace
   @Klass = ->
-new Namespace.Klass  # Throws a TypeError at runtime
+new Namespace.Klass
+# Throws a TypeError at runtime
 ```
 
 </section>
@@ -66,7 +70,8 @@ Due to a syntax clash with `super` with accessors, bare `super` no longer compil
 
 ```coffee
 class B extends A
-  foo: -> super    # Throws a compiler error
+  foo: -> super
+  # Throws a compiler error
 ```
 
 Arguments can be forwarded explicitly using splats:
@@ -92,7 +97,8 @@ In CoffeeScript 1.x it is possible to use `super` in more than just class method
 A = ->
 B = ->
 B extends A
-B.prototype.foo = -> super arguments...  # Throws a compiler error
+B.prototype.foo = -> super arguments...
+# Throws a compiler error
 ```
 
 Due to the switch to ES2015 `super`, this is no longer supported. The above case could be refactored to:

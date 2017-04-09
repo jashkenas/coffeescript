@@ -199,9 +199,19 @@ buildDocs = (watch = no) ->
   codeFor = require "./documentation/v#{majorVersion}/code.coffee"
 
   htmlFor = ->
+    hljs = require 'highlight.js'
+    hljs.configure classPrefix: ''
     markdownRenderer = require('markdown-it')
       html: yes
       typographer: yes
+      highlight: (str, lang) ->
+        # From https://github.com/markdown-it/markdown-it#syntax-highlighting
+        if lang and hljs.getLanguage(lang)
+          try
+            return hljs.highlight(lang, str).value
+          catch ex
+          return '' # No syntax highlighting
+
 
     # Add some custom overrides to Markdown-It’s rendering, per
     # https://github.com/markdown-it/markdown-it/blob/master/docs/architecture.md#renderer
