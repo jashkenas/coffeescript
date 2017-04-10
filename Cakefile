@@ -210,7 +210,7 @@ buildDocs = (watch = no) ->
           try
             return hljs.highlight(lang, str).value
           catch ex
-          return '' # No syntax highlighting
+        return '' # No syntax highlighting
 
 
     # Add some custom overrides to Markdown-It’s rendering, per
