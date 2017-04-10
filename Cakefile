@@ -199,22 +199,36 @@ buildDocs = (watch = no) ->
   codeFor = require "./documentation/v#{majorVersion}/code.coffee"
 
   htmlFor = ->
-    marked = require 'marked'
-    markdownRenderer = new marked.Renderer()
-    markdownRenderer.heading = (text, level) ->
-      "<h#{level}>#{text}</h#{level}>" # Don’t let marked add an id
-    markdownRenderer.code = (code) ->
+    hljs = require 'highlight.js'
+    hljs.configure classPrefix: ''
+    markdownRenderer = require('markdown-it')
+      html: yes
+      typographer: yes
+      highlight: (str, lang) ->
+        # From https://github.com/markdown-it/markdown-it#syntax-highlighting
+        if lang and hljs.getLanguage(lang)
+          try
+            return hljs.highlight(lang, str).value
+          catch ex
+        return '' # No syntax highlighting
+
+
+    # Add some custom overrides to Markdown-It’s rendering, per
+    # https://github.com/markdown-it/markdown-it/blob/master/docs/architecture.md#renderer
+    defaultFence = markdownRenderer.renderer.rules.fence
+    markdownRenderer.renderer.rules.fence = (tokens, idx, options, env, slf) ->
+      code = tokens[idx].content
       if code.indexOf('codeFor(') is 0 or code.indexOf('releaseHeader(') is 0
         "<%= #{code} %>"
       else
-        "<pre><code>#{code}</code></pre>" # Default
+        "<blockquote class=\"uneditable-code-block\">#{defaultFence.apply @, arguments}</blockquote>"
 
     (file, bookmark) ->
       md = fs.readFileSync "#{sectionsSourceFolder}/#{file}.md", 'utf-8'
       md = md.replace /<%= releaseHeader %>/g, releaseHeader
       md = md.replace /<%= majorVersion %>/g, majorVersion
       md = md.replace /<%= fullVersion %>/g, CoffeeScript.VERSION
-      html = marked md, renderer: markdownRenderer
+      html = markdownRenderer.render md
       html = _.template(html)
         codeFor: codeFor()
         releaseHeader: releaseHeader

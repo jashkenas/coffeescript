@@ -4,6 +4,6 @@ The golden rule of CoffeeScript is: _“It’s just JavaScript.”_ The code com
 
 **Latest Version:** [<%= fullVersion %>](http://github.com/jashkenas/coffeescript/tarball/<%= fullVersion %>)
 
-> ```
+```bash
 npm install -g coffeescript@next
 ```

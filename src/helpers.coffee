@@ -76,7 +76,8 @@ exports.some = Array::some ? (fn) ->
 exports.invertLiterate = (code) ->
   out = []
   md.renderer.rules =
-    code_block: (tokens, idx) ->
+    # Delete all other rules, since all we want are the code blocks.
+    code_block: (tokens, idx, options, env, slf) ->
       startLine = tokens[idx].map[0]
       lines = tokens[idx].content.split '\n'
       for line, i in lines

@@ -14,7 +14,7 @@ Since the CoffeeScript 2 compiler outputs ES2015+ syntax, it is your responsibil
 
 There are many great task runners for setting up JavaScript build chains, such as [Gulp](http://gulpjs.com/), [Webpack](https://webpack.github.io/), [Grunt](https://gruntjs.com/) and [Broccoli](http://broccolijs.com/). If you’re looking for a very minimal solution to get started, you can use [babel-preset-env](https://babeljs.io/docs/plugins/preset-env/) and the command line:
 
-> ```bash
+```bash
 npm install --global coffeescript@next
 npm install --save-dev coffeescript@next babel-cli babel-preset-env
 coffee -p *.coffee | babel --presets env > app.js

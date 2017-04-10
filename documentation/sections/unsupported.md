@@ -2,6 +2,8 @@
 
 There are a few ECMAScript features that CoffeeScript intentionally doesn’t support.
 
+<section id="unsupported-let-const">
+
 ### `let` and `const`: Block-Scoped and Reassignment-Protected Variables
 
 When CoffeeScript was designed, `var` was [intentionally omitted](https://github.com/jashkenas/coffeescript/issues/238#issuecomment-153502). This was to spare developers the mental housekeeping of needing to worry about variable _declaration_ (`var foo`) as opposed to variable _assignment_ (`foo = 1`). The CoffeeScript compiler automatically takes care of declaration for you, by generating `var` statements at the top of every function scope. This makes it impossible to accidentally declare a global variable.
@@ -10,11 +12,14 @@ When CoffeeScript was designed, `var` was [intentionally omitted](https://github
 
 Keep in mind that `const` only protects you from _reassigning_ a variable; it doesn’t prevent the variable’s value from changing, the way constants usually do in other languages:
 
-> ```js
+```js
 const obj = {foo: 'bar'};
 obj.foo = 'baz'; // Allowed!
 obj = {}; // Throws error
 ```
+
+</section>
+<section id="unsupported-get-set">
 
 ### `get` and `set` Keyword Shorthand Syntax
 
@@ -25,3 +30,5 @@ This is to avoid grammatical ambiguity, since in CoffeeScript such a construct l
 ```
 codeFor('get_set', 'screen.height')
 ```
+
+</section>

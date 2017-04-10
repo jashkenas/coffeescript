@@ -24,125 +24,21 @@ codeFor('modulo')
 
 All together now:
 
-<table class="definitions">
-
-<tbody>
-
-<tr>
-
-<th>CoffeeScript</th>
-
-<th>JavaScript</th>
-
-</tr>
-
-<tr>
-
-<td>`is`</td>
-
-<td>`===`</td>
-
-</tr>
-
-<tr>
-
-<td>`isnt`</td>
-
-<td>`!==`</td>
-
-</tr>
-
-<tr>
-
-<td>`not`</td>
-
-<td>`!`</td>
-
-</tr>
-
-<tr>
-
-<td>`and`</td>
-
-<td>`&&`</td>
-
-</tr>
-
-<tr>
-
-<td>`or`</td>
-
-<td>`||`</td>
-
-</tr>
-
-<tr>
-
-<td>`true`, `yes`, `on`</td>
-
-<td>`true`</td>
-
-</tr>
-
-<tr>
-
-<td>`false`, `no`, `off`&emsp;</td>
-
-<td>`false`</td>
-
-</tr>
-
-<tr>
-
-<td>`@`, `this`</td>
-
-<td>`this`</td>
-
-</tr>
-
-<tr>
-
-<td>`of`</td>
-
-<td>`in`</td>
-
-</tr>
-
-<tr>
-
-<td>`in`</td>
-
-<td>_<small>no JS equivalent</small>_</td>
-
-</tr>
-
-<tr>
-
-<td>`a ** b`</td>
-
-<td>`Math.pow(a, b)`</td>
-
-</tr>
-
-<tr>
-
-<td>`a // b`</td>
-
-<td>`Math.floor(a / b)`</td>
-
-</tr>
-
-<tr>
-
-<td>`a %% b`</td>
-
-<td>`(a % b + b) % b`</td>
-
-</tr>
-
-</tbody>
-
-</table>
+| CoffeeScript | JavaScript |
+| --- | --- |
+| `is` | `===` |
+| `isnt` | `!==` |
+| `not` | `!` |
+| `and` | `&&` |
+| `or` | `||` |
+| `true`, `yes`, `on` | `true` |
+| `false`, `no`, `off`&emsp; | `false` |
+| `@`, `this` | `this` |
+| `of` | `in` |
+| `in` | _no JS equivalent_ |
+| `a ** b` | `Math.pow(a, b)` |
+| `a // b` | `Math.floor(a / b)` |
+| `a %% b` | `(a % b + b) % b` |
 
 ```
 codeFor('aliases')
