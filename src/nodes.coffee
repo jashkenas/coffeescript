@@ -1141,6 +1141,13 @@ exports.Obj = class Obj extends Base
       if prop instanceof Comment or (prop instanceof Assign and prop.context is 'object')
         isCompact = no
 
+    # Store object spreads. Can be removed when ES proposal hits stage-4.
+    spreadAnswer = []
+    spreads = []
+    openBracket = @makeCode("{");
+    closeBracket = @makeCode("}");
+    hasSpread = no    
+    
     answer = []
     answer.push @makeCode "{#{if isCompact then '' else '\n'}"
     for prop, i in props
@@ -1161,13 +1168,11 @@ exports.Obj = class Obj extends Base
         prop.variable
       else if prop not instanceof Comment
         prop
-
       # Pass the Splat thru.    
       if key instanceof Value and key.hasProperties() and key not instanceof Splat
         key.error 'invalid object key' if prop.context is 'object' or not key.this
         key  = key.properties[0].name
         prop = new Assign key, prop, 'object'
-
       # Pass the Splat thru.    
       if key is prop and prop not instanceof Splat
         if prop.shouldCache()
@@ -1176,11 +1181,33 @@ exports.Obj = class Obj extends Base
           prop = new Assign key, value, 'object'
         else if not prop.bareLiteral?(IdentifierLiteral)
           prop = new Assign prop, prop, 'object'
-
+      # object spread
+      # Can be removed when ES proposal hits stage-4.
+      if key is prop and prop instanceof Splat    
+        spreadAnswer.push(@makeCode(", ")) if spreadAnswer.length
+        if spreads.length
+          spreadAnswer.push openBracket
+          for s in spreads
+            spreadAnswer.push s.compileToFragments(o, LEVEL_TOP)..., @makeCode(", ")
+          spreadAnswer.pop()
+          spreadAnswer.push closeBracket, @makeCode(", ")
+        spreadAnswer.push prop.name.compileToFragments(o, LEVEL_TOP)...
+        spreads = []
+        hasSpread = yes
+      spreads.push prop if prop not instanceof Splat
       if indent then answer.push @makeCode indent
       answer.push prop.compileToFragments(o, LEVEL_TOP)...
       if join then answer.push @makeCode join
-    answer.push @makeCode "#{if isCompact then '' else "\n#{@tab}"}}"
+    if hasSpread
+      if spreads.length 
+        spreadAnswer.push @makeCode(", "), openBracket
+        for s in spreads
+          spreadAnswer.push s.compileToFragments(o, LEVEL_TOP)..., @makeCode(", ")
+        spreadAnswer.pop()
+        spreadAnswer.push closeBracket
+      answer = [@makeCode("Object.assign({}, "), spreadAnswer..., @makeCode(")")]
+    else
+      answer.push @makeCode "#{if isCompact then '' else "\n#{@tab}"}}"
     if @front then @wrapInParentheses answer else answer
 
   assigns: (name) ->
@@ -1726,7 +1753,17 @@ exports.Assign = class Assign extends Base
 
   unfoldSoak: (o) ->
     unfoldSoak o, this, 'variable'
+  
+  # Helper. Check if obj cointains Splat
+  objectHasSplat: (o, obj) ->
+    obj.contains (n) -> n instanceof Splat
 
+  valueHasSplat: (o) ->
+    @objectHasSplat o, @value
+
+  variableHasSplat: (o) ->
+    @objectHasSplat o, @variable
+  
   # Compile an assignment, delegating to `compileDestructuring` or
   # `compileSplice` if appropriate. Keep track of the name of the base object
   # we've been assigned to, for correct internal references. If the variable
@@ -1734,6 +1771,9 @@ exports.Assign = class Assign extends Base
   compileNode: (o) ->
     # Store rest elements. Can be removed once ES proposal hits stage-4.
     answers = []
+    # Store objects spreads. Can be removed once ES proposal hits stage-4.
+    answersOnTop = []
+    
     isValue = @variable instanceof Value
     if isValue
       # When compiling `@variable`, remember if it is part of a function parameter.
@@ -1750,7 +1790,20 @@ exports.Assign = class Assign extends Base
         @variable.base.lhs = yes
         return @compileDestructuring o unless @variable.isAssignable()
         # Find rest elements in object destructuring. Can be removed once ES proposal hits stage-4.
-        answers = if @variable.isObject() and restElements = @compileObjectDestruct(o) then restElements else []
+        if @variable.isObject()
+          # Variable containes splat, e.g. {a, b, r...} = ... 
+          if @variableHasSplat(o) 
+            # Right side has object spread or is object literal. Make a simple variable if it isn't already.
+            # Examples:
+            #   {a, b, r...} = {a: 1, b: 2, c: 3} => ref = {a: 1, b: 2, c: 3}, {a, b} = ref, r = ....
+            #   {a, b, r...} = {a:1, obj..., c:99} => ref = Object.assign({}, {a:1}, obj, {c:99}), {a, b} = ref, r = ....
+            val = @value.compileToFragments(o, LEVEL_LIST);
+            vvarText = fragmentsToText(val);
+            if @value.unwrap() not instanceof IdentifierLiteral or @variable.assigns vvarText
+              answersOnTop.push [@makeCode("#{(ref = o.scope.freeVariable('ref'))} = "), val...]
+              @value = new IdentifierLiteral ref
+          restElements = @compileObjectDestruct o
+          answers.push restElements...
 
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
@@ -1783,7 +1836,7 @@ exports.Assign = class Assign extends Base
 
     val = @value.compileToFragments o, LEVEL_LIST
     compiledName = @variable.compileToFragments o, LEVEL_LIST
-
+    
     if @context is 'object'
       if @variable.shouldCache()
         compiledName.unshift @makeCode '['
@@ -1792,7 +1845,7 @@ exports.Assign = class Assign extends Base
         compiledName.unshift @makeCode '"'
         compiledName.push @makeCode '"'
       return compiledName.concat @makeCode(": "), val
-
+    
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
     # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration,
     # if we’re destructuring without declaring, the destructuring assignment must be wrapped in parentheses.
@@ -1803,8 +1856,8 @@ exports.Assign = class Assign extends Base
     else
       answers.unshift answer
       # answer
-    @joinFragmentArrays answers, ', '    
-  
+    @joinFragmentArrays [answersOnTop..., answers...], ', '    
+
   # Check object destructuring variable for rest elements
   # Can be removed once ES proposal hits stage-4.
   compileObjectDestruct: (o) ->
@@ -1841,11 +1894,6 @@ exports.Assign = class Assign extends Base
     return answers unless restList.length > 0
     val = @value.compileToFragments o, LEVEL_LIST
     vvarText = fragmentsToText val
-    # Make val into a simple variable if it isn't already.
-    if @value.unwrap() not instanceof IdentifierLiteral or @variable.assigns vvarText
-      answers.push [@makeCode("#{(ref = o.scope.freeVariable('ref'))} = "), val...]
-      val = [@makeCode(ref)]
-      vvarText = ref
     for restElement in restList
       # Build properties path.
       varProp = ((if prop[0] == "`" then "[#{prop}]" else "['#{prop.replace /\'/g, ""}']") for prop in restElement.props).join ""

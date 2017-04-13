@@ -276,6 +276,29 @@ test "deep destructuring assignment with objects: ES2015", ->
   eq bb, b1
   eq r2.b2, obj.b2  
 
+test "object spread properties: ES2015", ->
+  obj = {a:1, b:2, c:3, d:4, e:5}
+  obj2 = {obj..., c:9}
+  eq obj2.c, 9
+  eq obj.a, obj2.a
+
+  obj2 = {obj..., a:8, c:9, obj...}
+  eq obj2.c, 3
+  eq obj.a, obj2.a
+
+  obj3 = {obj..., b:7, g:{obj2..., c:1}}
+  eq obj3.g.c, 1
+  eq obj3.b, 7
+  deepEqual obj3.g, {obj..., c:1}
+
+
+  (({a, b, r...}) ->
+    eq 1, a
+    deepEqual r, {c:3, d:44, e:55}
+  ) {obj2..., d:44, e:55}
+  
+  
+  
 test "bracket insertion when necessary", ->
   [a] = [0] ? [1]
   eq a, 0
