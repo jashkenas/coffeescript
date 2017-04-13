@@ -46,6 +46,7 @@ exports.Lexer = class Lexer
     @seenFor    = no             # Used to recognize FORIN, FOROF and FORFROM tokens.
     @seenImport = no             # Used to recognize IMPORT FROM? AS? tokens.
     @seenExport = no             # Used to recognize EXPORT FROM? AS? tokens.
+    @importSpecifierList = no    # Used to identify when in an IMPORT {...} FROM? ...
     @exportSpecifierList = no    # Used to identify when in an EXPORT {...} FROM? ...
 
     @chunkLine =
@@ -376,6 +377,8 @@ exports.Lexer = class Lexer
     indent = match[0]
 
     @seenFor = no
+    @seenImport = no unless @importSpecifierList
+    @seenExport = no unless @exportSpecifierList
 
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()
@@ -494,7 +497,11 @@ exports.Lexer = class Lexer
         @error message, origin[2] if message
       return value.length if skipToken
 
-    if value is '{' and prev?[0] is 'EXPORT'
+    if value is '{' and @seenImport
+      @importSpecifierList = yes
+    else if @importSpecifierList and value is '}'
+      @importSpecifierList = no
+    else if value is '{' and prev?[0] is 'EXPORT'
       @exportSpecifierList = yes
     else if @exportSpecifierList and value is '}'
       @exportSpecifierList = no
@@ -788,10 +795,14 @@ exports.Lexer = class Lexer
 
   # Validates escapes in strings and regexes.
   validateEscapes: (str, options = {}) ->
-    match = INVALID_ESCAPE.exec str
+    invalidEscapeRegex =
+      if options.isRegex
+        REGEX_INVALID_ESCAPE
+      else
+        STRING_INVALID_ESCAPE
+    match = invalidEscapeRegex.exec str
     return unless match
     [[], before, octal, hex, unicode] = match
-    return if options.isRegex and octal and octal.charAt(0) isnt '0'
     message =
       if octal
         "octal escape sequences are not allowed"
@@ -1003,10 +1014,18 @@ HERECOMMENT_ILLEGAL = /\*\//
 
 LINE_CONTINUER      = /// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///
 
-INVALID_ESCAPE      = ///
+STRING_INVALID_ESCAPE = ///
   ( (?:^|[^\\]) (?:\\\\)* )        # make sure the escape isn’t escaped
   \\ (
      ?: (0[0-7]|[1-7])             # octal escape
+      | (x(?![\da-fA-F]{2}).{0,2}) # hex escape
+      | (u(?![\da-fA-F]{4}).{0,4}) # unicode escape
+  )
+///
+REGEX_INVALID_ESCAPE = ///
+  ( (?:^|[^\\]) (?:\\\\)* )        # make sure the escape isn’t escaped
+  \\ (
+     ?: (0[0-7])                   # octal escape
       | (x(?![\da-fA-F]{2}).{0,2}) # hex escape
       | (u(?![\da-fA-F]{4}).{0,4}) # unicode escape
   )

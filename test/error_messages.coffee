@@ -445,6 +445,13 @@ test "octal escapes", ->
       \  \   \ \ ^\^^
   '''
   assertErrorFormat '''
+    /a\\1\\tb\\\\\\07c/
+  ''', '''
+    [stdin]:1:10: error: octal escape sequences are not allowed \\07
+    /a\\1\\tb\\\\\\07c/
+      \  \   \ \ ^\^^
+  '''
+  assertErrorFormat '''
     ///a
       #{b} \\01///
   ''', '''

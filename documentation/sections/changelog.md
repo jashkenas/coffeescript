@@ -10,6 +10,13 @@ releaseHeader('2017-04-14', '2.0.0-beta1', '2.0.0-alpha1')
 *   Calling a function named `get` or `set` now requires parentheses, to disambiguate from the `get` or `set` keywords (which are [disallowed](#unsupported-get-set)).
 *   The compiler now requires Node 7.6+, the first version of Node to support asynchronous functions without requiring a flag.
 
+```
+releaseHeader('2017-04-10', '1.12.5', '1.12.4')
+```
+
+*   Better handling of `default`, `from`, `as` and `*` within `import` and `export` statements. You can now import or export a member named `default` and the compiler won’t interpret it as the `default` keyword.
+*   Fixed a bug where invalid octal escape sequences weren’t throwing errors in the compiler.
+
 
 ```
 releaseHeader('2017-02-21', '2.0.0-alpha1', '1.12.4')
