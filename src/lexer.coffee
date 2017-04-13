@@ -777,13 +777,13 @@ exports.Lexer = class Lexer
         STRING_INVALID_ESCAPE
     match = invalidEscapeRegex.exec str
     return unless match
-    [[], before, octal, hex, unicode] = match
+    [[], before, octal, hex, unicodeCodePoint, unicode] = match
     message =
       if octal
         "octal escape sequences are not allowed"
       else
         "invalid escape sequence"
-    invalidEscape = "\\#{octal or hex or unicode}"
+    invalidEscape = "\\#{octal or hex or unicodeCodePoint or unicode}"
     @error "#{message} #{invalidEscape}",
       offset: (options.offsetInChunk ? 0) + match.index + before.length
       length: invalidEscape.length
@@ -970,7 +970,7 @@ REGEX = /// ^
 ///
 
 REGEX_FLAGS  = /^\w*/
-VALID_FLAGS  = /^(?!.*(.).*\1)[imgy]*$/
+VALID_FLAGS  = /^(?!.*(.).*\1)[imguy]*$/
 
 HEREGEX      = /// ^(?: [^\\/#] | \\[\s\S] | /(?!//) | \#(?!\{) )* ///
 
@@ -994,7 +994,8 @@ STRING_INVALID_ESCAPE = ///
   \\ (
      ?: (0[0-7]|[1-7])             # octal escape
       | (x(?![\da-fA-F]{2}).{0,2}) # hex escape
-      | (u(?![\da-fA-F]{4}).{0,4}) # unicode escape
+      | (u\{(?![\da-fA-F]{1,}\})[^}]*\}?) # unicode code point escape
+      | (u(?!\{|[\da-fA-F]{4}).{0,4}) # unicode escape
   )
 ///
 REGEX_INVALID_ESCAPE = ///
@@ -1002,7 +1003,8 @@ REGEX_INVALID_ESCAPE = ///
   \\ (
      ?: (0[0-7])                   # octal escape
       | (x(?![\da-fA-F]{2}).{0,2}) # hex escape
-      | (u(?![\da-fA-F]{4}).{0,4}) # unicode escape
+      | (u\{(?![\da-fA-F]{1,}\})[^}]*\}?) # unicode code point escape
+      | (u(?!\{|[\da-fA-F]{4}).{0,4}) # unicode escape
   )
 ///
 

@@ -1257,3 +1257,28 @@ test "can't use pattern matches for loop indices", ->
     a for b, {c} in d
              ^^^
   '''
+
+test "#4248: Unicode code point escapes", ->
+  assertErrorFormat '''
+    "a
+      #{b} \\u{G02}
+     c"
+  ''', '''
+    [stdin]:2:8: error: invalid escape sequence \\u{G02}
+      #{b} \\u{G02}
+           ^\^^^^^^
+  '''
+  assertErrorFormat '''
+    /a\\u{}b/
+  ''', '''
+    [stdin]:1:3: error: invalid escape sequence \\u{}
+    /a\\u{}b/
+      ^\^^^
+  '''
+  assertErrorFormat '''
+    ///a \\u{01abc///
+  ''', '''
+    [stdin]:1:6: error: invalid escape sequence \\u{01abc
+    ///a \\u{01abc///
+         ^\^^^^^^^
+  '''
