@@ -18,6 +18,10 @@ CoffeeScript.run = (code, options = {}) ->
   options.shiftLine = on
   Function(compile code, options)()
 
+CoffeeScript.register = ->
+
+module.exports = CoffeeScript
+
 # If we're not in a browser environment, we're finished with the public API.
 return unless window?
 

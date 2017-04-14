@@ -135,7 +135,7 @@ task 'build:browser', 'build the merged script for inclusion in the browser', ->
       var CoffeeScript = function() {
         function require(path){ return require[path]; }
         #{code}
-        return require['./coffee-script'];
+        return require['./browser'];
       }();
 
       if (typeof define === 'function' && define.amd) {

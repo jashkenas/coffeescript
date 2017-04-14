@@ -16,7 +16,8 @@
   "directories": {
     "lib": "./lib/coffee-script"
   },
-  "main": "./lib/coffee-script/coffee-script",
+  "main": "./lib/coffee-script/index",
+  "browser": "./lib/coffee-script/browser",
   "bin": {
     "coffee": "./bin/coffee",
     "cake": "./bin/cake"
