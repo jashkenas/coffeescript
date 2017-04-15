@@ -407,8 +407,8 @@ test "#4248: Unicode code point escapes", ->
   eq 'a\u01ab', "#{ 'a' }\u{1ab}"
   eq '\u01abc', '''\u{01ab}c'''
   eq '\u01abc', """\u{1ab}#{ 'c' }"""
-  eq '\u000b\ucdef', '\u{bcdef}'
-  eq '\u000b\ucdef', '\u{0000bcdef}'
-  eq 'a\u000b\ucdef', "#{ 'a' }\u{bcdef}"
-  eq '\u000b\ucdefc', '''\u{0bcdef}c'''
-  eq '\u000b\ucdefc', """\u{bcdef}#{ 'c' }"""
+  eq '\udab3\uddef', '\u{bcdef}'
+  eq '\udab3\uddef', '\u{0000bcdef}'
+  eq 'a\udab3\uddef', "#{ 'a' }\u{bcdef}"
+  eq '\udab3\uddefc', '''\u{0bcdef}c'''
+  eq '\udab3\uddefc', """\u{bcdef}#{ 'c' }"""

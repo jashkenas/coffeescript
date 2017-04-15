@@ -291,10 +291,10 @@ test "#4248: Unicode code point escapes", ->
   ok /a\u{1ab}c/u.test 'a\u01abc'
   ok ///#{ 'a' }\u{000001ab}c///u.test 'a\u{1ab}c'
   ok ///a\u{000001ab}c///u.test 'a\u{1ab}c'
-  ok /a\u{12345}c/u.test 'a\u0001\u2345c'
+  ok /a\u{12345}c/u.test 'a\ud808\udf45c'
 
   # and now without u flag
   ok /a\u{1ab}c/.test 'a\u01abc'
   ok ///#{ 'a' }\u{000001ab}c///.test 'a\u{1ab}c'
   ok ///a\u{000001ab}c///.test 'a\u{1ab}c'
-  ok /a\u{12345}c/.test 'a\u0001\u2345c'
+  ok /a\u{12345}c/.test 'a\ud808\udf45c'

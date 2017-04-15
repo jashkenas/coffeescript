@@ -772,6 +772,16 @@ exports.Lexer = class Lexer
   formatRegex: (str, options) ->
     @replaceUnicodeCodePointEscapes str, options
 
+  unicodeCodePointToUnicodeEscapes: (codePoint) ->
+    toUnicodeEscape = (val) ->
+      str = val.toString 16
+      "\\u#{repeat '0', 4 - str.length}#{str}"
+    return toUnicodeEscape(codePoint) if codePoint < 0x10000
+    # surrogate pair
+    high = Math.floor((codePoint - 0x10000) / 0x400) + 0xD800
+    low = (codePoint - 0x10000) % 0x400 + 0xDC00
+    "#{toUnicodeEscape(high)}#{toUnicodeEscape(low)}"
+
   # Replace \u{...} with \uxxxx[\uxxxx] in strings and regexes
   replaceUnicodeCodePointEscapes: (str, options) ->
     str.replace UNICODE_CODE_POINT_ESCAPE, (match, before, codePointHex, offset) =>
@@ -781,13 +791,7 @@ exports.Lexer = class Lexer
           offset: offset + before.length + options.delimiter.length
           length: codePointHex.length + 4
 
-      strippedHex = codePointDecimal.toString 16
-      toUnicodeEscape = (str) ->
-        "\\u#{repeat '0', 4 - str.length}#{str}"
-      lastUnicodeEscape = toUnicodeEscape strippedHex[-4..]
-      return "#{before}#{lastUnicodeEscape}" unless strippedHex.length > 4
-      firstUnicodeEscape = toUnicodeEscape strippedHex[...strippedHex.length - 4]
-      "#{before}#{firstUnicodeEscape}#{lastUnicodeEscape}"
+      "#{before}#{@unicodeCodePointToUnicodeEscapes(codePointDecimal)}"
 
   # Validates escapes in strings and regexes.
   validateEscapes: (str, options = {}) ->
