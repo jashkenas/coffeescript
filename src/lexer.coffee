@@ -261,14 +261,14 @@ exports.Lexer = class Lexer
         indent = attempt if indent is null or 0 < attempt.length < indent.length
       indentRegex = /// \n#{indent} ///g if indent
       @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
-        value = @formatString value
+        value = @formatString value, delimiter: quote
         value = value.replace indentRegex, '\n' if indentRegex
         value = value.replace LEADING_BLANK_LINE,  '' if i is 0
         value = value.replace TRAILING_BLANK_LINE, '' if i is $
         value
     else
       @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
-        value = @formatString value
+        value = @formatString value, delimiter: quote
         value = value.replace SIMPLE_STRING_OMIT, (match, offset) ->
           if (i is 0 and offset is 0) or
              (i is $ and offset + match.length is value.length)
@@ -318,6 +318,7 @@ exports.Lexer = class Lexer
       when match = REGEX.exec @chunk
         [regex, body, closed] = match
         @validateEscapes body, isRegex: yes, offsetInChunk: 1
+        body = @formatRegex body, delimiter: '/'
         index = regex.length
         [..., prev] = @tokens
         if prev
@@ -336,13 +337,14 @@ exports.Lexer = class Lexer
       when not VALID_FLAGS.test flags
         @error "invalid regular expression flags #{flags}", offset: index, length: flags.length
       when regex or tokens.length is 1
-        body ?= @formatHeregex tokens[0][1]
+        body ?= @formatHeregex tokens[0][1], delimiter: '///'
         @token 'REGEX', "#{@makeDelimitedLiteral body, delimiter: '/'}#{flags}", 0, end, origin
       else
         @token 'REGEX_START', '(', 0, 0, origin
         @token 'IDENTIFIER', 'RegExp', 0, 0
         @token 'CALL_START', '(', 0, 0
-        @mergeInterpolationTokens tokens, {delimiter: '"', double: yes}, @formatHeregex
+        @mergeInterpolationTokens tokens, {delimiter: '"', double: yes}, (str) =>
+          @formatHeregex str, delimiter: '///'
         if flags
           @token ',', ',', index - 1, 0
           @token 'STRING', '"' + flags + '"', index - 1, flags.length
@@ -762,11 +764,31 @@ exports.Lexer = class Lexer
                '**', 'SHIFT', 'RELATION', 'COMPARE', '&', '^', '|', '&&', '||',
                'BIN?', 'THROW', 'EXTENDS']
 
-  formatString: (str) ->
-    str.replace STRING_OMIT, '$1'
+  formatString: (str, options) ->
+    @replaceUnicodeCodePointEscapes str.replace(STRING_OMIT, '$1'), options
 
-  formatHeregex: (str) ->
-    str.replace HEREGEX_OMIT, '$1$2'
+  formatHeregex: (str, options) ->
+    @formatRegex str.replace(HEREGEX_OMIT, '$1$2'), options
+
+  formatRegex: (str, options) ->
+    @replaceUnicodeCodePointEscapes str, options
+
+  # Replace \u{...} with \uxxxx[\uxxxx] in strings and regexes
+  replaceUnicodeCodePointEscapes: (str, options) ->
+    str.replace UNICODE_CODE_POINT_ESCAPE, (match, before, codePointHex, offset) =>
+      codePointDecimal = parseInt codePointHex, 16
+      if codePointDecimal > 1114111
+        @error "Unicode code point escapes greater than 1114111 are not allowed",
+          offset: offset + before.length + options.delimiter.length
+          length: codePointHex.length + 4
+
+      strippedHex = codePointDecimal.toString 16
+      toUnicodeEscape = (str) ->
+        "\\u#{repeat '0', 4 - str.length}#{str}"
+      lastUnicodeEscape = toUnicodeEscape strippedHex[-4..]
+      return "#{before}#{lastUnicodeEscape}" unless strippedHex.length > 4
+      firstUnicodeEscape = toUnicodeEscape strippedHex[...strippedHex.length - 4]
+      "#{before}#{firstUnicodeEscape}#{lastUnicodeEscape}"
 
   # Validates escapes in strings and regexes.
   validateEscapes: (str, options = {}) ->
@@ -1007,6 +1029,11 @@ REGEX_INVALID_ESCAPE = ///
       | (u(?!\{|[\da-fA-F]{4}).{0,4}) # unicode escape
   )
 ///
+
+UNICODE_CODE_POINT_ESCAPE = ///
+  ( (?:^|[^\\]) (?:\\\\)* )        # make sure the escape isn’t escaped
+  \\u\{ ( [\da-fA-F]+ ) \}
+///g
 
 LEADING_BLANK_LINE  = /^[^\n\S]*\n/
 TRAILING_BLANK_LINE = /\n[^\n\S]*$/

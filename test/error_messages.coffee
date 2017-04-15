@@ -1282,3 +1282,40 @@ test "#4248: Unicode code point escapes", ->
     ///a \\u{01abc///
          ^\^^^^^^^
   '''
+
+  assertErrorFormat '''
+    /\\u{123} \\u{110000}/
+  ''', '''
+    [stdin]:1:10: error: Unicode code point escapes greater than 1114111 are not allowed
+    /\\u{123} \\u{110000}/
+      \       ^\^^^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    ///abc\\u{123456}///
+  ''', '''
+    [stdin]:1:7: error: Unicode code point escapes greater than 1114111 are not allowed
+    ///abc\\u{123456}///
+          ^\^^^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    """
+      \\u{123}
+      a
+        \\u{00110000}
+      #{ 'b' }
+    """
+  ''', '''
+    [stdin]:4:5: error: Unicode code point escapes greater than 1114111 are not allowed
+        \\u{00110000}
+        ^\^^^^^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    '\\u{1111110000}'
+  ''', '''
+    [stdin]:1:2: error: Unicode code point escapes greater than 1114111 are not allowed
+    '\\u{1111110000}'
+     ^\^^^^^^^^^^^^^
+  '''
