@@ -343,8 +343,7 @@ exports.Lexer = class Lexer
         @token 'REGEX_START', '(', 0, 0, origin
         @token 'IDENTIFIER', 'RegExp', 0, 0
         @token 'CALL_START', '(', 0, 0
-        @mergeInterpolationTokens tokens, {delimiter: '"', double: yes}, (str) =>
-          @formatHeregex str
+        @mergeInterpolationTokens tokens, {delimiter: '"', double: yes}, @formatHeregex
         if flags
           @token ',', ',', index - 1, 0
           @token 'STRING', '"' + flags + '"', index - 1, flags.length
@@ -634,7 +633,7 @@ exports.Lexer = class Lexer
           tokensToPush = value
         when 'NEOSTRING'
           # Convert 'NEOSTRING' into 'STRING'.
-          converted = fn token[1], i
+          converted = fn.call this, token[1], i
           # Optimize out empty strings. We ensure that the tokens stream always
           # starts with a string token, though, to make sure that the result
           # really is a string.
