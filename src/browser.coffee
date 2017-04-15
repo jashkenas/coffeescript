@@ -4,7 +4,6 @@
 # `text/coffeescript` script tags, source maps via data-URLs, and so on.
 
 CoffeeScript = require './coffee-script'
-CoffeeScript.require = require
 compile = CoffeeScript.compile
 
 # Use standard JavaScript `eval` to eval code.
