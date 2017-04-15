@@ -407,7 +407,8 @@ runTests = (CoffeeScript) ->
 
 
 task 'test', 'run the CoffeeScript language test suite', ->
-  runTests CoffeeScript
+  testResults = runTests CoffeeScript
+  process.exit 1 unless testResults
 
 
 task 'test:browser', 'run the test suite against the merged browser script', ->
@@ -415,4 +416,5 @@ task 'test:browser', 'run the test suite against the merged browser script', ->
   result = {}
   global.testingBrowser = yes
   (-> eval source).call result
-  runTests result.CoffeeScript
+  testResults = runTests result.CoffeeScript
+  process.exit 1 unless testResults
