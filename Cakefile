@@ -51,14 +51,8 @@ run = (args, callback) ->
 buildParser = ->
   helpers.extend global, require 'util'
   require 'jison'
-  parser = require('./lib/coffee-script/grammar').parser.generate()
-  # Patch Jison’s output, until https://github.com/zaach/jison/pull/339 is accepted,
-  # to ensure that require('fs') is only called where it exists.
-  parser = parser.replace "var source = require('fs')", """
-      var source = '';
-          var fs = require('fs');
-          if (typeof fs !== 'undefined' && fs !== null)
-              source = fs"""
+  # We don't need moduleMain, since the parser is unlikely to be run standalone
+  parser = require('./lib/coffee-script/grammar').parser.generate(moduleMain: ->)
   fs.writeFileSync 'lib/coffee-script/parser.js', parser
 
 buildExceptParser = (callback) ->
