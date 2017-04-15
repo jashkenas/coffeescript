@@ -337,14 +337,14 @@ exports.Lexer = class Lexer
       when not VALID_FLAGS.test flags
         @error "invalid regular expression flags #{flags}", offset: index, length: flags.length
       when regex or tokens.length is 1
-        body ?= @formatHeregex tokens[0][1], delimiter: '///'
+        body ?= @formatHeregex tokens[0][1]
         @token 'REGEX', "#{@makeDelimitedLiteral body, delimiter: '/'}#{flags}", 0, end, origin
       else
         @token 'REGEX_START', '(', 0, 0, origin
         @token 'IDENTIFIER', 'RegExp', 0, 0
         @token 'CALL_START', '(', 0, 0
         @mergeInterpolationTokens tokens, {delimiter: '"', double: yes}, (str) =>
-          @formatHeregex str, delimiter: '///'
+          @formatHeregex str
         if flags
           @token ',', ',', index - 1, 0
           @token 'STRING', '"' + flags + '"', index - 1, flags.length
@@ -767,8 +767,8 @@ exports.Lexer = class Lexer
   formatString: (str, options) ->
     @replaceUnicodeCodePointEscapes str.replace(STRING_OMIT, '$1'), options
 
-  formatHeregex: (str, options) ->
-    @formatRegex str.replace(HEREGEX_OMIT, '$1$2'), options
+  formatHeregex: (str) ->
+    @formatRegex str.replace(HEREGEX_OMIT, '$1$2'), delimiter: '///'
 
   formatRegex: (str, options) ->
     @replaceUnicodeCodePointEscapes str, options
