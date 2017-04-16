@@ -2,8 +2,11 @@
 
 comment comment
 
+	testsCount = 0 # Track the number of tests run in this file, to make sure they all run
+
 	test "basic literate CoffeeScript parsing", ->
 		ok yes
+		testsCount++
 
 now with a...
 
@@ -16,6 +19,7 @@ now with a...
 ... nested block.
 
 			ok yes
+			testsCount++
 
 Code must be separated from text by a blank line.
 
@@ -25,6 +29,7 @@ The next line is part of the text and will not be executed.
     fail()
 
 		ok yes
+		testsCount++
 
 Code in `backticks is not parsed` and...
 
@@ -38,6 +43,7 @@ Code in `backticks is not parsed` and...
 				###
 
 				ok yes
+				testsCount++
 
 Regular [Markdown](http://example.com/markdown) features, like links
 and unordered lists, are fine:
@@ -49,11 +55,6 @@ and unordered lists, are fine:
   * A
 
   * List
-
-Spaces work too:
-
-  test "spaced code", ->
-    ok yes
 
 ---
 
@@ -69,13 +70,15 @@ if true
 
 	test "should ignore code blocks inside HTML", ->
 		eq executed, false
+		testsCount++
 
 ---
 
 *   A list item with a code block:
 
-		test "basic literate CoffeeScript parsing", ->
-			ok yes
+    	test "basic literate CoffeeScript parsing", -> # Needs to be indented with spaces up to the indentation level of the list
+    		ok yes
+    		testsCount++
 
 ---
 
@@ -128,12 +131,13 @@ This is [an example][id] reference-style link.
 
 1986. What a great season.
 
-	executed = yes
+      	executed = yes # Needs to be indented with spaces up to the indentation level of the list
 
 and test...
 
 	test "should recognize indented code blocks in lists with empty line as separator", ->
 		ok executed
+		testsCount++
 
 ---
 
@@ -146,6 +150,7 @@ and test...
 
 	test "should ignore indented code in escaped list like number", ->
 		eq executed, no
+		testsCount++
 
 one last test!
 
@@ -155,3 +160,9 @@ one last test!
 					and bar!
 		'''
 		eq quote, 'foo\n\t\tand bar!'
+		testsCount++
+
+and finally, how did we do?
+
+	test "all tabbed literate CoffeeScript tests executed", ->
+		eq testsCount, 9
