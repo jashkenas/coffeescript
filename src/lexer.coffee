@@ -787,7 +787,7 @@ exports.Lexer = class Lexer
     str.replace UNICODE_CODE_POINT_ESCAPE, (match, before, codePointHex, offset) =>
       codePointDecimal = parseInt codePointHex, 16
       if codePointDecimal > 1114111
-        @error "Unicode code point escapes greater than 1114111 are not allowed",
+        @error "unicode code point escapes greater than \\u{10ffff} are not allowed",
           offset: offset + before.length + options.delimiter.length
           length: codePointHex.length + 4
 
