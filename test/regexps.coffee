@@ -6,6 +6,12 @@
 # * Regexen
 # * Heregexen
 
+# Helper function
+toJS = (str) ->
+  CoffeeScript.compile str, bare: yes
+  .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace
+
+
 test "basic regular expression literals", ->
   ok 'a'.match(/a/)
   ok 'a'.match /a/
@@ -298,3 +304,20 @@ test "#4248: Unicode code point escapes", ->
   ok ///#{ 'a' }\u{000001ab}c///.test 'a\u{1ab}c'
   ok ///a\u{000001ab}c///.test 'a\u{1ab}c'
   ok /a\u{12345}c/.test 'a\ud808\udf45c'
+
+  # rewrite code point escapes
+  input = """
+    /\\u{bcdef}\\u{abc}/u
+    """
+  output = """
+    /\\udab3\\uddef\\u0abc/u;
+  """
+  eq toJS(input), output
+
+  input = """
+    ///#{ 'a' }\\u{bcdef}///
+    """
+  output = """
+    /a\\udab3\\uddef/;
+  """
+  eq toJS(input), output

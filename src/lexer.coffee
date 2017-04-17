@@ -784,14 +784,29 @@ exports.Lexer = class Lexer
 
   # Replace \u{...} with \uxxxx[\uxxxx] in strings and regexes
   replaceUnicodeCodePointEscapes: (str, options) ->
-    str.replace UNICODE_CODE_POINT_ESCAPE, (match, before, codePointHex, offset) =>
+    chunks = []
+    chunksIndex = lastEndOffset = 0
+    while match = UNICODE_CODE_POINT_ESCAPE.exec str
+      [[], before, codePointHex] = match
+      {index: offset}            = match
+      start = offset + before.length
+      length = codePointHex.length + 4
       codePointDecimal = parseInt codePointHex, 16
       if codePointDecimal > 1114111
-        @error "unicode code point escapes greater than \\u{10ffff} are not allowed",
-          offset: offset + before.length + options.delimiter.length
-          length: codePointHex.length + 4
+        UNICODE_CODE_POINT_ESCAPE.lastIndex = 0
+        @error "unicode code point escapes greater than \\u{10ffff} are not allowed", {
+          offset: start + options.delimiter.length
+          length
+        }
 
-      "#{before}#{@unicodeCodePointToUnicodeEscapes(codePointDecimal)}"
+      chunks[chunksIndex++] = str[lastEndOffset...start]
+      chunks[chunksIndex++] = @unicodeCodePointToUnicodeEscapes codePointDecimal
+
+      lastEndOffset = start + length
+      UNICODE_CODE_POINT_ESCAPE.lastIndex -= 1
+    return str unless chunks.length
+    chunks[chunksIndex] = str[lastEndOffset..str.length - 1]
+    chunks.join ''
 
   # Validates escapes in strings and regexes.
   validateEscapes: (str, options = {}) ->
