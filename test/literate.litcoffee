@@ -74,11 +74,11 @@ if true
 
 ---
 
-*   A list item with a code block:
+*   A list item followed by a code block:
 
-        test "basic literate CoffeeScript parsing", ->
-          ok yes
-          testsCount++
+    test "basic literate CoffeeScript parsing", ->
+      ok yes
+      testsCount++
 
 ---
 
@@ -91,37 +91,6 @@ if true
 
 ---
 
-1.  This is a list item with two paragraphs. Lorem ipsum dolor
-    sit amet, consectetuer adipiscing elit. Aliquam hendrerit
-    mi posuere lectus.
-
-    Vestibulum enim wisi, viverra nec, fringilla in, laoreet
-    vitae, risus. Donec sit amet nisl. Aliquam semper ipsum
-    sit amet velit.
-
-2.  Suspendisse id sem consectetuer libero luctus adipiscing.
-
----
-
-1.  This is a list item with two paragraphs. Lorem ipsum dolor
-    sit amet, consectetuer adipiscing elit. Aliquam hendrerit
-    mi posuere lectus.
-
-    Vestibulum enim wisi, viverra nec, fringilla in, laoreet
-    vitae, risus. Donec sit amet nisl. Aliquam semper ipsum
-    sit amet velit.
-
-2.  Suspendisse id sem consectetuer libero luctus adipiscing.
-
----
-
-*   A list item with a blockquote:
-
-    > This is a blockquote
-    > inside a list item.
-
----
-
 This is [an example][id] reference-style link.
 [id]: http://example.com/  "Optional Title Here"
 
@@ -131,7 +100,7 @@ This is [an example][id] reference-style link.
 
 1986. What a great season.
 
-          executed = yes
+    executed = yes
 
 and test...
 

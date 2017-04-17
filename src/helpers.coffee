@@ -82,38 +82,18 @@ exports.invertLiterate = (code) ->
     )
     [\ \t]            # followed by a space or a tab.
   ///
-  listItemFirstCharacter = new RegExp "#{listItemStart.source}+(\\S)"
   insideComment = no
-  insideList = no
-  indentation = 0
   for line in code.split('\n')
     if blankLine.test(line)
       insideComment = no
       out.push line
-    else if listItemStart.test(line)
-      insideList = yes
-      # Get the first non-whitespace character after the bullet or period, to
-      # determine our new base indentation level.
-      indentation = line.indexOf line.match(listItemFirstCharacter)[1]
+    else if insideComment or listItemStart.test(line)
+      insideComment = yes
       out.push "# #{line}"
-    else if indented.test(line)
-      if insideComment
-        out.push "# #{line}"
-      else if insideList
-        # Are we in a list, and indented relative to the indentation of the list?
-        # If so, treat as code.
-        if indented.test(line.substring(indentation))
-          out.push line.substring(indentation)
-        # Otherwise this is part of a list item paragraph.
-        else
-          out.push "# #{line}"
-      else
-        insideComment = no
-        out.push line
+    else if not insideComment and indented.test(line)
+      out.push line
     else
       insideComment = yes
-      insideList = no
-      indentation = 0
       out.push "# #{line}"
   out.join '\n'
 

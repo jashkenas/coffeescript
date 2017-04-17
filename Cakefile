@@ -122,14 +122,6 @@ task 'build:browser', 'build the merged script for inclusion in the browser', ->
     return #{fs.readFileSync "./package.json"};
   })();
   """
-  for {name, src} in [{name: 'markdown-it', src: 'dist/markdown-it.min.js'}]
-    code += """
-      require['#{name}'] = (function() {
-        var exports = {}, module = {exports: exports};
-        #{fs.readFileSync "node_modules/#{name}/#{src}"}
-        return module.exports;
-      })();
-    """
   for name in ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'nodes', 'sourcemap', 'coffeescript', 'browser']
     code += """
       require['./#{name}'] = (function() {
