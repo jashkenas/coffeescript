@@ -440,7 +440,8 @@ test "#1192: assignment starting with object literals", ->
 # Destructuring Assignment
 
 test "empty destructuring assignment", ->
-  {} = [] = undefined
+  {} = {}
+  [] = []
 
 test "chained destructuring assignments", ->
   [a] = {0: b} = {'0': c} = [nonce={}]
@@ -603,7 +604,7 @@ test "simple array destructuring defaults", ->
   [a = 2] = [undefined]
   eq 2, a
   [a = 3] = [null]
-  eq 3, a
+  eq null, a # Breaking change in CS2: per ES2015, default values are applied for `undefined` but not for `null`.
   [a = 4] = [0]
   eq 0, a
   arr = [a = 5]
@@ -616,7 +617,7 @@ test "simple object destructuring defaults", ->
   {b = 2} = {b: undefined}
   eq b, 2
   {b = 3} = {b: null}
-  eq b, 3
+  eq b, null # Breaking change in CS2: per ES2015, default values are applied for `undefined` but not for `null`.
   {b = 4} = {b: 0}
   eq b, 0
 
@@ -625,17 +626,17 @@ test "simple object destructuring defaults", ->
   {b: c = 2} = {b: undefined}
   eq c, 2
   {b: c = 3} = {b: null}
-  eq c, 3
+  eq c, null # Breaking change in CS2: per ES2015, default values are applied for `undefined` but not for `null`.
   {b: c = 4} = {b: 0}
   eq c, 0
 
 test "multiple array destructuring defaults", ->
-  [a = 1, b = 2, c] = [null, 12, 13]
+  [a = 1, b = 2, c] = [undefined, 12, 13]
   eq a, 1
   eq b, 12
   eq c, 13
-  [a, b = 2, c = 3] = [null, 12, 13]
-  eq a, null
+  [a, b = 2, c = 3] = [undefined, 12, 13]
+  eq a, undefined
   eq b, 12
   eq c, 13
   [a = 1, b, c = 3] = [11, 12]
@@ -666,7 +667,7 @@ test "destructuring assignment with context (@) properties and defaults", ->
   a={}; b={}; c={}; d={}; e={}
   obj =
     fn: () ->
-      local = [a, {b, c: null}, d]
+      local = [a, {b, c: undefined}, d]
       [@a, {b: @b = b, @c = c}, @d, @e = e] = local
   eq undefined, obj[key] for key in ['a','b','c','d','e']
   obj.fn()
@@ -685,7 +686,7 @@ test "destructuring assignment with defaults single evaluation", ->
   [a = fn()] = [10]
   eq 10, a
   eq 1, callCount
-  {a = fn(), b: c = fn()} = {a: 20, b: null}
+  {a = fn(), b: c = fn()} = {a: 20, b: undefined}
   eq 20, a
   eq c, 1
   eq callCount, 2
@@ -4875,6 +4876,13 @@ test "octal escapes", ->
       \  \   \ \ ^\^^
   '''
   assertErrorFormat '''
+    /a\\1\\tb\\\\\\07c/
+  ''', '''
+    [stdin]:1:10: error: octal escape sequences are not allowed \\07
+    /a\\1\\tb\\\\\\07c/
+      \  \   \ \ ^\^^
+  '''
+  assertErrorFormat '''
     ///a
       #{b} \\01///
   ''', '''
@@ -5771,6 +5779,142 @@ test "new with 'super'", ->
                                      ^^^^^
   '''
 
+test "getter keyword in object", ->
+  assertErrorFormat '''
+    obj =
+      get foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      get foo: ->
+      ^^^
+  '''
+
+test "setter keyword in object", ->
+  assertErrorFormat '''
+    obj =
+      set foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      set foo: ->
+      ^^^
+  '''
+
+test "getter keyword in inline implicit object", ->
+  assertErrorFormat 'obj = get foo: ->', '''
+    [stdin]:1:7: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+    obj = get foo: ->
+          ^^^
+  '''
+
+test "setter keyword in inline implicit object", ->
+  assertErrorFormat 'obj = set foo: ->', '''
+    [stdin]:1:7: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+    obj = set foo: ->
+          ^^^
+  '''
+
+test "getter keyword in inline explicit object", ->
+  assertErrorFormat 'obj = {get foo: ->}', '''
+    [stdin]:1:8: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+    obj = {get foo: ->}
+           ^^^
+  '''
+
+test "setter keyword in inline explicit object", ->
+  assertErrorFormat 'obj = {set foo: ->}', '''
+    [stdin]:1:8: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+    obj = {set foo: ->}
+           ^^^
+  '''
+
+test "getter keyword in function", ->
+  assertErrorFormat '''
+    f = ->
+      get foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      get foo: ->
+      ^^^
+  '''
+
+test "setter keyword in function", ->
+  assertErrorFormat '''
+    f = ->
+      set foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      set foo: ->
+      ^^^
+  '''
+
+test "getter keyword in inline function", ->
+  assertErrorFormat 'f = -> get foo: ->', '''
+    [stdin]:1:8: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+    f = -> get foo: ->
+           ^^^
+  '''
+
+test "setter keyword in inline function", ->
+  assertErrorFormat 'f = -> set foo: ->', '''
+    [stdin]:1:8: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+    f = -> set foo: ->
+           ^^^
+  '''
+
+test "getter keyword in class", ->
+  assertErrorFormat '''
+    class A
+      get foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      get foo: ->
+      ^^^
+  '''
+
+test "setter keyword in class", ->
+  assertErrorFormat '''
+    class A
+      set foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      set foo: ->
+      ^^^
+  '''
+
+test "getter keyword in inline class", ->
+  assertErrorFormat 'class A then get foo: ->', '''
+      [stdin]:1:14: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      class A then get foo: ->
+                   ^^^
+  '''
+
+test "setter keyword in inline class", ->
+  assertErrorFormat 'class A then set foo: ->', '''
+      [stdin]:1:14: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      class A then set foo: ->
+                   ^^^
+  '''
+
+test "getter keyword before static method", ->
+  assertErrorFormat '''
+    class A
+      get @foo = ->
+  ''', '''
+    [stdin]:2:3: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      get @foo = ->
+      ^^^
+  '''
+
+test "setter keyword before static method", ->
+  assertErrorFormat '''
+    class A
+      set @foo = ->
+  ''', '''
+    [stdin]:2:3: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      set @foo = ->
+      ^^^
+  '''
+
 </script>
 <script type="text/x-coffeescript" class="test" id="eval">
 if vm = require? 'vm'
@@ -6240,6 +6384,23 @@ test "tabs and spaces cannot be mixed for indentation", ->
     ok no
   catch e
     eq 'mixed indentation', e.message
+
+test "#4487: Handle unusual outdentation", ->
+  a =
+    switch 1
+      when 2
+          no
+         when 3 then no
+      when 1 then yes
+  eq yes, a
+
+  b = do ->
+    if no
+      if no
+            1
+       2
+      3
+  eq b, undefined
 
 </script>
 <script type="text/x-coffeescript" class="test" id="function_invocation">
@@ -6920,7 +7081,7 @@ test "Non-callable literals shouldn't compile", ->
   cantCompile '[1..10][2..9] 2'
   cantCompile '[1..10][2..9](2)'
 
-test 'implicit invocation with implicit object literal', ->
+test "implicit invocation with implicit object literal", ->
   f = (obj) -> eq 1, obj.a
 
   f
@@ -6951,6 +7112,48 @@ test 'implicit invocation with implicit object literal', ->
     else
       "#{a}": 1
   eq 2, obj.a
+
+test "get and set can be used as function names when not ambiguous with `get`/`set` keywords", ->
+  get = (val) -> val
+  set = (val) -> val
+  eq 2, get(2)
+  eq 3, set(3)
+  eq 'a', get('a')
+  eq 'b', set('b')
+
+  get = ({val}) -> val
+  set = ({val}) -> val
+  eq 4, get({val: 4})
+  eq 5, set({val: 5})
+  eq 'c', get({val: 'c'})
+  eq 'd', set({val: 'd'})
+
+test "get and set can be used as variable and property names", ->
+  get = 2
+  set = 3
+  eq 2, get
+  eq 3, set
+
+  {get} = {get: 4}
+  {set} = {set: 5}
+  eq 4, get
+  eq 5, set
+
+test "get and set can be used as class method names", ->
+  class A
+    get: -> 2
+    set: -> 3
+
+  a = new A()
+  eq 2, a.get()
+  eq 3, a.set()
+
+  class B
+    @get = -> 4
+    @set = -> 5
+
+  eq 4, B.get()
+  eq 5, B.set()
 
 </script>
 <script type="text/x-coffeescript" class="test" id="functions">
@@ -7135,7 +7338,7 @@ test "destructuring in function definition", ->
     {url, async, beforeSend, cache, method, data}
 
   fn = ->
-  deepEqual ajax('/home', beforeSend: fn, cache: null, method: 'post'), {
+  deepEqual ajax('/home', beforeSend: fn, method: 'post'), {
     url: '/home', async: true, beforeSend: fn, cache: true, method: 'post', data: {}
   }
 
@@ -7308,6 +7511,16 @@ test "#4406 Destructured parameter default evaluation order with generator funct
   next    = -> ++current
   foo = ({ a = next() }, b = next()) -> [ a, b ]
   arrayEq foo({}), [1, 2]
+
+test "Destructured parameter with default value, that itself has a default value", ->
+  # Adapted from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment
+  draw = ({size = 'big', coords = {x: 0, y: 0}, radius = 25} = {}) -> "#{size}-#{coords.x}-#{coords.y}-#{radius}"
+  output = draw
+    coords:
+      x: 18
+      y: 30
+    radius: 30
+  eq output, 'big-18-30-30'
 
 </script>
 <script type="text/x-coffeescript" class="test" id="generators">
@@ -8055,22 +8268,21 @@ test "escaped JavaScript blocks speed round", ->
 
 </script>
 <script type="text/x-literate-coffeescript" class="test" id="literate">
-Literate CoffeeScript Test
---------------------------
+# Literate CoffeeScript Test
 
 comment comment
 
     test "basic literate CoffeeScript parsing", ->
       ok yes
-      
+
 now with a...
-  
+
     test "broken up indentation", ->
-    
+
 ... broken up ...
 
       do ->
-      
+
 ... nested block.
 
         ok yes
@@ -8082,36 +8294,36 @@ Code must be separated from text by a blank line.
 The next line is part of the text and will not be executed.
       fail()
 
-      ok yes        
-        
+      ok yes
+
 Code in `backticks is not parsed` and...
 
     test "comments in indented blocks work", ->
       do ->
         do ->
           # Regular comment.
-          
+
           ###
             Block comment.
           ###
-          
+
           ok yes
-          
-Regular [Markdown](http://example.com/markdown) features, like links 
+
+Regular [Markdown](http://example.com/markdown) features, like links
 and unordered lists, are fine:
 
-  * I 
-  
+  * I
+
   * Am
-  
+
   * A
-  
+
   * List
 
 Tabs work too:
 
-				test "tabbed code", ->
-					ok yes
+	test "tabbed code", ->
+		ok yes
 
 ---
 
@@ -8120,11 +8332,12 @@ Tabs work too:
 
 <p>
 
-    executed = true # should not execute, this is just HTML para, not code!
+if true
+  executed = true # should not execute, this is just HTML para, not code!
 
 </p>
 
-    test "should ignore indented sections inside HTML", ->
+    test "should ignore code blocks inside HTML", ->
       eq executed, false
 
 ---
@@ -8176,24 +8389,8 @@ Tabs work too:
 
 ---
 
-This next one probably passes because a string is inoffensive in compiled js, also, can't get `marked` to parse it correctly, and not sure if empty line is permitted between title and reference
-
 This is [an example][id] reference-style link.
-[id]: http://example.com/
-
-    "Optional Title Here"
-
----
-
-    executed = no
-
-1986. What a great season.
-          executed = yes
-
-and test...
-
-    test "should recognise indented code blocks in lists", ->
-      ok executed
+[id]: http://example.com/  "Optional Title Here"
 
 ---
 
@@ -8205,7 +8402,7 @@ and test...
 
 and test...
 
-    test "should recognise indented code blocks in lists with empty line as separator", ->
+    test "should recognize indented code blocks in lists with empty line as separator", ->
       ok executed
 
 ---
@@ -8220,6 +8417,174 @@ and test...
     test "should ignore indented code in escaped list like number", ->
       eq executed, no
 
+one last test!
+
+    test "block quotes should render correctly", ->
+      quote = '''
+        foo
+           and bar!
+      '''
+      eq quote, 'foo\n   and bar!'
+
+</script>
+<script type="text/x-literate-coffeescript" class="test" id="literate_tabbed">
+# Tabbed Literate CoffeeScript Test
+
+comment comment
+
+	test "basic literate CoffeeScript parsing", ->
+		ok yes
+
+now with a...
+
+	test "broken up indentation", ->
+
+... broken up ...
+
+		do ->
+
+... nested block.
+
+			ok yes
+
+Code must be separated from text by a blank line.
+
+	test "code blocks must be preceded by a blank line", ->
+
+The next line is part of the text and will not be executed.
+    fail()
+
+		ok yes
+
+Code in `backticks is not parsed` and...
+
+	test "comments in indented blocks work", ->
+		do ->
+			do ->
+				# Regular comment.
+
+				###
+					Block comment.
+				###
+
+				ok yes
+
+Regular [Markdown](http://example.com/markdown) features, like links
+and unordered lists, are fine:
+
+  * I
+
+  * Am
+
+  * A
+
+  * List
+
+Spaces work too:
+
+  test "spaced code", ->
+    ok yes
+
+---
+
+	# keep track of whether code blocks are executed or not
+	executed = false
+
+<p>
+
+if true
+	executed = true # should not execute, this is just HTML para, not code!
+
+</p>
+
+	test "should ignore code blocks inside HTML", ->
+		eq executed, false
+
+---
+
+*   A list item with a code block:
+
+		test "basic literate CoffeeScript parsing", ->
+			ok yes
+
+---
+
+*   Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
+    Aliquam hendrerit mi posuere lectus. Vestibulum enim wisi,
+    viverra nec, fringilla in, laoreet vitae, risus.
+
+*   Donec sit amet nisl. Aliquam semper ipsum sit amet velit.
+    Suspendisse id sem consectetuer libero luctus adipiscing.
+
+---
+
+1.  This is a list item with two paragraphs. Lorem ipsum dolor
+    sit amet, consectetuer adipiscing elit. Aliquam hendrerit
+    mi posuere lectus.
+
+    Vestibulum enim wisi, viverra nec, fringilla in, laoreet
+    vitae, risus. Donec sit amet nisl. Aliquam semper ipsum
+    sit amet velit.
+
+2.  Suspendisse id sem consectetuer libero luctus adipiscing.
+
+---
+
+1.  This is a list item with two paragraphs. Lorem ipsum dolor
+    sit amet, consectetuer adipiscing elit. Aliquam hendrerit
+    mi posuere lectus.
+
+    Vestibulum enim wisi, viverra nec, fringilla in, laoreet
+    vitae, risus. Donec sit amet nisl. Aliquam semper ipsum
+    sit amet velit.
+
+2.  Suspendisse id sem consectetuer libero luctus adipiscing.
+
+---
+
+*   A list item with a blockquote:
+
+    > This is a blockquote
+    > inside a list item.
+
+---
+
+This is [an example][id] reference-style link.
+[id]: http://example.com/  "Optional Title Here"
+
+---
+
+	executed = no
+
+1986. What a great season.
+
+	executed = yes
+
+and test...
+
+	test "should recognize indented code blocks in lists with empty line as separator", ->
+		ok executed
+
+---
+
+	executed = no
+
+1986\. What a great season.
+				executed = yes
+
+and test...
+
+	test "should ignore indented code in escaped list like number", ->
+		eq executed, no
+
+one last test!
+
+	test "block quotes should render correctly", ->
+		quote = '''
+			foo
+					and bar!
+		'''
+		eq quote, 'foo\n\t\tand bar!'
 
 </script>
 <script type="text/x-coffeescript" class="test" id="location">
@@ -9561,7 +9926,7 @@ test "export an aliased member named default", ->
     };"""
   eq toJS(input), output
 
-test "export an imported member named default", ->
+test "import an imported member named default", ->
   input = "import { default } from 'lib'"
   output = """
     import {
@@ -9569,10 +9934,26 @@ test "export an imported member named default", ->
     } from 'lib';"""
   eq toJS(input), output
 
-test "export an imported aliased member named default", ->
+test "import an imported aliased member named default", ->
   input = "import { default as def } from 'lib'"
   output = """
     import {
+      default as def
+    } from 'lib';"""
+  eq toJS(input), output
+
+test "export an imported member named default", ->
+  input = "export { default } from 'lib'"
+  output = """
+    export {
+      default
+    } from 'lib';"""
+  eq toJS(input), output
+
+test "export an imported aliased member named default", ->
+  input = "export { default as def } from 'lib'"
+  output = """
+    export {
       default as def
     } from 'lib';"""
   eq toJS(input), output
@@ -9591,6 +9972,121 @@ test "#4394: export shouldn't prevent variable declarations", ->
       x
     };
   """
+  eq toJS(input), output
+
+test "#4451: `default` in an export statement is only treated as a keyword when it follows `export` or `as`", ->
+  input = "export default { default: 1 }"
+  output = """
+    export default {
+      "default": 1
+    };
+  """
+  eq toJS(input), output
+
+test "#4491: import- and export-specific lexing should stop after import/export statement", ->
+  input = """
+    import {
+      foo,
+      bar as baz
+    } from 'lib'
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
+    import {
+      foo,
+      bar as baz
+    } from 'lib';
+
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
+
+  input = """
+    import { foo, bar as baz } from 'lib'
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
+    import {
+      foo,
+      bar as baz
+    } from 'lib';
+
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
+
+  input = """
+    import * as lib from 'lib'
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
+    import * as lib from 'lib';
+
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
+
+  input = """
+    export {
+      foo,
+      bar
+    }
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
+    export {
+      foo,
+      bar
+    };
+
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
+
+  input = """
+    export * from 'lib'
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
+    export * from 'lib';
+
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
   eq toJS(input), output
 
 </script>
@@ -11861,7 +12357,7 @@ test "SourceMap tests", ->
 # Strict Early Errors
 # -------------------
 
-# The following are prohibited under ES5's `strict` mode
+# The following are prohibited under ES5’s `strict` mode
 # * `Octal Integer Literals`
 # * `Octal Escape Sequences`
 # * duplicate property definitions in `Object Literal`s

@@ -116,9 +116,9 @@ test "division vs regex after a callable token", ->
     p: (regex) -> if regex then r regex else 4
   class B extends A
     p: ->
-      eq 2, super / b/g
-      eq 2, super/b/g
-      eq 2, super/ b/g
+      eq 2, super() / b/g
+      eq 2, super()/b/g
+      eq 2, super()/ b/g
       eq true, super /b/g
   new B().p()
 

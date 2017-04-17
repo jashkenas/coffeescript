@@ -5,7 +5,7 @@
 
 # Ensure that the OptionParser handles arguments correctly.
 return unless require?
-{OptionParser} = require './../lib/coffee-script/optparse'
+{OptionParser} = require './../lib/coffeescript/optparse'
 
 opt = new OptionParser [
   ['-r', '--required [DIR]',  'desc required']

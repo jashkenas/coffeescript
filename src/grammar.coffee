@@ -89,7 +89,12 @@ grammar =
   Line: [
     o 'Expression'
     o 'Statement'
+    o 'FuncDirective'
+  ]
+
+  FuncDirective: [
     o 'YieldReturn'
+    o 'AwaitReturn'
   ]
 
   # Pure statements which cannot be expressions.
@@ -219,17 +224,22 @@ grammar =
     o 'YIELD RETURN',                           -> new YieldReturn
   ]
 
+  AwaitReturn: [
+    o 'AWAIT RETURN Expression',                -> new AwaitReturn $3
+    o 'AWAIT RETURN',                           -> new AwaitReturn
+  ]
+
+
   # A block comment.
   Comment: [
     o 'HERECOMMENT',                            -> new Comment $1
   ]
 
   # The **Code** node is the function literal. It's defined by an indented block
-  # of **Block** preceded by a function arrow, with an optional parameter
-  # list.
+  # of **Block** preceded by a function arrow, with an optional parameter list.
   Code: [
     o 'PARAM_START ParamList PARAM_END FuncGlyph Block', -> new Code $2, $5, $4
-    o 'FuncGlyph Block',                        -> new Code [], $2, $1
+    o 'FuncGlyph Block',                                 -> new Code [], $2, $1
   ]
 
   # CoffeeScript has two different symbols for functions. `->` is for ordinary
@@ -299,6 +309,13 @@ grammar =
     o 'Parenthetical',                          -> new Value $1
     o 'Range',                                  -> new Value $1
     o 'This'
+    o 'Super'
+  ]
+
+  # A `super`-based expression that can be used as a value.
+  Super: [
+    o 'SUPER . Property',                       -> new Super LOC(3) new Access $3
+    o 'SUPER INDEX_START Expression INDEX_END', -> new Super LOC(3) new Index $3
   ]
 
   # The general group of accessors into an object, by property, by prototype
@@ -420,12 +437,7 @@ grammar =
     o 'Value OptFuncExist String',              -> new TaggedTemplateCall $1, $3, $2
     o 'Value OptFuncExist Arguments',           -> new Call $1, $3, $2
     o 'Invocation OptFuncExist Arguments',      -> new Call $1, $3, $2
-    o 'Super'
-  ]
-
-  Super: [
-    o 'SUPER',                                  -> new SuperCall
-    o 'SUPER Arguments',                        -> new SuperCall $2
+    o 'SUPER OptFuncExist Arguments',           -> new SuperCall LOC(1)(new Super), $3, $2
   ]
 
   # An optional existence check on a function.
@@ -652,6 +664,8 @@ grammar =
     o '-     Expression',                      (-> new Op '-', $2), prec: 'UNARY_MATH'
     o '+     Expression',                      (-> new Op '+', $2), prec: 'UNARY_MATH'
 
+    o 'AWAIT Expression',                       -> new Op $1 , $2
+
     o '-- SimpleAssignable',                    -> new Op '--', $2
     o '++ SimpleAssignable',                    -> new Op '++', $2
     o 'SimpleAssignable --',                    -> new Op '--', $1, null, true
@@ -706,6 +720,7 @@ operators = [
   ['nonassoc',  '++', '--']
   ['left',      '?']
   ['right',     'UNARY']
+  ['right',     'AWAIT']
   ['right',     '**']
   ['right',     'UNARY_MATH']
   ['left',      'MATH']
