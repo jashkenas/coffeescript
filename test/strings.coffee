@@ -419,12 +419,12 @@ test "#4248: Unicode code point escapes", ->
   eq '\udab3\uddefc', '''\u{0bcdef}c'''
   eq '\udab3\uddefc', """\u{bcdef}#{ 'c' }"""
 
-  # rewrite code point escapes
+  # don't rewrite code point escapes
   input = """
     '\\u{bcdef}\\u{abc}'
     """
   output = """
-    '\\udab3\\uddef\\u0abc';
+    '\\u{bcdef}\\u{abc}';
   """
   eq toJS(input), output
 
@@ -432,6 +432,6 @@ test "#4248: Unicode code point escapes", ->
     "#{ 'a' }\\u{bcdef}"
     """
   output = """
-    "a\\udab3\\uddef";
+    "a\\u{bcdef}";
   """
   eq toJS(input), output

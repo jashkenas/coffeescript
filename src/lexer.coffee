@@ -12,7 +12,7 @@
 {Rewriter, INVERSES} = require './rewriter'
 
 # Import the helpers we need.
-{count, starts, compact, repeat, invertLiterate,
+{count, starts, compact, repeat, invertLiterate, merge,
 locationDataToString,  throwSyntaxError} = require './helpers'
 
 # The Lexer Class
@@ -329,7 +329,6 @@ exports.Lexer = class Lexer
       when match = REGEX.exec @chunk
         [regex, body, closed] = match
         @validateEscapes body, isRegex: yes, offsetInChunk: 1
-        body = @formatRegex body, delimiter: '/'
         index = regex.length
         prev = @prev()
         if prev
@@ -348,13 +347,17 @@ exports.Lexer = class Lexer
       when not VALID_FLAGS.test flags
         @error "invalid regular expression flags #{flags}", offset: index, length: flags.length
       when regex or tokens.length is 1
-        body ?= @formatHeregex tokens[0][1]
+        if body
+          body = @formatRegex body, { flags, delimiter: '/' }
+        else
+          body = @formatHeregex tokens[0][1], { flags }
         @token 'REGEX', "#{@makeDelimitedLiteral body, delimiter: '/'}#{flags}", 0, end, origin
       else
         @token 'REGEX_START', '(', 0, 0, origin
         @token 'IDENTIFIER', 'RegExp', 0, 0
         @token 'CALL_START', '(', 0, 0
-        @mergeInterpolationTokens tokens, {delimiter: '"', double: yes}, @formatHeregex
+        @mergeInterpolationTokens tokens, {delimiter: '"', double: yes}, (str) =>
+          @formatHeregex str, { flags }
         if flags
           @token ',', ',', index - 1, 0
           @token 'STRING', '"' + flags + '"', index - 1, flags.length
@@ -791,8 +794,8 @@ exports.Lexer = class Lexer
   formatString: (str, options) ->
     @replaceUnicodeCodePointEscapes str.replace(STRING_OMIT, '$1'), options
 
-  formatHeregex: (str) ->
-    @formatRegex str.replace(HEREGEX_OMIT, '$1$2'), delimiter: '///'
+  formatHeregex: (str, options) ->
+    @formatRegex str.replace(HEREGEX_OMIT, '$1$2'), merge(options, delimiter: '///')
 
   formatRegex: (str, options) ->
     @replaceUnicodeCodePointEscapes str, options
@@ -807,8 +810,9 @@ exports.Lexer = class Lexer
     low = (codePoint - 0x10000) % 0x400 + 0xDC00
     "#{toUnicodeEscape(high)}#{toUnicodeEscape(low)}"
 
-  # Replace \u{...} with \uxxxx[\uxxxx] in strings and regexes
+  # Replace \u{...} with \uxxxx[\uxxxx] in regexes without `u` flag
   replaceUnicodeCodePointEscapes: (str, options) ->
+    shouldReplace = options.flags?.indexOf('u') ? -1 > -1
     chunks = []
     chunksIndex = lastEndOffset = 0
     while match = UNICODE_CODE_POINT_ESCAPE.exec str
@@ -824,8 +828,9 @@ exports.Lexer = class Lexer
           length
         }
 
-      chunks[chunksIndex++] = str[lastEndOffset...start]
-      chunks[chunksIndex++] = @unicodeCodePointToUnicodeEscapes codePointDecimal
+      if shouldReplace
+        chunks[chunksIndex++] = str[lastEndOffset...start]
+        chunks[chunksIndex++] = @unicodeCodePointToUnicodeEscapes codePointDecimal
 
       lastEndOffset = start + length
       UNICODE_CODE_POINT_ESCAPE.lastIndex -= 1
