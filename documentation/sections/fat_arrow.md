@@ -12,6 +12,9 @@ If we had used `->` in the callback above, `@customer` would have referred to th
 
 When used in a class definition, methods declared with the fat arrow will be automatically bound to each instance of the class when the instance is constructed.
 
+<div id="generator-functions" class="bookmark"></div>
+<div id="async-functions" class="bookmark"></div>
+
 CoffeeScript also supports [generator functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) and [async functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function) through the `yield` and `await` keywords respectively. There's no `function*(){}` or `async function(){}` nonsense — a generator in CoffeeScript is simply a function that yields, and an async function in CoffeeScript is simply a function that awaits.
 
 ```
@@ -19,6 +22,8 @@ codeFor('generators', 'ps.next().value')
 ```
 
 `yield*` is called `yield from`, and `yield return` may be used if you need to force a generator that doesn’t yield.
+
+<div id="generator-iteration" class="bookmark"></div>
 
 You can iterate over a generator function using `for…from`.
 

@@ -116,7 +116,7 @@ task 'build:full', 'build the CoffeeScript compiler from source twice, and run t
   build ->
     build testBuiltCode
 
-task 'build:browser', 'build the merged script for inclusion in the browser', ->
+task 'build:browser', 'merge the built scripts into a single file for use in a browser', ->
   code = """
   require['../../package.json'] = (function() {
     return #{fs.readFileSync "./package.json"};
@@ -154,6 +154,9 @@ task 'build:browser', 'build the merged script for inclusion in the browser', ->
   outputFolder = "docs/v#{majorVersion}/browser-compiler"
   fs.mkdirSync outputFolder unless fs.existsSync outputFolder
   fs.writeFileSync "#{outputFolder}/coffeescript.js", header + '\n' + code
+
+task 'build:browser:full', 'merge the built scripts into a single file for use in a browser, and test it', ->
+  invoke 'build:browser'
   console.log "built ... running browser tests:"
   invoke 'test:browser'
 
@@ -331,7 +334,7 @@ task 'doc:source:watch', 'watch and continually rebuild the annotated source doc
 
 task 'release', 'build and test the CoffeeScript source, and build the documentation', ->
   invoke 'build:full'
-  invoke 'build:browser'
+  invoke 'build:browser:full'
   invoke 'doc:site'
   invoke 'doc:test'
   invoke 'doc:source'
@@ -421,7 +424,8 @@ runTests = (CoffeeScript) ->
 
 
 task 'test', 'run the CoffeeScript language test suite', ->
-  runTests CoffeeScript
+  testResults = runTests CoffeeScript
+  process.exit 1 unless testResults
 
 
 task 'test:browser', 'run the test suite against the merged browser script', ->
@@ -429,4 +433,5 @@ task 'test:browser', 'run the test suite against the merged browser script', ->
   result = {}
   global.testingBrowser = yes
   (-> eval source).call result
-  runTests result.CoffeeScript
+  testResults = runTests result.CoffeeScript
+  process.exit 1 unless testResults
