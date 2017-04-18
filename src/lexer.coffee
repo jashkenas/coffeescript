@@ -784,29 +784,16 @@ exports.Lexer = class Lexer
 
   # Replace \u{...} with \uxxxx[\uxxxx] in strings and regexes
   replaceUnicodeCodePointEscapes: (str, options) ->
-    chunks = []
-    chunksIndex = lastEndOffset = 0
-    while match = UNICODE_CODE_POINT_ESCAPE.exec str
-      [[], before, codePointHex] = match
-      {index: offset}            = match
-      start = offset + before.length
-      length = codePointHex.length + 4
+    str.replace UNICODE_CODE_POINT_ESCAPE, (match, escapedBackslash, codePointHex, offset) =>
+      return escapedBackslash if escapedBackslash
+
       codePointDecimal = parseInt codePointHex, 16
       if codePointDecimal > 1114111
-        UNICODE_CODE_POINT_ESCAPE.lastIndex = 0
-        @error "unicode code point escapes greater than \\u{10ffff} are not allowed", {
-          offset: start + options.delimiter.length
-          length
-        }
+        @error "unicode code point escapes greater than \\u{10ffff} are not allowed",
+          offset: offset + options.delimiter.length
+          length: codePointHex.length + 4
 
-      chunks[chunksIndex++] = str[lastEndOffset...start]
-      chunks[chunksIndex++] = @unicodeCodePointToUnicodeEscapes codePointDecimal
-
-      lastEndOffset = start + length
-      UNICODE_CODE_POINT_ESCAPE.lastIndex -= 1
-    return str unless chunks.length
-    chunks[chunksIndex] = str[lastEndOffset..str.length - 1]
-    chunks.join ''
+      @unicodeCodePointToUnicodeEscapes codePointDecimal
 
   # Validates escapes in strings and regexes.
   validateEscapes: (str, options = {}) ->
@@ -1049,7 +1036,8 @@ REGEX_INVALID_ESCAPE = ///
 ///
 
 UNICODE_CODE_POINT_ESCAPE = ///
-  ( (?:^|[^\\]) (?:\\\\)* )        # make sure the escape isn’t escaped
+  ( \\\\ )        # make sure the escape isn’t escaped
+  |
   \\u\{ ( [\da-fA-F]+ ) \}
 ///g
 
