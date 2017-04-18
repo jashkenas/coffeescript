@@ -1518,11 +1518,11 @@ test "#4248: Unicode code point escapes", ->
   '''
 
   assertErrorFormat '''
-    ///abc\\u{123456}///u
+    ///abc\\\\\\u{123456}///u
   ''', '''
-    [stdin]:1:7: error: unicode code point escapes greater than \\u{10ffff} are not allowed
-    ///abc\\u{123456}///u
-          ^\^^^^^^^^^
+    [stdin]:1:9: error: unicode code point escapes greater than \\u{10ffff} are not allowed
+    ///abc\\\\\\u{123456}///u
+           \ \^\^^^^^^^^^
   '''
 
   assertErrorFormat '''

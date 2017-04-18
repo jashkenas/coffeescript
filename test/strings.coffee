@@ -418,6 +418,7 @@ test "#4248: Unicode code point escapes", ->
   eq 'a\udab3\uddef', "#{ 'a' }\u{bcdef}"
   eq '\udab3\uddefc', '''\u{0bcdef}c'''
   eq '\udab3\uddefc', """\u{bcdef}#{ 'c' }"""
+  eq '\\u{123456}', "#{'\\'}#{'u{123456}'}"
 
   # don't rewrite code point escapes
   input = """
