@@ -1,5 +1,5 @@
 # `cake` is a simplified version of [Make](http://www.gnu.org/software/make/)
-# ([Rake](http://rake.rubyforge.org/), [Jake](http://github.com/280north/jake))
+# ([Rake](http://rake.rubyforge.org/), [Jake](https://github.com/280north/jake))
 # for CoffeeScript. You define tasks with names and descriptions in a Cakefile,
 # and can call them from the command line, or invoke them from other tasks.
 #

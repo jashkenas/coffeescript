@@ -1,21 +1,21 @@
 ## Resources
 
-*   [Source Code](http://github.com/jashkenas/coffeescript/)<br>
+*   [Source Code](https://github.com/jashkenas/coffeescript/)<br>
     Use `bin/coffee` to test your changes,<br>
     `bin/cake test` to run the test suite,<br>
     `bin/cake build` to rebuild the full CoffeeScript compiler, and<br>
     `bin/cake build:except-parser` to recompile much faster if you’re not editing `grammar.coffee`.
 
     `git checkout lib && bin/cake build:full` is a good command to run when you’re working on the core language. It’ll refresh the `lib` folder (in case you broke something), build your altered compiler, use that to rebuild itself (a good sanity test) and then run all of the tests. If they pass, there’s a good chance you’ve made a successful change.
-*   [Browser Tests](v<%= majorVersion %>/test.html)<br>
+*   [Browser Tests](/v<%= majorVersion %>/test.html)<br>
     Run CoffeeScript’s test suite in your current browser.
-*   [CoffeeScript Issues](http://github.com/jashkenas/coffeescript/issues)<br>
+*   [CoffeeScript Issues](https://github.com/jashkenas/coffeescript/issues)<br>
     Bug reports, feature proposals, and ideas for changes to the language belong here.
 *   [CoffeeScript Google Group](https://groups.google.com/forum/#!forum/coffeescript)<br>
     If you’d like to ask a question, the mailing list is a good place to get help.
-*   [The CoffeeScript Wiki](http://github.com/jashkenas/coffeescript/wiki)<br>
-    If you’ve ever learned a neat CoffeeScript tip or trick, or ran into a gotcha — share it on the wiki. The wiki also serves as a directory of handy [text editor extensions](http://github.com/jashkenas/coffeescript/wiki/Text-editor-plugins), [web framework plugins](http://github.com/jashkenas/coffeescript/wiki/Web-framework-plugins), and general [CoffeeScript build tools](http://github.com/jashkenas/coffeescript/wiki/Build-tools).
-*   [The FAQ](http://github.com/jashkenas/coffeescript/wiki/FAQ)<br>
+*   [The CoffeeScript Wiki](https://github.com/jashkenas/coffeescript/wiki)<br>
+    If you’ve ever learned a neat CoffeeScript tip or trick, or ran into a gotcha — share it on the wiki. The wiki also serves as a directory of handy [text editor extensions](https://github.com/jashkenas/coffeescript/wiki/Text-editor-plugins), [web framework plugins](https://github.com/jashkenas/coffeescript/wiki/Web-framework-plugins), and general [CoffeeScript build tools](https://github.com/jashkenas/coffeescript/wiki/Build-tools).
+*   [The FAQ](https://github.com/jashkenas/coffeescript/wiki/FAQ)<br>
     Perhaps your CoffeeScript-related question has been asked before. Check the FAQ first.
 *   [JS2Coffee](http://js2coffee.org)<br>
     Is a very well done reverse JavaScript-to-CoffeeScript compiler. It’s not going to be perfect (infer what your JavaScript classes are, when you need bound functions, and so on…) — but it’s a great starting point for converting simple scripts.

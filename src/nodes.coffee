@@ -1962,7 +1962,7 @@ exports.Op = class Op extends Base
     not @isNumber()
 
   # Am I capable of
-  # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin)?
+  # [Python-style comparison chaining](https://docs.python.org/3/reference/expressions.html#not-in)?
   isChainable: ->
     @operator in ['<', '>', '>=', '<=', '===', '!==']
 
