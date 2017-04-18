@@ -145,7 +145,7 @@ getCommandId = (repl, commandName) ->
 
 module.exports =
   start: (opts = {}) ->
-    [major, minor, build] = process.versions.node.split('.').map (n) -> parseInt(n)
+    [major, minor, build] = process.versions.node.split('.').map (n) -> parseInt(n, 10)
 
     if major < 6
       console.warn "Node 6+ required for CoffeeScript REPL"
