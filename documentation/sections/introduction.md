@@ -4,7 +4,7 @@ The golden rule of CoffeeScript is: _“It’s just JavaScript”_. The code com
 
 The CoffeeScript compiler goes to great lengths to generate output JavaScript that runs in every JavaScript runtime, but there are exceptions. Use [generator functions](#generator-functions), [`for…from`](#generator-iteration), or [tagged template literals](#tagged-template-literals) only if you know that your [target runtimes can support them](http://kangax.github.io/compat-table/es6/). If you use [modules](#modules), you will need to [use an additional tool to resolve them](#modules-note).
 
-**Latest Version:** [<%= fullVersion %>](http://github.com/jashkenas/coffeescript/tarball/<%= fullVersion %>)
+**Latest Version:** [<%= fullVersion %>](https://github.com/jashkenas/coffeescript/tarball/<%= fullVersion %>)
 
 ```bash
 npm install -g coffee-script
