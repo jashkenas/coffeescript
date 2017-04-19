@@ -788,7 +788,7 @@ exports.Lexer = class Lexer
       return escapedBackslash if escapedBackslash
 
       codePointDecimal = parseInt codePointHex, 16
-      if codePointDecimal > 1114111
+      if codePointDecimal > 0x10ffff
         @error "unicode code point escapes greater than \\u{10ffff} are not allowed",
           offset: offset + options.delimiter.length
           length: codePointHex.length + 4
