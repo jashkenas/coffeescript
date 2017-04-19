@@ -199,15 +199,15 @@ test "#748: trailing reserved identifiers", ->
   eq nonce, result
 
 test 'if-else within an assignment, condition parenthesized', ->
-  result = if (1 == 1) then 'right'
-  eq result, 'right'
+  result = if (1 is 1) then 'correct'
+  eq result, 'correct'
 
-  result = if ('whatever' ? no) then 'right'
-  eq result, 'right'
+  result = if ('whatever' ? no) then 'correct'
+  eq result, 'correct'
 
   f = -> 'wrong'
-  result = if (f?()) then 'right' else 'wrong'
-  eq result, 'right'
+  result = if (f?()) then 'correct' else 'wrong'
+  eq result, 'correct'
 
 # Postfix
 
