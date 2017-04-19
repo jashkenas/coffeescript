@@ -3,7 +3,7 @@
 # We add support for loading remote Coffee scripts via **XHR**, and
 # `text/coffeescript` script tags, source maps via data-URLs, and so on.
 
-CoffeeScript = require './coffee-script'
+CoffeeScript = require './coffeescript'
 compile = CoffeeScript.compile
 
 # Use standard JavaScript `eval` to eval code.
@@ -72,6 +72,7 @@ runScripts = ->
       options = literate: script.type is coffeetypes[1]
       source = script.src or script.getAttribute('data-src')
       if source
+        options.filename = source
         CoffeeScript.load source,
           (param) ->
             coffees[i] = param
@@ -79,6 +80,12 @@ runScripts = ->
           options
           true
       else
+        # `options.filename` defines the filename the source map appears as
+        # in Developer Tools. If a script tag has an `id`, use that as the
+        # filename; otherwise use `coffeescript`, or `coffeescript1` etc.,
+        # leaving the first one unnumbered for the common case that there’s
+        # only one CoffeeScript script block to parse.
+        options.filename = if script.id and script.id isnt '' then script.id else "coffeescript#{if i isnt 0 then i else ''}"
         options.sourceFiles = ['embedded']
         coffees[i] = [script.innerHTML, options]
 

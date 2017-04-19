@@ -1,5 +1,5 @@
 # Node.js Implementation
-CoffeeScript  = require './coffee-script' 
+CoffeeScript  = require './coffeescript' 
 fs            = require 'fs'
 vm            = require 'vm'
 path          = require 'path'

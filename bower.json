@@ -1,5 +1,5 @@
 {
-  "name": "coffee-script",
+  "name": "coffeescript",
   "main": [
     "lib/coffee-script/browser.js"
   ],
