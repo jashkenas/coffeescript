@@ -293,25 +293,25 @@ test "#3132: Format jsdoc-style block-comment nicely", ->
   input = """
   ###*
   # Multiline for jsdoc-"@doctags"
-  # 
+  #
   # @type {Function}
   ###
   fn = () -> 1
   """
 
   result = """
-  
+
   /**
    * Multiline for jsdoc-"@doctags"
-   * 
+   *
    * @type {Function}
    */
   var fn;
-  
+
   fn = function() {
     return 1;
   };
-  
+
   """
   eq CoffeeScript.compile(input, bare: on), result
 
@@ -321,25 +321,25 @@ test "#3132: Format hand-made (raw) jsdoc-style block-comment nicely", ->
   input = """
   ###*
    * Multiline for jsdoc-"@doctags"
-   * 
+   *
    * @type {Function}
   ###
   fn = () -> 1
   """
 
   result = """
-  
+
   /**
    * Multiline for jsdoc-"@doctags"
-   * 
+   *
    * @type {Function}
    */
   var fn;
-  
+
   fn = function() {
     return 1;
   };
-  
+
   """
   eq CoffeeScript.compile(input, bare: on), result
 
@@ -349,54 +349,54 @@ test "#3132: Place block-comments nicely", ->
   input = """
   ###*
   # A dummy class definition
-  # 
+  #
   # @class
   ###
   class DummyClass
-    
+
     ###*
     # @constructor
     ###
     constructor: ->
-  
+
     ###*
     # Singleton reference
-    # 
+    #
     # @type {DummyClass}
     ###
     @instance = new DummyClass()
-  
+
   """
 
   result = """
-  
+
   /**
    * A dummy class definition
-   * 
+   *
    * @class
    */
   var DummyClass;
-  
+
   DummyClass = (function() {
-  
+
     /**
      * @constructor
      */
     function DummyClass() {}
-  
-  
+
+
     /**
      * Singleton reference
-     * 
+     *
      * @type {DummyClass}
      */
-  
+
     DummyClass.instance = new DummyClass();
-  
+
     return DummyClass;
-  
+
   })();
-  
+
   """
   eq CoffeeScript.compile(input, bare: on), result
 
@@ -418,3 +418,16 @@ test "#3638: Demand a whitespace after # symbol", ->
   """
 
   eq CoffeeScript.compile(input, bare: on), result
+
+test "#3761: Multiline comment at end of an object", ->
+  anObject =
+    x: 3
+    ###
+    #Comment
+    ###
+
+  ok anObject.x is 3
+
+test "#4375: UTF-8 characters in comments", ->
+  # 智に働けば角が立つ、情に掉させば流される。
+  ok yes

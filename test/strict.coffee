@@ -55,35 +55,56 @@ test "octal escape sequences prohibited", ->
   strictOk  "`'\\1'`"
   eq "\\" + "1", `"\\1"`
 
+  # Also test other string types.
+  strict           "'\\\\\\1'"
+  eq "\x008",      '\08'
+  eq "\\\\" + "1", '\\\\1'
+  strict           "'''\\\\\\1'''"
+  eq "\x008",      '''\08'''
+  eq "\\\\" + "1", '''\\\\1'''
+  strict           '"""\\\\\\1"""'
+  eq "\x008",      """\08"""
+  eq "\\\\" + "1", """\\\\1"""
+
 test "duplicate formal parameters are prohibited", ->
   nonce = {}
   # a Param can be an Identifier, ThisProperty( @-param ), Array, or Object
   # a Param can also be a splat (...) or an assignment (param=value)
   # the following function expressions should throw errors
   strict '(_,_)->',          'param, param'
-  strict '(_,@_)->',         'param, @param'
   strict '(_,_...)->',       'param, param...'
-  strict '(@_,_...)->',      '@param, param...'
   strict '(_,_ = true)->',   'param, param='
   strict '(@_,@_)->',        'two @params'
-  strict '(_,@_ = true)->',  'param, @param='
+  strict '(@case,@case)->',  'two @reserved'
   strict '(_,{_})->',        'param, {param}'
-  strict '(@_,{_})->',       '@param, {param}'
+  strict '(_,{_=true})->',   'param, {param=}'
   strict '({_,_})->',        '{param, param}'
-  strict '({_,@_})->',       '{param, @param}'
+  strict '({_=true,_})->',   '{param=, param}'
   strict '(_,[_])->',        'param, [param]'
+  strict '(_,[_=true])->',   'param, [param=]'
   strict '([_,_])->',        '[param, param]'
-  strict '([_,@_])->',       '[param, @param]'
+  strict '([_=true,_])->',   '[param=, param]'
   strict '(_,[_]=true)->',   'param, [param]='
+  strict '(_,[_=true]=true)->', 'param, [param=]='
   strict '(_,[@_,{_}])->',   'param, [@param, {param}]'
   strict '(_,[_,{@_}])->',   'param, [param, {@param}]'
+  strict '(_,[_,{@_=true}])->', 'param, [param, {@param=}]'
   strict '(_,[_,{_}])->',    'param, [param, {param}]'
   strict '(_,[_,{__}])->',   'param, [param, {param2}]'
   strict '(_,[__,{_}])->',   'param, [param2, {param}]'
   strict '(__,[_,{_}])->',   'param, [param2, {param2}]'
-  strict '(0:a,1:a)->',      '0:param,1:param'
   strict '({0:a,1:a})->',    '{0:param,1:param}'
+  strict '(a=b=true,a)->',   'param=assignment, param'
+  strict '({a=b=true},a)->', '{param=assignment}, param'
   # the following function expressions should **not** throw errors
+  strictOk '(_,@_)->'
+  strictOk '(@_,_...)->'
+  strictOk '(_,@_ = true)->'
+  strictOk '(@_,{_})->'
+  strictOk '({_,@_})->'
+  strictOk '({_,@_ = true})->'
+  strictOk '([_,@_])->'
+  strictOk '([_,@_ = true])->'
   strictOk '({},_arg)->'
   strictOk '({},{})->'
   strictOk '([]...,_arg)->'
@@ -95,14 +116,13 @@ test "duplicate formal parameters are prohibited", ->
   strictOk '(@case...,_case)->'
   strictOk '(_case,@case)->'
   strictOk '(_case,@case...)->'
-  strictOk '(a:a)->'
-  strictOk '(a:a,a:b)->'
+  strictOk '({a:a})->'
+  strictOk '({a:a,a:b})->'
 
 test "`delete` operand restrictions", ->
   strict 'a = 1; delete a'
   strictOk 'delete a' #noop
   strict '(a) -> delete a'
-  strict '(@a) -> delete a'
   strict '(a...) -> delete a'
   strict '(a = 1) -> delete a'
   strict '([a]) -> delete a'

@@ -52,11 +52,10 @@ test "function invocation with soaked property access", ->
 test "if-to-ternary should safely parenthesize soaked property accesses", ->
   ok (if nonexistent?.property then false else true)
 
-test "#726", ->
-  # TODO: check this test, looks like it's not really testing anything
+test "#726: don't check for a property on a conditionally-referenced nonexistent thing", ->
   eq undefined, nonexistent?[Date()]
 
-test "#756", ->
+test "#756: conditional assignment edge cases", ->
   # TODO: improve this test
   a = null
   ok isNaN      a?.b.c +  1
@@ -88,7 +87,7 @@ test "soaked method invocation", ->
   eq obj      , obj.increment().increment().self?()
   eq 2        , counter
 
-test "#733", ->
+test "#733: conditional assignments", ->
   a = b: {c: null}
   eq a.b?.c?(), undefined
   a.b?.c or= (it) -> it

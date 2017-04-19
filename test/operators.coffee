@@ -215,6 +215,10 @@ test "#1714: lexer bug with raw range `for` followed by `in`", ->
   0 for [1..10] # comment ending
   ok not ('a' in ['b'])
 
+  # lexer state (specifically @seenFor) should be reset before each compilation
+  CoffeeScript.compile "0 for [1..2]"
+  CoffeeScript.compile "'a' in ['b']"
+
 test "#1099: statically determined `not in []` reporting incorrect result", ->
   ok 0 not in []
 
@@ -255,7 +259,7 @@ test "chained operations should evaluate each value only once", ->
 
 test "#891: incorrect inversion of chained comparisons", ->
   ok (true unless 0 > 1 > 2)
-  ok (true unless (NaN = 0/0) < 0/0 < NaN)
+  ok (true unless (this.NaN = 0/0) < 0/0 < this.NaN)
 
 test "#1234: Applying a splat to :: applies the splat to the wrong object", ->
   nonce = {}
@@ -326,7 +330,7 @@ test "floor division operator", ->
 
 test "floor division operator compound assignment", ->
   a = 7
-  a //= 2
+  a //= 1 + 1
   eq 3, a
 
 test "modulo operator", ->
@@ -370,3 +374,65 @@ test "#3363: Modulo operator coercing order", ->
   b = valueOf: -> count += 1
   eq 4, a %% b
   eq 5, count
+
+test "#3598: Unary + and - coerce the operand once when it is an identifier", ->
+  # Unary + and - do not generate `_ref`s when the operand is a number, for
+  # readability. To make sure that they do when the operand is an identifier,
+  # test that they are consistent with another unary operator as well as another
+  # complex expression.
+  # Tip: Making one of the tests temporarily fail lets you easily inspect the
+  # compiled JavaScript.
+
+  assertOneCoercion = (fn) ->
+    count = 0
+    value = valueOf: -> count++; 1
+    fn value
+    eq 1, count
+
+  eq 1, 1 ? 0
+  eq 1, +1 ? 0
+  eq -1, -1 ? 0
+  assertOneCoercion (a) ->
+    eq 1, +a ? 0
+  assertOneCoercion (a) ->
+    eq -1, -a ? 0
+  assertOneCoercion (a) ->
+    eq -2, ~a ? 0
+  assertOneCoercion (a) ->
+    eq 0.5, a / 2 ? 0
+
+  ok -2 <= 1 < 2
+  ok -2 <= +1 < 2
+  ok -2 <= -1 < 2
+  assertOneCoercion (a) ->
+    ok -2 <= +a < 2
+  assertOneCoercion (a) ->
+    ok -2 <= -a < 2
+  assertOneCoercion (a) ->
+    ok -2 <= ~a < 2
+  assertOneCoercion (a) ->
+    ok -2 <= a / 2 < 2
+
+  arrayEq [0], (n for n in [0] by 1)
+  arrayEq [0], (n for n in [0] by +1)
+  arrayEq [0], (n for n in [0] by -1)
+  assertOneCoercion (a) ->
+    arrayEq [0], (n for n in [0] by +a)
+  assertOneCoercion (a) ->
+    arrayEq [0], (n for n in [0] by -a)
+  assertOneCoercion (a) ->
+    arrayEq [0], (n for n in [0] by ~a)
+  assertOneCoercion (a) ->
+    arrayEq [0], (n for n in [0] by a * 2 / 2)
+
+  ok 1 in [0, 1]
+  ok +1 in [0, 1]
+  ok -1 in [0, -1]
+  assertOneCoercion (a) ->
+    ok +a in [0, 1]
+  assertOneCoercion (a) ->
+    ok -a in [0, -1]
+  assertOneCoercion (a) ->
+    ok ~a in [0, -2]
+  assertOneCoercion (a) ->
+    ok a / 2 in [0, 0.5]
