@@ -1,4 +1,4 @@
-{repeat, isCoffee} = require './helpers'
+{repeat} = require './helpers'
 
 # A simple **OptionParser** class to parse option flags from the command-line.
 # Use it like so:
@@ -25,45 +25,26 @@ exports.OptionParser = class OptionParser
   # parsers that allow you to attach callback actions for every flag. Instead,
   # you're responsible for interpreting the options object.
   parse: (args) ->
-    # Pass all arguments to script unchanged if first argument is the script to
-    # be run; assume no options are for the coffeescript compiler. This allows
-    # the use of '#!/usr/bin/env coffee' to run executable scripts on Linux
-    # systems, which do not parse the '--' argument in the first line correctly.
-    if (args.indexOf '--' is -1) and
-       (args.length > 0) and
-       (isCoffee args[0])
-      return arguments: args
-    options = arguments: []
-    skippingArgument = no
-    originalArgs = args
-    args = normalizeArguments args
-    for arg, i in args
-      if skippingArgument
-        skippingArgument = no
-        continue
-      if arg is '--'
-        pos = originalArgs.indexOf '--'
-        options.arguments = options.arguments.concat originalArgs[(pos + 1)..]
+    state =
+      argsLeft: args[..]
+      options: {}
+    while (arg = state.argsLeft.shift())?
+      if (arg.match(LONG_FLAG) ? arg.match(SHORT_FLAG))?
+        tryMatchOptionalArgument(arg, state, @rules)
+      else if (multiMatch = arg.match(MULTI_FLAG))?
+        # Normalize arguments by expanding merged flags into multiple
+        # flags. This allows you to have `-wl` be the same as `--watch --lint`.
+        normalized = "-#{multiArg}" for multiArg in multiMatch[1].split ''
+        state.argsLeft.unshift(normalized...)
+      else
+        # the CS option parser is a little odd; options after the first
+        # non-option argument are treated as non-option arguments themselves.
+        # executable scripts do not need to have a `--` at the end of the
+        # shebang ("#!") line, and if they do, they won't work on Linux
+        state.argsLeft.unshift(arg) unless arg is '--'
         break
-      isOption = !!(arg.match(LONG_FLAG) or arg.match(SHORT_FLAG))
-      # the CS option parser is a little odd; options after the first
-      # non-option argument are treated as non-option arguments themselves
-      seenNonOptionArg = options.arguments.length > 0
-      unless seenNonOptionArg
-        matchedRule = no
-        for rule in @rules
-          if rule.shortFlag is arg or rule.longFlag is arg
-            value = true
-            if rule.hasArgument
-              skippingArgument = yes
-              value = args[i + 1]
-            options[rule.name] = if rule.isList then (options[rule.name] or []).concat value else value
-            matchedRule = yes
-            break
-        throw new Error "unrecognized option: #{arg}" if isOption and not matchedRule
-      if seenNonOptionArg or not isOption
-        options.arguments.push arg
-    options
+    state.options.arguments = state.argsLeft[..]
+    state.options
 
   # Return the help text for this **OptionParser**, listing and describing all
   # of the valid options, for `--help` and such.
@@ -107,14 +88,22 @@ buildRule = (shortFlag, longFlag, description, options = {}) ->
     isList:       !!(match and match[2])
   }
 
-# Normalize arguments by expanding merged flags into multiple flags. This allows
-# you to have `-wl` be the same as `--watch --lint`.
-normalizeArguments = (args) ->
-  args = args[..]
-  result = []
-  for arg in args
-    if match = arg.match MULTI_FLAG
-      result.push '-' + l for l in match[1].split ''
-    else
-      result.push arg
-  result
+addArgument = (rule, options, value) ->
+  options[rule.name] = if rule.isList
+    (options[rule.name] ? []).concat value
+  else value
+
+tryMatchOptionalArgument = (arg, state, rules) ->
+  for rule in rules
+    if arg in [rule.shortFlag, rule.longFlag]
+      if rule.hasArgument
+        value = state.argsLeft.shift()
+        if not value?
+          throw new Error "#{arg} requires a value, but was the last argument"
+      else
+        value = true
+
+      addArgument(rule, state.options, value)
+      return
+
+  throw new Error "unrecognized option: #{arg}"
