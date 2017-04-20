@@ -2,8 +2,6 @@
 # the **Lexer**, **Rewriter**, and the **Nodes**. Merge objects, flatten
 # arrays, count characters, that sort of thing.
 
-md = require('markdown-it')()
-
 # Peek at the beginning of a given string to see if it matches a sequence.
 exports.starts = (string, literal, start) ->
   literal is string.substr start, literal.length
@@ -69,20 +67,34 @@ exports.some = Array::some ? (fn) ->
   return true for e in this when fn e
   false
 
-# Simple function for extracting code from Literate CoffeeScript by stripping
+# Helper function for extracting code from Literate CoffeeScript by stripping
 # out all non-code blocks, producing a string of CoffeeScript code that can
-# be compiled “normally.” Uses [MarkdownIt](https://markdown-it.github.io/)
-# to tell the difference between Markdown and code blocks.
+# be compiled “normally.”
 exports.invertLiterate = (code) ->
   out = []
-  md.renderer.rules =
-    # Delete all other rules, since all we want are the code blocks.
-    code_block: (tokens, idx, options, env, slf) ->
-      startLine = tokens[idx].map[0]
-      lines = tokens[idx].content.split '\n'
-      for line, i in lines
-        out[startLine + i] = line
-  md.render code
+  blankLine = /^\s*$/
+  indented = /^[\t ]/
+  listItemStart = /// ^
+    (?:\t?|\ {0,3})   # Up to one tab, or up to three spaces, or neither;
+    (?:
+      [\*\-\+] |      # followed by `*`, `-` or `+`;
+      [0-9]{1,9}\.    # or by an integer up to 9 digits long, followed by a period;
+    )
+    [\ \t]            # followed by a space or a tab.
+  ///
+  insideComment = no
+  for line in code.split('\n')
+    if blankLine.test(line)
+      insideComment = no
+      out.push line
+    else if insideComment or listItemStart.test(line)
+      insideComment = yes
+      out.push "# #{line}"
+    else if not insideComment and indented.test(line)
+      out.push line
+    else
+      insideComment = yes
+      out.push "# #{line}"
   out.join '\n'
 
 # Merge two jison-style location data objects together.

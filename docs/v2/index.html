@@ -714,7 +714,7 @@ textarea {
       <section id="overview">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="http://github.com/jashkenas/coffeescript/tarball/2.0.0-beta1">2.0.0-beta1</a></p>
+<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.0.0-beta1">2.0.0-beta1</a></p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install -g coffeescript@next
 </code></pre>
 </blockquote>
@@ -825,8 +825,8 @@ coffee -p *.coffee | babel --presets env &gt; app.js
       </section>
       <section id="installation">
         <h2>Installation</h2>
-<p>The command-line version of <code>coffee</code> is available as a <a href="http://nodejs.org/">Node.js</a> utility. The <a href="/v2/browser-compiler/coffeescript.js">core compiler</a> however, does not depend on Node, and can be run in any JavaScript environment, or in the browser (see <a href="#try">Try CoffeeScript</a>).</p>
-<p>To install, first make sure you have a working copy of the latest stable version of <a href="http://nodejs.org/">Node.js</a>. You can then install CoffeeScript globally with <a href="http://npmjs.org">npm</a>:</p>
+<p>The command-line version of <code>coffee</code> is available as a <a href="https://nodejs.org/">Node.js</a> utility. The <a href="/v2/browser-compiler/coffeescript.js">core compiler</a> however, does not depend on Node, and can be run in any JavaScript environment, or in the browser (see <a href="#try">Try CoffeeScript</a>).</p>
+<p>To install, first make sure you have a working copy of the latest stable version of <a href="https://nodejs.org/">Node.js</a>. You can then install CoffeeScript globally with <a href="https://www.npmjs.com/">npm</a>:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --global coffeescript@next
 </code></pre>
 </blockquote><p>When you need CoffeeScript as a dependency of a project, within that project’s folder you can install it locally:</p>
@@ -1798,7 +1798,7 @@ alert((function() {
 <p><code>unless</code> can be used as the inverse of <code>if</code>.</p>
 <p>As a shortcut for <code>this.property</code>, you can use <code>@property</code>.</p>
 <p>You can use <code>in</code> to test for array presence, and <code>of</code> to test for JavaScript object-key presence.</p>
-<p>To simplify math expressions, <code>**</code> can be used for exponentiation and <code>//</code> performs integer division. <code>%</code> works just like in JavaScript, while <code>%%</code> provides <a href="http://en.wikipedia.org/wiki/Modulo_operation">“dividend dependent modulo”</a>:</p>
+<p>To simplify math expressions, <code>**</code> can be used for exponentiation and <code>//</code> performs integer division. <code>%</code> works just like in JavaScript, while <code>%%</code> provides <a href="https://en.wikipedia.org/wiki/Modulo_operation">“dividend dependent modulo”</a>:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="modulo">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
@@ -2379,6 +2379,8 @@ Account = function(customer, cart) {
 </aside>
 <p>If we had used <code>-&gt;</code> in the callback above, <code>@customer</code> would have referred to the undefined “customer” property of the DOM element, and trying to call <code>purchase()</code> on it would have raised an exception.</p>
 <p>When used in a class definition, methods declared with the fat arrow will be automatically bound to each instance of the class when the instance is constructed.</p>
+<div id="generator-functions" class="bookmark"></div>
+<div id="async-functions" class="bookmark"></div>
 <p>CoffeeScript also supports <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">generator functions</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function">async functions</a> through the <code>yield</code> and <code>await</code> keywords respectively. There’s no <code>function*(){}</code> or <code>async function(){}</code> nonsense — a generator in CoffeeScript is simply a function that yields, and an async function in CoffeeScript is simply a function that awaits.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="generators">
   <div class="row">
@@ -2418,6 +2420,7 @@ window.ps || (window.ps = perfectSquares());
   
 </aside>
 <p><code>yield*</code> is called <code>yield from</code>, and <code>yield return</code> may be used if you need to force a generator that doesn’t yield.</p>
+<div id="generator-iteration" class="bookmark"></div>
 <p>You can iterate over a generator function using <code>for…from</code>.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="generator_iteration">
   <div class="row">
@@ -2657,7 +2660,7 @@ try {
         </section>
         <section id="comparisons">
           <h2>Chained Comparisons</h2>
-<p>CoffeeScript borrows <a href="http://docs.python.org/reference/expressions.html#notin">chained comparisons</a> from Python — making it easy to test if a value falls within a certain range.</p>
+<p>CoffeeScript borrows <a href="https://docs.python.org/3/reference/expressions.html#not-in">chained comparisons</a> from Python — making it easy to test if a value falls within a certain range.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="comparisons">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
@@ -2851,6 +2854,7 @@ export {
   </div>
   
 </aside>
+<div id="modules-note" class="bookmark"></div>
 <p>Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an <code>import</code> or <code>export</code> statement in CoffeeScript will produce an <code>import</code> or <code>export</code> statement in the resulting output. It is your responsibility attach another transpiler, such as <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>, <a href="http://babeljs.io/">Babel</a> or <a href="https://github.com/rollup/rollup">Rollup</a>, to convert this ES2015 syntax into code that will work in your target runtimes.</p>
 <p>Also note that any file with an <code>import</code> or <code>export</code> statement will be output without a <a href="#lexical-scope">top-level function safety wrapper</a>; in other words, importing or exporting modules will automatically trigger <a href="#usage">bare</a> mode for that file. This is because per the ES2015 spec, <code>import</code> or <code>export</code> statements must occur at the topmost scope.</p>
 
@@ -3005,14 +3009,20 @@ Object.defineProperty(screen, 'height', {
       </section>
       <section id="literate">
         <h2>Literate CoffeeScript</h2>
-<p>Besides being used as an ordinary programming language, CoffeeScript may also be written in “literate” mode. If you name your file with a <code>.litcoffee</code> extension, you can write it as a Markdown document — a document that also happens to be executable CoffeeScript code. The compiler will treat any indented blocks (Markdown’s way of indicating source code) as code, and ignore the rest as comments.</p>
-<p>Just for kicks, a little bit of the compiler is currently implemented in this fashion: See it <a href="https://gist.github.com/jashkenas/3fc3c1a8b1009c00d9df">as a document</a>, <a href="https://raw.github.com/jashkenas/coffeescript/master/src/scope.litcoffee">raw</a>, and <a href="http://cl.ly/LxEu">properly highlighted in a text editor</a>.</p>
+<p>Besides being used as an ordinary programming language, CoffeeScript may also be written in “literate” mode. If you name your file with a <code>.litcoffee</code> extension, you can write it as a Markdown document — a document that also happens to be executable CoffeeScript code. The compiler will treat any indented blocks (Markdown’s way of indicating source code) as executable code, and ignore the rest as comments. Code blocks must also be separated from comments by at least one blank line.</p>
+<p>Just for kicks, a little bit of the compiler is currently implemented in this fashion: See it <a href="https://gist.github.com/jashkenas/3fc3c1a8b1009c00d9df">as a document</a>, <a href="https://raw.githubusercontent.com/jashkenas/coffeescript/master/src/scope.litcoffee">raw</a>, and <a href="http://cl.ly/LxEu">properly highlighted in a text editor</a>.</p>
+<p>A few caveats:</p>
+<ul>
+<li>Code blocks need to maintain consistent indentation relative to each other. When the compiler parses your Literate CoffeeScript file, it first discards all the non-code block lines and then parses the remainder as a regular CoffeeScript file. Therefore the code blocks need to be written as if the comment lines don’t exist, with consistent indentation (including whether they are indented with tabs or spaces).</li>
+<li>Along those lines, code blocks within list items or blockquotes are not treated as executable code. Since list items and blockquotes imply their own indentation, it would be ambiguous how to treat indentation between successive code blocks when some are within these other blocks and some are not.</li>
+<li>List items can be at most only one paragraph long. The second paragraph of a list item would be indented after a blank line, and therefore indistinguishable from a code block.</li>
+</ul>
 
       </section>
       <section id="source-maps">
         <h2>Source Maps</h2>
 <p>CoffeeScript includes support for generating source maps, a way to tell your JavaScript engine what part of your CoffeeScript program matches up with the code being evaluated. Browsers that support it can automatically use source maps to show your original source code in the debugger. To generate source maps alongside your JavaScript files, pass the <code>--map</code> or <code>-m</code> flag to the compiler.</p>
-<p>For a full introduction to source maps, how they work, and how to hook them up in your browser, read the <a href="http://www.html5rocks.com/en/tutorials/developertools/sourcemaps/">HTML5 Tutorial</a>.</p>
+<p>For a full introduction to source maps, how they work, and how to hook them up in your browser, read the <a href="https://www.html5rocks.com/en/tutorials/developertools/sourcemaps/">HTML5 Tutorial</a>.</p>
 
       </section>
       <section id="cake">
@@ -3057,7 +3067,7 @@ task('build:parser', 'rebuild the Jison parser', function(options) {
       </section>
       <section id="scripts">
         <h2><code>&quot;text/coffeescript&quot;</code> Script Tags</h2>
-<p>While it’s not recommended for serious use, CoffeeScripts may be included directly within the browser using <code>&lt;script type=&quot;text/coffeescript&quot;&gt;</code> tags. The source includes a compressed and minified version of the compiler (<a href="/v2/browser-compiler/coffeescript.js">Download current version here, 51k when gzipped</a>) as <code>v2/browser-compiler/coffeescript.js</code>. Include this file on a page with inline CoffeeScript tags, and it will compile and evaluate them in order.</p>
+<p>While it’s not recommended for serious use, CoffeeScripts may be included directly within the browser using <code>&lt;script type=&quot;text/coffeescript&quot;&gt;</code> tags. The source includes a compressed and minified version of the compiler (<a href="/v2/browser-compiler/coffeescript.js">Download current version here, 51k when gzipped</a>) as <code>docs/v2/browser-compiler/coffeescript.js</code>. Include this file on a page with inline CoffeeScript tags, and it will compile and evaluate them in order.</p>
 <p>In fact, the little bit of glue script that runs <a href="#try">Try CoffeeScript</a>, as well as the code examples and other interactive parts of this site, is implemented in just this way. View source and look at the bottom of the page to see the example. Including the script also gives you access to <code>CoffeeScript.compile()</code> so you can pop open your JavaScript console and try compiling some strings.</p>
 <p>The usual caveats about CoffeeScript apply — your inline scripts will run within a closure wrapper, so if you want to expose global variables or functions, attach them to the <code>window</code> object.</p>
 
@@ -3065,14 +3075,14 @@ task('build:parser', 'rebuild the Jison parser', function(options) {
       <section id="resources">
         <h2>Resources</h2>
 <ul>
-<li><a href="http://github.com/jashkenas/coffeescript/">CoffeeScript on GitHub</a></li>
-<li><a href="http://github.com/jashkenas/coffeescript/issues">CoffeeScript Issues</a><br>
+<li><a href="https://github.com/jashkenas/coffeescript/">CoffeeScript on GitHub</a></li>
+<li><a href="https://github.com/jashkenas/coffeescript/issues">CoffeeScript Issues</a><br>
 Bug reports, feature proposals, and ideas for changes to the language belong here.</li>
 <li><a href="https://groups.google.com/forum/#!forum/coffeescript">CoffeeScript Google Group</a><br>
 If you’d like to ask a question, the mailing list is a good place to get help.</li>
-<li><a href="http://github.com/jashkenas/coffeescript/wiki">The CoffeeScript Wiki</a><br>
-If you’ve ever learned a neat CoffeeScript tip or trick, or ran into a gotcha — share it on the wiki. The wiki also serves as a directory of handy <a href="http://github.com/jashkenas/coffeescript/wiki/Text-editor-plugins">text editor extensions</a>, <a href="http://github.com/jashkenas/coffeescript/wiki/Web-framework-plugins">web framework plugins</a>, and general <a href="http://github.com/jashkenas/coffeescript/wiki/Build-tools">CoffeeScript build tools</a>.</li>
-<li><a href="http://github.com/jashkenas/coffeescript/wiki/FAQ">The FAQ</a><br>
+<li><a href="https://github.com/jashkenas/coffeescript/wiki">The CoffeeScript Wiki</a><br>
+If you’ve ever learned a neat CoffeeScript tip or trick, or ran into a gotcha — share it on the wiki. The wiki also serves as a directory of handy <a href="https://github.com/jashkenas/coffeescript/wiki/Text-editor-plugins">text editor extensions</a>, <a href="https://github.com/jashkenas/coffeescript/wiki/Web-framework-plugins">web framework plugins</a>, and general <a href="https://github.com/jashkenas/coffeescript/wiki/Build-tools">CoffeeScript build tools</a>.</li>
+<li><a href="https://github.com/jashkenas/coffeescript/wiki/FAQ">The FAQ</a><br>
 Perhaps your CoffeeScript-related question has been asked before. Check the FAQ first.</li>
 <li><a href="http://js2.coffee/">JS2Coffee</a><br>
 Is a very well done reverse JavaScript-to-CoffeeScript compiler. It’s not going to be perfect (infer what your JavaScript classes are, when you need bound functions, and so on…) — but it’s a great starting point for converting simple scripts.</li>
@@ -3084,23 +3094,23 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
           <h2>Books</h2>
 <p>There are a number of excellent resources to help you get started with CoffeeScript, some of which are freely available online.</p>
 <ul>
-<li><a href="http://arcturo.github.com/library/coffeescript/">The Little Book on CoffeeScript</a> is a brief 5-chapter introduction to CoffeeScript, written with great clarity and precision by <a href="http://alexmaccaw.co.uk/">Alex MacCaw</a>.</li>
-<li><a href="http://autotelicum.github.com/Smooth-CoffeeScript/">Smooth CoffeeScript</a> is a reimagination of the excellent book <a href="http://eloquentjavascript.net/">Eloquent JavaScript</a>, as if it had been written in CoffeeScript instead. Covers language features as well as the functional and object oriented programming styles. By <a href="https://github.com/autotelicum">E. Hoigaard</a>.</li>
+<li><a href="http://arcturo.github.io/library/coffeescript/">The Little Book on CoffeeScript</a> is a brief 5-chapter introduction to CoffeeScript, written with great clarity and precision by <a href="http://alexmaccaw.co.uk/">Alex MacCaw</a>.</li>
+<li><a href="http://autotelicum.github.io/Smooth-CoffeeScript/">Smooth CoffeeScript</a> is a reimagination of the excellent book <a href="http://eloquentjavascript.net/">Eloquent JavaScript</a>, as if it had been written in CoffeeScript instead. Covers language features as well as the functional and object oriented programming styles. By <a href="https://github.com/autotelicum">E. Hoigaard</a>.</li>
 <li><a href="http://pragprog.com/book/tbcoffee/coffeescript">CoffeeScript: Accelerated JavaScript Development</a> is <a href="http://trevorburnham.com/">Trevor Burnham</a>’s thorough introduction to the language. By the end of the book, you’ll have built a fast-paced multiplayer word game, writing both the client-side and Node.js portions in CoffeeScript.</li>
-<li><a href="http://www.packtpub.com/coffeescript-programming-with-jquery-rails-nodejs/book">CoffeeScript Programming with jQuery, Rails, and Node.js</a> is a new book by Michael Erasmus that covers CoffeeScript with an eye towards real-world usage both in the browser (jQuery) and on the server-side (Rails, Node).</li>
+<li><a href="https://www.packtpub.com/web-development/coffeescript-programming-jquery-rails-and-nodejs">CoffeeScript Programming with jQuery, Rails, and Node.js</a> is a new book by Michael Erasmus that covers CoffeeScript with an eye towards real-world usage both in the browser (jQuery) and on the server-side (Rails, Node).</li>
 <li><a href="https://leanpub.com/coffeescript-ristretto/read">CoffeeScript Ristretto</a> is a deep dive into CoffeeScript’s semantics from simple functions up through closures, higher-order functions, objects, classes, combinators, and decorators. By <a href="http://braythwayt.com/">Reg Braithwaite</a>.</li>
 <li><a href="https://efendibooks.com/minibooks/testing-with-coffeescript">Testing with CoffeeScript</a> is a succinct and freely downloadable guide to building testable applications with CoffeeScript and Jasmine.</li>
-<li><a href="http://www.packtpub.com/coffeescript-application-development/book">CoffeeScript Application Development</a> from Packt, introduces CoffeeScript while walking through the process of building a demonstration web application. A <a href="https://www.packtpub.com/web-development/coffeescript-application-development-cookbook">CoffeeScript Application Development Coookbook</a> with over 90 “recipes” is also available.</li>
-<li><a href="http://www.manning.com/lee/">CoffeeScript in Action</a> from Manning Publications, covers CoffeeScript syntax, composition techniques and application development.</li>
-<li><a href="http://www.dpunkt.de/buecher/4021/coffeescript.html">CoffeeScript: Die Alternative zu JavaScript</a> from dpunkt.verlag, is the first CoffeeScript book in Deutsch.</li>
+<li><a href="https://www.packtpub.com/web-development/coffeescript-application-development">CoffeeScript Application Development</a> from Packt, introduces CoffeeScript while walking through the process of building a demonstration web application. A <a href="https://www.packtpub.com/web-development/coffeescript-application-development-cookbook">CoffeeScript Application Development Coookbook</a> with over 90 “recipes” is also available.</li>
+<li><a href="https://www.manning.com/books/coffeescript-in-action">CoffeeScript in Action</a> from Manning Publications, covers CoffeeScript syntax, composition techniques and application development.</li>
+<li><a href="https://www.dpunkt.de/buecher/4021/coffeescript.html">CoffeeScript: Die Alternative zu JavaScript</a> from dpunkt.verlag, is the first CoffeeScript book in Deutsch.</li>
 </ul>
 
         </section>
         <section id="screencasts">
           <h2>Screencasts</h2>
 <ul>
-<li><a href="http://coffeescript.codeschool.com">A Sip of CoffeeScript</a> is a <a href="http://www.codeschool.com">Code School Course</a> which combines 6 screencasts with in-browser coding to make learning fun. The first level is free to try out.</li>
-<li><a href="http://peepcode.com/products/coffeescript">Meet CoffeeScript</a> is a 75-minute long screencast by <a href="http://peepcode.com/">PeepCode</a>. Highly memorable for its animations which demonstrate transforming CoffeeScript into the equivalent JS.</li>
+<li><a href="http://coffeescript.codeschool.com/">A Sip of CoffeeScript</a> is a <a href="https://www.codeschool.com">Code School Course</a> which combines 6 screencasts with in-browser coding to make learning fun. The first level is free to try out.</li>
+<li><a href="https://www.pluralsight.com/courses/meet-coffeescript">Meet CoffeeScript</a> is a 75-minute long screencast by PeepCode, now <a href="https://www.pluralsight.com/">PluralSight</a>. Highly memorable for its animations which demonstrate transforming CoffeeScript into the equivalent JS.</li>
 <li>If you’re looking for less of a time commitment, RailsCasts’ <a href="http://railscasts.com/episodes/267-coffeescript-basics">CoffeeScript Basics</a> should have you covered, hitting all of the important notes about CoffeeScript in 11 minutes.</li>
 </ul>
 
@@ -3109,10 +3119,9 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
           <h2>Examples</h2>
 <p>The <a href="https://github.com/trending?l=coffeescript&amp;since=monthly">best list of open-source CoffeeScript examples</a> can be found on GitHub. But just to throw out a few more:</p>
 <ul>
-<li><strong>GitHub</strong>’s <a href="http://hubot.github.com/">Hubot</a>, a friendly IRC robot that can perform any number of useful and useless tasks.</li>
+<li><strong>GitHub</strong>’s <a href="https://hubot.github.com/">Hubot</a>, a friendly IRC robot that can perform any number of useful and useless tasks.</li>
 <li><strong>sstephenson</strong>’s <a href="http://pow.cx/">Pow</a>, a zero-configuration Rack server, with comprehensive annotated source.</li>
 <li><strong>technoweenie</strong>’s <a href="https://github.com/technoweenie/coffee-resque">Coffee-Resque</a>, a port of <a href="https://github.com/defunkt/resque">Resque</a> for Node.js.</li>
-<li><strong>assaf</strong>’s <a href="http://zombie.labnotes.org/">Zombie.js</a>, a headless, full-stack, faux-browser testing library for Node.js.</li>
 <li><strong>stephank</strong>’s <a href="https://github.com/stephank/orona">Orona</a>, a remake of the Bolo tank game for modern browsers.</li>
 <li><strong>GitHub</strong>’s <a href="https://atom.io/">Atom</a>, a hackable text editor built on web technologies.</li>
 <li><strong>Basecamp</strong>’s <a href="https://trix-editor.org/">Trix</a>, a rich text editor for web apps.</li>
@@ -3709,7 +3718,7 @@ six = -&gt;
   <a href="https://github.com/jashkenas/coffeescript/compare/1.5.0...1.6.1">1.6.1</a>
   <span class="timestamp"> &mdash; <time datetime="2013-03-05">March 5, 2013</time></span>
 </h2><ul>
-<li>First release of <a href="#source-maps">source maps</a>. Pass the <code>--map</code> flag to the compiler, and off you go. Direct all your thanks over to <a href="http://github.com/jwalton">Jason Walton</a>.</li>
+<li>First release of <a href="#source-maps">source maps</a>. Pass the <code>--map</code> flag to the compiler, and off you go. Direct all your thanks over to <a href="https://github.com/jwalton">Jason Walton</a>.</li>
 <li>Fixed a 1.5.0 regression with multiple implicit calls against an indented implicit object. Combinations of implicit function calls and implicit objects should generally be parsed better now — but it still isn’t good <em>style</em> to nest them too heavily.</li>
 <li><code>.coffee.md</code> is now also supported as a Literate CoffeeScript file extension, for existing tooling. <code>.litcoffee</code> remains the canonical one.</li>
 <li>Several minor fixes surrounding member properties, bound methods and <code>super</code> in class declarations.</li>
@@ -3816,7 +3825,7 @@ six = -&gt;
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/0.9.4...0.9.5">0.9.5</a>
   <span class="timestamp"> &mdash; <time datetime="2010-11-21">November 21, 2010</time></span>
-</h2><p>0.9.5 should be considered the first release candidate for CoffeeScript 1.0. There have been a large number of internal changes since the previous release, many contributed from <strong>satyr</strong>’s <a href="http://github.com/satyr/coco">Coco</a> dialect of CoffeeScript. Heregexes (extended regexes) were added. Functions can now have default arguments. Class bodies are now executable code. Improved syntax errors for invalid CoffeeScript. <code>undefined</code> now works like <code>null</code>, and cannot be assigned a new value. There was a precedence change with respect to single-line comprehensions: <code>result = i for i in list</code>
+</h2><p>0.9.5 should be considered the first release candidate for CoffeeScript 1.0. There have been a large number of internal changes since the previous release, many contributed from <strong>satyr</strong>’s <a href="https://github.com/satyr/coco">Coco</a> dialect of CoffeeScript. Heregexes (extended regexes) were added. Functions can now have default arguments. Class bodies are now executable code. Improved syntax errors for invalid CoffeeScript. <code>undefined</code> now works like <code>null</code>, and cannot be assigned a new value. There was a precedence change with respect to single-line comprehensions: <code>result = i for i in list</code>
 used to parse as <code>result = (i for i in list)</code> by default … it now parses as
 <code>(result = i) for i in list</code>.</p>
 <div class="anchor" id="0.9.4"></div>
@@ -3883,7 +3892,7 @@ used to parse as <code>result = (i for i in list)</code> by default … it now p
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/0.5.4...0.5.5">0.5.5</a>
   <span class="timestamp"> &mdash; <time datetime="2010-03-08">March 8, 2010</time></span>
-</h2><p>String interpolation, contributed by <a href="http://github.com/StanAngeloff">Stan Angeloff</a>. Since <code>--run</code> has been the default since <strong>0.5.3</strong>, updating <code>--stdio</code> and <code>--eval</code> to run by default, pass <code>--compile</code> as well if you’d like to print the result.</p>
+</h2><p>String interpolation, contributed by <a href="https://github.com/StanAngeloff">Stan Angeloff</a>. Since <code>--run</code> has been the default since <strong>0.5.3</strong>, updating <code>--stdio</code> and <code>--eval</code> to run by default, pass <code>--compile</code> as well if you’d like to print the result.</p>
 <div class="anchor" id="0.5.4"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/0.5.3...0.5.4">0.5.4</a>
@@ -3899,7 +3908,7 @@ used to parse as <code>result = (i for i in list)</code> by default … it now p
   <a href="https://github.com/jashkenas/coffeescript/compare/0.5.1...0.5.2">0.5.2</a>
   <span class="timestamp"> &mdash; <time datetime="2010-02-25">February 25, 2010</time></span>
 </h2><p>Added a compressed version of the compiler for inclusion in web pages as
-<code>v2/browser-compiler/coffeescript.js</code>. It’ll automatically run any script tags with type <code>text/coffeescript</code> for you. Added a <code>--stdio</code> option to the <code>coffee</code> command, for piped-in compiles.</p>
+<code>/v2/browser-compiler/coffeescript.js</code>. It’ll automatically run any script tags with type <code>text/coffeescript</code> for you. Added a <code>--stdio</code> option to the <code>coffee</code> command, for piped-in compiles.</p>
 <div class="anchor" id="0.5.1"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/0.5.0...0.5.1">0.5.1</a>
@@ -3965,7 +3974,7 @@ The <code>extends</code> keyword now functions identically to <code>goog.inherit
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/0.1.6...0.2.0">0.2.0</a>
   <span class="timestamp"> &mdash; <time datetime="2010-01-05">January 5, 2010</time></span>
-</h2><p>Major release. Significant whitespace. Better statement-to-expression conversion. Splats. Splice literals. Object comprehensions. Blocks. The existential operator. Many thanks to all the folks who posted issues, with special thanks to <a href="http://github.com/liamoc">Liam O’Connor-Davis</a> for whitespace and expression help.</p>
+</h2><p>Major release. Significant whitespace. Better statement-to-expression conversion. Splats. Splice literals. Object comprehensions. Blocks. The existential operator. Many thanks to all the folks who posted issues, with special thanks to <a href="https://github.com/liamoc">Liam O’Connor-Davis</a> for whitespace and expression help.</p>
 <div class="anchor" id="0.1.6"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/0.1.5...0.1.6">0.1.6</a>
@@ -3980,7 +3989,7 @@ The <code>extends</code> keyword now functions identically to <code>goog.inherit
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/0.1.3...0.1.4">0.1.4</a>
   <span class="timestamp"> &mdash; <time datetime="2009-12-25">December 25, 2009</time></span>
-</h2><p>The official CoffeeScript extension is now <code>.coffee</code> instead of <code>.cs</code>, which properly belongs to <a href="http://en.wikipedia.org/wiki/C_Sharp_(programming_language)">C#</a>. Due to popular demand, you can now also use <code>=</code> to assign. Unlike JavaScript, <code>=</code> can also be used within object literals, interchangeably with <code>:</code>. Made a grammatical fix for chained function calls like <code>func(1)(2)(3)(4)</code>. Inheritance and super no longer use <code>__proto__</code>, so they should be IE-compatible now.</p>
+</h2><p>The official CoffeeScript extension is now <code>.coffee</code> instead of <code>.cs</code>, which properly belongs to <a href="https://en.wikipedia.org/wiki/C_Sharp_(programming_language)">C#</a>. Due to popular demand, you can now also use <code>=</code> to assign. Unlike JavaScript, <code>=</code> can also be used within object literals, interchangeably with <code>:</code>. Made a grammatical fix for chained function calls like <code>func(1)(2)(3)(4)</code>. Inheritance and super no longer use <code>__proto__</code>, so they should be IE-compatible now.</p>
 <div class="anchor" id="0.1.3"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/0.1.2...0.1.3">0.1.3</a>
