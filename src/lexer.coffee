@@ -272,14 +272,14 @@ exports.Lexer = class Lexer
         indent = attempt if indent is null or 0 < attempt.length < indent.length
       indentRegex = /// \n#{indent} ///g if indent
       @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
-        value = @formatString value
+        value = @formatString value, delimiter: quote
         value = value.replace indentRegex, '\n' if indentRegex
         value = value.replace LEADING_BLANK_LINE,  '' if i is 0
         value = value.replace TRAILING_BLANK_LINE, '' if i is $
         value
     else
       @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
-        value = @formatString value
+        value = @formatString value, delimiter: quote
         value = value.replace SIMPLE_STRING_OMIT, (match, offset) ->
           if (i is 0 and offset is 0) or
              (i is $ and offset + match.length is value.length)
@@ -329,6 +329,7 @@ exports.Lexer = class Lexer
       when match = REGEX.exec @chunk
         [regex, body, closed] = match
         @validateEscapes body, isRegex: yes, offsetInChunk: 1
+        body = @formatRegex body, delimiter: '/'
         index = regex.length
         prev = @prev()
         if prev
@@ -653,7 +654,7 @@ exports.Lexer = class Lexer
           tokensToPush = value
         when 'NEOSTRING'
           # Convert 'NEOSTRING' into 'STRING'.
-          converted = fn token[1], i
+          converted = fn.call this, token[1], i
           # Optimize out empty strings. We ensure that the tokens stream always
           # starts with a string token, though, to make sure that the result
           # really is a string.
@@ -787,11 +788,37 @@ exports.Lexer = class Lexer
                '**', 'SHIFT', 'RELATION', 'COMPARE', '&', '^', '|', '&&', '||',
                'BIN?', 'THROW', 'EXTENDS']
 
-  formatString: (str) ->
-    str.replace STRING_OMIT, '$1'
+  formatString: (str, options) ->
+    @replaceUnicodeCodePointEscapes str.replace(STRING_OMIT, '$1'), options
 
   formatHeregex: (str) ->
-    str.replace HEREGEX_OMIT, '$1$2'
+    @formatRegex str.replace(HEREGEX_OMIT, '$1$2'), delimiter: '///'
+
+  formatRegex: (str, options) ->
+    @replaceUnicodeCodePointEscapes str, options
+
+  unicodeCodePointToUnicodeEscapes: (codePoint) ->
+    toUnicodeEscape = (val) ->
+      str = val.toString 16
+      "\\u#{repeat '0', 4 - str.length}#{str}"
+    return toUnicodeEscape(codePoint) if codePoint < 0x10000
+    # surrogate pair
+    high = Math.floor((codePoint - 0x10000) / 0x400) + 0xD800
+    low = (codePoint - 0x10000) % 0x400 + 0xDC00
+    "#{toUnicodeEscape(high)}#{toUnicodeEscape(low)}"
+
+  # Replace \u{...} with \uxxxx[\uxxxx] in strings and regexes
+  replaceUnicodeCodePointEscapes: (str, options) ->
+    str.replace UNICODE_CODE_POINT_ESCAPE, (match, escapedBackslash, codePointHex, offset) =>
+      return escapedBackslash if escapedBackslash
+
+      codePointDecimal = parseInt codePointHex, 16
+      if codePointDecimal > 0x10ffff
+        @error "unicode code point escapes greater than \\u{10ffff} are not allowed",
+          offset: offset + options.delimiter.length
+          length: codePointHex.length + 4
+
+      @unicodeCodePointToUnicodeEscapes codePointDecimal
 
   # Validates escapes in strings and regexes.
   validateEscapes: (str, options = {}) ->
@@ -802,13 +829,13 @@ exports.Lexer = class Lexer
         STRING_INVALID_ESCAPE
     match = invalidEscapeRegex.exec str
     return unless match
-    [[], before, octal, hex, unicode] = match
+    [[], before, octal, hex, unicodeCodePoint, unicode] = match
     message =
       if octal
         "octal escape sequences are not allowed"
       else
         "invalid escape sequence"
-    invalidEscape = "\\#{octal or hex or unicode}"
+    invalidEscape = "\\#{octal or hex or unicodeCodePoint or unicode}"
     @error "#{message} #{invalidEscape}",
       offset: (options.offsetInChunk ? 0) + match.index + before.length
       length: invalidEscape.length
@@ -995,7 +1022,7 @@ REGEX = /// ^
 ///
 
 REGEX_FLAGS  = /^\w*/
-VALID_FLAGS  = /^(?!.*(.).*\1)[imgy]*$/
+VALID_FLAGS  = /^(?!.*(.).*\1)[imguy]*$/
 
 HEREGEX      = /// ^(?: [^\\/#] | \\[\s\S] | /(?!//) | \#(?!\{) )* ///
 
@@ -1019,7 +1046,8 @@ STRING_INVALID_ESCAPE = ///
   \\ (
      ?: (0[0-7]|[1-7])             # octal escape
       | (x(?![\da-fA-F]{2}).{0,2}) # hex escape
-      | (u(?![\da-fA-F]{4}).{0,4}) # unicode escape
+      | (u\{(?![\da-fA-F]{1,}\})[^}]*\}?) # unicode code point escape
+      | (u(?!\{|[\da-fA-F]{4}).{0,4}) # unicode escape
   )
 ///
 REGEX_INVALID_ESCAPE = ///
@@ -1027,9 +1055,16 @@ REGEX_INVALID_ESCAPE = ///
   \\ (
      ?: (0[0-7])                   # octal escape
       | (x(?![\da-fA-F]{2}).{0,2}) # hex escape
-      | (u(?![\da-fA-F]{4}).{0,4}) # unicode escape
+      | (u\{(?![\da-fA-F]{1,}\})[^}]*\}?) # unicode code point escape
+      | (u(?!\{|[\da-fA-F]{4}).{0,4}) # unicode escape
   )
 ///
+
+UNICODE_CODE_POINT_ESCAPE = ///
+  ( \\\\ )        # make sure the escape isn’t escaped
+  |
+  \\u\{ ( [\da-fA-F]+ ) \}
+///g
 
 LEADING_BLANK_LINE  = /^[^\n\S]*\n/
 TRAILING_BLANK_LINE = /\n[^\n\S]*$/
