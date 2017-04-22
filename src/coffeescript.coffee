@@ -153,13 +153,13 @@ exports.nodes = withPrettyErrors (source, options) ->
   else
     parser.parse source
 
-# Compile and execute a string of CoffeeScript 
-exports.run = (code, options = {}) -> throw new Error 'Not implemented'
-
-# Compile and evaluate a string of CoffeeScript 
-exports.eval = (code, options = {}) -> throw new Error 'Not implemented'
-
-exports.register = -> throw new Error 'Not implemented'
+# This file used to export these methods; leave stubs that throw warnings
+# instead. These methods have been moved into `index.coffee` to provide
+# separate entrypoints for Node and non-Node environments, so that static
+# analysis tools don’t choke on Node packages when compiling for a non-Node
+# environment.
+exports.run = exports.eval = exports.register = ->
+  throw new Error 'require index.coffee, not this file'
 
 # Instantiate a Lexer for our use here.
 lexer = new Lexer

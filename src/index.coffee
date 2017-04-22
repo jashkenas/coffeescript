@@ -1,5 +1,5 @@
 # Node.js Implementation
-CoffeeScript  = require './coffeescript' 
+CoffeeScript  = require './coffeescript'
 fs            = require 'fs'
 vm            = require 'vm'
 path          = require 'path'
@@ -81,7 +81,7 @@ if require.extensions
   for ext in CoffeeScript.FILE_EXTENSIONS then do (ext) ->
     require.extensions[ext] ?= ->
       throw new Error """
-      Use CoffeeScript.register() or require the coffee-script/register module to require #{ext} files.
+      Use CoffeeScript.register() or require the coffeescript/register module to require #{ext} files.
       """
 
 CoffeeScript._compileFile = (filename, sourceMap = no, inlineMap = no) ->

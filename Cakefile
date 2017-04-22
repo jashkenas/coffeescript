@@ -51,7 +51,7 @@ run = (args, callback) ->
 buildParser = ->
   helpers.extend global, require 'util'
   require 'jison'
-  # We don't need moduleMain, since the parser is unlikely to be run standalone
+  # We don't need `moduleMain`, since the parser is unlikely to be run standalone.
   parser = require('./lib/coffeescript/grammar').parser.generate(moduleMain: ->)
   fs.writeFileSync 'lib/coffeescript/parser.js', parser
 
