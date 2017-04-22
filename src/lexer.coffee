@@ -812,7 +812,7 @@ exports.Lexer = class Lexer
 
   # Replace \u{...} with \uxxxx[\uxxxx] in regexes without `u` flag
   replaceUnicodeCodePointEscapes: (str, options) ->
-    shouldReplace = options.flags? and options.flags.indexOf('u') is -1
+    shouldReplace = options.flags? and 'u' not in options.flags
     str.replace UNICODE_CODE_POINT_ESCAPE, (match, escapedBackslash, codePointHex, offset) =>
       return escapedBackslash if escapedBackslash
 
