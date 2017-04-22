@@ -7,12 +7,6 @@
 # * Strings
 # * Heredocs
 
-# Helper function
-toJS = (str) ->
-  CoffeeScript.compile str, bare: yes
-  .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace
-
-
 test "backslash escapes", ->
   eq "\\/\\\\", /\/\\/.source
 
