@@ -17,8 +17,8 @@ CoffeeScript.run = (code, options = {}) ->
   options.shiftLine = on
   Function(compile code, options)()
 
-CoffeeScript.register = ->
-
+# Export this more limited `CoffeeScript` than what is exported by
+# `index.coffee`, which is intended for a Node environment.
 module.exports = CoffeeScript
 
 # If we’re not in a browser environment, we’re finished with the public API.

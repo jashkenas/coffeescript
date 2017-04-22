@@ -357,7 +357,7 @@ task 'bench', 'quick benchmark of compilation time', ->
 
 # Run the CoffeeScript test suite.
 runTests = (CoffeeScript) ->
-  CoffeeScript.register()
+  CoffeeScript.register() unless global.testingBrowser
   startTime = Date.now()
 
   # These are attached to `global` so that they’re accessible from within
