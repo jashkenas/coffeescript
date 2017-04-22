@@ -1962,7 +1962,7 @@ exports.Op = class Op extends Base
     not @isNumber()
 
   # Am I capable of
-  # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin)?
+  # [Python-style comparison chaining](https://docs.python.org/3/reference/expressions.html#not-in)?
   isChainable: ->
     @operator in ['<', '>', '>=', '<=', '===', '!==']
 
@@ -2254,7 +2254,8 @@ exports.Parens = class Parens extends Base
       return expr.compileToFragments o
     fragments = expr.compileToFragments o, LEVEL_PAREN
     bare = o.level < LEVEL_OP and (expr instanceof Op or expr instanceof Call or
-      (expr instanceof For and expr.returns))
+      (expr instanceof For and expr.returns)) and (o.level < LEVEL_COND or
+        fragments.length <= 3)
     if bare then fragments else @wrapInBraces fragments
 
 #### StringWithInterpolations
