@@ -145,15 +145,11 @@ task 'build:browser', 'merge the built scripts into a single file for use in a b
       }
     }(this));
   """
-  unless process.env.MINIFY is 'false'
-    {compiledCode: code} = require('google-closure-compiler-js').compile
-      jsCode: [
-        src: code
-        languageOut: if majorVersion is 1 then 'ES5' else 'ES6'
-      ]
   outputFolder = "docs/v#{majorVersion}/browser-compiler"
   fs.mkdirSync outputFolder unless fs.existsSync outputFolder
   fs.writeFileSync "#{outputFolder}/coffeescript.js", header + '\n' + code
+  unless process.env.MINIFY is 'false'
+    execSync "./node_modules/babili/bin/babili.js #{outputFolder}/coffeescript.js -d ."
 
 task 'build:browser:full', 'merge the built scripts into a single file for use in a browser, and test it', ->
   invoke 'build:browser'
