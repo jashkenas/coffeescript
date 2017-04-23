@@ -748,3 +748,34 @@ test "get and set can be used as class method names", ->
 
   eq 4, B.get()
   eq 5, B.set()
+
+test "functions named get or set can be used without parentheses when attached to an object; #4524", ->
+  obj =
+    get: (x) -> x + 2
+    set: (x) -> x + 3
+
+  class A
+    get: (x) -> x + 4
+    set: (x) -> x + 5
+
+  a = new A()
+
+  eq 12, obj.get 10
+  eq 13, obj.set 10
+
+  eq 14, a.get 10
+  eq 15, a.set 10
+
+  @ten = 10
+
+  eq 12, obj.get @ten
+  eq 13, obj.set @ten
+
+  eq 14, a.get @ten
+  eq 15, a.set @ten
+
+  obj.obj = obj
+
+  eq 12, obj.obj.get @ten
+  eq 13, obj.obj.set @ten
+
