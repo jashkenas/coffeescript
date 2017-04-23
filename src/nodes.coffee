@@ -3118,7 +3118,7 @@ UTILITIES =
 
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls, and copies of any static properties.
-  extend: (o) -> "
+  extend: (o) -> """
     function(child, parent) {
       for (var key in parent) {
         if (#{utility 'hasProp', o}.call(parent, key)) child[key] = parent[key];
@@ -3130,33 +3130,22 @@ UTILITIES =
       child.prototype = new ctor();
       return child;
     }
-  "
+  """
 
   # Create a function bound to the current value of "this".
-  bind: -> '
+  bind: -> '''
     function(fn, me){
       return function(){
         return fn.apply(me, arguments);
       };
     }
-  '
+  '''
 
-  # Discover if an item is in an array.
-  indexOf: -> "
-    [].indexOf || function(item) {
-      for (var i = 0, l = this.length; i < l; i++) {
-        if (i in this && this[i] === item) return i;
-      }
-      return -1;
-    }
-  "
-
-  modulo: -> """
-    function(a, b) { return (+a % (b = +b) + b) % b; }
-  """
+  modulo: -> 'function(a, b) { return (+a % (b = +b) + b) % b; }'
 
   # Shortcuts to speed up the lookup time for native functions.
   hasProp: -> '{}.hasOwnProperty'
+  indexOf: -> '[].indexOf'
   slice  : -> '[].slice'
 
 # Levels indicate a node's position in the AST. Useful for knowing if
