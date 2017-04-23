@@ -433,20 +433,21 @@ test "export default predefined function", ->
     export default foo;"""
   eq toJS(input), output
 
-# Uncomment this test once ES2015+ `class` support is added
+test "export default class", ->
+  input = """
+    export default class foo extends bar
+      baz: ->
+        console.log 'hello, world!'"""
+  output = """
+    var foo;
 
-# test "export default class", ->
-#   input = """
-#     export default class foo extends bar
-#       baz: ->
-#         console.log 'hello, world!'"""
-#   output = """
-#     export default class foo extends bar {
-#       baz: function {
-#         return console.log('hello, world!');
-#       }
-#     }"""
-#   eq toJS(input), output
+    export default foo = class foo extends bar {
+      baz() {
+        return console.log('hello, world!');
+      }
+
+    };"""
+  eq toJS(input), output
 
 # Very limited tests for now, testing that `export class foo` either compiles
 # identically (ES2015+) or at least into some function, leaving the specifics
