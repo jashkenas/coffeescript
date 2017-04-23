@@ -1430,7 +1430,7 @@ exports.Class = class Class extends Base
   proxyBoundMethods: (o) ->
     @ctor.thisAssignments = for name in @boundMethods by -1
       name = new Value(new ThisLiteral, [ name ]).compile o
-      new Literal "#{name} = #{utility 'bind', o}(#{name}, this)"
+      new Literal "#{name} = #{name}.bind(this)"
 
     null
 
@@ -3131,15 +3131,6 @@ UTILITIES =
       return child;
     }
   """
-
-  # Create a function bound to the current value of "this".
-  bind: -> '''
-    function(fn, me){
-      return function(){
-        return fn.apply(me, arguments);
-      };
-    }
-  '''
 
   modulo: -> 'function(a, b) { return (+a % (b = +b) + b) % b; }'
 
