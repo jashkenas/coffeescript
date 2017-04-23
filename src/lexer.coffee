@@ -179,7 +179,8 @@ exports.Lexer = class Lexer
         @error "'#{prev[1]}' cannot be used as a keyword, or as a function call without parentheses", prev[2]
       else
         prevprev = @tokens[@tokens.length - 2]
-        if prev[0] in ['@', 'THIS'] and prevprev and prevprev.spaced and /^[gs]et$/.test(prevprev[1])
+        if prev[0] in ['@', 'THIS'] and prevprev and prevprev.spaced and /^[gs]et$/.test(prevprev[1]) and
+        @tokens[@tokens.length - 3][0] isnt '.'
           @error "'#{prevprev[1]}' cannot be used as a keyword, or as a function call without parentheses", prevprev[2]
 
     if tag is 'IDENTIFIER' and id in RESERVED
