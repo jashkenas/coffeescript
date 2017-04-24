@@ -951,10 +951,7 @@ exports.Access = class Access extends Base
     name = @name.compileToFragments o
     node = @name.unwrap()
     if node instanceof PropertyName
-      if node.value in JS_FORBIDDEN
-        [@makeCode('["'), name..., @makeCode('"]')]
-      else
-        [@makeCode('.'), name...]
+      [@makeCode('.'), name...]
     else
       [@makeCode('['), name..., @makeCode(']')]
 
@@ -1781,9 +1778,6 @@ exports.Assign = class Assign extends Base
       if @variable.shouldCache()
         compiledName.unshift @makeCode '['
         compiledName.push @makeCode ']'
-      else if fragmentsToText(compiledName) in JS_FORBIDDEN
-        compiledName.unshift @makeCode '"'
-        compiledName.push @makeCode '"'
       return compiledName.concat @makeCode(": "), val
 
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val

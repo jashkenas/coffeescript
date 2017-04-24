@@ -788,7 +788,7 @@ test "#4451: `default` in an export statement is only treated as a keyword when 
   input = "export default { default: 1 }"
   output = """
     export default {
-      "default": 1
+      default: 1
     };
   """
   eq toJS(input), output
