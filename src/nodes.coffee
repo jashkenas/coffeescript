@@ -3109,23 +3109,6 @@ exports.If = class If extends Base
 # ---------
 
 UTILITIES =
-
-  # Correctly set up a prototype chain for inheritance, including a reference
-  # to the superclass for `super()` calls, and copies of any static properties.
-  extend: (o) -> """
-    function(child, parent) {
-      for (var key in parent) {
-        if (#{utility 'hasProp', o}.call(parent, key)) child[key] = parent[key];
-      }
-      function ctor() {
-        this.constructor = child;
-      }
-      ctor.prototype = parent.prototype;
-      child.prototype = new ctor();
-      return child;
-    }
-  """
-
   modulo: -> 'function(a, b) { return (+a % (b = +b) + b) % b; }'
 
   # Shortcuts to speed up the lookup time for native functions.
