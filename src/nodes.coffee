@@ -1873,7 +1873,7 @@ exports.Assign = class Assign extends Base
       if not expandedIdx and obj instanceof Splat
         name = obj.name.unwrap().value
         obj = obj.unwrap()
-        val = "#{olen} <= #{vvarText}.length ? #{ utility 'slice', o }.call(#{vvarText}, #{i}"
+        val = "#{olen} <= #{vvarText}.length ? #{utility 'slice', o}.call(#{vvarText}, #{i}"
         rest = olen - i - 1
         if rest isnt 0
           ivar = o.scope.freeVariable 'i', single: true
@@ -1972,7 +1972,7 @@ exports.Assign = class Assign extends Base
     else
       to = "9e9"
     [valDef, valRef] = @value.cache o, LEVEL_LIST
-    answer = [].concat @makeCode("[].splice.apply(#{name}, [#{fromDecl}, #{to}].concat("), valDef, @makeCode(")), "), valRef
+    answer = [].concat @makeCode("#{utility 'splice', o}.apply(#{name}, [#{fromDecl}, #{to}].concat("), valDef, @makeCode(")), "), valRef
     if o.level > LEVEL_TOP then @wrapInParentheses answer else answer
 
   eachName: (iterator) ->
@@ -3115,6 +3115,7 @@ UTILITIES =
   hasProp: -> '{}.hasOwnProperty'
   indexOf: -> '[].indexOf'
   slice  : -> '[].slice'
+  splice : -> '[].splice'
 
 # Levels indicate a node's position in the AST. Useful for knowing if
 # parens are necessary or superfluous.
