@@ -699,7 +699,6 @@ grammar =
        INDENT Expression OUTDENT',              -> new Assign $1, $4, $2
     o 'SimpleAssignable COMPOUND_ASSIGN TERMINATOR
        Expression',                             -> new Assign $1, $4, $2
-    o 'SimpleAssignable EXTENDS Expression',    -> new Extends $1, $3
   ]
 
 
