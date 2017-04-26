@@ -305,12 +305,12 @@ test "#4248: Unicode code point escapes", ->
   ok ///a\u{000001ab}c///.test 'a\u{1ab}c'
   ok /a\u{12345}c/.test 'a\ud808\udf45c'
 
-  # rewrite code point escapes
+  # rewrite code point escapes unless u flag is set
   input = """
     /\\u{bcdef}\\u{abc}/u
     """
   output = """
-    /\\udab3\\uddef\\u0abc/u;
+    /\\u{bcdef}\\u{abc}/u;
   """
   eq toJS(input), output
 
