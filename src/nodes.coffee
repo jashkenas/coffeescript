@@ -630,9 +630,9 @@ exports.AwaitReturn = class AwaitReturn extends Return
 # or vanilla.
 exports.Value = class Value extends Base
   constructor: (base, props, tag, isDefaultValue = no) ->
-    return base if not props and base instanceof Value
-
     super()
+
+    return base if not props and base instanceof Value
 
     @base           = base
     @properties     = props or []
@@ -2435,14 +2435,14 @@ exports.While = class While extends Base
 # CoffeeScript operations into their JavaScript equivalents.
 exports.Op = class Op extends Base
   constructor: (op, first, second, flip) ->
+    super()
+
     return new In first, second if op is 'in'
     if op is 'do'
       return Op::generateDo first
     if op is 'new'
       return first.newInstance() if first instanceof Call and not first.do and not first.isNew
       first = new Parens first   if first instanceof Code and first.bound or first.do
-
-    super()
 
     @operator = CONVERSIONS[op] or op
     @first    = first
