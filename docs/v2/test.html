@@ -4151,6 +4151,17 @@ test "#748: trailing reserved identifiers", ->
     nonce
   eq nonce, result
 
+test 'if-else within an assignment, condition parenthesized', ->
+  result = if (1 is 1) then 'correct'
+  eq result, 'correct'
+
+  result = if ('whatever' ? no) then 'correct'
+  eq result, 'correct'
+
+  f = -> 'wrong'
+  result = if (f?()) then 'correct' else 'wrong'
+  eq result, 'correct'
+
 # Postfix
 
 test "#3056: multiple postfix conditionals", ->
@@ -5915,6 +5926,68 @@ test "setter keyword before static method", ->
       ^^^
   '''
 
+test "#4248: Unicode code point escapes", ->
+  assertErrorFormat '''
+    "a
+      #{b} \\u{G02}
+     c"
+  ''', '''
+    [stdin]:2:8: error: invalid escape sequence \\u{G02}
+      #{b} \\u{G02}
+           ^\^^^^^^
+  '''
+  assertErrorFormat '''
+    /a\\u{}b/
+  ''', '''
+    [stdin]:1:3: error: invalid escape sequence \\u{}
+    /a\\u{}b/
+      ^\^^^
+  '''
+  assertErrorFormat '''
+    ///a \\u{01abc///
+  ''', '''
+    [stdin]:1:6: error: invalid escape sequence \\u{01abc
+    ///a \\u{01abc///
+         ^\^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    /\\u{123} \\u{110000}/
+  ''', '''
+    [stdin]:1:10: error: unicode code point escapes greater than \\u{10ffff} are not allowed
+    /\\u{123} \\u{110000}/
+      \       ^\^^^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    ///abc\\\\\\u{123456}///u
+  ''', '''
+    [stdin]:1:9: error: unicode code point escapes greater than \\u{10ffff} are not allowed
+    ///abc\\\\\\u{123456}///u
+           \ \^\^^^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    """
+      \\u{123}
+      a
+        \\u{00110000}
+      #{ 'b' }
+    """
+  ''', '''
+    [stdin]:4:5: error: unicode code point escapes greater than \\u{10ffff} are not allowed
+        \\u{00110000}
+        ^\^^^^^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    '\\u{a}\\u{1111110000}'
+  ''', '''
+    [stdin]:1:7: error: unicode code point escapes greater than \\u{10ffff} are not allowed
+    '\\u{a}\\u{1111110000}'
+      \    ^\^^^^^^^^^^^^^
+  '''
+
 </script>
 <script type="text/x-coffeescript" class="test" id="eval">
 if vm = require? 'vm'
@@ -7120,13 +7193,26 @@ test "get and set can be used as function names when not ambiguous with `get`/`s
   eq 3, set(3)
   eq 'a', get('a')
   eq 'b', set('b')
+  eq 4, get 4
+  eq 5, set 5
+  eq 'c', get 'c'
+  eq 'd', set 'd'
+
+  @get = get
+  @set = set
+  eq 6, @get 6
+  eq 7, @set 7
 
   get = ({val}) -> val
   set = ({val}) -> val
-  eq 4, get({val: 4})
-  eq 5, set({val: 5})
-  eq 'c', get({val: 'c'})
-  eq 'd', set({val: 'd'})
+  eq 8, get({val: 8})
+  eq 9, set({val: 9})
+  eq 'e', get({val: 'e'})
+  eq 'f', set({val: 'f'})
+  eq 10, get {val: 10}
+  eq 11, set {val: 11}
+  eq 'g', get {val: 'g'}
+  eq 'h', set {val: 'h'}
 
 test "get and set can be used as variable and property names", ->
   get = 2
@@ -7154,6 +7240,37 @@ test "get and set can be used as class method names", ->
 
   eq 4, B.get()
   eq 5, B.set()
+
+test "functions named get or set can be used without parentheses when attached to an object; #4524", ->
+  obj =
+    get: (x) -> x + 2
+    set: (x) -> x + 3
+
+  class A
+    get: (x) -> x + 4
+    set: (x) -> x + 5
+
+  a = new A()
+
+  eq 12, obj.get 10
+  eq 13, obj.set 10
+
+  eq 14, a.get 10
+  eq 15, a.set 10
+
+  @ten = 10
+
+  eq 12, obj.get @ten
+  eq 13, obj.set @ten
+
+  eq 14, a.get @ten
+  eq 15, a.set @ten
+
+  obj.obj = obj
+
+  eq 12, obj.obj.get @ten
+  eq 13, obj.obj.set @ten
+
 
 </script>
 <script type="text/x-coffeescript" class="test" id="functions">
@@ -8272,8 +8389,11 @@ test "escaped JavaScript blocks speed round", ->
 
 comment comment
 
+    testsCount = 0 # Track the number of tests run in this file, to make sure they all run
+
     test "basic literate CoffeeScript parsing", ->
       ok yes
+      testsCount++
 
 now with a...
 
@@ -8286,6 +8406,7 @@ now with a...
 ... nested block.
 
         ok yes
+        testsCount++
 
 Code must be separated from text by a blank line.
 
@@ -8295,6 +8416,7 @@ The next line is part of the text and will not be executed.
       fail()
 
       ok yes
+      testsCount++
 
 Code in `backticks is not parsed` and...
 
@@ -8308,6 +8430,7 @@ Code in `backticks is not parsed` and...
           ###
 
           ok yes
+          testsCount++
 
 Regular [Markdown](http://example.com/markdown) features, like links
 and unordered lists, are fine:
@@ -8319,11 +8442,6 @@ and unordered lists, are fine:
   * A
 
   * List
-
-Tabs work too:
-
-	test "tabbed code", ->
-		ok yes
 
 ---
 
@@ -8339,13 +8457,15 @@ if true
 
     test "should ignore code blocks inside HTML", ->
       eq executed, false
+      testsCount++
 
 ---
 
-*   A list item with a code block:
+*   A list item followed by a code block:
 
-        test "basic literate CoffeeScript parsing", ->
-          ok yes
+    test "basic literate CoffeeScript parsing", ->
+      ok yes
+      testsCount++
 
 ---
 
@@ -8358,37 +8478,6 @@ if true
 
 ---
 
-1.  This is a list item with two paragraphs. Lorem ipsum dolor
-    sit amet, consectetuer adipiscing elit. Aliquam hendrerit
-    mi posuere lectus.
-
-    Vestibulum enim wisi, viverra nec, fringilla in, laoreet
-    vitae, risus. Donec sit amet nisl. Aliquam semper ipsum
-    sit amet velit.
-
-2.  Suspendisse id sem consectetuer libero luctus adipiscing.
-
----
-
-1.  This is a list item with two paragraphs. Lorem ipsum dolor
-    sit amet, consectetuer adipiscing elit. Aliquam hendrerit
-    mi posuere lectus.
-
-    Vestibulum enim wisi, viverra nec, fringilla in, laoreet
-    vitae, risus. Donec sit amet nisl. Aliquam semper ipsum
-    sit amet velit.
-
-2.  Suspendisse id sem consectetuer libero luctus adipiscing.
-
----
-
-*   A list item with a blockquote:
-
-    > This is a blockquote
-    > inside a list item.
-
----
-
 This is [an example][id] reference-style link.
 [id]: http://example.com/  "Optional Title Here"
 
@@ -8398,12 +8487,13 @@ This is [an example][id] reference-style link.
 
 1986. What a great season.
 
-          executed = yes
+    executed = yes
 
 and test...
 
     test "should recognize indented code blocks in lists with empty line as separator", ->
       ok executed
+      testsCount++
 
 ---
 
@@ -8416,6 +8506,7 @@ and test...
 
     test "should ignore indented code in escaped list like number", ->
       eq executed, no
+      testsCount++
 
 one last test!
 
@@ -8425,6 +8516,12 @@ one last test!
            and bar!
       '''
       eq quote, 'foo\n   and bar!'
+      testsCount++
+
+and finally, how did we do?
+
+    test "all spaced literate CoffeeScript tests executed", ->
+      eq testsCount, 9
 
 </script>
 <script type="text/x-literate-coffeescript" class="test" id="literate_tabbed">
@@ -8432,8 +8529,11 @@ one last test!
 
 comment comment
 
+	testsCount = 0 # Track the number of tests run in this file, to make sure they all run
+
 	test "basic literate CoffeeScript parsing", ->
 		ok yes
+		testsCount++
 
 now with a...
 
@@ -8446,6 +8546,7 @@ now with a...
 ... nested block.
 
 			ok yes
+			testsCount++
 
 Code must be separated from text by a blank line.
 
@@ -8455,6 +8556,7 @@ The next line is part of the text and will not be executed.
     fail()
 
 		ok yes
+		testsCount++
 
 Code in `backticks is not parsed` and...
 
@@ -8468,6 +8570,7 @@ Code in `backticks is not parsed` and...
 				###
 
 				ok yes
+				testsCount++
 
 Regular [Markdown](http://example.com/markdown) features, like links
 and unordered lists, are fine:
@@ -8479,11 +8582,6 @@ and unordered lists, are fine:
   * A
 
   * List
-
-Spaces work too:
-
-  test "spaced code", ->
-    ok yes
 
 ---
 
@@ -8499,13 +8597,15 @@ if true
 
 	test "should ignore code blocks inside HTML", ->
 		eq executed, false
+		testsCount++
 
 ---
 
-*   A list item with a code block:
+*   A list item followed by a code block:
 
-		test "basic literate CoffeeScript parsing", ->
-			ok yes
+	test "basic literate CoffeeScript parsing", ->
+		ok yes
+		testsCount++
 
 ---
 
@@ -8515,37 +8615,6 @@ if true
 
 *   Donec sit amet nisl. Aliquam semper ipsum sit amet velit.
     Suspendisse id sem consectetuer libero luctus adipiscing.
-
----
-
-1.  This is a list item with two paragraphs. Lorem ipsum dolor
-    sit amet, consectetuer adipiscing elit. Aliquam hendrerit
-    mi posuere lectus.
-
-    Vestibulum enim wisi, viverra nec, fringilla in, laoreet
-    vitae, risus. Donec sit amet nisl. Aliquam semper ipsum
-    sit amet velit.
-
-2.  Suspendisse id sem consectetuer libero luctus adipiscing.
-
----
-
-1.  This is a list item with two paragraphs. Lorem ipsum dolor
-    sit amet, consectetuer adipiscing elit. Aliquam hendrerit
-    mi posuere lectus.
-
-    Vestibulum enim wisi, viverra nec, fringilla in, laoreet
-    vitae, risus. Donec sit amet nisl. Aliquam semper ipsum
-    sit amet velit.
-
-2.  Suspendisse id sem consectetuer libero luctus adipiscing.
-
----
-
-*   A list item with a blockquote:
-
-    > This is a blockquote
-    > inside a list item.
 
 ---
 
@@ -8564,6 +8633,7 @@ and test...
 
 	test "should recognize indented code blocks in lists with empty line as separator", ->
 		ok executed
+		testsCount++
 
 ---
 
@@ -8576,6 +8646,7 @@ and test...
 
 	test "should ignore indented code in escaped list like number", ->
 		eq executed, no
+		testsCount++
 
 one last test!
 
@@ -8585,6 +8656,12 @@ one last test!
 					and bar!
 		'''
 		eq quote, 'foo\n\t\tand bar!'
+		testsCount++
+
+and finally, how did we do?
+
+	test "all tabbed literate CoffeeScript tests executed", ->
+		eq testsCount, 9
 
 </script>
 <script type="text/x-coffeescript" class="test" id="location">
@@ -9641,47 +9718,65 @@ test "export default predefined function", ->
     export default foo;"""
   eq toJS(input), output
 
-# Uncomment this test once ES2015+ `class` support is added
+test "export default class", ->
+  input = """
+    export default class foo extends bar
+      baz: ->
+        console.log 'hello, world!'"""
+  output = """
+    var foo;
 
-# test "export default class", ->
-#   input = """
-#     export default class foo extends bar
-#       baz: ->
-#         console.log 'hello, world!'"""
-#   output = """
-#     export default class foo extends bar {
-#       baz: function {
-#         return console.log('hello, world!');
-#       }
-#     }"""
-#   eq toJS(input), output
+    export default foo = class foo extends bar {
+      baz() {
+        return console.log('hello, world!');
+      }
 
-# Very limited tests for now, testing that `export class foo` either compiles
-# identically (ES2015+) or at least into some function, leaving the specifics
-# vague in case the CoffeeScript `class` interpretation changes
+    };"""
+  eq toJS(input), output
+
 test "export class", ->
   input = """
     export class foo
       baz: ->
         console.log 'hello, world!'"""
-  output = toJS input
-  ok /^export (var foo = class foo|var foo = \(function)/.test toJS input
+  output = """
+    export var foo = class foo {
+      baz() {
+        return console.log('hello, world!');
+      }
+
+    };"""
+  eq toJS(input), output
 
 test "export class that extends", ->
   input = """
     export class foo extends bar
       baz: ->
         console.log 'hello, world!'"""
-  output = toJS input
-  ok /export var foo = class foo/.test(output) and \
-    not /var foo(;|,)/.test output
+  output = """
+    export var foo = class foo extends bar {
+      baz() {
+        return console.log('hello, world!');
+      }
+
+    };"""
+  eq toJS(input), output
 
 test "export default class that extends", ->
   input = """
     export default class foo extends bar
       baz: ->
         console.log 'hello, world!'"""
-  ok /export default foo = class foo/.test toJS input
+  output = """
+    var foo;
+
+    export default foo = class foo extends bar {
+      baz() {
+        return console.log('hello, world!');
+      }
+
+    };"""
+  eq toJS(input), output
 
 test "export default named member, within an object", ->
   input = "export { foo as default, bar }"
@@ -9978,7 +10073,7 @@ test "#4451: `default` in an export statement is only treated as a keyword when 
   input = "export default { default: 1 }"
   output = """
     export default {
-      "default": 1
+      default: 1
     };
   """
   eq toJS(input), output
@@ -11469,6 +11564,12 @@ test "#1409: creating large ranges outside of a function body", ->
 # * Regexen
 # * Heregexen
 
+# Helper function
+toJS = (str) ->
+  CoffeeScript.compile str, bare: yes
+  .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace
+
+
 test "basic regular expression literals", ->
   ok 'a'.match(/a/)
   ok 'a'.match /a/
@@ -11750,6 +11851,35 @@ test "#3795: Escape otherwise invalid characters", ->
   ok ///#{a}\0
       1///.test 'a\x001'
 
+test "#4248: Unicode code point escapes", ->
+  ok /a\u{1ab}c/u.test 'a\u01abc'
+  ok ///#{ 'a' }\u{000001ab}c///u.test 'a\u{1ab}c'
+  ok ///a\u{000001ab}c///u.test 'a\u{1ab}c'
+  ok /a\u{12345}c/u.test 'a\ud808\udf45c'
+
+  # and now without u flag
+  ok /a\u{1ab}c/.test 'a\u01abc'
+  ok ///#{ 'a' }\u{000001ab}c///.test 'a\u{1ab}c'
+  ok ///a\u{000001ab}c///.test 'a\u{1ab}c'
+  ok /a\u{12345}c/.test 'a\ud808\udf45c'
+
+  # rewrite code point escapes unless u flag is set
+  input = """
+    /\\u{bcdef}\\u{abc}/u
+    """
+  output = """
+    /\\u{bcdef}\\u{abc}/u;
+  """
+  eq toJS(input), output
+
+  input = """
+    ///#{ 'a' }\\u{bcdef}///
+    """
+  output = """
+    /a\\udab3\\uddef/;
+  """
+  eq toJS(input), output
+
 </script>
 <script type="text/x-coffeescript" class="test" id="repl">
 return if global.testingBrowser
@@ -11823,6 +11953,11 @@ testRepl "variables are saved", (input, output) ->
   eq "'foobar'", output.lastWrite()
 
 testRepl "empty command evaluates to undefined", (input, output) ->
+  # A regression fixed in Node 5.11.0 broke the handling of pressing enter in
+  # the Node REPL; see https://github.com/nodejs/node/pull/6090 and
+  # https://github.com/jashkenas/coffeescript/issues/4502.
+  # Just skip this test for versions of Node < 6.
+  return if parseInt(process.versions.node.split('.')[0], 10) < 6
   input.emitLine ''
   eq 'undefined', output.lastWrite()
 
@@ -12496,10 +12631,10 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
     check "#{keyword} *= 1"
     check "#{keyword} /= 1"
     check "#{keyword} ?= 1"
-    check "{keyword}++"
-    check "++{keyword}"
-    check "{keyword}--"
-    check "--{keyword}"
+    check "#{keyword}++"
+    check "++#{keyword}"
+    check "#{keyword}--"
+    check "--#{keyword}"
   destruct = (keyword, check = strict) ->
     check "{#{keyword}}"
     check "o = {#{keyword}}"
@@ -12547,6 +12682,12 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
 
 # * Strings
 # * Heredocs
+
+# Helper function
+toJS = (str) ->
+  CoffeeScript.compile str, bare: yes
+  .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace
+
 
 test "backslash escapes", ->
   eq "\\/\\\\", /\/\\/.source
@@ -12941,6 +13082,36 @@ test "#4314: Whitespace less than or equal to stripped indentation", ->
   eq '1 2  3   4    5     end\na 0     b', """
     #{1} #{2}  #{3}   #{4}    #{5}     end
     a #{0}     b"""
+
+test "#4248: Unicode code point escapes", ->
+  eq '\u01ab\u00cd', '\u{1ab}\u{cd}'
+  eq '\u01ab', '\u{000001ab}'
+  eq 'a\u01ab', "#{ 'a' }\u{1ab}"
+  eq '\u01abc', '''\u{01ab}c'''
+  eq '\u01abc', """\u{1ab}#{ 'c' }"""
+  eq '\udab3\uddef', '\u{bcdef}'
+  eq '\udab3\uddef', '\u{0000bcdef}'
+  eq 'a\udab3\uddef', "#{ 'a' }\u{bcdef}"
+  eq '\udab3\uddefc', '''\u{0bcdef}c'''
+  eq '\udab3\uddefc', """\u{bcdef}#{ 'c' }"""
+  eq '\\u{123456}', "#{'\\'}#{'u{123456}'}"
+
+  # don't rewrite code point escapes
+  input = """
+    '\\u{bcdef}\\u{abc}'
+    """
+  output = """
+    '\\u{bcdef}\\u{abc}';
+  """
+  eq toJS(input), output
+
+  input = """
+    "#{ 'a' }\\u{bcdef}"
+    """
+  output = """
+    "a\\u{bcdef}";
+  """
+  eq toJS(input), output
 
 </script>
 <script type="text/x-coffeescript" class="test" id="tagged_template_literals">
