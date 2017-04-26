@@ -1279,10 +1279,8 @@ exports.Class = class Class extends Base
       result
 
   compileClassDeclaration: (o) ->
-    @ctor ?= @makeDefaultConstructor() if @externalCtor or @boundMethods.length
+    @ctor ?= @makeDefaultConstructor() if @externalCtor
     @ctor?.noReturn = true
-
-    @proxyBoundMethods o if @boundMethods.length
 
     o.indent += TAB
 
@@ -1319,7 +1317,6 @@ exports.Class = class Class extends Base
 
   walkBody: ->
     @ctor          = null
-    @boundMethods  = []
     executableBody = null
 
     initializer     = []
@@ -1363,11 +1360,8 @@ exports.Class = class Class extends Base
       if method.ctor
         method.error 'Cannot define more than one constructor in a class' if @ctor
         @ctor = method
-      else if method.bound and method.isStatic
+      else if method.isStatic and method.bound
         method.context = @name
-      else if method.bound
-        @boundMethods.push method.name
-        method.bound = false
 
     if initializer.length isnt expressions.length
       @body.expressions = (expression.hoist() for expression in initializer)
@@ -1405,7 +1399,7 @@ exports.Class = class Class extends Base
       method.name = new (if methodName.shouldCache() then Index else Access) methodName
       method.name.updateLocationDataIfMissing methodName.locationData
       method.ctor = (if @parent then 'derived' else 'base') if methodName.value is 'constructor'
-      method.error 'Cannot define a constructor as a bound function' if method.bound and method.ctor
+      method.error 'Methods cannot be bound functions' if method.bound
 
     method
 
@@ -1423,13 +1417,6 @@ exports.Class = class Class extends Base
       ctor.body.makeReturn()
 
     ctor
-
-  proxyBoundMethods: (o) ->
-    @ctor.thisAssignments = for name in @boundMethods by -1
-      name = new Value(new ThisLiteral, [ name ]).compile o
-      new Literal "#{name} = #{name}.bind(this)"
-
-    null
 
 exports.ExecutableClassBody = class ExecutableClassBody extends Base
   children: [ 'class', 'body' ]
