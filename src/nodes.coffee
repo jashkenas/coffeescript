@@ -630,9 +630,9 @@ exports.AwaitReturn = class AwaitReturn extends Return
 # or vanilla.
 exports.Value = class Value extends Base
   constructor: (base, props, tag, isDefaultValue = no) ->
-    return base if not props and base instanceof Value
-
     super()
+
+    return base if not props and base instanceof Value
 
     @base           = base
     @properties     = props or []
@@ -951,10 +951,7 @@ exports.Access = class Access extends Base
     name = @name.compileToFragments o
     node = @name.unwrap()
     if node instanceof PropertyName
-      if node.value in JS_FORBIDDEN
-        [@makeCode('["'), name..., @makeCode('"]')]
-      else
-        [@makeCode('.'), name...]
+      [@makeCode('.'), name...]
     else
       [@makeCode('['), name..., @makeCode(']')]
 
@@ -1430,7 +1427,7 @@ exports.Class = class Class extends Base
   proxyBoundMethods: (o) ->
     @ctor.thisAssignments = for name in @boundMethods by -1
       name = new Value(new ThisLiteral, [ name ]).compile o
-      new Literal "#{name} = #{utility 'bind', o}(#{name}, this)"
+      new Literal "#{name} = #{name}.bind(this)"
 
     null
 
@@ -1781,9 +1778,6 @@ exports.Assign = class Assign extends Base
       if @variable.shouldCache()
         compiledName.unshift @makeCode '['
         compiledName.push @makeCode ']'
-      else if fragmentsToText(compiledName) in JS_FORBIDDEN
-        compiledName.unshift @makeCode '"'
-        compiledName.push @makeCode '"'
       return compiledName.concat @makeCode(": "), val
 
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
@@ -1879,7 +1873,7 @@ exports.Assign = class Assign extends Base
       if not expandedIdx and obj instanceof Splat
         name = obj.name.unwrap().value
         obj = obj.unwrap()
-        val = "#{olen} <= #{vvarText}.length ? #{ utility 'slice', o }.call(#{vvarText}, #{i}"
+        val = "#{olen} <= #{vvarText}.length ? #{utility 'slice', o}.call(#{vvarText}, #{i}"
         rest = olen - i - 1
         if rest isnt 0
           ivar = o.scope.freeVariable 'i', single: true
@@ -1978,7 +1972,7 @@ exports.Assign = class Assign extends Base
     else
       to = "9e9"
     [valDef, valRef] = @value.cache o, LEVEL_LIST
-    answer = [].concat @makeCode("[].splice.apply(#{name}, [#{fromDecl}, #{to}].concat("), valDef, @makeCode(")), "), valRef
+    answer = [].concat @makeCode("#{utility 'splice', o}.apply(#{name}, [#{fromDecl}, #{to}].concat("), valDef, @makeCode(")), "), valRef
     if o.level > LEVEL_TOP then @wrapInParentheses answer else answer
 
   eachName: (iterator) ->
@@ -2441,14 +2435,14 @@ exports.While = class While extends Base
 # CoffeeScript operations into their JavaScript equivalents.
 exports.Op = class Op extends Base
   constructor: (op, first, second, flip) ->
+    super()
+
     return new In first, second if op is 'in'
     if op is 'do'
       return Op::generateDo first
     if op is 'new'
       return first.newInstance() if first instanceof Call and not first.do and not first.isNew
       first = new Parens first   if first instanceof Code and first.bound or first.do
-
-    super()
 
     @operator = CONVERSIONS[op] or op
     @first    = first
@@ -3115,49 +3109,13 @@ exports.If = class If extends Base
 # ---------
 
 UTILITIES =
-
-  # Correctly set up a prototype chain for inheritance, including a reference
-  # to the superclass for `super()` calls, and copies of any static properties.
-  extend: (o) -> "
-    function(child, parent) {
-      for (var key in parent) {
-        if (#{utility 'hasProp', o}.call(parent, key)) child[key] = parent[key];
-      }
-      function ctor() {
-        this.constructor = child;
-      }
-      ctor.prototype = parent.prototype;
-      child.prototype = new ctor();
-      return child;
-    }
-  "
-
-  # Create a function bound to the current value of "this".
-  bind: -> '
-    function(fn, me){
-      return function(){
-        return fn.apply(me, arguments);
-      };
-    }
-  '
-
-  # Discover if an item is in an array.
-  indexOf: -> "
-    [].indexOf || function(item) {
-      for (var i = 0, l = this.length; i < l; i++) {
-        if (i in this && this[i] === item) return i;
-      }
-      return -1;
-    }
-  "
-
-  modulo: -> """
-    function(a, b) { return (+a % (b = +b) + b) % b; }
-  """
+  modulo: -> 'function(a, b) { return (+a % (b = +b) + b) % b; }'
 
   # Shortcuts to speed up the lookup time for native functions.
   hasProp: -> '{}.hasOwnProperty'
+  indexOf: -> '[].indexOf'
   slice  : -> '[].slice'
+  splice : -> '[].splice'
 
 # Levels indicate a node's position in the AST. Useful for knowing if
 # parens are necessary or superfluous.

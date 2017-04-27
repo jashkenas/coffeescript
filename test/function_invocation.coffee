@@ -714,13 +714,26 @@ test "get and set can be used as function names when not ambiguous with `get`/`s
   eq 3, set(3)
   eq 'a', get('a')
   eq 'b', set('b')
+  eq 4, get 4
+  eq 5, set 5
+  eq 'c', get 'c'
+  eq 'd', set 'd'
+
+  @get = get
+  @set = set
+  eq 6, @get 6
+  eq 7, @set 7
 
   get = ({val}) -> val
   set = ({val}) -> val
-  eq 4, get({val: 4})
-  eq 5, set({val: 5})
-  eq 'c', get({val: 'c'})
-  eq 'd', set({val: 'd'})
+  eq 8, get({val: 8})
+  eq 9, set({val: 9})
+  eq 'e', get({val: 'e'})
+  eq 'f', set({val: 'f'})
+  eq 10, get {val: 10}
+  eq 11, set {val: 11}
+  eq 'g', get {val: 'g'}
+  eq 'h', set {val: 'h'}
 
 test "get and set can be used as variable and property names", ->
   get = 2
@@ -748,3 +761,34 @@ test "get and set can be used as class method names", ->
 
   eq 4, B.get()
   eq 5, B.set()
+
+test "functions named get or set can be used without parentheses when attached to an object; #4524", ->
+  obj =
+    get: (x) -> x + 2
+    set: (x) -> x + 3
+
+  class A
+    get: (x) -> x + 4
+    set: (x) -> x + 5
+
+  a = new A()
+
+  eq 12, obj.get 10
+  eq 13, obj.set 10
+
+  eq 14, a.get 10
+  eq 15, a.set 10
+
+  @ten = 10
+
+  eq 12, obj.get @ten
+  eq 13, obj.set @ten
+
+  eq 14, a.get @ten
+  eq 15, a.set @ten
+
+  obj.obj = obj
+
+  eq 12, obj.obj.get @ten
+  eq 13, obj.obj.set @ten
+

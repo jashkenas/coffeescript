@@ -139,12 +139,17 @@ task 'build:browser', 'merge the built scripts into a single file for use in a b
       }
     }(this));
   """
-  unless process.env.MINIFY is 'false'
-    {compiledCode: code} = require('google-closure-compiler-js').compile
-      jsCode: [
-        src: code
-        languageOut: if majorVersion is 1 then 'ES5' else 'ES6'
-      ]
+  babel = require 'babel-core'
+  presets = []
+  # Exclude the `modules` plugin in order to not break the `}(this));`
+  # at the end of the above code block.
+  presets.push ['env', {modules: no}] unless process.env.TRANSFORM is 'false'
+  presets.push 'babili' unless process.env.MINIFY is 'false'
+  babelOptions =
+    compact: process.env.MINIFY isnt 'false'
+    presets: presets
+    sourceType: 'script'
+  { code } = babel.transform code, babelOptions unless presets.length is 0
   outputFolder = "docs/v#{majorVersion}/browser-compiler"
   fs.mkdirSync outputFolder unless fs.existsSync outputFolder
   fs.writeFileSync "#{outputFolder}/coffeescript.js", header + '\n' + code
