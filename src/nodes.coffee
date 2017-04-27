@@ -1764,15 +1764,18 @@ exports.Assign = class Assign extends Base
         else
           o.scope.find name.value
 
+    compiledName = @variable.compileToFragments o, LEVEL_LIST
+
     if @value instanceof Code
       if @value.isStatic
         @value.name = @variable.properties[0]
       else if @variable.properties?.length >= 2
         [properties..., prototype, name] = @variable.properties
         @value.name = name if prototype.name?.value is 'prototype'
+      else
+        @value.outputName = compiledName
 
     val = @value.compileToFragments o, LEVEL_LIST
-    compiledName = @variable.compileToFragments o, LEVEL_LIST
 
     if @context is 'object'
       if @variable.shouldCache()
@@ -2144,18 +2147,18 @@ exports.Code = class Code extends Base
     # If there were parameters after the splat or expansion parameter, those
     # parameters need to be assigned in the body of the function.
     if paramsAfterSplat.length isnt 0
-      # Create a destructured assignment, e.g. `[a, b, c] = [args..., b, c]`
+      # Create a destructured assignment, e.g. `[a, b, c] = [args..., b, c]`.
       exprs.unshift new Assign new Value(
           new Arr [new Splat(new IdentifierLiteral(splatParamName)), (param.asReference o for param in paramsAfterSplat)...]
         ), new Value new IdentifierLiteral splatParamName
 
-    # Add new expressions to the function body
+    # Add new expressions to the function body.
     wasEmpty = @body.isEmpty()
     @body.expressions.unshift thisAssignments... unless @expandCtorSuper thisAssignments
     @body.expressions.unshift exprs...
     @body.makeReturn() unless wasEmpty or @noReturn
 
-    # Assemble the output
+    # Assemble the output.
     modifiers = []
     modifiers.push 'static' if @isMethod and @isStatic
     modifiers.push 'async'  if @isAsync
@@ -2164,7 +2167,14 @@ exports.Code = class Code extends Base
     else if @isGenerator
       modifiers.push '*'
 
-    signature = [@makeCode '(']
+    # Name this function, if it has a name we can use.
+    if @outputName and not @bound
+      outputName = fragmentsToText @outputName
+      outputName = no if outputName in JS_FORBIDDEN or /'|"|\.|\[/.test(outputName)
+
+    signature = []
+    signature.push @makeCode " #{outputName}" if outputName
+    signature.push @makeCode '('
     for param, i in params
       signature.push @makeCode ', ' if i
       signature.push @makeCode '...' if haveSplatParam and i is params.length - 1
@@ -2173,7 +2183,7 @@ exports.Code = class Code extends Base
 
     body = @body.compileWithDeclarations o unless @body.isEmpty()
 
-    # We need to compile the body before method names to ensure super references are handled
+    # We need to compile the body before method names to ensure super references are handled.
     if @isMethod
       [methodScope, o.scope] = [o.scope, o.scope.parent]
       name = @name.compileToFragments o

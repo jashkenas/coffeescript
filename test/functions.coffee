@@ -98,7 +98,7 @@ test "self-referencing functions", ->
   changeMe = ->
     changeMe = 2
 
-  changeMe()
+  changeMe = changeMe()
   eq changeMe, 2
 
 

@@ -400,7 +400,7 @@ test "export assignment function", ->
     export foo = (bar) ->
       console.log bar"""
   output = """
-    export var foo = function(bar) {
+    export var foo = function foo(bar) {
       return console.log(bar);
     };"""
   eq toJS(input), output
@@ -411,7 +411,7 @@ test "export assignment function which contains assignments in its body", ->
       baz = '!'
       console.log bar + baz"""
   output = """
-    export var foo = function(bar) {
+    export var foo = function foo(bar) {
       var baz;
       baz = '!';
       return console.log(bar + baz);
@@ -426,7 +426,7 @@ test "export default predefined function", ->
   output = """
     var foo;
 
-    foo = function(bar) {
+    foo = function foo(bar) {
       return console.log(bar);
     };
 
@@ -658,7 +658,7 @@ test "CoffeeScript keywords can be used as imported names in import lists", ->
 test "`*` can be used in an expression on the same line as an export keyword", ->
   input = "export foo = (x) -> x * x"
   output = """
-    export var foo = function(x) {
+    export var foo = function foo(x) {
       return x * x;
     };"""
   eq toJS(input), output
@@ -666,7 +666,7 @@ test "`*` can be used in an expression on the same line as an export keyword", -
   output = """
     var foo;
 
-    export default foo = function(x) {
+    export default foo = function foo(x) {
       return x * x;
     };"""
   eq toJS(input), output
@@ -679,7 +679,7 @@ test "`*` and `from` can be used in an export default expression", ->
         from = from * 3"""
   output = """
     export default foo.extend({
-      bar: function() {
+      bar: function bar() {
         var from;
         from = 5;
         return from = from * 3;
