@@ -790,7 +790,7 @@ exports.Lexer = class Lexer
     LINE_CONTINUER.test(@chunk) or
     @tag() in ['\\', '.', '?.', '?::', 'UNARY', 'MATH', 'UNARY_MATH', '+', '-',
                '**', 'SHIFT', 'RELATION', 'COMPARE', '&', '^', '|', '&&', '||',
-               'BIN?', 'THROW', 'EXTENDS']
+               'BIN?', 'THROW', 'EXTENDS', 'DEFAULT']
 
   formatString: (str, options) ->
     @replaceUnicodeCodePointEscapes str.replace(STRING_OMIT, '$1'), options
