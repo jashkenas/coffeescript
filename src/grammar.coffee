@@ -229,7 +229,6 @@ grammar =
     o 'AWAIT RETURN',                           -> new AwaitReturn
   ]
 
-
   # A block comment.
   Comment: [
     o 'HERECOMMENT',                            -> new Comment $1

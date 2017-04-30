@@ -455,7 +455,7 @@ exports.Lexer = class Lexer
     this
 
   # Matches and consumes non-meaningful whitespace. Tag the previous token
-  # as being "spaced", because there are some cases where it makes a difference.
+  # as being “spaced”, because there are some cases where it makes a difference.
   whitespaceToken: ->
     return 0 unless (match = WHITESPACE.exec @chunk) or
                     (nline = @chunk.charAt(0) is '\n')

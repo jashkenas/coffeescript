@@ -575,3 +575,15 @@ test "#4324: Shorthand after interpolated key", ->
   obj = {"#{1}": 1, a}
   eq 1, obj[1]
   eq 2, obj.a
+
+test "#1263: Braceless object return", ->
+  fn = ->
+    return
+      a: 1
+      b: 2
+      c: 3
+
+  obj = fn()
+  eq 1, obj.a
+  eq 2, obj.b
+  eq 3, obj.c
