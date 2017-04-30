@@ -403,7 +403,7 @@ exports.Lexer = class Lexer
       return indent.length
 
     if size > @indent
-      if noNewlines
+      if noNewlines or @tag() is 'RETURN'
         @indebt = size - @indent
         @suppressNewlines()
         return indent.length
