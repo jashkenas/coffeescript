@@ -14,11 +14,7 @@ generate = (tag, value, origin) ->
 
 # The **Rewriter** class is used by the [Lexer](lexer.html), directly against
 # its internal array of tokens.
-class exports.Rewriter
-
-  # Helpful snippet for debugging:
-  #
-  #     console.log (t[0] + '/' + t[1] for t in @tokens).join ' '
+exports.Rewriter = class Rewriter
 
   # Rewrite the token stream in multiple passes, one logical filter at
   # a time. This could certainly be changed into a single pass through the
@@ -26,6 +22,8 @@ class exports.Rewriter
   # like this. The order of these passes matters -- indentation must be
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (@tokens) ->
+    # Helpful snippet for debugging:
+    # console.log (t[0] + '/' + t[1] for t in @tokens).join ' '
     @removeLeadingNewlines()
     @closeOpenCalls()
     @closeOpenIndexes()
@@ -186,7 +184,7 @@ class exports.Rewriter
       # Don't end an implicit call on next indent if any of these are in an argument
       if inImplicitCall() and tag in ['IF', 'TRY', 'FINALLY', 'CATCH',
         'CLASS', 'SWITCH']
-        stack.push ['CONTROL', i, ours: true]
+        stack.push ['CONTROL', i, ours: yes]
         return forward(1)
 
       if tag is 'INDENT' and inImplicit()
