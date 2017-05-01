@@ -149,9 +149,12 @@ exports.Rewriter = class Rewriter
       forward   = (n) -> i - startIdx + n
 
       # Helper functions
-      inImplicit        = -> stackTop()?[2]?.ours
-      inImplicitCall    = -> inImplicit() and stackTop()?[0] is '('
-      inImplicitObject  = -> inImplicit() and stackTop()?[0] is '{'
+      isImplicit        = (stackItem) -> stackItem?[2]?.ours
+      isImplicitObject  = (stackItem) -> isImplicit(stackItem) and stackItem?[0] is '{'
+      isImplicitCall    = (stackItem) -> isImplicit(stackItem) and stackItem?[0] is '('
+      inImplicit        = -> isImplicit stackTop()
+      inImplicitCall    = -> isImplicitCall stackTop()
+      inImplicitObject  = -> isImplicitObject stackTop()
       # Unclosed control statement inside implicit parens (like
       # class declaration or if-conditionals)
       inImplicitControl = -> inImplicit and stackTop()?[0] is 'CONTROL'
@@ -298,7 +301,10 @@ exports.Rewriter = class Rewriter
       #     .g b
       #     .h a
 
-      stackTop()[2].sameLine = no if inImplicitObject() and tag in LINEBREAKS
+      # Mark all enclosing objects as not sameLine
+      if tag in LINEBREAKS
+        for stackItem in stack by -1 when isImplicitObject stackItem
+          stackItem[2].sameLine = no
 
       newLine = prevTag is 'OUTDENT' or prevToken.newLine
       if tag in IMPLICIT_END or tag in CALL_CLOSERS and newLine
