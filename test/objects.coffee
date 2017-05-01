@@ -581,9 +581,9 @@ test "#1263: Braceless object return", ->
     return
       a: 1
       b: 2
-      c: 3
+      c: -> 3
 
   obj = fn()
   eq 1, obj.a
   eq 2, obj.b
-  eq 3, obj.c
+  eq 3, obj.c()

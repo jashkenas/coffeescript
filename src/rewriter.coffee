@@ -23,7 +23,7 @@ exports.Rewriter = class Rewriter
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (@tokens) ->
     # Helpful snippet for debugging:
-    # console.log (t[0] + '/' + t[1] for t in @tokens).join ' '
+    #     console.log (t[0] + '/' + t[1] for t in @tokens).join ' '
     @removeLeadingNewlines()
     @closeOpenCalls()
     @closeOpenIndexes()
