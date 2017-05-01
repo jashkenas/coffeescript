@@ -398,7 +398,8 @@ class exports.Rewriter
       not (token[0] is 'TERMINATOR' and @tag(i + 1) in EXPRESSION_CLOSE) and
       not (token[0] is 'ELSE' and starter isnt 'THEN') and
       not (token[0] in ['CATCH', 'FINALLY'] and starter in ['->', '=>']) or
-      token[0] in CALL_CLOSERS and @tokens[i - 1].newLine
+      token[0] in CALL_CLOSERS and
+      (@tokens[i - 1].newLine or @tokens[i - 1][0] is 'OUTDENT')
 
     action = (token, i) ->
       @tokens.splice (if @tag(i - 1) is ',' then i - 1 else i), 0, outdent

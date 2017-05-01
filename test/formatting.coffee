@@ -198,6 +198,29 @@ test "#1495, method call chaining", ->
   ).join ', '
   eq 'a, b, c', result
 
+test "chaining should not wrap spilling ternary", ->
+  throws -> CoffeeScript.compile """
+    if 0 then 1 else g
+      a: 42
+    .h()
+  """
+
+test "chaining should wrap calls containing spilling ternary", ->
+  f = (x) -> h: x
+  id = (x) -> x
+  result = f if true then 42 else id
+      a: 2
+  .h
+  eq 42, result
+
+test "chaining should work within spilling ternary", ->
+  f = (x) -> h: x
+  id = (x) -> x
+  result = f if false then 1 else id
+      a: 3
+      .a
+  eq 3, result.h
+
 # Nested blocks caused by paren unwrapping
 test "#1492: Nested blocks don't cause double semicolons", ->
   js = CoffeeScript.compile '(0;0)'
