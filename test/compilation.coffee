@@ -123,3 +123,11 @@ test "#3001: `own` shouldn't be allowed in a `for`-`in` loop", ->
 
 test "#2994: single-line `if` requires `then`", ->
   cantCompile "if b else x"
+
+test "Shebang lines should be preserved after compilation", ->
+  js = CoffeeScript.compile "#!/usr/bin/env node\n\nconsole.log 'test'", header: on
+  ok js.split( "\n" )[0] is "#!/usr/bin/env node"
+
+  # Shebang lines not present on first line should be treated as normal comments
+  js = CoffeeScript.compile "console.log 'test'\n\n#!/usr/bin/env node"
+  ok js.split( "\n" ).indexOf( "#!/usr/bin/env node" ) is -1
