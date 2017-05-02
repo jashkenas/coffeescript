@@ -93,19 +93,19 @@ codeFor('breaking_change_super_without_arguments')
 </section>
 <section id="breaking-changes-super-in-non-class-methods">
 
-### `super` in non-class methods
+### `extends` for function prototypes, and `super` in non-class methods
 
-In CoffeeScript 1.x it is possible to use `super` in more than just class methods, such as in manually prototype-assigned functions:
+CoffeeScript 1.x allowed the `extends` keyword to set up prototypal inheritance between functions, and `super` could be used manually prototype-assigned functions:
 
 ```coffee
 A = ->
 B = ->
 B extends A
 B.prototype.foo = -> super arguments...
-# Throws a compiler error
+# Last two lines each throw compiler errors in CoffeeScript 2
 ```
 
-Due to the switch to ES2015 `super`, this is no longer supported. The above case could be refactored to:
+Due to the switch to ES2015 `extends` and `super`, using these keywords for prototypal functions are no longer supported. The above case could be refactored to:
 
 ```
 codeFor('breaking_change_super_in_non-class_methods_refactor_with_apply')
