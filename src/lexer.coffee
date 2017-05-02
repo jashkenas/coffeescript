@@ -893,6 +893,7 @@ JS_KEYWORDS = [
   'new', 'delete', 'typeof', 'in', 'instanceof'
   'return', 'throw', 'break', 'continue', 'debugger', 'yield'
   'if', 'else', 'switch', 'for', 'while', 'do', 'try', 'catch', 'finally'
+  'final', 'case', 'function', 'var', 'void'
   'class', 'extends', 'super'
   'import', 'export', 'default'
 ]
