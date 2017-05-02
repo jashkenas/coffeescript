@@ -716,8 +716,8 @@ exports.Call = class Call extends Base
 
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow an array of arguments to be passed.
-  # If it's a constructor, then things get real tricky. We have to inject an
-  # inner constructor in order to be able to pass the varargs.
+  # If it's a class constructor then we create a new Object
+  # and apply the class constructor to the Object instance
   #
   # splatArgs is an array of CodeFragments to put into the 'apply'.
   compileSplat: (o, splatArgs) ->
@@ -727,14 +727,9 @@ exports.Call = class Call extends Base
 
     if @isNew
       idt = @tab + TAB
-      return [].concat @makeCode("""
-        (function(func, args, ctor) {
-        #{idt}ctor.prototype = func.prototype;
-        #{idt}var child = new ctor, result = func.apply(child, args);
-        #{idt}return Object(result) === result ? result : child;
-        #{@tab}})("""),
+      return [].concat @makeCode("#{ utility 'applyCtor', o }("),
         (@variable.compileToFragments o, LEVEL_LIST),
-        @makeCode(", "), splatArgs, @makeCode(", function(){})")
+        @makeCode(", "), splatArgs, @makeCode(")")
 
     answer = []
     base = new Value @variable
@@ -2587,7 +2582,14 @@ UTILITIES =
       return child;
     }
   "
-
+  # Creates and applies arguments to a class constructor.
+  applyCtor: (ctor, args) -> "
+    function(ctor, args) {
+      var child = Object.create(ctor.prototype);
+      var result = ctor.apply(child, args);
+      return result && Object(result) === result ? result : child;
+    }
+  "
   # Create a function bound to the current value of "this".
   bind: -> '
     function(fn, me){
