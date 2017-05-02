@@ -10,8 +10,6 @@ codeFor('fat_arrow')
 
 If we had used `->` in the callback above, `@customer` would have referred to the undefined “customer” property of the DOM element, and trying to call `purchase()` on it would have raised an exception.
 
-When used in a class definition, methods declared with the fat arrow will be automatically bound to each instance of the class when the instance is constructed.
-
 <div id="generator-functions" class="bookmark"></div>
 <div id="async-functions" class="bookmark"></div>
 
