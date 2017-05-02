@@ -353,6 +353,28 @@ test "export default object", ->
     };"""
   eq toJS(input), output
 
+test "export default implicit object", ->
+  input = "export default foo: 'bar', baz: 'qux'"
+  output = """
+    export default {
+      foo: 'bar',
+      baz: 'qux'
+    };"""
+  eq toJS(input), output
+
+test "export default multiline implicit object", ->
+  input = """
+    export default
+      foo: 'bar',
+      baz: 'qux'
+    """
+  output = """
+    export default {
+      foo: 'bar',
+      baz: 'qux'
+    };"""
+  eq toJS(input), output
+
 test "export default assignment expression", ->
   input = "export default foo = 'bar'"
   output = """
