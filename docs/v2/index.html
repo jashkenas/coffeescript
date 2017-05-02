@@ -693,10 +693,44 @@ textarea {
       </ul>
     </li>
     <li class="nav-item">
-      <a href="#breaking-changes" class="nav-link" data-action="sidebar-nav">Breaking Changes From 1.x</a>
+      <a href="#unsupported" class="nav-link" data-action="sidebar-nav">Unsupported ECMAScript Features</a>
+      <ul class="nav">
+        <li class="nav-item">
+          <a href="#unsupported-let-const" class="nav-link" data-action="sidebar-nav"><code>let</code> and <code>const</code></a>
+        </li>
+        <li class="nav-item">
+          <a href="#unsupported-named-functions" class="nav-link" data-action="sidebar-nav">Named Functions and Function Declarations</a>
+        </li>
+        <li class="nav-item">
+          <a href="#unsupported-get-set" class="nav-link" data-action="sidebar-nav"><code>get</code> and <code>set</code> Shorthand Syntax</a>
+        </li>
+      </ul>
     </li>
     <li class="nav-item">
-      <a href="#unsupported" class="nav-link" data-action="sidebar-nav">Unsupported ECMAScript Features</a>
+      <a href="#breaking-changes" class="nav-link" data-action="sidebar-nav">Breaking Changes From 1.x</a>
+      <ul class="nav">
+        <li class="nav-item">
+          <a href="#breaking-changes-default-values" class="nav-link" data-action="sidebar-nav">Default Values</a>
+        </li>
+        <li class="nav-item">
+          <a href="#breaking-changes-bound-generator-functions" class="nav-link" data-action="sidebar-nav">Bound Generator Functions</a>
+        </li>
+        <li class="nav-item">
+          <a href="#breaking-changes-classes" class="nav-link" data-action="sidebar-nav">Classes</a>
+        </li>
+        <li class="nav-item">
+          <a href="#breaking-changes-bare-super" class="nav-link" data-action="sidebar-nav">Bare <code>super</code></a>
+        </li>
+        <li class="nav-item">
+          <a href="#breaking-changes-super-in-non-class-methods" class="nav-link" data-action="sidebar-nav"><code>extends</code> and <code>super</code> for Function Prototypes</a>
+        </li>
+        <li class="nav-item">
+          <a href="#breaking-changes-dynamic-class-keys-exclude-executable-class-scope" class="nav-link" data-action="sidebar-nav">Dynamic Class Keys Scope</a>
+        </li>
+        <li class="nav-item">
+          <a href="#breaking-changes-literate-coffeescript" class="nav-link" data-action="sidebar-nav">Literate CoffeeScript Parsing</a>
+        </li>
+      </ul>
     </li>
     <li class="nav-item">
       <a href="#changelog" class="nav-link" data-action="sidebar-nav">Change Log</a>
@@ -3204,11 +3238,81 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
 
         </section>
       </section>
+      <section id="unsupported">
+        <h2>Unsupported ECMAScript Features</h2>
+<p>There are a few ECMAScript features that CoffeeScript intentionally doesn’t support.</p>
+
+        <section id="unsupported-let-const">
+          <h3><code>let</code> and <code>const</code>: block-scoped and reassignment-protected variables</h3>
+<p>When CoffeeScript was designed, <code>var</code> was <a href="https://github.com/jashkenas/coffeescript/issues/238#issuecomment-153502">intentionally omitted</a>. This was to spare developers the mental housekeeping of needing to worry about variable <em>declaration</em> (<code>var foo</code>) as opposed to variable <em>assignment</em> (<code>foo = 1</code>). The CoffeeScript compiler automatically takes care of declaration for you, by generating <code>var</code> statements at the top of every function scope. This makes it impossible to accidentally declare a global variable.</p>
+<p><code>let</code> and <code>const</code> add a useful ability to JavaScript in that you can use them to declare variables within a <em>block</em> scope, for example within an <code>if</code> statement body or a <code>for</code> loop body, whereas <code>var</code> always declares variables in the scope of an entire function. When CoffeeScript 2 was designed, there was much discussion of whether this functionality was useful enough to outweigh the simplicity offered by never needing to consider variable declaration in CoffeeScript. In the end, it was decided that the simplicity was more valued. In CoffeeScript there remains only one type of variable.</p>
+<p>Keep in mind that <code>const</code> only protects you from <em>reassigning</em> a variable; it doesn’t prevent the variable’s value from changing, the way constants usually do in other languages:</p>
+<blockquote class="uneditable-code-block"><pre><code class="language-js"><span class="keyword">const</span> obj = {<span class="attr">foo</span>: <span class="string">'bar'</span>};
+obj.foo = <span class="string">'baz'</span>; <span class="comment">// Allowed!</span>
+obj = {}; <span class="comment">// Throws error</span>
+</code></pre>
+</blockquote>
+        </section>
+        <section id="unsupported-named-functions">
+          <h3>Named functions and function declarations</h3>
+<p>Newcomers to CoffeeScript often wonder how to generate the JavaScript <code>function foo() {}</code>, as opposed to the <code>foo = function() {}</code> that CoffeeScript produces. The first form is a <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function declaration</a>, and the second is a <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/function">function expression</a>. As stated above, in CoffeeScript <a href="#expressions">everything is an expression</a>, so naturally we favor the expression form. Supporting only one variant helps avoid confusing bugs that can arise from the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function#Function_declaration_hoisting">subtle differences between the two forms</a>.</p>
+<p>Technically, <code>foo = function() {}</code> is creating an anonymous function that gets assigned to a variable named <code>foo</code>. Some very early versions of CoffeeScript named this function, e.g. <code>foo = function foo() {}</code>, but this was dropped because of compatibility issues with Internet Explorer. For a while this annoyed people, as these functions would be unnamed in stack traces; but modern JavaScript runtimes <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/name">infer the names of such anonymous functions</a> from the names of the variables to which they’re assigned. Given that this is the case, and given that not all functions in function expressions can be named (for example, the functions in <code>first.fn = -&gt;; second.fn = -&gt;</code> can’t both be named <code>fn</code>) it’s simplest to just preserve the current behavior.</p>
+
+        </section>
+        <section id="unsupported-get-set">
+          <h3><code>get</code> and <code>set</code> keyword shorthand syntax</h3>
+<p><code>get</code> and <code>set</code>, as keywords preceding functions or class methods, are intentionally unimplemented in CoffeeScript.</p>
+<p>This is to avoid grammatical ambiguity, since in CoffeeScript such a construct looks identical to a function call (e.g. <code>get(function foo() {})</code>); and because there is an <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty">alternate syntax</a> that is slightly more verbose but just as effective:</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="get_set">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="get_set-coffee">screen =
+  width: 1200
+  ratio: 16/9
+
+Object.defineProperty screen, 'height',
+  get: ->
+    this.width / this.ratio
+  set: (val) ->
+    this.width = val / this.ratio
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="get_set-js">var screen;
+
+screen = {
+  width: 1200,
+  ratio: 16 / 9
+};
+
+Object.defineProperty(screen, 'height', {
+  get: function() {
+    return this.width / this.ratio;
+  },
+  set: function(val) {
+    return this.width = val / this.ratio;
+  }
+});
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="get_set" data-run="screen.height"><small>▶</small>&ensp;screen.height</button>
+    </div>
+  </div>
+  
+</aside>
+
+        </section>
+      </section>
       <section id="breaking-changes">
         <h2>Breaking Changes From CoffeeScript 1.x to 2</h2>
 <p>CoffeeScript 2 aims to output as much idiomatic ES2015+ syntax as possible with as few breaking changes from CoffeeScript 1.x as possible. Some breaking changes, unfortunately, were unavoidable.</p>
-<section id="breaking-changes-default-values">
-<h3>Default values for function parameters and destructured elements</h3>
+
+        <section id="breaking-changes-default-values">
+          <h3>Default values for function parameters and destructured elements</h3>
 <p>Per the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters">ES2015 spec regarding function default parameters</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Default_values">destructuring default values</a>, default values are only applied when a value is missing or <code>undefined</code>. In CoffeeScript 1.x, the default value would be applied in those cases but also if the  value was <code>null</code>.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="breaking_change_function_parameter_default_values">
   <div class="row">
@@ -3264,9 +3368,10 @@ a;
   </div>
   
 </aside>
-</section>
-<section id="breaking-changes-bound-generator-functions">
-<h3>Bound generator functions</h3>
+
+        </section>
+        <section id="breaking-changes-bound-generator-functions">
+          <h3>Bound generator functions</h3>
 <p>Bound generator functions, a.k.a. generator arrow functions, <a href="http://stackoverflow.com/questions/27661306/can-i-use-es6s-arrow-function-syntax-with-generators-arrow-notation">aren’t allowed in ECMAScript</a>. You can write <code>function*</code> or <code>=&gt;</code>, but not both. Therefore, CoffeeScript code like this:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="function"><span class="title">f</span> = =&gt;</span> <span class="keyword">yield</span> <span class="keyword">this</span>
 <span class="comment"># Throws a compiler error</span>
@@ -3292,9 +3397,10 @@ f = function*() {
   </div>
   
 </aside>
-</section>
-<section id="breaking-changes-classes">
-<h3>Classes are compiled to ES2015 classes</h3>
+
+        </section>
+        <section id="breaking-changes-classes">
+          <h3>Classes are compiled to ES2015 classes</h3>
 <p>ES2015 classes and their methods have some restrictions beyond those on regular functions.</p>
 <p>Class constructors can’t be invoked without <code>new</code>:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee">(<span class="class"><span class="keyword">class</span>)()</span>
@@ -3311,9 +3417,10 @@ f = function*() {
 <span class="keyword">new</span> Namespace.Klass
 <span class="comment"># Throws a TypeError at runtime</span>
 </code></pre>
-</blockquote></section>
-<section id="breaking-changes-bare-super">
-<h3>Bare <code>super</code></h3>
+</blockquote>
+        </section>
+        <section id="breaking-changes-bare-super">
+          <h3>Bare <code>super</code></h3>
 <p>Due to a syntax clash with <code>super</code> with accessors, bare <code>super</code> no longer compiles to a super call forwarding all arguments.</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>
   foo: <span class="function">-&gt;</span> <span class="keyword">super</span>
@@ -3363,9 +3470,10 @@ B = class B extends A {
   </div>
   
 </aside>
-</section>
-<section id="breaking-changes-super-in-non-class-methods">
-<h3><code>extends</code> for function prototypes, and <code>super</code> in non-class methods</h3>
+
+        </section>
+        <section id="breaking-changes-super-in-non-class-methods">
+          <h3><code>extends</code> for function prototypes, and <code>super</code> in non-class methods</h3>
 <p>CoffeeScript 1.x allowed the <code>extends</code> keyword to set up prototypal inheritance between functions, and <code>super</code> could be used manually prototype-assigned functions:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="function"><span class="title">A</span> = -&gt;</span>
 <span class="function"><span class="title">B</span> = -&gt;</span>
@@ -3456,87 +3564,25 @@ B = class B extends A {
   </div>
   
 </aside>
-</section>
-<section id="breaking-changes-dynamic-class-keys-exclude-executable-class-scope">
-<h3>Dynamic class keys exclude executable class scope</h3>
+
+        </section>
+        <section id="breaking-changes-dynamic-class-keys-exclude-executable-class-scope">
+          <h3>Dynamic class keys exclude executable class scope</h3>
 <p>Due to the hoisting required to compile to ES2015 classes, dynamic keys in class methods can’t use values from the executable class body unless the methods are assigned in prototype style.</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span>
   name = <span class="string">'method'</span>
   <span class="string">"<span class="subst">#{name}</span>"</span>: <span class="function">-&gt;</span>   <span class="comment"># This method will be named 'undefined'</span>
   @::[name] = <span class="function">-&gt;</span>  <span class="comment"># This will work; assigns to `A.prototype.method`</span>
 </code></pre>
-</blockquote></section>
-<section id="breaking-changes-literate-coffeescript">
-<h3>Literate CoffeeScript now parsed by a Markdown library</h3>
-<p>The CoffeeScript 1.x implementation of Literate CoffeeScript relies on indentation to tell apart code blocks from documentation, and as such it can get confused by Markdown features that also use indentation like lists. In CoffeeScript 2 this has been refactored to now use <a href="https://github.com/markdown-it/markdown-it">Markdown-It</a> to detect Markdown sections rather than just looking at indentation. The only significant difference is that now if you want to include a code block in documentation, as opposed to the compiler recognizing that code block as code, it must have at least one line fully unindented. Wrapping it in HTML tags is no longer sufficient.</p>
-<p>Code blocks interspersed with lists may need to be refactored. In general, code blocks should be separated by a blank line between documentation, and should maintain a consistent indentation level—so an indentation of one tab (or whatever you consider to be a tab stop, like 2 spaces or 4 spaces) should be treated as your code’s “left margin,” with all code in the file relative to that column.</p>
+</blockquote>
+        </section>
+        <section id="breaking-changes-literate-coffeescript">
+          <h3>Literate CoffeeScript parsing</h3>
+<p>CoffeeScript 2’s parsing of Literate CoffeeScript has been refactored to now be more careful about not treating indented lists as code blocks; but this means that all code blocks (unless they are to be interpreted as comments) must be separated by at least one blank line from lists.</p>
+<p>Code blocks should also now maintain a consistent indentation level—so an indentation of one tab (or whatever you consider to be a tab stop, like 2 spaces or 4 spaces) should be treated as your code’s “left margin,” with all code in the file relative to that column.</p>
+<p>Code blocks that you want to be part of the commentary, and not executed, must have at least one line (ideally the first line of the block) completely unindented.</p>
 
-      </section>
-      <section id="unsupported">
-        <h2>Unsupported ECMAScript Features</h2>
-<p>There are a few ECMAScript features that CoffeeScript intentionally doesn’t support.</p>
-<section id="unsupported-let-const">
-<h3><code>let</code> and <code>const</code>: Block-Scoped and Reassignment-Protected Variables</h3>
-<p>When CoffeeScript was designed, <code>var</code> was <a href="https://github.com/jashkenas/coffeescript/issues/238#issuecomment-153502">intentionally omitted</a>. This was to spare developers the mental housekeeping of needing to worry about variable <em>declaration</em> (<code>var foo</code>) as opposed to variable <em>assignment</em> (<code>foo = 1</code>). The CoffeeScript compiler automatically takes care of declaration for you, by generating <code>var</code> statements at the top of every function scope. This makes it impossible to accidentally declare a global variable.</p>
-<p><code>let</code> and <code>const</code> add a useful ability to JavaScript in that you can use them to declare variables within a <em>block</em> scope, for example within an <code>if</code> statement body or a <code>for</code> loop body, whereas <code>var</code> always declares variables in the scope of an entire function. When CoffeeScript 2 was designed, there was much discussion of whether this functionality was useful enough to outweigh the simplicity offered by never needing to consider variable declaration in CoffeeScript. In the end, it was decided that the simplicity was more valued. In CoffeeScript there remains only one type of variable.</p>
-<p>Keep in mind that <code>const</code> only protects you from <em>reassigning</em> a variable; it doesn’t prevent the variable’s value from changing, the way constants usually do in other languages:</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-js"><span class="keyword">const</span> obj = {<span class="attr">foo</span>: <span class="string">'bar'</span>};
-obj.foo = <span class="string">'baz'</span>; <span class="comment">// Allowed!</span>
-obj = {}; <span class="comment">// Throws error</span>
-</code></pre>
-</blockquote></section>
-<section id="unsupported-named-functions">
-<h3>Named Functions and Function Declarations</h3>
-<p>Newcomers to CoffeeScript often wonder how to generate the JavaScript <code>function foo() {}</code>, as opposed to the <code>foo = function() {}</code> that CoffeeScript produces. The first form is a <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function">function declaration</a>, and the second is a <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/function">function expression</a>. As stated above, in CoffeeScript <a href="#expressions">everything is an expression</a>, so naturally we favor the expression form. Supporting only one variant helps avoid confusing bugs that can arise from the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function#Function_declaration_hoisting">subtle differences between the two forms</a>.</p>
-<p>Technically, <code>foo = function() {}</code> is creating an anonymous function that gets assigned to a variable named <code>foo</code>. Some very early versions of CoffeeScript named this function, e.g. <code>foo = function foo() {}</code>, but this was dropped because of compatibility issues with Internet Explorer. For a while this annoyed people, as these functions would be unnamed in stack traces; but modern JavaScript runtimes <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/name">infer the names of such anonymous functions</a> from the names of the variables to which they’re assigned. Given that this is the case, and given that not all functions in function expressions can be named (for example, the functions in <code>first.fn = -&gt;; second.fn = -&gt;</code> can’t both be named <code>fn</code>) it’s simplest to just preserve the current behavior.</p>
-</section>
-<section id="unsupported-get-set">
-<h3><code>get</code> and <code>set</code> Keyword Shorthand Syntax</h3>
-<p><code>get</code> and <code>set</code>, as keywords preceding functions or class methods, are intentionally unimplemented in CoffeeScript.</p>
-<p>This is to avoid grammatical ambiguity, since in CoffeeScript such a construct looks identical to a function call (e.g. <code>get(function foo() {})</code>); and because there is an <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty">alternate syntax</a> that is slightly more verbose but just as effective:</p>
-<aside class="code-example container-fluid bg-ribbed-dark" data-example="get_set">
-  <div class="row">
-    <div class="col-md-6 coffeescript-input-column">
-      <textarea class="coffeescript-input" id="get_set-coffee">screen =
-  width: 1200
-  ratio: 16/9
-
-Object.defineProperty screen, 'height',
-  get: ->
-    this.width / this.ratio
-  set: (val) ->
-    this.width = val / this.ratio
-</textarea>
-    </div>
-    <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="get_set-js">var screen;
-
-screen = {
-  width: 1200,
-  ratio: 16 / 9
-};
-
-Object.defineProperty(screen, 'height', {
-  get: function() {
-    return this.width / this.ratio;
-  },
-  set: function(val) {
-    return this.width = val / this.ratio;
-  }
-});
-</textarea>
-    </div>
-  </div>
-  
-  <div class="row">
-    <div class="col-xs-12 text-xs-right">
-      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="get_set" data-run="screen.height"><small>▶</small>&ensp;screen.height</button>
-    </div>
-  </div>
-  
-</aside>
-</section>
-
+        </section>
       </section>
       <section id="changelog">
         <h2>Change Log</h2>
