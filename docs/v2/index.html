@@ -1605,17 +1605,20 @@ lyrics = (function() {
     <div class="col-md-6 coffeescript-input-column">
       <textarea class="coffeescript-input" id="do-coffee">for filename in list
   do (filename) ->
-    fs.readFile filename, (err, contents) ->
-      compile filename, contents.toString()
+    if filename not in ['.DS_Store', 'Thumbs.db', 'ehthumbs.db']
+      fs.readFile filename, (err, contents) ->
+        compile filename, contents.toString()
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="do-js">var filename, fn, i, len;
 
 fn = function(filename) {
-  return fs.readFile(filename, function(err, contents) {
-    return compile(filename, contents.toString());
-  });
+  if (filename !== '.DS_Store' && filename !== 'Thumbs.db' && filename !== 'ehthumbs.db') {
+    return fs.readFile(filename, function(err, contents) {
+      return compile(filename, contents.toString());
+    });
+  }
 };
 for (i = 0, len = list.length; i < len; i++) {
   filename = list[i];
