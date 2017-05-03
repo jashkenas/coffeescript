@@ -6,12 +6,6 @@
 # * Regexen
 # * Heregexen
 
-# Helper function
-toJS = (str) ->
-  CoffeeScript.compile str, bare: yes
-  .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace
-
-
 test "basic regular expression literals", ->
   ok 'a'.match(/a/)
   ok 'a'.match /a/

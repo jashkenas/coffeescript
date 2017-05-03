@@ -36,12 +36,6 @@
 # CoffeeScript also supports optional commas within `{ … }`.
 
 
-# Helper function
-toJS = (str) ->
-  CoffeeScript.compile str, bare: yes
-  .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace
-
-
 # Import statements
 
 test "backticked import statement", ->
