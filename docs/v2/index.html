@@ -1321,8 +1321,8 @@ inner = changeNumbers();
         </section>
         <section id="conditionals">
           <h2>If, Else, Unless, and Conditional Assignment</h2>
-<p><strong>If/else</strong> statements can be written without the use of parentheses and curly brackets. As with functions and other block expressions, multi-line conditionals are delimited by indentation. There’s also a handy postfix form, with the <code>if</code> or <code>unless</code> at the end.</p>
-<p>CoffeeScript can compile <strong>if</strong> statements into JavaScript expressions, using the ternary operator when possible, and closure wrapping otherwise. There is no explicit ternary statement in CoffeeScript — you simply use a regular <strong>if</strong> statement on a single line.</p>
+<p><code>if</code>/<code>else</code> statements can be written without the use of parentheses and curly brackets. As with functions and other block expressions, multi-line conditionals are delimited by indentation. There’s also a handy postfix form, with the <code>if</code> or <code>unless</code> at the end.</p>
+<p>CoffeeScript can compile <code>if</code> statements into JavaScript expressions, using the ternary operator when possible, and closure wrapping otherwise. There is no explicit ternary statement in CoffeeScript — you simply use a regular <code>if</code> statement on a single line.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="conditionals">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
@@ -1361,7 +1361,7 @@ date = friday ? sue : jill;
         </section>
         <section id="splats">
           <h2>Splats…</h2>
-<p>The JavaScript <strong>arguments object</strong> is a useful way to work with functions that accept variable numbers of arguments. CoffeeScript provides splats <code>...</code>, both for function definition as well as invocation, making variable numbers of arguments a little bit more palatable.</p>
+<p>The JavaScript <code>arguments</code> object is a useful way to work with functions that accept variable numbers of arguments. CoffeeScript provides splats <code>...</code>, both for function definition as well as invocation, making variable numbers of arguments a little bit more palatable.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="splats">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
@@ -1427,7 +1427,7 @@ alert("The Field: " + rest);
         </section>
         <section id="loops">
           <h2>Loops and Comprehensions</h2>
-<p>Most of the loops you’ll write in CoffeeScript will be <strong>comprehensions</strong> over arrays, objects, and ranges. Comprehensions replace (and compile into) <strong>for</strong> loops, with optional guard clauses and the value of the current array index. Unlike for loops, array comprehensions are expressions, and can be returned and assigned.</p>
+<p>Most of the loops you’ll write in CoffeeScript will be <strong>comprehensions</strong> over arrays, objects, and ranges. Comprehensions replace (and compile into) <code>for</code> loops, with optional guard clauses and the value of the current array index. Unlike for loops, array comprehensions are expressions, and can be returned and assigned.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="array_comprehensions">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
@@ -1472,7 +1472,7 @@ for (l = 0, len2 = foods.length; l < len2; l++) {
   </div>
   
 </aside>
-<p>Comprehensions should be able to handle most places where you otherwise would use a loop, <strong>each</strong>/<strong>forEach</strong>, <strong>map</strong>, or <strong>select</strong>/<strong>filter</strong>, for example:<br>
+<p>Comprehensions should be able to handle most places where you otherwise would use a loop, <code>each</code>/<code>forEach</code>, <code>map</code>, or <code>select</code>/<code>filter</code>, for example:<br>
 <code>shortNames = (name for name in list when name.length &lt; 5)</code><br>
 If you know the start and end of your loop, or would like to step through in fixed-size increments, you can use a range to specify the start and end of your comprehension.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="range_comprehensions">
@@ -1549,7 +1549,7 @@ ages = (function() {
 </aside>
 <p>If you would like to iterate over just the keys that are defined on the object itself, by adding a <code>hasOwnProperty</code> check to avoid properties that may be inherited from the prototype, use <code>for own key, value of object</code>.</p>
 <p>To iterate a generator function, use <code>from</code>. See <a href="#generator-iteration">Generator Functions</a>.</p>
-<p>The only low-level loop that CoffeeScript provides is the <strong>while</strong> loop. The main difference from JavaScript is that the <strong>while</strong> loop can be used as an expression, returning an array containing the result of each iteration through the loop.</p>
+<p>The only low-level loop that CoffeeScript provides is the <code>while</code> loop. The main difference from JavaScript is that the <code>while</code> loop can be used as an expression, returning an array containing the result of each iteration through the loop.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="while">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
@@ -1598,7 +1598,7 @@ lyrics = (function() {
   </div>
   
 </aside>
-<p>For readability, the <strong>until</strong> keyword is equivalent to <code>while not</code>, and the <strong>loop</strong> keyword is equivalent to <code>while true</code>.</p>
+<p>For readability, the <code>until</code> keyword is equivalent to <code>while not</code>, and the <code>loop</code> keyword is equivalent to <code>while true</code>.</p>
 <p>When using a JavaScript loop to generate functions, it’s common to insert a closure wrapper in order to ensure that loop variables are closed over, and all the generated functions don’t just share the final values. CoffeeScript provides the <code>do</code> keyword, which immediately invokes a passed function, forwarding any arguments.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="do">
   <div class="row">
@@ -1801,7 +1801,7 @@ globals = ((function() {
   </div>
   
 </aside>
-<p>As well as silly things, like passing a <strong>try/catch</strong> statement directly into a function call:</p>
+<p>As well as silly things, like passing a <code>try</code>/<code>catch</code> statement directly into a function call:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="expressions_try">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
@@ -1843,7 +1843,7 @@ alert((function() {
 <p>Because the <code>==</code> operator frequently causes undesirable coercion, is intransitive, and has a different meaning than in other languages, CoffeeScript compiles <code>==</code> into <code>===</code>, and <code>!=</code> into <code>!==</code>. In addition, <code>is</code> compiles into <code>===</code>, and <code>isnt</code> into <code>!==</code>.</p>
 <p>You can use <code>not</code> as an alias for <code>!</code>.</p>
 <p>For logic, <code>and</code> compiles to <code>&amp;&amp;</code>, and <code>or</code> into <code>||</code>.</p>
-<p>Instead of a newline or semicolon, <code>then</code> can be used to separate conditions from expressions, in <strong>while</strong>, <strong>if</strong>/<strong>else</strong>, and <strong>switch</strong>/<strong>when</strong> statements.</p>
+<p>Instead of a newline or semicolon, <code>then</code> can be used to separate conditions from expressions, in <code>while</code>, <code>if</code>/<code>else</code>, and <code>switch</code>/<code>when</code> statements.</p>
 <p>As in <a href="http://yaml.org/">YAML</a>, <code>on</code> and <code>yes</code> are the same as boolean <code>true</code>, while <code>off</code> and <code>no</code> are boolean <code>false</code>.</p>
 <p><code>unless</code> can be used as the inverse of <code>if</code>.</p>
 <p>As a shortcut for <code>this.property</code>, you can use <code>@property</code>.</p>
@@ -2672,8 +2672,8 @@ Teenager = class Teenager {
         </section>
         <section id="switch">
           <h2>Switch/When/Else</h2>
-<p><strong>Switch</strong> statements in JavaScript are a bit awkward. You need to remember to <strong>break</strong> at the end of every <strong>case</strong> statement to avoid accidentally falling through to the default case. CoffeeScript prevents accidental fall-through, and can convert the <code>switch</code> into a returnable, assignable expression. The format is: <code>switch</code> condition, <code>when</code> clauses, <code>else</code> the default case.</p>
-<p>As in Ruby, <strong>switch</strong> statements in CoffeeScript can take multiple values for each <strong>when</strong> clause. If any of the values match, the clause runs.</p>
+<p><code>switch</code> statements in JavaScript are a bit awkward. You need to remember to <code>break</code> at the end of every <code>case</code> statement to avoid accidentally falling through to the default case. CoffeeScript prevents accidental fall-through, and can convert the <code>switch</code> into a returnable, assignable expression. The format is: <code>switch</code> condition, <code>when</code> clauses, <code>else</code> the default case.</p>
+<p>As in Ruby, <code>switch</code> statements in CoffeeScript can take multiple values for each <code>when</code> clause. If any of the values match, the clause runs.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="switch">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
@@ -2718,7 +2718,7 @@ Teenager = class Teenager {
   </div>
   
 </aside>
-<p>Switch statements can also be used without a control expression, turning them in to a cleaner alternative to if/else chains.</p>
+<p><code>switch</code> statements can also be used without a control expression, turning them in to a cleaner alternative to <code>if</code>/<code>else</code> chains.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="switch_with_no_expression">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
@@ -2760,7 +2760,7 @@ grade = (function() {
         </section>
         <section id="try">
           <h2>Try/Catch/Finally</h2>
-<p>Try-expressions have the same semantics as try-statements in JavaScript, though in CoffeeScript, you may omit <em>both</em> the catch and finally parts. The catch part may also omit the error parameter if it is not needed.</p>
+<p><code>try</code> expressions have the same semantics as <code>try</code> statements in JavaScript, though in CoffeeScript, you may omit <em>both</em> the catch and finally parts. The catch part may also omit the error parameter if it is not needed.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="try">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">

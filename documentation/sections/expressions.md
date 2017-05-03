@@ -20,7 +20,7 @@ Things that would otherwise be statements in JavaScript, when used as part of an
 codeFor('expressions_comprehension', 'globals')
 ```
 
-As well as silly things, like passing a **try/catch** statement directly into a function call:
+As well as silly things, like passing a `try`/`catch` statement directly into a function call:
 
 ```
 codeFor('expressions_try', true)

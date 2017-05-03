@@ -6,7 +6,7 @@ You can use `not` as an alias for `!`.
 
 For logic, `and` compiles to `&&`, and `or` into `||`.
 
-Instead of a newline or semicolon, `then` can be used to separate conditions from expressions, in **while**, **if**/**else**, and **switch**/**when** statements.
+Instead of a newline or semicolon, `then` can be used to separate conditions from expressions, in `while`, `if`/`else`, and `switch`/`when` statements.
 
 As in [YAML](http://yaml.org/), `on` and `yes` are the same as boolean `true`, while `off` and `no` are boolean `false`.
 
