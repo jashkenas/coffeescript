@@ -719,13 +719,7 @@ textarea {
           <a href="#breaking-changes-classes" class="nav-link" data-action="sidebar-nav">Classes</a>
         </li>
         <li class="nav-item">
-          <a href="#breaking-changes-bare-super" class="nav-link" data-action="sidebar-nav">Bare <code>super</code></a>
-        </li>
-        <li class="nav-item">
-          <a href="#breaking-changes-super-in-non-class-methods" class="nav-link" data-action="sidebar-nav"><code>extends</code> and <code>super</code> for Function Prototypes</a>
-        </li>
-        <li class="nav-item">
-          <a href="#breaking-changes-dynamic-class-keys-exclude-executable-class-scope" class="nav-link" data-action="sidebar-nav">Dynamic Class Keys Scope</a>
+          <a href="#breaking-changes-super-extends" class="nav-link" data-action="sidebar-nav"><code>super</code> and <code>extends</code></a>
         </li>
         <li class="nav-item">
           <a href="#breaking-changes-literate-coffeescript" class="nav-link" data-action="sidebar-nav">Literate CoffeeScript Parsing</a>
@@ -3420,11 +3414,17 @@ f = function*() {
 <span class="keyword">new</span> Namespace.Klass
 <span class="comment"># Throws a TypeError at runtime</span>
 </code></pre>
+</blockquote><p>Due to the hoisting required to compile to ES2015 classes, dynamic keys in class methods can’t use values from the executable class body unless the methods are assigned in prototype style.</p>
+<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span>
+  name = <span class="string">'method'</span>
+  <span class="string">"<span class="subst">#{name}</span>"</span>: <span class="function">-&gt;</span>   <span class="comment"># This method will be named 'undefined'</span>
+  @::[name] = <span class="function">-&gt;</span>  <span class="comment"># This will work; assigns to `A.prototype.method`</span>
+</code></pre>
 </blockquote>
         </section>
-        <section id="breaking-changes-bare-super">
-          <h3>Bare <code>super</code></h3>
-<p>Due to a syntax clash with <code>super</code> with accessors, bare <code>super</code> no longer compiles to a super call forwarding all arguments.</p>
+        <section id="breaking-changes-super-extends">
+          <h3><code>super</code> and <code>extends</code></h3>
+<p>Due to a syntax clash with <code>super</code> with accessors, “bare” <code>super</code> (the keyword <code>super</code> without parentheses) no longer compiles to a super call forwarding all arguments.</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>
   foo: <span class="function">-&gt;</span> <span class="keyword">super</span>
   <span class="comment"># Throws a compiler error</span>
@@ -3473,10 +3473,6 @@ B = class B extends A {
   </div>
   
 </aside>
-
-        </section>
-        <section id="breaking-changes-super-in-non-class-methods">
-          <h3><code>extends</code> for function prototypes, and <code>super</code> in non-class methods</h3>
 <p>CoffeeScript 1.x allowed the <code>extends</code> keyword to set up prototypal inheritance between functions, and <code>super</code> could be used manually prototype-assigned functions:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="function"><span class="title">A</span> = -&gt;</span>
 <span class="function"><span class="title">B</span> = -&gt;</span>
@@ -3568,16 +3564,6 @@ B = class B extends A {
   
 </aside>
 
-        </section>
-        <section id="breaking-changes-dynamic-class-keys-exclude-executable-class-scope">
-          <h3>Dynamic class keys exclude executable class scope</h3>
-<p>Due to the hoisting required to compile to ES2015 classes, dynamic keys in class methods can’t use values from the executable class body unless the methods are assigned in prototype style.</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span>
-  name = <span class="string">'method'</span>
-  <span class="string">"<span class="subst">#{name}</span>"</span>: <span class="function">-&gt;</span>   <span class="comment"># This method will be named 'undefined'</span>
-  @::[name] = <span class="function">-&gt;</span>  <span class="comment"># This will work; assigns to `A.prototype.method`</span>
-</code></pre>
-</blockquote>
         </section>
         <section id="breaking-changes-literate-coffeescript">
           <h3>Literate CoffeeScript parsing</h3>

@@ -1,4 +1,24 @@
-### `extends` for function prototypes, and `super` in non-class methods
+### `super` and `extends`
+
+Due to a syntax clash with `super` with accessors, “bare” `super` (the keyword `super` without parentheses) no longer compiles to a super call forwarding all arguments.
+
+```coffee
+class B extends A
+  foo: -> super
+  # Throws a compiler error
+```
+
+Arguments can be forwarded explicitly using splats:
+
+```
+codeFor('breaking_change_super_with_arguments')
+```
+
+Or if you know that the parent function doesn’t require arguments, just call `super()`:
+
+```
+codeFor('breaking_change_super_without_arguments')
+```
 
 CoffeeScript 1.x allowed the `extends` keyword to set up prototypal inheritance between functions, and `super` could be used manually prototype-assigned functions:
 
