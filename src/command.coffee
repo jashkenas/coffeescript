@@ -35,6 +35,7 @@ SWITCHES = [
   ['-b', '--bare',            'compile without a top-level function wrapper']
   ['-c', '--compile',         'compile to JavaScript and save as .js files']
   ['-e', '--eval',            'pass a string from the command line as input']
+  ['-E', '--eval-print',      'evaluate and print the result']
   ['-h', '--help',            'display this help message']
   ['-i', '--interactive',     'run an interactive CoffeeScript REPL']
   ['-j', '--join [FILE]',     'concatenate the source CoffeeScript before compiling']
@@ -77,7 +78,7 @@ exports.run = ->
   return version()                              if opts.version
   return require('./repl').start(replCliOpts)   if opts.interactive
   return compileStdio()                         if opts.stdio
-  return compileScript null, opts.arguments[0]  if opts.eval
+  return compileScript null, opts.arguments[0]  if opts.eval or opts['eval-print']
   return require('./repl').start(replCliOpts)   unless opts.arguments.length
   literals = if opts.run then opts.arguments.splice 1 else []
   process.argv = process.argv[0..1].concat literals
@@ -104,7 +105,14 @@ exports.run = ->
     source = path.resolve source
     compilePath source, yes, source
 
+ADD_GLOBAL_PATHS = "
+  process.env.NODE_PATH = (process.env.NODE_PATH || '')
+    + require('path').delimiter
+    + require('path').resolve(process.execPath, '..', '..', 'lib', 'node_modules');
+  require('module')._initPaths();
+"
 makePrelude = (requires) ->
+  ADD_GLOBAL_PATHS +
   requires.map (module) ->
     [_, name, module] = match if match = module.match(/^(.*)=(.*)$/)
     name ||= helpers.baseFileName module, yes, useWinPathSep
@@ -178,6 +186,7 @@ compileScript = (file, input, base = null) ->
     else if o.run
       CoffeeScript.register()
       CoffeeScript.eval opts.prelude, t.options if opts.prelude
+      t.input = "console.log(#{t.input})" if o['eval-print']
       CoffeeScript.run t.input, t.options
     else if o.join and t.file isnt o.join
       t.input = helpers.invertLiterate t.input if helpers.isLiterate file
