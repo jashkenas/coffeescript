@@ -620,6 +620,9 @@ textarea {
           <a href="#destructuring" class="nav-link" data-action="sidebar-nav">Destructuring Assignment</a>
         </li>
         <li class="nav-item">
+          <a href="#chaining" class="nav-link" data-action="sidebar-nav">Chaining Function Calls</a>
+        </li>
+        <li class="nav-item">
           <a href="#fat-arrow" class="nav-link" data-action="sidebar-nav">Bound (Fat Arrow) Functions</a>
         </li>
         <li class="nav-item">
@@ -2128,6 +2131,31 @@ zip = typeof lottery.drawWinner === "function" ? (ref = lottery.drawWinner().add
 </tr>
 </tbody>
 </table>
+
+        </section>
+        <section id="chaining">
+          <h2>Chaining Function Calls</h2>
+<p>Leading <code>.</code> closes all open calls, allowing for simpler chaining syntax.</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="chaining">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="chaining-coffee">$ 'body'
+.click (e) ->
+  $ '.box'
+  .fadeIn 'fast'
+  .addClass '.active'
+.css 'background', 'white'
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="chaining-js">$('body').click(function(e) {
+  return $('.box').fadeIn('fast').addClass('.active');
+}).css('background', 'white');
+</textarea>
+    </div>
+  </div>
+  
+</aside>
 
         </section>
         <section id="destructuring">
@@ -3848,28 +3876,6 @@ six = -&gt;
 <li>When requiring CoffeeScript files in Node you must now explicitly register the compiler. This can be done with <code>require 'coffeescript/register'</code> or <code>CoffeeScript.register()</code>. Also for configuration such as Mocha’s, use <strong>coffeescript/register</strong>.</li>
 <li>Improved error messages, source maps and stack traces. Source maps now use the updated <code>//#</code> syntax.</li>
 <li>Leading <code>.</code> now closes all open calls, allowing for simpler chaining syntax.</li>
-</ul>
-<aside class="code-example container-fluid bg-ribbed-dark" data-example="chaining">
-  <div class="row">
-    <div class="col-md-6 coffeescript-input-column">
-      <textarea class="coffeescript-input" id="chaining-coffee">$ 'body'
-.click (e) ->
-  $ '.box'
-  .fadeIn 'fast'
-  .addClass '.active'
-.css 'background', 'white'
-</textarea>
-    </div>
-    <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="chaining-js">$('body').click(function(e) {
-  return $('.box').fadeIn('fast').addClass('.active');
-}).css('background', 'white');
-</textarea>
-    </div>
-  </div>
-  
-</aside>
-<ul>
 <li>Added <code>**</code>, <code>//</code> and <code>%%</code> operators and <code>...</code> expansion in parameter lists and destructuring expressions.</li>
 <li>Multiline strings are now joined by a single space and ignore all indentation. A backslash at the end of a line can denote the amount of whitespace between lines, in both strings and heredocs. Backslashes correctly escape whitespace in block regexes.</li>
 <li>Closing brackets can now be indented and therefore no longer cause unexpected error.</li>
