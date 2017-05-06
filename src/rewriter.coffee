@@ -154,7 +154,7 @@ exports.Rewriter = class Rewriter
       inImplicitObject  = -> inImplicit() and stackTop()?[0] is '{'
       # Unclosed control statement inside implicit parens (like
       # class declaration or if-conditionals)
-      inImplicitControl = -> inImplicit and stackTop()?[0] is 'CONTROL'
+      inImplicitControl = -> inImplicit() and stackTop()?[0] is 'CONTROL'
 
       startImplicitCall = (j) ->
         idx = j ? i
