@@ -216,13 +216,10 @@ test "#3132: Format single-line block comment nicely", ->
   input = """
   ### Single-line block comment without additional space here => ###"""
 
-  result = """
-
+  output = """
   /* Single-line block comment without additional space here => */
-
-
   """
-  eq CoffeeScript.compile(input, bare: on), result
+  eq toJS(input), output
 
 test "#3132: Format multi-line block comment nicely", ->
   input = """
@@ -232,17 +229,14 @@ test "#3132: Format multi-line block comment nicely", ->
   # comment
   ###"""
 
-  result = """
-
+  output = """
   /*
    * Multi-line
    * block
    * comment
    */
-
-
   """
-  eq CoffeeScript.compile(input, bare: on), result
+  eq toJS(input), output
 
 test "#3132: Format simple block comment nicely", ->
   input = """
@@ -251,17 +245,14 @@ test "#3132: Format simple block comment nicely", ->
   Preceding hash
   ###"""
 
-  result = """
-
+  output = """
   /*
   No
   Preceding hash
    */
-
-
   """
 
-  eq CoffeeScript.compile(input, bare: on), result
+  eq toJS(input), output
 
 test "#3132: Format indented block-comment nicely", ->
   input = """
@@ -272,7 +263,7 @@ test "#3132: Format indented block-comment nicely", ->
     ###
     1"""
 
-  result = """
+  output = """
   var fn;
 
   fn = function() {
@@ -283,9 +274,8 @@ test "#3132: Format indented block-comment nicely", ->
      */
     return 1;
   };
-
   """
-  eq CoffeeScript.compile(input, bare: on), result
+  eq toJS(input), output
 
 # Although adequately working, block comment-placement is not yet perfect.
 # (Considering a case where multiple variables have been declared …)
@@ -299,8 +289,7 @@ test "#3132: Format jsdoc-style block-comment nicely", ->
   fn = () -> 1
   """
 
-  result = """
-
+  output = """
   /**
    * Multiline for jsdoc-"@doctags"
    *
@@ -310,10 +299,8 @@ test "#3132: Format jsdoc-style block-comment nicely", ->
 
   fn = function() {
     return 1;
-  };
-
-  """
-  eq CoffeeScript.compile(input, bare: on), result
+  };"""
+  eq toJS(input), output
 
 # Although adequately working, block comment-placement is not yet perfect.
 # (Considering a case where multiple variables have been declared …)
@@ -327,8 +314,7 @@ test "#3132: Format hand-made (raw) jsdoc-style block-comment nicely", ->
   fn = () -> 1
   """
 
-  result = """
-
+  output = """
   /**
    * Multiline for jsdoc-"@doctags"
    *
@@ -338,10 +324,8 @@ test "#3132: Format hand-made (raw) jsdoc-style block-comment nicely", ->
 
   fn = function() {
     return 1;
-  };
-
-  """
-  eq CoffeeScript.compile(input, bare: on), result
+  };"""
+  eq toJS(input), output
 
 # Although adequately working, block comment-placement is not yet perfect.
 # (Considering a case where multiple variables have been declared …)
@@ -368,8 +352,7 @@ test "#3132: Place block-comments nicely", ->
 
   """
 
-  result = """
-
+  output = """
   /**
    * A dummy class definition
    *
@@ -399,10 +382,8 @@ test "#3132: Place block-comments nicely", ->
 
     return DummyClass;
 
-  })();
-
-  """
-  eq CoffeeScript.compile(input, bare: on), result
+  })();"""
+  eq toJS(input), output
 
 test "#3638: Demand a whitespace after # symbol", ->
   input = """
@@ -411,17 +392,13 @@ test "#3638: Demand a whitespace after # symbol", ->
   #whitespace
   ###"""
 
-  result = """
-
+  output = """
   /*
   #No
   #whitespace
-   */
+   */"""
 
-
-  """
-
-  eq CoffeeScript.compile(input, bare: on), result
+  eq toJS(input), output
 
 test "#3761: Multiline comment at end of an object", ->
   anObject =
