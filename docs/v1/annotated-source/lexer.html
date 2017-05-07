@@ -121,7 +121,7 @@ a token is produced, we consume the match, and start again. Tokens are in the
 form:</p>
 <pre><code>[tag, value, locationData]
 </code></pre><p>where locationData is {first_line, first_column, last_line, last_column}, which is a
-format that can be fed directly into <a href="http://github.com/zaach/jison">Jison</a>.  These
+format that can be fed directly into <a href="https://github.com/zaach/jison">Jison</a>.  These
 are read by jison in the <code>parser.lexer</code> function defined in coffee-script.coffee.</p>
 
             </div>
@@ -219,6 +219,7 @@ it has consumed.</p>
     @seenFor    = <span class="hljs-literal">no</span>             <span class="hljs-comment"># Used to recognize FORIN, FOROF and FORFROM tokens.</span>
     @seenImport = <span class="hljs-literal">no</span>             <span class="hljs-comment"># Used to recognize IMPORT FROM? AS? tokens.</span>
     @seenExport = <span class="hljs-literal">no</span>             <span class="hljs-comment"># Used to recognize EXPORT FROM? AS? tokens.</span>
+    @importSpecifierList = <span class="hljs-literal">no</span>    <span class="hljs-comment"># Used to identify when in an IMPORT {...} FROM? ...</span>
     @exportSpecifierList = <span class="hljs-literal">no</span>    <span class="hljs-comment"># Used to identify when in an EXPORT {...} FROM? ...</span>
 
     @chunkLine =
@@ -380,10 +381,10 @@ though <code>is</code> means <code>===</code> otherwise.</p>
       <span class="hljs-keyword">if</span> @tag() <span class="hljs-keyword">in</span> [<span class="hljs-string">'DEFAULT'</span>, <span class="hljs-string">'IMPORT_ALL'</span>, <span class="hljs-string">'IDENTIFIER'</span>]
         @token <span class="hljs-string">'AS'</span>, id
         <span class="hljs-keyword">return</span> id.length
-    <span class="hljs-keyword">if</span> id <span class="hljs-keyword">is</span> <span class="hljs-string">'as'</span> <span class="hljs-keyword">and</span> @seenExport <span class="hljs-keyword">and</span> @tag() <span class="hljs-keyword">is</span> <span class="hljs-string">'IDENTIFIER'</span>
+    <span class="hljs-keyword">if</span> id <span class="hljs-keyword">is</span> <span class="hljs-string">'as'</span> <span class="hljs-keyword">and</span> @seenExport <span class="hljs-keyword">and</span> @tag() <span class="hljs-keyword">in</span> [<span class="hljs-string">'IDENTIFIER'</span>, <span class="hljs-string">'DEFAULT'</span>]
       @token <span class="hljs-string">'AS'</span>, id
       <span class="hljs-keyword">return</span> id.length
-    <span class="hljs-keyword">if</span> id <span class="hljs-keyword">is</span> <span class="hljs-string">'default'</span> <span class="hljs-keyword">and</span> @seenExport
+    <span class="hljs-keyword">if</span> id <span class="hljs-keyword">is</span> <span class="hljs-string">'default'</span> <span class="hljs-keyword">and</span> @seenExport <span class="hljs-keyword">and</span> @tag() <span class="hljs-keyword">in</span> [<span class="hljs-string">'EXPORT'</span>, <span class="hljs-string">'AS'</span>]
       @token <span class="hljs-string">'DEFAULT'</span>, id
       <span class="hljs-keyword">return</span> id.length
 
@@ -742,6 +743,8 @@ can close multiple indents, so we need to know how far in we happen to be.</p>
     indent = match[<span class="hljs-number">0</span>]
 
     @seenFor = <span class="hljs-literal">no</span>
+    @seenImport = <span class="hljs-literal">no</span> <span class="hljs-keyword">unless</span> @importSpecifierList
+    @seenExport = <span class="hljs-literal">no</span> <span class="hljs-keyword">unless</span> @exportSpecifierList
 
     size = indent.length - <span class="hljs-number">1</span> - indent.lastIndexOf <span class="hljs-string">'\n'</span>
     noNewlines = @unfinished()
@@ -923,7 +926,11 @@ parentheses that indicate a method call from regular parentheses, and so on.</p>
         @error message, origin[<span class="hljs-number">2</span>] <span class="hljs-keyword">if</span> message
       <span class="hljs-keyword">return</span> value.length <span class="hljs-keyword">if</span> skipToken
 
-    <span class="hljs-keyword">if</span> value <span class="hljs-keyword">is</span> <span class="hljs-string">'{'</span> <span class="hljs-keyword">and</span> prev?[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'EXPORT'</span>
+    <span class="hljs-keyword">if</span> value <span class="hljs-keyword">is</span> <span class="hljs-string">'{'</span> <span class="hljs-keyword">and</span> @seenImport
+      @importSpecifierList = <span class="hljs-literal">yes</span>
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> @importSpecifierList <span class="hljs-keyword">and</span> value <span class="hljs-keyword">is</span> <span class="hljs-string">'}'</span>
+      @importSpecifierList = <span class="hljs-literal">no</span>
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> value <span class="hljs-keyword">is</span> <span class="hljs-string">'{'</span> <span class="hljs-keyword">and</span> prev?[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'EXPORT'</span>
       @exportSpecifierList = <span class="hljs-literal">yes</span>
     <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> @exportSpecifierList <span class="hljs-keyword">and</span> value <span class="hljs-keyword">is</span> <span class="hljs-string">'}'</span>
       @exportSpecifierList = <span class="hljs-literal">no</span>
@@ -1571,10 +1578,14 @@ not specified, the length of <code>value</code> will be used.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  validateEscapes: <span class="hljs-function"><span class="hljs-params">(str, options = {})</span> -&gt;</span>
-    match = INVALID_ESCAPE.exec str
+    invalidEscapeRegex =
+      <span class="hljs-keyword">if</span> options.isRegex
+        REGEX_INVALID_ESCAPE
+      <span class="hljs-keyword">else</span>
+        STRING_INVALID_ESCAPE
+    match = invalidEscapeRegex.exec str
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">unless</span> match
     [[], before, octal, hex, unicode] = match
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">if</span> options.isRegex <span class="hljs-keyword">and</span> octal <span class="hljs-keyword">and</span> octal.charAt(<span class="hljs-number">0</span>) <span class="hljs-keyword">isnt</span> <span class="hljs-string">'0'</span>
     message =
       <span class="hljs-keyword">if</span> octal
         <span class="hljs-string">"octal escape sequences are not allowed"</span>
@@ -2040,10 +2051,18 @@ POSSIBLY_DIVISION   = <span class="hljs-regexp">/// ^ /=?\s ///</span></pre></di
 
 LINE_CONTINUER      = <span class="hljs-regexp">/// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///</span>
 
-INVALID_ESCAPE      = <span class="hljs-regexp">///
+STRING_INVALID_ESCAPE = <span class="hljs-regexp">///
   ( (?:^|[^\\]) (?:\\\\)* )        <span class="hljs-comment"># make sure the escape isn’t escaped</span>
   \\ (
      ?: (0[0-7]|[1-7])             <span class="hljs-comment"># octal escape</span>
+      | (x(?![\da-fA-F]{2}).{0,2}) <span class="hljs-comment"># hex escape</span>
+      | (u(?![\da-fA-F]{4}).{0,4}) <span class="hljs-comment"># unicode escape</span>
+  )
+///</span>
+REGEX_INVALID_ESCAPE = <span class="hljs-regexp">///
+  ( (?:^|[^\\]) (?:\\\\)* )        <span class="hljs-comment"># make sure the escape isn’t escaped</span>
+  \\ (
+     ?: (0[0-7])                   <span class="hljs-comment"># octal escape</span>
       | (x(?![\da-fA-F]{2}).{0,2}) <span class="hljs-comment"># hex escape</span>
       | (u(?![\da-fA-F]{4}).{0,4}) <span class="hljs-comment"># unicode escape</span>
   )

@@ -6,13 +6,13 @@
 #     [tag, value, locationData]
 #
 # where locationData is {first_line, first_column, last_line, last_column}, which is a
-# format that can be fed directly into [Jison](http://github.com/zaach/jison).  These
+# format that can be fed directly into [Jison](https://github.com/zaach/jison).  These
 # are read by jison in the `parser.lexer` function defined in coffeescript.coffee.
 
 {Rewriter, INVERSES} = require './rewriter'
 
 # Import the helpers we need.
-{count, starts, compact, repeat, invertLiterate,
+{count, starts, compact, repeat, invertLiterate, merge,
 locationDataToString,  throwSyntaxError} = require './helpers'
 
 # The Lexer Class
@@ -46,6 +46,7 @@ exports.Lexer = class Lexer
     @seenFor    = no             # Used to recognize FORIN, FOROF and FORFROM tokens.
     @seenImport = no             # Used to recognize IMPORT FROM? AS? tokens.
     @seenExport = no             # Used to recognize EXPORT FROM? AS? tokens.
+    @importSpecifierList = no    # Used to identify when in an IMPORT {...} FROM? ...
     @exportSpecifierList = no    # Used to identify when in an EXPORT {...} FROM? ...
 
     @chunkLine =
@@ -178,7 +179,8 @@ exports.Lexer = class Lexer
         @error "'#{prev[1]}' cannot be used as a keyword, or as a function call without parentheses", prev[2]
       else
         prevprev = @tokens[@tokens.length - 2]
-        if prev[0] in ['@', 'THIS'] and prevprev and prevprev.spaced and /^[gs]et$/.test(prevprev[1])
+        if prev[0] in ['@', 'THIS'] and prevprev and prevprev.spaced and /^[gs]et$/.test(prevprev[1]) and
+        @tokens[@tokens.length - 3][0] isnt '.'
           @error "'#{prevprev[1]}' cannot be used as a keyword, or as a function call without parentheses", prevprev[2]
 
     if tag is 'IDENTIFIER' and id in RESERVED
@@ -271,14 +273,14 @@ exports.Lexer = class Lexer
         indent = attempt if indent is null or 0 < attempt.length < indent.length
       indentRegex = /// \n#{indent} ///g if indent
       @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
-        value = @formatString value
+        value = @formatString value, delimiter: quote
         value = value.replace indentRegex, '\n' if indentRegex
         value = value.replace LEADING_BLANK_LINE,  '' if i is 0
         value = value.replace TRAILING_BLANK_LINE, '' if i is $
         value
     else
       @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
-        value = @formatString value
+        value = @formatString value, delimiter: quote
         value = value.replace SIMPLE_STRING_OMIT, (match, offset) ->
           if (i is 0 and offset is 0) or
              (i is $ and offset + match.length is value.length)
@@ -346,13 +348,17 @@ exports.Lexer = class Lexer
       when not VALID_FLAGS.test flags
         @error "invalid regular expression flags #{flags}", offset: index, length: flags.length
       when regex or tokens.length is 1
-        body ?= @formatHeregex tokens[0][1]
+        if body
+          body = @formatRegex body, { flags, delimiter: '/' }
+        else
+          body = @formatHeregex tokens[0][1], { flags }
         @token 'REGEX', "#{@makeDelimitedLiteral body, delimiter: '/'}#{flags}", 0, end, origin
       else
         @token 'REGEX_START', '(', 0, 0, origin
         @token 'IDENTIFIER', 'RegExp', 0, 0
         @token 'CALL_START', '(', 0, 0
-        @mergeInterpolationTokens tokens, {delimiter: '"', double: yes}, @formatHeregex
+        @mergeInterpolationTokens tokens, {delimiter: '"', double: yes}, (str) =>
+          @formatHeregex str, { flags }
         if flags
           @token ',', ',', index - 1, 0
           @token 'STRING', '"' + flags + '"', index - 1, flags.length
@@ -376,6 +382,8 @@ exports.Lexer = class Lexer
     indent = match[0]
 
     @seenFor = no
+    @seenImport = no unless @importSpecifierList
+    @seenExport = no unless @exportSpecifierList
 
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()
@@ -395,7 +403,7 @@ exports.Lexer = class Lexer
       return indent.length
 
     if size > @indent
-      if noNewlines
+      if noNewlines or @tag() is 'RETURN'
         @indebt = size - @indent
         @suppressNewlines()
         return indent.length
@@ -447,7 +455,7 @@ exports.Lexer = class Lexer
     this
 
   # Matches and consumes non-meaningful whitespace. Tag the previous token
-  # as being "spaced", because there are some cases where it makes a difference.
+  # as being “spaced”, because there are some cases where it makes a difference.
   whitespaceToken: ->
     return 0 unless (match = WHITESPACE.exec @chunk) or
                     (nline = @chunk.charAt(0) is '\n')
@@ -494,7 +502,11 @@ exports.Lexer = class Lexer
         @error message, origin[2] if message
       return value.length if skipToken
 
-    if value is '{' and prev?[0] is 'EXPORT'
+    if value is '{' and @seenImport
+      @importSpecifierList = yes
+    else if @importSpecifierList and value is '}'
+      @importSpecifierList = no
+    else if value is '{' and prev?[0] is 'EXPORT'
       @exportSpecifierList = yes
     else if @exportSpecifierList and value is '}'
       @exportSpecifierList = no
@@ -646,7 +658,7 @@ exports.Lexer = class Lexer
           tokensToPush = value
         when 'NEOSTRING'
           # Convert 'NEOSTRING' into 'STRING'.
-          converted = fn token[1], i
+          converted = fn.call this, token[1], i
           # Optimize out empty strings. We ensure that the tokens stream always
           # starts with a string token, though, to make sure that the result
           # really is a string.
@@ -778,26 +790,58 @@ exports.Lexer = class Lexer
     LINE_CONTINUER.test(@chunk) or
     @tag() in ['\\', '.', '?.', '?::', 'UNARY', 'MATH', 'UNARY_MATH', '+', '-',
                '**', 'SHIFT', 'RELATION', 'COMPARE', '&', '^', '|', '&&', '||',
-               'BIN?', 'THROW', 'EXTENDS']
+               'BIN?', 'THROW', 'EXTENDS', 'DEFAULT']
 
-  formatString: (str) ->
-    str.replace STRING_OMIT, '$1'
+  formatString: (str, options) ->
+    @replaceUnicodeCodePointEscapes str.replace(STRING_OMIT, '$1'), options
 
-  formatHeregex: (str) ->
-    str.replace HEREGEX_OMIT, '$1$2'
+  formatHeregex: (str, options) ->
+    @formatRegex str.replace(HEREGEX_OMIT, '$1$2'), merge(options, delimiter: '///')
+
+  formatRegex: (str, options) ->
+    @replaceUnicodeCodePointEscapes str, options
+
+  unicodeCodePointToUnicodeEscapes: (codePoint) ->
+    toUnicodeEscape = (val) ->
+      str = val.toString 16
+      "\\u#{repeat '0', 4 - str.length}#{str}"
+    return toUnicodeEscape(codePoint) if codePoint < 0x10000
+    # surrogate pair
+    high = Math.floor((codePoint - 0x10000) / 0x400) + 0xD800
+    low = (codePoint - 0x10000) % 0x400 + 0xDC00
+    "#{toUnicodeEscape(high)}#{toUnicodeEscape(low)}"
+
+  # Replace \u{...} with \uxxxx[\uxxxx] in regexes without `u` flag
+  replaceUnicodeCodePointEscapes: (str, options) ->
+    shouldReplace = options.flags? and 'u' not in options.flags
+    str.replace UNICODE_CODE_POINT_ESCAPE, (match, escapedBackslash, codePointHex, offset) =>
+      return escapedBackslash if escapedBackslash
+
+      codePointDecimal = parseInt codePointHex, 16
+      if codePointDecimal > 0x10ffff
+        @error "unicode code point escapes greater than \\u{10ffff} are not allowed",
+          offset: offset + options.delimiter.length
+          length: codePointHex.length + 4
+      return match unless shouldReplace
+
+      @unicodeCodePointToUnicodeEscapes codePointDecimal
 
   # Validates escapes in strings and regexes.
   validateEscapes: (str, options = {}) ->
-    match = INVALID_ESCAPE.exec str
+    invalidEscapeRegex =
+      if options.isRegex
+        REGEX_INVALID_ESCAPE
+      else
+        STRING_INVALID_ESCAPE
+    match = invalidEscapeRegex.exec str
     return unless match
-    [[], before, octal, hex, unicode] = match
-    return if options.isRegex and octal and octal.charAt(0) isnt '0'
+    [[], before, octal, hex, unicodeCodePoint, unicode] = match
     message =
       if octal
         "octal escape sequences are not allowed"
       else
         "invalid escape sequence"
-    invalidEscape = "\\#{octal or hex or unicode}"
+    invalidEscape = "\\#{octal or hex or unicodeCodePoint or unicode}"
     @error "#{message} #{invalidEscape}",
       offset: (options.offsetInChunk ? 0) + match.index + before.length
       length: invalidEscape.length
@@ -984,7 +1028,7 @@ REGEX = /// ^
 ///
 
 REGEX_FLAGS  = /^\w*/
-VALID_FLAGS  = /^(?!.*(.).*\1)[imgy]*$/
+VALID_FLAGS  = /^(?!.*(.).*\1)[imguy]*$/
 
 HEREGEX      = /// ^(?: [^\\/#] | \\[\s\S] | /(?!//) | \#(?!\{) )* ///
 
@@ -1003,14 +1047,30 @@ HERECOMMENT_ILLEGAL = /\*\//
 
 LINE_CONTINUER      = /// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///
 
-INVALID_ESCAPE      = ///
+STRING_INVALID_ESCAPE = ///
   ( (?:^|[^\\]) (?:\\\\)* )        # make sure the escape isn’t escaped
   \\ (
      ?: (0[0-7]|[1-7])             # octal escape
       | (x(?![\da-fA-F]{2}).{0,2}) # hex escape
-      | (u(?![\da-fA-F]{4}).{0,4}) # unicode escape
+      | (u\{(?![\da-fA-F]{1,}\})[^}]*\}?) # unicode code point escape
+      | (u(?!\{|[\da-fA-F]{4}).{0,4}) # unicode escape
   )
 ///
+REGEX_INVALID_ESCAPE = ///
+  ( (?:^|[^\\]) (?:\\\\)* )        # make sure the escape isn’t escaped
+  \\ (
+     ?: (0[0-7])                   # octal escape
+      | (x(?![\da-fA-F]{2}).{0,2}) # hex escape
+      | (u\{(?![\da-fA-F]{1,}\})[^}]*\}?) # unicode code point escape
+      | (u(?!\{|[\da-fA-F]{4}).{0,4}) # unicode escape
+  )
+///
+
+UNICODE_CODE_POINT_ESCAPE = ///
+  ( \\\\ )        # make sure the escape isn’t escaped
+  |
+  \\u\{ ( [\da-fA-F]+ ) \}
+///g
 
 LEADING_BLANK_LINE  = /^[^\n\S]*\n/
 TRAILING_BLANK_LINE = /\n[^\n\S]*$/

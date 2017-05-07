@@ -36,12 +36,6 @@
 # CoffeeScript also supports optional commas within `{ … }`.
 
 
-# Helper function
-toJS = (str) ->
-  CoffeeScript.compile str, bare: yes
-  .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace
-
-
 # Import statements
 
 test "backticked import statement", ->
@@ -353,6 +347,28 @@ test "export default object", ->
     };"""
   eq toJS(input), output
 
+test "export default implicit object", ->
+  input = "export default foo: 'bar', baz: 'qux'"
+  output = """
+    export default {
+      foo: 'bar',
+      baz: 'qux'
+    };"""
+  eq toJS(input), output
+
+test "export default multiline implicit object", ->
+  input = """
+    export default
+      foo: 'bar',
+      baz: 'qux'
+    """
+  output = """
+    export default {
+      foo: 'bar',
+      baz: 'qux'
+    };"""
+  eq toJS(input), output
+
 test "export default assignment expression", ->
   input = "export default foo = 'bar'"
   output = """
@@ -433,47 +449,65 @@ test "export default predefined function", ->
     export default foo;"""
   eq toJS(input), output
 
-# Uncomment this test once ES2015+ `class` support is added
+test "export default class", ->
+  input = """
+    export default class foo extends bar
+      baz: ->
+        console.log 'hello, world!'"""
+  output = """
+    var foo;
 
-# test "export default class", ->
-#   input = """
-#     export default class foo extends bar
-#       baz: ->
-#         console.log 'hello, world!'"""
-#   output = """
-#     export default class foo extends bar {
-#       baz: function {
-#         return console.log('hello, world!');
-#       }
-#     }"""
-#   eq toJS(input), output
+    export default foo = class foo extends bar {
+      baz() {
+        return console.log('hello, world!');
+      }
 
-# Very limited tests for now, testing that `export class foo` either compiles
-# identically (ES2015+) or at least into some function, leaving the specifics
-# vague in case the CoffeeScript `class` interpretation changes
+    };"""
+  eq toJS(input), output
+
 test "export class", ->
   input = """
     export class foo
       baz: ->
         console.log 'hello, world!'"""
-  output = toJS input
-  ok /^export (var foo = class foo|var foo = \(function)/.test toJS input
+  output = """
+    export var foo = class foo {
+      baz() {
+        return console.log('hello, world!');
+      }
+
+    };"""
+  eq toJS(input), output
 
 test "export class that extends", ->
   input = """
     export class foo extends bar
       baz: ->
         console.log 'hello, world!'"""
-  output = toJS input
-  ok /export var foo = class foo/.test(output) and \
-    not /var foo(;|,)/.test output
+  output = """
+    export var foo = class foo extends bar {
+      baz() {
+        return console.log('hello, world!');
+      }
+
+    };"""
+  eq toJS(input), output
 
 test "export default class that extends", ->
   input = """
     export default class foo extends bar
       baz: ->
         console.log 'hello, world!'"""
-  ok /export default foo = class foo/.test toJS input
+  output = """
+    var foo;
+
+    export default foo = class foo extends bar {
+      baz() {
+        return console.log('hello, world!');
+      }
+
+    };"""
+  eq toJS(input), output
 
 test "export default named member, within an object", ->
   input = "export { foo as default, bar }"
@@ -770,6 +804,113 @@ test "#4451: `default` in an export statement is only treated as a keyword when 
   input = "export default { default: 1 }"
   output = """
     export default {
-      "default": 1
+      default: 1
     };
   """
+  eq toJS(input), output
+
+test "#4491: import- and export-specific lexing should stop after import/export statement", ->
+  input = """
+    import {
+      foo,
+      bar as baz
+    } from 'lib'
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
+    import {
+      foo,
+      bar as baz
+    } from 'lib';
+
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
+
+  input = """
+    import { foo, bar as baz } from 'lib'
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
+    import {
+      foo,
+      bar as baz
+    } from 'lib';
+
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
+
+  input = """
+    import * as lib from 'lib'
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
+    import * as lib from 'lib';
+
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
+
+  input = """
+    export {
+      foo,
+      bar
+    }
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
+    export {
+      foo,
+      bar
+    };
+
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
+
+  input = """
+    export * from 'lib'
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
+    export * from 'lib';
+
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output

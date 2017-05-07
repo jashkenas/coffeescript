@@ -282,6 +282,10 @@ p, blockquote, table, .code-example {
   margin-bottom: 1.3rem;
 }
 
+td code {
+  white-space: nowrap;
+}
+
 h2, h3 {
   margin-top: 1.3em;
   margin-bottom: 0.6em;

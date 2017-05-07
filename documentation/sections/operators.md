@@ -6,7 +6,7 @@ You can use `not` as an alias for `!`.
 
 For logic, `and` compiles to `&&`, and `or` into `||`.
 
-Instead of a newline or semicolon, `then` can be used to separate conditions from expressions, in **while**, **if**/**else**, and **switch**/**when** statements.
+Instead of a newline or semicolon, `then` can be used to separate conditions from expressions, in `while`, `if`/`else`, and `switch`/`when` statements.
 
 As in [YAML](http://yaml.org/), `on` and `yes` are the same as boolean `true`, while `off` and `no` are boolean `false`.
 
@@ -16,7 +16,9 @@ As a shortcut for `this.property`, you can use `@property`.
 
 You can use `in` to test for array presence, and `of` to test for JavaScript object-key presence.
 
-To simplify math expressions, `**` can be used for exponentiation and `//` performs integer division. `%` works just like in JavaScript, while `%%` provides [“dividend dependent modulo”](http://en.wikipedia.org/wiki/Modulo_operation):
+In a `for` loop, `from` compiles to the [ES2015 `of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of). (Yes, it’s unfortunate; the CoffeeScript `of` predates the ES2015 `of`.)
+
+To simplify math expressions, `**` can be used for exponentiation and `//` performs integer division. `%` works just like in JavaScript, while `%%` provides [“dividend dependent modulo”](https://en.wikipedia.org/wiki/Modulo_operation):
 
 ```
 codeFor('modulo')
@@ -24,125 +26,22 @@ codeFor('modulo')
 
 All together now:
 
-<table class="definitions">
-
-<tbody>
-
-<tr>
-
-<th>CoffeeScript</th>
-
-<th>JavaScript</th>
-
-</tr>
-
-<tr>
-
-<td>`is`</td>
-
-<td>`===`</td>
-
-</tr>
-
-<tr>
-
-<td>`isnt`</td>
-
-<td>`!==`</td>
-
-</tr>
-
-<tr>
-
-<td>`not`</td>
-
-<td>`!`</td>
-
-</tr>
-
-<tr>
-
-<td>`and`</td>
-
-<td>`&&`</td>
-
-</tr>
-
-<tr>
-
-<td>`or`</td>
-
-<td>`||`</td>
-
-</tr>
-
-<tr>
-
-<td>`true`, `yes`, `on`</td>
-
-<td>`true`</td>
-
-</tr>
-
-<tr>
-
-<td>`false`, `no`, `off`&emsp;</td>
-
-<td>`false`</td>
-
-</tr>
-
-<tr>
-
-<td>`@`, `this`</td>
-
-<td>`this`</td>
-
-</tr>
-
-<tr>
-
-<td>`of`</td>
-
-<td>`in`</td>
-
-</tr>
-
-<tr>
-
-<td>`in`</td>
-
-<td>_<small>no JS equivalent</small>_</td>
-
-</tr>
-
-<tr>
-
-<td>`a ** b`</td>
-
-<td>`Math.pow(a, b)`</td>
-
-</tr>
-
-<tr>
-
-<td>`a // b`</td>
-
-<td>`Math.floor(a / b)`</td>
-
-</tr>
-
-<tr>
-
-<td>`a %% b`</td>
-
-<td>`(a % b + b) % b`</td>
-
-</tr>
-
-</tbody>
-
-</table>
+| CoffeeScript | JavaScript |
+| --- | --- |
+| `is` | `===` |
+| `isnt` | `!==` |
+| `not` | `!` |
+| `and` | `&&` |
+| `or` | `||` |
+| `true`, `yes`, `on` | `true` |
+| `false`, `no`, `off`&emsp; | `false` |
+| `@`, `this` | `this` |
+| `a in b` | `[].indexOf.call(b, a) >= 0` |
+| `a of b` | `a in b` |
+| `for a from b` | `for (a of b)` |
+| `a ** b` | `Math.pow(a, b)` |
+| `a // b` | `Math.floor(a / b)` |
+| `a %% b` | `(a % b + b) % b` |
 
 ```
 codeFor('aliases')

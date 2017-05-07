@@ -116,20 +116,12 @@ task 'build:full', 'build the CoffeeScript compiler from source twice, and run t
   build ->
     build testBuiltCode
 
-task 'build:browser', 'build the merged script for inclusion in the browser', ->
+task 'build:browser', 'merge the built scripts into a single file for use in a browser', ->
   code = """
   require['../../package.json'] = (function() {
     return #{fs.readFileSync "./package.json"};
   })();
   """
-  for {name, src} in [{name: 'marked', src: 'lib/marked.js'}]
-    code += """
-      require['#{name}'] = (function() {
-        var exports = {}, module = {exports: exports};
-        #{fs.readFileSync "node_modules/#{name}/#{src}"}
-        return module.exports;
-      })();
-    """
   for name in ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'nodes', 'sourcemap', 'coffeescript', 'browser']
     code += """
       require['./#{name}'] = (function() {
@@ -153,15 +145,23 @@ task 'build:browser', 'build the merged script for inclusion in the browser', ->
       }
     }(this));
   """
-  unless process.env.MINIFY is 'false'
-    {compiledCode: code} = require('google-closure-compiler-js').compile
-      jsCode: [
-        src: code
-        languageOut: if majorVersion is 1 then 'ES5' else 'ES6'
-      ]
+  babel = require 'babel-core'
+  presets = []
+  # Exclude the `modules` plugin in order to not break the `}(this));`
+  # at the end of the above code block.
+  presets.push ['env', {modules: no}] unless process.env.TRANSFORM is 'false'
+  presets.push 'babili' unless process.env.MINIFY is 'false'
+  babelOptions =
+    compact: process.env.MINIFY isnt 'false'
+    presets: presets
+    sourceType: 'script'
+  { code } = babel.transform code, babelOptions unless presets.length is 0
   outputFolder = "docs/v#{majorVersion}/browser-compiler"
   fs.mkdirSync outputFolder unless fs.existsSync outputFolder
   fs.writeFileSync "#{outputFolder}/coffeescript.js", header + '\n' + code
+
+task 'build:browser:full', 'merge the built scripts into a single file for use in a browser, and test it', ->
+  invoke 'build:browser'
   console.log "built ... running browser tests:"
   invoke 'test:browser'
 
@@ -199,22 +199,36 @@ buildDocs = (watch = no) ->
   codeFor = require "./documentation/v#{majorVersion}/code.coffee"
 
   htmlFor = ->
-    marked = require 'marked'
-    markdownRenderer = new marked.Renderer()
-    markdownRenderer.heading = (text, level) ->
-      "<h#{level}>#{text}</h#{level}>" # Don’t let marked add an id
-    markdownRenderer.code = (code) ->
+    hljs = require 'highlight.js'
+    hljs.configure classPrefix: ''
+    markdownRenderer = require('markdown-it')
+      html: yes
+      typographer: yes
+      highlight: (str, lang) ->
+        # From https://github.com/markdown-it/markdown-it#syntax-highlighting
+        if lang and hljs.getLanguage(lang)
+          try
+            return hljs.highlight(lang, str).value
+          catch ex
+        return '' # No syntax highlighting
+
+
+    # Add some custom overrides to Markdown-It’s rendering, per
+    # https://github.com/markdown-it/markdown-it/blob/master/docs/architecture.md#renderer
+    defaultFence = markdownRenderer.renderer.rules.fence
+    markdownRenderer.renderer.rules.fence = (tokens, idx, options, env, slf) ->
+      code = tokens[idx].content
       if code.indexOf('codeFor(') is 0 or code.indexOf('releaseHeader(') is 0
         "<%= #{code} %>"
       else
-        "<pre><code>#{code}</code></pre>" # Default
+        "<blockquote class=\"uneditable-code-block\">#{defaultFence.apply @, arguments}</blockquote>"
 
     (file, bookmark) ->
       md = fs.readFileSync "#{sectionsSourceFolder}/#{file}.md", 'utf-8'
       md = md.replace /<%= releaseHeader %>/g, releaseHeader
       md = md.replace /<%= majorVersion %>/g, majorVersion
       md = md.replace /<%= fullVersion %>/g, CoffeeScript.VERSION
-      html = marked md, renderer: markdownRenderer
+      html = markdownRenderer.render md
       html = _.template(html)
         codeFor: codeFor()
         releaseHeader: releaseHeader
@@ -325,7 +339,7 @@ task 'doc:source:watch', 'watch and continually rebuild the annotated source doc
 
 task 'release', 'build and test the CoffeeScript source, and build the documentation', ->
   invoke 'build:full'
-  invoke 'build:browser'
+  invoke 'build:browser:full'
   invoke 'doc:site'
   invoke 'doc:test'
   invoke 'doc:source'
@@ -415,7 +429,8 @@ runTests = (CoffeeScript) ->
 
 
 task 'test', 'run the CoffeeScript language test suite', ->
-  runTests CoffeeScript
+  testResults = runTests CoffeeScript
+  process.exit 1 unless testResults
 
 
 task 'test:browser', 'run the test suite against the merged browser script', ->
@@ -423,4 +438,5 @@ task 'test:browser', 'run the test suite against the merged browser script', ->
   result = {}
   global.testingBrowser = yes
   (-> eval source).call result
-  runTests result.CoffeeScript
+  testResults = runTests result.CoffeeScript
+  process.exit 1 unless testResults

@@ -14,11 +14,7 @@ generate = (tag, value, origin) ->
 
 # The **Rewriter** class is used by the [Lexer](lexer.html), directly against
 # its internal array of tokens.
-class exports.Rewriter
-
-  # Helpful snippet for debugging:
-  #
-  #     console.log (t[0] + '/' + t[1] for t in @tokens).join ' '
+exports.Rewriter = class Rewriter
 
   # Rewrite the token stream in multiple passes, one logical filter at
   # a time. This could certainly be changed into a single pass through the
@@ -26,6 +22,8 @@ class exports.Rewriter
   # like this. The order of these passes matters -- indentation must be
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (@tokens) ->
+    # Helpful snippet for debugging:
+    #     console.log (t[0] + '/' + t[1] for t in @tokens).join ' '
     @removeLeadingNewlines()
     @closeOpenCalls()
     @closeOpenIndexes()
@@ -156,7 +154,7 @@ class exports.Rewriter
       inImplicitObject  = -> inImplicit() and stackTop()?[0] is '{'
       # Unclosed control statement inside implicit parens (like
       # class declaration or if-conditionals)
-      inImplicitControl = -> inImplicit and stackTop()?[0] is 'CONTROL'
+      inImplicitControl = -> inImplicit() and stackTop()?[0] is 'CONTROL'
 
       startImplicitCall = (j) ->
         idx = j ? i
@@ -186,7 +184,7 @@ class exports.Rewriter
       # Don't end an implicit call on next indent if any of these are in an argument
       if inImplicitCall() and tag in ['IF', 'TRY', 'FINALLY', 'CATCH',
         'CLASS', 'SWITCH']
-        stack.push ['CONTROL', i, ours: true]
+        stack.push ['CONTROL', i, ours: yes]
         return forward(1)
 
       if tag is 'INDENT' and inImplicit()
@@ -398,7 +396,8 @@ class exports.Rewriter
       not (token[0] is 'TERMINATOR' and @tag(i + 1) in EXPRESSION_CLOSE) and
       not (token[0] is 'ELSE' and starter isnt 'THEN') and
       not (token[0] in ['CATCH', 'FINALLY'] and starter in ['->', '=>']) or
-      token[0] in CALL_CLOSERS and @tokens[i - 1].newLine
+      token[0] in CALL_CLOSERS and
+      (@tokens[i - 1].newLine or @tokens[i - 1][0] is 'OUTDENT')
 
     action = (token, i) ->
       @tokens.splice (if @tag(i - 1) is ',' then i - 1 else i), 0, outdent

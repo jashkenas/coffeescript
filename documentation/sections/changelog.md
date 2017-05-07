@@ -1,6 +1,24 @@
 ## Change Log
 
 ```
+releaseHeader('2017-04-14', '2.0.0-beta1', '2.0.0-alpha1')
+```
+
+*   Initial beta release of CoffeeScript 2. No further breaking changes are anticipated.
+*   Destructured objects and arrays now output using ES2015+ syntax whenever possible.
+*   Literate CoffeeScript now has much better support for parsing Markdown, thanks to using [Markdown-It](https://github.com/markdown-it/markdown-it) to detect Markdown sections rather than just looking at indentation.
+*   Calling a function named `get` or `set` now requires parentheses, to disambiguate from the `get` or `set` keywords (which are [disallowed](#unsupported-get-set)).
+*   The compiler now requires Node 7.6+, the first version of Node to support asynchronous functions without requiring a flag.
+
+```
+releaseHeader('2017-04-10', '1.12.5', '1.12.4')
+```
+
+*   Better handling of `default`, `from`, `as` and `*` within `import` and `export` statements. You can now import or export a member named `default` and the compiler won’t interpret it as the `default` keyword.
+*   Fixed a bug where invalid octal escape sequences weren’t throwing errors in the compiler.
+
+
+```
 releaseHeader('2017-02-21', '2.0.0-alpha1', '1.12.4')
 ```
 
@@ -188,11 +206,6 @@ releaseHeader('2014-01-28', '1.7.0', '1.6.3')
 *   When requiring CoffeeScript files in Node you must now explicitly register the compiler. This can be done with `require 'coffeescript/register'` or `CoffeeScript.register()`. Also for configuration such as Mocha’s, use **coffeescript/register**.
 *   Improved error messages, source maps and stack traces. Source maps now use the updated `//#` syntax.
 *   Leading `.` now closes all open calls, allowing for simpler chaining syntax.
-
-```
-codeFor('chaining')
-```
-
 *   Added `**`, `//` and `%%` operators and `...` expansion in parameter lists and destructuring expressions.
 *   Multiline strings are now joined by a single space and ignore all indentation. A backslash at the end of a line can denote the amount of whitespace between lines, in both strings and heredocs. Backslashes correctly escape whitespace in block regexes.
 *   Closing brackets can now be indented and therefore no longer cause unexpected error.
@@ -223,7 +236,7 @@ releaseHeader('2013-03-18', '1.6.2', '1.6.1')
 releaseHeader('2013-03-05', '1.6.1', '1.5.0')
 ```
 
-*   First release of [source maps](#source-maps). Pass the `--map` flag to the compiler, and off you go. Direct all your thanks over to [Jason Walton](http://github.com/jwalton).
+*   First release of [source maps](#source-maps). Pass the `--map` flag to the compiler, and off you go. Direct all your thanks over to [Jason Walton](https://github.com/jwalton).
 *   Fixed a 1.5.0 regression with multiple implicit calls against an indented implicit object. Combinations of implicit function calls and implicit objects should generally be parsed better now — but it still isn’t good _style_ to nest them too heavily.
 *   `.coffee.md` is now also supported as a Literate CoffeeScript file extension, for existing tooling. `.litcoffee` remains the canonical one.
 *   Several minor fixes surrounding member properties, bound methods and `super` in class declarations.
@@ -330,7 +343,7 @@ The REPL now properly formats stacktraces, and stays alive through asynchronous 
 releaseHeader('2010-11-21', '0.9.5', '0.9.4')
 ```
 
-0.9.5 should be considered the first release candidate for CoffeeScript 1.0. There have been a large number of internal changes since the previous release, many contributed from **satyr**’s [Coco](http://github.com/satyr/coco) dialect of CoffeeScript. Heregexes (extended regexes) were added. Functions can now have default arguments. Class bodies are now executable code. Improved syntax errors for invalid CoffeeScript. `undefined` now works like `null`, and cannot be assigned a new value. There was a precedence change with respect to single-line comprehensions: `result = i for i in list`
+0.9.5 should be considered the first release candidate for CoffeeScript 1.0. There have been a large number of internal changes since the previous release, many contributed from **satyr**’s [Coco](https://github.com/satyr/coco) dialect of CoffeeScript. Heregexes (extended regexes) were added. Functions can now have default arguments. Class bodies are now executable code. Improved syntax errors for invalid CoffeeScript. `undefined` now works like `null`, and cannot be assigned a new value. There was a precedence change with respect to single-line comprehensions: `result = i for i in list`
 used to parse as `result = (i for i in list)` by default … it now parses as
 `(result = i) for i in list`.
 
@@ -410,7 +423,7 @@ Interpolation can now be used within regular expressions and heredocs, as well a
 releaseHeader('2010-03-08', '0.5.5', '0.5.4')
 ```
 
-String interpolation, contributed by [Stan Angeloff](http://github.com/StanAngeloff). Since `--run` has been the default since **0.5.3**, updating `--stdio` and `--eval` to run by default, pass `--compile` as well if you’d like to print the result.
+String interpolation, contributed by [Stan Angeloff](https://github.com/StanAngeloff). Since `--run` has been the default since **0.5.3**, updating `--stdio` and `--eval` to run by default, pass `--compile` as well if you’d like to print the result.
 
 ```
 releaseHeader('2010-03-03', '0.5.4', '0.5.3')
@@ -429,7 +442,7 @@ releaseHeader('2010-02-25', '0.5.2', '0.5.1')
 ```
 
 Added a compressed version of the compiler for inclusion in web pages as
-`v<%= majorVersion %>/browser-compiler/coffeescript.js`. It’ll automatically run any script tags with type `text/coffeescript` for you. Added a `--stdio` option to the `coffee` command, for piped-in compiles.
+`/v<%= majorVersion %>/browser-compiler/coffeescript.js`. It’ll automatically run any script tags with type `text/coffeescript` for you. Added a `--stdio` option to the `coffee` command, for piped-in compiles.
 
 ```
 releaseHeader('2010-02-24', '0.5.1', '0.5.0')
@@ -506,7 +519,7 @@ Arguments objects are now converted into real arrays when referenced.
 releaseHeader('2010-01-05', '0.2.0', '0.1.6')
 ```
 
-Major release. Significant whitespace. Better statement-to-expression conversion. Splats. Splice literals. Object comprehensions. Blocks. The existential operator. Many thanks to all the folks who posted issues, with special thanks to [Liam O’Connor-Davis](http://github.com/liamoc) for whitespace and expression help.
+Major release. Significant whitespace. Better statement-to-expression conversion. Splats. Splice literals. Object comprehensions. Blocks. The existential operator. Many thanks to all the folks who posted issues, with special thanks to [Liam O’Connor-Davis](https://github.com/liamoc) for whitespace and expression help.
 
 ```
 releaseHeader('2009-12-27', '0.1.6', '0.1.5')
@@ -524,7 +537,7 @@ Array slice literals and array comprehensions can now both take Ruby-style range
 releaseHeader('2009-12-25', '0.1.4', '0.1.3')
 ```
 
-The official CoffeeScript extension is now `.coffee` instead of `.cs`, which properly belongs to [C#](http://en.wikipedia.org/wiki/C_Sharp_(programming_language)). Due to popular demand, you can now also use `=` to assign. Unlike JavaScript, `=` can also be used within object literals, interchangeably with `:`. Made a grammatical fix for chained function calls like `func(1)(2)(3)(4)`. Inheritance and super no longer use `__proto__`, so they should be IE-compatible now.
+The official CoffeeScript extension is now `.coffee` instead of `.cs`, which properly belongs to [C#](https://en.wikipedia.org/wiki/C_Sharp_(programming_language)). Due to popular demand, you can now also use `=` to assign. Unlike JavaScript, `=` can also be used within object literals, interchangeably with `:`. Made a grammatical fix for chained function calls like `func(1)(2)(3)(4)`. Inheritance and super no longer use `__proto__`, so they should be IE-compatible now.
 
 ```
 releaseHeader('2009-12-25', '0.1.3', '0.1.2')

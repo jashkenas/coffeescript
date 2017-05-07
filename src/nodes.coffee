@@ -630,9 +630,9 @@ exports.AwaitReturn = class AwaitReturn extends Return
 # or vanilla.
 exports.Value = class Value extends Base
   constructor: (base, props, tag, isDefaultValue = no) ->
-    return base if not props and base instanceof Value
-
     super()
+
+    return base if not props and base instanceof Value
 
     @base           = base
     @properties     = props or []
@@ -951,10 +951,7 @@ exports.Access = class Access extends Base
     name = @name.compileToFragments o
     node = @name.unwrap()
     if node instanceof PropertyName
-      if node.value in JS_FORBIDDEN
-        [@makeCode('["'), name..., @makeCode('"]')]
-      else
-        [@makeCode('.'), name...]
+      [@makeCode('.'), name...]
     else
       [@makeCode('['), name..., @makeCode(']')]
 
@@ -1311,10 +1308,8 @@ exports.Class = class Class extends Base
       result
 
   compileClassDeclaration: (o) ->
-    @ctor ?= @makeDefaultConstructor() if @externalCtor or @boundMethods.length
+    @ctor ?= @makeDefaultConstructor() if @externalCtor
     @ctor?.noReturn = true
-
-    @proxyBoundMethods o if @boundMethods.length
 
     o.indent += TAB
 
@@ -1351,7 +1346,6 @@ exports.Class = class Class extends Base
 
   walkBody: ->
     @ctor          = null
-    @boundMethods  = []
     executableBody = null
 
     initializer     = []
@@ -1395,11 +1389,8 @@ exports.Class = class Class extends Base
       if method.ctor
         method.error 'Cannot define more than one constructor in a class' if @ctor
         @ctor = method
-      else if method.bound and method.isStatic
+      else if method.isStatic and method.bound
         method.context = @name
-      else if method.bound
-        @boundMethods.push method.name
-        method.bound = false
 
     if initializer.length isnt expressions.length
       @body.expressions = (expression.hoist() for expression in initializer)
@@ -1437,7 +1428,7 @@ exports.Class = class Class extends Base
       method.name = new (if methodName.shouldCache() then Index else Access) methodName
       method.name.updateLocationDataIfMissing methodName.locationData
       method.ctor = (if @parent then 'derived' else 'base') if methodName.value is 'constructor'
-      method.error 'Cannot define a constructor as a bound function' if method.bound and method.ctor
+      method.error 'Methods cannot be bound functions' if method.bound
 
     method
 
@@ -1455,13 +1446,6 @@ exports.Class = class Class extends Base
       ctor.body.makeReturn()
 
     ctor
-
-  proxyBoundMethods: (o) ->
-    @ctor.thisAssignments = for name in @boundMethods by -1
-      name = new Value(new ThisLiteral, [ name ]).compile o
-      new Literal "#{name} = #{utility 'bind', o}(#{name}, this)"
-
-    null
 
 exports.ExecutableClassBody = class ExecutableClassBody extends Base
   children: [ 'class', 'body' ]
@@ -1841,9 +1825,6 @@ exports.Assign = class Assign extends Base
       if @variable.shouldCache()
         compiledName.unshift @makeCode '['
         compiledName.push @makeCode ']'
-      else if fragmentsToText(compiledName) in JS_FORBIDDEN
-        compiledName.unshift @makeCode '"'
-        compiledName.push @makeCode '"'
       return compiledName.concat @makeCode(": "), val
     
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
@@ -1988,7 +1969,7 @@ exports.Assign = class Assign extends Base
       if not expandedIdx and obj instanceof Splat
         name = obj.name.unwrap().value
         obj = obj.unwrap()
-        val = "#{olen} <= #{vvarText}.length ? #{ utility 'slice', o }.call(#{vvarText}, #{i}"
+        val = "#{olen} <= #{vvarText}.length ? #{utility 'slice', o}.call(#{vvarText}, #{i}"
         rest = olen - i - 1
         if rest isnt 0
           ivar = o.scope.freeVariable 'i', single: true
@@ -2087,7 +2068,7 @@ exports.Assign = class Assign extends Base
     else
       to = "9e9"
     [valDef, valRef] = @value.cache o, LEVEL_LIST
-    answer = [].concat @makeCode("[].splice.apply(#{name}, [#{fromDecl}, #{to}].concat("), valDef, @makeCode(")), "), valRef
+    answer = [].concat @makeCode("#{utility 'splice', o}.apply(#{name}, [#{fromDecl}, #{to}].concat("), valDef, @makeCode(")), "), valRef
     if o.level > LEVEL_TOP then @wrapInParentheses answer else answer
 
   eachName: (iterator) ->
@@ -2592,14 +2573,14 @@ exports.While = class While extends Base
 # CoffeeScript operations into their JavaScript equivalents.
 exports.Op = class Op extends Base
   constructor: (op, first, second, flip) ->
+    super()
+
     return new In first, second if op is 'in'
     if op is 'do'
       return Op::generateDo first
     if op is 'new'
       return first.newInstance() if first instanceof Call and not first.do and not first.isNew
       first = new Parens first   if first instanceof Code and first.bound or first.do
-
-    super()
 
     @operator = CONVERSIONS[op] or op
     @first    = first
@@ -2638,7 +2619,7 @@ exports.Op = class Op extends Base
     not @isNumber()
 
   # Am I capable of
-  # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin)?
+  # [Python-style comparison chaining](https://docs.python.org/3/reference/expressions.html#not-in)?
   isChainable: ->
     @operator in ['<', '>', '>=', '<=', '===', '!==']
 
@@ -2948,7 +2929,8 @@ exports.Parens = class Parens extends Base
       return expr.compileToFragments o
     fragments = expr.compileToFragments o, LEVEL_PAREN
     bare = o.level < LEVEL_OP and (expr instanceof Op or expr instanceof Call or
-      (expr instanceof For and expr.returns))
+      (expr instanceof For and expr.returns)) and (o.level < LEVEL_COND or
+        fragments.length <= 3)
     if bare then fragments else @wrapInParentheses fragments
 
 #### StringWithInterpolations
@@ -3169,7 +3151,7 @@ exports.Switch = class Switch extends Base
       fragments = fragments.concat body, @makeCode('\n') if (body = block.compileToFragments o, LEVEL_TOP).length > 0
       break if i is @cases.length - 1 and not @otherwise
       expr = @lastNonComment block.expressions
-      continue if expr instanceof Return or (expr instanceof Literal and expr.jumps() and expr.value isnt 'debugger')
+      continue if expr instanceof Return or expr instanceof Throw or (expr instanceof Literal and expr.jumps() and expr.value isnt 'debugger')
       fragments.push cond.makeCode(idt2 + 'break;\n')
     if @otherwise and @otherwise.expressions.length
       fragments.push @makeCode(idt1 + "default:\n"), (@otherwise.compileToFragments o, LEVEL_TOP)..., @makeCode("\n")
@@ -3265,49 +3247,13 @@ exports.If = class If extends Base
 # ---------
 
 UTILITIES =
-
-  # Correctly set up a prototype chain for inheritance, including a reference
-  # to the superclass for `super()` calls, and copies of any static properties.
-  extend: (o) -> "
-    function(child, parent) {
-      for (var key in parent) {
-        if (#{utility 'hasProp', o}.call(parent, key)) child[key] = parent[key];
-      }
-      function ctor() {
-        this.constructor = child;
-      }
-      ctor.prototype = parent.prototype;
-      child.prototype = new ctor();
-      return child;
-    }
-  "
-
-  # Create a function bound to the current value of "this".
-  bind: -> '
-    function(fn, me){
-      return function(){
-        return fn.apply(me, arguments);
-      };
-    }
-  '
-
-  # Discover if an item is in an array.
-  indexOf: -> "
-    [].indexOf || function(item) {
-      for (var i = 0, l = this.length; i < l; i++) {
-        if (i in this && this[i] === item) return i;
-      }
-      return -1;
-    }
-  "
-
-  modulo: -> """
-    function(a, b) { return (+a % (b = +b) + b) % b; }
-  """
+  modulo: -> 'function(a, b) { return (+a % (b = +b) + b) % b; }'
 
   # Shortcuts to speed up the lookup time for native functions.
   hasProp: -> '{}.hasOwnProperty'
+  indexOf: -> '[].indexOf'
   slice  : -> '[].slice'
+  splice : -> '[].splice'
 
 # Levels indicate a node's position in the AST. Useful for knowing if
 # parens are necessary or superfluous.

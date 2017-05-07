@@ -445,6 +445,13 @@ test "octal escapes", ->
       \  \   \ \ ^\^^
   '''
   assertErrorFormat '''
+    /a\\1\\tb\\\\\\07c/
+  ''', '''
+    [stdin]:1:10: error: octal escape sequences are not allowed \\07
+    /a\\1\\tb\\\\\\07c/
+      \  \   \ \ ^\^^
+  '''
+  assertErrorFormat '''
     ///a
       #{b} \\01///
   ''', '''
@@ -1475,4 +1482,66 @@ test "setter keyword before static method", ->
     [stdin]:2:3: error: 'set' cannot be used as a keyword, or as a function call without parentheses
       set @foo = ->
       ^^^
+  '''
+
+test "#4248: Unicode code point escapes", ->
+  assertErrorFormat '''
+    "a
+      #{b} \\u{G02}
+     c"
+  ''', '''
+    [stdin]:2:8: error: invalid escape sequence \\u{G02}
+      #{b} \\u{G02}
+           ^\^^^^^^
+  '''
+  assertErrorFormat '''
+    /a\\u{}b/
+  ''', '''
+    [stdin]:1:3: error: invalid escape sequence \\u{}
+    /a\\u{}b/
+      ^\^^^
+  '''
+  assertErrorFormat '''
+    ///a \\u{01abc///
+  ''', '''
+    [stdin]:1:6: error: invalid escape sequence \\u{01abc
+    ///a \\u{01abc///
+         ^\^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    /\\u{123} \\u{110000}/
+  ''', '''
+    [stdin]:1:10: error: unicode code point escapes greater than \\u{10ffff} are not allowed
+    /\\u{123} \\u{110000}/
+      \       ^\^^^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    ///abc\\\\\\u{123456}///u
+  ''', '''
+    [stdin]:1:9: error: unicode code point escapes greater than \\u{10ffff} are not allowed
+    ///abc\\\\\\u{123456}///u
+           \ \^\^^^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    """
+      \\u{123}
+      a
+        \\u{00110000}
+      #{ 'b' }
+    """
+  ''', '''
+    [stdin]:4:5: error: unicode code point escapes greater than \\u{10ffff} are not allowed
+        \\u{00110000}
+        ^\^^^^^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    '\\u{a}\\u{1111110000}'
+  ''', '''
+    [stdin]:1:7: error: unicode code point escapes greater than \\u{10ffff} are not allowed
+    '\\u{a}\\u{1111110000}'
+      \    ^\^^^^^^^^^^^^^
   '''
