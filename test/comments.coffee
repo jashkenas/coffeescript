@@ -267,7 +267,6 @@ test "#3132: Format indented block-comment nicely", ->
   var fn;
 
   fn = function() {
-
     /*
      * Indented
     Multiline
@@ -362,7 +361,6 @@ test "#3132: Place block-comments nicely", ->
 
   DummyClass = (function() {
     class DummyClass {
-
       /**
        * @constructor
        */
@@ -370,7 +368,6 @@ test "#3132: Place block-comments nicely", ->
       constructor() {}
 
     };
-
 
     /**
      * Singleton reference
@@ -414,12 +411,28 @@ test "#4375: UTF-8 characters in comments", ->
   ok yes
 
 test "#3735: Multiline comment in array", ->
-  arr = [
+  a = [
     ###
       Comment
     ###
     3
   ]
+  arrayEq a, [3]
 
-  ok arr[0] is 3
+  b = [
+    4
+    ###
+      Comment
+    ###
+    5
+    6
+  ]
+  arrayEq b, [4, 5, 6]
 
+  c = [
+    7
+    ###
+      Comment
+    ###
+  ]
+  arrayEq c, [7]
