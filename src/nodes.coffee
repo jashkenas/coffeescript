@@ -403,7 +403,6 @@ exports.Block = class Block extends Base
     compiledNodes = []
 
     for node, index in @expressions
-
       node = node.unwrapAll()
       node = (node.unfoldSoak(o) or node)
       if node instanceof Block
@@ -417,9 +416,10 @@ exports.Block = class Block extends Base
       else if top
         node.front = true
         fragments = node.compileToFragments o
-        unless node.isStatement o
+        unless node.isStatement(o) or node instanceof Comment or
+        (node instanceof HoistTarget and node.source instanceof Comment)
           fragments.unshift @makeCode "#{@tab}"
-          fragments.push @makeCode ";"
+          fragments.push @makeCode ';'
         compiledNodes.push fragments
       else
         compiledNodes.push node.compileToFragments o, LEVEL_LIST
@@ -759,14 +759,14 @@ exports.Comment = class Comment extends Base
   constructor: (@comment) ->
     super()
 
-  isStatement:     YES
+  isStatement:     NO
   makeReturn:      THIS
 
   compileNode: (o, level) ->
     comment = @comment.replace /^(\s*)#(?=\s)/gm, "$1 *"
     code = "/*#{multident comment, @tab}#{if '\n' in comment then "\n#{@tab}" else ''} */"
     code = o.indent + code if (level or o.level) is LEVEL_TOP
-    [@makeCode("\n"), @makeCode(code)]
+    [@makeCode(code)]
 
 #### Call
 
@@ -1221,17 +1221,21 @@ exports.Arr = class Arr extends Base
       for obj in @objects
         unwrappedObj = obj.unwrapAll()
         unwrappedObj.lhs = yes if unwrappedObj instanceof Arr or unwrappedObj instanceof Obj
+
     compiledObjs = (obj.compileToFragments o, LEVEL_LIST for obj in @objects)
     for fragments, index in compiledObjs
-      if index
-        answer.push @makeCode ", "
-      answer.push fragments...
-    if fragmentsToText(answer).indexOf('\n') >= 0
+      unless fragments[0].type is 'Comment'
+        answer.push fragments...
+        unless index is compiledObjs.length - 1
+          answer.push @makeCode ', '
+      else
+        answer = answer.concat [@makeCode("\n#{o.indent}"), fragments..., @makeCode('\n')]
+    if fragmentsToText(answer).includes('\n')
       answer.unshift @makeCode "[\n#{o.indent}"
       answer.push @makeCode "\n#{@tab}]"
     else
-      answer.unshift @makeCode "["
-      answer.push @makeCode "]"
+      answer.unshift @makeCode '['
+      answer.push @makeCode ']'
     answer
 
   assigns: (name) ->
