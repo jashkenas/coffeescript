@@ -3090,7 +3090,9 @@ exports.If = class If extends Base
     cond = @condition.compileToFragments o, LEVEL_COND
     body = @bodyNode().compileToFragments o, LEVEL_LIST
     alt  = if @elseBodyNode() then @elseBodyNode().compileToFragments(o, LEVEL_LIST) else [@makeCode('void 0')]
-    fragments = cond.concat @makeCode(" ? "), body, @makeCode(" : "), alt
+    body.push @makeCode('void 0') if @bodyNode()     instanceof Comment
+    alt.push  @makeCode('void 0') if @elseBodyNode() instanceof Comment
+    fragments = cond.concat @makeCode(' ? '), body, @makeCode(' : '), alt
     if o.level >= LEVEL_COND then @wrapInParentheses fragments else fragments
 
   unfoldSoak: ->
