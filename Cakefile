@@ -1,4 +1,5 @@
 fs                        = require 'fs'
+os                        = require 'os'
 path                      = require 'path'
 _                         = require 'underscore'
 { spawn, exec, execSync } = require 'child_process'
@@ -434,3 +435,17 @@ task 'test:browser', 'run the test suite against the merged browser script', ->
   (-> eval source).call result
   testResults = runTests result.CoffeeScript
   process.exit 1 unless testResults
+
+task 'test:webpack', 'run webpack test', ->
+  args = [
+    "./node_modules/webpack/bin/webpack.js"
+    "--entry=./lib/coffeescript/browser.js", 
+    "--output-path=#{os.tmpdir()}",
+    "--output-filename=coffeescript.js"
+  ]
+
+  console.log 'webpack', args.slice(1).join(' ')
+
+  spawnNodeProcess args, 'both', (status) ->
+    console.log "webpack exits with #{status}"
+    process.exit(status)
