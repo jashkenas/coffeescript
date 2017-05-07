@@ -412,3 +412,14 @@ test "#3761: Multiline comment at end of an object", ->
 test "#4375: UTF-8 characters in comments", ->
   # 智に働けば角が立つ、情に掉させば流される。
   ok yes
+
+test "#3735: Multiline comment in array", ->
+  arr = [
+    ###
+      Comment
+    ###
+    3
+  ]
+
+  ok arr[0] is 3
+
