@@ -418,6 +418,7 @@ test "#3735: Multiline comment in array", ->
     3
   ]
   arrayEq a, [3]
+  eq a.length, 1
 
   b = [
     4
@@ -428,6 +429,7 @@ test "#3735: Multiline comment in array", ->
     6
   ]
   arrayEq b, [4, 5, 6]
+  eq b.length, 3
 
   c = [
     7
@@ -436,3 +438,4 @@ test "#3735: Multiline comment in array", ->
     ###
   ]
   arrayEq c, [7]
+  eq c.length, 1

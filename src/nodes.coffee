@@ -1224,12 +1224,11 @@ exports.Arr = class Arr extends Base
 
     compiledObjs = (obj.compileToFragments o, LEVEL_LIST for obj in @objects)
     for fragments, index in compiledObjs
-      unless fragments[0].type is 'Comment'
-        answer.push fragments...
-        unless index is compiledObjs.length - 1
-          answer.push @makeCode ', '
-      else
-        answer = answer.concat [@makeCode("\n#{o.indent}"), fragments..., @makeCode('\n')]
+      answer.push fragments...
+      if fragments[0].type is 'Comment'
+        answer.push @makeCode ' '
+      else unless index is compiledObjs.length - 1
+        answer.push @makeCode ', '
     if fragmentsToText(answer).includes('\n')
       answer.unshift @makeCode "[\n#{o.indent}"
       answer.push @makeCode "\n#{@tab}]"
