@@ -76,6 +76,23 @@ test "empty conditional bodies", ->
   else if false
   else)
 
+test "conditional bodies containing only comments", ->
+  eq undefined, (if true
+    ###
+    block comment
+    ###
+  else
+    # comment
+  )
+
+  eq undefined, (if false
+    # comment
+  else if true
+    ###
+    block comment
+    ###
+  else)
+
 test "return value of if-else is from the proper body", ->
   nonce = {}
   eq nonce, if false then undefined else nonce
