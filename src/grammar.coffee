@@ -100,6 +100,7 @@ grammar =
   # Pure statements which cannot be expressions.
   Statement: [
     o 'Return'
+    o 'Comment'
     o 'STATEMENT',                              -> new StatementLiteral $1
     o 'Import'
     o 'Export'
@@ -123,7 +124,6 @@ grammar =
     o 'Class'
     o 'Throw'
     o 'Yield'
-    o 'Comment'
   ]
 
   Yield: [

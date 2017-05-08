@@ -68,7 +68,7 @@ exports.Base = class Base
     o.level  = lvl if lvl
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
-    if o.level is LEVEL_TOP or not node.isStatement(o)
+    if o.level is LEVEL_TOP or not node.isStatement(o) or node instanceof Comment
       node.compileNode o
     else
       node.compileClosure o
@@ -416,8 +416,7 @@ exports.Block = class Block extends Base
       else if top
         node.front = true
         fragments = node.compileToFragments o
-        unless node.isStatement(o) or node instanceof Comment or
-        (node instanceof HoistTarget and node.source instanceof Comment)
+        unless node.isStatement o
           fragments.unshift @makeCode "#{@tab}"
           fragments.push @makeCode ';'
         compiledNodes.push fragments
@@ -759,7 +758,7 @@ exports.Comment = class Comment extends Base
   constructor: (@comment) ->
     super()
 
-  isStatement:     NO
+  isStatement:     YES
   makeReturn:      THIS
 
   compileNode: (o, level) ->
