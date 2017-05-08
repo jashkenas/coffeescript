@@ -156,7 +156,7 @@ test "block comments in functions", ->
 
   ok fn1()
 
-  fn2 =  ->
+  fn2 = ->
     ###
     block comment
     ###

@@ -81,7 +81,7 @@ exports.compile = compile = withPrettyErrors (code, options) ->
 
   tokens = lexer.tokenize code, options
 
-  # Pass a list of referenced variables, so that generated variables won't get
+  # Pass a list of referenced variables, so that generated variables won’t get
   # the same name.
   options.referencedVars = (
     token[1] for token in tokens when token[0] is 'IDENTIFIER'

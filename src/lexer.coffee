@@ -13,7 +13,7 @@
 
 # Import the helpers we need.
 {count, starts, compact, repeat, invertLiterate, merge,
-locationDataToString,  throwSyntaxError} = require './helpers'
+locationDataToString, throwSyntaxError} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -84,8 +84,8 @@ exports.Lexer = class Lexer
     (new Rewriter).rewrite @tokens
 
   # Preprocess the code to remove leading and trailing whitespace, carriage
-  # returns, etc. If we're lexing literate CoffeeScript, strip external Markdown
-  # by removing all lines that aren't indented by at least four spaces or a tab.
+  # returns, etc. If we’re lexing literate CoffeeScript, strip external Markdown
+  # by removing all lines that aren’t indented by at least four spaces or a tab.
   clean: (code) ->
     code = code.slice(1) if code.charCodeAt(0) is BOM
     code = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
@@ -99,9 +99,9 @@ exports.Lexer = class Lexer
   # ----------
 
   # Matches identifying literals: variables, keywords, method names, etc.
-  # Check to ensure that JavaScript reserved words aren't being used as
+  # Check to ensure that JavaScript reserved words aren’t being used as
   # identifiers. Because CoffeeScript reserves a handful of keywords that are
-  # allowed in JavaScript, we're careful not to tag them as keywords when
+  # allowed in JavaScript, we’re careful not to tag them as keywords when
   # referenced as property names here, so you can still do `jQuery.is()` even
   # though `is` means `===` otherwise.
   identifierToken: ->
@@ -173,7 +173,7 @@ exports.Lexer = class Lexer
       @seenFor = no
     # Throw an error on attempts to use `get` or `set` as keywords, or
     # what CoffeeScript would normally interpret as calls to functions named
-    # `get` or `set`, i.e. `get({foo: function () {}})`
+    # `get` or `set`, i.e. `get({foo: function () {}})`.
     else if tag is 'PROPERTY' and prev
       if prev.spaced and prev[0] in CALLABLE and /^[gs]et$/.test(prev[1])
         @error "'#{prev[1]}' cannot be used as a keyword, or as a function call without parentheses", prev[2]
@@ -211,7 +211,7 @@ exports.Lexer = class Lexer
     input.length
 
   # Matches numbers, including decimals, hex, and exponential notation.
-  # Be careful not to interfere with ranges-in-progress.
+  # Be careful not to interfere with ranges in progress.
   numberToken: ->
     return 0 unless match = NUMBER.exec @chunk
 
@@ -241,7 +241,7 @@ exports.Lexer = class Lexer
     @token tag, number, 0, lexedLength
     lexedLength
 
-  # Matches strings, including multi-line strings, as well as heredocs, with or without
+  # Matches strings, including multiline strings, as well as heredocs, with or without
   # interpolation.
   stringToken: ->
     [quote] = STRING_START.exec(@chunk) || []
@@ -592,7 +592,7 @@ exports.Lexer = class Lexer
 
       @validateEscapes strPart, {isRegex: delimiter.charAt(0) is '/', offsetInChunk}
 
-      # Push a fake 'NEOSTRING' token, which will get turned into a real string later.
+      # Push a fake `'NEOSTRING'` token, which will get turned into a real string later.
       tokens.push @makeToken 'NEOSTRING', strPart, offsetInChunk
 
       str = str[strPart.length..]
@@ -614,10 +614,10 @@ exports.Lexer = class Lexer
       close[0] = close[1] = ')'
       close.origin = ['', 'end of interpolation', close[2]]
 
-      # Remove leading 'TERMINATOR' (if any).
+      # Remove leading `'TERMINATOR'` (if any).
       nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
 
-      # Push a fake 'TOKENS' token, which will get turned into real tokens later.
+      # Push a fake `'TOKENS'` token, which will get turned into real tokens later.
       tokens.push ['TOKENS', nested]
 
       str = str[index..]
@@ -637,9 +637,9 @@ exports.Lexer = class Lexer
 
     {tokens, index: offsetInChunk + delimiter.length}
 
-  # Merge the array `tokens` of the fake token types 'TOKENS' and 'NEOSTRING'
+  # Merge the array `tokens` of the fake token types `'TOKENS'` and `'NEOSTRING'`
   # (as returned by `matchWithInterpolations`) into the token stream. The value
-  # of 'NEOSTRING's are converted using `fn` and turned into strings using
+  # of `'NEOSTRING'`s are converted using `fn` and turned into strings using
   # `options` first.
   mergeInterpolationTokens: (tokens, options, fn) ->
     if tokens.length > 1
@@ -652,12 +652,12 @@ exports.Lexer = class Lexer
         when 'TOKENS'
           # Optimize out empty interpolations (an empty pair of parentheses).
           continue if value.length is 2
-          # Push all the tokens in the fake 'TOKENS' token. These already have
+          # Push all the tokens in the fake `'TOKENS'` token. These already have
           # sane location data.
           locationToken = value[0]
           tokensToPush = value
         when 'NEOSTRING'
-          # Convert 'NEOSTRING' into 'STRING'.
+          # Convert `'NEOSTRING'` into `'STRING'`.
           converted = fn.call this, token[1], i
           # Optimize out empty strings. We ensure that the tokens stream always
           # starts with a string token, though, to make sure that the result
@@ -706,7 +706,7 @@ exports.Lexer = class Lexer
     [..., prev] = @ends
     unless tag is wanted = prev?.tag
       @error "unmatched #{tag}" unless 'OUTDENT' is wanted
-      # Auto-close INDENT to support syntax like this:
+      # Auto-close `INDENT` to support syntax like this:
       #
       #     el.click((event) ->
       #       el.hide())
@@ -721,7 +721,7 @@ exports.Lexer = class Lexer
 
   # Returns the line and column number from an offset into the current chunk.
   #
-  # `offset` is a number of characters into @chunk.
+  # `offset` is a number of characters into `@chunk`.
   getLineAndColumnFromChunk: (offset) ->
     if offset is 0
       return [@chunkLine, @chunkColumn]
@@ -742,7 +742,7 @@ exports.Lexer = class Lexer
 
     [@chunkLine + lineCount, column]
 
-  # Same as "token", exception this just returns the token without adding it
+  # Same as `token`, except this just returns the token without adding it
   # to the results.
   makeToken: (tag, value, offsetInChunk = 0, length = value.length) ->
     locationData = {}
@@ -760,8 +760,8 @@ exports.Lexer = class Lexer
     token
 
   # Add a token to the results.
-  # `offset` is the offset into the current @chunk where the token starts.
-  # `length` is the length of the token in the @chunk, after the offset.  If
+  # `offset` is the offset into the current `@chunk` where the token starts.
+  # `length` is the length of the token in the `@chunk`, after the offset.  If
   # not specified, the length of `value` will be used.
   #
   # Returns the new token.
@@ -811,7 +811,7 @@ exports.Lexer = class Lexer
     low = (codePoint - 0x10000) % 0x400 + 0xDC00
     "#{toUnicodeEscape(high)}#{toUnicodeEscape(low)}"
 
-  # Replace \u{...} with \uxxxx[\uxxxx] in regexes without `u` flag
+  # Replace `\u{...}` with `\uxxxx[\uxxxx]` in regexes without `u` flag
   replaceUnicodeCodePointEscapes: (str, options) ->
     shouldReplace = options.flags? and 'u' not in options.flags
     str.replace UNICODE_CODE_POINT_ESCAPE, (match, escapedBackslash, codePointHex, offset) =>
@@ -850,11 +850,11 @@ exports.Lexer = class Lexer
   makeDelimitedLiteral: (body, options = {}) ->
     body = '(?:)' if body is '' and options.delimiter is '/'
     regex = ///
-        (\\\\)                               # escaped backslash
-      | (\\0(?=[1-7]))                       # nul character mistaken as octal escape
-      | \\?(#{options.delimiter})            # (possibly escaped) delimiter
-      | \\?(?: (\n)|(\r)|(\u2028)|(\u2029) ) # (possibly escaped) newlines
-      | (\\.)                                # other escapes
+        (\\\\)                               # Escaped backslash.
+      | (\\0(?=[1-7]))                       # Null character mistaken as octal escape.
+      | \\?(#{options.delimiter})            # (Possibly escaped) delimiter.
+      | \\?(?: (\n)|(\r)|(\u2028)|(\u2029) ) # (Possibly escaped) newlines.
+      | (\\.)                                # Other escapes.
     ///g
     body = body.replace regex, (match, backslash, nul, delimiter, lf, cr, ls, ps, other) -> switch
       # Ignore escaped backslashes.
@@ -1010,8 +1010,8 @@ HEREDOC_SINGLE = /// ^(?: [^\\']  | \\[\s\S] | '(?!'')            )* ///
 HEREDOC_DOUBLE = /// ^(?: [^\\"#] | \\[\s\S] | "(?!"") | \#(?!\{) )* ///
 
 STRING_OMIT    = ///
-    ((?:\\\\)+)      # consume (and preserve) an even number of backslashes
-  | \\[^\S\n]*\n\s*  # remove escaped newlines
+    ((?:\\\\)+)      # Consume (and preserve) an even number of backslashes.
+  | \\[^\S\n]*\n\s*  # Remove escaped newlines.
 ///g
 SIMPLE_STRING_OMIT = /\s*\n\s*/g
 HEREDOC_INDENT     = /\n+([^\n\S]*)(?=\S)/g
@@ -1019,9 +1019,9 @@ HEREDOC_INDENT     = /\n+([^\n\S]*)(?=\S)/g
 # Regex-matching-regexes.
 REGEX = /// ^
   / (?!/) ((
-  ?: [^ [ / \n \\ ]  # every other thing
-   | \\[^\n]         # anything but newlines escaped
-   | \[              # character class
+  ?: [^ [ / \n \\ ]  # Every other thing.
+   | \\[^\n]         # Anything but newlines escaped.
+   | \[              # Character class.
        (?: \\[^\n] | [^ \] \n \\ ] )*
      \]
   )*) (/)?
@@ -1033,9 +1033,9 @@ VALID_FLAGS  = /^(?!.*(.).*\1)[imguy]*$/
 HEREGEX      = /// ^(?: [^\\/#] | \\[\s\S] | /(?!//) | \#(?!\{) )* ///
 
 HEREGEX_OMIT = ///
-    ((?:\\\\)+)     # consume (and preserve) an even number of backslashes
-  | \\(\s)          # preserve escaped whitespace
-  | \s+(?:#.*)?     # remove whitespace and comments
+    ((?:\\\\)+)     # Consume (and preserve) an even number of backslashes.
+  | \\(\s)          # Preserve escaped whitespace.
+  | \s+(?:#.*)?     # Remove whitespace and comments.
 ///g
 
 REGEX_ILLEGAL = /// ^ ( / | /{3}\s*) (\*) ///
@@ -1048,7 +1048,7 @@ HERECOMMENT_ILLEGAL = /\*\//
 LINE_CONTINUER      = /// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///
 
 STRING_INVALID_ESCAPE = ///
-  ( (?:^|[^\\]) (?:\\\\)* )        # make sure the escape isn’t escaped
+  ( (?:^|[^\\]) (?:\\\\)* )        # Make sure the escape isn’t escaped.
   \\ (
      ?: (0[0-7]|[1-7])             # octal escape
       | (x(?![\da-fA-F]{2}).{0,2}) # hex escape
@@ -1057,7 +1057,7 @@ STRING_INVALID_ESCAPE = ///
   )
 ///
 REGEX_INVALID_ESCAPE = ///
-  ( (?:^|[^\\]) (?:\\\\)* )        # make sure the escape isn’t escaped
+  ( (?:^|[^\\]) (?:\\\\)* )        # Make sure the escape isn’t escaped.
   \\ (
      ?: (0[0-7])                   # octal escape
       | (x(?![\da-fA-F]{2}).{0,2}) # hex escape
@@ -1067,7 +1067,7 @@ REGEX_INVALID_ESCAPE = ///
 ///
 
 UNICODE_CODE_POINT_ESCAPE = ///
-  ( \\\\ )        # make sure the escape isn’t escaped
+  ( \\\\ )        # Make sure the escape isn’t escaped.
   |
   \\u\{ ( [\da-fA-F]+ ) \}
 ///g
