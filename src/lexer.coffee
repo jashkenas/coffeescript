@@ -65,6 +65,7 @@ exports.Lexer = class Lexer
            @whitespaceToken() or
            @lineToken()       or
            @stringToken()     or
+           @symbolToken()     or
            @numberToken()     or
            @regexToken()      or
            @jsToken()         or
@@ -229,6 +230,12 @@ exports.Lexer = class Lexer
     tag = if numberValue is Infinity then 'INFINITY' else 'NUMBER'
     @token tag, number, 0, lexedLength
     lexedLength
+
+  symbolToken: ->
+    [match, symbol] = /^:([_$\-a-zA-Z0-9]+)/.exec(@chunk) || []
+    return 0 unless symbol
+    @token 'STRING', "\"#{symbol}\"", 0, match.length
+    match.length
 
   # Matches strings, including multi-line strings, as well as heredocs, with or without
   # interpolation.
