@@ -439,3 +439,6 @@ test "#3735: Multiline comment in array", ->
   ]
   arrayEq c, [7]
   eq c.length, 1
+
+test "Multiline comment not treated as value", ->
+  throws -> CoffeeScript.compile 'a + ### Comment ###'
