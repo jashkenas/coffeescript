@@ -420,7 +420,7 @@ exports.Lexer = class Lexer
         @outdebt = 0
         # pair might call outdentToken, so preserve decreasedIndent
         @pair 'OUTDENT'
-        @token 'OUTDENT', moveOut, 0, outdentLength
+        @token 'OUTDENT', dent, 0, outdentLength
         moveOut -= dent
     @outdebt -= moveOut if dent
     @tokens.pop() while @value() is ';'
