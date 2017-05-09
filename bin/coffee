@@ -2,6 +2,17 @@
 
 var path = require('path');
 var fs   = require('fs');
-var lib  = path.join(path.dirname(fs.realpathSync(__filename)), '../lib');
 
-require(lib + '/coffee-script/command').run();
+var potentialPaths = [
+  path.join(process.cwd(), 'node_modules/coffeescript/lib/coffeescript'),
+  path.join(process.cwd(), 'node_modules/coffeescript/lib/coffee-script'),
+  path.join(process.cwd(), 'node_modules/coffee-script/lib/coffee-script'),
+  path.join(__dirname, '../lib/coffee-script')
+];
+
+for (var i = 0, len = potentialPaths.length; i < len; i++) {
+  if (fs.existsSync(potentialPaths[i])) {
+    require(potentialPaths[i] + '/command').run();
+    break;
+  }
+}
