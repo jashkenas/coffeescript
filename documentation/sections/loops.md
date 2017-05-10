@@ -1,12 +1,12 @@
 ## Loops and Comprehensions
 
-Most of the loops you’ll write in CoffeeScript will be **comprehensions** over arrays, objects, and ranges. Comprehensions replace (and compile into) **for** loops, with optional guard clauses and the value of the current array index. Unlike for loops, array comprehensions are expressions, and can be returned and assigned.
+Most of the loops you’ll write in CoffeeScript will be **comprehensions** over arrays, objects, and ranges. Comprehensions replace (and compile into) `for` loops, with optional guard clauses and the value of the current array index. Unlike for loops, array comprehensions are expressions, and can be returned and assigned.
 
 ```
 codeFor('array_comprehensions')
 ```
 
-Comprehensions should be able to handle most places where you otherwise would use a loop, **each**/**forEach**, **map**, or **select**/**filter**, for example:<br>
+Comprehensions should be able to handle most places where you otherwise would use a loop, `each`/`forEach`, `map`, or `select`/`filter`, for example:<br>
 `shortNames = (name for name in list when name.length < 5)`<br>
 If you know the start and end of your loop, or would like to step through in fixed-size increments, you can use a range to specify the start and end of your comprehension.
 
@@ -32,13 +32,13 @@ If you would like to iterate over just the keys that are defined on the object i
 
 To iterate a generator function, use `from`. See [Generator Functions](#generator-iteration).
 
-The only low-level loop that CoffeeScript provides is the **while** loop. The main difference from JavaScript is that the **while** loop can be used as an expression, returning an array containing the result of each iteration through the loop.
+The only low-level loop that CoffeeScript provides is the `while` loop. The main difference from JavaScript is that the `while` loop can be used as an expression, returning an array containing the result of each iteration through the loop.
 
 ```
 codeFor('while', 'lyrics.join("\\n")')
 ```
 
-For readability, the **until** keyword is equivalent to `while not`, and the **loop** keyword is equivalent to `while true`.
+For readability, the `until` keyword is equivalent to `while not`, and the `loop` keyword is equivalent to `while true`.
 
 When using a JavaScript loop to generate functions, it’s common to insert a closure wrapper in order to ensure that loop variables are closed over, and all the generated functions don’t just share the final values. CoffeeScript provides the `do` keyword, which immediately invokes a passed function, forwarding any arguments.
 

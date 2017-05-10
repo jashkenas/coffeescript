@@ -206,11 +206,6 @@ releaseHeader('2014-01-28', '1.7.0', '1.6.3')
 *   When requiring CoffeeScript files in Node you must now explicitly register the compiler. This can be done with `require 'coffeescript/register'` or `CoffeeScript.register()`. Also for configuration such as Mocha’s, use **coffeescript/register**.
 *   Improved error messages, source maps and stack traces. Source maps now use the updated `//#` syntax.
 *   Leading `.` now closes all open calls, allowing for simpler chaining syntax.
-
-```
-codeFor('chaining')
-```
-
 *   Added `**`, `//` and `%%` operators and `...` expansion in parameter lists and destructuring expressions.
 *   Multiline strings are now joined by a single space and ignore all indentation. A backslash at the end of a line can denote the amount of whitespace between lines, in both strings and heredocs. Backslashes correctly escape whitespace in block regexes.
 *   Closing brackets can now be indented and therefore no longer cause unexpected error.

@@ -403,7 +403,7 @@ exports.Lexer = class Lexer
       return indent.length
 
     if size > @indent
-      if noNewlines
+      if noNewlines or @tag() is 'RETURN'
         @indebt = size - @indent
         @suppressNewlines()
         return indent.length
@@ -455,7 +455,7 @@ exports.Lexer = class Lexer
     this
 
   # Matches and consumes non-meaningful whitespace. Tag the previous token
-  # as being "spaced", because there are some cases where it makes a difference.
+  # as being “spaced”, because there are some cases where it makes a difference.
   whitespaceToken: ->
     return 0 unless (match = WHITESPACE.exec @chunk) or
                     (nline = @chunk.charAt(0) is '\n')
@@ -790,7 +790,7 @@ exports.Lexer = class Lexer
     LINE_CONTINUER.test(@chunk) or
     @tag() in ['\\', '.', '?.', '?::', 'UNARY', 'MATH', 'UNARY_MATH', '+', '-',
                '**', 'SHIFT', 'RELATION', 'COMPARE', '&', '^', '|', '&&', '||',
-               'BIN?', 'THROW', 'EXTENDS']
+               'BIN?', 'THROW', 'EXTENDS', 'DEFAULT']
 
   formatString: (str, options) ->
     @replaceUnicodeCodePointEscapes str.replace(STRING_OMIT, '$1'), options
