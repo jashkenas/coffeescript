@@ -462,4 +462,3 @@ task 'test:webpack', 'run test suite against the webpack test bundle', ->
 
   testResults = runTests CoffeeScript
   process.exit 1 unless testResults
-  
