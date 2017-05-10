@@ -436,16 +436,30 @@ task 'test:browser', 'run the test suite against the merged browser script', ->
   testResults = runTests result.CoffeeScript
   process.exit 1 unless testResults
 
-task 'test:webpack', 'run webpack test', ->
+task 'build:webpack', 'build webpack test bundle', ->
   args = [
     "./node_modules/webpack/bin/webpack.js"
-    "--entry=./lib/coffeescript/browser.js", 
-    "--output-path=#{os.tmpdir()}",
+    "--entry=./test/webpack/entry.js", 
+    "--output-path=test/webpack",
     "--output-filename=coffeescript.js"
   ]
 
-  console.log 'webpack', args.slice(1).join(' ')
-
   spawnNodeProcess args, 'both', (status) ->
-    console.log "webpack exits with #{status}"
     process.exit(status)
+
+task 'test:webpack', 'run test suite against the webpack test bundle', ->
+  loader = """
+  var __exports__ = {};
+  (function (__exports__) {
+    #{fs.readFileSync './test/webpack/coffeescript.js'}
+  })(__exports__)
+  return __exports__.CoffeeScript;
+  """
+
+  CoffeeScript = new Function(loader)()
+
+  global.testingBrowser = yes
+
+  testResults = runTests CoffeeScript
+  process.exit 1 unless testResults
+  
