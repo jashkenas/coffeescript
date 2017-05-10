@@ -1,4 +1,5 @@
 fs                        = require 'fs'
+os                        = require 'os'
 path                      = require 'path'
 _                         = require 'underscore'
 { spawn, exec, execSync } = require 'child_process'
@@ -51,14 +52,8 @@ run = (args, callback) ->
 buildParser = ->
   helpers.extend global, require 'util'
   require 'jison'
-  parser = require('./lib/coffeescript/grammar').parser.generate()
-  # Patch Jison’s output, until https://github.com/zaach/jison/pull/339 is accepted,
-  # to ensure that require('fs') is only called where it exists.
-  parser = parser.replace "var source = require('fs')", """
-      var source = '';
-          var fs = require('fs');
-          if (typeof fs !== 'undefined' && fs !== null)
-              source = fs"""
+  # We don't need `moduleMain`, since the parser is unlikely to be run standalone.
+  parser = require('./lib/coffeescript/grammar').parser.generate(moduleMain: ->)
   fs.writeFileSync 'lib/coffeescript/parser.js', parser
 
 buildExceptParser = (callback) ->
@@ -135,7 +130,7 @@ task 'build:browser', 'merge the built scripts into a single file for use in a b
       var CoffeeScript = function() {
         function require(path){ return require[path]; }
         #{code}
-        return require['./coffeescript'];
+        return require['./browser'];
       }();
 
       if (typeof define === 'function' && define.amd) {
@@ -368,7 +363,7 @@ task 'bench', 'quick benchmark of compilation time', ->
 
 # Run the CoffeeScript test suite.
 runTests = (CoffeeScript) ->
-  CoffeeScript.register()
+  CoffeeScript.register() unless global.testingBrowser
   startTime = Date.now()
 
   # These are attached to `global` so that they’re accessible from within
@@ -439,4 +434,31 @@ task 'test:browser', 'run the test suite against the merged browser script', ->
   global.testingBrowser = yes
   (-> eval source).call result
   testResults = runTests result.CoffeeScript
+  process.exit 1 unless testResults
+
+task 'build:webpack', 'build webpack test bundle', ->
+  args = [
+    "./node_modules/webpack/bin/webpack.js"
+    "--entry=./test/webpack/entry.js", 
+    "--output-path=test/webpack",
+    "--output-filename=coffeescript.js"
+  ]
+
+  spawnNodeProcess args, 'both', (status) ->
+    process.exit(status)
+
+task 'test:webpack', 'run test suite against the webpack test bundle', ->
+  loader = """
+  var __exports__ = {};
+  (function (__exports__) {
+    #{fs.readFileSync './test/webpack/coffeescript.js'}
+  })(__exports__)
+  return __exports__.CoffeeScript;
+  """
+
+  CoffeeScript = new Function(loader)()
+
+  global.testingBrowser = yes
+
+  testResults = runTests CoffeeScript
   process.exit 1 unless testResults
