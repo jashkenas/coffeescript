@@ -439,8 +439,10 @@ task 'test:browser', 'run the test suite against the merged browser script', ->
 task 'build:webpack', 'build webpack test bundle', ->
   args = [
     "./node_modules/webpack/bin/webpack.js"
-    "--entry=./test/webpack/entry.js", 
+    "--entry=./", 
     "--output-path=test/webpack",
+    "--output-library=CoffeeScript",
+    "--output-library-target=commonjs2",
     "--output-filename=coffeescript.js"
   ]
 
@@ -448,15 +450,7 @@ task 'build:webpack', 'build webpack test bundle', ->
     process.exit(status)
 
 task 'test:webpack', 'run test suite against the webpack test bundle', ->
-  loader = """
-  var __exports__ = {};
-  (function (__exports__) {
-    #{fs.readFileSync './test/webpack/coffeescript.js'}
-  })(__exports__)
-  return __exports__.CoffeeScript;
-  """
-
-  CoffeeScript = new Function(loader)()
+  CoffeeScript = require('./test/webpack/coffeescript.js')
 
   global.testingBrowser = yes
 
