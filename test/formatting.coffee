@@ -128,6 +128,9 @@ test "indented heredoc", ->
 #   * single line arguments
 #   * inline function literal
 #   * inline object literal
+#
+# * chaining inside
+#   * implicit object literal
 
 test "chaining after outdent", ->
   id = (x) -> x
@@ -220,6 +223,14 @@ test "chaining should work within spilling ternary", ->
       a: 3
       .a
   eq 3, result.h
+
+test "method call chaining inside objects", ->
+  f = (x) -> c: 42
+  result =
+    a: f 1
+    b: f a: 1
+      .c
+  eq 42, result.b
 
 # Nested blocks caused by paren unwrapping
 test "#1492: Nested blocks don't cause double semicolons", ->
