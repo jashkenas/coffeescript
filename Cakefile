@@ -436,7 +436,7 @@ task 'test:browser', 'run the test suite against the merged browser script', ->
   testResults = runTests result.CoffeeScript
   process.exit 1 unless testResults
 
-task 'build:webpack', 'build webpack test bundle', ->
+task 'test:webpack', 'build webpack test bundle and run test suite against it', ->
   args = [
     "./node_modules/webpack/bin/webpack.js"
     "--entry=./", 
@@ -447,12 +447,11 @@ task 'build:webpack', 'build webpack test bundle', ->
   ]
 
   spawnNodeProcess args, 'both', (status) ->
-    process.exit(status)
+    process.exit(status) if status isnt 0
 
-task 'test:webpack', 'run test suite against the webpack test bundle', ->
-  CoffeeScript = require('./test/webpack/coffeescript.js')
+    CoffeeScript = require('./test/webpack/coffeescript.js')
 
-  global.testingBrowser = yes
+    global.testingBrowser = yes
 
-  testResults = runTests CoffeeScript
-  process.exit 1 unless testResults
+    testResults = runTests CoffeeScript
+    process.exit 1 unless testResults
