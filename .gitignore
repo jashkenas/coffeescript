@@ -8,4 +8,3 @@ test/*.js
 parser.output
 /node_modules
 npm-debug.log*
-test/webpack/coffeescript.js

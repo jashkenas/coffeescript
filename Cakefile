@@ -436,22 +436,28 @@ task 'test:browser', 'run the test suite against the merged browser script', ->
   testResults = runTests result.CoffeeScript
   process.exit 1 unless testResults
 
-task 'test:webpack', 'build webpack test bundle and run test suite against it', ->
-  args = [
-    "./node_modules/webpack/bin/webpack.js"
-    "--entry=./", 
-    "--output-path=test/webpack",
-    "--output-library=CoffeeScript",
-    "--output-library-target=commonjs2",
-    "--output-filename=coffeescript.js"
-  ]
+task 'test:integrations', 'test the module integrated with other libraries and environments', ->
+  # Tools like Webpack and Browserify generate builds intended for a browser
+  # environment where Node modules are not available. We want to ensure that
+  # the CoffeeScript module as presented by the `browser` key in `package.json`
+  # can be built by such tools; if such a build succeeds, it verifies that no
+  # Node modules are required as part of the compiler (as opposed to the tests)
+  # and that therefore the compiler will run in a browser environment.
+  tmpdir = os.tmpdir()
+  try
+    buildLog = execSync "./node_modules/webpack/bin/webpack.js
+      --entry=./
+      --output-library=CoffeeScript
+      --output-library-target=commonjs2
+      --output-path=#{tmpdir}
+      --output-filename=coffeescript.js"
+  catch exception
+    console.error buildLog.toString()
+    throw exception
 
-  spawnNodeProcess args, 'both', (status) ->
-    process.exit(status) if status isnt 0
-
-    CoffeeScript = require('./test/webpack/coffeescript.js')
-
-    global.testingBrowser = yes
-
-    testResults = runTests CoffeeScript
-    process.exit 1 unless testResults
+  builtCompiler = path.join tmpdir, 'coffeescript.js'
+  CoffeeScript = require builtCompiler
+  global.testingBrowser = yes
+  testResults = runTests CoffeeScript
+  fs.unlinkSync builtCompiler
+  process.exit 1 unless testResults
