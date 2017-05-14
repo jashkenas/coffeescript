@@ -1,7 +1,7 @@
 {
   "name": "coffeescript",
   "main": [
-    "lib/coffeescript/coffeescript.js"
+    "lib/coffeescript/browser.js"
   ],
   "description": "Unfancy JavaScript",
   "keywords": [

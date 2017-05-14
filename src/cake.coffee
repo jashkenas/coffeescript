@@ -11,7 +11,7 @@ fs           = require 'fs'
 path         = require 'path'
 helpers      = require './helpers'
 optparse     = require './optparse'
-CoffeeScript = require './coffeescript'
+CoffeeScript = require './'
 
 # Register .coffee extension
 CoffeeScript.register()
