@@ -22,10 +22,10 @@ CoffeeScript is a little language that compiles into JavaScript.
 
 ## Installation
 
-If you have the node package manager, npm, installed:
+Once you have Node.js installed:
 
 ```shell
-npm install --global coffee-script
+npm install --global coffeescript
 ```
 
 Leave off the `--global` if you don’t wish to install globally.
