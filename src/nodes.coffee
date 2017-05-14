@@ -868,6 +868,42 @@ exports.Index = class Index extends Base
 
 #### Range
 
+# A JSX element
+exports.JsxElement = class JsxElement extends Base
+
+  children: ['children']
+
+  constructor: (options) ->
+    {@name, @children} = options
+
+  compileNode: (o) ->
+    startTag = [
+      @makeCode '<'
+      @makeCode @name
+      @makeCode '>'
+    ]
+
+    compiledChildren =
+      flatten(
+        for child in @children
+          if child instanceof JsxElement
+            child.compileToFragments(o)
+          else
+            [@makeCode child]
+      )
+
+    endTag = [
+      @makeCode '</'
+      @makeCode @name
+      @makeCode '>'
+    ]
+
+    [
+      startTag...
+      compiledChildren...
+      endTag...
+    ]
+
 # A range literal. Ranges can be used to extract portions (slices) of arrays,
 # to specify a range for comprehensions, or as a value, to be expanded into the
 # corresponding array of integers at runtime.

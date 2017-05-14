@@ -352,7 +352,8 @@ task 'bench', 'quick benchmark of compilation time', ->
 
 
 # Run the CoffeeScript test suite.
-runTests = (CoffeeScript) ->
+runTests = (CoffeeScript, opts = {}) ->
+  {justTestFile} = opts
   CoffeeScript.register()
   startTime   = Date.now()
   currentFile = null
@@ -398,7 +399,7 @@ runTests = (CoffeeScript) ->
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
 
-  for file in files when helpers.isCoffee file
+  for file in files when helpers.isCoffee(file) and (not justTestFile or "#{ justTestFile }.coffee" is file)
     literate = helpers.isLiterate file
     currentFile = filename = path.join 'test', file
     code = fs.readFileSync filename
@@ -411,6 +412,9 @@ runTests = (CoffeeScript) ->
 
 task 'test', 'run the CoffeeScript language test suite', ->
   testResults = runTests CoffeeScript
+  process.exit 1 unless testResults
+task 'test:jsx', 'run the CoffeeScript language test suite', ->
+  testResults = runTests CoffeeScript, justTestFile: 'jsx'
   process.exit 1 unless testResults
 
 

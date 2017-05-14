@@ -60,6 +60,7 @@ exports.Lexer = class Lexer
     i = 0
     while @chunk = code[i..]
       consumed = \
+           @jsxToken() or
            @identifierToken() or
            @commentToken()    or
            @whitespaceToken() or
@@ -279,6 +280,59 @@ exports.Lexer = class Lexer
 
     end
 
+  # Matches JSX-Haml elements
+  jsxToken: ->
+    originalChunk = @chunk
+    return 0 unless @matchJsxElement()
+    originalChunk.length - @chunk.length
+
+  consumeChunk: (length) ->
+    return unless length
+    @chunk = @chunk[length..]
+
+  matchJsxElement: (opts = {}) ->
+    {allowLeadingWhitespace} = opts
+    elementRegex =
+      if allowLeadingWhitespace
+        JSX_ELEMENT_LEADING_WHITESPACE
+      else
+        JSX_ELEMENT
+    return unless match = elementRegex.exec(@chunk)
+    [openingTag, elementName] = match
+    @token 'JSX_ELEMENT_NAME', elementName, 0, openingTag.length
+    @consumeChunk openingTag.length
+    @consumeChunk @whitespaceToken() # consume any trailing whitespace
+    hasIndentedBody = 'indent' is @lineToken(dry: yes)
+    if hasIndentedBody
+      @token 'JSX_ELEMENT_INDENTED_BODY_START', ''
+      @consumeChunk @lineToken() # consume indent
+      loop
+        {popLevels} = @matchJsxElementIndentedChild()
+        return popLevels: popLevels - 1 if popLevels
+        if not @chunk or 'outdent' is @lineToken(dry: yes)
+          {numOutdents, consumed} = @lineToken(returnNumOutdents: yes)
+          @consumeChunk consumed
+          return popLevels: numOutdents - 1
+    else
+      [content] = JSX_ELEMENT_INLINE_CONTENT.exec(@chunk) ? []
+      if content
+        contentLength = content.length
+        content = content.replace TRAILING_SPACES, ''
+        content = content.replace SIMPLE_STRING_OMIT, ' '
+        @token 'JSX_ELEMENT_CONTENT', content
+        @consumeChunk contentLength
+        {}
+    # @token 'JSX_ELEMENT_END', elementName
+
+  matchJsxElementIndentedChild: ->
+    @matchJsxElement(allowLeadingWhitespace: yes) ? @matchJsxElementIndentedContentLine()
+
+  matchJsxElementIndentedContentLine: ->
+    [match, content] = JSX_ELEMENT_INDENTED_CONTENT_LINE.exec(@chunk)
+    @token 'JSX_ELEMENT_CONTENT', content, 0, match.length
+    @consumeChunk match.length
+    {}
+
   # Matches and consumes comments.
   commentToken: ->
     return 0 unless match = @chunk.match COMMENT
@@ -362,7 +416,8 @@ exports.Lexer = class Lexer
   #
   # Keeps track of the level of indentation, because a single outdent token
   # can close multiple indents, so we need to know how far in we happen to be.
-  lineToken: ->
+  lineToken: (opts = {}) ->
+    {dry, returnNumOutdents} = opts
     return 0 unless match = MULTI_DENT.exec @chunk
     indent = match[0]
 
@@ -373,35 +428,49 @@ exports.Lexer = class Lexer
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()
 
-    if size - @indebt is @indent
-      if noNewlines then @suppressNewlines() else @newlineToken 0
-      return indent.length
+    action =
+      switch
+        when size - @indebt is @indent
+          'consumedIndebt'
+        when size > @indent
+          'indent'
+        when size < @baseIndent
+          'missing'
+        else
+           'outdent'
+    return action if dry
 
-    if size > @indent
-      if noNewlines or @tag() is 'RETURN'
-        @indebt = size - @indent
-        @suppressNewlines()
-        return indent.length
-      unless @tokens.length
-        @baseIndent = @indent = size
-        return indent.length
-      diff = size - @indent + @outdebt
-      @token 'INDENT', diff, indent.length - size, size
-      @indents.push diff
-      @ends.push {tag: 'OUTDENT'}
-      @outdebt = @indebt = 0
-      @indent = size
-    else if size < @baseIndent
-      @error 'missing indentation', offset: indent.length
-    else
-      @indebt = 0
-      @outdentToken @indent - size, noNewlines, indent.length
+    switch action
+      when 'consumedIndebt'
+        if noNewlines then @suppressNewlines() else @newlineToken 0
+      when 'indent'
+        if noNewlines or @tag() is 'RETURN'
+          @indebt = size - @indent
+          @suppressNewlines()
+          break
+        unless @tokens.length
+          @baseIndent = @indent = size
+          break
+        diff = size - @indent + @outdebt
+        @token 'INDENT', diff, indent.length - size, size
+        @indents.push diff
+        @ends.push {tag: 'OUTDENT'}
+        @outdebt = @indebt = 0
+        @indent = size
+      when 'missing'
+        @error 'missing indentation', offset: indent.length
+      else # outdent
+        @indebt = 0
+        numOutdents = @outdentToken @indent - size, noNewlines, indent.length
+        return {numOutdents, consumed: indent.length} if returnNumOutdents
+
     indent.length
 
   # Record an outdent token or multiple tokens, if we happen to be moving back
   # inwards past several recorded indents. Sets new @indent value.
   outdentToken: (moveOut, noNewlines, outdentLength) ->
     decreasedIndent = @indent - moveOut
+    numOutdents = 0
     while moveOut > 0
       lastIndent = @indents[@indents.length - 1]
       if not lastIndent
@@ -421,13 +490,14 @@ exports.Lexer = class Lexer
         # pair might call outdentToken, so preserve decreasedIndent
         @pair 'OUTDENT'
         @token 'OUTDENT', moveOut, 0, outdentLength
+        numOutdents++
         moveOut -= dent
     @outdebt -= moveOut if dent
     @tokens.pop() while @value() is ';'
 
     @token 'TERMINATOR', '\n', outdentLength, 0 unless @tag() is 'TERMINATOR' or noNewlines
     @indent = decreasedIndent
-    this
+    numOutdents
 
   # Matches and consumes non-meaningful whitespace. Tag the previous token
   # as being “spaced”, because there are some cases where it makes a difference.
@@ -969,6 +1039,11 @@ MULTI_DENT = /^(?:\n[^\n\S]*)+/
 
 JSTOKEN      = ///^ `(?!``) ((?: [^`\\] | \\[\s\S]           )*) `   ///
 HERE_JSTOKEN = ///^ ```     ((?: [^`\\] | \\[\s\S] | `(?!``) )*) ``` ///
+
+JSX_ELEMENT =                    /// ^     %([a-zA-Z][a-zA-Z_0-9]*) (?=\s|$) ///
+JSX_ELEMENT_LEADING_WHITESPACE = /// ^ \s* %([a-zA-Z][a-zA-Z_0-9]*) (?=\s|$) ///
+JSX_ELEMENT_INLINE_CONTENT = /^[^\n]+/
+JSX_ELEMENT_INDENTED_CONTENT_LINE = /// ^ \s* ([^\n]*) ///
 
 # String-matching-regexes.
 STRING_START   = /^(?:'''|"""|'|")/

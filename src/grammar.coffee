@@ -298,6 +298,7 @@ grammar =
     o 'Literal',                                -> new Value $1
     o 'Parenthetical',                          -> new Value $1
     o 'Range',                                  -> new Value $1
+    o 'JsxElement',                             -> new Value $1
     o 'This'
   ]
 
@@ -466,6 +467,23 @@ grammar =
   # The CoffeeScript range literal.
   Range: [
     o '[ Expression RangeDots Expression ]',    -> new Range $2, $4, $3
+  ]
+
+  # JSX-Haml element
+  JsxElement: [
+    o 'JSX_ELEMENT_NAME',                                   -> new JsxElement name: $1, children: []
+    o 'JSX_ELEMENT_NAME JsxElementChildren',                -> new JsxElement name: $1, children: $2
+  ]
+
+  JsxElementChildren: [
+    o 'JsxElementChild',                                                   -> [$1]
+    o 'JsxElementChildren JsxElementChild',                                -> $1.concat $2
+    o 'JSX_ELEMENT_INDENTED_BODY_START INDENT JsxElementChildren OUTDENT', -> $3
+  ]
+
+  JsxElementChild: [
+    o 'JSX_ELEMENT_CONTENT', -> $1
+    o 'JsxElement',          -> $1
   ]
 
   # Array slice literals.
