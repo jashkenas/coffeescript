@@ -157,7 +157,7 @@ its internal array of tokens.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">exports</span>.<span class="hljs-title">Rewriter</span></span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.Rewriter = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Rewriter</span></span></pre></div></div>
             
         </li>
         
@@ -168,10 +168,15 @@ its internal array of tokens.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>Helpful snippet for debugging:</p>
-<pre><code><span class="hljs-built_in">console</span>.log (t[<span class="hljs-number">0</span>] + <span class="hljs-string">'/'</span> + t[<span class="hljs-number">1</span>] <span class="hljs-keyword">for</span> t <span class="hljs-keyword">in</span> @tokens).join <span class="hljs-string">' '</span>
-</code></pre>
+              <p>Rewrite the token stream in multiple passes, one logical filter at
+a time. This could certainly be changed into a single pass through the
+stream, with a big ol’ efficient switch, but it’s much nicer to work with
+like this. The order of these passes matters – indentation must be
+corrected before implicit parentheses can be wrapped around blocks of code.</p>
+
             </div>
+            
+            <div class="content"><div class='highlight'><pre>  rewrite: <span class="hljs-function"><span class="hljs-params">(@tokens)</span> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -182,16 +187,12 @@ its internal array of tokens.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
-              <p>Rewrite the token stream in multiple passes, one logical filter at
-a time. This could certainly be changed into a single pass through the
-stream, with a big ol’ efficient switch, but it’s much nicer to work with
-like this. The order of these passes matters – indentation must be
-corrected before implicit parentheses can be wrapped around blocks of code.</p>
+              <p>Helpful snippet for debugging:
+    console.log (t[0] + ‘/‘ + t[1] for t in @tokens).join ‘ ‘</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  rewrite: <span class="hljs-function"><span class="hljs-params">(@tokens)</span> -&gt;</span>
-    @removeLeadingNewlines()
+            <div class="content"><div class='highlight'><pre>    @removeLeadingNewlines()
     @closeOpenCalls()
     @closeOpenIndexes()
     @normalizeLines()
@@ -509,7 +510,7 @@ class declaration or if-conditionals)</p>
             
             <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">if</span> inImplicitCall() <span class="hljs-keyword">and</span> tag <span class="hljs-keyword">in</span> [<span class="hljs-string">'IF'</span>, <span class="hljs-string">'TRY'</span>, <span class="hljs-string">'FINALLY'</span>, <span class="hljs-string">'CATCH'</span>,
         <span class="hljs-string">'CLASS'</span>, <span class="hljs-string">'SWITCH'</span>]
-        stack.push [<span class="hljs-string">'CONTROL'</span>, i, ours: <span class="hljs-literal">true</span>]
+        stack.push [<span class="hljs-string">'CONTROL'</span>, i, ours: <span class="hljs-literal">yes</span>]
         <span class="hljs-keyword">return</span> forward(<span class="hljs-number">1</span>)
 
       <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'INDENT'</span> <span class="hljs-keyword">and</span> inImplicit()</pre></div></div>
@@ -928,7 +929,8 @@ blocks are added.</p>
       <span class="hljs-keyword">not</span> (token[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'TERMINATOR'</span> <span class="hljs-keyword">and</span> @tag(i + <span class="hljs-number">1</span>) <span class="hljs-keyword">in</span> EXPRESSION_CLOSE) <span class="hljs-keyword">and</span>
       <span class="hljs-keyword">not</span> (token[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'ELSE'</span> <span class="hljs-keyword">and</span> starter <span class="hljs-keyword">isnt</span> <span class="hljs-string">'THEN'</span>) <span class="hljs-keyword">and</span>
       <span class="hljs-keyword">not</span> (token[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> [<span class="hljs-string">'CATCH'</span>, <span class="hljs-string">'FINALLY'</span>] <span class="hljs-keyword">and</span> starter <span class="hljs-keyword">in</span> [<span class="hljs-string">'-&gt;'</span>, <span class="hljs-string">'=&gt;'</span>]) <span class="hljs-keyword">or</span>
-      token[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> CALL_CLOSERS <span class="hljs-keyword">and</span> @tokens[i - <span class="hljs-number">1</span>].newLine
+      token[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> CALL_CLOSERS <span class="hljs-keyword">and</span>
+      (@tokens[i - <span class="hljs-number">1</span>].newLine <span class="hljs-keyword">or</span> @tokens[i - <span class="hljs-number">1</span>][<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'OUTDENT'</span>)
 <span class="hljs-function">
     <span class="hljs-title">action</span> = <span class="hljs-params">(token, i)</span> -&gt;</span>
       @tokens.splice (<span class="hljs-keyword">if</span> @tag(i - <span class="hljs-number">1</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">','</span> <span class="hljs-keyword">then</span> i - <span class="hljs-number">1</span> <span class="hljs-keyword">else</span> i), <span class="hljs-number">0</span>, outdent

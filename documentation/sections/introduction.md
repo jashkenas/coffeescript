@@ -7,7 +7,7 @@ The CoffeeScript compiler goes to great lengths to generate output JavaScript th
 **Latest Version:** [<%= fullVersion %>](https://github.com/jashkenas/coffeescript/tarball/<%= fullVersion %>)
 
 ```bash
-npm install -g coffee-script
+npm install -g coffeescript
 ```
 
 **CoffeeScript 2 is coming!** It adds support for [ES2015 classes](/v2/#classes), [`async`/`await`](/v2/#fat-arrow), and generates JavaScript using ES2015+ syntax. <a href="/v2/">Learn more</a>.</p>

@@ -585,7 +585,7 @@ Unwrap that too.</p>
 
 <span class="hljs-built_in">module</span>.exports =
   start: <span class="hljs-function"><span class="hljs-params">(opts = {})</span> -&gt;</span>
-    [major, minor, build] = process.versions.node.split(<span class="hljs-string">'.'</span>).map (n) -&gt; parseInt(n)
+    [major, minor, build] = process.versions.node.split(<span class="hljs-string">'.'</span>).map (n) -&gt; parseInt(n, <span class="hljs-number">10</span>)
 
     <span class="hljs-keyword">if</span> major <span class="hljs-keyword">is</span> <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> minor &lt; <span class="hljs-number">8</span>
       <span class="hljs-built_in">console</span>.warn <span class="hljs-string">"Node 0.8.0+ required for CoffeeScript REPL"</span>

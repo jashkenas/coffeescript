@@ -8,7 +8,7 @@
     "compiler"
   ],
   "author": "Jeremy Ashkenas",
-  "version": "1.12.5",
+  "version": "1.12.6",
   "license": "MIT",
   "engines": {
     "node": ">=0.8.0"
@@ -27,7 +27,6 @@
     "register.js",
     "repl.js"
   ],
-  "preferGlobal": true,
   "scripts": {
     "test": "node ./bin/cake test",
     "test-harmony": "node --harmony ./bin/cake test"
@@ -40,8 +39,8 @@
   },
   "devDependencies": {
     "docco": "~0.7.0",
-    "google-closure-compiler-js": "^20170218.0.0",
-    "highlight.js": "~9.10.0",
+    "google-closure-compiler-js": "^20170423.0.0",
+    "highlight.js": "~9.11.0",
     "jison": ">=0.4.17",
     "markdown-it": "^8.3.1",
     "underscore": "~1.8.3"
