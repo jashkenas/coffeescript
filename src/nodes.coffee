@@ -403,7 +403,6 @@ exports.Block = class Block extends Base
     compiledNodes = []
 
     for node, index in @expressions
-
       node = node.unwrapAll()
       node = (node.unfoldSoak(o) or node)
       if node instanceof Block
@@ -419,7 +418,7 @@ exports.Block = class Block extends Base
         fragments = node.compileToFragments o
         unless node.isStatement o
           fragments.unshift @makeCode "#{@tab}"
-          fragments.push @makeCode ";"
+          fragments.push @makeCode ';'
         compiledNodes.push fragments
       else
         compiledNodes.push node.compileToFragments o, LEVEL_LIST
@@ -1221,6 +1220,7 @@ exports.Arr = class Arr extends Base
       for obj in @objects
         unwrappedObj = obj.unwrapAll()
         unwrappedObj.lhs = yes if unwrappedObj instanceof Arr or unwrappedObj instanceof Obj
+
     compiledObjs = (obj.compileToFragments o, LEVEL_LIST for obj in @objects)
     for fragments, index in compiledObjs
       if index
@@ -1230,8 +1230,8 @@ exports.Arr = class Arr extends Base
       answer.unshift @makeCode "[\n#{o.indent}"
       answer.push @makeCode "\n#{@tab}]"
     else
-      answer.unshift @makeCode "["
-      answer.push @makeCode "]"
+      answer.unshift @makeCode '['
+      answer.push @makeCode ']'
     answer
 
   assigns: (name) ->

@@ -36,12 +36,12 @@ o = (patternString, action, options) ->
   return [patternString, '$$ = $1;', options] unless action
   action = if match = unwrap.exec action then match[1] else "(#{action}())"
 
-  # All runtime functions we need are defined on "yy"
+  # All runtime functions we need are defined on `yy`
   action = action.replace /\bnew /g, '$&yy.'
   action = action.replace /\b(?:Block\.wrap|extend)\b/g, 'yy.$&'
 
   # Returns a function which adds location data to the first parameter passed
-  # in, and returns the parameter.  If the parameter is not a node, it will
+  # in, and returns the parameter. If the parameter is not a node, it will
   # just be passed through unaffected.
   addLocationDataFn = (first, last) ->
     if not last
@@ -62,7 +62,7 @@ o = (patternString, action, options) ->
 # dollar-sign variables are provided by Jison as references to the value of
 # their numeric position, so in this rule:
 #
-#     "Expression UNLESS Expression"
+#     'Expression UNLESS Expression'
 #
 # `$1` would be the value of the first `Expression`, `$2` would be the token
 # for the `UNLESS` terminal, and `$3` would be the value of the second
