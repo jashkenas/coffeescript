@@ -612,8 +612,8 @@ pre .xml .cdata {
     <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript”</em>. The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
 <p>The CoffeeScript compiler goes to great lengths to generate output JavaScript that runs in every JavaScript runtime, but there are exceptions. Use <a href="#generator-functions">generator functions</a>, <a href="#generator-iteration"><code>for…from</code></a>, or <a href="#tagged-template-literals">tagged template literals</a> only if you know that your <a href="http://kangax.github.io/compat-table/es6/">target runtimes can support them</a>. If you use <a href="#modules">modules</a>, you will need to <a href="#modules-note">use an additional tool to resolve them</a>.</p>
-<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/1.12.5">1.12.5</a></p>
-<blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install -g coffee-script
+<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/1.12.6">1.12.6</a></p>
+<blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install -g coffeescript
 </code></pre>
 </blockquote><p><strong>CoffeeScript 2 is coming!</strong> It adds support for <a href="/v2/#classes">ES2015 classes</a>, <a href="/v2/#fat-arrow"><code>async</code>/<code>await</code></a>, and generates JavaScript using ES2015+ syntax. <a href="/v2/">Learn more</a>.</p></p>
 
@@ -740,12 +740,14 @@ cubes = (function() {
     <h2>Installation</h2>
 <p>The command-line version of <code>coffee</code> is available as a <a href="https://nodejs.org/">Node.js</a> utility. The <a href="/v1/browser-compiler/coffee-script.js">core compiler</a> however, does not depend on Node, and can be run in any JavaScript environment, or in the browser (see <a href="#try">Try CoffeeScript</a>).</p>
 <p>To install, first make sure you have a working copy of the latest stable version of <a href="https://nodejs.org/">Node.js</a>. You can then install CoffeeScript globally with <a href="https://www.npmjs.com/">npm</a>:</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --global coffee-script
+<blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --global coffeescript
 </code></pre>
-</blockquote><p>When you need CoffeeScript as a dependency of a project, within that project’s folder you can install it locally:</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --save coffee-script
+</blockquote><p>This will make the <code>coffee</code> and <code>cake</code> commands available globally.</p>
+<p>When you need CoffeeScript as a dependency of a project, within that project’s folder you can install it locally:</p>
+<blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --save coffeescript
 </code></pre>
-</blockquote>
+</blockquote><p>The <code>coffee</code> and <code>cake</code> commands will first look in the current folder to see if CoffeeScript is installed locally, and use that version if so. This allows different versions of CoffeeScript to be installed globally and locally.</p>
+
   <span class="bookmark" id="usage"></span>
     <h2>Usage</h2>
 <p>Once installed, you should have access to the <code>coffee</code> command, which can execute scripts, compile <code>.coffee</code> files into <code>.js</code>, and provide an interactive REPL. The <code>coffee</code> command takes the following options:</p>
@@ -2320,7 +2322,7 @@ OPERATOR = <span class="regexp">/^(?:[-=]&gt;|[-+*\/%&lt;&gt;&amp;|^!?=]=|&gt;&g
       <h2>Modules</h2>
 <p>ES2015 modules are supported in CoffeeScript, with very similar <code>import</code> and <code>export</code> syntax:</p>
 <div class='code'><pre><code><span class="keyword">import</span> <span class="string">'local-file.coffee'</span>
-<span class="keyword">import</span> <span class="string">'coffee-script'</span>
+<span class="keyword">import</span> <span class="string">'coffeescript'</span>
 
 <span class="keyword">import</span> _ <span class="keyword">from</span> <span class="string">'underscore'</span>
 <span class="keyword">import</span> * <span class="keyword">as</span> underscore <span class="keyword">from</span> <span class="string">'underscore'</span>
@@ -2343,7 +2345,7 @@ OPERATOR = <span class="regexp">/^(?:[-=]&gt;|[-+*\/%&lt;&gt;&amp;|^!?=]=|&gt;&g
 <span class="keyword">export</span> { max, min } <span class="keyword">from</span> <span class="string">'underscore'</span>
 </code></pre><pre><code><span class="keyword">import</span> <span class="string">'local-file.coffee'</span>;
 
-<span class="keyword">import</span> <span class="string">'coffee-script'</span>;
+<span class="keyword">import</span> <span class="string">'coffeescript'</span>;
 
 <span class="keyword">import</span> _ <span class="keyword">from</span> <span class="string">'underscore'</span>;
 
@@ -2406,7 +2408,7 @@ OPERATOR = <span class="regexp">/^(?:[-=]&gt;|[-+*\/%&lt;&gt;&amp;|^!?=]=|&gt;&g
   max,
   min
 } <span class="keyword">from</span> <span class="string">'underscore'</span>;
-</code></pre><script>window.example1 = "import 'local-file.coffee'\nimport 'coffee-script'\n\nimport _ from 'underscore'\nimport * as underscore from 'underscore'\n\nimport { now } from 'underscore'\nimport { now as currentTimestamp } from 'underscore'\nimport { first, last } from 'underscore'\nimport utilityBelt, { each } from 'underscore'\n\nexport default Math\nexport square = (x) -> x * x\nexport class Mathematics\n  least: (x, y) -> if x < y then x else y\n\nexport { sqrt }\nexport { sqrt as squareRoot }\nexport { Mathematics as default, sqrt as squareRoot }\n\nexport * from 'underscore'\nexport { max, min } from 'underscore'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example1);'>load</div><br class='clear' /></div><div id="modules-note" class="bookmark"></div>
+</code></pre><script>window.example1 = "import 'local-file.coffee'\nimport 'coffeescript'\n\nimport _ from 'underscore'\nimport * as underscore from 'underscore'\n\nimport { now } from 'underscore'\nimport { now as currentTimestamp } from 'underscore'\nimport { first, last } from 'underscore'\nimport utilityBelt, { each } from 'underscore'\n\nexport default Math\nexport square = (x) -> x * x\nexport class Mathematics\n  least: (x, y) -> if x < y then x else y\n\nexport { sqrt }\nexport { sqrt as squareRoot }\nexport { Mathematics as default, sqrt as squareRoot }\n\nexport * from 'underscore'\nexport { max, min } from 'underscore'\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example1);'>load</div><br class='clear' /></div><div id="modules-note" class="bookmark"></div>
 <p>Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an <code>import</code> or <code>export</code> statement in CoffeeScript will produce an <code>import</code> or <code>export</code> statement in the resulting output. It is your responsibility attach another transpiler, such as <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>, <a href="http://babeljs.io/">Babel</a> or <a href="https://github.com/rollup/rollup">Rollup</a>, to convert this ES2015 syntax into code that will work in your target runtimes.</p>
 <p>Also note that any file with an <code>import</code> or <code>export</code> statement will be output without a <a href="#lexical-scope">top-level function safety wrapper</a>; in other words, importing or exporting modules will automatically trigger <a href="#usage">bare</a> mode for that file. This is because per the ES2015 spec, <code>import</code> or <code>export</code> statements must occur at the topmost scope.</p>
 
@@ -2532,6 +2534,20 @@ The CoffeeScript logo is available in SVG for use in presentations.</p>
 
   <span class="bookmark" id="changelog"></span>
     <h2>Change Log</h2>
+<div class="anchor" id="1.12.6"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.12.5...1.12.6">1.12.6</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-05-15">May 15, 2017</time></span>
+</h2><ul>
+<li>The <code>return</code> and <code>export</code> keywords can now accept implicit objects (defined by indentation, without needing braces).</li>
+<li>Support Unicode code point escapes (e.g. <code>\u{1F4A9}</code>).</li>
+<li>The <code>coffee</code> command now first looks to see if CoffeeScript is installed under <code>node_modules</code> in the current folder, and executes the <code>coffee</code> binary there if so; or otherwise it runs the globally installed one. This allows you to have one version of CoffeeScript installed globally and a different one installed locally for a particular project. (Likewise for the <code>cake</code> command.)</li>
+<li>Bugfixes for chained function calls not closing implicit objects or ternaries.</li>
+<li>Bugfixes for incorrect code generated by the <code>?</code> operator within a termary <code>if</code> statement.</li>
+<li>Now <code>cake build:browser</code> just creates the browser build, without also running tests on it. New task <code>cake build:browser:full</code> creates the browser build and then tests it.</li>
+<li>Failing tests now result in a nonzero exit code.</li>
+<li>Fixed a too-permissive “reserved words” test, and fixed a REPL test that was broken in Node &lt; 6.</li>
+</ul>
 <div class="anchor" id="1.12.5"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/1.12.4...1.12.5">1.12.5</a>
