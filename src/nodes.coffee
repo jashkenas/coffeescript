@@ -68,8 +68,11 @@ exports.Base = class Base
     o.level  = lvl if lvl
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
-    if o.level is LEVEL_TOP or not node.isStatement(o) or node instanceof Comment
-      node.compileNode o
+    if o.level is LEVEL_TOP or not node.isStatement(o)
+      if node instanceof Comment and not o.level is LEVEL_TOP
+        node.error 'block comments not permitted here'
+      else
+        node.compileNode o
     else
       node.compileClosure o
 

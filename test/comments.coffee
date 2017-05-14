@@ -410,35 +410,5 @@ test "#4375: UTF-8 characters in comments", ->
   # 智に働けば角が立つ、情に掉させば流される。
   ok yes
 
-test "#3735: Multiline comment in array", ->
-  a = [
-    ###
-      Comment
-    ###
-    3
-  ]
-  arrayEq a, [3]
-  eq a.length, 1
-
-  b = [
-    4
-    ###
-      Comment
-    ###
-    5
-    6
-  ]
-  arrayEq b, [4, 5, 6]
-  eq b.length, 3
-
-  c = [
-    7
-    ###
-      Comment
-    ###
-  ]
-  arrayEq c, [7]
-  eq c.length, 1
-
-test "Multiline comment not treated as value", ->
+test "#3735: Multiline comment not treated as value", ->
   throws -> CoffeeScript.compile 'a + ### Comment ###'
