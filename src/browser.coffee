@@ -4,7 +4,6 @@
 # `text/coffeescript` script tags, source maps via data-URLs, and so on.
 
 CoffeeScript = require './coffeescript'
-CoffeeScript.require = require
 compile = CoffeeScript.compile
 
 # Use standard JavaScript `eval` to eval code.
@@ -18,11 +17,15 @@ CoffeeScript.run = (code, options = {}) ->
   options.shiftLine = on
   Function(compile code, options)()
 
-# If we're not in a browser environment, we're finished with the public API.
+# Export this more limited `CoffeeScript` than what is exported by
+# `index.coffee`, which is intended for a Node environment.
+module.exports = CoffeeScript
+
+# If we’re not in a browser environment, we’re finished with the public API.
 return unless window?
 
-# Include source maps where possible. If we've got a base64 encoder, a
-# JSON serializer, and tools for escaping unicode characters, we're good to go.
+# Include source maps where possible. If we’ve got a base64 encoder, a
+# JSON serializer, and tools for escaping unicode characters, we’re good to go.
 # Ported from https://developer.mozilla.org/en-US/docs/DOM/window.btoa
 if btoa? and JSON?
   compile = (code, options = {}) ->

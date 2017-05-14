@@ -16,7 +16,8 @@
   "directories": {
     "lib": "./lib/coffeescript"
   },
-  "main": "./lib/coffeescript/coffeescript",
+  "main": "./lib/coffeescript/index",
+  "browser": "./lib/coffeescript/browser",
   "bin": {
     "coffee": "./bin/coffee",
     "cake": "./bin/cake"
@@ -27,7 +28,6 @@
     "register.js",
     "repl.js"
   ],
-  "preferGlobal": true,
   "scripts": {
     "test": "node ./bin/cake test",
     "test-harmony": "node --harmony ./bin/cake test"
@@ -46,7 +46,8 @@
     "highlight.js": "~9.11.0",
     "jison": ">=0.4.17",
     "markdown-it": "^8.3.1",
-    "underscore": "~1.8.3"
+    "underscore": "~1.8.3",
+    "webpack": "^2.5.1"
   },
   "dependencies": {}
 }
