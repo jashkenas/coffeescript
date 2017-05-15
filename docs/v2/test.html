@@ -99,6 +99,10 @@ arrayEgal = (a, b) ->
 @eq      = (a, b, msg) -> ok egal(a, b), msg or "Expected #{a} to equal #{b}"
 @arrayEq = (a, b, msg) -> ok arrayEgal(a,b), msg or "Expected #{a} to deep equal #{b}"
 
+@toJS = (str) ->
+  CoffeeScript.compile str, bare: yes
+  .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace
+
 
 @doesNotThrow = (fn) ->
   fn()
@@ -2863,7 +2867,7 @@ test "block comments in functions", ->
 
   ok fn1()
 
-  fn2 =  ->
+  fn2 = ->
     ###
     block comment
     ###
@@ -2923,13 +2927,10 @@ test "#3132: Format single-line block comment nicely", ->
   input = """
   ### Single-line block comment without additional space here => ###"""
 
-  result = """
-
+  output = """
   /* Single-line block comment without additional space here => */
-
-
   """
-  eq CoffeeScript.compile(input, bare: on), result
+  eq toJS(input), output
 
 test "#3132: Format multi-line block comment nicely", ->
   input = """
@@ -2939,17 +2940,14 @@ test "#3132: Format multi-line block comment nicely", ->
   # comment
   ###"""
 
-  result = """
-
+  output = """
   /*
    * Multi-line
    * block
    * comment
    */
-
-
   """
-  eq CoffeeScript.compile(input, bare: on), result
+  eq toJS(input), output
 
 test "#3132: Format simple block comment nicely", ->
   input = """
@@ -2958,17 +2956,14 @@ test "#3132: Format simple block comment nicely", ->
   Preceding hash
   ###"""
 
-  result = """
-
+  output = """
   /*
   No
   Preceding hash
    */
-
-
   """
 
-  eq CoffeeScript.compile(input, bare: on), result
+  eq toJS(input), output
 
 test "#3132: Format indented block-comment nicely", ->
   input = """
@@ -2979,7 +2974,7 @@ test "#3132: Format indented block-comment nicely", ->
     ###
     1"""
 
-  result = """
+  output = """
   var fn;
 
   fn = function() {
@@ -2990,9 +2985,8 @@ test "#3132: Format indented block-comment nicely", ->
      */
     return 1;
   };
-
   """
-  eq CoffeeScript.compile(input, bare: on), result
+  eq toJS(input), output
 
 # Although adequately working, block comment-placement is not yet perfect.
 # (Considering a case where multiple variables have been declared …)
@@ -3006,8 +3000,7 @@ test "#3132: Format jsdoc-style block-comment nicely", ->
   fn = () -> 1
   """
 
-  result = """
-
+  output = """
   /**
    * Multiline for jsdoc-"@doctags"
    *
@@ -3017,10 +3010,8 @@ test "#3132: Format jsdoc-style block-comment nicely", ->
 
   fn = function() {
     return 1;
-  };
-
-  """
-  eq CoffeeScript.compile(input, bare: on), result
+  };"""
+  eq toJS(input), output
 
 # Although adequately working, block comment-placement is not yet perfect.
 # (Considering a case where multiple variables have been declared …)
@@ -3034,8 +3025,7 @@ test "#3132: Format hand-made (raw) jsdoc-style block-comment nicely", ->
   fn = () -> 1
   """
 
-  result = """
-
+  output = """
   /**
    * Multiline for jsdoc-"@doctags"
    *
@@ -3045,10 +3035,8 @@ test "#3132: Format hand-made (raw) jsdoc-style block-comment nicely", ->
 
   fn = function() {
     return 1;
-  };
-
-  """
-  eq CoffeeScript.compile(input, bare: on), result
+  };"""
+  eq toJS(input), output
 
 # Although adequately working, block comment-placement is not yet perfect.
 # (Considering a case where multiple variables have been declared …)
@@ -3075,8 +3063,7 @@ test "#3132: Place block-comments nicely", ->
 
   """
 
-  result = """
-
+  output = """
   /**
    * A dummy class definition
    *
@@ -3106,10 +3093,8 @@ test "#3132: Place block-comments nicely", ->
 
     return DummyClass;
 
-  })();
-
-  """
-  eq CoffeeScript.compile(input, bare: on), result
+  })();"""
+  eq toJS(input), output
 
 test "#3638: Demand a whitespace after # symbol", ->
   input = """
@@ -3118,17 +3103,13 @@ test "#3638: Demand a whitespace after # symbol", ->
   #whitespace
   ###"""
 
-  result = """
-
+  output = """
   /*
   #No
   #whitespace
-   */
+   */"""
 
-
-  """
-
-  eq CoffeeScript.compile(input, bare: on), result
+  eq toJS(input), output
 
 test "#3761: Multiline comment at end of an object", ->
   anObject =
@@ -6201,6 +6182,9 @@ test "indented heredoc", ->
 #   * single line arguments
 #   * inline function literal
 #   * inline object literal
+#
+# * chaining inside
+#   * implicit object literal
 
 test "chaining after outdent", ->
   id = (x) -> x
@@ -6270,6 +6254,37 @@ test "#1495, method call chaining", ->
     .join ''
   ).join ', '
   eq 'a, b, c', result
+
+test "chaining should not wrap spilling ternary", ->
+  throws -> CoffeeScript.compile """
+    if 0 then 1 else g
+      a: 42
+    .h()
+  """
+
+test "chaining should wrap calls containing spilling ternary", ->
+  f = (x) -> h: x
+  id = (x) -> x
+  result = f if true then 42 else id
+      a: 2
+  .h
+  eq 42, result
+
+test "chaining should work within spilling ternary", ->
+  f = (x) -> h: x
+  id = (x) -> x
+  result = f if false then 1 else id
+      a: 3
+      .a
+  eq 3, result.h
+
+test "method call chaining inside objects", ->
+  f = (x) -> c: 42
+  result =
+    a: f 1
+    b: f a: 1
+      .c
+  eq 42, result.b
 
 # Nested blocks caused by paren unwrapping
 test "#1492: Nested blocks don't cause double semicolons", ->
@@ -9224,12 +9239,6 @@ test "Verify all tokens get a location", ->
 # CoffeeScript also supports optional commas within `{ … }`.
 
 
-# Helper function
-toJS = (str) ->
-  CoffeeScript.compile str, bare: yes
-  .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace
-
-
 # Import statements
 
 test "backticked import statement", ->
@@ -11501,12 +11510,6 @@ test "#1409: creating large ranges outside of a function body", ->
 # * Regexen
 # * Heregexen
 
-# Helper function
-toJS = (str) ->
-  CoffeeScript.compile str, bare: yes
-  .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace
-
-
 test "basic regular expression literals", ->
   ok 'a'.match(/a/)
   ok 'a'.match /a/
@@ -12609,12 +12612,6 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
 
 # * Strings
 # * Heredocs
-
-# Helper function
-toJS = (str) ->
-  CoffeeScript.compile str, bare: yes
-  .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace
-
 
 test "backslash escapes", ->
   eq "\\/\\\\", /\/\\/.source

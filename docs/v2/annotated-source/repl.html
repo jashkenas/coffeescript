@@ -122,12 +122,14 @@
 path = <span class="hljs-built_in">require</span> <span class="hljs-string">'path'</span>
 vm = <span class="hljs-built_in">require</span> <span class="hljs-string">'vm'</span>
 nodeREPL = <span class="hljs-built_in">require</span> <span class="hljs-string">'repl'</span>
-CoffeeScript = <span class="hljs-built_in">require</span> <span class="hljs-string">'./coffeescript'</span>
+CoffeeScript = <span class="hljs-built_in">require</span> <span class="hljs-string">'./'</span>
 {merge, updateSyntaxError} = <span class="hljs-built_in">require</span> <span class="hljs-string">'./helpers'</span>
 
 replDefaults =
   prompt: <span class="hljs-string">'coffee&gt; '</span>,
-  historyFile: path.join process.env.HOME, <span class="hljs-string">'.coffee_history'</span> <span class="hljs-keyword">if</span> process.env.HOME
+  historyFile: <span class="hljs-keyword">do</span> -&gt;
+    historyPath = process.env.XDG_CACHE_HOME <span class="hljs-keyword">or</span> process.env.HOME
+    path.join historyPath, <span class="hljs-string">'.coffee_history'</span> <span class="hljs-keyword">if</span> historyPath
   historyMaxInputSize: <span class="hljs-number">10240</span>
   eval: <span class="hljs-function"><span class="hljs-params">(input, context, filename, cb)</span> -&gt;</span></pre></div></div>
             
@@ -585,7 +587,7 @@ Unwrap that too.</p>
 
 <span class="hljs-built_in">module</span>.exports =
   start: <span class="hljs-function"><span class="hljs-params">(opts = {})</span> -&gt;</span>
-    [major, minor, build] = process.versions.node.split(<span class="hljs-string">'.'</span>).map (n) -&gt; parseInt(n)
+    [major, minor, build] = process.versions.node.split(<span class="hljs-string">'.'</span>).map (n) -&gt; parseInt(n, <span class="hljs-number">10</span>)
 
     <span class="hljs-keyword">if</span> major &lt; <span class="hljs-number">6</span>
       <span class="hljs-built_in">console</span>.warn <span class="hljs-string">"Node 6+ required for CoffeeScript REPL"</span>

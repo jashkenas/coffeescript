@@ -1045,7 +1045,6 @@ statement, ask the statement to do so.</p>
     compiledNodes = []
 
     <span class="hljs-keyword">for</span> node, index <span class="hljs-keyword">in</span> @expressions
-
       node = node.unwrapAll()
       node = (node.unfoldSoak(o) <span class="hljs-keyword">or</span> node)
       <span class="hljs-keyword">if</span> node <span class="hljs-keyword">instanceof</span> Block</pre></div></div>
@@ -1087,7 +1086,7 @@ our own</p>
         fragments = node.compileToFragments o
         <span class="hljs-keyword">unless</span> node.isStatement o
           fragments.unshift @makeCode <span class="hljs-string">"<span class="hljs-subst">#{@tab}</span>"</span>
-          fragments.push @makeCode <span class="hljs-string">";"</span>
+          fragments.push @makeCode <span class="hljs-string">';'</span>
         compiledNodes.push fragments
       <span class="hljs-keyword">else</span>
         compiledNodes.push node.compileToFragments o, LEVEL_LIST
@@ -1440,9 +1439,9 @@ or vanilla.</p>
             
             <div class="content"><div class='highlight'><pre>exports.Value = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Value</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   constructor: <span class="hljs-function"><span class="hljs-params">(base, props, tag, isDefaultValue = <span class="hljs-literal">no</span>)</span> -&gt;</span>
-    <span class="hljs-keyword">return</span> base <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> props <span class="hljs-keyword">and</span> base <span class="hljs-keyword">instanceof</span> Value
-
     <span class="hljs-keyword">super</span>()
+
+    <span class="hljs-keyword">return</span> base <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> props <span class="hljs-keyword">and</span> base <span class="hljs-keyword">instanceof</span> Value
 
     @base           = base
     @properties     = props <span class="hljs-keyword">or</span> []
@@ -2056,10 +2055,7 @@ an access into the object’s prototype.</p>
     name = @name.compileToFragments o
     node = @name.unwrap()
     <span class="hljs-keyword">if</span> node <span class="hljs-keyword">instanceof</span> PropertyName
-      <span class="hljs-keyword">if</span> node.value <span class="hljs-keyword">in</span> JS_FORBIDDEN
-        [@makeCode(<span class="hljs-string">'["'</span>), name..., @makeCode(<span class="hljs-string">'"]'</span>)]
-      <span class="hljs-keyword">else</span>
-        [@makeCode(<span class="hljs-string">'.'</span>), name...]
+      [@makeCode(<span class="hljs-string">'.'</span>), name...]
     <span class="hljs-keyword">else</span>
       [@makeCode(<span class="hljs-string">'['</span>), name..., @makeCode(<span class="hljs-string">']'</span>)]
 
@@ -2578,6 +2574,7 @@ are too.</p>
       <span class="hljs-keyword">for</span> obj <span class="hljs-keyword">in</span> @objects
         unwrappedObj = obj.unwrapAll()
         unwrappedObj.lhs = <span class="hljs-literal">yes</span> <span class="hljs-keyword">if</span> unwrappedObj <span class="hljs-keyword">instanceof</span> Arr <span class="hljs-keyword">or</span> unwrappedObj <span class="hljs-keyword">instanceof</span> Obj
+
     compiledObjs = (obj.compileToFragments o, LEVEL_LIST <span class="hljs-keyword">for</span> obj <span class="hljs-keyword">in</span> @objects)
     <span class="hljs-keyword">for</span> fragments, index <span class="hljs-keyword">in</span> compiledObjs
       <span class="hljs-keyword">if</span> index
@@ -2587,8 +2584,8 @@ are too.</p>
       answer.unshift @makeCode <span class="hljs-string">"[\n<span class="hljs-subst">#{o.indent}</span>"</span>
       answer.push @makeCode <span class="hljs-string">"\n<span class="hljs-subst">#{@tab}</span>]"</span>
     <span class="hljs-keyword">else</span>
-      answer.unshift @makeCode <span class="hljs-string">"["</span>
-      answer.push @makeCode <span class="hljs-string">"]"</span>
+      answer.unshift @makeCode <span class="hljs-string">'['</span>
+      answer.push @makeCode <span class="hljs-string">']'</span>
     answer
 
   assigns: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
@@ -2683,10 +2680,8 @@ exports.Class = <span class="hljs-class"><span class="hljs-keyword">class</span>
       result
 
   compileClassDeclaration: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
-    @ctor ?= @makeDefaultConstructor() <span class="hljs-keyword">if</span> @externalCtor <span class="hljs-keyword">or</span> @boundMethods.length
+    @ctor ?= @makeDefaultConstructor() <span class="hljs-keyword">if</span> @externalCtor
     @ctor?.noReturn = <span class="hljs-literal">true</span>
-
-    @proxyBoundMethods o <span class="hljs-keyword">if</span> @boundMethods.length
 
     o.indent += TAB
 
@@ -2735,7 +2730,6 @@ exports.Class = <span class="hljs-class"><span class="hljs-keyword">class</span>
 
   walkBody: <span class="hljs-function">-&gt;</span>
     @ctor          = <span class="hljs-literal">null</span>
-    @boundMethods  = []
     executableBody = <span class="hljs-literal">null</span>
 
     initializer     = []
@@ -2805,11 +2799,8 @@ exports.Class = <span class="hljs-class"><span class="hljs-keyword">class</span>
       <span class="hljs-keyword">if</span> method.ctor
         method.error <span class="hljs-string">'Cannot define more than one constructor in a class'</span> <span class="hljs-keyword">if</span> @ctor
         @ctor = method
-      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> method.bound <span class="hljs-keyword">and</span> method.isStatic
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> method.isStatic <span class="hljs-keyword">and</span> method.bound
         method.context = @name
-      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> method.bound
-        @boundMethods.push method.name
-        method.bound = <span class="hljs-literal">false</span>
 
     <span class="hljs-keyword">if</span> initializer.length <span class="hljs-keyword">isnt</span> expressions.length
       @body.expressions = (expression.hoist() <span class="hljs-keyword">for</span> expression <span class="hljs-keyword">in</span> initializer)
@@ -2882,7 +2873,7 @@ When additional expressions become valid, this method should be updated to handl
       method.name = <span class="hljs-keyword">new</span> (<span class="hljs-keyword">if</span> methodName.shouldCache() <span class="hljs-keyword">then</span> Index <span class="hljs-keyword">else</span> Access) methodName
       method.name.updateLocationDataIfMissing methodName.locationData
       method.ctor = (<span class="hljs-keyword">if</span> @parent <span class="hljs-keyword">then</span> <span class="hljs-string">'derived'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'base'</span>) <span class="hljs-keyword">if</span> methodName.value <span class="hljs-keyword">is</span> <span class="hljs-string">'constructor'</span>
-      method.error <span class="hljs-string">'Cannot define a constructor as a bound function'</span> <span class="hljs-keyword">if</span> method.bound <span class="hljs-keyword">and</span> method.ctor
+      method.error <span class="hljs-string">'Methods cannot be bound functions'</span> <span class="hljs-keyword">if</span> method.bound
 
     method
 
@@ -2900,13 +2891,6 @@ When additional expressions become valid, this method should be updated to handl
       ctor.body.makeReturn()
 
     ctor
-
-  proxyBoundMethods: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
-    @ctor.thisAssignments = <span class="hljs-keyword">for</span> name <span class="hljs-keyword">in</span> @boundMethods <span class="hljs-keyword">by</span> <span class="hljs-number">-1</span>
-      name = <span class="hljs-keyword">new</span> Value(<span class="hljs-keyword">new</span> ThisLiteral, [ name ]).compile o
-      <span class="hljs-keyword">new</span> Literal <span class="hljs-string">"<span class="hljs-subst">#{name}</span> = <span class="hljs-subst">#{utility <span class="hljs-string">'bind'</span>, o}</span>(<span class="hljs-subst">#{name}</span>, this)"</span>
-
-    <span class="hljs-literal">null</span>
 
 exports.ExecutableClassBody = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ExecutableClassBody</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   children: [ <span class="hljs-string">'class'</span>, <span class="hljs-string">'body'</span> ]
@@ -3441,9 +3425,6 @@ destructured variables.</p>
       <span class="hljs-keyword">if</span> @variable.shouldCache()
         compiledName.unshift @makeCode <span class="hljs-string">'['</span>
         compiledName.push @makeCode <span class="hljs-string">']'</span>
-      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> fragmentsToText(compiledName) <span class="hljs-keyword">in</span> JS_FORBIDDEN
-        compiledName.unshift @makeCode <span class="hljs-string">'"'</span>
-        compiledName.push @makeCode <span class="hljs-string">'"'</span>
       <span class="hljs-keyword">return</span> compiledName.concat @makeCode(<span class="hljs-string">": "</span>), val
 
     answer = compiledName.concat @makeCode(<span class="hljs-string">" <span class="hljs-subst">#{ @context <span class="hljs-keyword">or</span> <span class="hljs-string">'='</span> }</span> "</span>), val</pre></div></div>
@@ -3676,7 +3657,7 @@ etc.</p>
       <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> expandedIdx <span class="hljs-keyword">and</span> obj <span class="hljs-keyword">instanceof</span> Splat
         name = obj.name.unwrap().value
         obj = obj.unwrap()
-        val = <span class="hljs-string">"<span class="hljs-subst">#{olen}</span> &lt;= <span class="hljs-subst">#{vvarText}</span>.length ? <span class="hljs-subst">#{ utility <span class="hljs-string">'slice'</span>, o }</span>.call(<span class="hljs-subst">#{vvarText}</span>, <span class="hljs-subst">#{i}</span>"</span>
+        val = <span class="hljs-string">"<span class="hljs-subst">#{olen}</span> &lt;= <span class="hljs-subst">#{vvarText}</span>.length ? <span class="hljs-subst">#{utility <span class="hljs-string">'slice'</span>, o}</span>.call(<span class="hljs-subst">#{vvarText}</span>, <span class="hljs-subst">#{i}</span>"</span>
         rest = olen - i - <span class="hljs-number">1</span>
         <span class="hljs-keyword">if</span> rest <span class="hljs-keyword">isnt</span> <span class="hljs-number">0</span>
           ivar = o.scope.freeVariable <span class="hljs-string">'i'</span>, single: <span class="hljs-literal">true</span>
@@ -3863,7 +3844,7 @@ extended form <code>a = a ** b</code> and then compiles that.</p>
     <span class="hljs-keyword">else</span>
       to = <span class="hljs-string">"9e9"</span>
     [valDef, valRef] = @value.cache o, LEVEL_LIST
-    answer = [].concat @makeCode(<span class="hljs-string">"[].splice.apply(<span class="hljs-subst">#{name}</span>, [<span class="hljs-subst">#{fromDecl}</span>, <span class="hljs-subst">#{to}</span>].concat("</span>), valDef, @makeCode(<span class="hljs-string">")), "</span>), valRef
+    answer = [].concat @makeCode(<span class="hljs-string">"<span class="hljs-subst">#{utility <span class="hljs-string">'splice'</span>, o}</span>.apply(<span class="hljs-subst">#{name}</span>, [<span class="hljs-subst">#{fromDecl}</span>, <span class="hljs-subst">#{to}</span>].concat("</span>), valDef, @makeCode(<span class="hljs-string">")), "</span>), valRef
     <span class="hljs-keyword">if</span> o.level &gt; LEVEL_TOP <span class="hljs-keyword">then</span> @wrapInParentheses answer <span class="hljs-keyword">else</span> answer
 
   eachName: <span class="hljs-function"><span class="hljs-params">(iterator)</span> -&gt;</span>
@@ -4906,14 +4887,14 @@ CoffeeScript operations into their JavaScript equivalents.</p>
             
             <div class="content"><div class='highlight'><pre>exports.Op = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Op</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
   constructor: <span class="hljs-function"><span class="hljs-params">(op, first, second, flip)</span> -&gt;</span>
+    <span class="hljs-keyword">super</span>()
+
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> In first, second <span class="hljs-keyword">if</span> op <span class="hljs-keyword">is</span> <span class="hljs-string">'in'</span>
     <span class="hljs-keyword">if</span> op <span class="hljs-keyword">is</span> <span class="hljs-string">'do'</span>
       <span class="hljs-keyword">return</span> Op::generateDo first
     <span class="hljs-keyword">if</span> op <span class="hljs-keyword">is</span> <span class="hljs-string">'new'</span>
       <span class="hljs-keyword">return</span> first.newInstance() <span class="hljs-keyword">if</span> first <span class="hljs-keyword">instanceof</span> Call <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> first.<span class="hljs-keyword">do</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> first.isNew
       first = <span class="hljs-keyword">new</span> Parens first   <span class="hljs-keyword">if</span> first <span class="hljs-keyword">instanceof</span> Code <span class="hljs-keyword">and</span> first.bound <span class="hljs-keyword">or</span> first.<span class="hljs-keyword">do</span>
-
-    <span class="hljs-keyword">super</span>()
 
     @operator = CONVERSIONS[op] <span class="hljs-keyword">or</span> op
     @first    = first
@@ -5512,7 +5493,8 @@ parentheses, but no longer – you can put in as many as you please.</p>
       <span class="hljs-keyword">return</span> expr.compileToFragments o
     fragments = expr.compileToFragments o, LEVEL_PAREN
     bare = o.level &lt; LEVEL_OP <span class="hljs-keyword">and</span> (expr <span class="hljs-keyword">instanceof</span> Op <span class="hljs-keyword">or</span> expr <span class="hljs-keyword">instanceof</span> Call <span class="hljs-keyword">or</span>
-      (expr <span class="hljs-keyword">instanceof</span> For <span class="hljs-keyword">and</span> expr.returns))
+      (expr <span class="hljs-keyword">instanceof</span> For <span class="hljs-keyword">and</span> expr.returns)) <span class="hljs-keyword">and</span> (o.level &lt; LEVEL_COND <span class="hljs-keyword">or</span>
+        fragments.length &lt;= <span class="hljs-number">3</span>)
     <span class="hljs-keyword">if</span> bare <span class="hljs-keyword">then</span> fragments <span class="hljs-keyword">else</span> @wrapInParentheses fragments</pre></div></div>
             
         </li>
@@ -5840,7 +5822,7 @@ some cannot.</p>
       fragments = fragments.concat body, @makeCode(<span class="hljs-string">'\n'</span>) <span class="hljs-keyword">if</span> (body = block.compileToFragments o, LEVEL_TOP).length &gt; <span class="hljs-number">0</span>
       <span class="hljs-keyword">break</span> <span class="hljs-keyword">if</span> i <span class="hljs-keyword">is</span> @cases.length - <span class="hljs-number">1</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @otherwise
       expr = @lastNonComment block.expressions
-      <span class="hljs-keyword">continue</span> <span class="hljs-keyword">if</span> expr <span class="hljs-keyword">instanceof</span> Return <span class="hljs-keyword">or</span> (expr <span class="hljs-keyword">instanceof</span> Literal <span class="hljs-keyword">and</span> expr.jumps() <span class="hljs-keyword">and</span> expr.value <span class="hljs-keyword">isnt</span> <span class="hljs-string">'debugger'</span>)
+      <span class="hljs-keyword">continue</span> <span class="hljs-keyword">if</span> expr <span class="hljs-keyword">instanceof</span> Return <span class="hljs-keyword">or</span> expr <span class="hljs-keyword">instanceof</span> Throw <span class="hljs-keyword">or</span> (expr <span class="hljs-keyword">instanceof</span> Literal <span class="hljs-keyword">and</span> expr.jumps() <span class="hljs-keyword">and</span> expr.value <span class="hljs-keyword">isnt</span> <span class="hljs-string">'debugger'</span>)
       fragments.push cond.makeCode(idt2 + <span class="hljs-string">'break;\n'</span>)
     <span class="hljs-keyword">if</span> @otherwise <span class="hljs-keyword">and</span> @otherwise.expressions.length
       fragments.push @makeCode(idt1 + <span class="hljs-string">"default:\n"</span>), (@otherwise.compileToFragments o, LEVEL_TOP)..., @makeCode(<span class="hljs-string">"\n"</span>)
@@ -6028,7 +6010,8 @@ force inner <em>else</em> bodies into statement form.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>
-UTILITIES =</pre></div></div>
+UTILITIES =
+  modulo: <span class="hljs-function">-&gt;</span> <span class="hljs-string">'function(a, b) { return (+a % (b = +b) + b) % b; }'</span></pre></div></div>
             
         </li>
         
@@ -6039,24 +6022,14 @@ UTILITIES =</pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-233">&#182;</a>
               </div>
-              <p>Correctly set up a prototype chain for inheritance, including a reference
-to the superclass for <code>super()</code> calls, and copies of any static properties.</p>
+              <p>Shortcuts to speed up the lookup time for native functions.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  extend: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span> <span class="hljs-string">"
-    function(child, parent) {
-      for (var key in parent) {
-        if (<span class="hljs-subst">#{utility <span class="hljs-string">'hasProp'</span>, o}</span>.call(parent, key)) child[key] = parent[key];
-      }
-      function ctor() {
-        this.constructor = child;
-      }
-      ctor.prototype = parent.prototype;
-      child.prototype = new ctor();
-      return child;
-    }
-  "</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  hasProp: <span class="hljs-function">-&gt;</span> <span class="hljs-string">'{}.hasOwnProperty'</span>
+  indexOf: <span class="hljs-function">-&gt;</span> <span class="hljs-string">'[].indexOf'</span>
+  slice  : <span class="hljs-function">-&gt;</span> <span class="hljs-string">'[].slice'</span>
+  splice : <span class="hljs-function">-&gt;</span> <span class="hljs-string">'[].splice'</span></pre></div></div>
             
         </li>
         
@@ -6066,69 +6039,6 @@ to the superclass for <code>super()</code> calls, and copies of any static prope
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-234">&#182;</a>
-              </div>
-              <p>Create a function bound to the current value of “this”.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  bind: <span class="hljs-function">-&gt;</span> <span class="hljs-string">'
-    function(fn, me){
-      return function(){
-        return fn.apply(me, arguments);
-      };
-    }
-  '</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-235">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-235">&#182;</a>
-              </div>
-              <p>Discover if an item is in an array.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  indexOf: <span class="hljs-function">-&gt;</span> <span class="hljs-string">"
-    [].indexOf || function(item) {
-      for (var i = 0, l = this.length; i &lt; l; i++) {
-        if (i in this &amp;&amp; this[i] === item) return i;
-      }
-      return -1;
-    }
-  "</span>
-
-  modulo: <span class="hljs-function">-&gt;</span> <span class="hljs-string">"""
-    function(a, b) { return (+a % (b = +b) + b) % b; }
-  """</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-236">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-236">&#182;</a>
-              </div>
-              <p>Shortcuts to speed up the lookup time for native functions.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  hasProp: <span class="hljs-function">-&gt;</span> <span class="hljs-string">'{}.hasOwnProperty'</span>
-  slice  : <span class="hljs-function">-&gt;</span> <span class="hljs-string">'[].slice'</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-237">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-237">&#182;</a>
               </div>
               <p>Levels indicate a node’s position in the AST. Useful for knowing if
 parens are necessary or superfluous.</p>
@@ -6145,11 +6055,11 @@ LEVEL_ACCESS = <span class="hljs-number">6</span>  <span class="hljs-comment"># 
         </li>
         
         
-        <li id="section-238">
+        <li id="section-235">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-238">&#182;</a>
+                <a class="pilcrow" href="#section-235">&#182;</a>
               </div>
               <p>Tabs are two spaces for pretty printing.</p>
 
@@ -6162,11 +6072,11 @@ SIMPLENUM = <span class="hljs-regexp">/^[+-]?\d+$/</span></pre></div></div>
         </li>
         
         
-        <li id="section-239">
+        <li id="section-236">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-239">&#182;</a>
+                <a class="pilcrow" href="#section-236">&#182;</a>
               </div>
               <h2 id="helper-functions">Helper Functions</h2>
 
@@ -6175,11 +6085,11 @@ SIMPLENUM = <span class="hljs-regexp">/^[+-]?\d+$/</span></pre></div></div>
         </li>
         
         
-        <li id="section-240">
+        <li id="section-237">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-240">&#182;</a>
+                <a class="pilcrow" href="#section-237">&#182;</a>
               </div>
               
             </div>
@@ -6187,11 +6097,11 @@ SIMPLENUM = <span class="hljs-regexp">/^[+-]?\d+$/</span></pre></div></div>
         </li>
         
         
-        <li id="section-241">
+        <li id="section-238">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-241">&#182;</a>
+                <a class="pilcrow" href="#section-238">&#182;</a>
               </div>
               <p>Helper for ensuring that utility functions are assigned at the top level.</p>
 
@@ -6221,11 +6131,11 @@ SIMPLENUM = <span class="hljs-regexp">/^[+-]?\d+$/</span></pre></div></div>
         </li>
         
         
-        <li id="section-242">
+        <li id="section-239">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-242">&#182;</a>
+                <a class="pilcrow" href="#section-239">&#182;</a>
               </div>
               <p>Unfold a node’s child if soak, then tuck the node under created <code>If</code></p>
 
