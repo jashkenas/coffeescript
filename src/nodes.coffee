@@ -871,15 +871,33 @@ exports.Index = class Index extends Base
 # A JSX element
 exports.JsxElement = class JsxElement extends Base
 
-  children: ['children']
+  children: ['children', 'attributes']
 
   constructor: (options) ->
-    {@name, @children} = options
+    {@name, @children, @attributes} = options
+    @children   ?= []
+    @attributes ?= []
 
   compileNode: (o) ->
+    compiledAttributes = do =>
+      return [] unless @attributes.length
+      attr = []
+      for {name, value} in @attributes
+        attr.push @makeCode ' '
+        attr.push @makeCode name
+        attr.push @makeCode '='
+        if value instanceof StringLiteral
+          attr.push value.compileToFragments(o)...
+        else # expression value
+          attr.push @makeCode '{'
+          attr.push value.compileToFragments(o)...
+          attr.push @makeCode '}'
+      attr
+
     startTag = [
       @makeCode '<'
       @makeCode @name
+      compiledAttributes...
       @makeCode '>'
     ]
 

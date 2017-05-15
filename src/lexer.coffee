@@ -288,6 +288,7 @@ exports.Lexer = class Lexer
 
   consumeChunk: (length) ->
     return unless length
+    [@chunkLine, @chunkColumn] = @getLineAndColumnFromChunk length
     @chunk = @chunk[length..]
 
   matchJsxElement: (opts = {}) ->
@@ -301,10 +302,44 @@ exports.Lexer = class Lexer
     [openingTag, elementName] = match
     @token 'JSX_ELEMENT_NAME', elementName, 0, openingTag.length
     @consumeChunk openingTag.length
+    if JSX_PARENTHESIZED_ATTRIBUTES_START.exec(@chunk)
+      @token 'JSX_PARENTHESIZED_ATTRIBUTES_START', '('
+      @consumeChunk '('.length
+      loop
+        @consumeChunk @whitespaceToken()
+        if JSX_PARENTHESIZED_ATTRIBUTES_END.exec(@chunk)
+          @token 'JSX_PARENTHESIZED_ATTRIBUTES_END', ')'
+          @consumeChunk ')'.length
+          break
+        @error 'expected JSX attribute' unless match = JSX_PARENTHESIZED_ATTRIBUTE.exec(@chunk)
+        [full, name, preEqualsSpace, postEqualsSpace, startExpressionValue, doubleQuotedStringValue, singleQuotedStringValue] = match
+        @token 'JSX_ATTRIBUTE_NAME', name
+        @consumeChunk name.length + preEqualsSpace.length
+        @token '=', '='
+        @consumeChunk '='.length + postEqualsSpace.length
+        if stringValue = doubleQuotedStringValue ? singleQuotedStringValue
+          @token 'STRING', stringValue
+          @consumeChunk stringValue.length
+        else
+          [line, column] = @getLineAndColumnFromChunk 0
+          {tokens: nested, index} =
+            new Lexer().tokenize @chunk, line: line, column: column, untilBalanced: on
+          # Skip the trailing `}`.
+          index += 1
+
+          [..., close] = nested
+          close.origin = ['', 'end of attribute expression value', close[2]]
+
+          # Remove leading 'TERMINATOR' (if any).
+          nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
+
+          @tokens.push nested...
+          @consumeChunk index
+
     @consumeChunk @whitespaceToken() # consume any trailing whitespace
     hasIndentedBody = 'indent' is @lineToken(dry: yes)
     if hasIndentedBody
-      @token 'JSX_ELEMENT_INDENTED_BODY_START', ''
+      @token 'JSX_ELEMENT_BODY_START', elementName, 0, 0
       @consumeChunk @lineToken() # consume indent
       loop
         {popLevels} = @matchJsxElementIndentedChild()
@@ -319,10 +354,11 @@ exports.Lexer = class Lexer
         contentLength = content.length
         content = content.replace TRAILING_SPACES, ''
         content = content.replace SIMPLE_STRING_OMIT, ' '
+        @token 'JSX_ELEMENT_BODY_START', elementName, 0, 0
         @token 'JSX_ELEMENT_CONTENT', content
         @consumeChunk contentLength
-        {}
-    # @token 'JSX_ELEMENT_END', elementName
+        @token 'JSX_ELEMENT_INLINE_BODY_END', elementName, 0, 0
+      {}
 
   matchJsxElementIndentedChild: ->
     @matchJsxElement(allowLeadingWhitespace: yes) ? @matchJsxElementIndentedContentLine()
@@ -1040,10 +1076,26 @@ MULTI_DENT = /^(?:\n[^\n\S]*)+/
 JSTOKEN      = ///^ `(?!``) ((?: [^`\\] | \\[\s\S]           )*) `   ///
 HERE_JSTOKEN = ///^ ```     ((?: [^`\\] | \\[\s\S] | `(?!``) )*) ``` ///
 
-JSX_ELEMENT =                    /// ^     %([a-zA-Z][a-zA-Z_0-9]*) (?=\s|$) ///
-JSX_ELEMENT_LEADING_WHITESPACE = /// ^ \s* %([a-zA-Z][a-zA-Z_0-9]*) (?=\s|$) ///
+JSX_ELEMENT =                    /// ^     %([a-zA-Z][a-zA-Z_0-9]*) ///
+JSX_ELEMENT_LEADING_WHITESPACE = /// ^ \s* %([a-zA-Z][a-zA-Z_0-9]*) ///
 JSX_ELEMENT_INLINE_CONTENT = /^[^\n]+/
 JSX_ELEMENT_INDENTED_CONTENT_LINE = /// ^ \s* ([^\n]*) ///
+JSX_PARENTHESIZED_ATTRIBUTES_START = /// ^ \( ///
+JSX_PARENTHESIZED_ATTRIBUTES_END   = /// ^ \) ///
+JSX_PARENTHESIZED_ATTRIBUTE = ///
+  ^
+  ([a-zA-Z][a-zA-Z_\-0-9]*)      # attribute name
+  (\s*)
+  =
+  (\s*) 
+  (?:
+    (\{)                           # start expression attribute value
+    |
+    (" (?: [^\\"] | \\[\s\S] )* ") # double-quoted string attribute value
+    |
+    (' (?: [^\\'] | \\[\s\S] )* ') # single-quoted string attribute value
+  )
+///
 
 # String-matching-regexes.
 STRING_START   = /^(?:'''|"""|'|")/

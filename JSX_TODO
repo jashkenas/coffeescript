@@ -1,0 +1,12 @@
+- allow interpolated string attribute values eg %h1( id="recipe-#{ x }" )
+- allow simple unquoted attribute values eg %p( key=i ) (or is this confusing/not preferable to HTML allowing unquoted attribute values?)
+- allow line-ending inline comments after inline elements eg %h1 # this is an h1 tag
+- allow comma after inline no-body element eg %h1, or %h1( a="b" ),
+- handle inline element (with or without body?) followed by indent eg:
+  if isSomething %abc
+    x
+- refine attribute error reporting so that eg %h1( x=[abc] ) will specifically tell you the attribute value is what's wrong
+- refactor attribute value nested lexing to share code with matchWithInterpolations()
+- spacing in element children?
+- compile empty element to eg <a /> instead of <a></a>? is there a semantic difference to JSX and/or HTML?
+- className and other attribute-name translations (automatically camelCase, that's what JSX wants?)

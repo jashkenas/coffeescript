@@ -471,14 +471,42 @@ grammar =
 
   # JSX-Haml element
   JsxElement: [
-    o 'JSX_ELEMENT_NAME',                                   -> new JsxElement name: $1, children: []
-    o 'JSX_ELEMENT_NAME JsxElementChildren',                -> new JsxElement name: $1, children: $2
+    o 'JSX_ELEMENT_NAME',                                                          -> new JsxElement name: $1
+    o 'JSX_ELEMENT_NAME JsxAttributes',                                            -> new JsxElement name: $1, attributes: $2
+    o 'JSX_ELEMENT_NAME JsxAttributes JSX_ELEMENT_BODY_START JsxElementChildren_', -> new JsxElement name: $1, attributes: $2, children: $4
+    o 'JSX_ELEMENT_NAME JSX_ELEMENT_BODY_START JsxElementChildren_',               -> new JsxElement name: $1, children: $3
+  ]
+
+  JsxAttributes: [
+    o 'JsxParenthesizedAttributes_'
+  ]
+
+  JsxParenthesizedAttributes_: [
+    o 'JSX_PARENTHESIZED_ATTRIBUTES_START JsxParenthesizedAttributes JSX_PARENTHESIZED_ATTRIBUTES_END', -> $2
+  ]
+
+  JsxParenthesizedAttributes: [
+    o 'JsxParenthesizedAttribute',                            -> [$1]
+    o 'JsxParenthesizedAttributes JsxParenthesizedAttribute', -> $1.concat $2
+  ]
+
+  JsxParenthesizedAttribute: [
+    o 'JSX_ATTRIBUTE_NAME = JsxParenthesizedAttributeValue', -> name: $1, value: $3
+  ]
+
+  JsxParenthesizedAttributeValue: [
+    o 'STRING',         -> new StringLiteral $1
+    o '{ Expression }', -> $2
+  ]
+
+  JsxElementChildren_: [
+    o 'JsxElementChildren JSX_ELEMENT_INLINE_BODY_END', -> $1
+    o 'INDENT JsxElementChildren OUTDENT',              -> $2
   ]
 
   JsxElementChildren: [
-    o 'JsxElementChild',                                                   -> [$1]
-    o 'JsxElementChildren JsxElementChild',                                -> $1.concat $2
-    o 'JSX_ELEMENT_INDENTED_BODY_START INDENT JsxElementChildren OUTDENT', -> $3
+    o 'JsxElementChild',                    -> [$1]
+    o 'JsxElementChildren JsxElementChild', -> $1.concat $2
   ]
 
   JsxElementChild: [
