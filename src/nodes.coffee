@@ -871,11 +871,11 @@ exports.Index = class Index extends Base
 # A JSX element
 exports.JsxElement = class JsxElement extends Base
 
-  children: ['children', 'attributes']
+  # children: ['children', 'attributes']
 
   constructor: (options) ->
-    {@name, @children, @attributes} = options
-    @children   ?= []
+    {@name, children: @children_, @attributes} = options
+    @children_  ?= []
     @attributes ?= []
 
   compileNode: (o) ->
@@ -902,20 +902,29 @@ exports.JsxElement = class JsxElement extends Base
     ]
 
     isString = (obj) -> Object.prototype.toString.call(obj) is '[object String]'
-    compiledChildren =
-      flatten(
-        for child in @children
-          if isString child # content
-            [@makeCode child]
-          else if child instanceof JsxElement
-            child.compileToFragments(o)
-          else # expression
+    compiledChildren = do =>
+      return [] unless @children_.length
+
+      compiled =
+        flatten(
+          for child in @children_
             [
-              @makeCode '{'
-              child.compileToFragments(o)
-              @makeCode '}'
+              @makeCode ' '
+              (if isString child # content
+                [@makeCode child]
+              else if child instanceof JsxElement
+                child.compileToFragments(o)
+              else # expression
+                [
+                  @makeCode '{'
+                  child.compileToFragments(o)
+                  @makeCode '}'
+                ]
+              )...
             ]
-      )
+        )
+      [initialSpace, compiled...] = compiled
+      compiled
 
     endTag = [
       @makeCode '</'

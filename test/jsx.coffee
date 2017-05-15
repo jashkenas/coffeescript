@@ -44,6 +44,26 @@ test 'inline =expressionBody', ->
   output = '<h1>{name}</h1>;'
   eq toJS(input), output
 
+test 'expression inline content', ->
+  input = '%h1 {@abc}'
+  output = '<h1>{this.abc}</h1>;'
+  eq toJS(input), output
+
+test 'mixed inline content', ->
+  input = '%h1 name {@abc}'
+  output = '<h1>name {this.abc}</h1>;'
+  eq toJS(input), output
+
+test 'mixed inline content normalize whitespace', ->
+  input = '%h1 name  {@abc}'
+  output = '<h1>name {this.abc}</h1>;'
+  eq toJS(input), output
+
+test 'mixed inline content normalize trailing whitespace', ->
+  input = '%h1 name  {@abc} '
+  output = '<h1>name {this.abc}</h1>;'
+  eq toJS(input), output
+
 test 'all together now', ->
   input = '''
     Recipe = ({name, ingredients, steps}) ->

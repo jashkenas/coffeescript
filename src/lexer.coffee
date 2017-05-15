@@ -367,15 +367,35 @@ exports.Lexer = class Lexer
         @token 'JSX_ELEMENT_INLINE_BODY_END', elementName, 0, 0
         return {}
 
-      [content] = JSX_ELEMENT_INLINE_CONTENT.exec(@chunk) ? []
-      if content
-        contentLength = content.length
-        content = content.replace TRAILING_SPACES, ''
-        content = content.replace SIMPLE_STRING_OMIT, ' '
-        @token 'JSX_ELEMENT_BODY_START', elementName, 0, 0
-        @token 'JSX_ELEMENT_CONTENT', content
-        @consumeChunk contentLength
-        @token 'JSX_ELEMENT_INLINE_BODY_END', elementName, 0, 0
+      hasBody = no
+      loop
+        @consumeChunk @whitespaceToken()
+        if match = JSX_ELEMENT_INLINE_CONTENT.exec(@chunk)
+          @token 'JSX_ELEMENT_BODY_START', elementName, 0, 0 unless hasBody
+          hasBody = yes
+          [content] = match
+          contentLength = content.length
+          content = content.replace TRAILING_SPACES, ''
+          content = content.replace SIMPLE_STRING_OMIT, ' '
+          @token 'JSX_ELEMENT_CONTENT', content
+          @consumeChunk contentLength
+        else if match = JSX_ELEMENT_INLINE_EXPRESSION_START.exec(@chunk)
+          @token 'JSX_ELEMENT_BODY_START', elementName, 0, 0 unless hasBody
+          hasBody = yes
+          [restOfLine] = match
+          [line, column] = @getLineAndColumnFromChunk 0
+          {tokens: nested, index} = new Lexer().tokenize restOfLine, {line, column, untilBalanced: yes}
+
+          # Remove leading 'TERMINATOR' (if any).
+          nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
+
+          [..., close] = nested
+          close.origin = ['', 'end of attribute expression value', close[2]]
+
+          @tokens.push nested...
+          @consumeChunk index
+        else break
+      @token 'JSX_ELEMENT_INLINE_BODY_END', elementName, 0, 0 if hasBody
       {}
 
   matchJsxElementIndentedChild: ->
@@ -1097,7 +1117,8 @@ HERE_JSTOKEN = ///^ ```     ((?: [^`\\] | \\[\s\S] | `(?!``) )*) ``` ///
 JSX_ELEMENT =                    /// ^     %([a-zA-Z][a-zA-Z_0-9]*) ///
 JSX_ELEMENT_LEADING_WHITESPACE = /// ^ \s* %([a-zA-Z][a-zA-Z_0-9]*) ///
 JSX_ELEMENT_INLINE_EQUALS_EXPRESSION = /// ^ (= \s*) ([^\n]+) ///
-JSX_ELEMENT_INLINE_CONTENT = /^[^\n]+/
+JSX_ELEMENT_INLINE_CONTENT = /// ^ [^\n\{]+ ///
+JSX_ELEMENT_INLINE_EXPRESSION_START = /// ^ \{ [^\n]* ///
 JSX_ELEMENT_INDENTED_CONTENT_LINE = /// ^ \s* ([^\n]*) ///
 JSX_PARENTHESIZED_ATTRIBUTES_START = /// ^ \( ///
 JSX_PARENTHESIZED_ATTRIBUTES_END   = /// ^ \) ///
