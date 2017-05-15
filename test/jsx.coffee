@@ -29,6 +29,21 @@ test 'inline element, no body', ->
   output = '<h1></h1>;'
   eq toJS(input), output
 
+test 'inline element with parenthesized attributes', ->
+  input = '''%h1( a="b" c='def' g={h + i})'''
+  output = '''<h1 a="b" c='def' g={h + i}></h1>;'''
+  eq toJS(input), output
+
+test 'inline element with parenthesized attributes and content', ->
+  input = '''%h1( a="b" c='def' g={h + i}) jkl'''
+  output = '''<h1 a="b" c='def' g={h + i}>jkl</h1>;'''
+  eq toJS(input), output
+
+test 'inline =expressionBody', ->
+  input = '%h1= name'
+  output = '<h1>{name}</h1>;'
+  eq toJS(input), output
+
 test 'all together now', ->
   input = '''
     Recipe = ({name, ingredients, steps}) ->

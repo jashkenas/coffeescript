@@ -323,9 +323,7 @@ exports.Lexer = class Lexer
         else
           [line, column] = @getLineAndColumnFromChunk 0
           {tokens: nested, index} =
-            new Lexer().tokenize @chunk, line: line, column: column, untilBalanced: on
-          # Skip the trailing `}`.
-          index += 1
+            new Lexer().tokenize @chunk, {line, column, untilBalanced: on}
 
           [..., close] = nested
           close.origin = ['', 'end of attribute expression value', close[2]]
@@ -349,6 +347,26 @@ exports.Lexer = class Lexer
           @consumeChunk consumed
           return popLevels: numOutdents - 1
     else
+      match = JSX_ELEMENT_INLINE_EQUALS_EXPRESSION.exec(@chunk)
+      if match
+        [full, equals, expression] = match
+        @token 'JSX_ELEMENT_BODY_START', elementName, 0, 0
+        @token '{', '=', 0, 0
+        @consumeChunk equals.length
+
+        [line, column] = @getLineAndColumnFromChunk 0
+        nested = new Lexer().tokenize expression, {line, column}
+
+        # Remove leading 'TERMINATOR' (if any).
+        nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
+
+        @tokens.push nested...
+        @consumeChunk expression.length
+        [..., close] = nested
+        @token '}', '}', 0, 0, ['', 'end of inline equals expression', close[2]]
+        @token 'JSX_ELEMENT_INLINE_BODY_END', elementName, 0, 0
+        return {}
+
       [content] = JSX_ELEMENT_INLINE_CONTENT.exec(@chunk) ? []
       if content
         contentLength = content.length
@@ -1078,6 +1096,7 @@ HERE_JSTOKEN = ///^ ```     ((?: [^`\\] | \\[\s\S] | `(?!``) )*) ``` ///
 
 JSX_ELEMENT =                    /// ^     %([a-zA-Z][a-zA-Z_0-9]*) ///
 JSX_ELEMENT_LEADING_WHITESPACE = /// ^ \s* %([a-zA-Z][a-zA-Z_0-9]*) ///
+JSX_ELEMENT_INLINE_EQUALS_EXPRESSION = /// ^ (= \s*) ([^\n]+) ///
 JSX_ELEMENT_INLINE_CONTENT = /^[^\n]+/
 JSX_ELEMENT_INDENTED_CONTENT_LINE = /// ^ \s* ([^\n]*) ///
 JSX_PARENTHESIZED_ATTRIBUTES_START = /// ^ \( ///

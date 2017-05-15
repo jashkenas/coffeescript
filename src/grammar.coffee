@@ -512,6 +512,7 @@ grammar =
   JsxElementChild: [
     o 'JSX_ELEMENT_CONTENT', -> $1
     o 'JsxElement',          -> $1
+    o '{ Expression }',      -> $2
   ]
 
   # Array slice literals.

@@ -901,13 +901,20 @@ exports.JsxElement = class JsxElement extends Base
       @makeCode '>'
     ]
 
+    isString = (obj) -> Object.prototype.toString.call(obj) is '[object String]'
     compiledChildren =
       flatten(
         for child in @children
-          if child instanceof JsxElement
-            child.compileToFragments(o)
-          else
+          if isString child # content
             [@makeCode child]
+          else if child instanceof JsxElement
+            child.compileToFragments(o)
+          else # expression
+            [
+              @makeCode '{'
+              child.compileToFragments(o)
+              @makeCode '}'
+            ]
       )
 
     endTag = [
