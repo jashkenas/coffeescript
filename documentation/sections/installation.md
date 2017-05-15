@@ -8,8 +8,12 @@ To install, first make sure you have a working copy of the latest stable version
 npm install --global coffeescript@next
 ```
 
+This will make the `coffee` and `cake` commands available globally.
+
 When you need CoffeeScript as a dependency of a project, within that project’s folder you can install it locally:
 
 ```bash
 npm install --save coffeescript@next
 ```
+
+The `coffee` and `cake` commands will first look in the current folder to see if CoffeeScript is installed locally, and use that version if so. This allows different versions of CoffeeScript to be installed globally and locally.
