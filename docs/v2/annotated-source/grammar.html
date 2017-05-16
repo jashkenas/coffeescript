@@ -221,7 +221,7 @@ previous nonterminal.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
-              <p>All runtime functions we need are defined on “yy”</p>
+              <p>All runtime functions we need are defined on <code>yy</code></p>
 
             </div>
             
@@ -238,7 +238,7 @@ previous nonterminal.</p>
                 <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
               <p>Returns a function which adds location data to the first parameter passed
-in, and returns the parameter.  If the parameter is not a node, it will
+in, and returns the parameter. If the parameter is not a node, it will
 just be passed through unaffected.</p>
 
             </div>
@@ -292,7 +292,7 @@ just be passed through unaffected.</p>
 the key to a list of alternative matches. With each match’s action, the
 dollar-sign variables are provided by Jison as references to the value of
 their numeric position, so in this rule:</p>
-<pre><code><span class="hljs-string">"Expression UNLESS Expression"</span>
+<pre><code><span class="hljs-string">'Expression UNLESS Expression'</span>
 </code></pre><p><code>$1</code> would be the value of the first <code>Expression</code>, <code>$2</code> would be the token
 for the <code>UNLESS</code> terminal, and <code>$3</code> would be the value of the second
 <code>Expression</code>.</p>
@@ -1590,7 +1590,6 @@ rules are necessary.</p>
        INDENT Expression OUTDENT'</span>,              <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Assign $<span class="hljs-number">1</span>, $<span class="hljs-number">4</span>, $<span class="hljs-number">2</span>
     o <span class="hljs-string">'SimpleAssignable COMPOUND_ASSIGN TERMINATOR
        Expression'</span>,                             <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Assign $<span class="hljs-number">1</span>, $<span class="hljs-number">4</span>, $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'SimpleAssignable EXTENDS Expression'</span>,    <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Extends $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
   ]</pre></div></div>
             
         </li>
