@@ -478,7 +478,10 @@ grammar =
   ]
 
   JsxAttributes: [
-    o 'JsxParenthesizedAttributes_'
+    o 'JsxParenthesizedAttributes_',                      -> list: $1
+    o 'JsxParenthesizedAttributes_ JsxObjectAttributes_', -> list: $1, object: $2
+    o 'JsxObjectAttributes_ JsxParenthesizedAttributes_', -> list: $2, object: $1
+    o 'JsxObjectAttributes_',                             -> object: $1
   ]
 
   JsxParenthesizedAttributes_: [
@@ -498,6 +501,15 @@ grammar =
     o 'STRING',         -> new StringLiteral $1
     o '{ Expression }', -> $2
   ]
+
+  JsxObjectAttributes_: [
+    o 'JSX_OBJECT_ATTRIBUTES_START JsxAttributesObject JSX_OBJECT_ATTRIBUTES_END', -> $2
+  ]
+
+  JsxAttributesObject: [
+    o '{ AssignList OptComma }', -> new JsxAttributesObj $2, $1.generated
+  ]
+
 
   JsxElementChildren_: [
     o 'JsxElementChildren JSX_ELEMENT_INLINE_BODY_END', -> $1

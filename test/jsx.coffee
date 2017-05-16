@@ -127,6 +127,61 @@ test 'various indented expressions', ->
   output = '<h1>{this.x} {this.y} abc {this.z} def {this.g + h} {this.i + this.j} {this.k} {this.l} {this.m}</h1>;'
   eq toJS(input), output
 
+test 'simple object attributes', ->
+  input = '''
+    %h1{ a: b }
+  '''
+  output = '<h1 a={b}></h1>;'
+  eq toJS(input), output
+
+test 'value object attributes', ->
+  input = '''
+    %h1{ a, @b, c: d() }
+  '''
+  output = '<h1 a={a} b={this.b} c={d()}></h1>;'
+  eq toJS(input), output
+
+test 'multi-line object attributes', ->
+  input = '''
+    x = ->
+      %h1{
+        a
+        @b
+        c: d()
+      }
+    y
+  '''
+  output = '''
+	var x;
+
+	x = function() {
+	  return <h1 a={a} b={this.b} c={d()}></h1>;
+	};
+
+	y;
+  '''
+  eq toJS(input), output
+
+test 'parenthesized and object attributes', ->
+  input = '''
+    %h1{ a, @b, c: d() }( e = 'f' )
+    %h2(e={f}){a,@b,c:d()}
+  '''
+  output = '''
+    <h1 e='f' a={a} b={this.b} c={d()}></h1>;
+
+    <h2 e={f} a={a} b={this.b} c={d()}></h2>;
+  '''
+  eq toJS(input), output
+
+# test '#id tags', ->
+#   input = '''
+#     %h1#abc
+#       #def
+#   '''
+#   output = '<h1 id="abc"><div id="def"></div></h1>;'
+#   eq toJS(input), output
+
 test 'all together now', ->
   input = '''
     Recipe = ({name, ingredients, steps}) ->

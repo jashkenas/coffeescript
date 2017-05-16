@@ -2,6 +2,7 @@
 - allow simple unquoted attribute values eg %p( key=i ) (or is this confusing/not preferable to HTML allowing unquoted attribute values?)
 - allow line-ending inline comments after inline elements eg %h1 # this is an h1 tag
 - allow comma after inline no-body element eg %h1, or %h1( a="b" ),
+- allow postfix for, if, unless immediately after no-body inline element eg return %h1 if abc
 - handle inline element (with or without body?) followed by indent eg:
   if isSomething %abc
     x
@@ -15,3 +16,23 @@
   %h1 {
     xyz
   }
+- support object spread operator in all 3 types of attributes
+- handle no-value attributes in () and <> attributes (implicit value is true?)
+- support haml-style nested object attributes? eg ng: { click: ... } - or is that ambiguous w/ possible object-literal value of top-level attribute?
+- handle comments inside object attributes?
+- don't wrap string literal object attribute values in braces eg %h1{ a: 'b' } >> <h1 a='b'>, not <h1 a={'b'}>
+- support haml-style class and id attribute merging? should also imitate haml wrt other duplicate attributes eg %a( b='c' ){ b: 'd' } >> <a b='d'> (looks like object always wins)?
+- should it allow closing } immediately after tag? eg:
+  %h1
+    {if x
+      %abc
+    else
+      %def}
+  or with space eg %def }
+- should it allow else nested at same depth as = if? eg:
+  %h1
+    = if x
+      %abc
+    else
+      %def
+- is there a semantic difference to React (or HTML) between self-closing and immediately end-tagged elements?

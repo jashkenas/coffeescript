@@ -302,37 +302,10 @@ exports.Lexer = class Lexer
     [openingTag, elementName] = match
     @token 'JSX_ELEMENT_NAME', elementName, 0, openingTag.length
     @consumeChunk openingTag.length
-    if JSX_PARENTHESIZED_ATTRIBUTES_START.exec(@chunk)
-      @token 'JSX_PARENTHESIZED_ATTRIBUTES_START', '('
-      @consumeChunk '('.length
-      loop
-        @consumeChunk @whitespaceToken()
-        if JSX_PARENTHESIZED_ATTRIBUTES_END.exec(@chunk)
-          @token 'JSX_PARENTHESIZED_ATTRIBUTES_END', ')'
-          @consumeChunk ')'.length
-          break
-        @error 'expected JSX attribute' unless match = JSX_PARENTHESIZED_ATTRIBUTE.exec(@chunk)
-        [full, name, preEqualsSpace, postEqualsSpace, startExpressionValue, doubleQuotedStringValue, singleQuotedStringValue] = match
-        @token 'JSX_ATTRIBUTE_NAME', name
-        @consumeChunk name.length + preEqualsSpace.length
-        @token '=', '='
-        @consumeChunk '='.length + postEqualsSpace.length
-        if stringValue = doubleQuotedStringValue ? singleQuotedStringValue
-          @token 'STRING', stringValue
-          @consumeChunk stringValue.length
-        else
-          [line, column] = @getLineAndColumnFromChunk 0
-          {tokens: nested, index} =
-            new Lexer().tokenize @chunk, {line, column, untilBalanced: on}
 
-          [..., close] = nested
-          close.origin = ['', 'end of attribute expression value', close[2]]
-
-          # Remove leading 'TERMINATOR' (if any).
-          nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
-
-          @tokens.push nested...
-          @consumeChunk index
+    matchedParenthesizedAttributes = @matchJsxParenthesizedAttributes()
+    @matchJsxObjectAttributes()
+    @matchJsxParenthesizedAttributes() unless matchedParenthesizedAttributes # could be before/after object-style attributes
 
     consumedWhitespace = @whitespaceToken() # consume any trailing whitespace
     hasIndentedBody = 'indent' is @lineToken(dry: yes)
@@ -369,14 +342,15 @@ exports.Lexer = class Lexer
         @token '}', '}', 0, 0, ['', 'end of inline equals expression', close[2]]
         @token 'JSX_ELEMENT_INLINE_BODY_END', elementName, 0, 0
         return {}
+      return {} unless JSX_ELEMENT_INLINE_BODY_START.exec(@chunk)
       @error 'Must include whitespace before JSX element body' unless consumedWhitespace or not @chunk
 
-      hasBody = no
+      alreadyStarted = no
       loop
         @consumeChunk @whitespaceToken()
         if match = JSX_ELEMENT_INLINE_CONTENT.exec(@chunk)
-          @token 'JSX_ELEMENT_BODY_START', elementName, 0, 0 unless hasBody
-          hasBody = yes
+          @token 'JSX_ELEMENT_BODY_START', elementName, 0, 0 unless alreadyStarted
+          alreadyStarted = yes
           [content] = match
           contentLength = content.length
           content = content.replace TRAILING_SPACES, ''
@@ -384,8 +358,8 @@ exports.Lexer = class Lexer
           @token 'JSX_ELEMENT_CONTENT', content
           @consumeChunk contentLength
         else if match = JSX_ELEMENT_INLINE_EXPRESSION_START.exec(@chunk)
-          @token 'JSX_ELEMENT_BODY_START', elementName, 0, 0 unless hasBody
-          hasBody = yes
+          @token 'JSX_ELEMENT_BODY_START', elementName, 0, 0 unless alreadyStarted
+          alreadyStarted = yes
           [restOfLine] = match
           [line, column] = @getLineAndColumnFromChunk 0
           {tokens: nested, index} = new Lexer().tokenize restOfLine, {line, column, untilBalanced: on}
@@ -399,8 +373,64 @@ exports.Lexer = class Lexer
           @tokens.push nested...
           @consumeChunk index
         else break
-      @token 'JSX_ELEMENT_INLINE_BODY_END', elementName, 0, 0 if hasBody
+      @token 'JSX_ELEMENT_INLINE_BODY_END', elementName, 0, 0
       {}
+
+  matchJsxObjectAttributes: ->
+    return unless JSX_OBJECT_ATTRIBUTES_START.exec(@chunk)
+
+    @token 'JSX_OBJECT_ATTRIBUTES_START', '{', 0, 0
+    # TODO: should use offsetOfNextOutdent() to not look past outdent for closing }?
+    [line, column] = @getLineAndColumnFromChunk 0
+    {tokens: nested, index} =
+      new Lexer().tokenize @chunk, {line, column, untilBalanced: on}
+
+    # TODO: check for non-null nested here and elsewhere?
+    [..., close] = nested
+    close.origin = ['', 'end of object attributes', close[2]]
+
+    # Remove leading 'TERMINATOR' (if any).
+    nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
+
+    @tokens.push nested...
+    @consumeChunk index
+    @token 'JSX_OBJECT_ATTRIBUTES_END', '}', 0, 0
+    yes
+
+  matchJsxParenthesizedAttributes: ->
+    return unless JSX_PARENTHESIZED_ATTRIBUTES_START.exec(@chunk)
+
+    @token 'JSX_PARENTHESIZED_ATTRIBUTES_START', '('
+    @consumeChunk '('.length
+    loop
+      @consumeChunk @whitespaceToken()
+      if JSX_PARENTHESIZED_ATTRIBUTES_END.exec(@chunk)
+        @token 'JSX_PARENTHESIZED_ATTRIBUTES_END', ')'
+        @consumeChunk ')'.length
+        break
+      @error 'expected JSX attribute' unless match = JSX_PARENTHESIZED_ATTRIBUTE.exec(@chunk)
+      [full, name, preEqualsSpace, postEqualsSpace, startExpressionValue, doubleQuotedStringValue, singleQuotedStringValue] = match
+      @token 'JSX_ATTRIBUTE_NAME', name
+      @consumeChunk name.length + preEqualsSpace.length
+      @token '=', '='
+      @consumeChunk '='.length + postEqualsSpace.length
+      if stringValue = doubleQuotedStringValue ? singleQuotedStringValue
+        @token 'STRING', stringValue
+        @consumeChunk stringValue.length
+      else
+        [line, column] = @getLineAndColumnFromChunk 0
+        {tokens: nested, index} =
+          new Lexer().tokenize @chunk, {line, column, untilBalanced: on}
+
+        [..., close] = nested
+        close.origin = ['', 'end of attribute expression value', close[2]]
+
+        # Remove leading 'TERMINATOR' (if any).
+        nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
+
+        @tokens.push nested...
+        @consumeChunk index
+    yes
 
   matchJsxElementIndentedChild: (opts) ->
     @matchJsxElementIndentedExpression(opts)      ? \
@@ -1182,6 +1212,7 @@ HERE_JSTOKEN = ///^ ```     ((?: [^`\\] | \\[\s\S] | `(?!``) )*) ``` ///
 JSX_ELEMENT =                    /// ^     %([a-zA-Z][a-zA-Z_0-9]*) ///
 JSX_ELEMENT_LEADING_WHITESPACE = /// ^ \s* %([a-zA-Z][a-zA-Z_0-9]*) ///
 JSX_ELEMENT_INLINE_EQUALS_EXPRESSION = /// ^ (= \s*) ([^\n]+) ///
+JSX_ELEMENT_INLINE_BODY_START = /// ^ [^\n] ///
 JSX_ELEMENT_INLINE_CONTENT = /// ^ [^\n\{]+ ///
 JSX_ELEMENT_INLINE_EXPRESSION_START = /// ^ \{ [^\n]* ///
 JSX_ELEMENT_INDENTED_EQUALS_EXPRESSION_START = /// ^ \s* = ///
@@ -1203,6 +1234,7 @@ JSX_PARENTHESIZED_ATTRIBUTE = ///
     (' (?: [^\\'] | \\[\s\S] )* ') # single-quoted string attribute value
   )
 ///
+JSX_OBJECT_ATTRIBUTES_START = /// ^ \{ ///
 WHITESPACE_INCLUDING_NEWLINES = /^\s+/
 
 # String-matching-regexes.

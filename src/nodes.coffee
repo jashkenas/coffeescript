@@ -876,13 +876,15 @@ exports.JsxElement = class JsxElement extends Base
   constructor: (options) ->
     {@name, children: @children_, @attributes} = options
     @children_  ?= []
-    @attributes ?= []
+    @attributes ?= {}
+    @attributes.object ?= {}
+    @attributes.list   ?= []
 
   compileNode: (o) ->
-    compiledAttributes = do =>
-      return [] unless @attributes.length
+    compiledListAttributes = do =>
+      return [] unless @attributes.list.length
       attr = []
-      for {name, value} in @attributes
+      for {name, value} in @attributes.list
         attr.push @makeCode ' '
         attr.push @makeCode name
         attr.push @makeCode '='
@@ -894,10 +896,14 @@ exports.JsxElement = class JsxElement extends Base
           attr.push @makeCode '}'
       attr
 
+    compiledObjectAttributes =
+      @attributes.object?.compileToFragments?(o) ? []
+
     startTag = [
       @makeCode '<'
       @makeCode @name
-      compiledAttributes...
+      compiledListAttributes...
+      compiledObjectAttributes...
       @makeCode '>'
     ]
 
@@ -1131,6 +1137,23 @@ exports.Obj = class Obj extends Base
   assigns: (name) ->
     for prop in @properties when prop.assigns name then return yes
     no
+
+exports.JsxAttributesObj = class JsxAttributesObj extends Obj
+  compileNode: (o) ->
+    answer = []
+    for prop in @properties
+      answer.push @makeCode ' '
+      if prop instanceof Assign
+        prop.context = '='
+        if prop.variable instanceof Value and prop.variable.hasProperties()
+          prop.variable.error 'invalid object key'
+      else if prop instanceof Value and prop.this
+        prop = new Assign prop.properties[0].name, prop, '='
+      else
+        prop = new Assign prop, prop, '='
+      prop.jsxAttribute = yes
+      answer.push prop.compileToFragments(o, LEVEL_TOP)...
+    answer
 
 #### Arr
 
@@ -1526,6 +1549,7 @@ exports.Assign = class Assign extends Base
           o.scope.find varBase.value
 
     val = @value.compileToFragments o, LEVEL_LIST
+    val = [@makeCode('{'), val..., @makeCode('}')] if @jsxAttribute
     @variable.front = true if isValue and @variable.base instanceof Obj
     compiledName = @variable.compileToFragments o, LEVEL_LIST
 
@@ -1535,7 +1559,7 @@ exports.Assign = class Assign extends Base
         compiledName.push @makeCode '"'
       return compiledName.concat @makeCode(": "), val
 
-    answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
+    answer = compiledName.concat @makeCode("#{ if @jsxAttribute then '' else ' '}#{ @context or '=' }#{ if @jsxAttribute then '' else ' '}"), val
     if o.level <= LEVEL_LIST then answer else @wrapInBraces answer
 
   # Brief implementation of recursive pattern matching, when assigning array or
