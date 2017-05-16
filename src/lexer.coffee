@@ -35,8 +35,8 @@ exports.Lexer = class Lexer
   # Before returning the token stream, run it through the [Rewriter](rewriter.html).
   tokenize: (code, opts = {}) ->
     @literate   = opts.literate  # Are we lexing literate CoffeeScript?
-    @indent     = 0              # The current indentation level.
-    @baseIndent = 0              # The overall minimum indentation level
+    @indent     = opts.initialIndent ? 0 # The current indentation level.
+    @baseIndent = opts.initialIndent ? 0 # The overall minimum indentation level
     @indebt     = 0              # The over-indentation at the current level.
     @outdebt    = 0              # The under-outdentation at the current level.
     @indents    = []             # The stack of all current indentation levels.
@@ -334,18 +334,21 @@ exports.Lexer = class Lexer
           @tokens.push nested...
           @consumeChunk index
 
-    @consumeChunk @whitespaceToken() # consume any trailing whitespace
+    consumedWhitespace = @whitespaceToken() # consume any trailing whitespace
     hasIndentedBody = 'indent' is @lineToken(dry: yes)
+    @consumeChunk consumedWhitespace
     if hasIndentedBody
       @token 'JSX_ELEMENT_BODY_START', elementName, 0, 0
       @consumeChunk @lineToken() # consume indent
+      followsNewline = yes
       loop
-        {popLevels} = @matchJsxElementIndentedChild()
+        {popLevels} = @matchJsxElementIndentedChild {followsNewline}
         return popLevels: popLevels - 1 if popLevels
         if not @chunk or 'outdent' is @lineToken(dry: yes)
           {numOutdents, consumed} = @lineToken(returnNumOutdents: yes)
           @consumeChunk consumed
           return popLevels: numOutdents - 1
+        followsNewline = @lineToken(dry: yes)
     else
       match = JSX_ELEMENT_INLINE_EQUALS_EXPRESSION.exec(@chunk)
       if match
@@ -366,6 +369,7 @@ exports.Lexer = class Lexer
         @token '}', '}', 0, 0, ['', 'end of inline equals expression', close[2]]
         @token 'JSX_ELEMENT_INLINE_BODY_END', elementName, 0, 0
         return {}
+      @error 'Must include whitespace before JSX element body' unless consumedWhitespace or not @chunk
 
       hasBody = no
       loop
@@ -384,7 +388,7 @@ exports.Lexer = class Lexer
           hasBody = yes
           [restOfLine] = match
           [line, column] = @getLineAndColumnFromChunk 0
-          {tokens: nested, index} = new Lexer().tokenize restOfLine, {line, column, untilBalanced: yes}
+          {tokens: nested, index} = new Lexer().tokenize restOfLine, {line, column, untilBalanced: on}
 
           # Remove leading 'TERMINATOR' (if any).
           nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
@@ -398,50 +402,73 @@ exports.Lexer = class Lexer
       @token 'JSX_ELEMENT_INLINE_BODY_END', elementName, 0, 0 if hasBody
       {}
 
-  matchJsxElementIndentedChild: ->
-    @matchJsxElementIndentedExpression()          ? \
+  matchJsxElementIndentedChild: (opts) ->
+    @matchJsxElementIndentedExpression(opts)      ? \
     @matchJsxElement(allowLeadingWhitespace: yes) ? \
     @matchJsxElementIndentedContentLine()
 
-  matchJsxElementIndentedExpression: ->
-    offsetOfNextOutdent = =>
+  matchJsxElementIndentedExpression: ({followsNewline}) ->
+    offsetOfNextOutdent = (greaterThan = no) =>
       match =
         ///
           \n
-          #{' '} {0, #{@indent}}
+          #{' '} {0, #{if greaterThan then @indent - 1 else @indent}}
           \S
         ///.exec @chunk
       return @chunk.length unless match # no outdent remaining
 
       match.index
 
-    [..., lastToken] = @tokens
-    if lastToken?[0] in ['TERMINATOR', 'INDENT', 'OUTDENT']
-      if match = JSX_ELEMENT_INDENTED_EQUALS_EXPRESSION_START.exec(@chunk)
-        @token '{', '=', 0, 0
-        @consumeChunk '='.length
+    if followsNewline and match = JSX_ELEMENT_INDENTED_EQUALS_EXPRESSION_START.exec(@chunk)
+      @token '{', '=', 0, 0
+      @consumeChunk match[0].length
 
-        endOfExpressionOffset = offsetOfNextOutdent()
-        [line, column] = @getLineAndColumnFromChunk 0
-        nested = new Lexer().tokenize @chunk[...endOfExpressionOffset], {line, column}
+      endOfExpressionOffset = offsetOfNextOutdent()
+      [line, column] = @getLineAndColumnFromChunk 0
+      nested = new Lexer().tokenize @chunk[...endOfExpressionOffset], {line, column}
 
-        # Remove leading 'TERMINATOR' (if any).
-        nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
+      # Remove leading 'TERMINATOR' (if any).
+      nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
 
-        if (token for token in nested when token[0] in ['FOR', 'SWITCH', 'WHILE', 'UNTIL']).length
-          @token 'IDENTIFIER', 'FORCE_EXPRESSION', 0, 0
-          @token '=', '=', 0, 0
+      if (token for token in nested when token[0] in ['FOR', 'SWITCH', 'WHILE', 'UNTIL']).length
+        @token 'IDENTIFIER', 'FORCE_EXPRESSION', 0, 0
+        @token '=', '=', 0, 0
 
-        @tokens.push nested...
-        @consumeChunk endOfExpressionOffset
+      @tokens.push nested...
+      @consumeChunk endOfExpressionOffset
 
-        [..., close] = nested
-        @token '}', '}', 0, 0, ['', 'end of equals expression', close[2]]
-        return {}
+      [..., close] = nested
+      @token '}', '}', 0, 0, ['', 'end of equals expression', close[2]]
+      return {}
+
+    if match = JSX_ELEMENT_INDENTED_EXPRESSION_START.exec(@chunk)
+      endOfExpressionOffset = offsetOfNextOutdent(yes)
+
+      # consume but don't record line token(s)
+      if match = WHITESPACE_INCLUDING_NEWLINES.exec(@chunk)
+        @consumeChunk match[0].length
+
+      [line, column] = @getLineAndColumnFromChunk 0
+      {tokens: nested, index} = new Lexer().tokenize @chunk[...endOfExpressionOffset], {line, column, untilBalanced: on, initialIndent: @indent}
+
+      # Remove leading 'TERMINATOR' (if any).
+      nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
+
+      if (token for token in nested when token[0] in ['FOR', 'SWITCH', 'WHILE', 'UNTIL']).length
+        @token 'IDENTIFIER', 'FORCE_EXPRESSION', 0, 0
+        @token '=', '=', 0, 0
+
+      [..., close] = nested
+      close.origin = ['', 'end of indented expression', close[2]]
+
+      @tokens.push nested...
+      @consumeChunk index
+
+      return {}
 
   matchJsxElementIndentedContentLine: ->
     [match, content] = JSX_ELEMENT_INDENTED_CONTENT_LINE.exec(@chunk)
-    @token 'JSX_ELEMENT_CONTENT', content, 0, match.length
+    @token 'JSX_ELEMENT_CONTENT', content.trim(), 0, match.length
     @consumeChunk match.length
     {}
 
@@ -1157,8 +1184,9 @@ JSX_ELEMENT_LEADING_WHITESPACE = /// ^ \s* %([a-zA-Z][a-zA-Z_0-9]*) ///
 JSX_ELEMENT_INLINE_EQUALS_EXPRESSION = /// ^ (= \s*) ([^\n]+) ///
 JSX_ELEMENT_INLINE_CONTENT = /// ^ [^\n\{]+ ///
 JSX_ELEMENT_INLINE_EXPRESSION_START = /// ^ \{ [^\n]* ///
-JSX_ELEMENT_INDENTED_EQUALS_EXPRESSION_START = /// ^ = ///
-JSX_ELEMENT_INDENTED_CONTENT_LINE = /// ^ \s* ([^\n]*) ///
+JSX_ELEMENT_INDENTED_EQUALS_EXPRESSION_START = /// ^ \s* = ///
+JSX_ELEMENT_INDENTED_EXPRESSION_START = /// ^ \s* { ///
+JSX_ELEMENT_INDENTED_CONTENT_LINE = /// ^ \s* ([^\n\{]*) ///
 JSX_PARENTHESIZED_ATTRIBUTES_START = /// ^ \( ///
 JSX_PARENTHESIZED_ATTRIBUTES_END   = /// ^ \) ///
 JSX_PARENTHESIZED_ATTRIBUTE = ///
@@ -1175,6 +1203,7 @@ JSX_PARENTHESIZED_ATTRIBUTE = ///
     (' (?: [^\\'] | \\[\s\S] )* ') # single-quoted string attribute value
   )
 ///
+WHITESPACE_INCLUDING_NEWLINES = /^\s+/
 
 # String-matching-regexes.
 STRING_START   = /^(?:'''|"""|'|")/

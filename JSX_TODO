@@ -11,3 +11,7 @@
 - compile empty element to eg <a /> instead of <a></a>? is there a semantic difference to JSX and/or HTML?
 - className and other attribute-name translations (automatically camelCase, that's what JSX wants?)
 - allow normal Coffeescript (line) comments inside (indented) element body
+- allow multiline expression to start "inline" eg:
+  %h1 {
+    xyz
+  }

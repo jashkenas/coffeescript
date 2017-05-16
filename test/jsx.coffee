@@ -72,6 +72,19 @@ test 'indented equals expression', ->
   output = '<h1>{abc}</h1>;'
   eq toJS(input), output
 
+test 'no equals expression unless line-starting', ->
+  input = '''
+    %h1
+      x = abc
+      y= abc
+      {z}= abc
+      {w} = abc
+      =abc
+  '''
+  # output = '<h1>x = abc y= abc {z}= abc {w} = abc {abc}</h1>;' TODO: once whitespace (or lack thereof) between children is fixed use this one
+  output = '<h1>x = abc y= abc {z} = abc {w} = abc {abc}</h1>;'
+  eq toJS(input), output
+
 test 'equals for loop', ->
   input = '''
     %h1
@@ -94,10 +107,30 @@ test 'equals for loop', ->
   '''
   eq toJS(input), output
 
+test 'various indented expressions', ->
+  input = '''
+    %h1
+      {@x} {@y}
+      abc
+      {@z}
+      def {@g + h}
+      {@i +
+        @j }
+      {
+        @k
+      }
+      { @l
+      }
+      {
+        @m }
+  '''
+  output = '<h1>{this.x} {this.y} abc {this.z} def {this.g + h} {this.i + this.j} {this.k} {this.l} {this.m}</h1>;'
+  eq toJS(input), output
+
 test 'all together now', ->
   input = '''
     Recipe = ({name, ingredients, steps}) ->
-      %section( id={ name.toLowerCase().replace / /g, '-' })
+      %section( id={ name.toLowerCase().replace(/ /g, '-')})
         %h1= name
         %ul.ingredients
           = for {name}, i in ingredients
@@ -111,5 +144,6 @@ test 'all together now', ->
   output = ''
   eq toJS(input), output
 
+# error tests: no whitespace before element body
 # object spread attributes
 # no-value (true) attributes
