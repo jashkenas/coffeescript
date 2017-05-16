@@ -1,7 +1,6 @@
 # We usually do not check the actual JS output from the compiler, but since
 # CSX is not readily supported by Node, we do it in this case
-eqCSX = (cs, js) ->
-  eq CoffeeScript.compile(cs, {bare: true}), js + '\n'
+eqCSX = (cs, js) -> eq toJS(cs), js
 
 test 'self closing', ->
   eqCSX '''
@@ -120,6 +119,13 @@ test 'regex in interpolation', ->
     <div x={/>asds/}><div />{/>asdsad</}</div>;
   '''
 
+test 'interpolation in string attribute value', ->
+  eqCSX '''
+    <div x="Hello #{world}" />
+  ''', '''
+    <div x={`Hello ${world}`} />;
+  '''
+
 # Unlike in coffee-react-transform
 test 'bare numbers not allowed', ->
   throws -> CoffeeScript.compile '<div x=3 />'
@@ -130,7 +136,7 @@ test 'bare expressions not allowed', ->
 test 'bare complex expressions not allowed', ->
   throws -> CoffeeScript.compile '<div x=f(3) />'
 
-test 'unescaped opening tag arrows disallowed', ->
+test 'unescaped opening tag angle bracket disallowed', ->
   throws -> CoffeeScript.compile '<Person><<</Person>'
 
 test 'space around equal sign', ->
@@ -143,10 +149,10 @@ test 'space around equal sign', ->
 # The following tests were adopted from James Friend's
 # https://github.com/jsdf/coffee-react-transform
 
-test 'ambigious tag-like expression', ->
+test 'ambiguous tag-like expression', ->
   throws -> CoffeeScript.compile 'x = a <b > c'
 
-test 'ambigious tag', ->
+test 'ambiguous tag', ->
   eqCSX '''
     a <b > c </b>
   ''', '''

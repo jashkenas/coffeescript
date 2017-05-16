@@ -2839,6 +2839,11 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
   shouldCache: -> @body.shouldCache()
 
   compileNode: (o) ->
+    if @csxAttribute
+      wrapped = new Parens new StringWithInterpolations @body
+      wrapped.csxAttribute = yes
+      return wrapped.compileNode o
+
     # Assumes that `expr` is `Value` » `StringLiteral` or `Op`
     expr = @body.unwrap()
 

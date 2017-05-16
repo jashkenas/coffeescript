@@ -1545,3 +1545,43 @@ test "#4248: Unicode code point escapes", ->
     '\\u{a}\\u{1111110000}'
       \    ^\^^^^^^^^^^^^^
   '''
+
+test "csx error: non-matching tag names", ->
+  assertErrorFormat '''
+    <div><span></div></span>
+  ''',
+  '''
+    [stdin]:1:7: error: expected corresponding CSX closing tag for span
+    <div><span></div></span>
+          ^^^^
+  '''
+
+test "csx error: bare expressions not allowed", ->
+  assertErrorFormat '''
+    <div x=3 />
+  ''',
+  '''
+    [stdin]:1:8: error: expected wrapped or quoted CSX attribute
+    <div x=3 />
+           ^
+  '''
+
+test "csx error: unescaped opening tag angle bracket disallowed", ->
+  assertErrorFormat '''
+    <Person><<</Person>
+  ''',
+  '''
+    [stdin]:1:9: error: unexpected <<
+    <Person><<</Person>
+            ^^
+  '''
+
+test "csx error: ambiguous tag-like expression", ->
+  assertErrorFormat '''
+    x = a <b > c
+  ''',
+  '''
+    [stdin]:1:10: error: missing </
+    x = a <b > c
+             ^
+  '''

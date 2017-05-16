@@ -48,7 +48,7 @@ exports.Lexer = class Lexer
     @seenExport = no             # Used to recognize EXPORT FROM? AS? tokens.
     @importSpecifierList = no    # Used to identify when in an IMPORT {...} FROM? ...
     @exportSpecifierList = no    # Used to identify when in an EXPORT {...} FROM? ...
-    @includesCSX = no            # Used to optimize CSX checks
+    @includesCSX = no            # Used to optimize CSX checks.
 
     @chunkLine =
       opts.line or 0             # The start line for the current @chunk.
@@ -715,7 +715,7 @@ exports.Lexer = class Lexer
       offsetInChunk += index
 
     unless str[...closingDelimiter.length] is closingDelimiter
-      @error "missing #{closingDelimiter}", length: closingDelimiter.length
+      @error "missing #{closingDelimiter}", length: delimiter.length
 
     [firstToken, ..., lastToken] = tokens
     firstToken[2].first_column -= delimiter.length
@@ -1065,7 +1065,7 @@ IDENTIFIER = /// ^
 ///
 
 CSX_IDENTIFIER = /// ^
-  (?!\d<)
+  (?![\d<])
   ( (?: (?!\s)[\-\.$\w\x7f-\uffff] )+ ) # like `IDENTIFIER` but includes `-`, `.`s
   ( [^\S]* = (?!=) )?  # Is this an attribute name?
 ///
