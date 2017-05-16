@@ -390,7 +390,7 @@ exports.Lexer = class Lexer
           nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
 
           [..., close] = nested
-          close.origin = ['', 'end of attribute expression value', close[2]]
+          close.origin = ['', 'end of inline expression', close[2]]
 
           @tokens.push nested...
           @consumeChunk index
@@ -399,7 +399,45 @@ exports.Lexer = class Lexer
       {}
 
   matchJsxElementIndentedChild: ->
-    @matchJsxElement(allowLeadingWhitespace: yes) ? @matchJsxElementIndentedContentLine()
+    @matchJsxElementIndentedExpression()          ? \
+    @matchJsxElement(allowLeadingWhitespace: yes) ? \
+    @matchJsxElementIndentedContentLine()
+
+  matchJsxElementIndentedExpression: ->
+    offsetOfNextOutdent = =>
+      match =
+        ///
+          \n
+          #{' '} {0, #{@indent}}
+          \S
+        ///.exec @chunk
+      return @chunk.length unless match # no outdent remaining
+
+      match.index
+
+    [..., lastToken] = @tokens
+    if lastToken?[0] in ['TERMINATOR', 'INDENT', 'OUTDENT']
+      if match = JSX_ELEMENT_INDENTED_EQUALS_EXPRESSION_START.exec(@chunk)
+        @token '{', '=', 0, 0
+        @consumeChunk '='.length
+
+        endOfExpressionOffset = offsetOfNextOutdent()
+        [line, column] = @getLineAndColumnFromChunk 0
+        nested = new Lexer().tokenize @chunk[...endOfExpressionOffset], {line, column}
+
+        # Remove leading 'TERMINATOR' (if any).
+        nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
+
+        if (token for token in nested when token[0] in ['FOR', 'SWITCH', 'WHILE', 'UNTIL']).length
+          @token 'IDENTIFIER', 'FORCE_EXPRESSION', 0, 0
+          @token '=', '=', 0, 0
+
+        @tokens.push nested...
+        @consumeChunk endOfExpressionOffset
+
+        [..., close] = nested
+        @token '}', '}', 0, 0, ['', 'end of equals expression', close[2]]
+        return {}
 
   matchJsxElementIndentedContentLine: ->
     [match, content] = JSX_ELEMENT_INDENTED_CONTENT_LINE.exec(@chunk)
@@ -1119,6 +1157,7 @@ JSX_ELEMENT_LEADING_WHITESPACE = /// ^ \s* %([a-zA-Z][a-zA-Z_0-9]*) ///
 JSX_ELEMENT_INLINE_EQUALS_EXPRESSION = /// ^ (= \s*) ([^\n]+) ///
 JSX_ELEMENT_INLINE_CONTENT = /// ^ [^\n\{]+ ///
 JSX_ELEMENT_INLINE_EXPRESSION_START = /// ^ \{ [^\n]* ///
+JSX_ELEMENT_INDENTED_EQUALS_EXPRESSION_START = /// ^ = ///
 JSX_ELEMENT_INDENTED_CONTENT_LINE = /// ^ \s* ([^\n]*) ///
 JSX_PARENTHESIZED_ATTRIBUTES_START = /// ^ \( ///
 JSX_PARENTHESIZED_ATTRIBUTES_END   = /// ^ \) ///

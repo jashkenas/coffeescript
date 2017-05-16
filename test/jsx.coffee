@@ -64,6 +64,36 @@ test 'mixed inline content normalize trailing whitespace', ->
   output = '<h1>name {this.abc}</h1>;'
   eq toJS(input), output
 
+test 'indented equals expression', ->
+  input = '''
+    %h1
+      = abc
+  '''
+  output = '<h1>{abc}</h1>;'
+  eq toJS(input), output
+
+test 'equals for loop', ->
+  input = '''
+    %h1
+      = for x in ['a', 'b', 'c']
+        %b= x
+  '''
+  output = '''
+    var FORCE_EXPRESSION, x;
+
+    <h1>{FORCE_EXPRESSION = (function() {
+      var i, len, ref, results;
+      ref = ['a', 'b', 'c'];
+      results = [];
+      for (i = 0, len = ref.length; i < len; i++) {
+        x = ref[i];
+        results.push(<b>{x}</b>);
+      }
+      return results;
+    })()}</h1>;
+  '''
+  eq toJS(input), output
+
 test 'all together now', ->
   input = '''
     Recipe = ({name, ingredients, steps}) ->
