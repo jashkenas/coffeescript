@@ -2573,47 +2573,62 @@ UTILITIES =
 
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls, and copies of any static properties.
-  extend: (o) -> "
-    function(child, parent) {
-      for (var key in parent) {
-        if (#{utility 'hasProp', o}.call(parent, key)) child[key] = parent[key];
+  extend: (o) -> 
+    if o.importHelpers
+      return "#{utility 'coffeelib', o}.extend"
+    else return "
+      function(child, parent) {
+        for (var key in parent) {
+          if (#{utility 'hasProp', o}.call(parent, key)) child[key] = parent[key];
+        }
+        function ctor() {
+          this.constructor = child;
+        }
+        ctor.prototype = parent.prototype;
+        child.prototype = new ctor();
+        child.__super__ = parent.prototype;
+        return child;
       }
-      function ctor() {
-        this.constructor = child;
-      }
-      ctor.prototype = parent.prototype;
-      child.prototype = new ctor();
-      child.__super__ = parent.prototype;
-      return child;
-    }
-  "
+    "
 
   # Create a function bound to the current value of "this".
-  bind: -> '
-    function(fn, me){
-      return function(){
-        return fn.apply(me, arguments);
-      };
-    }
-  '
+  bind: (o) ->
+    if o.importHelpers
+      return "#{utility 'coffeelib', o}.bind"
+    else return '
+      function(fn, me){
+        return function(){
+          return fn.apply(me, arguments);
+        };
+      }
+    '
 
   # Discover if an item is in an array.
-  indexOf: -> "
-    [].indexOf || function(item) {
-      for (var i = 0, l = this.length; i < l; i++) {
-        if (i in this && this[i] === item) return i;
+  indexOf: (o) -> 
+    if o.importHelpers
+      return "#{utility 'coffeelib', o}.indexOf"
+    else return "
+      [].indexOf || function(item) {
+        for (var i = 0, l = this.length; i < l; i++) {
+          if (i in this && this[i] === item) return i;
+        }
+        return -1;
       }
-      return -1;
-    }
-  "
+    "
 
-  modulo: -> """
-    function(a, b) { return (+a % (b = +b) + b) % b; }
-  """
+  modulo: (o) -> 
+    if o.importHelpers
+      return "#{utility 'coffeelib', o}.modulo"
+    else return """
+      function(a, b) { return (+a % (b = +b) + b) % b; }
+    """
 
   # Shortcuts to speed up the lookup time for native functions.
   hasProp: -> '{}.hasOwnProperty'
   slice  : -> '[].slice'
+
+  # Imports the coffeelib module (using CommonJS syntax)
+  coffeelib: (o) -> 'require("coffeelib")'
 
 # Levels indicate a node's position in the AST. Useful for knowing if
 # parens are necessary or superfluous.
@@ -2638,6 +2653,12 @@ utility = (name, o) ->
   if name of root.utilities
     root.utilities[name]
   else
+    # when we need the first utility, require coffeelib and stash it as a utility
+    if o.importHelpers and not root.utilities.length
+      coffeelibRef = root.freeVariable "coffeelib"
+      root.assign coffeelibRef, UTILITIES["coffeelib"] o
+      root.utilities["coffeelib"] = coffeelibRef
+
     ref = root.freeVariable name
     root.assign ref, UTILITIES[name] o
     root.utilities[name] = ref
