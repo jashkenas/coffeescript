@@ -183,6 +183,26 @@ test 'simple tag', ->
   '''
   eq toJS(input), output
 
+test 'self-closing tags', ->
+  input = '''
+    <h1/>
+    <h2 />
+    <h3 a='b' c={d}/>
+    <h4
+        e='f g'
+    />
+  '''
+  output = '''
+	<h1></h1>;
+
+	<h2></h2>;
+
+	<h3 a='b' c={d}></h3>;
+
+	<h4 e='f g'></h4>;
+  '''
+  eq toJS(input), output
+
 test 'tag with attributes and indented body', ->
   input = '''
     <h1 a="b" c={@d}>
@@ -259,6 +279,45 @@ test 'shorthand tags', ->
       #def.ghi.jkl
   '''
   output = '''<h1 id='abc'><div id='def' className='ghi jkl'></div></h1>;'''
+  eq toJS(input), output
+
+test 'multiline attributes', ->
+  input = '''
+    %h1(
+      a={b}
+      c='d' )
+      %a( e={f g}
+          h='i' )
+        %b( j = 'k' 
+          l='m'
+          )
+        %b( n = 'o' 
+          p='q'
+        )
+  '''
+  output = '''
+    <h1 a={b} c='d'><a e={f(g)} h='i'><b j='k' l='m'></b> <b n='o' p='q'></b></a></h1>;
+  '''
+  eq toJS(input), output
+
+test 'multiline attributes in tags', ->
+  input = '''
+    <h1
+      a={b}
+      c='d'>
+      <a e={f g}
+         h='i' >
+        <b j = 'k' 
+          l='m'
+          />
+        <b n = 'o' 
+          p='q'
+        ></b>
+      </a></h1>
+  '''
+  output = '''
+    <h1 a={b} c='d'><a e={f(g)} h='i'><b j='k' l='m'></b> <b n='o' p='q'></b></a></h1>;
+  '''
   eq toJS(input), output
 
 test 'all together now', ->

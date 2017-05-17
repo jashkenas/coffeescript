@@ -482,6 +482,7 @@ grammar =
   JsxStartTag: [
     o 'JSX_START_TAG_START JSX_ELEMENT_NAME JSX_START_TAG_END',                            -> name: $2
     o 'JSX_START_TAG_START JSX_ELEMENT_NAME JsxParenthesizedAttributes JSX_START_TAG_END', -> name: $2, attributes: {list: $3}
+    o 'JSX_START_TAG_START JSX_ELEMENT_NAME INDENT OUTDENT JSX_START_TAG_END',             -> name: $2, attributes: {list: $3}
   ]
 
   JsxTagChildren: [
@@ -535,6 +536,9 @@ grammar =
   JsxParenthesizedAttributes: [
     o 'JsxParenthesizedAttribute',                            -> [$1]
     o 'JsxParenthesizedAttributes JsxParenthesizedAttribute', -> $1.concat $2
+    o 'INDENT JsxParenthesizedAttributes OUTDENT',            -> $2
+    o 'JsxParenthesizedAttributes TERMINATOR',                -> $1
+    o 'JsxParenthesizedAttributes INDENT JsxParenthesizedAttributes OUTDENT', -> $1.concat $3
   ]
 
   JsxParenthesizedAttribute: [

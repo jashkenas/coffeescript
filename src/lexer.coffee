@@ -304,6 +304,8 @@ exports.Lexer = class Lexer
       return @matchJsxInlineBody({elementName, consumedWhitespace}) unless hasIndentedBody
       return @matchJsxIndentedBody({elementName, topLevel})
 
+    return {} if matchedTag?.selfClosed
+
     @matchJsxTagBody({elementName})
 
   matchJsxTagBody: ({elementName}) ->
@@ -312,6 +314,7 @@ exports.Lexer = class Lexer
     endTag = "</#{elementName}>"
     errorExpectedEndTag = =>
       @error "expected JSX end tag #{endTag}"
+    originalIndent = @indent
     loop
       {popLevels} = @matchJsxElementIndentedChild {followsNewline, untilEndTag: elementName}
       errorExpectedEndTag() if popLevels or not @chunk or (outdentNext = 'outdent' is @lineToken(dry: yes)) and not indentedBody
@@ -321,10 +324,11 @@ exports.Lexer = class Lexer
         @consumeChunk consumed
         justOutdented = yes
       if /// ^ #{endTag} ///.exec(@chunk)
+        @pair endTag
         @token 'JSX_END_TAG', endTag
         @consumeChunk endTag.length
         return {}
-      errorExpectedEndTag() if justOutdented
+      errorExpectedEndTag() if justOutdented and @indent < originalIndent
       followsNewline = @lineToken(dry: yes)
 
   matchJsxStartTag: ({allowLeadingWhitespace}) ->
@@ -335,12 +339,15 @@ exports.Lexer = class Lexer
         JSX_TAG
     return unless match = tagRegex.exec(@chunk)
     [[], tagOpener, elementName] = match
-    @token 'JSX_START_TAG_START', '<'
+    token = @makeToken 'JSX_START_TAG_START', '<'
+    @ends.push {tag: '>', origin: token}
+    @tokens.push token
     @consumeChunk tagOpener.length
     @token 'JSX_ELEMENT_NAME', elementName
     @consumeChunk elementName.length
-    @matchJsxTagAttributes()
-    {elementName}
+    ret = @matchJsxTagAttributes({elementName})
+    selfClosed = ret?.selfClosed
+    {elementName, selfClosed}
 
   matchJsxHamlElement: ({allowLeadingWhitespace}) ->
     elementRegex =
@@ -491,23 +498,37 @@ exports.Lexer = class Lexer
     @token 'JSX_OBJECT_ATTRIBUTES_END', '}', 0, 0
     yes
 
-  matchJsxTagAttributes: ->
+  matchJsxTagAttributes: ({elementName}) ->
     @matchJsxNormalAttributes
       reachedEnd: =>
-        return no unless JSX_TAG_ATTRIBUTES_END.exec(@chunk)
-        @token 'JSX_START_TAG_END', '>'
-        @consumeChunk '>'.length
-        yes
+        if JSX_TAG_ATTRIBUTES_END.exec(@chunk)
+          @pair '>'
+          token = @makeToken 'JSX_START_TAG_END', '>'
+          @ends.push {tag: "</#{elementName}>", origin: token}
+          @tokens.push token
+          @consumeChunk '>'.length
+          return yes
+        return no unless JSX_TAG_SELF_CLOSE.exec(@chunk)
+        @pair '>'
+        @token 'JSX_START_TAG_END', '>', 0, 0
+        @token 'JSX_ELEMENT_BODY_START', elementName, 0, 0
+        endTag = "</#{elementName}>"
+        @token 'JSX_END_TAG', endTag, 0, 0
+        @consumeChunk '/>'.length
+        selfClosed: yes
 
   matchJsxParenthesizedAttributes: ->
     return unless JSX_PARENTHESIZED_ATTRIBUTES_START.exec(@chunk)
 
-    @token 'JSX_PARENTHESIZED_ATTRIBUTES_START', '('
+    token = @makeToken 'JSX_PARENTHESIZED_ATTRIBUTES_START', '('
+    @ends.push {tag: 'JSX_PARENTHESIZED_ATTRIBUTES_END', origin: token}
+    @tokens.push token
     @consumeChunk '('.length
 
     @matchJsxNormalAttributes
       reachedEnd: =>
         return no unless JSX_PARENTHESIZED_ATTRIBUTES_END.exec(@chunk)
+        @pair 'JSX_PARENTHESIZED_ATTRIBUTES_END'
         @token 'JSX_PARENTHESIZED_ATTRIBUTES_END', ')'
         @consumeChunk ')'.length
         yes
@@ -515,7 +536,8 @@ exports.Lexer = class Lexer
   matchJsxNormalAttributes: ({reachedEnd}) ->
     loop
       @consumeChunk @whitespaceToken()
-      break if reachedEnd(@chunk)
+      @consumeChunk @lineToken()
+      break if end = reachedEnd()
       @error 'expected JSX attribute' unless match = JSX_PARENTHESIZED_ATTRIBUTE.exec(@chunk)
       [full, name, preEqualsSpace, postEqualsSpace, startExpressionValue, doubleQuotedStringValue, singleQuotedStringValue] = match
       @token 'JSX_ATTRIBUTE_NAME', name
@@ -540,7 +562,7 @@ exports.Lexer = class Lexer
 
         @tokens.push nested...
         @consumeChunk index
-    yes
+    end ? yes
 
   matchJsxElementIndentedChild: (opts) ->
     @matchJsxElementIndentedExpression(opts)      ? \
@@ -1363,6 +1385,7 @@ JSX_OBJECT_ATTRIBUTES_START = /// ^ \{ ///
 JSX_TAG =                    /// ^     (<) ([a-zA-Z][a-zA-Z_0-9]*) ///
 JSX_TAG_LEADING_WHITESPACE = /// ^ (\s* <) ([a-zA-Z][a-zA-Z_0-9]*) ///
 JSX_TAG_ATTRIBUTES_END = /// ^ > ///
+JSX_TAG_SELF_CLOSE = /// ^ /> ///
 NON_WHITESPACE = /// \S ///
 WHITESPACE_INCLUDING_NEWLINES = /^\s+/
 
