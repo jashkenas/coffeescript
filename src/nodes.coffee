@@ -874,13 +874,20 @@ exports.JsxElement = class JsxElement extends Base
   # children: ['children', 'attributes']
 
   constructor: (options) ->
-    {@name, children: @children_, @attributes} = options
-    @children_  ?= []
-    @attributes ?= {}
+    {@name, children: @children_ = [], @attributes = {}, @shorthands = {}} = options
     @attributes.object ?= {}
     @attributes.list   ?= []
+    @shorthands.classes ?= []
 
   compileNode: (o) ->
+    compiledIdAttribute = do =>
+      return [] unless @shorthands.id
+      [@makeCode " id='#{@shorthands.id}'"]
+
+    compiledClassAttribute = do =>
+      return [] unless @shorthands.classes.length
+      [@makeCode " className='#{@shorthands.classes.join ' '}'"]
+
     compiledListAttributes = do =>
       return [] unless @attributes.list.length
       attr = []
@@ -902,6 +909,8 @@ exports.JsxElement = class JsxElement extends Base
     startTag = [
       @makeCode '<'
       @makeCode @name
+      compiledIdAttribute...
+      compiledClassAttribute...
       compiledListAttributes...
       compiledObjectAttributes...
       @makeCode '>'

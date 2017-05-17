@@ -283,7 +283,7 @@ exports.Lexer = class Lexer
   # Matches JSX(-Haml) elements
   jsxToken: ->
     originalChunk = @chunk
-    return 0 unless @matchJsxElement()
+    return 0 unless @matchJsxElement({topLevel: yes})
     originalChunk.length - @chunk.length
 
   consumeChunk: (length) ->
@@ -292,6 +292,7 @@ exports.Lexer = class Lexer
     @chunk = @chunk[length..]
 
   matchJsxElement: (opts = {}) ->
+    {topLevel} = opts
     return unless (matchedHamlElement = @matchJsxHamlElement(opts)) or (matchedTag = @matchJsxStartTag(opts))
     {elementName} = matchedHamlElement ? matchedTag
 
@@ -301,7 +302,7 @@ exports.Lexer = class Lexer
       return {} if JSX_ELEMENT_IMMEDIATE_CLOSERS.exec(@chunk)
       hasIndentedBody = 'indent' is @lineToken(dry: yes)
       return @matchJsxInlineBody({elementName, consumedWhitespace}) unless hasIndentedBody
-      return @matchJsxIndentedBody({elementName})
+      return @matchJsxIndentedBody({elementName, topLevel})
 
     @matchJsxTagBody({elementName})
 
@@ -315,7 +316,7 @@ exports.Lexer = class Lexer
       {popLevels} = @matchJsxElementIndentedChild {followsNewline, untilEndTag: elementName}
       errorExpectedEndTag() if popLevels or not @chunk or (outdentNext = 'outdent' is @lineToken(dry: yes)) and not indentedBody
       if outdentNext
-        {numOutdents, consumed} = @lineToken(returnNumOutdents: yes)
+        {numOutdents, consumed} = @lineToken(returnNumOutdents: yes, noNewlines: yes)
         errorExpectedEndTag() if numOutdents > 1
         @consumeChunk consumed
         justOutdented = yes
@@ -347,25 +348,66 @@ exports.Lexer = class Lexer
         JSX_ELEMENT_LEADING_WHITESPACE
       else
         JSX_ELEMENT
-    return unless match = elementRegex.exec(@chunk)
-    [openingTag, elementName] = match
-    @token 'JSX_ELEMENT_NAME', elementName, 0, openingTag.length
-    @consumeChunk openingTag.length
+    if match = elementRegex.exec(@chunk)
+      [openingTag, elementName] = match
+      @token 'JSX_ELEMENT_NAME', elementName, 0, openingTag.length
+      @consumeChunk openingTag.length
+      @matchJsxHamlShorthands({allowLeadingDotClass: yes})
+    else if @matchJsxHamlShorthands({addImplicitElementName: yes})
+      elementName = 'div'
+    else return
 
     matchedParenthesizedAttributes = @matchJsxParenthesizedAttributes()
     @matchJsxObjectAttributes()
     @matchJsxParenthesizedAttributes() unless matchedParenthesizedAttributes # could be before/after object-style attributes
     {elementName}
 
-  matchJsxIndentedBody: ({elementName}) ->
+  matchJsxHamlShorthands: (opts = {}) ->
+    {allowLeadingDotClass, addImplicitElementName} = opts
+    # allowLeadingDotClass ?= ...
+    matchedId = @matchJsxIdShorthand({addImplicitElementName})
+    unless matchedId
+      return unless allowLeadingDotClass
+      return unless @matchJsxClassShorthand({addImplicitElementName})
+    loop
+      justMatchedId = no
+      matchedId = justMatchedId = @matchJsxIdShorthand() unless matchedId
+      matchedClass = @matchJsxClassShorthand()
+      return yes unless justMatchedId or matchedClass
+
+  matchJsxIdShorthand: (opts = {})->
+    {addImplicitElementName} = opts
+    return unless match = JSX_ID_SHORTHAND.exec(@chunk)
+    @token 'JSX_ELEMENT_NAME', 'div', 0, 0 if addImplicitElementName
+    [[], id] = match
+    @token 'JSX_ID_SHORTHAND_SYMBOL', '#'
+    @consumeChunk '#'.length
+    @token 'JSX_ID_SHORTHAND', id
+    @consumeChunk id.length
+    yes
+
+  matchJsxClassShorthand: (opts = {})->
+    {addImplicitElementName} = opts
+    return unless match = JSX_CLASS_SHORTHAND.exec(@chunk)
+    @token 'JSX_ELEMENT_NAME', 'div', 0, 0 if addImplicitElementName
+    [[], klass] = match
+    @token 'JSX_CLASS_SHORTHAND_SYMBOL', '.'
+    @consumeChunk '.'.length
+    @token 'JSX_CLASS_SHORTHAND', klass
+    @consumeChunk klass.length
+    yes
+
+  matchJsxIndentedBody: ({elementName, topLevel}) ->
     @token 'JSX_ELEMENT_BODY_START', elementName, 0, 0
     @consumeChunk @lineToken() # consume indent
     followsNewline = yes
     loop
       {popLevels} = @matchJsxElementIndentedChild {followsNewline}
-      return popLevels: popLevels - 1 if popLevels
+      if popLevels
+        @token 'TERMINATOR', '\n', 0, 0 if topLevel
+        return popLevels: popLevels - 1
       if not @chunk or 'outdent' is @lineToken(dry: yes)
-        {numOutdents, consumed} = @lineToken(returnNumOutdents: yes)
+        {numOutdents, consumed} = @lineToken(returnNumOutdents: yes, noNewlines: not topLevel)
         @consumeChunk consumed
         return popLevels: numOutdents - 1
       followsNewline = @lineToken(dry: yes)
@@ -666,7 +708,7 @@ exports.Lexer = class Lexer
   # Keeps track of the level of indentation, because a single outdent token
   # can close multiple indents, so we need to know how far in we happen to be.
   lineToken: (opts = {}) ->
-    {dry, returnNumOutdents} = opts
+    {dry, returnNumOutdents, noNewlines} = opts
     return 0 unless match = MULTI_DENT.exec @chunk
     indent = match[0]
 
@@ -675,7 +717,7 @@ exports.Lexer = class Lexer
     @seenExport = no unless @exportSpecifierList
 
     size = indent.length - 1 - indent.lastIndexOf '\n'
-    noNewlines = @unfinished()
+    noNewlines ?= @unfinished()
 
     action =
       switch
@@ -1291,6 +1333,8 @@ HERE_JSTOKEN = ///^ ```     ((?: [^`\\] | \\[\s\S] | `(?!``) )*) ``` ///
 
 JSX_ELEMENT =                    /// ^     %([a-zA-Z][a-zA-Z_0-9]*) ///
 JSX_ELEMENT_LEADING_WHITESPACE = /// ^ \s* %([a-zA-Z][a-zA-Z_0-9]*) ///
+JSX_ID_SHORTHAND = /// ^ \# ([a-zA-Z][a-zA-Z_0-9\-]*) ///
+JSX_CLASS_SHORTHAND = /// ^ \. ([a-zA-Z][a-zA-Z_0-9\-]*) ///
 JSX_ELEMENT_IMMEDIATE_CLOSERS = /// ^ (?: \, | \} | \) | \] | for\s | unless\s | if\s ) ///
 JSX_ELEMENT_INLINE_EQUALS_EXPRESSION = /// ^ (= \s*) ([^\n]+) ///
 JSX_ELEMENT_INLINE_BODY_START = /// ^ [^\n] ///

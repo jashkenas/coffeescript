@@ -487,14 +487,38 @@ grammar =
   JsxTagChildren: [
     o 'JsxElementChildren'
     o 'INDENT JsxElementChildren OUTDENT',            -> $2
-    o 'INDENT JsxElementChildren OUTDENT TERMINATOR', -> $2
   ]
 
   JsxHamlElement: [
-    o 'JSX_ELEMENT_NAME',                                                          -> new JsxElement name: $1
-    o 'JSX_ELEMENT_NAME JsxAttributes',                                            -> new JsxElement name: $1, attributes: $2
-    o 'JSX_ELEMENT_NAME JsxAttributes JSX_ELEMENT_BODY_START JsxElementChildren_', -> new JsxElement name: $1, attributes: $2, children: $4
-    o 'JSX_ELEMENT_NAME JSX_ELEMENT_BODY_START JsxElementChildren_',               -> new JsxElement name: $1, children: $3
+    o 'JSX_ELEMENT_NAME',                                                                               -> new JsxElement name: $1
+    o 'JSX_ELEMENT_NAME JsxElementShorthands',                                                          -> new JsxElement name: $1, shorthands: $2
+    o 'JSX_ELEMENT_NAME JsxAttributes',                                                                 -> new JsxElement name: $1, attributes: $2
+    o 'JSX_ELEMENT_NAME JsxElementShorthands JsxAttributes',                                            -> new JsxElement name: $1, shorthands: $2, attributes: $3
+    o 'JSX_ELEMENT_NAME JsxAttributes JSX_ELEMENT_BODY_START JsxElementChildren_',                      -> new JsxElement name: $1, attributes: $2, children: $4
+    o 'JSX_ELEMENT_NAME JsxElementShorthands JsxAttributes JSX_ELEMENT_BODY_START JsxElementChildren_', -> new JsxElement name: $1, shorthands: $2, attributes: $3, children: $5
+    o 'JSX_ELEMENT_NAME JSX_ELEMENT_BODY_START JsxElementChildren_',                                    -> new JsxElement name: $1, children: $3
+    o 'JSX_ELEMENT_NAME JsxElementShorthands JSX_ELEMENT_BODY_START JsxElementChildren_',               -> new JsxElement name: $1, shorthands: $2, children: $4
+  ]
+
+  JsxElementShorthands: [
+    o 'JsxElementShorthandClasses',                                                  -> classes: $1
+    o 'JsxElementShorthandId',                                                       -> id: $1
+    o 'JsxElementShorthandId JsxElementShorthandClasses',                            -> classes: $2, id: $1
+    o 'JsxElementShorthandClasses JsxElementShorthandId JsxElementShorthandClasses', -> classes: $1.concat($2), id: $2
+    o 'JsxElementShorthandClasses JsxElementShorthandId',                            -> classes: $1, id: $2
+  ]
+
+  JsxElementShorthandId: [
+    o 'JSX_ID_SHORTHAND_SYMBOL JSX_ID_SHORTHAND', -> $2
+  ]
+
+  JsxElementShorthandClasses: [
+    o 'JsxElementShorthandClass',                            -> [$1]
+    o 'JsxElementShorthandClasses JsxElementShorthandClass', -> $1.concat $2
+  ]
+
+  JsxElementShorthandClass: [
+    o 'JSX_CLASS_SHORTHAND_SYMBOL JSX_CLASS_SHORTHAND', -> $2
   ]
 
   JsxAttributes: [

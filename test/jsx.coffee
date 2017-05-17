@@ -261,13 +261,13 @@ test 'element enders', ->
   '''
   eq toJS(input), output
 
-# test '#id tags', ->
-#   input = '''
-#     %h1#abc
-#       #def
-#   '''
-#   output = '<h1 id="abc"><div id="def"></div></h1>;'
-#   eq toJS(input), output
+test 'shorthand tags', ->
+  input = '''
+    %h1#abc
+      #def.ghi.jkl
+  '''
+  output = '''<h1 id='abc'><div id='def' className='ghi jkl'></div></h1>;'''
+  eq toJS(input), output
 
 test 'all together now', ->
   input = '''
@@ -283,12 +283,29 @@ test 'all together now', ->
             %p( key={i} )= step
           }
   '''
-  output = ''
+  output = '''
+    var Recipe;
+
+    Recipe = function(arg) {
+      var FORCE_EXPRESSION, i, ingredients, name, steps;
+      name = arg.name, ingredients = arg.ingredients, steps = arg.steps;
+      return <section id={name.toLowerCase().replace(/ /g, '-')}><h1>{name}</h1> <ul className='ingredients'>{FORCE_EXPRESSION = (function() {
+        var j, len, results;
+        results = [];
+        for (i = j = 0, len = ingredients.length; j < len; i = ++j) {
+          name = ingredients[i].name;
+          results.push(<li key={i}>{ingredient.name}</li>);
+        }
+        return results;
+      })()}</ul> <section className='instructions'><h2>Cooking Instructions</h2> {steps.map(function(step, i) {
+        return <p key={i}>{step}</p>;
+      })}</section></section>;
+    };
+  '''
   eq toJS(input), output
 
+# TODO:
 # error tests:
 # - no whitespace before element body
 # - outdented end tag, expression }, ...
 # - mismatched start/end tag
-# object spread attributes
-# no-value (true) attributes
