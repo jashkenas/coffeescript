@@ -452,9 +452,9 @@ exports.Lexer = class Lexer
       else if match = JSX_ELEMENT_INLINE_EXPRESSION_START.exec(@chunk)
         @token 'JSX_ELEMENT_BODY_START', elementName, 0, 0 unless alreadyStarted
         alreadyStarted = yes
-        [restOfLine] = match
+        endOfExpressionOffset = @offsetOfNextOutdent(yes)
         [line, column] = @getLineAndColumnFromChunk 0
-        {tokens: nested, index} = new Lexer().tokenize restOfLine, {line, column, untilBalanced: on}
+        {tokens: nested, index} = new Lexer().tokenize @chunk[...endOfExpressionOffset], {line, column, untilBalanced: on}
 
         # Remove leading 'TERMINATOR' (if any).
         nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
@@ -547,23 +547,23 @@ exports.Lexer = class Lexer
     @matchJsxElement(allowLeadingWhitespace: yes) ? \
     @matchJsxElementIndentedContentLine(opts)
 
+  offsetOfNextOutdent: (greaterThan = no) =>
+    match =
+      ///
+        \n
+        #{' '} {0, #{if greaterThan then @indent - 1 else @indent}}
+        \S
+      ///.exec @chunk
+    return @chunk.length unless match # no outdent remaining
+
+    match.index
+
   matchJsxElementIndentedExpression: ({followsNewline}) ->
-    offsetOfNextOutdent = (greaterThan = no) =>
-      match =
-        ///
-          \n
-          #{' '} {0, #{if greaterThan then @indent - 1 else @indent}}
-          \S
-        ///.exec @chunk
-      return @chunk.length unless match # no outdent remaining
-
-      match.index
-
     if followsNewline and match = JSX_ELEMENT_INDENTED_EQUALS_EXPRESSION_START.exec(@chunk)
       @token '{', '=', 0, 0
       @consumeChunk match[0].length
 
-      endOfExpressionOffset = offsetOfNextOutdent()
+      endOfExpressionOffset = @offsetOfNextOutdent()
       [line, column] = @getLineAndColumnFromChunk 0
       nested = new Lexer().tokenize @chunk[...endOfExpressionOffset], {line, column}
 
@@ -580,7 +580,7 @@ exports.Lexer = class Lexer
       return {}
 
     if match = JSX_ELEMENT_INDENTED_EXPRESSION_START.exec(@chunk)
-      endOfExpressionOffset = offsetOfNextOutdent(yes)
+      endOfExpressionOffset = @offsetOfNextOutdent(yes)
 
       # consume but don't record line token(s)
       if match = WHITESPACE_INCLUDING_NEWLINES.exec(@chunk)
@@ -1339,7 +1339,7 @@ JSX_ELEMENT_IMMEDIATE_CLOSERS = /// ^ (?: \, | \} | \) | \] | for\s | unless\s |
 JSX_ELEMENT_INLINE_EQUALS_EXPRESSION = /// ^ (= \s*) ([^\n]+) ///
 JSX_ELEMENT_INLINE_BODY_START = /// ^ [^\n] ///
 JSX_ELEMENT_INLINE_CONTENT = /// ^ [^\n\{]+ ///
-JSX_ELEMENT_INLINE_EXPRESSION_START = /// ^ \{ [^\n]* ///
+JSX_ELEMENT_INLINE_EXPRESSION_START = /// ^ \{ ///
 JSX_ELEMENT_INDENTED_EQUALS_EXPRESSION_START = /// ^ \s* = ///
 JSX_ELEMENT_INDENTED_EXPRESSION_START = /// ^ \s* { ///
 JSX_ELEMENT_INDENTED_CONTENT_LINE = /// ^ \s* ([^\n\{]*) ///

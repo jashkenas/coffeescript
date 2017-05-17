@@ -207,21 +207,13 @@ test 'nested inline tags', ->
   eq toJS(input), output
 
 test 'element enders', ->
-  # input = '''
-  #   x %h1, 2
-  #   %h2 {
-  #     if a
-  #       %a
-  #     else
-  #       %b }
-  # '''
   input = '''
     x %h1, 2
-    %h2
-      { if a
-          %a
-        else
-          %b }
+    %h2 {
+      if a
+        %a
+      else
+        %b }
     [%a, %b]
     f(%h1( a={b} ))
     z = (%b{ x } for x in y)
