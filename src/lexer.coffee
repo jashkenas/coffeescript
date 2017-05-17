@@ -297,8 +297,9 @@ exports.Lexer = class Lexer
 
     if matchedHamlElement
       consumedWhitespace = @whitespaceToken() # consume any trailing whitespace
-      hasIndentedBody = 'indent' is @lineToken(dry: yes)
       @consumeChunk consumedWhitespace
+      return {} if JSX_ELEMENT_IMMEDIATE_CLOSERS.exec(@chunk)
+      hasIndentedBody = 'indent' is @lineToken(dry: yes)
       return @matchJsxInlineBody({elementName, consumedWhitespace}) unless hasIndentedBody
       return @matchJsxIndentedBody({elementName})
 
@@ -383,6 +384,8 @@ exports.Lexer = class Lexer
       # Remove leading 'TERMINATOR' (if any).
       nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
 
+      @jsxForceExpression({nested})
+
       @tokens.push nested...
       @consumeChunk expression.length
       [..., close] = nested
@@ -413,6 +416,8 @@ exports.Lexer = class Lexer
 
         # Remove leading 'TERMINATOR' (if any).
         nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
+
+        @jsxForceExpression({nested, inset: 1})
 
         [..., close] = nested
         close.origin = ['', 'end of inline expression', close[2]]
@@ -489,6 +494,8 @@ exports.Lexer = class Lexer
         # Remove leading 'TERMINATOR' (if any).
         nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
 
+        @jsxForceExpression({nested, inset: 1})
+
         @tokens.push nested...
         @consumeChunk index
     yes
@@ -521,9 +528,7 @@ exports.Lexer = class Lexer
       # Remove leading 'TERMINATOR' (if any).
       nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
 
-      if (token for token in nested when token[0] in ['FOR', 'SWITCH', 'WHILE', 'UNTIL']).length
-        @token 'IDENTIFIER', 'FORCE_EXPRESSION', 0, 0
-        @token '=', '=', 0, 0
+      @jsxForceExpression({nested})
 
       @tokens.push nested...
       @consumeChunk endOfExpressionOffset
@@ -545,9 +550,7 @@ exports.Lexer = class Lexer
       # Remove leading 'TERMINATOR' (if any).
       nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
 
-      if (token for token in nested when token[0] in ['FOR', 'SWITCH', 'WHILE', 'UNTIL']).length
-        @token 'IDENTIFIER', 'FORCE_EXPRESSION', 0, 0
-        @token '=', '=', 0, 0
+      @jsxForceExpression({nested, inset: 1})
 
       [..., close] = nested
       close.origin = ['', 'end of indented expression', close[2]]
@@ -556,6 +559,16 @@ exports.Lexer = class Lexer
       @consumeChunk index
 
       return {}
+
+  jsxForceExpression: ({nested, inset = 0}) ->
+    return unless (token for token in nested when token[0] in ['FOR', 'SWITCH', 'WHILE', 'UNTIL', 'IF']).length
+
+    nested.splice inset, 0,
+      @makeToken 'IDENTIFIER', 'FORCE_EXPRESSION', 0, 0
+      @makeToken '=', '=', 0, 0
+      @makeToken '(', '(', 0, 0
+    nested.splice nested.length - inset, 0,
+      @makeToken ')', ')', 0, 0
 
   matchJsxElementIndentedContentLine: ({untilEndTag}) ->
     regex =
@@ -1278,6 +1291,7 @@ HERE_JSTOKEN = ///^ ```     ((?: [^`\\] | \\[\s\S] | `(?!``) )*) ``` ///
 
 JSX_ELEMENT =                    /// ^     %([a-zA-Z][a-zA-Z_0-9]*) ///
 JSX_ELEMENT_LEADING_WHITESPACE = /// ^ \s* %([a-zA-Z][a-zA-Z_0-9]*) ///
+JSX_ELEMENT_IMMEDIATE_CLOSERS = /// ^ (?: \, | \} | \) | \] | for\s | unless\s | if\s ) ///
 JSX_ELEMENT_INLINE_EQUALS_EXPRESSION = /// ^ (= \s*) ([^\n]+) ///
 JSX_ELEMENT_INLINE_BODY_START = /// ^ [^\n] ///
 JSX_ELEMENT_INLINE_CONTENT = /// ^ [^\n\{]+ ///

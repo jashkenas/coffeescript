@@ -511,6 +511,7 @@ IMPLICIT_CALL    = [
   'UNDEFINED', 'NULL', 'BOOL'
   'UNARY', 'YIELD', 'UNARY_MATH', 'SUPER', 'THROW'
   '@', '->', '=>', '[', '(', '{', '--', '++'
+  'JSX_START_TAG_START', 'JSX_ELEMENT_NAME'
 ]
 
 IMPLICIT_UNSPACED_CALL = ['+', '-']

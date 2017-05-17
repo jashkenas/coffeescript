@@ -152,13 +152,13 @@ test 'multi-line object attributes', ->
     y
   '''
   output = '''
-	var x;
+    var x;
 
-	x = function() {
-	  return <h1 a={a} b={this.b} c={d()}></h1>;
-	};
+    x = function() {
+      return <h1 a={a} b={this.b} c={d()}></h1>;
+    };
 
-	y;
+    y;
   '''
   eq toJS(input), output
 
@@ -203,6 +203,61 @@ test 'nested inline tags', ->
   '''
   output = '''
     <h1 a="b" c={this.d}><b>Hey {this.name}</b></h1>;
+  '''
+  eq toJS(input), output
+
+test 'element enders', ->
+  # input = '''
+  #   x %h1, 2
+  #   %h2 {
+  #     if a
+  #       %a
+  #     else
+  #       %b }
+  # '''
+  input = '''
+    x %h1, 2
+    %h2
+      { if a
+          %a
+        else
+          %b }
+    [%a, %b]
+    f(%h1( a={b} ))
+    z = (%b{ x } for x in y)
+    y =
+      %b if c
+    x = ->
+      %b unless c
+  '''
+  output = '''
+    var FORCE_EXPRESSION, x, y, z;
+
+    x(<h1></h1>, 2);
+
+    <h2>{FORCE_EXPRESSION = (a ? <a></a> : <b></b>)}</h2>;
+
+    [<a></a>, <b></b>];
+
+    f(<h1 a={b}></h1>);
+
+    z = (function() {
+      var i, len, results;
+      results = [];
+      for (i = 0, len = y.length; i < len; i++) {
+        x = y[i];
+        results.push(<b x={x}></b>);
+      }
+      return results;
+    })();
+
+    y = c ? <b></b> : void 0;
+
+    x = function() {
+      if (!c) {
+        return <b></b>;
+      }
+    };
   '''
   eq toJS(input), output
 
