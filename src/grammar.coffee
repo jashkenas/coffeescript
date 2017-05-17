@@ -469,8 +469,28 @@ grammar =
     o '[ Expression RangeDots Expression ]',    -> new Range $2, $4, $3
   ]
 
-  # JSX-Haml element
   JsxElement: [
+    o 'JsxTag'
+    o 'JsxHamlElement'
+  ]
+
+  JsxTag: [
+    o 'JsxStartTag JSX_ELEMENT_BODY_START JsxTagChildren JSX_END_TAG', -> new JsxElement name: $1.name, attributes: $1.attributes, children: $3
+    o 'JsxStartTag JSX_ELEMENT_BODY_START JSX_END_TAG',                -> new JsxElement name: $1.name, attributes: $1.attributes
+  ]
+
+  JsxStartTag: [
+    o 'JSX_START_TAG_START JSX_ELEMENT_NAME JSX_START_TAG_END',                            -> name: $2
+    o 'JSX_START_TAG_START JSX_ELEMENT_NAME JsxParenthesizedAttributes JSX_START_TAG_END', -> name: $2, attributes: {list: $3}
+  ]
+
+  JsxTagChildren: [
+    o 'JsxElementChildren'
+    o 'INDENT JsxElementChildren OUTDENT',            -> $2
+    o 'INDENT JsxElementChildren OUTDENT TERMINATOR', -> $2
+  ]
+
+  JsxHamlElement: [
     o 'JSX_ELEMENT_NAME',                                                          -> new JsxElement name: $1
     o 'JSX_ELEMENT_NAME JsxAttributes',                                            -> new JsxElement name: $1, attributes: $2
     o 'JSX_ELEMENT_NAME JsxAttributes JSX_ELEMENT_BODY_START JsxElementChildren_', -> new JsxElement name: $1, attributes: $2, children: $4
@@ -509,7 +529,6 @@ grammar =
   JsxAttributesObject: [
     o '{ AssignList OptComma }', -> new JsxAttributesObj $2, $1.generated
   ]
-
 
   JsxElementChildren_: [
     o 'JsxElementChildren JSX_ELEMENT_INLINE_BODY_END', -> $1

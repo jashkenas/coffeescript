@@ -174,6 +174,38 @@ test 'parenthesized and object attributes', ->
   '''
   eq toJS(input), output
 
+test 'simple tag', ->
+  input = '''
+    <h1></h1>
+  '''
+  output = '''
+    <h1></h1>;
+  '''
+  eq toJS(input), output
+
+test 'tag with attributes and indented body', ->
+  input = '''
+    <h1 a="b" c={@d}>
+      <b>
+        Hey
+        = @name
+      </b>
+    </h1>
+  '''
+  output = '''
+    <h1 a="b" c={this.d}><b>Hey {this.name}</b></h1>;
+  '''
+  eq toJS(input), output
+
+test 'nested inline tags', ->
+  input = '''
+    <h1   a="b" c = {@d} ><b > Hey {@name}</b></h1>
+  '''
+  output = '''
+    <h1 a="b" c={this.d}><b>Hey {this.name}</b></h1>;
+  '''
+  eq toJS(input), output
+
 # test '#id tags', ->
 #   input = '''
 #     %h1#abc
@@ -199,6 +231,9 @@ test 'all together now', ->
   output = ''
   eq toJS(input), output
 
-# error tests: no whitespace before element body
+# error tests:
+# - no whitespace before element body
+# - outdented end tag, expression }, ...
+# - mismatched start/end tag
 # object spread attributes
 # no-value (true) attributes
