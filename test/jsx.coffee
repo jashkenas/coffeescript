@@ -193,13 +193,13 @@ test 'self-closing tags', ->
     />
   '''
   output = '''
-	<h1></h1>;
+    <h1></h1>;
 
-	<h2></h2>;
+    <h2></h2>;
 
-	<h3 a='b' c={d}></h3>;
+    <h3 a='b' c={d}></h3>;
 
-	<h4 e='f g'></h4>;
+    <h4 e='f g'></h4>;
   '''
   eq toJS(input), output
 
@@ -317,6 +317,41 @@ test 'multiline attributes in tags', ->
   '''
   output = '''
     <h1 a={b} c='d'><a e={f(g)} h='i'><b j='k' l='m'></b> <b n='o' p='q'></b></a></h1>;
+  '''
+  eq toJS(input), output
+
+test 'leading-dot classname', ->
+  input = '''
+    SplitPane = ({left, right}) ->
+      .SplitPane
+        .SplitPane-left {left}
+        .SplitPane-right {right}
+
+    x =
+      .abc
+        .def
+
+    f = (el) ->
+      return .shutter {el}
+
+    f(.pane)
+  '''
+  output = '''
+    var SplitPane, f, x;
+
+    SplitPane = function(arg) {
+      var left, right;
+      left = arg.left, right = arg.right;
+      return <div className='SplitPane'><div className='SplitPane-left'>{left}</div> <div className='SplitPane-right'>{right}</div></div>;
+    };
+
+    x = <div className='abc'><div className='def'></div></div>;
+
+    f = function(el) {
+      return <div className='shutter'>{el}</div>;
+    };
+
+    f(<div className='pane'></div>);
   '''
   eq toJS(input), output
 

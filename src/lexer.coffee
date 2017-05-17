@@ -349,7 +349,7 @@ exports.Lexer = class Lexer
     selfClosed = ret?.selfClosed
     {elementName, selfClosed}
 
-  matchJsxHamlElement: ({allowLeadingWhitespace}) ->
+  matchJsxHamlElement: ({allowLeadingWhitespace, allowLeadingDotClass}) ->
     elementRegex =
       if allowLeadingWhitespace
         JSX_ELEMENT_LEADING_WHITESPACE
@@ -360,7 +360,7 @@ exports.Lexer = class Lexer
       @token 'JSX_ELEMENT_NAME', elementName, 0, openingTag.length
       @consumeChunk openingTag.length
       @matchJsxHamlShorthands({allowLeadingDotClass: yes})
-    else if @matchJsxHamlShorthands({addImplicitElementName: yes})
+    else if @matchJsxHamlShorthands({allowLeadingDotClass, allowLeadingWhitespace, addImplicitElementName: yes})
       elementName = 'div'
     else return
 
@@ -370,12 +370,12 @@ exports.Lexer = class Lexer
     {elementName}
 
   matchJsxHamlShorthands: (opts = {}) ->
-    {allowLeadingDotClass, addImplicitElementName} = opts
-    # allowLeadingDotClass ?= ...
-    matchedId = @matchJsxIdShorthand({addImplicitElementName})
+    {allowLeadingDotClass, allowLeadingWhitespace, addImplicitElementName} = opts
+    allowLeadingDotClass ?= @jsxLeadingDotClassAllowed()
+    matchedId = @matchJsxIdShorthand({addImplicitElementName, allowLeadingWhitespace})
     unless matchedId
       return unless allowLeadingDotClass
-      return unless @matchJsxClassShorthand({addImplicitElementName})
+      return unless @matchJsxClassShorthand({addImplicitElementName, allowLeadingWhitespace})
     loop
       justMatchedId = no
       matchedId = justMatchedId = @matchJsxIdShorthand() unless matchedId
@@ -383,23 +383,33 @@ exports.Lexer = class Lexer
       return yes unless justMatchedId or matchedClass
 
   matchJsxIdShorthand: (opts = {})->
-    {addImplicitElementName} = opts
-    return unless match = JSX_ID_SHORTHAND.exec(@chunk)
+    {addImplicitElementName, allowLeadingWhitespace} = opts
+    regex =
+      if allowLeadingWhitespace
+        JSX_ID_SHORTHAND_LEADING_WHITESPACE
+      else
+        JSX_ID_SHORTHAND
+    return unless match = regex.exec(@chunk)
     @token 'JSX_ELEMENT_NAME', 'div', 0, 0 if addImplicitElementName
-    [[], id] = match
+    [[], symbol, id] = match
     @token 'JSX_ID_SHORTHAND_SYMBOL', '#'
-    @consumeChunk '#'.length
+    @consumeChunk symbol.length
     @token 'JSX_ID_SHORTHAND', id
     @consumeChunk id.length
     yes
 
   matchJsxClassShorthand: (opts = {})->
-    {addImplicitElementName} = opts
-    return unless match = JSX_CLASS_SHORTHAND.exec(@chunk)
+    {addImplicitElementName, allowLeadingWhitespace} = opts
+    regex =
+      if allowLeadingWhitespace
+        JSX_CLASS_SHORTHAND_LEADING_WHITESPACE
+      else
+        JSX_CLASS_SHORTHAND
+    return unless match = regex.exec(@chunk)
     @token 'JSX_ELEMENT_NAME', 'div', 0, 0 if addImplicitElementName
-    [[], klass] = match
+    [[], symbol, klass] = match
     @token 'JSX_CLASS_SHORTHAND_SYMBOL', '.'
-    @consumeChunk '.'.length
+    @consumeChunk symbol.length
     @token 'JSX_CLASS_SHORTHAND', klass
     @consumeChunk klass.length
     yes
@@ -566,7 +576,7 @@ exports.Lexer = class Lexer
 
   matchJsxElementIndentedChild: (opts) ->
     @matchJsxElementIndentedExpression(opts)      ? \
-    @matchJsxElement(allowLeadingWhitespace: yes) ? \
+    @matchJsxElement(allowLeadingWhitespace: yes, allowLeadingDotClass: yes) ? \
     @matchJsxElementIndentedContentLine(opts)
 
   offsetOfNextOutdent: (greaterThan = no) =>
@@ -1141,10 +1151,25 @@ exports.Lexer = class Lexer
 
   # Are we in the midst of an unfinished expression?
   unfinished: ->
-    LINE_CONTINUER.test(@chunk) or
+    regex =
+      if @jsxLeadingDotClassAllowed()
+        LINE_CONTINUER_NO_DOT
+      else
+        LINE_CONTINUER
+    regex.test(@chunk) or
     @tag() in ['\\', '.', '?.', '?::', 'UNARY', 'MATH', 'UNARY_MATH', '+', '-',
                '**', 'SHIFT', 'RELATION', 'COMPARE', '&', '^', '|', '&&', '||',
                'BIN?', 'THROW', 'EXTENDS', 'DEFAULT']
+
+  jsxLeadingDotClassAllowed: ->
+    return yes unless @tokens.length
+    return yes if @lastNonIndentTag() in CANT_PRECEDE_DOT_PROPERTY
+    no
+
+  lastNonIndentTag: ->
+    index = @tokens.length
+    while tag = @tokens[--index]?[0]
+      return tag unless tag is 'INDENT'
 
   formatString: (str, options) ->
     @replaceUnicodeCodePointEscapes str.replace(STRING_OMIT, '$1'), options
@@ -1355,8 +1380,10 @@ HERE_JSTOKEN = ///^ ```     ((?: [^`\\] | \\[\s\S] | `(?!``) )*) ``` ///
 
 JSX_ELEMENT =                    /// ^     %([a-zA-Z][a-zA-Z_0-9]*) ///
 JSX_ELEMENT_LEADING_WHITESPACE = /// ^ \s* %([a-zA-Z][a-zA-Z_0-9]*) ///
-JSX_ID_SHORTHAND = /// ^ \# ([a-zA-Z][a-zA-Z_0-9\-]*) ///
-JSX_CLASS_SHORTHAND = /// ^ \. ([a-zA-Z][a-zA-Z_0-9\-]*) ///
+JSX_ID_SHORTHAND =                    /// ^     (\#) ([a-zA-Z][a-zA-Z_0-9\-]*) ///
+JSX_ID_SHORTHAND_LEADING_WHITESPACE = /// ^ (\s* \#) ([a-zA-Z][a-zA-Z_0-9\-]*) ///
+JSX_CLASS_SHORTHAND =                    /// ^     (\.) ([a-zA-Z][a-zA-Z_0-9\-]*) ///
+JSX_CLASS_SHORTHAND_LEADING_WHITESPACE = /// ^ (\s* \.) ([a-zA-Z][a-zA-Z_0-9\-]*) ///
 JSX_ELEMENT_IMMEDIATE_CLOSERS = /// ^ (?: \, | \} | \) | \] | for\s | unless\s | if\s ) ///
 JSX_ELEMENT_INLINE_EQUALS_EXPRESSION = /// ^ (= \s*) ([^\n]+) ///
 JSX_ELEMENT_INLINE_BODY_START = /// ^ [^\n] ///
@@ -1433,7 +1460,12 @@ POSSIBLY_DIVISION   = /// ^ /=?\s ///
 # Other regexes.
 HERECOMMENT_ILLEGAL = /\*\//
 
-LINE_CONTINUER      = /// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///
+LINE_CONTINUER        = /// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///
+LINE_CONTINUER_NO_DOT = /// ^ \s* (?: , | :: ) ///
+CANT_PRECEDE_DOT_PROPERTY = [
+  'RETURN', '(', '->', '=>', '=', 'CALL_START'
+  'JSX_ELEMENT_NAME', 'JSX_START_TAG_END', 'JSX_ELEMENT_BODY_START'
+]
 
 STRING_INVALID_ESCAPE = ///
   ( (?:^|[^\\]) (?:\\\\)* )        # make sure the escape isn’t escaped

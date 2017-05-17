@@ -22,4 +22,7 @@
       %abc
     else
       %def
-- allow leading-dot class shorthand when nested or after blank line, ->, (, ...?
+- allow leading-dot class shorthand after blank line?
+- allow/parse inline tag after content? eg
+  %h1
+    hello<span class={@abc}>World</span>
