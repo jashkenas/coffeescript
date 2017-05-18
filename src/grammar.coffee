@@ -44,10 +44,7 @@ o = (patternString, action, options) ->
   # in, and returns the parameter. If the parameter is not a node, it will
   # just be passed through unaffected.
   addLocationDataFn = (first, last) ->
-    if not last
-      "yy.addLocationDataFn(@#{first})"
-    else
-      "yy.addLocationDataFn(@#{first}, @#{last})"
+    "yy.addLocationDataFn(@#{first}#{if last then ", @#{last}" else ''})"
 
   action = action.replace /LOC\(([0-9]*)\)/g, addLocationDataFn('$1')
   action = action.replace /LOC\(([0-9]*),\s*([0-9]*)\)/g, addLocationDataFn('$1', '$2')
