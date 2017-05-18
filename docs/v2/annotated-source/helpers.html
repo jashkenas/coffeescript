@@ -121,9 +121,6 @@ arrays, count characters, that sort of thing.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>
-md = <span class="hljs-built_in">require</span>(<span class="hljs-string">'markdown-it'</span>)()</pre></div></div>
-            
         </li>
         
         
@@ -331,16 +328,38 @@ looking for a particular method in an options hash.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
-              <p>Simple function for extracting code from Literate CoffeeScript by stripping
+              <p>Helper function for extracting code from Literate CoffeeScript by stripping
 out all non-code blocks, producing a string of CoffeeScript code that can
-be compiled “normally.” Uses <a href="https://markdown-it.github.io/">MarkdownIt</a>
-to tell the difference between Markdown and code blocks.</p>
+be compiled “normally.”</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>exports.invertLiterate = <span class="hljs-function"><span class="hljs-params">(code)</span> -&gt;</span>
   out = []
-  md.renderer.rules =</pre></div></div>
+  blankLine = <span class="hljs-regexp">/^\s*$/</span>
+  indented = <span class="hljs-regexp">/^[\t ]/</span>
+  listItemStart = <span class="hljs-regexp">/// ^
+    (?:\t?|\ {0,3})   <span class="hljs-comment"># Up to one tab, or up to three spaces, or neither;</span>
+    (?:
+      [\*\-\+] |      <span class="hljs-comment"># followed by `*`, `-` or `+`;</span>
+      [0-9]{1,9}\.    <span class="hljs-comment"># or by an integer up to 9 digits long, followed by a period;</span>
+    )
+    [\ \t]            <span class="hljs-comment"># followed by a space or a tab.</span>
+  ///</span>
+  insideComment = <span class="hljs-literal">no</span>
+  <span class="hljs-keyword">for</span> line <span class="hljs-keyword">in</span> code.split(<span class="hljs-string">'\n'</span>)
+    <span class="hljs-keyword">if</span> blankLine.test(line)
+      insideComment = <span class="hljs-literal">no</span>
+      out.push line
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> insideComment <span class="hljs-keyword">or</span> listItemStart.test(line)
+      insideComment = <span class="hljs-literal">yes</span>
+      out.push <span class="hljs-string">"# <span class="hljs-subst">#{line}</span>"</span>
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> insideComment <span class="hljs-keyword">and</span> indented.test(line)
+      out.push line
+    <span class="hljs-keyword">else</span>
+      insideComment = <span class="hljs-literal">yes</span>
+      out.push <span class="hljs-string">"# <span class="hljs-subst">#{line}</span>"</span>
+  out.join <span class="hljs-string">'\n'</span></pre></div></div>
             
         </li>
         
@@ -350,27 +369,6 @@ to tell the difference between Markdown and code blocks.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-14">&#182;</a>
-              </div>
-              <p>Delete all other rules, since all we want are the code blocks.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    code_block: <span class="hljs-function"><span class="hljs-params">(tokens, idx, options, env, slf)</span> -&gt;</span>
-      startLine = tokens[idx].map[<span class="hljs-number">0</span>]
-      lines = tokens[idx].content.split <span class="hljs-string">'\n'</span>
-      <span class="hljs-keyword">for</span> line, i <span class="hljs-keyword">in</span> lines
-        out[startLine + i] = line
-  md.render code
-  out.join <span class="hljs-string">'\n'</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-15">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>Merge two jison-style location data objects together.
 If <code>last</code> is not provided, this will simply return <code>first</code>.</p>
@@ -389,11 +387,11 @@ If <code>last</code> is not provided, this will simply return <code>first</code>
         </li>
         
         
-        <li id="section-16">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>This returns a function which takes an object as a parameter, and if that
 object is an AST node, updates that object’s locationData.
@@ -411,11 +409,11 @@ The object is returned either way.</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>Convert jison location data to a string.
 <code>obj</code> can be a token, or a locationData.</p>
@@ -435,11 +433,11 @@ The object is returned either way.</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>A <code>.coffee.md</code> compatible version of <code>basename</code>, that returns the file sans-extension.</p>
 
@@ -458,11 +456,11 @@ The object is returned either way.</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Determine if a filename represents a CoffeeScript file.</p>
 
@@ -473,11 +471,11 @@ The object is returned either way.</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Determine if a filename represents a Literate CoffeeScript file.</p>
 
@@ -488,11 +486,11 @@ The object is returned either way.</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Throws a SyntaxError from a given location.
 The error’s <code>toString</code> will return an error message following the “standard”
@@ -509,11 +507,11 @@ marker showing where the error is.</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Instead of showing the compiler’s stacktrace, show our custom error message
 (this is useful when the error bubbles up in Node.js applications that
@@ -528,11 +526,11 @@ compile CoffeeScript for example).</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Update a compiler SyntaxError with source code information if it didn’t have
 it already.</p>
@@ -544,11 +542,11 @@ it already.</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Avoid screwing up the <code>stack</code> property of other errors (i.e. possible bugs).</p>
 
@@ -574,11 +572,11 @@ it already.</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Show only the first line on multi-line errors.</p>
 
@@ -590,11 +588,11 @@ it already.</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Check to see if we’re running on a color-enabled TTY.</p>
 
