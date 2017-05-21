@@ -1,0 +1,31 @@
+<html>
+<head>
+<meta charset="utf-8">
+<title>CoffeeScript Compiler</title>
+<style>
+	body > div {float:left; width:49.5%;}
+	div div, input {font-weight:bold; text-align:center;}
+	input {float:right; margin-right:1%;}
+	textarea {width:99%; height:90%;}
+</style>
+</head>
+
+<body>
+<div>
+	<div>CoffeeScript</div>
+	<textarea id="src"></textarea>
+	<input type="button" value="Compile" accesskey="c" title="Alt+C" onclick="ButtonClick()">
+</div>
+<div>
+	<div>JavaScript</div>
+	<textarea id="dst"></textarea>
+</div>
+
+<script src="coffee-script.js"></script>
+<script>
+	function ButtonClick() {
+		document.getElementById("dst").value = CoffeeScript.compile(document.getElementById("src").value, {bare:true});
+	}
+</script>
+</body>
+</html>
