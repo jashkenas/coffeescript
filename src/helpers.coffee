@@ -40,7 +40,7 @@ exports.merge = (options, overrides) ->
   extend (extend {}, options), overrides
 
 # Extend a source object with the properties of another object (shallow copy).
-extend = exports.extend = (object, properties) ->
+exports.extend = extend = (object, properties) ->
   for key, val of properties
     object[key] = val
   object
@@ -51,12 +51,15 @@ exports.toArray = toArray = (obj) ->
   else [obj]
 
 # Perform single flattening of an array.
-# If fn provided
+# If fn is provided, it is called on each element of array and must return the
+# element to be inserted in the output.
 exports.flatten1 = flatten1 = (array, fn) ->
-  if not Array.isArray array then array
-  else array.reduce (acc, cur) ->
+  return array if not Array.isArray array
+  res = []
+  for cur in array
     arg = fn?(cur) ? cur
-    acc.concat arg
+    res = res.concat arg
+  res
 
 # Return a flattened version of an array.
 # Handy for getting a list of `children` from the nodes.
