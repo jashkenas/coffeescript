@@ -28,6 +28,7 @@ exports.compact = (array) ->
 # Count the number of occurrences of a string in a string.
 exports.count = (string, substr) ->
   num = pos = 0
+  # TODO: change 1/0 -> Infinity!
   return 1/0 unless substr.length
   num++ while pos = 1 + string.indexOf substr, pos
   num
@@ -44,17 +45,42 @@ extend = exports.extend = (object, properties) ->
     object[key] = val
   object
 
+# Return obj if it is an array; otherwise return an array containing only obj.
+exports.toArray = toArray = (obj) ->
+  if Array.isArray obj then obj
+  else [obj]
+
+# Perform single flattening of an array.
+# If fn provided
+exports.flatten1 = flatten1 = (array, fn) ->
+  if not Array.isArray array then array
+  else array.reduce (acc, cur) ->
+    arg = fn?(cur) ? cur
+    acc.concat arg
+
 # Return a flattened version of an array.
 # Handy for getting a list of `children` from the nodes.
-exports.flatten = flatten = (array) ->
-  flattened = []
-  for element in array
-    # TODO: is this different than Array::isArray? if not, use that
-    if '[object Array]' is Object::toString.call element
-      flattened = flattened.concat flatten element
-    else
-      flattened.push element
-  flattened
+exports.flatten = flatten = (array) -> flatten1 array, flatten
+
+# Return 2D array enumerating all sequences consisting of one argument from each
+# array in args.
+# args consists of 2D arrays -- a non-array will be converted with toArray, as
+# well as any non-array elements of the converted args.
+# E.g.: ([[1, 2], [3], [[4]]], 'a') => [[1, 2, 'a'], [3, 'a'], [[4], 'a']]
+exports.allOrderedSeqs = allOrderedSeqs = (args...) ->
+  return [] if args.length is 0
+  # args may have non-array elements
+  [first, rest...] = args.map(toArray).reverse()
+  # seqs is a 2d array
+  seqs = first.map(toArray)
+  for arr in rest
+    # arr may have non-array elements
+    # each element of arr.map is an array of arrays of new permutations
+    seqs = flatten1 arr.map(toArray).map (subArr) ->
+      # construct array of arrays with subArr as prefix, seqs as suffixes
+      # seqs is always an array of arrays
+      seqs.map (pe) -> [subArr..., pe...]
+  seqs
 
 # Delete a key from an object, returning the value. Useful when a node is
 # looking for a particular method in an options hash.
@@ -67,15 +93,6 @@ exports.del = (obj, key) ->
 exports.some = Array::some ? (fn) ->
   return true for e in this when fn e
   false
-
-allOrderedSeqs = exports.allOrderedSeqs = (arrays...) ->
-  switch arrays.length
-    when 0 then []
-    else
-      [cur, rest...] = arrays
-      recur = allOrderedSeqs rest...
-      nested = recur.map((seq) -> e.concat seq) for e in cur
-      flatten nested
 
 # Simple function for inverting Literate CoffeeScript code by putting the
 # documentation in comments, producing a string of CoffeeScript code that
