@@ -15,3 +15,5 @@ arrayEgal = (a, b) ->
 
 exports.eq      = (a, b, msg) -> ok egal(a, b), msg or "Expected #{a} to equal #{b}"
 exports.arrayEq = (a, b, msg) -> ok arrayEgal(a,b), msg or "Expected #{a} to deep equal #{b}"
+exports.inBrowser = -> window? or testingBrowser?
+exports.nonBrowserTest = (scriptFunction) -> scriptFunction() unless exports.inBrowser()

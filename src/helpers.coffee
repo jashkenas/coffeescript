@@ -49,6 +49,7 @@ extend = exports.extend = (object, properties) ->
 exports.flatten = flatten = (array) ->
   flattened = []
   for element in array
+    # TODO: is this different than Array::isArray? if not, use that
     if '[object Array]' is Object::toString.call element
       flattened = flattened.concat flatten element
     else
@@ -66,6 +67,15 @@ exports.del = (obj, key) ->
 exports.some = Array::some ? (fn) ->
   return true for e in this when fn e
   false
+
+allOrderedSeqs = exports.allOrderedSeqs = (arrays...) ->
+  switch arrays.length
+    when 0 then []
+    else
+      [cur, rest...] = arrays
+      recur = allOrderedSeqs rest...
+      nested = recur.map((seq) -> e.concat seq) for e in cur
+      flatten nested
 
 # Simple function for inverting Literate CoffeeScript code by putting the
 # documentation in comments, producing a string of CoffeeScript code that

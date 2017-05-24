@@ -25,10 +25,14 @@ exports.OptionParser = class OptionParser
   # parsers that allow you to attach callback actions for every flag. Instead,
   # you're responsible for interpreting the options object.
   parse: (args) ->
+    console.error "args: #{args}"
+
     options = arguments: []
     skippingArgument = no
     originalArgs = args
     args = normalizeArguments args
+
+    console.error "normalized: #{args}"
     for arg, i in args
       if skippingArgument
         skippingArgument = no
@@ -55,6 +59,8 @@ exports.OptionParser = class OptionParser
         throw new Error "unrecognized option: #{arg}" if isOption and not matchedRule
       if seenNonOptionArg or not isOption
         options.arguments.push arg
+
+    console.error "options: #{JSON.stringify(options)}"
     options
 
   # Return the help text for this **OptionParser**, listing and describing all
