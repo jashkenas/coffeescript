@@ -449,47 +449,65 @@ test "export default predefined function", ->
     export default foo;"""
   eq toJS(input), output
 
-# Uncomment this test once ES2015+ `class` support is added
+test "export default class", ->
+  input = """
+    export default class foo extends bar
+      baz: ->
+        console.log 'hello, world!'"""
+  output = """
+    var foo;
 
-# test "export default class", ->
-#   input = """
-#     export default class foo extends bar
-#       baz: ->
-#         console.log 'hello, world!'"""
-#   output = """
-#     export default class foo extends bar {
-#       baz: function {
-#         return console.log('hello, world!');
-#       }
-#     }"""
-#   eq toJS(input), output
+    export default foo = class foo extends bar {
+      baz() {
+        return console.log('hello, world!');
+      }
 
-# Very limited tests for now, testing that `export class foo` either compiles
-# identically (ES2015+) or at least into some function, leaving the specifics
-# vague in case the CoffeeScript `class` interpretation changes
+    };"""
+  eq toJS(input), output
+
 test "export class", ->
   input = """
     export class foo
       baz: ->
         console.log 'hello, world!'"""
-  output = toJS input
-  ok /^export (class foo|var foo = \(function)/.test toJS input
+  output = """
+    export var foo = class foo {
+      baz() {
+        return console.log('hello, world!');
+      }
+
+    };"""
+  eq toJS(input), output
 
 test "export class that extends", ->
   input = """
     export class foo extends bar
       baz: ->
         console.log 'hello, world!'"""
-  output = toJS input
-  ok /export (class foo|var foo = \(function)/.test(output) and \
-    not /var foo(;|,)/.test output
+  output = """
+    export var foo = class foo extends bar {
+      baz() {
+        return console.log('hello, world!');
+      }
+
+    };"""
+  eq toJS(input), output
 
 test "export default class that extends", ->
   input = """
     export default class foo extends bar
       baz: ->
         console.log 'hello, world!'"""
-  ok /export default (class foo|foo = \(function)/.test toJS input
+  output = """
+    var foo;
+
+    export default foo = class foo extends bar {
+      baz() {
+        return console.log('hello, world!');
+      }
+
+    };"""
+  eq toJS(input), output
 
 test "export default named member, within an object", ->
   input = "export { foo as default, bar }"
@@ -786,7 +804,7 @@ test "#4451: `default` in an export statement is only treated as a keyword when 
   input = "export default { default: 1 }"
   output = """
     export default {
-      "default": 1
+      default: 1
     };
   """
   eq toJS(input), output

@@ -1,4 +1,4 @@
-## Bound Functions, Generator Functions
+## Bound (Fat Arrow) Functions
 
 In JavaScript, the `this` keyword is dynamically scoped to mean the object that the current function is attached to. If you pass a function as a callback or attach it to a different object, the original value of `this` will be lost. If you’re not familiar with this behavior, [this Digital Web article](http://64.13.255.16/articles/scope_in_javascript/) gives a good overview of the quirks.
 
@@ -10,22 +10,4 @@ codeFor('fat_arrow')
 
 If we had used `->` in the callback above, `@customer` would have referred to the undefined “customer” property of the DOM element, and trying to call `purchase()` on it would have raised an exception.
 
-When used in a class definition, methods declared with the fat arrow will be automatically bound to each instance of the class when the instance is constructed.
-
-<div id="generator-functions" class="bookmark"></div>
-
-CoffeeScript functions also support [ES2015 generator functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) through the `yield` keyword. There’s no `function*(){}` nonsense — a generator in CoffeeScript is simply a function that yields.
-
-```
-codeFor('generators', 'ps.next().value')
-```
-
-`yield*` is called `yield from`, and `yield return` may be used if you need to force a generator that doesn’t yield.
-
-<div id="generator-iteration" class="bookmark"></div>
-
-You can iterate over a generator function using `for…from`.
-
-```
-codeFor('generator_iteration', 'getFibonacciNumbers(10)')
-```
+The fat arrow was one of the most popular features of CoffeeScript, and ES2015 [adopted it](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions); so CoffeeScript 2 compiles `=>` to ES `=>`.

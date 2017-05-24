@@ -41,18 +41,6 @@ test "compiler error formatting", ->
                  ^^^^
   '''
 
-test "compiler error formatting with mixed tab and space", ->
-  assertErrorFormat """
-    \t  if a
-    \t  test
-  """,
-  '''
-    [stdin]:1:4: error: unexpected if
-    \t  if a
-    \t  ^^
-  '''
-
-
 if require?
   os   = require 'os'
   fs   = require 'fs'
@@ -136,7 +124,7 @@ test "#4418 stack traces for compiled strings reference the correct line number"
 
   # Make sure the line number reported is line 3 (the original Coffee source)
   # and not line 6 (the generated JavaScript).
-  eq /at testCompiledStringStackTraceLineNumber.*:(\d):/.exec(error.stack.toString())[1], '3'
+  eq /testCompiledStringStackTraceLineNumber.*:(\d):/.exec(error.stack.toString())[1], '3'
 
 
 test "#1096: unexpected generated tokens", ->
@@ -662,14 +650,14 @@ test "duplicate function arguments", ->
   assertErrorFormat '''
     (foo, bar, foo) ->
   ''', '''
-    [stdin]:1:12: error: multiple parameters named foo
+    [stdin]:1:12: error: multiple parameters named 'foo'
     (foo, bar, foo) ->
                ^^^
   '''
   assertErrorFormat '''
     (@foo, bar, @foo) ->
   ''', '''
-    [stdin]:1:13: error: multiple parameters named @foo
+    [stdin]:1:13: error: multiple parameters named '@foo'
     (@foo, bar, @foo) ->
                 ^^^^
   '''
@@ -1175,6 +1163,13 @@ test "imported members cannot be reassigned", ->
            ^^^
   '''
 
+test "bound functions cannot be generators", ->
+  assertErrorFormat 'f = => yield this', '''
+    [stdin]:1:8: error: yield cannot occur inside bound (fat arrow) functions
+    f = => yield this
+           ^^^^^^^^^^
+  '''
+
 test "CoffeeScript keywords cannot be used as unaliased names in import lists", ->
   assertErrorFormat """
     import { unless, baz as bar } from 'lib'
@@ -1193,6 +1188,37 @@ test "CoffeeScript keywords cannot be used as local names in import list aliases
     [stdin]:1:17: error: unexpected unless
     import { bar as unless, baz as bar } from 'lib'
                     ^^^^^^
+  '''
+
+test "function cannot contain both `await` and `yield`", ->
+  assertErrorFormat '''
+    f = () ->
+      yield 5
+      await a
+  ''', '''
+    [stdin]:3:3: error: function can't contain both yield and await
+      await a
+      ^^^^^^^
+  '''
+
+test "function cannot contain both `await` and `yield from`", ->
+  assertErrorFormat '''
+    f = () ->
+      yield from a
+      await b
+  ''', '''
+    [stdin]:3:3: error: function can't contain both yield and await
+      await b
+      ^^^^^^^
+  '''
+
+test "cannot have `await` outside a function", ->
+  assertErrorFormat '''
+    await 1
+  ''', '''
+    [stdin]:1:1: error: await can only occur inside functions
+    await 1
+    ^^^^^^^
   '''
 
 test "indexes are not supported in for-from loops", ->
@@ -1251,11 +1277,211 @@ test "tagged template literals must be called by an identifier", ->
     ^
   '''
 
+test "constructor functions can't be async", ->
+  assertErrorFormat 'class then constructor: -> await x', '''
+    [stdin]:1:12: error: Class constructor may not be async
+    class then constructor: -> await x
+               ^^^^^^^^^^^
+  '''
+
+test "constructor functions can't be generators", ->
+  assertErrorFormat 'class then constructor: -> yield', '''
+    [stdin]:1:12: error: Class constructor may not be a generator
+    class then constructor: -> yield
+               ^^^^^^^^^^^
+  '''
+
+test "non-derived constructors can't call super", ->
+  assertErrorFormat 'class then constructor: -> super()', '''
+    [stdin]:1:28: error: 'super' is only allowed in derived class constructors
+    class then constructor: -> super()
+                               ^^^^^^^
+  '''
+
+test "derived constructors can't reference `this` before calling super", ->
+  assertErrorFormat 'class extends A then constructor: -> @', '''
+    [stdin]:1:38: error: Can't reference 'this' before calling super in derived class constructors
+    class extends A then constructor: -> @
+                                         ^
+  '''
+
+test "derived constructors can't use @params without calling super", ->
+  assertErrorFormat 'class extends A then constructor: (@a) ->', '''
+    [stdin]:1:36: error: Can't use @params in derived class constructors without calling super
+    class extends A then constructor: (@a) ->
+                                       ^^
+  '''
+
+test "'super' is not allowed in constructor parameter defaults", ->
+  assertErrorFormat 'class extends A then constructor: (a = super()) ->', '''
+    [stdin]:1:40: error: 'super' is not allowed in constructor parameter defaults
+    class extends A then constructor: (a = super()) ->
+                                           ^^^^^^^
+  '''
+
 test "can't use pattern matches for loop indices", ->
   assertErrorFormat 'a for b, {c} in d', '''
     [stdin]:1:10: error: index cannot be a pattern matching expression
     a for b, {c} in d
              ^^^
+  '''
+
+test "bare 'super' is no longer allowed", ->
+  # TODO Improve this error message (it should at least be 'unexpected super')
+  assertErrorFormat 'class extends A then constructor: -> super', '''
+    [stdin]:1:35: error: unexpected ->
+    class extends A then constructor: -> super
+                                      ^^
+  '''
+
+test "soaked 'super' in constructor", ->
+  assertErrorFormat 'class extends A then constructor: -> super?()', '''
+    [stdin]:1:38: error: Unsupported reference to 'super'
+    class extends A then constructor: -> super?()
+                                         ^^^^^
+  '''
+
+test "new with 'super'", ->
+  assertErrorFormat 'class extends A then foo: -> new super()', '''
+    [stdin]:1:34: error: Unsupported reference to 'super'
+    class extends A then foo: -> new super()
+                                     ^^^^^
+  '''
+
+test "getter keyword in object", ->
+  assertErrorFormat '''
+    obj =
+      get foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      get foo: ->
+      ^^^
+  '''
+
+test "setter keyword in object", ->
+  assertErrorFormat '''
+    obj =
+      set foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      set foo: ->
+      ^^^
+  '''
+
+test "getter keyword in inline implicit object", ->
+  assertErrorFormat 'obj = get foo: ->', '''
+    [stdin]:1:7: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+    obj = get foo: ->
+          ^^^
+  '''
+
+test "setter keyword in inline implicit object", ->
+  assertErrorFormat 'obj = set foo: ->', '''
+    [stdin]:1:7: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+    obj = set foo: ->
+          ^^^
+  '''
+
+test "getter keyword in inline explicit object", ->
+  assertErrorFormat 'obj = {get foo: ->}', '''
+    [stdin]:1:8: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+    obj = {get foo: ->}
+           ^^^
+  '''
+
+test "setter keyword in inline explicit object", ->
+  assertErrorFormat 'obj = {set foo: ->}', '''
+    [stdin]:1:8: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+    obj = {set foo: ->}
+           ^^^
+  '''
+
+test "getter keyword in function", ->
+  assertErrorFormat '''
+    f = ->
+      get foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      get foo: ->
+      ^^^
+  '''
+
+test "setter keyword in function", ->
+  assertErrorFormat '''
+    f = ->
+      set foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      set foo: ->
+      ^^^
+  '''
+
+test "getter keyword in inline function", ->
+  assertErrorFormat 'f = -> get foo: ->', '''
+    [stdin]:1:8: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+    f = -> get foo: ->
+           ^^^
+  '''
+
+test "setter keyword in inline function", ->
+  assertErrorFormat 'f = -> set foo: ->', '''
+    [stdin]:1:8: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+    f = -> set foo: ->
+           ^^^
+  '''
+
+test "getter keyword in class", ->
+  assertErrorFormat '''
+    class A
+      get foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      get foo: ->
+      ^^^
+  '''
+
+test "setter keyword in class", ->
+  assertErrorFormat '''
+    class A
+      set foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      set foo: ->
+      ^^^
+  '''
+
+test "getter keyword in inline class", ->
+  assertErrorFormat 'class A then get foo: ->', '''
+      [stdin]:1:14: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      class A then get foo: ->
+                   ^^^
+  '''
+
+test "setter keyword in inline class", ->
+  assertErrorFormat 'class A then set foo: ->', '''
+      [stdin]:1:14: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      class A then set foo: ->
+                   ^^^
+  '''
+
+test "getter keyword before static method", ->
+  assertErrorFormat '''
+    class A
+      get @foo = ->
+  ''', '''
+    [stdin]:2:3: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      get @foo = ->
+      ^^^
+  '''
+
+test "setter keyword before static method", ->
+  assertErrorFormat '''
+    class A
+      set @foo = ->
+  ''', '''
+    [stdin]:2:3: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      set @foo = ->
+      ^^^
   '''
 
 test "#4248: Unicode code point escapes", ->

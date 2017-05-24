@@ -675,7 +675,7 @@ test "Non-callable literals shouldn't compile", ->
   cantCompile '[1..10][2..9] 2'
   cantCompile '[1..10][2..9](2)'
 
-test 'implicit invocation with implicit object literal', ->
+test "implicit invocation with implicit object literal", ->
   f = (obj) -> eq 1, obj.a
 
   f
@@ -706,3 +706,89 @@ test 'implicit invocation with implicit object literal', ->
     else
       "#{a}": 1
   eq 2, obj.a
+
+test "get and set can be used as function names when not ambiguous with `get`/`set` keywords", ->
+  get = (val) -> val
+  set = (val) -> val
+  eq 2, get(2)
+  eq 3, set(3)
+  eq 'a', get('a')
+  eq 'b', set('b')
+  eq 4, get 4
+  eq 5, set 5
+  eq 'c', get 'c'
+  eq 'd', set 'd'
+
+  @get = get
+  @set = set
+  eq 6, @get 6
+  eq 7, @set 7
+
+  get = ({val}) -> val
+  set = ({val}) -> val
+  eq 8, get({val: 8})
+  eq 9, set({val: 9})
+  eq 'e', get({val: 'e'})
+  eq 'f', set({val: 'f'})
+  eq 10, get {val: 10}
+  eq 11, set {val: 11}
+  eq 'g', get {val: 'g'}
+  eq 'h', set {val: 'h'}
+
+test "get and set can be used as variable and property names", ->
+  get = 2
+  set = 3
+  eq 2, get
+  eq 3, set
+
+  {get} = {get: 4}
+  {set} = {set: 5}
+  eq 4, get
+  eq 5, set
+
+test "get and set can be used as class method names", ->
+  class A
+    get: -> 2
+    set: -> 3
+
+  a = new A()
+  eq 2, a.get()
+  eq 3, a.set()
+
+  class B
+    @get = -> 4
+    @set = -> 5
+
+  eq 4, B.get()
+  eq 5, B.set()
+
+test "functions named get or set can be used without parentheses when attached to an object; #4524", ->
+  obj =
+    get: (x) -> x + 2
+    set: (x) -> x + 3
+
+  class A
+    get: (x) -> x + 4
+    set: (x) -> x + 5
+
+  a = new A()
+
+  eq 12, obj.get 10
+  eq 13, obj.set 10
+
+  eq 14, a.get 10
+  eq 15, a.set 10
+
+  @ten = 10
+
+  eq 12, obj.get @ten
+  eq 13, obj.set @ten
+
+  eq 14, a.get @ten
+  eq 15, a.set @ten
+
+  obj.obj = obj
+
+  eq 12, obj.obj.get @ten
+  eq 13, obj.obj.set @ten
+

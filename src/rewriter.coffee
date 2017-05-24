@@ -157,7 +157,7 @@ exports.Rewriter = class Rewriter
       inImplicitObject  = -> isImplicitObject stackTop()
       # Unclosed control statement inside implicit parens (like
       # class declaration or if-conditionals)
-      inImplicitControl = -> inImplicit and stackTop()?[0] is 'CONTROL'
+      inImplicitControl = -> inImplicit() and stackTop()?[0] is 'CONTROL'
 
       startImplicitCall = (j) ->
         idx = j ? i
@@ -509,7 +509,7 @@ IMPLICIT_CALL    = [
   'STRING', 'STRING_START', 'REGEX', 'REGEX_START', 'JS'
   'NEW', 'PARAM_START', 'CLASS', 'IF', 'TRY', 'SWITCH', 'THIS'
   'UNDEFINED', 'NULL', 'BOOL'
-  'UNARY', 'YIELD', 'UNARY_MATH', 'SUPER', 'THROW'
+  'UNARY', 'YIELD', 'AWAIT', 'UNARY_MATH', 'SUPER', 'THROW'
   '@', '->', '=>', '[', '(', '{', '--', '++'
 ]
 

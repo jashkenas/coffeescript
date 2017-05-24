@@ -1,4 +1,20 @@
-## Change Log
+## Changelog
+
+```
+releaseHeader('2017-05-16', '2.0.0-beta2', '2.0.0-beta1')
+```
+
+*   This release includes [all the changes from 1.12.5 to 1.12.6](#1.12.6).
+*   Bound (fat arrow) methods in classes must be declared in the class constructor, after `super()` if the class is extending a parent class. See [breaking changes for classes](#breaking-changes-classes).
+*   All unnecessary utility helper functions have been removed, including the polyfills for `indexOf` and `bind`.
+*   The `extends` keyword now only works in the context of classes; it cannot be used to extend a function prototype. See [breaking changes for `extends`](#breaking-changes-super-extends).
+*   Literate CoffeeScript is now parsed entirely based on indentation, similar to the 1.x implementation; there is no longer a dependency for parsing Markdown. See [breaking changes for Literate CoffeeScript parsing](#breaking-changes-literate-coffeescript).
+*   JavaScript reserved words used as properties are no longer wrapped in quotes.
+*   `require('coffeescript')` should now work in non-Node environments such as the builds created by Webpack or Browserify. This provides a more convenient way to include the browser compiler in builds intending to run in a browser environment.
+*   Unreachable `break` statements are no longer added after `switch` cases that `throw` exceptions.
+*   The browser compiler is now compiled using Babili and transpiled down to Babel’s `env` preset (should be safe for use in all browsers in current use, not just evergreen versions).
+*   Calling functions `@get` or `@set` no longer throws an error about required parentheses. (Bare `get` or `set`, not attached to an object or `@`, [still intentionally throws a compiler error](#unsupported-get-set).)
+*   If `$XDG_CACHE_HOME` is set, the REPL `.coffee_history` file is saved there.
 
 ```
 releaseHeader('2017-05-15', '1.12.6', '1.12.5')
@@ -12,11 +28,39 @@ releaseHeader('2017-05-15', '1.12.6', '1.12.5')
 *   Fixed some tests, and failing tests now result in a nonzero exit code.
 
 ```
+releaseHeader('2017-04-14', '2.0.0-beta1', '2.0.0-alpha1')
+```
+
+*   Initial beta release of CoffeeScript 2. No further breaking changes are anticipated.
+*   Destructured objects and arrays now output using ES2015+ syntax whenever possible.
+*   Literate CoffeeScript now has much better support for parsing Markdown, thanks to using [Markdown-It](https://github.com/markdown-it/markdown-it) to detect Markdown sections rather than just looking at indentation.
+*   Calling a function named `get` or `set` now requires parentheses, to disambiguate from the `get` or `set` keywords (which are [disallowed](#unsupported-get-set)).
+*   The compiler now requires Node 7.6+, the first version of Node to support asynchronous functions without requiring a flag.
+
+```
 releaseHeader('2017-04-10', '1.12.5', '1.12.4')
 ```
 
 *   Better handling of `default`, `from`, `as` and `*` within `import` and `export` statements. You can now import or export a member named `default` and the compiler won’t interpret it as the `default` keyword.
 *   Fixed a bug where invalid octal escape sequences weren’t throwing errors in the compiler.
+
+
+```
+releaseHeader('2017-02-21', '2.0.0-alpha1', '1.12.4')
+```
+
+*   Initial alpha release of CoffeeScript 2. The CoffeeScript compiler now outputs ES2015+ syntax whenever possible. See [breaking changes](#breaking-changes).
+*   Classes are output using ES2015 `class` and `extends` keywords.
+*   Added support for `async`/`await`.
+*   Bound (arrow) functions now output as `=>` functions.
+*   Function parameters with default values now use ES2015 default values syntax.
+*   Splat function parameters now use ES2015 spread syntax.
+*   Computed properties now use ES2015 syntax.
+*   Interpolated strings (template literals) now use ES2015 backtick syntax.
+*   Improved support for recognizing Markdown in Literate CoffeeScript files.
+*   Mixing tabs and spaces in indentation is now disallowed.
+*   Browser compiler is now minified using the Google Closure Compiler (JavaScript version).
+*   Node 7+ required for CoffeeScript 2.
 
 ```
 releaseHeader('2017-02-18', '1.12.4', '1.12.3')
@@ -173,7 +217,7 @@ releaseHeader('2014-08-26', '1.8.0', '1.7.1')
 *   Fixed a slight formatting error in CoffeeScript’s source map-patched stack traces.
 *   The `%%` operator now coerces its right operand only once.
 *   It is now possible to require CoffeeScript files from Cakefiles without having to register the compiler first.
-*   The CoffeeScript REPL is now exported and can be required using `require 'coffee-script/repl'`.
+*   The CoffeeScript REPL is now exported and can be required using `require 'coffeescript/repl'`.
 *   Fixes for the REPL in Node 0.11.
 
 ```
@@ -186,14 +230,9 @@ releaseHeader('2014-01-29', '1.7.1', '1.7.0')
 releaseHeader('2014-01-28', '1.7.0', '1.6.3')
 ```
 
-*   When requiring CoffeeScript files in Node you must now explicitly register the compiler. This can be done with `require 'coffee-script/register'` or `CoffeeScript.register()`. Also for configuration such as Mocha’s, use **coffee-script/register**.
+*   When requiring CoffeeScript files in Node you must now explicitly register the compiler. This can be done with `require 'coffeescript/register'` or `CoffeeScript.register()`. Also for configuration such as Mocha’s, use **coffeescript/register**.
 *   Improved error messages, source maps and stack traces. Source maps now use the updated `//#` syntax.
 *   Leading `.` now closes all open calls, allowing for simpler chaining syntax.
-
-```
-codeFor('chaining')
-```
-
 *   Added `**`, `//` and `%%` operators and `...` expansion in parameter lists and destructuring expressions.
 *   Multiline strings are now joined by a single space and ignore all indentation. A backslash at the end of a line can denote the amount of whitespace between lines, in both strings and heredocs. Backslashes correctly escape whitespace in block regexes.
 *   Closing brackets can now be indented and therefore no longer cause unexpected error.
@@ -286,7 +325,7 @@ releaseHeader('2011-11-08', '1.1.3', '1.1.2')
 *   Ahh, whitespace. CoffeeScript’s compiled JS now tries to space things out and keep it readable, as you can see in the examples on this page.
 *   You can now call `super` in class level methods in class bodies, and bound class methods now preserve their correct context.
 *   JavaScript has always supported octal numbers `010 is 8`, and hexadecimal numbers `0xf is 15`, but CoffeeScript now also supports binary numbers: `0b10 is 2`.
-*   The CoffeeScript module has been nested under a subdirectory to make it easier to `require` individual components separately, without having to use **npm**. For example, after adding the CoffeeScript folder to your path: `require('coffee-script/lexer')`
+*   The CoffeeScript module has been nested under a subdirectory to make it easier to `require` individual components separately, without having to use **npm**. For example, after adding the CoffeeScript folder to your path: `require('coffeescript/lexer')`
 *   There’s a new “link” feature in Try CoffeeScript on this webpage. Use it to get a shareable permalink for your example script.
 *   The `coffee --watch` feature now only works on Node.js 0.6.0 and higher, but now also works properly on Windows.
 *   Lots of small bug fixes from **[@michaelficarra](https://github.com/michaelficarra)**, **[@geraldalewis](https://github.com/geraldalewis)**, **[@satyr](https://github.com/satyr)**, and **[@trevorburnham](https://github.com/trevorburnham)**.
@@ -405,7 +444,7 @@ Trailing commas are now allowed, a-la Python. Static properties may be assigned 
 releaseHeader('2010-03-23', '0.5.6', '0.5.5')
 ```
 
-Interpolation can now be used within regular expressions and heredocs, as well as strings. Added the `<-` bind operator. Allowing assignment to half-expressions instead of special `||=`-style operators. The arguments object is no longer automatically converted into an array. After requiring `coffee-script`, Node.js can now directly load `.coffee` files, thanks to **registerExtension**. Multiple splats can now be used in function calls, arrays, and pattern matching.
+Interpolation can now be used within regular expressions and heredocs, as well as strings. Added the `<-` bind operator. Allowing assignment to half-expressions instead of special `||=`-style operators. The arguments object is no longer automatically converted into an array. After requiring `coffeescript`, Node.js can now directly load `.coffee` files, thanks to **registerExtension**. Multiple splats can now be used in function calls, arrays, and pattern matching.
 
 ```
 releaseHeader('2010-03-08', '0.5.5', '0.5.4')
@@ -430,7 +469,7 @@ releaseHeader('2010-02-25', '0.5.2', '0.5.1')
 ```
 
 Added a compressed version of the compiler for inclusion in web pages as
-`/v<%= majorVersion %>/browser-compiler/coffee-script.js`. It’ll automatically run any script tags with type `text/coffeescript` for you. Added a `--stdio` option to the `coffee` command, for piped-in compiles.
+`/v<%= majorVersion %>/browser-compiler/coffeescript.js`. It’ll automatically run any script tags with type `text/coffeescript` for you. Added a `--stdio` option to the `coffee` command, for piped-in compiles.
 
 ```
 releaseHeader('2010-02-24', '0.5.1', '0.5.0')
@@ -519,7 +558,7 @@ Bugfix for running `coffee --interactive` and `--run` from outside of the Coffee
 releaseHeader('2009-12-26', '0.1.5', '0.1.4')
 ```
 
-Array slice literals and array comprehensions can now both take Ruby-style ranges to specify the start and end. JavaScript variable declaration is now pushed up to the top of the scope, making all assignment statements into expressions. You can use `\` to escape newlines. The `coffee-script` command is now called `coffee`.
+Array slice literals and array comprehensions can now both take Ruby-style ranges to specify the start and end. JavaScript variable declaration is now pushed up to the top of the scope, making all assignment statements into expressions. You can use `\` to escape newlines. The `coffeescript` command is now called `coffee`.
 
 ```
 releaseHeader('2009-12-25', '0.1.4', '0.1.3')

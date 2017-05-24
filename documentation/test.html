@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
   <title>CoffeeScript Test Suite</title>
-  <script src="browser-compiler/coffee-script.js"></script>
+  <script src="browser-compiler/coffeescript.js"></script>
   <script src="https://cdn.jsdelivr.net/underscorejs/1.8.3/underscore-min.js"></script>
   <style>
     body, pre {
@@ -39,9 +39,10 @@
 <script type="text/coffeescript">
 @testingBrowser = yes
 @global = window
-stdout  = document.getElementById 'stdout'
-start   = new Date
-success = total = done = failed = 0
+stdout = document.getElementById 'stdout'
+start = new Date
+@currentFile = ''
+@passedTests = failedTests = total = done = 0
 
 say = (msg, className) ->
   div = document.createElement 'div'
@@ -54,12 +55,20 @@ say = (msg, className) ->
   ++total
   try
     fn.call(fn)
-    ++success
-  catch exception
-    say "#{description}:", 'bad'
-    say fn.toString(), 'subtle' if fn.toString?
-    say exception, 'bad'
-    console.error exception
+    ++passedTests
+  catch error
+    failures.push
+      error: error
+      description: description
+      source: fn.toString() if fn.toString?
+
+@failures =
+  push: (failure) -> # Match function called by regular tests
+    ++failedTests
+    say "#{failure.description}:", 'bad'
+    say failure.source, 'subtle' if failure.source?
+    say failure.error, 'bad'
+    console.error failure.error
 
 @ok = (good, msg = 'Error') ->
   throw Error msg unless good
@@ -99,14 +108,15 @@ say = (msg, className) ->
 for test in document.getElementsByClassName 'test'
   say '\u2714 ' + test.id
   options = {}
+  options.filename = currentFile = test.id
   options.literate = yes if test.type is 'text/x-literate-coffeescript'
   CoffeeScript.run test.innerHTML, options
 
 # Finish up
-yay = success is total and not failed
+yay = passedTests is total and not failedTests
 sec = (new Date - start) / 1000
-msg = "passed #{success} tests in #{ sec.toFixed 2 } seconds"
-msg = "failed #{ total - success } tests and #{msg}" unless yay
+msg = "passed #{passedTests} tests in #{sec.toFixed 2} seconds"
+msg = "failed #{total - passedTests} tests and #{msg}" unless yay
 say msg, (if yay then 'good' else 'bad')
 </script>
 
