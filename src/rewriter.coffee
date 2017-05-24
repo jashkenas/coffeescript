@@ -83,7 +83,7 @@ exports.Rewriter = class Rewriter
   # Match it with its paired close.
   closeOpenIndexes: ->
     condition = (token, i) ->
-      token[0] is [']', 'INDEX_END']
+      token[0] in [']', 'INDEX_END']
 
     action = (token, i) ->
       token[0] = 'INDEX_END'
