@@ -622,3 +622,12 @@ test "#4544: Postfix conditionals in first line of implicit object literals", ->
   x = bar: 42 if no
   baz: 1337
   ok not x?
+
+  # Example from #2051
+  a = null
+  _alert = (arg) -> a = arg
+  _alert
+    val3: "works" if true
+    val: "hello"
+    val2: "all good"
+  eq a.val2, "all good"
