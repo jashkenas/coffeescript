@@ -12,11 +12,11 @@ Error.stackTraceLimit = Infinity
 {compact, flatten, extend, merge, del, starts, ends, some,
 addDataToNode, locationDataToString, throwSyntaxError} = require './helpers'
 
-# Functions required by parser
+# Functions required by parser.
 exports.extend = extend
 exports.addDataToNode = addDataToNode
 
-# Constant functions for nodes that don't need customization.
+# Constant functions for nodes that don’t need customization.
 YES     = -> yes
 NO      = -> no
 THIS    = -> this
@@ -35,6 +35,7 @@ exports.CodeFragment = class CodeFragment
     @type = parent?.constructor?.name or 'unknown'
 
   toString: ->
+    # This is only intended for debugging.
     "#{@code}#{if @locationData then ": " + locationDataToString(@locationData) else ''}"
 
 # Convert an array of CodeFragments into a string.
@@ -272,7 +273,7 @@ exports.Base = class Base
     @eachChild (child) ->
       child.updateLocationDataIfMissing locationData
 
-  # Throw a SyntaxError associated with this node's location.
+  # Throw a SyntaxError associated with this node’s location.
   error: (message) ->
     throwSyntaxError message, @locationData
 
@@ -394,9 +395,9 @@ exports.Block = class Block extends Base
   compileToFragments: (o = {}, level) ->
     if o.scope then super o, level else @compileRoot o
 
-  # Compile all expressions within the **Block** body. If we need to
-  # return the result, and it's an expression, simply return it. If it's a
-  # statement, ask the statement to do so.
+  # Compile all expressions within the **Block** body. If we need to return
+  # the result, and it’s an expression, simply return it. If it’s a statement,
+  # ask the statement to do so.
   compileNode: (o) ->
     @tab  = o.indent
     top   = o.level is LEVEL_TOP
@@ -406,12 +407,13 @@ exports.Block = class Block extends Base
       node = node.unwrapAll()
       node = (node.unfoldSoak(o) or node)
       if node instanceof Block
-        # This is a nested block. We don't do anything special here like enclose
-        # it in a new scope; we just compile the statements in this block along with
-        # our own
+        # This is a nested block. We don’t do anything special here like
+        # enclose it in a new scope; we just compile the statements in this
+        # block along with our own.
         compiledNodes.push node.compileNode o
       else if node.hoisted
-        # This is a hoisted expression. We want to compile this and ignore the result.
+        # This is a hoisted expression.
+        # We want to compile this and ignore the result.
         node.compileToFragments o
       else if top
         node.front = true
@@ -433,16 +435,15 @@ exports.Block = class Block extends Base
       answer = [@makeCode "void 0"]
     if compiledNodes.length > 1 and o.level >= LEVEL_LIST then @wrapInParentheses answer else answer
 
-  # If we happen to be the top-level **Block**, wrap everything in
-  # a safety closure, unless requested not to.
-  # It would be better not to generate them in the first place, but for now,
-  # clean up obvious double-parentheses.
+  # If we happen to be the top-level **Block**, wrap everything in a safety
+  # closure, unless requested not to. It would be better not to generate them
+  # in the first place, but for now, clean up obvious double-parentheses.
   compileRoot: (o) ->
     o.indent  = if o.bare then '' else TAB
     o.level   = LEVEL_TOP
     @spaced   = yes
     o.scope   = new Scope null, this, null, o.referencedVars ? []
-    # Mark given local variables in the root scope as parameters so they don't
+    # Mark given local variables in the root scope as parameters so they don’t
     # end up being declared on this block.
     o.scope.parameter name for name in o.locals or []
     prelude   = []
@@ -3013,7 +3014,7 @@ exports.Switch = class Switch extends Base
 # to the last line of each clause.
 #
 # Single-expression **Ifs** are compiled into conditional operators if possible,
-# because ternaries are already proper expressions, and don't need conversion.
+# because ternaries are already proper expressions, and don’t need conversion.
 exports.If = class If extends Base
   constructor: (condition, @body, options = {}) ->
     super()

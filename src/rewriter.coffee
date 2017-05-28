@@ -22,8 +22,10 @@ exports.Rewriter = class Rewriter
   # like this. The order of these passes matters -- indentation must be
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (@tokens) ->
-    # Helpful snippet for debugging:
-    #     console.log (t[0] + '/' + t[1] for t in @tokens).join ' '
+    # Set environment variable `DEBUG_TOKEN_STREAM` to `true` to output token
+    # debugging info.
+    if process.env.DEBUG_TOKEN_STREAM
+      console.log (t[0] + '/' + t[1] for t in @tokens).join ' '
     @removeLeadingNewlines()
     @closeOpenCalls()
     @closeOpenIndexes()
@@ -435,7 +437,6 @@ exports.Rewriter = class Rewriter
   # Tag postfix conditionals as such, so that we can parse them with a
   # different precedence.
   tagPostfixConditionals: ->
-
     original = null
 
     condition = (token, i) ->

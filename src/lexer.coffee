@@ -36,18 +36,18 @@ exports.Lexer = class Lexer
   tokenize: (code, opts = {}) ->
     @literate   = opts.literate  # Are we lexing literate CoffeeScript?
     @indent     = 0              # The current indentation level.
-    @baseIndent = 0              # The overall minimum indentation level
+    @baseIndent = 0              # The overall minimum indentation level.
     @indebt     = 0              # The over-indentation at the current level.
     @outdebt    = 0              # The under-outdentation at the current level.
     @indents    = []             # The stack of all current indentation levels.
-    @indentLiteral = ''          # The indentation
+    @indentLiteral = ''          # The indentation.
     @ends       = []             # The stack for pairing up tokens.
     @tokens     = []             # Stream of parsed tokens in the form `['TYPE', value, location data]`.
-    @seenFor    = no             # Used to recognize FORIN, FOROF and FORFROM tokens.
-    @seenImport = no             # Used to recognize IMPORT FROM? AS? tokens.
-    @seenExport = no             # Used to recognize EXPORT FROM? AS? tokens.
-    @importSpecifierList = no    # Used to identify when in an IMPORT {...} FROM? ...
-    @exportSpecifierList = no    # Used to identify when in an EXPORT {...} FROM? ...
+    @seenFor    = no             # Used to recognize `FORIN`, `FOROF` and `FORFROM` tokens.
+    @seenImport = no             # Used to recognize `IMPORT FROM? AS?` tokens.
+    @seenExport = no             # Used to recognize `EXPORT FROM? AS?` tokens.
+    @importSpecifierList = no    # Used to identify when in an `IMPORT {...} FROM? ...`.
+    @exportSpecifierList = no    # Used to identify when in an `EXPORT {...} FROM? ...`.
 
     @chunkLine =
       opts.line or 0             # The start line for the current @chunk.
@@ -71,7 +71,7 @@ exports.Lexer = class Lexer
            @jsToken()         or
            @literalToken()
 
-      # Update position
+      # Update position.
       [@chunkLine, @chunkColumn] = @getLineAndColumnFromChunk consumed
 
       i += consumed
