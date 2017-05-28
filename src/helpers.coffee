@@ -111,10 +111,14 @@ buildLocationData = (first, last) ->
 # This returns a function which takes an object as a parameter, and if that
 # object is an AST node, updates that object's locationData.
 # The object is returned either way.
-exports.addLocationDataFn = (first, last) ->
+exports.addDataToNode = (parser, first, last) ->
   (obj) ->
+    # Add location data
     if ((typeof obj) is 'object') and (!!obj['updateLocationDataIfMissing'])
       obj.updateLocationDataIfMissing buildLocationData(first, last)
+
+    # Add comments data
+    # TODO
 
     return obj
 

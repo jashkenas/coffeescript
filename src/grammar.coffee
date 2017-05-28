@@ -40,16 +40,17 @@ o = (patternString, action, options) ->
   action = action.replace /\bnew /g, '$&yy.'
   action = action.replace /\b(?:Block\.wrap|extend)\b/g, 'yy.$&'
 
-  # Returns a function which adds location data to the first parameter passed
-  # in, and returns the parameter. If the parameter is not a node, it will
-  # just be passed through unaffected.
-  addLocationDataFn = (first, last) ->
-    "yy.addLocationDataFn(@#{first}#{if last then ", @#{last}" else ''})"
+  # Returns strings of functions to add to `parser.js` which add extra data
+  # that nodes may have, such as comments or location data. Location data
+  # is added to the first parameter passed in, and the parameter is returned.
+  # If the parameter is not a node, it will just be passed through unaffected.
+  getFunctionString = (first, last) ->
+    "yy.addDataToNode(yy, @#{first}#{if last then ", @#{last}" else ''})"
 
-  action = action.replace /LOC\(([0-9]*)\)/g, addLocationDataFn('$1')
-  action = action.replace /LOC\(([0-9]*),\s*([0-9]*)\)/g, addLocationDataFn('$1', '$2')
+  action = action.replace /LOC\(([0-9]*)\)/g, getFunctionString('$1')
+  action = action.replace /LOC\(([0-9]*),\s*([0-9]*)\)/g, getFunctionString('$1', '$2')
 
-  [patternString, "$$ = #{addLocationDataFn(1, patternCount)}(#{action});", options]
+  [patternString, "$$ = #{getFunctionString(1, patternCount)}(#{action});", options]
 
 # Grammatical Rules
 # -----------------
