@@ -176,13 +176,12 @@ parser.lexer =
       @yylineno = @yylloc.first_line
     else
       tag = ''
-
     tag
   setInput: (tokens) ->
     parser.tokens = tokens
     @pos = 0
-  upcomingInput: ->
-    ""
+  upcomingInput: -> ''
+
 # Make all the AST nodes visible to the parser.
 parser.yy = require './nodes'
 

@@ -34,7 +34,7 @@ exports.CodeFragment = class CodeFragment
     @locationData = parent?.locationData
     @type = parent?.constructor?.name or 'unknown'
 
-  toString:   ->
+  toString: ->
     "#{@code}#{if @locationData then ": " + locationDataToString(@locationData) else ''}"
 
 # Convert an array of CodeFragments into a string.
