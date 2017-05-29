@@ -108,7 +108,7 @@ exports.Lexer = class Lexer
   # though `is` means `===` otherwise.
   identifierToken: ->
     inCSXTag = @atCSXTag()
-    regex = if inCSXTag then CSX_IDENTIFIER else IDENTIFIER
+    regex = if inCSXTag then CSX_ATTRIBUTE else IDENTIFIER
     return 0 unless match = regex.exec @chunk
     [input, id, colon] = match
 
@@ -520,9 +520,12 @@ exports.Lexer = class Lexer
         if not match or match[0] isnt csxTag.name
           @error "expected corresponding CSX closing tag for #{csxTag.name}",
             csxTag.origin[2]
-        # +1 for closing >
-        @token 'CALL_END', ')', end, end + csxTag.name.length + 1
-        return end + csxTag.name.length + 1
+        afterTag = end + csxTag.name.length
+        if @chunk[afterTag] isnt '>'
+          @error "missing closing > after tag name", offset: afterTag, length: 1
+        # +1 for the closing >
+        @token 'CALL_END', ')', end, csxTag.name.length + 1
+        return afterTag + 1
       else
         0
     else if @atCSXTag 1
@@ -1065,9 +1068,14 @@ IDENTIFIER = /// ^
 ///
 
 CSX_IDENTIFIER = /// ^
-  (?![\d<])
-  ( (?: (?!\s)[\-\.$\w\x7f-\uffff] )+ ) # like `IDENTIFIER` but includes `-`, `.`s
-  ( [^\S]* = (?!=) )?  # Is this an attribute name?
+  (?![\d<]) # must not start with `<`
+  ( (?: (?!\s)[\.\-$\w\x7f-\uffff] )+ ) # like `IDENTIFIER` but includes `-`, `.`s
+///
+
+CSX_ATTRIBUTE = /// ^
+  (?!\d)
+  ( (?: (?!\s)[\-$\w\x7f-\uffff] )+ ) # like `IDENTIFIER` but includes `-`s
+  ( [^\S]* = (?!=) )?  # Is this an attribute with a value?
 ///
 
 NUMBER     = ///

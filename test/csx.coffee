@@ -63,6 +63,13 @@ test 'object attribute', ->
       }} />;
   '''
 
+test 'attribute without value', ->
+  eqCSX '''
+    <div checked x="hello" />
+  ''', '''
+    <div checked x="hello" />;
+  '''
+
 test 'paired', ->
   eqCSX '''
     <div></div>
@@ -619,4 +626,9 @@ test 'hyphens in tag names', ->
     <paper-button className="button">{text}</paper-button>
   ''', '''
     <paper-button className="button">{text}</paper-button>;
+  '''
+
+test 'closing tags must be closed', ->
+  throws -> CoffeeScript.compile '''
+    <a></a
   '''
