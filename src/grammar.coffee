@@ -189,7 +189,7 @@ grammar =
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
     o 'ObjAssignable',                          -> new Value $1
-    o 'ObjAssignable ...',                      -> new Splat $1    
+    o 'ObjAssignable ...',                      -> new Splat $1
     o 'ObjAssignable : Expression',             -> new Assign LOC(1)(new Value $1), $3, 'object',
                                                               operatorToken: LOC(2)(new Literal $2)
     o 'ObjAssignable :
@@ -213,7 +213,8 @@ grammar =
     o 'SimpleObjAssignable'
     o 'AlphaNumeric'
   ]
-
+  
+ 
   # A return statement from a function body.
   Return: [
     o 'RETURN Expression',                      -> new Return $2
