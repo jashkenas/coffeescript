@@ -18,8 +18,8 @@ exports.Rewriter = class Rewriter
 
   # Rewrite the token stream in multiple passes, one logical filter at
   # a time. This could certainly be changed into a single pass through the
-  # stream, with a big ol' efficient switch, but it's much nicer to work with
-  # like this. The order of these passes matters -- indentation must be
+  # stream, with a big ol’ efficient switch, but it’s much nicer to work with
+  # like this. The order of these passes matters—indentation must be
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (@tokens) ->
     # Set environment variable `DEBUG_TOKEN_STREAM` to `true` to output token
@@ -38,7 +38,7 @@ exports.Rewriter = class Rewriter
 
   # Rewrite the token stream, looking one token ahead and behind.
   # Allow the return value of the block to tell us how many tokens to move
-  # forwards (or backwards) in the stream, to make sure we don't miss anything
+  # forwards (or backwards) in the stream, to make sure we don’t miss anything
   # as tokens are inserted and removed, and the stream changes length under
   # our feet.
   scanTokens: (block) ->
@@ -119,7 +119,7 @@ exports.Rewriter = class Rewriter
     no
 
   # Returns `yes` if current line of tokens contain an element of tags on same
-  # expression level. Stop searching at LINEBREAKS or explicit start of
+  # expression level. Stop searching at `LINEBREAKS` or explicit start of
   # containing balanced expression.
   findTagsBackwards: (i, tags) ->
     backStack = []
@@ -158,7 +158,7 @@ exports.Rewriter = class Rewriter
       inImplicitCall    = -> isImplicitCall stackTop()
       inImplicitObject  = -> isImplicitObject stackTop()
       # Unclosed control statement inside implicit parens (like
-      # class declaration or if-conditionals)
+      # class declaration or if-conditionals).
       inImplicitControl = -> inImplicit() and stackTop()?[0] is 'CONTROL'
 
       startImplicitCall = (idx) ->
@@ -191,7 +191,7 @@ exports.Rewriter = class Rewriter
         return no unless nextTerminatorIdx?
         @looksObjectish nextTerminatorIdx + 1
 
-      # Don't end an implicit call on next indent if any of these are in an argument
+      # Don’t end an implicit call on next indent if any of these are in an argument
       if inImplicitCall() and tag in ['IF', 'TRY', 'FINALLY', 'CATCH',
         'CLASS', 'SWITCH']
         stack.push ['CONTROL', i, ours: yes]
@@ -202,15 +202,14 @@ exports.Rewriter = class Rewriter
         # An `INDENT` closes an implicit call unless
         #
         #  1. We have seen a `CONTROL` argument on the line.
-        #  2. The last token before the indent is part of the list below
-        #
+        #  2. The last token before the indent is part of the list below.
         if prevTag not in ['=>', '->', '[', '(', ',', '{', 'ELSE', '=']
           endImplicitCall() while inImplicitCall()
         stack.pop() if inImplicitControl()
         stack.push [tag, i]
         return forward(1)
 
-      # Straightforward start of explicit expression
+      # Straightforward start of explicit expression.
       if tag in EXPRESSION_START
         stack.push [tag, i]
         return forward(1)
@@ -243,7 +242,7 @@ exports.Rewriter = class Rewriter
       #       a: b
       #       c: d
       #
-      # Don't accept implicit calls of this type, when on the same line
+      # Don’t accept implicit calls of this type, when on the same line
       # as the control structures below as that may misinterpret constructs like:
       #
       #     if f
@@ -253,7 +252,7 @@ exports.Rewriter = class Rewriter
       #     if f(a: 1)
       #
       # which is probably always unintended.
-      # Furthermore don't allow this in literal arrays, as
+      # Furthermore don’t allow this in literal arrays, as
       # that creates grammatical ambiguities.
       if tag in IMPLICIT_FUNC and
          @indexOfTag(i + 1, 'INDENT') > -1 and @looksObjectish(i + 2) and
@@ -263,16 +262,16 @@ exports.Rewriter = class Rewriter
         stack.push ['INDENT', i + 2]
         return forward(3)
 
-      # Implicit objects start here
+      # Implicit objects start here.
       if tag is ':'
-        # Go back to the (implicit) start of the object
+        # Go back to the (implicit) start of the object.
         s = switch
           when @tag(i - 1) in EXPRESSION_END then start[1]
           when @tag(i - 2) is '@' then i - 2
           else i - 1
         s -= 2 while @tag(s - 2) is 'HERECOMMENT'
 
-        # Mark if the value is a for loop
+        # Mark if the value is a for loop.
         @insideForDeclaration = nextTag is 'FOR'
 
         startsLine = s is 0 or @tag(s - 1) in LINEBREAKS or tokens[s - 1].newLine
@@ -320,7 +319,7 @@ exports.Rewriter = class Rewriter
                   not (tag is 'POST_IF' and startsLine and implicitObjectContinues(i + 1))
             endImplicitObject()
           # Close implicit objects when at end of line, line didn't end with a comma
-          # and the implicit object didn't start the line or the next line doesn't look like
+          # and the implicit object didn't start the line or the next line doesn’t look like
           # the continuation of an object.
           else if inImplicitObject() and tag is 'TERMINATOR' and prevTag isnt ',' and
                   not (startsLine and @looksObjectish(i + 1))
@@ -330,7 +329,7 @@ exports.Rewriter = class Rewriter
             break
 
       # Close implicit object if comma is the last character
-      # and what comes after doesn't look like it belongs.
+      # and what comes after doesn’t look like it belongs.
       # This is used for trailing commas and calls, like:
       #
       #     x =
@@ -348,9 +347,8 @@ exports.Rewriter = class Rewriter
         # When nextTag is OUTDENT the comma is insignificant and
         # should just be ignored so embed it in the implicit object.
         #
-        # When it isn't the comma go on to play a role in a call or
+        # When it isn’t the comma go on to play a role in a call or
         # array further up the stack, so give it a chance.
-
         offset = if nextTag is 'OUTDENT' then 1 else 0
         while inImplicitObject()
           endImplicitObject i + offset
@@ -374,9 +372,9 @@ exports.Rewriter = class Rewriter
         last_column:  column
       return 1
 
-  # OUTDENT tokens should always be positioned at the last character of the
-  # previous token, so that AST nodes ending in an OUTDENT token end up with a
-  # location corresponding to the last "real" token under the node.
+  # `OUTDENT` tokens should always be positioned at the last character of the
+  # previous token, so that AST nodes ending in an `OUTDENT` token end up with a
+  # location corresponding to the last “real” token under the node.
   fixOutdentLocationData: ->
     @scanTokens (token, i, tokens) ->
       return 1 unless token[0] is 'OUTDENT' or
@@ -390,9 +388,9 @@ exports.Rewriter = class Rewriter
         last_column:  prevLocationData.last_column
       return 1
 
-  # Because our grammar is LALR(1), it can't handle some single-line
+  # Because our grammar is LALR(1), it can’t handle some single-line
   # expressions that lack ending delimiters. The **Rewriter** adds the implicit
-  # blocks, so it doesn't need to. To keep the grammar clean and tidy, trailing
+  # blocks, so it doesn’t need to. To keep the grammar clean and tidy, trailing
   # newlines within expressions are removed and the indentation tokens of empty
   # blocks are added.
   normalizeLines: ->
@@ -485,7 +483,7 @@ BALANCED_PAIRS = [
   ['REGEX_START', 'REGEX_END']
 ]
 
-# The inverse mappings of `BALANCED_PAIRS` we're trying to fix up, so we can
+# The inverse mappings of `BALANCED_PAIRS` we’re trying to fix up, so we can
 # look things up from either end.
 exports.INVERSES = INVERSES = {}
 
@@ -493,9 +491,9 @@ exports.INVERSES = INVERSES = {}
 EXPRESSION_START = []
 EXPRESSION_END   = []
 
-for [left, rite] in BALANCED_PAIRS
-  EXPRESSION_START.push INVERSES[rite] = left
-  EXPRESSION_END  .push INVERSES[left] = rite
+for [left, right] in BALANCED_PAIRS
+  EXPRESSION_START.push INVERSES[right] = left
+  EXPRESSION_END  .push INVERSES[left] = right
 
 # Tokens that indicate the close of a clause of an expression.
 EXPRESSION_CLOSE = ['CATCH', 'THEN', 'ELSE', 'FINALLY'].concat EXPRESSION_END
@@ -520,7 +518,7 @@ IMPLICIT_END     = ['POST_IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY',
   'LOOP', 'TERMINATOR']
 
 # Single-line flavors of block expressions that have unclosed endings.
-# The grammar can't disambiguate them, so we insert the implicit indentation.
+# The grammar can’t disambiguate them, so we insert the implicit indentation.
 SINGLE_LINERS    = ['ELSE', '->', '=>', 'TRY', 'FINALLY', 'THEN']
 SINGLE_CLOSERS   = ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_WHEN']
 
