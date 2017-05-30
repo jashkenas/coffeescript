@@ -1129,6 +1129,12 @@ exports.Obj = class Obj extends Base
     if @generated
       for node in props when node instanceof Value
         node.error 'cannot have an implicit value in an implicit object'
+    
+    # Object spread properties. https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md
+    hasSplat = no
+    hasSplat = true for prop in props when prop instanceof Splat
+    return @compileSpread o if hasSplat
+    
     idt        = o.indent += TAB
     lastNoncom = @lastNonComment @properties
 
@@ -1136,13 +1142,6 @@ exports.Obj = class Obj extends Base
     for prop in @properties
       if prop instanceof Comment or (prop instanceof Assign and prop.context is 'object')
         isCompact = no
-
-    # Store object spreads. Can be removed when ES proposal hits stage-4.
-    spreadAnswer = []
-    spreads = []
-    openBracket = @makeCode("{");
-    closeBracket = @makeCode("}");
-    hasSpread = no    
     
     answer = []
     answer.push @makeCode "{#{if isCompact then '' else '\n'}"
@@ -1164,46 +1163,21 @@ exports.Obj = class Obj extends Base
         prop.variable
       else if prop not instanceof Comment
         prop
-      # Pass the Splat thru.    
-      if key instanceof Value and key.hasProperties() and key not instanceof Splat
+      if key instanceof Value and key.hasProperties()
         key.error 'invalid object key' if prop.context is 'object' or not key.this
         key  = key.properties[0].name
         prop = new Assign key, prop, 'object'
-      # Pass the Splat thru.    
-      if key is prop and prop not instanceof Splat
+      if key is prop
         if prop.shouldCache()
           [key, value] = prop.base.cache o
           key  = new PropertyName key.value if key instanceof IdentifierLiteral
           prop = new Assign key, value, 'object'
         else if not prop.bareLiteral?(IdentifierLiteral)
           prop = new Assign prop, prop, 'object'
-      # object spread
-      # Can be removed when ES proposal hits stage-4.
-      if key is prop and prop instanceof Splat    
-        spreadAnswer.push(@makeCode(", ")) if spreadAnswer.length
-        if spreads.length
-          spreadAnswer.push openBracket
-          for s in spreads
-            spreadAnswer.push s.compileToFragments(o, LEVEL_TOP)..., @makeCode(", ")
-          spreadAnswer.pop()
-          spreadAnswer.push closeBracket, @makeCode(", ")
-        spreadAnswer.push prop.name.compileToFragments(o, LEVEL_TOP)...
-        spreads = []
-        hasSpread = yes
-      spreads.push prop if prop not instanceof Splat
       if indent then answer.push @makeCode indent
       answer.push prop.compileToFragments(o, LEVEL_TOP)...
       if join then answer.push @makeCode join
-    if hasSpread
-      if spreads.length 
-        spreadAnswer.push @makeCode(", "), openBracket
-        for s in spreads
-          spreadAnswer.push s.compileToFragments(o, LEVEL_TOP)..., @makeCode(", ")
-        spreadAnswer.pop()
-        spreadAnswer.push closeBracket
-      answer = [@makeCode("Object.assign({}, "), spreadAnswer..., @makeCode(")")]
-    else
-      answer.push @makeCode "#{if isCompact then '' else "\n#{@tab}"}}"
+    answer.push @makeCode "#{if isCompact then '' else "\n#{@tab}"}}"
     if @front then @wrapInParentheses answer else answer
 
   assigns: (name) ->
@@ -1215,7 +1189,28 @@ exports.Obj = class Obj extends Base
       prop = prop.value if prop instanceof Assign and prop.context is 'object'
       prop = prop.unwrapAll()
       prop.eachName iterator if prop.eachName?
-
+  
+  compileSpread: (o) ->
+    props = @properties
+    # Store object spreads.
+    splatSlices = []
+    propSlices = []
+    slices = [new Obj [], false]
+    addSlice = () -> 
+      slices = [slices..., new Obj [propSlices...], false] if propSlices.length      
+      slices = [slices..., splatSlices...] if splatSlices.length
+    for prop, i in props
+      prop = props[i]
+      addSlice()
+      if prop instanceof Splat
+        splatSlices.push new Value prop.name
+        propSlices = []
+      else
+        propSlices.push prop
+        splatSlices = []
+    addSlice()
+    (new Call new Literal('Object.assign'), slices).compileToFragments o
+      
 #### Arr
 
 # An array literal.
