@@ -730,7 +730,7 @@ textarea {
       </ul>
     </li>
     <li class="nav-item">
-      <a href="#changelog" class="nav-link" data-action="sidebar-nav">Change Log</a>
+      <a href="#changelog" class="nav-link" data-action="sidebar-nav">Changelog</a>
     </li>
   </ul>
 </nav>
@@ -751,7 +751,7 @@ textarea {
       <section id="overview">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.0.0-beta1">2.0.0-beta1</a></p>
+<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.0.0-beta2">2.0.0-beta2</a></p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install -g coffeescript@next
 </code></pre>
 </blockquote>
@@ -863,10 +863,12 @@ cubes = (function() {
 <p>To install, first make sure you have a working copy of the latest stable version of <a href="https://nodejs.org/">Node.js</a>. You can then install CoffeeScript globally with <a href="https://www.npmjs.com/">npm</a>:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --global coffeescript@next
 </code></pre>
-</blockquote><p>When you need CoffeeScript as a dependency of a project, within that project’s folder you can install it locally:</p>
+</blockquote><p>This will make the <code>coffee</code> and <code>cake</code> commands available globally.</p>
+<p>When you need CoffeeScript as a dependency of a project, within that project’s folder you can install it locally:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --save coffeescript@next
 </code></pre>
-</blockquote>
+</blockquote><p>The <code>coffee</code> and <code>cake</code> commands will first look in the current folder to see if CoffeeScript is installed locally, and use that version if so. This allows different versions of CoffeeScript to be installed globally and locally.</p>
+
       </section>
       <section id="usage">
         <h2>Usage</h2>
@@ -3249,7 +3251,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
         <section id="annotated-source">
           <h2>Annotated Source</h2>
-<p>You can browse the CoffeeScript 2.0.0-beta1 source in readable, annotated form <a href="http://coffeescript.org/v2/annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+<p>You can browse the CoffeeScript 2.0.0-beta2 source in readable, annotated form <a href="http://coffeescript.org/v2/annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="http://coffeescript.org/v2/annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
 <li><a href="http://coffeescript.org/v2/annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
@@ -3452,14 +3454,20 @@ f = function*() {
 </code></pre>
 </blockquote><p>Derived (extended) class <code>constructor</code>s cannot use <code>this</code> before calling <code>super</code>:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>
-  constructor: <span class="function">-&gt;</span> <span class="keyword">this</span>
-  <span class="comment"># Throws a compiler error</span>
+  constructor: <span class="function">-&gt;</span> <span class="keyword">this</span>  <span class="comment"># Throws a compiler error</span>
+</code></pre>
+</blockquote><p>Class methods can’t be bound (i.e. you can’t define a class method using a fat arrow) though you can define such methods in the constructor instead:</p>
+<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>
+  method: <span class="function">=&gt;</span>  <span class="comment"># Throws a compiler error</span>
+  
+  constructor: <span class="function">-&gt;</span>
+    <span class="keyword">super</span>()
+    @method = <span class="function">=&gt;</span>  <span class="comment"># This works</span>
 </code></pre>
 </blockquote><p>Class methods can’t be used with <code>new</code> (uncommon):</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">Namespace</span></span>
   @Klass = <span class="function">-&gt;</span>
-<span class="keyword">new</span> Namespace.Klass
-<span class="comment"># Throws a TypeError at runtime</span>
+<span class="keyword">new</span> Namespace.Klass  <span class="comment"># Throws a TypeError at runtime</span>
 </code></pre>
 </blockquote><p>Due to the hoisting required to compile to ES2015 classes, dynamic keys in class methods can’t use values from the executable class body unless the methods are assigned in prototype style.</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span>
@@ -3621,7 +3629,36 @@ B = class B extends A {
         </section>
       </section>
       <section id="changelog">
-        <h2>Change Log</h2>
+        <h2>Changelog</h2>
+<div class="anchor" id="2.0.0-beta2"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta1...2.0.0-beta2">2.0.0-beta2</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-05-16">May 16, 2017</time></span>
+</h2><ul>
+<li>This release includes <a href="#1.12.6">all the changes from 1.12.5 to 1.12.6</a>.</li>
+<li>Bound (fat arrow) methods in classes must be declared in the class constructor, after <code>super()</code> if the class is extending a parent class. See <a href="#breaking-changes-classes">breaking changes for classes</a>.</li>
+<li>All unnecessary utility helper functions have been removed, including the polyfills for <code>indexOf</code> and <code>bind</code>.</li>
+<li>The <code>extends</code> keyword now only works in the context of classes; it cannot be used to extend a function prototype. See <a href="#breaking-changes-super-extends">breaking changes for <code>extends</code></a>.</li>
+<li>Literate CoffeeScript is now parsed entirely based on indentation, similar to the 1.x implementation; there is no longer a dependency for parsing Markdown. See <a href="#breaking-changes-literate-coffeescript">breaking changes for Literate CoffeeScript parsing</a>.</li>
+<li>JavaScript reserved words used as properties are no longer wrapped in quotes.</li>
+<li><code>require('coffeescript')</code> should now work in non-Node environments such as the builds created by Webpack or Browserify. This provides a more convenient way to include the browser compiler in builds intending to run in a browser environment.</li>
+<li>Unreachable <code>break</code> statements are no longer added after <code>switch</code> cases that <code>throw</code> exceptions.</li>
+<li>The browser compiler is now compiled using Babili and transpiled down to Babel’s <code>env</code> preset (should be safe for use in all browsers in current use, not just evergreen versions).</li>
+<li>Calling functions <code>@get</code> or <code>@set</code> no longer throws an error about required parentheses. (Bare <code>get</code> or <code>set</code>, not attached to an object or <code>@</code>, <a href="#unsupported-get-set">still intentionally throws a compiler error</a>.)</li>
+<li>If <code>$XDG_CACHE_HOME</code> is set, the REPL <code>.coffee_history</code> file is saved there.</li>
+</ul>
+<div class="anchor" id="1.12.6"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.12.5...1.12.6">1.12.6</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-05-15">May 15, 2017</time></span>
+</h2><ul>
+<li>The <code>return</code> and <code>export</code> keywords can now accept implicit objects (defined by indentation, without needing braces).</li>
+<li>Support Unicode code point escapes (e.g. <code>\u{1F4A9}</code>).</li>
+<li>The <code>coffee</code> command now first looks to see if CoffeeScript is installed under <code>node_modules</code> in the current folder, and executes the <code>coffee</code> binary there if so; or otherwise it runs the globally installed one. This allows you to have one version of CoffeeScript installed globally and a different one installed locally for a particular project. (Likewise for the <code>cake</code> command.)</li>
+<li>Bugfixes for chained function calls not closing implicit objects or ternaries.</li>
+<li>Bugfixes for incorrect code generated by the <code>?</code> operator within a termary <code>if</code> statement.</li>
+<li>Fixed some tests, and failing tests now result in a nonzero exit code.</li>
+</ul>
 <div class="anchor" id="2.0.0-beta1"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-alpha1...2.0.0-beta1">2.0.0-beta1</a>
