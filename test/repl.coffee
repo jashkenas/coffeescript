@@ -69,6 +69,11 @@ testRepl "variables are saved", (input, output) ->
   eq "'foobar'", output.lastWrite()
 
 testRepl "empty command evaluates to undefined", (input, output) ->
+  # A regression fixed in Node 5.11.0 broke the handling of pressing enter in
+  # the Node REPL; see https://github.com/nodejs/node/pull/6090 and
+  # https://github.com/jashkenas/coffeescript/issues/4502.
+  # Just skip this test for versions of Node < 6.
+  return if parseInt(process.versions.node.split('.')[0], 10) < 6
   input.emitLine ''
   eq 'undefined', output.lastWrite()
 

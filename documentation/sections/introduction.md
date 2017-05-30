@@ -2,8 +2,8 @@
 
 The golden rule of CoffeeScript is: _“It’s just JavaScript.”_ The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.
 
-**Latest Version:** [<%= fullVersion %>](http://github.com/jashkenas/coffeescript/tarball/<%= fullVersion %>)
+**Latest Version:** [<%= fullVersion %>](https://github.com/jashkenas/coffeescript/tarball/<%= fullVersion %>)
 
-> ```
+```bash
 npm install -g coffeescript@next
 ```

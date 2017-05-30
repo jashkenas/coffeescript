@@ -2,12 +2,14 @@ fs = require 'fs'
 path = require 'path'
 vm = require 'vm'
 nodeREPL = require 'repl'
-CoffeeScript = require './coffeescript'
+CoffeeScript = require './'
 {merge, updateSyntaxError} = require './helpers'
 
 replDefaults =
   prompt: 'coffee> ',
-  historyFile: path.join process.env.HOME, '.coffee_history' if process.env.HOME
+  historyFile: do ->
+    historyPath = process.env.XDG_CACHE_HOME or process.env.HOME
+    path.join historyPath, '.coffee_history' if historyPath
   historyMaxInputSize: 10240
   eval: (input, context, filename, cb) ->
     # XXX: multiline hack.
@@ -145,7 +147,7 @@ getCommandId = (repl, commandName) ->
 
 module.exports =
   start: (opts = {}) ->
-    [major, minor, build] = process.versions.node.split('.').map (n) -> parseInt(n)
+    [major, minor, build] = process.versions.node.split('.').map (n) -> parseInt(n, 10)
 
     if major < 6
       console.warn "Node 6+ required for CoffeeScript REPL"

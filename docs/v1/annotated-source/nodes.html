@@ -3941,7 +3941,7 @@ CoffeeScript operations into their JavaScript equivalents.</p>
                 <a class="pilcrow" href="#section-155">&#182;</a>
               </div>
               <p>Am I capable of
-<a href="http://docs.python.org/reference/expressions.html#notin">Python-style comparison chaining</a>?</p>
+<a href="https://docs.python.org/3/reference/expressions.html#not-in">Python-style comparison chaining</a>?</p>
 
             </div>
             
@@ -4450,7 +4450,8 @@ parentheses, but no longer – you can put in as many as you please.</p>
       <span class="hljs-keyword">return</span> expr.compileToFragments o
     fragments = expr.compileToFragments o, LEVEL_PAREN
     bare = o.level &lt; LEVEL_OP <span class="hljs-keyword">and</span> (expr <span class="hljs-keyword">instanceof</span> Op <span class="hljs-keyword">or</span> expr <span class="hljs-keyword">instanceof</span> Call <span class="hljs-keyword">or</span>
-      (expr <span class="hljs-keyword">instanceof</span> For <span class="hljs-keyword">and</span> expr.returns))
+      (expr <span class="hljs-keyword">instanceof</span> For <span class="hljs-keyword">and</span> expr.returns)) <span class="hljs-keyword">and</span> (o.level &lt; LEVEL_COND <span class="hljs-keyword">or</span>
+        fragments.length &lt;= <span class="hljs-number">3</span>)
     <span class="hljs-keyword">if</span> bare <span class="hljs-keyword">then</span> fragments <span class="hljs-keyword">else</span> @wrapInBraces fragments</pre></div></div>
             
         </li>
