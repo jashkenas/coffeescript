@@ -1546,7 +1546,7 @@ test "#4248: Unicode code point escapes", ->
       \    ^\^^^^^^^^^^^^^
   '''
 
-test "csx error: non-matching tag names", ->
+test "CSX error: non-matching tag names", ->
   assertErrorFormat '''
     <div><span></div></span>
   ''',
@@ -1556,7 +1556,7 @@ test "csx error: non-matching tag names", ->
           ^^^^
   '''
 
-test "csx error: bare expressions not allowed", ->
+test "CSX error: bare expressions not allowed", ->
   assertErrorFormat '''
     <div x=3 />
   ''',
@@ -1566,7 +1566,7 @@ test "csx error: bare expressions not allowed", ->
            ^
   '''
 
-test "csx error: unescaped opening tag angle bracket disallowed", ->
+test "CSX error: unescaped opening tag angle bracket disallowed", ->
   assertErrorFormat '''
     <Person><<</Person>
   ''',
@@ -1576,7 +1576,7 @@ test "csx error: unescaped opening tag angle bracket disallowed", ->
             ^^
   '''
 
-test "csx error: ambiguous tag-like expression", ->
+test "CSX error: ambiguous tag-like expression", ->
   assertErrorFormat '''
     x = a <b > c
   ''',

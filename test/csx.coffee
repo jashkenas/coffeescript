@@ -132,7 +132,7 @@ test 'interpolation in string attribute value', ->
     <div x={`Hello ${world}`} />;
   '''
 
-# Unlike in coffee-react-transform
+# Unlike in `coffee-react-transform`.
 test 'bare numbers not allowed', ->
   throws -> CoffeeScript.compile '<div x=3 />'
 
@@ -152,8 +152,8 @@ test 'space around equal sign', ->
     <div popular="yes" />;
   '''
 
-# The following tests were adopted from James Friend's
-# https://github.com/jsdf/coffee-react-transform
+# The following tests were adopted from James Friend’s
+# [https://github.com/jsdf/coffee-react-transform](https://github.com/jsdf/coffee-react-transform).
 
 test 'ambiguous tag-like expression', ->
   throws -> CoffeeScript.compile 'x = a <b > c'
@@ -165,14 +165,14 @@ test 'ambiguous tag', ->
     a(<b> c </b>);
   '''
 
-test 'escaped coffeescript attribute', ->
+test 'escaped CoffeeScript attribute', ->
   eqJS '''
     <Person name={if test() then 'yes' else 'no'} />
   ''', '''
     <Person name={test() ? 'yes' : 'no'} />;
   '''
 
-test 'escaped coffeescript attribute over multiple lines', ->
+test 'escaped CoffeeScript attribute over multiple lines', ->
   eqJS '''
     <Person name={
       if test()
@@ -184,7 +184,7 @@ test 'escaped coffeescript attribute over multiple lines', ->
     <Person name={test() ? 'yes' : 'no'} />;
   '''
 
-test 'multiple line escaped coffeescript with nested CSX', ->
+test 'multiple line escaped CoffeeScript with nested CSX', ->
   eqJS '''
     <Person name={
       if test()
@@ -266,7 +266,7 @@ test 'multiline tag with nested CSX within an attribute', ->
     </Person>;
   '''
 
-test 'escaped coffeescript with nested object literals', ->
+test 'escaped CoffeeScript with nested object literals', ->
   eqJS '''
     <Person>
       blah blah blah {
@@ -282,7 +282,7 @@ test 'escaped coffeescript with nested object literals', ->
     </Person>;
   '''
 
-test 'multiline tag attributes with escaped coffeescript', ->
+test 'multiline tag attributes with escaped CoffeeScript', ->
   eqJS '''
     <Person name={if isActive() then 'active' else 'inactive'}
     someattr='on new line' />
@@ -464,7 +464,7 @@ test 'self closing tag with namespace', ->
     <Something.Tag />;
   '''
 
-# TODO: support spread
+# TODO: Uncomment the following test once destructured object spreads are supported.
 # test 'self closing tag with spread attribute', ->
 #   eqJS '''
 #     <Component a={b} {... x } b="c" />
@@ -472,7 +472,7 @@ test 'self closing tag with namespace', ->
 #     React.createElement(Component, Object.assign({"a": (b)},  x , {"b": "c"}))
 #   '''
 
-# TODO: support spread
+# TODO: Uncomment the following test once destructured object spreads are supported.
 # test 'complex spread attribute', ->
 #   eqJS '''
 #     <Component {...x} a={b} {... x } b="c" {...$my_xtraCoolVar123 } />
@@ -480,7 +480,7 @@ test 'self closing tag with namespace', ->
 #     React.createElement(Component, Object.assign({},  x, {"a": (b)},  x , {"b": "c"}, $my_xtraCoolVar123  ))
 #   '''
 
-# TODO: support spread
+# TODO: Uncomment the following test once destructured object spreads are supported.
 # test 'multiline spread attribute', ->
 #   eqJS '''
 #     <Component {...
@@ -492,7 +492,7 @@ test 'self closing tag with namespace', ->
 #     )
 #   '''
 
-# TODO: support spread
+# TODO: Uncomment the following test once destructured object spreads are supported.
 # test 'multiline tag with spread attribute', ->
 #   eqJS '''
 #     <Component
@@ -512,7 +512,7 @@ test 'self closing tag with namespace', ->
 #     )
 #   '''
 
-# TODO: support spread
+# TODO: Uncomment the following test once destructured object spreads are supported.
 # test 'multiline tag with spread attribute first', ->
 #   eqJS '''
 #     <Component
@@ -534,7 +534,7 @@ test 'self closing tag with namespace', ->
 #     )
 #   '''
 
-# TODO: support spread
+# TODO: Uncomment the following test once destructured object spreads are supported.
 # test 'complex multiline spread attribute', ->
 #   eqJS '''
 #     <Component
@@ -550,7 +550,7 @@ test 'self closing tag with namespace', ->
 #     )
 #   '''
 
-# TODO: support spread
+# TODO: Uncomment the following test once destructured object spreads are supported.
 # test 'self closing spread attribute on single line', ->
 #   eqJS '''
 #     <Component a="b" c="d" {...@props} />
@@ -558,7 +558,7 @@ test 'self closing tag with namespace', ->
 #     React.createElement(Component, Object.assign({"a": "b", "c": "d"}, @props ))
 #   '''
 
-# TODO: support spread
+# TODO: Uncomment the following test once destructured object spreads are supported.
 # test 'self closing spread attribute on new line', ->
 #   eqJS '''
 #     <Component
@@ -574,7 +574,7 @@ test 'self closing tag with namespace', ->
 #     ))
 #   '''
 
-# TODO: support spread
+# TODO: Uncomment the following test once destructured object spreads are supported.
 # test 'self closing spread attribute on same line', ->
 #   eqJS '''
 #     <Component
@@ -588,7 +588,7 @@ test 'self closing tag with namespace', ->
 #       }, @props ))
 #   '''
 
-# TODO: support spread
+# TODO: Uncomment the following test once destructured object spreads are supported.
 # test 'self closing spread attribute on next line', ->
 #   eqJS '''
 #     <Component
@@ -606,14 +606,14 @@ test 'self closing tag with namespace', ->
 #     ))
 #   '''
 
-test 'Empty strings are not converted to true', ->
+test 'empty strings are not converted to true', ->
   eqJS '''
     <Component val="" />
   ''', '''
     <Component val="" />;
   '''
 
-test 'coffeescript @ syntax in tag name', ->
+test 'CoffeeScript @ syntax in tag name', ->
   throws -> CoffeeScript.compile '''
     <@Component>
       <Component />
