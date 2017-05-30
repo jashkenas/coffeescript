@@ -267,7 +267,6 @@ test "#3132: Format indented block-comment nicely", ->
   var fn;
 
   fn = function() {
-
     /*
      * Indented
     Multiline
@@ -362,7 +361,6 @@ test "#3132: Place block-comments nicely", ->
 
   DummyClass = (function() {
     class DummyClass {
-
       /**
        * @constructor
        */
@@ -370,7 +368,6 @@ test "#3132: Place block-comments nicely", ->
       constructor() {}
 
     };
-
 
     /**
      * Singleton reference
@@ -412,3 +409,6 @@ test "#3761: Multiline comment at end of an object", ->
 test "#4375: UTF-8 characters in comments", ->
   # 智に働けば角が立つ、情に掉させば流される。
   ok yes
+
+test "#3735: Multiline comment not treated as value", ->
+  throws -> CoffeeScript.compile 'a + ### Comment ###'

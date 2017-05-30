@@ -553,7 +553,6 @@ test "#1966: external constructors should produce their return value", ->
   ok (new A) not instanceof A
 
 test "#1980: regression with an inherited class with static function members", ->
-
   class A
 
   class B extends A
@@ -572,28 +571,6 @@ test "#1534: class then 'use strict'", ->
   doesNotThrow -> CoffeeScript.run "class then #{error}", bare: yes
   doesNotThrow -> CoffeeScript.run "class then #{error};'use strict'", bare: yes
 
-  # comments are ignored in the Directive Prologue
-  comments = ["""
-  class
-    ### comment ###
-    'use strict'
-    #{error}""",
-  """
-  class
-    ### comment 1 ###
-    ### comment 2 ###
-    'use strict'
-    #{error}""",
-  """
-  class
-    ### comment 1 ###
-    ### comment 2 ###
-    'use strict'
-    #{error}
-    ### comment 3 ###"""
-  ]
-  throws (-> CoffeeScript.run comment, bare: yes) for comment in comments
-
   # [ES5 §14.1](http://es5.github.com/#x14.1) allows for other directives
   directives = ["""
   class
@@ -607,16 +584,9 @@ test "#1534: class then 'use strict'", ->
     #{error}""",
   """
   class
-    ### comment 1 ###
     'directive 1'
     'use strict'
-    #{error}""",
-  """
-  class
-    ### comment 1 ###
-    'directive 1'
-    ### comment 2 ###
-    'use strict'
+    ### comment ###
     #{error}"""
   ]
   throws (-> CoffeeScript.run directive, bare: yes) for directive in directives
@@ -632,8 +602,8 @@ test "#2052: classes should work in strict mode", ->
 test "directives in class with extends ", ->
   strictTest = """
     class extends Object
-      ### comment ###
       'use strict'
+      ### comment ###
       do -> eq this, undefined
   """
   CoffeeScript.run strictTest, bare: yes

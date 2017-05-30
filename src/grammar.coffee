@@ -464,8 +464,7 @@ grammar =
 
   # The array literal.
   Array: [
-    o '[ ]',                                    -> new Arr []
-    o '[ ArgList OptComma ]',                   -> new Arr $2
+    o '[ ElementList OptComma ]',               -> new Arr $2
   ]
 
   # Inclusive and exclusive range dots.
@@ -487,8 +486,17 @@ grammar =
     o 'RangeDots',                              -> new Range null, null, $1
   ]
 
-  # The **ArgList** is both the list of objects passed into a function call,
-  # as well as the contents of an array literal
+  # The **ElementList** holds the contents of an array literal
+  # (i.e. comma-separated expressions). Newlines work as well.
+  ElementList: [
+    o '',                                                         -> []
+    o 'Arg',                                                      -> [$1]
+    o 'ElementList , Arg',                                        -> $1.concat $3
+    o 'ElementList OptComma TERMINATOR Arg',                      -> $1.concat $4
+    o 'ElementList OptComma INDENT ElementList OptComma OUTDENT', -> $1.concat $4
+  ]
+
+  # The **ArgList** is the list of objects passed into a function call,
   # (i.e. comma-separated expressions). Newlines work as well.
   ArgList: [
     o 'Arg',                                              -> [$1]

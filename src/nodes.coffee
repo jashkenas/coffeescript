@@ -69,7 +69,10 @@ exports.Base = class Base
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
     if o.level is LEVEL_TOP or not node.isStatement(o)
-      node.compileNode o
+      if node instanceof Comment and not o.level is LEVEL_TOP
+        node.error 'block comments not permitted here'
+      else
+        node.compileNode o
     else
       node.compileClosure o
 
@@ -765,7 +768,7 @@ exports.Comment = class Comment extends Base
     comment = @comment.replace /^(\s*)#(?=\s)/gm, "$1 *"
     code = "/*#{multident comment, @tab}#{if '\n' in comment then "\n#{@tab}" else ''} */"
     code = o.indent + code if (level or o.level) is LEVEL_TOP
-    [@makeCode("\n"), @makeCode(code)]
+    [@makeCode(code)]
 
 #### Call
 
@@ -1223,10 +1226,12 @@ exports.Arr = class Arr extends Base
 
     compiledObjs = (obj.compileToFragments o, LEVEL_LIST for obj in @objects)
     for fragments, index in compiledObjs
-      if index
-        answer.push @makeCode ", "
       answer.push fragments...
-    if fragmentsToText(answer).indexOf('\n') >= 0
+      if fragments[0].type is 'Comment'
+        answer.push @makeCode ' '
+      else unless index is compiledObjs.length - 1
+        answer.push @makeCode ', '
+    if fragmentsToText(answer).includes('\n')
       answer.unshift @makeCode "[\n#{o.indent}"
       answer.push @makeCode "\n#{@tab}]"
     else
@@ -3086,7 +3091,9 @@ exports.If = class If extends Base
     cond = @condition.compileToFragments o, LEVEL_COND
     body = @bodyNode().compileToFragments o, LEVEL_LIST
     alt  = if @elseBodyNode() then @elseBodyNode().compileToFragments(o, LEVEL_LIST) else [@makeCode('void 0')]
-    fragments = cond.concat @makeCode(" ? "), body, @makeCode(" : "), alt
+    body.push @makeCode('void 0') if @bodyNode()     instanceof Comment
+    alt.push  @makeCode('void 0') if @elseBodyNode() instanceof Comment
+    fragments = cond.concat @makeCode(' ? '), body, @makeCode(' : '), alt
     if o.level >= LEVEL_COND then @wrapInParentheses fragments else fragments
 
   unfoldSoak: ->
