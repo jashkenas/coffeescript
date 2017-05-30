@@ -546,12 +546,6 @@ exports.Lexer = class Lexer
     last = @ends[i]
     last?.tag is '/>' and last
 
-  addCSXToken: (args...) ->
-    token = @makeToken args...
-    token.csx = yes
-    @tokens.push token
-    token
-
   # We treat all other single characters as a token. E.g.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
   # the proper order of operations. There are some symbols that we tag specially
