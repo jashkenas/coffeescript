@@ -1,23 +1,22 @@
 # We usually do not check the actual JS output from the compiler, but since
-# CSX is not readily supported by Node, we do it in this case
-eqCSX = (cs, js) -> eq toJS(cs), js
+# JSX is not natively supported by Node, we do it in this case.
 
 test 'self closing', ->
-  eqCSX '''
+  eqJS '''
     <div />
   ''', '''
     <div />;
   '''
 
 test 'self closing formatting', ->
-  eqCSX '''
+  eqJS '''
     <div/>
   ''', '''
     <div />;
   '''
 
 test 'self closing multiline', ->
-  eqCSX '''
+  eqJS '''
     <div
     />
   ''', '''
@@ -25,28 +24,28 @@ test 'self closing multiline', ->
   '''
 
 test 'regex attribute', ->
-  eqCSX '''
+  eqJS '''
     <div x={/>asds/} />
   ''', '''
     <div x={/>asds/} />;
   '''
 
 test 'string attribute', ->
-  eqCSX '''
+  eqJS '''
     <div x="a" />
   ''', '''
     <div x="a" />;
   '''
 
 test 'simple attribute', ->
-  eqCSX '''
+  eqJS '''
     <div x={42} />
   ''', '''
     <div x={42} />;
   '''
 
 test 'assignment attribute', ->
-  eqCSX '''
+  eqJS '''
     <div x={y = 42} />
   ''', '''
     var y;
@@ -55,7 +54,7 @@ test 'assignment attribute', ->
   '''
 
 test 'object attribute', ->
-  eqCSX '''
+  eqJS '''
     <div x={{y: 42}} />
   ''', '''
     <div x={{
@@ -64,70 +63,70 @@ test 'object attribute', ->
   '''
 
 test 'attribute without value', ->
-  eqCSX '''
+  eqJS '''
     <div checked x="hello" />
   ''', '''
     <div checked x="hello" />;
   '''
 
 test 'paired', ->
-  eqCSX '''
+  eqJS '''
     <div></div>
   ''', '''
     <div></div>;
   '''
 
 test 'simple content', ->
-  eqCSX '''
+  eqJS '''
     <div>Hello world</div>
   ''', '''
     <div>Hello world</div>;
   '''
 
 test 'content interpolation', ->
-  eqCSX '''
+  eqJS '''
     <div>Hello {42}</div>
   ''', '''
     <div>Hello {42}</div>;
   '''
 
 test 'nested tag', ->
-  eqCSX '''
+  eqJS '''
     <div><span /></div>
   ''', '''
     <div><span /></div>;
   '''
 
 test 'tag inside interpolation formatting', ->
-  eqCSX '''
+  eqJS '''
     <div>Hello {<span />}</div>
   ''', '''
     <div>Hello <span /></div>;
   '''
 
 test 'tag inside interpolation, tags are callable', ->
-  eqCSX '''
+  eqJS '''
     <div>Hello {<span /> x}</div>
   ''', '''
     <div>Hello {<span />(x)}</div>;
   '''
 
 test 'tags inside interpolation, tags trigger implicit calls', ->
-  eqCSX '''
+  eqJS '''
     <div>Hello {f <span />}</div>
   ''', '''
     <div>Hello {f(<span />)}</div>;
   '''
 
 test 'regex in interpolation', ->
-  eqCSX '''
+  eqJS '''
     <div x={/>asds/}><div />{/>asdsad</}</div>
   ''', '''
     <div x={/>asds/}><div />{/>asdsad</}</div>;
   '''
 
 test 'interpolation in string attribute value', ->
-  eqCSX '''
+  eqJS '''
     <div x="Hello #{world}" />
   ''', '''
     <div x={`Hello ${world}`} />;
@@ -147,7 +146,7 @@ test 'unescaped opening tag angle bracket disallowed', ->
   throws -> CoffeeScript.compile '<Person><<</Person>'
 
 test 'space around equal sign', ->
-  eqCSX '''
+  eqJS '''
     <div popular = "yes" />
   ''', '''
     <div popular="yes" />;
@@ -160,21 +159,21 @@ test 'ambiguous tag-like expression', ->
   throws -> CoffeeScript.compile 'x = a <b > c'
 
 test 'ambiguous tag', ->
-  eqCSX '''
+  eqJS '''
     a <b > c </b>
   ''', '''
     a(<b> c </b>);
   '''
 
 test 'escaped coffeescript attribute', ->
-  eqCSX '''
+  eqJS '''
     <Person name={if test() then 'yes' else 'no'} />
   ''', '''
     <Person name={test() ? 'yes' : 'no'} />;
   '''
 
 test 'escaped coffeescript attribute over multiple lines', ->
-  eqCSX '''
+  eqJS '''
     <Person name={
       if test()
         'yes'
@@ -186,7 +185,7 @@ test 'escaped coffeescript attribute over multiple lines', ->
   '''
 
 test 'multiple line escaped coffeescript with nested CSX', ->
-  eqCSX '''
+  eqJS '''
     <Person name={
       if test()
         'yes'
@@ -224,7 +223,7 @@ test 'multiple line escaped coffeescript with nested CSX', ->
   '''
 
 test 'nested CSX within an attribute, with object attr value', ->
-  eqCSX '''
+  eqJS '''
     <Company>
       <Person name={<NameComponent attr3={ {'a': {}, b: '{'} } />} />
     </Company>
@@ -238,7 +237,7 @@ test 'nested CSX within an attribute, with object attr value', ->
   '''
 
 test 'complex nesting', ->
-  eqCSX '''
+  eqJS '''
     <div code={someFunc({a:{b:{}, C:'}{}{'}})} />
   ''', '''
     <div code={someFunc({
@@ -250,7 +249,7 @@ test 'complex nesting', ->
   '''
 
 test 'multiline tag with nested CSX within an attribute', ->
-  eqCSX '''
+  eqJS '''
     <Person
       name={
         name = formatName(user.name)
@@ -268,7 +267,7 @@ test 'multiline tag with nested CSX within an attribute', ->
   '''
 
 test 'escaped coffeescript with nested object literals', ->
-  eqCSX '''
+  eqJS '''
     <Person>
       blah blah blah {
         {'a' : {}, 'asd': 'asd'}
@@ -284,7 +283,7 @@ test 'escaped coffeescript with nested object literals', ->
   '''
 
 test 'multiline tag attributes with escaped coffeescript', ->
-  eqCSX '''
+  eqJS '''
     <Person name={if isActive() then 'active' else 'inactive'}
     someattr='on new line' />
   ''', '''
@@ -292,7 +291,7 @@ test 'multiline tag attributes with escaped coffeescript', ->
   '''
 
 test 'lots of attributes', ->
-  eqCSX '''
+  eqJS '''
     <Person eyes={2} friends={getFriends()} popular = "yes"
     active={ if isActive() then 'active' else 'inactive' } data-attr='works' checked check={me_out}
     />
@@ -302,7 +301,7 @@ test 'lots of attributes', ->
 
 # TODO: fix partially indented CSX
 # test 'multiline elements', ->
-#   eqCSX '''
+#   eqJS '''
 #     <div something={
 #       do ->
 #         test = /432/gm # this is a regex
@@ -325,7 +324,7 @@ test 'lots of attributes', ->
 #   '''
 
 test 'complex regex', ->
-  eqCSX '''
+  eqJS '''
     <Person />
     /\\/\\/<Person \\/>\\>\\//
   ''', '''
@@ -335,7 +334,7 @@ test 'complex regex', ->
   '''
 
 test 'heregex', ->
-  eqCSX '''
+  eqJS '''
     test = /432/gm # this is a regex
     6 /432/gm # this is division
     <Tag>
@@ -377,7 +376,7 @@ test 'heregex', ->
   '''
 
 test 'comment within CSX is not treated as comment', ->
-  eqCSX '''
+  eqJS '''
     <Person>
     # i am not a comment
     </Person>
@@ -388,7 +387,7 @@ test 'comment within CSX is not treated as comment', ->
   '''
 
 test 'comment at start of CSX escape', ->
-  eqCSX '''
+  eqJS '''
     <Person>
     {# i am a comment
       "i am a string"
@@ -413,28 +412,28 @@ test 'comment syntax cannot be used inline', ->
   '''
 
 test 'string within CSX is ignored', ->
-  eqCSX '''
+  eqJS '''
     <Person> "i am not a string" 'nor am i' </Person>
   ''', '''
     <Person> "i am not a string" 'nor am i' </Person>;
   '''
 
 test 'special chars within CSX are ignored', ->
-  eqCSX """
+  eqJS """
     <Person> a,/';][' a\''@$%^&˚¬∑˜˚∆å∂¬˚*()*&^%$>> '"''"'''\'\'m' i </Person>
   """, """
     <Person> a,/';][' a''@$%^&˚¬∑˜˚∆å∂¬˚*()*&^%$>> '"''"'''''m' i </Person>;
   """
 
 test 'html entities (name, decimal, hex) within CSX', ->
-  eqCSX '''
+  eqJS '''
     <Person>  &&&&euro;  &#8364; &#x20AC;;; </Person>
   ''', '''
     <Person>  &&&&euro;  &#8364; &#x20AC;;; </Person>;
   '''
 
 test 'tag with {{}}', ->
-  eqCSX '''
+  eqJS '''
     <Person name={{value: item, key, item}} />
   ''', '''
     <Person name={{
@@ -445,21 +444,21 @@ test 'tag with {{}}', ->
   '''
 
 test 'tag with namespace', ->
-  eqCSX '''
+  eqJS '''
     <Something.Tag></Something.Tag>
   ''', '''
     <Something.Tag></Something.Tag>;
   '''
 
 test 'tag with lowercase namespace', ->
-  eqCSX '''
+  eqJS '''
     <something.tag></something.tag>
   ''', '''
     <something.tag></something.tag>;
   '''
 
 test 'self closing tag with namespace', ->
-  eqCSX '''
+  eqJS '''
     <Something.Tag />
   ''', '''
     <Something.Tag />;
@@ -467,7 +466,7 @@ test 'self closing tag with namespace', ->
 
 # TODO: support spread
 # test 'self closing tag with spread attribute', ->
-#   eqCSX '''
+#   eqJS '''
 #     <Component a={b} {... x } b="c" />
 #   ''', '''
 #     React.createElement(Component, Object.assign({"a": (b)},  x , {"b": "c"}))
@@ -475,7 +474,7 @@ test 'self closing tag with namespace', ->
 
 # TODO: support spread
 # test 'complex spread attribute', ->
-#   eqCSX '''
+#   eqJS '''
 #     <Component {...x} a={b} {... x } b="c" {...$my_xtraCoolVar123 } />
 #   ''', '''
 #     React.createElement(Component, Object.assign({},  x, {"a": (b)},  x , {"b": "c"}, $my_xtraCoolVar123  ))
@@ -483,7 +482,7 @@ test 'self closing tag with namespace', ->
 
 # TODO: support spread
 # test 'multiline spread attribute', ->
-#   eqCSX '''
+#   eqJS '''
 #     <Component {...
 #       x } a={b} {... x } b="c" {...z }>
 #     </Component>
@@ -495,7 +494,7 @@ test 'self closing tag with namespace', ->
 
 # TODO: support spread
 # test 'multiline tag with spread attribute', ->
-#   eqCSX '''
+#   eqJS '''
 #     <Component
 #       z="1"
 #       {...x}
@@ -515,7 +514,7 @@ test 'self closing tag with namespace', ->
 
 # TODO: support spread
 # test 'multiline tag with spread attribute first', ->
-#   eqCSX '''
+#   eqJS '''
 #     <Component
 #       {...
 #       x}
@@ -537,7 +536,7 @@ test 'self closing tag with namespace', ->
 
 # TODO: support spread
 # test 'complex multiline spread attribute', ->
-#   eqCSX '''
+#   eqJS '''
 #     <Component
 #       {...
 #       y} a={b} {... x } b="c" {...z }>
@@ -553,7 +552,7 @@ test 'self closing tag with namespace', ->
 
 # TODO: support spread
 # test 'self closing spread attribute on single line', ->
-#   eqCSX '''
+#   eqJS '''
 #     <Component a="b" c="d" {...@props} />
 #   ''', '''
 #     React.createElement(Component, Object.assign({"a": "b", "c": "d"}, @props ))
@@ -561,7 +560,7 @@ test 'self closing tag with namespace', ->
 
 # TODO: support spread
 # test 'self closing spread attribute on new line', ->
-#   eqCSX '''
+#   eqJS '''
 #     <Component
 #       a="b"
 #       c="d"
@@ -577,7 +576,7 @@ test 'self closing tag with namespace', ->
 
 # TODO: support spread
 # test 'self closing spread attribute on same line', ->
-#   eqCSX '''
+#   eqJS '''
 #     <Component
 #       a="b"
 #       c="d"
@@ -591,7 +590,7 @@ test 'self closing tag with namespace', ->
 
 # TODO: support spread
 # test 'self closing spread attribute on next line', ->
-#   eqCSX '''
+#   eqJS '''
 #     <Component
 #       a="b"
 #       c="d"
@@ -608,7 +607,7 @@ test 'self closing tag with namespace', ->
 #   '''
 
 test 'Empty strings are not converted to true', ->
-  eqCSX '''
+  eqJS '''
     <Component val="" />
   ''', '''
     <Component val="" />;
@@ -622,7 +621,7 @@ test 'coffeescript @ syntax in tag name', ->
   '''
 
 test 'hyphens in tag names', ->
-  eqCSX '''
+  eqJS '''
     <paper-button className="button">{text}</paper-button>
   ''', '''
     <paper-button className="button">{text}</paper-button>;
