@@ -1155,7 +1155,6 @@ exports.Obj = class Obj extends Base
       else
         ',\n'
       indent = if isCompact or prop instanceof Comment then '' else idt
-
       key = if prop instanceof Assign and prop.context is 'object'
         prop.variable
       else if prop instanceof Assign
@@ -1199,8 +1198,7 @@ exports.Obj = class Obj extends Base
     addSlice = () -> 
       slices = [slices..., new Obj [propSlices...], false] if propSlices.length      
       slices = [slices..., splatSlices...] if splatSlices.length
-    for prop, i in props
-      prop = props[i]
+    for prop in props
       addSlice()
       if prop instanceof Splat
         splatSlices.push new Value prop.name
