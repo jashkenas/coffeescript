@@ -485,7 +485,7 @@ exports.Lexer = class Lexer
     @tokens.pop() if @value() is '\\'
     this
 
-  # CSX is like JSX but for CoffeeScript
+  # CSX is like JSX but for CoffeeScript.
   csxToken: ->
     firstChar = @chunk[0]
     if firstChar is '<'
@@ -495,7 +495,7 @@ exports.Lexer = class Lexer
       @token 'CALL_START', '('
       @token '{', '{'
       @ends.push tag: '/>', origin: origin, name: id
-      @includesCSX = true
+      @includesCSX = yes
       return id.length + 1
     else if csxTag = @atCSXTag()
       if @chunk[...2] is '/>'
@@ -508,8 +508,8 @@ exports.Lexer = class Lexer
         @ends.push {tag: '}', origin: token}
         return 1
       else if firstChar is '>'
-        # Ignore terminators inside a tag
-        @pair '/>' # As if the current tag was self-closing
+        # Ignore terminators inside a tag.
+        @pair '/>' # As if the current tag was self-closing.
         origin = @token '}', '}'
         @token ',', ','
         {tokens, index: end} =
@@ -523,11 +523,11 @@ exports.Lexer = class Lexer
         afterTag = end + csxTag.name.length
         if @chunk[afterTag] isnt '>'
           @error "missing closing > after tag name", offset: afterTag, length: 1
-        # +1 for the closing >
+        # +1 for the closing `>`.
         @token 'CALL_END', ')', end, csxTag.name.length + 1
         return afterTag + 1
       else
-        0
+        return 0
     else if @atCSXTag 1
       if firstChar is '}'
         @pair firstChar
@@ -535,14 +535,14 @@ exports.Lexer = class Lexer
         @token ',', ','
         return 1
       else
-        0
+        return 0
     else
-      0
+      return 0
 
   atCSXTag: (depth = 0) ->
-    return false unless @includesCSX
+    return no unless @includesCSX
     i = @ends.length - 1
-    i-- while @ends[i]?.tag is 'OUTDENT' or depth-- > 0 # ignore indents
+    i-- while @ends[i]?.tag is 'OUTDENT' or depth-- > 0 # Ignore indents.
     last = @ends[i]
     last?.tag is '/>' and last
 
@@ -1071,13 +1071,13 @@ IDENTIFIER = /// ^
 ///
 
 CSX_IDENTIFIER = /// ^
-  (?![\d<]) # must not start with `<`
-  ( (?: (?!\s)[\.\-$\w\x7f-\uffff] )+ ) # like `IDENTIFIER` but includes `-`, `.`s
+  (?![\d<]) # Must not start with `<`.
+  ( (?: (?!\s)[\.\-$\w\x7f-\uffff] )+ ) # Like `IDENTIFIER`, but includes `-`s and `.`s.
 ///
 
 CSX_ATTRIBUTE = /// ^
   (?!\d)
-  ( (?: (?!\s)[\-$\w\x7f-\uffff] )+ ) # like `IDENTIFIER` but includes `-`s
+  ( (?: (?!\s)[\-$\w\x7f-\uffff] )+ ) # Like `IDENTIFIER`, but includes `-`s.
   ( [^\S]* = (?!=) )?  # Is this an attribute with a value?
 ///
 
@@ -1119,13 +1119,13 @@ HEREDOC_DOUBLE = /// ^(?: [^\\"#] | \\[\s\S] | "(?!"") | \#(?!\{) )* ///
 
 INSIDE_CSX = /// ^(?:
     [^
-      \{ # start of CoffeeScript interpolation
-      <  # maybe CSX tag (`<` not allowed even if bare)
+      \{ # Start of CoffeeScript interpolation.
+      <  # Maybe CSX tag (`<` not allowed even if bare).
     ]
-  )* /// # similar to HEREDOC_DOUBLE but there is no escaping
+  )* /// # Similar to `HEREDOC_DOUBLE` but there is no escaping.
 CSX_INTERPOLATION = /// ^(?:
-      \{       # CoffeeScript interpolation
-    | <(?!/)   # CSX opening tag
+      \{       # CoffeeScript interpolation.
+    | <(?!/)   # CSX opening tag.
   )///
 
 STRING_OMIT    = ///

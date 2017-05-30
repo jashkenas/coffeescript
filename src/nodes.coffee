@@ -537,7 +537,6 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
     if o.level >= LEVEL_OP then @wrapInParentheses code else code
 
 exports.StringLiteral = class StringLiteral extends Literal
-
   compileNode: (o) ->
     res = if @csx then [@makeCode @unquote yes] else super()
 
@@ -545,7 +544,7 @@ exports.StringLiteral = class StringLiteral extends Literal
     unquoted = @value[1...-1]
     if literal
       unquoted.replace /\\n/g, '\n'
-        .replace /\\"/g, '"'
+      .replace /\\"/g, '"'
     else
       unquoted
 
@@ -1805,7 +1804,7 @@ exports.Assign = class Assign extends Base
       if @variable.shouldCache()
         compiledName.unshift @makeCode '['
         compiledName.push @makeCode ']'
-      return compiledName.concat @makeCode(if @csx then "=" else ": "), val
+      return compiledName.concat @makeCode(if @csx then '=' else ': '), val
 
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
     # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration,
@@ -2862,7 +2861,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
     for element in elements
       if element instanceof StringLiteral
         value = element.unquote @csx
-        if not @csx
+        unless @csx
           # Backticks and `${` inside template literals must be escaped.
           value = value.replace /(\\*)(`|\$\{)/g, (match, backslashes, toBeEscaped) ->
             if backslashes.length % 2 is 0
@@ -2871,19 +2870,17 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
               match
         fragments.push @makeCode value
       else
-        fragments.push @makeCode '$' if not @csx
+        fragments.push @makeCode '$' unless @csx
         code = element.compileToFragments(o, LEVEL_PAREN)
-        code = @wrapInBraces code if not @isNestedTag element
+        code = @wrapInBraces code unless @isNestedTag element
         fragments.push code...
-    fragments.push @makeCode '`' if not @csx
+    fragments.push @makeCode '`' unless @csx
     fragments
 
   isNestedTag: (element) ->
-    @csx and
-    (exprs = element?.body?.expressions) and
-    exprs.length is 1 and
-    (call = exprs?[0]) instanceof Call and
-    call.csx
+    exprs = element?.body?.expressions
+    call = exprs?[0]
+    @csx and exprs and exprs.length is 1 and call instanceof Call and call.csx
 
 #### For
 
