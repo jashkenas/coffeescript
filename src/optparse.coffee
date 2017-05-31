@@ -45,21 +45,23 @@ exports.OptionParser = class OptionParser
       for argFlag, j in toProcess
         rule = @rules.flagDict[argFlag]
         unless rule?
-          context = if multi? then " (in multi-flag '#{cmdLineArg}')" else ''
-          throw new Error "unrecognized option: #{argFlag}#{context}"
+          msg = "unrecognized option: #{argFlag}"
+          msg += " (in multi-flag '#{cmdLineArg}')" if multi?
+          throw new Error msg
 
         {hasArgument, isList, name} = rule
 
-        options[name] = switch hasArgument
-          when no then true
+        unless hasArgument
+          options[name] = true
+        else
+          nextArg = toProcess[++j] ? args[++i]
+          unless nextArg? then throw new Error "value required for '#{argFlag}',
+            which was the last argument provided"
+          if isList
+            options[name] ?= []
+            options[name].push nextArg
           else
-            next = toProcess[++j] or args[++i]
-            unless next?
-              throw new Error "value required for '#{argFlag}':
-                was the last argument provided"
-            switch isList
-              when no then next
-              else (options[name] or []).concat next
+            options[name] = nextArg
     options
 
   # Return the help text for this **OptionParser**, listing and describing all
