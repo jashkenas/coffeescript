@@ -631,3 +631,62 @@ test 'closing tags must be closed', ->
   throws -> CoffeeScript.compile '''
     <a></a
   '''
+
+# Tests for allowing less than operator without spaces when ther is no CSX
+
+test 'unspaced less than without CSX: identifier', ->
+  a = 3
+  div = 5
+  ok a<div
+
+test 'unspaced less than without CSX: number', ->
+  div = 5
+  ok 3<div
+
+test 'unspaced less than without CSX: paren', ->
+  div = 5
+  ok (3)<div
+
+test 'tag inside CSX works following: identifier', ->
+  eqJS '''
+    <span>a<div /></span>
+  ''', '''
+    <span>a<div /></span>;
+  '''
+
+test 'tag inside CSX works following: number', ->
+  eqJS '''
+    <span>3<div /></span>
+  ''', '''
+    <span>3<div /></span>;
+  '''
+
+test 'tag inside CSX works following: paren', ->
+  eqJS '''
+    <span>(3)<div /></span>
+  ''', '''
+    <span>(3)<div /></span>;
+  '''
+
+test 'mixing CSX and unspaced less than not allowed', ->
+  throws -> CoffeeScript.compile '''
+    html = <span />
+    a = 3
+    div = 5
+    res = a<div
+  '''
+
+test 'unspaced less than before CSX works but is not encouraged', ->
+  eqJS '''
+      div = 5
+      res = 2<div
+      html = <span />
+    ''', '''
+      var div, html, res;
+
+      div = 5;
+
+      res = 2 < div;
+
+      html = <span />;
+    '''

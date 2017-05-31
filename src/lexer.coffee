@@ -489,7 +489,14 @@ exports.Lexer = class Lexer
   csxToken: ->
     firstChar = @chunk[0]
     if firstChar is '<'
-      return 0 unless match = CSX_IDENTIFIER.exec @chunk[1...]
+      unless (match = CSX_IDENTIFIER.exec @chunk[1...]) and (
+        @includesCSX or
+        # not the RHS of an unspaced comparison (i.e. `a<b`)
+        not (prev = @prev()) or
+        prev.spaced or
+        prev[0] not in COMPARABLE
+      )
+        return 0
       [input, id, colon] = match
       origin = @token 'CSX_TAG', id, 1, id.length
       @token 'CALL_START', '('
@@ -1224,6 +1231,9 @@ INDEXABLE = CALLABLE.concat [
   'NUMBER', 'INFINITY', 'NAN', 'STRING', 'STRING_END', 'REGEX', 'REGEX_END'
   'BOOL', 'NULL', 'UNDEFINED', '}', '::'
 ]
+
+# Tokens which can be the left-hand side of a less-than comparison, i.e. `a<b`
+COMPARABLE = ['IDENTIFIER', ')', 'NUMBER']
 
 # Tokens which a regular expression will never immediately follow (except spaced
 # CALLABLEs in some cases), but which a division operator can.
