@@ -1,8 +1,10 @@
 p = (desc, obj) -> console.error "#{desc}: #{JSON.stringify obj}"
 
-{buildCSOptionParser} = require '../src/command'
+# console.error (k for k of CoffeeScript)
 
-optionParser = buildCSOptionParser()
+throw new Error "?"
+
+optionParser = CoffeeScript.command.buildCSOptionParser()
 
 test "combined options are still split after initial file name", ->
   args = []

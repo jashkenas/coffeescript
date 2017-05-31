@@ -15,7 +15,9 @@ arrayEgal = (a, b) ->
 
 exports.eq      = (a, b, msg) -> ok egal(a, b), msg or "Expected #{a} to equal #{b}"
 exports.arrayEq = (a, b, msg) -> ok arrayEgal(a,b), msg or "Expected #{a} to deep equal #{b}"
+# FIXME: make all tests use this function
 exports.inBrowser = inBrowser = -> window? or testingBrowser?
+# FIXME: don't use this
 exports.nonBrowserTest = nonBrowserTest = (scriptFunction) ->
   scriptFunction() unless exports.inBrowser()
 
