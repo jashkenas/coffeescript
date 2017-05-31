@@ -1,7 +1,7 @@
 # Strict Early Errors
 # -------------------
 
-# The following are prohibited under ES5's `strict` mode
+# The following are prohibited under ES5’s `strict` mode
 # * `Octal Integer Literals`
 # * `Octal Escape Sequences`
 # * duplicate property definitions in `Object Literal`s

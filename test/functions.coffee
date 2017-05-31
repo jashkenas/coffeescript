@@ -79,21 +79,27 @@ test "even more fancy bound functions", ->
   eq obj.one(), 3
 
 
+test "arguments in bound functions inherit from parent function", ->
+  # The `arguments` object in an ES arrow function refers to the `arguments`
+  # of the parent scope, just like `this`. In the CoffeeScript 1.x
+  # implementation of `=>`, the `arguments` object referred to the arguments
+  # of the arrow function; but per the ES2015 spec, `arguments` should refer
+  # to the parent.
+  arrayEq ((a...) -> a)([1, 2, 3]), ((a...) => a)([1, 2, 3])
+
+  parent = (a, b, c) ->
+    (bound = =>
+      [arguments[0], arguments[1], arguments[2]]
+    )()
+  arrayEq [1, 2, 3], parent(1, 2, 3)
+
+
 test "self-referencing functions", ->
   changeMe = ->
     changeMe = 2
 
   changeMe()
   eq changeMe, 2
-
-test "#2009: don't touch `` `this` ``", ->
-  nonceA = {}
-  nonceB = {}
-  fn = null
-  (->
-    fn = => this is nonceA and `this` is nonceB
-  ).call nonceA
-  ok fn.call nonceB
 
 
 # Parameter List Features
@@ -173,7 +179,7 @@ test "destructuring in function definition", ->
     {url, async, beforeSend, cache, method, data}
 
   fn = ->
-  deepEqual ajax('/home', beforeSend: fn, cache: null, method: 'post'), {
+  deepEqual ajax('/home', beforeSend: fn, method: 'post'), {
     url: '/home', async: true, beforeSend: fn, cache: true, method: 'post', data: {}
   }
 
@@ -189,7 +195,7 @@ test "default values", ->
   eq nonceA, a(0)
   eq nonceB, a(0,0,nonceB)
   eq nonceA, a(0,0,undefined)
-  eq nonceA, a(0,0,null)
+  eq null, a(0,0,null) # Per ES2015, `null` doesn’t trigger a parameter default value
   eq false , a(0,0,false)
   eq nonceB, a(undefined,undefined,nonceB,undefined)
   b = (_,arg=nonceA,_1,_2) -> arg
@@ -197,7 +203,7 @@ test "default values", ->
   eq nonceA, b(0)
   eq nonceB, b(0,nonceB)
   eq nonceA, b(0,undefined)
-  eq nonceA, b(0,null)
+  eq null, b(0,null)
   eq false , b(0,false)
   eq nonceB, b(undefined,nonceB,undefined)
   c = (arg=nonceA,_,_1) -> arg
@@ -205,7 +211,7 @@ test "default values", ->
   eq      0, c(0)
   eq nonceB, c(nonceB)
   eq nonceA, c(undefined)
-  eq nonceA, c(null)
+  eq null, c(null)
   eq false , c(false)
   eq nonceB, c(nonceB,undefined,undefined)
 
@@ -335,3 +341,24 @@ test "#1038 Optimize trailing return statements", ->
                                                    foo()
                                                    return
                                                  """)
+
+test "#4406 Destructured parameter default evaluation order with incrementing variable", ->
+  i = 0
+  f = ({ a = ++i }, b = ++i) -> [a, b]
+  arrayEq f({}), [1, 2]
+
+test "#4406 Destructured parameter default evaluation order with generator function", ->
+  current = 0
+  next    = -> ++current
+  foo = ({ a = next() }, b = next()) -> [ a, b ]
+  arrayEq foo({}), [1, 2]
+
+test "Destructured parameter with default value, that itself has a default value", ->
+  # Adapted from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment
+  draw = ({size = 'big', coords = {x: 0, y: 0}, radius = 25} = {}) -> "#{size}-#{coords.x}-#{coords.y}-#{radius}"
+  output = draw
+    coords:
+      x: 18
+      y: 30
+    radius: 30
+  eq output, 'big-18-30-30'

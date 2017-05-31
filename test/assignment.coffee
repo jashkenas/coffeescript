@@ -142,7 +142,8 @@ test "#1192: assignment starting with object literals", ->
 # Destructuring Assignment
 
 test "empty destructuring assignment", ->
-  {} = [] = undefined
+  {} = {}
+  [] = []
 
 test "chained destructuring assignments", ->
   [a] = {0: b} = {'0': c} = [nonce={}]
@@ -305,7 +306,7 @@ test "simple array destructuring defaults", ->
   [a = 2] = [undefined]
   eq 2, a
   [a = 3] = [null]
-  eq 3, a
+  eq null, a # Breaking change in CS2: per ES2015, default values are applied for `undefined` but not for `null`.
   [a = 4] = [0]
   eq 0, a
   arr = [a = 5]
@@ -318,7 +319,7 @@ test "simple object destructuring defaults", ->
   {b = 2} = {b: undefined}
   eq b, 2
   {b = 3} = {b: null}
-  eq b, 3
+  eq b, null # Breaking change in CS2: per ES2015, default values are applied for `undefined` but not for `null`.
   {b = 4} = {b: 0}
   eq b, 0
 
@@ -327,17 +328,17 @@ test "simple object destructuring defaults", ->
   {b: c = 2} = {b: undefined}
   eq c, 2
   {b: c = 3} = {b: null}
-  eq c, 3
+  eq c, null # Breaking change in CS2: per ES2015, default values are applied for `undefined` but not for `null`.
   {b: c = 4} = {b: 0}
   eq c, 0
 
 test "multiple array destructuring defaults", ->
-  [a = 1, b = 2, c] = [null, 12, 13]
+  [a = 1, b = 2, c] = [undefined, 12, 13]
   eq a, 1
   eq b, 12
   eq c, 13
-  [a, b = 2, c = 3] = [null, 12, 13]
-  eq a, null
+  [a, b = 2, c = 3] = [undefined, 12, 13]
+  eq a, undefined
   eq b, 12
   eq c, 13
   [a = 1, b, c = 3] = [11, 12]
@@ -368,7 +369,7 @@ test "destructuring assignment with context (@) properties and defaults", ->
   a={}; b={}; c={}; d={}; e={}
   obj =
     fn: () ->
-      local = [a, {b, c: null}, d]
+      local = [a, {b, c: undefined}, d]
       [@a, {b: @b = b, @c = c}, @d, @e = e] = local
   eq undefined, obj[key] for key in ['a','b','c','d','e']
   obj.fn()
@@ -387,7 +388,7 @@ test "destructuring assignment with defaults single evaluation", ->
   [a = fn()] = [10]
   eq 10, a
   eq 1, callCount
-  {a = fn(), b: c = fn()} = {a: 20, b: null}
+  {a = fn(), b: c = fn()} = {a: 20, b: undefined}
   eq 20, a
   eq c, 1
   eq callCount, 2
@@ -449,7 +450,7 @@ test "#1591, #1101: splatted expressions in destructuring assignment must be ass
 
 test "#1643: splatted accesses in destructuring assignments should not be declared as variables", ->
   nonce = {}
-  accesses = ['o.a', 'o["a"]', '(o.a)', '(o.a).a', '@o.a', 'C::a', 'C::', 'f().a', 'o?.a', 'o?.a.b', 'f?().a']
+  accesses = ['o.a', 'o["a"]', '(o.a)', '(o.a).a', '@o.a', 'C::a', 'f().a', 'o?.a', 'o?.a.b', 'f?().a']
   for access in accesses
     for i,j in [1,2,3] #position can matter
       code =
@@ -561,9 +562,8 @@ test "Assignment to variables similar to helper functions", ->
     extend = 3
     hasProp = 4
     value: 5
-    method: (bind, bind1) => [bind, bind1, extend, hasProp, @value]
-  {method} = new B
-  arrayEq [1, 2, 3, 4, 5], method 1, 2
+    method: (bind, bind1) -> [bind, bind1, extend, hasProp, @value]
+  arrayEq [1, 2, 3, 4, 5], new B().method 1, 2
 
   modulo = -1 %% 3
   eq 2, modulo

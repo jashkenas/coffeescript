@@ -90,6 +90,10 @@ arrayEgal = (a, b) ->
 @eq      = (a, b, msg) -> ok egal(a, b), msg or "Expected #{a} to equal #{b}"
 @arrayEq = (a, b, msg) -> ok arrayEgal(a,b), msg or "Expected #{a} to deep equal #{b}"
 
+@toJS = (str) ->
+  CoffeeScript.compile str, bare: yes
+  .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace
+
 
 @doesNotThrow = (fn) ->
   fn()
@@ -3146,6 +3150,17 @@ test "#748: trailing reserved identifiers", ->
     nonce
   eq nonce, result
 
+test 'if-else within an assignment, condition parenthesized', ->
+  result = if (1 is 1) then 'correct'
+  eq result, 'correct'
+
+  result = if ('whatever' ? no) then 'correct'
+  eq result, 'correct'
+
+  f = -> 'wrong'
+  result = if (f?()) then 'correct' else 'wrong'
+  eq result, 'correct'
+
 # Postfix
 
 test "#3056: multiple postfix conditionals", ->
@@ -4684,6 +4699,68 @@ test "can't use pattern matches for loop indices", ->
              ^^^
   '''
 
+test "#4248: Unicode code point escapes", ->
+  assertErrorFormat '''
+    "a
+      #{b} \\u{G02}
+     c"
+  ''', '''
+    [stdin]:2:8: error: invalid escape sequence \\u{G02}
+      #{b} \\u{G02}
+           ^\^^^^^^
+  '''
+  assertErrorFormat '''
+    /a\\u{}b/
+  ''', '''
+    [stdin]:1:3: error: invalid escape sequence \\u{}
+    /a\\u{}b/
+      ^\^^^
+  '''
+  assertErrorFormat '''
+    ///a \\u{01abc///
+  ''', '''
+    [stdin]:1:6: error: invalid escape sequence \\u{01abc
+    ///a \\u{01abc///
+         ^\^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    /\\u{123} \\u{110000}/
+  ''', '''
+    [stdin]:1:10: error: unicode code point escapes greater than \\u{10ffff} are not allowed
+    /\\u{123} \\u{110000}/
+      \       ^\^^^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    ///abc\\\\\\u{123456}///u
+  ''', '''
+    [stdin]:1:9: error: unicode code point escapes greater than \\u{10ffff} are not allowed
+    ///abc\\\\\\u{123456}///u
+           \ \^\^^^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    """
+      \\u{123}
+      a
+        \\u{00110000}
+      #{ 'b' }
+    """
+  ''', '''
+    [stdin]:4:5: error: unicode code point escapes greater than \\u{10ffff} are not allowed
+        \\u{00110000}
+        ^\^^^^^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    '\\u{a}\\u{1111110000}'
+  ''', '''
+    [stdin]:1:7: error: unicode code point escapes greater than \\u{10ffff} are not allowed
+    '\\u{a}\\u{1111110000}'
+      \    ^\^^^^^^^^^^^^^
+  '''
+
 </script>
 <script type="text/x-coffeescript" class="test" id="eval">
 if vm = require? 'vm'
@@ -4994,6 +5071,9 @@ test "indented heredoc", ->
 #   * single line arguments
 #   * inline function literal
 #   * inline object literal
+#
+# * chaining inside
+#   * implicit object literal
 
 test "chaining after outdent", ->
   id = (x) -> x
@@ -5063,6 +5143,37 @@ test "#1495, method call chaining", ->
     .join ''
   ).join ', '
   eq 'a, b, c', result
+
+test "chaining should not wrap spilling ternary", ->
+  throws -> CoffeeScript.compile """
+    if 0 then 1 else g
+      a: 42
+    .h()
+  """
+
+test "chaining should wrap calls containing spilling ternary", ->
+  f = (x) -> h: x
+  id = (x) -> x
+  result = f if true then 42 else id
+      a: 2
+  .h
+  eq 42, result
+
+test "chaining should work within spilling ternary", ->
+  f = (x) -> h: x
+  id = (x) -> x
+  result = f if false then 1 else id
+      a: 3
+      .a
+  eq 3, result.h
+
+test "method call chaining inside objects", ->
+  f = (x) -> c: 42
+  result =
+    a: f 1
+    b: f a: 1
+      .c
+  eq 42, result.b
 
 # Nested blocks caused by paren unwrapping
 test "#1492: Nested blocks don't cause double semicolons", ->
@@ -7635,12 +7746,6 @@ test "Verify all tokens get a location", ->
 # CoffeeScript also supports optional commas within `{ … }`.
 
 
-# Helper function
-toJS = (str) ->
-  CoffeeScript.compile str, bare: yes
-  .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace
-
-
 # Import statements
 
 test "backticked import statement", ->
@@ -7945,6 +8050,28 @@ test "export default number", ->
 
 test "export default object", ->
   input = "export default { foo: 'bar', baz: 'qux' }"
+  output = """
+    export default {
+      foo: 'bar',
+      baz: 'qux'
+    };"""
+  eq toJS(input), output
+
+test "export default implicit object", ->
+  input = "export default foo: 'bar', baz: 'qux'"
+  output = """
+    export default {
+      foo: 'bar',
+      baz: 'qux'
+    };"""
+  eq toJS(input), output
+
+test "export default multiline implicit object", ->
+  input = """
+    export default
+      foo: 'bar',
+      baz: 'qux'
+    """
   output = """
     export default {
       foo: 'bar',
@@ -9151,6 +9278,18 @@ test "#4324: Shorthand after interpolated key", ->
   eq 1, obj[1]
   eq 2, obj.a
 
+test "#1263: Braceless object return", ->
+  fn = ->
+    return
+      a: 1
+      b: 2
+      c: -> 3
+
+  obj = fn()
+  eq 1, obj.a
+  eq 2, obj.b
+  eq 3, obj.c()
+
 </script>
 <script type="text/x-coffeescript" class="test" id="operators">
 # Operators
@@ -10117,6 +10256,35 @@ test "#3795: Escape otherwise invalid characters", ->
   ok ///#{a}\0
       1///.test 'a\x001'
 
+test "#4248: Unicode code point escapes", ->
+  ok /a\u{1ab}c/u.test 'a\u01abc'
+  ok ///#{ 'a' }\u{000001ab}c///u.test 'a\u{1ab}c'
+  ok ///a\u{000001ab}c///u.test 'a\u{1ab}c'
+  ok /a\u{12345}c/u.test 'a\ud808\udf45c'
+
+  # and now without u flag
+  ok /a\u{1ab}c/.test 'a\u01abc'
+  ok ///#{ 'a' }\u{000001ab}c///.test 'a\u{1ab}c'
+  ok ///a\u{000001ab}c///.test 'a\u{1ab}c'
+  ok /a\u{12345}c/.test 'a\ud808\udf45c'
+
+  # rewrite code point escapes
+  input = """
+    /\\u{bcdef}\\u{abc}/u
+    """
+  output = """
+    /\\udab3\\uddef\\u0abc/u;
+  """
+  eq toJS(input), output
+
+  input = """
+    ///#{ 'a' }\\u{bcdef}///
+    """
+  output = """
+    /a\\udab3\\uddef/;
+  """
+  eq toJS(input), output
+
 </script>
 <script type="text/x-coffeescript" class="test" id="repl">
 return if global.testingBrowser
@@ -10188,6 +10356,11 @@ testRepl "variables are saved", (input, output) ->
   eq "'foobar'", output.lastWrite()
 
 testRepl "empty command evaluates to undefined", (input, output) ->
+  # A regression fixed in Node 5.11.0 broke the handling of pressing enter in
+  # the Node REPL; see https://github.com/nodejs/node/pull/6090 and
+  # https://github.com/jashkenas/coffeescript/issues/4502.
+  # Just skip this test for versions of Node < 6.
+  return if parseInt(process.versions.node.split('.')[0], 10) < 6
   input.emitLine ''
   eq 'undefined', output.lastWrite()
 
@@ -10861,10 +11034,10 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
     check "#{keyword} *= 1"
     check "#{keyword} /= 1"
     check "#{keyword} ?= 1"
-    check "{keyword}++"
-    check "++{keyword}"
-    check "{keyword}--"
-    check "--{keyword}"
+    check "#{keyword}++"
+    check "++#{keyword}"
+    check "#{keyword}--"
+    check "--#{keyword}"
   destruct = (keyword, check = strict) ->
     check "{#{keyword}}"
     check "o = {#{keyword}}"
@@ -11306,6 +11479,36 @@ test "#4314: Whitespace less than or equal to stripped indentation", ->
   eq '1 2  3   4    5     end\na 0     b', """
     #{1} #{2}  #{3}   #{4}    #{5}     end
     a #{0}     b"""
+
+test "#4248: Unicode code point escapes", ->
+  eq '\u01ab\u00cd', '\u{1ab}\u{cd}'
+  eq '\u01ab', '\u{000001ab}'
+  eq 'a\u01ab', "#{ 'a' }\u{1ab}"
+  eq '\u01abc', '''\u{01ab}c'''
+  eq '\u01abc', """\u{1ab}#{ 'c' }"""
+  eq '\udab3\uddef', '\u{bcdef}'
+  eq '\udab3\uddef', '\u{0000bcdef}'
+  eq 'a\udab3\uddef', "#{ 'a' }\u{bcdef}"
+  eq '\udab3\uddefc', '''\u{0bcdef}c'''
+  eq '\udab3\uddefc', """\u{bcdef}#{ 'c' }"""
+  eq '\\u{123456}', "#{'\\'}#{'u{123456}'}"
+
+  # rewrite code point escapes
+  input = """
+    '\\u{bcdef}\\u{abc}'
+    """
+  output = """
+    '\\udab3\\uddef\\u0abc';
+  """
+  eq toJS(input), output
+
+  input = """
+    "#{ 'a' }\\u{bcdef}"
+    """
+  output = """
+    "a\\udab3\\uddef";
+  """
+  eq toJS(input), output
 
 </script>
 <script type="text/x-coffeescript" class="test" id="tagged_template_literals">

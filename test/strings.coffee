@@ -400,3 +400,33 @@ test "#4314: Whitespace less than or equal to stripped indentation", ->
   eq '1 2  3   4    5     end\na 0     b', """
     #{1} #{2}  #{3}   #{4}    #{5}     end
     a #{0}     b"""
+
+test "#4248: Unicode code point escapes", ->
+  eq '\u01ab\u00cd', '\u{1ab}\u{cd}'
+  eq '\u01ab', '\u{000001ab}'
+  eq 'a\u01ab', "#{ 'a' }\u{1ab}"
+  eq '\u01abc', '''\u{01ab}c'''
+  eq '\u01abc', """\u{1ab}#{ 'c' }"""
+  eq '\udab3\uddef', '\u{bcdef}'
+  eq '\udab3\uddef', '\u{0000bcdef}'
+  eq 'a\udab3\uddef', "#{ 'a' }\u{bcdef}"
+  eq '\udab3\uddefc', '''\u{0bcdef}c'''
+  eq '\udab3\uddefc', """\u{bcdef}#{ 'c' }"""
+  eq '\\u{123456}', "#{'\\'}#{'u{123456}'}"
+
+  # don't rewrite code point escapes
+  input = """
+    '\\u{bcdef}\\u{abc}'
+    """
+  output = """
+    '\\u{bcdef}\\u{abc}';
+  """
+  eq toJS(input), output
+
+  input = """
+    "#{ 'a' }\\u{bcdef}"
+    """
+  output = """
+    "a\\u{bcdef}";
+  """
+  eq toJS(input), output
