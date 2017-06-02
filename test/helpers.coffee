@@ -2,7 +2,7 @@
 # -------
 
 # pull the helpers from `CoffeeScript.helpers` into local variables
-{starts, ends, repeat, compact, count, merge, extend, flatten, del, baseFileName} = CoffeeScript.helpers
+{starts, ends, repeat, compact, count, merge, extend, flatten, del, baseFileName, updateSyntaxError} = CoffeeScript.helpers
 
 
 # `starts`
@@ -123,3 +123,6 @@ test "the `baseFileName` helper returns the file name to write to", ->
     name = baseFileName sourceFileName, yes
     filename = name + ext
     eq filename, expectedFileName
+
+test "the `updateSyntaxError` helper handles `null` argument", ->
+    eq null, updateSyntaxError null

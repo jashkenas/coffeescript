@@ -140,3 +140,10 @@ test "parameter-less catch clause", ->
   try throw new Error 'failed' catch finally ok true
 
   ok try throw new Error 'failed' catch then true
+
+test "Allow throwing `null`", ->
+	try
+		throw null
+	catch err
+		error = err
+	ok error is null
