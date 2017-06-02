@@ -68,8 +68,6 @@ exports.buildCSOptionParser = buildCSOptionParser = ->
 # Many flags cause us to divert before compiling anything. Flags passed after
 # `--` will be passed verbatim to your script as arguments in `process.argv`
 exports.run = ->
-  console.error "argv:"
-  console.error process.argv
   optionParser = buildCSOptionParser()
   parseOptions()
   # Make the REPL *CLI* use the global context so as to (a) be consistent with the
