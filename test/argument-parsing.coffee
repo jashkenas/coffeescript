@@ -56,11 +56,6 @@ test "options are not split after any '--'", ->
   expected = arguments: ['--', '-bc']
   sameOptions parsed, expected
 
-  argv = ['some-file.coffee', '--', '-bc']
-  parsed = optionParser.parse argv
-  expected = arguments: ['some-file.coffee', '--', '-bc']
-  sameOptions parsed, expected
-
   argv = ['--', 'some-file.coffee', '--', 'arg']
   parsed = optionParser.parse argv
   expected = arguments: ['some-file.coffee', '--', 'arg']
@@ -75,4 +70,10 @@ test "any non-option argument stops argument parsing", ->
   argv = ['arg', '-bc']
   parsed = optionParser.parse argv
   expected = arguments: ['arg', '-bc']
+  sameOptions parsed, expected
+
+test "later '--' are not removed", ->
+  argv = ['some-file.coffee', '--', '-bc']
+  parsed = optionParser.parse argv
+  expected = arguments: ['some-file.coffee', '--', '-bc']
   sameOptions parsed, expected
