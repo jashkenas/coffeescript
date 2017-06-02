@@ -439,6 +439,12 @@ test "#3216: For loop declaration as a value of an implicit object", ->
   arrayEq ob.b, test
   arrayEq ob.c, test
   arrayEq ob.d, test
+  byFirstKey =
+    a: for v in test by 1 then v
+  arrayEq byFirstKey.a, test
+  whenFirstKey =
+    a: for v in test when true then v
+  arrayEq whenFirstKey.a, test
 
 test 'inline implicit object literals within multiline implicit object literals', ->
   x =
@@ -569,3 +575,59 @@ test "object keys with interpolations", ->
     interpolated:
       nested:
         123: 456
+
+test "#4324: Shorthand after interpolated key", ->
+  a = 2
+  obj = {"#{1}": 1, a}
+  eq 1, obj[1]
+  eq 2, obj.a
+
+test "#1263: Braceless object return", ->
+  fn = ->
+    return
+      a: 1
+      b: 2
+      c: -> 3
+
+  obj = fn()
+  eq 1, obj.a
+  eq 2, obj.b
+  eq 3, obj.c()
+
+test "#4544: Postfix conditionals in first line of implicit object literals", ->
+  two =
+    foo:
+      bar: 42 if yes
+      baz: 1337
+  eq 42, two.foo.bar
+  eq 1337, two.foo.baz
+
+  f = (x) -> x
+
+  three =
+    foo: f
+      bar: 42 if yes
+      baz: 1337
+  eq 42, three.foo.bar
+  eq 1337, three.foo.baz
+
+  four =
+    f
+      foo:
+        bar: 42 if yes
+      baz: 1337
+  eq 42, four.foo.bar
+  eq 1337, four.baz
+
+  x = bar: 42 if no
+  baz: 1337
+  ok not x?
+
+  # Example from #2051
+  a = null
+  _alert = (arg) -> a = arg
+  _alert
+    val3: "works" if true
+    val: "hello"
+    val2: "all good"
+  eq a.val2, "all good"

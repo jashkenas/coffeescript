@@ -12,7 +12,7 @@ test "ensure that carriage returns don't break compilation on Windows", ->
 test "#3089 - don't mutate passed in options to compile", ->
   opts = {}
   CoffeeScript.compile '1 + 1', opts
-  ok !opts.scope 
+  ok !opts.scope
 
 test "--bare", ->
   eq -1, CoffeeScript.compile('x = y', bare: on).indexOf 'function'
@@ -76,7 +76,7 @@ test "#2516: Unicode spaces should not be part of identifiers", ->
   eq 5, {c: 5}[ 'c' ]
 
   # A line where every space in non-breaking
-  eq 1 + 1, 2  
+  eq 1 + 1, 2  
 
 test "don't accidentally stringify keywords", ->
   ok (-> this == 'this')() is false

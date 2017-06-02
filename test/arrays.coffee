@@ -107,3 +107,49 @@ test "regex interpolation in array", ->
   eq 2, arr.length
   eq 'ab', arr[0].source
   eq 'value', arr[1].key
+
+test "splat extraction from generators", ->
+  gen = ->
+    yield 1
+    yield 2
+    yield 3
+  arrayEq [ gen()... ], [ 1, 2, 3 ]
+
+test "for-from loops over Array", ->
+  array1 = [50, 30, 70, 20]
+  array2 = []
+  for x from array1
+    array2.push(x)
+  arrayEq array1, array2
+
+  array1 = [[20, 30], [40, 50]]
+  array2 = []
+  for [a, b] from array1
+    array2.push(b)
+    array2.push(a)
+  arrayEq array2, [30, 20, 50, 40]
+
+  array1 = [{a: 10, b: 20, c: 30}, {a: 40, b: 50, c: 60}]
+  array2 = []
+  for {a: a, b, c: d} from array1
+    array2.push([a, b, d])
+  arrayEq array2, [[10, 20, 30], [40, 50, 60]]
+
+  array1 = [[10, 20, 30, 40, 50]]
+  for [a, b..., c] from array1
+    eq 10, a
+    arrayEq [20, 30, 40], b
+    eq 50, c
+
+test "for-from comprehensions over Array", ->
+  array1 = (x + 10 for x from [10, 20, 30])
+  ok array1.join(' ') is '20 30 40'
+
+  array2 = (x for x from [30, 41, 57] when x %% 3 is 0)
+  ok array2.join(' ') is '30 57'
+
+  array1 = (b + 5 for [a, b] from [[20, 30], [40, 50]])
+  ok array1.join(' ') is '35 55'
+
+  array2 = (a + b for [a, b] from [[10, 20], [30, 40], [50, 60]] when a + b >= 70)
+  ok array2.join(' ') is '70 110'

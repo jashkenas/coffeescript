@@ -1,8 +1,7 @@
 {
-  "name": "coffee-script",
-  "version": "1.9.2",
+  "name": "coffeescript",
   "main": [
-    "lib/coffee-script/coffee-script.js"
+    "lib/coffeescript/browser.js"
   ],
   "description": "Unfancy JavaScript",
   "keywords": [
@@ -11,13 +10,6 @@
     "coffeescript",
     "compiler"
   ],
-  "devDependencies": {
-    "uglify-js": "~2.2",
-    "jison": ">=0.2.0",
-    "highlight.js": "~8.0.0",
-    "underscore": "~1.5.2",
-    "docco": "~0.6.2"
-  },
   "author": {
     "name": "Jeremy Ashkenas"
   },

@@ -1,6 +1,8 @@
 return if global.testingBrowser
 
+os = require 'os'
 fs = require 'fs'
+path = require 'path'
 
 # REPL
 # ----
@@ -8,27 +10,29 @@ Stream = require 'stream'
 
 class MockInputStream extends Stream
   constructor: ->
+    super()
     @readable = true
 
   resume: ->
 
   emitLine: (val) ->
-    @emit 'data', new Buffer("#{val}\n")
+    @emit 'data', Buffer.from("#{val}\n")
 
 class MockOutputStream extends Stream
   constructor: ->
+    super()
     @writable = true
     @written = []
 
   write: (data) ->
-    #console.log 'output write', arguments
+    # console.log 'output write', arguments
     @written.push data
 
   lastWrite: (fromEnd = -1) ->
-    @written[@written.length - 1 + fromEnd].replace /\n$/, ''
+    @written[@written.length - 1 + fromEnd].replace /\r?\n$/, ''
 
 # Create a dummy history file
-historyFile = '.coffee_history_test'
+historyFile = path.join os.tmpdir(), '.coffee_history_test'
 fs.writeFileSync historyFile, '1 + 2\n'
 
 testRepl = (desc, fn) ->
@@ -65,6 +69,11 @@ testRepl "variables are saved", (input, output) ->
   eq "'foobar'", output.lastWrite()
 
 testRepl "empty command evaluates to undefined", (input, output) ->
+  # A regression fixed in Node 5.11.0 broke the handling of pressing enter in
+  # the Node REPL; see https://github.com/nodejs/node/pull/6090 and
+  # https://github.com/jashkenas/coffeescript/issues/4502.
+  # Just skip this test for versions of Node < 6.
+  return if parseInt(process.versions.node.split('.')[0], 10) < 6
   input.emitLine ''
   eq 'undefined', output.lastWrite()
 
@@ -107,4 +116,6 @@ testRepl "keeps running after runtime error", (input, output) ->
   eq 'undefined', output.lastWrite()
 
 process.on 'exit', ->
-  fs.unlinkSync historyFile
+  try
+    fs.unlinkSync historyFile
+  catch exception # Already deleted, nothing else to do.

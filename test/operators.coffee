@@ -215,6 +215,10 @@ test "#1714: lexer bug with raw range `for` followed by `in`", ->
   0 for [1..10] # comment ending
   ok not ('a' in ['b'])
 
+  # lexer state (specifically @seenFor) should be reset before each compilation
+  CoffeeScript.compile "0 for [1..2]"
+  CoffeeScript.compile "'a' in ['b']"
+
 test "#1099: statically determined `not in []` reporting incorrect result", ->
   ok 0 not in []
 
@@ -255,7 +259,7 @@ test "chained operations should evaluate each value only once", ->
 
 test "#891: incorrect inversion of chained comparisons", ->
   ok (true unless 0 > 1 > 2)
-  ok (true unless (NaN = 0/0) < 0/0 < NaN)
+  ok (true unless (this.NaN = 0/0) < 0/0 < this.NaN)
 
 test "#1234: Applying a splat to :: applies the splat to the wrong object", ->
   nonce = {}
@@ -326,7 +330,7 @@ test "floor division operator", ->
 
 test "floor division operator compound assignment", ->
   a = 7
-  a //= 2
+  a //= 1 + 1
   eq 3, a
 
 test "modulo operator", ->
@@ -432,3 +436,27 @@ test "#3598: Unary + and - coerce the operand once when it is an identifier", ->
     ok ~a in [0, -2]
   assertOneCoercion (a) ->
     ok a / 2 in [0, 0.5]
+
+test "'new' target", ->
+  nonce = {}
+  ctor  = -> nonce
+
+  eq (new ctor), nonce
+  eq (new ctor()), nonce
+
+  ok new class
+
+  ctor  = class
+  ok (new ctor) instanceof ctor
+  ok (new ctor()) instanceof ctor
+
+  # Force an executable class body
+  ctor  = class then a = 1
+  ok (new ctor) instanceof ctor
+
+  get   = -> ctor
+  ok (new get()) not instanceof ctor
+  ok (new (get())()) instanceof ctor
+
+  # classes must be called with `new`. In this case `new` applies to `get` only
+  throws -> new get()()

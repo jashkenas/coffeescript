@@ -2,12 +2,14 @@ fs = require 'fs'
 path = require 'path'
 vm = require 'vm'
 nodeREPL = require 'repl'
-CoffeeScript = require './coffee-script'
+CoffeeScript = require './'
 {merge, updateSyntaxError} = require './helpers'
 
 replDefaults =
   prompt: 'coffee> ',
-  historyFile: path.join process.env.HOME, '.coffee_history' if process.env.HOME
+  historyFile: do ->
+    historyPath = process.env.XDG_CACHE_HOME or process.env.HOME
+    path.join historyPath, '.coffee_history' if historyPath
   historyMaxInputSize: 10240
   eval: (input, context, filename, cb) ->
     # XXX: multiline hack.
@@ -15,6 +17,9 @@ replDefaults =
     # Node's REPL sends the input ending with a newline and then wrapped in
     # parens. Unwrap all that.
     input = input.replace /^\(([\s\S]*)\n\)$/m, '$1'
+    # Node's REPL v6.9.1+ sends the input wrapped in a try/catch statement.
+    # Unwrap that too.
+    input = input.replace /^\s*try\s*{([\s\S]*)}\s*catch.*$/m, '$1'
 
     # Require AST nodes to do some AST manipulation.
     {Block, Assign, Value, Literal} = require './nodes'
@@ -24,7 +29,7 @@ replDefaults =
       tokens = CoffeeScript.tokens input
       # Collect referenced variable names just like in `CoffeeScript.compile`.
       referencedVars = (
-        token[1] for token in tokens when token.variable
+        token[1] for token in tokens when token[0] is 'IDENTIFIER'
       )
       # Generate the AST of the tokens.
       ast = CoffeeScript.nodes tokens
@@ -106,8 +111,9 @@ addHistory = (repl, filename, maxSize) ->
     size = Math.min maxSize, stat.size
     # Read last `size` bytes from the file
     readFd = fs.openSync filename, 'r'
-    buffer = new Buffer(size)
+    buffer = Buffer.alloc size
     fs.readSync readFd, buffer, 0, size, stat.size - size
+    fs.closeSync readFd
     # Set the history on the interpreter
     repl.rli.history = buffer.toString().split('\n').reverse()
     # If the history file was truncated we should pop off a potential partial line
@@ -120,12 +126,12 @@ addHistory = (repl, filename, maxSize) ->
   fd = fs.openSync filename, 'a'
 
   repl.rli.addListener 'line', (code) ->
-    if code and code.length and code isnt '.history' and lastLine isnt code
+    if code and code.length and code isnt '.history' and code isnt '.exit' and lastLine isnt code
       # Save the latest command in the file
-      fs.write fd, "#{code}\n"
+      fs.writeSync fd, "#{code}\n"
       lastLine = code
 
-  repl.rli.on 'exit', -> fs.close fd
+  repl.on 'exit', -> fs.closeSync fd
 
   # Add a command to show the history stack
   repl.commands[getCommandId(repl, 'history')] =
@@ -141,10 +147,10 @@ getCommandId = (repl, commandName) ->
 
 module.exports =
   start: (opts = {}) ->
-    [major, minor, build] = process.versions.node.split('.').map (n) -> parseInt(n)
+    [major, minor, build] = process.versions.node.split('.').map (n) -> parseInt(n, 10)
 
-    if major is 0 and minor < 8
-      console.warn "Node 0.8.0+ required for CoffeeScript REPL"
+    if major < 6
+      console.warn "Node 6+ required for CoffeeScript REPL"
       process.exit 1
 
     CoffeeScript.register()
@@ -152,7 +158,7 @@ module.exports =
     opts = merge replDefaults, opts
     repl = nodeREPL.start opts
     runInContext opts.prelude, repl.context, 'prelude' if opts.prelude
-    repl.on 'exit', -> repl.outputStream.write '\n'
+    repl.on 'exit', -> repl.outputStream.write '\n' if not repl.rli.closed
     addMultilineHandler repl
     addHistory repl, opts.historyFile, opts.historyMaxInputSize if opts.historyFile
     # Adapt help inherited from the node REPL

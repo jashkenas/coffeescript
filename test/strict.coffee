@@ -1,7 +1,7 @@
 # Strict Early Errors
 # -------------------
 
-# The following are prohibited under ES5's `strict` mode
+# The following are prohibited under ES5’s `strict` mode
 # * `Octal Integer Literals`
 # * `Octal Escape Sequences`
 # * duplicate property definitions in `Object Literal`s
@@ -77,25 +77,34 @@ test "duplicate formal parameters are prohibited", ->
   strict '(@_,@_)->',        'two @params'
   strict '(@case,@case)->',  'two @reserved'
   strict '(_,{_})->',        'param, {param}'
+  strict '(_,{_=true})->',   'param, {param=}'
   strict '({_,_})->',        '{param, param}'
+  strict '({_=true,_})->',   '{param=, param}'
   strict '(_,[_])->',        'param, [param]'
+  strict '(_,[_=true])->',   'param, [param=]'
   strict '([_,_])->',        '[param, param]'
+  strict '([_=true,_])->',   '[param=, param]'
   strict '(_,[_]=true)->',   'param, [param]='
+  strict '(_,[_=true]=true)->', 'param, [param=]='
   strict '(_,[@_,{_}])->',   'param, [@param, {param}]'
   strict '(_,[_,{@_}])->',   'param, [param, {@param}]'
+  strict '(_,[_,{@_=true}])->', 'param, [param, {@param=}]'
   strict '(_,[_,{_}])->',    'param, [param, {param}]'
   strict '(_,[_,{__}])->',   'param, [param, {param2}]'
   strict '(_,[__,{_}])->',   'param, [param2, {param}]'
   strict '(__,[_,{_}])->',   'param, [param2, {param2}]'
-  strict '(0:a,1:a)->',      '0:param,1:param'
   strict '({0:a,1:a})->',    '{0:param,1:param}'
+  strict '(a=b=true,a)->',   'param=assignment, param'
+  strict '({a=b=true},a)->', '{param=assignment}, param'
   # the following function expressions should **not** throw errors
   strictOk '(_,@_)->'
   strictOk '(@_,_...)->'
   strictOk '(_,@_ = true)->'
   strictOk '(@_,{_})->'
   strictOk '({_,@_})->'
+  strictOk '({_,@_ = true})->'
   strictOk '([_,@_])->'
+  strictOk '([_,@_ = true])->'
   strictOk '({},_arg)->'
   strictOk '({},{})->'
   strictOk '([]...,_arg)->'
@@ -107,8 +116,8 @@ test "duplicate formal parameters are prohibited", ->
   strictOk '(@case...,_case)->'
   strictOk '(_case,@case)->'
   strictOk '(_case,@case...)->'
-  strictOk '(a:a)->'
-  strictOk '(a:a,a:b)->'
+  strictOk '({a:a})->'
+  strictOk '({a:a,a:b})->'
 
 test "`delete` operand restrictions", ->
   strict 'a = 1; delete a'
@@ -131,10 +140,10 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
     check "#{keyword} *= 1"
     check "#{keyword} /= 1"
     check "#{keyword} ?= 1"
-    check "{keyword}++"
-    check "++{keyword}"
-    check "{keyword}--"
-    check "--{keyword}"
+    check "#{keyword}++"
+    check "++#{keyword}"
+    check "#{keyword}--"
+    check "--#{keyword}"
   destruct = (keyword, check = strict) ->
     check "{#{keyword}}"
     check "o = {#{keyword}}"

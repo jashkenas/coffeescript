@@ -41,6 +41,10 @@ test "loop variable should be accessible after for-in loop", ->
   d = (x for x in [1,2])
   eq x, 2
 
+test "loop variable should be accessible after for-from loop", ->
+  d = (x for x from [1,2])
+  eq x, 2
+
 class Array then slice: fail # needs to be global
 class Object then hasOwnProperty: fail
 test "#1973: redefining Array/Object constructors shouldn't confuse __X helpers", ->
@@ -59,34 +63,34 @@ test "#1183: super + fat arrows", ->
   dolater = (cb) -> cb()
 
   class A
-  	constructor: ->
-  		@_i = 0
-  	foo : (cb) ->
-  		dolater => 
-  			@_i += 1 
-  			cb()
+    constructor: ->
+      @_i = 0
+    foo : (cb) ->
+      dolater =>
+        @_i += 1
+        cb()
 
   class B extends A
-  	constructor : ->
-  		super
-  	foo : (cb) ->
-  		dolater =>
-  			dolater =>
-  				@_i += 2
-  				super cb
-          
+    constructor : ->
+      super()
+    foo : (cb) ->
+      dolater =>
+        dolater =>
+          @_i += 2
+          super cb
+
   b = new B
   b.foo => eq b._i, 3
 
 test "#1183: super + wrap", ->
   class A
     m : -> 10
-    
+
   class B extends A
-    constructor : -> super
-    
-  B::m = -> r = try super()
-  
+    constructor : -> super()
+    m: -> r = try super()
+    m: -> r = super()
+
   eq (new B).m(), 10
 
 test "#1183: super + closures", ->
@@ -94,7 +98,7 @@ test "#1183: super + closures", ->
     constructor: ->
       @i = 10
     foo : -> @i
-    
+
   class B extends A
     foo : ->
       ret = switch 1
@@ -102,16 +106,6 @@ test "#1183: super + closures", ->
         when 1 then super()
       ret
   eq (new B).foo(), 10
- 
-test "#2331: bound super regression", ->
-  class A
-    @value = 'A'
-    method: -> @constructor.value
-    
-  class B extends A
-    method: => super
-  
-  eq (new B).method(), 'A'
 
 test "#3259: leak with @-params within destructured parameters", ->
   fn = ({@foo}, [@bar], [{@baz}]) ->

@@ -14,11 +14,7 @@ generate = (tag, value, origin) ->
 
 # The **Rewriter** class is used by the [Lexer](lexer.html), directly against
 # its internal array of tokens.
-class exports.Rewriter
-
-  # Helpful snippet for debugging:
-  #
-  #     console.log (t[0] + '/' + t[1] for t in @tokens).join ' '
+exports.Rewriter = class Rewriter
 
   # Rewrite the token stream in multiple passes, one logical filter at
   # a time. This could certainly be changed into a single pass through the
@@ -26,6 +22,8 @@ class exports.Rewriter
   # like this. The order of these passes matters -- indentation must be
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (@tokens) ->
+    # Helpful snippet for debugging:
+    #     console.log (t[0] + '/' + t[1] for t in @tokens).join ' '
     @removeLeadingNewlines()
     @closeOpenCalls()
     @closeOpenIndexes()
@@ -33,6 +31,7 @@ class exports.Rewriter
     @tagPostfixConditionals()
     @addImplicitBracesAndParens()
     @addLocationDataToGeneratedTokens()
+    @fixOutdentLocationData()
     @tokens
 
   # Rewrite the token stream, looking one token ahead and behind.
@@ -46,16 +45,18 @@ class exports.Rewriter
     i += block.call this, token, i, tokens while token = tokens[i]
     true
 
-  detectEnd: (i, condition, action) ->
+  detectEnd: (i, condition, action, opts = {}) ->
     {tokens} = this
     levels = 0
     while token = tokens[i]
-      return action.call this, token, i     if levels is 0 and condition.call this, token, i
-      return action.call this, token, i - 1 if not token or levels < 0
+      return action.call this, token, i if levels is 0 and condition.call this, token, i
       if token[0] in EXPRESSION_START
         levels += 1
       else if token[0] in EXPRESSION_END
         levels -= 1
+      if levels < 0
+        return if opts.returnOnNegativeLevel
+        return action.call this, token, i
       i += 1
     i - 1
 
@@ -66,21 +67,19 @@ class exports.Rewriter
     @tokens.splice 0, i if i
 
   # The lexer has tagged the opening parenthesis of a method call. Match it with
-  # its paired close. We have the mis-nested outdent case included here for
-  # calls that close on the same line, just before their outdent.
+  # its paired close.
   closeOpenCalls: ->
     condition = (token, i) ->
-      token[0] in [')', 'CALL_END'] or
-      token[0] is 'OUTDENT' and @tag(i - 1) is ')'
+      token[0] in [')', 'CALL_END']
 
     action = (token, i) ->
-      @tokens[if token[0] is 'OUTDENT' then i - 1 else i][0] = 'CALL_END'
+      token[0] = 'CALL_END'
 
     @scanTokens (token, i) ->
       @detectEnd i + 1, condition, action if token[0] is 'CALL_START'
       1
 
-  # The lexer has tagged the opening parenthesis of an indexing operation call.
+  # The lexer has tagged the opening bracket of an indexing operation call.
   # Match it with its paired close.
   closeOpenIndexes: ->
     condition = (token, i) ->
@@ -141,7 +140,7 @@ class exports.Rewriter
     @scanTokens (token, i, tokens) ->
       [tag]     = token
       [prevTag] = prevToken = if i > 0 then tokens[i - 1] else []
-      [nextTag] = if i < tokens.length - 1 then tokens[i + 1] else []
+      [nextTag] = nextToken = if i < tokens.length - 1 then tokens[i + 1] else []
       stackTop  = -> stack[stack.length - 1]
       startIdx  = i
 
@@ -150,31 +149,30 @@ class exports.Rewriter
       forward   = (n) -> i - startIdx + n
 
       # Helper functions
-      inImplicit        = -> stackTop()?[2]?.ours
-      inImplicitCall    = -> inImplicit() and stackTop()?[0] is '('
-      inImplicitObject  = -> inImplicit() and stackTop()?[0] is '{'
+      isImplicit        = (stackItem) -> stackItem?[2]?.ours
+      isImplicitObject  = (stackItem) -> isImplicit(stackItem) and stackItem?[0] is '{'
+      isImplicitCall    = (stackItem) -> isImplicit(stackItem) and stackItem?[0] is '('
+      inImplicit        = -> isImplicit stackTop()
+      inImplicitCall    = -> isImplicitCall stackTop()
+      inImplicitObject  = -> isImplicitObject stackTop()
       # Unclosed control statement inside implicit parens (like
       # class declaration or if-conditionals)
-      inImplicitControl = -> inImplicit and stackTop()?[0] is 'CONTROL'
+      inImplicitControl = -> inImplicit() and stackTop()?[0] is 'CONTROL'
 
-      startImplicitCall = (j) ->
-        idx = j ? i
+      startImplicitCall = (idx) ->
         stack.push ['(', idx, ours: yes]
         tokens.splice idx, 0, generate 'CALL_START', '('
-        i += 1 if not j?
 
       endImplicitCall = ->
         stack.pop()
         tokens.splice i, 0, generate 'CALL_END', ')', ['', 'end of input', token[2]]
         i += 1
 
-      startImplicitObject = (j, startsLine = yes) ->
-        idx = j ? i
+      startImplicitObject = (idx, startsLine = yes) ->
         stack.push ['{', idx, sameLine: yes, startsLine: startsLine, ours: yes]
         val = new String '{'
         val.generated = yes
         tokens.splice idx, 0, generate '{', val, token
-        i += 1 if not j?
 
       endImplicitObject = (j) ->
         j = j ? i
@@ -182,10 +180,19 @@ class exports.Rewriter
         tokens.splice j, 0, generate '}', '}', token
         i += 1
 
+      implicitObjectContinues = (j) =>
+        nextTerminatorIdx = null
+        @detectEnd j,
+          (token) -> token[0] is 'TERMINATOR'
+          (token, i) -> nextTerminatorIdx = i
+          returnOnNegativeLevel: yes
+        return no unless nextTerminatorIdx?
+        @looksObjectish nextTerminatorIdx + 1
+
       # Don't end an implicit call on next indent if any of these are in an argument
       if inImplicitCall() and tag in ['IF', 'TRY', 'FINALLY', 'CATCH',
         'CLASS', 'SWITCH']
-        stack.push ['CONTROL', i, ours: true]
+        stack.push ['CONTROL', i, ours: yes]
         return forward(1)
 
       if tag is 'INDENT' and inImplicit()
@@ -195,7 +202,7 @@ class exports.Rewriter
         #  1. We have seen a `CONTROL` argument on the line.
         #  2. The last token before the indent is part of the list below
         #
-        if prevTag not in ['=>', '->', '[', '(', ',', '{', 'TRY', 'ELSE', '=']
+        if prevTag not in ['=>', '->', '[', '(', ',', '{', 'ELSE', '=']
           endImplicitCall() while inImplicitCall()
         stack.pop() if inImplicitControl()
         stack.push [tag, i]
@@ -223,7 +230,7 @@ class exports.Rewriter
           tag is '?' and i > 0 and not tokens[i - 1].spaced) and
          (nextTag in IMPLICIT_CALL or
           nextTag in IMPLICIT_UNSPACED_CALL and
-          not tokens[i + 1]?.spaced and not tokens[i + 1]?.newLine)
+          not nextToken.spaced and not nextToken.newLine)
         tag = token[0] = 'FUNC_EXIST' if tag is '?'
         startImplicitCall i + 1
         return forward(2)
@@ -234,15 +241,8 @@ class exports.Rewriter
       #       a: b
       #       c: d
       #
-      # and
-      #
-      #     f
-      #       1
-      #       a: b
-      #       b: c
-      #
       # Don't accept implicit calls of this type, when on the same line
-      # as the control strucutures below as that may misinterpret constructs like:
+      # as the control structures below as that may misinterpret constructs like:
       #
       #     if f
       #        a: 1
@@ -254,7 +254,7 @@ class exports.Rewriter
       # Furthermore don't allow this in literal arrays, as
       # that creates grammatical ambiguities.
       if tag in IMPLICIT_FUNC and
-         @indexOfTag(i + 1, 'INDENT', null, ':') > -1 and
+         @indexOfTag(i + 1, 'INDENT') > -1 and @looksObjectish(i + 2) and
          not @findTagsBackwards(i, ['CLASS', 'EXTENDS', 'IF', 'CATCH',
           'SWITCH', 'LEADING_WHEN', 'FOR', 'WHILE', 'UNTIL'])
         startImplicitCall i + 1
@@ -299,7 +299,10 @@ class exports.Rewriter
       #     .g b
       #     .h a
 
-      stackTop()[2].sameLine = no if inImplicitObject() and tag in LINEBREAKS
+      # Mark all enclosing objects as not sameLine
+      if tag in LINEBREAKS
+        for stackItem in stack by -1 when isImplicitObject stackItem
+          stackItem[2].sameLine = no
 
       newLine = prevTag is 'OUTDENT' or prevToken.newLine
       if tag in IMPLICIT_END or tag in CALL_CLOSERS and newLine
@@ -311,7 +314,8 @@ class exports.Rewriter
           # Close implicit objects such as:
           # return a: 1, b: 2 unless true
           else if inImplicitObject() and not @insideForDeclaration and sameLine and
-                  tag isnt 'TERMINATOR' and prevTag isnt ':'
+                  tag isnt 'TERMINATOR' and prevTag isnt ':' and
+                  not (tag is 'POST_IF' and startsLine and implicitObjectContinues(i + 1))
             endImplicitObject()
           # Close implicit objects when at end of line, line didn't end with a comma
           # and the implicit object didn't start the line or the next line doesn't look like
@@ -368,6 +372,22 @@ class exports.Rewriter
         last_column:  column
       return 1
 
+  # OUTDENT tokens should always be positioned at the last character of the
+  # previous token, so that AST nodes ending in an OUTDENT token end up with a
+  # location corresponding to the last "real" token under the node.
+  fixOutdentLocationData: ->
+    @scanTokens (token, i, tokens) ->
+      return 1 unless token[0] is 'OUTDENT' or
+        (token.generated and token[0] is 'CALL_END') or
+        (token.generated and token[0] is '}')
+      prevLocationData = tokens[i - 1][2]
+      token[2] =
+        first_line:   prevLocationData.last_line
+        first_column: prevLocationData.last_column
+        last_line:    prevLocationData.last_line
+        last_column:  prevLocationData.last_column
+      return 1
+
   # Because our grammar is LALR(1), it can't handle some single-line
   # expressions that lack ending delimiters. The **Rewriter** adds the implicit
   # blocks, so it doesn't need to. To keep the grammar clean and tidy, trailing
@@ -381,7 +401,8 @@ class exports.Rewriter
       not (token[0] is 'TERMINATOR' and @tag(i + 1) in EXPRESSION_CLOSE) and
       not (token[0] is 'ELSE' and starter isnt 'THEN') and
       not (token[0] in ['CATCH', 'FINALLY'] and starter in ['->', '=>']) or
-      token[0] in CALL_CLOSERS and @tokens[i - 1].newLine
+      token[0] in CALL_CLOSERS and
+      (@tokens[i - 1].newLine or @tokens[i - 1][0] is 'OUTDENT')
 
     action = (token, i) ->
       @tokens.splice (if @tag(i - 1) is ',' then i - 1 else i), 0, outdent
@@ -479,13 +500,15 @@ for [left, rite] in BALANCED_PAIRS
 EXPRESSION_CLOSE = ['CATCH', 'THEN', 'ELSE', 'FINALLY'].concat EXPRESSION_END
 
 # Tokens that, if followed by an `IMPLICIT_CALL`, indicate a function invocation.
-IMPLICIT_FUNC    = ['IDENTIFIER', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@', 'THIS']
+IMPLICIT_FUNC    = ['IDENTIFIER', 'PROPERTY', 'SUPER', ')', 'CALL_END', ']', 'INDEX_END', '@', 'THIS']
 
 # If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
 IMPLICIT_CALL    = [
-  'IDENTIFIER', 'NUMBER', 'STRING', 'STRING_START', 'JS', 'REGEX', 'REGEX_START'
-  'NEW', 'PARAM_START', 'CLASS', 'IF', 'TRY', 'SWITCH', 'THIS', 'BOOL', 'NULL'
-  'UNDEFINED', 'UNARY', 'YIELD', 'UNARY_MATH', 'SUPER', 'THROW'
+  'IDENTIFIER', 'PROPERTY', 'NUMBER', 'INFINITY', 'NAN'
+  'STRING', 'STRING_START', 'REGEX', 'REGEX_START', 'JS'
+  'NEW', 'PARAM_START', 'CLASS', 'IF', 'TRY', 'SWITCH', 'THIS'
+  'UNDEFINED', 'NULL', 'BOOL'
+  'UNARY', 'YIELD', 'AWAIT', 'UNARY_MATH', 'SUPER', 'THROW'
   '@', '->', '=>', '[', '(', '{', '--', '++'
 ]
 
