@@ -35,8 +35,7 @@ exports.OptionParser = class OptionParser
       # non-option argument are treated as non-option arguments themselves.
       # Executable scripts do not need to have a `--` at the end of the
       # shebang ("#!") line, and if they do, they won't work on Linux.
-      multi = trySplitMultiFlag(cmdLineArg)
-      toProcess = multi or trySingleFlag(cmdLineArg)
+      toProcess = trySplitMultiFlag(cmdLineArg) ? trySingleFlag(cmdLineArg)
       # If the current argument could not be parsed as one or more arguments.
       unless toProcess?
         ++i if cmdLineArg is '--'
