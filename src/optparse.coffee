@@ -8,6 +8,9 @@
 #
 # The first non-option is considered to be the start of the file (and file
 # option) list, and all subsequent arguments are left unparsed.
+#
+# The `coffee` command uses an instance of **OptionParser** to parse its
+# command-line arguments in `src/command.coffee`.
 exports.OptionParser = class OptionParser
 
   # Initialize with a list of valid options, in the form:

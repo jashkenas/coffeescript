@@ -61,11 +61,14 @@ notSources   = {}
 watchedDirs  = {}
 optionParser = null
 
+exports.buildCSOptionParser = buildCSOptionParser = ->
+  new optparse.OptionParser SWITCHES, BANNER
+
 # Run `coffee` by parsing passed options and determining what action to take.
 # Many flags cause us to divert before compiling anything. Flags passed after
 # `--` will be passed verbatim to your script as arguments in `process.argv`
 exports.run = ->
-  optionParser  = new optparse.OptionParser SWITCHES, BANNER
+  optionParser = buildCSOptionParser()
   parseOptions()
   # Make the REPL *CLI* use the global context so as to (a) be consistent with the
   # `node` REPL CLI and, therefore, (b) make packages that modify native prototypes
