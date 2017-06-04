@@ -489,14 +489,14 @@ exports.Lexer = class Lexer
   csxToken: ->
     firstChar = @chunk[0]
     if firstChar is '<'
-      unless (match = CSX_IDENTIFIER.exec @chunk[1...]) and (
+      match = CSX_IDENTIFIER.exec @chunk[1...]
+      return 0 unless match and (
         @csxDepth > 0 or
-        # not the RHS of an unspaced comparison (i.e. `a<b`)
+        # Not the right hand side of an unspaced comparison (i.e. `a<b`).
         not (prev = @prev()) or
         prev.spaced or
-        prev[0] not in COMPARABLE
+        prev[0] not in COMPARABLE_LEFT_SIDE
       )
-        return 0
       [input, id, colon] = match
       origin = @token 'CSX_TAG', id, 1, id.length
       @token 'CALL_START', '('
@@ -711,8 +711,8 @@ exports.Lexer = class Lexer
       # Remove leading `'TERMINATOR'` (if any).
       nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
 
-      if not braceInterpolator
-        # We are not using `{` and `}`, so wrap the interpolated tokens instead
+      unless braceInterpolator
+        # We are not using `{` and `}`, so wrap the interpolated tokens instead.
         open = @makeToken '(', '(', offsetInChunk, 0
         close = @makeToken ')', ')', offsetInChunk + index, 0
         nested = [open, nested..., close]
@@ -1234,8 +1234,8 @@ INDEXABLE = CALLABLE.concat [
   'BOOL', 'NULL', 'UNDEFINED', '}', '::'
 ]
 
-# Tokens which can be the left-hand side of a less-than comparison, i.e. `a<b`
-COMPARABLE = ['IDENTIFIER', ')', ']', 'NUMBER']
+# Tokens which can be the left-hand side of a less-than comparison, i.e. `a<b`.
+COMPARABLE_LEFT_SIDE = ['IDENTIFIER', ')', ']', 'NUMBER']
 
 # Tokens which a regular expression will never immediately follow (except spaced
 # CALLABLEs in some cases), but which a division operator can.

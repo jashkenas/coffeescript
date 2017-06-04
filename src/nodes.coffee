@@ -2857,7 +2857,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
       return yes
 
     fragments = []
-    fragments.push @makeCode '`' if not @csx
+    fragments.push @makeCode '`' unless @csx
     for element in elements
       if element instanceof StringLiteral
         value = element.unquote @csx
