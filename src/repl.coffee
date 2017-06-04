@@ -33,7 +33,7 @@ replDefaults =
       ast = CoffeeScript.nodes tokens
       # Add assignment to `_` variable to force the input to be an expression.
       ast = new Block [
-        new Assign (new Value new Literal '_'), ast, '='
+        new Assign (new Value new Literal '__'), ast, '='
       ]
       js = ast.compile {bare: yes, locals: Object.keys(context), referencedVars}
       cb null, runInContext js, context, filename
