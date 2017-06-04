@@ -2142,7 +2142,7 @@ exports.Code = class Code extends Base
         target = new IdentifierLiteral o.scope.freeVariable name
         param.renameParam node, target
         thisAssignments.push new Assign node, target
-      # In case the parameter is object and containes the splat, e.g. fn({a, b, r...})
+      # In case the parameter is object and contains the splat, e.g. fn({a, b, r...})
       # Can be removed once ES proposal hits Stage 4.  
       if param.name instanceof Obj and param.name.hasSplat()
         param.splat = true;
@@ -2166,7 +2166,7 @@ exports.Code = class Code extends Base
         else if param instanceof Expansion and @params.length is 1
           param.error 'an expansion parameter cannot be the only parameter in a function definition'
 
-        # If the parameter is object and containes the splat, e.g. fn({a, b, r...}), 
+        # If the parameter is object and contains the splat, e.g. fn({a, b, r...}), 
         # set haveSplatParam to false to avoid adding '...' to the function argument.
         haveSplatParam = yes and param.name not instanceof Obj
         if param.splat
