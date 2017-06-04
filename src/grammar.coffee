@@ -190,6 +190,7 @@ grammar =
   AssignObj: [
     o 'ObjAssignable',                          -> new Value $1
     o 'ObjAssignable ...',                      -> new Splat $1
+    o '... ObjAssignable',                      -> new Splat $2    
     o 'ObjAssignable : Expression',             -> new Assign LOC(1)(new Value $1), $3, 'object',
                                                               operatorToken: LOC(2)(new Literal $2)
     o 'ObjAssignable :
@@ -270,6 +271,7 @@ grammar =
   Param: [
     o 'ParamVar',                               -> new Param $1
     o 'ParamVar ...',                           -> new Param $1, null, on
+    o '... ParamVar',                           -> new Param $2, null, on    
     o 'ParamVar = Expression',                  -> new Param $1, $3
     o '...',                                    -> new Expansion
   ]
@@ -285,6 +287,7 @@ grammar =
   # A splat that occurs outside of a parameter list.
   Splat: [
     o 'Expression ...',                         -> new Splat $1
+    o '... Expression',                         -> new Splat $2    
   ]
 
   # Variables and properties that can be assigned to.
