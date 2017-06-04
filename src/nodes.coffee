@@ -2226,47 +2226,6 @@ exports.Code = class Code extends Base
             param.name.lhs = yes
             param.name.eachName (prop) ->
               o.scope.parameter prop.value
-            # Check if object parameter has splat. Can be removed when ES proposal hits Stage 4.
-            if param.name instanceof Obj
-              # Recursive function for searching rest elements in the object.
-              traverseRest = (objects) ->
-                results = {splats: [], allProps: []}
-                restElement = no
-                propParams = []
-                for obj, key in objects
-                  if obj instanceof Assign and obj.context == "object" and obj.value.base instanceof Obj
-                    results = traverseRest obj.value.base.objects
-                  if obj instanceof Splat
-                    obj.error "multiple rest elements are disallowed in object destructuring" if restElement
-                    restElement = obj.unwrap().value
-                    propParams.push restElement
-                  else
-                    unless obj instanceof Assign
-                      # IdentifierLiteral
-                      propParams.push obj.unwrap().value
-                    else
-                      # Assigning to new variable name
-                      propParams.push obj.value.unwrap().value if obj.value.base instanceof IdentifierLiteral
-                      # Assigning to new variable name with default value
-                      propParams.push obj.value.variable.unwrap().value if obj.value instanceof Assign and obj.value.variable.base instanceof IdentifierLiteral
-                results.allProps.push propParams...
-                results.splats.push restElement if restElement
-                results
-              objParams = traverseRest param.name.objects
-              if objParams.splats.length
-                o.scope.add val, 'var', yes for val in objParams.allProps
-                ref = param.asReference o
-                # Assign object destructuring parameter
-                exprs.push new Assign new Value(param.name), ref, null, {param: yes, paramWithSplat: yes}
-            # Collect object properties and declare them as variables in the function scope.
-            if param.name instanceof Arr and param.shouldCache()
-              arrParams = []
-              for prop in param.name.objects
-                if prop instanceof Assign
-                  arrParams.push if prop.value.base instanceof IdentifierLiteral then prop.value.base.value else prop.variable.base.value
-                else
-                  arrParams.push if prop instanceof Splat then prop.name.unwrap().value else prop.unwrap().value
-              o.scope.add val, 'var', yes for val in arrParams
           else
             o.scope.parameter fragmentsToText (if param.value? then param else ref).compileToFragments o
           params.push ref
