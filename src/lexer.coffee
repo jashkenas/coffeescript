@@ -48,7 +48,7 @@ exports.Lexer = class Lexer
     @seenExport = no             # Used to recognize EXPORT FROM? AS? tokens.
     @importSpecifierList = no    # Used to identify when in an IMPORT {...} FROM? ...
     @exportSpecifierList = no    # Used to identify when in an EXPORT {...} FROM? ...
-    @includesCSX = no            # Used to optimize CSX checks.
+    @csxDepth = 0                # Used to optimize CSX checks, how deep in CSX we are.
 
     @chunkLine =
       opts.line or 0             # The start line for the current @chunk.
@@ -490,7 +490,7 @@ exports.Lexer = class Lexer
     firstChar = @chunk[0]
     if firstChar is '<'
       unless (match = CSX_IDENTIFIER.exec @chunk[1...]) and (
-        @includesCSX or
+        @csxDepth > 0 or
         # not the RHS of an unspaced comparison (i.e. `a<b`)
         not (prev = @prev()) or
         prev.spaced or
@@ -502,13 +502,14 @@ exports.Lexer = class Lexer
       @token 'CALL_START', '('
       @token '{', '{'
       @ends.push tag: '/>', origin: origin, name: id
-      @includesCSX = yes
+      @csxDepth++
       return id.length + 1
     else if csxTag = @atCSXTag()
       if @chunk[...2] is '/>'
         @pair '/>'
         @token '}', '}', 0, 2
         @token 'CALL_END', ')', 0, 2
+        @csxDepth--
         return 2
       else if firstChar is '{'
         token = @token '(', '('
@@ -532,6 +533,7 @@ exports.Lexer = class Lexer
           @error "missing closing > after tag name", offset: afterTag, length: 1
         # +1 for the closing `>`.
         @token 'CALL_END', ')', end, csxTag.name.length + 1
+        @csxDepth--
         return afterTag + 1
       else
         return 0
@@ -547,7 +549,7 @@ exports.Lexer = class Lexer
       return 0
 
   atCSXTag: (depth = 0) ->
-    return no unless @includesCSX
+    return no if @csxDepth is 0
     i = @ends.length - 1
     i-- while @ends[i]?.tag is 'OUTDENT' or depth-- > 0 # Ignore indents.
     last = @ends[i]

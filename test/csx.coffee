@@ -668,14 +668,6 @@ test 'tag inside CSX works following: paren', ->
     <span>(3)<div /></span>;
   '''
 
-test 'mixing CSX and unspaced less than not allowed', ->
-  throws -> CoffeeScript.compile '''
-    html = <span />
-    a = 3
-    div = 5
-    res = a<div
-  '''
-
 test 'unspaced less than before CSX works but is not encouraged', ->
   eqJS '''
       div = 5
@@ -689,4 +681,19 @@ test 'unspaced less than before CSX works but is not encouraged', ->
       res = 2 < div;
 
       html = <span />;
+    '''
+
+test 'unspaced less than after CSX works but is not encouraged', ->
+  eqJS '''
+      div = 5
+      html = <span />
+      res = 2<div
+    ''', '''
+      var div, html, res;
+
+      div = 5;
+
+      html = <span />;
+
+      res = 2 < div;
     '''
