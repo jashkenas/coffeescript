@@ -1235,7 +1235,7 @@ INDEXABLE = CALLABLE.concat [
 ]
 
 # Tokens which can be the left-hand side of a less-than comparison, i.e. `a<b`
-COMPARABLE = ['IDENTIFIER', ')', 'NUMBER']
+COMPARABLE = ['IDENTIFIER', ')', ']', 'NUMBER']
 
 # Tokens which a regular expression will never immediately follow (except spaced
 # CALLABLEs in some cases), but which a division operator can.

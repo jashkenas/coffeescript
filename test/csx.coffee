@@ -647,6 +647,11 @@ test 'unspaced less than without CSX: paren', ->
   div = 5
   ok (3)<div
 
+test 'unspaced less than without CSX: index', ->
+  div = 5
+  a = [3]
+  ok a[0]<div
+
 test 'tag inside CSX works following: identifier', ->
   eqJS '''
     <span>a<div /></span>
@@ -667,6 +672,28 @@ test 'tag inside CSX works following: paren', ->
   ''', '''
     <span>(3)<div /></span>;
   '''
+
+test 'tag inside CSX works following: square bracket', ->
+  eqJS '''
+    <span>]<div /></span>
+  ''', '''
+    <span>]<div /></span>;
+  '''
+
+test 'unspaced less than inside CSX works but is not encouraged', ->
+  eqJS '''
+      a = 3
+      div = 5
+      html = <span>{a<div}</span>
+    ''', '''
+      var a, div, html;
+
+      a = 3;
+
+      div = 5;
+
+      html = <span>{a < div}</span>;
+    '''
 
 test 'unspaced less than before CSX works but is not encouraged', ->
   eqJS '''
