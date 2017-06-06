@@ -1422,7 +1422,6 @@ exports.Class = class Class extends Base
       method.name.updateLocationDataIfMissing methodName.locationData
       method.ctor = (if @parent then 'derived' else 'base') if methodName.value is 'constructor'
       method.error 'Cannot define a constructor as a bound function' if method.bound and method.ctor
-      # method.error 'Cannot define a bound method in an anonymous class' if method.bound and not @name
 
     method
 
