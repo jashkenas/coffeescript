@@ -1699,7 +1699,7 @@ test 'Bound method called normally before binding is ok', ->
     derivedBound: =>
       @prop
 
-  d = new Derived
+  d  = new Derived
 
 test 'Bound method called as callback after super() is ok', ->
   class Base
