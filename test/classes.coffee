@@ -1729,3 +1729,17 @@ test 'Bound method of base class called as callback is ok', ->
   b = new Base
   {baseBound} = b
   eq baseBound(), 3
+
+test 'Bound method of prop-named class called as callback is ok', ->
+  Hive = {}
+  class Hive.Bee
+    constructor: (@prop = 3) ->
+      f = @baseBound
+      eq f(), 3
+
+    baseBound: =>
+      @prop
+
+  b = new Hive.Bee
+  {baseBound} = b
+  eq baseBound(), 3
