@@ -1670,3 +1670,62 @@ test "CS6 Class extends a CS1 compiled class with super()", ->
   eq B.className(), 'ExtendedCS1'
   b = new B('three')
   eq b.make(), "making a cafe ole with caramel and three shots of espresso"
+
+test 'Bound method called as callback before binding throws runtime error', ->
+  class Base
+    constructor: ->
+      f = @derivedBound
+      try
+        f()
+        ok no
+      catch e
+        eq e.message, 'Bound instance method accessed before binding'
+
+  class Derived extends Base
+    derivedBound: =>
+      ok no
+  d = new Derived
+
+test 'Bound method called normally before binding is ok', ->
+  class Base
+    constructor: ->
+      @setProp()
+      eq @derivedBound(), 3
+
+  class Derived extends Base
+    setProp: ->
+      @prop = 3
+
+    derivedBound: =>
+      @prop
+
+  d = new Derived
+
+test 'Bound method called as callback after super() is ok', ->
+  class Base
+
+  class Derived extends Base
+    constructor: (@prop = 3) ->
+      super()
+      f = @derivedBound
+      eq f(), 3
+
+    derivedBound: =>
+      @prop
+
+  d = new Derived
+  {derivedBound} = d
+  eq derivedBound(), 3
+
+test 'Bound method of base class called as callback is ok', ->
+  class Base
+    constructor: (@prop = 3) ->
+      f = @baseBound
+      eq f(), 3
+
+    baseBound: =>
+      @prop
+
+  b = new Base
+  {baseBound} = b
+  eq baseBound(), 3
