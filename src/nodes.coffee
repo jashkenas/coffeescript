@@ -1515,7 +1515,7 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
     @body.traverseChildren false, (node) =>
       if node instanceof ThisLiteral
         node.value   = @name
-      else if node instanceof Code and node.bound
+      else if node instanceof Code and node.bound and node.isStatic
         node.context = @name
 
   # Make class/prototype assignments for invalid ES properties
