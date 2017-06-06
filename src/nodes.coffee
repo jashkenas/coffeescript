@@ -1256,7 +1256,7 @@ exports.Class = class Class extends Base
 
   compileNode: (o) ->
     @name          = @determineName()
-    executableBody = @walkBody()
+    executableBody = @walkBody(o)
 
     # Special handling to allow `class expr.A extends A` declarations
     parentName    = @parent.base.value if @parent instanceof Value and not @parent.hasProperties()
@@ -1287,6 +1287,10 @@ exports.Class = class Class extends Base
     o.indent += TAB
 
     result = []
+    if @assignParentRef
+      result.push @makeCode "("
+      result.push @assignParentRef.compileToFragments(o)...
+      result.push @makeCode ", "
     result.push @makeCode "class "
     result.push @makeCode "#{@name} " if @name
     result.push @makeCode('extends '), @parent.compileToFragments(o)..., @makeCode ' ' if @parent
@@ -1298,6 +1302,8 @@ exports.Class = class Class extends Base
       result.push @body.compileToFragments(o, LEVEL_TOP)...
       result.push @makeCode "\n#{@tab}"
     result.push @makeCode '}'
+    if @assignParentRef
+      result.push @makeCode ")"
 
     result
 
@@ -1317,7 +1323,16 @@ exports.Class = class Class extends Base
       @variable.error message if message
     if name in JS_FORBIDDEN then "_#{name}" else name
 
-  walkBody: ->
+  setParentRef: (o) ->
+    return if @_setParentRef
+    @_setParentRef = yes
+
+    if @parent?.shouldCache()
+      ref = new IdentifierLiteral o.scope.freeVariable 'ref'
+      @assignParentRef = new Assign ref, @parent
+      @parent = ref
+
+  walkBody: (o) ->
     @ctor          = null
     @boundMethods  = []
     executableBody = null
@@ -1367,7 +1382,8 @@ exports.Class = class Class extends Base
         method.context = @name
       else if method.bound
         @boundMethods.push method.name
-        method.constructorName = @name
+        @setParentRef(o)
+        method.parentClass = @parent
 
     if initializer.length isnt expressions.length
       @body.expressions = (expression.hoist() for expression in initializer)
@@ -2154,9 +2170,9 @@ exports.Code = class Code extends Base
     wasEmpty = @body.isEmpty()
     @body.expressions.unshift thisAssignments... unless @expandCtorSuper thisAssignments
     @body.expressions.unshift exprs...
-    if @isMethod and @bound and not @isStatic and @constructorName
+    if @isMethod and @bound and not @isStatic and @parentClass
       _boundMethodCheck = new Value new Literal utility '_boundMethodCheck', o
-      @body.expressions.unshift new Call(_boundMethodCheck, [new Value(new ThisLiteral), new Value new Literal @constructorName])
+      @body.expressions.unshift new Call(_boundMethodCheck, [new Value(new ThisLiteral), @parentClass])
     @body.makeReturn() unless wasEmpty or @noReturn
 
     # Assemble the output

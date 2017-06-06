@@ -1743,3 +1743,22 @@ test 'Bound method of prop-named class called as callback is ok', ->
   b = new Hive.Bee
   {baseBound} = b
   eq baseBound(), 3
+
+test 'Bound method of class with expression base class called as callback is ok', ->
+  calledB = no
+  B = ->
+    throw new Error if calledB
+    calledB = yes
+    class
+  class A extends B()
+    constructor: (@prop = 3) ->
+      super()
+      f = @derivedBound
+      eq f(), 3
+
+    derivedBound: =>
+      @prop
+
+  b = new A
+  {derivedBound} = b
+  eq derivedBound(), 3
