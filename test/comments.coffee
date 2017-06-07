@@ -213,57 +213,50 @@ test "#2916: block comment before implicit call with implicit object", ->
     a: yes
 
 test "#3132: Format single-line block comment nicely", ->
-  input = """
-  ### Single-line block comment without additional space here => ###"""
-
-  output = """
+  eqJS """
+  ### Single-line block comment without additional space here => ###""",
+  """
   /* Single-line block comment without additional space here => */
   """
-  eq toJS(input), output
 
 test "#3132: Format multi-line block comment nicely", ->
-  input = """
+  eqJS """
   ###
   # Multi-line
   # block
   # comment
-  ###"""
-
-  output = """
+  ###""",
+  """
   /*
    * Multi-line
    * block
    * comment
    */
   """
-  eq toJS(input), output
 
 test "#3132: Format simple block comment nicely", ->
-  input = """
+  eqJS """
   ###
   No
   Preceding hash
-  ###"""
-
-  output = """
+  ###""",
+  """
   /*
   No
   Preceding hash
    */
   """
 
-  eq toJS(input), output
 
 test "#3132: Format indented block-comment nicely", ->
-  input = """
+  eqJS """
   fn = () ->
     ###
     # Indented
     Multiline
     ###
-    1"""
-
-  output = """
+    1""",
+  """
   var fn;
 
   fn = function() {
@@ -275,21 +268,19 @@ test "#3132: Format indented block-comment nicely", ->
     return 1;
   };
   """
-  eq toJS(input), output
 
 # Although adequately working, block comment-placement is not yet perfect.
 # (Considering a case where multiple variables have been declared …)
 test "#3132: Format jsdoc-style block-comment nicely", ->
-  input = """
+  eqJS """
   ###*
   # Multiline for jsdoc-"@doctags"
   #
   # @type {Function}
   ###
   fn = () -> 1
+  """,
   """
-
-  output = """
   /**
    * Multiline for jsdoc-"@doctags"
    *
@@ -300,21 +291,19 @@ test "#3132: Format jsdoc-style block-comment nicely", ->
   fn = function() {
     return 1;
   };"""
-  eq toJS(input), output
 
 # Although adequately working, block comment-placement is not yet perfect.
 # (Considering a case where multiple variables have been declared …)
 test "#3132: Format hand-made (raw) jsdoc-style block-comment nicely", ->
-  input = """
+  eqJS """
   ###*
    * Multiline for jsdoc-"@doctags"
    *
    * @type {Function}
   ###
   fn = () -> 1
+  """,
   """
-
-  output = """
   /**
    * Multiline for jsdoc-"@doctags"
    *
@@ -325,12 +314,11 @@ test "#3132: Format hand-made (raw) jsdoc-style block-comment nicely", ->
   fn = function() {
     return 1;
   };"""
-  eq toJS(input), output
 
 # Although adequately working, block comment-placement is not yet perfect.
 # (Considering a case where multiple variables have been declared …)
 test "#3132: Place block-comments nicely", ->
-  input = """
+  eqJS """
   ###*
   # A dummy class definition
   #
@@ -350,9 +338,8 @@ test "#3132: Place block-comments nicely", ->
     ###
     @instance = new DummyClass()
 
+  """,
   """
-
-  output = """
   /**
    * A dummy class definition
    *
@@ -383,22 +370,19 @@ test "#3132: Place block-comments nicely", ->
     return DummyClass;
 
   })();"""
-  eq toJS(input), output
 
 test "#3638: Demand a whitespace after # symbol", ->
-  input = """
+  eqJS """
   ###
   #No
   #whitespace
-  ###"""
-
-  output = """
+  ###""",
+  """
   /*
   #No
   #whitespace
    */"""
 
-  eq toJS(input), output
 
 test "#3761: Multiline comment at end of an object", ->
   anObject =
