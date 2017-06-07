@@ -207,14 +207,19 @@ grammar =
     o 'Identifier'
     o 'Property'
     o 'ThisProperty'
+    o 'ObjDestructIdentifier'
   ]
-
+  
+  ObjDestructIdentifier: [
+    o 'SimpleObjAssignable . Property',                             -> (new Value $1).add(new Access $3)
+    o 'SimpleObjAssignable INDEX_START IndexValue INDEX_END',       -> (new Value $1).add($3)
+  ]
+ 
   ObjAssignable: [
     o 'SimpleObjAssignable'
     o 'AlphaNumeric'
   ]
-  
- 
+   
   # A return statement from a function body.
   Return: [
     o 'RETURN Expression',                      -> new Return $2
