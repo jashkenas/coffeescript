@@ -1421,7 +1421,7 @@ exports.Class = class Class extends Base
       method.name = new (if methodName.shouldCache() then Index else Access) methodName
       method.name.updateLocationDataIfMissing methodName.locationData
       method.ctor = (if @parent then 'derived' else 'base') if methodName.value is 'constructor'
-      method.error 'Cannot define a constructor as a bound function' if method.bound and method.ctor
+      method.error 'Cannot define a constructor as a bound (fat arrow) function' if method.bound and method.ctor
 
     method
 
@@ -1442,8 +1442,8 @@ exports.Class = class Class extends Base
 
   proxyBoundMethods: (o) ->
     @ctor.thisAssignments = for name in @boundMethods by -1
-      name = new Value(new ThisLiteral, [ name ]).compile o
-      new Literal "#{name} = #{name}.bind(this)"
+      name = new Value(new ThisLiteral, [ name ])
+      new Assign name, new Call(new Value(name, [new Access new PropertyName 'bind']), [new ThisLiteral])
 
     null
 
@@ -3132,7 +3132,7 @@ UTILITIES =
   boundMethodCheck: -> "
     function(instance, Constructor) {
       if (!(instance instanceof Constructor)) {
-        throw new Error('Bound instance method accessed before binding')
+        throw new Error('Bound instance method accessed before binding');
       }
     }
   "
