@@ -74,6 +74,10 @@ $(document).ready ->
           editors[index + 1].setValue output
         , lastCompilationElapsedTime
 
+  # Allow middle mouse button scrolling
+  $('.CodeMirror-sizer').on 'mousedown', (event) ->
+    event.stopPropagation() if event.button is 1
+
 
   # Handle the code example buttons
   $('[data-action="run-code-example"]').click ->
