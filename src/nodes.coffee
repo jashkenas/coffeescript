@@ -868,6 +868,91 @@ exports.Index = class Index extends Base
 
 #### Range
 
+# A JSX element
+exports.JsxElement = class JsxElement extends Base
+
+  # children: ['children', 'attributes']
+
+  constructor: (options) ->
+    {@name, children: @children_ = [], @attributes = {}, @shorthands = {}} = options
+    @attributes.object ?= {}
+    @attributes.list   ?= []
+    @shorthands.classes ?= []
+
+  compileNode: (o) ->
+    compiledIdAttribute = do =>
+      return [] unless @shorthands.id
+      [@makeCode " id='#{@shorthands.id}'"]
+
+    compiledClassAttribute = do =>
+      return [] unless @shorthands.classes.length
+      [@makeCode " className='#{@shorthands.classes.join ' '}'"]
+
+    compiledListAttributes = do =>
+      return [] unless @attributes.list.length
+      attr = []
+      for {name, value} in @attributes.list
+        attr.push @makeCode ' '
+        attr.push @makeCode name
+        attr.push @makeCode '='
+        if value instanceof StringLiteral
+          attr.push value.compileToFragments(o)...
+        else # expression value
+          attr.push @makeCode '{'
+          attr.push value.compileToFragments(o)...
+          attr.push @makeCode '}'
+      attr
+
+    compiledObjectAttributes =
+      @attributes.object?.compileToFragments?(o) ? []
+
+    startTag = [
+      @makeCode '<'
+      @makeCode @name
+      compiledIdAttribute...
+      compiledClassAttribute...
+      compiledListAttributes...
+      compiledObjectAttributes...
+      @makeCode '>'
+    ]
+
+    isString = (obj) -> Object.prototype.toString.call(obj) is '[object String]'
+    compiledChildren = do =>
+      return [] unless @children_.length
+
+      compiled =
+        flatten(
+          for child in @children_
+            [
+              @makeCode ' '
+              (if isString child # content
+                [@makeCode child]
+              else if child instanceof JsxElement
+                child.compileToFragments(o)
+              else # expression
+                [
+                  @makeCode '{'
+                  child.compileToFragments(o)
+                  @makeCode '}'
+                ]
+              )...
+            ]
+        )
+      [initialSpace, compiled...] = compiled
+      compiled
+
+    endTag = [
+      @makeCode '</'
+      @makeCode @name
+      @makeCode '>'
+    ]
+
+    [
+      startTag...
+      compiledChildren...
+      endTag...
+    ]
+
 # A range literal. Ranges can be used to extract portions (slices) of arrays,
 # to specify a range for comprehensions, or as a value, to be expanded into the
 # corresponding array of integers at runtime.
@@ -1061,6 +1146,23 @@ exports.Obj = class Obj extends Base
   assigns: (name) ->
     for prop in @properties when prop.assigns name then return yes
     no
+
+exports.JsxAttributesObj = class JsxAttributesObj extends Obj
+  compileNode: (o) ->
+    answer = []
+    for prop in @properties
+      answer.push @makeCode ' '
+      if prop instanceof Assign
+        prop.context = '='
+        if prop.variable instanceof Value and prop.variable.hasProperties()
+          prop.variable.error 'invalid object key'
+      else if prop instanceof Value and prop.this
+        prop = new Assign prop.properties[0].name, prop, '='
+      else
+        prop = new Assign prop, prop, '='
+      prop.jsxAttribute = yes
+      answer.push prop.compileToFragments(o, LEVEL_TOP)...
+    answer
 
 #### Arr
 
@@ -1456,6 +1558,7 @@ exports.Assign = class Assign extends Base
           o.scope.find varBase.value
 
     val = @value.compileToFragments o, LEVEL_LIST
+    val = [@makeCode('{'), val..., @makeCode('}')] if @jsxAttribute
     @variable.front = true if isValue and @variable.base instanceof Obj
     compiledName = @variable.compileToFragments o, LEVEL_LIST
 
@@ -1465,7 +1568,7 @@ exports.Assign = class Assign extends Base
         compiledName.push @makeCode '"'
       return compiledName.concat @makeCode(": "), val
 
-    answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
+    answer = compiledName.concat @makeCode("#{ if @jsxAttribute then '' else ' '}#{ @context or '=' }#{ if @jsxAttribute then '' else ' '}"), val
     if o.level <= LEVEL_LIST then answer else @wrapInBraces answer
 
   # Brief implementation of recursive pattern matching, when assigning array or

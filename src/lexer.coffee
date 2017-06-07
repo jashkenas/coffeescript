@@ -35,8 +35,8 @@ exports.Lexer = class Lexer
   # Before returning the token stream, run it through the [Rewriter](rewriter.html).
   tokenize: (code, opts = {}) ->
     @literate   = opts.literate  # Are we lexing literate CoffeeScript?
-    @indent     = 0              # The current indentation level.
-    @baseIndent = 0              # The overall minimum indentation level
+    @indent     = opts.initialIndent ? 0 # The current indentation level.
+    @baseIndent = opts.initialIndent ? 0 # The overall minimum indentation level
     @indebt     = 0              # The over-indentation at the current level.
     @outdebt    = 0              # The under-outdentation at the current level.
     @indents    = []             # The stack of all current indentation levels.
@@ -60,6 +60,7 @@ exports.Lexer = class Lexer
     i = 0
     while @chunk = code[i..]
       consumed = \
+           @jsxToken() or
            @identifierToken() or
            @commentToken()    or
            @whitespaceToken() or
@@ -279,6 +280,382 @@ exports.Lexer = class Lexer
 
     end
 
+  # Matches JSX(-Haml) elements
+  jsxToken: ->
+    originalChunk = @chunk
+    return 0 unless @matchJsxElement({topLevel: yes})
+    originalChunk.length - @chunk.length
+
+  consumeChunk: (length) ->
+    return unless length
+    [@chunkLine, @chunkColumn] = @getLineAndColumnFromChunk length
+    @chunk = @chunk[length..]
+
+  matchJsxElement: (opts = {}) ->
+    {topLevel} = opts
+    return unless (matchedHamlElement = @matchJsxHamlElement(opts)) or (matchedTag = @matchJsxStartTag(opts))
+    {elementName} = matchedHamlElement ? matchedTag
+
+    if matchedHamlElement
+      consumedWhitespace = @whitespaceToken() # consume any trailing whitespace
+      @consumeChunk consumedWhitespace
+      return {} if JSX_ELEMENT_IMMEDIATE_CLOSERS.exec(@chunk)
+      hasIndentedBody = 'indent' is @lineToken(dry: yes)
+      return @matchJsxInlineBody({elementName, consumedWhitespace}) unless hasIndentedBody
+      return @matchJsxIndentedBody({elementName, topLevel})
+
+    return {} if matchedTag?.selfClosed
+
+    @matchJsxTagBody({elementName})
+
+  matchJsxTagBody: ({elementName}) ->
+    @token 'JSX_ELEMENT_BODY_START', elementName, 0, 0
+    @consumeChunk(indentedBody = followsNewline = @lineToken()) # consume indent
+    endTag = "</#{elementName}>"
+    errorExpectedEndTag = =>
+      @error "expected JSX end tag #{endTag}"
+    originalIndent = @indent
+    loop
+      {popLevels} = @matchJsxElementIndentedChild {followsNewline, untilEndTag: elementName}
+      errorExpectedEndTag() if popLevels or not @chunk or (outdentNext = 'outdent' is @lineToken(dry: yes)) and not indentedBody
+      if outdentNext
+        {numOutdents, consumed} = @lineToken(returnNumOutdents: yes, noNewlines: yes)
+        errorExpectedEndTag() if numOutdents > 1
+        @consumeChunk consumed
+        justOutdented = yes
+      if /// ^ #{endTag} ///.exec(@chunk)
+        @pair endTag
+        @token 'JSX_END_TAG', endTag
+        @consumeChunk endTag.length
+        return {}
+      errorExpectedEndTag() if justOutdented and @indent < originalIndent
+      followsNewline = @lineToken(dry: yes)
+
+  matchJsxStartTag: ({allowLeadingWhitespace}) ->
+    tagRegex =
+      if allowLeadingWhitespace
+        JSX_TAG_LEADING_WHITESPACE
+      else
+        JSX_TAG
+    return unless match = tagRegex.exec(@chunk)
+    [[], tagOpener, elementName] = match
+    token = @makeToken 'JSX_START_TAG_START', '<'
+    @ends.push {tag: '>', origin: token}
+    @tokens.push token
+    @consumeChunk tagOpener.length
+    @token 'JSX_ELEMENT_NAME', elementName
+    @consumeChunk elementName.length
+    ret = @matchJsxTagAttributes({elementName})
+    selfClosed = ret?.selfClosed
+    {elementName, selfClosed}
+
+  matchJsxHamlElement: ({allowLeadingWhitespace, allowLeadingDotClass}) ->
+    elementRegex =
+      if allowLeadingWhitespace
+        JSX_ELEMENT_LEADING_WHITESPACE
+      else
+        JSX_ELEMENT
+    if match = elementRegex.exec(@chunk)
+      [openingTag, elementName] = match
+      @token 'JSX_ELEMENT_NAME', elementName, 0, openingTag.length
+      @consumeChunk openingTag.length
+      @matchJsxHamlShorthands({allowLeadingDotClass: yes})
+    else if @matchJsxHamlShorthands({allowLeadingDotClass, allowLeadingWhitespace, addImplicitElementName: yes})
+      elementName = 'div'
+    else return
+
+    matchedParenthesizedAttributes = @matchJsxParenthesizedAttributes()
+    @matchJsxObjectAttributes()
+    @matchJsxParenthesizedAttributes() unless matchedParenthesizedAttributes # could be before/after object-style attributes
+    {elementName}
+
+  matchJsxHamlShorthands: (opts = {}) ->
+    {allowLeadingDotClass, allowLeadingWhitespace, addImplicitElementName} = opts
+    allowLeadingDotClass ?= @jsxLeadingDotClassAllowed()
+    matchedId = @matchJsxIdShorthand({addImplicitElementName, allowLeadingWhitespace})
+    unless matchedId
+      return unless allowLeadingDotClass
+      return unless @matchJsxClassShorthand({addImplicitElementName, allowLeadingWhitespace})
+    loop
+      justMatchedId = no
+      matchedId = justMatchedId = @matchJsxIdShorthand() unless matchedId
+      matchedClass = @matchJsxClassShorthand()
+      return yes unless justMatchedId or matchedClass
+
+  matchJsxIdShorthand: (opts = {})->
+    {addImplicitElementName, allowLeadingWhitespace} = opts
+    regex =
+      if allowLeadingWhitespace
+        JSX_ID_SHORTHAND_LEADING_WHITESPACE
+      else
+        JSX_ID_SHORTHAND
+    return unless match = regex.exec(@chunk)
+    @token 'JSX_ELEMENT_NAME', 'div', 0, 0 if addImplicitElementName
+    [[], symbol, id] = match
+    @token 'JSX_ID_SHORTHAND_SYMBOL', '#'
+    @consumeChunk symbol.length
+    @token 'JSX_ID_SHORTHAND', id
+    @consumeChunk id.length
+    yes
+
+  matchJsxClassShorthand: (opts = {})->
+    {addImplicitElementName, allowLeadingWhitespace} = opts
+    regex =
+      if allowLeadingWhitespace
+        JSX_CLASS_SHORTHAND_LEADING_WHITESPACE
+      else
+        JSX_CLASS_SHORTHAND
+    return unless match = regex.exec(@chunk)
+    @token 'JSX_ELEMENT_NAME', 'div', 0, 0 if addImplicitElementName
+    [[], symbol, klass] = match
+    @token 'JSX_CLASS_SHORTHAND_SYMBOL', '.'
+    @consumeChunk symbol.length
+    @token 'JSX_CLASS_SHORTHAND', klass
+    @consumeChunk klass.length
+    yes
+
+  matchJsxIndentedBody: ({elementName, topLevel}) ->
+    @token 'JSX_ELEMENT_BODY_START', elementName, 0, 0
+    @consumeChunk @lineToken() # consume indent
+    followsNewline = yes
+    loop
+      {popLevels} = @matchJsxElementIndentedChild {followsNewline}
+      if popLevels
+        @token 'TERMINATOR', '\n', 0, 0 if topLevel
+        return popLevels: popLevels - 1
+      if not @chunk or 'outdent' is @lineToken(dry: yes)
+        {numOutdents, consumed} = @lineToken(returnNumOutdents: yes, noNewlines: not topLevel)
+        @consumeChunk consumed
+        return popLevels: numOutdents - 1
+      followsNewline = @lineToken(dry: yes)
+
+  matchJsxInlineBody: ({elementName, consumedWhitespace}) ->
+    match = JSX_ELEMENT_INLINE_EQUALS_EXPRESSION.exec(@chunk)
+    if match
+      [full, equals, expression] = match
+      @token 'JSX_ELEMENT_BODY_START', elementName, 0, 0
+      @token '{', '=', 0, 0
+      @consumeChunk equals.length
+
+      [line, column] = @getLineAndColumnFromChunk 0
+      nested = new Lexer().tokenize expression, {line, column}
+
+      # Remove leading 'TERMINATOR' (if any).
+      nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
+
+      @jsxForceExpression({nested})
+
+      @tokens.push nested...
+      @consumeChunk expression.length
+      [..., close] = nested
+      @token '}', '}', 0, 0, ['', 'end of inline equals expression', close[2]]
+      @token 'JSX_ELEMENT_INLINE_BODY_END', elementName, 0, 0
+      return {}
+    return {} unless JSX_ELEMENT_INLINE_BODY_START.exec(@chunk)
+    @error 'must include whitespace before JSX element body' unless consumedWhitespace or not @chunk
+
+    alreadyStarted = no
+    loop
+      @consumeChunk @whitespaceToken()
+      if match = JSX_ELEMENT_INLINE_CONTENT.exec(@chunk)
+        @token 'JSX_ELEMENT_BODY_START', elementName, 0, 0 unless alreadyStarted
+        alreadyStarted = yes
+        [content] = match
+        contentLength = content.length
+        content = content.replace TRAILING_SPACES, ''
+        content = content.replace SIMPLE_STRING_OMIT, ' '
+        @token 'JSX_ELEMENT_CONTENT', content
+        @consumeChunk contentLength
+      else if match = JSX_ELEMENT_INLINE_EXPRESSION_START.exec(@chunk)
+        @token 'JSX_ELEMENT_BODY_START', elementName, 0, 0 unless alreadyStarted
+        alreadyStarted = yes
+        endOfExpressionOffset = @offsetOfNextOutdent(yes)
+        [line, column] = @getLineAndColumnFromChunk 0
+        {tokens: nested, index} = new Lexer().tokenize @chunk[...endOfExpressionOffset], {line, column, untilBalanced: on}
+
+        # Remove leading 'TERMINATOR' (if any).
+        nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
+
+        @jsxForceExpression({nested, inset: 1})
+
+        [..., close] = nested
+        close.origin = ['', 'end of inline expression', close[2]]
+
+        @tokens.push nested...
+        @consumeChunk index
+      else break
+    @token 'JSX_ELEMENT_INLINE_BODY_END', elementName, 0, 0
+    {}
+
+  matchJsxObjectAttributes: ->
+    return unless JSX_OBJECT_ATTRIBUTES_START.exec(@chunk)
+
+    @token 'JSX_OBJECT_ATTRIBUTES_START', '{', 0, 0
+    # TODO: should use offsetOfNextOutdent() to not look past outdent for closing }?
+    [line, column] = @getLineAndColumnFromChunk 0
+    {tokens: nested, index} =
+      new Lexer().tokenize @chunk, {line, column, untilBalanced: on}
+
+    # TODO: check for non-null nested here and elsewhere?
+    [..., close] = nested
+    close.origin = ['', 'end of object attributes', close[2]]
+
+    # Remove leading 'TERMINATOR' (if any).
+    nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
+
+    @tokens.push nested...
+    @consumeChunk index
+    @token 'JSX_OBJECT_ATTRIBUTES_END', '}', 0, 0
+    yes
+
+  matchJsxTagAttributes: ({elementName}) ->
+    @matchJsxNormalAttributes
+      reachedEnd: =>
+        if JSX_TAG_ATTRIBUTES_END.exec(@chunk)
+          @pair '>'
+          token = @makeToken 'JSX_START_TAG_END', '>'
+          @ends.push {tag: "</#{elementName}>", origin: token}
+          @tokens.push token
+          @consumeChunk '>'.length
+          return yes
+        return no unless JSX_TAG_SELF_CLOSE.exec(@chunk)
+        @pair '>'
+        @token 'JSX_START_TAG_END', '>', 0, 0
+        @token 'JSX_ELEMENT_BODY_START', elementName, 0, 0
+        endTag = "</#{elementName}>"
+        @token 'JSX_END_TAG', endTag, 0, 0
+        @consumeChunk '/>'.length
+        selfClosed: yes
+
+  matchJsxParenthesizedAttributes: ->
+    return unless JSX_PARENTHESIZED_ATTRIBUTES_START.exec(@chunk)
+
+    token = @makeToken 'JSX_PARENTHESIZED_ATTRIBUTES_START', '('
+    @ends.push {tag: 'JSX_PARENTHESIZED_ATTRIBUTES_END', origin: token}
+    @tokens.push token
+    @consumeChunk '('.length
+
+    @matchJsxNormalAttributes
+      reachedEnd: =>
+        return no unless JSX_PARENTHESIZED_ATTRIBUTES_END.exec(@chunk)
+        @pair 'JSX_PARENTHESIZED_ATTRIBUTES_END'
+        @token 'JSX_PARENTHESIZED_ATTRIBUTES_END', ')'
+        @consumeChunk ')'.length
+        yes
+
+  matchJsxNormalAttributes: ({reachedEnd}) ->
+    loop
+      @consumeChunk @whitespaceToken()
+      @consumeChunk @lineToken()
+      break if end = reachedEnd()
+      @error 'expected JSX attribute' unless match = JSX_PARENTHESIZED_ATTRIBUTE.exec(@chunk)
+      [full, name, preEqualsSpace, postEqualsSpace, startExpressionValue, doubleQuotedStringValue, singleQuotedStringValue] = match
+      @token 'JSX_ATTRIBUTE_NAME', name
+      @consumeChunk name.length + preEqualsSpace.length
+      @token '=', '='
+      @consumeChunk '='.length + postEqualsSpace.length
+      if stringValue = doubleQuotedStringValue ? singleQuotedStringValue
+        @token 'STRING', stringValue
+        @consumeChunk stringValue.length
+      else
+        [line, column] = @getLineAndColumnFromChunk 0
+        {tokens: nested, index} =
+          new Lexer().tokenize @chunk, {line, column, untilBalanced: on}
+
+        [..., close] = nested
+        close.origin = ['', 'end of attribute expression value', close[2]]
+
+        # Remove leading 'TERMINATOR' (if any).
+        nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
+
+        @jsxForceExpression({nested, inset: 1})
+
+        @tokens.push nested...
+        @consumeChunk index
+    end ? yes
+
+  matchJsxElementIndentedChild: (opts) ->
+    @matchJsxElementIndentedExpression(opts)      ? \
+    @matchJsxElement(allowLeadingWhitespace: yes, allowLeadingDotClass: yes) ? \
+    @matchJsxElementIndentedContentLine(opts)
+
+  offsetOfNextOutdent: (greaterThan = no) =>
+    match =
+      ///
+        \n
+        #{' '} {0, #{if greaterThan then @indent - 1 else @indent}}
+        \S
+      ///.exec @chunk
+    return @chunk.length unless match # no outdent remaining
+
+    match.index
+
+  matchJsxElementIndentedExpression: ({followsNewline}) ->
+    if followsNewline and match = JSX_ELEMENT_INDENTED_EQUALS_EXPRESSION_START.exec(@chunk)
+      @token '{', '=', 0, 0
+      @consumeChunk match[0].length
+
+      endOfExpressionOffset = @offsetOfNextOutdent()
+      [line, column] = @getLineAndColumnFromChunk 0
+      nested = new Lexer().tokenize @chunk[...endOfExpressionOffset], {line, column}
+
+      # Remove leading 'TERMINATOR' (if any).
+      nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
+
+      @jsxForceExpression({nested})
+
+      @tokens.push nested...
+      @consumeChunk endOfExpressionOffset
+
+      [..., close] = nested
+      @token '}', '}', 0, 0, ['', 'end of equals expression', close[2]]
+      return {}
+
+    if match = JSX_ELEMENT_INDENTED_EXPRESSION_START.exec(@chunk)
+      endOfExpressionOffset = @offsetOfNextOutdent(yes)
+
+      # consume but don't record line token(s)
+      if match = WHITESPACE_INCLUDING_NEWLINES.exec(@chunk)
+        @consumeChunk match[0].length
+
+      [line, column] = @getLineAndColumnFromChunk 0
+      {tokens: nested, index} = new Lexer().tokenize @chunk[...endOfExpressionOffset], {line, column, untilBalanced: on, initialIndent: @indent}
+
+      # Remove leading 'TERMINATOR' (if any).
+      nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
+
+      @jsxForceExpression({nested, inset: 1})
+
+      [..., close] = nested
+      close.origin = ['', 'end of indented expression', close[2]]
+
+      @tokens.push nested...
+      @consumeChunk index
+
+      return {}
+
+  jsxForceExpression: ({nested, inset = 0}) ->
+    return unless (token for token in nested when token[0] in ['FOR', 'SWITCH', 'WHILE', 'UNTIL', 'IF']).length
+
+    nested.splice inset, 0,
+      @makeToken 'IDENTIFIER', 'FORCE_EXPRESSION', 0, 0
+      @makeToken '=', '=', 0, 0
+      @makeToken '(', '(', 0, 0
+    nested.splice nested.length - inset, 0,
+      @makeToken ')', ')', 0, 0
+
+  matchJsxElementIndentedContentLine: ({untilEndTag}) ->
+    regex =
+      if untilEndTag
+        /// ^ \s* ( (?: [^\n\{<] | <(?!/#{untilEndTag}>) )* ) ///
+      else
+        JSX_ELEMENT_INDENTED_CONTENT_LINE
+    [match, content] = regex.exec(@chunk)
+    return {} unless match.length
+    @token 'JSX_ELEMENT_CONTENT', content.trim(), 0, match.length if NON_WHITESPACE.exec(match)
+    @consumeChunk match.length
+    {}
+
   # Matches and consumes comments.
   commentToken: ->
     return 0 unless match = @chunk.match COMMENT
@@ -362,7 +739,8 @@ exports.Lexer = class Lexer
   #
   # Keeps track of the level of indentation, because a single outdent token
   # can close multiple indents, so we need to know how far in we happen to be.
-  lineToken: ->
+  lineToken: (opts = {}) ->
+    {dry, returnNumOutdents, noNewlines} = opts
     return 0 unless match = MULTI_DENT.exec @chunk
     indent = match[0]
 
@@ -371,37 +749,51 @@ exports.Lexer = class Lexer
     @seenExport = no unless @exportSpecifierList
 
     size = indent.length - 1 - indent.lastIndexOf '\n'
-    noNewlines = @unfinished()
+    noNewlines ?= @unfinished()
 
-    if size - @indebt is @indent
-      if noNewlines then @suppressNewlines() else @newlineToken 0
-      return indent.length
+    action =
+      switch
+        when size - @indebt is @indent
+          'consumedIndebt'
+        when size > @indent
+          'indent'
+        when size < @baseIndent
+          'missing'
+        else
+           'outdent'
+    return action if dry
 
-    if size > @indent
-      if noNewlines or @tag() is 'RETURN'
-        @indebt = size - @indent
-        @suppressNewlines()
-        return indent.length
-      unless @tokens.length
-        @baseIndent = @indent = size
-        return indent.length
-      diff = size - @indent + @outdebt
-      @token 'INDENT', diff, indent.length - size, size
-      @indents.push diff
-      @ends.push {tag: 'OUTDENT'}
-      @outdebt = @indebt = 0
-      @indent = size
-    else if size < @baseIndent
-      @error 'missing indentation', offset: indent.length
-    else
-      @indebt = 0
-      @outdentToken @indent - size, noNewlines, indent.length
+    switch action
+      when 'consumedIndebt'
+        if noNewlines then @suppressNewlines() else @newlineToken 0
+      when 'indent'
+        if noNewlines or @tag() is 'RETURN'
+          @indebt = size - @indent
+          @suppressNewlines()
+          break
+        unless @tokens.length
+          @baseIndent = @indent = size
+          break
+        diff = size - @indent + @outdebt
+        @token 'INDENT', diff, indent.length - size, size
+        @indents.push diff
+        @ends.push {tag: 'OUTDENT'}
+        @outdebt = @indebt = 0
+        @indent = size
+      when 'missing'
+        @error 'missing indentation', offset: indent.length
+      else # outdent
+        @indebt = 0
+        numOutdents = @outdentToken @indent - size, noNewlines, indent.length
+        return {numOutdents, consumed: indent.length} if returnNumOutdents
+
     indent.length
 
   # Record an outdent token or multiple tokens, if we happen to be moving back
   # inwards past several recorded indents. Sets new @indent value.
   outdentToken: (moveOut, noNewlines, outdentLength) ->
     decreasedIndent = @indent - moveOut
+    numOutdents = 0
     while moveOut > 0
       lastIndent = @indents[@indents.length - 1]
       if not lastIndent
@@ -421,13 +813,14 @@ exports.Lexer = class Lexer
         # pair might call outdentToken, so preserve decreasedIndent
         @pair 'OUTDENT'
         @token 'OUTDENT', moveOut, 0, outdentLength
+        numOutdents++
         moveOut -= dent
     @outdebt -= moveOut if dent
     @tokens.pop() while @value() is ';'
 
     @token 'TERMINATOR', '\n', outdentLength, 0 unless @tag() is 'TERMINATOR' or noNewlines
     @indent = decreasedIndent
-    this
+    numOutdents
 
   # Matches and consumes non-meaningful whitespace. Tag the previous token
   # as being “spaced”, because there are some cases where it makes a difference.
@@ -758,10 +1151,25 @@ exports.Lexer = class Lexer
 
   # Are we in the midst of an unfinished expression?
   unfinished: ->
-    LINE_CONTINUER.test(@chunk) or
+    regex =
+      if @jsxLeadingDotClassAllowed()
+        LINE_CONTINUER_NO_DOT
+      else
+        LINE_CONTINUER
+    regex.test(@chunk) or
     @tag() in ['\\', '.', '?.', '?::', 'UNARY', 'MATH', 'UNARY_MATH', '+', '-',
                '**', 'SHIFT', 'RELATION', 'COMPARE', '&', '^', '|', '&&', '||',
                'BIN?', 'THROW', 'EXTENDS', 'DEFAULT']
+
+  jsxLeadingDotClassAllowed: ->
+    return yes unless @tokens.length
+    return yes if @lastNonIndentTag() in CANT_PRECEDE_DOT_PROPERTY
+    no
+
+  lastNonIndentTag: ->
+    index = @tokens.length
+    while tag = @tokens[--index]?[0]
+      return tag unless tag is 'INDENT'
 
   formatString: (str, options) ->
     @replaceUnicodeCodePointEscapes str.replace(STRING_OMIT, '$1'), options
@@ -970,6 +1378,44 @@ MULTI_DENT = /^(?:\n[^\n\S]*)+/
 JSTOKEN      = ///^ `(?!``) ((?: [^`\\] | \\[\s\S]           )*) `   ///
 HERE_JSTOKEN = ///^ ```     ((?: [^`\\] | \\[\s\S] | `(?!``) )*) ``` ///
 
+JSX_ELEMENT =                    /// ^     %([a-zA-Z][a-zA-Z_0-9]*) ///
+JSX_ELEMENT_LEADING_WHITESPACE = /// ^ \s* %([a-zA-Z][a-zA-Z_0-9]*) ///
+JSX_ID_SHORTHAND =                    /// ^     (\#) ([a-zA-Z][a-zA-Z_0-9\-]*) ///
+JSX_ID_SHORTHAND_LEADING_WHITESPACE = /// ^ (\s* \#) ([a-zA-Z][a-zA-Z_0-9\-]*) ///
+JSX_CLASS_SHORTHAND =                    /// ^     (\.) ([a-zA-Z][a-zA-Z_0-9\-]*) ///
+JSX_CLASS_SHORTHAND_LEADING_WHITESPACE = /// ^ (\s* \.) ([a-zA-Z][a-zA-Z_0-9\-]*) ///
+JSX_ELEMENT_IMMEDIATE_CLOSERS = /// ^ (?: \, | \} | \) | \] | for\s | unless\s | if\s ) ///
+JSX_ELEMENT_INLINE_EQUALS_EXPRESSION = /// ^ (= \s*) ([^\n]+) ///
+JSX_ELEMENT_INLINE_BODY_START = /// ^ [^\n] ///
+JSX_ELEMENT_INLINE_CONTENT = /// ^ [^\n\{]+ ///
+JSX_ELEMENT_INLINE_EXPRESSION_START = /// ^ \{ ///
+JSX_ELEMENT_INDENTED_EQUALS_EXPRESSION_START = /// ^ \s* = ///
+JSX_ELEMENT_INDENTED_EXPRESSION_START = /// ^ \s* { ///
+JSX_ELEMENT_INDENTED_CONTENT_LINE = /// ^ \s* ([^\n\{]*) ///
+JSX_PARENTHESIZED_ATTRIBUTES_START = /// ^ \( ///
+JSX_PARENTHESIZED_ATTRIBUTES_END   = /// ^ \) ///
+JSX_PARENTHESIZED_ATTRIBUTE = ///
+  ^
+  ([a-zA-Z][a-zA-Z_\-0-9]*)      # attribute name
+  (\s*)
+  =
+  (\s*) 
+  (?:
+    (\{)                           # start expression attribute value
+    |
+    (" (?: [^\\"] | \\[\s\S] )* ") # double-quoted string attribute value
+    |
+    (' (?: [^\\'] | \\[\s\S] )* ') # single-quoted string attribute value
+  )
+///
+JSX_OBJECT_ATTRIBUTES_START = /// ^ \{ ///
+JSX_TAG =                    /// ^     (<) ([a-zA-Z][a-zA-Z_0-9]*) ///
+JSX_TAG_LEADING_WHITESPACE = /// ^ (\s* <) ([a-zA-Z][a-zA-Z_0-9]*) ///
+JSX_TAG_ATTRIBUTES_END = /// ^ > ///
+JSX_TAG_SELF_CLOSE = /// ^ /> ///
+NON_WHITESPACE = /// \S ///
+WHITESPACE_INCLUDING_NEWLINES = /^\s+/
+
 # String-matching-regexes.
 STRING_START   = /^(?:'''|"""|'|")/
 
@@ -1014,7 +1460,12 @@ POSSIBLY_DIVISION   = /// ^ /=?\s ///
 # Other regexes.
 HERECOMMENT_ILLEGAL = /\*\//
 
-LINE_CONTINUER      = /// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///
+LINE_CONTINUER        = /// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///
+LINE_CONTINUER_NO_DOT = /// ^ \s* (?: , | :: ) ///
+CANT_PRECEDE_DOT_PROPERTY = [
+  'RETURN', '(', '->', '=>', '=', 'CALL_START'
+  'JSX_ELEMENT_NAME', 'JSX_START_TAG_END', 'JSX_ELEMENT_BODY_START'
+]
 
 STRING_INVALID_ESCAPE = ///
   ( (?:^|[^\\]) (?:\\\\)* )        # make sure the escape isn’t escaped

@@ -298,6 +298,7 @@ grammar =
     o 'Literal',                                -> new Value $1
     o 'Parenthetical',                          -> new Value $1
     o 'Range',                                  -> new Value $1
+    o 'JsxElement',                             -> new Value $1
     o 'This'
   ]
 
@@ -466,6 +467,112 @@ grammar =
   # The CoffeeScript range literal.
   Range: [
     o '[ Expression RangeDots Expression ]',    -> new Range $2, $4, $3
+  ]
+
+  JsxElement: [
+    o 'JsxTag'
+    o 'JsxHamlElement'
+  ]
+
+  JsxTag: [
+    o 'JsxStartTag JSX_ELEMENT_BODY_START JsxTagChildren JSX_END_TAG', -> new JsxElement name: $1.name, attributes: $1.attributes, children: $3
+    o 'JsxStartTag JSX_ELEMENT_BODY_START JSX_END_TAG',                -> new JsxElement name: $1.name, attributes: $1.attributes
+  ]
+
+  JsxStartTag: [
+    o 'JSX_START_TAG_START JSX_ELEMENT_NAME JSX_START_TAG_END',                            -> name: $2
+    o 'JSX_START_TAG_START JSX_ELEMENT_NAME JsxParenthesizedAttributes JSX_START_TAG_END', -> name: $2, attributes: {list: $3}
+    o 'JSX_START_TAG_START JSX_ELEMENT_NAME INDENT OUTDENT JSX_START_TAG_END',             -> name: $2, attributes: {list: $3}
+  ]
+
+  JsxTagChildren: [
+    o 'JsxElementChildren'
+    o 'INDENT JsxElementChildren OUTDENT',            -> $2
+  ]
+
+  JsxHamlElement: [
+    o 'JSX_ELEMENT_NAME',                                                                               -> new JsxElement name: $1
+    o 'JSX_ELEMENT_NAME JsxElementShorthands',                                                          -> new JsxElement name: $1, shorthands: $2
+    o 'JSX_ELEMENT_NAME JsxAttributes',                                                                 -> new JsxElement name: $1, attributes: $2
+    o 'JSX_ELEMENT_NAME JsxElementShorthands JsxAttributes',                                            -> new JsxElement name: $1, shorthands: $2, attributes: $3
+    o 'JSX_ELEMENT_NAME JsxAttributes JSX_ELEMENT_BODY_START JsxElementChildren_',                      -> new JsxElement name: $1, attributes: $2, children: $4
+    o 'JSX_ELEMENT_NAME JsxElementShorthands JsxAttributes JSX_ELEMENT_BODY_START JsxElementChildren_', -> new JsxElement name: $1, shorthands: $2, attributes: $3, children: $5
+    o 'JSX_ELEMENT_NAME JSX_ELEMENT_BODY_START JsxElementChildren_',                                    -> new JsxElement name: $1, children: $3
+    o 'JSX_ELEMENT_NAME JsxElementShorthands JSX_ELEMENT_BODY_START JsxElementChildren_',               -> new JsxElement name: $1, shorthands: $2, children: $4
+  ]
+
+  JsxElementShorthands: [
+    o 'JsxElementShorthandClasses',                                                  -> classes: $1
+    o 'JsxElementShorthandId',                                                       -> id: $1
+    o 'JsxElementShorthandId JsxElementShorthandClasses',                            -> classes: $2, id: $1
+    o 'JsxElementShorthandClasses JsxElementShorthandId JsxElementShorthandClasses', -> classes: $1.concat($2), id: $2
+    o 'JsxElementShorthandClasses JsxElementShorthandId',                            -> classes: $1, id: $2
+  ]
+
+  JsxElementShorthandId: [
+    o 'JSX_ID_SHORTHAND_SYMBOL JSX_ID_SHORTHAND', -> $2
+  ]
+
+  JsxElementShorthandClasses: [
+    o 'JsxElementShorthandClass',                            -> [$1]
+    o 'JsxElementShorthandClasses JsxElementShorthandClass', -> $1.concat $2
+  ]
+
+  JsxElementShorthandClass: [
+    o 'JSX_CLASS_SHORTHAND_SYMBOL JSX_CLASS_SHORTHAND', -> $2
+  ]
+
+  JsxAttributes: [
+    o 'JsxParenthesizedAttributes_',                      -> list: $1
+    o 'JsxParenthesizedAttributes_ JsxObjectAttributes_', -> list: $1, object: $2
+    o 'JsxObjectAttributes_ JsxParenthesizedAttributes_', -> list: $2, object: $1
+    o 'JsxObjectAttributes_',                             -> object: $1
+  ]
+
+  JsxParenthesizedAttributes_: [
+    o 'JSX_PARENTHESIZED_ATTRIBUTES_START JsxParenthesizedAttributes JSX_PARENTHESIZED_ATTRIBUTES_END', -> $2
+  ]
+
+  JsxParenthesizedAttributes: [
+    o 'JsxParenthesizedAttribute',                            -> [$1]
+    o 'JsxParenthesizedAttributes JsxParenthesizedAttribute', -> $1.concat $2
+    o 'INDENT JsxParenthesizedAttributes OUTDENT',            -> $2
+    o 'JsxParenthesizedAttributes TERMINATOR',                -> $1
+    o 'JsxParenthesizedAttributes INDENT JsxParenthesizedAttributes OUTDENT', -> $1.concat $3
+  ]
+
+  JsxParenthesizedAttribute: [
+    o 'JSX_ATTRIBUTE_NAME = JsxParenthesizedAttributeValue', -> name: $1, value: $3
+  ]
+
+  JsxParenthesizedAttributeValue: [
+    o 'STRING',         -> new StringLiteral $1
+    o '{ Expression }', -> $2
+  ]
+
+  JsxObjectAttributes_: [
+    o 'JSX_OBJECT_ATTRIBUTES_START JsxAttributesObject JSX_OBJECT_ATTRIBUTES_END', -> $2
+  ]
+
+  JsxAttributesObject: [
+    o '{ AssignList OptComma }', -> new JsxAttributesObj $2, $1.generated
+  ]
+
+  JsxElementChildren_: [
+    o 'JsxElementChildren JSX_ELEMENT_INLINE_BODY_END', -> $1
+    o 'INDENT JsxElementChildren OUTDENT',              -> $2
+  ]
+
+  JsxElementChildren: [
+    o 'JsxElementChild',                    -> [$1]
+    o 'JsxElementChildren JsxElementChild', -> $1.concat $2
+  ]
+
+  JsxElementChild: [
+    o 'JSX_ELEMENT_CONTENT',           -> $1
+    o 'JsxElement',                    -> $1
+    o '{ Expression }',                -> $2
+    o '{ INDENT Expression OUTDENT }', -> $3
   ]
 
   # Array slice literals.
