@@ -2170,8 +2170,8 @@ exports.Code = class Code extends Base
     @body.expressions.unshift thisAssignments... unless @expandCtorSuper thisAssignments
     @body.expressions.unshift exprs...
     if @isMethod and @bound and not @isStatic and @parentClass
-      _boundMethodCheck = new Value new Literal utility '_boundMethodCheck', o
-      @body.expressions.unshift new Call(_boundMethodCheck, [new Value(new ThisLiteral), @parentClass])
+      boundMethodCheck = new Value new Literal utility 'boundMethodCheck', o
+      @body.expressions.unshift new Call(boundMethodCheck, [new Value(new ThisLiteral), @parentClass])
     @body.makeReturn() unless wasEmpty or @noReturn
 
     # Assemble the output
@@ -3129,7 +3129,7 @@ exports.If = class If extends Base
 
 UTILITIES =
   modulo: -> 'function(a, b) { return (+a % (b = +b) + b) % b; }'
-  _boundMethodCheck: -> "
+  boundMethodCheck: -> "
     function(instance, Constructor) {
       if (!(instance instanceof Constructor)) {
         throw new Error('Bound instance method accessed before binding')
