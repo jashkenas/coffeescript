@@ -123,7 +123,7 @@ test "block comments in objects", ->
   obj = {
     a: a
     ###
-    comment
+    block comment in object
     ###
     b: b
   }
@@ -137,7 +137,7 @@ test "block comments in YAML-style", ->
   obj =
     a: a
     ###
-    comment
+    block comment in YAML-style
     ###
     b: b
 
@@ -158,7 +158,7 @@ test "block comments in functions", ->
 
   fn2 = ->
     ###
-    block comment
+    block comment in function 1
     ###
     nonce
 
@@ -167,7 +167,7 @@ test "block comments in functions", ->
   fn3 = ->
     nonce
   ###
-  block comment
+  block comment in function 2
   ###
 
   eq nonce, fn3()
@@ -175,7 +175,7 @@ test "block comments in functions", ->
   fn4 = ->
     one = ->
       ###
-        block comment
+        block comment in function 3
       ###
       two = ->
         three = ->
@@ -188,7 +188,7 @@ test "block comments inside class bodies", ->
     a: ->
 
     ###
-    Comment
+    Comment in class body 1
     ###
     b: ->
 
@@ -196,7 +196,7 @@ test "block comments inside class bodies", ->
 
   class B
     ###
-    Comment
+    Comment in class body 2
     ###
     a: ->
     b: ->
@@ -204,7 +204,7 @@ test "block comments inside class bodies", ->
   ok B.prototype.a instanceof Function
 
 test "#2037: herecomments shouldn't imply line terminators", ->
-  do (-> ### ###; fail)
+  do (-> ### ###yes; fail)
 
 test "#2916: block comment before implicit call with implicit object", ->
   fn = (obj) -> ok obj.a
