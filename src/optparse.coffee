@@ -1,4 +1,4 @@
-{repeat} = require './helpers'
+{repeat, isString} = require './helpers'
 
 # A simple **OptionParser** class to parse option flags from the command-line.
 # Use it like so:
@@ -28,42 +28,57 @@ exports.OptionParser = class OptionParser
   # parsers that allow you to attach callback actions for every flag. Instead,
   # you're responsible for interpreting the options object.
   parse: (args) ->
+    argsLeft = args[..]
+    options = {}
 
-    options = arguments: []
-    for cmdLineArg, i in args
+    while argsLeft.length > 0
       # The CS option parser is a little odd; options after the first
       # non-option argument are treated as non-option arguments themselves.
       # Executable scripts do not need to have a `--` at the end of the
       # shebang ("#!") line, and if they do, they won't work on Linux.
-      toProcess = trySplitMultiFlag(cmdLineArg) ? trySingleFlag(cmdLineArg)
-      # If the current argument could not be parsed as one or more arguments.
-      unless toProcess?
-        ++i if cmdLineArg is '--'
-        options.arguments = args[i..]
-        break
-
       # Normalize arguments by expanding merged flags into multiple
       # flags. This allows you to have `-wl` be the same as `--watch --lint`.
-      for argFlag, j in toProcess
-        rule = @rules.flagDict[argFlag]
-        unless rule?
-          msg = "unrecognized option: #{argFlag}"
-          msg += " (in multi-flag '#{cmdLineArg}')" if multi?
-          throw new Error msg
-
-        {hasArgument, isList, name} = rule
-
-        unless hasArgument
-          options[name] = true
+      # `flags` are objects of {multi, flag}, where `multi` contains the
+      # original command-line argument which was split, if applicable.
+      # If `arg` is not a string, then we have already processed it.
+      arg = argsLeft.shift()
+      unless isString arg then argsLeft.unshift arg
+      else
+        flags = parseMultiFlag(arg) ? parseSingleFlag(arg)
+        if flags?
+          argsLeft.unshift flags...
         else
-          nextArg = toProcess[++j] ? args[++i]
-          unless nextArg? then throw new Error "value required for '#{argFlag}',
-            which was the last argument provided"
-          if isList
-            options[name] ?= []
-            options[name].push nextArg
-          else
-            options[name] = nextArg
+          # This is a positional argument.
+          # TODO: should we check these with `isCoffee`?
+          argsLeft.unshift(arg) unless arg is '--'
+          break
+
+      [cur, rest...] = argsLeft
+      {flag, multi} = cur
+      rule = @rules.flagDict[flag]
+      unless rule?
+        # TODO: test all of this!
+        msg = "unrecognized option: #{flag}"
+        msg += " (in multi-flag '#{multi}')" if multi?
+        throw new Error msg
+
+      {hasArgument, isList, name} = rule
+      unless hasArgument then options[name] = true
+      else
+        # We do not touch flag arguments at all, but we don't know which flags
+        # need arguments until we get to this point, which is why we use a while
+        # loop above.
+        # TODO: test this!
+        nextArg = argsLeft.shift()
+        unless nextArg? then throw new Error "value required for
+          '#{flag}', which was the last argument provided"
+        if isList
+          options[name] ?= []
+          options[name].push nextArg
+        else
+          options[name] = nextArg
+
+    options.arguments = argsLeft
     options
 
   # Return the help text for this **OptionParser**, listing and describing all
@@ -122,11 +137,13 @@ buildRule = (shortFlag, longFlag, description) ->
     isList:       !!(match and match[2])
   }
 
-trySingleFlag = (arg) ->
-  if ([LONG_FLAG, SHORT_FLAG].some (pat) -> arg.match(pat)?) then [arg]
+parseSingleFlag = (arg) ->
+  if ([LONG_FLAG, SHORT_FLAG].some (pat) -> arg.match(pat)?) then [flag: arg]
   else null
 
-trySplitMultiFlag = (arg) ->
+parseMultiFlag = (arg) ->
   arg.match(MULTI_FLAG)?[1]
     .split('')
-    .map (flagName) -> "-#{flagName}"
+    .map (flagName) ->
+      multi: arg
+      flag: "-#{flagName}"
