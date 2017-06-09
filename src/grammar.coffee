@@ -142,6 +142,7 @@ grammar =
 
   Identifier: [
     o 'IDENTIFIER',                             -> new IdentifierLiteral $1
+    o 'CSX_TAG',                                -> new CSXTag $1
   ]
 
   Property: [

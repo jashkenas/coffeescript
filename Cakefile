@@ -378,6 +378,10 @@ runTests = (CoffeeScript) ->
   # Convenience aliases.
   global.CoffeeScript = CoffeeScript
   global.Repl = require './lib/coffeescript/repl'
+  global.bold = bold
+  global.red = red
+  global.green = green
+  global.reset = reset
 
   # Our test helper function for delimiting different test cases.
   global.test = (description, fn) ->
