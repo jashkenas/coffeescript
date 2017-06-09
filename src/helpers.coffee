@@ -49,11 +49,14 @@ extend = exports.extend = (object, properties) ->
 exports.flatten = flatten = (array) ->
   flattened = []
   for element in array
-    if '[object Array]' is Object::toString.call element
-      flattened = flattened.concat flatten element
+    # TODO: is this the same as using Object::toString.call?
+    if Array.isArray element
+      flattened.push flatten(element)...
     else
       flattened.push element
   flattened
+
+exports.isString = (obj) -> Object::toString.call(obj) is '[object String]'
 
 # Delete a key from an object, returning the value. Useful when a node is
 # looking for a particular method in an options hash.
