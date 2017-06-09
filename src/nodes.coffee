@@ -280,7 +280,10 @@ exports.Base = class Base
     new CodeFragment this, code
 
   wrapInParentheses: (fragments) ->
-    [].concat @makeCode('('), fragments, @makeCode(')')
+    [@makeCode('('), fragments..., @makeCode(')')]
+
+  wrapInBraces: (fragments) ->
+    [@makeCode('{'), fragments..., @makeCode('}')]
 
   # `fragmentsList` is an array of arrays of fragments. Each array in fragmentsList will be
   # concatonated together, with `joinStr` added in between each, to produce a final flat array
@@ -534,6 +537,16 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
     if o.level >= LEVEL_OP then @wrapInParentheses code else code
 
 exports.StringLiteral = class StringLiteral extends Literal
+  compileNode: (o) ->
+    res = if @csx then [@makeCode @unquote yes] else super()
+
+  unquote: (literal) ->
+    unquoted = @value[1...-1]
+    if literal
+      unquoted.replace /\\n/g, '\n'
+      .replace /\\"/g, '"'
+    else
+      unquoted
 
 exports.RegexLiteral = class RegexLiteral extends Literal
 
@@ -544,6 +557,8 @@ exports.IdentifierLiteral = class IdentifierLiteral extends Literal
 
   eachName: (iterator) ->
     iterator @
+
+exports.CSXTag = class CSXTag extends IdentifierLiteral
 
 exports.PropertyName = class PropertyName extends Literal
   isAssignable: YES
@@ -778,6 +793,8 @@ exports.Call = class Call extends Base
     if @variable instanceof Value and @variable.isNotCallable()
       @variable.error "literal is not a function"
 
+    @csx = @variable.base instanceof CSXTag
+
   children: ['variable', 'args']
 
   # When setting the location, we sometimes need to update the start location to
@@ -840,6 +857,7 @@ exports.Call = class Call extends Base
 
   # Compile a vanilla function call.
   compileNode: (o) ->
+    return @compileCSX o if @csx
     @variable?.front = @front
     compiledArgs = []
     for arg, argIndex in @args
@@ -852,6 +870,21 @@ exports.Call = class Call extends Base
       fragments.push @makeCode 'new '
     fragments.push @variable.compileToFragments(o, LEVEL_ACCESS)...
     fragments.push @makeCode('('), compiledArgs..., @makeCode(')')
+    fragments
+
+  compileCSX: (o) ->
+    [attributes, content] = @args
+    attributes.base.csx = yes
+    content?.base.csx = yes
+    fragments = [@makeCode('<')]
+    fragments.push (tag = @variable.compileToFragments(o, LEVEL_ACCESS))...
+    fragments.push attributes.compileToFragments(o, LEVEL_PAREN)...
+    if content
+      fragments.push @makeCode('>')
+      fragments.push content.compileNode(o, LEVEL_LIST)...
+      fragments.push [@makeCode('</'), tag..., @makeCode('>')]...
+    else
+      fragments.push @makeCode(' />')
     fragments
 
 #### Super
@@ -1134,17 +1167,19 @@ exports.Obj = class Obj extends Base
 
     isCompact = yes
     for prop in @properties
-      if prop instanceof Comment or (prop instanceof Assign and prop.context is 'object')
+      if prop instanceof Comment or (prop instanceof Assign and prop.context is 'object' and not @csx)
         isCompact = no
 
     answer = []
-    answer.push @makeCode "{#{if isCompact then '' else '\n'}"
+    answer.push @makeCode if isCompact then '' else '\n'
     for prop, i in props
       join = if i is props.length - 1
         ''
+      else if isCompact and @csx
+        ' '
       else if isCompact
         ', '
-      else if prop is lastNoncom or prop instanceof Comment
+      else if prop is lastNoncom or prop instanceof Comment or @csx
         '\n'
       else
         ',\n'
@@ -1172,9 +1207,12 @@ exports.Obj = class Obj extends Base
           prop = new Assign prop, prop, 'object'
 
       if indent then answer.push @makeCode indent
+      prop.csx = yes if @csx
+      answer.push @makeCode ' ' if @csx and i is 0
       answer.push prop.compileToFragments(o, LEVEL_TOP)...
       if join then answer.push @makeCode join
-    answer.push @makeCode "#{if isCompact then '' else "\n#{@tab}"}}"
+    answer.push @makeCode if isCompact then '' else "\n#{@tab}"
+    answer = @wrapInBraces answer if not @csx
     if @front then @wrapInParentheses answer else answer
 
   assigns: (name) ->
@@ -1758,6 +1796,7 @@ exports.Assign = class Assign extends Base
         [properties..., prototype, name] = @variable.properties
         @value.name = name if prototype.name?.value is 'prototype'
 
+    @value.base.csxAttribute = yes if @csx
     val = @value.compileToFragments o, LEVEL_LIST
     compiledName = @variable.compileToFragments o, LEVEL_LIST
 
@@ -1765,7 +1804,7 @@ exports.Assign = class Assign extends Base
       if @variable.shouldCache()
         compiledName.unshift @makeCode '['
         compiledName.push @makeCode ']'
-      return compiledName.concat @makeCode(": "), val
+      return compiledName.concat @makeCode(if @csx then '=' else ': '), val
 
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
     # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration,
@@ -2773,13 +2812,14 @@ exports.Parens = class Parens extends Base
 
   compileNode: (o) ->
     expr = @body.unwrap()
-    if expr instanceof Value and expr.isAtomic()
+    if expr instanceof Value and expr.isAtomic() and not @csxAttribute
       expr.front = @front
       return expr.compileToFragments o
     fragments = expr.compileToFragments o, LEVEL_PAREN
     bare = o.level < LEVEL_OP and (expr instanceof Op or expr instanceof Call or
       (expr instanceof For and expr.returns)) and (o.level < LEVEL_COND or
         fragments.length <= 3)
+    return @wrapInBraces fragments if @csxAttribute
     if bare then fragments else @wrapInParentheses fragments
 
 #### StringWithInterpolations
@@ -2798,6 +2838,11 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
   shouldCache: -> @body.shouldCache()
 
   compileNode: (o) ->
+    if @csxAttribute
+      wrapped = new Parens new StringWithInterpolations @body
+      wrapped.csxAttribute = yes
+      return wrapped.compileNode o
+
     # Assumes that `expr` is `Value` » `StringLiteral` or `Op`
     expr = @body.unwrap()
 
@@ -2812,24 +2857,30 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
       return yes
 
     fragments = []
-    fragments.push @makeCode '`'
+    fragments.push @makeCode '`' unless @csx
     for element in elements
       if element instanceof StringLiteral
-        value = element.value[1...-1]
-        # Backticks and `${` inside template literals must be escaped.
-        value = value.replace /(\\*)(`|\$\{)/g, (match, backslashes, toBeEscaped) ->
-          if backslashes.length % 2 is 0
-            "#{backslashes}\\#{toBeEscaped}"
-          else
-            match
+        value = element.unquote @csx
+        unless @csx
+          # Backticks and `${` inside template literals must be escaped.
+          value = value.replace /(\\*)(`|\$\{)/g, (match, backslashes, toBeEscaped) ->
+            if backslashes.length % 2 is 0
+              "#{backslashes}\\#{toBeEscaped}"
+            else
+              match
         fragments.push @makeCode value
       else
-        fragments.push @makeCode '${'
-        fragments.push element.compileToFragments(o, LEVEL_PAREN)...
-        fragments.push @makeCode '}'
-    fragments.push @makeCode '`'
-
+        fragments.push @makeCode '$' unless @csx
+        code = element.compileToFragments(o, LEVEL_PAREN)
+        code = @wrapInBraces code unless @isNestedTag element
+        fragments.push code...
+    fragments.push @makeCode '`' unless @csx
     fragments
+
+  isNestedTag: (element) ->
+    exprs = element?.body?.expressions
+    call = exprs?[0]
+    @csx and exprs and exprs.length is 1 and call instanceof Call and call.csx
 
 #### For
 
