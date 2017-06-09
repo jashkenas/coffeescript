@@ -48,6 +48,7 @@ exports.Lexer = class Lexer
     @seenExport = no             # Used to recognize EXPORT FROM? AS? tokens.
     @importSpecifierList = no    # Used to identify when in an IMPORT {...} FROM? ...
     @exportSpecifierList = no    # Used to identify when in an EXPORT {...} FROM? ...
+    @csxDepth = 0                # Used to optimize CSX checks, how deep in CSX we are.
 
     @chunkLine =
       opts.line or 0             # The start line for the current @chunk.
@@ -67,6 +68,7 @@ exports.Lexer = class Lexer
            @lineToken()       or
            @stringToken()     or
            @numberToken()     or
+           @csxToken()        or
            @regexToken()      or
            @jsToken()         or
            @literalToken()
@@ -105,7 +107,9 @@ exports.Lexer = class Lexer
   # referenced as property names here, so you can still do `jQuery.is()` even
   # though `is` means `===` otherwise.
   identifierToken: ->
-    return 0 unless match = IDENTIFIER.exec @chunk
+    inCSXTag = @atCSXTag()
+    regex = if inCSXTag then CSX_ATTRIBUTE else IDENTIFIER
+    return 0 unless match = regex.exec @chunk
     [input, id, colon] = match
 
     # Preserve length of id for location data
@@ -205,8 +209,11 @@ exports.Lexer = class Lexer
       [tagToken[2].first_line, tagToken[2].first_column] =
         [poppedToken[2].first_line, poppedToken[2].first_column]
     if colon
-      colonOffset = input.lastIndexOf ':'
-      @token ':', ':', colonOffset, colon.length
+      colonOffset = input.lastIndexOf if inCSXTag then '=' else ':'
+      colonToken = @token ':', ':', colonOffset, colon.length
+      colonToken.csxColon = yes if inCSXTag # used by rewriter
+    if inCSXTag and tag is 'IDENTIFIER' and prev[0] isnt ':'
+      @token ',', ',', 0, 0, tagToken
 
     input.length
 
@@ -288,6 +295,9 @@ exports.Lexer = class Lexer
           else
             ' '
         value
+
+    if @atCSXTag()
+      @token ',', ',', 0, 0, @prev
 
     end
 
@@ -475,6 +485,76 @@ exports.Lexer = class Lexer
     @tokens.pop() if @value() is '\\'
     this
 
+  # CSX is like JSX but for CoffeeScript.
+  csxToken: ->
+    firstChar = @chunk[0]
+    if firstChar is '<'
+      match = CSX_IDENTIFIER.exec @chunk[1...]
+      return 0 unless match and (
+        @csxDepth > 0 or
+        # Not the right hand side of an unspaced comparison (i.e. `a<b`).
+        not (prev = @prev()) or
+        prev.spaced or
+        prev[0] not in COMPARABLE_LEFT_SIDE
+      )
+      [input, id, colon] = match
+      origin = @token 'CSX_TAG', id, 1, id.length
+      @token 'CALL_START', '('
+      @token '{', '{'
+      @ends.push tag: '/>', origin: origin, name: id
+      @csxDepth++
+      return id.length + 1
+    else if csxTag = @atCSXTag()
+      if @chunk[...2] is '/>'
+        @pair '/>'
+        @token '}', '}', 0, 2
+        @token 'CALL_END', ')', 0, 2
+        @csxDepth--
+        return 2
+      else if firstChar is '{'
+        token = @token '(', '('
+        @ends.push {tag: '}', origin: token}
+        return 1
+      else if firstChar is '>'
+        # Ignore terminators inside a tag.
+        @pair '/>' # As if the current tag was self-closing.
+        origin = @token '}', '}'
+        @token ',', ','
+        {tokens, index: end} =
+          @matchWithInterpolations INSIDE_CSX, '>', '</', CSX_INTERPOLATION
+        @mergeInterpolationTokens tokens, {delimiter: '"'}, (value, i) =>
+          @formatString value, delimiter: '>'
+        match = CSX_IDENTIFIER.exec @chunk[end...]
+        if not match or match[0] isnt csxTag.name
+          @error "expected corresponding CSX closing tag for #{csxTag.name}",
+            csxTag.origin[2]
+        afterTag = end + csxTag.name.length
+        if @chunk[afterTag] isnt '>'
+          @error "missing closing > after tag name", offset: afterTag, length: 1
+        # +1 for the closing `>`.
+        @token 'CALL_END', ')', end, csxTag.name.length + 1
+        @csxDepth--
+        return afterTag + 1
+      else
+        return 0
+    else if @atCSXTag 1
+      if firstChar is '}'
+        @pair firstChar
+        @token ')', ')'
+        @token ',', ','
+        return 1
+      else
+        return 0
+    else
+      return 0
+
+  atCSXTag: (depth = 0) ->
+    return no if @csxDepth is 0
+    i = @ends.length - 1
+    i-- while @ends[i]?.tag is 'OUTDENT' or depth-- > 0 # Ignore indents.
+    last = @ends[i]
+    last?.tag is '/>' and last
+
   # We treat all other single characters as a token. E.g.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
   # the proper order of operations. There are some symbols that we tag specially
@@ -535,7 +615,7 @@ exports.Lexer = class Lexer
     switch value
       when '(', '{', '[' then @ends.push {tag: INVERSES[value], origin: token}
       when ')', '}', ']' then @pair value
-    @tokens.push token
+    @tokens.push @makeToken tag, value
     value.length
 
   # Token Manipulators
@@ -582,10 +662,16 @@ exports.Lexer = class Lexer
   #    `#{` if interpolations are desired).
   #  - `delimiter` is the delimiter of the token. Examples are `'`, `"`, `'''`,
   #    `"""` and `///`.
+  #  - `closingDelimiter` is different from `delimiter` only in CSX
+  #  - `interpolators` matches the start of an interpolation, for CSX it's both
+  #    `{` and `<` (i.e. nested CSX tag)
   #
   # This method allows us to have strings within interpolations within strings,
   # ad infinitum.
-  matchWithInterpolations: (regex, delimiter) ->
+  matchWithInterpolations: (regex, delimiter, closingDelimiter, interpolators) ->
+    closingDelimiter ?= delimiter
+    interpolators ?= /^#\{/
+
     tokens = []
     offsetInChunk = delimiter.length
     return null unless @chunk[...offsetInChunk] is delimiter
@@ -601,24 +687,35 @@ exports.Lexer = class Lexer
       str = str[strPart.length..]
       offsetInChunk += strPart.length
 
-      break unless str[...2] is '#{'
+      break unless match = interpolators.exec str
+      [interpolator] = match
 
-      # The `1`s are to remove the `#` in `#{`.
-      [line, column] = @getLineAndColumnFromChunk offsetInChunk + 1
+      # To remove the `#` in `#{`.
+      interpolationOffset = interpolator.length - 1
+      [line, column] = @getLineAndColumnFromChunk offsetInChunk + interpolationOffset
+      rest = str[interpolationOffset..]
       {tokens: nested, index} =
-        new Lexer().tokenize str[1..], line: line, column: column, untilBalanced: on
-      # Skip the trailing `}`.
-      index += 1
+        new Lexer().tokenize rest, line: line, column: column, untilBalanced: on
+      # Account for the `#` in `#{`
+      index += interpolationOffset
 
-      # Turn the leading and trailing `{` and `}` into parentheses. Unnecessary
-      # parentheses will be removed later.
-      [open, ..., close] = nested
-      open[0]  = open[1]  = '('
-      close[0] = close[1] = ')'
-      close.origin = ['', 'end of interpolation', close[2]]
+      braceInterpolator = str[index - 1] is '}'
+      if braceInterpolator
+        # Turn the leading and trailing `{` and `}` into parentheses. Unnecessary
+        # parentheses will be removed later.
+        [open, ..., close] = nested
+        open[0]  = open[1]  = '('
+        close[0] = close[1] = ')'
+        close.origin = ['', 'end of interpolation', close[2]]
 
       # Remove leading `'TERMINATOR'` (if any).
       nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
+
+      unless braceInterpolator
+        # We are not using `{` and `}`, so wrap the interpolated tokens instead.
+        open = @makeToken '(', '(', offsetInChunk, 0
+        close = @makeToken ')', ')', offsetInChunk + index, 0
+        nested = [open, nested..., close]
 
       # Push a fake `'TOKENS'` token, which will get turned into real tokens later.
       tokens.push ['TOKENS', nested]
@@ -626,19 +723,19 @@ exports.Lexer = class Lexer
       str = str[index..]
       offsetInChunk += index
 
-    unless str[...delimiter.length] is delimiter
-      @error "missing #{delimiter}", length: delimiter.length
+    unless str[...closingDelimiter.length] is closingDelimiter
+      @error "missing #{closingDelimiter}", length: delimiter.length
 
     [firstToken, ..., lastToken] = tokens
     firstToken[2].first_column -= delimiter.length
     if lastToken[1].substr(-1) is '\n'
       lastToken[2].last_line += 1
-      lastToken[2].last_column = delimiter.length - 1
+      lastToken[2].last_column = closingDelimiter.length - 1
     else
-      lastToken[2].last_column += delimiter.length
+      lastToken[2].last_column += closingDelimiter.length
     lastToken[2].last_column -= 1 if lastToken[1].length is 0
 
-    {tokens, index: offsetInChunk + delimiter.length}
+    {tokens, index: offsetInChunk + closingDelimiter.length}
 
   # Merge the array `tokens` of the fake token types `'TOKENS'` and `'NEOSTRING'`
   # (as returned by `matchWithInterpolations`) into the token stream. The value
@@ -976,6 +1073,17 @@ IDENTIFIER = /// ^
   ( [^\n\S]* : (?!:) )?  # Is this a property name?
 ///
 
+CSX_IDENTIFIER = /// ^
+  (?![\d<]) # Must not start with `<`.
+  ( (?: (?!\s)[\.\-$\w\x7f-\uffff] )+ ) # Like `IDENTIFIER`, but includes `-`s and `.`s.
+///
+
+CSX_ATTRIBUTE = /// ^
+  (?!\d)
+  ( (?: (?!\s)[\-$\w\x7f-\uffff] )+ ) # Like `IDENTIFIER`, but includes `-`s.
+  ( [^\S]* = (?!=) )?  # Is this an attribute with a value?
+///
+
 NUMBER     = ///
   ^ 0b[01]+    |              # binary
   ^ 0o[0-7]+   |              # octal
@@ -1011,6 +1119,17 @@ STRING_SINGLE  = /// ^(?: [^\\']  | \\[\s\S]                      )* ///
 STRING_DOUBLE  = /// ^(?: [^\\"#] | \\[\s\S] |           \#(?!\{) )* ///
 HEREDOC_SINGLE = /// ^(?: [^\\']  | \\[\s\S] | '(?!'')            )* ///
 HEREDOC_DOUBLE = /// ^(?: [^\\"#] | \\[\s\S] | "(?!"") | \#(?!\{) )* ///
+
+INSIDE_CSX = /// ^(?:
+    [^
+      \{ # Start of CoffeeScript interpolation.
+      <  # Maybe CSX tag (`<` not allowed even if bare).
+    ]
+  )* /// # Similar to `HEREDOC_DOUBLE` but there is no escaping.
+CSX_INTERPOLATION = /// ^(?:
+      \{       # CoffeeScript interpolation.
+    | <(?!/)   # CSX opening tag.
+  )///
 
 STRING_OMIT    = ///
     ((?:\\\\)+)      # Consume (and preserve) an even number of backslashes.
@@ -1114,6 +1233,9 @@ INDEXABLE = CALLABLE.concat [
   'NUMBER', 'INFINITY', 'NAN', 'STRING', 'STRING_END', 'REGEX', 'REGEX_END'
   'BOOL', 'NULL', 'UNDEFINED', '}', '::'
 ]
+
+# Tokens which can be the left-hand side of a less-than comparison, i.e. `a<b`.
+COMPARABLE_LEFT_SIDE = ['IDENTIFIER', ')', ']', 'NUMBER']
 
 # Tokens which a regular expression will never immediately follow (except spaced
 # CALLABLEs in some cases), but which a division operator can.
