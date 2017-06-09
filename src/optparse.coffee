@@ -56,7 +56,10 @@ exports.OptionParser = class OptionParser
       [cur, rest...] = argsLeft
       {flag, multi} = cur
       rule = @rules.flagDict[flag]
-      unless rule?
+      if rule?
+        # We recognize the current top argument, so process and remove it.
+        argsLeft = rest
+      else
         # TODO: test all of this!
         msg = "unrecognized option: #{flag}"
         msg += " (in multi-flag '#{multi}')" if multi?
