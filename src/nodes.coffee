@@ -1325,10 +1325,6 @@ exports.Class = class Class extends Base
     o.indent += TAB
 
     result = []
-    if @assignParentRef
-      result.push @makeCode "("
-      result.push @assignParentRef.compileToFragments(o)...
-      result.push @makeCode ", "
     result.push @makeCode "class "
     result.push @makeCode "#{@name} " if @name
     result.push @makeCode('extends '), @parent.compileToFragments(o)..., @makeCode ' ' if @parent
@@ -1340,8 +1336,6 @@ exports.Class = class Class extends Base
       result.push @body.compileToFragments(o, LEVEL_TOP)...
       result.push @makeCode "\n#{@tab}"
     result.push @makeCode '}'
-    if @assignParentRef
-      result.push @makeCode ")"
 
     result
 
@@ -1360,15 +1354,6 @@ exports.Class = class Class extends Base
       message = isUnassignable name
       @variable.error message if message
     if name in JS_FORBIDDEN then "_#{name}" else name
-
-  setParentRef: (o) ->
-    return if @_setParentRef
-    @_setParentRef = yes
-
-    if @parent?.shouldCache()
-      ref = new IdentifierLiteral o.scope.freeVariable 'ref'
-      @assignParentRef = new Assign ref, @parent
-      @parent = ref
 
   walkBody: (o) ->
     @ctor          = null
@@ -1419,9 +1404,7 @@ exports.Class = class Class extends Base
       else if method.isStatic and method.bound
         method.context = @name
       else if method.bound
-        @boundMethods.push method.name
-        @setParentRef(o)
-        method.parentClass = @parent
+        @boundMethods.push method
 
     if initializer.length isnt expressions.length
       @body.expressions = (expression.hoist() for expression in initializer)
@@ -1479,8 +1462,13 @@ exports.Class = class Class extends Base
     ctor
 
   proxyBoundMethods: (o) ->
-    @ctor.thisAssignments = for name in @boundMethods by -1
-      name = new Value(new ThisLiteral, [ name ])
+    @variable ?= new IdentifierLiteral o.scope.freeVariable '_class' if @parent
+    [@variable, @variableRef] = @variable.cache o unless @variableRef?
+
+    @ctor.thisAssignments = for method in @boundMethods by -1
+      method.classVariable = @variableRef if @parent
+
+      name = new Value(new ThisLiteral, [ method.name ])
       new Assign name, new Call(new Value(name, [new Access new PropertyName 'bind']), [new ThisLiteral])
 
     null
@@ -2208,9 +2196,9 @@ exports.Code = class Code extends Base
     wasEmpty = @body.isEmpty()
     @body.expressions.unshift thisAssignments... unless @expandCtorSuper thisAssignments
     @body.expressions.unshift exprs...
-    if @isMethod and @bound and not @isStatic and @parentClass
+    if @isMethod and @bound and not @isStatic and @classVariable
       boundMethodCheck = new Value new Literal utility 'boundMethodCheck', o
-      @body.expressions.unshift new Call(boundMethodCheck, [new Value(new ThisLiteral), @parentClass])
+      @body.expressions.unshift new Call(boundMethodCheck, [new Value(new ThisLiteral), @classVariable])
     @body.makeReturn() unless wasEmpty or @noReturn
 
     # Assemble the output

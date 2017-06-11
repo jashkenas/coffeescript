@@ -1747,3 +1747,61 @@ test 'Bound method of class with expression base class called as callback is ok'
   b = new A
   {derivedBound} = b
   eq derivedBound(), 3
+
+test 'Bound method of class with expression base class called as callback is ok', ->
+  calledF = no
+  obj = {}
+  B = class
+  f = ->
+    throw new Error if calledF
+    calledF = yes
+    obj
+  class f().A extends B
+    constructor: (@prop = 3) ->
+      super()
+      g = @derivedBound
+      eq g(), 3
+
+    derivedBound: =>
+      @prop
+
+  a = new obj.A
+  {derivedBound} = a
+  eq derivedBound(), 3
+
+test 'Bound method of anonymous child class called as callback is ok', ->
+  f = ->
+    B = class
+    class extends B
+      constructor: (@prop = 3) ->
+        super()
+        g = @derivedBound
+        eq g(), 3
+
+      derivedBound: =>
+        @prop
+
+  a = new (f())
+  {derivedBound} = a
+  eq derivedBound(), 3
+
+# uncomment once #4436 is fixed
+# test 'Bound method of immediately instantiated class with expression base class called as callback is ok', ->
+#   calledF = no
+#   obj = {}
+#   B = class
+#   f = ->
+#     throw new Error if calledF
+#     calledF = yes
+#     obj
+#   a = new class f().A extends B
+#     constructor: (@prop = 3) ->
+#       super()
+#       g = @derivedBound
+#       eq g(), 3
+
+#     derivedBound: =>
+#       @prop
+
+#   {derivedBound} = a
+#   eq derivedBound(), 3
