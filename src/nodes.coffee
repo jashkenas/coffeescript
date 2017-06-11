@@ -679,9 +679,6 @@ exports.Value = class Value extends Base
   isObject: (onlyGenerated) ->
     return no if @properties.length
     (@base instanceof Obj) and (not onlyGenerated or @base.generated)
-  
-  hasSplat: ->
-    return @isObject() and @base.hasSplat()
 
   isSplice: ->
     [..., lastProp] = @properties
@@ -1129,9 +1126,10 @@ exports.Obj = class Obj extends Base
 
   # Check if object contains splat. 
   hasSplat: ->
-    props = @properties
-    splat = yes for prop in props when prop instanceof Splat
-    splat ? no
+    for prop in @properties
+      return yes if prop instanceof Splat
+      return prop.value.hasSplat if prop instanceof Assign and prop.value instanceof Obj
+    no
 
   compileNode: (o) ->
     props = @properties
@@ -1204,10 +1202,10 @@ exports.Obj = class Obj extends Base
     # Store object spreads.
     splatSlice = []
     propSlices = []
-    slices = [new Obj [], false]
-    addSlice = () -> 
-      slices = [slices..., new Obj [propSlices...], false] if propSlices.length      
-      slices = [slices..., splatSlice...] if splatSlice.length
+    slices = []
+    addSlice = -> 
+      slices.push new Obj propSlices if propSlices.length      
+      slices.push splatSlice... if splatSlice.length
       splatSlice = []
       propSlices = []
     for prop in props
@@ -1217,6 +1215,7 @@ exports.Obj = class Obj extends Base
       else
         propSlices.push prop
     addSlice()
+    slices.unshift new Obj unless slices[0] instanceof Obj
     (new Call new Literal('Object.assign'), slices).compileToFragments o
       
 #### Arr
@@ -1760,7 +1759,7 @@ exports.Assign = class Assign extends Base
         @variable.base.lhs = yes
         return @compileDestructuring o unless @variable.isAssignable()
         # Object destructuring. Can be removed once ES proposal hits Stage 4.
-        return @compileObjectDestruct(o) if @variable.isObject() and @variable.hasSplat()
+        return @compileObjectDestruct(o) if @variable.isObject() and @variable.base.hasSplat()
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
       return @compileSpecialMath  o if @context in ['**=', '//=', '%%=']
@@ -1802,7 +1801,7 @@ exports.Assign = class Assign extends Base
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
     # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration,
     # if we’re destructuring without declaring, the destructuring assignment must be wrapped in parentheses.
-    if o.level > LEVEL_LIST or (isValue and @variable.base instanceof Obj and (not @param or @paramWithSplat))
+    if o.level > LEVEL_LIST or (isValue and @variable.base instanceof Obj and not @param)
       @wrapInParentheses answer
     else
       answer
@@ -1814,51 +1813,49 @@ exports.Assign = class Assign extends Base
     # if we’re destructuring without declaring, the destructuring assignment must be wrapped in parentheses.
     # ({a, b} = obj)
     # Helper function setScopeVar() declares vars 'a' and 'b' at the top of the current scope.
-    setScopeVar = (obj) ->
+    setScopeVar = (prop) ->
       newVar = false
-      return if obj instanceof Assign and obj.value.base instanceof Obj
-      if obj instanceof Assign
-        if obj.value.base instanceof IdentifierLiteral
-          newVar = obj.value.base.compile o
+      return if prop instanceof Assign and prop.value.base instanceof Obj
+      if prop instanceof Assign
+        if prop.value.base instanceof IdentifierLiteral
+          newVar = prop.value.base.compile o
         else 
-          newVar = obj.variable.base.compile o
+          newVar = prop.variable.base.compile o
       else
-        newVar = obj.compile o
+        newVar = prop.compile o
       o.scope.add(newVar, 'var', true) if newVar
-    # Helper function getPropVaues() returns object compiled property value.
-    # These values are then passed as argument to helper function objectWithoutKeys which is used to assign object value to the destructuring rest variable.
-    getPropValue = (obj) ->
-      wrapInQutes = (obj) -> (new Literal("'#{obj.compile o}'")).compile o
-      setScopeVar obj # Declare a variable in the scope.
-      if obj instanceof Assign
-        return obj.variable.compile o if obj.variable.base instanceof StringWithInterpolations or obj.variable.base instanceof StringLiteral
-        return wrapInQutes obj.variable
+    # Helper function getPropVaues() returns compiled object property value.
+    # These values are then passed as an argument to helper function objectWithoutKeys 
+    # which is used to assign object value to the destructuring rest variable.
+    getPropValue = (prop) ->
+      wrapInQutes = (prop) -> (new Literal "'#{prop.compile o}'").compile o
+      setScopeVar prop # Declare a variable in the scope.
+      if prop instanceof Assign
+        return prop.variable.compile o if prop.variable.base instanceof StringWithInterpolations or prop.variable.base instanceof StringLiteral
+        return wrapInQutes prop.variable
       else
-        return wrapInQutes obj
+        return wrapInQutes prop
     # Recursive function for searching and storing rest elements in objects.
     # Parameter props[] is used to store nested object properties,
     # e.g. `{a: {b, c: {d, r1...}, r2...}, r3...} = obj`.
-    traverseRest = (objects, props = []) ->
+    traverseRest = (properties, path = []) ->
       results = []
       restElement = no
-      for obj, key in objects
-        if obj instanceof Assign and obj.context == "object" and obj.value.base instanceof Obj
-          props.push getPropValue obj
-          results = traverseRest obj.value.base.objects, props
-          props.pop()
-        if obj instanceof Splat
-          obj.error "multiple rest elements are disallowed in object destructuring" if restElement
+      for prop, key in properties
+        if prop instanceof Assign and prop.value.base instanceof Obj          
+          results = traverseRest prop.value.base.objects, [path..., getPropValue prop]
+        if prop instanceof Splat
+          prop.error "multiple rest elements are disallowed in object destructuring" if restElement
           restElement = {
             key,
-            name: obj.unwrap(),
-            # props: [props...].map((p) -> (new Literal "[#{p}]").compile(o)).join ""
-            props: ((new Literal "[#{p}]").compile(o) for p in [props...]).join ""            
+            name: prop.unwrap(),
+            props: ((new Literal "[#{p}]").compile(o) for p in path).join ""            
           }  
       if restElement
         # Remove rest element from the object.
-        objects.splice restElement.key, 1
-        # Prepare array of compiled property keys to be excluded from the object
-        restElement["excludeProps"] = new Literal "[#{(getPropValue(obj) for obj in objects)}]"
+        properties.splice restElement.key, 1
+        # Prepare array of compiled property keys to be excluded from the object.
+        restElement["excludeProps"] = new Literal "[#{(getPropValue(prop) for prop in properties)}]"
         results.push restElement
       results
     fragments = []
@@ -3211,7 +3208,13 @@ exports.If = class If extends Base
 
 UTILITIES =
   modulo: -> 'function(a, b) { return (+a % (b = +b) + b) % b; }'
-  objectWithoutKeys: -> 'function(obj, props) { return Object.keys(obj).reduce(function(a,c) { return (![].includes.call(props, c)) && (a[c] = obj[c]), a; }, {}); }'
+  # objectWithoutKeys: -> 'function(obj, props) { return Object.keys(obj).reduce(function(a,c) { return (![].includes.call(props, c)) && (a[c] = obj[c]), a; }, {}); }'
+  objectWithoutKeys: -> "
+      function(o, ks) {
+        var res = {};
+        for (var k in o) ([].indexOf.call(ks, k) < 0 && {}.hasOwnProperty.call(o, k)) && (res[k] = o[k]);
+        return res;
+      }"
   # Shortcuts to speed up the lookup time for native functions.
   hasProp: -> '{}.hasOwnProperty'
   indexOf: -> '[].indexOf'
