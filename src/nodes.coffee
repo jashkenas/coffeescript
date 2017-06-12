@@ -2180,11 +2180,6 @@ exports.Code = class Code extends Base
         target = new IdentifierLiteral o.scope.freeVariable name
         param.renameParam node, target
         thisAssignments.push new Assign node, target
-      # In case the parameter is object and contains the splat, e.g. fn({a, b, r...})
-      # Can be removed once ES proposal hits Stage 4.  
-      if param.name instanceof Obj and param.name.hasSplat()
-        param.splat = true;
-        param.name.lhs = true;
         
     # Parse the parameters, adding them to the list of parameters to put in the
     # function definition; and dealing with splats or expansions, including
