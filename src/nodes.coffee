@@ -1904,9 +1904,9 @@ exports.Assign = class Assign extends Base
         results.push restElement
       results
     fragments = []
-    {objects} = @variable.base
+    {properties} = @variable.base
     # Find all rest elements.
-    restList = traverseRest objects
+    restList = traverseRest properties
     val = @value.compileToFragments o, LEVEL_LIST  
     vvarText = fragmentsToText val
     # Make value into a simple variable if it isn't already.
