@@ -1892,9 +1892,9 @@ exports.Assign = class Assign extends Base
         if prop instanceof Splat
           prop.error "multiple rest elements are disallowed in object destructuring" if restElement
           restKey = key
-          restElement = {
-            name: prop.unwrap(),
-            props: ((new Literal p).compile(o) for p in path)    
+          restElement = { 
+            name: prop.unwrap(), 
+            path
           }  
       if restElement
         # Remove rest element from the properties.
@@ -1919,7 +1919,7 @@ exports.Assign = class Assign extends Base
     objVar = compiledName.concat @makeCode(" = "), val
     fragments.push @wrapInParentheses objVar
     for restElement in restList
-      varProp = if restElement.props.length then ".#{restElement.props.join '.'}" else ""
+      varProp = if restElement.path.length then ".#{restElement.path.join '.'}" else ""
       vvarPropText = new Literal "#{vvarText}#{varProp}"
       extractKeys = new Call new Value(new Literal(utility('objectWithoutKeys', o))), [vvarPropText, restElement.excludeProps]
       fragments.push new Assign(restElement.name, extractKeys, null).compileToFragments o, LEVEL_LIST
