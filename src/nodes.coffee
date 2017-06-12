@@ -1907,7 +1907,8 @@ exports.Assign = class Assign extends Base
     vvarText = fragmentsToText val
     # Make value into a simple variable if it isn't already.
     if (@value.unwrap() not instanceof IdentifierLiteral) or @variable.assigns vvarText 
-      fragments.push [@makeCode "#{(ref = o.scope.freeVariable('obj'))} = ", val...]
+      ref = o.scope.freeVariable 'obj'
+      fragments.push [@makeCode(ref + ' = '), val...]
       val = (new IdentifierLiteral ref).compileToFragments o, LEVEL_TOP
       vvarText = ref
     compiledName = @variable.compileToFragments o, LEVEL_TOP
