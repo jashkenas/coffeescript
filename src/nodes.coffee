@@ -1869,8 +1869,11 @@ exports.Assign = class Assign extends Base
     # Helper function getPropValue() returns compiled object property value.
     # These values are then passed as an argument to helper function objectWithoutKeys 
     # which is used to assign object value to the destructuring rest variable.
-    getPropValue = (prop) ->
-      wrapInQutes = (prop) -> (new Literal "'#{prop.compile o}'").compile o
+    getPropValue = (prop, quote = no) ->
+      wrapInQutes = (prop) -> 
+        compiledProp = prop.compile o
+        compiledProp = "'#{compiledProp}'" if quote
+        (new Literal compiledProp).compile o
       setScopeVar prop # Declare a variable in the scope.
       if prop instanceof Assign
         return prop.variable.compile o if prop.variable.base instanceof StringWithInterpolations or prop.variable.base instanceof StringLiteral
@@ -1891,13 +1894,13 @@ exports.Assign = class Assign extends Base
           restKey = key
           restElement = {
             name: prop.unwrap(),
-            props: ((new Literal "[#{p}]").compile(o) for p in path).join ""            
+            props: ((new Literal p).compile(o) for p in path)    
           }  
       if restElement
         # Remove rest element from the properties.
         properties.splice restKey, 1
         # Prepare array of compiled property keys to be excluded from the object.
-        restElement["excludeProps"] = new Literal "[#{(getPropValue(prop) for prop in properties)}]"
+        restElement["excludeProps"] = new Literal "[#{(getPropValue(prop, yes) for prop in properties)}]"
         results.push restElement
       results
     fragments = []
@@ -1916,7 +1919,7 @@ exports.Assign = class Assign extends Base
     objVar = compiledName.concat @makeCode(" = "), val
     fragments.push @wrapInParentheses objVar
     for restElement in restList
-      varProp = restElement.props
+      varProp = if restElement.props.length then ".#{restElement.props.join '.'}" else ""
       vvarPropText = new Literal "#{vvarText}#{varProp}"
       extractKeys = new Call new Value(new Literal(utility('objectWithoutKeys', o))), [vvarPropText, restElement.excludeProps]
       fragments.push new Assign(restElement.name, extractKeys, null).compileToFragments o, LEVEL_LIST

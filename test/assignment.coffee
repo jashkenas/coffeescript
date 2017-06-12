@@ -270,7 +270,7 @@ test "deep destructuring assignment with objects: ES2015", ->
     }
     b2: {b1, c1}
   }
-  {a:w, 'b':{c:{d:{b1:bb, r1...}}}, r2...} = obj
+  {a:w, b:{c:{d:{b1:bb, r1...}}}, r2...} = obj
   eq r1.e, c1
   eq r2.b, undefined
   eq bb, b1
