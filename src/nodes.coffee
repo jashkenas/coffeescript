@@ -1155,14 +1155,15 @@ exports.Obj = class Obj extends Base
     yes
 
   shouldCache: ->
+    # @hasSplat() in condition is needed to properly process object spread properties
+    # in function parameters, and can be removed once the proposal hits Stage 4.
+    # Example: foo({a, b, r...}) => foo(arg) { ({a,b} = arg), r = ... }
     not @isAssignable() or @hasSplat()
 
   # Check if object contains splat. 
   hasSplat: ->
-    for prop in @properties
-      return yes if prop instanceof Splat
-      return prop.value.hasSplat if prop instanceof Assign and prop.value instanceof Obj
-    no
+    splat = yes for prop in @properties when prop instanceof Splat 
+    splat ? no
 
   compileNode: (o) ->
     props = @properties
@@ -1799,7 +1800,7 @@ exports.Assign = class Assign extends Base
         @variable.base.lhs = yes
         return @compileDestructuring o unless @variable.isAssignable()
         # Object destructuring. Can be removed once ES proposal hits Stage 4.
-        return @compileObjectDestruct(o) if @variable.isObject() and @variable.base.hasSplat()
+        return @compileObjectDestruct(o) if @variable.isObject() and @variable.contains((n) -> n instanceof Splat)
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
       return @compileSpecialMath  o if @context in ['**=', '//=', '%%=']
@@ -1865,7 +1866,7 @@ exports.Assign = class Assign extends Base
       else
         newVar = prop.compile o
       o.scope.add(newVar, 'var', true) if newVar
-    # Helper function getPropVaues() returns compiled object property value.
+    # Helper function getPropValue() returns compiled object property value.
     # These values are then passed as an argument to helper function objectWithoutKeys 
     # which is used to assign object value to the destructuring rest variable.
     getPropValue = (prop) ->
@@ -1887,14 +1888,14 @@ exports.Assign = class Assign extends Base
           results = traverseRest prop.value.base.objects, [path..., getPropValue prop]
         if prop instanceof Splat
           prop.error "multiple rest elements are disallowed in object destructuring" if restElement
+          restKey = key
           restElement = {
-            key,
             name: prop.unwrap(),
             props: ((new Literal "[#{p}]").compile(o) for p in path).join ""            
           }  
       if restElement
-        # Remove rest element from the object.
-        properties.splice restElement.key, 1
+        # Remove rest element from the properties.
+        properties.splice restKey, 1
         # Prepare array of compiled property keys to be excluded from the object.
         restElement["excludeProps"] = new Literal "[#{(getPropValue(prop) for prop in properties)}]"
         results.push restElement
@@ -2199,10 +2200,7 @@ exports.Code = class Code extends Base
           param.error 'only one splat or expansion parameter is allowed per function definition'
         else if param instanceof Expansion and @params.length is 1
           param.error 'an expansion parameter cannot be the only parameter in a function definition'
-
-        # If the parameter is object and contains the splat, e.g. fn({a, b, r...}), 
-        # set haveSplatParam to false to avoid adding '...' to the function argument.
-        haveSplatParam = yes and param.name not instanceof Obj
+        haveSplatParam = yes
         if param.splat
           if param.name instanceof Arr
             # Splat arrays are treated oddly by ES; deal with them the legacy
