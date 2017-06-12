@@ -303,7 +303,7 @@ test "object spread properties: ES2015", ->
   eq obj4.f.g, 5
   deepEqual obj4.f, obj.c.f
   
-  obj5 = {obj..., ((k) -> {b:k})(99)}
+  obj5 = {obj..., ((k) -> {b:k})(99)...}
   eq obj5.b, 99
   deepEqual obj5.c, obj.c
   

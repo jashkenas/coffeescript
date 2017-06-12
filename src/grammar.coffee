@@ -225,12 +225,9 @@ grammar =
   ObjDestructAssignable: [
     o 'Object ...',                             -> new Value $1
     o 'SimpleObjAssignable ...',                -> new Value $1
-    o 'Parenthetical',                          -> new Value $1
     o 'Parenthetical ...',                      -> new Value $1
-    o 'Parenthetical Arguments',                -> new Call $1, $2, no
-    o 'Parenthetical Arguments ...',            -> new Call $1, $2, no    
-    o 'Identifier Arguments',                   -> new Call $1, $2, no    
-    o 'Identifier Arguments ...',               -> new Call $1, $2, no 
+    o 'Parenthetical Arguments ...',            -> new Call $1, $2, no
+    o 'Identifier Arguments ...',               -> new Call $1, $2, no
   ] 
   
   # A return statement from a function body.
