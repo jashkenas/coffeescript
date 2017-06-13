@@ -1300,21 +1300,22 @@ exports.Class = class Class extends Base
     parentName    = @parent.base.value if @parent instanceof Value and not @parent.hasProperties()
     @hasNameClash = @name? and @name is parentName
 
-    if executableBody or @hasNameClash
-      @compileNode = @compileClassDeclaration
-      result = new ExecutableClassBody(@, executableBody).compileToFragments o
-      @compileNode = @constructor::compileNode
-    else
-      result = @compileClassDeclaration o
+    node = @
 
+    if executableBody or @hasNameClash
+      node = new ExecutableClassBody node, executableBody
+    else if not @name? and o.level is LEVEL_TOP
       # Anonymous classes are only valid in expressions
-      result = @wrapInParentheses result if not @name? and o.level is LEVEL_TOP
+      node = new Parens node
 
     if @variable
-      assign = new Assign @variable, new Literal(''), null, { @moduleDeclaration }
-      [ assign.compileToFragments(o)..., result... ]
-    else
-      result
+      node = new Assign @variable, node, null, { @moduleDeclaration }
+
+    @compileNode = @compileClassDeclaration
+    try
+      return node.compileToFragments o
+    finally
+      delete @compileNode
 
   compileClassDeclaration: (o) ->
     @ctor ?= @makeDefaultConstructor() if @externalCtor
