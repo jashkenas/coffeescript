@@ -1325,7 +1325,7 @@ exports.Class = class Class extends Base
     @ctor ?= @makeDefaultConstructor() if @externalCtor or @boundMethods.length
     @ctor?.noReturn = true
 
-    @proxyBoundMethods o if @boundMethods.length
+    @proxyBoundMethods() if @boundMethods.length
 
     o.indent += TAB
 
@@ -1466,7 +1466,7 @@ exports.Class = class Class extends Base
 
     ctor
 
-  proxyBoundMethods: (o) ->
+  proxyBoundMethods: ->
     @ctor.thisAssignments = for method in @boundMethods
       method.classVariable = @variableRef if @parent
 
