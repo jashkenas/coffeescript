@@ -822,6 +822,10 @@ test "#1392 calling `super` in methods defined on namespaced classes", ->
   eq 5, (new C.a).m()
 
 
+test "#4436 immediately instantiated named class", ->
+  ok new class Foo
+
+
 test "dynamic method names", ->
   class A
     "#{name = 'm'}": -> 1
