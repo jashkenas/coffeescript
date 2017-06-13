@@ -1294,7 +1294,7 @@ exports.Class = class Class extends Base
 
   compileNode: (o) ->
     @name          = @determineName()
-    executableBody = @walkBody(o)
+    executableBody = @walkBody()
 
     # Special handling to allow `class expr.A extends A` declarations
     parentName    = @parent.base.value if @parent instanceof Value and not @parent.hasProperties()
@@ -1307,6 +1307,10 @@ exports.Class = class Class extends Base
     else if not @name? and o.level is LEVEL_TOP
       # Anonymous classes are only valid in expressions
       node = new Parens node
+
+    if @boundMethods.length and @parent
+      @variable ?= new IdentifierLiteral o.scope.freeVariable '_class'
+      [@variable, @variableRef] = @variable.cache o unless @variableRef?
 
     if @variable
       node = new Assign @variable, node, null, { @moduleDeclaration }
@@ -1356,7 +1360,7 @@ exports.Class = class Class extends Base
       @variable.error message if message
     if name in JS_FORBIDDEN then "_#{name}" else name
 
-  walkBody: (o) ->
+  walkBody: ->
     @ctor          = null
     @boundMethods  = []
     executableBody = null
@@ -1463,10 +1467,7 @@ exports.Class = class Class extends Base
     ctor
 
   proxyBoundMethods: (o) ->
-    @variable ?= new IdentifierLiteral o.scope.freeVariable '_class' if @parent
-    [@variable, @variableRef] = @variable.cache o unless @variableRef?
-
-    @ctor.thisAssignments = for method in @boundMethods by -1
+    @ctor.thisAssignments = for method in @boundMethods
       method.classVariable = @variableRef if @parent
 
       name = new Value(new ThisLiteral, [ method.name ])
