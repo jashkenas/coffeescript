@@ -1,4 +1,5 @@
 for filename in list
   do (filename) ->
-    fs.readFile filename, (err, contents) ->
-      compile filename, contents.toString()
+    if filename not in ['.DS_Store', 'Thumbs.db', 'ehthumbs.db']
+      fs.readFile filename, (err, contents) ->
+        compile filename, contents.toString()

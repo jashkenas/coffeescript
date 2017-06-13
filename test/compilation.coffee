@@ -76,7 +76,7 @@ test "#2516: Unicode spaces should not be part of identifiers", ->
   eq 5, {c: 5}[ 'c' ]
 
   # A line where every space in non-breaking
-  eq 1 + 1, 2  
+  eq 1 + 1, 2  
 
 test "don't accidentally stringify keywords", ->
   ok (-> this == 'this')() is false

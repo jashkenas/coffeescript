@@ -9,7 +9,7 @@ fs             = require 'fs'
 path           = require 'path'
 helpers        = require './helpers'
 optparse       = require './optparse'
-CoffeeScript   = require './coffee-script'
+CoffeeScript   = require './'
 {spawn, exec}  = require 'child_process'
 {EventEmitter} = require 'events'
 
@@ -47,7 +47,7 @@ SWITCHES = [
   ['-p', '--print',           'print out the compiled JavaScript']
   ['-r', '--require [MODULE*]', 'require the given module before eval or REPL']
   ['-s', '--stdio',           'listen for and compile scripts over stdio']
-  ['-l', '--literate',        'treat stdio as literate style coffee-script']
+  ['-l', '--literate',        'treat stdio as literate style coffeescript']
   ['-t', '--tokens',          'print out the tokens that the lexer/rewriter produce']
   ['-v', '--version',         'display the version number']
   ['-w', '--watch',           'watch scripts for changes and rerun commands']

@@ -39,80 +39,72 @@
 # Import statements
 
 test "backticked import statement", ->
-  input = """
+  eqJS """
     if Meteor.isServer
-      `import { foo, bar as baz } from 'lib'`"""
-  output = """
+      `import { foo, bar as baz } from 'lib'`""",
+  """
     if (Meteor.isServer) {
       import { foo, bar as baz } from 'lib';
     }"""
-  eq toJS(input), output
 
 test "import an entire module for side effects only, without importing any bindings", ->
-  input = "import 'lib'"
-  output = "import 'lib';"
-  eq toJS(input), output
+  eqJS "import 'lib'",
+  "import 'lib';"
 
 test "import default member from module, adding the member to the current scope", ->
-  input = """
+  eqJS """
     import foo from 'lib'
-    foo.fooMethod()"""
-  output = """
+    foo.fooMethod()""",
+  """
     import foo from 'lib';
 
     foo.fooMethod();"""
-  eq toJS(input), output
 
 test "import an entire module's contents as an alias, adding the alias to the current scope", ->
-  input = """
+  eqJS """
     import * as foo from 'lib'
-    foo.fooMethod()"""
-  output = """
+    foo.fooMethod()""",
+  """
     import * as foo from 'lib';
 
     foo.fooMethod();"""
-  eq toJS(input), output
 
 test "import empty object", ->
-  input = "import { } from 'lib'"
-  output = "import {} from 'lib';"
-  eq toJS(input), output
+  eqJS "import { } from 'lib'",
+  "import {} from 'lib';"
 
 test "import empty object", ->
-  input = "import {} from 'lib'"
-  output = "import {} from 'lib';"
-  eq toJS(input), output
+  eqJS "import {} from 'lib'",
+  "import {} from 'lib';"
 
 test "import a single member of a module, adding the member to the current scope", ->
-  input = """
+  eqJS """
     import { foo } from 'lib'
-    foo.fooMethod()"""
-  output = """
+    foo.fooMethod()""",
+  """
     import {
       foo
     } from 'lib';
 
     foo.fooMethod();"""
-  eq toJS(input), output
 
 test "import a single member of a module as an alias, adding the alias to the current scope", ->
-  input = """
+  eqJS """
     import { foo as bar } from 'lib'
-    bar.barMethod()"""
-  output = """
+    bar.barMethod()""",
+  """
     import {
       foo as bar
     } from 'lib';
 
     bar.barMethod();"""
-  eq toJS(input), output
 
 test "import multiple members of a module, adding the members to the current scope", ->
-  input = """
+  eqJS """
     import { foo, bar } from 'lib'
     foo.fooMethod()
-    bar.barMethod()"""
-  output = """
+    bar.barMethod()""",
+  """
     import {
       foo,
       bar
@@ -121,14 +113,13 @@ test "import multiple members of a module, adding the members to the current sco
     foo.fooMethod();
 
     bar.barMethod();"""
-  eq toJS(input), output
 
 test "import multiple members of a module where some are aliased, adding the members or aliases to the current scope", ->
-  input = """
+  eqJS """
     import { foo, bar as baz } from 'lib'
     foo.fooMethod()
-    baz.bazMethod()"""
-  output = """
+    baz.bazMethod()""",
+  """
     import {
       foo,
       bar as baz
@@ -137,15 +128,14 @@ test "import multiple members of a module where some are aliased, adding the mem
     foo.fooMethod();
 
     baz.bazMethod();"""
-  eq toJS(input), output
 
 test "import default member and other members of a module, adding the members to the current scope", ->
-  input = """
+  eqJS """
     import foo, { bar, baz as qux } from 'lib'
     foo.fooMethod()
     bar.barMethod()
-    qux.quxMethod()"""
-  output = """
+    qux.quxMethod()""",
+  """
     import foo, {
       bar,
       baz as qux
@@ -156,87 +146,80 @@ test "import default member and other members of a module, adding the members to
     bar.barMethod();
 
     qux.quxMethod();"""
-  eq toJS(input), output
 
 test "import default member from a module as well as the entire module's contents as an alias, adding the member and alias to the current scope", ->
-  input = """
+  eqJS """
     import foo, * as bar from 'lib'
     foo.fooMethod()
-    bar.barMethod()"""
-  output = """
+    bar.barMethod()""",
+  """
     import foo, * as bar from 'lib';
 
     foo.fooMethod();
 
     bar.barMethod();"""
-  eq toJS(input), output
 
 test "multiline simple import", ->
-  input = """
+  eqJS """
     import {
       foo,
       bar as baz
-    } from 'lib'"""
-  output = """
+    } from 'lib'""",
+  """
     import {
       foo,
       bar as baz
     } from 'lib';"""
-  eq toJS(input), output
 
 test "multiline complex import", ->
-  input = """
+  eqJS """
     import foo, {
       bar,
       baz as qux
-    } from 'lib'"""
-  output = """
+    } from 'lib'""",
+  """
     import foo, {
       bar,
       baz as qux
     } from 'lib';"""
-  eq toJS(input), output
 
 test "import with optional commas", ->
-  input = "import { foo, bar, } from 'lib'"
-  output = """
+  eqJS "import { foo, bar, } from 'lib'",
+  """
     import {
       foo,
       bar
     } from 'lib';"""
-  eq toJS(input), output
 
 test "multiline import without commas", ->
-  input = """
+  eqJS """
     import {
       foo
       bar
-    } from 'lib'"""
-  output = """
+    } from 'lib'""",
+  """
     import {
       foo,
       bar
     } from 'lib';"""
-  eq toJS(input), output
 
 test "multiline import with optional commas", ->
-  input = """
+  eqJS """
     import {
       foo,
       bar,
-    } from 'lib'"""
-  output = """
+    } from 'lib'""",
+  """
     import {
       foo,
       bar
     } from 'lib';"""
-  eq toJS(input), output
 
 test "a variable can be assigned after an import", ->
-  input = """
+  eqJS """
     import { foo } from 'lib'
-    bar = 5"""
-  output = """
+    bar = 5""",
+  """
     var bar;
 
     import {
@@ -244,14 +227,13 @@ test "a variable can be assigned after an import", ->
     } from 'lib';
 
     bar = 5;"""
-  eq toJS(input), output
 
 test "variables can be assigned before and after an import", ->
-  input = """
+  eqJS """
     foo = 5
     import { bar } from 'lib'
-    baz = 7"""
-  output = """
+    baz = 7""",
+  """
     var baz, foo;
 
     foo = 5;
@@ -261,185 +243,164 @@ test "variables can be assigned before and after an import", ->
     } from 'lib';
 
     baz = 7;"""
-  eq toJS(input), output
 
 # Export statements
 
 test "export empty object", ->
-  input = "export { }"
-  output = "export {};"
-  eq toJS(input), output
+  eqJS "export { }",
+  "export {};"
 
 test "export empty object", ->
-  input = "export {}"
-  output = "export {};"
-  eq toJS(input), output
+  eqJS "export {}",
+  "export {};"
 
 test "export named members within an object", ->
-  input = "export { foo, bar }"
-  output = """
+  eqJS "export { foo, bar }",
+  """
     export {
       foo,
       bar
     };"""
-  eq toJS(input), output
 
 test "export named members as aliases, within an object", ->
-  input = "export { foo as bar, baz as qux }"
-  output = """
+  eqJS "export { foo as bar, baz as qux }",
+  """
     export {
       foo as bar,
       baz as qux
     };"""
-  eq toJS(input), output
 
 test "export named members within an object, with an optional comma", ->
-  input = "export { foo, bar, }"
-  output = """
+  eqJS "export { foo, bar, }",
+  """
     export {
       foo,
       bar
     };"""
-  eq toJS(input), output
 
 test "multiline export named members within an object", ->
-  input = """
+  eqJS """
     export {
       foo,
       bar
-    }"""
-  output = """
+    }""",
+  """
     export {
       foo,
       bar
     };"""
-  eq toJS(input), output
 
 test "multiline export named members within an object, with an optional comma", ->
-  input = """
+  eqJS """
     export {
       foo,
       bar,
-    }"""
-  output = """
+    }""",
+  """
     export {
       foo,
       bar
     };"""
-  eq toJS(input), output
 
 test "export default string", ->
-  input = "export default 'foo'"
-  output = "export default 'foo';"
-  eq toJS(input), output
+  eqJS "export default 'foo'",
+  "export default 'foo';"
 
 test "export default number", ->
-  input = "export default 5"
-  output = "export default 5;"
-  eq toJS(input), output
+  eqJS "export default 5",
+  "export default 5;"
 
 test "export default object", ->
-  input = "export default { foo: 'bar', baz: 'qux' }"
-  output = """
+  eqJS "export default { foo: 'bar', baz: 'qux' }",
+  """
     export default {
       foo: 'bar',
       baz: 'qux'
     };"""
-  eq toJS(input), output
 
 test "export default implicit object", ->
-  input = "export default foo: 'bar', baz: 'qux'"
-  output = """
+  eqJS "export default foo: 'bar', baz: 'qux'",
+  """
     export default {
       foo: 'bar',
       baz: 'qux'
     };"""
-  eq toJS(input), output
 
 test "export default multiline implicit object", ->
-  input = """
+  eqJS """
     export default
       foo: 'bar',
       baz: 'qux'
-    """
-  output = """
+    """,
+  """
     export default {
       foo: 'bar',
       baz: 'qux'
     };"""
-  eq toJS(input), output
 
 test "export default assignment expression", ->
-  input = "export default foo = 'bar'"
-  output = """
+  eqJS "export default foo = 'bar'",
+  """
     var foo;
 
     export default foo = 'bar';"""
-  eq toJS(input), output
 
 test "export assignment expression", ->
-  input = "export foo = 'bar'"
-  output = "export var foo = 'bar';"
-  eq toJS(input), output
+  eqJS "export foo = 'bar'",
+  "export var foo = 'bar';"
 
 test "export multiline assignment expression", ->
-  input = """
+  eqJS """
     export foo =
-    'bar'"""
-  output = "export var foo = 'bar';"
-  eq toJS(input), output
+    'bar'""",
+    "export var foo = 'bar';"
 
 test "export multiline indented assignment expression", ->
-  input = """
+  eqJS """
     export foo =
-      'bar'"""
-  output = "export var foo = 'bar';"
-  eq toJS(input), output
+      'bar'""",
+      "export var foo = 'bar';"
 
 test "export default function", ->
-  input = "export default ->"
-  output = "export default function() {};"
-  eq toJS(input), output
+  eqJS "export default ->",
+  "export default function() {};"
 
 test "export default multiline function", ->
-  input = """
+  eqJS """
     export default (foo) ->
-      console.log foo"""
-  output = """
+      console.log foo""",
+    """
     export default function(foo) {
       return console.log(foo);
     };"""
-  eq toJS(input), output
 
 test "export assignment function", ->
-  input = """
+  eqJS """
     export foo = (bar) ->
-      console.log bar"""
-  output = """
+      console.log bar""",
+    """
     export var foo = function(bar) {
       return console.log(bar);
     };"""
-  eq toJS(input), output
 
 test "export assignment function which contains assignments in its body", ->
-  input = """
+  eqJS """
     export foo = (bar) ->
       baz = '!'
-      console.log bar + baz"""
-  output = """
+      console.log bar + baz""",
+    """
     export var foo = function(bar) {
       var baz;
       baz = '!';
       return console.log(bar + baz);
     };"""
-  eq toJS(input), output
 
 test "export default predefined function", ->
-  input = """
+  eqJS """
     foo = (bar) ->
       console.log bar
-    export default foo"""
-  output = """
+    export default foo""",
+  """
     var foo;
 
     foo = function(bar) {
@@ -447,127 +408,133 @@ test "export default predefined function", ->
     };
 
     export default foo;"""
-  eq toJS(input), output
 
-# Uncomment this test once ES2015+ `class` support is added
-
-# test "export default class", ->
-#   input = """
-#     export default class foo extends bar
-#       baz: ->
-#         console.log 'hello, world!'"""
-#   output = """
-#     export default class foo extends bar {
-#       baz: function {
-#         return console.log('hello, world!');
-#       }
-#     }"""
-#   eq toJS(input), output
-
-# Very limited tests for now, testing that `export class foo` either compiles
-# identically (ES2015+) or at least into some function, leaving the specifics
-# vague in case the CoffeeScript `class` interpretation changes
-test "export class", ->
-  input = """
-    export class foo
-      baz: ->
-        console.log 'hello, world!'"""
-  output = toJS input
-  ok /^export (class foo|var foo = \(function)/.test toJS input
-
-test "export class that extends", ->
-  input = """
-    export class foo extends bar
-      baz: ->
-        console.log 'hello, world!'"""
-  output = toJS input
-  ok /export (class foo|var foo = \(function)/.test(output) and \
-    not /var foo(;|,)/.test output
-
-test "export default class that extends", ->
-  input = """
+test "export default class", ->
+  eqJS """
     export default class foo extends bar
       baz: ->
-        console.log 'hello, world!'"""
-  ok /export default (class foo|foo = \(function)/.test toJS input
+        console.log 'hello, world!'""",
+      """
+    var foo;
+
+    export default foo = class foo extends bar {
+      baz() {
+        return console.log('hello, world!');
+      }
+
+    };"""
+
+test "export class", ->
+  eqJS """
+    export class foo
+      baz: ->
+        console.log 'hello, world!'""",
+      """
+    export var foo = class foo {
+      baz() {
+        return console.log('hello, world!');
+      }
+
+    };"""
+
+test "export class that extends", ->
+  eqJS """
+    export class foo extends bar
+      baz: ->
+        console.log 'hello, world!'""",
+      """
+    export var foo = class foo extends bar {
+      baz() {
+        return console.log('hello, world!');
+      }
+
+    };"""
+
+test "export default class that extends", ->
+  eqJS """
+    export default class foo extends bar
+      baz: ->
+        console.log 'hello, world!'""",
+      """
+    var foo;
+
+    export default foo = class foo extends bar {
+      baz() {
+        return console.log('hello, world!');
+      }
+
+    };"""
 
 test "export default named member, within an object", ->
-  input = "export { foo as default, bar }"
-  output = """
+  eqJS "export { foo as default, bar }",
+  """
     export {
       foo as default,
       bar
     };"""
-  eq toJS(input), output
 
 
 # Import and export in the same statement
 
 test "export an entire module's contents", ->
-  input = "export * from 'lib'"
-  output = "export * from 'lib';"
-  eq toJS(input), output
+  eqJS "export * from 'lib'",
+  "export * from 'lib';"
 
 test "export members imported from another module", ->
-  input = "export { foo, bar } from 'lib'"
-  output = """
+  eqJS "export { foo, bar } from 'lib'",
+  """
     export {
       foo,
       bar
     } from 'lib';"""
-  eq toJS(input), output
 
 test "export as aliases members imported from another module", ->
-  input = "export { foo as bar, baz as qux } from 'lib'"
-  output = """
+  eqJS "export { foo as bar, baz as qux } from 'lib'",
+  """
     export {
       foo as bar,
       baz as qux
     } from 'lib';"""
-  eq toJS(input), output
 
 test "export list can contain CoffeeScript keywords", ->
-  input = "export { unless } from 'lib'"
-  output = """
+  eqJS "export { unless } from 'lib'",
+  """
     export {
       unless
     } from 'lib';"""
-  eq toJS(input), output
 
 test "export list can contain CoffeeScript keywords when aliasing", ->
-  input = "export { when as bar, baz as unless } from 'lib'"
-  output = """
+  eqJS "export { when as bar, baz as unless } from 'lib'",
+  """
     export {
       when as bar,
       baz as unless
     } from 'lib';"""
-  eq toJS(input), output
 
 
 # Edge cases
 
 test "multiline import with comments", ->
-  input = """
+  eqJS """
     import {
       foo, # Not as good as bar
       bar as baz # I prefer qux
-    } from 'lib'"""
-  output = """
+    } from 'lib'""",
+  """
     import {
       foo,
       bar as baz
     } from 'lib';"""
-  eq toJS(input), output
 
 test "`from` not part of an import or export statement can still be assigned", ->
   from = 5
   eq 5, from
 
 test "a variable named `from` can be assigned after an import", ->
-  input = """
+  eqJS """
     import { foo } from 'lib'
-    from = 5"""
-  output = """
+    from = 5""",
+  """
     var from;
 
     import {
@@ -575,15 +542,14 @@ test "a variable named `from` can be assigned after an import", ->
     } from 'lib';
 
     from = 5;"""
-  eq toJS(input), output
 
 test "`from` can be assigned after a multiline import", ->
-  input = """
+  eqJS """
     import {
       foo
     } from 'lib'
-    from = 5"""
-  output = """
+    from = 5""",
+  """
     var from;
 
     import {
@@ -591,91 +557,81 @@ test "`from` can be assigned after a multiline import", ->
     } from 'lib';
 
     from = 5;"""
-  eq toJS(input), output
 
 test "`from` can be imported as a member name", ->
-  input = "import { from } from 'lib'"
-  output = """
+  eqJS "import { from } from 'lib'",
+  """
     import {
       from
     } from 'lib';"""
-  eq toJS(input), output
 
 test "`from` can be imported as a member name and aliased", ->
-  input = "import { from as foo } from 'lib'"
-  output = """
+  eqJS "import { from as foo } from 'lib'",
+  """
     import {
       from as foo
     } from 'lib';"""
-  eq toJS(input), output
 
 test "`from` can be used as an alias name", ->
-  input = "import { foo as from } from 'lib'"
-  output = """
+  eqJS "import { foo as from } from 'lib'",
+  """
     import {
       foo as from
     } from 'lib';"""
-  eq toJS(input), output
 
 test "`as` can be imported as a member name", ->
-  input = "import { as } from 'lib'"
-  output = """
+  eqJS "import { as } from 'lib'",
+  """
     import {
       as
     } from 'lib';"""
-  eq toJS(input), output
 
 test "`as` can be imported as a member name and aliased", ->
-  input = "import { as as foo } from 'lib'"
-  output = """
+  eqJS "import { as as foo } from 'lib'",
+  """
     import {
       as as foo
     } from 'lib';"""
-  eq toJS(input), output
 
 test "`as` can be used as an alias name", ->
-  input = "import { foo as as } from 'lib'"
-  output = """
+  eqJS "import { foo as as } from 'lib'",
+  """
     import {
       foo as as
     } from 'lib';"""
-  eq toJS(input), output
 
 test "CoffeeScript keywords can be used as imported names in import lists", ->
-  input = """
+  eqJS """
     import { unless as bar } from 'lib'
-    bar.barMethod()"""
-  output = """
+    bar.barMethod()""",
+  """
     import {
       unless as bar
     } from 'lib';
 
     bar.barMethod();"""
-  eq toJS(input), output
 
 test "`*` can be used in an expression on the same line as an export keyword", ->
-  input = "export foo = (x) -> x * x"
-  output = """
+  eqJS "export foo = (x) -> x * x",
+  """
     export var foo = function(x) {
       return x * x;
     };"""
-  eq toJS(input), output
-  input = "export default foo = (x) -> x * x"
-  output = """
+  eqJS "export default foo = (x) -> x * x",
+  """
     var foo;
 
     export default foo = function(x) {
       return x * x;
     };"""
-  eq toJS(input), output
 
 test "`*` and `from` can be used in an export default expression", ->
-  input = """
+  eqJS """
     export default foo.extend
       bar: ->
         from = 5
-        from = from * 3"""
-  output = """
+        from = from * 3""",
+      """
     export default foo.extend({
       bar: function() {
         var from;
@@ -683,95 +639,84 @@ test "`*` and `from` can be used in an export default expression", ->
         return from = from * 3;
       }
     });"""
-  eq toJS(input), output
 
 test "wrapped members can be imported multiple times if aliased", ->
-  input = "import { foo, foo as bar } from 'lib'"
-  output = """
+  eqJS "import { foo, foo as bar } from 'lib'",
+  """
     import {
       foo,
       foo as bar
     } from 'lib';"""
-  eq toJS(input), output
 
 test "default and wrapped members can be imported multiple times if aliased", ->
-  input = "import foo, { foo as bar } from 'lib'"
-  output = """
+  eqJS "import foo, { foo as bar } from 'lib'",
+  """
     import foo, {
       foo as bar
     } from 'lib';"""
-  eq toJS(input), output
 
 test "import a member named default", ->
-  input = "import { default } from 'lib'"
-  output = """
+  eqJS "import { default } from 'lib'",
+  """
     import {
       default
     } from 'lib';"""
-  eq toJS(input), output
 
 test "import an aliased member named default", ->
-  input = "import { default as def } from 'lib'"
-  output = """
+  eqJS "import { default as def } from 'lib'",
+  """
     import {
       default as def
     } from 'lib';"""
-  eq toJS(input), output
 
 test "export a member named default", ->
-  input = "export { default }"
-  output = """
+  eqJS "export { default }",
+  """
     export {
       default
     };"""
-  eq toJS(input), output
 
 test "export an aliased member named default", ->
-  input = "export { def as default }"
-  output = """
+  eqJS "export { def as default }",
+  """
     export {
       def as default
     };"""
-  eq toJS(input), output
 
 test "import an imported member named default", ->
-  input = "import { default } from 'lib'"
-  output = """
+  eqJS "import { default } from 'lib'",
+  """
     import {
       default
     } from 'lib';"""
-  eq toJS(input), output
 
 test "import an imported aliased member named default", ->
-  input = "import { default as def } from 'lib'"
-  output = """
+  eqJS "import { default as def } from 'lib'",
+  """
     import {
       default as def
     } from 'lib';"""
-  eq toJS(input), output
 
 test "export an imported member named default", ->
-  input = "export { default } from 'lib'"
-  output = """
+  eqJS "export { default } from 'lib'",
+  """
     export {
       default
     } from 'lib';"""
-  eq toJS(input), output
 
 test "export an imported aliased member named default", ->
-  input = "export { default as def } from 'lib'"
-  output = """
+  eqJS "export { default as def } from 'lib'",
+  """
     export {
       default as def
     } from 'lib';"""
-  eq toJS(input), output
 
 test "#4394: export shouldn't prevent variable declarations", ->
-  input = """
+  eqJS """
     x = 1
     export { x }
+  """,
   """
-  output = """
     var x;
 
     x = 1;
@@ -780,19 +725,17 @@ test "#4394: export shouldn't prevent variable declarations", ->
       x
     };
   """
-  eq toJS(input), output
 
 test "#4451: `default` in an export statement is only treated as a keyword when it follows `export` or `as`", ->
-  input = "export default { default: 1 }"
-  output = """
+  eqJS "export default { default: 1 }",
+  """
     export default {
-      "default": 1
+      default: 1
     };
   """
-  eq toJS(input), output
 
 test "#4491: import- and export-specific lexing should stop after import/export statement", ->
-  input = """
+  eqJS """
     import {
       foo,
       bar as baz
@@ -801,8 +744,8 @@ test "#4491: import- and export-specific lexing should stop after import/export 
     foo as
     3 * as 4
     from 'foo'
-    """
-  output = """
+    """,
+  """
     import {
       foo,
       bar as baz
@@ -814,16 +757,15 @@ test "#4491: import- and export-specific lexing should stop after import/export 
 
     from('foo');
     """
-  eq toJS(input), output
 
-  input = """
+  eqJS """
     import { foo, bar as baz } from 'lib'
 
     foo as
     3 * as 4
     from 'foo'
-    """
-  output = """
+    """,
+  """
     import {
       foo,
       bar as baz
@@ -835,16 +777,15 @@ test "#4491: import- and export-specific lexing should stop after import/export 
 
     from('foo');
     """
-  eq toJS(input), output
 
-  input = """
+  eqJS """
     import * as lib from 'lib'
 
     foo as
     3 * as 4
     from 'foo'
-    """
-  output = """
+    """,
+  """
     import * as lib from 'lib';
 
     foo(as);
@@ -853,9 +794,8 @@ test "#4491: import- and export-specific lexing should stop after import/export 
 
     from('foo');
     """
-  eq toJS(input), output
 
-  input = """
+  eqJS """
     export {
       foo,
       bar
@@ -864,8 +804,8 @@ test "#4491: import- and export-specific lexing should stop after import/export 
     foo as
     3 * as 4
     from 'foo'
-    """
-  output = """
+    """,
+  """
     export {
       foo,
       bar
@@ -877,16 +817,15 @@ test "#4491: import- and export-specific lexing should stop after import/export 
 
     from('foo');
     """
-  eq toJS(input), output
 
-  input = """
+  eqJS """
     export * from 'lib'
 
     foo as
     3 * as 4
     from 'foo'
-    """
-  output = """
+    """,
+  """
     export * from 'lib';
 
     foo(as);
@@ -895,4 +834,3 @@ test "#4491: import- and export-specific lexing should stop after import/export 
 
     from('foo');
     """
-  eq toJS(input), output

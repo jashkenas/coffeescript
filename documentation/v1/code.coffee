@@ -1,5 +1,5 @@
 fs           = require 'fs'
-CoffeeScript = require '../../lib/coffee-script'
+CoffeeScript = require '../../lib/coffeescript'
 
 
 module.exports = ->

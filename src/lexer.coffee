@@ -7,13 +7,13 @@
 #
 # where locationData is {first_line, first_column, last_line, last_column}, which is a
 # format that can be fed directly into [Jison](https://github.com/zaach/jison).  These
-# are read by jison in the `parser.lexer` function defined in coffee-script.coffee.
+# are read by jison in the `parser.lexer` function defined in coffeescript.coffee.
 
 {Rewriter, INVERSES} = require './rewriter'
 
 # Import the helpers we need.
-{count, starts, compact, repeat, invertLiterate,
-locationDataToString,  throwSyntaxError} = require './helpers'
+{count, starts, compact, repeat, invertLiterate, merge,
+locationDataToString, throwSyntaxError} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -40,6 +40,7 @@ exports.Lexer = class Lexer
     @indebt     = 0              # The over-indentation at the current level.
     @outdebt    = 0              # The under-outdentation at the current level.
     @indents    = []             # The stack of all current indentation levels.
+    @indentLiteral = ''          # The indentation
     @ends       = []             # The stack for pairing up tokens.
     @tokens     = []             # Stream of parsed tokens in the form `['TYPE', value, location data]`.
     @seenFor    = no             # Used to recognize FORIN, FOROF and FORFROM tokens.
@@ -47,6 +48,7 @@ exports.Lexer = class Lexer
     @seenExport = no             # Used to recognize EXPORT FROM? AS? tokens.
     @importSpecifierList = no    # Used to identify when in an IMPORT {...} FROM? ...
     @exportSpecifierList = no    # Used to identify when in an EXPORT {...} FROM? ...
+    @csxDepth = 0                # Used to optimize CSX checks, how deep in CSX we are.
 
     @chunkLine =
       opts.line or 0             # The start line for the current @chunk.
@@ -66,6 +68,7 @@ exports.Lexer = class Lexer
            @lineToken()       or
            @stringToken()     or
            @numberToken()     or
+           @csxToken()        or
            @regexToken()      or
            @jsToken()         or
            @literalToken()
@@ -83,8 +86,8 @@ exports.Lexer = class Lexer
     (new Rewriter).rewrite @tokens
 
   # Preprocess the code to remove leading and trailing whitespace, carriage
-  # returns, etc. If we're lexing literate CoffeeScript, strip external Markdown
-  # by removing all lines that aren't indented by at least four spaces or a tab.
+  # returns, etc. If we’re lexing literate CoffeeScript, strip external Markdown
+  # by removing all lines that aren’t indented by at least four spaces or a tab.
   clean: (code) ->
     code = code.slice(1) if code.charCodeAt(0) is BOM
     code = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
@@ -98,13 +101,15 @@ exports.Lexer = class Lexer
   # ----------
 
   # Matches identifying literals: variables, keywords, method names, etc.
-  # Check to ensure that JavaScript reserved words aren't being used as
+  # Check to ensure that JavaScript reserved words aren’t being used as
   # identifiers. Because CoffeeScript reserves a handful of keywords that are
-  # allowed in JavaScript, we're careful not to tag them as keywords when
+  # allowed in JavaScript, we’re careful not to tag them as keywords when
   # referenced as property names here, so you can still do `jQuery.is()` even
   # though `is` means `===` otherwise.
   identifierToken: ->
-    return 0 unless match = IDENTIFIER.exec @chunk
+    inCSXTag = @atCSXTag()
+    regex = if inCSXTag then CSX_ATTRIBUTE else IDENTIFIER
+    return 0 unless match = regex.exec @chunk
     [input, id, colon] = match
 
     # Preserve length of id for location data
@@ -132,7 +137,7 @@ exports.Lexer = class Lexer
       @token 'DEFAULT', id
       return id.length
 
-    [..., prev] = @tokens
+    prev = @prev()
 
     tag =
       if colon or prev? and
@@ -170,6 +175,17 @@ exports.Lexer = class Lexer
        isForFrom(prev)
       tag = 'FORFROM'
       @seenFor = no
+    # Throw an error on attempts to use `get` or `set` as keywords, or
+    # what CoffeeScript would normally interpret as calls to functions named
+    # `get` or `set`, i.e. `get({foo: function () {}})`.
+    else if tag is 'PROPERTY' and prev
+      if prev.spaced and prev[0] in CALLABLE and /^[gs]et$/.test(prev[1])
+        @error "'#{prev[1]}' cannot be used as a keyword, or as a function call without parentheses", prev[2]
+      else
+        prevprev = @tokens[@tokens.length - 2]
+        if prev[0] in ['@', 'THIS'] and prevprev and prevprev.spaced and /^[gs]et$/.test(prevprev[1]) and
+        @tokens[@tokens.length - 3][0] isnt '.'
+          @error "'#{prevprev[1]}' cannot be used as a keyword, or as a function call without parentheses", prevprev[2]
 
     if tag is 'IDENTIFIER' and id in RESERVED
       @error "reserved word '#{id}'", length: id.length
@@ -193,13 +209,16 @@ exports.Lexer = class Lexer
       [tagToken[2].first_line, tagToken[2].first_column] =
         [poppedToken[2].first_line, poppedToken[2].first_column]
     if colon
-      colonOffset = input.lastIndexOf ':'
-      @token ':', ':', colonOffset, colon.length
+      colonOffset = input.lastIndexOf if inCSXTag then '=' else ':'
+      colonToken = @token ':', ':', colonOffset, colon.length
+      colonToken.csxColon = yes if inCSXTag # used by rewriter
+    if inCSXTag and tag is 'IDENTIFIER' and prev[0] isnt ':'
+      @token ',', ',', 0, 0, tagToken
 
     input.length
 
   # Matches numbers, including decimals, hex, and exponential notation.
-  # Be careful not to interfere with ranges-in-progress.
+  # Be careful not to interfere with ranges in progress.
   numberToken: ->
     return 0 unless match = NUMBER.exec @chunk
 
@@ -222,15 +241,14 @@ exports.Lexer = class Lexer
       when 'o' then 8
       when 'x' then 16
       else null
+
     numberValue = if base? then parseInt(number[2..], base) else parseFloat(number)
-    if number.charAt(1) in ['b', 'o']
-      number = "0x#{numberValue.toString 16}"
 
     tag = if numberValue is Infinity then 'INFINITY' else 'NUMBER'
     @token tag, number, 0, lexedLength
     lexedLength
 
-  # Matches strings, including multi-line strings, as well as heredocs, with or without
+  # Matches strings, including multiline strings, as well as heredocs, with or without
   # interpolation.
   stringToken: ->
     [quote] = STRING_START.exec(@chunk) || []
@@ -238,8 +256,9 @@ exports.Lexer = class Lexer
 
     # If the preceding token is `from` and this is an import or export statement,
     # properly tag the `from`.
-    if @tokens.length and @value() is 'from' and (@seenImport or @seenExport)
-      @tokens[@tokens.length - 1][0] = 'FROM'
+    prev = @prev()
+    if prev and @value() is 'from' and (@seenImport or @seenExport)
+      prev[0] = 'FROM'
 
     regex = switch quote
       when "'"   then STRING_SINGLE
@@ -276,6 +295,9 @@ exports.Lexer = class Lexer
           else
             ' '
         value
+
+    if @atCSXTag()
+      @token ',', ',', 0, 0, @prev
 
     end
 
@@ -318,9 +340,8 @@ exports.Lexer = class Lexer
       when match = REGEX.exec @chunk
         [regex, body, closed] = match
         @validateEscapes body, isRegex: yes, offsetInChunk: 1
-        body = @formatRegex body, delimiter: '/'
         index = regex.length
-        [..., prev] = @tokens
+        prev = @prev()
         if prev
           if prev.spaced and prev[0] in CALLABLE
             return 0 if not closed or POSSIBLY_DIVISION.test regex
@@ -337,13 +358,17 @@ exports.Lexer = class Lexer
       when not VALID_FLAGS.test flags
         @error "invalid regular expression flags #{flags}", offset: index, length: flags.length
       when regex or tokens.length is 1
-        body ?= @formatHeregex tokens[0][1]
+        if body
+          body = @formatRegex body, { flags, delimiter: '/' }
+        else
+          body = @formatHeregex tokens[0][1], { flags }
         @token 'REGEX', "#{@makeDelimitedLiteral body, delimiter: '/'}#{flags}", 0, end, origin
       else
         @token 'REGEX_START', '(', 0, 0, origin
         @token 'IDENTIFIER', 'RegExp', 0, 0
         @token 'CALL_START', '(', 0, 0
-        @mergeInterpolationTokens tokens, {delimiter: '"', double: yes}, @formatHeregex
+        @mergeInterpolationTokens tokens, {delimiter: '"', double: yes}, (str) =>
+          @formatHeregex str, { flags }
         if flags
           @token ',', ',', index - 1, 0
           @token 'STRING', '"' + flags + '"', index - 1, flags.length
@@ -373,6 +398,16 @@ exports.Lexer = class Lexer
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()
 
+    newIndentLiteral = if size > 0 then indent[-size..] else ''
+    unless /^(.?)\1*$/.exec newIndentLiteral
+      @error 'mixed indentation', offset: indent.length
+      return indent.length
+
+    minLiteralLength = Math.min newIndentLiteral.length, @indentLiteral.length
+    if newIndentLiteral[...minLiteralLength] isnt @indentLiteral[...minLiteralLength]
+      @error 'indentation mismatch', offset: indent.length
+      return indent.length
+
     if size - @indebt is @indent
       if noNewlines then @suppressNewlines() else @newlineToken 0
       return indent.length
@@ -384,6 +419,7 @@ exports.Lexer = class Lexer
         return indent.length
       unless @tokens.length
         @baseIndent = @indent = size
+        @indentLiteral = newIndentLiteral
         return indent.length
       diff = size - @indent + @outdebt
       @token 'INDENT', diff, indent.length - size, size
@@ -391,6 +427,7 @@ exports.Lexer = class Lexer
       @ends.push {tag: 'OUTDENT'}
       @outdebt = @indebt = 0
       @indent = size
+      @indentLiteral = newIndentLiteral
     else if size < @baseIndent
       @error 'missing indentation', offset: indent.length
     else
@@ -406,12 +443,9 @@ exports.Lexer = class Lexer
       lastIndent = @indents[@indents.length - 1]
       if not lastIndent
         moveOut = 0
-      else if lastIndent is @outdebt
-        moveOut -= @outdebt
-        @outdebt = 0
-      else if lastIndent < @outdebt
-        @outdebt -= lastIndent
-        moveOut  -= lastIndent
+      else if @outdebt and moveOut <= @outdebt
+        @outdebt -= moveOut
+        moveOut   = 0
       else
         dent = @indents.pop() + @outdebt
         if outdentLength and @chunk[outdentLength] in INDENTABLE_CLOSERS
@@ -427,6 +461,7 @@ exports.Lexer = class Lexer
 
     @token 'TERMINATOR', '\n', outdentLength, 0 unless @tag() is 'TERMINATOR' or noNewlines
     @indent = decreasedIndent
+    @indentLiteral = @indentLiteral[...decreasedIndent]
     this
 
   # Matches and consumes non-meaningful whitespace. Tag the previous token
@@ -434,7 +469,7 @@ exports.Lexer = class Lexer
   whitespaceToken: ->
     return 0 unless (match = WHITESPACE.exec @chunk) or
                     (nline = @chunk.charAt(0) is '\n')
-    [..., prev] = @tokens
+    prev = @prev()
     prev[if match then 'spaced' else 'newLine'] = true if prev
     if match then match[0].length else 0
 
@@ -450,6 +485,76 @@ exports.Lexer = class Lexer
     @tokens.pop() if @value() is '\\'
     this
 
+  # CSX is like JSX but for CoffeeScript.
+  csxToken: ->
+    firstChar = @chunk[0]
+    if firstChar is '<'
+      match = CSX_IDENTIFIER.exec @chunk[1...]
+      return 0 unless match and (
+        @csxDepth > 0 or
+        # Not the right hand side of an unspaced comparison (i.e. `a<b`).
+        not (prev = @prev()) or
+        prev.spaced or
+        prev[0] not in COMPARABLE_LEFT_SIDE
+      )
+      [input, id, colon] = match
+      origin = @token 'CSX_TAG', id, 1, id.length
+      @token 'CALL_START', '('
+      @token '{', '{'
+      @ends.push tag: '/>', origin: origin, name: id
+      @csxDepth++
+      return id.length + 1
+    else if csxTag = @atCSXTag()
+      if @chunk[...2] is '/>'
+        @pair '/>'
+        @token '}', '}', 0, 2
+        @token 'CALL_END', ')', 0, 2
+        @csxDepth--
+        return 2
+      else if firstChar is '{'
+        token = @token '(', '('
+        @ends.push {tag: '}', origin: token}
+        return 1
+      else if firstChar is '>'
+        # Ignore terminators inside a tag.
+        @pair '/>' # As if the current tag was self-closing.
+        origin = @token '}', '}'
+        @token ',', ','
+        {tokens, index: end} =
+          @matchWithInterpolations INSIDE_CSX, '>', '</', CSX_INTERPOLATION
+        @mergeInterpolationTokens tokens, {delimiter: '"'}, (value, i) =>
+          @formatString value, delimiter: '>'
+        match = CSX_IDENTIFIER.exec @chunk[end...]
+        if not match or match[0] isnt csxTag.name
+          @error "expected corresponding CSX closing tag for #{csxTag.name}",
+            csxTag.origin[2]
+        afterTag = end + csxTag.name.length
+        if @chunk[afterTag] isnt '>'
+          @error "missing closing > after tag name", offset: afterTag, length: 1
+        # +1 for the closing `>`.
+        @token 'CALL_END', ')', end, csxTag.name.length + 1
+        @csxDepth--
+        return afterTag + 1
+      else
+        return 0
+    else if @atCSXTag 1
+      if firstChar is '}'
+        @pair firstChar
+        @token ')', ')'
+        @token ',', ','
+        return 1
+      else
+        return 0
+    else
+      return 0
+
+  atCSXTag: (depth = 0) ->
+    return no if @csxDepth is 0
+    i = @ends.length - 1
+    i-- while @ends[i]?.tag is 'OUTDENT' or depth-- > 0 # Ignore indents.
+    last = @ends[i]
+    last?.tag is '/>' and last
+
   # We treat all other single characters as a token. E.g.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
   # the proper order of operations. There are some symbols that we tag specially
@@ -462,7 +567,7 @@ exports.Lexer = class Lexer
     else
       value = @chunk.charAt 0
     tag  = value
-    [..., prev] = @tokens
+    prev = @prev()
 
     if prev and value in ['=', COMPOUND_ASSIGN...]
       skipToken = false
@@ -510,7 +615,7 @@ exports.Lexer = class Lexer
     switch value
       when '(', '{', '[' then @ends.push {tag: INVERSES[value], origin: token}
       when ')', '}', ']' then @pair value
-    @tokens.push token
+    @tokens.push @makeToken tag, value
     value.length
 
   # Token Manipulators
@@ -524,7 +629,8 @@ exports.Lexer = class Lexer
     stack = []
     {tokens} = this
     i = tokens.length
-    tokens[--i][0] = 'PARAM_END'
+    paramEndToken = tokens[--i]
+    paramEndToken[0] = 'PARAM_END'
     while tok = tokens[--i]
       switch tok[0]
         when ')'
@@ -534,7 +640,9 @@ exports.Lexer = class Lexer
           else if tok[0] is '('
             tok[0] = 'PARAM_START'
             return this
-          else return this
+          else
+            paramEndToken[0] = 'CALL_END'
+            return this
     this
 
   # Close up all remaining open blocks at the end of the file.
@@ -554,10 +662,16 @@ exports.Lexer = class Lexer
   #    `#{` if interpolations are desired).
   #  - `delimiter` is the delimiter of the token. Examples are `'`, `"`, `'''`,
   #    `"""` and `///`.
+  #  - `closingDelimiter` is different from `delimiter` only in CSX
+  #  - `interpolators` matches the start of an interpolation, for CSX it's both
+  #    `{` and `<` (i.e. nested CSX tag)
   #
   # This method allows us to have strings within interpolations within strings,
   # ad infinitum.
-  matchWithInterpolations: (regex, delimiter) ->
+  matchWithInterpolations: (regex, delimiter, closingDelimiter, interpolators) ->
+    closingDelimiter ?= delimiter
+    interpolators ?= /^#\{/
+
     tokens = []
     offsetInChunk = delimiter.length
     return null unless @chunk[...offsetInChunk] is delimiter
@@ -567,54 +681,65 @@ exports.Lexer = class Lexer
 
       @validateEscapes strPart, {isRegex: delimiter.charAt(0) is '/', offsetInChunk}
 
-      # Push a fake 'NEOSTRING' token, which will get turned into a real string later.
+      # Push a fake `'NEOSTRING'` token, which will get turned into a real string later.
       tokens.push @makeToken 'NEOSTRING', strPart, offsetInChunk
 
       str = str[strPart.length..]
       offsetInChunk += strPart.length
 
-      break unless str[...2] is '#{'
+      break unless match = interpolators.exec str
+      [interpolator] = match
 
-      # The `1`s are to remove the `#` in `#{`.
-      [line, column] = @getLineAndColumnFromChunk offsetInChunk + 1
+      # To remove the `#` in `#{`.
+      interpolationOffset = interpolator.length - 1
+      [line, column] = @getLineAndColumnFromChunk offsetInChunk + interpolationOffset
+      rest = str[interpolationOffset..]
       {tokens: nested, index} =
-        new Lexer().tokenize str[1..], line: line, column: column, untilBalanced: on
-      # Skip the trailing `}`.
-      index += 1
+        new Lexer().tokenize rest, line: line, column: column, untilBalanced: on
+      # Account for the `#` in `#{`
+      index += interpolationOffset
 
-      # Turn the leading and trailing `{` and `}` into parentheses. Unnecessary
-      # parentheses will be removed later.
-      [open, ..., close] = nested
-      open[0]  = open[1]  = '('
-      close[0] = close[1] = ')'
-      close.origin = ['', 'end of interpolation', close[2]]
+      braceInterpolator = str[index - 1] is '}'
+      if braceInterpolator
+        # Turn the leading and trailing `{` and `}` into parentheses. Unnecessary
+        # parentheses will be removed later.
+        [open, ..., close] = nested
+        open[0]  = open[1]  = '('
+        close[0] = close[1] = ')'
+        close.origin = ['', 'end of interpolation', close[2]]
 
-      # Remove leading 'TERMINATOR' (if any).
+      # Remove leading `'TERMINATOR'` (if any).
       nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
 
-      # Push a fake 'TOKENS' token, which will get turned into real tokens later.
+      unless braceInterpolator
+        # We are not using `{` and `}`, so wrap the interpolated tokens instead.
+        open = @makeToken '(', '(', offsetInChunk, 0
+        close = @makeToken ')', ')', offsetInChunk + index, 0
+        nested = [open, nested..., close]
+
+      # Push a fake `'TOKENS'` token, which will get turned into real tokens later.
       tokens.push ['TOKENS', nested]
 
       str = str[index..]
       offsetInChunk += index
 
-    unless str[...delimiter.length] is delimiter
-      @error "missing #{delimiter}", length: delimiter.length
+    unless str[...closingDelimiter.length] is closingDelimiter
+      @error "missing #{closingDelimiter}", length: delimiter.length
 
     [firstToken, ..., lastToken] = tokens
     firstToken[2].first_column -= delimiter.length
     if lastToken[1].substr(-1) is '\n'
       lastToken[2].last_line += 1
-      lastToken[2].last_column = delimiter.length - 1
+      lastToken[2].last_column = closingDelimiter.length - 1
     else
-      lastToken[2].last_column += delimiter.length
+      lastToken[2].last_column += closingDelimiter.length
     lastToken[2].last_column -= 1 if lastToken[1].length is 0
 
-    {tokens, index: offsetInChunk + delimiter.length}
+    {tokens, index: offsetInChunk + closingDelimiter.length}
 
-  # Merge the array `tokens` of the fake token types 'TOKENS' and 'NEOSTRING'
+  # Merge the array `tokens` of the fake token types `'TOKENS'` and `'NEOSTRING'`
   # (as returned by `matchWithInterpolations`) into the token stream. The value
-  # of 'NEOSTRING's are converted using `fn` and turned into strings using
+  # of `'NEOSTRING'`s are converted using `fn` and turned into strings using
   # `options` first.
   mergeInterpolationTokens: (tokens, options, fn) ->
     if tokens.length > 1
@@ -627,12 +752,12 @@ exports.Lexer = class Lexer
         when 'TOKENS'
           # Optimize out empty interpolations (an empty pair of parentheses).
           continue if value.length is 2
-          # Push all the tokens in the fake 'TOKENS' token. These already have
+          # Push all the tokens in the fake `'TOKENS'` token. These already have
           # sane location data.
           locationToken = value[0]
           tokensToPush = value
         when 'NEOSTRING'
-          # Convert 'NEOSTRING' into 'STRING'.
+          # Convert `'NEOSTRING'` into `'STRING'`.
           converted = fn.call this, token[1], i
           # Optimize out empty strings. We ensure that the tokens stream always
           # starts with a string token, though, to make sure that the result
@@ -681,7 +806,7 @@ exports.Lexer = class Lexer
     [..., prev] = @ends
     unless tag is wanted = prev?.tag
       @error "unmatched #{tag}" unless 'OUTDENT' is wanted
-      # Auto-close INDENT to support syntax like this:
+      # Auto-close `INDENT` to support syntax like this:
       #
       #     el.click((event) ->
       #       el.hide())
@@ -696,7 +821,7 @@ exports.Lexer = class Lexer
 
   # Returns the line and column number from an offset into the current chunk.
   #
-  # `offset` is a number of characters into @chunk.
+  # `offset` is a number of characters into `@chunk`.
   getLineAndColumnFromChunk: (offset) ->
     if offset is 0
       return [@chunkLine, @chunkColumn]
@@ -717,7 +842,7 @@ exports.Lexer = class Lexer
 
     [@chunkLine + lineCount, column]
 
-  # Same as "token", exception this just returns the token without adding it
+  # Same as `token`, except this just returns the token without adding it
   # to the results.
   makeToken: (tag, value, offsetInChunk = 0, length = value.length) ->
     locationData = {}
@@ -735,8 +860,8 @@ exports.Lexer = class Lexer
     token
 
   # Add a token to the results.
-  # `offset` is the offset into the current @chunk where the token starts.
-  # `length` is the length of the token in the @chunk, after the offset.  If
+  # `offset` is the offset into the current `@chunk` where the token starts.
+  # `length` is the length of the token in the `@chunk`, after the offset.  If
   # not specified, the length of `value` will be used.
   #
   # Returns the new token.
@@ -756,6 +881,10 @@ exports.Lexer = class Lexer
     [..., token] = @tokens
     token?[1]
 
+  # Get the previous token in the token stream.
+  prev: ->
+    @tokens[@tokens.length - 1]
+
   # Are we in the midst of an unfinished expression?
   unfinished: ->
     LINE_CONTINUER.test(@chunk) or
@@ -766,8 +895,8 @@ exports.Lexer = class Lexer
   formatString: (str, options) ->
     @replaceUnicodeCodePointEscapes str.replace(STRING_OMIT, '$1'), options
 
-  formatHeregex: (str) ->
-    @formatRegex str.replace(HEREGEX_OMIT, '$1$2'), delimiter: '///'
+  formatHeregex: (str, options) ->
+    @formatRegex str.replace(HEREGEX_OMIT, '$1$2'), merge(options, delimiter: '///')
 
   formatRegex: (str, options) ->
     @replaceUnicodeCodePointEscapes str, options
@@ -782,8 +911,9 @@ exports.Lexer = class Lexer
     low = (codePoint - 0x10000) % 0x400 + 0xDC00
     "#{toUnicodeEscape(high)}#{toUnicodeEscape(low)}"
 
-  # Replace \u{...} with \uxxxx[\uxxxx] in strings and regexes
+  # Replace `\u{...}` with `\uxxxx[\uxxxx]` in regexes without `u` flag
   replaceUnicodeCodePointEscapes: (str, options) ->
+    shouldReplace = options.flags? and 'u' not in options.flags
     str.replace UNICODE_CODE_POINT_ESCAPE, (match, escapedBackslash, codePointHex, offset) =>
       return escapedBackslash if escapedBackslash
 
@@ -792,6 +922,7 @@ exports.Lexer = class Lexer
         @error "unicode code point escapes greater than \\u{10ffff} are not allowed",
           offset: offset + options.delimiter.length
           length: codePointHex.length + 4
+      return match unless shouldReplace
 
       @unicodeCodePointToUnicodeEscapes codePointDecimal
 
@@ -819,11 +950,11 @@ exports.Lexer = class Lexer
   makeDelimitedLiteral: (body, options = {}) ->
     body = '(?:)' if body is '' and options.delimiter is '/'
     regex = ///
-        (\\\\)                               # escaped backslash
-      | (\\0(?=[1-7]))                       # nul character mistaken as octal escape
-      | \\?(#{options.delimiter})            # (possibly escaped) delimiter
-      | \\?(?: (\n)|(\r)|(\u2028)|(\u2029) ) # (possibly escaped) newlines
-      | (\\.)                                # other escapes
+        (\\\\)                               # Escaped backslash.
+      | (\\0(?=[1-7]))                       # Null character mistaken as octal escape.
+      | \\?(#{options.delimiter})            # (Possibly escaped) delimiter.
+      | \\?(?: (\n)|(\r)|(\u2028)|(\u2029) ) # (Possibly escaped) newlines.
+      | (\\.)                                # Other escapes.
     ///g
     body = body.replace regex, (match, backslash, nul, delimiter, lf, cr, ls, ps, other) -> switch
       # Ignore escaped backslashes.
@@ -891,7 +1022,7 @@ isForFrom = (prev) ->
 JS_KEYWORDS = [
   'true', 'false', 'null', 'this'
   'new', 'delete', 'typeof', 'in', 'instanceof'
-  'return', 'throw', 'break', 'continue', 'debugger', 'yield'
+  'return', 'throw', 'break', 'continue', 'debugger', 'yield', 'await'
   'if', 'else', 'switch', 'for', 'while', 'do', 'try', 'catch', 'finally'
   'class', 'extends', 'super'
   'import', 'export', 'default'
@@ -942,6 +1073,17 @@ IDENTIFIER = /// ^
   ( [^\n\S]* : (?!:) )?  # Is this a property name?
 ///
 
+CSX_IDENTIFIER = /// ^
+  (?![\d<]) # Must not start with `<`.
+  ( (?: (?!\s)[\.\-$\w\x7f-\uffff] )+ ) # Like `IDENTIFIER`, but includes `-`s and `.`s.
+///
+
+CSX_ATTRIBUTE = /// ^
+  (?!\d)
+  ( (?: (?!\s)[\-$\w\x7f-\uffff] )+ ) # Like `IDENTIFIER`, but includes `-`s.
+  ( [^\S]* = (?!=) )?  # Is this an attribute with a value?
+///
+
 NUMBER     = ///
   ^ 0b[01]+    |              # binary
   ^ 0o[0-7]+   |              # octal
@@ -978,9 +1120,20 @@ STRING_DOUBLE  = /// ^(?: [^\\"#] | \\[\s\S] |           \#(?!\{) )* ///
 HEREDOC_SINGLE = /// ^(?: [^\\']  | \\[\s\S] | '(?!'')            )* ///
 HEREDOC_DOUBLE = /// ^(?: [^\\"#] | \\[\s\S] | "(?!"") | \#(?!\{) )* ///
 
+INSIDE_CSX = /// ^(?:
+    [^
+      \{ # Start of CoffeeScript interpolation.
+      <  # Maybe CSX tag (`<` not allowed even if bare).
+    ]
+  )* /// # Similar to `HEREDOC_DOUBLE` but there is no escaping.
+CSX_INTERPOLATION = /// ^(?:
+      \{       # CoffeeScript interpolation.
+    | <(?!/)   # CSX opening tag.
+  )///
+
 STRING_OMIT    = ///
-    ((?:\\\\)+)      # consume (and preserve) an even number of backslashes
-  | \\[^\S\n]*\n\s*  # remove escaped newlines
+    ((?:\\\\)+)      # Consume (and preserve) an even number of backslashes.
+  | \\[^\S\n]*\n\s*  # Remove escaped newlines.
 ///g
 SIMPLE_STRING_OMIT = /\s*\n\s*/g
 HEREDOC_INDENT     = /\n+([^\n\S]*)(?=\S)/g
@@ -988,9 +1141,9 @@ HEREDOC_INDENT     = /\n+([^\n\S]*)(?=\S)/g
 # Regex-matching-regexes.
 REGEX = /// ^
   / (?!/) ((
-  ?: [^ [ / \n \\ ]  # every other thing
-   | \\[^\n]         # anything but newlines escaped
-   | \[              # character class
+  ?: [^ [ / \n \\ ]  # Every other thing.
+   | \\[^\n]         # Anything but newlines escaped.
+   | \[              # Character class.
        (?: \\[^\n] | [^ \] \n \\ ] )*
      \]
   )*) (/)?
@@ -1002,9 +1155,9 @@ VALID_FLAGS  = /^(?!.*(.).*\1)[imguy]*$/
 HEREGEX      = /// ^(?: [^\\/#] | \\[\s\S] | /(?!//) | \#(?!\{) )* ///
 
 HEREGEX_OMIT = ///
-    ((?:\\\\)+)     # consume (and preserve) an even number of backslashes
-  | \\(\s)          # preserve escaped whitespace
-  | \s+(?:#.*)?     # remove whitespace and comments
+    ((?:\\\\)+)     # Consume (and preserve) an even number of backslashes.
+  | \\(\s)          # Preserve escaped whitespace.
+  | \s+(?:#.*)?     # Remove whitespace and comments.
 ///g
 
 REGEX_ILLEGAL = /// ^ ( / | /{3}\s*) (\*) ///
@@ -1017,7 +1170,7 @@ HERECOMMENT_ILLEGAL = /\*\//
 LINE_CONTINUER      = /// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///
 
 STRING_INVALID_ESCAPE = ///
-  ( (?:^|[^\\]) (?:\\\\)* )        # make sure the escape isn’t escaped
+  ( (?:^|[^\\]) (?:\\\\)* )        # Make sure the escape isn’t escaped.
   \\ (
      ?: (0[0-7]|[1-7])             # octal escape
       | (x(?![\da-fA-F]{2}).{0,2}) # hex escape
@@ -1026,7 +1179,7 @@ STRING_INVALID_ESCAPE = ///
   )
 ///
 REGEX_INVALID_ESCAPE = ///
-  ( (?:^|[^\\]) (?:\\\\)* )        # make sure the escape isn’t escaped
+  ( (?:^|[^\\]) (?:\\\\)* )        # Make sure the escape isn’t escaped.
   \\ (
      ?: (0[0-7])                   # octal escape
       | (x(?![\da-fA-F]{2}).{0,2}) # hex escape
@@ -1036,7 +1189,7 @@ REGEX_INVALID_ESCAPE = ///
 ///
 
 UNICODE_CODE_POINT_ESCAPE = ///
-  ( \\\\ )        # make sure the escape isn’t escaped
+  ( \\\\ )        # Make sure the escape isn’t escaped.
   |
   \\u\{ ( [\da-fA-F]+ ) \}
 ///g
@@ -1080,6 +1233,9 @@ INDEXABLE = CALLABLE.concat [
   'NUMBER', 'INFINITY', 'NAN', 'STRING', 'STRING_END', 'REGEX', 'REGEX_END'
   'BOOL', 'NULL', 'UNDEFINED', '}', '::'
 ]
+
+# Tokens which can be the left-hand side of a less-than comparison, i.e. `a<b`.
+COMPARABLE_LEFT_SIDE = ['IDENTIFIER', ')', ']', 'NUMBER']
 
 # Tokens which a regular expression will never immediately follow (except spaced
 # CALLABLEs in some cases), but which a division operator can.

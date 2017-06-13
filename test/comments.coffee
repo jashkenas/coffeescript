@@ -156,7 +156,7 @@ test "block comments in functions", ->
 
   ok fn1()
 
-  fn2 =  ->
+  fn2 = ->
     ###
     block comment
     ###
@@ -213,66 +213,50 @@ test "#2916: block comment before implicit call with implicit object", ->
     a: yes
 
 test "#3132: Format single-line block comment nicely", ->
-  input = """
-  ### Single-line block comment without additional space here => ###"""
-
-  result = """
-
-  /* Single-line block comment without additional space here => */
-
-
+  eqJS """
+  ### Single-line block comment without additional space here => ###""",
   """
-  eq CoffeeScript.compile(input, bare: on), result
+  /* Single-line block comment without additional space here => */
+  """
 
 test "#3132: Format multi-line block comment nicely", ->
-  input = """
+  eqJS """
   ###
   # Multi-line
   # block
   # comment
-  ###"""
-
-  result = """
-
+  ###""",
+  """
   /*
    * Multi-line
    * block
    * comment
    */
-
-
   """
-  eq CoffeeScript.compile(input, bare: on), result
 
 test "#3132: Format simple block comment nicely", ->
-  input = """
+  eqJS """
   ###
   No
   Preceding hash
-  ###"""
-
-  result = """
-
+  ###""",
+  """
   /*
   No
   Preceding hash
    */
-
-
   """
 
-  eq CoffeeScript.compile(input, bare: on), result
 
 test "#3132: Format indented block-comment nicely", ->
-  input = """
+  eqJS """
   fn = () ->
     ###
     # Indented
     Multiline
     ###
-    1"""
-
-  result = """
+    1""",
+  """
   var fn;
 
   fn = function() {
@@ -283,24 +267,20 @@ test "#3132: Format indented block-comment nicely", ->
      */
     return 1;
   };
-
   """
-  eq CoffeeScript.compile(input, bare: on), result
 
 # Although adequately working, block comment-placement is not yet perfect.
 # (Considering a case where multiple variables have been declared …)
 test "#3132: Format jsdoc-style block-comment nicely", ->
-  input = """
+  eqJS """
   ###*
   # Multiline for jsdoc-"@doctags"
   #
   # @type {Function}
   ###
   fn = () -> 1
+  """,
   """
-
-  result = """
-
   /**
    * Multiline for jsdoc-"@doctags"
    *
@@ -310,25 +290,20 @@ test "#3132: Format jsdoc-style block-comment nicely", ->
 
   fn = function() {
     return 1;
-  };
-
-  """
-  eq CoffeeScript.compile(input, bare: on), result
+  };"""
 
 # Although adequately working, block comment-placement is not yet perfect.
 # (Considering a case where multiple variables have been declared …)
 test "#3132: Format hand-made (raw) jsdoc-style block-comment nicely", ->
-  input = """
+  eqJS """
   ###*
    * Multiline for jsdoc-"@doctags"
    *
    * @type {Function}
   ###
   fn = () -> 1
+  """,
   """
-
-  result = """
-
   /**
    * Multiline for jsdoc-"@doctags"
    *
@@ -338,15 +313,12 @@ test "#3132: Format hand-made (raw) jsdoc-style block-comment nicely", ->
 
   fn = function() {
     return 1;
-  };
-
-  """
-  eq CoffeeScript.compile(input, bare: on), result
+  };"""
 
 # Although adequately working, block comment-placement is not yet perfect.
 # (Considering a case where multiple variables have been declared …)
 test "#3132: Place block-comments nicely", ->
-  input = """
+  eqJS """
   ###*
   # A dummy class definition
   #
@@ -366,10 +338,8 @@ test "#3132: Place block-comments nicely", ->
     ###
     @instance = new DummyClass()
 
+  """,
   """
-
-  result = """
-
   /**
    * A dummy class definition
    *
@@ -378,11 +348,15 @@ test "#3132: Place block-comments nicely", ->
   var DummyClass;
 
   DummyClass = (function() {
+    class DummyClass {
 
-    /**
-     * @constructor
-     */
-    function DummyClass() {}
+      /**
+       * @constructor
+       */
+
+      constructor() {}
+
+    };
 
 
     /**
@@ -395,29 +369,20 @@ test "#3132: Place block-comments nicely", ->
 
     return DummyClass;
 
-  })();
-
-  """
-  eq CoffeeScript.compile(input, bare: on), result
+  })();"""
 
 test "#3638: Demand a whitespace after # symbol", ->
-  input = """
+  eqJS """
   ###
   #No
   #whitespace
-  ###"""
-
-  result = """
-
+  ###""",
+  """
   /*
   #No
   #whitespace
-   */
+   */"""
 
-
-  """
-
-  eq CoffeeScript.compile(input, bare: on), result
 
 test "#3761: Multiline comment at end of an object", ->
   anObject =

@@ -110,9 +110,9 @@ test "division vs regex after a callable token", ->
     p: (regex) -> if regex then r regex else 4
   class B extends A
     p: ->
-      eq 2, super / b/g
-      eq 2, super/b/g
-      eq 2, super/ b/g
+      eq 2, super() / b/g
+      eq 2, super()/b/g
+      eq 2, super()/ b/g
       eq true, super /b/g
   new B().p()
 
@@ -299,19 +299,17 @@ test "#4248: Unicode code point escapes", ->
   ok ///a\u{000001ab}c///.test 'a\u{1ab}c'
   ok /a\u{12345}c/.test 'a\ud808\udf45c'
 
-  # rewrite code point escapes
-  input = """
+  # rewrite code point escapes unless u flag is set
+  eqJS """
     /\\u{bcdef}\\u{abc}/u
-    """
-  output = """
-    /\\udab3\\uddef\\u0abc/u;
+  """,
   """
-  eq toJS(input), output
+    /\\u{bcdef}\\u{abc}/u;
+  """
 
-  input = """
+  eqJS """
     ///#{ 'a' }\\u{bcdef}///
-    """
-  output = """
+  """,
+  """
     /a\\udab3\\uddef/;
   """
-  eq toJS(input), output
