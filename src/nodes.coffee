@@ -1197,7 +1197,6 @@ exports.Obj = class Obj extends Base
       else
         ',\n'
       indent = if isCompact or prop instanceof Comment then '' else idt
-      
       key = if prop instanceof Assign and prop.context is 'object'
         prop.variable
       else if prop instanceof Assign
@@ -1788,7 +1787,6 @@ exports.Assign = class Assign extends Base
     if isValue
       # When compiling `@variable`, remember if it is part of a function parameter.
       @variable.param = @param
-      
       # If `@variable` is an array or an object, we’re destructuring;
       # if it’s also `isAssignable()`, the destructuring syntax is supported
       # in ES and we can output it as is; otherwise we `@compileDestructuring`
