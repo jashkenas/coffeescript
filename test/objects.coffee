@@ -587,3 +587,15 @@ test "#1263: Braceless object return", ->
   eq 1, obj.a
   eq 2, obj.b
   eq 3, obj.c()
+
+test "#4564: indent should close implicit object", ->
+  f = (x) -> x
+
+  arrayEq ['a'],
+    for key of f a: 1
+      key
+
+  g = null
+  if f a: 1
+    g = 3
+  eq g, 3
