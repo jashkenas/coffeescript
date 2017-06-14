@@ -804,28 +804,28 @@ test "unexpected object keys", ->
     [[]]: 1
     ^
   '''
-  # Disabled because object spread assignement can allow parentheses in object spread assignment e.g. {a:1, ((k)=>({a:k})(2))...}
-  # assertErrorFormat '''
-  #   {(a + "b")}
-  # ''', '''
-  #   [stdin]:1:2: error: unexpected (
-  #   {(a + "b")}
-  #    ^
-  # '''
-  # assertErrorFormat '''
-  #   {(a + "b"): 1}
-  # ''', '''
-  #   [stdin]:1:2: error: unexpected (
-  #   {(a + "b"): 1}
-  #    ^
-  # '''
-  # assertErrorFormat '''
-  #   (a + "b"): 1
-  # ''', '''
-  #   [stdin]:1:1: error: unexpected (
-  #   (a + "b"): 1
-  #   ^
-  # '''
+
+  assertErrorFormat '''
+    {(a + "b")}
+  ''', '''
+    [stdin]:1:11: error: unexpected }
+    {(a + "b")}
+              ^
+  '''
+  assertErrorFormat '''
+    {(a + "b"): 1}
+  ''', '''
+    [stdin]:1:11: error: unexpected :
+    {(a + "b"): 1}
+              ^
+  '''
+  assertErrorFormat '''
+    (a + "b"): 1
+  ''', '''
+    [stdin]:1:10: error: unexpected :
+    (a + "b"): 1
+             ^
+  '''
   assertErrorFormat '''
     a: 1, [[]]: 2
   ''', '''
