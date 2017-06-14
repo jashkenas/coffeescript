@@ -7,12 +7,27 @@
 
 {throwSyntaxError} = require './helpers'
 
+# Move attached comments from one token to another.
+moveComments = (fromToken, toToken) ->
+  return unless fromToken.comments
+  if toToken.comments and toToken.comments.length isnt 0
+    for comment in fromToken.comments
+      if comment.unshift
+        toToken.comments.unshift comment
+      else
+        toToken.comments.push comment
+  else
+    toToken.comments = fromToken.comments
+  delete fromToken.comments
+
 # Create a generated token: one that exists due to a use of implicit syntax.
-generate = (tag, value, origin) ->
-  tok = [tag, value]
-  tok.generated = yes
-  tok.origin = origin if origin
-  tok
+# Optionally have this new token take the attached comments from another token.
+generate = (tag, value, origin, commentsToken) ->
+  token = [tag, value]
+  token.generated = yes
+  token.origin = origin if origin
+  moveComments commentsToken, token if commentsToken
+  token
 
 # The **Rewriter** class is used by the [Lexer](lexer.html), directly against
 # its internal array of tokens.
@@ -25,18 +40,24 @@ exports.Rewriter = class Rewriter
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (@tokens) ->
     # Set environment variable `DEBUG_TOKEN_STREAM` to `true` to output token
-    # debugging info.
+    # debugging info. Also set `DEBUG_REWRITTEN_TOKEN_STREAM` to `true` to
+    # output the token stream after it has been rewritten by this file.
     if process.env.DEBUG_TOKEN_STREAM
-      console.log (t[0] + '/' + t[1] for t in @tokens).join ' '
+      console.log 'Initial token stream:' if process.env.DEBUG_REWRITTEN_TOKEN_STREAM
+      console.log (t[0] + '/' + t[1] + (if t.comments then '*' else '') for t in @tokens).join ' '
     @removeLeadingNewlines()
     @closeOpenCalls()
     @closeOpenIndexes()
     @normalizeLines()
     @tagPostfixConditionals()
     @addImplicitBracesAndParens()
+    @rescueStowawayComments()
     @addLocationDataToGeneratedTokens()
     @enforceValidCSXAttributes()
     @fixOutdentLocationData()
+    if process.env.DEBUG_REWRITTEN_TOKEN_STREAM
+      console.log 'Rewritten token stream:' if process.env.DEBUG_TOKEN_STREAM
+      console.log (t[0] + '/' + t[1] + (if t.comments then '*' else '') for t in @tokens).join ' '
     @tokens
 
   # Rewrite the token stream, looking one token ahead and behind.
@@ -68,8 +89,15 @@ exports.Rewriter = class Rewriter
   # Leading newlines would introduce an ambiguity in the grammar, so we
   # dispatch them here.
   removeLeadingNewlines: ->
+    # Find the index of the first non-`TERMINATOR` token.
     break for [tag], i in @tokens when tag isnt 'TERMINATOR'
-    @tokens.splice 0, i if i
+    return if i is 0
+    # If there are any comments attached to the tokens we’re about to discard,
+    # shift them forward to what will become the new first token.
+    for leadingNewlineToken in @tokens[0...i]
+      moveComments leadingNewlineToken, @tokens[i]
+    # Discard all the leading newline tokens.
+    @tokens.splice 0, i
 
   # The lexer has tagged the opening parenthesis of a method call. Match it with
   # its paired close.
@@ -166,23 +194,23 @@ exports.Rewriter = class Rewriter
 
       startImplicitCall = (idx) ->
         stack.push ['(', idx, ours: yes]
-        tokens.splice idx, 0, generate 'CALL_START', '('
+        tokens.splice idx, 0, generate 'CALL_START', '(', null, prevToken
 
       endImplicitCall = ->
         stack.pop()
-        tokens.splice i, 0, generate 'CALL_END', ')', ['', 'end of input', token[2]]
+        tokens.splice i, 0, generate 'CALL_END', ')', ['', 'end of input', token[2]], prevToken
         i += 1
 
       startImplicitObject = (idx, startsLine = yes) ->
         stack.push ['{', idx, sameLine: yes, startsLine: startsLine, ours: yes]
         val = new String '{'
         val.generated = yes
-        tokens.splice idx, 0, generate '{', val, token
+        tokens.splice idx, 0, generate '{', val, token, prevToken
 
       endImplicitObject = (j) ->
         j = j ? i
         stack.pop()
-        tokens.splice j, 0, generate '}', '}', token
+        tokens.splice j, 0, generate '}', '}', token, prevToken
         i += 1
 
       implicitObjectContinues = (j) =>
@@ -366,6 +394,55 @@ exports.Rewriter = class Rewriter
           throwSyntaxError 'expected wrapped or quoted CSX attribute', next[2]
       return 1
 
+  # Not all tokens survive processing by the parser. To avoid comments getting
+  # lost into the ether, find comments attached to doomed tokens and move them
+  # to a token that will make it to the other side.
+  rescueStowawayComments: ->
+    shiftCommentsForward = (token, i, tokens) ->
+      # Find the next surviving token and attach this token’s comments to
+      # it, with a flag that we know to output such comments *before* that
+      # token’s own compilation. (Usually comments are output following
+      # the token they’re attached to.)
+      j = i
+      j++ while j isnt tokens.length and tokens[j][0] in DISCARDED
+      unless j is tokens.length or tokens[j][0] in DISCARDED
+        comment.unshift = yes for comment in token.comments
+        moveComments token, tokens[j]
+        return 1
+      else # All following tokens are doomed!
+        j = tokens.length - 1
+        tokens.push generate 'TERMINATOR', '\n', tokens[j] unless tokens[j][0] is 'TERMINATOR'
+        tokens.push generate 'JS', '', tokens[j], token
+        # The generated tokens were added to the end, not inline, so we don’t skip.
+        return 1
+
+    @scanTokens (token, i, tokens) ->
+      return 1 unless token.comments and not token.generated
+      if token[0] in DISCARDED
+        return shiftCommentsForward token, i, tokens
+      else
+        # If any of this token’s comments start a line, i.e. there’s only
+        # whitespace between the preceding newline and the start of the
+        # comment; *and* the comment would abut code either to the right
+        # (if it has `unshift`) or to the left; shift the comments.
+        dummyToken = comments: []
+        j = token.comments.length - 1
+        until j is -1
+          if token.comments[j].newLine and ((
+              token.comments[j].unshift is yes and
+              i isnt tokens.length - 1 and tokens[i + 1][0] not in LINEBREAKS
+            ) or (
+              token.comments[j].unshift isnt yes and
+              i isnt 0 and tokens[i - 1][0] not in LINEBREAKS
+            ))
+            dummyToken.comments.unshift token.comments[j]
+            token.comments.splice j, 1
+          j--
+        if dummyToken.comments.length isnt 0
+          return shiftCommentsForward dummyToken, i, tokens
+        else
+          return 1
+
   # Add location data to all tokens generated by the rewriter.
   addLocationDataToGeneratedTokens: ->
     @scanTokens (token, i, tokens) ->
@@ -539,3 +616,8 @@ LINEBREAKS       = ['TERMINATOR', 'INDENT', 'OUTDENT']
 
 # Tokens that close open calls when they follow a newline.
 CALL_CLOSERS     = ['.', '?.', '::', '?::']
+
+# Tokens that are swallowed up by the parser, never leading to code generation.
+# You can spot these in `grammar.coffee` because the `o` function second
+# argument doesn’t contain a `new` call for these tokens.
+DISCARDED        = LINEBREAKS.concat ['CALL_END', '->', '=>', '{', '}'] # TODO: flesh out this list

@@ -31,8 +31,9 @@ NEGATE  = -> @negated = not @negated; this
 exports.CodeFragment = class CodeFragment
   constructor: (parent, code) ->
     @code = "#{code}"
-    @locationData = parent?.locationData
     @type = parent?.constructor?.name or 'unknown'
+    @locationData = parent?.locationData
+    @comments = parent?.comments
 
   toString: ->
     # This is only intended for debugging.
@@ -69,10 +70,13 @@ exports.Base = class Base
     o.level  = lvl if lvl
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
-    if o.level is LEVEL_TOP or not node.isStatement(o)
+
+    fragments = if o.level is LEVEL_TOP or not node.isStatement(o)
       node.compileNode o
     else
       node.compileClosure o
+    @compileComments o, node, fragments if node.comments
+    fragments
 
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
@@ -102,6 +106,24 @@ exports.Base = class Base
         parts.unshift @makeCode "(await "
         parts.push    @makeCode ")"
     parts
+
+  compileComments: (o, node, fragments) ->
+    for comment in node.comments when comment not in @compiledComments
+      @compiledComments.push comment # Don’t output this comment twice.
+      if comment.here
+        hasLeadingMarks = /\n\s*[#|\*]/.test comment.content
+        comment.content = comment.content.replace /^(\s*)#(?=\s)/gm, '$1 *'
+        code = "/*#{comment.content}#{if hasLeadingMarks then ' ' else ''}*/"
+        code = o.indent + code if o.level is LEVEL_TOP
+        code = @tab + code if comment.unshift
+        code = code + '\n' if comment.newLine
+        commentFragment = @makeCode code
+        commentFragment.comment = comment
+        commentFragment.suppressTrailingSemicolon = yes
+        if comment.unshift
+          fragments.unshift commentFragment
+        else
+          fragments.push commentFragment
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -264,6 +286,9 @@ exports.Base = class Base
   # Is this node used to assign a certain variable?
   assigns: NO
 
+  # Track which comments have been output.
+  compiledComments: []
+
   # For this node and all descendents, set the location data to `locationData`
   # if the location data is not already set.
   updateLocationDataIfMissing: (locationData) ->
@@ -422,8 +447,10 @@ exports.Block = class Block extends Base
         node.front = true
         fragments = node.compileToFragments o
         unless node.isStatement o
-          fragments.unshift @makeCode "#{@tab}"
-          fragments.push @makeCode ';'
+          [..., lastFragment] = fragments
+          unless lastFragment.code is ''
+            fragments.unshift @makeCode "#{@tab}"
+            fragments.push @makeCode ';' unless lastFragment.suppressTrailingSemicolon
         compiledNodes.push fragments
       else
         compiledNodes.push node.compileToFragments o, LEVEL_LIST
@@ -435,7 +462,7 @@ exports.Block = class Block extends Base
     if compiledNodes.length
       answer = @joinFragmentArrays(compiledNodes, ', ')
     else
-      answer = [@makeCode "void 0"]
+      answer = [@makeCode 'void 0']
     if compiledNodes.length > 1 and o.level >= LEVEL_LIST then @wrapInParentheses answer else answer
 
   # If we happen to be the top-level **Block**, wrap everything in a safety
@@ -521,6 +548,7 @@ exports.Literal = class Literal extends Base
     [@makeCode @value]
 
   toString: ->
+    # This is only intended for debugging.
     " #{if @isStatement() then super() else @constructor.name}: #{@value}"
 
 exports.NumberLiteral = class NumberLiteral extends Literal
@@ -616,12 +644,21 @@ exports.Return = class Return extends Base
 
   compileNode: (o) ->
     answer = []
-    # TODO: If we call expression.compile() here twice, we'll sometimes get back different results!
-    answer.push @makeCode @tab + "return#{if @expression then " " else ""}"
+    # TODO: If we call `expression.compile()` here twice, we’ll sometimes
+    # get back different results!
     if @expression
-      answer = answer.concat @expression.compileToFragments o, LEVEL_PAREN
-    answer.push @makeCode ";"
-    return answer
+      fragments = @expression.compileToFragments o, LEVEL_PAREN
+      # If the `return` is followed by a block comment that contains a newline,
+      # move the comment before the `return` so that JavaScript doesn’t infer
+      # a semicolon between the `return` and the comment.
+      if fragments[0].comment and '\n' in fragments[0].code
+        answer.push fragments.shift()
+      answer.push @makeCode "#{@tab}return "
+      answer = answer.concat fragments
+    else
+      answer.push @makeCode "#{@tab}return"
+    answer.push @makeCode ';'
+    answer
 
 # `yield return` works exactly like `return`, except that it turns the function
 # into a generator.
@@ -630,7 +667,6 @@ exports.YieldReturn = class YieldReturn extends Return
     unless o.scope.parent?
       @error 'yield can only occur inside functions'
     super o
-
 
 exports.AwaitReturn = class AwaitReturn extends Return
   compileNode: (o) ->
@@ -3184,7 +3220,7 @@ utility = (name, o) ->
     root.utilities[name] = ref
 
 multident = (code, tab) ->
-  code = code.replace /\n/g, '$&' + tab
+  code = code.replace /\n/g, "$&#{tab}"
   code.replace /\s+$/, ''
 
 isLiteralArguments = (node) ->

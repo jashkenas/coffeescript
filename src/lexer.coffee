@@ -301,17 +301,56 @@ exports.Lexer = class Lexer
 
     end
 
-  # Matches and consumes comments.
+  # Matches and consumes comments. The comments are taken out of the token
+  # stream and saved for later, to be reinserted into the output after
+  # everything has been parsed and the JavaScript code generated.
   commentToken: ->
     return 0 unless match = @chunk.match COMMENT
     [comment, here] = match
+    content = null
+    # Does this comment follow code on the same line?
+    newLine = /^\s*\n+\s*#/.test comment
     if here
-      if match = HERECOMMENT_ILLEGAL.exec comment
-        @error "block comments cannot contain #{match[0]}",
-          offset: match.index, length: match[0].length
-      if here.indexOf('\n') >= 0
-        here = here.replace /// \n #{repeat ' ', @indent} ///g, '\n'
-      @token 'HERECOMMENT', here, 0, comment.length
+      matchIllegal = HERECOMMENT_ILLEGAL.exec comment
+      if matchIllegal
+        @error "block comments cannot contain #{matchIllegal[0]}",
+          offset: matchIllegal.index, length: matchIllegal[0].length
+
+      # Parse indentation or outdentation as if this block comment didn’t exist.
+      chunk = @chunk.replace "####{here}###", ''
+      # Remove leading newlines, like `Rewriter::removeLeadingNewlines`, to
+      # avoid the creation of unwanted `TERMINATOR` tokens.
+      chunk = @chunk.replace /^\n+/, ''
+      @lineToken chunk
+
+      # Pull out the ###-style comment’s content, and format it.
+      content = here
+      content = content.replace /^(\s*)###/, ''
+      content = content.replace /###$/, ''
+      if '\n' in content
+        content = content.replace /// \n #{repeat ' ', @indent} ///g, '\n'
+    else
+      content = comment.replace /^(\s*)#/, ''
+
+    commentAttachment =
+      content: content
+      here: here?
+      newLine: newLine
+
+    prev = @prev()
+    unless prev
+      # If there’s no previous token, create a placeholder token to attach
+      # this comment to; and follow with a newline.
+      @lineToken @chunk[comment.length..] # Set the indent.
+      @token 'JS', ''
+      @tokens[0].comments = [commentAttachment]
+      @newlineToken 0
+    else
+      if prev.comments
+        prev.comments.push commentAttachment
+      else
+        prev.comments = [commentAttachment]
+
     comment.length
 
   # Matches JavaScript interpolated directly into the source via backticks.
@@ -387,8 +426,8 @@ exports.Lexer = class Lexer
   #
   # Keeps track of the level of indentation, because a single outdent token
   # can close multiple indents, so we need to know how far in we happen to be.
-  lineToken: ->
-    return 0 unless match = MULTI_DENT.exec @chunk
+  lineToken: (chunk = @chunk) ->
+    return 0 unless match = MULTI_DENT.exec chunk
     indent = match[0]
 
     @seenFor = no
@@ -1103,7 +1142,7 @@ OPERATOR   = /// ^ (
 
 WHITESPACE = /^[^\n\S]+/
 
-COMMENT    = /^###([^#][\s\S]*?)(?:###[^\n\S]*|###$)|^(?:\s*#(?!##[^#]).*)+/
+COMMENT    = /^\s*###([^#][\s\S]*?)(?:###[^\n\S]*|###$)|^(?:\s*#(?!##[^#]).*)+/
 
 CODE       = /^[-=]>/
 
