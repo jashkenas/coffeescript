@@ -562,8 +562,9 @@ test "Assignment to variables similar to helper functions", ->
     extend = 3
     hasProp = 4
     value: 5
-    method: (bind, bind1) -> [bind, bind1, extend, hasProp, @value]
-  arrayEq [1, 2, 3, 4, 5], new B().method 1, 2
+    method: (bind, bind1) => [bind, bind1, extend, hasProp, @value]
+  {method} = new B
+  arrayEq [1, 2, 3, 4, 5], method 1, 2
 
   modulo = -1 %% 3
   eq 2, modulo

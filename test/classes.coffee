@@ -136,18 +136,40 @@ test "classes with JS-keyword properties", ->
   ok instance.name() is 'class'
 
 
-test "Classes with methods that are pre-bound statically, to the class", ->
+test "Classes with methods that are pre-bound to the instance, or statically, to the class", ->
 
   class Dog
     constructor: (name) ->
       @name = name
 
+    bark: =>
+      "#{@name} woofs!"
+
     @static = =>
       new this('Dog')
+
+  spark = new Dog('Spark')
+  fido  = new Dog('Fido')
+  fido.bark = spark.bark
+
+  ok fido.bark() is 'Spark woofs!'
 
   obj = func: Dog.static
 
   ok obj.func().name is 'Dog'
+
+
+test "a bound function in a bound function", ->
+
+  class Mini
+    num: 10
+    generate: =>
+      for i in [1..3]
+        =>
+          @num
+
+  m = new Mini
+  eq (func() for func in m.generate()).join(' '), '10 10 10'
 
 
 test "contructor called with varargs", ->
@@ -454,6 +476,21 @@ test "#1182: execution order needs to be considered as well", ->
     @B: makeFn 2
     constructor: makeFn 3
 
+test "#1182: external constructors with bound functions", ->
+  fn = ->
+    {one: 1}
+    this
+  class B
+  class A
+    constructor: fn
+    method: => this instanceof A
+  ok (new A).method.call(new B)
+
+test "#1372: bound class methods with reserved names", ->
+  class C
+    delete: =>
+  ok C::delete
+
 test "#1380: `super` with reserved names", ->
   class C
     do: -> super()
@@ -522,7 +559,7 @@ test "#1842: Regression with bound functions within bound class methods", ->
     @unbound: ->
       eq this, Store
 
-    instance: ->
+    instance: =>
       ok this instanceof Store
 
   Store.bound()
@@ -684,6 +721,57 @@ test "extending native objects works with and without defining a constructor", -
   overrideArray = new OverrideArray
   ok overrideArray instanceof OverrideArray
   eq 'yes!', overrideArray.method()
+
+
+test "#2782: non-alphanumeric-named bound functions", ->
+  class A
+    'b:c': =>
+      'd'
+
+  eq (new A)['b:c'](), 'd'
+
+
+test "#2781: overriding bound functions", ->
+  class A
+    a: ->
+        @b()
+    b: =>
+        1
+
+  class B extends A
+    b: =>
+        2
+
+  b = (new A).b
+  eq b(), 1
+
+  b = (new B).b
+  eq b(), 2
+
+
+test "#2791: bound function with destructured argument", ->
+  class Foo
+    method: ({a}) => 'Bar'
+
+  eq (new Foo).method({a: 'Bar'}), 'Bar'
+
+
+test "#2796: ditto, ditto, ditto", ->
+  answer = null
+
+  outsideMethod = (func) ->
+    func.call message: 'wrong!'
+
+  class Base
+    constructor: ->
+      @message = 'right!'
+      outsideMethod @echo
+
+    echo: =>
+      answer = @message
+
+  new Base
+  eq answer, 'right!'
 
 test "#3063: Class bodies cannot contain pure statements", ->
   throws -> CoffeeScript.compile """
@@ -900,6 +988,9 @@ test "`this` access after `super` in extended classes", ->
       eq result.super, this
       eq result.param, @param
       eq result.method, @method
+      ok result.method isnt Test::method
+
+    method: =>
 
   nonce = {}
   new Test nonce, {}
@@ -919,6 +1010,8 @@ test "`@`-params and bound methods with multiple `super` paths (blocks)", ->
         super 'not param'
         eq @name, 'not param'
       eq @param, nonce
+      ok @method isnt Test::method
+    method: =>
   new Test true, nonce
   new Test false, nonce
 
@@ -937,13 +1030,16 @@ test "`@`-params and bound methods with multiple `super` paths (expressions)", -
           eq (super 'param'), @;
           eq @name, 'param';
           eq @param, nonce;
+          ok @method isnt Test::method
         )
       else
         result = (
           eq (super 'not param'), @;
           eq @name, 'not param';
           eq @param, nonce;
+          ok @method isnt Test::method
         )
+    method: =>
   new Test true, nonce
   new Test false, nonce
 
@@ -1145,7 +1241,7 @@ test "super in a bound function", ->
     make: -> "Making a #{@drink}"
 
   class B extends A
-    make: (@flavor) ->
+    make: (@flavor) =>
       super() + " with #{@flavor}"
 
   b = new B('Machiato')
@@ -1153,7 +1249,7 @@ test "super in a bound function", ->
 
   # super in a bound function in a bound function
   class C extends A
-    make: (@flavor) ->
+    make: (@flavor) =>
       func = () =>
         super() + " with #{@flavor}"
       func()
@@ -1578,3 +1674,137 @@ test "CS6 Class extends a CS1 compiled class with super()", ->
   eq B.className(), 'ExtendedCS1'
   b = new B('three')
   eq b.make(), "making a cafe ole with caramel and three shots of espresso"
+
+test 'Bound method called normally before binding is ok', ->
+  class Base
+    constructor: ->
+      @setProp()
+      eq @derivedBound(), 3
+
+  class Derived extends Base
+    setProp: ->
+      @prop = 3
+
+    derivedBound: =>
+      @prop
+
+  d = new Derived
+
+test 'Bound method called as callback after super() is ok', ->
+  class Base
+
+  class Derived extends Base
+    constructor: (@prop = 3) ->
+      super()
+      f = @derivedBound
+      eq f(), 3
+
+    derivedBound: =>
+      @prop
+
+  d = new Derived
+  {derivedBound} = d
+  eq derivedBound(), 3
+
+test 'Bound method of base class called as callback is ok', ->
+  class Base
+    constructor: (@prop = 3) ->
+      f = @baseBound
+      eq f(), 3
+
+    baseBound: =>
+      @prop
+
+  b = new Base
+  {baseBound} = b
+  eq baseBound(), 3
+
+test 'Bound method of prop-named class called as callback is ok', ->
+  Hive = {}
+  class Hive.Bee
+    constructor: (@prop = 3) ->
+      f = @baseBound
+      eq f(), 3
+
+    baseBound: =>
+      @prop
+
+  b = new Hive.Bee
+  {baseBound} = b
+  eq baseBound(), 3
+
+test 'Bound method of class with expression base class called as callback is ok', ->
+  calledB = no
+  B = ->
+    throw new Error if calledB
+    calledB = yes
+    class
+  class A extends B()
+    constructor: (@prop = 3) ->
+      super()
+      f = @derivedBound
+      eq f(), 3
+
+    derivedBound: =>
+      @prop
+
+  b = new A
+  {derivedBound} = b
+  eq derivedBound(), 3
+
+test 'Bound method of class with expression class name called as callback is ok', ->
+  calledF = no
+  obj = {}
+  B = class
+  f = ->
+    throw new Error if calledF
+    calledF = yes
+    obj
+  class f().A extends B
+    constructor: (@prop = 3) ->
+      super()
+      g = @derivedBound
+      eq g(), 3
+
+    derivedBound: =>
+      @prop
+
+  a = new obj.A
+  {derivedBound} = a
+  eq derivedBound(), 3
+
+test 'Bound method of anonymous child class called as callback is ok', ->
+  f = ->
+    B = class
+    class extends B
+      constructor: (@prop = 3) ->
+        super()
+        g = @derivedBound
+        eq g(), 3
+
+      derivedBound: =>
+        @prop
+
+  a = new (f())
+  {derivedBound} = a
+  eq derivedBound(), 3
+
+test 'Bound method of immediately instantiated class with expression base class called as callback is ok', ->
+  calledF = no
+  obj = {}
+  B = class
+  f = ->
+    throw new Error if calledF
+    calledF = yes
+    obj
+  a = new class f().A extends B
+    constructor: (@prop = 3) ->
+      super()
+      g = @derivedBound
+      eq g(), 3
+
+    derivedBound: =>
+      @prop
+
+  {derivedBound} = a
+  eq derivedBound(), 3
