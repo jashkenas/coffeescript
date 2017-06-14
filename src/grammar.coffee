@@ -33,24 +33,27 @@ unwrap = /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 o = (patternString, action, options) ->
   patternString = patternString.replace /\s{2,}/g, ' '
   patternCount = patternString.split(' ').length
-  return [patternString, '$$ = $1;', options] unless action
-  action = if match = unwrap.exec action then match[1] else "(#{action}())"
+  if action
+    action = if match = unwrap.exec action then match[1] else "(#{action}())"
 
-  # All runtime functions we need are defined on `yy`
-  action = action.replace /\bnew /g, '$&yy.'
-  action = action.replace /\b(?:Block\.wrap|extend)\b/g, 'yy.$&'
+    # All runtime functions we need are defined on `yy`
+    action = action.replace /\bnew /g, '$&yy.'
+    action = action.replace /\b(?:Block\.wrap|extend)\b/g, 'yy.$&'
 
-  # Returns strings of functions to add to `parser.js` which add extra data
-  # that nodes may have, such as comments or location data. Location data
-  # is added to the first parameter passed in, and the parameter is returned.
-  # If the parameter is not a node, it will just be passed through unaffected.
-  getFunctionString = (first, last) ->
-    "yy.addDataToNode(yy, @#{first}#{if last then ", @#{last}" else ''})"
+    # Returns strings of functions to add to `parser.js` which add extra data
+    # that nodes may have, such as comments or location data. Location data
+    # is added to the first parameter passed in, and the parameter is returned.
+    # If the parameter is not a node, it will just be passed through unaffected.
+    getAddDataToNodeFunctionString = (first, last) ->
+      "yy.addDataToNode(yy, @#{first}#{if last then ", @#{last}" else ''})"
 
-  action = action.replace /LOC\(([0-9]*)\)/g, getFunctionString('$1')
-  action = action.replace /LOC\(([0-9]*),\s*([0-9]*)\)/g, getFunctionString('$1', '$2')
+    action = action.replace /LOC\(([0-9]*)\)/g, getAddDataToNodeFunctionString('$1')
+    action = action.replace /LOC\(([0-9]*),\s*([0-9]*)\)/g, getAddDataToNodeFunctionString('$1', '$2')
+    performActionFunctionString = "$$ = #{getAddDataToNodeFunctionString(1, patternCount)}(#{action});"
+  else
+    performActionFunctionString = '$$ = $1;'
 
-  [patternString, "$$ = #{getFunctionString(1, patternCount)}(#{action});", options]
+  [patternString, performActionFunctionString, options]
 
 # Grammatical Rules
 # -----------------
@@ -98,7 +101,6 @@ grammar =
   # Pure statements which cannot be expressions.
   Statement: [
     o 'Return'
-    o 'Comment'
     o 'STATEMENT',                              -> new StatementLiteral $1
     o 'Import'
     o 'Export'
@@ -198,7 +200,6 @@ grammar =
     o 'SimpleObjAssignable =
        INDENT Expression OUTDENT',              -> new Assign LOC(1)(new Value $1), $4, null,
                                                               operatorToken: LOC(2)(new Literal $2)
-    o 'Comment'
   ]
 
   SimpleObjAssignable: [
@@ -226,11 +227,6 @@ grammar =
   AwaitReturn: [
     o 'AWAIT RETURN Expression',                -> new AwaitReturn $3
     o 'AWAIT RETURN',                           -> new AwaitReturn
-  ]
-
-  # A block comment.
-  Comment: [
-    o 'HERECOMMENT',                            -> new Comment $1
   ]
 
   # The **Code** node is the function literal. It's defined by an indented block
