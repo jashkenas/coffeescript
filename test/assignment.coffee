@@ -570,3 +570,7 @@ test "Assignment to variables similar to helper functions", ->
 
   indexOf = [1, 2, 3]
   ok 2 in indexOf
+
+test "#4566: destructuring with nested default values", ->
+  {a: {b = 1}} = a: {}
+  eq 1, b

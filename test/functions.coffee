@@ -362,3 +362,8 @@ test "Destructured parameter with default value, that itself has a default value
       y: 30
     radius: 30
   eq output, 'big-18-30-30'
+
+test "#4566: destructuring with nested default values", ->
+  f = ({a: {b = 1}}) ->
+    b
+  eq 2, f a: b: 2

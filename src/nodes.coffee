@@ -1165,6 +1165,14 @@ exports.Obj = class Obj extends Base
     idt        = o.indent += TAB
     lastNoncom = @lastNonComment @properties
 
+    # If this object is the left-hand side of an assignment, all its children
+    # are too.
+    if @lhs
+      for prop in props when prop instanceof Assign
+        {value} = prop
+        unwrappedVal = value.unwrapAll()
+        unwrappedVal.lhs = yes if unwrappedVal instanceof Arr or unwrappedVal instanceof Obj
+
     isCompact = yes
     for prop in @properties
       if prop instanceof Comment or (prop instanceof Assign and prop.context is 'object' and not @csx)
