@@ -1155,9 +1155,10 @@ exports.Obj = class Obj extends Base
     yes
 
   shouldCache: ->
-    # @hasSplat() in condition is needed to properly process object spread properties
-    # in function parameters, and can be removed once the proposal hits Stage 4.
-    # Example: foo({a, b, r...}) => foo(arg) { ({a,b} = arg), r = ... }
+    # `@hasSplat()` in condition is needed to properly process object spread
+    # properties in function parameters, and can be removed once the proposal
+    # hits Stage 4.
+    # Example: `foo({a, b, r...}) => foo(arg) { ({a,b} = arg), r = ... }`
     not @isAssignable() or @hasSplat()
 
   # Check if object contains splat.
@@ -1172,7 +1173,7 @@ exports.Obj = class Obj extends Base
         node.error 'cannot have an implicit value in an implicit object'
 
     # Object spread properties. https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md
-    # obj2 = {a:1, obj..., c:3, d:4} => obj2 = Object.assign({}, {a:1}, obj1, {c:3, d:4})
+    # `obj2 = {a:1, obj..., c:3, d:4} => obj2 = Object.assign({}, {a:1}, obj1, {c:3, d:4})`
     return @compileSpread o if @hasSplat()
 
     idt        = o.indent += TAB
@@ -1236,7 +1237,7 @@ exports.Obj = class Obj extends Base
       prop.eachName iterator if prop.eachName?
 
   # Object spread properties. https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md
-  # obj2 = {a:1, obj..., c:3, d:4} => obj2 = Object.assign({}, {a:1}, obj1, {c:3, d:4})
+  # `obj2 = {a:1, obj..., c:3, d:4} => obj2 = Object.assign({}, {a:1}, obj1, {c:3, d:4})`
   compileSpread: (o) ->
     props = @properties
     # Store object spreads.
@@ -1871,9 +1872,10 @@ exports.Assign = class Assign extends Base
   # can be removed once ES proposal hits Stage 4.
   compileObjectDestruct: (o) ->
     # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration,
-    # if we’re destructuring without declaring, the destructuring assignment must be wrapped in parentheses.
-    # ({a, b} = obj)
-    # Helper function setScopeVar() declares vars 'a' and 'b' at the top of the current scope.
+    # if we’re destructuring without declaring, the destructuring assignment
+    # must be wrapped in parentheses: `({a, b} = obj)`. Helper function
+    # `setScopeVar()` declares variables `a` and `b` at the top of the
+    # current scope.
     setScopeVar = (prop) ->
       newVar = false
       return if prop instanceof Assign and prop.value.base instanceof Obj
@@ -1885,9 +1887,10 @@ exports.Assign = class Assign extends Base
       else
         newVar = prop.compile o
       o.scope.add(newVar, 'var', true) if newVar
-    # Helper function getPropValue() returns compiled object property value.
-    # These values are then passed as an argument to helper function objectWithoutKeys
-    # which is used to assign object value to the destructuring rest variable.
+    # Helper function `getPropValue()` returns compiled object property value.
+    # These values are then passed as an argument to helper function
+    # `objectWithoutKeys` which is used to assign object value to the
+    # destructuring rest variable.
     getPropValue = (prop, quote = no) ->
       wrapInQutes = (prop) ->
         compiledProp = prop.compile o
@@ -1900,7 +1903,7 @@ exports.Assign = class Assign extends Base
       else
         return wrapInQutes prop
     # Recursive function for searching and storing rest elements in objects.
-    # Parameter props[] is used to store nested object properties,
+    # Parameter `props[]` is used to store nested object properties,
     # e.g. `{a: {b, c: {d, r1...}, r2...}, r3...} = obj`.
     traverseRest = (properties, path = []) ->
       results = []
@@ -1928,7 +1931,7 @@ exports.Assign = class Assign extends Base
     restList = traverseRest properties
     val = @value.compileToFragments o, LEVEL_LIST
     vvarText = fragmentsToText val
-    # Make value into a simple variable if it isn't already.
+    # Make value into a simple variable if it isn’t already.
     if (@value.unwrap() not instanceof IdentifierLiteral) or @variable.assigns vvarText
       ref = o.scope.freeVariable 'obj'
       fragments.push [@makeCode(ref + ' = '), val...]
@@ -2007,7 +2010,7 @@ exports.Assign = class Assign extends Base
 
     # At this point, there are several things to destructure. So the `fn()` in
     # `{a, b} = fn()` must be cached, for example. Make vvar into a simple
-    # variable if it isn't already.
+    # variable if it isn’t already.
     if value.unwrap() not instanceof IdentifierLiteral or @variable.assigns(vvarText)
       ref = o.scope.freeVariable 'ref'
       assigns.push [@makeCode(ref + ' = '), vvar...]
@@ -2427,7 +2430,9 @@ exports.Param = class Param extends Base
       name = "_#{name}" if name in JS_FORBIDDEN
       node = new IdentifierLiteral o.scope.freeVariable name
     else if node.shouldCache() or node.lhs
-      # node.lhs is checked in case we have object destructuring as function parameter. Can be removed once ES proposal for object spread hots Stage 4.
+      # `node.lhs` is checked in case we have object destructuring as a
+      # function parameter. Can be removed once ES proposal for object spread
+      # reaches Stage 4.
       node = new IdentifierLiteral o.scope.freeVariable 'arg'
     node = new Value node
     node.updateLocationDataIfMissing @locationData
