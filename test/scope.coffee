@@ -107,6 +107,16 @@ test "#1183: super + closures", ->
       ret
   eq (new B).foo(), 10
 
+test "#2331: bound super regression", ->
+  class A
+    @value = 'A'
+    method: -> @constructor.value
+
+  class B extends A
+    method: => super()
+
+  eq (new B).method(), 'A'
+
 test "#3259: leak with @-params within destructured parameters", ->
   fn = ({@foo}, [@bar], [{@baz}]) ->
     foo = bar = baz = false
