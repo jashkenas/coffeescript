@@ -234,7 +234,7 @@ test "destructuring assignment against an expression", ->
   [y, z] = if true then [a, b] else [b, a]
   eq a, y
   eq b, z
-  
+
 test "destructuring assignment with objects and splats: ES2015", ->
   obj = {a:1, b:2, c:3, d:4, e:5}
   throws (-> CoffeeScript.compile "{a, r..., s...} = x"), null, "multiple rest elements are disallowed"
@@ -274,7 +274,7 @@ test "deep destructuring assignment with objects: ES2015", ->
   eq r1.e, c1
   eq r2.b, undefined
   eq bb, b1
-  eq r2.b2, obj.b2  
+  eq r2.b2, obj.b2
 
 test "object spread properties: ES2015", ->
   obj = {a:1, b:2, c:3, d:4, e:5}
@@ -295,27 +295,27 @@ test "object spread properties: ES2015", ->
     eq 1, a
     deepEqual r, {c:3, d:44, e:55}
   ) {obj2..., d:44, e:55}
-  
+
   obj = {a:1, b:2, c:{d:3, e:4, f:{g:5}}}
   obj4 = {a:10, obj.c...}
   eq obj4.a, 10
   eq obj4.d, 3
   eq obj4.f.g, 5
   deepEqual obj4.f, obj.c.f
-  
+
   obj5 = {obj..., ((k) -> {b:k})(99)...}
   eq obj5.b, 99
   deepEqual obj5.c, obj.c
-  
+
   fn = -> {c:{d:33, e:44, f:{g:55}}}
   obj6 = {obj..., fn()...}
   eq obj6.c.d, 33
   deepEqual obj6.c, {d:33, e:44, f:{g:55}}
-  
+
   obj7 = {obj..., fn()..., {c:{d:55, e:66, f:{77}}}...}
   eq obj7.c.d, 55
   deepEqual obj6.c, {d:33, e:44, f:{g:55}}
-  
+
 test "bracket insertion when necessary", ->
   [a] = [0] ? [1]
   eq a, 0

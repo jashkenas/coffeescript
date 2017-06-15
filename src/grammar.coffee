@@ -210,17 +210,17 @@ grammar =
     o 'ThisProperty'
     o 'ObjDestructIdentifier'
   ]
-  
+
   ObjAssignable: [
     o 'SimpleObjAssignable'
     o 'AlphaNumeric'
   ]
- 
+
   ObjDestructIdentifier: [
     o 'SimpleObjAssignable . Property',                             -> (new Value $1).add(new Access $3)
     o 'SimpleObjAssignable INDEX_START IndexValue INDEX_END',       -> (new Value $1).add($3)
   ]
-  
+
   # Object literal spread properties.
   ObjDestructAssignable: [
     o 'Object ...',                             -> new Value $1
@@ -228,8 +228,8 @@ grammar =
     o 'Parenthetical ...',                      -> new Value $1
     o 'Parenthetical Arguments ...',            -> new Call $1, $2, no
     o 'Identifier Arguments ...',               -> new Call $1, $2, no
-  ] 
-  
+  ]
+
   # A return statement from a function body.
   Return: [
     o 'RETURN Expression',                      -> new Return $2

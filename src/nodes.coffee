@@ -1160,9 +1160,9 @@ exports.Obj = class Obj extends Base
     # Example: foo({a, b, r...}) => foo(arg) { ({a,b} = arg), r = ... }
     not @isAssignable() or @hasSplat()
 
-  # Check if object contains splat. 
+  # Check if object contains splat.
   hasSplat: ->
-    splat = yes for prop in @properties when prop instanceof Splat 
+    splat = yes for prop in @properties when prop instanceof Splat
     splat ? no
 
   compileNode: (o) ->
@@ -1170,11 +1170,11 @@ exports.Obj = class Obj extends Base
     if @generated
       for node in props when node instanceof Value
         node.error 'cannot have an implicit value in an implicit object'
-    
+
     # Object spread properties. https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md
     # obj2 = {a:1, obj..., c:3, d:4} => obj2 = Object.assign({}, {a:1}, obj1, {c:3, d:4})
     return @compileSpread o if @hasSplat()
-    
+
     idt        = o.indent += TAB
     lastNoncom = @lastNonComment @properties
 
@@ -1197,7 +1197,7 @@ exports.Obj = class Obj extends Base
       else
         ',\n'
       indent = if isCompact or prop instanceof Comment then '' else idt
-      
+
       key = if prop instanceof Assign and prop.context is 'object'
         prop.variable
       else if prop instanceof Assign
@@ -1243,8 +1243,8 @@ exports.Obj = class Obj extends Base
     splatSlice = []
     propSlices = []
     slices = []
-    addSlice = -> 
-      slices.push new Obj propSlices if propSlices.length      
+    addSlice = ->
+      slices.push new Obj propSlices if propSlices.length
       slices.push splatSlice... if splatSlice.length
       splatSlice = []
       propSlices = []
@@ -1257,7 +1257,7 @@ exports.Obj = class Obj extends Base
     addSlice()
     slices.unshift new Obj unless slices[0] instanceof Obj
     (new Call new Literal('Object.assign'), slices).compileToFragments o
-      
+
 #### Arr
 
 # An array literal.
@@ -1807,7 +1807,7 @@ exports.Assign = class Assign extends Base
     if isValue
       # When compiling `@variable`, remember if it is part of a function parameter.
       @variable.param = @param
-      
+
       # If `@variable` is an array or an object, we’re destructuring;
       # if it’s also `isAssignable()`, the destructuring syntax is supported
       # in ES and we can output it as is; otherwise we `@compileDestructuring`
@@ -1880,16 +1880,16 @@ exports.Assign = class Assign extends Base
       if prop instanceof Assign
         if prop.value.base instanceof IdentifierLiteral
           newVar = prop.value.base.compile o
-        else 
+        else
           newVar = prop.variable.base.compile o
       else
         newVar = prop.compile o
       o.scope.add(newVar, 'var', true) if newVar
     # Helper function getPropValue() returns compiled object property value.
-    # These values are then passed as an argument to helper function objectWithoutKeys 
+    # These values are then passed as an argument to helper function objectWithoutKeys
     # which is used to assign object value to the destructuring rest variable.
     getPropValue = (prop, quote = no) ->
-      wrapInQutes = (prop) -> 
+      wrapInQutes = (prop) ->
         compiledProp = prop.compile o
         compiledProp = "'#{compiledProp}'" if quote
         (new Literal compiledProp).compile o
@@ -1906,15 +1906,15 @@ exports.Assign = class Assign extends Base
       results = []
       restElement = no
       for prop, key in properties
-        if prop instanceof Assign and prop.value.base instanceof Obj          
+        if prop instanceof Assign and prop.value.base instanceof Obj
           results = traverseRest prop.value.base.objects, [path..., getPropValue prop]
         if prop instanceof Splat
           prop.error "multiple rest elements are disallowed in object destructuring" if restElement
           restKey = key
-          restElement = { 
-            name: prop.unwrap(), 
+          restElement = {
+            name: prop.unwrap(),
             path
-          }  
+          }
       if restElement
         # Remove rest element from the properties.
         properties.splice restKey, 1
@@ -1926,10 +1926,10 @@ exports.Assign = class Assign extends Base
     {properties} = @variable.base
     # Find all rest elements.
     restList = traverseRest properties
-    val = @value.compileToFragments o, LEVEL_LIST  
+    val = @value.compileToFragments o, LEVEL_LIST
     vvarText = fragmentsToText val
     # Make value into a simple variable if it isn't already.
-    if (@value.unwrap() not instanceof IdentifierLiteral) or @variable.assigns vvarText 
+    if (@value.unwrap() not instanceof IdentifierLiteral) or @variable.assigns vvarText
       ref = o.scope.freeVariable 'obj'
       fragments.push [@makeCode(ref + ' = '), val...]
       val = (new IdentifierLiteral ref).compileToFragments o, LEVEL_TOP
@@ -2204,7 +2204,7 @@ exports.Code = class Code extends Base
         target = new IdentifierLiteral o.scope.freeVariable name
         param.renameParam node, target
         thisAssignments.push new Assign node, target
-        
+
     # Parse the parameters, adding them to the list of parameters to put in the
     # function definition; and dealing with splats or expansions, including
     # adding expressions to the function body to declare all parameter
@@ -3300,7 +3300,7 @@ UTILITIES =
   indexOf: -> '[].indexOf'
   slice  : -> '[].slice'
   splice : -> '[].splice'
-  
+
 
 # Levels indicate a node's position in the AST. Useful for knowing if
 # parens are necessary or superfluous.
