@@ -1914,6 +1914,8 @@ exports.Assign = class Assign extends Base
         if prop instanceof Splat
           prop.error "multiple rest elements are disallowed in object destructuring" if restElement
           restKey = key
+          # Force variable declaration in the current scope in case object destructuring is function argument.
+          setScopeVar prop.unwrap()
           restElement = {
             name: prop.unwrap(),
             path
@@ -1944,8 +1946,6 @@ exports.Assign = class Assign extends Base
       varProp = if restElement.path.length then ".#{restElement.path.join '.'}" else ""
       vvarPropText = new Literal "#{vvarText}#{varProp}"
       extractKeys = new Call new Value(new Literal(utility('objectWithoutKeys', o))), [vvarPropText, restElement.excludeProps]
-      # Force declare var in current scope in case object destructuring is function argument.
-      o.scope.add restElement.name.compile(o), 'var'
       fragments.push new Assign(restElement.name, extractKeys, null).compileToFragments o, LEVEL_LIST
     @joinFragmentArrays fragments, ", "
 
