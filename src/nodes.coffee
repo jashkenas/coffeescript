@@ -1944,6 +1944,8 @@ exports.Assign = class Assign extends Base
       varProp = if restElement.path.length then ".#{restElement.path.join '.'}" else ""
       vvarPropText = new Literal "#{vvarText}#{varProp}"
       extractKeys = new Call new Value(new Literal(utility('objectWithoutKeys', o))), [vvarPropText, restElement.excludeProps]
+      # Force declare var in current scope in case object destructuring is function argument.
+      o.scope.add restElement.name.compile(o), 'var'
       fragments.push new Assign(restElement.name, extractKeys, null).compileToFragments o, LEVEL_LIST
     @joinFragmentArrays fragments, ", "
 
@@ -2282,11 +2284,7 @@ exports.Code = class Code extends Base
             # This parameter is destructured.
             param.name.lhs = yes
             param.name.eachName (prop) ->
-              if param.shouldCache()
-                o.scope.add prop.value, 'var'
-                o.scope.parameter fragmentsToText ref.compileToFragments o
-              else
-                o.scope.parameter prop.value
+              o.scope.parameter prop.value
           else
             o.scope.parameter fragmentsToText (if param.value? then param else ref).compileToFragments o
           params.push ref
@@ -2433,11 +2431,8 @@ exports.Param = class Param extends Base
       name = node.properties[0].name.value
       name = "_#{name}" if name in JS_FORBIDDEN
       node = new IdentifierLiteral o.scope.freeVariable name
-    else if node.shouldCache() or node.lhs
-      # `node.lhs` is checked in case we have object destructuring as a
-      # function parameter. Can be removed once ES proposal for object spread
-      # reaches Stage 4.
-      node = new IdentifierLiteral o.scope.freeVariable 'arg'
+    else if node.shouldCache()
+      node = new IdentifierLiteral o.scope.freeVariable 'arg', {reserve: no}
     node = new Value node
     node.updateLocationDataIfMissing @locationData
     @reference = node
