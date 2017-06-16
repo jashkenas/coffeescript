@@ -220,6 +220,11 @@ test "rest element destructuring in function definition", ->
   #   deepEqual r2.b2, {b1, c1}
   # ) obj1
 
+  b = 3
+  f = ({a, b...}) ->
+  f {}
+  eq 3, b
+
 test "#4005: `([a = {}]..., b) ->` weirdness", ->
   fn = ([a = {}]..., b) -> [a, b]
   deepEqual fn(5), [{}, 5]

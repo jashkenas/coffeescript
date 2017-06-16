@@ -2278,11 +2278,15 @@ exports.Code = class Code extends Base
             else
               ref = param
           # Add this parameter’s reference(s) to the function scope.
-          if (param.name instanceof Arr or param.name instanceof Obj) and not param.shouldCache()
+          if param.name instanceof Arr or param.name instanceof Obj
             # This parameter is destructured.
             param.name.lhs = yes
             param.name.eachName (prop) ->
-              o.scope.parameter prop.value
+              if param.shouldCache()
+                o.scope.add prop.value, 'var'
+                o.scope.parameter fragmentsToText ref.compileToFragments o
+              else
+                o.scope.parameter prop.value
           else
             o.scope.parameter fragmentsToText (if param.value? then param else ref).compileToFragments o
           params.push ref
