@@ -192,33 +192,34 @@ test "rest element destructuring in function definition", ->
     deepEqual r, {c:3, d:4, e:5}
   ) obj
 
-  # (({a:p, b, r...}) ->
-  #   eq p, 1
-  #   deepEqual r, {c:3, d:4, e:5}
-  # ) {a:1, b:2, c:3, d:4, e:5}
-  #
-  # a1={}; b1={}; c1={}; d1={}
-  # obj1 = {
-  #   a: a1
-  #   b: {
-  #     'c': {
-  #       d: {
-  #         b1
-  #         e: c1
-  #         f: d1
-  #       }
-  #     }
-  #   }
-  #   b2: {b1, c1}
-  # }
+  (({a:p, b, r...}, q) ->
+    eq p, 1
+    eq q, 9
+    deepEqual r, {c:3, d:4, e:5}
+  ) {a:1, b:2, c:3, d:4, e:5}, 9
 
-  # (({a:w, 'b':{c:{d:{b1:bb, r1...}}}, r2...}) ->
-  #   eq a1, w
-  #   eq bb, b1
-  #   eq r2.b, undefined
-  #   deepEqual r1, {e:c1, f:d1}
-  #   deepEqual r2.b2, {b1, c1}
-  # ) obj1
+  a1={}; b1={}; c1={}; d1={}
+  obj1 = {
+    a: a1
+    b: {
+      'c': {
+        d: {
+          b1
+          e: c1
+          f: d1
+        }
+      }
+    }
+    b2: {b1, c1}
+  }
+
+  (({a:w, b:{c:{d:{b1:bb, r1...}}}, r2...}) ->
+    eq a1, w
+    eq bb, b1
+    eq r2.b, undefined
+    deepEqual r1, {e:c1, f:d1}
+    deepEqual r2.b2, {b1, c1}
+  ) obj1
 
   b = 3
   f = ({a, b...}) ->
