@@ -2278,7 +2278,7 @@ exports.Code = class Code extends Base
             else
               ref = param
           # Add this parameter’s reference(s) to the function scope.
-          if param.name instanceof Arr or param.name instanceof Obj
+          if (param.name instanceof Arr or param.name instanceof Obj) and not param.shouldCache()
             # This parameter is destructured.
             param.name.lhs = yes
             param.name.eachName (prop) ->
