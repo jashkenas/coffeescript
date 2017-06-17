@@ -321,7 +321,7 @@ exports.Rewriter = class Rewriter
           # return a: 1, b: 2 unless true
           else if inImplicitObject() and sameLine and
                   tag isnt 'TERMINATOR' and prevTag isnt ':' and
-                  not (tag is 'POST_IF' and startsLine and implicitObjectContinues(i + 1))
+                  not (tag in ['POST_IF', 'FOR'] and startsLine and implicitObjectContinues(i + 1))
             endImplicitObject()
           # Close implicit objects when at end of line, line didn't end with a comma
           # and the implicit object didn't start the line or the next line doesn't look like
