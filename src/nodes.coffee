@@ -1155,11 +1155,7 @@ exports.Obj = class Obj extends Base
     yes
 
   shouldCache: ->
-    # `@hasSplat()` in condition is needed to properly process object spread
-    # properties in function parameters, and can be removed once the proposal
-    # hits Stage 4.
-    # Example: `foo({a, b, r...}) => foo(arg) { ({a,b} = arg), r = ... }`
-    not @isAssignable() or @hasSplat()
+    not @isAssignable()
 
   # Check if object contains splat.
   hasSplat: ->
@@ -2281,10 +2277,20 @@ exports.Code = class Code extends Base
               ref = param
           # Add this parameter’s reference(s) to the function scope.
           if param.name instanceof Arr or param.name instanceof Obj
-            # This parameter is destructured.
             param.name.lhs = yes
             param.name.eachName (prop) ->
               o.scope.parameter prop.value
+            # This parameter is object destructured.
+            # Compile foo({a, b...}) -> into foo(arg) -> {a, b...} = arg
+            # Can be removed once ES proposal hits Stage 4.
+            if param.name instanceof Obj and param.name.hasSplat()
+              splatParamName = o.scope.freeVariable 'arg'
+              o.scope.parameter splatParamName
+              ref = new Value new IdentifierLiteral splatParamName
+              exprs.push new Assign new Value(param.name), ref, null, param: yes
+              # Compile foo({a, b...} = {}) -> into foo(arg = {}) -> {a, b...} = arg
+              if param.value?  and not param.assignedInBody
+                ref = new Assign ref, param.value, null, param: yes
           else
             o.scope.parameter fragmentsToText (if param.value? then param else ref).compileToFragments o
           params.push ref
@@ -2432,7 +2438,7 @@ exports.Param = class Param extends Base
       name = "_#{name}" if name in JS_FORBIDDEN
       node = new IdentifierLiteral o.scope.freeVariable name
     else if node.shouldCache()
-      node = new IdentifierLiteral o.scope.freeVariable 'arg', {reserve: no}
+      node = new IdentifierLiteral o.scope.freeVariable 'arg'
     node = new Value node
     node.updateLocationDataIfMissing @locationData
     @reference = node
