@@ -649,7 +649,7 @@ test "#4544: Postfix conditionals in first line of implicit object literals", ->
     val2: "all good"
   eq a.val2, "all good"
 
-test "#4578: Postfix for in first line of implicit object literals", ->
+test "#4579: Postfix for in first line of implicit object literals", ->
   two =
     foo:
       bar: x for x in [1, 2, 3]
@@ -661,7 +661,7 @@ test "#4578: Postfix for in first line of implicit object literals", ->
 
   three =
     foo: f
-      # Uncomment when #4579 is fixed
+      # Uncomment when #4580 is fixed
       # bar: x + y for x, y of a: 'b', c: 'd'
       bar: x + 'c' for x of a: 1, b: 2
       baz: 1337
