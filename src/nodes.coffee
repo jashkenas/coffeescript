@@ -2277,10 +2277,10 @@ exports.Code = class Code extends Base
               ref = param
           # Add this parameter’s reference(s) to the function scope.
           if param.name instanceof Arr or param.name instanceof Obj
+            # This parameter is destructured.
             param.name.lhs = yes
             param.name.eachName (prop) ->
               o.scope.parameter prop.value
-            # This parameter is object destructured.
             # Compile foo({a, b...}) -> into foo(arg) -> {a, b...} = arg
             # Can be removed once ES proposal hits Stage 4.
             if param.name instanceof Obj and param.name.hasSplat()
