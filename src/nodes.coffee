@@ -1898,14 +1898,14 @@ exports.Assign = class Assign extends Base
       else
         return wrapInQutes prop
     # Recursive function for searching and storing rest elements in objects.
-    # Parameter `props[]` is used to store nested object properties,
+    # Parameter `path[]` is used to store nested object properties,
     # e.g. `{a: {b, c: {d, r1...}, r2...}, r3...} = obj`.
     traverseRest = (properties, path = []) ->
       results = []
       restElement = no
       for prop, key in properties
         if prop instanceof Assign and prop.value.base instanceof Obj
-          results = traverseRest prop.value.base.objects, [path..., getPropValue prop]
+          results = traverseRest prop.value.base.properties, [path..., getPropValue prop]
         else
           setScopeVar prop.unwrap() # Declare a variable in the scope.
         if prop instanceof Splat
