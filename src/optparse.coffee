@@ -117,10 +117,10 @@ buildRules = (ruleDecls) ->
   for rule in ruleList
     # shortFlag is null if not provided in the rule.
     for flag in [rule.shortFlag, rule.longFlag] when flag?
-      prevRule = flagDict[flag]
-      if prevRule?
+      if flagDict[flag]?
+        # TODO: test this!
         throw new Error "flag #{flag} for switch #{rule.name}
-          was already declared for switch #{prevRule.name}"
+          was already declared for switch #{flagDict[flag].name}"
       flagDict[flag] = rule
 
   {ruleList, flagDict}
@@ -132,7 +132,7 @@ buildRule = (shortFlag, longFlag, description) ->
   shortFlag = shortFlag?.match(SHORT_FLAG)[1]
   longFlag  = longFlag.match(LONG_FLAG)[1]
   {
-    name:         longFlag.substr 2
+    name:         longFlag.replace /^--/, ''
     shortFlag:    shortFlag
     longFlag:     longFlag
     description:  description
