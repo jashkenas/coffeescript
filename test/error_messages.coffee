@@ -1585,3 +1585,18 @@ test "CSX error: ambiguous tag-like expression", ->
     x = a <b > c
              ^
   '''
+
+test 'Bound method called as callback before binding throws runtime error', ->
+  class Base
+    constructor: ->
+      f = @derivedBound
+      try
+        f()
+        ok no
+      catch e
+        eq e.message, 'Bound instance method accessed before binding'
+
+  class Derived extends Base
+    derivedBound: =>
+      ok no
+  d = new Derived

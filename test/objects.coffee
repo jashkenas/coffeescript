@@ -594,6 +594,23 @@ test "#1263: Braceless object return", ->
   eq 2, obj.b
   eq 3, obj.c()
 
+test "#4564: indent should close implicit object", ->
+  f = (x) -> x
+
+  arrayEq ['a'],
+    for key of f a: 1
+      key
+
+  g = null
+  if f a: 1
+    g = 3
+  eq g, 3
+
+  h = null
+  if a: (i for i in [1, 2, 3])
+    h = 4
+  eq h, 4
+
 test "#4544: Postfix conditionals in first line of implicit object literals", ->
   two =
     foo:
