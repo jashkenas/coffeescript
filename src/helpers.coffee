@@ -56,8 +56,6 @@ exports.flatten = flatten = (array) ->
       flattened.push element
   flattened
 
-exports.isString = (obj) -> Object::toString.call(obj) is '[object String]'
-
 # Delete a key from an object, returning the value. Useful when a node is
 # looking for a particular method in an options hash.
 exports.del = (obj, key) ->

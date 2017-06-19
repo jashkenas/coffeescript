@@ -1,4 +1,4 @@
-{repeat, isString} = require './helpers'
+{repeat} = require './helpers'
 
 # A simple **OptionParser** class to parse option flags from the command-line.
 # Use it like so:
@@ -112,6 +112,9 @@ normalizeArguments = (args, flagDict) ->
   positional = []
   needsArgOpt = null
   for arg, argIndex in args
+    # If the previous argument given to the script was an option that uses the
+    # next command-line argument as its argument, create copy of the option's
+    # rule with an `argument` field.
     if needsArgOpt?
       # FIXME: use object spread when that gets merged (in #4493)
       rules.push Object.assign({}, needsArgOpt.rule, {argument: arg})

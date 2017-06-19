@@ -91,6 +91,12 @@ test "throw on invalid options", ->
   argv = ['-oc']
   throws (-> optionParser.parse argv), /needs an argument/
 
+  argv = ['-o']
+  throws (-> optionParser.parse argv), /value required/
+
+  argv = ['-co']
+  throws (-> optionParser.parse argv), /value required/
+
   # Check if all flags in a multi-flag are recognized before checking if flags
   # before the last need arguments.
   argv = ['-ok']
