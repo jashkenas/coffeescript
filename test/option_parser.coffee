@@ -41,3 +41,29 @@ test "-- and interesting combinations", ->
   eq undefined, result.optional
   eq undefined, result.required
   arrayEq args[1..], result.arguments
+
+test "throw if multiple flags try to use the same short or long name", ->
+  throws -> new OptionParser [
+    ['-r', '--required [DIR]', 'required']
+    ['-r', '--long',           'switch']
+  ]
+
+  throws -> new OptionParser [
+    ['-a', '--append [STR]', 'append']
+    ['-b', '--append',       'append with -b short opt']
+  ]
+
+  throws -> new OptionParser [
+    ['--just-long', 'desc']
+    ['--just-long', 'another desc']
+  ]
+
+  throws -> new OptionParser [
+    ['-j', '--just-long', 'desc']
+    ['--just-long', 'another desc']
+  ]
+
+  throws -> new OptionParser [
+    ['--just-long',       'desc']
+    ['-j', '--just-long', 'another desc']
+  ]
