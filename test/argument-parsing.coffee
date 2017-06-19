@@ -77,3 +77,21 @@ test "later '--' are not removed", ->
   parsed = optionParser.parse argv
   expected = arguments: ['some-file.coffee', '--', '-bc']
   sameOptions parsed, expected
+
+test "throw on invalid options", ->
+  argv = ['-k']
+  throws -> optionParser.parse argv
+
+  argv = ['-ck']
+  throws (-> optionParser.parse argv), /multi-flag/
+
+  argv = ['-kc']
+  throws (-> optionParser.parse argv), /multi-flag/
+
+  argv = ['-oc']
+  throws (-> optionParser.parse argv), /needs an argument/
+
+  # Check if all flags in a multi-flag are recognized before checking if flags
+  # before the last need arguments.
+  argv = ['-ok']
+  throws (-> optionParser.parse argv), /unrecognized option/

@@ -28,60 +28,28 @@ exports.OptionParser = class OptionParser
   # parsers that allow you to attach callback actions for every flag. Instead,
   # you're responsible for interpreting the options object.
   parse: (args) ->
-    argsLeft = args[..]
+    # The CS option parser is a little odd; options after the first
+    # non-option argument are treated as non-option arguments themselves.
+    # Optional arguments are normalized by expanding merged flags into multiple
+    # flags. This allows you to have `-wl` be the same as `--watch --lint`.
+    # Note that executable scripts do not need to have a `--` at the end of the
+    # shebang ("#!") line, and if they do, they won't work on Linux (see #3946).
+    {rules, positional} = normalizeArguments args, @rules.flagDict
     options = {}
 
-    while argsLeft.length > 0
-      # The CS option parser is a little odd; options after the first
-      # non-option argument are treated as non-option arguments themselves.
-      # Executable scripts do not need to have a `--` at the end of the
-      # shebang ("#!") line, and if they do, they won't work on Linux.
-      # Normalize arguments by expanding merged flags into multiple
-      # flags. This allows you to have `-wl` be the same as `--watch --lint`.
-      # `flags` are objects of {multi, flag}, where `multi` contains the
-      # original command-line argument which was split, if applicable.
-      # If `arg` is not a string, then we have already processed it.
-      arg = argsLeft.shift()
-      unless isString arg then argsLeft.unshift arg
-      else
-        flags = parseMultiFlag(arg) ? parseSingleFlag(arg)
-        if flags?
-          argsLeft.unshift flags...
-        else
-          # This is a positional argument.
-          # TODO: should we check these with `isCoffee`?
-          argsLeft.unshift(arg) unless arg is '--'
-          break
-
-      [cur, rest...] = argsLeft
-      {flag, multi} = cur
-      rule = @rules.flagDict[flag]
-      if rule?
-        # We recognize the current top argument, so process and remove it.
-        argsLeft = rest
-      else
-        # TODO: test all of this!
-        msg = "unrecognized option: #{flag}"
-        msg += " (in multi-flag '#{multi}')" if multi?
-        throw new Error msg
-
-      {hasArgument, isList, name} = rule
-      unless hasArgument then options[name] = true
-      else
-        # We do not touch flag arguments at all, but we don't know which flags
-        # need arguments until we get to this point, which is why we use a while
-        # loop above.
-        # TODO: test this!
-        nextArg = argsLeft.shift()
-        unless nextArg? then throw new Error "value required for
-          '#{flag}', which was the last argument provided"
+    # The `argument` field is added to the rule instance non-destructively by
+    # `normalizeArguments`.
+    for {hasArgument, argument, isList, name} in rules
+      if hasArgument
         if isList
           options[name] ?= []
-          options[name].push nextArg
+          options[name].push argument
         else
-          options[name] = nextArg
+          options[name] = argument
+      else
+        options[name] = true
 
-    options.arguments = argsLeft
+    options.arguments = positional
     options
 
   # Return the help text for this **OptionParser**, listing and describing all
@@ -118,7 +86,6 @@ buildRules = (ruleDecls) ->
     # shortFlag is null if not provided in the rule.
     for flag in [rule.shortFlag, rule.longFlag] when flag?
       if flagDict[flag]?
-        # TODO: test this!
         throw new Error "flag #{flag} for switch #{rule.name}
           was already declared for switch #{flagDict[flag].name}"
       flagDict[flag] = rule
@@ -140,13 +107,55 @@ buildRule = (shortFlag, longFlag, description) ->
     isList:       !!(match and match[2])
   }
 
-parseSingleFlag = (arg) ->
-  if ([LONG_FLAG, SHORT_FLAG].some (pat) -> arg.match(pat)?) then [flag: arg]
-  else null
+normalizeArguments = (args, flagDict) ->
+  rules = []
+  positional = []
+  needsArgOpt = null
+  for arg, argIndex in args
+    if needsArgOpt?
+      # FIXME: use object spread when that gets merged (in #4493)
+      rules.push Object.assign({}, needsArgOpt.rule, {argument: arg})
+      needsArgOpt = null
+      continue
 
-parseMultiFlag = (arg) ->
-  arg.match(MULTI_FLAG)?[1]
-    .split('')
-    .map (flagName) ->
-      multi: arg
-      flag: "-#{flagName}"
+    multiFlags = arg.match(MULTI_FLAG)?[1]
+      .split('')
+      .map (flagName) -> "-#{flagName}"
+    if multiFlags?
+      multiOpts = multiFlags.map (flag) ->
+        rule = flagDict[flag]
+        unless rule?
+          throw new Error "unrecognized option #{flag} in multi-flag #{arg}"
+        {rule, flag}
+      # Only the last flag in a multi-flag may have an argument.
+      [innerOpts..., lastOpt] = multiOpts
+      for {rule, flag} in innerOpts
+        if rule.hasArgument
+          throw new Error "cannot use option #{flag} in multi-flag #{arg} except
+          as the last option, because it needs an argument"
+        rules.push rule
+      if lastOpt.rule.hasArgument
+        needsArgOpt = lastOpt
+      else
+        rules.push lastOpt.rule
+    else if ([LONG_FLAG, SHORT_FLAG].some (pat) -> arg.match(pat)?)
+      # TODO: do we need to check if `arg` matches regex if we already check if
+      # it's in flagDict?
+      singleRule = flagDict[arg]
+      unless singleRule?
+        throw new Error "unrecognized option #{arg}"
+      if singleRule.hasArgument
+        needsArgOpt = {rule: singleRule, flag: arg}
+      else
+        rules.push singleRule
+    else
+      # This is a positional argument.
+      # TODO: should we check these with `isCoffee`?
+      finalIndex = if arg is '--' then argIndex + 1 else argIndex
+      positional = args[finalIndex..]
+      break
+
+  if needsArgOpt?
+    throw new Error "value required for #{needsArgOpt.flag}, which was the last
+    argument provided"
+  {rules, positional}
