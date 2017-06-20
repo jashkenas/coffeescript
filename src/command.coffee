@@ -69,7 +69,11 @@ exports.buildCSOptionParser = buildCSOptionParser = ->
 # `--` will be passed verbatim to your script as arguments in `process.argv`
 exports.run = ->
   optionParser = buildCSOptionParser()
-  parseOptions()
+  try parseOptions()
+  catch err
+    console.error "option parsing error: #{err.message}"
+    process.exit 1
+
   # Make the REPL *CLI* use the global context so as to (a) be consistent with the
   # `node` REPL CLI and, therefore, (b) make packages that modify native prototypes
   # (such as 'colors' and 'sugar') work as expected.

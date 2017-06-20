@@ -33,7 +33,7 @@ exports.OptionParser = class OptionParser
     # Optional arguments are normalized by expanding merged flags into multiple
     # flags. This allows you to have `-wl` be the same as `--watch --lint`.
     # Note that executable scripts do not need to have a `--` at the end of the
-    # shebang ("#!") line, and if they do, they won't work on Linux (see #3946).
+    # shebang (`#!`) line, and if they do, they won't work on Linux (see #3946).
     {rules, positional} = normalizeArguments args, @rules.flagDict
     options = {}
 
@@ -83,7 +83,7 @@ buildRules = (ruleDecls) ->
     buildRule tuple...
   flagDict = {}
   for rule in ruleList
-    # shortFlag is null if not provided in the rule.
+    # `shortFlag` is null if not provided in the rule.
     for flag in [rule.shortFlag, rule.longFlag] when flag?
       if flagDict[flag]?
         throw new Error "flag #{flag} for switch #{rule.name}
@@ -116,8 +116,8 @@ normalizeArguments = (args, flagDict) ->
     # next command-line argument as its argument, create copy of the option's
     # rule with an `argument` field.
     if needsArgOpt?
-      # FIXME: use object spread when that gets merged (in #4493)
-      rules.push Object.assign({}, needsArgOpt.rule, {argument: arg})
+      withArg = Object.assign({}, needsArgOpt.rule, {argument: arg})
+      rules.push withArg
       needsArgOpt = null
       continue
 
@@ -142,8 +142,6 @@ normalizeArguments = (args, flagDict) ->
       else
         rules.push lastOpt.rule
     else if ([LONG_FLAG, SHORT_FLAG].some (pat) -> arg.match(pat)?)
-      # TODO: do we need to check if `arg` matches regex if we already check if
-      # it's in flagDict?
       singleRule = flagDict[arg]
       unless singleRule?
         throw new Error "unrecognized option #{arg}"
@@ -159,6 +157,6 @@ normalizeArguments = (args, flagDict) ->
       break
 
   if needsArgOpt?
-    throw new Error "value required for #{needsArgOpt.flag}, which was the last
+    throw new Error "value required for #{needsArgOpt.flag}, but it was the last
     argument provided"
   {rules, positional}
