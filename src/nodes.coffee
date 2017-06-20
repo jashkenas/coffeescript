@@ -1817,6 +1817,14 @@ exports.Assign = class Assign extends Base
         return @compileDestructuring o unless @variable.isAssignable()
         # Object destructuring. Can be removed once ES proposal hits Stage 4.
         return @compileObjectDestruct(o) if @variable.isObject() and @variable.contains((n) -> n instanceof Splat)
+
+      # If `@variable.base` is a property and `@value.base` is an object, 
+      # we’re destructuring; this is the left-hand side of an assignment; 
+      # let `Obj` know that, so that those nodes know that they’re 
+      # assignable as destructured variables.
+      if @variable.base instanceof PropertyName and @value.base instanceof Obj
+        @value.base.lhs = yes
+
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
       return @compileSpecialMath  o if @context in ['**=', '//=', '%%=']
@@ -1904,10 +1912,14 @@ exports.Assign = class Assign extends Base
       results = []
       restElement = no
       for prop, key in properties
-        if prop instanceof Assign and prop.value.base instanceof Obj
-          results = traverseRest prop.value.base.properties, [path..., getPropValue prop]
-        else
-          setScopeVar prop.unwrap() # Declare a variable in the scope.
+        setScopeVar prop.unwrap() # Declare a variable in the scope.
+        if prop instanceof Assign 
+          if prop.value.base instanceof Obj
+            results = traverseRest prop.value.base.properties, [path..., getPropValue prop]
+          # prop.value has default value assigned (e.g. { a: {b} = {} } );
+          # if it’s also 'Obj`, we need to traverse prop.value.variable 'properties'
+          if prop.value instanceof Assign and prop.value.variable.isObject()
+            results = traverseRest prop.value.variable.base.properties, [path..., getPropValue prop]
         if prop instanceof Splat
           prop.error "multiple rest elements are disallowed in object destructuring" if restElement
           restKey = key
