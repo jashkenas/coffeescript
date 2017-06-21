@@ -39,7 +39,9 @@ test "combined options are not split after initial file name", ->
 test "combined options are not split after a '--', which is discarded", ->
   argv = ['--', '-bc']
   parsed = optionParser.parse argv
-  expected = arguments: ['-bc']
+  expected =
+    doubleDashed: yes
+    arguments: ['-bc']
   sameOptions parsed, expected
 
   argv = ['-bc', '--', '-bc']
@@ -47,23 +49,30 @@ test "combined options are not split after a '--', which is discarded", ->
   expected =
     bare: yes
     compile: yes
+    doubleDashed: yes
     arguments: ['-bc']
   sameOptions parsed, expected
 
 test "options are not split after any '--'", ->
   argv = ['--', '--', '-bc']
   parsed = optionParser.parse argv
-  expected = arguments: ['--', '-bc']
+  expected =
+    doubleDashed: yes
+    arguments: ['--', '-bc']
   sameOptions parsed, expected
 
   argv = ['--', 'some-file.coffee', '--', 'arg']
   parsed = optionParser.parse argv
-  expected = arguments: ['some-file.coffee', '--', 'arg']
+  expected =
+    doubleDashed: yes
+    arguments: ['some-file.coffee', '--', 'arg']
   sameOptions parsed, expected
 
   argv = ['--', 'arg', 'some-file.coffee', '--', '-bc']
   parsed = optionParser.parse argv
-  expected = arguments: ['arg', 'some-file.coffee', '--', '-bc']
+  expected =
+    doubleDashed: yes
+    arguments: ['arg', 'some-file.coffee', '--', '-bc']
   sameOptions parsed, expected
 
 test "any non-option argument stops argument parsing", ->

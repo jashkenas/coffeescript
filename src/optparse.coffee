@@ -50,6 +50,10 @@ exports.OptionParser = class OptionParser
       else
         options[name] = true
 
+    if positional[0] is '--'
+      options.doubleDashed = yes
+      positional = positional[1..]
+
     options.arguments = positional
     options
 
@@ -152,8 +156,7 @@ normalizeArguments = (args, flagDict) ->
         rules.push singleRule
     else
       # This is a positional argument.
-      finalIndex = if arg is '--' then argIndex + 1 else argIndex
-      positional = args[finalIndex..]
+      positional = args[argIndex..]
       break
 
   if needsArgOpt?
