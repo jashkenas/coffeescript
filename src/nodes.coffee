@@ -335,10 +335,10 @@ exports.HoistTarget = class HoistTarget extends Base
   constructor: (@source) ->
     super()
 
-    # Holds presentational options to apply when the source node is compiled
+    # Holds presentational options to apply when the source node is compiled.
     @options = {}
 
-    # Placeholder fragments to be replaced by the source node's compilation
+    # Placeholder fragments to be replaced by the source node’s compilation.
     @targetFragments = { fragments: [] }
 
   isStatement: (o) ->
@@ -2237,7 +2237,8 @@ exports.Code = class Code extends Base
 
     body = @body.compileWithDeclarations o unless @body.isEmpty()
 
-    # We need to compile the body before method names to ensure super references are handled
+    # We need to compile the body before method names to ensure `super`
+    # references are handled.
     if @isMethod
       [methodScope, o.scope] = [o.scope, o.scope.parent]
       name = @name.compileToFragments o
