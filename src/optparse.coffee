@@ -152,7 +152,6 @@ normalizeArguments = (args, flagDict) ->
         rules.push singleRule
     else
       # This is a positional argument.
-      # TODO: should we check these with `isCoffee`?
       finalIndex = if arg is '--' then argIndex + 1 else argIndex
       positional = args[finalIndex..]
       break
