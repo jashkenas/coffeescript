@@ -648,3 +648,52 @@ test "#4544: Postfix conditionals in first line of implicit object literals", ->
     val: "hello"
     val2: "all good"
   eq a.val2, "all good"
+
+test "#4579: Postfix for/while/until in first line of implicit object literals", ->
+  two =
+    foo:
+      bar: x for x in [1, 2, 3]
+      baz: 1337
+  arrayEq [1, 2, 3], two.foo.bar
+  eq 1337, two.foo.baz
+
+  f = (x) -> x
+
+  three =
+    foo: f
+      # Uncomment when #4580 is fixed
+      # bar: x + y for x, y of a: 'b', c: 'd'
+      bar: x + 'c' for x of a: 1, b: 2
+      baz: 1337
+  arrayEq ['ac', 'bc'], three.foo.bar
+  eq 1337, three.foo.baz
+
+  four =
+    f
+      foo:
+        "bar_#{x}": x for x of a: 1, b: 2
+      baz: 1337
+  eq 'a', four.foo[0].bar_a
+  eq 'b', four.foo[1].bar_b
+  eq 1337, four.baz
+
+  x = bar: 42 for y in [1]
+  baz: 1337
+  eq x.bar, 42
+
+  i = 5
+  five =
+    foo:
+      bar: i while i-- > 0
+      baz: 1337
+  arrayEq [4, 3, 2, 1, 0], five.foo.bar
+  eq 1337, five.foo.baz
+
+  i = 5
+  six =
+    foo:
+      bar: i until i-- <= 0
+      baz: 1337
+  arrayEq [4, 3, 2, 1, 0], six.foo.bar
+  eq 1337, six.foo.baz
+
