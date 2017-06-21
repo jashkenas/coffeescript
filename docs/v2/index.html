@@ -4394,6 +4394,21 @@ $(document).ready ->
           editors[index + 1].setValue output
         , lastCompilationElapsedTime
 
+      # Fix the code editors’ handling of tab-indented code
+      editor.addKeyMap
+        'Tab': (cm) ->
+          if cm.somethingSelected()
+            cm.indentSelection 'add'
+          else if /^\t/m.test cm.getValue()
+            # If any lines start with a tab, treat this as tab-indented code
+            cm.execCommand 'insertTab'
+          else
+            cm.execCommand 'insertSoftTab'
+        'Shift-Tab': (cm) ->
+          cm.indentSelection 'subtract'
+        'Enter': (cm) ->
+          cm.options.indentWithTabs = /^\t/m.test cm.getValue()
+          cm.execCommand 'newlineAndIndent'
 
   # Handle the code example buttons
   $('[data-action="run-code-example"]').click ->
