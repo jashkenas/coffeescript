@@ -3140,35 +3140,39 @@ function time() {
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
       <textarea class="coffeescript-input" id="jsx-coffee">renderStarRating = ({ rating, maxStars }) ->
-  <aside title={"Rating: #{rating} of #{maxStars} stars"}>{
-    for wholeStars in [0...Math.floor(rating)]
-      <Star className="wholeStar" />
-    if rating % 1 isnt 0
-      <Star className="halfStar" />
-    for emptyStars in [Math.ceil(rating)...maxStars]
-      <Star className="emptyStar" />
-  }</aside>
+  <aside title={"Rating: #{rating} of #{maxStars} stars"}>
+    {for [0...Math.floor(rating)]
+      <Star className="wholeStar" />}
+    {if rating % 1 isnt 0
+      <Star className="halfStar" />}
+    {for [Math.ceil(rating)...maxStars]
+      <Star className="emptyStar" />}
+  </aside>
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="jsx-js">var renderStarRating;
 
 renderStarRating = function({rating, maxStars}) {
-  var emptyStars, wholeStars;
-  return <aside title={`Rating: ${rating} of ${maxStars} stars`}>{((function() {
-    var i, j, ref, ref1, ref2, results;
-    for (wholeStars = i = 0, ref = Math.floor(rating); 0 <= ref ? i < ref : i > ref; wholeStars = 0 <= ref ? ++i : --i) {
-      <Star className="wholeStar" />;
-    }
-    if (rating % 1 !== 0) {
-      <Star className="halfStar" />;
-    }
+  return <aside title={`Rating: ${rating} of ${maxStars} stars`}>
+    {(function() {
+    var i, ref, results;
     results = [];
-    for (emptyStars = j = ref1 = Math.ceil(rating), ref2 = maxStars; ref1 <= ref2 ? j < ref2 : j > ref2; emptyStars = ref1 <= ref2 ? ++j : --j) {
+    for (i = 0, ref = Math.floor(rating); 0 <= ref ? i < ref : i > ref; 0 <= ref ? i++ : i--) {
+      results.push(<Star className="wholeStar" />);
+    }
+    return results;
+  })()}
+    {(rating % 1 !== 0 ? <Star className="halfStar" /> : void 0)}
+    {(function() {
+    var i, ref, ref1, results;
+    results = [];
+    for (i = ref = Math.ceil(rating), ref1 = maxStars; ref <= ref1 ? i < ref1 : i > ref1; ref <= ref1 ? i++ : i--) {
       results.push(<Star className="emptyStar" />);
     }
     return results;
-  })())}</aside>;
+  })()}
+  </aside>;
 };
 </textarea>
     </div>
