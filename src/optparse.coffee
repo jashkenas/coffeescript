@@ -32,8 +32,9 @@ exports.OptionParser = class OptionParser
     # non-option argument are treated as non-option arguments themselves.
     # Optional arguments are normalized by expanding merged flags into multiple
     # flags. This allows you to have `-wl` be the same as `--watch --lint`.
-    # Note that executable scripts do not need to have a `--` at the end of the
-    # shebang (`#!`) line, and if they do, they won't work on Linux (see #3946).
+    # Note that executable scripts with a shebang (`#!`) line should use the
+    # line `#!/usr/bin/env coffee`, or `#!/absolute/path/to/coffee`, without a
+    # `--` argument after, because that will fail on Linux (see #3946).
     {rules, positional} = normalizeArguments args, @rules.flagDict
     options = {}
 
@@ -116,7 +117,7 @@ normalizeArguments = (args, flagDict) ->
     # next command-line argument as its argument, create copy of the option's
     # rule with an `argument` field.
     if needsArgOpt?
-      withArg = Object.assign({}, needsArgOpt.rule, {argument: arg})
+      withArg = Object.assign {}, needsArgOpt.rule, {argument: arg}
       rules.push withArg
       needsArgOpt = null
       continue

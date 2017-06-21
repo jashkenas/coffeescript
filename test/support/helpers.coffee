@@ -30,3 +30,5 @@ exports.eqJS = (input, expectedOutput, msg) ->
   #{reset}#{expectedOutput}#{red}
     but instead it was:
   #{reset}#{actualOutput}#{red}"""
+
+exports.isWindows = -> process.platform is 'win32'
