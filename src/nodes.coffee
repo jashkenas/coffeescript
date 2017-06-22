@@ -1215,6 +1215,17 @@ exports.Obj = class Obj extends Base
     idt        = o.indent += TAB
     lastNoncom = @lastNonComment @properties
 
+    # If this object is the left-hand side of an assignment, all its children
+    # are too.
+    if @lhs
+      for prop in props when prop instanceof Assign
+        {value} = prop
+        unwrappedVal = value.unwrapAll()
+        if unwrappedVal instanceof Arr or unwrappedVal instanceof Obj
+          unwrappedVal.lhs = yes
+        else if unwrappedVal instanceof Assign
+          unwrappedVal.nestedLhs = yes
+
     isCompact = yes
     for prop in @properties
       if prop instanceof Comment or (prop instanceof Assign and prop.context is 'object' and not @csx)
@@ -1358,6 +1369,10 @@ exports.Class = class Class extends Base
       # Anonymous classes are only valid in expressions
       node = new Parens node
 
+    if @boundMethods.length and @parent
+      @variable ?= new IdentifierLiteral o.scope.freeVariable '_class'
+      [@variable, @variableRef] = @variable.cache o unless @variableRef?
+
     if @variable
       node = new Assign @variable, node, null, { @moduleDeclaration }
 
@@ -1368,8 +1383,10 @@ exports.Class = class Class extends Base
       delete @compileNode
 
   compileClassDeclaration: (o) ->
-    @ctor ?= @makeDefaultConstructor() if @externalCtor
+    @ctor ?= @makeDefaultConstructor() if @externalCtor or @boundMethods.length
     @ctor?.noReturn = true
+
+    @proxyBoundMethods() if @boundMethods.length
 
     o.indent += TAB
 
@@ -1406,6 +1423,7 @@ exports.Class = class Class extends Base
 
   walkBody: ->
     @ctor          = null
+    @boundMethods  = []
     executableBody = null
 
     initializer     = []
@@ -1451,6 +1469,8 @@ exports.Class = class Class extends Base
         @ctor = method
       else if method.isStatic and method.bound
         method.context = @name
+      else if method.bound
+        @boundMethods.push method
 
     if initializer.length isnt expressions.length
       @body.expressions = (expression.hoist() for expression in initializer)
@@ -1488,7 +1508,7 @@ exports.Class = class Class extends Base
       method.name = new (if methodName.shouldCache() then Index else Access) methodName
       method.name.updateLocationDataIfMissing methodName.locationData
       method.ctor = (if @parent then 'derived' else 'base') if methodName.value is 'constructor'
-      method.error 'Methods cannot be bound functions' if method.bound
+      method.error 'Cannot define a constructor as a bound (fat arrow) function' if method.bound and method.ctor
 
     method
 
@@ -1506,6 +1526,15 @@ exports.Class = class Class extends Base
       ctor.body.makeReturn()
 
     ctor
+
+  proxyBoundMethods: ->
+    @ctor.thisAssignments = for method in @boundMethods
+      method.classVariable = @variableRef if @parent
+
+      name = new Value(new ThisLiteral, [ method.name ])
+      new Assign name, new Call(new Value(name, [new Access new PropertyName 'bind']), [new ThisLiteral])
+
+    null
 
 exports.ExecutableClassBody = class ExecutableClassBody extends Base
   children: [ 'class', 'body' ]
@@ -1590,7 +1619,7 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
     @body.traverseChildren false, (node) =>
       if node instanceof ThisLiteral
         node.value   = @name
-      else if node instanceof Code and node.bound
+      else if node instanceof Code and node.bound and node.isStatic
         node.context = @name
 
   # Make class/prototype assignments for invalid ES properties
@@ -1860,7 +1889,7 @@ exports.Assign = class Assign extends Base
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
     # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration,
     # if we’re destructuring without declaring, the destructuring assignment must be wrapped in parentheses.
-    if o.level > LEVEL_LIST or (isValue and @variable.base instanceof Obj and not @param)
+    if o.level > LEVEL_LIST or (isValue and @variable.base instanceof Obj and not @nestedLhs and not @param)
       @wrapInParentheses answer
     else
       answer
@@ -2230,6 +2259,9 @@ exports.Code = class Code extends Base
     wasEmpty = @body.isEmpty()
     @body.expressions.unshift thisAssignments... unless @expandCtorSuper thisAssignments
     @body.expressions.unshift exprs...
+    if @isMethod and @bound and not @isStatic and @classVariable
+      boundMethodCheck = new Value new Literal utility 'boundMethodCheck', o
+      @body.expressions.unshift new Call(boundMethodCheck, [new Value(new ThisLiteral), @classVariable])
     @body.makeReturn() unless wasEmpty or @noReturn
 
     # Assemble the output
@@ -3200,6 +3232,13 @@ exports.If = class If extends Base
 
 UTILITIES =
   modulo: -> 'function(a, b) { return (+a % (b = +b) + b) % b; }'
+  boundMethodCheck: -> "
+    function(instance, Constructor) {
+      if (!(instance instanceof Constructor)) {
+        throw new Error('Bound instance method accessed before binding');
+      }
+    }
+  "
 
   # Shortcuts to speed up the lookup time for native functions.
   hasProp: -> '{}.hasOwnProperty'

@@ -222,9 +222,11 @@ exports.Rewriter = class Rewriter
         return no unless nextTerminatorIdx?
         @looksObjectish nextTerminatorIdx + 1
 
-      # Don’t end an implicit call on next indent if any of these are in an argument
-      if inImplicitCall() and tag in ['IF', 'TRY', 'FINALLY', 'CATCH',
-        'CLASS', 'SWITCH']
+      # Don’t end an implicit call/object on next indent if any of these are in an argument/value.
+      if (
+        (inImplicitCall() or inImplicitObject()) and tag in CONTROL_IN_IMPLICIT or
+        inImplicitObject() and prevTag is ':' and tag is 'FOR'
+      )
         stack.push ['CONTROL', i, ours: yes]
         return forward(1)
 
@@ -235,7 +237,11 @@ exports.Rewriter = class Rewriter
         #  1. We have seen a `CONTROL` argument on the line.
         #  2. The last token before the indent is part of the list below.
         if prevTag not in ['=>', '->', '[', '(', ',', '{', 'ELSE', '=']
-          endImplicitCall() while inImplicitCall()
+          while inImplicitCall() or inImplicitObject() and prevTag isnt ':'
+            if inImplicitCall()
+              endImplicitCall()
+            else
+              endImplicitObject()
         stack.pop() if inImplicitControl()
         stack.push [tag, i]
         return forward(1)
@@ -302,9 +308,6 @@ exports.Rewriter = class Rewriter
           else i - 1
         s -= 2 while @tag(s - 2) is 'HERECOMMENT'
 
-        # Mark if the value is a for loop.
-        @insideForDeclaration = nextTag is 'FOR'
-
         startsLine = s is 0 or @tag(s - 1) in LINEBREAKS or tokens[s - 1].newLine
         # Are we just continuing an already declared object?
         if stackTop()
@@ -345,9 +348,9 @@ exports.Rewriter = class Rewriter
             endImplicitCall()
           # Close implicit objects such as:
           # return a: 1, b: 2 unless true
-          else if inImplicitObject() and not @insideForDeclaration and sameLine and
+          else if inImplicitObject() and sameLine and
                   tag isnt 'TERMINATOR' and prevTag isnt ':' and
-                  not (tag is 'POST_IF' and startsLine and implicitObjectContinues(i + 1))
+                  not (tag in ['POST_IF', 'FOR', 'WHILE', 'UNTIL'] and startsLine and implicitObjectContinues(i + 1))
             endImplicitObject()
           # Close implicit objects when at end of line, line didn't end with a comma
           # and the implicit object didn't start the line or the next line doesn’t look like
@@ -373,7 +376,6 @@ exports.Rewriter = class Rewriter
       #     f a, b: c, d: e, f, g: h: i, j
       #
       if tag is ',' and not @looksObjectish(i + 1) and inImplicitObject() and
-         not @insideForDeclaration and
          (nextTag isnt 'TERMINATOR' or not @looksObjectish(i + 2))
         # When nextTag is OUTDENT the comma is insignificant and
         # should just be ignored so embed it in the implicit object.
@@ -622,6 +624,9 @@ LINEBREAKS       = ['TERMINATOR', 'INDENT', 'OUTDENT']
 
 # Tokens that close open calls when they follow a newline.
 CALL_CLOSERS     = ['.', '?.', '::', '?::']
+
+# Tokens that prevent a subsequent indent from ending implicit calls/objects
+CONTROL_IN_IMPLICIT = ['IF', 'TRY', 'FINALLY', 'CATCH', 'CLASS', 'SWITCH']
 
 # Tokens that are swallowed up by the parser, never leading to code generation.
 # You can spot these in `grammar.coffee` because the `o` function second
