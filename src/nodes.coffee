@@ -111,11 +111,23 @@ exports.Base = class Base
     for comment in node.comments when comment not in @compiledComments
       @compiledComments.push comment # Don’t output this comment twice.
       if comment.here
-        hasLeadingMarks = /\n\s*[#|\*]/.test comment.content
-        comment.content = comment.content.replace /^(\s*)#(?=\s)/gm, '$1 *'
-        code = "/*#{comment.content}#{if hasLeadingMarks then ' ' else ''}*/"
-        code = o.indent + code if o.level is LEVEL_TOP
-        code = @tab + code if comment.unshift
+        code = comment.content
+        multiline = '\n' in code
+        hasLeadingMarks = /\n\s*[#|\*]/.test code
+        if hasLeadingMarks
+          code = code.replace /^([ \t]*)#(?=\s)/gm, '$1 *'
+        # Unindent multiline comments.
+        if multiline
+          largestIndent = ''
+          for line in code.split '\n'
+            leadingWhitespace = /^\s*/.exec(line)[0]
+            if leadingWhitespace.length > largestIndent.length
+              largestIndent = leadingWhitespace
+          code = code.replace ///^(#{leadingWhitespace})///gm, ''
+          # Reindent by the indent of this block.
+          code = multident(code, @tab) + "\n#{@tab}"
+        code = "/*#{code}#{if hasLeadingMarks then ' ' else ''}*/"
+        code = @tab + code if o.level is LEVEL_TOP
         code = code + '\n' if comment.newLine
         commentFragment = @makeCode code
         commentFragment.comment = comment
@@ -652,6 +664,7 @@ exports.Return = class Return extends Base
       # move the comment before the `return` so that JavaScript doesn’t infer
       # a semicolon between the `return` and the comment.
       if fragments[0].comment and '\n' in fragments[0].code
+        fragments[0].code = @tab + fragments[0].code
         answer.push fragments.shift()
       answer.push @makeCode "#{@tab}return "
       answer = answer.concat fragments
@@ -2254,7 +2267,7 @@ exports.Code = class Code extends Base
     answer.push @makeCode('\n'), body..., @makeCode("\n#{@tab}") if body?.length
     answer.push @makeCode '}'
 
-    return [@makeCode(@tab), answer...] if @isMethod
+    return indentFirstNonCommentLine answer, @ if @isMethod
     if @front or (o.level >= LEVEL_ACCESS) then @wrapInParentheses answer else answer
 
   eachParamName: (iterator) ->
@@ -3224,6 +3237,14 @@ utility = (name, o) ->
 multident = (code, tab) ->
   code = code.replace /\n/g, "$&#{tab}"
   code.replace /\s+$/, ''
+
+# Insert `node.tab` before the first fragment that isn’t a comment that starts
+# a new line.
+indentFirstNonCommentLine = (fragments, node) ->
+  for fragment, i in fragments when not fragment.comment?.newLine
+    fragments.splice i, 0, node.makeCode "#{node.tab}"
+    break
+  fragments
 
 isLiteralArguments = (node) ->
   node instanceof IdentifierLiteral and node.value is 'arguments'
