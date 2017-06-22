@@ -61,10 +61,14 @@ notSources   = {}
 watchedDirs  = {}
 optionParser = null
 
+exports.buildCSOptionParser = buildCSOptionParser = ->
+  new optparse.OptionParser SWITCHES, BANNER
+
 # Run `coffee` by parsing passed options and determining what action to take.
 # Many flags cause us to divert before compiling anything. Flags passed after
 # `--` will be passed verbatim to your script as arguments in `process.argv`
 exports.run = ->
+  optionParser = buildCSOptionParser()
   parseOptions()
   # Make the REPL *CLI* use the global context so as to (a) be consistent with the
   # `node` REPL CLI and, therefore, (b) make packages that modify native prototypes
@@ -400,7 +404,6 @@ printTokens = (tokens) ->
 # Use the [OptionParser module](optparse.html) to extract all options from
 # `process.argv` that are specified in `SWITCHES`.
 parseOptions = ->
-  optionParser  = new optparse.OptionParser SWITCHES, BANNER
   o = opts      = optionParser.parse process.argv[2..]
   o.compile     or=  !!o.output
   o.run         = not (o.compile or o.print or o.map)
@@ -449,7 +452,7 @@ forkNode = ->
 # Print the `--help` usage message and exit. Deprecated switches are not
 # shown.
 usage = ->
-  printLine (new optparse.OptionParser SWITCHES, BANNER).help()
+  printLine optionParser.help()
 
 # Print the `--version` message and exit.
 version = ->

@@ -1175,6 +1175,17 @@ exports.Obj = class Obj extends Base
     idt        = o.indent += TAB
     lastNoncom = @lastNonComment @properties
 
+    # If this object is the left-hand side of an assignment, all its children
+    # are too.
+    if @lhs
+      for prop in props when prop instanceof Assign
+        {value} = prop
+        unwrappedVal = value.unwrapAll()
+        if unwrappedVal instanceof Arr or unwrappedVal instanceof Obj
+          unwrappedVal.lhs = yes
+        else if unwrappedVal instanceof Assign
+          unwrappedVal.nestedLhs = yes
+
     isCompact = yes
     for prop in @properties
       if prop instanceof Comment or (prop instanceof Assign and prop.context is 'object' and not @csx)
@@ -1818,13 +1829,6 @@ exports.Assign = class Assign extends Base
         # Object destructuring. Can be removed once ES proposal hits Stage 4.
         return @compileObjectDestruct(o) if @variable.isObject() and @variable.contains((n) -> n instanceof Splat)
 
-      # If `@variable.base` is a property and `@value.base` is an object, 
-      # we’re destructuring; this is the left-hand side of an assignment; 
-      # let `Obj` know that, so that those nodes know that they’re 
-      # assignable as destructured variables.
-      if @variable.base instanceof PropertyName and @value.base instanceof Obj
-        @value.base.lhs = yes
-
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
       return @compileSpecialMath  o if @context in ['**=', '//=', '%%=']
@@ -1867,7 +1871,7 @@ exports.Assign = class Assign extends Base
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
     # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration,
     # if we’re destructuring without declaring, the destructuring assignment must be wrapped in parentheses.
-    if o.level > LEVEL_LIST or (o.level < LEVEL_LIST and isValue and @variable.base instanceof Obj and not @param)
+    if o.level > LEVEL_LIST or (isValue and @variable.base instanceof Obj and not @nestedLhs and not @param)
       @wrapInParentheses answer
     else
       answer
