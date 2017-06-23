@@ -11,11 +11,13 @@
 moveComments = (fromToken, toToken) ->
   return unless fromToken.comments
   if toToken.comments and toToken.comments.length isnt 0
+    unshiftedComments = []
     for comment in fromToken.comments
       if comment.unshift
-        toToken.comments.unshift comment
+        unshiftedComments.push comment
       else
         toToken.comments.push comment
+    toToken.comments = unshiftedComments.concat toToken.comments
   else
     toToken.comments = fromToken.comments
   delete fromToken.comments
