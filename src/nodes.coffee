@@ -114,8 +114,8 @@ exports.Base = class Base
         code = comment.content
         multiline = '\n' in code
         hasLeadingMarks = /\n\s*[#|\*]/.test code
-        if hasLeadingMarks
-          code = code.replace /^([ \t]*)#(?=\s)/gm, '$1 *'
+        code = code.replace /^([ \t]*)#(?=\s)/gm, ' *' if hasLeadingMarks
+
         # Unindent multiline comments.
         if multiline
           largestIndent = ''
@@ -124,13 +124,12 @@ exports.Base = class Base
             if leadingWhitespace.length > largestIndent.length
               largestIndent = leadingWhitespace
           code = code.replace ///^(#{leadingWhitespace})///gm, ''
-          # Reindent by the indent of this block.
-          code = multident(code, @tab) + "\n#{@tab}"
+
         code = "/*#{code}#{if hasLeadingMarks then ' ' else ''}*/"
-        code = @tab + code if o.level is LEVEL_TOP
         code = code + '\n' if comment.newLine
         commentFragment = @makeCode code
         commentFragment.comment = comment
+        commentFragment.multiline = yes
         commentFragment.suppressTrailingSemicolon = yes
         if comment.unshift
           fragments.unshift commentFragment
@@ -456,13 +455,13 @@ exports.Block = class Block extends Base
         # We want to compile this and ignore the result.
         node.compileToFragments o
       else if top
-        node.front = true
+        node.front = yes
         fragments = node.compileToFragments o
         unless node.isStatement o
+          fragments = indentInitial fragments, @
           [..., lastFragment] = fragments
-          unless lastFragment.code is ''
-            fragments.unshift @makeCode "#{@tab}"
-            fragments.push @makeCode ';' unless lastFragment.suppressTrailingSemicolon
+          unless lastFragment.code is '' or lastFragment.suppressTrailingSemicolon
+            fragments.push @makeCode ';'
         compiledNodes.push fragments
       else
         compiledNodes.push node.compileToFragments o, LEVEL_LIST
@@ -663,9 +662,13 @@ exports.Return = class Return extends Base
       # If the `return` is followed by a block comment that contains a newline,
       # move the comment before the `return` so that JavaScript doesn’t infer
       # a semicolon between the `return` and the comment.
-      if fragments[0].comment and '\n' in fragments[0].code
-        fragments[0].code = @tab + fragments[0].code
-        answer.push fragments.shift()
+      for fragment, i in fragments
+        if fragment?.comment and fragment.multiline
+          fragment.code = multident fragment.code, @tab
+          answer.push fragment
+        else
+          break
+      fragments = fragments[i...]
       answer.push @makeCode "#{@tab}return "
       answer = answer.concat fragments
     else
@@ -2299,7 +2302,7 @@ exports.Code = class Code extends Base
     answer.push @makeCode('\n'), body..., @makeCode("\n#{@tab}") if body?.length
     answer.push @makeCode '}'
 
-    return indentFirstNonCommentLine answer, @ if @isMethod
+    return indentInitial answer, @ if @isMethod
     if @front or (o.level >= LEVEL_ACCESS) then @wrapInParentheses answer else answer
 
   eachParamName: (iterator) ->
@@ -3274,15 +3277,27 @@ utility = (name, o) ->
     root.utilities[name] = ref
 
 multident = (code, tab) ->
-  code = code.replace /\n/g, "$&#{tab}"
-  code.replace /\s+$/, ''
+  endsWithNewLine = code[code.length - 1] is '\n'
+  code = tab + code.replace /\n/g, "$&#{tab}"
+  code = code.replace /\s+$/, ''
+  code = code + '\n' if endsWithNewLine
+  code
 
-# Insert `node.tab` before the first fragment that isn’t a comment that starts
-# a new line.
-indentFirstNonCommentLine = (fragments, node) ->
-  for fragment, i in fragments when not fragment.comment?.newLine
-    fragments.splice i, 0, node.makeCode "#{node.tab}"
-    break
+# Wherever in CoffeeScript 1 we might’ve inserted a `makeCode "#{@tab}"` to
+# indent a line of code, now we must account for the possibility of comments
+# preceding that line of code. If there are such comments, indent each line of
+# such comments, and _then_ indent the first following line of code.
+indentInitial = (fragments, node) ->
+  for fragment, i in fragments
+    if fragment.comment?
+      fragment.code = multident fragment.code, node.tab
+    else if fragment.code is '' # Placeholder token to hold initial comments.
+      # TODO: Remove this `else` when we start outputting line comments, to
+      # allow the line comment to get the indentation of the following line.
+      break
+    else
+      fragments.splice i, 0, node.makeCode "#{node.tab}"
+      break
   fragments
 
 isLiteralArguments = (node) ->

@@ -314,61 +314,57 @@ test "#3132: Format hand-made (raw) jsdoc-style block-comment nicely", ->
     return 1;
   };"""
 
-# # Although adequately working, block comment-placement is not yet perfect.
-# # (Considering a case where multiple variables have been declared …)
-# test "#3132: Place block-comments nicely", ->
-#   eqJS """
-#   ###*
-#   # A dummy class definition
-#   #
-#   # @class
-#   ###
-#   class DummyClass
+# Although adequately working, block comment-placement is not yet perfect.
+# (Considering a case where multiple variables have been declared …)
+test "#3132: Place block-comments nicely", ->
+  eqJS """
+  ###*
+  # A dummy class definition
+  #
+  # @class
+  ###
+  class DummyClass
 
-#     ###*
-#     # @constructor
-#     ###
-#     constructor: ->
+    ###*
+    # @constructor
+    ###
+    constructor: ->
 
-#     ###*
-#     # Singleton reference
-#     #
-#     # @type {DummyClass}
-#     ###
-#     @instance = new DummyClass()
+    ###*
+    # Singleton reference
+    #
+    # @type {DummyClass}
+    ###
+    @instance = new DummyClass()
 
-#   """,
-#   """
-#   /**
-#    * A dummy class definition
-#    *
-#    * @class
-#    */
-#   var DummyClass;
+  """,
+  """
+  /**
+   * A dummy class definition
+   *
+   * @class
+   */
+  var DummyClass;
 
-#   DummyClass = (function() {
-#     class DummyClass {
+  DummyClass = (function() {
+    class DummyClass {
+      /**
+       * @constructor
+       */
+      constructor() {}
 
-#       /**
-#        * @constructor
-#        */
+    };
 
-#       constructor() {}
+    /**
+     * Singleton reference
+     *
+     * @type {DummyClass}
+     */
+    DummyClass.instance = new DummyClass();
 
-#     };
+    return DummyClass;
 
-
-#     /**
-#      * Singleton reference
-#      *
-#      * @type {DummyClass}
-#      */
-
-#     DummyClass.instance = new DummyClass();
-
-#     return DummyClass;
-
-#   })();"""
+  })();"""
 
 test "#3638: Demand a whitespace after # symbol", ->
   eqJS """
