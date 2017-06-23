@@ -424,32 +424,22 @@ exports.Rewriter = class Rewriter
       return 1 unless token.comments and not token.generated
       if token[0] in DISCARDED
         return shiftCommentsForward token, i, tokens
-      else if i isnt 0 and token[0] is 'IDENTIFIER' and tokens[i - 1][0] in ['CLASS', 'EXTENDS']
-        # If this is a comment following `class ClassName` or
-        # `class Child extends Parent`, shift it forward to precede the next
-        # valid token, rather than following this one but ending up outside
-        # the class wrapper.
-        return shiftCommentsForward token, i + 1, tokens
       else
-        # If any of this token’s comments start a line, i.e. there’s only
+        # If any of this token’s comments start a line—there’s only
         # whitespace between the preceding newline and the start of the
-        # comment; *and* the comment would abut code either to the right
-        # (if it has `unshift`) or to the left; shift the comments.
+        # comment—and the *next* token isn’t a line break, then
+        # shift this comment forward to precede the next valid token.
+        # We move this to follow the line break so that this unshifted
+        # comment is output as starting a line.
         dummyToken = comments: []
         j = token.comments.length - 1
         until j is -1
-          if token.comments[j].newLine and ((
-              token.comments[j].unshift is yes and
-              i isnt tokens.length - 1 and tokens[i + 1][0] not in LINEBREAKS
-            ) or (
-              token.comments[j].unshift isnt yes and
-              i isnt 0 and tokens[i - 1][0] not in LINEBREAKS
-            ))
+          if token.comments[j].newLine and not token.comments[j].unshift and tokens[i + 1]?[0] in LINEBREAKS
             dummyToken.comments.unshift token.comments[j]
             token.comments.splice j, 1
           j--
         if dummyToken.comments.length isnt 0
-          return shiftCommentsForward dummyToken, i, tokens
+          return shiftCommentsForward dummyToken, i + 1, tokens
         else
           return 1
 
