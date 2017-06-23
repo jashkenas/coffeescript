@@ -172,11 +172,11 @@ grammar =
     o 'AlphaNumeric'
     o 'JS',                                     -> new PassthroughLiteral $1
     o 'Regex'
-    o 'UNDEFINED',                              -> new UndefinedLiteral
-    o 'NULL',                                   -> new NullLiteral
+    o 'UNDEFINED',                              -> new UndefinedLiteral $1
+    o 'NULL',                                   -> new NullLiteral $1
     o 'BOOL',                                   -> new BooleanLiteral $1
     o 'INFINITY',                               -> new InfinityLiteral $1
-    o 'NAN',                                    -> new NaNLiteral
+    o 'NAN',                                    -> new NaNLiteral $1
   ]
 
   # Assignment of a variable, property, or index to a value.
@@ -448,8 +448,8 @@ grammar =
 
   # A reference to the *this* current object.
   This: [
-    o 'THIS',                                   -> new Value new ThisLiteral
-    o '@',                                      -> new Value new ThisLiteral
+    o 'THIS',                                   -> new Value new ThisLiteral $1
+    o '@',                                      -> new Value new ThisLiteral $1
   ]
 
   # A reference to a property on *this*.
