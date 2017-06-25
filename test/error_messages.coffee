@@ -1319,3 +1319,37 @@ test "#4248: Unicode code point escapes", ->
     '\\u{a}\\u{1111110000}'
       \    ^\^^^^^^^^^^^^^
   '''
+
+test "#3906: error for unusual indentation", ->
+  assertErrorFormat '''
+    a('b')
+      .c 'a',
+        {b: 'a'}
+      .c()
+    a(
+      'b'
+    )
+    1
+  ''', '''
+    [stdin]:8:2: error: missing OUTDENT
+    1
+     ^
+  '''
+
+test "#3906: error for unusual indentation", ->
+  assertErrorFormat '''
+    a
+        .b ->
+            c
+        .d
+
+    e(
+        f
+    )
+
+    g
+  ''', '''
+    [stdin]:10:2: error: missing OUTDENT
+    g
+     ^
+  '''
