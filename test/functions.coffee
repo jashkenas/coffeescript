@@ -378,3 +378,27 @@ test "#1043: comma after function glyph", ->
   eq g, undefined
   h = f(=>, 2)
   eq h, undefined
+
+test "#3845/#3446: chain after function glyph", ->
+  angular = module: -> controller: -> controller: ->
+
+  eq undefined,
+    angular.module 'foo'
+    .controller 'EmailLoginCtrl', ->
+    .controller 'EmailSignupCtrl', ->
+
+  beforeEach = (f) -> f()
+  getPromise = -> then: -> catch: ->
+
+  eq undefined,
+    beforeEach ->
+      getPromise()
+      .then (@result) =>
+      .catch (@error) =>
+
+  doThing = -> then: -> catch: (f) -> f()
+  handleError = -> 3
+  eq 3,
+    doThing()
+    .then (@result) =>
+    .catch handleError
