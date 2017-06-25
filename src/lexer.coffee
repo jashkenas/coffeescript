@@ -442,7 +442,7 @@ exports.Lexer = class Lexer
     while moveOut > 0
       lastIndent = @indents[@indents.length - 1]
       if not lastIndent
-        moveOut = 0
+        @outdebt = moveOut = 0
       else if @outdebt and moveOut <= @outdebt
         @outdebt -= moveOut
         moveOut   = 0
