@@ -376,5 +376,5 @@ test "#1043: comma after function glyph", ->
   f = (a) -> a()
   g = f ->, 2
   eq g, undefined
-  h = f(->, 2)
+  h = f(=>, 2)
   eq h, undefined
