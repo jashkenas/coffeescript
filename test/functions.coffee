@@ -367,3 +367,14 @@ test "#4566: destructuring with nested default values", ->
   f = ({a: {b = 1}}) ->
     b
   eq 2, f a: b: 2
+
+test "#1043: comma after function glyph", ->
+  x = (a=->, b=2) ->
+    a()
+  eq x(), undefined
+
+  f = (a) -> a()
+  g = f ->, 2
+  eq g, undefined
+  h = f(->, 2)
+  eq h, undefined
