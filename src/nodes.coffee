@@ -110,13 +110,13 @@ exports.Base = class Base
   compileComments: (o, node, fragments) ->
     for comment in node.comments when comment not in @compiledComments
       @compiledComments.push comment # Don’t output this comment twice.
-      if comment.here
+      if comment.here # Comment delimited by `###`.
         code = comment.content
         multiline = '\n' in code
         hasLeadingMarks = /\n\s*[#|\*]/.test code
         code = code.replace /^([ \t]*)#(?=\s)/gm, ' *' if hasLeadingMarks
 
-        # Unindent multiline comments.
+        # Unindent multiline comments. They will be reindented later.
         if multiline
           largestIndent = ''
           for line in code.split '\n'
@@ -126,10 +126,10 @@ exports.Base = class Base
           code = code.replace ///^(#{leadingWhitespace})///gm, ''
 
         code = "/*#{code}#{if hasLeadingMarks then ' ' else ''}*/"
-        code = code + '\n' if comment.newLine
+        code = "#{code}\n" if comment.newLine
         commentFragment = @makeCode code
         commentFragment.comment = comment
-        commentFragment.multiline = yes
+        commentFragment.multiline = multiline
         commentFragment.suppressTrailingSemicolon = yes
         if comment.unshift
           fragments.unshift commentFragment

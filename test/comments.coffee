@@ -52,14 +52,14 @@ test "comments in functions", ->
     false
     # comment
 
-  # comment
+  # comment before return
     true
 
   ok fn()
 
   fn2 = -> #comment
     fn()
-    # comment
+    # comment after return
 
   ok fn2()
 
