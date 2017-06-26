@@ -1600,3 +1600,13 @@ test 'Bound method called as callback before binding throws runtime error', ->
     derivedBound: =>
       ok no
   d = new Derived
+
+test "#3845/#3446: chain after function glyph (but not inline)", ->
+  assertErrorFormat '''
+    a -> .b
+  ''',
+  '''
+    [stdin]:1:6: error: unexpected .
+    a -> .b
+         ^
+  '''
