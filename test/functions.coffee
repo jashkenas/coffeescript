@@ -184,18 +184,18 @@ test "destructuring in function definition", ->
   }
 
 test "rest element destructuring in function definition", ->
-  obj = {a:1, b:2, c:3, d:4, e:5}
+  obj = {a: 1, b: 2, c: 3, d: 4, e: 5}
 
   (({a, b, r...}) ->
     eq 1, a
     eq 2, b,
-    deepEqual r, {c:3, d:4, e:5}
+    deepEqual r, {c: 3, d: 4, e: 5}
   ) obj
 
-  (({a:p, b, r...}, q) ->
+  (({a: p, b, r...}, q) ->
     eq p, 1
     eq q, 9
-    deepEqual r, {c:3, d:4, e:5}
+    deepEqual r, {c: 3, d: 4, e: 5}
   ) {a:1, b:2, c:3, d:4, e:5}, 9
 
   a1={}; b1={}; c1={}; d1={}
@@ -213,11 +213,11 @@ test "rest element destructuring in function definition", ->
     b2: {b1, c1}
   }
 
-  (({a:w, b:{c:{d:{b1:bb, r1...}}}, r2...}) ->
+  (({a: w, b: {c: {d: {b1: bb, r1...}}}, r2...}) ->
     eq a1, w
     eq bb, b1
     eq r2.b, undefined
-    deepEqual r1, {e:c1, f:d1}
+    deepEqual r1, {e: c1, f: d1}
     deepEqual r2.b2, {b1, c1}
   ) obj1
 
@@ -233,19 +233,19 @@ test "rest element destructuring in function definition", ->
 
   (({a, r...} = {}) ->
     eq a, 1
-    deepEqual r, {b:2, c:3}
-  ) {a:1, b:2, c:3}
+    deepEqual r, {b: 2, c: 3}
+  ) {a: 1, b: 2, c: 3}
 
   f = ({a, r...} = {}) -> [a, r]
   deepEqual [undefined, {}], f()
-  deepEqual [1, {b:2}], f {a:1, b:2}
-  deepEqual [1, {}], f {a:1}
+  deepEqual [1, {b: 2}], f {a: 1, b: 2}
+  deepEqual [1, {}], f {a: 1}
 
-  f = ({a, r...} = {a:1, b:2}) -> [a, r]
+  f = ({a, r...} = {a: 1, b: 2}) -> [a, r]
   deepEqual [1, {b:2}], f()
   deepEqual [2, {}], f {a:2}
   deepEqual [3, {c:5}], f {a:3, c:5}
-  
+
 test "#4005: `([a = {}]..., b) ->` weirdness", ->
   fn = ([a = {}]..., b) -> [a, b]
   deepEqual fn(5), [{}, 5]

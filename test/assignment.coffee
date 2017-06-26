@@ -236,7 +236,7 @@ test "destructuring assignment against an expression", ->
   eq b, z
 
 test "destructuring assignment with objects and splats: ES2015", ->
-  obj = {a:1, b:2, c:3, d:4, e:5}
+  obj = {a: 1, b: 2, c: 3, d: 4, e: 5}
   throws (-> CoffeeScript.compile "{a, r..., s...} = x"), null, "multiple rest elements are disallowed"
   throws (-> CoffeeScript.compile "{a, r..., s..., b} = x"), null, "multiple rest elements are disallowed"
   prop = "b"
@@ -245,12 +245,12 @@ test "destructuring assignment with objects and splats: ES2015", ->
   eq b, 2
   eq r.e, obj.e
   eq r.a, undefined
-  {d, c:x, r...} = obj
+  {d, c: x, r...} = obj
   eq x, 3
   eq d, 4
   eq r.c, undefined
   eq r.b, 2
-  {a, 'b':z, g = 9, r...} = obj
+  {a, 'b': z, g = 9, r...} = obj
   eq g, 9
   eq z, 2
   eq r.b, undefined
@@ -288,51 +288,51 @@ test "deep destructuring assignment with objects: ES2015", ->
     }
     b2: {b1, c1}
   }
-  {a:w, b:{c:{d:{b1:bb, r1...}}}, r2...} = obj
+  {a: w, b: {c: {d: {b1: bb, r1...}}}, r2...} = obj
   eq r1.e, c1
   eq r2.b, undefined
   eq bb, b1
   eq r2.b2, obj.b2
 
 test "object spread properties: ES2015", ->
-  obj = {a:1, b:2, c:3, d:4, e:5}
+  obj = {a: 1, b: 2, c: 3, d: 4, e: 5}
   obj2 = {obj..., c:9}
   eq obj2.c, 9
   eq obj.a, obj2.a
 
-  obj2 = {obj..., a:8, c:9, obj...}
+  obj2 = {obj..., a: 8, c: 9, obj...}
   eq obj2.c, 3
   eq obj.a, obj2.a
 
-  obj3 = {obj..., b:7, g:{obj2..., c:1}}
+  obj3 = {obj..., b: 7, g: {obj2..., c: 1}}
   eq obj3.g.c, 1
   eq obj3.b, 7
-  deepEqual obj3.g, {obj..., c:1}
+  deepEqual obj3.g, {obj..., c: 1}
 
   (({a, b, r...}) ->
     eq 1, a
-    deepEqual r, {c:3, d:44, e:55}
-  ) {obj2..., d:44, e:55}
+    deepEqual r, {c: 3, d: 44, e: 55}
+  ) {obj2..., d: 44, e: 55}
 
-  obj = {a:1, b:2, c:{d:3, e:4, f:{g:5}}}
-  obj4 = {a:10, obj.c...}
+  obj = {a: 1, b: 2, c: {d: 3, e: 4, f: {g: 5}}}
+  obj4 = {a: 10, obj.c...}
   eq obj4.a, 10
   eq obj4.d, 3
   eq obj4.f.g, 5
   deepEqual obj4.f, obj.c.f
 
-  obj5 = {obj..., ((k) -> {b:k})(99)...}
+  obj5 = {obj..., ((k) -> {b: k})(99)...}
   eq obj5.b, 99
   deepEqual obj5.c, obj.c
 
-  fn = -> {c:{d:33, e:44, f:{g:55}}}
+  fn = -> {c: {d: 33, e: 44, f: {g: 55}}}
   obj6 = {obj..., fn()...}
   eq obj6.c.d, 33
-  deepEqual obj6.c, {d:33, e:44, f:{g:55}}
+  deepEqual obj6.c, {d: 33, e: 44, f: {g: 55}}
 
-  obj7 = {obj..., fn()..., {c:{d:55, e:66, f:{77}}}...}
+  obj7 = {obj..., fn()..., {c: {d: 55, e: 66, f: {77}}}...}
   eq obj7.c.d, 55
-  deepEqual obj6.c, {d:33, e:44, f:{g:55}}
+  deepEqual obj6.c, {d: 33, e: 44, f: {g: 55}}
 
 test "bracket insertion when necessary", ->
   [a] = [0] ? [1]
