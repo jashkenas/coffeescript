@@ -1169,7 +1169,6 @@ exports.Obj = class Obj extends Base
         node.error 'cannot have an implicit value in an implicit object'
 
     # Object spread properties. https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md
-    # `obj2 = {a: 1, obj..., c: 3, d: 4} => obj2 = Object.assign({}, {a: 1}, obj1, {c: 3, d: 4})`
     return @compileSpread o if @hasSplat()
 
     idt        = o.indent += TAB
@@ -1244,7 +1243,7 @@ exports.Obj = class Obj extends Base
       prop.eachName iterator if prop.eachName?
 
   # Object spread properties. https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md
-  # `obj2 = {a: 1, obj..., c: 3, d: 4} => obj2 = Object.assign({}, {a: 1}, obj1, {c: 3, d: 4})`
+  # `obj2 = {a: 1, obj..., c: 3, d: 4}` → `obj2 = Object.assign({}, {a: 1}, obj, {c: 3, d: 4})`
   compileSpread: (o) ->
     props = @properties
     # Store object spreads.
