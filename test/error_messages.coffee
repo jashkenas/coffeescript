@@ -1319,3 +1319,12 @@ test "#4248: Unicode code point escapes", ->
     '\\u{a}\\u{1111110000}'
       \    ^\^^^^^^^^^^^^^
   '''
+
+test "#4283: error message for implicit call", ->
+  assertErrorFormat '''
+    console.log {search, users, contacts users_to_display}
+  ''', '''
+    [stdin]:1:29: error: unexpected implicit function call
+    console.log {search, users, contacts users_to_display}
+                                ^^^^^^^^
+  '''
