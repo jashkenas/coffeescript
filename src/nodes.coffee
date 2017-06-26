@@ -1169,7 +1169,7 @@ exports.Obj = class Obj extends Base
         node.error 'cannot have an implicit value in an implicit object'
 
     # Object spread properties. https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md
-    # `obj2 = {a:1, obj..., c:3, d:4} => obj2 = Object.assign({}, {a:1}, obj1, {c:3, d:4})`
+    # `obj2 = {a: 1, obj..., c: 3, d: 4} => obj2 = Object.assign({}, {a: 1}, obj1, {c: 3, d: 4})`
     return @compileSpread o if @hasSplat()
 
     idt        = o.indent += TAB
@@ -1244,7 +1244,7 @@ exports.Obj = class Obj extends Base
       prop.eachName iterator if prop.eachName?
 
   # Object spread properties. https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md
-  # `obj2 = {a:1, obj..., c:3, d:4} => obj2 = Object.assign({}, {a:1}, obj1, {c:3, d:4})`
+  # `obj2 = {a: 1, obj..., c: 3, d: 4} => obj2 = Object.assign({}, {a: 1}, obj1, {c: 3, d: 4})`
   compileSpread: (o) ->
     props = @properties
     # Store object spreads.
@@ -1917,11 +1917,11 @@ exports.Assign = class Assign extends Base
       restElement = no
       for prop, key in properties
         setScopeVar prop.unwrap() # Declare a variable in the scope.
-        if prop instanceof Assign 
+        if prop instanceof Assign
           if prop.value.base instanceof Obj
             results = traverseRest prop.value.base.properties, [path..., getPropValue prop]
-          # prop.value has default value assigned (e.g. { a: {b} = {} } );
-          # if it’s also 'Obj`, we need to traverse prop.value.variable 'properties'
+          # `prop.value` has default value assigned, e.g. `{ a: {b} = {} } );`.
+          # If it’s also `Obj`, we need to traverse prop.value.variable `properties`.
           if prop.value instanceof Assign and prop.value.variable.isObject()
             results = traverseRest prop.value.variable.base.properties, [path..., getPropValue prop]
         if prop instanceof Splat
@@ -2296,14 +2296,14 @@ exports.Code = class Code extends Base
             param.name.lhs = yes
             param.name.eachName (prop) ->
               o.scope.parameter prop.value
-            # Compile foo({a, b...}) -> to foo(arg) -> {a, b...} = arg
+            # Compile `foo({a, b...}) ->` to `foo(arg) -> {a, b...} = arg`.
             # Can be removed once ES proposal hits Stage 4.
             if param.name instanceof Obj and param.name.hasSplat()
               splatParamName = o.scope.freeVariable 'arg'
               o.scope.parameter splatParamName
               ref = new Value new IdentifierLiteral splatParamName
               exprs.push new Assign new Value(param.name), ref, null, param: yes
-              # Compile foo({a, b...} = {}) -> to foo(arg = {}) -> {a, b...} = arg
+              # Compile `foo({a, b...} = {}) ->` to `foo(arg = {}) -> {a, b...} = arg`.
               if param.value?  and not param.assignedInBody
                 ref = new Assign ref, param.value, null, param: yes
           else
@@ -2318,7 +2318,8 @@ exports.Code = class Code extends Base
             condition = new Op '===', param, new UndefinedLiteral
             ifTrue = new Assign new Value(param.name), param.value
             exprs.push new If condition, ifTrue
-          # Add this parameter to the scope, since it wouldn’t have been added yet since it was skipped earlier.
+          # Add this parameter to the scope, since it wouldn’t have been added
+          # yet since it was skipped earlier.
           o.scope.add param.name.value, 'var', yes if param.name?.value?
 
     # If there were parameters after the splat or expansion parameter, those
@@ -3325,7 +3326,6 @@ UTILITIES =
   indexOf: -> '[].indexOf'
   slice  : -> '[].slice'
   splice : -> '[].splice'
-
 
 # Levels indicate a node's position in the AST. Useful for knowing if
 # parens are necessary or superfluous.
