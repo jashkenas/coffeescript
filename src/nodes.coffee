@@ -286,11 +286,11 @@ exports.Base = class Base
     [@makeCode('{'), fragments..., @makeCode('}')]
 
   # `fragmentsList` is an array of arrays of fragments. Each array in fragmentsList will be
-  # concatonated together, with `joinStr` added in between each, to produce a final flat array
+  # concatenated together, with `joinStr` added in between each, to produce a final flat array
   # of fragments.
   joinFragmentArrays: (fragmentsList, joinStr) ->
     answer = []
-    for fragments,i in fragmentsList
+    for fragments, i in fragmentsList
       if i then answer.push @makeCode joinStr
       answer = answer.concat fragments
     answer
@@ -453,12 +453,12 @@ exports.Block = class Block extends Base
       preludeExps = for exp, i in @expressions
         break unless exp.unwrap() instanceof Comment
         exp
-      rest = @expressions[preludeExps.length...]
-      @expressions = preludeExps
       if preludeExps.length
+        rest = @expressions[preludeExps.length...]
+        @expressions = preludeExps
         prelude = @compileNode merge(o, indent: '')
         prelude.push @makeCode "\n"
-      @expressions = rest
+        @expressions = rest
     fragments = @compileWithDeclarations o
     HoistTarget.expand fragments
     return fragments if o.bare
@@ -839,6 +839,7 @@ exports.Call = class Call extends Base
     call = this
     list = []
     loop
+      # if call.variable.unwrap() instanceof Call
       if call.variable instanceof Call
         list.push call
         call = call.variable
@@ -2500,7 +2501,8 @@ exports.Op = class Op extends Base
     if op is 'do'
       return Op::generateDo first
     if op is 'new'
-      return first.newInstance() if first instanceof Call and not first.do and not first.isNew
+      if (firstCall = first.unwrap()) instanceof Call and not firstCall.do and not firstCall.isNew
+        return firstCall.newInstance()
       first = new Parens first   if first instanceof Code and first.bound or first.do
 
     @operator = CONVERSIONS[op] or op
@@ -2849,7 +2851,7 @@ exports.Parens = class Parens extends Base
       expr.front = @front
       return expr.compileToFragments o
     fragments = expr.compileToFragments o, LEVEL_PAREN
-    bare = o.level < LEVEL_OP and (expr instanceof Op or expr instanceof Call or
+    bare = o.level < LEVEL_OP and (expr instanceof Op or expr.unwrap() instanceof Call or
       (expr instanceof For and expr.returns)) and (o.level < LEVEL_COND or
         fragments.length <= 3)
     return @wrapInBraces fragments if @csxAttribute
@@ -2912,7 +2914,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
 
   isNestedTag: (element) ->
     exprs = element?.body?.expressions
-    call = exprs?[0]
+    call = exprs?[0].unwrap()
     @csx and exprs and exprs.length is 1 and call instanceof Call and call.csx
 
 #### For
