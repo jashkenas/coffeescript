@@ -3132,19 +3132,19 @@ function time() {
         <section id="jsx">
           <h2>JSX</h2>
 <p><a href="https://facebook.github.io/react/docs/introducing-jsx.html">JSX</a> is JavaScript containing interspersed XML elements. While conceived for <a href="https://facebook.github.io/react/">React</a>, it is not specific to any particular library or framework.</p>
-<p>CoffeeScript supports interspersed XML elements, without the need for separate plugins or special settings. The XML elements will be rendered as such, outputting JSX that could be parsed like any normal JSX file, for example by <a href="https://babeljs.io/docs/plugins/transform-react-jsx/">Babel with the React JSX transform</a>. CoffeeScript does <em>not</em> output <code>React.createElement</code> calls or any code specific to React or any other framework. It is up to you to attach another step in your build chain to convert this JSX to whatever function calls you wish the XML elements to compile to.</p>
+<p>CoffeeScript supports interspersed XML elements, without the need for separate plugins or special settings. The XML elements will be compiled as such, outputting JSX that could be parsed like any normal JSX file, for example by <a href="https://babeljs.io/docs/plugins/transform-react-jsx/">Babel with the React JSX transform</a>. CoffeeScript does <em>not</em> output <code>React.createElement</code> calls or any code specific to React or any other framework. It is up to you to attach another step in your build chain to convert this JSX to whatever function calls you wish the XML elements to compile to.</p>
 <p>Just like in JSX and HTML, denote XML tags using <code>&lt;</code> and <code>&gt;</code>. You can interpolate CoffeeScript code inside a tag using <code>{</code> and <code>}</code>. To avoid compiler errors, when using <code>&lt;</code> and <code>&gt;</code> to mean “less than” or “greater than,” you should wrap the operators in spaces to distinguish them from XML tags. So <code>i &lt; len</code>, not <code>i&lt;len</code>. The compiler tries to be forgiving when it can be sure what you intend, but always putting spaces around the “less than” and “greater than” operators will remove ambiguity.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="jsx">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
       <textarea class="coffeescript-input" id="jsx-coffee">renderStarRating = ({ rating, maxStars }) ->
   <aside title={"Rating: #{rating} of #{maxStars} stars"}>
-    {for [0...Math.floor(rating)]
-      <Star className="wholeStar" />}
+    {for wholeStar in [0...Math.floor(rating)]
+      <Star className="wholeStar" key={wholeStar} />}
     {if rating % 1 isnt 0
       <Star className="halfStar" />}
-    {for [Math.ceil(rating)...maxStars]
-      <Star className="emptyStar" />}
+    {for emptyStar in [Math.ceil(rating)...maxStars]
+      <Star className="emptyStar" key={emptyStar} />}
   </aside>
 </textarea>
     </div>
@@ -3152,12 +3152,13 @@ function time() {
       <textarea class="javascript-output" id="jsx-js">var renderStarRating;
 
 renderStarRating = function({rating, maxStars}) {
+  var emptyStar, wholeStar;
   return <aside title={`Rating: ${rating} of ${maxStars} stars`}>
     {(function() {
     var i, ref, results;
     results = [];
-    for (i = 0, ref = Math.floor(rating); 0 <= ref ? i < ref : i > ref; 0 <= ref ? i++ : i--) {
-      results.push(<Star className="wholeStar" />);
+    for (wholeStar = i = 0, ref = Math.floor(rating); 0 <= ref ? i < ref : i > ref; wholeStar = 0 <= ref ? ++i : --i) {
+      results.push(<Star className="wholeStar" key={wholeStar} />);
     }
     return results;
   })()}
@@ -3165,8 +3166,8 @@ renderStarRating = function({rating, maxStars}) {
     {(function() {
     var i, ref, ref1, results;
     results = [];
-    for (i = ref = Math.ceil(rating), ref1 = maxStars; ref <= ref1 ? i < ref1 : i > ref1; ref <= ref1 ? i++ : i--) {
-      results.push(<Star className="emptyStar" />);
+    for (emptyStar = i = ref = Math.ceil(rating), ref1 = maxStars; ref <= ref1 ? i < ref1 : i > ref1; emptyStar = ref <= ref1 ? ++i : --i) {
+      results.push(<Star className="emptyStar" key={emptyStar} />);
     }
     return results;
   })()}
