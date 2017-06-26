@@ -309,7 +309,7 @@ grammar =
     o 'Parenthetical',                          -> new Value $1
     o 'Range',                                  -> new Value $1
     o 'This'
-    o 'Super'
+    o 'Super',                                  -> new Value $1
   ]
 
   # A `super`-based expression that can be used as a value.
