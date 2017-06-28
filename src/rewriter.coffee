@@ -44,7 +44,7 @@ exports.Rewriter = class Rewriter
     # Set environment variable `DEBUG_TOKEN_STREAM` to `true` to output token
     # debugging info. Also set `DEBUG_REWRITTEN_TOKEN_STREAM` to `true` to
     # output the token stream after it has been rewritten by this file.
-    if process.env.DEBUG_TOKEN_STREAM
+    if process? and process.env.DEBUG_TOKEN_STREAM
       console.log 'Initial token stream:' if process.env.DEBUG_REWRITTEN_TOKEN_STREAM
       console.log (t[0] + '/' + t[1] + (if t.comments then '*' else '') for t in @tokens).join ' '
     @removeLeadingNewlines()
@@ -57,7 +57,7 @@ exports.Rewriter = class Rewriter
     @addLocationDataToGeneratedTokens()
     @enforceValidCSXAttributes()
     @fixOutdentLocationData()
-    if process.env.DEBUG_REWRITTEN_TOKEN_STREAM
+    if process? and process.env.DEBUG_REWRITTEN_TOKEN_STREAM
       console.log 'Rewritten token stream:' if process.env.DEBUG_TOKEN_STREAM
       console.log (t[0] + '/' + t[1] + (if t.comments then '*' else '') for t in @tokens).join ' '
     @tokens
