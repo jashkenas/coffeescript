@@ -280,13 +280,13 @@ test "#3132: Format jsdoc-style block-comment nicely", ->
   fn = () -> 1
   """,
   """
+  var fn;
+
   /**
    * Multiline for jsdoc-"@doctags"
    *
    * @type {Function}
    */
-  var fn;
-
   fn = function() {
     return 1;
   };"""
@@ -303,13 +303,13 @@ test "#3132: Format hand-made (raw) jsdoc-style block-comment nicely", ->
   fn = () -> 1
   """,
   """
+  var fn;
+
   /**
    * Multiline for jsdoc-"@doctags"
    *
    * @type {Function}
    */
-  var fn;
-
   fn = function() {
     return 1;
   };"""
@@ -339,13 +339,13 @@ test "#3132: Place block-comments nicely", ->
 
   """,
   """
+  var DummyClass;
+
   /**
    * A dummy class definition
    *
    * @class
    */
-  var DummyClass;
-
   DummyClass = (function() {
     class DummyClass {
       /**

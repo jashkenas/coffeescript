@@ -145,6 +145,28 @@ exports.Base = class Base
         else
           fragments.push commentFragment
 
+      else # Line comment, delimited by `#`.
+        # Successive line comments are joined together, so even line comments
+        # might be multiline.
+        code = comment.content
+        multiline = '\n' in code
+        code = code.replace /^([ \t]*)#/gm, '//' if multiline
+        code = code.replace /\n+$/, ''
+        code = "//#{code}"
+
+        codes = if multiline then code.split('\n') else [code]
+        for code in codes when code isnt ''
+          commentFragment = @makeCode code
+          commentFragment.type = 'LineComment'
+          commentFragment.trail = not comment.newLine and not comment.unshift
+
+          if comment.unshift
+            fragments[0].precedingComments ?= []
+            fragments[0].precedingComments.push commentFragment
+          else
+            fragments[fragments.length - 1].trailingComments ?= []
+            fragments[fragments.length - 1].trailingComments.push commentFragment
+
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
   # by assigning it to a temporary variable. Pass a level to precompile.
@@ -509,6 +531,7 @@ exports.Block = class Block extends Base
       @expressions = rest
     fragments = @compileWithDeclarations o
     HoistTarget.expand fragments
+    fragments = @compileComments fragments
     return fragments if o.bare
     [].concat prelude, @makeCode("(function() {\n"), fragments, @makeCode("\n}).call(this);\n")
 
@@ -543,6 +566,60 @@ exports.Block = class Block extends Base
       else if fragments.length and post.length
         fragments.push @makeCode "\n"
     fragments.concat post
+
+  compileComments: (fragments) ->
+    for fragment, fragmentIndex in fragments
+      # Insert comments into the output at the next or previous newline.
+      # If there are no newlines at which to place comments, create them.
+      if fragment.precedingComments
+        code = '\n' + (commentFragment.code for commentFragment in fragment.precedingComments).join '\n'
+        for pastFragment, pastFragmentIndex in fragments[0...(fragmentIndex + 1)] by -1
+          newLineIndex = pastFragment.code.lastIndexOf '\n'
+          if newLineIndex is -1
+            # Keep searching previous fragments until we can’t go back any
+            # further, either because there are no fragments left or we’ve
+            # discovered that we’re in a code block that is interpolated
+            # inside a string.
+            if pastFragmentIndex is 0
+              pastFragment.code = '\n' + pastFragment.code
+              newLineIndex = 0
+            else if pastFragment.type is 'StringWithInterpolations' and pastFragment.code is '{'
+              code = code[1..] + '\n' # Move newline to end.
+              newLineIndex = 1
+            else
+              continue
+          delete fragment.precedingComments
+          pastFragment.code = pastFragment.code[0...newLineIndex] +
+            code + pastFragment.code[newLineIndex..]
+          break
+
+      # Yes, this is awfully similar to the previous `if` block, but if you
+      # look closely you’ll find lots of tiny differences that make this
+      # impractical to abstract into a function that both blocks can share.
+      if fragment.trailingComments
+        code = (commentFragment.code for commentFragment in fragment.trailingComments).join '\n'
+        code = " #{code}" if fragment.trailingComments[0].trail
+        for upcomingFragment, upcomingFragmentIndex in fragments[fragmentIndex...]
+          newLineIndex = upcomingFragment.code.indexOf '\n'
+          if newLineIndex is -1
+            # Keep searching upcoming fragments until we can’t go any
+            # further, either because there are no fragments left or we’ve
+            # discovered that we’re in a code block that is interpolated
+            # inside a string.
+            if upcomingFragmentIndex is fragments.length - 1
+              upcomingFragment.code = upcomingFragment.code + '\n'
+              newLineIndex = upcomingFragment.code.length
+            else if upcomingFragment.type is 'StringWithInterpolations' and upcomingFragment.code is '}'
+              code = "\n#{code}\n"
+              newLineIndex = 0
+            else
+              continue
+          delete fragment.trailingComments
+          upcomingFragment.code = upcomingFragment.code[0...newLineIndex] +
+            code + upcomingFragment.code[newLineIndex..]
+          break
+
+    fragments
 
   # Wrap up the given nodes as a **Block**, unless it already happens
   # to be one.
@@ -3300,10 +3377,6 @@ indentInitial = (fragments, node) ->
   for fragment, i in fragments
     if fragment.type is 'HereComment'
       fragment.code = multident fragment.code, node.tab
-    else if fragment.code is '' # Placeholder token to hold initial comments.
-      # TODO: Remove this `else` when we start outputting line comments, to
-      # allow the line comment to get the indentation of the following line.
-      break
     else
       fragments.splice i, 0, node.makeCode "#{node.tab}"
       break
