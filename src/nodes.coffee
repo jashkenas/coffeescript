@@ -75,7 +75,7 @@ exports.Base = class Base
       node.compileNode o
     else
       node.compileClosure o
-    @compileComments o, node, fragments if node.comments
+    @attachComments o, node, fragments if node.comments
     fragments
 
   # Statements converted into expressions via closure-wrapping share a scope
@@ -107,9 +107,15 @@ exports.Base = class Base
         parts.push    @makeCode ")"
     parts
 
-  compileComments: (o, node, fragments) ->
-    for comment in node.comments when comment not in @compiledComments
-      @compiledComments.push comment # Don’t output this comment twice.
+  attachComments: (o, node, fragments) ->
+    for comment in node.comments when comment not in @attachedComments
+      # For block/here comments, denoted by `###`, create fragments and insert
+      # them into the fragments array, whether they’re multiline comments or
+      # inline comments like `1 + ### comment ### 2`.
+      # For line comments, just attach them to their closest fragment for now,
+      # so they can be inserted into the output later after all the newlines
+      # have been added.
+      @attachedComments.push comment # Don’t output this comment twice.
       if comment.here # Comment delimited by `###`.
         code = comment.content
         multiline = '\n' in code
@@ -128,11 +134,14 @@ exports.Base = class Base
         code = "/*#{code}#{if hasLeadingMarks then ' ' else ''}*/"
         code = "#{code}\n" if comment.newLine
         commentFragment = @makeCode code
-        commentFragment.comment = comment
+        commentFragment.type = 'HereComment'
         commentFragment.multiline = multiline
         commentFragment.suppressTrailingSemicolon = yes
         if comment.unshift
-          fragments.unshift commentFragment
+          # Find index of first non-comment fragment, to insert before.
+          for fragment, fragmentIndex in fragments when fragment.type isnt 'HereComment'
+            fragments.splice fragmentIndex, 0, commentFragment
+            break
         else
           fragments.push commentFragment
 
@@ -298,7 +307,7 @@ exports.Base = class Base
   assigns: NO
 
   # Track which comments have been output.
-  compiledComments: []
+  attachedComments: []
 
   # For this node and all descendents, set the location data to `locationData`
   # if the location data is not already set.
@@ -663,7 +672,7 @@ exports.Return = class Return extends Base
       # move the comment before the `return` so that JavaScript doesn’t infer
       # a semicolon between the `return` and the comment.
       for fragment, i in fragments
-        if fragment?.comment and fragment.multiline
+        if fragment?.type is 'HereComment' and fragment.multiline
           fragment.code = multident fragment.code, @tab
           answer.push fragment
         else
@@ -3289,7 +3298,7 @@ multident = (code, tab) ->
 # such comments, and _then_ indent the first following line of code.
 indentInitial = (fragments, node) ->
   for fragment, i in fragments
-    if fragment.comment?
+    if fragment.type is 'HereComment'
       fragment.code = multident fragment.code, node.tab
     else if fragment.code is '' # Placeholder token to hold initial comments.
       # TODO: Remove this `else` when we start outputting line comments, to

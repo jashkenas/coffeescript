@@ -341,6 +341,7 @@ exports.Lexer = class Lexer
     unless prev
       # If there’s no previous token, create a placeholder token to attach
       # this comment to; and follow with a newline.
+      commentAttachment.newLine = yes
       @lineToken @chunk[comment.length..] # Set the indent.
       @token 'JS', ''
       @tokens[0].comments = [commentAttachment]
