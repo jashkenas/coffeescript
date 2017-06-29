@@ -1896,6 +1896,7 @@ exports.Assign = class Assign extends Base
         newVar = prop.compile o
       o.scope.add(newVar, 'var', true) if newVar
 
+    # Returns a safe (cached) reference to the key for a given property
     getPropKey = (prop) ->
       if prop instanceof Assign
         [prop.variable, key] = prop.variable.cache o
@@ -1903,6 +1904,9 @@ exports.Assign = class Assign extends Base
       else
         prop
 
+    # Returns the name of a given property for use with excludeProps
+    # Property names are quoted (e.g. `a: b` -> 'a'), and everything else uses the key reference
+    # (e.g. `'a': b -> 'a'`, `"#{a}": b` -> <cached>`)
     getPropName = (prop) ->
       key = getPropKey prop
       cached = prop instanceof Assign and prop.variable != key
@@ -1912,8 +1916,7 @@ exports.Assign = class Assign extends Base
         new Literal "'#{key.compile o}'"
 
     # Recursive function for searching and storing rest elements in objects.
-    # Parameter `path[]` is used to store nested object properties,
-    # e.g. `{a: {b, c: {d, r1...}, r2...}, r3...} = obj`.
+    # e.g. `{[properties...]} = source`.
     traverseRest = (properties, source) =>
       restElements = []
       restIndex = undefined
