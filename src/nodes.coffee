@@ -1917,12 +1917,14 @@ exports.Assign = class Assign extends Base
       for prop, key in properties
         setScopeVar prop.unwrap() # Declare a variable in the scope.
         if prop instanceof Assign
-          if prop.value.base instanceof Obj
-            results = traverseRest prop.value.base.properties, [path..., getPropValue prop]
-          # `prop.value` has default value assigned, e.g. `{ a: {b} = {} } );`.
-          # If it’s also `Obj`, we need to traverse prop.value.variable `properties`.
-          if prop.value instanceof Assign and prop.value.variable.isObject()
-            results = traverseRest prop.value.variable.base.properties, [path..., getPropValue prop]
+          nestedProperties = if prop.value.isObject?()
+            # prop is `k: {...}`
+            prop.value.base.properties
+          else if prop.value instanceof Assign and prop.value.variable.isObject()
+            # prop is `k: {...} = default`
+            prop.value.variable.base.properties
+          if nestedProperties
+            results = results.concat traverseRest nestedProperties, [path..., getPropValue prop]
         if prop instanceof Splat
           prop.error "multiple rest elements are disallowed in object destructuring" if restElement
           restKey = key

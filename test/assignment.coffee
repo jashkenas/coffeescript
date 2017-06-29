@@ -255,6 +255,12 @@ test "destructuring assignment with objects and splats: ES2015", ->
   eq z, 2
   eq r.b, undefined
 
+test "assignment with multiple splats in different objects", ->
+  obj = { a: {val: 1}, b: {val: 2} }
+  { a: {a...}, b: {b...} } = obj
+  deepEqual a, val: 1
+  deepEqual b, val: 2
+
 # Tests from https://babeljs.io/docs/plugins/transform-object-rest-spread/.
 test "destructuring assignment with objects and splats: Babel tests", ->
   # What Babel calls “rest properties:”
