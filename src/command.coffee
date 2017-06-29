@@ -27,9 +27,7 @@ hidden = (file) -> /^\.|~$/.test file
 BANNER = '''
   Usage: coffee [options] [--] path/to/script.coffee [args]
 
-  If called without options, `coffee` will run your script. Previous versions of
-  coffeescript required a `--` after the script to run, but this convention is
-  now deprecated.
+  If called without options, `coffee` will run your script.
 '''
 
 # The list of all the valid option flags that `coffee` knows how to handle.
@@ -84,8 +82,7 @@ exports.run = ->
 
       '--' will be removed from the argument list.
     '''
-    argStr = JSON.stringify opts.arguments
-    printWarn "The positional arguments were: #{argStr}"
+    printWarn "The positional arguments were: #{JSON.stringify opts.arguments}"
     opts.arguments = [opts.arguments[0]].concat opts.arguments[2..]
 
   # Make the REPL *CLI* use the global context so as to (a) be consistent with the

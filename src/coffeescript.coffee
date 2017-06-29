@@ -300,12 +300,13 @@ Error.prepareStackTrace = (err, stack) ->
 
 checkShebangLine = (file, input) ->
   firstLine = input.split(/$/m)[0]
-  if firstLine?.match(/^#!/)?
-    shebangTokens = firstLine.split /\s/
-    if shebangTokens.length > 2
-      console.error '''
-        The script to be run begins with a shebang line with more than one
-        argument. This script will fail on platforms such as Linux which only
-        allow a single argument.
-      '''
-      console.error "The shebang line was: '#{firstLine}' in file '#{file}'"
+  rest = firstLine?.match(/^#!\s*([^\s]+\s*)(.*)/)
+  args = rest?[2]?.split(/\s/).filter (s) -> s isnt ''
+  if args?.length > 1
+    console.error '''
+      The script to be run begins with a shebang line with more than one
+      argument. This script will fail on platforms such as Linux which only
+      allow a single argument.
+    '''
+    console.error "The shebang line was: '#{firstLine}' in file '#{file}'"
+    console.error "The arguments were: #{JSON.stringify args}"
