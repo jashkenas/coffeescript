@@ -263,6 +263,13 @@ test "destructuring assignment with splats and default values", ->
   eq b, 1
   deepEqual d, {}
 
+test "destructuring assignment with splat with default value", ->
+  obj = {}
+  c = {val: 1}
+  { a: {b...} = c } = obj
+
+  deepEqual b, val: 1
+
 test "destructuring assignment with multiple splats in different objects", ->
   obj = { a: {val: 1}, b: {val: 2} }
   { a: {a...}, b: {b...} } = obj

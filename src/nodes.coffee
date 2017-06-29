@@ -1911,7 +1911,7 @@ exports.Assign = class Assign extends Base
     # Recursive function for searching and storing rest elements in objects.
     # Parameter `path[]` is used to store nested object properties,
     # e.g. `{a: {b, c: {d, r1...}, r2...}, r3...} = obj`.
-    traverseRest = (properties, path = []) ->
+    traverseRest = (properties, defaultValue, path = []) ->
       results = []
       restElement = no
       for prop, key in properties
@@ -1922,15 +1922,18 @@ exports.Assign = class Assign extends Base
             prop.value.base.properties
           else if prop.value instanceof Assign and prop.value.variable.isObject()
             # prop is `k: {...} = default`
+            [val, defaultValue] = prop.value.value.cache()
+            prop.value.value = val
             prop.value.variable.base.properties
           if nestedProperties
-            results = results.concat traverseRest nestedProperties, [path..., getPropValue prop]
+            results = results.concat traverseRest nestedProperties, defaultValue, [path..., getPropValue prop]
         if prop instanceof Splat
           prop.error "multiple rest elements are disallowed in object destructuring" if restElement
           restKey = key
           restElement = {
-            name: prop.unwrap(),
+            name: prop.unwrap()
             path
+            defaultValue
           }
       if restElement
         # Remove rest element from the properties.
@@ -1956,8 +1959,9 @@ exports.Assign = class Assign extends Base
     fragments.push @wrapInParentheses objVar
     for restElement in restList
       varProp = if restElement.path.length then ".#{restElement.path.join '.'}" else ""
-      vvarPropText = new Literal "#{vvarText}#{varProp}"
-      extractKeys = new Call new Value(new Literal(utility('objectWithoutKeys', o))), [vvarPropText, restElement.excludeProps]
+      restSource = vvarPropText = new Literal "#{vvarText}#{varProp}"
+      restSource = new Op '?', vvarPropText, restElement.defaultValue if restElement.defaultValue
+      extractKeys = new Call new Value(new Literal(utility('objectWithoutKeys', o))), [restSource, restElement.excludeProps]
       fragments.push new Assign(restElement.name, extractKeys, null).compileToFragments o, LEVEL_LIST
     @joinFragmentArrays fragments, ", "
 
