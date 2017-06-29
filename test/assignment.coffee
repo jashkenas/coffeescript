@@ -276,6 +276,17 @@ test "destructuring assignment with multiple splats in different objects", ->
   deepEqual a, val: 1
   deepEqual b, val: 2
 
+test "destructuring assignment with dynamic keys and splats", ->
+  i = 0
+  foo = -> ++i
+
+  obj = {1: 'a', 2: 'b'}
+  { "#{foo()}": a, b... } = obj
+
+  eq a, 'a'
+  eq i, 1
+  deepEqual b, 2: 'b'
+
 # Tests from https://babeljs.io/docs/plugins/transform-object-rest-spread/.
 test "destructuring assignment with objects and splats: Babel tests", ->
   # What Babel calls “rest properties:”
