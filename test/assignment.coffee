@@ -255,7 +255,15 @@ test "destructuring assignment with objects and splats: ES2015", ->
   eq z, 2
   eq r.b, undefined
 
-test "assignment with multiple splats in different objects", ->
+test "destructuring assignment with splats and default values", ->
+  obj = {}
+  c = {b: 1}
+  { a: {b} = c, d...} = obj
+
+  eq b, 1
+  deepEqual d, {}
+
+test "destructuring assignment with multiple splats in different objects", ->
   obj = { a: {val: 1}, b: {val: 2} }
   { a: {a...}, b: {b...} } = obj
   deepEqual a, val: 1
