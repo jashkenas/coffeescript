@@ -1871,7 +1871,7 @@ exports.Assign = class Assign extends Base
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
     # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration,
     # if we’re destructuring without declaring, the destructuring assignment must be wrapped in parentheses.
-    if o.level > LEVEL_LIST or (isValue and @variable.base instanceof Obj and not @nestedLhs and not @param)
+    if o.level > LEVEL_LIST or (o.level is LEVEL_TOP and isValue and @variable.base instanceof Obj and not @nestedLhs and not @param)
       @wrapInParentheses answer
     else
       answer
@@ -1957,15 +1957,18 @@ exports.Assign = class Assign extends Base
     # Find all rest elements.
     restElements = traverseRest @variable.base.properties, valueRef
 
-    # Compile the remaining simple destructuring assignment
-    fragments = [@compileToFragments o, LEVEL_TOP]
-
-    # Append each compiled rest element
+    result = new Block [@]
     for restElement in restElements
       value = new Call new Value(new Literal utility 'objectWithoutKeys', o), [restElement.source, restElement.excludeProps]
-      fragments.push new Assign(restElement.name, value).compileToFragments o, LEVEL_LIST
+      result.push new Assign restElement.name, value
 
-    @joinFragmentArrays fragments, ', '
+    fragments = result.compileToFragments o
+    if o.level is LEVEL_TOP
+      # Remove leading tab and trailing semicolon
+      fragments.shift()
+      fragments.pop()
+
+    fragments
 
   # Brief implementation of recursive pattern matching, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
