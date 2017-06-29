@@ -1955,7 +1955,7 @@ exports.Assign = class Assign extends Base
     restElements = traverseRest @variable.base.properties, valueRef
 
     # Compile the remaining simple destructuring assignment
-    fragments = [@wrapInParentheses @compileToFragments o, LEVEL_TOP]
+    fragments = [@compileToFragments o, LEVEL_TOP]
 
     # Append each compiled rest element
     for restElement in restElements
@@ -2250,12 +2250,12 @@ exports.Code = class Code extends Base
             # function parameter list, and if so, how?
             splatParamName = o.scope.freeVariable 'arg'
             params.push ref = new Value new IdentifierLiteral splatParamName
-            exprs.push new Assign new Value(param.name), ref, null, param: yes
+            exprs.push new Assign new Value(param.name), ref
           else
             params.push ref = param.asReference o
             splatParamName = fragmentsToText ref.compileNode o
           if param.shouldCache()
-            exprs.push new Assign new Value(param.name), ref, null, param: yes
+            exprs.push new Assign new Value(param.name), ref
         else # `param` is an Expansion
           splatParamName = o.scope.freeVariable 'args'
           params.push new Value new IdentifierLiteral splatParamName
@@ -2275,10 +2275,10 @@ exports.Code = class Code extends Base
           # `(arg) => { var a = arg.a; }`, with a default value if it has one.
           if param.value?
             condition = new Op '===', param, new UndefinedLiteral
-            ifTrue = new Assign new Value(param.name), param.value, null, param: yes
+            ifTrue = new Assign new Value(param.name), param.value
             exprs.push new If condition, ifTrue
           else
-            exprs.push new Assign new Value(param.name), param.asReference(o), null, param: yes
+            exprs.push new Assign new Value(param.name), param.asReference(o)
 
         # If this parameter comes before the splat or expansion, it will go
         # in the function definition parameter list.
@@ -2306,7 +2306,7 @@ exports.Code = class Code extends Base
               splatParamName = o.scope.freeVariable 'arg'
               o.scope.parameter splatParamName
               ref = new Value new IdentifierLiteral splatParamName
-              exprs.push new Assign new Value(param.name), ref, null, param: yes
+              exprs.push new Assign new Value(param.name), ref
               # Compile `foo({a, b...} = {}) ->` to `foo(arg = {}) -> {a, b...} = arg`.
               if param.value?  and not param.assignedInBody
                 ref = new Assign ref, param.value, null, param: yes
