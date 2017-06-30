@@ -190,7 +190,7 @@ grammar =
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
     o 'ObjAssignable',                          -> new Value $1
-    o 'ObjDestructAssignable',                  -> new Splat $1
+    o 'ObjRestValue'
     o 'ObjAssignable : Expression',             -> new Assign LOC(1)(new Value $1), $3, 'object',
                                                               operatorToken: LOC(2)(new Literal $2)
     o 'ObjAssignable :
@@ -208,7 +208,6 @@ grammar =
     o 'Identifier'
     o 'Property'
     o 'ThisProperty'
-    o 'ObjDestructIdentifier'
   ]
 
   ObjAssignable: [
@@ -216,18 +215,25 @@ grammar =
     o 'AlphaNumeric'
   ]
 
-  ObjDestructIdentifier: [
-    o 'SimpleObjAssignable . Property',                             -> (new Value $1).add(new Access $3)
-    o 'SimpleObjAssignable INDEX_START IndexValue INDEX_END',       -> (new Value $1).add($3)
+  # Object literal spread properties.
+  ObjRestValue: [
+    o 'SimpleObjAssignable ...', -> new Splat new Value $1
+    o 'ObjSpreadExpr ...',       -> new Splat $1
   ]
 
-  # Object literal spread properties.
-  ObjDestructAssignable: [
-    o 'Object ...',                             -> new Value $1
-    o 'SimpleObjAssignable ...',                -> new Value $1
-    o 'Parenthetical ...',                      -> new Value $1
-    o 'Parenthetical Arguments ...',            -> new Call $1, $2, no
-    o 'Identifier Arguments ...',               -> new Call $1, $2, no
+  ObjSpreadExpr: [
+    o 'ObjSpreadIdentifier'
+    o 'Object'
+    o 'Parenthetical'
+    o 'Super'
+    o 'This'
+    o 'SimpleObjAssignable Arguments', -> new Call (new Value $1), $2
+    o 'ObjSpreadExpr Arguments',       -> new Call $1, $2
+  ]
+
+  ObjSpreadIdentifier: [
+    o 'SimpleObjAssignable . Property',                             -> (new Value $1).add(new Access $3)
+    o 'SimpleObjAssignable INDEX_START IndexValue INDEX_END',       -> (new Value $1).add($3)
   ]
 
   # A return statement from a function body.
