@@ -6,7 +6,7 @@ The biggest change in CoffeeScript 2 is that now the CoffeeScript compiler produ
 
 Support for ES2015+ syntax is important to ensure compatibility with frameworks that assume ES2015. Now that CoffeeScript compiles classes to the ES `class` keyword, it’s possible to `extend` an ES class; that wasn’t possible in CoffeeScript 1. Parity in how language features work is also important on its own; CoffeeScript “is just JavaScript,” and so things like [function parameter default values](#breaking-changes-default-values) should behave the same in CoffeeScript as in JavaScript.
 
-Many ES2015+ features have been backported to CoffeeScript 1.11 and 1.12, including [modules](#modules), [`for…of`](#generator-iteration), and [tagged template literals](#tagged-template-literals). One major new feature unique to CoffeeScript 2 is support for ES2017’s [async functions](#async-functions). More details are in the [changelog](#changelog).
+Many ES2015+ features have been backported to CoffeeScript 1.11 and 1.12, including [modules](#modules), [`for…of`](#generator-iteration), and [tagged template literals](#tagged-template-literals). Major new features unique to CoffeeScript 2 are support for ES2017’s [async functions](#async-functions) and for [JSX](#jsx). More details are in the [changelog](#changelog).
 
 There are very few [breaking changes from CoffeeScript 1.x to 2](#breaking-changes); we hope the upgrade process is smooth for most projects.
 

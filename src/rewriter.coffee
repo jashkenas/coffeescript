@@ -509,6 +509,10 @@ exports.Rewriter = class Rewriter
         for j in [1..2] when @tag(i + j) in ['OUTDENT', 'TERMINATOR', 'FINALLY']
           tokens.splice i + j, 0, @indentation()...
           return 2 + j
+      if tag in ['->', '=>'] and (@tag(i + 1) is ',' or @tag(i + 1) is '.' and token.newLine)
+        [indent, outdent] = @indentation tokens[i]
+        tokens.splice i + 1, 0, indent, outdent
+        return 1
       if tag in SINGLE_LINERS and @tag(i + 1) isnt 'INDENT' and
          not (tag is 'ELSE' and @tag(i + 1) is 'IF')
         starter = tag

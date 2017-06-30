@@ -39,6 +39,7 @@
 <script type="text/coffeescript">
 @testingBrowser = yes
 @global = window
+bold = red = green = reset = ''
 stdout = document.getElementById 'stdout'
 start = new Date
 @currentFile = ''
@@ -81,7 +82,7 @@ say = (msg, className) ->
 @deepEqual = (a, b) ->
   ok _.isEqual(a, b), "Expected #{JSON.stringify a} to deep equal #{JSON.stringify b}"
 
-# See http://wiki.ecmascript.org/doku.php?id=harmony:egal
+# See [http://wiki.ecmascript.org/doku.php?id=harmony:egal](http://wiki.ecmascript.org/doku.php?id=harmony:egal).
 egal = (a, b) ->
   if a is b
     a isnt 0 or 1/a is 1/b
@@ -96,12 +97,23 @@ arrayEgal = (a, b) ->
     return no for el, idx in a when not arrayEgal el, b[idx]
     yes
 
-@eq      = (a, b, msg) -> ok egal(a, b), msg or "Expected #{a} to equal #{b}"
-@arrayEq = (a, b, msg) -> ok arrayEgal(a,b), msg or "Expected #{a} to deep equal #{b}"
+@eq = (a, b, msg) ->
+  ok egal(a, b), msg or
+  "Expected #{reset}#{a}#{red} to equal #{reset}#{b}#{red}"
 
-@toJS = (str) ->
-  CoffeeScript.compile str, bare: yes
-  .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace
+@arrayEq = (a, b, msg) ->
+  ok arrayEgal(a,b), msg or
+  "Expected #{reset}#{a}#{red} to deep equal #{reset}#{b}#{red}"
+
+@eqJS = (input, expectedOutput, msg) ->
+  actualOutput = CoffeeScript.compile input, bare: yes
+  .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace.
+
+  ok egal(expectedOutput, actualOutput), msg or
+  """Expected generated JavaScript to be:
+  #{reset}#{expectedOutput}#{red}
+    but instead it was:
+  #{reset}#{actualOutput}#{red}"""
 
 
 @doesNotThrow = (fn) ->
@@ -141,6 +153,84 @@ msg = "failed #{total - passedTests} tests and #{msg}" unless yay
 say msg, (if yay then 'good' else 'bad')
 </script>
 
+<script type="text/x-coffeescript" class="test" id="argument-parsing">
+return unless require?
+
+{buildCSOptionParser} = require '../lib/coffeescript/command'
+
+optionParser = buildCSOptionParser()
+
+sameOptions = (opts1, opts2, msg) ->
+  ownKeys = Object.keys(opts1).sort()
+  otherKeys = Object.keys(opts2).sort()
+  arrayEq ownKeys, otherKeys, msg
+  for k in ownKeys
+    arrayEq opts1[k], opts2[k], msg
+  yes
+
+test "combined options are still split after initial file name", ->
+  argv = ['some-file.coffee', '-bc']
+  parsed = optionParser.parse argv
+  expected = arguments: ['some-file.coffee', '-b', '-c']
+  sameOptions parsed, expected
+
+  argv = ['some-file.litcoffee', '-bc']
+  parsed = optionParser.parse argv
+  expected = arguments: ['some-file.litcoffee', '-b', '-c']
+  sameOptions parsed, expected
+
+  argv = ['-c', 'some-file.coffee', '-bc']
+  parsed = optionParser.parse argv
+  expected =
+    compile: yes
+    arguments: ['some-file.coffee', '-b', '-c']
+  sameOptions parsed, expected
+
+  argv = ['-bc', 'some-file.coffee', '-bc']
+  parsed = optionParser.parse argv
+  expected =
+    bare: yes
+    compile: yes
+    arguments: ['some-file.coffee', '-b', '-c']
+  sameOptions parsed, expected
+
+test "combined options are not split after a '--'", ->
+  argv = ['--', '-bc']
+  parsed = optionParser.parse argv
+  expected = arguments: ['-bc']
+  sameOptions parsed, expected
+
+  argv = ['-bc', '--', '-bc']
+  parsed = optionParser.parse argv
+  expected =
+    bare: yes
+    compile: yes
+    arguments: ['-bc']
+  sameOptions parsed, expected
+
+test "options are not split after any '--'", ->
+  argv = ['--', '--', '-bc']
+  parsed = optionParser.parse argv
+  expected = arguments: ['--', '-bc']
+  sameOptions parsed, expected
+
+  argv = ['--', 'some-file.coffee', '--', 'arg']
+  parsed = optionParser.parse argv
+  expected = arguments: ['some-file.coffee', '--', 'arg']
+  sameOptions parsed, expected
+
+  argv = ['--', 'arg', 'some-file.coffee', '--', '-bc']
+  parsed = optionParser.parse argv
+  expected = arguments: ['arg', 'some-file.coffee', '--', '-bc']
+  sameOptions parsed, expected
+
+test "later '--' are removed", ->
+  argv = ['some-file.coffee', '--', '-bc']
+  parsed = optionParser.parse argv
+  expected = arguments: ['some-file.coffee', '-bc']
+  sameOptions parsed, expected
+
+</script>
 <script type="text/x-coffeescript" class="test" id="arrays">
 # Array Literals
 # --------------
@@ -537,6 +627,154 @@ test "destructuring assignment against an expression", ->
   eq a, y
   eq b, z
 
+test "destructuring assignment with objects and splats: ES2015", ->
+  obj = {a: 1, b: 2, c: 3, d: 4, e: 5}
+  throws (-> CoffeeScript.compile "{a, r..., s...} = x"), null, "multiple rest elements are disallowed"
+  throws (-> CoffeeScript.compile "{a, r..., s..., b} = x"), null, "multiple rest elements are disallowed"
+  prop = "b"
+  {a, b, r...} = obj
+  eq a, 1
+  eq b, 2
+  eq r.e, obj.e
+  eq r.a, undefined
+  {d, c: x, r...} = obj
+  eq x, 3
+  eq d, 4
+  eq r.c, undefined
+  eq r.b, 2
+  {a, 'b': z, g = 9, r...} = obj
+  eq g, 9
+  eq z, 2
+  eq r.b, undefined
+
+test "destructuring assignment with splats and default values", ->
+  obj = {}
+  c = {b: 1}
+  { a: {b} = c, d...} = obj
+
+  eq b, 1
+  deepEqual d, {}
+
+test "destructuring assignment with splat with default value", ->
+  obj = {}
+  c = {val: 1}
+  { a: {b...} = c } = obj
+
+  deepEqual b, val: 1
+
+test "destructuring assignment with multiple splats in different objects", ->
+  obj = { a: {val: 1}, b: {val: 2} }
+  { a: {a...}, b: {b...} } = obj
+  deepEqual a, val: 1
+  deepEqual b, val: 2
+
+test "destructuring assignment with dynamic keys and splats", ->
+  i = 0
+  foo = -> ++i
+
+  obj = {1: 'a', 2: 'b'}
+  { "#{foo()}": a, b... } = obj
+
+  eq a, 'a'
+  eq i, 1
+  deepEqual b, 2: 'b'
+
+# Tests from https://babeljs.io/docs/plugins/transform-object-rest-spread/.
+test "destructuring assignment with objects and splats: Babel tests", ->
+  # What Babel calls “rest properties:”
+  { x, y, z... } = { x: 1, y: 2, a: 3, b: 4 }
+  eq x, 1
+  eq y, 2
+  deepEqual z, { a: 3, b: 4 }
+
+  # What Babel calls “spread properties:”
+  n = { x, y, z... }
+  deepEqual n, { x: 1, y: 2, a: 3, b: 4 }
+
+test "deep destructuring assignment with objects: ES2015", ->
+  a1={}; b1={}; c1={}; d1={}
+  obj = {
+    a: a1
+    b: {
+      'c': {
+        d: {
+          b1
+          e: c1
+          f: d1
+        }
+      }
+    }
+    b2: {b1, c1}
+  }
+  {a: w, b: {c: {d: {b1: bb, r1...}}}, r2...} = obj
+  eq r1.e, c1
+  eq r2.b, undefined
+  eq bb, b1
+  eq r2.b2, obj.b2
+
+test "deep destructuring assignment with defaults: ES2015", ->
+  obj =
+    b: { c: 1, baz: 'qux' }
+    foo: 'bar'
+  j =
+    f: 'world'
+  i =
+    some: 'prop'
+  {
+    a...
+    b: { c, d... }
+    e: {
+      f: hello
+      g: { h... } = i
+    } = j
+  } = obj
+
+  deepEqual a, foo: 'bar'
+  eq c, 1
+  deepEqual d, baz: 'qux'
+  eq hello, 'world'
+  deepEqual h, some: 'prop'
+
+test "object spread properties: ES2015", ->
+  obj = {a: 1, b: 2, c: 3, d: 4, e: 5}
+  obj2 = {obj..., c:9}
+  eq obj2.c, 9
+  eq obj.a, obj2.a
+
+  obj2 = {obj..., a: 8, c: 9, obj...}
+  eq obj2.c, 3
+  eq obj.a, obj2.a
+
+  obj3 = {obj..., b: 7, g: {obj2..., c: 1}}
+  eq obj3.g.c, 1
+  eq obj3.b, 7
+  deepEqual obj3.g, {obj..., c: 1}
+
+  (({a, b, r...}) ->
+    eq 1, a
+    deepEqual r, {c: 3, d: 44, e: 55}
+  ) {obj2..., d: 44, e: 55}
+
+  obj = {a: 1, b: 2, c: {d: 3, e: 4, f: {g: 5}}}
+  obj4 = {a: 10, obj.c...}
+  eq obj4.a, 10
+  eq obj4.d, 3
+  eq obj4.f.g, 5
+  deepEqual obj4.f, obj.c.f
+
+  obj5 = {obj..., ((k) -> {b: k})(99)...}
+  eq obj5.b, 99
+  deepEqual obj5.c, obj.c
+
+  fn = -> {c: {d: 33, e: 44, f: {g: 55}}}
+  obj6 = {obj..., fn()...}
+  eq obj6.c.d, 33
+  deepEqual obj6.c, {d: 33, e: 44, f: {g: 55}}
+
+  obj7 = {obj..., fn()..., {c: {d: 55, e: 66, f: {77}}}...}
+  eq obj7.c.d, 55
+  deepEqual obj6.c, {d: 33, e: 44, f: {g: 55}}
+
 test "bracket insertion when necessary", ->
   [a] = [0] ? [1]
   eq a, 0
@@ -864,14 +1102,25 @@ test "Assignment to variables similar to helper functions", ->
     extend = 3
     hasProp = 4
     value: 5
-    method: (bind, bind1) -> [bind, bind1, extend, hasProp, @value]
-  arrayEq [1, 2, 3, 4, 5], new B().method 1, 2
+    method: (bind, bind1) => [bind, bind1, extend, hasProp, @value]
+  {method} = new B
+  arrayEq [1, 2, 3, 4, 5], method 1, 2
 
   modulo = -1 %% 3
   eq 2, modulo
 
   indexOf = [1, 2, 3]
   ok 2 in indexOf
+
+test "#4566: destructuring with nested default values", ->
+  {a: {b = 1}} = a: {}
+  eq 1, b
+
+  {c: {d} = {}} = c: d: 3
+  eq 3, d
+
+  {e: {f = 5} = {}} = {}
+  eq 5, f
 
 </script>
 <script type="text/x-coffeescript" class="test" id="async">
@@ -1250,18 +1499,40 @@ test "classes with JS-keyword properties", ->
   ok instance.name() is 'class'
 
 
-test "Classes with methods that are pre-bound statically, to the class", ->
+test "Classes with methods that are pre-bound to the instance, or statically, to the class", ->
 
   class Dog
     constructor: (name) ->
       @name = name
 
+    bark: =>
+      "#{@name} woofs!"
+
     @static = =>
       new this('Dog')
+
+  spark = new Dog('Spark')
+  fido  = new Dog('Fido')
+  fido.bark = spark.bark
+
+  ok fido.bark() is 'Spark woofs!'
 
   obj = func: Dog.static
 
   ok obj.func().name is 'Dog'
+
+
+test "a bound function in a bound function", ->
+
+  class Mini
+    num: 10
+    generate: =>
+      for i in [1..3]
+        =>
+          @num
+
+  m = new Mini
+  eq (func() for func in m.generate()).join(' '), '10 10 10'
 
 
 test "contructor called with varargs", ->
@@ -1568,6 +1839,21 @@ test "#1182: execution order needs to be considered as well", ->
     @B: makeFn 2
     constructor: makeFn 3
 
+test "#1182: external constructors with bound functions", ->
+  fn = ->
+    {one: 1}
+    this
+  class B
+  class A
+    constructor: fn
+    method: => this instanceof A
+  ok (new A).method.call(new B)
+
+test "#1372: bound class methods with reserved names", ->
+  class C
+    delete: =>
+  ok C::delete
+
 test "#1380: `super` with reserved names", ->
   class C
     do: -> super()
@@ -1636,7 +1922,7 @@ test "#1842: Regression with bound functions within bound class methods", ->
     @unbound: ->
       eq this, Store
 
-    instance: ->
+    instance: =>
       ok this instanceof Store
 
   Store.bound()
@@ -1799,6 +2085,57 @@ test "extending native objects works with and without defining a constructor", -
   ok overrideArray instanceof OverrideArray
   eq 'yes!', overrideArray.method()
 
+
+test "#2782: non-alphanumeric-named bound functions", ->
+  class A
+    'b:c': =>
+      'd'
+
+  eq (new A)['b:c'](), 'd'
+
+
+test "#2781: overriding bound functions", ->
+  class A
+    a: ->
+        @b()
+    b: =>
+        1
+
+  class B extends A
+    b: =>
+        2
+
+  b = (new A).b
+  eq b(), 1
+
+  b = (new B).b
+  eq b(), 2
+
+
+test "#2791: bound function with destructured argument", ->
+  class Foo
+    method: ({a}) => 'Bar'
+
+  eq (new Foo).method({a: 'Bar'}), 'Bar'
+
+
+test "#2796: ditto, ditto, ditto", ->
+  answer = null
+
+  outsideMethod = (func) ->
+    func.call message: 'wrong!'
+
+  class Base
+    constructor: ->
+      @message = 'right!'
+      outsideMethod @echo
+
+    echo: =>
+      answer = @message
+
+  new Base
+  eq answer, 'right!'
+
 test "#3063: Class bodies cannot contain pure statements", ->
   throws -> CoffeeScript.compile """
     class extends S
@@ -1846,6 +2183,10 @@ test "#1392 calling `super` in methods defined on namespaced classes", ->
     @a: class extends Base
       m: -> super()
   eq 5, (new C.a).m()
+
+
+test "#4436 immediately instantiated named class", ->
+  ok new class Foo
 
 
 test "dynamic method names", ->
@@ -2010,6 +2351,9 @@ test "`this` access after `super` in extended classes", ->
       eq result.super, this
       eq result.param, @param
       eq result.method, @method
+      ok result.method isnt Test::method
+
+    method: =>
 
   nonce = {}
   new Test nonce, {}
@@ -2029,6 +2373,8 @@ test "`@`-params and bound methods with multiple `super` paths (blocks)", ->
         super 'not param'
         eq @name, 'not param'
       eq @param, nonce
+      ok @method isnt Test::method
+    method: =>
   new Test true, nonce
   new Test false, nonce
 
@@ -2047,13 +2393,16 @@ test "`@`-params and bound methods with multiple `super` paths (expressions)", -
           eq (super 'param'), @;
           eq @name, 'param';
           eq @param, nonce;
+          ok @method isnt Test::method
         )
       else
         result = (
           eq (super 'not param'), @;
           eq @name, 'not param';
           eq @param, nonce;
+          ok @method isnt Test::method
         )
+    method: =>
   new Test true, nonce
   new Test false, nonce
 
@@ -2255,7 +2604,7 @@ test "super in a bound function", ->
     make: -> "Making a #{@drink}"
 
   class B extends A
-    make: (@flavor) ->
+    make: (@flavor) =>
       super() + " with #{@flavor}"
 
   b = new B('Machiato')
@@ -2263,7 +2612,7 @@ test "super in a bound function", ->
 
   # super in a bound function in a bound function
   class C extends A
-    make: (@flavor) ->
+    make: (@flavor) =>
       func = () =>
         super() + " with #{@flavor}"
       func()
@@ -2689,6 +3038,140 @@ test "CS6 Class extends a CS1 compiled class with super()", ->
   b = new B('three')
   eq b.make(), "making a cafe ole with caramel and three shots of espresso"
 
+test 'Bound method called normally before binding is ok', ->
+  class Base
+    constructor: ->
+      @setProp()
+      eq @derivedBound(), 3
+
+  class Derived extends Base
+    setProp: ->
+      @prop = 3
+
+    derivedBound: =>
+      @prop
+
+  d = new Derived
+
+test 'Bound method called as callback after super() is ok', ->
+  class Base
+
+  class Derived extends Base
+    constructor: (@prop = 3) ->
+      super()
+      f = @derivedBound
+      eq f(), 3
+
+    derivedBound: =>
+      @prop
+
+  d = new Derived
+  {derivedBound} = d
+  eq derivedBound(), 3
+
+test 'Bound method of base class called as callback is ok', ->
+  class Base
+    constructor: (@prop = 3) ->
+      f = @baseBound
+      eq f(), 3
+
+    baseBound: =>
+      @prop
+
+  b = new Base
+  {baseBound} = b
+  eq baseBound(), 3
+
+test 'Bound method of prop-named class called as callback is ok', ->
+  Hive = {}
+  class Hive.Bee
+    constructor: (@prop = 3) ->
+      f = @baseBound
+      eq f(), 3
+
+    baseBound: =>
+      @prop
+
+  b = new Hive.Bee
+  {baseBound} = b
+  eq baseBound(), 3
+
+test 'Bound method of class with expression base class called as callback is ok', ->
+  calledB = no
+  B = ->
+    throw new Error if calledB
+    calledB = yes
+    class
+  class A extends B()
+    constructor: (@prop = 3) ->
+      super()
+      f = @derivedBound
+      eq f(), 3
+
+    derivedBound: =>
+      @prop
+
+  b = new A
+  {derivedBound} = b
+  eq derivedBound(), 3
+
+test 'Bound method of class with expression class name called as callback is ok', ->
+  calledF = no
+  obj = {}
+  B = class
+  f = ->
+    throw new Error if calledF
+    calledF = yes
+    obj
+  class f().A extends B
+    constructor: (@prop = 3) ->
+      super()
+      g = @derivedBound
+      eq g(), 3
+
+    derivedBound: =>
+      @prop
+
+  a = new obj.A
+  {derivedBound} = a
+  eq derivedBound(), 3
+
+test 'Bound method of anonymous child class called as callback is ok', ->
+  f = ->
+    B = class
+    class extends B
+      constructor: (@prop = 3) ->
+        super()
+        g = @derivedBound
+        eq g(), 3
+
+      derivedBound: =>
+        @prop
+
+  a = new (f())
+  {derivedBound} = a
+  eq derivedBound(), 3
+
+test 'Bound method of immediately instantiated class with expression base class called as callback is ok', ->
+  calledF = no
+  obj = {}
+  B = class
+  f = ->
+    throw new Error if calledF
+    calledF = yes
+    obj
+  a = new class f().A extends B
+    constructor: (@prop = 3) ->
+      super()
+      g = @derivedBound
+      eq g(), 3
+
+    derivedBound: =>
+      @prop
+
+  {derivedBound} = a
+  eq derivedBound(), 3
+
 </script>
 <script type="text/x-coffeescript" class="test" id="cluster">
 # Cluster Module
@@ -2924,57 +3407,50 @@ test "#2916: block comment before implicit call with implicit object", ->
     a: yes
 
 test "#3132: Format single-line block comment nicely", ->
-  input = """
-  ### Single-line block comment without additional space here => ###"""
-
-  output = """
+  eqJS """
+  ### Single-line block comment without additional space here => ###""",
+  """
   /* Single-line block comment without additional space here => */
   """
-  eq toJS(input), output
 
 test "#3132: Format multi-line block comment nicely", ->
-  input = """
+  eqJS """
   ###
   # Multi-line
   # block
   # comment
-  ###"""
-
-  output = """
+  ###""",
+  """
   /*
    * Multi-line
    * block
    * comment
    */
   """
-  eq toJS(input), output
 
 test "#3132: Format simple block comment nicely", ->
-  input = """
+  eqJS """
   ###
   No
   Preceding hash
-  ###"""
-
-  output = """
+  ###""",
+  """
   /*
   No
   Preceding hash
    */
   """
 
-  eq toJS(input), output
 
 test "#3132: Format indented block-comment nicely", ->
-  input = """
+  eqJS """
   fn = () ->
     ###
     # Indented
     Multiline
     ###
-    1"""
-
-  output = """
+    1""",
+  """
   var fn;
 
   fn = function() {
@@ -2986,21 +3462,19 @@ test "#3132: Format indented block-comment nicely", ->
     return 1;
   };
   """
-  eq toJS(input), output
 
 # Although adequately working, block comment-placement is not yet perfect.
 # (Considering a case where multiple variables have been declared …)
 test "#3132: Format jsdoc-style block-comment nicely", ->
-  input = """
+  eqJS """
   ###*
   # Multiline for jsdoc-"@doctags"
   #
   # @type {Function}
   ###
   fn = () -> 1
+  """,
   """
-
-  output = """
   /**
    * Multiline for jsdoc-"@doctags"
    *
@@ -3011,21 +3485,19 @@ test "#3132: Format jsdoc-style block-comment nicely", ->
   fn = function() {
     return 1;
   };"""
-  eq toJS(input), output
 
 # Although adequately working, block comment-placement is not yet perfect.
 # (Considering a case where multiple variables have been declared …)
 test "#3132: Format hand-made (raw) jsdoc-style block-comment nicely", ->
-  input = """
+  eqJS """
   ###*
    * Multiline for jsdoc-"@doctags"
    *
    * @type {Function}
   ###
   fn = () -> 1
+  """,
   """
-
-  output = """
   /**
    * Multiline for jsdoc-"@doctags"
    *
@@ -3036,12 +3508,11 @@ test "#3132: Format hand-made (raw) jsdoc-style block-comment nicely", ->
   fn = function() {
     return 1;
   };"""
-  eq toJS(input), output
 
 # Although adequately working, block comment-placement is not yet perfect.
 # (Considering a case where multiple variables have been declared …)
 test "#3132: Place block-comments nicely", ->
-  input = """
+  eqJS """
   ###*
   # A dummy class definition
   #
@@ -3061,9 +3532,8 @@ test "#3132: Place block-comments nicely", ->
     ###
     @instance = new DummyClass()
 
+  """,
   """
-
-  output = """
   /**
    * A dummy class definition
    *
@@ -3094,22 +3564,19 @@ test "#3132: Place block-comments nicely", ->
     return DummyClass;
 
   })();"""
-  eq toJS(input), output
 
 test "#3638: Demand a whitespace after # symbol", ->
-  input = """
+  eqJS """
   ###
   #No
   #whitespace
-  ###"""
-
-  output = """
+  ###""",
+  """
   /*
   #No
   #whitespace
    */"""
 
-  eq toJS(input), output
 
 test "#3761: Multiline comment at end of an object", ->
   anObject =
@@ -4323,6 +4790,735 @@ test "#4267: lots of for-loops in the same scope", ->
   ok CoffeeScript.eval(code)
 
 </script>
+<script type="text/x-coffeescript" class="test" id="csx">
+# We usually do not check the actual JS output from the compiler, but since
+# JSX is not natively supported by Node, we do it in this case.
+
+test 'self closing', ->
+  eqJS '''
+    <div />
+  ''', '''
+    <div />;
+  '''
+
+test 'self closing formatting', ->
+  eqJS '''
+    <div/>
+  ''', '''
+    <div />;
+  '''
+
+test 'self closing multiline', ->
+  eqJS '''
+    <div
+    />
+  ''', '''
+    <div />;
+  '''
+
+test 'regex attribute', ->
+  eqJS '''
+    <div x={/>asds/} />
+  ''', '''
+    <div x={/>asds/} />;
+  '''
+
+test 'string attribute', ->
+  eqJS '''
+    <div x="a" />
+  ''', '''
+    <div x="a" />;
+  '''
+
+test 'simple attribute', ->
+  eqJS '''
+    <div x={42} />
+  ''', '''
+    <div x={42} />;
+  '''
+
+test 'assignment attribute', ->
+  eqJS '''
+    <div x={y = 42} />
+  ''', '''
+    var y;
+
+    <div x={y = 42} />;
+  '''
+
+test 'object attribute', ->
+  eqJS '''
+    <div x={{y: 42}} />
+  ''', '''
+    <div x={{
+        y: 42
+      }} />;
+  '''
+
+test 'attribute without value', ->
+  eqJS '''
+    <div checked x="hello" />
+  ''', '''
+    <div checked x="hello" />;
+  '''
+
+test 'paired', ->
+  eqJS '''
+    <div></div>
+  ''', '''
+    <div></div>;
+  '''
+
+test 'simple content', ->
+  eqJS '''
+    <div>Hello world</div>
+  ''', '''
+    <div>Hello world</div>;
+  '''
+
+test 'content interpolation', ->
+  eqJS '''
+    <div>Hello {42}</div>
+  ''', '''
+    <div>Hello {42}</div>;
+  '''
+
+test 'nested tag', ->
+  eqJS '''
+    <div><span /></div>
+  ''', '''
+    <div><span /></div>;
+  '''
+
+test 'tag inside interpolation formatting', ->
+  eqJS '''
+    <div>Hello {<span />}</div>
+  ''', '''
+    <div>Hello <span /></div>;
+  '''
+
+test 'tag inside interpolation, tags are callable', ->
+  eqJS '''
+    <div>Hello {<span /> x}</div>
+  ''', '''
+    <div>Hello {<span />(x)}</div>;
+  '''
+
+test 'tags inside interpolation, tags trigger implicit calls', ->
+  eqJS '''
+    <div>Hello {f <span />}</div>
+  ''', '''
+    <div>Hello {f(<span />)}</div>;
+  '''
+
+test 'regex in interpolation', ->
+  eqJS '''
+    <div x={/>asds/}><div />{/>asdsad</}</div>
+  ''', '''
+    <div x={/>asds/}><div />{/>asdsad</}</div>;
+  '''
+
+test 'interpolation in string attribute value', ->
+  eqJS '''
+    <div x="Hello #{world}" />
+  ''', '''
+    <div x={`Hello ${world}`} />;
+  '''
+
+# Unlike in `coffee-react-transform`.
+test 'bare numbers not allowed', ->
+  throws -> CoffeeScript.compile '<div x=3 />'
+
+test 'bare expressions not allowed', ->
+  throws -> CoffeeScript.compile '<div x=y />'
+
+test 'bare complex expressions not allowed', ->
+  throws -> CoffeeScript.compile '<div x=f(3) />'
+
+test 'unescaped opening tag angle bracket disallowed', ->
+  throws -> CoffeeScript.compile '<Person><<</Person>'
+
+test 'space around equal sign', ->
+  eqJS '''
+    <div popular = "yes" />
+  ''', '''
+    <div popular="yes" />;
+  '''
+
+# The following tests were adopted from James Friend’s
+# [https://github.com/jsdf/coffee-react-transform](https://github.com/jsdf/coffee-react-transform).
+
+test 'ambiguous tag-like expression', ->
+  throws -> CoffeeScript.compile 'x = a <b > c'
+
+test 'ambiguous tag', ->
+  eqJS '''
+    a <b > c </b>
+  ''', '''
+    a(<b> c </b>);
+  '''
+
+test 'escaped CoffeeScript attribute', ->
+  eqJS '''
+    <Person name={if test() then 'yes' else 'no'} />
+  ''', '''
+    <Person name={test() ? 'yes' : 'no'} />;
+  '''
+
+test 'escaped CoffeeScript attribute over multiple lines', ->
+  eqJS '''
+    <Person name={
+      if test()
+        'yes'
+      else
+        'no'
+    } />
+  ''', '''
+    <Person name={test() ? 'yes' : 'no'} />;
+  '''
+
+test 'multiple line escaped CoffeeScript with nested CSX', ->
+  eqJS '''
+    <Person name={
+      if test()
+        'yes'
+      else
+        'no'
+    }>
+    {
+
+      for n in a
+        <div> a
+          asf
+          <li xy={"as"}>{ n+1 }<a /> <a /> </li>
+        </div>
+    }
+
+    </Person>
+  ''', '''
+    var n;
+
+    <Person name={test() ? 'yes' : 'no'}>
+    {(function() {
+      var i, len, results;
+      results = [];
+      for (i = 0, len = a.length; i < len; i++) {
+        n = a[i];
+        results.push(<div> a
+          asf
+          <li xy={"as"}>{n + 1}<a /> <a /> </li>
+        </div>);
+      }
+      return results;
+    })()}
+
+    </Person>;
+  '''
+
+test 'nested CSX within an attribute, with object attr value', ->
+  eqJS '''
+    <Company>
+      <Person name={<NameComponent attr3={ {'a': {}, b: '{'} } />} />
+    </Company>
+  ''', '''
+    <Company>
+      <Person name={<NameComponent attr3={{
+          'a': {},
+          b: '{'
+        }} />} />
+    </Company>;
+  '''
+
+test 'complex nesting', ->
+  eqJS '''
+    <div code={someFunc({a:{b:{}, C:'}{}{'}})} />
+  ''', '''
+    <div code={someFunc({
+        a: {
+          b: {},
+          C: '}{}{'
+        }
+      })} />;
+  '''
+
+test 'multiline tag with nested CSX within an attribute', ->
+  eqJS '''
+    <Person
+      name={
+        name = formatName(user.name)
+        <NameComponent name={name.toUppercase()} />
+      }
+    >
+      blah blah blah
+    </Person>
+  ''', '''
+    var name;
+
+    <Person name={name = formatName(user.name), <NameComponent name={name.toUppercase()} />}>
+      blah blah blah
+    </Person>;
+  '''
+
+test 'escaped CoffeeScript with nested object literals', ->
+  eqJS '''
+    <Person>
+      blah blah blah {
+        {'a' : {}, 'asd': 'asd'}
+      }
+    </Person>
+  ''', '''
+    <Person>
+      blah blah blah {{
+      'a': {},
+      'asd': 'asd'
+    }}
+    </Person>;
+  '''
+
+test 'multiline tag attributes with escaped CoffeeScript', ->
+  eqJS '''
+    <Person name={if isActive() then 'active' else 'inactive'}
+    someattr='on new line' />
+  ''', '''
+    <Person name={isActive() ? 'active' : 'inactive'} someattr='on new line' />;
+  '''
+
+test 'lots of attributes', ->
+  eqJS '''
+    <Person eyes={2} friends={getFriends()} popular = "yes"
+    active={ if isActive() then 'active' else 'inactive' } data-attr='works' checked check={me_out}
+    />
+  ''', '''
+    <Person eyes={2} friends={getFriends()} popular="yes" active={isActive() ? 'active' : 'inactive'} data-attr='works' checked check={me_out} />;
+  '''
+
+# TODO: fix partially indented CSX
+# test 'multiline elements', ->
+#   eqJS '''
+#     <div something={
+#       do ->
+#         test = /432/gm # this is a regex
+#         6 /432/gm # this is division
+#     }
+#     >
+#     <div>
+#     <div>
+#     <div>
+#       <article name={ new Date() } number={203}
+#        range={getRange()}
+#       >
+#       </article>
+#     </div>
+#     </div>
+#     </div>
+#     </div>
+#   ''', '''
+#     bla
+#   '''
+
+test 'complex regex', ->
+  eqJS '''
+    <Person />
+    /\\/\\/<Person \\/>\\>\\//
+  ''', '''
+    <Person />;
+
+    /\\/\\/<Person \\/>\\>\\//;
+  '''
+
+test 'heregex', ->
+  eqJS '''
+    test = /432/gm # this is a regex
+    6 /432/gm # this is division
+    <Tag>
+    {test = /<Tag>/} this is a regex containing something which looks like a tag
+    </Tag>
+    <Person />
+    REGEX = /// ^
+      (/ (?! [\s=] )   # comment comment <comment>comment</comment>
+      [^ [ / \n \\ ]*  # comment comment
+      (?:
+        <Tag />
+        (?: \\[\s\S]   # comment comment
+          | \[         # comment comment
+               [^ \] \n \\ ]*
+               (?: \\[\s\S] [^ \] \n \\ ]* )*
+               <Tag>tag</Tag>
+             ]
+        ) [^ [ / \n \\ ]*
+      )*
+      /) ([imgy]{0,4}) (?!\w)
+    ///
+    <Person />
+  ''', '''
+    var REGEX, test;
+
+    test = /432/gm;
+
+    6 / 432 / gm;
+
+    <Tag>
+    {(test = /<Tag>/)} this is a regex containing something which looks like a tag
+    </Tag>;
+
+    <Person />;
+
+    REGEX = /^(\\/(?![s=])[^[\\/ ]*(?:<Tag\\/>(?:\\[sS]|[[^] ]*(?:\\[sS][^] ]*)*<Tag>tag<\\/Tag>])[^[\\/ ]*)*\\/)([imgy]{0,4})(?!w)/;
+
+    <Person />;
+  '''
+
+test 'comment within CSX is not treated as comment', ->
+  eqJS '''
+    <Person>
+    # i am not a comment
+    </Person>
+  ''', '''
+    <Person>
+    # i am not a comment
+    </Person>;
+  '''
+
+test 'comment at start of CSX escape', ->
+  eqJS '''
+    <Person>
+    {# i am a comment
+      "i am a string"
+    }
+    </Person>
+  ''', '''
+    <Person>
+    {"i am a string"}
+    </Person>;
+  '''
+
+test 'CSX comment cannot be used inside interpolation', ->
+  throws -> CoffeeScript.compile '''
+    <Person>
+    {# i am a comment}
+    </Person>
+  '''
+
+test 'comment syntax cannot be used inline', ->
+  throws -> CoffeeScript.compile '''
+    <Person>{#comment inline}</Person>
+  '''
+
+test 'string within CSX is ignored', ->
+  eqJS '''
+    <Person> "i am not a string" 'nor am i' </Person>
+  ''', '''
+    <Person> "i am not a string" 'nor am i' </Person>;
+  '''
+
+test 'special chars within CSX are ignored', ->
+  eqJS """
+    <Person> a,/';][' a\''@$%^&˚¬∑˜˚∆å∂¬˚*()*&^%$>> '"''"'''\'\'m' i </Person>
+  """, """
+    <Person> a,/';][' a''@$%^&˚¬∑˜˚∆å∂¬˚*()*&^%$>> '"''"'''''m' i </Person>;
+  """
+
+test 'html entities (name, decimal, hex) within CSX', ->
+  eqJS '''
+    <Person>  &&&&euro;  &#8364; &#x20AC;;; </Person>
+  ''', '''
+    <Person>  &&&&euro;  &#8364; &#x20AC;;; </Person>;
+  '''
+
+test 'tag with {{}}', ->
+  eqJS '''
+    <Person name={{value: item, key, item}} />
+  ''', '''
+    <Person name={{
+        value: item,
+        key,
+        item
+      }} />;
+  '''
+
+test 'tag with namespace', ->
+  eqJS '''
+    <Something.Tag></Something.Tag>
+  ''', '''
+    <Something.Tag></Something.Tag>;
+  '''
+
+test 'tag with lowercase namespace', ->
+  eqJS '''
+    <something.tag></something.tag>
+  ''', '''
+    <something.tag></something.tag>;
+  '''
+
+test 'self closing tag with namespace', ->
+  eqJS '''
+    <Something.Tag />
+  ''', '''
+    <Something.Tag />;
+  '''
+
+# TODO: Uncomment the following test once destructured object spreads are supported.
+# test 'self closing tag with spread attribute', ->
+#   eqJS '''
+#     <Component a={b} {... x } b="c" />
+#   ''', '''
+#     React.createElement(Component, Object.assign({"a": (b)},  x , {"b": "c"}))
+#   '''
+
+# TODO: Uncomment the following test once destructured object spreads are supported.
+# test 'complex spread attribute', ->
+#   eqJS '''
+#     <Component {...x} a={b} {... x } b="c" {...$my_xtraCoolVar123 } />
+#   ''', '''
+#     React.createElement(Component, Object.assign({},  x, {"a": (b)},  x , {"b": "c"}, $my_xtraCoolVar123  ))
+#   '''
+
+# TODO: Uncomment the following test once destructured object spreads are supported.
+# test 'multiline spread attribute', ->
+#   eqJS '''
+#     <Component {...
+#       x } a={b} {... x } b="c" {...z }>
+#     </Component>
+#   ''', '''
+#     React.createElement(Component, Object.assign({},
+#       x , {"a": (b)},  x , {"b": "c"}, z )
+#     )
+#   '''
+
+# TODO: Uncomment the following test once destructured object spreads are supported.
+# test 'multiline tag with spread attribute', ->
+#   eqJS '''
+#     <Component
+#       z="1"
+#       {...x}
+#       a={b}
+#       b="c"
+#     >
+#     </Component>
+#   ''', '''
+#     React.createElement(Component, Object.assign({ \
+#       "z": "1"
+#       }, x, { \
+#       "a": (b),  \
+#       "b": "c"
+#     })
+#     )
+#   '''
+
+# TODO: Uncomment the following test once destructured object spreads are supported.
+# test 'multiline tag with spread attribute first', ->
+#   eqJS '''
+#     <Component
+#       {...
+#       x}
+#       z="1"
+#       a={b}
+#       b="c"
+#     >
+#     </Component>
+#   ''', '''
+#     React.createElement(Component, Object.assign({}, \
+
+#       x, { \
+#       "z": "1",  \
+#       "a": (b),  \
+#       "b": "c"
+#     })
+#     )
+#   '''
+
+# TODO: Uncomment the following test once destructured object spreads are supported.
+# test 'complex multiline spread attribute', ->
+#   eqJS '''
+#     <Component
+#       {...
+#       y} a={b} {... x } b="c" {...z }>
+#       <div code={someFunc({a:{b:{}, C:'}'}})} />
+#     </Component>
+#   ''', '''
+#     React.createElement(Component, Object.assign({}, \
+
+#       y, {"a": (b)},  x , {"b": "c"}, z ),
+#       React.createElement("div", {"code": (someFunc({a:{b:{}, C:'}'}}))})
+#     )
+#   '''
+
+# TODO: Uncomment the following test once destructured object spreads are supported.
+# test 'self closing spread attribute on single line', ->
+#   eqJS '''
+#     <Component a="b" c="d" {...@props} />
+#   ''', '''
+#     React.createElement(Component, Object.assign({"a": "b", "c": "d"}, @props ))
+#   '''
+
+# TODO: Uncomment the following test once destructured object spreads are supported.
+# test 'self closing spread attribute on new line', ->
+#   eqJS '''
+#     <Component
+#       a="b"
+#       c="d"
+#       {...@props}
+#     />
+#   ''', '''
+#     React.createElement(Component, Object.assign({ \
+#       "a": "b",  \
+#       "c": "d"
+#       }, @props
+#     ))
+#   '''
+
+# TODO: Uncomment the following test once destructured object spreads are supported.
+# test 'self closing spread attribute on same line', ->
+#   eqJS '''
+#     <Component
+#       a="b"
+#       c="d"
+#       {...@props} />
+#   ''', '''
+#     React.createElement(Component, Object.assign({ \
+#       "a": "b",  \
+#       "c": "d"
+#       }, @props ))
+#   '''
+
+# TODO: Uncomment the following test once destructured object spreads are supported.
+# test 'self closing spread attribute on next line', ->
+#   eqJS '''
+#     <Component
+#       a="b"
+#       c="d"
+#       {...@props}
+
+#     />
+#   ''', '''
+#     React.createElement(Component, Object.assign({ \
+#       "a": "b",  \
+#       "c": "d"
+#       }, @props
+
+#     ))
+#   '''
+
+test 'empty strings are not converted to true', ->
+  eqJS '''
+    <Component val="" />
+  ''', '''
+    <Component val="" />;
+  '''
+
+test 'CoffeeScript @ syntax in tag name', ->
+  throws -> CoffeeScript.compile '''
+    <@Component>
+      <Component />
+    </@Component>
+  '''
+
+test 'hyphens in tag names', ->
+  eqJS '''
+    <paper-button className="button">{text}</paper-button>
+  ''', '''
+    <paper-button className="button">{text}</paper-button>;
+  '''
+
+test 'closing tags must be closed', ->
+  throws -> CoffeeScript.compile '''
+    <a></a
+  '''
+
+# Tests for allowing less than operator without spaces when ther is no CSX
+
+test 'unspaced less than without CSX: identifier', ->
+  a = 3
+  div = 5
+  ok a<div
+
+test 'unspaced less than without CSX: number', ->
+  div = 5
+  ok 3<div
+
+test 'unspaced less than without CSX: paren', ->
+  div = 5
+  ok (3)<div
+
+test 'unspaced less than without CSX: index', ->
+  div = 5
+  a = [3]
+  ok a[0]<div
+
+test 'tag inside CSX works following: identifier', ->
+  eqJS '''
+    <span>a<div /></span>
+  ''', '''
+    <span>a<div /></span>;
+  '''
+
+test 'tag inside CSX works following: number', ->
+  eqJS '''
+    <span>3<div /></span>
+  ''', '''
+    <span>3<div /></span>;
+  '''
+
+test 'tag inside CSX works following: paren', ->
+  eqJS '''
+    <span>(3)<div /></span>
+  ''', '''
+    <span>(3)<div /></span>;
+  '''
+
+test 'tag inside CSX works following: square bracket', ->
+  eqJS '''
+    <span>]<div /></span>
+  ''', '''
+    <span>]<div /></span>;
+  '''
+
+test 'unspaced less than inside CSX works but is not encouraged', ->
+  eqJS '''
+      a = 3
+      div = 5
+      html = <span>{a<div}</span>
+    ''', '''
+      var a, div, html;
+
+      a = 3;
+
+      div = 5;
+
+      html = <span>{a < div}</span>;
+    '''
+
+test 'unspaced less than before CSX works but is not encouraged', ->
+  eqJS '''
+      div = 5
+      res = 2<div
+      html = <span />
+    ''', '''
+      var div, html, res;
+
+      div = 5;
+
+      res = 2 < div;
+
+      html = <span />;
+    '''
+
+test 'unspaced less than after CSX works but is not encouraged', ->
+  eqJS '''
+      div = 5
+      html = <span />
+      res = 2<div
+    ''', '''
+      var div, html, res;
+
+      div = 5;
+
+      html = <span />;
+
+      res = 2 < div;
+    '''
+
+</script>
 <script type="text/x-coffeescript" class="test" id="error_messages">
 # Error Formatting
 # ----------------
@@ -5130,26 +6326,27 @@ test "unexpected object keys", ->
     [[]]: 1
     ^
   '''
+
   assertErrorFormat '''
     {(a + "b")}
   ''', '''
-    [stdin]:1:2: error: unexpected (
+    [stdin]:1:11: error: unexpected }
     {(a + "b")}
-     ^
+              ^
   '''
   assertErrorFormat '''
     {(a + "b"): 1}
   ''', '''
-    [stdin]:1:2: error: unexpected (
+    [stdin]:1:11: error: unexpected :
     {(a + "b"): 1}
-     ^
+              ^
   '''
   assertErrorFormat '''
     (a + "b"): 1
   ''', '''
-    [stdin]:1:1: error: unexpected (
+    [stdin]:1:10: error: unexpected :
     (a + "b"): 1
-    ^
+             ^
   '''
   assertErrorFormat '''
     a: 1, [[]]: 2
@@ -5872,6 +7069,87 @@ test "#4248: Unicode code point escapes", ->
       \    ^\^^^^^^^^^^^^^
   '''
 
+test "CSX error: non-matching tag names", ->
+  assertErrorFormat '''
+    <div><span></div></span>
+  ''',
+  '''
+    [stdin]:1:7: error: expected corresponding CSX closing tag for span
+    <div><span></div></span>
+          ^^^^
+  '''
+
+test "CSX error: bare expressions not allowed", ->
+  assertErrorFormat '''
+    <div x=3 />
+  ''',
+  '''
+    [stdin]:1:8: error: expected wrapped or quoted CSX attribute
+    <div x=3 />
+           ^
+  '''
+
+test "CSX error: unescaped opening tag angle bracket disallowed", ->
+  assertErrorFormat '''
+    <Person><<</Person>
+  ''',
+  '''
+    [stdin]:1:9: error: unexpected <<
+    <Person><<</Person>
+            ^^
+  '''
+
+test "CSX error: ambiguous tag-like expression", ->
+  assertErrorFormat '''
+    x = a <b > c
+  ''',
+  '''
+    [stdin]:1:10: error: missing </
+    x = a <b > c
+             ^
+  '''
+
+test 'Bound method called as callback before binding throws runtime error', ->
+  class Base
+    constructor: ->
+      f = @derivedBound
+      try
+        f()
+        ok no
+      catch e
+        eq e.message, 'Bound instance method accessed before binding'
+
+  class Derived extends Base
+    derivedBound: =>
+      ok no
+  d = new Derived
+
+test "#3845/#3446: chain after function glyph (but not inline)", ->
+  assertErrorFormat '''
+    a -> .b
+  ''',
+  '''
+    [stdin]:1:6: error: unexpected .
+    a -> .b
+         ^
+  '''
+
+test "#3906: error for unusual indentation", ->
+  assertErrorFormat '''
+    a
+      c
+     .d
+
+    e(
+     f)
+
+    g
+  ''', '''
+    [stdin]:2:1: error: unexpected indentation
+      c
+    ^^
+  '''
+
 </script>
 <script type="text/x-coffeescript" class="test" id="eval">
 if vm = require? 'vm'
@@ -6392,6 +7670,52 @@ test "#4487: Handle unusual outdentation", ->
        2
       3
   eq b, undefined
+
+test "#3906: handle further indentation inside indented chain", ->
+  eq 1, CoffeeScript.eval '''
+    z = b: -> d: 2
+    e = ->
+    f = 3
+
+    z
+        .b ->
+            c
+        .d
+
+    e(
+        f
+    )
+
+    1
+  '''
+
+  eq 1, CoffeeScript.eval '''
+    z = -> b: -> e: ->
+
+    z()
+        .b
+            c: 'd'
+        .e()
+
+    f = [
+        'g'
+    ]
+
+    1
+  '''
+
+  eq 1, CoffeeScript.eval '''
+    z = -> c: -> c: ->
+
+    z('b')
+      .c 'a',
+        {b: 'a'}
+      .c()
+    z(
+      'b'
+    )
+    1
+  '''
 
 </script>
 <script type="text/x-coffeescript" class="test" id="function_invocation">
@@ -7377,6 +8701,69 @@ test "destructuring in function definition", ->
     url: '/home', async: true, beforeSend: fn, cache: true, method: 'post', data: {}
   }
 
+test "rest element destructuring in function definition", ->
+  obj = {a: 1, b: 2, c: 3, d: 4, e: 5}
+
+  (({a, b, r...}) ->
+    eq 1, a
+    eq 2, b,
+    deepEqual r, {c: 3, d: 4, e: 5}
+  ) obj
+
+  (({a: p, b, r...}, q) ->
+    eq p, 1
+    eq q, 9
+    deepEqual r, {c: 3, d: 4, e: 5}
+  ) {a:1, b:2, c:3, d:4, e:5}, 9
+
+  a1={}; b1={}; c1={}; d1={}
+  obj1 = {
+    a: a1
+    b: {
+      'c': {
+        d: {
+          b1
+          e: c1
+          f: d1
+        }
+      }
+    }
+    b2: {b1, c1}
+  }
+
+  (({a: w, b: {c: {d: {b1: bb, r1...}}}, r2...}) ->
+    eq a1, w
+    eq bb, b1
+    eq r2.b, undefined
+    deepEqual r1, {e: c1, f: d1}
+    deepEqual r2.b2, {b1, c1}
+  ) obj1
+
+  b = 3
+  f = ({a, b...}) ->
+  f {}
+  eq 3, b
+
+  (({a, r...} = {}) ->
+    eq a, undefined
+    deepEqual r, {}
+  )()
+
+  (({a, r...} = {}) ->
+    eq a, 1
+    deepEqual r, {b: 2, c: 3}
+  ) {a: 1, b: 2, c: 3}
+
+  f = ({a, r...} = {}) -> [a, r]
+  deepEqual [undefined, {}], f()
+  deepEqual [1, {b: 2}], f {a: 1, b: 2}
+  deepEqual [1, {}], f {a: 1}
+
+  f = ({a, r...} = {a: 1, b: 2}) -> [a, r]
+  deepEqual [1, {b:2}], f()
+  deepEqual [2, {}], f {a:2}
+  deepEqual [3, {c:5}], f {a:3, c:5}
+
 test "#4005: `([a = {}]..., b) ->` weirdness", ->
   fn = ([a = {}]..., b) -> [a, b]
   deepEqual fn(5), [{}, 5]
@@ -7556,6 +8943,46 @@ test "Destructured parameter with default value, that itself has a default value
       y: 30
     radius: 30
   eq output, 'big-18-30-30'
+
+test "#4566: destructuring with nested default values", ->
+  f = ({a: {b = 1}}) ->
+    b
+  eq 2, f a: b: 2
+
+test "#1043: comma after function glyph", ->
+  x = (a=->, b=2) ->
+    a()
+  eq x(), undefined
+
+  f = (a) -> a()
+  g = f ->, 2
+  eq g, undefined
+  h = f(=>, 2)
+  eq h, undefined
+
+test "#3845/#3446: chain after function glyph", ->
+  angular = module: -> controller: -> controller: ->
+
+  eq undefined,
+    angular.module 'foo'
+    .controller 'EmailLoginCtrl', ->
+    .controller 'EmailSignupCtrl', ->
+
+  beforeEach = (f) -> f()
+  getPromise = -> then: -> catch: ->
+
+  eq undefined,
+    beforeEach ->
+      getPromise()
+      .then (@result) =>
+      .catch (@error) =>
+
+  doThing = -> then: -> catch: (f) -> f()
+  handleError = -> 3
+  eq 3,
+    doThing()
+    .then (@result) =>
+    .catch handleError
 
 </script>
 <script type="text/x-coffeescript" class="test" id="generators">
@@ -9242,80 +10669,72 @@ test "Verify all tokens get a location", ->
 # Import statements
 
 test "backticked import statement", ->
-  input = """
+  eqJS """
     if Meteor.isServer
-      `import { foo, bar as baz } from 'lib'`"""
-  output = """
+      `import { foo, bar as baz } from 'lib'`""",
+  """
     if (Meteor.isServer) {
       import { foo, bar as baz } from 'lib';
     }"""
-  eq toJS(input), output
 
 test "import an entire module for side effects only, without importing any bindings", ->
-  input = "import 'lib'"
-  output = "import 'lib';"
-  eq toJS(input), output
+  eqJS "import 'lib'",
+  "import 'lib';"
 
 test "import default member from module, adding the member to the current scope", ->
-  input = """
+  eqJS """
     import foo from 'lib'
-    foo.fooMethod()"""
-  output = """
+    foo.fooMethod()""",
+  """
     import foo from 'lib';
 
     foo.fooMethod();"""
-  eq toJS(input), output
 
 test "import an entire module's contents as an alias, adding the alias to the current scope", ->
-  input = """
+  eqJS """
     import * as foo from 'lib'
-    foo.fooMethod()"""
-  output = """
+    foo.fooMethod()""",
+  """
     import * as foo from 'lib';
 
     foo.fooMethod();"""
-  eq toJS(input), output
 
 test "import empty object", ->
-  input = "import { } from 'lib'"
-  output = "import {} from 'lib';"
-  eq toJS(input), output
+  eqJS "import { } from 'lib'",
+  "import {} from 'lib';"
 
 test "import empty object", ->
-  input = "import {} from 'lib'"
-  output = "import {} from 'lib';"
-  eq toJS(input), output
+  eqJS "import {} from 'lib'",
+  "import {} from 'lib';"
 
 test "import a single member of a module, adding the member to the current scope", ->
-  input = """
+  eqJS """
     import { foo } from 'lib'
-    foo.fooMethod()"""
-  output = """
+    foo.fooMethod()""",
+  """
     import {
       foo
     } from 'lib';
 
     foo.fooMethod();"""
-  eq toJS(input), output
 
 test "import a single member of a module as an alias, adding the alias to the current scope", ->
-  input = """
+  eqJS """
     import { foo as bar } from 'lib'
-    bar.barMethod()"""
-  output = """
+    bar.barMethod()""",
+  """
     import {
       foo as bar
     } from 'lib';
 
     bar.barMethod();"""
-  eq toJS(input), output
 
 test "import multiple members of a module, adding the members to the current scope", ->
-  input = """
+  eqJS """
     import { foo, bar } from 'lib'
     foo.fooMethod()
-    bar.barMethod()"""
-  output = """
+    bar.barMethod()""",
+  """
     import {
       foo,
       bar
@@ -9324,14 +10743,13 @@ test "import multiple members of a module, adding the members to the current sco
     foo.fooMethod();
 
     bar.barMethod();"""
-  eq toJS(input), output
 
 test "import multiple members of a module where some are aliased, adding the members or aliases to the current scope", ->
-  input = """
+  eqJS """
     import { foo, bar as baz } from 'lib'
     foo.fooMethod()
-    baz.bazMethod()"""
-  output = """
+    baz.bazMethod()""",
+  """
     import {
       foo,
       bar as baz
@@ -9340,15 +10758,14 @@ test "import multiple members of a module where some are aliased, adding the mem
     foo.fooMethod();
 
     baz.bazMethod();"""
-  eq toJS(input), output
 
 test "import default member and other members of a module, adding the members to the current scope", ->
-  input = """
+  eqJS """
     import foo, { bar, baz as qux } from 'lib'
     foo.fooMethod()
     bar.barMethod()
-    qux.quxMethod()"""
-  output = """
+    qux.quxMethod()""",
+  """
     import foo, {
       bar,
       baz as qux
@@ -9359,87 +10776,80 @@ test "import default member and other members of a module, adding the members to
     bar.barMethod();
 
     qux.quxMethod();"""
-  eq toJS(input), output
 
 test "import default member from a module as well as the entire module's contents as an alias, adding the member and alias to the current scope", ->
-  input = """
+  eqJS """
     import foo, * as bar from 'lib'
     foo.fooMethod()
-    bar.barMethod()"""
-  output = """
+    bar.barMethod()""",
+  """
     import foo, * as bar from 'lib';
 
     foo.fooMethod();
 
     bar.barMethod();"""
-  eq toJS(input), output
 
 test "multiline simple import", ->
-  input = """
+  eqJS """
     import {
       foo,
       bar as baz
-    } from 'lib'"""
-  output = """
+    } from 'lib'""",
+  """
     import {
       foo,
       bar as baz
     } from 'lib';"""
-  eq toJS(input), output
 
 test "multiline complex import", ->
-  input = """
+  eqJS """
     import foo, {
       bar,
       baz as qux
-    } from 'lib'"""
-  output = """
+    } from 'lib'""",
+  """
     import foo, {
       bar,
       baz as qux
     } from 'lib';"""
-  eq toJS(input), output
 
 test "import with optional commas", ->
-  input = "import { foo, bar, } from 'lib'"
-  output = """
+  eqJS "import { foo, bar, } from 'lib'",
+  """
     import {
       foo,
       bar
     } from 'lib';"""
-  eq toJS(input), output
 
 test "multiline import without commas", ->
-  input = """
+  eqJS """
     import {
       foo
       bar
-    } from 'lib'"""
-  output = """
+    } from 'lib'""",
+  """
     import {
       foo,
       bar
     } from 'lib';"""
-  eq toJS(input), output
 
 test "multiline import with optional commas", ->
-  input = """
+  eqJS """
     import {
       foo,
       bar,
-    } from 'lib'"""
-  output = """
+    } from 'lib'""",
+  """
     import {
       foo,
       bar
     } from 'lib';"""
-  eq toJS(input), output
 
 test "a variable can be assigned after an import", ->
-  input = """
+  eqJS """
     import { foo } from 'lib'
-    bar = 5"""
-  output = """
+    bar = 5""",
+  """
     var bar;
 
     import {
@@ -9447,14 +10857,13 @@ test "a variable can be assigned after an import", ->
     } from 'lib';
 
     bar = 5;"""
-  eq toJS(input), output
 
 test "variables can be assigned before and after an import", ->
-  input = """
+  eqJS """
     foo = 5
     import { bar } from 'lib'
-    baz = 7"""
-  output = """
+    baz = 7""",
+  """
     var baz, foo;
 
     foo = 5;
@@ -9464,185 +10873,164 @@ test "variables can be assigned before and after an import", ->
     } from 'lib';
 
     baz = 7;"""
-  eq toJS(input), output
 
 # Export statements
 
 test "export empty object", ->
-  input = "export { }"
-  output = "export {};"
-  eq toJS(input), output
+  eqJS "export { }",
+  "export {};"
 
 test "export empty object", ->
-  input = "export {}"
-  output = "export {};"
-  eq toJS(input), output
+  eqJS "export {}",
+  "export {};"
 
 test "export named members within an object", ->
-  input = "export { foo, bar }"
-  output = """
+  eqJS "export { foo, bar }",
+  """
     export {
       foo,
       bar
     };"""
-  eq toJS(input), output
 
 test "export named members as aliases, within an object", ->
-  input = "export { foo as bar, baz as qux }"
-  output = """
+  eqJS "export { foo as bar, baz as qux }",
+  """
     export {
       foo as bar,
       baz as qux
     };"""
-  eq toJS(input), output
 
 test "export named members within an object, with an optional comma", ->
-  input = "export { foo, bar, }"
-  output = """
+  eqJS "export { foo, bar, }",
+  """
     export {
       foo,
       bar
     };"""
-  eq toJS(input), output
 
 test "multiline export named members within an object", ->
-  input = """
+  eqJS """
     export {
       foo,
       bar
-    }"""
-  output = """
+    }""",
+  """
     export {
       foo,
       bar
     };"""
-  eq toJS(input), output
 
 test "multiline export named members within an object, with an optional comma", ->
-  input = """
+  eqJS """
     export {
       foo,
       bar,
-    }"""
-  output = """
+    }""",
+  """
     export {
       foo,
       bar
     };"""
-  eq toJS(input), output
 
 test "export default string", ->
-  input = "export default 'foo'"
-  output = "export default 'foo';"
-  eq toJS(input), output
+  eqJS "export default 'foo'",
+  "export default 'foo';"
 
 test "export default number", ->
-  input = "export default 5"
-  output = "export default 5;"
-  eq toJS(input), output
+  eqJS "export default 5",
+  "export default 5;"
 
 test "export default object", ->
-  input = "export default { foo: 'bar', baz: 'qux' }"
-  output = """
+  eqJS "export default { foo: 'bar', baz: 'qux' }",
+  """
     export default {
       foo: 'bar',
       baz: 'qux'
     };"""
-  eq toJS(input), output
 
 test "export default implicit object", ->
-  input = "export default foo: 'bar', baz: 'qux'"
-  output = """
+  eqJS "export default foo: 'bar', baz: 'qux'",
+  """
     export default {
       foo: 'bar',
       baz: 'qux'
     };"""
-  eq toJS(input), output
 
 test "export default multiline implicit object", ->
-  input = """
+  eqJS """
     export default
       foo: 'bar',
       baz: 'qux'
-    """
-  output = """
+    """,
+  """
     export default {
       foo: 'bar',
       baz: 'qux'
     };"""
-  eq toJS(input), output
 
 test "export default assignment expression", ->
-  input = "export default foo = 'bar'"
-  output = """
+  eqJS "export default foo = 'bar'",
+  """
     var foo;
 
     export default foo = 'bar';"""
-  eq toJS(input), output
 
 test "export assignment expression", ->
-  input = "export foo = 'bar'"
-  output = "export var foo = 'bar';"
-  eq toJS(input), output
+  eqJS "export foo = 'bar'",
+  "export var foo = 'bar';"
 
 test "export multiline assignment expression", ->
-  input = """
+  eqJS """
     export foo =
-    'bar'"""
-  output = "export var foo = 'bar';"
-  eq toJS(input), output
+    'bar'""",
+    "export var foo = 'bar';"
 
 test "export multiline indented assignment expression", ->
-  input = """
+  eqJS """
     export foo =
-      'bar'"""
-  output = "export var foo = 'bar';"
-  eq toJS(input), output
+      'bar'""",
+      "export var foo = 'bar';"
 
 test "export default function", ->
-  input = "export default ->"
-  output = "export default function() {};"
-  eq toJS(input), output
+  eqJS "export default ->",
+  "export default function() {};"
 
 test "export default multiline function", ->
-  input = """
+  eqJS """
     export default (foo) ->
-      console.log foo"""
-  output = """
+      console.log foo""",
+    """
     export default function(foo) {
       return console.log(foo);
     };"""
-  eq toJS(input), output
 
 test "export assignment function", ->
-  input = """
+  eqJS """
     export foo = (bar) ->
-      console.log bar"""
-  output = """
+      console.log bar""",
+    """
     export var foo = function(bar) {
       return console.log(bar);
     };"""
-  eq toJS(input), output
 
 test "export assignment function which contains assignments in its body", ->
-  input = """
+  eqJS """
     export foo = (bar) ->
       baz = '!'
-      console.log bar + baz"""
-  output = """
+      console.log bar + baz""",
+    """
     export var foo = function(bar) {
       var baz;
       baz = '!';
       return console.log(bar + baz);
     };"""
-  eq toJS(input), output
 
 test "export default predefined function", ->
-  input = """
+  eqJS """
     foo = (bar) ->
       console.log bar
-    export default foo"""
-  output = """
+    export default foo""",
+  """
     var foo;
 
     foo = function(bar) {
@@ -9650,14 +11038,13 @@ test "export default predefined function", ->
     };
 
     export default foo;"""
-  eq toJS(input), output
 
 test "export default class", ->
-  input = """
+  eqJS """
     export default class foo extends bar
       baz: ->
-        console.log 'hello, world!'"""
-  output = """
+        console.log 'hello, world!'""",
+      """
     var foo;
 
     export default foo = class foo extends bar {
@@ -9666,42 +11053,39 @@ test "export default class", ->
       }
 
     };"""
-  eq toJS(input), output
 
 test "export class", ->
-  input = """
+  eqJS """
     export class foo
       baz: ->
-        console.log 'hello, world!'"""
-  output = """
+        console.log 'hello, world!'""",
+      """
     export var foo = class foo {
       baz() {
         return console.log('hello, world!');
       }
 
     };"""
-  eq toJS(input), output
 
 test "export class that extends", ->
-  input = """
+  eqJS """
     export class foo extends bar
       baz: ->
-        console.log 'hello, world!'"""
-  output = """
+        console.log 'hello, world!'""",
+      """
     export var foo = class foo extends bar {
       baz() {
         return console.log('hello, world!');
       }
 
     };"""
-  eq toJS(input), output
 
 test "export default class that extends", ->
-  input = """
+  eqJS """
     export default class foo extends bar
       baz: ->
-        console.log 'hello, world!'"""
-  output = """
+        console.log 'hello, world!'""",
+      """
     var foo;
 
     export default foo = class foo extends bar {
@@ -9710,85 +11094,77 @@ test "export default class that extends", ->
       }
 
     };"""
-  eq toJS(input), output
 
 test "export default named member, within an object", ->
-  input = "export { foo as default, bar }"
-  output = """
+  eqJS "export { foo as default, bar }",
+  """
     export {
       foo as default,
       bar
     };"""
-  eq toJS(input), output
 
 
 # Import and export in the same statement
 
 test "export an entire module's contents", ->
-  input = "export * from 'lib'"
-  output = "export * from 'lib';"
-  eq toJS(input), output
+  eqJS "export * from 'lib'",
+  "export * from 'lib';"
 
 test "export members imported from another module", ->
-  input = "export { foo, bar } from 'lib'"
-  output = """
+  eqJS "export { foo, bar } from 'lib'",
+  """
     export {
       foo,
       bar
     } from 'lib';"""
-  eq toJS(input), output
 
 test "export as aliases members imported from another module", ->
-  input = "export { foo as bar, baz as qux } from 'lib'"
-  output = """
+  eqJS "export { foo as bar, baz as qux } from 'lib'",
+  """
     export {
       foo as bar,
       baz as qux
     } from 'lib';"""
-  eq toJS(input), output
 
 test "export list can contain CoffeeScript keywords", ->
-  input = "export { unless } from 'lib'"
-  output = """
+  eqJS "export { unless } from 'lib'",
+  """
     export {
       unless
     } from 'lib';"""
-  eq toJS(input), output
 
 test "export list can contain CoffeeScript keywords when aliasing", ->
-  input = "export { when as bar, baz as unless } from 'lib'"
-  output = """
+  eqJS "export { when as bar, baz as unless } from 'lib'",
+  """
     export {
       when as bar,
       baz as unless
     } from 'lib';"""
-  eq toJS(input), output
 
 
 # Edge cases
 
 test "multiline import with comments", ->
-  input = """
+  eqJS """
     import {
       foo, # Not as good as bar
       bar as baz # I prefer qux
-    } from 'lib'"""
-  output = """
+    } from 'lib'""",
+  """
     import {
       foo,
       bar as baz
     } from 'lib';"""
-  eq toJS(input), output
 
 test "`from` not part of an import or export statement can still be assigned", ->
   from = 5
   eq 5, from
 
 test "a variable named `from` can be assigned after an import", ->
-  input = """
+  eqJS """
     import { foo } from 'lib'
-    from = 5"""
-  output = """
+    from = 5""",
+  """
     var from;
 
     import {
@@ -9796,15 +11172,14 @@ test "a variable named `from` can be assigned after an import", ->
     } from 'lib';
 
     from = 5;"""
-  eq toJS(input), output
 
 test "`from` can be assigned after a multiline import", ->
-  input = """
+  eqJS """
     import {
       foo
     } from 'lib'
-    from = 5"""
-  output = """
+    from = 5""",
+  """
     var from;
 
     import {
@@ -9812,91 +11187,81 @@ test "`from` can be assigned after a multiline import", ->
     } from 'lib';
 
     from = 5;"""
-  eq toJS(input), output
 
 test "`from` can be imported as a member name", ->
-  input = "import { from } from 'lib'"
-  output = """
+  eqJS "import { from } from 'lib'",
+  """
     import {
       from
     } from 'lib';"""
-  eq toJS(input), output
 
 test "`from` can be imported as a member name and aliased", ->
-  input = "import { from as foo } from 'lib'"
-  output = """
+  eqJS "import { from as foo } from 'lib'",
+  """
     import {
       from as foo
     } from 'lib';"""
-  eq toJS(input), output
 
 test "`from` can be used as an alias name", ->
-  input = "import { foo as from } from 'lib'"
-  output = """
+  eqJS "import { foo as from } from 'lib'",
+  """
     import {
       foo as from
     } from 'lib';"""
-  eq toJS(input), output
 
 test "`as` can be imported as a member name", ->
-  input = "import { as } from 'lib'"
-  output = """
+  eqJS "import { as } from 'lib'",
+  """
     import {
       as
     } from 'lib';"""
-  eq toJS(input), output
 
 test "`as` can be imported as a member name and aliased", ->
-  input = "import { as as foo } from 'lib'"
-  output = """
+  eqJS "import { as as foo } from 'lib'",
+  """
     import {
       as as foo
     } from 'lib';"""
-  eq toJS(input), output
 
 test "`as` can be used as an alias name", ->
-  input = "import { foo as as } from 'lib'"
-  output = """
+  eqJS "import { foo as as } from 'lib'",
+  """
     import {
       foo as as
     } from 'lib';"""
-  eq toJS(input), output
 
 test "CoffeeScript keywords can be used as imported names in import lists", ->
-  input = """
+  eqJS """
     import { unless as bar } from 'lib'
-    bar.barMethod()"""
-  output = """
+    bar.barMethod()""",
+  """
     import {
       unless as bar
     } from 'lib';
 
     bar.barMethod();"""
-  eq toJS(input), output
 
 test "`*` can be used in an expression on the same line as an export keyword", ->
-  input = "export foo = (x) -> x * x"
-  output = """
+  eqJS "export foo = (x) -> x * x",
+  """
     export var foo = function(x) {
       return x * x;
     };"""
-  eq toJS(input), output
-  input = "export default foo = (x) -> x * x"
-  output = """
+  eqJS "export default foo = (x) -> x * x",
+  """
     var foo;
 
     export default foo = function(x) {
       return x * x;
     };"""
-  eq toJS(input), output
 
 test "`*` and `from` can be used in an export default expression", ->
-  input = """
+  eqJS """
     export default foo.extend
       bar: ->
         from = 5
-        from = from * 3"""
-  output = """
+        from = from * 3""",
+      """
     export default foo.extend({
       bar: function() {
         var from;
@@ -9904,95 +11269,84 @@ test "`*` and `from` can be used in an export default expression", ->
         return from = from * 3;
       }
     });"""
-  eq toJS(input), output
 
 test "wrapped members can be imported multiple times if aliased", ->
-  input = "import { foo, foo as bar } from 'lib'"
-  output = """
+  eqJS "import { foo, foo as bar } from 'lib'",
+  """
     import {
       foo,
       foo as bar
     } from 'lib';"""
-  eq toJS(input), output
 
 test "default and wrapped members can be imported multiple times if aliased", ->
-  input = "import foo, { foo as bar } from 'lib'"
-  output = """
+  eqJS "import foo, { foo as bar } from 'lib'",
+  """
     import foo, {
       foo as bar
     } from 'lib';"""
-  eq toJS(input), output
 
 test "import a member named default", ->
-  input = "import { default } from 'lib'"
-  output = """
+  eqJS "import { default } from 'lib'",
+  """
     import {
       default
     } from 'lib';"""
-  eq toJS(input), output
 
 test "import an aliased member named default", ->
-  input = "import { default as def } from 'lib'"
-  output = """
+  eqJS "import { default as def } from 'lib'",
+  """
     import {
       default as def
     } from 'lib';"""
-  eq toJS(input), output
 
 test "export a member named default", ->
-  input = "export { default }"
-  output = """
+  eqJS "export { default }",
+  """
     export {
       default
     };"""
-  eq toJS(input), output
 
 test "export an aliased member named default", ->
-  input = "export { def as default }"
-  output = """
+  eqJS "export { def as default }",
+  """
     export {
       def as default
     };"""
-  eq toJS(input), output
 
 test "import an imported member named default", ->
-  input = "import { default } from 'lib'"
-  output = """
+  eqJS "import { default } from 'lib'",
+  """
     import {
       default
     } from 'lib';"""
-  eq toJS(input), output
 
 test "import an imported aliased member named default", ->
-  input = "import { default as def } from 'lib'"
-  output = """
+  eqJS "import { default as def } from 'lib'",
+  """
     import {
       default as def
     } from 'lib';"""
-  eq toJS(input), output
 
 test "export an imported member named default", ->
-  input = "export { default } from 'lib'"
-  output = """
+  eqJS "export { default } from 'lib'",
+  """
     export {
       default
     } from 'lib';"""
-  eq toJS(input), output
 
 test "export an imported aliased member named default", ->
-  input = "export { default as def } from 'lib'"
-  output = """
+  eqJS "export { default as def } from 'lib'",
+  """
     export {
       default as def
     } from 'lib';"""
-  eq toJS(input), output
 
 test "#4394: export shouldn't prevent variable declarations", ->
-  input = """
+  eqJS """
     x = 1
     export { x }
+  """,
   """
-  output = """
     var x;
 
     x = 1;
@@ -10001,19 +11355,17 @@ test "#4394: export shouldn't prevent variable declarations", ->
       x
     };
   """
-  eq toJS(input), output
 
 test "#4451: `default` in an export statement is only treated as a keyword when it follows `export` or `as`", ->
-  input = "export default { default: 1 }"
-  output = """
+  eqJS "export default { default: 1 }",
+  """
     export default {
       default: 1
     };
   """
-  eq toJS(input), output
 
 test "#4491: import- and export-specific lexing should stop after import/export statement", ->
-  input = """
+  eqJS """
     import {
       foo,
       bar as baz
@@ -10022,8 +11374,8 @@ test "#4491: import- and export-specific lexing should stop after import/export 
     foo as
     3 * as 4
     from 'foo'
-    """
-  output = """
+    """,
+  """
     import {
       foo,
       bar as baz
@@ -10035,16 +11387,15 @@ test "#4491: import- and export-specific lexing should stop after import/export 
 
     from('foo');
     """
-  eq toJS(input), output
 
-  input = """
+  eqJS """
     import { foo, bar as baz } from 'lib'
 
     foo as
     3 * as 4
     from 'foo'
-    """
-  output = """
+    """,
+  """
     import {
       foo,
       bar as baz
@@ -10056,16 +11407,15 @@ test "#4491: import- and export-specific lexing should stop after import/export 
 
     from('foo');
     """
-  eq toJS(input), output
 
-  input = """
+  eqJS """
     import * as lib from 'lib'
 
     foo as
     3 * as 4
     from 'foo'
-    """
-  output = """
+    """,
+  """
     import * as lib from 'lib';
 
     foo(as);
@@ -10074,9 +11424,8 @@ test "#4491: import- and export-specific lexing should stop after import/export 
 
     from('foo');
     """
-  eq toJS(input), output
 
-  input = """
+  eqJS """
     export {
       foo,
       bar
@@ -10085,8 +11434,8 @@ test "#4491: import- and export-specific lexing should stop after import/export 
     foo as
     3 * as 4
     from 'foo'
-    """
-  output = """
+    """,
+  """
     export {
       foo,
       bar
@@ -10098,16 +11447,15 @@ test "#4491: import- and export-specific lexing should stop after import/export 
 
     from('foo');
     """
-  eq toJS(input), output
 
-  input = """
+  eqJS """
     export * from 'lib'
 
     foo as
     3 * as 4
     from 'foo'
-    """
-  output = """
+    """,
+  """
     export * from 'lib';
 
     foo(as);
@@ -10116,7 +11464,6 @@ test "#4491: import- and export-specific lexing should stop after import/export 
 
     from('foo');
     """
-  eq toJS(input), output
 
 </script>
 <script type="text/x-coffeescript" class="test" id="numbers">
@@ -10652,6 +11999,12 @@ test "#3216: For loop declaration as a value of an implicit object", ->
   arrayEq ob.b, test
   arrayEq ob.c, test
   arrayEq ob.d, test
+  byFirstKey =
+    a: for v in test by 1 then v
+  arrayEq byFirstKey.a, test
+  whenFirstKey =
+    a: for v in test when true then v
+  arrayEq whenFirstKey.a, test
 
 test 'inline implicit object literals within multiline implicit object literals', ->
   x =
@@ -10800,6 +12153,110 @@ test "#1263: Braceless object return", ->
   eq 1, obj.a
   eq 2, obj.b
   eq 3, obj.c()
+
+test "#4564: indent should close implicit object", ->
+  f = (x) -> x
+
+  arrayEq ['a'],
+    for key of f a: 1
+      key
+
+  g = null
+  if f a: 1
+    g = 3
+  eq g, 3
+
+  h = null
+  if a: (i for i in [1, 2, 3])
+    h = 4
+  eq h, 4
+
+test "#4544: Postfix conditionals in first line of implicit object literals", ->
+  two =
+    foo:
+      bar: 42 if yes
+      baz: 1337
+  eq 42, two.foo.bar
+  eq 1337, two.foo.baz
+
+  f = (x) -> x
+
+  three =
+    foo: f
+      bar: 42 if yes
+      baz: 1337
+  eq 42, three.foo.bar
+  eq 1337, three.foo.baz
+
+  four =
+    f
+      foo:
+        bar: 42 if yes
+      baz: 1337
+  eq 42, four.foo.bar
+  eq 1337, four.baz
+
+  x = bar: 42 if no
+  baz: 1337
+  ok not x?
+
+  # Example from #2051
+  a = null
+  _alert = (arg) -> a = arg
+  _alert
+    val3: "works" if true
+    val: "hello"
+    val2: "all good"
+  eq a.val2, "all good"
+
+test "#4579: Postfix for/while/until in first line of implicit object literals", ->
+  two =
+    foo:
+      bar: x for x in [1, 2, 3]
+      baz: 1337
+  arrayEq [1, 2, 3], two.foo.bar
+  eq 1337, two.foo.baz
+
+  f = (x) -> x
+
+  three =
+    foo: f
+      # Uncomment when #4580 is fixed
+      # bar: x + y for x, y of a: 'b', c: 'd'
+      bar: x + 'c' for x of a: 1, b: 2
+      baz: 1337
+  arrayEq ['ac', 'bc'], three.foo.bar
+  eq 1337, three.foo.baz
+
+  four =
+    f
+      foo:
+        "bar_#{x}": x for x of a: 1, b: 2
+      baz: 1337
+  eq 'a', four.foo[0].bar_a
+  eq 'b', four.foo[1].bar_b
+  eq 1337, four.baz
+
+  x = bar: 42 for y in [1]
+  baz: 1337
+  eq x.bar, 42
+
+  i = 5
+  five =
+    foo:
+      bar: i while i-- > 0
+      baz: 1337
+  arrayEq [4, 3, 2, 1, 0], five.foo.bar
+  eq 1337, five.foo.baz
+
+  i = 5
+  six =
+    foo:
+      bar: i until i-- <= 0
+      baz: 1337
+  arrayEq [4, 3, 2, 1, 0], six.foo.bar
+  eq 1337, six.foo.baz
+
 
 </script>
 <script type="text/x-coffeescript" class="test" id="operators">
@@ -11804,21 +13261,19 @@ test "#4248: Unicode code point escapes", ->
   ok /a\u{12345}c/.test 'a\ud808\udf45c'
 
   # rewrite code point escapes unless u flag is set
-  input = """
+  eqJS """
     /\\u{bcdef}\\u{abc}/u
-    """
-  output = """
+  """,
+  """
     /\\u{bcdef}\\u{abc}/u;
   """
-  eq toJS(input), output
 
-  input = """
+  eqJS """
     ///#{ 'a' }\\u{bcdef}///
-    """
-  output = """
+  """,
+  """
     /a\\udab3\\uddef/;
   """
-  eq toJS(input), output
 
 </script>
 <script type="text/x-coffeescript" class="test" id="repl">
@@ -12054,6 +13509,16 @@ test "#1183: super + closures", ->
         when 1 then super()
       ret
   eq (new B).foo(), 10
+
+test "#2331: bound super regression", ->
+  class A
+    @value = 'A'
+    method: -> @constructor.value
+
+  class B extends A
+    method: => super()
+
+  eq (new B).method(), 'A'
 
 test "#3259: leak with @-params within destructured parameters", ->
   fn = ({@foo}, [@bar], [{@baz}]) ->
@@ -13021,21 +14486,19 @@ test "#4248: Unicode code point escapes", ->
   eq '\\u{123456}', "#{'\\'}#{'u{123456}'}"
 
   # don't rewrite code point escapes
-  input = """
+  eqJS """
     '\\u{bcdef}\\u{abc}'
-    """
-  output = """
+  """,
+  """
     '\\u{bcdef}\\u{abc}';
   """
-  eq toJS(input), output
 
-  input = """
+  eqJS """
     "#{ 'a' }\\u{bcdef}"
-    """
-  output = """
+  """,
+  """
     "a\\u{bcdef}";
   """
-  eq toJS(input), output
 
 </script>
 <script type="text/x-coffeescript" class="test" id="tagged_template_literals">
