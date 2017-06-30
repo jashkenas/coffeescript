@@ -10,9 +10,9 @@ patchedPath = "#{coffeeBinDir}:#{process.env.PATH}"
 patchedEnv = Object.assign {}, process.env, {PATH: patchedPath}
 
 shebangScript = require.resolve './importing/shebang.coffee'
-initialSpaceScript = require.resolve './importing/shebang-initial-space.coffee'
-extraArgsScript = require.resolve './importing/shebang-extra-args.coffee'
-initialSpaceExtraArgsScript = require.resolve './importing/shebang-initial-space-extra-args.coffee'
+initialSpaceScript = require.resolve './importing/shebang_initial_space.coffee'
+extraArgsScript = require.resolve './importing/shebang_extra_args.coffee'
+initialSpaceExtraArgsScript = require.resolve './importing/shebang_initial_space_extra_args.coffee'
 
 test "parse arguments for shebang scripts correctly (on unix platforms)", ->
   return if isWindows()

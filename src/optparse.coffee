@@ -62,7 +62,7 @@ exports.OptionParser = class OptionParser
   help: ->
     lines = []
     lines.unshift "#{@banner}\n" if @banner
-    for rule in @rules
+    for rule in @rules.ruleList
       spaces  = 15 - rule.longFlag.length
       spaces  = if spaces > 0 then repeat ' ', spaces else ''
       letPart = if rule.shortFlag then rule.shortFlag + ', ' else '    '
