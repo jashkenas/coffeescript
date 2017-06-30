@@ -597,7 +597,7 @@ textarea {
           <a href="#conditionals" class="nav-link" data-action="sidebar-nav">If, Else, Unless, and Conditional Assignment</a>
         </li>
         <li class="nav-item">
-          <a href="#splats" class="nav-link" data-action="sidebar-nav">Splats…</a>
+          <a href="#splats" class="nav-link" data-action="sidebar-nav">Splats, or Rest Parameters/Spread Syntax</a>
         </li>
         <li class="nav-item">
           <a href="#loops" class="nav-link" data-action="sidebar-nav">Loops and Comprehensions</a>
@@ -1388,8 +1388,8 @@ date = friday ? sue : jill;
 
         </section>
         <section id="splats">
-          <h2>Splats…</h2>
-<p>The JavaScript <code>arguments</code> object is a useful way to work with functions that accept variable numbers of arguments. CoffeeScript provides splats <code>...</code>, both for function definition as well as invocation, making variable numbers of arguments a little bit more palatable.</p>
+          <h2>Splats, or Rest Parameters/Spread Syntax</h2>
+<p>The JavaScript <code>arguments</code> object is a useful way to work with functions that accept variable numbers of arguments. CoffeeScript provides splats <code>...</code>, both for function definition as well as invocation, making variable numbers of arguments a little bit more palatable. ES2015 adopted this feature as their <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/rest_parameters">rest parameters</a>.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="splats">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
@@ -1415,9 +1415,11 @@ contenders = [
 
 awardMedals contenders...
 
-alert "Gold: " + gold
-alert "Silver: " + silver
-alert "The Field: " + rest
+alert """
+Gold: #{gold}
+Silver: #{silver}
+The Field: #{rest.join ', '}
+"""
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
@@ -1435,11 +1437,7 @@ contenders = ["Michael Phelps", "Liu Xiang", "Yao Ming", "Allyson Felix", "Shawn
 
 awardMedals(...contenders);
 
-alert("Gold: " + gold);
-
-alert("Silver: " + silver);
-
-alert("The Field: " + rest);
+alert(`Gold: ${gold}\nSilver: ${silver}\nThe Field: ${rest.join(', ')}`);
 </textarea>
     </div>
   </div>
@@ -1451,6 +1449,69 @@ alert("The Field: " + rest);
   </div>
   
 </aside>
+<p>Splats also let us elide array elements…</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="array_spread">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="array_spread-coffee">popular  = ['pepperoni', 'sausage', 'cheese']
+unwanted = ['anchovies', 'olives']
+
+all = [popular..., unwanted..., 'mushrooms']
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="array_spread-js">var all, popular, unwanted;
+
+popular = ['pepperoni', 'sausage', 'cheese'];
+
+unwanted = ['anchovies', 'olives'];
+
+all = [...popular, ...unwanted, 'mushrooms'];
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="array_spread" data-run="all"><small>▶</small>&ensp;all</button>
+    </div>
+  </div>
+  
+</aside>
+<p>…and object properties.</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="object_spread">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="object_spread-coffee">user =
+  name: 'Werner Heisenberg'
+  occupation: 'theoretical physicist'
+
+currentUser = { user..., status: 'Uncertain' }
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="object_spread-js">var currentUser, user;
+
+user = {
+  name: 'Werner Heisenberg',
+  occupation: 'theoretical physicist'
+};
+
+currentUser = Object.assign({}, user, {
+  status: 'Uncertain'
+});
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="object_spread" data-run="JSON.stringify%28currentUser%29"><small>▶</small>&ensp;JSON.stringify(currentUser)</button>
+    </div>
+  </div>
+  
+</aside>
+<p>In ECMAScript this is called <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator">spread syntax</a>, and has been supported for arrays since ES2015 but is <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator#Spread_in_object_literals">coming soon for objects</a>. Until object spread syntax is officially supported, the CoffeeScript compiler outputs the same polyfill as <a href="https://babeljs.io/docs/plugins/transform-object-rest-spread/">Babel’s rest spread transform</a>; but once it is supported, we will revise the compiler’s output. Note that there are <a href="https://developers.google.com/web/updates/2017/06/object-rest-spread">very subtle differences</a> between the polyfill and the current proposal.</p>
 
         </section>
         <section id="loops">
