@@ -1610,3 +1610,19 @@ test "#3845/#3446: chain after function glyph (but not inline)", ->
     a -> .b
          ^
   '''
+
+test "#3906: error for unusual indentation", ->
+  assertErrorFormat '''
+    a
+      c
+     .d
+
+    e(
+     f)
+
+    g
+  ''', '''
+    [stdin]:2:1: error: unexpected indentation
+      c
+    ^^
+  '''
