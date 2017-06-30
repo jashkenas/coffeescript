@@ -360,16 +360,16 @@ test "#3906: handle further indentation inside indented chain", ->
   eq 1, CoffeeScript.eval '''
     z = -> b: -> e: ->
 
-	z()
-		.b
-			c: 'd'
-		.e()
+    z()
+        .b
+            c: 'd'
+        .e()
 
-	f = [
-		'g'
-	]
+    f = [
+        'g'
+    ]
 
-	1
+    1
   '''
 
   eq 1, CoffeeScript.eval '''
