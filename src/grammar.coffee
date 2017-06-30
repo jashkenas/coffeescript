@@ -227,6 +227,7 @@ grammar =
     o 'Parenthetical'
     o 'Super'
     o 'This'
+    o 'SUPER Arguments',               -> new SuperCall LOC(1)(new Super), $2
     o 'SimpleObjAssignable Arguments', -> new Call (new Value $1), $2
     o 'ObjSpreadExpr Arguments',       -> new Call $1, $2
   ]
