@@ -1600,3 +1600,19 @@ test 'Bound method called as callback before binding throws runtime error', ->
     derivedBound: =>
       ok no
   d = new Derived
+
+test "#3906: error for unusual indentation", ->
+  assertErrorFormat '''
+    a
+      c
+     .d
+
+    e(
+     f)
+
+    g
+  ''', '''
+    [stdin]:2:1: error: unexpected indentation
+      c
+    ^^
+  '''

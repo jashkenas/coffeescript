@@ -338,3 +338,49 @@ test "#4487: Handle unusual outdentation", ->
        2
       3
   eq b, undefined
+
+test "#3906: handle further indentation inside indented chain", ->
+  eq 1, CoffeeScript.eval '''
+    z = b: -> d: 2
+    e = ->
+    f = 3
+
+    z
+        .b ->
+            c
+        .d
+
+    e(
+        f
+    )
+
+    1
+  '''
+
+  eq 1, CoffeeScript.eval '''
+    z = -> b: -> e: ->
+
+	z()
+		.b
+			c: 'd'
+		.e()
+
+	f = [
+		'g'
+	]
+
+	1
+  '''
+
+  eq 1, CoffeeScript.eval '''
+    z = -> c: -> c: ->
+
+    z('b')
+      .c 'a',
+        {b: 'a'}
+      .c()
+    z(
+      'b'
+    )
+    1
+  '''
