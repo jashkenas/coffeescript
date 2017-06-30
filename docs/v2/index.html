@@ -597,7 +597,7 @@ textarea {
           <a href="#conditionals" class="nav-link" data-action="sidebar-nav">If, Else, Unless, and Conditional Assignment</a>
         </li>
         <li class="nav-item">
-          <a href="#splats" class="nav-link" data-action="sidebar-nav">Splats…</a>
+          <a href="#splats" class="nav-link" data-action="sidebar-nav">Splats, or Rest Parameters/Spread Syntax</a>
         </li>
         <li class="nav-item">
           <a href="#loops" class="nav-link" data-action="sidebar-nav">Loops and Comprehensions</a>
@@ -714,6 +714,9 @@ textarea {
       <a href="#breaking-changes" class="nav-link" data-action="sidebar-nav">Breaking Changes From 1.x</a>
       <ul class="nav">
         <li class="nav-item">
+          <a href="#breaking-change-fat-arrow" class="nav-link" data-action="sidebar-nav">Bound (Fat Arrow) Functions</a>
+        </li>
+        <li class="nav-item">
           <a href="#breaking-changes-default-values" class="nav-link" data-action="sidebar-nav">Default Values</a>
         </li>
         <li class="nav-item">
@@ -758,7 +761,7 @@ textarea {
       <section id="overview">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.0.0-beta2">2.0.0-beta2</a></p>
+<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.0.0-beta3">2.0.0-beta3</a></p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install -g coffeescript@next
 </code></pre>
 </blockquote>
@@ -1385,8 +1388,8 @@ date = friday ? sue : jill;
 
         </section>
         <section id="splats">
-          <h2>Splats…</h2>
-<p>The JavaScript <code>arguments</code> object is a useful way to work with functions that accept variable numbers of arguments. CoffeeScript provides splats <code>...</code>, both for function definition as well as invocation, making variable numbers of arguments a little bit more palatable.</p>
+          <h2>Splats, or Rest Parameters/Spread Syntax</h2>
+<p>The JavaScript <code>arguments</code> object is a useful way to work with functions that accept variable numbers of arguments. CoffeeScript provides splats <code>...</code>, both for function definition as well as invocation, making variable numbers of arguments a little bit more palatable. ES2015 adopted this feature as their <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/rest_parameters">rest parameters</a>.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="splats">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
@@ -1412,9 +1415,11 @@ contenders = [
 
 awardMedals contenders...
 
-alert "Gold: " + gold
-alert "Silver: " + silver
-alert "The Field: " + rest
+alert """
+Gold: #{gold}
+Silver: #{silver}
+The Field: #{rest.join ', '}
+"""
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
@@ -1432,11 +1437,7 @@ contenders = ["Michael Phelps", "Liu Xiang", "Yao Ming", "Allyson Felix", "Shawn
 
 awardMedals(...contenders);
 
-alert("Gold: " + gold);
-
-alert("Silver: " + silver);
-
-alert("The Field: " + rest);
+alert(`Gold: ${gold}\nSilver: ${silver}\nThe Field: ${rest.join(', ')}`);
 </textarea>
     </div>
   </div>
@@ -1448,6 +1449,71 @@ alert("The Field: " + rest);
   </div>
   
 </aside>
+<div id="array-spread" class="bookmark"></div>
+<p>Splats also let us elide array elements…</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="array_spread">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="array_spread-coffee">popular  = ['pepperoni', 'sausage', 'cheese']
+unwanted = ['anchovies', 'olives']
+
+all = [popular..., unwanted..., 'mushrooms']
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="array_spread-js">var all, popular, unwanted;
+
+popular = ['pepperoni', 'sausage', 'cheese'];
+
+unwanted = ['anchovies', 'olives'];
+
+all = [...popular, ...unwanted, 'mushrooms'];
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="array_spread" data-run="all"><small>▶</small>&ensp;all</button>
+    </div>
+  </div>
+  
+</aside>
+<div id="object-spread" class="bookmark"></div>
+<p>…and object properties.</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="object_spread">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="object_spread-coffee">user =
+  name: 'Werner Heisenberg'
+  occupation: 'theoretical physicist'
+
+currentUser = { user..., status: 'Uncertain' }
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="object_spread-js">var currentUser, user;
+
+user = {
+  name: 'Werner Heisenberg',
+  occupation: 'theoretical physicist'
+};
+
+currentUser = Object.assign({}, user, {
+  status: 'Uncertain'
+});
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="object_spread" data-run="JSON.stringify%28currentUser%29"><small>▶</small>&ensp;JSON.stringify(currentUser)</button>
+    </div>
+  </div>
+  
+</aside>
+<p>In ECMAScript this is called <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator">spread syntax</a>, and has been supported for arrays since ES2015 but is <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator#Spread_in_object_literals">coming soon for objects</a>. Until object spread syntax is officially supported, the CoffeeScript compiler outputs the same polyfill as <a href="https://babeljs.io/docs/plugins/transform-object-rest-spread/">Babel’s rest spread transform</a>; but once it is supported, we will revise the compiler’s output. Note that there are <a href="https://developers.google.com/web/updates/2017/06/object-rest-spread">very subtle differences</a> between the polyfill and the current proposal.</p>
 
         </section>
         <section id="loops">
@@ -3310,7 +3376,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
         <section id="annotated-source">
           <h2>Annotated Source</h2>
-<p>You can browse the CoffeeScript 2.0.0-beta2 source in readable, annotated form <a href="http://coffeescript.org/v2/annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+<p>You can browse the CoffeeScript 2.0.0-beta3 source in readable, annotated form <a href="http://coffeescript.org/v2/annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="http://coffeescript.org/v2/annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
 <li><a href="http://coffeescript.org/v2/annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
@@ -3416,6 +3482,44 @@ Object.defineProperty(screen, 'height', {
         <h2>Breaking Changes From CoffeeScript 1.x to 2</h2>
 <p>CoffeeScript 2 aims to output as much idiomatic ES2015+ syntax as possible with as few breaking changes from CoffeeScript 1.x as possible. Some breaking changes, unfortunately, were unavoidable.</p>
 
+        <section id="breaking-change-fat-arrow">
+          <h3>Bound (fat arrow) functions</h3>
+<p>In CoffeeScript 1.x, <code>=&gt;</code> compiled to a regular <code>function</code> but with references to <code>this</code>/<code>@</code> rewritten to use the outer scope’s <code>this</code>, or with the inner function bound to the outer scope via <code>.bind</code> (hence the name “bound function”). In CoffeeScript 2, <code>=&gt;</code> compiles to <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions">ES2015’s <code>=&gt;</code></a>, which behaves slightly differently. The largest difference is that in ES2015, <code>=&gt;</code> functions lack an <code>arguments</code> object:</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="breaking_change_fat_arrow">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="breaking_change_fat_arrow-coffee">outer = ->
+  inner = => Array.from arguments
+  inner()
+
+outer(1, 2)  # Returns '' in CoffeeScript 1.x, '1, 2' in CoffeeScript 2
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="breaking_change_fat_arrow-js">var outer;
+
+outer = function() {
+  var inner;
+  inner = () => {
+    return Array.from(arguments);
+  };
+  return inner();
+};
+
+outer(1, 2);
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="breaking_change_fat_arrow" data-run="outer%281%2C%202%29"><small>▶</small>&ensp;outer(1, 2)</button>
+    </div>
+  </div>
+  
+</aside>
+
+        </section>
         <section id="breaking-changes-default-values">
           <h3>Default values for function parameters and destructured elements</h3>
 <p>Per the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters">ES2015 spec regarding function default parameters</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Default_values">destructuring default values</a>, default values are only applied when a value is missing or <code>undefined</code>. In CoffeeScript 1.x, the default value would be applied in those cases but also if the  value was <code>null</code>.</p>
@@ -3515,13 +3619,16 @@ f = function*() {
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>
   constructor: <span class="function">-&gt;</span> <span class="keyword">this</span>  <span class="comment"># Throws a compiler error</span>
 </code></pre>
-</blockquote><p>Class methods can’t be bound (i.e. you can’t define a class method using a fat arrow) though you can define such methods in the constructor instead:</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>
-  method: <span class="function">=&gt;</span>  <span class="comment"># Throws a compiler error</span>
-  
+</blockquote><p>ES2015 classes don’t allow bound (fat arrow) methods. The CoffeeScript compiler goes through some contortions to preserve support for them, but one thing that can’t be accomodated is calling a bound method before it is bound:</p>
+<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">Base</span></span>
   constructor: <span class="function">-&gt;</span>
-    <span class="keyword">super</span>()
-    @method = <span class="function">=&gt;</span>  <span class="comment"># This works</span>
+    @onClick()      <span class="comment"># This works</span>
+    clickHandler = @onClick
+    clickHandler()  <span class="comment"># This throws a runtime error</span>
+
+<span class="class"><span class="keyword">class</span> <span class="title">Component</span> <span class="keyword">extends</span> <span class="title">Base</span></span>
+  onClick: <span class="function">=&gt;</span>
+    <span class="built_in">console</span>.log <span class="string">'Clicked!'</span>, @
 </code></pre>
 </blockquote><p>Class methods can’t be used with <code>new</code> (uncommon):</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">Namespace</span></span>
@@ -3694,6 +3801,17 @@ B = class B extends A {
       </section>
       <section id="changelog">
         <h2>Changelog</h2>
+<div class="anchor" id="2.0.0-beta3"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta2...2.0.0-beta3">2.0.0-beta3</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-06-30">June 30, 2017</time></span>
+</h2><ul>
+<li><a href="#jsx">JSX</a> is now supported.</li>
+<li><a href="#object-spread">Object rest/spread properties</a> are now supported.</li>
+<li>Bound (fat arrow) methods are once again supported in classes; though an error will be thrown if you attempt to call the method before it is bound. See <a href="#breaking-changes-classes">breaking changes for classes</a>.</li>
+<li>The REPL no longer warns about assigning to <code>_</code>.</li>
+<li>Bugfixes for destructured nested default values and issues related to chaining or continuing expressions across multiple lines.</li>
+</ul>
 <div class="anchor" id="2.0.0-beta2"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta1...2.0.0-beta2">2.0.0-beta2</a>
@@ -4445,6 +4563,8 @@ $(document).ready ->
       toggleTry()
     else
       initializeScrollspyFromHash window.location.hash
+      # Initializing the code editors might’ve thrown off our vertical scroll position
+      document.getElementById(window.location.hash.slice(1)).scrollIntoView()
 
 </script>
 
