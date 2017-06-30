@@ -1449,6 +1449,7 @@ alert(`Gold: ${gold}\nSilver: ${silver}\nThe Field: ${rest.join(', ')}`);
   </div>
   
 </aside>
+<div id="array-spread" class="bookmark"></div>
 <p>Splats also let us elide array elements…</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="array_spread">
   <div class="row">
@@ -1478,6 +1479,7 @@ all = [...popular, ...unwanted, 'mushrooms'];
   </div>
   
 </aside>
+<div id="object-spread" class="bookmark"></div>
 <p>…and object properties.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="object_spread">
   <div class="row">
@@ -3799,6 +3801,17 @@ B = class B extends A {
       </section>
       <section id="changelog">
         <h2>Changelog</h2>
+<div class="anchor" id="2.0.0-beta3"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta2...2.0.0-beta3">2.0.0-beta3</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-06-30">June 30, 2017</time></span>
+</h2><ul>
+<li><a href="#jsx">JSX</a> is now supported.</li>
+<li><a href="#object-spread">Object rest/spread properties</a> are now supported.</li>
+<li>Bound (fat arrow) methods are once again supported in classes; though an error will be thrown if you attempt to call the method before it is bound. See <a href="#breaking-changes-classes">breaking changes for classes</a>.</li>
+<li>The REPL no longer warns about assigning to <code>_</code>.</li>
+<li>Bugfixes for destructured nested default values and issues related to chaining or continuing expressions across multiple lines.</li>
+</ul>
 <div class="anchor" id="2.0.0-beta2"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta1...2.0.0-beta2">2.0.0-beta2</a>
