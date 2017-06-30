@@ -3617,13 +3617,16 @@ f = function*() {
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>
   constructor: <span class="function">-&gt;</span> <span class="keyword">this</span>  <span class="comment"># Throws a compiler error</span>
 </code></pre>
-</blockquote><p>Class methods can’t be bound (i.e. you can’t define a class method using a fat arrow) though you can define such methods in the constructor instead:</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>
-  method: <span class="function">=&gt;</span>  <span class="comment"># Throws a compiler error</span>
-  
+</blockquote><p>ES2015 classes don’t allow bound (fat arrow) methods. The CoffeeScript compiler goes through some contortions to preserve support for them, but one thing that can’t be accomodated is calling a bound method before it is bound:</p>
+<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">Base</span></span>
   constructor: <span class="function">-&gt;</span>
-    <span class="keyword">super</span>()
-    @method = <span class="function">=&gt;</span>  <span class="comment"># This works</span>
+    @onClick()      <span class="comment"># This works</span>
+    clickHandler = @onClick
+    clickHandler()  <span class="comment"># This throws a runtime error</span>
+
+<span class="class"><span class="keyword">class</span> <span class="title">Component</span> <span class="keyword">extends</span> <span class="title">Base</span></span>
+  onClick: <span class="function">=&gt;</span>
+    <span class="built_in">console</span>.log <span class="string">'Clicked!'</span>, @
 </code></pre>
 </blockquote><p>Class methods can’t be used with <code>new</code> (uncommon):</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">Namespace</span></span>
