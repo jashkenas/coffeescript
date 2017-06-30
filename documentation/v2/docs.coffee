@@ -124,3 +124,5 @@ $(document).ready ->
       toggleTry()
     else
       initializeScrollspyFromHash window.location.hash
+      # Initializing the code editors might’ve thrown off our vertical scroll position
+      document.getElementById(window.location.hash.slice(1)).scrollIntoView()
