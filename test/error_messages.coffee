@@ -1601,6 +1601,16 @@ test 'Bound method called as callback before binding throws runtime error', ->
       ok no
   d = new Derived
 
+test "#3845/#3446: chain after function glyph (but not inline)", ->
+  assertErrorFormat '''
+    a -> .b
+  ''',
+  '''
+    [stdin]:1:6: error: unexpected .
+    a -> .b
+         ^
+  '''
+
 test "#3906: error for unusual indentation", ->
   assertErrorFormat '''
     a
