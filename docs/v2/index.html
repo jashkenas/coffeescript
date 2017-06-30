@@ -714,6 +714,9 @@ textarea {
       <a href="#breaking-changes" class="nav-link" data-action="sidebar-nav">Breaking Changes From 1.x</a>
       <ul class="nav">
         <li class="nav-item">
+          <a href="#breaking-change-fat-arrow" class="nav-link" data-action="sidebar-nav">Bound (Fat Arrow) Functions</a>
+        </li>
+        <li class="nav-item">
           <a href="#breaking-changes-default-values" class="nav-link" data-action="sidebar-nav">Default Values</a>
         </li>
         <li class="nav-item">
@@ -3416,6 +3419,44 @@ Object.defineProperty(screen, 'height', {
         <h2>Breaking Changes From CoffeeScript 1.x to 2</h2>
 <p>CoffeeScript 2 aims to output as much idiomatic ES2015+ syntax as possible with as few breaking changes from CoffeeScript 1.x as possible. Some breaking changes, unfortunately, were unavoidable.</p>
 
+        <section id="breaking-change-fat-arrow">
+          <h3>Bound (fat arrow) functions</h3>
+<p>In CoffeeScript 1.x, <code>=&gt;</code> compiled to a regular <code>function</code> but with references to <code>this</code>/<code>@</code> rewritten to use the outer scope’s <code>this</code>, or with the inner function bound to the outer scope via <code>.bind</code> (hence the name “bound function”). In CoffeeScript 2, <code>=&gt;</code> compiles to <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions">ES2015’s <code>=&gt;</code></a>, which behaves slightly differently. The largest difference is that in ES2015, <code>=&gt;</code> functions lack an <code>arguments</code> object:</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="breaking_change_fat_arrow">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="breaking_change_fat_arrow-coffee">outer = ->
+  inner = => Array.from arguments
+  inner()
+
+outer(1, 2)  # Returns '' in CoffeeScript 1.x, '1, 2' in CoffeeScript 2
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="breaking_change_fat_arrow-js">var outer;
+
+outer = function() {
+  var inner;
+  inner = () => {
+    return Array.from(arguments);
+  };
+  return inner();
+};
+
+outer(1, 2);
+</textarea>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 text-xs-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="breaking_change_fat_arrow" data-run="outer%281%2C%202%29"><small>▶</small>&ensp;outer(1, 2)</button>
+    </div>
+  </div>
+  
+</aside>
+
+        </section>
         <section id="breaking-changes-default-values">
           <h3>Default values for function parameters and destructured elements</h3>
 <p>Per the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters">ES2015 spec regarding function default parameters</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Default_values">destructuring default values</a>, default values are only applied when a value is missing or <code>undefined</code>. In CoffeeScript 1.x, the default value would be applied in those cases but also if the  value was <code>null</code>.</p>
@@ -4445,6 +4486,8 @@ $(document).ready ->
       toggleTry()
     else
       initializeScrollspyFromHash window.location.hash
+      # Initializing the code editors might’ve thrown off our vertical scroll position
+      document.getElementById(window.location.hash.slice(1)).scrollIntoView()
 
 </script>
 
