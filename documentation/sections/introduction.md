@@ -10,4 +10,4 @@ The CoffeeScript compiler goes to great lengths to generate output JavaScript th
 npm install -g coffeescript
 ```
 
-**CoffeeScript 2 is coming!** It adds support for [ES2015 classes](/v2/#classes), [`async`/`await`](/v2/#fat-arrow), and generates JavaScript using ES2015+ syntax. <a href="/v2/">Learn more</a>.</p>
+**CoffeeScript 2 is coming!** It adds support for [ES2015 classes](/v2/#classes), [`async`/`await`](/v2/#fat-arrow), [JSX](/v2/#jsx), [object rest/spread syntax](/v2/#splats), and generates JavaScript using ES2015+ syntax. <a href="/v2/">Learn more</a>.</p>
