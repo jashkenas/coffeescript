@@ -1934,7 +1934,7 @@ exports.Assign = class Assign extends Base
             [prop.value.value, nestedSourceDefault] = prop.value.value.cache o
           if nestedProperties
             nestedSource = new Value source.base, source.properties.concat [new Access getPropKey prop]
-            nestedSource = new Op '?', nestedSource, nestedSourceDefault if nestedSourceDefault
+            nestedSource = new Value new Op '?', nestedSource, nestedSourceDefault if nestedSourceDefault
             restElements = restElements.concat traverseRest nestedProperties, nestedSource
         else if prop instanceof Splat
           prop.error "multiple rest elements are disallowed in object destructuring" if restIndex?

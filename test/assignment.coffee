@@ -320,6 +320,29 @@ test "deep destructuring assignment with objects: ES2015", ->
   eq bb, b1
   eq r2.b2, obj.b2
 
+test "deep destructuring assignment with defaults: ES2015", ->
+  obj =
+    b: { c: 1, baz: 'qux' }
+    foo: 'bar'
+  j =
+    f: 'world'
+  i =
+    some: 'prop'
+  {
+    a...
+    b: { c, d... }
+    e: {
+      f: hello
+      g: { h... } = i
+    } = j
+  } = obj
+
+  deepEqual a, foo: 'bar'
+  eq c, 1
+  deepEqual d, baz: 'qux'
+  eq hello, 'world'
+  deepEqual h, some: 'prop'
+
 test "object spread properties: ES2015", ->
   obj = {a: 1, b: 2, c: 3, d: 4, e: 5}
   obj2 = {obj..., c:9}
