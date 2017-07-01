@@ -8,7 +8,7 @@
     "compiler"
   ],
   "author": "Jeremy Ashkenas",
-  "version": "2.0.0-beta2",
+  "version": "2.0.0-beta3",
   "license": "MIT",
   "engines": {
     "node": ">=7.6.0"

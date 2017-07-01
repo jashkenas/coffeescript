@@ -238,7 +238,10 @@ sources      = []
 sourceCode   = []
 notSources   = {}
 watchedDirs  = {}
-optionParser = <span class="hljs-literal">null</span></pre></div></div>
+optionParser = <span class="hljs-literal">null</span>
+
+exports.buildCSOptionParser = buildCSOptionParser = <span class="hljs-function">-&gt;</span>
+  <span class="hljs-keyword">new</span> optparse.OptionParser SWITCHES, BANNER</pre></div></div>
             
         </li>
         
@@ -256,6 +259,7 @@ Many flags cause us to divert before compiling anything. Flags passed after
             </div>
             
             <div class="content"><div class='highlight'><pre>exports.run = <span class="hljs-function">-&gt;</span>
+  optionParser = buildCSOptionParser()
   parseOptions()</pre></div></div>
             
         </li>
@@ -771,7 +775,6 @@ same directory as the <code>.js</code> file.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">parseOptions</span> = -&gt;</span>
-  optionParser  = <span class="hljs-keyword">new</span> optparse.OptionParser SWITCHES, BANNER
   o = opts      = optionParser.parse process.argv[<span class="hljs-number">2.</span>.]
   o.compile     <span class="hljs-keyword">or</span>=  !!o.output
   o.run         = <span class="hljs-keyword">not</span> (o.compile <span class="hljs-keyword">or</span> o.<span class="hljs-built_in">print</span> <span class="hljs-keyword">or</span> o.map)
@@ -856,7 +859,7 @@ shown.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">usage</span> = -&gt;</span>
-  printLine (<span class="hljs-keyword">new</span> optparse.OptionParser SWITCHES, BANNER).help()</pre></div></div>
+  printLine optionParser.help()</pre></div></div>
             
         </li>
         
