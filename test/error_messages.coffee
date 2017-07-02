@@ -804,26 +804,27 @@ test "unexpected object keys", ->
     [[]]: 1
     ^
   '''
+
   assertErrorFormat '''
     {(a + "b")}
   ''', '''
-    [stdin]:1:2: error: unexpected (
+    [stdin]:1:11: error: unexpected }
     {(a + "b")}
-     ^
+              ^
   '''
   assertErrorFormat '''
     {(a + "b"): 1}
   ''', '''
-    [stdin]:1:2: error: unexpected (
+    [stdin]:1:11: error: unexpected :
     {(a + "b"): 1}
-     ^
+              ^
   '''
   assertErrorFormat '''
     (a + "b"): 1
   ''', '''
-    [stdin]:1:1: error: unexpected (
+    [stdin]:1:10: error: unexpected :
     (a + "b"): 1
-    ^
+             ^
   '''
   assertErrorFormat '''
     a: 1, [[]]: 2
@@ -1600,3 +1601,29 @@ test 'Bound method called as callback before binding throws runtime error', ->
     derivedBound: =>
       ok no
   d = new Derived
+
+test "#3845/#3446: chain after function glyph (but not inline)", ->
+  assertErrorFormat '''
+    a -> .b
+  ''',
+  '''
+    [stdin]:1:6: error: unexpected .
+    a -> .b
+         ^
+  '''
+
+test "#3906: error for unusual indentation", ->
+  assertErrorFormat '''
+    a
+      c
+     .d
+
+    e(
+     f)
+
+    g
+  ''', '''
+    [stdin]:2:1: error: unexpected indentation
+      c
+    ^^
+  '''
