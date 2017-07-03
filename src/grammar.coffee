@@ -240,6 +240,7 @@ grammar =
   # A return statement from a function body.
   Return: [
     o 'RETURN Expression',                      -> new Return $2
+    o 'RETURN INDENT Expression OUTDENT',       -> new Return $3
     o 'RETURN',                                 -> new Return
   ]
 
@@ -555,6 +556,7 @@ grammar =
   # Throw an exception object.
   Throw: [
     o 'THROW Expression',                       -> new Throw $2
+    o 'THROW INDENT Expression OUTDENT',        -> new Throw $3
   ]
 
   # Parenthetical expressions. Note that the **Parenthetical** is a **Value**,
