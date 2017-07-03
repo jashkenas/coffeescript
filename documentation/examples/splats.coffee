@@ -20,6 +20,8 @@ contenders = [
 
 awardMedals contenders...
 
-alert "Gold: " + gold
-alert "Silver: " + silver
-alert "The Field: " + rest
+alert """
+Gold: #{gold}
+Silver: #{silver}
+The Field: #{rest.join ', '}
+"""
