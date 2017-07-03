@@ -266,7 +266,8 @@ exports.Base = class Base
   # For this node and all descendents, set the location data to `locationData`
   # if the location data is not already set.
   updateLocationDataIfMissing: (locationData) ->
-    return this if @locationData
+    return this if @locationData and not @forceUpdateLocation
+    delete @forceUpdateLocation
     @locationData = locationData
 
     @eachChild (child) ->
@@ -659,6 +660,7 @@ exports.Value = class Value extends Base
   # Add a property (or *properties* ) `Access` to the list.
   add: (props) ->
     @properties = @properties.concat props
+    @forceUpdateLocation = yes
     this
 
   hasProperties: ->

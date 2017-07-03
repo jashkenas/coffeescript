@@ -613,3 +613,14 @@ test "Verify all tokens get a location", ->
     tokens = CoffeeScript.tokens testScript
     for token in tokens
         ok !!token[2]
+
+test 'Values with properties end up with a location that includes the properties', ->
+  source = '''
+    a.b
+  '''
+  block = CoffeeScript.nodes source
+  [value] = block.expressions
+  eq value.locationData.first_line, 0
+  eq value.locationData.first_column, 0
+  eq value.locationData.last_line, 0
+  eq value.locationData.last_column, 2
