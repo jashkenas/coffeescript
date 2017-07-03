@@ -841,7 +841,6 @@ exports.Call = class Call extends Base
     call = this
     list = []
     loop
-      # if call.variable.unwrap() instanceof Call
       if call.variable instanceof Call
         list.push call
         call = call.variable
@@ -2915,7 +2914,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
     fragments
 
   isNestedTag: (element) ->
-    exprs = element?.body?.expressions
+    exprs = element.body?.expressions
     call = exprs?[0].unwrap()
     @csx and exprs and exprs.length is 1 and call instanceof Call and call.csx
 
