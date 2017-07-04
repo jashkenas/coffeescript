@@ -232,6 +232,16 @@ test "method call chaining inside objects", ->
       .c
   eq 42, result.b
 
+test "#4568: refine sameLine implicit object tagging", ->
+  condition = yes
+  fn = -> yes
+
+  x =
+    fn bar: {
+      foo: 123
+    } if not condition
+  eq x, undefined
+
 # Nested blocks caused by paren unwrapping
 test "#1492: Nested blocks don't cause double semicolons", ->
   js = CoffeeScript.compile '(0;0)'

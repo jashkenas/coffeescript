@@ -303,8 +303,9 @@ exports.Rewriter = class Rewriter
 
       # Mark all enclosing objects as not sameLine
       if tag in LINEBREAKS
-        for stackItem in stack by -1 when isImplicitObject stackItem
-          stackItem[2].sameLine = no
+        for stackItem in stack by -1
+          break unless isImplicit stackItem
+          stackItem[2].sameLine = no if isImplicitObject stackItem
 
       newLine = prevTag is 'OUTDENT' or prevToken.newLine
       if tag in IMPLICIT_END or tag in CALL_CLOSERS and newLine
