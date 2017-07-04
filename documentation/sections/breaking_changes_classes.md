@@ -16,7 +16,7 @@ class B extends A
   constructor: -> this  # Throws a compiler error
 ```
 
-ES2015 classes don’t allow bound (fat arrow) methods. The CoffeeScript compiler goes through some contortions to preserve support for them, but one thing that can’t be accomodated is calling a bound method before it is bound:
+ES2015 classes don’t allow bound (fat arrow) methods. The CoffeeScript compiler goes through some contortions to preserve support for them, but one thing that can’t be accommodated is calling a bound method before it is bound:
 
 ```coffee
 class Base
