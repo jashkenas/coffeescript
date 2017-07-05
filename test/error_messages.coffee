@@ -1340,7 +1340,7 @@ test "#3199: error message for call indented non-object", ->
     ^^
   '''
 
-test "#3199: error message for call indented non-object", ->
+test "#3199: error message for call indented comprehension", ->
   assertErrorFormat '''
     fn = ->
     fn
@@ -1361,7 +1361,7 @@ test "#3199: error message for return indented non-object", ->
       ^
   '''
 
-test "#3199: error message for return indented non-object", ->
+test "#3199: error message for return indented comprehension", ->
   assertErrorFormat '''
     return
       x for x in [1, 2, 3]
