@@ -391,3 +391,14 @@ test "#3761: Multiline comment at end of an object", ->
 test "#4375: UTF-8 characters in comments", ->
   # 智に働けば角が立つ、情に掉させば流される。
   ok yes
+
+test "#4290: Block comments in array literals", ->
+  arr = [
+    ###  ###
+    3
+    ###
+      What is the meaning of life, the universe, and everything?
+    ###
+    42
+  ]
+  arrayEq arr, [3, 42]
