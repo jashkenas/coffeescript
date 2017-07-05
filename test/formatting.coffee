@@ -299,7 +299,7 @@ test "#1275: allow indentation before closing brackets", ->
    )
   eq 1, a
 
-test "#3199: throw multiline implicit object", ->
+test "#3199: return multiline implicit object", ->
   y = do ->
     if no then return
       type: 'a'
