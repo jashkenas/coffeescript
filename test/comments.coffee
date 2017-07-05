@@ -402,3 +402,42 @@ test "#4290: Block comments in array literals", ->
     42
   ]
   arrayEq arr, [3, 42]
+
+test "Line comments are properly indented", ->
+  eqJS '''
+  # Unindented comment
+  if yes
+    # Comment indented one tab
+    1
+    if yes
+      # Comment indented two tabs
+      2
+    else
+      # Another comment indented two tabs
+      # Yet another comment indented two tabs
+      3
+  else
+    # Another comment indented one tab
+    # Yet another comment indented one tab
+    4
+
+  # Another unindented comment''', '''
+  // Unindented comment
+  if (true) {
+    // Comment indented one tab
+    1;
+    if (true) {
+      // Comment indented two tabs
+      2;
+    } else {
+      // Another comment indented two tabs
+      // Yet another comment indented two tabs
+      3;
+    }
+  } else {
+    // Another comment indented one tab
+    // Yet another comment indented one tab
+    4;
+  }
+
+  // Another unindented comment'''

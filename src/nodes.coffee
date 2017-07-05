@@ -572,7 +572,22 @@ exports.Block = class Block extends Base
       # Insert comments into the output at the next or previous newline.
       # If there are no newlines at which to place comments, create them.
       if fragment.precedingComments
-        code = '\n' + (commentFragment.code for commentFragment in fragment.precedingComments).join '\n'
+        # Determine the indentation level of the fragment that we are about
+        # to insert comments before, and use that indentation level for our
+        # inserted comments. Because some fragments begin with a space, e.g.
+        # ` + 1`, we look for either a tab character or at least two spaces
+        # to detect indentation. If someone is actually using one-space
+        # indentation, well, they’ll get unindented line comments.
+        fragmentIndent = ''
+        for pastFragment in fragments[0...(fragmentIndex + 1)] by -1
+          indent = /\t+| {2,}/.exec pastFragment.code
+          if indent
+            fragmentIndent = indent[0]
+            break
+
+        code = '\n' + fragmentIndent + (
+            commentFragment.code for commentFragment in fragment.precedingComments
+          ).join "\n#{fragmentIndent}"
         for pastFragment, pastFragmentIndex in fragments[0...(fragmentIndex + 1)] by -1
           newLineIndex = pastFragment.code.lastIndexOf '\n'
           if newLineIndex is -1
