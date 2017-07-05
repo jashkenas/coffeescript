@@ -22,23 +22,29 @@ replDefaults =
     input = input.replace /^\s*try\s*{([\s\S]*)}\s*catch.*$/m, '$1'
 
     # Require AST nodes to do some AST manipulation.
-    {Block, Assign, Value, Literal} = require './nodes'
+    {Block, Assign, Value, Literal, Call, Code} = require './nodes'
 
     try
       # Tokenize the clean input.
       tokens = CoffeeScript.tokens input
       # Collect referenced variable names just like in `CoffeeScript.compile`.
-      referencedVars = (
-        token[1] for token in tokens when token[0] is 'IDENTIFIER'
-      )
+      referencedVars = (token[1] for token in tokens when token[0] is 'IDENTIFIER')
       # Generate the AST of the tokens.
       ast = CoffeeScript.nodes tokens
-      # Add assignment to `_` variable to force the input to be an expression.
-      ast = new Block [
-        new Assign (new Value new Literal '__'), ast, '='
-      ]
-      js = ast.compile {bare: yes, locals: Object.keys(context), referencedVars}
-      cb null, runInContext js, context, filename
+      # Add assignment to `__` variable to force the input to be an expression.
+      ast = new Block [new Assign (new Value new Literal '__'), ast, '=']
+      # Wrap the expression in a closure to support top-level `await`
+      ast     = new Code [], ast
+      isAsync = ast.isAsync
+      # Invoke the wrapping closure
+      ast    = new Block [new Call ast]
+      js     = ast.compile {bare: yes, locals: Object.keys(context), referencedVars, sharedScope: yes}
+      result = runInContext js, context, filename
+      # Await an async result, if necessary
+      if isAsync
+        cb null, await result
+      else
+        cb null, result
     catch err
       # AST's `compile` does not add source code information to syntax errors.
       updateSyntaxError err, input
