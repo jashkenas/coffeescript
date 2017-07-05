@@ -211,7 +211,7 @@ grammar =
   # A return statement from a function body.
   Return: [
     o 'RETURN Expression',                      -> new Return $2
-    o 'RETURN INDENT Expression OUTDENT',       -> new Return $3
+    o 'RETURN INDENT Object OUTDENT',           -> new Return new Value $3
     o 'RETURN',                                 -> new Return
   ]
 

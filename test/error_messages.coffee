@@ -1328,3 +1328,23 @@ test "#4283: error message for implicit call", ->
     console.log {search, users, contacts users_to_display}
                                 ^^^^^^^^
   '''
+
+test "#3199: error message for return indented non-object", ->
+  assertErrorFormat '''
+    return
+      1
+  ''', '''
+    [stdin]:2:3: error: unexpected number
+      1
+      ^
+  '''
+
+test "#3199: error message for return indented non-object", ->
+  assertErrorFormat '''
+    return
+      x for x in [1, 2, 3]
+  ''', '''
+    [stdin]:2:3: error: unexpected identifier
+      x for x in [1, 2, 3]
+      ^
+  '''
