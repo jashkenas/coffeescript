@@ -196,7 +196,7 @@ exports.Rewriter = class Rewriter
 
       startImplicitCall = (idx) ->
         stack.push ['(', idx, ours: yes]
-        tokens.splice idx, 0, generate 'CALL_START', '(', null, prevToken
+        tokens.splice idx, 0, generate 'CALL_START', '(', ['', 'implicit function call', token[2]], prevToken
 
       endImplicitCall = ->
         stack.pop()
