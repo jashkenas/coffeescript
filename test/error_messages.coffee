@@ -1637,6 +1637,28 @@ test "#4283: error message for implicit call", ->
         ^
   '''
 
+test "#3199: error message for call indented non-object", ->
+  assertErrorFormat '''
+    fn = ->
+    fn
+      1
+  ''', '''
+    [stdin]:3:1: error: unexpected indentation
+      1
+    ^^
+  '''
+
+test "#3199: error message for call indented comprehension", ->
+  assertErrorFormat '''
+    fn = ->
+    fn
+      x for x in [1, 2, 3]
+  ''', '''
+    [stdin]:3:1: error: unexpected indentation
+      x for x in [1, 2, 3]
+    ^^
+  '''
+
 test "#3199: error message for return indented non-object", ->
   assertErrorFormat '''
     return
@@ -1647,7 +1669,7 @@ test "#3199: error message for return indented non-object", ->
       ^
   '''
 
-test "#3199: error message for return indented non-object", ->
+test "#3199: error message for return indented comprehension", ->
   assertErrorFormat '''
     return
       x for x in [1, 2, 3]
@@ -1667,7 +1689,7 @@ test "#3199: error message for throw indented non-object", ->
       ^
   '''
 
-test "#3199: error message for throw indented non-object", ->
+test "#3199: error message for throw indented comprehension", ->
   assertErrorFormat '''
     throw
       x for x in [1, 2, 3]
