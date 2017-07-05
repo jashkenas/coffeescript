@@ -1636,3 +1636,43 @@ test "#4283: error message for implicit call", ->
     (a, b c) ->
         ^
   '''
+
+test "#3199: error message for return indented non-object", ->
+  assertErrorFormat '''
+    return
+      1
+  ''', '''
+    [stdin]:2:3: error: unexpected number
+      1
+      ^
+  '''
+
+test "#3199: error message for return indented non-object", ->
+  assertErrorFormat '''
+    return
+      x for x in [1, 2, 3]
+  ''', '''
+    [stdin]:2:3: error: unexpected identifier
+      x for x in [1, 2, 3]
+      ^
+  '''
+
+test "#3199: error message for throw indented non-object", ->
+  assertErrorFormat '''
+    throw
+      1
+  ''', '''
+    [stdin]:2:3: error: unexpected number
+      1
+      ^
+  '''
+
+test "#3199: error message for throw indented non-object", ->
+  assertErrorFormat '''
+    throw
+      x for x in [1, 2, 3]
+  ''', '''
+    [stdin]:2:3: error: unexpected identifier
+      x for x in [1, 2, 3]
+      ^
+  '''
