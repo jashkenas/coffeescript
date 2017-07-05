@@ -521,7 +521,6 @@ grammar =
   # Throw an exception object.
   Throw: [
     o 'THROW Expression',                       -> new Throw $2
-    o 'THROW INDENT Expression OUTDENT',        -> new Throw $3
   ]
 
   # Parenthetical expressions. Note that the **Parenthetical** is a **Value**,

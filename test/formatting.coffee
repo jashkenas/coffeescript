@@ -300,12 +300,6 @@ test "#1275: allow indentation before closing brackets", ->
   eq 1, a
 
 test "#3199: throw multiline implicit object", ->
-  x = do ->
-    if no then throw
-      type: 'a'
-      msg: 'b'
-  eq undefined, x
-
   y = do ->
     if no then return
       type: 'a'
