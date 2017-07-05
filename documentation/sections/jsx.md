@@ -10,4 +10,4 @@ Just like in JSX and HTML, denote XML tags using `<` and `>`. You can interpolat
 codeFor('jsx')
 ```
 
-Older plugins or forks of CoffeeScript supported JSX syntax and referred to it as CSX or CJSX. They also often used a `.cjsx` file extension, but this is no longer necessary; regalar `.coffee` will do.
+Older plugins or forks of CoffeeScript supported JSX syntax and referred to it as CSX or CJSX. They also often used a `.cjsx` file extension, but this is no longer necessary; regular `.coffee` will do.

@@ -1627,3 +1627,12 @@ test "#3906: error for unusual indentation", ->
       c
     ^^
   '''
+
+test "#4283: error message for implicit call", ->
+  assertErrorFormat '''
+    (a, b c) ->
+  ''', '''
+    [stdin]:1:5: error: unexpected implicit function call
+    (a, b c) ->
+        ^
+  '''
