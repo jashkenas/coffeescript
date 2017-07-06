@@ -112,7 +112,6 @@ grammar =
   # them somewhat circular.
   Expression: [
     o 'Value'
-    o 'Invocation'
     o 'Code'
     o 'Operation'
     o 'Assign'
@@ -307,7 +306,6 @@ grammar =
   SimpleAssignable: [
     o 'Identifier',                             -> new Value $1
     o 'Value Accessor',                         -> $1.add $2
-    o 'Invocation Accessor',                    -> new Value $1, [].concat $2
     o 'ThisProperty'
   ]
 
@@ -325,8 +323,9 @@ grammar =
     o 'Literal',                                -> new Value $1
     o 'Parenthetical',                          -> new Value $1
     o 'Range',                                  -> new Value $1
+    o 'Invocation',                             -> new Value $1
     o 'This'
-    o 'Super'
+    o 'Super',                                  -> new Value $1
   ]
 
   # A `super`-based expression that can be used as a value.
@@ -453,7 +452,6 @@ grammar =
   Invocation: [
     o 'Value OptFuncExist String',              -> new TaggedTemplateCall $1, $3, $2
     o 'Value OptFuncExist Arguments',           -> new Call $1, $3, $2
-    o 'Invocation OptFuncExist Arguments',      -> new Call $1, $3, $2
     o 'SUPER OptFuncExist Arguments',           -> new SuperCall LOC(1)(new Super), $3, $2
   ]
 
