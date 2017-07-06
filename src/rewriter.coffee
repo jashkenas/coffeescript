@@ -421,7 +421,7 @@ exports.Rewriter = class Rewriter
         return 1
 
     @scanTokens (token, i, tokens) ->
-      return 1 unless token.comments and not token.generated
+      return 1 unless token.comments
       if token[0] in DISCARDED
         return shiftCommentsForward token, i, tokens
       else

@@ -585,6 +585,8 @@ exports.Block = class Block extends Base
           if indent
             fragmentIndent = indent[0]
             break
+          else if '\n' in pastFragment.code
+            break
 
         code = '\n' + fragmentIndent + (
             commentFragment.code for commentFragment in fragment.precedingComments

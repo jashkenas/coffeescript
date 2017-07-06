@@ -441,3 +441,21 @@ test "Line comments are properly indented", ->
   }
 
   // Another unindented comment'''
+
+test "Line comments that start a new line after a function call are output as such", ->
+  eqJS '''
+  a = ->
+    b 1
+
+  # Comment
+  2
+  ''', '''
+  var a;
+
+  a = function() {
+    return b(1);
+  };
+
+  // Comment
+  2;
+  '''
