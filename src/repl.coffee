@@ -5,6 +5,8 @@ nodeREPL = require 'repl'
 CoffeeScript = require './'
 {merge, updateSyntaxError} = require './helpers'
 
+sawSIGINT = no
+
 replDefaults =
   prompt: 'coffee> ',
   historyFile: do ->
@@ -42,7 +44,9 @@ replDefaults =
       result = runInContext js, context, filename
       # Await an async result, if necessary
       if isAsync
-        cb null, await result
+        result = await result
+        cb null, result unless sawSIGINT
+        sawSIGINT = false
       else
         cb null, result
     catch err
@@ -137,6 +141,8 @@ addHistory = (repl, filename, maxSize) ->
       fs.writeSync fd, "#{code}\n"
       lastLine = code
 
+  # XXX: The SIGINT event from REPLServer is undocumented, so this is a bit fragile
+  repl.on 'SIGINT', -> sawSIGINT = yes
   repl.on 'exit', -> fs.closeSync fd
 
   # Add a command to show the history stack
