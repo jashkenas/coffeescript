@@ -2494,8 +2494,10 @@ exports.Param = class Param extends Base
       if obj instanceof Assign
         # ... possibly with a default value
         if obj.value instanceof Assign
+          obj = obj.value.variable
+        else
           obj = obj.value
-        @eachName iterator, obj.value.unwrap()
+        @eachName iterator, obj.unwrap()
       # * splats within destructured parameters `[xs...]`
       else if obj instanceof Splat
         node = obj.name.unwrap()
