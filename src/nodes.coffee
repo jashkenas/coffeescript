@@ -1903,6 +1903,11 @@ exports.ModuleSpecifier = class ModuleSpecifier extends Base
   constructor: (@original, @alias, @moduleDeclarationType) ->
     super()
 
+    if @original.comments or @alias?.comments
+      @comments = []
+      @comments = @comments.concat @original.comments if @original.comments
+      @comments = @comments.concat @alias.comments    if @alias?.comments
+
     # The name of the variable entering the local scope
     @identifier = if @alias? then @alias.value else @original.value
 
