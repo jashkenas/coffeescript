@@ -442,20 +442,20 @@ test "Line comments are properly indented", ->
 
   // Another unindented comment'''
 
-test "Line comments that start a new line after a function call are output as such", ->
+test "Line comments that trail code, followed by line comments that start a new line", ->
   eqJS '''
   a = ->
-    b 1
+    b 1 # Trailing comment
 
-  # Comment
+  # Comment that starts a new line
   2
   ''', '''
   var a;
 
   a = function() {
-    return b(1);
+    return b(1); // Trailing comment
   };
 
-  // Comment
+  // Comment that starts a new line
   2;
   '''

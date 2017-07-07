@@ -307,7 +307,7 @@ exports.Lexer = class Lexer
   commentToken: ->
     return 0 unless match = @chunk.match COMMENT
     [comment, here] = match
-    content = null
+    contents = null
     # Does this comment follow code on the same line?
     newLine = /^\s*\n+\s*#/.test comment
     if here
@@ -329,28 +329,33 @@ exports.Lexer = class Lexer
       content = content.replace /###$/, ''
       if '\n' in content
         content = content.replace /// \n #{repeat ' ', @indent} ///g, '\n'
+      contents = [content]
     else
-      content = comment.replace /^(\s*)#/, ''
+      # The `COMMENT` regex captures successive line comments as one token.
+      content = comment.replace /^(\s*)#/gm, ''
+      contents = content.split '\n'
 
-    commentAttachment =
-      content: content
-      here: here?
-      newLine: newLine
+    commentAttachments = []
+    for content, i in contents
+      commentAttachments.push
+        content: content
+        here: here?
+        newLine: newLine or i isnt 0 # Line comments after the first one start new lines, by definition.
 
     prev = @prev()
     unless prev
       # If there’s no previous token, create a placeholder token to attach
       # this comment to; and follow with a newline.
-      commentAttachment.newLine = yes
+      commentAttachments[0].newLine = yes
       @lineToken @chunk[comment.length..] # Set the indent.
       @token 'JS', ''
-      @tokens[0].comments = [commentAttachment]
+      @tokens[0].comments = commentAttachments
       @newlineToken 0
     else
       if prev.comments
-        prev.comments.push commentAttachment
+        prev.comments = prev.comments.concat commentAttachments
       else
-        prev.comments = [commentAttachment]
+        prev.comments = commentAttachments
 
     comment.length
 
