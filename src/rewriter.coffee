@@ -44,7 +44,7 @@ exports.Rewriter = class Rewriter
     # Set environment variable `DEBUG_TOKEN_STREAM` to `true` to output token
     # debugging info. Also set `DEBUG_REWRITTEN_TOKEN_STREAM` to `true` to
     # output the token stream after it has been rewritten by this file.
-    if process? and process.env.DEBUG_TOKEN_STREAM
+    if process?.env?.DEBUG_TOKEN_STREAM
       console.log 'Initial token stream:' if process.env.DEBUG_REWRITTEN_TOKEN_STREAM
       console.log (t[0] + '/' + t[1] + (if t.comments then '*' else '') for t in @tokens).join ' '
     @removeLeadingNewlines()
@@ -57,7 +57,7 @@ exports.Rewriter = class Rewriter
     @addLocationDataToGeneratedTokens()
     @enforceValidCSXAttributes()
     @fixOutdentLocationData()
-    if process? and process.env.DEBUG_REWRITTEN_TOKEN_STREAM
+    if process?.env?.DEBUG_REWRITTEN_TOKEN_STREAM
       console.log 'Rewritten token stream:' if process.env.DEBUG_TOKEN_STREAM
       console.log (t[0] + '/' + t[1] + (if t.comments then '*' else '') for t in @tokens).join ' '
     @tokens
@@ -389,13 +389,13 @@ exports.Rewriter = class Rewriter
           endImplicitObject i + offset
       return forward(1)
 
-  # Make sure only strings and wrapped expressions are used in CSX attributes
+  # Make sure only strings and wrapped expressions are used in CSX attributes.
   enforceValidCSXAttributes: ->
     @scanTokens (token, i, tokens) ->
       if token.csxColon
         next = tokens[i + 1]
         if next[0] not in ['STRING_START', 'STRING', '(']
-          throwSyntaxError 'expected wrapped or quoted CSX attribute', next[2]
+          throwSyntaxError 'expected wrapped or quoted JSX attribute', next[2]
       return 1
 
   # Not all tokens survive processing by the parser. To avoid comments getting
@@ -403,9 +403,9 @@ exports.Rewriter = class Rewriter
   # to a token that will make it to the other side.
   rescueStowawayComments: ->
     shiftCommentsForward = (token, i, tokens) ->
-      # Find the next surviving token and attach this token’s comments to
-      # it, with a flag that we know to output such comments *before* that
-      # token’s own compilation. (Usually comments are output following
+      # Find the next surviving token and attach this token’s comments to it,
+      # with a flag that we know to output such comments *before* that
+      # token’s own compilation. (Otherwise comments are output following
       # the token they’re attached to.)
       j = i
       j++ while j isnt tokens.length and tokens[j][0] in DISCARDED
