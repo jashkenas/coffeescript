@@ -164,7 +164,7 @@ exports.Rewriter = class Rewriter
 
       startImplicitCall = (idx) ->
         stack.push ['(', idx, ours: yes]
-        tokens.splice idx, 0, generate 'CALL_START', '('
+        tokens.splice idx, 0, generate 'CALL_START', '(', ['', 'implicit function call', token[2]]
 
       endImplicitCall = ->
         stack.pop()
@@ -434,7 +434,7 @@ exports.Rewriter = class Rewriter
         for j in [1..2] when @tag(i + j) in ['OUTDENT', 'TERMINATOR', 'FINALLY']
           tokens.splice i + j, 0, @indentation()...
           return 2 + j
-      if tag in ['->', '=>'] and @tag(i + 1) in [',', '.']
+      if tag in ['->', '=>'] and (@tag(i + 1) is ',' or @tag(i + 1) is '.' and token.newLine)
         [indent, outdent] = @indentation tokens[i]
         tokens.splice i + 1, 0, indent, outdent
         return 1

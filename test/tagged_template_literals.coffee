@@ -18,6 +18,7 @@ func = (text, expressions...) ->
 outerobj =
   obj:
     func: func
+    f: -> func
 
 # Example use
 test "tagged template literal for html templating", ->
@@ -169,3 +170,8 @@ test "tagged template literal with unnecessarily escaped ES interpolation", ->
 test "tagged template literal special escaping", ->
   eq 'text: [` ` \\` \\` \\\\` $ { ${ ${ \\${ \\${ \\\\${ | ` ${] expressions: [1]',
   func"` \` \\` \\\` \\\\` $ { ${ \${ \\${ \\\${ \\\\${ #{1} ` ${"
+
+test '#4467: tagged template literal call recognized as a callable function', ->
+  eq 'text: [dot notation] expressions: []',
+  outerobj.obj.f()'dot notation'
+

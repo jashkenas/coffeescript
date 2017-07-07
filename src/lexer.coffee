@@ -81,7 +81,7 @@ exports.Lexer = class Lexer
       return {@tokens, index: i} if opts.untilBalanced and @ends.length is 0
 
     @closeIndentation()
-    @error "missing #{end.tag}", end.origin[2] if end = @ends.pop()
+    @error "missing #{end.tag}", (end.origin ? end)[2] if end = @ends.pop()
     return @tokens if opts.rewrite is off
     (new Rewriter).rewrite @tokens
 
@@ -442,7 +442,7 @@ exports.Lexer = class Lexer
     while moveOut > 0
       lastIndent = @indents[@indents.length - 1]
       if not lastIndent
-        moveOut = 0
+        @outdebt = moveOut = 0
       else if @outdebt and moveOut <= @outdebt
         @outdebt -= moveOut
         moveOut   = 0

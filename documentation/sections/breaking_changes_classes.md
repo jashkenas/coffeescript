@@ -16,15 +16,18 @@ class B extends A
   constructor: -> this  # Throws a compiler error
 ```
 
-Class methods can’t be bound (i.e. you can’t define a class method using a fat arrow) though you can define such methods in the constructor instead:
+ES2015 classes don’t allow bound (fat arrow) methods. The CoffeeScript compiler goes through some contortions to preserve support for them, but one thing that can’t be accommodated is calling a bound method before it is bound:
 
 ```coffee
-class B extends A
-  method: =>  # Throws a compiler error
-  
+class Base
   constructor: ->
-    super()
-    @method = =>  # This works
+    @onClick()      # This works
+    clickHandler = @onClick
+    clickHandler()  # This throws a runtime error
+
+class Component extends Base
+  onClick: =>
+    console.log 'Clicked!', @
 ```
 
 Class methods can’t be used with `new` (uncommon):
