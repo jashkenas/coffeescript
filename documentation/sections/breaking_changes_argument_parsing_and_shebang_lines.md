@@ -34,7 +34,7 @@ The positional arguments were: ["path/to/script.coffee","--"]
 hello world!
 ```
 
-Note that the script is still run as usual, printing `"hello world!"` after the warning text.
+Note that the script is still run as usual, printing `hello world!` after the warning text.
 
 #### Shebang scripts
 
