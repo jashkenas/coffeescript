@@ -72,36 +72,23 @@ test "throw if multiple flags try to use the same short or long name", ->
     ['-j', '--just-long', 'another desc']
   ]
 
-reQuote = (str) -> (str ? '').replace /[.?*+^$[\]\\(){}|-]/g, "\\$&"
+test "outputs expected help text", ->
+  expectedBanner = '''
 
-flagPattern = (flag) ->
-  switch flag.length
-    when 2
-      shortFlag = null
-      [longFlag, desc] = flag
-    when 3
-      [shortFlag, longFlag, desc] = flag
-    else
-      throw new Error "invalid flag"
-  longFlagPat = reQuote longFlag.match(/--[^\s]+/)[0]
-  descPat = reQuote desc
-  if shortFlag?
-    joined = [reQuote(shortFlag), longFlagPat, descPat].join '.*'
-  else
-    joined = [longFlagPat, descPat].join '.*'
-  new RegExp "^.*#{joined}.*$", 'm'
+banner text
 
-test "help text shows banner and all switches", ->
-  bannerHelp = opt.help()
-  bannerPattern = new RegExp reQuote(banner), 'g'
-  ok bannerHelp.match bannerPattern
-  for flag in flags
-    linePat = flagPattern flag
-    ok bannerHelp.match linePat
+  -r, --required     desc required
+  -o, --optional     desc optional
+  -l, --list         desc list
 
-test "help text shows switches, even without banner", ->
-  parser = new OptionParser flags
-  noBannerHelp = parser.help()
-  for flag in flags
-    linePat = flagPattern flag
-    ok noBannerHelp.match linePat
+  '''
+  ok opt.help() is expectedBanner
+
+  expected = [
+    ''
+    '  -r, --required     desc required'
+    '  -o, --optional     desc optional'
+    '  -l, --list         desc list'
+    ''
+  ].join('\n')
+  ok new OptionParser(flags).help() is expected
