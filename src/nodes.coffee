@@ -1171,7 +1171,7 @@ exports.Obj = class Obj extends Base
         node.error 'cannot have an implicit value in an implicit object'
 
     # Object spread properties. https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md
-    return @compileSpread o if @hasSplat()
+    return @compileSpread o if @hasSplat() and !@csx
 
     idt        = o.indent += TAB
     lastNoncom = @lastNonComment @properties
@@ -1195,6 +1195,7 @@ exports.Obj = class Obj extends Base
     answer = []
     answer.push @makeCode if isCompact then '' else '\n'
     for prop, i in props
+      propHasSplat = prop instanceof Splat
       join = if i is props.length - 1
         ''
       else if isCompact and @csx
@@ -1219,12 +1220,16 @@ exports.Obj = class Obj extends Base
         key  = key.properties[0].name
         prop = new Assign key, prop, 'object'
       if key is prop
-        if prop.shouldCache()
-          [key, value] = prop.base.cache o
-          key  = new PropertyName key.value if key instanceof IdentifierLiteral
-          prop = new Assign key, value, 'object'
-        else if not prop.bareLiteral?(IdentifierLiteral)
-          prop = new Assign prop, prop, 'object'
+        unless propHasSplat
+          if prop.shouldCache()
+            [key, value] = prop.base.cache o
+            key  = new PropertyName key.value if key instanceof IdentifierLiteral
+            prop = new Assign key, value, 'object'
+          else if not prop.bareLiteral?(IdentifierLiteral)
+            prop = new Assign prop, prop, 'object'
+        else
+          # Spread in CSX
+          prop = if @csx then new Literal "{#{prop.compile(o)}}" else prop
       if indent then answer.push @makeCode indent
       prop.csx = yes if @csx
       answer.push @makeCode ' ' if @csx and i is 0

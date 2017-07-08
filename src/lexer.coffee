@@ -49,6 +49,7 @@ exports.Lexer = class Lexer
     @importSpecifierList = no    # Used to identify when in an IMPORT {...} FROM? ...
     @exportSpecifierList = no    # Used to identify when in an EXPORT {...} FROM? ...
     @csxDepth = 0                # Used to optimize CSX checks, how deep in CSX we are.
+    @csxSpreadProps = no         # Used to detect if CSX attributes include spreads (<div {props...} />)
 
     @chunkLine =
       opts.line or 0             # The start line for the current @chunk.
@@ -488,6 +489,8 @@ exports.Lexer = class Lexer
   # CSX is like JSX but for CoffeeScript.
   csxToken: ->
     firstChar = @chunk[0]
+    # Check the previous token to detect if attribute is spread.
+    prevChar = if @tokens.length > 0 then @tokens[@tokens.length - 1][0] else ''
     if firstChar is '<'
       match = CSX_IDENTIFIER.exec @chunk[1...]
       return 0 unless match and (
@@ -512,8 +515,13 @@ exports.Lexer = class Lexer
         @csxDepth--
         return 2
       else if firstChar is '{'
-        token = @token '(', '('
-        @ends.push {tag: '}', origin: token}
+        if prevChar == ':'
+          token = @token '(', '('
+          @ends.push {tag: '}', origin: token}
+          @csxSpreadProps = no
+        else
+          @ends.push {tag: '}'}  
+          @csxSpreadProps = yes          
         return 1
       else if firstChar is '>'
         # Ignore terminators inside a tag.
@@ -540,7 +548,7 @@ exports.Lexer = class Lexer
     else if @atCSXTag 1
       if firstChar is '}'
         @pair firstChar
-        @token ')', ')'
+        @token ')', ')' unless @csxSpreadProps
         @token ',', ','
         return 1
       else
