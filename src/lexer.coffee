@@ -520,8 +520,8 @@ exports.Lexer = class Lexer
           @ends.push {tag: '}', origin: token}
           @csxSpreadProps = no
         else
-          @ends.push {tag: '}'}  
-          @csxSpreadProps = yes          
+          @ends.push {tag: '}'}
+          @csxSpreadProps = yes
         return 1
       else if firstChar is '>'
         # Ignore terminators inside a tag.
