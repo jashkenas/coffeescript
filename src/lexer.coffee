@@ -13,7 +13,7 @@
 
 # Import the helpers we need.
 {count, starts, compact, repeat, invertLiterate, merge,
-locationDataToString, throwSyntaxError} = require './helpers'
+attachCommentsToNode, locationDataToString, throwSyntaxError} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -352,10 +352,7 @@ exports.Lexer = class Lexer
       @tokens[0].comments = commentAttachments
       @newlineToken 0
     else
-      if prev.comments
-        prev.comments = prev.comments.concat commentAttachments
-      else
-        prev.comments = commentAttachments
+      attachCommentsToNode prev, commentAttachments
 
     comment.length
 

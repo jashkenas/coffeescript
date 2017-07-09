@@ -10,7 +10,8 @@ Error.stackTraceLimit = Infinity
 
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, some,
-addDataToNode, locationDataToString, throwSyntaxError} = require './helpers'
+addDataToNode, attachCommentsToNode, locationDataToString,
+throwSyntaxError} = require './helpers'
 
 # Functions required by parser.
 exports.extend = extend

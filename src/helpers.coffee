@@ -130,12 +130,15 @@ exports.addDataToNode = (parserState, first, last) ->
     if obj.locationData?
       objHash = "#{obj.locationData.first_line}x#{obj.locationData.first_column}-#{obj.locationData.last_line}x#{obj.locationData.last_column}"
       if parserState.tokenComments[objHash]?
-        unless obj.comments
-          obj.comments = parserState.tokenComments[objHash]
-        else
-          obj.comments = obj.comments.concat parserState.tokenComments[objHash]
+        attachCommentsToNode obj, parserState.tokenComments[objHash]
 
     obj
+
+exports.attachCommentsToNode = attachCommentsToNode = (node, comments) ->
+  node.comments = if node.comments
+    node.comments.concat comments
+  else
+    comments
 
 # Convert jison location data to a string.
 # `obj` can be a token, or a locationData.
