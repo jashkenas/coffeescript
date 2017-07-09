@@ -3183,28 +3183,44 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
     expr = @body.unwrap()
 
     elements = []
+    salvagedComments = []
     expr.traverseChildren no, (node) ->
       if node instanceof StringLiteral
+        if node.comments
+          salvagedComments = salvagedComments.concat node.comments
+          delete node.comments
         elements.push node
         return yes
       else if node instanceof Parens
+        if salvagedComments.length isnt 0
+          for comment in salvagedComments
+            comment.unshift = yes
+            comment.newLine = yes
+          attachCommentsToNode node, salvagedComments
         elements.push node
         return no
+      else if node.comments
+        # This node is getting discarded, but salvage its comments.
+        if elements.length isnt 0 and elements[elements.length - 1] not instanceof StringLiteral
+          attachCommentsToNode elements[elements.length - 1], node.comments
+        else
+          salvagedComments = salvagedComments.concat node.comments
+        delete node.comments
       return yes
 
     fragments = []
     fragments.push @makeCode '`' unless @csx
     for element in elements
       if element instanceof StringLiteral
-        value = element.unquote @csx
+        element.value = element.unquote @csx
         unless @csx
           # Backticks and `${` inside template literals must be escaped.
-          value = value.replace /(\\*)(`|\$\{)/g, (match, backslashes, toBeEscaped) ->
+          element.value = element.value.replace /(\\*)(`|\$\{)/g, (match, backslashes, toBeEscaped) ->
             if backslashes.length % 2 is 0
               "#{backslashes}\\#{toBeEscaped}"
             else
               match
-        fragments.push @makeCode value
+        fragments.push element.compileToFragments(o)...
       else
         fragments.push @makeCode '$' unless @csx
         code = element.compileToFragments(o, LEVEL_PAREN)

@@ -459,3 +459,11 @@ test "Line comments that trail code, followed by line comments that start a new 
   // Comment that starts a new line
   2;
   '''
+
+test "Line comment in an interpolated string", ->
+  eqJS '''
+  "a#{# comment
+  1}b"
+  ''', '''
+  `a${// comment
+  1}b`;'''
