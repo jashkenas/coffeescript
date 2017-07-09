@@ -306,7 +306,7 @@ td code {
   white-space: nowrap;
 }
 
-h2, h3 {
+h2, h3, h4 {
   margin-top: 1.3em;
   margin-bottom: 0.6em;
   font-family: 'Alegreya Sans';
@@ -314,7 +314,7 @@ h2, h3 {
 h2 {
   font-weight: 800;
 }
-h3, h2 time {
+h3, h4, h2 time {
   font-weight: 400;
 }
 
@@ -734,6 +734,9 @@ textarea {
         <li class="nav-item">
           <a href="#breaking-changes-literate-coffeescript" class="nav-link" data-action="sidebar-nav">Literate CoffeeScript Parsing</a>
         </li>
+        <li class="nav-item">
+          <a href="#breaking-changes-argument-parsing-and-shebang-lines" class="nav-link" data-action="sidebar-nav">Argument Parsing and <code>#!</code> Lines</a>
+        </li>
       </ul>
     </li>
     <li class="nav-item">
@@ -858,7 +861,7 @@ cubes = (function() {
       <section id="coffeescript-2">
         <h2>CoffeeScript 2</h2>
 <h3>What’s New In CoffeeScript 2?</h3>
-<p>The biggest change in CoffeeScript 2 is that now the CoffeeScript compiler produces modern, ES2015+ JavaScript. A CoffeeScript <code>=&gt;</code> becomes an ES <code>=&gt;</code>, a CoffeeScript <code>class</code> becomes an ES <code>class</code> and so on. With the exception of modules (<code>import</code> and <code>export</code> statements), all the ES2015+ features that CoffeeScript supports can run natively in Node 7.6+, meaning that Node can run CoffeeScript’s output without any further processing required. You can <a href="http://coffeescript.org/v2/test.html">run the tests in your browser</a> to see if your browser can do the same; Chrome has supported all features since version 55.</p>
+<p>The biggest change in CoffeeScript 2 is that now the CoffeeScript compiler produces modern, ES2015+ JavaScript. A CoffeeScript <code>=&gt;</code> becomes an ES <code>=&gt;</code>, a CoffeeScript <code>class</code> becomes an ES <code>class</code> and so on. With the exception of <a href="#modules">modules</a> (<code>import</code> and <code>export</code> statements) and <a href="#jsx">JSX</a>, all the ES2015+ features that CoffeeScript supports can run natively in Node 7.6+, meaning that Node can run CoffeeScript’s output without any further processing required. You can <a href="http://coffeescript.org/v2/test.html">run the tests in your browser</a> to see if your browser can do the same; Chrome has supported all features since version 55.</p>
 <p>Support for ES2015+ syntax is important to ensure compatibility with frameworks that assume ES2015. Now that CoffeeScript compiles classes to the ES <code>class</code> keyword, it’s possible to <code>extend</code> an ES class; that wasn’t possible in CoffeeScript 1. Parity in how language features work is also important on its own; CoffeeScript “is just JavaScript,” and so things like <a href="#breaking-changes-default-values">function parameter default values</a> should behave the same in CoffeeScript as in JavaScript.</p>
 <p>Many ES2015+ features have been backported to CoffeeScript 1.11 and 1.12, including <a href="#modules">modules</a>, <a href="#generator-iteration"><code>for…of</code></a>, and <a href="#tagged-template-literals">tagged template literals</a>. Major new features unique to CoffeeScript 2 are support for ES2017’s <a href="#async-functions">async functions</a> and for <a href="#jsx">JSX</a>. More details are in the <a href="#changelog">changelog</a>.</p>
 <p>There are very few <a href="#breaking-changes">breaking changes from CoffeeScript 1.x to 2</a>; we hope the upgrade process is smooth for most projects.</p>
@@ -3244,7 +3247,7 @@ renderStarRating = function({rating, maxStars}) {
   </div>
   
 </aside>
-<p>Older plugins or forks of CoffeeScript supported JSX syntax and referred to it as CSX or CJSX. They also often used a <code>.cjsx</code> file extension, but this is no longer necessary; regalar <code>.coffee</code> will do.</p>
+<p>Older plugins or forks of CoffeeScript supported JSX syntax and referred to it as CSX or CJSX. They also often used a <code>.cjsx</code> file extension, but this is no longer necessary; regular <code>.coffee</code> will do.</p>
 
         </section>
       </section>
@@ -3619,7 +3622,7 @@ f = function*() {
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>
   constructor: <span class="function">-&gt;</span> <span class="keyword">this</span>  <span class="comment"># Throws a compiler error</span>
 </code></pre>
-</blockquote><p>ES2015 classes don’t allow bound (fat arrow) methods. The CoffeeScript compiler goes through some contortions to preserve support for them, but one thing that can’t be accomodated is calling a bound method before it is bound:</p>
+</blockquote><p>ES2015 classes don’t allow bound (fat arrow) methods. The CoffeeScript compiler goes through some contortions to preserve support for them, but one thing that can’t be accommodated is calling a bound method before it is bound:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">Base</span></span>
   constructor: <span class="function">-&gt;</span>
     @onClick()      <span class="comment"># This works</span>
@@ -3787,7 +3790,7 @@ B = class B extends A {
 
         </section>
         <section id="breaking-changes-jsx-and-the-less-than-and-greater-than-operators">
-          <h3>JSX and the <code>&lt;</code> and <code>&gt;</code> Operators</h3>
+          <h3>JSX and the <code>&lt;</code> and <code>&gt;</code> operators</h3>
 <p>With the addition of <a href="#jsx">JSX</a>, the <code>&lt;</code> and <code>&gt;</code> characters serve as both the “less than” and “greater than” operators and as the delimiters for XML tags, like <code>&lt;div&gt;</code>. For best results, in general you should always wrap the operators in spaces to distinguish them from XML tags: <code>i &lt; len</code>, not <code>i&lt;len</code>. The compiler tries to be forgiving when it can be sure what you intend, but always putting spaces around the “less than” and “greater than” operators will remove ambiguity.</p>
 
         </section>
@@ -3796,6 +3799,29 @@ B = class B extends A {
 <p>CoffeeScript 2’s parsing of Literate CoffeeScript has been refactored to now be more careful about not treating indented lists as code blocks; but this means that all code blocks (unless they are to be interpreted as comments) must be separated by at least one blank line from lists.</p>
 <p>Code blocks should also now maintain a consistent indentation level—so an indentation of one tab (or whatever you consider to be a tab stop, like 2 spaces or 4 spaces) should be treated as your code’s “left margin,” with all code in the file relative to that column.</p>
 <p>Code blocks that you want to be part of the commentary, and not executed, must have at least one line (ideally the first line of the block) completely unindented.</p>
+
+        </section>
+        <section id="breaking-changes-argument-parsing-and-shebang-lines">
+          <h3>Argument parsing and shebang (<code>#!</code>) lines</h3>
+<p>In CoffeeScript 1.x, <code>--</code> was required after the path and filename of the script to be run, but before any arguments passed to that script. This convention is now deprecated. So instead of:</p>
+<blockquote class="uneditable-code-block"><pre><code class="language-bash">coffee [options] path/to/script.coffee -- [args]
+</code></pre>
+</blockquote><p>Now you would just type:</p>
+<blockquote class="uneditable-code-block"><pre><code class="language-bash">coffee [options] path/to/script.coffee [args]
+</code></pre>
+</blockquote><p>The deprecated version will still work, but it will print a warning before running the script.</p>
+<p>On non-Windows platforms, a <code>.coffee</code> file can be made executable by adding a shebang (<code>#!</code>) line at the top of the file and marking the file as executable. For example:</p>
+<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="comment">#!/usr/bin/env coffee</span>
+
+x = <span class="number">2</span> + <span class="number">2</span>
+<span class="built_in">console</span>.log x
+</code></pre>
+</blockquote><p>If this were saved as <code>executable.coffee</code>, it could be made executable and run:</p>
+<blockquote class="uneditable-code-block"><pre><code class="language-bash">▶ chmod +x ./executable.coffee
+▶ ./executable.coffee
+4
+</code></pre>
+</blockquote><p>In CoffeeScript 1.x, this used to fail when trying to pass arguments to the script. Some users on OS X worked around the problem by using <code>#!/usr/bin/env coffee --</code> as the first line of the file. That didn’t work on Linux, however, which cannot parse shebang lines with more than a single argument. While such scripts will still run on OS X, CoffeeScript will now display a warning before compiling or evaluating files that begin with a too-long shebang line. Now that CoffeeScript 2 supports passing arguments without needing <code>--</code>, we recommend simply changing the shebang lines in such scripts to just <code>#!/usr/bin/env coffee</code>.</p>
 
         </section>
       </section>
