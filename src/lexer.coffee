@@ -378,7 +378,7 @@ exports.Lexer = class Lexer
       return indent.length
 
     if size > @indent
-      if noNewlines or @tag() is 'RETURN'
+      if noNewlines
         @indebt = size - @indent
         @suppressNewlines()
         return indent.length
@@ -759,9 +759,7 @@ exports.Lexer = class Lexer
   # Are we in the midst of an unfinished expression?
   unfinished: ->
     LINE_CONTINUER.test(@chunk) or
-    @tag() in ['\\', '.', '?.', '?::', 'UNARY', 'MATH', 'UNARY_MATH', '+', '-',
-               '**', 'SHIFT', 'RELATION', 'COMPARE', '&', '^', '|', '&&', '||',
-               'BIN?', 'THROW', 'EXTENDS', 'DEFAULT']
+    @tag() in UNFINISHED
 
   formatString: (str, options) ->
     @replaceUnicodeCodePointEscapes str.replace(STRING_OMIT, '$1'), options
@@ -1094,3 +1092,8 @@ LINE_BREAK = ['INDENT', 'OUTDENT', 'TERMINATOR']
 
 # Additional indent in front of these is ignored.
 INDENTABLE_CLOSERS = [')', '}', ']']
+
+# Tokens that, when appearing at the end of a line, suppress a following TERMINATOR/INDENT token
+UNFINISHED = ['\\', '.', '?.', '?::', 'UNARY', 'MATH', 'UNARY_MATH', '+', '-',
+           '**', 'SHIFT', 'RELATION', 'COMPARE', '&', '^', '|', '&&', '||',
+           'BIN?', 'THROW', 'EXTENDS', 'DEFAULT']

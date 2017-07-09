@@ -298,3 +298,10 @@ test "#1275: allow indentation before closing brackets", ->
     a = 1
    )
   eq 1, a
+
+test "#3199: return multiline implicit object", ->
+  y = do ->
+    if no then return
+      type: 'a'
+      msg: 'b'
+  eq undefined, y
