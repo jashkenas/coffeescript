@@ -384,3 +384,16 @@ test "#3906: handle further indentation inside indented chain", ->
     )
     1
   '''
+
+test "#3199: throw multiline implicit object", ->
+  x = do ->
+    if no then throw
+      type: 'a'
+      msg: 'b'
+  eq undefined, x
+
+  y = do ->
+    if no then return
+      type: 'a'
+      msg: 'b'
+  eq undefined, y
