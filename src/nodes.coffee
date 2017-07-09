@@ -147,26 +147,16 @@ exports.Base = class Base
           fragments.push commentFragment
 
       else # Line comment, delimited by `#`.
-        # Successive line comments are joined together, so even line comments
-        # might be multiline.
-        code = comment.content
-        multiline = '\n' in code
-        code = code.replace /^([ \t]*)#/gm, '//' if multiline
-        code = code.replace /\n+$/, ''
-        code = "//#{code}"
+        commentFragment = @makeCode "//#{comment.content}"
+        commentFragment.type = 'LineComment'
+        commentFragment.trail = not comment.newLine and not comment.unshift
 
-        codes = if multiline then code.split('\n') else [code]
-        for code in codes when code isnt ''
-          commentFragment = @makeCode code
-          commentFragment.type = 'LineComment'
-          commentFragment.trail = not comment.newLine and not comment.unshift
-
-          if comment.unshift
-            fragments[0].precedingComments ?= []
-            fragments[0].precedingComments.push commentFragment
-          else
-            fragments[fragments.length - 1].trailingComments ?= []
-            fragments[fragments.length - 1].trailingComments.push commentFragment
+        if comment.unshift
+          fragments[0].precedingComments ?= []
+          fragments[0].precedingComments.push commentFragment
+        else
+          fragments[fragments.length - 1].trailingComments ?= []
+          fragments[fragments.length - 1].trailingComments.push commentFragment
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
