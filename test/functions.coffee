@@ -245,6 +245,12 @@ test "rest element destructuring in function definition", ->
   deepEqual [1, {b:2}], f()
   deepEqual [2, {}], f {a:2}
   deepEqual [3, {c:5}], f {a:3, c:5}
+  
+  f = ({ a: aa = 0, b: bb = 0 }) -> [aa, bb]
+  deepEqual [0, 0], f {}
+  deepEqual [0, 42], f {b:42}
+  deepEqual [42, 0], f {a:42}
+  deepEqual [42, 43], f {a:42, b:43}
 
 test "#4005: `([a = {}]..., b) ->` weirdness", ->
   fn = ([a = {}]..., b) -> [a, b]

@@ -235,9 +235,10 @@ exports.Rewriter = class Rewriter
 
       # Recognize standard implicit calls like
       # f a, f() b, f? c, h[0] d etc.
+      # Added support for spread dots on the left side: f ...a
       if (tag in IMPLICIT_FUNC and token.spaced or
           tag is '?' and i > 0 and not tokens[i - 1].spaced) and
-         (nextTag in IMPLICIT_CALL or
+         (nextTag in IMPLICIT_CALL or nextTag is '...' or
           nextTag in IMPLICIT_UNSPACED_CALL and
           not nextToken.spaced and not nextToken.newLine)
         tag = token[0] = 'FUNC_EXIST' if tag is '?'
