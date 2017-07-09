@@ -155,8 +155,8 @@ exports.Base = class Base
           fragments[0].precedingComments ?= []
           fragments[0].precedingComments.push commentFragment
         else
-          fragments[fragments.length - 1].trailingComments ?= []
-          fragments[fragments.length - 1].trailingComments.push commentFragment
+          fragments[fragments.length - 1].followingComments ?= []
+          fragments[fragments.length - 1].followingComments.push commentFragment
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -579,7 +579,7 @@ exports.Block = class Block extends Base
           else if '\n' in pastFragment.code
             break
 
-        code = '\n' + fragmentIndent + (
+        code = "\n#{fragmentIndent}" + (
             commentFragment.code for commentFragment in fragment.precedingComments
           ).join "\n#{fragmentIndent}"
         for pastFragment, pastFragmentIndex in fragments[0...(fragmentIndex + 1)] by -1
@@ -604,10 +604,34 @@ exports.Block = class Block extends Base
 
       # Yes, this is awfully similar to the previous `if` block, but if you
       # look closely you’ll find lots of tiny differences that make this
-      # impractical to abstract into a function that both blocks can share.
-      if fragment.trailingComments
-        code = (commentFragment.code for commentFragment in fragment.trailingComments).join '\n'
-        code = " #{code}" if fragment.trailingComments[0].trail
+      # confusing if it were abstracted into a function that both blocks share.
+      if fragment.followingComments
+        # Does the first trailing comment follow at the end of a line of code,
+        # like `; // Comment`, or does it start a new line after a line of code?
+        trail = fragment.followingComments[0].trail
+        fragmentIndent = ''
+        # Find the indent of the next line of code, if we have any non-trailing
+        # comments to output. We need to first find the next newline, as these
+        # comments will be output after that; and then the indent of the line
+        # that follows the next newline.
+        unless trail and fragment.followingComments.length is 1
+          onNextLine = no
+          for upcomingFragment in fragments[fragmentIndex...]
+            unless onNextLine
+              if '\n' in upcomingFragment.code
+                onNextLine = yes
+              else
+                continue
+            else
+              indent = /\t+| {2,}/.exec upcomingFragment.code
+              if indent
+                fragmentIndent = indent[0]
+                break
+              else if '\n' in upcomingFragment.code
+                break
+        code = (if trail then ' ' else "\n#{fragmentIndent}") + (
+            commentFragment.code for commentFragment in fragment.followingComments
+          ).join "\n#{fragmentIndent}"
         for upcomingFragment, upcomingFragmentIndex in fragments[fragmentIndex...]
           newLineIndex = upcomingFragment.code.indexOf '\n'
           if newLineIndex is -1
@@ -619,11 +643,13 @@ exports.Block = class Block extends Base
               upcomingFragment.code = upcomingFragment.code + '\n'
               newLineIndex = upcomingFragment.code.length
             else if upcomingFragment.type is 'StringWithInterpolations' and upcomingFragment.code is '}'
-              code = "\n#{code}\n"
+              code = "#{code}\n"
               newLineIndex = 0
             else
               continue
-          delete fragment.trailingComments
+          delete fragment.followingComments
+          # Avoid inserting extra blank lines.
+          code = code.replace /^\n/, '' if upcomingFragment.code is '\n'
           upcomingFragment.code = upcomingFragment.code[0...newLineIndex] +
             code + upcomingFragment.code[newLineIndex..]
           break
