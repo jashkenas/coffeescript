@@ -1171,7 +1171,7 @@ exports.Obj = class Obj extends Base
         node.error 'cannot have an implicit value in an implicit object'
 
     # Object spread properties. https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md
-    return @compileSpread o if @hasSplat() and !@csx
+    return @compileSpread o if @hasSplat() and not @csx
 
     idt        = o.indent += TAB
     lastNoncom = @lastNonComment @properties
@@ -1225,10 +1225,10 @@ exports.Obj = class Obj extends Base
             [key, value] = prop.base.cache o
             key  = new PropertyName key.value if key instanceof IdentifierLiteral
             prop = new Assign key, value, 'object'
-          else if not prop.bareLiteral?(IdentifierLiteral)
+          else unless prop.bareLiteral?(IdentifierLiteral)
             prop = new Assign prop, prop, 'object'
         else
-          # Spread in CSX
+          # Spread in CSX.
           prop = if @csx then new Literal "{#{prop.compile(o)}}" else prop
       if indent then answer.push @makeCode indent
       prop.csx = yes if @csx

@@ -49,7 +49,7 @@ exports.Lexer = class Lexer
     @importSpecifierList = no    # Used to identify when in an IMPORT {...} FROM? ...
     @exportSpecifierList = no    # Used to identify when in an EXPORT {...} FROM? ...
     @csxDepth = 0                # Used to optimize CSX checks, how deep in CSX we are.
-    @csxSpreadProps = no         # Used to detect if CSX attributes include spreads (<div {props...} />)
+    @csxSpreadProps = no         # Used to detect if CSX attributes include spreads (<div {props...} />).
 
     @chunkLine =
       opts.line or 0             # The start line for the current @chunk.
