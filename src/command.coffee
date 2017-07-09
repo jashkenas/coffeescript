@@ -25,7 +25,7 @@ hidden = (file) -> /^\.|~$/.test file
 
 # The help banner that is printed in conjunction with `-h`/`--help`.
 BANNER = '''
-  Usage: coffee [options] [--] path/to/script.coffee [args]
+  Usage: coffee [options] path/to/script.coffee [args]
 
   If called without options, `coffee` will run your script.
 '''

@@ -115,7 +115,7 @@ test "throw on invalid options", ->
 test "has expected help text", ->
   ok optionParser.help() is '''
 
-Usage: coffee [options] [--] path/to/script.coffee [args]
+Usage: coffee [options] path/to/script.coffee [args]
 
 If called without options, `coffee` will run your script.
 

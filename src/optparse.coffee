@@ -18,8 +18,8 @@ exports.OptionParser = class OptionParser
   #     [short-flag, long-flag, description]
   #
   # Along with an optional banner for the usage help.
-  constructor: (ruleDecls, @banner) ->
-    @rules = buildRules ruleDecls
+  constructor: (ruleDeclarations, @banner) ->
+    @rules = buildRules ruleDeclarations
 
   # Parse the list of arguments, populating an `options` object with all of the
   # specified options, and return it. Options after the first non-option
@@ -28,7 +28,7 @@ exports.OptionParser = class OptionParser
   # parsers that allow you to attach callback actions for every flag. Instead,
   # you're responsible for interpreting the options object.
   parse: (args) ->
-    # The CS option parser is a little odd; options after the first
+    # The CoffeeScript option parser is a little odd; options after the first
     # non-option argument are treated as non-option arguments themselves.
     # Optional arguments are normalized by expanding merged flags into multiple
     # flags. This allows you to have `-wl` be the same as `--watch --lint`.
@@ -82,8 +82,8 @@ OPTIONAL   = /\[(\w+(\*?))\]/
 
 # Build and return the list of option rules. If the optional *short-flag* is
 # unspecified, leave it out by padding with `null`.
-buildRules = (ruleDecls) ->
-  ruleList = for tuple in ruleDecls
+buildRules = (ruleDeclarations) ->
+  ruleList = for tuple in ruleDeclarations
     tuple.unshift null if tuple.length < 3
     buildRule tuple...
   flagDict = {}
@@ -118,7 +118,7 @@ normalizeArguments = (args, flagDict) ->
   needsArgOpt = null
   for arg, argIndex in args
     # If the previous argument given to the script was an option that uses the
-    # next command-line argument as its argument, create copy of the option's
+    # next command-line argument as its argument, create copy of the option’s
     # rule with an `argument` field.
     if needsArgOpt?
       withArg = Object.assign {}, needsArgOpt.rule, {argument: arg}
