@@ -118,26 +118,7 @@ exports.Base = class Base
       # have been added.
       @attachedComments.push comment # Don’t output this comment twice.
       if comment.here # Comment delimited by `###`.
-        code = comment.content
-        multiline = '\n' in code
-        hasLeadingMarks = /\n\s*[#|\*]/.test code
-        code = code.replace /^([ \t]*)#(?=\s)/gm, ' *' if hasLeadingMarks
-
-        # Unindent multiline comments. They will be reindented later.
-        if multiline
-          largestIndent = ''
-          for line in code.split '\n'
-            leadingWhitespace = /^\s*/.exec(line)[0]
-            if leadingWhitespace.length > largestIndent.length
-              largestIndent = leadingWhitespace
-          code = code.replace ///^(#{leadingWhitespace})///gm, ''
-
-        code = "/*#{code}#{if hasLeadingMarks then ' ' else ''}*/"
-        code = "#{code}\n" if comment.newLine
-        commentFragment = @makeCode code
-        commentFragment.type = 'HereComment'
-        commentFragment.multiline = multiline
-        commentFragment.suppressTrailingSemicolon = yes
+        commentFragment = new HereComment(comment).compileNode o
         if comment.unshift
           # Find index of first non-comment fragment, to insert before.
           for fragment, fragmentIndex in fragments when fragment.type isnt 'HereComment'
@@ -145,12 +126,9 @@ exports.Base = class Base
             break
         else
           fragments.push commentFragment
-
       else # Line comment, delimited by `#`.
-        commentFragment = @makeCode "//#{comment.content}"
-        commentFragment.type = 'LineComment'
+        commentFragment = new LineComment(comment).compileNode o
         commentFragment.trail = not comment.newLine and not comment.unshift
-
         if comment.unshift
           fragments[0].precedingComments ?= []
           fragments[0].precedingComments.push commentFragment
@@ -226,7 +204,7 @@ exports.Base = class Base
   # Pull out the last non-comment node of a node list.
   lastNonComment: (list) ->
     i = list.length
-    return list[i] while i-- when list[i] not instanceof Comment
+    return list[i] while i-- when list[i] not instanceof HereComment
     null
 
   # `toString` representation of the node, for inspecting the parse tree.
@@ -447,7 +425,7 @@ exports.Block = class Block extends Base
     len = @expressions.length
     while len--
       expr = @expressions[len]
-      if expr not instanceof Comment
+      if expr not instanceof HereComment
         @expressions[len] = expr.makeReturn res
         @expressions.splice(len, 1) if expr instanceof Return and not expr.expression
         break
@@ -483,7 +461,7 @@ exports.Block = class Block extends Base
         unless node.isStatement o
           fragments = indentInitial fragments, @
           [..., lastFragment] = fragments
-          unless lastFragment.code is '' or lastFragment.suppressTrailingSemicolon
+          unless lastFragment.code is '' or lastFragment.type is 'HereComment'
             fragments.push @makeCode ';'
         compiledNodes.push fragments
       else
@@ -513,7 +491,7 @@ exports.Block = class Block extends Base
     prelude   = []
     unless o.bare
       preludeExps = for exp, i in @expressions
-        break unless exp.unwrap() instanceof Comment
+        break unless exp.unwrap() instanceof HereComment
         exp
       if preludeExps.length
         rest = @expressions[preludeExps.length...]
@@ -534,7 +512,7 @@ exports.Block = class Block extends Base
     post = []
     for exp, i in @expressions
       exp = exp.unwrap()
-      break unless exp instanceof Comment or exp instanceof Literal
+      break unless exp instanceof HereComment or exp instanceof Literal
     o = merge(o, level: LEVEL_TOP)
     if i
       rest = @expressions.splice i, 9e9
@@ -784,7 +762,7 @@ exports.Return = class Return extends Base
       # move the comment before the `return` so that JavaScript doesn’t infer
       # a semicolon between the `return` and the comment.
       for fragment, i in fragments
-        if fragment?.type is 'HereComment' and fragment.multiline
+        if fragment?.type is 'HereComment' and '\n' in fragment.code
           fragment.code = multident fragment.code, @tab
           answer.push fragment
         else
@@ -940,22 +918,40 @@ exports.Value = class Value extends Base
     else
       @error 'tried to assign to unassignable value'
 
-#### Comment
+#### HereComment
 
-# CoffeeScript passes through block comments as JavaScript block comments
-# at the same position.
-exports.Comment = class Comment extends Base
-  constructor: (@comment) ->
+# Comment delimited by `###` (becoming `/* */`).
+exports.HereComment = class HereComment extends Base
+  constructor: ({ @content, @newLine }) ->
     super()
 
-  isStatement:     YES
-  makeReturn:      THIS
+  compileNode: (o) ->
+    multiline = '\n' in @content
+    hasLeadingMarks = /\n\s*[#|\*]/.test @content
+    @content = @content.replace /^([ \t]*)#(?=\s)/gm, ' *' if hasLeadingMarks
 
-  compileNode: (o, level) ->
-    comment = @comment.replace /^(\s*)#(?=\s)/gm, "$1 *"
-    code = "/*#{multident comment, @tab}#{if '\n' in comment then "\n#{@tab}" else ''} */"
-    code = o.indent + code if (level or o.level) is LEVEL_TOP
-    [@makeCode("\n"), @makeCode(code)]
+    # Unindent multiline comments. They will be reindented later.
+    if multiline
+      largestIndent = ''
+      for line in @content.split '\n'
+        leadingWhitespace = /^\s*/.exec(line)[0]
+        if leadingWhitespace.length > largestIndent.length
+          largestIndent = leadingWhitespace
+      @content = @content.replace ///^(#{leadingWhitespace})///gm, ''
+
+    @content = "/*#{@content}#{if hasLeadingMarks then ' ' else ''}*/"
+    @content = "#{@content}\n" if @newLine
+    @makeCode @content
+
+#### LineComment
+
+# Comment running from `#` to the end of a line (becoming `//`).
+exports.LineComment = class LineComment extends Base
+  constructor: ({ @content }) ->
+    super()
+
+  compileNode: (o) ->
+    @makeCode "//#{@content}"
 
 #### Call
 
@@ -1362,7 +1358,7 @@ exports.Obj = class Obj extends Base
 
     isCompact = yes
     for prop in @properties
-      if prop instanceof Comment or (prop instanceof Assign and prop.context is 'object' and not @csx)
+      if prop instanceof HereComment or (prop instanceof Assign and prop.context is 'object' and not @csx)
         isCompact = no
 
     answer = []
@@ -1374,18 +1370,18 @@ exports.Obj = class Obj extends Base
         ' '
       else if isCompact
         ', '
-      else if prop is lastNoncom or prop instanceof Comment or @csx
+      else if prop is lastNoncom or prop instanceof HereComment or @csx
         '\n'
       else
         ',\n'
-      indent = if isCompact or prop instanceof Comment then '' else idt
+      indent = if isCompact or prop instanceof HereComment then '' else idt
 
       key = if prop instanceof Assign and prop.context is 'object'
         prop.variable
       else if prop instanceof Assign
         prop.operatorToken.error "unexpected #{prop.operatorToken.value}" unless @lhs
         prop.variable
-      else if prop not instanceof Comment
+      else if prop not instanceof HereComment
         prop
       if key instanceof Value and key.hasProperties()
         key.error 'invalid object key' if prop.context is 'object' or not key.this
@@ -1598,7 +1594,7 @@ exports.Class = class Class extends Base
             exprs.push initializerExpression
             initializer.push initializerExpression
             start = end + 1
-          else if initializer[initializer.length - 1] instanceof Comment
+          else if initializer[initializer.length - 1] instanceof HereComment
             # Try to keep comments with their subsequent assign
             exprs.pop()
             initializer.pop()
@@ -1612,7 +1608,7 @@ exports.Class = class Class extends Base
         if initializerExpression = @addInitializerExpression expression
           initializer.push initializerExpression
           expressions[i] = initializerExpression
-        else if initializer[initializer.length - 1] instanceof Comment
+        else if initializer[initializer.length - 1] instanceof HereComment
           # Try to keep comments with their subsequent assign
           initializer.pop()
         i += 1
@@ -1636,7 +1632,7 @@ exports.Class = class Class extends Base
   # When additional expressions become valid, this method should be updated to handle them.
   addInitializerExpression: (node) ->
     switch
-      when node instanceof Comment
+      when node instanceof HereComment
         node
       when @validInitializerMethod node
         @addInitializerMethod node
@@ -1747,7 +1743,7 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
 
     index = 0
     while expr = @body.expressions[index]
-      break unless expr instanceof Comment or expr instanceof Value and expr.isString()
+      break unless expr instanceof HereComment or expr instanceof Value and expr.isString()
       if expr.hoisted
         index++
       else
@@ -1784,7 +1780,7 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
       value    = assign.value
       delete assign.context
 
-      if assign instanceof Comment
+      if assign instanceof HereComment
         # Passthrough
       else if base.value is 'constructor'
         if value instanceof Code
