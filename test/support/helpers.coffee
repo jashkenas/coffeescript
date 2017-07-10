@@ -13,6 +13,17 @@ arrayEgal = (a, b) ->
     return no for el, idx in a when not arrayEgal el, b[idx]
     yes
 
+diffOutput = (expectedOutput, actualOutput) ->
+  expectedOutputLines = expectedOutput.split '\n'
+  actualOutputLines = actualOutput.split '\n'
+  for line, i in actualOutputLines
+    if line isnt expectedOutputLines[i]
+      actualOutputLines[i] = "#{yellow}#{line}#{reset}"
+  """Expected generated JavaScript to be:
+  #{reset}#{expectedOutput}#{red}
+    but instead it was:
+  #{reset}#{actualOutputLines.join '\n'}#{red}"""
+
 exports.eq = (a, b, msg) ->
   ok egal(a, b), msg or
   "Expected #{reset}#{a}#{red} to equal #{reset}#{b}#{red}"
@@ -24,9 +35,4 @@ exports.arrayEq = (a, b, msg) ->
 exports.eqJS = (input, expectedOutput, msg) ->
   actualOutput = CoffeeScript.compile input, bare: yes
   .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace.
-
-  ok egal(expectedOutput, actualOutput), msg or
-  """Expected generated JavaScript to be:
-  #{reset}#{expectedOutput}#{red}
-    but instead it was:
-  #{reset}#{actualOutput}#{red}"""
+  ok egal(expectedOutput, actualOutput), msg or diffOutput expectedOutput, actualOutput

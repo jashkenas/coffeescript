@@ -7,12 +7,13 @@ CoffeeScript              = require './lib/coffeescript'
 helpers                   = require './lib/coffeescript/helpers'
 
 # ANSI Terminal Colors.
-bold = red = green = reset = ''
+bold = red = green = yellow = reset = ''
 unless process.env.NODE_DISABLE_COLORS
-  bold  = '\x1B[0;1m'
-  red   = '\x1B[0;31m'
-  green = '\x1B[0;32m'
-  reset = '\x1B[0m'
+  bold   = '\x1B[0;1m'
+  red    = '\x1B[0;31m'
+  green  = '\x1B[0;32m'
+  yellow = '\x1B[0;33m'
+  reset  = '\x1B[0m'
 
 # Built file header.
 header = """
@@ -377,11 +378,12 @@ runTests = (CoffeeScript) ->
 
   # Convenience aliases.
   global.CoffeeScript = CoffeeScript
-  global.Repl = require './lib/coffeescript/repl'
-  global.bold = bold
-  global.red = red
-  global.green = green
-  global.reset = reset
+  global.Repl   = require './lib/coffeescript/repl'
+  global.bold   = bold
+  global.red    = red
+  global.green  = green
+  global.yellow = yellow
+  global.reset  = reset
 
   # Our test helper function for delimiting different test cases.
   global.test = (description, fn) ->
