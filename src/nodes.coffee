@@ -201,11 +201,9 @@ exports.Base = class Base
         return no
     node
 
-  # Pull out the last non-comment node of a node list.
-  lastNonComment: (list) ->
-    i = list.length
-    return list[i] while i-- when list[i] not instanceof HereComment
-    null
+  # Pull out the last node of a node list.
+  lastNode: (list) ->
+    if list.length is 0 then null else list[list.length - 1]
 
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
@@ -425,10 +423,9 @@ exports.Block = class Block extends Base
     len = @expressions.length
     while len--
       expr = @expressions[len]
-      if expr not instanceof HereComment
-        @expressions[len] = expr.makeReturn res
-        @expressions.splice(len, 1) if expr instanceof Return and not expr.expression
-        break
+      @expressions[len] = expr.makeReturn res
+      @expressions.splice(len, 1) if expr instanceof Return and not expr.expression
+      break
     this
 
   # A **Block** is the only node that can serve as the root.
@@ -488,22 +485,11 @@ exports.Block = class Block extends Base
     # Mark given local variables in the root scope as parameters so they don’t
     # end up being declared on this block.
     o.scope.parameter name for name in o.locals or []
-    prelude   = []
-    unless o.bare
-      preludeExps = for exp, i in @expressions
-        break unless exp.unwrap() instanceof HereComment
-        exp
-      if preludeExps.length
-        rest = @expressions[preludeExps.length...]
-        @expressions = preludeExps
-        prelude = @compileNode merge(o, indent: '')
-        prelude.push @makeCode "\n"
-        @expressions = rest
     fragments = @compileWithDeclarations o
     HoistTarget.expand fragments
     fragments = @compileComments fragments
     return fragments if o.bare
-    [].concat prelude, @makeCode("(function() {\n"), fragments, @makeCode("\n}).call(this);\n")
+    [].concat @makeCode("(function() {\n"), fragments, @makeCode("\n}).call(this);\n")
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
@@ -512,7 +498,7 @@ exports.Block = class Block extends Base
     post = []
     for exp, i in @expressions
       exp = exp.unwrap()
-      break unless exp instanceof HereComment or exp instanceof Literal
+      break unless exp instanceof Literal
     o = merge(o, level: LEVEL_TOP)
     if i
       rest = @expressions.splice i, 9e9
@@ -1342,8 +1328,8 @@ exports.Obj = class Obj extends Base
     # Object spread properties. https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md
     return @compileSpread o if @hasSplat()
 
-    idt        = o.indent += TAB
-    lastNoncom = @lastNonComment @properties
+    idt      = o.indent += TAB
+    lastNode = @lastNode @properties
 
     # If this object is the left-hand side of an assignment, all its children
     # are too.
@@ -1358,7 +1344,7 @@ exports.Obj = class Obj extends Base
 
     isCompact = yes
     for prop in @properties
-      if prop instanceof HereComment or (prop instanceof Assign and prop.context is 'object' and not @csx)
+      if prop instanceof Assign and prop.context is 'object' and not @csx
         isCompact = no
 
     answer = []
@@ -1370,18 +1356,18 @@ exports.Obj = class Obj extends Base
         ' '
       else if isCompact
         ', '
-      else if prop is lastNoncom or prop instanceof HereComment or @csx
+      else if prop is lastNode or @csx
         '\n'
       else
         ',\n'
-      indent = if isCompact or prop instanceof HereComment then '' else idt
+      indent = if isCompact then '' else idt
 
       key = if prop instanceof Assign and prop.context is 'object'
         prop.variable
       else if prop instanceof Assign
         prop.operatorToken.error "unexpected #{prop.operatorToken.value}" unless @lhs
         prop.variable
-      else if prop not instanceof HereComment
+      else
         prop
       if key instanceof Value and key.hasProperties()
         key.error 'invalid object key' if prop.context is 'object' or not key.this
@@ -1594,11 +1580,6 @@ exports.Class = class Class extends Base
             exprs.push initializerExpression
             initializer.push initializerExpression
             start = end + 1
-          else if initializer[initializer.length - 1] instanceof HereComment
-            # Try to keep comments with their subsequent assign
-            exprs.pop()
-            initializer.pop()
-            start--
           end++
         pushSlice()
 
@@ -1608,9 +1589,6 @@ exports.Class = class Class extends Base
         if initializerExpression = @addInitializerExpression expression
           initializer.push initializerExpression
           expressions[i] = initializerExpression
-        else if initializer[initializer.length - 1] instanceof HereComment
-          # Try to keep comments with their subsequent assign
-          initializer.pop()
         i += 1
 
     for method in initializer when method instanceof Code
@@ -1628,21 +1606,18 @@ exports.Class = class Class extends Base
 
   # Add an expression to the class initializer
   #
-  # NOTE Currently, only comments, methods and static methods are valid in ES class initializers.
+  # NOTE Currently, only methods and static methods are valid in ES class initializers.
   # When additional expressions become valid, this method should be updated to handle them.
   addInitializerExpression: (node) ->
-    switch
-      when node instanceof HereComment
-        node
-      when @validInitializerMethod node
-        @addInitializerMethod node
-      else
-        null
+    if @validInitializerMethod node
+      @addInitializerMethod node
+    else
+      null
 
   # Checks if the given node is a valid ES class initializer method.
   validInitializerMethod: (node) ->
-    return false unless node instanceof Assign and node.value instanceof Code
-    return true if node.context is 'object' and not node.variable.hasProperties()
+    return no unless node instanceof Assign and node.value instanceof Code
+    return yes if node.context is 'object' and not node.variable.hasProperties()
     return node.variable.looksStatic(@name) and (@name or not node.value.bound)
 
   # Returns a configured class initializer method
@@ -1743,7 +1718,7 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
 
     index = 0
     while expr = @body.expressions[index]
-      break unless expr instanceof HereComment or expr instanceof Value and expr.isString()
+      break unless expr instanceof Value and expr.isString()
       if expr.hoisted
         index++
       else
@@ -1780,9 +1755,7 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
       value    = assign.value
       delete assign.context
 
-      if assign instanceof HereComment
-        # Passthrough
-      else if base.value is 'constructor'
+      if base.value is 'constructor'
         if value instanceof Code
           base.error 'constructors must be defined at the top level of a class body'
 
@@ -3414,7 +3387,7 @@ exports.Switch = class Switch extends Base
         fragments = fragments.concat @makeCode(idt1 + "case "), cond.compileToFragments(o, LEVEL_PAREN), @makeCode(":\n")
       fragments = fragments.concat body, @makeCode('\n') if (body = block.compileToFragments o, LEVEL_TOP).length > 0
       break if i is @cases.length - 1 and not @otherwise
-      expr = @lastNonComment block.expressions
+      expr = @lastNode block.expressions
       continue if expr instanceof Return or expr instanceof Throw or (expr instanceof Literal and expr.jumps() and expr.value isnt 'debugger')
       fragments.push cond.makeCode(idt2 + 'break;\n')
     if @otherwise and @otherwise.expressions.length
