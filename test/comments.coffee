@@ -403,6 +403,82 @@ test "#4290: Block comments in array literals", ->
   ]
   arrayEq arr, [3, 42]
 
+test "Block comments in array literals are properly indented 1", ->
+  eqJS '''
+  arr = [
+    ### ! ###
+    3
+    42
+  ]''', '''
+  var arr;
+
+  arr = [/* ! */ 3, 42];'''
+
+test "Block comments in array literals are properly indented 2", ->
+  eqJS '''
+  arr = [
+    ###  ###
+    3
+    ###
+      What is the meaning of life, the universe, and everything?
+    ###
+    42
+  ]''', '''
+  var arr;
+
+  arr = [
+    /*  */
+    3,
+    /*
+      What is the meaning of life, the universe, and everything?
+    */
+    42
+  ];'''
+
+test "Block comments in array literals are properly indented 3", ->
+  eqJS '''
+  arr = [
+    ###
+      How many stooges are there?
+    ###
+    3
+    ### Who’s on first? ###
+    'Who'
+  ]''', '''
+  var arr;
+
+  arr = [
+    /*
+      How many stooges are there?
+    */
+    3,
+    /* Who’s on first? */
+    'Who'
+  ];'''
+
+test "Block comments in array literals are properly indented 4", ->
+  eqJS '''
+  arr = [
+    1
+    ###
+      How many stooges are there?
+    ###
+    3
+    ### Who’s on first? ###
+    'Who'
+  ]''', '''
+  var arr;
+
+  arr = [
+    1,
+    /*
+      How many stooges are there?
+    */
+    3,
+    /* Who’s on first? */
+    'Who'
+  ];'''
+
 test "Line comments are properly indented", ->
   eqJS '''
   # Unindented comment

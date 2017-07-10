@@ -1458,13 +1458,23 @@ exports.Arr = class Arr extends Base
 
     compiledObjs = (obj.compileToFragments o, LEVEL_LIST for obj in @objects)
     for fragments, index in compiledObjs
-      if index
+      for fragment in fragments when fragment.type is 'HereComment'
+        fragment.code = fragment.code.trim()
+      if index isnt 0
         answer.push @makeCode ", "
       answer.push fragments...
-    if fragmentsToText(answer).indexOf('\n') >= 0
-      answer.unshift @makeCode "[\n#{o.indent}"
+    if '\n' in fragmentsToText(answer)
+      for fragment, fragmentIndex in answer
+        if fragment.type is 'HereComment'
+          fragment.code = "#{multident(fragment.code, o.indent)}\n#{o.indent}"
+          fragment.code = "\n#{fragment.code}" unless fragmentIndex is 0
+        else if fragment.code is ', '
+          fragment.code = ','
+      answer.unshift @makeCode "[\n#{unless answer[0].type is 'HereComment' then o.indent else ''}"
       answer.push @makeCode "\n#{@tab}]"
     else
+      for fragment in answer when fragment.type is 'HereComment'
+        fragment.code = "#{fragment.code} "
       answer.unshift @makeCode '['
       answer.push @makeCode ']'
     answer
