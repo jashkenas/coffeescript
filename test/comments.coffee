@@ -458,25 +458,74 @@ test "Block comments in array literals are properly indented 3", ->
 
 test "Block comments in array literals are properly indented 4", ->
   eqJS '''
+  if yes
+    arr = [
+      1
+      ###
+        How many stooges are there?
+      ###
+      3
+      ### Who’s on first? ###
+      'Who'
+    ]''', '''
+  var arr;
+
+  if (true) {
+    arr = [
+      1,
+      /*
+        How many stooges are there?
+      */
+      3,
+      /* Who’s on first? */
+      'Who'
+    ];
+  }'''
+
+test "Line comments in array literals are properly indented 1", ->
+  eqJS '''
   arr = [
-    1
-    ###
-      How many stooges are there?
-    ###
+    # How many stooges are there?
     3
-    ### Who’s on first? ###
+    # Who’s on first?
     'Who'
   ]''', '''
   var arr;
 
   arr = [
-    1,
-    /*
-      How many stooges are there?
-    */
+    // How many stooges are there?
     3,
-    /* Who’s on first? */
+    // Who’s on first?
     'Who'
+  ];'''
+
+test "Line comments in array literals are properly indented 2", ->
+  eqJS '''
+  arr = [
+    # How many stooges are there?
+    3
+    # Who’s on first?
+    'Who'
+    # Who?
+    {
+      firstBase: 'Who'
+      secondBase: 'What'
+      leftField: 'Why'
+    }
+  ]''', '''
+  var arr;
+
+  arr = [
+    // How many stooges are there?
+    3,
+    // Who’s on first?
+    'Who',
+    {
+      // Who?
+      firstBase: 'Who',
+      secondBase: 'What',
+      leftField: 'Why'
+    }
   ];'''
 
 test "Line comments are properly indented", ->

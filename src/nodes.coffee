@@ -1457,20 +1457,30 @@ exports.Arr = class Arr extends Base
         unwrappedObj.lhs = yes if unwrappedObj instanceof Arr or unwrappedObj instanceof Obj
 
     compiledObjs = (obj.compileToFragments o, LEVEL_LIST for obj in @objects)
+    # If `compiledObjs` includes newlines, we will output this as a multiline
+    # array (i.e. with a newline and indentation after the `[`). If an element
+    # contains line comments, that should also trigger multiline output since
+    # by definition line comments will introduce newlines into our output.
+    # The exception is if only the first element has line comments; in that
+    # case, output as the compact form if we otherwise would have, so that the
+    # first element’s line comments get output before or after the array.
+    includesLineCommentsOnNonFirstElement = no
     for fragments, index in compiledObjs
-      for fragment in fragments when fragment.type is 'HereComment'
-        fragment.code = fragment.code.trim()
+      for fragment in fragments
+        if fragment.type is 'HereComment'
+          fragment.code = fragment.code.trim()
+        else if index isnt 0 and includesLineCommentsOnNonFirstElement is no and hasLineComments fragment
+          includesLineCommentsOnNonFirstElement = yes
       if index isnt 0
-        answer.push @makeCode ", "
+        answer.push @makeCode ', '
       answer.push fragments...
-    if '\n' in fragmentsToText(answer)
+    if includesLineCommentsOnNonFirstElement or '\n' in fragmentsToText(answer)
       for fragment, fragmentIndex in answer
         if fragment.type is 'HereComment'
-          fragment.code = "#{multident(fragment.code, o.indent)}\n#{o.indent}"
-          fragment.code = "\n#{fragment.code}" unless fragmentIndex is 0
+          fragment.code = "#{multident(fragment.code, o.indent, no)}\n#{o.indent}"
         else if fragment.code is ', '
-          fragment.code = ','
-      answer.unshift @makeCode "[\n#{unless answer[0].type is 'HereComment' then o.indent else ''}"
+          fragment.code = ",\n#{o.indent}"
+      answer.unshift @makeCode "[\n#{o.indent}"
       answer.push @makeCode "\n#{@tab}]"
     else
       for fragment in answer when fragment.type is 'HereComment'
@@ -3543,9 +3553,9 @@ utility = (name, o) ->
     root.assign ref, UTILITIES[name] o
     root.utilities[name] = ref
 
-multident = (code, tab) ->
+multident = (code, tab, includingFirstLine = yes) ->
   endsWithNewLine = code[code.length - 1] is '\n'
-  code = tab + code.replace /\n/g, "$&#{tab}"
+  code = (if includingFirstLine then tab else '') + code.replace /\n/g, "$&#{tab}"
   code = code.replace /\s+$/, ''
   code = code + '\n' if endsWithNewLine
   code
@@ -3562,6 +3572,12 @@ indentInitial = (fragments, node) ->
       fragments.splice i, 0, node.makeCode "#{node.tab}"
       break
   fragments
+
+hasLineComments = (fragment) ->
+  return no unless fragment.comments
+  for comment in fragment.comments
+    return yes if comment.here is no
+  return no
 
 isLiteralArguments = (node) ->
   node instanceof IdentifierLiteral and node.value is 'arguments'
