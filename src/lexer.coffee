@@ -325,8 +325,6 @@ exports.Lexer = class Lexer
 
       # Pull out the ###-style comment’s content, and format it.
       content = here
-      content = content.replace /^(\s*)###/, ''
-      content = content.replace /###$/, ''
       if '\n' in content
         content = content.replace /// \n #{repeat ' ', @indent} ///g, '\n'
       contents = [content]
