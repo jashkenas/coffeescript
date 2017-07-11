@@ -320,7 +320,7 @@ exports.Lexer = class Lexer
       chunk = @chunk.replace "####{here}###", ''
       # Remove leading newlines, like `Rewriter::removeLeadingNewlines`, to
       # avoid the creation of unwanted `TERMINATOR` tokens.
-      chunk = @chunk.replace /^\n+/, ''
+      chunk = chunk.replace /^\n+/, ''
       @lineToken chunk
 
       # Pull out the ###-style comment’s content, and format it.
