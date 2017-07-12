@@ -1230,6 +1230,12 @@ exports.Obj = class Obj extends Base
         else
           # Spread in CSX.
           prop = if @csx then new Literal "{#{prop.compile(o)}}" else prop
+      # Check if CSX attribute is valid.
+      if @csx and prop instanceof Assign
+        prop.variable.error "Unexpected token" unless prop.variable.unwrap() instanceof PropertyName
+        propVal = prop.value.unwrap()
+        unless ((propVal instanceof Parens or propVal instanceof StringWithInterpolations) and propVal.body instanceof Block) or propVal instanceof StringLiteral or propVal instanceof Obj
+          prop.value.error "expected wrapped or quoted CSX attribute"
       if indent then answer.push @makeCode indent
       prop.csx = yes if @csx
       answer.push @makeCode ' ' if @csx and i is 0
