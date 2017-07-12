@@ -536,7 +536,7 @@ exports.Block = class Block extends Base
         # indentation, well, they’ll get unindented line comments.
         fragmentIndent = ''
         for pastFragment in fragments[0...(fragmentIndex + 1)] by -1
-          indent = /\t+| {2,}/.exec pastFragment.code
+          indent = /^\t+| {2,}/.exec pastFragment.code
           if indent
             fragmentIndent = indent[0]
             break
@@ -587,7 +587,7 @@ exports.Block = class Block extends Base
               else
                 continue
             else
-              indent = /\t+| {2,}/.exec upcomingFragment.code
+              indent = /^\t+| {2,}/.exec upcomingFragment.code
               if indent
                 fragmentIndent = indent[0]
                 break
