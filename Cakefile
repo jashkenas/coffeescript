@@ -146,7 +146,14 @@ task 'build:browser', 'merge the built scripts into a single file for use in a b
   # Exclude the `modules` plugin in order to not break the `}(this));`
   # at the end of the above code block.
   presets.push ['env', {modules: no}] unless process.env.TRANSFORM is 'false'
-  presets.push 'babili' unless process.env.MINIFY is 'false'
+  babelOptions =
+    presets: presets
+    sourceType: 'script'
+  { code } = babel.transform code, babelOptions unless presets.length is 0
+  # Running Babel twice due to https://github.com/babel/babili/issues/614.
+  # Once that issue is fixed, move the `babili` preset back up into the
+  # `presets` array and run Babel once with both presets together.
+  presets = if process.env.MINIFY is 'false' then [] else ['babili']
   babelOptions =
     compact: process.env.MINIFY isnt 'false'
     presets: presets
