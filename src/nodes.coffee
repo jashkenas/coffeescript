@@ -530,13 +530,13 @@ exports.Block = class Block extends Base
       if fragment.precedingComments
         # Determine the indentation level of the fragment that we are about
         # to insert comments before, and use that indentation level for our
-        # inserted comments. Because some fragments begin with a space, e.g.
-        # ` + 1`, we look for either a tab character or at least two spaces
-        # to detect indentation. If someone is actually using one-space
-        # indentation, well, they’ll get unindented line comments.
+        # inserted comments. At this point, the fragments’ `code` property
+        # is the generated output JavaScript, and CoffeeScript always
+        # generates output indented by two spaces; so all we need to do is
+        # search for a `code` property that begins with at least two spaces.
         fragmentIndent = ''
         for pastFragment in fragments[0...(fragmentIndex + 1)] by -1
-          indent = /^\t+| {2,}/.exec pastFragment.code
+          indent = /^ {2,}/m.exec pastFragment.code
           if indent
             fragmentIndent = indent[0]
             break
@@ -570,7 +570,7 @@ exports.Block = class Block extends Base
       # look closely you’ll find lots of tiny differences that make this
       # confusing if it were abstracted into a function that both blocks share.
       if fragment.followingComments
-        # Does the first trailing comment follow at the end of a line of code,
+            # Does the first trailing comment follow at the end of a line of code,
         # like `; // Comment`, or does it start a new line after a line of code?
         trail = fragment.followingComments[0].trail
         fragmentIndent = ''
@@ -587,7 +587,7 @@ exports.Block = class Block extends Base
               else
                 continue
             else
-              indent = /^\t+| {2,}/.exec upcomingFragment.code
+              indent = /^ {2,}/m.exec upcomingFragment.code
               if indent
                 fragmentIndent = indent[0]
                 break
