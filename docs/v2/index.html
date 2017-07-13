@@ -801,22 +801,28 @@ cubes = (math.cube num for num in list)
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="overview-js">var cubes, list, math, num, number, opposite, race, square;
+      <textarea class="javascript-output" id="overview-js">
+var cubes, list, math, num, number, opposite, race, square;
 
+// Assignment:
 number = 42;
 
 opposite = true;
 
 if (opposite) {
+  // Conditions:
   number = -42;
 }
 
+// Functions:
 square = function(x) {
   return x * x;
 };
 
+// Arrays:
 list = [1, 2, 3, 4, 5];
 
+// Objects:
 math = {
   root: Math.sqrt,
   square: square,
@@ -825,14 +831,17 @@ math = {
   }
 };
 
+// Splats:
 race = function(winner, ...runners) {
   return print(winner, runners);
 };
 
 if (typeof elvis !== "undefined" && elvis !== null) {
+  // Existence:
   alert("I knew it!");
 }
 
+// Array comprehensions:
 cubes = (function() {
   var i, len, results;
   results = [];
@@ -978,7 +987,7 @@ cubes = (function() {
 <p>There are many great task runners for setting up JavaScript build chains, such as <a href="http://gulpjs.com/">Gulp</a>, <a href="https://webpack.github.io/">Webpack</a>, <a href="https://gruntjs.com/">Grunt</a> and <a href="http://broccolijs.com/">Broccoli</a>. If you’re looking for a very minimal solution to get started, you can use <a href="https://babeljs.io/docs/plugins/preset-env/">babel-preset-env</a> and the command line:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --global coffeescript@next
 npm install --save-dev coffeescript@next babel-cli babel-preset-env
-coffee --print *.coffee | babel --presets env &gt; app.js
+coffee --<span class="built_in">print</span> *.coffee | babel --presets env &gt; app.js
 </code></pre>
 </blockquote><h3>Node.js</h3>
 <p>If you’d like to use Node.js’ CommonJS to <code>require</code> CoffeeScript files, e.g. <code>require './app.coffee'</code>, you must first “register” CoffeeScript as an extension:</p>
@@ -1274,7 +1283,7 @@ output = `${turtle.name} wears an ${turtle.mask} mask. Watch out for his ${turtl
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="comment-js">var code;
 
-code = 2 * 617;
+code = 2 * 617; // The code is 1234
 </textarea>
     </div>
   </div>
@@ -1291,11 +1300,12 @@ Released under the MIT License
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="block_comment-js">
-/*
+      <textarea class="javascript-output" id="block_comment-js">/*
 SkinnyMochaHalfCaffScript Compiler v1.0
 Released under the MIT License
- */
+*/
+
+
 
 </textarea>
     </div>
@@ -1535,14 +1545,17 @@ eat food for food in foods when food isnt 'chocolate'
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="array_comprehensions-js">var courses, dish, food, foods, i, j, k, l, len, len1, len2, ref;
+      <textarea class="javascript-output" id="array_comprehensions-js">
+var courses, dish, food, foods, i, j, k, l, len, len1, len2, ref;
 
 ref = ['toast', 'cheese', 'wine'];
 for (j = 0, len = ref.length; j < len; j++) {
   food = ref[j];
+  // Eat lunch.
   eat(food);
 }
 
+// Fine five course dining.
 courses = ['greens', 'caviar', 'truffles', 'roast', 'cake'];
 
 for (i = k = 0, len1 = courses.length; k < len1; i = ++k) {
@@ -1550,6 +1563,7 @@ for (i = k = 0, len1 = courses.length; k < len1; i = ++k) {
   menu(i + 1, dish);
 }
 
+// Health conscious meal.
 foods = ['broccoli', 'spinach', 'chocolate'];
 
 for (l = 0, len2 = foods.length; l < len2; l++) {
@@ -1657,8 +1671,10 @@ lyrics = while num -= 1
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="while-js">var lyrics, num;
+      <textarea class="javascript-output" id="while-js">
+var lyrics, num;
 
+// Econ 101
 if (this.studyingEconomics) {
   while (supply > demand) {
     buy();
@@ -1668,6 +1684,7 @@ if (this.studyingEconomics) {
   }
 }
 
+// Nursery Rhyme
 num = 6;
 
 lyrics = (function() {
@@ -1871,8 +1888,10 @@ globals = (name for name of window)[0...10]
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="expressions_comprehension-js">var globals, name;
+      <textarea class="javascript-output" id="expressions_comprehension-js">
+var globals, name;
 
+// The first ten global properties.
 globals = ((function() {
   var results;
   results = [];
@@ -1953,9 +1972,9 @@ tabs.selectTabAtIndex((tabs.currentIndex - count) %% tabs.length)
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="modulo-js">var modulo = function(a, b) { return (+a % (b = +b) + b) % b; };
 
--7 % 5 === -2;
+-7 % 5 === -2; // The remainder of 7 / 5
 
-modulo(-7, 5) === 3;
+modulo(-7, 5) === 3; // n %% 5 is always between 0 and 4
 
 tabs.selectTabAtIndex(modulo(tabs.currentIndex - count, tabs.length));
 </textarea>
@@ -2279,6 +2298,7 @@ theSwitch = 0;
       <textarea class="javascript-output" id="multiple_return_values-js">var city, forecast, temp, weatherReport;
 
 weatherReport = function(location) {
+  // Make an Ajax request to fetch the weather...
   return [location, 72, "Mostly Sunny"];
 };
 
@@ -2597,8 +2617,11 @@ countdown 3
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="async-js">var countdown, say, sleep;
+      <textarea class="javascript-output" id="async-js">
+var countdown, say, sleep;
 
+// Your browser must support async/await and speech synthesis
+// to run this example.
 sleep = function(ms) {
   return new Promise(function(resolve) {
     return window.setTimeout(resolve, ms);
@@ -2614,7 +2637,7 @@ countdown = async function(seconds) {
   var i, j, ref;
   for (i = j = ref = seconds; ref <= 1 ? j <= 1 : j >= 1; i = ref <= 1 ? ++j : --j) {
     say(i);
-    await sleep(1000);
+    await sleep(1000); // wait one second
   }
   return say("Blastoff!");
 };
@@ -2867,6 +2890,8 @@ grade = (function() {
       return 'A';
   }
 })();
+
+// grade == 'C'
 </textarea>
     </div>
   </div>
@@ -3244,7 +3269,7 @@ renderStarRating = function({rating, maxStars}) {
   </div>
   
 </aside>
-<p>Older plugins or forks of CoffeeScript supported JSX syntax and referred to it as CSX or CJSX. They also often used a <code>.cjsx</code> file extension, but this is no longer necessary; regalar <code>.coffee</code> will do.</p>
+<p>Older plugins or forks of CoffeeScript supported JSX syntax and referred to it as CSX or CJSX. They also often used a <code>.cjsx</code> file extension, but this is no longer necessary; regular <code>.coffee</code> will do.</p>
 
         </section>
       </section>
@@ -3506,7 +3531,7 @@ outer = function() {
   return inner();
 };
 
-outer(1, 2);
+outer(1, 2); // Returns '' in CoffeeScript 1.x, '1, 2' in CoffeeScript 2
 </textarea>
     </div>
   </div>
@@ -3538,7 +3563,7 @@ f = function(a = 1) {
   return a;
 };
 
-f(null);
+f(null); // Returns 1 in CoffeeScript 1.x, null in CoffeeScript 2
 </textarea>
     </div>
   </div>
@@ -3565,7 +3590,7 @@ a  # Equals 1 in CoffeeScript 1.x, null in CoffeeScript 2
   a: null
 });
 
-a;
+a; // Equals 1 in CoffeeScript 1.x, null in CoffeeScript 2
 </textarea>
     </div>
   </div>
@@ -3619,7 +3644,7 @@ f = function*() {
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>
   constructor: <span class="function">-&gt;</span> <span class="keyword">this</span>  <span class="comment"># Throws a compiler error</span>
 </code></pre>
-</blockquote><p>ES2015 classes don’t allow bound (fat arrow) methods. The CoffeeScript compiler goes through some contortions to preserve support for them, but one thing that can’t be accomodated is calling a bound method before it is bound:</p>
+</blockquote><p>ES2015 classes don’t allow bound (fat arrow) methods. The CoffeeScript compiler goes through some contortions to preserve support for them, but one thing that can’t be accommodated is calling a bound method before it is bound:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">Base</span></span>
   constructor: <span class="function">-&gt;</span>
     @onClick()      <span class="comment"># This works</span>
@@ -3726,8 +3751,10 @@ B.prototype.foo = -> A::foo.apply this, arguments
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="breaking_change_super_in_non-class_methods_refactor_with_apply-js">var A, B, extend, hasProp;
+      <textarea class="javascript-output" id="breaking_change_super_in_non-class_methods_refactor_with_apply-js">
+var A, B, extend, hasProp;
 
+// Helper functions
 hasProp = {}.hasOwnProperty;
 
 extend = function(child, parent) {
