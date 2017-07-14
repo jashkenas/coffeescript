@@ -630,3 +630,16 @@ test "Block comments can appear between function parameters and function opening
     return str + num;
   };'''
 
+test "Flow comment-based syntax support", ->
+  eqJS '''
+  # @flow
+
+  fn = (str ###: string ###, num ###: number ###) ###: string ### ->
+    str + num
+  ''', '''
+  // @flow
+  var fn;
+
+  fn = function(str/*: string */, num/*: number */)/*: string */ {
+    return str + num;
+  };'''
