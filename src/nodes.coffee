@@ -574,7 +574,7 @@ exports.Block = class Block extends Base
       # look closely you’ll find lots of tiny differences that make this
       # confusing if it were abstracted into a function that both blocks share.
       if fragment.followingComments
-            # Does the first trailing comment follow at the end of a line of code,
+        # Does the first trailing comment follow at the end of a line of code,
         # like `; // Comment`, or does it start a new line after a line of code?
         trail = fragment.followingComments[0].trail
         fragmentIndent = ''
@@ -597,9 +597,16 @@ exports.Block = class Block extends Base
                 break
               else if '\n' in upcomingFragment.code
                 break
-        code = (if trail then ' ' else "\n#{fragmentIndent}") + (
-            commentFragment.code for commentFragment in fragment.followingComments
-          ).join "\n#{fragmentIndent}"
+        # Is this comment following the indent inserted by bare mode?
+        # If so, there’s no need to indent this further.
+        code = if fragmentIndex is 1 and /^\s+$/.test fragments[0].code
+          ''
+        else if trail
+          ' '
+        else
+          "\n#{fragmentIndent}"
+        code += (commentFragment.code for commentFragment in fragment.followingComments)
+          .join "\n#{fragmentIndent}"
         for upcomingFragment, upcomingFragmentIndex in fragments[fragmentIndex...]
           newLineIndex = upcomingFragment.code.indexOf '\n'
           if newLineIndex is -1
