@@ -662,7 +662,7 @@ CONTROL_IN_IMPLICIT = ['IF', 'TRY', 'FINALLY', 'CATCH', 'CLASS', 'SWITCH']
 # Tokens that are swallowed up by the parser, never leading to code generation.
 # You can spot these in `grammar.coffee` because the `o` function second
 # argument doesn’t contain a `new` call for these tokens.
-DISCARDED        = ['->', '=>', '.', '..', '...', ',', '=', '++', '--', '?',
+DISCARDED        = ['.', '..', '...', ',', '=', '++', '--', '?',
   'AS', 'AWAIT', 'DEFAULT', 'ELSE', 'EXTENDS', 'EXPORT', 'FORIN', 'FOROF', 'FORFROM',
   'IMPORT', 'INDEX_SOAK', 'LEADING_WHEN', 'RETURN', 'SUPER', 'THROW', 'YIELD'
 ].concat IMPLICIT_UNSPACED_CALL.concat IMPLICIT_END.concat CALL_CLOSERS.concat CONTROL_IN_IMPLICIT
