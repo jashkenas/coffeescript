@@ -456,7 +456,7 @@ exports.Rewriter = class Rewriter
       else
         # If any of this token’s comments start a line—there’s only
         # whitespace between the preceding newline and the start of the
-        # comment—and the *next* token isn’t a line break, then
+        # comment—and this isn’t one of the special `JS` tokens, then
         # shift this comment forward to precede the next valid token.
         # `Block.compileComments` also has logic to make sure that
         # “starting new line” comments follow or precede the nearest
@@ -468,7 +468,8 @@ exports.Rewriter = class Rewriter
         dummyToken = comments: []
         j = token.comments.length - 1
         until j is -1
-          if token.comments[j].newLine and not token.comments[j].unshift and tokens[i + 1]?[0] in LINEBREAKS
+          if token.comments[j].newLine and not token.comments[j].unshift and
+             not (token[0] is 'JS' and token.generated)
             dummyToken.comments.unshift token.comments[j]
             token.comments.splice j, 1
           j--

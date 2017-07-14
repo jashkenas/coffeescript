@@ -3221,6 +3221,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
       else if node.comments
         # This node is getting discarded, but salvage its comments.
         if elements.length isnt 0 and elements[elements.length - 1] not instanceof StringLiteral
+          comment.unshift = no for comment in node.comments
           attachCommentsToNode elements[elements.length - 1], node.comments
         else
           salvagedComments = salvagedComments.concat node.comments

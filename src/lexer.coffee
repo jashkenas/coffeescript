@@ -346,8 +346,10 @@ exports.Lexer = class Lexer
       # this comment to; and follow with a newline.
       commentAttachments[0].newLine = yes
       @lineToken @chunk[comment.length..] # Set the indent.
-      @token 'JS', ''
-      @tokens[0].comments = commentAttachments
+      placeholderToken = @makeToken 'JS', ''
+      placeholderToken.generated = yes
+      placeholderToken.comments = commentAttachments
+      @tokens.push placeholderToken
       @newlineToken 0
     else
       attachCommentsToNode prev, commentAttachments
