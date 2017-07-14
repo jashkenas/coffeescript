@@ -592,3 +592,13 @@ test "Line comment in an interpolated string", ->
   ''', '''
   `a${// comment
   1}b`;'''
+
+test "Block comments can appear with function arguments", ->
+  eqJS '''
+  fn = (str ###: string ###, num ###: number ###) -> str + num
+  ''', '''
+  var fn;
+
+  fn = function(str/*: string */, num/*: number */) {
+    return str + num;
+  };'''

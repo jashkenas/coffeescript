@@ -76,7 +76,7 @@ exports.Base = class Base
       node.compileNode o
     else
       node.compileClosure o
-    @attachComments o, node, fragments if node.comments
+    @attachComments o, node, fragments
     fragments
 
   # Statements converted into expressions via closure-wrapping share a scope
@@ -109,6 +109,7 @@ exports.Base = class Base
     parts
 
   attachComments: (o, node, fragments) ->
+    return fragments unless node.comments
     for comment in node.comments when comment not in @attachedComments
       # For block/here comments, denoted by `###`, create fragments and insert
       # them into the fragments array, whether they’re multiline comments or
@@ -137,6 +138,7 @@ exports.Base = class Base
         else
           fragments[fragments.length - 1].followingComments ?= []
           fragments[fragments.length - 1].followingComments.push commentFragment
+    fragments
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -2390,7 +2392,7 @@ exports.Code = class Code extends Base
     haveSplatParam   = no
     haveBodyParam    = no
 
-    # Check for duplicate parameters and separate `this` assignments
+    # Check for duplicate parameters and separate `this` assignments.
     paramNames = []
     @eachParamName (name, node, param) ->
       node.error "multiple parameters named '#{name}'" if name in paramNames
@@ -2488,7 +2490,17 @@ exports.Code = class Code extends Base
               if param.value?  and not param.assignedInBody
                 ref = new Assign ref, param.value, null, param: yes
           else
-            o.scope.parameter fragmentsToText (if param.value? then param else ref).compileToFragments o
+            # This compilation of the parameter is only to get its name to add
+            # to the scope name tracking; since the compilation output here
+            # isn’t kept for eventual output, don’t include comments in this
+            # compilation, so that they get output the “real” time this param
+            # is compiled.
+            paramToAddToScope = if param.value? then param else ref
+            if paramToAddToScope.name?.comments
+              salvagedComments = paramToAddToScope.name.comments
+              delete paramToAddToScope.name.comments
+            o.scope.parameter fragmentsToText paramToAddToScope.compileToFragments o
+            paramToAddToScope.name.comments = salvagedComments if salvagedComments
           params.push ref
         else
           paramsAfterSplat.push param
@@ -2531,7 +2543,7 @@ exports.Code = class Code extends Base
 
     signature = [@makeCode '(']
     for param, i in params
-      signature.push @makeCode ', ' if i
+      signature.push @makeCode ', ' if i isnt 0
       signature.push @makeCode '...' if haveSplatParam and i is params.length - 1
       signature.push param.compileToFragments(o)...
     signature.push @makeCode ')'
