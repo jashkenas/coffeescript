@@ -596,6 +596,19 @@ test "Line comment in an interpolated string", ->
   `a${// comment
   1}b`;'''
 
+test "Comments appear above scope `var` declarations", ->
+  eqJS '''
+  # @flow
+
+  fn = (str) -> str
+  ''', '''
+  // @flow
+  var fn;
+
+  fn = function(str) {
+    return str;
+  };'''
+
 test "Block comments can appear with function arguments", ->
   eqJS '''
   fn = (str ###: string ###, num ###: number ###) -> str + num
@@ -606,16 +619,14 @@ test "Block comments can appear with function arguments", ->
     return str + num;
   };'''
 
-test "Comments appear above scope `var` declarations", ->
+test "Block comments can appear between function parameters and function opening brace", ->
   eqJS '''
-  # @flow
-
-  fn = -> str
+  fn = (str ###: string ###, num ###: number ###) ###: string ### ->
+    str + num
   ''', '''
-  // @flow
   var fn;
 
-  fn = function(str) {
-    return str;
+  fn = function(str/*: string */, num/*: number */)/*: string */ {
+    return str + num;
   };'''
 

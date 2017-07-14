@@ -2553,6 +2553,10 @@ exports.Code = class Code extends Base
       signature.push @makeCode '...' if haveSplatParam and i is params.length - 1
       signature.push param.compileToFragments(o)...
     signature.push @makeCode ')'
+    # Block comments between `)` and `->`/`=>` get output between `)` and `{`.
+    if @funcGlyph?.comments?
+      comment.unshift = no for comment in @funcGlyph.comments
+      @attachComments o, @funcGlyph, signature
 
     body = @body.compileWithDeclarations o unless @body.isEmpty()
 
