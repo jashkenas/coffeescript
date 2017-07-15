@@ -288,6 +288,8 @@ test "#3795: Escape otherwise invalid characters", ->
       1///.test 'a\x001'
 
 test "#4248: Unicode code point escapes", ->
+  # Support for the `u` flag in regexes was added in Node 6.
+  return unless new RegExp().unicode isnt undefined
   ok /a\u{1ab}c/u.test 'a\u01abc'
   ok ///#{ 'a' }\u{000001ab}c///u.test 'a\u{1ab}c'
   ok ///a\u{000001ab}c///u.test 'a\u{1ab}c'
