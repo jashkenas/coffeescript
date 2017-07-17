@@ -1,6 +1,13 @@
 ## Changelog
 
 ```
+releaseHeader('2017-07-16', '1.12.7', '1.12.6')
+```
+
+*   Fix regressions in 1.12.6 related to chained function calls and indented `return` and `throw` arguments.
+*   The REPL no longer warns about assigning to `_`.
+
+```
 releaseHeader('2017-06-30', '2.0.0-beta3', '2.0.0-beta2')
 ```
 

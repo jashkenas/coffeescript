@@ -96,6 +96,9 @@ code, pre, pre > code, textarea {
   font-weight: normal;
   text-transform: uppercase;
 }
+.nowrap {
+  white-space: nowrap;
+}
 div.anchor {
   position: relative;
   top: -90px;
