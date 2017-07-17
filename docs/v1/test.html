@@ -4761,6 +4761,57 @@ test "#4248: Unicode code point escapes", ->
       \    ^\^^^^^^^^^^^^^
   '''
 
+test "#4283: error message for implicit call", ->
+  assertErrorFormat '''
+    console.log {search, users, contacts users_to_display}
+  ''', '''
+    [stdin]:1:29: error: unexpected implicit function call
+    console.log {search, users, contacts users_to_display}
+                                ^^^^^^^^
+  '''
+
+test "#3199: error message for call indented non-object", ->
+  assertErrorFormat '''
+    fn = ->
+    fn
+      1
+  ''', '''
+    [stdin]:3:1: error: unexpected indentation
+      1
+    ^^
+  '''
+
+test "#3199: error message for call indented comprehension", ->
+  assertErrorFormat '''
+    fn = ->
+    fn
+      x for x in [1, 2, 3]
+  ''', '''
+    [stdin]:3:1: error: unexpected indentation
+      x for x in [1, 2, 3]
+    ^^
+  '''
+
+test "#3199: error message for return indented non-object", ->
+  assertErrorFormat '''
+    return
+      1
+  ''', '''
+    [stdin]:2:3: error: unexpected number
+      1
+      ^
+  '''
+
+test "#3199: error message for return indented comprehension", ->
+  assertErrorFormat '''
+    return
+      x for x in [1, 2, 3]
+  ''', '''
+    [stdin]:2:3: error: unexpected identifier
+      x for x in [1, 2, 3]
+      ^
+  '''
+
 </script>
 <script type="text/x-coffeescript" class="test" id="eval">
 if vm = require? 'vm'
@@ -5175,6 +5226,16 @@ test "method call chaining inside objects", ->
       .c
   eq 42, result.b
 
+test "#4568: refine sameLine implicit object tagging", ->
+  condition = yes
+  fn = -> yes
+
+  x =
+    fn bar: {
+      foo: 123
+    } if not condition
+  eq x, undefined
+
 # Nested blocks caused by paren unwrapping
 test "#1492: Nested blocks don't cause double semicolons", ->
   js = CoffeeScript.compile '(0;0)'
@@ -5231,6 +5292,13 @@ test "#1275: allow indentation before closing brackets", ->
     a = 1
    )
   eq 1, a
+
+test "#3199: return multiline implicit object", ->
+  y = do ->
+    if no then return
+      type: 'a'
+      msg: 'b'
+  eq undefined, y
 
 </script>
 <script type="text/x-coffeescript" class="test" id="function_invocation">
@@ -10257,6 +10325,8 @@ test "#3795: Escape otherwise invalid characters", ->
       1///.test 'a\x001'
 
 test "#4248: Unicode code point escapes", ->
+  # Support for the `u` flag in regexes was added in Node 6.
+  return if new RegExp().unicode is undefined
   ok /a\u{1ab}c/u.test 'a\u01abc'
   ok ///#{ 'a' }\u{000001ab}c///u.test 'a\u{1ab}c'
   ok ///a\u{000001ab}c///u.test 'a\u{1ab}c'
