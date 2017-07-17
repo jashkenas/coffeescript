@@ -1,7 +1,7 @@
 ## Change Log
 
 ```
-releaseHeader('2017-07-15', '1.12.7', '1.12.6')
+releaseHeader('2017-07-16', '1.12.7', '1.12.6')
 ```
 
 *   Fix regressions in 1.12.6 related to chained function calls and indented `return` and `throw` arguments.
