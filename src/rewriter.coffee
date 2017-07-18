@@ -403,6 +403,10 @@ exports.Rewriter = class Rewriter
   # lost into the ether, find comments attached to doomed tokens and move them
   # to a token that will make it to the other side.
   rescueStowawayComments: ->
+    insertPlaceholder = (token, j, tokens, method) ->
+      tokens[method] generate 'TERMINATOR', '\n', tokens[j] unless tokens[j][0] is 'TERMINATOR'
+      tokens[method] generate 'JS', '', tokens[j], token
+
     shiftCommentsForward = (token, i, tokens) ->
       # Find the next surviving token and attach this token’s comments to it,
       # with a flag that we know to output such comments *before* that
@@ -416,8 +420,7 @@ exports.Rewriter = class Rewriter
         return 1
       else # All following tokens are doomed!
         j = tokens.length - 1
-        tokens.push generate 'TERMINATOR', '\n', tokens[j] unless tokens[j][0] is 'TERMINATOR'
-        tokens.push generate 'JS', '', tokens[j], token
+        insertPlaceholder token, j, tokens, 'push'
         # The generated tokens were added to the end, not inline, so we don’t skip.
         return 1
 
@@ -429,8 +432,7 @@ exports.Rewriter = class Rewriter
         moveComments token, tokens[j]
         return 1
       else # All previous tokens are doomed!
-        tokens.unshift generate 'TERMINATOR', '\n', tokens[0] unless tokens[0][0] is 'TERMINATOR'
-        tokens.unshift generate 'JS', '', tokens[0], token
+        insertPlaceholder token, 0, tokens, 'unshift'
         # We added two tokens, so shift forward to account for the insertion.
         return 3
 
