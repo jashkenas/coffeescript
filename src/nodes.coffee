@@ -23,6 +23,10 @@ NO      = -> no
 THIS    = -> this
 NEGATE  = -> @negated = not @negated; this
 
+# Track comments that have been compiled into fragments, to avoid outputting
+# them twice.
+compiledComments = []
+
 #### CodeFragment
 
 # The various nodes defined below all compile to a collection of **CodeFragment** objects.
@@ -76,7 +80,7 @@ exports.Base = class Base
       node.compileNode o
     else
       node.compileClosure o
-    @attachComments o, node, fragments
+    @compileCommentFragments o, node, fragments
     fragments
 
   # Statements converted into expressions via closure-wrapping share a scope
@@ -108,27 +112,38 @@ exports.Base = class Base
         parts.push    @makeCode ")"
     parts
 
-  attachComments: (o, node, fragments) ->
+  compileCommentFragments: (o, node, fragments) ->
     return fragments unless node.comments
-    for comment in node.comments when comment not in @attachedComments
+    # Comments that can become `CodeFragment`s are output here. This includes
+    # all block (here) comments and line comments that share their line with
+    # only whitespace (i.e. that don’t trail code on a line). Trailing line
+    # comments need to be output later, after all the fragments are assembled
+    # and their indentations and newlines set.
+
+    unshiftCommentFragment = (commentFragment) ->
+      if commentFragment.unshift
+        # Find the first non-comment fragment and insert `commentFragment`
+        # before it.
+        unshiftAfterComments fragments, commentFragment
+      else
+        if fragments.length isnt 0
+          precedingFragment = fragments[fragments.length - 1]
+          if commentFragment.newLine and precedingFragment.code isnt '' and
+             not /\n\s*$/.test precedingFragment.code
+            commentFragment.code = "\n#{commentFragment.code}"
+        fragments.push commentFragment
+
+    for comment in node.comments when comment not in compiledComments
+      compiledComments.push comment # Don’t output this comment twice.
       # For block/here comments, denoted by `###`, create fragments and insert
       # them into the fragments array, whether they’re multiline comments or
       # inline comments like `1 + ### comment ### 2`.
       # For line comments, just attach them to their closest fragment for now,
       # so they can be inserted into the output later after all the newlines
       # have been added.
-      @attachedComments.push comment # Don’t output this comment twice.
-      if comment.here # Comment delimited by `###`.
+      if comment.here # Block comment, delimited by `###`.
         commentFragment = new HereComment(comment).compileNode o
-        # Don’t rely on `fragment.type`, which can break when the compiler is minified.
-        commentFragment.isHereComment = yes
-        if comment.unshift
-          # Find index of first non-comment fragment, to insert before.
-          for fragment, fragmentIndex in fragments when not fragment.isHereComment
-            fragments.splice fragmentIndex, 0, commentFragment
-            break
-        else
-          fragments.push commentFragment
+        unshiftCommentFragment commentFragment
       else # Line comment, delimited by `#`.
         commentFragment = new LineComment(comment).compileNode o
         commentFragment.trail = not comment.newLine and not comment.unshift
@@ -299,9 +314,6 @@ exports.Base = class Base
   # Is this node used to assign a certain variable?
   assigns: NO
 
-  # Track which comments have been output.
-  attachedComments: []
-
   # For this node and all descendents, set the location data to `locationData`
   # if the location data is not already set.
   updateLocationDataIfMissing: (locationData) ->
@@ -462,14 +474,14 @@ exports.Block = class Block extends Base
         unless node.isStatement o
           fragments = indentInitial fragments, @
           [..., lastFragment] = fragments
-          unless lastFragment.code is '' or lastFragment.isHereComment
+          unless lastFragment.code is '' or lastFragment.isComment
             fragments.push @makeCode ';'
         compiledNodes.push fragments
       else
         compiledNodes.push node.compileToFragments o, LEVEL_LIST
     if top
       if @spaced
-        return [].concat @joinFragmentArrays(compiledNodes, '\n\n'), @makeCode("\n")
+        return [].concat @joinFragmentArrays(compiledNodes, '\n\n'), @makeCode('\n')
       else
         return @joinFragmentArrays(compiledNodes, '\n')
     if compiledNodes.length
@@ -754,19 +766,17 @@ exports.Return = class Return extends Base
     # TODO: If we call `expression.compile()` here twice, we’ll sometimes
     # get back different results!
     if @expression
-      fragments = @expression.compileToFragments o, LEVEL_PAREN
-      # If the `return` is followed by a block comment that contains a newline,
-      # move the comment before the `return` so that JavaScript doesn’t infer
-      # a semicolon between the `return` and the comment.
-      for fragment, i in fragments
-        if fragment?.isHereComment and '\n' in fragment.code
+      answer = @expression.compileToFragments o, LEVEL_PAREN
+      unshiftAfterComments answer, @makeCode "#{@tab}return "
+      # Since the `return` got indented by `@tab`, preceding comments that are
+      # multiline need to be indented.
+      for fragment in answer
+        if fragment.isHereComment and '\n' in fragment.code
           fragment.code = multident fragment.code, @tab
-          answer.push fragment
+        else if fragment.isLineComment
+          fragment.code = "#{@tab}#{fragment.code}"
         else
           break
-      fragments = fragments[i...]
-      answer.push @makeCode "#{@tab}return "
-      answer = answer.concat fragments
     else
       answer.push @makeCode "#{@tab}return"
     answer.push @makeCode ';'
@@ -919,7 +929,7 @@ exports.Value = class Value extends Base
 
 # Comment delimited by `###` (becoming `/* */`).
 exports.HereComment = class HereComment extends Base
-  constructor: ({ @content, @newLine }) ->
+  constructor: ({ @content, @newLine, @unshift }) ->
     super()
 
   compileNode: (o) ->
@@ -938,17 +948,27 @@ exports.HereComment = class HereComment extends Base
 
     @content = "/*#{@content}#{if hasLeadingMarks then ' ' else ''}*/"
     @content = "#{@content}\n" if @newLine
-    @makeCode @content
+    fragment = @makeCode @content
+    fragment.newLine = @newLine
+    fragment.unshift = @unshift
+    # Don’t rely on `fragment.type`, which can break when the compiler is minified.
+    fragment.isComment = fragment.isHereComment = yes
+    fragment
 
 #### LineComment
 
 # Comment running from `#` to the end of a line (becoming `//`).
 exports.LineComment = class LineComment extends Base
-  constructor: ({ @content }) ->
+  constructor: ({ @content, @newLine, @unshift }) ->
     super()
 
   compileNode: (o) ->
-    @makeCode "//#{@content}"
+    fragment = @makeCode "//#{@content}"
+    fragment.newLine = @newLine
+    fragment.unshift = @unshift
+    # Don’t rely on `fragment.type`, which can break when the compiler is minified.
+    fragment.isComment = fragment.isLineComment = yes
+    fragment
 
 #### Call
 
@@ -2563,7 +2583,7 @@ exports.Code = class Code extends Base
     # Block comments between `)` and `->`/`=>` get output between `)` and `{`.
     if @funcGlyph?.comments?
       comment.unshift = no for comment in @funcGlyph.comments
-      @attachComments o, @funcGlyph, signature
+      @compileCommentFragments o, @funcGlyph, signature
 
     body = @body.compileWithDeclarations o unless @body.isEmpty()
 
@@ -3129,7 +3149,11 @@ exports.Throw = class Throw extends Base
   makeReturn: THIS
 
   compileNode: (o) ->
-    [].concat @makeCode(@tab + "throw "), @expression.compileToFragments(o), @makeCode(";")
+    fragments = @expression.compileToFragments o
+    unshiftAfterComments fragments, @makeCode 'throw '
+    fragments.unshift @makeCode @tab
+    fragments.push @makeCode ';'
+    fragments
 
 #### Existence
 
@@ -3238,7 +3262,9 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
       else if node.comments
         # This node is getting discarded, but salvage its comments.
         if elements.length isnt 0 and elements[elements.length - 1] not instanceof StringLiteral
-          comment.unshift = no for comment in node.comments
+          for comment in node.comments
+            comment.unshift = no
+            comment.newLine = yes
           attachCommentsToNode elements[elements.length - 1], node.comments
         else
           salvagedComments = salvagedComments.concat node.comments
@@ -3604,11 +3630,11 @@ multident = (code, tab, includingFirstLine = yes) ->
 # preceding that line of code. If there are such comments, indent each line of
 # such comments, and _then_ indent the first following line of code.
 indentInitial = (fragments, node) ->
-  for fragment, i in fragments
+  for fragment, fragmentIndex in fragments
     if fragment.isHereComment
       fragment.code = multident fragment.code, node.tab
     else
-      fragments.splice i, 0, node.makeCode "#{node.tab}"
+      fragments.splice fragmentIndex, 0, node.makeCode "#{node.tab}"
       break
   fragments
 
@@ -3617,6 +3643,18 @@ hasLineComments = (fragment) ->
   for comment in fragment.comments
     return yes if comment.here is no
   return no
+
+# Sometimes when compiling a node, we want to insert a fragment at the start
+# of an array of fragments; but if the start has one or more comment fragments,
+# we want to insert this fragment after those but before any non-comments.
+unshiftAfterComments = (fragments, fragmentToInsert) ->
+  inserted = no
+  for fragment, fragmentIndex in fragments when not fragment.isComment
+    fragments.splice fragmentIndex, 0, fragmentToInsert
+    inserted = yes
+    break
+  fragments.push fragmentToInsert unless inserted
+  fragments
 
 isLiteralArguments = (node) ->
   node instanceof IdentifierLiteral and node.value is 'arguments'
