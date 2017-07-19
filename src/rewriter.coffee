@@ -433,7 +433,6 @@ exports.Rewriter = class Rewriter
       #
       #     f a, b: c, d: e, f, g: h: i, j
       #
-
       if tag is ',' and not @looksObjectish(i + 1) and inImplicitObject() and 
           (nextTag isnt 'TERMINATOR' or not @looksObjectish(i + 2))
         # When nextTag is OUTDENT the comma is insignificant and
