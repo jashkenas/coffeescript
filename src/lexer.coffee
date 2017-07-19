@@ -835,6 +835,7 @@ exports.Lexer = class Lexer
         last_line:    lastToken[2].last_line
         last_column:  lastToken[2].last_column
       ]
+      lparen[2] = lparen.origin[2]
       rparen = @token 'STRING_END', ')'
       rparen[2] =
         first_line:   lastToken[2].last_line

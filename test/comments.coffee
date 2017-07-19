@@ -531,6 +531,29 @@ test "Line comments in array literals are properly indented 2", ->
     }
   ];'''
 
+test "Line comment above interpolated string", ->
+  eqJS '''
+  if indented
+    # comment
+    "#{1}"
+  ''', '''
+  if (indented) {
+    // comment
+    `${1}`;
+  }'''
+
+test "Line comment above interpolated string object key", ->
+  eqJS '''
+  {
+    # comment
+    "#{1}": 2
+  }
+  ''', '''
+  ({
+    // comment
+    [`${1}`]: 2
+  });'''
+
 test "Line comments are properly indented", ->
   eqJS '''
   # Unindented comment
@@ -595,6 +618,21 @@ test "Line comment in an interpolated string", ->
   ''', '''
   `a${// comment
   1}b`;'''
+
+test "Line comments before `throw`", ->
+  eqJS '''
+  if indented
+    1/0
+    # Uh-oh!
+    # You really shouldn’t have done that.
+    throw DivideByZeroError()
+  ''', '''
+  if (indented) {
+    1 / 0;
+    // Uh-oh!
+    // You really shouldn’t have done that.
+    throw DivideByZeroError();
+  }'''
 
 test "Comments appear above scope `var` declarations", ->
   eqJS '''

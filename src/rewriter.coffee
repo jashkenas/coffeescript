@@ -664,8 +664,12 @@ CONTROL_IN_IMPLICIT = ['IF', 'TRY', 'FINALLY', 'CATCH', 'CLASS', 'SWITCH']
 # Tokens that are swallowed up by the parser, never leading to code generation.
 # You can spot these in `grammar.coffee` because the `o` function second
 # argument doesn’t contain a `new` call for these tokens.
-DISCARDED        = ['.', '..', '...', ',', '=', '++', '--', '?',
-  'AS', 'AWAIT', 'DEFAULT', 'ELSE', 'EXTENDS', 'EXPORT', 'FORIN', 'FOROF', 'FORFROM',
-  'IMPORT', 'INDEX_SOAK', 'LEADING_WHEN', 'RETURN', 'SUPER', 'THROW', 'YIELD'
+# `STRING_START` isn’t on this list because its `locationData` matches that of
+# the node that becomes `StringWithInterpolations`, and therefore
+# `addDataToNode` attaches `STRING_START`’s tokens to that node.
+DISCARDED = ['(', ')', '[', ']', '{', '}', '.', '..', '...', ',', '=', '++', '--', '?',
+  'AS', 'AWAIT', 'CALL_START', 'CALL_END', 'DEFAULT', 'ELSE', 'EXTENDS',
+  'EXPORT', 'FORIN', 'FOROF', 'FORFROM', 'IMPORT', 'INDENT', 'INDEX_SOAK',
+  'LEADING_WHEN', 'OUTDENT', 'PARAM_START', 'PARAM_END', 'RETURN',
+  'STRING_END', 'SUPER', 'THROW', 'YIELD'
 ].concat IMPLICIT_UNSPACED_CALL.concat IMPLICIT_END.concat CALL_CLOSERS.concat CONTROL_IN_IMPLICIT
-DISCARDED        = DISCARDED.concat pair for pair in BALANCED_PAIRS
