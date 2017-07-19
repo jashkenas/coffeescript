@@ -73,6 +73,8 @@ exports.compile = compile = withPrettyErrors (code, options) ->
   generateSourceMap = options.sourceMap or options.inlineMap or not options.filename?
   filename = options.filename or '<anonymous>'
 
+  checkShebangLine filename, code
+
   sources[filename] = code
   map = new SourceMap if generateSourceMap
 
@@ -295,3 +297,16 @@ Error.prepareStackTrace = (err, stack) ->
     "    at #{formatSourcePosition frame, getSourceMapping}"
 
   "#{err.toString()}\n#{frames.join '\n'}\n"
+
+checkShebangLine = (file, input) ->
+  firstLine = input.split(/$/m)[0]
+  rest = firstLine?.match(/^#!\s*([^\s]+\s*)(.*)/)
+  args = rest?[2]?.split(/\s/).filter (s) -> s isnt ''
+  if args?.length > 1
+    console.error '''
+      The script to be run begins with a shebang line with more than one
+      argument. This script will fail on platforms such as Linux which only
+      allow a single argument.
+    '''
+    console.error "The shebang line was: '#{firstLine}' in file '#{file}'"
+    console.error "The arguments were: #{JSON.stringify args}"
