@@ -524,7 +524,12 @@ exports.Lexer = class Lexer
   # Use a `\` at a line-ending to suppress the newline.
   # The slash is removed here once its job is done.
   suppressNewlines: ->
-    @tokens.pop() if @value() is '\\'
+    prev = @prev()
+    if prev[1] is '\\'
+      if prev.comments
+        # By definition, there must be a token before a `\` token.
+        attachCommentsToNode @tokens[@tokens.length - 2], prev.comments
+      @tokens.pop()
     this
 
   # CSX is like JSX but for CoffeeScript.

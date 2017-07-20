@@ -704,6 +704,14 @@ test "Comments before postfix", ->
     return;
   }'''
 
+test "Line comment after line continuation", ->
+  eqJS '''
+  1 + \\ # comment
+    2
+  ''', '''
+  1 + 2; // comment
+  '''
+
 test "Comments appear above scope `var` declarations", ->
   eqJS '''
   # @flow
