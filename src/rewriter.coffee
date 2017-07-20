@@ -671,5 +671,5 @@ DISCARDED = ['(', ')', '[', ']', '{', '}', '.', '..', '...', ',', '=', '++', '--
   'AS', 'AWAIT', 'CALL_START', 'CALL_END', 'DEFAULT', 'ELSE', 'EXTENDS',
   'EXPORT', 'FORIN', 'FOROF', 'FORFROM', 'IMPORT', 'INDENT', 'INDEX_SOAK',
   'LEADING_WHEN', 'OUTDENT', 'PARAM_START', 'PARAM_END', 'RETURN',
-  'STRING_END', 'SUPER', 'THROW', 'YIELD'
+  'STRING_END', 'THROW', 'YIELD'
 ].concat IMPLICIT_UNSPACED_CALL.concat IMPLICIT_END.concat CALL_CLOSERS.concat CONTROL_IN_IMPLICIT

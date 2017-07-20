@@ -554,6 +554,53 @@ test "Line comment above interpolated string object key", ->
     [`${1}`]: 2
   });'''
 
+test "Line comments in classes are properly indented", ->
+  eqJS '''
+  class A extends B
+    # This is a fine class.
+    # I could tell you all about it, but what else do you need to know?
+    constructor: ->
+      # Something before `super`
+      super()
+
+    # This next method is a doozy!
+    # A doozy, I tell ya!
+    method: ->
+      # Whoa.
+      # Can you believe it?
+      no
+
+    ### Look out, incoming! ###
+    anotherMethod: ->
+      ### Ha! ###
+      off
+  ''', '''
+  var A;
+
+  A = class A extends B {
+    // This is a fine class.
+    // I could tell you all about it, but what else do you need to know?
+    constructor() {
+      // Something before `super`
+      super();
+    }
+
+    // This next method is a doozy!
+    // A doozy, I tell ya!
+    method() {
+      // Whoa.
+      // Can you believe it?
+      return false;
+    }
+
+    /* Look out, incoming! */
+    anotherMethod() {
+      /* Ha! */
+      return false;
+    }
+
+  };'''
+
 test "Line comments are properly indented", ->
   eqJS '''
   # Unindented comment

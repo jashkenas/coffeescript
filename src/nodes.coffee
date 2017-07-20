@@ -974,7 +974,7 @@ exports.LineComment = class LineComment extends Base
 
 # Node for a function invocation.
 exports.Call = class Call extends Base
-  constructor: (@variable, @args = [], @soak) ->
+  constructor: (@variable, @args = [], @soak, @token) ->
     super()
 
     @isNew = no
