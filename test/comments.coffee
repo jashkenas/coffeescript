@@ -681,6 +681,29 @@ test "Line comments before `throw`", ->
     throw DivideByZeroError();
   }'''
 
+test "Comments before postfix", ->
+  eqJS '''
+  # 1
+  2
+
+  # 3
+  return unless window?
+
+  ### 4 ###
+  return if global?
+  ''', '''
+  // 1
+  2;
+  // 3
+  if (typeof window === "undefined" || window === null) {
+    return;
+  }
+
+  /* 4 */
+  if (typeof global !== "undefined" && global !== null) {
+    return;
+  }'''
+
 test "Comments appear above scope `var` declarations", ->
   eqJS '''
   # @flow

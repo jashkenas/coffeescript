@@ -3164,6 +3164,15 @@ exports.Existence = class Existence extends Base
   constructor: (@expression, onlyNotUndefined = no) ->
     super()
     @comparisonTarget = if onlyNotUndefined then 'undefined' else 'null'
+    if @expression.comments
+      salvagedComments = []
+      @expression.eachChild (child) ->
+        if child.comments
+          for comment in child.comments
+            salvagedComments.push comment unless comment in salvagedComments
+          delete child.comments
+      attachCommentsToNode @, salvagedComments
+      delete @expression.comments
 
   children: ['expression']
 
@@ -3490,11 +3499,13 @@ exports.Switch = class Switch extends Base
 exports.If = class If extends Base
   constructor: (condition, @body, options = {}) ->
     super()
-
     @condition = if options.type is 'unless' then condition.invert() else condition
     @elseBody  = null
     @isChain   = false
     {@soak}    = options
+    if @condition.comments
+      attachCommentsToNode @, @condition.comments
+      delete @condition.comments
 
   children: ['condition', 'body', 'elseBody']
 
