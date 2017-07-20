@@ -286,7 +286,7 @@ td code {
   white-space: nowrap;
 }
 
-h2, h3 {
+h2, h3, h4 {
   margin-top: 1.3em;
   margin-bottom: 0.6em;
   font-family: 'Alegreya Sans';
@@ -294,7 +294,7 @@ h2, h3 {
 h2 {
   font-weight: 800;
 }
-h3, h2 time {
+h3, h4, h2 time {
   font-weight: 400;
 }
 

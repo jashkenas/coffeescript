@@ -755,7 +755,7 @@ can close multiple indents, so we need to know how far in we happen to be.</p>
       <span class="hljs-keyword">return</span> indent.length
 
     <span class="hljs-keyword">if</span> size &gt; @indent
-      <span class="hljs-keyword">if</span> noNewlines <span class="hljs-keyword">or</span> @tag() <span class="hljs-keyword">is</span> <span class="hljs-string">'RETURN'</span>
+      <span class="hljs-keyword">if</span> noNewlines
         @indebt = size - @indent
         @suppressNewlines()
         <span class="hljs-keyword">return</span> indent.length
@@ -1555,9 +1555,7 @@ not specified, the length of <code>value</code> will be used.</p>
             
             <div class="content"><div class='highlight'><pre>  unfinished: <span class="hljs-function">-&gt;</span>
     LINE_CONTINUER.test(@chunk) <span class="hljs-keyword">or</span>
-    @tag() <span class="hljs-keyword">in</span> [<span class="hljs-string">'\\'</span>, <span class="hljs-string">'.'</span>, <span class="hljs-string">'?.'</span>, <span class="hljs-string">'?::'</span>, <span class="hljs-string">'UNARY'</span>, <span class="hljs-string">'MATH'</span>, <span class="hljs-string">'UNARY_MATH'</span>, <span class="hljs-string">'+'</span>, <span class="hljs-string">'-'</span>,
-               <span class="hljs-string">'**'</span>, <span class="hljs-string">'SHIFT'</span>, <span class="hljs-string">'RELATION'</span>, <span class="hljs-string">'COMPARE'</span>, <span class="hljs-string">'&amp;'</span>, <span class="hljs-string">'^'</span>, <span class="hljs-string">'|'</span>, <span class="hljs-string">'&amp;&amp;'</span>, <span class="hljs-string">'||'</span>,
-               <span class="hljs-string">'BIN?'</span>, <span class="hljs-string">'THROW'</span>, <span class="hljs-string">'EXTENDS'</span>, <span class="hljs-string">'DEFAULT'</span>]
+    @tag() <span class="hljs-keyword">in</span> UNFINISHED
 
   formatString: <span class="hljs-function"><span class="hljs-params">(str, options)</span> -&gt;</span>
     @replaceUnicodeCodePointEscapes str.replace(STRING_OMIT, <span class="hljs-string">'$1'</span>), options
@@ -2312,6 +2310,23 @@ avoid an ambiguity in the grammar.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>INDENTABLE_CLOSERS = [<span class="hljs-string">')'</span>, <span class="hljs-string">'}'</span>, <span class="hljs-string">']'</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-94">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-94">&#182;</a>
+              </div>
+              <p>Tokens that, when appearing at the end of a line, suppress a following TERMINATOR/INDENT token</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>UNFINISHED = [<span class="hljs-string">'\\'</span>, <span class="hljs-string">'.'</span>, <span class="hljs-string">'?.'</span>, <span class="hljs-string">'?::'</span>, <span class="hljs-string">'UNARY'</span>, <span class="hljs-string">'MATH'</span>, <span class="hljs-string">'UNARY_MATH'</span>, <span class="hljs-string">'+'</span>, <span class="hljs-string">'-'</span>,
+           <span class="hljs-string">'**'</span>, <span class="hljs-string">'SHIFT'</span>, <span class="hljs-string">'RELATION'</span>, <span class="hljs-string">'COMPARE'</span>, <span class="hljs-string">'&amp;'</span>, <span class="hljs-string">'^'</span>, <span class="hljs-string">'|'</span>, <span class="hljs-string">'&amp;&amp;'</span>, <span class="hljs-string">'||'</span>,
+           <span class="hljs-string">'BIN?'</span>, <span class="hljs-string">'THROW'</span>, <span class="hljs-string">'EXTENDS'</span>, <span class="hljs-string">'DEFAULT'</span>]</pre></div></div>
             
         </li>
         

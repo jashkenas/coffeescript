@@ -36,3 +36,5 @@ exports.eqJS = (input, expectedOutput, msg) ->
   actualOutput = CoffeeScript.compile input, bare: yes
   .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace.
   ok egal(expectedOutput, actualOutput), msg or diffOutput expectedOutput, actualOutput
+
+exports.isWindows = -> process.platform is 'win32'
