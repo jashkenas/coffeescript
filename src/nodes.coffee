@@ -143,11 +143,15 @@ exports.Base = class Base
       # have been added.
       if comment.here # Block comment, delimited by `###`.
         commentFragment = new HereComment(comment).compileNode o
-        unshiftCommentFragment commentFragment
       else # Line comment, delimited by `#`.
         commentFragment = new LineComment(comment).compileNode o
-        commentFragment.trail = not comment.newLine and not comment.unshift
-        if comment.unshift
+      if (commentFragment.isHereComment and not commentFragment.newLine) or
+         node.includeCommentFragments()
+        # Inline block comments, like `1 + /* comment */ 2`, or a node whose
+        # `compileToFragments` method has logic for outputting comments.
+        unshiftCommentFragment commentFragment
+      else
+        if commentFragment.unshift
           fragments[0].precedingComments ?= []
           fragments[0].precedingComments.push commentFragment
         else
@@ -285,6 +289,10 @@ exports.Base = class Base
   # error messages that come from `nodes.coffee` due to statements ending up
   # in expression position.
   isStatement: NO
+
+  # `includeCommentFragments` lets `compileCommentFragments` know whether this node
+  # has special awareness of how to handle comments within its output.
+  includeCommentFragments: NO
 
   # `jumps` tells you if an expression, or an internal part of an expression
   # has a flow control construct (like `break`, or `continue`, or `return`,
@@ -558,9 +566,12 @@ exports.Block = class Block extends Base
             break
           else if '\n' in pastFragment.code
             break
-
         code = "\n#{fragmentIndent}" + (
-            commentFragment.code for commentFragment in fragment.precedingComments
+            for commentFragment in fragment.precedingComments
+              if commentFragment.isHereComment and commentFragment.multiline
+                multident commentFragment.code, fragmentIndent, no
+              else
+                commentFragment.code
           ).join "\n#{fragmentIndent}"
         for pastFragment, pastFragmentIndex in fragments[0...(fragmentIndex + 1)] by -1
           newLineIndex = pastFragment.code.lastIndexOf '\n'
@@ -617,8 +628,14 @@ exports.Block = class Block extends Base
           ' '
         else
           "\n#{fragmentIndent}"
-        code += (commentFragment.code for commentFragment in fragment.followingComments)
-          .join "\n#{fragmentIndent}"
+        # Assemble properly indented comments.
+        code += (
+            for commentFragment in fragment.followingComments
+              if commentFragment.isHereComment and commentFragment.multiline
+                multident commentFragment.code, fragmentIndent, no
+              else
+                commentFragment.code
+          ).join "\n#{fragmentIndent}"
         for upcomingFragment, upcomingFragmentIndex in fragments[fragmentIndex...]
           newLineIndex = upcomingFragment.code.indexOf '\n'
           if newLineIndex is -1
@@ -947,10 +964,10 @@ exports.HereComment = class HereComment extends Base
       @content = @content.replace ///^(#{leadingWhitespace})///gm, ''
 
     @content = "/*#{@content}#{if hasLeadingMarks then ' ' else ''}*/"
-    @content = "#{@content}\n" if @newLine
     fragment = @makeCode @content
     fragment.newLine = @newLine
     fragment.unshift = @unshift
+    fragment.multiline = multiline
     # Don’t rely on `fragment.type`, which can break when the compiler is minified.
     fragment.isComment = fragment.isHereComment = yes
     fragment
@@ -966,6 +983,7 @@ exports.LineComment = class LineComment extends Base
     fragment = @makeCode "//#{@content}"
     fragment.newLine = @newLine
     fragment.unshift = @unshift
+    fragment.trail = not @newLine and not @unshift
     # Don’t rely on `fragment.type`, which can break when the compiler is minified.
     fragment.isComment = fragment.isLineComment = yes
     fragment
@@ -1459,7 +1477,6 @@ exports.Obj = class Obj extends Base
 exports.Arr = class Arr extends Base
   constructor: (objs, @lhs = no) ->
     super()
-
     @objects = objs or []
 
   children: ['objects']
@@ -1480,11 +1497,16 @@ exports.Arr = class Arr extends Base
     o.indent += TAB
 
     answer = []
-    # If this array is the left-hand side of an assignment, all its children
-    # are too.
-    if @lhs
-      for obj in @objects
-        unwrappedObj = obj.unwrapAll()
+    for obj, objIndex in @objects
+      unwrappedObj = obj.unwrapAll()
+      # Let `compileCommentFragments` know to intersperse block comments
+      # into the fragments created when compiling this array.
+      if unwrappedObj.comments and
+         unwrappedObj.comments.filter((comment) -> not comment.here).length is 0
+        unwrappedObj.includeCommentFragments = YES
+      # If this array is the left-hand side of an assignment, all its children
+      # are too.
+      if @lhs
         unwrappedObj.lhs = yes if unwrappedObj instanceof Arr or unwrappedObj instanceof Obj
 
     compiledObjs = (obj.compileToFragments o, LEVEL_LIST for obj in @objects)

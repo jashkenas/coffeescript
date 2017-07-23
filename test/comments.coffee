@@ -285,7 +285,6 @@ test "#3132: Format jsdoc-style block-comment nicely", ->
    *
    * @type {Function}
    */
-
   var fn;
 
   fn = function() {
@@ -309,7 +308,6 @@ test "#3132: Format hand-made (raw) jsdoc-style block-comment nicely", ->
    *
    * @type {Function}
    */
-
   var fn;
 
   fn = function() {
@@ -346,7 +344,6 @@ test "#3132: Place block-comments nicely", ->
    *
    * @class
    */
-
   var DummyClass;
 
   DummyClass = (function() {
@@ -530,6 +527,56 @@ test "Line comments in array literals are properly indented 2", ->
       leftField: 'Why'
     }
   ];'''
+
+test "Block comments trailing their attached token are properly indented", ->
+  eqJS '''
+  if indented
+    if indentedAgain
+      a
+      ###
+        Multiline
+        comment
+      ###
+    a
+  ''', '''
+  if (indented) {
+    if (indentedAgain) {
+      a;
+    }
+    /*
+      Multiline
+      comment
+    */
+    a;
+  }
+  '''
+
+test "Comments in proper order 1", ->
+  eqJS '''
+  # 1
+  ### 2 ###
+  # 3
+  ''', '''
+  // 1
+  /* 2 */
+  // 3
+  '''
+
+test "Comments in proper order 2", ->
+  eqJS '''
+  if indented
+    # 1
+    ### 2 ###
+    # 3
+    a
+  ''', '''
+  if (indented) {
+    // 1
+    /* 2 */
+    // 3
+    a;
+  }
+  '''
 
 test "Line comment above interpolated string", ->
   eqJS '''
