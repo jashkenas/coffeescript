@@ -751,6 +751,21 @@ test "Comments before postfix", ->
     return;
   }'''
 
+test "Comments before splice", ->
+  eqJS '''
+  if indented
+    # comment
+    a[1..2] = [1, 2, 3]
+  ''', '''
+  var ref,
+    splice = [].splice;
+
+  if (indented) {
+    // comment
+    splice.apply(a, [1, 2].concat(ref = [1, 2, 3])), ref;
+  }
+  '''
+
 test "Line comment after line continuation", ->
   eqJS '''
   1 + \\ # comment

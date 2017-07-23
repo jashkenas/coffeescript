@@ -2361,6 +2361,11 @@ exports.Assign = class Assign extends Base
   # `Array#splice` method.
   compileSplice: (o) ->
     {range: {from, to, exclusive}} = @variable.properties.pop()
+    unwrappedVar = @variable.unwrapAll()
+    if unwrappedVar.comments
+      attachCommentsToNode @, unwrappedVar.comments
+      delete unwrappedVar.comments
+      delete @variable.comments
     name = @variable.compile o
     if from
       [fromDecl, fromRef] = @cacheToCodeFragments from.cache o, LEVEL_OP
@@ -3671,9 +3676,9 @@ indentInitial = (fragments, node) ->
       break
   fragments
 
-hasLineComments = (fragment) ->
-  return no unless fragment.comments
-  for comment in fragment.comments
+hasLineComments = (node) ->
+  return no unless node.comments
+  for comment in node.comments
     return yes if comment.here is no
   return no
 
