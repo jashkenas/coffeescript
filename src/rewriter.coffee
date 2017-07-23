@@ -107,10 +107,74 @@ exports.Rewriter = class Rewriter
       return -1 if @tag(i + j + fuzz) not in pattern[j]
     i + j + fuzz - 1
 
+  # Return starting position of the object spread when used without braces and commas.
+  detectObjectSpreadStart: (j) ->
+    spreadStarters = ['IDENTIFIER', 'SUPER', '@', 'THIS']
+    expStart = ['(', '{', 'CALL_START', 'PARAM_START']
+    expEnd = [')', '}', 'CALL_END', 'PARAM_END']
+    # left side spread, e.g. ...obj
+    return j if @tag(j) is '...' and @tag(j + 1) in [spreadStarters..., '(', '{', 'CALL_START']
+    startIdx = j - 1
+    return -1 unless startIdx > -1 
+    # right side spread, e.g, obj...
+    return startIdx if @tag(startIdx) in spreadStarters
+    if @tag(startIdx) is 'PROPERTY' or @tag(startIdx) in expEnd
+      s = startIdx - 1
+      levels = if @tag(startIdx) in expEnd then 1 else 0
+      while tag = @tag(s)
+        # Stop if spread is directly in array or argument.
+        return -1 if tag in ['[', 'INDEX_START', 'PARAM_START'] and levels <= 0
+        # Spread is wrapped in '()', '{}'
+        if tag in expStart and levels == 0 or @tag(s - 1) in expStart and levels < 0
+          # foo({})...
+          return s - 2 if @tag(s - 1) in spreadStarters and @tag(s - 2) in expStart
+          # foo()...
+          return s - 1 if @tag(s - 1) in spreadStarters
+          # ()...
+          return s if not (@tag(s - 1) in expEnd) and @tag(s - 1) isnt '.'
+          levels = 0
+        # foo...  
+        return s if tag in spreadStarters and levels <= 0
+        if tag in expEnd
+          levels += 1
+        else if tag in expStart
+          levels -= 1
+        s -= 1
+    -1
+
+  # Return yes if standing in front of the spread.
+  # foo.., foo()..., {}..., ()...
+  # ...foo, ...foo(), ...(), ...{}
+  detectObjectSpread: (j) ->
+    spreadStart = ['IDENTIFIER', 'SUPER', '@', 'THIS', '(', '[', '{', 'CALL_START']
+    # left side spread
+    return yes if @tag(j) is '...' and @tag(j + 1) in spreadStart
+    #right side spread
+    return yes if @indexOfTag(j, 'IDENTIFIER', '...') > -1 or @indexOfTag(j, '@', null, '...') > -1
+    index = @indexOfTag(j, [EXPRESSION_START..., spreadStart...])
+    return no unless index > -1
+    end = null
+    condition = (token, i) ->
+      cond1 = @tag(i) is '...' and @tag(i - 1) in ['IDENTIFIER', 'PROPERTY', ')', ']', '}', 'CALL_END']
+      cond2 = @tag(i + 1) is '...' and @tag(i) in ['IDENTIFIER', 'PROPERTY', ')', ']', '}', 'CALL_END']      
+      cond1 or cond2
+    action = (token, i) ->
+      end = i if @tokens[i]?[0] is '...'  
+      end = i + 1 if @tokens[i + 1]?[0] is '...'  
+      end
+    @detectEnd index + 1, condition, action
+    return yes if @tag(end) is '...'
+    no
+  
+  # Helper property when dealing with an implicit call, (e.g. f a:1, obj...)
+  # which is used to avoid processing spreads.
+  processingImplicitCall: no
+
   # Returns `yes` if standing in front of something looking like
   # `@<x>:`, `<x>:` or `<EXPRESSION_START><x>...<EXPRESSION_END>:`,
   # skipping over 'HERECOMMENT's.
   looksObjectish: (j) ->
+    return yes if not @processingImplicitCall and @detectObjectSpread(j)
     return yes if @indexOfTag(j, '@', null, ':') > -1 or @indexOfTag(j, null, ':') > -1
     index = @indexOfTag(j, EXPRESSION_START)
     if index > -1
@@ -146,6 +210,7 @@ exports.Rewriter = class Rewriter
       [nextTag] = nextToken = if i < tokens.length - 1 then tokens[i + 1] else []
       stackTop  = -> stack[stack.length - 1]
       startIdx  = i
+      self = @
 
       # Helper function, used for keeping track of the number of tokens consumed
       # and spliced, when returning for getting a new token.
@@ -163,10 +228,12 @@ exports.Rewriter = class Rewriter
       inImplicitControl = -> inImplicit() and stackTop()?[0] is 'CONTROL'
 
       startImplicitCall = (idx) ->
+        self.processingImplicitCall = yes
         stack.push ['(', idx, ours: yes]
         tokens.splice idx, 0, generate 'CALL_START', '(', ['', 'implicit function call', token[2]]
 
       endImplicitCall = ->
+        self.processingImplicitCall = no
         stack.pop()
         tokens.splice i, 0, generate 'CALL_END', ')', ['', 'end of input', token[2]]
         i += 1
@@ -191,6 +258,16 @@ exports.Rewriter = class Rewriter
           returnOnNegativeLevel: yes
         return no unless nextTerminatorIdx?
         @looksObjectish nextTerminatorIdx + 1
+      
+      # Helper function returns yes if spread is directly in the argument or array
+      # [a, b..., c], f a:1, obj...
+      inParamOrArray = (j) =>
+        end = null
+        @detectEnd j, ((token) -> token[0] in [']', 'INDEX_END']), ((token, i) -> end = i)
+        return yes if @tag(end) in [']', 'INDEX_END']
+        @detectEnd j, ((token) -> token[0] is 'PARAM_END'), ((token, i) -> end = i)
+        return yes if @tag(end) is 'PARAM_END'
+        no
 
       # Don't end an implicit call/object on next indent if any of these are in an argument/value
       if (
@@ -234,7 +311,7 @@ exports.Rewriter = class Rewriter
         start = stack.pop()
 
       # Recognize standard implicit calls like
-      # f a, f() b, f? c, h[0] d etc.
+      # f a, f ...a, f() b, f? c, h[0] d etc.
       # Added support for spread dots on the left side: f ...a
       if (tag in IMPLICIT_FUNC and token.spaced or
           tag is '?' and i > 0 and not tokens[i - 1].spaced) and
@@ -271,10 +348,19 @@ exports.Rewriter = class Rewriter
         stack.push ['INDENT', i + 2]
         return forward(3)
 
-      # Implicit objects start here
-      if tag is ':'
+      # Check if tag is object spread.
+      spreadTag = no
+      if tag is '...' and not (@processingImplicitCall or inParamOrArray(i))
+        # Find the staring position of the spread. 
+        # Spread can be positioned on the left or the right side.
+        spreadTagStart = @detectObjectSpreadStart i
+        spreadTag = spreadTagStart > -1
+      
+      # Implicit objects start here, e.g. a:1 or a...
+      if tag is ':' or spreadTag
         # Go back to the (implicit) start of the object
         s = switch
+          when spreadTag then spreadTagStart
           when @tag(i - 1) in EXPRESSION_END then start[1]
           when @tag(i - 2) is '@' then i - 2
           else i - 1
@@ -285,7 +371,7 @@ exports.Rewriter = class Rewriter
         if stackTop()
           [stackTag, stackIdx] = stackTop()
           if (stackTag is '{' or stackTag is 'INDENT' and @tag(stackIdx - 1) is '{') and
-             (startsLine or @tag(s - 1) is ',' or @tag(s - 1) is '{')
+             (startsLine or @tag(s - 1) is ',' or @tag(s - 1) is '{' or @tag(s - 1) is '...')
             return forward(1)
 
         startImplicitObject(s, !!startsLine)
@@ -347,8 +433,8 @@ exports.Rewriter = class Rewriter
       #
       #     f a, b: c, d: e, f, g: h: i, j
       #
-      if tag is ',' and not @looksObjectish(i + 1) and inImplicitObject() and
-         (nextTag isnt 'TERMINATOR' or not @looksObjectish(i + 2))
+      if tag is ',' and not @looksObjectish(i + 1) and inImplicitObject() and 
+          (nextTag isnt 'TERMINATOR' or not @looksObjectish(i + 2))
         # When nextTag is OUTDENT the comma is insignificant and
         # should just be ignored so embed it in the implicit object.
         #
