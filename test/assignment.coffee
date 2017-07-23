@@ -382,6 +382,23 @@ test "object spread properties: ES2015", ->
   obj7 = {obj..., fn()..., {c: {d: 55, e: 66, f: {77}}}...}
   eq obj7.c.d, 55
   deepEqual obj6.c, {d: 33, e: 44, f: {g: 55}}
+  
+  obj =
+    a:
+      b:
+        c:
+          d:
+            e: {}
+  obj9 = {a:1, obj.a.b.c..., g:3}
+  deepEqual obj9.d, {e: {}}
+
+  a = "a"
+  c = "c"
+  obj9 = {a:1, obj[a].b[c]..., g:3}
+  deepEqual obj9.d, {e: {}}
+
+  obj9 = {a:1, obj.a["b"].c["d"]..., g:3}
+  deepEqual obj9["e"], {}
 
 test "bracket insertion when necessary", ->
   [a] = [0] ? [1]
