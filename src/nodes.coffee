@@ -1207,7 +1207,7 @@ exports.Obj = class Obj extends Base
       else
         ',\n'
       indent = if isCompact or prop instanceof Comment then '' else idt
-
+      log = console.log
       key = if prop instanceof Assign and prop.context is 'object'
         prop.variable
       else if prop instanceof Assign
@@ -1229,7 +1229,7 @@ exports.Obj = class Obj extends Base
             prop = new Assign prop, prop, 'object'
         else
           # Spread in CSX.
-          prop = if @csx then new Literal "{#{prop.compile(o)}}" else prop
+          prop = if propHasSplat then new Literal "{#{prop.compile(o)}}" else prop
       # Check if CSX attribute is valid.
       # CSX atributes are processed in the `lexer` and converted from
       # `<div id={value} name="tag" {props...} title="#{foo()}" src={{a:1, b:2}} />` into

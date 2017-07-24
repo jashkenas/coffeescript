@@ -10,7 +10,7 @@
 # are read by jison in the `parser.lexer` function defined in coffeescript.coffee.
 
 {Rewriter, INVERSES} = require './rewriter'
-
+log = console.log
 # Import the helpers we need.
 {count, starts, compact, repeat, invertLiterate, merge,
 locationDataToString, throwSyntaxError} = require './helpers'
@@ -109,6 +109,20 @@ exports.Lexer = class Lexer
   # though `is` means `===` otherwise.
   identifierToken: ->
     inCSXTag = @atCSXTag()
+    # Check CSX properties synatx.
+    # Allowed properties: `<div id="someID" name={nameValue} {props...} />
+    if inCSXTag and @prev()[1] isnt ':' and @chunk[0] in ['{', '"', "'"]
+      if @chunk[0] in ['"', "'"]
+        @error "Unexpected token"
+      csxSpreadMatch = /^({\.\.\.\S+})|({\S+\.\.\.})/.exec @chunk
+      unless csxSpreadMatch
+        if lastBrace = /^({[^}:\.]+)(:|\})/.exec(@chunk)
+          @error "Unexpected token, expected ...", offset: lastBrace[0].length - 1
+        if badSpread = /^({\S+\.\.\.)|({\.\.\.\S+)[^\}]/.exec @chunk
+          # Offset value for left or right spread dots position.
+          offset = if badSpread[0][1] is '.' then badSpread[0].length - 1 else badSpread[0].length
+          @error "Unexpected token, expected }", {offset}
+
     regex = if inCSXTag then CSX_ATTRIBUTE else IDENTIFIER
     return 0 unless match = regex.exec @chunk
     [input, id, colon] = match
@@ -515,7 +529,7 @@ exports.Lexer = class Lexer
         @csxDepth--
         return 2
       else if firstChar is '{'
-        if prevChar == ':'
+        if prevChar is ':'
           token = @token '(', '('
           @ends.push {tag: '}', origin: token}
           @csxSpreadProps = no
@@ -561,6 +575,7 @@ exports.Lexer = class Lexer
     i = @ends.length - 1
     i-- while @ends[i]?.tag is 'OUTDENT' or depth-- > 0 # Ignore indents.
     last = @ends[i]
+    # log @csxDepth, last?.tag
     last?.tag is '/>' and last
 
   # We treat all other single characters as a token. E.g.: `( ) , . !`
