@@ -109,7 +109,7 @@ exports.Lexer = class Lexer
   # though `is` means `===` otherwise.
   identifierToken: ->
     inCSXTag = @atCSXTag()
-    # Check CSX properties synatx.
+    # Check CSX properties syntax.
     # Allowed properties: `<div id="someID" name={nameValue} {props...} />
     if inCSXTag and @prev()[1] isnt ':' and @chunk[0] in ['{', '"', "'"]
       if @chunk[0] in ['"', "'"]
