@@ -10,7 +10,7 @@
 # are read by jison in the `parser.lexer` function defined in coffeescript.coffee.
 
 {Rewriter, INVERSES} = require './rewriter'
-log = console.log
+
 # Import the helpers we need.
 {count, starts, compact, repeat, invertLiterate, merge,
 locationDataToString, throwSyntaxError} = require './helpers'
@@ -575,7 +575,6 @@ exports.Lexer = class Lexer
     i = @ends.length - 1
     i-- while @ends[i]?.tag is 'OUTDENT' or depth-- > 0 # Ignore indents.
     last = @ends[i]
-    # log @csxDepth, last?.tag
     last?.tag is '/>' and last
 
   # We treat all other single characters as a token. E.g.: `( ) , . !`
