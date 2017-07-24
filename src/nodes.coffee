@@ -1231,10 +1231,18 @@ exports.Obj = class Obj extends Base
           # Spread in CSX.
           prop = if @csx then new Literal "{#{prop.compile(o)}}" else prop
       # Check if CSX attribute is valid.
+      # CSX atributes are processed in the `lexer` and converted from
+      # `<div id={value} name="tag" {props...} title="#{foo()}" src={{a:1, b:2}} />` into
+      # `{ id:(abc), name:"tags", ...props, title:("" + (foo())), src:{a:1, b:2} }`
       if @csx and prop instanceof Assign
+        # The `prop.variable` must be the instance of `PropertyName` (i.e. `PROPERTY`).
         prop.variable.error "Unexpected token" unless prop.variable.unwrap() instanceof PropertyName
         propVal = prop.value.unwrap()
-        unless ((propVal instanceof Parens or propVal instanceof StringWithInterpolations) and propVal.body instanceof Block) or propVal instanceof StringLiteral or propVal instanceof Obj
+        # The `prop.value` instance can be:
+        # - `StringLiteral`, e.g. id:"abc"
+        # - `Parens` or `StringWithInterpolations`, e.g. id:{abc} or id:"#{abc}" or id:(abc)
+        unless propVal instanceof StringLiteral or
+            ((propVal instanceof Parens or propVal instanceof StringWithInterpolations) and propVal.body instanceof Block)
           prop.value.error "expected wrapped or quoted CSX attribute"
       if indent then answer.push @makeCode indent
       prop.csx = yes if @csx
