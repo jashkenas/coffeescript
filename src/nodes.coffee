@@ -23,10 +23,6 @@ NO      = -> no
 THIS    = -> this
 NEGATE  = -> @negated = not @negated; this
 
-# Track comments that have been compiled into fragments, to avoid outputting
-# them twice.
-compiledComments = []
-
 #### CodeFragment
 
 # The various nodes defined below all compile to a collection of **CodeFragment** objects.
@@ -133,8 +129,8 @@ exports.Base = class Base
             commentFragment.code = "\n#{commentFragment.code}"
         fragments.push commentFragment
 
-    for comment in node.comments when comment not in compiledComments
-      compiledComments.push comment # Don’t output this comment twice.
+    for comment in node.comments when comment not in @compiledComments
+      @compiledComments.push comment # Don’t output this comment twice.
       # For block/here comments, denoted by `###`, create fragments and insert
       # them into the fragments array, whether they’re multiline comments or
       # inline comments like `1 + ### comment ### 2`.
@@ -289,6 +285,10 @@ exports.Base = class Base
   # error messages that come from `nodes.coffee` due to statements ending up
   # in expression position.
   isStatement: NO
+
+  # Track comments that have been compiled into fragments, to avoid outputting
+  # them twice.
+  compiledComments: []
 
   # `includeCommentFragments` lets `compileCommentFragments` know whether this node
   # has special awareness of how to handle comments within its output.
