@@ -1,13 +1,9 @@
 ## Comments
 
-In CoffeeScript, comments are denoted by the `#` character. Everything from a `#` to the end of the line is ignored by the compiler, and will be excluded from the JavaScript output.
+In CoffeeScript, comments are denoted by the `#` character to the end of a line, or from `###` to the next appearance of `###`. Comments are ignored by the compiler, though the compiler makes its best effort at reinserting your comments into the output JavaScript after compilation.
 
 ```
 codeFor('comment')
 ```
 
-Sometimes you’d like to pass a block comment through to the generated JavaScript. For example, when you need to embed a licensing header at the top of a file. Block comments, which mirror the syntax for block strings, are preserved in the generated output.
-
-```
-codeFor('block_comment')
-```
+Inline `###` comments make [type annotations](#type-annotations) possible.

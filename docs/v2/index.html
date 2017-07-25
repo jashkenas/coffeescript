@@ -1299,43 +1299,35 @@ output = `${turtle.name} wears an ${turtle.mask} mask. Watch out for his ${turtl
         </section>
         <section id="comments">
           <h2>Comments</h2>
-<p>In CoffeeScript, comments are denoted by the <code>#</code> character. Everything from a <code>#</code> to the end of the line is ignored by the compiler, and will be excluded from the JavaScript output.</p>
+<p>In CoffeeScript, comments are denoted by the <code>#</code> character to the end of a line, or from <code>###</code> to the next appearance of <code>###</code>. Comments are ignored by the compiler, though the compiler makes its best effort at reinserting your comments into the output JavaScript after compilation.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="comment">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
-      <textarea class="coffeescript-input" id="comment-coffee">code = 2 * 617 # The code is 1234
-</textarea>
-    </div>
-    <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="comment-js">var code;
-
-code = 2 * 617; // The code is 1234
-</textarea>
-    </div>
-  </div>
-  
-</aside>
-<p>Sometimes you’d like to pass a block comment through to the generated JavaScript. For example, when you need to embed a licensing header at the top of a file. Block comments, which mirror the syntax for block strings, are preserved in the generated output.</p>
-<aside class="code-example container-fluid bg-ribbed-dark" data-example="block_comment">
-  <div class="row">
-    <div class="col-md-6 coffeescript-input-column">
-      <textarea class="coffeescript-input" id="block_comment-coffee">###
-SkinnyMochaHalfCaffScript Compiler v1.0
+      <textarea class="coffeescript-input" id="comment-coffee">###
+Fortune Cookie Reader v1.0
 Released under the MIT License
 ###
+
+sayFortune = (fortune) ->
+	console.log fortune # in bed!
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="block_comment-js">/*
-SkinnyMochaHalfCaffScript Compiler v1.0
+      <textarea class="javascript-output" id="comment-js">/*
+Fortune Cookie Reader v1.0
 Released under the MIT License
 */
+var sayFortune;
 
+sayFortune = function(fortune) {
+  return console.log(fortune); // in bed!
+};
 </textarea>
     </div>
   </div>
   
 </aside>
+<p>Inline <code>###</code> comments make <a href="#type-annotations">type annotations</a> possible.</p>
 
         </section>
         <section id="lexical-scope">
