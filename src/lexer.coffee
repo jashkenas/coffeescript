@@ -114,14 +114,10 @@ exports.Lexer = class Lexer
     if inCSXTag and @prev()[1] isnt ':' and @chunk[0] in ['{', '"', "'"]
       if @chunk[0] in ['"', "'"]
         @error "Unexpected token"
-      csxSpreadMatch = /^({\.\.\.\S+})|({\S+\.\.\.})/.exec @chunk
-      unless csxSpreadMatch
-        if lastBrace = /^({[^}:\.]+)(:|\})/.exec(@chunk)
-          @error "Unexpected token, expected ...", offset: lastBrace[0].length - 1
-        if badSpread = /^({\S+\.\.\.)|({\.\.\.\S+)[^\}]/.exec @chunk
-          # Offset value for left or right spread dots position.
-          offset = if badSpread[0][1] is '.' then badSpread[0].length - 1 else badSpread[0].length
-          @error "Unexpected token, expected }", {offset}
+      unless CSX_SPREAD_LEFT.exec(@chunk) or CSX_SPREAD_RIGHT.exec(@chunk)
+        if badCSXSpread = CSX_FIND_ATTRIBUTE_ERROR.exec @chunk
+          expected = if badCSXSpread[1] is '...' or badCSXSpread[3] is '...' then "}" else "..."
+          @error "Unexpected token, expected #{expected}", offset: badCSXSpread[0].length - 1
 
     regex = if inCSXTag then CSX_ATTRIBUTE else IDENTIFIER
     return 0 unless match = regex.exec @chunk
@@ -1104,6 +1100,29 @@ CSX_ATTRIBUTE = /// ^
   (?!\d)
   ( (?: (?!\s)[\-$\w\x7f-\uffff] )+ ) # Like `IDENTIFIER`, but includes `-`s.
   ( [^\S]* = (?!=) )?  # Is this an attribute with a value?
+///
+
+CSX_SPREAD_RIGHT = /// ^
+  {\s*
+  ( (?: (?!\s)[$\w\x7f-\uffff] )+ ) # `IDENTIFIER`
+  \.{3}
+  \s*}
+///
+
+CSX_SPREAD_LEFT = /// ^
+  {\s*
+  \.{3}
+  ( (?: (?!\s)[$\w\x7f-\uffff] )+ ) # `IDENTIFIER`
+  \s*}
+///
+
+CSX_FIND_ATTRIBUTE_ERROR = /// ^
+  {\s*
+  (?!\d)
+  (\.{3})? # Possible spreads on the left side.
+  ( (?: (?!\s)[$\w\x7f-\uffff] )+ ) # `IDENTIFIER`
+  (\.{3})? # Possible spreads on the right side.
+  ([:=;,\s}]) # Wrong character
 ///
 
 NUMBER     = ///
