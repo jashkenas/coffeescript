@@ -670,6 +670,9 @@ textarea {
       </ul>
     </li>
     <li class="nav-item">
+      <a href="#type-annotations" class="nav-link" data-action="sidebar-nav">Type Annotations</a>
+    </li>
+    <li class="nav-item">
       <a href="#literate" class="nav-link" data-action="sidebar-nav">Literate CoffeeScript</a>
     </li>
     <li class="nav-item">
@@ -815,10 +818,9 @@ cubes = (math.cube num for num in list)
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="overview-js">
+      <textarea class="javascript-output" id="overview-js">// Assignment:
 var cubes, list, math, num, number, opposite, race, square;
 
-// Assignment:
 number = 42;
 
 opposite = true;
@@ -1567,13 +1569,12 @@ eat food for food in foods when food isnt 'chocolate'
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="array_comprehensions-js">
+      <textarea class="javascript-output" id="array_comprehensions-js">// Eat lunch.
 var courses, dish, food, foods, i, j, k, l, len, len1, len2, ref;
 
 ref = ['toast', 'cheese', 'wine'];
 for (j = 0, len = ref.length; j < len; j++) {
   food = ref[j];
-  // Eat lunch.
   eat(food);
 }
 
@@ -1693,10 +1694,9 @@ lyrics = while num -= 1
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="while-js">
+      <textarea class="javascript-output" id="while-js">// Econ 101
 var lyrics, num;
 
-// Econ 101
 if (this.studyingEconomics) {
   while (supply > demand) {
     buy();
@@ -1910,10 +1910,9 @@ globals = (name for name of window)[0...10]
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="expressions_comprehension-js">
+      <textarea class="javascript-output" id="expressions_comprehension-js">// The first ten global properties.
 var globals, name;
 
-// The first ten global properties.
 globals = ((function() {
   var results;
   results = [];
@@ -2639,11 +2638,10 @@ countdown 3
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="async-js">
+      <textarea class="javascript-output" id="async-js">// Your browser must support async/await and speech synthesis
+// to run this example.
 var countdown, say, sleep;
 
-// Your browser must support async/await and speech synthesis
-// to run this example.
 sleep = function(ms) {
   return new Promise(function(resolve) {
     return window.setTimeout(resolve, ms);
@@ -3295,6 +3293,37 @@ renderStarRating = function({rating, maxStars}) {
 
         </section>
       </section>
+      <section id="type-annotations">
+        <h2>Type Annotations</h2>
+<p>Static type checking can be achieved in CoffeeScript by using <a href="https://flow.org/">Flow</a>’s <a href="https://flow.org/en/docs/types/comments/">Comment Types syntax</a>:</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="type_annotations">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="type_annotations-coffee"># @flow
+
+fn = (str ###: string ###, num ###: number ###) ###: string ### ->
+  str + num
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="type_annotations-js">// @flow
+var fn;
+
+fn = function(str/*: string */, num/*: number */)/*: string */ {
+  return str + num;
+};
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+<p>CoffeeScript does not do any type checking itself; the JavaScript output you see above needs to get passed to Flow for it to validate your code. We expect most people will use a <a href="#es2015plus-output">build tool</a> for this, but here’s how to do it the simplest way possible using the <a href="#cli">CoffeeScript</a> and <a href="https://flow.org/en/docs/usage/">Flow</a> command-line tools, assuming you’ve already <a href="https://flow.org/en/docs/install/">installed Flow</a> and the <a href="#installation">latest CoffeeScript</a> in your project folder:</p>
+<blockquote class="uneditable-code-block"><pre><code class="language-bash">coffee --bare --no-header --compile app.coffee &amp;&amp; npm run flow
+</code></pre>
+</blockquote><p><code>--bare</code> and <code>--no-header</code> are important because Flow requires the first line of the file to be the comment <code>// @flow</code>. If you configure your build chain to compile CoffeeScript and pass the result to Flow in-memory, you can get better performance than this example; and a proper build tool should be able to watch your CoffeeScript files and recompile and type-check them for you on save.</p>
+<p>If you know of another way to achieve static type checking with CoffeeScript, please <a href="https://github.com/jashkenas/coffeescript/issues/new">create an issue</a> and let us know.</p>
+
+      </section>
       <section id="literate">
         <h2>Literate CoffeeScript</h2>
 <p>Besides being used as an ordinary programming language, CoffeeScript may also be written in “literate” mode. If you name your file with a <code>.litcoffee</code> extension, you can write it as a Markdown document — a document that also happens to be executable CoffeeScript code. The compiler will treat any indented blocks (Markdown’s way of indicating source code) as executable code, and ignore the rest as comments. Code blocks must also be separated from comments by at least one blank line.</p>
@@ -3773,10 +3802,9 @@ B.prototype.foo = -> A::foo.apply this, arguments
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="breaking_change_super_in_non-class_methods_refactor_with_apply-js">
+      <textarea class="javascript-output" id="breaking_change_super_in_non-class_methods_refactor_with_apply-js">// Helper functions
 var A, B, extend, hasProp;
 
-// Helper functions
 hasProp = {}.hasOwnProperty;
 
 extend = function(child, parent) {
@@ -3873,6 +3901,14 @@ x = <span class="number">2</span> + <span class="number">2</span>
       </section>
       <section id="changelog">
         <h2>Changelog</h2>
+<div class="anchor" id="1.12.7"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.12.6...1.12.7">1.12.7</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-07-16">July 16, 2017</time></span>
+</h2><ul>
+<li>Fix regressions in 1.12.6 related to chained function calls and indented <code>return</code> and <code>throw</code> arguments.</li>
+<li>The REPL no longer warns about assigning to <code>_</code>.</li>
+</ul>
 <div class="anchor" id="2.0.0-beta3"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta2...2.0.0-beta3">2.0.0-beta3</a>
