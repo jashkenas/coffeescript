@@ -751,6 +751,31 @@ test "Comments before postfix", ->
     return;
   }'''
 
+test "Comments before soak", ->
+  eqJS '''
+  # 1
+  2
+
+  # 3
+  return unless window?.location?.hash
+
+  ### 4 ###
+  return if process?.env?.ENV
+  ''', '''
+  // 1
+  2;
+  var ref, ref1;
+
+  // 3
+  if (!(typeof window !== "undefined" && window !== null ? (ref = window.location) != null ? ref.hash : void 0 : void 0)) {
+    return;
+  }
+
+  /* 4 */
+  if (typeof process !== "undefined" && process !== null ? (ref1 = process.env) != null ? ref1.ENV : void 0 : void 0) {
+    return;
+  }'''
+
 test "Comments before splice", ->
   eqJS '''
   if indented

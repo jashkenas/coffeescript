@@ -920,7 +920,8 @@ exports.Value = class Value extends Base
   # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
     @unfoldedSoak ?= do =>
-      if ifn = @base.unfoldSoak o
+      ifn = @base.unfoldSoak o
+      if ifn
         ifn.body.properties.push @properties...
         return ifn
       for prop, i in @properties when prop.soak
@@ -3191,15 +3192,14 @@ exports.Existence = class Existence extends Base
   constructor: (@expression, onlyNotUndefined = no) ->
     super()
     @comparisonTarget = if onlyNotUndefined then 'undefined' else 'null'
-    if @expression.comments
-      salvagedComments = []
-      @expression.eachChild (child) ->
-        if child.comments
-          for comment in child.comments
-            salvagedComments.push comment unless comment in salvagedComments
-          delete child.comments
-      attachCommentsToNode @, salvagedComments
-      delete @expression.comments
+    salvagedComments = []
+    @expression.eachChild (child) ->
+      if child.comments
+        for comment in child.comments
+          salvagedComments.push comment unless comment in salvagedComments
+        delete child.comments
+    attachCommentsToNode @, salvagedComments
+    delete @expression.comments if @expression.comments
 
   children: ['expression']
 

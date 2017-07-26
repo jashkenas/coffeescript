@@ -135,6 +135,7 @@ exports.addDataToNode = (parserState, first, last) ->
     obj
 
 exports.attachCommentsToNode = attachCommentsToNode = (node, comments) ->
+  return unless comments?.length isnt 0
   node.comments = if node.comments
     node.comments.concat comments
   else
