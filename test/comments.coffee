@@ -742,6 +742,19 @@ test "Comments before if this exists", ->
   }
   '''
 
+test "Comment before unary (`not`)", ->
+  eqJS '''
+  1
+  # Comment
+  if not doubleNegative
+    dontDoIt()
+  ''', '''
+  1;
+  // Comment
+  if (!doubleNegative) {
+    dontDoIt();
+  }'''
+
 test "Comments before postfix", ->
   eqJS '''
   # 1
