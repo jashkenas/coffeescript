@@ -826,6 +826,10 @@ exports.Value = class Value extends Base
     @properties     = props or []
     @[tag]          = yes if tag
     @isDefaultValue = isDefaultValue
+    # If this is a `@foo =` assignment, if there are comments on `@` move them
+    # to be on `foo`.
+    if @base?.comments and @base instanceof ThisLiteral and @properties[0]?.name?
+      moveComments @base, @properties[0].name
 
   children: ['base', 'properties']
 
@@ -2006,11 +2010,6 @@ exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options = {}) ->
     super()
     {@param, @subpattern, @operatorToken, @moduleDeclaration} = options
-    # If this is a `@var =` assignment, if there are comments on `@` move them
-    # to be on `var`.
-    if @variable.this and @variable.base?.comments and @variable.properties[0]?.name?
-      attachCommentsToNode @variable.properties[0].name, @variable.base.comments
-      delete @variable.base.comments
 
   children: ['variable', 'value']
 
@@ -2366,8 +2365,7 @@ exports.Assign = class Assign extends Base
     {range: {from, to, exclusive}} = @variable.properties.pop()
     unwrappedVar = @variable.unwrapAll()
     if unwrappedVar.comments
-      attachCommentsToNode @, unwrappedVar.comments
-      delete unwrappedVar.comments
+      moveComments unwrappedVar, @
       delete @variable.comments
     name = @variable.compile o
     if from
@@ -3200,8 +3198,12 @@ exports.Existence = class Existence extends Base
         for comment in child.comments
           salvagedComments.push comment unless comment in salvagedComments
         delete child.comments
-    attachCommentsToNode @, salvagedComments
-    delete @expression.comments if @expression.comments
+      if child.name?.comments
+        for comment in child.name.comments
+          salvagedComments.push comment unless comment in salvagedComments
+        delete child.name.comments
+    attachCommentsToNode salvagedComments, @
+    moveComments @expression, @
 
   children: ['expression']
 
@@ -3294,7 +3296,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
           for comment in salvagedComments
             comment.unshift = yes
             comment.newLine = yes
-          attachCommentsToNode node, salvagedComments
+          attachCommentsToNode salvagedComments, node
         elements.push node
         return no
       else if node.comments
@@ -3303,7 +3305,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
           for comment in node.comments
             comment.unshift = no
             comment.newLine = yes
-          attachCommentsToNode elements[elements.length - 1], node.comments
+          attachCommentsToNode node.comments, elements[elements.length - 1]
         else
           salvagedComments = salvagedComments.concat node.comments
         delete node.comments
@@ -3532,9 +3534,7 @@ exports.If = class If extends Base
     @elseBody  = null
     @isChain   = false
     {@soak}    = options
-    if @condition.comments
-      attachCommentsToNode @, @condition.comments
-      delete @condition.comments
+    moveComments @condition, @ if @condition.comments
 
   children: ['condition', 'body', 'elseBody']
 
@@ -3683,6 +3683,13 @@ hasLineComments = (node) ->
   for comment in node.comments
     return yes if comment.here is no
   return no
+
+# Move the `comments` property from one object to another, deleting it from
+# the first object.
+moveComments = (from, to) ->
+  return unless from.comments
+  attachCommentsToNode from.comments, to
+  delete from.comments
 
 # Sometimes when compiling a node, we want to insert a fragment at the start
 # of an array of fragments; but if the start has one or more comment fragments,

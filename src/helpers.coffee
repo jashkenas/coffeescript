@@ -130,11 +130,11 @@ exports.addDataToNode = (parserState, first, last) ->
     if obj.locationData?
       objHash = "#{obj.locationData.first_line}x#{obj.locationData.first_column}-#{obj.locationData.last_line}x#{obj.locationData.last_column}"
       if parserState.tokenComments[objHash]?
-        attachCommentsToNode obj, parserState.tokenComments[objHash]
+        attachCommentsToNode parserState.tokenComments[objHash], obj
 
     obj
 
-exports.attachCommentsToNode = attachCommentsToNode = (node, comments) ->
+exports.attachCommentsToNode = attachCommentsToNode = (comments, node) ->
   return unless comments?.length isnt 0
   node.comments = if node.comments
     node.comments.concat comments

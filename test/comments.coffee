@@ -728,6 +728,20 @@ test "Line comments before `throw`", ->
     throw DivideByZeroError();
   }'''
 
+test "Comments before if this exists", ->
+  eqJS '''
+  1
+  # Comment
+  if @huh?
+    2
+  ''', '''
+  1;
+  // Comment
+  if (this.huh != null) {
+    2;
+  }
+  '''
+
 test "Comments before postfix", ->
   eqJS '''
   # 1

@@ -352,7 +352,7 @@ exports.Lexer = class Lexer
       @tokens.push placeholderToken
       @newlineToken 0
     else
-      attachCommentsToNode prev, commentAttachments
+      attachCommentsToNode commentAttachments, prev
 
     comment.length
 
@@ -528,7 +528,7 @@ exports.Lexer = class Lexer
     if prev[1] is '\\'
       if prev.comments
         # By definition, there must be a token before a `\` token.
-        attachCommentsToNode @tokens[@tokens.length - 2], prev.comments
+        attachCommentsToNode prev.comments, @tokens[@tokens.length - 2]
       @tokens.pop()
     this
 
