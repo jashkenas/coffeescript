@@ -819,6 +819,24 @@ test "Comments before static method", ->
 
   };'''
 
+test "Comment before method that calls `super()`", ->
+  eqJS '''
+  class Dismissed
+    # Before a method calling `super`
+    method: ->
+      super()
+  ''', '''
+  var Dismissed;
+
+  Dismissed = class Dismissed {
+    // Before a method calling `super`
+    method() {
+      return super.method();
+    }
+
+  };
+  '''
+
 test "Line comment after line continuation", ->
   eqJS '''
   1 + \\ # comment

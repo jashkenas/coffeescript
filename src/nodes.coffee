@@ -1123,25 +1123,37 @@ exports.SuperCall = class SuperCall extends Call
     replacement.compileToFragments o, if o.level is LEVEL_TOP then o.level else LEVEL_LIST
 
 exports.Super = class Super extends Base
-  children: ['accessor']
-
   constructor: (@accessor) ->
     super()
+
+  children: ['accessor']
 
   compileNode: (o) ->
     method = o.scope.namedMethod()
     @error 'cannot use super outside of an instance method' unless method?.isMethod
 
-    @inCtor = !!method.ctor
-
-    unless @inCtor or @accessor?
+    unless method.ctor? or @accessor?
       {name, variable} = method
       if name.shouldCache() or (name instanceof Index and name.index.isAssignable())
         nref = new IdentifierLiteral o.scope.parent.freeVariable 'name'
         name.index = new Assign nref, name.index
       @accessor = if nref? then new Index nref else name
 
-    (new Value (new Literal 'super'), if @accessor then [ @accessor ] else []).compileToFragments o
+    if @accessor?.name?.comments
+      # A `super()` call gets compiled to e.g. `super.method()`, which means
+      # the `method` property name gets compiled for the first time here, and
+      # again when the `method:` property of the class gets compiled. Since
+      # this compilation happens first, comments attached to `method:` would
+      # get incorrectly output near `super.method()`, when we want them to
+      # get output on the second pass when `method:` is output. So set them
+      # aside during this compilation pass, and put them back on the object so
+      # that they’re there for the later compilation.
+      salvagedComments = @accessor.name.comments
+      delete @accessor.name.comments
+    fragments = (new Value (new Literal 'super'), if @accessor then [ @accessor ] else [])
+    .compileToFragments o
+    attachCommentsToNode salvagedComments, @accessor.name if salvagedComments
+    fragments
 
 #### RegexWithInterpolations
 
