@@ -476,7 +476,7 @@ class declaration or if-conditionals)</p>
       <span class="hljs-title">startImplicitCall</span> = <span class="hljs-params">(j)</span> -&gt;</span>
         idx = j ? i
         stack.push [<span class="hljs-string">'('</span>, idx, ours: <span class="hljs-literal">yes</span>]
-        tokens.splice idx, <span class="hljs-number">0</span>, generate <span class="hljs-string">'CALL_START'</span>, <span class="hljs-string">'('</span>
+        tokens.splice idx, <span class="hljs-number">0</span>, generate <span class="hljs-string">'CALL_START'</span>, <span class="hljs-string">'('</span>, [<span class="hljs-string">''</span>, <span class="hljs-string">'implicit function call'</span>, token[<span class="hljs-number">2</span>]]
         i += <span class="hljs-number">1</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> j?
 <span class="hljs-function">
       <span class="hljs-title">endImplicitCall</span> = -&gt;</span>
@@ -752,8 +752,9 @@ like e.g.:</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">in</span> LINEBREAKS
-        <span class="hljs-keyword">for</span> stackItem <span class="hljs-keyword">in</span> stack <span class="hljs-keyword">by</span> <span class="hljs-number">-1</span> <span class="hljs-keyword">when</span> isImplicitObject stackItem
-          stackItem[<span class="hljs-number">2</span>].sameLine = <span class="hljs-literal">no</span>
+        <span class="hljs-keyword">for</span> stackItem <span class="hljs-keyword">in</span> stack <span class="hljs-keyword">by</span> <span class="hljs-number">-1</span>
+          <span class="hljs-keyword">break</span> <span class="hljs-keyword">unless</span> isImplicit stackItem
+          stackItem[<span class="hljs-number">2</span>].sameLine = <span class="hljs-literal">no</span> <span class="hljs-keyword">if</span> isImplicitObject stackItem
 
       newLine = prevTag <span class="hljs-keyword">is</span> <span class="hljs-string">'OUTDENT'</span> <span class="hljs-keyword">or</span> prevToken.newLine
       <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">in</span> IMPLICIT_END <span class="hljs-keyword">or</span> tag <span class="hljs-keyword">in</span> CALL_CLOSERS <span class="hljs-keyword">and</span> newLine

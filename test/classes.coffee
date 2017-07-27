@@ -1808,3 +1808,28 @@ test 'Bound method of immediately instantiated class with expression base class 
 
   {derivedBound} = a
   eq derivedBound(), 3
+
+test "#4591: super.x.y, super['x'].y", ->
+  class A
+    x:
+      y: 1
+      z: -> 2
+
+  class B extends A
+    constructor: ->
+      super()
+
+      @w = super.x.y
+      @v = super['x'].y
+      @u = super.x['y']
+      @t = super.x.z()
+      @s = super['x'].z()
+      @r = super.x['z']()
+
+  b = new B
+  eq 1, b.w
+  eq 1, b.v
+  eq 1, b.u
+  eq 2, b.t
+  eq 2, b.s
+  eq 2, b.r
