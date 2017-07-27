@@ -485,7 +485,7 @@ grammar =
 
   # A reference to a property on *this*.
   ThisProperty: [
-    o '@ Property',                             -> new Value LOC(1)(new ThisLiteral), [LOC(2)(new Access($2))], 'this'
+    o '@ Property',                             -> new Value LOC(1)(new ThisLiteral $1), [LOC(2)(new Access($2))], 'this'
   ]
 
   # The array literal.

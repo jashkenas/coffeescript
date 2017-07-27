@@ -821,14 +821,11 @@ exports.AwaitReturn = class AwaitReturn extends Return
 exports.Value = class Value extends Base
   constructor: (base, props, tag, isDefaultValue = no) ->
     super()
-
     return base if not props and base instanceof Value
-
     @base           = base
     @properties     = props or []
     @[tag]          = yes if tag
     @isDefaultValue = isDefaultValue
-    return this
 
   children: ['base', 'properties']
 
@@ -839,7 +836,7 @@ exports.Value = class Value extends Base
     this
 
   hasProperties: ->
-    !!@properties.length
+    @properties.length isnt 0
 
   bareLiteral: (type) ->
     not @properties.length and @base instanceof type
@@ -2009,6 +2006,11 @@ exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options = {}) ->
     super()
     {@param, @subpattern, @operatorToken, @moduleDeclaration} = options
+    # If this is a `@var =` assignment, if there are comments on `@` move them
+    # to be on `var`.
+    if @variable.this and @variable.base?.comments and @variable.properties[0]?.name?
+      attachCommentsToNode @variable.properties[0].name, @variable.base.comments
+      delete @variable.base.comments
 
   children: ['variable', 'value']
 

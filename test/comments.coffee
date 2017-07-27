@@ -791,6 +791,20 @@ test "Comments before splice", ->
   }
   '''
 
+test "Comments before static method", ->
+  eqJS '''
+  class Child extends Base
+    # Static method:
+    @method = ->
+  ''', '''
+  var Child;
+
+  Child = class Child extends Base {
+    // Static method:
+    static method() {}
+
+  };'''
+
 test "Line comment after line continuation", ->
   eqJS '''
   1 + \\ # comment
