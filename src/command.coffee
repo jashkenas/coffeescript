@@ -462,6 +462,9 @@ forkNode = ->
     cwd:        process.cwd()
     env:        process.env
     stdio:      [0, 1, 2]
+  ['SIGINT', 'SIGTERM'].forEach (signal) ->
+    process.on signal, ->
+      p.kill signal
   p.on 'exit', (code) -> process.exit code
 
 # Print the `--help` usage message and exit. Deprecated switches are not
