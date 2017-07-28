@@ -880,7 +880,16 @@ exports.Call = class Call extends Base
     content?.base.csx = yes
     fragments = [@makeCode('<')]
     fragments.push (tag = @variable.compileToFragments(o, LEVEL_ACCESS))...
-    fragments.push attributes.compileToFragments(o, LEVEL_PAREN)...
+    if attributes.base instanceof Arr
+      for obj in attributes.base.objects
+        attr = obj.base
+        attrProps = attr?.properties or []
+        # Catch invalid CSX attributes: <div {a:"b", props} {props} "value" />
+        if not (attr instanceof Obj or attr instanceof IdentifierLiteral) or (attr instanceof Obj and not attr.generated and (attrProps > 1 or not (attrProps[0] instanceof Splat)))
+          obj.error 'Unexpected token. Allowed CSX attributes are: id="val", src={source} or {props...}'
+        obj.base.csx = yes if obj.base instanceof Obj
+        fragments.push @makeCode ' '
+        fragments.push obj.compileToFragments(o, LEVEL_PAREN)...
     if content
       fragments.push @makeCode('>')
       fragments.push content.compileNode(o, LEVEL_LIST)...
@@ -1176,6 +1185,9 @@ exports.Obj = class Obj extends Base
     idt        = o.indent += TAB
     lastNoncom = @lastNonComment @properties
 
+    # CSX attributes <div id="val" attr={aaa} {props...} />
+    return @compileCSXAttributes o if @csx
+
     # If this object is the left-hand side of an assignment, all its children
     # are too.
     if @lhs
@@ -1189,20 +1201,17 @@ exports.Obj = class Obj extends Base
 
     isCompact = yes
     for prop in @properties
-      if prop instanceof Comment or (prop instanceof Assign and prop.context is 'object' and not @csx)
+      if prop instanceof Comment or (prop instanceof Assign and prop.context is 'object')
         isCompact = no
 
     answer = []
     answer.push @makeCode if isCompact then '' else '\n'
     for prop, i in props
-      propHasSplat = prop instanceof Splat
       join = if i is props.length - 1
         ''
-      else if isCompact and @csx
-        ' '
       else if isCompact
         ', '
-      else if prop is lastNoncom or prop instanceof Comment or @csx
+      else if prop is lastNoncom or prop instanceof Comment
         '\n'
       else
         ',\n'
@@ -1220,37 +1229,17 @@ exports.Obj = class Obj extends Base
         key  = key.properties[0].name
         prop = new Assign key, prop, 'object'
       if key is prop
-        unless propHasSplat
-          if prop.shouldCache()
-            [key, value] = prop.base.cache o
-            key  = new PropertyName key.value if key instanceof IdentifierLiteral
-            prop = new Assign key, value, 'object'
-          else unless prop.bareLiteral?(IdentifierLiteral)
-            prop = new Assign prop, prop, 'object'
-        else
-          # Spread in CSX.
-          prop = if @csx then new Literal "{#{prop.compile(o)}}" else prop
-      # Check if CSX attribute is valid.
-      # CSX atributes are processed in the `lexer` and converted from
-      # `<div id={value} name="tag" {props...} title="#{foo()}" src={{a:1, b:2}} />` into
-      # `{ id:(abc), name:"tags", ...props, title:("" + (foo())), src:{a:1, b:2} }`
-      if @csx and prop instanceof Assign
-        # The `prop.variable` must be the instance of `PropertyName` (i.e. `PROPERTY`).
-        prop.variable.error "Unexpected token" unless prop.variable.unwrap() instanceof PropertyName
-        propVal = prop.value.unwrap()
-        # The `prop.value` instance can be:
-        # - `StringLiteral`, e.g. id:"abc"
-        # - `Parens` or `StringWithInterpolations`, e.g. id:{abc} or id:"#{abc}" or id:(abc)
-        unless propVal instanceof StringLiteral or
-            ((propVal instanceof Parens or propVal instanceof StringWithInterpolations) and propVal.body instanceof Block)
-          prop.value.error "expected wrapped or quoted CSX attribute"
+        if prop.shouldCache()
+          [key, value] = prop.base.cache o
+          key  = new PropertyName key.value if key instanceof IdentifierLiteral
+          prop = new Assign key, value, 'object'
+        else if not prop.bareLiteral?(IdentifierLiteral)
+          prop = new Assign prop, prop, 'object'
       if indent then answer.push @makeCode indent
-      prop.csx = yes if @csx
-      answer.push @makeCode ' ' if @csx and i is 0
       answer.push prop.compileToFragments(o, LEVEL_TOP)...
       if join then answer.push @makeCode join
     answer.push @makeCode if isCompact then '' else "\n#{@tab}"
-    answer = @wrapInBraces answer if not @csx
+    answer = @wrapInBraces answer
     if @front then @wrapInParentheses answer else answer
 
   assigns: (name) ->
@@ -1285,7 +1274,18 @@ exports.Obj = class Obj extends Base
     addSlice()
     slices.unshift new Obj unless slices[0] instanceof Obj
     (new Call new Literal('Object.assign'), slices).compileToFragments o
-
+  
+  compileCSXAttributes: (o) ->
+    props = @properties
+    answer = []
+    for prop, i in props
+      prop.csx = yes
+      join = if i is props.length - 1 then '' else ' '
+      prop = new Literal "{#{prop.compile(o)}}" if prop instanceof Splat
+      answer.push prop.compileToFragments(o, LEVEL_TOP)...
+      answer.push @makeCode join
+    if @front then @wrapInParentheses answer else answer
+    
 #### Arr
 
 # An array literal.

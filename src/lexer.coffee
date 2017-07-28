@@ -49,7 +49,7 @@ exports.Lexer = class Lexer
     @importSpecifierList = no    # Used to identify when in an IMPORT {...} FROM? ...
     @exportSpecifierList = no    # Used to identify when in an EXPORT {...} FROM? ...
     @csxDepth = 0                # Used to optimize CSX checks, how deep in CSX we are.
-    @csxSpreadProps = no         # Used to detect if CSX attributes include spreads (<div {props...} />).
+    @csxObjAttribute = no        # Used to detect if CSX attributes is wrapped in {} (<div {props...} />).
 
     @chunkLine =
       opts.line or 0             # The start line for the current @chunk.
@@ -80,7 +80,7 @@ exports.Lexer = class Lexer
       i += consumed
 
       return {@tokens, index: i} if opts.untilBalanced and @ends.length is 0
-
+      
     @closeIndentation()
     @error "missing #{end.tag}", (end.origin ? end)[2] if end = @ends.pop()
     return @tokens if opts.rewrite is off
@@ -109,16 +109,6 @@ exports.Lexer = class Lexer
   # though `is` means `===` otherwise.
   identifierToken: ->
     inCSXTag = @atCSXTag()
-    # Check CSX properties syntax.
-    # Allowed properties: `<div id="someID" name={nameValue} {props...} />
-    if inCSXTag and @prev()[1] isnt ':' and @chunk[0] in ['{', '"', "'"]
-      if @chunk[0] in ['"', "'"]
-        @error "Unexpected token"
-      unless CSX_SPREAD_LEFT.exec(@chunk) or CSX_SPREAD_RIGHT.exec(@chunk)
-        if badCSXSpread = CSX_FIND_ATTRIBUTE_ERROR.exec @chunk
-          expected = if badCSXSpread[1] is '...' or badCSXSpread[3] is '...' then "}" else "..."
-          @error "Unexpected token, expected #{expected}", offset: badCSXSpread[0].length - 1
-
     regex = if inCSXTag then CSX_ATTRIBUTE else IDENTIFIER
     return 0 unless match = regex.exec @chunk
     [input, id, colon] = match
@@ -513,30 +503,30 @@ exports.Lexer = class Lexer
       [input, id, colon] = match
       origin = @token 'CSX_TAG', id, 1, id.length
       @token 'CALL_START', '('
-      @token '{', '{'
+      csxStart = @token '[', '['
       @ends.push tag: '/>', origin: origin, name: id
       @csxDepth++
       return id.length + 1
     else if csxTag = @atCSXTag()
       if @chunk[...2] is '/>'
         @pair '/>'
-        @token '}', '}', 0, 2
+        @token ']', ']', 0, 2
         @token 'CALL_END', ')', 0, 2
         @csxDepth--
         return 2
       else if firstChar is '{'
         if prevChar is ':'
           token = @token '(', '('
-          @ends.push {tag: '}', origin: token}
-          @csxSpreadProps = no
+          @csxObjAttribute = no
         else
-          @ends.push {tag: '}'}
-          @csxSpreadProps = yes
+          token = @token '{', '{'
+          @csxObjAttribute = yes
+        @ends.push {tag: '}', origin: token}
         return 1
       else if firstChar is '>'
         # Ignore terminators inside a tag.
         @pair '/>' # As if the current tag was self-closing.
-        origin = @token '}', '}'
+        origin = @token ']', ']'
         @token ',', ','
         {tokens, index: end} =
           @matchWithInterpolations INSIDE_CSX, '>', '</', CSX_INTERPOLATION
@@ -558,7 +548,10 @@ exports.Lexer = class Lexer
     else if @atCSXTag 1
       if firstChar is '}'
         @pair firstChar
-        @token ')', ')' unless @csxSpreadProps
+        if @csxObjAttribute
+          @token '}', '}'
+        else
+          @token ')', ')'
         @token ',', ','
         return 1
       else
@@ -1100,29 +1093,6 @@ CSX_ATTRIBUTE = /// ^
   (?!\d)
   ( (?: (?!\s)[\-$\w\x7f-\uffff] )+ ) # Like `IDENTIFIER`, but includes `-`s.
   ( [^\S]* = (?!=) )?  # Is this an attribute with a value?
-///
-
-CSX_SPREAD_RIGHT = /// ^
-  {\s*
-  ( (?: (?!\s)[$\w\x7f-\uffff] )+ ) # `IDENTIFIER`
-  \.{3}
-  \s*}
-///
-
-CSX_SPREAD_LEFT = /// ^
-  {\s*
-  \.{3}
-  ( (?: (?!\s)[$\w\x7f-\uffff] )+ ) # `IDENTIFIER`
-  \s*}
-///
-
-CSX_FIND_ATTRIBUTE_ERROR = /// ^
-  {\s*
-  (?!\d)
-  (\.{3})? # Possible spreads on the left side.
-  ( (?: (?!\s)[$\w\x7f-\uffff] )+ ) # `IDENTIFIER`
-  (\.{3})? # Possible spreads on the right side.
-  ([:=;,\s}]) # Wrong character
 ///
 
 NUMBER     = ///
