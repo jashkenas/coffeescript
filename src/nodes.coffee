@@ -3368,12 +3368,11 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
 exports.For = class For extends While
   constructor: (body, source) ->
     super()
-
     {@source, @guard, @step, @name, @index} = source
     @body    = Block.wrap [body]
-    @own     = !!source.own
-    @object  = !!source.object
-    @from    = !!source.from
+    @own     = source.own?
+    @object  = source.object?
+    @from    = source.from?
     @index.error 'cannot use index with for-from' if @from and @index
     source.ownTag.error "cannot use own with for-#{if @from then 'from' else 'in'}" if @own and not @object
     [@name, @index] = [@index, @name] if @object
@@ -3382,7 +3381,9 @@ exports.For = class For extends While
     @pattern = @name instanceof Value
     @index.error 'indexes do not apply to range loops' if @range and @index
     @name.error 'cannot pattern match over range loops' if @range and @pattern
-    @returns = false
+    @returns = no
+    moveComments @name, @
+    moveComments @index, @
 
   children: ['body', 'source', 'guard', 'step']
 
@@ -3699,7 +3700,7 @@ hasLineComments = (node) ->
 # Move the `comments` property from one object to another, deleting it from
 # the first object.
 moveComments = (from, to) ->
-  return unless from.comments
+  return unless from?.comments
   attachCommentsToNode from.comments, to
   delete from.comments
 

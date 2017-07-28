@@ -778,6 +778,44 @@ test "Comments before postfix", ->
     return;
   }'''
 
+test "Comments before assignment if", ->
+  eqJS '''
+  1
+  # Line comment
+  a = if b
+    3
+  else
+    4
+
+  ### Block comment ###
+  c = if d
+    5
+  ''', '''
+  1;
+  var a, c;
+
+  // Line comment
+  a = b ? 3 : 4;
+
+  /* Block comment */
+  c = d ? 5 : void 0;'''
+
+test "Comments before for loop", ->
+  eqJS '''
+  1
+  # Comment
+  for drop in ocean
+    drink drop
+  ''', '''
+  1;
+  var drop, i, len;
+
+  // Comment
+  for (i = 0, len = ocean.length; i < len; i++) {
+    drop = ocean[i];
+    drink(drop);
+  }'''
+
 test "Comments before soak", ->
   eqJS '''
   # 1
