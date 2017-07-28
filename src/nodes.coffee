@@ -884,9 +884,13 @@ exports.Call = class Call extends Base
       for obj in attributes.base.objects
         attr = obj.base
         attrProps = attr?.properties or []
+        console.log attr, attrProps
         # Catch invalid CSX attributes: <div {a:"b", props} {props} "value" />
-        if not (attr instanceof Obj or attr instanceof IdentifierLiteral) or (attr instanceof Obj and not attr.generated and (attrProps > 1 or not (attrProps[0] instanceof Splat)))
-          obj.error 'Unexpected token. Allowed CSX attributes are: id="val", src={source} or {props...}'
+        if not (attr instanceof Obj or attr instanceof IdentifierLiteral) or (attr instanceof Obj and not attr.generated and (attrProps.length > 1 or not (attrProps[0] instanceof Splat)))
+          obj.error """
+            Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+            Example: <div id="val" src={getTheSource()} {props...} checked>hellow world</div>.
+          """  
         obj.base.csx = yes if obj.base instanceof Obj
         fragments.push @makeCode ' '
         fragments.push obj.compileToFragments(o, LEVEL_PAREN)...
