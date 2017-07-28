@@ -370,7 +370,10 @@ test 'heregex', ->
 
     <Person />;
 
-    REGEX = /^(\\/(?![s=])[^[\\/ ]*(?:<Tag\\/>(?:\\[sS]|[[^] ]*(?:\\[sS][^] ]*)*<Tag>tag<\\/Tag>])[^[\\/ ]*)*\\/)([imgy]{0,4})(?!w)/;
+    REGEX = /^(\\/(?![s=])[^[\\/ ]*(?:<Tag\\/>(?:\\[sS]|[[^] ]*(?:\\[sS][^] ]*)*<Tag>tag<\\/Tag>])[^[\\/ ]*)*\\/)([imgy]{0,4})(?!w)/; // comment comment <comment>comment</comment>
+    // comment comment
+    // comment comment
+    // comment comment
 
     <Person />;
   '''

@@ -304,8 +304,8 @@ exports.Lexer = class Lexer
   # Matches and consumes comments. The comments are taken out of the token
   # stream and saved for later, to be reinserted into the output after
   # everything has been parsed and the JavaScript code generated.
-  commentToken: ->
-    return 0 unless match = @chunk.match COMMENT
+  commentToken: (chunk = @chunk) ->
+    return 0 unless match = chunk.match COMMENT
     [comment, here] = match
     contents = null
     # Does this comment follow code on the same line?
@@ -317,7 +317,7 @@ exports.Lexer = class Lexer
           offset: matchIllegal.index, length: matchIllegal[0].length
 
       # Parse indentation or outdentation as if this block comment didn’t exist.
-      chunk = @chunk.replace "####{here}###", ''
+      chunk = chunk.replace "####{here}###", ''
       # Remove leading newlines, like `Rewriter::removeLeadingNewlines`, to
       # avoid the creation of unwanted `TERMINATOR` tokens.
       chunk = chunk.replace /^\n+/, ''
@@ -379,6 +379,8 @@ exports.Lexer = class Lexer
           offset: match.index + match[1].length
       when match = @matchWithInterpolations HEREGEX, '///'
         {tokens, index} = match
+        comments = @chunk[0...index].match /\s+(#(?!{).*)/g
+        @commentToken comment for comment in comments if comments
       when match = REGEX.exec @chunk
         [regex, body, closed] = match
         @validateEscapes body, isRegex: yes, offsetInChunk: 1
