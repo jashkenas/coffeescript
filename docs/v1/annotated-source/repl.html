@@ -256,7 +256,7 @@ Unwrap that too.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>      ast = <span class="hljs-keyword">new</span> Block [
-        <span class="hljs-keyword">new</span> Assign (<span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> Literal <span class="hljs-string">'_'</span>), ast, <span class="hljs-string">'='</span>
+        <span class="hljs-keyword">new</span> Assign (<span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> Literal <span class="hljs-string">'__'</span>), ast, <span class="hljs-string">'='</span>
       ]
       js = ast.compile {bare: <span class="hljs-literal">yes</span>, locals: Object.keys(context), referencedVars}
       cb <span class="hljs-literal">null</span>, runInContext js, context, filename

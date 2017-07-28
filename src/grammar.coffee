@@ -217,7 +217,9 @@ grammar =
   # Object literal spread properties.
   ObjRestValue: [
     o 'SimpleObjAssignable ...', -> new Splat new Value $1
+    o '... SimpleObjAssignable', -> new Splat new Value $2
     o 'ObjSpreadExpr ...',       -> new Splat $1
+    o '... ObjSpreadExpr',       -> new Splat $2
   ]
 
   ObjSpreadExpr: [
@@ -232,13 +234,19 @@ grammar =
   ]
 
   ObjSpreadIdentifier: [
-    o 'SimpleObjAssignable . Property',                             -> (new Value $1).add(new Access $3)
-    o 'SimpleObjAssignable INDEX_START IndexValue INDEX_END',       -> (new Value $1).add($3)
+    o 'SimpleObjAssignable ObjSpreadAccessor', -> (new Value $1).add $2
+    o 'ObjSpreadExpr ObjSpreadAccessor',       -> (new Value $1).add $2
+  ]
+
+  ObjSpreadAccessor: [
+    o '. Property',                             -> new Access $2
+    o 'INDEX_START IndexValue INDEX_END',       -> $2
   ]
 
   # A return statement from a function body.
   Return: [
     o 'RETURN Expression',                      -> new Return $2
+    o 'RETURN INDENT Object OUTDENT',           -> new Return new Value $3
     o 'RETURN',                                 -> new Return
   ]
 
@@ -291,6 +299,7 @@ grammar =
   Param: [
     o 'ParamVar',                               -> new Param $1
     o 'ParamVar ...',                           -> new Param $1, null, on
+    o '... ParamVar',                           -> new Param $2, null, on
     o 'ParamVar = Expression',                  -> new Param $1, $3
     o '...',                                    -> new Expansion
   ]
@@ -306,6 +315,7 @@ grammar =
   # A splat that occurs outside of a parameter list.
   Splat: [
     o 'Expression ...',                         -> new Splat $1
+    o '... Expression',                         -> new Splat $2
   ]
 
   # Variables and properties that can be assigned to.
@@ -553,6 +563,7 @@ grammar =
   # Throw an exception object.
   Throw: [
     o 'THROW Expression',                       -> new Throw $2
+    o 'THROW INDENT Object OUTDENT',            -> new Throw new Value $3
   ]
 
   # Parenthetical expressions. Note that the **Parenthetical** is a **Value**,
