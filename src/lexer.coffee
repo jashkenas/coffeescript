@@ -80,7 +80,7 @@ exports.Lexer = class Lexer
       i += consumed
 
       return {@tokens, index: i} if opts.untilBalanced and @ends.length is 0
-      
+
     @closeIndentation()
     @error "missing #{end.tag}", (end.origin ? end)[2] if end = @ends.pop()
     return @tokens if opts.rewrite is off
