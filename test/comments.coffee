@@ -823,6 +823,18 @@ test "Comments before splice", ->
   '''
   ok js.includes '// Comment'
 
+test "Comments before object destructuring", ->
+  js = CoffeeScript.compile '''
+  1
+  # Comment before splat token
+  { x... } = { a: 1, b: 2 }
+
+  # Comment before destructured token
+  { x, y, z... } = { x: 1, y: 2, a: 3, b: 4 }
+  '''
+  ok js.includes 'Comment before splat token'
+  ok js.includes 'Comment before destructured token'
+
 test "Comments before static method", ->
   eqJS '''
   class Child extends Base

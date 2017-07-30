@@ -60,6 +60,31 @@ exports.Base = class Base
   compile: (o, lvl) ->
     fragmentsToText @compileToFragments o, lvl
 
+  # Occasionally a node is compiled multiple times, for example to get the name
+  # of a variable to add to scope tracking. When we know that a “premature”
+  # compilation won’t result in comments being output, set those comments aside
+  # so that they’re preserved for a later `compile` call that will result in
+  # the comments being included in the output.
+  compileWithoutComments: (o, lvl) ->
+    if @comments
+      @ignoreTheseCommentsTemporarily = @comments
+      delete @comments
+    unwrapped = @unwrapAll()
+    if unwrapped.comments
+      unwrapped.ignoreTheseCommentsTemporarily = unwrapped.comments
+      delete unwrapped.comments
+
+    fragments = @compile o, lvl
+
+    if @ignoreTheseCommentsTemporarily
+      @comments = @ignoreTheseCommentsTemporarily
+      delete @ignoreTheseCommentsTemporarily
+    if unwrapped.ignoreTheseCommentsTemporarily
+      unwrapped.comments = unwrapped.ignoreTheseCommentsTemporarily
+      delete unwrapped.ignoreTheseCommentsTemporarily
+
+    fragments
+
   # Common logic for determining whether to wrap this node in a closure before
   # compiling it, or to compile directly. We need to wrap if this node is a
   # *statement*, and it's not a *pureStatement*, and we're not at
@@ -2126,11 +2151,11 @@ exports.Assign = class Assign extends Base
       return if prop instanceof Assign and prop.value.base instanceof Obj
       if prop instanceof Assign
         if prop.value.base instanceof IdentifierLiteral
-          newVar = prop.value.base.compile o
+          newVar = prop.value.base.compileWithoutComments o
         else
-          newVar = prop.variable.base.compile o
+          newVar = prop.variable.base.compileWithoutComments o
       else
-        newVar = prop.compile o
+        newVar = prop.compileWithoutComments o
       o.scope.add(newVar, 'var', true) if newVar
 
     # Returns a safe (cached) reference to the key for a given property
@@ -2146,11 +2171,11 @@ exports.Assign = class Assign extends Base
     # (e.g. `'a': b -> 'a'`, `"#{a}": b` -> <cached>`)
     getPropName = (prop) ->
       key = getPropKey prop
-      cached = prop instanceof Assign and prop.variable != key
+      cached = prop instanceof Assign and prop.variable isnt key
       if cached or not key.isAssignable()
         key
       else
-        new Literal "'#{key.compile o}'"
+        new Literal "'#{key.compileWithoutComments o}'"
 
     # Recursive function for searching and storing rest elements in objects.
     # e.g. `{[properties...]} = source`.
