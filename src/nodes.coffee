@@ -3408,8 +3408,19 @@ exports.For = class For extends While
     @index.error 'indexes do not apply to range loops' if @range and @index
     @name.error 'cannot pattern match over range loops' if @range and @pattern
     @returns = no
-    moveComments @name, @
-    moveComments @index, @
+    # Move up any comments in the “`for` line”, i.e. the line of code with `for`,
+    # from any child nodes of that line up to the `for` node itself so that these
+    # comments get output, and get output above the `for` loop.
+    for attribute in ['source', 'guard', 'step', 'name', 'index'] when @[attribute]
+      @[attribute].traverseChildren yes, (node) =>
+        if node.comments
+          # These comments are buried pretty deeply, so if they happen to be
+          # trailing comments the line they trail will be unrecognizable when
+          # we’re done compiling this `for` loop; so just shift them up to
+          # output above the `for` line.
+          comment.newLine = comment.unshift = yes for comment in node.comments
+          moveComments node, @[attribute]
+      moveComments @[attribute], @
 
   children: ['body', 'source', 'guard', 'step']
 

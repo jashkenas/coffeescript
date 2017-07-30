@@ -801,6 +801,19 @@ test "Comments before for loop", ->
   '''
   ok js.includes '// Comment'
 
+test "Comments after for loop", ->
+  js = CoffeeScript.compile '''
+  for drop in ocean # Comment after source variable
+    drink drop
+  for i in [1, 2] # Comment after array literal element
+    count i
+  for key, val of {a: 1} # Comment after object literal
+    turn key
+  '''
+  ok js.includes '// Comment after source variable'
+  ok js.includes '// Comment after array literal element'
+  ok js.includes '// Comment after object literal'
+
 test "Comments before soak", ->
   js = CoffeeScript.compile '''
   # 1
