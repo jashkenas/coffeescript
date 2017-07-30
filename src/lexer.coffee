@@ -136,11 +136,12 @@ exports.Lexer = class Lexer
     if id is 'default' and @seenExport and @tag() in ['EXPORT', 'AS']
       @token 'DEFAULT', id
       return id.length
-    if id is 'do' and /^super(?:\s+?)?(?!\(\))/.exec @chunk[3...]
+    if id is 'do' and regExSuper = /^(\s*super)(?!\(\))/.exec @chunk[3...]
       @token 'SUPER', 'super'
       @token 'CALL_START', '('      
       @token 'CALL_END', ')'
-      return 8
+      [input, sup] = regExSuper
+      return sup.length + 3
 
     prev = @prev()
 
