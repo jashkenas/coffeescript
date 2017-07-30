@@ -219,16 +219,16 @@ test "#3132: Format single-line block comment nicely", ->
   /* Single-line block comment without additional space here => */
   """
 
-test "#3132: Format multi-line block comment nicely", ->
+test "#3132: Format multiline block comment nicely", ->
   eqJS """
   ###
-  # Multi-line
+  # Multiline
   # block
   # comment
   ###""",
   """
   /*
-   * Multi-line
+   * Multiline
    * block
    * comment
    */
@@ -847,6 +847,14 @@ test "Comments before object destructuring", ->
   '''
   ok js.includes 'Comment before splat token'
   ok js.includes 'Comment before destructured token'
+
+test "Comment before splat function parameter", ->
+  js = CoffeeScript.compile '''
+  1
+  # Comment
+  (blah..., yadda) ->
+  '''
+  ok js.includes 'Comment'
 
 test "Comments before static method", ->
   eqJS '''

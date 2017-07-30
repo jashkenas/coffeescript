@@ -65,7 +65,7 @@ exports.Base = class Base
   # compilation won’t result in comments being output, set those comments aside
   # so that they’re preserved for a later `compile` call that will result in
   # the comments being included in the output.
-  compileWithoutComments: (o, lvl) ->
+  compileWithoutComments: (o, lvl, method = 'compile') ->
     if @comments
       @ignoreTheseCommentsTemporarily = @comments
       delete @comments
@@ -74,7 +74,7 @@ exports.Base = class Base
       unwrapped.ignoreTheseCommentsTemporarily = unwrapped.comments
       delete unwrapped.comments
 
-    fragments = @compile o, lvl
+    fragments = @[method] o, lvl
 
     if @ignoreTheseCommentsTemporarily
       @comments = @ignoreTheseCommentsTemporarily
@@ -84,6 +84,9 @@ exports.Base = class Base
       delete unwrapped.ignoreTheseCommentsTemporarily
 
     fragments
+
+  compileNodeWithoutComments: (o, lvl) ->
+    @compileWithoutComments o, lvl, 'compileNode'
 
   # Common logic for determining whether to wrap this node in a closure before
   # compiling it, or to compile directly. We need to wrap if this node is a
@@ -2531,7 +2534,7 @@ exports.Code = class Code extends Base
             exprs.push new Assign new Value(param.name), ref
           else
             params.push ref = param.asReference o
-            splatParamName = fragmentsToText ref.compileNode o
+            splatParamName = fragmentsToText ref.compileNodeWithoutComments o
           if param.shouldCache()
             exprs.push new Assign new Value(param.name), ref
         else # `param` is an Expansion
