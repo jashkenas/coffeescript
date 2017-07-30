@@ -3503,10 +3503,17 @@ exports.For = class For extends While
       forPartFragments = [@makeCode("#{kvar} of #{svar}")]
     bodyFragments = body.compileToFragments merge(o, indent: idt1), LEVEL_TOP
     if bodyFragments and bodyFragments.length > 0
-      bodyFragments = [].concat @makeCode("\n"), bodyFragments, @makeCode("\n")
-    [].concat defPartFragments, @makeCode("#{resultPart or ''}#{@tab}for ("),
+      bodyFragments = [].concat @makeCode('\n'), bodyFragments, @makeCode('\n')
+
+    fragments = []
+    if defPartFragments? and fragmentsToText(defPartFragments) isnt ''
+      fragments = fragments.concat defPartFragments
+    fragments.push @makeCode(resultPart) if resultPart
+    fragments = fragments.concat @makeCode(@tab), @makeCode( 'for ('),
       forPartFragments, @makeCode(") {#{guardPart}#{varPart}"), bodyFragments,
-      @makeCode("#{@tab}}#{returnResult or ''}")
+      @makeCode(@tab), @makeCode('}')
+    fragments.push @makeCode(returnResult) if returnResult
+    fragments
 
   pluckDirectCall: (o, body) ->
     defs = []
