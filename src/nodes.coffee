@@ -1032,6 +1032,13 @@ exports.Call = class Call extends Base
 
     @csx = @variable.base instanceof CSXTag
 
+    # `@variable` never gets output as a result of this node getting created as
+    # part of `RegexWithInterpolations`, so for that case move any comments to
+    # the `args` property that gets passed into `RegexWithInterpolations` via
+    # the grammar.
+    if @variable.base?.value is 'RegExp' and @args.length isnt 0
+      moveComments @variable, @args[0]
+
   children: ['variable', 'args']
 
   # When setting the location, we sometimes need to update the start location to

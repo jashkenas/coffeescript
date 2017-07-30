@@ -888,6 +888,16 @@ test "Comment before method that calls `super()`", ->
   };
   '''
 
+test "Comment in interpolated regex", ->
+  js = CoffeeScript.compile '''
+  1
+  ///
+    #{1}
+    # Comment
+  ///
+  '''
+  ok js.includes 'Comment'
+
 test "Line comment after line continuation", ->
   eqJS '''
   1 + \\ # comment
