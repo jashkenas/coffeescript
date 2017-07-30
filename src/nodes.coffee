@@ -110,12 +110,13 @@ exports.Base = class Base
 
   compileCommentFragments: (o, node, fragments) ->
     return fragments unless node.comments
-    # Comments that can become `CodeFragment`s are output here. This includes
-    # all block (here) comments and line comments that share their line with
-    # only whitespace (i.e. that don’t trail code on a line). Trailing line
-    # comments need to be output later, after all the fragments are assembled
-    # and their indentations and newlines set.
-
+    # This is where comments, that are attached to nodes as a `comments`
+    # property, become `CodeFragment`s. “Inline block comments,” e.g.
+    # `/* */`-delimited comments that are interspersed within code on a line,
+    # are added to the current `fragments` stream. All other fragments are
+    # attached as properties to the nearest preceding or following fragment,
+    # to remain stowaways until they get properly output in `compileComments`
+    # later on.
     unshiftCommentFragment = (commentFragment) ->
       if commentFragment.unshift
         # Find the first non-comment fragment and insert `commentFragment`
@@ -131,10 +132,10 @@ exports.Base = class Base
 
     for comment in node.comments when comment not in @compiledComments
       @compiledComments.push comment # Don’t output this comment twice.
-      # For block/here comments, denoted by `###`, create fragments and insert
-      # them into the fragments array, whether they’re multiline comments or
-      # inline comments like `1 + ### comment ### 2`.
-      # For line comments, just attach them to their closest fragment for now,
+      # For block/here comments, denoted by `###`, that are inline comments
+      # like `1 + ### comment ### 2`, create fragments and insert them into
+      # the fragments array.
+      # Otherwise attach comment fragments to their closest fragment for now,
       # so they can be inserted into the output later after all the newlines
       # have been added.
       if comment.here # Block comment, delimited by `###`.
