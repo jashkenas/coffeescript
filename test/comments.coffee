@@ -701,9 +701,25 @@ test "Line comments that trail code, followed by line comments that start a new 
     return b(1); // Trailing comment
   };
 
+
   // Comment that starts a new line
   2;
   '''
+
+test "Empty lines between comments are preserved", ->
+  eqJS '''
+  if indented
+    # 1
+
+    # 2
+    3
+  ''', '''
+  if (indented) {
+    // 1
+
+    // 2
+    3;
+  }'''
 
 test "Line comment in an interpolated string", ->
   eqJS '''

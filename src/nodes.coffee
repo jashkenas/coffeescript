@@ -573,7 +573,7 @@ exports.Block = class Block extends Base
                 multident commentFragment.code, fragmentIndent, no
               else
                 commentFragment.code
-          ).join "\n#{fragmentIndent}"
+          ).join("\n#{fragmentIndent}").replace /^(\s*)$/gm, ''
         for pastFragment, pastFragmentIndex in fragments[0...(fragmentIndex + 1)] by -1
           newLineIndex = pastFragment.code.lastIndexOf '\n'
           if newLineIndex is -1
@@ -636,7 +636,7 @@ exports.Block = class Block extends Base
                 multident commentFragment.code, fragmentIndent, no
               else
                 commentFragment.code
-          ).join "\n#{fragmentIndent}"
+          ).join("\n#{fragmentIndent}").replace /^(\s*)$/gm, ''
         for upcomingFragment, upcomingFragmentIndex in fragments[fragmentIndex...]
           newLineIndex = upcomingFragment.code.indexOf '\n'
           if newLineIndex is -1
@@ -983,7 +983,7 @@ exports.LineComment = class LineComment extends Base
     super()
 
   compileNode: (o) ->
-    fragment = @makeCode "//#{@content}"
+    fragment = @makeCode(if /^\s*$/.test @content then '' else "//#{@content}")
     fragment.newLine = @newLine
     fragment.unshift = @unshift
     fragment.trail = not @newLine and not @unshift

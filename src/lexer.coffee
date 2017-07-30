@@ -330,7 +330,10 @@ exports.Lexer = class Lexer
       contents = [content]
     else
       # The `COMMENT` regex captures successive line comments as one token.
-      content = comment.replace /^(\s*)#/gm, ''
+      # Remove any leading newlines before the first comment, but preserve
+      # blank lines between line comments.
+      content = comment.replace /^(\n*)/, ''
+      content = content.replace /^([ |\t]*)#/gm, ''
       contents = content.split '\n'
 
     commentAttachments = []
