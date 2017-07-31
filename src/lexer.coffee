@@ -503,7 +503,7 @@ exports.Lexer = class Lexer
       [input, id, colon] = match
       origin = @token 'CSX_TAG', id, 1, id.length
       @token 'CALL_START', '('
-      csxStart = @token '[', '['
+      @token '[', '['
       @ends.push tag: '/>', origin: origin, name: id
       @csxDepth++
       return id.length + 1
@@ -550,6 +550,7 @@ exports.Lexer = class Lexer
         @pair firstChar
         if @csxObjAttribute
           @token '}', '}'
+          @csxObjAttribute = no
         else
           @token ')', ')'
         @token ',', ','
