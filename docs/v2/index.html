@@ -2981,21 +2981,21 @@ healthy = (200 > cholesterol && cholesterol > 60);
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="heregexes">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
-      <textarea class="coffeescript-input" id="heregexes-coffee">OPERATOR = /// ^ (
-  ?: [-=]>             # function
-   | [-+*/%<>&|^!?=]=  # compound assign / compare
-   | >>>=?             # zero-fill right shift
-   | ([-+:])\1         # doubles
-   | ([&|<>])\2=?      # logic / shift
-   | \?\.              # soak access
-   | \.{2,3}           # range or splat
-) ///
+      <textarea class="coffeescript-input" id="heregexes-coffee">NUMBER     = ///
+  ^ 0b[01]+    |              # binary
+  ^ 0o[0-7]+   |              # octal
+  ^ 0x[\da-f]+ |              # hex
+  ^ \d*\.?\d+ (?:e[+-]?\d+)?  # decimal
+///i
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="heregexes-js">var OPERATOR;
+      <textarea class="javascript-output" id="heregexes-js">var NUMBER;
 
-OPERATOR = /^(?:[-=]>|[-+*\/%<>&|^!?=]=|>>>=?|([-+:])\1|([&|<>])\2=?|\?\.|\.{2,3})/;
+NUMBER = /^0b[01]+|^0o[0-7]+|^0x[\da-f]+|^\d*\.?\d+(?:e[+-]?\d+)?/i; // binary
+// octal
+// hex
+// decimal
 </textarea>
     </div>
   </div>
