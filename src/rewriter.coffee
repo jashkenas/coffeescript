@@ -127,25 +127,23 @@ exports.Rewriter = class Rewriter
       @detectEnd i + 1, condition, action if token[0] is 'INDEX_START'
       1
 
-  # Match tags in token stream starting at `i` with `pattern`, skipping 'HERECOMMENT's.
+  # Match tags in token stream starting at `i` with `pattern`.
   # `pattern` may consist of strings (equality), an array of strings (one of)
   # or null (wildcard). Returns the index of the match or -1 if no match.
   indexOfTag: (i, pattern...) ->
     fuzz = 0
     for j in [0 ... pattern.length]
-      fuzz += 2 while @tag(i + j + fuzz) is 'HERECOMMENT'
       continue if not pattern[j]?
       pattern[j] = [pattern[j]] if typeof pattern[j] is 'string'
       return -1 if @tag(i + j + fuzz) not in pattern[j]
     i + j + fuzz - 1
 
   # Returns `yes` if standing in front of something looking like
-  # `@<x>:`, `<x>:` or `<EXPRESSION_START><x>...<EXPRESSION_END>:`,
-  # skipping over 'HERECOMMENT's.
+  # `@<x>:`, `<x>:` or `<EXPRESSION_START><x>...<EXPRESSION_END>:`.
   looksObjectish: (j) ->
-    return yes if @indexOfTag(j, '@', null, ':') > -1 or @indexOfTag(j, null, ':') > -1
-    index = @indexOfTag(j, EXPRESSION_START)
-    if index > -1
+    return yes if @indexOfTag(j, '@', null, ':') isnt -1 or @indexOfTag(j, null, ':') isnt -1
+    index = @indexOfTag j, EXPRESSION_START
+    if index isnt -1
       end = null
       @detectEnd index + 1, ((token) -> token[0] in EXPRESSION_END), ((token, i) -> end = i)
       return yes if @tag(end + 1) is ':'
@@ -309,7 +307,6 @@ exports.Rewriter = class Rewriter
           when @tag(i - 1) in EXPRESSION_END then start[1]
           when @tag(i - 2) is '@' then i - 2
           else i - 1
-        s -= 2 while @tag(s - 2) is 'HERECOMMENT'
 
         startsLine = s is 0 or @tag(s - 1) in LINEBREAKS or tokens[s - 1].newLine
         # Are we just continuing an already declared object?
@@ -360,7 +357,6 @@ exports.Rewriter = class Rewriter
           # the continuation of an object.
           else if inImplicitObject() and tag is 'TERMINATOR' and prevTag isnt ',' and
                   not (startsLine and @looksObjectish(i + 1))
-            return forward 1 if nextTag is 'HERECOMMENT'
             endImplicitObject()
           else
             break
