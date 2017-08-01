@@ -336,12 +336,10 @@ exports.Lexer = class Lexer
       content = content.replace /^([ |\t]*)#/gm, ''
       contents = content.split '\n'
 
-    commentAttachments = []
-    for content, i in contents
-      commentAttachments.push
-        content: content
-        here: here?
-        newLine: newLine or i isnt 0 # Line comments after the first one start new lines, by definition.
+    commentAttachments = for content, i in contents
+      content: content
+      here: here?
+      newLine: newLine or i isnt 0 # Line comments after the first one start new lines, by definition.
 
     prev = @prev()
     unless prev
@@ -531,8 +529,10 @@ exports.Lexer = class Lexer
   suppressNewlines: ->
     prev = @prev()
     if prev[1] is '\\'
-      if prev.comments
-        # By definition, there must be a token before a `\` token.
+      if prev.comments and @tokens.length > 1
+        # `@tokens.length` should be at least 2 (some code, then `\`).
+        # If something puts a `\` after nothing, they deserve to lose any
+        # comments that trail it.
         attachCommentsToNode prev.comments, @tokens[@tokens.length - 2]
       @tokens.pop()
     this

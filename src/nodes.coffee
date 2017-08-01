@@ -2014,8 +2014,8 @@ exports.ModuleSpecifier = class ModuleSpecifier extends Base
 
     if @original.comments or @alias?.comments
       @comments = []
-      @comments = @comments.concat @original.comments if @original.comments
-      @comments = @comments.concat @alias.comments    if @alias?.comments
+      @comments.push @original.comments... if @original.comments
+      @comments.push @alias.comments...    if @alias?.comments
 
     # The name of the variable entering the local scope
     @identifier = if @alias? then @alias.value else @original.value
@@ -2207,7 +2207,7 @@ exports.Assign = class Assign extends Base
           if nestedProperties
             nestedSource = new Value source.base, source.properties.concat [new Access getPropKey prop]
             nestedSource = new Value new Op '?', nestedSource, nestedSourceDefault if nestedSourceDefault
-            restElements = restElements.concat traverseRest nestedProperties, nestedSource
+            restElements.push traverseRest(nestedProperties, nestedSource)...
         else if prop instanceof Splat
           prop.error "multiple rest elements are disallowed in object destructuring" if restIndex?
           restIndex = index
@@ -3335,7 +3335,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
     expr.traverseChildren no, (node) ->
       if node instanceof StringLiteral
         if node.comments
-          salvagedComments = salvagedComments.concat node.comments
+          salvagedComments.push node.comments...
           delete node.comments
         elements.push node
         return yes
@@ -3355,7 +3355,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
             comment.newLine = yes
           attachCommentsToNode node.comments, elements[elements.length - 1]
         else
-          salvagedComments = salvagedComments.concat node.comments
+          salvagedComments.push node.comments...
         delete node.comments
       return yes
 

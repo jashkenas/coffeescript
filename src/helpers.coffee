@@ -138,11 +138,9 @@ exports.addDataToNode = (parserState, first, last) ->
     obj
 
 exports.attachCommentsToNode = attachCommentsToNode = (comments, node) ->
-  return unless comments?.length isnt 0
-  node.comments = if node.comments
-    node.comments.concat comments
-  else
-    comments
+  return if not comments? or comments.length is 0
+  node.comments ?= []
+  node.comments.push comments...
 
 # Convert jison location data to a string.
 # `obj` can be a token, or a locationData.
