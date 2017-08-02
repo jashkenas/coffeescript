@@ -888,7 +888,6 @@ exports.Call = class Call extends Base
         if not (attr instanceof Obj or attr instanceof IdentifierLiteral) or (attr instanceof Obj and not attr.generated and (attrProps.length > 1 or not (attrProps[0] instanceof Splat)))
           obj.error """
             Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
-            Example: <div id="val" src={getTheSource()} {props...} checked>hello world</div>.
           """
         obj.base.csx = yes if obj.base instanceof Obj
         fragments.push @makeCode ' '

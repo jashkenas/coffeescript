@@ -692,11 +692,3 @@ test 'unspaced less than after CSX works but is not encouraged', ->
 
       res = 2 < div;
     '''
-
-test 'CSX invalid attribute errors', ->
-  throws (-> CoffeeScript.compile '<div a="b" {props} />')
-  throws (-> CoffeeScript.compile '<div a={b} {a:{b}} />')
-  throws (-> CoffeeScript.compile '<div {"#{a}"} />')
-  throws (-> CoffeeScript.compile '<div props... />')
-  throws (-> CoffeeScript.compile '<div {a:"b", props..., c:{d()}} />')
-  throws (-> CoffeeScript.compile '<div {props..., a, b} />')
