@@ -49,7 +49,7 @@ exports.Lexer = class Lexer
     @importSpecifierList = no    # Used to identify when in an IMPORT {...} FROM? ...
     @exportSpecifierList = no    # Used to identify when in an EXPORT {...} FROM? ...
     @csxDepth = 0                # Used to optimize CSX checks, how deep in CSX we are.
-    @csxObjAttribute = no        # Used to detect if CSX attributes is wrapped in {} (<div {props...} />).
+    @csxObjAttribute = {}        # Used to detect if CSX attributes is wrapped in {} (<div {props...} />).
 
     @chunkLine =
       opts.line or 0             # The start line for the current @chunk.
@@ -517,10 +517,10 @@ exports.Lexer = class Lexer
       else if firstChar is '{'
         if prevChar is ':'
           token = @token '(', '('
-          @csxObjAttribute = no
+          @csxObjAttribute[@csxDepth] = no
         else
           token = @token '{', '{'
-          @csxObjAttribute = yes
+          @csxObjAttribute[@csxDepth] = yes
         @ends.push {tag: '}', origin: token}
         return 1
       else if firstChar is '>'
@@ -548,9 +548,9 @@ exports.Lexer = class Lexer
     else if @atCSXTag 1
       if firstChar is '}'
         @pair firstChar
-        if @csxObjAttribute
+        if @csxObjAttribute[@csxDepth]
           @token '}', '}'
-          @csxObjAttribute = no
+          @csxObjAttribute[@csxDepth] = no
         else
           @token ')', ')'
         @token ',', ','
