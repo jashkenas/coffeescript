@@ -49,6 +49,7 @@ exports.Lexer = class Lexer
     @importSpecifierList = no    # Used to identify when in an `IMPORT {...} FROM? ...`.
     @exportSpecifierList = no    # Used to identify when in an `EXPORT {...} FROM? ...`.
     @csxDepth = 0                # Used to optimize CSX checks, how deep in CSX we are.
+    @csxObjAttribute = {}        # Used to detect if CSX attributes is wrapped in {} (<div {props...} />).
 
     @chunkLine =
       opts.line or 0             # The start line for the current @chunk.
@@ -546,6 +547,8 @@ exports.Lexer = class Lexer
   # CSX is like JSX but for CoffeeScript.
   csxToken: ->
     firstChar = @chunk[0]
+    # Check the previous token to detect if attribute is spread.
+    prevChar = if @tokens.length > 0 then @tokens[@tokens.length - 1][0] else ''
     if firstChar is '<'
       match = CSX_IDENTIFIER.exec @chunk[1...]
       return 0 unless match and (
@@ -558,25 +561,30 @@ exports.Lexer = class Lexer
       [input, id, colon] = match
       origin = @token 'CSX_TAG', id, 1, id.length
       @token 'CALL_START', '('
-      @token '{', '{'
+      @token '[', '['
       @ends.push tag: '/>', origin: origin, name: id
       @csxDepth++
       return id.length + 1
     else if csxTag = @atCSXTag()
       if @chunk[...2] is '/>'
         @pair '/>'
-        @token '}', '}', 0, 2
+        @token ']', ']', 0, 2
         @token 'CALL_END', ')', 0, 2
         @csxDepth--
         return 2
       else if firstChar is '{'
-        token = @token '(', '('
+        if prevChar is ':'
+          token = @token '(', '('
+          @csxObjAttribute[@csxDepth] = no
+        else
+          token = @token '{', '{'
+          @csxObjAttribute[@csxDepth] = yes
         @ends.push {tag: '}', origin: token}
         return 1
       else if firstChar is '>'
         # Ignore terminators inside a tag.
         @pair '/>' # As if the current tag was self-closing.
-        origin = @token '}', '}'
+        origin = @token ']', ']'
         @token ',', ','
         {tokens, index: end} =
           @matchWithInterpolations INSIDE_CSX, '>', '</', CSX_INTERPOLATION
@@ -598,7 +606,11 @@ exports.Lexer = class Lexer
     else if @atCSXTag 1
       if firstChar is '}'
         @pair firstChar
-        @token ')', ')'
+        if @csxObjAttribute[@csxDepth]
+          @token '}', '}'
+          @csxObjAttribute[@csxDepth] = no
+        else
+          @token ')', ')'
         @token ',', ','
         return 1
       else

@@ -1122,7 +1122,18 @@ exports.Call = class Call extends Base
     content?.base.csx = yes
     fragments = [@makeCode('<')]
     fragments.push (tag = @variable.compileToFragments(o, LEVEL_ACCESS))...
-    fragments.push attributes.compileToFragments(o, LEVEL_PAREN)...
+    if attributes.base instanceof Arr
+      for obj in attributes.base.objects
+        attr = obj.base
+        attrProps = attr?.properties or []
+        # Catch invalid CSX attributes: <div {a:"b", props} {props} "value" />
+        if not (attr instanceof Obj or attr instanceof IdentifierLiteral) or (attr instanceof Obj and not attr.generated and (attrProps.length > 1 or not (attrProps[0] instanceof Splat)))
+          obj.error """
+            Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+          """
+        obj.base.csx = yes if obj.base instanceof Obj
+        fragments.push @makeCode ' '
+        fragments.push obj.compileToFragments(o, LEVEL_PAREN)...
     if content
       fragments.push @makeCode('>')
       fragments.push content.compileNode(o, LEVEL_LIST)...
@@ -1425,10 +1436,13 @@ exports.Obj = class Obj extends Base
         node.error 'cannot have an implicit value in an implicit object'
 
     # Object spread properties. https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md
-    return @compileSpread o if @hasSplat()
+    return @compileSpread o if @hasSplat() and not @csx
 
     idt      = o.indent += TAB
     lastNode = @lastNode @properties
+
+    # CSX attributes <div id="val" attr={aaa} {props...} />
+    return @compileCSXAttributes o if @csx
 
     # If this object is the left-hand side of an assignment, all its children
     # are too.
@@ -1443,7 +1457,7 @@ exports.Obj = class Obj extends Base
 
     isCompact = yes
     for prop in @properties
-      if prop instanceof Assign and prop.context is 'object' and not @csx
+      if prop instanceof Assign and prop.context is 'object'
         isCompact = no
 
     answer = []
@@ -1451,11 +1465,9 @@ exports.Obj = class Obj extends Base
     for prop, i in props
       join = if i is props.length - 1
         ''
-      else if isCompact and @csx
-        ' '
       else if isCompact
         ', '
-      else if prop is lastNode or @csx
+      else if prop is lastNode
         '\n'
       else
         ',\n'
@@ -1480,12 +1492,10 @@ exports.Obj = class Obj extends Base
         else if not prop.bareLiteral?(IdentifierLiteral)
           prop = new Assign prop, prop, 'object'
       if indent then answer.push @makeCode indent
-      prop.csx = yes if @csx
-      answer.push @makeCode ' ' if @csx and i is 0
       answer.push prop.compileToFragments(o, LEVEL_TOP)...
       if join then answer.push @makeCode join
     answer.push @makeCode if isCompact then '' else "\n#{@tab}"
-    answer = @wrapInBraces answer if not @csx
+    answer = @wrapInBraces answer
     if @front then @wrapInParentheses answer else answer
 
   assigns: (name) ->
@@ -1520,6 +1530,17 @@ exports.Obj = class Obj extends Base
     addSlice()
     slices.unshift new Obj unless slices[0] instanceof Obj
     (new Call new Literal('Object.assign'), slices).compileToFragments o
+
+  compileCSXAttributes: (o) ->
+    props = @properties
+    answer = []
+    for prop, i in props
+      prop.csx = yes
+      join = if i is props.length - 1 then '' else ' '
+      prop = new Literal "{#{prop.compile(o)}}" if prop instanceof Splat
+      answer.push prop.compileToFragments(o, LEVEL_TOP)...
+      answer.push @makeCode join
+    if @front then @wrapInParentheses answer else answer
 
 #### Arr
 

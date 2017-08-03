@@ -1587,6 +1587,50 @@ test "CSX error: ambiguous tag-like expression", ->
              ^
   '''
 
+test 'CSX error: invalid attributes', ->
+  assertErrorFormat '''
+    <div a="b" {props} />
+  ''', '''
+    [stdin]:1:12: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    <div a="b" {props} />
+               ^^^^^^^
+  '''
+  assertErrorFormat '''
+    <div a={b} {a:{b}} />
+  ''', '''
+    [stdin]:1:12: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    <div a={b} {a:{b}} />
+               ^^^^^^^
+  '''
+  assertErrorFormat '''
+    <div {"#{a}"} />
+  ''', '''
+    [stdin]:1:6: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    <div {"#{a}"} />
+         ^^^^^^^^
+  '''
+  assertErrorFormat '''
+    <div props... />
+  ''', '''
+    [stdin]:1:11: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    <div props... />
+              ^^^
+  '''
+  assertErrorFormat '''
+    <div {a:"b", props..., c:d()} />
+  ''', '''
+    [stdin]:1:6: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    <div {a:"b", props..., c:d()} />
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  '''
+  assertErrorFormat '''
+    <div {props..., a, b} />
+  ''', '''
+    [stdin]:1:6: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    <div {props..., a, b} />
+         ^^^^^^^^^^^^^^^^
+  '''
+
 test 'Bound method called as callback before binding throws runtime error', ->
   class Base
     constructor: ->

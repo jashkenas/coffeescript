@@ -483,147 +483,115 @@ test 'self closing tag with namespace', ->
     <Something.Tag />;
   '''
 
-# TODO: Uncomment the following test once destructured object spreads are supported.
-# test 'self closing tag with spread attribute', ->
-#   eqJS '''
-#     <Component a={b} {... x } b="c" />
-#   ''', '''
-#     React.createElement(Component, Object.assign({"a": (b)},  x , {"b": "c"}))
-#   '''
+test 'self closing tag with spread attribute', ->
+  eqJS '''
+    <Component a={b} {x...} b="c" />
+  ''', '''
+    <Component a={b} {...x} b="c" />;
+  '''
 
-# TODO: Uncomment the following test once destructured object spreads are supported.
-# test 'complex spread attribute', ->
-#   eqJS '''
-#     <Component {...x} a={b} {... x } b="c" {...$my_xtraCoolVar123 } />
-#   ''', '''
-#     React.createElement(Component, Object.assign({},  x, {"a": (b)},  x , {"b": "c"}, $my_xtraCoolVar123  ))
-#   '''
+test 'complex spread attribute', ->
+  eqJS '''
+    <Component {x...} a={b} {x...} b="c" {$my_xtraCoolVar123...} />
+  ''', '''
+    <Component {...x} a={b} {...x} b="c" {...$my_xtraCoolVar123} />;
+  '''
 
-# TODO: Uncomment the following test once destructured object spreads are supported.
-# test 'multiline spread attribute', ->
-#   eqJS '''
-#     <Component {...
-#       x } a={b} {... x } b="c" {...z }>
-#     </Component>
-#   ''', '''
-#     React.createElement(Component, Object.assign({},
-#       x , {"a": (b)},  x , {"b": "c"}, z )
-#     )
-#   '''
+test 'multiline spread attribute', ->
+  eqJS '''
+    <Component {
+      x...} a={b} {x...} b="c" {z...}>
+    </Component>
+  ''', '''
+    <Component {...x} a={b} {...x} b="c" {...z}>
+    </Component>;
+  '''
 
-# TODO: Uncomment the following test once destructured object spreads are supported.
-# test 'multiline tag with spread attribute', ->
-#   eqJS '''
-#     <Component
-#       z="1"
-#       {...x}
-#       a={b}
-#       b="c"
-#     >
-#     </Component>
-#   ''', '''
-#     React.createElement(Component, Object.assign({ \
-#       "z": "1"
-#       }, x, { \
-#       "a": (b),  \
-#       "b": "c"
-#     })
-#     )
-#   '''
+test 'multiline tag with spread attribute', ->
+  eqJS '''
+    <Component
+      z="1"
+      {x...}
+      a={b}
+      b="c"
+    >
+    </Component>
+  ''', '''
+    <Component z="1" {...x} a={b} b="c">
+    </Component>;
+  '''
 
-# TODO: Uncomment the following test once destructured object spreads are supported.
-# test 'multiline tag with spread attribute first', ->
-#   eqJS '''
-#     <Component
-#       {...
-#       x}
-#       z="1"
-#       a={b}
-#       b="c"
-#     >
-#     </Component>
-#   ''', '''
-#     React.createElement(Component, Object.assign({}, \
+test 'multiline tag with spread attribute first', ->
+  eqJS '''
+    <Component
+      {x...}
+      z="1"
+      a={b}
+      b="c"
+    >
+    </Component>
+  ''', '''
+    <Component {...x} z="1" a={b} b="c">
+    </Component>;
+  '''
 
-#       x, { \
-#       "z": "1",  \
-#       "a": (b),  \
-#       "b": "c"
-#     })
-#     )
-#   '''
+test 'complex multiline spread attribute', ->
+  eqJS '''
+    <Component
+      {y...
+      } a={b} {x...} b="c" {z...}>
+      <div code={someFunc({a:{b:{}, C:'}'}})} />
+    </Component>
+  ''', '''
+    <Component {...y} a={b} {...x} b="c" {...z}>
+      <div code={someFunc({
+        a: {
+          b: {},
+          C: '}'
+        }
+      })} />
+    </Component>;
+  '''
 
-# TODO: Uncomment the following test once destructured object spreads are supported.
-# test 'complex multiline spread attribute', ->
-#   eqJS '''
-#     <Component
-#       {...
-#       y} a={b} {... x } b="c" {...z }>
-#       <div code={someFunc({a:{b:{}, C:'}'}})} />
-#     </Component>
-#   ''', '''
-#     React.createElement(Component, Object.assign({}, \
+test 'self closing spread attribute on single line', ->
+  eqJS '''
+    <Component a="b" c="d" {@props...} />
+  ''', '''
+    <Component a="b" c="d" {...this.props} />;
+  '''
 
-#       y, {"a": (b)},  x , {"b": "c"}, z ),
-#       React.createElement("div", {"code": (someFunc({a:{b:{}, C:'}'}}))})
-#     )
-#   '''
+test 'self closing spread attribute on new line', ->
+  eqJS '''
+    <Component
+      a="b"
+      c="d"
+      {@props...}
+    />
+  ''', '''
+    <Component a="b" c="d" {...this.props} />;
+  '''
 
-# TODO: Uncomment the following test once destructured object spreads are supported.
-# test 'self closing spread attribute on single line', ->
-#   eqJS '''
-#     <Component a="b" c="d" {...@props} />
-#   ''', '''
-#     React.createElement(Component, Object.assign({"a": "b", "c": "d"}, @props ))
-#   '''
+test 'self closing spread attribute on same line', ->
+  eqJS '''
+    <Component
+      a="b"
+      c="d"
+      {@props...} />
+  ''', '''
+    <Component a="b" c="d" {...this.props} />;
+  '''
 
-# TODO: Uncomment the following test once destructured object spreads are supported.
-# test 'self closing spread attribute on new line', ->
-#   eqJS '''
-#     <Component
-#       a="b"
-#       c="d"
-#       {...@props}
-#     />
-#   ''', '''
-#     React.createElement(Component, Object.assign({ \
-#       "a": "b",  \
-#       "c": "d"
-#       }, @props
-#     ))
-#   '''
+test 'self closing spread attribute on next line', ->
+  eqJS '''
+    <Component
+      a="b"
+      c="d"
+      {@props...}
 
-# TODO: Uncomment the following test once destructured object spreads are supported.
-# test 'self closing spread attribute on same line', ->
-#   eqJS '''
-#     <Component
-#       a="b"
-#       c="d"
-#       {...@props} />
-#   ''', '''
-#     React.createElement(Component, Object.assign({ \
-#       "a": "b",  \
-#       "c": "d"
-#       }, @props ))
-#   '''
-
-# TODO: Uncomment the following test once destructured object spreads are supported.
-# test 'self closing spread attribute on next line', ->
-#   eqJS '''
-#     <Component
-#       a="b"
-#       c="d"
-#       {...@props}
-
-#     />
-#   ''', '''
-#     React.createElement(Component, Object.assign({ \
-#       "a": "b",  \
-#       "c": "d"
-#       }, @props
-
-#     ))
-#   '''
+    />
+  ''', '''
+    <Component a="b" c="d" {...this.props} />;
+  '''
 
 test 'empty strings are not converted to true', ->
   eqJS '''
