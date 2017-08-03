@@ -108,15 +108,39 @@ buildLocationData = (first, last) ->
     last_line: last.last_line
     last_column: last.last_column
 
+buildLocationHash = (loc) ->
+  "#{loc.first_line}x#{loc.first_column}-#{loc.last_line}x#{loc.last_column}"
+
 # This returns a function which takes an object as a parameter, and if that
 # object is an AST node, updates that object's locationData.
 # The object is returned either way.
-exports.addLocationDataFn = (first, last) ->
+exports.addDataToNode = (parserState, first, last) ->
   (obj) ->
-    if ((typeof obj) is 'object') and (!!obj['updateLocationDataIfMissing'])
+    # Add location data
+    if obj?.updateLocationDataIfMissing? and first?
       obj.updateLocationDataIfMissing buildLocationData(first, last)
 
-    return obj
+    # Add comments data
+    unless parserState.tokenComments
+      parserState.tokenComments = {}
+      for token in parserState.parser.tokens when token.comments
+        tokenHash = buildLocationHash token[2]
+        unless parserState.tokenComments[tokenHash]?
+          parserState.tokenComments[tokenHash] = token.comments
+        else
+          parserState.tokenComments[tokenHash].push token.comments...
+
+    if obj.locationData?
+      objHash = buildLocationHash obj.locationData
+      if parserState.tokenComments[objHash]?
+        attachCommentsToNode parserState.tokenComments[objHash], obj
+
+    obj
+
+exports.attachCommentsToNode = attachCommentsToNode = (comments, node) ->
+  return if not comments? or comments.length is 0
+  node.comments ?= []
+  node.comments.push comments...
 
 # Convert jison location data to a string.
 # `obj` can be a token, or a locationData.

@@ -33,26 +33,27 @@ unwrap = /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 o = (patternString, action, options) ->
   patternString = patternString.replace /\s{2,}/g, ' '
   patternCount = patternString.split(' ').length
-  return [patternString, '$$ = $1;', options] unless action
-  action = if match = unwrap.exec action then match[1] else "(#{action}())"
+  if action
+    action = if match = unwrap.exec action then match[1] else "(#{action}())"
 
-  # All runtime functions we need are defined on `yy`
-  action = action.replace /\bnew /g, '$&yy.'
-  action = action.replace /\b(?:Block\.wrap|extend)\b/g, 'yy.$&'
+    # All runtime functions we need are defined on `yy`
+    action = action.replace /\bnew /g, '$&yy.'
+    action = action.replace /\b(?:Block\.wrap|extend)\b/g, 'yy.$&'
 
-  # Returns a function which adds location data to the first parameter passed
-  # in, and returns the parameter. If the parameter is not a node, it will
-  # just be passed through unaffected.
-  addLocationDataFn = (first, last) ->
-    if not last
-      "yy.addLocationDataFn(@#{first})"
-    else
-      "yy.addLocationDataFn(@#{first}, @#{last})"
+    # Returns strings of functions to add to `parser.js` which add extra data
+    # that nodes may have, such as comments or location data. Location data
+    # is added to the first parameter passed in, and the parameter is returned.
+    # If the parameter is not a node, it will just be passed through unaffected.
+    getAddDataToNodeFunctionString = (first, last) ->
+      "yy.addDataToNode(yy, @#{first}#{if last then ", @#{last}" else ''})"
 
-  action = action.replace /LOC\(([0-9]*)\)/g, addLocationDataFn('$1')
-  action = action.replace /LOC\(([0-9]*),\s*([0-9]*)\)/g, addLocationDataFn('$1', '$2')
+    action = action.replace /LOC\(([0-9]*)\)/g, getAddDataToNodeFunctionString('$1')
+    action = action.replace /LOC\(([0-9]*),\s*([0-9]*)\)/g, getAddDataToNodeFunctionString('$1', '$2')
+    performActionFunctionString = "$$ = #{getAddDataToNodeFunctionString(1, patternCount)}(#{action});"
+  else
+    performActionFunctionString = '$$ = $1;'
 
-  [patternString, "$$ = #{addLocationDataFn(1, patternCount)}(#{action});", options]
+  [patternString, performActionFunctionString, options]
 
 # Grammatical Rules
 # -----------------
@@ -100,7 +101,6 @@ grammar =
   # Pure statements which cannot be expressions.
   Statement: [
     o 'Return'
-    o 'Comment'
     o 'STATEMENT',                              -> new StatementLiteral $1
     o 'Import'
     o 'Export'
@@ -171,11 +171,11 @@ grammar =
     o 'AlphaNumeric'
     o 'JS',                                     -> new PassthroughLiteral $1
     o 'Regex'
-    o 'UNDEFINED',                              -> new UndefinedLiteral
-    o 'NULL',                                   -> new NullLiteral
+    o 'UNDEFINED',                              -> new UndefinedLiteral $1
+    o 'NULL',                                   -> new NullLiteral $1
     o 'BOOL',                                   -> new BooleanLiteral $1
     o 'INFINITY',                               -> new InfinityLiteral $1
-    o 'NAN',                                    -> new NaNLiteral
+    o 'NAN',                                    -> new NaNLiteral $1
   ]
 
   # Assignment of a variable, property, or index to a value.
@@ -200,7 +200,6 @@ grammar =
     o 'SimpleObjAssignable =
        INDENT Expression OUTDENT',              -> new Assign LOC(1)(new Value $1), $4, null,
                                                               operatorToken: LOC(2)(new Literal $2)
-    o 'Comment'
   ]
 
   SimpleObjAssignable: [
@@ -228,7 +227,7 @@ grammar =
     o 'Parenthetical'
     o 'Super'
     o 'This'
-    o 'SUPER Arguments',               -> new SuperCall LOC(1)(new Super), $2
+    o 'SUPER Arguments',               -> new SuperCall LOC(1)(new Super), $2, no, $1
     o 'SimpleObjAssignable Arguments', -> new Call (new Value $1), $2
     o 'ObjSpreadExpr Arguments',       -> new Call $1, $2
   ]
@@ -260,11 +259,6 @@ grammar =
     o 'AWAIT RETURN',                           -> new AwaitReturn
   ]
 
-  # A block comment.
-  Comment: [
-    o 'HERECOMMENT',                            -> new Comment $1
-  ]
-
   # The **Code** node is the function literal. It's defined by an indented block
   # of **Block** preceded by a function arrow, with an optional parameter list.
   Code: [
@@ -275,8 +269,8 @@ grammar =
   # CoffeeScript has two different symbols for functions. `->` is for ordinary
   # functions, and `=>` is for functions bound to the current value of *this*.
   FuncGlyph: [
-    o '->',                                     -> 'func'
-    o '=>',                                     -> 'boundfunc'
+    o '->',                                     -> new FuncGlyph $1
+    o '=>',                                     -> new FuncGlyph $1
   ]
 
   # An optional, trailing comma.
@@ -346,8 +340,8 @@ grammar =
 
   # A `super`-based expression that can be used as a value.
   Super: [
-    o 'SUPER . Property',                       -> new Super LOC(3) new Access $3
-    o 'SUPER INDEX_START Expression INDEX_END', -> new Super LOC(3) new Index $3
+    o 'SUPER . Property',                       -> new Super LOC(3)(new Access $3), [], no, $1
+    o 'SUPER INDEX_START Expression INDEX_END', -> new Super LOC(3)(new Index $3),  [], no, $1
   ]
 
   # The general group of accessors into an object, by property, by prototype
@@ -364,7 +358,7 @@ grammar =
   # Indexing into an object or array using bracket notation.
   Index: [
     o 'INDEX_START IndexValue INDEX_END',       -> $2
-    o 'INDEX_SOAK  Index',                      -> extend $2, soak : yes
+    o 'INDEX_SOAK  Index',                      -> extend $2, soak: yes
   ]
 
   IndexValue: [
@@ -468,7 +462,7 @@ grammar =
   Invocation: [
     o 'Value OptFuncExist String',              -> new TaggedTemplateCall $1, $3, $2
     o 'Value OptFuncExist Arguments',           -> new Call $1, $3, $2
-    o 'SUPER OptFuncExist Arguments',           -> new SuperCall LOC(1)(new Super), $3, $2
+    o 'SUPER OptFuncExist Arguments',           -> new SuperCall LOC(1)(new Super), $3, $2, $1
   ]
 
   # An optional existence check on a function.
@@ -485,13 +479,13 @@ grammar =
 
   # A reference to the *this* current object.
   This: [
-    o 'THIS',                                   -> new Value new ThisLiteral
-    o '@',                                      -> new Value new ThisLiteral
+    o 'THIS',                                   -> new Value new ThisLiteral $1
+    o '@',                                      -> new Value new ThisLiteral $1
   ]
 
   # A reference to a property on *this*.
   ThisProperty: [
-    o '@ Property',                             -> new Value LOC(1)(new ThisLiteral), [LOC(2)(new Access($2))], 'this'
+    o '@ Property',                             -> new Value LOC(1)(new ThisLiteral $1), [LOC(2)(new Access($2))], 'this'
   ]
 
   # The array literal.

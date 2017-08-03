@@ -123,15 +123,15 @@ test "@-parameters: automatically assign an argument's value to a property of th
   ((@prop) ->).call context = {}, nonce
   eq nonce, context.prop
 
-  # allow splats along side the special argument
+  # Allow splats alongside the special argument
   ((splat..., @prop) ->).apply context = {}, [0, 0, nonce]
   eq nonce, context.prop
 
-  # allow the argument itself to be a splat
+  # Allow the argument itself to be a splat
   ((@prop...) ->).call context = {}, 0, nonce, 0
   eq nonce, context.prop[1]
 
-  # the argument should not be able to be referenced normally
+  # The argument should not be able to be referenced normally
   code = '((@prop) -> prop).call {}'
   doesNotThrow -> CoffeeScript.compile code
   throws (-> CoffeeScript.run code), ReferenceError
@@ -245,7 +245,7 @@ test "rest element destructuring in function definition", ->
   deepEqual [1, {b:2}], f()
   deepEqual [2, {}], f {a:2}
   deepEqual [3, {c:5}], f {a:3, c:5}
-  
+
   f = ({ a: aa = 0, b: bb = 0 }) -> [aa, bb]
   deepEqual [0, 0], f {}
   deepEqual [0, 42], f {b:42}

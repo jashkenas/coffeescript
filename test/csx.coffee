@@ -360,9 +360,9 @@ test 'heregex', ->
   ''', '''
     var REGEX, test;
 
-    test = /432/gm;
+    test = /432/gm; // this is a regex
 
-    6 / 432 / gm;
+    6 / 432 / gm; // this is division
 
     <Tag>
     {(test = /<Tag>/)} this is a regex containing something which looks like a tag
@@ -370,7 +370,10 @@ test 'heregex', ->
 
     <Person />;
 
-    REGEX = /^(\\/(?![s=])[^[\\/ ]*(?:<Tag\\/>(?:\\[sS]|[[^] ]*(?:\\[sS][^] ]*)*<Tag>tag<\\/Tag>])[^[\\/ ]*)*\\/)([imgy]{0,4})(?!w)/;
+    REGEX = /^(\\/(?![s=])[^[\\/ ]*(?:<Tag\\/>(?:\\[sS]|[[^] ]*(?:\\[sS][^] ]*)*<Tag>tag<\\/Tag>])[^[\\/ ]*)*\\/)([imgy]{0,4})(?!w)/; // comment comment <comment>comment</comment>
+    // comment comment
+    // comment comment
+    // comment comment
 
     <Person />;
   '''
@@ -395,7 +398,23 @@ test 'comment at start of CSX escape', ->
     </Person>
   ''', '''
     <Person>
-    {"i am a string"}
+    {// i am a comment
+    "i am a string"}
+    </Person>;
+  '''
+
+test 'comment at end of CSX escape', ->
+  eqJS '''
+    <Person>
+    {"i am a string"
+    # i am a comment
+    }
+    </Person>
+  ''', '''
+    <Person>
+    {"i am a string"
+    // i am a comment
+    }
     </Person>;
   '''
 

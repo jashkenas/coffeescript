@@ -522,8 +522,8 @@ test "multiline import with comments", ->
     } from 'lib'""",
   """
     import {
-      foo,
-      bar as baz
+      foo, // Not as good as bar
+      bar as baz // I prefer qux
     } from 'lib';"""
 
 test "`from` not part of an import or export statement can still be assigned", ->

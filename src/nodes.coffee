@@ -10,13 +10,14 @@ Error.stackTraceLimit = Infinity
 
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, some,
-addLocationDataFn, locationDataToString, throwSyntaxError} = require './helpers'
+addDataToNode, attachCommentsToNode, locationDataToString,
+throwSyntaxError} = require './helpers'
 
-# Functions required by parser
+# Functions required by parser.
 exports.extend = extend
-exports.addLocationDataFn = addLocationDataFn
+exports.addDataToNode = addDataToNode
 
-# Constant functions for nodes that don't need customization.
+# Constant functions for nodes that don’t need customization.
 YES     = -> yes
 NO      = -> no
 THIS    = -> this
@@ -31,10 +32,12 @@ NEGATE  = -> @negated = not @negated; this
 exports.CodeFragment = class CodeFragment
   constructor: (parent, code) ->
     @code = "#{code}"
-    @locationData = parent?.locationData
     @type = parent?.constructor?.name or 'unknown'
+    @locationData = parent?.locationData
+    @comments = parent?.comments
 
-  toString:   ->
+  toString: ->
+    # This is only intended for debugging.
     "#{@code}#{if @locationData then ": " + locationDataToString(@locationData) else ''}"
 
 # Convert an array of CodeFragments into a string.
@@ -57,6 +60,34 @@ exports.Base = class Base
   compile: (o, lvl) ->
     fragmentsToText @compileToFragments o, lvl
 
+  # Occasionally a node is compiled multiple times, for example to get the name
+  # of a variable to add to scope tracking. When we know that a “premature”
+  # compilation won’t result in comments being output, set those comments aside
+  # so that they’re preserved for a later `compile` call that will result in
+  # the comments being included in the output.
+  compileWithoutComments: (o, lvl, method = 'compile') ->
+    if @comments
+      @ignoreTheseCommentsTemporarily = @comments
+      delete @comments
+    unwrapped = @unwrapAll()
+    if unwrapped.comments
+      unwrapped.ignoreTheseCommentsTemporarily = unwrapped.comments
+      delete unwrapped.comments
+
+    fragments = @[method] o, lvl
+
+    if @ignoreTheseCommentsTemporarily
+      @comments = @ignoreTheseCommentsTemporarily
+      delete @ignoreTheseCommentsTemporarily
+    if unwrapped.ignoreTheseCommentsTemporarily
+      unwrapped.comments = unwrapped.ignoreTheseCommentsTemporarily
+      delete unwrapped.ignoreTheseCommentsTemporarily
+
+    fragments
+
+  compileNodeWithoutComments: (o, lvl) ->
+    @compileWithoutComments o, lvl, 'compileNode'
+
   # Common logic for determining whether to wrap this node in a closure before
   # compiling it, or to compile directly. We need to wrap if this node is a
   # *statement*, and it's not a *pureStatement*, and we're not at
@@ -68,10 +99,13 @@ exports.Base = class Base
     o.level  = lvl if lvl
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
-    if o.level is LEVEL_TOP or not node.isStatement(o)
+
+    fragments = if o.level is LEVEL_TOP or not node.isStatement(o)
       node.compileNode o
     else
       node.compileClosure o
+    @compileCommentFragments o, node, fragments
+    fragments
 
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
@@ -101,6 +135,54 @@ exports.Base = class Base
         parts.unshift @makeCode "(await "
         parts.push    @makeCode ")"
     parts
+
+  compileCommentFragments: (o, node, fragments) ->
+    return fragments unless node.comments
+    # This is where comments, that are attached to nodes as a `comments`
+    # property, become `CodeFragment`s. “Inline block comments,” e.g.
+    # `/* */`-delimited comments that are interspersed within code on a line,
+    # are added to the current `fragments` stream. All other fragments are
+    # attached as properties to the nearest preceding or following fragment,
+    # to remain stowaways until they get properly output in `compileComments`
+    # later on.
+    unshiftCommentFragment = (commentFragment) ->
+      if commentFragment.unshift
+        # Find the first non-comment fragment and insert `commentFragment`
+        # before it.
+        unshiftAfterComments fragments, commentFragment
+      else
+        if fragments.length isnt 0
+          precedingFragment = fragments[fragments.length - 1]
+          if commentFragment.newLine and precedingFragment.code isnt '' and
+             not /\n\s*$/.test precedingFragment.code
+            commentFragment.code = "\n#{commentFragment.code}"
+        fragments.push commentFragment
+
+    for comment in node.comments when comment not in @compiledComments
+      @compiledComments.push comment # Don’t output this comment twice.
+      # For block/here comments, denoted by `###`, that are inline comments
+      # like `1 + ### comment ### 2`, create fragments and insert them into
+      # the fragments array.
+      # Otherwise attach comment fragments to their closest fragment for now,
+      # so they can be inserted into the output later after all the newlines
+      # have been added.
+      if comment.here # Block comment, delimited by `###`.
+        commentFragment = new HereComment(comment).compileNode o
+      else # Line comment, delimited by `#`.
+        commentFragment = new LineComment(comment).compileNode o
+      if (commentFragment.isHereComment and not commentFragment.newLine) or
+         node.includeCommentFragments()
+        # Inline block comments, like `1 + /* comment */ 2`, or a node whose
+        # `compileToFragments` method has logic for outputting comments.
+        unshiftCommentFragment commentFragment
+      else
+        if commentFragment.unshift
+          fragments[0].precedingComments ?= []
+          fragments[0].precedingComments.push commentFragment
+        else
+          fragments[fragments.length - 1].followingComments ?= []
+          fragments[fragments.length - 1].followingComments.push commentFragment
+    fragments
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -167,11 +249,9 @@ exports.Base = class Base
         return no
     node
 
-  # Pull out the last non-comment node of a node list.
-  lastNonComment: (list) ->
-    i = list.length
-    return list[i] while i-- when list[i] not instanceof Comment
-    null
+  # Pull out the last node of a node list.
+  lastNode: (list) ->
+    if list.length is 0 then null else list[list.length - 1]
 
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
@@ -235,6 +315,14 @@ exports.Base = class Base
   # in expression position.
   isStatement: NO
 
+  # Track comments that have been compiled into fragments, to avoid outputting
+  # them twice.
+  compiledComments: []
+
+  # `includeCommentFragments` lets `compileCommentFragments` know whether this node
+  # has special awareness of how to handle comments within its output.
+  includeCommentFragments: NO
+
   # `jumps` tells you if an expression, or an internal part of an expression
   # has a flow control construct (like `break`, or `continue`, or `return`,
   # or `throw`) that jumps out of the normal flow of control and can’t be
@@ -273,7 +361,7 @@ exports.Base = class Base
     @eachChild (child) ->
       child.updateLocationDataIfMissing locationData
 
-  # Throw a SyntaxError associated with this node's location.
+  # Throw a SyntaxError associated with this node’s location.
   error: (message) ->
     throwSyntaxError message, @locationData
 
@@ -310,10 +398,10 @@ exports.HoistTarget = class HoistTarget extends Base
   constructor: (@source) ->
     super()
 
-    # Holds presentational options to apply when the source node is compiled
+    # Holds presentational options to apply when the source node is compiled.
     @options = {}
 
-    # Placeholder fragments to be replaced by the source node's compilation
+    # Placeholder fragments to be replaced by the source node’s compilation.
     @targetFragments = { fragments: [] }
 
   isStatement: (o) ->
@@ -388,19 +476,18 @@ exports.Block = class Block extends Base
     len = @expressions.length
     while len--
       expr = @expressions[len]
-      if expr not instanceof Comment
-        @expressions[len] = expr.makeReturn res
-        @expressions.splice(len, 1) if expr instanceof Return and not expr.expression
-        break
+      @expressions[len] = expr.makeReturn res
+      @expressions.splice(len, 1) if expr instanceof Return and not expr.expression
+      break
     this
 
   # A **Block** is the only node that can serve as the root.
   compileToFragments: (o = {}, level) ->
     if o.scope then super o, level else @compileRoot o
 
-  # Compile all expressions within the **Block** body. If we need to
-  # return the result, and it's an expression, simply return it. If it's a
-  # statement, ask the statement to do so.
+  # Compile all expressions within the **Block** body. If we need to return
+  # the result, and it’s an expression, simply return it. If it’s a statement,
+  # ask the statement to do so.
   compileNode: (o) ->
     @tab  = o.indent
     top   = o.level is LEVEL_TOP
@@ -410,60 +497,52 @@ exports.Block = class Block extends Base
       node = node.unwrapAll()
       node = (node.unfoldSoak(o) or node)
       if node instanceof Block
-        # This is a nested block. We don't do anything special here like enclose
-        # it in a new scope; we just compile the statements in this block along with
-        # our own
+        # This is a nested block. We don’t do anything special here like
+        # enclose it in a new scope; we just compile the statements in this
+        # block along with our own.
         compiledNodes.push node.compileNode o
       else if node.hoisted
-        # This is a hoisted expression. We want to compile this and ignore the result.
+        # This is a hoisted expression.
+        # We want to compile this and ignore the result.
         node.compileToFragments o
       else if top
-        node.front = true
+        node.front = yes
         fragments = node.compileToFragments o
         unless node.isStatement o
-          fragments.unshift @makeCode "#{@tab}"
-          fragments.push @makeCode ';'
+          fragments = indentInitial fragments, @
+          [..., lastFragment] = fragments
+          unless lastFragment.code is '' or lastFragment.isComment
+            fragments.push @makeCode ';'
         compiledNodes.push fragments
       else
         compiledNodes.push node.compileToFragments o, LEVEL_LIST
     if top
       if @spaced
-        return [].concat @joinFragmentArrays(compiledNodes, '\n\n'), @makeCode("\n")
+        return [].concat @joinFragmentArrays(compiledNodes, '\n\n'), @makeCode('\n')
       else
         return @joinFragmentArrays(compiledNodes, '\n')
     if compiledNodes.length
       answer = @joinFragmentArrays(compiledNodes, ', ')
     else
-      answer = [@makeCode "void 0"]
+      answer = [@makeCode 'void 0']
     if compiledNodes.length > 1 and o.level >= LEVEL_LIST then @wrapInParentheses answer else answer
 
-  # If we happen to be the top-level **Block**, wrap everything in
-  # a safety closure, unless requested not to.
-  # It would be better not to generate them in the first place, but for now,
-  # clean up obvious double-parentheses.
+  # If we happen to be the top-level **Block**, wrap everything in a safety
+  # closure, unless requested not to. It would be better not to generate them
+  # in the first place, but for now, clean up obvious double-parentheses.
   compileRoot: (o) ->
     o.indent  = if o.bare then '' else TAB
     o.level   = LEVEL_TOP
     @spaced   = yes
     o.scope   = new Scope null, this, null, o.referencedVars ? []
-    # Mark given local variables in the root scope as parameters so they don't
+    # Mark given local variables in the root scope as parameters so they don’t
     # end up being declared on this block.
     o.scope.parameter name for name in o.locals or []
-    prelude   = []
-    unless o.bare
-      preludeExps = for exp, i in @expressions
-        break unless exp.unwrap() instanceof Comment
-        exp
-      if preludeExps.length
-        rest = @expressions[preludeExps.length...]
-        @expressions = preludeExps
-        prelude = @compileNode merge(o, indent: '')
-        prelude.push @makeCode "\n"
-        @expressions = rest
     fragments = @compileWithDeclarations o
     HoistTarget.expand fragments
+    fragments = @compileComments fragments
     return fragments if o.bare
-    [].concat prelude, @makeCode("(function() {\n"), fragments, @makeCode("\n}).call(this);\n")
+    [].concat @makeCode("(function() {\n"), fragments, @makeCode("\n}).call(this);\n")
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
@@ -472,7 +551,7 @@ exports.Block = class Block extends Base
     post = []
     for exp, i in @expressions
       exp = exp.unwrap()
-      break unless exp instanceof Comment or exp instanceof Literal
+      break unless exp instanceof Literal
     o = merge(o, level: LEVEL_TOP)
     if i
       rest = @expressions.splice i, 9e9
@@ -496,6 +575,119 @@ exports.Block = class Block extends Base
       else if fragments.length and post.length
         fragments.push @makeCode "\n"
     fragments.concat post
+
+  compileComments: (fragments) ->
+    for fragment, fragmentIndex in fragments
+      # Insert comments into the output at the next or previous newline.
+      # If there are no newlines at which to place comments, create them.
+      if fragment.precedingComments
+        # Determine the indentation level of the fragment that we are about
+        # to insert comments before, and use that indentation level for our
+        # inserted comments. At this point, the fragments’ `code` property
+        # is the generated output JavaScript, and CoffeeScript always
+        # generates output indented by two spaces; so all we need to do is
+        # search for a `code` property that begins with at least two spaces.
+        fragmentIndent = ''
+        for pastFragment in fragments[0...(fragmentIndex + 1)] by -1
+          indent = /^ {2,}/m.exec pastFragment.code
+          if indent
+            fragmentIndent = indent[0]
+            break
+          else if '\n' in pastFragment.code
+            break
+        code = "\n#{fragmentIndent}" + (
+            for commentFragment in fragment.precedingComments
+              if commentFragment.isHereComment and commentFragment.multiline
+                multident commentFragment.code, fragmentIndent, no
+              else
+                commentFragment.code
+          ).join("\n#{fragmentIndent}").replace /^(\s*)$/gm, ''
+        for pastFragment, pastFragmentIndex in fragments[0...(fragmentIndex + 1)] by -1
+          newLineIndex = pastFragment.code.lastIndexOf '\n'
+          if newLineIndex is -1
+            # Keep searching previous fragments until we can’t go back any
+            # further, either because there are no fragments left or we’ve
+            # discovered that we’re in a code block that is interpolated
+            # inside a string.
+            if pastFragmentIndex is 0
+              pastFragment.code = '\n' + pastFragment.code
+              newLineIndex = 0
+            else if pastFragment.isStringWithInterpolations and pastFragment.code is '{'
+              code = code[1..] + '\n' # Move newline to end.
+              newLineIndex = 1
+            else
+              continue
+          delete fragment.precedingComments
+          pastFragment.code = pastFragment.code[0...newLineIndex] +
+            code + pastFragment.code[newLineIndex..]
+          break
+
+      # Yes, this is awfully similar to the previous `if` block, but if you
+      # look closely you’ll find lots of tiny differences that make this
+      # confusing if it were abstracted into a function that both blocks share.
+      if fragment.followingComments
+        # Does the first trailing comment follow at the end of a line of code,
+        # like `; // Comment`, or does it start a new line after a line of code?
+        trail = fragment.followingComments[0].trail
+        fragmentIndent = ''
+        # Find the indent of the next line of code, if we have any non-trailing
+        # comments to output. We need to first find the next newline, as these
+        # comments will be output after that; and then the indent of the line
+        # that follows the next newline.
+        unless trail and fragment.followingComments.length is 1
+          onNextLine = no
+          for upcomingFragment in fragments[fragmentIndex...]
+            unless onNextLine
+              if '\n' in upcomingFragment.code
+                onNextLine = yes
+              else
+                continue
+            else
+              indent = /^ {2,}/m.exec upcomingFragment.code
+              if indent
+                fragmentIndent = indent[0]
+                break
+              else if '\n' in upcomingFragment.code
+                break
+        # Is this comment following the indent inserted by bare mode?
+        # If so, there’s no need to indent this further.
+        code = if fragmentIndex is 1 and /^\s+$/.test fragments[0].code
+          ''
+        else if trail
+          ' '
+        else
+          "\n#{fragmentIndent}"
+        # Assemble properly indented comments.
+        code += (
+            for commentFragment in fragment.followingComments
+              if commentFragment.isHereComment and commentFragment.multiline
+                multident commentFragment.code, fragmentIndent, no
+              else
+                commentFragment.code
+          ).join("\n#{fragmentIndent}").replace /^(\s*)$/gm, ''
+        for upcomingFragment, upcomingFragmentIndex in fragments[fragmentIndex...]
+          newLineIndex = upcomingFragment.code.indexOf '\n'
+          if newLineIndex is -1
+            # Keep searching upcoming fragments until we can’t go any
+            # further, either because there are no fragments left or we’ve
+            # discovered that we’re in a code block that is interpolated
+            # inside a string.
+            if upcomingFragmentIndex is fragments.length - 1
+              upcomingFragment.code = upcomingFragment.code + '\n'
+              newLineIndex = upcomingFragment.code.length
+            else if upcomingFragment.isStringWithInterpolations and upcomingFragment.code is '}'
+              code = "#{code}\n"
+              newLineIndex = 0
+            else
+              continue
+          delete fragment.followingComments
+          # Avoid inserting extra blank lines.
+          code = code.replace /^\n/, '' if upcomingFragment.code is '\n'
+          upcomingFragment.code = upcomingFragment.code[0...newLineIndex] +
+            code + upcomingFragment.code[newLineIndex..]
+          break
+
+    fragments
 
   # Wrap up the given nodes as a **Block**, unless it already happens
   # to be one.
@@ -521,6 +713,7 @@ exports.Literal = class Literal extends Base
     [@makeCode @value]
 
   toString: ->
+    # This is only intended for debugging.
     " #{if @isStatement() then super() else @constructor.name}: #{@value}"
 
 exports.NumberLiteral = class NumberLiteral extends Literal
@@ -616,12 +809,24 @@ exports.Return = class Return extends Base
 
   compileNode: (o) ->
     answer = []
-    # TODO: If we call expression.compile() here twice, we'll sometimes get back different results!
-    answer.push @makeCode @tab + "return#{if @expression then " " else ""}"
+    # TODO: If we call `expression.compile()` here twice, we’ll sometimes
+    # get back different results!
     if @expression
-      answer = answer.concat @expression.compileToFragments o, LEVEL_PAREN
-    answer.push @makeCode ";"
-    return answer
+      answer = @expression.compileToFragments o, LEVEL_PAREN
+      unshiftAfterComments answer, @makeCode "#{@tab}return "
+      # Since the `return` got indented by `@tab`, preceding comments that are
+      # multiline need to be indented.
+      for fragment in answer
+        if fragment.isHereComment and '\n' in fragment.code
+          fragment.code = multident fragment.code, @tab
+        else if fragment.isLineComment
+          fragment.code = "#{@tab}#{fragment.code}"
+        else
+          break
+    else
+      answer.push @makeCode "#{@tab}return"
+    answer.push @makeCode ';'
+    answer
 
 # `yield return` works exactly like `return`, except that it turns the function
 # into a generator.
@@ -630,7 +835,6 @@ exports.YieldReturn = class YieldReturn extends Return
     unless o.scope.parent?
       @error 'yield can only occur inside functions'
     super o
-
 
 exports.AwaitReturn = class AwaitReturn extends Return
   compileNode: (o) ->
@@ -646,14 +850,15 @@ exports.AwaitReturn = class AwaitReturn extends Return
 exports.Value = class Value extends Base
   constructor: (base, props, tag, isDefaultValue = no) ->
     super()
-
     return base if not props and base instanceof Value
-
     @base           = base
     @properties     = props or []
     @[tag]          = yes if tag
     @isDefaultValue = isDefaultValue
-    return this
+    # If this is a `@foo =` assignment, if there are comments on `@` move them
+    # to be on `foo`.
+    if @base?.comments and @base instanceof ThisLiteral and @properties[0]?.name?
+      moveComments @base, @properties[0].name
 
   children: ['base', 'properties']
 
@@ -664,7 +869,7 @@ exports.Value = class Value extends Base
     this
 
   hasProperties: ->
-    !!@properties.length
+    @properties.length isnt 0
 
   bareLiteral: (type) ->
     not @properties.length and @base instanceof type
@@ -745,7 +950,8 @@ exports.Value = class Value extends Base
   # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
     @unfoldedSoak ?= do =>
-      if ifn = @base.unfoldSoak o
+      ifn = @base.unfoldSoak o
+      if ifn
         ifn.body.properties.push @properties...
         return ifn
       for prop, i in @properties when prop.soak
@@ -767,28 +973,57 @@ exports.Value = class Value extends Base
     else
       @error 'tried to assign to unassignable value'
 
-#### Comment
+#### HereComment
 
-# CoffeeScript passes through block comments as JavaScript block comments
-# at the same position.
-exports.Comment = class Comment extends Base
-  constructor: (@comment) ->
+# Comment delimited by `###` (becoming `/* */`).
+exports.HereComment = class HereComment extends Base
+  constructor: ({ @content, @newLine, @unshift }) ->
     super()
 
-  isStatement:     YES
-  makeReturn:      THIS
+  compileNode: (o) ->
+    multiline = '\n' in @content
+    hasLeadingMarks = /\n\s*[#|\*]/.test @content
+    @content = @content.replace /^([ \t]*)#(?=\s)/gm, ' *' if hasLeadingMarks
 
-  compileNode: (o, level) ->
-    comment = @comment.replace /^(\s*)#(?=\s)/gm, "$1 *"
-    code = "/*#{multident comment, @tab}#{if '\n' in comment then "\n#{@tab}" else ''} */"
-    code = o.indent + code if (level or o.level) is LEVEL_TOP
-    [@makeCode("\n"), @makeCode(code)]
+    # Unindent multiline comments. They will be reindented later.
+    if multiline
+      largestIndent = ''
+      for line in @content.split '\n'
+        leadingWhitespace = /^\s*/.exec(line)[0]
+        if leadingWhitespace.length > largestIndent.length
+          largestIndent = leadingWhitespace
+      @content = @content.replace ///^(#{leadingWhitespace})///gm, ''
+
+    @content = "/*#{@content}#{if hasLeadingMarks then ' ' else ''}*/"
+    fragment = @makeCode @content
+    fragment.newLine = @newLine
+    fragment.unshift = @unshift
+    fragment.multiline = multiline
+    # Don’t rely on `fragment.type`, which can break when the compiler is minified.
+    fragment.isComment = fragment.isHereComment = yes
+    fragment
+
+#### LineComment
+
+# Comment running from `#` to the end of a line (becoming `//`).
+exports.LineComment = class LineComment extends Base
+  constructor: ({ @content, @newLine, @unshift }) ->
+    super()
+
+  compileNode: (o) ->
+    fragment = @makeCode(if /^\s*$/.test @content then '' else "//#{@content}")
+    fragment.newLine = @newLine
+    fragment.unshift = @unshift
+    fragment.trail = not @newLine and not @unshift
+    # Don’t rely on `fragment.type`, which can break when the compiler is minified.
+    fragment.isComment = fragment.isLineComment = yes
+    fragment
 
 #### Call
 
 # Node for a function invocation.
 exports.Call = class Call extends Base
-  constructor: (@variable, @args = [], @soak) ->
+  constructor: (@variable, @args = [], @soak, @token) ->
     super()
 
     @isNew = no
@@ -796,6 +1031,13 @@ exports.Call = class Call extends Base
       @variable.error "literal is not a function"
 
     @csx = @variable.base instanceof CSXTag
+
+    # `@variable` never gets output as a result of this node getting created as
+    # part of `RegexWithInterpolations`, so for that case move any comments to
+    # the `args` property that gets passed into `RegexWithInterpolations` via
+    # the grammar.
+    if @variable.base?.value is 'RegExp' and @args.length isnt 0
+      moveComments @variable, @args[0]
 
   children: ['variable', 'args']
 
@@ -928,25 +1170,37 @@ exports.SuperCall = class SuperCall extends Call
     replacement.compileToFragments o, if o.level is LEVEL_TOP then o.level else LEVEL_LIST
 
 exports.Super = class Super extends Base
-  children: ['accessor']
-
   constructor: (@accessor) ->
     super()
+
+  children: ['accessor']
 
   compileNode: (o) ->
     method = o.scope.namedMethod()
     @error 'cannot use super outside of an instance method' unless method?.isMethod
 
-    @inCtor = !!method.ctor
-
-    unless @inCtor or @accessor?
+    unless method.ctor? or @accessor?
       {name, variable} = method
       if name.shouldCache() or (name instanceof Index and name.index.isAssignable())
         nref = new IdentifierLiteral o.scope.parent.freeVariable 'name'
         name.index = new Assign nref, name.index
       @accessor = if nref? then new Index nref else name
 
-    (new Value (new Literal 'super'), if @accessor then [ @accessor ] else []).compileToFragments o
+    if @accessor?.name?.comments
+      # A `super()` call gets compiled to e.g. `super.method()`, which means
+      # the `method` property name gets compiled for the first time here, and
+      # again when the `method:` property of the class gets compiled. Since
+      # this compilation happens first, comments attached to `method:` would
+      # get incorrectly output near `super.method()`, when we want them to
+      # get output on the second pass when `method:` is output. So set them
+      # aside during this compilation pass, and put them back on the object so
+      # that they’re there for the later compilation.
+      salvagedComments = @accessor.name.comments
+      delete @accessor.name.comments
+    fragments = (new Value (new Literal 'super'), if @accessor then [ @accessor ] else [])
+    .compileToFragments o
+    attachCommentsToNode salvagedComments, @accessor.name if salvagedComments
+    fragments
 
 #### RegexWithInterpolations
 
@@ -1184,8 +1438,8 @@ exports.Obj = class Obj extends Base
     # Object spread properties. https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md
     return @compileSpread o if @hasSplat() and not @csx
 
-    idt        = o.indent += TAB
-    lastNoncom = @lastNonComment @properties
+    idt      = o.indent += TAB
+    lastNode = @lastNode @properties
 
     # CSX attributes <div id="val" attr={aaa} {props...} />
     return @compileCSXAttributes o if @csx
@@ -1203,7 +1457,7 @@ exports.Obj = class Obj extends Base
 
     isCompact = yes
     for prop in @properties
-      if prop instanceof Comment or (prop instanceof Assign and prop.context is 'object')
+      if prop instanceof Assign and prop.context is 'object'
         isCompact = no
 
     answer = []
@@ -1213,18 +1467,18 @@ exports.Obj = class Obj extends Base
         ''
       else if isCompact
         ', '
-      else if prop is lastNoncom or prop instanceof Comment
+      else if prop is lastNode
         '\n'
       else
         ',\n'
-      indent = if isCompact or prop instanceof Comment then '' else idt
+      indent = if isCompact then '' else idt
 
       key = if prop instanceof Assign and prop.context is 'object'
         prop.variable
       else if prop instanceof Assign
         prop.operatorToken.error "unexpected #{prop.operatorToken.value}" unless @lhs
         prop.variable
-      else if prop not instanceof Comment
+      else
         prop
       if key instanceof Value and key.hasProperties()
         key.error 'invalid object key' if prop.context is 'object' or not key.this
@@ -1276,7 +1530,7 @@ exports.Obj = class Obj extends Base
     addSlice()
     slices.unshift new Obj unless slices[0] instanceof Obj
     (new Call new Literal('Object.assign'), slices).compileToFragments o
-  
+
   compileCSXAttributes: (o) ->
     props = @properties
     answer = []
@@ -1287,14 +1541,13 @@ exports.Obj = class Obj extends Base
       answer.push prop.compileToFragments(o, LEVEL_TOP)...
       answer.push @makeCode join
     if @front then @wrapInParentheses answer else answer
-    
+
 #### Arr
 
 # An array literal.
 exports.Arr = class Arr extends Base
   constructor: (objs, @lhs = no) ->
     super()
-
     @objects = objs or []
 
   children: ['objects']
@@ -1315,22 +1568,47 @@ exports.Arr = class Arr extends Base
     o.indent += TAB
 
     answer = []
-    # If this array is the left-hand side of an assignment, all its children
-    # are too.
-    if @lhs
-      for obj in @objects
-        unwrappedObj = obj.unwrapAll()
+    for obj, objIndex in @objects
+      unwrappedObj = obj.unwrapAll()
+      # Let `compileCommentFragments` know to intersperse block comments
+      # into the fragments created when compiling this array.
+      if unwrappedObj.comments and
+         unwrappedObj.comments.filter((comment) -> not comment.here).length is 0
+        unwrappedObj.includeCommentFragments = YES
+      # If this array is the left-hand side of an assignment, all its children
+      # are too.
+      if @lhs
         unwrappedObj.lhs = yes if unwrappedObj instanceof Arr or unwrappedObj instanceof Obj
 
     compiledObjs = (obj.compileToFragments o, LEVEL_LIST for obj in @objects)
+    # If `compiledObjs` includes newlines, we will output this as a multiline
+    # array (i.e. with a newline and indentation after the `[`). If an element
+    # contains line comments, that should also trigger multiline output since
+    # by definition line comments will introduce newlines into our output.
+    # The exception is if only the first element has line comments; in that
+    # case, output as the compact form if we otherwise would have, so that the
+    # first element’s line comments get output before or after the array.
+    includesLineCommentsOnNonFirstElement = no
     for fragments, index in compiledObjs
-      if index
-        answer.push @makeCode ", "
+      for fragment in fragments
+        if fragment.isHereComment
+          fragment.code = fragment.code.trim()
+        else if index isnt 0 and includesLineCommentsOnNonFirstElement is no and hasLineComments fragment
+          includesLineCommentsOnNonFirstElement = yes
+      if index isnt 0
+        answer.push @makeCode ', '
       answer.push fragments...
-    if fragmentsToText(answer).indexOf('\n') >= 0
+    if includesLineCommentsOnNonFirstElement or '\n' in fragmentsToText(answer)
+      for fragment, fragmentIndex in answer
+        if fragment.isHereComment
+          fragment.code = "#{multident(fragment.code, o.indent, no)}\n#{o.indent}"
+        else if fragment.code is ', '
+          fragment.code = ",\n#{o.indent}"
       answer.unshift @makeCode "[\n#{o.indent}"
       answer.push @makeCode "\n#{@tab}]"
     else
+      for fragment in answer when fragment.isHereComment
+        fragment.code = "#{fragment.code} "
       answer.unshift @makeCode '['
       answer.push @makeCode ']'
     answer
@@ -1446,11 +1724,6 @@ exports.Class = class Class extends Base
             exprs.push initializerExpression
             initializer.push initializerExpression
             start = end + 1
-          else if initializer[initializer.length - 1] instanceof Comment
-            # Try to keep comments with their subsequent assign
-            exprs.pop()
-            initializer.pop()
-            start--
           end++
         pushSlice()
 
@@ -1460,9 +1733,6 @@ exports.Class = class Class extends Base
         if initializerExpression = @addInitializerExpression expression
           initializer.push initializerExpression
           expressions[i] = initializerExpression
-        else if initializer[initializer.length - 1] instanceof Comment
-          # Try to keep comments with their subsequent assign
-          initializer.pop()
         i += 1
 
     for method in initializer when method instanceof Code
@@ -1480,21 +1750,18 @@ exports.Class = class Class extends Base
 
   # Add an expression to the class initializer
   #
-  # NOTE Currently, only comments, methods and static methods are valid in ES class initializers.
+  # NOTE Currently, only methods and static methods are valid in ES class initializers.
   # When additional expressions become valid, this method should be updated to handle them.
   addInitializerExpression: (node) ->
-    switch
-      when node instanceof Comment
-        node
-      when @validInitializerMethod node
-        @addInitializerMethod node
-      else
-        null
+    if @validInitializerMethod node
+      @addInitializerMethod node
+    else
+      null
 
   # Checks if the given node is a valid ES class initializer method.
   validInitializerMethod: (node) ->
-    return false unless node instanceof Assign and node.value instanceof Code
-    return true if node.context is 'object' and not node.variable.hasProperties()
+    return no unless node instanceof Assign and node.value instanceof Code
+    return yes if node.context is 'object' and not node.variable.hasProperties()
     return node.variable.looksStatic(@name) and (@name or not node.value.bound)
 
   # Returns a configured class initializer method
@@ -1595,7 +1862,7 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
 
     index = 0
     while expr = @body.expressions[index]
-      break unless expr instanceof Comment or expr instanceof Value and expr.isString()
+      break unless expr instanceof Value and expr.isString()
       if expr.hoisted
         index++
       else
@@ -1632,9 +1899,7 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
       value    = assign.value
       delete assign.context
 
-      if assign instanceof Comment
-        # Passthrough
-      else if base.value is 'constructor'
+      if base.value is 'constructor'
         if value instanceof Code
           base.error 'constructors must be defined at the top level of a class body'
 
@@ -1767,6 +2032,11 @@ exports.ExportSpecifierList = class ExportSpecifierList extends ModuleSpecifierL
 exports.ModuleSpecifier = class ModuleSpecifier extends Base
   constructor: (@original, @alias, @moduleDeclarationType) ->
     super()
+
+    if @original.comments or @alias?.comments
+      @comments = []
+      @comments.push @original.comments... if @original.comments
+      @comments.push @alias.comments...    if @alias?.comments
 
     # The name of the variable entering the local scope
     @identifier = if @alias? then @alias.value else @original.value
@@ -1912,11 +2182,11 @@ exports.Assign = class Assign extends Base
       return if prop instanceof Assign and prop.value.base instanceof Obj
       if prop instanceof Assign
         if prop.value.base instanceof IdentifierLiteral
-          newVar = prop.value.base.compile o
+          newVar = prop.value.base.compileWithoutComments o
         else
-          newVar = prop.variable.base.compile o
+          newVar = prop.variable.base.compileWithoutComments o
       else
-        newVar = prop.compile o
+        newVar = prop.compileWithoutComments o
       o.scope.add(newVar, 'var', true) if newVar
 
     # Returns a safe (cached) reference to the key for a given property
@@ -1932,11 +2202,11 @@ exports.Assign = class Assign extends Base
     # (e.g. `'a': b -> 'a'`, `"#{a}": b` -> <cached>`)
     getPropName = (prop) ->
       key = getPropKey prop
-      cached = prop instanceof Assign and prop.variable != key
+      cached = prop instanceof Assign and prop.variable isnt key
       if cached or not key.isAssignable()
         key
       else
-        new Literal "'#{key.compile o}'"
+        new Literal "'#{key.compileWithoutComments o}'"
 
     # Recursive function for searching and storing rest elements in objects.
     # e.g. `{[properties...]} = source`.
@@ -1958,7 +2228,7 @@ exports.Assign = class Assign extends Base
           if nestedProperties
             nestedSource = new Value source.base, source.properties.concat [new Access getPropKey prop]
             nestedSource = new Value new Op '?', nestedSource, nestedSourceDefault if nestedSourceDefault
-            restElements = restElements.concat traverseRest nestedProperties, nestedSource
+            restElements.push traverseRest(nestedProperties, nestedSource)...
         else if prop instanceof Splat
           prop.error "multiple rest elements are disallowed in object destructuring" if restIndex?
           restIndex = index
@@ -2162,6 +2432,10 @@ exports.Assign = class Assign extends Base
   # `Array#splice` method.
   compileSplice: (o) ->
     {range: {from, to, exclusive}} = @variable.properties.pop()
+    unwrappedVar = @variable.unwrapAll()
+    if unwrappedVar.comments
+      moveComments unwrappedVar, @
+      delete @variable.comments
     name = @variable.compile o
     if from
       [fromDecl, fromRef] = @cacheToCodeFragments from.cache o, LEVEL_OP
@@ -2183,18 +2457,24 @@ exports.Assign = class Assign extends Base
   eachName: (iterator) ->
     @variable.unwrapAll().eachName iterator
 
+#### FuncGlyph
+
+exports.FuncGlyph = class FuncGlyph extends Base
+  constructor: (@glyph) ->
+    super()
+
 #### Code
 
 # A function definition. This is the only node that creates a new Scope.
 # When for the purposes of walking the contents of a function body, the Code
 # has no *children* -- they're within the inner scope.
 exports.Code = class Code extends Base
-  constructor: (params, body, tag) ->
+  constructor: (params, body, @funcGlyph) ->
     super()
 
     @params      = params or []
     @body        = body or new Block
-    @bound       = tag is 'boundfunc'
+    @bound       = @funcGlyph?.glyph is '=>'
     @isGenerator = no
     @isAsync     = no
     @isMethod    = no
@@ -2242,7 +2522,7 @@ exports.Code = class Code extends Base
     haveSplatParam   = no
     haveBodyParam    = no
 
-    # Check for duplicate parameters and separate `this` assignments
+    # Check for duplicate parameters and separate `this` assignments.
     paramNames = []
     @eachParamName (name, node, param) ->
       node.error "multiple parameters named '#{name}'" if name in paramNames
@@ -2282,7 +2562,7 @@ exports.Code = class Code extends Base
             exprs.push new Assign new Value(param.name), ref
           else
             params.push ref = param.asReference o
-            splatParamName = fragmentsToText ref.compileNode o
+            splatParamName = fragmentsToText ref.compileNodeWithoutComments o
           if param.shouldCache()
             exprs.push new Assign new Value(param.name), ref
         else # `param` is an Expansion
@@ -2340,7 +2620,17 @@ exports.Code = class Code extends Base
               if param.value?  and not param.assignedInBody
                 ref = new Assign ref, param.value, null, param: yes
           else
-            o.scope.parameter fragmentsToText (if param.value? then param else ref).compileToFragments o
+            # This compilation of the parameter is only to get its name to add
+            # to the scope name tracking; since the compilation output here
+            # isn’t kept for eventual output, don’t include comments in this
+            # compilation, so that they get output the “real” time this param
+            # is compiled.
+            paramToAddToScope = if param.value? then param else ref
+            if paramToAddToScope.name?.comments
+              salvagedComments = paramToAddToScope.name.comments
+              delete paramToAddToScope.name.comments
+            o.scope.parameter fragmentsToText paramToAddToScope.compileToFragments o
+            paramToAddToScope.name.comments = salvagedComments if salvagedComments
           params.push ref
         else
           paramsAfterSplat.push param
@@ -2383,14 +2673,19 @@ exports.Code = class Code extends Base
 
     signature = [@makeCode '(']
     for param, i in params
-      signature.push @makeCode ', ' if i
+      signature.push @makeCode ', ' if i isnt 0
       signature.push @makeCode '...' if haveSplatParam and i is params.length - 1
       signature.push param.compileToFragments(o)...
     signature.push @makeCode ')'
+    # Block comments between `)` and `->`/`=>` get output between `)` and `{`.
+    if @funcGlyph?.comments?
+      comment.unshift = no for comment in @funcGlyph.comments
+      @compileCommentFragments o, @funcGlyph, signature
 
     body = @body.compileWithDeclarations o unless @body.isEmpty()
 
-    # We need to compile the body before method names to ensure super references are handled
+    # We need to compile the body before method names to ensure `super`
+    # references are handled.
     if @isMethod
       [methodScope, o.scope] = [o.scope, o.scope.parent]
       name = @name.compileToFragments o
@@ -2406,7 +2701,7 @@ exports.Code = class Code extends Base
     answer.push @makeCode('\n'), body..., @makeCode("\n#{@tab}") if body?.length
     answer.push @makeCode '}'
 
-    return [@makeCode(@tab), answer...] if @isMethod
+    return indentInitial answer, @ if @isMethod
     if @front or (o.level >= LEVEL_ACCESS) then @wrapInParentheses answer else answer
 
   eachParamName: (iterator) ->
@@ -2951,7 +3246,11 @@ exports.Throw = class Throw extends Base
   makeReturn: THIS
 
   compileNode: (o) ->
-    [].concat @makeCode(@tab + "throw "), @expression.compileToFragments(o), @makeCode(";")
+    fragments = @expression.compileToFragments o
+    unshiftAfterComments fragments, @makeCode 'throw '
+    fragments.unshift @makeCode @tab
+    fragments.push @makeCode ';'
+    fragments
 
 #### Existence
 
@@ -2962,6 +3261,18 @@ exports.Existence = class Existence extends Base
   constructor: (@expression, onlyNotUndefined = no) ->
     super()
     @comparisonTarget = if onlyNotUndefined then 'undefined' else 'null'
+    salvagedComments = []
+    @expression.eachChild (child) ->
+      if child.comments
+        for comment in child.comments
+          salvagedComments.push comment unless comment in salvagedComments
+        delete child.comments
+      if child.name?.comments
+        for comment in child.name.comments
+          salvagedComments.push comment unless comment in salvagedComments
+        delete child.name.comments
+    attachCommentsToNode salvagedComments, @
+    moveComments @expression, @
 
   children: ['expression']
 
@@ -3041,32 +3352,58 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
     expr = @body.unwrap()
 
     elements = []
+    salvagedComments = []
     expr.traverseChildren no, (node) ->
       if node instanceof StringLiteral
+        if node.comments
+          salvagedComments.push node.comments...
+          delete node.comments
         elements.push node
         return yes
       else if node instanceof Parens
+        if salvagedComments.length isnt 0
+          for comment in salvagedComments
+            comment.unshift = yes
+            comment.newLine = yes
+          attachCommentsToNode salvagedComments, node
         elements.push node
         return no
+      else if node.comments
+        # This node is getting discarded, but salvage its comments.
+        if elements.length isnt 0 and elements[elements.length - 1] not instanceof StringLiteral
+          for comment in node.comments
+            comment.unshift = no
+            comment.newLine = yes
+          attachCommentsToNode node.comments, elements[elements.length - 1]
+        else
+          salvagedComments.push node.comments...
+        delete node.comments
       return yes
 
     fragments = []
     fragments.push @makeCode '`' unless @csx
     for element in elements
       if element instanceof StringLiteral
-        value = element.unquote @csx
+        element.value = element.unquote @csx
         unless @csx
           # Backticks and `${` inside template literals must be escaped.
-          value = value.replace /(\\*)(`|\$\{)/g, (match, backslashes, toBeEscaped) ->
+          element.value = element.value.replace /(\\*)(`|\$\{)/g, (match, backslashes, toBeEscaped) ->
             if backslashes.length % 2 is 0
               "#{backslashes}\\#{toBeEscaped}"
             else
               match
-        fragments.push @makeCode value
+        fragments.push element.compileToFragments(o)...
       else
         fragments.push @makeCode '$' unless @csx
         code = element.compileToFragments(o, LEVEL_PAREN)
-        code = @wrapInBraces code unless @isNestedTag element
+        unless @isNestedTag element
+          code = @wrapInBraces code
+          # Flag the `{` and `}` fragments as having been generated by this
+          # `StringWithInterpolations` node, so that `compileComments` knows
+          # to treat them as bounds. Don’t trust `fragment.type`, which can
+          # report minified variable names when this compiler is minified.
+          code[0].isStringWithInterpolations = yes
+          code[code.length - 1].isStringWithInterpolations = yes
         fragments.push code...
     fragments.push @makeCode '`' unless @csx
     fragments
@@ -3088,12 +3425,11 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
 exports.For = class For extends While
   constructor: (body, source) ->
     super()
-
     {@source, @guard, @step, @name, @index} = source
     @body    = Block.wrap [body]
-    @own     = !!source.own
-    @object  = !!source.object
-    @from    = !!source.from
+    @own     = source.own?
+    @object  = source.object?
+    @from    = source.from?
     @index.error 'cannot use index with for-from' if @from and @index
     source.ownTag.error "cannot use own with for-#{if @from then 'from' else 'in'}" if @own and not @object
     [@name, @index] = [@index, @name] if @object
@@ -3102,7 +3438,20 @@ exports.For = class For extends While
     @pattern = @name instanceof Value
     @index.error 'indexes do not apply to range loops' if @range and @index
     @name.error 'cannot pattern match over range loops' if @range and @pattern
-    @returns = false
+    @returns = no
+    # Move up any comments in the “`for` line”, i.e. the line of code with `for`,
+    # from any child nodes of that line up to the `for` node itself so that these
+    # comments get output, and get output above the `for` loop.
+    for attribute in ['source', 'guard', 'step', 'name', 'index'] when @[attribute]
+      @[attribute].traverseChildren yes, (node) =>
+        if node.comments
+          # These comments are buried pretty deeply, so if they happen to be
+          # trailing comments the line they trail will be unrecognizable when
+          # we’re done compiling this `for` loop; so just shift them up to
+          # output above the `for` line.
+          comment.newLine = comment.unshift = yes for comment in node.comments
+          moveComments node, @[attribute]
+      moveComments @[attribute], @
 
   children: ['body', 'source', 'guard', 'step']
 
@@ -3185,10 +3534,17 @@ exports.For = class For extends While
       forPartFragments = [@makeCode("#{kvar} of #{svar}")]
     bodyFragments = body.compileToFragments merge(o, indent: idt1), LEVEL_TOP
     if bodyFragments and bodyFragments.length > 0
-      bodyFragments = [].concat @makeCode("\n"), bodyFragments, @makeCode("\n")
-    [].concat defPartFragments, @makeCode("#{resultPart or ''}#{@tab}for ("),
+      bodyFragments = [].concat @makeCode('\n'), bodyFragments, @makeCode('\n')
+
+    fragments = []
+    if defPartFragments? and fragmentsToText(defPartFragments) isnt ''
+      fragments = fragments.concat defPartFragments
+    fragments.push @makeCode(resultPart) if resultPart
+    fragments = fragments.concat @makeCode(@tab), @makeCode( 'for ('),
       forPartFragments, @makeCode(") {#{guardPart}#{varPart}"), bodyFragments,
-      @makeCode("#{@tab}}#{returnResult or ''}")
+      @makeCode(@tab), @makeCode('}')
+    fragments.push @makeCode(returnResult) if returnResult
+    fragments
 
   pluckDirectCall: (o, body) ->
     defs = []
@@ -3244,7 +3600,7 @@ exports.Switch = class Switch extends Base
         fragments = fragments.concat @makeCode(idt1 + "case "), cond.compileToFragments(o, LEVEL_PAREN), @makeCode(":\n")
       fragments = fragments.concat body, @makeCode('\n') if (body = block.compileToFragments o, LEVEL_TOP).length > 0
       break if i is @cases.length - 1 and not @otherwise
-      expr = @lastNonComment block.expressions
+      expr = @lastNode block.expressions
       continue if expr instanceof Return or expr instanceof Throw or (expr instanceof Literal and expr.jumps() and expr.value isnt 'debugger')
       fragments.push cond.makeCode(idt2 + 'break;\n')
     if @otherwise and @otherwise.expressions.length
@@ -3258,15 +3614,15 @@ exports.Switch = class Switch extends Base
 # to the last line of each clause.
 #
 # Single-expression **Ifs** are compiled into conditional operators if possible,
-# because ternaries are already proper expressions, and don't need conversion.
+# because ternaries are already proper expressions, and don’t need conversion.
 exports.If = class If extends Base
   constructor: (condition, @body, options = {}) ->
     super()
-
     @condition = if options.type is 'unless' then condition.invert() else condition
     @elseBody  = null
     @isChain   = false
     {@soak}    = options
+    moveComments @condition, @ if @condition.comments
 
   children: ['condition', 'body', 'elseBody']
 
@@ -3390,9 +3746,50 @@ utility = (name, o) ->
     root.assign ref, UTILITIES[name] o
     root.utilities[name] = ref
 
-multident = (code, tab) ->
-  code = code.replace /\n/g, '$&' + tab
-  code.replace /\s+$/, ''
+multident = (code, tab, includingFirstLine = yes) ->
+  endsWithNewLine = code[code.length - 1] is '\n'
+  code = (if includingFirstLine then tab else '') + code.replace /\n/g, "$&#{tab}"
+  code = code.replace /\s+$/, ''
+  code = code + '\n' if endsWithNewLine
+  code
+
+# Wherever in CoffeeScript 1 we might’ve inserted a `makeCode "#{@tab}"` to
+# indent a line of code, now we must account for the possibility of comments
+# preceding that line of code. If there are such comments, indent each line of
+# such comments, and _then_ indent the first following line of code.
+indentInitial = (fragments, node) ->
+  for fragment, fragmentIndex in fragments
+    if fragment.isHereComment
+      fragment.code = multident fragment.code, node.tab
+    else
+      fragments.splice fragmentIndex, 0, node.makeCode "#{node.tab}"
+      break
+  fragments
+
+hasLineComments = (node) ->
+  return no unless node.comments
+  for comment in node.comments
+    return yes if comment.here is no
+  return no
+
+# Move the `comments` property from one object to another, deleting it from
+# the first object.
+moveComments = (from, to) ->
+  return unless from?.comments
+  attachCommentsToNode from.comments, to
+  delete from.comments
+
+# Sometimes when compiling a node, we want to insert a fragment at the start
+# of an array of fragments; but if the start has one or more comment fragments,
+# we want to insert this fragment after those but before any non-comments.
+unshiftAfterComments = (fragments, fragmentToInsert) ->
+  inserted = no
+  for fragment, fragmentIndex in fragments when not fragment.isComment
+    fragments.splice fragmentIndex, 0, fragmentToInsert
+    inserted = yes
+    break
+  fragments.push fragmentToInsert unless inserted
+  fragments
 
 isLiteralArguments = (node) ->
   node instanceof IdentifierLiteral and node.value is 'arguments'

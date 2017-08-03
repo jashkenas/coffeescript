@@ -574,6 +574,17 @@ textarea {
     </li>
     <li class="nav-item">
       <a href="#usage" class="nav-link" data-action="sidebar-nav">Usage</a>
+      <ul class="nav">
+        <li class="nav-item">
+          <a href="#cli" class="nav-link" data-action="sidebar-nav">Command Line</a>
+        </li>
+        <li class="nav-item">
+          <a href="#es2015plus-output" class="nav-link" data-action="sidebar-nav">ES2015+ Output</a>
+        </li>
+        <li class="nav-item">
+          <a href="#nodejs-usage" class="nav-link" data-action="sidebar-nav">Node.js</a>
+        </li>
+      </ul>
     </li>
     <li class="nav-item">
       <a href="#language" class="nav-link" data-action="sidebar-nav">Language Reference</a>
@@ -657,6 +668,9 @@ textarea {
           <a href="#jsx" class="nav-link" data-action="sidebar-nav">JSX</a>
         </li>
       </ul>
+    </li>
+    <li class="nav-item">
+      <a href="#type-annotations" class="nav-link" data-action="sidebar-nav">Type Annotations</a>
     </li>
     <li class="nav-item">
       <a href="#literate" class="nav-link" data-action="sidebar-nav">Literate CoffeeScript</a>
@@ -804,22 +818,27 @@ cubes = (math.cube num for num in list)
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="overview-js">var cubes, list, math, num, number, opposite, race, square;
+      <textarea class="javascript-output" id="overview-js">// Assignment:
+var cubes, list, math, num, number, opposite, race, square;
 
 number = 42;
 
 opposite = true;
 
 if (opposite) {
+  // Conditions:
   number = -42;
 }
 
+// Functions:
 square = function(x) {
   return x * x;
 };
 
+// Arrays:
 list = [1, 2, 3, 4, 5];
 
+// Objects:
 math = {
   root: Math.sqrt,
   square: square,
@@ -828,14 +847,17 @@ math = {
   }
 };
 
+// Splats:
 race = function(winner, ...runners) {
   return print(winner, runners);
 };
 
 if (typeof elvis !== "undefined" && elvis !== null) {
+  // Existence:
   alert("I knew it!");
 }
 
+// Array comprehensions:
 cubes = (function() {
   var i, len, results;
   results = [];
@@ -885,6 +907,9 @@ cubes = (function() {
       </section>
       <section id="usage">
         <h2>Usage</h2>
+
+        <section id="cli">
+          <h3>Command Line</h3>
 <p>Once installed, you should have access to the <code>coffee</code> command, which can execute scripts, compile <code>.coffee</code> files into <code>.js</code>, and provide an interactive REPL. The <code>coffee</code> command takes the following options:</p>
 <table>
 <thead>
@@ -960,7 +985,7 @@ cubes = (function() {
 </tr>
 </tbody>
 </table>
-<h3>Examples:</h3>
+<h4>Examples:</h4>
 <ul>
 <li>Compile a directory tree of <code>.coffee</code> files in <code>src</code> into a parallel tree of <code>.js</code> files in <code>lib</code>:<br>
 <code>coffee --compile --output lib/ src/</code></li>
@@ -975,15 +1000,21 @@ cubes = (function() {
 <li>Start the CoffeeScript REPL (<code>Ctrl-D</code> to exit, <code>Ctrl-V</code>for multi-line):<br>
 <code>coffee</code></li>
 </ul>
-<h3>ES2015+ Output</h3>
+
+        </section>
+        <section id="es2015plus-output">
+          <h3>ES2015+ Output</h3>
 <p>CoffeeScript 2 outputs the latest ES2015+ syntax. If you’re looking for a single tool that takes CoffeeScript input and generates JavaScript output that runs in any JavaScript runtime, assuming you opt out of certain newer features, stick to <a href="/v1/">CoffeeScript 1.x</a>. CoffeeScript 2 <a href="#breaking-changes">breaks compatibility</a> with certain CoffeeScript 1.x features in order to conform with the ES2015+ specifications, and generate more idiomatic output (a CoffeeScript <code>=&gt;</code> becomes an ES <code>=&gt;</code>; a CoffeeScript <code>class</code> becomes an ES <code>class</code>; and so on).</p>
 <p>Since the CoffeeScript 2 compiler outputs ES2015+ syntax, it is your responsibility to either ensure that your target JavaScript runtime(s) support all these features, or that you pass the output through another transpiler like <a href="http://babeljs.io/">Babel</a>, <a href="https://github.com/rollup/rollup">Rollup</a> or <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>. In general, <a href="http://node.green/">CoffeeScript 2’s output is supported as is by Node.js 7.6+</a>, except for modules and JSX which require transpilation.</p>
 <p>There are many great task runners for setting up JavaScript build chains, such as <a href="http://gulpjs.com/">Gulp</a>, <a href="https://webpack.github.io/">Webpack</a>, <a href="https://gruntjs.com/">Grunt</a> and <a href="http://broccolijs.com/">Broccoli</a>. If you’re looking for a very minimal solution to get started, you can use <a href="https://babeljs.io/docs/plugins/preset-env/">babel-preset-env</a> and the command line:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --global coffeescript@next
 npm install --save-dev coffeescript@next babel-cli babel-preset-env
-coffee --print *.coffee | babel --presets env &gt; app.js
+coffee --<span class="built_in">print</span> *.coffee | babel --presets env &gt; app.js
 </code></pre>
-</blockquote><h3>Node.js</h3>
+</blockquote>
+        </section>
+        <section id="nodejs-usage">
+          <h3>Node.js</h3>
 <p>If you’d like to use Node.js’ CommonJS to <code>require</code> CoffeeScript files, e.g. <code>require './app.coffee'</code>, you must first “register” CoffeeScript as an extension:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="built_in">require</span> <span class="string">'coffeescript/register'</span>
 
@@ -1003,6 +1034,7 @@ eval CoffeeScript.compile <span class="string">'console.log "Mmmmm, I could real
 <li><code>options.header</code>, boolean: if true, output the <code>Generated by CoffeeScript</code> header.</li>
 </ul>
 
+        </section>
       </section>
       <section id="language">
         <h2>Language Reference</h2>
@@ -1267,44 +1299,35 @@ output = `${turtle.name} wears an ${turtle.mask} mask. Watch out for his ${turtl
         </section>
         <section id="comments">
           <h2>Comments</h2>
-<p>In CoffeeScript, comments are denoted by the <code>#</code> character. Everything from a <code>#</code> to the end of the line is ignored by the compiler, and will be excluded from the JavaScript output.</p>
+<p>In CoffeeScript, comments are denoted by the <code>#</code> character to the end of a line, or from <code>###</code> to the next appearance of <code>###</code>. Comments are ignored by the compiler, though the compiler makes its best effort at reinserting your comments into the output JavaScript after compilation.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="comment">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
-      <textarea class="coffeescript-input" id="comment-coffee">code = 2 * 617 # The code is 1234
-</textarea>
-    </div>
-    <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="comment-js">var code;
-
-code = 2 * 617;
-</textarea>
-    </div>
-  </div>
-  
-</aside>
-<p>Sometimes you’d like to pass a block comment through to the generated JavaScript. For example, when you need to embed a licensing header at the top of a file. Block comments, which mirror the syntax for block strings, are preserved in the generated output.</p>
-<aside class="code-example container-fluid bg-ribbed-dark" data-example="block_comment">
-  <div class="row">
-    <div class="col-md-6 coffeescript-input-column">
-      <textarea class="coffeescript-input" id="block_comment-coffee">###
-SkinnyMochaHalfCaffScript Compiler v1.0
+      <textarea class="coffeescript-input" id="comment-coffee">###
+Fortune Cookie Reader v1.0
 Released under the MIT License
 ###
+
+sayFortune = (fortune) ->
+	console.log fortune # in bed!
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="block_comment-js">
-/*
-SkinnyMochaHalfCaffScript Compiler v1.0
+      <textarea class="javascript-output" id="comment-js">/*
+Fortune Cookie Reader v1.0
 Released under the MIT License
- */
+*/
+var sayFortune;
 
+sayFortune = function(fortune) {
+  return console.log(fortune); // in bed!
+};
 </textarea>
     </div>
   </div>
   
 </aside>
+<p>Inline <code>###</code> comments make <a href="#type-annotations">type annotations</a> possible.</p>
 
         </section>
         <section id="lexical-scope">
@@ -1538,7 +1561,8 @@ eat food for food in foods when food isnt 'chocolate'
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="array_comprehensions-js">var courses, dish, food, foods, i, j, k, l, len, len1, len2, ref;
+      <textarea class="javascript-output" id="array_comprehensions-js">// Eat lunch.
+var courses, dish, food, foods, i, j, k, l, len, len1, len2, ref;
 
 ref = ['toast', 'cheese', 'wine'];
 for (j = 0, len = ref.length; j < len; j++) {
@@ -1546,6 +1570,7 @@ for (j = 0, len = ref.length; j < len; j++) {
   eat(food);
 }
 
+// Fine five course dining.
 courses = ['greens', 'caviar', 'truffles', 'roast', 'cake'];
 
 for (i = k = 0, len1 = courses.length; k < len1; i = ++k) {
@@ -1553,6 +1578,7 @@ for (i = k = 0, len1 = courses.length; k < len1; i = ++k) {
   menu(i + 1, dish);
 }
 
+// Health conscious meal.
 foods = ['broccoli', 'spinach', 'chocolate'];
 
 for (l = 0, len2 = foods.length; l < len2; l++) {
@@ -1660,7 +1686,8 @@ lyrics = while num -= 1
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="while-js">var lyrics, num;
+      <textarea class="javascript-output" id="while-js">// Econ 101
+var lyrics, num;
 
 if (this.studyingEconomics) {
   while (supply > demand) {
@@ -1671,6 +1698,7 @@ if (this.studyingEconomics) {
   }
 }
 
+// Nursery Rhyme
 num = 6;
 
 lyrics = (function() {
@@ -1874,7 +1902,8 @@ globals = (name for name of window)[0...10]
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="expressions_comprehension-js">var globals, name;
+      <textarea class="javascript-output" id="expressions_comprehension-js">// The first ten global properties.
+var globals, name;
 
 globals = ((function() {
   var results;
@@ -1956,9 +1985,9 @@ tabs.selectTabAtIndex((tabs.currentIndex - count) %% tabs.length)
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="modulo-js">var modulo = function(a, b) { return (+a % (b = +b) + b) % b; };
 
--7 % 5 === -2;
+-7 % 5 === -2; // The remainder of 7 / 5
 
-modulo(-7, 5) === 3;
+modulo(-7, 5) === 3; // n %% 5 is always between 0 and 4
 
 tabs.selectTabAtIndex(modulo(tabs.currentIndex - count, tabs.length));
 </textarea>
@@ -2282,6 +2311,7 @@ theSwitch = 0;
       <textarea class="javascript-output" id="multiple_return_values-js">var city, forecast, temp, weatherReport;
 
 weatherReport = function(location) {
+  // Make an Ajax request to fetch the weather...
   return [location, 72, "Mostly Sunny"];
 };
 
@@ -2600,7 +2630,9 @@ countdown 3
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="async-js">var countdown, say, sleep;
+      <textarea class="javascript-output" id="async-js">// Your browser must support async/await and speech synthesis
+// to run this example.
+var countdown, say, sleep;
 
 sleep = function(ms) {
   return new Promise(function(resolve) {
@@ -2617,7 +2649,7 @@ countdown = async function(seconds) {
   var i, j, ref;
   for (i = j = ref = seconds; ref <= 1 ? j <= 1 : j >= 1; i = ref <= 1 ? ++j : --j) {
     say(i);
-    await sleep(1000);
+    await sleep(1000); // wait one second
   }
   return say("Blastoff!");
 };
@@ -2870,6 +2902,8 @@ grade = (function() {
       return 'A';
   }
 })();
+
+// grade == 'C'
 </textarea>
     </div>
   </div>
@@ -2947,21 +2981,21 @@ healthy = (200 > cholesterol && cholesterol > 60);
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="heregexes">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
-      <textarea class="coffeescript-input" id="heregexes-coffee">OPERATOR = /// ^ (
-  ?: [-=]>             # function
-   | [-+*/%<>&|^!?=]=  # compound assign / compare
-   | >>>=?             # zero-fill right shift
-   | ([-+:])\1         # doubles
-   | ([&|<>])\2=?      # logic / shift
-   | \?\.              # soak access
-   | \.{2,3}           # range or splat
-) ///
+      <textarea class="coffeescript-input" id="heregexes-coffee">NUMBER     = ///
+  ^ 0b[01]+    |              # binary
+  ^ 0o[0-7]+   |              # octal
+  ^ 0x[\da-f]+ |              # hex
+  ^ \d*\.?\d+ (?:e[+-]?\d+)?  # decimal
+///i
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="heregexes-js">var OPERATOR;
+      <textarea class="javascript-output" id="heregexes-js">var NUMBER;
 
-OPERATOR = /^(?:[-=]>|[-+*\/%<>&|^!?=]=|>>>=?|([-+:])\1|([&|<>])\2=?|\?\.|\.{2,3})/;
+NUMBER = /^0b[01]+|^0o[0-7]+|^0x[\da-f]+|^\d*\.?\d+(?:e[+-]?\d+)?/i; // binary
+// octal
+// hex
+// decimal
 </textarea>
     </div>
   </div>
@@ -3251,6 +3285,37 @@ renderStarRating = function({rating, maxStars}) {
 
         </section>
       </section>
+      <section id="type-annotations">
+        <h2>Type Annotations</h2>
+<p>Static type checking can be achieved in CoffeeScript by using <a href="https://flow.org/">Flow</a>’s <a href="https://flow.org/en/docs/types/comments/">Comment Types syntax</a>:</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="type_annotations">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="type_annotations-coffee"># @flow
+
+fn = (str ###: string ###, num ###: number ###) ###: string ### ->
+  str + num
+</textarea>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="type_annotations-js">// @flow
+var fn;
+
+fn = function(str/*: string */, num/*: number */)/*: string */ {
+  return str + num;
+};
+</textarea>
+    </div>
+  </div>
+  
+</aside>
+<p>CoffeeScript does not do any type checking itself; the JavaScript output you see above needs to get passed to Flow for it to validate your code. We expect most people will use a <a href="#es2015plus-output">build tool</a> for this, but here’s how to do it the simplest way possible using the <a href="#cli">CoffeeScript</a> and <a href="https://flow.org/en/docs/usage/">Flow</a> command-line tools, assuming you’ve already <a href="https://flow.org/en/docs/install/">installed Flow</a> and the <a href="#installation">latest CoffeeScript</a> in your project folder:</p>
+<blockquote class="uneditable-code-block"><pre><code class="language-bash">coffee --bare --no-header --compile app.coffee &amp;&amp; npm run flow
+</code></pre>
+</blockquote><p><code>--bare</code> and <code>--no-header</code> are important because Flow requires the first line of the file to be the comment <code>// @flow</code>. If you configure your build chain to compile CoffeeScript and pass the result to Flow in-memory, you can get better performance than this example; and a proper build tool should be able to watch your CoffeeScript files and recompile and type-check them for you on save.</p>
+<p>If you know of another way to achieve static type checking with CoffeeScript, please <a href="https://github.com/jashkenas/coffeescript/issues/new">create an issue</a> and let us know.</p>
+
+      </section>
       <section id="literate">
         <h2>Literate CoffeeScript</h2>
 <p>Besides being used as an ordinary programming language, CoffeeScript may also be written in “literate” mode. If you name your file with a <code>.litcoffee</code> extension, you can write it as a Markdown document — a document that also happens to be executable CoffeeScript code. The compiler will treat any indented blocks (Markdown’s way of indicating source code) as executable code, and ignore the rest as comments. Code blocks must also be separated from comments by at least one blank line.</p>
@@ -3509,7 +3574,7 @@ outer = function() {
   return inner();
 };
 
-outer(1, 2);
+outer(1, 2); // Returns '' in CoffeeScript 1.x, '1, 2' in CoffeeScript 2
 </textarea>
     </div>
   </div>
@@ -3541,7 +3606,7 @@ f = function(a = 1) {
   return a;
 };
 
-f(null);
+f(null); // Returns 1 in CoffeeScript 1.x, null in CoffeeScript 2
 </textarea>
     </div>
   </div>
@@ -3568,7 +3633,7 @@ a  # Equals 1 in CoffeeScript 1.x, null in CoffeeScript 2
   a: null
 });
 
-a;
+a; // Equals 1 in CoffeeScript 1.x, null in CoffeeScript 2
 </textarea>
     </div>
   </div>
@@ -3729,7 +3794,8 @@ B.prototype.foo = -> A::foo.apply this, arguments
 </textarea>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="breaking_change_super_in_non-class_methods_refactor_with_apply-js">var A, B, extend, hasProp;
+      <textarea class="javascript-output" id="breaking_change_super_in_non-class_methods_refactor_with_apply-js">// Helper functions
+var A, B, extend, hasProp;
 
 hasProp = {}.hasOwnProperty;
 
@@ -3827,6 +3893,14 @@ x = <span class="number">2</span> + <span class="number">2</span>
       </section>
       <section id="changelog">
         <h2>Changelog</h2>
+<div class="anchor" id="1.12.7"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/1.12.6...1.12.7">1.12.7</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-07-16">July 16, 2017</time></span>
+</h2><ul>
+<li>Fix regressions in 1.12.6 related to chained function calls and indented <code>return</code> and <code>throw</code> arguments.</li>
+<li>The REPL no longer warns about assigning to <code>_</code>.</li>
+</ul>
 <div class="anchor" id="2.0.0-beta3"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta2...2.0.0-beta3">2.0.0-beta3</a>
