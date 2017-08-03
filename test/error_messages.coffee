@@ -1562,7 +1562,7 @@ test "CSX error: bare expressions not allowed", ->
     <div x=3 />
   ''',
   '''
-    [stdin]:1:8: error: expected wrapped or quoted CSX attribute
+    [stdin]:1:8: error: expected wrapped or quoted JSX attribute
     <div x=3 />
            ^
   '''

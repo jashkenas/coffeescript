@@ -1,9 +1,6 @@
-OPERATOR = /// ^ (
-  ?: [-=]>             # function
-   | [-+*/%<>&|^!?=]=  # compound assign / compare
-   | >>>=?             # zero-fill right shift
-   | ([-+:])\1         # doubles
-   | ([&|<>])\2=?      # logic / shift
-   | \?\.              # soak access
-   | \.{2,3}           # range or splat
-) ///
+NUMBER     = ///
+  ^ 0b[01]+    |              # binary
+  ^ 0o[0-7]+   |              # octal
+  ^ 0x[\da-f]+ |              # hex
+  ^ \d*\.?\d+ (?:e[+-]?\d+)?  # decimal
+///i

@@ -7,12 +7,29 @@
 
 {throwSyntaxError} = require './helpers'
 
+# Move attached comments from one token to another.
+moveComments = (fromToken, toToken) ->
+  return unless fromToken.comments
+  if toToken.comments and toToken.comments.length isnt 0
+    unshiftedComments = []
+    for comment in fromToken.comments
+      if comment.unshift
+        unshiftedComments.push comment
+      else
+        toToken.comments.push comment
+    toToken.comments = unshiftedComments.concat toToken.comments
+  else
+    toToken.comments = fromToken.comments
+  delete fromToken.comments
+
 # Create a generated token: one that exists due to a use of implicit syntax.
-generate = (tag, value, origin) ->
-  tok = [tag, value]
-  tok.generated = yes
-  tok.origin = origin if origin
-  tok
+# Optionally have this new token take the attached comments from another token.
+generate = (tag, value, origin, commentsToken) ->
+  token = [tag, value]
+  token.generated = yes
+  token.origin = origin if origin
+  moveComments commentsToken, token if commentsToken
+  token
 
 # The **Rewriter** class is used by the [Lexer](lexer.html), directly against
 # its internal array of tokens.
@@ -20,26 +37,34 @@ exports.Rewriter = class Rewriter
 
   # Rewrite the token stream in multiple passes, one logical filter at
   # a time. This could certainly be changed into a single pass through the
-  # stream, with a big ol' efficient switch, but it's much nicer to work with
-  # like this. The order of these passes matters -- indentation must be
+  # stream, with a big ol’ efficient switch, but it’s much nicer to work with
+  # like this. The order of these passes matters—indentation must be
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (@tokens) ->
-    # Helpful snippet for debugging:
-    #     console.log (t[0] + '/' + t[1] for t in @tokens).join ' '
+    # Set environment variable `DEBUG_TOKEN_STREAM` to `true` to output token
+    # debugging info. Also set `DEBUG_REWRITTEN_TOKEN_STREAM` to `true` to
+    # output the token stream after it has been rewritten by this file.
+    if process?.env?.DEBUG_TOKEN_STREAM
+      console.log 'Initial token stream:' if process.env.DEBUG_REWRITTEN_TOKEN_STREAM
+      console.log (t[0] + '/' + t[1] + (if t.comments then '*' else '') for t in @tokens).join ' '
     @removeLeadingNewlines()
     @closeOpenCalls()
     @closeOpenIndexes()
     @normalizeLines()
     @tagPostfixConditionals()
     @addImplicitBracesAndParens()
+    @rescueStowawayComments()
     @addLocationDataToGeneratedTokens()
     @enforceValidCSXAttributes()
     @fixOutdentLocationData()
+    if process?.env?.DEBUG_REWRITTEN_TOKEN_STREAM
+      console.log 'Rewritten token stream:' if process.env.DEBUG_TOKEN_STREAM
+      console.log (t[0] + '/' + t[1] + (if t.comments then '*' else '') for t in @tokens).join ' '
     @tokens
 
   # Rewrite the token stream, looking one token ahead and behind.
   # Allow the return value of the block to tell us how many tokens to move
-  # forwards (or backwards) in the stream, to make sure we don't miss anything
+  # forwards (or backwards) in the stream, to make sure we don’t miss anything
   # as tokens are inserted and removed, and the stream changes length under
   # our feet.
   scanTokens: (block) ->
@@ -66,8 +91,15 @@ exports.Rewriter = class Rewriter
   # Leading newlines would introduce an ambiguity in the grammar, so we
   # dispatch them here.
   removeLeadingNewlines: ->
+    # Find the index of the first non-`TERMINATOR` token.
     break for [tag], i in @tokens when tag isnt 'TERMINATOR'
-    @tokens.splice 0, i if i
+    return if i is 0
+    # If there are any comments attached to the tokens we’re about to discard,
+    # shift them forward to what will become the new first token.
+    for leadingNewlineToken in @tokens[0...i]
+      moveComments leadingNewlineToken, @tokens[i]
+    # Discard all the leading newline tokens.
+    @tokens.splice 0, i
 
   # The lexer has tagged the opening parenthesis of a method call. Match it with
   # its paired close.
@@ -95,32 +127,30 @@ exports.Rewriter = class Rewriter
       @detectEnd i + 1, condition, action if token[0] is 'INDEX_START'
       1
 
-  # Match tags in token stream starting at `i` with `pattern`, skipping 'HERECOMMENT's.
+  # Match tags in token stream starting at `i` with `pattern`.
   # `pattern` may consist of strings (equality), an array of strings (one of)
   # or null (wildcard). Returns the index of the match or -1 if no match.
   indexOfTag: (i, pattern...) ->
     fuzz = 0
     for j in [0 ... pattern.length]
-      fuzz += 2 while @tag(i + j + fuzz) is 'HERECOMMENT'
       continue if not pattern[j]?
       pattern[j] = [pattern[j]] if typeof pattern[j] is 'string'
       return -1 if @tag(i + j + fuzz) not in pattern[j]
     i + j + fuzz - 1
 
   # Returns `yes` if standing in front of something looking like
-  # `@<x>:`, `<x>:` or `<EXPRESSION_START><x>...<EXPRESSION_END>:`,
-  # skipping over 'HERECOMMENT's.
+  # `@<x>:`, `<x>:` or `<EXPRESSION_START><x>...<EXPRESSION_END>:`.
   looksObjectish: (j) ->
-    return yes if @indexOfTag(j, '@', null, ':') > -1 or @indexOfTag(j, null, ':') > -1
-    index = @indexOfTag(j, EXPRESSION_START)
-    if index > -1
+    return yes if @indexOfTag(j, '@', null, ':') isnt -1 or @indexOfTag(j, null, ':') isnt -1
+    index = @indexOfTag j, EXPRESSION_START
+    if index isnt -1
       end = null
       @detectEnd index + 1, ((token) -> token[0] in EXPRESSION_END), ((token, i) -> end = i)
       return yes if @tag(end + 1) is ':'
     no
 
   # Returns `yes` if current line of tokens contain an element of tags on same
-  # expression level. Stop searching at LINEBREAKS or explicit start of
+  # expression level. Stop searching at `LINEBREAKS` or explicit start of
   # containing balanced expression.
   findTagsBackwards: (i, tags) ->
     backStack = []
@@ -159,28 +189,28 @@ exports.Rewriter = class Rewriter
       inImplicitCall    = -> isImplicitCall stackTop()
       inImplicitObject  = -> isImplicitObject stackTop()
       # Unclosed control statement inside implicit parens (like
-      # class declaration or if-conditionals)
+      # class declaration or if-conditionals).
       inImplicitControl = -> inImplicit() and stackTop()?[0] is 'CONTROL'
 
       startImplicitCall = (idx) ->
         stack.push ['(', idx, ours: yes]
-        tokens.splice idx, 0, generate 'CALL_START', '(', ['', 'implicit function call', token[2]]
+        tokens.splice idx, 0, generate 'CALL_START', '(', ['', 'implicit function call', token[2]], prevToken
 
       endImplicitCall = ->
         stack.pop()
-        tokens.splice i, 0, generate 'CALL_END', ')', ['', 'end of input', token[2]]
+        tokens.splice i, 0, generate 'CALL_END', ')', ['', 'end of input', token[2]], prevToken
         i += 1
 
       startImplicitObject = (idx, startsLine = yes) ->
         stack.push ['{', idx, sameLine: yes, startsLine: startsLine, ours: yes]
         val = new String '{'
         val.generated = yes
-        tokens.splice idx, 0, generate '{', val, token
+        tokens.splice idx, 0, generate '{', val, token, prevToken
 
       endImplicitObject = (j) ->
         j = j ? i
         stack.pop()
-        tokens.splice j, 0, generate '}', '}', token
+        tokens.splice j, 0, generate '}', '}', token, prevToken
         i += 1
 
       implicitObjectContinues = (j) =>
@@ -192,7 +222,7 @@ exports.Rewriter = class Rewriter
         return no unless nextTerminatorIdx?
         @looksObjectish nextTerminatorIdx + 1
 
-      # Don't end an implicit call/object on next indent if any of these are in an argument/value
+      # Don’t end an implicit call/object on next indent if any of these are in an argument/value.
       if (
         (inImplicitCall() or inImplicitObject()) and tag in CONTROL_IN_IMPLICIT or
         inImplicitObject() and prevTag is ':' and tag is 'FOR'
@@ -205,8 +235,7 @@ exports.Rewriter = class Rewriter
         # An `INDENT` closes an implicit call unless
         #
         #  1. We have seen a `CONTROL` argument on the line.
-        #  2. The last token before the indent is part of the list below
-        #
+        #  2. The last token before the indent is part of the list below.
         if prevTag not in ['=>', '->', '[', '(', ',', '{', 'ELSE', '=']
           while inImplicitCall() or inImplicitObject() and prevTag isnt ':'
             if inImplicitCall()
@@ -217,7 +246,7 @@ exports.Rewriter = class Rewriter
         stack.push [tag, i]
         return forward(1)
 
-      # Straightforward start of explicit expression
+      # Straightforward start of explicit expression.
       if tag in EXPRESSION_START
         stack.push [tag, i]
         return forward(1)
@@ -251,7 +280,7 @@ exports.Rewriter = class Rewriter
       #       a: b
       #       c: d
       #
-      # Don't accept implicit calls of this type, when on the same line
+      # Don’t accept implicit calls of this type, when on the same line
       # as the control structures below as that may misinterpret constructs like:
       #
       #     if f
@@ -261,7 +290,7 @@ exports.Rewriter = class Rewriter
       #     if f(a: 1)
       #
       # which is probably always unintended.
-      # Furthermore don't allow this in literal arrays, as
+      # Furthermore don’t allow this in literal arrays, as
       # that creates grammatical ambiguities.
       if tag in IMPLICIT_FUNC and
          @indexOfTag(i + 1, 'INDENT') > -1 and @looksObjectish(i + 2) and
@@ -271,14 +300,13 @@ exports.Rewriter = class Rewriter
         stack.push ['INDENT', i + 2]
         return forward(3)
 
-      # Implicit objects start here
+      # Implicit objects start here.
       if tag is ':'
-        # Go back to the (implicit) start of the object
+        # Go back to the (implicit) start of the object.
         s = switch
           when @tag(i - 1) in EXPRESSION_END then start[1]
           when @tag(i - 2) is '@' then i - 2
           else i - 1
-        s -= 2 while @tag(s - 2) is 'HERECOMMENT'
 
         startsLine = s is 0 or @tag(s - 1) in LINEBREAKS or tokens[s - 1].newLine
         # Are we just continuing an already declared object?
@@ -325,17 +353,16 @@ exports.Rewriter = class Rewriter
                   not (tag in ['POST_IF', 'FOR', 'WHILE', 'UNTIL'] and startsLine and implicitObjectContinues(i + 1))
             endImplicitObject()
           # Close implicit objects when at end of line, line didn't end with a comma
-          # and the implicit object didn't start the line or the next line doesn't look like
+          # and the implicit object didn't start the line or the next line doesn’t look like
           # the continuation of an object.
           else if inImplicitObject() and tag is 'TERMINATOR' and prevTag isnt ',' and
                   not (startsLine and @looksObjectish(i + 1))
-            return forward 1 if nextTag is 'HERECOMMENT'
             endImplicitObject()
           else
             break
 
       # Close implicit object if comma is the last character
-      # and what comes after doesn't look like it belongs.
+      # and what comes after doesn’t look like it belongs.
       # This is used for trailing commas and calls, like:
       #
       #     x =
@@ -352,22 +379,102 @@ exports.Rewriter = class Rewriter
         # When nextTag is OUTDENT the comma is insignificant and
         # should just be ignored so embed it in the implicit object.
         #
-        # When it isn't the comma go on to play a role in a call or
+        # When it isn’t the comma go on to play a role in a call or
         # array further up the stack, so give it a chance.
-
         offset = if nextTag is 'OUTDENT' then 1 else 0
         while inImplicitObject()
           endImplicitObject i + offset
       return forward(1)
 
-  # Make sure only strings and wrapped expressions are used in CSX attributes
+  # Make sure only strings and wrapped expressions are used in CSX attributes.
   enforceValidCSXAttributes: ->
     @scanTokens (token, i, tokens) ->
       if token.csxColon
         next = tokens[i + 1]
         if next[0] not in ['STRING_START', 'STRING', '(']
-          throwSyntaxError 'expected wrapped or quoted CSX attribute', next[2]
+          throwSyntaxError 'expected wrapped or quoted JSX attribute', next[2]
       return 1
+
+  # Not all tokens survive processing by the parser. To avoid comments getting
+  # lost into the ether, find comments attached to doomed tokens and move them
+  # to a token that will make it to the other side.
+  rescueStowawayComments: ->
+    insertPlaceholder = (token, j, tokens, method) ->
+      tokens[method] generate 'TERMINATOR', '\n', tokens[j] unless tokens[j][0] is 'TERMINATOR'
+      tokens[method] generate 'JS', '', tokens[j], token
+
+    shiftCommentsForward = (token, i, tokens) ->
+      # Find the next surviving token and attach this token’s comments to it,
+      # with a flag that we know to output such comments *before* that
+      # token’s own compilation. (Otherwise comments are output following
+      # the token they’re attached to.)
+      j = i
+      j++ while j isnt tokens.length and tokens[j][0] in DISCARDED
+      unless j is tokens.length or tokens[j][0] in DISCARDED
+        comment.unshift = yes for comment in token.comments
+        moveComments token, tokens[j]
+        return 1
+      else # All following tokens are doomed!
+        j = tokens.length - 1
+        insertPlaceholder token, j, tokens, 'push'
+        # The generated tokens were added to the end, not inline, so we don’t skip.
+        return 1
+
+    shiftCommentsBackward = (token, i, tokens) ->
+      # Find the last surviving token and attach this token’s comments to it.
+      j = i
+      j-- while j isnt -1 and tokens[j][0] in DISCARDED
+      unless j is -1 or tokens[j][0] in DISCARDED
+        moveComments token, tokens[j]
+        return 1
+      else # All previous tokens are doomed!
+        insertPlaceholder token, 0, tokens, 'unshift'
+        # We added two tokens, so shift forward to account for the insertion.
+        return 3
+
+    @scanTokens (token, i, tokens) ->
+      return 1 unless token.comments
+      ret = 1
+      if token[0] in DISCARDED
+        # This token won’t survive passage through the parser, so we need to
+        # rescue its attached tokens and redistribute them to nearby tokens.
+        # Comments that don’t start a new line can shift backwards to the last
+        # safe token, while other tokens should shift forward.
+        dummyToken = comments: []
+        j = token.comments.length - 1
+        until j is -1
+          if token.comments[j].newLine is no and token.comments[j].here is no
+            dummyToken.comments.unshift token.comments[j]
+            token.comments.splice j, 1
+          j--
+        if dummyToken.comments.length isnt 0
+          ret = shiftCommentsBackward dummyToken, i - 1, tokens
+        if token.comments.length isnt 0
+          shiftCommentsForward token, i, tokens
+      else
+        # If any of this token’s comments start a line—there’s only
+        # whitespace between the preceding newline and the start of the
+        # comment—and this isn’t one of the special `JS` tokens, then
+        # shift this comment forward to precede the next valid token.
+        # `Block.compileComments` also has logic to make sure that
+        # “starting new line” comments follow or precede the nearest
+        # newline relative to the token that the comment is attached to,
+        # but that newline might be inside a `}` or `)` or other generated
+        # token that we really want this comment to output after. Therefore
+        # we need to shift the comments here, avoiding such generated and
+        # discarded tokens.
+        dummyToken = comments: []
+        j = token.comments.length - 1
+        until j is -1
+          if token.comments[j].newLine and not token.comments[j].unshift and
+             not (token[0] is 'JS' and token.generated)
+            dummyToken.comments.unshift token.comments[j]
+            token.comments.splice j, 1
+          j--
+        if dummyToken.comments.length isnt 0
+          ret = shiftCommentsForward dummyToken, i + 1, tokens
+      delete token.comments if token.comments?.length is 0
+      ret
 
   # Add location data to all tokens generated by the rewriter.
   addLocationDataToGeneratedTokens: ->
@@ -387,9 +494,9 @@ exports.Rewriter = class Rewriter
         last_column:  column
       return 1
 
-  # OUTDENT tokens should always be positioned at the last character of the
-  # previous token, so that AST nodes ending in an OUTDENT token end up with a
-  # location corresponding to the last "real" token under the node.
+  # `OUTDENT` tokens should always be positioned at the last character of the
+  # previous token, so that AST nodes ending in an `OUTDENT` token end up with a
+  # location corresponding to the last “real” token under the node.
   fixOutdentLocationData: ->
     @scanTokens (token, i, tokens) ->
       return 1 unless token[0] is 'OUTDENT' or
@@ -403,9 +510,9 @@ exports.Rewriter = class Rewriter
         last_column:  prevLocationData.last_column
       return 1
 
-  # Because our grammar is LALR(1), it can't handle some single-line
+  # Because our grammar is LALR(1), it can’t handle some single-line
   # expressions that lack ending delimiters. The **Rewriter** adds the implicit
-  # blocks, so it doesn't need to. To keep the grammar clean and tidy, trailing
+  # blocks, so it doesn’t need to. To keep the grammar clean and tidy, trailing
   # newlines within expressions are removed and the indentation tokens of empty
   # blocks are added.
   normalizeLines: ->
@@ -453,7 +560,6 @@ exports.Rewriter = class Rewriter
   # Tag postfix conditionals as such, so that we can parse them with a
   # different precedence.
   tagPostfixConditionals: ->
-
     original = null
 
     condition = (token, i) ->
@@ -503,7 +609,7 @@ BALANCED_PAIRS = [
   ['REGEX_START', 'REGEX_END']
 ]
 
-# The inverse mappings of `BALANCED_PAIRS` we're trying to fix up, so we can
+# The inverse mappings of `BALANCED_PAIRS` we’re trying to fix up, so we can
 # look things up from either end.
 exports.INVERSES = INVERSES = {}
 
@@ -511,9 +617,9 @@ exports.INVERSES = INVERSES = {}
 EXPRESSION_START = []
 EXPRESSION_END   = []
 
-for [left, rite] in BALANCED_PAIRS
-  EXPRESSION_START.push INVERSES[rite] = left
-  EXPRESSION_END  .push INVERSES[left] = rite
+for [left, right] in BALANCED_PAIRS
+  EXPRESSION_START.push INVERSES[right] = left
+  EXPRESSION_END  .push INVERSES[left] = right
 
 # Tokens that indicate the close of a clause of an expression.
 EXPRESSION_CLOSE = ['CATCH', 'THEN', 'ELSE', 'FINALLY'].concat EXPRESSION_END
@@ -538,7 +644,7 @@ IMPLICIT_END     = ['POST_IF', 'FOR', 'WHILE', 'UNTIL', 'WHEN', 'BY',
   'LOOP', 'TERMINATOR']
 
 # Single-line flavors of block expressions that have unclosed endings.
-# The grammar can't disambiguate them, so we insert the implicit indentation.
+# The grammar can’t disambiguate them, so we insert the implicit indentation.
 SINGLE_LINERS    = ['ELSE', '->', '=>', 'TRY', 'FINALLY', 'THEN']
 SINGLE_CLOSERS   = ['TERMINATOR', 'CATCH', 'FINALLY', 'ELSE', 'OUTDENT', 'LEADING_WHEN']
 
@@ -550,3 +656,16 @@ CALL_CLOSERS     = ['.', '?.', '::', '?::']
 
 # Tokens that prevent a subsequent indent from ending implicit calls/objects
 CONTROL_IN_IMPLICIT = ['IF', 'TRY', 'FINALLY', 'CATCH', 'CLASS', 'SWITCH']
+
+# Tokens that are swallowed up by the parser, never leading to code generation.
+# You can spot these in `grammar.coffee` because the `o` function second
+# argument doesn’t contain a `new` call for these tokens.
+# `STRING_START` isn’t on this list because its `locationData` matches that of
+# the node that becomes `StringWithInterpolations`, and therefore
+# `addDataToNode` attaches `STRING_START`’s tokens to that node.
+DISCARDED = ['(', ')', '[', ']', '{', '}', '.', '..', '...', ',', '=', '++', '--', '?',
+  'AS', 'AWAIT', 'CALL_START', 'CALL_END', 'DEFAULT', 'ELSE', 'EXTENDS', 'EXPORT',
+  'FORIN', 'FOROF', 'FORFROM', 'IMPORT', 'INDENT', 'INDEX_SOAK', 'LEADING_WHEN',
+  'OUTDENT', 'PARAM_START', 'PARAM_END', 'REGEX_START', 'REGEX_END', 'RETURN',
+  'STRING_END', 'THROW', 'UNARY', 'YIELD'
+].concat IMPLICIT_UNSPACED_CALL.concat IMPLICIT_END.concat CALL_CLOSERS.concat CONTROL_IN_IMPLICIT

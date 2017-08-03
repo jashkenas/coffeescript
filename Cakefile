@@ -7,12 +7,13 @@ CoffeeScript              = require './lib/coffeescript'
 helpers                   = require './lib/coffeescript/helpers'
 
 # ANSI Terminal Colors.
-bold = red = green = reset = ''
+bold = red = green = yellow = reset = ''
 unless process.env.NODE_DISABLE_COLORS
-  bold  = '\x1B[0;1m'
-  red   = '\x1B[0;31m'
-  green = '\x1B[0;32m'
-  reset = '\x1B[0m'
+  bold   = '\x1B[0;1m'
+  red    = '\x1B[0;31m'
+  green  = '\x1B[0;32m'
+  yellow = '\x1B[0;33m'
+  reset  = '\x1B[0m'
 
 # Built file header.
 header = """
@@ -145,7 +146,14 @@ task 'build:browser', 'merge the built scripts into a single file for use in a b
   # Exclude the `modules` plugin in order to not break the `}(this));`
   # at the end of the above code block.
   presets.push ['env', {modules: no}] unless process.env.TRANSFORM is 'false'
-  presets.push 'babili' unless process.env.MINIFY is 'false'
+  babelOptions =
+    presets: presets
+    sourceType: 'script'
+  { code } = babel.transform code, babelOptions unless presets.length is 0
+  # Running Babel twice due to https://github.com/babel/babili/issues/614.
+  # Once that issue is fixed, move the `babili` preset back up into the
+  # `presets` array and run Babel once with both presets together.
+  presets = if process.env.MINIFY is 'false' then [] else ['babili']
   babelOptions =
     compact: process.env.MINIFY isnt 'false'
     presets: presets
@@ -377,11 +385,12 @@ runTests = (CoffeeScript) ->
 
   # Convenience aliases.
   global.CoffeeScript = CoffeeScript
-  global.Repl = require './lib/coffeescript/repl'
-  global.bold = bold
-  global.red = red
-  global.green = green
-  global.reset = reset
+  global.Repl   = require './lib/coffeescript/repl'
+  global.bold   = bold
+  global.red    = red
+  global.green  = green
+  global.yellow = yellow
+  global.reset  = reset
 
   # Our test helper function for delimiting different test cases.
   global.test = (description, fn) ->
