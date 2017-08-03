@@ -382,7 +382,10 @@ If <code>last</code> is not provided, this will simply return <code>first</code>
     first_line: first.first_line
     first_column: first.first_column
     last_line: last.last_line
-    last_column: last.last_column</pre></div></div>
+    last_column: last.last_column
+<span class="hljs-function">
+<span class="hljs-title">buildLocationHash</span> = <span class="hljs-params">(loc)</span> -&gt;</span>
+  <span class="hljs-string">"<span class="hljs-subst">#{loc.first_line}</span>x<span class="hljs-subst">#{loc.first_column}</span>-<span class="hljs-subst">#{loc.last_line}</span>x<span class="hljs-subst">#{loc.last_column}</span>"</span></pre></div></div>
             
         </li>
         
@@ -399,12 +402,8 @@ The object is returned either way.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.addLocationDataFn = <span class="hljs-function"><span class="hljs-params">(first, last)</span> -&gt;</span>
-  (obj) -&gt;
-    <span class="hljs-keyword">if</span> ((<span class="hljs-keyword">typeof</span> obj) <span class="hljs-keyword">is</span> <span class="hljs-string">'object'</span>) <span class="hljs-keyword">and</span> (!!obj[<span class="hljs-string">'updateLocationDataIfMissing'</span>])
-      obj.updateLocationDataIfMissing buildLocationData(first, last)
-
-    <span class="hljs-keyword">return</span> obj</pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.addDataToNode = <span class="hljs-function"><span class="hljs-params">(parserState, first, last)</span> -&gt;</span>
+  (obj) -&gt;</pre></div></div>
             
         </li>
         
@@ -414,6 +413,56 @@ The object is returned either way.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>Add location data</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> obj?.updateLocationDataIfMissing? <span class="hljs-keyword">and</span> first?
+      obj.updateLocationDataIfMissing buildLocationData(first, last)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Add comments data</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">unless</span> parserState.tokenComments
+      parserState.tokenComments = {}
+      <span class="hljs-keyword">for</span> token <span class="hljs-keyword">in</span> parserState.parser.tokens <span class="hljs-keyword">when</span> token.comments
+        tokenHash = buildLocationHash token[<span class="hljs-number">2</span>]
+        <span class="hljs-keyword">unless</span> parserState.tokenComments[tokenHash]?
+          parserState.tokenComments[tokenHash] = token.comments
+        <span class="hljs-keyword">else</span>
+          parserState.tokenComments[tokenHash].push token.comments...
+
+    <span class="hljs-keyword">if</span> obj.locationData?
+      objHash = buildLocationHash obj.locationData
+      <span class="hljs-keyword">if</span> parserState.tokenComments[objHash]?
+        attachCommentsToNode parserState.tokenComments[objHash], obj
+
+    obj
+
+exports.attachCommentsToNode = attachCommentsToNode = <span class="hljs-function"><span class="hljs-params">(comments, node)</span> -&gt;</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> comments? <span class="hljs-keyword">or</span> comments.length <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>
+  node.comments ?= []
+  node.comments.push comments...</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Convert jison location data to a string.
 <code>obj</code> can be a token, or a locationData.</p>
@@ -433,11 +482,11 @@ The object is returned either way.</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>A <code>.coffee.md</code> compatible version of <code>basename</code>, that returns the file sans-extension.</p>
 
@@ -456,11 +505,11 @@ The object is returned either way.</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Determine if a filename represents a CoffeeScript file.</p>
 
@@ -471,11 +520,11 @@ The object is returned either way.</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Determine if a filename represents a Literate CoffeeScript file.</p>
 
@@ -486,11 +535,11 @@ The object is returned either way.</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Throws a SyntaxError from a given location.
 The error’s <code>toString</code> will return an error message following the “standard”
@@ -507,11 +556,11 @@ marker showing where the error is.</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Instead of showing the compiler’s stacktrace, show our custom error message
 (this is useful when the error bubbles up in Node.js applications that
@@ -526,11 +575,11 @@ compile CoffeeScript for example).</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Update a compiler SyntaxError with source code information if it didn’t have
 it already.</p>
@@ -542,11 +591,11 @@ it already.</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Avoid screwing up the <code>stack</code> property of other errors (i.e. possible bugs).</p>
 
@@ -572,11 +621,11 @@ it already.</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Show only the first line on multi-line errors.</p>
 
@@ -588,11 +637,11 @@ it already.</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>Check to see if we’re running on a color-enabled TTY.</p>
 
