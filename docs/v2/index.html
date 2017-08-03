@@ -3893,6 +3893,24 @@ x = <span class="number">2</span> + <span class="number">2</span>
       </section>
       <section id="changelog">
         <h2>Changelog</h2>
+<div class="anchor" id="2.0.0-beta4"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta3...2.0.0-beta4">2.0.0-beta4</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-08-03">August 3, 2017</time></span>
+</h2><ul>
+<li>This release includes <a href="#1.12.7">all the changes from 1.12.6 to 1.12.7</a>.</li>
+<li><a href="#comments">Line comments</a> (starting with <code>#</code>) are now output in the generated JavaScript.</li>
+<li><a href="#comments">Block comments</a> (delimited by <code>###</code>) are now allowed anywhere, including inline where they previously weren’t possible. This provides support for <a href="#type-annotations">static type annotations</a> using Flow’s comments-based syntax.</li>
+<li>Spread syntax (<code>...</code> for objects) is now supported in JSX tags: <code>&lt;div {props...} /&gt;</code>.</li>
+<li>Argument parsing for scripts run via <code>coffee</code> is improved. See <a href="#breaking-changes-argument-parsing-and-shebang-lines">breaking changes</a>.</li>
+<li>CLI: Propagate <code>SIGINT</code> and <code>SIGTERM</code> signals when node is forked.</li>
+<li><code>await</code> in the REPL is now allowed without requiring a wrapper function.</li>
+<li><code>do super</code> is now allowed, and other accesses of <code>super</code> like <code>super.x.y</code> or <code>super['x'].y</code> now work.</li>
+<li>Splat/spread syntax triple dots are now allowed on either the left or the right (so <code>props...</code> or <code>...props</code> are both valid).</li>
+<li>Tagged template literals are recognized as callable functions.</li>
+<li>Bugfixes for object spread syntax in nested properties.</li>
+<li>Bugfixes for destructured function parameter default values.</li>
+</ul>
 <div class="anchor" id="1.12.7"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/1.12.6...1.12.7">1.12.7</a>
