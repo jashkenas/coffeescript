@@ -315,6 +315,8 @@ we need to recompile it to get a source map for <code>prepareStackTrace</code>.<
             <div class="content"><div class='highlight'><pre>  generateSourceMap = options.sourceMap <span class="hljs-keyword">or</span> options.inlineMap <span class="hljs-keyword">or</span> <span class="hljs-keyword">not</span> options.filename?
   filename = options.filename <span class="hljs-keyword">or</span> <span class="hljs-string">'&lt;anonymous&gt;'</span>
 
+  checkShebangLine filename, code
+
   sources[filename] = code
   map = <span class="hljs-keyword">new</span> SourceMap <span class="hljs-keyword">if</span> generateSourceMap
 
@@ -540,13 +542,11 @@ directly as a “Jison lexer”.</p>
       @yylineno = @yylloc.first_line
     <span class="hljs-keyword">else</span>
       tag = <span class="hljs-string">''</span>
-
     tag
   setInput: <span class="hljs-function"><span class="hljs-params">(tokens)</span> -&gt;</span>
     parser.tokens = tokens
     @pos = <span class="hljs-number">0</span>
-  upcomingInput: <span class="hljs-function">-&gt;</span>
-    <span class="hljs-string">""</span></pre></div></div>
+  upcomingInput: <span class="hljs-function">-&gt;</span> <span class="hljs-string">''</span></pre></div></div>
             
         </li>
         
@@ -757,7 +757,20 @@ positions.</p>
     <span class="hljs-keyword">break</span> <span class="hljs-keyword">if</span> frame.getFunction() <span class="hljs-keyword">is</span> exports.run
     <span class="hljs-string">"    at <span class="hljs-subst">#{formatSourcePosition frame, getSourceMapping}</span>"</span>
 
-  <span class="hljs-string">"<span class="hljs-subst">#{err.toString()}</span>\n<span class="hljs-subst">#{frames.join <span class="hljs-string">'\n'</span>}</span>\n"</span></pre></div></div>
+  <span class="hljs-string">"<span class="hljs-subst">#{err.toString()}</span>\n<span class="hljs-subst">#{frames.join <span class="hljs-string">'\n'</span>}</span>\n"</span>
+<span class="hljs-function">
+<span class="hljs-title">checkShebangLine</span> = <span class="hljs-params">(file, input)</span> -&gt;</span>
+  firstLine = input.split(<span class="hljs-regexp">/$/m</span>)[<span class="hljs-number">0</span>]
+  rest = firstLine?.match(<span class="hljs-regexp">/^#!\s*([^\s]+\s*)(.*)/</span>)
+  args = rest?[<span class="hljs-number">2</span>]?.split(<span class="hljs-regexp">/\s/</span>).filter (s) -&gt; s <span class="hljs-keyword">isnt</span> <span class="hljs-string">''</span>
+  <span class="hljs-keyword">if</span> args?.length &gt; <span class="hljs-number">1</span>
+    <span class="hljs-built_in">console</span>.error <span class="hljs-string">'''
+      The script to be run begins with a shebang line with more than one
+      argument. This script will fail on platforms such as Linux which only
+      allow a single argument.
+    '''</span>
+    <span class="hljs-built_in">console</span>.error <span class="hljs-string">"The shebang line was: '<span class="hljs-subst">#{firstLine}</span>' in file '<span class="hljs-subst">#{file}</span>'"</span>
+    <span class="hljs-built_in">console</span>.error <span class="hljs-string">"The arguments were: <span class="hljs-subst">#{JSON.stringify args}</span>"</span></pre></div></div>
             
         </li>
         

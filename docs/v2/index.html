@@ -778,7 +778,7 @@ textarea {
       <section id="overview">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.0.0-beta3">2.0.0-beta3</a></p>
+<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.0.0-beta4">2.0.0-beta4</a></p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install -g coffeescript@next
 </code></pre>
 </blockquote>
@@ -3444,7 +3444,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
         <section id="annotated-source">
           <h2>Annotated Source</h2>
-<p>You can browse the CoffeeScript 2.0.0-beta3 source in readable, annotated form <a href="http://coffeescript.org/v2/annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+<p>You can browse the CoffeeScript 2.0.0-beta4 source in readable, annotated form <a href="http://coffeescript.org/v2/annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="http://coffeescript.org/v2/annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
 <li><a href="http://coffeescript.org/v2/annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
@@ -3893,6 +3893,24 @@ x = <span class="number">2</span> + <span class="number">2</span>
       </section>
       <section id="changelog">
         <h2>Changelog</h2>
+<div class="anchor" id="2.0.0-beta4"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta3...2.0.0-beta4">2.0.0-beta4</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-08-03">August 3, 2017</time></span>
+</h2><ul>
+<li>This release includes <a href="#1.12.7">all the changes from 1.12.6 to 1.12.7</a>.</li>
+<li><a href="#comments">Line comments</a> (starting with <code>#</code>) are now output in the generated JavaScript.</li>
+<li><a href="#comments">Block comments</a> (delimited by <code>###</code>) are now allowed anywhere, including inline where they previously weren’t possible. This provides support for <a href="#type-annotations">static type annotations</a> using Flow’s comments-based syntax.</li>
+<li>Spread syntax (<code>...</code> for objects) is now supported in JSX tags: <code>&lt;div {props...} /&gt;</code>.</li>
+<li>Argument parsing for scripts run via <code>coffee</code> is improved. See <a href="#breaking-changes-argument-parsing-and-shebang-lines">breaking changes</a>.</li>
+<li>CLI: Propagate <code>SIGINT</code> and <code>SIGTERM</code> signals when node is forked.</li>
+<li><code>await</code> in the REPL is now allowed without requiring a wrapper function.</li>
+<li><code>do super</code> is now allowed, and other accesses of <code>super</code> like <code>super.x.y</code> or <code>super['x'].y</code> now work.</li>
+<li>Splat/spread syntax triple dots are now allowed on either the left or the right (so <code>props...</code> or <code>...props</code> are both valid).</li>
+<li>Tagged template literals are recognized as callable functions.</li>
+<li>Bugfixes for object spread syntax in nested properties.</li>
+<li>Bugfixes for destructured function parameter default values.</li>
+</ul>
 <div class="anchor" id="1.12.7"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/1.12.6...1.12.7">1.12.7</a>
