@@ -1742,3 +1742,28 @@ test "#3199: error message for throw indented comprehension", ->
       x for x in [1, 2, 3]
       ^
   '''
+
+test "#2998: Indentation mismatch in object shouldn’t produce two objects", ->
+  assertErrorFormat '''
+  colors =
+     45: 'cyan'
+     52: 'sepia'
+    100: 'olive'
+    124: 'red'
+  ''', '''
+    [stdin]:4:3: error: unexpected indentation
+      100: 'olive'
+      ^
+  '''
+
+  # Former object test that is now invalid because it looks too much like a mistake.
+  # It used to test that string-keyed objects shouldn’t suppress newlines.
+  assertErrorFormat '''
+    one =
+      '>!': 3
+    six: -> 10
+  ''', '''
+    [stdin]:3:1: error: unexpected indentation
+    six: -> 10
+    ^
+  '''

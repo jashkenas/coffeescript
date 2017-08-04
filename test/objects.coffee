@@ -113,12 +113,6 @@ ok obj.misdent.toString() is ',,,'
 #542: Objects leading expression statement should be parenthesized.
 {f: -> ok yes }.f() + 1
 
-# String-keyed objects shouldn't suppress newlines.
-one =
-  '>!': 3
-six: -> 10
-ok not one.six
-
 # Shorthand objects with property references.
 obj =
   ### comment one ###
@@ -696,4 +690,3 @@ test "#4579: Postfix for/while/until in first line of implicit object literals",
       baz: 1337
   arrayEq [4, 3, 2, 1, 0], six.foo.bar
   eq 1337, six.foo.baz
-
