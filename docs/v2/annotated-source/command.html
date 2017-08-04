@@ -180,7 +180,7 @@ useWinPathSep  = path.sep <span class="hljs-keyword">is</span> <span class="hljs
             </div>
             
             <div class="content"><div class='highlight'><pre>BANNER = <span class="hljs-string">'''
-  Usage: coffee [options] path/to/script.coffee -- [args]
+  Usage: coffee [options] path/to/script.coffee [args]
 
   If called without options, `coffee` will run your script.
 '''</span></pre></div></div>
@@ -260,7 +260,21 @@ Many flags cause us to divert before compiling anything. Flags passed after
             
             <div class="content"><div class='highlight'><pre>exports.run = <span class="hljs-function">-&gt;</span>
   optionParser = buildCSOptionParser()
-  parseOptions()</pre></div></div>
+  <span class="hljs-keyword">try</span> parseOptions()
+  <span class="hljs-keyword">catch</span> err
+    <span class="hljs-built_in">console</span>.error <span class="hljs-string">"option parsing error: <span class="hljs-subst">#{err.message}</span>"</span>
+    process.exit <span class="hljs-number">1</span>
+
+  <span class="hljs-keyword">if</span> (<span class="hljs-keyword">not</span> opts.doubleDashed) <span class="hljs-keyword">and</span> (opts.arguments[<span class="hljs-number">1</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'--'</span>)
+    printWarn <span class="hljs-string">'''
+      coffee was invoked with '--' as the second positional argument, which is
+      now deprecated. To pass '--' as an argument to a script to run, put an
+      additional '--' before the path to your script.
+
+      '--' will be removed from the argument list.
+    '''</span>
+    printWarn <span class="hljs-string">"The positional arguments were: <span class="hljs-subst">#{JSON.stringify opts.arguments}</span>"</span>
+    opts.arguments = [opts.arguments[<span class="hljs-number">0</span>]].concat opts.arguments[<span class="hljs-number">2.</span>.]</pre></div></div>
             
         </li>
         
@@ -842,6 +856,9 @@ the <code>node</code> binary, preserving the other options.</p>
     cwd:        process.cwd()
     env:        process.env
     stdio:      [<span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>]
+  <span class="hljs-keyword">for</span> signal <span class="hljs-keyword">in</span> [<span class="hljs-string">'SIGINT'</span>, <span class="hljs-string">'SIGTERM'</span>]
+    process.<span class="hljs-literal">on</span> signal, <span class="hljs-keyword">do</span> (signal) -&gt;
+      -&gt; p.kill signal
   p.<span class="hljs-literal">on</span> <span class="hljs-string">'exit'</span>, <span class="hljs-function"><span class="hljs-params">(code)</span> -&gt;</span> process.exit code</pre></div></div>
             
         </li>

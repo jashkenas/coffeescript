@@ -97,6 +97,17 @@ arrayEgal = (a, b) ->
     return no for el, idx in a when not arrayEgal el, b[idx]
     yes
 
+diffOutput = (expectedOutput, actualOutput) ->
+  expectedOutputLines = expectedOutput.split '\n'
+  actualOutputLines = actualOutput.split '\n'
+  for line, i in actualOutputLines
+    if line isnt expectedOutputLines[i]
+      actualOutputLines[i] = "#{yellow}#{line}#{reset}"
+  """Expected generated JavaScript to be:
+  #{reset}#{expectedOutput}#{red}
+    but instead it was:
+  #{reset}#{actualOutputLines.join '\n'}#{red}"""
+
 @eq = (a, b, msg) ->
   ok egal(a, b), msg or
   "Expected #{reset}#{a}#{red} to equal #{reset}#{b}#{red}"
@@ -108,12 +119,9 @@ arrayEgal = (a, b) ->
 @eqJS = (input, expectedOutput, msg) ->
   actualOutput = CoffeeScript.compile input, bare: yes
   .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace.
+  ok egal(expectedOutput, actualOutput), msg or diffOutput expectedOutput, actualOutput
 
-  ok egal(expectedOutput, actualOutput), msg or
-  """Expected generated JavaScript to be:
-  #{reset}#{expectedOutput}#{red}
-    but instead it was:
-  #{reset}#{actualOutput}#{red}"""
+@isWindows = -> process.platform is 'win32'
 
 
 @doesNotThrow = (fn) ->
@@ -153,9 +161,8 @@ msg = "failed #{total - passedTests} tests and #{msg}" unless yay
 say msg, (if yay then 'good' else 'bad')
 </script>
 
-<script type="text/x-coffeescript" class="test" id="argument-parsing">
+<script type="text/x-coffeescript" class="test" id="argument_parsing">
 return unless require?
-
 {buildCSOptionParser} = require '../lib/coffeescript/command'
 
 optionParser = buildCSOptionParser()
@@ -168,22 +175,22 @@ sameOptions = (opts1, opts2, msg) ->
     arrayEq opts1[k], opts2[k], msg
   yes
 
-test "combined options are still split after initial file name", ->
+test "combined options are not split after initial file name", ->
   argv = ['some-file.coffee', '-bc']
   parsed = optionParser.parse argv
-  expected = arguments: ['some-file.coffee', '-b', '-c']
+  expected = arguments: ['some-file.coffee', '-bc']
   sameOptions parsed, expected
 
   argv = ['some-file.litcoffee', '-bc']
   parsed = optionParser.parse argv
-  expected = arguments: ['some-file.litcoffee', '-b', '-c']
+  expected = arguments: ['some-file.litcoffee', '-bc']
   sameOptions parsed, expected
 
   argv = ['-c', 'some-file.coffee', '-bc']
   parsed = optionParser.parse argv
   expected =
     compile: yes
-    arguments: ['some-file.coffee', '-b', '-c']
+    arguments: ['some-file.coffee', '-bc']
   sameOptions parsed, expected
 
   argv = ['-bc', 'some-file.coffee', '-bc']
@@ -191,13 +198,15 @@ test "combined options are still split after initial file name", ->
   expected =
     bare: yes
     compile: yes
-    arguments: ['some-file.coffee', '-b', '-c']
+    arguments: ['some-file.coffee', '-bc']
   sameOptions parsed, expected
 
-test "combined options are not split after a '--'", ->
+test "combined options are not split after a '--', which is discarded", ->
   argv = ['--', '-bc']
   parsed = optionParser.parse argv
-  expected = arguments: ['-bc']
+  expected =
+    doubleDashed: yes
+    arguments: ['-bc']
   sameOptions parsed, expected
 
   argv = ['-bc', '--', '-bc']
@@ -205,30 +214,96 @@ test "combined options are not split after a '--'", ->
   expected =
     bare: yes
     compile: yes
+    doubleDashed: yes
     arguments: ['-bc']
   sameOptions parsed, expected
 
 test "options are not split after any '--'", ->
   argv = ['--', '--', '-bc']
   parsed = optionParser.parse argv
-  expected = arguments: ['--', '-bc']
+  expected =
+    doubleDashed: yes
+    arguments: ['--', '-bc']
   sameOptions parsed, expected
 
   argv = ['--', 'some-file.coffee', '--', 'arg']
   parsed = optionParser.parse argv
-  expected = arguments: ['some-file.coffee', '--', 'arg']
+  expected =
+    doubleDashed: yes
+    arguments: ['some-file.coffee', '--', 'arg']
   sameOptions parsed, expected
 
   argv = ['--', 'arg', 'some-file.coffee', '--', '-bc']
   parsed = optionParser.parse argv
-  expected = arguments: ['arg', 'some-file.coffee', '--', '-bc']
+  expected =
+    doubleDashed: yes
+    arguments: ['arg', 'some-file.coffee', '--', '-bc']
   sameOptions parsed, expected
 
-test "later '--' are removed", ->
+test "any non-option argument stops argument parsing", ->
+  argv = ['arg', '-bc']
+  parsed = optionParser.parse argv
+  expected = arguments: ['arg', '-bc']
+  sameOptions parsed, expected
+
+test "later '--' are not removed", ->
   argv = ['some-file.coffee', '--', '-bc']
   parsed = optionParser.parse argv
-  expected = arguments: ['some-file.coffee', '-bc']
+  expected = arguments: ['some-file.coffee', '--', '-bc']
   sameOptions parsed, expected
+
+test "throw on invalid options", ->
+  argv = ['-k']
+  throws -> optionParser.parse argv
+
+  argv = ['-ck']
+  throws (-> optionParser.parse argv), /multi-flag/
+
+  argv = ['-kc']
+  throws (-> optionParser.parse argv), /multi-flag/
+
+  argv = ['-oc']
+  throws (-> optionParser.parse argv), /needs an argument/
+
+  argv = ['-o']
+  throws (-> optionParser.parse argv), /value required/
+
+  argv = ['-co']
+  throws (-> optionParser.parse argv), /value required/
+
+  # Check if all flags in a multi-flag are recognized before checking if flags
+  # before the last need arguments.
+  argv = ['-ok']
+  throws (-> optionParser.parse argv), /unrecognized option/
+
+test "has expected help text", ->
+  ok optionParser.help() is '''
+
+Usage: coffee [options] path/to/script.coffee [args]
+
+If called without options, `coffee` will run your script.
+
+  -b, --bare         compile without a top-level function wrapper
+  -c, --compile      compile to JavaScript and save as .js files
+  -e, --eval         pass a string from the command line as input
+  -h, --help         display this help message
+  -i, --interactive  run an interactive CoffeeScript REPL
+  -j, --join         concatenate the source CoffeeScript before compiling
+  -m, --map          generate source map and save as .js.map files
+  -M, --inline-map   generate source map and include it directly in output
+  -n, --nodes        print out the parse tree that the parser produces
+      --nodejs       pass options directly to the "node" binary
+      --no-header    suppress the "Generated by" header
+  -o, --output       set the output directory for compiled JavaScript
+  -p, --print        print out the compiled JavaScript
+  -r, --require      require the given module before eval or REPL
+  -s, --stdio        listen for and compile scripts over stdio
+  -l, --literate     treat stdio as literate style coffeescript
+  -t, --tokens       print out the tokens that the lexer/rewriter produce
+  -v, --version      display the version number
+  -w, --watch        watch scripts for changes and rerun commands
+
+  '''
 
 </script>
 <script type="text/x-coffeescript" class="test" id="arrays">
@@ -774,6 +849,23 @@ test "object spread properties: ES2015", ->
   obj7 = {obj..., fn()..., {c: {d: 55, e: 66, f: {77}}}...}
   eq obj7.c.d, 55
   deepEqual obj6.c, {d: 33, e: 44, f: {g: 55}}
+  
+  obj =
+    a:
+      b:
+        c:
+          d:
+            e: {}
+  obj9 = {a:1, obj.a.b.c..., g:3}
+  deepEqual obj9.d, {e: {}}
+
+  a = "a"
+  c = "c"
+  obj9 = {a:1, obj[a].b[c]..., g:3}
+  deepEqual obj9.d, {e: {}}
+
+  obj9 = {a:1, obj.a["b"].c["d"]..., g:3}
+  deepEqual obj9["e"], {}
 
 test "bracket insertion when necessary", ->
   [a] = [0] ? [1]
@@ -3172,6 +3264,31 @@ test 'Bound method of immediately instantiated class with expression base class 
   {derivedBound} = a
   eq derivedBound(), 3
 
+test "#4591: super.x.y, super['x'].y", ->
+  class A
+    x:
+      y: 1
+      z: -> 2
+
+  class B extends A
+    constructor: ->
+      super()
+
+      @w = super.x.y
+      @v = super['x'].y
+      @u = super.x['y']
+      @t = super.x.z()
+      @s = super['x'].z()
+      @r = super.x['z']()
+
+  b = new B
+  eq 1, b.w
+  eq 1, b.v
+  eq 1, b.u
+  eq 2, b.t
+  eq 2, b.s
+  eq 2, b.r
+
 </script>
 <script type="text/x-coffeescript" class="test" id="cluster">
 # Cluster Module
@@ -3246,14 +3363,14 @@ test "comments in functions", ->
     false
     # comment
 
-  # comment
+  # comment before return
     true
 
   ok fn()
 
   fn2 = -> #comment
     fn()
-    # comment
+    # comment after return
 
   ok fn2()
 
@@ -3317,7 +3434,7 @@ test "block comments in objects", ->
   obj = {
     a: a
     ###
-    comment
+    block comment in object
     ###
     b: b
   }
@@ -3331,7 +3448,7 @@ test "block comments in YAML-style", ->
   obj =
     a: a
     ###
-    comment
+    block comment in YAML-style
     ###
     b: b
 
@@ -3352,7 +3469,7 @@ test "block comments in functions", ->
 
   fn2 = ->
     ###
-    block comment
+    block comment in function 1
     ###
     nonce
 
@@ -3361,7 +3478,7 @@ test "block comments in functions", ->
   fn3 = ->
     nonce
   ###
-  block comment
+  block comment in function 2
   ###
 
   eq nonce, fn3()
@@ -3369,7 +3486,7 @@ test "block comments in functions", ->
   fn4 = ->
     one = ->
       ###
-        block comment
+        block comment in function 3
       ###
       two = ->
         three = ->
@@ -3382,7 +3499,7 @@ test "block comments inside class bodies", ->
     a: ->
 
     ###
-    Comment
+    Comment in class body 1
     ###
     b: ->
 
@@ -3390,7 +3507,7 @@ test "block comments inside class bodies", ->
 
   class B
     ###
-    Comment
+    Comment in class body 2
     ###
     a: ->
     b: ->
@@ -3398,7 +3515,7 @@ test "block comments inside class bodies", ->
   ok B.prototype.a instanceof Function
 
 test "#2037: herecomments shouldn't imply line terminators", ->
-  do (-> ### ###; fail)
+  do (-> ### ###yes; fail)
 
 test "#2916: block comment before implicit call with implicit object", ->
   fn = (obj) -> ok obj.a
@@ -3413,16 +3530,16 @@ test "#3132: Format single-line block comment nicely", ->
   /* Single-line block comment without additional space here => */
   """
 
-test "#3132: Format multi-line block comment nicely", ->
+test "#3132: Format multiline block comment nicely", ->
   eqJS """
   ###
-  # Multi-line
+  # Multiline
   # block
   # comment
   ###""",
   """
   /*
-   * Multi-line
+   * Multiline
    * block
    * comment
    */
@@ -3438,13 +3555,13 @@ test "#3132: Format simple block comment nicely", ->
   /*
   No
   Preceding hash
-   */
+  */
   """
 
 
 test "#3132: Format indented block-comment nicely", ->
   eqJS """
-  fn = () ->
+  fn = ->
     ###
     # Indented
     Multiline
@@ -3454,7 +3571,6 @@ test "#3132: Format indented block-comment nicely", ->
   var fn;
 
   fn = function() {
-
     /*
      * Indented
     Multiline
@@ -3543,22 +3659,18 @@ test "#3132: Place block-comments nicely", ->
 
   DummyClass = (function() {
     class DummyClass {
-
       /**
        * @constructor
        */
-
       constructor() {}
 
     };
-
 
     /**
      * Singleton reference
      *
      * @type {DummyClass}
      */
-
     DummyClass.instance = new DummyClass();
 
     return DummyClass;
@@ -3590,6 +3702,568 @@ test "#3761: Multiline comment at end of an object", ->
 test "#4375: UTF-8 characters in comments", ->
   # 智に働けば角が立つ、情に掉させば流される。
   ok yes
+
+test "#4290: Block comments in array literals", ->
+  arr = [
+    ###  ###
+    3
+    ###
+      What is the meaning of life, the universe, and everything?
+    ###
+    42
+  ]
+  arrayEq arr, [3, 42]
+
+test "Block comments in array literals are properly indented 1", ->
+  eqJS '''
+  arr = [
+    ### ! ###
+    3
+    42
+  ]''', '''
+  var arr;
+
+  arr = [/* ! */ 3, 42];'''
+
+test "Block comments in array literals are properly indented 2", ->
+  eqJS '''
+  arr = [
+    ###  ###
+    3
+    ###
+      What is the meaning of life, the universe, and everything?
+    ###
+    42
+  ]''', '''
+  var arr;
+
+  arr = [
+    /*  */
+    3,
+    /*
+      What is the meaning of life, the universe, and everything?
+    */
+    42
+  ];'''
+
+test "Block comments in array literals are properly indented 3", ->
+  eqJS '''
+  arr = [
+    ###
+      How many stooges are there?
+    ###
+    3
+    ### Who’s on first? ###
+    'Who'
+  ]''', '''
+  var arr;
+
+  arr = [
+    /*
+      How many stooges are there?
+    */
+    3,
+    /* Who’s on first? */
+    'Who'
+  ];'''
+
+test "Block comments in array literals are properly indented 4", ->
+  eqJS '''
+  if yes
+    arr = [
+      1
+      ###
+        How many stooges are there?
+      ###
+      3
+      ### Who’s on first? ###
+      'Who'
+    ]''', '''
+  var arr;
+
+  if (true) {
+    arr = [
+      1,
+      /*
+        How many stooges are there?
+      */
+      3,
+      /* Who’s on first? */
+      'Who'
+    ];
+  }'''
+
+test "Line comments in array literals are properly indented 1", ->
+  eqJS '''
+  arr = [
+    # How many stooges are there?
+    3
+    # Who’s on first?
+    'Who'
+  ]''', '''
+  var arr;
+
+  arr = [
+    // How many stooges are there?
+    3,
+    // Who’s on first?
+    'Who'
+  ];'''
+
+test "Line comments in array literals are properly indented 2", ->
+  eqJS '''
+  arr = [
+    # How many stooges are there?
+    3
+    # Who’s on first?
+    'Who'
+    # Who?
+    {
+      firstBase: 'Who'
+      secondBase: 'What'
+      leftField: 'Why'
+    }
+  ]''', '''
+  var arr;
+
+  arr = [
+    // How many stooges are there?
+    3,
+    // Who’s on first?
+    'Who',
+    {
+      // Who?
+      firstBase: 'Who',
+      secondBase: 'What',
+      leftField: 'Why'
+    }
+  ];'''
+
+test "Block comments trailing their attached token are properly indented", ->
+  eqJS '''
+  if indented
+    if indentedAgain
+      a
+      ###
+        Multiline
+        comment
+      ###
+    a
+  ''', '''
+  if (indented) {
+    if (indentedAgain) {
+      a;
+    }
+    /*
+      Multiline
+      comment
+    */
+    a;
+  }
+  '''
+
+test "Comments in proper order 1", ->
+  eqJS '''
+  # 1
+  ### 2 ###
+  # 3
+  ''', '''
+  // 1
+  /* 2 */
+  // 3
+  '''
+
+test "Comments in proper order 2", ->
+  eqJS '''
+  if indented
+    # 1
+    ### 2 ###
+    # 3
+    a
+  ''', '''
+  if (indented) {
+    // 1
+    /* 2 */
+    // 3
+    a;
+  }
+  '''
+
+test "Line comment above interpolated string", ->
+  eqJS '''
+  if indented
+    # comment
+    "#{1}"
+  ''', '''
+  if (indented) {
+    // comment
+    `${1}`;
+  }'''
+
+test "Line comment above interpolated string object key", ->
+  eqJS '''
+  {
+    # comment
+    "#{1}": 2
+  }
+  ''', '''
+  ({
+    // comment
+    [`${1}`]: 2
+  });'''
+
+test "Line comments in classes are properly indented", ->
+  eqJS '''
+  class A extends B
+    # This is a fine class.
+    # I could tell you all about it, but what else do you need to know?
+    constructor: ->
+      # Something before `super`
+      super()
+
+    # This next method is a doozy!
+    # A doozy, I tell ya!
+    method: ->
+      # Whoa.
+      # Can you believe it?
+      no
+
+    ### Look out, incoming! ###
+    anotherMethod: ->
+      ### Ha! ###
+      off
+  ''', '''
+  var A;
+
+  A = class A extends B {
+    // This is a fine class.
+    // I could tell you all about it, but what else do you need to know?
+    constructor() {
+      // Something before `super`
+      super();
+    }
+
+    // This next method is a doozy!
+    // A doozy, I tell ya!
+    method() {
+      // Whoa.
+      // Can you believe it?
+      return false;
+    }
+
+    /* Look out, incoming! */
+    anotherMethod() {
+      /* Ha! */
+      return false;
+    }
+
+  };'''
+
+test "Line comments are properly indented", ->
+  eqJS '''
+  # Unindented comment
+  if yes
+    # Comment indented one tab
+    1
+    if yes
+      # Comment indented two tabs
+      2
+    else
+      # Another comment indented two tabs
+      # Yet another comment indented two tabs
+      3
+  else
+    # Another comment indented one tab
+    # Yet another comment indented one tab
+    4
+
+  # Another unindented comment''', '''
+  // Unindented comment
+  if (true) {
+    // Comment indented one tab
+    1;
+    if (true) {
+      // Comment indented two tabs
+      2;
+    } else {
+      // Another comment indented two tabs
+      // Yet another comment indented two tabs
+      3;
+    }
+  } else {
+    // Another comment indented one tab
+    // Yet another comment indented one tab
+    4;
+  }
+
+  // Another unindented comment'''
+
+test "Line comments that trail code, followed by line comments that start a new line", ->
+  eqJS '''
+  a = ->
+    b 1 # Trailing comment
+
+  # Comment that starts a new line
+  2
+  ''', '''
+  var a;
+
+  a = function() {
+    return b(1); // Trailing comment
+  };
+
+
+  // Comment that starts a new line
+  2;
+  '''
+
+test "Empty lines between comments are preserved", ->
+  eqJS '''
+  if indented
+    # 1
+
+    # 2
+    3
+  ''', '''
+  if (indented) {
+    // 1
+
+    // 2
+    3;
+  }'''
+
+test "Line comment in an interpolated string", ->
+  eqJS '''
+  "a#{# Comment
+  1}b"
+  ''', '''
+  `a${// Comment
+  1}b`;'''
+
+test "Line comments before `throw`", ->
+  eqJS '''
+  if indented
+    1/0
+    # Uh-oh!
+    # You really shouldn’t have done that.
+    throw DivideByZeroError()
+  ''', '''
+  if (indented) {
+    1 / 0;
+    // Uh-oh!
+    // You really shouldn’t have done that.
+    throw DivideByZeroError();
+  }'''
+
+test "Comments before if this exists", ->
+  js = CoffeeScript.compile '''
+  1
+  # Comment
+  if @huh?
+    2
+  '''
+  ok js.includes '// Comment'
+
+test "Comment before unary (`not`)", ->
+  js = CoffeeScript.compile '''
+  1
+  # Comment
+  if not doubleNegative
+    dontDoIt()
+  '''
+  ok js.includes '// Comment'
+
+test "Comments before postfix", ->
+  js = CoffeeScript.compile '''
+  # 1
+  2
+
+  # 3
+  return unless window?
+
+  ### 4 ###
+  return if global?
+  '''
+  ok js.includes '// 3'
+  ok js.includes '/* 4 */'
+
+test "Comments before assignment if", ->
+  js = CoffeeScript.compile '''
+  1
+  # Line comment
+  a = if b
+    3
+  else
+    4
+
+  ### Block comment ###
+  c = if d
+    5
+  '''
+  ok js.includes '// Line comment'
+  ok js.includes '/* Block comment */'
+
+test "Comments before for loop", ->
+  js = CoffeeScript.compile '''
+  1
+  # Comment
+  for drop in ocean
+    drink drop
+  '''
+  ok js.includes '// Comment'
+
+test "Comments after for loop", ->
+  js = CoffeeScript.compile '''
+  for drop in ocean # Comment after source variable
+    drink drop
+  for i in [1, 2] # Comment after array literal element
+    count i
+  for key, val of {a: 1} # Comment after object literal
+    turn key
+  '''
+  ok js.includes '// Comment after source variable'
+  ok js.includes '// Comment after array literal element'
+  ok js.includes '// Comment after object literal'
+
+test "Comments before soak", ->
+  js = CoffeeScript.compile '''
+  # 1
+  2
+
+  # 3
+  return unless window?.location?.hash
+
+  ### 4 ###
+  return if process?.env?.ENV
+  '''
+  ok js.includes '// 3'
+  ok js.includes '/* 4 */'
+
+test "Comments before splice", ->
+  js = CoffeeScript.compile '''
+  1
+  # Comment
+  a[1..2] = [1, 2, 3]
+  '''
+  ok js.includes '// Comment'
+
+test "Comments before object destructuring", ->
+  js = CoffeeScript.compile '''
+  1
+  # Comment before splat token
+  { x... } = { a: 1, b: 2 }
+
+  # Comment before destructured token
+  { x, y, z... } = { x: 1, y: 2, a: 3, b: 4 }
+  '''
+  ok js.includes 'Comment before splat token'
+  ok js.includes 'Comment before destructured token'
+
+test "Comment before splat function parameter", ->
+  js = CoffeeScript.compile '''
+  1
+  # Comment
+  (blah..., yadda) ->
+  '''
+  ok js.includes 'Comment'
+
+test "Comments before static method", ->
+  eqJS '''
+  class Child extends Base
+    # Static method:
+    @method = ->
+  ''', '''
+  var Child;
+
+  Child = class Child extends Base {
+    // Static method:
+    static method() {}
+
+  };'''
+
+test "Comment before method that calls `super()`", ->
+  eqJS '''
+  class Dismissed
+    # Before a method calling `super`
+    method: ->
+      super()
+  ''', '''
+  var Dismissed;
+
+  Dismissed = class Dismissed {
+    // Before a method calling `super`
+    method() {
+      return super.method();
+    }
+
+  };
+  '''
+
+test "Comment in interpolated regex", ->
+  js = CoffeeScript.compile '''
+  1
+  ///
+    #{1}
+    # Comment
+  ///
+  '''
+  ok js.includes 'Comment'
+
+test "Line comment after line continuation", ->
+  eqJS '''
+  1 + \\ # comment
+    2
+  ''', '''
+  1 + 2; // comment
+  '''
+
+test "Comments appear above scope `var` declarations", ->
+  eqJS '''
+  # @flow
+
+  fn = (str) -> str
+  ''', '''
+  // @flow
+  var fn;
+
+  fn = function(str) {
+    return str;
+  };'''
+
+test "Block comments can appear with function arguments", ->
+  eqJS '''
+  fn = (str ###: string ###, num ###: number ###) -> str + num
+  ''', '''
+  var fn;
+
+  fn = function(str/*: string */, num/*: number */) {
+    return str + num;
+  };'''
+
+test "Block comments can appear between function parameters and function opening brace", ->
+  eqJS '''
+  fn = (str ###: string ###, num ###: number ###) ###: string ### ->
+    str + num
+  ''', '''
+  var fn;
+
+  fn = function(str/*: string */, num/*: number */)/*: string */ {
+    return str + num;
+  };'''
+
+test "Flow comment-based syntax support", ->
+  eqJS '''
+  # @flow
+
+  fn = (str ###: string ###, num ###: number ###) ###: string ### ->
+    str + num
+  ''', '''
+  // @flow
+  var fn;
+
+  fn = function(str/*: string */, num/*: number */)/*: string */ {
+    return str + num;
+  };'''
 
 </script>
 <script type="text/x-coffeescript" class="test" id="compilation">
@@ -5153,9 +5827,9 @@ test 'heregex', ->
   ''', '''
     var REGEX, test;
 
-    test = /432/gm;
+    test = /432/gm; // this is a regex
 
-    6 / 432 / gm;
+    6 / 432 / gm; // this is division
 
     <Tag>
     {(test = /<Tag>/)} this is a regex containing something which looks like a tag
@@ -5163,7 +5837,10 @@ test 'heregex', ->
 
     <Person />;
 
-    REGEX = /^(\\/(?![s=])[^[\\/ ]*(?:<Tag\\/>(?:\\[sS]|[[^] ]*(?:\\[sS][^] ]*)*<Tag>tag<\\/Tag>])[^[\\/ ]*)*\\/)([imgy]{0,4})(?!w)/;
+    REGEX = /^(\\/(?![s=])[^[\\/ ]*(?:<Tag\\/>(?:\\[sS]|[[^] ]*(?:\\[sS][^] ]*)*<Tag>tag<\\/Tag>])[^[\\/ ]*)*\\/)([imgy]{0,4})(?!w)/; // comment comment <comment>comment</comment>
+    // comment comment
+    // comment comment
+    // comment comment
 
     <Person />;
   '''
@@ -5188,7 +5865,23 @@ test 'comment at start of CSX escape', ->
     </Person>
   ''', '''
     <Person>
-    {"i am a string"}
+    {// i am a comment
+    "i am a string"}
+    </Person>;
+  '''
+
+test 'comment at end of CSX escape', ->
+  eqJS '''
+    <Person>
+    {"i am a string"
+    # i am a comment
+    }
+    </Person>
+  ''', '''
+    <Person>
+    {"i am a string"
+    // i am a comment
+    }
     </Person>;
   '''
 
@@ -5257,147 +5950,115 @@ test 'self closing tag with namespace', ->
     <Something.Tag />;
   '''
 
-# TODO: Uncomment the following test once destructured object spreads are supported.
-# test 'self closing tag with spread attribute', ->
-#   eqJS '''
-#     <Component a={b} {... x } b="c" />
-#   ''', '''
-#     React.createElement(Component, Object.assign({"a": (b)},  x , {"b": "c"}))
-#   '''
+test 'self closing tag with spread attribute', ->
+  eqJS '''
+    <Component a={b} {x...} b="c" />
+  ''', '''
+    <Component a={b} {...x} b="c" />;
+  '''
 
-# TODO: Uncomment the following test once destructured object spreads are supported.
-# test 'complex spread attribute', ->
-#   eqJS '''
-#     <Component {...x} a={b} {... x } b="c" {...$my_xtraCoolVar123 } />
-#   ''', '''
-#     React.createElement(Component, Object.assign({},  x, {"a": (b)},  x , {"b": "c"}, $my_xtraCoolVar123  ))
-#   '''
+test 'complex spread attribute', ->
+  eqJS '''
+    <Component {x...} a={b} {x...} b="c" {$my_xtraCoolVar123...} />
+  ''', '''
+    <Component {...x} a={b} {...x} b="c" {...$my_xtraCoolVar123} />;
+  '''
 
-# TODO: Uncomment the following test once destructured object spreads are supported.
-# test 'multiline spread attribute', ->
-#   eqJS '''
-#     <Component {...
-#       x } a={b} {... x } b="c" {...z }>
-#     </Component>
-#   ''', '''
-#     React.createElement(Component, Object.assign({},
-#       x , {"a": (b)},  x , {"b": "c"}, z )
-#     )
-#   '''
+test 'multiline spread attribute', ->
+  eqJS '''
+    <Component {
+      x...} a={b} {x...} b="c" {z...}>
+    </Component>
+  ''', '''
+    <Component {...x} a={b} {...x} b="c" {...z}>
+    </Component>;
+  '''
 
-# TODO: Uncomment the following test once destructured object spreads are supported.
-# test 'multiline tag with spread attribute', ->
-#   eqJS '''
-#     <Component
-#       z="1"
-#       {...x}
-#       a={b}
-#       b="c"
-#     >
-#     </Component>
-#   ''', '''
-#     React.createElement(Component, Object.assign({ \
-#       "z": "1"
-#       }, x, { \
-#       "a": (b),  \
-#       "b": "c"
-#     })
-#     )
-#   '''
+test 'multiline tag with spread attribute', ->
+  eqJS '''
+    <Component
+      z="1"
+      {x...}
+      a={b}
+      b="c"
+    >
+    </Component>
+  ''', '''
+    <Component z="1" {...x} a={b} b="c">
+    </Component>;
+  '''
 
-# TODO: Uncomment the following test once destructured object spreads are supported.
-# test 'multiline tag with spread attribute first', ->
-#   eqJS '''
-#     <Component
-#       {...
-#       x}
-#       z="1"
-#       a={b}
-#       b="c"
-#     >
-#     </Component>
-#   ''', '''
-#     React.createElement(Component, Object.assign({}, \
+test 'multiline tag with spread attribute first', ->
+  eqJS '''
+    <Component
+      {x...}
+      z="1"
+      a={b}
+      b="c"
+    >
+    </Component>
+  ''', '''
+    <Component {...x} z="1" a={b} b="c">
+    </Component>;
+  '''
 
-#       x, { \
-#       "z": "1",  \
-#       "a": (b),  \
-#       "b": "c"
-#     })
-#     )
-#   '''
+test 'complex multiline spread attribute', ->
+  eqJS '''
+    <Component
+      {y...
+      } a={b} {x...} b="c" {z...}>
+      <div code={someFunc({a:{b:{}, C:'}'}})} />
+    </Component>
+  ''', '''
+    <Component {...y} a={b} {...x} b="c" {...z}>
+      <div code={someFunc({
+        a: {
+          b: {},
+          C: '}'
+        }
+      })} />
+    </Component>;
+  '''
 
-# TODO: Uncomment the following test once destructured object spreads are supported.
-# test 'complex multiline spread attribute', ->
-#   eqJS '''
-#     <Component
-#       {...
-#       y} a={b} {... x } b="c" {...z }>
-#       <div code={someFunc({a:{b:{}, C:'}'}})} />
-#     </Component>
-#   ''', '''
-#     React.createElement(Component, Object.assign({}, \
+test 'self closing spread attribute on single line', ->
+  eqJS '''
+    <Component a="b" c="d" {@props...} />
+  ''', '''
+    <Component a="b" c="d" {...this.props} />;
+  '''
 
-#       y, {"a": (b)},  x , {"b": "c"}, z ),
-#       React.createElement("div", {"code": (someFunc({a:{b:{}, C:'}'}}))})
-#     )
-#   '''
+test 'self closing spread attribute on new line', ->
+  eqJS '''
+    <Component
+      a="b"
+      c="d"
+      {@props...}
+    />
+  ''', '''
+    <Component a="b" c="d" {...this.props} />;
+  '''
 
-# TODO: Uncomment the following test once destructured object spreads are supported.
-# test 'self closing spread attribute on single line', ->
-#   eqJS '''
-#     <Component a="b" c="d" {...@props} />
-#   ''', '''
-#     React.createElement(Component, Object.assign({"a": "b", "c": "d"}, @props ))
-#   '''
+test 'self closing spread attribute on same line', ->
+  eqJS '''
+    <Component
+      a="b"
+      c="d"
+      {@props...} />
+  ''', '''
+    <Component a="b" c="d" {...this.props} />;
+  '''
 
-# TODO: Uncomment the following test once destructured object spreads are supported.
-# test 'self closing spread attribute on new line', ->
-#   eqJS '''
-#     <Component
-#       a="b"
-#       c="d"
-#       {...@props}
-#     />
-#   ''', '''
-#     React.createElement(Component, Object.assign({ \
-#       "a": "b",  \
-#       "c": "d"
-#       }, @props
-#     ))
-#   '''
+test 'self closing spread attribute on next line', ->
+  eqJS '''
+    <Component
+      a="b"
+      c="d"
+      {@props...}
 
-# TODO: Uncomment the following test once destructured object spreads are supported.
-# test 'self closing spread attribute on same line', ->
-#   eqJS '''
-#     <Component
-#       a="b"
-#       c="d"
-#       {...@props} />
-#   ''', '''
-#     React.createElement(Component, Object.assign({ \
-#       "a": "b",  \
-#       "c": "d"
-#       }, @props ))
-#   '''
-
-# TODO: Uncomment the following test once destructured object spreads are supported.
-# test 'self closing spread attribute on next line', ->
-#   eqJS '''
-#     <Component
-#       a="b"
-#       c="d"
-#       {...@props}
-
-#     />
-#   ''', '''
-#     React.createElement(Component, Object.assign({ \
-#       "a": "b",  \
-#       "c": "d"
-#       }, @props
-
-#     ))
-#   '''
+    />
+  ''', '''
+    <Component a="b" c="d" {...this.props} />;
+  '''
 
 test 'empty strings are not converted to true', ->
   eqJS '''
@@ -7084,7 +7745,7 @@ test "CSX error: bare expressions not allowed", ->
     <div x=3 />
   ''',
   '''
-    [stdin]:1:8: error: expected wrapped or quoted CSX attribute
+    [stdin]:1:8: error: expected wrapped or quoted JSX attribute
     <div x=3 />
            ^
   '''
@@ -7107,6 +7768,50 @@ test "CSX error: ambiguous tag-like expression", ->
     [stdin]:1:10: error: missing </
     x = a <b > c
              ^
+  '''
+
+test 'CSX error: invalid attributes', ->
+  assertErrorFormat '''
+    <div a="b" {props} />
+  ''', '''
+    [stdin]:1:12: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    <div a="b" {props} />
+               ^^^^^^^
+  '''
+  assertErrorFormat '''
+    <div a={b} {a:{b}} />
+  ''', '''
+    [stdin]:1:12: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    <div a={b} {a:{b}} />
+               ^^^^^^^
+  '''
+  assertErrorFormat '''
+    <div {"#{a}"} />
+  ''', '''
+    [stdin]:1:6: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    <div {"#{a}"} />
+         ^^^^^^^^
+  '''
+  assertErrorFormat '''
+    <div props... />
+  ''', '''
+    [stdin]:1:11: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    <div props... />
+              ^^^
+  '''
+  assertErrorFormat '''
+    <div {a:"b", props..., c:d()} />
+  ''', '''
+    [stdin]:1:6: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    <div {a:"b", props..., c:d()} />
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  '''
+  assertErrorFormat '''
+    <div {props..., a, b} />
+  ''', '''
+    [stdin]:1:6: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    <div {props..., a, b} />
+         ^^^^^^^^^^^^^^^^
   '''
 
 test 'Bound method called as callback before binding throws runtime error', ->
@@ -7148,6 +7853,77 @@ test "#3906: error for unusual indentation", ->
     [stdin]:2:1: error: unexpected indentation
       c
     ^^
+  '''
+
+test "#4283: error message for implicit call", ->
+  assertErrorFormat '''
+    (a, b c) ->
+  ''', '''
+    [stdin]:1:5: error: unexpected implicit function call
+    (a, b c) ->
+        ^
+  '''
+
+test "#3199: error message for call indented non-object", ->
+  assertErrorFormat '''
+    fn = ->
+    fn
+      1
+  ''', '''
+    [stdin]:3:1: error: unexpected indentation
+      1
+    ^^
+  '''
+
+test "#3199: error message for call indented comprehension", ->
+  assertErrorFormat '''
+    fn = ->
+    fn
+      x for x in [1, 2, 3]
+  ''', '''
+    [stdin]:3:1: error: unexpected indentation
+      x for x in [1, 2, 3]
+    ^^
+  '''
+
+test "#3199: error message for return indented non-object", ->
+  assertErrorFormat '''
+    return
+      1
+  ''', '''
+    [stdin]:2:3: error: unexpected number
+      1
+      ^
+  '''
+
+test "#3199: error message for return indented comprehension", ->
+  assertErrorFormat '''
+    return
+      x for x in [1, 2, 3]
+  ''', '''
+    [stdin]:2:3: error: unexpected identifier
+      x for x in [1, 2, 3]
+      ^
+  '''
+
+test "#3199: error message for throw indented non-object", ->
+  assertErrorFormat '''
+    throw
+      1
+  ''', '''
+    [stdin]:2:3: error: unexpected number
+      1
+      ^
+  '''
+
+test "#3199: error message for throw indented comprehension", ->
+  assertErrorFormat '''
+    throw
+      x for x in [1, 2, 3]
+  ''', '''
+    [stdin]:2:3: error: unexpected identifier
+      x for x in [1, 2, 3]
+      ^
   '''
 
 </script>
@@ -7564,6 +8340,16 @@ test "method call chaining inside objects", ->
       .c
   eq 42, result.b
 
+test "#4568: refine sameLine implicit object tagging", ->
+  condition = yes
+  fn = -> yes
+
+  x =
+    fn bar: {
+      foo: 123
+    } if not condition
+  eq x, undefined
+
 # Nested blocks caused by paren unwrapping
 test "#1492: Nested blocks don't cause double semicolons", ->
   js = CoffeeScript.compile '(0;0)'
@@ -7716,6 +8502,19 @@ test "#3906: handle further indentation inside indented chain", ->
     )
     1
   '''
+
+test "#3199: throw multiline implicit object", ->
+  x = do ->
+    if no then throw
+      type: 'a'
+      msg: 'b'
+  eq undefined, x
+
+  y = do ->
+    if no then return
+      type: 'a'
+      msg: 'b'
+  eq undefined, y
 
 </script>
 <script type="text/x-coffeescript" class="test" id="function_invocation">
@@ -8641,15 +9440,15 @@ test "@-parameters: automatically assign an argument's value to a property of th
   ((@prop) ->).call context = {}, nonce
   eq nonce, context.prop
 
-  # allow splats along side the special argument
+  # Allow splats alongside the special argument
   ((splat..., @prop) ->).apply context = {}, [0, 0, nonce]
   eq nonce, context.prop
 
-  # allow the argument itself to be a splat
+  # Allow the argument itself to be a splat
   ((@prop...) ->).call context = {}, 0, nonce, 0
   eq nonce, context.prop[1]
 
-  # the argument should not be able to be referenced normally
+  # The argument should not be able to be referenced normally
   code = '((@prop) -> prop).call {}'
   doesNotThrow -> CoffeeScript.compile code
   throws (-> CoffeeScript.run code), ReferenceError
@@ -8763,6 +9562,12 @@ test "rest element destructuring in function definition", ->
   deepEqual [1, {b:2}], f()
   deepEqual [2, {}], f {a:2}
   deepEqual [3, {c:5}], f {a:3, c:5}
+
+  f = ({ a: aa = 0, b: bb = 0 }) -> [aa, bb]
+  deepEqual [0, 0], f {}
+  deepEqual [0, 42], f {b:42}
+  deepEqual [42, 0], f {a:42}
+  deepEqual [42, 43], f {a:42, b:43}
 
 test "#4005: `([a = {}]..., b) ->` weirdness", ->
   fn = ([a = {}]..., b) -> [a, b]
@@ -9656,6 +10461,117 @@ test "heregex interpolation", ->
   /// + ''
 
 </script>
+<script type="text/x-coffeescript" class="test" id="invocation_argument_parsing">
+return unless require?
+
+path = require 'path'
+{spawnSync, execFileSync} = require 'child_process'
+
+# Get directory containing the compiled `coffee` executable and prepend it to
+# the path so `#!/usr/bin/env coffee` resolves to our locally built file.
+coffeeBinDir = path.dirname require.resolve('../bin/coffee')
+patchedPath = "#{coffeeBinDir}:#{process.env.PATH}"
+patchedEnv = Object.assign {}, process.env, {PATH: patchedPath}
+
+shebangScript = require.resolve './importing/shebang.coffee'
+initialSpaceScript = require.resolve './importing/shebang_initial_space.coffee'
+extraArgsScript = require.resolve './importing/shebang_extra_args.coffee'
+initialSpaceExtraArgsScript = require.resolve './importing/shebang_initial_space_extra_args.coffee'
+
+test "parse arguments for shebang scripts correctly (on unix platforms)", ->
+  return if isWindows()
+
+  stdout = execFileSync shebangScript, ['-abck'], {env: patchedEnv}
+  expectedArgs = ['coffee', shebangScript, '-abck']
+  realArgs = JSON.parse stdout
+  arrayEq expectedArgs, realArgs
+
+  stdout = execFileSync initialSpaceScript, ['-abck'], {env: patchedEnv}
+  expectedArgs = ['coffee', initialSpaceScript, '-abck']
+  realArgs = JSON.parse stdout
+  arrayEq expectedArgs, realArgs
+
+test "warn and remove -- if it is the second positional argument", ->
+  result = spawnSync 'coffee', [shebangScript, '--'], {env: patchedEnv}
+  stderr = result.stderr.toString()
+  arrayEq JSON.parse(result.stdout), ['coffee', shebangScript]
+  ok stderr.match /^coffee was invoked with '--'/m
+  posArgs = stderr.match(/^The positional arguments were: (.*)$/m)[1]
+  arrayEq JSON.parse(posArgs), [shebangScript, '--']
+  ok result.status is 0
+
+  result = spawnSync 'coffee', ['-b', shebangScript, '--'], {env: patchedEnv}
+  stderr = result.stderr.toString()
+  arrayEq JSON.parse(result.stdout), ['coffee', shebangScript]
+  ok stderr.match /^coffee was invoked with '--'/m
+  posArgs = stderr.match(/^The positional arguments were: (.*)$/m)[1]
+  arrayEq JSON.parse(posArgs), [shebangScript, '--']
+  ok result.status is 0
+
+  result = spawnSync(
+    'coffee', ['-b', shebangScript, '--', 'ANOTHER ONE'], {env: patchedEnv})
+  stderr = result.stderr.toString()
+  arrayEq JSON.parse(result.stdout), ['coffee', shebangScript, 'ANOTHER ONE']
+  ok stderr.match /^coffee was invoked with '--'/m
+  posArgs = stderr.match(/^The positional arguments were: (.*)$/m)[1]
+  arrayEq JSON.parse(posArgs), [shebangScript, '--', 'ANOTHER ONE']
+  ok result.status is 0
+
+  result = spawnSync(
+    'coffee', ['--', initialSpaceScript, 'arg'], {env: patchedEnv})
+  expectedArgs = ['coffee', initialSpaceScript, 'arg']
+  realArgs = JSON.parse result.stdout
+  arrayEq expectedArgs, realArgs
+  ok result.stderr.toString() is ''
+  ok result.status is 0
+
+test "warn about non-portable shebang lines", ->
+  result = spawnSync 'coffee', [extraArgsScript, 'arg'], {env: patchedEnv}
+  stderr = result.stderr.toString()
+  arrayEq JSON.parse(result.stdout), ['coffee', extraArgsScript, 'arg']
+  ok stderr.match /^The script to be run begins with a shebang line with more than one/m
+  [_, firstLine, file] = stderr.match(/^The shebang line was: '([^']+)' in file '([^']+)'/m)
+  ok (firstLine is '#!/usr/bin/env coffee --')
+  ok (file is extraArgsScript)
+  args = stderr.match(/^The arguments were: (.*)$/m)[1]
+  arrayEq JSON.parse(args), ['coffee', '--']
+  ok result.status is 0
+
+  result = spawnSync 'coffee', [initialSpaceScript, 'arg'], {env: patchedEnv}
+  stderr = result.stderr.toString()
+  ok stderr is ''
+  arrayEq JSON.parse(result.stdout), ['coffee', initialSpaceScript, 'arg']
+  ok result.status is 0
+
+  result = spawnSync(
+    'coffee', [initialSpaceExtraArgsScript, 'arg'], {env: patchedEnv})
+  stderr = result.stderr.toString()
+  arrayEq JSON.parse(result.stdout), ['coffee', initialSpaceExtraArgsScript, 'arg']
+  ok stderr.match /^The script to be run begins with a shebang line with more than one/m
+  [_, firstLine, file] = stderr.match(/^The shebang line was: '([^']+)' in file '([^']+)'/m)
+  ok (firstLine is '#! /usr/bin/env coffee extra')
+  ok (file is initialSpaceExtraArgsScript)
+  args = stderr.match(/^The arguments were: (.*)$/m)[1]
+  arrayEq JSON.parse(args), ['coffee', 'extra']
+  ok result.status is 0
+
+test "both warnings will be shown at once", ->
+  result = spawnSync(
+    'coffee', [initialSpaceExtraArgsScript, '--', 'arg'], {env: patchedEnv})
+  stderr = result.stderr.toString()
+  arrayEq JSON.parse(result.stdout), ['coffee', initialSpaceExtraArgsScript, 'arg']
+  ok stderr.match /^The script to be run begins with a shebang line with more than one/m
+  [_, firstLine, file] = stderr.match(/^The shebang line was: '([^']+)' in file '([^']+)'/m)
+  ok (firstLine is '#! /usr/bin/env coffee extra')
+  ok (file is initialSpaceExtraArgsScript)
+  args = stderr.match(/^The arguments were: (.*)$/m)[1]
+  arrayEq JSON.parse(args), ['coffee', 'extra']
+  ok stderr.match /^coffee was invoked with '--'/m
+  posArgs = stderr.match(/^The positional arguments were: (.*)$/m)[1]
+  arrayEq JSON.parse(posArgs), [initialSpaceExtraArgsScript, '--', 'arg']
+  ok result.status is 0
+
+</script>
 <script type="text/x-coffeescript" class="test" id="javascript_literals">
 # JavaScript Literals
 # -------------------
@@ -9726,7 +10642,7 @@ test "escaped JavaScript blocks speed round", ->
     ['`Single backslash at EOS: \\\\`',                       'Single backslash at EOS: \\;']
     ['`Double backslash at EOS: \\\\\\\\`',                   'Double backslash at EOS: \\\\;']
   ]
-    eq CoffeeScript.compile(input, bare: yes), "#{output}\n\n"
+    eqJS input, output
 
 </script>
 <script type="text/x-literate-coffeescript" class="test" id="literate">
@@ -10626,6 +11542,41 @@ test "Verify all tokens get a location", ->
     for token in tokens
         ok !!token[2]
 
+test 'Values with properties end up with a location that includes the properties', ->
+  source = '''
+    a.b
+    a.b.c
+    a['b']
+    a[b.c()].d
+  '''
+  block = CoffeeScript.nodes source
+  [
+    singleProperty
+    twoProperties
+    indexed
+    complexIndex
+  ] = block.expressions
+
+  eq singleProperty.locationData.first_line, 0
+  eq singleProperty.locationData.first_column, 0
+  eq singleProperty.locationData.last_line, 0
+  eq singleProperty.locationData.last_column, 2
+
+  eq twoProperties.locationData.first_line, 1
+  eq twoProperties.locationData.first_column, 0
+  eq twoProperties.locationData.last_line, 1
+  eq twoProperties.locationData.last_column, 4
+
+  eq indexed.locationData.first_line, 2
+  eq indexed.locationData.first_column, 0
+  eq indexed.locationData.last_line, 2
+  eq indexed.locationData.last_column, 5
+
+  eq complexIndex.locationData.first_line, 3
+  eq complexIndex.locationData.first_column, 0
+  eq complexIndex.locationData.last_line, 3
+  eq complexIndex.locationData.last_column, 9
+
 </script>
 <script type="text/x-coffeescript" class="test" id="modules">
 # Modules, a.k.a. ES2015 import/export
@@ -11152,8 +12103,8 @@ test "multiline import with comments", ->
     } from 'lib'""",
   """
     import {
-      foo,
-      bar as baz
+      foo, // Not as good as bar
+      bar as baz // I prefer qux
     } from 'lib';"""
 
 test "`from` not part of an import or export statement can still be assigned", ->
@@ -12728,17 +13679,21 @@ test "'new' target", ->
 # Option Parser
 # -------------
 
-# TODO: refactor option parser tests
-
 # Ensure that the OptionParser handles arguments correctly.
 return unless require?
 {OptionParser} = require './../lib/coffeescript/optparse'
 
-opt = new OptionParser [
+flags = [
   ['-r', '--required [DIR]',  'desc required']
   ['-o', '--optional',        'desc optional']
   ['-l', '--list [FILES*]',   'desc list']
 ]
+
+banner = '''
+  banner text
+'''
+
+opt = new OptionParser flags, banner
 
 test "basic arguments", ->
   args = ['one', 'two', 'three', '-r', 'dir']
@@ -12768,6 +13723,53 @@ test "-- and interesting combinations", ->
   eq undefined, result.optional
   eq undefined, result.required
   arrayEq args[1..], result.arguments
+
+test "throw if multiple flags try to use the same short or long name", ->
+  throws -> new OptionParser [
+    ['-r', '--required [DIR]', 'required']
+    ['-r', '--long',           'switch']
+  ]
+
+  throws -> new OptionParser [
+    ['-a', '--append [STR]', 'append']
+    ['-b', '--append',       'append with -b short opt']
+  ]
+
+  throws -> new OptionParser [
+    ['--just-long', 'desc']
+    ['--just-long', 'another desc']
+  ]
+
+  throws -> new OptionParser [
+    ['-j', '--just-long', 'desc']
+    ['--just-long', 'another desc']
+  ]
+
+  throws -> new OptionParser [
+    ['--just-long',       'desc']
+    ['-j', '--just-long', 'another desc']
+  ]
+
+test "outputs expected help text", ->
+  expectedBanner = '''
+
+banner text
+
+  -r, --required     desc required
+  -o, --optional     desc optional
+  -l, --list         desc list
+
+  '''
+  ok opt.help() is expectedBanner
+
+  expected = [
+    ''
+    '  -r, --required     desc required'
+    '  -o, --optional     desc optional'
+    '  -l, --list         desc list'
+    ''
+  ].join('\n')
+  ok new OptionParser(flags).help() is expected
 
 </script>
 <script type="text/x-coffeescript" class="test" id="parser">
@@ -14522,6 +15524,7 @@ func = (text, expressions...) ->
 outerobj =
   obj:
     func: func
+    f: -> func
 
 # Example use
 test "tagged template literal for html templating", ->
@@ -14673,6 +15676,11 @@ test "tagged template literal with unnecessarily escaped ES interpolation", ->
 test "tagged template literal special escaping", ->
   eq 'text: [` ` \\` \\` \\\\` $ { ${ ${ \\${ \\${ \\\\${ | ` ${] expressions: [1]',
   func"` \` \\` \\\` \\\\` $ { ${ \${ \\${ \\\${ \\\\${ #{1} ` ${"
+
+test '#4467: tagged template literal call recognized as a callable function', ->
+  eq 'text: [dot notation] expressions: []',
+  outerobj.obj.f()'dot notation'
+
 
 </script>
 
