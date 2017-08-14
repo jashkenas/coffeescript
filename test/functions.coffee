@@ -479,4 +479,6 @@ test "#4413: expressions in function parameters that create generated variables 
   foo = -> null
   bar = -> 33
   f = (a = foo() ? bar()) -> a
+  g = (a = foo() ? bar()) -> a + 1
   eq f(), 33
+  eq g(), 34
