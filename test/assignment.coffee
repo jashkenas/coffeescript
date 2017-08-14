@@ -185,6 +185,12 @@ test "destructuring assignment with splats", ->
   arrayEq [b,c,d], y
   eq e, z
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  [x,y ...,z] = [a,b,c,d,e]
+  eq a, x
+  arrayEq [b,c,d], y
+  eq e, z
+
 test "deep destructuring assignment with splats", ->
   a={}; b={}; c={}; d={}; e={}; f={}; g={}; h={}; i={}
   [u, [v, w..., x], y..., z] = [a, [b, c, d, e], f, g, h, i]
@@ -229,6 +235,11 @@ test "destructuring assignment with objects and splats", ->
   eq a, y
   arrayEq [b,c,d], z
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  {a: b: [y, z ...]} = obj
+  eq a, y
+  arrayEq [b,c,d], z
+
 test "destructuring assignment against an expression", ->
   a={}; b={}
   [y, z] = if true then [a, b] else [b, a]
@@ -263,6 +274,15 @@ test "destructuring assignment with splats and default values", ->
   eq b, 1
   deepEqual d, {}
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  {
+    a: {b} = c
+    d ...
+  } = obj
+
+  eq b, 1
+  deepEqual d, {}
+
 test "destructuring assignment with splat with default value", ->
   obj = {}
   c = {val: 1}
@@ -273,6 +293,18 @@ test "destructuring assignment with splat with default value", ->
 test "destructuring assignment with multiple splats in different objects", ->
   obj = { a: {val: 1}, b: {val: 2} }
   { a: {a...}, b: {b...} } = obj
+  deepEqual a, val: 1
+  deepEqual b, val: 2
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  {
+    a: {
+      a ...
+    }
+    b: {
+      b ...
+    }
+  } = obj
   deepEqual a, val: 1
   deepEqual b, val: 2
 
@@ -299,6 +331,15 @@ test "destructuring assignment with objects and splats: Babel tests", ->
   n = { x, y, z... }
   deepEqual n, { x: 1, y: 2, a: 3, b: 4 }
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  { x, y, z ... } = { x: 1, y: 2, a: 3, b: 4 }
+  eq x, 1
+  eq y, 2
+  deepEqual z, { a: 3, b: 4 }
+
+  n = { x, y, z ... }
+  deepEqual n, { x: 1, y: 2, a: 3, b: 4 }
+
 test "deep destructuring assignment with objects: ES2015", ->
   a1={}; b1={}; c1={}; d1={}
   obj = {
@@ -315,6 +356,13 @@ test "deep destructuring assignment with objects: ES2015", ->
     b2: {b1, c1}
   }
   {a: w, b: {c: {d: {b1: bb, r1...}}}, r2...} = obj
+  eq r1.e, c1
+  eq r2.b, undefined
+  eq bb, b1
+  eq r2.b2, obj.b2
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  {a: w, b: {c: {d: {b1: bb, r1 ...}}}, r2 ...} = obj
   eq r1.e, c1
   eq r2.b, undefined
   eq bb, b1
@@ -343,13 +391,52 @@ test "deep destructuring assignment with defaults: ES2015", ->
   eq hello, 'world'
   deepEqual h, some: 'prop'
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  {
+    a ...
+    b: {
+      c,
+      d ...
+    }
+    e: {
+      f: hello
+      g: {
+        h ...
+      } = i
+    } = j
+  } = obj
+
+  deepEqual a, foo: 'bar'
+  eq c, 1
+  deepEqual d, baz: 'qux'
+  eq hello, 'world'
+  deepEqual h, some: 'prop'
+
 test "object spread properties: ES2015", ->
   obj = {a: 1, b: 2, c: 3, d: 4, e: 5}
   obj2 = {obj..., c:9}
   eq obj2.c, 9
   eq obj.a, obj2.a
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  obj2 = {
+    obj ...
+    c:9
+  }
+  eq obj2.c, 9
+  eq obj.a, obj2.a
+
   obj2 = {obj..., a: 8, c: 9, obj...}
+  eq obj2.c, 3
+  eq obj.a, obj2.a
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  obj2 = {
+    obj ...
+    a: 8
+    c: 9
+    obj ...
+  }
   eq obj2.c, 3
   eq obj.a, obj2.a
 
@@ -370,7 +457,39 @@ test "object spread properties: ES2015", ->
   eq obj4.f.g, 5
   deepEqual obj4.f, obj.c.f
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  (({
+    a
+    b
+    r ...
+    }) ->
+    eq 1, a
+    deepEqual r, {c: 3, d: 44, e: 55}
+  ) {
+    obj2 ...
+    d: 44
+    e: 55
+  }
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  obj4 = {
+    a: 10
+    obj.c ...
+  }
+  eq obj4.a, 10
+  eq obj4.d, 3
+  eq obj4.f.g, 5
+  deepEqual obj4.f, obj.c.f
+
   obj5 = {obj..., ((k) -> {b: k})(99)...}
+  eq obj5.b, 99
+  deepEqual obj5.c, obj.c
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  obj5 = {
+    obj ...
+    ((k) -> {b: k})(99) ...
+  }
   eq obj5.b, 99
   deepEqual obj5.c, obj.c
 
@@ -382,7 +501,16 @@ test "object spread properties: ES2015", ->
   obj7 = {obj..., fn()..., {c: {d: 55, e: 66, f: {77}}}...}
   eq obj7.c.d, 55
   deepEqual obj6.c, {d: 33, e: 44, f: {g: 55}}
-  
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  obj7 = {
+    obj ...
+    fn() ...
+    {c: {d: 55, e: 66, f: {77}}} ...
+  }
+  eq obj7.c.d, 55
+  deepEqual obj6.c, {d: 33, e: 44, f: {g: 55}}
+
   obj =
     a:
       b:

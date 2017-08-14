@@ -28,6 +28,19 @@ test "basic exclusive ranges", ->
   arrayEq [], [0...0]
   arrayEq [], [-1...-1]
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  arrayEq [1, 2, 3] , [1 ... 4]
+  arrayEq [0, 1, 2] , [0 ... 3]
+  arrayEq [0, 1]    , [0 ... 2]
+  arrayEq [0]       , [0 ... 1]
+  arrayEq [-1]      , [-1 ... 0]
+  arrayEq [-1, 0]   , [-1 ... 1]
+  arrayEq [-1, 0, 1], [-1 ... 2]
+
+  arrayEq [], [1 ... 1]
+  arrayEq [], [0 ... 0]
+  arrayEq [], [-1 ... -1]
+
 test "downward ranges", ->
   arrayEq shared, [9..0].reverse()
   arrayEq [5, 4, 3, 2] , [5..2]
@@ -65,6 +78,9 @@ test "ranges with expressions as endpoints", ->
   [a, b] = [1, 3]
   arrayEq [2, 3, 4, 5, 6], [(a+1)..2*b]
   arrayEq [2, 3, 4, 5]   , [(a+1)...2*b]
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  arrayEq [2, 3, 4, 5]   , [(a+1) ... 2*b]
 
 test "large ranges are generated with looping constructs", ->
   down = [99..0]
