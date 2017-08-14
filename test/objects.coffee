@@ -113,6 +113,12 @@ ok obj.misdent.toString() is ',,,'
 #542: Objects leading expression statement should be parenthesized.
 {f: -> ok yes }.f() + 1
 
+# String-keyed objects shouldn't suppress newlines.
+one =
+  '>!': 3
+  six: -> 10
+eq one.six(), 10
+
 # Shorthand objects with property references.
 obj =
   ### comment one ###

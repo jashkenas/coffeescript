@@ -1756,14 +1756,3 @@ test "#2998: Indentation mismatch in object shouldn’t produce two objects", ->
       ^
   '''
 
-  # Former object test that is now invalid because it looks too much like a mistake.
-  # It used to test that string-keyed objects shouldn’t suppress newlines.
-  assertErrorFormat '''
-    one =
-      '>!': 3
-    six: -> 10
-  ''', '''
-    [stdin]:3:1: error: unexpected indentation
-    six: -> 10
-    ^
-  '''
