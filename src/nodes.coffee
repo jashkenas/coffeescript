@@ -2674,7 +2674,14 @@ exports.Code = class Code extends Base
     for param, i in params
       signature.push @makeCode ', ' if i isnt 0
       signature.push @makeCode '...' if haveSplatParam and i is params.length - 1
+      # Compile this parameter, but if any generated variables get created
+      # (e.g. `ref`), shift those into the parent scope since we can’t put a
+      # `var` line inside a function parameter list.
+      scopeVariablesCount = o.scope.variables.length
       signature.push param.compileToFragments(o)...
+      if scopeVariablesCount isnt o.scope.variables.length
+        generatedVariables = o.scope.variables.splice scopeVariablesCount
+        o.scope.parent.variables.push generatedVariables...
     signature.push @makeCode ')'
     # Block comments between `)` and `->`/`=>` get output between `)` and `{`.
     if @funcGlyph?.comments?

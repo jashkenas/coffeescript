@@ -471,3 +471,12 @@ test "#3845/#3446: chain after function glyph", ->
     doThing()
     .then (@result) =>
     .catch handleError
+
+test "#4413: expressions in function parameters that create generated variables have those variables declared correctly", ->
+  'use strict'
+  # We’re in strict mode because we want an error to be thrown if the generated
+  # variable (`ref`) is assigned before being declared.
+  foo = -> null
+  bar = -> 33
+  f = (a = foo() ? bar()) -> a
+  eq f(), 33
