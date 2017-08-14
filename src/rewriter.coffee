@@ -315,8 +315,12 @@ exports.Rewriter = class Rewriter
           if (stackTag is '{' or stackTag is 'INDENT' and @tag(stackIdx - 1) is '{') and
              (startsLine or @tag(s - 1) is ',' or @tag(s - 1) is '{')
             return forward(1)
+        # Is this an indentation error within what was intended to be one object?
+        else if s > 3 and @tag(s - 1) in LINEBREAKS and @tag(s - 2) in LINEBREAKS and
+           @tag(s - 3) is '}' and @tokens[s - 3].generated
+          throwSyntaxError 'unexpected indentation', @tokens[s - 1][2]
 
-        startImplicitObject(s, !!startsLine)
+        startImplicitObject s, startsLine?
         return forward(2)
 
       # End implicit calls when chaining method calls

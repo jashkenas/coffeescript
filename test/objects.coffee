@@ -116,8 +116,8 @@ ok obj.misdent.toString() is ',,,'
 # String-keyed objects shouldn't suppress newlines.
 one =
   '>!': 3
-six: -> 10
-ok not one.six
+  six: -> 10
+eq one.six(), 10
 
 # Shorthand objects with property references.
 obj =
@@ -696,4 +696,3 @@ test "#4579: Postfix for/while/until in first line of implicit object literals",
       baz: 1337
   arrayEq [4, 3, 2, 1, 0], six.foo.bar
   eq 1337, six.foo.baz
-

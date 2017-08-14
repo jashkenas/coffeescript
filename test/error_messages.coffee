@@ -1742,3 +1742,17 @@ test "#3199: error message for throw indented comprehension", ->
       x for x in [1, 2, 3]
       ^
   '''
+
+test "#2998: Indentation mismatch in object shouldn’t produce two objects", ->
+  assertErrorFormat '''
+  colors =
+     45: 'cyan'
+     52: 'sepia'
+    100: 'olive'
+    124: 'red'
+  ''', '''
+    [stdin]:4:3: error: unexpected indentation
+      100: 'olive'
+      ^
+  '''
+
