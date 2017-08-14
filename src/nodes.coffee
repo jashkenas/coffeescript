@@ -107,6 +107,9 @@ exports.Base = class Base
     @compileCommentFragments o, node, fragments
     fragments
 
+  compileToFragmentsWithoutComments: (o, lvl) ->
+    @compileWithoutComments o, lvl, 'compileToFragments'
+
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
   compileClosure: (o) ->
@@ -2626,11 +2629,7 @@ exports.Code = class Code extends Base
             # compilation, so that they get output the “real” time this param
             # is compiled.
             paramToAddToScope = if param.value? then param else ref
-            if paramToAddToScope.name?.comments
-              salvagedComments = paramToAddToScope.name.comments
-              delete paramToAddToScope.name.comments
-            o.scope.parameter fragmentsToText paramToAddToScope.compileToFragments o
-            paramToAddToScope.name.comments = salvagedComments if salvagedComments
+            o.scope.parameter fragmentsToText paramToAddToScope.compileToFragmentsWithoutComments o
           params.push ref
         else
           paramsAfterSplat.push param
@@ -2773,6 +2772,9 @@ exports.Param = class Param extends Base
 
   compileToFragments: (o) ->
     @name.compileToFragments o, LEVEL_LIST
+
+  compileToFragmentsWithoutComments: (o) ->
+    @name.compileToFragmentsWithoutComments o, LEVEL_LIST
 
   asReference: (o) ->
     return @reference if @reference
