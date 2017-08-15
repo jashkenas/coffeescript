@@ -107,6 +107,9 @@ exports.Base = class Base
     @compileCommentFragments o, node, fragments
     fragments
 
+  compileToFragmentsWithoutComments: (o, lvl) ->
+    @compileWithoutComments o, lvl, 'compileToFragments'
+
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
   compileClosure: (o) ->
@@ -2626,11 +2629,7 @@ exports.Code = class Code extends Base
             # compilation, so that they get output the “real” time this param
             # is compiled.
             paramToAddToScope = if param.value? then param else ref
-            if paramToAddToScope.name?.comments
-              salvagedComments = paramToAddToScope.name.comments
-              delete paramToAddToScope.name.comments
-            o.scope.parameter fragmentsToText paramToAddToScope.compileToFragments o
-            paramToAddToScope.name.comments = salvagedComments if salvagedComments
+            o.scope.parameter fragmentsToText paramToAddToScope.compileToFragmentsWithoutComments o
           params.push ref
         else
           paramsAfterSplat.push param
@@ -2675,7 +2674,14 @@ exports.Code = class Code extends Base
     for param, i in params
       signature.push @makeCode ', ' if i isnt 0
       signature.push @makeCode '...' if haveSplatParam and i is params.length - 1
+      # Compile this parameter, but if any generated variables get created
+      # (e.g. `ref`), shift those into the parent scope since we can’t put a
+      # `var` line inside a function parameter list.
+      scopeVariablesCount = o.scope.variables.length
       signature.push param.compileToFragments(o)...
+      if scopeVariablesCount isnt o.scope.variables.length
+        generatedVariables = o.scope.variables.splice scopeVariablesCount
+        o.scope.parent.variables.push generatedVariables...
     signature.push @makeCode ')'
     # Block comments between `)` and `->`/`=>` get output between `)` and `{`.
     if @funcGlyph?.comments?
@@ -2773,6 +2779,9 @@ exports.Param = class Param extends Base
 
   compileToFragments: (o) ->
     @name.compileToFragments o, LEVEL_LIST
+
+  compileToFragmentsWithoutComments: (o) ->
+    @name.compileToFragmentsWithoutComments o, LEVEL_LIST
 
   asReference: (o) ->
     return @reference if @reference
