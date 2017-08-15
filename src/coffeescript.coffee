@@ -49,9 +49,9 @@ withPrettyErrors = (fn) ->
 # a stack trace. Assuming that most of the time, code isn’t throwing
 # exceptions, it’s probably more efficient to compile twice only when we
 # need a stack trace, rather than always generating a source map even when
-# it’s not likely to be used. Save in form of `filename`: `(source)`
+# it’s not likely to be used. Save in form of `filename`: [`(source)`]
 sources = {}
-# Also save source maps if generated, in form of `filename`: `(source map)`.
+# Also save source maps if generated, in form of `(source)`: [`(source map)`].
 sourceMaps = {}
 
 # Compile CoffeeScript code to JavaScript, using the Coffee/Jison compiler.
@@ -75,7 +75,8 @@ exports.compile = compile = withPrettyErrors (code, options) ->
 
   checkShebangLine filename, code
 
-  sources[filename] = code
+  sources[filename] ?= []
+  sources[filename].push code
   map = new SourceMap if generateSourceMap
 
   tokens = lexer.tokenize code, options
@@ -124,8 +125,9 @@ exports.compile = compile = withPrettyErrors (code, options) ->
     js = "// #{header}\n#{js}"
 
   if generateSourceMap
-    v3SourceMap = map.generate(options, code)
-    sourceMaps[filename] = map
+    v3SourceMap = map.generate options, code
+    sourceMaps[filename] ?= []
+    sourceMaps[filename].push map
 
   if options.inlineMap
     encoded = base64encode JSON.stringify v3SourceMap
@@ -266,14 +268,14 @@ formatSourcePosition = (frame, getSourceMapping) ->
 
 getSourceMap = (filename) ->
   if sourceMaps[filename]?
-    sourceMaps[filename]
-  # CoffeeScript compiled in a browser may get compiled with `options.filename`
-  # of `<anonymous>`, but the browser may request the stack trace with the
-  # filename of the script file.
+    sourceMaps[filename][sourceMaps[filename].length - 1]
   else if sourceMaps['<anonymous>']?
-    sourceMaps['<anonymous>']
+    # CoffeeScript compiled in a browser may get compiled with `options.filename`
+    # of `<anonymous>`, but the browser may request the stack trace with the
+    # filename of the script file.
+    sourceMaps['<anonymous>'][sourceMaps['<anonymous>'].length - 1]
   else if sources[filename]?
-    answer = compile sources[filename],
+    answer = compile sources[filename][sources[filename].length - 1],
       filename: filename
       sourceMap: yes
       literate: helpers.isLiterate filename
