@@ -341,11 +341,15 @@ task 'doc:source:watch', 'watch and continually rebuild the annotated source doc
 
 
 task 'release', 'build and test the CoffeeScript source, and build the documentation', ->
-  invoke 'build:full'
-  invoke 'build:browser:full'
-  invoke 'doc:site'
-  invoke 'doc:test'
-  invoke 'doc:source'
+  execSync '''
+    cake build:full
+    cake build:browser
+    cake test:browser
+    cake test:integrations
+    cake doc:site
+    cake doc:test
+    cake doc:source''', stdio: 'inherit'
+
 
 task 'bench', 'quick benchmark of compilation time', ->
   {Rewriter} = require './lib/coffeescript/rewriter'
