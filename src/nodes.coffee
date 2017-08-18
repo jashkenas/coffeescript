@@ -2229,8 +2229,11 @@ exports.Assign = class Assign extends Base
             nestedProperties = prop.value.variable.base.properties
             [prop.value.value, nestedSourceDefault] = prop.value.value.cache o
           if nestedProperties
-            nestedSource = new Value source.base, source.properties.concat [new Access getPropKey prop]
-            nestedSource = new Value new Op '?', nestedSource, nestedSourceDefault if nestedSourceDefault
+            if source.properties
+              nestedSource = new Value source.base, source.properties.concat [new Access getPropKey prop]
+              nestedSource = new Value new Op '?', nestedSource, nestedSourceDefault if nestedSourceDefault
+            else
+              nestedSource = source
             restElements.push traverseRest(nestedProperties, nestedSource)...
         else if prop instanceof Splat
           prop.error "multiple rest elements are disallowed in object destructuring" if restIndex?
@@ -2247,8 +2250,16 @@ exports.Assign = class Assign extends Base
 
       restElements
 
-    # Cache the value for reuse with rest elements
-    [@value, valueRef] = @value.cache o
+    # Cache the value for reuse with rest elements.
+    # `Obj` should be always cached.
+    # Examples:
+    #   {a, r...} = {a:1, b:2, c:3}
+    #   {a, r...} = {a:1, obj...}
+    shouldCache = (value) =>
+      return yes if value.base instanceof Obj
+      value.shouldCache()
+
+    [@value, valueRef] = @value.cache o, false, shouldCache
 
     # Find all rest elements.
     restElements = traverseRest @variable.base.properties, valueRef
