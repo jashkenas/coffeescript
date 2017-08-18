@@ -1,3 +1,7 @@
+# Methods
+eat = (food) -> "#{food} eaten."
+menu = (i, dish) -> "Menu Item #{i}: #{dish}" 
+
 # Eat lunch.
 eat food for food in ['toast', 'cheese', 'wine']
 
