@@ -2255,7 +2255,7 @@ exports.Assign = class Assign extends Base
     # Examples:
     #   {a, r...} = {a:1, b:2, c:3}
     #   {a, r...} = {a:1, obj...}
-    shouldCache = (value) =>
+    shouldCache = (value) ->
       return yes if value.base instanceof Obj
       value.shouldCache()
 
