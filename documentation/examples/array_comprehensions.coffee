@@ -1,12 +1,10 @@
-# Methods
-eat = (food) -> "#{food} eaten."
-menu = (i, dish) -> "Menu Item #{i}: #{dish}" 
-
 # Eat lunch.
+eat = (food) -> "#{food} eaten."
 eat food for food in ['toast', 'cheese', 'wine']
 
 # Fine five course dining.
 courses = ['greens', 'caviar', 'truffles', 'roast', 'cake']
+menu = (i, dish) -> "Menu Item #{i}: #{dish}" 
 menu i + 1, dish for dish, i in courses
 
 # Health conscious meal.
