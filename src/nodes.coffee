@@ -2122,8 +2122,9 @@ exports.Assign = class Assign extends Base
         @variable.base.lhs = yes
         return @compileDestructuring o unless @variable.isAssignable()
         # Object destructuring. Can be removed once ES proposal hits Stage 4.
-        return @compileObjectDestruct(o) if @variable.isObject() and @variable.contains (node) ->
+        objDestructAnswer = @compileObjectDestruct(o) if @variable.isObject() and @variable.contains (node) ->
           node instanceof Obj and node.hasSplat()
+        return objDestructAnswer if objDestructAnswer
 
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
@@ -2224,8 +2225,12 @@ exports.Assign = class Assign extends Base
         if prop instanceof Assign
           # prop is `k: expr`, we need to check `expr` for nested splats
           if prop.value.isObject?()
-            # prop is `k: {...}`
-            nestedProperties = prop.value.base.properties
+            if prop.operatorToken.unwrap().value is ':'
+              # prop is `k: {...}`
+              nestedProperties = prop.value.base.properties
+            if prop.operatorToken.unwrap().value is '='
+              # prop is `k = {...} `
+              continue
           else if prop.value instanceof Assign and prop.value.variable.isObject()
             # prop is `k: {...} = default`
             nestedProperties = prop.value.variable.base.properties
@@ -2254,8 +2259,10 @@ exports.Assign = class Assign extends Base
 
     # Find all rest elements.
     restElements = traverseRest @variable.base.properties, valueRef
+    return false unless restElements and restElements.length > 0
 
     result = new Block [@]
+
     for restElement in restElements
       value = new Call new Value(new Literal utility 'objectWithoutKeys', o), [restElement.source, restElement.excludeProps]
       result.push new Assign restElement.name, value
