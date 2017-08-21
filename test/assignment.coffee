@@ -305,9 +305,11 @@ test "destructuring assignment with multiple splats in different objects", ->
       s: 6
     }
   }
-  {p: {m}, r...} = o.props
+  {p: {m, q..., t = {obj...}}, r...} = o.props
   eq m, o.props.p.m
   deepEqual r, s: 6
+  deepEqual q, n: 1
+  deepEqual t, obj
 
   @props = o.props
   {p: {m}, r...} = @props

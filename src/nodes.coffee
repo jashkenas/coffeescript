@@ -2216,8 +2216,10 @@ exports.Assign = class Assign extends Base
     traverseRest = (properties, source) =>
       restElements = []
       restIndex = undefined
+      source = new Value source unless source.properties?
 
       for prop, index in properties
+        nestedSourceDefault = nestedSource = nestedProperties = null
         setScopeVar prop.unwrap()
         if prop instanceof Assign
           # prop is `k: expr`, we need to check `expr` for nested splats
@@ -2229,11 +2231,8 @@ exports.Assign = class Assign extends Base
             nestedProperties = prop.value.variable.base.properties
             [prop.value.value, nestedSourceDefault] = prop.value.value.cache o
           if nestedProperties
-            if source.properties
-              nestedSource = new Value source.base, source.properties.concat [new Access getPropKey prop]
-              nestedSource = new Value new Op '?', nestedSource, nestedSourceDefault if nestedSourceDefault
-            else
-              nestedSource = source
+            nestedSource = new Value source.base, source.properties.concat [new Access getPropKey prop]
+            nestedSource = new Value new Op '?', nestedSource, nestedSourceDefault if nestedSourceDefault
             restElements.push traverseRest(nestedProperties, nestedSource)...
         else if prop instanceof Splat
           prop.error "multiple rest elements are disallowed in object destructuring" if restIndex?
