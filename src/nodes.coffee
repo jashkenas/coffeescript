@@ -2250,15 +2250,7 @@ exports.Assign = class Assign extends Base
       restElements
 
     # Cache the value for reuse with rest elements.
-    # `Obj` should be always cached.
-    # Examples:
-    #   {a, r...} = {a:1, b:2, c:3}
-    #   {a, r...} = {a:1, obj...}
-    shouldCache = (value) ->
-      return yes if value.base instanceof Obj
-      value.shouldCache()
-
-    [@value, valueRef] = @value.cache o, false, shouldCache
+    [@value, valueRef] = @value.cache o
 
     # Find all rest elements.
     restElements = traverseRest @variable.base.properties, valueRef
