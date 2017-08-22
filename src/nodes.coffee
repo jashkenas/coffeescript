@@ -2255,12 +2255,16 @@ exports.Assign = class Assign extends Base
       restElements
 
     # Cache the value for reuse with rest elements.
-    [@value, valueRef] = @value.cache o
+    if @value.shouldCache()
+      valueRefTemp = new IdentifierLiteral o.scope.freeVariable 'ref', reserve: false
+    else
+      valueRefTemp = @value.base
 
     # Find all rest elements.
-    restElements = traverseRest @variable.base.properties, valueRef
-    return false unless restElements and restElements.length > 0
+    restElements = traverseRest @variable.base.properties, valueRefTemp
+    return no unless restElements and restElements.length > 0
 
+    [@value, valueRef] = @value.cache o
     result = new Block [@]
 
     for restElement in restElements
