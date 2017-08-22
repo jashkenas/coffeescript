@@ -2225,12 +2225,10 @@ exports.Assign = class Assign extends Base
         if prop instanceof Assign
           # prop is `k: expr`, we need to check `expr` for nested splats
           if prop.value.isObject?()
-            if prop.operatorToken.unwrap().value is ':'
-              # prop is `k: {...}`
-              nestedProperties = prop.value.base.properties
-            if prop.operatorToken.unwrap().value is '='
-              # prop is `k = {...} `
-              continue
+            # prop is `k = {...} `
+            continue unless prop.context is 'object'
+            # prop is `k: {...}`
+            nestedProperties = prop.value.base.properties
           else if prop.value instanceof Assign and prop.value.variable.isObject()
             # prop is `k: {...} = default`
             nestedProperties = prop.value.variable.base.properties
