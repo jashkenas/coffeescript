@@ -267,7 +267,8 @@ exports.Rewriter = class Rewriter
       # Added support for spread dots on the left side: f ...a
       if (tag in IMPLICIT_FUNC and token.spaced or
           tag is '?' and i > 0 and not tokens[i - 1].spaced) and
-         (nextTag in IMPLICIT_CALL or nextTag is '...' or
+         (nextTag in IMPLICIT_CALL or
+         (nextTag is '...' and @tag(i + 2) in IMPLICIT_CALL and not @findTagsBackwards(i, ['INDEX_START', '['])) or
           nextTag in IMPLICIT_UNSPACED_CALL and
           not nextToken.spaced and not nextToken.newLine)
         tag = token[0] = 'FUNC_EXIST' if tag is '?'

@@ -110,12 +110,22 @@ test "splats", ->
   arrayEq [0, 1], (((splat..., _, _1) -> splat) 0, 1, 2, 3)
   arrayEq [2], (((_, _1, splat..., _2) -> splat) 0, 1, 2, 3)
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  arrayEq [0, 1, 2], (((splat ...) -> splat) 0, 1, 2)
+  arrayEq [2, 3], (((_, _1, splat ...) -> splat) 0, 1, 2, 3)
+  arrayEq [0, 1], (((splat ..., _, _1) -> splat) 0, 1, 2, 3)
+  arrayEq [2], (((_, _1, splat ..., _2) -> splat) 0, 1, 2, 3)
+
 test "destructured splatted parameters", ->
   arr = [0,1,2]
   splatArray = ([a...]) -> a
   splatArrayRest = ([a...],b...) -> arrayEq(a,b); b
   arrayEq splatArray(arr), arr
   arrayEq splatArrayRest(arr,0,1,2), arr
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  splatArray = ([a ...]) -> a
+  splatArrayRest = ([a ...],b ...) -> arrayEq(a,b); b
 
 test "@-parameters: automatically assign an argument's value to a property of the context", ->
   nonce = {}
@@ -127,8 +137,16 @@ test "@-parameters: automatically assign an argument's value to a property of th
   ((splat..., @prop) ->).apply context = {}, [0, 0, nonce]
   eq nonce, context.prop
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  ((splat ..., @prop) ->).apply context = {}, [0, 0, nonce]
+  eq nonce, context.prop
+
   # Allow the argument itself to be a splat
   ((@prop...) ->).call context = {}, 0, nonce, 0
+  eq nonce, context.prop[1]
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  ((@prop ...) ->).call context = {}, 0, nonce, 0
   eq nonce, context.prop[1]
 
   # The argument should not be able to be referenced normally
@@ -149,8 +167,22 @@ test "@-parameters and splats with constructors", ->
   eq a, obj.first
   eq b, obj.last
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  class Klass
+    constructor: (@first, splat ..., @last) ->
+
+  obj = new Klass a, 0, 0, b
+  eq a, obj.first
+  eq b, obj.last
+
 test "destructuring in function definition", ->
   (([{a: [b], c}]...) ->
+    eq 1, b
+    eq 2, c
+  ) {a: [1], c: 2}
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  (([{a: [b], c}] ...) ->
     eq 1, b
     eq 2, c
   ) {a: [1], c: 2}
@@ -193,6 +225,17 @@ test "rest element destructuring in function definition", ->
   ) obj
 
   (({a: p, b, r...}, q) ->
+    eq p, 1
+    eq q, 9
+    deepEqual r, {c: 3, d: 4, e: 5}
+  ) {a:1, b:2, c:3, d:4, e:5}, 9
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  (({
+      a: p
+      b
+      r ...
+    }, q) ->
     eq p, 1
     eq q, 9
     deepEqual r, {c: 3, d: 4, e: 5}
@@ -256,6 +299,10 @@ test "#4005: `([a = {}]..., b) ->` weirdness", ->
   fn = ([a = {}]..., b) -> [a, b]
   deepEqual fn(5), [{}, 5]
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  fn = ([a = {}] ..., b) -> [a, b]
+  deepEqual fn(5), [{}, 5]
+
 test "default values", ->
   nonceA = {}
   nonceB = {}
@@ -299,6 +346,14 @@ test "default values with splatted arguments", ->
   eq  1, withSplats(1,1,1)
   eq  2, withSplats(1,1,1,1)
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  withSplats = (a = 2, b ..., c = 3, d = 5) -> a * (b.length + 1) * c * d
+  eq 30, withSplats()
+  eq 15, withSplats(1)
+  eq  5, withSplats(1,1)
+  eq  1, withSplats(1,1,1)
+  eq  2, withSplats(1,1,1,1)
+
 test "#156: parameter lists with expansion", ->
   expandArguments = (first, ..., lastButOne, last) ->
     eq 1, first
@@ -328,6 +383,12 @@ test "variable definitions and splat", ->
   eq 0, a
   eq 0, b
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  f = (a, middle ..., b) -> [a, middle, b]
+  arrayEq [1, [2, 3, 4], 5], f 1, 2, 3, 4, 5
+  eq 0, a
+  eq 0, b
+
 test "default values with function calls", ->
   doesNotThrow -> CoffeeScript.compile "(x = f()) ->"
 
@@ -350,6 +411,12 @@ test "reserved keyword as parameters", ->
 
 test "reserved keyword at-splat", ->
   f = (@case...) -> @case
+  [a, b] = f(1, 2)
+  eq 1, a
+  eq 2, b
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  f = (@case ...) -> @case
   [a, b] = f(1, 2)
   eq 1, a
   eq 2, b

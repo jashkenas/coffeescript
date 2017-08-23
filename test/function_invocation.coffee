@@ -347,12 +347,26 @@ test "passing splats to functions", ->
   arrayEq [2..6], others
   eq 7, last
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  arrayEq [0..4], id id [0..4] ...
+  fn = (a, b, c ..., d) -> [a, b, c, d]
+  range = [0..3]
+  [first, second, others, last] = fn range ..., 4, [5 ... 8] ...
+  eq 0, first
+  eq 1, second
+  arrayEq [2..6], others
+  eq 7, last
+
 test "splat variables are local to the function", ->
   outer = "x"
   clobber = (avar, outer...) -> outer
   clobber "foo", "bar"
   eq "x", outer
 
+test "Issue 4631: left and right spread dots with preceding space", ->
+  a = []
+  f = (a) -> a
+  eq yes, (f ...a) is (f ... a) is (f a...) is (f a ...) is f(a...) is f(...a) is f(a ...) is f(... a)
 
 test "Issue 894: Splatting against constructor-chained functions.", ->
 
@@ -387,6 +401,16 @@ test "splats with super() within classes.", ->
       super nums...
   ok (new Child).meth().join(' ') is '3 2 1'
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  class Parent
+    meth: (args ...) ->
+      args
+  class Child extends Parent
+    meth: ->
+      nums = [3, 2, 1]
+      super nums ...
+  ok (new Child).meth().join(' ') is '3 2 1'
+
 
 test "#1011: passing a splat to a method of a number", ->
   eq '1011', 11.toString [2]...
@@ -394,10 +418,19 @@ test "#1011: passing a splat to a method of a number", ->
   eq '1011', 69.0.toString [4]...
   eq '1011', (131.0).toString [5]...
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  eq '1011', 11.toString [2] ...
+  eq '1011', (31).toString [3] ...
+  eq '1011', 69.0.toString [4] ...
+  eq '1011', (131.0).toString [5] ...
 
 test "splats and the `new` operator: functions that return `null` should construct their instance", ->
   args = []
   child = new (constructor = -> null) args...
+  ok child instanceof constructor
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  child = new (constructor = -> null) args ...
   ok child instanceof constructor
 
 test "splats and the `new` operator: functions that return functions should construct their return value", ->
