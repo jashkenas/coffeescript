@@ -125,9 +125,9 @@ exports.run = ->
 
 makePrelude = (requires) ->
   requires.map (module) ->
-    [_, name, module] = match if match = module.match(/^(.*)=(.*)$/)
-    name ||= helpers.baseFileName module, yes, useWinPathSep
-    "#{name} = require('#{module}')"
+    [full, name, module] = match if match = module.match(/^(.*)=(.*)$/)
+    name or= helpers.baseFileName module, yes, useWinPathSep
+    "global['#{name}'] = require('#{module}')"
   .join ';'
 
 # Compile a path, which could be a script or a directory. If a directory
