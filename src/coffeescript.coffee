@@ -14,7 +14,7 @@ packageJson   = require '../../package.json'
 # The current CoffeeScript version number.
 exports.VERSION = packageJson.version
 
-exports.FILE_EXTENSIONS = ['.coffee', '.litcoffee', '.coffee.md']
+exports.FILE_EXTENSIONS = FILE_EXTENSIONS = ['.coffee', '.litcoffee', '.coffee.md']
 
 # Expose helpers for testing.
 exports.helpers = helpers
@@ -49,9 +49,9 @@ withPrettyErrors = (fn) ->
 # a stack trace. Assuming that most of the time, code isn’t throwing
 # exceptions, it’s probably more efficient to compile twice only when we
 # need a stack trace, rather than always generating a source map even when
-# it’s not likely to be used. Save in form of `filename`: `(source)`
+# it’s not likely to be used. Save in form of `filename`: [`(source)`]
 sources = {}
-# Also save source maps if generated, in form of `filename`: `(source map)`.
+# Also save source maps if generated, in form of `(source)`: [`(source map)`].
 sourceMaps = {}
 
 # Compile CoffeeScript code to JavaScript, using the Coffee/Jison compiler.
@@ -75,7 +75,8 @@ exports.compile = compile = withPrettyErrors (code, options) ->
 
   checkShebangLine filename, code
 
-  sources[filename] = code
+  sources[filename] ?= []
+  sources[filename].push code
   map = new SourceMap if generateSourceMap
 
   tokens = lexer.tokenize code, options
@@ -124,8 +125,9 @@ exports.compile = compile = withPrettyErrors (code, options) ->
     js = "// #{header}\n#{js}"
 
   if generateSourceMap
-    v3SourceMap = map.generate(options, code)
-    sourceMaps[filename] = map
+    v3SourceMap = map.generate options, code
+    sourceMaps[filename] ?= []
+    sourceMaps[filename].push map
 
   if options.inlineMap
     encoded = base64encode JSON.stringify v3SourceMap
@@ -264,16 +266,36 @@ formatSourcePosition = (frame, getSourceMapping) ->
   else
     fileLocation
 
-getSourceMap = (filename) ->
-  if sourceMaps[filename]?
-    sourceMaps[filename]
-  # CoffeeScript compiled in a browser may get compiled with `options.filename`
-  # of `<anonymous>`, but the browser may request the stack trace with the
-  # filename of the script file.
+getSourceMap = (filename, line, column) ->
+  # Skip files that we didn’t compile, like Node system files that appear in
+  # the stack trace, as they never have source maps.
+  return null unless filename is '<anonymous>' or filename.slice(filename.lastIndexOf('.')) in FILE_EXTENSIONS
+
+  if filename isnt '<anonymous>' and sourceMaps[filename]?
+    return sourceMaps[filename][sourceMaps[filename].length - 1]
+  # CoffeeScript compiled in a browser or via `CoffeeScript.compile` or `.run`
+  # may get compiled with `options.filename` that’s missing, which becomes
+  # `<anonymous>`; but the runtime might request the stack trace with the
+  # filename of the script file. See if we have a source map cached under
+  # `<anonymous>` that matches the error.
   else if sourceMaps['<anonymous>']?
-    sourceMaps['<anonymous>']
-  else if sources[filename]?
-    answer = compile sources[filename],
+    # Work backwards from the most recent anonymous source maps, until we find
+    # one that works. This isn’t foolproof; there is a chance that multiple
+    # source maps will have line/column pairs that match. But we have no other
+    # way to match them. `frame.getFunction().toString()` doesn’t always work,
+    # and it’s not foolproof either.
+    for map in sourceMaps['<anonymous>'] by -1
+      sourceLocation = map.sourceLocation [line - 1, column - 1]
+      return map if sourceLocation?[0]? and sourceLocation[1]?
+
+  # If all else fails, recompile this source to get a source map. We need the
+  # previous section (for `<anonymous>`) despite this option, because after it
+  # gets compiled we will still need to look it up from
+  # `sourceMaps['<anonymous>']` in order to find and return it. That’s why we
+  # start searching from the end in the previous block, because most of the
+  # time the source map we want is the last one.
+  if sources[filename]?
+    answer = compile sources[filename][sources[filename].length - 1],
       filename: filename
       sourceMap: yes
       literate: helpers.isLiterate filename
@@ -287,7 +309,7 @@ getSourceMap = (filename) ->
 # positions.
 Error.prepareStackTrace = (err, stack) ->
   getSourceMapping = (filename, line, column) ->
-    sourceMap = getSourceMap filename
+    sourceMap = getSourceMap filename, line, column
     answer = sourceMap.sourceLocation [line - 1, column - 1] if sourceMap?
     if answer? then [answer[0] + 1, answer[1] + 1] else null
 

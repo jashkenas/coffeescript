@@ -75,7 +75,7 @@ if require?
     finally
       fs.unlinkSync tempFile
 
-  test "#3890 Error.prepareStackTrace doesn't throw an error if a compiled file is deleted", ->
+  test "#3890: Error.prepareStackTrace doesn't throw an error if a compiled file is deleted", ->
     # Adapted from https://github.com/atom/coffee-cash/blob/master/spec/coffee-cash-spec.coffee
     filePath = path.join os.tmpdir(), 'PrepareStackTraceTestFile.coffee'
     fs.writeFileSync filePath, "module.exports = -> throw new Error('hello world')"
@@ -90,7 +90,7 @@ if require?
     doesNotThrow(-> error.stack)
     notEqual error.stack.toString().indexOf(filePath), -1
 
-  test "#4418 stack traces for compiled files reference the correct line number", ->
+  test "#4418: stack traces for compiled files reference the correct line number", ->
     filePath = path.join os.tmpdir(), 'StackTraceLineNumberTestFile.coffee'
     fileContents = """
       testCompiledFileStackTraceLineNumber = ->
@@ -111,21 +111,38 @@ if require?
     eq /StackTraceLineNumberTestFile.coffee:(\d)/.exec(error.stack.toString())[1], '3'
 
 
-test "#4418 stack traces for compiled strings reference the correct line number", ->
+test "#4418: stack traces for compiled strings reference the correct line number", ->
   try
-    CoffeeScript.run """
+    CoffeeScript.run '''
       testCompiledStringStackTraceLineNumber = ->
         # `a` on the next line is undefined and should throw a ReferenceError
         console.log a if true
 
       do testCompiledStringStackTraceLineNumber
-      """
+      '''
   catch error
 
   # Make sure the line number reported is line 3 (the original Coffee source)
   # and not line 6 (the generated JavaScript).
   eq /testCompiledStringStackTraceLineNumber.*:(\d):/.exec(error.stack.toString())[1], '3'
 
+
+test "#4558: compiling a string inside a script doesn’t screw up stack trace line number", ->
+  try
+    CoffeeScript.run '''
+      testCompilingInsideAScriptDoesntScrewUpStackTraceLineNumber = ->
+        if require?
+          CoffeeScript = require './lib/coffeescript'
+          CoffeeScript.compile ''
+        throw new Error 'Some Error'
+
+      do testCompilingInsideAScriptDoesntScrewUpStackTraceLineNumber
+      '''
+  catch error
+
+  # Make sure the line number reported is line 5 (the original Coffee source)
+  # and not line 10 (the generated JavaScript).
+  eq /testCompilingInsideAScriptDoesntScrewUpStackTraceLineNumber.*:(\d):/.exec(error.stack.toString())[1], '5'
 
 test "#1096: unexpected generated tokens", ->
   # Implicit ends
