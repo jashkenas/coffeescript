@@ -38,7 +38,6 @@ test "array splat expansions with assignments", ->
 
 
 test "mixed shorthand objects in array lists", ->
-
   arr = [
     a:1
     'b'
@@ -58,7 +57,6 @@ test "mixed shorthand objects in array lists", ->
   eq arr[2].b, 1
   eq arr[3], 'b'
 
-
 test "array splats with nested arrays", ->
   nonce = {}
   a = [nonce]
@@ -69,6 +67,11 @@ test "array splats with nested arrays", ->
   a = [[nonce]]
   list = [1, 2, a...]
   arrayEq list, [1, 2, [nonce]]
+
+test "#4260: splat after existential operator soak", ->
+  a = {b: [3]}
+  arrayEq [a?.b...], [3]
+  arrayEq [c?.b...], []
 
 test "#1274: `[] = a()` compiles to `false` instead of `a()`", ->
   a = false
