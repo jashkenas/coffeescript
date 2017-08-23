@@ -1827,7 +1827,15 @@ exports.Splat = class Splat extends Base
     if not (@name instanceof Value) or
         (not (@name.base instanceof Parens) and @propHasSoak())
       @name = new Value new Parens @name
-    @name.compileToFragments o
+      # We need to replace `void 0` with `[]` in compiled fragments.
+      # Example: [a?.b...]
+      # slice.call((typeof a !== "undefined" && a !== null ? a.b : []));
+      fragments = @name.compileToFragments o
+      for fragment, ix in fragments
+        fragments[ix].code = "[]" if fragment.code == "void 0" and fragment.type == "If"
+      fragments
+    else
+      @name.compileToFragments o
 
   unwrap: -> @name
 

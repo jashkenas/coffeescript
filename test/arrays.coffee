@@ -72,6 +72,13 @@ test "#4260: splat after existential operator soak", ->
   arrayEq [a?.b...], [3]
   arrayEq [c?.b...], []
 
+test "#1349: trailing if after splat", ->
+  a = [3]
+  b = yes
+  c = null
+  arrayEq [a if b...], [3]
+  arrayEq [a if c...], []
+
 test "#1274: `[] = a()` compiles to `false` instead of `a()`", ->
   a = false
   fn = -> a = true
