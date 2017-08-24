@@ -721,6 +721,26 @@ test "Empty lines between comments are preserved", ->
     3;
   }'''
 
+test "Block comment in an interpolated string", ->
+  eqJS '"a#{### Comment ###}b"', '`a${/* Comment */}b`;'
+  eqJS '"a#{### 1 ###}b#{### 2 ###}c"', '`a${/* 1 */}b${/* 2 */}c`;'
+
+test "#4629: Block comment in CSX interpolation", ->
+  eqJS '<div>{### Comment ###}</div>', '<div>{/* Comment */}</div>;'
+  eqJS '''
+  <div>
+  {###
+    Multiline
+    Comment
+  ###}
+  </div>''', '''
+  <div>
+  {/*
+    Multiline
+    Comment
+  */}
+  </div>;'''
+
 test "Line comment in an interpolated string", ->
   eqJS '''
   "a#{# Comment
