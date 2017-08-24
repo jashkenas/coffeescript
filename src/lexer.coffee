@@ -824,7 +824,13 @@ exports.Lexer = class Lexer
             # Optimize out empty interpolations (an empty pair of parentheses).
             continue unless value[0].comments or value[1].comments
             # There are comments (and nothing else) in this interpolation.
-            placeholderToken = @makeToken 'JS', ''
+            if @csxDepth is 0
+              # This is an interpolated string, not a CSX tag; and for whatever
+              # reason `` `a${/*test*/}b` `` is invalid JS. So compile to
+              # `` `a${/*test*/''}b` `` instead.
+              placeholderToken = @makeToken 'STRING', "''"
+            else
+              placeholderToken = @makeToken 'JS', ''
             # Use the same location data as the first parenthesis.
             placeholderToken[2] = value[0][2]
             for val in value when val.comments
