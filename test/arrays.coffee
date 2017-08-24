@@ -74,12 +74,23 @@ test "#4260: splat after existential operator soak", ->
   arrayEq [c?.b...], []
   arrayEq [...a?.b], [3]
   arrayEq [...c?.b], []
+  e = yes
+  f = null
+  arrayEq [(a if e)?.b...], [3]
+  arrayEq [(a if f)?.b...], []
+  arrayEq [...(a if e)?.b], [3]
+  arrayEq [...(a if f)?.b], []
 
   # Should not trigger implicit call, e.g. rest ... => rest(...)
   arrayEq [... a?.b], [3]
   arrayEq [... c?.b], []
   arrayEq [a?.b ...], [3]
   arrayEq [c?.b ...], []
+  arrayEq [(a if e)?.b ...], [3]
+  arrayEq [(a if f)?.b ...], []
+  arrayEq [... (a if e)?.b], [3]
+  arrayEq [... (a if f)?.b], []
+
 
 test "#1349: trailing if after splat", ->
   a = [3]

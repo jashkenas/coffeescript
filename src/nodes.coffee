@@ -2879,8 +2879,7 @@ exports.Splat = class Splat extends Base
     # [a?.b...]    => [(a?.b)...]
     # f(a.b?.c...) => f((a.b?.c)...)
     # [a if b...]  => [(a if b)...]
-    if not (@name instanceof Value) or
-        (not (@name.base instanceof Parens) and not @isAssignable())
+    if not (@name instanceof Value) or not @isAssignable()
       @name = new Value new Parens @name
       fragments = @name.compileToFragments o
       # We need to replace `void 0` with `[]` in compiled fragments.
