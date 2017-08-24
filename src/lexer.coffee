@@ -139,7 +139,7 @@ exports.Lexer = class Lexer
       return id.length
     if id is 'do' and regExSuper = /^(\s*super)(?!\(\))/.exec @chunk[3...]
       @token 'SUPER', 'super'
-      @token 'CALL_START', '('      
+      @token 'CALL_START', '('
       @token 'CALL_END', ')'
       [input, sup] = regExSuper
       return sup.length + 3
@@ -820,8 +820,23 @@ exports.Lexer = class Lexer
       [tag, value] = token
       switch tag
         when 'TOKENS'
-          # Optimize out empty interpolations (an empty pair of parentheses).
-          continue if value.length is 2
+          if value.length is 2
+            # Optimize out empty interpolations (an empty pair of parentheses).
+            continue unless value[0].comments or value[1].comments
+            # There are comments (and nothing else) in this interpolation.
+            if @csxDepth is 0
+              # This is an interpolated string, not a CSX tag; and for whatever
+              # reason `` `a${/*test*/}b` `` is invalid JS. So compile to
+              # `` `a${/*test*/''}b` `` instead.
+              placeholderToken = @makeToken 'STRING', "''"
+            else
+              placeholderToken = @makeToken 'JS', ''
+            # Use the same location data as the first parenthesis.
+            placeholderToken[2] = value[0][2]
+            for val in value when val.comments
+              placeholderToken.comments ?= []
+              placeholderToken.comments.push val.comments...
+            value.splice 1, 0, placeholderToken
           # Push all the tokens in the fake `'TOKENS'` token. These already have
           # sane location data.
           locationToken = value[0]
