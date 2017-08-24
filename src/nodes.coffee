@@ -3393,7 +3393,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
     fragments.push @makeCode '`' unless @csx
     for element in elements
       if element instanceof StringLiteral
-        element.value = element.unquote @csx
+        element.value = element.unquote yes
         unless @csx
           # Backticks and `${` inside template literals must be escaped.
           element.value = element.value.replace /(\\*)(`|\$\{)/g, (match, backslashes, toBeEscaped) ->
