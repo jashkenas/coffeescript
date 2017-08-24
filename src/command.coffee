@@ -105,8 +105,8 @@ exports.run = ->
   if opts.output
     outputBasename = path.basename opts.output
     if '.' in outputBasename and
-       not helpers.ends(opts.output, path.sep) and
-       not /^\.+$/.test(outputBasename) # Not `.` or `..`.
+       outputBasename not in ['.', '..'] and
+       not helpers.ends(opts.output, path.sep)
       # An output filename was specified, e.g. `/dist/scripts.js`.
       opts.outputFilename = outputBasename
       opts.outputPath = path.resolve path.dirname opts.output
