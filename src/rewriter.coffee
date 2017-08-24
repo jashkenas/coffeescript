@@ -309,7 +309,7 @@ exports.Rewriter = class Rewriter
           when @tag(i - 2) is '@' then i - 2
           else i - 1
 
-        startsLine = s is 0 or @tag(s - 1) in LINEBREAKS or tokens[s - 1].newLine
+        startsLine = s <= 0 or @tag(s - 1) in LINEBREAKS or tokens[s - 1].newLine
         # Are we just continuing an already declared object?
         if stackTop()
           [stackTag, stackIdx] = stackTop()
