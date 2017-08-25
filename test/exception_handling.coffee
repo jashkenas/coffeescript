@@ -176,3 +176,9 @@ test "#3709: throwing a while loop", ->
       i++
   catch err
     eq i, 3
+
+test "#3789: throwing a throw", ->
+  try
+    throw throw throw new Error 'whoa!'
+  catch err
+    eq err.message, 'whoa!'

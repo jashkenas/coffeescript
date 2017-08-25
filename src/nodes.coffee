@@ -3258,6 +3258,7 @@ exports.Throw = class Throw extends Base
     if @expression instanceof For or
        @expression instanceof If or
        @expression instanceof Switch or
+       @expression instanceof Throw or
        @expression instanceof While
       fragments = @expression.compileClosure o
     else
