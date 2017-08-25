@@ -3255,15 +3255,7 @@ exports.Throw = class Throw extends Base
   makeReturn: THIS
 
   compileNode: (o) ->
-    if @expression instanceof For or
-       @expression instanceof If or
-       @expression instanceof Switch or
-       @expression instanceof Throw or
-       @expression instanceof While
-      fragments = @expression.compileClosure o
-    else
-      fragments = @expression.compileToFragments o
-
+    fragments = @expression.compileToFragments o, LEVEL_LIST
     unshiftAfterComments fragments, @makeCode 'throw '
     fragments.unshift @makeCode @tab
     fragments.push @makeCode ';'
