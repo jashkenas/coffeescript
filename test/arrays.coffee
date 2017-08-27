@@ -70,53 +70,31 @@ test "array splats with nested arrays", ->
 
 test "#4260: splat after existential operator soak", ->
   a = {b: [3]}
-  foo = (a) -> [a] ? []
-
+  foo = (a) -> [a]
   arrayEq [a?.b...], [3]
-  arrayEq [c?.b...], []
+  arrayEq [c?.b ? []...], []
   arrayEq [...a?.b], [3]
-  arrayEq [...c?.b], []
+  arrayEq [...c?.b ? []], []
   arrayEq foo(a?.b...), [3]
   arrayEq foo(...a?.b), [3]
-  arrayEq [foo(a?.b)...], [a.b]   # `void 0` should not be replaced with `[]`
-  arrayEq [...foo(a?.b)], [a.b]   # `void 0` should not be replaced with `[]`
-  arrayEq [foo(a?.b...)...], [3]
-  arrayEq [...foo(...a?.b)], [3]
-  arrayEq foo(c?.b...), [undefined]
-  arrayEq foo(...c?.b), [undefined]
-  arrayEq [foo(c?.b)...], [undefined]   # `void 0` should not be replaced with `[]`
-  arrayEq [...foo(c?.b)], [undefined]   # `void 0` should not be replaced with `[]`
-  arrayEq [foo(c?.b...)...], [undefined]
-  arrayEq [...foo(...c?.b)], [undefined]
-
+  arrayEq foo(c?.b ? []...), [undefined]
+  arrayEq foo(...c?.b ? []), [undefined]
   e = yes
   f = null
   arrayEq [(a if e)?.b...], [3]
-  arrayEq [(a if f)?.b...], []
+  arrayEq [(a if f)?.b ? []...], []
   arrayEq [...(a if e)?.b], [3]
-  arrayEq [...(a if f)?.b], []
+  arrayEq [...(a if f)?.b ? []], []
   arrayEq foo((a if e)?.b...), [3]
   arrayEq foo(...(a if e)?.b), [3]
-  arrayEq [foo((a if e)?.b)...], [a.b]   # `void 0` should not be replaced with `[]`
-  arrayEq [...foo((a if e)?.b)], [a.b]   # `void 0` should not be replaced with `[]`
-  arrayEq [foo((a if e)?.b...)...], [3]
-  arrayEq [...foo(...(a if e)?.b)], [3]
-  arrayEq foo((a if f)?.b...), [undefined]
-  arrayEq foo(...(a if f)?.b), [undefined]
-  arrayEq [foo((a if f)?.b)...], [undefined]   # `void 0` should not be replaced with `[]`
-  arrayEq [...foo((a if f)?.b)], [undefined]   # `void 0` should not be replaced with `[]`
-  arrayEq [foo((a if f)?.b...)...], [undefined]
-  arrayEq [...foo(...(a if f)?.b)], [undefined]
+  arrayEq foo((a if f)?.b ? []...), [undefined]
+  arrayEq foo(...(a if f)?.b ? []), [undefined]
 
   # Should not trigger implicit call, e.g. rest ... => rest(...)
   arrayEq [... a?.b], [3]
-  arrayEq [... c?.b], []
+  arrayEq [... c?.b ? []], []
   arrayEq [a?.b ...], [3]
-  arrayEq [c?.b ...], []
   arrayEq [(a if e)?.b ...], [3]
-  arrayEq [(a if f)?.b ...], []
-  arrayEq [... (a if e)?.b], [3]
-  arrayEq [... (a if f)?.b], []
   arrayEq foo(a?.b ...), [3]
   arrayEq foo(... a?.b), [3]
 
@@ -126,27 +104,17 @@ test "#1349: trailing if after splat", ->
   c = null
   foo = (a) -> [a]
   arrayEq [a if b...], [3]
-  arrayEq [a if c...], []
+  arrayEq [(a if c) ? []...], []
   arrayEq [...a if b], [3]
-  arrayEq [...a if c], []
+  arrayEq [...(a if c) ? []], []
   arrayEq foo((a if b)...), [3]
   arrayEq foo(...(a if b)), [3]
-  arrayEq [foo((a if b))...], [a]   # `void 0` should not be replaced with `[]`
-  arrayEq [...foo((a if b))], [a]   # `void 0` should not be replaced with `[]`
-  arrayEq [foo((a if b)...)...], [3]
-  arrayEq [...foo(...(a if b))], [3]
-  arrayEq foo((a if c)...), [undefined]
-  arrayEq foo(...(a if c)), [undefined]
-  arrayEq [foo((a if c))...], [[]]   # `void 0` should not be replaced with `[]`
-  arrayEq [...foo((a if c))], [[]]   # `void 0` should not be replaced with `[]`
-  arrayEq [foo((a if c)...)...], [undefined]
-  arrayEq [...foo(...(a if c))], [undefined]
+  arrayEq foo((a if c) ? []...), [undefined]
+  arrayEq foo(...(a if c) ? []), [undefined]
 
   # Should not trigger implicit call, e.g. rest ... => rest(...)
   arrayEq [... a if b], [3]
-  arrayEq [... a if c], []
   arrayEq [a if b ...], [3]
-  arrayEq [a if c ...], []
 
 test "#1274: `[] = a()` compiles to `false` instead of `a()`", ->
   a = false

@@ -2872,30 +2872,9 @@ exports.Splat = class Splat extends Base
   assigns: (name) ->
     @name.assigns name
 
-  compileToFragments: (o) ->
-    # Check if @name is not an instance of `Value` or @name properties contains soak accessor, e.g. ?.b,
-    # and ensure correct compilation by wrapping the @name in `Parens`.
-    # Examples:
-    # [a?.b...]    => [(a?.b)...]
-    # f(a.b?.c...) => f((a.b?.c)...)
-    # [a if b...]  => [(a if b)...]
-    if not (@name instanceof Value) or not @isAssignable()
-      fragments = @name.compileToFragments o, LEVEL_OP
-      # We need to replace `void 0` with `[]` in compiled fragments.
-      # Examples:
-      # - [a?.b...]
-      #   [...(a !== null ? a.b : void 0)] => [...(a !== null ? a.b : [])]
-      # - f(a?b...)
-      #   f(...(typeof c !== "undefined" && c !== null ? c.b : []))
-      flen = fragments.length
-      for fragment, ix in fragments
-        fragments[ix].code = '[]' if fragment.type is 'If' and fragment.code is 'void 0' and
-            ix + 1 < flen and fragments[ix + 1].type isnt 'Call'
-    else
-      fragments = @name.compileToFragments o
-
+  compileNode: (o) ->
     [ @makeCode('...')
-      fragments... ]
+      @name.compileToFragments(o)... ]
 
   unwrap: -> @name
 
