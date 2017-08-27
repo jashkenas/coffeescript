@@ -2859,22 +2859,20 @@ exports.Param = class Param extends Base
 # A splat, either as a parameter to a function, an argument to a call,
 # or as part of a destructuring assignment.
 exports.Splat = class Splat extends Base
+  constructor: (name) ->
+    super()
+    @name = if name.compile then name else new Literal name
 
   children: ['name']
 
   isAssignable: ->
     @name.isAssignable() and (not @name.isAtomic or @name.isAtomic())
 
-  constructor: (name) ->
-    super()
-    @name = if name.compile then name else new Literal name
-
   assigns: (name) ->
     @name.assigns name
 
   compileNode: (o) ->
-    [ @makeCode('...')
-      @name.compileToFragments(o)... ]
+    [@makeCode('...'), @name.compileToFragments(o, LEVEL_OP)...]
 
   unwrap: -> @name
 
