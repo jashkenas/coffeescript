@@ -1812,30 +1812,8 @@ exports.Splat = class Splat extends Base
   assigns: (name) ->
     @name.assigns name
 
-  propHasSoak: ->
-    return no unless @name.properties
-    isSoak = yes for prop in @name.properties when prop.soak
-    isSoak ? no
-
-  compileToFragments: (o) ->
-    # Check if @name is not an instance of `Value` or @name properties contains soak accessor, e.g. ?.b,
-    # and ensure correct compilation by wrapping the @name in `Parens`.
-    # Examples:
-    # [a?.b...]    => [(a?.b)...]
-    # f(a.b?.c...) => f((a.b?.c)...)
-    # [a if b...]  => [(a if b)...]
-    if not (@name instanceof Value) or
-        (not (@name.base instanceof Parens) and @propHasSoak())
-      @name = new Value new Parens @name
-      # We need to replace `void 0` with `[]` in compiled fragments.
-      # Example: [a?.b...]
-      # slice.call((typeof a !== "undefined" && a !== null ? a.b : []));
-      fragments = @name.compileToFragments o
-      for fragment, ix in fragments
-        fragments[ix].code = "[]" if fragment.code == "void 0" and fragment.type == "If"
-      fragments
-    else
-      @name.compileToFragments o
+  compileNode: (o) ->
+    @name.compileToFragments o
 
   unwrap: -> @name
 

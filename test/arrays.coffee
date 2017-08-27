@@ -69,15 +69,27 @@ test "array splats with nested arrays", ->
 
 test "#4260: splat after existential operator soak", ->
   a = {b: [3]}
+  foo = (a) -> [a]
   arrayEq [a?.b...], [3]
-  arrayEq [c?.b...], []
+  arrayEq [c?.b ? []...], []
+  arrayEq foo(a?.b...), [3]
+  arrayEq foo(c?.b ? []...), [undefined]
+  e = yes
+  f = null
+  arrayEq [(a if e)?.b...], [3]
+  arrayEq [(a if f)?.b ? []...], []
+  arrayEq foo((a if e)?.b...), [3]
+  arrayEq foo((a if f)?.b ? []...), [undefined]
 
 test "#1349: trailing if after splat", ->
   a = [3]
   b = yes
   c = null
+  foo = (a) -> [a]
   arrayEq [a if b...], [3]
-  arrayEq [a if c...], []
+  arrayEq [(a if c) ? []...], []
+  arrayEq foo((a if b)...), [3]
+  arrayEq foo((a if c) ? []...), [undefined]
 
 test "#1274: `[] = a()` compiles to `false` instead of `a()`", ->
   a = false
