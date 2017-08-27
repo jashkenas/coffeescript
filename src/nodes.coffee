@@ -1812,7 +1812,7 @@ exports.Splat = class Splat extends Base
   assigns: (name) ->
     @name.assigns name
 
-  compileToFragments: (o) ->
+  compileNode: (o) ->
     @name.compileToFragments o
 
   unwrap: -> @name

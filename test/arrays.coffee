@@ -36,9 +36,7 @@ test "array splat expansions with assignments", ->
   eq 4, b
   arrayEq [0,1,2,3,4], list
 
-
 test "mixed shorthand objects in array lists", ->
-
   arr = [
     a:1
     'b'
@@ -58,7 +56,6 @@ test "mixed shorthand objects in array lists", ->
   eq arr[2].b, 1
   eq arr[3], 'b'
 
-
 test "array splats with nested arrays", ->
   nonce = {}
   a = [nonce]
@@ -69,6 +66,30 @@ test "array splats with nested arrays", ->
   a = [[nonce]]
   list = [1, 2, a...]
   arrayEq list, [1, 2, [nonce]]
+
+test "#4260: splat after existential operator soak", ->
+  a = {b: [3]}
+  foo = (a) -> [a]
+  arrayEq [a?.b...], [3]
+  arrayEq [c?.b ? []...], []
+  arrayEq foo(a?.b...), [3]
+  arrayEq foo(c?.b ? []...), [undefined]
+  e = yes
+  f = null
+  arrayEq [(a if e)?.b...], [3]
+  arrayEq [(a if f)?.b ? []...], []
+  arrayEq foo((a if e)?.b...), [3]
+  arrayEq foo((a if f)?.b ? []...), [undefined]
+
+test "#1349: trailing if after splat", ->
+  a = [3]
+  b = yes
+  c = null
+  foo = (a) -> [a]
+  arrayEq [a if b...], [3]
+  arrayEq [(a if c) ? []...], []
+  arrayEq foo((a if b)...), [3]
+  arrayEq foo((a if c) ? []...), [undefined]
 
 test "#1274: `[] = a()` compiles to `false` instead of `a()`", ->
   a = false
