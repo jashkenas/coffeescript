@@ -407,3 +407,16 @@ test "#3199: throw multiline implicit object", ->
       type: 'a'
       msg: 'b'
   eq undefined, y
+
+test "#4576: multiple row function chaining", ->
+  ->
+    eq @a, 3
+  .call a: 3
+
+test "#4576: function chaining on separate rows", ->
+  do ->
+    Promise
+    .resolve()
+    .then ->
+      yes
+    .then ok
