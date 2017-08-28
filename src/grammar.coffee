@@ -316,6 +316,7 @@ grammar =
   SimpleAssignable: [
     o 'Identifier',                             -> new Value $1
     o 'Value Accessor',                         -> $1.add $2
+    o 'Code Accessor',                          -> new Value($1).add $2
     o 'ThisProperty'
   ]
 
