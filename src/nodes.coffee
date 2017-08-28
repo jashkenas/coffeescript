@@ -735,15 +735,13 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
 
 exports.StringLiteral = class StringLiteral extends Literal
   compileNode: (o) ->
-    res = if @csx then [@makeCode @unquote yes] else super()
+    res = if @csx then [@makeCode @unquote(yes, yes)] else super()
 
-  unquote: (literal) ->
+  unquote: (doubleQuote = no, newLine = no) ->
     unquoted = @value[1...-1]
-    if literal
-      unquoted.replace /\\n/g, '\n'
-      .replace /\\"/g, '"'
-    else
-      unquoted
+    unquoted = unquoted.replace /\\"/g, '"'  if doubleQuote
+    unquoted = unquoted.replace /\\n/g, '\n' if newLine
+    unquoted
 
 exports.RegexLiteral = class RegexLiteral extends Literal
 
@@ -3391,7 +3389,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
     fragments.push @makeCode '`' unless @csx
     for element in elements
       if element instanceof StringLiteral
-        element.value = element.unquote yes
+        element.value = element.unquote yes, @csx
         unless @csx
           # Backticks and `${` inside template literals must be escaped.
           element.value = element.value.replace /(\\*)(`|\$\{)/g, (match, backslashes, toBeEscaped) ->
