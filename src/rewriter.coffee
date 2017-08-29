@@ -527,7 +527,7 @@ exports.Rewriter = class Rewriter
     @scanTokens (token, i, tokens) ->
       return 1 unless token[1] is 'do' and @tag(i + 1) in ['->', '=>'] and @tag(i + 2) is 'INDENT'
       doIndex = i
-      @detectEnd i + 2, condition, action, log: yes
+      @detectEnd i + 2, condition, action
       return 2
 
   # Because our grammar is LALR(1), it can’t handle some single-line
