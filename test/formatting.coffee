@@ -420,3 +420,19 @@ test "#4576: function chaining on separate rows", ->
     .then ->
       yes
     .then ok
+
+test "#3736: chaining after do IIFE", ->
+  eq 3,
+    do ->
+      a: 3
+    .a
+
+  eq 3,
+    do -> a: 3
+    .a
+
+  # preserve existing chaining behavior for non-IIFE `do`
+  b = c: -> 4
+  eq 4,
+    do b
+    .c
