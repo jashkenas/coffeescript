@@ -520,9 +520,9 @@ exports.Rewriter = class Rewriter
     condition = (token, i) ->
       @tag(i - 1) is 'OUTDENT'
     action = (token, i) ->
-      return unless token[0] is '.'
-      @tokens.splice doIndex, 0, generate '(', '(', @tokens[doIndex][2]
-      @tokens.splice i + 1, 0, generate ')', ')', ['', 'implicit parentheses', token[2]]
+      return unless token[0] in CALL_CLOSERS
+      @tokens.splice doIndex, 0, generate '(', '(', @tokens[doIndex]
+      @tokens.splice i + 1, 0, generate ')', ')', @tokens[i]
     doIndex = null
     @scanTokens (token, i, tokens) ->
       return 1 unless token[1] is 'do' and @tag(i + 1) in ['->', '=>'] and @tag(i + 2) is 'INDENT'
