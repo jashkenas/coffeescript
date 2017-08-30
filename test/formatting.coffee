@@ -435,6 +435,7 @@ test "#3736: chaining after do IIFE", ->
   eq 3,
     do (
       b
+      {d} = {}
     ) ->
       a: b
     .a
