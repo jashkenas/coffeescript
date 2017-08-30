@@ -33,7 +33,7 @@ test "SourceMap tests", ->
   deepEqual testWithFilenames, {
     version: 3
     file: "source.js"
-    sourceRoot: ""
+    sourceRoot: null
     sources: ["source.coffee"]
     names: []
     mappings: "AAAA;;IACK,GAAC,CAAG;IAET"
@@ -41,9 +41,9 @@ test "SourceMap tests", ->
 
   deepEqual map.generate(), {
     version: 3
-    file: ""
-    sourceRoot: ""
-    sources: [""]
+    file: null
+    sourceRoot: null
+    sources: []
     names: []
     mappings: "AAAA;;IACK,GAAC,CAAG;IAET"
   }
@@ -53,3 +53,13 @@ test "SourceMap tests", ->
 
   # Look up a point further along on the same line - should get back the same source position.
   arrayEq map.sourceLocation([2,10]), [1,9]
+
+test "#3075: v3 source map fields", ->
+  { js, v3SourceMap, sourceMap } = CoffeeScript.compile 'console.log Date.now()',
+    filename: 'tempus_fugit.coffee'
+    sourceMap: yes
+    sourceRoot: './www_root/coffee/'
+
+  v3SourceMap = JSON.parse v3SourceMap
+  arrayEq v3SourceMap.sources, ['tempus_fugit.coffee']
+  eq v3SourceMap.sourceRoot, './www_root/coffee/'
