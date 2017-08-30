@@ -87,6 +87,9 @@ doesNotThrow -> CoffeeScript.compile """
   a?[b..c]
   """
 
+test "#1768: space between `::` and index is ignored", ->
+  eq 'function', typeof String:: ['toString']
+
 # Array Literals
 
 test "indented array literals don't trigger whitespace rewriting", ->
