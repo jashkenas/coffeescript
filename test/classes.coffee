@@ -1833,3 +1833,18 @@ test "#4591: super.x.y, super['x'].y", ->
   eq 2, b.t
   eq 2, b.s
   eq 2, b.r
+
+test "#4464: backticked expressions in class body", ->
+  class A
+    `get x() { return 42; }`
+
+  class B
+    `get x() { return 42; }`
+    constructor: ->
+      @y = 84
+
+  a = new A
+  eq 42, a.x
+  b = new B
+  eq 42, b.x
+  eq 84, b.y

@@ -1636,17 +1636,16 @@ exports.Class = class Class extends Base
     super()
 
   compileNode: (o) ->
-    @name          = @determineName()
-    executableBody = @walkBody()
+    @name = @determineName()
+    @walkBody()
 
     # Special handling to allow `class expr.A extends A` declarations
     parentName    = @parent.base.value if @parent instanceof Value and not @parent.hasProperties()
     @hasNameClash = @name? and @name is parentName
 
     node = @
-
-    if executableBody or @hasNameClash
-      node = new ExecutableClassBody node, executableBody
+    if @executableBody or @hasNameClash
+      node = new ExecutableClassBody node, @executableBody
     else if not @name? and o.level is LEVEL_TOP
       # Anonymous classes are only valid in expressions
       node = new Parens node
@@ -1666,7 +1665,7 @@ exports.Class = class Class extends Base
 
   compileClassDeclaration: (o) ->
     @ctor ?= @makeDefaultConstructor() if @externalCtor or @boundMethods.length
-    @ctor?.noReturn = true
+    @ctor?.noReturn = yes
 
     @proxyBoundMethods() if @boundMethods.length
 
@@ -1678,10 +1677,14 @@ exports.Class = class Class extends Base
     result.push @makeCode('extends '), @parent.compileToFragments(o)..., @makeCode ' ' if @parent
 
     result.push @makeCode '{'
-    unless @body.isEmpty()
-      @body.spaced = true
+    unless @passthroughBody.isEmpty() and @body.isEmpty()
+      @body.spaced = yes
       result.push @makeCode '\n'
-      result.push @body.compileToFragments(o, LEVEL_TOP)...
+      unless @passthroughBody.isEmpty()
+        result.push @passthroughBody.compileToFragments(o, LEVEL_TOP)...
+        result.push @makeCode '\n\n' unless @body.isEmpty()
+      unless @body.isEmpty()
+        result.push @body.compileToFragments(o, LEVEL_TOP)...
       result.push @makeCode "\n#{@tab}"
     result.push @makeCode '}'
 
@@ -1704,21 +1707,21 @@ exports.Class = class Class extends Base
     if name in JS_FORBIDDEN then "_#{name}" else name
 
   walkBody: ->
-    @ctor          = null
-    @boundMethods  = []
-    executableBody = null
+    @ctor         = null
+    @boundMethods = []
 
-    initializer     = []
-    { expressions } = @body
+    initializer                = []
+    passthroughBodyExpressions = []
+    { expressions }            = @body
 
     i = 0
-    for expression in expressions.slice()
-      if expression instanceof Value and expression.isObject true
+    for expression, expressionIndex in expressions.slice()
+      if expression instanceof Value and expression.isObject yes
         { properties } = expression.base
         exprs     = []
         end       = 0
         start     = 0
-        pushSlice = -> exprs.push new Value new Obj properties[start...end], true if end > start
+        pushSlice = -> exprs.push new Value new Obj properties[start...end], yes if end > start
 
         while assign = properties[end]
           if initializerExpression = @addInitializerExpression assign
@@ -1731,6 +1734,9 @@ exports.Class = class Class extends Base
 
         expressions[i..i] = exprs
         i += exprs.length
+      else if expression instanceof Value and expression.base instanceof PassthroughLiteral
+        passthroughBodyExpressions.push expression
+        expressions.splice expressionIndex, 1
       else
         if initializerExpression = @addInitializerExpression expression
           initializer.push initializerExpression
@@ -1746,9 +1752,12 @@ exports.Class = class Class extends Base
       else if method.bound
         @boundMethods.push method
 
+    @passthroughBody = new Block passthroughBodyExpressions
+
     if initializer.length isnt expressions.length
       @body.expressions = (expression.hoist() for expression in initializer)
-      new Block expressions
+      @executableBody = new Block expressions
+
 
   # Add an expression to the class initializer
   #
