@@ -428,8 +428,16 @@ test "#3736: chaining after do IIFE", ->
     .a
 
   eq 3,
-    do -> a: 3
+    do (b = (c) -> c) -> a: 3
     ?.a
+
+  b = 3
+  eq 3,
+    do (
+      b
+    ) ->
+      a: b
+    .a
 
   # preserve existing chaining behavior for non-IIFE `do`
   b = c: -> 4
