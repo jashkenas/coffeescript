@@ -525,9 +525,16 @@ exports.Rewriter = class Rewriter
       @tokens.splice i + 1, 0, generate ')', ')', @tokens[i]
     doIndex = null
     @scanTokens (token, i, tokens) ->
-      return 1 unless token[1] is 'do' and @tag(i + 1) in ['->', '=>'] and @tag(i + 2) is 'INDENT'
+      return 1 unless token[1] is 'do'
       doIndex = i
-      @detectEnd i + 2, condition, action
+      glyphIndex = i + 1
+      if @tag(i + 1) is 'PARAM_START'
+        glyphIndex = null
+        @detectEnd i + 1,
+          (token, i) -> @tag(i - 1) is 'PARAM_END'
+          (token, i) -> glyphIndex = i
+      return 1 unless glyphIndex? and @tag(glyphIndex) in ['->', '=>'] and @tag(glyphIndex + 1) is 'INDENT'
+      @detectEnd glyphIndex + 1, condition, action
       return 2
 
   # Because our grammar is LALR(1), it can’t handle some single-line

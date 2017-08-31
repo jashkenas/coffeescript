@@ -87,6 +87,9 @@ doesNotThrow -> CoffeeScript.compile """
   a?[b..c]
   """
 
+test "#1768: space between `::` and index is ignored", ->
+  eq 'function', typeof String:: ['toString']
+
 # Array Literals
 
 test "indented array literals don't trigger whitespace rewriting", ->
@@ -428,8 +431,17 @@ test "#3736: chaining after do IIFE", ->
     .a
 
   eq 3,
-    do -> a: 3
+    do (b = (c) -> c) -> a: 3
     ?.a
+
+  b = 3
+  eq 3,
+    do (
+      b
+      {d} = {}
+    ) ->
+      a: b
+    .a
 
   # preserve existing chaining behavior for non-IIFE `do`
   b = c: -> 4

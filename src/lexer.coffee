@@ -674,11 +674,12 @@ exports.Lexer = class Lexer
     else if value in UNARY_MATH      then tag = 'UNARY_MATH'
     else if value in SHIFT           then tag = 'SHIFT'
     else if value is '?' and prev?.spaced then tag = 'BIN?'
-    else if prev and not prev.spaced
-      if value is '(' and prev[0] in CALLABLE
+    else if prev
+      if value is '(' and not prev.spaced and prev[0] in CALLABLE
         prev[0] = 'FUNC_EXIST' if prev[0] is '?'
         tag = 'CALL_START'
-      else if value is '[' and prev[0] in INDEXABLE
+      else if value is '[' and ((prev[0] in INDEXABLE and not prev.spaced) or
+         (prev[0] is '::')) # `.prototype` can’t be a method you can call.
         tag = 'INDEX_START'
         switch prev[0]
           when '?'  then prev[0] = 'INDEX_SOAK'
