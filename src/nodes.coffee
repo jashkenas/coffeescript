@@ -1530,7 +1530,8 @@ exports.Obj = class Obj extends Base
         propSlices.push prop
     addSlice()
     slices.unshift new Obj unless slices[0] instanceof Obj
-    (new Call new Literal('Object.assign'), slices).compileToFragments o
+    _extends = new Value new Literal utility '_extends', o
+    (new Call _extends, slices).compileToFragments o
 
   compileCSXAttributes: (o) ->
     props = @properties
@@ -3715,6 +3716,19 @@ UTILITIES =
       if (!(instance instanceof Constructor)) {
         throw new Error('Bound instance method accessed before binding');
       }
+    }
+  "
+  _extends: -> "
+    Object.assign || function (target) {
+      for (var i = 1; i < arguments.length; i++) {
+        var source = arguments[i];
+        for (var key in source) {
+          if (Object.prototype.hasOwnProperty.call(source, key)) {
+            target[key] = source[key];
+          }
+        }
+      }
+      return target;
     }
   "
 
