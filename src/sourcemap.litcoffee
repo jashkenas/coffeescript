@@ -123,7 +123,7 @@ Produce the canonical JSON object format for a "v3" source map.
         else if options.filename
           [options.filename]
         else
-          ['']
+          ['<anonymous>']
 
         v3 =
           version:    3

@@ -43,7 +43,7 @@ test "SourceMap tests", ->
     version: 3
     file: ''
     sourceRoot: ''
-    sources: ['']
+    sources: ['<anonymous>']
     names: []
     mappings: 'AAAA;;IACK,GAAC,CAAG;IAET'
   }
