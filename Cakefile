@@ -462,14 +462,12 @@ runTests = (CoffeeScript) ->
     catch error
       failures.push {filename, error}
 
-  Promise.all asyncTests
+  Promise.all(asyncTests).then ->
+    Promise.reject() if failures.length isnt 0
 
 
 task 'test', 'run the CoffeeScript language test suite', ->
-  runTests(CoffeeScript).then ->
-    # All the async tests passed, but did all the non-async ones?
-    process.exit 1 unless failures.length is 0
-  .catch -> process.exit 1 # At least one async test failed.
+  runTests(CoffeeScript).catch -> process.exit 1
 
 
 task 'test:browser', 'run the test suite against the merged browser script', ->
@@ -477,9 +475,8 @@ task 'test:browser', 'run the test suite against the merged browser script', ->
   result = {}
   global.testingBrowser = yes
   (-> eval source).call result
-  runTests(CoffeeScript).then ->
-    process.exit 1 unless failures.length is 0
-  .catch -> process.exit 1
+  runTests(CoffeeScript).catch -> process.exit 1
+
 
 task 'test:integrations', 'test the module integrated with other libraries and environments', ->
   # Tools like Webpack and Browserify generate builds intended for a browser
