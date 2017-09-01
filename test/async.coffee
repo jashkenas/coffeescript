@@ -1,28 +1,15 @@
-# Functions that contain the `await` keyword will compile into async
-# functions, which currently only Node 7+ in harmony mode can even
-# evaluate, much less run. Therefore we need to prevent runtimes
-# which will choke on such code from even loading it. This file is
-# only loaded by async-capable environments, so we redefine `test`
-# here even though it is based on `test` defined in `Cakefile`.
-# It replaces `test` for this file, and adds to the tracked
-# `passedTests` and `failures` arrays which are global objects.
-test = (description, fn) ->
-  try
-    fn.test = {description, currentFile}
-    await fn.call(fn)
-    ++passedTests
-  catch e
-    failures.push
-      filename: currentFile
-      error: e
-      description: description if description?
-      source: fn.toString() if fn.toString?
+# Functions that contain the `await` keyword will compile into async functions,
+# supported by Node 7.6+, Chrome 55+, Firefox 52+, Safari 10.1+ and Edge.
+# But runtimes that don’t support the `await` keyword will throw an error,
+# even if we put `return unless global.supportsAsync` at the top of this file.
+# Therefore we need to prevent runtimes which will choke on such code from even
+# parsing it, which is handled in `Cakefile`.
 
 
-# always fulfills
+# This is always fulfilled.
 winning = (val) -> Promise.resolve val
 
-# always is rejected
+# This is always rejected.
 failing = (val) -> Promise.reject new Error val
 
 
