@@ -52,16 +52,27 @@ say = (msg, className) ->
   stdout.appendChild div
   msg
 
+asyncTests = []
+onFail = (description, fn, err) ->
+  failures.push
+    error: err
+    description: description
+    source: fn.toString() if fn.toString?
+
 @test = (description, fn) ->
   ++total
   try
-    fn.call(fn)
-    ++passedTests
-  catch error
-    failures.push
-      error: error
-      description: description
-      source: fn.toString() if fn.toString?
+    result = fn.call(fn)
+    if result instanceof Promise # An async test.
+      asyncTests.push result
+      result.then ->
+        passedTests++
+      .catch (err) ->
+        onFail description, fn, err
+    else
+      passedTests++
+  catch err
+    onFail description, fn, err
 
 @failures =
   push: (failure) -> # Match function called by regular tests
@@ -74,11 +85,11 @@ say = (msg, className) ->
 @ok = (good, msg = 'Error') ->
   throw Error msg unless good
 
-# Polyfill Node assert's fail
+# Polyfill Node assert’s fail
 @fail = ->
   ok no
 
-# Polyfill Node assert's deepEqual with Underscore's isEqual
+# Polyfill Node assert’s deepEqual with Underscore’s isEqual
 @deepEqual = (a, b) ->
   ok _.isEqual(a, b), "Expected #{JSON.stringify a} to deep equal #{JSON.stringify b}"
 
@@ -114,11 +125,14 @@ for test in document.getElementsByClassName 'test'
   CoffeeScript.run test.innerHTML, options
 
 # Finish up
-yay = passedTests is total and not failedTests
-sec = (new Date - start) / 1000
-msg = "passed #{passedTests} tests in #{sec.toFixed 2} seconds"
-msg = "failed #{total - passedTests} tests and #{msg}" unless yay
-say msg, (if yay then 'good' else 'bad')
+done = ->
+  yay = passedTests is total and not failedTests
+  sec = (new Date - start) / 1000
+  msg = "passed #{passedTests} tests in #{sec.toFixed 2} seconds"
+  msg = "failed #{total - passedTests} tests and #{msg}" unless yay
+  say msg, (if yay then 'good' else 'bad')
+
+Promise.all(asyncTests).then(done).catch(done)
 </script>
 
 <%= tests %>

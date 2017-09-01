@@ -376,7 +376,6 @@ task 'bench', 'quick benchmark of compilation time', ->
 # Run the CoffeeScript test suite.
 runTests = (CoffeeScript) ->
   CoffeeScript.register() unless global.testingBrowser
-  startTime = Date.now()
 
   # These are attached to `global` so that they’re accessible from within
   # `test/async.coffee`, which has an async-capable version of
@@ -396,18 +395,29 @@ runTests = (CoffeeScript) ->
   global.yellow = yellow
   global.reset  = reset
 
+  asyncTests = []
+  onFail = (description, fn, err) ->
+    failures.push
+      filename: global.currentFile
+      error: err
+      description: description
+      source: fn.toString() if fn.toString?
+
   # Our test helper function for delimiting different test cases.
   global.test = (description, fn) ->
     try
       fn.test = {description, currentFile}
-      fn.call(fn)
-      ++passedTests
-    catch e
-      failures.push
-        filename: currentFile
-        error: e
-        description: description if description?
-        source: fn.toString() if fn.toString?
+      result = fn.call(fn)
+      if result instanceof Promise # An async test.
+        asyncTests.push result
+        result.then ->
+          passedTests++
+        .catch (err) ->
+          onFail description, fn, err
+      else
+        passedTests++
+    catch err
+      onFail description, fn, err
 
   global.supportsAsync = if global.testingBrowser
     try
@@ -442,6 +452,7 @@ runTests = (CoffeeScript) ->
   unless global.supportsAsync # Except for async tests, if async isn’t supported.
     files = files.filter (filename) -> filename isnt 'async.coffee'
 
+  startTime = Date.now()
   for file in files when helpers.isCoffee file
     literate = helpers.isLiterate file
     currentFile = filename = path.join 'test', file
@@ -450,12 +461,17 @@ runTests = (CoffeeScript) ->
       CoffeeScript.run code.toString(), {filename, literate}
     catch error
       failures.push {filename, error}
-  return !failures.length
+
+  asyncTests.push ->
+    new Promise (resolve) -> resolve failures.length is 0
+  Promise.all asyncTests
 
 
 task 'test', 'run the CoffeeScript language test suite', ->
-  testResults = runTests CoffeeScript
-  process.exit 1 unless testResults
+  runTests(CoffeeScript).then ->
+    # All the async tests passed, but did all the non-async ones?
+    process.exit 1 unless failures.length is 0
+  .catch -> process.exit 1 # At least one async test failed.
 
 
 task 'test:browser', 'run the test suite against the merged browser script', ->
@@ -463,8 +479,9 @@ task 'test:browser', 'run the test suite against the merged browser script', ->
   result = {}
   global.testingBrowser = yes
   (-> eval source).call result
-  testResults = runTests result.CoffeeScript
-  process.exit 1 unless testResults
+  runTests(CoffeeScript).then ->
+    process.exit 1 unless failures.length is 0
+  .catch -> process.exit 1
 
 task 'test:integrations', 'test the module integrated with other libraries and environments', ->
   # Tools like Webpack and Browserify generate builds intended for a browser
