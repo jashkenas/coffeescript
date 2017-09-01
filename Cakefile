@@ -419,27 +419,11 @@ runTests = (CoffeeScript) ->
     catch err
       onFail description, fn, err
 
-  global.supportsAsync = if global.testingBrowser
-    try
+  global.supportsAsync = try
       new Function('async () => {}')()
       yes
     catch
       no
-  else
-    [major, minor, build] = process.versions.node.split('.').map (version) ->
-      parseInt version, 10
-    major >= 8 or (major is 7 and minor >= 6)
-
-  global.supportsAsync = if global.testingBrowser
-    try
-      new Function('async () => {}')()
-      yes
-    catch
-      no
-  else
-    [major, minor, build] = process.versions.node.split('.').map (version) ->
-      parseInt version, 10
-    major >= 8 or (major is 7 and minor >= 6)
 
   helpers.extend global, require './test/support/helpers'
 
