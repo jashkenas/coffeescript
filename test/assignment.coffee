@@ -875,7 +875,7 @@ test "#4566: destructuring with nested default values", ->
   {e: {f = 5} = {}} = {}
   eq 5, f
 
-test "#4674: _extends utility for object spreads", ->
+test "#4674: _extends utility for object spreads 1", ->
   eqJS(
     "{a, b..., c..., d}"
     """
@@ -884,3 +884,11 @@ test "#4674: _extends utility for object spreads", ->
       _extends({a}, b, c, {d});
     """
   )
+
+test "#4674: _extends utility for object spreads 2", ->
+  _extends = -> 3
+  a = b: 1
+  c = d: 2
+  e = {a..., c...}
+  eq e.b, 1
+  eq e.d, 2
