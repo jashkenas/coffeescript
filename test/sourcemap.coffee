@@ -3,13 +3,13 @@ return if global.testingBrowser
 SourceMap = require '../src/sourcemap'
 
 vlqEncodedValues = [
-    [1, "C"],
-    [-1, "D"],
-    [2, "E"],
-    [-2, "F"],
-    [0, "A"],
-    [16, "gB"],
-    [948, "o7B"]
+    [1, 'C'],
+    [-1, 'D'],
+    [2, 'E'],
+    [-2, 'F'],
+    [0, 'A'],
+    [16, 'gB'],
+    [948, 'o7B']
 ]
 
 test "encodeVlq tests", ->
@@ -25,27 +25,27 @@ test "SourceMap tests", ->
   map.add [3, 0], [3, 4]
 
   testWithFilenames = map.generate {
-    sourceRoot: ""
-    sourceFiles: ["source.coffee"]
-    generatedFile: "source.js"
+    sourceRoot: ''
+    sourceFiles: ['source.coffee']
+    generatedFile: 'source.js'
   }
 
   deepEqual testWithFilenames, {
     version: 3
-    file: "source.js"
-    sourceRoot: null
-    sources: ["source.coffee"]
+    file: 'source.js'
+    sourceRoot: ''
+    sources: ['source.coffee']
     names: []
-    mappings: "AAAA;;IACK,GAAC,CAAG;IAET"
+    mappings: 'AAAA;;IACK,GAAC,CAAG;IAET'
   }
 
   deepEqual map.generate(), {
     version: 3
-    file: null
-    sourceRoot: null
-    sources: []
+    file: ''
+    sourceRoot: ''
+    sources: ['']
     names: []
-    mappings: "AAAA;;IACK,GAAC,CAAG;IAET"
+    mappings: 'AAAA;;IACK,GAAC,CAAG;IAET'
   }
 
   # Look up a generated column - should get back the original source position.

@@ -123,12 +123,12 @@ Produce the canonical JSON object format for a "v3" source map.
         else if options.filename
           [options.filename]
         else
-          []
+          ['']
 
         v3 =
           version:    3
-          file:       options.generatedFile or null
-          sourceRoot: options.sourceRoot or null
+          file:       options.generatedFile or ''
+          sourceRoot: options.sourceRoot or ''
           sources:    sources
           names:      []
           mappings:   buffer
