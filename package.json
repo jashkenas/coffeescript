@@ -11,7 +11,7 @@
   "version": "2.0.0-beta4",
   "license": "MIT",
   "engines": {
-    "node": ">=7.6.0"
+    "node": ">=6"
   },
   "directories": {
     "lib": "./lib/coffeescript"
