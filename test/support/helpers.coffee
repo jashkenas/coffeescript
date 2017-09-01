@@ -29,7 +29,7 @@ exports.eq = (a, b, msg) ->
   "Expected #{reset}#{a}#{red} to equal #{reset}#{b}#{red}"
 
 exports.arrayEq = (a, b, msg) ->
-  ok arrayEgal(a,b), msg or
+  ok arrayEgal(a, b), msg or
   "Expected #{reset}#{a}#{red} to deep equal #{reset}#{b}#{red}"
 
 exports.eqJS = (input, expectedOutput, msg) ->

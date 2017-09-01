@@ -1768,3 +1768,12 @@ test "#3199: error message for throw indented comprehension", ->
       x for x in [1, 2, 3]
       ^
   '''
+
+test "#3098: suppressed newline should be unsuppressed by semicolon", ->
+  assertErrorFormat '''
+    a = ; 5
+  ''', '''
+    [stdin]:1:5: error: unexpected ;
+    a = ; 5
+        ^
+  '''

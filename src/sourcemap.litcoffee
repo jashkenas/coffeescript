@@ -118,11 +118,18 @@ The starting column in the original source, relative to the previous column.
 
 Produce the canonical JSON object format for a "v3" source map.
 
+        sources = if options.sourceFiles
+          options.sourceFiles
+        else if options.filename
+          [options.filename]
+        else
+          ['<anonymous>']
+
         v3 =
           version:    3
           file:       options.generatedFile or ''
           sourceRoot: options.sourceRoot or ''
-          sources:    options.sourceFiles or ['']
+          sources:    sources
           names:      []
           mappings:   buffer
 

@@ -1530,7 +1530,8 @@ exports.Obj = class Obj extends Base
         propSlices.push prop
     addSlice()
     slices.unshift new Obj unless slices[0] instanceof Obj
-    (new Call new Literal('Object.assign'), slices).compileToFragments o
+    _extends = new Value new Literal utility '_extends', o
+    (new Call _extends, slices).compileToFragments o
 
   compileCSXAttributes: (o) ->
     props = @properties
@@ -2120,8 +2121,9 @@ exports.Assign = class Assign extends Base
         @variable.base.lhs = yes
         return @compileDestructuring o unless @variable.isAssignable()
         # Object destructuring. Can be removed once ES proposal hits Stage 4.
-        return @compileObjectDestruct(o) if @variable.isObject() and @variable.contains (node) ->
+        objDestructAnswer = @compileObjectDestruct(o) if @variable.isObject() and @variable.contains (node) ->
           node instanceof Obj and node.hasSplat()
+        return objDestructAnswer if objDestructAnswer
 
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
@@ -2214,12 +2216,16 @@ exports.Assign = class Assign extends Base
     traverseRest = (properties, source) =>
       restElements = []
       restIndex = undefined
+      source = new Value source unless source.properties?
 
       for prop, index in properties
+        nestedSourceDefault = nestedSource = nestedProperties = null
         setScopeVar prop.unwrap()
         if prop instanceof Assign
           # prop is `k: expr`, we need to check `expr` for nested splats
           if prop.value.isObject?()
+            # prop is `k = {...} `
+            continue unless prop.context is 'object'
             # prop is `k: {...}`
             nestedProperties = prop.value.base.properties
           else if prop.value instanceof Assign and prop.value.variable.isObject()
@@ -2245,13 +2251,19 @@ exports.Assign = class Assign extends Base
 
       restElements
 
-    # Cache the value for reuse with rest elements
-    [@value, valueRef] = @value.cache o
+    # Cache the value for reuse with rest elements.
+    if @value.shouldCache()
+      valueRefTemp = new IdentifierLiteral o.scope.freeVariable 'ref', reserve: false
+    else
+      valueRefTemp = @value.base
 
     # Find all rest elements.
-    restElements = traverseRest @variable.base.properties, valueRef
+    restElements = traverseRest @variable.base.properties, valueRefTemp
+    return no unless restElements and restElements.length > 0
 
+    [@value, valueRef] = @value.cache o
     result = new Block [@]
+
     for restElement in restElements
       value = new Call new Value(new Literal utility 'objectWithoutKeys', o), [restElement.source, restElement.excludeProps]
       result.push new Assign restElement.name, value
@@ -3715,6 +3727,19 @@ UTILITIES =
       if (!(instance instanceof Constructor)) {
         throw new Error('Bound instance method accessed before binding');
       }
+    }
+  "
+  _extends: -> "
+    Object.assign || function (target) {
+      for (var i = 1; i < arguments.length; i++) {
+        var source = arguments[i];
+        for (var key in source) {
+          if (Object.prototype.hasOwnProperty.call(source, key)) {
+            target[key] = source[key];
+          }
+        }
+      }
+      return target;
     }
   "
 
