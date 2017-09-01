@@ -413,7 +413,7 @@ runTests = (CoffeeScript) ->
     try
       new Function('async () => {}')()
       yes
-    catch exception
+    catch
       no
   else
     [major, minor, build] = process.versions.node.split('.').map (version) ->
