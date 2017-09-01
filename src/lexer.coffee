@@ -509,7 +509,7 @@ exports.Lexer = class Lexer
         @token 'OUTDENT', moveOut, 0, outdentLength
         moveOut -= dent
     @outdebt -= moveOut if dent
-    @tokens.pop() while @value() is ';'
+    @suppressSemicolons()
 
     @token 'TERMINATOR', '\n', outdentLength, 0 unless @tag() is 'TERMINATOR' or noNewlines
     @indent = decreasedIndent
@@ -527,7 +527,7 @@ exports.Lexer = class Lexer
 
   # Generate a newline token. Consecutive newlines get merged together.
   newlineToken: (offset) ->
-    @tokens.pop() while @value() is ';'
+    @suppressSemicolons()
     @token 'TERMINATOR', '\n', offset, 0 unless @tag() is 'TERMINATOR'
     this
 
@@ -662,6 +662,7 @@ exports.Lexer = class Lexer
       @exportSpecifierList = no
 
     if value is ';'
+      @error 'unexpected ;' if prev?[0] in ['=', UNFINISHED...]
       @seenFor = @seenImport = @seenExport = no
       tag = 'TERMINATOR'
     else if value is '*' and prev?[0] is 'EXPORT'
@@ -1052,6 +1053,11 @@ exports.Lexer = class Lexer
       when ps        then '\\u2029'
       when other     then (if options.double then "\\#{other}" else other)
     "#{options.delimiter}#{body}#{options.delimiter}"
+
+  suppressSemicolons: ->
+    while @value() is ';'
+      @tokens.pop()
+      @error 'unexpected ;' if @prev()?[0] in ['=', UNFINISHED...]
 
   # Throws an error at either a given offset from the current chunk or at the
   # location of a token (`token[2]`).
