@@ -462,8 +462,6 @@ runTests = (CoffeeScript) ->
     catch error
       failures.push {filename, error}
 
-  asyncTests.push ->
-    new Promise (resolve) -> resolve failures.length is 0
   Promise.all asyncTests
 
 
