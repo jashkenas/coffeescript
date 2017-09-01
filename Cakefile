@@ -409,6 +409,17 @@ runTests = (CoffeeScript) ->
         description: description if description?
         source: fn.toString() if fn.toString?
 
+  global.supportsAsync = if global.testingBrowser
+    try
+      new Function('async () => {}')()
+      yes
+    catch
+      no
+  else
+    [major, minor, build] = process.versions.node.split('.').map (version) ->
+      parseInt version, 10
+    major >= 8 or (major is 7 and minor >= 6)
+
   helpers.extend global, require './test/support/helpers'
 
   # When all the tests have run, collect and print errors.
@@ -428,6 +439,8 @@ runTests = (CoffeeScript) ->
 
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
+  unless global.supportsAsync # Except for async tests, if async isn’t supported.
+    files = files.filter (filename) -> filename isnt 'async.coffee'
 
   for file in files when helpers.isCoffee file
     literate = helpers.isLiterate file
