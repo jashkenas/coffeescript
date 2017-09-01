@@ -296,6 +296,29 @@ test "destructuring assignment with multiple splats in different objects", ->
   deepEqual a, val: 1
   deepEqual b, val: 2
 
+  o = {
+    props: {
+      p: {
+        n: 1
+        m: 5
+      }
+      s: 6
+    }
+  }
+  {p: {m, q..., t = {obj...}}, r...} = o.props
+  eq m, o.props.p.m
+  deepEqual r, s: 6
+  deepEqual q, n: 1
+  deepEqual t, obj
+
+  @props = o.props
+  {p: {m}, r...} = @props
+  eq m, @props.p.m
+  deepEqual r, s: 6
+
+  {p: {m}, r...} = {o.props..., p:{m:9}}
+  eq m, 9
+
   # Should not trigger implicit call, e.g. rest ... => rest(...)
   {
     a: {
