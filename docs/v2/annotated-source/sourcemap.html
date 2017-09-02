@@ -370,11 +370,18 @@ column for the current line:</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    v3 =
+            <div class="content"><div class='highlight'><pre>    sources = <span class="hljs-keyword">if</span> options.sourceFiles
+      options.sourceFiles
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> options.filename
+      [options.filename]
+    <span class="hljs-keyword">else</span>
+      [<span class="hljs-string">'&lt;anonymous&gt;'</span>]
+
+    v3 =
       version:    <span class="hljs-number">3</span>
       file:       options.generatedFile <span class="hljs-keyword">or</span> <span class="hljs-string">''</span>
       sourceRoot: options.sourceRoot <span class="hljs-keyword">or</span> <span class="hljs-string">''</span>
-      sources:    options.sourceFiles <span class="hljs-keyword">or</span> [<span class="hljs-string">''</span>]
+      sources:    sources
       names:      []
       mappings:   buffer
 
