@@ -306,9 +306,9 @@ Unwrap that too.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">if</span> isAsync
-        result = <span class="hljs-keyword">await</span> result
-        cb <span class="hljs-literal">null</span>, result <span class="hljs-keyword">unless</span> sawSIGINT
-        sawSIGINT = <span class="hljs-literal">false</span>
+        result.<span class="hljs-keyword">then</span> (resolvedResult) -&gt;
+          cb <span class="hljs-literal">null</span>, resolvedResult <span class="hljs-keyword">unless</span> sawSIGINT
+        sawSIGINT = <span class="hljs-literal">no</span>
       <span class="hljs-keyword">else</span>
         cb <span class="hljs-literal">null</span>, result
     <span class="hljs-keyword">catch</span> err</pre></div></div>

@@ -159,7 +159,7 @@ evaluated from <code>lib/coffeescript</code>.</p>
             
             <div class="content"><div class='highlight'><pre>exports.VERSION = packageJson.version
 
-exports.FILE_EXTENSIONS = [<span class="hljs-string">'.coffee'</span>, <span class="hljs-string">'.litcoffee'</span>, <span class="hljs-string">'.coffee.md'</span>]</pre></div></div>
+exports.FILE_EXTENSIONS = FILE_EXTENSIONS = [<span class="hljs-string">'.coffee'</span>, <span class="hljs-string">'.litcoffee'</span>, <span class="hljs-string">'.coffee.md'</span>]</pre></div></div>
             
         </li>
         
@@ -252,7 +252,7 @@ didn’t create a source map (faster) but something went wrong and we need
 a stack trace. Assuming that most of the time, code isn’t throwing
 exceptions, it’s probably more efficient to compile twice only when we
 need a stack trace, rather than always generating a source map even when
-it’s not likely to be used. Save in form of <code>filename</code>: <code>(source)</code></p>
+it’s not likely to be used. Save in form of <code>filename</code>: [<code>(source)</code>]</p>
 
             </div>
             
@@ -267,7 +267,7 @@ it’s not likely to be used. Save in form of <code>filename</code>: <code>(sour
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
-              <p>Also save source maps if generated, in form of <code>filename</code>: <code>(source map)</code>.</p>
+              <p>Also save source maps if generated, in form of <code>(source)</code>: [<code>(source map)</code>].</p>
 
             </div>
             
@@ -317,7 +317,8 @@ we need to recompile it to get a source map for <code>prepareStackTrace</code>.<
 
   checkShebangLine filename, code
 
-  sources[filename] = code
+  sources[filename] ?= []
+  sources[filename].push code
   map = <span class="hljs-keyword">new</span> SourceMap <span class="hljs-keyword">if</span> generateSourceMap
 
   tokens = lexer.tokenize code, options</pre></div></div>
@@ -428,8 +429,9 @@ the same name.</p>
     js = <span class="hljs-string">"// <span class="hljs-subst">#{header}</span>\n<span class="hljs-subst">#{js}</span>"</span>
 
   <span class="hljs-keyword">if</span> generateSourceMap
-    v3SourceMap = map.generate(options, code)
-    sourceMaps[filename] = map
+    v3SourceMap = map.generate options, code
+    sourceMaps[filename] ?= []
+    sourceMaps[filename].push map
 
   <span class="hljs-keyword">if</span> options.inlineMap
     encoded = base64encode JSON.stringify v3SourceMap
@@ -701,9 +703,7 @@ Modified to handle sourceMap</p>
   <span class="hljs-keyword">else</span>
     fileLocation
 <span class="hljs-function">
-<span class="hljs-title">getSourceMap</span> = <span class="hljs-params">(filename)</span> -&gt;</span>
-  <span class="hljs-keyword">if</span> sourceMaps[filename]?
-    sourceMaps[filename]</pre></div></div>
+<span class="hljs-title">getSourceMap</span> = <span class="hljs-params">(filename, line, column)</span> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -714,22 +714,15 @@ Modified to handle sourceMap</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
-              <p>CoffeeScript compiled in a browser may get compiled with <code>options.filename</code>
-of <code>&lt;anonymous&gt;</code>, but the browser may request the stack trace with the
-filename of the script file.</p>
+              <p>Skip files that we didn’t compile, like Node system files that appear in
+the stack trace, as they never have source maps.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> sourceMaps[<span class="hljs-string">'&lt;anonymous&gt;'</span>]?
-    sourceMaps[<span class="hljs-string">'&lt;anonymous&gt;'</span>]
-  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> sources[filename]?
-    answer = compile sources[filename],
-      filename: filename
-      sourceMap: <span class="hljs-literal">yes</span>
-      literate: helpers.isLiterate filename
-    answer.sourceMap
-  <span class="hljs-keyword">else</span>
-    <span class="hljs-literal">null</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span> <span class="hljs-keyword">unless</span> filename <span class="hljs-keyword">is</span> <span class="hljs-string">'&lt;anonymous&gt;'</span> <span class="hljs-keyword">or</span> filename.slice(filename.lastIndexOf(<span class="hljs-string">'.'</span>)) <span class="hljs-keyword">in</span> FILE_EXTENSIONS
+
+  <span class="hljs-keyword">if</span> filename <span class="hljs-keyword">isnt</span> <span class="hljs-string">'&lt;anonymous&gt;'</span> <span class="hljs-keyword">and</span> sourceMaps[filename]?
+    <span class="hljs-keyword">return</span> sourceMaps[filename][sourceMaps[filename].length - <span class="hljs-number">1</span>]</pre></div></div>
             
         </li>
         
@@ -740,6 +733,73 @@ filename of the script file.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
+              <p>CoffeeScript compiled in a browser or via <code>CoffeeScript.compile</code> or <code>.run</code>
+may get compiled with <code>options.filename</code> that’s missing, which becomes
+<code>&lt;anonymous&gt;</code>; but the runtime might request the stack trace with the
+filename of the script file. See if we have a source map cached under
+<code>&lt;anonymous&gt;</code> that matches the error.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> sourceMaps[<span class="hljs-string">'&lt;anonymous&gt;'</span>]?</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              <p>Work backwards from the most recent anonymous source maps, until we find
+one that works. This isn’t foolproof; there is a chance that multiple
+source maps will have line/column pairs that match. But we have no other
+way to match them. <code>frame.getFunction().toString()</code> doesn’t always work,
+and it’s not foolproof either.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">for</span> map <span class="hljs-keyword">in</span> sourceMaps[<span class="hljs-string">'&lt;anonymous&gt;'</span>] <span class="hljs-keyword">by</span> <span class="hljs-number">-1</span>
+      sourceLocation = map.sourceLocation [line - <span class="hljs-number">1</span>, column - <span class="hljs-number">1</span>]
+      <span class="hljs-keyword">return</span> map <span class="hljs-keyword">if</span> sourceLocation?[<span class="hljs-number">0</span>]? <span class="hljs-keyword">and</span> sourceLocation[<span class="hljs-number">1</span>]?</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              <p>If all else fails, recompile this source to get a source map. We need the
+previous section (for <code>&lt;anonymous&gt;</code>) despite this option, because after it
+gets compiled we will still need to look it up from
+<code>sourceMaps[&#39;&lt;anonymous&gt;&#39;]</code> in order to find and return it. That’s why we
+start searching from the end in the previous block, because most of the
+time the source map we want is the last one.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">if</span> sources[filename]?
+    answer = compile sources[filename][sources[filename].length - <span class="hljs-number">1</span>],
+      filename: filename
+      sourceMap: <span class="hljs-literal">yes</span>
+      literate: helpers.isLiterate filename
+    answer.sourceMap
+  <span class="hljs-keyword">else</span>
+    <span class="hljs-literal">null</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-32">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>
               <p>Based on <a href="http://goo.gl/ZTx1p">michaelficarra/CoffeeScriptRedux</a>
 NodeJS / V8 have no support for transforming positions in stack traces using
 sourceMap, so we must monkey-patch Error to display CoffeeScript source
@@ -749,7 +809,7 @@ positions.</p>
             
             <div class="content"><div class='highlight'><pre>Error.prepareStackTrace = <span class="hljs-function"><span class="hljs-params">(err, stack)</span> -&gt;</span>
 <span class="hljs-function">  <span class="hljs-title">getSourceMapping</span> = <span class="hljs-params">(filename, line, column)</span> -&gt;</span>
-    sourceMap = getSourceMap filename
+    sourceMap = getSourceMap filename, line, column
     answer = sourceMap.sourceLocation [line - <span class="hljs-number">1</span>, column - <span class="hljs-number">1</span>] <span class="hljs-keyword">if</span> sourceMap?
     <span class="hljs-keyword">if</span> answer? <span class="hljs-keyword">then</span> [answer[<span class="hljs-number">0</span>] + <span class="hljs-number">1</span>, answer[<span class="hljs-number">1</span>] + <span class="hljs-number">1</span>] <span class="hljs-keyword">else</span> <span class="hljs-literal">null</span>
 
