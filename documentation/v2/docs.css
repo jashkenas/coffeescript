@@ -203,8 +203,19 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 
 .main p, .main li, .main td, .main th {
   font-family: Lato;
-  font-size: 1.3rem;
   font-weight: 300;
+  font-size: 1.1em;
+}
+.main blockquote {
+  font-size: 1.1em;
+}
+@media (min-width: 768px) {
+  .main p, .main li, .main td, .main th {
+    font-size: 1.3em;
+  }
+  .main blockquote {
+    font-size: 1.3em;
+  }
 }
 .main td {
   vertical-align: top;
@@ -219,9 +230,6 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 }
 .main a:focus, .main a:hover, .main a:active {
   border-bottom: 2px solid rgba(56, 142, 60, 0.2);
-}
-.main blockquote {
-  font-size: 1.3rem;
 }
 .main blockquote pre {
   background-color: #f8f3f0;
@@ -310,10 +318,18 @@ textarea {
   font-family: 'Roboto Mono';
   font-weight: 400;
   line-height: 1.25;
+  font-size: 0.9em;
 }
+@media (min-width: 768px) {
+  .CodeMirror {
+    font-size: 1em;
+  }
+}
+
 .CodeMirror-code:focus {
   outline: none;
 }
+
 .javascript-output-column .CodeMirror-cursor {
   /* https://github.com/codemirror/CodeMirror/issues/2568 */
   display: none;
