@@ -1,12 +1,12 @@
 $(document).ready ->
   # Mobile navigation
   toggleSidebar = ->
-    $('.menu-button, .row-offcanvas').toggleClass 'active'
+    $('.navbar-toggler, .row-offcanvas').toggleClass 'show'
 
   $('[data-toggle="offcanvas"]').click toggleSidebar
 
   $('[data-action="sidebar-nav"]').click (event) ->
-    if $('.menu-button').is(':visible')
+    if $('.navbar-toggler').is(':visible')
       event.preventDefault()
       toggleSidebar()
       setTimeout ->
@@ -20,12 +20,12 @@ $(document).ready ->
     offset: Math.round $('main').css('padding-top').replace('px', '')
 
   initializeScrollspyFromHash = (hash) ->
-    $(".nav-link.active[href!='#{hash}']").removeClass 'active'
+    $("#contents a.active[href!='#{hash}']").removeClass 'show'
 
   $(window).on 'activate.bs.scrollspy', (event, target) -> # Why `window`? https://github.com/twbs/bootstrap/issues/20086
     # We only want one active link in the nav
-    $(".nav-link.active[href!='#{target.relatedTarget}']").removeClass 'active'
-    $target = $(".nav-link[href='#{target.relatedTarget}']")
+    $("#contents a.active[href!='#{target.relatedTarget}']").removeClass 'show'
+    $target = $("#contents a[href='#{target.relatedTarget}']")
     # Update the browser address bar on scroll or navigation
     window.history.pushState {}, $target.text(), $target.prop('href')
 
@@ -58,7 +58,7 @@ $(document).ready ->
           lastCompilationStartTime = Date.now()
           try
             coffee = editor.getValue()
-            if index is 0 and $('#try').hasClass('active') # If this is the editor in Try CoffeeScript and it’s still visible
+            if index is 0 and $('#try').hasClass('show') # If this is the editor in Try CoffeeScript and it’s still visible
               # Update the hash with the current code
               link = "try:#{encodeURIComponent coffee}"
               window.history.pushState {}, 'CoffeeScript', "#{location.href.split('#')[0]}##{link}"
@@ -107,9 +107,9 @@ $(document).ready ->
         if coffee?
           editors[0].setValue coffee
       catch exception
-    $('#try, #try-link').toggleClass 'active'
+    $('#try, #try-link').toggleClass 'show'
   closeTry = ->
-    $('#try, #try-link').removeClass 'active'
+    $('#try, #try-link').removeClass 'show'
 
   $('[data-toggle="try"]').click toggleTry
   $('[data-close="try"]').click closeTry
@@ -124,5 +124,6 @@ $(document).ready ->
       toggleTry()
     else
       initializeScrollspyFromHash window.location.hash
-      # Initializing the code editors might’ve thrown off our vertical scroll position
-      document.getElementById(window.location.hash.slice(1).replace(/try:.*/, '')).scrollIntoView()
+      if window.location.hash.length > 1
+        # Initializing the code editors might’ve thrown off our vertical scroll position
+        document.getElementById(window.location.hash.slice(1).replace(/try:.*/, '')).scrollIntoView()

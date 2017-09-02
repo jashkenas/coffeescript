@@ -9,7 +9,7 @@
   </div>
   <% if (run) { %>
   <div class="row">
-    <div class="col-xs-12 text-xs-right">
+    <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="<%= file %>" data-run="<%= escape(run) %>"><% if (run === true) { %>▶<% } else { %><small>▶</small>&ensp;<%= run.replace(/"/g, '&quot;') %><% } %></button>
     </div>
   </div>
