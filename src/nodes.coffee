@@ -2145,7 +2145,11 @@ exports.Assign = class Assign extends Base
         if @moduleDeclaration
           o.scope.add name.value, @moduleDeclaration
         else if @param
-          o.scope.add name.value, 'var'
+          o.scope.add name.value,
+            if @param is 'alwaysDeclare'
+              'var'
+            else
+              'param'
         else
           o.scope.find name.value
 
@@ -2598,7 +2602,7 @@ exports.Code = class Code extends Base
             ref = param.asReference o
           else
             if param.value? and not param.assignedInBody
-              ref = new Assign new Value(param.name), param.value, null, param: 'alwaysDeclare'
+              ref = new Assign new Value(param.name), param.value, null, param: yes
             else
               ref = param
           # Add this parameter’s reference(s) to the function scope.
