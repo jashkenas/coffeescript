@@ -566,3 +566,9 @@ test "#4657: destructured array param declarations", ->
   f [3, 4, 5]
   eq a, 1
   eq b, 2
+
+test "#4657: destructured array parameters", ->
+  f = ([a..., b]) -> {a, b}
+  result = f [1, 2, 3, 4]
+  arrayEq result.a, [1, 2, 3]
+  eq result.b, 4
