@@ -3,16 +3,14 @@
 <%= include('try.html') %>
 
 <div class="container-fluid" id="top">
-  <div class="row row-offcanvas row-offcanvas-left">
-    <nav class="sidebar sidebar-offcanvas col-xs-12 col-lg-3 bg-ribbed-light">
+  <div class="row flex-nowrap">
+    <nav class="sidebar col-lg-3 bg-ribbed-light">
       <%= include('sidebar.html') %>
     </nav>
     <main class="main col-lg-9 ml-auto">
-
       <header class="title-logo d-none d-lg-block">
         <%= include('documentation/images/logo.svg') %>
       </header>
-
       <section id="overview">
         <%= htmlFor('introduction') %>
         <%= htmlFor('overview') %>
@@ -197,7 +195,6 @@
       <section id="changelog">
         <%= htmlFor('changelog') %>
       </section>
-
     </main>
   </div>
 </div>

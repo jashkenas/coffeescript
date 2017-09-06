@@ -1,7 +1,7 @@
 $(document).ready ->
   # Mobile navigation
   toggleSidebar = ->
-    $('.navbar-toggler, .row-offcanvas').toggleClass 'show'
+    $('.navbar-toggler, .sidebar').toggleClass 'show'
 
   $('[data-toggle="offcanvas"]').click toggleSidebar
 

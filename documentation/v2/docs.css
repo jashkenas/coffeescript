@@ -1,5 +1,3 @@
-/* Adapted from https://v4-alpha.getbootstrap.com/examples/dashboard/dashboard.css and http://v4-alpha.getbootstrap.com/examples/offcanvas/offcanvas.css */
-
 html,
 body {
   /* Prevent scroll on narrow devices */
@@ -51,7 +49,7 @@ button:focus, .navbar-dark .navbar-toggler:focus {
  */
 .site-navbar {
   height: 3.5rem;
-  font-family: Lato;
+  font-family: 'Lato';
   font-weight: 400;
   font-size: 1.1em;
 }
@@ -86,43 +84,38 @@ button:focus, .navbar-dark .navbar-toggler:focus {
  */
 
 .sidebar {
-  background-color: #efebe9;
-  border-right: 1px solid #efebe9;
-  top: 3.5rem;
-  bottom: 0;
-  left: 0;
-  z-index: 1000;
-  display: block;
-  padding: 0;
-}
-.sidebar .contents {
-  height: 100%;
+  position: fixed;
+  top: 3.5em;
+  height: calc(100% - 3.5rem);
   /* Scrollable contents if viewport is shorter than content */
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 0.5em 0 0.5em 0.3em;
+  left: 0;
+  bottom: 0;
+  z-index: 1000;
+  padding: 0;
+  background-color: #efebe9;
+  border-right: 1px solid #efebe9;
+}
+@media screen and (max-width: 991px) {
+  .sidebar {
+    left: -100%;
+    transition: 0.25s left ease-in-out;
+  }
+  .sidebar.show {
+    left: 0;
+  }
+}
+
+.contents {
+  padding: 0.5em 0 0.5em 0.5em;
   font-family: 'Alegreya Sans';
   font-weight: 400;
   font-size: 1.2em;
   align-items: normal;
 }
-.sidebar .contents::-webkit-scrollbar {
+.contents::-webkit-scrollbar {
   display: none;
-}
-@media screen and (max-width: 991px) {
-  .sidebar .contents {
-    position: fixed;
-    height: calc(100% - 3.5rem);
-  }
-}
-@media screen and (min-width: 992px) {
-  .sidebar {
-    position: fixed;
-  }
-}
-
-.contents-column {
-  display: block;
 }
 
 .contents .nav .nav {
@@ -138,44 +131,6 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 .contents .nav-link.active a:hover,
 .contents .nav-link.active a:focus {
   font-weight: 800;
-}
-
-
-/*
- * Off Canvas
- */
-@media screen and (max-width: 991px) {
-  .row-offcanvas {
-    position: relative;
-    transition: all .25s ease-in-out;
-  }
-  .row-offcanvas-left {
-    left: 0;
-  }
-  .sidebar-offcanvas {
-    position: absolute;
-    top: 0;
-  }
-}
-@media screen and (max-width: 767px) {
-  .row-offcanvas-left .sidebar-offcanvas {
-    left: -100%;
-  }
-  .row-offcanvas-left.show {
-    left: calc(100% + 30px)
-  }
-}
-@media screen and (min-width: 768px) and (max-width: 991px) {
-  .row-offcanvas-left .sidebar-offcanvas {
-    left: calc(-66.667% - 15px);
-    width: 66.667%;
-  }
-  .row-offcanvas-left.show {
-    left: calc(66.667% + 30px);
-  }
-  .row-offcanvas-left .sidebar-offcanvas .contents {
-    width: 66.667%;
-  }
 }
 
 
