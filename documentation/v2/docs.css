@@ -97,6 +97,9 @@ button:focus, .navbar-dark .navbar-toggler:focus {
   background-color: #efebe9;
   border-right: 1px solid #efebe9;
 }
+.sidebar::-webkit-scrollbar {
+  display: none;
+}
 @media screen and (max-width: 991px) {
   .sidebar {
     left: -100%;
@@ -113,9 +116,6 @@ button:focus, .navbar-dark .navbar-toggler:focus {
   font-weight: 400;
   font-size: 1.2em;
   align-items: normal;
-}
-.contents::-webkit-scrollbar {
-  display: none;
 }
 
 .contents .nav .nav {
