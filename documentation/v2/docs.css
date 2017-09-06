@@ -266,7 +266,8 @@ textarea {
   outline: 0;
 }
 
-.CodeMirror {
+.CodeMirror,
+.placeholder-code {
   /* https://codemirror.net/demo/resize.html */
   height: auto;
   background: transparent;
@@ -276,7 +277,8 @@ textarea {
   font-size: 0.9em;
 }
 @media (min-width: 768px) {
-  .CodeMirror {
+  .CodeMirror,
+  .placeholder-code {
     font-size: 1em;
   }
 }

@@ -2,9 +2,11 @@
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
       <textarea class="coffeescript-input" id="<%= file %>-coffee"><%= cs %></textarea>
+      <pre class="placeholder-code"><%= highlight('coffeescript', cs) %></pre>
     </div>
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="<%= file %>-js"><%= js %></textarea>
+      <pre class="placeholder-code"><%= highlight('javascript', js) %></pre>
     </div>
   </div>
   <% if (run) { %>

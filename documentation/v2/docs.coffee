@@ -37,6 +37,8 @@ $(document).ready ->
     $(@).data 'index', index
     mode = if $(@).hasClass('javascript-output') then 'javascript' else 'coffeescript'
 
+    $(@).next('.placeholder-code').remove()
+
     editors[index] = editor = CodeMirror.fromTextArea @,
       mode: mode
       theme: 'twilight'
