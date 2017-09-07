@@ -54,6 +54,7 @@
   color: #dad085;
 }
 .cm-s-twilight .cm-operator,
+.placeholder-code .punctuation,
 .placeholder-code .symbol,
 .placeholder-code .bullet,
 .placeholder-code .addition,

@@ -50,5 +50,7 @@
     "underscore": "~1.8.3",
     "webpack": "~3.5.5"
   },
-  "dependencies": {}
+  "dependencies": {
+    "prismjs": "^1.6.0"
+  }
 }
