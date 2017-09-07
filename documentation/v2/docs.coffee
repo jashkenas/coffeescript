@@ -31,15 +31,16 @@ $(document).ready ->
 
 
   # Initialize CodeMirror for code examples; https://codemirror.net/doc/manual.html
+  # Defer this until a code example is clicked or focused, to avoid unnecessary computation/slowness
   editors = []
   lastCompilationElapsedTime = 200
   $('textarea').each (index) ->
     $(@).data 'index', index
-    mode = if $(@).hasClass('javascript-output') then 'javascript' else 'coffeescript'
-    return
-    $(@).next('.placeholder-code').remove()
 
-    editors[index] = editor = CodeMirror.fromTextArea @,
+  initializeEditor = ($textarea) ->
+    index = $textarea.data 'index'
+    mode = if $textarea.hasClass('javascript-output') then 'javascript' else 'coffeescript'
+    editors[index] = editor = CodeMirror.fromTextArea $textarea[0],
       mode: mode
       theme: 'twilight'
       indentUnit: 2
@@ -92,6 +93,19 @@ $(document).ready ->
           cm.options.indentWithTabs = /^\t/m.test cm.getValue()
           cm.execCommand 'newlineAndIndent'
 
+  $('.placeholder-code').one 'mouseover', (event) ->
+    $textarea = $(@).prev 'textarea'
+    $(@).remove()
+    initializeEditor $textarea
+    # Initialize the sibling column too
+    $siblingColumn = $ $textarea.parent().siblings()[0]
+    $siblingColumn.children('.placeholder-code').remove()
+    initializeEditor $ $siblingColumn.children('textarea')[0]
+
+  initializeTryEditors = ->
+    initializeEditor $ '#try-coffeescript-coffee'
+    initializeEditor $ '#try-coffeescript-js'
+
   # Handle the code example buttons
   $('[data-action="run-code-example"]').click ->
     run = $(@).data 'run'
@@ -109,6 +123,7 @@ $(document).ready ->
 
   # Try CoffeeScript
   toggleTry = (checkLocalStorage = no) ->
+    initializeTryEditors() if $('#try .CodeMirror').length is 0
     if checkLocalStorage and window.localStorage?
       try
         coffee = window.localStorage.getItem 'tryCoffeeScriptCode'
@@ -130,6 +145,7 @@ $(document).ready ->
     if window.location.hash is '#try'
       toggleTry yes
     else if window.location.hash.indexOf('#try') is 0
+      initializeTryEditors() if $('#try .CodeMirror').length is 0
       editors[0].setValue decodeURIComponent window.location.hash[5..]
       toggleTry()
     else if window.location.hash is ''
