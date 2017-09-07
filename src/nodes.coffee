@@ -1427,8 +1427,8 @@ exports.Obj = class Obj extends Base
 
   # Check if object contains splat.
   hasSplat: ->
-    splat = yes for prop in @properties when prop instanceof Splat
-    splat ? no
+    return yes for prop in @properties when prop instanceof Splat
+    no
 
   compileNode: (o) ->
     props = @properties
@@ -1510,7 +1510,7 @@ exports.Obj = class Obj extends Base
       prop.eachName iterator if prop.eachName?
 
   # Object spread properties. https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md
-  # `obj2 = {a: 1, obj..., c: 3, d: 4}` → `obj2 = Object.assign({}, {a: 1}, obj, {c: 3, d: 4})`
+  # `obj2 = {a: 1, obj..., c: 3, d: 4}` → `obj2 = _extends({}, {a: 1}, obj, {c: 3, d: 4})`
   compileSpread: (o) ->
     props = @properties
     # Store object spreads.
@@ -2144,6 +2144,12 @@ exports.Assign = class Assign extends Base
         @checkAssignability o, name
         if @moduleDeclaration
           o.scope.add name.value, @moduleDeclaration
+        else if @param
+          o.scope.add name.value,
+            if @param is 'alwaysDeclare'
+              'var'
+            else
+              'param'
         else
           o.scope.find name.value
 
@@ -2167,7 +2173,7 @@ exports.Assign = class Assign extends Base
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
     # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration,
     # if we’re destructuring without declaring, the destructuring assignment must be wrapped in parentheses.
-    if o.level > LEVEL_LIST or (o.level is LEVEL_TOP and isValue and @variable.base instanceof Obj and not @nestedLhs and not @param)
+    if o.level > LEVEL_LIST or o.level is LEVEL_TOP and isValue and @variable.base instanceof Obj and not @nestedLhs and not (@param is yes)
       @wrapInParentheses answer
     else
       answer
@@ -2175,23 +2181,6 @@ exports.Assign = class Assign extends Base
   # Check object destructuring variable for rest elements;
   # can be removed once ES proposal hits Stage 4.
   compileObjectDestruct: (o) ->
-    # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration,
-    # if we’re destructuring without declaring, the destructuring assignment
-    # must be wrapped in parentheses: `({a, b} = obj)`. Helper function
-    # `setScopeVar()` declares variables `a` and `b` at the top of the
-    # current scope.
-    setScopeVar = (prop) ->
-      newVar = false
-      return if prop instanceof Assign and prop.value.base instanceof Obj
-      if prop instanceof Assign
-        if prop.value.base instanceof IdentifierLiteral
-          newVar = prop.value.base.compileWithoutComments o
-        else
-          newVar = prop.variable.base.compileWithoutComments o
-      else
-        newVar = prop.compileWithoutComments o
-      o.scope.add(newVar, 'var', true) if newVar
-
     # Returns a safe (cached) reference to the key for a given property
     getPropKey = (prop) ->
       if prop instanceof Assign
@@ -2220,7 +2209,6 @@ exports.Assign = class Assign extends Base
 
       for prop, index in properties
         nestedSourceDefault = nestedSource = nestedProperties = null
-        setScopeVar prop.unwrap()
         if prop instanceof Assign
           # prop is `k: expr`, we need to check `expr` for nested splats
           if prop.value.isObject?()
@@ -2252,10 +2240,11 @@ exports.Assign = class Assign extends Base
       restElements
 
     # Cache the value for reuse with rest elements.
-    if @value.shouldCache()
-      valueRefTemp = new IdentifierLiteral o.scope.freeVariable 'ref', reserve: false
-    else
-      valueRefTemp = @value.base
+    valueRefTemp =
+      if @value.shouldCache()
+        new IdentifierLiteral o.scope.freeVariable 'ref', reserve: false
+      else
+        @value.base
 
     # Find all rest elements.
     restElements = traverseRest @variable.base.properties, valueRefTemp
@@ -2266,7 +2255,7 @@ exports.Assign = class Assign extends Base
 
     for restElement in restElements
       value = new Call new Value(new Literal utility 'objectWithoutKeys', o), [restElement.source, restElement.excludeProps]
-      result.push new Assign restElement.name, value
+      result.push new Assign new Value(restElement.name), value, null, param: if @param then 'alwaysDeclare' else null
 
     fragments = result.compileToFragments o
     if o.level is LEVEL_TOP
@@ -2600,7 +2589,7 @@ exports.Code = class Code extends Base
             ifTrue = new Assign new Value(param.name), param.value
             exprs.push new If condition, ifTrue
           else
-            exprs.push new Assign new Value(param.name), param.asReference(o)
+            exprs.push new Assign new Value(param.name), param.asReference(o), null, param: 'alwaysDeclare'
 
         # If this parameter comes before the splat or expansion, it will go
         # in the function definition parameter list.
@@ -2620,18 +2609,19 @@ exports.Code = class Code extends Base
           if param.name instanceof Arr or param.name instanceof Obj
             # This parameter is destructured.
             param.name.lhs = yes
-            param.name.eachName (prop) ->
-              o.scope.parameter prop.value
             # Compile `foo({a, b...}) ->` to `foo(arg) -> {a, b...} = arg`.
             # Can be removed once ES proposal hits Stage 4.
             if param.name instanceof Obj and param.name.hasSplat()
               splatParamName = o.scope.freeVariable 'arg'
               o.scope.parameter splatParamName
               ref = new Value new IdentifierLiteral splatParamName
-              exprs.push new Assign new Value(param.name), ref
+              exprs.push new Assign new Value(param.name), ref, null, param: 'alwaysDeclare'
               # Compile `foo({a, b...} = {}) ->` to `foo(arg = {}) -> {a, b...} = arg`.
-              if param.value?  and not param.assignedInBody
+              if param.value? and not param.assignedInBody
                 ref = new Assign ref, param.value, null, param: yes
+            else unless param.shouldCache()
+              param.name.eachName (prop) ->
+                o.scope.parameter prop.value
           else
             # This compilation of the parameter is only to get its name to add
             # to the scope name tracking; since the compilation output here

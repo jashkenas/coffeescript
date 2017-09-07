@@ -915,3 +915,15 @@ test "#4674: _extends utility for object spreads 2", ->
   e = {a..., c...}
   eq e.b, 1
   eq e.d, 2
+
+test "#4673: complex destructured object spread variables", ->
+  b = c: 1
+  {{a...}...} = b
+  eq a.c, 1
+
+  d = {}
+  {d.e...} = f: 1
+  eq d.e.f, 1
+
+  {{g}...} = g: 1
+  eq g, 1

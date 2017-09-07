@@ -549,3 +549,26 @@ test "#4413: expressions in function parameters that create generated variables 
   g = (a = foo() ? bar()) -> a + 1
   eq f(), 33
   eq g(), 34
+
+test "#4673: complex destructured object spread variables", ->
+  f = ({{a...}...}) ->
+    a
+  eq f(c: 1).c, 1
+
+  g = ({@y...}) ->
+    eq @y.b, 1
+  g b: 1
+
+test "#4657: destructured array param declarations", ->
+  a = 1
+  b = 2
+  f = ([a..., b]) ->
+  f [3, 4, 5]
+  eq a, 1
+  eq b, 2
+
+test "#4657: destructured array parameters", ->
+  f = ([a..., b]) -> {a, b}
+  result = f [1, 2, 3, 4]
+  arrayEq result.a, [1, 2, 3]
+  eq result.b, 4
