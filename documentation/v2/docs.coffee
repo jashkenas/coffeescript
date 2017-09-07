@@ -36,7 +36,7 @@ $(document).ready ->
   $('textarea').each (index) ->
     $(@).data 'index', index
     mode = if $(@).hasClass('javascript-output') then 'javascript' else 'coffeescript'
-
+    return
     $(@).next('.placeholder-code').remove()
 
     editors[index] = editor = CodeMirror.fromTextArea @,
@@ -100,6 +100,12 @@ $(document).ready ->
     js = "#{js}\nalert(#{unescape run});" unless run is yes
     eval js
 
+  clearHash = ->
+    window.history.pushState '', document.title, window.location.pathname
+
+  $(window).on 'hashchange', ->
+    # Get rid of dangling # in the address bar
+    clearHash() if window.location.hash is ''
 
   # Try CoffeeScript
   toggleTry = (checkLocalStorage = no) ->
@@ -110,8 +116,10 @@ $(document).ready ->
           editors[0].setValue coffee
       catch exception
     $('#try, #try-link').toggleClass 'show'
+    setTimeout clearHash, 200 unless $('#try').hasClass('show')
   closeTry = ->
     $('#try, #try-link').removeClass 'show'
+    window.history.pushState '', document.title, window.location.pathname
 
   $('[data-toggle="try"]').click toggleTry
   $('[data-close="try"]').click closeTry
@@ -124,6 +132,8 @@ $(document).ready ->
     else if window.location.hash.indexOf('#try') is 0
       editors[0].setValue decodeURIComponent window.location.hash[5..]
       toggleTry()
+    else if window.location.hash is ''
+      clearHash()
     else
       initializeScrollspyFromHash window.location.hash
       if window.location.hash.length > 1
