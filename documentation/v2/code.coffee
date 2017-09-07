@@ -1,20 +1,46 @@
 fs           = require 'fs'
 _            = require 'underscore'
-Prism        = require 'prismjs'
-require 'prismjs/components/prism-coffeescript'
-require 'prismjs/components/prism-javascript'
+
+# Use CodeMirror in Node for syntax highlighting, per
+# https://github.com/codemirror/CodeMirror/blob/master/bin/source-highlight
+CodeMirror   = require 'codemirror/addon/runmode/runmode.node.js'
+require 'codemirror/mode/coffeescript/coffeescript.js'
+require 'codemirror/mode/javascript/javascript.js'
+
 CoffeeScript = require '../../lib/coffeescript'
 
 
 module.exports = ->
   (file, run = no) ->
     cs = fs.readFileSync "documentation/examples/#{file}.coffee", 'utf-8'
-    js = CoffeeScript.compile cs, bare: yes # This is just the initial JavaScript output; it is replaced by dynamic compilation on changes of the CoffeeScript pane
+    js = CoffeeScript.compile cs, bare: yes # This is just the initial JavaScript output; it is replaced by dynamic compilation on changes of the CoffeeScript pane.
     render = _.template fs.readFileSync('documentation/v2/code.html', 'utf-8')
+
     highlight = (language, code) ->
-      html = Prism.highlight code, Prism.languages[language]
-      if language is 'coffeescript'
-        html = html.replace /-&gt;/g, '<span class="operator">-&gt;</span>'
-        html = html.replace /\=&gt;/g, '<span class="operator">=&gt;</span>'
+      # Adapted from https://github.com/codemirror/CodeMirror/blob/master/bin/source-highlight.
+      html = ''
+      curStyle = null
+      accum = ''
+
+      esc = (str) ->
+        str.replace /[<&]/g, (ch) ->
+          if ch is '&' then '&amp;' else '&lt;'
+
+      flush = ->
+        if curStyle
+          html += "<span class=\"#{curStyle.replace /(^|\s+)/g, '$1cm-'}\">#{esc accum}</span>"
+        else
+          html += esc accum
+
+      CodeMirror.runMode code, {name: language}, (text, style) ->
+        if style isnt curStyle
+          flush()
+          curStyle = style
+          accum = text
+        else
+          accum += text
+      flush()
+
       html
+
     output = render {highlight, file, cs, js, run}

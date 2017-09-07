@@ -51,6 +51,6 @@
     "webpack": "~3.5.5"
   },
   "dependencies": {
-    "prismjs": "^1.6.0"
+    "codemirror": "^5.29.0"
   }
 }

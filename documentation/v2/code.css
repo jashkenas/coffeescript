@@ -1,11 +1,11 @@
 /* Adapted from https://github.com/FarhadG/code-mirror-themes/blob/master/themes/twilight.css */
 
-.cm-s-twilight,
+.CodeMirror,
 .placeholder-code {
   letter-spacing: 0.3px;
   color: #f8f8f8;
 }
-.cm-s-twilight .CodeMirror-lines {
+.CodeMirror-lines {
   padding: 0.5em 0;
 }
 .placeholder-code {
@@ -13,36 +13,36 @@
   margin-bottom: 1.3rem;
   white-space: pre-wrap;
 }
-.cm-s-twilight div.CodeMirror-cursor {
+div.CodeMirror-cursor {
   border-left: 3px solid #f8f8f8;
 }
-.cm-s-twilight .CodeMirror-activeline-background {
+.CodeMirror-activeline-background {
   background: #ffffff08;
 }
-.cm-s-twilight .CodeMirror-selected {
+.CodeMirror-selected {
   background: #ddf0ff33;
 }
-.cm-s-twilight .cm-comment,
+.cm-comment,
 .placeholder-code .comment {
   font-style: italic;
   color: #5f5a60;
 }
-.cm-s-twilight .cm-keyword,
+.cm-keyword,
 .placeholder-code .keyword {
   color: #cda869;
 }
-.cm-s-twilight .cm-string,
+.cm-string,
 .placeholder-code .string {
   color: #8f9d6a;
 }
-.cm-s-twilight .cm-property,
+.cm-property,
 .placeholder-code .attribute {
   color: #dad085;
 }
-.cm-s-twilight .cm-atom {
+.cm-atom {
   color: #dad085;
 }
-.cm-s-twilight .cm-number,
+.cm-number,
 .placeholder-code .number,
 .placeholder-code .built_in,
 .placeholder-code .builtin-name,
@@ -53,7 +53,7 @@
 .placeholder-code .link {
   color: #dad085;
 }
-.cm-s-twilight .cm-operator,
+.cm-operator,
 .placeholder-code .punctuation,
 .placeholder-code .symbol,
 .placeholder-code .bullet,
