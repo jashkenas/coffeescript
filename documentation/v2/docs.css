@@ -266,6 +266,10 @@ textarea {
   outline: 0;
 }
 
+.play-button {
+  height: 1em;
+}
+
 .CodeMirror,
 .placeholder-code {
   /* https://codemirror.net/demo/resize.html */

@@ -15,6 +15,7 @@ module.exports = ->
     cs = fs.readFileSync "documentation/examples/#{file}.coffee", 'utf-8'
     js = CoffeeScript.compile cs, bare: yes # This is just the initial JavaScript output; it is replaced by dynamic compilation on changes of the CoffeeScript pane.
     render = _.template fs.readFileSync('documentation/v2/code.html', 'utf-8')
+    include = (file) -> fs.readFileSync("documentation/v2/#{file}", 'utf-8')
 
     highlight = (language, code) ->
       # Adapted from https://github.com/codemirror/CodeMirror/blob/master/bin/source-highlight.
@@ -43,4 +44,4 @@ module.exports = ->
 
       html
 
-    output = render {highlight, file, cs, js, run}
+    output = render {file, cs, js, highlight, include, run}

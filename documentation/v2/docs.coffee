@@ -32,9 +32,11 @@ $(document).ready ->
 
   # Initialize CodeMirror for code examples; https://codemirror.net/doc/manual.html
   # Defer this until a code example is clicked or focused, to avoid unnecessary computation/slowness
+  textareas = []
   editors = []
   lastCompilationElapsedTime = 200
   $('textarea').each (index) ->
+    textareas[index] = @
     $(@).data 'index', index
 
   initializeEditor = ($textarea) ->
@@ -110,7 +112,10 @@ $(document).ready ->
   $('[data-action="run-code-example"]').click ->
     run = $(@).data 'run'
     index = $("##{$(@).data('example')}-js").data 'index'
-    js = editors[index].getValue()
+    js = if editors[index]?
+      editors[index].getValue()
+    else
+      $(textareas[index]).val()
     js = "#{js}\nalert(#{unescape run});" unless run is yes
     eval js
 
