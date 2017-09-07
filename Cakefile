@@ -66,6 +66,27 @@ build = (callback) ->
   buildParser()
   buildExceptParser callback
 
+transpile = (code) ->
+  babel = require 'babel-core'
+  presets = []
+  # Exclude the `modules` plugin in order to not break the `}(this));`
+  # at the end of the above code block.
+  presets.push ['env', {modules: no}] unless process.env.TRANSFORM is 'false'
+  babelOptions =
+    presets: presets
+    sourceType: 'script'
+  { code } = babel.transform code, babelOptions unless presets.length is 0
+  # Running Babel twice due to https://github.com/babel/babili/issues/614.
+  # Once that issue is fixed, move the `babili` preset back up into the
+  # `presets` array and run Babel once with both presets together.
+  presets = if process.env.MINIFY is 'false' then [] else ['babili']
+  babelOptions =
+    compact: process.env.MINIFY isnt 'false'
+    presets: presets
+    sourceType: 'script'
+  { code } = babel.transform code, babelOptions unless presets.length is 0
+  code
+
 testBuiltCode = (watch = no) ->
   csPath = './lib/coffeescript'
   csDir  = path.dirname require.resolve csPath
@@ -141,24 +162,7 @@ task 'build:browser', 'merge the built scripts into a single file for use in a b
       }
     }(this));
   """
-  babel = require 'babel-core'
-  presets = []
-  # Exclude the `modules` plugin in order to not break the `}(this));`
-  # at the end of the above code block.
-  presets.push ['env', {modules: no}] unless process.env.TRANSFORM is 'false'
-  babelOptions =
-    presets: presets
-    sourceType: 'script'
-  { code } = babel.transform code, babelOptions unless presets.length is 0
-  # Running Babel twice due to https://github.com/babel/babili/issues/614.
-  # Once that issue is fixed, move the `babili` preset back up into the
-  # `presets` array and run Babel once with both presets together.
-  presets = if process.env.MINIFY is 'false' then [] else ['babili']
-  babelOptions =
-    compact: process.env.MINIFY isnt 'false'
-    presets: presets
-    sourceType: 'script'
-  { code } = babel.transform code, babelOptions unless presets.length is 0
+  code = transpile code
   outputFolder = "docs/v#{majorVersion}/browser-compiler"
   fs.mkdirSync outputFolder unless fs.existsSync outputFolder
   fs.writeFileSync "#{outputFolder}/coffeescript.js", header + '\n' + code
@@ -236,9 +240,17 @@ buildDocs = (watch = no) ->
         codeFor: codeFor()
         releaseHeader: releaseHeader
 
+  includeScript = ->
+    (file) ->
+      file = "#{versionedSourceFolder}/#{file}" unless '/' in file
+      code = fs.readFileSync file, 'utf-8'
+      code = CoffeeScript.compile code
+      code = transpile code
+      code
+
   include = ->
     (file) ->
-      file = "#{versionedSourceFolder}/#{file}" if file.indexOf('/') is -1
+      file = "#{versionedSourceFolder}/#{file}" unless '/' in file
       output = fs.readFileSync file, 'utf-8'
       if /\.html$/.test(file)
         render = _.template output
@@ -249,6 +261,7 @@ buildDocs = (watch = no) ->
           htmlFor: htmlFor()
           codeFor: codeFor()
           include: include()
+          includeScript: includeScript()
       output
 
   # Task
