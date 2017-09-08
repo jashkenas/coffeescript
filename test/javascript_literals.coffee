@@ -67,4 +67,4 @@ test "escaped JavaScript blocks speed round", ->
     ['`Single backslash at EOS: \\\\`',                       'Single backslash at EOS: \\;']
     ['`Double backslash at EOS: \\\\\\\\`',                   'Double backslash at EOS: \\\\;']
   ]
-    eq CoffeeScript.compile(input, bare: yes), "#{output}\n\n"
+    eqJS input, output

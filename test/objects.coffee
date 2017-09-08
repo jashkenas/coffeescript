@@ -439,6 +439,12 @@ test "#3216: For loop declaration as a value of an implicit object", ->
   arrayEq ob.b, test
   arrayEq ob.c, test
   arrayEq ob.d, test
+  byFirstKey =
+    a: for v in test by 1 then v
+  arrayEq byFirstKey.a, test
+  whenFirstKey =
+    a: for v in test when true then v
+  arrayEq whenFirstKey.a, test
 
 test 'inline implicit object literals within multiline implicit object literals', ->
   x =
@@ -587,3 +593,107 @@ test "#1263: Braceless object return", ->
   eq 1, obj.a
   eq 2, obj.b
   eq 3, obj.c()
+
+test "#4564: indent should close implicit object", ->
+  f = (x) -> x
+
+  arrayEq ['a'],
+    for key of f a: 1
+      key
+
+  g = null
+  if f a: 1
+    g = 3
+  eq g, 3
+
+  h = null
+  if a: (i for i in [1, 2, 3])
+    h = 4
+  eq h, 4
+
+test "#4544: Postfix conditionals in first line of implicit object literals", ->
+  two =
+    foo:
+      bar: 42 if yes
+      baz: 1337
+  eq 42, two.foo.bar
+  eq 1337, two.foo.baz
+
+  f = (x) -> x
+
+  three =
+    foo: f
+      bar: 42 if yes
+      baz: 1337
+  eq 42, three.foo.bar
+  eq 1337, three.foo.baz
+
+  four =
+    f
+      foo:
+        bar: 42 if yes
+      baz: 1337
+  eq 42, four.foo.bar
+  eq 1337, four.baz
+
+  x = bar: 42 if no
+  baz: 1337
+  ok not x?
+
+  # Example from #2051
+  a = null
+  _alert = (arg) -> a = arg
+  _alert
+    val3: "works" if true
+    val: "hello"
+    val2: "all good"
+  eq a.val2, "all good"
+
+test "#4579: Postfix for/while/until in first line of implicit object literals", ->
+  two =
+    foo:
+      bar: x for x in [1, 2, 3]
+      baz: 1337
+  arrayEq [1, 2, 3], two.foo.bar
+  eq 1337, two.foo.baz
+
+  f = (x) -> x
+
+  three =
+    foo: f
+      # Uncomment when #4580 is fixed
+      # bar: x + y for x, y of a: 'b', c: 'd'
+      bar: x + 'c' for x of a: 1, b: 2
+      baz: 1337
+  arrayEq ['ac', 'bc'], three.foo.bar
+  eq 1337, three.foo.baz
+
+  four =
+    f
+      foo:
+        "bar_#{x}": x for x of a: 1, b: 2
+      baz: 1337
+  eq 'a', four.foo[0].bar_a
+  eq 'b', four.foo[1].bar_b
+  eq 1337, four.baz
+
+  x = bar: 42 for y in [1]
+  baz: 1337
+  eq x.bar, 42
+
+  i = 5
+  five =
+    foo:
+      bar: i while i-- > 0
+      baz: 1337
+  arrayEq [4, 3, 2, 1, 0], five.foo.bar
+  eq 1337, five.foo.baz
+
+  i = 5
+  six =
+    foo:
+      bar: i until i-- <= 0
+      baz: 1337
+  arrayEq [4, 3, 2, 1, 0], six.foo.bar
+  eq 1337, six.foo.baz
+

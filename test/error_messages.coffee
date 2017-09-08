@@ -41,18 +41,6 @@ test "compiler error formatting", ->
                  ^^^^
   '''
 
-test "compiler error formatting with mixed tab and space", ->
-  assertErrorFormat """
-    \t  if a
-    \t  test
-  """,
-  '''
-    [stdin]:1:4: error: unexpected if
-    \t  if a
-    \t  ^^
-  '''
-
-
 if require?
   os   = require 'os'
   fs   = require 'fs'
@@ -87,7 +75,7 @@ if require?
     finally
       fs.unlinkSync tempFile
 
-  test "#3890 Error.prepareStackTrace doesn't throw an error if a compiled file is deleted", ->
+  test "#3890: Error.prepareStackTrace doesn't throw an error if a compiled file is deleted", ->
     # Adapted from https://github.com/atom/coffee-cash/blob/master/spec/coffee-cash-spec.coffee
     filePath = path.join os.tmpdir(), 'PrepareStackTraceTestFile.coffee'
     fs.writeFileSync filePath, "module.exports = -> throw new Error('hello world')"
@@ -102,7 +90,10 @@ if require?
     doesNotThrow(-> error.stack)
     notEqual error.stack.toString().indexOf(filePath), -1
 
-  test "#4418 stack traces for compiled files reference the correct line number", ->
+  test "#4418: stack traces for compiled files reference the correct line number", ->
+    # The browser is already compiling other anonymous scripts (the tests)
+    # which will conflict.
+    return if global.testingBrowser
     filePath = path.join os.tmpdir(), 'StackTraceLineNumberTestFile.coffee'
     fileContents = """
       testCompiledFileStackTraceLineNumber = ->
@@ -123,21 +114,44 @@ if require?
     eq /StackTraceLineNumberTestFile.coffee:(\d)/.exec(error.stack.toString())[1], '3'
 
 
-test "#4418 stack traces for compiled strings reference the correct line number", ->
+test "#4418: stack traces for compiled strings reference the correct line number", ->
+  # The browser is already compiling other anonymous scripts (the tests)
+  # which will conflict.
+  return if global.testingBrowser
   try
-    CoffeeScript.run """
+    CoffeeScript.run '''
       testCompiledStringStackTraceLineNumber = ->
         # `a` on the next line is undefined and should throw a ReferenceError
         console.log a if true
 
       do testCompiledStringStackTraceLineNumber
-      """
+      '''
   catch error
 
   # Make sure the line number reported is line 3 (the original Coffee source)
   # and not line 6 (the generated JavaScript).
-  eq /at testCompiledStringStackTraceLineNumber.*:(\d):/.exec(error.stack.toString())[1], '3'
+  eq /testCompiledStringStackTraceLineNumber.*:(\d):/.exec(error.stack.toString())[1], '3'
 
+
+test "#4558: compiling a string inside a script doesn’t screw up stack trace line number", ->
+  # The browser is already compiling other anonymous scripts (the tests)
+  # which will conflict.
+  return if global.testingBrowser
+  try
+    CoffeeScript.run '''
+      testCompilingInsideAScriptDoesntScrewUpStackTraceLineNumber = ->
+        if require?
+          CoffeeScript = require './lib/coffeescript'
+          CoffeeScript.compile ''
+        throw new Error 'Some Error'
+
+      do testCompilingInsideAScriptDoesntScrewUpStackTraceLineNumber
+      '''
+  catch error
+
+  # Make sure the line number reported is line 5 (the original Coffee source)
+  # and not line 10 (the generated JavaScript).
+  eq /testCompilingInsideAScriptDoesntScrewUpStackTraceLineNumber.*:(\d):/.exec(error.stack.toString())[1], '5'
 
 test "#1096: unexpected generated tokens", ->
   # Implicit ends
@@ -662,14 +676,14 @@ test "duplicate function arguments", ->
   assertErrorFormat '''
     (foo, bar, foo) ->
   ''', '''
-    [stdin]:1:12: error: multiple parameters named foo
+    [stdin]:1:12: error: multiple parameters named 'foo'
     (foo, bar, foo) ->
                ^^^
   '''
   assertErrorFormat '''
     (@foo, bar, @foo) ->
   ''', '''
-    [stdin]:1:13: error: multiple parameters named @foo
+    [stdin]:1:13: error: multiple parameters named '@foo'
     (@foo, bar, @foo) ->
                 ^^^^
   '''
@@ -816,26 +830,27 @@ test "unexpected object keys", ->
     [[]]: 1
     ^
   '''
+
   assertErrorFormat '''
     {(a + "b")}
   ''', '''
-    [stdin]:1:2: error: unexpected (
+    [stdin]:1:11: error: unexpected }
     {(a + "b")}
-     ^
+              ^
   '''
   assertErrorFormat '''
     {(a + "b"): 1}
   ''', '''
-    [stdin]:1:2: error: unexpected (
+    [stdin]:1:11: error: unexpected :
     {(a + "b"): 1}
-     ^
+              ^
   '''
   assertErrorFormat '''
     (a + "b"): 1
   ''', '''
-    [stdin]:1:1: error: unexpected (
+    [stdin]:1:10: error: unexpected :
     (a + "b"): 1
-    ^
+             ^
   '''
   assertErrorFormat '''
     a: 1, [[]]: 2
@@ -1175,6 +1190,13 @@ test "imported members cannot be reassigned", ->
            ^^^
   '''
 
+test "bound functions cannot be generators", ->
+  assertErrorFormat 'f = => yield this', '''
+    [stdin]:1:8: error: yield cannot occur inside bound (fat arrow) functions
+    f = => yield this
+           ^^^^^^^^^^
+  '''
+
 test "CoffeeScript keywords cannot be used as unaliased names in import lists", ->
   assertErrorFormat """
     import { unless, baz as bar } from 'lib'
@@ -1193,6 +1215,37 @@ test "CoffeeScript keywords cannot be used as local names in import list aliases
     [stdin]:1:17: error: unexpected unless
     import { bar as unless, baz as bar } from 'lib'
                     ^^^^^^
+  '''
+
+test "function cannot contain both `await` and `yield`", ->
+  assertErrorFormat '''
+    f = () ->
+      yield 5
+      await a
+  ''', '''
+    [stdin]:3:3: error: function can't contain both yield and await
+      await a
+      ^^^^^^^
+  '''
+
+test "function cannot contain both `await` and `yield from`", ->
+  assertErrorFormat '''
+    f = () ->
+      yield from a
+      await b
+  ''', '''
+    [stdin]:3:3: error: function can't contain both yield and await
+      await b
+      ^^^^^^^
+  '''
+
+test "cannot have `await` outside a function", ->
+  assertErrorFormat '''
+    await 1
+  ''', '''
+    [stdin]:1:1: error: await can only occur inside functions
+    await 1
+    ^^^^^^^
   '''
 
 test "indexes are not supported in for-from loops", ->
@@ -1251,11 +1304,211 @@ test "tagged template literals must be called by an identifier", ->
     ^
   '''
 
+test "constructor functions can't be async", ->
+  assertErrorFormat 'class then constructor: -> await x', '''
+    [stdin]:1:12: error: Class constructor may not be async
+    class then constructor: -> await x
+               ^^^^^^^^^^^
+  '''
+
+test "constructor functions can't be generators", ->
+  assertErrorFormat 'class then constructor: -> yield', '''
+    [stdin]:1:12: error: Class constructor may not be a generator
+    class then constructor: -> yield
+               ^^^^^^^^^^^
+  '''
+
+test "non-derived constructors can't call super", ->
+  assertErrorFormat 'class then constructor: -> super()', '''
+    [stdin]:1:28: error: 'super' is only allowed in derived class constructors
+    class then constructor: -> super()
+                               ^^^^^^^
+  '''
+
+test "derived constructors can't reference `this` before calling super", ->
+  assertErrorFormat 'class extends A then constructor: -> @', '''
+    [stdin]:1:38: error: Can't reference 'this' before calling super in derived class constructors
+    class extends A then constructor: -> @
+                                         ^
+  '''
+
+test "derived constructors can't use @params without calling super", ->
+  assertErrorFormat 'class extends A then constructor: (@a) ->', '''
+    [stdin]:1:36: error: Can't use @params in derived class constructors without calling super
+    class extends A then constructor: (@a) ->
+                                       ^^
+  '''
+
+test "'super' is not allowed in constructor parameter defaults", ->
+  assertErrorFormat 'class extends A then constructor: (a = super()) ->', '''
+    [stdin]:1:40: error: 'super' is not allowed in constructor parameter defaults
+    class extends A then constructor: (a = super()) ->
+                                           ^^^^^^^
+  '''
+
 test "can't use pattern matches for loop indices", ->
   assertErrorFormat 'a for b, {c} in d', '''
     [stdin]:1:10: error: index cannot be a pattern matching expression
     a for b, {c} in d
              ^^^
+  '''
+
+test "bare 'super' is no longer allowed", ->
+  # TODO Improve this error message (it should at least be 'unexpected super')
+  assertErrorFormat 'class extends A then constructor: -> super', '''
+    [stdin]:1:35: error: unexpected ->
+    class extends A then constructor: -> super
+                                      ^^
+  '''
+
+test "soaked 'super' in constructor", ->
+  assertErrorFormat 'class extends A then constructor: -> super?()', '''
+    [stdin]:1:38: error: Unsupported reference to 'super'
+    class extends A then constructor: -> super?()
+                                         ^^^^^
+  '''
+
+test "new with 'super'", ->
+  assertErrorFormat 'class extends A then foo: -> new super()', '''
+    [stdin]:1:34: error: Unsupported reference to 'super'
+    class extends A then foo: -> new super()
+                                     ^^^^^
+  '''
+
+test "getter keyword in object", ->
+  assertErrorFormat '''
+    obj =
+      get foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      get foo: ->
+      ^^^
+  '''
+
+test "setter keyword in object", ->
+  assertErrorFormat '''
+    obj =
+      set foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      set foo: ->
+      ^^^
+  '''
+
+test "getter keyword in inline implicit object", ->
+  assertErrorFormat 'obj = get foo: ->', '''
+    [stdin]:1:7: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+    obj = get foo: ->
+          ^^^
+  '''
+
+test "setter keyword in inline implicit object", ->
+  assertErrorFormat 'obj = set foo: ->', '''
+    [stdin]:1:7: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+    obj = set foo: ->
+          ^^^
+  '''
+
+test "getter keyword in inline explicit object", ->
+  assertErrorFormat 'obj = {get foo: ->}', '''
+    [stdin]:1:8: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+    obj = {get foo: ->}
+           ^^^
+  '''
+
+test "setter keyword in inline explicit object", ->
+  assertErrorFormat 'obj = {set foo: ->}', '''
+    [stdin]:1:8: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+    obj = {set foo: ->}
+           ^^^
+  '''
+
+test "getter keyword in function", ->
+  assertErrorFormat '''
+    f = ->
+      get foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      get foo: ->
+      ^^^
+  '''
+
+test "setter keyword in function", ->
+  assertErrorFormat '''
+    f = ->
+      set foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      set foo: ->
+      ^^^
+  '''
+
+test "getter keyword in inline function", ->
+  assertErrorFormat 'f = -> get foo: ->', '''
+    [stdin]:1:8: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+    f = -> get foo: ->
+           ^^^
+  '''
+
+test "setter keyword in inline function", ->
+  assertErrorFormat 'f = -> set foo: ->', '''
+    [stdin]:1:8: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+    f = -> set foo: ->
+           ^^^
+  '''
+
+test "getter keyword in class", ->
+  assertErrorFormat '''
+    class A
+      get foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      get foo: ->
+      ^^^
+  '''
+
+test "setter keyword in class", ->
+  assertErrorFormat '''
+    class A
+      set foo: ->
+  ''', '''
+    [stdin]:2:3: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      set foo: ->
+      ^^^
+  '''
+
+test "getter keyword in inline class", ->
+  assertErrorFormat 'class A then get foo: ->', '''
+      [stdin]:1:14: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      class A then get foo: ->
+                   ^^^
+  '''
+
+test "setter keyword in inline class", ->
+  assertErrorFormat 'class A then set foo: ->', '''
+      [stdin]:1:14: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      class A then set foo: ->
+                   ^^^
+  '''
+
+test "getter keyword before static method", ->
+  assertErrorFormat '''
+    class A
+      get @foo = ->
+  ''', '''
+    [stdin]:2:3: error: 'get' cannot be used as a keyword, or as a function call without parentheses
+      get @foo = ->
+      ^^^
+  '''
+
+test "setter keyword before static method", ->
+  assertErrorFormat '''
+    class A
+      set @foo = ->
+  ''', '''
+    [stdin]:2:3: error: 'set' cannot be used as a keyword, or as a function call without parentheses
+      set @foo = ->
+      ^^^
   '''
 
 test "#4248: Unicode code point escapes", ->
@@ -1320,13 +1573,138 @@ test "#4248: Unicode code point escapes", ->
       \    ^\^^^^^^^^^^^^^
   '''
 
+test "CSX error: non-matching tag names", ->
+  assertErrorFormat '''
+    <div><span></div></span>
+  ''',
+  '''
+    [stdin]:1:7: error: expected corresponding CSX closing tag for span
+    <div><span></div></span>
+          ^^^^
+  '''
+
+test "CSX error: bare expressions not allowed", ->
+  assertErrorFormat '''
+    <div x=3 />
+  ''',
+  '''
+    [stdin]:1:8: error: expected wrapped or quoted JSX attribute
+    <div x=3 />
+           ^
+  '''
+
+test "CSX error: unescaped opening tag angle bracket disallowed", ->
+  assertErrorFormat '''
+    <Person><<</Person>
+  ''',
+  '''
+    [stdin]:1:9: error: unexpected <<
+    <Person><<</Person>
+            ^^
+  '''
+
+test "CSX error: ambiguous tag-like expression", ->
+  assertErrorFormat '''
+    x = a <b > c
+  ''',
+  '''
+    [stdin]:1:10: error: missing </
+    x = a <b > c
+             ^
+  '''
+
+test 'CSX error: invalid attributes', ->
+  assertErrorFormat '''
+    <div a="b" {props} />
+  ''', '''
+    [stdin]:1:12: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    <div a="b" {props} />
+               ^^^^^^^
+  '''
+  assertErrorFormat '''
+    <div a={b} {a:{b}} />
+  ''', '''
+    [stdin]:1:12: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    <div a={b} {a:{b}} />
+               ^^^^^^^
+  '''
+  assertErrorFormat '''
+    <div {"#{a}"} />
+  ''', '''
+    [stdin]:1:6: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    <div {"#{a}"} />
+         ^^^^^^^^
+  '''
+  assertErrorFormat '''
+    <div props... />
+  ''', '''
+    [stdin]:1:11: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    <div props... />
+              ^^^
+  '''
+  assertErrorFormat '''
+    <div {a:"b", props..., c:d()} />
+  ''', '''
+    [stdin]:1:6: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    <div {a:"b", props..., c:d()} />
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  '''
+  assertErrorFormat '''
+    <div {props..., a, b} />
+  ''', '''
+    [stdin]:1:6: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    <div {props..., a, b} />
+         ^^^^^^^^^^^^^^^^
+  '''
+
+test 'Bound method called as callback before binding throws runtime error', ->
+  class Base
+    constructor: ->
+      f = @derivedBound
+      try
+        f()
+        ok no
+      catch e
+        eq e.message, 'Bound instance method accessed before binding'
+
+  class Derived extends Base
+    derivedBound: =>
+      ok no
+  d = new Derived
+
+test "#3845/#3446: chain after function glyph (but not inline)", ->
+  assertErrorFormat '''
+    a -> .b
+  ''',
+  '''
+    [stdin]:1:6: error: unexpected .
+    a -> .b
+         ^
+  '''
+
+test "#3906: error for unusual indentation", ->
+  assertErrorFormat '''
+    a
+      c
+     .d
+
+    e(
+     f)
+
+    g
+  ''', '''
+    [stdin]:2:1: error: unexpected indentation
+      c
+    ^^
+  '''
+
 test "#4283: error message for implicit call", ->
   assertErrorFormat '''
-    console.log {search, users, contacts users_to_display}
+    (a, b c) ->
   ''', '''
-    [stdin]:1:29: error: unexpected implicit function call
-    console.log {search, users, contacts users_to_display}
-                                ^^^^^^^^
+    [stdin]:1:5: error: unexpected implicit function call
+    (a, b c) ->
+        ^
   '''
 
 test "#3199: error message for call indented non-object", ->
@@ -1369,4 +1747,33 @@ test "#3199: error message for return indented comprehension", ->
     [stdin]:2:3: error: unexpected identifier
       x for x in [1, 2, 3]
       ^
+  '''
+
+test "#3199: error message for throw indented non-object", ->
+  assertErrorFormat '''
+    throw
+      1
+  ''', '''
+    [stdin]:2:3: error: unexpected number
+      1
+      ^
+  '''
+
+test "#3199: error message for throw indented comprehension", ->
+  assertErrorFormat '''
+    throw
+      x for x in [1, 2, 3]
+  ''', '''
+    [stdin]:2:3: error: unexpected identifier
+      x for x in [1, 2, 3]
+      ^
+  '''
+
+test "#3098: suppressed newline should be unsuppressed by semicolon", ->
+  assertErrorFormat '''
+    a = ; 5
+  ''', '''
+    [stdin]:1:5: error: unexpected ;
+    a = ; 5
+        ^
   '''

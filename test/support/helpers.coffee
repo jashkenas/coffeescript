@@ -1,4 +1,4 @@
-# See http://wiki.ecmascript.org/doku.php?id=harmony:egal
+# See [http://wiki.ecmascript.org/doku.php?id=harmony:egal](http://wiki.ecmascript.org/doku.php?id=harmony:egal).
 egal = (a, b) ->
   if a is b
     a isnt 0 or 1/a is 1/b
@@ -13,9 +13,28 @@ arrayEgal = (a, b) ->
     return no for el, idx in a when not arrayEgal el, b[idx]
     yes
 
-exports.eq      = (a, b, msg) -> ok egal(a, b), msg or "Expected #{a} to equal #{b}"
-exports.arrayEq = (a, b, msg) -> ok arrayEgal(a,b), msg or "Expected #{a} to deep equal #{b}"
+diffOutput = (expectedOutput, actualOutput) ->
+  expectedOutputLines = expectedOutput.split '\n'
+  actualOutputLines = actualOutput.split '\n'
+  for line, i in actualOutputLines
+    if line isnt expectedOutputLines[i]
+      actualOutputLines[i] = "#{yellow}#{line}#{reset}"
+  """Expected generated JavaScript to be:
+  #{reset}#{expectedOutput}#{red}
+    but instead it was:
+  #{reset}#{actualOutputLines.join '\n'}#{red}"""
 
-exports.toJS = (str) ->
-  CoffeeScript.compile str, bare: yes
-  .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace
+exports.eq = (a, b, msg) ->
+  ok egal(a, b), msg or
+  "Expected #{reset}#{a}#{red} to equal #{reset}#{b}#{red}"
+
+exports.arrayEq = (a, b, msg) ->
+  ok arrayEgal(a, b), msg or
+  "Expected #{reset}#{a}#{red} to deep equal #{reset}#{b}#{red}"
+
+exports.eqJS = (input, expectedOutput, msg) ->
+  actualOutput = CoffeeScript.compile input, bare: yes
+  .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace.
+  ok egal(expectedOutput, actualOutput), msg or diffOutput expectedOutput, actualOutput
+
+exports.isWindows = -> process.platform is 'win32'

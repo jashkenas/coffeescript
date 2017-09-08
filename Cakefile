@@ -1,17 +1,19 @@
 fs                        = require 'fs'
+os                        = require 'os'
 path                      = require 'path'
 _                         = require 'underscore'
 { spawn, exec, execSync } = require 'child_process'
-CoffeeScript              = require './lib/coffee-script'
-helpers                   = require './lib/coffee-script/helpers'
+CoffeeScript              = require './lib/coffeescript'
+helpers                   = require './lib/coffeescript/helpers'
 
 # ANSI Terminal Colors.
-bold = red = green = reset = ''
+bold = red = green = yellow = reset = ''
 unless process.env.NODE_DISABLE_COLORS
-  bold  = '\x1B[0;1m'
-  red   = '\x1B[0;31m'
-  green = '\x1B[0;32m'
-  reset = '\x1B[0m'
+  bold   = '\x1B[0;1m'
+  red    = '\x1B[0;31m'
+  green  = '\x1B[0;32m'
+  yellow = '\x1B[0;33m'
+  reset  = '\x1B[0m'
 
 # Built file header.
 header = """
@@ -51,27 +53,42 @@ run = (args, callback) ->
 buildParser = ->
   helpers.extend global, require 'util'
   require 'jison'
-  parser = require('./lib/coffee-script/grammar').parser.generate()
-  # Patch Jison’s output, until https://github.com/zaach/jison/pull/339 is accepted,
-  # to ensure that require('fs') is only called where it exists.
-  parser = parser.replace "var source = require('fs')", """
-      var source = '';
-          var fs = require('fs');
-          if (typeof fs !== 'undefined' && fs !== null)
-              source = fs"""
-  fs.writeFileSync 'lib/coffee-script/parser.js', parser
+  # We don't need `moduleMain`, since the parser is unlikely to be run standalone.
+  parser = require('./lib/coffeescript/grammar').parser.generate(moduleMain: ->)
+  fs.writeFileSync 'lib/coffeescript/parser.js', parser
 
 buildExceptParser = (callback) ->
   files = fs.readdirSync 'src'
   files = ('src/' + file for file in files when file.match(/\.(lit)?coffee$/))
-  run ['-c', '-o', 'lib/coffee-script'].concat(files), callback
+  run ['-c', '-o', 'lib/coffeescript'].concat(files), callback
 
 build = (callback) ->
   buildParser()
   buildExceptParser callback
 
+transpile = (code) ->
+  babel = require 'babel-core'
+  presets = []
+  # Exclude the `modules` plugin in order to not break the `}(this));`
+  # at the end of the above code block.
+  presets.push ['env', {modules: no}] unless process.env.TRANSFORM is 'false'
+  babelOptions =
+    presets: presets
+    sourceType: 'script'
+  { code } = babel.transform code, babelOptions unless presets.length is 0
+  # Running Babel twice due to https://github.com/babel/babili/issues/614.
+  # Once that issue is fixed, move the `babili` preset back up into the
+  # `presets` array and run Babel once with both presets together.
+  presets = if process.env.MINIFY is 'false' then [] else ['babili']
+  babelOptions =
+    compact: process.env.MINIFY isnt 'false'
+    presets: presets
+    sourceType: 'script'
+  { code } = babel.transform code, babelOptions unless presets.length is 0
+  code
+
 testBuiltCode = (watch = no) ->
-  csPath = './lib/coffee-script'
+  csPath = './lib/coffeescript'
   csDir  = path.dirname require.resolve csPath
 
   for mod of require.cache when csDir is mod[0 ... csDir.length]
@@ -122,11 +139,11 @@ task 'build:browser', 'merge the built scripts into a single file for use in a b
     return #{fs.readFileSync "./package.json"};
   })();
   """
-  for name in ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'nodes', 'sourcemap', 'coffee-script', 'browser']
+  for name in ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'nodes', 'sourcemap', 'coffeescript', 'browser']
     code += """
       require['./#{name}'] = (function() {
         var exports = {}, module = {exports: exports};
-        #{fs.readFileSync "lib/coffee-script/#{name}.js"}
+        #{fs.readFileSync "lib/coffeescript/#{name}.js"}
         return module.exports;
       })();
     """
@@ -135,7 +152,7 @@ task 'build:browser', 'merge the built scripts into a single file for use in a b
       var CoffeeScript = function() {
         function require(path){ return require[path]; }
         #{code}
-        return require['./coffee-script'];
+        return require['./browser'];
       }();
 
       if (typeof define === 'function' && define.amd) {
@@ -145,15 +162,10 @@ task 'build:browser', 'merge the built scripts into a single file for use in a b
       }
     }(this));
   """
-  unless process.env.MINIFY is 'false'
-    {compiledCode: code} = require('google-closure-compiler-js').compile
-      jsCode: [
-        src: code
-        languageOut: if majorVersion is 1 then 'ES5' else 'ES6'
-      ]
+  code = transpile code
   outputFolder = "docs/v#{majorVersion}/browser-compiler"
   fs.mkdirSync outputFolder unless fs.existsSync outputFolder
-  fs.writeFileSync "#{outputFolder}/coffee-script.js", header + '\n' + code
+  fs.writeFileSync "#{outputFolder}/coffeescript.js", header + '\n' + code
 
 task 'build:browser:full', 'merge the built scripts into a single file for use in a browser, and test it', ->
   invoke 'build:browser'
@@ -194,9 +206,19 @@ buildDocs = (watch = no) ->
   codeFor = require "./documentation/v#{majorVersion}/code.coffee"
 
   htmlFor = ->
+    hljs = require 'highlight.js'
+    hljs.configure classPrefix: ''
     markdownRenderer = require('markdown-it')
       html: yes
       typographer: yes
+      highlight: (str, lang) ->
+        # From https://github.com/markdown-it/markdown-it#syntax-highlighting
+        if lang and hljs.getLanguage(lang)
+          try
+            return hljs.highlight(lang, str).value
+          catch ex
+        return '' # No syntax highlighting
+
 
     # Add some custom overrides to Markdown-It’s rendering, per
     # https://github.com/markdown-it/markdown-it/blob/master/docs/architecture.md#renderer
@@ -218,9 +240,17 @@ buildDocs = (watch = no) ->
         codeFor: codeFor()
         releaseHeader: releaseHeader
 
+  includeScript = ->
+    (file) ->
+      file = "#{versionedSourceFolder}/#{file}" unless '/' in file
+      code = fs.readFileSync file, 'utf-8'
+      code = CoffeeScript.compile code
+      code = transpile code
+      code
+
   include = ->
     (file) ->
-      file = "#{versionedSourceFolder}/#{file}" if file.indexOf('/') is -1
+      file = "#{versionedSourceFolder}/#{file}" unless '/' in file
       output = fs.readFileSync file, 'utf-8'
       if /\.html$/.test(file)
         render = _.template output
@@ -231,6 +261,7 @@ buildDocs = (watch = no) ->
           htmlFor: htmlFor()
           codeFor: codeFor()
           include: include()
+          includeScript: includeScript()
       output
 
   # Task
@@ -323,15 +354,19 @@ task 'doc:source:watch', 'watch and continually rebuild the annotated source doc
 
 
 task 'release', 'build and test the CoffeeScript source, and build the documentation', ->
-  invoke 'build:full'
-  invoke 'build:browser:full'
-  invoke 'doc:site'
-  invoke 'doc:test'
-  invoke 'doc:source'
+  execSync '''
+    cake build:full
+    cake build:browser
+    cake test:browser
+    cake test:integrations
+    cake doc:site
+    cake doc:test
+    cake doc:source''', stdio: 'inherit'
+
 
 task 'bench', 'quick benchmark of compilation time', ->
-  {Rewriter} = require './lib/coffee-script/rewriter'
-  sources = ['coffee-script', 'grammar', 'helpers', 'lexer', 'nodes', 'rewriter']
+  {Rewriter} = require './lib/coffeescript/rewriter'
+  sources = ['coffeescript', 'grammar', 'helpers', 'lexer', 'nodes', 'rewriter']
   coffee  = sources.map((name) -> fs.readFileSync "src/#{name}.coffee").join '\n'
   litcoffee = fs.readFileSync("src/scope.litcoffee").toString()
   fmt    = (ms) -> " #{bold}#{ "   #{ms}".slice -4 }#{reset} ms"
@@ -353,30 +388,55 @@ task 'bench', 'quick benchmark of compilation time', ->
 
 # Run the CoffeeScript test suite.
 runTests = (CoffeeScript) ->
-  CoffeeScript.register()
-  startTime   = Date.now()
-  currentFile = null
-  passedTests = 0
-  failures    = []
+  CoffeeScript.register() unless global.testingBrowser
+
+  # These are attached to `global` so that they’re accessible from within
+  # `test/async.coffee`, which has an async-capable version of
+  # `global.test`.
+  global.currentFile = null
+  global.passedTests = 0
+  global.failures    = []
 
   global[name] = func for name, func of require 'assert'
 
   # Convenience aliases.
   global.CoffeeScript = CoffeeScript
-  global.Repl = require './lib/coffee-script/repl'
+  global.Repl   = require './lib/coffeescript/repl'
+  global.bold   = bold
+  global.red    = red
+  global.green  = green
+  global.yellow = yellow
+  global.reset  = reset
+
+  asyncTests = []
+  onFail = (description, fn, err) ->
+    failures.push
+      filename: global.currentFile
+      error: err
+      description: description
+      source: fn.toString() if fn.toString?
 
   # Our test helper function for delimiting different test cases.
   global.test = (description, fn) ->
     try
       fn.test = {description, currentFile}
-      fn.call(fn)
-      ++passedTests
-    catch e
-      failures.push
-        filename: currentFile
-        error: e
-        description: description if description?
-        source: fn.toString() if fn.toString?
+      result = fn.call(fn)
+      if result instanceof Promise # An async test.
+        asyncTests.push result
+        result.then ->
+          passedTests++
+        .catch (err) ->
+          onFail description, fn, err
+      else
+        passedTests++
+    catch err
+      onFail description, fn, err
+
+  global.supportsAsync = try
+      new Function('async () => {}')()
+      yes
+    catch
+      no
 
   helpers.extend global, require './test/support/helpers'
 
@@ -397,7 +457,10 @@ runTests = (CoffeeScript) ->
 
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
+  unless global.supportsAsync # Except for async tests, if async isn’t supported.
+    files = files.filter (filename) -> filename isnt 'async.coffee'
 
+  startTime = Date.now()
   for file in files when helpers.isCoffee file
     literate = helpers.isLiterate file
     currentFile = filename = path.join 'test', file
@@ -406,18 +469,45 @@ runTests = (CoffeeScript) ->
       CoffeeScript.run code.toString(), {filename, literate}
     catch error
       failures.push {filename, error}
-  return !failures.length
+
+  Promise.all(asyncTests).then ->
+    Promise.reject() if failures.length isnt 0
 
 
 task 'test', 'run the CoffeeScript language test suite', ->
-  testResults = runTests CoffeeScript
-  process.exit 1 unless testResults
+  runTests(CoffeeScript).catch -> process.exit 1
 
 
 task 'test:browser', 'run the test suite against the merged browser script', ->
-  source = fs.readFileSync "docs/v#{majorVersion}/browser-compiler/coffee-script.js", 'utf-8'
+  source = fs.readFileSync "docs/v#{majorVersion}/browser-compiler/coffeescript.js", 'utf-8'
   result = {}
   global.testingBrowser = yes
   (-> eval source).call result
-  testResults = runTests result.CoffeeScript
+  runTests(CoffeeScript).catch -> process.exit 1
+
+
+task 'test:integrations', 'test the module integrated with other libraries and environments', ->
+  # Tools like Webpack and Browserify generate builds intended for a browser
+  # environment where Node modules are not available. We want to ensure that
+  # the CoffeeScript module as presented by the `browser` key in `package.json`
+  # can be built by such tools; if such a build succeeds, it verifies that no
+  # Node modules are required as part of the compiler (as opposed to the tests)
+  # and that therefore the compiler will run in a browser environment.
+  tmpdir = os.tmpdir()
+  try
+    buildLog = execSync "./node_modules/webpack/bin/webpack.js
+      --entry=./
+      --output-library=CoffeeScript
+      --output-library-target=commonjs2
+      --output-path=#{tmpdir}
+      --output-filename=coffeescript.js"
+  catch exception
+    console.error buildLog.toString()
+    throw exception
+
+  builtCompiler = path.join tmpdir, 'coffeescript.js'
+  CoffeeScript = require builtCompiler
+  global.testingBrowser = yes
+  testResults = runTests CoffeeScript
+  fs.unlinkSync builtCompiler
   process.exit 1 unless testResults

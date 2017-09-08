@@ -89,10 +89,8 @@ test "try/catch with empty catch as last statement in a function body", ->
     catch err
   eq nonce, fn()
 
-
-# Catch leads to broken scoping: #1595
-
-test "try/catch with a reused variable name.", ->
+test "#1595: try/catch with a reused variable name", ->
+  # `catch` shouldn’t lead to broken scoping.
   do ->
     try
       inner = 5
@@ -100,19 +98,13 @@ test "try/catch with a reused variable name.", ->
       # nothing
   eq typeof inner, 'undefined'
 
-
-# Allowed to destructure exceptions: #2580
-
-test "try/catch with destructuring the exception object", ->
-
+test "#2580: try/catch with destructuring the exception object", ->
   result = try
     missing.object
   catch {message}
     message
 
   eq message, 'missing is not defined'
-
-
 
 test "Try catch finally as implicit arguments", ->
   first = (x) -> x
@@ -130,8 +122,8 @@ test "Try catch finally as implicit arguments", ->
   catch e
   eq bar, yes
 
-# Catch Should Not Require Param: #2900
-test "parameter-less catch clause", ->
+test "#2900: parameter-less catch clause", ->
+  # `catch` should not require a parameter.
   try
     throw new Error 'failed'
   catch
@@ -140,3 +132,53 @@ test "parameter-less catch clause", ->
   try throw new Error 'failed' catch finally ok true
 
   ok try throw new Error 'failed' catch then true
+
+test "#3709: throwing an if statement", ->
+  # `throw if` should return a closure around the `if` block, so that the
+  # output is valid JavaScript.
+  try
+    throw if no
+        new Error 'drat!'
+      else
+        new Error 'no escape!'
+  catch err
+    eq err.message, 'no escape!'
+
+  try
+    throw if yes then new Error 'huh?' else null
+  catch err
+    eq err.message, 'huh?'
+
+test "#3709: throwing a switch statement", ->
+  i = 3
+  try
+    throw switch i
+      when 2
+        new Error 'not this one'
+      when 3
+        new Error 'oh no!'
+  catch err
+    eq err.message, 'oh no!'
+
+test "#3709: throwing a for loop", ->
+  # `throw for` should return a closure around the `for` block, so that the
+  # output is valid JavaScript.
+  try
+    throw for i in [0..3]
+      i * 2
+  catch err
+    arrayEq err, [0, 2, 4, 6]
+
+test "#3709: throwing a while loop", ->
+  i = 0
+  try
+    throw while i < 3
+      i++
+  catch err
+    eq i, 3
+
+test "#3789: throwing a throw", ->
+  try
+    throw throw throw new Error 'whoa!'
+  catch err
+    eq err.message, 'whoa!'

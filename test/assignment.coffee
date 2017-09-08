@@ -142,7 +142,8 @@ test "#1192: assignment starting with object literals", ->
 # Destructuring Assignment
 
 test "empty destructuring assignment", ->
-  {} = [] = undefined
+  {} = {}
+  [] = []
 
 test "chained destructuring assignments", ->
   [a] = {0: b} = {'0': c} = [nonce={}]
@@ -180,6 +181,12 @@ test "#713: destructuring assignment should return right-hand-side value", ->
 test "destructuring assignment with splats", ->
   a = {}; b = {}; c = {}; d = {}; e = {}
   [x,y...,z] = [a,b,c,d,e]
+  eq a, x
+  arrayEq [b,c,d], y
+  eq e, z
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  [x,y ...,z] = [a,b,c,d,e]
   eq a, x
   arrayEq [b,c,d], y
   eq e, z
@@ -228,11 +235,321 @@ test "destructuring assignment with objects and splats", ->
   eq a, y
   arrayEq [b,c,d], z
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  {a: b: [y, z ...]} = obj
+  eq a, y
+  arrayEq [b,c,d], z
+
 test "destructuring assignment against an expression", ->
   a={}; b={}
   [y, z] = if true then [a, b] else [b, a]
   eq a, y
   eq b, z
+
+test "destructuring assignment with objects and splats: ES2015", ->
+  obj = {a: 1, b: 2, c: 3, d: 4, e: 5}
+  throws (-> CoffeeScript.compile "{a, r..., s...} = x"), null, "multiple rest elements are disallowed"
+  throws (-> CoffeeScript.compile "{a, r..., s..., b} = x"), null, "multiple rest elements are disallowed"
+  prop = "b"
+  {a, b, r...} = obj
+  eq a, 1
+  eq b, 2
+  eq r.e, obj.e
+  eq r.a, undefined
+  {d, c: x, r...} = obj
+  eq x, 3
+  eq d, 4
+  eq r.c, undefined
+  eq r.b, 2
+  {a, 'b': z, g = 9, r...} = obj
+  eq g, 9
+  eq z, 2
+  eq r.b, undefined
+
+test "destructuring assignment with splats and default values", ->
+  obj = {}
+  c = {b: 1}
+  { a: {b} = c, d...} = obj
+
+  eq b, 1
+  deepEqual d, {}
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  {
+    a: {b} = c
+    d ...
+  } = obj
+
+  eq b, 1
+  deepEqual d, {}
+
+test "destructuring assignment with splat with default value", ->
+  obj = {}
+  c = {val: 1}
+  { a: {b...} = c } = obj
+
+  deepEqual b, val: 1
+
+test "destructuring assignment with multiple splats in different objects", ->
+  obj = { a: {val: 1}, b: {val: 2} }
+  { a: {a...}, b: {b...} } = obj
+  deepEqual a, val: 1
+  deepEqual b, val: 2
+
+  o = {
+    props: {
+      p: {
+        n: 1
+        m: 5
+      }
+      s: 6
+    }
+  }
+  {p: {m, q..., t = {obj...}}, r...} = o.props
+  eq m, o.props.p.m
+  deepEqual r, s: 6
+  deepEqual q, n: 1
+  deepEqual t, obj
+
+  @props = o.props
+  {p: {m}, r...} = @props
+  eq m, @props.p.m
+  deepEqual r, s: 6
+
+  {p: {m}, r...} = {o.props..., p:{m:9}}
+  eq m, 9
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  {
+    a: {
+      a ...
+    }
+    b: {
+      b ...
+    }
+  } = obj
+  deepEqual a, val: 1
+  deepEqual b, val: 2
+
+test "destructuring assignment with dynamic keys and splats", ->
+  i = 0
+  foo = -> ++i
+
+  obj = {1: 'a', 2: 'b'}
+  { "#{foo()}": a, b... } = obj
+
+  eq a, 'a'
+  eq i, 1
+  deepEqual b, 2: 'b'
+
+# Tests from https://babeljs.io/docs/plugins/transform-object-rest-spread/.
+test "destructuring assignment with objects and splats: Babel tests", ->
+  # What Babel calls “rest properties:”
+  { x, y, z... } = { x: 1, y: 2, a: 3, b: 4 }
+  eq x, 1
+  eq y, 2
+  deepEqual z, { a: 3, b: 4 }
+
+  # What Babel calls “spread properties:”
+  n = { x, y, z... }
+  deepEqual n, { x: 1, y: 2, a: 3, b: 4 }
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  { x, y, z ... } = { x: 1, y: 2, a: 3, b: 4 }
+  eq x, 1
+  eq y, 2
+  deepEqual z, { a: 3, b: 4 }
+
+  n = { x, y, z ... }
+  deepEqual n, { x: 1, y: 2, a: 3, b: 4 }
+
+test "deep destructuring assignment with objects: ES2015", ->
+  a1={}; b1={}; c1={}; d1={}
+  obj = {
+    a: a1
+    b: {
+      'c': {
+        d: {
+          b1
+          e: c1
+          f: d1
+        }
+      }
+    }
+    b2: {b1, c1}
+  }
+  {a: w, b: {c: {d: {b1: bb, r1...}}}, r2...} = obj
+  eq r1.e, c1
+  eq r2.b, undefined
+  eq bb, b1
+  eq r2.b2, obj.b2
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  {a: w, b: {c: {d: {b1: bb, r1 ...}}}, r2 ...} = obj
+  eq r1.e, c1
+  eq r2.b, undefined
+  eq bb, b1
+  eq r2.b2, obj.b2
+
+test "deep destructuring assignment with defaults: ES2015", ->
+  obj =
+    b: { c: 1, baz: 'qux' }
+    foo: 'bar'
+  j =
+    f: 'world'
+  i =
+    some: 'prop'
+  {
+    a...
+    b: { c, d... }
+    e: {
+      f: hello
+      g: { h... } = i
+    } = j
+  } = obj
+
+  deepEqual a, foo: 'bar'
+  eq c, 1
+  deepEqual d, baz: 'qux'
+  eq hello, 'world'
+  deepEqual h, some: 'prop'
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  {
+    a ...
+    b: {
+      c,
+      d ...
+    }
+    e: {
+      f: hello
+      g: {
+        h ...
+      } = i
+    } = j
+  } = obj
+
+  deepEqual a, foo: 'bar'
+  eq c, 1
+  deepEqual d, baz: 'qux'
+  eq hello, 'world'
+  deepEqual h, some: 'prop'
+
+test "object spread properties: ES2015", ->
+  obj = {a: 1, b: 2, c: 3, d: 4, e: 5}
+  obj2 = {obj..., c:9}
+  eq obj2.c, 9
+  eq obj.a, obj2.a
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  obj2 = {
+    obj ...
+    c:9
+  }
+  eq obj2.c, 9
+  eq obj.a, obj2.a
+
+  obj2 = {obj..., a: 8, c: 9, obj...}
+  eq obj2.c, 3
+  eq obj.a, obj2.a
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  obj2 = {
+    obj ...
+    a: 8
+    c: 9
+    obj ...
+  }
+  eq obj2.c, 3
+  eq obj.a, obj2.a
+
+  obj3 = {obj..., b: 7, g: {obj2..., c: 1}}
+  eq obj3.g.c, 1
+  eq obj3.b, 7
+  deepEqual obj3.g, {obj..., c: 1}
+
+  (({a, b, r...}) ->
+    eq 1, a
+    deepEqual r, {c: 3, d: 44, e: 55}
+  ) {obj2..., d: 44, e: 55}
+
+  obj = {a: 1, b: 2, c: {d: 3, e: 4, f: {g: 5}}}
+  obj4 = {a: 10, obj.c...}
+  eq obj4.a, 10
+  eq obj4.d, 3
+  eq obj4.f.g, 5
+  deepEqual obj4.f, obj.c.f
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  (({
+    a
+    b
+    r ...
+    }) ->
+    eq 1, a
+    deepEqual r, {c: 3, d: 44, e: 55}
+  ) {
+    obj2 ...
+    d: 44
+    e: 55
+  }
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  obj4 = {
+    a: 10
+    obj.c ...
+  }
+  eq obj4.a, 10
+  eq obj4.d, 3
+  eq obj4.f.g, 5
+  deepEqual obj4.f, obj.c.f
+
+  obj5 = {obj..., ((k) -> {b: k})(99)...}
+  eq obj5.b, 99
+  deepEqual obj5.c, obj.c
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  obj5 = {
+    obj ...
+    ((k) -> {b: k})(99) ...
+  }
+  eq obj5.b, 99
+  deepEqual obj5.c, obj.c
+
+  fn = -> {c: {d: 33, e: 44, f: {g: 55}}}
+  obj6 = {obj..., fn()...}
+  eq obj6.c.d, 33
+  deepEqual obj6.c, {d: 33, e: 44, f: {g: 55}}
+
+  obj7 = {obj..., fn()..., {c: {d: 55, e: 66, f: {77}}}...}
+  eq obj7.c.d, 55
+  deepEqual obj6.c, {d: 33, e: 44, f: {g: 55}}
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  obj7 = {
+    obj ...
+    fn() ...
+    {c: {d: 55, e: 66, f: {77}}} ...
+  }
+  eq obj7.c.d, 55
+  deepEqual obj6.c, {d: 33, e: 44, f: {g: 55}}
+
+  obj =
+    a:
+      b:
+        c:
+          d:
+            e: {}
+  obj9 = {a:1, obj.a.b.c..., g:3}
+  deepEqual obj9.d, {e: {}}
+
+  a = "a"
+  c = "c"
+  obj9 = {a:1, obj[a].b[c]..., g:3}
+  deepEqual obj9.d, {e: {}}
+
+  obj9 = {a:1, obj.a["b"].c["d"]..., g:3}
+  deepEqual obj9["e"], {}
 
 test "bracket insertion when necessary", ->
   [a] = [0] ? [1]
@@ -305,7 +622,7 @@ test "simple array destructuring defaults", ->
   [a = 2] = [undefined]
   eq 2, a
   [a = 3] = [null]
-  eq 3, a
+  eq null, a # Breaking change in CS2: per ES2015, default values are applied for `undefined` but not for `null`.
   [a = 4] = [0]
   eq 0, a
   arr = [a = 5]
@@ -318,7 +635,7 @@ test "simple object destructuring defaults", ->
   {b = 2} = {b: undefined}
   eq b, 2
   {b = 3} = {b: null}
-  eq b, 3
+  eq b, null # Breaking change in CS2: per ES2015, default values are applied for `undefined` but not for `null`.
   {b = 4} = {b: 0}
   eq b, 0
 
@@ -327,17 +644,17 @@ test "simple object destructuring defaults", ->
   {b: c = 2} = {b: undefined}
   eq c, 2
   {b: c = 3} = {b: null}
-  eq c, 3
+  eq c, null # Breaking change in CS2: per ES2015, default values are applied for `undefined` but not for `null`.
   {b: c = 4} = {b: 0}
   eq c, 0
 
 test "multiple array destructuring defaults", ->
-  [a = 1, b = 2, c] = [null, 12, 13]
+  [a = 1, b = 2, c] = [undefined, 12, 13]
   eq a, 1
   eq b, 12
   eq c, 13
-  [a, b = 2, c = 3] = [null, 12, 13]
-  eq a, null
+  [a, b = 2, c = 3] = [undefined, 12, 13]
+  eq a, undefined
   eq b, 12
   eq c, 13
   [a = 1, b, c = 3] = [11, 12]
@@ -368,7 +685,7 @@ test "destructuring assignment with context (@) properties and defaults", ->
   a={}; b={}; c={}; d={}; e={}
   obj =
     fn: () ->
-      local = [a, {b, c: null}, d]
+      local = [a, {b, c: undefined}, d]
       [@a, {b: @b = b, @c = c}, @d, @e = e] = local
   eq undefined, obj[key] for key in ['a','b','c','d','e']
   obj.fn()
@@ -387,7 +704,7 @@ test "destructuring assignment with defaults single evaluation", ->
   [a = fn()] = [10]
   eq 10, a
   eq 1, callCount
-  {a = fn(), b: c = fn()} = {a: 20, b: null}
+  {a = fn(), b: c = fn()} = {a: 20, b: undefined}
   eq 20, a
   eq c, 1
   eq callCount, 2
@@ -449,7 +766,7 @@ test "#1591, #1101: splatted expressions in destructuring assignment must be ass
 
 test "#1643: splatted accesses in destructuring assignments should not be declared as variables", ->
   nonce = {}
-  accesses = ['o.a', 'o["a"]', '(o.a)', '(o.a).a', '@o.a', 'C::a', 'C::', 'f().a', 'o?.a', 'o?.a.b', 'f?().a']
+  accesses = ['o.a', 'o["a"]', '(o.a)', '(o.a).a', '@o.a', 'C::a', 'f().a', 'o?.a', 'o?.a.b', 'f?().a']
   for access in accesses
     for i,j in [1,2,3] #position can matter
       code =
@@ -570,3 +887,43 @@ test "Assignment to variables similar to helper functions", ->
 
   indexOf = [1, 2, 3]
   ok 2 in indexOf
+
+test "#4566: destructuring with nested default values", ->
+  {a: {b = 1}} = a: {}
+  eq 1, b
+
+  {c: {d} = {}} = c: d: 3
+  eq 3, d
+
+  {e: {f = 5} = {}} = {}
+  eq 5, f
+
+test "#4674: _extends utility for object spreads 1", ->
+  eqJS(
+    "{a, b..., c..., d}"
+    """
+      var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+      _extends({a}, b, c, {d});
+    """
+  )
+
+test "#4674: _extends utility for object spreads 2", ->
+  _extends = -> 3
+  a = b: 1
+  c = d: 2
+  e = {a..., c...}
+  eq e.b, 1
+  eq e.d, 2
+
+test "#4673: complex destructured object spread variables", ->
+  b = c: 1
+  {{a...}...} = b
+  eq a.c, 1
+
+  d = {}
+  {d.e...} = f: 1
+  eq d.e.f, 1
+
+  {{g}...} = g: 1
+  eq g, 1

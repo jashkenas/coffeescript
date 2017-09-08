@@ -87,6 +87,9 @@ doesNotThrow -> CoffeeScript.compile """
   a?[b..c]
   """
 
+test "#1768: space between `::` and index is ignored", ->
+  eq 'function', typeof String:: ['toString']
+
 # Array Literals
 
 test "indented array literals don't trigger whitespace rewriting", ->
@@ -299,9 +302,149 @@ test "#1275: allow indentation before closing brackets", ->
    )
   eq 1, a
 
-test "#3199: return multiline implicit object", ->
+test "don’t allow mixing of spaces and tabs for indentation", ->
+  try
+    CoffeeScript.compile '''
+      new Layer
+       x: 0
+      	y: 1
+    '''
+    ok no
+  catch e
+    eq 'indentation mismatch', e.message
+
+test "each code block that starts at indentation 0 can use a different style", ->
+  doesNotThrow ->
+    CoffeeScript.compile '''
+      new Layer
+       x: 0
+       y: 1
+      new Layer
+      	x: 0
+      	y: 1
+    '''
+
+test "tabs and spaces cannot be mixed for indentation", ->
+  try
+    CoffeeScript.compile '''
+      new Layer
+      	 x: 0
+      	 y: 1
+    '''
+    ok no
+  catch e
+    eq 'mixed indentation', e.message
+
+test "#4487: Handle unusual outdentation", ->
+  a =
+    switch 1
+      when 2
+          no
+         when 3 then no
+      when 1 then yes
+  eq yes, a
+
+  b = do ->
+    if no
+      if no
+            1
+       2
+      3
+  eq b, undefined
+
+test "#3906: handle further indentation inside indented chain", ->
+  eq 1, CoffeeScript.eval '''
+    z = b: -> d: 2
+    e = ->
+    f = 3
+
+    z
+        .b ->
+            c
+        .d
+
+    e(
+        f
+    )
+
+    1
+  '''
+
+  eq 1, CoffeeScript.eval '''
+    z = -> b: -> e: ->
+
+    z()
+        .b
+            c: 'd'
+        .e()
+
+    f = [
+        'g'
+    ]
+
+    1
+  '''
+
+  eq 1, CoffeeScript.eval '''
+    z = -> c: -> c: ->
+
+    z('b')
+      .c 'a',
+        {b: 'a'}
+      .c()
+    z(
+      'b'
+    )
+    1
+  '''
+
+test "#3199: throw multiline implicit object", ->
+  x = do ->
+    if no then throw
+      type: 'a'
+      msg: 'b'
+  eq undefined, x
+
   y = do ->
     if no then return
       type: 'a'
       msg: 'b'
   eq undefined, y
+
+test "#4576: multiple row function chaining", ->
+  ->
+    eq @a, 3
+  .call a: 3
+
+test "#4576: function chaining on separate rows", ->
+  do ->
+    Promise
+    .resolve()
+    .then ->
+      yes
+    .then ok
+
+test "#3736: chaining after do IIFE", ->
+  eq 3,
+    do ->
+      a: 3
+    .a
+
+  eq 3,
+    do (b = (c) -> c) -> a: 3
+    ?.a
+
+  b = 3
+  eq 3,
+    do (
+      b
+      {d} = {}
+    ) ->
+      a: b
+    .a
+
+  # preserve existing chaining behavior for non-IIFE `do`
+  b = c: -> 4
+  eq 4,
+    do b
+    .c

@@ -36,6 +36,7 @@ test "array splat expansions with assignments", ->
   eq 4, b
   arrayEq [0,1,2,3,4], list
 
+
 test "mixed shorthand objects in array lists", ->
   arr = [
     a:1
@@ -72,14 +73,30 @@ test "#4260: splat after existential operator soak", ->
   foo = (a) -> [a]
   arrayEq [a?.b...], [3]
   arrayEq [c?.b ? []...], []
+  arrayEq [...a?.b], [3]
+  arrayEq [...c?.b ? []], []
   arrayEq foo(a?.b...), [3]
+  arrayEq foo(...a?.b), [3]
   arrayEq foo(c?.b ? []...), [undefined]
+  arrayEq foo(...c?.b ? []), [undefined]
   e = yes
   f = null
   arrayEq [(a if e)?.b...], [3]
   arrayEq [(a if f)?.b ? []...], []
+  arrayEq [...(a if e)?.b], [3]
+  arrayEq [...(a if f)?.b ? []], []
   arrayEq foo((a if e)?.b...), [3]
+  arrayEq foo(...(a if e)?.b), [3]
   arrayEq foo((a if f)?.b ? []...), [undefined]
+  arrayEq foo(...(a if f)?.b ? []), [undefined]
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  arrayEq [... a?.b], [3]
+  arrayEq [... c?.b ? []], []
+  arrayEq [a?.b ...], [3]
+  arrayEq [(a if e)?.b ...], [3]
+  arrayEq foo(a?.b ...), [3]
+  arrayEq foo(... a?.b), [3]
 
 test "#1349: trailing if after splat", ->
   a = [3]
@@ -88,8 +105,16 @@ test "#1349: trailing if after splat", ->
   foo = (a) -> [a]
   arrayEq [a if b...], [3]
   arrayEq [(a if c) ? []...], []
+  arrayEq [...a if b], [3]
+  arrayEq [...(a if c) ? []], []
   arrayEq foo((a if b)...), [3]
+  arrayEq foo(...(a if b)), [3]
   arrayEq foo((a if c) ? []...), [undefined]
+  arrayEq foo(...(a if c) ? []), [undefined]
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  arrayEq [... a if b], [3]
+  arrayEq [a if b ...], [3]
 
 test "#1274: `[] = a()` compiles to `false` instead of `a()`", ->
   a = false
@@ -129,6 +154,12 @@ test "regex interpolation in array", ->
   eq 'ab', arr[0].source
   eq 'value', arr[1].key
 
+test "splat extraction from generators", ->
+  gen = ->
+    yield 1
+    yield 2
+    yield 3
+  arrayEq [ gen()... ], [ 1, 2, 3 ]
 
 test "for-from loops over Array", ->
   array1 = [50, 30, 70, 20]
