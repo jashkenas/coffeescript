@@ -447,7 +447,7 @@ compileOptions = (filename, base) ->
     # via Babel. We use Babel as an `optionalDependency`; see
     # https://docs.npmjs.com/files/package.json#optionaldependencies.
     try
-      babel = require 'babel-core'
+      require 'babel-core'
     catch exception
       console.error '''
         To use --transpile, you must have Babel installed and configured
@@ -459,50 +459,42 @@ compileOptions = (filename, base) ->
     # it doesn’t know where to search to find a `.babelrc` file or a `babel`
     # key in a `package.json`. So if `opts.transpile` is an object, use that
     # as Babel’s options; otherwise figure out what the options should be.
-    if typeof opts.transpile is 'object'
-      # Only possible via the Node API.
-      babelOptions = opts.transpile
-    else
-      if typeof opts.transpile is 'string'
-        # This is only possible via the Node API; did that API pass us a path
-        # to a `.babelrc` or `package.json` file?
+    unless typeof opts.transpile is 'object'
+      # Find the options based on the path to the file being compiled.
+      cantFindOptions = ->
+        console.error '''
+          To use the transpile option, there must be a .babelrc file
+          (or a package.json file with a "babel" key) in the path of the file
+          to be compiled, or in the path of the current working directory.
+          If you are compiling a string via the Node API, the transpile option
+          must be an object with the options to pass to Babel.
+          See http://coffeescript.org/#usage
+        '''
+        process.exit 1
+
+      checkPath = if filename
+        path.dirname filename
+      else if base
+        base
+      else if process?
+        process.cwd()
+      else
+        cantFindOptions()
+
+      loop
         try
-          opts.transpile = JSON.parse fs.readFileSync opts.transpile, 'utf-8'
+          opts.transpile = JSON.parse fs.readFileSync path.join(checkPath, '.babelrc'), 'utf-8'
+          break
         catch
           try
-            opts.transpile = JSON.parse fs.readFileSync path.join(process.cwd(), opts.transpile), 'utf-8'
-          catch
-            console.error "Babel options could not be loaded from #{opts.transpile}"
-            process.exit 1
-        opts.transpile = opts.transpile.babel if opts.transpile.babel
-      else
-        # This is the code path from the CLI `--transpile`, or from the Node
-        # API if `transpile` is set to `true`. Find the options based on the
-        # path to the file being compiled; or if we aren’t given a path, die.
-        # When calling `compile` via the Node API, if `transpile` is
-        # specified it must be a resolvable path (see above) or an object
-        # that can be passed to Babel as its options.
-        if filename
-          checkPath = path.dirname filename
-          loop
-            try
-              opts.transpile = JSON.parse fs.readFileSync path.join(checkPath, '.babelrc'), 'utf-8'
-              break
-            catch
-              try
-                opts.transpile = JSON.parse(fs.readFileSync(path.join(checkPath, 'package.json'), 'utf-8')).babel
-                break
+            opts.transpile = JSON.parse(fs.readFileSync(path.join(checkPath, 'package.json'), 'utf-8')).babel
+            break
 
-            break if checkPath is path.dirname checkPath # We’ve reached the root.
-            checkPath = path.dirname checkPath
+        if checkPath is path.dirname checkPath # We’ve reached the root.
+          cantFindOptions()
+          break
         else
-          console.error '''
-            To use the transpile option without giving the compiler a filename,
-            the transpile option must be either:
-            - a string path to a .babelrc file or package.json file with a babel key
-            - an object to pass to Babel as its options (if compiling via the API)
-          '''
-          process.exit 1
+          checkPath = path.dirname checkPath
 
     # Whew! By now we’ve populated `opts.transpile` with the options to pass
     # to Babel, if at all possible. Fill in a few more options unless the user
