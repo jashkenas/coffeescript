@@ -48,7 +48,8 @@ SWITCHES = [
   ['-r', '--require [MODULE*]', 'require the given module before eval or REPL']
   ['-s', '--stdio',             'listen for and compile scripts over stdio']
   ['-l', '--literate',          'treat stdio as literate style coffeescript']
-  ['-t', '--tokens',            'print out the tokens that the lexer/rewriter produce']
+  ['-t', '--transpile',         'pipe generated JavaScript through Babel']
+  [      '--tokens',            'print out the tokens that the lexer/rewriter produce']
   ['-v', '--version',           'display the version number']
   ['-w', '--watch',             'watch scripts for changes and rerun commands']
 ]
@@ -441,14 +442,90 @@ parseOptions = ->
 
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions = (filename, base) ->
-  answer = {
-    filename
+  if opts.transpile and opts.transpile not in [no, 0, 'false', 'off', 'no', '0']
+    # The user has requested that the CoffeeScript compiler also transpile
+    # via Babel. We use Babel as an `optionalDependency`; see
+    # https://docs.npmjs.com/files/package.json#optionaldependencies.
+    try
+      babel = require 'babel-core'
+    catch exception
+      console.error '''
+        To use --transpile, you must have Babel installed and configured
+        See http://coffeescript.org/#usage
+      '''
+      process.exit 1
+
+    # We’re giving Babel only a string, not a filename or path to a file, so
+    # it doesn’t know where to search to find a `.babelrc` file or a `babel`
+    # key in a `package.json`. So if `opts.transpile` is an object, use that
+    # as Babel’s options; otherwise figure out what the options should be.
+    if typeof opts.transpile is 'object'
+      # Only possible via the Node API.
+      babelOptions = opts.transpile
+    else
+      if typeof opts.transpile is 'string'
+        # This is only possible via the Node API; did that API pass us a path
+        # to a `.babelrc` or `package.json` file?
+        try
+          opts.transpile = JSON.parse fs.readFileSync opts.transpile, 'utf-8'
+        catch
+          try
+            opts.transpile = JSON.parse fs.readFileSync path.join(process.cwd(), opts.transpile), 'utf-8'
+          catch
+            console.error "Babel options could not be loaded from #{opts.transpile}"
+            process.exit 1
+        opts.transpile = opts.transpile.babel if opts.transpile.babel
+      else
+        # This is the code path from the CLI `--transpile`, or from the Node
+        # API if `transpile` is set to `true`. Find the options based on the
+        # path to the file being compiled; or if we aren’t given a path, die.
+        # When calling `compile` via the Node API, if `transpile` is
+        # specified it must be a resolvable path (see above) or an object
+        # that can be passed to Babel as its options.
+        if filename
+          checkPath = path.dirname filename
+          loop
+            try
+              opts.transpile = JSON.parse fs.readFileSync path.join(checkPath, '.babelrc'), 'utf-8'
+              break
+            catch
+              try
+                opts.transpile = JSON.parse(fs.readFileSync(path.join(checkPath, 'package.json'), 'utf-8')).babel
+                break
+
+            break if checkPath is path.dirname checkPath # We’ve reached the root.
+            checkPath = path.dirname checkPath
+        else
+          console.error '''
+            To use the transpile option without giving the compiler a filename,
+            the transpile option must be either:
+            - a string path to a .babelrc file or package.json file with a babel key
+            - an object to pass to Babel as its options (if compiling via the API)
+          '''
+          process.exit 1
+
+    # Whew! By now we’ve populated `opts.transpile` with the options to pass
+    # to Babel, if at all possible. Fill in a few more options unless the user
+    # has explicitly defined them.
+    unless opts.transpile.sourceMaps?
+      if opts.map and opts['inline-map']
+        opts.transpile.sourceMaps = 'both'
+      else if opts.map
+        opts.transpile.sourceMaps = yes
+      else if opts['inline-map']
+        opts.transpile.sourceMaps = 'inline'
+  else
+    opts.transpile = no
+
+  answer =
+    filename: filename
     literate: opts.literate or helpers.isLiterate(filename)
     bare: opts.bare
     header: opts.compile and not opts['no-header']
+    transpile: opts.transpile
     sourceMap: opts.map
     inlineMap: opts['inline-map']
-  }
+
   if filename
     if base
       cwd = process.cwd()

@@ -129,6 +129,18 @@ exports.compile = compile = withPrettyErrors (code, options) ->
     sourceMaps[filename] ?= []
     sourceMaps[filename].push map
 
+  if options.transpile
+    # See https://github.com/babel/babel/issues/827#issuecomment-77573107:
+    # Babel can take a v3 source map object as input in `inputSourceMap`
+    # and it will return an *updated* v3 source map object in its output.
+    if generateSourceMap and not options.transpile.inputSourceMap?
+      options.transpile.inputSourceMap = v3SourceMap
+    babel = require 'babel-core'
+    babelOutput = babel.transform js, options.transpile
+    js = babelOutput.code
+    if options.sourceMap and babelOutput.map
+      v3SourceMap = babelOutput.map
+
   if options.inlineMap
     encoded = base64encode JSON.stringify v3SourceMap
     sourceMapDataURI = "//# sourceMappingURL=data:application/json;base64,#{encoded}"
