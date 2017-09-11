@@ -70,16 +70,9 @@ transpile = (code) ->
   babel = require 'babel-core'
   presets = []
   # Exclude the `modules` plugin in order to not break the `}(this));`
-  # at the end of the above code block.
+  # at the end of the `build:browser` code block.
   presets.push ['env', {modules: no}] unless process.env.TRANSFORM is 'false'
-  babelOptions =
-    presets: presets
-    sourceType: 'script'
-  { code } = babel.transform code, babelOptions unless presets.length is 0
-  # Running Babel twice due to https://github.com/babel/babili/issues/614.
-  # Once that issue is fixed, move the `babili` preset back up into the
-  # `presets` array and run Babel once with both presets together.
-  presets = if process.env.MINIFY is 'false' then [] else ['babili']
+  presets.push 'minify' unless process.env.MINIFY is 'false'
   babelOptions =
     compact: process.env.MINIFY isnt 'false'
     presets: presets

@@ -42,7 +42,7 @@
     "babel-core": "~6.26.0",
     "babel-preset-babili": "~0.1.4",
     "babel-preset-env": "~1.6.0",
-    "babili": "^0.1.4",
+    "babel-preset-minify": "^0.2.0",
     "codemirror": "^5.29.0",
     "docco": "~0.7.0",
     "highlight.js": "~9.12.0",
