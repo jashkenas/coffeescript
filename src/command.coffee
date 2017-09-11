@@ -442,7 +442,7 @@ parseOptions = ->
 
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions = (filename, base) ->
-  if opts.transpile and opts.transpile not in [no, 0, 'false', 'off', 'no', '0']
+  if opts.transpile
     # The user has requested that the CoffeeScript compiler also transpile
     # via Babel. We use Babel as an `optionalDependency`; see
     # https://docs.npmjs.com/files/package.json#optionaldependencies.
