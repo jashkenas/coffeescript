@@ -448,9 +448,9 @@ compileOptions = (filename, base) ->
     # https://docs.npmjs.com/files/package.json#optionaldependencies.
     try
       require 'babel-core'
-    catch exception
+    catch
       console.error '''
-        To use --transpile, you must have Babel installed and configured
+        To use --transpile, you must have Babel installed and configured.
         See http://coffeescript.org/#usage
       '''
       process.exit 1
@@ -495,17 +495,6 @@ compileOptions = (filename, base) ->
           break
         else
           checkPath = path.dirname checkPath
-
-    # Whew! By now we’ve populated `opts.transpile` with the options to pass
-    # to Babel, if at all possible. Fill in a few more options unless the user
-    # has explicitly defined them.
-    unless opts.transpile.sourceMaps?
-      if opts.map and opts['inline-map']
-        opts.transpile.sourceMaps = 'both'
-      else if opts.map
-        opts.transpile.sourceMaps = yes
-      else if opts['inline-map']
-        opts.transpile.sourceMaps = 'inline'
   else
     opts.transpile = no
 
