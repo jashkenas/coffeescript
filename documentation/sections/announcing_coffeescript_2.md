@@ -16,28 +16,28 @@ From the beginning, CoffeeScript has been described as being “just JavaScript.
 
 Many ES2015 features, such as `=>`, were adopted directly from CoffeeScript and are one-to-one compatible, or very nearly so. This has made outputting many of CoffeeScript’s innovations into ES2015 syntax straightforward: not only does `=>` become `=>`, but `{ a } = obj` becomes `{ a } = obj`, `"a#{b}c"` becomes `` `a${b}c` `` and so on.
 
-The following CoffeeScript features were updated in 2 to output using ES2015+ syntax (or added in 1.11–2, output using modern syntax):
+The following CoffeeScript features were updated in 2 to output using ES2015+ syntax (or added in CoffeeScript 1.11 through 2.0, output using modern syntax):
 
-- Modules
-- Classes
-- Async functions, a.k.a. `async`/`await`
-- Bound/arrow functions
-- Function default parameters
-- Function splat/rest parameters
-- Destructuring, for both arrays and objects
-- Object rest/spread properties
-- Interpolated strings/template literals (ES2015 backticked strings)
-- Tagged template literals
-- ES2015’s `for…of` is now available as CoffeeScript’s `for…from` (we already had a `for…of`)
+- Modules: `import`/`export`
+- Classes: `class Animal`
+- Async functions: `await someFunction()`
+- Bound/arrow functions: `=>`
+- Function default parameters: `(options = {}) ->`
+- Function splat/rest parameters: `(items...) ->`
+- Destructuring, for both arrays and objects: `[first, second] = items`, `{length} = items`
+- Object rest/spread properties: `{options..., force: yes}`, `{force, otherOptions...} = options`
+- Interpolated strings/template literals (ES2015 backticked strings): `"Hello, #{user}!"`
+- Tagged template literals: `html"<strong>coffee</strong>"`
+- ES2015’s `for…of` is now available as CoffeeScript’s `for…from` (we already had a `for…of`): `for n from generatorFunction()`
 
-Not all CoffeeScript features were adopted as is; most notably, [default values](http://coffeescript.org/v2/#breaking-changes-default-values) in ES2015 and CoffeeScript 2 are only applied when a variable is `undefined`, not `undefined` or `null` as in CoffeeScript 1; and [classes](http://coffeescript.org/v2/#breaking-changes-classes) have their own differences. See the [breaking changes](http://coffeescript.org/v2/#breaking-changes) for the fine details.
+Not all CoffeeScript features were adopted by ES2015 in 100% the same way; most notably, [default values](http://coffeescript.org/v2/#breaking-changes-default-values) in ES2015 (and also in CoffeeScript 2) are only applied when a variable is `undefined`, not `undefined` or `null` as in CoffeeScript 1; and [classes](http://coffeescript.org/v2/#breaking-changes-classes) have their own differences. See the [breaking changes](http://coffeescript.org/v2/#breaking-changes) for the fine details.
 
 In our experience, most breaking changes are edge cases that should affect very few people, like ES2015’s [lack of an `arguments` object inside arrow functions](http://coffeescript.org/v2/#breaking-change-fat-arrow). There seem to be two breaking changes that affect a significant number of projects:
 
 - In CoffeeScript 2, “bare” `super` (calling `super` without arguments) is now no longer allowed, and one must use `super()` or `super arguments...` instead.
 - References to `this`/`@` cannot occur before a call to `super`, per the ES spec.
 
-See the [full details](http://coffeescript.org/v2/#breaking-changes-super-extends). Either the CoffeeScript compiler or Babel will throw errors for either of these cases, so updating your code is a simple matter of fixing each instance as the compiler errors on it, until your code compiles successfully.
+See the [full details](http://coffeescript.org/v2/#breaking-changes-super-extends). Either the CoffeeScript compiler or Babel will throw errors for either of these cases, so updating your code is a matter of fixing each occurrence as the compiler errors on it, until your code compiles successfully.
 
 ## Other Features
 
@@ -49,7 +49,7 @@ Besides supporting new ES2015+ features and outputting older CoffeeScript featur
 
 There are many smaller improvements as well, such as to the `coffee` command-line tool. You can read all the details in the [changelog](http://coffeescript.org/v2/#changelog) for the 2.0.0 betas.
 
-## What About…
+## “What About …?”
 
 A few features get asked about so often that we added a section to the docs called [Unsupported ECMAScript Features](http://coffeescript.org/v2/#unsupported). These include `let` and `const`, named functions and the `get` and `set` keywords. You can read the docs for the details, but simply put: `let` and `const` and named functions aren’t necessary for compatibility or interoperability with other libraries, and supporting them would add unwanted complexity to CoffeeScript; and getters and setters are supported but with the more verbose syntax.
 
