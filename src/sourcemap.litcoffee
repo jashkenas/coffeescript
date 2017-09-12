@@ -133,7 +133,7 @@ Produce the canonical JSON object format for a "v3" source map.
           names:      []
           mappings:   buffer
 
-        v3.sourcesContent = [code] if options.inlineMap
+        v3.sourcesContent = [code] if options.sourceMap or options.inlineMap
 
         v3
 
