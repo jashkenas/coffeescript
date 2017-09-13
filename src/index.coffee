@@ -5,7 +5,24 @@ vm            = require 'vm'
 path          = require 'path'
 
 helpers       = CoffeeScript.helpers
-compile       = CoffeeScript.compile
+
+CoffeeScript.transpile = (js, options) ->
+  try
+    babel = require 'babel-core'
+  catch
+    # This error is only for Node, as CLI users will see a different error
+    # earlier if they don’t have Babel installed.
+    throw new Error 'To use the transpile option, you must have the \'babel-core\' module installed'
+  babel.transform js, options
+
+compile = (code, options) ->
+  # Pass a reference to Babel into the compiler, so that the transpile option
+  # is available in the Node API. We need to do this so that tools like Webpack
+  # can `require('coffeescript')` and build correctly, without trying to
+  # require Babel.
+  if options.transpile
+    options.transpile.transpile = CoffeeScript.transpile
+  CoffeeScript.compile code, options
 
 # Compile and execute a string of CoffeeScript (on the server), correctly
 # setting `__filename`, `__dirname`, and relative `require()`.

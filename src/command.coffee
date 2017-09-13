@@ -495,6 +495,12 @@ compileOptions = (filename, base) ->
           break
         else
           checkPath = path.dirname checkPath
+
+    # Pass a reference to Babel into the compiler, so that the transpile option
+    # is available for the CLI. We need to do this so that tools like Webpack
+    # can `require('coffeescript')` and build correctly, without trying to
+    # require Babel.
+    opts.transpile.transpile = CoffeeScript.transpile
   else
     opts.transpile = no
 
