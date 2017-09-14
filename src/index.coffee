@@ -15,14 +15,17 @@ CoffeeScript.transpile = (js, options) ->
     throw new Error 'To use the transpile option, you must have the \'babel-core\' module installed'
   babel.transform js, options
 
-compile = (code, options) ->
+# The `compile` method shared by the CLI, Node and browser APIs.
+universalCompile = CoffeeScript.compile
+# The `compile` method particular to the Node API.
+CoffeeScript.compile = (code, options) ->
   # Pass a reference to Babel into the compiler, so that the transpile option
   # is available in the Node API. We need to do this so that tools like Webpack
   # can `require('coffeescript')` and build correctly, without trying to
   # require Babel.
-  if options.transpile
+  if options?.transpile
     options.transpile.transpile = CoffeeScript.transpile
-  CoffeeScript.compile code, options
+  universalCompile.call CoffeeScript, code, options
 
 # Compile and execute a string of CoffeeScript (on the server), correctly
 # setting `__filename`, `__dirname`, and relative `require()`.
@@ -45,7 +48,7 @@ CoffeeScript.run = (code, options = {}) ->
 
   # Compile.
   if not helpers.isCoffee(mainModule.filename) or require.extensions
-    answer = compile code, options
+    answer = CoffeeScript.compile code, options
     code = answer.js ? answer
 
   mainModule._compile code, mainModule.filename
@@ -85,7 +88,7 @@ CoffeeScript.eval = (code, options = {}) ->
   o = {}
   o[k] = v for own k, v of options
   o.bare = on # ensure return value
-  js = compile code, o
+  js = CoffeeScript.compile code, o
   if sandbox is global
     vm.runInThisContext js
   else
@@ -107,7 +110,7 @@ CoffeeScript._compileFile = (filename, sourceMap = no, inlineMap = no) ->
   stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
 
   try
-    answer = compile stripped, {
+    answer = CoffeeScript.compile stripped, {
       filename, sourceMap, inlineMap
       sourceFiles: [filename]
       literate: helpers.isLiterate filename

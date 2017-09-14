@@ -64,9 +64,9 @@ sourceMaps = {}
 # in which case this returns a `{js, v3SourceMap, sourceMap}`
 # object, where sourceMap is a sourcemap.coffee#SourceMap object, handy for
 # doing programmatic lookups.
-exports.compile = compile = withPrettyErrors (code, options) ->
-  {merge, extend} = helpers
-  options = extend {}, options
+exports.compile = compile = withPrettyErrors (code, options = {}) ->
+  # Clone `options`, to avoid mutating the `options` object passed in.
+  options = Object.assign {}, options
   # Always generate a source map if no filename is passed in, since without a
   # a filename we have no way to retrieve this source later in the event that
   # we need to recompile it to get a source map for `prepareStackTrace`.
