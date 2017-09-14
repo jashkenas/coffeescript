@@ -1,10 +1,18 @@
 # Compilation
 # -----------
 
-# helper to assert that a string should fail compilation
+# Helper to assert that a string should fail compilation.
 cantCompile = (code) ->
   throws -> CoffeeScript.compile code
 
+# Helper to pipe the CoffeeScript compiler’s output through a transpiler.
+transpile = (method, code) ->
+  # `method` should be 'compile' or 'eval' or 'run'
+  CoffeeScript[method] code,
+    bare: yes
+    transpile:
+      # Target Internet Explorer 6, which supports no ES2015+ features.
+      presets: [['env', {targets: browsers: ['ie 6']}]]
 
 test "ensure that carriage returns don't break compilation on Windows", ->
   doesNotThrow -> CoffeeScript.compile 'one\r\ntwo', bare: on
@@ -123,3 +131,15 @@ test "#3001: `own` shouldn't be allowed in a `for`-`in` loop", ->
 
 test "#2994: single-line `if` requires `then`", ->
   cantCompile "if b else x"
+
+test "transpile option, for Node API CoffeeScript.compile", ->
+  return if global.testingBrowser
+  ok transpile('compile', "import fs from 'fs'").includes 'require'
+
+test "transpile option, for Node API CoffeeScript.eval", ->
+  return if global.testingBrowser
+  ok transpile 'eval', "import path from 'path'; path.sep in ['/', '\\\\']"
+
+test "transpile option, for Node API CoffeeScript.run", ->
+  return if global.testingBrowser
+  doesNotThrow -> transpile 'run', "import fs from 'fs'"
