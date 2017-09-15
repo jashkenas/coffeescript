@@ -2,7 +2,7 @@
 
 We are pleased to announce CoffeeScript 2! This new release of the CoffeeScript language and compiler aims to bring CoffeeScript into the modern JavaScript era, closing gaps in compatibility with JavaScript while preserving the clean syntax that is CoffeeScript’s hallmark. In a nutshell:
 
-- The CoffeeScript 2 compiler now translates CoffeeScript code into modern JavaScript syntax. So a CoffeeScript `=>` is now output as `=>`, a CoffeeScript `class` is now output using the `class` keyword, and so on. This means you may need to [pipe CoffeeScript’s output through a transpiler](http://coffeescript.org/v2/#es2015plus-output).
+- The CoffeeScript 2 compiler now translates CoffeeScript code into modern JavaScript syntax. So a CoffeeScript `=>` is now output as `=>`, a CoffeeScript `class` is now output using the `class` keyword, and so on. This means you may need to [transpile the CoffeeScript compiler’s output](http://coffeescript.org/v2/#es2015plus-output).
 - CoffeeScript 2 adds support for [async functions](http://coffeescript.org/#async-functions) syntax, for the future [object destructuring](http://coffeescript.org/#destructuring) syntax, and for [JSX](http://coffeescript.org/#jsx). Some features, such as [modules](http://coffeescript.org/#modules) (`import` and `export` statements), [`for…of`](http://coffeescript.org/#generator-iteration), and [tagged template literals](http://coffeescript.org/#tagged-template-literals) were backported into CoffeeScript versions 1.11 and 1.12.
 - All of the above was achieved with very few [breaking changes from 1.x](http://coffeescript.org/v2/#breaking-changes). Most current CoffeeScript projects should be able to upgrade with little or no refactoring necessary.
 
@@ -49,7 +49,7 @@ There are many smaller improvements as well, such as to the `coffee` command-lin
 
 ## “What About …?”
 
-A few features recently added to JavaScript have been intentionally omitted from CoffeeScript. These get asked about so often that we added a section to the docs called [Unsupported ECMAScript Features](http://coffeescript.org/v2/#unsupported). These include `let` and `const` (and `var`), named functions and the `get` and `set` keywords. You can read the docs for the details, but simply put: in CoffeeScript everything is an expression, and we don’t have declarations (`var foo;`, as opposed to assignment `foo = 3;`). `var`, `let`, `const` and named functions are only used for declarations, which aren’t expressions; and none are necessary for compatibility or interoperability with other libraries, so they’re not necessary for us to add. Getters and setters are supported but with the more verbose syntax.
+A few JavaScript features have been intentionally omitted from CoffeeScript. These include `let` and `const` (and `var`), named functions and the `get` and `set` keywords. These get asked about so often that we added a section to the docs called [Unsupported ECMAScript Features](http://coffeescript.org/v2/#unsupported). CoffeeScript’s lack of equivalents for these features does not affect compatibility or interoperability with JavaScript modules or libraries.
 
 ## Future Compatibility
 
