@@ -70,16 +70,9 @@ transpile = (code) ->
   babel = require 'babel-core'
   presets = []
   # Exclude the `modules` plugin in order to not break the `}(this));`
-  # at the end of the above code block.
+  # at the end of the `build:browser` code block.
   presets.push ['env', {modules: no}] unless process.env.TRANSFORM is 'false'
-  babelOptions =
-    presets: presets
-    sourceType: 'script'
-  { code } = babel.transform code, babelOptions unless presets.length is 0
-  # Running Babel twice due to https://github.com/babel/babili/issues/614.
-  # Once that issue is fixed, move the `babili` preset back up into the
-  # `presets` array and run Babel once with both presets together.
-  presets = if process.env.MINIFY is 'false' then [] else ['babili']
+  presets.push 'minify' unless process.env.MINIFY is 'false'
   babelOptions =
     compact: process.env.MINIFY isnt 'false'
     presets: presets
@@ -100,7 +93,7 @@ testBuiltCode = (watch = no) ->
 
 buildAndTest = (includingParser = yes, harmony = no) ->
   process.stdout.write '\x1Bc' # Clear terminal screen.
-  execSync 'git checkout lib/*', stdio: [0,1,2] # Reset the generated compiler.
+  execSync 'git checkout lib/*', stdio: 'inherit' # Reset the generated compiler.
 
   buildArgs = ['bin/cake']
   buildArgs.push if includingParser then 'build' else 'build:except-parser'
@@ -494,20 +487,28 @@ task 'test:integrations', 'test the module integrated with other libraries and e
   # Node modules are required as part of the compiler (as opposed to the tests)
   # and that therefore the compiler will run in a browser environment.
   tmpdir = os.tmpdir()
-  try
-    buildLog = execSync "./node_modules/webpack/bin/webpack.js
-      --entry=./
-      --output-library=CoffeeScript
-      --output-library-target=commonjs2
-      --output-path=#{tmpdir}
-      --output-filename=coffeescript.js"
-  catch exception
-    console.error buildLog.toString()
-    throw exception
+  webpack = require 'webpack'
+  webpack {
+    entry: './'
+    output:
+      path: tmpdir
+      filename: 'coffeescript.js'
+      library: 'CoffeeScript'
+      libraryTarget: 'commonjs2'
+  }, (err, stats) ->
+    if err or stats.hasErrors()
+      if err
+        console.error err.stack or err
+        console.error err.details if err.details
+      if stats.hasErrors()
+        console.error error for error in stats.compilation.errors
+      if stats.hasWarnings()
+        console.warn warning for warning in stats.compilation.warnings
+      process.exit 1
 
-  builtCompiler = path.join tmpdir, 'coffeescript.js'
-  CoffeeScript = require builtCompiler
-  global.testingBrowser = yes
-  testResults = runTests CoffeeScript
-  fs.unlinkSync builtCompiler
-  process.exit 1 unless testResults
+    builtCompiler = path.join tmpdir, 'coffeescript.js'
+    CoffeeScript = require builtCompiler
+    global.testingBrowser = yes
+    testResults = runTests CoffeeScript
+    fs.unlinkSync builtCompiler
+    process.exit 1 unless testResults

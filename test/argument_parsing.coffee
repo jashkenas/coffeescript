@@ -135,7 +135,8 @@ If called without options, `coffee` will run your script.
   -r, --require      require the given module before eval or REPL
   -s, --stdio        listen for and compile scripts over stdio
   -l, --literate     treat stdio as literate style coffeescript
-  -t, --tokens       print out the tokens that the lexer/rewriter produce
+  -t, --transpile    pipe generated JavaScript through Babel
+      --tokens       print out the tokens that the lexer/rewriter produce
   -v, --version      display the version number
   -w, --watch        watch scripts for changes and rerun commands
 
