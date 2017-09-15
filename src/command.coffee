@@ -487,8 +487,10 @@ compileOptions = (filename, base) ->
           break
         catch
           try
-            opts.transpile = JSON.parse(fs.readFileSync(path.join(checkPath, 'package.json'), 'utf-8')).babel
-            break
+            packageJson = JSON.parse fs.readFileSync(path.join(checkPath, 'package.json'), 'utf-8')
+            if packageJson.babel?
+              opts.transpile = packageJson.babel
+              break
 
         if checkPath is path.dirname checkPath # We’ve reached the root.
           cantFindOptions()
