@@ -160,3 +160,9 @@ test "transpile option has merged source maps", ->
   # The number of lines in the transpiled code should match the number of lines
   # in the source map.
   eq transpiledOutput.js.split('\n').length, transpiledOutput.v3SourceMap.mappings.split(';').length
+
+test "using transpile from the Node API requires an object", ->
+  try
+    CoffeeScript.compile '', transpile: yes
+  catch exception
+    eq exception.message, 'The transpile option must be given an object with options to pass to Babel'
