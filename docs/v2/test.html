@@ -313,7 +313,8 @@ If called without options, `coffee` will run your script.
   -r, --require      require the given module before eval or REPL
   -s, --stdio        listen for and compile scripts over stdio
   -l, --literate     treat stdio as literate style coffeescript
-  -t, --tokens       print out the tokens that the lexer/rewriter produce
+  -t, --transpile    pipe generated JavaScript through Babel
+      --tokens       print out the tokens that the lexer/rewriter produce
   -v, --version      display the version number
   -w, --watch        watch scripts for changes and rerun commands
 
@@ -1442,6 +1443,18 @@ test "#4674: _extends utility for object spreads 2", ->
   e = {a..., c...}
   eq e.b, 1
   eq e.d, 2
+
+test "#4673: complex destructured object spread variables", ->
+  b = c: 1
+  {{a...}...} = b
+  eq a.c, 1
+
+  d = {}
+  {d.e...} = f: 1
+  eq d.e.f, 1
+
+  {{g}...} = g: 1
+  eq g, 1
 
 </script>
 <script type="text/x-coffeescript" class="test" id="async">
@@ -4506,9 +4519,18 @@ test "Flow comment-based syntax support", ->
 # Compilation
 # -----------
 
-# helper to assert that a string should fail compilation
+# Helper to assert that a string should fail compilation.
 cantCompile = (code) ->
   throws -> CoffeeScript.compile code
+
+# Helper to pipe the CoffeeScript compiler’s output through a transpiler.
+transpile = (method, code, options = {}) ->
+  # `method` should be 'compile' or 'eval' or 'run'
+  options.bare = yes
+  options.transpile =
+    # Target Internet Explorer 6, which supports no ES2015+ features.
+    presets: [['env', {targets: browsers: ['ie 6']}]]
+  CoffeeScript[method] code, options
 
 
 test "ensure that carriage returns don't break compilation on Windows", ->
@@ -4628,6 +4650,40 @@ test "#3001: `own` shouldn't be allowed in a `for`-`in` loop", ->
 
 test "#2994: single-line `if` requires `then`", ->
   cantCompile "if b else x"
+
+test "transpile option, for Node API CoffeeScript.compile", ->
+  return if global.testingBrowser
+  ok transpile('compile', "import fs from 'fs'").includes 'require'
+
+test "transpile option, for Node API CoffeeScript.eval", ->
+  return if global.testingBrowser
+  ok transpile 'eval', "import path from 'path'; path.sep in ['/', '\\\\']"
+
+test "transpile option, for Node API CoffeeScript.run", ->
+  return if global.testingBrowser
+  doesNotThrow -> transpile 'run', "import fs from 'fs'"
+
+test "transpile option has merged source maps", ->
+  return if global.testingBrowser
+  untranspiledOutput = CoffeeScript.compile "import path from 'path'\nconsole.log path.sep", sourceMap: yes
+  transpiledOutput   = transpile 'compile', "import path from 'path'\nconsole.log path.sep", sourceMap: yes
+  untranspiledOutput.v3SourceMap = JSON.parse untranspiledOutput.v3SourceMap
+  transpiledOutput.v3SourceMap   = JSON.parse transpiledOutput.v3SourceMap
+  ok untranspiledOutput.v3SourceMap.mappings isnt transpiledOutput.v3SourceMap.mappings
+  # Babel adds `'use strict';` to the top of files with the modules transform.
+  eq transpiledOutput.js.indexOf('use strict'), 1
+  # The `'use strict';` followed by two newlines results in the first two lines
+  # of the source map mappings being two blank/skipped lines.
+  eq transpiledOutput.v3SourceMap.mappings.indexOf(';;'), 0
+  # The number of lines in the transpiled code should match the number of lines
+  # in the source map.
+  eq transpiledOutput.js.split('\n').length, transpiledOutput.v3SourceMap.mappings.split(';').length
+
+test "using transpile from the Node API requires an object", ->
+  try
+    CoffeeScript.compile '', transpile: yes
+  catch exception
+    eq exception.message, 'The transpile option must be given an object with options to pass to Babel'
 
 </script>
 <script type="text/x-coffeescript" class="test" id="comprehensions">
@@ -10253,6 +10309,29 @@ test "#4413: expressions in function parameters that create generated variables 
   g = (a = foo() ? bar()) -> a + 1
   eq f(), 33
   eq g(), 34
+
+test "#4673: complex destructured object spread variables", ->
+  f = ({{a...}...}) ->
+    a
+  eq f(c: 1).c, 1
+
+  g = ({@y...}) ->
+    eq @y.b, 1
+  g b: 1
+
+test "#4657: destructured array param declarations", ->
+  a = 1
+  b = 2
+  f = ([a..., b]) ->
+  f [3, 4, 5]
+  eq a, 1
+  eq b, 2
+
+test "#4657: destructured array parameters", ->
+  f = ([a..., b]) -> {a, b}
+  result = f [1, 2, 3, 4]
+  arrayEq result.a, [1, 2, 3]
+  eq result.b, 4
 
 </script>
 <script type="text/x-coffeescript" class="test" id="generators">

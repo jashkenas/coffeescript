@@ -2,11 +2,11 @@
 
 We are pleased to announce CoffeeScript 2! This new release of the CoffeeScript language and compiler aims to bring CoffeeScript into the modern JavaScript era, closing gaps in compatibility with JavaScript while preserving the clean syntax that is CoffeeScript’s hallmark. In a nutshell:
 
-- The CoffeeScript 2 compiler now translates CoffeeScript code into modern JavaScript syntax. So a CoffeeScript `=>` is now output as `=>`, a CoffeeScript `class` is now output using the `class` keyword, and so on. This means you may need to [transpile the CoffeeScript compiler’s output](http://coffeescript.org/v2/#es2015plus-output).
-- CoffeeScript 2 adds support for [async functions](http://coffeescript.org/#async-functions) syntax, for the future [object destructuring](http://coffeescript.org/#destructuring) syntax, and for [JSX](http://coffeescript.org/#jsx). Some features, such as [modules](http://coffeescript.org/#modules) (`import` and `export` statements), [`for…of`](http://coffeescript.org/#generator-iteration), and [tagged template literals](http://coffeescript.org/#tagged-template-literals) were backported into CoffeeScript versions 1.11 and 1.12.
-- All of the above was achieved with very few [breaking changes from 1.x](http://coffeescript.org/v2/#breaking-changes). Most current CoffeeScript projects should be able to upgrade with little or no refactoring necessary.
+- The CoffeeScript 2 compiler now translates CoffeeScript code into modern JavaScript syntax. So a CoffeeScript `=>` is now output as `=>`, a CoffeeScript `class` is now output using the `class` keyword, and so on. This means you may need to [transpile the CoffeeScript compiler’s output](../#es2015plus-output).
+- CoffeeScript 2 adds support for [async functions](../#async-functions) syntax, for the future [object destructuring](../#destructuring) syntax, and for [JSX](../#jsx). Some features, such as [modules](../#modules) (`import` and `export` statements), [`for…of`](../#generator-iteration), and [tagged template literals](../#tagged-template-literals) were backported into CoffeeScript versions 1.11 and 1.12.
+- All of the above was achieved with very few [breaking changes from 1.x](../#breaking-changes). Most current CoffeeScript projects should be able to upgrade with little or no refactoring necessary.
 
-CoffeeScript 2 was developed with two primary goals: remove any incompatibilities with modern JavaScript that might prevent CoffeeScript from being used on a project; and preserve as much backward compatibility as possible. [Install now](http://coffeescript.org/v2/#installation): `npm install -g coffeescript@2`
+CoffeeScript 2 was developed with two primary goals: remove any incompatibilities with modern JavaScript that might prevent CoffeeScript from being used on a project; and preserve as much backward compatibility as possible. [Install now](../#installation): `npm install -g coffeescript@2`
 
 ## Modern JavaScript Output
 
@@ -28,28 +28,28 @@ The following CoffeeScript features were updated in 2.0 to output using modern J
 - Tagged template literals: `html"<strong>coffee</strong>"`
 - JavaScript’s `for…of` is now available as CoffeeScript’s `for…from` (we already had a `for…of`): `for n from generatorFunction()`
 
-Not all CoffeeScript features were adopted into JavaScript in 100% the same way; most notably, [default values](http://coffeescript.org/v2/#breaking-changes-default-values) in JavaScript (and also in CoffeeScript 2) are only applied when a variable is `undefined`, not `undefined` or `null` as in CoffeeScript 1; and [classes](http://coffeescript.org/v2/#breaking-changes-classes) have their own differences. See the [breaking changes](http://coffeescript.org/v2/#breaking-changes) for the fine details.
+Not all CoffeeScript features were adopted into JavaScript in 100% the same way; most notably, [default values](../#breaking-changes-default-values) in JavaScript (and also in CoffeeScript 2) are only applied when a variable is `undefined`, not `undefined` or `null` as in CoffeeScript 1; and [classes](../#breaking-changes-classes) have their own differences. See the [breaking changes](../#breaking-changes) for the fine details.
 
-In our experience, most breaking changes are edge cases that should affect very few people, like JavaScript’s [lack of an `arguments` object inside arrow functions](http://coffeescript.org/v2/#breaking-change-fat-arrow). There seem to be two breaking changes that affect a significant number of projects:
+In our experience, most breaking changes are edge cases that should affect very few people, like JavaScript’s [lack of an `arguments` object inside arrow functions](../#breaking-change-fat-arrow). There seem to be two breaking changes that affect a significant number of projects:
 
 - In CoffeeScript 2, “bare” `super` (calling `super` without arguments) is now no longer allowed, and one must use `super()` or `super arguments...` instead.
 - References to `this`/`@` cannot occur before a call to `super`, per the JS spec.
 
-See the [full details](http://coffeescript.org/v2/#breaking-changes-super-extends). Either the CoffeeScript compiler or your transpiler will throw errors for either of these cases, so updating your code is a matter of fixing each occurrence as the compiler errors on it, until your code compiles successfully.
+See the [full details](../#breaking-changes-super-extends). Either the CoffeeScript compiler or your transpiler will throw errors for either of these cases, so updating your code is a matter of fixing each occurrence as the compiler errors on it, until your code compiles successfully.
 
 ## Other Features
 
 Besides supporting new JavaScript features and outputting older CoffeeScript features in modern JS syntax, CoffeeScript 2 has added support for the following:
 
-- [JSX](http://coffeescript.org/v2/#jsx)
-- [Line comments](http://coffeescript.org/v2/#comments) are now output (in CoffeeScript 1 they were discarded)
-- Block comments are now allowed anywhere, enabling [static type annotations](http://coffeescript.org/v2/#type-annotations) using Flow’s comment-based syntax
+- [JSX](../#jsx)
+- [Line comments](../#comments) are now output (in CoffeeScript 1 they were discarded)
+- Block comments are now allowed anywhere, enabling [static type annotations](../#type-annotations) using Flow’s comment-based syntax
 
-There are many smaller improvements as well, such as to the `coffee` command-line tool. You can read all the details in the [changelog](http://coffeescript.org/v2/#changelog) for the 2.0.0 betas.
+There are many smaller improvements as well, such as to the `coffee` command-line tool. You can read all the details in the [changelog](../#changelog) for the 2.0.0 betas.
 
 ## “What About …?”
 
-A few JavaScript features have been intentionally omitted from CoffeeScript. These include `let` and `const` (and `var`), named functions and the `get` and `set` keywords. These get asked about so often that we added a section to the docs called [Unsupported ECMAScript Features](http://coffeescript.org/v2/#unsupported). CoffeeScript’s lack of equivalents for these features does not affect compatibility or interoperability with JavaScript modules or libraries.
+A few JavaScript features have been intentionally omitted from CoffeeScript. These include `let` and `const` (and `var`), named functions and the `get` and `set` keywords. These get asked about so often that we added a section to the docs called [Unsupported ECMAScript Features](../#unsupported). CoffeeScript’s lack of equivalents for these features does not affect compatibility or interoperability with JavaScript modules or libraries.
 
 ## Future Compatibility
 
@@ -57,7 +57,7 @@ Back when CoffeeScript 1 was created, ES2015 JavaScript and transpilers like [Ba
 
 But transpilers exist now, and they do their job well. With them around, there’s no need for the CoffeeScript compiler to duplicate this functionality. All the CoffeeScript compiler needs to worry about now is converting the CoffeeScript version of new syntax into the JS version of that syntax, e.g. `"Hello, #{name}!"` into `` `Hello, ${name}!` ``. This makes adding support for new JavaScript features much easier than before.
 
-Most features added by ECMA in recent years haven’t required any updates at all in CoffeeScript. New global objects, or new methods on global objects, don’t require any updates on CoffeeScript’s part to work. Some proposed future JS features _do_ involve new syntax, like [class fields](https://github.com/tc39/proposal-class-fields). We have adopted a policy of supporting new syntax only when it reaches Stage 4 in ECMA’s process, which means that the syntax is final and will be in the next ES release. On occasion we might support a _feature_ before it has reached Stage 4, but output it using equivalent non-experimental syntax instead of the newly-proposed syntax; that’s what’s happening in 2.0.0 for [object destructuring](http://coffeescript.org/v2/#splats), where our output uses the same polyfill that Babel uses. When the new syntax is finalized, we will update our output to use the final syntax.
+Most features added by ECMA in recent years haven’t required any updates at all in CoffeeScript. New global objects, or new methods on global objects, don’t require any updates on CoffeeScript’s part to work. Some proposed future JS features _do_ involve new syntax, like [class fields](https://github.com/tc39/proposal-class-fields). We have adopted a policy of supporting new syntax only when it reaches Stage 4 in ECMA’s process, which means that the syntax is final and will be in the next ES release. On occasion we might support a _feature_ before it has reached Stage 4, but output it using equivalent non-experimental syntax instead of the newly-proposed syntax; that’s what’s happening in 2.0.0 for [object destructuring](../#splats), where our output uses the same polyfill that Babel uses. When the new syntax is finalized, we will update our output to use the final syntax.
 
 ## Credits
 
