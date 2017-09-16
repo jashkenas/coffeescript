@@ -53,7 +53,7 @@ A few JavaScript features have been intentionally omitted from CoffeeScript. The
 
 ## Future Compatibility
 
-Back when CoffeeScript 1 was created, ES2015 JavaScript and transpilers like [Babel](http://babeljs.io/), [Bublé](https://buble.surge.sh/) or [Traceur Compiler](https://github.com/google/traceur-compiler) were several years away. The CoffeeScript compiler itself had to do what today’s transpilers do, converting modern features like destructuring and arrow functions into equivalent lowest-common-denominator JavaScript. 
+Back when CoffeeScript 1 was created, ES2015 JavaScript and transpilers like [Babel](http://babeljs.io/), [Bublé](https://buble.surge.sh/) or [Traceur Compiler](https://github.com/google/traceur-compiler) were several years away. The CoffeeScript compiler itself had to do what today’s transpilers do, converting modern features like destructuring and arrow functions into equivalent lowest-common-denominator JavaScript.
 
 But transpilers exist now, and they do their job well. With them around, there’s no need for the CoffeeScript compiler to duplicate this functionality. All the CoffeeScript compiler needs to worry about now is converting the CoffeeScript version of new syntax into the JS version of that syntax, e.g. `import fs from 'fs'` into `import fs from 'fs'`. This makes adding support for new JavaScript features much easier than before.
 
