@@ -528,7 +528,11 @@ div.CodeMirror-cursor {
     <a href="#try" class="nav-link d-md-none" data-action="sidebar-nav" data-toggle="try">Try CoffeeScript</a>
     <a href="#top" class="nav-link" data-action="sidebar-nav">Overview</a>
     <a href="#coffeescript-2" class="nav-link" data-action="sidebar-nav">CoffeeScript 2</a>
-    <a href="#compatibility" class="nav-link" data-action="sidebar-nav">Compatibility</a>
+    <nav class="nav flex-column">
+      <a href="#whats-new-in-coffeescript-2" class="nav-link" data-action="sidebar-nav">What’s New in CoffeeScript 2</a>
+      <a href="#why-coffeescript" class="nav-link" data-action="sidebar-nav">Why CoffeeScript When There’s ES6?</a>
+      <a href="#compatibility" class="nav-link" data-action="sidebar-nav">Compatibility</a>
+    </nav>
     <a href="#installation" class="nav-link" data-action="sidebar-nav">Installation</a>
     <a href="#usage" class="nav-link" data-action="sidebar-nav">Usage</a>
     <nav class="nav flex-column">
@@ -803,19 +807,25 @@ cubes = (function() {
       </section>
       <section id="coffeescript-2">
         <h2>CoffeeScript 2</h2>
-<h3>What’s New In CoffeeScript 2?</h3>
+
+        <section id="whats-new-in-coffeescript-2">
+          <h3>What’s New In CoffeeScript 2?</h3>
 <p>The biggest change in CoffeeScript 2 is that now the CoffeeScript compiler produces modern JavaScript syntax (ES6, or ES2015 and later). A CoffeeScript <code>=&gt;</code> becomes a JS <code>=&gt;</code>, a CoffeeScript <code>class</code> becomes a JS <code>class</code> and so on. Major new features in CoffeeScript 2 include <a href="#async-functions">async functions</a> and <a href="#jsx">JSX</a>. You can read more in the <a href="announcing-coffeescript-2/">announcement</a>.</p>
 <p>There are very few <a href="#breaking-changes">breaking changes from CoffeeScript 1.x to 2</a>; we hope the upgrade process is smooth for most projects.</p>
-<h3>Why CoffeeScript When There’s ES6?</h3>
+
+        </section>
+        <section id="why-coffeescript">
+          <h3>Why CoffeeScript When There’s ES6?</h3>
 <p>CoffeeScript introduced many new features to the JavaScript world, such as <a href="#fat-arrow"><code>=&gt;</code></a> and <a href="#destructuring">destructuring</a> and <a href="#classes">classes</a>. We are happy that ECMA has seen their utility and adopted them into ECMAScript.</p>
 <p>CoffeeScript’s intent, however, was never to be a superset of JavaScript. One of the guiding principles of CoffeeScript has been <em>simplicity:</em> not just removing JavaScript’s “bad parts,” but providing an elegant, concise syntax that eschews unnecessary punctuation whenever possible, to make code easier to read and reason about. This benefit of CoffeeScript remains, even in an ES2015+ world.</p>
 
-      </section>
-      <section id="compatibility">
-        <h2>Compatibility</h2>
-<p>With the exception of <a href="#modules">modules</a> (<code>import</code> and <code>export</code> statements) and <a href="#jsx">JSX</a>, all the modern JavaScript features that CoffeeScript supports can run natively in Node 7.6+, meaning that Node can run CoffeeScript’s output without any further processing required. You can <a href="http://coffeescript.org/v2/test.html">run the tests in your browser</a> to see if your browser can do the same. For older browsers or older versions of Node, <a href="#transpilation">transpilation</a> is required.</p>
+        </section>
+        <section id="compatibility">
+          <h3>Compatibility</h3>
+<p>With the exception of <a href="#modules">modules</a> (<code>import</code> and <code>export</code> statements) and <a href="#jsx">JSX</a>, all the modern JavaScript features that CoffeeScript supports can run natively in Node 7.6+, meaning that Node can run CoffeeScript’s output without any further processing required. You can <a href="http://coffeescript.org/v2/test.html">run the tests in your browser</a> to see if your browser can do the same. For older browsers or older versions of Node, however, <a href="#transpilation">transpilation</a> is required.</p>
 <p>Support for modern JavaScript syntax is important to ensure compatibility with frameworks that assume modern features. Now that CoffeeScript compiles classes to the <code>class</code> keyword, it’s possible to <code>extend</code> a JavaScript class; that wasn’t possible in CoffeeScript 1. Parity in how language features work is also important on its own; CoffeeScript “is just JavaScript,” and so things like <a href="#breaking-changes-default-values">function parameter default values</a> should behave the same in CoffeeScript as in JavaScript. Some such features behave slightly differently in JavaScript than they did in CoffeeScript 1; in such cases we are conforming with the JavaScript spec, and we’ve documented the differences as <a href="#breaking-changes">breaking changes</a>.</p>
 
+        </section>
       </section>
       <section id="installation">
         <h2>Installation</h2>
@@ -957,7 +967,14 @@ eval CoffeeScript.compile <span class="string">'console.log "Mmmmm, I could real
         </section>
         <section id="transpilation">
           <h3>Transpilation</h3>
-<p>CoffeeScript 2 generates JavaScript that uses the latest, modern syntax (a.k.a. ES6, or ES2015, or ES2016 or ES2017 etc.). In general, <a href="http://node.green/">CoffeeScript 2’s output is supported as is by Node.js 7.6+</a>, except for <a href="#modules">modules</a> and <a href="#jsx">JSX</a>. Evergreen browsers such as the latest versions of Chrome and Safari have similar robust support. But if you want to support older browsers, or if you want to use modules or JSX, you must transpile CoffeeScript’s output.</p>
+<p>CoffeeScript 2 generates JavaScript that uses the latest, modern syntax. Your runtime <a href="#compatibility">might not support all of that syntax</a>. If so, you need to <em>transpile</em> the JavaScript. To make things a little easier, CoffeeScript has built-in support for the popular <a href="http://babeljs.io/">Babel</a> transpiler.</p>
+<h4>Quickstart</h4>
+<p>From the root of your project:</p>
+<blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --save-dev babel-core babel-preset-env
+<span class="built_in">echo</span> <span class="string">'{ "presets": ["env"] }'</span> &gt; .babelrc
+coffee --compile --transpile --inline-map some-file.coffee
+</code></pre>
+</blockquote><h4>About Transpilation</h4>
 <p>Transpilation is the conversion of source code into equivalent but different source code. In our case, we want to convert modern JavaScript into older JavaScript that will run in older versions of Node or older browsers; for example, <code>{ a } = obj</code> into <code>a = obj.a</code>. This is done via transpilers like <a href="http://babeljs.io/">Babel</a>, <a href="https://buble.surge.sh/">Bublé</a> or <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>.</p>
 <p>CoffeeScript includes a <code>--transpile</code> option when used via the <code>coffee</code> command, or a <code>transpile</code> option when used via Node. To use either, <a href="http://babeljs.io/">Babel</a> must be installed in your project:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --save-dev babel-core
@@ -968,12 +985,8 @@ eval CoffeeScript.compile <span class="string">'console.log "Mmmmm, I could real
 </code></pre>
 </blockquote><p>See <a href="https://babeljs.io/docs/plugins/">Babel’s website to learn about presets and plugins</a> and the multitude of options you have.</p>
 <p>Simply installing <code>babel-preset-env</code> isn’t enough. You also need to define the configuration options that you want Babel to use. You can do this by creating a <a href="https://babeljs.io/docs/usage/babelrc/"><code>.babelrc</code> file</a> in the folder containing the files you’re compiling, or in any parent folder up the path above those files. So if your project is in <code>~/app</code> and your files are in <code>~/app/src</code>, you can put <code>.babelrc</code> in either <code>~/app</code> or in <code>~/app/src</code>. You can also define the Babel options via a <code>babel</code> key in the <code>package.json</code> file for your project. A minimal <code>.babelrc</code> file (or <code>package.json</code> <code>babel</code> key) for use with <code>babel-preset-env</code> would be just <code>{ &quot;presets&quot;: [&quot;env&quot;] }</code>.</p>
-<p>So to put it all together, from the root of your project:</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --save-dev babel-core babel-preset-env
-<span class="built_in">echo</span> <span class="string">'{ "presets": ["env"] }'</span> &gt; .babelrc
-</code></pre>
-</blockquote><p>And then you can use <code>coffee --transpile</code> and it will pipe CoffeeScript’s output through Babel using the options in this <code>.babelrc</code> file.</p>
-<p>If you’re using CoffeeScript via the <a href="nodejs_usage">Node API</a>, where you call <code>CoffeeScript.compile</code> with a string to be compiled and an options object, the <code>transpile</code> key of the <code>options</code> object should be the Babel options:</p>
+<p>Once you have <code>babel-core</code> and <code>babel-preset-env</code> (or other presets or plugins) installed, and a <code>.babelrc</code> file (or <code>package.json</code> <code>babel</code> key) in place, you can use <code>coffee --transpile</code> to pipe CoffeeScript’s output through Babel using the options you’ve saved.</p>
+<p>If you’re using CoffeeScript via the <a href="nodejs_usage">Node API</a>, where you call <code>CoffeeScript.compile</code> with a string to be compiled and an <code>options</code> object, the <code>transpile</code> key of the <code>options</code> object should be the Babel options:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-js">CoffeeScript.compile(code, {<span class="attr">transpile</span>: {<span class="attr">presets</span>: [<span class="string">'env'</span>]}})
 </code></pre>
 </blockquote><p>You can also transpile CoffeeScript’s output without using the <code>transpile</code> option, for example as part of a build chain. This lets you use transpilers other than Babel, and it gives you greater control over the process. There are many great task runners for setting up JavaScript build chains, such as <a href="http://gulpjs.com/">Gulp</a>, <a href="https://webpack.github.io/">Webpack</a>, <a href="https://gruntjs.com/">Grunt</a> and <a href="http://broccolijs.com/">Broccoli</a>.</p>

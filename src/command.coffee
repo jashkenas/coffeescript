@@ -451,7 +451,7 @@ compileOptions = (filename, base) ->
     catch
       console.error '''
         To use --transpile, you must have Babel installed and configured.
-        See http://coffeescript.org/#usage
+        See http://coffeescript.org/#transpilation
       '''
       process.exit 1
 
@@ -468,7 +468,7 @@ compileOptions = (filename, base) ->
           to be compiled, or in the path of the current working directory.
           If you are compiling a string via the Node API, the transpile option
           must be an object with the options to pass to Babel.
-          See http://coffeescript.org/#usage
+          See http://coffeescript.org/#transpilation
         '''
         process.exit 1
 
