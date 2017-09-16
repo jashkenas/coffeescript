@@ -1,8 +1,8 @@
 ## Contributing
 
-Contributions are welcome! Feel free to fork [the repo](http://github.com/jashkenas/coffeescript) and submit a pull request.
+Contributions are welcome! Feel free to fork [the repo](https://github.com/jashkenas/coffeescript) and submit a pull request.
 
-[Some features of ECMAScript are intentionally unsupported](#unsupported). Please review both the open and closed [issues on GitHub](http://github.com/jashkenas/coffeescript/issues) to see if the feature you’re looking for has already been discussed. As a general rule, we don’t support ECMAScript syntax for features that aren’t yet finalized (at Stage 4 in the proposal approval process).
+[Some features of ECMAScript are intentionally unsupported](#unsupported). Please review both the open and closed [issues on GitHub](https://github.com/jashkenas/coffeescript/issues) to see if the feature you’re looking for has already been discussed. As a general rule, we don’t support ECMAScript syntax for features that aren’t yet finalized (at Stage 4 in the proposal approval process).
 
 For more resources on adding to CoffeeScript, please see [the Wiki](https://github.com/jashkenas/coffeescript/wiki/%5BHowto%5D-Hacking-on-the-CoffeeScript-Compiler), especially [How The Parser Works](https://github.com/jashkenas/coffeescript/wiki/%5BHowTo%5D-How-parsing-works).
 
