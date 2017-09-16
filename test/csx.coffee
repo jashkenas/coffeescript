@@ -711,3 +711,34 @@ test 'unspaced less than after CSX works but is not encouraged', ->
 
       res = 2 < div;
     '''
+
+test '#4686: comments inside interpolations that also contain CSX tags', ->
+  eqJS '''
+    <div>
+      {
+        # comment
+        <div />
+      }
+    </div>
+  ''', '''
+    <div>
+      {  // comment
+    <div />}
+    </div>;
+  '''
+
+test '#4686: comments inside interpolations that also contain CSX attributes', ->
+  eqJS '''
+    <div>
+      <div anAttr={
+        # comment
+        "value"
+      } />
+    </div>
+  ''', '''
+    <div>
+      {  // comment
+    <div anAttr={"value"} />}
+    </div>;
+  '''
+
