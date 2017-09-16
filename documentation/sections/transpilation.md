@@ -1,6 +1,18 @@
 ### Transpilation
 
-CoffeeScript 2 generates JavaScript that uses the latest, modern syntax (a.k.a. ES6, or ES2015, or ES2016 or ES2017 etc.). In general, [CoffeeScript 2’s output is supported as is by Node.js 7.6+](http://node.green/), except for [modules](#modules) and [JSX](#jsx). Evergreen browsers such as the latest versions of Chrome and Safari have similar robust support. But if you want to support older browsers, or if you want to use modules or JSX, you must transpile CoffeeScript’s output.
+CoffeeScript 2 generates JavaScript that uses the latest, modern syntax. Your runtime [might not support all of that syntax](#compatibility). If so, you need to _transpile_ the JavaScript. To make things a little easier, CoffeeScript has built-in support for the popular [Babel](http://babeljs.io/) transpiler.
+
+#### Quickstart
+
+From the root of your project:
+
+```bash
+npm install --save-dev babel-core babel-preset-env
+echo '{ "presets": ["env"] }' > .babelrc
+coffee --compile --transpile --inline-map some-file.coffee
+```
+
+#### About Transpilation
 
 Transpilation is the conversion of source code into equivalent but different source code. In our case, we want to convert modern JavaScript into older JavaScript that will run in older versions of Node or older browsers; for example, `{ a } = obj` into `a = obj.a`. This is done via transpilers like [Babel](http://babeljs.io/), [Bublé](https://buble.surge.sh/) or [Traceur Compiler](https://github.com/google/traceur-compiler).
 
@@ -22,16 +34,9 @@ See [Babel’s website to learn about presets and plugins](https://babeljs.io/do
 
 Simply installing `babel-preset-env` isn’t enough. You also need to define the configuration options that you want Babel to use. You can do this by creating a [`.babelrc` file](https://babeljs.io/docs/usage/babelrc/) in the folder containing the files you’re compiling, or in any parent folder up the path above those files. So if your project is in `~/app` and your files are in `~/app/src`, you can put `.babelrc` in either `~/app` or in `~/app/src`. You can also define the Babel options via a `babel` key in the `package.json` file for your project. A minimal `.babelrc` file (or `package.json` `babel` key) for use with `babel-preset-env` would be just `{ "presets": ["env"] }`.
 
-So to put it all together, from the root of your project:
+Once you have `babel-core` and `babel-preset-env` (or other presets or plugins) installed, and a `.babelrc` file (or `package.json` `babel` key) in place, you can use `coffee --transpile` to pipe CoffeeScript’s output through Babel using the options you’ve saved.
 
-```bash
-npm install --save-dev babel-core babel-preset-env
-echo '{ "presets": ["env"] }' > .babelrc
-```
-
-And then you can use `coffee --transpile` and it will pipe CoffeeScript’s output through Babel using the options in this `.babelrc` file.
-
-If you’re using CoffeeScript via the [Node API](nodejs_usage), where you call `CoffeeScript.compile` with a string to be compiled and an options object, the `transpile` key of the `options` object should be the Babel options:
+If you’re using CoffeeScript via the [Node API](nodejs_usage), where you call `CoffeeScript.compile` with a string to be compiled and an `options` object, the `transpile` key of the `options` object should be the Babel options:
 
 ```js
 CoffeeScript.compile(code, {transpile: {presets: ['env']}})
