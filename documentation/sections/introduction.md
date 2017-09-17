@@ -4,10 +4,10 @@ The golden rule of CoffeeScript is: _“It’s just JavaScript”_. The code com
 
 The CoffeeScript compiler goes to great lengths to generate output JavaScript that runs in every JavaScript runtime, but there are exceptions. Use [generator functions](#generator-functions), [`for…from`](#generator-iteration), or [tagged template literals](#tagged-template-literals) only if you know that your [target runtimes can support them](http://kangax.github.io/compat-table/es6/). If you use [modules](#modules), you will need to [use an additional tool to resolve them](#modules-note).
 
-**Latest Version:** [<%= fullVersion %>](https://github.com/jashkenas/coffeescript/tarball/<%= fullVersion %>)
+**Latest 1.x Version:** [<%= fullVersion %>](https://github.com/jashkenas/coffeescript/tarball/<%= fullVersion %>)
 
 ```bash
 npm install -g coffeescript
 ```
 
-**CoffeeScript 2 is coming!** It adds support for [ES2015 classes](/v2/#classes), [`async`/`await`](/v2/#fat-arrow), [JSX](/v2/#jsx), <span class="nowrap">[object rest/spread syntax](/v2/#splats)</span>, and JavaScript generated using ES2015+ syntax. [Learn more](/v2/).
+**Upgrade to CoffeeScript 2!** It adds support for [ES2015 classes](/#classes), [`async`/`await`](/#async-functions), [JSX](/#jsx), <span class="nowrap">[object rest/spread syntax](/#splats)</span>, and [JavaScript generated using modern syntax](/#coffeescript-2). [Learn more](/announcing-coffeescript-2/).

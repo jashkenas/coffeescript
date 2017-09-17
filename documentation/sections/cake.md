@@ -8,4 +8,4 @@ Task definitions are written in CoffeeScript, so you can put arbitrary code in y
 codeFor('cake_tasks')
 ```
 
-If you need to invoke one task before another — for example, running `build` before `test`, you can use the `invoke` function: `invoke 'build'`. Cake tasks are a minimal way to expose your CoffeeScript functions to the command line, so [don’t expect any fanciness built-in](/v<%= majorVersion %>/annotated-source/cake.html). If you need dependencies, or async callbacks, it’s best to put them in your code itself — not the cake task.
+If you need to invoke one task before another — for example, running `build` before `test`, you can use the `invoke` function: `invoke 'build'`. Cake tasks are a minimal way to expose your CoffeeScript functions to the command line, so [don’t expect any fanciness built-in](annotated-source/cake.html). If you need dependencies, or async callbacks, it’s best to put them in your code itself — not the cake task.

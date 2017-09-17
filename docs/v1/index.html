@@ -594,18 +594,18 @@ pre .xml .cdata {
       Annotated Source
     </div>
     <div class="contents menu">
-      <a href="/v1/annotated-source/grammar.html">Grammar Rules — src/grammar</a>
-      <a href="/v1/annotated-source/lexer.html">Lexing Tokens — src/lexer</a>
-      <a href="/v1/annotated-source/rewriter.html">The Rewriter — src/rewriter</a>
-      <a href="/v1/annotated-source/nodes.html">The Syntax Tree — src/nodes</a>
-      <a href="/v1/annotated-source/scope.html">Lexical Scope — src/scope</a>
-      <a href="/v1/annotated-source/helpers.html">Helpers &amp; Utility Functions — src/helpers</a>
-      <a href="/v1/annotated-source/coffee-script.html">The CoffeeScript Module — src/coffee-script</a>
-      <a href="/v1/annotated-source/cake.html">Cake &amp; Cakefiles — src/cake</a>
-      <a href="/v1/annotated-source/command.html">“coffee” Command-Line Utility — src/command</a>
-      <a href="/v1/annotated-source/optparse.html">Option Parsing — src/optparse</a>
-      <a href="/v1/annotated-source/repl.html">Interactive REPL — src/repl</a>
-      <a href="/v1/annotated-source/sourcemap.html">Source Maps — src/sourcemap</a>
+      <a href="annotated-source/grammar.html">Grammar Rules — src/grammar</a>
+      <a href="annotated-source/lexer.html">Lexing Tokens — src/lexer</a>
+      <a href="annotated-source/rewriter.html">The Rewriter — src/rewriter</a>
+      <a href="annotated-source/nodes.html">The Syntax Tree — src/nodes</a>
+      <a href="annotated-source/scope.html">Lexical Scope — src/scope</a>
+      <a href="annotated-source/helpers.html">Helpers &amp; Utility Functions — src/helpers</a>
+      <a href="annotated-source/coffee-script.html">The CoffeeScript Module — src/coffee-script</a>
+      <a href="annotated-source/cake.html">Cake &amp; Cakefiles — src/cake</a>
+      <a href="annotated-source/command.html">“coffee” Command-Line Utility — src/command</a>
+      <a href="annotated-source/optparse.html">Option Parsing — src/optparse</a>
+      <a href="annotated-source/repl.html">Interactive REPL — src/repl</a>
+      <a href="annotated-source/sourcemap.html">Source Maps — src/sourcemap</a>
     </div>
   </div>
 </div>
@@ -615,10 +615,10 @@ pre .xml .cdata {
     <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript”</em>. The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
 <p>The CoffeeScript compiler goes to great lengths to generate output JavaScript that runs in every JavaScript runtime, but there are exceptions. Use <a href="#generator-functions">generator functions</a>, <a href="#generator-iteration"><code>for…from</code></a>, or <a href="#tagged-template-literals">tagged template literals</a> only if you know that your <a href="http://kangax.github.io/compat-table/es6/">target runtimes can support them</a>. If you use <a href="#modules">modules</a>, you will need to <a href="#modules-note">use an additional tool to resolve them</a>.</p>
-<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/1.12.7">1.12.7</a></p>
+<p><strong>Latest 1.x Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/1.12.7">1.12.7</a></p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install -g coffeescript
 </code></pre>
-</blockquote><p><strong>CoffeeScript 2 is coming!</strong> It adds support for <a href="/v2/#classes">ES2015 classes</a>, <a href="/v2/#fat-arrow"><code>async</code>/<code>await</code></a>, <a href="/v2/#jsx">JSX</a>, <span class="nowrap"><a href="/v2/#splats">object rest/spread syntax</a></span>, and JavaScript generated using ES2015+ syntax. <a href="/v2/">Learn more</a>.</p>
+</blockquote><p><strong>Upgrade to CoffeeScript 2!</strong> It adds support for <a href="/#classes">ES2015 classes</a>, <a href="/#async-functions"><code>async</code>/<code>await</code></a>, <a href="/#jsx">JSX</a>, <span class="nowrap"><a href="/#splats">object rest/spread syntax</a></span>, and <a href="/#coffeescript-2">JavaScript generated using modern syntax</a>. <a href="/announcing-coffeescript-2/">Learn more</a>.</p>
 
     <h2>Overview</h2>
 <p><em>CoffeeScript on the left, compiled JavaScript output on the right.</em></p>
@@ -741,7 +741,7 @@ cubes = (function() {
 ;alert(cubes);">run: cubes</div><br class='clear' /></div>
   <span class="bookmark" id="installation"></span>
     <h2>Installation</h2>
-<p>The command-line version of <code>coffee</code> is available as a <a href="https://nodejs.org/">Node.js</a> utility. The <a href="/v1/browser-compiler/coffee-script.js">core compiler</a> however, does not depend on Node, and can be run in any JavaScript environment, or in the browser (see <a href="#try">Try CoffeeScript</a>).</p>
+<p>The command-line version of <code>coffee</code> is available as a <a href="https://nodejs.org/">Node.js</a> utility. The <a href="browser-compiler/coffee-script.js">core compiler</a> however, does not depend on Node, and can be run in any JavaScript environment, or in the browser (see <a href="#try">Try CoffeeScript</a>).</p>
 <p>To install, first make sure you have a working copy of the latest stable version of <a href="https://nodejs.org/">Node.js</a>. You can then install CoffeeScript globally with <a href="https://www.npmjs.com/">npm</a>:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --global coffeescript
 </code></pre>
@@ -2441,7 +2441,7 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
   dir = options.output || <span class="string">'lib'</span>;
   <span class="keyword">return</span> fs.writeFile(dir + <span class="string">"/parser.js"</span>, code);
 });
-</code></pre><script>window.example1 = "fs = require 'fs'\n\noption '-o', '--output [DIR]', 'directory for compiled code'\n\ntask 'build:parser', 'rebuild the Jison parser', (options) ->\n  require 'jison'\n  code = require('./lib/grammar').parser.generate()\n  dir  = options.output or 'lib'\n  fs.writeFile \"#{dir}/parser.js\", code\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example1);'>load</div><br class='clear' /></div><p>If you need to invoke one task before another — for example, running <code>build</code> before <code>test</code>, you can use the <code>invoke</code> function: <code>invoke 'build'</code>. Cake tasks are a minimal way to expose your CoffeeScript functions to the command line, so <a href="/v1/annotated-source/cake.html">don’t expect any fanciness built-in</a>. If you need dependencies, or async callbacks, it’s best to put them in your code itself — not the cake task.</p>
+</code></pre><script>window.example1 = "fs = require 'fs'\n\noption '-o', '--output [DIR]', 'directory for compiled code'\n\ntask 'build:parser', 'rebuild the Jison parser', (options) ->\n  require 'jison'\n  code = require('./lib/grammar').parser.generate()\n  dir  = options.output or 'lib'\n  fs.writeFile \"#{dir}/parser.js\", code\n"</script><div class='minibutton load' onclick='javascript: loadConsole(example1);'>load</div><br class='clear' /></div><p>If you need to invoke one task before another — for example, running <code>build</code> before <code>test</code>, you can use the <code>invoke</code> function: <code>invoke 'build'</code>. Cake tasks are a minimal way to expose your CoffeeScript functions to the command line, so <a href="annotated-source/cake.html">don’t expect any fanciness built-in</a>. If you need dependencies, or async callbacks, it’s best to put them in your code itself — not the cake task.</p>
 
   <span class="bookmark" id="source-maps"></span>
     <h2>Source Maps</h2>
@@ -2450,7 +2450,7 @@ task(<span class="string">'build:parser'</span>, <span class="string">'rebuild t
 
   <span class="bookmark" id="scripts"></span>
     <h2>“text/coffeescript” Script Tags</h2>
-<p>While it’s not recommended for serious use, CoffeeScripts may be included directly within the browser using <code>&lt;script type=&quot;text/coffeescript&quot;&gt;</code> tags. The source includes a compressed and minified version of the compiler (<a href="/v1/browser-compiler/coffee-script.js">Download current version here, 51k when gzipped</a>) as <code>v1/browser-compiler/coffee-script.js</code>. Include this file on a page with inline CoffeeScript tags, and it will compile and evaluate them in order.</p>
+<p>While it’s not recommended for serious use, CoffeeScripts may be included directly within the browser using <code>&lt;script type=&quot;text/coffeescript&quot;&gt;</code> tags. The source includes a compressed and minified version of the compiler (<a href="browser-compiler/coffee-script.js">Download current version here, 51k when gzipped</a>) as <code>docs/v1/browser-compiler/coffee-script.js</code>. Include this file on a page with inline CoffeeScript tags, and it will compile and evaluate them in order.</p>
 <p>In fact, the little bit of glue script that runs “Try CoffeeScript” above, as well as the jQuery for the menu, is implemented in just this way. View source and look at the bottom of the page to see the example. Including the script also gives you access to <code>CoffeeScript.compile()</code> so you can pop open Firebug and try compiling some strings.</p>
 <p>The usual caveats about CoffeeScript apply — your inline scripts will run within a closure wrapper, so if you want to expose global variables or functions, attach them to the <code>window</code> object.</p>
 
@@ -2501,7 +2501,7 @@ Use <code>bin/coffee</code> to test your changes,<br>
 <p><code>git checkout lib &amp;&amp; bin/cake build:full</code> is a good command to run when you’re working on the core language. It’ll refresh the <code>lib</code> folder (in case you broke something), build your altered compiler, use that to rebuild itself (a good sanity test) and then run all of the tests. If they pass, there’s a good chance you’ve made a successful change.</p>
 </li>
 <li>
-<p><a href="/v1/test.html">Browser Tests</a><br>
+<p><a href="test.html">Browser Tests</a><br>
 Run CoffeeScript’s test suite in your current browser.</p>
 </li>
 <li>
@@ -2592,7 +2592,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</p>
 <li>The browser compiler can once again be built unminified via <code>MINIFY=false cake build:browser</code>.</li>
 <li>The error-prone patched version of <code>Error.prepareStackTrace</code> has been removed.</li>
 <li>Command completion in the REPL (pressing tab to get suggestions) has been fixed for Node 6.9.1+.</li>
-<li>The <a href="/v1/test.html">browser-based tests</a> now include all the tests as the Node-based version.</li>
+<li>The <a href="test.html">browser-based tests</a> now include all the tests as the Node-based version.</li>
 </ul>
 <div class="anchor" id="1.12.1"></div>
 <h2 class="header">
@@ -2611,7 +2611,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</p>
 <li>CoffeeScript now provides a <a href="#generator-iteration"><code>for…from</code></a> syntax for outputting ES2015 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of"><code>for…of</code></a>. (Sorry they couldn’t match, but we came up with <code>for…of</code> first for something else.) This allows iterating over generators or any other iterable object. Note that using <code>for…from</code> in your code makes you responsible for ensuring that either your runtime supports <code>for…of</code> or that you transpile the output JavaScript further to a version your target runtime(s) support.</li>
 <li>Triple backticks (<code>```​</code>) allow the creation of embedded JavaScript blocks where escaping single backticks is not required, which should improve interoperability with ES2015 template literals and with Markdown.</li>
 <li>Within single-backtick embedded JavaScript, backticks can now be escaped via <code>\`​</code>.</li>
-<li>The browser tests now run in the browser again, and are accessible <a href="/v1/test.html">here</a> if you would like to test your browser.</li>
+<li>The browser tests now run in the browser again, and are accessible <a href="test.html">here</a> if you would like to test your browser.</li>
 <li>CoffeeScript-only keywords in ES2015 <code>import</code>s and <code>export</code>s are now ignored.</li>
 <li>The compiler now throws an error on trying to export an anonymous class.</li>
 <li>Bugfixes related to tokens and location data, for better source maps and improved compatibility with downstream tools.</li>
@@ -3016,7 +3016,7 @@ used to parse as <code>result = (i for i in list)</code> by default … it now p
   <a href="https://github.com/jashkenas/coffeescript/compare/0.5.1...0.5.2">0.5.2</a>
   <span class="timestamp"> &mdash; <time datetime="2010-02-25">February 25, 2010</time></span>
 </h2><p>Added a compressed version of the compiler for inclusion in web pages as
-<code>/v1/browser-compiler/coffee-script.js</code>. It’ll automatically run any script tags with type <code>text/coffeescript</code> for you. Added a <code>--stdio</code> option to the <code>coffee</code> command, for piped-in compiles.</p>
+<code>browser-compiler/coffee-script.js</code>. It’ll automatically run any script tags with type <code>text/coffeescript</code> for you. Added a <code>--stdio</code> option to the <code>coffee</code> command, for piped-in compiles.</p>
 <div class="anchor" id="0.5.1"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/0.5.0...0.5.1">0.5.1</a>
@@ -3222,7 +3222,7 @@ compileSource()
 </script>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<script src="v1/browser-compiler/coffee-script.js"></script>
+<script src="browser-compiler/coffee-script.js"></script>
 
 </body>
 </html>

@@ -7,7 +7,7 @@
     `bin/cake build:except-parser` to recompile much faster if you’re not editing `grammar.coffee`.
 
     `git checkout lib && bin/cake build:full` is a good command to run when you’re working on the core language. It’ll refresh the `lib` folder (in case you broke something), build your altered compiler, use that to rebuild itself (a good sanity test) and then run all of the tests. If they pass, there’s a good chance you’ve made a successful change.
-*   [Browser Tests](/v<%= majorVersion %>/test.html)<br>
+*   [Browser Tests](test.html)<br>
     Run CoffeeScript’s test suite in your current browser.
 *   [CoffeeScript Issues](https://github.com/jashkenas/coffeescript/issues)<br>
     Bug reports, feature proposals, and ideas for changes to the language belong here.

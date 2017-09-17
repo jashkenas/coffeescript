@@ -49,7 +49,7 @@ releaseHeader('2016-12-16', '1.12.2', '1.12.1')
 *   The browser compiler can once again be built unminified via `MINIFY=false cake build:browser`.
 *   The error-prone patched version of `Error.prepareStackTrace` has been removed.
 *   Command completion in the REPL (pressing tab to get suggestions) has been fixed for Node 6.9.1+.
-*   The [browser-based tests](/v<%= majorVersion %>/test.html) now include all the tests as the Node-based version.
+*   The [browser-based tests](test.html) now include all the tests as the Node-based version.
 
 ```
 releaseHeader('2016-12-07', '1.12.1', '1.12.0')
@@ -66,7 +66,7 @@ releaseHeader('2016-12-04', '1.12.0', '1.11.1')
 *   CoffeeScript now provides a [`for…from`](#generator-iteration) syntax for outputting ES2015 [`for…of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of). (Sorry they couldn’t match, but we came up with `for…of` first for something else.) This allows iterating over generators or any other iterable object. Note that using `for…from` in your code makes you responsible for ensuring that either your runtime supports `for…of` or that you transpile the output JavaScript further to a version your target runtime(s) support.
 *   Triple backticks (`` ```​``) allow the creation of embedded JavaScript blocks where escaping single backticks is not required, which should improve interoperability with ES2015 template literals and with Markdown.
 *   Within single-backtick embedded JavaScript, backticks can now be escaped via `` \`​``.
-*   The browser tests now run in the browser again, and are accessible [here](/v<%= majorVersion %>/test.html) if you would like to test your browser.
+*   The browser tests now run in the browser again, and are accessible [here](test.html) if you would like to test your browser.
 *   CoffeeScript-only keywords in ES2015 `import`s and `export`s are now ignored.
 *   The compiler now throws an error on trying to export an anonymous class.
 *   Bugfixes related to tokens and location data, for better source maps and improved compatibility with downstream tools.
@@ -437,7 +437,7 @@ releaseHeader('2010-02-25', '0.5.2', '0.5.1')
 ```
 
 Added a compressed version of the compiler for inclusion in web pages as
-`/v<%= majorVersion %>/browser-compiler/coffee-script.js`. It’ll automatically run any script tags with type `text/coffeescript` for you. Added a `--stdio` option to the `coffee` command, for piped-in compiles.
+`browser-compiler/coffee-script.js`. It’ll automatically run any script tags with type `text/coffeescript` for you. Added a `--stdio` option to the `coffee` command, for piped-in compiles.
 
 ```
 releaseHeader('2010-02-24', '0.5.1', '0.5.0')
