@@ -132,6 +132,17 @@ done = ->
   msg = "failed #{total - passedTests} tests and #{msg}" unless yay
   say msg, (if yay then 'good' else 'bad')
 
+  gtag 'event', 'tests_complete',
+    event_category: 'tests'
+    event_label: if yay then 'passed' else 'failed'
+    value: if yay then passedTests else total - passedTests
+  gtag 'event', 'tests_report',
+    event_category: 'tests'
+    event_label: msg
+  gtag 'event', 'timing_complete',
+    name: 'tests_run'
+    value: sec * 1000
+
 Promise.all(asyncTests).then(done).catch(done)
 </script>
 
@@ -139,10 +150,11 @@ Promise.all(asyncTests).then(done).catch(done)
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-106156830-1"></script>
 <script>
+  window.GA_TRACKING_ID = 'UA-106156830-1';
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments)};
   gtag('js', new Date());
-  gtag('config', 'UA-106156830-1');
+  gtag('config', GA_TRACKING_ID);
 </script>
 </body>
 </html>
