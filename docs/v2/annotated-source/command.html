@@ -215,7 +215,8 @@ useWinPathSep  = path.sep <span class="hljs-keyword">is</span> <span class="hljs
   [<span class="hljs-string">'-r'</span>, <span class="hljs-string">'--require [MODULE*]'</span>, <span class="hljs-string">'require the given module before eval or REPL'</span>]
   [<span class="hljs-string">'-s'</span>, <span class="hljs-string">'--stdio'</span>,             <span class="hljs-string">'listen for and compile scripts over stdio'</span>]
   [<span class="hljs-string">'-l'</span>, <span class="hljs-string">'--literate'</span>,          <span class="hljs-string">'treat stdio as literate style coffeescript'</span>]
-  [<span class="hljs-string">'-t'</span>, <span class="hljs-string">'--tokens'</span>,            <span class="hljs-string">'print out the tokens that the lexer/rewriter produce'</span>]
+  [<span class="hljs-string">'-t'</span>, <span class="hljs-string">'--transpile'</span>,         <span class="hljs-string">'pipe generated JavaScript through Babel'</span>]
+  [      <span class="hljs-string">'--tokens'</span>,            <span class="hljs-string">'print out the tokens that the lexer/rewriter produce'</span>]
   [<span class="hljs-string">'-v'</span>, <span class="hljs-string">'--version'</span>,           <span class="hljs-string">'display the version number'</span>]
   [<span class="hljs-string">'-w'</span>, <span class="hljs-string">'--watch'</span>,             <span class="hljs-string">'watch scripts for changes and rerun commands'</span>]
 ]</pre></div></div>
@@ -849,14 +850,129 @@ same directory as the <code>.js</code> file.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">compileOptions</span> = <span class="hljs-params">(filename, base)</span> -&gt;</span>
-  answer = {
-    filename
+  <span class="hljs-keyword">if</span> opts.transpile</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>The user has requested that the CoffeeScript compiler also transpile
+via Babel. We use Babel as an <code>optionalDependency</code>; see
+<a href="https://docs.npmjs.com/files/package.json#optionaldependencies">https://docs.npmjs.com/files/package.json#optionaldependencies</a>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">try</span>
+      <span class="hljs-built_in">require</span> <span class="hljs-string">'babel-core'</span>
+    <span class="hljs-keyword">catch</span>
+      <span class="hljs-built_in">console</span>.error <span class="hljs-string">'''
+        To use --transpile, you must have Babel installed and configured.
+        See http://coffeescript.org/#transpilation
+      '''</span>
+      process.exit <span class="hljs-number">1</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <p>We’re giving Babel only a string, not a filename or path to a file, so
+it doesn’t know where to search to find a <code>.babelrc</code> file or a <code>babel</code>
+key in a <code>package.json</code>. So if <code>opts.transpile</code> is an object, use that
+as Babel’s options; otherwise figure out what the options should be.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">unless</span> <span class="hljs-keyword">typeof</span> opts.transpile <span class="hljs-keyword">is</span> <span class="hljs-string">'object'</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>Find the options based on the path to the file being compiled.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function">      <span class="hljs-title">cantFindOptions</span> = -&gt;</span>
+        <span class="hljs-built_in">console</span>.error <span class="hljs-string">'''
+          To use the transpile option, there must be a .babelrc file
+          (or a package.json file with a "babel" key) in the path of the file
+          to be compiled, or in the path of the current working directory.
+          If you are compiling a string via the Node API, the transpile option
+          must be an object with the options to pass to Babel.
+          See http://coffeescript.org/#transpilation
+        '''</span>
+        process.exit <span class="hljs-number">1</span>
+
+      checkPath = <span class="hljs-keyword">if</span> filename
+        path.dirname filename
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> base
+        base
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> process?
+        process.cwd()
+      <span class="hljs-keyword">else</span>
+        cantFindOptions()
+
+      <span class="hljs-keyword">loop</span>
+        <span class="hljs-keyword">try</span>
+          opts.transpile = JSON.parse fs.readFileSync path.join(checkPath, <span class="hljs-string">'.babelrc'</span>), <span class="hljs-string">'utf-8'</span>
+          <span class="hljs-keyword">break</span>
+        <span class="hljs-keyword">catch</span>
+          <span class="hljs-keyword">try</span>
+            packageJson = JSON.parse fs.readFileSync(path.join(checkPath, <span class="hljs-string">'package.json'</span>), <span class="hljs-string">'utf-8'</span>)
+            <span class="hljs-keyword">if</span> packageJson.babel?
+              opts.transpile = packageJson.babel
+              <span class="hljs-keyword">break</span>
+
+        <span class="hljs-keyword">if</span> checkPath <span class="hljs-keyword">is</span> path.dirname checkPath <span class="hljs-comment"># We’ve reached the root.</span>
+          cantFindOptions()
+          <span class="hljs-keyword">break</span>
+        <span class="hljs-keyword">else</span>
+          checkPath = path.dirname checkPath</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <p>Pass a reference to Babel into the compiler, so that the transpile option
+is available for the CLI. We need to do this so that tools like Webpack
+can <code>require(&#39;coffeescript&#39;)</code> and build correctly, without trying to
+require Babel.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    opts.transpile.transpile = CoffeeScript.transpile
+  <span class="hljs-keyword">else</span>
+    opts.transpile = <span class="hljs-literal">no</span>
+
+  answer =
+    filename: filename
     literate: opts.literate <span class="hljs-keyword">or</span> helpers.isLiterate(filename)
     bare: opts.bare
     header: opts.compile <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> opts[<span class="hljs-string">'no-header'</span>]
+    transpile: opts.transpile
     sourceMap: opts.map
     inlineMap: opts[<span class="hljs-string">'inline-map'</span>]
-  }
+
   <span class="hljs-keyword">if</span> filename
     <span class="hljs-keyword">if</span> base
       cwd = process.cwd()
@@ -878,11 +994,11 @@ same directory as the <code>.js</code> file.</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Start up a new Node.js instance with the arguments in <code>--nodejs</code> passed to
 the <code>node</code> binary, preserving the other options.</p>
@@ -905,11 +1021,11 @@ the <code>node</code> binary, preserving the other options.</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>Print the <code>--help</code> usage message and exit. Deprecated switches are not
 shown.</p>
@@ -922,11 +1038,11 @@ shown.</p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>Print the <code>--version</code> message and exit.</p>
 
