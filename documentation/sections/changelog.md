@@ -1,6 +1,14 @@
 ## Changelog
 
 ```
+releaseHeader('2017-09-17', '2.0.0', '2.0.0-beta5')
+```
+
+*   Added `--transpile` flag or `transpile` Node API option to tell the CoffeeScript compiler to pipe its output through Babel before saving or returning it; see [Transpilation](#transpilation). Also changed the `-t` short flag to refer to `--transpile` instead of `--tokens`.
+*   Always populate source maps’ `sourcesContent` property.
+*   Bugfixes for destructuring and for comments in JSX.
+
+```
 releaseHeader('2017-09-02', '2.0.0-beta5', '2.0.0-beta4')
 ```
 
