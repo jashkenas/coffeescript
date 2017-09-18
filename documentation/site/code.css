@@ -5,7 +5,7 @@
   letter-spacing: 0.3px;
   color: #f8f8f8;
   /* Prevent mobile Safari from zooming in on our code editors; the code is 16px naturally, but somehow being explicit about it prevents the zooming */
-  font-size: 16px;
+  font-size: 15px;
 }
 .CodeMirror-lines {
   padding: 0.5em 0;

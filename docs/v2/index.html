@@ -184,12 +184,12 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 .main blockquote {
   font-size: 1.1em;
 }
-@media (min-width: 768px) {
+@media (min-width: 1050px) {
   .main p, .main li, .main td, .main th {
-    font-size: 1.3em;
+    font-size: 1.2em;
   }
   .main blockquote {
-    font-size: 1.3em;
+    font-size: 1.2em;
   }
 }
 .main td {
@@ -215,6 +215,10 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 
 p, blockquote, table, .code-example {
   margin-bottom: 1.3rem;
+}
+
+code {
+  font-size: 82%;
 }
 
 td code {
@@ -245,7 +249,7 @@ code, button {
 }
 code, a > code {
   background-color: #f8f3f0;
-  padding: 0.2rem 0.4rem;
+  padding: 2px 8px;
 }
 code {
   color: #2f2625;
@@ -377,7 +381,7 @@ textarea {
   letter-spacing: 0.3px;
   color: #f8f8f8;
   /* Prevent mobile Safari from zooming in on our code editors; the code is 16px naturally, but somehow being explicit about it prevents the zooming */
-  font-size: 16px;
+  font-size: 15px;
 }
 .CodeMirror-lines {
   padding: 0.5em 0;
