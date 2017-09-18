@@ -6850,7 +6850,7 @@ and using @body.compileNode. <code>StringWithInterpolations.compileNode</code> i
       <span class="hljs-keyword">else</span>
         fragments.push @makeCode <span class="hljs-string">'$'</span> <span class="hljs-keyword">unless</span> @csx
         code = element.compileToFragments(o, LEVEL_PAREN)
-        <span class="hljs-keyword">unless</span> @isNestedTag element
+        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> @isNestedTag(element) <span class="hljs-keyword">or</span> code.some(<span class="hljs-function"><span class="hljs-params">(fragment)</span> -&gt;</span> fragment.comments?)
           code = @wrapInBraces code</pre></div></div>
             
         </li>
