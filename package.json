@@ -51,8 +51,5 @@
     "underscore": "~1.8.3",
     "webpack": "~3.6.0"
   },
-  "optionalDependencies": {
-    "babel-core": "^6"
-  },
   "dependencies": {}
 }
