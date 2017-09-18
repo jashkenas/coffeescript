@@ -274,6 +274,10 @@ textarea {
   height: 1em;
 }
 
+.CodeMirror pre {
+  line-height: 1.4em;
+}
+
 .CodeMirror,
 .placeholder-code {
   /* https://codemirror.net/demo/resize.html */
