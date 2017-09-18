@@ -5,7 +5,7 @@ The command-line version of `coffee` is available as a [Node.js](https://nodejs.
 To install, first make sure you have a working copy of the latest stable version of [Node.js](https://nodejs.org/). You can then install CoffeeScript globally with [npm](https://www.npmjs.com/):
 
 ```bash
-npm install --global coffeescript@next
+npm install --global coffeescript
 ```
 
 This will make the `coffee` and `cake` commands available globally.
@@ -13,7 +13,7 @@ This will make the `coffee` and `cake` commands available globally.
 When you need CoffeeScript as a dependency of a project, within that project’s folder you can install it locally:
 
 ```bash
-npm install --save coffeescript@next
+npm install --save-dev coffeescript
 ```
 
 The `coffee` and `cake` commands will first look in the current folder to see if CoffeeScript is installed locally, and use that version if so. This allows different versions of CoffeeScript to be installed globally and locally.

@@ -1,3 +1,6 @@
+unless window.location.origin # Polyfill `location.origin` for IE < 11
+  window.location.origin = "#{window.location.protocol}//#{window.location.hostname}"
+
 $(document).ready ->
   # Mobile navigation
   toggleSidebar = ->
@@ -12,8 +15,11 @@ $(document).ready ->
       setTimeout ->
         window.location = event.target.href
       , 260 # Wait for the sidebar to slide away before navigating
+    gtag 'event', 'sidebar_navigate',
+      event_category: 'navigation'
+      event_label: event.target.href.replace window.location.origin, ''
 
-  # Initialize Scrollspy for sidebar navigation; http://v4-alpha.getbootstrap.com/components/scrollspy/
+  # Initialize Scrollspy for sidebar navigation; https://getbootstrap.com/docs/4.0/components/scrollspy/
   # See also http://www.codingeverything.com/2014/02/BootstrapDocsSideBar.html and http://jsfiddle.net/KyleMit/v6zhz/
   $('body').scrollspy
     target: '#contents'
@@ -26,8 +32,12 @@ $(document).ready ->
     # We only want one active link in the nav
     $("#contents a.active[href!='#{target.relatedTarget}']").removeClass 'show'
     $target = $("#contents a[href='#{target.relatedTarget}']")
+    return if $target.prop('href') is "#{window.location.origin}/#try"
     # Update the browser address bar on scroll or navigation
     window.history.pushState {}, $target.text(), $target.prop('href')
+    # Track this as a new pageview; we only want '/#hash', not 'http://coffeescript.org/#hash'
+    gtag 'config', GA_TRACKING_ID,
+      page_path: $target.prop('href').replace window.location.origin, ''
 
 
   # Initialize CodeMirror for code examples; https://codemirror.net/doc/manual.html
@@ -77,6 +87,9 @@ $(document).ready ->
           catch exception
             output = "#{exception}"
           editors[index + 1].setValue output
+          gtag 'event', 'edit_code',
+            event_category: 'engagement'
+            event_label: $textarea.closest('[data-example]').data('example')
         , lastCompilationElapsedTime
 
       # Fix the code editors’ handling of tab-indented code
@@ -118,6 +131,9 @@ $(document).ready ->
       $(textareas[index]).val()
     js = "#{js}\nalert(#{unescape run});" unless run is yes
     eval js
+    gtag 'event', 'run_code',
+      event_category: 'engagement'
+      event_label: $(@).closest('[data-example]').data('example')
 
   clearHash = ->
     window.history.pushState '', document.title, window.location.pathname

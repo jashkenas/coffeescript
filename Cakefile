@@ -174,11 +174,11 @@ task 'build:watch:harmony', 'watch and continually rebuild the CoffeeScript comp
 
 buildDocs = (watch = no) ->
   # Constants
-  indexFile = 'documentation/index.html'
-  versionedSourceFolder = "documentation/v#{majorVersion}"
+  indexFile            = 'documentation/site/index.html'
+  siteSourceFolder     = "documentation/site"
   sectionsSourceFolder = 'documentation/sections'
   examplesSourceFolder = 'documentation/examples'
-  outputFolder = "docs/v#{majorVersion}"
+  outputFolder         = "docs/v#{majorVersion}"
 
   # Helpers
   releaseHeader = (date, version, prevVersion) ->
@@ -196,7 +196,7 @@ buildDocs = (watch = no) ->
       </h2>
     """
 
-  codeFor = require "./documentation/v#{majorVersion}/code.coffee"
+  codeFor = require "./documentation/site/code.coffee"
 
   htmlFor = ->
     hljs = require 'highlight.js'
@@ -235,7 +235,7 @@ buildDocs = (watch = no) ->
 
   includeScript = ->
     (file) ->
-      file = "#{versionedSourceFolder}/#{file}" unless '/' in file
+      file = "#{siteSourceFolder}/#{file}" unless '/' in file
       code = fs.readFileSync file, 'utf-8'
       code = CoffeeScript.compile code
       code = transpile code
@@ -243,7 +243,7 @@ buildDocs = (watch = no) ->
 
   include = ->
     (file) ->
-      file = "#{versionedSourceFolder}/#{file}" unless '/' in file
+      file = "#{siteSourceFolder}/#{file}" unless '/' in file
       output = fs.readFileSync file, 'utf-8'
       if /\.html$/.test(file)
         render = _.template output
@@ -269,7 +269,7 @@ buildDocs = (watch = no) ->
   catch exception
 
   if watch
-    for target in [indexFile, versionedSourceFolder, examplesSourceFolder, sectionsSourceFolder]
+    for target in [indexFile, siteSourceFolder, examplesSourceFolder, sectionsSourceFolder]
       fs.watch target, interval: 200, renderIndex
     log 'watching...', green
 
@@ -282,9 +282,9 @@ task 'doc:site:watch', 'watch and continually rebuild the documentation for the 
 
 buildDocTests = (watch = no) ->
   # Constants
-  testFile = 'documentation/test.html'
+  testFile          = 'documentation/site/test.html'
   testsSourceFolder = 'test'
-  outputFolder = "docs/v#{majorVersion}"
+  outputFolder      = "docs/v#{majorVersion}"
 
   # Included in test.html
   testHelpers = fs.readFileSync('test/support/helpers.coffee', 'utf-8').replace /exports\./g, '@'
