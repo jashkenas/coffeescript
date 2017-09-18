@@ -274,7 +274,7 @@ textarea {
   height: 1em;
 }
 
-.CodeMirror pre {
+.CodeMirror pre, pre.placeholder-code {
   line-height: 1.4em;
 }
 
