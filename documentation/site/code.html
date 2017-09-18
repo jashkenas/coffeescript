@@ -12,7 +12,7 @@
   <% if (run) { %>
   <div class="row">
     <div class="col text-right">
-      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="<%= file %>" data-run="<%= escape(run) %>"><% if (run === true) { include('play.svg') } else { %><small><%= include('play.svg') %></small><%= run.replace(/"/g, '&quot;') %><% } %></button>
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="<%= file %>" data-run="<%= escape(run) %>"><small><%= include('play.svg') %></small><%= run === true ? 'Run' : run.replace(/"/g, '&quot;') %></button>
     </div>
   </div>
   <% } %>
