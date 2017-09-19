@@ -214,11 +214,7 @@ p, blockquote, table, .code-example {
   margin-bottom: 1.3rem;
 }
 
-code {
-  font-size: 82%;
-}
-
-td code {
+code, td code {
   white-space: nowrap;
 }
 
@@ -246,7 +242,6 @@ code, button {
 }
 code, a > code {
   background-color: #f8f3f0;
-  padding: 2px 8px;
 }
 code {
   color: #2f2625;
@@ -382,7 +377,7 @@ textarea {
   letter-spacing: 0.3px;
   color: #f8f8f8;
   /* Prevent mobile Safari from zooming in on our code editors; the code is 16px naturally, but somehow being explicit about it prevents the zooming */
-  font-size: 15px;
+  font-size: 16px;
 }
 .CodeMirror-lines {
   padding: 0.5em 0;
@@ -1679,7 +1674,7 @@ alert(`Gold: ${gold}\nSilver: ${silver}\nThe Field: ${rest.join(', ')}`);
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="splats" data-run="true"><small><svg class="play-button" viewBox="0 0 24 24">
   <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
 </svg>
-</small>Run</button>
+</small></button>
     </div>
   </div>
   
@@ -2477,7 +2472,7 @@ alert((function() {
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="expressions_try" data-run="true"><small><svg class="play-button" viewBox="0 0 24 24">
   <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
 </svg>
-</small>Run</button>
+</small></button>
     </div>
   </div>
   
@@ -3550,7 +3545,7 @@ countdown(3);
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="async" data-run="true"><small><svg class="play-button" viewBox="0 0 24 24">
   <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
 </svg>
-</small>Run</button>
+</small></button>
     </div>
   </div>
   
@@ -3691,7 +3686,7 @@ tom.move();
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="classes" data-run="true"><small><svg class="play-button" viewBox="0 0 24 24">
   <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
 </svg>
-</small>Run</button>
+</small></button>
     </div>
   </div>
   
