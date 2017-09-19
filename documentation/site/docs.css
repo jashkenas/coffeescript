@@ -164,6 +164,9 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 .main blockquote {
   font-size: 1.1em;
 }
+.main li p, .main li li, .main li blockquote {
+  font-size: 1em;
+}
 @media (min-width: 768px) {
   .main p, .main li, .main td, .main th, .main blockquote {
     font-size: 1.2em;
