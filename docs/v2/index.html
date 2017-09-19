@@ -184,6 +184,9 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 .main blockquote {
   font-size: 1.1em;
 }
+.main li p, .main li li, .main li blockquote {
+  font-size: 1em;
+}
 @media (min-width: 768px) {
   .main p, .main li, .main td, .main th, .main blockquote {
     font-size: 1.2em;
@@ -5591,21 +5594,12 @@ x = <span class="number">2</span> + <span class="number">2</span>
   <a href="https://github.com/jashkenas/coffeescript/compare/1.10.0...1.11.0">1.11.0</a>
   <span class="timestamp"> &mdash; <time datetime="2016-09-24">September 24, 2016</time></span>
 </h2><ul>
-<li>
-<p>CoffeeScript now supports ES2015 <a href="#modules"><code>import</code> and <code>export</code> syntax</a>.</p>
-</li>
-<li>
-<p>Added the <code>-M, --inline-map</code> flag to the compiler, allowing you embed the source map directly into the output JavaScript, rather than as a separate file.</p>
-</li>
-<li>
-<p>A bunch of fixes for <code>yield</code>:</p>
+<li>CoffeeScript now supports ES2015 <a href="#modules"><code>import</code> and <code>export</code> syntax</a>.</li>
+<li>Added the <code>-M, --inline-map</code> flag to the compiler, allowing you embed the source map directly into the output JavaScript, rather than as a separate file.</li>
+<li>A bunch of fixes for <code>yield</code>:
 <ul>
-<li>
-<p><code>yield return</code> can no longer mistakenly be used as an expression.</p>
-</li>
-<li>
-<p><code>yield</code> now mirrors <code>return</code> in that it can be used stand-alone as well as with expressions. Where you previously wrote <code>yield undefined</code>, you may now write simply <code>yield</code>. However, this means also inheriting the same syntax limitations that <code>return</code> has, so these examples no longer compile:</p>
-<blockquote class="uneditable-code-block"><pre><code>doubles = -&gt;
+<li><code>yield return</code> can no longer mistakenly be used as an expression.</li>
+<li><code>yield</code> now mirrors <code>return</code> in that it can be used stand-alone as well as with expressions. Where you previously wrote <code>yield undefined</code>, you may now write simply <code>yield</code>. However, this means also inheriting the same syntax limitations that <code>return</code> has, so these examples no longer compile:<blockquote class="uneditable-code-block"><pre><code>doubles = -&gt;
   yield for i in [1..3]
     i * 2
 six = -&gt;
@@ -5613,28 +5607,15 @@ six = -&gt;
     2 * 3
 </code></pre>
 </blockquote></li>
-<li>
-<p>The JavaScript output is a bit nicer, with unnecessary parentheses and spaces, double indentation and double semicolons around <code>yield</code> no longer present.</p>
-</li>
+<li>The JavaScript output is a bit nicer, with unnecessary parentheses and spaces, double indentation and double semicolons around <code>yield</code> no longer present.</li>
 </ul>
 </li>
-<li>
-<p><code>&amp;&amp;=</code>, <code>||=</code>, <code>and=</code> and <code>or=</code> no longer accidentally allow a space before the equals sign.</p>
-</li>
-<li>
-<p>Improved several error messages.</p>
-</li>
-<li>
-<p>Just like <code>undefined</code> compiles to <code>void 0</code>, <code>NaN</code> now compiles into <code>0/0</code> and <code>Infinity</code> into <code>2e308</code>.</p>
-</li>
-<li>
-<p>Bugfix for renamed destructured parameters with defaults. <code>({a: b = 1}) -&gt;</code> no longer crashes the compiler.</p>
-</li>
-<li>
-<p>Improved the internal representation of a CoffeeScript program. This is only noticeable to tools that use <code>CoffeeScript.tokens</code> or <code>CoffeeScript.nodes</code>. Such tools need to update to take account for changed or added tokens and nodes.</p>
-</li>
-<li>
-<p>Several minor bug fixes, including:</p>
+<li><code>&amp;&amp;=</code>, <code>||=</code>, <code>and=</code> and <code>or=</code> no longer accidentally allow a space before the equals sign.</li>
+<li>Improved several error messages.</li>
+<li>Just like <code>undefined</code> compiles to <code>void 0</code>, <code>NaN</code> now compiles into <code>0/0</code> and <code>Infinity</code> into <code>2e308</code>.</li>
+<li>Bugfix for renamed destructured parameters with defaults. <code>({a: b = 1}) -&gt;</code> no longer crashes the compiler.</li>
+<li>Improved the internal representation of a CoffeeScript program. This is only noticeable to tools that use <code>CoffeeScript.tokens</code> or <code>CoffeeScript.nodes</code>. Such tools need to update to take account for changed or added tokens and nodes.</li>
+<li>Several minor bug fixes, including:
 <ul>
 <li>The caught error in <code>catch</code> blocks is no longer declared unnecessarily, and no longer mistakenly named <code>undefined</code> for <code>catch</code>-less <code>try</code> blocks.</li>
 <li>Unassignable parameter destructuring no longer crashes the compiler.</li>
@@ -5651,14 +5632,9 @@ six = -&gt;
   <a href="https://github.com/jashkenas/coffeescript/compare/1.9.3...1.10.0">1.10.0</a>
   <span class="timestamp"> &mdash; <time datetime="2015-09-03">September 3, 2015</time></span>
 </h2><ul>
-<li>
-<p>CoffeeScript now supports ES2015-style destructuring defaults.</p>
-</li>
-<li>
-<p><code>(offsetHeight: height) -&gt;</code> no longer compiles. That syntax was accidental and partly broken. Use <code>({offsetHeight: height}) -&gt;</code> instead. Object destructuring always requires braces.</p>
-</li>
-<li>
-<p>Several minor bug fixes, including:</p>
+<li>CoffeeScript now supports ES2015-style destructuring defaults.</li>
+<li><code>(offsetHeight: height) -&gt;</code> no longer compiles. That syntax was accidental and partly broken. Use <code>({offsetHeight: height}) -&gt;</code> instead. Object destructuring always requires braces.</li>
+<li>Several minor bug fixes, including:
 <ul>
 <li>A bug where the REPL would sometimes report valid code as invalid, based on what you had typed earlier.</li>
 <li>A problem with multiple JS contexts in the jest test framework.</li>
@@ -6083,7 +6059,255 @@ The <code>extends</code> keyword now functions identically to <code>goog.inherit
 
 <script src="browser-compiler/coffeescript.js"></script>
 <script>
-(function(){window.location.origin||(window.location.origin=window.location.protocol+'//'+window.location.hostname),$(document).ready(function(){var a,b,c,d,e,f,g,h,i,j;if(i=function(){return $('.navbar-toggler, .sidebar').toggleClass('show')},$('[data-toggle="offcanvas"]').click(i),$('[data-action="sidebar-nav"]').click(function(a){return $('.navbar-toggler').is(':visible')&&(a.preventDefault(),i(),setTimeout(function(){return window.location=a.target.href},260)),gtag('event','sidebar_navigate',{event_category:'navigation',event_label:a.target.href.replace(window.location.origin,'')})}),$('body').scrollspy({target:'#contents',offset:Math.round($('main').css('padding-top').replace('px',''))}),e=function(a){return $('#contents a.active[href!=\''+a+'\']').removeClass('show')},$(window).on('activate.bs.scrollspy',function(a,b){var c;if($('#contents a.active[href!=\''+b.relatedTarget+'\']').removeClass('show'),c=$('#contents a[href=\''+b.relatedTarget+'\']'),c.prop('href')!==window.location.origin+'/#try')return window.history.pushState({},c.text(),c.prop('href')),gtag('config',GA_TRACKING_ID,{page_path:c.prop('href').replace(window.location.origin,'')})}),h=[],c=[],g=200,$('textarea').each(function(a){return h[a]=this,$(this).data('index',a)}),d=function(a){var b,d,e,f;if(d=a.data('index'),e=a.hasClass('javascript-output')?'javascript':'coffeescript',c[d]=b=CodeMirror.fromTextArea(a[0],{mode:e,theme:'twilight',indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:'contenteditable',readOnly:'coffeescript'!==e,viewportMargin:2e308}),'coffeescript'===e)return f=null,b.on('change',function(){return clearTimeout(f),f=setTimeout(function(){var e,f,h,i,j;h=Date.now();try{if(e=b.getValue(),0===d&&$('#try').hasClass('show')){i='try:'+encodeURIComponent(e),window.history.pushState({},'CoffeeScript',location.href.split('#')[0]+'#'+i);try{null!=window.localStorage&&window.localStorage.setItem('tryCoffeeScriptCode',e)}catch(a){f=a}}j=CoffeeScript.compile(e,{bare:!0}),g=Math.max(200,Date.now()-h)}catch(a){f=a,j=''+f}return c[d+1].setValue(j),gtag('event','edit_code',{event_category:'engagement',event_label:a.closest('[data-example]').data('example')})},g)}),b.addKeyMap({Tab:function Tab(a){return a.somethingSelected()?a.indentSelection('add'):/^\t/m.test(a.getValue())?a.execCommand('insertTab'):a.execCommand('insertSoftTab')},"Shift-Tab":function ShiftTab(a){return a.indentSelection('subtract')},Enter:function Enter(a){return a.options.indentWithTabs=/^\t/m.test(a.getValue()),a.execCommand('newlineAndIndent')}})},$('.placeholder-code').one('mouseover',function(){var a,b;return b=$(this).prev('textarea'),$(this).remove(),d(b),a=$(b.parent().siblings()[0]),a.children('.placeholder-code').remove(),d($(a.children('textarea')[0]))}),f=function(){return d($('#try-coffeescript-coffee')),d($('#try-coffeescript-js'))},$('[data-action="run-code-example"]').click(function(){var a,b,d;return d=$(this).data('run'),a=$('#'+$(this).data('example')+'-js').data('index'),b=null==c[a]?$(h[a]).val():c[a].getValue(),!0!==d&&(b=b+'\nalert('+unescape(d)+');'),eval(b),gtag('event','run_code',{event_category:'engagement',event_label:$(this).closest('[data-example]').data('example')})}),a=function(){return window.history.pushState('',document.title,window.location.pathname)},$(window).on('hashchange',function(){if(''===window.location.hash)return a()}),j=function(){var b,d=0<arguments.length&&void 0!==arguments[0]&&arguments[0];if(0===$('#try .CodeMirror').length&&f(),d&&null!=window.localStorage)try{b=window.localStorage.getItem('tryCoffeeScriptCode'),null!=b&&c[0].setValue(b)}catch(a){}return($('#try, #try-link').toggleClass('show'),!$('#try').hasClass('show'))?setTimeout(a,200):void 0},b=function(){return $('#try, #try-link').removeClass('show'),window.history.pushState('',document.title,window.location.pathname)},$('[data-toggle="try"]').click(j),$('[data-close="try"]').click(b),null!=window.location.hash){if('#try'===window.location.hash)return j(!0);if(0===window.location.hash.indexOf('#try'))return 0===$('#try .CodeMirror').length&&f(),c[0].setValue(decodeURIComponent(window.location.hash.slice(5))),j();if(''===window.location.hash)return a();if(e(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,'')).scrollIntoView()}})}).call(this);
+(function() {
+  if (!window.location.origin) { // Polyfill `location.origin` for IE < 11
+    window.location.origin = `${window.location.protocol}//${window.location.hostname}`;
+  }
+
+  $(document).ready(function() {
+    var clearHash, closeTry, editors, initializeEditor, initializeScrollspyFromHash, initializeTryEditors, lastCompilationElapsedTime, previousHash, replaceState, textareas, toggleSidebar, toggleTry;
+    // Mobile navigation
+    toggleSidebar = function() {
+      return $('.navbar-toggler, .sidebar').toggleClass('show');
+    };
+    $('[data-toggle="offcanvas"]').click(toggleSidebar);
+    $('[data-action="sidebar-nav"]').click(function(event) {
+      if ($('.navbar-toggler').is(':visible')) {
+        event.preventDefault();
+        toggleSidebar();
+        setTimeout(function() {
+          return window.location = event.target.href;
+        }, 260); // Wait for the sidebar to slide away before navigating
+      }
+      return gtag('event', 'sidebar_navigate', {
+        event_category: 'navigation',
+        event_label: event.target.href.replace(window.location.origin, '')
+      });
+    });
+    // Initialize Scrollspy for sidebar navigation; https://getbootstrap.com/docs/4.0/components/scrollspy/
+    // See also http://www.codingeverything.com/2014/02/BootstrapDocsSideBar.html and http://jsfiddle.net/KyleMit/v6zhz/
+    $('body').scrollspy({
+      target: '#contents',
+      offset: Math.round($('main').css('padding-top').replace('px', ''))
+    });
+    initializeScrollspyFromHash = function(hash) {
+      return $(`#contents a.active[href!='${hash}']`).removeClass('show');
+    };
+    $(window).on('activate.bs.scrollspy', function(event, target) { // Why `window`? https://github.com/twbs/bootstrap/issues/20086
+      var $target;
+      // We only want one active link in the nav
+      $(`#contents a.active[href!='${target.relatedTarget}']`).removeClass('show');
+      $target = $(`#contents a[href='${target.relatedTarget}']`);
+      if ($target.prop('href') === `${window.location.origin}/#try`) {
+        return;
+      }
+      // Update the browser address bar on scroll, without adding to the history; clicking the sidebar links will automatically add to the history
+      replaceState($target.prop('href'));
+      // Track this as a new pageview; we only want '/#hash', not 'http://coffeescript.org/#hash'
+      return gtag('config', GA_TRACKING_ID, {
+        page_path: $target.prop('href').replace(window.location.origin, '')
+      });
+    });
+    // Initialize CodeMirror for code examples; https://codemirror.net/doc/manual.html
+    // Defer this until a code example is clicked or focused, to avoid unnecessary computation/slowness
+    textareas = [];
+    editors = [];
+    lastCompilationElapsedTime = 200;
+    $('textarea').each(function(index) {
+      textareas[index] = this;
+      return $(this).data('index', index);
+    });
+    initializeEditor = function($textarea) {
+      var editor, index, mode, pending;
+      index = $textarea.data('index');
+      mode = $textarea.hasClass('javascript-output') ? 'javascript' : 'coffeescript';
+      editors[index] = editor = CodeMirror.fromTextArea($textarea[0], {
+        mode: mode,
+        theme: 'twilight',
+        indentUnit: 2,
+        tabSize: 2,
+        lineWrapping: true,
+        lineNumbers: false,
+        inputStyle: 'contenteditable',
+        readOnly: mode !== 'coffeescript', // Can’t use 'nocursor' if we want the JavaScript to be copyable
+        viewportMargin: 2e308
+      });
+      // Whenever the user edits the CoffeeScript side of a code example, update the JavaScript output
+      // If the editor is Try CoffeeScript, also update the hash and save this code in localStorage
+      if (mode === 'coffeescript') {
+        pending = null;
+        editor.on('change', function(instance, change) {
+          clearTimeout(pending);
+          return pending = setTimeout(function() {
+            var coffee, exception, lastCompilationStartTime, link, output;
+            lastCompilationStartTime = Date.now();
+            try {
+              coffee = editor.getValue();
+              if (index === 0 && $('#try').hasClass('show')) { // If this is the editor in Try CoffeeScript and it’s still visible
+                if ($('#try').hasClass('show')) {
+                  // Update the hash with the current code
+                  link = `try:${encodeURIComponent(coffee)}`;
+                  replaceState(`${(window.location.href.split('#')[0])}#${link}`);
+                }
+                try {
+                  // Save this to the user’s localStorage
+                  if (window.localStorage != null) {
+                    window.localStorage.setItem('tryCoffeeScriptCode', coffee);
+                  }
+                } catch (error) {
+                  exception = error;
+                }
+              }
+              output = CoffeeScript.compile(coffee, {
+                bare: true
+              });
+              lastCompilationElapsedTime = Math.max(200, Date.now() - lastCompilationStartTime);
+            } catch (error) {
+              exception = error;
+              output = `${exception}`;
+            }
+            editors[index + 1].setValue(output);
+            return gtag('event', 'edit_code', {
+              event_category: 'engagement',
+              event_label: $textarea.closest('[data-example]').data('example')
+            });
+          }, lastCompilationElapsedTime);
+        });
+        // Fix the code editors’ handling of tab-indented code
+        return editor.addKeyMap({
+          'Tab': function(cm) {
+            if (cm.somethingSelected()) {
+              return cm.indentSelection('add');
+            } else if (/^\t/m.test(cm.getValue())) {
+              // If any lines start with a tab, treat this as tab-indented code
+              return cm.execCommand('insertTab');
+            } else {
+              return cm.execCommand('insertSoftTab');
+            }
+          },
+          'Shift-Tab': function(cm) {
+            return cm.indentSelection('subtract');
+          },
+          'Enter': function(cm) {
+            cm.options.indentWithTabs = /^\t/m.test(cm.getValue());
+            return cm.execCommand('newlineAndIndent');
+          }
+        });
+      }
+    };
+    $('.placeholder-code').one('mouseover', function(event) {
+      var $siblingColumn, $textarea;
+      $textarea = $(this).prev('textarea');
+      $(this).remove();
+      initializeEditor($textarea);
+      // Initialize the sibling column too
+      $siblingColumn = $($textarea.parent().siblings()[0]);
+      $siblingColumn.children('.placeholder-code').remove();
+      return initializeEditor($($siblingColumn.children('textarea')[0]));
+    });
+    initializeTryEditors = function() {
+      initializeEditor($('#try-coffeescript-coffee'));
+      return initializeEditor($('#try-coffeescript-js'));
+    };
+    // Handle the code example buttons
+    $('[data-action="run-code-example"]').click(function() {
+      var index, js, run;
+      run = $(this).data('run');
+      index = $(`#${$(this).data('example')}-js`).data('index');
+      js = editors[index] != null ? editors[index].getValue() : $(textareas[index]).val();
+      if (run !== true) {
+        js = `${js}\nalert(${unescape(run)});`;
+      }
+      eval(js);
+      return gtag('event', 'run_code', {
+        event_category: 'engagement',
+        event_label: $(this).closest('[data-example]').data('example')
+      });
+    });
+    // Try CoffeeScript
+    previousHash = null;
+    toggleTry = function(checkLocalStorage) {
+      var coffee, exception;
+      $('#try, #try-link').toggleClass('show');
+      if ($('#try').hasClass('show')) {
+        if (window.location.hash) {
+          previousHash = window.location.hash;
+        }
+        if ($('#try .CodeMirror').length === 0) {
+          initializeTryEditors();
+        }
+        if (checkLocalStorage && (window.localStorage != null)) {
+          try {
+            coffee = window.localStorage.getItem('tryCoffeeScriptCode');
+            if (coffee != null) {
+              return editors[0].setValue(coffee);
+            }
+          } catch (error) {
+            exception = error;
+          }
+        } else {
+          return replaceState('#try');
+        }
+      } else {
+        if (previousHash) {
+          return replaceState(previousHash);
+        } else {
+          return clearHash();
+        }
+      }
+    };
+    closeTry = function() {
+      $('#try, #try-link').removeClass('show');
+      if (previousHash) {
+        return replaceState(previousHash);
+      } else {
+        return clearHash();
+      }
+    };
+    $('[data-toggle="try"]').click(function(event) {
+      event.preventDefault();
+      return toggleTry(true);
+    });
+    $('[data-close="try"]').click(closeTry);
+    clearHash = function() {
+      return window.history.replaceState({}, document.title, window.location.pathname);
+    };
+    replaceState = function(newURL) {
+      if ((newURL != null ? newURL.indexOf('#') : void 0) === 0) {
+        newURL = `${window.location.pathname}${newURL}`;
+      }
+      return window.history.replaceState({}, document.title, newURL || '');
+    };
+    $(window).on('hashchange', function() {
+      if (window.location.hash === '') {
+        // Get rid of dangling # in the address bar
+        return clearHash();
+      }
+    });
+    // Configure the initial state
+    if (window.location.hash != null) {
+      if (window.location.hash === '#try') {
+        return toggleTry(true);
+      } else if (window.location.hash.indexOf('#try') === 0) {
+        if ($('#try .CodeMirror').length === 0) {
+          initializeTryEditors();
+        }
+        editors[0].setValue(decodeURIComponent(window.location.hash.slice(5)));
+        return toggleTry(false);
+      } else if (window.location.hash === '') {
+        return clearHash();
+      } else {
+        initializeScrollspyFromHash(window.location.hash);
+        if (window.location.hash.length > 1) {
+          // Initializing the code editors might’ve thrown off our vertical scroll position
+          return document.getElementById(window.location.hash.slice(1).replace(/try:.*/, '')).scrollIntoView();
+        }
+      }
+    }
+  });
+
+}).call(this);
+
 </script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-106156830-1"></script>
 <script>
