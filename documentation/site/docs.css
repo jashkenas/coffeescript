@@ -164,11 +164,8 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 .main blockquote {
   font-size: 1.1em;
 }
-@media (min-width: 1050px) {
-  .main p, .main li, .main td, .main th {
-    font-size: 1.2em;
-  }
-  .main blockquote {
+@media (min-width: 768px) {
+  .main p, .main li, .main td, .main th, .main blockquote {
     font-size: 1.2em;
   }
 }
@@ -197,11 +194,7 @@ p, blockquote, table, .code-example {
   margin-bottom: 1.3rem;
 }
 
-code {
-  font-size: 82%;
-}
-
-td code {
+code, td code {
   white-space: nowrap;
 }
 
@@ -229,7 +222,6 @@ code, button {
 }
 code, a > code {
   background-color: #f8f3f0;
-  padding: 2px 8px;
 }
 code {
   color: #2f2625;
