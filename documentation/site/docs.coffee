@@ -148,7 +148,10 @@ $(document).ready ->
           coffee = window.localStorage.getItem 'tryCoffeeScriptCode'
           if coffee?
             editors[0].setValue coffee
+          else
+            replaceState '#try'
         catch exception
+          replaceState '#try'
       else
         replaceState '#try'
     else

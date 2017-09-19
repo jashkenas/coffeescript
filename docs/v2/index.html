@@ -6241,9 +6241,12 @@ The <code>extends</code> keyword now functions identically to <code>goog.inherit
             coffee = window.localStorage.getItem('tryCoffeeScriptCode');
             if (coffee != null) {
               return editors[0].setValue(coffee);
+            } else {
+              return replaceState('#try');
             }
           } catch (error) {
             exception = error;
+            return replaceState('#try');
           }
         } else {
           return replaceState('#try');
