@@ -160,6 +160,7 @@ button:focus, .navbar-dark .navbar-toggler:focus {
   font-family: Lato;
   font-weight: 300;
   font-size: 1.1em;
+  line-height: 1.7;
 }
 .main blockquote {
   font-size: 1.1em;
