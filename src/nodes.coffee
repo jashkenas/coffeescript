@@ -1751,10 +1751,16 @@ exports.Class = class Class extends Base
       new Block expressions
 
   # Add an expression to the class initializer
+  #
   # This is the key method for determining whether an expression in a class body should appear in
   # the initializer or the executable body. If the given `node` is valid in a class body the method
   # will return a (new, modified, or identical) node for inclusion in the class initializer,
   # otherwise nothing will be returned and the node will appear in the executable body.
+  #
+  # At time of writing, only methods (instance and static) are valid in ES class initializers. As
+  # new ES class features reach Stage 4 this method will need to be updated to support them. We
+  # additionally allow `PassthroughLiteral`s (backticked expressions) in the initializer as an
+  # escape hatch for ES features that are not implemented (e.g. getters and setters).
   addInitializerExpression: (node) ->
     if node.unwrapAll() instanceof PassthroughLiteral
       node
