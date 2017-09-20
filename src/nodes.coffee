@@ -1751,6 +1751,10 @@ exports.Class = class Class extends Base
       new Block expressions
 
   # Add an expression to the class initializer
+  # This is the key method for determining whether an expression in a class body should appear in
+  # the initializer or the executable body. If the given `node` is valid in a class body the method
+  # will return a (new, modified, or identical) node for inclusion in the class initializer,
+  # otherwise nothing will be returned and the node will appear in the executable body.
   addInitializerExpression: (node) ->
     if node.unwrapAll() instanceof PassthroughLiteral
       node
