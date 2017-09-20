@@ -184,7 +184,6 @@ releaseHeader('2016-09-24', '1.11.0', '1.10.0')
 *   CoffeeScript now supports ES2015 [`import` and `export` syntax](#modules).
 *   Added the `-M, --inline-map` flag to the compiler, allowing you embed the source map directly into the output JavaScript, rather than as a separate file.
 *   A bunch of fixes for `yield`:
-
     *   `yield return` can no longer mistakenly be used as an expression.
     *   `yield` now mirrors `return` in that it can be used stand-alone as well as with expressions. Where you previously wrote `yield undefined`, you may now write simply `yield`. However, this means also inheriting the same syntax limitations that `return` has, so these examples no longer compile:
         ```
@@ -195,7 +194,6 @@ releaseHeader('2016-09-24', '1.11.0', '1.10.0')
           yield
             2 * 3
         ```
-
     *   The JavaScript output is a bit nicer, with unnecessary parentheses and spaces, double indentation and double semicolons around `yield` no longer present.
 *   `&&=`, `||=`, `and=` and `or=` no longer accidentally allow a space before the equals sign.
 *   Improved several error messages.
@@ -203,7 +201,6 @@ releaseHeader('2016-09-24', '1.11.0', '1.10.0')
 *   Bugfix for renamed destructured parameters with defaults. `({a: b = 1}) ->` no longer crashes the compiler.
 *   Improved the internal representation of a CoffeeScript program. This is only noticeable to tools that use `CoffeeScript.tokens` or `CoffeeScript.nodes`. Such tools need to update to take account for changed or added tokens and nodes.
 *   Several minor bug fixes, including:
-
     *   The caught error in `catch` blocks is no longer declared unnecessarily, and no longer mistakenly named `undefined` for `catch`-less `try` blocks.
     *   Unassignable parameter destructuring no longer crashes the compiler.
     *   Source maps are now used correctly for errors thrown from .coffee.md files.
@@ -219,7 +216,6 @@ releaseHeader('2015-09-03', '1.10.0', '1.9.3')
 *   CoffeeScript now supports ES2015-style destructuring defaults.
 *   `(offsetHeight: height) ->` no longer compiles. That syntax was accidental and partly broken. Use `({offsetHeight: height}) ->` instead. Object destructuring always requires braces.
 *   Several minor bug fixes, including:
-
     *   A bug where the REPL would sometimes report valid code as invalid, based on what you had typed earlier.
     *   A problem with multiple JS contexts in the jest test framework.
     *   An error in io.js where strict mode is set on internal modules.

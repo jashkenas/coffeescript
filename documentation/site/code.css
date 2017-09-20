@@ -5,14 +5,20 @@
   letter-spacing: 0.3px;
   color: #f8f8f8;
   /* Prevent mobile Safari from zooming in on our code editors; the code is 16px naturally, but somehow being explicit about it prevents the zooming */
-  font-size: 15px;
+  font-size: 16px;
+}
+@media (min-width: 768px) {
+  .CodeMirror,
+  .placeholder-code {
+    font-size: 90%; /* Matching Bootstrap’s font size for code, which calculates to 14.4px */
+  }
 }
 .CodeMirror-lines {
   padding: 0.5em 0;
 }
 .placeholder-code {
   padding: 0.5em 4px;
-  margin-bottom: 1.3rem;
+  margin-bottom: 1.37em;
   white-space: pre-wrap;
 }
 div.CodeMirror-cursor {

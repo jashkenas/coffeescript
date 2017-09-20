@@ -160,15 +160,16 @@ button:focus, .navbar-dark .navbar-toggler:focus {
   font-family: Lato;
   font-weight: 300;
   font-size: 1.1em;
+  line-height: 1.7;
 }
 .main blockquote {
   font-size: 1.1em;
 }
-@media (min-width: 1050px) {
-  .main p, .main li, .main td, .main th {
-    font-size: 1.2em;
-  }
-  .main blockquote {
+.main li p, .main li li, .main li blockquote {
+  font-size: 1em;
+}
+@media (min-width: 768px) {
+  .main p, .main li, .main td, .main th, .main blockquote {
     font-size: 1.2em;
   }
 }
@@ -194,15 +195,18 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 }
 
 p, blockquote, table, .code-example {
-  margin-bottom: 1.3rem;
+  margin-bottom: 1.1em;
+}
+.main li {
+  margin-bottom: 0.6em;
 }
 
-code {
-  font-size: 82%;
-}
-
-td code {
+code, td code {
   white-space: nowrap;
+  padding: 2px 8px;
+}
+pre code {
+  white-space: pre; /* We want newlines to be newlines in code blocks */
 }
 
 h2, h3, h4 {
@@ -223,13 +227,18 @@ h3, h4, h2 time {
   margin-top: -2.3rem;
 }
 
+@media (min-width: 1200px) {
+  .main > header, .main section > h2, .main section > h3, .main section > h4, .main section > p, .main section > blockquote, .main section > ul, .main section > table {
+    max-width: 80%;
+  }
+}
+
 code, button {
   font-family: 'Roboto Mono';
   font-weight: 400;
 }
 code, a > code {
   background-color: #f8f3f0;
-  padding: 2px 8px;
 }
 code {
   color: #2f2625;

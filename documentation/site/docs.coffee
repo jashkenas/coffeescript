@@ -33,8 +33,8 @@ $(document).ready ->
     $("#contents a.active[href!='#{target.relatedTarget}']").removeClass 'show'
     $target = $("#contents a[href='#{target.relatedTarget}']")
     return if $target.prop('href') is "#{window.location.origin}/#try"
-    # Update the browser address bar on scroll or navigation
-    window.history.pushState {}, $target.text(), $target.prop('href')
+    # Update the browser address bar on scroll, without adding to the history; clicking the sidebar links will automatically add to the history
+    replaceState $target.prop('href')
     # Track this as a new pageview; we only want '/#hash', not 'http://coffeescript.org/#hash'
     gtag 'config', GA_TRACKING_ID,
       page_path: $target.prop('href').replace window.location.origin, ''
@@ -74,9 +74,10 @@ $(document).ready ->
           try
             coffee = editor.getValue()
             if index is 0 and $('#try').hasClass('show') # If this is the editor in Try CoffeeScript and it’s still visible
-              # Update the hash with the current code
-              link = "try:#{encodeURIComponent coffee}"
-              window.history.pushState {}, 'CoffeeScript', "#{location.href.split('#')[0]}##{link}"
+              if $('#try').hasClass('show')
+                # Update the hash with the current code
+                link = "try:#{encodeURIComponent coffee}"
+                replaceState "#{window.location.href.split('#')[0]}##{link}"
               # Save this to the user’s localStorage
               try
                 if window.localStorage?
@@ -135,31 +136,45 @@ $(document).ready ->
       event_category: 'engagement'
       event_label: $(@).closest('[data-example]').data('example')
 
+  # Try CoffeeScript
+  previousHash = null
+  toggleTry = (checkLocalStorage) ->
+    $('#try, #try-link').toggleClass 'show'
+    if $('#try').hasClass('show')
+      previousHash = window.location.hash if window.location.hash
+      initializeTryEditors() if $('#try .CodeMirror').length is 0
+      if checkLocalStorage and window.localStorage?
+        try
+          coffee = window.localStorage.getItem 'tryCoffeeScriptCode'
+          if coffee?
+            editors[0].setValue coffee
+          else
+            replaceState '#try'
+        catch exception
+          replaceState '#try'
+      else
+        replaceState '#try'
+    else
+      if previousHash then replaceState(previousHash) else clearHash()
+  closeTry = ->
+    $('#try, #try-link').removeClass 'show'
+    if previousHash then replaceState(previousHash) else clearHash()
+
+  $('[data-toggle="try"]').click (event) ->
+    event.preventDefault()
+    toggleTry yes
+  $('[data-close="try"]').click closeTry
+
   clearHash = ->
-    window.history.pushState '', document.title, window.location.pathname
+    window.history.replaceState {}, document.title, window.location.pathname
+
+  replaceState = (newURL) ->
+    newURL = "#{window.location.pathname}#{newURL}" if newURL?.indexOf('#') is 0
+    window.history.replaceState {}, document.title, (newURL or '')
 
   $(window).on 'hashchange', ->
     # Get rid of dangling # in the address bar
     clearHash() if window.location.hash is ''
-
-  # Try CoffeeScript
-  toggleTry = (checkLocalStorage = no) ->
-    initializeTryEditors() if $('#try .CodeMirror').length is 0
-    if checkLocalStorage and window.localStorage?
-      try
-        coffee = window.localStorage.getItem 'tryCoffeeScriptCode'
-        if coffee?
-          editors[0].setValue coffee
-      catch exception
-    $('#try, #try-link').toggleClass 'show'
-    setTimeout clearHash, 200 unless $('#try').hasClass('show')
-  closeTry = ->
-    $('#try, #try-link').removeClass 'show'
-    window.history.pushState '', document.title, window.location.pathname
-
-  $('[data-toggle="try"]').click toggleTry
-  $('[data-close="try"]').click closeTry
-
 
   # Configure the initial state
   if window.location.hash?
@@ -168,7 +183,7 @@ $(document).ready ->
     else if window.location.hash.indexOf('#try') is 0
       initializeTryEditors() if $('#try .CodeMirror').length is 0
       editors[0].setValue decodeURIComponent window.location.hash[5..]
-      toggleTry()
+      toggleTry no
     else if window.location.hash is ''
       clearHash()
     else
