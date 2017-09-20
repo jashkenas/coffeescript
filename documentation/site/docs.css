@@ -195,7 +195,10 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 }
 
 p, blockquote, table, .code-example {
-  margin-bottom: 1.3rem;
+  margin-bottom: 1.1em;
+}
+.main li {
+  margin-bottom: 0.6em;
 }
 
 code, td code {
