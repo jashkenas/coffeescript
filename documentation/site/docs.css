@@ -224,6 +224,12 @@ h3, h4, h2 time {
   margin-top: -2.3rem;
 }
 
+@media (min-width: 1200px) {
+  .main > header, .main section > h2, .main section > h3, .main section > h4, .main section > p, .main section > blockquote, .main section > ul, .main section > table {
+    max-width: 80%;
+  }
+}
+
 code, button {
   font-family: 'Roboto Mono';
   font-weight: 400;
