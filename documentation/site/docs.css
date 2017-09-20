@@ -200,6 +200,10 @@ p, blockquote, table, .code-example {
 
 code, td code {
   white-space: nowrap;
+  padding: 2px 8px;
+}
+pre code {
+  white-space: pre; /* We want newlines to be newlines in code blocks */
 }
 
 h2, h3, h4 {

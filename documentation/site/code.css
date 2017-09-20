@@ -7,6 +7,12 @@
   /* Prevent mobile Safari from zooming in on our code editors; the code is 16px naturally, but somehow being explicit about it prevents the zooming */
   font-size: 16px;
 }
+@media (min-width: 768px) {
+  .CodeMirror,
+  .placeholder-code {
+    font-size: 90%; /* Matching Bootstrap’s font size for code, which calculates to 14.4px */
+  }
+}
 .CodeMirror-lines {
   padding: 0.5em 0;
 }
