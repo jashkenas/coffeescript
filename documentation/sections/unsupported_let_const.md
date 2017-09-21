@@ -4,6 +4,30 @@ When CoffeeScript was designed, `var` was [intentionally omitted](https://github
 
 `let` and `const` add a useful ability to JavaScript in that you can use them to declare variables within a _block_ scope, for example within an `if` statement body or a `for` loop body, whereas `var` always declares variables in the scope of an entire function. When CoffeeScript 2 was designed, there was much discussion of whether this functionality was useful enough to outweigh the simplicity offered by never needing to consider variable declaration in CoffeeScript. In the end, it was decided that the simplicity was more valued. In CoffeeScript there remains only one type of variable.
 
+If you really think that what you need is behavior like `let`, you can use the `do ->` idiom, which creates and immediately runs a function:
+
+```coffee
+if foo then do ->
+  x = 42
+  console.log x       # => 42
+
+console.log x         # => ReferenceError
+```
+
+If inside the `do ->` you want to avoid clobbering variables in the outer scope that have the same name, you need to explicitly declare them as arguments:
+
+```coffee
+x = 17
+
+# use '(x)' to avoid clobbering variable from outer scope
+if foo then do (x) ->
+  x = 42
+  console.log x       # => 42
+
+console.log x         # => 17
+
+```
+
 Keep in mind that `const` only protects you from _reassigning_ a variable; it doesn’t prevent the variable’s value from changing, the way constants usually do in other languages:
 
 ```js
