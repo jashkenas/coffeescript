@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+<title>Announcing CoffeeScript 2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="canonical" href="http://coffeescript.org" />
+
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="theme-color" content="#ffffff">
+
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css?family=Alegreya+Sans:400,800|Galada:400|Lato:300,300i,400,700|Roboto+Mono:400,400i" rel="stylesheet" crossorigin="anonymous">
+<style>
+body {
+  /* Push below header bar */
+  margin-top: 3.5rem;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 3"><path opacity=".02" fill="#000" d="M0 0h1v1H0z"/><path opacity=".005" fill="#000" d="M0 1h1v2H0z"/></svg>');
+  background-size: 1px 3px;
+}
+
+svg {
+  width: auto;
+  height: 100%;
+}
+
+a {
+  color: #1b5e20;
+  transition: 0.1s ease-in-out;
+}
+a:focus, a:hover, a:active {
+  color: #388e3c;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+button:focus, .navbar-dark .navbar-toggler:focus {
+  outline: none;
+  border: thin solid rgba(248, 243, 240, 0.3);
+}
+
+.bg-dark {
+  background-color: #3e2723 !important;
+}
+
+.bg-ribbed-light {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 3"><path opacity=".03" fill="#000" d="M0 0h1v1H0z"/><path opacity=".005" fill="#000" d="M0 1h1v2H0z"/></svg>');
+  background-size: 1px 3px;
+}
+.bg-ribbed-dark {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 3"><path opacity=".2" fill="#000" d="M0 0h1v1H0z"/><path opacity=".15" fill="#000" d="M0 1h1v2H0z"/></svg>');
+  background-size: 1px 3px;
+}
+
+
+/*
+ * Header
+ */
+.site-navbar {
+  height: 3.5rem;
+  font-family: 'Lato';
+  font-weight: 400;
+  font-size: 1.1em;
+}
+
+.navbar-brand {
+  height: 2.2em;
+  margin-right: 1em;
+}
+
+.navbar-dark path {
+  fill: #fff;
+}
+
+.navbar-nav .nav-item {
+  margin-left: 0.6em;
+  margin-right: 0.6em;
+  border-radius: 0.4em;
+}
+.navbar-nav .nav-item:hover,
+.navbar-nav .nav-item:active,
+.navbar-nav .nav-item.show {
+  background-color: #4e342e;
+}
+
+.navbar-toggler {
+  transition: all 0.1s ease-in-out;
+}
+
+
+/*
+ * Main content
+ */
+
+.main {
+  padding: 1.3em;
+}
+@media (min-width: 992px) {
+  .main {
+    padding-right: 2em;
+    padding-left: 2em;
+  }
+}
+
+h1 {
+  font: 2.5em Galada;
+  color: #2f2625;
+  text-align: center;
+}
+@media (min-width: 768px) {
+  h1 {
+    font-size: 3em;
+  }
+}
+@media (min-width: 992px) {
+  h1 {
+    font-size: 4em;
+  }
+}
+
+.title-logo {
+  display: inline-block;
+  height: 1em;
+  transform: translateY(0.2em);
+  margin-left: 0.3em;
+  margin-right: 0.25em;
+  fill: #2f2625;
+}
+
+.main p, .main li {
+  font-family: Lato;
+  font-weight: 300;
+  font-size: 1.1em;
+  line-height: 1.6;
+}
+.main blockquote {
+  font-size: 1.1em;
+}
+@media (min-width: 768px) {
+  .main p, .main li {
+    font-size: 1.3em;
+  }
+  .main blockquote {
+    font-size: 1.3em;
+  }
+}
+.main strong {
+  font-weight: 700;
+}
+.main a {
+  border-bottom: 2px solid transparent;
+  font-weight: 400;
+}
+.main a:focus, .main a:hover, .main a:active {
+  border-bottom: 2px solid rgba(56, 142, 60, 0.2);
+}
+.main blockquote pre {
+  background-color: #f8f3f0;
+  color: #2f2625;
+  border-radius: .3em;
+  padding: 0.4em 0.6em;
+}
+
+p, blockquote, li {
+  margin-bottom: 1.3rem;
+}
+.credits li {
+  margin-bottom: 0.3em;
+}
+
+h2, h3, h4 {
+  margin-top: 1.3em;
+  margin-bottom: 0.6em;
+  font-family: 'Alegreya Sans';
+}
+h2 {
+  font-weight: 800;
+}
+h3, h4, h2 time {
+  font-weight: 400;
+}
+
+.main h2 {
+  padding-top: 4rem;
+  margin-top: -4rem;
+}
+
+code {
+  font-family: 'Roboto Mono';
+  font-weight: 400;
+}
+code, a > code {
+  background-color: #f8f3f0;
+  padding: 0.2rem 0.4rem;
+}
+code {
+  color: #2f2625;
+}
+
+
+.uneditable-code-block .comment {
+  font-style: italic;
+  color: #837B85;
+}
+.uneditable-code-block .class,
+.uneditable-code-block .function,
+.uneditable-code-block .keyword,
+.uneditable-code-block .reserved,
+.uneditable-code-block .title {
+  color: #534328;
+}
+.uneditable-code-block .string
+.uneditable-code-block .value
+.uneditable-code-block .inheritance
+.uneditable-code-block .header {
+  color: #3A4029;
+}
+.uneditable-code-block .variable,
+.uneditable-code-block .literal,
+.uneditable-code-block .tag,
+.uneditable-code-block .regexp,
+.uneditable-code-block .subst,
+.uneditable-code-block .property {
+  color: #474429;
+}
+.uneditable-code-block .number,
+.uneditable-code-block .preprocessor,
+.uneditable-code-block .built_in,
+.uneditable-code-block .params,
+.uneditable-code-block .constant {
+  color: #474429;
+}
+</style>
+
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark bg-ribbed-dark site-navbar">
+  <a class="navbar-brand" href="/" data-close="try"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-22 347 566 100">
+  <title>
+    CoffeeScript Logo
+  </title>
+  <path d="M21.7 351.1c.1.6-.2 1.1-1.2 1.6-1.3-.7-4.1-1.1-6.4-.9-2.5.2-4.6 1-4.3 2.7.4 1.7 2.8 2.7 7.1 2.3 10.5-.9 10.4-8 25.8-9.4 12-1.1 18.7 2.6 19.6 7.1.7 3.5-2.2 6.9-10.9 7.6-7.7.7-12.2-1.4-12.6-3.5-.2-1.1.4-2.7 4.1-3.1.4 1.7 2.5 3.5 7.5 3 3.6-.3 6.6-1.6 6.2-3.6-.4-2.1-4.2-3.3-10.2-2.8-12.2 1.1-15.2 7.8-25.6 8.7-7.4.7-13.4-2-14.2-6-.3-1.5-.3-5 7.5-5.7 4-.3 7.2.4 7.6 2zm-39 41.8c-3.4 4.3-4.9 9.3-4.6 14.2.3 4.9 2.7 8.9 6.5 12 4 3.1 8.3 4 13.2 3.1 1.9-.3 4-1.3 5.9-1.9-4 0-7.4-1.3-10.8-4-3.7-2.7-6.2-6.5-6.8-11.1-.9-4.3 0-8.3 2.4-11.8 2.7-3.4 6.2-5.3 10.8-5.9 4.6-.3 8.6.9 12.6 3.7-.9-1.3-2.2-2.2-3.4-3.4-4-2.7-8.3-4-13.6-2.7-4.8 1-8.8 3.5-12.2 7.8zm53.6-23.1c-12.9 0-24.4-1.3-32.7-3.1-8.9-2.2-13.6-4.6-13.6-7.7 0-1.3.6-2.4 2.4-3.7-5.6 2.2-8.6 4-8.6 6.8.3 3.1 5.3 6.2 15.5 8.6 9.6 2.4 21.9 3.7 36.7 3.7 15.1 0 27.1-1.3 36.7-3.7 10.2-2.4 15.1-5.6 15.1-8.6 0-2.2-2.2-4.3-6.2-5.9.9.6 1.6 1.6 1.6 2.7 0 3.1-4.6 5.6-13.9 7.7-8.6 1.9-19.6 3.2-33 3.2zm36.8 8.6c-9.6 2.2-21.9 3.7-36.7 3.7-15.1 0-27.4-1.6-37-3.7-8.6-2.2-13.2-4.6-14.8-7.1 1.6 10.8 5.3 21 10.2 30 3.7 5.6 7.4 10.5 11.1 15.8 1.6 3.1 2.7 6.2 3.4 9.3 2.4 3.4 5.9 5.6 10.2 6.8 5.3 1.9 10.8 2.7 16.4 2.4h.6c5.6.3 11.5-.6 16.9-2.4 4-1.3 7.4-3.4 9.9-6.8h.3c.6-3.1 1.6-6.2 3.1-9.3 3.7-5.3 7.4-10.2 11.1-15.8 4.9-8.9 8.3-19.1 10.2-30-2 2.8-6.6 5.2-14.9 7.1zm106.2 30.1c-4.8 12.1-17.6 16.9-25.9 16.9-13.4 0-19.9-6-19.9-22.3 0-16.5 7.9-47.3 31.7-47.3 8.5 0 15.2 3.3 15.2 12.1 0 4.8-1.8 8.3-6.4 8.3-1.5 0-3.4-.4-5.2-2.4 2.2-1.1 4.2-4.9 4.2-8.3 0-2.9-1.5-5.6-5.6-5.6-10 0-18.9 23.9-18.9 42.4 0 8.3 2.2 14.2 10.9 14.2 7.1 0 13.5-3.4 17.7-9.1l2.2 1.1zm32.9-16.3c.4.2.7.2 1 .2 4.2 0 10.1-2.7 14-5.5l.8 2.4c-3.4 3.7-9.5 6.5-16.1 7.5-1.5 16.8-10.6 27.3-21.7 27.3-8.4 0-14.5-4-14.5-14.4 0-10.5 6.2-32.2 24.9-32.2 7.8.3 11.6 5.3 11.6 14.7zm-7.7 5c-1.9-.5-2.4-2-2.4-3.8 0-2.5 1.2-4.2 2.8-4.9-.2-3.8-1.1-5.3-3.4-5.3-6.5 0-12 16.6-12 25.6 0 6 1.2 7.3 4.6 7.3 4.2.1 8.9-8 10.4-18.9zm-6.6 39.7c0-8.3 7.1-11 15.8-13.6l10.9-51.9c2.7-13 10.6-15.5 16.5-15.5 4.1 0 8 2.2 9.7 5.7 3.6-4.6 8.4-5.7 12.4-5.7 5.6 0 10.8 3.9 10.8 9.8 0 1.5-.1 2.6-.3 3.7h-4.3c.1-.9.2-1.7.2-2.4 0-2.1-1.7-3.1-3.4-3.1-2 0-4.8 1.1-6.2 7.1l-1.7 7.4h9.1l-.8 3.6h-9l-10.3 49.1c-2.7 13-10.6 15.5-16.5 15.5-5.2 0-8.3-2.3-9.8-5.7-3.5 4.6-8.3 5.7-12.3 5.7-5.6.1-10.8-3.8-10.8-9.7zm9.1 1.8c1.9 0 4.2-1.8 5.4-7.1l1.1-5.3c-5.7 2-10.1 4.4-10.1 9.4 0 1.2 1.7 3 3.6 3zm21.7 0c1.9 0 4.2-1.8 5.4-7.1l2.2-10.4-9.4 1.8-1.8 8.3c-.5 2.1-1.1 4-1.8 5.6.9 1.3 3 1.8 5.4 1.8zm-1.4-18l9.4-1.7 7.7-36.8h-9l-8.1 38.5zm16.6-56.7c-2 0-4.8 1.1-6.2 7.1l-1.7 7.4h9l2.1-9.5c.2-.7.2-1.3.2-2 .1-2-1.5-3-3.4-3zm37.9 53c7.1 0 11.6-4 16.1-9.2h3.1c-5.2 8.3-12.9 16.8-25 16.8-8.5 0-14.2-4.2-14.2-14.5 0-10.5 5.9-32.3 24.6-32.3 8.1 0 10 4.2 10 8.7 0 10.5-10 18.5-20.9 19.2-.1 1.3-.2 2.5-.2 3.6 0 6.2 2.2 7.7 6.5 7.7zm5.3-34.4c-4.6 0-9.1 9.7-10.9 18.7 7-.5 13.2-7.4 13.2-15 0-2.2-.5-3.7-2.3-3.7zm28.6 33.4c3.4 0 7.8-2.3 10.8-4.8-2 10.4-8.4 13.4-15.8 13.4-8.4 0-14.1-4.2-14.1-14.5 0-10.5 5.9-32.3 24.6-32.3 8.1 0 10 4.2 10 8.7 0 10.6-10 18.5-20.9 19.2-.1.9-.2 2-.2 2.7 0 5.7 2.5 7.6 5.6 7.6zm6.2-33.4c-4.5 0-9.1 10.1-11 18.7 7.1-.4 13.3-7.3 13.3-15 0-2.2-.6-3.7-2.3-3.7zm51.3-6.7c-1.7 0-3-.6-4.2-1.9 2.4-1.5 4.1-4.8 4.1-7.8 0-3.1-1.8-6.1-6.8-6.1s-8.3 2.8-8.3 8.2c0 13.3 20.5 15.2 20.5 34.8 0 15.3-12.3 22.7-25.6 22.7-10.4 0-19.3-4.5-19.3-15.7 0-9.8 7-14.9 13.3-14.9 3.1 0 7.7 1.3 8 6-4.9 0-10.7 2.3-10.7 8.5 0 4.5 2.9 8.7 8.7 8.7 6.1 0 10.6-4.4 10.6-12 0-15.6-18.6-21.1-18.6-34.5 0-9.5 9.3-16.3 21-16.3 4.3 0 14.6.9 14.6 10.9.1 5.5-2.8 9.4-7.3 9.4zm36.2 10.3c0-2.3-.8-3.7-2.5-3.7-5.7 0-11.7 16.6-11.7 26.7 0 6.2 2.2 7.6 6.6 7.6 7.1 0 11.6-4 16.1-9.2h3.1c-5.2 8.3-12.9 16.8-25 16.8-8.5 0-14.2-4.2-14.2-14.5 0-10.6 6-32.3 24.5-32.3 8.1 0 10.1 4.2 10.1 8.3 0 4.4-2.2 6.7-4.8 6.7-1 0-2.1-.4-3.1-1.1.5-1.9.9-3.6.9-5.3zm27.7-7.6l-1.2 5.7c3.1-2.7 6.7-5.7 11-5.7 4.1 0 6.3 3.3 6.3 6.9 0 3.1-2.1 6.7-6.6 6.7-5.1 0-2.5-6-5.3-6-2.7 0-4.4 1.4-6.7 3.4l-7.2 34.6h-13.1l9.6-45.4 13.2-.2zm34.2 0l-6.6 30.9c-.3 1.2-.4 2.1-.4 2.9 0 2.5 1.2 3.3 3.7 3.3 3.5 0 6.9-3.4 8.1-8h3.8c-5.2 14.8-14.2 16.8-19.1 16.8-5.5 0-9.7-3.2-9.7-10.9 0-1.8.3-3.7.7-5.9l6.2-29.2 13.3.1zm-4.1-19.4c4 0 7.2 3.2 7.2 7.2s-3.2 7.1-7.2 7.1-7.1-3.1-7.1-7.1c-.1-4 3.2-7.2 7.1-7.2zm29.1 16l-1.5 6.9c2.6-2.3 6.1-3.9 10.7-3.9 6.2 0 11.1 3.5 11.1 14.4 0 12.2-4.7 32.1-22.3 32.1-4.5 0-6.8-1.6-7.7-3.2l-4.7 22.1-13.7 3.2 15.2-71.5 12.9-.1zm7.8 17c0-7-2.9-7.5-4.5-7.5-2 0-4.5 1.6-6.3 4.4l-5.4 25.5c.4 1 1.4 2.1 3.4 2.1 9.7 0 12.8-15.9 12.8-24.5zm27.8 17.3c-.3 1.1-.5 2.2-.5 3.1 0 1.9.7 3.2 3.1 3.2.7 0 1.7 0 2.4-.3-2.5 7.8-6.6 8.9-9.6 8.9-6.4 0-9.1-4.4-9.1-10.3 0-1.6.2-3.1.6-4.8l5.8-27.2h-3l.7-3.6h3L528 366l13.4-1.9s-1.4 6.2-3.1 14.4h5.5l-.7 3.6h-5.5l-5.7 27.4z"/>
+</svg>
+</a>
+  <button class="navbar-toggler" type="button" data-toggle="offcanvas" data-close="try" aria-label="Toggle sidebar">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <nav class="collapse navbar-collapse">
+    <div class="navbar-nav mr-auto d-none d-lg-flex">
+      <a href="../#try" id="try-link" class="nav-item nav-link" data-toggle="try">Try CoffeeScript</a>
+      <a href="../#language" class="nav-item nav-link" data-close="try">Language Reference</a>
+      <a href="../#resources" class="nav-item nav-link" data-close="try">Resources</a>
+      <a href="https://github.com/jashkenas/coffeescript" class="nav-item nav-link" data-close="try">GitHub
+        </a>
+    </div>
+  </nav>
+</nav>
+
+
+<div class="container" id="top">
+  <div class="row">
+    <main class="main">
+      <header>
+        <h1>Announcing <span class="text-nowrap"><svg class="title-logo" xmlns="http://www.w3.org/2000/svg" viewBox="-76 212 458 369">
+          <title>
+            CoffeeScript Icon
+          </title>
+          <path d="M106 228.6c.5 2.3-.9 4.4-5 6.5-5.5-3.1-16.9-4.4-26.7-3.5-10.4.9-19.4 4.2-17.9 11.3 1.5 7.1 11.7 11 29.5 9.5 43.6-3.8 43.4-33.3 107.4-39 49.8-4.4 77.8 11 81.8 29.7 3.1 14.7-9.1 28.6-45.2 31.8-32 2.8-50.7-5.6-52.6-14.6-1-4.5 1.8-11.3 17.2-13.1 1.5 7 10.6 14.4 31.1 12.6 14.8-1.3 27.6-6.6 25.9-14.9-1.8-8.6-17.7-13.7-42.6-11.5-50.7 4.5-63.2 32.5-106.8 36.3-30.8 2.7-55.9-8.5-59.4-25.1-1.3-6.1-1.4-21 31.2-23.9 17.1-1.5 30.7 1.5 32.1 7.9zM-56.4 402.5c-14.3 18-20.4 38.8-19.2 59.2 1.2 20.4 11.4 37.1 26.9 50.2C-32 525-14 528.6 6.4 525c7.8-1.2 16.7-5.3 24.5-7.8-16.7 0-31-5.3-44.9-16.7-15.5-11.4-25.7-26.9-28.2-46.1-3.7-18 0-34.7 10.2-49 11.4-14.3 25.7-22 44.9-24.5 19.2-1.2 35.9 3.7 52.6 15.5-3.7-5.3-9-9-14.3-14.3-16.7-11.4-34.7-16.7-56.7-11.4-19.9 3.6-36.7 13.8-50.9 31.8zm223.6-96.3c-53.9 0-101.6-5.3-136.3-13.1-37.1-9-56.7-19.2-56.7-32.2 0-5.3 2.4-10.2 10.2-15.5-23.3 9-35.9 16.7-35.9 28.2 1.2 13.1 22 25.7 64.5 35.9 40 10.2 91.4 15.5 153 15.5 62.8 0 113-5.3 153-15.5 42.4-10.2 62.8-23.3 62.8-35.9 0-9-9-18-25.7-24.5 3.7 2.4 6.5 6.5 6.5 11.4 0 13.1-19.2 23.3-57.9 32.2-36 8.2-82.1 13.5-137.5 13.5zm153 35.9c-40 9-91.4 15.5-153 15.5-62.8 0-114.2-6.5-154.2-15.5-35.9-9-55.1-19.2-61.6-29.4 6.5 44.9 22 87.3 42.4 124.8 15.5 23.3 31 43.7 46.1 65.7 6.5 13.1 11.4 25.7 14.3 38.8 10.2 14.3 24.5 23.3 42.4 28.2 22 7.8 44.9 11.4 68.1 10.2h2.4c23.3 1.2 47.7-2.4 70.6-10.2 16.7-5.3 31-14.3 41.2-28.2h1.2c2.4-13.1 6.5-25.7 13.1-38.8 15.5-22 31-42.4 46.1-65.7 20.4-37.1 34.7-79.6 42.4-124.8-7.7 11.4-26.9 21.6-61.5 29.4z"/>
+        </svg> CoffeeScript 2</span></h1>
+      </header>
+      <section>
+<p>We are pleased to announce CoffeeScript 2! This new release of the CoffeeScript language and compiler aims to bring CoffeeScript into the modern JavaScript era, closing gaps in compatibility with JavaScript while preserving the clean syntax that is CoffeeScript’s hallmark. In a nutshell:</p>
+<ul>
+<li>The CoffeeScript 2 compiler now translates CoffeeScript code into modern JavaScript syntax. So a CoffeeScript <code>=&gt;</code> is now output as <code>=&gt;</code>, a CoffeeScript <code>class</code> is now output using the <code>class</code> keyword, and so on. This means you may need to <a href="../#transpilation">transpile the CoffeeScript compiler’s output</a>.</li>
+<li>CoffeeScript 2 adds support for <a href="../#async-functions">async functions</a> syntax, for the future <a href="../#destructuring">object destructuring</a> syntax, and for <a href="../#jsx">JSX</a>. Some features, such as <a href="../#modules">modules</a> (<code>import</code> and <code>export</code> statements), <a href="../#generator-iteration"><code>for…of</code></a>, and <a href="../#tagged-template-literals">tagged template literals</a> were backported into CoffeeScript versions 1.11 and 1.12.</li>
+<li>All of the above was achieved with very few <a href="../#breaking-changes">breaking changes from 1.x</a>. Most current CoffeeScript projects should be able to upgrade with little or no refactoring necessary.</li>
+</ul>
+<p>CoffeeScript 2 was developed with two primary goals: remove any incompatibilities with modern JavaScript that might prevent CoffeeScript from being used on a project; and preserve as much backward compatibility as possible. <a href="../#installation">Install now</a>: <code>npm install -g coffeescript@2</code></p>
+<h2 id="modern-javascript-output">Modern JavaScript Output</h2>
+<p>From the beginning, CoffeeScript has been described as being “just JavaScript.” And today, JavaScript is ES2015 (well, ES2017; also commonly known as ES6). CoffeeScript welcomes the changes in the JavaScript world and we’re happy to stop outputting circa-1999 syntax for modern features.</p>
+<p>Many new JavaScript features, such as <code>=&gt;</code>, were informed by CoffeeScript and are one-to-one compatible, or very nearly so. This has made outputting many of CoffeeScript’s innovations into new JS syntax straightforward: not only does <code>=&gt;</code> become <code>=&gt;</code>, but <code>{ a } = obj</code> becomes <code>{ a } = obj</code>, <code>&quot;a#{b}c&quot;</code> becomes <code>`a${b}c`</code> and so on.</p>
+<p>The following CoffeeScript features were updated in 2.0 to output using modern JavaScript syntax (or added in CoffeeScript 1.11 through 2.0, output using modern syntax):</p>
+<ul>
+<li>Modules: <code>import</code>/<code>export</code></li>
+<li>Classes: <code>class Animal</code></li>
+<li>Async functions: <code>await someFunction()</code></li>
+<li>Bound/arrow functions: <code>=&gt;</code></li>
+<li>Function default parameters: <code>(options = {}) -&gt;</code></li>
+<li>Function splat/rest parameters: <code>(items...) -&gt;</code></li>
+<li>Destructuring, for both arrays and objects: <code>[first, second] = items</code>, <code>{length} = items</code></li>
+<li>Object rest/spread properties: <code>{options..., force: yes}</code>, <code>{force, otherOptions...} = options</code></li>
+<li>Interpolated strings/template literals (JS backticked strings): <code>&quot;Hello, #{user}!&quot;</code></li>
+<li>Tagged template literals: <code>html&quot;&lt;strong&gt;coffee&lt;/strong&gt;&quot;</code></li>
+<li>JavaScript’s <code>for…of</code> is now available as CoffeeScript’s <code>for…from</code> (we already had a <code>for…of</code>): <code>for n from generatorFunction()</code></li>
+</ul>
+<p>Not all CoffeeScript features were adopted into JavaScript in 100% the same way; most notably, <a href="../#breaking-changes-default-values">default values</a> in JavaScript (and also in CoffeeScript 2) are only applied when a variable is <code>undefined</code>, not <code>undefined</code> or <code>null</code> as in CoffeeScript 1; and <a href="../#breaking-changes-classes">classes</a> have their own differences. See the <a href="../#breaking-changes">breaking changes</a> for the fine details.</p>
+<p>In our experience, most breaking changes are edge cases that should affect very few people, like JavaScript’s <a href="../#breaking-change-fat-arrow">lack of an <code>arguments</code> object inside arrow functions</a>. There seem to be two breaking changes that affect a significant number of projects:</p>
+<ul>
+<li>In CoffeeScript 2, “bare” <code>super</code> (calling <code>super</code> without arguments) is now no longer allowed, and one must use <code>super()</code> or <code>super arguments...</code> instead.</li>
+<li>References to <code>this</code>/<code>@</code> cannot occur before a call to <code>super</code>, per the JS spec.</li>
+</ul>
+<p>See the <a href="../#breaking-changes-super-extends">full details</a>. Either the CoffeeScript compiler or your transpiler will throw errors for either of these cases, so updating your code is a matter of fixing each occurrence as the compiler errors on it, until your code compiles successfully.</p>
+<h2 id="other-features">Other Features</h2>
+<p>Besides supporting new JavaScript features and outputting older CoffeeScript features in modern JS syntax, CoffeeScript 2 has added support for the following:</p>
+<ul>
+<li><a href="../#jsx">JSX</a></li>
+<li><a href="../#comments">Line comments</a> are now output (in CoffeeScript 1 they were discarded)</li>
+<li>Block comments are now allowed anywhere, enabling <a href="../#type-annotations">static type annotations</a> using Flow’s comment-based syntax</li>
+</ul>
+<p>There are many smaller improvements as well, such as to the <code>coffee</code> command-line tool. You can read all the details in the <a href="../#changelog">changelog</a> for the 2.0.0 betas.</p>
+<h2 id="what-about-…">“What About …?”</h2>
+<p>A few JavaScript features have been intentionally omitted from CoffeeScript. These include <code>let</code> and <code>const</code> (and <code>var</code>), named functions and the <code>get</code> and <code>set</code> keywords. These get asked about so often that we added a section to the docs called <a href="../#unsupported">Unsupported ECMAScript Features</a>. CoffeeScript’s lack of equivalents for these features does not affect compatibility or interoperability with JavaScript modules or libraries.</p>
+<h2 id="future-compatibility">Future Compatibility</h2>
+<p>Back when CoffeeScript 1 was created, ES2015 JavaScript and transpilers like <a href="http://babeljs.io/">Babel</a>, <a href="https://buble.surge.sh/">Bublé</a> or <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a> were several years away. The CoffeeScript compiler itself had to do what today’s transpilers do, converting modern features like destructuring and arrow functions into equivalent lowest-common-denominator JavaScript.</p>
+<p>But transpilers exist now, and they do their job well. With them around, there’s no need for the CoffeeScript compiler to duplicate this functionality. All the CoffeeScript compiler needs to worry about now is converting the CoffeeScript version of new syntax into the JS version of that syntax, e.g. <code>&quot;Hello, #{name}!&quot;</code> into <code>`Hello, ${name}!`</code>. This makes adding support for new JavaScript features much easier than before.</p>
+<p>Most features added by ECMA in recent years haven’t required any updates at all in CoffeeScript. New global objects, or new methods on global objects, don’t require any updates on CoffeeScript’s part to work. Some proposed future JS features <em>do</em> involve new syntax, like <a href="https://github.com/tc39/proposal-class-fields">class fields</a>. We have adopted a policy of supporting new syntax only when it reaches Stage 4 in ECMA’s process, which means that the syntax is final and will be in the next ES release. On occasion we might support a <em>feature</em> before it has reached Stage 4, but output it using equivalent non-experimental syntax instead of the newly-proposed syntax; that’s what’s happening in 2.0.0 for <a href="../#splats">object destructuring</a>, where our output uses the same polyfill that Babel uses. When the new syntax is finalized, we will update our output to use the final syntax.</p>
+<h2 id="credits">Credits</h2>
+<p>The major features of 2.0.0 would not have been possible without the following people:</p>
+<ul class="credits">
+<li><a href="https://github.com/GeoffreyBooth">@GeoffreyBooth</a>: Organizer of the CoffeeScript 2 effort, developer for modules; arrow functions, function default parameters and function rest parameters output using ES2015 syntax; line comments output and block comments output anywhere; block embedded JavaScript via triple backticks; improved parsing of Literate CoffeeScript; and the new docs website.</li>
+<li><a href="https://github.com/connec">@connec</a>: Classes; destructuring; splats/rest syntax in arrays and function calls; and computed properties all output using ES2015 syntax.</li>
+<li><a href="https://github.com/GabrielRatener">@GabrielRatener</a>: Async functions.</li>
+<li><a href="https://github.com/xixixao">@xixixao</a>: JSX.</li>
+<li><a href="https://github.com/zdenko">@zdenko</a>: Object rest/spread properties (object destructuring).</li>
+<li><a href="https://github.com/greghuc">@greghuc</a>: Tagged template literals, interpolated strings output in ES2015 syntax.</li>
+<li><a href="https://github.com/atg">@atg</a>: ES2015 <code>for…of</code>, supported as CoffeeScript’s <code>for…from</code>.</li>
+<li><a href="https://github.com/lydell">@lydell</a> and <a href="https://github.com/jashkenas">@jashkenas</a>: Guidance, code reviews and feedback.</li>
+</ul>
+<p>See the full <a href="https://github.com/jashkenas/coffeescript/wiki/CoffeeScript-2-Honor-Roll">honor roll</a>.</p>
+<p>Thanks and we hope you enjoy CoffeeScript 2!</p>
+
+      </section>
+    </main>
+  </div>
+</div>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-106156830-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments)};
+  gtag('js', new Date());
+  gtag('config', 'UA-106156830-1');
+</script>
+</body>
+</html>

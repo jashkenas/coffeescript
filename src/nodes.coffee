@@ -1427,8 +1427,8 @@ exports.Obj = class Obj extends Base
 
   # Check if object contains splat.
   hasSplat: ->
-    splat = yes for prop in @properties when prop instanceof Splat
-    splat ? no
+    return yes for prop in @properties when prop instanceof Splat
+    no
 
   compileNode: (o) ->
     props = @properties
@@ -1510,7 +1510,7 @@ exports.Obj = class Obj extends Base
       prop.eachName iterator if prop.eachName?
 
   # Object spread properties. https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md
-  # `obj2 = {a: 1, obj..., c: 3, d: 4}` → `obj2 = Object.assign({}, {a: 1}, obj, {c: 3, d: 4})`
+  # `obj2 = {a: 1, obj..., c: 3, d: 4}` → `obj2 = _extends({}, {a: 1}, obj, {c: 3, d: 4})`
   compileSpread: (o) ->
     props = @properties
     # Store object spreads.
@@ -1530,7 +1530,8 @@ exports.Obj = class Obj extends Base
         propSlices.push prop
     addSlice()
     slices.unshift new Obj unless slices[0] instanceof Obj
-    (new Call new Literal('Object.assign'), slices).compileToFragments o
+    _extends = new Value new Literal utility '_extends', o
+    (new Call _extends, slices).compileToFragments o
 
   compileCSXAttributes: (o) ->
     props = @properties
@@ -2129,8 +2130,9 @@ exports.Assign = class Assign extends Base
         @variable.base.lhs = yes
         return @compileDestructuring o unless @variable.isAssignable()
         # Object destructuring. Can be removed once ES proposal hits Stage 4.
-        return @compileObjectDestruct(o) if @variable.isObject() and @variable.contains (node) ->
+        objDestructAnswer = @compileObjectDestruct(o) if @variable.isObject() and @variable.contains (node) ->
           node instanceof Obj and node.hasSplat()
+        return objDestructAnswer if objDestructAnswer
 
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
@@ -2151,6 +2153,12 @@ exports.Assign = class Assign extends Base
         @checkAssignability o, name
         if @moduleDeclaration
           o.scope.add name.value, @moduleDeclaration
+        else if @param
+          o.scope.add name.value,
+            if @param is 'alwaysDeclare'
+              'var'
+            else
+              'param'
         else
           o.scope.find name.value
 
@@ -2174,7 +2182,7 @@ exports.Assign = class Assign extends Base
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
     # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration,
     # if we’re destructuring without declaring, the destructuring assignment must be wrapped in parentheses.
-    if o.level > LEVEL_LIST or (o.level is LEVEL_TOP and isValue and @variable.base instanceof Obj and not @nestedLhs and not @param)
+    if o.level > LEVEL_LIST or o.level is LEVEL_TOP and isValue and @variable.base instanceof Obj and not @nestedLhs and not (@param is yes)
       @wrapInParentheses answer
     else
       answer
@@ -2182,23 +2190,6 @@ exports.Assign = class Assign extends Base
   # Check object destructuring variable for rest elements;
   # can be removed once ES proposal hits Stage 4.
   compileObjectDestruct: (o) ->
-    # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration,
-    # if we’re destructuring without declaring, the destructuring assignment
-    # must be wrapped in parentheses: `({a, b} = obj)`. Helper function
-    # `setScopeVar()` declares variables `a` and `b` at the top of the
-    # current scope.
-    setScopeVar = (prop) ->
-      newVar = false
-      return if prop instanceof Assign and prop.value.base instanceof Obj
-      if prop instanceof Assign
-        if prop.value.base instanceof IdentifierLiteral
-          newVar = prop.value.base.compileWithoutComments o
-        else
-          newVar = prop.variable.base.compileWithoutComments o
-      else
-        newVar = prop.compileWithoutComments o
-      o.scope.add(newVar, 'var', true) if newVar
-
     # Returns a safe (cached) reference to the key for a given property
     getPropKey = (prop) ->
       if prop instanceof Assign
@@ -2223,12 +2214,15 @@ exports.Assign = class Assign extends Base
     traverseRest = (properties, source) =>
       restElements = []
       restIndex = undefined
+      source = new Value source unless source.properties?
 
       for prop, index in properties
-        setScopeVar prop.unwrap()
+        nestedSourceDefault = nestedSource = nestedProperties = null
         if prop instanceof Assign
           # prop is `k: expr`, we need to check `expr` for nested splats
           if prop.value.isObject?()
+            # prop is `k = {...} `
+            continue unless prop.context is 'object'
             # prop is `k: {...}`
             nestedProperties = prop.value.base.properties
           else if prop.value instanceof Assign and prop.value.variable.isObject()
@@ -2254,16 +2248,23 @@ exports.Assign = class Assign extends Base
 
       restElements
 
-    # Cache the value for reuse with rest elements
-    [@value, valueRef] = @value.cache o
+    # Cache the value for reuse with rest elements.
+    valueRefTemp =
+      if @value.shouldCache()
+        new IdentifierLiteral o.scope.freeVariable 'ref', reserve: false
+      else
+        @value.base
 
     # Find all rest elements.
-    restElements = traverseRest @variable.base.properties, valueRef
+    restElements = traverseRest @variable.base.properties, valueRefTemp
+    return no unless restElements and restElements.length > 0
 
+    [@value, valueRef] = @value.cache o
     result = new Block [@]
+
     for restElement in restElements
       value = new Call new Value(new Literal utility 'objectWithoutKeys', o), [restElement.source, restElement.excludeProps]
-      result.push new Assign restElement.name, value
+      result.push new Assign new Value(restElement.name), value, null, param: if @param then 'alwaysDeclare' else null
 
     fragments = result.compileToFragments o
     if o.level is LEVEL_TOP
@@ -2597,7 +2598,7 @@ exports.Code = class Code extends Base
             ifTrue = new Assign new Value(param.name), param.value
             exprs.push new If condition, ifTrue
           else
-            exprs.push new Assign new Value(param.name), param.asReference(o)
+            exprs.push new Assign new Value(param.name), param.asReference(o), null, param: 'alwaysDeclare'
 
         # If this parameter comes before the splat or expansion, it will go
         # in the function definition parameter list.
@@ -2617,18 +2618,19 @@ exports.Code = class Code extends Base
           if param.name instanceof Arr or param.name instanceof Obj
             # This parameter is destructured.
             param.name.lhs = yes
-            param.name.eachName (prop) ->
-              o.scope.parameter prop.value
             # Compile `foo({a, b...}) ->` to `foo(arg) -> {a, b...} = arg`.
             # Can be removed once ES proposal hits Stage 4.
             if param.name instanceof Obj and param.name.hasSplat()
               splatParamName = o.scope.freeVariable 'arg'
               o.scope.parameter splatParamName
               ref = new Value new IdentifierLiteral splatParamName
-              exprs.push new Assign new Value(param.name), ref
+              exprs.push new Assign new Value(param.name), ref, null, param: 'alwaysDeclare'
               # Compile `foo({a, b...} = {}) ->` to `foo(arg = {}) -> {a, b...} = arg`.
-              if param.value?  and not param.assignedInBody
+              if param.value? and not param.assignedInBody
                 ref = new Assign ref, param.value, null, param: yes
+            else unless param.shouldCache()
+              param.name.eachName (prop) ->
+                o.scope.parameter prop.value
           else
             # This compilation of the parameter is only to get its name to add
             # to the scope name tracking; since the compilation output here
@@ -3410,7 +3412,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
       else
         fragments.push @makeCode '$' unless @csx
         code = element.compileToFragments(o, LEVEL_PAREN)
-        unless @isNestedTag element
+        if not @isNestedTag(element) or code.some((fragment) -> fragment.comments?)
           code = @wrapInBraces code
           # Flag the `{` and `}` fragments as having been generated by this
           # `StringWithInterpolations` node, so that `compileComments` knows
@@ -3724,6 +3726,19 @@ UTILITIES =
       if (!(instance instanceof Constructor)) {
         throw new Error('Bound instance method accessed before binding');
       }
+    }
+  "
+  _extends: -> "
+    Object.assign || function (target) {
+      for (var i = 1; i < arguments.length; i++) {
+        var source = arguments[i];
+        for (var key in source) {
+          if (Object.prototype.hasOwnProperty.call(source, key)) {
+            target[key] = source[key];
+          }
+        }
+      }
+      return target;
     }
   "
 

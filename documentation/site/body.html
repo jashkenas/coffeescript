@@ -3,22 +3,28 @@
 <%= include('try.html') %>
 
 <div class="container-fluid" id="top">
-  <div class="row row-offcanvas row-offcanvas-left">
-    <nav class="sidebar sidebar-offcanvas col-xs-12 col-lg-3 bg-ribbed-light">
+  <div class="row flex-nowrap">
+    <nav class="sidebar col-lg-3 bg-ribbed-light">
       <%= include('sidebar.html') %>
     </nav>
-    <main class="main col-xs-12 col-lg-9 offset-lg-3">
-
-      <header class="title-logo hidden-md-down">
-        <%= include('documentation/images/logo.svg') %>
+    <main class="main col-lg-9 ml-auto">
+      <header class="d-none d-lg-block">
+        <p class="title-logo">
+          <%= include('logo.svg') %>
+        </p>
       </header>
-
       <section id="overview">
         <%= htmlFor('introduction') %>
         <%= htmlFor('overview') %>
       </section>
       <section id="coffeescript-2">
         <%= htmlFor('coffeescript_2') %>
+        <section id="whats-new-in-coffeescript-2">
+          <%= htmlFor('whats_new_in_coffeescript_2') %>
+        </section>
+        <section id="compatibility">
+          <%= htmlFor('compatibility') %>
+        </section>
       </section>
       <section id="installation">
         <%= htmlFor('installation') %>
@@ -28,11 +34,11 @@
         <section id="cli">
           <%= htmlFor('command_line_interface') %>
         </section>
-        <section id="es2015plus-output">
-          <%= htmlFor('es2015plus_output') %>
-        </section>
         <section id="nodejs-usage">
           <%= htmlFor('nodejs_usage') %>
+        </section>
+        <section id="transpilation">
+          <%= htmlFor('transpilation') %>
         </section>
       </section>
       <section id="language">
@@ -197,7 +203,6 @@
       <section id="changelog">
         <%= htmlFor('changelog') %>
       </section>
-
     </main>
   </div>
 </div>

@@ -64,9 +64,9 @@ sourceMaps = {}
 # in which case this returns a `{js, v3SourceMap, sourceMap}`
 # object, where sourceMap is a sourcemap.coffee#SourceMap object, handy for
 # doing programmatic lookups.
-exports.compile = compile = withPrettyErrors (code, options) ->
-  {merge, extend} = helpers
-  options = extend {}, options
+exports.compile = compile = withPrettyErrors (code, options = {}) ->
+  # Clone `options`, to avoid mutating the `options` object passed in.
+  options = Object.assign {}, options
   # Always generate a source map if no filename is passed in, since without a
   # a filename we have no way to retrieve this source later in the event that
   # we need to recompile it to get a source map for `prepareStackTrace`.
@@ -128,6 +128,27 @@ exports.compile = compile = withPrettyErrors (code, options) ->
     v3SourceMap = map.generate options, code
     sourceMaps[filename] ?= []
     sourceMaps[filename].push map
+
+  if options.transpile
+    if typeof options.transpile isnt 'object'
+      # This only happens if run via the Node API and `transpile` is set to
+      # something other than an object.
+      throw new Error 'The transpile option must be given an object with options to pass to Babel'
+
+    # Get the reference to Babel that we have been passed if this compiler
+    # is run via the CLI or Node API.
+    transpiler = options.transpile.transpile
+    delete options.transpile.transpile
+
+    # See https://github.com/babel/babel/issues/827#issuecomment-77573107:
+    # Babel can take a v3 source map object as input in `inputSourceMap`
+    # and it will return an *updated* v3 source map object in its output.
+    if v3SourceMap and not options.transpile.inputSourceMap?
+      options.transpile.inputSourceMap = v3SourceMap
+    transpilerOutput = transpiler js, options.transpile
+    js = transpilerOutput.code
+    if v3SourceMap and transpilerOutput.map
+      v3SourceMap = transpilerOutput.map
 
   if options.inlineMap
     encoded = base64encode JSON.stringify v3SourceMap

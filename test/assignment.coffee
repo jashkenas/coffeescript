@@ -296,6 +296,29 @@ test "destructuring assignment with multiple splats in different objects", ->
   deepEqual a, val: 1
   deepEqual b, val: 2
 
+  o = {
+    props: {
+      p: {
+        n: 1
+        m: 5
+      }
+      s: 6
+    }
+  }
+  {p: {m, q..., t = {obj...}}, r...} = o.props
+  eq m, o.props.p.m
+  deepEqual r, s: 6
+  deepEqual q, n: 1
+  deepEqual t, obj
+
+  @props = o.props
+  {p: {m}, r...} = @props
+  eq m, @props.p.m
+  deepEqual r, s: 6
+
+  {p: {m}, r...} = {o.props..., p:{m:9}}
+  eq m, 9
+
   # Should not trigger implicit call, e.g. rest ... => rest(...)
   {
     a: {
@@ -874,3 +897,33 @@ test "#4566: destructuring with nested default values", ->
 
   {e: {f = 5} = {}} = {}
   eq 5, f
+
+test "#4674: _extends utility for object spreads 1", ->
+  eqJS(
+    "{a, b..., c..., d}"
+    """
+      var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+      _extends({a}, b, c, {d});
+    """
+  )
+
+test "#4674: _extends utility for object spreads 2", ->
+  _extends = -> 3
+  a = b: 1
+  c = d: 2
+  e = {a..., c...}
+  eq e.b, 1
+  eq e.d, 2
+
+test "#4673: complex destructured object spread variables", ->
+  b = c: 1
+  {{a...}...} = b
+  eq a.c, 1
+
+  d = {}
+  {d.e...} = f: 1
+  eq d.e.f, 1
+
+  {{g}...} = g: 1
+  eq g, 1

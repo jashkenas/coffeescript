@@ -44,9 +44,9 @@ replDefaults =
       result = runInContext js, context, filename
       # Await an async result, if necessary
       if isAsync
-        result = await result
-        cb null, result unless sawSIGINT
-        sawSIGINT = false
+        result.then (resolvedResult) ->
+          cb null, resolvedResult unless sawSIGINT
+        sawSIGINT = no
       else
         cb null, result
     catch err

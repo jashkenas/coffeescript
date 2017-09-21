@@ -1,0 +1,19 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js" integrity="sha384-xBuQ/xzmlsLoJpyjoggmTEz8OWUFM0/RC5BsqQBDX2v5cMvDHcMakNTNrHIW2I5f" crossorigin="anonymous"></script>
+<script>
+  window.Popper = {}; // Remove if we want to use Bootstrap tooltips
+</script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/combine/npm/codemirror@5.29.0/lib/codemirror.js,npm/codemirror@5.29.0/mode/coffeescript/coffeescript.js,npm/codemirror@5.29.0/addon/lint/coffeescript-lint.js,npm/codemirror@5.29.0/mode/javascript/javascript.js"></script>
+
+<script src="browser-compiler/coffeescript.js"></script>
+<script>
+<%= includeScript('docs.coffee') %>
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-106156830-1"></script>
+<script>
+  window.GA_TRACKING_ID = 'UA-106156830-1';
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments)};
+  gtag('js', new Date());
+  gtag('config', GA_TRACKING_ID);
+</script>

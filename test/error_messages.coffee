@@ -91,6 +91,9 @@ if require?
     notEqual error.stack.toString().indexOf(filePath), -1
 
   test "#4418: stack traces for compiled files reference the correct line number", ->
+    # The browser is already compiling other anonymous scripts (the tests)
+    # which will conflict.
+    return if global.testingBrowser
     filePath = path.join os.tmpdir(), 'StackTraceLineNumberTestFile.coffee'
     fileContents = """
       testCompiledFileStackTraceLineNumber = ->
@@ -112,6 +115,9 @@ if require?
 
 
 test "#4418: stack traces for compiled strings reference the correct line number", ->
+  # The browser is already compiling other anonymous scripts (the tests)
+  # which will conflict.
+  return if global.testingBrowser
   try
     CoffeeScript.run '''
       testCompiledStringStackTraceLineNumber = ->
@@ -128,6 +134,9 @@ test "#4418: stack traces for compiled strings reference the correct line number
 
 
 test "#4558: compiling a string inside a script doesn’t screw up stack trace line number", ->
+  # The browser is already compiling other anonymous scripts (the tests)
+  # which will conflict.
+  return if global.testingBrowser
   try
     CoffeeScript.run '''
       testCompilingInsideAScriptDoesntScrewUpStackTraceLineNumber = ->
@@ -1758,4 +1767,13 @@ test "#3199: error message for throw indented comprehension", ->
     [stdin]:2:3: error: unexpected identifier
       x for x in [1, 2, 3]
       ^
+  '''
+
+test "#3098: suppressed newline should be unsuppressed by semicolon", ->
+  assertErrorFormat '''
+    a = ; 5
+  ''', '''
+    [stdin]:1:5: error: unexpected ;
+    a = ; 5
+        ^
   '''

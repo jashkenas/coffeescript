@@ -1,6 +1,31 @@
 ## Changelog
 
 ```
+releaseHeader('2017-09-17', '2.0.0', '2.0.0-beta5')
+```
+
+*   Added `--transpile` flag or `transpile` Node API option to tell the CoffeeScript compiler to pipe its output through Babel before saving or returning it; see [Transpilation](#transpilation). Also changed the `-t` short flag to refer to `--transpile` instead of `--tokens`.
+*   Always populate source maps’ `sourcesContent` property.
+*   Bugfixes for destructuring and for comments in JSX.
+*   _Note that these are only the changes between 2.0.0-beta5 and 2.0.0. See below for all changes since 1.x._
+
+```
+releaseHeader('2017-09-02', '2.0.0-beta5', '2.0.0-beta4')
+```
+
+*   Node 6 is now supported, and we will try to maintain that as the minimum required version for CoffeeScript 2 via the `coffee` command or Node API. Older versions of Node, or non-evergreen browsers, can compile via the [browser compiler](./browser-compiler/coffeescript.js).
+*   The command line `--output` flag now allows you to specify an output filename, not just an output folder.
+*   The command line `--require` flag now properly handles filenames or module names that are invalid identifiers (like an NPM module with a hyphen in the name).
+*   `Object.assign`, output when object destructuring is used, is polyfilled using the same polyfill that Babel outputs. This means that polyfills shouldn’t be required unless support for Internet Explorer 8 or below is desired (or your own code uses a feature that requires a polyfill). See [ES2015+ Output](#es2015plus-output).
+*   A string or JSX interpolation that contains only a comment (`"a#{### comment ###}b"` or `<div>{### comment ###}</div>`) is now output (`` `a${/* comment */}b` ``)
+*   Interpolated strings (ES2015 template literals) that contain quotation marks no longer have the quotation marks escaped: `` `say "${message}"` ``
+*   It is now possible to chain after a function literal (for example, to define a function and then call `.call` on it).
+*   The results of the async tests are included in the output when you run `cake test`.
+*   Bugfixes for object destructuring; expansions in function parameters; generated reference variables in function parameters; chained functions after `do`; splats after existential operator soaks in arrays (`[a?.b...]`); trailing `if` with splat in arrays or function parameters (`[a if b...]`); attempting to `throw` an `if`, `for`, `switch`, `while` or other invalid construct.
+*   Bugfixes for syntactical edge cases: semicolons after `=` and other “mid-expression” tokens; spaces after `::`; and scripts that begin with `:` or `*`.
+*   Bugfixes for source maps generated via the Node API; and stack trace line numbers when compiling CoffeeScript via the Node API from within a `.coffee` file.
+
+```
 releaseHeader('2017-08-03', '2.0.0-beta4', '2.0.0-beta3')
 ```
 
@@ -159,7 +184,6 @@ releaseHeader('2016-09-24', '1.11.0', '1.10.0')
 *   CoffeeScript now supports ES2015 [`import` and `export` syntax](#modules).
 *   Added the `-M, --inline-map` flag to the compiler, allowing you embed the source map directly into the output JavaScript, rather than as a separate file.
 *   A bunch of fixes for `yield`:
-
     *   `yield return` can no longer mistakenly be used as an expression.
     *   `yield` now mirrors `return` in that it can be used stand-alone as well as with expressions. Where you previously wrote `yield undefined`, you may now write simply `yield`. However, this means also inheriting the same syntax limitations that `return` has, so these examples no longer compile:
         ```
@@ -170,7 +194,6 @@ releaseHeader('2016-09-24', '1.11.0', '1.10.0')
           yield
             2 * 3
         ```
-
     *   The JavaScript output is a bit nicer, with unnecessary parentheses and spaces, double indentation and double semicolons around `yield` no longer present.
 *   `&&=`, `||=`, `and=` and `or=` no longer accidentally allow a space before the equals sign.
 *   Improved several error messages.
@@ -178,7 +201,6 @@ releaseHeader('2016-09-24', '1.11.0', '1.10.0')
 *   Bugfix for renamed destructured parameters with defaults. `({a: b = 1}) ->` no longer crashes the compiler.
 *   Improved the internal representation of a CoffeeScript program. This is only noticeable to tools that use `CoffeeScript.tokens` or `CoffeeScript.nodes`. Such tools need to update to take account for changed or added tokens and nodes.
 *   Several minor bug fixes, including:
-
     *   The caught error in `catch` blocks is no longer declared unnecessarily, and no longer mistakenly named `undefined` for `catch`-less `try` blocks.
     *   Unassignable parameter destructuring no longer crashes the compiler.
     *   Source maps are now used correctly for errors thrown from .coffee.md files.
@@ -194,7 +216,6 @@ releaseHeader('2015-09-03', '1.10.0', '1.9.3')
 *   CoffeeScript now supports ES2015-style destructuring defaults.
 *   `(offsetHeight: height) ->` no longer compiles. That syntax was accidental and partly broken. Use `({offsetHeight: height}) ->` instead. Object destructuring always requires braces.
 *   Several minor bug fixes, including:
-
     *   A bug where the REPL would sometimes report valid code as invalid, based on what you had typed earlier.
     *   A problem with multiple JS contexts in the jest test framework.
     *   An error in io.js where strict mode is set on internal modules.

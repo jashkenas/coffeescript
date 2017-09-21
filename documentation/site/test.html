@@ -52,16 +52,27 @@ say = (msg, className) ->
   stdout.appendChild div
   msg
 
+asyncTests = []
+onFail = (description, fn, err) ->
+  failures.push
+    error: err
+    description: description
+    source: fn.toString() if fn.toString?
+
 @test = (description, fn) ->
   ++total
   try
-    fn.call(fn)
-    ++passedTests
-  catch error
-    failures.push
-      error: error
-      description: description
-      source: fn.toString() if fn.toString?
+    result = fn.call(fn)
+    if result instanceof Promise # An async test.
+      asyncTests.push result
+      result.then ->
+        passedTests++
+      .catch (err) ->
+        onFail description, fn, err
+    else
+      passedTests++
+  catch err
+    onFail description, fn, err
 
 @failures =
   push: (failure) -> # Match function called by regular tests
@@ -74,11 +85,11 @@ say = (msg, className) ->
 @ok = (good, msg = 'Error') ->
   throw Error msg unless good
 
-# Polyfill Node assert's fail
+# Polyfill Node assert’s fail
 @fail = ->
   ok no
 
-# Polyfill Node assert's deepEqual with Underscore's isEqual
+# Polyfill Node assert’s deepEqual with Underscore’s isEqual
 @deepEqual = (a, b) ->
   ok _.isEqual(a, b), "Expected #{JSON.stringify a} to deep equal #{JSON.stringify b}"
 
@@ -114,14 +125,36 @@ for test in document.getElementsByClassName 'test'
   CoffeeScript.run test.innerHTML, options
 
 # Finish up
-yay = passedTests is total and not failedTests
-sec = (new Date - start) / 1000
-msg = "passed #{passedTests} tests in #{sec.toFixed 2} seconds"
-msg = "failed #{total - passedTests} tests and #{msg}" unless yay
-say msg, (if yay then 'good' else 'bad')
+done = ->
+  yay = passedTests is total and not failedTests
+  sec = (new Date - start) / 1000
+  msg = "passed #{passedTests} tests in #{sec.toFixed 2} seconds"
+  msg = "failed #{total - passedTests} tests and #{msg}" unless yay
+  say msg, (if yay then 'good' else 'bad')
+
+  gtag 'event', 'tests_complete',
+    event_category: 'tests'
+    event_label: if yay then 'passed' else 'failed'
+    value: if yay then passedTests else total - passedTests
+  gtag 'event', 'tests_report',
+    event_category: 'tests'
+    event_label: msg
+  gtag 'event', 'timing_complete',
+    name: 'tests_run'
+    value: sec * 1000
+
+Promise.all(asyncTests).then(done).catch(done)
 </script>
 
 <%= tests %>
 
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-106156830-1"></script>
+<script>
+  window.GA_TRACKING_ID = 'UA-106156830-1';
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments)};
+  gtag('js', new Date());
+  gtag('config', GA_TRACKING_ID);
+</script>
 </body>
 </html>

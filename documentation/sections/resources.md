@@ -11,5 +11,5 @@
     Perhaps your CoffeeScript-related question has been asked before. Check the FAQ first.
 *   [JS2Coffee](http://js2.coffee/)<br>
     Is a very well done reverse JavaScript-to-CoffeeScript compiler. It’s not going to be perfect (infer what your JavaScript classes are, when you need bound functions, and so on…) — but it’s a great starting point for converting simple scripts.
-*   [High-Rez Logo](https://github.com/jashkenas/coffeescript/tree/master/documentation/images)<br>
+*   [High-Rez Logo](https://github.com/jashkenas/coffeescript/tree/master/documentation/site)<br>
     The CoffeeScript logo is available in SVG for use in presentations.

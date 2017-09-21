@@ -1,5 +1,6 @@
 {
-	"name": "",
+	"name": "CoffeeScript",
+	"description": "Unfancy JavaScript",
 	"icons": [
 		{
 			"src": "\/android-chrome-192x192.png",

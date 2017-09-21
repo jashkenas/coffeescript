@@ -66,6 +66,20 @@ build = (callback) ->
   buildParser()
   buildExceptParser callback
 
+transpile = (code) ->
+  babel = require 'babel-core'
+  presets = []
+  # Exclude the `modules` plugin in order to not break the `}(this));`
+  # at the end of the `build:browser` code block.
+  presets.push ['env', {modules: no}] unless process.env.TRANSFORM is 'false'
+  presets.push 'minify' unless process.env.MINIFY is 'false'
+  babelOptions =
+    compact: process.env.MINIFY isnt 'false'
+    presets: presets
+    sourceType: 'script'
+  { code } = babel.transform code, babelOptions unless presets.length is 0
+  code
+
 testBuiltCode = (watch = no) ->
   csPath = './lib/coffeescript'
   csDir  = path.dirname require.resolve csPath
@@ -79,7 +93,7 @@ testBuiltCode = (watch = no) ->
 
 buildAndTest = (includingParser = yes, harmony = no) ->
   process.stdout.write '\x1Bc' # Clear terminal screen.
-  execSync 'git checkout lib/*', stdio: [0,1,2] # Reset the generated compiler.
+  execSync 'git checkout lib/*', stdio: 'inherit' # Reset the generated compiler.
 
   buildArgs = ['bin/cake']
   buildArgs.push if includingParser then 'build' else 'build:except-parser'
@@ -141,24 +155,7 @@ task 'build:browser', 'merge the built scripts into a single file for use in a b
       }
     }(this));
   """
-  babel = require 'babel-core'
-  presets = []
-  # Exclude the `modules` plugin in order to not break the `}(this));`
-  # at the end of the above code block.
-  presets.push ['env', {modules: no}] unless process.env.TRANSFORM is 'false'
-  babelOptions =
-    presets: presets
-    sourceType: 'script'
-  { code } = babel.transform code, babelOptions unless presets.length is 0
-  # Running Babel twice due to https://github.com/babel/babili/issues/614.
-  # Once that issue is fixed, move the `babili` preset back up into the
-  # `presets` array and run Babel once with both presets together.
-  presets = if process.env.MINIFY is 'false' then [] else ['babili']
-  babelOptions =
-    compact: process.env.MINIFY isnt 'false'
-    presets: presets
-    sourceType: 'script'
-  { code } = babel.transform code, babelOptions unless presets.length is 0
+  code = transpile code
   outputFolder = "docs/v#{majorVersion}/browser-compiler"
   fs.mkdirSync outputFolder unless fs.existsSync outputFolder
   fs.writeFileSync "#{outputFolder}/coffeescript.js", header + '\n' + code
@@ -177,11 +174,11 @@ task 'build:watch:harmony', 'watch and continually rebuild the CoffeeScript comp
 
 buildDocs = (watch = no) ->
   # Constants
-  indexFile = 'documentation/index.html'
-  versionedSourceFolder = "documentation/v#{majorVersion}"
+  indexFile            = 'documentation/site/index.html'
+  siteSourceFolder     = "documentation/site"
   sectionsSourceFolder = 'documentation/sections'
   examplesSourceFolder = 'documentation/examples'
-  outputFolder = "docs/v#{majorVersion}"
+  outputFolder         = "docs/v#{majorVersion}"
 
   # Helpers
   releaseHeader = (date, version, prevVersion) ->
@@ -199,7 +196,7 @@ buildDocs = (watch = no) ->
       </h2>
     """
 
-  codeFor = require "./documentation/v#{majorVersion}/code.coffee"
+  codeFor = require "./documentation/site/code.coffee"
 
   htmlFor = ->
     hljs = require 'highlight.js'
@@ -236,9 +233,17 @@ buildDocs = (watch = no) ->
         codeFor: codeFor()
         releaseHeader: releaseHeader
 
+  includeScript = ->
+    (file) ->
+      file = "#{siteSourceFolder}/#{file}" unless '/' in file
+      code = fs.readFileSync file, 'utf-8'
+      code = CoffeeScript.compile code
+      code = transpile code
+      code
+
   include = ->
     (file) ->
-      file = "#{versionedSourceFolder}/#{file}" if file.indexOf('/') is -1
+      file = "#{siteSourceFolder}/#{file}" unless '/' in file
       output = fs.readFileSync file, 'utf-8'
       if /\.html$/.test(file)
         render = _.template output
@@ -249,6 +254,7 @@ buildDocs = (watch = no) ->
           htmlFor: htmlFor()
           codeFor: codeFor()
           include: include()
+          includeScript: includeScript()
       output
 
   # Task
@@ -263,7 +269,7 @@ buildDocs = (watch = no) ->
   catch exception
 
   if watch
-    for target in [indexFile, versionedSourceFolder, examplesSourceFolder, sectionsSourceFolder]
+    for target in [indexFile, siteSourceFolder, examplesSourceFolder, sectionsSourceFolder]
       fs.watch target, interval: 200, renderIndex
     log 'watching...', green
 
@@ -276,9 +282,9 @@ task 'doc:site:watch', 'watch and continually rebuild the documentation for the 
 
 buildDocTests = (watch = no) ->
   # Constants
-  testFile = 'documentation/test.html'
+  testFile          = 'documentation/site/test.html'
   testsSourceFolder = 'test'
-  outputFolder = "docs/v#{majorVersion}"
+  outputFolder      = "docs/v#{majorVersion}"
 
   # Included in test.html
   testHelpers = fs.readFileSync('test/support/helpers.coffee', 'utf-8').replace /exports\./g, '@'
@@ -376,7 +382,6 @@ task 'bench', 'quick benchmark of compilation time', ->
 # Run the CoffeeScript test suite.
 runTests = (CoffeeScript) ->
   CoffeeScript.register() unless global.testingBrowser
-  startTime = Date.now()
 
   # These are attached to `global` so that they’re accessible from within
   # `test/async.coffee`, which has an async-capable version of
@@ -396,18 +401,35 @@ runTests = (CoffeeScript) ->
   global.yellow = yellow
   global.reset  = reset
 
+  asyncTests = []
+  onFail = (description, fn, err) ->
+    failures.push
+      filename: global.currentFile
+      error: err
+      description: description
+      source: fn.toString() if fn.toString?
+
   # Our test helper function for delimiting different test cases.
   global.test = (description, fn) ->
     try
       fn.test = {description, currentFile}
-      fn.call(fn)
-      ++passedTests
-    catch e
-      failures.push
-        filename: currentFile
-        error: e
-        description: description if description?
-        source: fn.toString() if fn.toString?
+      result = fn.call(fn)
+      if result instanceof Promise # An async test.
+        asyncTests.push result
+        result.then ->
+          passedTests++
+        .catch (err) ->
+          onFail description, fn, err
+      else
+        passedTests++
+    catch err
+      onFail description, fn, err
+
+  global.supportsAsync = try
+      new Function('async () => {}')()
+      yes
+    catch
+      no
 
   helpers.extend global, require './test/support/helpers'
 
@@ -428,7 +450,10 @@ runTests = (CoffeeScript) ->
 
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
+  unless global.supportsAsync # Except for async tests, if async isn’t supported.
+    files = files.filter (filename) -> filename isnt 'async.coffee'
 
+  startTime = Date.now()
   for file in files when helpers.isCoffee file
     literate = helpers.isLiterate file
     currentFile = filename = path.join 'test', file
@@ -437,12 +462,13 @@ runTests = (CoffeeScript) ->
       CoffeeScript.run code.toString(), {filename, literate}
     catch error
       failures.push {filename, error}
-  return !failures.length
+
+  Promise.all(asyncTests).then ->
+    Promise.reject() if failures.length isnt 0
 
 
 task 'test', 'run the CoffeeScript language test suite', ->
-  testResults = runTests CoffeeScript
-  process.exit 1 unless testResults
+  runTests(CoffeeScript).catch -> process.exit 1
 
 
 task 'test:browser', 'run the test suite against the merged browser script', ->
@@ -450,8 +476,8 @@ task 'test:browser', 'run the test suite against the merged browser script', ->
   result = {}
   global.testingBrowser = yes
   (-> eval source).call result
-  testResults = runTests result.CoffeeScript
-  process.exit 1 unless testResults
+  runTests(CoffeeScript).catch -> process.exit 1
+
 
 task 'test:integrations', 'test the module integrated with other libraries and environments', ->
   # Tools like Webpack and Browserify generate builds intended for a browser
@@ -461,20 +487,28 @@ task 'test:integrations', 'test the module integrated with other libraries and e
   # Node modules are required as part of the compiler (as opposed to the tests)
   # and that therefore the compiler will run in a browser environment.
   tmpdir = os.tmpdir()
-  try
-    buildLog = execSync "./node_modules/webpack/bin/webpack.js
-      --entry=./
-      --output-library=CoffeeScript
-      --output-library-target=commonjs2
-      --output-path=#{tmpdir}
-      --output-filename=coffeescript.js"
-  catch exception
-    console.error buildLog.toString()
-    throw exception
+  webpack = require 'webpack'
+  webpack {
+    entry: './'
+    output:
+      path: tmpdir
+      filename: 'coffeescript.js'
+      library: 'CoffeeScript'
+      libraryTarget: 'commonjs2'
+  }, (err, stats) ->
+    if err or stats.hasErrors()
+      if err
+        console.error err.stack or err
+        console.error err.details if err.details
+      if stats.hasErrors()
+        console.error error for error in stats.compilation.errors
+      if stats.hasWarnings()
+        console.warn warning for warning in stats.compilation.warnings
+      process.exit 1
 
-  builtCompiler = path.join tmpdir, 'coffeescript.js'
-  CoffeeScript = require builtCompiler
-  global.testingBrowser = yes
-  testResults = runTests CoffeeScript
-  fs.unlinkSync builtCompiler
-  process.exit 1 unless testResults
+    builtCompiler = path.join tmpdir, 'coffeescript.js'
+    CoffeeScript = require builtCompiler
+    global.testingBrowser = yes
+    testResults = runTests CoffeeScript
+    fs.unlinkSync builtCompiler
+    process.exit 1 unless testResults

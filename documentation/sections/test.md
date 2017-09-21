@@ -4,4 +4,4 @@ CoffeeScript includes an extensive test suite, which verifies that the compiler 
 
 Note that since no JavaScript runtime yet supports ES2015 modules, the tests for module support verify only that the CoffeeScript compiler’s output is the correct syntax; the tests don’t verify that the modules resolve properly.
 
-[Run the tests in your browser.](http://coffeescript.org/v<%= majorVersion %>/test.html)
+[Run the tests in your browser.](test.html)

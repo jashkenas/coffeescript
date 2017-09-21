@@ -8,10 +8,10 @@
     "compiler"
   ],
   "author": "Jeremy Ashkenas",
-  "version": "2.0.0-beta4",
+  "version": "2.0.0",
   "license": "MIT",
   "engines": {
-    "node": ">=7.6.0"
+    "node": ">=6"
   },
   "directories": {
     "lib": "./lib/coffeescript"
@@ -39,16 +39,17 @@
     "url": "git://github.com/jashkenas/coffeescript.git"
   },
   "devDependencies": {
-    "babel-core": "~6.25.0",
+    "babel-core": "~6.26.0",
     "babel-preset-babili": "~0.1.4",
     "babel-preset-env": "~1.6.0",
-    "babili": "^0.1.4",
+    "babel-preset-minify": "^0.2.0",
+    "codemirror": "^5.29.0",
     "docco": "~0.7.0",
     "highlight.js": "~9.12.0",
-    "jison": ">=0.4.17",
-    "markdown-it": "~8.3.1",
+    "jison": ">=0.4.18",
+    "markdown-it": "~8.4.0",
     "underscore": "~1.8.3",
-    "webpack": "~3.2.0"
+    "webpack": "~3.6.0"
   },
   "dependencies": {}
 }

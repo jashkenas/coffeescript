@@ -4,4 +4,4 @@ Released under the MIT License
 ###
 
 sayFortune = (fortune) ->
-	console.log fortune # in bed!
+  console.log fortune # in bed!

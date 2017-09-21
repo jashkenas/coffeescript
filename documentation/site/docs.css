@@ -1,5 +1,3 @@
-/* Adapted from https://v4-alpha.getbootstrap.com/examples/dashboard/dashboard.css and http://v4-alpha.getbootstrap.com/examples/offcanvas/offcanvas.css */
-
 html,
 body {
   /* Prevent scroll on narrow devices */
@@ -27,7 +25,12 @@ a:focus, a:hover, a:active {
   text-decoration: none;
 }
 
-.bg-inverse {
+button:focus, .navbar-dark .navbar-toggler:focus {
+  outline: none;
+  border: thin solid rgba(248, 243, 240, 0.3);
+}
+
+.bg-dark {
   background-color: #3e2723 !important;
 }
 
@@ -44,92 +47,35 @@ a:focus, a:hover, a:active {
 /*
  * Header
  */
-.navbar-fixed-top {
+.site-navbar {
   height: 3.5rem;
+  font-family: 'Lato';
+  font-weight: 400;
+  font-size: 1.1em;
 }
 
 .navbar-brand {
-  height: 2em;
-  margin-right: 2em;
+  height: 2.2em;
+  margin-right: 1em;
 }
 
 .navbar-dark path {
   fill: #fff;
 }
 
-.navbar-nav {
-  font-family: Lato;
-  font-weight: 400;
-  font-size: 1.1em;
-}
-
-.navbar-nav .nav-link {
-  padding-left: 0.6em;
-  padding-right: 0.6em;
+.navbar-nav .nav-item {
+  margin-left: 0.6em;
+  margin-right: 0.6em;
   border-radius: 0.4em;
 }
-.navbar-nav .nav-link:hover,
-.navbar-nav .nav-link:active,
-.navbar-nav .nav-link.active {
+.navbar-nav .nav-item:hover,
+.navbar-nav .nav-item:active,
+.navbar-nav .nav-item.show {
   background-color: #4e342e;
 }
 
-/* Adapted from https://codepen.io/GeoffreyBooth/pen/QGzwYK */
-.navbar-menu-button,
-.navbar-menu-button:focus {
-  float: right;
-  width: 2.3em;
-  padding: 0;
-  margin-top: 0.25em;
-  background: transparent;
-  border: 0;
-  outline: 0;
-}
-.menu-button {
-  width: 2em;
-  height: 1.5em;
-  position: relative;
-  transform: rotate(0deg);
-  transition: .25s ease-in-out;
-  cursor: pointer;
-}
-.menu-button span {
-  display: block;
-  position: absolute;
-  height: 4px;
-  width: 100%;
-  background: #efebe9;
-  border-radius: 4px;
-  opacity: 1;
-  left: 0;
-  transform: rotate(0deg);
-  transition: .25s ease-in-out;
-}
-.menu-button span:nth-child(1) {
-  top: 0;
-}
-.menu-button span:nth-child(2),
-.menu-button span:nth-child(3) {
-  top: 0.7em;
-}
-.menu-button span:nth-child(4) {
-  top: 1.4em;
-}
-.menu-button.active span:nth-child(1) {
-  top: 0.7em;
-  width: 0%;
-  left: 50%;
-}
-.menu-button.active span:nth-child(2) {
-  transform: rotate(45deg);
-}
-.menu-button.active span:nth-child(3) {
-  transform: rotate(-45deg);
-}
-.menu-button.active span:nth-child(4) {
-  top: 0.7em;
-  width: 0%;
-  left: 50%;
+.navbar-toggler {
+  transition: all 0.1s ease-in-out;
 }
 
 
@@ -138,92 +84,53 @@ a:focus, a:hover, a:active {
  */
 
 .sidebar {
-  background-color: #efebe9;
-  border-right: 1px solid #efebe9;
-  top: 3.5rem;
-  bottom: 0;
-  left: 0;
-  z-index: 1000;
-  display: block;
-  padding: 0;
-}
-.sidebar .contents {
-  height: 100%;
+  position: fixed;
+  top: 3.5em;
+  height: calc(100% - 3.5rem);
   /* Scrollable contents if viewport is shorter than content */
   overflow-y: auto;
   overflow-x: hidden;
+  left: 0;
+  bottom: 0;
+  z-index: 1000;
+  padding: 0;
+  background-color: #efebe9;
+  border-right: 1px solid #efebe9;
+}
+.sidebar::-webkit-scrollbar {
+  display: none;
+}
+@media screen and (max-width: 991px) {
+  .sidebar {
+    left: -100%;
+    transition: 0.25s left ease-in-out;
+  }
+  .sidebar.show {
+    left: 0;
+  }
+}
+
+.contents {
+  padding: 0.5em 0 0.5em 0.5em;
   font-family: 'Alegreya Sans';
   font-weight: 400;
   font-size: 1.2em;
-  line-height: 2;
-}
-@media screen and (max-width: 991px) {
-  .sidebar .contents {
-    position: fixed;
-    height: calc(100% - 3.5rem);
-    padding: 1em 1.6em;
-  }
-}
-@media screen and (min-width: 992px) {
-  .sidebar {
-    position: fixed;
-  }
-  .sidebar .contents {
-    padding: 1.3em;
-  }
-  .sidebar .contents::-webkit-scrollbar {
-    display: none;
-  }
+  align-items: normal;
 }
 
-.sidebar .nav-link.active,
-.sidebar .nav-link.active a:hover,
-.sidebar .nav-link.active a:focus {
-  font-weight: 800;
-}
-
-.nav .nav {
+.contents .nav .nav {
   margin-left: 1em;
   font-size: 0.9em;
-  line-height: 1.7;
 }
 
+.contents .nav-link {
+  padding: 0.2em 0.7em;
+}
 
-/*
- * Off Canvas
- */
-@media screen and (max-width: 991px) {
-  .row-offcanvas {
-    position: relative;
-    transition: all .25s ease-in-out;
-  }
-  .row-offcanvas-left {
-    left: 0;
-  }
-  .sidebar-offcanvas {
-    position: absolute;
-    top: 0;
-  }
-}
-@media screen and (max-width: 767px) {
-  .row-offcanvas-left .sidebar-offcanvas {
-    left: -100%;
-  }
-  .row-offcanvas-left.active {
-    left: calc(100% + 30px)
-  }
-}
-@media screen and (min-width: 768px) and (max-width: 991px) {
-  .row-offcanvas-left .sidebar-offcanvas {
-    left: calc(-66.667% - 15px);
-    width: 66.667%;
-  }
-  .row-offcanvas-left.active {
-    left: calc(66.667% + 30px);
-  }
-  .row-offcanvas-left .sidebar-offcanvas .contents {
-    width: 66.667%;
-  }
+.contents .nav-link.active,
+.contents .nav-link.active a:hover,
+.contents .nav-link.active a:focus {
+  font-weight: 800;
 }
 
 
@@ -251,8 +158,20 @@ a:focus, a:hover, a:active {
 
 .main p, .main li, .main td, .main th {
   font-family: Lato;
-  font-size: 1.3rem;
   font-weight: 300;
+  font-size: 1.1em;
+  line-height: 1.7;
+}
+.main blockquote {
+  font-size: 1.1em;
+}
+.main li p, .main li li, .main li blockquote {
+  font-size: 1em;
+}
+@media (min-width: 768px) {
+  .main p, .main li, .main td, .main th, .main blockquote {
+    font-size: 1.2em;
+  }
 }
 .main td {
   vertical-align: top;
@@ -268,9 +187,6 @@ a:focus, a:hover, a:active {
 .main a:focus, .main a:hover, .main a:active {
   border-bottom: 2px solid rgba(56, 142, 60, 0.2);
 }
-.main blockquote {
-  font-size: 1.3rem;
-}
 .main blockquote pre {
   background-color: #f8f3f0;
   color: #2f2625;
@@ -279,11 +195,18 @@ a:focus, a:hover, a:active {
 }
 
 p, blockquote, table, .code-example {
-  margin-bottom: 1.3rem;
+  margin-bottom: 1.1em;
+}
+.main li {
+  margin-bottom: 0.6em;
 }
 
-td code {
+code, td code {
   white-space: nowrap;
+  padding: 2px 8px;
+}
+pre code {
+  white-space: pre; /* We want newlines to be newlines in code blocks */
 }
 
 h2, h3, h4 {
@@ -304,12 +227,20 @@ h3, h4, h2 time {
   margin-top: -2.3rem;
 }
 
+@media (min-width: 1200px) {
+  .main > header, .main section > h2, .main section > h3, .main section > h4, .main section > p, .main section > blockquote, .main section > ul, .main section > table {
+    max-width: 80%;
+  }
+}
+
 code, button {
   font-family: 'Roboto Mono';
   font-weight: 400;
 }
-code {
+code, a > code {
   background-color: #f8f3f0;
+}
+code {
   color: #2f2625;
 }
 
@@ -348,14 +279,35 @@ textarea {
   outline: 0;
 }
 
-.CodeMirror {
+.play-button {
+  height: 1em;
+}
+
+.CodeMirror pre, pre.placeholder-code {
+  line-height: 1.4em;
+}
+
+.CodeMirror,
+.placeholder-code {
   /* https://codemirror.net/demo/resize.html */
   height: auto;
   background: transparent;
   font-family: 'Roboto Mono';
   font-weight: 400;
   line-height: 1.25;
+  font-size: 0.9em;
 }
+@media (min-width: 768px) {
+  .CodeMirror,
+  .placeholder-code {
+    font-size: 1em;
+  }
+}
+
+.CodeMirror-code:focus {
+  outline: none;
+}
+
 .javascript-output-column .CodeMirror-cursor {
   /* https://github.com/codemirror/CodeMirror/issues/2568 */
   display: none;
@@ -373,7 +325,7 @@ textarea {
   opacity: 0;
   transition: opacity 0.15s ease-in-out;
 }
-.try-coffeescript.active {
+.try-coffeescript.show {
   opacity: 1;
   z-index: 1001;
 }

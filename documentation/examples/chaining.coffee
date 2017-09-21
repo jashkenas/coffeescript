@@ -2,5 +2,5 @@ $ 'body'
 .click (e) ->
   $ '.box'
   .fadeIn 'fast'
-  .addClass '.active'
+  .addClass 'show'
 .css 'background', 'white'
