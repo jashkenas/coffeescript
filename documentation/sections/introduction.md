@@ -5,5 +5,9 @@ The golden rule of CoffeeScript is: _“It’s just JavaScript.”_ The code com
 **Latest Version:** [<%= fullVersion %>](https://github.com/jashkenas/coffeescript/tarball/<%= fullVersion %>)
 
 ```bash
-npm install -g coffeescript
+# Install locally for a project
+npm install --save-dev coffeescript
+
+# Install globally to execute .coffee files anywhere
+npm install --global coffeescript
 ```
