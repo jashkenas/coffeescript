@@ -470,54 +470,27 @@ compileOptions = (filename, base) ->
         '''
       process.exit 1
 
-    # We’re giving Babel only a string, not a filename or path to a file, so
-    # it doesn’t know where to search to find a `.babelrc` file or a `babel`
-    # key in a `package.json`. So if `opts.transpile` is an object, use that
-    # as Babel’s options; otherwise figure out what the options should be.
-    unless typeof opts.transpile is 'object'
-      # Find the options based on the path to the file being compiled.
-      cantFindOptions = ->
-        console.error '''
-          To use the transpile option, there must be a .babelrc file
-          (or a package.json file with a "babel" key) in the path of the file
-          to be compiled, or in the path of the current working directory.
-          If you are compiling a string via the Node API, the transpile option
-          must be an object with the options to pass to Babel.
-          See http://coffeescript.org/#transpilation
-        '''
-        process.exit 1
-
-      checkPath = if filename
-        path.dirname filename
-      else if base
-        base
-      else if process?
-        process.cwd()
-      else
-        cantFindOptions()
-
-      loop
-        try
-          opts.transpile = JSON.parse fs.readFileSync path.join(checkPath, '.babelrc'), 'utf-8'
-          break
-        catch
-          try
-            packageJson = JSON.parse fs.readFileSync(path.join(checkPath, 'package.json'), 'utf-8')
-            if packageJson.babel?
-              opts.transpile = packageJson.babel
-              break
-
-        if checkPath is path.dirname checkPath # We’ve reached the root.
-          cantFindOptions()
-          break
-        else
-          checkPath = path.dirname checkPath
+    opts.transpile = {} unless typeof opts.transpile is 'object'
 
     # Pass a reference to Babel into the compiler, so that the transpile option
     # is available for the CLI. We need to do this so that tools like Webpack
     # can `require('coffeescript')` and build correctly, without trying to
     # require Babel.
     opts.transpile.transpile = CoffeeScript.transpile
+
+    # Babel searches for its options (a `.babelrc` file, a `.babelrc.js` file,
+    # a `package.json` file with a `babel` key, etc.) relative to the path
+    # given to it in its `filename` option. Make sure we have a path to pass
+    # along.
+    unless opts.transpile.filename
+      if filename
+        opts.transpile.filename = filename
+      else
+        opts.transpile.filename = base or process.cwd()
+        if opts.transpile.filename.endsWith(path.sep)
+          opts.transpile.filename += '.'
+        else
+          opts.transpile.filename += path.sep + '.'
   else
     opts.transpile = no
 
