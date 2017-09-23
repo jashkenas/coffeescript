@@ -22,19 +22,25 @@ CoffeeScript includes a `--transpile` option when used via the `coffee` command,
 npm install --save-dev babel-core
 ```
 
+Or if you’re running the `coffee` command outside of a project folder, using a globally-installed `coffeescript` module, `babel-core` also needs to be installed globally:
+
+```bash
+npm install --global babel-core
+```
+
 By default, Babel doesn’t do anything—it doesn’t make assumptions about what you want to transpile to. You might know that your code will run in Node 8, and so you want Babel to transpile modules and JSX and nothing else. Or you might want to support Internet Explorer 8, in which case Babel will transpile every feature introduced in ES2015 and later specs.
 
 If you’re not sure what you need, a good starting point is [`babel-preset-env`](https://babeljs.io/docs/plugins/preset-env/):
 
 ```bash
-npm install --save-dev babel-preset-env
+npm install --save-dev babel-preset-env  # Or --global for non-project-based usage
 ```
 
 See [Babel’s website to learn about presets and plugins](https://babeljs.io/docs/plugins/) and the multitude of options you have.
 
-Simply installing `babel-preset-env` isn’t enough. You also need to define the configuration options that you want Babel to use. You can do this by creating a [`.babelrc` file](https://babeljs.io/docs/usage/babelrc/) in the folder containing the files you’re compiling, or in any parent folder up the path above those files. So if your project is in `~/app` and your files are in `~/app/src`, you can put `.babelrc` in either `~/app` or in `~/app/src`. You can also define the Babel options via a `babel` key in the `package.json` file for your project. A minimal `.babelrc` file (or `package.json` `babel` key) for use with `babel-preset-env` would be just `{ "presets": ["env"] }`.
+Simply installing `babel-preset-env` isn’t enough. You also need to define the configuration options that you want Babel to use. You can do this by creating a [`.babelrc` file](https://babeljs.io/docs/usage/babelrc/) in the folder containing the files you’re compiling, or in any parent folder up the path above those files. (Babel supports [other ways](https://babeljs.io/docs/usage/babelrc/) to specify its options; any of them will work, though for the sake of simplicity in these docs we’ll assume you’re creating a `.babelrc` file.) So if your project is in `~/app` and your files are in `~/app/src`, you can put `.babelrc` in either `~/app` or in `~/app/src`. A minimal `.babelrc` file (or `package.json` `babel` key) for use with `babel-preset-env` would be just `{ "presets": ["env"] }`.
 
-Once you have `babel-core` and `babel-preset-env` (or other presets or plugins) installed, and a `.babelrc` file (or `package.json` `babel` key) in place, you can use `coffee --transpile` to pipe CoffeeScript’s output through Babel using the options you’ve saved.
+Once you have `babel-core` and `babel-preset-env` (or other presets or plugins) installed, and a `.babelrc` file (or other equivalent file) in place, you can use `coffee --transpile` to pipe CoffeeScript’s output through Babel using the options you’ve saved.
 
 If you’re using CoffeeScript via the [Node API](nodejs_usage), where you call `CoffeeScript.compile` with a string to be compiled and an `options` object, the `transpile` key of the `options` object should be the Babel options:
 
