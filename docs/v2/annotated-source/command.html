@@ -862,19 +862,17 @@ same directory as the <code>.js</code> file.</p>
                 <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>The user has requested that the CoffeeScript compiler also transpile
-via Babel. We use Babel as an <code>optionalDependency</code>; see
-<a href="https://docs.npmjs.com/files/package.json#optionaldependencies">https://docs.npmjs.com/files/package.json#optionaldependencies</a>.</p>
+via Babel. We don’t include Babel as a dependency because we want to
+avoid dependencies in general, and most users probably won’t be relying
+on us to transpile for them; we assume most users will probably either
+run CoffeeScript’s output without transpilation (modern Node or evergreen
+browsers) or use a proper build chain like Gulp or Webpack.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">try</span>
       <span class="hljs-built_in">require</span> <span class="hljs-string">'babel-core'</span>
-    <span class="hljs-keyword">catch</span>
-      <span class="hljs-built_in">console</span>.error <span class="hljs-string">'''
-        To use --transpile, you must have Babel installed and configured.
-        See http://coffeescript.org/#transpilation
-      '''</span>
-      process.exit <span class="hljs-number">1</span></pre></div></div>
+    <span class="hljs-keyword">catch</span></pre></div></div>
             
         </li>
         
@@ -885,14 +883,28 @@ via Babel. We use Babel as an <code>optionalDependency</code>; see
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
-              <p>We’re giving Babel only a string, not a filename or path to a file, so
-it doesn’t know where to search to find a <code>.babelrc</code> file or a <code>babel</code>
-key in a <code>package.json</code>. So if <code>opts.transpile</code> is an object, use that
-as Babel’s options; otherwise figure out what the options should be.</p>
+              <p>Give appropriate instructions depending on whether <code>coffee</code> was run
+locally or globally.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">unless</span> <span class="hljs-keyword">typeof</span> opts.transpile <span class="hljs-keyword">is</span> <span class="hljs-string">'object'</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">if</span> <span class="hljs-built_in">require</span>.resolve(<span class="hljs-string">'.'</span>).indexOf(process.cwd()) <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>
+        <span class="hljs-built_in">console</span>.error <span class="hljs-string">'''
+          To use --transpile, you must have babel-core installed:
+            npm install --save-dev babel-core
+          And you must save options to configure Babel in one of the places it looks to find its options.
+          See http://coffeescript.org/#transpilation
+        '''</span>
+      <span class="hljs-keyword">else</span>
+        <span class="hljs-built_in">console</span>.error <span class="hljs-string">'''
+          To use --transpile with globally-installed CoffeeScript, you must have babel-core installed globally:
+            npm install --global babel-core
+          And you must save options to configure Babel in one of the places it looks to find its options, relative to the file being compiled or to the current folder.
+          See http://coffeescript.org/#transpilation
+        '''</span>
+      process.exit <span class="hljs-number">1</span>
+
+    opts.transpile = {} <span class="hljs-keyword">unless</span> <span class="hljs-keyword">typeof</span> opts.transpile <span class="hljs-keyword">is</span> <span class="hljs-string">'object'</span></pre></div></div>
             
         </li>
         
@@ -903,46 +915,14 @@ as Babel’s options; otherwise figure out what the options should be.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
-              <p>Find the options based on the path to the file being compiled.</p>
+              <p>Pass a reference to Babel into the compiler, so that the transpile option
+is available for the CLI. We need to do this so that tools like Webpack
+can <code>require(&#39;coffeescript&#39;)</code> and build correctly, without trying to
+require Babel.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-function">      <span class="hljs-title">cantFindOptions</span> = -&gt;</span>
-        <span class="hljs-built_in">console</span>.error <span class="hljs-string">'''
-          To use the transpile option, there must be a .babelrc file
-          (or a package.json file with a "babel" key) in the path of the file
-          to be compiled, or in the path of the current working directory.
-          If you are compiling a string via the Node API, the transpile option
-          must be an object with the options to pass to Babel.
-          See http://coffeescript.org/#transpilation
-        '''</span>
-        process.exit <span class="hljs-number">1</span>
-
-      checkPath = <span class="hljs-keyword">if</span> filename
-        path.dirname filename
-      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> base
-        base
-      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> process?
-        process.cwd()
-      <span class="hljs-keyword">else</span>
-        cantFindOptions()
-
-      <span class="hljs-keyword">loop</span>
-        <span class="hljs-keyword">try</span>
-          opts.transpile = JSON.parse fs.readFileSync path.join(checkPath, <span class="hljs-string">'.babelrc'</span>), <span class="hljs-string">'utf-8'</span>
-          <span class="hljs-keyword">break</span>
-        <span class="hljs-keyword">catch</span>
-          <span class="hljs-keyword">try</span>
-            packageJson = JSON.parse fs.readFileSync(path.join(checkPath, <span class="hljs-string">'package.json'</span>), <span class="hljs-string">'utf-8'</span>)
-            <span class="hljs-keyword">if</span> packageJson.babel?
-              opts.transpile = packageJson.babel
-              <span class="hljs-keyword">break</span>
-
-        <span class="hljs-keyword">if</span> checkPath <span class="hljs-keyword">is</span> path.dirname checkPath <span class="hljs-comment"># We’ve reached the root.</span>
-          cantFindOptions()
-          <span class="hljs-keyword">break</span>
-        <span class="hljs-keyword">else</span>
-          checkPath = path.dirname checkPath</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    opts.transpile.transpile = CoffeeScript.transpile</pre></div></div>
             
         </li>
         
@@ -953,14 +933,15 @@ as Babel’s options; otherwise figure out what the options should be.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
-              <p>Pass a reference to Babel into the compiler, so that the transpile option
-is available for the CLI. We need to do this so that tools like Webpack
-can <code>require(&#39;coffeescript&#39;)</code> and build correctly, without trying to
-require Babel.</p>
+              <p>Babel searches for its options (a <code>.babelrc</code> file, a <code>.babelrc.js</code> file,
+a <code>package.json</code> file with a <code>babel</code> key, etc.) relative to the path
+given to it in its <code>filename</code> option. Make sure we have a path to pass
+along.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    opts.transpile.transpile = CoffeeScript.transpile
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">unless</span> opts.transpile.filename
+      opts.transpile.filename = filename <span class="hljs-keyword">or</span> path.resolve(base <span class="hljs-keyword">or</span> process.cwd(), <span class="hljs-string">'&lt;anonymous&gt;'</span>)
   <span class="hljs-keyword">else</span>
     opts.transpile = <span class="hljs-literal">no</span>
 

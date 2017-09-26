@@ -3641,13 +3641,25 @@ exports.Class = <span class="hljs-class"><span class="hljs-keyword">class</span>
                 <a class="pilcrow" href="#section-148">&#182;</a>
               </div>
               <p>Add an expression to the class initializer</p>
-<p>NOTE Currently, only methods and static methods are valid in ES class initializers.
-When additional expressions become valid, this method should be updated to handle them.</p>
+<p>This is the key method for determining whether an expression in a class
+body should appear in the initializer or the executable body. If the given
+<code>node</code> is valid in a class body the method will return a (new, modified,
+or identical) node for inclusion in the class initializer, otherwise
+nothing will be returned and the node will appear in the executable body.</p>
+<p>At time of writing, only methods (instance and static) are valid in ES
+class initializers. As new ES class features (such as class fields) reach
+Stage 4, this method will need to be updated to support them. We
+additionally allow <code>PassthroughLiteral</code>s (backticked expressions) in the
+initializer as an escape hatch for ES features that are not implemented
+(e.g. getters and setters defined via the <code>get</code> and <code>set</code> keywords as
+opposed to the <code>Object.defineProperty</code> method).</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  addInitializerExpression: <span class="hljs-function"><span class="hljs-params">(node)</span> -&gt;</span>
-    <span class="hljs-keyword">if</span> @validInitializerMethod node
+    <span class="hljs-keyword">if</span> node.unwrapAll() <span class="hljs-keyword">instanceof</span> PassthroughLiteral
+      node
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> @validInitializerMethod node
       @addInitializerMethod node
     <span class="hljs-keyword">else</span>
       <span class="hljs-literal">null</span></pre></div></div>
