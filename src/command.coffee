@@ -444,65 +444,46 @@ parseOptions = ->
 compileOptions = (filename, base) ->
   if opts.transpile
     # The user has requested that the CoffeeScript compiler also transpile
-    # via Babel. We use Babel as an `optionalDependency`; see
-    # https://docs.npmjs.com/files/package.json#optionaldependencies.
+    # via Babel. We don’t include Babel as a dependency because we want to
+    # avoid dependencies in general, and most users probably won’t be relying
+    # on us to transpile for them; we assume most users will probably either
+    # run CoffeeScript’s output without transpilation (modern Node or evergreen
+    # browsers) or use a proper build chain like Gulp or Webpack.
     try
       require 'babel-core'
     catch
-      console.error '''
-        To use --transpile, you must have Babel installed and configured.
-        See http://coffeescript.org/#transpilation
-      '''
-      process.exit 1
-
-    # We’re giving Babel only a string, not a filename or path to a file, so
-    # it doesn’t know where to search to find a `.babelrc` file or a `babel`
-    # key in a `package.json`. So if `opts.transpile` is an object, use that
-    # as Babel’s options; otherwise figure out what the options should be.
-    unless typeof opts.transpile is 'object'
-      # Find the options based on the path to the file being compiled.
-      cantFindOptions = ->
+      # Give appropriate instructions depending on whether `coffee` was run
+      # locally or globally.
+      if require.resolve('.').indexOf(process.cwd()) is 0
         console.error '''
-          To use the transpile option, there must be a .babelrc file
-          (or a package.json file with a "babel" key) in the path of the file
-          to be compiled, or in the path of the current working directory.
-          If you are compiling a string via the Node API, the transpile option
-          must be an object with the options to pass to Babel.
+          To use --transpile, you must have babel-core installed:
+            npm install --save-dev babel-core
+          And you must save options to configure Babel in one of the places it looks to find its options.
           See http://coffeescript.org/#transpilation
         '''
-        process.exit 1
-
-      checkPath = if filename
-        path.dirname filename
-      else if base
-        base
-      else if process?
-        process.cwd()
       else
-        cantFindOptions()
+        console.error '''
+          To use --transpile with globally-installed CoffeeScript, you must have babel-core installed globally:
+            npm install --global babel-core
+          And you must save options to configure Babel in one of the places it looks to find its options, relative to the file being compiled or to the current folder.
+          See http://coffeescript.org/#transpilation
+        '''
+      process.exit 1
 
-      loop
-        try
-          opts.transpile = JSON.parse fs.readFileSync path.join(checkPath, '.babelrc'), 'utf-8'
-          break
-        catch
-          try
-            packageJson = JSON.parse fs.readFileSync(path.join(checkPath, 'package.json'), 'utf-8')
-            if packageJson.babel?
-              opts.transpile = packageJson.babel
-              break
-
-        if checkPath is path.dirname checkPath # We’ve reached the root.
-          cantFindOptions()
-          break
-        else
-          checkPath = path.dirname checkPath
+    opts.transpile = {} unless typeof opts.transpile is 'object'
 
     # Pass a reference to Babel into the compiler, so that the transpile option
     # is available for the CLI. We need to do this so that tools like Webpack
     # can `require('coffeescript')` and build correctly, without trying to
     # require Babel.
     opts.transpile.transpile = CoffeeScript.transpile
+
+    # Babel searches for its options (a `.babelrc` file, a `.babelrc.js` file,
+    # a `package.json` file with a `babel` key, etc.) relative to the path
+    # given to it in its `filename` option. Make sure we have a path to pass
+    # along.
+    unless opts.transpile.filename
+      opts.transpile.filename = filename or path.resolve(base or process.cwd(), '<anonymous>')
   else
     opts.transpile = no
 

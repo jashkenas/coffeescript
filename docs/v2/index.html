@@ -646,7 +646,11 @@ div.CodeMirror-cursor {
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
 <p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.0.0">2.0.0</a></p>
-<blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install -g coffeescript
+<blockquote class="uneditable-code-block"><pre><code class="language-bash"><span class="comment"># Install locally for a project:</span>
+npm install --save-dev coffeescript
+
+<span class="comment"># Install globally to execute .coffee files anywhere:</span>
+npm install --global coffeescript
 </code></pre>
 </blockquote>
         <h2>Overview</h2>
@@ -847,15 +851,16 @@ cubes = (function() {
       </section>
       <section id="installation">
         <h2>Installation</h2>
-<p>The command-line version of <code>coffee</code> is available as a <a href="https://nodejs.org/">Node.js</a> utility. The <a href="/v2/browser-compiler/coffeescript.js">core compiler</a> however, does not depend on Node, and can be run in any JavaScript environment, or in the browser (see <a href="#try">Try CoffeeScript</a>).</p>
+<p>The command-line version of <code>coffee</code> is available as a <a href="https://nodejs.org/">Node.js</a> utility, requiring Node 6 or later. The <a href="/v2/browser-compiler/coffeescript.js">core compiler</a> however, does not depend on Node, and can be run in any JavaScript environment, or in the browser (see <a href="#try">Try CoffeeScript</a>).</p>
 <p>To install, first make sure you have a working copy of the latest stable version of <a href="https://nodejs.org/">Node.js</a>. You can then install CoffeeScript globally with <a href="https://www.npmjs.com/">npm</a>:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --global coffeescript
 </code></pre>
 </blockquote><p>This will make the <code>coffee</code> and <code>cake</code> commands available globally.</p>
-<p>When you need CoffeeScript as a dependency of a project, within that project’s folder you can install it locally:</p>
+<p>If you are using CoffeeScript in a project, you should install it locally for that project so that the version of CoffeeScript is tracked as one of your project’s dependencies. Within that project’s folder:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --save-dev coffeescript
 </code></pre>
 </blockquote><p>The <code>coffee</code> and <code>cake</code> commands will first look in the current folder to see if CoffeeScript is installed locally, and use that version if so. This allows different versions of CoffeeScript to be installed globally and locally.</p>
+<p>If you plan to use the <code>--transpile</code> option (see <a href="#transpilation">Transpilation</a>) you will need to also install <code>babel-core</code> either globally or locally, depending on whether you are running a globally or locally installed version of CoffeeScript.</p>
 
       </section>
       <section id="usage">
@@ -985,30 +990,31 @@ eval CoffeeScript.compile <span class="string">'console.log "Mmmmm, I could real
         </section>
         <section id="transpilation">
           <h3>Transpilation</h3>
-<p>CoffeeScript 2 generates JavaScript that uses the latest, modern syntax. Your runtime <a href="#compatibility">might not support all of that syntax</a>. If so, you need to <em>transpile</em> the JavaScript. To make things a little easier, CoffeeScript has built-in support for the popular <a href="http://babeljs.io/">Babel</a> transpiler.</p>
+<p>CoffeeScript 2 generates JavaScript that uses the latest, modern syntax. The runtime or browsers where you want your code to run <a href="#compatibility">might not support all of that syntax</a>. In that case, we want to convert modern JavaScript into older JavaScript that will run in older versions of Node or older browsers; for example, <code>{ a } = obj</code> into <code>a = obj.a</code>. This is done via transpilers like <a href="http://babeljs.io/">Babel</a>, <a href="https://buble.surge.sh/">Bublé</a> or <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>.</p>
 <h4>Quickstart</h4>
 <p>From the root of your project:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --save-dev babel-core babel-preset-env
 <span class="built_in">echo</span> <span class="string">'{ "presets": ["env"] }'</span> &gt; .babelrc
 coffee --compile --transpile --inline-map some-file.coffee
 </code></pre>
-</blockquote><h4>About Transpilation</h4>
-<p>Transpilation is the conversion of source code into equivalent but different source code. In our case, we want to convert modern JavaScript into older JavaScript that will run in older versions of Node or older browsers; for example, <code>{ a } = obj</code> into <code>a = obj.a</code>. This is done via transpilers like <a href="http://babeljs.io/">Babel</a>, <a href="https://buble.surge.sh/">Bublé</a> or <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>.</p>
-<p>CoffeeScript includes a <code>--transpile</code> option when used via the <code>coffee</code> command, or a <code>transpile</code> option when used via Node. To use either, <a href="http://babeljs.io/">Babel</a> must be installed in your project:</p>
+</blockquote><h4>Transpiling with the CoffeeScript compiler</h4>
+<p>To make things easy, CoffeeScript has built-in support for the popular <a href="http://babeljs.io/">Babel</a> transpiler. You can use it via the <code>--transpile</code> command-line option or the <code>transpile</code> Node API option. To use either, <code>babel-core</code> must be installed in your project:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --save-dev babel-core
 </code></pre>
-</blockquote><p>By default, Babel doesn’t do anything—it doesn’t make assumptions about what you want to transpile to. You might know that your code will run in Node 8, and so you want Babel to transpile modules and JSX and nothing else. Or you might want to support Internet Explorer 8, in which case Babel will transpile every feature introduced in ES2015 and later specs.</p>
-<p>If you’re not sure what you need, a good starting point is <a href="https://babeljs.io/docs/plugins/preset-env/"><code>babel-preset-env</code></a>:</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --save-dev babel-preset-env
+</blockquote><p>Or if you’re running the <code>coffee</code> command outside of a project folder, using a globally-installed <code>coffeescript</code> module, <code>babel-core</code> needs to be installed globally:</p>
+<blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --global babel-core
 </code></pre>
-</blockquote><p>See <a href="https://babeljs.io/docs/plugins/">Babel’s website to learn about presets and plugins</a> and the multitude of options you have.</p>
-<p>Simply installing <code>babel-preset-env</code> isn’t enough. You also need to define the configuration options that you want Babel to use. You can do this by creating a <a href="https://babeljs.io/docs/usage/babelrc/"><code>.babelrc</code> file</a> in the folder containing the files you’re compiling, or in any parent folder up the path above those files. So if your project is in <code>~/app</code> and your files are in <code>~/app/src</code>, you can put <code>.babelrc</code> in either <code>~/app</code> or in <code>~/app/src</code>. You can also define the Babel options via a <code>babel</code> key in the <code>package.json</code> file for your project. A minimal <code>.babelrc</code> file (or <code>package.json</code> <code>babel</code> key) for use with <code>babel-preset-env</code> would be just <code>{ &quot;presets&quot;: [&quot;env&quot;] }</code>.</p>
-<p>Once you have <code>babel-core</code> and <code>babel-preset-env</code> (or other presets or plugins) installed, and a <code>.babelrc</code> file (or <code>package.json</code> <code>babel</code> key) in place, you can use <code>coffee --transpile</code> to pipe CoffeeScript’s output through Babel using the options you’ve saved.</p>
+</blockquote><p>By default, Babel doesn’t do anything—it doesn’t make assumptions about what you want to transpile to. You need to provide it with a configuration so that it knows what to do. One way to do this is by creating a <a href="https://babeljs.io/docs/usage/babelrc/"><code>.babelrc</code> file</a> in the folder containing the files you’re compiling, or in any parent folder up the path above those files. (Babel supports <a href="https://babeljs.io/docs/usage/babelrc/">other ways</a>, too.) A minimal <code>.babelrc</code> file would be just <code>{ &quot;presets&quot;: [&quot;env&quot;] }</code>. This implies that you have installed <a href="https://babeljs.io/docs/plugins/preset-env/"><code>babel-preset-env</code></a>:</p>
+<blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --save-dev babel-preset-env  <span class="comment"># Or --global for non-project-based usage</span>
+</code></pre>
+</blockquote><p>See <a href="https://babeljs.io/docs/plugins/">Babel’s website to learn about presets and plugins</a> and the multitude of options you have. Another preset you might need is <a href="https://babeljs.io/docs/plugins/transform-react-jsx/"><code>transform-react-jsx</code></a> if you’re using JSX with React (JSX can also be used with other frameworks).</p>
+<p>Once you have <code>babel-core</code> and <code>babel-preset-env</code> (or other presets or plugins) installed, and a <code>.babelrc</code> file (or other equivalent) in place, you can use <code>coffee --transpile</code> to pipe CoffeeScript’s output through Babel using the options you’ve saved.</p>
 <p>If you’re using CoffeeScript via the <a href="nodejs_usage">Node API</a>, where you call <code>CoffeeScript.compile</code> with a string to be compiled and an <code>options</code> object, the <code>transpile</code> key of the <code>options</code> object should be the Babel options:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-js">CoffeeScript.compile(code, {<span class="attr">transpile</span>: {<span class="attr">presets</span>: [<span class="string">'env'</span>]}})
 </code></pre>
 </blockquote><p>You can also transpile CoffeeScript’s output without using the <code>transpile</code> option, for example as part of a build chain. This lets you use transpilers other than Babel, and it gives you greater control over the process. There are many great task runners for setting up JavaScript build chains, such as <a href="http://gulpjs.com/">Gulp</a>, <a href="https://webpack.github.io/">Webpack</a>, <a href="https://gruntjs.com/">Grunt</a> and <a href="http://broccolijs.com/">Broccoli</a>.</p>
-<p>Note that <a href="https://babeljs.io/docs/plugins/preset-env/">babel-preset-env</a> doesn’t automatically supply <a href="https://developer.mozilla.org/en-US/docs/Glossary/Polyfill">polyfills</a> for your code. CoffeeScript itself will output <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf"><code>Array.indexOf</code></a> if you use the <code>in</code> operator, or destructuring or spread/rest syntax; and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind"><code>Function.bind</code></a> if you use a bound (<code>=&gt;</code>) method in a class. Both are supported in Internet Explorer 9+ and all more recent browsers, but you will need to supply polyfills if you need to support Internet Explorer 8 or below and are using features that would cause these methods to be output. You’ll also need to supply polyfills if your own code uses these methods or another method added in recent versions of JavaScript. One polyfill option is <a href="https://babeljs.io/docs/usage/polyfill/"><code>babel-polyfill</code></a>, though there are many <a href="https://hackernoon.com/polyfills-everything-you-ever-wanted-to-know-or-maybe-a-bit-less-7c8de164e423">other</a> <a href="https://philipwalton.com/articles/loading-polyfills-only-when-needed/">strategies</a>.</p>
+<h4>Polyfills</h4>
+<p>Note that transpiling doesn’t automatically supply <a href="https://developer.mozilla.org/en-US/docs/Glossary/Polyfill">polyfills</a> for your code. CoffeeScript itself will output <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf"><code>Array.indexOf</code></a> if you use the <code>in</code> operator, or destructuring or spread/rest syntax; and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind"><code>Function.bind</code></a> if you use a bound (<code>=&gt;</code>) method in a class. Both are supported in Internet Explorer 9+ and all more recent browsers, but you will need to supply polyfills if you need to support Internet Explorer 8 or below and are using features that would cause these methods to be output. You’ll also need to supply polyfills if your own code uses these methods or another method added in recent versions of JavaScript. One polyfill option is <a href="https://babeljs.io/docs/usage/polyfill/"><code>babel-polyfill</code></a>, though there are many <a href="https://hackernoon.com/polyfills-everything-you-ever-wanted-to-know-or-maybe-a-bit-less-7c8de164e423">other</a> <a href="https://philipwalton.com/articles/loading-polyfills-only-when-needed/">strategies</a>.</p>
 
         </section>
       </section>
@@ -2482,7 +2488,7 @@ alert((function() {
 
 <span class="cm-variable">alert</span>((<span class="cm-keyword">function</span>() {
   <span class="cm-keyword">try</span> {
-    <span class="cm-keyword">return</span> <span class="cm-variable">nonexistent</span> <span class="cm-operator">/</span> <span class="cm-keyword">void</span> <span class="cm-number">0</span>;
+    <span class="cm-keyword">return</span> <span class="cm-variable">nonexistent</span> <span class="cm-operator">/</span> <span class="cm-variable">void</span> <span class="cm-number">0</span>;
   } <span class="cm-keyword">catch</span> (<span class="cm-def">error1</span>) {
     <span class="cm-variable">error</span> <span class="cm-operator">=</span> <span class="cm-variable-2">error1</span>;
     <span class="cm-keyword">return</span> <span class="cm-string-2">`And the error is ... ${</span><span class="cm-variable">error</span><span class="cm-string-2">}`</span>;
@@ -2846,7 +2852,7 @@ zip = typeof lottery.drawWinner === "function" ? (ref = lottery.drawWinner().add
 </textarea>
       <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">ref</span>, <span class="cm-def">zip</span>;
 
-<span class="cm-variable">zip</span> <span class="cm-operator">=</span> <span class="cm-keyword">typeof</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span> <span class="cm-operator">===</span> <span class="cm-string">"function"</span> <span class="cm-operator">?</span> (<span class="cm-variable">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span>().<span class="cm-property">address</span>) <span class="cm-operator">!=</span> <span class="cm-atom">null</span> <span class="cm-operator">?</span> <span class="cm-variable">ref</span>.<span class="cm-property">zipcode</span> : <span class="cm-keyword">void</span> <span class="cm-number">0</span> : <span class="cm-keyword">void</span> <span class="cm-number">0</span>;
+<span class="cm-variable">zip</span> <span class="cm-operator">=</span> <span class="cm-keyword">typeof</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span> <span class="cm-operator">===</span> <span class="cm-string">"function"</span> <span class="cm-operator">?</span> (<span class="cm-variable">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span>().<span class="cm-property">address</span>) <span class="cm-operator">!=</span> <span class="cm-atom">null</span> <span class="cm-operator">?</span> <span class="cm-variable">ref</span>.<span class="cm-property">zipcode</span> : <span class="cm-variable">void</span> <span class="cm-number">0</span> : <span class="cm-variable">void</span> <span class="cm-number">0</span>;
 </pre>
     </div>
   </div>
@@ -4765,7 +4771,7 @@ If you’ve ever learned a neat CoffeeScript tip or trick, or ran into a gotcha 
 Perhaps your CoffeeScript-related question has been asked before. Check the FAQ first.</li>
 <li><a href="http://js2.coffee/">JS2Coffee</a><br>
 Is a very well done reverse JavaScript-to-CoffeeScript compiler. It’s not going to be perfect (infer what your JavaScript classes are, when you need bound functions, and so on…) — but it’s a great starting point for converting simple scripts.</li>
-<li><a href="https://github.com/jashkenas/coffeescript/tree/master/documentation/images">High-Rez Logo</a><br>
+<li><a href="https://github.com/jashkenas/coffeescript/tree/master/documentation/site">High-Rez Logo</a><br>
 The CoffeeScript logo is available in SVG for use in presentations.</li>
 </ul>
 
