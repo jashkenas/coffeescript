@@ -1,4 +1,10 @@
 # @flow
 
-fn = (str ###: string ###, num ###: number ###) ###: string ### ->
-  str + num
+###::
+type Obj = {
+  num: number,
+};
+###
+
+fn = (str ###: string ###, obj ###: Obj ###) ###: string ### ->
+  str + obj.num
