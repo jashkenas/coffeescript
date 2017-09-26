@@ -5448,10 +5448,19 @@ x = <span class="number">2</span> + <span class="number">2</span>
       </section>
       <section id="changelog">
         <h2>Changelog</h2>
+<div class="anchor" id="2.0.1"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/2.0.0...2.0.1">2.0.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-09-26">September 26, 2017</time></span>
+</h2><ul>
+<li><code>babel-core</code> is no longer listed in <code>package.json</code>, even as an <code>optionalDependency</code>, to avoid it being automatically installed for most users. If you wish to use <code>--transpile</code>, simply install <code>babel-core</code> manually. See <a href="#transpilation">Transpilation</a>.</li>
+<li><code>--transpile</code> now relies on Babel to find its options, i.e. the <code>.babelrc</code> file in the path of the file(s) being compiled. (Previously the CoffeeScript compiler was duplicating this logic, so nothing has changed from a user’s perspective.) This provides automatic support for additional ways to pass options to Babel in future versions, such as the <code>.babelrc.js</code> file coming in Babel 7.</li>
+<li>Backticked expressions in a class body, outside any class methods, are now output in the JavaScript class body itself. This allows for passing through experimental JavaScript syntax like the <a href="https://github.com/tc39/proposal-class-fields">class fields proposal</a>, assuming your <a href="https://babeljs.io/docs/plugins/transform-class-properties/">transpiler supports it</a>.</li>
+</ul>
 <div class="anchor" id="2.0.0"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta5...2.0.0">2.0.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2017-09-17">September 17, 2017</time></span>
+  <span class="timestamp"> &mdash; <time datetime="2017-09-18">September 18, 2017</time></span>
 </h2><ul>
 <li>Added <code>--transpile</code> flag or <code>transpile</code> Node API option to tell the CoffeeScript compiler to pipe its output through Babel before saving or returning it; see <a href="#transpilation">Transpilation</a>. Also changed the <code>-t</code> short flag to refer to <code>--transpile</code> instead of <code>--tokens</code>.</li>
 <li>Always populate source maps’ <code>sourcesContent</code> property.</li>
