@@ -483,14 +483,7 @@ compileOptions = (filename, base) ->
     # given to it in its `filename` option. Make sure we have a path to pass
     # along.
     unless opts.transpile.filename
-      if filename
-        opts.transpile.filename = filename
-      else
-        opts.transpile.filename = base or process.cwd()
-        if opts.transpile.filename.endsWith(path.sep)
-          opts.transpile.filename += '.'
-        else
-          opts.transpile.filename += path.sep + '.'
+      opts.transpile.filename = filename or path.resolve(base or process.cwd(), '<anonymous>')
   else
     opts.transpile = no
 
