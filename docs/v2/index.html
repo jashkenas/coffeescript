@@ -2482,7 +2482,7 @@ alert((function() {
 
 <span class="cm-variable">alert</span>((<span class="cm-keyword">function</span>() {
   <span class="cm-keyword">try</span> {
-    <span class="cm-keyword">return</span> <span class="cm-variable">nonexistent</span> <span class="cm-operator">/</span> <span class="cm-variable">void</span> <span class="cm-number">0</span>;
+    <span class="cm-keyword">return</span> <span class="cm-variable">nonexistent</span> <span class="cm-operator">/</span> <span class="cm-keyword">void</span> <span class="cm-number">0</span>;
   } <span class="cm-keyword">catch</span> (<span class="cm-def">error1</span>) {
     <span class="cm-variable">error</span> <span class="cm-operator">=</span> <span class="cm-variable-2">error1</span>;
     <span class="cm-keyword">return</span> <span class="cm-string-2">`And the error is ... ${</span><span class="cm-variable">error</span><span class="cm-string-2">}`</span>;
@@ -2846,7 +2846,7 @@ zip = typeof lottery.drawWinner === "function" ? (ref = lottery.drawWinner().add
 </textarea>
       <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">ref</span>, <span class="cm-def">zip</span>;
 
-<span class="cm-variable">zip</span> <span class="cm-operator">=</span> <span class="cm-keyword">typeof</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span> <span class="cm-operator">===</span> <span class="cm-string">"function"</span> <span class="cm-operator">?</span> (<span class="cm-variable">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span>().<span class="cm-property">address</span>) <span class="cm-operator">!=</span> <span class="cm-atom">null</span> <span class="cm-operator">?</span> <span class="cm-variable">ref</span>.<span class="cm-property">zipcode</span> : <span class="cm-variable">void</span> <span class="cm-number">0</span> : <span class="cm-variable">void</span> <span class="cm-number">0</span>;
+<span class="cm-variable">zip</span> <span class="cm-operator">=</span> <span class="cm-keyword">typeof</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span> <span class="cm-operator">===</span> <span class="cm-string">"function"</span> <span class="cm-operator">?</span> (<span class="cm-variable">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span>().<span class="cm-property">address</span>) <span class="cm-operator">!=</span> <span class="cm-atom">null</span> <span class="cm-operator">?</span> <span class="cm-variable">ref</span>.<span class="cm-property">zipcode</span> : <span class="cm-keyword">void</span> <span class="cm-number">0</span> : <span class="cm-keyword">void</span> <span class="cm-number">0</span>;
 </pre>
     </div>
   </div>
@@ -4605,28 +4605,50 @@ renderStarRating = function({rating, maxStars}) {
     <div class="col-md-6 coffeescript-input-column">
       <textarea class="coffeescript-input" id="type_annotations-coffee"># @flow
 
-fn = (str ###: string ###, num ###: number ###) ###: string ### ->
-  str + num
+###::
+type Obj = {
+  num: number,
+};
+###
+
+fn = (str ###: string ###, obj ###: Obj ###) ###: string ### ->
+  str + obj.num
 </textarea>
       <pre class="placeholder-code"><span class="cm-comment"># @flow</span>
 
-<span class="cm-variable">fn</span> <span class="cm-punctuation">=</span> <span class="cm-punctuation">(</span><span class="cm-variable">str</span> <span class="cm-comment">###: string ###</span><span class="cm-punctuation">,</span> <span class="cm-variable">num</span> <span class="cm-comment">###: number ###</span><span class="cm-punctuation">)</span> <span class="cm-comment">###: string ###</span> <span class="cm-operator">-></span>
-  <span class="cm-variable">str</span> <span class="cm-operator">+</span> <span class="cm-variable">num</span>
+<span class="cm-comment">###::</span>
+<span class="cm-comment">type Obj = {</span>
+<span class="cm-comment">  num: number,</span>
+<span class="cm-comment">};</span>
+<span class="cm-comment">###</span>
+
+<span class="cm-variable">fn</span> <span class="cm-punctuation">=</span> <span class="cm-punctuation">(</span><span class="cm-variable">str</span> <span class="cm-comment">###: string ###</span><span class="cm-punctuation">,</span> <span class="cm-variable">obj</span> <span class="cm-comment">###: Obj ###</span><span class="cm-punctuation">)</span> <span class="cm-comment">###: string ###</span> <span class="cm-operator">-></span>
+  <span class="cm-variable">str</span> <span class="cm-operator">+</span> <span class="cm-variable">obj</span><span class="cm-punctuation">.</span><span class="cm-property">num</span>
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="type_annotations-js">// @flow
 var fn;
 
-fn = function(str/*: string */, num/*: number */)/*: string */ {
-  return str + num;
+/*::
+type Obj = {
+  num: number,
+};
+*/
+fn = function(str/*: string */, obj/*: Obj */)/*: string */ {
+  return str + obj.num;
 };
 </textarea>
       <pre class="placeholder-code"><span class="cm-comment">// @flow</span>
 <span class="cm-keyword">var</span> <span class="cm-def">fn</span>;
 
-<span class="cm-variable">fn</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">str</span><span class="cm-comment">/*: string */</span>, <span class="cm-def">num</span><span class="cm-comment">/*: number */</span>)<span class="cm-comment">/*: string */</span> {
-  <span class="cm-keyword">return</span> <span class="cm-variable-2">str</span> <span class="cm-operator">+</span> <span class="cm-variable-2">num</span>;
+<span class="cm-comment">/*::</span>
+<span class="cm-comment">type Obj = {</span>
+<span class="cm-comment">  num: number,</span>
+<span class="cm-comment">};</span>
+<span class="cm-comment">*/</span>
+<span class="cm-variable">fn</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">str</span><span class="cm-comment">/*: string */</span>, <span class="cm-def">obj</span><span class="cm-comment">/*: Obj */</span>)<span class="cm-comment">/*: string */</span> {
+  <span class="cm-keyword">return</span> <span class="cm-variable-2">str</span> <span class="cm-operator">+</span> <span class="cm-variable-2">obj</span>.<span class="cm-property">num</span>;
 };
 </pre>
     </div>
