@@ -243,6 +243,9 @@ compileScript = (file, input, base = null) ->
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,
 # and write them back to **stdout**.
 compileStdio = ->
+  if opts.map
+    console.error '--stdio and --map cannot be used together'
+    process.exit 1
   buffers = []
   stdin = process.openStdin()
   stdin.on 'data', (buffer) ->
