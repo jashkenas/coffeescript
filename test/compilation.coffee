@@ -166,3 +166,7 @@ test "using transpile from the Node API requires an object", ->
     CoffeeScript.compile '', transpile: yes
   catch exception
     eq exception.message, 'The transpile option must be given an object with options to pass to Babel'
+
+test "transpile option applies to imported .coffee files", ->
+  return if global.testingBrowser
+  doesNotThrow -> transpile 'run', "import { getSep } from './test/importing/transpile_import'\ngetSep()"

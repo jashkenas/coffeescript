@@ -46,6 +46,9 @@ CoffeeScript.run = (code, options = {}) ->
     fs.realpathSync '.'
   mainModule.paths = require('module')._nodeModulePaths dir
 
+  # Save the options for compiling child imports.
+  mainModule.options = options
+
   # Compile.
   if not helpers.isCoffee(mainModule.filename) or require.extensions
     answer = CoffeeScript.compile code, options
@@ -104,17 +107,19 @@ if require.extensions
       Use CoffeeScript.register() or require the coffeescript/register module to require #{ext} files.
       """
 
-CoffeeScript._compileFile = (filename, sourceMap = no, inlineMap = no) ->
+CoffeeScript._compileFile = (filename, options = {}) ->
   raw = fs.readFileSync filename, 'utf8'
   # Strip the Unicode byte order mark, if this file begins with one.
   stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
 
+  Object.assign options,
+    filename: filename
+    literate: helpers.isLiterate filename
+    sourceFiles: [filename]
+    inlineMap: yes # Always generate a source map, so that stack traces line up.
+
   try
-    answer = CoffeeScript.compile stripped, {
-      filename, sourceMap, inlineMap
-      sourceFiles: [filename]
-      literate: helpers.isLiterate filename
-    }
+    answer = CoffeeScript.compile stripped, options
   catch err
     # As the filename and code of a dynamically loaded file will be different
     # from the original file compiled with CoffeeScript.run, add that
