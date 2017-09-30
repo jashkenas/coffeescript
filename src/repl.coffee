@@ -173,7 +173,7 @@ module.exports =
 
     CoffeeScript.register()
     process.argv = ['coffee'].concat process.argv[2..]
-    if '--transpile' in process.argv or '-t' in process.argv
+    if opts.transpile
       try
         transpile = {}
         transpile.transpile = require('babel-core').transform
@@ -189,6 +189,10 @@ module.exports =
         process.exit 1
       transpile.options =
         filename: path.resolve process.cwd(), '<repl>'
+      # Since the REPL compilation path is unique (in `eval` above), we need
+      # another way to get the `options` object attached to a module so that
+      # it knows later on whether it needs to be transpiled. In the case of
+      # the REPL, the only applicable option is `transpile`.
       Module = require 'module'
       originalModuleLoad = Module::load
       Module::load = (filename) ->
