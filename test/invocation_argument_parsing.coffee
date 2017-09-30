@@ -1,13 +1,16 @@
 return unless require?
 
 path = require 'path'
-{spawnSync, execFileSync} = require 'child_process'
+{execSync, execFileSync} = require 'child_process'
 
-# Get directory containing the compiled `coffee` executable and prepend it to
-# the path so `#!/usr/bin/env coffee` resolves to our locally built file.
-coffeeBinDir = path.dirname require.resolve('../bin/coffee')
-patchedPath = "#{coffeeBinDir}:#{process.env.PATH}"
-patchedEnv = Object.assign {}, process.env, {PATH: patchedPath}
+# Get the folder containing the compiled `coffee` executable and make it the
+# PATH so that `#!/usr/bin/env coffee` resolves to our locally built file.
+coffeeBinFolder = path.dirname require.resolve '../bin/coffee'
+execSyncOptions =
+  cwd: coffeeBinFolder
+  encoding: 'utf8'
+  env:
+    PATH: [coffeeBinFolder, path.dirname(process.execPath)].join(if isWindows() then ';' else ':')
 
 shebangScript = require.resolve './importing/shebang.coffee'
 initialSpaceScript = require.resolve './importing/shebang_initial_space.coffee'
@@ -17,12 +20,12 @@ initialSpaceExtraArgsScript = require.resolve './importing/shebang_initial_space
 test "parse arguments for shebang scripts correctly (on unix platforms)", ->
   return if isWindows()
 
-  stdout = execFileSync shebangScript, ['-abck'], {env: patchedEnv}
+  stdout = execFileSync shebangScript, ['-abck'], execSyncOptions
   expectedArgs = ['coffee', shebangScript, '-abck']
   realArgs = JSON.parse stdout
   arrayEq expectedArgs, realArgs
 
-  stdout = execFileSync initialSpaceScript, ['-abck'], {env: patchedEnv}
+  stdout = execFileSync initialSpaceScript, ['-abck'], execSyncOptions
   expectedArgs = ['coffee', initialSpaceScript, '-abck']
   realArgs = JSON.parse stdout
   arrayEq expectedArgs, realArgs
