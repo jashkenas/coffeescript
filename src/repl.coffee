@@ -6,6 +6,7 @@ CoffeeScript = require './'
 {merge, updateSyntaxError} = require './helpers'
 
 sawSIGINT = no
+transpile = no
 
 replDefaults =
   prompt: 'coffee> ',
@@ -35,14 +36,19 @@ replDefaults =
       ast = CoffeeScript.nodes tokens
       # Add assignment to `__` variable to force the input to be an expression.
       ast = new Block [new Assign (new Value new Literal '__'), ast, '=']
-      # Wrap the expression in a closure to support top-level `await`
+      # Wrap the expression in a closure to support top-level `await`.
       ast     = new Code [], ast
       isAsync = ast.isAsync
-      # Invoke the wrapping closure
+      # Invoke the wrapping closure.
       ast    = new Block [new Call ast]
       js     = ast.compile {bare: yes, locals: Object.keys(context), referencedVars, sharedScope: yes}
+      if transpile
+        js = transpile.transpile(js, transpile.options).code
+        # Strip `"use strict"`, to avoid an exception on assigning to
+        # undeclared variable `__`.
+        js = js.replace /^"use strict"|^'use strict'/, ''
       result = runInContext js, context, filename
-      # Await an async result, if necessary
+      # Await an async result, if necessary.
       if isAsync
         result.then (resolvedResult) ->
           cb null, resolvedResult unless sawSIGINT
@@ -167,6 +173,27 @@ module.exports =
 
     CoffeeScript.register()
     process.argv = ['coffee'].concat process.argv[2..]
+    if '--transpile' in process.argv or '-t' in process.argv
+      try
+        transpile = {}
+        transpile.transpile = require('babel-core').transform
+      catch
+        console.error '''
+          To use --transpile with an interactive REPL, babel-core must be installed either in the current folder or globally:
+            npm install --save-dev babel-core
+          or
+            npm install --global babel-core
+          And you must save options to configure Babel in one of the places it looks to find its options.
+          See http://coffeescript.org/#transpilation
+        '''
+        process.exit 1
+      transpile.options =
+        filename: path.resolve process.cwd(), '<repl>'
+      Module = require 'module'
+      originalModuleLoad = Module::load
+      Module::load = (filename) ->
+        @options = transpile: transpile.options
+        originalModuleLoad.call @, filename
     opts = merge replDefaults, opts
     repl = nodeREPL.start opts
     runInContext opts.prelude, repl.context, 'prelude' if opts.prelude
