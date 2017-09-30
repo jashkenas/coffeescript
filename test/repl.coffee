@@ -124,7 +124,7 @@ testRepl "#4604: wraps an async function", (input, output) ->
 
 testRepl "transpile REPL", (input, output) ->
   input.emitLine 'require("./test/importing/transpile_import").getSep()'
-  eq "'#{path.sep}'", output.lastWrite()
+  eq "'#{path.sep.replace '\\', '\\\\'}'", output.lastWrite()
 
 process.on 'exit', ->
   try
