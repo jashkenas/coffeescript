@@ -112,7 +112,7 @@ CoffeeScript._compileFile = (filename, options = {}) ->
   # Strip the Unicode byte order mark, if this file begins with one.
   stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
 
-  Object.assign options,
+  options = Object.assign {}, options,
     filename: filename
     literate: helpers.isLiterate filename
     sourceFiles: [filename]
