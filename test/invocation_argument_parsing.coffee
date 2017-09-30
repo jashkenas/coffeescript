@@ -49,12 +49,12 @@ test "warn and remove -- if it is the second positional argument", ->
   ok result.status is 0
 
   result = spawnSync(
-    'coffee', ['-b', shebangScript, '--', 'ANOTHER ONE'], spawnOptions)
+    'coffee', ['-b', shebangScript, '--', 'ANOTHER'], spawnOptions)
   stderr = result.stderr.toString()
-  arrayEq JSON.parse(result.stdout), ['coffee', shebangScript, 'ANOTHER ONE']
+  arrayEq JSON.parse(result.stdout), ['coffee', shebangScript, 'ANOTHER']
   ok stderr.match /^coffee was invoked with '--'/m
   posArgs = stderr.match(/^The positional arguments were: (.*)$/m)[1]
-  arrayEq JSON.parse(posArgs), [shebangScript, '--', 'ANOTHER ONE']
+  arrayEq JSON.parse(posArgs), [shebangScript, '--', 'ANOTHER']
   ok result.status is 0
 
   result = spawnSync(
