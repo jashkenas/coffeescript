@@ -5,8 +5,8 @@ path          = require 'path'
 
 # Load and run a CoffeeScript file for Node, stripping any `BOM`s.
 loadFile = (module, filename) ->
-  rootModule = getRootModule module
-  answer = CoffeeScript._compileFile filename, rootModule.options
+  options = module.options or getRootModule(module).options
+  answer = CoffeeScript._compileFile filename, options
   module._compile answer, filename
 
 # If the installed version of Node supports `require.extensions`, register
