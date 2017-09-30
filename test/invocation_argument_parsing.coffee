@@ -1,18 +1,28 @@
 return unless require?
 
+fs = require 'fs'
 path = require 'path'
 {spawnSync, execFileSync} = require 'child_process'
 
 # Get directory containing the compiled `coffee` executable and prepend it to
 # the path so `#!/usr/bin/env coffee` resolves to our locally built file.
-coffeeBinDir = path.dirname require.resolve('../bin/coffee')
-patchedPath = "#{coffeeBinDir}:#{process.env.PATH}"
+coffeeBin = require.resolve '../bin/coffee'
+coffeePatchedExe = "#{coffeeBin}.EXE"
+coffeeBinDir = path.dirname coffeeBin
+pathEnvSep = if isWindows() then ';' else ':'
+patchedPath = "#{coffeeBinDir}#{pathEnvSep}#{process.env.PATH}"
 patchedEnv = Object.assign {}, process.env, {PATH: patchedPath}
 
 shebangScript = require.resolve './importing/shebang.coffee'
 initialSpaceScript = require.resolve './importing/shebang_initial_space.coffee'
 extraArgsScript = require.resolve './importing/shebang_extra_args.coffee'
 initialSpaceExtraArgsScript = require.resolve './importing/shebang_initial_space_extra_args.coffee'
+
+# coffee.EXE is made because it is registered in PATHEXT (which we can change,
+# but apparently it's hard to execute files without extensions at all so we
+# still need something)
+coffeeExeContents = fs.readFileSync coffeeBin
+fs.writeFileSync coffeePatchedExe, {mode: fs.S_IRWXU}
 
 test "parse arguments for shebang scripts correctly (on unix platforms)", ->
   return if isWindows()
@@ -28,7 +38,15 @@ test "parse arguments for shebang scripts correctly (on unix platforms)", ->
   arrayEq expectedArgs, realArgs
 
 test "warn and remove -- if it is the second positional argument", ->
+  # spawnSync() fails on windows, even with patched cwd
+  # (ENOENT (if file is not registered in PATHEXT) or even better "unknown"),
+  # even if a new executable file coffee.exe is created, and no alternative
+  # process creation mechanism in node works either, which feels like my fault
+  # TODO: look at other process spawning mechanisms in node, windows; see if
+  # there's a known dead-easy way to do this
   result = spawnSync 'coffee', [shebangScript, '--'], {env: patchedEnv}
+  # if this has null stderr or stdout, it means spawn failed, so scroll up
+  console.error result
   stderr = result.stderr.toString()
   arrayEq JSON.parse(result.stdout), ['coffee', shebangScript]
   ok stderr.match /^coffee was invoked with '--'/m
