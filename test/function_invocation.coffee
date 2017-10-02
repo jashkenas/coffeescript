@@ -806,6 +806,12 @@ test "functions named get or set can be used without parentheses when attached t
 
   a = new A()
 
+  class B
+    get: (x) -> x.value + 6
+    set: (x) -> x.value + 7
+
+  b = new B()
+
   eq 12, obj.get 10
   eq 13, obj.set 10
 
@@ -825,3 +831,8 @@ test "functions named get or set can be used without parentheses when attached t
   eq 12, obj.obj.get @ten
   eq 13, obj.obj.set @ten
 
+  eq 16, b.get value: 10
+  eq 17, b.set value: 10
+
+  eq 16, b.get value: @ten
+  eq 17, b.set value: @ten
