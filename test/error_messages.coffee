@@ -65,7 +65,7 @@ if require?
 
     try
       assertErrorFormat """
-        require '#{tempFile}'
+        require '#{tempFile.replace /\\/g, '\\\\'}'
       """,
       """
         #{fs.realpathSync tempFile}:1:15: error: unexpected in
