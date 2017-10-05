@@ -122,6 +122,10 @@ testRepl "#4604: wraps an async function", (input, output) ->
     eq '33', output.lastWrite()
   , 20
 
+testRepl "transpile REPL", (input, output) ->
+  input.emitLine 'require("./test/importing/transpile_import").getSep()'
+  eq "'#{path.sep.replace '\\', '\\\\'}'", output.lastWrite()
+
 process.on 'exit', ->
   try
     fs.unlinkSync historyFile
