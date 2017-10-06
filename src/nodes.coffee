@@ -2695,7 +2695,6 @@ exports.Code = class Code extends Base
     # Block comments between a function name and `(` get output between
     # `function` and `(`.
     if @paramStart?.comments?
-      comment.unshift = yes for comment in @paramStart.comments
       @compileCommentFragments o, @paramStart, signature
     for param, i in params
       signature.push @makeCode ', ' if i isnt 0
