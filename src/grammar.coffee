@@ -262,8 +262,12 @@ grammar =
   # The **Code** node is the function literal. It's defined by an indented block
   # of **Block** preceded by a function arrow, with an optional parameter list.
   Code: [
-    o 'PARAM_START ParamList PARAM_END FuncGlyph Block', -> new Code $2, $5, $4
+    o 'ParamStart ParamList PARAM_END FuncGlyph Block',  -> new Code $2, $5, $4, $1
     o 'FuncGlyph Block',                                 -> new Code [], $2, $1
+  ]
+
+  ParamStart: [
+    o 'PARAM_START',                            -> new ParamStart $1
   ]
 
   # CoffeeScript has two different symbols for functions. `->` is for ordinary

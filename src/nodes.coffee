@@ -2472,6 +2472,12 @@ exports.Assign = class Assign extends Base
   eachName: (iterator) ->
     @variable.unwrapAll().eachName iterator
 
+#### ParamStart
+
+exports.ParamStart = class ParamStart extends Base
+  constructor: ->
+    super()
+
 #### FuncGlyph
 
 exports.FuncGlyph = class FuncGlyph extends Base
@@ -2484,7 +2490,7 @@ exports.FuncGlyph = class FuncGlyph extends Base
 # When for the purposes of walking the contents of a function body, the Code
 # has no *children* -- they're within the inner scope.
 exports.Code = class Code extends Base
-  constructor: (params, body, @funcGlyph) ->
+  constructor: (params, body, @funcGlyph, @paramStart) ->
     super()
 
     @params      = params or []
@@ -2684,6 +2690,11 @@ exports.Code = class Code extends Base
       modifiers.push '*'
 
     signature = [@makeCode '(']
+    # Block comments between a function name and `(` get output between
+    # `function` and `(`.
+    if @paramStart?.comments?
+      comment.unshift = yes for comment in @paramStart.comments
+      @compileCommentFragments o, @paramStart, signature
     for param, i in params
       signature.push @makeCode ', ' if i isnt 0
       signature.push @makeCode '...' if haveSplatParam and i is params.length - 1

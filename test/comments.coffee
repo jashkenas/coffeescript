@@ -973,3 +973,14 @@ test "Flow comment-based syntax support", ->
   fn = function(str/*: string */, num/*: number */)/*: string */ {
     return str + num;
   };'''
+
+test "#4706: Flow comments around function parameters", ->
+  eqJS '''
+  identity = ###::<T>### (value ###: T ###) ###: T ### ->
+    value
+  ''', '''
+  var identity;
+
+  identity = function/*::<T>*/(value/*: T */)/*: T */ {
+    return value;
+  };'''
