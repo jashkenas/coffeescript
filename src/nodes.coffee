@@ -511,6 +511,12 @@ exports.Block = class Block extends Base
       else if top
         node.front = yes
         fragments = node.compileToFragments o
+        # If this is just an identifier on its own followed by a block comment,
+        # wrap it in parentheses so that Flow understands that it’s not a
+        # JavaScript label; see #4706.
+        if node instanceof IdentifierLiteral and
+           node.comments?.some((comment) -> comment.here and not comment.unshift and not comment.newLine)
+          fragments = @wrapInParentheses fragments
         unless node.isStatement o
           fragments = indentInitial fragments, @
           [..., lastFragment] = fragments

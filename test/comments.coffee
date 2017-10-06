@@ -1008,3 +1008,7 @@ test "#4706: Flow comments after class name", ->
     }
 
   };'''
+
+test "#4706: Top-level identifiers with comments are wrapped in parentheses", ->
+  eqJS '(arr ###: Array<number> ###)', '(arr/*: Array<number> */);'
+  eqJS 'arr ###: Array<number> ###', '(arr/*: Array<number> */);'
