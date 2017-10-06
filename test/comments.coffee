@@ -984,3 +984,14 @@ test "#4706: Flow comments around function parameters", ->
   identity = function/*::<T>*/(value/*: T */)/*: T */ {
     return value;
   };'''
+
+
+test "#4706: Flow comments around function parameters", ->
+  eqJS '''
+  copy = arr.map(###:: <T> ###(item ###: T ###) ###: T ### => item)
+  ''', '''
+  var copy;
+
+  copy = arr.map(/*:: <T> */(item/*: T */)/*: T */ => {
+    return item;
+  });'''
