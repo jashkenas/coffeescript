@@ -985,7 +985,6 @@ test "#4706: Flow comments around function parameters", ->
     return value;
   };'''
 
-
 test "#4706: Flow comments around function parameters", ->
   eqJS '''
   copy = arr.map(###:: <T> ###(item ###: T ###) ###: T ### => item)
@@ -995,3 +994,17 @@ test "#4706: Flow comments around function parameters", ->
   copy = arr.map(/*:: <T> */(item/*: T */)/*: T */ => {
     return item;
   });'''
+
+test "#4706: Flow comments after class name", ->
+  eqJS '''
+  class Container ###::<T> ###
+    method: ###::<U> ### () -> true
+  ''', '''
+  var Container;
+
+  Container = class Container/*::<T> */ {
+    method() {
+      return true;
+    }
+
+  };'''

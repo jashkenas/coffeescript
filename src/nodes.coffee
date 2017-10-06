@@ -1674,7 +1674,9 @@ exports.Class = class Class extends Base
 
     result = []
     result.push @makeCode "class "
-    result.push @makeCode "#{@name} " if @name
+    result.push @makeCode @name if @name
+    @compileCommentFragments o, @variable, result if @variable?.comments?
+    result.push @makeCode ' ' if @name
     result.push @makeCode('extends '), @parent.compileToFragments(o)..., @makeCode ' ' if @parent
 
     result.push @makeCode '{'
