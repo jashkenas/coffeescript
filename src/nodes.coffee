@@ -2472,12 +2472,6 @@ exports.Assign = class Assign extends Base
   eachName: (iterator) ->
     @variable.unwrapAll().eachName iterator
 
-#### ParamStart
-
-exports.ParamStart = class ParamStart extends Base
-  constructor: ->
-    super()
-
 #### FuncGlyph
 
 exports.FuncGlyph = class FuncGlyph extends Base
