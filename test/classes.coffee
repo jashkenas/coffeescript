@@ -1848,3 +1848,12 @@ test "#4464: backticked expressions in class body", ->
   b = new B
   eq 42, b.x
   eq 84, b.y
+
+test "#4724: backticked expression in a class body with hoisted member", ->
+  class A
+    `get x() { return 42; }`
+    hoisted: 84
+
+  a = new A
+  eq 42, a.x
+  eq 84, a.hoisted

@@ -497,6 +497,12 @@ exports.Block = class Block extends Base
     compiledNodes = []
 
     for node, index in @expressions
+      if node.hoisted
+        # This is a hoisted expression.
+        # We want to compile this and ignore the result.
+        node.compileToFragments o
+        continue
+
       node = node.unwrapAll()
       node = (node.unfoldSoak(o) or node)
       if node instanceof Block
@@ -504,10 +510,6 @@ exports.Block = class Block extends Base
         # enclose it in a new scope; we just compile the statements in this
         # block along with our own.
         compiledNodes.push node.compileNode o
-      else if node.hoisted
-        # This is a hoisted expression.
-        # We want to compile this and ignore the result.
-        node.compileToFragments o
       else if top
         node.front = yes
         fragments = node.compileToFragments o
