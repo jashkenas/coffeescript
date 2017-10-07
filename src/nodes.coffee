@@ -497,7 +497,6 @@ exports.Block = class Block extends Base
     compiledNodes = []
 
     for node, index in @expressions
-      node = node.unwrapAll()
       node = (node.unfoldSoak(o) or node)
       if node instanceof Block
         # This is a nested block. We don’t do anything special here like
@@ -511,12 +510,6 @@ exports.Block = class Block extends Base
       else if top
         node.front = yes
         fragments = node.compileToFragments o
-        # If this is just an identifier on its own followed by a block comment,
-        # wrap it in parentheses so that Flow understands that it’s not a
-        # JavaScript label; see #4706.
-        if node instanceof IdentifierLiteral and
-           node.comments?.some((comment) -> comment.here and not comment.unshift and not comment.newLine)
-          fragments = @wrapInParentheses fragments
         unless node.isStatement o
           fragments = indentInitial fragments, @
           [..., lastFragment] = fragments
@@ -3349,13 +3342,21 @@ exports.Parens = class Parens extends Base
 
   compileNode: (o) ->
     expr = @body.unwrap()
-    if expr instanceof Value and expr.isAtomic() and not @csxAttribute
+    # If these parentheses are wrapping an `IdentifierLiteral` followed by a
+    # block comment, output the parentheses (or put another way, don’t optimize
+    # away these redundant parentheses). This is because Flow requires
+    # parentheses in certain circumstances to distinguish identifiers followed
+    # by comment-based type annotations from JavaScript labels.
+    shouldWrapComment = expr.comments?.some(
+      (comment) -> comment.here and not comment.unshift and not comment.newLine)
+    if expr instanceof Value and expr.isAtomic() and not @csxAttribute and not shouldWrapComment
       expr.front = @front
       return expr.compileToFragments o
     fragments = expr.compileToFragments o, LEVEL_PAREN
-    bare = o.level < LEVEL_OP and (expr instanceof Op or expr.unwrap() instanceof Call or
-      (expr instanceof For and expr.returns)) and (o.level < LEVEL_COND or
-        fragments.length <= 3)
+    bare = o.level < LEVEL_OP and not shouldWrapComment and (
+        expr instanceof Op or expr.unwrap() instanceof Call or
+        (expr instanceof For and expr.returns)
+      ) and (o.level < LEVEL_COND or fragments.length <= 3)
     return @wrapInBraces fragments if @csxAttribute
     if bare then fragments else @wrapInParentheses fragments
 
