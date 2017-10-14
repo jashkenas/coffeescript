@@ -171,6 +171,7 @@ test "multiline simple import", ->
       bar as baz
     } from 'lib';"""
 
+
 test "multiline complex import", ->
   eqJS """
     import foo, {
@@ -497,18 +498,21 @@ test "export as aliases members imported from another module", ->
     } from 'lib';"""
 
 test "export list can contain CoffeeScript keywords", ->
-  eqJS "export { unless } from 'lib'",
+  eqJS "export { unless, and } from 'lib'",
   """
     export {
-      unless
+      unless,
+      and
     } from 'lib';"""
 
 test "export list can contain CoffeeScript keywords when aliasing", ->
-  eqJS "export { when as bar, baz as unless } from 'lib'",
+  eqJS "export { when as bar, baz as unless, and as foo, booze as not } from 'lib'",
   """
     export {
       when as bar,
-      baz as unless
+      baz as unless,
+      and as foo,
+      booze as not
     } from 'lib';"""
 
 
@@ -602,11 +606,12 @@ test "`as` can be used as an alias name", ->
 
 test "CoffeeScript keywords can be used as imported names in import lists", ->
   eqJS """
-    import { unless as bar } from 'lib'
+    import { unless as bar, and as computedAnd } from 'lib'
     bar.barMethod()""",
   """
     import {
-      unless as bar
+      unless as bar,
+      and as computedAnd
     } from 'lib';
 
     bar.barMethod();"""

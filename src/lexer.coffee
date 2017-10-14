@@ -116,7 +116,6 @@ exports.Lexer = class Lexer
     # Preserve length of id for location data
     idLength = id.length
     poppedToken = undefined
-
     if id is 'own' and @tag() is 'FOR'
       @token 'OWN', id
       return id.length
@@ -126,14 +125,21 @@ exports.Lexer = class Lexer
     if id is 'as' and @seenImport
       if @value() is '*'
         @tokens[@tokens.length - 1][0] = 'IMPORT_ALL'
-      else if @value() in COFFEE_KEYWORDS
-        @tokens[@tokens.length - 1][0] = 'IDENTIFIER'
+      else if @value(yes) in COFFEE_KEYWORDS
+        prev = @prev()
+        [prev[0], prev[1]] = ['IDENTIFIER', @value(yes)]
       if @tag() in ['DEFAULT', 'IMPORT_ALL', 'IDENTIFIER']
         @token 'AS', id
         return id.length
-    if id is 'as' and @seenExport and @tag() in ['IDENTIFIER', 'DEFAULT']
-      @token 'AS', id
-      return id.length
+    if id is 'as' and @seenExport
+      if @tag() in ['IDENTIFIER', 'DEFAULT']
+        @token 'AS', id
+        return id.length
+      if @value(yes) in COFFEE_KEYWORDS
+        prev = @prev()
+        [prev[0], prev[1]] = ['IDENTIFIER', @value(yes)]
+        @token 'AS', id
+        return id.length
     if id is 'default' and @seenExport and @tag() in ['EXPORT', 'AS']
       @token 'DEFAULT', id
       return id.length
@@ -197,7 +203,7 @@ exports.Lexer = class Lexer
     if tag is 'IDENTIFIER' and id in RESERVED
       @error "reserved word '#{id}'", length: id.length
 
-    unless tag is 'PROPERTY'
+    unless tag is 'PROPERTY' or @exportSpecifierList
       if id in COFFEE_ALIASES
         alias = id
         id = COFFEE_ALIAS_MAP[id]
@@ -965,9 +971,12 @@ exports.Lexer = class Lexer
     token?[0]
 
   # Peek at the last value in the token stream.
-  value: ->
+  value: (useOrigin = no) ->
     [..., token] = @tokens
-    token?[1]
+    if useOrigin and token?.origin?
+      token.origin?[1]
+    else
+      token?[1]
 
   # Get the previous token in the token stream.
   prev: ->
