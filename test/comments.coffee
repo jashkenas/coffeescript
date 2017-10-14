@@ -1015,3 +1015,61 @@ test "#4706: Identifiers with comments wrapped in parentheses remain wrapped", -
   var other;
 
   other = (arr/*: any */);'''
+
+test "#4706: Flow comments before class methods", ->
+  eqJS '''
+  class Container
+    ###::
+    method: (number) => string;
+    method: (string) => number;
+    ###
+    method: -> true
+  ''', '''
+  var Container;
+
+  Container = class Container {
+    /*::
+    method: (number) => string;
+    method: (string) => number;
+    */
+    method() {
+      return true;
+    }
+
+  };'''
+
+test "#4706: Flow comments for class method params", ->
+  eqJS '''
+  class Container
+    method: (param ###: string ###) -> true
+  ''', '''
+  var Container;
+
+  Container = class Container {
+    method(param/*: string */) {
+      return true;
+    }
+
+  };'''
+
+test "#4706: Flow comments for class method returns", ->
+  eqJS '''
+  class Container
+    method: () ###: string ### -> true
+  ''', '''
+  var Container;
+
+  Container = class Container {
+    method()/*: string */ {
+      return true;
+    }
+
+  };'''
+
+test "#4706: Flow comments for function spread", ->
+  eqJS '''
+  method = (...rest ###: Array<string> ###) =>
+  ''', '''
+  var method;
+
+  method = (...rest/*: Array<string> */) => {};'''
