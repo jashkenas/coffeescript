@@ -116,6 +116,8 @@ CoffeeScript._compileFile = (filename, options = {}) ->
     filename: filename
     literate: helpers.isLiterate filename
     sourceFiles: [filename]
+    transpile: if options.transpile then options.transpile else
+      filename: filename
     inlineMap: yes # Always generate a source map, so that stack traces line up.
 
   try
