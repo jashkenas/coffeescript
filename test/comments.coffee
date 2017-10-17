@@ -1073,3 +1073,37 @@ test "#4706: Flow comments for function spread", ->
   var method;
 
   method = (...rest/*: Array<string> */) => {};'''
+
+test "#4747: Flow comments for local variable declaration", ->
+  eqJS 'a ###: number ### = 1', '''
+  var a/*: number */;
+
+  a = 1;
+  '''
+
+test "#4747: Flow comments for local variable declarations", ->
+  eqJS '''
+  a ###: number ### = 1
+  b ###: string ### = 'c'
+  ''', '''
+  var a/*: number */, b/*: string */;
+
+  a = 1;
+
+  b = 'c';
+  '''
+
+test "#4747: Flow comments for local variable declarations with reassignment", ->
+  eqJS '''
+  a ###: number ### = 1
+  b ###: string ### = 'c'
+  a ### some other comment ### = 2
+  ''', '''
+  var a/*: number */, b/*: string */;
+
+  a = 1;
+
+  b = 'c';
+
+  a/* some other comment */ = 2;
+  '''

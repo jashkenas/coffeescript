@@ -11,10 +11,12 @@ Initialize a scope with its parent, for lookups up the chain,
 as well as a reference to the **Block** node it belongs to, which is
 where it should declare its variables, a reference to the function that
 it belongs to, and a list of variables referenced in the source code
-and therefore should be avoided when generating variables.
+and therefore should be avoided when generating variables. Also track comments
+that should be output as part of variable declarations.
 
       constructor: (@parent, @expressions, @method, @referencedVars) ->
         @variables = [{name: 'arguments', type: 'arguments'}]
+        @comments  = {}
         @positions = {}
         @utilities = {} unless @parent
 
