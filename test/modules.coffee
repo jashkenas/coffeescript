@@ -171,7 +171,6 @@ test "multiline simple import", ->
       bar as baz
     } from 'lib';"""
 
-
 test "multiline complex import", ->
   eqJS """
     import foo, {
@@ -473,7 +472,6 @@ test "export default named member, within an object", ->
       foo as default,
       bar
     };"""
-
 
 # Import and export in the same statement
 

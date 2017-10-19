@@ -502,8 +502,6 @@ exports.Block = class Block extends Base
         # We want to compile this and ignore the result.
         node.compileToFragments o
         continue
-
-      node = node.unwrapAll()
       node = (node.unfoldSoak(o) or node)
       if node instanceof Block
         # This is a nested block. We don’t do anything special here like
@@ -1676,7 +1674,9 @@ exports.Class = class Class extends Base
 
     result = []
     result.push @makeCode "class "
-    result.push @makeCode "#{@name} " if @name
+    result.push @makeCode @name if @name
+    @compileCommentFragments o, @variable, result if @variable?.comments?
+    result.push @makeCode ' ' if @name
     result.push @makeCode('extends '), @parent.compileToFragments(o)..., @makeCode ' ' if @parent
 
     result.push @makeCode '{'
@@ -2486,7 +2486,7 @@ exports.FuncGlyph = class FuncGlyph extends Base
 # When for the purposes of walking the contents of a function body, the Code
 # has no *children* -- they're within the inner scope.
 exports.Code = class Code extends Base
-  constructor: (params, body, @funcGlyph) ->
+  constructor: (params, body, @funcGlyph, @paramStart) ->
     super()
 
     @params      = params or []
@@ -2686,6 +2686,10 @@ exports.Code = class Code extends Base
       modifiers.push '*'
 
     signature = [@makeCode '(']
+    # Block comments between a function name and `(` get output between
+    # `function` and `(`.
+    if @paramStart?.comments?
+      @compileCommentFragments o, @paramStart, signature
     for param, i in params
       signature.push @makeCode ', ' if i isnt 0
       signature.push @makeCode '...' if haveSplatParam and i is params.length - 1
@@ -3339,13 +3343,21 @@ exports.Parens = class Parens extends Base
 
   compileNode: (o) ->
     expr = @body.unwrap()
-    if expr instanceof Value and expr.isAtomic() and not @csxAttribute
+    # If these parentheses are wrapping an `IdentifierLiteral` followed by a
+    # block comment, output the parentheses (or put another way, don’t optimize
+    # away these redundant parentheses). This is because Flow requires
+    # parentheses in certain circumstances to distinguish identifiers followed
+    # by comment-based type annotations from JavaScript labels.
+    shouldWrapComment = expr.comments?.some(
+      (comment) -> comment.here and not comment.unshift and not comment.newLine)
+    if expr instanceof Value and expr.isAtomic() and not @csxAttribute and not shouldWrapComment
       expr.front = @front
       return expr.compileToFragments o
     fragments = expr.compileToFragments o, LEVEL_PAREN
-    bare = o.level < LEVEL_OP and (expr instanceof Op or expr.unwrap() instanceof Call or
-      (expr instanceof For and expr.returns)) and (o.level < LEVEL_COND or
-        fragments.length <= 3)
+    bare = o.level < LEVEL_OP and not shouldWrapComment and (
+        expr instanceof Op or expr.unwrap() instanceof Call or
+        (expr instanceof For and expr.returns)
+      ) and (o.level < LEVEL_COND or fragments.length <= 3)
     return @wrapInBraces fragments if @csxAttribute
     if bare then fragments else @wrapInParentheses fragments
 
