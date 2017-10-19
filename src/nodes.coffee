@@ -179,6 +179,7 @@ exports.Base = class Base
         # `compileToFragments` method has logic for outputting comments.
         unshiftCommentFragment commentFragment
       else
+        fragments.push @makeCode '' if fragments.length is 0
         if commentFragment.unshift
           fragments[0].precedingComments ?= []
           fragments[0].precedingComments.push commentFragment
@@ -570,7 +571,13 @@ exports.Block = class Block extends Base
         fragments.push @makeCode '\n' if i
         fragments.push @makeCode "#{@tab}var "
         if declars
-          fragments.push @makeCode scope.declaredVariables().join(', ')
+          declaredVariables = scope.declaredVariables()
+          for declaredVariable, declaredVariablesIndex in declaredVariables
+            fragments.push @makeCode declaredVariable
+            if Object::hasOwnProperty.call o.scope.comments, declaredVariable
+              fragments.push o.scope.comments[declaredVariable]...
+            if declaredVariablesIndex isnt declaredVariables.length - 1
+              fragments.push @makeCode ', '
         if assigns
           fragments.push @makeCode ",\n#{@tab + TAB}" if declars
           fragments.push @makeCode scope.assignedVariables().join(",\n#{@tab + TAB}")
@@ -2155,7 +2162,7 @@ exports.Assign = class Assign extends Base
         message = isUnassignable name.value
         name.error message if message
 
-        # `moduleDeclaration` can be `'import'` or `'export'`
+        # `moduleDeclaration` can be `'import'` or `'export'`.
         @checkAssignability o, name
         if @moduleDeclaration
           o.scope.add name.value, @moduleDeclaration
@@ -2167,6 +2174,20 @@ exports.Assign = class Assign extends Base
               'param'
         else
           o.scope.find name.value
+          # If this assignment identifier has one or more herecomments
+          # attached, output them as part of the declarations line (unless
+          # other herecomments are already staged there) for compatibility
+          # with Flow typing. Don’t do this if this assignment is for a
+          # class, e.g. `ClassName = class ClassName {`, as Flow requires
+          # the comment to be between the class name and the `{`.
+          if name.comments and not o.scope.comments[name.value] and
+             @value not instanceof Class and
+             name.comments.every((comment) -> comment.here and not comment.multiline)
+            commentsNode = new IdentifierLiteral name.value
+            commentsNode.comments = name.comments
+            commentFragments = []
+            @compileCommentFragments o, commentsNode, commentFragments
+            o.scope.comments[name.value] = commentFragments
 
     if @value instanceof Code
       if @value.isStatic
