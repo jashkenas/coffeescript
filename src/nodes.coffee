@@ -2790,6 +2790,8 @@ exports.Code = class Code extends Base
 
     context.traverseChildren true, (child) =>
       if child instanceof SuperCall
+        if not child.variable.accessor and child.args.some((arg) -> arg.this)
+          child.error "Can't call super with @params in derived class constructors"
         seenSuper = yes
         iterator child
       else if child instanceof ThisLiteral and @ctor is 'derived' and not seenSuper
