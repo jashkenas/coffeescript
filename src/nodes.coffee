@@ -2783,15 +2783,19 @@ exports.Code = class Code extends Base
 
     seenSuper
 
-  # Find all super calls in the given context node
-  # Returns `true` if `iterator` is called
+  # Find all super calls in the given context node;
+  # returns `true` if `iterator` is called.
   eachSuperCall: (context, iterator) ->
     seenSuper = no
 
-    context.traverseChildren true, (child) =>
+    context.traverseChildren yes, (child) =>
       if child instanceof SuperCall
-        if not child.variable.accessor and child.args.some((arg) -> arg.this)
-          child.error "Can't call super with @params in derived class constructors"
+        # `super` in a constructor (the only `super` without an accessor)
+        # cannot be given an argument with a reference to `this`, as that would
+        # be referencing `this` before calling `super`.
+        unless child.variable.accessor
+          Block.wrap(child.args).traverseChildren yes, (node) =>
+            node.error "Can't call super with @params in derived class constructors" if node.this
         seenSuper = yes
         iterator child
       else if child instanceof ThisLiteral and @ctor is 'derived' and not seenSuper

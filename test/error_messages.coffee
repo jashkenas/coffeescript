@@ -1341,9 +1341,16 @@ test "derived constructors can't use @params without calling super", ->
 
 test "derived constructors can't call super with @params", ->
   assertErrorFormat 'class extends A then constructor: (@a) -> super(@a)', '''
-    [stdin]:1:43: error: Can't call super with @params in derived class constructors
+    [stdin]:1:49: error: Can't call super with @params in derived class constructors
     class extends A then constructor: (@a) -> super(@a)
-                                              ^^^^^^^^^
+                                                    ^^
+  '''
+
+test "derived constructors can't call super with buried @params", ->
+  assertErrorFormat 'class extends A then constructor: (@a) -> super((=> @a)())', '''
+    [stdin]:1:53: error: Can't call super with @params in derived class constructors
+    class extends A then constructor: (@a) -> super((=> @a)())
+                                                        ^^
   '''
 
 test "'super' is not allowed in constructor parameter defaults", ->
