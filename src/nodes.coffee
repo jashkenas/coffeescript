@@ -3309,15 +3309,11 @@ exports.Existence = class Existence extends Base
     super()
     @comparisonTarget = if onlyNotUndefined then 'undefined' else 'null'
     salvagedComments = []
-    @expression.eachChild (child) ->
+    @expression.traverseChildren yes, (child) ->
       if child.comments
         for comment in child.comments
           salvagedComments.push comment unless comment in salvagedComments
         delete child.comments
-      if child.name?.comments
-        for comment in child.name.comments
-          salvagedComments.push comment unless comment in salvagedComments
-        delete child.name.comments
     attachCommentsToNode salvagedComments, @
     moveComments @expression, @
 
