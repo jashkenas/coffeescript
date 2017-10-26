@@ -619,6 +619,7 @@ div.CodeMirror-cursor {
         <a href="#breaking-changes-default-values" class="nav-link" data-action="sidebar-nav">Default Values</a>
         <a href="#breaking-changes-bound-generator-functions" class="nav-link" data-action="sidebar-nav">Bound Generator Functions</a>
         <a href="#breaking-changes-classes" class="nav-link" data-action="sidebar-nav">Classes</a>
+        <a href="#breaking-changes-super-this" class="nav-link" data-action="sidebar-nav"><code>super</code> and <code>this</code></a>
         <a href="#breaking-changes-super-extends" class="nav-link" data-action="sidebar-nav"><code>super</code> and <code>extends</code></a>
         <a href="#breaking-changes-jsx-and-the-less-than-and-greater-than-operators" class="nav-link" data-action="sidebar-nav">JSX and the <code>&lt;</code> and <code>&gt;</code> Operators</a>
         <a href="#breaking-changes-literate-coffeescript" class="nav-link" data-action="sidebar-nav">Literate CoffeeScript Parsing</a>
@@ -645,7 +646,7 @@ div.CodeMirror-cursor {
       <section id="overview">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.0.1">2.0.1</a></p>
+<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.0.2">2.0.2</a></p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash"><span class="comment"># Install locally for a project:</span>
 npm install --save-dev coffeescript
 
@@ -4634,25 +4635,25 @@ fn = (str ###: string ###, obj ###: Obj ###) ###: string ### ->
     </div>
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="type_annotations-js">// @flow
-var fn;
-
 /*::
 type Obj = {
   num: number,
 };
 */
+var fn;
+
 fn = function(str/*: string */, obj/*: Obj */)/*: string */ {
   return str + obj.num;
 };
 </textarea>
       <pre class="placeholder-code"><span class="cm-comment">// @flow</span>
-<span class="cm-keyword">var</span> <span class="cm-def">fn</span>;
-
 <span class="cm-comment">/*::</span>
 <span class="cm-comment">type Obj = {</span>
 <span class="cm-comment">  num: number,</span>
 <span class="cm-comment">};</span>
 <span class="cm-comment">*/</span>
+<span class="cm-keyword">var</span> <span class="cm-def">fn</span>;
+
 <span class="cm-variable">fn</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">str</span><span class="cm-comment">/*: string */</span>, <span class="cm-def">obj</span><span class="cm-comment">/*: Obj */</span>)<span class="cm-comment">/*: string */</span> {
   <span class="cm-keyword">return</span> <span class="cm-variable-2">str</span> <span class="cm-operator">+</span> <span class="cm-variable-2">obj</span>.<span class="cm-property">num</span>;
 };
@@ -4820,7 +4821,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
         <section id="annotated-source">
           <h2>Annotated Source</h2>
-<p>You can browse the CoffeeScript 2.0.1 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+<p>You can browse the CoffeeScript 2.0.2 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
 <li><a href="annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
@@ -5150,10 +5151,6 @@ f = function*() {
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee">(<span class="class"><span class="keyword">class</span>)()</span>
 <span class="comment"># Throws a TypeError at runtime</span>
 </code></pre>
-</blockquote><p>Derived (extended) class <code>constructor</code>s cannot use <code>this</code> before calling <code>super</code>:</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>
-  constructor: <span class="function">-&gt;</span> <span class="keyword">this</span>  <span class="comment"># Throws a compiler error</span>
-</code></pre>
 </blockquote><p>ES2015 classes don’t allow bound (fat arrow) methods. The CoffeeScript compiler goes through some contortions to preserve support for them, but one thing that can’t be accommodated is calling a bound method before it is bound:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">Base</span></span>
   constructor: <span class="function">-&gt;</span>
@@ -5177,6 +5174,59 @@ f = function*() {
   @::[name] = <span class="function">-&gt;</span>  <span class="comment"># This will work; assigns to `A.prototype.method`</span>
 </code></pre>
 </blockquote>
+        </section>
+        <section id="breaking-changes-super-this">
+          <h3><code>super</code> and <code>this</code></h3>
+<p>In the constructor of a derived class (a class that <code>extends</code> another class), <code>this</code> cannot be used before calling <code>super</code>:</p>
+<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>
+  constructor: <span class="function">-&gt;</span> <span class="keyword">this</span>  <span class="comment"># Throws a compiler error</span>
+</code></pre>
+</blockquote><p>This also means you cannot pass a reference to <code>this</code> as an argument to <code>super</code> in the constructor of a derived class:</p>
+<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>
+  constructor: <span class="function"><span class="params">(@arg)</span> -&gt;</span>
+    <span class="keyword">super</span> @arg  <span class="comment"># Throws a compiler error</span>
+</code></pre>
+</blockquote><p>This is a limitation of ES2015 classes. As a workaround, assign to <code>this</code> after the <code>super</code> call:</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="breaking_change_super_this">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="breaking_change_super_this-coffee">class B extends A
+  constructor: (arg) ->
+    super arg
+    @arg = arg
+</textarea>
+      <pre class="placeholder-code"><span class="cm-keyword">class</span> <span class="cm-variable">B</span> <span class="cm-keyword">extends</span> <span class="cm-variable">A</span>
+  <span class="cm-variable">constructor</span><span class="cm-punctuation">:</span> <span class="cm-punctuation">(</span><span class="cm-variable">arg</span><span class="cm-punctuation">)</span> <span class="cm-operator">-></span>
+    <span class="cm-variable">super</span> <span class="cm-variable">arg</span>
+    <span class="cm-property">@arg</span> <span class="cm-punctuation">=</span> <span class="cm-variable">arg</span>
+</pre>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="breaking_change_super_this-js">var B;
+
+B = class B extends A {
+  constructor(arg) {
+    super(arg);
+    this.arg = arg;
+  }
+
+};
+</textarea>
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">B</span>;
+
+<span class="cm-variable">B</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">B</span> <span class="cm-keyword">extends</span> <span class="cm-variable">A</span> {
+  <span class="cm-property">constructor</span>(<span class="cm-def">arg</span>) {
+    <span class="cm-keyword">super</span>(<span class="cm-variable-2">arg</span>);
+    <span class="cm-keyword">this</span>.<span class="cm-property">arg</span> <span class="cm-operator">=</span> <span class="cm-variable-2">arg</span>;
+  }
+
+};
+</pre>
+    </div>
+  </div>
+  
+</aside>
+
         </section>
         <section id="breaking-changes-super-extends">
           <h3><code>super</code> and <code>extends</code></h3>
@@ -5448,6 +5498,21 @@ x = <span class="number">2</span> + <span class="number">2</span>
       </section>
       <section id="changelog">
         <h2>Changelog</h2>
+<div class="anchor" id="2.0.2"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/2.0.1...2.0.2">2.0.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-10-26">October 26, 2017</time></span>
+</h2><ul>
+<li><code>--transpile</code> now also applies to <code>require</code>d or <code>import</code>ed CoffeeScript files.</li>
+<li><code>--transpile</code> can be used with the REPL: <code>coffee --interactive --transpile</code>.</li>
+<li>Improvements to comments output that should now cover all of the <a href="https://flow.org/en/docs/types/comments/">Flow comment-based syntax</a>. Inline <code>###</code> comments near <a href="https://flow.org/en/docs/types/variables/">variable</a> initial assignments are now output in the variable declaration statement, and <code>###</code> comments near a <a href="https://flow.org/en/docs/types/generics/">class and method names</a> are now output where Flow expects them.</li>
+<li>Importing CoffeeScript keywords is now allowed, so long as they’re aliased: <code>import { and as andFn } from 'lib'</code>. (You could also do <code>import lib from 'lib'</code> and then reference <code>lib.and</code>.)</li>
+<li>Calls to functions named <code>get</code> and <code>set</code> no longer throw an error when given a bracketless object literal as an argument: <code>obj.set propertyName: propertyValue</code>.</li>
+<li>In the constructor of a derived class (a class that <code>extends</code> another class), you cannot call <code>super</code> with an argument that references <code>this</code>: <code>class Child extends Parent then constructor: (@arg) -&gt; super(@arg)</code>. This isn’t allowed in JavaScript, and now the CoffeeScript compiler will throw an error. Instead, assign to <code>this</code> after calling <code>super</code>: <code>(arg) -&gt; super(arg); @arg = arg</code>.</li>
+<li>Bugfix for incorrect output when backticked class bodies where mixed with hoisted expressions in a class body. This allows a backticked line like <code>`field = 3`</code>, for people using the experimental <a href="https://github.com/tc39/proposal-class-fields">class fields</a> syntax, along with traditional class body expressions like <code>prop: 3</code> that CoffeeScript outputs as part of the class prototype.</li>
+<li>Bugfix for comments not output before a complex <code>?</code> operation, e.g. <code>@a ? b</code>.</li>
+<li>All tests now pass in Windows.</li>
+</ul>
 <div class="anchor" id="2.0.1"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/2.0.0...2.0.1">2.0.1</a>

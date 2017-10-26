@@ -3544,6 +3544,15 @@ test "#4464: backticked expressions in class body", ->
   eq 42, b.x
   eq 84, b.y
 
+test "#4724: backticked expression in a class body with hoisted member", ->
+  class A
+    `get x() { return 42; }`
+    hoisted: 84
+
+  a = new A
+  eq 42, a.x
+  eq 84, a.hoisted
+
 </script>
 <script type="text/x-coffeescript" class="test" id="cluster">
 # Cluster Module
@@ -4540,6 +4549,153 @@ test "Flow comment-based syntax support", ->
     return str + num;
   };'''
 
+test "#4706: Flow comments around function parameters", ->
+  eqJS '''
+  identity = ###::<T>### (value ###: T ###) ###: T ### ->
+    value
+  ''', '''
+  var identity;
+
+  identity = function/*::<T>*/(value/*: T */)/*: T */ {
+    return value;
+  };'''
+
+test "#4706: Flow comments around function parameters", ->
+  eqJS '''
+  copy = arr.map(###:: <T> ###(item ###: T ###) ###: T ### => item)
+  ''', '''
+  var copy;
+
+  copy = arr.map(/*:: <T> */(item/*: T */)/*: T */ => {
+    return item;
+  });'''
+
+test "#4706: Flow comments after class name", ->
+  eqJS '''
+  class Container ###::<T> ###
+    method: ###::<U> ### () -> true
+  ''', '''
+  var Container;
+
+  Container = class Container/*::<T> */ {
+    method() {
+      return true;
+    }
+
+  };'''
+
+test "#4706: Identifiers with comments wrapped in parentheses remain wrapped", ->
+  eqJS '(arr ###: Array<number> ###)', '(arr/*: Array<number> */);'
+  eqJS 'other = (arr ###: any ###)', '''
+  var other;
+
+  other = (arr/*: any */);'''
+
+test "#4706: Flow comments before class methods", ->
+  eqJS '''
+  class Container
+    ###::
+    method: (number) => string;
+    method: (string) => number;
+    ###
+    method: -> true
+  ''', '''
+  var Container;
+
+  Container = class Container {
+    /*::
+    method: (number) => string;
+    method: (string) => number;
+    */
+    method() {
+      return true;
+    }
+
+  };'''
+
+test "#4706: Flow comments for class method params", ->
+  eqJS '''
+  class Container
+    method: (param ###: string ###) -> true
+  ''', '''
+  var Container;
+
+  Container = class Container {
+    method(param/*: string */) {
+      return true;
+    }
+
+  };'''
+
+test "#4706: Flow comments for class method returns", ->
+  eqJS '''
+  class Container
+    method: () ###: string ### -> true
+  ''', '''
+  var Container;
+
+  Container = class Container {
+    method()/*: string */ {
+      return true;
+    }
+
+  };'''
+
+test "#4706: Flow comments for function spread", ->
+  eqJS '''
+  method = (...rest ###: Array<string> ###) =>
+  ''', '''
+  var method;
+
+  method = (...rest/*: Array<string> */) => {};'''
+
+test "#4747: Flow comments for local variable declaration", ->
+  eqJS 'a ###: number ### = 1', '''
+  var a/*: number */;
+
+  a = 1;
+  '''
+
+test "#4747: Flow comments for local variable declarations", ->
+  eqJS '''
+  a ###: number ### = 1
+  b ###: string ### = 'c'
+  ''', '''
+  var a/*: number */, b/*: string */;
+
+  a = 1;
+
+  b = 'c';
+  '''
+
+test "#4747: Flow comments for local variable declarations with reassignment", ->
+  eqJS '''
+  a ###: number ### = 1
+  b ###: string ### = 'c'
+  a ### some other comment ### = 2
+  ''', '''
+  var a/*: number */, b/*: string */;
+
+  a = 1;
+
+  b = 'c';
+
+  a/* some other comment */ = 2;
+  '''
+
+test "#4756: Comment before ? operation", ->
+  eqJS '''
+  do ->
+    ### Comment ###
+    @foo ? 42
+  ''', '''
+  (function() {
+    var ref;
+    /* Comment */
+    return (ref = this.foo) != null ? ref : 42;
+  })();
+  '''
+
 </script>
 <script type="text/x-coffeescript" class="test" id="compilation">
 # Compilation
@@ -4710,6 +4866,10 @@ test "using transpile from the Node API requires an object", ->
     CoffeeScript.compile '', transpile: yes
   catch exception
     eq exception.message, 'The transpile option must be given an object with options to pass to Babel'
+
+test "transpile option applies to imported .coffee files", ->
+  return if global.testingBrowser
+  doesNotThrow -> transpile 'run', "import { getSep } from './test/importing/transpile_import'\ngetSep()"
 
 </script>
 <script type="text/x-coffeescript" class="test" id="comprehensions">
@@ -6597,7 +6757,7 @@ if require?
 
     try
       assertErrorFormat """
-        require '#{tempFile}'
+        require '#{tempFile.replace /\\/g, '\\\\'}'
       """,
       """
         #{fs.realpathSync tempFile}:1:15: error: unexpected in
@@ -7869,6 +8029,20 @@ test "derived constructors can't use @params without calling super", ->
     [stdin]:1:36: error: Can't use @params in derived class constructors without calling super
     class extends A then constructor: (@a) ->
                                        ^^
+  '''
+
+test "derived constructors can't call super with @params", ->
+  assertErrorFormat 'class extends A then constructor: (@a) -> super(@a)', '''
+    [stdin]:1:49: error: Can't call super with @params in derived class constructors
+    class extends A then constructor: (@a) -> super(@a)
+                                                    ^^
+  '''
+
+test "derived constructors can't call super with buried @params", ->
+  assertErrorFormat 'class extends A then constructor: (@a) -> super((=> @a)())', '''
+    [stdin]:1:53: error: Can't call super with @params in derived class constructors
+    class extends A then constructor: (@a) -> super((=> @a)())
+                                                        ^^
   '''
 
 test "'super' is not allowed in constructor parameter defaults", ->
@@ -9793,6 +9967,12 @@ test "functions named get or set can be used without parentheses when attached t
 
   a = new A()
 
+  class B
+    get: (x) -> x.value + 6
+    set: (x) -> x.value + 7
+
+  b = new B()
+
   eq 12, obj.get 10
   eq 13, obj.set 10
 
@@ -9812,6 +9992,11 @@ test "functions named get or set can be used without parentheses when attached t
   eq 12, obj.obj.get @ten
   eq 13, obj.obj.set @ten
 
+  eq 16, b.get value: 10
+  eq 17, b.set value: 10
+
+  eq 16, b.get value: @ten
+  eq 17, b.set value: @ten
 
 </script>
 <script type="text/x-coffeescript" class="test" id="functions">
@@ -11066,13 +11251,17 @@ test "heregex interpolation", ->
 return unless require?
 
 path = require 'path'
-{spawnSync, execFileSync} = require 'child_process'
+{ execFileSync, spawnSync } = require 'child_process'
 
-# Get directory containing the compiled `coffee` executable and prepend it to
-# the path so `#!/usr/bin/env coffee` resolves to our locally built file.
-coffeeBinDir = path.dirname require.resolve('../bin/coffee')
-patchedPath = "#{coffeeBinDir}:#{process.env.PATH}"
-patchedEnv = Object.assign {}, process.env, {PATH: patchedPath}
+# Get the folder containing the compiled `coffee` executable and make it the
+# PATH so that `#!/usr/bin/env coffee` resolves to our locally built file.
+coffeeBinFolder = path.dirname require.resolve '../bin/coffee'
+spawnOptions =
+  cwd: coffeeBinFolder
+  encoding: 'utf8'
+  env:
+    PATH: coffeeBinFolder + (if isWindows() then ';' else ':') + process.env.PATH
+  shell: isWindows()
 
 shebangScript = require.resolve './importing/shebang.coffee'
 initialSpaceScript = require.resolve './importing/shebang_initial_space.coffee'
@@ -11082,18 +11271,18 @@ initialSpaceExtraArgsScript = require.resolve './importing/shebang_initial_space
 test "parse arguments for shebang scripts correctly (on unix platforms)", ->
   return if isWindows()
 
-  stdout = execFileSync shebangScript, ['-abck'], {env: patchedEnv}
+  stdout = execFileSync shebangScript, ['-abck'], spawnOptions
   expectedArgs = ['coffee', shebangScript, '-abck']
   realArgs = JSON.parse stdout
   arrayEq expectedArgs, realArgs
 
-  stdout = execFileSync initialSpaceScript, ['-abck'], {env: patchedEnv}
+  stdout = execFileSync initialSpaceScript, ['-abck'], spawnOptions
   expectedArgs = ['coffee', initialSpaceScript, '-abck']
   realArgs = JSON.parse stdout
   arrayEq expectedArgs, realArgs
 
 test "warn and remove -- if it is the second positional argument", ->
-  result = spawnSync 'coffee', [shebangScript, '--'], {env: patchedEnv}
+  result = spawnSync 'coffee', [shebangScript, '--'], spawnOptions
   stderr = result.stderr.toString()
   arrayEq JSON.parse(result.stdout), ['coffee', shebangScript]
   ok stderr.match /^coffee was invoked with '--'/m
@@ -11101,7 +11290,7 @@ test "warn and remove -- if it is the second positional argument", ->
   arrayEq JSON.parse(posArgs), [shebangScript, '--']
   ok result.status is 0
 
-  result = spawnSync 'coffee', ['-b', shebangScript, '--'], {env: patchedEnv}
+  result = spawnSync 'coffee', ['-b', shebangScript, '--'], spawnOptions
   stderr = result.stderr.toString()
   arrayEq JSON.parse(result.stdout), ['coffee', shebangScript]
   ok stderr.match /^coffee was invoked with '--'/m
@@ -11110,16 +11299,16 @@ test "warn and remove -- if it is the second positional argument", ->
   ok result.status is 0
 
   result = spawnSync(
-    'coffee', ['-b', shebangScript, '--', 'ANOTHER ONE'], {env: patchedEnv})
+    'coffee', ['-b', shebangScript, '--', 'ANOTHER'], spawnOptions)
   stderr = result.stderr.toString()
-  arrayEq JSON.parse(result.stdout), ['coffee', shebangScript, 'ANOTHER ONE']
+  arrayEq JSON.parse(result.stdout), ['coffee', shebangScript, 'ANOTHER']
   ok stderr.match /^coffee was invoked with '--'/m
   posArgs = stderr.match(/^The positional arguments were: (.*)$/m)[1]
-  arrayEq JSON.parse(posArgs), [shebangScript, '--', 'ANOTHER ONE']
+  arrayEq JSON.parse(posArgs), [shebangScript, '--', 'ANOTHER']
   ok result.status is 0
 
   result = spawnSync(
-    'coffee', ['--', initialSpaceScript, 'arg'], {env: patchedEnv})
+    'coffee', ['--', initialSpaceScript, 'arg'], spawnOptions)
   expectedArgs = ['coffee', initialSpaceScript, 'arg']
   realArgs = JSON.parse result.stdout
   arrayEq expectedArgs, realArgs
@@ -11127,7 +11316,7 @@ test "warn and remove -- if it is the second positional argument", ->
   ok result.status is 0
 
 test "warn about non-portable shebang lines", ->
-  result = spawnSync 'coffee', [extraArgsScript, 'arg'], {env: patchedEnv}
+  result = spawnSync 'coffee', [extraArgsScript, 'arg'], spawnOptions
   stderr = result.stderr.toString()
   arrayEq JSON.parse(result.stdout), ['coffee', extraArgsScript, 'arg']
   ok stderr.match /^The script to be run begins with a shebang line with more than one/m
@@ -11138,14 +11327,14 @@ test "warn about non-portable shebang lines", ->
   arrayEq JSON.parse(args), ['coffee', '--']
   ok result.status is 0
 
-  result = spawnSync 'coffee', [initialSpaceScript, 'arg'], {env: patchedEnv}
+  result = spawnSync 'coffee', [initialSpaceScript, 'arg'], spawnOptions
   stderr = result.stderr.toString()
   ok stderr is ''
   arrayEq JSON.parse(result.stdout), ['coffee', initialSpaceScript, 'arg']
   ok result.status is 0
 
   result = spawnSync(
-    'coffee', [initialSpaceExtraArgsScript, 'arg'], {env: patchedEnv})
+    'coffee', [initialSpaceExtraArgsScript, 'arg'], spawnOptions)
   stderr = result.stderr.toString()
   arrayEq JSON.parse(result.stdout), ['coffee', initialSpaceExtraArgsScript, 'arg']
   ok stderr.match /^The script to be run begins with a shebang line with more than one/m
@@ -11158,7 +11347,7 @@ test "warn about non-portable shebang lines", ->
 
 test "both warnings will be shown at once", ->
   result = spawnSync(
-    'coffee', [initialSpaceExtraArgsScript, '--', 'arg'], {env: patchedEnv})
+    'coffee', [initialSpaceExtraArgsScript, '--', 'arg'], spawnOptions)
   stderr = result.stderr.toString()
   arrayEq JSON.parse(result.stdout), ['coffee', initialSpaceExtraArgsScript, 'arg']
   ok stderr.match /^The script to be run begins with a shebang line with more than one/m
@@ -12655,7 +12844,6 @@ test "export default named member, within an object", ->
       bar
     };"""
 
-
 # Import and export in the same statement
 
 test "export an entire module's contents", ->
@@ -12679,18 +12867,21 @@ test "export as aliases members imported from another module", ->
     } from 'lib';"""
 
 test "export list can contain CoffeeScript keywords", ->
-  eqJS "export { unless } from 'lib'",
+  eqJS "export { unless, and } from 'lib'",
   """
     export {
-      unless
+      unless,
+      and
     } from 'lib';"""
 
 test "export list can contain CoffeeScript keywords when aliasing", ->
-  eqJS "export { when as bar, baz as unless } from 'lib'",
+  eqJS "export { when as bar, baz as unless, and as foo, booze as not } from 'lib'",
   """
     export {
       when as bar,
-      baz as unless
+      baz as unless,
+      and as foo,
+      booze as not
     } from 'lib';"""
 
 
@@ -12784,11 +12975,12 @@ test "`as` can be used as an alias name", ->
 
 test "CoffeeScript keywords can be used as imported names in import lists", ->
   eqJS """
-    import { unless as bar } from 'lib'
+    import { unless as bar, and as computedAnd } from 'lib'
     bar.barMethod()""",
   """
     import {
-      unless as bar
+      unless as bar,
+      and as computedAnd
     } from 'lib';
 
     bar.barMethod();"""
@@ -15019,6 +15211,10 @@ testRepl "#4604: wraps an async function", (input, output) ->
   setTimeout ->
     eq '33', output.lastWrite()
   , 20
+
+testRepl "transpile REPL", (input, output) ->
+  input.emitLine 'require("./test/importing/transpile_import").getSep()'
+  eq "'#{path.sep.replace '\\', '\\\\'}'", output.lastWrite()
 
 process.on 'exit', ->
   try
