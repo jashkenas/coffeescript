@@ -1107,3 +1107,16 @@ test "#4747: Flow comments for local variable declarations with reassignment", -
 
   a/* some other comment */ = 2;
   '''
+
+test "#4756: Comment before ? operation", ->
+  eqJS '''
+  do ->
+    ### Comment ###
+    @foo ? 42
+  ''', '''
+  (function() {
+    var ref;
+    /* Comment */
+    return (ref = this.foo) != null ? ref : 42;
+  })();
+  '''
