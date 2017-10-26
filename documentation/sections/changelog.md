@@ -9,7 +9,7 @@ releaseHeader('2017-10-26', '2.0.2', '2.0.1')
 *   Importing CoffeeScript keywords is now allowed, so long as they’re aliased: `import { and as andFn } from 'lib'`. (You could also do `import lib from 'lib'` and then reference `lib.and`.)
 *   Calls to functions named `get` and `set` no longer throw an error when given a bracketless object literal as an argument: `obj.set propertyName: propertyValue`.
 *   In the constructor of a derived class (a class that `extends` another class), you cannot call `super` with an argument that references `this`: `class Child extends Parent then constructor: (@arg) -> super(@arg)`. This isn’t allowed in JavaScript, and now the CoffeeScript compiler will throw an error. Instead, assign to `this` after calling `super`: `(arg) -> super(arg); @arg = arg`.
-*   Bugfix for incorrect output when backticked class bodies where mixed with hoisted expressions in a class body. This allows a backticked line like `` `field = 3` ``, for people using the experimental [class fields](https://github.com/tc39/proposal-class-fields) syntax, along with traditional class body expressions like `prop: 3` that CoffeeScript outputs as part of the class prototype.
+*   Bugfix for incorrect output when backticked statements and hoisted expressions were both in the same class body. This allows a backticked line like `` `field = 3` ``, for people using the experimental [class fields](https://github.com/tc39/proposal-class-fields) syntax, in the same class along with traditional class body expressions like `prop: 3` that CoffeeScript outputs as part of the class prototype.
 *   Bugfix for comments not output before a complex `?` operation, e.g. `@a ? b`.
 *   All tests now pass in Windows.
 
