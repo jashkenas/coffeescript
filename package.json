@@ -28,6 +28,7 @@
     "repl.js"
   ],
   "scripts": {
+    "postinstall": "node ./bin/cake postinstall",
     "test": "node ./bin/cake test",
     "test-harmony": "node --harmony ./bin/cake test"
   },

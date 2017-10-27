@@ -421,3 +421,9 @@ task 'test:browser', 'run the test suite against the merged browser script', ->
   (-> eval source).call result
   testResults = runTests result.CoffeeScript
   process.exit 1 unless testResults
+
+
+task 'postinstall', 'print postinstall message', ->
+  return unless require('./package.json').name is 'coffee-script'
+  log 'CoffeeScript has moved!', red, 'Please update your package.json to replace "coffee-script" with "coffeescript".'
+  console.log 'Also, a new major release is available. Learn more at http://coffeescript.org.'
