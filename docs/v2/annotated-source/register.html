@@ -137,7 +137,8 @@ path          = <span class="hljs-built_in">require</span> <span class="hljs-str
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">loadFile</span> = <span class="hljs-params">(<span class="hljs-built_in">module</span>, filename)</span> -&gt;</span>
-  answer = CoffeeScript._compileFile filename, <span class="hljs-literal">no</span>, <span class="hljs-literal">yes</span>
+  options = <span class="hljs-built_in">module</span>.options <span class="hljs-keyword">or</span> getRootModule(<span class="hljs-built_in">module</span>).options
+  answer = CoffeeScript._compileFile filename, options
   <span class="hljs-built_in">module</span>._compile answer, filename</pre></div></div>
             
         </li>
@@ -242,6 +243,22 @@ to fork both CoffeeScript files, and JavaScript files, directly.</p>
       args = [path].concat args
       path = binary
     fork path, args, options</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Utility function to find the <code>options</code> object attached to the topmost module.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">getRootModule</span> = <span class="hljs-params">(<span class="hljs-built_in">module</span>)</span> -&gt;</span>
+  <span class="hljs-keyword">if</span> <span class="hljs-built_in">module</span>.parent <span class="hljs-keyword">then</span> getRootModule <span class="hljs-built_in">module</span>.parent <span class="hljs-keyword">else</span> <span class="hljs-built_in">module</span></pre></div></div>
             
         </li>
         

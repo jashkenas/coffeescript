@@ -139,12 +139,14 @@ with external scopes.</p>
 as well as a reference to the <strong>Block</strong> node it belongs to, which is
 where it should declare its variables, a reference to the function that
 it belongs to, and a list of variables referenced in the source code
-and therefore should be avoided when generating variables.</p>
+and therefore should be avoided when generating variables. Also track comments
+that should be output as part of variable declarations.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  constructor: <span class="hljs-function"><span class="hljs-params">(@parent, @expressions, @method, @referencedVars)</span> -&gt;</span>
     @variables = [{name: <span class="hljs-string">'arguments'</span>, type: <span class="hljs-string">'arguments'</span>}]
+    @comments  = {}
     @positions = {}
     @utilities = {} <span class="hljs-keyword">unless</span> @parent</pre></div></div>
             

@@ -9,13 +9,6 @@ Class constructors can’t be invoked without `new`:
 # Throws a TypeError at runtime
 ```
 
-Derived (extended) class `constructor`s cannot use `this` before calling `super`:
-
-```coffee
-class B extends A
-  constructor: -> this  # Throws a compiler error
-```
-
 ES2015 classes don’t allow bound (fat arrow) methods. The CoffeeScript compiler goes through some contortions to preserve support for them, but one thing that can’t be accommodated is calling a bound method before it is bound:
 
 ```coffee

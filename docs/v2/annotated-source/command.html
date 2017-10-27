@@ -295,6 +295,7 @@ Many flags cause us to divert before compiling anything. Flags passed after
             <div class="content"><div class='highlight'><pre>  replCliOpts = useGlobal: <span class="hljs-literal">yes</span>
   opts.prelude = makePrelude opts.<span class="hljs-built_in">require</span>       <span class="hljs-keyword">if</span> opts.<span class="hljs-built_in">require</span>
   replCliOpts.prelude = opts.prelude
+  replCliOpts.transpile = opts.transpile
   <span class="hljs-keyword">return</span> forkNode()                             <span class="hljs-keyword">if</span> opts.nodejs
   <span class="hljs-keyword">return</span> usage()                                <span class="hljs-keyword">if</span> opts.help
   <span class="hljs-keyword">return</span> version()                              <span class="hljs-keyword">if</span> opts.version
@@ -508,6 +509,9 @@ and write them back to <strong>stdout</strong>.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">compileStdio</span> = -&gt;</span>
+  <span class="hljs-keyword">if</span> opts.map
+    <span class="hljs-built_in">console</span>.error <span class="hljs-string">'--stdio and --map cannot be used together'</span>
+    process.exit <span class="hljs-number">1</span>
   buffers = []
   stdin = process.openStdin()
   stdin.<span class="hljs-literal">on</span> <span class="hljs-string">'data'</span>, <span class="hljs-function"><span class="hljs-params">(buffer)</span> -&gt;</span>

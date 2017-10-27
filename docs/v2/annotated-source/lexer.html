@@ -372,7 +372,6 @@ though <code>is</code> means <code>===</code> otherwise.</p>
             
             <div class="content"><div class='highlight'><pre>    idLength = id.length
     poppedToken = <span class="hljs-literal">undefined</span>
-
     <span class="hljs-keyword">if</span> id <span class="hljs-keyword">is</span> <span class="hljs-string">'own'</span> <span class="hljs-keyword">and</span> @tag() <span class="hljs-keyword">is</span> <span class="hljs-string">'FOR'</span>
       @token <span class="hljs-string">'OWN'</span>, id
       <span class="hljs-keyword">return</span> id.length
@@ -382,14 +381,21 @@ though <code>is</code> means <code>===</code> otherwise.</p>
     <span class="hljs-keyword">if</span> id <span class="hljs-keyword">is</span> <span class="hljs-string">'as'</span> <span class="hljs-keyword">and</span> @seenImport
       <span class="hljs-keyword">if</span> @value() <span class="hljs-keyword">is</span> <span class="hljs-string">'*'</span>
         @tokens[@tokens.length - <span class="hljs-number">1</span>][<span class="hljs-number">0</span>] = <span class="hljs-string">'IMPORT_ALL'</span>
-      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> @value() <span class="hljs-keyword">in</span> COFFEE_KEYWORDS
-        @tokens[@tokens.length - <span class="hljs-number">1</span>][<span class="hljs-number">0</span>] = <span class="hljs-string">'IDENTIFIER'</span>
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> @value(<span class="hljs-literal">yes</span>) <span class="hljs-keyword">in</span> COFFEE_KEYWORDS
+        prev = @prev()
+        [prev[<span class="hljs-number">0</span>], prev[<span class="hljs-number">1</span>]] = [<span class="hljs-string">'IDENTIFIER'</span>, @value(<span class="hljs-literal">yes</span>)]
       <span class="hljs-keyword">if</span> @tag() <span class="hljs-keyword">in</span> [<span class="hljs-string">'DEFAULT'</span>, <span class="hljs-string">'IMPORT_ALL'</span>, <span class="hljs-string">'IDENTIFIER'</span>]
         @token <span class="hljs-string">'AS'</span>, id
         <span class="hljs-keyword">return</span> id.length
-    <span class="hljs-keyword">if</span> id <span class="hljs-keyword">is</span> <span class="hljs-string">'as'</span> <span class="hljs-keyword">and</span> @seenExport <span class="hljs-keyword">and</span> @tag() <span class="hljs-keyword">in</span> [<span class="hljs-string">'IDENTIFIER'</span>, <span class="hljs-string">'DEFAULT'</span>]
-      @token <span class="hljs-string">'AS'</span>, id
-      <span class="hljs-keyword">return</span> id.length
+    <span class="hljs-keyword">if</span> id <span class="hljs-keyword">is</span> <span class="hljs-string">'as'</span> <span class="hljs-keyword">and</span> @seenExport
+      <span class="hljs-keyword">if</span> @tag() <span class="hljs-keyword">in</span> [<span class="hljs-string">'IDENTIFIER'</span>, <span class="hljs-string">'DEFAULT'</span>]
+        @token <span class="hljs-string">'AS'</span>, id
+        <span class="hljs-keyword">return</span> id.length
+      <span class="hljs-keyword">if</span> @value(<span class="hljs-literal">yes</span>) <span class="hljs-keyword">in</span> COFFEE_KEYWORDS
+        prev = @prev()
+        [prev[<span class="hljs-number">0</span>], prev[<span class="hljs-number">1</span>]] = [<span class="hljs-string">'IDENTIFIER'</span>, @value(<span class="hljs-literal">yes</span>)]
+        @token <span class="hljs-string">'AS'</span>, id
+        <span class="hljs-keyword">return</span> id.length
     <span class="hljs-keyword">if</span> id <span class="hljs-keyword">is</span> <span class="hljs-string">'default'</span> <span class="hljs-keyword">and</span> @seenExport <span class="hljs-keyword">and</span> @tag() <span class="hljs-keyword">in</span> [<span class="hljs-string">'EXPORT'</span>, <span class="hljs-string">'AS'</span>]
       @token <span class="hljs-string">'DEFAULT'</span>, id
       <span class="hljs-keyword">return</span> id.length
@@ -455,7 +461,7 @@ what CoffeeScript would normally interpret as calls to functions named
             </div>
             
             <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'PROPERTY'</span> <span class="hljs-keyword">and</span> prev
-      <span class="hljs-keyword">if</span> prev.spaced <span class="hljs-keyword">and</span> prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> CALLABLE <span class="hljs-keyword">and</span> <span class="hljs-regexp">/^[gs]et$/</span>.test(prev[<span class="hljs-number">1</span>])
+      <span class="hljs-keyword">if</span> prev.spaced <span class="hljs-keyword">and</span> prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> CALLABLE <span class="hljs-keyword">and</span> <span class="hljs-regexp">/^[gs]et$/</span>.test(prev[<span class="hljs-number">1</span>]) <span class="hljs-keyword">and</span> @tokens[@tokens.length - <span class="hljs-number">2</span>][<span class="hljs-number">0</span>] <span class="hljs-keyword">isnt</span> <span class="hljs-string">'.'</span>
         @error <span class="hljs-string">"'<span class="hljs-subst">#{prev[<span class="hljs-number">1</span>]}</span>' cannot be used as a keyword, or as a function call without parentheses"</span>, prev[<span class="hljs-number">2</span>]
       <span class="hljs-keyword">else</span>
         prevprev = @tokens[@tokens.length - <span class="hljs-number">2</span>]
@@ -466,7 +472,7 @@ what CoffeeScript would normally interpret as calls to functions named
     <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'IDENTIFIER'</span> <span class="hljs-keyword">and</span> id <span class="hljs-keyword">in</span> RESERVED
       @error <span class="hljs-string">"reserved word '<span class="hljs-subst">#{id}</span>'"</span>, length: id.length
 
-    <span class="hljs-keyword">unless</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'PROPERTY'</span>
+    <span class="hljs-keyword">unless</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'PROPERTY'</span> <span class="hljs-keyword">or</span> @exportSpecifierList
       <span class="hljs-keyword">if</span> id <span class="hljs-keyword">in</span> COFFEE_ALIASES
         alias = id
         id = COFFEE_ALIAS_MAP[id]
@@ -1968,9 +1974,12 @@ not specified, the length of <code>value</code> will be used.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  value: <span class="hljs-function">-&gt;</span>
+            <div class="content"><div class='highlight'><pre>  value: <span class="hljs-function"><span class="hljs-params">(useOrigin = <span class="hljs-literal">no</span>)</span> -&gt;</span>
     [..., token] = @tokens
-    token?[<span class="hljs-number">1</span>]</pre></div></div>
+    <span class="hljs-keyword">if</span> useOrigin <span class="hljs-keyword">and</span> token?.origin?
+      token.origin?[<span class="hljs-number">1</span>]
+    <span class="hljs-keyword">else</span>
+      token?[<span class="hljs-number">1</span>]</pre></div></div>
             
         </li>
         
