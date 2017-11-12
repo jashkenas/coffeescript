@@ -401,7 +401,7 @@ mkdirp = (dir, fn) ->
 # If `generatedSourceMap` is provided, this will write a `.js.map` file into the
 # same directory as the `.js` file.
 writeJs = (base, sourcePath, js, jsPath, generatedSourceMap = null) ->
-  sourceMapPath = outputPath sourcePath, base, ".js.map"
+  sourceMapPath = "#{jsPath}.map"
   jsDir  = path.dirname jsPath
   compile = ->
     if opts.compile
