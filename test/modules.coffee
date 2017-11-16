@@ -329,13 +329,29 @@ test "export default implicit object", ->
 test "export default multiline implicit object", ->
   eqJS """
     export default
-      foo: 'bar',
+      foo: 'bar'
       baz: 'qux'
     """,
   """
     export default {
       foo: 'bar',
       baz: 'qux'
+    };"""
+
+test "export default multiline implicit object with internal braces", ->
+  eqJS """
+    export default
+      foo: yes
+      bar: {
+        baz
+      }
+      quz: no
+    """,
+  """
+    export default {
+      foo: true,
+      bar: {baz},
+      quz: false
     };"""
 
 test "export default assignment expression", ->

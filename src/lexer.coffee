@@ -1354,4 +1354,4 @@ INDENTABLE_CLOSERS = [')', '}', ']']
 # Tokens that, when appearing at the end of a line, suppress a following TERMINATOR/INDENT token
 UNFINISHED = ['\\', '.', '?.', '?::', 'UNARY', 'MATH', 'UNARY_MATH', '+', '-',
            '**', 'SHIFT', 'RELATION', 'COMPARE', '&', '^', '|', '&&', '||',
-           'BIN?', 'EXTENDS', 'DEFAULT']
+           'BIN?', 'EXTENDS']
