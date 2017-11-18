@@ -2209,7 +2209,7 @@ exports.Assign = class Assign extends Base
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
     # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration,
     # if we’re destructuring without declaring, the destructuring assignment must be wrapped in parentheses.
-    if o.level > LEVEL_LIST or o.level is LEVEL_TOP and isValue and @variable.base instanceof Obj and not @nestedLhs and not (@param is yes)
+    if o.level > LEVEL_LIST or (o.level is LEVEL_TOP or o.level is LEVEL_LIST) and isValue and @variable.base instanceof Obj and not @nestedLhs and not (@param is yes)
       @wrapInParentheses answer
     else
       answer
