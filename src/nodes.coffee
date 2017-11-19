@@ -2697,6 +2697,12 @@ exports.Code = class Code extends Base
       @body.expressions.unshift new Call(boundMethodCheck, [new Value(new ThisLiteral), @classVariable])
     @body.makeReturn() unless wasEmpty or @noReturn
 
+    # JavaScript doesn’t allow bound (`=>`) functions to also be generators.
+    # This is usually caught via `Op::compileContinuation`, but double-check:
+    if @bound and @isGenerator
+      yieldNode = @body.contains (node) -> node instanceof Op and node.operator is 'yield'
+      (yieldNode or @).error 'yield cannot occur inside bound (fat arrow) functions'
+
     # Assemble the output
     modifiers = []
     modifiers.push 'static' if @isMethod and @isStatic
