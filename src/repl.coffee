@@ -30,6 +30,14 @@ replDefaults =
     try
       # Tokenize the clean input.
       tokens = CoffeeScript.tokens input
+      # Filter out tokens generated just to hold comments.
+      if tokens.length >= 2 and tokens[0].generated and
+         tokens[0].comments?.length isnt 0 and tokens[0][1] is '' and
+         tokens[1][0] is 'TERMINATOR'
+        tokens = tokens[2...]
+      if tokens.length >= 1 and tokens[tokens.length - 1].generated and
+         tokens[tokens.length - 1].comments?.length isnt 0 and tokens[tokens.length - 1][1] is ''
+        tokens.pop()
       # Collect referenced variable names just like in `CoffeeScript.compile`.
       referencedVars = (token[1] for token in tokens when token[0] is 'IDENTIFIER')
       # Generate the AST of the tokens.

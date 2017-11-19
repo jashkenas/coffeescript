@@ -77,6 +77,14 @@ testRepl "empty command evaluates to undefined", (input, output) ->
   input.emitLine ''
   eq 'undefined', output.lastWrite()
 
+testRepl "#4763: comment evaluates to undefined", (input, output) ->
+  input.emitLine '# comment'
+  eq 'undefined', output.lastWrite()
+
+testRepl "#4763: multiple comments evaluate to undefined", (input, output) ->
+  input.emitLine '### a ### ### b ### # c'
+  eq 'undefined', output.lastWrite()
+
 testRepl "ctrl-v toggles multiline prompt", (input, output) ->
   input.emit 'keypress', null, ctrlV
   eq '------> ', output.lastWrite(0)
