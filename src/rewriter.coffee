@@ -377,7 +377,7 @@ exports.Rewriter = class Rewriter
       #
       #     f a, b: c, d: e, f, g: h: i, j
       #
-      if tag is ',' and not @looksObjectish(i + 1) and inImplicitObject() and
+      if tag is ',' and not @looksObjectish(i + 1) and inImplicitObject() and not (@tag(i + 2) in ['FOROF', 'FORIN']) and
          (nextTag isnt 'TERMINATOR' or not @looksObjectish(i + 2))
         # When nextTag is OUTDENT the comma is insignificant and
         # should just be ignored so embed it in the implicit object.
