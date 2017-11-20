@@ -652,20 +652,22 @@ test "#4544: Postfix conditionals in first line of implicit object literals", ->
 test "#4579: Postfix for/while/until in first line of implicit object literals", ->
   two =
     foo:
-      bar: x for x in [1, 2, 3]
+      bar1: x for x in [1, 2, 3]
+      bar2: x + y for x, y in [1, 2, 3]
       baz: 1337
-  arrayEq [1, 2, 3], two.foo.bar
+  arrayEq [1, 2, 3], two.foo.bar1
+  arrayEq [1, 3, 5], two.foo.bar2
   eq 1337, two.foo.baz
 
   f = (x) -> x
 
   three =
     foo: f
-      # Uncomment when #4580 is fixed
-      # bar: x + y for x, y of a: 'b', c: 'd'
-      bar: x + 'c' for x of a: 1, b: 2
+      bar1: x + y for x, y of a: 'b', c: 'd'
+      bar2: x + 'c' for x of a: 1, b: 2
       baz: 1337
-  arrayEq ['ac', 'bc'], three.foo.bar
+  arrayEq ['ab', 'cd'], three.foo.bar1
+  arrayEq ['ac', 'bc'], three.foo.bar2
   eq 1337, three.foo.baz
 
   four =
@@ -696,4 +698,3 @@ test "#4579: Postfix for/while/until in first line of implicit object literals",
       baz: 1337
   arrayEq [4, 3, 2, 1, 0], six.foo.bar
   eq 1337, six.foo.baz
-
