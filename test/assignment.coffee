@@ -178,6 +178,13 @@ test "#713: destructuring assignment should return right-hand-side value", ->
   eq nonceB, b
   eq nonceB, d
 
+test "#4787 destructuring of objects within arrays", ->
+  arr = [1, {a:1, b:2}]
+  [...,{a, b}] = arr
+  eq a, 1
+  eq b, arr[1].b
+  deepEqual {a, b}, arr[1]
+
 test "destructuring assignment with splats", ->
   a = {}; b = {}; c = {}; d = {}; e = {}
   [x,y...,z] = [a,b,c,d,e]
