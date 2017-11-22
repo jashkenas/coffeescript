@@ -1197,6 +1197,18 @@ test "bound functions cannot be generators", ->
            ^^^^^^^^^^
   '''
 
+test "#4790: bound functions cannot be generators, even when we’re creating IIFEs", ->
+  assertErrorFormat '''
+  =>
+    for x in []
+      for y in []
+        yield z
+  ''', '''
+    [stdin]:4:7: error: yield cannot occur inside bound (fat arrow) functions
+          yield z
+          ^^^^^^^
+  '''
+
 test "CoffeeScript keywords cannot be used as unaliased names in import lists", ->
   assertErrorFormat """
     import { unless, baz as bar } from 'lib'
