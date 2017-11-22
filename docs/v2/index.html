@@ -5497,6 +5497,19 @@ x = <span class="number">2</span> + <span class="number">2</span>
       </section>
       <section id="changelog">
         <h2>Changelog</h2>
+<div class="anchor" id="2.0.3"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/2.0.2...2.0.3">2.0.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-11-22">November 22, 2017</time></span>
+</h2><ul>
+<li>Bugfix for <code>export default</code> followed by an implicit object that contains an explicit object, for example <code>exportedMember: { obj... }</code>.</li>
+<li>Bugfix for <code>key, val of obj</code> after an implicit object member, e.g. <code>foo: bar for key, val of obj</code>.</li>
+<li>Bugfix for combining array and object destructuring, e.g. <code>[ ..., {a, b} ] = arr</code>.</li>
+<li>Bugfix for an edge case where it was possible to create a bound (<code>=&gt;</code>) generator function, which should throw an error as such functions aren’t allowed in ES2015.</li>
+<li>Bugfix for source maps: <code>.map</code> files should always have the same base filename as the requested output filename. So <code>coffee --map --output foo.js test.coffee</code> should generate <code>foo.js</code> and <code>foo.js.map</code>.</li>
+<li>Bugfix for incorrect source maps generated when using <code>--transpile</code> with <code>--map</code> for multiple input files.</li>
+<li>Bugfix for comments at the beginning or end of input into the REPL (<code>coffee --interactive</code>).</li>
+</ul>
 <div class="anchor" id="2.0.2"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/2.0.1...2.0.2">2.0.2</a>
