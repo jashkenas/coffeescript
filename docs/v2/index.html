@@ -4754,7 +4754,6 @@ task('build:parser', 'rebuild the Jison parser', function(options) {
       <section id="scripts">
         <h2><code>&quot;text/coffeescript&quot;</code> Script Tags</h2>
 <p>While it’s not recommended for serious use, CoffeeScripts may be included directly within the browser using <code>&lt;script type=&quot;text/coffeescript&quot;&gt;</code> tags. The source includes a compressed and minified version of the compiler (<a href="/v2/browser-compiler/coffeescript.js">Download current version here, 51k when gzipped</a>) as <code>docs/v2/browser-compiler/coffeescript.js</code>. Include this file on a page with inline CoffeeScript tags, and it will compile and evaluate them in order.</p>
-<p>In fact, the little bit of glue script that runs <a href="#try">Try CoffeeScript</a>, as well as the code examples and other interactive parts of this site, is implemented in just this way. View source and look at the bottom of the page to see the example. Including the script also gives you access to <code>CoffeeScript.compile()</code> so you can pop open your JavaScript console and try compiling some strings.</p>
 <p>The usual caveats about CoffeeScript apply — your inline scripts will run within a closure wrapper, so if you want to expose global variables or functions, attach them to the <code>window</code> object.</p>
 
       </section>
