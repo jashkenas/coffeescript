@@ -26,6 +26,40 @@ test "incorrect indentation without commas", ->
   ok result[0][0] is 'a'
   ok result[1]['b'] is 'c'
 
+# Elisions
+test "array elisions", ->
+  eq [,1].length, 2
+  eq [,,1,2,,].length, 5
+
+  arr = [1,2,3,4,5,6,7,8,9]
+  [,a] = arr
+  [,,,b] = arr
+  arrayEq [a,b], [2,4]
+  [,a,,b,,c,,,d] = arr
+  arrayEq [a,b,c,d], [2,4,6,9]
+  [
+    ,a,
+    ,b,
+    ,c,
+    ,,d] = arr
+  arrayEq [a,b,c,d], [2,4,6,9]
+
+  foo = ([,a]) -> a
+  a = foo arr
+  eq a, 2
+  foo = ([,,,a]) -> a
+  a = foo arr
+  eq a, 4
+  foo = ([,a,,b,,c,,,d]) -> [a,b,c,d]
+  [a,b,c,d] = foo arr
+  arrayEq [a,b,c,d], [2,4,6,9]
+
+  [,a,,,b...] = arr
+  arrayEq [a,b], [2,[5,6,7,8,9]]
+  [,a,...,,b,,c] = arr
+  arrayEq [a,b,c], [2,7,9]
+  [...,a,,,b,,,] = arr
+  arrayEq [a,b], [4,7]
 
 # Splats in Array Literals
 

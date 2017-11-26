@@ -493,7 +493,9 @@ grammar =
   # The array literal.
   Array: [
     o '[ ]',                                    -> new Arr []
-    o '[ ArgList OptComma ]',                   -> new Arr $2
+    o '[ Elisions ]',                           -> new Arr $2
+    o '[ ArgElisionList OptComma ]',            -> new Arr $2
+    o '[ ArgElisionList , Elisions ]',          -> new Arr [].concat $2, $4
   ]
 
   # Inclusive and exclusive range dots.
@@ -515,8 +517,7 @@ grammar =
     o 'RangeDots',                              -> new Range null, null, $1
   ]
 
-  # The **ArgList** is both the list of objects passed into a function call,
-  # as well as the contents of an array literal
+  # The **ArgList** is the list of objects passed into a function call
   # (i.e. comma-separated expressions). Newlines work as well.
   ArgList: [
     o 'Arg',                                              -> [$1]
@@ -531,6 +532,34 @@ grammar =
     o 'Expression'
     o 'Splat'
     o '...',                                     -> new Expansion
+  ]
+
+  # The **ArgElisionList** is the list of objects, contents of an array literal
+  # (i.e. comma-separated expressions and elisions). Newlines work as well.
+  ArgElisionList: [
+    o 'ArgElision'
+    o 'ArgElisionList , ArgElision',                                      -> $1.concat $3
+    o 'ArgElisionList TERMINATOR Arg',                                    -> $1.concat $3
+    o 'ArgElisionList , TERMINATOR ArgElision',                           -> $1.concat $4
+    o 'INDENT ArgElisionList OptComma OUTDENT',                           -> $2
+    o 'INDENT ArgElisionList , Elisions OUTDENT',                         -> $2.concat $4
+    o 'ArgElisionList OptComma INDENT ArgElisionList OptComma OUTDENT',   -> $1.concat $4
+    o 'ArgElisionList , Elisions INDENT ArgElisionList OptComma OUTDENT', -> $1.concat $3, $5
+    o 'ArgElisionList OptComma INDENT ArgElisionList , Elisions OUTDENT', -> $1.concat $4, $6
+  ]
+
+  ArgElision: [
+    o 'Arg',                  -> [$1]
+    o 'Elisions Arg',         -> [].concat $1, $2
+  ]
+
+  Elisions: [
+    o 'Elision'
+    o 'Elisions Elision',     -> [].concat $1, $2
+  ]
+
+  Elision: [
+    o ',',                    -> new Elision
   ]
 
   # Just simple, comma-separated, required arguments (no fancy syntax). We need

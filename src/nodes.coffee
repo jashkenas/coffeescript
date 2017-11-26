@@ -910,6 +910,10 @@ exports.Value = class Value extends Base
     return no if @properties.length
     (@base instanceof Obj) and (not onlyGenerated or @base.generated)
 
+  isElision: ->
+    return no unless @base instanceof Arr
+    @base.hasElision()
+
   isSplice: ->
     [..., lastProp] = @properties
     lastProp instanceof Slice
@@ -1561,6 +1565,10 @@ exports.Arr = class Arr extends Base
 
   children: ['objects']
 
+  hasElision: ->
+    return yes for obj in @objects when obj instanceof Elision
+    no
+
   isAssignable: ->
     return no unless @objects.length
 
@@ -1575,6 +1583,9 @@ exports.Arr = class Arr extends Base
   compileNode: (o) ->
     return [@makeCode '[]'] unless @objects.length
     o.indent += TAB
+    fragmentIsElision = (fragment) -> fragmentsToText(fragment).trim() is ','
+    # Detect if `Elisions` at the beginning of the array are processed (e.g. [, , , a]).
+    passedElision = no
 
     answer = []
     for obj, objIndex in @objects
@@ -1590,6 +1601,7 @@ exports.Arr = class Arr extends Base
         unwrappedObj.lhs = yes if unwrappedObj instanceof Arr or unwrappedObj instanceof Obj
 
     compiledObjs = (obj.compileToFragments o, LEVEL_LIST for obj in @objects)
+    olen = compiledObjs.length
     # If `compiledObjs` includes newlines, we will output this as a multiline
     # array (i.e. with a newline and indentation after the `[`). If an element
     # contains line comments, that should also trigger multiline output since
@@ -1604,14 +1616,17 @@ exports.Arr = class Arr extends Base
           fragment.code = fragment.code.trim()
         else if index isnt 0 and includesLineCommentsOnNonFirstElement is no and hasLineComments fragment
           includesLineCommentsOnNonFirstElement = yes
-      if index isnt 0
+      # Add ', ' if all `Elisions` from the beginning of the array are processed (e.g. [, , , a]) and
+      # element isn't `Elision` or last element is `Elision` (e.g. [a,,b,,])
+      if index isnt 0 and passedElision and (not fragmentIsElision(fragments) or index is olen - 1)
         answer.push @makeCode ', '
+      passedElision = passedElision or not fragmentIsElision fragments
       answer.push fragments...
     if includesLineCommentsOnNonFirstElement or '\n' in fragmentsToText(answer)
       for fragment, fragmentIndex in answer
         if fragment.isHereComment
           fragment.code = "#{multident(fragment.code, o.indent, no)}\n#{o.indent}"
-        else if fragment.code is ', '
+        else if fragment.code is ', ' and fragment.type isnt 'Elision'
           fragment.code = ",\n#{o.indent}"
       answer.unshift @makeCode "[\n#{o.indent}"
       answer.push @makeCode "\n#{@tab}]"
@@ -2440,7 +2455,10 @@ exports.Assign = class Assign extends Base
       if name?
         message = isUnassignable name
         obj.error message if message
-      assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
+      unless obj instanceof Elision
+        assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
+      else
+        assigns.push idx.compileToFragments o, LEVEL_LIST
 
     assigns.push vvar unless top or @subpattern
     fragments = @joinFragmentArrays assigns, ', '
@@ -2890,6 +2908,8 @@ exports.Param = class Param extends Base
           atParam obj
         # * simple destructured parameters {foo}
         else iterator obj.base.value, obj.base, @
+      else if obj instanceof Elision
+        obj
       else if obj not instanceof Expansion
         obj.error "illegal parameter #{obj.compile()}"
     return
@@ -2940,6 +2960,23 @@ exports.Expansion = class Expansion extends Base
 
   compileNode: (o) ->
     @error 'Expansion must be used inside a destructuring assignment or parameter list'
+
+  asReference: (o) ->
+    this
+
+  eachName: (iterator) ->
+
+#### Elision
+
+# Array elision element (for example, [,a, , , b, , c, ,]).
+exports.Elision = class Elision extends Base
+
+  isAssignable: YES
+
+  shouldCache: NO
+
+  compileNode: (o) ->
+    [@makeCode ', ']
 
   asReference: (o) ->
     this
