@@ -749,7 +749,7 @@ same directory as the <code>.js</code> file.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">writeJs</span> = <span class="hljs-params">(base, sourcePath, js, jsPath, generatedSourceMap = <span class="hljs-literal">null</span>)</span> -&gt;</span>
-  sourceMapPath = outputPath sourcePath, base, <span class="hljs-string">".js.map"</span>
+  sourceMapPath = <span class="hljs-string">"<span class="hljs-subst">#{jsPath}</span>.map"</span>
   jsDir  = path.dirname jsPath
 <span class="hljs-function">  <span class="hljs-title">compile</span> = -&gt;</span>
     <span class="hljs-keyword">if</span> opts.compile

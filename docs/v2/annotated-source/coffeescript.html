@@ -480,7 +480,9 @@ is run via the CLI or Node API.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    transpiler = options.transpile.transpile
-    <span class="hljs-keyword">delete</span> options.transpile.transpile</pre></div></div>
+    <span class="hljs-keyword">delete</span> options.transpile.transpile
+
+    transpilerOptions = Object.assign {}, options.transpile</pre></div></div>
             
         </li>
         
@@ -497,9 +499,9 @@ and it will return an <em>updated</em> v3 source map object in its output.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> v3SourceMap <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> options.transpile.inputSourceMap?
-      options.transpile.inputSourceMap = v3SourceMap
-    transpilerOutput = transpiler js, options.transpile
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> v3SourceMap <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> transpilerOptions.inputSourceMap?
+      transpilerOptions.inputSourceMap = v3SourceMap
+    transpilerOutput = transpiler js, transpilerOptions
     js = transpilerOutput.code
     <span class="hljs-keyword">if</span> v3SourceMap <span class="hljs-keyword">and</span> transpilerOutput.map
       v3SourceMap = transpilerOutput.map
