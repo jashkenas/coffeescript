@@ -145,7 +145,8 @@ task 'build:browser', 'merge the built scripts into a single file for use in a b
       }
     }(this));
   """
-  unless process.env.MINIFY is 'false'
+  unless process.env.MINIFY is 'false' or process.versions.node.split('.')[0] is '0'
+    # Google Closure Compiler needs Node >= 4
     {compiledCode: code} = require('google-closure-compiler-js').compile
       jsCode: [
         src: code
