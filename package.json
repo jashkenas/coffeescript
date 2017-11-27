@@ -39,10 +39,10 @@
   },
   "devDependencies": {
     "docco": "~0.7.0",
-    "google-closure-compiler-js": "^20170626.0.0",
+    "google-closure-compiler-js": "~20170910.0.1",
     "highlight.js": "~9.12.0",
-    "jison": ">=0.4.17",
-    "markdown-it": "^8.3.1",
+    "jison": "~0.4.18",
+    "markdown-it": "~8.4.0",
     "underscore": "~1.8.3"
   }
 }
