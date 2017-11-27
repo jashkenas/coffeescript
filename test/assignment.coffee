@@ -185,6 +185,12 @@ test "#4787 destructuring of objects within arrays", ->
   eq b, arr[1].b
   deepEqual {a, b}, arr[1]
 
+test "#4798 destructuring of objects with splat within arrays", ->
+  arr = [1, {a:1, b:2}]
+  [...,{a, r...}] = arr
+  eq a, 1
+  deepEqual r, {b:2}
+
 test "destructuring assignment with splats", ->
   a = {}; b = {}; c = {}; d = {}; e = {}
   [x,y...,z] = [a,b,c,d,e]

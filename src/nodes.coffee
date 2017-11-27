@@ -2141,10 +2141,11 @@ exports.Assign = class Assign extends Base
         # know that, so that those nodes know that they’re assignable as
         # destructured variables.
         @variable.base.lhs = yes
-        return @compileDestructuring o unless @variable.isAssignable()
+        # Check if @variable contains Obj with splats.
+        hasSplat = @variable.contains (node) -> node instanceof Obj and node.hasSplat()
+        return @compileDestructuring o if not @variable.isAssignable() or @variable.isArray() and hasSplat
         # Object destructuring. Can be removed once ES proposal hits Stage 4.
-        objDestructAnswer = @compileObjectDestruct(o) if @variable.isObject() and @variable.contains (node) ->
-          node instanceof Obj and node.hasSplat()
+        objDestructAnswer = @compileObjectDestruct(o) if @variable.isObject() and hasSplat
         return objDestructAnswer if objDestructAnswer
 
       return @compileSplice       o if @variable.isSplice()
