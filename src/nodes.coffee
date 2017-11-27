@@ -1626,7 +1626,7 @@ exports.Arr = class Arr extends Base
       for fragment, fragmentIndex in answer
         if fragment.isHereComment
           fragment.code = "#{multident(fragment.code, o.indent, no)}\n#{o.indent}"
-        else if fragment.code is ', ' and fragment.type isnt 'Elision'
+        else if fragment.code is ', ' and not fragment?.isElision
           fragment.code = ",\n#{o.indent}"
       answer.unshift @makeCode "[\n#{o.indent}"
       answer.push @makeCode "\n#{@tab}]"
@@ -2974,6 +2974,11 @@ exports.Elision = class Elision extends Base
   isAssignable: YES
 
   shouldCache: NO
+
+  compileToFragments: (o, level) ->
+    fragment = super o, level
+    fragment.isElision = yes
+    fragment
 
   compileNode: (o) ->
     [@makeCode ', ']
