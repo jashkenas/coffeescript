@@ -398,6 +398,12 @@ runTests = (CoffeeScript) ->
 
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
+  # If template literal syntax isn’t supported (Node < 4), filter out the tests that use it.
+  try
+    new Function('var a = ``')()
+  catch
+    files.splice files.indexOf('javascript_literals.coffee'), 1
+    files.splice files.indexOf('tagged_template_literals.coffee'), 1
 
   for file in files when helpers.isCoffee file
     literate = helpers.isLiterate file
