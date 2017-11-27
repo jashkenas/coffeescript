@@ -28,7 +28,7 @@
     "repl.js"
   ],
   "scripts": {
-    "postinstall": "node ./bin/cake postinstall",
+    "postinstall": "node --eval 'if (require(\"./package.json\").name === \"coffee-script\") { console.warn(\"\\x1b[31mCoffeeScript has moved!\\x1b[0m Please update your package.json to replace \\\"coffee-script\\\" with \\\"coffeescript\\\".\"); console.warn(\"Also, a new major release is available. Learn more at \\x1b[36mhttp://coffeescript.org\\x1b[0m.\"); }'",
     "test": "node ./bin/cake test",
     "test-harmony": "node --harmony ./bin/cake test"
   },
