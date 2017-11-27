@@ -398,6 +398,18 @@ runTests = (CoffeeScript) ->
 
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
+  # If generator syntax isn’t supported (Node < 0.12 harmony), filter out the tests that use it.
+  try
+    new Function('(function*(){}())')()
+  catch
+    files.splice files.indexOf('generators.coffee'), 1
+  # If `for-of` syntax isn’t supported (Node < 0.12), filter out the tests that use it.
+  try
+    new Function('for (a of []) {}')()
+  catch
+    files.splice files.indexOf('arrays.coffee'), 1
+    files.splice files.indexOf('ranges.coffee'), 1
+    files.splice files.indexOf('scope.coffee'), 1
   # If template literal syntax isn’t supported (Node < 4), filter out the tests that use it.
   try
     new Function('var a = ``')()
