@@ -1,7 +1,7 @@
 ## Changelog
 
 ```
-releaseHeader('2017-11-22', '2.0.3', '2.0.2')
+releaseHeader('2017-11-26', '2.0.3', '2.0.2')
 ```
 
 *   Bugfix for `export default` followed by an implicit object that contains an explicit object, for example `exportedMember: { obj... }`.
