@@ -145,7 +145,8 @@ task 'build:browser', 'merge the built scripts into a single file for use in a b
       }
     }(this));
   """
-  unless process.env.MINIFY is 'false'
+  unless process.env.MINIFY is 'false' or process.versions.node.split('.')[0] is '0'
+    # Google Closure Compiler needs Node >= 4
     {compiledCode: code} = require('google-closure-compiler-js').compile
       jsCode: [
         src: code
@@ -397,6 +398,24 @@ runTests = (CoffeeScript) ->
 
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
+  # If generator syntax isn’t supported (Node < 0.12 harmony), filter out the tests that use it.
+  try
+    new Function('(function*(){}())')()
+  catch
+    files.splice files.indexOf('generators.coffee'), 1
+  # If `for-of` syntax isn’t supported (Node < 0.12), filter out the tests that use it.
+  try
+    new Function('for (a of []) {}')()
+  catch
+    files.splice files.indexOf('arrays.coffee'), 1
+    files.splice files.indexOf('ranges.coffee'), 1
+    files.splice files.indexOf('scope.coffee'), 1
+  # If template literal syntax isn’t supported (Node < 4), filter out the tests that use it.
+  try
+    new Function('var a = ``')()
+  catch
+    files.splice files.indexOf('javascript_literals.coffee'), 1
+    files.splice files.indexOf('tagged_template_literals.coffee'), 1
 
   for file in files when helpers.isCoffee file
     literate = helpers.isLiterate file
