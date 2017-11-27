@@ -1,7 +1,6 @@
 language: node_js
 
 node_js:
-  - 0.8
   - 0.10
   - 0.12
   - 4
@@ -16,7 +15,7 @@ cache:
 script:
   - node ./bin/cake build:except-parser
   - node ./bin/cake build:parser
-  - node ./bin/cake build:full
+  - node --harmony ./bin/cake build:full
   - node ./bin/cake build:browser
-  - node  --harmony ./bin/cake test
-  - node  --harmony ./bin/cake test:browser
+  - node --harmony ./bin/cake test
+  - node --harmony ./bin/cake test:browser
