@@ -190,6 +190,11 @@ test "#4798 destructuring of objects with splat within arrays", ->
   [...,{a, r...}] = arr
   eq a, 1
   deepEqual r, {b:2}
+  [b, {q...}] = arr
+  eq b, 1
+  deepEqual q, arr[1]
+  eq q.b, r.b
+  eq q.a, a
 
 test "destructuring assignment with splats", ->
   a = {}; b = {}; c = {}; d = {}; e = {}
