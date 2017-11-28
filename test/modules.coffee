@@ -359,13 +359,32 @@ test "export default implicit object", ->
 test "export default multiline implicit object", ->
   input = """
     export default
-      foo: 'bar',
+      foo: 'bar'
       baz: 'qux'
     """
   output = """
     export default {
       foo: 'bar',
       baz: 'qux'
+    };"""
+  eq toJS(input), output
+
+test "export default multiline implicit object with internal braces", ->
+  input = """
+    export default
+      foo: yes
+      bar: {
+        baz
+      }
+      quz: no
+    """
+  output = """
+    export default {
+      foo: true,
+      bar: {
+        baz: baz
+      },
+      quz: false
     };"""
   eq toJS(input), output
 
