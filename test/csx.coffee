@@ -766,3 +766,19 @@ test 'fragments', ->
       Even more text.
     </>;
   '''
+  eqJS '''
+   Component = (props) =>
+     <Fragment>
+       <OtherComponent />
+       <OtherComponent />
+     </Fragment>
+  ''', '''
+    var Component;
+
+    Component = (props) => {
+      return <Fragment>
+        <OtherComponent />
+        <OtherComponent />
+      </Fragment>;
+    };
+  '''
