@@ -556,7 +556,7 @@ exports.Lexer = class Lexer
     # Check the previous token to detect if attribute is spread.
     prevChar = if @tokens.length > 0 then @tokens[@tokens.length - 1][0] else ''
     if firstChar is '<'
-      match = CSX_IDENTIFIER.exec @chunk[1...]
+      match = CSX_IDENTIFIER.exec(@chunk[1...]) or CSX_FRAGMENT_IDENTIFIER.exec(@chunk[1...])
       return 0 unless match and (
         @csxDepth > 0 or
         # Not the right hand side of an unspaced comparison (i.e. `a<b`).
@@ -596,7 +596,7 @@ exports.Lexer = class Lexer
           @matchWithInterpolations INSIDE_CSX, '>', '</', CSX_INTERPOLATION
         @mergeInterpolationTokens tokens, {delimiter: '"'}, (value, i) =>
           @formatString value, delimiter: '>'
-        match = CSX_IDENTIFIER.exec @chunk[end...]
+        match = CSX_IDENTIFIER.exec(@chunk[end...]) or CSX_FRAGMENT_IDENTIFIER.exec(@chunk[end...])
         if not match or match[0] isnt csxTag.name
           @error "expected corresponding CSX closing tag for #{csxTag.name}",
             csxTag.origin[2]
@@ -1176,6 +1176,12 @@ IDENTIFIER = /// ^
 CSX_IDENTIFIER = /// ^
   (?![\d<]) # Must not start with `<`.
   ( (?: (?!\s)[\.\-$\w\x7f-\uffff] )+ ) # Like `IDENTIFIER`, but includes `-`s and `.`s.
+///
+
+# Fragment: <></>
+CSX_FRAGMENT_IDENTIFIER = /// ^
+  (?![\d<]) # Must not start with `<`.
+  ( (?=>) ) # Ends immediately with '>.
 ///
 
 CSX_ATTRIBUTE = /// ^

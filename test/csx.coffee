@@ -742,3 +742,27 @@ test '#4686: comments inside interpolations that also contain CSX attributes', -
     </div>;
   '''
 
+# https://reactjs.org/blog/2017/11/28/react-v16.2.0-fragment-support.html
+test 'fragments', ->
+  eqJS '''
+    <></>
+  ''', '''
+    <></>;
+  '''
+  eqJS '''
+    <>
+      Some text.
+      <h2>A heading</h2>
+      More text.
+      <h2>Another heading</h2>
+      Even more text.
+    </>
+  ''', '''
+    <>
+      Some text.
+      <h2>A heading</h2>
+      More text.
+      <h2>Another heading</h2>
+      Even more text.
+    </>;
+  '''
