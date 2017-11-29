@@ -646,7 +646,7 @@ div.CodeMirror-cursor {
       <section id="overview">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.0.2">2.0.2</a></p>
+<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.0.3">2.0.3</a></p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash"><span class="comment"># Install locally for a project:</span>
 npm install --save-dev coffeescript
 
@@ -4754,7 +4754,6 @@ task('build:parser', 'rebuild the Jison parser', function(options) {
       <section id="scripts">
         <h2><code>&quot;text/coffeescript&quot;</code> Script Tags</h2>
 <p>While it’s not recommended for serious use, CoffeeScripts may be included directly within the browser using <code>&lt;script type=&quot;text/coffeescript&quot;&gt;</code> tags. The source includes a compressed and minified version of the compiler (<a href="/v2/browser-compiler/coffeescript.js">Download current version here, 51k when gzipped</a>) as <code>docs/v2/browser-compiler/coffeescript.js</code>. Include this file on a page with inline CoffeeScript tags, and it will compile and evaluate them in order.</p>
-<p>In fact, the little bit of glue script that runs <a href="#try">Try CoffeeScript</a>, as well as the code examples and other interactive parts of this site, is implemented in just this way. View source and look at the bottom of the page to see the example. Including the script also gives you access to <code>CoffeeScript.compile()</code> so you can pop open your JavaScript console and try compiling some strings.</p>
 <p>The usual caveats about CoffeeScript apply — your inline scripts will run within a closure wrapper, so if you want to expose global variables or functions, attach them to the <code>window</code> object.</p>
 
       </section>
@@ -4821,7 +4820,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
         <section id="annotated-source">
           <h2>Annotated Source</h2>
-<p>You can browse the CoffeeScript 2.0.2 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+<p>You can browse the CoffeeScript 2.0.3 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
 <li><a href="annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
@@ -5498,6 +5497,19 @@ x = <span class="number">2</span> + <span class="number">2</span>
       </section>
       <section id="changelog">
         <h2>Changelog</h2>
+<div class="anchor" id="2.0.3"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/2.0.2...2.0.3">2.0.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-11-26">November 26, 2017</time></span>
+</h2><ul>
+<li>Bugfix for <code>export default</code> followed by an implicit object that contains an explicit object, for example <code>exportedMember: { obj... }</code>.</li>
+<li>Bugfix for <code>key, val of obj</code> after an implicit object member, e.g. <code>foo: bar for key, val of obj</code>.</li>
+<li>Bugfix for combining array and object destructuring, e.g. <code>[ ..., {a, b} ] = arr</code>.</li>
+<li>Bugfix for an edge case where it was possible to create a bound (<code>=&gt;</code>) generator function, which should throw an error as such functions aren’t allowed in ES2015.</li>
+<li>Bugfix for source maps: <code>.map</code> files should always have the same base filename as the requested output filename. So <code>coffee --map --output foo.js test.coffee</code> should generate <code>foo.js</code> and <code>foo.js.map</code>.</li>
+<li>Bugfix for incorrect source maps generated when using <code>--transpile</code> with <code>--map</code> for multiple input files.</li>
+<li>Bugfix for comments at the beginning or end of input into the REPL (<code>coffee --interactive</code>).</li>
+</ul>
 <div class="anchor" id="2.0.2"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/2.0.1...2.0.2">2.0.2</a>

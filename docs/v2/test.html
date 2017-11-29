@@ -717,6 +717,13 @@ test "#713: destructuring assignment should return right-hand-side value", ->
   eq nonceB, b
   eq nonceB, d
 
+test "#4787 destructuring of objects within arrays", ->
+  arr = [1, {a:1, b:2}]
+  [...,{a, b}] = arr
+  eq a, 1
+  eq b, arr[1].b
+  deepEqual {a, b}, arr[1]
+
 test "destructuring assignment with splats", ->
   a = {}; b = {}; c = {}; d = {}; e = {}
   [x,y...,z] = [a,b,c,d,e]
@@ -7889,6 +7896,18 @@ test "bound functions cannot be generators", ->
            ^^^^^^^^^^
   '''
 
+test "#4790: bound functions cannot be generators, even when we’re creating IIFEs", ->
+  assertErrorFormat '''
+  =>
+    for x in []
+      for y in []
+        yield z
+  ''', '''
+    [stdin]:4:7: error: yield cannot occur inside bound (fat arrow) functions
+          yield z
+          ^^^^^^^
+  '''
+
 test "CoffeeScript keywords cannot be used as unaliased names in import lists", ->
   assertErrorFormat """
     import { unless, baz as bar } from 'lib'
@@ -12700,13 +12719,29 @@ test "export default implicit object", ->
 test "export default multiline implicit object", ->
   eqJS """
     export default
-      foo: 'bar',
+      foo: 'bar'
       baz: 'qux'
     """,
   """
     export default {
       foo: 'bar',
       baz: 'qux'
+    };"""
+
+test "export default multiline implicit object with internal braces", ->
+  eqJS """
+    export default
+      foo: yes
+      bar: {
+        baz
+      }
+      quz: no
+    """,
+  """
+    export default {
+      foo: true,
+      bar: {baz},
+      quz: false
     };"""
 
 test "export default assignment expression", ->
@@ -13956,20 +13991,22 @@ test "#4544: Postfix conditionals in first line of implicit object literals", ->
 test "#4579: Postfix for/while/until in first line of implicit object literals", ->
   two =
     foo:
-      bar: x for x in [1, 2, 3]
+      bar1: x for x in [1, 2, 3]
+      bar2: x + y for x, y in [1, 2, 3]
       baz: 1337
-  arrayEq [1, 2, 3], two.foo.bar
+  arrayEq [1, 2, 3], two.foo.bar1
+  arrayEq [1, 3, 5], two.foo.bar2
   eq 1337, two.foo.baz
 
   f = (x) -> x
 
   three =
     foo: f
-      # Uncomment when #4580 is fixed
-      # bar: x + y for x, y of a: 'b', c: 'd'
-      bar: x + 'c' for x of a: 1, b: 2
+      bar1: x + y for x, y of a: 'b', c: 'd'
+      bar2: x + 'c' for x of a: 1, b: 2
       baz: 1337
-  arrayEq ['ac', 'bc'], three.foo.bar
+  arrayEq ['ab', 'cd'], three.foo.bar1
+  arrayEq ['ac', 'bc'], three.foo.bar2
   eq 1337, three.foo.baz
 
   four =
@@ -14000,7 +14037,6 @@ test "#4579: Postfix for/while/until in first line of implicit object literals",
       baz: 1337
   arrayEq [4, 3, 2, 1, 0], six.foo.bar
   eq 1337, six.foo.baz
-
 
 </script>
 <script type="text/x-coffeescript" class="test" id="operators">
@@ -15165,6 +15201,14 @@ testRepl "empty command evaluates to undefined", (input, output) ->
   # Just skip this test for versions of Node < 6.
   return if parseInt(process.versions.node.split('.')[0], 10) < 6
   input.emitLine ''
+  eq 'undefined', output.lastWrite()
+
+testRepl "#4763: comment evaluates to undefined", (input, output) ->
+  input.emitLine '# comment'
+  eq 'undefined', output.lastWrite()
+
+testRepl "#4763: multiple comments evaluate to undefined", (input, output) ->
+  input.emitLine '### a ### ### b ### # c'
   eq 'undefined', output.lastWrite()
 
 testRepl "ctrl-v toggles multiline prompt", (input, output) ->

@@ -224,11 +224,17 @@ Unwrap that too.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
-              <p>Collect referenced variable names just like in <code>CoffeeScript.compile</code>.</p>
+              <p>Filter out tokens generated just to hold comments.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      referencedVars = (token[<span class="hljs-number">1</span>] <span class="hljs-keyword">for</span> token <span class="hljs-keyword">in</span> tokens <span class="hljs-keyword">when</span> token[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'IDENTIFIER'</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">if</span> tokens.length &gt;= <span class="hljs-number">2</span> <span class="hljs-keyword">and</span> tokens[<span class="hljs-number">0</span>].generated <span class="hljs-keyword">and</span>
+         tokens[<span class="hljs-number">0</span>].comments?.length <span class="hljs-keyword">isnt</span> <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> tokens[<span class="hljs-number">0</span>][<span class="hljs-number">1</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">''</span> <span class="hljs-keyword">and</span>
+         tokens[<span class="hljs-number">1</span>][<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'TERMINATOR'</span>
+        tokens = tokens[<span class="hljs-number">2.</span>..]
+      <span class="hljs-keyword">if</span> tokens.length &gt;= <span class="hljs-number">1</span> <span class="hljs-keyword">and</span> tokens[tokens.length - <span class="hljs-number">1</span>].generated <span class="hljs-keyword">and</span>
+         tokens[tokens.length - <span class="hljs-number">1</span>].comments?.length <span class="hljs-keyword">isnt</span> <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> tokens[tokens.length - <span class="hljs-number">1</span>][<span class="hljs-number">1</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">''</span>
+        tokens.pop()</pre></div></div>
             
         </li>
         
@@ -239,11 +245,11 @@ Unwrap that too.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
-              <p>Generate the AST of the tokens.</p>
+              <p>Collect referenced variable names just like in <code>CoffeeScript.compile</code>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      ast = CoffeeScript.nodes tokens</pre></div></div>
+            <div class="content"><div class='highlight'><pre>      referencedVars = (token[<span class="hljs-number">1</span>] <span class="hljs-keyword">for</span> token <span class="hljs-keyword">in</span> tokens <span class="hljs-keyword">when</span> token[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'IDENTIFIER'</span>)</pre></div></div>
             
         </li>
         
@@ -254,11 +260,11 @@ Unwrap that too.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
-              <p>Add assignment to <code>__</code> variable to force the input to be an expression.</p>
+              <p>Generate the AST of the tokens.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      ast = <span class="hljs-keyword">new</span> Block [<span class="hljs-keyword">new</span> Assign (<span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> Literal <span class="hljs-string">'__'</span>), ast, <span class="hljs-string">'='</span>]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>      ast = CoffeeScript.nodes tokens</pre></div></div>
             
         </li>
         
@@ -268,6 +274,21 @@ Unwrap that too.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Add assignment to <code>__</code> variable to force the input to be an expression.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      ast = <span class="hljs-keyword">new</span> Block [<span class="hljs-keyword">new</span> Assign (<span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> Literal <span class="hljs-string">'__'</span>), ast, <span class="hljs-string">'='</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>Wrap the expression in a closure to support top-level <code>await</code>.</p>
 
@@ -279,11 +300,11 @@ Unwrap that too.</p>
         </li>
         
         
-        <li id="section-11">
+        <li id="section-12">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <p>Invoke the wrapping closure.</p>
 
@@ -297,11 +318,11 @@ Unwrap that too.</p>
         </li>
         
         
-        <li id="section-12">
+        <li id="section-13">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
               <p>Strip <code>&quot;use strict&quot;</code>, to avoid an exception on assigning to
 undeclared variable <code>__</code>.</p>
@@ -314,11 +335,11 @@ undeclared variable <code>__</code>.</p>
         </li>
         
         
-        <li id="section-13">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <p>Await an async result, if necessary.</p>
 
@@ -335,11 +356,11 @@ undeclared variable <code>__</code>.</p>
         </li>
         
         
-        <li id="section-14">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>AST’s <code>compile</code> does not add source code information to syntax errors.</p>
 
@@ -360,11 +381,11 @@ undeclared variable <code>__</code>.</p>
         </li>
         
         
-        <li id="section-15">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>Node 0.11.12 changed API, prompt is now _prompt.</p>
 
@@ -381,11 +402,11 @@ undeclared variable <code>__</code>.</p>
         </li>
         
         
-        <li id="section-16">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Proxy node’s line listener</p>
 
@@ -406,11 +427,11 @@ undeclared variable <code>__</code>.</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Handle Ctrl-v</p>
 
@@ -423,11 +444,11 @@ undeclared variable <code>__</code>.</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>allow arbitrarily switching between modes any time before multiple lines are entered</p>
 
@@ -442,11 +463,11 @@ undeclared variable <code>__</code>.</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>no-op unless the current line is empty</p>
 
@@ -457,11 +478,11 @@ undeclared variable <code>__</code>.</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>eval, print, loop</p>
 
@@ -476,11 +497,11 @@ undeclared variable <code>__</code>.</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>XXX: multiline hack</p>
 
@@ -498,11 +519,11 @@ undeclared variable <code>__</code>.</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Store and load command history from a file</p>
 
@@ -515,11 +536,11 @@ undeclared variable <code>__</code>.</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Get file info and at most maxSize of command history</p>
 
@@ -531,11 +552,11 @@ undeclared variable <code>__</code>.</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Read last <code>size</code> bytes from the file</p>
 
@@ -549,11 +570,11 @@ undeclared variable <code>__</code>.</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Set the history on the interpreter</p>
 
@@ -564,11 +585,11 @@ undeclared variable <code>__</code>.</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>If the history file was truncated we should pop off a potential partial line</p>
 
@@ -579,11 +600,11 @@ undeclared variable <code>__</code>.</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>Shift off the final blank newline</p>
 
@@ -601,11 +622,11 @@ undeclared variable <code>__</code>.</p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Save the latest command in the file</p>
 
@@ -617,11 +638,11 @@ undeclared variable <code>__</code>.</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>XXX: The SIGINT event from REPLServer is undocumented, so this is a bit fragile</p>
 
@@ -633,11 +654,11 @@ undeclared variable <code>__</code>.</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>Add a command to show the history stack</p>
 
@@ -654,11 +675,11 @@ undeclared variable <code>__</code>.</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>Node 0.11 changed API, a command such as ‘.help’ is now stored as ‘help’</p>
 
@@ -697,11 +718,11 @@ undeclared variable <code>__</code>.</p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>Since the REPL compilation path is unique (in <code>eval</code> above), we need
 another way to get the <code>options</code> object attached to a module so that
@@ -725,11 +746,11 @@ the REPL, the only applicable option is <code>transpile</code>.</p>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <p>Adapt help inherited from the node REPL</p>
 
