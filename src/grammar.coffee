@@ -396,6 +396,7 @@ grammar =
     o 'EXPORT Identifier = INDENT Expression OUTDENT',       -> new ExportNamedDeclaration new Assign $2, $5, null,
                                                                                                       moduleDeclaration: 'export'
     o 'EXPORT DEFAULT Expression',                           -> new ExportDefaultDeclaration $3
+    o 'EXPORT DEFAULT INDENT Object OUTDENT',                -> new ExportDefaultDeclaration new Value $4
     o 'EXPORT EXPORT_ALL FROM String',                       -> new ExportAllDeclaration new Literal($2), $4
     o 'EXPORT { ExportSpecifierList OptComma } FROM String', -> new ExportNamedDeclaration new ExportSpecifierList($3), $7
   ]
