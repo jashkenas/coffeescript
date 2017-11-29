@@ -26,6 +26,94 @@ test "incorrect indentation without commas", ->
   ok result[0][0] is 'a'
   ok result[1]['b'] is 'c'
 
+# Elisions
+test "array elisions", ->
+  eq [,1].length, 2
+  eq [,,1,2,,].length, 5
+  arr = [1,,2]
+  eq arr.length, 3
+  eq arr[1], undefined
+  eq [,,].length, 2
+
+test "array elisions indentation and commas", ->
+  arr1 = [
+    , 1, 2, , , 3,
+    4, 5, 6
+    , , 8, 9,
+  ]
+  eq arr1.length, 12
+  eq arr1[5], 3
+  eq arr1[9], undefined
+  arr2 = [, , 1,
+    2, , 3,
+    , 4, 5
+    6
+    , , ,
+  ]
+  eq arr2.length, 12
+  eq arr2[8], 5
+  eq arr2[1], undefined
+
+test "array elisions destructuring", ->
+  arr = [1,2,3,4,5,6,7,8,9]
+  [,a] = arr
+  [,,,b] = arr
+  arrayEq [a,b], [2,4]
+  [,a,,b,,c,,,d] = arr
+  arrayEq [a,b,c,d], [2,4,6,9]
+  [
+    ,e,
+    ,f,
+    ,g,
+    ,,h] = arr
+  arrayEq [e,f,g,h], [2,4,6,9]
+
+test "array elisions destructuring with splats and expansions", ->
+  arr = [1,2,3,4,5,6,7,8,9]
+  [,a,,,b...] = arr
+  arrayEq [a,b], [2,[5,6,7,8,9]]
+  [,c,...,,d,,e] = arr
+  arrayEq [c,d,e], [2,7,9]
+  [...,e,,,f,,,] = arr
+  arrayEq [e,f], [4,7]
+
+test "array elisions as function parameters", ->
+  arr = [1,2,3,4,5,6,7,8,9]
+  foo = ([,a]) -> a
+  a = foo arr
+  eq a, 2
+  foo = ([,,,a]) -> a
+  a = foo arr
+  eq a, 4
+  foo = ([,a,,b,,c,,,d]) -> [a,b,c,d]
+  [a,b,c,d] = foo arr
+  arrayEq [a,b,c,d], [2,4,6,9]
+
+test "array elisions nested destructuring", ->
+  arr = [
+    1,
+    [2,3, [4,5,6, [7,8,9] ] ]
+  ]
+  [,a] = arr
+  arrayEq a[2][3], [7,8,9]
+  [,[,,[,b,,[,,c]]]] = arr
+  eq b, 5
+  eq c, 9
+  aobj = [
+    {},
+    {x: 2},
+    {},
+    [
+      {},
+      {},
+      {z:1, w:[1,2,4], p:3, q:4}
+      {},
+      {}
+    ]
+  ]
+  [,d,,[,,{w}]] = aobj
+  deepEqual d, {x:2}
+  arrayEq w, [1,2,4]
 
 # Splats in Array Literals
 

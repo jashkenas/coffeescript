@@ -493,7 +493,8 @@ grammar =
   # The array literal.
   Array: [
     o '[ ]',                                    -> new Arr []
-    o '[ ArgList OptComma ]',                   -> new Arr $2
+    o '[ Elisions ]',                           -> new Arr $2
+    o '[ ArgElisionList OptElisions ]',         -> new Arr [].concat $2, $3
   ]
 
   # Inclusive and exclusive range dots.
@@ -515,8 +516,7 @@ grammar =
     o 'RangeDots',                              -> new Range null, null, $1
   ]
 
-  # The **ArgList** is both the list of objects passed into a function call,
-  # as well as the contents of an array literal
+  # The **ArgList** is the list of objects passed into a function call
   # (i.e. comma-separated expressions). Newlines work as well.
   ArgList: [
     o 'Arg',                                              -> [$1]
@@ -531,6 +531,35 @@ grammar =
     o 'Expression'
     o 'Splat'
     o '...',                                     -> new Expansion
+  ]
+
+  # The **ArgElisionList** is the list of objects, contents of an array literal
+  # (i.e. comma-separated expressions and elisions). Newlines work as well.
+  ArgElisionList: [
+    o 'ArgElision'
+    o 'ArgElisionList , ArgElision',                                          -> $1.concat $3
+    o 'ArgElisionList OptElisions TERMINATOR ArgElision',                     -> $1.concat $2, $4
+    o 'INDENT ArgElisionList OptElisions OUTDENT',                            -> $2.concat $3
+    o 'ArgElisionList OptElisions INDENT ArgElisionList OptElisions OUTDENT', -> $1.concat $2, $4, $5
+  ]
+
+  ArgElision: [
+    o 'Arg',                  -> [$1]
+    o 'Elisions Arg',         -> $1.concat $2
+  ]
+
+  OptElisions: [
+    o 'OptComma',             -> []
+    o ', Elisions',           -> [].concat $2
+  ]
+
+  Elisions: [
+    o 'Elision',              -> [$1]
+    o 'Elisions Elision',     -> $1.concat $2
+  ]
+
+  Elision: [
+    o ',',                    -> new Elision
   ]
 
   # Just simple, comma-separated, required arguments (no fancy syntax). We need
