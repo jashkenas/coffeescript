@@ -1500,20 +1500,20 @@ exports.Obj = class Obj extends Base
         key.error 'invalid object key' if prop.context is 'object' or not key.this
         key  = key.properties[0].name
         prop = new Assign key, prop, 'object'
-      if key is prop and key instanceof Value and key.base instanceof ComputedPropertyName
-        # { [foo()] } => { [ref = foo()]: ref }
-        if key.base.value.base instanceof Call
-          ref = new IdentifierLiteral o.scope.freeVariable 'ref', reserve: false
-          key = new ComputedPropertyName new Assign ref, key.base.value
-          prop = new Assign key, ref, 'object'
-        else
-          # { [expression] } =>  { [expression]: expression }
-          prop = new Assign key, prop.base.value, 'object'
       if key is prop
         if prop.shouldCache()
           [key, value] = prop.base.cache o
           key  = new PropertyName key.value if key instanceof IdentifierLiteral
           prop = new Assign key, value, 'object'
+        else if key instanceof Value and key.base instanceof ComputedPropertyName
+          # { [foo()] } => { [ref = foo()]: ref }
+          if prop.base.value.shouldCache()
+            [key, value] = prop.base.value.cache o
+            key  = new ComputedPropertyName key.value if key instanceof IdentifierLiteral
+            prop = new Assign key, value, 'object'
+          else
+            # { [expression] } =>  { [expression]: expression }
+            prop = new Assign key, prop.base.value, 'object'
         else if not prop.bareLiteral?(IdentifierLiteral)
           prop = new Assign prop, prop, 'object'
       if indent then answer.push @makeCode indent
