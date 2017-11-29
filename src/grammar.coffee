@@ -16,7 +16,7 @@
 
 # The only dependency is on the **Jison.Parser**.
 {Parser} = require 'jison'
-
+log = console.log
 # Jison DSL
 # ---------
 
@@ -494,8 +494,7 @@ grammar =
   Array: [
     o '[ ]',                                    -> new Arr []
     o '[ Elisions ]',                           -> new Arr $2
-    o '[ ArgElisionList OptComma ]',            -> new Arr $2
-    o '[ ArgElisionList , Elisions ]',          -> new Arr [].concat $2, $4
+    o '[ ArgElisionList OptElisions ]',         -> new Arr [].concat $2, $3
   ]
 
   # Inclusive and exclusive range dots.
@@ -538,24 +537,25 @@ grammar =
   # (i.e. comma-separated expressions and elisions). Newlines work as well.
   ArgElisionList: [
     o 'ArgElision'
-    o 'ArgElisionList , ArgElision',                                      -> $1.concat $3
-    o 'ArgElisionList TERMINATOR Arg',                                    -> $1.concat $3
-    o 'ArgElisionList , TERMINATOR ArgElision',                           -> $1.concat $4
-    o 'INDENT ArgElisionList OptComma OUTDENT',                           -> $2
-    o 'INDENT ArgElisionList , Elisions OUTDENT',                         -> $2.concat $4
-    o 'ArgElisionList OptComma INDENT ArgElisionList OptComma OUTDENT',   -> $1.concat $4
-    o 'ArgElisionList , Elisions INDENT ArgElisionList OptComma OUTDENT', -> $1.concat $3, $5
-    o 'ArgElisionList OptComma INDENT ArgElisionList , Elisions OUTDENT', -> $1.concat $4, $6
+    o 'ArgElisionList , ArgElision',                                          -> $1.concat $3
+    o 'ArgElisionList OptElisions TERMINATOR ArgElision',                     -> $1.concat $2, $4
+    o 'INDENT ArgElisionList OptElisions OUTDENT',                            -> $2.concat $3
+    o 'ArgElisionList OptElisions INDENT ArgElisionList OptElisions OUTDENT', -> $1.concat $2, $4, $5
   ]
 
   ArgElision: [
     o 'Arg',                  -> [$1]
-    o 'Elisions Arg',         -> [].concat $1, $2
+    o 'Elisions Arg',         -> $1.concat $2
+  ]
+
+  OptElisions: [
+    o 'OptComma',             -> []
+    o ', Elisions',           -> [].concat $2
   ]
 
   Elisions: [
-    o 'Elision'
-    o 'Elisions Elision',     -> [].concat $1, $2
+    o 'Elision',              -> [$1]
+    o 'Elisions Elision',     -> $1.concat $2
   ]
 
   Elision: [

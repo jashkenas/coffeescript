@@ -33,6 +33,26 @@ test "array elisions", ->
   arr = [1,,2]
   eq arr.length, 3
   eq arr[1], undefined
+  eq [,,].length, 2
+
+test "array elisions indentation and commas", ->
+  arr1 = [
+    , 1, 2, , , 3,
+    4, 5, 6
+    , , 8, 9,
+  ]
+  eq arr1.length, 12
+  eq arr1[5], 3
+  eq arr1[9], undefined
+  arr2 = [, , 1,
+    2, , 3,
+    , 4, 5
+    6
+    , , ,
+  ]
+  eq arr2.length, 12
+  eq arr2[8], 5
+  eq arr2[1], undefined
 
 test "array elisions destructuring", ->
   arr = [1,2,3,4,5,6,7,8,9]
