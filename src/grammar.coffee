@@ -16,7 +16,7 @@
 
 # The only dependency is on the **Jison.Parser**.
 {Parser} = require 'jison'
-log = console.log
+
 # Jison DSL
 # ---------
 
