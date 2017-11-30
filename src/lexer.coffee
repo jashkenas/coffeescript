@@ -597,7 +597,7 @@ exports.Lexer = class Lexer
         @mergeInterpolationTokens tokens, {delimiter: '"'}, (value, i) =>
           @formatString value, delimiter: '>'
         match = CSX_IDENTIFIER.exec(@chunk[end...]) or CSX_FRAGMENT_IDENTIFIER.exec(@chunk[end...])
-        if not match or match[0] isnt csxTag.name
+        if not match or match[1] isnt csxTag.name
           @error "expected corresponding CSX closing tag for #{csxTag.name}",
             csxTag.origin[2]
         afterTag = end + csxTag.name.length
@@ -1179,7 +1179,9 @@ CSX_IDENTIFIER = /// ^
 ///
 
 # Fragment: <></>
-CSX_FRAGMENT_IDENTIFIER = /// ^ ((?=>)) /// # Ends immediately with '>'.
+CSX_FRAGMENT_IDENTIFIER = /// ^
+  ()>
+  /// # Ends immediately with '>'.
 
 CSX_ATTRIBUTE = /// ^
   (?!\d)
