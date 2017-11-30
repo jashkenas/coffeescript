@@ -1,6 +1,14 @@
 ## Change Log
 
 ```
+releaseHeader('2017-11-29', '1.12.8', '1.12.7')
+```
+
+*   Added install message on `coffee-script` package encouraging people to use the `coffeescript` NPM package instead.
+*   Backported bugfix for `export default` followed by an implicit object that contains an explicit object, for example `exportedMember: { obj... }`.
+*   Backported bugfix for splats after existential operator soaks in arrays (`[a?.b...]`) or expressions.
+
+```
 releaseHeader('2017-07-16', '1.12.7', '1.12.6')
 ```
 
