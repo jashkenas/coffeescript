@@ -1179,10 +1179,7 @@ CSX_IDENTIFIER = /// ^
 ///
 
 # Fragment: <></>
-CSX_FRAGMENT_IDENTIFIER = /// ^
-  (?![\d<])   # Must not start with number or `<`
-  (.{0}(?=>)) # Ends immediately with '>.
-///
+CSX_FRAGMENT_IDENTIFIER = /// ^ ((?=>)) # Ends immediately with '>`. ///
 
 CSX_ATTRIBUTE = /// ^
   (?!\d)
