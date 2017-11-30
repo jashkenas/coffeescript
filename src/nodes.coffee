@@ -767,7 +767,7 @@ exports.PropertyName = class PropertyName extends Literal
 
 exports.ComputedPropertyName = class ComputedPropertyName extends PropertyName
   compileNode: (o) ->
-    [@makeCode "[" + @value.compile(o) + "]"]
+    [@makeCode('['), @value.compileToFragments(o, LEVEL_LIST)..., @makeCode(']')]
 
 exports.StatementLiteral = class StatementLiteral extends Literal
   isStatement: YES
