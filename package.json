@@ -28,7 +28,7 @@
     "repl.js"
   ],
   "scripts": {
-    "postinstall": "node ./warning.js",
+    "postinstall": "node --harmony ./warning.js",
     "test": "node ./bin/cake test",
     "test-harmony": "node --harmony ./bin/cake test"
   },
@@ -47,6 +47,6 @@
     "underscore": "~1.8.3"
   },
   "dependencies": {
-    "chalk": "^2.3.0"
+    "chalk": "^1.1.1"
   }
 }
