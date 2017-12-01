@@ -6,7 +6,6 @@ environment:
 
 install:
   - ps: Install-Product node $env:nodejs_version
-  - npm install --global npm@latest
   - npm install
 
 test_script:
