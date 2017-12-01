@@ -1252,7 +1252,15 @@ REGEX = /// ^
 REGEX_FLAGS  = /^\w*/
 VALID_FLAGS  = /^(?!.*(.).*\1)[imguy]*$/
 
-HEREGEX      = /// ^(?: [^\\/#] | \\[\s\S] | /(?!//) | \#(?!\{) )* ///
+HEREGEX      = /// ^
+      (?:
+        [^\\/#]   |
+        \\[\s\S]  |
+        # The comment should consume everything until the end of the line, including the '///'
+        \#(?!\{)(?:[^\n\r]*[\n\r])  |
+        /(?!//)
+      )*
+///
 
 HEREGEX_OMIT = ///
     ((?:\\\\)+)     # Consume (and preserve) an even number of backslashes.

@@ -1803,3 +1803,12 @@ test "#3098: suppressed newline should be unsuppressed by semicolon", ->
     a = ; 5
         ^
   '''
+
+test "#4811, heregex comments cannot contain three slashes in a row", ->
+  assertErrorFormat '''
+   /// .* # comment ///
+  ''', '''
+  [stdin]:1:1: error: missing ///
+  /// .* # comment ///
+  ^^^
+  '''
