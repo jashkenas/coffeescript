@@ -13,8 +13,8 @@ function readJsonFile(filePath) {
 var pkgCoffeeData = readJsonFile('./package.json');
 
 // In npm when a package is installed the 'package.json' is amended and some new fields are added
-// one of these fields is '_where' which indicated from where the package was installed.
-// in case _where is not defined we cannpt determine from where it was installed, thus show the warning.
+// one of these fields is '_where' which indicates from where the package was installed.
+// in case _where is not defined we cannot determine from where it was installed, thus show the warning.
 if (pkgCoffeeData && pkgCoffeeData._where) {
   if (pkgCoffeeData._where.indexOf('node_modules') !== -1) {
     return;
