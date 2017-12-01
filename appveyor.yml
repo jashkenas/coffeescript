@@ -6,11 +6,11 @@ environment:
 
 install:
   - ps: Install-Product node $env:nodejs_version
+  - node --version
+  - npm --version
   - npm install
 
 test_script:
-  - node --version
-  - npm --version
   - node ./bin/cake build:except-parser
   - node ./bin/cake build:parser
   - node ./bin/cake build:full
