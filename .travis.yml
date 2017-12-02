@@ -10,7 +10,7 @@ node_js:
   - node
 
 before_install:
-  - "test $TRAVIS_NODE_VERSION < 4 && npm install --global npm@2"
+  - "test $(echo $TRAVIS_NODE_VERSION | cut -d. -f1) = '0' && npm install --global npm@2"
 
 cache:
   directories:
