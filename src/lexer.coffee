@@ -1256,9 +1256,9 @@ HEREGEX      = /// ^
       (?:
         [^\\/#]   |
         \\[\s\S]  |
+        /(?!//)   |
         # The comment should consume everything until the end of the line, including the '///'
-        \#(?!\{)(?:[^\n\r]*[\n\r])  |
-        /(?!//)
+        \#(?!\{)(?:[^\n]*[\n])
       )*
 ///
 
