@@ -10,7 +10,7 @@ environment:
 
 install:
   - ps: Install-Product node $env:nodejs_version
-  - IF DEFINED %nodejs_version% IF %nodejs_version% LSS 4 npm install --global npm@2
+  - IF NOT [%nodejs_version%] == [] IF "%nodejs_version%" LSS 4 npm install --global npm@2
   - node --version
   - npm --version
   - npm install
