@@ -1,12 +1,16 @@
 language: node_js
 
 node_js:
+  - 0.8
   - 0.10
   - 0.12
   - 4
   - 6
   - 8
   - node
+
+before_install:
+  - "test $TRAVIS_NODE_VERSION < 4 && npm install --global npm@2"
 
 cache:
   directories:
