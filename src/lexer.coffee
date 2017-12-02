@@ -1216,9 +1216,9 @@ HERE_JSTOKEN = ///^ ```     ((?: [^`\\] | \\[\s\S] | `(?!``) )*) ``` ///
 STRING_START   = /^(?:'''|"""|'|")/
 
 STRING_SINGLE  = /// ^(?: [^\\']  | \\[\s\S]                      )* ///
-STRING_DOUBLE  = /// ^(?: [^\\"\#] | \\[\s\S] |           \#(?!\{) )* ///
+STRING_DOUBLE  = /// ^(?: [^\\"#] | \\[\s\S] |           \#(?!\{) )* ///
 HEREDOC_SINGLE = /// ^(?: [^\\']  | \\[\s\S] | '(?!'')            )* ///
-HEREDOC_DOUBLE = /// ^(?: [^\\"\#] | \\[\s\S] | "(?!"") | \#(?!\{) )* ///
+HEREDOC_DOUBLE = /// ^(?: [^\\"#] | \\[\s\S] | "(?!"") | \#(?!\{) )* ///
 
 INSIDE_CSX = /// ^(?:
     [^
@@ -1254,19 +1254,19 @@ VALID_FLAGS  = /^(?!.*(.).*\1)[imguy]*$/
 
 HEREGEX      = /// ^
   (?:
-      [^\\/#]   |
-      \\[\s\S]  |
-      /(?!//)   |
-      \\\#      | # Escaped hash.
-      # The comment should consume everything until the end of the line, including the '///'.
-      \#(?!\{)[^\n]*\n
+    # Comments consume everything until the end of the line, including `///`.
+    (?:\s+|^)(?:#(?!\{)[^\n]*)? |
+    [^\\/#]                     |
+    \\[\s\S]                    |
+    /(?!//)                     |
+    \#(?!\{)
   )*
 ///
 
 HEREGEX_OMIT = ///
     ((?:\\\\)+)     # Consume (and preserve) an even number of backslashes.
   | \\(\s)          # Preserve escaped whitespace.
-  | \s+(?:\#.*)?     # Remove whitespace and comments.
+  | \s+(?:#.*)?     # Remove whitespace and comments.
 ///g
 
 REGEX_ILLEGAL = /// ^ ( / | /{3}\s*) (\*) ///
