@@ -10,10 +10,13 @@ environment:
 
 install:
   - ps: Install-Product node $env:nodejs_version
-  - IF %nodejs_version% LSS 4 npm -g install npm@2
+  - IF %nodejs_version% NEQ "" IF %nodejs_version% LSS 4 npm -g install npm@2
   - node --version
   - npm --version
   - npm install
+
+cache:
+  - node_modules
 
 test_script:
   - node ./bin/cake build:except-parser
@@ -22,7 +25,6 @@ test_script:
   - node ./bin/cake build:browser
   - node --harmony ./bin/cake test
   - node --harmony ./bin/cake test:browser
-
 
 build: off
 
