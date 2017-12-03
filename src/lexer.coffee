@@ -1263,7 +1263,7 @@ HEREGEX      = /// ^
       # Match `#` which is not part of interpolation, e.g. `#{}`.
     | \#(?!\{)
       # Comments consume everything until the end of the line, including `///`.
-    | \s+(?:#(?!\{)[^\n]*)?
+    | \s+(?:#(?!\{).*)?
   )*
 ///
 
