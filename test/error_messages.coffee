@@ -1804,7 +1804,7 @@ test "#3098: suppressed newline should be unsuppressed by semicolon", ->
         ^
   '''
 
-test "#4811, heregex comments cannot contain three slashes in a row", ->
+test "#4811: '///' inside a heregex comment does not close the heregex", ->
   assertErrorFormat '''
    /// .* # comment ///
   ''', '''

@@ -1254,7 +1254,7 @@ VALID_FLAGS  = /^(?!.*(.).*\1)[imguy]*$/
 
 HEREGEX      = /// ^
   (?:
-      # Skip `\`, `/`, `#` and `\s` characters.
+      # Match any character, except those that need special handling below.
       [^\\/#\s]
       # Match `\` followed by any character.
     | \\[\s\S]
