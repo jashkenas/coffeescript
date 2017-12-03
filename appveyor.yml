@@ -10,6 +10,9 @@ install:
   - npm --version
   - npm install
 
+cache:
+  - node_modules
+
 test_script:
   - node ./bin/cake build:except-parser
   - node ./bin/cake build:parser
