@@ -1,4 +1,5 @@
 fs                        = require 'fs'
+os                        = require 'os'
 path                      = require 'path'
 _                         = require 'underscore'
 { spawn, exec, execSync } = require 'child_process'
@@ -361,6 +362,9 @@ runTests = (CoffeeScript) ->
   failures    = []
 
   global[name] = func for name, func of require 'assert'
+
+  # `os.tmpdir()` was added in Node 0.9.9, but we support 0.8+.
+  os.tmpdir ?= -> path.resolve process.env.TMPDIR
 
   # Convenience aliases.
   global.CoffeeScript = CoffeeScript
