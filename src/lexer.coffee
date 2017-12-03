@@ -1252,7 +1252,20 @@ REGEX = /// ^
 REGEX_FLAGS  = /^\w*/
 VALID_FLAGS  = /^(?!.*(.).*\1)[imguy]*$/
 
-HEREGEX      = /// ^(?: [^\\/#] | \\[\s\S] | /(?!//) | \#(?!\{) )* ///
+HEREGEX      = /// ^
+  (?:
+      # Match any character, except those that need special handling below.
+      [^\\/#\s]
+      # Match `\` followed by any character.
+    | \\[\s\S]
+      # Match any `/` except `///`.
+    | /(?!//)
+      # Match `#` which is not part of interpolation, e.g. `#{}`.
+    | \#(?!\{)
+      # Comments consume everything until the end of the line, including `///`.
+    | \s+(?:#(?!\{).*)?
+  )*
+///
 
 HEREGEX_OMIT = ///
     ((?:\\\\)+)     # Consume (and preserve) an even number of backslashes.

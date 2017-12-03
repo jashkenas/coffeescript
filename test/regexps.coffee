@@ -313,3 +313,16 @@ test "#4248: Unicode code point escapes", ->
   """
     /a\\udab3\\uddef/;
   """
+
+test "#4811, heregex comments with ///", ->
+  eqJS """
+    ///
+      a | # comment with ///
+      b   # /// 'heregex' in comment will be consumed
+    ///
+  """,
+  """
+   // comment with ///
+   // /// 'heregex' in comment will be consumed
+   /a|b/;
+  """
