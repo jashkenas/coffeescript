@@ -1808,7 +1808,7 @@ test "#4811: '///' inside a heregex comment does not close the heregex", ->
   assertErrorFormat '''
    /// .* # comment ///
   ''', '''
-  [stdin]:1:1: error: missing ///
+  [stdin]:1:7: error: '///' inside a heregex comment does not close the heregex
   /// .* # comment ///
-  ^^^
+        ^^^^^^^^^^^^^^
   '''

@@ -754,10 +754,11 @@ exports.Lexer = class Lexer
     offsetInChunk = delimiter.length
     return null unless @chunk[...offsetInChunk] is delimiter
     str = @chunk[offsetInChunk..]
+    isRegex = delimiter.charAt(0) is '/'
     loop
       [strPart] = regex.exec str
 
-      @validateEscapes strPart, {isRegex: delimiter.charAt(0) is '/', offsetInChunk}
+      @validateEscapes strPart, {isRegex, offsetInChunk}
 
       # Push a fake `'NEOSTRING'` token, which will get turned into a real string later.
       tokens.push @makeToken 'NEOSTRING', strPart, offsetInChunk
@@ -802,6 +803,11 @@ exports.Lexer = class Lexer
       offsetInChunk += index
 
     unless str[...closingDelimiter.length] is closingDelimiter
+      # Find heregex comment ending with '///'.
+      regExError = /// \s+ \#(?!\{) [^\n]* (\/\/\/) ///g
+      if isRegex and errorMatch = regExError.exec @chunk
+        {index} = errorMatch
+        @error "'#{closingDelimiter}' inside a heregex comment does not close the heregex", length: errorMatch[0].length, offset: index
       @error "missing #{closingDelimiter}", length: delimiter.length
 
     [firstToken, ..., lastToken] = tokens
