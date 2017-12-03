@@ -1254,12 +1254,16 @@ VALID_FLAGS  = /^(?!.*(.).*\1)[imguy]*$/
 
 HEREGEX      = /// ^
   (?:
-    # Comments consume everything until the end of the line, including `///`.
-    (?:\s+|^)(?:#(?!\{)[^\n]*)? |
-    [^\\/#]                     |
-    \\[\s\S]                    |
-    /(?!//)                     |
-    \#(?!\{)
+      # Skip `\`, `/`, `#` and `\s` characters.
+      [^\\/#\s]
+      # Match `\` followed by any character.
+    | \\[\s\S]
+      # Match any `/` except `///`.
+    | /(?!//)
+      # Match `#` which is not part of interpolation, e.g. `#{}`.
+    | \#(?!\{)
+      # Comments consume everything until the end of the line, including `///`.
+    | \s+(?:#(?!\{)[^\n]*)?
   )*
 ///
 
