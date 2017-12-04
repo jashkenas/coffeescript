@@ -1506,13 +1506,13 @@ exports.Obj = class Obj extends Base
           key  = new PropertyName key.value if key instanceof IdentifierLiteral
           prop = new Assign key, value, 'object'
         else if key instanceof Value and key.base instanceof ComputedPropertyName
-          # { [foo()] } => { [ref = foo()]: ref }
+          # `{ [foo()] }` output as `{ [ref = foo()]: ref }`.
           if prop.base.value.shouldCache()
             [key, value] = prop.base.value.cache o
             key  = new ComputedPropertyName key.value if key instanceof IdentifierLiteral
             prop = new Assign key, value, 'object'
           else
-            # { [expression] } =>  { [expression]: expression }
+            # `{ [expression] }` output as `{ [expression]: expression }`.
             prop = new Assign key, prop.base.value, 'object'
         else if not prop.bareLiteral?(IdentifierLiteral)
           prop = new Assign prop, prop, 'object'
