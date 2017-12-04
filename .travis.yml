@@ -1,18 +1,24 @@
 language: node_js
-
 node_js:
   - 6
   - 8
-
 cache:
   directories:
     - node_modules
-
 script:
-  - node ./bin/cake build:except-parser
-  - node ./bin/cake build:parser
-  - node ./bin/cake build:full
-  - node ./bin/cake build:browser
-  - node ./bin/cake test
-  - node ./bin/cake test:browser
-  - node ./bin/cake test:integrations
+  - 'node ./bin/cake build:except-parser'
+  - 'node ./bin/cake build:parser'
+  - 'node ./bin/cake build:full'
+  - 'node ./bin/cake build:browser'
+  - 'node ./bin/cake test'
+  - 'node ./bin/cake test:browser'
+  - 'node ./bin/cake test:integrations'
+notifications:
+  webhooks:
+    urls:
+      - 'https://www.travisbuddy.com/'
+    on_success: never
+    on_failure: always
+    on_start: never
+    on_cancel: never
+    on_error: never
