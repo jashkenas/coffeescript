@@ -743,12 +743,14 @@ test '#4686: comments inside interpolations that also contain CSX attributes', -
   '''
 
 # https://reactjs.org/blog/2017/11/28/react-v16.2.0-fragment-support.html
-test 'fragments', ->
+test 'JSX fragments: empty fragment', ->
   eqJS '''
     <></>
   ''', '''
     <></>;
   '''
+
+test 'JSX fragments: fragment with text nodes', ->
   eqJS '''
     <>
       Some text.
@@ -766,6 +768,8 @@ test 'fragments', ->
       Even more text.
     </>;
   '''
+
+test 'JSX fragments: fragment with component nodes', ->
   eqJS '''
    Component = (props) =>
      <Fragment>
