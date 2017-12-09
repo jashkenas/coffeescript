@@ -206,6 +206,7 @@ grammar =
     o 'Identifier'
     o 'Property'
     o 'ThisProperty'
+    o '[ Expression ]',          -> new Value new ComputedPropertyName $2
   ]
 
   ObjAssignable: [

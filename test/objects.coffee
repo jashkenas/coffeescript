@@ -453,8 +453,7 @@ test 'inline implicit object literals within multiline implicit object literals'
   eq 0, x.b
   eq 0, x.a.aa
 
-test "object keys with interpolations", ->
-  # Simple cases.
+test "object keys with interpolations: simple cases", ->
   a = 'a'
   obj = "#{a}": yes
   eq obj.a, yes
@@ -465,7 +464,7 @@ test "object keys with interpolations", ->
   obj = {"#{5}"}
   eq obj[5], '5' # Note that the value is a string, just like the key.
 
-  # Commas in implicit object.
+test "object keys with interpolations: commas in implicit object", ->
   obj = "#{'a'}": 1, b: 2
   deepEqual obj, {a: 1, b: 2}
   obj = a: 1, "#{'b'}": 2
@@ -473,7 +472,7 @@ test "object keys with interpolations", ->
   obj = "#{'a'}": 1, "#{'b'}": 2
   deepEqual obj, {a: 1, b: 2}
 
-  # Commas in explicit object.
+test "object keys with interpolations: commas in explicit object", ->
   obj = {"#{'a'}": 1, b: 2}
   deepEqual obj, {a: 1, b: 2}
   obj = {a: 1, "#{'b'}": 2}
@@ -481,7 +480,7 @@ test "object keys with interpolations", ->
   obj = {"#{'a'}": 1, "#{'b'}": 2}
   deepEqual obj, {a: 1, b: 2}
 
-  # Commas after key with interpolation.
+test "object keys with interpolations: commas after key with interpolation", ->
   obj = {"#{'a'}": yes,}
   eq obj.a, yes
   obj = {
@@ -504,17 +503,17 @@ test "object keys with interpolations", ->
     "#{'c'}": 3, "#{'d'}": 4,
   deepEqual obj, {a: 1, b: 2, c: 3, d: 4}
 
-  # Key with interpolation mixed with `@prop`.
+test "object keys with interpolations: key with interpolation mixed with `@prop`", ->
   deepEqual (-> {@a, "#{'b'}": 2}).call(a: 1), {a: 1, b: 2}
 
-  # Evaluate only once.
+test "object keys with interpolations: evaluate only once", ->
   count = 0
-  b = -> count++; 'b'
-  obj = {"#{b()}"}
-  eq obj.b, 'b'
+  a = -> count++; 'a'
+  obj = {"#{a()}"}
+  eq obj.a, 'a'
   eq count, 1
 
-  # Evaluation order.
+test "object keys with interpolations: evaluation order", ->
   arr = []
   obj =
     a: arr.push 1
@@ -527,13 +526,13 @@ test "object keys with interpolations", ->
   arrayEq arr, [1..7]
   deepEqual obj, {a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7}
 
-  # Object starting with dynamic key.
+test "object keys with interpolations: object starting with dynamic key", ->
   obj =
     "#{'a'}": 1
     b: 2
   deepEqual obj, {a: 1, b: 2}
 
-  # Comments in implicit object.
+test "object keys with interpolations: comments in implicit object", ->
   obj =
     ### leading comment ###
     "#{'a'}": 1
@@ -564,7 +563,7 @@ test "object keys with interpolations", ->
   }
   deepEqual obj, {a: 1, b: 2, c: 3, d: 4, e: 5}
 
-  # A more complicated case.
+test "object keys with interpolations: more complicated case", ->
   obj = {
     "#{'interpolated'}":
       """
@@ -581,6 +580,212 @@ test "#4324: Shorthand after interpolated key", ->
   obj = {"#{1}": 1, a}
   eq 1, obj[1]
   eq 2, obj.a
+
+test "computed property keys: simple cases", ->
+  a = 'a'
+  obj = [a]: yes
+  eq obj.a, yes
+  obj = {[a]: yes}
+  eq obj.a, yes
+  obj = {[a]}
+  eq obj.a, 'a'
+  obj = {[5]}
+  eq obj[5], 5
+  obj = {['5']}
+  eq obj['5'], '5'
+
+test "computed property keys: commas in implicit object", ->
+  obj = ['a']: 1, b: 2
+  deepEqual obj, {a: 1, b: 2}
+  obj = a: 1, ['b']: 2
+  deepEqual obj, {a: 1, b: 2}
+  obj = ['a']: 1, ['b']: 2
+  deepEqual obj, {a: 1, b: 2}
+
+test "computed property keys: commas in explicit object", ->
+  obj = {['a']: 1, b: 2}
+  deepEqual obj, {a: 1, b: 2}
+  obj = {a: 1, ['b']: 2}
+  deepEqual obj, {a: 1, b: 2}
+  obj = {['a']: 1, ['b']: 2}
+  deepEqual obj, {a: 1, b: 2}
+
+test "computed property keys: commas after key with interpolation", ->
+  obj = {['a']: yes,}
+  eq obj.a, yes
+  obj = {
+    ['a']: 1,
+    ['b']: 2,
+    ### herecomment ###
+    ['c']: 3,
+  }
+  deepEqual obj, {a: 1, b: 2, c: 3}
+  obj =
+    ['a']: 1,
+    ['b']: 2,
+    ### herecomment ###
+    ['c']: 3,
+  deepEqual obj, {a: 1, b: 2, c: 3}
+  obj =
+    ['a']: 1,
+    ['b']: 2,
+    ### herecomment ###
+    ['c']: 3, ['d']: 4,
+  deepEqual obj, {a: 1, b: 2, c: 3, d: 4}
+
+test "computed property keys: key with interpolation mixed with `@prop`", ->
+  deepEqual (-> {@a, ['b']: 2}).call(a: 1), {a: 1, b: 2}
+
+test "computed property keys: evaluate only once", ->
+  count = 0
+  a = -> count++; 'a'
+  obj = {[a()]}
+  eq obj.a, 'a'
+  eq count, 1
+
+test "computed property keys: evaluation order", ->
+  arr = []
+  obj =
+    a: arr.push 1
+    b: arr.push 2
+    ['c']: arr.push 3
+    ['d']: arr.push 4
+    e: arr.push 5
+    ['f']: arr.push 6
+    g: arr.push 7
+  arrayEq arr, [1..7]
+  deepEqual obj, {a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7}
+
+test "computed property keys: object starting with dynamic key", ->
+  obj =
+    ['a']: 1
+    b: 2
+  deepEqual obj, {a: 1, b: 2}
+
+test "computed property keys: comments in implicit object", ->
+  obj =
+    ### leading comment ###
+    ['a']: 1
+
+    ### middle ###
+
+    ['b']: 2
+    # regular comment
+    'c': 3
+    ### foo ###
+    d: 4
+    ['e']: 5
+  deepEqual obj, {a: 1, b: 2, c: 3, d: 4, e: 5}
+
+  obj = {
+    ### leading comment ###
+    ['a']: 1
+
+    ### middle ###
+
+    ['b']: 2
+    # regular comment
+    'c': 3
+    ### foo ###
+    d: 4
+    ['e']: 5
+  }
+  deepEqual obj, {a: 1, b: 2, c: 3, d: 4, e: 5}
+
+test "computed property keys: more complicated case", ->
+  obj = {
+    ['interpolated']:
+       ['nested']:
+         123: 456
+  }
+  deepEqual obj,
+    interpolated:
+      nested:
+        123: 456
+
+test "computed property keys: empty array as key", ->
+  o1 = { [[]] }
+  deepEqual o1, { [[]]: [] }
+  arrayEq o1[[]], []
+  o2 = { [[]]: 1 }
+  deepEqual o2, { [[]]: 1 }
+  eq o2[[]], 1
+  o3 = [[]]: 1
+  deepEqual o3, { [[]]: 1 }
+  deepEqual o3, { [[]]: 1 }
+  eq o3[[]], 1
+  o4 = a: 1, [[]]: 2
+  deepEqual o4, { a: 1, [[]]: 2 }
+  eq o4.a, 1,
+  eq o4[[]], 2
+  o5 = { a: 1, [[]]: 2 }
+  deepEqual o5, { a: 1, [[]]: 2 }
+  eq o5.a, 1,
+  eq o5[[]], 2
+
+test "computed property keys: shorthand after computed property key", ->
+  a = 2
+  obj = {[1]: 1, a}
+  eq 1, obj[1]
+  eq 2, obj.a
+
+test "computed property keys: shorthand computed property key", ->
+  a = 'b'
+  o = {[a]}
+  p = {a}
+  r = {['a']}
+  eq o.b, 'b'
+  eq p.a, o.b
+  eq r.a, 'a'
+
+  foo = -> "a"
+  obj = { [foo()] }
+  eq obj.a, 'a'
+
+test "computed property keys: arrays", ->
+  b = 'b'
+  f = (c) -> "#{c}1"
+  obj =
+    ['a']: [1, 2, 3]
+    [b]: [4, 5, 6]
+    [f(b)]: [7, 8, 9]
+  arrayEq obj.a, [1, 2, 3]
+  arrayEq obj.b, [4, 5, 6]
+  arrayEq obj.b1, [7, 8, 9]
+
+test "computed property keys: examples from developer.mozilla.org (Object initializer)", ->
+  i = 0
+  obj =
+    ['foo' + ++i]: i
+    ['foo' + ++i]: i
+    ['foo' + ++i]: i
+  eq obj.foo1, 1
+  eq obj.foo2, 2
+  eq obj.foo3, 3
+
+  param = 'size'
+  config =
+    [param]: 12,
+    ['mobile' + param.charAt(0).toUpperCase() + param.slice(1)]: 4
+  deepEqual config, {size: 12,  mobileSize: 4}
+
+test "computed property keys: [Symbol.iterator]", ->
+  obj =
+    [Symbol.iterator]: ->
+      yield "hello"
+      yield "world"
+  arrayEq [obj...], ['hello', 'world']
+
+test "computed property keys: Class property", ->
+  increment_method = "increment"
+  decrement_method = "decrement"
+  class Obs
+    constructor: (@count) ->
+    [increment_method]: -> @count += 1
+    [decrement_method]: -> @count -= 1
+  ob = new Obs 2
+  eq ob.increment(), 3
+  eq ob.decrement(), 2
 
 test "#1263: Braceless object return", ->
   fn = ->

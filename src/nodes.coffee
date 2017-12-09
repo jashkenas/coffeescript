@@ -765,6 +765,10 @@ exports.CSXTag = class CSXTag extends IdentifierLiteral
 exports.PropertyName = class PropertyName extends Literal
   isAssignable: YES
 
+exports.ComputedPropertyName = class ComputedPropertyName extends PropertyName
+  compileNode: (o) ->
+    [@makeCode('['), @value.compileToFragments(o, LEVEL_LIST)..., @makeCode(']')]
+
 exports.StatementLiteral = class StatementLiteral extends Literal
   isStatement: YES
 
@@ -1501,6 +1505,15 @@ exports.Obj = class Obj extends Base
           [key, value] = prop.base.cache o
           key  = new PropertyName key.value if key instanceof IdentifierLiteral
           prop = new Assign key, value, 'object'
+        else if key instanceof Value and key.base instanceof ComputedPropertyName
+          # `{ [foo()] }` output as `{ [ref = foo()]: ref }`.
+          if prop.base.value.shouldCache()
+            [key, value] = prop.base.value.cache o
+            key  = new ComputedPropertyName key.value if key instanceof IdentifierLiteral
+            prop = new Assign key, value, 'object'
+          else
+            # `{ [expression] }` output as `{ [expression]: expression }`.
+            prop = new Assign key, prop.base.value, 'object'
         else if not prop.bareLiteral?(IdentifierLiteral)
           prop = new Assign prop, prop, 'object'
       if indent then answer.push @makeCode indent

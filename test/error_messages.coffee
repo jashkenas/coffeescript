@@ -183,9 +183,9 @@ test "#1096: unexpected generated tokens", ->
     for i in [1]:
       1
   ''', '''
-    [stdin]:1:10: error: unexpected [
-    for i in [1]:
-             ^
+    [stdin]:2:4: error: unexpected end of input
+      1
+       ^
   '''
   # Unexpected regex
   assertErrorFormat '{/a/i: val}', '''
@@ -808,29 +808,8 @@ test "invalid numbers", ->
     ^^^
 '''
 
-test "unexpected object keys", ->
-  assertErrorFormat '''
-    {[[]]}
-  ''', '''
-    [stdin]:1:2: error: unexpected [
-    {[[]]}
-     ^
-  '''
-  assertErrorFormat '''
-    {[[]]: 1}
-  ''', '''
-    [stdin]:1:2: error: unexpected [
-    {[[]]: 1}
-     ^
-  '''
-  assertErrorFormat '''
-    [[]]: 1
-  ''', '''
-    [stdin]:1:1: error: unexpected [
-    [[]]: 1
-    ^
-  '''
 
+test "unexpected object keys", ->
   assertErrorFormat '''
     {(a + "b")}
   ''', '''
@@ -851,20 +830,6 @@ test "unexpected object keys", ->
     [stdin]:1:10: error: unexpected :
     (a + "b"): 1
              ^
-  '''
-  assertErrorFormat '''
-    a: 1, [[]]: 2
-  ''', '''
-    [stdin]:1:7: error: unexpected [
-    a: 1, [[]]: 2
-          ^
-  '''
-  assertErrorFormat '''
-    {a: 1, [[]]: 2}
-  ''', '''
-    [stdin]:1:8: error: unexpected [
-    {a: 1, [[]]: 2}
-           ^
   '''
 
 test "invalid object keys", ->
