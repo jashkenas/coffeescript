@@ -2472,7 +2472,8 @@ exports.Assign = class Assign extends Base
       unless obj instanceof Elision
         assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
       else
-        assigns.push idx.compileToFragments o, LEVEL_LIST
+        # Output `Elision` only if `idx` is `i++`, e.g. expandedIdx.
+        assigns.push idx.compileToFragments o, LEVEL_LIST if expandedIdx
 
     assigns.push vvar unless top or @subpattern
     fragments = @joinFragmentArrays assigns, ', '
