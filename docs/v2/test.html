@@ -409,8 +409,8 @@ test "array elisions destructuring with splats and expansions", ->
   arrayEq [a,b], [2,[5,6,7,8,9]]
   [,c,...,,d,,e] = arr
   arrayEq [c,d,e], [2,7,9]
-  [...,e,,,f,,,] = arr
-  arrayEq [e,f], [4,7]
+  [...,f,,,g,,,] = arr
+  arrayEq [f,g], [4,7]
 
 test "array elisions as function parameters", ->
   arr = [1,2,3,4,5,6,7,8,9]
