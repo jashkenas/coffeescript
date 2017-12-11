@@ -1121,7 +1121,7 @@ comments that trail it.</p>
             
             <div class="content"><div class='highlight'><pre>    prevChar = <span class="hljs-keyword">if</span> @tokens.length &gt; <span class="hljs-number">0</span> <span class="hljs-keyword">then</span> @tokens[@tokens.length - <span class="hljs-number">1</span>][<span class="hljs-number">0</span>] <span class="hljs-keyword">else</span> <span class="hljs-string">''</span>
     <span class="hljs-keyword">if</span> firstChar <span class="hljs-keyword">is</span> <span class="hljs-string">'&lt;'</span>
-      match = CSX_IDENTIFIER.exec @chunk[<span class="hljs-number">1.</span>..]
+      match = CSX_IDENTIFIER.exec(@chunk[<span class="hljs-number">1.</span>..]) <span class="hljs-keyword">or</span> CSX_FRAGMENT_IDENTIFIER.exec(@chunk[<span class="hljs-number">1.</span>..])
       <span class="hljs-keyword">return</span> <span class="hljs-number">0</span> <span class="hljs-keyword">unless</span> match <span class="hljs-keyword">and</span> (
         @csxDepth &gt; <span class="hljs-number">0</span> <span class="hljs-keyword">or</span></pre></div></div>
             
@@ -1187,8 +1187,8 @@ comments that trail it.</p>
           @matchWithInterpolations INSIDE_CSX, <span class="hljs-string">'&gt;'</span>, <span class="hljs-string">'&lt;/'</span>, CSX_INTERPOLATION
         @mergeInterpolationTokens tokens, {delimiter: <span class="hljs-string">'"'</span>}, <span class="hljs-function"><span class="hljs-params">(value, i)</span> =&gt;</span>
           @formatString value, delimiter: <span class="hljs-string">'&gt;'</span>
-        match = CSX_IDENTIFIER.exec @chunk[end...]
-        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> match <span class="hljs-keyword">or</span> match[<span class="hljs-number">0</span>] <span class="hljs-keyword">isnt</span> csxTag.name
+        match = CSX_IDENTIFIER.exec(@chunk[end...]) <span class="hljs-keyword">or</span> CSX_FRAGMENT_IDENTIFIER.exec(@chunk[end...])
+        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> match <span class="hljs-keyword">or</span> match[<span class="hljs-number">1</span>] <span class="hljs-keyword">isnt</span> csxTag.name
           @error <span class="hljs-string">"expected corresponding CSX closing tag for <span class="hljs-subst">#{csxTag.name}</span>"</span>,
             csxTag.origin[<span class="hljs-number">2</span>]
         afterTag = end + csxTag.name.length
@@ -2458,6 +2458,23 @@ be used as identifiers or properties.</p>
 CSX_IDENTIFIER = <span class="hljs-regexp">/// ^
   (?![\d&lt;]) <span class="hljs-comment"># Must not start with `&lt;`.</span>
   ( (?: (?!\s)[\.\-$\w\x7f-\uffff] )+ ) <span class="hljs-comment"># Like `IDENTIFIER`, but includes `-`s and `.`s.</span>
+///</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-98">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-98">&#182;</a>
+              </div>
+              <p>Fragment: &lt;&gt;&lt;/&gt;</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>CSX_FRAGMENT_IDENTIFIER = <span class="hljs-regexp">/// ^
+  ()&gt; <span class="hljs-comment"># Ends immediately with `&gt;`.</span>
 ///</span>
 
 CSX_ATTRIBUTE = <span class="hljs-regexp">/// ^
@@ -2497,11 +2514,11 @@ HERE_JSTOKEN = <span class="hljs-regexp">///^ ```     ((?: [^`\\] | \\[\s\S] | `
         </li>
         
         
-        <li id="section-98">
+        <li id="section-99">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-98">&#182;</a>
+                <a class="pilcrow" href="#section-99">&#182;</a>
               </div>
               <p>String-matching-regexes.</p>
 
@@ -2535,11 +2552,11 @@ HEREDOC_INDENT     = <span class="hljs-regexp">/\n+([^\n\S]*)(?=\S)/g</span></pr
         </li>
         
         
-        <li id="section-99">
+        <li id="section-100">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-99">&#182;</a>
+                <a class="pilcrow" href="#section-100">&#182;</a>
               </div>
               <p>Regex-matching-regexes.</p>
 
@@ -2558,7 +2575,86 @@ HEREDOC_INDENT     = <span class="hljs-regexp">/\n+([^\n\S]*)(?=\S)/g</span></pr
 REGEX_FLAGS  = <span class="hljs-regexp">/^\w*/</span>
 VALID_FLAGS  = <span class="hljs-regexp">/^(?!.*(.).*\1)[imguy]*$/</span>
 
-HEREGEX      = <span class="hljs-regexp">/// ^(?: [^\\/<span class="hljs-comment">#] | \\[\s\S] | /(?!//) | \#(?!\{) )* ///</span>
+HEREGEX      = <span class="hljs-regexp">/// ^
+  (?:
+</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-101">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-101">&#182;</a>
+              </div>
+              <p>Match any character, except those that need special handling below.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      [^\\/<span class="hljs-comment">#\s]</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-102">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-102">&#182;</a>
+              </div>
+              <p>Match <code>\</code> followed by any character.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    | \\[\s\S]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-103">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-103">&#182;</a>
+              </div>
+              <p>Match any <code>/</code> except <code>///</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    | <span class="hljs-regexp">/(?!/</span>/)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-104">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-104">&#182;</a>
+              </div>
+              <p>Match <code>#</code> which is not part of interpolation, e.g. <code>#{}</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    | \<span class="hljs-comment">#(?!\{)</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-105">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-105">&#182;</a>
+              </div>
+              <p>Comments consume everything until the end of the line, including <code>///</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    | \s+(?:<span class="hljs-comment">#(?!\{).*)?</span>
+  )*
+<span class="hljs-regexp">///
 
 HEREGEX_OMIT = ///</span>
     ((?:\\\\)+)     <span class="hljs-comment"># Consume (and preserve) an even number of backslashes.</span>
@@ -2573,11 +2669,11 @@ POSSIBLY_DIVISION   = <span class="hljs-regexp">/// ^ /=?\s ///</span></pre></di
         </li>
         
         
-        <li id="section-100">
+        <li id="section-106">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-100">&#182;</a>
+                <a class="pilcrow" href="#section-106">&#182;</a>
               </div>
               <p>Other regexes.</p>
 
@@ -2620,11 +2716,11 @@ TRAILING_SPACES     = <span class="hljs-regexp">/\s+$/</span></pre></div></div>
         </li>
         
         
-        <li id="section-101">
+        <li id="section-107">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-101">&#182;</a>
+                <a class="pilcrow" href="#section-107">&#182;</a>
               </div>
               <p>Compound assignment tokens.</p>
 
@@ -2638,11 +2734,11 @@ TRAILING_SPACES     = <span class="hljs-regexp">/\s+$/</span></pre></div></div>
         </li>
         
         
-        <li id="section-102">
+        <li id="section-108">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-102">&#182;</a>
+                <a class="pilcrow" href="#section-108">&#182;</a>
               </div>
               <p>Unary tokens.</p>
 
@@ -2655,11 +2751,11 @@ UNARY_MATH = [<span class="hljs-string">'!'</span>, <span class="hljs-string">'~
         </li>
         
         
-        <li id="section-103">
+        <li id="section-109">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-103">&#182;</a>
+                <a class="pilcrow" href="#section-109">&#182;</a>
               </div>
               <p>Bit-shifting tokens.</p>
 
@@ -2670,11 +2766,11 @@ UNARY_MATH = [<span class="hljs-string">'!'</span>, <span class="hljs-string">'~
         </li>
         
         
-        <li id="section-104">
+        <li id="section-110">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-104">&#182;</a>
+                <a class="pilcrow" href="#section-110">&#182;</a>
               </div>
               <p>Comparison tokens.</p>
 
@@ -2685,11 +2781,11 @@ UNARY_MATH = [<span class="hljs-string">'!'</span>, <span class="hljs-string">'~
         </li>
         
         
-        <li id="section-105">
+        <li id="section-111">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-105">&#182;</a>
+                <a class="pilcrow" href="#section-111">&#182;</a>
               </div>
               <p>Mathematical tokens.</p>
 
@@ -2700,11 +2796,11 @@ UNARY_MATH = [<span class="hljs-string">'!'</span>, <span class="hljs-string">'~
         </li>
         
         
-        <li id="section-106">
+        <li id="section-112">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-106">&#182;</a>
+                <a class="pilcrow" href="#section-112">&#182;</a>
               </div>
               <p>Relational tokens that are negatable with <code>not</code> prefix.</p>
 
@@ -2715,11 +2811,11 @@ UNARY_MATH = [<span class="hljs-string">'!'</span>, <span class="hljs-string">'~
         </li>
         
         
-        <li id="section-107">
+        <li id="section-113">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-107">&#182;</a>
+                <a class="pilcrow" href="#section-113">&#182;</a>
               </div>
               <p>Boolean tokens.</p>
 
@@ -2730,11 +2826,11 @@ UNARY_MATH = [<span class="hljs-string">'!'</span>, <span class="hljs-string">'~
         </li>
         
         
-        <li id="section-108">
+        <li id="section-114">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-108">&#182;</a>
+                <a class="pilcrow" href="#section-114">&#182;</a>
               </div>
               <p>Tokens which could legitimately be invoked or indexed. An opening
 parentheses or bracket following these tokens will be recorded as the start
@@ -2751,11 +2847,11 @@ INDEXABLE = CALLABLE.concat [
         </li>
         
         
-        <li id="section-109">
+        <li id="section-115">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-109">&#182;</a>
+                <a class="pilcrow" href="#section-115">&#182;</a>
               </div>
               <p>Tokens which can be the left-hand side of a less-than comparison, i.e. <code>a&lt;b</code>.</p>
 
@@ -2766,11 +2862,11 @@ INDEXABLE = CALLABLE.concat [
         </li>
         
         
-        <li id="section-110">
+        <li id="section-116">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-110">&#182;</a>
+                <a class="pilcrow" href="#section-116">&#182;</a>
               </div>
               <p>Tokens which a regular expression will never immediately follow (except spaced
 CALLABLEs in some cases), but which a division operator can.</p>
@@ -2783,11 +2879,11 @@ CALLABLEs in some cases), but which a division operator can.</p>
         </li>
         
         
-        <li id="section-111">
+        <li id="section-117">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-111">&#182;</a>
+                <a class="pilcrow" href="#section-117">&#182;</a>
               </div>
               <p>Tokens that, when immediately preceding a <code>WHEN</code>, indicate that the <code>WHEN</code>
 occurs at the start of a line. We disambiguate these from trailing whens to
@@ -2800,11 +2896,11 @@ avoid an ambiguity in the grammar.</p>
         </li>
         
         
-        <li id="section-112">
+        <li id="section-118">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-112">&#182;</a>
+                <a class="pilcrow" href="#section-118">&#182;</a>
               </div>
               <p>Additional indent in front of these is ignored.</p>
 
@@ -2815,11 +2911,11 @@ avoid an ambiguity in the grammar.</p>
         </li>
         
         
-        <li id="section-113">
+        <li id="section-119">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-113">&#182;</a>
+                <a class="pilcrow" href="#section-119">&#182;</a>
               </div>
               <p>Tokens that, when appearing at the end of a line, suppress a following TERMINATOR/INDENT token</p>
 

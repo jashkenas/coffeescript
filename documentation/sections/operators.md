@@ -18,7 +18,7 @@ You can use `in` to test for array presence, and `of` to test for JavaScript obj
 
 In a `for` loop, `from` compiles to the [ES2015 `of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of). (Yes, it’s unfortunate; the CoffeeScript `of` predates the ES2015 `of`.)
 
-To simplify math expressions, `**` can be used for exponentiation and `//` performs integer division. `%` works just like in JavaScript, while `%%` provides [“dividend dependent modulo”](https://en.wikipedia.org/wiki/Modulo_operation):
+To simplify math expressions, `**` can be used for exponentiation and `//` performs floor division. `%` works just like in JavaScript, while `%%` provides [“dividend dependent modulo”](https://en.wikipedia.org/wiki/Modulo_operation):
 
 ```
 codeFor('modulo')

@@ -646,7 +646,7 @@ div.CodeMirror-cursor {
       <section id="overview">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.0.3">2.0.3</a></p>
+<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.1.0">2.1.0</a></p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash"><span class="comment"># Install locally for a project:</span>
 npm install --save-dev coffeescript
 
@@ -1340,36 +1340,6 @@ kids = {
   <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
 </svg>
 </small>song.join(&quot; … &quot;)</button>
-    </div>
-  </div>
-  
-</aside>
-<p>In JavaScript, you can’t use reserved words, like <code>class</code>, as properties of an object, without quoting them as strings. CoffeeScript notices reserved words used as keys in objects and quotes them for you, so you don’t have to worry about it (say, when using jQuery).</p>
-<aside class="code-example container-fluid bg-ribbed-dark" data-example="objects_reserved">
-  <div class="row">
-    <div class="col-md-6 coffeescript-input-column">
-      <textarea class="coffeescript-input" id="objects_reserved-coffee">$('.account').prop class: 'active'
-
-log object.class
-</textarea>
-      <pre class="placeholder-code"><span class="cm-variable">$</span><span class="cm-punctuation">(</span><span class="cm-string">'.account'</span><span class="cm-punctuation">).</span><span class="cm-property">prop</span> <span class="cm-keyword">class</span><span class="cm-punctuation">:</span> <span class="cm-string">'active'</span>
-
-<span class="cm-variable">log</span> <span class="cm-variable">object</span><span class="cm-punctuation">.</span><span class="cm-property">class</span>
-</pre>
-    </div>
-    <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="objects_reserved-js">$('.account').prop({
-  class: 'active'
-});
-
-log(object.class);
-</textarea>
-      <pre class="placeholder-code"><span class="cm-variable">$</span>(<span class="cm-string">'.account'</span>).<span class="cm-property">prop</span>({
-  <span class="cm-property">class</span>: <span class="cm-string">'active'</span>
-});
-
-<span class="cm-variable">log</span>(<span class="cm-variable">object</span>.<span class="cm-property">class</span>);
-</pre>
     </div>
   </div>
   
@@ -2489,7 +2459,7 @@ alert((function() {
 
 <span class="cm-variable">alert</span>((<span class="cm-keyword">function</span>() {
   <span class="cm-keyword">try</span> {
-    <span class="cm-keyword">return</span> <span class="cm-variable">nonexistent</span> <span class="cm-operator">/</span> <span class="cm-variable">void</span> <span class="cm-number">0</span>;
+    <span class="cm-keyword">return</span> <span class="cm-variable">nonexistent</span> <span class="cm-operator">/</span> <span class="cm-keyword">void</span> <span class="cm-number">0</span>;
   } <span class="cm-keyword">catch</span> (<span class="cm-def">error1</span>) {
     <span class="cm-variable">error</span> <span class="cm-operator">=</span> <span class="cm-variable-2">error1</span>;
     <span class="cm-keyword">return</span> <span class="cm-string-2">`And the error is ... ${</span><span class="cm-variable">error</span><span class="cm-string-2">}`</span>;
@@ -2523,7 +2493,7 @@ alert((function() {
 <p>As a shortcut for <code>this.property</code>, you can use <code>@property</code>.</p>
 <p>You can use <code>in</code> to test for array presence, and <code>of</code> to test for JavaScript object-key presence.</p>
 <p>In a <code>for</code> loop, <code>from</code> compiles to the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of">ES2015 <code>of</code></a>. (Yes, it’s unfortunate; the CoffeeScript <code>of</code> predates the ES2015 <code>of</code>.)</p>
-<p>To simplify math expressions, <code>**</code> can be used for exponentiation and <code>//</code> performs integer division. <code>%</code> works just like in JavaScript, while <code>%%</code> provides <a href="https://en.wikipedia.org/wiki/Modulo_operation">“dividend dependent modulo”</a>:</p>
+<p>To simplify math expressions, <code>**</code> can be used for exponentiation and <code>//</code> performs floor division. <code>%</code> works just like in JavaScript, while <code>%%</code> provides <a href="https://en.wikipedia.org/wiki/Modulo_operation">“dividend dependent modulo”</a>:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="modulo">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
@@ -2853,7 +2823,7 @@ zip = typeof lottery.drawWinner === "function" ? (ref = lottery.drawWinner().add
 </textarea>
       <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">ref</span>, <span class="cm-def">zip</span>;
 
-<span class="cm-variable">zip</span> <span class="cm-operator">=</span> <span class="cm-keyword">typeof</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span> <span class="cm-operator">===</span> <span class="cm-string">"function"</span> <span class="cm-operator">?</span> (<span class="cm-variable">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span>().<span class="cm-property">address</span>) <span class="cm-operator">!=</span> <span class="cm-atom">null</span> <span class="cm-operator">?</span> <span class="cm-variable">ref</span>.<span class="cm-property">zipcode</span> : <span class="cm-variable">void</span> <span class="cm-number">0</span> : <span class="cm-variable">void</span> <span class="cm-number">0</span>;
+<span class="cm-variable">zip</span> <span class="cm-operator">=</span> <span class="cm-keyword">typeof</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span> <span class="cm-operator">===</span> <span class="cm-string">"function"</span> <span class="cm-operator">?</span> (<span class="cm-variable">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span>().<span class="cm-property">address</span>) <span class="cm-operator">!=</span> <span class="cm-atom">null</span> <span class="cm-operator">?</span> <span class="cm-variable">ref</span>.<span class="cm-property">zipcode</span> : <span class="cm-keyword">void</span> <span class="cm-number">0</span> : <span class="cm-keyword">void</span> <span class="cm-number">0</span>;
 </pre>
     </div>
   </div>
@@ -4820,7 +4790,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
         <section id="annotated-source">
           <h2>Annotated Source</h2>
-<p>You can browse the CoffeeScript 2.0.3 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+<p>You can browse the CoffeeScript 2.1.0 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
 <li><a href="annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
@@ -5497,6 +5467,17 @@ x = <span class="number">2</span> + <span class="number">2</span>
       </section>
       <section id="changelog">
         <h2>Changelog</h2>
+<div class="anchor" id="2.1.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/2.0.3...2.1.0">2.1.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-12-10">December 10, 2017</time></span>
+</h2><ul>
+<li>Computed property keys in object literals are now supported: <code>obj = { ['key' + i]: 42 }</code>, or <code>obj = [Symbol.iterator]: -&gt; yield i++</code>.</li>
+<li>Skipping of array elements, a.k.a. elision, is now supported: <code>arr = [a, , b]</code>, or <code>[, protocol] = url.match /^(.*):\/\//</code>.</li>
+<li><a href="https://reactjs.org/blog/2017/11/28/react-v16.2.0-fragment-support.html">JSX fragments syntax</a> is now supported.</li>
+<li>Bugfix where <code>///</code> within a <code>#</code> line comment inside a <code>///</code> block regex was erroneously closing the regex, rather than being treated as part of the comment.</li>
+<li>Bugfix for incorrect output for object rest destructuring inside array destructuring.</li>
+</ul>
 <div class="anchor" id="2.0.3"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/2.0.2...2.0.3">2.0.3</a>

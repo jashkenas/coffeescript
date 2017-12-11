@@ -361,6 +361,94 @@ test "incorrect indentation without commas", ->
   ok result[0][0] is 'a'
   ok result[1]['b'] is 'c'
 
+# Elisions
+test "array elisions", ->
+  eq [,1].length, 2
+  eq [,,1,2,,].length, 5
+  arr = [1,,2]
+  eq arr.length, 3
+  eq arr[1], undefined
+  eq [,,].length, 2
+
+test "array elisions indentation and commas", ->
+  arr1 = [
+    , 1, 2, , , 3,
+    4, 5, 6
+    , , 8, 9,
+  ]
+  eq arr1.length, 12
+  eq arr1[5], 3
+  eq arr1[9], undefined
+  arr2 = [, , 1,
+    2, , 3,
+    , 4, 5
+    6
+    , , ,
+  ]
+  eq arr2.length, 12
+  eq arr2[8], 5
+  eq arr2[1], undefined
+
+test "array elisions destructuring", ->
+  arr = [1,2,3,4,5,6,7,8,9]
+  [,a] = arr
+  [,,,b] = arr
+  arrayEq [a,b], [2,4]
+  [,a,,b,,c,,,d] = arr
+  arrayEq [a,b,c,d], [2,4,6,9]
+  [
+    ,e,
+    ,f,
+    ,g,
+    ,,h] = arr
+  arrayEq [e,f,g,h], [2,4,6,9]
+
+test "array elisions destructuring with splats and expansions", ->
+  arr = [1,2,3,4,5,6,7,8,9]
+  [,a,,,b...] = arr
+  arrayEq [a,b], [2,[5,6,7,8,9]]
+  [,c,...,,d,,e] = arr
+  arrayEq [c,d,e], [2,7,9]
+  [...,f,,,g,,,] = arr
+  arrayEq [f,g], [4,7]
+
+test "array elisions as function parameters", ->
+  arr = [1,2,3,4,5,6,7,8,9]
+  foo = ([,a]) -> a
+  a = foo arr
+  eq a, 2
+  foo = ([,,,a]) -> a
+  a = foo arr
+  eq a, 4
+  foo = ([,a,,b,,c,,,d]) -> [a,b,c,d]
+  [a,b,c,d] = foo arr
+  arrayEq [a,b,c,d], [2,4,6,9]
+
+test "array elisions nested destructuring", ->
+  arr = [
+    1,
+    [2,3, [4,5,6, [7,8,9] ] ]
+  ]
+  [,a] = arr
+  arrayEq a[2][3], [7,8,9]
+  [,[,,[,b,,[,,c]]]] = arr
+  eq b, 5
+  eq c, 9
+  aobj = [
+    {},
+    {x: 2},
+    {},
+    [
+      {},
+      {},
+      {z:1, w:[1,2,4], p:3, q:4}
+      {},
+      {}
+    ]
+  ]
+  [,d,,[,,{w}]] = aobj
+  deepEqual d, {x:2}
+  arrayEq w, [1,2,4]
 
 # Splats in Array Literals
 
@@ -723,6 +811,17 @@ test "#4787 destructuring of objects within arrays", ->
   eq a, 1
   eq b, arr[1].b
   deepEqual {a, b}, arr[1]
+
+test "#4798 destructuring of objects with splat within arrays", ->
+  arr = [1, {a:1, b:2}]
+  [...,{a, r...}] = arr
+  eq a, 1
+  deepEqual r, {b:2}
+  [b, {q...}] = arr
+  eq b, 1
+  deepEqual q, arr[1]
+  eq q.b, r.b
+  eq q.a, a
 
 test "destructuring assignment with splats", ->
   a = {}; b = {}; c = {}; d = {}; e = {}
@@ -6694,6 +6793,50 @@ test '#4686: comments inside interpolations that also contain CSX attributes', -
     </div>;
   '''
 
+# https://reactjs.org/blog/2017/11/28/react-v16.2.0-fragment-support.html
+test 'JSX fragments: empty fragment', ->
+  eqJS '''
+    <></>
+  ''', '''
+    <></>;
+  '''
+
+test 'JSX fragments: fragment with text nodes', ->
+  eqJS '''
+    <>
+      Some text.
+      <h2>A heading</h2>
+      More text.
+      <h2>Another heading</h2>
+      Even more text.
+    </>
+  ''', '''
+    <>
+      Some text.
+      <h2>A heading</h2>
+      More text.
+      <h2>Another heading</h2>
+      Even more text.
+    </>;
+  '''
+
+test 'JSX fragments: fragment with component nodes', ->
+  eqJS '''
+   Component = (props) =>
+     <Fragment>
+       <OtherComponent />
+       <OtherComponent />
+     </Fragment>
+  ''', '''
+    var Component;
+
+    Component = (props) => {
+      return <Fragment>
+        <OtherComponent />
+        <OtherComponent />
+      </Fragment>;
+    };
+  '''
 
 </script>
 <script type="text/x-coffeescript" class="test" id="error_messages">
@@ -6882,9 +7025,9 @@ test "#1096: unexpected generated tokens", ->
     for i in [1]:
       1
   ''', '''
-    [stdin]:1:10: error: unexpected [
-    for i in [1]:
-             ^
+    [stdin]:2:4: error: unexpected end of input
+      1
+       ^
   '''
   # Unexpected regex
   assertErrorFormat '{/a/i: val}', '''
@@ -7507,29 +7650,8 @@ test "invalid numbers", ->
     ^^^
 '''
 
-test "unexpected object keys", ->
-  assertErrorFormat '''
-    {[[]]}
-  ''', '''
-    [stdin]:1:2: error: unexpected [
-    {[[]]}
-     ^
-  '''
-  assertErrorFormat '''
-    {[[]]: 1}
-  ''', '''
-    [stdin]:1:2: error: unexpected [
-    {[[]]: 1}
-     ^
-  '''
-  assertErrorFormat '''
-    [[]]: 1
-  ''', '''
-    [stdin]:1:1: error: unexpected [
-    [[]]: 1
-    ^
-  '''
 
+test "unexpected object keys", ->
   assertErrorFormat '''
     {(a + "b")}
   ''', '''
@@ -7550,20 +7672,6 @@ test "unexpected object keys", ->
     [stdin]:1:10: error: unexpected :
     (a + "b"): 1
              ^
-  '''
-  assertErrorFormat '''
-    a: 1, [[]]: 2
-  ''', '''
-    [stdin]:1:7: error: unexpected [
-    a: 1, [[]]: 2
-          ^
-  '''
-  assertErrorFormat '''
-    {a: 1, [[]]: 2}
-  ''', '''
-    [stdin]:1:8: error: unexpected [
-    {a: 1, [[]]: 2}
-           ^
   '''
 
 test "invalid object keys", ->
@@ -8501,6 +8609,15 @@ test "#3098: suppressed newline should be unsuppressed by semicolon", ->
     [stdin]:1:5: error: unexpected ;
     a = ; 5
         ^
+  '''
+
+test "#4811: '///' inside a heregex comment does not close the heregex", ->
+  assertErrorFormat '''
+   /// .* # comment ///
+  ''', '''
+  [stdin]:1:1: error: missing ///
+  /// .* # comment ///
+  ^^^
   '''
 
 </script>
@@ -11275,6 +11392,8 @@ path = require 'path'
 # Get the folder containing the compiled `coffee` executable and make it the
 # PATH so that `#!/usr/bin/env coffee` resolves to our locally built file.
 coffeeBinFolder = path.dirname require.resolve '../bin/coffee'
+# For some reason, Windows requires `coffee` to be executed as `node coffee`.
+coffeeCommand = if isWindows() then 'node coffee' else 'coffee'
 spawnOptions =
   cwd: coffeeBinFolder
   encoding: 'utf8'
@@ -11287,7 +11406,7 @@ initialSpaceScript = require.resolve './importing/shebang_initial_space.coffee'
 extraArgsScript = require.resolve './importing/shebang_extra_args.coffee'
 initialSpaceExtraArgsScript = require.resolve './importing/shebang_initial_space_extra_args.coffee'
 
-test "parse arguments for shebang scripts correctly (on unix platforms)", ->
+test "parse arguments for shebang scripts correctly (on *nix platforms)", ->
   return if isWindows()
 
   stdout = execFileSync shebangScript, ['-abck'], spawnOptions
@@ -11301,7 +11420,7 @@ test "parse arguments for shebang scripts correctly (on unix platforms)", ->
   arrayEq expectedArgs, realArgs
 
 test "warn and remove -- if it is the second positional argument", ->
-  result = spawnSync 'coffee', [shebangScript, '--'], spawnOptions
+  result = spawnSync coffeeCommand, [shebangScript, '--'], spawnOptions
   stderr = result.stderr.toString()
   arrayEq JSON.parse(result.stdout), ['coffee', shebangScript]
   ok stderr.match /^coffee was invoked with '--'/m
@@ -11309,7 +11428,7 @@ test "warn and remove -- if it is the second positional argument", ->
   arrayEq JSON.parse(posArgs), [shebangScript, '--']
   ok result.status is 0
 
-  result = spawnSync 'coffee', ['-b', shebangScript, '--'], spawnOptions
+  result = spawnSync coffeeCommand, ['-b', shebangScript, '--'], spawnOptions
   stderr = result.stderr.toString()
   arrayEq JSON.parse(result.stdout), ['coffee', shebangScript]
   ok stderr.match /^coffee was invoked with '--'/m
@@ -11318,7 +11437,7 @@ test "warn and remove -- if it is the second positional argument", ->
   ok result.status is 0
 
   result = spawnSync(
-    'coffee', ['-b', shebangScript, '--', 'ANOTHER'], spawnOptions)
+    coffeeCommand, ['-b', shebangScript, '--', 'ANOTHER'], spawnOptions)
   stderr = result.stderr.toString()
   arrayEq JSON.parse(result.stdout), ['coffee', shebangScript, 'ANOTHER']
   ok stderr.match /^coffee was invoked with '--'/m
@@ -11327,7 +11446,7 @@ test "warn and remove -- if it is the second positional argument", ->
   ok result.status is 0
 
   result = spawnSync(
-    'coffee', ['--', initialSpaceScript, 'arg'], spawnOptions)
+    coffeeCommand, ['--', initialSpaceScript, 'arg'], spawnOptions)
   expectedArgs = ['coffee', initialSpaceScript, 'arg']
   realArgs = JSON.parse result.stdout
   arrayEq expectedArgs, realArgs
@@ -11335,7 +11454,7 @@ test "warn and remove -- if it is the second positional argument", ->
   ok result.status is 0
 
 test "warn about non-portable shebang lines", ->
-  result = spawnSync 'coffee', [extraArgsScript, 'arg'], spawnOptions
+  result = spawnSync coffeeCommand, [extraArgsScript, 'arg'], spawnOptions
   stderr = result.stderr.toString()
   arrayEq JSON.parse(result.stdout), ['coffee', extraArgsScript, 'arg']
   ok stderr.match /^The script to be run begins with a shebang line with more than one/m
@@ -11346,14 +11465,14 @@ test "warn about non-portable shebang lines", ->
   arrayEq JSON.parse(args), ['coffee', '--']
   ok result.status is 0
 
-  result = spawnSync 'coffee', [initialSpaceScript, 'arg'], spawnOptions
+  result = spawnSync coffeeCommand, [initialSpaceScript, 'arg'], spawnOptions
   stderr = result.stderr.toString()
   ok stderr is ''
   arrayEq JSON.parse(result.stdout), ['coffee', initialSpaceScript, 'arg']
   ok result.status is 0
 
   result = spawnSync(
-    'coffee', [initialSpaceExtraArgsScript, 'arg'], spawnOptions)
+    coffeeCommand, [initialSpaceExtraArgsScript, 'arg'], spawnOptions)
   stderr = result.stderr.toString()
   arrayEq JSON.parse(result.stdout), ['coffee', initialSpaceExtraArgsScript, 'arg']
   ok stderr.match /^The script to be run begins with a shebang line with more than one/m
@@ -11366,7 +11485,7 @@ test "warn about non-portable shebang lines", ->
 
 test "both warnings will be shown at once", ->
   result = spawnSync(
-    'coffee', [initialSpaceExtraArgsScript, '--', 'arg'], spawnOptions)
+    coffeeCommand, [initialSpaceExtraArgsScript, '--', 'arg'], spawnOptions)
   stderr = result.stderr.toString()
   arrayEq JSON.parse(result.stdout), ['coffee', initialSpaceExtraArgsScript, 'arg']
   ok stderr.match /^The script to be run begins with a shebang line with more than one/m
@@ -13792,8 +13911,7 @@ test 'inline implicit object literals within multiline implicit object literals'
   eq 0, x.b
   eq 0, x.a.aa
 
-test "object keys with interpolations", ->
-  # Simple cases.
+test "object keys with interpolations: simple cases", ->
   a = 'a'
   obj = "#{a}": yes
   eq obj.a, yes
@@ -13804,7 +13922,7 @@ test "object keys with interpolations", ->
   obj = {"#{5}"}
   eq obj[5], '5' # Note that the value is a string, just like the key.
 
-  # Commas in implicit object.
+test "object keys with interpolations: commas in implicit object", ->
   obj = "#{'a'}": 1, b: 2
   deepEqual obj, {a: 1, b: 2}
   obj = a: 1, "#{'b'}": 2
@@ -13812,7 +13930,7 @@ test "object keys with interpolations", ->
   obj = "#{'a'}": 1, "#{'b'}": 2
   deepEqual obj, {a: 1, b: 2}
 
-  # Commas in explicit object.
+test "object keys with interpolations: commas in explicit object", ->
   obj = {"#{'a'}": 1, b: 2}
   deepEqual obj, {a: 1, b: 2}
   obj = {a: 1, "#{'b'}": 2}
@@ -13820,7 +13938,7 @@ test "object keys with interpolations", ->
   obj = {"#{'a'}": 1, "#{'b'}": 2}
   deepEqual obj, {a: 1, b: 2}
 
-  # Commas after key with interpolation.
+test "object keys with interpolations: commas after key with interpolation", ->
   obj = {"#{'a'}": yes,}
   eq obj.a, yes
   obj = {
@@ -13843,17 +13961,17 @@ test "object keys with interpolations", ->
     "#{'c'}": 3, "#{'d'}": 4,
   deepEqual obj, {a: 1, b: 2, c: 3, d: 4}
 
-  # Key with interpolation mixed with `@prop`.
+test "object keys with interpolations: key with interpolation mixed with `@prop`", ->
   deepEqual (-> {@a, "#{'b'}": 2}).call(a: 1), {a: 1, b: 2}
 
-  # Evaluate only once.
+test "object keys with interpolations: evaluate only once", ->
   count = 0
-  b = -> count++; 'b'
-  obj = {"#{b()}"}
-  eq obj.b, 'b'
+  a = -> count++; 'a'
+  obj = {"#{a()}"}
+  eq obj.a, 'a'
   eq count, 1
 
-  # Evaluation order.
+test "object keys with interpolations: evaluation order", ->
   arr = []
   obj =
     a: arr.push 1
@@ -13866,13 +13984,13 @@ test "object keys with interpolations", ->
   arrayEq arr, [1..7]
   deepEqual obj, {a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7}
 
-  # Object starting with dynamic key.
+test "object keys with interpolations: object starting with dynamic key", ->
   obj =
     "#{'a'}": 1
     b: 2
   deepEqual obj, {a: 1, b: 2}
 
-  # Comments in implicit object.
+test "object keys with interpolations: comments in implicit object", ->
   obj =
     ### leading comment ###
     "#{'a'}": 1
@@ -13903,7 +14021,7 @@ test "object keys with interpolations", ->
   }
   deepEqual obj, {a: 1, b: 2, c: 3, d: 4, e: 5}
 
-  # A more complicated case.
+test "object keys with interpolations: more complicated case", ->
   obj = {
     "#{'interpolated'}":
       """
@@ -13920,6 +14038,212 @@ test "#4324: Shorthand after interpolated key", ->
   obj = {"#{1}": 1, a}
   eq 1, obj[1]
   eq 2, obj.a
+
+test "computed property keys: simple cases", ->
+  a = 'a'
+  obj = [a]: yes
+  eq obj.a, yes
+  obj = {[a]: yes}
+  eq obj.a, yes
+  obj = {[a]}
+  eq obj.a, 'a'
+  obj = {[5]}
+  eq obj[5], 5
+  obj = {['5']}
+  eq obj['5'], '5'
+
+test "computed property keys: commas in implicit object", ->
+  obj = ['a']: 1, b: 2
+  deepEqual obj, {a: 1, b: 2}
+  obj = a: 1, ['b']: 2
+  deepEqual obj, {a: 1, b: 2}
+  obj = ['a']: 1, ['b']: 2
+  deepEqual obj, {a: 1, b: 2}
+
+test "computed property keys: commas in explicit object", ->
+  obj = {['a']: 1, b: 2}
+  deepEqual obj, {a: 1, b: 2}
+  obj = {a: 1, ['b']: 2}
+  deepEqual obj, {a: 1, b: 2}
+  obj = {['a']: 1, ['b']: 2}
+  deepEqual obj, {a: 1, b: 2}
+
+test "computed property keys: commas after key with interpolation", ->
+  obj = {['a']: yes,}
+  eq obj.a, yes
+  obj = {
+    ['a']: 1,
+    ['b']: 2,
+    ### herecomment ###
+    ['c']: 3,
+  }
+  deepEqual obj, {a: 1, b: 2, c: 3}
+  obj =
+    ['a']: 1,
+    ['b']: 2,
+    ### herecomment ###
+    ['c']: 3,
+  deepEqual obj, {a: 1, b: 2, c: 3}
+  obj =
+    ['a']: 1,
+    ['b']: 2,
+    ### herecomment ###
+    ['c']: 3, ['d']: 4,
+  deepEqual obj, {a: 1, b: 2, c: 3, d: 4}
+
+test "computed property keys: key with interpolation mixed with `@prop`", ->
+  deepEqual (-> {@a, ['b']: 2}).call(a: 1), {a: 1, b: 2}
+
+test "computed property keys: evaluate only once", ->
+  count = 0
+  a = -> count++; 'a'
+  obj = {[a()]}
+  eq obj.a, 'a'
+  eq count, 1
+
+test "computed property keys: evaluation order", ->
+  arr = []
+  obj =
+    a: arr.push 1
+    b: arr.push 2
+    ['c']: arr.push 3
+    ['d']: arr.push 4
+    e: arr.push 5
+    ['f']: arr.push 6
+    g: arr.push 7
+  arrayEq arr, [1..7]
+  deepEqual obj, {a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7}
+
+test "computed property keys: object starting with dynamic key", ->
+  obj =
+    ['a']: 1
+    b: 2
+  deepEqual obj, {a: 1, b: 2}
+
+test "computed property keys: comments in implicit object", ->
+  obj =
+    ### leading comment ###
+    ['a']: 1
+
+    ### middle ###
+
+    ['b']: 2
+    # regular comment
+    'c': 3
+    ### foo ###
+    d: 4
+    ['e']: 5
+  deepEqual obj, {a: 1, b: 2, c: 3, d: 4, e: 5}
+
+  obj = {
+    ### leading comment ###
+    ['a']: 1
+
+    ### middle ###
+
+    ['b']: 2
+    # regular comment
+    'c': 3
+    ### foo ###
+    d: 4
+    ['e']: 5
+  }
+  deepEqual obj, {a: 1, b: 2, c: 3, d: 4, e: 5}
+
+test "computed property keys: more complicated case", ->
+  obj = {
+    ['interpolated']:
+       ['nested']:
+         123: 456
+  }
+  deepEqual obj,
+    interpolated:
+      nested:
+        123: 456
+
+test "computed property keys: empty array as key", ->
+  o1 = { [[]] }
+  deepEqual o1, { [[]]: [] }
+  arrayEq o1[[]], []
+  o2 = { [[]]: 1 }
+  deepEqual o2, { [[]]: 1 }
+  eq o2[[]], 1
+  o3 = [[]]: 1
+  deepEqual o3, { [[]]: 1 }
+  deepEqual o3, { [[]]: 1 }
+  eq o3[[]], 1
+  o4 = a: 1, [[]]: 2
+  deepEqual o4, { a: 1, [[]]: 2 }
+  eq o4.a, 1,
+  eq o4[[]], 2
+  o5 = { a: 1, [[]]: 2 }
+  deepEqual o5, { a: 1, [[]]: 2 }
+  eq o5.a, 1,
+  eq o5[[]], 2
+
+test "computed property keys: shorthand after computed property key", ->
+  a = 2
+  obj = {[1]: 1, a}
+  eq 1, obj[1]
+  eq 2, obj.a
+
+test "computed property keys: shorthand computed property key", ->
+  a = 'b'
+  o = {[a]}
+  p = {a}
+  r = {['a']}
+  eq o.b, 'b'
+  eq p.a, o.b
+  eq r.a, 'a'
+
+  foo = -> "a"
+  obj = { [foo()] }
+  eq obj.a, 'a'
+
+test "computed property keys: arrays", ->
+  b = 'b'
+  f = (c) -> "#{c}1"
+  obj =
+    ['a']: [1, 2, 3]
+    [b]: [4, 5, 6]
+    [f(b)]: [7, 8, 9]
+  arrayEq obj.a, [1, 2, 3]
+  arrayEq obj.b, [4, 5, 6]
+  arrayEq obj.b1, [7, 8, 9]
+
+test "computed property keys: examples from developer.mozilla.org (Object initializer)", ->
+  i = 0
+  obj =
+    ['foo' + ++i]: i
+    ['foo' + ++i]: i
+    ['foo' + ++i]: i
+  eq obj.foo1, 1
+  eq obj.foo2, 2
+  eq obj.foo3, 3
+
+  param = 'size'
+  config =
+    [param]: 12,
+    ['mobile' + param.charAt(0).toUpperCase() + param.slice(1)]: 4
+  deepEqual config, {size: 12,  mobileSize: 4}
+
+test "computed property keys: [Symbol.iterator]", ->
+  obj =
+    [Symbol.iterator]: ->
+      yield "hello"
+      yield "world"
+  arrayEq [obj...], ['hello', 'world']
+
+test "computed property keys: Class property", ->
+  increment_method = "increment"
+  decrement_method = "decrement"
+  class Obs
+    constructor: (@count) ->
+    [increment_method]: -> @count += 1
+    [decrement_method]: -> @count -= 1
+  ob = new Obs 2
+  eq ob.increment(), 3
+  eq ob.decrement(), 2
 
 test "#1263: Braceless object return", ->
   fn = ->
@@ -15120,6 +15444,19 @@ test "#4248: Unicode code point escapes", ->
   """,
   """
     /a\\udab3\\uddef/;
+  """
+
+test "#4811, heregex comments with ///", ->
+  eqJS """
+    ///
+      a | # comment with ///
+      b   # /// 'heregex' in comment will be consumed
+    ///
+  """,
+  """
+   // comment with ///
+   // /// 'heregex' in comment will be consumed
+   /a|b/;
   """
 
 </script>
