@@ -2382,13 +2382,17 @@ exports.Assign = class Assign extends Base
 
     # Helper which outputs `[].slice` code.
     compSlice = (vvar, start, end = no) ->
-      endVal = if end then ", #{end}" else ""
-      new Value new Literal "#{utility 'slice', o}.call(#{vvar}, #{start}#{endVal})"
+      args = [new IdentifierLiteral(vvar), new NumberLiteral(start)]
+      args.push new NumberLiteral end if end
+      slice = new Value new Literal "#{utility 'slice', o}.call"
+      new Value new Call slice, args
 
     # Helper which outputs `[].splice` code.
     compSplice = (vvar, start, end = no) ->
-      endVal = if end then ", #{end}" else ""
-      new Value new Literal "#{utility 'splice', o}.call(#{vvar}, #{start}#{endVal})"
+      args = [new IdentifierLiteral(vvar), new NumberLiteral(start)]
+      args.push new NumberLiteral end if end
+      splice = new Value new Literal "#{utility 'splice', o}.call"
+      new Value new Call splice, args
 
     # Check if `objects` array contains object spread (`{a, r...}`), e.g. `[a, b, {c, r...}]`.
     hasObjSpreads = (objs) ->
