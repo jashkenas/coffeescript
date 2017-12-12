@@ -2360,7 +2360,7 @@ exports.Assign = class Assign extends Base
     # Show error if there is more than one `Splat`, or `Expansion`.
     # Examples: [a, b, c..., d, e, f...], [a, b, ..., c, d, ...], [a, b, ..., c, d, e...]
     if splatsAndExpans.length > 1
-      objects[testSplatExpans[1]].error "multiple splats/expansions are disallowed in an assignment"
+      objects[splatsAndExpans[1]].error "multiple splats/expansions are disallowed in an assignment"
 
     isSplat = splats.length
     isExpans = expans.length
@@ -2380,19 +2380,17 @@ exports.Assign = class Assign extends Base
       vvar = [@makeCode ref]
       vvarText = ref
 
-    # Helper which outputs `[].slice` code.
-    compSlice = (vvar, start, end = no) ->
+    slicer = (type) -> (vvar, start, end = no) ->
       args = [new IdentifierLiteral(vvar), new NumberLiteral(start)]
       args.push new NumberLiteral end if end
-      slice = new Value new Literal "#{utility 'slice', o}.call"
+      slice = new Value new Literal "#{utility type, o}.call"
       new Value new Call slice, args
 
+    # Helper which outputs `[].slice` code.
+    compSlice = slicer "slice"
+
     # Helper which outputs `[].splice` code.
-    compSplice = (vvar, start, end = no) ->
-      args = [new IdentifierLiteral(vvar), new NumberLiteral(start)]
-      args.push new NumberLiteral end if end
-      splice = new Value new Literal "#{utility 'splice', o}.call"
-      new Value new Call splice, args
+    compSplice = slicer "splice"
 
     # Check if `objects` array contains object spread (`{a, r...}`), e.g. `[a, b, {c, r...}]`.
     hasObjSpreads = (objs) ->
