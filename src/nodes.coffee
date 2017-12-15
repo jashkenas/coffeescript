@@ -1871,11 +1871,6 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
     if argumentsNode = @body.contains isLiteralArguments
       argumentsNode.error "Class bodies shouldn't reference arguments"
 
-    @name      = @class.name ? @defaultClassVariableName
-    directives = @walkBody()
-    @setContext()
-
-    ident   = new IdentifierLiteral @name
     params  = []
     args    = []
     wrapper = new Code params, @body
@@ -1884,6 +1879,11 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
     @body.spaced = true
 
     o.classScope = wrapper.makeScope o.scope
+
+    @name      = @class.name ? o.classScope.freeVariable @defaultClassVariableName
+    ident      = new IdentifierLiteral @name
+    directives = @walkBody()
+    @setContext()
 
     if @class.hasNameClash
       parent = new IdentifierLiteral o.classScope.freeVariable 'superClass'
