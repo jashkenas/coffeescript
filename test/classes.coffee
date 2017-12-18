@@ -1857,3 +1857,13 @@ test "#4724: backticked expression in a class body with hoisted member", ->
   a = new A
   eq 42, a.x
   eq 84, a.hoisted
+
+test "#4827: executable class body wrappers have correct context", ->
+  test = ->
+    class @A
+    class @B extends @A
+      @property = 1
+
+  o = {}
+  test.call o
+  ok typeof o.A is typeof o.B is 'function'
