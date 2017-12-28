@@ -1872,9 +1872,9 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
       argumentsNode.error "Class bodies shouldn't reference arguments"
 
     params  = []
-    args    = []
+    args    = [new ThisLiteral]
     wrapper = new Code params, @body
-    klass   = new Parens new Call wrapper, args
+    klass   = new Parens new Call (new Value wrapper, [new Access new PropertyName 'call']), args
 
     @body.spaced = true
 

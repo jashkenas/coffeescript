@@ -1864,3 +1864,13 @@ test "#4822: nested anonymous classes use non-conflicting variable names", ->
       @b: 1
 
   eq Class.a.b, 1
+
+test "#4827: executable class body wrappers have correct context", ->
+  test = ->
+    class @A
+    class @B extends @A
+      @property = 1
+
+  o = {}
+  test.call o
+  ok typeof o.A is typeof o.B is 'function'
