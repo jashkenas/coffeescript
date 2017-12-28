@@ -1858,6 +1858,13 @@ test "#4724: backticked expression in a class body with hoisted member", ->
   eq 42, a.x
   eq 84, a.hoisted
 
+test "#4822: nested anonymous classes use non-conflicting variable names", ->
+  Class = class
+    @a: class
+      @b: 1
+
+  eq Class.a.b, 1
+
 test "#4827: executable class body wrappers have correct context", ->
   test = ->
     class @A
