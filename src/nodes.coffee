@@ -2384,7 +2384,7 @@ exports.Assign = class Assign extends Base
     slicer = (type) -> (vvar, start, end = no) ->
       args = [new IdentifierLiteral(vvar), new NumberLiteral(start)]
       args.push new NumberLiteral end if end
-      slice = new Value new Literal "#{utility type, o}.call"
+      slice = new Value (new IdentifierLiteral utility type, o), [new Access new PropertyName 'call']
       new Value new Call slice, args
 
     # Helper which outputs `[].slice` code.
@@ -2469,8 +2469,8 @@ exports.Assign = class Assign extends Base
       expIdx = splatsAndExpans[0]
       leftObjs = objects.slice 0, expIdx + (if isSplat then 1 else 0)
       rightObjs = objects.slice expIdx + 1
-      processObjects leftObjs, vvarText if leftObjs.length
-      if rightObjs.length
+      processObjects leftObjs, vvarText if leftObjs.length isnt 0
+      if rightObjs.length isnt 0
         # Slice or splice `objects`.
         refExp = switch
           when isSplat then compSplice objects[expIdx].unwrapAll().value, rightObjs.length * -1
