@@ -646,7 +646,7 @@ div.CodeMirror-cursor {
       <section id="overview">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.1.0">2.1.0</a></p>
+<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.1.1">2.1.1</a></p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash"><span class="comment"># Install locally for a project:</span>
 npm install --save-dev coffeescript
 
@@ -4790,7 +4790,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
         <section id="annotated-source">
           <h2>Annotated Source</h2>
-<p>You can browse the CoffeeScript 2.1.0 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+<p>You can browse the CoffeeScript 2.1.1 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
 <li><a href="annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
@@ -5467,6 +5467,14 @@ x = <span class="number">2</span> + <span class="number">2</span>
       </section>
       <section id="changelog">
         <h2>Changelog</h2>
+<div class="anchor" id="2.1.1"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/2.1.0...2.1.1">2.1.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-12-29">December 29, 2017</time></span>
+</h2><ul>
+<li>Bugfix to set the correct context for executable class bodies. So in <code>class @B extends @A then @property = 1</code>, the <code>@</code> in <code>@property</code> now refers to the class, not the global object.</li>
+<li>Bugfix where anonymous classes were getting created using the same automatic variable name. They now each receive unique names, so as not to override each other.</li>
+</ul>
 <div class="anchor" id="2.1.0"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/2.0.3...2.1.0">2.1.0</a>
