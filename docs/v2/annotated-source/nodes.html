@@ -3838,19 +3838,19 @@ exports.ExecutableClassBody = <span class="hljs-class"><span class="hljs-keyword
     <span class="hljs-keyword">if</span> argumentsNode = @body.contains isLiteralArguments
       argumentsNode.error <span class="hljs-string">"Class bodies shouldn't reference arguments"</span>
 
-    @name      = @class.name ? @defaultClassVariableName
-    directives = @walkBody()
-    @setContext()
-
-    ident   = <span class="hljs-keyword">new</span> IdentifierLiteral @name
     params  = []
-    args    = []
+    args    = [<span class="hljs-keyword">new</span> ThisLiteral]
     wrapper = <span class="hljs-keyword">new</span> Code params, @body
-    klass   = <span class="hljs-keyword">new</span> Parens <span class="hljs-keyword">new</span> Call wrapper, args
+    klass   = <span class="hljs-keyword">new</span> Parens <span class="hljs-keyword">new</span> Call (<span class="hljs-keyword">new</span> Value wrapper, [<span class="hljs-keyword">new</span> Access <span class="hljs-keyword">new</span> PropertyName <span class="hljs-string">'call'</span>]), args
 
     @body.spaced = <span class="hljs-literal">true</span>
 
     o.classScope = wrapper.makeScope o.scope
+
+    @name      = @class.name ? o.classScope.freeVariable @defaultClassVariableName
+    ident      = <span class="hljs-keyword">new</span> IdentifierLiteral @name
+    directives = @walkBody()
+    @setContext()
 
     <span class="hljs-keyword">if</span> @class.hasNameClash
       parent = <span class="hljs-keyword">new</span> IdentifierLiteral o.classScope.freeVariable <span class="hljs-string">'superClass'</span>
