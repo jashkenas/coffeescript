@@ -50,6 +50,7 @@ exports.Rewriter = class Rewriter
     @removeLeadingNewlines()
     @closeOpenCalls()
     @closeOpenIndexes()
+    @addParensToConditions()
     @normalizeLines()
     @tagPostfixConditionals()
     @addImplicitBracesAndParens()
@@ -535,6 +536,52 @@ exports.Rewriter = class Rewriter
           (token, i) -> glyphIndex = i
       return 1 unless glyphIndex? and @tag(glyphIndex) in ['->', '=>'] and @tag(glyphIndex + 1) is 'INDENT'
       @detectEnd glyphIndex + 1, condition, action
+      return 2
+
+  # Add parens around a function used in condition (see #3921).
+  # Examples:
+  # ```
+  # if f -> a is 1
+  #   foo a
+  #
+  # while f (a) -> a
+  #   foo a
+  #
+  # a = if f -> g(a) is 1 then b else c
+  # ```
+  # Without parens, method @normalizeLines will insert `INDENT` after `->` or `=>`, and
+  # @tagPostfixConditionals will convert `IF` in `POST_IF`.
+  addParensToConditions: ->
+    conditionTags = ['IF', 'UNLESS', 'WHILE', 'UNTIL', 'SWITCH']
+    endTags = ['ELSE',  'THEN', LINEBREAKS...]
+    glyphTags = ['->', '=>']
+
+    findGlyph = (idx) =>
+      @detectEnd idx,
+        (token) -> token[0] in [glyphTags..., endTags...]
+        (token, i) -> i if token[0] in glyphTags and @tag(i + 1) not in LINEBREAKS
+        returnOnNegativeLevel: yes
+
+    wrapInParens = (startIndex, idx) =>
+      @detectEnd idx,
+        (token) -> token[0] in endTags
+        (token, i) ->
+          endIndex = i + 1
+          @tokens.splice startIndex, 0, generate '(', '(', @tokens[startIndex]
+          @tokens.splice endIndex, 0, generate ')', ')', @tokens[endIndex]
+        returnOnNegativeLevel: yes
+
+    @scanTokens (token, i, tokens) ->
+      startIndex = funcGlyphIndex = null
+      [tag] = token
+      nextTag = @tag i + 1
+      return 1 unless tag in conditionTags and nextTag isnt '('
+      # Open parens index.
+      startIndex = i + 1
+      # Find function glyph (`->` or `=>`) or end tag (`then`, `else`, linebreaks).
+      funcGlyphIndex = findGlyph startIndex
+      return 1 unless funcGlyphIndex?
+      wrapInParens startIndex, funcGlyphIndex
       return 2
 
   # Because our grammar is LALR(1), it can’t handle some single-line

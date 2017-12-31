@@ -484,3 +484,91 @@ test "#4267: lots of for-loops in the same scope", ->
       true
   """
   ok CoffeeScript.eval(code)
+
+# Test for issue #3921: Inline function without parentheses used in condition fails to compile
+test "Issue 3921: `if` & `unless`", ->
+  a = {}
+  eq a, if do -> no then undefined else a
+  a1 = undefined
+  if do -> yes
+    a1 = a
+  eq a, a1
+
+  b = {}
+  eq b, unless do -> no then b else undefined
+  b1 = undefined
+  unless do -> no
+    b1 = b
+  eq b, b1
+
+  c = 0
+  if (arg = undefined) -> yes then c++
+  eq 1, c
+  d = 0
+  if (arg = undefined) -> yes
+    d++
+  eq 1, d
+
+  nonce = {}
+  eq nonce, unless do -> no then nonce
+  n = undefined
+  unless do -> no
+    n = nonce
+  eq nonce, n
+
+  answer = 'correct'
+  eq answer, if do -> 'wrong' then 'correct' else 'wrong'
+  eq answer, unless do -> no then 'correct' else 'wrong'
+  statm1 = undefined
+  if do -> 'wrong'
+    statm1 = 'correct'
+  eq answer, statm1
+  statm2 = undefined
+  unless do -> no
+    statm2 = 'correct'
+  eq answer, statm2
+
+test "Issue 3921: `while` & `until`", ->
+  i = 5
+  assert = (a) -> ok 5 > a > 0
+  result1 = while do (num = 1) -> i -= num
+    assert i
+    i
+  ok result1.join(' ') is '4 3 2 1'
+
+  j = 5
+  result2 = until do (num = 1) -> (j -= num) < 1
+    assert j
+    j
+  ok result2.join(' ') is '4 3 2 1'
+
+test "Issue 3921: `switch`", ->
+  i = 1
+  a = switch do (m = 2) -> i * m
+    when 5 then "five"
+    when 4 then "four"
+    when 3 then "three"
+    when 2 then "two"
+    when 1 then "one"
+    else "none"
+  eq "two", a
+
+  j = 12
+  b = switch do (m = 3) -> j / m
+    when 5 then "five"
+    when 4 then "four"
+    when 3 then "three"
+    when 2 then "two"
+    when 1 then "one"
+    else "none"
+  eq "four", b
+
+  k = 20
+  c = switch do (m = 4) -> k / m
+    when 5 then "five"
+    when 4 then "four"
+    when 3 then "three"
+    when 2 then "two"
+    when 1 then "one"
+    else "none"
+  eq "five", c
