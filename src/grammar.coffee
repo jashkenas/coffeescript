@@ -333,7 +333,11 @@ grammar =
   Value: [
     o 'Assignable'
     o 'Literal',                                -> new Value $1
-    o 'Parenthetical',                          -> new Value $1
+    o 'Parenthetical',                          ->
+        if $1.constructor.name is 'Parens'
+          new Value $1
+        else
+          $1
     o 'Range',                                  -> new Value $1
     o 'Invocation',                             -> new Value $1
     o 'This'
@@ -597,8 +601,22 @@ grammar =
   # where only values are accepted, wrapping it in parentheses will always do
   # the trick.
   Parenthetical: [
-    o '( Body )',                               -> new Parens $2
-    o '( INDENT Body OUTDENT )',                -> new Parens $3
+    o '( Body )',                               ->
+        # When `Parens` block includes a `StatementLiteral` (e.g. `(b; break) for a in arr`),
+        # it won't compile since `Parens` (`(b; break)`) is compiled as `Value` and
+        # pure statement (`break`) can't be used in an expression.
+        # For this reasons, we return `Block`, which is passed further to `Value` and `Expression`.
+        stm = $2.contains (n) -> n.constructor.name is 'StatementLiteral'
+        if stm
+          LOC(2)(Block.wrap [$2])
+        else
+          new Parens $2
+    o '( INDENT Body OUTDENT )',                ->
+        stm = $3.contains (n) -> n.constructor.name is 'StatementLiteral'
+        if stm
+          LOC(3)(Block.wrap [$3])
+        else
+          new Parens $3
   ]
 
   # The condition portion of a while loop.
