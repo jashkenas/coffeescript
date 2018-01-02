@@ -94,7 +94,13 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
         options.bare = yes
         break
 
-  fragments = parser.parse(tokens).compileToFragments options
+  nodes = parser.parse tokens
+  # If all that was requested was a POJO representation of the nodes, e.g.
+  # the abstract syntax tree (AST), we can stop now and just return that.
+  if options.nodes
+    return nodes.toPlainObject()
+
+  fragments = nodes.compileToFragments options
 
   currentLine = 0
   currentLine += 1 if options.header
