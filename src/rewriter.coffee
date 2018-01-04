@@ -50,7 +50,6 @@ exports.Rewriter = class Rewriter
     @removeLeadingNewlines()
     @closeOpenCalls()
     @closeOpenIndexes()
-    @addParensToConditions()
     @normalizeLines()
     @tagPostfixConditionals()
     @addImplicitBracesAndParens()
@@ -344,7 +343,9 @@ exports.Rewriter = class Rewriter
           stackItem[2].sameLine = no if isImplicitObject stackItem
 
       newLine = prevTag is 'OUTDENT' or prevToken.newLine
-      if tag in IMPLICIT_END or tag in CALL_CLOSERS and newLine
+      if tag in IMPLICIT_END or
+          (tag in CALL_CLOSERS and newLine) or
+          (tag in ['..', '...'] and @findTagsBackwards(i, ["INDEX_START"]))
         while inImplicit()
           [stackTag, stackIdx, {sameLine, startsLine}] = stackTop()
           # Close implicit calls when reached end of argument list
@@ -538,52 +539,6 @@ exports.Rewriter = class Rewriter
       @detectEnd glyphIndex + 1, condition, action
       return 2
 
-  # Add parens around a function used in condition (see #3921).
-  # Examples:
-  # ```
-  # if f -> a is 1
-  #   foo a
-  #
-  # while f (a) -> a
-  #   foo a
-  #
-  # a = if f -> g(a) is 1 then b else c
-  # ```
-  # Without parens, method @normalizeLines will insert `INDENT` after `->` or `=>`, and
-  # @tagPostfixConditionals will convert `IF` in `POST_IF`.
-  addParensToConditions: ->
-    conditionTags = ['IF', 'UNLESS', 'WHILE', 'UNTIL', 'SWITCH']
-    endTags = ['ELSE',  'THEN', LINEBREAKS...]
-    glyphTags = ['->', '=>']
-
-    findGlyph = (idx) =>
-      @detectEnd idx,
-        (token) -> token[0] in [glyphTags..., endTags...]
-        (token, i) -> i if token[0] in glyphTags and @tag(i + 1) not in LINEBREAKS
-        returnOnNegativeLevel: yes
-
-    wrapInParens = (startIndex, idx) =>
-      @detectEnd idx,
-        (token) -> token[0] in endTags
-        (token, i) ->
-          endIndex = i + 1
-          @tokens.splice startIndex, 0, generate '(', '(', @tokens[startIndex]
-          @tokens.splice endIndex, 0, generate ')', ')', @tokens[endIndex]
-        returnOnNegativeLevel: yes
-
-    @scanTokens (token, i, tokens) ->
-      startIndex = funcGlyphIndex = null
-      [tag] = token
-      nextTag = @tag i + 1
-      return 1 unless tag in conditionTags and nextTag isnt '('
-      # Open parens index.
-      startIndex = i + 1
-      # Find function glyph (`->` or `=>`) or end tag (`then`, `else`, linebreaks).
-      funcGlyphIndex = findGlyph startIndex
-      return 1 unless funcGlyphIndex?
-      wrapInParens startIndex, funcGlyphIndex
-      return 2
-
   # Because our grammar is LALR(1), it can’t handle some single-line
   # expressions that lack ending delimiters. The **Rewriter** adds the implicit
   # blocks, so it doesn’t need to. To keep the grammar clean and tidy, trailing
@@ -605,6 +560,10 @@ exports.Rewriter = class Rewriter
 
     @scanTokens (token, i, tokens) ->
       [tag] = token
+      conditionTag = tag in ['->', '=>'] and
+        @findTagsBackwards(i, ['IF', 'WHILE', 'FOR', 'UNTIL', 'SWITCH', 'WHEN', 'LEADING_WHEN', '[', 'INDEX_START']) and
+        not (@findTagsBackwards i, ['THEN', '..', '...'])
+
       if tag is 'TERMINATOR'
         if @tag(i + 1) is 'ELSE' and @tag(i - 1) isnt 'OUTDENT'
           tokens.splice i, 1, @indentation()...
@@ -621,7 +580,8 @@ exports.Rewriter = class Rewriter
         tokens.splice i + 1, 0, indent, outdent
         return 1
       if tag in SINGLE_LINERS and @tag(i + 1) isnt 'INDENT' and
-         not (tag is 'ELSE' and @tag(i + 1) is 'IF')
+         not (tag is 'ELSE' and @tag(i + 1) is 'IF') and
+         not conditionTag
         starter = tag
         [indent, outdent] = @indentation tokens[i]
         indent.fromThen   = true if starter is 'THEN'

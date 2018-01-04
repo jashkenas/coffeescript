@@ -509,13 +509,6 @@ test "Issue 3921: `if` & `unless`", ->
     d++
   eq 1, d
 
-  nonce = {}
-  eq nonce, unless do -> no then nonce
-  n = undefined
-  unless do -> no
-    n = nonce
-  eq nonce, n
-
   answer = 'correct'
   eq answer, if do -> 'wrong' then 'correct' else 'wrong'
   eq answer, unless do -> no then 'correct' else 'wrong'
@@ -526,6 +519,29 @@ test "Issue 3921: `if` & `unless`", ->
   statm2 = undefined
   unless do -> no
     statm2 = 'correct'
+  eq answer, statm2
+
+test "Issue 3921: `post if`", ->
+  a = {}
+  eq a, a unless do -> no
+  a1 = a if do -> yes
+  eq a, a1
+
+  c = 0
+  c++ if (arg = undefined) -> yes
+  eq 1, c
+  d = 0
+  d++ if (arg = undefined) -> yes
+  eq 1, d
+
+  answer = 'correct'
+  eq answer, 'correct' if do -> 'wrong'
+  eq answer, 'correct' unless do -> not 'wrong'
+  statm1 = undefined
+  statm1 = 'correct' if do -> 'wrong'
+  eq answer, statm1
+  statm2 = undefined
+  statm2 = 'correct' unless do -> not 'wrong'
   eq answer, statm2
 
 test "Issue 3921: `while` & `until`", ->
