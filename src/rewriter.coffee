@@ -546,11 +546,14 @@ exports.Rewriter = class Rewriter
   # blocks are added.
   normalizeLines: ->
     starter = indent = outdent = null
+    leading_switch_when = null
+    leading_if_then = null
 
     condition = (token, i) ->
       token[1] isnt ';' and token[0] in SINGLE_CLOSERS and
       not (token[0] is 'TERMINATOR' and @tag(i + 1) in EXPRESSION_CLOSE) and
-      not (token[0] is 'ELSE' and starter isnt 'THEN') and
+      not (token[0] is 'ELSE' and
+           (starter isnt 'THEN' or (leading_if_then or leading_switch_when))) and
       not (token[0] in ['CATCH', 'FINALLY'] and starter in ['->', '=>']) or
       token[0] in CALL_CLOSERS and
       (@tokens[i - 1].newLine or @tokens[i - 1][0] is 'OUTDENT')
@@ -585,6 +588,9 @@ exports.Rewriter = class Rewriter
         starter = tag
         [indent, outdent] = @indentation tokens[i]
         indent.fromThen   = true if starter is 'THEN'
+        if tag is 'THEN'
+          leading_switch_when = @findTagsBackwards(i, ['LEADING_WHEN']) and @tag(i + 1) is 'IF'
+          leading_if_then = @findTagsBackwards(i, ['IF']) and @tag(i + 1) is 'IF'
         tokens.splice i + 1, 0, indent
         @detectEnd i + 2, condition, action
         tokens.splice i, 1 if tag is 'THEN'

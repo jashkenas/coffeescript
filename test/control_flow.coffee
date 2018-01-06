@@ -485,6 +485,293 @@ test "#4267: lots of for-loops in the same scope", ->
   """
   ok CoffeeScript.eval(code)
 
+# Test for issue #2342: Lexer: Inline `else` binds to wrong `if`/`switch`
+test "issue 2343: if / then / if / then / else", ->
+  a = b = yes
+  c = e = g = no
+  d = 1
+  f = 2
+  h = 3
+  i = 4
+
+  s = ->
+    if a
+      if b
+        if c
+          d
+        else
+          if e
+            f
+          else
+            if g
+              h
+            else
+              i
+
+  t = ->
+    if a then if b
+      if c then d
+      else if e
+        f
+      else if g
+        h
+      else
+        i
+
+  u = ->
+    if a then if b
+      if c then d else if e
+        f
+      else if g
+        h
+      else i
+
+  v = ->
+    if a then if b
+      if c then d else if e then f
+      else if g then h
+      else i
+
+  w = ->
+    if a then if b
+      if c then d
+      else if e
+          f
+        else
+          if g then h
+          else i
+
+  x = -> if a then if b then if c then d else if e then f else if g then h else i
+
+  y = -> if a then if b then (if c then d else (if e then f else (if g then h else i)))
+
+  eq 4, s()
+  eq 4, t()
+  eq 4, u()
+  eq 4, v()
+  eq 4, w()
+  eq 4, x()
+  eq 4, y()
+
+  c = yes
+  eq 1, s()
+  eq 1, t()
+  eq 1, u()
+  eq 1, v()
+  eq 1, w()
+  eq 1, x()
+  eq 1, y()
+
+  b = no
+  eq undefined, s()
+  eq undefined, t()
+  eq undefined, u()
+  eq undefined, v()
+  eq undefined, w()
+  eq undefined, x()
+  eq undefined, y()
+
+
+test "issue 2343: switch / when / then / if / then / else", ->
+  a = b = yes
+  c = e = g = no
+  d = 1
+  f = 2
+  h = 3
+  i = 4
+
+  s = ->
+    switch
+      when a
+        if b
+          if c
+            d
+          else
+            if e
+              f
+            else
+              if g
+                h
+              else
+                i
+
+
+  t = ->
+    switch
+      when a then if b
+        if c then d
+        else if e
+          f
+        else if g
+          h
+        else
+          i
+
+  u = ->
+    switch
+      when a then if b then if c then d
+      else if e then f
+      else if g then h else i
+
+  v = ->
+    switch
+      when a then if b then if c then d else if e then f
+      else if g then h else i
+
+  w = ->
+    switch
+      when a then if b then if c then d else if e then f
+      else if g
+        h
+      else i
+
+  x = ->
+    switch
+     when a then if b then if c then d else if e then f else if g then h else i
+
+  y = -> switch
+    when a then if b then (if c then d else (if e then f else (if g then h else i)))
+
+  eq 4, s()
+  eq 4, t()
+  eq 4, u()
+  eq 4, v()
+  eq 4, w()
+  eq 4, x()
+  eq 4, y()
+
+  c = yes
+  eq 1, s()
+  eq 1, t()
+  eq 1, u()
+  eq 1, v()
+  eq 1, w()
+  eq 1, x()
+  eq 1, y()
+
+  b = no
+  eq undefined, s()
+  eq undefined, t()
+  eq undefined, u()
+  eq undefined, v()
+  eq undefined, w()
+  eq undefined, x()
+  eq undefined, y()
+
+test "issue 2343: switch / when / then / if / then / else / else", ->
+  a = b = yes
+  c = e = g = no
+  d = 1
+  f = 2
+  h = 3
+  i = 4
+
+  s = ->
+    switch
+      when a
+        if b
+          if c
+            d
+          else if e
+            f
+          else if g
+            h
+          else
+            i
+      else
+        0
+
+  t = ->
+    switch
+      when a
+        if b
+          if c then d
+          else if e
+            f
+          else if g
+            h
+          else i
+      else 0
+
+  u = ->
+    switch
+      when a
+        if b then if c
+            d
+          else if e
+            f
+          else if g
+            h
+          else i
+      else 0
+
+  v = ->
+    switch
+      when a
+        if b then if c then d
+        else if e
+          f
+        else if g
+          h
+        else i
+      else 0
+
+  w = ->
+    switch
+      when a
+        if b then if c then d
+        else if e then f
+        else if g then h
+        else i
+      else 0
+
+  x = ->
+    switch
+     when a
+       if b then if c then d else if e then f else if g then h else i
+     else 0
+
+  y = -> switch
+    when a
+      if b then (if c then d else (if e then f else (if g then h else i)))
+    else 0
+
+  eq 4, s()
+  eq 4, t()
+  eq 4, u()
+  eq 4, v()
+  eq 4, w()
+  eq 4, x()
+  eq 4, y()
+
+  c = yes
+  eq 1, s()
+  eq 1, t()
+  eq 1, u()
+  eq 1, v()
+  eq 1, w()
+  eq 1, x()
+  eq 1, y()
+
+  b = no
+  eq undefined, s()
+  eq undefined, t()
+  eq undefined, u()
+  eq undefined, v()
+  eq undefined, w()
+  eq undefined, x()
+  eq undefined, y()
+
+  b = yes
+  a = no
+  eq 0, s()
+  eq 0, t()
+  eq 0, u()
+  eq 0, v()
+  eq 0, w()
+  eq 0, x()
+  eq 0, y()
+
 # Test for issue #3921: Inline function without parentheses used in condition fails to compile
 test "Issue 3921: `if` & `unless`", ->
   a = {}
