@@ -1,6 +1,6 @@
 gold = silver = rest = "unknown"
 
-awardMedals = (first, second, others...) ->
+awardMedals = (first, second, ...others) ->
   gold   = first
   silver = second
   rest   = others
@@ -18,7 +18,7 @@ contenders = [
   "Usain Bolt"
 ]
 
-awardMedals contenders...
+awardMedals ...contenders
 
 alert """
 Gold: #{gold}

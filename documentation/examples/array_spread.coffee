@@ -1,4 +1,4 @@
 popular  = ['pepperoni', 'sausage', 'cheese']
 unwanted = ['anchovies', 'olives']
 
-all = [popular..., unwanted..., 'mushrooms']
+all = [...popular, ...unwanted, 'mushrooms']
