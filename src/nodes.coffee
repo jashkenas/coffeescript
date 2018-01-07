@@ -2603,8 +2603,19 @@ exports.Code = class Code extends Base
       if node.this
         name   = node.properties[0].name.value
         name   = "_#{name}" if name in JS_FORBIDDEN
-        target = new IdentifierLiteral o.scope.freeVariable name
-        param.renameParam node, target
+        newName = o.scope.freeVariable name, reserve: no
+        target = new IdentifierLiteral newName
+        # Param is object destructuring with a default value: ({@prop = 1}) ->
+        # In a case when the variable name is already reserved, we have to assign
+        # a new variable name to the destructured variable: ({prop:prop1 = 1}) ->
+        if param.name instanceof Obj and
+            param.name.properties[0] instanceof Assign and
+            name isnt newName
+          propTarget = new Assign (new IdentifierLiteral name), target,
+              'object', operatorToken: new Literal ':', param: yes
+          param.renameParam node, propTarget
+        else
+          param.renameParam node, target
         thisAssignments.push new Assign node, target
 
     # Parse the parameters, adding them to the list of parameters to put in the
