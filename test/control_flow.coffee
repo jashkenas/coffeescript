@@ -486,7 +486,7 @@ test "#4267: lots of for-loops in the same scope", ->
   ok CoffeeScript.eval(code)
 
 # Test for issue #2342: Lexer: Inline `else` binds to wrong `if`/`switch`
-test "issue 2343: if / then / if / then / else", ->
+test "#2343: if / then / if / then / else", ->
   a = b = yes
   c = e = g = no
   d = 1
@@ -572,7 +572,7 @@ test "issue 2343: if / then / if / then / else", ->
   eq undefined, y()
 
 
-test "issue 2343: switch / when / then / if / then / else", ->
+test "#2343: switch / when / then / if / then / else", ->
   a = b = yes
   c = e = g = no
   d = 1
@@ -658,7 +658,7 @@ test "issue 2343: switch / when / then / if / then / else", ->
   eq undefined, x()
   eq undefined, y()
 
-test "issue 2343: switch / when / then / if / then / else / else", ->
+test "#2343: switch / when / then / if / then / else / else", ->
   a = b = yes
   c = e = g = no
   d = 1
@@ -773,7 +773,7 @@ test "issue 2343: switch / when / then / if / then / else / else", ->
   eq 0, y()
 
 # Test for issue #3921: Inline function without parentheses used in condition fails to compile
-test "Issue 3921: `if` & `unless`", ->
+test "#3921: `if` & `unless`", ->
   a = {}
   eq a, if do -> no then undefined else a
   a1 = undefined
@@ -808,7 +808,7 @@ test "Issue 3921: `if` & `unless`", ->
     statm2 = 'correct'
   eq answer, statm2
 
-test "Issue 3921: `post if`", ->
+test "#3921: `post if`", ->
   a = {}
   eq a, a unless do -> no
   a1 = a if do -> yes
@@ -845,7 +845,7 @@ test "Issue 3921: `while` & `until`", ->
     j
   ok result2.join(' ') is '4 3 2 1'
 
-test "Issue 3921: `switch`", ->
+test "#3921: `switch`", ->
   i = 1
   a = switch do (m = 2) -> i * m
     when 5 then "five"
