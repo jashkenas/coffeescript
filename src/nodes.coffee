@@ -3214,6 +3214,19 @@ exports.Op = class Op extends Base
   compileUnary: (o) ->
     parts = []
     op = @operator
+    validUnaryExpression = (node) ->
+      {body: {expressions}} = node
+      [expr] = expressions
+      return no if expressions.length > 1
+      return no unless expr instanceof Value
+      return no if expr.contains (n) ->
+          n instanceof NumberLiteral or
+          n instanceof Code or
+          n instanceof Call
+      yes
+    if op in ['++', '--'] and @first instanceof Parens and not validUnaryExpression @first
+      @first.error "Invalid left-hand side expression"
+
     parts.push [@makeCode op]
     if op is '!' and @first instanceof Existence
       @first.negated = not @first.negated
