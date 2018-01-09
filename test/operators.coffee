@@ -460,3 +460,17 @@ test "'new' target", ->
 
   # classes must be called with `new`. In this case `new` applies to `get` only
   throws -> new get()()
+
+test "#4422: operator (++ and --) on braced expression", ->
+  i = 1
+  eq 2, ++i
+  eq 1, --(i)
+  eq 1,  i++
+  eq 2, (i)++
+
+  obj = a: 1
+  eq 2, ++obj.a
+  eq 3, ++(obj.a)
+  eq 3, (obj.a)--
+  eq 2, (obj.a)++
+  eq 3, obj.a--

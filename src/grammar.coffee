@@ -726,8 +726,12 @@ grammar =
 
     o '-- SimpleAssignable',                    -> new Op '--', $2
     o '++ SimpleAssignable',                    -> new Op '++', $2
+    o '-- Parenthetical',                       -> new Op '--', new Value $2
+    o '++ Parenthetical',                       -> new Op '++', new Value $2
     o 'SimpleAssignable --',                    -> new Op '--', $1, null, true
     o 'SimpleAssignable ++',                    -> new Op '++', $1, null, true
+    o 'Parenthetical --',                       -> new Op '--', (new Value $1), null, true
+    o 'Parenthetical ++',                       -> new Op '++', (new Value $1), null, true
 
     # [The existential operator](http://coffeescript.org/#existential-operator).
     o 'Expression ?',                           -> new Existence $1
