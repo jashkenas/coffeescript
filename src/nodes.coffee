@@ -2597,25 +2597,24 @@ exports.Code = class Code extends Base
 
     # Check for duplicate parameters and separate `this` assignments.
     paramNames = []
-    @eachParamName (name, node, param) ->
+    @eachParamName (name, node, param, obj) ->
       node.error "multiple parameters named '#{name}'" if name in paramNames
       paramNames.push name
+
       if node.this
         name   = node.properties[0].name.value
         name   = "_#{name}" if name in JS_FORBIDDEN
-        newName = o.scope.freeVariable name, reserve: no
-        target = new IdentifierLiteral newName
-        # Param is object destructuring with a default value: ({@prop = 1}) ->
+        target = new IdentifierLiteral o.scope.freeVariable name, reserve: no
+        # `Param` is object destructuring with a default value: ({@prop = 1}) ->
         # In a case when the variable name is already reserved, we have to assign
         # a new variable name to the destructured variable: ({prop:prop1 = 1}) ->
-        if param.name instanceof Obj and
-            param.name.properties[0] instanceof Assign and
-            name isnt newName
-          propTarget = new Assign (new IdentifierLiteral name), target,
-              'object', operatorToken: new Literal ':', param: yes
-          param.renameParam node, propTarget
-        else
-          param.renameParam node, target
+        replacement =
+            if param.name instanceof Obj and obj instanceof Assign and
+                obj.operatorToken.value is '='
+              new Assign (new IdentifierLiteral name), target, 'object' #, operatorToken: new Literal ':'
+            else
+              target
+        param.renameParam node, replacement
         thisAssignments.push new Assign node, target
 
     # Parse the parameters, adding them to the list of parameters to put in the
@@ -2803,7 +2802,7 @@ exports.Code = class Code extends Base
     if @front or (o.level >= LEVEL_ACCESS) then @wrapInParentheses answer else answer
 
   eachParamName: (iterator) ->
-    param.eachName iterator for param in @params
+    param.eachName iterator for param, i in @params
 
   # Short-circuit `traverseChildren` method to prevent it from crossing scope
   # boundaries unless `crossScope` is `true`.
@@ -2904,12 +2903,14 @@ exports.Param = class Param extends Base
   # `name` is the name of the parameter and `node` is the AST node corresponding
   # to that name.
   eachName: (iterator, name = @name) ->
-    atParam = (obj) => iterator "@#{obj.properties[0].name.value}", obj, @
+    atParam = (obj) => iterator "@#{obj.properties[0].name.value}", obj, @, nObj
     # * simple literals `foo`
     return iterator name.value, name, @ if name instanceof Literal
     # * at-params `@foo`
     return atParam name if name instanceof Value
     for obj in name.objects ? []
+      # Save original obj.
+      nObj = obj
       # * destructured parameter with default value
       if obj instanceof Assign and not obj.context?
         obj = obj.variable
@@ -2948,7 +2949,14 @@ exports.Param = class Param extends Base
       if parent instanceof Obj
         key = node
         key = node.properties[0].name if node.this
-        new Assign new Value(key), newNode, 'object'
+        # No need to assign a new variable for the destructured variable if the variable isn't reserved.
+        # Examples:
+        # `({@foo}) ->`  should compile to `({foo}) { this.foo = foo}`
+        # `foo = 1; ({@foo}) ->` should compile to `foo = 1; ({foo:foo1}) { this.foo = foo1 }`
+        if node.this and key.value is newNode.value
+          new Value newNode
+        else
+          new Assign new Value(key), newNode, 'object'
       else
         newNode
 
