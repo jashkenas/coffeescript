@@ -2802,7 +2802,7 @@ exports.Code = class Code extends Base
     if @front or (o.level >= LEVEL_ACCESS) then @wrapInParentheses answer else answer
 
   eachParamName: (iterator) ->
-    param.eachName iterator for param, i in @params
+    param.eachName iterator for param in @params
 
   # Short-circuit `traverseChildren` method to prevent it from crossing scope
   # boundaries unless `crossScope` is `true`.
