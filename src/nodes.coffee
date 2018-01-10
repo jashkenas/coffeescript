@@ -2903,7 +2903,7 @@ exports.Param = class Param extends Base
   # `name` is the name of the parameter and `node` is the AST node corresponding
   # to that name.
   eachName: (iterator, name = @name) ->
-    atParam = (obj) => iterator "@#{obj.properties[0].name.value}", obj, @, nObj
+    atParam = (obj, originalObj = null) => iterator "@#{obj.properties[0].name.value}", obj, @, originalObj
     # * simple literals `foo`
     return iterator name.value, name, @ if name instanceof Literal
     # * at-params `@foo`
@@ -2932,7 +2932,7 @@ exports.Param = class Param extends Base
           @eachName iterator, obj.base
         # * at-params within destructured parameters `{@foo}`
         else if obj.this
-          atParam obj
+          atParam obj, nObj
         # * simple destructured parameters {foo}
         else iterator obj.base.value, obj.base, @
       else if obj instanceof Elision
