@@ -388,6 +388,12 @@ exports.Base = class Base
       answer = answer.concat fragments
     answer
 
+  hasStatementLiteral: ->
+    @contains (n) -> n instanceof StatementLiteral
+
+  hasParentheses: ->
+    @ instanceof Parens
+
 #### HoistTarget
 
 # A **HoistTargetNode** represents the output location in the node tree for a hoisted node.

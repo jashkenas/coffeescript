@@ -334,7 +334,7 @@ grammar =
     o 'Assignable'
     o 'Literal',                                -> new Value $1
     o 'Parenthetical',                          ->
-        if $1.constructor.name is 'Parens'
+        if $1.hasParentheses()
           new Value $1
         else
           $1
@@ -606,14 +606,12 @@ grammar =
         # it won't compile since `Parens` (`(b; break)`) is compiled as `Value` and
         # pure statement (`break`) can't be used in an expression.
         # For this reasons, we return `Block`, which is passed further to `Value` and `Expression`.
-        stm = $2.contains (n) -> n.constructor.name is 'StatementLiteral'
-        if stm
+        if $2.hasStatementLiteral()
           LOC(2)(Block.wrap [$2])
         else
           new Parens $2
     o '( INDENT Body OUTDENT )',                ->
-        stm = $3.contains (n) -> n.constructor.name is 'StatementLiteral'
-        if stm
+        if $3.hasStatementLiteral()
           LOC(3)(Block.wrap [$3])
         else
           new Parens $3
