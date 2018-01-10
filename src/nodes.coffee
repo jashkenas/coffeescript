@@ -1401,6 +1401,11 @@ exports.Slice = class Slice extends Base
   # `9e9` should be safe because `9e9` > `2**32`, the max array length.
   compileNode: (o) ->
     {to, from} = @range
+    # Issue #1726 (https://github.com/jashkenas/coffeescript/issues/1726)
+    if from?.shouldCache()
+      from = new Value new Parens from
+    if to?.shouldCache()
+      to = new Value new Parens to
     fromCompiled = from and from.compileToFragments(o, LEVEL_PAREN) or [@makeCode '0']
     # TODO: jwalton - move this into the 'if'?
     if to
