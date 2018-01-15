@@ -1385,9 +1385,9 @@ exports.Range = class Range extends Base
       range.pop() if @exclusive
       return [@makeCode "[#{ range.join(', ') }]"]
     idt    = @tab + TAB
-    i      = o.scope.freeVariable 'i', single: true
-    result = o.scope.freeVariable 'results'
-    pre    = "\n#{idt}#{result} = [];"
+    i      = o.scope.freeVariable 'i', single: true, reserve: no
+    result = o.scope.freeVariable 'results', reserve: no
+    pre    = "\n#{idt}var #{result} = [];"
     if known
       o.index = i
       body    = fragmentsToText @compileNode o
