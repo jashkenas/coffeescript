@@ -1411,8 +1411,7 @@ exports.Slice = class Slice extends Base
       from = new Value new Parens from
     if to?.shouldCache()
       to = new Value new Parens to
-    fromCompiled = from and from.compileToFragments(o, LEVEL_PAREN) or [@makeCode '0']
-    # TODO: jwalton - move this into the 'if'?
+    fromCompiled = from?.compileToFragments(o, LEVEL_PAREN) or [@makeCode '0']
     if to
       compiled     = to.compileToFragments o, LEVEL_PAREN
       compiledText = fragmentsToText compiled
