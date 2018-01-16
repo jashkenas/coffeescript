@@ -364,7 +364,7 @@ test "#3132: Place block-comments nicely", ->
 
     return DummyClass;
 
-  })();"""
+  }).call(this);"""
 
 test "#3638: Demand a whitespace after # symbol", ->
   eqJS """

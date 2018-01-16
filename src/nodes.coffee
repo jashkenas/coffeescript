@@ -1369,9 +1369,9 @@ exports.Range = class Range extends Base
       range.pop() if @exclusive
       return [@makeCode "[#{ range.join(', ') }]"]
     idt    = @tab + TAB
-    i      = o.scope.freeVariable 'i', single: true
-    result = o.scope.freeVariable 'results'
-    pre    = "\n#{idt}#{result} = [];"
+    i      = o.scope.freeVariable 'i', single: true, reserve: no
+    result = o.scope.freeVariable 'results', reserve: no
+    pre    = "\n#{idt}var #{result} = [];"
     if known
       o.index = i
       body    = fragmentsToText @compileNode o
@@ -1871,19 +1871,19 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
     if argumentsNode = @body.contains isLiteralArguments
       argumentsNode.error "Class bodies shouldn't reference arguments"
 
-    @name      = @class.name ? @defaultClassVariableName
-    directives = @walkBody()
-    @setContext()
-
-    ident   = new IdentifierLiteral @name
     params  = []
-    args    = []
+    args    = [new ThisLiteral]
     wrapper = new Code params, @body
-    klass   = new Parens new Call wrapper, args
+    klass   = new Parens new Call (new Value wrapper, [new Access new PropertyName 'call']), args
 
     @body.spaced = true
 
     o.classScope = wrapper.makeScope o.scope
+
+    @name      = @class.name ? o.classScope.freeVariable @defaultClassVariableName
+    ident      = new IdentifierLiteral @name
+    directives = @walkBody()
+    @setContext()
 
     if @class.hasNameClash
       parent = new IdentifierLiteral o.classScope.freeVariable 'superClass'
