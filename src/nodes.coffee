@@ -1422,8 +1422,12 @@ exports.Slice = class Slice extends Base
   # `9e9` should be safe because `9e9` > `2**32`, the max array length.
   compileNode: (o) ->
     {to, from} = @range
-    fromCompiled = from and from.compileToFragments(o, LEVEL_PAREN) or [@makeCode '0']
-    # TODO: jwalton - move this into the 'if'?
+    # Handle an expression in the property access, e.g. `a[!b in c..]`.
+    if from?.shouldCache()
+      from = new Value new Parens from
+    if to?.shouldCache()
+      to = new Value new Parens to
+    fromCompiled = from?.compileToFragments(o, LEVEL_PAREN) or [@makeCode '0']
     if to
       compiled     = to.compileToFragments o, LEVEL_PAREN
       compiledText = fragmentsToText compiled
