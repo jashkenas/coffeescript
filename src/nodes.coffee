@@ -3655,7 +3655,7 @@ exports.For = class For extends While
         body = Block.wrap [new If @guard, body] if @guard
     if @pattern
       body.expressions.unshift new Assign @name, if @from then new IdentifierLiteral kvar else new Literal "#{svar}[#{kvar}]"
-    defPartFragments = [].concat @makeCode(defPart), @pluckDirectCall(o, body)
+
     varPart = "\n#{idt1}#{namePart};" if namePart
     if @object
       forPartFragments = [@makeCode("#{kvar} in #{svar}")]
@@ -3666,35 +3666,13 @@ exports.For = class For extends While
     if bodyFragments and bodyFragments.length > 0
       bodyFragments = [].concat @makeCode('\n'), bodyFragments, @makeCode('\n')
 
-    fragments = []
-    if defPartFragments? and fragmentsToText(defPartFragments) isnt ''
-      fragments = fragments.concat defPartFragments
+    fragments = [@makeCode(defPart)]
     fragments.push @makeCode(resultPart) if resultPart
     fragments = fragments.concat @makeCode(@tab), @makeCode( 'for ('),
       forPartFragments, @makeCode(") {#{guardPart}#{varPart}"), bodyFragments,
       @makeCode(@tab), @makeCode('}')
     fragments.push @makeCode(returnResult) if returnResult
     fragments
-
-  pluckDirectCall: (o, body) ->
-    defs = []
-    for expr, idx in body.expressions
-      expr = expr.unwrapAll()
-      continue unless expr instanceof Call
-      val = expr.variable?.unwrapAll()
-      continue unless (val instanceof Code) or
-                      (val instanceof Value and
-                      val.base?.unwrapAll() instanceof Code and
-                      val.properties.length is 1 and
-                      val.properties[0].name?.value in ['call', 'apply'])
-      fn    = val.base?.unwrapAll() or val
-      ref   = new IdentifierLiteral o.scope.freeVariable 'fn'
-      base  = new Value ref
-      if val.base
-        [val.base, base] = [base, val]
-      body.expressions[idx] = new Call base, expr.args
-      defs = defs.concat @makeCode(@tab), (new Assign(ref, fn).compileToFragments(o, LEVEL_TOP)), @makeCode(';\n')
-    defs
 
 #### Switch
 
