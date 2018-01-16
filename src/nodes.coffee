@@ -1332,19 +1332,33 @@ exports.Range = class Range extends Base
 
     # Generate the condition.
     [from, to] = [@fromNum, @toNum]
+    # Treat `step` as Number. Bitwise operation converts `String`
+    # into 0 to avoid `NaN` error.
+    validStep = "(Number(#{@stepVar}) || (#{@stepVar}|0))" if @step
+    # Always check if the `step` isn't zero to avoid the infinite loop.
+    stepCond = "#{validStep} !== 0"
     condPart =
       if known
         unless @step?
           if from <= to then "#{lt} #{to}" else "#{gt} #{to}"
         else
-          if from <= to then "#{from} <= #{idx} && #{lt} #{to}" else "#{from} >= #{idx} && #{gt} #{to}"
+          # from < to
+          lowerBound = "#{from} <= #{idx} && #{lt} #{to}"
+          # from > to
+          upperBound = "#{from} >= #{idx} && #{gt} #{to}"
+          if from <= to then "#{stepCond} && #{lowerBound}" else "#{stepCond} && #{upperBound}"
       else
-        "#{@fromVar} <= #{@toVar} ? #{@fromVar} <= #{idx} && #{lt} #{@toVar} : #{@fromVar} >= #{idx} && #{gt} #{@toVar}"
+        # from < to
+        lowerBound = "#{@fromVar} <= #{idx} && #{lt} #{@toVar}"
+        # from > to
+        upperBound = "#{@fromVar} >= #{idx} && #{gt} #{@toVar}"
+        "#{stepCond} && (#{@fromVar} <= #{@toVar} ? #{lowerBound} : #{upperBound})"
+
     cond = if @stepVar then "#{@stepVar} > 0" else "#{@fromVar} <= #{@toVar}"
 
     # Generate the step.
     stepPart = if @stepVar
-      "#{idx} += #{@stepVar}"
+      "#{idx} += #{validStep}"
     else if known
       if namedIndex
         if from <= to then "++#{idx}" else "--#{idx}"

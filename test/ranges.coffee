@@ -172,3 +172,43 @@ test "#2047: Infinite loop possible when `for` loop with `range` uses variables"
 
   testRange d for d in testData
 
+test "#2047: from, to and step as variables", ->
+  up = 1
+  down = -1
+  a = 1
+  b = 5
+
+  r = (x for x in [a..b] by up)
+  arrayEq r, [1..5]
+
+  r = (x for x in [a..b] by down)
+  arrayEq r, [1]
+
+  r = (x for x in [b..a] by up)
+  arrayEq r, [5]
+
+  r = (x for x in [b..a] by down)
+  arrayEq r, [5..1]
+
+  a = 1
+  b = -1
+  step = 0
+  r = (x for x in [b..a] by step)
+  arrayEq r, []
+
+  a = "aaa"
+  b = "bbb"
+  step = "3"
+  r = (x for x in [b..a] by step)
+  arrayEq r, ['bbb']
+
+  step = "ccc"
+  r = (x for x in [b..a] by step)
+  arrayEq r, []
+
+  a = 2
+  b = 1
+  step = "0.5000000"
+  r = (x for x in [b..a] by step)
+  arrayEq r, [1, 1.5, 2]
+
