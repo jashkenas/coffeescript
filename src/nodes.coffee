@@ -2605,14 +2605,24 @@ exports.Code = class Code extends Base
 
     # Check for duplicate parameters and separate `this` assignments.
     paramNames = []
-    @eachParamName (name, node, param) ->
+    @eachParamName (name, node, param, obj) ->
       node.error "multiple parameters named '#{name}'" if name in paramNames
       paramNames.push name
+
       if node.this
         name   = node.properties[0].name.value
         name   = "_#{name}" if name in JS_FORBIDDEN
-        target = new IdentifierLiteral o.scope.freeVariable name
-        param.renameParam node, target
+        target = new IdentifierLiteral o.scope.freeVariable name, reserve: no
+        # `Param` is object destructuring with a default value: ({@prop = 1}) ->
+        # In a case when the variable name is already reserved, we have to assign
+        # a new variable name to the destructured variable: ({prop:prop1 = 1}) ->
+        replacement =
+            if param.name instanceof Obj and obj instanceof Assign and
+                obj.operatorToken.value is '='
+              new Assign (new IdentifierLiteral name), target, 'object' #, operatorToken: new Literal ':'
+            else
+              target
+        param.renameParam node, replacement
         thisAssignments.push new Assign node, target
 
     # Parse the parameters, adding them to the list of parameters to put in the
@@ -2901,12 +2911,14 @@ exports.Param = class Param extends Base
   # `name` is the name of the parameter and `node` is the AST node corresponding
   # to that name.
   eachName: (iterator, name = @name) ->
-    atParam = (obj) => iterator "@#{obj.properties[0].name.value}", obj, @
+    atParam = (obj, originalObj = null) => iterator "@#{obj.properties[0].name.value}", obj, @, originalObj
     # * simple literals `foo`
     return iterator name.value, name, @ if name instanceof Literal
     # * at-params `@foo`
     return atParam name if name instanceof Value
     for obj in name.objects ? []
+      # Save original obj.
+      nObj = obj
       # * destructured parameter with default value
       if obj instanceof Assign and not obj.context?
         obj = obj.variable
@@ -2928,7 +2940,7 @@ exports.Param = class Param extends Base
           @eachName iterator, obj.base
         # * at-params within destructured parameters `{@foo}`
         else if obj.this
-          atParam obj
+          atParam obj, nObj
         # * simple destructured parameters {foo}
         else iterator obj.base.value, obj.base, @
       else if obj instanceof Elision
@@ -2945,7 +2957,14 @@ exports.Param = class Param extends Base
       if parent instanceof Obj
         key = node
         key = node.properties[0].name if node.this
-        new Assign new Value(key), newNode, 'object'
+        # No need to assign a new variable for the destructured variable if the variable isn't reserved.
+        # Examples:
+        # `({@foo}) ->`  should compile to `({foo}) { this.foo = foo}`
+        # `foo = 1; ({@foo}) ->` should compile to `foo = 1; ({foo:foo1}) { this.foo = foo1 }`
+        if node.this and key.value is newNode.value
+          new Value newNode
+        else
+          new Assign new Value(key), newNode, 'object'
       else
         newNode
 
