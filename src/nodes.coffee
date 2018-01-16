@@ -2351,47 +2351,26 @@ exports.Assign = class Assign extends Base
     if olen is 1 and obj instanceof Expansion
       obj.error 'Destructuring assignment has no target'
 
-    isObject = @variable.isObject()
+    # Count all `Splats`: [a, b, c..., d, e]
+    splats = (i for obj, i in objects when obj instanceof Splat)
+    # Count all `Expansions`: [a, b, ..., c, d]
+    expans = (i for obj, i in objects when obj instanceof Expansion)
+    # Combine splats and expansions.
+    splatsAndExpans = [splats..., expans...]
+    # Show error if there is more than one `Splat`, or `Expansion`.
+    # Examples: [a, b, c..., d, e, f...], [a, b, ..., c, d, ...], [a, b, ..., c, d, e...]
+    if splatsAndExpans.length > 1
+      # Sort 'splatsAndExpans' so we can show error at first disallowed token.
+      objects[splatsAndExpans.sort()[1]].error "multiple splats/expansions are disallowed in an assignment"
 
-    # Special case for when there's only one thing destructured off of
-    # something. `{a} = b`, `[a] = b`, `{a: b} = c`
-    if top and olen is 1 and obj not instanceof Splat
-      # Pick the property straight off the value when there’s just one to pick
-      # (no need to cache the value into a variable).
-      defaultValue = undefined
-      if obj instanceof Assign and obj.context is 'object'
-        # A regular object pattern-match.
-        {variable: {base: idx}, value: obj} = obj
-        if obj instanceof Assign
-          defaultValue = obj.value
-          obj = obj.variable
-      else
-        if obj instanceof Assign
-          defaultValue = obj.value
-          obj = obj.variable
-        idx = if isObject
-          # A shorthand `{a, b, @c} = val` pattern-match.
-          if obj.this
-            obj.properties[0].name
-          else
-            new PropertyName obj.unwrap().value
-        else
-          # A regular array pattern-match.
-          new NumberLiteral 0
-      acc   = idx.unwrap() instanceof PropertyName
-      value = new Value value
-      value.properties.push new (if acc then Access else Index) idx
-      message = isUnassignable obj.unwrap().value
-      obj.error message if message
-      if defaultValue
-        defaultValue.isDefaultValue = yes
-        value = new Op '?', value, defaultValue
-      return new Assign(obj, value, null, param: @param).compileToFragments o, LEVEL_TOP
+    isSplat = splats.length
+    isExpans = expans.length
+    isObject = @variable.isObject()
+    isArray = @variable.isArray()
 
     vvar     = value.compileToFragments o, LEVEL_LIST
     vvarText = fragmentsToText vvar
     assigns  = []
-    expandedIdx = false
 
     # At this point, there are several things to destructure. So the `fn()` in
     # `{a, b} = fn()` must be cached, for example. Make vvar into a simple
@@ -2402,79 +2381,108 @@ exports.Assign = class Assign extends Base
       vvar = [@makeCode ref]
       vvarText = ref
 
-    # And here comes the big loop that handles all of these cases:
-    # `[a, b] = c`
-    # `[a..., b] = c`
-    # `[..., a, b] = c`
-    # `[@a, b] = c`
-    # `[a = 1, b] = c`
-    # `{a, b} = c`
-    # `{@a, b} = c`
-    # `{a = 1, b} = c`
-    # etc.
-    for obj, i in objects
-      idx = i
-      if not expandedIdx and obj instanceof Splat
-        name = obj.name.unwrap().value
-        obj = obj.unwrap()
-        val = "#{olen} <= #{vvarText}.length ? #{utility 'slice', o}.call(#{vvarText}, #{i}"
-        rest = olen - i - 1
-        if rest isnt 0
-          ivar = o.scope.freeVariable 'i', single: true
-          val += ", #{ivar} = #{vvarText}.length - #{rest}) : (#{ivar} = #{i}, [])"
-        else
-          val += ") : []"
-        val   = new Literal val
-        expandedIdx = "#{ivar}++"
-      else if not expandedIdx and obj instanceof Expansion
-        rest = olen - i - 1
-        if rest isnt 0
-          if rest is 1
-            expandedIdx = "#{vvarText}.length - 1"
-          else
-            ivar = o.scope.freeVariable 'i', single: true
-            val = new Literal "#{ivar} = #{vvarText}.length - #{rest}"
-            expandedIdx = "#{ivar}++"
-            assigns.push val.compileToFragments o, LEVEL_LIST
-        continue
-      else
-        if obj instanceof Splat or obj instanceof Expansion
-          obj.error "multiple splats/expansions are disallowed in an assignment"
-        defaultValue = undefined
-        if obj instanceof Assign and obj.context is 'object'
-          # A regular object pattern-match.
-          {variable: {base: idx}, value: obj} = obj
-          if obj instanceof Assign
-            defaultValue = obj.value
-            obj = obj.variable
-        else
-          if obj instanceof Assign
-            defaultValue = obj.value
-            obj = obj.variable
-          idx = if isObject
-            # A shorthand `{a, b, @c} = val` pattern-match.
-            if obj.this
-              obj.properties[0].name
-            else
-              new PropertyName obj.unwrap().value
-          else
-            # A regular array pattern-match.
-            new Literal expandedIdx or idx
-        name = obj.unwrap().value
-        acc = idx.unwrap() instanceof PropertyName
-        val = new Value new Literal(vvarText), [new (if acc then Access else Index) idx]
-        if defaultValue
-          defaultValue.isDefaultValue = yes
-          val = new Op '?', val, defaultValue
-      if name?
-        message = isUnassignable name
-        obj.error message if message
-      unless obj instanceof Elision
-        assigns.push new Assign(obj, val, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
-      else
-        # Output `Elision` only if `idx` is `i++`, e.g. expandedIdx.
-        assigns.push idx.compileToFragments o, LEVEL_LIST if expandedIdx
+    slicer = (type) -> (vvar, start, end = no) ->
+      args = [new IdentifierLiteral(vvar), new NumberLiteral(start)]
+      args.push new NumberLiteral end if end
+      slice = new Value (new IdentifierLiteral utility type, o), [new Access new PropertyName 'call']
+      new Value new Call slice, args
 
+    # Helper which outputs `[].slice` code.
+    compSlice = slicer "slice"
+
+    # Helper which outputs `[].splice` code.
+    compSplice = slicer "splice"
+
+    # Check if `objects` array contains object spread (`{a, r...}`), e.g. `[a, b, {c, r...}]`.
+    hasObjSpreads = (objs) ->
+      (i for obj, i in objs when obj.base instanceof Obj and obj.base.hasSplat())
+
+    # Check if `objects` array contains any instance of `Assign`, e.g. {a:1}.
+    hasObjAssigns = (objs) ->
+      (i for obj, i in objs when obj instanceof Assign and obj.context is 'object')
+
+    # Check if `objects` array contains any unassignable object.
+    objIsUnassignable = (objs) ->
+      return yes for obj in objs when not obj.isAssignable()
+      no
+
+    # `objects` are complex when there is object spread ({a...}), object assign ({a:1}),
+    # unassignable object, or just a single node.
+    complexObjects = (objs) ->
+      hasObjSpreads(objs).length or hasObjAssigns(objs).length or objIsUnassignable(objs) or olen is 1
+
+    # "Complex" `objects` are processed in a loop.
+    # Examples: [a, b, {c, r...}, d], [a, ..., {b, r...}, c, d]
+    loopObjects = (objs, vvarTxt) =>
+      objSpreads = hasObjSpreads objs
+      for obj, i in objs
+        # `Elision` can be skipped.
+        continue if obj instanceof Elision
+        # If `obj` is {a: 1}
+        if obj instanceof Assign and obj.context is 'object'
+          {variable: {base: idx}, value: vvar} = obj
+          {variable: vvar} = vvar if vvar instanceof Assign
+          idx =
+            if vvar.this
+              vvar.properties[0].name
+            else
+              new PropertyName vvar.unwrap().value
+          acc = idx.unwrap() instanceof PropertyName
+          vval = new Value value, [new (if acc then Access else Index) idx]
+        else
+          # `obj` is [a...], {a...} or a
+          vvar = switch
+            when obj instanceof Splat then new Value obj.name
+            when i in objSpreads then new Value obj.base
+            else obj
+          vval = switch
+            when obj instanceof Splat then compSlice(vvarTxt, i)
+            else new Value new Literal(vvarTxt), [new Index new NumberLiteral i]
+        message = isUnassignable vvar.unwrap().value
+        vvar.error message if message
+        assigns.push new Assign(vvar, vval, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
+
+    # "Simple" `objects` can be split and compiled to arrays, [a, b, c] = arr, [a, b, c...] = arr
+    assignObjects = (objs, vvarTxt) =>
+      vvar = new Value new Arr(objs, yes)
+      vval = if vvarTxt instanceof Value then vvarTxt else new Value new Literal(vvarTxt)
+      assigns.push new Assign(vvar, vval, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
+
+    processObjects = (objs, vvarTxt) ->
+      if complexObjects objs
+        loopObjects objs, vvarTxt
+      else
+        assignObjects objs, vvarTxt
+
+    # In case there is `Splat` or `Expansion` in `objects`,
+    # we can split array in two simple subarrays.
+    # `Splat` [a, b, c..., d, e] can be split into  [a, b, c...] and [d, e].
+    # `Expansion` [a, b, ..., c, d] can be split into [a, b] and [c, d].
+    # Examples:
+    # a) `Splat`
+    #   CS: [a, b, c..., d, e] = arr
+    #   JS: [a, b, ...c] = arr, [d, e] = splice.call(c, -2)
+    # b) `Expansion`
+    #   CS: [a, b, ..., d, e] = arr
+    #   JS: [a, b] = arr, [d, e] = slice.call(arr, -2)
+    if splatsAndExpans.length
+      expIdx = splatsAndExpans[0]
+      leftObjs = objects.slice 0, expIdx + (if isSplat then 1 else 0)
+      rightObjs = objects.slice expIdx + 1
+      processObjects leftObjs, vvarText if leftObjs.length isnt 0
+      if rightObjs.length isnt 0
+        # Slice or splice `objects`.
+        refExp = switch
+          when isSplat then compSplice objects[expIdx].unwrapAll().value, rightObjs.length * -1
+          when isExpans then compSlice vvarText, rightObjs.length * -1
+        if complexObjects rightObjs
+          restVar = refExp
+          refExp = o.scope.freeVariable 'ref'
+          assigns.push [@makeCode(refExp + ' = '), restVar.compileToFragments(o, LEVEL_LIST)...]
+        processObjects rightObjs, refExp
+    else
+      # There is no `Splat` or `Expansion` in `objects`.
+      processObjects objects, vvarText
     assigns.push vvar unless top or @subpattern
     fragments = @joinFragmentArrays assigns, ', '
     if o.level < LEVEL_LIST then fragments else @wrapInParentheses fragments
