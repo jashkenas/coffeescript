@@ -329,6 +329,15 @@ test "Simple Destructuring function arguments with same-named variables in scope
   eq f([2]), 2
   eq x, 1
 
+test "#4843: Bad output when assigning to @prop in destructuring assignment with defaults", ->
+  works = "maybe"
+  drinks = "beer"
+  class A
+    constructor: ({@works = 'no', @drinks = 'wine'}) ->
+  a = new A {works: 'yes', drinks: 'coffee'}
+  eq a.works, 'yes'
+  eq a.drinks, 'coffee'
+
 test "caching base value", ->
 
   obj =
