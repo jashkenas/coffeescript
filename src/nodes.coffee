@@ -1337,11 +1337,8 @@ exports.Range = class Range extends Base
 
     # Generate the condition.
     [from, to] = [@fromNum, @toNum]
-    # Treat `step` as Number. Bitwise operation converts `String`
-    # into 0 to avoid `NaN` error.
-    validStep = "(Number(#{@stepVar}) || (#{@stepVar}|0))" if @step
     # Always check if the `step` isn't zero to avoid the infinite loop.
-    stepCond = "#{validStep} !== 0"
+    stepCond = if @stepNum then "#{@stepNum} !== 0" else "#{@stepVar} !== 0"
     condPart =
       if known
         unless @step?
@@ -1363,7 +1360,7 @@ exports.Range = class Range extends Base
 
     # Generate the step.
     stepPart = if @stepVar
-      "#{idx} += #{validStep}"
+      "#{idx} += #{@stepVar}"
     else if known
       if namedIndex
         if from <= to then "++#{idx}" else "--#{idx}"

@@ -204,11 +204,11 @@ test "#2047: from, to and step as variables", ->
 
   step = "ccc"
   r = (x for x in [b..a] by step)
-  arrayEq r, []
+  arrayEq r, ['bbb']
 
   a = 2
   b = 1
   step = "0.5000000"
   r = (x for x in [b..a] by step)
-  arrayEq r, [1, 1.5, 2]
+  arrayEq r, [1]
 
