@@ -515,3 +515,118 @@ test "#3441: `StatementLiteral` in parentheses", ->
 
   r9 = for a in arr then (a; continue)
   arrayEq r9, []
+
+# Issue #3909: backslash to break line in `for` loops throw syntax error
+test "#3909: backslash `for own ... of`", ->
+
+  obj = {a: 1, b: 2, c: 3}
+  arr = ['a', 'b', 'c']
+
+  x1 \
+    = ( key for own key of obj )
+  arrayEq x1, arr
+
+  x2 = \
+    ( key for own key of obj )
+  arrayEq x2, arr
+
+  x3 = ( \
+    key for own key of obj )
+  arrayEq x3, arr
+
+  x4 = ( key \
+    for own key of obj )
+  arrayEq x4, arr
+
+  x5 = ( key for own key of \
+    obj )
+  arrayEq x5, arr
+
+  x6 = ( key for own key of obj \
+    )
+  arrayEq x6, arr
+
+  x7 = ( key for \
+    own key of obj )
+  arrayEq x7, arr
+
+  x8 = ( key for own \
+    key of obj )
+  arrayEq x8, arr
+
+  x9 = ( key for own key \
+    of obj )
+  arrayEq x9, arr
+
+
+test "#3909: backslash `for ... of`", ->
+  obj = {a: 1, b: 2, c: 3}
+  arr = ['a', 'b', 'c']
+
+  x1 \
+    = ( key for key of obj )
+  arrayEq x1, arr
+
+  x2 = \
+    ( key for key of obj )
+  arrayEq x2, arr
+
+  x3 = ( \
+    key for key of obj )
+  arrayEq x3, arr
+
+  x4 = ( key \
+    for key of obj )
+  arrayEq x4, arr
+
+  x5 = ( key for key of \
+    obj )
+  arrayEq x5, arr
+
+  x6 = ( key for key of obj \
+    )
+  arrayEq x6, arr
+
+  x7 = ( key for \
+    key of obj )
+  arrayEq x7, arr
+
+  x8 = ( key for key \
+    of obj )
+  arrayEq x8, arr
+
+
+test "#3909: backslash `for ... in`", ->
+  arr = ['a', 'b', 'c']
+
+  x1 \
+    = ( key for key in arr )
+  arrayEq x1, arr
+
+  x2 = \
+    ( key for key in arr )
+  arrayEq x2, arr
+
+  x3 = ( \
+    key for key in arr )
+  arrayEq x3, arr
+
+  x4 = ( key \
+    for key in arr )
+  arrayEq x4, arr
+
+  x5 = ( key for key in \
+    arr )
+  arrayEq x5, arr
+
+  x6 = ( key for key in arr \
+    )
+  arrayEq x6, arr
+
+  x7 = ( key for \
+    key in arr )
+  arrayEq x7, arr
+
+  x8 = ( key for key \
+    in arr )
+  arrayEq x8, arr
