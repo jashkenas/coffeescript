@@ -561,27 +561,27 @@ exports.Rewriter = class Rewriter
       (@tokens[i - 1].newLine or @tokens[i - 1][0] is 'OUTDENT')
 
     action = (token, i) ->
+      ifThens.pop() if token[0] is 'ELSE' and starter is 'THEN'
       @tokens.splice (if @tag(i - 1) is ',' then i - 1 else i), 0, outdent
 
     closeElseTag = (tokens, i) =>
       tlen = ifThens.length
+      return i unless tlen > 0
       lastThen = ifThens.pop()
       [, outdentElse] = @indentation tokens[lastThen]
-      if tlen >= 2
-        outdentElse[1] = tlen*2
-        # Insert `OUTDENT` tag and close inner `IF`.
-        tokens.splice(i, 0, outdentElse)
-        # Remove outdents from the end.
-        @detectEnd i + 1,
-          (token, i) -> token[0] in ['OUTDENT', 'TERMINATOR']
-          (token, i) ->
-              if @tag(i) is 'OUTDENT' and @tag(i + 1) is 'OUTDENT'
-                tokens.splice i, 2
-        outdentElse[1] = 2
-        i += 1
-      # Insert `OUTDENT` tag and close outer `IF`.
+      # Insert `OUTDENT` to close inner `IF`.
+      outdentElse[1] = tlen*2
       tokens.splice(i, 0, outdentElse)
-      i += 1
+      # Insert `OUTDENT` to close outer `IF`.
+      outdentElse[1] = 2
+      tokens.splice(i + 1, 0, outdentElse)
+      # Remove outdents from the end.
+      @detectEnd i + 2,
+        (token, i) -> token[0] in ['OUTDENT', 'TERMINATOR']
+        (token, i) ->
+            if @tag(i) is 'OUTDENT' and @tag(i + 1) is 'OUTDENT'
+              tokens.splice i, 2
+      i + 2
 
     @scanTokens (token, i, tokens) ->
       [tag] = token
@@ -605,7 +605,7 @@ exports.Rewriter = class Rewriter
         tokens.splice i + 1, 0, indent, outdent
         return 1
       if tag in SINGLE_LINERS and @tag(i + 1) isnt 'INDENT' and
-         not (tag is 'ELSE' and @tag(i + 1) is 'IF') and
+         not (tag is 'ELSE' and @tag(i + 1) is 'IF' and ifThens.length > 1) and
          not conditionTag
         starter = tag
         [indent, outdent] = @indentation tokens[i]
@@ -615,7 +615,7 @@ exports.Rewriter = class Rewriter
           leading_if_then = @findTagsBackwards(i, ['IF']) and @tag(i + 1) is 'IF'
         ifThens.push i if tag is 'THEN' and @findTagsBackwards(i, ['IF'])
         # `ELSE` tag is not closed.
-        if tag is 'ELSE' and @tag(i - 1) isnt 'OUTDENT' and ifThens.length > 0
+        if tag is 'ELSE' and @tag(i - 1) isnt 'OUTDENT'
           i = closeElseTag tokens, i
         tokens.splice i + 1, 0, indent
         @detectEnd i + 2, condition, action
