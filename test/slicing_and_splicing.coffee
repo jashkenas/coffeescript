@@ -165,3 +165,9 @@ test "#2953: methods on endpoints in assignment from array splice literal", ->
   delete Number.prototype.same
 
   arrayEq [0, 5, 9], list
+
+test "#1726: `Op` expression in property access causes unexpected results", ->
+  a = [0..2]
+  arrayEq a, a[(!1 in a)..]
+  arrayEq a, a[!1 in a..]
+  arrayEq a[(!1 in a)..], a[(!1 in a)..]

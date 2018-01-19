@@ -329,6 +329,15 @@ test "Simple Destructuring function arguments with same-named variables in scope
   eq f([2]), 2
   eq x, 1
 
+test "#4843: Bad output when assigning to @prop in destructuring assignment with defaults", ->
+  works = "maybe"
+  drinks = "beer"
+  class A
+    constructor: ({@works = 'no', @drinks = 'wine'}) ->
+  a = new A {works: 'yes', drinks: 'coffee'}
+  eq a.works, 'yes'
+  eq a.drinks, 'coffee'
+
 test "caching base value", ->
 
   obj =
@@ -795,7 +804,7 @@ test "get and set can be used as class method names", ->
   eq 4, B.get()
   eq 5, B.set()
 
-test "functions named get or set can be used without parentheses when attached to an object; #4524", ->
+test "#4524: functions named get or set can be used without parentheses when attached to an object", ->
   obj =
     get: (x) -> x + 2
     set: (x) -> x + 3
@@ -836,3 +845,18 @@ test "functions named get or set can be used without parentheses when attached t
 
   eq 16, b.get value: @ten
   eq 17, b.set value: @ten
+
+test "#4836: functions named get or set can be used without parentheses when attached to this or @", ->
+  @get = (x) -> x + 2
+  @set = (x) -> x + 3
+  @a = 4
+
+  eq 12, this.get 10
+  eq 13, this.set 10
+  eq 6, this.get @a
+  eq 7, this.set @a
+
+  eq 12, @get 10
+  eq 13, @set 10
+  eq 6, @get @a
+  eq 7, @set @a
