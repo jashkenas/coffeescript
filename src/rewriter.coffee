@@ -548,6 +548,8 @@ exports.Rewriter = class Rewriter
     starter = indent = outdent = null
     leading_switch_when = null
     leading_if_then = null
+    # Count `THEN` tags
+    ifThens = []
 
     condition = (token, i) ->
       token[1] isnt ';' and token[0] in SINGLE_CLOSERS and
@@ -560,6 +562,26 @@ exports.Rewriter = class Rewriter
 
     action = (token, i) ->
       @tokens.splice (if @tag(i - 1) is ',' then i - 1 else i), 0, outdent
+
+    closeElseTag = (tokens, i) =>
+      tlen = ifThens.length
+      lastThen = ifThens.pop()
+      [, outdentElse] = @indentation tokens[lastThen]
+      if tlen >= 2
+        outdentElse[1] = tlen*2
+        # Insert `OUTDENT` tag and close inner `IF`.
+        tokens.splice(i, 0, outdentElse)
+        # Remove outdents from the end.
+        @detectEnd i + 1,
+          (token, i) -> token[0] in ['OUTDENT', 'TERMINATOR']
+          (token, i) ->
+              if @tag(i) is 'OUTDENT' and @tag(i + 1) is 'OUTDENT'
+                tokens.splice i, 2
+        outdentElse[1] = 2
+        i += 1
+      # Insert `OUTDENT` tag and close outer `IF`.
+      tokens.splice(i, 0, outdentElse)
+      i += 1
 
     @scanTokens (token, i, tokens) ->
       [tag] = token
@@ -591,6 +613,10 @@ exports.Rewriter = class Rewriter
         if tag is 'THEN'
           leading_switch_when = @findTagsBackwards(i, ['LEADING_WHEN']) and @tag(i + 1) is 'IF'
           leading_if_then = @findTagsBackwards(i, ['IF']) and @tag(i + 1) is 'IF'
+        ifThens.push i if tag is 'THEN' and @findTagsBackwards(i, ['IF'])
+        # `ELSE` tag is not closed.
+        if tag is 'ELSE' and @tag(i - 1) isnt 'OUTDENT' and ifThens.length > 0
+          i = closeElseTag tokens, i
         tokens.splice i + 1, 0, indent
         @detectEnd i + 2, condition, action
         tokens.splice i, 1 if tag is 'THEN'
