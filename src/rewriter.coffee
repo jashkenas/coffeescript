@@ -263,6 +263,20 @@ exports.Rewriter = class Rewriter
             stack.pop()
         start = stack.pop()
 
+      inControlFlow = =>
+        seenFor = @findTagsBackwards(i, ['FOR']) and @findTagsBackwards(i, ['FORIN', 'FOROF', 'FORFROM'])
+        controlFlow = seenFor or @findTagsBackwards i, ['WHILE', 'UNTIL', 'LOOP', 'LEADING_WHEN']
+        return no unless controlFlow
+        isFunc = no
+        tagCurrentLine = token[2].first_line
+        @detectEnd i,
+          (token, i) -> token[0] in LINEBREAKS
+          (token, i) ->
+            [prevTag, ,{first_line}] = tokens[i - 1] || []
+            isFunc = tagCurrentLine is first_line and prevTag in ['->', '=>']
+          returnOnNegativeLevel: yes
+        isFunc
+
       # Recognize standard implicit calls like
       # f a, f() b, f? c, h[0] d etc.
       # Added support for spread dots on the left side: f ...a
@@ -271,7 +285,8 @@ exports.Rewriter = class Rewriter
          (nextTag in IMPLICIT_CALL or
          (nextTag is '...' and @tag(i + 2) in IMPLICIT_CALL and not @findTagsBackwards(i, ['INDEX_START', '['])) or
           nextTag in IMPLICIT_UNSPACED_CALL and
-          not nextToken.spaced and not nextToken.newLine)
+          not nextToken.spaced and not nextToken.newLine) and
+          not inControlFlow()
         tag = token[0] = 'FUNC_EXIST' if tag is '?'
         startImplicitCall i + 1
         return forward(2)
