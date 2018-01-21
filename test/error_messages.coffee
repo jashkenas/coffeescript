@@ -1782,25 +1782,25 @@ test "#3933: prevent implicit calls when cotrol flow is missing `THEN`", ->
   assertErrorFormat '''
     for a in b do ->
   ''','''
-    [stdin]:1:17: error: unexpected end of input
+    [stdin]:1:12: error: unexpected do
     for a in b do ->
-                    ^
+               ^^
   '''
 
   assertErrorFormat '''
     for a in b ->
   ''','''
-    [stdin]:1:14: error: unexpected end of input
+    [stdin]:1:12: error: unexpected ->
     for a in b ->
-                 ^
+               ^^
   '''
 
   assertErrorFormat '''
     for a in b do =>
   ''','''
-    [stdin]:1:17: error: unexpected end of input
+    [stdin]:1:12: error: unexpected do
     for a in b do =>
-                    ^
+               ^^
   '''
 
   assertErrorFormat '''
