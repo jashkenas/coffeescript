@@ -860,3 +860,25 @@ test "#4836: functions named get or set can be used without parentheses when att
   eq 13, @set 10
   eq 6, @get @a
   eq 7, @set @a
+
+test "#4473: variable scope in chained calls", ->
+  A = class A
+    foo: (a) ->
+      a()
+      this
+    bar: (a) -> this
+
+  a = (a) -> new A
+  b = (b) ->
+    b()
+    new A
+  c = (c) -> new A
+
+  a(x = 1).foo( -> x = 2)
+  eq x, 2
+
+  b(-> y = 2).bar(y = 1)
+  eq y, 1
+
+  c(z = 1).foo(-> z = 2).bar(z = 3)
+  eq z, 3

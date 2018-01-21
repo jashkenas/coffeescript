@@ -961,11 +961,21 @@ exports.Value = class Value extends Base
   compileNode: (o) ->
     @base.front = @front
     props = @properties
-    fragments = @base.compileToFragments o, (if props.length then LEVEL_ACCESS else null)
+    if props.length and @base.cached?
+      # Cached fragments enable correct order of the compilation,
+      # and reuse of variables in the scope.
+      # Example:
+      # `a(x = 5).b(-> x = 6)` should compile in the same order as
+      # `a(x = 5); b(-> x = 6)`
+      # (see issue #4437, https://github.com/jashkenas/coffeescript/issues/4437)
+      fragments = @base.cached
+    else
+      fragments = @base.compileToFragments o, (if props.length then LEVEL_ACCESS else null)
     if props.length and SIMPLENUM.test fragmentsToText fragments
       fragments.push @makeCode '.'
     for prop in props
       fragments.push (prop.compileToFragments o)...
+
     fragments
 
   # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
@@ -1125,6 +1135,19 @@ exports.Call = class Call extends Base
     return @compileCSX o if @csx
     @variable?.front = @front
     compiledArgs = []
+    # If variable is `Accessor` fragments are cached and used later
+    # in `Value::compileNode` to ensure correct order of the compilation,
+    # and reuse of variables in the scope.
+    # Example:
+    # `a(x = 5).b(-> x = 6)` should compile in the same order as
+    # `a(x = 5); b(-> x = 6)`
+    # (see issue #4437, https://github.com/jashkenas/coffeescript/issues/4437)
+    varAccess = @variable?.properties?[0] instanceof Access
+    argCode = (arg for arg in (@args || []) when arg instanceof Code)
+    if argCode.length > 0 and varAccess and not @variable.base.cached
+      [cache] = @variable.base.cache o, LEVEL_ACCESS, -> no
+      @variable.base.cached = cache
+
     for arg, argIndex in @args
       if argIndex then compiledArgs.push @makeCode ", "
       compiledArgs.push (arg.compileToFragments o, LEVEL_LIST)...
