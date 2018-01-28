@@ -862,23 +862,23 @@ test "#4836: functions named get or set can be used without parentheses when att
   eq 7, @set @a
 
 test "#4473: variable scope in chained calls", ->
-  A = class A
-    foo: (a) ->
+  obj =
+    foo: -> this
+    bar: (a) ->
       a()
       this
-    bar: (a) -> this
 
-  a = (a) -> new A
-  b = (b) ->
-    b()
-    new A
-  c = (c) -> new A
+  obj.foo(a = 1).bar(-> a = 2)
+  eq a, 2
 
-  a(x = 1).foo( -> x = 2)
-  eq x, 2
+  obj.bar(-> b = 2).foo(b = 1)
+  eq b, 1
 
-  b(-> y = 2).bar(y = 1)
-  eq y, 1
+  obj.foo(c = 1).bar(-> c = 2).foo(c = 3)
+  eq c, 3
 
-  c(z = 1).foo(-> z = 2).bar(z = 3)
-  eq z, 3
+  obj.foo([d, e] = [1, 2]).bar(-> d = 4)
+  eq d, 4
+
+  obj.foo({f} = {f: 1}).bar(-> f = 5)
+  eq f, 5
