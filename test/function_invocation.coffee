@@ -823,6 +823,8 @@ test "#4524: functions named get or set can be used without parentheses when att
 
   eq 12, obj.get 10
   eq 13, obj.set 10
+  eq 12, obj?.get 10
+  eq 13, obj?.set 10
 
   eq 14, a.get 10
   eq 15, a.set 10
@@ -853,10 +855,29 @@ test "#4836: functions named get or set can be used without parentheses when att
 
   eq 12, this.get 10
   eq 13, this.set 10
+  eq 12, this?.get 10
+  eq 13, this?.set 10
   eq 6, this.get @a
   eq 7, this.set @a
+  eq 6, this?.get @a
+  eq 7, this?.set @a
 
   eq 12, @get 10
   eq 13, @set 10
+  eq 12, @?.get 10
+  eq 13, @?.set 10
   eq 6, @get @a
   eq 7, @set @a
+  eq 6, @?.get @a
+  eq 7, @?.set @a
+
+test "#4852: functions named get or set can be used without parentheses when attached to this or @, with an argument of an implicit object", ->
+  @get = ({ x }) -> x + 2
+  @set = ({ x }) -> x + 3
+
+  eq 12, @get x: 10
+  eq 13, @set x: 10
+  eq 12, @?.get x: 10
+  eq 13, @?.set x: 10
+  eq 12, this?.get x: 10
+  eq 13, this?.set x: 10
