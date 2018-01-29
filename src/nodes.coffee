@@ -2856,21 +2856,15 @@ exports.Code = class Code extends Base
   eachSuperCall: (context, iterator) ->
     seenSuper = no
 
-    childArgs = (args) ->
-      cArgs = []
-      for arg in args
-        continue if arg instanceof Class or arg instanceof Code
-        cArgs.push arg
-      cArgs
-
     context.traverseChildren yes, (child) =>
       if child instanceof SuperCall
         # `super` in a constructor (the only `super` without an accessor)
         # cannot be given an argument with a reference to `this`, as that would
         # be referencing `this` before calling `super`.
         unless child.variable.accessor
-          cArgs = childArgs child.args
-          Block.wrap(cArgs).traverseChildren yes, (node) =>
+          childArgs = child.args.filter (arg) ->
+            arg not instanceof Class and (arg not instanceof Code or arg.bound)
+          Block.wrap(childArgs).traverseChildren yes, (node) =>
             node.error "Can't call super with @params in derived class constructors" if node.this
         seenSuper = yes
         iterator child
