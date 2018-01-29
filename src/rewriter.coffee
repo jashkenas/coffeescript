@@ -343,7 +343,9 @@ exports.Rewriter = class Rewriter
           stackItem[2].sameLine = no if isImplicitObject stackItem
 
       newLine = prevTag is 'OUTDENT' or prevToken.newLine
-      if tag in IMPLICIT_END or tag in CALL_CLOSERS and newLine
+      if tag in IMPLICIT_END or
+          (tag in CALL_CLOSERS and newLine) or
+          (tag in ['..', '...'] and @findTagsBackwards(i, ["INDEX_START"]))
         while inImplicit()
           [stackTag, stackIdx, {sameLine, startsLine}] = stackTop()
           # Close implicit calls when reached end of argument list
@@ -544,20 +546,49 @@ exports.Rewriter = class Rewriter
   # blocks are added.
   normalizeLines: ->
     starter = indent = outdent = null
+    leading_switch_when = null
+    leading_if_then = null
+    # Count `THEN` tags
+    ifThens = []
 
     condition = (token, i) ->
       token[1] isnt ';' and token[0] in SINGLE_CLOSERS and
       not (token[0] is 'TERMINATOR' and @tag(i + 1) in EXPRESSION_CLOSE) and
-      not (token[0] is 'ELSE' and starter isnt 'THEN') and
+      not (token[0] is 'ELSE' and
+           (starter isnt 'THEN' or (leading_if_then or leading_switch_when))) and
       not (token[0] in ['CATCH', 'FINALLY'] and starter in ['->', '=>']) or
       token[0] in CALL_CLOSERS and
       (@tokens[i - 1].newLine or @tokens[i - 1][0] is 'OUTDENT')
 
     action = (token, i) ->
+      ifThens.pop() if token[0] is 'ELSE' and starter is 'THEN'
       @tokens.splice (if @tag(i - 1) is ',' then i - 1 else i), 0, outdent
+
+    closeElseTag = (tokens, i) =>
+      tlen = ifThens.length
+      return i unless tlen > 0
+      lastThen = ifThens.pop()
+      [, outdentElse] = @indentation tokens[lastThen]
+      # Insert `OUTDENT` to close inner `IF`.
+      outdentElse[1] = tlen*2
+      tokens.splice(i, 0, outdentElse)
+      # Insert `OUTDENT` to close outer `IF`.
+      outdentElse[1] = 2
+      tokens.splice(i + 1, 0, outdentElse)
+      # Remove outdents from the end.
+      @detectEnd i + 2,
+        (token, i) -> token[0] in ['OUTDENT', 'TERMINATOR']
+        (token, i) ->
+            if @tag(i) is 'OUTDENT' and @tag(i + 1) is 'OUTDENT'
+              tokens.splice i, 2
+      i + 2
 
     @scanTokens (token, i, tokens) ->
       [tag] = token
+      conditionTag = tag in ['->', '=>'] and
+        @findTagsBackwards(i, ['IF', 'WHILE', 'FOR', 'UNTIL', 'SWITCH', 'WHEN', 'LEADING_WHEN', '[', 'INDEX_START']) and
+        not (@findTagsBackwards i, ['THEN', '..', '...'])
+
       if tag is 'TERMINATOR'
         if @tag(i + 1) is 'ELSE' and @tag(i - 1) isnt 'OUTDENT'
           tokens.splice i, 1, @indentation()...
@@ -574,10 +605,18 @@ exports.Rewriter = class Rewriter
         tokens.splice i + 1, 0, indent, outdent
         return 1
       if tag in SINGLE_LINERS and @tag(i + 1) isnt 'INDENT' and
-         not (tag is 'ELSE' and @tag(i + 1) is 'IF')
+         not (tag is 'ELSE' and @tag(i + 1) is 'IF' and ifThens.length > 1) and
+         not conditionTag
         starter = tag
         [indent, outdent] = @indentation tokens[i]
         indent.fromThen   = true if starter is 'THEN'
+        if tag is 'THEN'
+          leading_switch_when = @findTagsBackwards(i, ['LEADING_WHEN']) and @tag(i + 1) is 'IF'
+          leading_if_then = @findTagsBackwards(i, ['IF']) and @tag(i + 1) is 'IF'
+        ifThens.push i if tag is 'THEN' and @findTagsBackwards(i, ['IF'])
+        # `ELSE` tag is not closed.
+        if tag is 'ELSE' and @tag(i - 1) isnt 'OUTDENT'
+          i = closeElseTag tokens, i
         tokens.splice i + 1, 0, indent
         @detectEnd i + 2, condition, action
         tokens.splice i, 1 if tag is 'THEN'
