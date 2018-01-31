@@ -2885,7 +2885,9 @@ exports.Code = class Code extends Base
         # cannot be given an argument with a reference to `this`, as that would
         # be referencing `this` before calling `super`.
         unless child.variable.accessor
-          Block.wrap(child.args).traverseChildren yes, (node) =>
+          childArgs = child.args.filter (arg) ->
+            arg not instanceof Class and (arg not instanceof Code or arg.bound)
+          Block.wrap(childArgs).traverseChildren yes, (node) =>
             node.error "Can't call super with @params in derived class constructors" if node.this
         seenSuper = yes
         iterator child
