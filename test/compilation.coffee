@@ -170,3 +170,10 @@ test "using transpile from the Node API requires an object", ->
 test "transpile option applies to imported .coffee files", ->
   return if global.testingBrowser
   doesNotThrow -> transpile 'run', "import { getSep } from './test/importing/transpile_import'\ngetSep()"
+
+test "#3306: trailing comma in a function call in the last line", ->
+  eqJS '''
+  foo bar,
+  ''', '''
+  foo(bar);
+  '''

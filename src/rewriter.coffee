@@ -364,7 +364,8 @@ exports.Rewriter = class Rewriter
         while inImplicit()
           [stackTag, stackIdx, {sameLine, startsLine}] = stackTop()
           # Close implicit calls when reached end of argument list
-          if inImplicitCall() and prevTag isnt ','
+          if inImplicitCall() and prevTag isnt ',' or
+              (prevTag is ',' and tag is 'TERMINATOR' and not nextTag?)
             endImplicitCall()
           # Close implicit objects such as:
           # return a: 1, b: 2 unless true
