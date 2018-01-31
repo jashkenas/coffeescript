@@ -1257,3 +1257,33 @@ test "#3909: backslash `for ... in`", ->
   x8 = ( key for key \
     in arr )
   arrayEq x8, arr
+
+test "#4871: `else if` no longer output together ", ->
+   eqJS '''
+   if a then b else if c then d else if e then f else g
+   ''',
+   '''
+   if (a) {
+     b;
+   } else if (c) {
+     d;
+   } else if (e) {
+     f;
+   } else {
+     g;
+   }
+   '''
+
+   eqJS '''
+   if no
+     1
+   else if yes
+     2
+   ''',
+   '''
+   if (false) {
+     1;
+   } else if (true) {
+     2;
+   }
+   '''

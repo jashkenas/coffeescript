@@ -621,7 +621,7 @@ exports.Rewriter = class Rewriter
         tokens.splice i + 1, 0, indent, outdent
         return 1
       if tag in SINGLE_LINERS and @tag(i + 1) isnt 'INDENT' and
-         not (tag is 'ELSE' and @tag(i + 1) is 'IF' and ifThens.length > 1) and
+         not (tag is 'ELSE' and @tag(i + 1) is 'IF') and
          not conditionTag
         starter = tag
         [indent, outdent] = @indentation tokens[i]
