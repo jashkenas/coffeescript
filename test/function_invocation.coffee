@@ -881,3 +881,25 @@ test "#4852: functions named get or set can be used without parentheses when att
   eq 13, @?.set x: 10
   eq 12, this?.get x: 10
   eq 13, this?.set x: 10
+
+test "#4473: variable scope in chained calls", ->
+  obj =
+    foo: -> this
+    bar: (a) ->
+      a()
+      this
+
+  obj.foo(a = 1).bar(-> a = 2)
+  eq a, 2
+
+  obj.bar(-> b = 2).foo(b = 1)
+  eq b, 1
+
+  obj.foo(c = 1).bar(-> c = 2).foo(c = 3)
+  eq c, 3
+
+  obj.foo([d, e] = [1, 2]).bar(-> d = 4)
+  eq d, 4
+
+  obj.foo({f} = {f: 1}).bar(-> f = 5)
+  eq f, 5

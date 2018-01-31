@@ -1777,3 +1777,53 @@ test "#4811: '///' inside a heregex comment does not close the heregex", ->
   /// .* # comment ///
   ^^^
   '''
+
+test "#3933: prevent implicit calls when cotrol flow is missing `THEN`", ->
+  assertErrorFormat '''
+    for a in b do ->
+  ''','''
+    [stdin]:1:12: error: unexpected do
+    for a in b do ->
+               ^^
+  '''
+
+  assertErrorFormat '''
+    for a in b ->
+  ''','''
+    [stdin]:1:12: error: unexpected ->
+    for a in b ->
+               ^^
+  '''
+
+  assertErrorFormat '''
+    for a in b do =>
+  ''','''
+    [stdin]:1:12: error: unexpected do
+    for a in b do =>
+               ^^
+  '''
+
+  assertErrorFormat '''
+    while a do ->
+  ''','''
+    [stdin]:1:9: error: unexpected do
+    while a do ->
+            ^^
+  '''
+
+  assertErrorFormat '''
+    until a do =>
+  ''','''
+    [stdin]:1:9: error: unexpected do
+    until a do =>
+            ^^
+  '''
+
+  assertErrorFormat '''
+    switch
+      when a ->
+  ''','''
+    [stdin]:2:10: error: unexpected ->
+      when a ->
+             ^^
+  '''

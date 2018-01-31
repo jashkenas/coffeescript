@@ -453,7 +453,9 @@ exports.Lexer = class Lexer
     return 0 unless match = MULTI_DENT.exec chunk
     indent = match[0]
 
-    @seenFor = no
+    prev = @prev()
+    backslash = prev? and prev[0] is '\\'
+    @seenFor = no unless backslash and @seenFor
     @seenImport = no unless @importSpecifierList
     @seenExport = no unless @exportSpecifierList
 
