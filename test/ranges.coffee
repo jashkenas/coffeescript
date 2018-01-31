@@ -195,20 +195,3 @@ test "#2047: from, to and step as variables", ->
   step = 0
   r = (x for x in [b..a] by step)
   arrayEq r, []
-
-  a = "aaa"
-  b = "bbb"
-  step = "3"
-  r = (x for x in [b..a] by step)
-  arrayEq r, ['bbb']
-
-  step = "ccc"
-  r = (x for x in [b..a] by step)
-  arrayEq r, ['bbb']
-
-  a = 2
-  b = 1
-  step = "0.5000000"
-  r = (x for x in [b..a] by step)
-  arrayEq r, [1]
-
