@@ -646,7 +646,7 @@ div.CodeMirror-cursor {
       <section id="overview">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.1.1">2.1.1</a></p>
+<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.2.0">2.2.0</a></p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash"><span class="comment"># Install locally for a project:</span>
 npm install --save-dev coffeescript
 
@@ -2121,32 +2121,30 @@ lyrics = (function() {
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="do-js">var filename, fn, i, len;
+      <textarea class="javascript-output" id="do-js">var filename, i, len;
 
-fn = function(filename) {
-  if (filename !== '.DS_Store' && filename !== 'Thumbs.db' && filename !== 'ehthumbs.db') {
-    return fs.readFile(filename, function(err, contents) {
-      return compile(filename, contents.toString());
-    });
-  }
-};
 for (i = 0, len = list.length; i < len; i++) {
   filename = list[i];
-  fn(filename);
+  (function(filename) {
+    if (filename !== '.DS_Store' && filename !== 'Thumbs.db' && filename !== 'ehthumbs.db') {
+      return fs.readFile(filename, function(err, contents) {
+        return compile(filename, contents.toString());
+      });
+    }
+  })(filename);
 }
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">filename</span>, <span class="cm-def">fn</span>, <span class="cm-def">i</span>, <span class="cm-def">len</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">filename</span>, <span class="cm-def">i</span>, <span class="cm-def">len</span>;
 
-<span class="cm-variable">fn</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">filename</span>) {
-  <span class="cm-keyword">if</span> (<span class="cm-variable-2">filename</span> <span class="cm-operator">!==</span> <span class="cm-string">'.DS_Store'</span> <span class="cm-operator">&amp;&amp;</span> <span class="cm-variable-2">filename</span> <span class="cm-operator">!==</span> <span class="cm-string">'Thumbs.db'</span> <span class="cm-operator">&amp;&amp;</span> <span class="cm-variable-2">filename</span> <span class="cm-operator">!==</span> <span class="cm-string">'ehthumbs.db'</span>) {
-    <span class="cm-keyword">return</span> <span class="cm-variable">fs</span>.<span class="cm-property">readFile</span>(<span class="cm-variable-2">filename</span>, <span class="cm-keyword">function</span>(<span class="cm-def">err</span>, <span class="cm-def">contents</span>) {
-      <span class="cm-keyword">return</span> <span class="cm-variable">compile</span>(<span class="cm-variable-2">filename</span>, <span class="cm-variable-2">contents</span>.<span class="cm-property">toString</span>());
-    });
-  }
-};
 <span class="cm-keyword">for</span> (<span class="cm-variable">i</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>, <span class="cm-variable">len</span> <span class="cm-operator">=</span> <span class="cm-variable">list</span>.<span class="cm-property">length</span>; <span class="cm-variable">i</span> <span class="cm-operator">&lt;</span> <span class="cm-variable">len</span>; <span class="cm-variable">i</span><span class="cm-operator">++</span>) {
   <span class="cm-variable">filename</span> <span class="cm-operator">=</span> <span class="cm-variable">list</span>[<span class="cm-variable">i</span>];
-  <span class="cm-variable">fn</span>(<span class="cm-variable">filename</span>);
+  (<span class="cm-keyword">function</span>(<span class="cm-def">filename</span>) {
+    <span class="cm-keyword">if</span> (<span class="cm-variable-2">filename</span> <span class="cm-operator">!==</span> <span class="cm-string">'.DS_Store'</span> <span class="cm-operator">&amp;&amp;</span> <span class="cm-variable-2">filename</span> <span class="cm-operator">!==</span> <span class="cm-string">'Thumbs.db'</span> <span class="cm-operator">&amp;&amp;</span> <span class="cm-variable-2">filename</span> <span class="cm-operator">!==</span> <span class="cm-string">'ehthumbs.db'</span>) {
+      <span class="cm-keyword">return</span> <span class="cm-variable">fs</span>.<span class="cm-property">readFile</span>(<span class="cm-variable-2">filename</span>, <span class="cm-keyword">function</span>(<span class="cm-def">err</span>, <span class="cm-def">contents</span>) {
+        <span class="cm-keyword">return</span> <span class="cm-variable">compile</span>(<span class="cm-variable-2">filename</span>, <span class="cm-variable-2">contents</span>.<span class="cm-property">toString</span>());
+      });
+    }
+  })(<span class="cm-variable">filename</span>);
 }
 </pre>
     </div>
@@ -3095,19 +3093,19 @@ futurists = {
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="patterns_and_splats-js">var close, contents, i, open, ref, tag,
-  slice = [].slice;
+      <textarea class="javascript-output" id="patterns_and_splats-js">var close, contents, open, ref, tag,
+  splice = [].splice;
 
 tag = "<impossible>";
 
-ref = tag.split(""), open = ref[0], contents = 3 <= ref.length ? slice.call(ref, 1, i = ref.length - 1) : (i = 1, []), close = ref[i++];
+ref = tag.split(""), [open, ...contents] = ref, [close] = splice.call(contents, -1);
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">close</span>, <span class="cm-def">contents</span>, <span class="cm-def">i</span>, <span class="cm-def">open</span>, <span class="cm-def">ref</span>, <span class="cm-def">tag</span>,
-  <span class="cm-def">slice</span> <span class="cm-operator">=</span> [].<span class="cm-property">slice</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">close</span>, <span class="cm-def">contents</span>, <span class="cm-def">open</span>, <span class="cm-def">ref</span>, <span class="cm-def">tag</span>,
+  <span class="cm-def">splice</span> <span class="cm-operator">=</span> [].<span class="cm-property">splice</span>;
 
 <span class="cm-variable">tag</span> <span class="cm-operator">=</span> <span class="cm-string">"&lt;impossible>"</span>;
 
-<span class="cm-variable">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">tag</span>.<span class="cm-property">split</span>(<span class="cm-string">""</span>), <span class="cm-variable">open</span> <span class="cm-operator">=</span> <span class="cm-variable">ref</span>[<span class="cm-number">0</span>], <span class="cm-variable">contents</span> <span class="cm-operator">=</span> <span class="cm-number">3</span> <span class="cm-operator">&lt;=</span> <span class="cm-variable">ref</span>.<span class="cm-property">length</span> <span class="cm-operator">?</span> <span class="cm-variable">slice</span>.<span class="cm-property">call</span>(<span class="cm-variable">ref</span>, <span class="cm-number">1</span>, <span class="cm-variable">i</span> <span class="cm-operator">=</span> <span class="cm-variable">ref</span>.<span class="cm-property">length</span> <span class="cm-operator">-</span> <span class="cm-number">1</span>) : (<span class="cm-variable">i</span> <span class="cm-operator">=</span> <span class="cm-number">1</span>, []), <span class="cm-variable">close</span> <span class="cm-operator">=</span> <span class="cm-variable">ref</span>[<span class="cm-variable">i</span><span class="cm-operator">++</span>];
+<span class="cm-variable">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">tag</span>.<span class="cm-property">split</span>(<span class="cm-string">""</span>), [<span class="cm-variable">open</span>, <span class="cm-meta">...</span><span class="cm-variable">contents</span>] <span class="cm-operator">=</span> <span class="cm-variable">ref</span>, [<span class="cm-variable">close</span>] <span class="cm-operator">=</span> <span class="cm-variable">splice</span>.<span class="cm-property">call</span>(<span class="cm-variable">contents</span>, <span class="cm-operator">-</span><span class="cm-number">1</span>);
 </pre>
     </div>
   </div>
@@ -3138,17 +3136,19 @@ ref = tag.split(""), open = ref[0], contents = 3 <= ref.length ? slice.call(ref,
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="expansion-js">var first, last, ref, text;
+      <textarea class="javascript-output" id="expansion-js">var first, last, ref, text,
+  slice = [].slice;
 
 text = "Every literary critic believes he will outwit history and have the last word";
 
-ref = text.split(" "), first = ref[0], last = ref[ref.length - 1];
+ref = text.split(" "), [first] = ref, [last] = slice.call(ref, -1);
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">first</span>, <span class="cm-def">last</span>, <span class="cm-def">ref</span>, <span class="cm-def">text</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">first</span>, <span class="cm-def">last</span>, <span class="cm-def">ref</span>, <span class="cm-def">text</span>,
+  <span class="cm-def">slice</span> <span class="cm-operator">=</span> [].<span class="cm-property">slice</span>;
 
 <span class="cm-variable">text</span> <span class="cm-operator">=</span> <span class="cm-string">"Every literary critic believes he will outwit history and have the last word"</span>;
 
-<span class="cm-variable">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">text</span>.<span class="cm-property">split</span>(<span class="cm-string">" "</span>), <span class="cm-variable">first</span> <span class="cm-operator">=</span> <span class="cm-variable">ref</span>[<span class="cm-number">0</span>], <span class="cm-variable">last</span> <span class="cm-operator">=</span> <span class="cm-variable">ref</span>[<span class="cm-variable">ref</span>.<span class="cm-property">length</span> <span class="cm-operator">-</span> <span class="cm-number">1</span>];
+<span class="cm-variable">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">text</span>.<span class="cm-property">split</span>(<span class="cm-string">" "</span>), [<span class="cm-variable">first</span>] <span class="cm-operator">=</span> <span class="cm-variable">ref</span>, [<span class="cm-variable">last</span>] <span class="cm-operator">=</span> <span class="cm-variable">slice</span>.<span class="cm-property">call</span>(<span class="cm-variable">ref</span>, <span class="cm-operator">-</span><span class="cm-number">1</span>);
 </pre>
     </div>
   </div>
@@ -3504,7 +3504,7 @@ say = function(text) {
 
 countdown = async function(seconds) {
   var i, j, ref;
-  for (i = j = ref = seconds; ref <= 1 ? j <= 1 : j >= 1; i = ref <= 1 ? ++j : --j) {
+  for (i = j = ref = seconds; undefined !== 0 && (ref <= 1 ? ref <= j && j <= 1 : ref >= j && j >= 1); i = ref <= 1 ? ++j : --j) {
     say(i);
     await sleep(1000); // wait one second
   }
@@ -3530,7 +3530,7 @@ countdown(3);
 
 <span class="cm-variable">countdown</span> <span class="cm-operator">=</span> <span class="cm-keyword">async</span> <span class="cm-keyword">function</span>(<span class="cm-def">seconds</span>) {
   <span class="cm-keyword">var</span> <span class="cm-def">i</span>, <span class="cm-def">j</span>, <span class="cm-def">ref</span>;
-  <span class="cm-keyword">for</span> (<span class="cm-variable-2">i</span> <span class="cm-operator">=</span> <span class="cm-variable-2">j</span> <span class="cm-operator">=</span> <span class="cm-variable-2">ref</span> <span class="cm-operator">=</span> <span class="cm-variable-2">seconds</span>; <span class="cm-variable-2">ref</span> <span class="cm-operator">&lt;=</span> <span class="cm-number">1</span> <span class="cm-operator">?</span> <span class="cm-variable-2">j</span> <span class="cm-operator">&lt;=</span> <span class="cm-number">1</span> : <span class="cm-variable-2">j</span> <span class="cm-operator">>=</span> <span class="cm-number">1</span>; <span class="cm-variable-2">i</span> <span class="cm-operator">=</span> <span class="cm-variable-2">ref</span> <span class="cm-operator">&lt;=</span> <span class="cm-number">1</span> <span class="cm-operator">?</span> <span class="cm-operator">++</span><span class="cm-variable-2">j</span> : <span class="cm-operator">--</span><span class="cm-variable-2">j</span>) {
+  <span class="cm-keyword">for</span> (<span class="cm-variable-2">i</span> <span class="cm-operator">=</span> <span class="cm-variable-2">j</span> <span class="cm-operator">=</span> <span class="cm-variable-2">ref</span> <span class="cm-operator">=</span> <span class="cm-variable-2">seconds</span>; <span class="cm-atom">undefined</span> <span class="cm-operator">!==</span> <span class="cm-number">0</span> <span class="cm-operator">&amp;&amp;</span> (<span class="cm-variable-2">ref</span> <span class="cm-operator">&lt;=</span> <span class="cm-number">1</span> <span class="cm-operator">?</span> <span class="cm-variable-2">ref</span> <span class="cm-operator">&lt;=</span> <span class="cm-variable-2">j</span> <span class="cm-operator">&amp;&amp;</span> <span class="cm-variable-2">j</span> <span class="cm-operator">&lt;=</span> <span class="cm-number">1</span> : <span class="cm-variable-2">ref</span> <span class="cm-operator">>=</span> <span class="cm-variable-2">j</span> <span class="cm-operator">&amp;&amp;</span> <span class="cm-variable-2">j</span> <span class="cm-operator">>=</span> <span class="cm-number">1</span>); <span class="cm-variable-2">i</span> <span class="cm-operator">=</span> <span class="cm-variable-2">ref</span> <span class="cm-operator">&lt;=</span> <span class="cm-number">1</span> <span class="cm-operator">?</span> <span class="cm-operator">++</span><span class="cm-variable-2">j</span> : <span class="cm-operator">--</span><span class="cm-variable-2">j</span>) {
     <span class="cm-variable">say</span>(<span class="cm-variable-2">i</span>);
     <span class="cm-keyword">await</span> <span class="cm-variable">sleep</span>(<span class="cm-number">1000</span>); <span class="cm-comment">// wait one second</span>
   }
@@ -4524,7 +4524,7 @@ renderStarRating = function({rating, maxStars}) {
     {(function() {
     var i, ref, results;
     results = [];
-    for (wholeStar = i = 0, ref = Math.floor(rating); 0 <= ref ? i < ref : i > ref; wholeStar = 0 <= ref ? ++i : --i) {
+    for (wholeStar = i = 0, ref = Math.floor(rating); undefined !== 0 && (0 <= ref ? 0 <= i && i < ref : 0 >= i && i > ref); wholeStar = 0 <= ref ? ++i : --i) {
       results.push(<Star className="wholeStar" key={wholeStar} />);
     }
     return results;
@@ -4533,7 +4533,7 @@ renderStarRating = function({rating, maxStars}) {
     {(function() {
     var i, ref, ref1, results;
     results = [];
-    for (emptyStar = i = ref = Math.ceil(rating), ref1 = maxStars; ref <= ref1 ? i < ref1 : i > ref1; emptyStar = ref <= ref1 ? ++i : --i) {
+    for (emptyStar = i = ref = Math.ceil(rating), ref1 = maxStars; undefined !== 0 && (ref <= ref1 ? ref <= i && i < ref1 : ref >= i && i > ref1); emptyStar = ref <= ref1 ? ++i : --i) {
       results.push(<Star className="emptyStar" key={emptyStar} />);
     }
     return results;
@@ -4549,7 +4549,7 @@ renderStarRating = function({rating, maxStars}) {
     <span class="cm-string-2">{(function() {</span>
     <span class="cm-string-2">var i, ref, results;</span>
     <span class="cm-string-2">results = [];</span>
-    <span class="cm-string-2">for (wholeStar = i = 0, ref = Math.floor(rating); 0 &lt;= ref ? i &lt; ref : i > ref; wholeStar = 0 &lt;= ref ? ++i : --i) {</span>
+    <span class="cm-string-2">for (wholeStar = i = 0, ref = Math.floor(rating); undefined !== 0 &amp;&amp; (0 &lt;= ref ? 0 &lt;= i &amp;&amp; i &lt; ref : 0 >= i &amp;&amp; i > ref); wholeStar = 0 &lt;= ref ? ++i : --i) {</span>
       <span class="cm-string-2">results.push(&lt;Star className="wholeStar" key={wholeStar} />);</span>
     <span class="cm-string-2">}</span>
     <span class="cm-string-2">return results;</span>
@@ -4558,7 +4558,7 @@ renderStarRating = function({rating, maxStars}) {
     <span class="cm-string-2">{(function() {</span>
     <span class="cm-string-2">var i, ref, ref1, results;</span>
     <span class="cm-string-2">results = [];</span>
-    <span class="cm-string-2">for (emptyStar = i = ref = Math.ceil(rating), ref1 = maxStars; ref &lt;= ref1 ? i &lt; ref1 : i > ref1; emptyStar = ref &lt;= ref1 ? ++i : --i) {</span>
+    <span class="cm-string-2">for (emptyStar = i = ref = Math.ceil(rating), ref1 = maxStars; undefined !== 0 &amp;&amp; (ref &lt;= ref1 ? ref &lt;= i &amp;&amp; i &lt; ref1 : ref >= i &amp;&amp; i > ref1); emptyStar = ref &lt;= ref1 ? ++i : --i) {</span>
       <span class="cm-string-2">results.push(&lt;Star className="emptyStar" key={emptyStar} />);</span>
     <span class="cm-string-2">}</span>
     <span class="cm-string-2">return results;</span>
@@ -4790,7 +4790,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
         <section id="annotated-source">
           <h2>Annotated Source</h2>
-<p>You can browse the CoffeeScript 2.1.1 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+<p>You can browse the CoffeeScript 2.2.0 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
 <li><a href="annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
@@ -5467,6 +5467,28 @@ x = <span class="number">2</span> + <span class="number">2</span>
       </section>
       <section id="changelog">
         <h2>Changelog</h2>
+<div class="anchor" id="2.2.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/2.1.1...2.2.0">2.2.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2018-02-01">February 1, 2018</time></span>
+</h2><ul>
+<li>This release fixes <em>all</em> currently open bugs, dating as far back as 2014, 2012 and 2011.</li>
+<li><strong>Potential breaking change:</strong> An inline <code>if</code> or <code>switch</code> statement with an ambiguous <code>else</code>, such as <code>if no then if yes then alert 1 else alert 2</code>, now compiles where the <code>else</code> always corresponds to the closest open <code>then</code>. Previously the behavior of an ambiguous <code>else</code> was unpredictable. If your code has any <code>if … then</code> or <code>switch … then</code> statements with multiple <code>then</code>s (and one or more <code>else</code>s) the compiled output might be different now, unless you had resolved ambiguity via parentheses. We made this change because the previous behavior was inconsistent and basically a bug: depending on what grammar was where, for example if there was an inline function or something that implied a block, the <code>else</code> might bind to an earlier <code>then</code> rather than a later <code>then</code>. Now an <code>else</code> essentially closes a block opened by a <code>then</code>, similar to closing an open parenthesis.</li>
+<li>When a required <code>then</code> is missing, the error more accurately points out the location of the mistake.</li>
+<li>An error is thrown when the <code>coffee</code> command is run in an environment that doesn’t support some ES2015 JavaScript features that the CoffeeScript compiler itself requires. This can happen if CoffeeScript is installed in Node older than version 6.</li>
+<li>Destructuring with a non-final splat/spread, e.g. <code>[open, contents..., close] = tag.split('')</code> is now output using ES2015 rest syntax.</li>
+<li>Functions named <code>get</code> or <code>set</code> can be used without parentheses in more cases, including when attached to <code>this</code> or <code>@</code> or <code>?.</code>; or when the first argument is an implicit object, e.g. <code>@set key: 'val'</code>.</li>
+<li>Statements such as <code>break</code> can now be used inside parentheses, e.g. <code>(doSomething(); break) while condition</code> or <code>(pick(key); break) for key of obj</code>.</li>
+<li>Bugfix for assigning to a property attached to <code>this</code>/<code>@</code> in destructuring, e.g. <code>({@prop = yes, @otherProp = no}) -&gt;</code>.</li>
+<li>Bugfix for incorrect errors being thrown about calling <code>super</code> with a parameter attached to <code>this</code> when said parameter is in a lower scope, e.g. <code>class Child extends Parent then constructor: -&gt; super(-&gt; @prop)</code>.</li>
+<li>Bugfix to prevent a possible infinite loop when a <code>for</code> loop is given a variable to step by, e.g. <code>for x in [1..3] by step</code> (as opposed to <code>by 0.5</code> or some other primitive numeric value).</li>
+<li>Bugfix to no longer declare iterator variables twice when evaluating a range, e.g. <code>end = 3; fn [0..end]</code>.</li>
+<li>Bugfix for incorrect scope of variables in chained calls, e.g. <code>start(x = 3).then(-&gt; x = 4)</code>.</li>
+<li>Bugfix for incorrect scope of variables in a function passed to <code>do</code>, e.g. <code>for [1..3] then masked = 10; do -&gt; alert masked</code>.</li>
+<li>Bugfix to no longer throw a syntax error for a trailing comma in a function call, e.g. <code>fn arg1, arg2,</code>.</li>
+<li>Bugfix for an expression in a property access, e.g. <code>a[!b in c..]</code>.</li>
+<li>Bugfix to allow a line continuation backslash (<code>\</code>) at any point in a <code>for</code> line.</li>
+</ul>
 <div class="anchor" id="2.1.1"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/2.1.0...2.1.1">2.1.1</a>
@@ -6184,7 +6206,7 @@ The <code>extends</code> keyword now functions identically to <code>goog.inherit
 
 <script src="browser-compiler/coffeescript.js"></script>
 <script>
-(function(){window.location.origin||(window.location.origin=window.location.protocol+'//'+window.location.hostname),$(document).ready(function(){var a,b,c,d,e,f,g,h,i,j,k,l;if(k=function(){return $('.navbar-toggler, .sidebar').toggleClass('show')},$('[data-toggle="offcanvas"]').click(k),$('[data-action="sidebar-nav"]').click(function(a){return $('.navbar-toggler').is(':visible')&&(a.preventDefault(),k(),setTimeout(function(){return window.location=a.target.href},260)),gtag('event','sidebar_navigate',{event_category:'navigation',event_label:a.target.href.replace(window.location.origin,'')})}),$('body').scrollspy({target:'#contents',offset:Math.round($('main').css('padding-top').replace('px',''))}),e=function(a){return $('#contents a.active[href!=\''+a+'\']').removeClass('show')},$(window).on('activate.bs.scrollspy',function(a,b){var c;if($('#contents a.active[href!=\''+b.relatedTarget+'\']').removeClass('show'),c=$('#contents a[href=\''+b.relatedTarget+'\']'),c.prop('href')!==window.location.origin+'/#try')return i(c.prop('href')),gtag('config',GA_TRACKING_ID,{page_path:c.prop('href').replace(window.location.origin,'')})}),j=[],c=[],g=200,$('textarea').each(function(a){return j[a]=this,$(this).data('index',a)}),d=function(a){var b,d,e,f;if(d=a.data('index'),e=a.hasClass('javascript-output')?'javascript':'coffeescript',c[d]=b=CodeMirror.fromTextArea(a[0],{mode:e,theme:'twilight',indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:'contenteditable',readOnly:'coffeescript'!==e,viewportMargin:2e308}),'coffeescript'===e)return f=null,b.on('change',function(){return clearTimeout(f),f=setTimeout(function(){var e,f,h,j,k;h=Date.now();try{if(e=b.getValue(),0===d&&$('#try').hasClass('show')){$('#try').hasClass('show')&&(j='try:'+encodeURIComponent(e),i(window.location.href.split('#')[0]+'#'+j));try{null!=window.localStorage&&window.localStorage.setItem('tryCoffeeScriptCode',e)}catch(a){f=a}}k=CoffeeScript.compile(e,{bare:!0}),g=Math.max(200,Date.now()-h)}catch(a){f=a,k=''+f}return c[d+1].setValue(k),gtag('event','edit_code',{event_category:'engagement',event_label:a.closest('[data-example]').data('example')})},g)}),b.addKeyMap({Tab:function Tab(a){return a.somethingSelected()?a.indentSelection('add'):/^\t/m.test(a.getValue())?a.execCommand('insertTab'):a.execCommand('insertSoftTab')},"Shift-Tab":function ShiftTab(a){return a.indentSelection('subtract')},Enter:function Enter(a){return a.options.indentWithTabs=/^\t/m.test(a.getValue()),a.execCommand('newlineAndIndent')}})},$('.placeholder-code').one('mouseover',function(){var a,b;return b=$(this).prev('textarea'),$(this).remove(),d(b),a=$(b.parent().siblings()[0]),a.children('.placeholder-code').remove(),d($(a.children('textarea')[0]))}),f=function(){return d($('#try-coffeescript-coffee')),d($('#try-coffeescript-js'))},$('[data-action="run-code-example"]').click(function(){var a,b,d;return d=$(this).data('run'),a=$('#'+$(this).data('example')+'-js').data('index'),b=null==c[a]?$(j[a]).val():c[a].getValue(),!0!==d&&(b=b+'\nalert('+unescape(d)+');'),eval(b),gtag('event','run_code',{event_category:'engagement',event_label:$(this).closest('[data-example]').data('example')})}),h=null,l=function(b){var d,e;if($('#try, #try-link').toggleClass('show'),!$('#try').hasClass('show'))return h?i(h):a();if(window.location.hash&&(h=window.location.hash),0===$('#try .CodeMirror').length&&f(),b&&null!=window.localStorage)try{return d=window.localStorage.getItem('tryCoffeeScriptCode'),null==d?i('#try'):c[0].setValue(d)}catch(a){return e=a,i('#try')}else return i('#try')},b=function(){return $('#try, #try-link').removeClass('show'),h?i(h):a()},$('[data-toggle="try"]').click(function(a){return a.preventDefault(),l(!0)}),$('[data-close="try"]').click(b),a=function(){return window.history.replaceState({},document.title,window.location.pathname)},i=function(a){return 0===(null==a?void 0:a.indexOf('#'))&&(a=''+window.location.pathname+a),window.history.replaceState({},document.title,a||'')},$(window).on('hashchange',function(){if(''===window.location.hash)return a()}),null!=window.location.hash){if('#try'===window.location.hash)return l(!0);if(0===window.location.hash.indexOf('#try'))return 0===$('#try .CodeMirror').length&&f(),c[0].setValue(decodeURIComponent(window.location.hash.slice(5))),l(!1);if(''===window.location.hash)return a();if(e(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,'')).scrollIntoView()}})}).call(this);
+(function(){window.location.origin||(window.location.origin=window.location.protocol+'//'+window.location.hostname),$(document).ready(function(){var clearHash,closeTry,editors,initializeEditor,initializeScrollspyFromHash,initializeTryEditors,lastCompilationElapsedTime,previousHash,replaceState,textareas,toggleSidebar,toggleTry;if(toggleSidebar=function(){return $('.navbar-toggler, .sidebar').toggleClass('show')},$('[data-toggle="offcanvas"]').click(toggleSidebar),$('[data-action="sidebar-nav"]').click(function(a){return $('.navbar-toggler').is(':visible')&&(a.preventDefault(),toggleSidebar(),setTimeout(function(){return window.location=a.target.href},260)),gtag('event','sidebar_navigate',{event_category:'navigation',event_label:a.target.href.replace(window.location.origin,'')})}),$('body').scrollspy({target:'#contents',offset:Math.round($('main').css('padding-top').replace('px',''))}),initializeScrollspyFromHash=function(a){return $('#contents a.active[href!=\''+a+'\']').removeClass('show')},$(window).on('activate.bs.scrollspy',function(a,b){var c;if($('#contents a.active[href!=\''+b.relatedTarget+'\']').removeClass('show'),c=$('#contents a[href=\''+b.relatedTarget+'\']'),c.prop('href')!==window.location.origin+'/#try')return replaceState(c.prop('href')),gtag('config',GA_TRACKING_ID,{page_path:c.prop('href').replace(window.location.origin,'')})}),textareas=[],editors=[],lastCompilationElapsedTime=200,$('textarea').each(function(a){return textareas[a]=this,$(this).data('index',a)}),initializeEditor=function(a){var b,c,d,e;if(c=a.data('index'),d=a.hasClass('javascript-output')?'javascript':'coffeescript',editors[c]=b=CodeMirror.fromTextArea(a[0],{mode:d,theme:'twilight',indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:'contenteditable',readOnly:'coffeescript'!==d,viewportMargin:2e308}),'coffeescript'===d)return e=null,b.on('change',function(){return clearTimeout(e),e=setTimeout(function(){var d,e,f,g,h;f=Date.now();try{if(d=b.getValue(),0===c&&$('#try').hasClass('show')){$('#try').hasClass('show')&&(g='try:'+encodeURIComponent(d),replaceState(window.location.href.split('#')[0]+'#'+g));try{null!=window.localStorage&&window.localStorage.setItem('tryCoffeeScriptCode',d)}catch(a){e=a}}h=CoffeeScript.compile(d,{bare:!0}),lastCompilationElapsedTime=Math.max(200,Date.now()-f)}catch(a){e=a,h=''+e}return editors[c+1].setValue(h),gtag('event','edit_code',{event_category:'engagement',event_label:a.closest('[data-example]').data('example')})},lastCompilationElapsedTime)}),b.addKeyMap({Tab:function Tab(a){return a.somethingSelected()?a.indentSelection('add'):/^\t/m.test(a.getValue())?a.execCommand('insertTab'):a.execCommand('insertSoftTab')},"Shift-Tab":function ShiftTab(a){return a.indentSelection('subtract')},Enter:function Enter(a){return a.options.indentWithTabs=/^\t/m.test(a.getValue()),a.execCommand('newlineAndIndent')}})},$('.placeholder-code').one('mouseover',function(){var a,b;return b=$(this).prev('textarea'),$(this).remove(),initializeEditor(b),a=$(b.parent().siblings()[0]),a.children('.placeholder-code').remove(),initializeEditor($(a.children('textarea')[0]))}),initializeTryEditors=function(){return initializeEditor($('#try-coffeescript-coffee')),initializeEditor($('#try-coffeescript-js'))},$('[data-action="run-code-example"]').click(function(){var index,js,run;return run=$(this).data('run'),index=$('#'+$(this).data('example')+'-js').data('index'),js=null==editors[index]?$(textareas[index]).val():editors[index].getValue(),!0!==run&&(js=js+'\nalert('+unescape(run)+');'),eval(js),gtag('event','run_code',{event_category:'engagement',event_label:$(this).closest('[data-example]').data('example')})}),previousHash=null,toggleTry=function(a){var b,c;if($('#try, #try-link').toggleClass('show'),!$('#try').hasClass('show'))return previousHash?replaceState(previousHash):clearHash();if(window.location.hash&&(previousHash=window.location.hash),0===$('#try .CodeMirror').length&&initializeTryEditors(),a&&null!=window.localStorage)try{return b=window.localStorage.getItem('tryCoffeeScriptCode'),null==b?replaceState('#try'):editors[0].setValue(b)}catch(a){return c=a,replaceState('#try')}else return replaceState('#try')},closeTry=function(){return $('#try, #try-link').removeClass('show'),previousHash?replaceState(previousHash):clearHash()},$('[data-toggle="try"]').click(function(a){return a.preventDefault(),toggleTry(!0)}),$('[data-close="try"]').click(closeTry),clearHash=function(){return window.history.replaceState({},document.title,window.location.pathname)},replaceState=function(a){return 0===(null==a?void 0:a.indexOf('#'))&&(a=''+window.location.pathname+a),window.history.replaceState({},document.title,a||'')},$(window).on('hashchange',function(){if(''===window.location.hash)return clearHash()}),null!=window.location.hash){if('#try'===window.location.hash)return toggleTry(!0);if(0===window.location.hash.indexOf('#try'))return 0===$('#try .CodeMirror').length&&initializeTryEditors(),editors[0].setValue(decodeURIComponent(window.location.hash.slice(5))),toggleTry(!1);if(''===window.location.hash)return clearHash();if(initializeScrollspyFromHash(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,'')).scrollIntoView()}})}).call(this);
 </script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-106156830-1"></script>
 <script>
