@@ -332,7 +332,7 @@ task 'doc:test:watch', 'watch and continually rebuild the browser-based tests', 
 
 buildAnnotatedSource = (watch = no) ->
   do generateAnnotatedSource = ->
-    exec "node_modules/docco/bin/docco src/*.*coffee --output docs/v#{majorVersion}/annotated-source", (err) -> throw err if err
+    exec "cd src && ../node_modules/docco/bin/docco *.*coffee --output ../docs/v#{majorVersion}/annotated-source", (err) -> throw err if err
     log 'generated', green, "annotated source in docs/v#{majorVersion}/annotated-source/"
 
   if watch
