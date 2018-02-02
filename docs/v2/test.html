@@ -3676,6 +3676,30 @@ test "#4827: executable class body wrappers have correct context", ->
   test.call o
   ok typeof o.A is typeof o.B is 'function'
 
+test "#4868: Incorrect ‘Can’t call super with @params’ error", ->
+  class A
+    constructor: (@func = ->) ->
+      @x = 1
+      @func()
+
+  class B extends A
+    constructor: ->
+      super -> @x = 2
+
+  a = new A
+  b = new B
+  eq 1, a.x
+  eq 2, b.x
+
+  class C
+    constructor: (@c = class) -> @c
+
+  class D extends C
+    constructor: ->
+      super class then constructor: (@a) -> @a = 3
+
+  d = new (new D).c
+  eq 3, d.a
 </script>
 <script type="text/x-coffeescript" class="test" id="cluster">
 # Cluster Module
@@ -4994,6 +5018,12 @@ test "transpile option applies to imported .coffee files", ->
   return if global.testingBrowser
   doesNotThrow -> transpile 'run', "import { getSep } from './test/importing/transpile_import'\ngetSep()"
 
+test "#3306: trailing comma in a function call in the last line", ->
+  eqJS '''
+  foo bar,
+  ''', '''
+  foo(bar);
+  '''
 </script>
 <script type="text/x-coffeescript" class="test" id="comprehensions">
 # Comprehensions
@@ -6063,6 +6093,809 @@ test "#4267: lots of for-loops in the same scope", ->
       true
   """
   ok CoffeeScript.eval(code)
+
+# Test for issue #2342: Lexer: Inline `else` binds to wrong `if`/`switch`
+test "#2343: if / then / if / then / else", ->
+  a = b = yes
+  c = e = g = no
+  d = 1
+  f = 2
+  h = 3
+  i = 4
+
+  s = ->
+    if a
+      if b
+        if c
+          d
+        else
+          if e
+            f
+          else
+            if g
+              h
+            else
+              i
+
+  t = ->
+    if a then if b
+      if c then d
+      else if e
+        f
+      else if g
+        h
+      else
+        i
+
+  u = ->
+    if a then if b
+      if c then d else if e
+        f
+      else if g
+        h
+      else i
+
+  v = ->
+    if a then if b
+      if c then d else if e then f
+      else if g then h
+      else i
+
+  w = ->
+    if a then if b
+      if c then d
+      else if e
+          f
+        else
+          if g then h
+          else i
+
+  x = -> if a then if b then if c then d else if e then f else if g then h else i
+
+  y = -> if a then if b then (if c then d else (if e then f else (if g then h else i)))
+
+  eq 4, s()
+  eq 4, t()
+  eq 4, u()
+  eq 4, v()
+  eq 4, w()
+  eq 4, x()
+  eq 4, y()
+
+  c = yes
+  eq 1, s()
+  eq 1, t()
+  eq 1, u()
+  eq 1, v()
+  eq 1, w()
+  eq 1, x()
+  eq 1, y()
+
+  b = no
+  eq undefined, s()
+  eq undefined, t()
+  eq undefined, u()
+  eq undefined, v()
+  eq undefined, w()
+  eq undefined, x()
+  eq undefined, y()
+
+test "#2343: if / then / if / then / else / else", ->
+  a = b = yes
+  c = e = g = no
+  d = 1
+  f = 2
+  h = 3
+  i = 4
+  j = 5
+  k = 6
+
+  s = ->
+    if a
+      if b
+        if c
+          d
+        else
+          e
+          if e
+            f
+          else
+            if g
+              h
+            else
+              i
+      else
+        j
+    else
+      k
+
+  t = ->
+    if a
+      if b
+        if c then d
+        else if e
+          f
+        else if g
+          h
+        else
+          i
+      else
+        j
+    else
+      k
+
+  u = ->
+    if a
+      if b
+        if c then d else if e
+          f
+        else if g
+          h
+        else i
+      else j
+    else k
+
+  v = ->
+    if a
+      if b
+        if c then d else if e then f
+        else if g then h
+        else i
+      else j else k
+
+  w = ->
+    if a then if b
+        if c then d
+        else if e
+            f
+          else
+            if g then h
+            else i
+    else j else k
+
+  x = -> if a then if b then if c then d else if e then f else if g then h else i else j else k
+
+  y = -> if a then (if b then (if c then d else (if e then f else (if g then h else i))) else j) else k
+
+  eq 4, s()
+  eq 4, t()
+  eq 4, u()
+  eq 4, v()
+  eq 4, w()
+  eq 4, x()
+  eq 4, y()
+
+  c = yes
+  eq 1, s()
+  eq 1, t()
+  eq 1, u()
+  eq 1, v()
+  eq 1, w()
+  eq 1, x()
+  eq 1, y()
+
+  b = no
+  eq 5, s()
+  eq 5, t()
+  eq 5, u()
+  eq 5, v()
+  eq 5, w()
+  eq 5, x()
+  eq 5, y()
+
+  a = no
+  eq 6, s()
+  eq 6, t()
+  eq 6, u()
+  eq 6, v()
+  eq 6, w()
+  eq 6, x()
+  eq 6, y()
+
+
+test "#2343: switch / when / then / if / then / else", ->
+  a = b = yes
+  c = e = g = no
+  d = 1
+  f = 2
+  h = 3
+  i = 4
+
+  s = ->
+    switch
+      when a
+        if b
+          if c
+            d
+          else
+            if e
+              f
+            else
+              if g
+                h
+              else
+                i
+
+
+  t = ->
+    switch
+      when a then if b
+        if c then d
+        else if e
+          f
+        else if g
+          h
+        else
+          i
+
+  u = ->
+    switch
+      when a then if b then if c then d
+      else if e then f
+      else if g then h else i
+
+  v = ->
+    switch
+      when a then if b then if c then d else if e then f
+      else if g then h else i
+
+  w = ->
+    switch
+      when a then if b then if c then d else if e then f
+      else if g
+        h
+      else i
+
+  x = ->
+    switch
+     when a then if b then if c then d else if e then f else if g then h else i
+
+  y = -> switch
+    when a then if b then (if c then d else (if e then f else (if g then h else i)))
+
+  eq 4, s()
+  eq 4, t()
+  eq 4, u()
+  eq 4, v()
+  eq 4, w()
+  eq 4, x()
+  eq 4, y()
+
+  c = yes
+  eq 1, s()
+  eq 1, t()
+  eq 1, u()
+  eq 1, v()
+  eq 1, w()
+  eq 1, x()
+  eq 1, y()
+
+  b = no
+  eq undefined, s()
+  eq undefined, t()
+  eq undefined, u()
+  eq undefined, v()
+  eq undefined, w()
+  eq undefined, x()
+  eq undefined, y()
+
+test "#2343: switch / when / then / if / then / else / else", ->
+  a = b = yes
+  c = e = g = no
+  d = 1
+  f = 2
+  h = 3
+  i = 4
+
+  s = ->
+    switch
+      when a
+        if b
+          if c
+            d
+          else if e
+            f
+          else if g
+            h
+          else
+            i
+      else
+        0
+
+  t = ->
+    switch
+      when a
+        if b
+          if c then d
+          else if e
+            f
+          else if g
+            h
+          else i
+      else 0
+
+  u = ->
+    switch
+      when a
+        if b then if c
+            d
+          else if e
+            f
+          else if g
+            h
+          else i
+      else 0
+
+  v = ->
+    switch
+      when a
+        if b then if c then d
+        else if e
+          f
+        else if g
+          h
+        else i
+      else 0
+
+  w = ->
+    switch
+      when a
+        if b then if c then d
+        else if e then f
+        else if g then h
+        else i
+      else 0
+
+  x = ->
+    switch
+     when a
+       if b then if c then d else if e then f else if g then h else i
+     else 0
+
+  y = -> switch
+    when a
+      if b then (if c then d else (if e then f else (if g then h else i)))
+    else 0
+
+  eq 4, s()
+  eq 4, t()
+  eq 4, u()
+  eq 4, v()
+  eq 4, w()
+  eq 4, x()
+  eq 4, y()
+
+  c = yes
+  eq 1, s()
+  eq 1, t()
+  eq 1, u()
+  eq 1, v()
+  eq 1, w()
+  eq 1, x()
+  eq 1, y()
+
+  b = no
+  eq undefined, s()
+  eq undefined, t()
+  eq undefined, u()
+  eq undefined, v()
+  eq undefined, w()
+  eq undefined, x()
+  eq undefined, y()
+
+  b = yes
+  a = no
+  eq 0, s()
+  eq 0, t()
+  eq 0, u()
+  eq 0, v()
+  eq 0, w()
+  eq 0, x()
+  eq 0, y()
+
+test "#2343: switch / when / then / if / then / else / else / else", ->
+  a = b = yes
+  c = e = g = no
+  d = 1
+  f = 2
+  h = 3
+  i = 4
+  j = 5
+
+  s = ->
+    switch
+      when a
+        if b
+          if c
+            d
+          else if e
+            f
+          else if g
+            h
+          else
+            i
+        else
+          j
+      else
+        0
+
+  t = ->
+    switch
+      when a
+        if b
+          if c then d
+          else if e
+            f
+          else if g
+            h
+          else i
+        else
+          j
+      else 0
+
+  u = ->
+    switch
+      when a
+        if b
+          if c
+            d
+          else if e
+            f
+          else if g
+            h
+          else i
+        else j
+      else 0
+
+  v = ->
+    switch
+      when a
+        if b
+          if c then d
+          else if e
+            f
+          else if g then h
+          else i
+        else j
+      else 0
+
+  w = ->
+    switch
+      when a
+        if b
+          if c then d
+          else if e then f
+          else if g then h
+          else i
+        else j
+      else 0
+
+  x = ->
+    switch
+     when a
+       if b then if c then d else if e then f else if g then h else i else j
+     else 0
+
+  y = -> switch
+    when a
+      if b then (if c then d else (if e then f else (if g then h else i))) else j
+    else 0
+
+  eq 4, s()
+  eq 4, t()
+  eq 4, u()
+  eq 4, v()
+  eq 4, w()
+  eq 4, x()
+  eq 4, y()
+
+  c = yes
+  eq 1, s()
+  eq 1, t()
+  eq 1, u()
+  eq 1, v()
+  eq 1, w()
+  eq 1, x()
+  eq 1, y()
+
+  b = no
+  eq 5, s()
+  eq 5, t()
+  eq 5, u()
+  eq 5, v()
+  eq 5, w()
+  eq 5, x()
+  eq 5, y()
+
+  b = yes
+  a = no
+  eq 0, s()
+  eq 0, t()
+  eq 0, u()
+  eq 0, v()
+  eq 0, w()
+  eq 0, x()
+  eq 0, y()
+
+# Test for issue #3921: Inline function without parentheses used in condition fails to compile
+test "#3921: `if` & `unless`", ->
+  a = {}
+  eq a, if do -> no then undefined else a
+  a1 = undefined
+  if do -> yes
+    a1 = a
+  eq a, a1
+
+  b = {}
+  eq b, unless do -> no then b else undefined
+  b1 = undefined
+  unless do -> no
+    b1 = b
+  eq b, b1
+
+  c = 0
+  if (arg = undefined) -> yes then c++
+  eq 1, c
+  d = 0
+  if (arg = undefined) -> yes
+    d++
+  eq 1, d
+
+  answer = 'correct'
+  eq answer, if do -> 'wrong' then 'correct' else 'wrong'
+  eq answer, unless do -> no then 'correct' else 'wrong'
+  statm1 = undefined
+  if do -> 'wrong'
+    statm1 = 'correct'
+  eq answer, statm1
+  statm2 = undefined
+  unless do -> no
+    statm2 = 'correct'
+  eq answer, statm2
+
+test "#3921: `post if`", ->
+  a = {}
+  eq a, a unless do -> no
+  a1 = a if do -> yes
+  eq a, a1
+
+  c = 0
+  c++ if (arg = undefined) -> yes
+  eq 1, c
+  d = 0
+  d++ if (arg = undefined) -> yes
+  eq 1, d
+
+  answer = 'correct'
+  eq answer, 'correct' if do -> 'wrong'
+  eq answer, 'correct' unless do -> not 'wrong'
+  statm1 = undefined
+  statm1 = 'correct' if do -> 'wrong'
+  eq answer, statm1
+  statm2 = undefined
+  statm2 = 'correct' unless do -> not 'wrong'
+  eq answer, statm2
+
+test "Issue 3921: `while` & `until`", ->
+  i = 5
+  assert = (a) -> ok 5 > a > 0
+  result1 = while do (num = 1) -> i -= num
+    assert i
+    i
+  ok result1.join(' ') is '4 3 2 1'
+
+  j = 5
+  result2 = until do (num = 1) -> (j -= num) < 1
+    assert j
+    j
+  ok result2.join(' ') is '4 3 2 1'
+
+test "#3921: `switch`", ->
+  i = 1
+  a = switch do (m = 2) -> i * m
+    when 5 then "five"
+    when 4 then "four"
+    when 3 then "three"
+    when 2 then "two"
+    when 1 then "one"
+    else "none"
+  eq "two", a
+
+  j = 12
+  b = switch do (m = 3) -> j / m
+    when 5 then "five"
+    when 4 then "four"
+    when 3 then "three"
+    when 2 then "two"
+    when 1 then "one"
+    else "none"
+  eq "four", b
+
+  k = 20
+  c = switch do (m = 4) -> k / m
+    when 5 then "five"
+    when 4 then "four"
+    when 3 then "three"
+    when 2 then "two"
+    when 1 then "one"
+    else "none"
+  eq "five", c
+
+# Issue #3441: Parentheses wrapping expression throw invalid error in `then` clause
+test "#3441: `StatementLiteral` in parentheses", ->
+  i = 0
+  r1 = ((i++; break) while i < 10)
+  arrayEq r1, []
+
+  i = 0
+  r2 = ((i++; continue) while i < 10)
+  arrayEq r2, []
+
+  i = 0
+  r4 = while i < 10 then (i++; break)
+  arrayEq r4, []
+
+  i = 0
+  r5 = while i < 10 then (i++; continue)
+  arrayEq r5, []
+
+  arr = [0..9]
+  r6 = ((a; break) for a in arr)
+  arrayEq r6, []
+
+  r7 = ((a; continue) for a in arr)
+  arrayEq r7, []
+
+  r8 = for a in arr then (a; break)
+  arrayEq r8, []
+
+  r9 = for a in arr then (a; continue)
+  arrayEq r9, []
+
+# Issue #3909: backslash to break line in `for` loops throw syntax error
+test "#3909: backslash `for own ... of`", ->
+
+  obj = {a: 1, b: 2, c: 3}
+  arr = ['a', 'b', 'c']
+
+  x1 \
+    = ( key for own key of obj )
+  arrayEq x1, arr
+
+  x2 = \
+    ( key for own key of obj )
+  arrayEq x2, arr
+
+  x3 = ( \
+    key for own key of obj )
+  arrayEq x3, arr
+
+  x4 = ( key \
+    for own key of obj )
+  arrayEq x4, arr
+
+  x5 = ( key for own key of \
+    obj )
+  arrayEq x5, arr
+
+  x6 = ( key for own key of obj \
+    )
+  arrayEq x6, arr
+
+  x7 = ( key for \
+    own key of obj )
+  arrayEq x7, arr
+
+  x8 = ( key for own \
+    key of obj )
+  arrayEq x8, arr
+
+  x9 = ( key for own key \
+    of obj )
+  arrayEq x9, arr
+
+
+test "#3909: backslash `for ... of`", ->
+  obj = {a: 1, b: 2, c: 3}
+  arr = ['a', 'b', 'c']
+
+  x1 \
+    = ( key for key of obj )
+  arrayEq x1, arr
+
+  x2 = \
+    ( key for key of obj )
+  arrayEq x2, arr
+
+  x3 = ( \
+    key for key of obj )
+  arrayEq x3, arr
+
+  x4 = ( key \
+    for key of obj )
+  arrayEq x4, arr
+
+  x5 = ( key for key of \
+    obj )
+  arrayEq x5, arr
+
+  x6 = ( key for key of obj \
+    )
+  arrayEq x6, arr
+
+  x7 = ( key for \
+    key of obj )
+  arrayEq x7, arr
+
+  x8 = ( key for key \
+    of obj )
+  arrayEq x8, arr
+
+
+test "#3909: backslash `for ... in`", ->
+  arr = ['a', 'b', 'c']
+
+  x1 \
+    = ( key for key in arr )
+  arrayEq x1, arr
+
+  x2 = \
+    ( key for key in arr )
+  arrayEq x2, arr
+
+  x3 = ( \
+    key for key in arr )
+  arrayEq x3, arr
+
+  x4 = ( key \
+    for key in arr )
+  arrayEq x4, arr
+
+  x5 = ( key for key in \
+    arr )
+  arrayEq x5, arr
+
+  x6 = ( key for key in arr \
+    )
+  arrayEq x6, arr
+
+  x7 = ( key for \
+    key in arr )
+  arrayEq x7, arr
+
+  x8 = ( key for key \
+    in arr )
+  arrayEq x8, arr
+
+test "#4871: `else if` no longer output together ", ->
+   eqJS '''
+   if a then b else if c then d else if e then f else g
+   ''',
+   '''
+   if (a) {
+     b;
+   } else if (c) {
+     d;
+   } else if (e) {
+     f;
+   } else {
+     g;
+   }
+   '''
+
+   eqJS '''
+   if no
+     1
+   else if yes
+     2
+   ''',
+   '''
+   if (false) {
+     1;
+   } else if (true) {
+     2;
+   }
+   '''
 
 </script>
 <script type="text/x-coffeescript" class="test" id="csx">
@@ -8637,6 +9470,55 @@ test "#4811: '///' inside a heregex comment does not close the heregex", ->
   ^^^
   '''
 
+test "#3933: prevent implicit calls when cotrol flow is missing `THEN`", ->
+  assertErrorFormat '''
+    for a in b do ->
+  ''','''
+    [stdin]:1:12: error: unexpected do
+    for a in b do ->
+               ^^
+  '''
+
+  assertErrorFormat '''
+    for a in b ->
+  ''','''
+    [stdin]:1:12: error: unexpected ->
+    for a in b ->
+               ^^
+  '''
+
+  assertErrorFormat '''
+    for a in b do =>
+  ''','''
+    [stdin]:1:12: error: unexpected do
+    for a in b do =>
+               ^^
+  '''
+
+  assertErrorFormat '''
+    while a do ->
+  ''','''
+    [stdin]:1:9: error: unexpected do
+    while a do ->
+            ^^
+  '''
+
+  assertErrorFormat '''
+    until a do =>
+  ''','''
+    [stdin]:1:9: error: unexpected do
+    until a do =>
+            ^^
+  '''
+
+  assertErrorFormat '''
+    switch
+      when a ->
+  ''','''
+    [stdin]:2:10: error: unexpected ->
+      when a ->
+             ^^
+  '''
 </script>
 <script type="text/x-coffeescript" class="test" id="eval">
 if vm = require? 'vm'
@@ -9643,6 +10525,15 @@ test "Simple Destructuring function arguments with same-named variables in scope
   eq f([2]), 2
   eq x, 1
 
+test "#4843: Bad output when assigning to @prop in destructuring assignment with defaults", ->
+  works = "maybe"
+  drinks = "beer"
+  class A
+    constructor: ({@works = 'no', @drinks = 'wine'}) ->
+  a = new A {works: 'yes', drinks: 'coffee'}
+  eq a.works, 'yes'
+  eq a.drinks, 'coffee'
+
 test "caching base value", ->
 
   obj =
@@ -10109,7 +11000,7 @@ test "get and set can be used as class method names", ->
   eq 4, B.get()
   eq 5, B.set()
 
-test "functions named get or set can be used without parentheses when attached to an object; #4524", ->
+test "#4524: functions named get or set can be used without parentheses when attached to an object", ->
   obj =
     get: (x) -> x + 2
     set: (x) -> x + 3
@@ -10128,6 +11019,8 @@ test "functions named get or set can be used without parentheses when attached t
 
   eq 12, obj.get 10
   eq 13, obj.set 10
+  eq 12, obj?.get 10
+  eq 13, obj?.set 10
 
   eq 14, a.get 10
   eq 15, a.set 10
@@ -10150,6 +11043,62 @@ test "functions named get or set can be used without parentheses when attached t
 
   eq 16, b.get value: @ten
   eq 17, b.set value: @ten
+
+test "#4836: functions named get or set can be used without parentheses when attached to this or @", ->
+  @get = (x) -> x + 2
+  @set = (x) -> x + 3
+  @a = 4
+
+  eq 12, this.get 10
+  eq 13, this.set 10
+  eq 12, this?.get 10
+  eq 13, this?.set 10
+  eq 6, this.get @a
+  eq 7, this.set @a
+  eq 6, this?.get @a
+  eq 7, this?.set @a
+
+  eq 12, @get 10
+  eq 13, @set 10
+  eq 12, @?.get 10
+  eq 13, @?.set 10
+  eq 6, @get @a
+  eq 7, @set @a
+  eq 6, @?.get @a
+  eq 7, @?.set @a
+
+test "#4852: functions named get or set can be used without parentheses when attached to this or @, with an argument of an implicit object", ->
+  @get = ({ x }) -> x + 2
+  @set = ({ x }) -> x + 3
+
+  eq 12, @get x: 10
+  eq 13, @set x: 10
+  eq 12, @?.get x: 10
+  eq 13, @?.set x: 10
+  eq 12, this?.get x: 10
+  eq 13, this?.set x: 10
+
+test "#4473: variable scope in chained calls", ->
+  obj =
+    foo: -> this
+    bar: (a) ->
+      a()
+      this
+
+  obj.foo(a = 1).bar(-> a = 2)
+  eq a, 2
+
+  obj.bar(-> b = 2).foo(b = 1)
+  eq b, 1
+
+  obj.foo(c = 1).bar(-> c = 2).foo(c = 3)
+  eq c, 3
+
+  obj.foo([d, e] = [1, 2]).bar(-> d = 4)
+  eq d, 4
+
+  obj.foo({f} = {f: 1}).bar(-> f = 5)
+  eq f, 5
 
 </script>
 <script type="text/x-coffeescript" class="test" id="functions">
@@ -15145,6 +16094,85 @@ test "#1012 slices with arguments object", ->
 test "#1409: creating large ranges outside of a function body", ->
   CoffeeScript.eval '[0..100]'
 
+test "#2047: Infinite loop possible when `for` loop with `range` uses variables", ->
+  up = 1
+  down = -1
+  a = 1
+  b = 5
+
+  testRange = (arg) ->
+    [from, to, step, expectedResult] = arg
+    r = (x for x in [from..to] by step)
+    arrayEq r, expectedResult
+
+  testData = [
+    [1, 5, 1, [1..5]]
+    [1, 5, -1, [1]]
+    [1, 5, up, [1..5]]
+    [1, 5, down, [1]]
+
+    [a, 5, 1, [1..5]]
+    [a, 5, -1, [1]]
+    [a, 5, up, [1..5]]
+    [a, 5, down, [1]]
+
+    [1, b, 1, [1..5]]
+    [1, b, -1, [1]]
+    [1, b, up, [1..5]]
+    [1, b, down, [1]]
+
+    [a, b, 1, [1..5]]
+    [a, b, -1, [1]]
+    [a, b, up, [1..5]]
+    [a, b, down, [1]]
+
+    [5, 1, 1, [5]]
+    [5, 1, -1, [5..1]]
+    [5, 1, up, [5]]
+    [5, 1, down,  [5..1]]
+
+    [5, a, 1, [5]]
+    [5, a, -1, [5..1]]
+    [5, a, up, [5]]
+    [5, a, down, [5..1]]
+
+    [b, 1, 1, [5]]
+    [b, 1, -1, [5..1]]
+    [b, 1, up, [5]]
+    [b, 1, down, [5..1]]
+
+    [b, a, 1, [5]]
+    [b, a, -1, [5..1]]
+    [b, a, up, [5]]
+    [b, a, down, [5..1]]
+  ]
+
+  testRange d for d in testData
+
+test "#2047: from, to and step as variables", ->
+  up = 1
+  down = -1
+  a = 1
+  b = 5
+
+  r = (x for x in [a..b] by up)
+  arrayEq r, [1..5]
+
+  r = (x for x in [a..b] by down)
+  arrayEq r, [1]
+
+  r = (x for x in [b..a] by up)
+  arrayEq r, [5]
+
+  r = (x for x in [b..a] by down)
+  arrayEq r, [5..1]
+
+  a = 1
+  b = -1
+  step = 0
+  r = (x for x in [b..a] by step)
+  arrayEq r, []
+
 </script>
 <script type="text/x-coffeescript" class="test" id="regexps">
 # Regular Expression Literals
@@ -15919,6 +16947,12 @@ test "#2953: methods on endpoints in assignment from array splice literal", ->
   delete Number.prototype.same
 
   arrayEq [0, 5, 9], list
+
+test "#1726: `Op` expression in property access causes unexpected results", ->
+  a = [0..2]
+  arrayEq a, a[(!1 in a)..]
+  arrayEq a, a[!1 in a..]
+  arrayEq a[(!1 in a)..], a[(!1 in a)..]
 
 </script>
 <script type="text/x-coffeescript" class="test" id="soaks">

@@ -461,13 +461,17 @@ what CoffeeScript would normally interpret as calls to functions named
             </div>
             
             <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'PROPERTY'</span> <span class="hljs-keyword">and</span> prev
-      <span class="hljs-keyword">if</span> prev.spaced <span class="hljs-keyword">and</span> prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> CALLABLE <span class="hljs-keyword">and</span> <span class="hljs-regexp">/^[gs]et$/</span>.test(prev[<span class="hljs-number">1</span>]) <span class="hljs-keyword">and</span> @tokens[@tokens.length - <span class="hljs-number">2</span>][<span class="hljs-number">0</span>] <span class="hljs-keyword">isnt</span> <span class="hljs-string">'.'</span>
-        @error <span class="hljs-string">"'<span class="hljs-subst">#{prev[<span class="hljs-number">1</span>]}</span>' cannot be used as a keyword, or as a function call without parentheses"</span>, prev[<span class="hljs-number">2</span>]
-      <span class="hljs-keyword">else</span>
+      <span class="hljs-keyword">if</span> prev.spaced <span class="hljs-keyword">and</span> prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> CALLABLE <span class="hljs-keyword">and</span> <span class="hljs-regexp">/^[gs]et$/</span>.test(prev[<span class="hljs-number">1</span>]) <span class="hljs-keyword">and</span>
+         @tokens.length &gt; <span class="hljs-number">1</span> <span class="hljs-keyword">and</span> @tokens[@tokens.length - <span class="hljs-number">2</span>][<span class="hljs-number">0</span>] <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> [<span class="hljs-string">'.'</span>, <span class="hljs-string">'?.'</span>, <span class="hljs-string">'@'</span>]
+        @error <span class="hljs-string">"'<span class="hljs-subst">#{prev[<span class="hljs-number">1</span>]}</span>' cannot be used as a keyword, or as a function call
+        without parentheses"</span>, prev[<span class="hljs-number">2</span>]
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> @tokens.length &gt; <span class="hljs-number">2</span>
         prevprev = @tokens[@tokens.length - <span class="hljs-number">2</span>]
-        <span class="hljs-keyword">if</span> prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> [<span class="hljs-string">'@'</span>, <span class="hljs-string">'THIS'</span>] <span class="hljs-keyword">and</span> prevprev <span class="hljs-keyword">and</span> prevprev.spaced <span class="hljs-keyword">and</span> <span class="hljs-regexp">/^[gs]et$/</span>.test(prevprev[<span class="hljs-number">1</span>]) <span class="hljs-keyword">and</span>
-        @tokens[@tokens.length - <span class="hljs-number">3</span>][<span class="hljs-number">0</span>] <span class="hljs-keyword">isnt</span> <span class="hljs-string">'.'</span>
-          @error <span class="hljs-string">"'<span class="hljs-subst">#{prevprev[<span class="hljs-number">1</span>]}</span>' cannot be used as a keyword, or as a function call without parentheses"</span>, prevprev[<span class="hljs-number">2</span>]
+        <span class="hljs-keyword">if</span> prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">in</span> [<span class="hljs-string">'@'</span>, <span class="hljs-string">'THIS'</span>] <span class="hljs-keyword">and</span> prevprev <span class="hljs-keyword">and</span> prevprev.spaced <span class="hljs-keyword">and</span>
+           <span class="hljs-regexp">/^[gs]et$/</span>.test(prevprev[<span class="hljs-number">1</span>]) <span class="hljs-keyword">and</span>
+           @tokens[@tokens.length - <span class="hljs-number">3</span>][<span class="hljs-number">0</span>] <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> [<span class="hljs-string">'.'</span>, <span class="hljs-string">'?.'</span>, <span class="hljs-string">'@'</span>]
+          @error <span class="hljs-string">"'<span class="hljs-subst">#{prevprev[<span class="hljs-number">1</span>]}</span>' cannot be used as a keyword, or as a
+          function call without parentheses"</span>, prevprev[<span class="hljs-number">2</span>]
 
     <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'IDENTIFIER'</span> <span class="hljs-keyword">and</span> id <span class="hljs-keyword">in</span> RESERVED
       @error <span class="hljs-string">"reserved word '<span class="hljs-subst">#{id}</span>'"</span>, length: id.length
@@ -915,7 +919,9 @@ can close multiple indents, so we need to know how far in we happen to be.</p>
     <span class="hljs-keyword">return</span> <span class="hljs-number">0</span> <span class="hljs-keyword">unless</span> match = MULTI_DENT.exec chunk
     indent = match[<span class="hljs-number">0</span>]
 
-    @seenFor = <span class="hljs-literal">no</span>
+    prev = @prev()
+    backslash = prev? <span class="hljs-keyword">and</span> prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'\\'</span>
+    @seenFor = <span class="hljs-literal">no</span> <span class="hljs-keyword">unless</span> backslash <span class="hljs-keyword">and</span> @seenFor
     @seenImport = <span class="hljs-literal">no</span> <span class="hljs-keyword">unless</span> @importSpecifierList
     @seenExport = <span class="hljs-literal">no</span> <span class="hljs-keyword">unless</span> @exportSpecifierList
 
@@ -1641,8 +1647,8 @@ of <code>&#39;NEOSTRING&#39;</code>s are converted using <code>fn</code> and tur
                 <a class="pilcrow" href="#section-58">&#182;</a>
               </div>
               <p>This is an interpolated string, not a CSX tag; and for whatever
-reason <code>`a${/*test*/}b` </code> is invalid JS. So compile to
-<code>`a${/*test*/&#39;&#39;}b` </code> instead.</p>
+reason <code>`a${/*test*/}b`</code> is invalid JS. So compile to
+<code>`a${/*test*/&#39;&#39;}b`</code> instead.</p>
 
             </div>
             

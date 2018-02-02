@@ -357,6 +357,7 @@ grammar.</p>
             
             <div class="content"><div class='highlight'><pre>  Line: [
     o <span class="hljs-string">'Expression'</span>
+    o <span class="hljs-string">'ExpressionLine'</span>
     o <span class="hljs-string">'Statement'</span>
     o <span class="hljs-string">'FuncDirective'</span>
   ]
@@ -415,6 +416,27 @@ them somewhat circular.</p>
     o <span class="hljs-string">'Class'</span>
     o <span class="hljs-string">'Throw'</span>
     o <span class="hljs-string">'Yield'</span>
+  ]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Expressions which are written in single line and would otherwise require being
+wrapped in braces: E.g <code>a = b if do -&gt; f a is 1</code>, <code>if f (a) -&gt; a*2 then ...</code>,
+<code>for x in do (obj) -&gt; f obj when x &gt; 8 then f x</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  ExpressionLine: [
+    o <span class="hljs-string">'CodeLine'</span>
+    o <span class="hljs-string">'IfLine'</span>
+    o <span class="hljs-string">'OperationLine'</span>
   ]
 
   Yield: [
@@ -426,11 +448,11 @@ them somewhat circular.</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>An indented block of expressions. Note that the <a href="rewriter.html">Rewriter</a>
 will convert some postfix forms into blocks for us, by adjusting the
@@ -455,11 +477,11 @@ token stream.</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Alphanumerics are separated from the other <strong>Literal</strong> matchers because
 they can also serve as keys in object literals.</p>
@@ -484,11 +506,11 @@ they can also serve as keys in object literals.</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>All of our immediate values. Generally these can be passed straight
 through and printed to JavaScript.</p>
@@ -509,11 +531,11 @@ through and printed to JavaScript.</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Assignment of a variable, property, or index to a value.</p>
 
@@ -528,11 +550,11 @@ through and printed to JavaScript.</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Assignment when it happens within an object literal. The difference from
 the ordinary <strong>Assign</strong> is that these allow numbers and strings as keys.</p>
@@ -569,11 +591,11 @@ the ordinary <strong>Assign</strong> is that these allow numbers and strings as 
         </li>
         
         
-        <li id="section-22">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Object literal spread properties.</p>
 
@@ -610,11 +632,11 @@ the ordinary <strong>Assign</strong> is that these allow numbers and strings as 
         </li>
         
         
-        <li id="section-23">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>A return statement from a function body.</p>
 
@@ -639,11 +661,11 @@ the ordinary <strong>Assign</strong> is that these allow numbers and strings as 
         </li>
         
         
-        <li id="section-24">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>The <strong>Code</strong> node is the function literal. It’s defined by an indented block
 of <strong>Block</strong> preceded by a function arrow, with an optional parameter list.</p>
@@ -658,11 +680,30 @@ of <strong>Block</strong> preceded by a function arrow, with an optional paramet
         </li>
         
         
-        <li id="section-25">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>The Codeline is the <strong>Code</strong> node with <strong>Line</strong> instead of indented <strong>Block</strong>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  CodeLine: [
+    o <span class="hljs-string">'PARAM_START ParamList PARAM_END FuncGlyph Line'</span>, <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Code $<span class="hljs-number">2</span>, LOC(<span class="hljs-number">5</span>)(Block.wrap [$<span class="hljs-number">5</span>]), $<span class="hljs-number">4</span>,
+                                                              LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Literal $<span class="hljs-number">1</span>)
+    o <span class="hljs-string">'FuncGlyph Line'</span>,                                 <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Code [], LOC(<span class="hljs-number">2</span>)(Block.wrap [$<span class="hljs-number">2</span>]), $<span class="hljs-number">1</span>
+  ]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>CoffeeScript has two different symbols for functions. <code>-&gt;</code> is for ordinary
 functions, and <code>=&gt;</code> is for functions bound to the current value of <em>this</em>.</p>
@@ -677,11 +718,11 @@ functions, and <code>=&gt;</code> is for functions bound to the current value of
         </li>
         
         
-        <li id="section-26">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>An optional, trailing comma.</p>
 
@@ -695,11 +736,11 @@ functions, and <code>=&gt;</code> is for functions bound to the current value of
         </li>
         
         
-        <li id="section-27">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>The list of parameters that a function accepts can be of any length.</p>
 
@@ -716,11 +757,11 @@ functions, and <code>=&gt;</code> is for functions bound to the current value of
         </li>
         
         
-        <li id="section-28">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>A single parameter in a function definition can be ordinary, or a splat
 that hoovers up the remaining arguments.</p>
@@ -738,11 +779,11 @@ that hoovers up the remaining arguments.</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>Function Parameters</p>
 
@@ -758,11 +799,11 @@ that hoovers up the remaining arguments.</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>A splat that occurs outside of a parameter list.</p>
 
@@ -776,11 +817,11 @@ that hoovers up the remaining arguments.</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>Variables and properties that can be assigned to.</p>
 
@@ -796,11 +837,11 @@ that hoovers up the remaining arguments.</p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <p>Everything that can be assigned to.</p>
 
@@ -815,11 +856,11 @@ that hoovers up the remaining arguments.</p>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>The types of things that can be treated as values – assigned to, invoked
 as functions, indexed into, named as a class, etc.</p>
@@ -839,11 +880,11 @@ as functions, indexed into, named as a class, etc.</p>
         </li>
         
         
-        <li id="section-34">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
               <p>A <code>super</code>-based expression that can be used as a value.</p>
 
@@ -857,11 +898,11 @@ as functions, indexed into, named as a class, etc.</p>
         </li>
         
         
-        <li id="section-35">
+        <li id="section-37">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-35">&#182;</a>
+                <a class="pilcrow" href="#section-37">&#182;</a>
               </div>
               <p>The general group of accessors into an object, by property, by prototype
 or by array index or slice.</p>
@@ -880,11 +921,11 @@ or by array index or slice.</p>
         </li>
         
         
-        <li id="section-36">
+        <li id="section-38">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-36">&#182;</a>
+                <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
               <p>Indexing into an object or array using bracket notation.</p>
 
@@ -903,11 +944,11 @@ or by array index or slice.</p>
         </li>
         
         
-        <li id="section-37">
+        <li id="section-39">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-37">&#182;</a>
+                <a class="pilcrow" href="#section-39">&#182;</a>
               </div>
               <p>In CoffeeScript, an object literal is simply a list of assignments.</p>
 
@@ -920,11 +961,11 @@ or by array index or slice.</p>
         </li>
         
         
-        <li id="section-38">
+        <li id="section-40">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-38">&#182;</a>
+                <a class="pilcrow" href="#section-40">&#182;</a>
               </div>
               <p>Assignment of properties within an object literal can be separated by
 comma, as in JavaScript, or simply by newline.</p>
@@ -942,11 +983,11 @@ comma, as in JavaScript, or simply by newline.</p>
         </li>
         
         
-        <li id="section-39">
+        <li id="section-41">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-39">&#182;</a>
+                <a class="pilcrow" href="#section-41">&#182;</a>
               </div>
               <p>Class definitions have optional bodies of prototype property assignments,
 and optional references to the superclass.</p>
@@ -1032,11 +1073,11 @@ and optional references to the superclass.</p>
         </li>
         
         
-        <li id="section-40">
+        <li id="section-42">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-40">&#182;</a>
+                <a class="pilcrow" href="#section-42">&#182;</a>
               </div>
               <p>Ordinary function invocation, or a chained series of calls.</p>
 
@@ -1051,11 +1092,11 @@ and optional references to the superclass.</p>
         </li>
         
         
-        <li id="section-41">
+        <li id="section-43">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-41">&#182;</a>
+                <a class="pilcrow" href="#section-43">&#182;</a>
               </div>
               <p>An optional existence check on a function.</p>
 
@@ -1069,11 +1110,11 @@ and optional references to the superclass.</p>
         </li>
         
         
-        <li id="section-42">
+        <li id="section-44">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-42">&#182;</a>
+                <a class="pilcrow" href="#section-44">&#182;</a>
               </div>
               <p>The list of arguments to a function call.</p>
 
@@ -1087,11 +1128,11 @@ and optional references to the superclass.</p>
         </li>
         
         
-        <li id="section-43">
+        <li id="section-45">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-43">&#182;</a>
+                <a class="pilcrow" href="#section-45">&#182;</a>
               </div>
               <p>A reference to the <em>this</em> current object.</p>
 
@@ -1105,11 +1146,11 @@ and optional references to the superclass.</p>
         </li>
         
         
-        <li id="section-44">
+        <li id="section-46">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-44">&#182;</a>
+                <a class="pilcrow" href="#section-46">&#182;</a>
               </div>
               <p>A reference to a property on <em>this</em>.</p>
 
@@ -1122,11 +1163,11 @@ and optional references to the superclass.</p>
         </li>
         
         
-        <li id="section-45">
+        <li id="section-47">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-45">&#182;</a>
+                <a class="pilcrow" href="#section-47">&#182;</a>
               </div>
               <p>The array literal.</p>
 
@@ -1141,11 +1182,11 @@ and optional references to the superclass.</p>
         </li>
         
         
-        <li id="section-46">
+        <li id="section-48">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-46">&#182;</a>
+                <a class="pilcrow" href="#section-48">&#182;</a>
               </div>
               <p>Inclusive and exclusive range dots.</p>
 
@@ -1159,28 +1200,29 @@ and optional references to the superclass.</p>
         </li>
         
         
-        <li id="section-47">
+        <li id="section-49">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-47">&#182;</a>
+                <a class="pilcrow" href="#section-49">&#182;</a>
               </div>
               <p>The CoffeeScript range literal.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  Range: [
-    o <span class="hljs-string">'[ Expression RangeDots Expression ]'</span>,    <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>, $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'[ Expression RangeDots Expression ]'</span>,      <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>, $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'[ ExpressionLine RangeDots Expression ]'</span>,  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>, $<span class="hljs-number">3</span>
   ]</pre></div></div>
             
         </li>
         
         
-        <li id="section-48">
+        <li id="section-50">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-48">&#182;</a>
+                <a class="pilcrow" href="#section-50">&#182;</a>
               </div>
               <p>Array slice literals.</p>
 
@@ -1189,6 +1231,8 @@ and optional references to the superclass.</p>
             <div class="content"><div class='highlight'><pre>  Slice: [
     o <span class="hljs-string">'Expression RangeDots Expression'</span>,        <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">2</span>
     o <span class="hljs-string">'Expression RangeDots'</span>,                   <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range $<span class="hljs-number">1</span>, <span class="hljs-literal">null</span>, $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'ExpressionLine RangeDots Expression'</span>,    <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'ExpressionLine RangeDots'</span>,               <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range $<span class="hljs-number">1</span>, <span class="hljs-literal">null</span>, $<span class="hljs-number">2</span>
     o <span class="hljs-string">'RangeDots Expression'</span>,                   <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range <span class="hljs-literal">null</span>, $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>
     o <span class="hljs-string">'RangeDots'</span>,                              <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>, $<span class="hljs-number">1</span>
   ]</pre></div></div>
@@ -1196,11 +1240,11 @@ and optional references to the superclass.</p>
         </li>
         
         
-        <li id="section-49">
+        <li id="section-51">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-49">&#182;</a>
+                <a class="pilcrow" href="#section-51">&#182;</a>
               </div>
               <p>The <strong>ArgList</strong> is the list of objects passed into a function call
 (i.e. comma-separated expressions). Newlines work as well.</p>
@@ -1218,11 +1262,11 @@ and optional references to the superclass.</p>
         </li>
         
         
-        <li id="section-50">
+        <li id="section-52">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-50">&#182;</a>
+                <a class="pilcrow" href="#section-52">&#182;</a>
               </div>
               <p>Valid arguments are Blocks or Splats.</p>
 
@@ -1230,6 +1274,7 @@ and optional references to the superclass.</p>
             
             <div class="content"><div class='highlight'><pre>  Arg: [
     o <span class="hljs-string">'Expression'</span>
+    o <span class="hljs-string">'ExpressionLine'</span>
     o <span class="hljs-string">'Splat'</span>
     o <span class="hljs-string">'...'</span>,                                     <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Expansion
   ]</pre></div></div>
@@ -1237,11 +1282,11 @@ and optional references to the superclass.</p>
         </li>
         
         
-        <li id="section-51">
+        <li id="section-53">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-51">&#182;</a>
+                <a class="pilcrow" href="#section-53">&#182;</a>
               </div>
               <p>The <strong>ArgElisionList</strong> is the list of objects, contents of an array literal
 (i.e. comma-separated expressions and elisions). Newlines work as well.</p>
@@ -1278,11 +1323,11 @@ and optional references to the superclass.</p>
         </li>
         
         
-        <li id="section-52">
+        <li id="section-54">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-52">&#182;</a>
+                <a class="pilcrow" href="#section-54">&#182;</a>
               </div>
               <p>Just simple, comma-separated, required arguments (no fancy syntax). We need
 this to be separate from the <strong>ArgList</strong> for use in <strong>Switch</strong> blocks, where
@@ -1292,17 +1337,19 @@ having the newlines wouldn’t make sense.</p>
             
             <div class="content"><div class='highlight'><pre>  SimpleArgs: [
     o <span class="hljs-string">'Expression'</span>
+    o <span class="hljs-string">'ExpressionLine'</span>
     o <span class="hljs-string">'SimpleArgs , Expression'</span>,                <span class="hljs-function">-&gt;</span> [].concat $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'SimpleArgs , ExpressionLine'</span>,            <span class="hljs-function">-&gt;</span> [].concat $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
   ]</pre></div></div>
             
         </li>
         
         
-        <li id="section-53">
+        <li id="section-55">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-53">&#182;</a>
+                <a class="pilcrow" href="#section-55">&#182;</a>
               </div>
               <p>The variants of <em>try/catch/finally</em> exception handling blocks.</p>
 
@@ -1318,11 +1365,11 @@ having the newlines wouldn’t make sense.</p>
         </li>
         
         
-        <li id="section-54">
+        <li id="section-56">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-54">&#182;</a>
+                <a class="pilcrow" href="#section-56">&#182;</a>
               </div>
               <p>A catch clause names its error and runs a block of code.</p>
 
@@ -1337,11 +1384,11 @@ having the newlines wouldn’t make sense.</p>
         </li>
         
         
-        <li id="section-55">
+        <li id="section-57">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-55">&#182;</a>
+                <a class="pilcrow" href="#section-57">&#182;</a>
               </div>
               <p>Throw an exception object.</p>
 
@@ -1355,11 +1402,11 @@ having the newlines wouldn’t make sense.</p>
         </li>
         
         
-        <li id="section-56">
+        <li id="section-58">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-56">&#182;</a>
+                <a class="pilcrow" href="#section-58">&#182;</a>
               </div>
               <p>Parenthetical expressions. Note that the <strong>Parenthetical</strong> is a <strong>Value</strong>,
 not an <strong>Expression</strong>, so if you need to use an expression in a place
@@ -1376,31 +1423,40 @@ the trick.</p>
         </li>
         
         
-        <li id="section-57">
+        <li id="section-59">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-57">&#182;</a>
+                <a class="pilcrow" href="#section-59">&#182;</a>
               </div>
               <p>The condition portion of a while loop.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  WhileSource: [
+            <div class="content"><div class='highlight'><pre>  WhileLineSource: [
+    o <span class="hljs-string">'WHILE ExpressionLine'</span>,                       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> While $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'WHILE ExpressionLine WHEN ExpressionLine'</span>,   <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> While $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>
+    o <span class="hljs-string">'UNTIL ExpressionLine'</span>,                       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> While $<span class="hljs-number">2</span>, invert: <span class="hljs-literal">true</span>
+    o <span class="hljs-string">'UNTIL ExpressionLine WHEN ExpressionLine'</span>,   <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> While $<span class="hljs-number">2</span>, invert: <span class="hljs-literal">true</span>, guard: $<span class="hljs-number">4</span>
+  ]
+
+  WhileSource: [
     o <span class="hljs-string">'WHILE Expression'</span>,                       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> While $<span class="hljs-number">2</span>
     o <span class="hljs-string">'WHILE Expression WHEN Expression'</span>,       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> While $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>
+    o <span class="hljs-string">'WHILE ExpressionLine WHEN Expression'</span>,   <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> While $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>
     o <span class="hljs-string">'UNTIL Expression'</span>,                       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> While $<span class="hljs-number">2</span>, invert: <span class="hljs-literal">true</span>
     o <span class="hljs-string">'UNTIL Expression WHEN Expression'</span>,       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> While $<span class="hljs-number">2</span>, invert: <span class="hljs-literal">true</span>, guard: $<span class="hljs-number">4</span>
+    o <span class="hljs-string">'UNTIL ExpressionLine WHEN Expression'</span>,   <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> While $<span class="hljs-number">2</span>, invert: <span class="hljs-literal">true</span>, guard: $<span class="hljs-number">4</span>
   ]</pre></div></div>
             
         </li>
         
         
-        <li id="section-58">
+        <li id="section-60">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-58">&#182;</a>
+                <a class="pilcrow" href="#section-60">&#182;</a>
               </div>
               <p>The while loop can either be normal, with a block of expressions to execute,
 or postfix, with a single expression. There is no do..while.</p>
@@ -1409,6 +1465,7 @@ or postfix, with a single expression. There is no do..while.</p>
             
             <div class="content"><div class='highlight'><pre>  While: [
     o <span class="hljs-string">'WhileSource Block'</span>,                      <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>addBody $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'WhileLineSource Block'</span>,                  <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>addBody $<span class="hljs-number">2</span>
     o <span class="hljs-string">'Statement  WhileSource'</span>,                 <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2.</span>addBody LOC(<span class="hljs-number">1</span>) Block.wrap([$<span class="hljs-number">1</span>])
     o <span class="hljs-string">'Expression WhileSource'</span>,                 <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2.</span>addBody LOC(<span class="hljs-number">1</span>) Block.wrap([$<span class="hljs-number">1</span>])
     o <span class="hljs-string">'Loop'</span>,                                   <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1</span>
@@ -1422,11 +1479,11 @@ or postfix, with a single expression. There is no do..while.</p>
         </li>
         
         
-        <li id="section-59">
+        <li id="section-61">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-59">&#182;</a>
+                <a class="pilcrow" href="#section-61">&#182;</a>
               </div>
               <p>Array, object, and range comprehensions, at the most generic level.
 Comprehensions can either be normal, with a block of expressions to execute,
@@ -1438,12 +1495,18 @@ or postfix, with a single expression.</p>
     o <span class="hljs-string">'Statement  ForBody'</span>,                     <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> For $<span class="hljs-number">1</span>, $<span class="hljs-number">2</span>
     o <span class="hljs-string">'Expression ForBody'</span>,                     <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> For $<span class="hljs-number">1</span>, $<span class="hljs-number">2</span>
     o <span class="hljs-string">'ForBody    Block'</span>,                       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> For $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'ForLineBody  Block'</span>,                     <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> For $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>
   ]
 
   ForBody: [
     o <span class="hljs-string">'FOR Range'</span>,                              <span class="hljs-function">-&gt;</span> source: (LOC(<span class="hljs-number">2</span>) <span class="hljs-keyword">new</span> Value($<span class="hljs-number">2</span>))
     o <span class="hljs-string">'FOR Range BY Expression'</span>,                <span class="hljs-function">-&gt;</span> source: (LOC(<span class="hljs-number">2</span>) <span class="hljs-keyword">new</span> Value($<span class="hljs-number">2</span>)), step: $<span class="hljs-number">4</span>
     o <span class="hljs-string">'ForStart ForSource'</span>,                     <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2.</span>own = $<span class="hljs-number">1.</span>own; $<span class="hljs-number">2.</span>ownTag = $<span class="hljs-number">1.</span>ownTag; $<span class="hljs-number">2.</span>name = $<span class="hljs-number">1</span>[<span class="hljs-number">0</span>]; $<span class="hljs-number">2.</span>index = $<span class="hljs-number">1</span>[<span class="hljs-number">1</span>]; $<span class="hljs-number">2</span>
+  ]
+
+  ForLineBody: [
+    o <span class="hljs-string">'FOR Range BY ExpressionLine'</span>,            <span class="hljs-function">-&gt;</span> source: (LOC(<span class="hljs-number">2</span>) <span class="hljs-keyword">new</span> Value($<span class="hljs-number">2</span>)), step: $<span class="hljs-number">4</span>
+    o <span class="hljs-string">'ForStart ForLineSource'</span>,                 <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2.</span>own = $<span class="hljs-number">1.</span>own; $<span class="hljs-number">2.</span>ownTag = $<span class="hljs-number">1.</span>ownTag; $<span class="hljs-number">2.</span>name = $<span class="hljs-number">1</span>[<span class="hljs-number">0</span>]; $<span class="hljs-number">2.</span>index = $<span class="hljs-number">1</span>[<span class="hljs-number">1</span>]; $<span class="hljs-number">2</span>
   ]
 
   ForStart: [
@@ -1454,11 +1517,11 @@ or postfix, with a single expression.</p>
         </li>
         
         
-        <li id="section-60">
+        <li id="section-62">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-60">&#182;</a>
+                <a class="pilcrow" href="#section-62">&#182;</a>
               </div>
               <p>An array of all accepted values for a variable inside the loop.
 This enables support for pattern matching.</p>
@@ -1475,11 +1538,11 @@ This enables support for pattern matching.</p>
         </li>
         
         
-        <li id="section-61">
+        <li id="section-63">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-61">&#182;</a>
+                <a class="pilcrow" href="#section-63">&#182;</a>
               </div>
               <p>An array or range comprehension has variables for the current element
 and (optional) reference to the current index. Or, <em>key, value</em>, in the case
@@ -1495,11 +1558,11 @@ of object comprehensions.</p>
         </li>
         
         
-        <li id="section-62">
+        <li id="section-64">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-62">&#182;</a>
+                <a class="pilcrow" href="#section-64">&#182;</a>
               </div>
               <p>The source of a comprehension is an array or object with an optional guard
 clause. If it’s an array comprehension, you can also choose to step through
@@ -1508,22 +1571,56 @@ in fixed-size increments.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  ForSource: [
-    o <span class="hljs-string">'FORIN Expression'</span>,                               <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'FOROF Expression'</span>,                               <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, object: <span class="hljs-literal">yes</span>
-    o <span class="hljs-string">'FORIN Expression WHEN Expression'</span>,               <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>
-    o <span class="hljs-string">'FOROF Expression WHEN Expression'</span>,               <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, object: <span class="hljs-literal">yes</span>
-    o <span class="hljs-string">'FORIN Expression BY Expression'</span>,                 <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, step:  $<span class="hljs-number">4</span>
-    o <span class="hljs-string">'FORIN Expression WHEN Expression BY Expression'</span>, <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, step: $<span class="hljs-number">6</span>
-    o <span class="hljs-string">'FORIN Expression BY Expression WHEN Expression'</span>, <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, step:  $<span class="hljs-number">4</span>, guard: $<span class="hljs-number">6</span>
-    o <span class="hljs-string">'FORFROM Expression'</span>,                             <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, from: <span class="hljs-literal">yes</span>
-    o <span class="hljs-string">'FORFROM Expression WHEN Expression'</span>,             <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, from: <span class="hljs-literal">yes</span>
+    o <span class="hljs-string">'FORIN Expression'</span>,                                           <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'FOROF Expression'</span>,                                           <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, object: <span class="hljs-literal">yes</span>
+    o <span class="hljs-string">'FORIN Expression WHEN Expression'</span>,                           <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>
+    o <span class="hljs-string">'FORIN ExpressionLine WHEN Expression'</span>,                       <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>
+    o <span class="hljs-string">'FOROF Expression WHEN Expression'</span>,                           <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, object: <span class="hljs-literal">yes</span>
+    o <span class="hljs-string">'FOROF ExpressionLine WHEN Expression'</span>,                       <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, object: <span class="hljs-literal">yes</span>
+    o <span class="hljs-string">'FORIN Expression BY Expression'</span>,                             <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, step:  $<span class="hljs-number">4</span>
+    o <span class="hljs-string">'FORIN ExpressionLine BY Expression'</span>,                         <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, step:  $<span class="hljs-number">4</span>
+    o <span class="hljs-string">'FORIN Expression WHEN Expression BY Expression'</span>,             <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, step: $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'FORIN ExpressionLine WHEN Expression BY Expression'</span>,         <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, step: $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'FORIN Expression WHEN ExpressionLine BY Expression'</span>,         <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, step: $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'FORIN ExpressionLine WHEN ExpressionLine BY Expression'</span>,     <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, step: $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'FORIN Expression BY Expression WHEN Expression'</span>,             <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, step:  $<span class="hljs-number">4</span>, guard: $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'FORIN ExpressionLine BY Expression WHEN Expression'</span>,         <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, step:  $<span class="hljs-number">4</span>, guard: $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'FORIN Expression BY ExpressionLine WHEN Expression'</span>,         <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, step:  $<span class="hljs-number">4</span>, guard: $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'FORIN ExpressionLine BY ExpressionLine WHEN Expression'</span>,     <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, step:  $<span class="hljs-number">4</span>, guard: $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'FORFROM Expression'</span>,                                         <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, from: <span class="hljs-literal">yes</span>
+    o <span class="hljs-string">'FORFROM Expression WHEN Expression'</span>,                         <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, from: <span class="hljs-literal">yes</span>
+    o <span class="hljs-string">'FORFROM ExpressionLine WHEN Expression'</span>,                     <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, from: <span class="hljs-literal">yes</span>
+  ]
+
+  ForLineSource: [
+    o <span class="hljs-string">'FORIN ExpressionLine'</span>,                                       <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'FOROF ExpressionLine'</span>,                                       <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, object: <span class="hljs-literal">yes</span>
+    o <span class="hljs-string">'FORIN Expression WHEN ExpressionLine'</span>,                       <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>
+    o <span class="hljs-string">'FORIN ExpressionLine WHEN ExpressionLine'</span>,                   <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>
+    o <span class="hljs-string">'FOROF Expression WHEN ExpressionLine'</span>,                       <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, object: <span class="hljs-literal">yes</span>
+    o <span class="hljs-string">'FOROF ExpressionLine WHEN ExpressionLine'</span>,                   <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, object: <span class="hljs-literal">yes</span>
+    o <span class="hljs-string">'FORIN Expression BY ExpressionLine'</span>,                         <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, step:  $<span class="hljs-number">4</span>
+    o <span class="hljs-string">'FORIN ExpressionLine BY ExpressionLine'</span>,                     <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, step:  $<span class="hljs-number">4</span>
+    o <span class="hljs-string">'FORIN Expression WHEN Expression BY ExpressionLine'</span>,         <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, step: $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'FORIN ExpressionLine WHEN Expression BY ExpressionLine'</span>,     <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, step: $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'FORIN Expression WHEN ExpressionLine BY ExpressionLine'</span>,     <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, step: $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'FORIN ExpressionLine WHEN ExpressionLine BY ExpressionLine'</span>, <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, step: $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'FORIN Expression BY Expression WHEN ExpressionLine'</span>,         <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, step:  $<span class="hljs-number">4</span>, guard: $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'FORIN ExpressionLine BY Expression WHEN ExpressionLine'</span>,     <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, step:  $<span class="hljs-number">4</span>, guard: $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'FORIN Expression BY ExpressionLine WHEN ExpressionLine'</span>,     <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, step:  $<span class="hljs-number">4</span>, guard: $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'FORIN ExpressionLine BY ExpressionLine WHEN ExpressionLine'</span>, <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, step:  $<span class="hljs-number">4</span>, guard: $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'FORFROM ExpressionLine'</span>,                                     <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, from: <span class="hljs-literal">yes</span>
+    o <span class="hljs-string">'FORFROM Expression WHEN ExpressionLine'</span>,                     <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, from: <span class="hljs-literal">yes</span>
+    o <span class="hljs-string">'FORFROM ExpressionLine WHEN ExpressionLine'</span>,                 <span class="hljs-function">-&gt;</span> source: $<span class="hljs-number">2</span>, guard: $<span class="hljs-number">4</span>, from: <span class="hljs-literal">yes</span>
   ]
 
   Switch: [
-    o <span class="hljs-string">'SWITCH Expression INDENT Whens OUTDENT'</span>,            <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Switch $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>
-    o <span class="hljs-string">'SWITCH Expression INDENT Whens ELSE Block OUTDENT'</span>, <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Switch $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>, $<span class="hljs-number">6</span>
-    o <span class="hljs-string">'SWITCH INDENT Whens OUTDENT'</span>,                       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Switch <span class="hljs-literal">null</span>, $<span class="hljs-number">3</span>
-    o <span class="hljs-string">'SWITCH INDENT Whens ELSE Block OUTDENT'</span>,            <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Switch <span class="hljs-literal">null</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">5</span>
+    o <span class="hljs-string">'SWITCH Expression INDENT Whens OUTDENT'</span>,                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Switch $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>
+    o <span class="hljs-string">'SWITCH ExpressionLine INDENT Whens OUTDENT'</span>,            <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Switch $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>
+    o <span class="hljs-string">'SWITCH Expression INDENT Whens ELSE Block OUTDENT'</span>,     <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Switch $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>, $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'SWITCH ExpressionLine INDENT Whens ELSE Block OUTDENT'</span>, <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Switch $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>, $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'SWITCH INDENT Whens OUTDENT'</span>,                           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Switch <span class="hljs-literal">null</span>, $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'SWITCH INDENT Whens ELSE Block OUTDENT'</span>,                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Switch <span class="hljs-literal">null</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">5</span>
   ]
 
   Whens: [
@@ -1534,11 +1631,11 @@ in fixed-size increments.</p>
         </li>
         
         
-        <li id="section-63">
+        <li id="section-65">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-63">&#182;</a>
+                <a class="pilcrow" href="#section-65">&#182;</a>
               </div>
               <p>An individual <strong>When</strong> clause, with action.</p>
 
@@ -1552,11 +1649,11 @@ in fixed-size increments.</p>
         </li>
         
         
-        <li id="section-64">
+        <li id="section-66">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-64">&#182;</a>
+                <a class="pilcrow" href="#section-66">&#182;</a>
               </div>
               <p>The most basic form of <em>if</em> is a condition and an action. The following
 if-related rules are broken up along these lines in order to avoid
@@ -1572,11 +1669,11 @@ ambiguity.</p>
         </li>
         
         
-        <li id="section-65">
+        <li id="section-67">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-65">&#182;</a>
+                <a class="pilcrow" href="#section-67">&#182;</a>
               </div>
               <p>The full complement of <em>if</em> expressions, including postfix one-liner
 <em>if</em> and <em>unless</em>.</p>
@@ -1588,16 +1685,28 @@ ambiguity.</p>
     o <span class="hljs-string">'IfBlock ELSE Block'</span>,                     <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>addElse $<span class="hljs-number">3</span>
     o <span class="hljs-string">'Statement  POST_IF Expression'</span>,          <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> If $<span class="hljs-number">3</span>, LOC(<span class="hljs-number">1</span>)(Block.wrap [$<span class="hljs-number">1</span>]), type: $<span class="hljs-number">2</span>, statement: <span class="hljs-literal">true</span>
     o <span class="hljs-string">'Expression POST_IF Expression'</span>,          <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> If $<span class="hljs-number">3</span>, LOC(<span class="hljs-number">1</span>)(Block.wrap [$<span class="hljs-number">1</span>]), type: $<span class="hljs-number">2</span>, statement: <span class="hljs-literal">true</span>
+  ]
+
+  IfBlockLine: [
+    o <span class="hljs-string">'IF ExpressionLine Block'</span>,                  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> If $<span class="hljs-number">2</span>, $<span class="hljs-number">3</span>, type: $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'IfBlockLine ELSE IF ExpressionLine Block'</span>, <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>addElse LOC(<span class="hljs-number">3</span>,<span class="hljs-number">5</span>) <span class="hljs-keyword">new</span> If $<span class="hljs-number">4</span>, $<span class="hljs-number">5</span>, type: $<span class="hljs-number">3</span>
+  ]
+
+  IfLine: [
+    o <span class="hljs-string">'IfBlockLine'</span>
+    o <span class="hljs-string">'IfBlockLine ELSE Block'</span>,               <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>addElse $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'Statement  POST_IF ExpressionLine'</span>,    <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> If $<span class="hljs-number">3</span>, LOC(<span class="hljs-number">1</span>)(Block.wrap [$<span class="hljs-number">1</span>]), type: $<span class="hljs-number">2</span>, statement: <span class="hljs-literal">true</span>
+    o <span class="hljs-string">'Expression POST_IF ExpressionLine'</span>,    <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> If $<span class="hljs-number">3</span>, LOC(<span class="hljs-number">1</span>)(Block.wrap [$<span class="hljs-number">1</span>]), type: $<span class="hljs-number">2</span>, statement: <span class="hljs-literal">true</span>
   ]</pre></div></div>
             
         </li>
         
         
-        <li id="section-66">
+        <li id="section-68">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-66">&#182;</a>
+                <a class="pilcrow" href="#section-68">&#182;</a>
               </div>
               <p>Arithmetic and logical operators, working on one or more operands.
 Here they are grouped by order of precedence. The actual precedence rules
@@ -1608,7 +1717,11 @@ rules are necessary.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  Operation: [
+            <div class="content"><div class='highlight'><pre>  OperationLine: [
+    o <span class="hljs-string">'UNARY ExpressionLine'</span>,                   <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1</span>, $<span class="hljs-number">2</span>
+  ]
+
+  Operation: [
     o <span class="hljs-string">'UNARY Expression'</span>,                       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1</span> , $<span class="hljs-number">2</span>
     o <span class="hljs-string">'UNARY_MATH Expression'</span>,                  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1</span> , $<span class="hljs-number">2</span>
     o <span class="hljs-string">'-     Expression'</span>,                      (<span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op <span class="hljs-string">'-'</span>, $<span class="hljs-number">2</span>), prec: <span class="hljs-string">'UNARY_MATH'</span>
@@ -1624,11 +1737,11 @@ rules are necessary.</p>
         </li>
         
         
-        <li id="section-67">
+        <li id="section-69">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-67">&#182;</a>
+                <a class="pilcrow" href="#section-69">&#182;</a>
               </div>
               <p><a href="http://coffeescript.org/#existential-operator">The existential operator</a>.</p>
 
@@ -1666,11 +1779,11 @@ rules are necessary.</p>
         </li>
         
         
-        <li id="section-68">
+        <li id="section-70">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-68">&#182;</a>
+                <a class="pilcrow" href="#section-70">&#182;</a>
               </div>
               <h2 id="precedence">Precedence</h2>
 
@@ -1679,11 +1792,11 @@ rules are necessary.</p>
         </li>
         
         
-        <li id="section-69">
+        <li id="section-71">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-69">&#182;</a>
+                <a class="pilcrow" href="#section-71">&#182;</a>
               </div>
               
             </div>
@@ -1691,11 +1804,11 @@ rules are necessary.</p>
         </li>
         
         
-        <li id="section-70">
+        <li id="section-72">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-70">&#182;</a>
+                <a class="pilcrow" href="#section-72">&#182;</a>
               </div>
               <p>Operators at the top of this list have higher precedence than the ones lower
 down. Following these rules is what makes <code>2 + 3 * 4</code> parse as:</p>
@@ -1736,11 +1849,11 @@ down. Following these rules is what makes <code>2 + 3 * 4</code> parse as:</p>
         </li>
         
         
-        <li id="section-71">
+        <li id="section-73">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-71">&#182;</a>
+                <a class="pilcrow" href="#section-73">&#182;</a>
               </div>
               <h2 id="wrapping-up">Wrapping Up</h2>
 
@@ -1749,11 +1862,11 @@ down. Following these rules is what makes <code>2 + 3 * 4</code> parse as:</p>
         </li>
         
         
-        <li id="section-72">
+        <li id="section-74">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-72">&#182;</a>
+                <a class="pilcrow" href="#section-74">&#182;</a>
               </div>
               
             </div>
@@ -1761,11 +1874,11 @@ down. Following these rules is what makes <code>2 + 3 * 4</code> parse as:</p>
         </li>
         
         
-        <li id="section-73">
+        <li id="section-75">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-73">&#182;</a>
+                <a class="pilcrow" href="#section-75">&#182;</a>
               </div>
               <p>Finally, now that we have our <strong>grammar</strong> and our <strong>operators</strong>, we can create
 our <strong>Jison.Parser</strong>. We do this by processing all of our rules, recording all
@@ -1785,11 +1898,11 @@ as “tokens”.</p>
         </li>
         
         
-        <li id="section-74">
+        <li id="section-76">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-74">&#182;</a>
+                <a class="pilcrow" href="#section-76">&#182;</a>
               </div>
               <p>Initialize the <strong>Parser</strong> with our list of terminal <strong>tokens</strong>, our <strong>grammar</strong>
 rules, and the name of the root. Reverse the operators because Jison orders
