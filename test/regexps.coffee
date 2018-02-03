@@ -326,3 +326,15 @@ test "#4811, heregex comments with ///", ->
    // /// 'heregex' in comment will be consumed
    /a|b/;
   """
+
+test "dotall flag", ->
+  # Only supported in Node 9+; use example test adapted from
+  # https://github.com/tc39/proposal-regexp-dotall-flag#proposed-solution
+  try
+    new Function("/foo.bar/s.test('foo\tbar');")()
+  catch
+    return
+
+  # Can’t run the new syntax directly, as Node still parses these lines
+  # (and will throw an error in Node < 9) even though it never evaluates them.
+  doesNotThrow -> CoffeeScript.run "/a.b/s.test 'a\nb'", bare: yes
