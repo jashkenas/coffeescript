@@ -195,3 +195,10 @@ test "#2047: from, to and step as variables", ->
   step = 0
   r = (x for x in [b..a] by step)
   arrayEq r, []
+
+test "#4884: Range not declaring var for the 'i'", ->
+  'use strict'
+  [0..21].forEach (idx) ->
+    idx + 1
+
+  eq global.i, undefined
