@@ -2408,8 +2408,8 @@ exports.Assign = class Assign extends Base
       # Sort 'splatsAndExpans' so we can show error at first disallowed token.
       objects[splatsAndExpans.sort()[1]].error "multiple splats/expansions are disallowed in an assignment"
 
-    isSplat = splats.length > 0
-    isExpans = expans.length > 0
+    isSplat = splats?.length > 0
+    isExpans = expans?.length > 0
     isObject = @variable.isObject()
     isArray = @variable.isArray()
 

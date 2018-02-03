@@ -947,64 +947,41 @@ test "#4673: complex destructured object spread variables", ->
   eq g, 1
 
 test "#4878: Compile error when using destructuring with a splat or expansion in an array", ->
-  eqJS '''
-    foo = (list) ->
-      [first, ..., last] = list
-    ''', '''
-    var foo,
-      slice = [].slice;
+  arr = ['a', 'b', 'c', 'd']
 
-    foo = function(list) {
-      var first, last;
-      return [first] = list, [last] = slice.call(list, -1);
-    };
-    '''
+  f1 = (list) ->
+    [first, ..., last] = list
 
-  eqJS '''
-    foo = (list) ->
-      [first..., last] = list
-    ''', '''
-    var foo,
-      splice = [].splice;
+  f2 = (list) ->
+    [first..., last] = list
 
-    foo = function(list) {
-      var first, last;
-      return [...first] = list, [last] = splice.call(first, -1);
-    };
-    '''
+  f3 = (list) ->
+    ([first, ...] = list); first
 
-  eqJS '''
-    foo = (list) ->
-      ret =
-        if value.length
-          [ first, ..., last ] = value
-          [ first, last ]
-        else
-          []
-    ''', '''
-    var foo,
-      slice = [].slice;
+  f4 = (list) ->
+    ([first, ...rest] = list); rest
 
-    foo = function(list) {
-      var first, last, ret;
-      return ret = value.length ? (([first] = value, [last] = slice.call(value, -1)), [first, last]) : [];
-    };
-    '''
+  arrayEq f1(arr), ['d']
+  arrayEq f2(arr), ['d']
+  arrayEq f3(arr), 'a'
+  arrayEq f4(arr), ['b', 'c', 'd']
 
-  eqJS '''
-    foo = (list) ->
-      ret =
-        if value.length
-          [ first..., last ] = value
-          [ first, last ]
-        else
-          []
-    ''', '''
-    var foo,
-      splice = [].splice;
+  foo = (list) ->
+    ret =
+      if list.length
+        [first, ..., last] = list
+        [first, last]
+      else
+        []
 
-    foo = function(list) {
-      var first, last, ret;
-      return ret = value.length ? (([...first] = value, [last] = splice.call(first, -1)), [first, last]) : [];
-    };
-    '''
+  arrayEq foo(arr), ['a', 'd']
+
+  bar = (list) ->
+    ret =
+      if list.length
+        [first, ...rest] = list
+        [first, rest]
+      else
+        []
+
+  arrayEq bar(arr), ['a', ['b', 'c', 'd']]
