@@ -2408,8 +2408,8 @@ exports.Assign = class Assign extends Base
       # Sort 'splatsAndExpans' so we can show error at first disallowed token.
       objects[splatsAndExpans.sort()[1]].error "multiple splats/expansions are disallowed in an assignment"
 
-    isSplat = splats.length
-    isExpans = expans.length
+    isSplat = splats.length > 0
+    isExpans = expans.length > 0
     isObject = @variable.isObject()
     isArray = @variable.isArray()
 
@@ -2528,7 +2528,6 @@ exports.Assign = class Assign extends Base
     else
       # There is no `Splat` or `Expansion` in `objects`.
       processObjects objects, vvarText
-    assigns.push vvar unless top or @subpattern
     fragments = @joinFragmentArrays assigns, ', '
     if o.level < LEVEL_LIST then fragments else @wrapInParentheses fragments
 

@@ -945,3 +945,66 @@ test "#4673: complex destructured object spread variables", ->
 
   {{g}...} = g: 1
   eq g, 1
+
+test "#4878: Compile error when using destructuring with a splat or expansion in an array", ->
+  eqJS '''
+    foo = (list) ->
+      [first, ..., last] = list
+    ''', '''
+    var foo,
+      slice = [].slice;
+
+    foo = function(list) {
+      var first, last;
+      return [first] = list, [last] = slice.call(list, -1);
+    };
+    '''
+
+  eqJS '''
+    foo = (list) ->
+      [first..., last] = list
+    ''', '''
+    var foo,
+      splice = [].splice;
+
+    foo = function(list) {
+      var first, last;
+      return [...first] = list, [last] = splice.call(first, -1);
+    };
+    '''
+
+  eqJS '''
+    foo = (list) ->
+      ret =
+        if value.length
+          [ first, ..., last ] = value
+          [ first, last ]
+        else
+          []
+    ''', '''
+    var foo,
+      slice = [].slice;
+
+    foo = function(list) {
+      var first, last, ret;
+      return ret = value.length ? (([first] = value, [last] = slice.call(value, -1)), [first, last]) : [];
+    };
+    '''
+
+  eqJS '''
+    foo = (list) ->
+      ret =
+        if value.length
+          [ first..., last ] = value
+          [ first, last ]
+        else
+          []
+    ''', '''
+    var foo,
+      splice = [].splice;
+
+    foo = function(list) {
+      var first, last, ret;
+      return ret = value.length ? (([...first] = value, [last] = splice.call(first, -1)), [first, last]) : [];
+    };
+    '''
