@@ -2458,7 +2458,7 @@ exports.Assign = class Assign extends Base
 
     # "Complex" `objects` are processed in a loop.
     # Examples: [a, b, {c, r...}, d], [a, ..., {b, r...}, c, d]
-    loopObjects = (objs, vvarTxt) =>
+    loopObjects = (objs, vvar, vvarTxt) =>
       objSpreads = hasObjSpreads objs
       for obj, i in objs
         # `Elision` can be skipped.
@@ -2488,16 +2488,16 @@ exports.Assign = class Assign extends Base
         assigns.push new Assign(vvar, vval, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
 
     # "Simple" `objects` can be split and compiled to arrays, [a, b, c] = arr, [a, b, c...] = arr
-    assignObjects = (objs, vvarTxt) =>
+    assignObjects = (objs, vvar, vvarTxt) =>
       vvar = new Value new Arr(objs, yes)
       vval = if vvarTxt instanceof Value then vvarTxt else new Value new Literal(vvarTxt)
       assigns.push new Assign(vvar, vval, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
 
-    processObjects = (objs, vvarTxt) ->
+    processObjects = (objs, vvar, vvarTxt) ->
       if complexObjects objs
-        loopObjects objs, vvarTxt
+        loopObjects objs, vvar, vvarTxt
       else
-        assignObjects objs, vvarTxt
+        assignObjects objs, vvar, vvarTxt
 
     # In case there is `Splat` or `Expansion` in `objects`,
     # we can split array in two simple subarrays.
@@ -2514,7 +2514,7 @@ exports.Assign = class Assign extends Base
       expIdx = splatsAndExpans[0]
       leftObjs = objects.slice 0, expIdx + (if isSplat then 1 else 0)
       rightObjs = objects.slice expIdx + 1
-      processObjects leftObjs, vvarText if leftObjs.length isnt 0
+      processObjects leftObjs, vvar, vvarText if leftObjs.length isnt 0
       if rightObjs.length isnt 0
         # Slice or splice `objects`.
         refExp = switch
@@ -2524,10 +2524,11 @@ exports.Assign = class Assign extends Base
           restVar = refExp
           refExp = o.scope.freeVariable 'ref'
           assigns.push [@makeCode(refExp + ' = '), restVar.compileToFragments(o, LEVEL_LIST)...]
-        processObjects rightObjs, refExp
+        processObjects rightObjs, vvar, refExp
     else
       # There is no `Splat` or `Expansion` in `objects`.
-      processObjects objects, vvarText
+      processObjects objects, vvar, vvarText
+    assigns.push vvar unless top or @subpattern
     fragments = @joinFragmentArrays assigns, ', '
     if o.level < LEVEL_LIST then fragments else @wrapInParentheses fragments
 

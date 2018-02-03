@@ -961,8 +961,8 @@ test "#4878: Compile error when using destructuring with a splat or expansion in
   f4 = (list) ->
     ([first, ...rest] = list); rest
 
-  arrayEq f1(arr), ['d']
-  arrayEq f2(arr), ['d']
+  arrayEq f1(arr), arr
+  arrayEq f2(arr), arr
   arrayEq f3(arr), 'a'
   arrayEq f4(arr), ['b', 'c', 'd']
 
