@@ -1353,7 +1353,11 @@ exports.Range = class Range extends Base
     idx      = del o, 'index'
     idxName  = del o, 'name'
     namedIndex = idxName and idxName isnt idx
-    varPart  = "#{idx} = #{@fromC}"
+    varPart  =
+      if known and not namedIndex
+        "var #{idx} = #{@fromC}"
+      else
+        "#{idx} = #{@fromC}"
     varPart += ", #{@toC}" if @toC isnt @toVar
     varPart += ", #{@step}" if @step isnt @stepVar
     [lt, gt] = ["#{idx} <#{@equals}", "#{idx} >#{@equals}"]
