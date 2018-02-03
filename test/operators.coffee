@@ -8,6 +8,7 @@
 # * [not] in/of
 # * Chained Comparison
 
+
 # The `**` and `**=` operators are only supported in Node 7.5+.
 supportsExponentiation = yes
 try new Function('2 ** 2')()
@@ -15,10 +16,9 @@ catch
   supportsExponentiation = no
 
 supportsExponentiationAssignment = yes
-try new Function('var a = 2; a **= 3')()
+try new Function('() => { var a = 2; a **= 3; }')()
 catch
   supportsExponentiationAssignment = no
-
 
 
 test "binary (2-ary) math operators do not require spaces", ->
