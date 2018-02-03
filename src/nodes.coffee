@@ -3253,7 +3253,6 @@ exports.Op = class Op extends Base
     return @compileChain        o if isChain
     switch @operator
       when '?'  then @compileExistence o, @second.isDefaultValue
-      when '**' then @compilePower o
       when '//' then @compileFloorDivision o
       when '%%' then @compileModulo o
       else
@@ -3319,11 +3318,6 @@ exports.Op = class Op extends Base
       parts.push @first.compileToFragments o, LEVEL_OP
       parts.push [@makeCode ")"] if o.level >= LEVEL_PAREN
     @joinFragmentArrays parts, ''
-
-  compilePower: (o) ->
-    # Make a Math.pow call
-    pow = new Value new IdentifierLiteral('Math'), [new Access new PropertyName 'pow']
-    new Call(pow, [@first, @second]).compileToFragments o
 
   compileFloorDivision: (o) ->
     floor = new Value new IdentifierLiteral('Math'), [new Access new PropertyName 'floor']
