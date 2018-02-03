@@ -8,6 +8,19 @@
 # * [not] in/of
 # * Chained Comparison
 
+# The `**` and `**=` operators are only supported in Node 7.5+.
+supportsExponentiation = yes
+try new Function('2 ** 2')()
+catch
+  supportsExponentiation = no
+
+supportsExponentiationAssignment = yes
+try new Function('var a = 2; a **= 3')()
+catch
+  supportsExponentiationAssignment = no
+
+
+
 test "binary (2-ary) math operators do not require spaces", ->
   a = 1
   b = -1
@@ -306,20 +319,22 @@ test "#2508: Existential access of the prototype", ->
   ok Object?::toString
 
 test "power operator", ->
-  eq 27, 3 ** 3
+  return unless supportsExponentiation
+  eq 27, CoffeeScript.eval('3 ** 3', bare: yes)
 
 test "power operator has higher precedence than other maths operators", ->
-  eq 55, 1 + 3 ** 3 * 2
-  eq -4, -2 ** 2
-  eq 0, (!2) ** 2
+  return unless supportsExponentiation
+  eq 55, CoffeeScript.eval('1 + 3 ** 3 * 2', bare: yes)
+  eq -4, CoffeeScript.eval('-2 ** 2', bare: yes)
+  eq 0, CoffeeScript.eval('(!2) ** 2', bare: yes)
 
 test "power operator is right associative", ->
-  eq 2, 2 ** 1 ** 3
+  return unless supportsExponentiation
+  eq 2, CoffeeScript.eval('2 ** 1 ** 3', bare: yes)
 
 test "power operator compound assignment", ->
-  a = 2
-  a **= 3
-  eq 8, a
+  return unless supportsExponentiationAssignment
+  eq 8, CoffeeScript.eval('do -> a = 2; a **= 3', bare: yes)
 
 test "floor division operator", ->
   eq 2, 7 // 3
