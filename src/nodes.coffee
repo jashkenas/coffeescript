@@ -2223,9 +2223,9 @@ exports.Assign = class Assign extends Base
 
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
-      return @compileSpecialMath  o if @context in ['**=', '//=', '%%=']
+      return @compileSpecialMath  o if @context in ['//=', '%%=']
 
-    unless @context
+    if not @context or @context is '**='
       varBase = @variable.unwrapAll()
       unless varBase.isAssignable()
         @variable.error "'#{@variable.compile o}' can't be assigned"
@@ -2548,7 +2548,7 @@ exports.Assign = class Assign extends Base
       fragments = new Op(@context[...-1], left, new Assign(right, @value, '=')).compileToFragments o
       if o.level <= LEVEL_LIST then fragments else @wrapInParentheses fragments
 
-  # Convert special math assignment operators like `a **= b` to the equivalent
+  # Convert special math assignment operators like `a //= b` to the equivalent
   # extended form `a = a ** b` and then compiles that.
   compileSpecialMath: (o) ->
     [left, right] = @variable.cacheReference o
