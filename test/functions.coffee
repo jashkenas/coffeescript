@@ -551,9 +551,9 @@ test "#4413: expressions in function parameters that create generated variables 
   eq g(), 34
 
 test "#4673: complex destructured object spread variables", ->
-  f = ({{a...}...}) ->
-    a
-  eq f(c: 1).c, 1
+  # f = ({{a...}...}) ->
+  #   a
+  # eq f(c: 1).c, 1
 
   g = ({@y...}) ->
     eq @y.b, 1

@@ -916,32 +916,14 @@ test "#4566: destructuring with nested default values", ->
   {e: {f = 5} = {}} = {}
   eq 5, f
 
-test "#4674: _extends utility for object spreads 1", ->
-  eqJS(
-    "{a, b..., c..., d}"
-    """
-      var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-      _extends({a}, b, c, {d});
-    """
-  )
-
-test "#4674: _extends utility for object spreads 2", ->
-  _extends = -> 3
-  a = b: 1
-  c = d: 2
-  e = {a..., c...}
-  eq e.b, 1
-  eq e.d, 2
-
 test "#4673: complex destructured object spread variables", ->
-  b = c: 1
-  {{a...}...} = b
-  eq a.c, 1
+  # b = c: 1
+  # {{a...}...} = b
+  # eq a.c, 1
 
   d = {}
   {d.e...} = f: 1
   eq d.e.f, 1
 
-  {{g}...} = g: 1
-  eq g, 1
+  # {{g}...} = g: 1
+  # eq g, 1

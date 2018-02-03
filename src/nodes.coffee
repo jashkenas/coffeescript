@@ -1490,20 +1490,31 @@ exports.Obj = class Obj extends Base
     return yes for prop in @properties when prop instanceof Splat
     no
 
+  # Move rest property to the end of the list.
+  # `{a, rest..., b} = obj` -> `{a, b, rest...} = obj`
+  # `foo = ({a, rest..., b}) ->` -> `foo = {a, b, rest...}) ->`
+  reorderProperties: ->
+    props = @properties
+    splatProps = (prop for prop in props when prop instanceof Splat)
+    objProps = (prop for prop in props when prop not instanceof Splat)
+    @objects = @properties = [].concat objProps, splatProps
+
   compileNode: (o) ->
+    @reorderProperties() if @hasSplat() and @lhs
     props = @properties
     if @generated
       for node in props when node instanceof Value
         node.error 'cannot have an implicit value in an implicit object'
-
-    # Object spread properties. https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md
-    return @compileSpread o if @hasSplat() and not @csx
 
     idt      = o.indent += TAB
     lastNode = @lastNode @properties
 
     # CSX attributes <div id="val" attr={aaa} {props...} />
     return @compileCSXAttributes o if @csx
+
+    if @hasSplat() and @lhs
+      splatProps = (ix for prop, ix in props when prop instanceof Splat)
+      props[splatProps[1]].error "multiple spread elements are disallowed" if splatProps?.length > 1
 
     # If this object is the left-hand side of an assignment, all its children
     # are too.
@@ -1559,7 +1570,7 @@ exports.Obj = class Obj extends Base
           else
             # `{ [expression] }` output as `{ [expression]: expression }`.
             prop = new Assign key, prop.base.value, 'object'
-        else if not prop.bareLiteral?(IdentifierLiteral)
+        else if not prop.bareLiteral?(IdentifierLiteral) and prop not instanceof Splat
           prop = new Assign prop, prop, 'object'
       if indent then answer.push @makeCode indent
       answer.push prop.compileToFragments(o, LEVEL_TOP)...
@@ -1577,30 +1588,6 @@ exports.Obj = class Obj extends Base
       prop = prop.value if prop instanceof Assign and prop.context is 'object'
       prop = prop.unwrapAll()
       prop.eachName iterator if prop.eachName?
-
-  # Object spread properties. https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md
-  # `obj2 = {a: 1, obj..., c: 3, d: 4}` → `obj2 = _extends({}, {a: 1}, obj, {c: 3, d: 4})`
-  compileSpread: (o) ->
-    props = @properties
-    # Store object spreads.
-    splatSlice = []
-    propSlices = []
-    slices = []
-    addSlice = ->
-      slices.push new Obj propSlices if propSlices.length
-      slices.push splatSlice... if splatSlice.length
-      splatSlice = []
-      propSlices = []
-    for prop in props
-      if prop instanceof Splat
-        splatSlice.push new Value prop.name
-        addSlice()
-      else
-        propSlices.push prop
-    addSlice()
-    slices.unshift new Obj unless slices[0] instanceof Obj
-    _extends = new Value new Literal utility '_extends', o
-    (new Call _extends, slices).compileToFragments o
 
   compileCSXAttributes: (o) ->
     props = @properties
@@ -2217,9 +2204,6 @@ exports.Assign = class Assign extends Base
         # Check if @variable contains Obj with splats.
         hasSplat = @variable.contains (node) -> node instanceof Obj and node.hasSplat()
         return @compileDestructuring o if not @variable.isAssignable() or @variable.isArray() and hasSplat
-        # Object destructuring. Can be removed once ES proposal hits Stage 4.
-        objDestructAnswer = @compileObjectDestruct(o) if @variable.isObject() and hasSplat
-        return objDestructAnswer if objDestructAnswer
 
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
@@ -2289,93 +2273,6 @@ exports.Assign = class Assign extends Base
       @wrapInParentheses answer
     else
       answer
-
-  # Check object destructuring variable for rest elements;
-  # can be removed once ES proposal hits Stage 4.
-  compileObjectDestruct: (o) ->
-    # Returns a safe (cached) reference to the key for a given property
-    getPropKey = (prop) ->
-      if prop instanceof Assign
-        [prop.variable, key] = prop.variable.cache o
-        key
-      else
-        prop
-
-    # Returns the name of a given property for use with excludeProps
-    # Property names are quoted (e.g. `a: b` -> 'a'), and everything else uses the key reference
-    # (e.g. `'a': b -> 'a'`, `"#{a}": b` -> <cached>`)
-    getPropName = (prop) ->
-      key = getPropKey prop
-      cached = prop instanceof Assign and prop.variable isnt key
-      if cached or not key.isAssignable()
-        key
-      else
-        new Literal "'#{key.compileWithoutComments o}'"
-
-    # Recursive function for searching and storing rest elements in objects.
-    # e.g. `{[properties...]} = source`.
-    traverseRest = (properties, source) =>
-      restElements = []
-      restIndex = undefined
-      source = new Value source unless source.properties?
-
-      for prop, index in properties
-        nestedSourceDefault = nestedSource = nestedProperties = null
-        if prop instanceof Assign
-          # prop is `k: expr`, we need to check `expr` for nested splats
-          if prop.value.isObject?()
-            # prop is `k = {...} `
-            continue unless prop.context is 'object'
-            # prop is `k: {...}`
-            nestedProperties = prop.value.base.properties
-          else if prop.value instanceof Assign and prop.value.variable.isObject()
-            # prop is `k: {...} = default`
-            nestedProperties = prop.value.variable.base.properties
-            [prop.value.value, nestedSourceDefault] = prop.value.value.cache o
-          if nestedProperties
-            nestedSource = new Value source.base, source.properties.concat [new Access getPropKey prop]
-            nestedSource = new Value new Op '?', nestedSource, nestedSourceDefault if nestedSourceDefault
-            restElements.push traverseRest(nestedProperties, nestedSource)...
-        else if prop instanceof Splat
-          prop.error "multiple rest elements are disallowed in object destructuring" if restIndex?
-          restIndex = index
-          restElements.push {
-            name: prop.name.unwrapAll()
-            source
-            excludeProps: new Arr (getPropName p for p in properties when p isnt prop)
-          }
-
-      if restIndex?
-        # Remove rest element from the properties after iteration
-        properties.splice restIndex, 1
-
-      restElements
-
-    # Cache the value for reuse with rest elements.
-    valueRefTemp =
-      if @value.shouldCache()
-        new IdentifierLiteral o.scope.freeVariable 'ref', reserve: false
-      else
-        @value.base
-
-    # Find all rest elements.
-    restElements = traverseRest @variable.base.properties, valueRefTemp
-    return no unless restElements and restElements.length > 0
-
-    [@value, valueRef] = @value.cache o
-    result = new Block [@]
-
-    for restElement in restElements
-      value = new Call new Value(new Literal utility 'objectWithoutKeys', o), [restElement.source, restElement.excludeProps]
-      result.push new Assign new Value(restElement.name), value, null, param: if @param then 'alwaysDeclare' else null
-
-    fragments = result.compileToFragments o
-    if o.level is LEVEL_TOP
-      # Remove leading tab and trailing semicolon
-      fragments.shift()
-      fragments.pop()
-
-    fragments
 
   # Brief implementation of recursive pattern matching, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
@@ -2743,17 +2640,7 @@ exports.Code = class Code extends Base
           if param.name instanceof Arr or param.name instanceof Obj
             # This parameter is destructured.
             param.name.lhs = yes
-            # Compile `foo({a, b...}) ->` to `foo(arg) -> {a, b...} = arg`.
-            # Can be removed once ES proposal hits Stage 4.
-            if param.name instanceof Obj and param.name.hasSplat()
-              splatParamName = o.scope.freeVariable 'arg'
-              o.scope.parameter splatParamName
-              ref = new Value new IdentifierLiteral splatParamName
-              exprs.push new Assign new Value(param.name), ref, null, param: 'alwaysDeclare'
-              # Compile `foo({a, b...} = {}) ->` to `foo(arg = {}) -> {a, b...} = arg`.
-              if param.value? and not param.assignedInBody
-                ref = new Assign ref, param.value, null, param: yes
-            else unless param.shouldCache()
+            unless param.shouldCache()
               param.name.eachName (prop) ->
                 o.scope.parameter prop.value
           else
@@ -3027,6 +2914,8 @@ exports.Splat = class Splat extends Base
     @name = if name.compile then name else new Literal name
 
   children: ['name']
+
+  shouldCache: -> no
 
   isAssignable: ->
     @name.isAssignable() and (not @name.isAtomic or @name.isAtomic())
@@ -3872,31 +3761,12 @@ exports.If = class If extends Base
 
 UTILITIES =
   modulo: -> 'function(a, b) { return (+a % (b = +b) + b) % b; }'
-  objectWithoutKeys: -> "
-      function(o, ks) {
-        var res = {};
-        for (var k in o) ([].indexOf.call(ks, k) < 0 && {}.hasOwnProperty.call(o, k)) && (res[k] = o[k]);
-        return res;
-      }
-    "
+
   boundMethodCheck: -> "
     function(instance, Constructor) {
       if (!(instance instanceof Constructor)) {
         throw new Error('Bound instance method accessed before binding');
       }
-    }
-  "
-  _extends: -> "
-    Object.assign || function (target) {
-      for (var i = 1; i < arguments.length; i++) {
-        var source = arguments[i];
-        for (var key in source) {
-          if (Object.prototype.hasOwnProperty.call(source, key)) {
-            target[key] = source[key];
-          }
-        }
-      }
-      return target;
     }
   "
 
