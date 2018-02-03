@@ -968,7 +968,7 @@ test "#4878: Compile error when using destructuring with a splat or expansion in
 
   foo = (list) ->
     ret =
-      if list.length
+      if list?.length > 0
         [first, ..., last] = list
         [first, last]
       else
@@ -978,7 +978,7 @@ test "#4878: Compile error when using destructuring with a splat or expansion in
 
   bar = (list) ->
     ret =
-      if list.length
+      if list?.length > 0
         [first, ...rest] = list
         [first, rest]
       else
