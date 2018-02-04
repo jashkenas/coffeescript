@@ -967,4 +967,3 @@ test "#4878: Compile error when using destructuring with a splat or expansion in
         []
 
   arrayEq bar(arr), ['a', ['b', 'c', 'd']]
->>>>>>> 794f65fbd74ee9f3839a5f715116e71cf23e24c0
