@@ -927,3 +927,44 @@ test "#4673: complex destructured object spread variables", ->
 
   # {{g}...} = g: 1
   # eq g, 1
+
+test "#4878: Compile error when using destructuring with a splat or expansion in an array", ->
+  arr = ['a', 'b', 'c', 'd']
+
+  f1 = (list) ->
+    [first, ..., last] = list
+
+  f2 = (list) ->
+    [first..., last] = list
+
+  f3 = (list) ->
+    ([first, ...] = list); first
+
+  f4 = (list) ->
+    ([first, ...rest] = list); rest
+
+  arrayEq f1(arr), arr
+  arrayEq f2(arr), arr
+  arrayEq f3(arr), 'a'
+  arrayEq f4(arr), ['b', 'c', 'd']
+
+  foo = (list) ->
+    ret =
+      if list?.length > 0
+        [first, ..., last] = list
+        [first, last]
+      else
+        []
+
+  arrayEq foo(arr), ['a', 'd']
+
+  bar = (list) ->
+    ret =
+      if list?.length > 0
+        [first, ...rest] = list
+        [first, rest]
+      else
+        []
+
+  arrayEq bar(arr), ['a', ['b', 'c', 'd']]
+>>>>>>> 794f65fbd74ee9f3839a5f715116e71cf23e24c0
