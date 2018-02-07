@@ -2947,7 +2947,11 @@ needed to iterate over the values in the range. Used by comprehensions.</p>
     idx      = del o, <span class="hljs-string">'index'</span>
     idxName  = del o, <span class="hljs-string">'name'</span>
     namedIndex = idxName <span class="hljs-keyword">and</span> idxName <span class="hljs-keyword">isnt</span> idx
-    varPart  = <span class="hljs-string">"<span class="hljs-subst">#{idx}</span> = <span class="hljs-subst">#{@fromC}</span>"</span>
+    varPart  =
+      <span class="hljs-keyword">if</span> known <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> namedIndex
+        <span class="hljs-string">"var <span class="hljs-subst">#{idx}</span> = <span class="hljs-subst">#{@fromC}</span>"</span>
+      <span class="hljs-keyword">else</span>
+        <span class="hljs-string">"<span class="hljs-subst">#{idx}</span> = <span class="hljs-subst">#{@fromC}</span>"</span>
     varPart += <span class="hljs-string">", <span class="hljs-subst">#{@toC}</span>"</span> <span class="hljs-keyword">if</span> @toC <span class="hljs-keyword">isnt</span> @toVar
     varPart += <span class="hljs-string">", <span class="hljs-subst">#{@step}</span>"</span> <span class="hljs-keyword">if</span> @step <span class="hljs-keyword">isnt</span> @stepVar
     [lt, gt] = [<span class="hljs-string">"<span class="hljs-subst">#{idx}</span> &lt;<span class="hljs-subst">#{@equals}</span>"</span>, <span class="hljs-string">"<span class="hljs-subst">#{idx}</span> &gt;<span class="hljs-subst">#{@equals}</span>"</span>]</pre></div></div>
@@ -4955,8 +4959,8 @@ Examples: [a, b, c…, d, e, f…], [a, b, …, c, d, …], [a, b, …, c, d, e�
             
             <div class="content"><div class='highlight'><pre>      objects[splatsAndExpans.sort()[<span class="hljs-number">1</span>]].error <span class="hljs-string">"multiple splats/expansions are disallowed in an assignment"</span>
 
-    isSplat = splats.length
-    isExpans = expans.length
+    isSplat = splats?.length &gt; <span class="hljs-number">0</span>
+    isExpans = expans?.length &gt; <span class="hljs-number">0</span>
     isObject = @variable.isObject()
     isArray = @variable.isArray()
 
@@ -5101,7 +5105,7 @@ Examples: [a, b, {c, r…}, d], [a, …, {b, r…}, c, d]</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-function">    <span class="hljs-title">loopObjects</span> = <span class="hljs-params">(objs, vvarTxt)</span> =&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-function">    <span class="hljs-title">loopObjects</span> = <span class="hljs-params">(objs, vvar, vvarTxt)</span> =&gt;</span>
       objSpreads = hasObjSpreads objs
       <span class="hljs-keyword">for</span> obj, i <span class="hljs-keyword">in</span> objs</pre></div></div>
             
@@ -5182,16 +5186,16 @@ Examples: [a, b, {c, r…}, d], [a, …, {b, r…}, c, d]</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-function">    <span class="hljs-title">assignObjects</span> = <span class="hljs-params">(objs, vvarTxt)</span> =&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-function">    <span class="hljs-title">assignObjects</span> = <span class="hljs-params">(objs, vvar, vvarTxt)</span> =&gt;</span>
       vvar = <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> Arr(objs, <span class="hljs-literal">yes</span>)
       vval = <span class="hljs-keyword">if</span> vvarTxt <span class="hljs-keyword">instanceof</span> Value <span class="hljs-keyword">then</span> vvarTxt <span class="hljs-keyword">else</span> <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> Literal(vvarTxt)
       assigns.push <span class="hljs-keyword">new</span> Assign(vvar, vval, <span class="hljs-literal">null</span>, param: @param, subpattern: <span class="hljs-literal">yes</span>).compileToFragments o, LEVEL_LIST
 <span class="hljs-function">
-    <span class="hljs-title">processObjects</span> = <span class="hljs-params">(objs, vvarTxt)</span> -&gt;</span>
+    <span class="hljs-title">processObjects</span> = <span class="hljs-params">(objs, vvar, vvarTxt)</span> -&gt;</span>
       <span class="hljs-keyword">if</span> complexObjects objs
-        loopObjects objs, vvarTxt
+        loopObjects objs, vvar, vvarTxt
       <span class="hljs-keyword">else</span>
-        assignObjects objs, vvarTxt</pre></div></div>
+        assignObjects objs, vvar, vvarTxt</pre></div></div>
             
         </li>
         
@@ -5220,7 +5224,7 @@ b) <code>Expansion</code>
       expIdx = splatsAndExpans[<span class="hljs-number">0</span>]
       leftObjs = objects.slice <span class="hljs-number">0</span>, expIdx + (<span class="hljs-keyword">if</span> isSplat <span class="hljs-keyword">then</span> <span class="hljs-number">1</span> <span class="hljs-keyword">else</span> <span class="hljs-number">0</span>)
       rightObjs = objects.slice expIdx + <span class="hljs-number">1</span>
-      processObjects leftObjs, vvarText <span class="hljs-keyword">if</span> leftObjs.length <span class="hljs-keyword">isnt</span> <span class="hljs-number">0</span>
+      processObjects leftObjs, vvar, vvarText <span class="hljs-keyword">if</span> leftObjs.length <span class="hljs-keyword">isnt</span> <span class="hljs-number">0</span>
       <span class="hljs-keyword">if</span> rightObjs.length <span class="hljs-keyword">isnt</span> <span class="hljs-number">0</span></pre></div></div>
             
         </li>
@@ -5243,7 +5247,7 @@ b) <code>Expansion</code>
           restVar = refExp
           refExp = o.scope.freeVariable <span class="hljs-string">'ref'</span>
           assigns.push [@makeCode(refExp + <span class="hljs-string">' = '</span>), restVar.compileToFragments(o, LEVEL_LIST)...]
-        processObjects rightObjs, refExp
+        processObjects rightObjs, vvar, refExp
     <span class="hljs-keyword">else</span></pre></div></div>
             
         </li>
@@ -5259,7 +5263,7 @@ b) <code>Expansion</code>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      processObjects objects, vvarText
+            <div class="content"><div class='highlight'><pre>      processObjects objects, vvar, vvarText
     assigns.push vvar <span class="hljs-keyword">unless</span> top <span class="hljs-keyword">or</span> @subpattern
     fragments = @joinFragmentArrays assigns, <span class="hljs-string">', '</span>
     <span class="hljs-keyword">if</span> o.level &lt; LEVEL_LIST <span class="hljs-keyword">then</span> fragments <span class="hljs-keyword">else</span> @wrapInParentheses fragments</pre></div></div>

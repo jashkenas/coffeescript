@@ -1,6 +1,12 @@
 ## Changelog
 
 ```
+releaseHeader('2018-02-06', '2.2.1', '2.1.0')
+```
+*   Bugfix for regression in 2.2.0 involving an error thrown by the compiler in certain cases when using destructuring with a splat or expansion in an array.
+*   Bugfix for regression in 2.2.0 where in certain cases a range iterator variable was declared in the global scope.
+
+```
 releaseHeader('2018-02-01', '2.2.0', '2.1.1')
 ```
 *   This release fixes *all* currently open bugs, dating as far back as 2014, 2012 and 2011.
