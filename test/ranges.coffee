@@ -130,43 +130,43 @@ test "#2047: Infinite loop possible when `for` loop with `range` uses variables"
 
   testData = [
     [1, 5, 1, [1..5]]
-    [1, 5, -1, [1]]
+    [1, 5, -1, []]
     [1, 5, up, [1..5]]
-    [1, 5, down, [1]]
+    [1, 5, down, []]
 
     [a, 5, 1, [1..5]]
-    [a, 5, -1, [1]]
+    [a, 5, -1, []]
     [a, 5, up, [1..5]]
-    [a, 5, down, [1]]
+    [a, 5, down, []]
 
     [1, b, 1, [1..5]]
-    [1, b, -1, [1]]
+    [1, b, -1, []]
     [1, b, up, [1..5]]
-    [1, b, down, [1]]
+    [1, b, down, []]
 
     [a, b, 1, [1..5]]
-    [a, b, -1, [1]]
+    [a, b, -1, []]
     [a, b, up, [1..5]]
-    [a, b, down, [1]]
+    [a, b, down, []]
 
-    [5, 1, 1, [5]]
+    [5, 1, 1, []]
     [5, 1, -1, [5..1]]
-    [5, 1, up, [5]]
+    [5, 1, up, []]
     [5, 1, down,  [5..1]]
 
-    [5, a, 1, [5]]
+    [5, a, 1, []]
     [5, a, -1, [5..1]]
-    [5, a, up, [5]]
+    [5, a, up, []]
     [5, a, down, [5..1]]
 
-    [b, 1, 1, [5]]
+    [b, 1, 1, []]
     [b, 1, -1, [5..1]]
-    [b, 1, up, [5]]
+    [b, 1, up, []]
     [b, 1, down, [5..1]]
 
-    [b, a, 1, [5]]
+    [b, a, 1, []]
     [b, a, -1, [5..1]]
-    [b, a, up, [5]]
+    [b, a, up, []]
     [b, a, down, [5..1]]
   ]
 
@@ -182,10 +182,10 @@ test "#2047: from, to and step as variables", ->
   arrayEq r, [1..5]
 
   r = (x for x in [a..b] by down)
-  arrayEq r, [1]
+  arrayEq r, []
 
   r = (x for x in [b..a] by up)
-  arrayEq r, [5]
+  arrayEq r, []
 
   r = (x for x in [b..a] by down)
   arrayEq r, [5..1]
