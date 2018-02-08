@@ -2923,18 +2923,7 @@ exports.Splat = class Splat extends Base
   assigns: (name) ->
     @name.assigns name
 
-  unrollSplat: ->
-    return @name unless @name instanceof Obj
-    # prop =
-    # if @name.properties?[0] instanceof Splat
-    # unrollSplat splat
-    # lg "2", splat
-    # return splat
-
-
   compileNode: (o) ->
-    lg = console.log
-    console.log @isAssignable(), @name.unwrapAll()
     [@makeCode('...'), @name.compileToFragments(o, LEVEL_OP)...]
 
   unwrap: -> @name
