@@ -431,6 +431,12 @@ runTests = (CoffeeScript) ->
     catch
       no
 
+  global.supportsObjectRestSpread = try
+        new Function('var {...a} = {}')()
+        yes
+      catch
+        no
+
   helpers.extend global, require './test/support/helpers'
 
   # When all the tests have run, collect and print errors.
@@ -452,6 +458,9 @@ runTests = (CoffeeScript) ->
   files = fs.readdirSync 'test'
   unless global.supportsAsync # Except for async tests, if async isn’t supported.
     files = files.filter (filename) -> filename isnt 'async.coffee'
+
+  unless global.supportsObjectRestSpread # Except for object rest/spread, if rest/spread isn't supported.
+    files = files.filter (filename) -> filename isnt 'object_rest_spread.coffee'
 
   startTime = Date.now()
   for file in files when helpers.isCoffee file
