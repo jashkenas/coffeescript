@@ -669,16 +669,25 @@ grammar =
   ForBody: [
     o 'FOR Range',                              -> source: (LOC(2) new Value($2))
     o 'FOR Range BY Expression',                -> source: (LOC(2) new Value($2)), step: $4
-    o 'ForStart ForSource',                     -> $2.own = $1.own; $2.ownTag = $1.ownTag; $2.name = $1[0]; $2.index = $1[1]; $2
+    o 'ForStart ForSource',                     ->
+        $2[prop] = $1[prop] for prop in ['await', 'awaitTag', 'own', 'ownTag']
+        $2.name = $1[0]
+        $2.index = $1[1]
+        $2
   ]
 
   ForLineBody: [
     o 'FOR Range BY ExpressionLine',            -> source: (LOC(2) new Value($2)), step: $4
-    o 'ForStart ForLineSource',                 -> $2.own = $1.own; $2.ownTag = $1.ownTag; $2.name = $1[0]; $2.index = $1[1]; $2
+    o 'ForStart ForLineSource',                 ->
+        $2[prop] = $1[prop] for prop in ['await', 'awaitTag', 'own', 'ownTag']
+        $2.name = $1[0]
+        $2.index = $1[1]
+        $2
   ]
 
   ForStart: [
     o 'FOR ForVariables',                       -> $2
+    o 'FOR AWAIT ForVariables',                 -> $3.await = yes; $3.awaitTag = (LOC(2) new Literal($2)); $3
     o 'FOR OWN ForVariables',                   -> $3.own = yes; $3.ownTag = (LOC(2) new Literal($2)); $3
   ]
 
