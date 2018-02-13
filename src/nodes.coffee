@@ -3625,17 +3625,27 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
 exports.For = class For extends While
   constructor: (body, source) ->
     super()
-    {@source, @guard, @step, @name, @index} = source
-    @body    = Block.wrap [body]
-    @own     = source.own?
-    @await   = source.await?
-    @object  = source.object?
-    @from    = source.from?
+    @addBody body
+    @addSource source
+
+  children: ['body', 'source', 'guard', 'step']
+
+  isAwait: -> @await ? no
+
+  addBody: (body) ->
+    @body = Block.wrap [body]
+    this
+
+  addSource: (source) ->
+    {@source  = no} = source
+    attribs   = ["name", "index", "guard", "step", "own", "ownTag", "await", "awaitTag", "object", "from"]
+    @[attr]   = source[attr] ? @[attr] for attr in attribs
+    return this unless @source
     @index.error 'cannot use index with for-from' if @from and @index
-    source.ownTag.error "cannot use own with for-#{if @from then 'from' else 'in'}" if @own and not @object
+    @ownTag.error "cannot use own with for-#{if @from then 'from' else 'in'}" if @own and not @object
     [@name, @index] = [@index, @name] if @object
     @index.error 'index cannot be a pattern matching expression' if @index?.isArray?() or @index?.isObject?()
-    @index.error 'await must be used with for-from' if @await and not @from
+    @awaitTag.error 'await must be used with for-from' if @await and not @from
     @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length and not @from
     @pattern = @name instanceof Value
     @index.error 'indexes do not apply to range loops' if @range and @index
@@ -3654,10 +3664,7 @@ exports.For = class For extends While
           comment.newLine = comment.unshift = yes for comment in node.comments
           moveComments node, @[attribute]
       moveComments @[attribute], @
-
-  children: ['body', 'source', 'guard', 'step']
-
-  isAwait: -> @await ? no
+    this
 
   # Welcome to the hairiest method in all of CoffeeScript. Handles the inner
   # loop, filtering, stepping, and result saving for array, object, and range
