@@ -478,7 +478,7 @@ exports.Lexer = class Lexer
 
     if size > @indent
       if noNewlines
-        @indebt = size - @indent
+        @indebt = size - @indent unless backslash
         @suppressNewlines()
         return indent.length
       unless @tokens.length
