@@ -1298,3 +1298,55 @@ test "#4889: `for` loop unexpected behavior", ->
 
   arrayEq result, [0,1,1]
 
+test "#4898: Lexer: backslash line continuation is inconsistent", ->
+  if ( \
+      false \
+      or \
+      true \
+    )
+    a = 42
+
+  eq a, 42
+
+  if ( \
+      false \
+      or \
+      true \
+  )
+    b = 42
+
+  eq b, 42
+
+  if ( \
+            false \
+         or \
+   true \
+  )
+    c = 42
+
+  eq c, 42
+
+  if \
+   false \
+        or \
+   true
+    d = 42
+
+  eq d, 42
+
+  if \
+              false or \
+  true
+    e = 42
+
+  eq e, 42
+
+  if \
+       false or \
+    true \
+       then \
+   f = 42 \
+   else
+     f = 24
+
+  eq f, 42

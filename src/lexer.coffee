@@ -454,10 +454,10 @@ exports.Lexer = class Lexer
     indent = match[0]
 
     prev = @prev()
-    backslash = prev? and prev[0] is '\\'
+    backslash = prev?[0] is '\\'
     @seenFor = no unless backslash and @seenFor
-    @seenImport = no unless @importSpecifierList
-    @seenExport = no unless @exportSpecifierList
+    @seenImport = no unless (backslash and @seenImport) or @importSpecifierList
+    @seenExport = no unless (backslash and @seenExport) or @exportSpecifierList
 
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()
@@ -478,7 +478,7 @@ exports.Lexer = class Lexer
 
     if size > @indent
       if noNewlines
-        @indebt = size - @indent
+        @indebt = size - @indent unless backslash
         @suppressNewlines()
         return indent.length
       unless @tokens.length
