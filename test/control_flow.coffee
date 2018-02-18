@@ -1288,16 +1288,6 @@ test "#4871: `else if` no longer output together ", ->
    }
    '''
 
-test "#4889: `for` loop unexpected behavior", ->
-  n = 1
-  result = []
-  for i in [0..n]
-    result.push i
-    for j in [(i+1)..n] by 1
-      result.push j
-
-  arrayEq result, [0,1,1]
-
 test "#4898: Lexer: backslash line continuation is inconsistent", ->
   if ( \
       false \
