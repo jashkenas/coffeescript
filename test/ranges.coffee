@@ -208,7 +208,37 @@ test "#4889: `for` loop unexpected behavior", ->
   result = []
   for i in [0..n]
     result.push i
+    for j in [(i+1)..n]
+      result.push j
+
+  arrayEq result, [0,1,1,2,1]
+
+test "#4889: `for` loop unexpected behavior with `by 1` on second loop", ->
+  n = 1
+  result = []
+  for i in [0..n]
+    result.push i
     for j in [(i+1)..n] by 1
       result.push j
 
   arrayEq result, [0,1,1]
+
+test "countdown example from docs", ->
+  countdown = (num for num in [10..1])
+  arrayEq countdown, [10,9,8,7,6,5,4,3,2,1]
+
+test "counting up when the range goes down returns an empty array", ->
+  countdown = (num for num in [10..1] by 1)
+  arrayEq countdown, []
+
+test "counting down when the range goes up returns an empty array", ->
+  countup = (num for num in [1..10] by -1)
+  arrayEq countup, []
+
+test "counting down by too much returns just the first value", ->
+  countdown = (num for num in [10..1] by -100)
+  arrayEq countdown, [10]
+
+test "counting up by too much returns just the first value", ->
+  countup = (num for num in [1..10] by 100)
+  arrayEq countup, [1]
