@@ -1365,23 +1365,18 @@ exports.Range = class Range extends Base
     # Generate the condition.
     [from, to] = [@fromNum, @toNum]
     # Always check if the `step` isn't zero to avoid the infinite loop.
-    stepCond = if @stepNum then "#{@stepNum} !== 0" else "#{@stepVar} !== 0"
+    stepNotZero = "#{ @stepNum ? @stepVar } !== 0"
+    stepCond = "#{ @stepNum ? @stepVar } > 0"
+    lowerBound = "#{lt} #{ if known then to else @toVar }"
+    upperBound = "#{gt} #{ if known then to else @toVar }"
     condPart =
-      if known
-        unless @step?
-          if from <= to then "#{lt} #{to}" else "#{gt} #{to}"
-        else
-          # from < to
-          lowerBound = "#{from} <= #{idx} && #{lt} #{to}"
-          # from > to
-          upperBound = "#{from} >= #{idx} && #{gt} #{to}"
-          if from <= to then "#{stepCond} && #{lowerBound}" else "#{stepCond} && #{upperBound}"
-      else
-        # from < to
-        lowerBound = "#{@fromVar} <= #{idx} && #{lt} #{@toVar}"
-        # from > to
-        upperBound = "#{@fromVar} >= #{idx} && #{gt} #{@toVar}"
-        "#{stepCond} && (#{@fromVar} <= #{@toVar} ? #{lowerBound} : #{upperBound})"
+       if @step?
+         "#{stepNotZero} && (#{stepCond} ? #{lowerBound} : #{upperBound})"
+       else
+         if known
+           "#{ if from <= to then lt else gt } #{to}"
+         else
+          "(#{@fromVar} <= #{@toVar} ? #{lowerBound} : #{upperBound})"
 
     cond = if @stepVar then "#{@stepVar} > 0" else "#{@fromVar} <= #{@toVar}"
 
