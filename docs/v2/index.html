@@ -4859,7 +4859,7 @@ Object.defineProperty screen, 'height',
   get: ->
     this.width / this.ratio
   set: (val) ->
-    this.width = val / this.ratio
+    this.width = val * this.ratio
 </textarea>
       <pre class="placeholder-code"><span class="cm-variable">screen</span> <span class="cm-punctuation">=</span>
 <span class="cm-indent">  </span><span class="cm-variable">width</span><span class="cm-punctuation">:</span> <span class="cm-number">1200</span>
@@ -4869,7 +4869,7 @@ Object.defineProperty screen, 'height',
 <span class="cm-indent">  </span><span class="cm-variable">get</span><span class="cm-punctuation">:</span> <span class="cm-operator">-></span>
     <span class="cm-keyword">this</span><span class="cm-punctuation">.</span><span class="cm-property">width</span> <span class="cm-operator">/</span> <span class="cm-keyword">this</span><span class="cm-punctuation">.</span><span class="cm-property">ratio</span>
 <span class="cm-dedent">  </span><span class="cm-variable">set</span><span class="cm-punctuation">:</span> <span class="cm-punctuation">(</span><span class="cm-variable">val</span><span class="cm-punctuation">)</span> <span class="cm-operator">-></span>
-    <span class="cm-keyword">this</span><span class="cm-punctuation">.</span><span class="cm-property">width</span> <span class="cm-punctuation">=</span> <span class="cm-variable">val</span> <span class="cm-operator">/</span> <span class="cm-keyword">this</span><span class="cm-punctuation">.</span><span class="cm-property">ratio</span>
+    <span class="cm-keyword">this</span><span class="cm-punctuation">.</span><span class="cm-property">width</span> <span class="cm-punctuation">=</span> <span class="cm-variable">val</span> <span class="cm-operator">*</span> <span class="cm-keyword">this</span><span class="cm-punctuation">.</span><span class="cm-property">ratio</span>
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
@@ -4885,7 +4885,7 @@ Object.defineProperty(screen, 'height', {
     return this.width / this.ratio;
   },
   set: function(val) {
-    return this.width = val / this.ratio;
+    return this.width = val * this.ratio;
   }
 });
 </textarea>
@@ -4901,7 +4901,7 @@ Object.defineProperty(screen, 'height', {
     <span class="cm-keyword">return</span> <span class="cm-keyword">this</span>.<span class="cm-property">width</span> <span class="cm-operator">/</span> <span class="cm-keyword">this</span>.<span class="cm-property">ratio</span>;
   },
   <span class="cm-property">set</span>: <span class="cm-keyword">function</span>(<span class="cm-def">val</span>) {
-    <span class="cm-keyword">return</span> <span class="cm-keyword">this</span>.<span class="cm-property">width</span> <span class="cm-operator">=</span> <span class="cm-variable-2">val</span> <span class="cm-operator">/</span> <span class="cm-keyword">this</span>.<span class="cm-property">ratio</span>;
+    <span class="cm-keyword">return</span> <span class="cm-keyword">this</span>.<span class="cm-property">width</span> <span class="cm-operator">=</span> <span class="cm-variable-2">val</span> <span class="cm-operator">*</span> <span class="cm-keyword">this</span>.<span class="cm-property">ratio</span>;
   }
 });
 </pre>
