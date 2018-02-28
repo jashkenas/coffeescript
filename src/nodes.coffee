@@ -760,6 +760,45 @@ exports.IdentifierLiteral = class IdentifierLiteral extends Literal
   eachName: (iterator) ->
     iterator @
 
+exports.SubStructAssign = class SubStructAssign extends Base
+  constructor: (@variable, @value, @lhs = no) ->
+    super()
+    [@objVar, @objVal] = @variable
+
+  objProperties: (props) ->
+    ret = []
+    for prop in props
+      if prop instanceof Assign
+        ret.push prop.value.base
+      else if prop instanceof Splat
+        ret.push prop.name
+      else if prop.base not instanceof ExProperty
+        ret.push prop.base
+    ret
+
+  finalProps: (props = []) ->
+    ret = []
+    getProps = (props) => (p for p in @finalProps @objProperties props)
+    for prop in props
+      if prop instanceof Obj
+        ret = [ret..., (getProps prop.properties)...]
+      else if prop instanceof Arr
+        ret = [ret..., (getProps prop.objects)...]
+      else
+        ret.push prop
+    ret
+
+  compileNode: (o) ->
+    fProps = @finalProps @objProperties @objVal.properties
+    body = [new Assign new Value(@objVal), new Value(@objVar)]
+    if @lhs
+      body.push new Value new Obj [(new Splat @value), fProps...]
+    else
+      body.push new Obj fProps
+    answer = new Code [], Block.wrap(body), new FuncGlyph '->'
+    answer = new Call (new Parens answer), [], no
+    answer.compileToFragments o, LEVEL_TOP
+
 exports.CSXTag = class CSXTag extends IdentifierLiteral
 
 exports.PropertyName = class PropertyName extends Literal
@@ -768,6 +807,10 @@ exports.PropertyName = class PropertyName extends Literal
 exports.ComputedPropertyName = class ComputedPropertyName extends PropertyName
   compileNode: (o) ->
     [@makeCode('['), @value.compileToFragments(o, LEVEL_LIST)..., @makeCode(']')]
+
+exports.ExProperty = class ExProperty extends PropertyName
+  compileNode: (o) ->
+    (new Value @value).compileToFragments o, LEVEL_LIST
 
 exports.StatementLiteral = class StatementLiteral extends Literal
   isStatement: YES
@@ -1489,7 +1532,15 @@ exports.Obj = class Obj extends Base
     return yes for prop in @properties when prop instanceof Splat
     no
 
+  hasExProperty: ->
+    return yes for prop in @properties when prop.base instanceof ExProperty
+    no
+
+  excludeProperties: (props) ->
+    (p for p in props when p.base not instanceof ExProperty)
+
   compileNode: (o) ->
+    @objects = @properties = @excludeProperties @properties
     props = @properties
     if @generated
       for node in props when node instanceof Value
@@ -2200,6 +2251,10 @@ exports.Assign = class Assign extends Base
   # has not been seen yet within the current scope, declare it.
   compileNode: (o) ->
     isValue = @variable instanceof Value
+
+    if @value instanceof SubStructAssign and @value.lhs and not o.scope.check @value.value.value
+      @error "the variable '#{@value.value.value}' has not been declared before"
+
     if isValue
       # When compiling `@variable`, remember if it is part of a function parameter.
       @variable.param = @param

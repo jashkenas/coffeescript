@@ -124,6 +124,7 @@ grammar =
     o 'Class'
     o 'Throw'
     o 'Yield'
+    o 'SubStructAssignable', -> new Value new SubStructAssign $1
   ]
 
   # Expressions which are written in single line and would otherwise require being
@@ -190,9 +191,14 @@ grammar =
 
   # Assignment of a variable, property, or index to a value.
   Assign: [
-    o 'Assignable = Expression',                -> new Assign $1, $3
-    o 'Assignable = TERMINATOR Expression',     -> new Assign $1, $4
-    o 'Assignable = INDENT Expression OUTDENT', -> new Assign $1, $4
+    o 'Assignable AssignValue',             -> new Assign $1, $2
+    o 'SubStructAssignable AssignValue',    -> new Assign $1[0], new SubStructAssign [$2, $1[1]], $1[0], yes
+  ]
+
+  AssignValue: [
+    o '= Expression',                 -> $2
+    o '= TERMINATOR Expression',      -> $3
+    o '= INDENT Expression OUTDENT',  -> $3
   ]
 
   # Assignment when it happens within an object literal. The difference from
@@ -217,6 +223,7 @@ grammar =
     o 'Property'
     o 'ThisProperty'
     o '[ Expression ]',          -> new Value new ComputedPropertyName $2
+    o '- Identifier',            -> new ExProperty $2
   ]
 
   ObjAssignable: [
@@ -343,6 +350,10 @@ grammar =
     o 'SimpleAssignable'
     o 'Array',                                  -> new Value $1
     o 'Object',                                 -> new Value $1
+  ]
+
+  SubStructAssignable: [
+    o 'Identifier Object',                      -> [$1, $2]
   ]
 
   # The types of things that can be treated as values -- assigned to, invoked
