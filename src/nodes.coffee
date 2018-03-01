@@ -778,12 +778,12 @@ exports.SubStructAssign = class SubStructAssign extends Base
 
   finalProps: (props = []) ->
     ret = []
-    getProps = (props) => (p for p in @finalProps @objProperties props)
+    getProps = (props) => @finalProps @objProperties props
     for prop in props
       if prop instanceof Obj
-        ret = [ret..., (getProps prop.properties)...]
+        ret = [ret..., getProps(prop.properties)...]
       else if prop instanceof Arr
-        ret = [ret..., (getProps prop.objects)...]
+        ret = [ret..., getProps(prop.objects)...]
       else
         ret.push prop
     ret
@@ -2252,8 +2252,14 @@ exports.Assign = class Assign extends Base
   compileNode: (o) ->
     isValue = @variable instanceof Value
 
-    if @value instanceof SubStructAssign and @value.lhs and not o.scope.check @value.value.value
-      @error "the variable '#{@value.value.value}' has not been declared before"
+    # Convert LHS sub-structuring assignment.
+    if @variable.base instanceof SubStructAssign
+      {objVar, objVal} = @variable.base
+      unless o.scope.check objVar.value
+        @error "the variable '#{objVar.value}' has not been declared before"
+      subStruct = new SubStructAssign [@value, objVal], objVar, yes
+      subStructAssign = new Assign new Value(objVar), new Value subStruct
+      return subStructAssign.compileToFragments o, LEVEL_TOP
 
     if isValue
       # When compiling `@variable`, remember if it is part of a function parameter.
