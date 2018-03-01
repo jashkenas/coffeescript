@@ -768,11 +768,15 @@ exports.SubStructAssign = class SubStructAssign extends Base
   objProperties: (props) ->
     ret = []
     for prop in props
-      if prop instanceof Assign
-        ret.push prop.value.base
+      if prop instanceof Assign and prop.context is 'object'
+        {value: {base: obj}} = prop
+        validObj = (obj instanceof Arr and obj.objects.length > 0) or
+                   (obj instanceof Obj and obj.properties.length > 0) or
+                    obj instanceof IdentifierLiteral
+        ret.push obj if validObj
       else if prop instanceof Splat
         ret.push prop.name
-      else if prop.base not instanceof ExProperty
+      else
         ret.push prop.base
     ret
 
@@ -807,10 +811,6 @@ exports.PropertyName = class PropertyName extends Literal
 exports.ComputedPropertyName = class ComputedPropertyName extends PropertyName
   compileNode: (o) ->
     [@makeCode('['), @value.compileToFragments(o, LEVEL_LIST)..., @makeCode(']')]
-
-exports.ExProperty = class ExProperty extends PropertyName
-  compileNode: (o) ->
-    (new Value @value).compileToFragments o, LEVEL_LIST
 
 exports.StatementLiteral = class StatementLiteral extends Literal
   isStatement: YES
@@ -1532,15 +1532,7 @@ exports.Obj = class Obj extends Base
     return yes for prop in @properties when prop instanceof Splat
     no
 
-  hasExProperty: ->
-    return yes for prop in @properties when prop.base instanceof ExProperty
-    no
-
-  excludeProperties: (props) ->
-    (p for p in props when p.base not instanceof ExProperty)
-
   compileNode: (o) ->
-    @objects = @properties = @excludeProperties @properties
     props = @properties
     if @generated
       for node in props when node instanceof Value

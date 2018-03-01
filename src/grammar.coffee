@@ -190,9 +190,9 @@ grammar =
 
   # Assignment of a variable, property, or index to a value.
   Assign: [
-    o 'Assignable = Expression',                 -> new Assign $1, $3
-    o 'Assignable = TERMINATOR Expression',      -> new Assign $1, $4
-    o 'Assignable = INDENT Expression OUTDENT',  -> new Assign $1, $4
+    o 'Assignable = Expression',                -> new Assign $1, $3
+    o 'Assignable = TERMINATOR Expression',     -> new Assign $1, $4
+    o 'Assignable = INDENT Expression OUTDENT', -> new Assign $1, $4
   ]
 
   # Assignment when it happens within an object literal. The difference from
@@ -200,6 +200,9 @@ grammar =
   AssignObj: [
     o 'ObjAssignable',                          -> new Value $1
     o 'ObjRestValue'
+    o '- Identifier',                           -> new Assign LOC(1)(new Value $2),
+                                                              (new Value new Obj [], yes), 'object',
+                                                              operatorToken: (new Literal ':')
     o 'ObjAssignable : Expression',             -> new Assign LOC(1)(new Value $1), $3, 'object',
                                                               operatorToken: LOC(2)(new Literal $2)
     o 'ObjAssignable :
@@ -217,7 +220,6 @@ grammar =
     o 'Property'
     o 'ThisProperty'
     o '[ Expression ]',          -> new Value new ComputedPropertyName $2
-    o '- Identifier',            -> new ExProperty $2
   ]
 
   ObjAssignable: [
