@@ -1,4 +1,235 @@
-## Change Log
+## Changelog
+
+```
+releaseHeader('2018-02-21', '2.2.2', '2.1.1')
+```
+*   Bugfix for regression in 2.2.0 where a range with a `by` (step) value that increments or decrements in the opposite direction as the range was returning an array containing the first value of the range, whereas it should be returning an empty array. In other words, `x for x in [2..1] by 1` should equal `[]`, not `[2]` (because the step value is positive 1, counting up, whereas the range goes from 2 to 1, counting down).
+*   Bugfixes for allowing backslashes in `import` and `export` statements and lines that trigger the start of an indented block, like an `if` statement.
+
+```
+releaseHeader('2018-02-06', '2.2.1', '2.1.0')
+```
+*   Bugfix for regression in 2.2.0 involving an error thrown by the compiler in certain cases when using destructuring with a splat or expansion in an array.
+*   Bugfix for regression in 2.2.0 where in certain cases a range iterator variable was declared in the global scope.
+
+```
+releaseHeader('2018-02-01', '2.2.0', '2.1.1')
+```
+*   This release fixes *all* currently open bugs, dating as far back as 2014, 2012 and 2011.
+*   **Potential breaking change:** An inline `if` or `switch` statement with an ambiguous `else`, such as `if no then if yes then alert 1 else alert 2`, now compiles where the `else` always corresponds to the closest open `then`. Previously the behavior of an ambiguous `else` was unpredictable. If your code has any `if … then` or `switch … then` statements with multiple `then`s (and one or more `else`s) the compiled output might be different now, unless you had resolved ambiguity via parentheses. We made this change because the previous behavior was inconsistent and basically a bug: depending on what grammar was where, for example if there was an inline function or something that implied a block, the `else` might bind to an earlier `then` rather than a later `then`. Now an `else` essentially closes a block opened by a `then`, similar to closing an open parenthesis.
+*   When a required `then` is missing, the error more accurately points out the location of the mistake.
+*   An error is thrown when the `coffee` command is run in an environment that doesn’t support some ES2015 JavaScript features that the CoffeeScript compiler itself requires. This can happen if CoffeeScript is installed in Node older than version 6.
+*   Destructuring with a non-final splat/spread, e.g. `[open, contents..., close] = tag.split('')` is now output using ES2015 rest syntax.
+*   Functions named `get` or `set` can be used without parentheses in more cases, including when attached to `this` or `@` or `?.`; or when the first argument is an implicit object, e.g. `@set key: 'val'`.
+*   Statements such as `break` can now be used inside parentheses, e.g. `(doSomething(); break) while condition` or `(pick(key); break) for key of obj`.
+*   Bugfix for assigning to a property attached to `this`/`@` in destructuring, e.g. `({@prop = yes, @otherProp = no}) ->`.
+*   Bugfix for incorrect errors being thrown about calling `super` with a parameter attached to `this` when said parameter is in a lower scope, e.g. `class Child extends Parent then constructor: -> super(-> @prop)`.
+*   Bugfix to prevent a possible infinite loop when a `for` loop is given a variable to step by, e.g. `for x in [1..3] by step` (as opposed to `by 0.5` or some other primitive numeric value).
+*   Bugfix to no longer declare iterator variables twice when evaluating a range, e.g. `end = 3; fn [0..end]`.
+*   Bugfix for incorrect scope of variables in chained calls, e.g. `start(x = 3).then(-> x = 4)`.
+*   Bugfix for incorrect scope of variables in a function passed to `do`, e.g. `for [1..3] then masked = 10; do -> alert masked`.
+*   Bugfix to no longer throw a syntax error for a trailing comma in a function call, e.g. `fn arg1, arg2,`.
+*   Bugfix for an expression in a property access, e.g. `a[!b in c..]`.
+*   Bugfix to allow a line continuation backslash (`\`) at any point in a `for` line.
+
+```
+releaseHeader('2017-12-29', '2.1.1', '2.1.0')
+```
+
+*   Bugfix to set the correct context for executable class bodies. So in `class @B extends @A then @property = 1`, the `@` in `@property` now refers to the class, not the global object.
+*   Bugfix where anonymous classes were getting created using the same automatic variable name. They now each receive unique names, so as not to override each other.
+
+
+```
+releaseHeader('2017-12-10', '2.1.0', '2.0.3')
+```
+
+*   Computed property keys in object literals are now supported: `obj = { ['key' + i]: 42 }`, or `obj = [Symbol.iterator]: -> yield i++`.
+*   Skipping of array elements, a.k.a. elision, is now supported: `arr = [a, , b]`, or `[, protocol] = url.match /^(.*):\/\//`.
+*   [JSX fragments syntax](https://reactjs.org/blog/2017/11/28/react-v16.2.0-fragment-support.html) is now supported.
+*   Bugfix where `///` within a `#` line comment inside a `///` block regex was erroneously closing the regex, rather than being treated as part of the comment.
+*   Bugfix for incorrect output for object rest destructuring inside array destructuring.
+
+```
+releaseHeader('2017-11-26', '2.0.3', '2.0.2')
+```
+
+*   Bugfix for `export default` followed by an implicit object that contains an explicit object, for example `exportedMember: { obj... }`.
+*   Bugfix for `key, val of obj` after an implicit object member, e.g. `foo: bar for key, val of obj`.
+*   Bugfix for combining array and object destructuring, e.g. `[ ..., {a, b} ] = arr`.
+*   Bugfix for an edge case where it was possible to create a bound (`=>`) generator function, which should throw an error as such functions aren’t allowed in ES2015.
+*   Bugfix for source maps: `.map` files should always have the same base filename as the requested output filename. So `coffee --map --output foo.js test.coffee` should generate `foo.js` and `foo.js.map`.
+*   Bugfix for incorrect source maps generated when using `--transpile` with `--map` for multiple input files.
+*   Bugfix for comments at the beginning or end of input into the REPL (`coffee --interactive`).
+
+```
+releaseHeader('2017-10-26', '2.0.2', '2.0.1')
+```
+*   `--transpile` now also applies to `require`d or `import`ed CoffeeScript files.
+*   `--transpile` can be used with the REPL: `coffee --interactive --transpile`.
+*   Improvements to comments output that should now cover all of the [Flow comment-based syntax](https://flow.org/en/docs/types/comments/). Inline `###` comments near [variable](https://flow.org/en/docs/types/variables/) initial assignments are now output in the variable declaration statement, and `###` comments near a [class and method names](https://flow.org/en/docs/types/generics/) are now output where Flow expects them.
+*   Importing CoffeeScript keywords is now allowed, so long as they’re aliased: `import { and as andFn } from 'lib'`. (You could also do `import lib from 'lib'` and then reference `lib.and`.)
+*   Calls to functions named `get` and `set` no longer throw an error when given a bracketless object literal as an argument: `obj.set propertyName: propertyValue`.
+*   In the constructor of a derived class (a class that `extends` another class), you cannot call `super` with an argument that references `this`: `class Child extends Parent then constructor: (@arg) -> super(@arg)`. This isn’t allowed in JavaScript, and now the CoffeeScript compiler will throw an error. Instead, assign to `this` after calling `super`: `(arg) -> super(arg); @arg = arg`.
+*   Bugfix for incorrect output when backticked statements and hoisted expressions were both in the same class body. This allows a backticked line like `` `field = 3` ``, for people using the experimental [class fields](https://github.com/tc39/proposal-class-fields) syntax, in the same class along with traditional class body expressions like `prop: 3` that CoffeeScript outputs as part of the class prototype.
+*   Bugfix for comments not output before a complex `?` operation, e.g. `@a ? b`.
+*   All tests now pass in Windows.
+
+```
+releaseHeader('2017-09-26', '2.0.1', '2.0.0')
+```
+
+*   `babel-core` is no longer listed in `package.json`, even as an `optionalDependency`, to avoid it being automatically installed for most users. If you wish to use `--transpile`, simply install `babel-core` manually. See [Transpilation](#transpilation).
+*   `--transpile` now relies on Babel to find its options, i.e. the `.babelrc` file in the path of the file(s) being compiled. (Previously the CoffeeScript compiler was duplicating this logic, so nothing has changed from a user’s perspective.) This provides automatic support for additional ways to pass options to Babel in future versions, such as the `.babelrc.js` file coming in Babel 7.
+*   Backticked expressions in a class body, outside any class methods, are now output in the JavaScript class body itself. This allows for passing through experimental JavaScript syntax like the [class fields proposal](https://github.com/tc39/proposal-class-fields), assuming your [transpiler supports it](https://babeljs.io/docs/plugins/transform-class-properties/).
+
+```
+releaseHeader('2017-09-18', '2.0.0', '2.0.0-beta5')
+```
+
+*   Added `--transpile` flag or `transpile` Node API option to tell the CoffeeScript compiler to pipe its output through Babel before saving or returning it; see [Transpilation](#transpilation). Also changed the `-t` short flag to refer to `--transpile` instead of `--tokens`.
+*   Always populate source maps’ `sourcesContent` property.
+*   Bugfixes for destructuring and for comments in JSX.
+*   _Note that these are only the changes between 2.0.0-beta5 and 2.0.0. See below for all changes since 1.x._
+
+```
+releaseHeader('2017-09-02', '2.0.0-beta5', '2.0.0-beta4')
+```
+
+*   Node 6 is now supported, and we will try to maintain that as the minimum required version for CoffeeScript 2 via the `coffee` command or Node API. Older versions of Node, or non-evergreen browsers, can compile via the [browser compiler](./browser-compiler/coffeescript.js).
+*   The command line `--output` flag now allows you to specify an output filename, not just an output folder.
+*   The command line `--require` flag now properly handles filenames or module names that are invalid identifiers (like an NPM module with a hyphen in the name).
+*   `Object.assign`, output when object destructuring is used, is polyfilled using the same polyfill that Babel outputs. This means that polyfills shouldn’t be required unless support for Internet Explorer 8 or below is desired (or your own code uses a feature that requires a polyfill). See [ES2015+ Output](#es2015plus-output).
+*   A string or JSX interpolation that contains only a comment (`"a#{### comment ###}b"` or `<div>{### comment ###}</div>`) is now output (`` `a${/* comment */}b` ``)
+*   Interpolated strings (ES2015 template literals) that contain quotation marks no longer have the quotation marks escaped: `` `say "${message}"` ``
+*   It is now possible to chain after a function literal (for example, to define a function and then call `.call` on it).
+*   The results of the async tests are included in the output when you run `cake test`.
+*   Bugfixes for object destructuring; expansions in function parameters; generated reference variables in function parameters; chained functions after `do`; splats after existential operator soaks in arrays (`[a?.b...]`); trailing `if` with splat in arrays or function parameters (`[a if b...]`); attempting to `throw` an `if`, `for`, `switch`, `while` or other invalid construct.
+*   Bugfixes for syntactical edge cases: semicolons after `=` and other “mid-expression” tokens; spaces after `::`; and scripts that begin with `:` or `*`.
+*   Bugfixes for source maps generated via the Node API; and stack trace line numbers when compiling CoffeeScript via the Node API from within a `.coffee` file.
+
+```
+releaseHeader('2017-08-03', '2.0.0-beta4', '2.0.0-beta3')
+```
+
+*   This release includes [all the changes from 1.12.6 to 1.12.7](#1.12.7).
+*   [Line comments](#comments) (starting with `#`) are now output in the generated JavaScript.
+*   [Block comments](#comments) (delimited by `###`) are now allowed anywhere, including inline where they previously weren’t possible. This provides support for [static type annotations](#type-annotations) using Flow’s comments-based syntax.
+*   Spread syntax (`...` for objects) is now supported in JSX tags: `<div {props...} />`.
+*   Argument parsing for scripts run via `coffee` is improved. See [breaking changes](#breaking-changes-argument-parsing-and-shebang-lines).
+*   CLI: Propagate `SIGINT` and `SIGTERM` signals when node is forked.
+*   `await` in the REPL is now allowed without requiring a wrapper function.
+*   `do super` is now allowed, and other accesses of `super` like `super.x.y` or `super['x'].y` now work.
+*   Splat/spread syntax triple dots are now allowed on either the left or the right (so `props...` or `...props` are both valid).
+*   Tagged template literals are recognized as callable functions.
+*   Bugfixes for object spread syntax in nested properties.
+*   Bugfixes for destructured function parameter default values.
+
+```
+releaseHeader('2017-07-16', '1.12.7', '1.12.6')
+```
+
+*   Fix regressions in 1.12.6 related to chained function calls and indented `return` and `throw` arguments.
+*   The REPL no longer warns about assigning to `_`.
+
+```
+releaseHeader('2017-06-30', '2.0.0-beta3', '2.0.0-beta2')
+```
+
+*   [JSX](#jsx) is now supported.
+*   [Object rest/spread properties](#object-spread) are now supported.
+*   Bound (fat arrow) methods are once again supported in classes; though an error will be thrown if you attempt to call the method before it is bound. See [breaking changes for classes](#breaking-changes-classes).
+*   The REPL no longer warns about assigning to `_`.
+*   Bugfixes for destructured nested default values and issues related to chaining or continuing expressions across multiple lines.
+
+
+```
+releaseHeader('2017-05-16', '2.0.0-beta2', '2.0.0-beta1')
+```
+
+*   This release includes [all the changes from 1.12.5 to 1.12.6](#1.12.6).
+*   Bound (fat arrow) methods in classes must be declared in the class constructor, after `super()` if the class is extending a parent class. See [breaking changes for classes](#breaking-changes-classes).
+*   All unnecessary utility helper functions have been removed, including the polyfills for `indexOf` and `bind`.
+*   The `extends` keyword now only works in the context of classes; it cannot be used to extend a function prototype. See [breaking changes for `extends`](#breaking-changes-super-extends).
+*   Literate CoffeeScript is now parsed entirely based on indentation, similar to the 1.x implementation; there is no longer a dependency for parsing Markdown. See [breaking changes for Literate CoffeeScript parsing](#breaking-changes-literate-coffeescript).
+*   JavaScript reserved words used as properties are no longer wrapped in quotes.
+*   `require('coffeescript')` should now work in non-Node environments such as the builds created by Webpack or Browserify. This provides a more convenient way to include the browser compiler in builds intending to run in a browser environment.
+*   Unreachable `break` statements are no longer added after `switch` cases that `throw` exceptions.
+*   The browser compiler is now compiled using Babili and transpiled down to Babel’s `env` preset (should be safe for use in all browsers in current use, not just evergreen versions).
+*   Calling functions `@get` or `@set` no longer throws an error about required parentheses. (Bare `get` or `set`, not attached to an object or `@`, [still intentionally throws a compiler error](#unsupported-get-set).)
+*   If `$XDG_CACHE_HOME` is set, the REPL `.coffee_history` file is saved there.
+
+```
+releaseHeader('2017-05-15', '1.12.6', '1.12.5')
+```
+
+*   The `return` and `export` keywords can now accept implicit objects (defined by indentation, without needing braces).
+*   Support Unicode code point escapes (e.g. `\u{1F4A9}`).
+*   The `coffee` command now first looks to see if CoffeeScript is installed under `node_modules` in the current folder, and executes the `coffee` binary there if so; or otherwise it runs the globally installed one. This allows you to have one version of CoffeeScript installed globally and a different one installed locally for a particular project. (Likewise for the `cake` command.)
+*   Bugfixes for chained function calls not closing implicit objects or ternaries.
+*   Bugfixes for incorrect code generated by the `?` operator within a termary `if` statement.
+*   Fixed some tests, and failing tests now result in a nonzero exit code.
+
+```
+releaseHeader('2017-04-14', '2.0.0-beta1', '2.0.0-alpha1')
+```
+
+*   Initial beta release of CoffeeScript 2. No further breaking changes are anticipated.
+*   Destructured objects and arrays now output using ES2015+ syntax whenever possible.
+*   Literate CoffeeScript now has much better support for parsing Markdown, thanks to using [Markdown-It](https://github.com/markdown-it/markdown-it) to detect Markdown sections rather than just looking at indentation.
+*   Calling a function named `get` or `set` now requires parentheses, to disambiguate from the `get` or `set` keywords (which are [disallowed](#unsupported-get-set)).
+*   The compiler now requires Node 7.6+, the first version of Node to support asynchronous functions without requiring a flag.
+
+```
+releaseHeader('2017-04-10', '1.12.5', '1.12.4')
+```
+
+*   Better handling of `default`, `from`, `as` and `*` within `import` and `export` statements. You can now import or export a member named `default` and the compiler won’t interpret it as the `default` keyword.
+*   Fixed a bug where invalid octal escape sequences weren’t throwing errors in the compiler.
+
+
+```
+releaseHeader('2017-02-21', '2.0.0-alpha1', '1.12.4')
+```
+
+*   Initial alpha release of CoffeeScript 2. The CoffeeScript compiler now outputs ES2015+ syntax whenever possible. See [breaking changes](#breaking-changes).
+*   Classes are output using ES2015 `class` and `extends` keywords.
+*   Added support for `async`/`await`.
+*   Bound (arrow) functions now output as `=>` functions.
+*   Function parameters with default values now use ES2015 default values syntax.
+*   Splat function parameters now use ES2015 spread syntax.
+*   Computed properties now use ES2015 syntax.
+*   Interpolated strings (template literals) now use ES2015 backtick syntax.
+*   Improved support for recognizing Markdown in Literate CoffeeScript files.
+*   Mixing tabs and spaces in indentation is now disallowed.
+*   Browser compiler is now minified using the Google Closure Compiler (JavaScript version).
+*   Node 7+ required for CoffeeScript 2.
+
+```
+releaseHeader('2017-02-18', '1.12.4', '1.12.3')
+```
+
+*   The `cake` commands have been updated, with new `watch` options for most tasks. Clone the [CoffeeScript repo](https://github.com/jashkenas/coffeescript) and run `cake` at the root of the repo to see the options.
+*   Fixed a bug where `export`ing a referenced variable was preventing the variable from being declared.
+*   Fixed a bug where the `coffee` command wasn’t working for a `.litcoffee` file.
+*   Bugfixes related to tokens and location data, for better source maps and improved compatibility with downstream tools.
+
+```
+releaseHeader('2017-01-24', '1.12.3', '1.12.2')
+```
+
+*   `@` values can now be used as indices in `for` expressions. This loosens the compilation of `for` expressions to allow the index variable to be an `@` value, e.g. `do @visit for @node, @index in nodes`. Within `@visit`, the index of the current node (`@node`) would be available as `@index`.
+*   CoffeeScript’s patched `Error.prepareStackTrace` has been restored, with some revisions that should prevent the erroneous exceptions that were making life difficult for some downstream projects. This fixes the incorrect line numbers in stack traces since 1.12.2.
+*   The `//=` operator’s output now wraps parentheses around the right operand, like the other assignment operators.
+
+```
+releaseHeader('2016-12-16', '1.12.2', '1.12.1')
+```
+
+*   The browser compiler can once again be built unminified via `MINIFY=false cake build:browser`.
+*   The error-prone patched version of `Error.prepareStackTrace` has been removed.
+*   Command completion in the REPL (pressing tab to get suggestions) has been fixed for Node 6.9.1+.
+*   The [browser-based tests](/v<%= majorVersion %>/test.html) now include all the tests as the Node-based version.
 
 ```
 releaseHeader('2016-12-07', '1.12.1', '1.12.0')
@@ -15,7 +246,7 @@ releaseHeader('2016-12-04', '1.12.0', '1.11.1')
 *   CoffeeScript now provides a [`for…from`](#generator-iteration) syntax for outputting ES2015 [`for…of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of). (Sorry they couldn’t match, but we came up with `for…of` first for something else.) This allows iterating over generators or any other iterable object. Note that using `for…from` in your code makes you responsible for ensuring that either your runtime supports `for…of` or that you transpile the output JavaScript further to a version your target runtime(s) support.
 *   Triple backticks (`` ```​``) allow the creation of embedded JavaScript blocks where escaping single backticks is not required, which should improve interoperability with ES2015 template literals and with Markdown.
 *   Within single-backtick embedded JavaScript, backticks can now be escaped via `` \`​``.
-*   The browser tests now run in the browser again, and are accessible [here](v<%= majorVersion %>/test.html) if you would like to test your browser.
+*   The browser tests now run in the browser again, and are accessible [here](/v<%= majorVersion %>/test.html) if you would like to test your browser.
 *   CoffeeScript-only keywords in ES2015 `import`s and `export`s are now ignored.
 *   The compiler now throws an error on trying to export an anonymous class.
 *   Bugfixes related to tokens and location data, for better source maps and improved compatibility with downstream tools.
@@ -36,7 +267,6 @@ releaseHeader('2016-09-24', '1.11.0', '1.10.0')
 *   CoffeeScript now supports ES2015 [`import` and `export` syntax](#modules).
 *   Added the `-M, --inline-map` flag to the compiler, allowing you embed the source map directly into the output JavaScript, rather than as a separate file.
 *   A bunch of fixes for `yield`:
-
     *   `yield return` can no longer mistakenly be used as an expression.
     *   `yield` now mirrors `return` in that it can be used stand-alone as well as with expressions. Where you previously wrote `yield undefined`, you may now write simply `yield`. However, this means also inheriting the same syntax limitations that `return` has, so these examples no longer compile:
         ```
@@ -47,7 +277,6 @@ releaseHeader('2016-09-24', '1.11.0', '1.10.0')
           yield
             2 * 3
         ```
-
     *   The JavaScript output is a bit nicer, with unnecessary parentheses and spaces, double indentation and double semicolons around `yield` no longer present.
 *   `&&=`, `||=`, `and=` and `or=` no longer accidentally allow a space before the equals sign.
 *   Improved several error messages.
@@ -55,7 +284,6 @@ releaseHeader('2016-09-24', '1.11.0', '1.10.0')
 *   Bugfix for renamed destructured parameters with defaults. `({a: b = 1}) ->` no longer crashes the compiler.
 *   Improved the internal representation of a CoffeeScript program. This is only noticeable to tools that use `CoffeeScript.tokens` or `CoffeeScript.nodes`. Such tools need to update to take account for changed or added tokens and nodes.
 *   Several minor bug fixes, including:
-
     *   The caught error in `catch` blocks is no longer declared unnecessarily, and no longer mistakenly named `undefined` for `catch`-less `try` blocks.
     *   Unassignable parameter destructuring no longer crashes the compiler.
     *   Source maps are now used correctly for errors thrown from .coffee.md files.
@@ -71,7 +299,6 @@ releaseHeader('2015-09-03', '1.10.0', '1.9.3')
 *   CoffeeScript now supports ES2015-style destructuring defaults.
 *   `(offsetHeight: height) ->` no longer compiles. That syntax was accidental and partly broken. Use `({offsetHeight: height}) ->` instead. Object destructuring always requires braces.
 *   Several minor bug fixes, including:
-
     *   A bug where the REPL would sometimes report valid code as invalid, based on what you had typed earlier.
     *   A problem with multiple JS contexts in the jest test framework.
     *   An error in io.js where strict mode is set on internal modules.
@@ -129,7 +356,7 @@ releaseHeader('2014-08-26', '1.8.0', '1.7.1')
 *   Fixed a slight formatting error in CoffeeScript’s source map-patched stack traces.
 *   The `%%` operator now coerces its right operand only once.
 *   It is now possible to require CoffeeScript files from Cakefiles without having to register the compiler first.
-*   The CoffeeScript REPL is now exported and can be required using `require 'coffee-script/repl'`.
+*   The CoffeeScript REPL is now exported and can be required using `require 'coffeescript/repl'`.
 *   Fixes for the REPL in Node 0.11.
 
 ```
@@ -142,14 +369,9 @@ releaseHeader('2014-01-29', '1.7.1', '1.7.0')
 releaseHeader('2014-01-28', '1.7.0', '1.6.3')
 ```
 
-*   When requiring CoffeeScript files in Node you must now explicitly register the compiler. This can be done with `require 'coffee-script/register'` or `CoffeeScript.register()`. Also for configuration such as Mocha’s, use **coffee-script/register**.
+*   When requiring CoffeeScript files in Node you must now explicitly register the compiler. This can be done with `require 'coffeescript/register'` or `CoffeeScript.register()`. Also for configuration such as Mocha’s, use **coffeescript/register**.
 *   Improved error messages, source maps and stack traces. Source maps now use the updated `//#` syntax.
 *   Leading `.` now closes all open calls, allowing for simpler chaining syntax.
-
-```
-codeFor('chaining')
-```
-
 *   Added `**`, `//` and `%%` operators and `...` expansion in parameter lists and destructuring expressions.
 *   Multiline strings are now joined by a single space and ignore all indentation. A backslash at the end of a line can denote the amount of whitespace between lines, in both strings and heredocs. Backslashes correctly escape whitespace in block regexes.
 *   Closing brackets can now be indented and therefore no longer cause unexpected error.
@@ -180,7 +402,7 @@ releaseHeader('2013-03-18', '1.6.2', '1.6.1')
 releaseHeader('2013-03-05', '1.6.1', '1.5.0')
 ```
 
-*   First release of [source maps](#source-maps). Pass the `--map` flag to the compiler, and off you go. Direct all your thanks over to [Jason Walton](http://github.com/jwalton).
+*   First release of [source maps](#source-maps). Pass the `--map` flag to the compiler, and off you go. Direct all your thanks over to [Jason Walton](https://github.com/jwalton).
 *   Fixed a 1.5.0 regression with multiple implicit calls against an indented implicit object. Combinations of implicit function calls and implicit objects should generally be parsed better now — but it still isn’t good _style_ to nest them too heavily.
 *   `.coffee.md` is now also supported as a Literate CoffeeScript file extension, for existing tooling. `.litcoffee` remains the canonical one.
 *   Several minor fixes surrounding member properties, bound methods and `super` in class declarations.
@@ -242,7 +464,7 @@ releaseHeader('2011-11-08', '1.1.3', '1.1.2')
 *   Ahh, whitespace. CoffeeScript’s compiled JS now tries to space things out and keep it readable, as you can see in the examples on this page.
 *   You can now call `super` in class level methods in class bodies, and bound class methods now preserve their correct context.
 *   JavaScript has always supported octal numbers `010 is 8`, and hexadecimal numbers `0xf is 15`, but CoffeeScript now also supports binary numbers: `0b10 is 2`.
-*   The CoffeeScript module has been nested under a subdirectory to make it easier to `require` individual components separately, without having to use **npm**. For example, after adding the CoffeeScript folder to your path: `require('coffee-script/lexer')`
+*   The CoffeeScript module has been nested under a subdirectory to make it easier to `require` individual components separately, without having to use **npm**. For example, after adding the CoffeeScript folder to your path: `require('coffeescript/lexer')`
 *   There’s a new “link” feature in Try CoffeeScript on this webpage. Use it to get a shareable permalink for your example script.
 *   The `coffee --watch` feature now only works on Node.js 0.6.0 and higher, but now also works properly on Windows.
 *   Lots of small bug fixes from **[@michaelficarra](https://github.com/michaelficarra)**, **[@geraldalewis](https://github.com/geraldalewis)**, **[@satyr](https://github.com/satyr)**, and **[@trevorburnham](https://github.com/trevorburnham)**.
@@ -287,7 +509,7 @@ The REPL now properly formats stacktraces, and stays alive through asynchronous 
 releaseHeader('2010-11-21', '0.9.5', '0.9.4')
 ```
 
-0.9.5 should be considered the first release candidate for CoffeeScript 1.0. There have been a large number of internal changes since the previous release, many contributed from **satyr**’s [Coco](http://github.com/satyr/coco) dialect of CoffeeScript. Heregexes (extended regexes) were added. Functions can now have default arguments. Class bodies are now executable code. Improved syntax errors for invalid CoffeeScript. `undefined` now works like `null`, and cannot be assigned a new value. There was a precedence change with respect to single-line comprehensions: `result = i for i in list`
+0.9.5 should be considered the first release candidate for CoffeeScript 1.0. There have been a large number of internal changes since the previous release, many contributed from **satyr**’s [Coco](https://github.com/satyr/coco) dialect of CoffeeScript. Heregexes (extended regexes) were added. Functions can now have default arguments. Class bodies are now executable code. Improved syntax errors for invalid CoffeeScript. `undefined` now works like `null`, and cannot be assigned a new value. There was a precedence change with respect to single-line comprehensions: `result = i for i in list`
 used to parse as `result = (i for i in list)` by default … it now parses as
 `(result = i) for i in list`.
 
@@ -361,13 +583,13 @@ Trailing commas are now allowed, a-la Python. Static properties may be assigned 
 releaseHeader('2010-03-23', '0.5.6', '0.5.5')
 ```
 
-Interpolation can now be used within regular expressions and heredocs, as well as strings. Added the `<-` bind operator. Allowing assignment to half-expressions instead of special `||=`-style operators. The arguments object is no longer automatically converted into an array. After requiring `coffee-script`, Node.js can now directly load `.coffee` files, thanks to **registerExtension**. Multiple splats can now be used in function calls, arrays, and pattern matching.
+Interpolation can now be used within regular expressions and heredocs, as well as strings. Added the `<-` bind operator. Allowing assignment to half-expressions instead of special `||=`-style operators. The arguments object is no longer automatically converted into an array. After requiring `coffeescript`, Node.js can now directly load `.coffee` files, thanks to **registerExtension**. Multiple splats can now be used in function calls, arrays, and pattern matching.
 
 ```
 releaseHeader('2010-03-08', '0.5.5', '0.5.4')
 ```
 
-String interpolation, contributed by [Stan Angeloff](http://github.com/StanAngeloff). Since `--run` has been the default since **0.5.3**, updating `--stdio` and `--eval` to run by default, pass `--compile` as well if you’d like to print the result.
+String interpolation, contributed by [Stan Angeloff](https://github.com/StanAngeloff). Since `--run` has been the default since **0.5.3**, updating `--stdio` and `--eval` to run by default, pass `--compile` as well if you’d like to print the result.
 
 ```
 releaseHeader('2010-03-03', '0.5.4', '0.5.3')
@@ -386,7 +608,7 @@ releaseHeader('2010-02-25', '0.5.2', '0.5.1')
 ```
 
 Added a compressed version of the compiler for inclusion in web pages as
-`v<%= majorVersion %>/browser-compiler/coffee-script.js`. It’ll automatically run any script tags with type `text/coffeescript` for you. Added a `--stdio` option to the `coffee` command, for piped-in compiles.
+`/v<%= majorVersion %>/browser-compiler/coffeescript.js`. It’ll automatically run any script tags with type `text/coffeescript` for you. Added a `--stdio` option to the `coffee` command, for piped-in compiles.
 
 ```
 releaseHeader('2010-02-24', '0.5.1', '0.5.0')
@@ -463,7 +685,7 @@ Arguments objects are now converted into real arrays when referenced.
 releaseHeader('2010-01-05', '0.2.0', '0.1.6')
 ```
 
-Major release. Significant whitespace. Better statement-to-expression conversion. Splats. Splice literals. Object comprehensions. Blocks. The existential operator. Many thanks to all the folks who posted issues, with special thanks to [Liam O’Connor-Davis](http://github.com/liamoc) for whitespace and expression help.
+Major release. Significant whitespace. Better statement-to-expression conversion. Splats. Splice literals. Object comprehensions. Blocks. The existential operator. Many thanks to all the folks who posted issues, with special thanks to [Liam O’Connor-Davis](https://github.com/liamoc) for whitespace and expression help.
 
 ```
 releaseHeader('2009-12-27', '0.1.6', '0.1.5')
@@ -475,13 +697,13 @@ Bugfix for running `coffee --interactive` and `--run` from outside of the Coffee
 releaseHeader('2009-12-26', '0.1.5', '0.1.4')
 ```
 
-Array slice literals and array comprehensions can now both take Ruby-style ranges to specify the start and end. JavaScript variable declaration is now pushed up to the top of the scope, making all assignment statements into expressions. You can use `\` to escape newlines. The `coffee-script` command is now called `coffee`.
+Array slice literals and array comprehensions can now both take Ruby-style ranges to specify the start and end. JavaScript variable declaration is now pushed up to the top of the scope, making all assignment statements into expressions. You can use `\` to escape newlines. The `coffeescript` command is now called `coffee`.
 
 ```
 releaseHeader('2009-12-25', '0.1.4', '0.1.3')
 ```
 
-The official CoffeeScript extension is now `.coffee` instead of `.cs`, which properly belongs to [C#](http://en.wikipedia.org/wiki/C_Sharp_(programming_language)). Due to popular demand, you can now also use `=` to assign. Unlike JavaScript, `=` can also be used within object literals, interchangeably with `:`. Made a grammatical fix for chained function calls like `func(1)(2)(3)(4)`. Inheritance and super no longer use `__proto__`, so they should be IE-compatible now.
+The official CoffeeScript extension is now `.coffee` instead of `.cs`, which properly belongs to [C#](https://en.wikipedia.org/wiki/C_Sharp_(programming_language)). Due to popular demand, you can now also use `=` to assign. Unlike JavaScript, `=` can also be used within object literals, interchangeably with `:`. Made a grammatical fix for chained function calls like `func(1)(2)(3)(4)`. Inheritance and super no longer use `__proto__`, so they should be IE-compatible now.
 
 ```
 releaseHeader('2009-12-25', '0.1.3', '0.1.2')
@@ -502,7 +724,7 @@ releaseHeader('2009-12-24', '0.1.1', '0.1.0')
 Added `instanceof` and `typeof` as operators.
 
 ```
-releaseHeader('2009-12-24', '0.1.0')
+releaseHeader('2009-12-24', '0.1.0', '8e9d637985d2dc9b44922076ad54ffef7fa8e9c2')
 ```
 
 Initial CoffeeScript release.

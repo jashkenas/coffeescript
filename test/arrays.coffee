@@ -26,6 +26,94 @@ test "incorrect indentation without commas", ->
   ok result[0][0] is 'a'
   ok result[1]['b'] is 'c'
 
+# Elisions
+test "array elisions", ->
+  eq [,1].length, 2
+  eq [,,1,2,,].length, 5
+  arr = [1,,2]
+  eq arr.length, 3
+  eq arr[1], undefined
+  eq [,,].length, 2
+
+test "array elisions indentation and commas", ->
+  arr1 = [
+    , 1, 2, , , 3,
+    4, 5, 6
+    , , 8, 9,
+  ]
+  eq arr1.length, 12
+  eq arr1[5], 3
+  eq arr1[9], undefined
+  arr2 = [, , 1,
+    2, , 3,
+    , 4, 5
+    6
+    , , ,
+  ]
+  eq arr2.length, 12
+  eq arr2[8], 5
+  eq arr2[1], undefined
+
+test "array elisions destructuring", ->
+  arr = [1,2,3,4,5,6,7,8,9]
+  [,a] = arr
+  [,,,b] = arr
+  arrayEq [a,b], [2,4]
+  [,a,,b,,c,,,d] = arr
+  arrayEq [a,b,c,d], [2,4,6,9]
+  [
+    ,e,
+    ,f,
+    ,g,
+    ,,h] = arr
+  arrayEq [e,f,g,h], [2,4,6,9]
+
+test "array elisions destructuring with splats and expansions", ->
+  arr = [1,2,3,4,5,6,7,8,9]
+  [,a,,,b...] = arr
+  arrayEq [a,b], [2,[5,6,7,8,9]]
+  [,c,...,,d,,e] = arr
+  arrayEq [c,d,e], [2,7,9]
+  [...,f,,,g,,,] = arr
+  arrayEq [f,g], [4,7]
+
+test "array elisions as function parameters", ->
+  arr = [1,2,3,4,5,6,7,8,9]
+  foo = ([,a]) -> a
+  a = foo arr
+  eq a, 2
+  foo = ([,,,a]) -> a
+  a = foo arr
+  eq a, 4
+  foo = ([,a,,b,,c,,,d]) -> [a,b,c,d]
+  [a,b,c,d] = foo arr
+  arrayEq [a,b,c,d], [2,4,6,9]
+
+test "array elisions nested destructuring", ->
+  arr = [
+    1,
+    [2,3, [4,5,6, [7,8,9] ] ]
+  ]
+  [,a] = arr
+  arrayEq a[2][3], [7,8,9]
+  [,[,,[,b,,[,,c]]]] = arr
+  eq b, 5
+  eq c, 9
+  aobj = [
+    {},
+    {x: 2},
+    {},
+    [
+      {},
+      {},
+      {z:1, w:[1,2,4], p:3, q:4}
+      {},
+      {}
+    ]
+  ]
+  [,d,,[,,{w}]] = aobj
+  deepEqual d, {x:2}
+  arrayEq w, [1,2,4]
 
 # Splats in Array Literals
 
@@ -38,7 +126,6 @@ test "array splat expansions with assignments", ->
 
 
 test "mixed shorthand objects in array lists", ->
-
   arr = [
     a:1
     'b'
@@ -58,7 +145,6 @@ test "mixed shorthand objects in array lists", ->
   eq arr[2].b, 1
   eq arr[3], 'b'
 
-
 test "array splats with nested arrays", ->
   nonce = {}
   a = [nonce]
@@ -69,6 +155,54 @@ test "array splats with nested arrays", ->
   a = [[nonce]]
   list = [1, 2, a...]
   arrayEq list, [1, 2, [nonce]]
+
+test "#4260: splat after existential operator soak", ->
+  a = {b: [3]}
+  foo = (a) -> [a]
+  arrayEq [a?.b...], [3]
+  arrayEq [c?.b ? []...], []
+  arrayEq [...a?.b], [3]
+  arrayEq [...c?.b ? []], []
+  arrayEq foo(a?.b...), [3]
+  arrayEq foo(...a?.b), [3]
+  arrayEq foo(c?.b ? []...), [undefined]
+  arrayEq foo(...c?.b ? []), [undefined]
+  e = yes
+  f = null
+  arrayEq [(a if e)?.b...], [3]
+  arrayEq [(a if f)?.b ? []...], []
+  arrayEq [...(a if e)?.b], [3]
+  arrayEq [...(a if f)?.b ? []], []
+  arrayEq foo((a if e)?.b...), [3]
+  arrayEq foo(...(a if e)?.b), [3]
+  arrayEq foo((a if f)?.b ? []...), [undefined]
+  arrayEq foo(...(a if f)?.b ? []), [undefined]
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  arrayEq [... a?.b], [3]
+  arrayEq [... c?.b ? []], []
+  arrayEq [a?.b ...], [3]
+  arrayEq [(a if e)?.b ...], [3]
+  arrayEq foo(a?.b ...), [3]
+  arrayEq foo(... a?.b), [3]
+
+test "#1349: trailing if after splat", ->
+  a = [3]
+  b = yes
+  c = null
+  foo = (a) -> [a]
+  arrayEq [a if b...], [3]
+  arrayEq [(a if c) ? []...], []
+  arrayEq [...a if b], [3]
+  arrayEq [...(a if c) ? []], []
+  arrayEq foo((a if b)...), [3]
+  arrayEq foo(...(a if b)), [3]
+  arrayEq foo((a if c) ? []...), [undefined]
+  arrayEq foo(...(a if c) ? []), [undefined]
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  arrayEq [... a if b], [3]
+  arrayEq [a if b ...], [3]
 
 test "#1274: `[] = a()` compiles to `false` instead of `a()`", ->
   a = false
@@ -108,6 +242,12 @@ test "regex interpolation in array", ->
   eq 'ab', arr[0].source
   eq 'value', arr[1].key
 
+test "splat extraction from generators", ->
+  gen = ->
+    yield 1
+    yield 2
+    yield 3
+  arrayEq [ gen()... ], [ 1, 2, 3 ]
 
 test "for-from loops over Array", ->
   array1 = [50, 30, 70, 20]

@@ -1,17 +1,21 @@
 # Option Parser
 # -------------
 
-# TODO: refactor option parser tests
-
 # Ensure that the OptionParser handles arguments correctly.
 return unless require?
-{OptionParser} = require './../lib/coffee-script/optparse'
+{OptionParser} = require './../lib/coffeescript/optparse'
 
-opt = new OptionParser [
+flags = [
   ['-r', '--required [DIR]',  'desc required']
   ['-o', '--optional',        'desc optional']
   ['-l', '--list [FILES*]',   'desc list']
 ]
+
+banner = '''
+  banner text
+'''
+
+opt = new OptionParser flags, banner
 
 test "basic arguments", ->
   args = ['one', 'two', 'three', '-r', 'dir']
@@ -41,3 +45,50 @@ test "-- and interesting combinations", ->
   eq undefined, result.optional
   eq undefined, result.required
   arrayEq args[1..], result.arguments
+
+test "throw if multiple flags try to use the same short or long name", ->
+  throws -> new OptionParser [
+    ['-r', '--required [DIR]', 'required']
+    ['-r', '--long',           'switch']
+  ]
+
+  throws -> new OptionParser [
+    ['-a', '--append [STR]', 'append']
+    ['-b', '--append',       'append with -b short opt']
+  ]
+
+  throws -> new OptionParser [
+    ['--just-long', 'desc']
+    ['--just-long', 'another desc']
+  ]
+
+  throws -> new OptionParser [
+    ['-j', '--just-long', 'desc']
+    ['--just-long', 'another desc']
+  ]
+
+  throws -> new OptionParser [
+    ['--just-long',       'desc']
+    ['-j', '--just-long', 'another desc']
+  ]
+
+test "outputs expected help text", ->
+  expectedBanner = '''
+
+banner text
+
+  -r, --required     desc required
+  -o, --optional     desc optional
+  -l, --list         desc list
+
+  '''
+  ok opt.help() is expectedBanner
+
+  expected = [
+    ''
+    '  -r, --required     desc required'
+    '  -o, --optional     desc optional'
+    '  -l, --list         desc list'
+    ''
+  ].join('\n')
+  ok new OptionParser(flags).help() is expected

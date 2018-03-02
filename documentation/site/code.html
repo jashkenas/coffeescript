@@ -1,0 +1,19 @@
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="<%= file %>">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="<%= file %>-coffee"><%= cs %></textarea>
+      <pre class="placeholder-code"><%= highlight('coffeescript', cs) %></pre>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="<%= file %>-js"><%= js %></textarea>
+      <pre class="placeholder-code"><%= highlight('javascript', js) %></pre>
+    </div>
+  </div>
+  <% if (run) { %>
+  <div class="row">
+    <div class="col text-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="<%= file %>" data-run="<%= escape(run) %>"><small><%= include('play.svg') %></small><%= run === true ? '' : run.replace(/"/g, '&quot;') %></button>
+    </div>
+  </div>
+  <% } %>
+</aside>

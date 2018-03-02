@@ -1,8 +1,11 @@
 raw
 presentation
 test.coffee
+test*.coffee
 test.litcoffee
-parser.output
+test*.litcoffee
 test/*.js
+parser.output
 /node_modules
-npm-debug.log
+npm-debug.log*
+yarn.lock

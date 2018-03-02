@@ -87,6 +87,9 @@ doesNotThrow -> CoffeeScript.compile """
   a?[b..c]
   """
 
+test "#1768: space between `::` and index is ignored", ->
+  eq 'function', typeof String:: ['toString']
+
 # Array Literals
 
 test "indented array literals don't trigger whitespace rewriting", ->
@@ -128,6 +131,9 @@ test "indented heredoc", ->
 #   * single line arguments
 #   * inline function literal
 #   * inline object literal
+#
+# * chaining inside
+#   * implicit object literal
 
 test "chaining after outdent", ->
   id = (x) -> x
@@ -198,6 +204,47 @@ test "#1495, method call chaining", ->
   ).join ', '
   eq 'a, b, c', result
 
+test "chaining should not wrap spilling ternary", ->
+  throws -> CoffeeScript.compile """
+    if 0 then 1 else g
+      a: 42
+    .h()
+  """
+
+test "chaining should wrap calls containing spilling ternary", ->
+  f = (x) -> h: x
+  id = (x) -> x
+  result = f if true then 42 else id
+      a: 2
+  .h
+  eq 42, result
+
+test "chaining should work within spilling ternary", ->
+  f = (x) -> h: x
+  id = (x) -> x
+  result = f if false then 1 else id
+      a: 3
+      .a
+  eq 3, result.h
+
+test "method call chaining inside objects", ->
+  f = (x) -> c: 42
+  result =
+    a: f 1
+    b: f a: 1
+      .c
+  eq 42, result.b
+
+test "#4568: refine sameLine implicit object tagging", ->
+  condition = yes
+  fn = -> yes
+
+  x =
+    fn bar: {
+      foo: 123
+    } if not condition
+  eq x, undefined
+
 # Nested blocks caused by paren unwrapping
 test "#1492: Nested blocks don't cause double semicolons", ->
   js = CoffeeScript.compile '(0;0)'
@@ -254,3 +301,150 @@ test "#1275: allow indentation before closing brackets", ->
     a = 1
    )
   eq 1, a
+
+test "don’t allow mixing of spaces and tabs for indentation", ->
+  try
+    CoffeeScript.compile '''
+      new Layer
+       x: 0
+      	y: 1
+    '''
+    ok no
+  catch e
+    eq 'indentation mismatch', e.message
+
+test "each code block that starts at indentation 0 can use a different style", ->
+  doesNotThrow ->
+    CoffeeScript.compile '''
+      new Layer
+       x: 0
+       y: 1
+      new Layer
+      	x: 0
+      	y: 1
+    '''
+
+test "tabs and spaces cannot be mixed for indentation", ->
+  try
+    CoffeeScript.compile '''
+      new Layer
+      	 x: 0
+      	 y: 1
+    '''
+    ok no
+  catch e
+    eq 'mixed indentation', e.message
+
+test "#4487: Handle unusual outdentation", ->
+  a =
+    switch 1
+      when 2
+          no
+         when 3 then no
+      when 1 then yes
+  eq yes, a
+
+  b = do ->
+    if no
+      if no
+            1
+       2
+      3
+  eq b, undefined
+
+test "#3906: handle further indentation inside indented chain", ->
+  eq 1, CoffeeScript.eval '''
+    z = b: -> d: 2
+    e = ->
+    f = 3
+
+    z
+        .b ->
+            c
+        .d
+
+    e(
+        f
+    )
+
+    1
+  '''
+
+  eq 1, CoffeeScript.eval '''
+    z = -> b: -> e: ->
+
+    z()
+        .b
+            c: 'd'
+        .e()
+
+    f = [
+        'g'
+    ]
+
+    1
+  '''
+
+  eq 1, CoffeeScript.eval '''
+    z = -> c: -> c: ->
+
+    z('b')
+      .c 'a',
+        {b: 'a'}
+      .c()
+    z(
+      'b'
+    )
+    1
+  '''
+
+test "#3199: throw multiline implicit object", ->
+  x = do ->
+    if no then throw
+      type: 'a'
+      msg: 'b'
+  eq undefined, x
+
+  y = do ->
+    if no then return
+      type: 'a'
+      msg: 'b'
+  eq undefined, y
+
+test "#4576: multiple row function chaining", ->
+  ->
+    eq @a, 3
+  .call a: 3
+
+test "#4576: function chaining on separate rows", ->
+  do ->
+    Promise
+    .resolve()
+    .then ->
+      yes
+    .then ok
+
+test "#3736: chaining after do IIFE", ->
+  eq 3,
+    do ->
+      a: 3
+    .a
+
+  eq 3,
+    do (b = (c) -> c) -> a: 3
+    ?.a
+
+  b = 3
+  eq 3,
+    do (
+      b
+      {d} = {}
+    ) ->
+      a: b
+    .a
+
+  # preserve existing chaining behavior for non-IIFE `do`
+  b = c: -> 4
+  eq 4,
+    do b
+    .c

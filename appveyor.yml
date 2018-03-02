@@ -1,0 +1,27 @@
+environment:
+  matrix:
+    - nodejs_version: '6'
+    - nodejs_version: '8'
+    - nodejs_version: '' # Installs latest.
+
+install:
+  - ps: Install-Product node $env:nodejs_version
+  - node --version
+  - npm --version
+  - npm install
+
+cache:
+  - node_modules
+
+test_script:
+  - node ./bin/cake build:except-parser
+  - node ./bin/cake build:parser
+  - node ./bin/cake build:full
+  - node ./bin/cake build:browser
+  - node ./bin/cake test
+  - node ./bin/cake test:browser
+  - node ./bin/cake test:integrations
+
+build: off
+
+version: "{build}"

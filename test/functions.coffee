@@ -79,21 +79,27 @@ test "even more fancy bound functions", ->
   eq obj.one(), 3
 
 
+test "arguments in bound functions inherit from parent function", ->
+  # The `arguments` object in an ES arrow function refers to the `arguments`
+  # of the parent scope, just like `this`. In the CoffeeScript 1.x
+  # implementation of `=>`, the `arguments` object referred to the arguments
+  # of the arrow function; but per the ES2015 spec, `arguments` should refer
+  # to the parent.
+  arrayEq ((a...) -> a)([1, 2, 3]), ((a...) => a)([1, 2, 3])
+
+  parent = (a, b, c) ->
+    (bound = =>
+      [arguments[0], arguments[1], arguments[2]]
+    )()
+  arrayEq [1, 2, 3], parent(1, 2, 3)
+
+
 test "self-referencing functions", ->
   changeMe = ->
     changeMe = 2
 
   changeMe()
   eq changeMe, 2
-
-test "#2009: don't touch `` `this` ``", ->
-  nonceA = {}
-  nonceB = {}
-  fn = null
-  (->
-    fn = => this is nonceA and `this` is nonceB
-  ).call nonceA
-  ok fn.call nonceB
 
 
 # Parameter List Features
@@ -104,6 +110,12 @@ test "splats", ->
   arrayEq [0, 1], (((splat..., _, _1) -> splat) 0, 1, 2, 3)
   arrayEq [2], (((_, _1, splat..., _2) -> splat) 0, 1, 2, 3)
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  arrayEq [0, 1, 2], (((splat ...) -> splat) 0, 1, 2)
+  arrayEq [2, 3], (((_, _1, splat ...) -> splat) 0, 1, 2, 3)
+  arrayEq [0, 1], (((splat ..., _, _1) -> splat) 0, 1, 2, 3)
+  arrayEq [2], (((_, _1, splat ..., _2) -> splat) 0, 1, 2, 3)
+
 test "destructured splatted parameters", ->
   arr = [0,1,2]
   splatArray = ([a...]) -> a
@@ -111,21 +123,33 @@ test "destructured splatted parameters", ->
   arrayEq splatArray(arr), arr
   arrayEq splatArrayRest(arr,0,1,2), arr
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  splatArray = ([a ...]) -> a
+  splatArrayRest = ([a ...],b ...) -> arrayEq(a,b); b
+
 test "@-parameters: automatically assign an argument's value to a property of the context", ->
   nonce = {}
 
   ((@prop) ->).call context = {}, nonce
   eq nonce, context.prop
 
-  # allow splats along side the special argument
+  # Allow splats alongside the special argument
   ((splat..., @prop) ->).apply context = {}, [0, 0, nonce]
   eq nonce, context.prop
 
-  # allow the argument itself to be a splat
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  ((splat ..., @prop) ->).apply context = {}, [0, 0, nonce]
+  eq nonce, context.prop
+
+  # Allow the argument itself to be a splat
   ((@prop...) ->).call context = {}, 0, nonce, 0
   eq nonce, context.prop[1]
 
-  # the argument should not be able to be referenced normally
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  ((@prop ...) ->).call context = {}, 0, nonce, 0
+  eq nonce, context.prop[1]
+
+  # The argument should not be able to be referenced normally
   code = '((@prop) -> prop).call {}'
   doesNotThrow -> CoffeeScript.compile code
   throws (-> CoffeeScript.run code), ReferenceError
@@ -143,8 +167,22 @@ test "@-parameters and splats with constructors", ->
   eq a, obj.first
   eq b, obj.last
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  class Klass
+    constructor: (@first, splat ..., @last) ->
+
+  obj = new Klass a, 0, 0, b
+  eq a, obj.first
+  eq b, obj.last
+
 test "destructuring in function definition", ->
   (([{a: [b], c}]...) ->
+    eq 1, b
+    eq 2, c
+  ) {a: [1], c: 2}
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  (([{a: [b], c}] ...) ->
     eq 1, b
     eq 2, c
   ) {a: [1], c: 2}
@@ -173,12 +211,96 @@ test "destructuring in function definition", ->
     {url, async, beforeSend, cache, method, data}
 
   fn = ->
-  deepEqual ajax('/home', beforeSend: fn, cache: null, method: 'post'), {
+  deepEqual ajax('/home', beforeSend: fn, method: 'post'), {
     url: '/home', async: true, beforeSend: fn, cache: true, method: 'post', data: {}
   }
 
+test "rest element destructuring in function definition", ->
+  obj = {a: 1, b: 2, c: 3, d: 4, e: 5}
+
+  (({a, b, r...}) ->
+    eq 1, a
+    eq 2, b,
+    deepEqual r, {c: 3, d: 4, e: 5}
+  ) obj
+
+  (({a: p, b, r...}, q) ->
+    eq p, 1
+    eq q, 9
+    deepEqual r, {c: 3, d: 4, e: 5}
+  ) {a:1, b:2, c:3, d:4, e:5}, 9
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  (({
+      a: p
+      b
+      r ...
+    }, q) ->
+    eq p, 1
+    eq q, 9
+    deepEqual r, {c: 3, d: 4, e: 5}
+  ) {a:1, b:2, c:3, d:4, e:5}, 9
+
+  a1={}; b1={}; c1={}; d1={}
+  obj1 = {
+    a: a1
+    b: {
+      'c': {
+        d: {
+          b1
+          e: c1
+          f: d1
+        }
+      }
+    }
+    b2: {b1, c1}
+  }
+
+  (({a: w, b: {c: {d: {b1: bb, r1...}}}, r2...}) ->
+    eq a1, w
+    eq bb, b1
+    eq r2.b, undefined
+    deepEqual r1, {e: c1, f: d1}
+    deepEqual r2.b2, {b1, c1}
+  ) obj1
+
+  b = 3
+  f = ({a, b...}) ->
+  f {}
+  eq 3, b
+
+  (({a, r...} = {}) ->
+    eq a, undefined
+    deepEqual r, {}
+  )()
+
+  (({a, r...} = {}) ->
+    eq a, 1
+    deepEqual r, {b: 2, c: 3}
+  ) {a: 1, b: 2, c: 3}
+
+  f = ({a, r...} = {}) -> [a, r]
+  deepEqual [undefined, {}], f()
+  deepEqual [1, {b: 2}], f {a: 1, b: 2}
+  deepEqual [1, {}], f {a: 1}
+
+  f = ({a, r...} = {a: 1, b: 2}) -> [a, r]
+  deepEqual [1, {b:2}], f()
+  deepEqual [2, {}], f {a:2}
+  deepEqual [3, {c:5}], f {a:3, c:5}
+
+  f = ({ a: aa = 0, b: bb = 0 }) -> [aa, bb]
+  deepEqual [0, 0], f {}
+  deepEqual [0, 42], f {b:42}
+  deepEqual [42, 0], f {a:42}
+  deepEqual [42, 43], f {a:42, b:43}
+
 test "#4005: `([a = {}]..., b) ->` weirdness", ->
   fn = ([a = {}]..., b) -> [a, b]
+  deepEqual fn(5), [{}, 5]
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  fn = ([a = {}] ..., b) -> [a, b]
   deepEqual fn(5), [{}, 5]
 
 test "default values", ->
@@ -189,7 +311,7 @@ test "default values", ->
   eq nonceA, a(0)
   eq nonceB, a(0,0,nonceB)
   eq nonceA, a(0,0,undefined)
-  eq nonceA, a(0,0,null)
+  eq null, a(0,0,null) # Per ES2015, `null` doesn’t trigger a parameter default value
   eq false , a(0,0,false)
   eq nonceB, a(undefined,undefined,nonceB,undefined)
   b = (_,arg=nonceA,_1,_2) -> arg
@@ -197,7 +319,7 @@ test "default values", ->
   eq nonceA, b(0)
   eq nonceB, b(0,nonceB)
   eq nonceA, b(0,undefined)
-  eq nonceA, b(0,null)
+  eq null, b(0,null)
   eq false , b(0,false)
   eq nonceB, b(undefined,nonceB,undefined)
   c = (arg=nonceA,_,_1) -> arg
@@ -205,7 +327,7 @@ test "default values", ->
   eq      0, c(0)
   eq nonceB, c(nonceB)
   eq nonceA, c(undefined)
-  eq nonceA, c(null)
+  eq null, c(null)
   eq false , c(false)
   eq nonceB, c(nonceB,undefined,undefined)
 
@@ -218,6 +340,14 @@ test "default values with @-parameters", ->
 
 test "default values with splatted arguments", ->
   withSplats = (a = 2, b..., c = 3, d = 5) -> a * (b.length + 1) * c * d
+  eq 30, withSplats()
+  eq 15, withSplats(1)
+  eq  5, withSplats(1,1)
+  eq  1, withSplats(1,1,1)
+  eq  2, withSplats(1,1,1,1)
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  withSplats = (a = 2, b ..., c = 3, d = 5) -> a * (b.length + 1) * c * d
   eq 30, withSplats()
   eq 15, withSplats(1)
   eq  5, withSplats(1,1)
@@ -253,6 +383,12 @@ test "variable definitions and splat", ->
   eq 0, a
   eq 0, b
 
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  f = (a, middle ..., b) -> [a, middle, b]
+  arrayEq [1, [2, 3, 4], 5], f 1, 2, 3, 4, 5
+  eq 0, a
+  eq 0, b
+
 test "default values with function calls", ->
   doesNotThrow -> CoffeeScript.compile "(x = f()) ->"
 
@@ -275,6 +411,12 @@ test "reserved keyword as parameters", ->
 
 test "reserved keyword at-splat", ->
   f = (@case...) -> @case
+  [a, b] = f(1, 2)
+  eq 1, a
+  eq 2, b
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  f = (@case ...) -> @case
   [a, b] = f(1, 2)
   eq 1, a
   eq 2, b
@@ -335,3 +477,98 @@ test "#1038 Optimize trailing return statements", ->
                                                    foo()
                                                    return
                                                  """)
+
+test "#4406 Destructured parameter default evaluation order with incrementing variable", ->
+  i = 0
+  f = ({ a = ++i }, b = ++i) -> [a, b]
+  arrayEq f({}), [1, 2]
+
+test "#4406 Destructured parameter default evaluation order with generator function", ->
+  current = 0
+  next    = -> ++current
+  foo = ({ a = next() }, b = next()) -> [ a, b ]
+  arrayEq foo({}), [1, 2]
+
+test "Destructured parameter with default value, that itself has a default value", ->
+  # Adapted from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment
+  draw = ({size = 'big', coords = {x: 0, y: 0}, radius = 25} = {}) -> "#{size}-#{coords.x}-#{coords.y}-#{radius}"
+  output = draw
+    coords:
+      x: 18
+      y: 30
+    radius: 30
+  eq output, 'big-18-30-30'
+
+test "#4566: destructuring with nested default values", ->
+  f = ({a: {b = 1}}) ->
+    b
+  eq 2, f a: b: 2
+
+test "#1043: comma after function glyph", ->
+  x = (a=->, b=2) ->
+    a()
+  eq x(), undefined
+
+  f = (a) -> a()
+  g = f ->, 2
+  eq g, undefined
+  h = f(=>, 2)
+  eq h, undefined
+
+test "#3845/#3446: chain after function glyph", ->
+  angular = module: -> controller: -> controller: ->
+
+  eq undefined,
+    angular.module 'foo'
+    .controller 'EmailLoginCtrl', ->
+    .controller 'EmailSignupCtrl', ->
+
+  beforeEach = (f) -> f()
+  getPromise = -> then: -> catch: ->
+
+  eq undefined,
+    beforeEach ->
+      getPromise()
+      .then (@result) =>
+      .catch (@error) =>
+
+  doThing = -> then: -> catch: (f) -> f()
+  handleError = -> 3
+  eq 3,
+    doThing()
+    .then (@result) =>
+    .catch handleError
+
+test "#4413: expressions in function parameters that create generated variables have those variables declared correctly", ->
+  'use strict'
+  # We’re in strict mode because we want an error to be thrown if the generated
+  # variable (`ref`) is assigned before being declared.
+  foo = -> null
+  bar = -> 33
+  f = (a = foo() ? bar()) -> a
+  g = (a = foo() ? bar()) -> a + 1
+  eq f(), 33
+  eq g(), 34
+
+test "#4673: complex destructured object spread variables", ->
+  f = ({{a...}...}) ->
+    a
+  eq f(c: 1).c, 1
+
+  g = ({@y...}) ->
+    eq @y.b, 1
+  g b: 1
+
+test "#4657: destructured array param declarations", ->
+  a = 1
+  b = 2
+  f = ([a..., b]) ->
+  f [3, 4, 5]
+  eq a, 1
+  eq b, 2
+
+test "#4657: destructured array parameters", ->
+  f = ([a..., b]) -> {a, b}
+  result = f [1, 2, 3, 4]
+  arrayEq result.a, [1, 2, 3]
+  eq result.b, 4

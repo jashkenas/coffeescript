@@ -1,27 +1,21 @@
 ## Installation
 
-The CoffeeScript compiler is itself [written in CoffeeScript](v<%= majorVersion %>/annotated-source/grammar.html), using the [Jison parser generator](http://jison.org). The command-line version of `coffee` is available as a [Node.js](http://nodejs.org/) utility. The [core compiler](v<%= majorVersion %>/browser-compiler/coffee-script.js) however, does not depend on Node, and can be run in any JavaScript environment, or in the browser (see “Try CoffeeScript”, above).
+The command-line version of `coffee` is available as a [Node.js](https://nodejs.org/) utility, requiring Node 6 or later. The [core compiler](/v<%= majorVersion %>/browser-compiler/coffeescript.js) however, does not depend on Node, and can be run in any JavaScript environment, or in the browser (see [Try CoffeeScript](#try)).
 
-To install, first make sure you have a working copy of the latest stable version of [Node.js](http://nodejs.org/). You can then install CoffeeScript globally with [npm](http://npmjs.org):
+To install, first make sure you have a working copy of the latest stable version of [Node.js](https://nodejs.org/). You can then install CoffeeScript globally with [npm](https://www.npmjs.com/):
 
-> ```
-npm install -g coffee-script
+```bash
+npm install --global coffeescript
 ```
 
-When you need CoffeeScript as a dependency, install it locally:
+This will make the `coffee` and `cake` commands available globally.
 
-> ```
-npm install --save coffee-script
+If you are using CoffeeScript in a project, you should install it locally for that project so that the version of CoffeeScript is tracked as one of your project’s dependencies. Within that project’s folder:
+
+```bash
+npm install --save-dev coffeescript
 ```
 
-If you’d prefer to install the latest **master** version of CoffeeScript, you can clone the CoffeeScript [source repository](http://github.com/jashkenas/coffeescript) from GitHub, or download [the source](http://github.com/jashkenas/coffeescript/tarball/master) directly. To install the latest master CoffeeScript compiler with npm:
+The `coffee` and `cake` commands will first look in the current folder to see if CoffeeScript is installed locally, and use that version if so. This allows different versions of CoffeeScript to be installed globally and locally.
 
-> ```
-npm install -g jashkenas/coffeescript
-```
-
-Or, if you want to install to `/usr/local`, and don’t want to use npm to manage it, open the `coffee-script` directory and run:
-
-> ```
-sudo bin/cake install
-```
+If you plan to use the `--transpile` option (see [Transpilation](#transpilation)) you will need to also install `babel-core` either globally or locally, depending on whether you are running a globally or locally installed version of CoffeeScript.

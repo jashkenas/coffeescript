@@ -1,0 +1,106 @@
+/* Adapted from https://github.com/FarhadG/code-mirror-themes/blob/master/themes/twilight.css */
+
+.CodeMirror,
+.placeholder-code {
+  letter-spacing: 0.3px;
+  color: #f8f8f8;
+  /* Prevent mobile Safari from zooming in on our code editors; the code is 16px naturally, but somehow being explicit about it prevents the zooming */
+  font-size: 16px;
+}
+@media (min-width: 768px) {
+  .CodeMirror,
+  .placeholder-code {
+    font-size: 90%; /* Matching Bootstrap’s font size for code, which calculates to 14.4px */
+  }
+}
+.CodeMirror-lines {
+  padding: 0.5em 0;
+}
+.placeholder-code {
+  padding: 0.5em 4px;
+  margin-bottom: 1.37em;
+  white-space: pre-wrap;
+}
+div.CodeMirror-cursor {
+  border-left: 3px solid #f8f8f8;
+}
+.CodeMirror-activeline-background {
+  background: #ffffff08;
+}
+.CodeMirror-selected {
+  background: #ddf0ff33;
+}
+.cm-comment,
+.placeholder-code .comment {
+  font-style: italic;
+  color: #5f5a60;
+}
+.cm-keyword,
+.placeholder-code .keyword {
+  color: #cda869;
+}
+.cm-string,
+.placeholder-code .string {
+  color: #8f9d6a;
+}
+.cm-property,
+.placeholder-code .attribute {
+  color: #dad085;
+}
+.cm-atom {
+  color: #dad085;
+}
+.cm-number,
+.placeholder-code .number,
+.placeholder-code .built_in,
+.placeholder-code .builtin-name,
+.placeholder-code .literal,
+.placeholder-code .type,
+/*.placeholder-code .params,*/
+.placeholder-code .meta,
+.placeholder-code .link {
+  color: #dad085;
+}
+.cm-operator,
+.placeholder-code .punctuation,
+.placeholder-code .symbol,
+.placeholder-code .bullet,
+.placeholder-code .addition,
+.placeholder-code .operator {
+  color: #cda869;
+}
+
+/* Uneditable code blocks are inverted, so use darker versions of the above */
+
+.uneditable-code-block .comment {
+  font-style: italic;
+  color: #837B85;
+}
+.uneditable-code-block .class,
+.uneditable-code-block .function,
+.uneditable-code-block .keyword,
+.uneditable-code-block .reserved,
+.uneditable-code-block .title {
+  color: #534328;
+}
+.uneditable-code-block .string
+.uneditable-code-block .value
+.uneditable-code-block .inheritance
+.uneditable-code-block .header {
+  color: #3A4029;
+}
+.uneditable-code-block .variable,
+.uneditable-code-block .literal,
+.uneditable-code-block .tag,
+.uneditable-code-block .regexp,
+.uneditable-code-block .subst,
+.uneditable-code-block .property {
+  color: #474429;
+}
+.uneditable-code-block .number,
+.uneditable-code-block .preprocessor,
+.uneditable-code-block .built_in,
+.uneditable-code-block .params,
+.uneditable-code-block .constant {
+  color: #474429;
+}

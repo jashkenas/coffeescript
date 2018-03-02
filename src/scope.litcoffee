@@ -11,10 +11,12 @@ Initialize a scope with its parent, for lookups up the chain,
 as well as a reference to the **Block** node it belongs to, which is
 where it should declare its variables, a reference to the function that
 it belongs to, and a list of variables referenced in the source code
-and therefore should be avoided when generating variables.
+and therefore should be avoided when generating variables. Also track comments
+that should be output as part of variable declarations.
 
       constructor: (@parent, @expressions, @method, @referencedVars) ->
         @variables = [{name: 'arguments', type: 'arguments'}]
+        @comments  = {}
         @positions = {}
         @utilities = {} unless @parent
 
@@ -44,9 +46,9 @@ function object that has a name filled in, or bottoms out.
 Look up a variable name in lexical scope, and declare it if it does not
 already exist.
 
-      find: (name) ->
+      find: (name, type = 'var') ->
         return yes if @check name
-        @add name, 'var'
+        @add name, type
         no
 
 Reserve a variable name as originating from a function parameter for this
@@ -116,4 +118,3 @@ of this scope.
 
       assignedVariables: ->
         "#{v.name} = #{v.type.value}" for v in @variables when v.type.assigned
-

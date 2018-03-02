@@ -67,19 +67,35 @@ exports.some = Array::some ? (fn) ->
   return true for e in this when fn e
   false
 
-# Simple function for inverting Literate CoffeeScript code by putting the
-# documentation in comments, producing a string of CoffeeScript code that
-# can be compiled "normally".
+# Helper function for extracting code from Literate CoffeeScript by stripping
+# out all non-code blocks, producing a string of CoffeeScript code that can
+# be compiled “normally.”
 exports.invertLiterate = (code) ->
-  maybe_code = true
-  lines = for line in code.split('\n')
-    if maybe_code and /^([ ]{4}|[ ]{0,3}\t)/.test line
-      line
-    else if maybe_code = /^\s*$/.test line
-      line
+  out = []
+  blankLine = /^\s*$/
+  indented = /^[\t ]/
+  listItemStart = /// ^
+    (?:\t?|\ {0,3})   # Up to one tab, or up to three spaces, or neither;
+    (?:
+      [\*\-\+] |      # followed by `*`, `-` or `+`;
+      [0-9]{1,9}\.    # or by an integer up to 9 digits long, followed by a period;
+    )
+    [\ \t]            # followed by a space or a tab.
+  ///
+  insideComment = no
+  for line in code.split('\n')
+    if blankLine.test(line)
+      insideComment = no
+      out.push line
+    else if insideComment or listItemStart.test(line)
+      insideComment = yes
+      out.push "# #{line}"
+    else if not insideComment and indented.test(line)
+      out.push line
     else
-      '# ' + line
-  lines.join '\n'
+      insideComment = yes
+      out.push "# #{line}"
+  out.join '\n'
 
 # Merge two jison-style location data objects together.
 # If `last` is not provided, this will simply return `first`.
@@ -92,15 +108,39 @@ buildLocationData = (first, last) ->
     last_line: last.last_line
     last_column: last.last_column
 
+buildLocationHash = (loc) ->
+  "#{loc.first_line}x#{loc.first_column}-#{loc.last_line}x#{loc.last_column}"
+
 # This returns a function which takes an object as a parameter, and if that
 # object is an AST node, updates that object's locationData.
 # The object is returned either way.
-exports.addLocationDataFn = (first, last) ->
+exports.addDataToNode = (parserState, first, last) ->
   (obj) ->
-    if ((typeof obj) is 'object') and (!!obj['updateLocationDataIfMissing'])
+    # Add location data
+    if obj?.updateLocationDataIfMissing? and first?
       obj.updateLocationDataIfMissing buildLocationData(first, last)
 
-    return obj
+    # Add comments data
+    unless parserState.tokenComments
+      parserState.tokenComments = {}
+      for token in parserState.parser.tokens when token.comments
+        tokenHash = buildLocationHash token[2]
+        unless parserState.tokenComments[tokenHash]?
+          parserState.tokenComments[tokenHash] = token.comments
+        else
+          parserState.tokenComments[tokenHash].push token.comments...
+
+    if obj.locationData?
+      objHash = buildLocationHash obj.locationData
+      if parserState.tokenComments[objHash]?
+        attachCommentsToNode parserState.tokenComments[objHash], obj
+
+    obj
+
+exports.attachCommentsToNode = attachCommentsToNode = (comments, node) ->
+  return if not comments? or comments.length is 0
+  node.comments ?= []
+  node.comments.push comments...
 
 # Convert jison location data to a string.
 # `obj` can be a token, or a locationData.

@@ -64,6 +64,18 @@ test "#1722: operator precedence in unbounded slice compilation", ->
 test "#2349: inclusive slicing to numeric strings", ->
   arrayEq [0, 1], [0..10][.."1"]
 
+test "#4631: slicing with space before and/or after the dots", ->
+  a = (s) -> s
+  b = [4, 5, 6]
+  c = [7, 8, 9]
+  arrayEq [2, 3, 4], shared[2 ... 5]
+  arrayEq [3, 4, 5], shared[3... 6]
+  arrayEq [4, 5, 6], shared[4 ...7]
+  arrayEq shared[(a b...)...(a c...)]  , shared[(a ...b)...(a ...c)]
+  arrayEq shared[(a b...) ... (a c...)], shared[(a ...b) ... (a ...c)]
+  arrayEq shared[(a b...)... (a c...)] , shared[(a ...b)... (a ...c)]
+  arrayEq shared[(a b...) ...(a c...)] , shared[(a ...b) ...(a ...c)]
+
 
 # Splicing
 
@@ -153,3 +165,9 @@ test "#2953: methods on endpoints in assignment from array splice literal", ->
   delete Number.prototype.same
 
   arrayEq [0, 5, 9], list
+
+test "#1726: `Op` expression in property access causes unexpected results", ->
+  a = [0..2]
+  arrayEq a, a[(!1 in a)..]
+  arrayEq a, a[!1 in a..]
+  arrayEq a[(!1 in a)..], a[(!1 in a)..]

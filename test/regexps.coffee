@@ -110,9 +110,9 @@ test "division vs regex after a callable token", ->
     p: (regex) -> if regex then r regex else 4
   class B extends A
     p: ->
-      eq 2, super / b/g
-      eq 2, super/b/g
-      eq 2, super/ b/g
+      eq 2, super() / b/g
+      eq 2, super()/b/g
+      eq 2, super()/ b/g
       eq true, super /b/g
   new B().p()
 
@@ -286,3 +286,43 @@ test "#3795: Escape otherwise invalid characters", ->
   ok ///#{a}\ ///.test 'a\u2029'
   ok ///#{a}\0
       1///.test 'a\x001'
+
+test "#4248: Unicode code point escapes", ->
+  ok /a\u{1ab}c/u.test 'a\u01abc'
+  ok ///#{ 'a' }\u{000001ab}c///u.test 'a\u{1ab}c'
+  ok ///a\u{000001ab}c///u.test 'a\u{1ab}c'
+  ok /a\u{12345}c/u.test 'a\ud808\udf45c'
+
+  # and now without u flag
+  ok /a\u{1ab}c/.test 'a\u01abc'
+  ok ///#{ 'a' }\u{000001ab}c///.test 'a\u{1ab}c'
+  ok ///a\u{000001ab}c///.test 'a\u{1ab}c'
+  ok /a\u{12345}c/.test 'a\ud808\udf45c'
+
+  # rewrite code point escapes unless u flag is set
+  eqJS """
+    /\\u{bcdef}\\u{abc}/u
+  """,
+  """
+    /\\u{bcdef}\\u{abc}/u;
+  """
+
+  eqJS """
+    ///#{ 'a' }\\u{bcdef}///
+  """,
+  """
+    /a\\udab3\\uddef/;
+  """
+
+test "#4811, heregex comments with ///", ->
+  eqJS """
+    ///
+      a | # comment with ///
+      b   # /// 'heregex' in comment will be consumed
+    ///
+  """,
+  """
+   // comment with ///
+   // /// 'heregex' in comment will be consumed
+   /a|b/;
+  """

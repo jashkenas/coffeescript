@@ -1,11 +1,12 @@
-CoffeeScript  = require './coffee-script'
+CoffeeScript  = require './'
 child_process = require 'child_process'
 helpers       = require './helpers'
 path          = require 'path'
 
 # Load and run a CoffeeScript file for Node, stripping any `BOM`s.
 loadFile = (module, filename) ->
-  answer = CoffeeScript._compileFile filename, no, yes
+  options = module.options or getRootModule(module).options
+  answer = CoffeeScript._compileFile filename, options
   module._compile answer, filename
 
 # If the installed version of Node supports `require.extensions`, register
@@ -48,3 +49,7 @@ if child_process
       args = [path].concat args
       path = binary
     fork path, args, options
+
+# Utility function to find the `options` object attached to the topmost module.
+getRootModule = (module) ->
+  if module.parent then getRootModule module.parent else module

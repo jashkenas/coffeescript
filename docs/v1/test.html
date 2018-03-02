@@ -90,6 +90,10 @@ arrayEgal = (a, b) ->
 @eq      = (a, b, msg) -> ok egal(a, b), msg or "Expected #{a} to equal #{b}"
 @arrayEq = (a, b, msg) -> ok arrayEgal(a,b), msg or "Expected #{a} to deep equal #{b}"
 
+@toJS = (str) ->
+  CoffeeScript.compile str, bare: yes
+  .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace
+
 
 @doesNotThrow = (fn) ->
   fn()
@@ -2882,6 +2886,16 @@ test "#2274: Allow @values as loop variables", ->
   obj.method()
   eq obj.item, 3
 
+test "#4411: Allow @values as loop indices", ->
+  obj =
+    index: null
+    get: -> @index
+    method: ->
+      @get() for _, @index in [1, 2, 3]
+  eq obj.index, null
+  arrayEq obj.method(), [0, 1, 2]
+  eq obj.index, 3
+
 test "#2525, #1187, #1208, #1758, looping over an array forwards", ->
   list = [0, 1, 2, 3, 4]
 
@@ -3135,6 +3149,17 @@ test "#748: trailing reserved identifiers", ->
   result = if obj.delete
     nonce
   eq nonce, result
+
+test 'if-else within an assignment, condition parenthesized', ->
+  result = if (1 is 1) then 'correct'
+  eq result, 'correct'
+
+  result = if ('whatever' ? no) then 'correct'
+  eq result, 'correct'
+
+  f = -> 'wrong'
+  result = if (f?()) then 'correct' else 'wrong'
+  eq result, 'correct'
 
 # Postfix
 
@@ -3470,6 +3495,7 @@ test "compiler error formatting with mixed tab and space", ->
 
 
 if require?
+  os   = require 'os'
   fs   = require 'fs'
   path = require 'path'
 
@@ -3486,20 +3512,72 @@ if require?
 
   test "#2849: compilation error in a require()d file", ->
     # Create a temporary file to require().
-    ok not fs.existsSync 'test/syntax-error.coffee'
-    fs.writeFileSync 'test/syntax-error.coffee', 'foo in bar or in baz'
+    tempFile = path.join os.tmpdir(), 'syntax-error.coffee'
+    ok not fs.existsSync tempFile
+    fs.writeFileSync tempFile, 'foo in bar or in baz'
 
     try
-      assertErrorFormat '''
-        require './test/syntax-error'
-      ''',
+      assertErrorFormat """
+        require '#{tempFile}'
+      """,
       """
-        #{path.join __dirname, 'syntax-error.coffee'}:1:15: error: unexpected in
+        #{fs.realpathSync tempFile}:1:15: error: unexpected in
         foo in bar or in baz
                       ^^
       """
     finally
-      fs.unlinkSync 'test/syntax-error.coffee'
+      fs.unlinkSync tempFile
+
+  test "#3890 Error.prepareStackTrace doesn't throw an error if a compiled file is deleted", ->
+    # Adapted from https://github.com/atom/coffee-cash/blob/master/spec/coffee-cash-spec.coffee
+    filePath = path.join os.tmpdir(), 'PrepareStackTraceTestFile.coffee'
+    fs.writeFileSync filePath, "module.exports = -> throw new Error('hello world')"
+    throwsAnError = require filePath
+    fs.unlinkSync filePath
+
+    try
+      throwsAnError()
+    catch error
+
+    eq error.message, 'hello world'
+    doesNotThrow(-> error.stack)
+    notEqual error.stack.toString().indexOf(filePath), -1
+
+  test "#4418 stack traces for compiled files reference the correct line number", ->
+    filePath = path.join os.tmpdir(), 'StackTraceLineNumberTestFile.coffee'
+    fileContents = """
+      testCompiledFileStackTraceLineNumber = ->
+        # `a` on the next line is undefined and should throw a ReferenceError
+        console.log a if true
+
+      do testCompiledFileStackTraceLineNumber
+      """
+    fs.writeFileSync filePath, fileContents
+
+    try
+      require filePath
+    catch error
+    fs.unlinkSync filePath
+
+    # Make sure the line number reported is line 3 (the original Coffee source)
+    # and not line 6 (the generated JavaScript).
+    eq /StackTraceLineNumberTestFile.coffee:(\d)/.exec(error.stack.toString())[1], '3'
+
+
+test "#4418 stack traces for compiled strings reference the correct line number", ->
+  try
+    CoffeeScript.run """
+      testCompiledStringStackTraceLineNumber = ->
+        # `a` on the next line is undefined and should throw a ReferenceError
+        console.log a if true
+
+      do testCompiledStringStackTraceLineNumber
+      """
+  catch error
+
+  # Make sure the line number reported is line 3 (the original Coffee source)
+  # and not line 6 (the generated JavaScript).
+  eq /at testCompiledStringStackTraceLineNumber.*:(\d):/.exec(error.stack.toString())[1], '3'
 
 
 test "#1096: unexpected generated tokens", ->
@@ -3820,6 +3898,13 @@ test "octal escapes", ->
       \  \   \ \ ^\^^
   '''
   assertErrorFormat '''
+    /a\\1\\tb\\\\\\07c/
+  ''', '''
+    [stdin]:1:10: error: octal escape sequences are not allowed \\07
+    /a\\1\\tb\\\\\\07c/
+      \  \   \ \ ^\^^
+  '''
+  assertErrorFormat '''
     ///a
       #{b} \\01///
   ''', '''
@@ -3855,7 +3940,7 @@ test "#3795: invalid escapes", ->
   assertErrorFormat '''
     ///a \\u002 0 space///
   ''', '''
-    [stdin]:1:6: error: invalid escape sequence \\u002 
+    [stdin]:1:6: error: invalid escape sequence \\u002 \n\
     ///a \\u002 0 space///
          ^\^^^^^
   '''
@@ -4607,6 +4692,126 @@ test "tagged template literals must be called by an identifier", ->
     ^
   '''
 
+test "can't use pattern matches for loop indices", ->
+  assertErrorFormat 'a for b, {c} in d', '''
+    [stdin]:1:10: error: index cannot be a pattern matching expression
+    a for b, {c} in d
+             ^^^
+  '''
+
+test "#4248: Unicode code point escapes", ->
+  assertErrorFormat '''
+    "a
+      #{b} \\u{G02}
+     c"
+  ''', '''
+    [stdin]:2:8: error: invalid escape sequence \\u{G02}
+      #{b} \\u{G02}
+           ^\^^^^^^
+  '''
+  assertErrorFormat '''
+    /a\\u{}b/
+  ''', '''
+    [stdin]:1:3: error: invalid escape sequence \\u{}
+    /a\\u{}b/
+      ^\^^^
+  '''
+  assertErrorFormat '''
+    ///a \\u{01abc///
+  ''', '''
+    [stdin]:1:6: error: invalid escape sequence \\u{01abc
+    ///a \\u{01abc///
+         ^\^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    /\\u{123} \\u{110000}/
+  ''', '''
+    [stdin]:1:10: error: unicode code point escapes greater than \\u{10ffff} are not allowed
+    /\\u{123} \\u{110000}/
+      \       ^\^^^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    ///abc\\\\\\u{123456}///u
+  ''', '''
+    [stdin]:1:9: error: unicode code point escapes greater than \\u{10ffff} are not allowed
+    ///abc\\\\\\u{123456}///u
+           \ \^\^^^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    """
+      \\u{123}
+      a
+        \\u{00110000}
+      #{ 'b' }
+    """
+  ''', '''
+    [stdin]:4:5: error: unicode code point escapes greater than \\u{10ffff} are not allowed
+        \\u{00110000}
+        ^\^^^^^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    '\\u{a}\\u{1111110000}'
+  ''', '''
+    [stdin]:1:7: error: unicode code point escapes greater than \\u{10ffff} are not allowed
+    '\\u{a}\\u{1111110000}'
+      \    ^\^^^^^^^^^^^^^
+  '''
+
+test "#4283: error message for implicit call", ->
+  assertErrorFormat '''
+    console.log {search, users, contacts users_to_display}
+  ''', '''
+    [stdin]:1:29: error: unexpected implicit function call
+    console.log {search, users, contacts users_to_display}
+                                ^^^^^^^^
+  '''
+
+test "#3199: error message for call indented non-object", ->
+  assertErrorFormat '''
+    fn = ->
+    fn
+      1
+  ''', '''
+    [stdin]:3:1: error: unexpected indentation
+      1
+    ^^
+  '''
+
+test "#3199: error message for call indented comprehension", ->
+  assertErrorFormat '''
+    fn = ->
+    fn
+      x for x in [1, 2, 3]
+  ''', '''
+    [stdin]:3:1: error: unexpected indentation
+      x for x in [1, 2, 3]
+    ^^
+  '''
+
+test "#3199: error message for return indented non-object", ->
+  assertErrorFormat '''
+    return
+      1
+  ''', '''
+    [stdin]:2:3: error: unexpected number
+      1
+      ^
+  '''
+
+test "#3199: error message for return indented comprehension", ->
+  assertErrorFormat '''
+    return
+      x for x in [1, 2, 3]
+  ''', '''
+    [stdin]:2:3: error: unexpected identifier
+      x for x in [1, 2, 3]
+      ^
+  '''
+
 </script>
 <script type="text/x-coffeescript" class="test" id="eval">
 if vm = require? 'vm'
@@ -4917,6 +5122,9 @@ test "indented heredoc", ->
 #   * single line arguments
 #   * inline function literal
 #   * inline object literal
+#
+# * chaining inside
+#   * implicit object literal
 
 test "chaining after outdent", ->
   id = (x) -> x
@@ -4987,6 +5195,47 @@ test "#1495, method call chaining", ->
   ).join ', '
   eq 'a, b, c', result
 
+test "chaining should not wrap spilling ternary", ->
+  throws -> CoffeeScript.compile """
+    if 0 then 1 else g
+      a: 42
+    .h()
+  """
+
+test "chaining should wrap calls containing spilling ternary", ->
+  f = (x) -> h: x
+  id = (x) -> x
+  result = f if true then 42 else id
+      a: 2
+  .h
+  eq 42, result
+
+test "chaining should work within spilling ternary", ->
+  f = (x) -> h: x
+  id = (x) -> x
+  result = f if false then 1 else id
+      a: 3
+      .a
+  eq 3, result.h
+
+test "method call chaining inside objects", ->
+  f = (x) -> c: 42
+  result =
+    a: f 1
+    b: f a: 1
+      .c
+  eq 42, result.b
+
+test "#4568: refine sameLine implicit object tagging", ->
+  condition = yes
+  fn = -> yes
+
+  x =
+    fn bar: {
+      foo: 123
+    } if not condition
+  eq x, undefined
+
 # Nested blocks caused by paren unwrapping
 test "#1492: Nested blocks don't cause double semicolons", ->
   js = CoffeeScript.compile '(0;0)'
@@ -5043,6 +5292,13 @@ test "#1275: allow indentation before closing brackets", ->
     a = 1
    )
   eq 1, a
+
+test "#3199: return multiline implicit object", ->
+  y = do ->
+    if no then return
+      type: 'a'
+      msg: 'b'
+  eq undefined, y
 
 </script>
 <script type="text/x-coffeescript" class="test" id="function_invocation">
@@ -7489,6 +7745,29 @@ test "Verify indented heredocs have the right position", ->
   eq stringToken[2].last_line, 3
   eq stringToken[2].last_column, 4
 
+test "Verify heregexes with interpolations have the right ending position", ->
+  source = '''
+    [a ///#{b}///g]
+  '''
+  [..., stringEnd, comma, flagsString, regexCallEnd, regexEnd, fnCallEnd,
+    arrayEnd, terminator] = CoffeeScript.tokens source
+
+  eq comma[0], ','
+  eq arrayEnd[0], ']'
+
+  assertColumn = (token, column) ->
+    eq token[2].first_line, 0
+    eq token[2].first_column, column
+    eq token[2].last_line, 0
+    eq token[2].last_column, column
+
+  arrayEndColumn = arrayEnd[2].first_column
+  for token in [comma, flagsString]
+    assertColumn token, arrayEndColumn - 2
+  for token in [regexCallEnd, regexEnd, fnCallEnd]
+    assertColumn token, arrayEndColumn - 1
+  assertColumn arrayEnd, arrayEndColumn
+
 test "Verify all tokens get a location", ->
   doesNotThrow ->
     tokens = CoffeeScript.tokens testScript
@@ -7533,12 +7812,6 @@ test "Verify all tokens get a location", ->
 # export name = …
 
 # CoffeeScript also supports optional commas within `{ … }`.
-
-
-# Helper function
-toJS = (str) ->
-  CoffeeScript.compile str, bare: yes
-  .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace
 
 
 # Import statements
@@ -7845,6 +8118,28 @@ test "export default number", ->
 
 test "export default object", ->
   input = "export default { foo: 'bar', baz: 'qux' }"
+  output = """
+    export default {
+      foo: 'bar',
+      baz: 'qux'
+    };"""
+  eq toJS(input), output
+
+test "export default implicit object", ->
+  input = "export default foo: 'bar', baz: 'qux'"
+  output = """
+    export default {
+      foo: 'bar',
+      baz: 'qux'
+    };"""
+  eq toJS(input), output
+
+test "export default multiline implicit object", ->
+  input = """
+    export default
+      foo: 'bar',
+      baz: 'qux'
+    """
   output = """
     export default {
       foo: 'bar',
@@ -8217,7 +8512,7 @@ test "export an aliased member named default", ->
     };"""
   eq toJS(input), output
 
-test "export an imported member named default", ->
+test "import an imported member named default", ->
   input = "import { default } from 'lib'"
   output = """
     import {
@@ -8225,12 +8520,159 @@ test "export an imported member named default", ->
     } from 'lib';"""
   eq toJS(input), output
 
-test "export an imported aliased member named default", ->
+test "import an imported aliased member named default", ->
   input = "import { default as def } from 'lib'"
   output = """
     import {
       default as def
     } from 'lib';"""
+  eq toJS(input), output
+
+test "export an imported member named default", ->
+  input = "export { default } from 'lib'"
+  output = """
+    export {
+      default
+    } from 'lib';"""
+  eq toJS(input), output
+
+test "export an imported aliased member named default", ->
+  input = "export { default as def } from 'lib'"
+  output = """
+    export {
+      default as def
+    } from 'lib';"""
+  eq toJS(input), output
+
+test "#4394: export shouldn't prevent variable declarations", ->
+  input = """
+    x = 1
+    export { x }
+  """
+  output = """
+    var x;
+
+    x = 1;
+
+    export {
+      x
+    };
+  """
+  eq toJS(input), output
+
+test "#4451: `default` in an export statement is only treated as a keyword when it follows `export` or `as`", ->
+  input = "export default { default: 1 }"
+  output = """
+    export default {
+      "default": 1
+    };
+  """
+  eq toJS(input), output
+
+test "#4491: import- and export-specific lexing should stop after import/export statement", ->
+  input = """
+    import {
+      foo,
+      bar as baz
+    } from 'lib'
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
+    import {
+      foo,
+      bar as baz
+    } from 'lib';
+
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
+
+  input = """
+    import { foo, bar as baz } from 'lib'
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
+    import {
+      foo,
+      bar as baz
+    } from 'lib';
+
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
+
+  input = """
+    import * as lib from 'lib'
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
+    import * as lib from 'lib';
+
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
+
+  input = """
+    export {
+      foo,
+      bar
+    }
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
+    export {
+      foo,
+      bar
+    };
+
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
+  eq toJS(input), output
+
+  input = """
+    export * from 'lib'
+
+    foo as
+    3 * as 4
+    from 'foo'
+    """
+  output = """
+    export * from 'lib';
+
+    foo(as);
+
+    3 * as(4);
+
+    from('foo');
+    """
   eq toJS(input), output
 
 </script>
@@ -8904,6 +9346,18 @@ test "#4324: Shorthand after interpolated key", ->
   eq 1, obj[1]
   eq 2, obj.a
 
+test "#1263: Braceless object return", ->
+  fn = ->
+    return
+      a: 1
+      b: 2
+      c: -> 3
+
+  obj = fn()
+  eq 1, obj.a
+  eq 2, obj.b
+  eq 3, obj.c()
+
 </script>
 <script type="text/x-coffeescript" class="test" id="operators">
 # Operators
@@ -9238,7 +9692,7 @@ test "floor division operator", ->
 
 test "floor division operator compound assignment", ->
   a = 7
-  a //= 2
+  a //= 1 + 1
   eq 3, a
 
 test "modulo operator", ->
@@ -9433,6 +9887,46 @@ test "operator precedence for binary ? operator", ->
   eq expression.second.first.base.value, 'b'
   eq expression.second.operator, '&&'
   eq expression.second.second.base.value, 'c'
+
+test "new calls have a range including the new", ->
+  source = '''
+    a = new B().c(d)
+  '''
+  block = CoffeeScript.nodes source
+
+  assertColumnRange = (node, firstColumn, lastColumn) ->
+    eq node.locationData.first_line, 0
+    eq node.locationData.first_column, firstColumn
+    eq node.locationData.last_line, 0
+    eq node.locationData.last_column, lastColumn
+
+  [assign] = block.expressions
+  outerCall = assign.value
+  innerValue = outerCall.variable
+  innerCall = innerValue.base
+
+  assertColumnRange assign, 0, 15
+  assertColumnRange outerCall, 4, 15
+  assertColumnRange innerValue, 4, 12
+  assertColumnRange innerCall, 4, 10
+
+test "location data is properly set for nested `new`", ->
+  source = '''
+    new new A()()
+  '''
+  block = CoffeeScript.nodes source
+
+  assertColumnRange = (node, firstColumn, lastColumn) ->
+    eq node.locationData.first_line, 0
+    eq node.locationData.first_column, firstColumn
+    eq node.locationData.last_line, 0
+    eq node.locationData.last_column, lastColumn
+
+  [outerCall] = block.expressions
+  innerCall = outerCall.variable
+
+  assertColumnRange outerCall, 0, 12
+  assertColumnRange innerCall, 4, 10
 
 </script>
 <script type="text/x-coffeescript" class="test" id="ranges">
@@ -9830,11 +10324,44 @@ test "#3795: Escape otherwise invalid characters", ->
   ok ///#{a}\0
       1///.test 'a\x001'
 
+test "#4248: Unicode code point escapes", ->
+  # Support for the `u` flag in regexes was added in Node 6.
+  return if new RegExp().unicode is undefined
+  ok /a\u{1ab}c/u.test 'a\u01abc'
+  ok ///#{ 'a' }\u{000001ab}c///u.test 'a\u{1ab}c'
+  ok ///a\u{000001ab}c///u.test 'a\u{1ab}c'
+  ok /a\u{12345}c/u.test 'a\ud808\udf45c'
+
+  # and now without u flag
+  ok /a\u{1ab}c/.test 'a\u01abc'
+  ok ///#{ 'a' }\u{000001ab}c///.test 'a\u{1ab}c'
+  ok ///a\u{000001ab}c///.test 'a\u{1ab}c'
+  ok /a\u{12345}c/.test 'a\ud808\udf45c'
+
+  # rewrite code point escapes
+  input = """
+    /\\u{bcdef}\\u{abc}/u
+    """
+  output = """
+    /\\udab3\\uddef\\u0abc/u;
+  """
+  eq toJS(input), output
+
+  input = """
+    ///#{ 'a' }\\u{bcdef}///
+    """
+  output = """
+    /a\\udab3\\uddef/;
+  """
+  eq toJS(input), output
+
 </script>
 <script type="text/x-coffeescript" class="test" id="repl">
 return if global.testingBrowser
 
+os = require 'os'
 fs = require 'fs'
+path = require 'path'
 
 # REPL
 # ----
@@ -9862,7 +10389,7 @@ class MockOutputStream extends Stream
     @written[@written.length - 1 + fromEnd].replace /\r?\n$/, ''
 
 # Create a dummy history file
-historyFile = '.coffee_history_test'
+historyFile = path.join os.tmpdir(), '.coffee_history_test'
 fs.writeFileSync historyFile, '1 + 2\n'
 
 testRepl = (desc, fn) ->
@@ -9899,6 +10426,11 @@ testRepl "variables are saved", (input, output) ->
   eq "'foobar'", output.lastWrite()
 
 testRepl "empty command evaluates to undefined", (input, output) ->
+  # A regression fixed in Node 5.11.0 broke the handling of pressing enter in
+  # the Node REPL; see https://github.com/nodejs/node/pull/6090 and
+  # https://github.com/jashkenas/coffeescript/issues/4502.
+  # Just skip this test for versions of Node < 6.
+  return if parseInt(process.versions.node.split('.')[0], 10) < 6
   input.emitLine ''
   eq 'undefined', output.lastWrite()
 
@@ -9941,7 +10473,9 @@ testRepl "keeps running after runtime error", (input, output) ->
   eq 'undefined', output.lastWrite()
 
 process.on 'exit', ->
-  fs.unlinkSync historyFile
+  try
+    fs.unlinkSync historyFile
+  catch exception # Already deleted, nothing else to do.
 
 </script>
 <script type="text/x-coffeescript" class="test" id="scope">
@@ -10570,10 +11104,10 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
     check "#{keyword} *= 1"
     check "#{keyword} /= 1"
     check "#{keyword} ?= 1"
-    check "{keyword}++"
-    check "++{keyword}"
-    check "{keyword}--"
-    check "--{keyword}"
+    check "#{keyword}++"
+    check "++#{keyword}"
+    check "#{keyword}--"
+    check "--#{keyword}"
   destruct = (keyword, check = strict) ->
     check "{#{keyword}}"
     check "o = {#{keyword}}"
@@ -11015,6 +11549,36 @@ test "#4314: Whitespace less than or equal to stripped indentation", ->
   eq '1 2  3   4    5     end\na 0     b', """
     #{1} #{2}  #{3}   #{4}    #{5}     end
     a #{0}     b"""
+
+test "#4248: Unicode code point escapes", ->
+  eq '\u01ab\u00cd', '\u{1ab}\u{cd}'
+  eq '\u01ab', '\u{000001ab}'
+  eq 'a\u01ab', "#{ 'a' }\u{1ab}"
+  eq '\u01abc', '''\u{01ab}c'''
+  eq '\u01abc', """\u{1ab}#{ 'c' }"""
+  eq '\udab3\uddef', '\u{bcdef}'
+  eq '\udab3\uddef', '\u{0000bcdef}'
+  eq 'a\udab3\uddef', "#{ 'a' }\u{bcdef}"
+  eq '\udab3\uddefc', '''\u{0bcdef}c'''
+  eq '\udab3\uddefc', """\u{bcdef}#{ 'c' }"""
+  eq '\\u{123456}', "#{'\\'}#{'u{123456}'}"
+
+  # rewrite code point escapes
+  input = """
+    '\\u{bcdef}\\u{abc}'
+    """
+  output = """
+    '\\udab3\\uddef\\u0abc';
+  """
+  eq toJS(input), output
+
+  input = """
+    "#{ 'a' }\\u{bcdef}"
+    """
+  output = """
+    "a\\udab3\\uddef";
+  """
+  eq toJS(input), output
 
 </script>
 <script type="text/x-coffeescript" class="test" id="tagged_template_literals">

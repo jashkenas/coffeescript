@@ -36,4 +36,4 @@ Destructuring assignment is also useful when combined with class constructors to
 codeFor('constructor_destructuring', 'tim.age + " " + tim.height')
 ```
 
-The above example also demonstrates that if properties are missing in the destructured object or array, you can, just like in JavaScript, provide defaults. The difference with JavaScript is that CoffeeScript, as always, treats both null and undefined the same.
+The above example also demonstrates that if properties are missing in the destructured object or array, you can, just like in JavaScript, provide defaults. Note though that unlike with the existential operator, the default is only applied with the value is missing or `undefined`—[passing `null` will set a value of `null`](#breaking-changes-default-values), not the default.

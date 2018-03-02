@@ -118,15 +118,22 @@ The starting column in the original source, relative to the previous column.
 
 Produce the canonical JSON object format for a "v3" source map.
 
+        sources = if options.sourceFiles
+          options.sourceFiles
+        else if options.filename
+          [options.filename]
+        else
+          ['<anonymous>']
+
         v3 =
           version:    3
           file:       options.generatedFile or ''
           sourceRoot: options.sourceRoot or ''
-          sources:    options.sourceFiles or ['']
+          sources:    sources
           names:      []
           mappings:   buffer
 
-        v3.sourcesContent = [code] if options.inlineMap
+        v3.sourcesContent = [code] if options.sourceMap or options.inlineMap
 
         v3
 
@@ -136,7 +143,7 @@ Base64 VLQ Encoding
 
 Note that SourceMap VLQ encoding is "backwards".  MIDI-style VLQ encoding puts
 the most-significant-bit (MSB) from the original value into the MSB of the VLQ
-encoded value (see [Wikipedia](http://en.wikipedia.org/wiki/File:Uintvar_coding.svg)).
+encoded value (see [Wikipedia](https://en.wikipedia.org/wiki/File:Uintvar_coding.svg)).
 SourceMap VLQ does things the other way around, with the least significat four
 bits of the original value encoded into the first byte of the VLQ encoded value.
 

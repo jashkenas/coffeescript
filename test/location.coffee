@@ -585,8 +585,66 @@ test "Verify indented heredocs have the right position", ->
   eq stringToken[2].last_line, 3
   eq stringToken[2].last_column, 4
 
+test "Verify heregexes with interpolations have the right ending position", ->
+  source = '''
+    [a ///#{b}///g]
+  '''
+  [..., stringEnd, comma, flagsString, regexCallEnd, regexEnd, fnCallEnd,
+    arrayEnd, terminator] = CoffeeScript.tokens source
+
+  eq comma[0], ','
+  eq arrayEnd[0], ']'
+
+  assertColumn = (token, column) ->
+    eq token[2].first_line, 0
+    eq token[2].first_column, column
+    eq token[2].last_line, 0
+    eq token[2].last_column, column
+
+  arrayEndColumn = arrayEnd[2].first_column
+  for token in [comma, flagsString]
+    assertColumn token, arrayEndColumn - 2
+  for token in [regexCallEnd, regexEnd, fnCallEnd]
+    assertColumn token, arrayEndColumn - 1
+  assertColumn arrayEnd, arrayEndColumn
+
 test "Verify all tokens get a location", ->
   doesNotThrow ->
     tokens = CoffeeScript.tokens testScript
     for token in tokens
         ok !!token[2]
+
+test 'Values with properties end up with a location that includes the properties', ->
+  source = '''
+    a.b
+    a.b.c
+    a['b']
+    a[b.c()].d
+  '''
+  block = CoffeeScript.nodes source
+  [
+    singleProperty
+    twoProperties
+    indexed
+    complexIndex
+  ] = block.expressions
+
+  eq singleProperty.locationData.first_line, 0
+  eq singleProperty.locationData.first_column, 0
+  eq singleProperty.locationData.last_line, 0
+  eq singleProperty.locationData.last_column, 2
+
+  eq twoProperties.locationData.first_line, 1
+  eq twoProperties.locationData.first_column, 0
+  eq twoProperties.locationData.last_line, 1
+  eq twoProperties.locationData.last_column, 4
+
+  eq indexed.locationData.first_line, 2
+  eq indexed.locationData.first_column, 0
+  eq indexed.locationData.last_line, 2
+  eq indexed.locationData.last_column, 5
+
+  eq complexIndex.locationData.first_line, 3
+  eq complexIndex.locationData.first_column, 0
+  eq complexIndex.locationData.last_line, 3
+  eq complexIndex.locationData.last_column, 9

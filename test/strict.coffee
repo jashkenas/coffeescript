@@ -1,7 +1,7 @@
 # Strict Early Errors
 # -------------------
 
-# The following are prohibited under ES5's `strict` mode
+# The following are prohibited under ES5’s `strict` mode
 # * `Octal Integer Literals`
 # * `Octal Escape Sequences`
 # * duplicate property definitions in `Object Literal`s
@@ -140,10 +140,10 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
     check "#{keyword} *= 1"
     check "#{keyword} /= 1"
     check "#{keyword} ?= 1"
-    check "{keyword}++"
-    check "++{keyword}"
-    check "{keyword}--"
-    check "--{keyword}"
+    check "#{keyword}++"
+    check "++#{keyword}"
+    check "#{keyword}--"
+    check "--#{keyword}"
   destruct = (keyword, check = strict) ->
     check "{#{keyword}}"
     check "o = {#{keyword}}"
