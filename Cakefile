@@ -29,6 +29,15 @@ header = """
 # Used in folder names like `docs/v1`.
 majorVersion = parseInt CoffeeScript.VERSION.split('.')[0], 10
 
+# Patterns of names of test files which depend on currently absent features
+testFilesToSkip = [
+  /async/           unless try new Function 'async ()   => {}'
+  /async_iterators/ unless try new Function 'async () * => {}'
+  /exponent_ops/    unless try new Function 'x = 3; x **= 2 ** 2; return x === 81'
+].filter _.identity
+
+featuresPresentFor = (fileName) ->
+  not testFilesToSkip.find (filePattern) -> fileName.match filePattern
 
 # Log a message with a color.
 log = (message, color, explanation) ->
@@ -378,7 +387,6 @@ task 'bench', 'quick benchmark of compilation time', ->
   console.log "Compile#{time()} (#{js.length} chars)"
   console.log "total  #{ fmt total }"
 
-
 # Run the CoffeeScript test suite.
 runTests = (CoffeeScript) ->
   CoffeeScript.register() unless global.testingBrowser
@@ -425,12 +433,6 @@ runTests = (CoffeeScript) ->
     catch err
       onFail description, fn, err
 
-  global.supportsAsync = try
-      new Function('async () => {}')()
-      yes
-    catch
-      no
-
   helpers.extend global, require './test/support/helpers'
 
   # When all the tests have run, collect and print errors.
@@ -449,9 +451,9 @@ runTests = (CoffeeScript) ->
     return
 
   # Run every test in the `test` folder, recording failures.
-  files = fs.readdirSync 'test'
-  unless global.supportsAsync # Except for async tests, if async isn’t supported.
-    files = files.filter (filename) -> filename isnt 'async.coffee'
+  files =
+    fs.readdirSync 'test'
+      .filter featuresPresentFor
 
   startTime = Date.now()
   for file in files when helpers.isCoffee file
