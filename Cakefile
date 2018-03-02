@@ -387,6 +387,7 @@ task 'bench', 'quick benchmark of compilation time', ->
   console.log "Compile#{time()} (#{js.length} chars)"
   console.log "total  #{ fmt total }"
 
+
 # Run the CoffeeScript test suite.
 runTests = (CoffeeScript) ->
   CoffeeScript.register() unless global.testingBrowser
@@ -451,9 +452,8 @@ runTests = (CoffeeScript) ->
     return
 
   # Run every test in the `test` folder, recording failures.
-  files =
-    fs.readdirSync 'test'
-      .filter featuresPresentFor
+  files = fs.readdirSync 'test'
+            .filter featuresPresentFor
 
   startTime = Date.now()
   for file in files when helpers.isCoffee file
