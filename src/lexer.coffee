@@ -323,25 +323,26 @@ exports.Lexer = class Lexer
   # everything has been parsed and the JavaScript code generated.
   commentToken: (chunk = @chunk) ->
     return 0 unless match = chunk.match COMMENT
-    [comment, here] = match
+    [comment, here, here2] = match
     contents = null
     # Does this comment follow code on the same line?
     newLine = /^\s*\n+\s*#/.test comment
-    if here
+    if here or here2
       matchIllegal = HERECOMMENT_ILLEGAL.exec comment
       if matchIllegal
         @error "block comments cannot contain #{matchIllegal[0]}",
           offset: matchIllegal.index, length: matchIllegal[0].length
 
       # Parse indentation or outdentation as if this block comment didn’t exist.
-      chunk = chunk.replace "####{here}###", ''
+      chunk = chunk.replace "####{here}###", '' if here
+      chunk = chunk.replace "#*#{here2}*#", '' if here2
       # Remove leading newlines, like `Rewriter::removeLeadingNewlines`, to
       # avoid the creation of unwanted `TERMINATOR` tokens.
       chunk = chunk.replace /^\n+/, ''
       @lineToken chunk
 
       # Pull out the ###-style comment’s content, and format it.
-      content = here
+      content = if here then here else here2
       if '\n' in content
         content = content.replace /// \n #{repeat ' ', @indent} ///g, '\n'
       contents = [content]
@@ -355,7 +356,7 @@ exports.Lexer = class Lexer
 
     commentAttachments = for content, i in contents
       content: content
-      here: here?
+      here: here? or here2?
       newLine: newLine or i isnt 0 # Line comments after the first one start new lines, by definition.
 
     prev = @prev()
@@ -1214,7 +1215,14 @@ OPERATOR   = /// ^ (
 
 WHITESPACE = /^[^\n\S]+/
 
-COMMENT    = /^\s*###([^#][\s\S]*?)(?:###[^\n\S]*|###$)|^(?:\s*#(?!##[^#]).*)+/
+COMMENT    = ///
+    # match herecomment, e.g. ### comment ###
+    ^ \s* \#\#\# ( [^\#][\s\S]*? ) (?: \#\#\#[^\n\S]* | \#\#\#$ )
+    # match alternative herecomment: , e.g. #* comment *#
+  | ^ \s* \#\* ( [\s\S]*? ) (?: \*\#[^\n\S]* | \*\#$ )
+    # match line comment
+  | ^ (?: \s* \# (?! (?:\#\#|\*)[^\#] ) .* )+
+  ///
 
 CODE       = /^[-=]>/
 
