@@ -1477,7 +1477,9 @@ exports.Obj = class Obj extends Base
       message = isUnassignable prop.unwrapAll().value
       prop.error message if message
 
-      prop = prop.value if prop instanceof Assign and prop.context is 'object'
+      prop = prop.value if prop instanceof Assign and
+        prop.context is 'object' and
+        prop.value?.base not instanceof Arr
       return no unless prop.isAssignable()
     yes
 
@@ -2215,13 +2217,7 @@ exports.Assign = class Assign extends Base
         @variable.base.lhs = yes
         # Check if @variable contains Obj with splats.
         hasSplat = @variable.contains (node) -> node instanceof Obj and node.hasSplat()
-        # Check if `@variable` containes an empty array as a property, e.g. `{a:[]} = b`.
-        # An empty array is not assignable and would invoke `@compileDestructuring` method,
-        # which is not needed since this is valid ES syntax and can be compiled directly.
-        hasArrayProp = @variable.contains (node) ->
-            node instanceof Assign and node.context is 'object' and node.value.base instanceof Arr
-        if (not @variable.isAssignable() or @variable.isArray() and hasSplat) and not hasArrayProp
-          return @compileDestructuring o
+        return @compileDestructuring o if not @variable.isAssignable() or @variable.isArray() and hasSplat
         # Object destructuring. Can be removed once ES proposal hits Stage 4.
         objDestructAnswer = @compileObjectDestruct(o) if @variable.isObject() and hasSplat
         return objDestructAnswer if objDestructAnswer
@@ -2232,7 +2228,7 @@ exports.Assign = class Assign extends Base
 
     unless @context
       varBase = @variable.unwrapAll()
-      unless varBase.isAssignable() or hasArrayProp
+      unless varBase.isAssignable()
         @variable.error "'#{@variable.compile o}' can't be assigned"
 
       varBase.eachName (name) =>
