@@ -1219,7 +1219,9 @@ COMMENT    = ///
     # match herecomment, e.g. ### comment ###
     ^ \s* \#\#\# ( [^\#][\s\S]*? ) (?: \#\#\#[^\n\S]* | \#\#\#$ )
     # match alternative herecomment: , e.g. #* comment *#
-  | ^ \s* \#\* ( [\s\S]*? ) (?: \*\#[^\n\S]* | \*\#$ )
+  | ^ \s* \#\* ( ([\s\S](?! \#\* ))*? ) (?: \*\#[^\n\S]* | \*\#$ )
+    # match line comment starting with `#*`
+  | ^ (?: \s* \#\* (?: [^\n] )*? ).*
     # match line comment
   | ^ (?: \s* \# (?! (?:\#\#|\*)[^\#] ) .* )+
   ///
