@@ -2426,7 +2426,8 @@ exports.Assign = class Assign extends Base
       vvarText = ref
 
     slicer = (type) -> (vvar, start, end = no) ->
-      args = [new IdentifierLiteral(vvar), new NumberLiteral(start)]
+      vvar = new IdentifierLiteral vvar unless vvar instanceof Value
+      args = [vvar, new NumberLiteral(start)]
       args.push new NumberLiteral end if end
       slice = new Value (new IdentifierLiteral utility type, o), [new Access new PropertyName 'call']
       new Value new Call slice, args
@@ -2517,7 +2518,7 @@ exports.Assign = class Assign extends Base
       if rightObjs.length isnt 0
         # Slice or splice `objects`.
         refExp = switch
-          when isSplat then compSplice objects[expIdx].unwrapAll().value, rightObjs.length * -1
+          when isSplat then compSplice new Value(objects[expIdx].name), rightObjs.length * -1
           when isExpans then compSlice vvarText, rightObjs.length * -1
         if complexObjects rightObjs
           restVar = refExp
