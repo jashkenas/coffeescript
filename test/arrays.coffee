@@ -287,3 +287,21 @@ test "for-from comprehensions over Array", ->
 
   array2 = (a + b for [a, b] from [[10, 20], [30, 40], [50, 60]] when a + b >= 70)
   ok array2.join(' ') is '70 110'
+
+test '#1334: literals as array accessors', ->
+  arr = [1, 2, 3, 4, 5]
+  foo = (n) -> 5 - n
+
+  eq arr.1, 2
+  eq arr."#{5-3}", 3
+  eq arr."#{foo 5}", 1
+
+  arr2 = [
+    [1, 2, 3]
+    [4, 5, 6]
+    [7, 8, 9]
+  ]
+
+  eq arr2.0.1, 2
+  eq arr2.1."#{5-3}", 6
+  eq arr2."#{foo 3}"."#{ (6 * 3) / 9}", 9

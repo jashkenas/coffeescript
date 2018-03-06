@@ -903,3 +903,391 @@ test "#4579: Postfix for/while/until in first line of implicit object literals",
       baz: 1337
   arrayEq [4, 3, 2, 1, 0], six.foo.bar
   eq 1337, six.foo.baz
+
+test '#1334: literals as object properties', ->
+  obj =
+    "a-b-c": 1
+    a:
+      "b-c": 11
+    "a-b":
+      2: 22
+    42: 3
+    "f-o-o": -> "foo"
+    "b-a":
+      "-r": -> "bar"
+      5: -> "b52"
+    4:
+      2: 42
+    5:
+      "2-0": "five-two-zero"
+
+  eq obj.'a-b-c', 1
+  eq obj."a-b-c", 1
+  eq obj.'''a-b-c''', 1
+  eq obj."""a-b-c""", 1
+
+  eq obj?.'a-b-c', 1
+  eq obj?."a-b-c", 1
+  eq obj?.'''a-b-c''', 1
+  eq obj?."""a-b-c""", 1
+
+  eq obj.a.'b-c', 11
+  eq obj.a."b-c", 11
+  eq obj.a.'''b-c''', 11
+  eq obj.a."""b-c""", 11
+
+  eq obj?.a.'b-c', 11
+  eq obj?.a."b-c", 11
+  eq obj?.a.'''b-c''', 11
+  eq obj?.a."""b-c""", 11
+
+  eq obj.a?.'b-c', 11
+  eq obj.a?."b-c", 11
+  eq obj.a?.'''b-c''', 11
+  eq obj.a?."""b-c""", 11
+
+  eq obj?.a?.'b-c', 11
+  eq obj?.a?."b-c", 11
+  eq obj?.a?.'''b-c''', 11
+  eq obj?.a?."""b-c""", 11
+
+  eq obj.'a-b'.2, 22
+  eq obj."a-b".2, 22
+  eq obj.'''a-b'''.2, 22
+  eq obj."""a-b""".2, 22
+
+  eq obj?.'a-b'.2, 22
+  eq obj?."a-b".2, 22
+  eq obj?.'''a-b'''.2, 22
+  eq obj?."""a-b""".2, 22
+
+  eq obj.'a-b'?.2, 22
+  eq obj."a-b"?.2, 22
+  eq obj.'''a-b'''?.2, 22
+  eq obj."""a-b"""?.2, 22
+
+  eq obj?.'a-b'?.2, 22
+  eq obj?."a-b"?.2, 22
+  eq obj?.'''a-b'''?.2, 22
+  eq obj?."""a-b"""?.2, 22
+
+  eq obj.42, 3
+  eq obj?.42, 3
+
+  eq obj.'f-o-o'(), "foo"
+  eq obj."f-o-o"(), "foo"
+  eq obj.'''f-o-o'''(), "foo"
+  eq obj."""f-o-o"""(), "foo"
+  eq obj?.'f-o-o'(), "foo"
+  eq obj?."f-o-o"(), "foo"
+  eq obj?.'''f-o-o'''(), "foo"
+  eq obj?."""f-o-o"""(), "foo"
+
+  eq obj.'b-a'.'-r'(), "bar"
+  eq obj."b-a"."-r"(), "bar"
+  eq obj.'''b-a'''.'''-r'''(), "bar"
+  eq obj."""b-a"""."-r"(), "bar"
+  eq obj?.'b-a'.'''-r'''(), "bar"
+  eq obj?."b-a"."""-r"""(), "bar"
+  eq obj?.'''b-a'''.'-r'(), "bar"
+  eq obj?."""b-a""".'''-r'''(), "bar"
+
+  eq obj.'b-a'.5(), "b52"
+  eq obj."b-a".5(), "b52"
+  eq obj.'''b-a'''.5(), "b52"
+  eq obj."""b-a""".5(), "b52"
+  eq obj?.'b-a'.5(), "b52"
+  eq obj?."b-a".5(), "b52"
+  eq obj?.'''b-a'''.5(), "b52"
+  eq obj?."""b-a""".5(), "b52"
+
+  eq obj.4.2, 42
+  eq obj?.4.2, 42
+  eq obj.4?.2, 42
+  eq obj?.4?.2, 42
+
+  eq obj.5.'2-0', "five-two-zero"
+  eq obj.5."2-0", "five-two-zero"
+  eq obj.5.'''2-0''', "five-two-zero"
+  eq obj.5."""2-0""", "five-two-zero"
+
+  eq obj?.5.'2-0', "five-two-zero"
+  eq obj?.5."2-0", "five-two-zero"
+  eq obj?.5.'''2-0''', "five-two-zero"
+  eq obj?.5."""2-0""", "five-two-zero"
+
+  eq obj.5?.'2-0', "five-two-zero"
+  eq obj.5?."2-0", "five-two-zero"
+  eq obj.5?.'''2-0''', "five-two-zero"
+  eq obj.5?."""2-0""", "five-two-zero"
+
+  eq obj?.5?.'2-0', "five-two-zero"
+  eq obj?.5?."2-0", "five-two-zero"
+  eq obj?.5?.'''2-0''', "five-two-zero"
+  eq obj?.5?."""2-0""", "five-two-zero"
+
+test '#1334: literals as object prototype properties', ->
+  obj =
+    prototype:
+      "a-b-c": 1
+      a:
+        prototype:
+          "b-c": 11
+      "a-b":
+        2: 22
+      42: 3
+      "f-o-o": -> "foo"
+      "b-a":
+        prototype:
+          "-r": -> "bar"
+          5: -> "b52"
+      4:
+        prototype:
+          2: 42
+      5:
+        "2-0": "five-two-zero"
+
+  eq obj::'a-b-c', 1
+  eq obj::"a-b-c", 1
+  eq obj::'''a-b-c''', 1
+  eq obj::"""a-b-c""", 1
+
+  eq obj?::'a-b-c', 1
+  eq obj?::"a-b-c", 1
+  eq obj?::'''a-b-c''', 1
+  eq obj?::"""a-b-c""", 1
+
+  eq obj::a::'b-c', 11
+  eq obj::a::"b-c", 11
+  eq obj::a::'''b-c''', 11
+  eq obj::a::"""b-c""", 11
+
+  eq obj?::a::'b-c', 11
+  eq obj?::a::"b-c", 11
+  eq obj?::a::'''b-c''', 11
+  eq obj?::a::"""b-c""", 11
+
+  eq obj::a?::'b-c', 11
+  eq obj::a?::"b-c", 11
+  eq obj::a?::'''b-c''', 11
+  eq obj::a?::"""b-c""", 11
+
+  eq obj?::a?::'b-c', 11
+  eq obj?::a?::"b-c", 11
+  eq obj?::a?::'''b-c''', 11
+  eq obj?::a?::"""b-c""", 11
+
+  eq obj::'a-b'.2, 22
+  eq obj::"a-b".2, 22
+  eq obj::'''a-b'''.2, 22
+  eq obj::"""a-b""".2, 22
+
+  eq obj?::'a-b'.2, 22
+  eq obj?::"a-b".2, 22
+  eq obj?::'''a-b'''.2, 22
+  eq obj?::"""a-b""".2, 22
+
+  eq obj::'a-b'?.2, 22
+  eq obj::"a-b"?.2, 22
+  eq obj::'''a-b'''?.2, 22
+  eq obj::"""a-b"""?.2, 22
+
+  eq obj?::'a-b'?.2, 22
+  eq obj?::"a-b"?.2, 22
+  eq obj?::'''a-b'''?.2, 22
+  eq obj?::"""a-b"""?.2, 22
+
+  eq obj::42, 3
+  eq obj?::42, 3
+
+  eq obj::'f-o-o'(), "foo"
+  eq obj::"f-o-o"(), "foo"
+  eq obj::'''f-o-o'''(), "foo"
+  eq obj::"""f-o-o"""(), "foo"
+  eq obj?::'f-o-o'(), "foo"
+  eq obj?::"f-o-o"(), "foo"
+  eq obj?::'''f-o-o'''(), "foo"
+  eq obj?::"""f-o-o"""(), "foo"
+
+  eq obj::'b-a'::'-r'(), "bar"
+  eq obj::"b-a"::"-r"(), "bar"
+  eq obj::'''b-a'''::'''-r'''(), "bar"
+  eq obj::"""b-a"""::"-r"(), "bar"
+  eq obj?::'b-a'?::'''-r'''(), "bar"
+  eq obj?::"b-a"::"""-r"""(), "bar"
+  eq obj?::'''b-a'''?::'-r'(), "bar"
+  eq obj?::"""b-a"""?::'''-r'''(), "bar"
+
+  eq obj::'b-a'::5(), "b52"
+  eq obj::"b-a"::5(), "b52"
+  eq obj::'''b-a'''::5(), "b52"
+  eq obj::"""b-a"""::5(), "b52"
+  eq obj?::'b-a'?::5(), "b52"
+  eq obj?::"b-a"::5(), "b52"
+  eq obj?::'''b-a'''?::5(), "b52"
+  eq obj?::"""b-a"""::5(), "b52"
+
+  eq obj::4::2, 42
+  eq obj?::4::2, 42
+  eq obj::4?::2, 42
+  eq obj?::4?::2, 42
+
+  eq obj::5.'2-0', "five-two-zero"
+  eq obj::5."2-0", "five-two-zero"
+  eq obj::5.'''2-0''', "five-two-zero"
+  eq obj::5."""2-0""", "five-two-zero"
+
+  eq obj?::5.'2-0', "five-two-zero"
+  eq obj?::5."2-0", "five-two-zero"
+  eq obj?::5.'''2-0''', "five-two-zero"
+  eq obj?::5."""2-0""", "five-two-zero"
+
+  eq obj::5?.'2-0', "five-two-zero"
+  eq obj::5?."2-0", "five-two-zero"
+  eq obj::5?.'''2-0''', "five-two-zero"
+  eq obj::5?."""2-0""", "five-two-zero"
+
+  eq obj?::5?.'2-0', "five-two-zero"
+  eq obj?::5?."2-0", "five-two-zero"
+  eq obj?::5?.'''2-0''', "five-two-zero"
+  eq obj?::5?."""2-0""", "five-two-zero"
+
+test '#1334: literals with interpolations as object properties', ->
+  obj =
+    "a-b-c": 1
+    a:
+      "b-c": 11
+    "a-b":
+      2: 22
+    "f-o-o": -> "foo"
+    "b-a":
+      "-r": -> "bar"
+      5: -> "b52"
+    5:
+      "2-0": "five-two-zero"
+
+  foo = (l, r) -> "#{l}#{r}"
+
+  eq obj."a#{foo '-b', '-c'}", 1
+  eq obj."""#{foo 'a', '-b'}-c""", 1
+  eq obj?."a#{foo '-b', '-c'}", 1
+  eq obj?."""#{foo 'a', '-b'}-c""", 1
+
+  eq obj.a."#{foo 'b-', ''}c", 11
+  eq obj.a."""b#{foo '-', 'c'}""", 11
+  eq obj?.a."#{foo 'b-', ''}c", 11
+  eq obj?.a."""b#{foo '-', 'c'}""", 11
+  eq obj.a?."#{foo 'b-', ''}c", 11
+  eq obj.a?."""b#{foo '-', 'c'}""", 11
+  eq obj?.a?."#{foo 'b-', ''}c", 11
+  eq obj?.a?."""b#{foo '-', 'c'}""", 11
+
+  eq obj."#{foo 'a', '-b'}"."#{2}", 22
+  eq obj."""#{foo 'a', '-b'}"""."#{2}", 22
+  eq obj."#{foo 'a', '-b'}"."""#{2}""", 22
+  eq obj."""#{foo 'a', '-b'}"""."""#{2}""", 22
+  eq obj?."#{foo 'a', '-b'}"."#{2}", 22
+  eq obj?."""#{foo 'a', '-b'}"""."#{2}", 22
+  eq obj?."#{foo 'a', '-b'}"."""#{2}""", 22
+  eq obj?."""#{foo 'a', '-b'}"""."""#{2}""", 22
+  eq obj."#{foo 'a', '-b'}"?."#{2}", 22
+  eq obj."""#{foo 'a', '-b'}"""?."#{2}", 22
+  eq obj."#{foo 'a', '-b'}"?."""#{2}""", 22
+  eq obj."""#{foo 'a', '-b'}"""?."""#{2}""", 22
+  eq obj?."#{foo 'a', '-b'}"?."#{2}", 22
+  eq obj?."""#{foo 'a', '-b'}"""?."#{2}", 22
+  eq obj?."#{foo 'a', '-b'}"?."""#{2}""", 22
+  eq obj?."""#{foo 'a', '-b'}"""?."""#{2}""", 22
+
+  eq obj."f-#{foo 'o', '-o'}"(), "foo"
+  eq obj."""#{"f-o-o"}"""(), "foo"
+  eq obj?."f-#{"o-o"}"(), "foo"
+  eq obj?."""f-o-#{foo "o", ""}"""(), "foo"
+
+  eq obj."b-a"."#{foo '-', 'r'}"(), "bar"
+  eq obj."""#{foo 'b-a', ""}"""."#{foo "", '-r'}"(), "bar"
+  eq obj?."#{"b"}-#{foo "a", ""}"."""#{"-"}#{'r'}"""(), "bar"
+
+  eq obj."#{foo 'b', "-"}#{foo "", ""}a".5(), "b52"
+  eq obj."""b-#{"a"}""".5(), "b52"
+  eq obj?."b#{foo "", ""}-a".5(), "b52"
+  eq obj?."""#{"b"}-a""".5(), "b52"
+
+  eq obj.5."#{"2-0"}", "five-two-zero"
+  eq obj.5."""2#{"-0"}""", "five-two-zero"
+  eq obj?.5."#{"2-0"}", "five-two-zero"
+  eq obj?.5."""2#{"-0"}""", "five-two-zero"
+  eq obj?.5?."#{"2-0"}", "five-two-zero"
+  eq obj?.5?."""2#{"-0"}""", "five-two-zero"
+
+test '#1334: literals with interpolations as object prototype properties', ->
+  obj =
+    prototype:
+      "a-b-c": 1
+      a:
+        prototype:
+          "b-c": 11
+      "a-b":
+        2: 22
+      "f-o-o": -> "foo"
+      "b-a":
+        prototype:
+          "-r": -> "bar"
+          5: -> "b52"
+      5:
+        prototype:
+          "2-0": "five-two-zero"
+
+  foo = (l, r) -> "#{l}#{r}"
+
+  eq obj::"a#{foo '-b', '-c'}", 1
+  eq obj::"""#{foo 'a', '-b'}-c""", 1
+  eq obj?::"a#{foo '-b', '-c'}", 1
+  eq obj?::"""#{foo 'a', '-b'}-c""", 1
+
+  eq obj::a::"#{foo 'b-', ''}c", 11
+  eq obj::a::"""b#{foo '-', 'c'}""", 11
+  eq obj?::a::"#{foo 'b-', ''}c", 11
+  eq obj?::a::"""b#{foo '-', 'c'}""", 11
+  eq obj::a?::"#{foo 'b-', ''}c", 11
+  eq obj::a?::"""b#{foo '-', 'c'}""", 11
+  eq obj?::a?::"#{foo 'b-', ''}c", 11
+  eq obj?::a?::"""b#{foo '-', 'c'}""", 11
+
+  eq obj::"#{foo 'a', '-b'}"."#{2}", 22
+  eq obj::"""#{foo 'a', '-b'}"""."#{2}", 22
+  eq obj::"#{foo 'a', '-b'}"."""#{2}""", 22
+  eq obj::"""#{foo 'a', '-b'}"""."""#{2}""", 22
+  eq obj?::"#{foo 'a', '-b'}"."#{2}", 22
+  eq obj?::"""#{foo 'a', '-b'}"""."#{2}", 22
+  eq obj?::"#{foo 'a', '-b'}"."""#{2}""", 22
+  eq obj?::"""#{foo 'a', '-b'}"""."""#{2}""", 22
+  eq obj::"#{foo 'a', '-b'}"?."#{2}", 22
+  eq obj::"""#{foo 'a', '-b'}"""?."#{2}", 22
+  eq obj::"#{foo 'a', '-b'}"?."""#{2}""", 22
+  eq obj::"""#{foo 'a', '-b'}"""?."""#{2}""", 22
+  eq obj?::"#{foo 'a', '-b'}"?."#{2}", 22
+  eq obj?::"""#{foo 'a', '-b'}"""?."#{2}", 22
+  eq obj?::"#{foo 'a', '-b'}"?."""#{2}""", 22
+  eq obj?::"""#{foo 'a', '-b'}"""?."""#{2}""", 22
+
+  eq obj::"f-#{foo 'o', '-o'}"(), "foo"
+  eq obj::"""#{"f-o-o"}"""(), "foo"
+  eq obj?::"f-#{"o-o"}"(), "foo"
+  eq obj?::"""f-o-#{foo "o", ""}"""(), "foo"
+
+  eq obj::"b-a"::"#{foo '-', 'r'}"(), "bar"
+  eq obj::"""#{foo 'b-a', ""}"""::"#{foo "", '-r'}"(), "bar"
+  eq obj?::"#{"b"}-#{foo "a", ""}"::"""#{"-"}#{'r'}"""(), "bar"
+
+  eq obj::"#{foo 'b', "-"}#{foo "", ""}a"?::5(), "b52"
+  eq obj::"""b-#{"a"}"""::5(), "b52"
+  eq obj?::"b#{foo "", ""}-a"?::5(), "b52"
+  eq obj?::"""#{"b"}-a"""::5(), "b52"
+
+  eq obj::5::"#{"2-0"}", "five-two-zero"
+  eq obj::5::"""2#{"-0"}""", "five-two-zero"
+  eq obj?::5::"#{"2-0"}", "five-two-zero"
+  eq obj?::5::"""2#{"-0"}""", "five-two-zero"
+  eq obj?::5?::"#{"2-0"}", "five-two-zero"
+  eq obj?::5?::"""2#{"-0"}""", "five-two-zero"

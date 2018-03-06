@@ -460,3 +460,22 @@ test "'new' target", ->
 
   # classes must be called with `new`. In this case `new` applies to `get` only
   throws -> new get()()
+
+test '#1334: operations with literals as array and object accessors', ->
+  arr2 = [
+    [1, 2, 3]
+    [4, 5, 6]
+    [7, 8, 9]
+  ]
+
+  obj =
+    "a-b":
+      3: 3
+    4:
+      2: 42
+
+  eq arr2.0.1 + .1, 2.1
+  eq arr2."#{5-4}".2 + .2, 6.2
+
+  eq obj."a-b".3 + .3, 3.3
+  eq obj.4.2 + .4, 42.4

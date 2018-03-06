@@ -765,6 +765,12 @@ exports.CSXTag = class CSXTag extends IdentifierLiteral
 exports.PropertyName = class PropertyName extends Literal
   isAssignable: YES
 
+exports.PropertyNumber = class PropertyNumber extends Literal
+  isAssignable: YES
+
+exports.PropertyString = class PropertyString extends StringLiteral
+  isAssignable: YES
+
 exports.ComputedPropertyName = class ComputedPropertyName extends PropertyName
   compileNode: (o) ->
     [@makeCode('['), @value.compileToFragments(o, LEVEL_LIST)..., @makeCode(']')]
@@ -3607,6 +3613,9 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
     exprs = element.body?.expressions
     call = exprs?[0].unwrap()
     @csx and exprs and exprs.length is 1 and call instanceof Call and call.csx
+
+exports.PropertyStringWithInterpolations = class PropertyStringWithInterpolations extends StringWithInterpolations
+  isAssignable: YES
 
 #### For
 

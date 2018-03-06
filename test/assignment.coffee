@@ -985,3 +985,21 @@ test "#4878: Compile error when using destructuring with a splat or expansion in
         []
 
   arrayEq bar(arr), ['a', ['b', 'c', 'd']]
+
+test '#1334: object destructuring with literals as object properties', ->
+  a={}; b={}; c={}; d={}
+  obj = {
+    "a-1": a
+    "b-2": {
+      3: {
+        "d-4": [
+          "b-5": b
+          {"e-6": c, "f-6": d}
+        ]
+      }
+    }
+  }
+  b2 = {a, obj."b-2"...}
+  deepEqual b2, { '3': { 'd-4': [ "b-5": b, {"e-6": c, "f-6": d} ] }, a: {} }
+  obj3 = {obj."b#{"-" + '2'}".3..., d}
+  deepEqual obj3,  {'d-4': [ { 'b-5': {} }, { 'e-6': {}, 'f-6': {} } ], d: {} }

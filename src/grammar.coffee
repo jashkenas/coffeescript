@@ -154,8 +154,19 @@ grammar =
     o 'CSX_TAG',                                -> new CSXTag $1
   ]
 
+  # PropertyNumber is `NumberLiteral` `Accessor`, e.g. obj.42
+  # PropertyString is `StringLiteral` `Accessor`, e.g. obj."abc", obj::"abc"
+  # PropertyStringWithInterpolations is `StringWithInterpolations` `Accessor`,
+  # e.g. obj."a#{b 42}c", obj::"a#{b 42}c"
   Property: [
     o 'PROPERTY',                               -> new PropertyName $1
+    o 'PROPERTY_NUMBER',                        -> new PropertyNumber $1
+    o 'StringProperty'
+  ]
+
+  StringProperty: [
+    o 'PROPERTY_STRING',                                  -> new PropertyString $1
+    o 'PROPERTY_STRING_START Body PROPERTY_STRING_END',   -> new PropertyStringWithInterpolations $2
   ]
 
   # Alphanumerics are separated from the other **Literal** matchers because
@@ -366,11 +377,11 @@ grammar =
   # The general group of accessors into an object, by property, by prototype
   # or by array index or slice.
   Accessor: [
-    o '.  Property',                            -> new Access $2
-    o '?. Property',                            -> new Access $2, 'soak'
-    o ':: Property',                            -> [LOC(1)(new Access new PropertyName('prototype')), LOC(2)(new Access $2)]
-    o '?:: Property',                           -> [LOC(1)(new Access new PropertyName('prototype'), 'soak'), LOC(2)(new Access $2)]
-    o '::',                                     -> new Access new PropertyName 'prototype'
+    o '.  Property',      -> new Access $2
+    o '?. Property',      -> new Access $2, 'soak'
+    o ':: Property',      -> [LOC(1)(new Access new PropertyName('prototype')), LOC(2)(new Access $2)]
+    o '?:: Property',     -> [LOC(1)(new Access new PropertyName('prototype'), 'soak'), LOC(2)(new Access $2)]
+    o '::',               -> new Access new PropertyName 'prototype'
     o 'Index'
   ]
 

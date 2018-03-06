@@ -242,6 +242,22 @@ exports.Lexer = class Lexer
     number = match[0]
     lexedLength = number.length
 
+    # Property number notation, e.g. a.3
+    prev = @prev()
+    if prev and not prev.spaced
+      if prev[0] in [CALLABLE..., '?.', '::', '?::']
+        s = 0
+        nProp = number
+        if nProp[0] is "."
+          @token '.', '.', s++, 1
+          nProp = nProp[1..]
+
+        for num, x in nProp.split "."
+          @token '.', '.', s++, 1 if (x+1) % 2 is 0
+          @token 'PROPERTY_NUMBER', num, s, num.length
+          s += num.length
+        return number.length
+
     switch
       when /^0[BOX]/.test number
         @error "radix prefix in '#{number}' must be lowercase", offset: 1
@@ -287,6 +303,11 @@ exports.Lexer = class Lexer
     {tokens, index: end} = @matchWithInterpolations regex, quote
     $ = tokens.length - 1
 
+    if prev and not prev.spaced and prev[0] in ['.', '?.', '::', '?::']
+      stringProp = prev[0]
+    else
+      stringProp = no
+
     delimiter = quote.charAt(0)
     if heredoc
       # Find the smallest indentation. It will be removed from all lines later.
@@ -296,14 +317,14 @@ exports.Lexer = class Lexer
         attempt = match[1]
         indent = attempt if indent is null or 0 < attempt.length < indent.length
       indentRegex = /// \n#{indent} ///g if indent
-      @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
+      @mergeInterpolationTokens tokens, {delimiter, stringProp}, (value, i) =>
         value = @formatString value, delimiter: quote
         value = value.replace indentRegex, '\n' if indentRegex
         value = value.replace LEADING_BLANK_LINE,  '' if i is 0
         value = value.replace TRAILING_BLANK_LINE, '' if i is $
         value
     else
-      @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
+      @mergeInterpolationTokens tokens, {delimiter, stringProp}, (value, i) =>
         value = @formatString value, delimiter: quote
         value = value.replace SIMPLE_STRING_OMIT, (match, offset) ->
           if (i is 0 and offset is 0) or
@@ -827,7 +848,12 @@ exports.Lexer = class Lexer
   # `options` first.
   mergeInterpolationTokens: (tokens, options, fn) ->
     if tokens.length > 1
-      lparen = @token 'STRING_START', '(', 0, 0
+      sTag =
+        if options?.stringProp
+          ['PROPERTY_STRING_START', 'PROPERTY_STRING_END']
+        else
+          ['STRING_START', 'STRING_END']
+      lparen = @token sTag[0], '(', 0, 0
 
     firstIndex = @tokens.length
     for token, i in tokens
@@ -870,7 +896,7 @@ exports.Lexer = class Lexer
           # empty string.
           if i is 2 and firstEmptyStringIndex?
             @tokens.splice firstEmptyStringIndex, 2 # Remove empty string and the plus.
-          token[0] = 'STRING'
+          token[0] = if options?.stringProp and not lparen then 'PROPERTY_STRING' else 'STRING'
           token[1] = @makeDelimitedLiteral converted, options
           locationToken = token
           tokensToPush = [token]
@@ -893,7 +919,7 @@ exports.Lexer = class Lexer
         last_column:  lastToken[2].last_column
       ]
       lparen[2] = lparen.origin[2]
-      rparen = @token 'STRING_END', ')'
+      rparen = @token sTag[1], ')'
       rparen[2] =
         first_line:   lastToken[2].last_line
         first_column: lastToken[2].last_column
@@ -1352,7 +1378,8 @@ BOOL = ['TRUE', 'FALSE']
 # Tokens which could legitimately be invoked or indexed. An opening
 # parentheses or bracket following these tokens will be recorded as the start
 # of a function invocation or indexing operation.
-CALLABLE  = ['IDENTIFIER', 'PROPERTY', ')', ']', '?', '@', 'THIS', 'SUPER']
+CALLABLE  = ['IDENTIFIER', 'PROPERTY', 'PROPERTY_NUMBER', 'PROPERTY_STRING', 'PROPERTY_STRING_END',
+          ')', ']', '?', '@', 'THIS', 'SUPER']
 INDEXABLE = CALLABLE.concat [
   'NUMBER', 'INFINITY', 'NAN', 'STRING', 'STRING_END', 'REGEX', 'REGEX_END'
   'BOOL', 'NULL', 'UNDEFINED', '}', '::'
