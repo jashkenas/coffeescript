@@ -48,7 +48,7 @@ if require?
 
   test "patchStackTrace line patching", ->
     err = new Error 'error'
-    ok err.stack.match /test[\/\\]error_messages\.coffee:\d+:\d+\b/
+    ok err.stack.match /test[\/\\]always[\/\\]error_messages\.coffee:\d+:\d+\b/
 
   test "patchStackTrace stack prelude consistent with V8", ->
     err = new Error

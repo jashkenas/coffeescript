@@ -5,7 +5,7 @@ path = require 'path'
 
 # Get the folder containing the compiled `coffee` executable and make it the
 # PATH so that `#!/usr/bin/env coffee` resolves to our locally built file.
-coffeeBinFolder = path.dirname require.resolve '../bin/coffee'
+coffeeBinFolder = path.dirname require.resolve '../../bin/coffee'
 # For some reason, Windows requires `coffee` to be executed as `node coffee`.
 coffeeCommand = if isWindows() then 'node coffee' else 'coffee'
 spawnOptions =
@@ -15,10 +15,10 @@ spawnOptions =
     PATH: coffeeBinFolder + (if isWindows() then ';' else ':') + process.env.PATH
   shell: isWindows()
 
-shebangScript = require.resolve './importing/shebang.coffee'
-initialSpaceScript = require.resolve './importing/shebang_initial_space.coffee'
-extraArgsScript = require.resolve './importing/shebang_extra_args.coffee'
-initialSpaceExtraArgsScript = require.resolve './importing/shebang_initial_space_extra_args.coffee'
+shebangScript = require.resolve '../importing/shebang.coffee'
+initialSpaceScript = require.resolve '../importing/shebang_initial_space.coffee'
+extraArgsScript = require.resolve '../importing/shebang_extra_args.coffee'
+initialSpaceExtraArgsScript = require.resolve '../importing/shebang_initial_space_extra_args.coffee'
 
 test "parse arguments for shebang scripts correctly (on *nix platforms)", ->
   return if isWindows()

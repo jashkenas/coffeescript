@@ -378,6 +378,36 @@ task 'bench', 'quick benchmark of compilation time', ->
   console.log "Compile#{time()} (#{js.length} chars)"
   console.log "total  #{ fmt total }"
 
+lookForTestsIn = (directory) ->
+  files = []
+
+  logSkippedTests = (details) ->
+    #console.log "Skipped tests\n%o", details
+
+  examineTestFileOrDirectory = (directory) ->
+    (entry) ->
+      fullpath = path.join directory, entry
+
+      if helpers.ends entry, 'coffee'
+        files = files.concat fullpath
+      else
+        files = files.concat lookForTestsIn fullpath
+
+  global.runTheseTestsIf = (result) ->
+    if result not instanceof Error
+      fs.readdirSync directory
+        .forEach examineTestFileOrDirectory directory
+
+    else
+      logSkippedTests {directory, code, error: result}
+
+  # Not all directories contain tests
+  try
+    require directory
+  catch error
+    logSkippedTests {directory, error}
+
+  files
 
 # Run the CoffeeScript test suite.
 runTests = (CoffeeScript) ->
@@ -425,12 +455,6 @@ runTests = (CoffeeScript) ->
     catch err
       onFail description, fn, err
 
-  global.supportsAsync = try
-      new Function('async () => {}')()
-      yes
-    catch
-      no
-
   helpers.extend global, require './test/support/helpers'
 
   # When all the tests have run, collect and print errors.
@@ -448,15 +472,12 @@ runTests = (CoffeeScript) ->
       console.log "  #{source}" if source
     return
 
-  # Run every test in the `test` folder, recording failures.
-  files = fs.readdirSync 'test'
-  unless global.supportsAsync # Except for async tests, if async isn’t supported.
-    files = files.filter (filename) -> filename isnt 'async.coffee'
+  files = lookForTestsIn path.resolve __dirname, 'test'
 
   startTime = Date.now()
   for file in files when helpers.isCoffee file
     literate = helpers.isLiterate file
-    currentFile = filename = path.join 'test', file
+    currentFile = filename = file
     code = fs.readFileSync filename
     try
       CoffeeScript.run code.toString(), {filename, literate}
