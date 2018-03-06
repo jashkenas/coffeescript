@@ -381,9 +381,6 @@ task 'bench', 'quick benchmark of compilation time', ->
 lookForTestsIn = (directory) ->
   files = []
 
-  logSkippedTests = (details) ->
-    #console.log "Skipped tests\n%o", details
-
   examineTestFileOrDirectory = (directory) ->
     (entry) ->
       fullpath = path.join directory, entry
@@ -398,14 +395,10 @@ lookForTestsIn = (directory) ->
       fs.readdirSync directory
         .forEach examineTestFileOrDirectory directory
 
-    else
-      logSkippedTests {directory, code, error: result}
-
   # Not all directories contain tests
   try
-    require directory
-  catch error
-    logSkippedTests {directory, error}
+    if (fs.statSync path.join directory, 'index.coffee').isFile()
+      require directory
 
   files
 
