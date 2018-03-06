@@ -407,7 +407,7 @@ runTests = (CoffeeScript) ->
   CoffeeScript.register() unless global.testingBrowser
 
   # These are attached to `global` so that they’re accessible from within
-  # `test/async.coffee`, which has an async-capable version of
+  # `test/async/async.coffee`, which has an async-capable version of
   # `global.test`.
   global.currentFile = null
   global.passedTests = 0
