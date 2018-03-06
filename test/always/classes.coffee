@@ -266,6 +266,7 @@ test "classes with value'd constructors", ->
     inner = ++counter
     ->
       @value = inner
+      return @
 
   class One
     constructor: classMaker()

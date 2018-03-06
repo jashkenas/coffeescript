@@ -1,0 +1,3 @@
+runTheseTestsIf new Function '''
+  async () => {}
+'''

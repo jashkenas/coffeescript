@@ -1,5 +1,5 @@
 return unless require?
-{buildCSOptionParser} = require '../lib/coffeescript/command'
+{buildCSOptionParser} = require '../../lib/coffeescript/command'
 
 optionParser = buildCSOptionParser()
 
