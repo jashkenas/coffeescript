@@ -450,7 +450,7 @@ runTests = (CoffeeScript) ->
 
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
-            .filter (filename) -> fileName not in testFilesToSkip
+            .filter (filename) -> filename not in testFilesToSkip
 
   startTime = Date.now()
   for file in files when helpers.isCoffee file
