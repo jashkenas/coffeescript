@@ -31,13 +31,10 @@ majorVersion = parseInt CoffeeScript.VERSION.split('.')[0], 10
 
 # Patterns of names of test files which depend on currently absent features
 testFilesToSkip = [
-  /async/           unless try new Function 'async ()   => {}'
-  /async_iterators/ unless try new Function 'async () * => {}'
-  /exponent_ops/    unless try new Function 'x = 3; x **= 2 ** 2; return x === 81'
+  'async.coffee'           unless try new Function 'async ()   => {}'
+  'async_iterators.coffee' unless try new Function 'async () * => {}'
+  'exponent_ops.coffee'    unless try new Function 'x = 3; x **= 2 ** 2; return x === 81'
 ].filter _.identity
-
-featuresPresentFor = (fileName) ->
-  not testFilesToSkip.find (filePattern) -> fileName.match filePattern
 
 # Log a message with a color.
 log = (message, color, explanation) ->
@@ -453,7 +450,7 @@ runTests = (CoffeeScript) ->
 
   # Run every test in the `test` folder, recording failures.
   files = fs.readdirSync 'test'
-            .filter featuresPresentFor
+            .filter (filename) -> fileName not in testFilesToSkip
 
   startTime = Date.now()
   for file in files when helpers.isCoffee file
