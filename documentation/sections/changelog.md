@@ -1,6 +1,12 @@
 ## Changelog
 
 ```
+releaseHeader('2018-03-11', '2.2.3', '2.1.2')
+```
+*   Bugfix for object destructuring with an empty array as a key’s value: `{ key: [] } = obj`.
+*   Bugfix for array destructuring onto targets attached to `this`: `[ @most... , @penultimate, @last ] = arr`.
+
+```
 releaseHeader('2018-02-21', '2.2.2', '2.1.1')
 ```
 *   Bugfix for regression in 2.2.0 where a range with a `by` (step) value that increments or decrements in the opposite direction as the range was returning an array containing the first value of the range, whereas it should be returning an empty array. In other words, `x for x in [2..1] by 1` should equal `[]`, not `[2]` (because the step value is positive 1, counting up, whereas the range goes from 2 to 1, counting down).
