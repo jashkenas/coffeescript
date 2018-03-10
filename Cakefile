@@ -29,12 +29,24 @@ header = """
 # Used in folder names like `docs/v1`.
 majorVersion = parseInt CoffeeScript.VERSION.split('.')[0], 10
 
-# Patterns of names of test files which depend on currently absent features
-testFilesToSkip = [
-  'async.coffee'           unless try new Function 'async ()   => {}'
-  'async_iterators.coffee' unless try new Function 'async () * => {}'
-  'exponent_ops.coffee'    unless try new Function 'x = 3; x **= 2 ** 2; return x === 81'
-].filter _.identity
+# CoffeeScript supports a range of major versions of NodeJS. Major versions of
+# NodeJS differ in the features they support. CoffeeScript features which
+# depend on features which are not available across all supported NodeJS
+# versions need only be tested against versions of NodeJS which provide the
+# required feature. The purpose of the `testFilesToSkip` array is to exempt
+# files which test features not available within the NodeJS runtime currently
+# under test.
+testFilesToSkip = []
+
+# The `skipUnless` function adds file names to the `testFilesToSkip` array
+# when the feature(s) the file(s) depend on are not available.
+skipUnless = (code, names...) ->
+  unless try new Function code
+    testFilesToSkip = testFilesToSkip.concat names
+
+skipUnless 'async ()   => {}',                     'async.coffee'
+skipUnless 'async () * => {}',                     'async_iterators.coffee'
+skipUnless 'x = 3; x **= 2 ** 2; return x === 81', 'exponent_ops.coffee'
 
 # Log a message with a color.
 log = (message, color, explanation) ->
