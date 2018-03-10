@@ -3215,7 +3215,9 @@ is the index of the beginning.</p>
             <div class="content"><div class='highlight'><pre>      message = isUnassignable prop.unwrapAll().value
       prop.error message <span class="hljs-keyword">if</span> message
 
-      prop = prop.value <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">instanceof</span> Assign <span class="hljs-keyword">and</span> prop.context <span class="hljs-keyword">is</span> <span class="hljs-string">'object'</span>
+      prop = prop.value <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">instanceof</span> Assign <span class="hljs-keyword">and</span>
+        prop.context <span class="hljs-keyword">is</span> <span class="hljs-string">'object'</span> <span class="hljs-keyword">and</span>
+        prop.value?.base <span class="hljs-keyword">not</span> <span class="hljs-keyword">instanceof</span> Arr
       <span class="hljs-keyword">return</span> <span class="hljs-literal">no</span> <span class="hljs-keyword">unless</span> prop.isAssignable()
     <span class="hljs-literal">yes</span>
 
@@ -4933,7 +4935,8 @@ variable if it isn’t already.</p>
       vvarText = ref
 <span class="hljs-function">
     <span class="hljs-title">slicer</span> = <span class="hljs-params">(type)</span> -&gt;</span> (vvar, start, end = <span class="hljs-literal">no</span>) -&gt;
-      args = [<span class="hljs-keyword">new</span> IdentifierLiteral(vvar), <span class="hljs-keyword">new</span> NumberLiteral(start)]
+      vvar = <span class="hljs-keyword">new</span> IdentifierLiteral vvar <span class="hljs-keyword">unless</span> vvar <span class="hljs-keyword">instanceof</span> Value
+      args = [vvar, <span class="hljs-keyword">new</span> NumberLiteral(start)]
       args.push <span class="hljs-keyword">new</span> NumberLiteral end <span class="hljs-keyword">if</span> end
       slice = <span class="hljs-keyword">new</span> Value (<span class="hljs-keyword">new</span> IdentifierLiteral utility type, o), [<span class="hljs-keyword">new</span> Access <span class="hljs-keyword">new</span> PropertyName <span class="hljs-string">'call'</span>]
       <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> Call slice, args</pre></div></div>
@@ -5184,7 +5187,7 @@ b) <code>Expansion</code>
             </div>
             
             <div class="content"><div class='highlight'><pre>        refExp = <span class="hljs-keyword">switch</span>
-          <span class="hljs-keyword">when</span> isSplat <span class="hljs-keyword">then</span> compSplice objects[expIdx].unwrapAll().value, rightObjs.length * <span class="hljs-number">-1</span>
+          <span class="hljs-keyword">when</span> isSplat <span class="hljs-keyword">then</span> compSplice <span class="hljs-keyword">new</span> Value(objects[expIdx].name), rightObjs.length * <span class="hljs-number">-1</span>
           <span class="hljs-keyword">when</span> isExpans <span class="hljs-keyword">then</span> compSlice vvarText, rightObjs.length * <span class="hljs-number">-1</span>
         <span class="hljs-keyword">if</span> complexObjects rightObjs
           restVar = refExp
