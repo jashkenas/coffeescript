@@ -986,6 +986,23 @@ test "#4878: Compile error when using destructuring with a splat or expansion in
 
   arrayEq bar(arr), ['a', ['b', 'c', 'd']]
 
+test "destructuring assignment with an empty array in object", ->
+  obj =
+    a1: [1, 2]
+    b1: 3
+
+  {a1:[], b1} = obj
+  eq 'undefined', typeof a1
+  eq b1, 3
+
+  obj =
+    a2:
+      b2: [1, 2]
+    c2: 3
+
+  {a2: {b2:[]}, c2} = obj
+  eq 'undefined', typeof b2
+  eq c2, 3
 
 test "#5004: array destructuring with accessors", ->
   obj =

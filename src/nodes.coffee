@@ -1477,7 +1477,9 @@ exports.Obj = class Obj extends Base
       message = isUnassignable prop.unwrapAll().value
       prop.error message if message
 
-      prop = prop.value if prop instanceof Assign and prop.context is 'object'
+      prop = prop.value if prop instanceof Assign and
+        prop.context is 'object' and
+        prop.value?.base not instanceof Arr
       return no unless prop.isAssignable()
     yes
 
