@@ -40,7 +40,7 @@ testFilesToSkip = []
 
 # The `skipUnless` function adds file names to the `testFilesToSkip` array
 # when the feature(s) the file(s) depend on are not available.
-skipUnless = (code, names->
+skipUnless = (code, names) ->
   unless (try new Function code)
     testFilesToSkip = testFilesToSkip.concat names
 
