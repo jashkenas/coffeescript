@@ -40,13 +40,17 @@ testFilesToSkip = []
 
 # The `skipUnless` function adds file names to the `testFilesToSkip` array
 # when the feature(s) the file(s) depend on are not available.
-skipUnless = (code, names...) ->
+skipUnless = (code, names->
   unless (try new Function code)
     testFilesToSkip = testFilesToSkip.concat names
 
-skipUnless 'async ()   => {}',                     'async.coffee'
-skipUnless 'async () * => {}',                     'async_iterators.coffee'
-skipUnless 'x = 3; x **= 2 ** 2; return x === 81', 'exponent_ops.coffee'
+skipUnless 'async ()   => {}', [ 'async.coffee', 'async_iterators.coffee' ]
+skipUnless 'async () * => {}', [ 'async_iterators.coffee' ]
+skipUnless '''
+  x = 3
+  x **= 2 ** 2
+  return x === 81
+''', [ 'exponent_ops.coffee' ]
 
 # Log a message with a color.
 log = (message, color, explanation) ->
