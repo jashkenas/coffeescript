@@ -29,29 +29,6 @@ header = """
 # Used in folder names like `docs/v1`.
 majorVersion = parseInt CoffeeScript.VERSION.split('.')[0], 10
 
-# CoffeeScript supports a range of major versions of NodeJS. Major versions of
-# NodeJS differ in the features they support. CoffeeScript features which
-# depend on features which are not available across all supported NodeJS
-# versions need only be tested against versions of NodeJS which provide the
-# required feature. The purpose of the `testFilesToSkip` array is to exempt
-# files which test features not available within the NodeJS runtime currently
-# under test.
-testFilesToSkip = []
-
-# The `skipUnless` function adds file names to the `testFilesToSkip` array
-# when the feature(s) the file(s) depend on are not available.
-skipUnless = (code, names) ->
-  unless (try new Function code)
-    testFilesToSkip = testFilesToSkip.concat names
-
-skipUnless 'async ()   => {}', [ 'async.coffee', 'async_iterators.coffee' ]
-skipUnless 'async () * => {}', [ 'async_iterators.coffee' ]
-skipUnless '''
-  x = 3
-  x **= 2 ** 2
-  return x === 81
-''', [ 'exponent_ops.coffee' ]
-
 # Log a message with a color.
 log = (message, color, explanation) ->
   console.log color + message + reset + ' ' + (explanation or '')
@@ -464,9 +441,18 @@ runTests = (CoffeeScript) ->
       console.log "  #{source}" if source
     return
 
-  # Run every test in the `test` folder, recording failures.
-  files = fs.readdirSync 'test'
-            .filter (filename) -> filename not in testFilesToSkip
+  # Run every test in the `test` folder, recording failures, except for files
+  # we’re skipping because the features to be tested are unsupported in the
+  # current Node runtime.
+  testFilesToSkip = []
+  skipUnless = (featureDetect, filenames) ->
+    unless (try new Function featureDetect)
+      testFilesToSkip = testFilesToSkip.concat filenames
+  skipUnless 'async () => {}', ['async.coffee', 'async_iterators.coffee']
+  skipUnless 'async function* generator() { yield 42; }', ['async_iterators.coffee']
+  skipUnless 'var a = 2 ** 2; a **= 3', ['exponentiation.coffee']
+  files = fs.readdirSync('test').filter (filename) ->
+    filename not in testFilesToSkip
 
   startTime = Date.now()
   for file in files when helpers.isCoffee file
