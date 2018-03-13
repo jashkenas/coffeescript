@@ -29,6 +29,7 @@ header = """
 # Used in folder names like `docs/v1`.
 majorVersion = parseInt CoffeeScript.VERSION.split('.')[0], 10
 
+
 # Log a message with a color.
 log = (message, color, explanation) ->
   console.log color + message + reset + ' ' + (explanation or '')
