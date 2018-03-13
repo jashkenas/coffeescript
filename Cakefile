@@ -425,12 +425,6 @@ runTests = (CoffeeScript) ->
     catch err
       onFail description, fn, err
 
-  global.supportsAsync = try
-      new Function('async () => {}')()
-      yes
-    catch
-      no
-
   helpers.extend global, require './test/support/helpers'
 
   # When all the tests have run, collect and print errors.
@@ -448,10 +442,18 @@ runTests = (CoffeeScript) ->
       console.log "  #{source}" if source
     return
 
-  # Run every test in the `test` folder, recording failures.
-  files = fs.readdirSync 'test'
-  unless global.supportsAsync # Except for async tests, if async isn’t supported.
-    files = files.filter (filename) -> filename isnt 'async.coffee'
+  # Run every test in the `test` folder, recording failures, except for files
+  # we’re skipping because the features to be tested are unsupported in the
+  # current Node runtime.
+  testFilesToSkip = []
+  skipUnless = (featureDetect, filenames) ->
+    unless (try new Function featureDetect)
+      testFilesToSkip = testFilesToSkip.concat filenames
+  skipUnless 'async () => {}', ['async.coffee', 'async_iterators.coffee']
+  skipUnless 'async function* generator() { yield 42; }', ['async_iterators.coffee']
+  skipUnless 'var a = 2 ** 2; a **= 3', ['exponentiation.coffee']
+  files = fs.readdirSync('test').filter (filename) ->
+    filename not in testFilesToSkip
 
   startTime = Date.now()
   for file in files when helpers.isCoffee file
