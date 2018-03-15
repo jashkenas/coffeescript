@@ -953,15 +953,6 @@ test "`yield` outside of a function", ->
     ^^^^^^^^^^^^
   '''
 
-test "#4097: `yield return` as an expression", ->
-  assertErrorFormat '''
-    -> (yield return)
-  ''', '''
-    [stdin]:1:5: error: cannot use a pure statement in an expression
-    -> (yield return)
-        ^^^^^^^^^^^^
-  '''
-
 test "`&&=` and `||=` with a space in-between", ->
   assertErrorFormat '''
     a = 0

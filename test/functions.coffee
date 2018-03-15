@@ -572,3 +572,17 @@ test "#4657: destructured array parameters", ->
   result = f [1, 2, 3, 4]
   arrayEq result.a, [1, 2, 3]
   eq result.b, 4
+
+test "#5013: return statements in parentheses", ->
+  compile = (code) -> CoffeeScript.compile(code, bare: yes).trim().replace(/\s+/g, " ")
+
+  eq "(function() {});",         compile("-> (return)")
+  eq "(function*() {});",        compile("-> (yield return)")
+  eq "(async function() {});",   compile("-> (await return)")
+
+  foo = (cond) ->
+    (a = 1; return) if cond
+    a = 2
+
+  eq undefined, foo yes
+  eq 2, foo no
