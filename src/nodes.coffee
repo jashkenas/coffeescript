@@ -1371,7 +1371,7 @@ exports.Range = class Range extends Base
     upperBound = "#{gt} #{ if known then to else @toVar }"
     condPart =
       if @step?
-        if @stepNum? and @stepNum != 0
+        if @stepNum? and @stepNum isnt 0
           if @stepNum > 0 then "#{lowerBound}" else "#{upperBound}"
         else
           "#{stepNotZero} && (#{stepCond} ? #{lowerBound} : #{upperBound})"
