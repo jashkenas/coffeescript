@@ -1370,12 +1370,15 @@ exports.Range = class Range extends Base
     lowerBound = "#{lt} #{ if known then to else @toVar }"
     upperBound = "#{gt} #{ if known then to else @toVar }"
     condPart =
-       if @step?
-         "#{stepNotZero} && (#{stepCond} ? #{lowerBound} : #{upperBound})"
-       else
-         if known
-           "#{ if from <= to then lt else gt } #{to}"
-         else
+      if @step?
+        if @stepNum? and @stepNum != 0
+          if @stepNum > 0 then "#{lowerBound}" else "#{upperBound}"
+        else
+          "#{stepNotZero} && (#{stepCond} ? #{lowerBound} : #{upperBound})"
+      else
+        if known
+          "#{ if from <= to then lt else gt } #{to}"
+        else
           "(#{@fromVar} <= #{@toVar} ? #{lowerBound} : #{upperBound})"
 
     cond = if @stepVar then "#{@stepVar} > 0" else "#{@fromVar} <= #{@toVar}"
