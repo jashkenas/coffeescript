@@ -953,6 +953,51 @@ test "`yield` outside of a function", ->
     ^^^^^^^^^^^^
   '''
 
+test "#4097: `yield return` as an expression", ->
+  assertErrorFormat '''
+    -> (yield return)
+  ''', '''
+    [stdin]:1:5: error: cannot use a pure statement in an expression
+    -> (yield return)
+        ^^^^^^^^^^^^
+  '''
+
+test "#5013: `await return` as an expression", ->
+  assertErrorFormat '''
+    -> (await return)
+  ''', '''
+    [stdin]:1:5: error: cannot use a pure statement in an expression
+    -> (await return)
+        ^^^^^^^^^^^^
+  '''
+
+test "#5013: `return` as an expression", ->
+  assertErrorFormat '''
+    -> (return)
+  ''', '''
+    [stdin]:1:5: error: cannot use a pure statement in an expression
+    -> (return)
+        ^^^^^^
+  '''
+
+test "#5013: `break` as an expression", ->
+  assertErrorFormat '''
+    (b = 1; break) for b in a
+  ''', '''
+    [stdin]:1:9: error: cannot use a pure statement in an expression
+    (b = 1; break) for b in a
+            ^^^^^
+  '''
+
+test "#5013: `continue` as an expression", ->
+  assertErrorFormat '''
+    (b = 1; continue) for b in a
+  ''', '''
+    [stdin]:1:9: error: cannot use a pure statement in an expression
+    (b = 1; continue) for b in a
+            ^^^^^^^^
+  '''
+
 test "`&&=` and `||=` with a space in-between", ->
   assertErrorFormat '''
     a = 0
