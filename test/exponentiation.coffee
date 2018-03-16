@@ -14,4 +14,6 @@ test "exponentiation operator is right associative", ->
   eq 2, 2 ** 1 ** 3
 
 test "exponentiation operator compound assignment", ->
-  eq 8, do -> a = 2; a **= 3
+  a = 2
+  a **= 3
+  eq 8, a
