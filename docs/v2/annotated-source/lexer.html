@@ -920,10 +920,10 @@ can close multiple indents, so we need to know how far in we happen to be.</p>
     indent = match[<span class="hljs-number">0</span>]
 
     prev = @prev()
-    backslash = prev? <span class="hljs-keyword">and</span> prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'\\'</span>
+    backslash = prev?[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'\\'</span>
     @seenFor = <span class="hljs-literal">no</span> <span class="hljs-keyword">unless</span> backslash <span class="hljs-keyword">and</span> @seenFor
-    @seenImport = <span class="hljs-literal">no</span> <span class="hljs-keyword">unless</span> @importSpecifierList
-    @seenExport = <span class="hljs-literal">no</span> <span class="hljs-keyword">unless</span> @exportSpecifierList
+    @seenImport = <span class="hljs-literal">no</span> <span class="hljs-keyword">unless</span> (backslash <span class="hljs-keyword">and</span> @seenImport) <span class="hljs-keyword">or</span> @importSpecifierList
+    @seenExport = <span class="hljs-literal">no</span> <span class="hljs-keyword">unless</span> (backslash <span class="hljs-keyword">and</span> @seenExport) <span class="hljs-keyword">or</span> @exportSpecifierList
 
     size = indent.length - <span class="hljs-number">1</span> - indent.lastIndexOf <span class="hljs-string">'\n'</span>
     noNewlines = @unfinished()
@@ -944,7 +944,7 @@ can close multiple indents, so we need to know how far in we happen to be.</p>
 
     <span class="hljs-keyword">if</span> size &gt; @indent
       <span class="hljs-keyword">if</span> noNewlines
-        @indebt = size - @indent
+        @indebt = size - @indent <span class="hljs-keyword">unless</span> backslash
         @suppressNewlines()
         <span class="hljs-keyword">return</span> indent.length
       <span class="hljs-keyword">unless</span> @tokens.length
