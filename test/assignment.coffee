@@ -945,3 +945,90 @@ test "#4673: complex destructured object spread variables", ->
 
   {{g}...} = g: 1
   eq g, 1
+
+test "#4878: Compile error when using destructuring with a splat or expansion in an array", ->
+  arr = ['a', 'b', 'c', 'd']
+
+  f1 = (list) ->
+    [first, ..., last] = list
+
+  f2 = (list) ->
+    [first..., last] = list
+
+  f3 = (list) ->
+    ([first, ...] = list); first
+
+  f4 = (list) ->
+    ([first, rest...] = list); rest
+
+  arrayEq f1(arr), arr
+  arrayEq f2(arr), arr
+  arrayEq f3(arr), 'a'
+  arrayEq f4(arr), ['b', 'c', 'd']
+
+  foo = (list) ->
+    ret =
+      if list?.length > 0
+        [first, ..., last] = list
+        [first, last]
+      else
+        []
+
+  arrayEq foo(arr), ['a', 'd']
+
+  bar = (list) ->
+    ret =
+      if list?.length > 0
+        [first, rest...] = list
+        [first, rest]
+      else
+        []
+
+  arrayEq bar(arr), ['a', ['b', 'c', 'd']]
+
+test "destructuring assignment with an empty array in object", ->
+  obj =
+    a1: [1, 2]
+    b1: 3
+
+  {a1:[], b1} = obj
+  eq 'undefined', typeof a1
+  eq b1, 3
+
+  obj =
+    a2:
+      b2: [1, 2]
+    c2: 3
+
+  {a2: {b2:[]}, c2} = obj
+  eq 'undefined', typeof b2
+  eq c2, 3
+
+test "#5004: array destructuring with accessors", ->
+  obj =
+    arr: ['a', 'b', 'c', 'd']
+    list: {}
+    f1: ->
+      [@first, @rest...] = @arr
+    f2: ->
+      [@second, @third..., @last] = @rest
+    f3: ->
+      [@list.a, @list.middle..., @list.d] = @arr
+
+  obj.f1()
+  eq obj.first, 'a'
+  arrayEq obj.rest, ['b', 'c', 'd']
+
+  obj.f2()
+  eq obj.second, 'b'
+  arrayEq obj.third, ['c']
+  eq obj.last, 'd'
+
+  obj.f3()
+  eq obj.list.a, 'a'
+  arrayEq obj.list.middle, ['b', 'c']
+  eq obj.list.d, 'd'
+
+  [obj.list.middle..., d] = obj.arr
+  eq d, 'd'
+  arrayEq obj.list.middle, ['a', 'b', 'c']

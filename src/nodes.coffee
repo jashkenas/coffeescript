@@ -1353,7 +1353,11 @@ exports.Range = class Range extends Base
     idx      = del o, 'index'
     idxName  = del o, 'name'
     namedIndex = idxName and idxName isnt idx
-    varPart  = "#{idx} = #{@fromC}"
+    varPart  =
+      if known and not namedIndex
+        "var #{idx} = #{@fromC}"
+      else
+        "#{idx} = #{@fromC}"
     varPart += ", #{@toC}" if @toC isnt @toVar
     varPart += ", #{@step}" if @step isnt @stepVar
     [lt, gt] = ["#{idx} <#{@equals}", "#{idx} >#{@equals}"]
@@ -1361,23 +1365,21 @@ exports.Range = class Range extends Base
     # Generate the condition.
     [from, to] = [@fromNum, @toNum]
     # Always check if the `step` isn't zero to avoid the infinite loop.
-    stepCond = if @stepNum then "#{@stepNum} !== 0" else "#{@stepVar} !== 0"
+    stepNotZero = "#{ @stepNum ? @stepVar } !== 0"
+    stepCond = "#{ @stepNum ? @stepVar } > 0"
+    lowerBound = "#{lt} #{ if known then to else @toVar }"
+    upperBound = "#{gt} #{ if known then to else @toVar }"
     condPart =
-      if known
-        unless @step?
-          if from <= to then "#{lt} #{to}" else "#{gt} #{to}"
+      if @step?
+        if @stepNum? and @stepNum isnt 0
+          if @stepNum > 0 then "#{lowerBound}" else "#{upperBound}"
         else
-          # from < to
-          lowerBound = "#{from} <= #{idx} && #{lt} #{to}"
-          # from > to
-          upperBound = "#{from} >= #{idx} && #{gt} #{to}"
-          if from <= to then "#{stepCond} && #{lowerBound}" else "#{stepCond} && #{upperBound}"
+          "#{stepNotZero} && (#{stepCond} ? #{lowerBound} : #{upperBound})"
       else
-        # from < to
-        lowerBound = "#{@fromVar} <= #{idx} && #{lt} #{@toVar}"
-        # from > to
-        upperBound = "#{@fromVar} >= #{idx} && #{gt} #{@toVar}"
-        "#{stepCond} && (#{@fromVar} <= #{@toVar} ? #{lowerBound} : #{upperBound})"
+        if known
+          "#{ if from <= to then lt else gt } #{to}"
+        else
+          "(#{@fromVar} <= #{@toVar} ? #{lowerBound} : #{upperBound})"
 
     cond = if @stepVar then "#{@stepVar} > 0" else "#{@fromVar} <= #{@toVar}"
 
@@ -1478,7 +1480,9 @@ exports.Obj = class Obj extends Base
       message = isUnassignable prop.unwrapAll().value
       prop.error message if message
 
-      prop = prop.value if prop instanceof Assign and prop.context is 'object'
+      prop = prop.value if prop instanceof Assign and
+        prop.context is 'object' and
+        prop.value?.base not instanceof Arr
       return no unless prop.isAssignable()
     yes
 
@@ -2408,8 +2412,8 @@ exports.Assign = class Assign extends Base
       # Sort 'splatsAndExpans' so we can show error at first disallowed token.
       objects[splatsAndExpans.sort()[1]].error "multiple splats/expansions are disallowed in an assignment"
 
-    isSplat = splats.length
-    isExpans = expans.length
+    isSplat = splats?.length > 0
+    isExpans = expans?.length > 0
     isObject = @variable.isObject()
     isArray = @variable.isArray()
 
@@ -2427,7 +2431,8 @@ exports.Assign = class Assign extends Base
       vvarText = ref
 
     slicer = (type) -> (vvar, start, end = no) ->
-      args = [new IdentifierLiteral(vvar), new NumberLiteral(start)]
+      vvar = new IdentifierLiteral vvar unless vvar instanceof Value
+      args = [vvar, new NumberLiteral(start)]
       args.push new NumberLiteral end if end
       slice = new Value (new IdentifierLiteral utility type, o), [new Access new PropertyName 'call']
       new Value new Call slice, args
@@ -2458,7 +2463,7 @@ exports.Assign = class Assign extends Base
 
     # "Complex" `objects` are processed in a loop.
     # Examples: [a, b, {c, r...}, d], [a, ..., {b, r...}, c, d]
-    loopObjects = (objs, vvarTxt) =>
+    loopObjects = (objs, vvar, vvarTxt) =>
       objSpreads = hasObjSpreads objs
       for obj, i in objs
         # `Elision` can be skipped.
@@ -2488,16 +2493,16 @@ exports.Assign = class Assign extends Base
         assigns.push new Assign(vvar, vval, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
 
     # "Simple" `objects` can be split and compiled to arrays, [a, b, c] = arr, [a, b, c...] = arr
-    assignObjects = (objs, vvarTxt) =>
+    assignObjects = (objs, vvar, vvarTxt) =>
       vvar = new Value new Arr(objs, yes)
       vval = if vvarTxt instanceof Value then vvarTxt else new Value new Literal(vvarTxt)
       assigns.push new Assign(vvar, vval, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
 
-    processObjects = (objs, vvarTxt) ->
+    processObjects = (objs, vvar, vvarTxt) ->
       if complexObjects objs
-        loopObjects objs, vvarTxt
+        loopObjects objs, vvar, vvarTxt
       else
-        assignObjects objs, vvarTxt
+        assignObjects objs, vvar, vvarTxt
 
     # In case there is `Splat` or `Expansion` in `objects`,
     # we can split array in two simple subarrays.
@@ -2514,20 +2519,20 @@ exports.Assign = class Assign extends Base
       expIdx = splatsAndExpans[0]
       leftObjs = objects.slice 0, expIdx + (if isSplat then 1 else 0)
       rightObjs = objects.slice expIdx + 1
-      processObjects leftObjs, vvarText if leftObjs.length isnt 0
+      processObjects leftObjs, vvar, vvarText if leftObjs.length isnt 0
       if rightObjs.length isnt 0
         # Slice or splice `objects`.
         refExp = switch
-          when isSplat then compSplice objects[expIdx].unwrapAll().value, rightObjs.length * -1
+          when isSplat then compSplice new Value(objects[expIdx].name), rightObjs.length * -1
           when isExpans then compSlice vvarText, rightObjs.length * -1
         if complexObjects rightObjs
           restVar = refExp
           refExp = o.scope.freeVariable 'ref'
           assigns.push [@makeCode(refExp + ' = '), restVar.compileToFragments(o, LEVEL_LIST)...]
-        processObjects rightObjs, refExp
+        processObjects rightObjs, vvar, refExp
     else
       # There is no `Splat` or `Expansion` in `objects`.
-      processObjects objects, vvarText
+      processObjects objects, vvar, vvarText
     assigns.push vvar unless top or @subpattern
     fragments = @joinFragmentArrays assigns, ', '
     if o.level < LEVEL_LIST then fragments else @wrapInParentheses fragments
