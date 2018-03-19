@@ -18,7 +18,7 @@ attachCommentsToNode, locationDataToString, throwSyntaxError} = require './helpe
 # The Lexer Class
 # ---------------
 
-# The Lexer class reads a stream of CoffeeScript and divvies it up into tagged
+# The Lexer class reads a stream of CoffeeScript and divides it up into tagged
 # tokens. Some potential ambiguity in the grammar has been avoided by
 # pushing some extra smarts into the Lexer.
 exports.Lexer = class Lexer
