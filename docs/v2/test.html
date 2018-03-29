@@ -1664,9 +1664,10 @@ test "#5004: array destructuring with accessors", ->
 <script type="text/x-coffeescript" class="test" id="async">
 # Functions that contain the `await` keyword will compile into async functions,
 # supported by Node 7.6+, Chrome 55+, Firefox 52+, Safari 10.1+ and Edge.
-# But runtimes that don’t support the `await` keyword will throw an error,
-# even if we put `return unless global.supportsAsync` at the top of this file.
-# Therefore we need to prevent runtimes which will choke on such code from even
+# But runtimes that don’t support the `await` keyword will throw an error just
+# from parsing this file, even without executing it, even if we put
+# `return unless try new Function 'async () => {}'` at the top of this file.
+# Therefore we need to prevent runtimes which will choke on such code from
 # parsing it, which is handled in `Cakefile`.
 
 
@@ -2154,6 +2155,7 @@ test "classes with value'd constructors", ->
     inner = ++counter
     ->
       @value = inner
+      @
 
   class One
     constructor: classMaker()
@@ -6808,37 +6810,6 @@ test "#3921: `switch`", ->
     else "none"
   eq "five", c
 
-# Issue #3441: Parentheses wrapping expression throw invalid error in `then` clause
-test "#3441: `StatementLiteral` in parentheses", ->
-  i = 0
-  r1 = ((i++; break) while i < 10)
-  arrayEq r1, []
-
-  i = 0
-  r2 = ((i++; continue) while i < 10)
-  arrayEq r2, []
-
-  i = 0
-  r4 = while i < 10 then (i++; break)
-  arrayEq r4, []
-
-  i = 0
-  r5 = while i < 10 then (i++; continue)
-  arrayEq r5, []
-
-  arr = [0..9]
-  r6 = ((a; break) for a in arr)
-  arrayEq r6, []
-
-  r7 = ((a; continue) for a in arr)
-  arrayEq r7, []
-
-  r8 = for a in arr then (a; break)
-  arrayEq r8, []
-
-  r9 = for a in arr then (a; continue)
-  arrayEq r9, []
-
 # Issue #3909: backslash to break line in `for` loops throw syntax error
 test "#3909: backslash `for own ... of`", ->
 
@@ -8792,6 +8763,42 @@ test "#4097: `yield return` as an expression", ->
     [stdin]:1:5: error: cannot use a pure statement in an expression
     -> (yield return)
         ^^^^^^^^^^^^
+  '''
+
+test "#5013: `await return` as an expression", ->
+  assertErrorFormat '''
+    -> (await return)
+  ''', '''
+    [stdin]:1:5: error: cannot use a pure statement in an expression
+    -> (await return)
+        ^^^^^^^^^^^^
+  '''
+
+test "#5013: `return` as an expression", ->
+  assertErrorFormat '''
+    -> (return)
+  ''', '''
+    [stdin]:1:5: error: cannot use a pure statement in an expression
+    -> (return)
+        ^^^^^^
+  '''
+
+test "#5013: `break` as an expression", ->
+  assertErrorFormat '''
+    (b = 1; break) for b in a
+  ''', '''
+    [stdin]:1:9: error: cannot use a pure statement in an expression
+    (b = 1; break) for b in a
+            ^^^^^
+  '''
+
+test "#5013: `continue` as an expression", ->
+  assertErrorFormat '''
+    (b = 1; continue) for b in a
+  ''', '''
+    [stdin]:1:9: error: cannot use a pure statement in an expression
+    (b = 1; continue) for b in a
+            ^^^^^^^^
   '''
 
 test "`&&=` and `||=` with a space in-between", ->
@@ -16886,7 +16893,7 @@ testRepl "keeps running after runtime error", (input, output) ->
   eq 'undefined', output.lastWrite()
 
 testRepl "#4604: wraps an async function", (input, output) ->
-  return unless global.supportsAsync
+  return unless try new Function 'async () => {}' # Feature detect support for async functions.
   input.emitLine 'await new Promise (resolve) -> setTimeout (-> resolve 33), 10'
   setTimeout ->
     eq '33', output.lastWrite()
