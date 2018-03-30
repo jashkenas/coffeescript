@@ -1261,7 +1261,7 @@ REGEX = /// ^
 ///
 
 REGEX_FLAGS  = /^\w*/
-VALID_FLAGS  = /^(?!.*(.).*\1)[imguy]*$/
+VALID_FLAGS  = /^(?!.*(.).*\1)[gimsuy]*$/
 
 HEREGEX      = /// ^
   (?:
