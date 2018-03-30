@@ -1112,37 +1112,6 @@ test "#3921: `switch`", ->
     else "none"
   eq "five", c
 
-# Issue #3441: Parentheses wrapping expression throw invalid error in `then` clause
-test "#3441: `StatementLiteral` in parentheses", ->
-  i = 0
-  r1 = ((i++; break) while i < 10)
-  arrayEq r1, []
-
-  i = 0
-  r2 = ((i++; continue) while i < 10)
-  arrayEq r2, []
-
-  i = 0
-  r4 = while i < 10 then (i++; break)
-  arrayEq r4, []
-
-  i = 0
-  r5 = while i < 10 then (i++; continue)
-  arrayEq r5, []
-
-  arr = [0..9]
-  r6 = ((a; break) for a in arr)
-  arrayEq r6, []
-
-  r7 = ((a; continue) for a in arr)
-  arrayEq r7, []
-
-  r8 = for a in arr then (a; break)
-  arrayEq r8, []
-
-  r9 = for a in arr then (a; continue)
-  arrayEq r9, []
-
 # Issue #3909: backslash to break line in `for` loops throw syntax error
 test "#3909: backslash `for own ... of`", ->
 
@@ -1287,3 +1256,56 @@ test "#4871: `else if` no longer output together ", ->
      2;
    }
    '''
+
+test "#4898: Lexer: backslash line continuation is inconsistent", ->
+  if ( \
+      false \
+      or \
+      true \
+    )
+    a = 42
+
+  eq a, 42
+
+  if ( \
+      false \
+      or \
+      true \
+  )
+    b = 42
+
+  eq b, 42
+
+  if ( \
+            false \
+         or \
+   true \
+  )
+    c = 42
+
+  eq c, 42
+
+  if \
+   false \
+        or \
+   true
+    d = 42
+
+  eq d, 42
+
+  if \
+              false or \
+  true
+    e = 42
+
+  eq e, 42
+
+  if \
+       false or \
+    true \
+       then \
+   f = 42 \
+   else
+     f = 24
+
+  eq f, 42

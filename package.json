@@ -8,7 +8,7 @@
     "compiler"
   ],
   "author": "Jeremy Ashkenas",
-  "version": "2.2.0",
+  "version": "2.2.4",
   "license": "MIT",
   "engines": {
     "node": ">=6"
@@ -43,13 +43,13 @@
     "babel-preset-babili": "~0.1.4",
     "babel-preset-env": "~1.6.1",
     "babel-preset-minify": "^0.3.0",
-    "codemirror": "^5.32.0",
+    "codemirror": "^5.35.0",
     "docco": "~0.8.0",
     "highlight.js": "~9.12.0",
     "jison": ">=0.4.18",
-    "markdown-it": "~8.4.0",
+    "markdown-it": "~8.4.1",
     "underscore": "~1.8.3",
-    "webpack": "~3.10.0"
+    "webpack": "~4.1.1"
   },
   "dependencies": {}
 }
