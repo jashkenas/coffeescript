@@ -760,6 +760,49 @@ exports.IdentifierLiteral = class IdentifierLiteral extends Literal
   eachName: (iterator) ->
     iterator @
 
+exports.SubStructAssign = class SubStructAssign extends Base
+  constructor: (@variable, @value, @lhs = no) ->
+    super()
+    [@objVar, @objVal] = @variable
+
+  objProperties: (props) ->
+    ret = []
+    for prop in props
+      if prop instanceof Assign and prop.context is 'object'
+        {value: {base: obj}} = prop
+        validObj = (obj instanceof Arr and obj.objects.length > 0) or
+                   (obj instanceof Obj and obj.properties.length > 0) or
+                    obj instanceof IdentifierLiteral
+        ret.push obj if validObj
+      else if prop instanceof Splat
+        ret.push prop.name
+      else
+        ret.push prop.base
+    ret
+
+  finalProps: (props = []) ->
+    ret = []
+    getProps = (props) => @finalProps @objProperties props
+    for prop in props
+      if prop instanceof Obj
+        ret = [ret..., getProps(prop.properties)...]
+      else if prop instanceof Arr
+        ret = [ret..., getProps(prop.objects)...]
+      else
+        ret.push prop
+    ret
+
+  compileNode: (o) ->
+    fProps = @finalProps @objProperties @objVal.properties
+    body = [new Assign new Value(@objVal), new Value(@objVar)]
+    if @lhs
+      body.push new Value new Obj [(new Splat @value), fProps...]
+    else
+      body.push new Obj fProps
+    answer = new Code [], Block.wrap(body), new FuncGlyph '->'
+    answer = new Call (new Parens answer), [], no
+    answer.compileToFragments o, LEVEL_TOP
+
 exports.CSXTag = class CSXTag extends IdentifierLiteral
 
 exports.PropertyName = class PropertyName extends Literal
@@ -2200,6 +2243,16 @@ exports.Assign = class Assign extends Base
   # has not been seen yet within the current scope, declare it.
   compileNode: (o) ->
     isValue = @variable instanceof Value
+
+    # Convert LHS sub-structuring assignment.
+    if @variable.base instanceof SubStructAssign
+      {objVar, objVal} = @variable.base
+      unless o.scope.check objVar.value
+        @error "the variable '#{objVar.value}' has not been declared before"
+      subStruct = new SubStructAssign [@value, objVal], objVar, yes
+      subStructAssign = new Assign new Value(objVar), new Value subStruct
+      return subStructAssign.compileToFragments o, LEVEL_TOP
+
     if isValue
       # When compiling `@variable`, remember if it is part of a function parameter.
       @variable.param = @param

@@ -1863,3 +1863,13 @@ test "#3933: prevent implicit calls when cotrol flow is missing `THEN`", ->
       when a ->
              ^^
   '''
+
+test "lhs sub-structure assignment error", ->
+  assertErrorFormat '''
+    a{title} = data
+  ''',
+  '''
+    [stdin]:1:1: error: the variable 'a' has not been declared before
+    a{title} = data
+    ^^^^^^^^^^^^^^^
+  '''

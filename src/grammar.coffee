@@ -200,6 +200,9 @@ grammar =
   AssignObj: [
     o 'ObjAssignable',                          -> new Value $1
     o 'ObjRestValue'
+    o '- Identifier',                           -> new Assign LOC(1)(new Value $2),
+                                                              (new Value new Obj [], yes), 'object',
+                                                              operatorToken: (new Literal ':')
     o 'ObjAssignable : Expression',             -> new Assign LOC(1)(new Value $1), $3, 'object',
                                                               operatorToken: LOC(2)(new Literal $2)
     o 'ObjAssignable :
@@ -343,6 +346,11 @@ grammar =
     o 'SimpleAssignable'
     o 'Array',                                  -> new Value $1
     o 'Object',                                 -> new Value $1
+    o 'SubStructAssignable',                    -> new Value new SubStructAssign $1
+  ]
+
+  SubStructAssignable: [
+    o 'Identifier Object',                      -> [$1, $2]
   ]
 
   # The types of things that can be treated as values -- assigned to, invoked
