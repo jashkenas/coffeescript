@@ -1,7 +1,25 @@
 ## Changelog
 
 ```
-releaseHeader('2018-02-06', '2.2.1', '2.1.0')
+releaseHeader('2018-03-29', '2.2.4', '2.2.3')
+```
+*   When the `by` value in a `for` loop is a literal number, e.g. `for x in [2..1] by -1`, fewer checks are necessary to determine if the loop is in range.
+*   Bugfix for regression in 2.2.0 where a statement inside parentheses, e.g. `(fn(); break) while condition`, was compiling. Pure statements like `break` or `return` cannot turn a parenthesized block into an expression, and should throw an error.
+
+```
+releaseHeader('2018-03-11', '2.2.3', '2.2.2')
+```
+*   Bugfix for object destructuring with an empty array as a key’s value: `{ key: [] } = obj`.
+*   Bugfix for array destructuring onto targets attached to `this`: `[ @most... , @penultimate, @last ] = arr`.
+
+```
+releaseHeader('2018-02-21', '2.2.2', '2.2.1')
+```
+*   Bugfix for regression in 2.2.0 where a range with a `by` (step) value that increments or decrements in the opposite direction as the range was returning an array containing the first value of the range, whereas it should be returning an empty array. In other words, `x for x in [2..1] by 1` should equal `[]`, not `[2]` (because the step value is positive 1, counting up, whereas the range goes from 2 to 1, counting down).
+*   Bugfixes for allowing backslashes in `import` and `export` statements and lines that trigger the start of an indented block, like an `if` statement.
+
+```
+releaseHeader('2018-02-06', '2.2.1', '2.2.0')
 ```
 *   Bugfix for regression in 2.2.0 involving an error thrown by the compiler in certain cases when using destructuring with a splat or expansion in an array.
 *   Bugfix for regression in 2.2.0 where in certain cases a range iterator variable was declared in the global scope.

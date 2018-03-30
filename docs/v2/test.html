@@ -1586,7 +1586,7 @@ test "#4878: Compile error when using destructuring with a splat or expansion in
     ([first, ...] = list); first
 
   f4 = (list) ->
-    ([first, ...rest] = list); rest
+    ([first, rest...] = list); rest
 
   arrayEq f1(arr), arr
   arrayEq f2(arr), arr
@@ -1606,20 +1606,68 @@ test "#4878: Compile error when using destructuring with a splat or expansion in
   bar = (list) ->
     ret =
       if list?.length > 0
-        [first, ...rest] = list
+        [first, rest...] = list
         [first, rest]
       else
         []
 
   arrayEq bar(arr), ['a', ['b', 'c', 'd']]
 
+test "destructuring assignment with an empty array in object", ->
+  obj =
+    a1: [1, 2]
+    b1: 3
+
+  {a1:[], b1} = obj
+  eq 'undefined', typeof a1
+  eq b1, 3
+
+  obj =
+    a2:
+      b2: [1, 2]
+    c2: 3
+
+  {a2: {b2:[]}, c2} = obj
+  eq 'undefined', typeof b2
+  eq c2, 3
+
+test "#5004: array destructuring with accessors", ->
+  obj =
+    arr: ['a', 'b', 'c', 'd']
+    list: {}
+    f1: ->
+      [@first, @rest...] = @arr
+    f2: ->
+      [@second, @third..., @last] = @rest
+    f3: ->
+      [@list.a, @list.middle..., @list.d] = @arr
+
+  obj.f1()
+  eq obj.first, 'a'
+  arrayEq obj.rest, ['b', 'c', 'd']
+
+  obj.f2()
+  eq obj.second, 'b'
+  arrayEq obj.third, ['c']
+  eq obj.last, 'd'
+
+  obj.f3()
+  eq obj.list.a, 'a'
+  arrayEq obj.list.middle, ['b', 'c']
+  eq obj.list.d, 'd'
+
+  [obj.list.middle..., d] = obj.arr
+  eq d, 'd'
+  arrayEq obj.list.middle, ['a', 'b', 'c']
+
 </script>
 <script type="text/x-coffeescript" class="test" id="async">
 # Functions that contain the `await` keyword will compile into async functions,
 # supported by Node 7.6+, Chrome 55+, Firefox 52+, Safari 10.1+ and Edge.
-# But runtimes that don’t support the `await` keyword will throw an error,
-# even if we put `return unless global.supportsAsync` at the top of this file.
-# Therefore we need to prevent runtimes which will choke on such code from even
+# But runtimes that don’t support the `await` keyword will throw an error just
+# from parsing this file, even without executing it, even if we put
+# `return unless try new Function 'async () => {}'` at the top of this file.
+# Therefore we need to prevent runtimes which will choke on such code from
 # parsing it, which is handled in `Cakefile`.
 
 
@@ -2107,6 +2155,7 @@ test "classes with value'd constructors", ->
     inner = ++counter
     ->
       @value = inner
+      @
 
   class One
     constructor: classMaker()
@@ -6761,37 +6810,6 @@ test "#3921: `switch`", ->
     else "none"
   eq "five", c
 
-# Issue #3441: Parentheses wrapping expression throw invalid error in `then` clause
-test "#3441: `StatementLiteral` in parentheses", ->
-  i = 0
-  r1 = ((i++; break) while i < 10)
-  arrayEq r1, []
-
-  i = 0
-  r2 = ((i++; continue) while i < 10)
-  arrayEq r2, []
-
-  i = 0
-  r4 = while i < 10 then (i++; break)
-  arrayEq r4, []
-
-  i = 0
-  r5 = while i < 10 then (i++; continue)
-  arrayEq r5, []
-
-  arr = [0..9]
-  r6 = ((a; break) for a in arr)
-  arrayEq r6, []
-
-  r7 = ((a; continue) for a in arr)
-  arrayEq r7, []
-
-  r8 = for a in arr then (a; break)
-  arrayEq r8, []
-
-  r9 = for a in arr then (a; continue)
-  arrayEq r9, []
-
 # Issue #3909: backslash to break line in `for` loops throw syntax error
 test "#3909: backslash `for own ... of`", ->
 
@@ -6936,6 +6954,59 @@ test "#4871: `else if` no longer output together ", ->
      2;
    }
    '''
+
+test "#4898: Lexer: backslash line continuation is inconsistent", ->
+  if ( \
+      false \
+      or \
+      true \
+    )
+    a = 42
+
+  eq a, 42
+
+  if ( \
+      false \
+      or \
+      true \
+  )
+    b = 42
+
+  eq b, 42
+
+  if ( \
+            false \
+         or \
+   true \
+  )
+    c = 42
+
+  eq c, 42
+
+  if \
+   false \
+        or \
+   true
+    d = 42
+
+  eq d, 42
+
+  if \
+              false or \
+  true
+    e = 42
+
+  eq e, 42
+
+  if \
+       false or \
+    true \
+       then \
+   f = 42 \
+   else
+     f = 24
+
+  eq f, 42
 
 </script>
 <script type="text/x-coffeescript" class="test" id="csx">
@@ -8692,6 +8763,42 @@ test "#4097: `yield return` as an expression", ->
     [stdin]:1:5: error: cannot use a pure statement in an expression
     -> (yield return)
         ^^^^^^^^^^^^
+  '''
+
+test "#5013: `await return` as an expression", ->
+  assertErrorFormat '''
+    -> (await return)
+  ''', '''
+    [stdin]:1:5: error: cannot use a pure statement in an expression
+    -> (await return)
+        ^^^^^^^^^^^^
+  '''
+
+test "#5013: `return` as an expression", ->
+  assertErrorFormat '''
+    -> (return)
+  ''', '''
+    [stdin]:1:5: error: cannot use a pure statement in an expression
+    -> (return)
+        ^^^^^^
+  '''
+
+test "#5013: `break` as an expression", ->
+  assertErrorFormat '''
+    (b = 1; break) for b in a
+  ''', '''
+    [stdin]:1:9: error: cannot use a pure statement in an expression
+    (b = 1; break) for b in a
+            ^^^^^
+  '''
+
+test "#5013: `continue` as an expression", ->
+  assertErrorFormat '''
+    (b = 1; continue) for b in a
+  ''', '''
+    [stdin]:1:9: error: cannot use a pure statement in an expression
+    (b = 1; continue) for b in a
+            ^^^^^^^^
   '''
 
 test "`&&=` and `||=` with a space in-between", ->
@@ -14369,6 +14476,73 @@ test "#4491: import- and export-specific lexing should stop after import/export 
     from('foo');
     """
 
+# Issue #4874: Backslash not supported in import or export statements
+test "#4874: backslash `import`", ->
+
+  eqJS """
+    import foo \
+        from 'lib'
+
+    foo a
+    """,
+  """
+    import foo from 'lib';
+
+    foo(a);
+    """
+
+  eqJS """
+    import \
+                    foo \
+        from \
+    'lib'
+
+    foo a
+    """,
+  """
+    import foo from 'lib';
+
+    foo(a);
+    """
+
+  eqJS """
+    import \
+          utilityBelt \
+    , {
+      each
+    } from \
+    'underscore'
+    """,
+  """
+    import utilityBelt, {
+      each
+    } from 'underscore';
+    """
+
+test "#4874: backslash `export`", ->
+  eqJS """
+    export \
+      * \
+            from \
+      'underscore'
+    """,
+  """
+    export * from 'underscore';
+    """
+
+  eqJS """
+    export \
+        { max, min } \
+              from \
+      'underscore'
+  """,
+  """
+    export {
+      max,
+      min
+    } from 'underscore';
+    """
+
 </script>
 <script type="text/x-coffeescript" class="test" id="numbers">
 # Number Literals
@@ -16147,43 +16321,43 @@ test "#2047: Infinite loop possible when `for` loop with `range` uses variables"
 
   testData = [
     [1, 5, 1, [1..5]]
-    [1, 5, -1, [1]]
+    [1, 5, -1, []]
     [1, 5, up, [1..5]]
-    [1, 5, down, [1]]
+    [1, 5, down, []]
 
     [a, 5, 1, [1..5]]
-    [a, 5, -1, [1]]
+    [a, 5, -1, []]
     [a, 5, up, [1..5]]
-    [a, 5, down, [1]]
+    [a, 5, down, []]
 
     [1, b, 1, [1..5]]
-    [1, b, -1, [1]]
+    [1, b, -1, []]
     [1, b, up, [1..5]]
-    [1, b, down, [1]]
+    [1, b, down, []]
 
     [a, b, 1, [1..5]]
-    [a, b, -1, [1]]
+    [a, b, -1, []]
     [a, b, up, [1..5]]
-    [a, b, down, [1]]
+    [a, b, down, []]
 
-    [5, 1, 1, [5]]
+    [5, 1, 1, []]
     [5, 1, -1, [5..1]]
-    [5, 1, up, [5]]
+    [5, 1, up, []]
     [5, 1, down,  [5..1]]
 
-    [5, a, 1, [5]]
+    [5, a, 1, []]
     [5, a, -1, [5..1]]
-    [5, a, up, [5]]
+    [5, a, up, []]
     [5, a, down, [5..1]]
 
-    [b, 1, 1, [5]]
+    [b, 1, 1, []]
     [b, 1, -1, [5..1]]
-    [b, 1, up, [5]]
+    [b, 1, up, []]
     [b, 1, down, [5..1]]
 
-    [b, a, 1, [5]]
+    [b, a, 1, []]
     [b, a, -1, [5..1]]
-    [b, a, up, [5]]
+    [b, a, up, []]
     [b, a, down, [5..1]]
   ]
 
@@ -16199,10 +16373,10 @@ test "#2047: from, to and step as variables", ->
   arrayEq r, [1..5]
 
   r = (x for x in [a..b] by down)
-  arrayEq r, [1]
+  arrayEq r, []
 
   r = (x for x in [b..a] by up)
-  arrayEq r, [5]
+  arrayEq r, []
 
   r = (x for x in [b..a] by down)
   arrayEq r, [5..1]
@@ -16219,6 +16393,46 @@ test "#4884: Range not declaring var for the 'i'", ->
     idx + 1
 
   eq global.i, undefined
+
+test "#4889: `for` loop unexpected behavior", ->
+  n = 1
+  result = []
+  for i in [0..n]
+    result.push i
+    for j in [(i+1)..n]
+      result.push j
+
+  arrayEq result, [0,1,1,2,1]
+
+test "#4889: `for` loop unexpected behavior with `by 1` on second loop", ->
+  n = 1
+  result = []
+  for i in [0..n]
+    result.push i
+    for j in [(i+1)..n] by 1
+      result.push j
+
+  arrayEq result, [0,1,1]
+
+test "countdown example from docs", ->
+  countdown = (num for num in [10..1])
+  arrayEq countdown, [10,9,8,7,6,5,4,3,2,1]
+
+test "counting up when the range goes down returns an empty array", ->
+  countdown = (num for num in [10..1] by 1)
+  arrayEq countdown, []
+
+test "counting down when the range goes up returns an empty array", ->
+  countup = (num for num in [1..10] by -1)
+  arrayEq countup, []
+
+test "counting down by too much returns just the first value", ->
+  countdown = (num for num in [10..1] by -100)
+  arrayEq countdown, [10]
+
+test "counting up by too much returns just the first value", ->
+  countup = (num for num in [1..10] by 100)
+  arrayEq countup, [1]
 
 </script>
 <script type="text/x-coffeescript" class="test" id="regexps">
@@ -16679,7 +16893,7 @@ testRepl "keeps running after runtime error", (input, output) ->
   eq 'undefined', output.lastWrite()
 
 testRepl "#4604: wraps an async function", (input, output) ->
-  return unless global.supportsAsync
+  return unless try new Function 'async () => {}' # Feature detect support for async functions.
   input.emitLine 'await new Promise (resolve) -> setTimeout (-> resolve 33), 10'
   setTimeout ->
     eq '33', output.lastWrite()

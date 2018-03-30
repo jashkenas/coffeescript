@@ -863,11 +863,6 @@ exports.Value = class Value extends Base
   constructor: (base, props, tag, isDefaultValue = no) ->
     super()
     return base if not props and base instanceof Value
-    # When `Parens` block includes a `StatementLiteral` (e.g. `(b; break) for a in arr`),
-    # it won't compile since `Parens` (`(b; break)`) is compiled as `Value` and
-    # pure statement (`break`) can't be used in an expression.
-    # For this reasons, we return `Block` instead of `Parens`.
-    return base.unwrap() if base instanceof Parens and base.contains (n) -> n instanceof StatementLiteral
     @base           = base
     @properties     = props or []
     @[tag]          = yes if tag
@@ -1365,23 +1360,21 @@ exports.Range = class Range extends Base
     # Generate the condition.
     [from, to] = [@fromNum, @toNum]
     # Always check if the `step` isn't zero to avoid the infinite loop.
-    stepCond = if @stepNum then "#{@stepNum} !== 0" else "#{@stepVar} !== 0"
+    stepNotZero = "#{ @stepNum ? @stepVar } !== 0"
+    stepCond = "#{ @stepNum ? @stepVar } > 0"
+    lowerBound = "#{lt} #{ if known then to else @toVar }"
+    upperBound = "#{gt} #{ if known then to else @toVar }"
     condPart =
-      if known
-        unless @step?
-          if from <= to then "#{lt} #{to}" else "#{gt} #{to}"
+      if @step?
+        if @stepNum? and @stepNum isnt 0
+          if @stepNum > 0 then "#{lowerBound}" else "#{upperBound}"
         else
-          # from < to
-          lowerBound = "#{from} <= #{idx} && #{lt} #{to}"
-          # from > to
-          upperBound = "#{from} >= #{idx} && #{gt} #{to}"
-          if from <= to then "#{stepCond} && #{lowerBound}" else "#{stepCond} && #{upperBound}"
+          "#{stepNotZero} && (#{stepCond} ? #{lowerBound} : #{upperBound})"
       else
-        # from < to
-        lowerBound = "#{@fromVar} <= #{idx} && #{lt} #{@toVar}"
-        # from > to
-        upperBound = "#{@fromVar} >= #{idx} && #{gt} #{@toVar}"
-        "#{stepCond} && (#{@fromVar} <= #{@toVar} ? #{lowerBound} : #{upperBound})"
+        if known
+          "#{ if from <= to then lt else gt } #{to}"
+        else
+          "(#{@fromVar} <= #{@toVar} ? #{lowerBound} : #{upperBound})"
 
     cond = if @stepVar then "#{@stepVar} > 0" else "#{@fromVar} <= #{@toVar}"
 
@@ -1482,7 +1475,9 @@ exports.Obj = class Obj extends Base
       message = isUnassignable prop.unwrapAll().value
       prop.error message if message
 
-      prop = prop.value if prop instanceof Assign and prop.context is 'object'
+      prop = prop.value if prop instanceof Assign and
+        prop.context is 'object' and
+        prop.value?.base not instanceof Arr
       return no unless prop.isAssignable()
     yes
 
@@ -2227,9 +2222,9 @@ exports.Assign = class Assign extends Base
 
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
-      return @compileSpecialMath  o if @context in ['**=', '//=', '%%=']
+      return @compileSpecialMath  o if @context in ['//=', '%%=']
 
-    unless @context
+    if not @context or @context is '**='
       varBase = @variable.unwrapAll()
       unless varBase.isAssignable()
         @variable.error "'#{@variable.compile o}' can't be assigned"
@@ -2431,7 +2426,8 @@ exports.Assign = class Assign extends Base
       vvarText = ref
 
     slicer = (type) -> (vvar, start, end = no) ->
-      args = [new IdentifierLiteral(vvar), new NumberLiteral(start)]
+      vvar = new IdentifierLiteral vvar unless vvar instanceof Value
+      args = [vvar, new NumberLiteral(start)]
       args.push new NumberLiteral end if end
       slice = new Value (new IdentifierLiteral utility type, o), [new Access new PropertyName 'call']
       new Value new Call slice, args
@@ -2522,7 +2518,7 @@ exports.Assign = class Assign extends Base
       if rightObjs.length isnt 0
         # Slice or splice `objects`.
         refExp = switch
-          when isSplat then compSplice objects[expIdx].unwrapAll().value, rightObjs.length * -1
+          when isSplat then compSplice new Value(objects[expIdx].name), rightObjs.length * -1
           when isExpans then compSlice vvarText, rightObjs.length * -1
         if complexObjects rightObjs
           restVar = refExp
@@ -2552,7 +2548,7 @@ exports.Assign = class Assign extends Base
       fragments = new Op(@context[...-1], left, new Assign(right, @value, '=')).compileToFragments o
       if o.level <= LEVEL_LIST then fragments else @wrapInParentheses fragments
 
-  # Convert special math assignment operators like `a **= b` to the equivalent
+  # Convert special math assignment operators like `a //= b` to the equivalent
   # extended form `a = a ** b` and then compiles that.
   compileSpecialMath: (o) ->
     [left, right] = @variable.cacheReference o
@@ -3257,7 +3253,6 @@ exports.Op = class Op extends Base
     return @compileChain        o if isChain
     switch @operator
       when '?'  then @compileExistence o, @second.isDefaultValue
-      when '**' then @compilePower o
       when '//' then @compileFloorDivision o
       when '%%' then @compileModulo o
       else
@@ -3323,11 +3318,6 @@ exports.Op = class Op extends Base
       parts.push @first.compileToFragments o, LEVEL_OP
       parts.push [@makeCode ")"] if o.level >= LEVEL_PAREN
     @joinFragmentArrays parts, ''
-
-  compilePower: (o) ->
-    # Make a Math.pow call
-    pow = new Value new IdentifierLiteral('Math'), [new Access new PropertyName 'pow']
-    new Call(pow, [@first, @second]).compileToFragments o
 
   compileFloorDivision: (o) ->
     floor = new Value new IdentifierLiteral('Math'), [new Access new PropertyName 'floor']
