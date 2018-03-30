@@ -863,11 +863,6 @@ exports.Value = class Value extends Base
   constructor: (base, props, tag, isDefaultValue = no) ->
     super()
     return base if not props and base instanceof Value
-    # When `Parens` block includes a `StatementLiteral` (e.g. `(b; break) for a in arr`),
-    # it won't compile since `Parens` (`(b; break)`) is compiled as `Value` and
-    # pure statement (`break`) can't be used in an expression.
-    # For this reasons, we return `Block` instead of `Parens`.
-    return base.unwrap() if base instanceof Parens and base.contains (n) -> n instanceof StatementLiteral
     @base           = base
     @properties     = props or []
     @[tag]          = yes if tag
