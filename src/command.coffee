@@ -335,15 +335,16 @@ silentUnlink = (path) ->
     throw err unless err.code in ['ENOENT', 'EPERM']
 
 # Get the corresponding output JavaScript path for a source file.
-outputPath = (source, base, extension=".js") ->
-  basename  = helpers.baseFileName source, yes, useWinPathSep
-  srcDir    = path.dirname source
+outputPath = (source, base, extension) ->
+  basename = helpers.baseFileName source, yes, useWinPathSep
+  srcDir   = path.dirname source
   dir = unless opts.outputPath
     srcDir
   else if source is base
     opts.outputPath
   else
     path.join opts.outputPath, path.relative base, srcDir
+  extension ?= if helpers.isESModule(source) then '.mjs' else '.js'
   path.join dir, basename + extension
 
 # Recursively mkdir, like `mkdir -p`.
@@ -362,13 +363,14 @@ mkdirp = (dir, fn) ->
 
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
-# directory can be customized with `--output`.
+# directory can be customized with `--output`. If the source file extension is
+# `.mcoffee` or `.litmcoffee`, use the `.mjs` extension.
 #
 # If `generatedSourceMap` is provided, this will write a `.js.map` file into the
-# same directory as the `.js` file.
+# same directory as the `.js` file; and likewise with `.mjs.map` and `.mjs`.
 writeJs = (base, sourcePath, js, jsPath, generatedSourceMap = null) ->
   sourceMapPath = "#{jsPath}.map"
-  jsDir  = path.dirname jsPath
+  jsDir = path.dirname jsPath
   compile = ->
     if opts.compile
       js = ' ' if js.length <= 0
