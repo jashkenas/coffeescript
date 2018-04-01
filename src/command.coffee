@@ -37,7 +37,6 @@ SWITCHES = [
   ['-e', '--eval',              'pass a string from the command line as input']
   ['-h', '--help',              'display this help message']
   ['-i', '--interactive',       'run an interactive CoffeeScript REPL']
-  ['-j', '--join [FILE]',       'concatenate the source CoffeeScript before compiling']
   ['-m', '--map',               'generate source map and save as .js.map files']
   ['-M', '--inline-map',        'generate source map and include it directly in output']
   ['-n', '--nodes',             'print out the parse tree that the parser produces']
@@ -117,22 +116,6 @@ exports.run = ->
       opts.outputFilename = null
       opts.outputPath = path.resolve opts.output
 
-  if opts.join
-    opts.join = path.resolve opts.join
-    console.error '''
-
-    The --join option is deprecated and will be removed in a future version.
-
-    If for some reason it's necessary to share local variables between files,
-    replace...
-
-        $ coffee --compile --join bundle.js -- a.coffee b.coffee c.coffee
-
-    with...
-
-        $ cat a.coffee b.coffee c.coffee | coffee --compile --stdio > bundle.js
-
-    '''
   for source in opts.arguments
     source = path.resolve source
     compilePath source, yes, source
@@ -211,10 +194,6 @@ compileScript = (file, input, base = null) ->
       CoffeeScript.register()
       CoffeeScript.eval opts.prelude, task.options if opts.prelude
       CoffeeScript.run task.input, task.options
-    else if opts.join and task.file isnt opts.join
-      task.input = helpers.invertLiterate task.input if helpers.isLiterate file
-      sourceCode[sources.indexOf(task.file)] = task.input
-      compileJoin()
     else
       compiled = CoffeeScript.compile task.input, task.options
       task.output = compiled
@@ -254,16 +233,6 @@ compileStdio = ->
   stdin.on 'end', ->
     compileScript null, Buffer.concat(buffers).toString()
 
-# If all of the source files are done being read, concatenate and compile
-# them together.
-joinTimeout = null
-compileJoin = ->
-  return unless opts.join
-  unless sourceCode.some((code) -> code is null)
-    clearTimeout joinTimeout
-    joinTimeout = wait 100, ->
-      compileScript opts.join, sourceCode.join('\n'), opts.join
-
 # Watch a source CoffeeScript file using `fs.watch`, recompiling it every
 # time the file is updated. May be used in combination with other options,
 # such as `--print`.
@@ -280,7 +249,6 @@ watch = (source, base) ->
       compile()
     catch
       removeSource source, base
-      compileJoin()
 
   compile = ->
     clearTimeout compileTimeout
@@ -349,7 +317,6 @@ removeSourceDir = (source, base) ->
   for file in sources when source is path.dirname file
     removeSource file, base
     sourcesChanged = yes
-  compileJoin() if sourcesChanged
 
 # Remove a file from our source list, and source code cache. Optionally remove
 # the compiled JS version as well.
@@ -357,10 +324,9 @@ removeSource = (source, base) ->
   index = sources.indexOf source
   sources.splice index, 1
   sourceCode.splice index, 1
-  unless opts.join
-    silentUnlink outputPath source, base
-    silentUnlink outputPath source, base, '.js.map'
-    timeLog "removed #{source}"
+  silentUnlink outputPath source, base
+  silentUnlink outputPath source, base, '.js.map'
+  timeLog "removed #{source}"
 
 silentUnlink = (path) ->
   try
@@ -369,15 +335,16 @@ silentUnlink = (path) ->
     throw err unless err.code in ['ENOENT', 'EPERM']
 
 # Get the corresponding output JavaScript path for a source file.
-outputPath = (source, base, extension=".js") ->
-  basename  = helpers.baseFileName source, yes, useWinPathSep
-  srcDir    = path.dirname source
+outputPath = (source, base, extension) ->
+  basename = helpers.baseFileName source, yes, useWinPathSep
+  srcDir   = path.dirname source
   dir = unless opts.outputPath
     srcDir
   else if source is base
     opts.outputPath
   else
     path.join opts.outputPath, path.relative base, srcDir
+  extension ?= if helpers.isESModule(source) then '.mjs' else '.js'
   path.join dir, basename + extension
 
 # Recursively mkdir, like `mkdir -p`.
@@ -396,13 +363,14 @@ mkdirp = (dir, fn) ->
 
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
-# directory can be customized with `--output`.
+# directory can be customized with `--output`. If the source file extension is
+# `.mcoffee` or `.litmcoffee`, use the `.mjs` extension.
 #
 # If `generatedSourceMap` is provided, this will write a `.js.map` file into the
-# same directory as the `.js` file.
+# same directory as the `.js` file; and likewise with `.mjs.map` and `.mjs`.
 writeJs = (base, sourcePath, js, jsPath, generatedSourceMap = null) ->
   sourceMapPath = "#{jsPath}.map"
-  jsDir  = path.dirname jsPath
+  jsDir = path.dirname jsPath
   compile = ->
     if opts.compile
       js = ' ' if js.length <= 0

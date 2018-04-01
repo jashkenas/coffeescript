@@ -1,9 +1,7 @@
 raw
 presentation
 test.coffee
-test*.coffee
-test.litcoffee
-test*.litcoffee
+test*.*coffee
 test/*.js
 parser.output
 /node_modules

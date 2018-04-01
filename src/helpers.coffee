@@ -160,16 +160,19 @@ exports.baseFileName = (file, stripExt = no, useWinPathSep = no) ->
   parts = file.split(pathSep)
   file = parts[parts.length - 1]
   return file unless stripExt and file.indexOf('.') >= 0
-  parts = file.split('.')
+  parts = file.split '.'
   parts.pop()
-  parts.pop() if parts[parts.length - 1] is 'coffee' and parts.length > 1
-  parts.join('.')
+  parts.pop() if parts.length > 1 and parts[parts.length - 1] in ['coffee', 'mcoffee']
+  parts.join '.'
 
 # Determine if a filename represents a CoffeeScript file.
-exports.isCoffee = (file) -> /\.((lit)?coffee|coffee\.md)$/.test file
+exports.isCoffee = (file) -> /\.((lit)?m?coffee|m?coffee\.md)$/.test file
 
 # Determine if a filename represents a Literate CoffeeScript file.
-exports.isLiterate = (file) -> /\.(litcoffee|coffee\.md)$/.test file
+exports.isLiterate = (file) -> /\.(litcoffee|litmcoffee|coffee\.md)$/.test file
+
+# Determine if a filename represents a CoffeeScript file compiling to an ES module.
+exports.isESModule = (file) -> /\.((lit)?mcoffee|mcoffee\.md)$/.test file
 
 # Throws a SyntaxError from a given location.
 # The error's `toString` will return an error message following the "standard"

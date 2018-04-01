@@ -15,17 +15,6 @@ unless process.env.NODE_DISABLE_COLORS
   yellow = '\x1B[0;33m'
   reset  = '\x1B[0m'
 
-# Built file header.
-header = """
-  /**
-   * CoffeeScript Compiler v#{CoffeeScript.VERSION}
-   * http://coffeescript.org
-   *
-   * Copyright 2011, Jeremy Ashkenas
-   * Released under the MIT License
-   */
-"""
-
 # Used in folder names like `docs/v1`.
 majorVersion = parseInt CoffeeScript.VERSION.split('.')[0], 10
 
@@ -127,6 +116,16 @@ task 'build:full', 'build the CoffeeScript compiler from source twice, and run t
     build testBuiltCode
 
 task 'build:browser', 'merge the built scripts into a single file for use in a browser', ->
+  # Built file header.
+  header = """
+    /**
+     * CoffeeScript Compiler v#{CoffeeScript.VERSION}
+     * http://coffeescript.org
+     *
+     * Copyright #{new Date().getFullYear()}, Jeremy Ashkenas
+     * Released under the MIT License
+     */
+  """
   code = """
   require['../../package.json'] = (function() {
     return #{fs.readFileSync "./package.json"};

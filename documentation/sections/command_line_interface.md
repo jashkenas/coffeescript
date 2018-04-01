@@ -28,8 +28,6 @@ Once installed, you should have access to the `coffee` command, which can execut
     `coffee --compile --output lib/ src/`
 *   Watch a file for changes, and recompile it every time the file is saved:<br>
     `coffee --watch --compile experimental.coffee`
-*   Concatenate a list of files into a single script:<br>
-    `coffee --join project.js --compile src/*.coffee`
 *   Print out the compiled JS from a one-liner:<br>
     `coffee -bpe "alert i for i in [0..10]"`
 *   All together now, watch and recompile an entire project as you work on it:<br>
