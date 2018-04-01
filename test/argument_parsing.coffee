@@ -124,7 +124,6 @@ If called without options, `coffee` will run your script.
   -e, --eval         pass a string from the command line as input
   -h, --help         display this help message
   -i, --interactive  run an interactive CoffeeScript REPL
-  -j, --join         concatenate the source CoffeeScript before compiling
   -m, --map          generate source map and save as .js.map files
   -M, --inline-map   generate source map and include it directly in output
   -n, --nodes        print out the parse tree that the parser produces
