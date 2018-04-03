@@ -9,6 +9,10 @@ test "#4798 destructuring of objects with splat within arrays", ->
   eq q.b, r.b
   eq q.a, a
 
+  arr2 = [arr[1]]
+  [{a2...}] = arr2
+  eq a2.a, arr2[0].a
+
 test "destructuring assignment with objects and splats: ES2015", ->
   obj = {a: 1, b: 2, c: 3, d: 4, e: 5}
   throws (-> CoffeeScript.compile "{a, r..., s...} = x"), null, "multiple rest elements are disallowed"

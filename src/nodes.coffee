@@ -1494,9 +1494,10 @@ exports.Obj = class Obj extends Base
   # `foo = ({a, rest..., b}) ->` -> `foo = {a, b, rest...}) ->`
   reorderProperties: ->
     props = @properties
-    splatProps = (prop for prop in props when prop instanceof Splat)
-    objProps = (prop for prop in props when prop not instanceof Splat)
-    @objects = @properties = [].concat objProps, splatProps
+    splatProps = (x for prop, x in props when prop instanceof Splat)
+    props[splatProps[1]].error "multiple spread elements are disallowed" if splatProps?.length > 1
+    splatProp = props.splice splatProps[0], 1
+    @objects = @properties = [].concat props, splatProp
 
   compileNode: (o) ->
     @reorderProperties() if @hasSplat() and @lhs
@@ -1510,10 +1511,6 @@ exports.Obj = class Obj extends Base
 
     # CSX attributes <div id="val" attr={aaa} {props...} />
     return @compileCSXAttributes o if @csx
-
-    if @hasSplat() and @lhs
-      splatProps = (ix for prop, ix in props when prop instanceof Splat)
-      props[splatProps[1]].error "multiple spread elements are disallowed" if splatProps?.length > 1
 
     # If this object is the left-hand side of an assignment, all its children
     # are too.
@@ -2200,9 +2197,7 @@ exports.Assign = class Assign extends Base
         # know that, so that those nodes know that they’re assignable as
         # destructured variables.
         @variable.base.lhs = yes
-        # Check if @variable contains Obj with splats.
-        hasSplat = @variable.contains (node) -> node instanceof Obj and node.hasSplat()
-        return @compileDestructuring o if not @variable.isAssignable() or @variable.isArray() and hasSplat
+        return @compileDestructuring o if not @variable.isAssignable()
 
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
