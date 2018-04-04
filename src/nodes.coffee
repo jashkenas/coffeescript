@@ -2197,7 +2197,11 @@ exports.Assign = class Assign extends Base
         # know that, so that those nodes know that they’re assignable as
         # destructured variables.
         @variable.base.lhs = yes
-        return @compileDestructuring o if not @variable.isAssignable()
+        unless @variable.isAssignable()
+          if @variable.isObject() and @variable.base.hasSplat()
+            return @compileObjectDestruct o
+          else
+            return @compileDestructuring o
 
       return @compileSplice       o if @variable.isSplice()
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
@@ -2267,6 +2271,19 @@ exports.Assign = class Assign extends Base
       @wrapInParentheses answer
     else
       answer
+
+  # Object rest property is not assignable: `{{a}...}`
+  compileObjectDestruct: (o) ->
+    @variable.base.reorderProperties()
+    {properties:props} = @variable.base
+    [..., splat] = props
+    splatProp = splat.name
+    assigns = []
+    refVal = new Value new IdentifierLiteral o.scope.freeVariable 'ref'
+    props.splice -1, 1, new Splat refVal
+    assigns.push new Assign(new Value(new Obj props), @value).compileToFragments o, LEVEL_LIST
+    assigns.push new Assign(new Value(splatProp), refVal).compileToFragments o, LEVEL_LIST
+    @joinFragmentArrays assigns, ', '
 
   # Brief implementation of recursive pattern matching, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
@@ -2346,7 +2363,7 @@ exports.Assign = class Assign extends Base
     # `objects` are complex when there is object spread ({a...}), object assign ({a:1}),
     # unassignable object, or just a single node.
     complexObjects = (objs) ->
-      hasObjSpreads(objs).length or hasObjAssigns(objs).length or objIsUnassignable(objs) or olen is 1
+      hasObjAssigns(objs).length or objIsUnassignable(objs) or olen is 1
 
     # "Complex" `objects` are processed in a loop.
     # Examples: [a, b, {c, r...}, d], [a, ..., {b, r...}, c, d]
@@ -2913,6 +2930,7 @@ exports.Splat = class Splat extends Base
   shouldCache: -> no
 
   isAssignable: ->
+    return no if @name instanceof Obj or @name instanceof Parens
     @name.isAssignable() and (not @name.isAtomic or @name.isAtomic())
 
   assigns: (name) ->
