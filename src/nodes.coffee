@@ -2347,10 +2347,6 @@ exports.Assign = class Assign extends Base
     # Helper which outputs `[].splice` code.
     compSplice = slicer "splice"
 
-    # Check if `objects` array contains object spread (`{a, r...}`), e.g. `[a, b, {c, r...}]`.
-    hasObjSpreads = (objs) ->
-      (i for obj, i in objs when obj.base instanceof Obj and obj.base.hasSplat())
-
     # Check if `objects` array contains any instance of `Assign`, e.g. {a:1}.
     hasObjAssigns = (objs) ->
       (i for obj, i in objs when obj instanceof Assign and obj.context is 'object')
@@ -2368,7 +2364,6 @@ exports.Assign = class Assign extends Base
     # "Complex" `objects` are processed in a loop.
     # Examples: [a, b, {c, r...}, d], [a, ..., {b, r...}, c, d]
     loopObjects = (objs, vvar, vvarTxt) =>
-      objSpreads = hasObjSpreads objs
       for obj, i in objs
         # `Elision` can be skipped.
         continue if obj instanceof Elision
@@ -2387,7 +2382,6 @@ exports.Assign = class Assign extends Base
           # `obj` is [a...], {a...} or a
           vvar = switch
             when obj instanceof Splat then new Value obj.name
-            when i in objSpreads then new Value obj.base
             else obj
           vval = switch
             when obj instanceof Splat then compSlice(vvarTxt, i)
