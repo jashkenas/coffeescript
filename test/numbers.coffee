@@ -86,3 +86,10 @@ test "Infinity", ->
 
 test "NaN", ->
   ok isNaN 1/NaN
+
+test "#3828: Floats with leading periods still work", ->
+  eq (0.5).toFixed(1), (.5).toFixed(1)
+
+  foo = (n) -> n
+  eq 0.2, foo .2
+  eq (.2).toFixed(1), foo .2.toFixed(1)
