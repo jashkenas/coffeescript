@@ -124,7 +124,7 @@ testRepl "keeps running after runtime error", (input, output) ->
   eq 'undefined', output.lastWrite()
 
 testRepl "#4604: wraps an async function", (input, output) ->
-  return unless global.supportsAsync
+  return unless try new Function 'async () => {}' # Feature detect support for async functions.
   input.emitLine 'await new Promise (resolve) -> setTimeout (-> resolve 33), 10'
   setTimeout ->
     eq '33', output.lastWrite()

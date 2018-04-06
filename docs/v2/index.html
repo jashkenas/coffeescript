@@ -646,7 +646,7 @@ div.CodeMirror-cursor {
       <section id="overview">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.2.2">2.2.2</a></p>
+<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.2.4">2.2.4</a></p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash"><span class="comment"># Install locally for a project:</span>
 npm install --save-dev coffeescript
 
@@ -4790,7 +4790,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
         <section id="annotated-source">
           <h2>Annotated Source</h2>
-<p>You can browse the CoffeeScript 2.2.2 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+<p>You can browse the CoffeeScript 2.2.4 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
 <li><a href="annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
@@ -5467,9 +5467,25 @@ x = <span class="number">2</span> + <span class="number">2</span>
       </section>
       <section id="changelog">
         <h2>Changelog</h2>
+<div class="anchor" id="2.2.4"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/2.2.3...2.2.4">2.2.4</a>
+  <span class="timestamp"> &mdash; <time datetime="2018-03-29">March 29, 2018</time></span>
+</h2><ul>
+<li>When the <code>by</code> value in a <code>for</code> loop is a literal number, e.g. <code>for x in [2..1] by -1</code>, fewer checks are necessary to determine if the loop is in range.</li>
+<li>Bugfix for regression in 2.2.0 where a statement inside parentheses, e.g. <code>(fn(); break) while condition</code>, was compiling. Pure statements like <code>break</code> or <code>return</code> cannot turn a parenthesized block into an expression, and should throw an error.</li>
+</ul>
+<div class="anchor" id="2.2.3"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/2.2.2...2.2.3">2.2.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2018-03-11">March 11, 2018</time></span>
+</h2><ul>
+<li>Bugfix for object destructuring with an empty array as a key’s value: <code>{ key: [] } = obj</code>.</li>
+<li>Bugfix for array destructuring onto targets attached to <code>this</code>: <code>[ @most... , @penultimate, @last ] = arr</code>.</li>
+</ul>
 <div class="anchor" id="2.2.2"></div>
 <h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/2.1.1...2.2.2">2.2.2</a>
+  <a href="https://github.com/jashkenas/coffeescript/compare/2.2.1...2.2.2">2.2.2</a>
   <span class="timestamp"> &mdash; <time datetime="2018-02-21">February 21, 2018</time></span>
 </h2><ul>
 <li>Bugfix for regression in 2.2.0 where a range with a <code>by</code> (step) value that increments or decrements in the opposite direction as the range was returning an array containing the first value of the range, whereas it should be returning an empty array. In other words, <code>x for x in [2..1] by 1</code> should equal <code>[]</code>, not <code>[2]</code> (because the step value is positive 1, counting up, whereas the range goes from 2 to 1, counting down).</li>
@@ -5477,7 +5493,7 @@ x = <span class="number">2</span> + <span class="number">2</span>
 </ul>
 <div class="anchor" id="2.2.1"></div>
 <h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/2.1.0...2.2.1">2.2.1</a>
+  <a href="https://github.com/jashkenas/coffeescript/compare/2.2.0...2.2.1">2.2.1</a>
   <span class="timestamp"> &mdash; <time datetime="2018-02-06">February 6, 2018</time></span>
 </h2><ul>
 <li>Bugfix for regression in 2.2.0 involving an error thrown by the compiler in certain cases when using destructuring with a splat or expansion in an array.</li>

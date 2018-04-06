@@ -168,7 +168,7 @@ test "`throw` can be yielded", ->
   throws -> x.next()
 
 test "symbolic operators has precedence over the `yield`", ->
-  symbolic   = '+ - * / << >> & | || && ** ^ // or and'.split ' '
+  symbolic   = '+ - * / << >> & | || && ^ // or and'.split ' '
   compound   = ("#{op}=" for op in symbolic)
   relations  = '< > == != <= >= is isnt'.split ' '
 
