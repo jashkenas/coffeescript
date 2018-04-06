@@ -1494,7 +1494,7 @@ exports.Obj = class Obj extends Base
   # `foo = ({a, rest..., b}) ->` -> `foo = {a, b, rest...}) ->`
   reorderProperties: ->
     props = @properties
-    splatProps = (x for prop, x in props when prop instanceof Splat)
+    splatProps = (i for prop, i in props when prop instanceof Splat)
     props[splatProps[1]].error "multiple spread elements are disallowed" if splatProps?.length > 1
     splatProp = props.splice splatProps[0], 1
     @objects = @properties = [].concat props, splatProp
@@ -2275,7 +2275,7 @@ exports.Assign = class Assign extends Base
   # Object rest property is not assignable: `{{a}...}`
   compileObjectDestruct: (o) ->
     @variable.base.reorderProperties()
-    {properties:props} = @variable.base
+    {properties: props} = @variable.base
     [..., splat] = props
     splatProp = splat.name
     assigns = []
@@ -2356,7 +2356,7 @@ exports.Assign = class Assign extends Base
       return yes for obj in objs when not obj.isAssignable()
       no
 
-    # `objects` are complex when there is object spread ({a...}), object assign ({a:1}),
+    # `objects` are complex when there is object assign ({a:1}),
     # unassignable object, or just a single node.
     complexObjects = (objs) ->
       hasObjAssigns(objs).length or objIsUnassignable(objs) or olen is 1
