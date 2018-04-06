@@ -2610,7 +2610,7 @@ exports.Code = class Code extends Base
         @isGenerator = yes
       if (node instanceof Op and node.isAwait()) or node instanceof AwaitReturn
         @isAsync = yes
-      if (node instanceof For and node.isAwait())
+      if node instanceof For and node.isAwait()
         @isAsync = yes
 
   children: ['params', 'body']
