@@ -127,6 +127,16 @@ test "destructured splatted parameters", ->
   splatArray = ([a ...]) -> a
   splatArrayRest = ([a ...],b ...) -> arrayEq(a,b); b
 
+test "object-destructured splatted parameters", ->
+  f = ({length}...) -> length
+  eq f(4, 5, 6), 3
+  f = ({length: len}...) -> len
+  eq f(4, 5, 6), 3
+  f = ({length}..., last) -> [length, last]
+  arrayEq f(4, 5, 6), [2, 6]
+  f = ({length: len}..., last) -> [len, last]
+  arrayEq f(4, 5, 6), [2, 6]
+
 test "@-parameters: automatically assign an argument's value to a property of the context", ->
   nonce = {}
 

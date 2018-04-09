@@ -2318,12 +2318,19 @@ exports.Assign = class Assign extends Base
 
     isSplat = splats?.length > 0
     isExpans = expans?.length > 0
-    isObject = @variable.isObject()
-    isArray = @variable.isArray()
 
     vvar     = value.compileToFragments o, LEVEL_LIST
     vvarText = fragmentsToText vvar
     assigns  = []
+    pushAssign = (variable, val) =>
+      assigns.push new Assign(variable, val, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
+
+    if isSplat
+      splatVar = objects[splats[0]].name.unwrap()
+      if splatVar instanceof Arr or splatVar instanceof Obj
+        splatVarRef = new IdentifierLiteral o.scope.freeVariable 'ref'
+        objects[splats[0]].name = splatVarRef
+        splatVarAssign = -> pushAssign new Value(splatVar), splatVarRef
 
     # At this point, there are several things to destructure. So the `fn()` in
     # `{a, b} = fn()` must be cached, for example. Make vvar into a simple
@@ -2388,13 +2395,13 @@ exports.Assign = class Assign extends Base
             else new Value new Literal(vvarTxt), [new Index new NumberLiteral i]
         message = isUnassignable vvar.unwrap().value
         vvar.error message if message
-        assigns.push new Assign(vvar, vval, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
+        pushAssign vvar, vval
 
     # "Simple" `objects` can be split and compiled to arrays, [a, b, c] = arr, [a, b, c...] = arr
     assignObjects = (objs, vvar, vvarTxt) =>
       vvar = new Value new Arr(objs, yes)
       vval = if vvarTxt instanceof Value then vvarTxt else new Value new Literal(vvarTxt)
-      assigns.push new Assign(vvar, vval, null, param: @param, subpattern: yes).compileToFragments o, LEVEL_LIST
+      pushAssign vvar, vval
 
     processObjects = (objs, vvar, vvarTxt) ->
       if complexObjects objs
@@ -2431,6 +2438,7 @@ exports.Assign = class Assign extends Base
     else
       # There is no `Splat` or `Expansion` in `objects`.
       processObjects objects, vvar, vvarText
+    splatVarAssign?()
     assigns.push vvar unless top or @subpattern
     fragments = @joinFragmentArrays assigns, ', '
     if o.level < LEVEL_LIST then fragments else @wrapInParentheses fragments
@@ -2592,7 +2600,7 @@ exports.Code = class Code extends Base
           param.error 'an expansion parameter cannot be the only parameter in a function definition'
         haveSplatParam = yes
         if param.splat
-          if param.name instanceof Arr
+          if param.name instanceof Arr or param.name instanceof Obj
             # Splat arrays are treated oddly by ES; deal with them the legacy
             # way in the function body. TODO: Should this be handled in the
             # function parameter list, and if so, how?

@@ -686,3 +686,38 @@ test "#5004: array destructuring with accessors", ->
   [obj.list.middle..., d] = obj.arr
   eq d, 'd'
   arrayEq obj.list.middle, ['a', 'b', 'c']
+
+test "destructured object splat", ->
+  [{length}...] = [1, 2, 3]
+  eq length, 3
+  [{length: len}...] = [1, 2, 3]
+  eq len, 3
+  [{length}..., three] = [1, 2, 3]
+  eq length, 2
+  eq three, 3
+  [{length: len}..., three] = [1, 2, 3]
+  eq len, 2
+  eq three, 3
+  x = [{length}..., three] = [1, 2, 3]
+  eq length, 2
+  eq three, 3
+  eq x[2], 3
+  x = [{length: len}..., three] = [1, 2, 3]
+  eq len, 2
+  eq three, 3
+  eq x[2], 3
+
+test "destructured array splat", ->
+  [[one, two, three]...] = [1, 2, 3]
+  eq one, 1
+  eq two, 2
+  eq three, 3
+  [[one, two]..., three] = [1, 2, 3]
+  eq one, 1
+  eq two, 2
+  eq three, 3
+  x = [[one, two]..., three] = [1, 2, 3]
+  eq one, 1
+  eq two, 2
+  eq three, 3
+  eq x[2], 3
