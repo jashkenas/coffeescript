@@ -287,6 +287,14 @@ exports.Lexer = class Lexer
     {tokens, index: end} = @matchWithInterpolations regex, quote
     $ = tokens.length - 1
 
+
+    # nlRegEx = """(\n|\r|\u2028|\u2029)"""
+    # str = @chunk[quote.length..end-4].replace ///^#{nlRegEx}///, ""
+    #
+    # countNewlines = (str.match(///#{nlRegEx}///mg) || []).length
+    # countNewlines -= 1 if str.match ///#{nlRegEx}$///
+    # newlines = countNewlines > 1
+
     delimiter = quote.charAt(0)
     if heredoc
       # Find the smallest indentation. It will be removed from all lines later.
@@ -296,14 +304,14 @@ exports.Lexer = class Lexer
         attempt = match[1]
         indent = attempt if indent is null or 0 < attempt.length < indent.length
       indentRegex = /// \n#{indent} ///g if indent
-      @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
+      @mergeInterpolationTokens tokens, {delimiter, heredoc, newlines:no}, (value, i) =>
         value = @formatString value, delimiter: quote
         value = value.replace indentRegex, '\n' if indentRegex
         value = value.replace LEADING_BLANK_LINE,  '' if i is 0
         value = value.replace TRAILING_BLANK_LINE, '' if i is $
         value
     else
-      @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
+      @mergeInterpolationTokens tokens, {delimiter, heredoc: no, newlines: no}, (value, i) =>
         value = @formatString value, delimiter: quote
         value = value.replace SIMPLE_STRING_OMIT, (match, offset) ->
           if (i is 0 and offset is 0) or
@@ -826,7 +834,7 @@ exports.Lexer = class Lexer
   # of `'NEOSTRING'`s are converted using `fn` and turned into strings using
   # `options` first.
   mergeInterpolationTokens: (tokens, options, fn) ->
-    if tokens.length > 1
+    if tokens.length > 1 #or options?.newlines
       lparen = @token 'STRING_START', '(', 0, 0
 
     firstIndex = @tokens.length
@@ -1050,13 +1058,19 @@ exports.Lexer = class Lexer
   # Constructs a string or regex by escaping certain characters.
   makeDelimitedLiteral: (body, options = {}) ->
     body = '(?:)' if body is '' and options.delimiter is '/'
+    heredoc = options?.heredoc or no
+    # Newlines are not escaped in block strings with interpolations.
+    strictNewline = if heredoc is yes then "" else "?"
+    # console.log strictNewline
+    # strictNewline = "?"
     regex = ///
-        (\\\\)                               # Escaped backslash.
-      | (\\0(?=[1-7]))                       # Null character mistaken as octal escape.
-      | \\?(#{options.delimiter})            # (Possibly escaped) delimiter.
-      | \\?(?: (\n)|(\r)|(\u2028)|(\u2029) ) # (Possibly escaped) newlines.
-      | (\\.)                                # Other escapes.
+        (\\\\)                                              # Escaped backslash.
+      | (\\0(?=[1-7]))                                      # Null character mistaken as octal escape.
+      | \\?(#{options.delimiter})                           # (Possibly escaped) delimiter.
+      | \\#{strictNewline}(?: (\n)|(\r)|(\u2028)|(\u2029) ) # (Possibly escaped) newlines.
+      | (\\.)                                               # Other escapes.
     ///g
+    # console.log heredoc, body
     body = body.replace regex, (match, backslash, nul, delimiter, lf, cr, ls, ps, other) -> switch
       # Ignore escaped backslashes.
       when backslash then (if options.double then backslash + backslash else backslash)
