@@ -127,7 +127,7 @@ test "destructured splatted parameters", ->
   splatArray = ([a ...]) -> a
   splatArrayRest = ([a ...],b ...) -> arrayEq(a,b); b
 
-test "object-destructured splatted parameters", ->
+test "#4884: object-destructured splatted parameters", ->
   f = ({length}...) -> length
   eq f(4, 5, 6), 3
   f = ({length: len}...) -> len

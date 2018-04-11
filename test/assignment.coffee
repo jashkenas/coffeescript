@@ -687,7 +687,7 @@ test "#5004: array destructuring with accessors", ->
   eq d, 'd'
   arrayEq obj.list.middle, ['a', 'b', 'c']
 
-test "destructured object splat", ->
+test "#4884: destructured object splat", ->
   [{length}...] = [1, 2, 3]
   eq length, 3
   [{length: len}...] = [1, 2, 3]
@@ -707,7 +707,7 @@ test "destructured object splat", ->
   eq three, 3
   eq x[2], 3
 
-test "destructured array splat", ->
+test "#4884: destructured array splat", ->
   [[one, two, three]...] = [1, 2, 3]
   eq one, 1
   eq two, 2
