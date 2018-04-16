@@ -17,6 +17,7 @@
 <!-- The CoffeeScript logo font is Google’s Galada -->
 <link href="https://fonts.googleapis.com/css?family=Alegreya+Sans:400,800|Lato:300,300i,400,700|Roboto+Mono:400,400i" rel="stylesheet" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/codemirror/4.5.0/codemirror.css" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css">
 <style>
 html,
 body {
@@ -108,8 +109,7 @@ button:focus, .navbar-dark .navbar-toggler:focus {
   top: 3.5em;
   height: calc(100% - 3.5rem);
   /* Scrollable contents if viewport is shorter than content */
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: visible;
   left: 0;
   bottom: 0;
   z-index: 1000;
@@ -141,6 +141,8 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 .contents .nav .nav {
   margin-left: 1em;
   font-size: 0.9em;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .contents .nav-link {
@@ -494,6 +496,8 @@ div.CodeMirror-cursor {
   color: #474429;
 }
 
+.searchbox{ min-width: 80%; margin: 1em 10%;}
+
 </style>
 
 </head>
@@ -546,6 +550,27 @@ div.CodeMirror-cursor {
 <div class="container-fluid" id="top">
   <div class="row flex-nowrap">
     <nav class="sidebar col-lg-3 bg-ribbed-light">
+      <form novalidate="novalidate" onsubmit="return false;" class="searchbox">
+        <div role="search" class="searchbox__wrapper">
+          <input id='q' type="search" name="search" placeholder="Search the docs" autocomplete="off" required="required" class="searchbox__input"/>
+          <button type="submit" title="Submit your search query." class="searchbox__submit" >
+            <svg width=12 height=12 role="img" aria-label="Search">
+              <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#sbx-icon-search-13"></use>
+            </svg>
+          </button>
+          <button type="reset" title="Clear the search query." class="searchbox__reset hide">
+            <svg width=12 height=12 role="img" aria-label="Reset">
+              <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#sbx-icon-clear-3"></use>
+            </svg>
+          </button>
+        </div>
+      </form>
+      <div class="svg-icons" style="height: 0; width: 0; position: absolute; visibility: hidden">
+        <svg xmlns="http://www.w3.org/2000/svg">
+          <symbol id="sbx-icon-clear-3" viewBox="0 0 40 40"><path d="M16.228 20L1.886 5.657 0 3.772 3.772 0l1.885 1.886L20 16.228 34.343 1.886 36.228 0 40 3.772l-1.886 1.885L23.772 20l14.342 14.343L40 36.228 36.228 40l-1.885-1.886L20 23.772 5.657 38.114 3.772 40 0 36.228l1.886-1.885L16.228 20z" fill-rule="evenodd"></symbol>
+          <symbol id="sbx-icon-search-13" viewBox="0 0 40 40"><path d="M26.806 29.012a16.312 16.312 0 0 1-10.427 3.746C7.332 32.758 0 25.425 0 16.378 0 7.334 7.333 0 16.38 0c9.045 0 16.378 7.333 16.378 16.38 0 3.96-1.406 7.593-3.746 10.426L39.547 37.34c.607.608.61 1.59-.004 2.203a1.56 1.56 0 0 1-2.202.004L26.807 29.012zm-10.427.627c7.322 0 13.26-5.938 13.26-13.26 0-7.324-5.938-13.26-13.26-13.26-7.324 0-13.26 5.936-13.26 13.26 0 7.322 5.936 13.26 13.26 13.26z" fill-rule="evenodd"></symbol>
+        </svg>
+      </div>
       <nav id="contents" class="navbar contents">
   <nav class="nav flex-column">
     <a href="#try" class="nav-link d-md-none" data-action="sidebar-nav" data-toggle="try">Try CoffeeScript</a>
@@ -845,8 +870,14 @@ cubes = (function() {
         </section>
         <section id="compatibility">
           <h3>Compatibility</h3>
-<p>With the exception of <a href="#modules">modules</a> (<code>import</code> and <code>export</code> statements) and <a href="#jsx">JSX</a>, all the modern JavaScript features that CoffeeScript supports can run natively in Node 7.6+, meaning that Node can run CoffeeScript’s output without any further processing required. You can <a href="test.html">run the tests in your browser</a> to see if your browser can do the same. For older browsers or older versions of Node, however, <a href="#transpilation">transpilation</a> is required.</p>
-<p>Support for modern JavaScript syntax is important to ensure compatibility with frameworks that assume modern features. Now that CoffeeScript compiles classes to the <code>class</code> keyword, it’s possible to <code>extend</code> a JavaScript class; that wasn’t possible in CoffeeScript 1. Parity in how language features work is also important on its own; CoffeeScript “is just JavaScript,” and so things like <a href="#breaking-changes-default-values">function parameter default values</a> should behave the same in CoffeeScript as in JavaScript. Some such features behave slightly differently in JavaScript than they did in CoffeeScript 1; in such cases we are conforming with the JavaScript spec, and we’ve documented the differences as <a href="#breaking-changes">breaking changes</a>.</p>
+<p>Most modern JavaScript features that CoffeeScript supports can run natively in Node 7.6+, meaning that Node can run CoffeeScript’s output without any further processing required. Here are some notable exceptions:</p>
+<ul>
+<li><a href="#jsx">JSX</a> always requires transpilation.</li>
+<li><a href="#modules">Modules</a> (<code>import</code> and <code>export</code> statements) are supported by Node 10+, provided you specify an output filename with an <code>.mjs</code> extension (or rename the extensions of the generated <code>.js</code> files) and execute such files via <code>node</code>, not <code>coffee</code>.</li>
+<li><a href="http://coffeescript.org/#splats">Splats, a.k.a. object rest/spread syntax, for objects</a> are supported by Node 8.6+.</li>
+<li>The <a href="https://github.com/tc39/proposal-regexp-dotall-flag">regular expression <code>s</code> (dotall) flag</a> is supported by Node 9+.</li>
+</ul>
+<p>This list may be incomplete, and excludes versions of Node that support newer features behind flags; please refer to <a href="http://node.green/">node.green</a> for full details. You can <a href="test.html">run the tests in your browser</a> to see what your browser supports. It is your responsibility to ensure that your runtime supports the modern features you use; or that you <a href="#transpilation">transpile</a> your code. When in doubt, transpile.</p>
 
         </section>
       </section>
@@ -4354,7 +4385,7 @@ export {
   
 </aside>
 <div id="modules-note" class="bookmark"></div>
-<p>Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an <code>import</code> or <code>export</code> statement in CoffeeScript will produce an <code>import</code> or <code>export</code> statement in the resulting output. It is your responsibility attach another transpiler, such as <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>, <a href="http://babeljs.io/">Babel</a> or <a href="https://github.com/rollup/rollup">Rollup</a>, to convert this ES2015 syntax into code that will work in your target runtimes.</p>
+<p>Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an <code>import</code> or <code>export</code> statement in CoffeeScript will produce an <code>import</code> or <code>export</code> statement in the resulting output. It is your responsibility to <a href="#transpilation">transpile</a> this ES2015 syntax into code that will work in your target runtimes, unless you know that your code will be executed by a runtime that supports <a href="https://nodejs.org/api/esm.html">ES modules</a>. Node supports such modules only for files with <code>.mjs</code> extensions; you can generate such an extension via the <code>coffee</code> command for a single file via <code>--output</code>, as in <code>coffee --compile --output index.mjs index.coffee</code>. When compiling folders or globs, it is your responsibility to rename the generated <code>.js</code> files as needed.</p>
 <p>Also note that any file with an <code>import</code> or <code>export</code> statement will be output without a <a href="#lexical-scope">top-level function safety wrapper</a>; in other words, importing or exporting modules will automatically trigger <a href="#usage">bare</a> mode for that file. This is because per the ES2015 spec, <code>import</code> or <code>export</code> statements must occur at the topmost scope.</p>
 
         </section>
@@ -6247,6 +6278,15 @@ The <code>extends</code> keyword now functions identically to <code>goog.inherit
   function gtag(){dataLayer.push(arguments)};
   gtag('js', new Date());
   gtag('config', GA_TRACKING_ID);
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.js"></script>
+<script type="text/javascript"> docsearch({
+  apiKey: 'd8c0290b3e915152f833b7eb80aa8d45',
+  indexName: 'coffeescript',
+  // enhancedSearchInput:true,
+  inputSelector: '#q',
+  debug: false // Set debug to true if you want to inspect the dropdown
+});
 </script>
 
 </body>

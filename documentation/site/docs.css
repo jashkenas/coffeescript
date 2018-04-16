@@ -88,8 +88,7 @@ button:focus, .navbar-dark .navbar-toggler:focus {
   top: 3.5em;
   height: calc(100% - 3.5rem);
   /* Scrollable contents if viewport is shorter than content */
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: visible;
   left: 0;
   bottom: 0;
   z-index: 1000;
@@ -121,6 +120,8 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 .contents .nav .nav {
   margin-left: 1em;
   font-size: 0.9em;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .contents .nav-link {
