@@ -120,8 +120,6 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 .contents .nav .nav {
   margin-left: 1em;
   font-size: 0.9em;
-  overflow-x: auto;
-  overflow-y: hidden;
 }
 
 .contents .nav-link {
@@ -140,6 +138,11 @@ button:focus, .navbar-dark .navbar-toggler:focus {
   font-family: 'Lato';
 }
 
+.sidebar-scrollable{
+  width: 100%;
+  height: calc(100% - 32px);
+  overflow: scroll;
+}
 
 /*
  * Main content
