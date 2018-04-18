@@ -135,8 +135,9 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 }
 
 .searchbox {
-  min-width: 80%;
-  margin: 1em 10%;
+  min-width: calc(100% - 1.4em);
+  margin: 0.7em 0.7em 0 0.7em;
+  font-family: 'Lato';
 }
 
 
