@@ -134,6 +134,11 @@ button:focus, .navbar-dark .navbar-toggler:focus {
   font-weight: 800;
 }
 
+.searchbox {
+  min-width: 80%;
+  margin: 1em 10%;
+}
+
 
 /*
  * Main content

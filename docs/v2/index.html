@@ -155,6 +155,11 @@ button:focus, .navbar-dark .navbar-toggler:focus {
   font-weight: 800;
 }
 
+.searchbox {
+  min-width: 80%;
+  margin: 1em 10%;
+}
+
 
 /*
  * Main content
@@ -495,8 +500,6 @@ div.CodeMirror-cursor {
 .uneditable-code-block .constant {
   color: #474429;
 }
-
-.searchbox{ min-width: 80%; margin: 1em 10%;}
 
 </style>
 
@@ -2488,7 +2491,7 @@ alert((function() {
 
 <span class="cm-variable">alert</span>((<span class="cm-keyword">function</span>() {
   <span class="cm-keyword">try</span> {
-    <span class="cm-keyword">return</span> <span class="cm-variable">nonexistent</span> <span class="cm-operator">/</span> <span class="cm-keyword">void</span> <span class="cm-number">0</span>;
+    <span class="cm-keyword">return</span> <span class="cm-variable">nonexistent</span> <span class="cm-operator">/</span> <span class="cm-variable">void</span> <span class="cm-number">0</span>;
   } <span class="cm-keyword">catch</span> (<span class="cm-def">error1</span>) {
     <span class="cm-variable">error</span> <span class="cm-operator">=</span> <span class="cm-variable-2">error1</span>;
     <span class="cm-keyword">return</span> <span class="cm-string-2">`And the error is ... ${</span><span class="cm-variable">error</span><span class="cm-string-2">}`</span>;
@@ -2852,7 +2855,7 @@ zip = typeof lottery.drawWinner === "function" ? (ref = lottery.drawWinner().add
 </textarea>
       <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">ref</span>, <span class="cm-def">zip</span>;
 
-<span class="cm-variable">zip</span> <span class="cm-operator">=</span> <span class="cm-keyword">typeof</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span> <span class="cm-operator">===</span> <span class="cm-string">"function"</span> <span class="cm-operator">?</span> (<span class="cm-variable">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span>().<span class="cm-property">address</span>) <span class="cm-operator">!=</span> <span class="cm-atom">null</span> <span class="cm-operator">?</span> <span class="cm-variable">ref</span>.<span class="cm-property">zipcode</span> : <span class="cm-keyword">void</span> <span class="cm-number">0</span> : <span class="cm-keyword">void</span> <span class="cm-number">0</span>;
+<span class="cm-variable">zip</span> <span class="cm-operator">=</span> <span class="cm-keyword">typeof</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span> <span class="cm-operator">===</span> <span class="cm-string">"function"</span> <span class="cm-operator">?</span> (<span class="cm-variable">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span>().<span class="cm-property">address</span>) <span class="cm-operator">!=</span> <span class="cm-atom">null</span> <span class="cm-operator">?</span> <span class="cm-variable">ref</span>.<span class="cm-property">zipcode</span> : <span class="cm-variable">void</span> <span class="cm-number">0</span> : <span class="cm-variable">void</span> <span class="cm-number">0</span>;
 </pre>
     </div>
   </div>
@@ -6265,11 +6268,11 @@ The <code>extends</code> keyword now functions identically to <code>goog.inherit
   window.Popper = {}; // Remove if we want to use Bootstrap tooltips
 </script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/combine/npm/codemirror@5.29.0/lib/codemirror.js,npm/codemirror@5.29.0/mode/coffeescript/coffeescript.js,npm/codemirror@5.29.0/addon/lint/coffeescript-lint.js,npm/codemirror@5.29.0/mode/javascript/javascript.js"></script>
+<script src="https://cdn.jsdelivr.net/combine/npm/codemirror@5.29.0/lib/codemirror.js,npm/codemirror@5.29.0/mode/coffeescript/coffeescript.js,npm/codemirror@5.29.0/addon/lint/coffeescript-lint.js,npm/codemirror@5.29.0/mode/javascript/javascript.js,npm/docsearch.js@2/dist/cdn/docsearch.min.js"></script>
 
 <script src="browser-compiler/coffeescript.js"></script>
 <script>
-(function(){window.location.origin||(window.location.origin=window.location.protocol+'//'+window.location.hostname),$(document).ready(function(){var clearHash,closeTry,editors,initializeEditor,initializeScrollspyFromHash,initializeTryEditors,lastCompilationElapsedTime,previousHash,replaceState,textareas,toggleSidebar,toggleTry;if(toggleSidebar=function(){return $('.navbar-toggler, .sidebar').toggleClass('show')},$('[data-toggle="offcanvas"]').click(toggleSidebar),$('[data-action="sidebar-nav"]').click(function(a){return $('.navbar-toggler').is(':visible')&&(a.preventDefault(),toggleSidebar(),setTimeout(function(){return window.location=a.target.href},260)),gtag('event','sidebar_navigate',{event_category:'navigation',event_label:a.target.href.replace(window.location.origin,'')})}),$('body').scrollspy({target:'#contents',offset:Math.round($('main').css('padding-top').replace('px',''))}),initializeScrollspyFromHash=function(a){return $('#contents a.active[href!=\''+a+'\']').removeClass('show')},$(window).on('activate.bs.scrollspy',function(a,b){var c;if($('#contents a.active[href!=\''+b.relatedTarget+'\']').removeClass('show'),c=$('#contents a[href=\''+b.relatedTarget+'\']'),c.prop('href')!==window.location.origin+'/#try')return replaceState(c.prop('href')),gtag('config',GA_TRACKING_ID,{page_path:c.prop('href').replace(window.location.origin,'')})}),textareas=[],editors=[],lastCompilationElapsedTime=200,$('textarea').each(function(a){return textareas[a]=this,$(this).data('index',a)}),initializeEditor=function(a){var b,c,d,e;if(c=a.data('index'),d=a.hasClass('javascript-output')?'javascript':'coffeescript',editors[c]=b=CodeMirror.fromTextArea(a[0],{mode:d,theme:'twilight',indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:'contenteditable',readOnly:'coffeescript'!==d,viewportMargin:2e308}),'coffeescript'===d)return e=null,b.on('change',function(){return clearTimeout(e),e=setTimeout(function(){var d,e,f,g,h;f=Date.now();try{if(d=b.getValue(),0===c&&$('#try').hasClass('show')){$('#try').hasClass('show')&&(g='try:'+encodeURIComponent(d),replaceState(window.location.href.split('#')[0]+'#'+g));try{null!=window.localStorage&&window.localStorage.setItem('tryCoffeeScriptCode',d)}catch(a){e=a}}h=CoffeeScript.compile(d,{bare:!0}),lastCompilationElapsedTime=Math.max(200,Date.now()-f)}catch(a){e=a,h=''+e}return editors[c+1].setValue(h),gtag('event','edit_code',{event_category:'engagement',event_label:a.closest('[data-example]').data('example')})},lastCompilationElapsedTime)}),b.addKeyMap({Tab:function Tab(a){return a.somethingSelected()?a.indentSelection('add'):/^\t/m.test(a.getValue())?a.execCommand('insertTab'):a.execCommand('insertSoftTab')},"Shift-Tab":function ShiftTab(a){return a.indentSelection('subtract')},Enter:function Enter(a){return a.options.indentWithTabs=/^\t/m.test(a.getValue()),a.execCommand('newlineAndIndent')}})},$('.placeholder-code').one('mouseover',function(){var a,b;return b=$(this).prev('textarea'),$(this).remove(),initializeEditor(b),a=$(b.parent().siblings()[0]),a.children('.placeholder-code').remove(),initializeEditor($(a.children('textarea')[0]))}),initializeTryEditors=function(){return initializeEditor($('#try-coffeescript-coffee')),initializeEditor($('#try-coffeescript-js'))},$('[data-action="run-code-example"]').click(function(){var index,js,run;return run=$(this).data('run'),index=$('#'+$(this).data('example')+'-js').data('index'),js=null==editors[index]?$(textareas[index]).val():editors[index].getValue(),!0!==run&&(js=js+'\nalert('+unescape(run)+');'),eval(js),gtag('event','run_code',{event_category:'engagement',event_label:$(this).closest('[data-example]').data('example')})}),previousHash=null,toggleTry=function(a){var b,c;if($('#try, #try-link').toggleClass('show'),!$('#try').hasClass('show'))return previousHash?replaceState(previousHash):clearHash();if(window.location.hash&&(previousHash=window.location.hash),0===$('#try .CodeMirror').length&&initializeTryEditors(),a&&null!=window.localStorage)try{return b=window.localStorage.getItem('tryCoffeeScriptCode'),null==b?replaceState('#try'):editors[0].setValue(b)}catch(a){return c=a,replaceState('#try')}else return replaceState('#try')},closeTry=function(){return $('#try, #try-link').removeClass('show'),previousHash?replaceState(previousHash):clearHash()},$('[data-toggle="try"]').click(function(a){return a.preventDefault(),toggleTry(!0)}),$('[data-close="try"]').click(closeTry),clearHash=function(){return window.history.replaceState({},document.title,window.location.pathname)},replaceState=function(a){return 0===(null==a?void 0:a.indexOf('#'))&&(a=''+window.location.pathname+a),window.history.replaceState({},document.title,a||'')},$(window).on('hashchange',function(){if(''===window.location.hash)return clearHash()}),null!=window.location.hash){if('#try'===window.location.hash)return toggleTry(!0);if(0===window.location.hash.indexOf('#try'))return 0===$('#try .CodeMirror').length&&initializeTryEditors(),editors[0].setValue(decodeURIComponent(window.location.hash.slice(5))),toggleTry(!1);if(''===window.location.hash)return clearHash();if(initializeScrollspyFromHash(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,'')).scrollIntoView()}})}).call(this);
+(function(){window.location.origin||(window.location.origin=window.location.protocol+'//'+window.location.hostname),$(document).ready(function(){var a,b,c,d,e,f,g,h,i,j,k,l;if(k=function(){return $('.navbar-toggler, .sidebar').toggleClass('show')},$('[data-toggle="offcanvas"]').click(k),$('[data-action="sidebar-nav"]').click(function(a){return $('.navbar-toggler').is(':visible')&&(a.preventDefault(),k(),setTimeout(function(){return window.location=a.target.href},260)),gtag('event','sidebar_navigate',{event_category:'navigation',event_label:a.target.href.replace(window.location.origin,'')})}),$('body').scrollspy({target:'#contents',offset:Math.round($('main').css('padding-top').replace('px',''))}),e=function(a){return $('#contents a.active[href!=\''+a+'\']').removeClass('show')},$(window).on('activate.bs.scrollspy',function(a,b){var c;if($('#contents a.active[href!=\''+b.relatedTarget+'\']').removeClass('show'),c=$('#contents a[href=\''+b.relatedTarget+'\']'),c.prop('href')!==window.location.origin+'/#try')return i(c.prop('href')),gtag('config',GA_TRACKING_ID,{page_path:c.prop('href').replace(window.location.origin,'')})}),j=[],c=[],g=200,$('textarea').each(function(a){return j[a]=this,$(this).data('index',a)}),d=function(a){var b,d,e,f;if(d=a.data('index'),e=a.hasClass('javascript-output')?'javascript':'coffeescript',c[d]=b=CodeMirror.fromTextArea(a[0],{mode:e,theme:'twilight',indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:'contenteditable',readOnly:'coffeescript'!==e,viewportMargin:2e308}),'coffeescript'===e)return f=null,b.on('change',function(){return clearTimeout(f),f=setTimeout(function(){var e,f,h,j,k;h=Date.now();try{if(e=b.getValue(),0===d&&$('#try').hasClass('show')){$('#try').hasClass('show')&&(j='try:'+encodeURIComponent(e),i(window.location.href.split('#')[0]+'#'+j));try{null!=window.localStorage&&window.localStorage.setItem('tryCoffeeScriptCode',e)}catch(a){f=a}}k=CoffeeScript.compile(e,{bare:!0}),g=Math.max(200,Date.now()-h)}catch(a){f=a,k=''+f}return c[d+1].setValue(k),gtag('event','edit_code',{event_category:'engagement',event_label:a.closest('[data-example]').data('example')})},g)}),b.addKeyMap({Tab:function Tab(a){return a.somethingSelected()?a.indentSelection('add'):/^\t/m.test(a.getValue())?a.execCommand('insertTab'):a.execCommand('insertSoftTab')},"Shift-Tab":function ShiftTab(a){return a.indentSelection('subtract')},Enter:function Enter(a){return a.options.indentWithTabs=/^\t/m.test(a.getValue()),a.execCommand('newlineAndIndent')}})},$('.placeholder-code').one('mouseover',function(){var a,b;return b=$(this).prev('textarea'),$(this).remove(),d(b),a=$(b.parent().siblings()[0]),a.children('.placeholder-code').remove(),d($(a.children('textarea')[0]))}),f=function(){return d($('#try-coffeescript-coffee')),d($('#try-coffeescript-js'))},$('[data-action="run-code-example"]').click(function(){var a,b,d;return d=$(this).data('run'),a=$('#'+$(this).data('example')+'-js').data('index'),b=null==c[a]?$(j[a]).val():c[a].getValue(),!0!==d&&(b=b+'\nalert('+unescape(d)+');'),eval(b),gtag('event','run_code',{event_category:'engagement',event_label:$(this).closest('[data-example]').data('example')})}),h=null,l=function(b){var d,e;if($('#try, #try-link').toggleClass('show'),!$('#try').hasClass('show'))return h?i(h):a();if(window.location.hash&&(h=window.location.hash),0===$('#try .CodeMirror').length&&f(),b&&null!=window.localStorage)try{return d=window.localStorage.getItem('tryCoffeeScriptCode'),null==d?i('#try'):c[0].setValue(d)}catch(a){return e=a,i('#try')}else return i('#try')},b=function(){return $('#try, #try-link').removeClass('show'),h?i(h):a()},$('[data-toggle="try"]').click(function(a){return a.preventDefault(),l(!0)}),$('[data-close="try"]').click(b),a=function(){return window.history.replaceState({},document.title,window.location.pathname)},i=function(a){return 0===(null==a?void 0:a.indexOf('#'))&&(a=''+window.location.pathname+a),window.history.replaceState({},document.title,a||'')},$(window).on('hashchange',function(){if(''===window.location.hash)return a()}),null!=window.location.hash){if('#try'===window.location.hash)return l(!0);if(0===window.location.hash.indexOf('#try'))return 0===$('#try .CodeMirror').length&&f(),c[0].setValue(decodeURIComponent(window.location.hash.slice(5))),l(!1);if(''===window.location.hash)return a();if(e(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,'')).scrollIntoView()}})}).call(this);
 </script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-106156830-1"></script>
 <script>
@@ -6279,14 +6282,14 @@ The <code>extends</code> keyword now functions identically to <code>goog.inherit
   gtag('js', new Date());
   gtag('config', GA_TRACKING_ID);
 </script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.js"></script>
-<script type="text/javascript"> docsearch({
-  apiKey: 'd8c0290b3e915152f833b7eb80aa8d45',
-  indexName: 'coffeescript',
-  // enhancedSearchInput:true,
-  inputSelector: '#q',
-  debug: false // Set debug to true if you want to inspect the dropdown
-});
+<script>
+  docsearch({
+    apiKey: 'd8c0290b3e915152f833b7eb80aa8d45',
+    indexName: 'coffeescript',
+    // enhancedSearchInput:true,
+    inputSelector: '#q',
+    debug: false // Set debug to true if you want to inspect the dropdown
+  });
 </script>
 
 </body>

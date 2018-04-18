@@ -3,7 +3,7 @@
   window.Popper = {}; // Remove if we want to use Bootstrap tooltips
 </script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/combine/npm/codemirror@5.29.0/lib/codemirror.js,npm/codemirror@5.29.0/mode/coffeescript/coffeescript.js,npm/codemirror@5.29.0/addon/lint/coffeescript-lint.js,npm/codemirror@5.29.0/mode/javascript/javascript.js"></script>
+<script src="https://cdn.jsdelivr.net/combine/npm/codemirror@5.29.0/lib/codemirror.js,npm/codemirror@5.29.0/mode/coffeescript/coffeescript.js,npm/codemirror@5.29.0/addon/lint/coffeescript-lint.js,npm/codemirror@5.29.0/mode/javascript/javascript.js,npm/docsearch.js@2/dist/cdn/docsearch.min.js"></script>
 
 <script src="browser-compiler/coffeescript.js"></script>
 <script>
@@ -17,12 +17,12 @@
   gtag('js', new Date());
   gtag('config', GA_TRACKING_ID);
 </script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.js"></script>
-<script type="text/javascript"> docsearch({
-  apiKey: 'd8c0290b3e915152f833b7eb80aa8d45',
-  indexName: 'coffeescript',
-  // enhancedSearchInput:true,
-  inputSelector: '#q',
-  debug: false // Set debug to true if you want to inspect the dropdown
-});
+<script>
+  docsearch({
+    apiKey: 'd8c0290b3e915152f833b7eb80aa8d45',
+    indexName: 'coffeescript',
+    // enhancedSearchInput:true,
+    inputSelector: '#q',
+    debug: false // Set debug to true if you want to inspect the dropdown
+  });
 </script>
