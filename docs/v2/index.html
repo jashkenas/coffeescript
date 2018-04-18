@@ -893,8 +893,7 @@ cubes = (function() {
           <h3>Compatibility</h3>
 <p>Most modern JavaScript features that CoffeeScript supports can run natively in Node 7.6+, meaning that Node can run CoffeeScript’s output without any further processing required. Here are some notable exceptions:</p>
 <ul>
-<li><a href="#jsx">JSX</a> always requires transpilation.</li>
-<li><a href="#modules">Modules</a> (<code>import</code> and <code>export</code> statements) are supported by Node 10+, provided you specify an output filename with an <code>.mjs</code> extension (or rename the extensions of the generated <code>.js</code> files) and execute such files via <code>node</code>, not <code>coffee</code>.</li>
+<li><a href="#modules">Modules</a> and <a href="#jsx">JSX</a> always require transpilation.</li>
 <li><a href="http://coffeescript.org/#splats">Splats, a.k.a. object rest/spread syntax, for objects</a> are supported by Node 8.6+.</li>
 <li>The <a href="https://github.com/tc39/proposal-regexp-dotall-flag">regular expression <code>s</code> (dotall) flag</a> is supported by Node 9+.</li>
 </ul>
@@ -4406,7 +4405,7 @@ export {
   
 </aside>
 <div id="modules-note" class="bookmark"></div>
-<p>Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an <code>import</code> or <code>export</code> statement in CoffeeScript will produce an <code>import</code> or <code>export</code> statement in the resulting output. It is your responsibility to <a href="#transpilation">transpile</a> this ES2015 syntax into code that will work in your target runtimes, unless you know that your code will be executed by a runtime that supports <a href="https://nodejs.org/api/esm.html">ES modules</a>. Node supports such modules only for files with <code>.mjs</code> extensions; you can generate such an extension via the <code>coffee</code> command for a single file via <code>--output</code>, as in <code>coffee --compile --output index.mjs index.coffee</code>. When compiling folders or globs, it is your responsibility to rename the generated <code>.js</code> files as needed.</p>
+<p>Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an <code>import</code> or <code>export</code> statement in CoffeeScript will produce an <code>import</code> or <code>export</code> statement in the resulting output. It is your responsibility to <a href="#transpilation">transpile</a> this ES2015 syntax into code that will work in your target runtimes.</p>
 <p>Also note that any file with an <code>import</code> or <code>export</code> statement will be output without a <a href="#lexical-scope">top-level function safety wrapper</a>; in other words, importing or exporting modules will automatically trigger <a href="#usage">bare</a> mode for that file. This is because per the ES2015 spec, <code>import</code> or <code>export</code> statements must occur at the topmost scope.</p>
 
         </section>
