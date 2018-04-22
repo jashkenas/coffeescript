@@ -2521,8 +2521,8 @@ exports.Code = class Code extends Base
         @isGenerator = yes
       if (node instanceof Op and node.isAwait()) or node instanceof AwaitReturn
         @isAsync = yes
-      if @isGenerator and @isAsync
-        node.error "function can't contain both yield and await"
+      if node instanceof For and node.isAwait()
+        @isAsync = yes
 
   children: ['params', 'body']
 
@@ -3519,15 +3519,27 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
 exports.For = class For extends While
   constructor: (body, source) ->
     super()
-    {@source, @guard, @step, @name, @index} = source
-    @body    = Block.wrap [body]
-    @own     = source.own?
-    @object  = source.object?
-    @from    = source.from?
+    @addBody body
+    @addSource source
+
+  children: ['body', 'source', 'guard', 'step']
+
+  isAwait: -> @await ? no
+
+  addBody: (body) ->
+    @body = Block.wrap [body]
+    this
+
+  addSource: (source) ->
+    {@source  = no} = source
+    attribs   = ["name", "index", "guard", "step", "own", "ownTag", "await", "awaitTag", "object", "from"]
+    @[attr]   = source[attr] ? @[attr] for attr in attribs
+    return this unless @source
     @index.error 'cannot use index with for-from' if @from and @index
-    source.ownTag.error "cannot use own with for-#{if @from then 'from' else 'in'}" if @own and not @object
+    @ownTag.error "cannot use own with for-#{if @from then 'from' else 'in'}" if @own and not @object
     [@name, @index] = [@index, @name] if @object
     @index.error 'index cannot be a pattern matching expression' if @index?.isArray?() or @index?.isObject?()
+    @awaitTag.error 'await must be used with for-from' if @await and not @from
     @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length and not @from
     @pattern = @name instanceof Value
     @index.error 'indexes do not apply to range loops' if @range and @index
@@ -3546,8 +3558,7 @@ exports.For = class For extends While
           comment.newLine = comment.unshift = yes for comment in node.comments
           moveComments node, @[attribute]
       moveComments @[attribute], @
-
-  children: ['body', 'source', 'guard', 'step']
+    this
 
   # Welcome to the hairiest method in all of CoffeeScript. Handles the inner
   # loop, filtering, stepping, and result saving for array, object, and range
@@ -3625,15 +3636,21 @@ exports.For = class For extends While
       forPartFragments = [@makeCode("#{kvar} in #{svar}")]
       guardPart = "\n#{idt1}if (!#{utility 'hasProp', o}.call(#{svar}, #{kvar})) continue;" if @own
     else if @from
-      forPartFragments = [@makeCode("#{kvar} of #{svar}")]
+      if @await
+        forPartFragments = new Op 'await', new Parens new Literal "#{kvar} of #{svar}"
+        forPartFragments = forPartFragments.compileToFragments o, LEVEL_TOP
+      else
+        forPartFragments = [@makeCode("#{kvar} of #{svar}")]
     bodyFragments = body.compileToFragments merge(o, indent: idt1), LEVEL_TOP
     if bodyFragments and bodyFragments.length > 0
       bodyFragments = [].concat @makeCode('\n'), bodyFragments, @makeCode('\n')
 
     fragments = [@makeCode(defPart)]
     fragments.push @makeCode(resultPart) if resultPart
-    fragments = fragments.concat @makeCode(@tab), @makeCode( 'for ('),
-      forPartFragments, @makeCode(") {#{guardPart}#{varPart}"), bodyFragments,
+    forCode = if @await then 'for ' else 'for ('
+    forClose = if @await then '' else ')'
+    fragments = fragments.concat @makeCode(@tab), @makeCode( forCode),
+      forPartFragments, @makeCode("#{forClose} {#{guardPart}#{varPart}"), bodyFragments,
       @makeCode(@tab), @makeCode('}')
     fragments.push @makeCode(returnResult) if returnResult
     fragments

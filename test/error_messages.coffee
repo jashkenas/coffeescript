@@ -1230,28 +1230,6 @@ test "CoffeeScript keywords cannot be used as local names in import list aliases
                     ^^^^^^
   '''
 
-test "function cannot contain both `await` and `yield`", ->
-  assertErrorFormat '''
-    f = () ->
-      yield 5
-      await a
-  ''', '''
-    [stdin]:3:3: error: function can't contain both yield and await
-      await a
-      ^^^^^^^
-  '''
-
-test "function cannot contain both `await` and `yield from`", ->
-  assertErrorFormat '''
-    f = () ->
-      yield from a
-      await b
-  ''', '''
-    [stdin]:3:3: error: function can't contain both yield and await
-      await b
-      ^^^^^^^
-  '''
-
 test "cannot have `await` outside a function", ->
   assertErrorFormat '''
     await 1
