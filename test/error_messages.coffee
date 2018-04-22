@@ -962,6 +962,42 @@ test "#4097: `yield return` as an expression", ->
         ^^^^^^^^^^^^
   '''
 
+test "#5013: `await return` as an expression", ->
+  assertErrorFormat '''
+    -> (await return)
+  ''', '''
+    [stdin]:1:5: error: cannot use a pure statement in an expression
+    -> (await return)
+        ^^^^^^^^^^^^
+  '''
+
+test "#5013: `return` as an expression", ->
+  assertErrorFormat '''
+    -> (return)
+  ''', '''
+    [stdin]:1:5: error: cannot use a pure statement in an expression
+    -> (return)
+        ^^^^^^
+  '''
+
+test "#5013: `break` as an expression", ->
+  assertErrorFormat '''
+    (b = 1; break) for b in a
+  ''', '''
+    [stdin]:1:9: error: cannot use a pure statement in an expression
+    (b = 1; break) for b in a
+            ^^^^^
+  '''
+
+test "#5013: `continue` as an expression", ->
+  assertErrorFormat '''
+    (b = 1; continue) for b in a
+  ''', '''
+    [stdin]:1:9: error: cannot use a pure statement in an expression
+    (b = 1; continue) for b in a
+            ^^^^^^^^
+  '''
+
 test "`&&=` and `||=` with a space in-between", ->
   assertErrorFormat '''
     a = 0
@@ -1192,28 +1228,6 @@ test "CoffeeScript keywords cannot be used as local names in import list aliases
     [stdin]:1:17: error: unexpected unless
     import { bar as unless, baz as bar } from 'lib'
                     ^^^^^^
-  '''
-
-test "function cannot contain both `await` and `yield`", ->
-  assertErrorFormat '''
-    f = () ->
-      yield 5
-      await a
-  ''', '''
-    [stdin]:3:3: error: function can't contain both yield and await
-      await a
-      ^^^^^^^
-  '''
-
-test "function cannot contain both `await` and `yield from`", ->
-  assertErrorFormat '''
-    f = () ->
-      yield from a
-      await b
-  ''', '''
-    [stdin]:3:3: error: function can't contain both yield and await
-      await b
-      ^^^^^^^
   '''
 
 test "cannot have `await` outside a function", ->
@@ -1776,4 +1790,54 @@ test "#4811: '///' inside a heregex comment does not close the heregex", ->
   [stdin]:1:1: error: missing ///
   /// .* # comment ///
   ^^^
+  '''
+
+test "#3933: prevent implicit calls when cotrol flow is missing `THEN`", ->
+  assertErrorFormat '''
+    for a in b do ->
+  ''','''
+    [stdin]:1:12: error: unexpected do
+    for a in b do ->
+               ^^
+  '''
+
+  assertErrorFormat '''
+    for a in b ->
+  ''','''
+    [stdin]:1:12: error: unexpected ->
+    for a in b ->
+               ^^
+  '''
+
+  assertErrorFormat '''
+    for a in b do =>
+  ''','''
+    [stdin]:1:12: error: unexpected do
+    for a in b do =>
+               ^^
+  '''
+
+  assertErrorFormat '''
+    while a do ->
+  ''','''
+    [stdin]:1:9: error: unexpected do
+    while a do ->
+            ^^
+  '''
+
+  assertErrorFormat '''
+    until a do =>
+  ''','''
+    [stdin]:1:9: error: unexpected do
+    until a do =>
+            ^^
+  '''
+
+  assertErrorFormat '''
+    switch
+      when a ->
+  ''','''
+    [stdin]:2:10: error: unexpected ->
+      when a ->
+             ^^
   '''

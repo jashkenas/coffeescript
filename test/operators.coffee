@@ -305,24 +305,6 @@ test "#2508: Existential access of the prototype", ->
   eq NonExistent?::nothing, undefined
   ok Object?::toString
 
-test "power operator", ->
-  eq 27, 3 ** 3
-
-test "power operator has higher precedence than other maths operators", ->
-  eq 55, 1 + 3 ** 3 * 2
-  eq -4, -2 ** 2
-  eq false, !2 ** 2
-  eq 0, (!2) ** 2
-  eq -2, ~1 ** 5
-
-test "power operator is right associative", ->
-  eq 2, 2 ** 1 ** 3
-
-test "power operator compound assignment", ->
-  a = 2
-  a **= 3
-  eq 8, a
-
 test "floor division operator", ->
   eq 2, 7 // 3
   eq -3, -7 // 3

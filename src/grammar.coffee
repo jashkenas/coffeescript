@@ -89,6 +89,7 @@ grammar =
   # grammar.
   Line: [
     o 'Expression'
+    o 'ExpressionLine'
     o 'Statement'
     o 'FuncDirective'
   ]
@@ -123,6 +124,15 @@ grammar =
     o 'Class'
     o 'Throw'
     o 'Yield'
+  ]
+
+  # Expressions which are written in single line and would otherwise require being
+  # wrapped in braces: E.g `a = b if do -> f a is 1`, `if f (a) -> a*2 then ...`,
+  # `for x in do (obj) -> f obj when x > 8 then f x`
+  ExpressionLine: [
+    o 'CodeLine'
+    o 'IfLine'
+    o 'OperationLine'
   ]
 
   Yield: [
@@ -265,6 +275,13 @@ grammar =
   Code: [
     o 'PARAM_START ParamList PARAM_END FuncGlyph Block', -> new Code $2, $5, $4, LOC(1)(new Literal $1)
     o 'FuncGlyph Block',                                 -> new Code [], $2, $1
+  ]
+
+  # The Codeline is the **Code** node with **Line** instead of indented **Block**.
+  CodeLine: [
+    o 'PARAM_START ParamList PARAM_END FuncGlyph Line', -> new Code $2, LOC(5)(Block.wrap [$5]), $4,
+                                                              LOC(1)(new Literal $1)
+    o 'FuncGlyph Line',                                 -> new Code [], LOC(2)(Block.wrap [$2]), $1
   ]
 
   # CoffeeScript has two different symbols for functions. `->` is for ordinary
@@ -506,13 +523,16 @@ grammar =
 
   # The CoffeeScript range literal.
   Range: [
-    o '[ Expression RangeDots Expression ]',    -> new Range $2, $4, $3
+    o '[ Expression RangeDots Expression ]',      -> new Range $2, $4, $3
+    o '[ ExpressionLine RangeDots Expression ]',  -> new Range $2, $4, $3
   ]
 
   # Array slice literals.
   Slice: [
     o 'Expression RangeDots Expression',        -> new Range $1, $3, $2
     o 'Expression RangeDots',                   -> new Range $1, null, $2
+    o 'ExpressionLine RangeDots Expression',    -> new Range $1, $3, $2
+    o 'ExpressionLine RangeDots',               -> new Range $1, null, $2
     o 'RangeDots Expression',                   -> new Range null, $2, $1
     o 'RangeDots',                              -> new Range null, null, $1
   ]
@@ -530,6 +550,7 @@ grammar =
   # Valid arguments are Blocks or Splats.
   Arg: [
     o 'Expression'
+    o 'ExpressionLine'
     o 'Splat'
     o '...',                                     -> new Expansion
   ]
@@ -568,7 +589,9 @@ grammar =
   # having the newlines wouldn't make sense.
   SimpleArgs: [
     o 'Expression'
+    o 'ExpressionLine'
     o 'SimpleArgs , Expression',                -> [].concat $1, $3
+    o 'SimpleArgs , ExpressionLine',            -> [].concat $1, $3
   ]
 
   # The variants of *try/catch/finally* exception handling blocks.
@@ -602,17 +625,27 @@ grammar =
   ]
 
   # The condition portion of a while loop.
+  WhileLineSource: [
+    o 'WHILE ExpressionLine',                       -> new While $2
+    o 'WHILE ExpressionLine WHEN ExpressionLine',   -> new While $2, guard: $4
+    o 'UNTIL ExpressionLine',                       -> new While $2, invert: true
+    o 'UNTIL ExpressionLine WHEN ExpressionLine',   -> new While $2, invert: true, guard: $4
+  ]
+
   WhileSource: [
     o 'WHILE Expression',                       -> new While $2
     o 'WHILE Expression WHEN Expression',       -> new While $2, guard: $4
+    o 'WHILE ExpressionLine WHEN Expression',   -> new While $2, guard: $4
     o 'UNTIL Expression',                       -> new While $2, invert: true
     o 'UNTIL Expression WHEN Expression',       -> new While $2, invert: true, guard: $4
+    o 'UNTIL ExpressionLine WHEN Expression',   -> new While $2, invert: true, guard: $4
   ]
 
   # The while loop can either be normal, with a block of expressions to execute,
   # or postfix, with a single expression. There is no do..while.
   While: [
     o 'WhileSource Block',                      -> $1.addBody $2
+    o 'WhileLineSource Block',                  -> $1.addBody $2
     o 'Statement  WhileSource',                 -> $2.addBody LOC(1) Block.wrap([$1])
     o 'Expression WhileSource',                 -> $2.addBody LOC(1) Block.wrap([$1])
     o 'Loop',                                   -> $1
@@ -627,20 +660,31 @@ grammar =
   # Comprehensions can either be normal, with a block of expressions to execute,
   # or postfix, with a single expression.
   For: [
-    o 'Statement  ForBody',                     -> new For $1, $2
-    o 'Expression ForBody',                     -> new For $1, $2
-    o 'ForBody    Block',                       -> new For $2, $1
+    o 'Statement    ForBody',  -> $2.addBody $1
+    o 'Expression   ForBody',  -> $2.addBody $1
+    o 'ForBody      Block',    -> $1.addBody $2
+    o 'ForLineBody  Block',    -> $1.addBody $2
   ]
 
   ForBody: [
-    o 'FOR Range',                              -> source: (LOC(2) new Value($2))
-    o 'FOR Range BY Expression',                -> source: (LOC(2) new Value($2)), step: $4
-    o 'ForStart ForSource',                     -> $2.own = $1.own; $2.ownTag = $1.ownTag; $2.name = $1[0]; $2.index = $1[1]; $2
+    o 'FOR Range',                -> new For [], source: (LOC(2) new Value($2))
+    o 'FOR Range BY Expression',  -> new For [], source: (LOC(2) new Value($2)), step: $4
+    o 'ForStart ForSource',       -> $1.addSource $2
+  ]
+
+  ForLineBody: [
+    o 'FOR Range BY ExpressionLine',  -> new For [], source: (LOC(2) new Value($2)), step: $4
+    o 'ForStart ForLineSource',       -> $1.addSource $2
   ]
 
   ForStart: [
-    o 'FOR ForVariables',                       -> $2
-    o 'FOR OWN ForVariables',                   -> $3.own = yes; $3.ownTag = (LOC(2) new Literal($2)); $3
+    o 'FOR ForVariables',        -> new For [], name: $2[0], index: $2[1]
+    o 'FOR AWAIT ForVariables',  ->
+        [name, index] = $3
+        new For [], {name, index, await: yes, awaitTag: (LOC(2) new Literal($2))}
+    o 'FOR OWN ForVariables',    ->
+        [name, index] = $3
+        new For [], {name, index, own: yes, ownTag: (LOC(2) new Literal($2))}
   ]
 
   # An array of all accepted values for a variable inside the loop.
@@ -664,22 +708,56 @@ grammar =
   # clause. If it's an array comprehension, you can also choose to step through
   # in fixed-size increments.
   ForSource: [
-    o 'FORIN Expression',                               -> source: $2
-    o 'FOROF Expression',                               -> source: $2, object: yes
-    o 'FORIN Expression WHEN Expression',               -> source: $2, guard: $4
-    o 'FOROF Expression WHEN Expression',               -> source: $2, guard: $4, object: yes
-    o 'FORIN Expression BY Expression',                 -> source: $2, step:  $4
-    o 'FORIN Expression WHEN Expression BY Expression', -> source: $2, guard: $4, step: $6
-    o 'FORIN Expression BY Expression WHEN Expression', -> source: $2, step:  $4, guard: $6
-    o 'FORFROM Expression',                             -> source: $2, from: yes
-    o 'FORFROM Expression WHEN Expression',             -> source: $2, guard: $4, from: yes
+    o 'FORIN Expression',                                           -> source: $2
+    o 'FOROF Expression',                                           -> source: $2, object: yes
+    o 'FORIN Expression WHEN Expression',                           -> source: $2, guard: $4
+    o 'FORIN ExpressionLine WHEN Expression',                       -> source: $2, guard: $4
+    o 'FOROF Expression WHEN Expression',                           -> source: $2, guard: $4, object: yes
+    o 'FOROF ExpressionLine WHEN Expression',                       -> source: $2, guard: $4, object: yes
+    o 'FORIN Expression BY Expression',                             -> source: $2, step:  $4
+    o 'FORIN ExpressionLine BY Expression',                         -> source: $2, step:  $4
+    o 'FORIN Expression WHEN Expression BY Expression',             -> source: $2, guard: $4, step: $6
+    o 'FORIN ExpressionLine WHEN Expression BY Expression',         -> source: $2, guard: $4, step: $6
+    o 'FORIN Expression WHEN ExpressionLine BY Expression',         -> source: $2, guard: $4, step: $6
+    o 'FORIN ExpressionLine WHEN ExpressionLine BY Expression',     -> source: $2, guard: $4, step: $6
+    o 'FORIN Expression BY Expression WHEN Expression',             -> source: $2, step:  $4, guard: $6
+    o 'FORIN ExpressionLine BY Expression WHEN Expression',         -> source: $2, step:  $4, guard: $6
+    o 'FORIN Expression BY ExpressionLine WHEN Expression',         -> source: $2, step:  $4, guard: $6
+    o 'FORIN ExpressionLine BY ExpressionLine WHEN Expression',     -> source: $2, step:  $4, guard: $6
+    o 'FORFROM Expression',                                         -> source: $2, from: yes
+    o 'FORFROM Expression WHEN Expression',                         -> source: $2, guard: $4, from: yes
+    o 'FORFROM ExpressionLine WHEN Expression',                     -> source: $2, guard: $4, from: yes
+  ]
+
+  ForLineSource: [
+    o 'FORIN ExpressionLine',                                       -> source: $2
+    o 'FOROF ExpressionLine',                                       -> source: $2, object: yes
+    o 'FORIN Expression WHEN ExpressionLine',                       -> source: $2, guard: $4
+    o 'FORIN ExpressionLine WHEN ExpressionLine',                   -> source: $2, guard: $4
+    o 'FOROF Expression WHEN ExpressionLine',                       -> source: $2, guard: $4, object: yes
+    o 'FOROF ExpressionLine WHEN ExpressionLine',                   -> source: $2, guard: $4, object: yes
+    o 'FORIN Expression BY ExpressionLine',                         -> source: $2, step:  $4
+    o 'FORIN ExpressionLine BY ExpressionLine',                     -> source: $2, step:  $4
+    o 'FORIN Expression WHEN Expression BY ExpressionLine',         -> source: $2, guard: $4, step: $6
+    o 'FORIN ExpressionLine WHEN Expression BY ExpressionLine',     -> source: $2, guard: $4, step: $6
+    o 'FORIN Expression WHEN ExpressionLine BY ExpressionLine',     -> source: $2, guard: $4, step: $6
+    o 'FORIN ExpressionLine WHEN ExpressionLine BY ExpressionLine', -> source: $2, guard: $4, step: $6
+    o 'FORIN Expression BY Expression WHEN ExpressionLine',         -> source: $2, step:  $4, guard: $6
+    o 'FORIN ExpressionLine BY Expression WHEN ExpressionLine',     -> source: $2, step:  $4, guard: $6
+    o 'FORIN Expression BY ExpressionLine WHEN ExpressionLine',     -> source: $2, step:  $4, guard: $6
+    o 'FORIN ExpressionLine BY ExpressionLine WHEN ExpressionLine', -> source: $2, step:  $4, guard: $6
+    o 'FORFROM ExpressionLine',                                     -> source: $2, from: yes
+    o 'FORFROM Expression WHEN ExpressionLine',                     -> source: $2, guard: $4, from: yes
+    o 'FORFROM ExpressionLine WHEN ExpressionLine',                 -> source: $2, guard: $4, from: yes
   ]
 
   Switch: [
-    o 'SWITCH Expression INDENT Whens OUTDENT',            -> new Switch $2, $4
-    o 'SWITCH Expression INDENT Whens ELSE Block OUTDENT', -> new Switch $2, $4, $6
-    o 'SWITCH INDENT Whens OUTDENT',                       -> new Switch null, $3
-    o 'SWITCH INDENT Whens ELSE Block OUTDENT',            -> new Switch null, $3, $5
+    o 'SWITCH Expression INDENT Whens OUTDENT',                -> new Switch $2, $4
+    o 'SWITCH ExpressionLine INDENT Whens OUTDENT',            -> new Switch $2, $4
+    o 'SWITCH Expression INDENT Whens ELSE Block OUTDENT',     -> new Switch $2, $4, $6
+    o 'SWITCH ExpressionLine INDENT Whens ELSE Block OUTDENT', -> new Switch $2, $4, $6
+    o 'SWITCH INDENT Whens OUTDENT',                           -> new Switch null, $3
+    o 'SWITCH INDENT Whens ELSE Block OUTDENT',                -> new Switch null, $3, $5
   ]
 
   Whens: [
@@ -710,12 +788,28 @@ grammar =
     o 'Expression POST_IF Expression',          -> new If $3, LOC(1)(Block.wrap [$1]), type: $2, statement: true
   ]
 
+  IfBlockLine: [
+    o 'IF ExpressionLine Block',                  -> new If $2, $3, type: $1
+    o 'IfBlockLine ELSE IF ExpressionLine Block', -> $1.addElse LOC(3,5) new If $4, $5, type: $3
+  ]
+
+  IfLine: [
+    o 'IfBlockLine'
+    o 'IfBlockLine ELSE Block',               -> $1.addElse $3
+    o 'Statement  POST_IF ExpressionLine',    -> new If $3, LOC(1)(Block.wrap [$1]), type: $2, statement: true
+    o 'Expression POST_IF ExpressionLine',    -> new If $3, LOC(1)(Block.wrap [$1]), type: $2, statement: true
+  ]
+
   # Arithmetic and logical operators, working on one or more operands.
   # Here they are grouped by order of precedence. The actual precedence rules
   # are defined at the bottom of the page. It would be shorter if we could
   # combine most of these rules into a single generic *Operand OpSymbol Operand*
   # -type rule, but in order to make the precedence binding possible, separate
   # rules are necessary.
+  OperationLine: [
+    o 'UNARY ExpressionLine',                   -> new Op $1, $2
+  ]
+
   Operation: [
     o 'UNARY Expression',                       -> new Op $1 , $2
     o 'UNARY_MATH Expression',                  -> new Op $1 , $2

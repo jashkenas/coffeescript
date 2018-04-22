@@ -266,6 +266,7 @@ test "classes with value'd constructors", ->
     inner = ++counter
     ->
       @value = inner
+      @
 
   class One
     constructor: classMaker()
@@ -1874,3 +1875,28 @@ test "#4827: executable class body wrappers have correct context", ->
   o = {}
   test.call o
   ok typeof o.A is typeof o.B is 'function'
+
+test "#4868: Incorrect ‘Can’t call super with @params’ error", ->
+  class A
+    constructor: (@func = ->) ->
+      @x = 1
+      @func()
+
+  class B extends A
+    constructor: ->
+      super -> @x = 2
+
+  a = new A
+  b = new B
+  eq 1, a.x
+  eq 2, b.x
+
+  class C
+    constructor: (@c = class) -> @c
+
+  class D extends C
+    constructor: ->
+      super class then constructor: (@a) -> @a = 3
+
+  d = new (new D).c
+  eq 3, d.a

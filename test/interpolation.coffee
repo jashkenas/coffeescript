@@ -139,7 +139,7 @@ eq 'multiline nested "interpolations" work', """multiline #{
 
 eq 'function(){}', "#{->}".replace /\s/g, ''
 ok /^a[\s\S]+b$/.test "a#{=>}b"
-ok /^a[\s\S]+b$/.test "a#{ (x) -> x ** 2 }b"
+ok /^a[\s\S]+b$/.test "a#{ (x) -> x %% 2 }b"
 
 # Regular Expression Interpolation
 

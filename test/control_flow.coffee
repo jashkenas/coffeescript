@@ -484,3 +484,828 @@ test "#4267: lots of for-loops in the same scope", ->
       true
   """
   ok CoffeeScript.eval(code)
+
+# Test for issue #2342: Lexer: Inline `else` binds to wrong `if`/`switch`
+test "#2343: if / then / if / then / else", ->
+  a = b = yes
+  c = e = g = no
+  d = 1
+  f = 2
+  h = 3
+  i = 4
+
+  s = ->
+    if a
+      if b
+        if c
+          d
+        else
+          if e
+            f
+          else
+            if g
+              h
+            else
+              i
+
+  t = ->
+    if a then if b
+      if c then d
+      else if e
+        f
+      else if g
+        h
+      else
+        i
+
+  u = ->
+    if a then if b
+      if c then d else if e
+        f
+      else if g
+        h
+      else i
+
+  v = ->
+    if a then if b
+      if c then d else if e then f
+      else if g then h
+      else i
+
+  w = ->
+    if a then if b
+      if c then d
+      else if e
+          f
+        else
+          if g then h
+          else i
+
+  x = -> if a then if b then if c then d else if e then f else if g then h else i
+
+  y = -> if a then if b then (if c then d else (if e then f else (if g then h else i)))
+
+  eq 4, s()
+  eq 4, t()
+  eq 4, u()
+  eq 4, v()
+  eq 4, w()
+  eq 4, x()
+  eq 4, y()
+
+  c = yes
+  eq 1, s()
+  eq 1, t()
+  eq 1, u()
+  eq 1, v()
+  eq 1, w()
+  eq 1, x()
+  eq 1, y()
+
+  b = no
+  eq undefined, s()
+  eq undefined, t()
+  eq undefined, u()
+  eq undefined, v()
+  eq undefined, w()
+  eq undefined, x()
+  eq undefined, y()
+
+test "#2343: if / then / if / then / else / else", ->
+  a = b = yes
+  c = e = g = no
+  d = 1
+  f = 2
+  h = 3
+  i = 4
+  j = 5
+  k = 6
+
+  s = ->
+    if a
+      if b
+        if c
+          d
+        else
+          e
+          if e
+            f
+          else
+            if g
+              h
+            else
+              i
+      else
+        j
+    else
+      k
+
+  t = ->
+    if a
+      if b
+        if c then d
+        else if e
+          f
+        else if g
+          h
+        else
+          i
+      else
+        j
+    else
+      k
+
+  u = ->
+    if a
+      if b
+        if c then d else if e
+          f
+        else if g
+          h
+        else i
+      else j
+    else k
+
+  v = ->
+    if a
+      if b
+        if c then d else if e then f
+        else if g then h
+        else i
+      else j else k
+
+  w = ->
+    if a then if b
+        if c then d
+        else if e
+            f
+          else
+            if g then h
+            else i
+    else j else k
+
+  x = -> if a then if b then if c then d else if e then f else if g then h else i else j else k
+
+  y = -> if a then (if b then (if c then d else (if e then f else (if g then h else i))) else j) else k
+
+  eq 4, s()
+  eq 4, t()
+  eq 4, u()
+  eq 4, v()
+  eq 4, w()
+  eq 4, x()
+  eq 4, y()
+
+  c = yes
+  eq 1, s()
+  eq 1, t()
+  eq 1, u()
+  eq 1, v()
+  eq 1, w()
+  eq 1, x()
+  eq 1, y()
+
+  b = no
+  eq 5, s()
+  eq 5, t()
+  eq 5, u()
+  eq 5, v()
+  eq 5, w()
+  eq 5, x()
+  eq 5, y()
+
+  a = no
+  eq 6, s()
+  eq 6, t()
+  eq 6, u()
+  eq 6, v()
+  eq 6, w()
+  eq 6, x()
+  eq 6, y()
+
+
+test "#2343: switch / when / then / if / then / else", ->
+  a = b = yes
+  c = e = g = no
+  d = 1
+  f = 2
+  h = 3
+  i = 4
+
+  s = ->
+    switch
+      when a
+        if b
+          if c
+            d
+          else
+            if e
+              f
+            else
+              if g
+                h
+              else
+                i
+
+
+  t = ->
+    switch
+      when a then if b
+        if c then d
+        else if e
+          f
+        else if g
+          h
+        else
+          i
+
+  u = ->
+    switch
+      when a then if b then if c then d
+      else if e then f
+      else if g then h else i
+
+  v = ->
+    switch
+      when a then if b then if c then d else if e then f
+      else if g then h else i
+
+  w = ->
+    switch
+      when a then if b then if c then d else if e then f
+      else if g
+        h
+      else i
+
+  x = ->
+    switch
+     when a then if b then if c then d else if e then f else if g then h else i
+
+  y = -> switch
+    when a then if b then (if c then d else (if e then f else (if g then h else i)))
+
+  eq 4, s()
+  eq 4, t()
+  eq 4, u()
+  eq 4, v()
+  eq 4, w()
+  eq 4, x()
+  eq 4, y()
+
+  c = yes
+  eq 1, s()
+  eq 1, t()
+  eq 1, u()
+  eq 1, v()
+  eq 1, w()
+  eq 1, x()
+  eq 1, y()
+
+  b = no
+  eq undefined, s()
+  eq undefined, t()
+  eq undefined, u()
+  eq undefined, v()
+  eq undefined, w()
+  eq undefined, x()
+  eq undefined, y()
+
+test "#2343: switch / when / then / if / then / else / else", ->
+  a = b = yes
+  c = e = g = no
+  d = 1
+  f = 2
+  h = 3
+  i = 4
+
+  s = ->
+    switch
+      when a
+        if b
+          if c
+            d
+          else if e
+            f
+          else if g
+            h
+          else
+            i
+      else
+        0
+
+  t = ->
+    switch
+      when a
+        if b
+          if c then d
+          else if e
+            f
+          else if g
+            h
+          else i
+      else 0
+
+  u = ->
+    switch
+      when a
+        if b then if c
+            d
+          else if e
+            f
+          else if g
+            h
+          else i
+      else 0
+
+  v = ->
+    switch
+      when a
+        if b then if c then d
+        else if e
+          f
+        else if g
+          h
+        else i
+      else 0
+
+  w = ->
+    switch
+      when a
+        if b then if c then d
+        else if e then f
+        else if g then h
+        else i
+      else 0
+
+  x = ->
+    switch
+     when a
+       if b then if c then d else if e then f else if g then h else i
+     else 0
+
+  y = -> switch
+    when a
+      if b then (if c then d else (if e then f else (if g then h else i)))
+    else 0
+
+  eq 4, s()
+  eq 4, t()
+  eq 4, u()
+  eq 4, v()
+  eq 4, w()
+  eq 4, x()
+  eq 4, y()
+
+  c = yes
+  eq 1, s()
+  eq 1, t()
+  eq 1, u()
+  eq 1, v()
+  eq 1, w()
+  eq 1, x()
+  eq 1, y()
+
+  b = no
+  eq undefined, s()
+  eq undefined, t()
+  eq undefined, u()
+  eq undefined, v()
+  eq undefined, w()
+  eq undefined, x()
+  eq undefined, y()
+
+  b = yes
+  a = no
+  eq 0, s()
+  eq 0, t()
+  eq 0, u()
+  eq 0, v()
+  eq 0, w()
+  eq 0, x()
+  eq 0, y()
+
+test "#2343: switch / when / then / if / then / else / else / else", ->
+  a = b = yes
+  c = e = g = no
+  d = 1
+  f = 2
+  h = 3
+  i = 4
+  j = 5
+
+  s = ->
+    switch
+      when a
+        if b
+          if c
+            d
+          else if e
+            f
+          else if g
+            h
+          else
+            i
+        else
+          j
+      else
+        0
+
+  t = ->
+    switch
+      when a
+        if b
+          if c then d
+          else if e
+            f
+          else if g
+            h
+          else i
+        else
+          j
+      else 0
+
+  u = ->
+    switch
+      when a
+        if b
+          if c
+            d
+          else if e
+            f
+          else if g
+            h
+          else i
+        else j
+      else 0
+
+  v = ->
+    switch
+      when a
+        if b
+          if c then d
+          else if e
+            f
+          else if g then h
+          else i
+        else j
+      else 0
+
+  w = ->
+    switch
+      when a
+        if b
+          if c then d
+          else if e then f
+          else if g then h
+          else i
+        else j
+      else 0
+
+  x = ->
+    switch
+     when a
+       if b then if c then d else if e then f else if g then h else i else j
+     else 0
+
+  y = -> switch
+    when a
+      if b then (if c then d else (if e then f else (if g then h else i))) else j
+    else 0
+
+  eq 4, s()
+  eq 4, t()
+  eq 4, u()
+  eq 4, v()
+  eq 4, w()
+  eq 4, x()
+  eq 4, y()
+
+  c = yes
+  eq 1, s()
+  eq 1, t()
+  eq 1, u()
+  eq 1, v()
+  eq 1, w()
+  eq 1, x()
+  eq 1, y()
+
+  b = no
+  eq 5, s()
+  eq 5, t()
+  eq 5, u()
+  eq 5, v()
+  eq 5, w()
+  eq 5, x()
+  eq 5, y()
+
+  b = yes
+  a = no
+  eq 0, s()
+  eq 0, t()
+  eq 0, u()
+  eq 0, v()
+  eq 0, w()
+  eq 0, x()
+  eq 0, y()
+
+# Test for issue #3921: Inline function without parentheses used in condition fails to compile
+test "#3921: `if` & `unless`", ->
+  a = {}
+  eq a, if do -> no then undefined else a
+  a1 = undefined
+  if do -> yes
+    a1 = a
+  eq a, a1
+
+  b = {}
+  eq b, unless do -> no then b else undefined
+  b1 = undefined
+  unless do -> no
+    b1 = b
+  eq b, b1
+
+  c = 0
+  if (arg = undefined) -> yes then c++
+  eq 1, c
+  d = 0
+  if (arg = undefined) -> yes
+    d++
+  eq 1, d
+
+  answer = 'correct'
+  eq answer, if do -> 'wrong' then 'correct' else 'wrong'
+  eq answer, unless do -> no then 'correct' else 'wrong'
+  statm1 = undefined
+  if do -> 'wrong'
+    statm1 = 'correct'
+  eq answer, statm1
+  statm2 = undefined
+  unless do -> no
+    statm2 = 'correct'
+  eq answer, statm2
+
+test "#3921: `post if`", ->
+  a = {}
+  eq a, a unless do -> no
+  a1 = a if do -> yes
+  eq a, a1
+
+  c = 0
+  c++ if (arg = undefined) -> yes
+  eq 1, c
+  d = 0
+  d++ if (arg = undefined) -> yes
+  eq 1, d
+
+  answer = 'correct'
+  eq answer, 'correct' if do -> 'wrong'
+  eq answer, 'correct' unless do -> not 'wrong'
+  statm1 = undefined
+  statm1 = 'correct' if do -> 'wrong'
+  eq answer, statm1
+  statm2 = undefined
+  statm2 = 'correct' unless do -> not 'wrong'
+  eq answer, statm2
+
+test "Issue 3921: `while` & `until`", ->
+  i = 5
+  assert = (a) -> ok 5 > a > 0
+  result1 = while do (num = 1) -> i -= num
+    assert i
+    i
+  ok result1.join(' ') is '4 3 2 1'
+
+  j = 5
+  result2 = until do (num = 1) -> (j -= num) < 1
+    assert j
+    j
+  ok result2.join(' ') is '4 3 2 1'
+
+test "#3921: `switch`", ->
+  i = 1
+  a = switch do (m = 2) -> i * m
+    when 5 then "five"
+    when 4 then "four"
+    when 3 then "three"
+    when 2 then "two"
+    when 1 then "one"
+    else "none"
+  eq "two", a
+
+  j = 12
+  b = switch do (m = 3) -> j / m
+    when 5 then "five"
+    when 4 then "four"
+    when 3 then "three"
+    when 2 then "two"
+    when 1 then "one"
+    else "none"
+  eq "four", b
+
+  k = 20
+  c = switch do (m = 4) -> k / m
+    when 5 then "five"
+    when 4 then "four"
+    when 3 then "three"
+    when 2 then "two"
+    when 1 then "one"
+    else "none"
+  eq "five", c
+
+# Issue #3909: backslash to break line in `for` loops throw syntax error
+test "#3909: backslash `for own ... of`", ->
+
+  obj = {a: 1, b: 2, c: 3}
+  arr = ['a', 'b', 'c']
+
+  x1 \
+    = ( key for own key of obj )
+  arrayEq x1, arr
+
+  x2 = \
+    ( key for own key of obj )
+  arrayEq x2, arr
+
+  x3 = ( \
+    key for own key of obj )
+  arrayEq x3, arr
+
+  x4 = ( key \
+    for own key of obj )
+  arrayEq x4, arr
+
+  x5 = ( key for own key of \
+    obj )
+  arrayEq x5, arr
+
+  x6 = ( key for own key of obj \
+    )
+  arrayEq x6, arr
+
+  x7 = ( key for \
+    own key of obj )
+  arrayEq x7, arr
+
+  x8 = ( key for own \
+    key of obj )
+  arrayEq x8, arr
+
+  x9 = ( key for own key \
+    of obj )
+  arrayEq x9, arr
+
+
+test "#3909: backslash `for ... of`", ->
+  obj = {a: 1, b: 2, c: 3}
+  arr = ['a', 'b', 'c']
+
+  x1 \
+    = ( key for key of obj )
+  arrayEq x1, arr
+
+  x2 = \
+    ( key for key of obj )
+  arrayEq x2, arr
+
+  x3 = ( \
+    key for key of obj )
+  arrayEq x3, arr
+
+  x4 = ( key \
+    for key of obj )
+  arrayEq x4, arr
+
+  x5 = ( key for key of \
+    obj )
+  arrayEq x5, arr
+
+  x6 = ( key for key of obj \
+    )
+  arrayEq x6, arr
+
+  x7 = ( key for \
+    key of obj )
+  arrayEq x7, arr
+
+  x8 = ( key for key \
+    of obj )
+  arrayEq x8, arr
+
+
+test "#3909: backslash `for ... in`", ->
+  arr = ['a', 'b', 'c']
+
+  x1 \
+    = ( key for key in arr )
+  arrayEq x1, arr
+
+  x2 = \
+    ( key for key in arr )
+  arrayEq x2, arr
+
+  x3 = ( \
+    key for key in arr )
+  arrayEq x3, arr
+
+  x4 = ( key \
+    for key in arr )
+  arrayEq x4, arr
+
+  x5 = ( key for key in \
+    arr )
+  arrayEq x5, arr
+
+  x6 = ( key for key in arr \
+    )
+  arrayEq x6, arr
+
+  x7 = ( key for \
+    key in arr )
+  arrayEq x7, arr
+
+  x8 = ( key for key \
+    in arr )
+  arrayEq x8, arr
+
+test "#4871: `else if` no longer output together ", ->
+   eqJS '''
+   if a then b else if c then d else if e then f else g
+   ''',
+   '''
+   if (a) {
+     b;
+   } else if (c) {
+     d;
+   } else if (e) {
+     f;
+   } else {
+     g;
+   }
+   '''
+
+   eqJS '''
+   if no
+     1
+   else if yes
+     2
+   ''',
+   '''
+   if (false) {
+     1;
+   } else if (true) {
+     2;
+   }
+   '''
+
+test "#4898: Lexer: backslash line continuation is inconsistent", ->
+  if ( \
+      false \
+      or \
+      true \
+    )
+    a = 42
+
+  eq a, 42
+
+  if ( \
+      false \
+      or \
+      true \
+  )
+    b = 42
+
+  eq b, 42
+
+  if ( \
+            false \
+         or \
+   true \
+  )
+    c = 42
+
+  eq c, 42
+
+  if \
+   false \
+        or \
+   true
+    d = 42
+
+  eq d, 42
+
+  if \
+              false or \
+  true
+    e = 42
+
+  eq e, 42
+
+  if \
+       false or \
+    true \
+       then \
+   f = 42 \
+   else
+     f = 24
+
+  eq f, 42

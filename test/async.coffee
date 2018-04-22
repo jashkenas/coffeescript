@@ -1,8 +1,9 @@
 # Functions that contain the `await` keyword will compile into async functions,
 # supported by Node 7.6+, Chrome 55+, Firefox 52+, Safari 10.1+ and Edge.
-# But runtimes that don’t support the `await` keyword will throw an error,
-# even if we put `return unless global.supportsAsync` at the top of this file.
-# Therefore we need to prevent runtimes which will choke on such code from even
+# But runtimes that don’t support the `await` keyword will throw an error just
+# from parsing this file, even without executing it, even if we put
+# `return unless try new Function 'async () => {}'` at the top of this file.
+# Therefore we need to prevent runtimes which will choke on such code from
 # parsing it, which is handled in `Cakefile`.
 
 

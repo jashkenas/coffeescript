@@ -192,13 +192,17 @@ exports.Lexer = class Lexer
     # what CoffeeScript would normally interpret as calls to functions named
     # `get` or `set`, i.e. `get({foo: function () {}})`.
     else if tag is 'PROPERTY' and prev
-      if prev.spaced and prev[0] in CALLABLE and /^[gs]et$/.test(prev[1]) and @tokens[@tokens.length - 2][0] isnt '.'
-        @error "'#{prev[1]}' cannot be used as a keyword, or as a function call without parentheses", prev[2]
-      else
+      if prev.spaced and prev[0] in CALLABLE and /^[gs]et$/.test(prev[1]) and
+         @tokens.length > 1 and @tokens[@tokens.length - 2][0] not in ['.', '?.', '@']
+        @error "'#{prev[1]}' cannot be used as a keyword, or as a function call
+        without parentheses", prev[2]
+      else if @tokens.length > 2
         prevprev = @tokens[@tokens.length - 2]
-        if prev[0] in ['@', 'THIS'] and prevprev and prevprev.spaced and /^[gs]et$/.test(prevprev[1]) and
-        @tokens[@tokens.length - 3][0] isnt '.'
-          @error "'#{prevprev[1]}' cannot be used as a keyword, or as a function call without parentheses", prevprev[2]
+        if prev[0] in ['@', 'THIS'] and prevprev and prevprev.spaced and
+           /^[gs]et$/.test(prevprev[1]) and
+           @tokens[@tokens.length - 3][0] not in ['.', '?.', '@']
+          @error "'#{prevprev[1]}' cannot be used as a keyword, or as a
+          function call without parentheses", prevprev[2]
 
     if tag is 'IDENTIFIER' and id in RESERVED
       @error "reserved word '#{id}'", length: id.length
@@ -449,9 +453,11 @@ exports.Lexer = class Lexer
     return 0 unless match = MULTI_DENT.exec chunk
     indent = match[0]
 
-    @seenFor = no
-    @seenImport = no unless @importSpecifierList
-    @seenExport = no unless @exportSpecifierList
+    prev = @prev()
+    backslash = prev?[0] is '\\'
+    @seenFor = no unless backslash and @seenFor
+    @seenImport = no unless (backslash and @seenImport) or @importSpecifierList
+    @seenExport = no unless (backslash and @seenExport) or @exportSpecifierList
 
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()
@@ -472,7 +478,7 @@ exports.Lexer = class Lexer
 
     if size > @indent
       if noNewlines
-        @indebt = size - @indent
+        @indebt = size - @indent unless backslash
         @suppressNewlines()
         return indent.length
       unless @tokens.length
@@ -1255,7 +1261,7 @@ REGEX = /// ^
 ///
 
 REGEX_FLAGS  = /^\w*/
-VALID_FLAGS  = /^(?!.*(.).*\1)[imguy]*$/
+VALID_FLAGS  = /^(?!.*(.).*\1)[gimsuy]*$/
 
 HEREGEX      = /// ^
   (?:

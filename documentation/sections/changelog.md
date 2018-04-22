@@ -1,6 +1,50 @@
 ## Changelog
 
 ```
+releaseHeader('2018-03-29', '2.2.4', '2.2.3')
+```
+*   When the `by` value in a `for` loop is a literal number, e.g. `for x in [2..1] by -1`, fewer checks are necessary to determine if the loop is in range.
+*   Bugfix for regression in 2.2.0 where a statement inside parentheses, e.g. `(fn(); break) while condition`, was compiling. Pure statements like `break` or `return` cannot turn a parenthesized block into an expression, and should throw an error.
+
+```
+releaseHeader('2018-03-11', '2.2.3', '2.2.2')
+```
+*   Bugfix for object destructuring with an empty array as a key’s value: `{ key: [] } = obj`.
+*   Bugfix for array destructuring onto targets attached to `this`: `[ @most... , @penultimate, @last ] = arr`.
+
+```
+releaseHeader('2018-02-21', '2.2.2', '2.2.1')
+```
+*   Bugfix for regression in 2.2.0 where a range with a `by` (step) value that increments or decrements in the opposite direction as the range was returning an array containing the first value of the range, whereas it should be returning an empty array. In other words, `x for x in [2..1] by 1` should equal `[]`, not `[2]` (because the step value is positive 1, counting up, whereas the range goes from 2 to 1, counting down).
+*   Bugfixes for allowing backslashes in `import` and `export` statements and lines that trigger the start of an indented block, like an `if` statement.
+
+```
+releaseHeader('2018-02-06', '2.2.1', '2.2.0')
+```
+*   Bugfix for regression in 2.2.0 involving an error thrown by the compiler in certain cases when using destructuring with a splat or expansion in an array.
+*   Bugfix for regression in 2.2.0 where in certain cases a range iterator variable was declared in the global scope.
+
+```
+releaseHeader('2018-02-01', '2.2.0', '2.1.1')
+```
+*   This release fixes *all* currently open bugs, dating as far back as 2014, 2012 and 2011.
+*   **Potential breaking change:** An inline `if` or `switch` statement with an ambiguous `else`, such as `if no then if yes then alert 1 else alert 2`, now compiles where the `else` always corresponds to the closest open `then`. Previously the behavior of an ambiguous `else` was unpredictable. If your code has any `if … then` or `switch … then` statements with multiple `then`s (and one or more `else`s) the compiled output might be different now, unless you had resolved ambiguity via parentheses. We made this change because the previous behavior was inconsistent and basically a bug: depending on what grammar was where, for example if there was an inline function or something that implied a block, the `else` might bind to an earlier `then` rather than a later `then`. Now an `else` essentially closes a block opened by a `then`, similar to closing an open parenthesis.
+*   When a required `then` is missing, the error more accurately points out the location of the mistake.
+*   An error is thrown when the `coffee` command is run in an environment that doesn’t support some ES2015 JavaScript features that the CoffeeScript compiler itself requires. This can happen if CoffeeScript is installed in Node older than version 6.
+*   Destructuring with a non-final splat/spread, e.g. `[open, contents..., close] = tag.split('')` is now output using ES2015 rest syntax.
+*   Functions named `get` or `set` can be used without parentheses in more cases, including when attached to `this` or `@` or `?.`; or when the first argument is an implicit object, e.g. `@set key: 'val'`.
+*   Statements such as `break` can now be used inside parentheses, e.g. `(doSomething(); break) while condition` or `(pick(key); break) for key of obj`.
+*   Bugfix for assigning to a property attached to `this`/`@` in destructuring, e.g. `({@prop = yes, @otherProp = no}) ->`.
+*   Bugfix for incorrect errors being thrown about calling `super` with a parameter attached to `this` when said parameter is in a lower scope, e.g. `class Child extends Parent then constructor: -> super(-> @prop)`.
+*   Bugfix to prevent a possible infinite loop when a `for` loop is given a variable to step by, e.g. `for x in [1..3] by step` (as opposed to `by 0.5` or some other primitive numeric value).
+*   Bugfix to no longer declare iterator variables twice when evaluating a range, e.g. `end = 3; fn [0..end]`.
+*   Bugfix for incorrect scope of variables in chained calls, e.g. `start(x = 3).then(-> x = 4)`.
+*   Bugfix for incorrect scope of variables in a function passed to `do`, e.g. `for [1..3] then masked = 10; do -> alert masked`.
+*   Bugfix to no longer throw a syntax error for a trailing comma in a function call, e.g. `fn arg1, arg2,`.
+*   Bugfix for an expression in a property access, e.g. `a[!b in c..]`.
+*   Bugfix to allow a line continuation backslash (`\`) at any point in a `for` line.
+
+```
 releaseHeader('2017-12-29', '2.1.1', '2.1.0')
 ```
 

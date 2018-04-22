@@ -853,3 +853,70 @@ test "#4491: import- and export-specific lexing should stop after import/export 
 
     from('foo');
     """
+
+# Issue #4874: Backslash not supported in import or export statements
+test "#4874: backslash `import`", ->
+
+  eqJS """
+    import foo \
+        from 'lib'
+
+    foo a
+    """,
+  """
+    import foo from 'lib';
+
+    foo(a);
+    """
+
+  eqJS """
+    import \
+                    foo \
+        from \
+    'lib'
+
+    foo a
+    """,
+  """
+    import foo from 'lib';
+
+    foo(a);
+    """
+
+  eqJS """
+    import \
+          utilityBelt \
+    , {
+      each
+    } from \
+    'underscore'
+    """,
+  """
+    import utilityBelt, {
+      each
+    } from 'underscore';
+    """
+
+test "#4874: backslash `export`", ->
+  eqJS """
+    export \
+      * \
+            from \
+      'underscore'
+    """,
+  """
+    export * from 'underscore';
+    """
+
+  eqJS """
+    export \
+        { max, min } \
+              from \
+      'underscore'
+  """,
+  """
+    export {
+      max,
+      min
+    } from 'underscore';
+    """
