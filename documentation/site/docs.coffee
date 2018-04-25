@@ -1,18 +1,8 @@
 unless window.location.origin # Polyfill `location.origin` for IE < 11
   window.location.origin = "#{window.location.protocol}//#{window.location.hostname}"
 
-
-# Initialize Algolia search; https://community.algolia.com/docsearch/documentation/docsearch-autocomplete/configuring-the-search/
-for docSearchInputSelector in ['#algolia-search-input-navbar', '#algolia-search-input-sidebar']
-  window.docsearch
-    apiKey: 'd8c0290b3e915152f833b7eb80aa8d45'
-    indexName: 'coffeescript'
-    inputSelector: docSearchInputSelector
-    debug: on # Toggle on to inspect the search dropdown
-    handleSelected: (input, event, suggestion) ->
-      debugger
+# Don’t wait for document ready to cancel search form submissions
 $('#algolia-search-form').on 'submit', -> return no
-
 
 # Initialize Google Analytics
 window.GA_TRACKING_ID = 'UA-106156830-1'
@@ -160,6 +150,7 @@ $(document).ready ->
       event_category: 'engagement'
       event_label: $(@).closest('[data-example]').data('example')
 
+
   # Try CoffeeScript
   previousHash = null
   toggleTry = (checkLocalStorage) ->
@@ -188,6 +179,39 @@ $(document).ready ->
     event.preventDefault()
     toggleTry yes
   $('[data-close="try"]').click closeTry
+
+
+  # Algolia search; https://community.algolia.com/docsearch/documentation/docsearch-autocomplete/configuring-the-search/
+  # See also https://github.com/algolia/docsearch-configs/blob/master/configs/coffeescript.json
+  queryTimeout = null
+  for docSearchInputSelector in ['#algolia-search-input-navbar', '#algolia-search-input-sidebar']
+    window.docsearch
+      apiKey: 'd8c0290b3e915152f833b7eb80aa8d45'
+      indexName: 'coffeescript'
+      inputSelector: docSearchInputSelector
+      debug: on # Toggle on to inspect the search dropdown
+      queryHook: (query) ->
+        clearTimeout queryTimeout
+        queryTimeout = setTimeout ->
+          gtag 'event', 'search',
+            event_category: 'engagement'
+            event_label: query
+        , 500 # Only log this to analytics after the user has stopped typing for a half-second
+        query
+      transformData: (hits) ->
+        return unless hits?.length isnt 0
+        startUrl = /^(.+)#/.exec(hits[0].url)[1]
+        for hit in hits
+          hit.url = hit.url.replace startUrl, window.location.origin
+        return
+      handleSelected: (input, event, suggestion) ->
+        hash = suggestion.url.replace window.location.origin, ''
+        window.location = hash
+        gtag 'event', 'search_navigate',
+          event_category: 'navigation'
+          event_label: hash
+        return
+
 
   clearHash = ->
     window.history.replaceState {}, document.title, window.location.pathname
