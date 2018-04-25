@@ -200,9 +200,10 @@ $(document).ready ->
         query
       transformData: (hits) ->
         return unless hits?.length isnt 0
-        startUrl = /^(.+)#/.exec(hits[0].url)[1]
+        startUrlMatch = /^(.+)#/.exec hits[0].url
+        return unless startUrlMatch[1]
         for hit in hits
-          hit.url = hit.url.replace startUrl, window.location.origin
+          hit.url = hit.url.replace startUrlMatch[1], window.location.origin
         return
       handleSelected: (input, event, suggestion) ->
         hash = suggestion.url.replace window.location.origin, ''
