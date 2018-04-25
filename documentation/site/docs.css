@@ -88,7 +88,8 @@ button:focus, .navbar-dark .navbar-toggler:focus {
   top: 3.5em;
   height: calc(100% - 3.5rem);
   /* Scrollable contents if viewport is shorter than content */
-  overflow: visible;
+  overflow-y: auto;
+  overflow-x: hidden;
   left: 0;
   bottom: 0;
   z-index: 1000;
@@ -106,6 +107,9 @@ button:focus, .navbar-dark .navbar-toggler:focus {
   }
   .sidebar.show {
     left: 0;
+  }
+  .sidebar.show .flex-column {
+    flex-grow: 1;
   }
 }
 
@@ -132,17 +136,56 @@ button:focus, .navbar-dark .navbar-toggler:focus {
   font-weight: 800;
 }
 
-.searchbox {
-  min-width: calc(100% - 1.4em);
-  margin: 0.7em 0.7em 0 0.7em;
+
+/*
+ * Search input; see search.css for most of the styling of the dropdown
+ */
+
+.algolia-search-form {
   font-family: 'Lato';
 }
-
-.sidebar-scrollable{
-  width: 100%;
-  height: calc(100% - 32px);
-  overflow: scroll;
+.algolia-search-form-sidebar {
+  min-width: 100%;
+  margin: 0.7em 1.2em 0.7em 0.7em;
 }
+.algolia-search-form-sidebar .algolia-autocomplete {
+  width: calc(100% - 1.9em);
+}
+
+.algolia-search-input {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg alt="Search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M6.02945,10.20327a4.17382,4.17382,0,1,1,4.17382-4.17382A4.15609,4.15609,0,0,1,6.02945,10.20327Zm9.69195,4.2199L10.8989,9.59979A5.88021,5.88021,0,0,0,12.058,6.02856,6.00467,6.00467,0,1,0,9.59979,10.8989l4.82338,4.82338a.89729.89729,0,0,0,1.29912,0,.89749.89749,0,0,0-.00087-1.29909Z" fill="#2f2625"/></svg>');
+  background-size: 1em 1em;
+  background-repeat: no-repeat;
+  background-position-y: center;
+  background-position-x: 0.5em;
+  padding-left: 2em;
+  color: #2f2625;
+}
+.form-control::-webkit-input-placeholder {
+  color: #998f8e;
+}
+.form-control:-ms-input-placeholder {
+  color: #998f8e;
+}
+.form-control::-ms-input-placeholder {
+  color: #998f8e;
+}
+.form-control::placeholder {
+  color: #998f8e;
+}
+.form-control:focus {
+  border-color: #1b5e20;
+  box-shadow: 0 0 0 0.2rem rgba(27, 94, 32, 0.25);
+  color: #2f2625;
+}
+
+.algolia-search-form-sidebar .algolia-autocomplete .ds-dropdown-menu {
+  min-width: 100%;
+  max-width: 100%;
+}
+
 
 /*
  * Main content

@@ -2,12 +2,16 @@ unless window.location.origin # Polyfill `location.origin` for IE < 11
   window.location.origin = "#{window.location.protocol}//#{window.location.hostname}"
 
 
-# Initialize Algolia search
-window.docsearch
-  apiKey: 'd8c0290b3e915152f833b7eb80aa8d45'
-  indexName: 'coffeescript'
-  inputSelector: '#search'
-  debug: off # Toggle on to inspect the search dropdown
+# Initialize Algolia search; https://community.algolia.com/docsearch/documentation/docsearch-autocomplete/configuring-the-search/
+for docSearchInputSelector in ['#algolia-search-input-navbar', '#algolia-search-input-sidebar']
+  window.docsearch
+    apiKey: 'd8c0290b3e915152f833b7eb80aa8d45'
+    indexName: 'coffeescript'
+    inputSelector: docSearchInputSelector
+    debug: on # Toggle on to inspect the search dropdown
+    handleSelected: (input, event, suggestion) ->
+      debugger
+$('#algolia-search-form').on 'submit', -> return no
 
 
 # Initialize Google Analytics
