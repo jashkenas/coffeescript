@@ -13,12 +13,526 @@
 <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
 <meta name="theme-color" content="#ffffff">
 
-<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
 <!-- The CoffeeScript logo font is Google’s Galada -->
 <link href="https://fonts.googleapis.com/css?family=Alegreya+Sans:400,800|Lato:300,300i,400,700|Roboto+Mono:400,400i" rel="stylesheet" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/codemirror/4.5.0/codemirror.css" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css">
+<link href="https://cdn.jsdelivr.net/npm/codemirror@5.37.0/lib/codemirror.css" rel="stylesheet" crossorigin="anonymous">
 <style>
+/* Built via instructions from https://community.algolia.com/docsearch/documentation/docsearch-autocomplete/customize-autocomplete-styles/, using the following _variables.scss, with some unused classes deleted after build:
+
+// SEARCHBOX
+$searchbox-config: (
+  input-width: 200px,
+	input-height: 32px,
+	border-width: 1px,
+	border-radius: 16px,
+	input-border-color: #CCCCCC,
+	input-focus-border-color: #AAAAAA,
+	input-background: #FFFFFF,
+	input-focus-background: #FFFFFF,
+	font-size: 12px,
+	placeholder-color: #AAAAAA,
+	icon-size: 14px,
+	icon-position: left,
+	icon-color: #6D7E96,
+	icon-background: #458EE1,
+	icon-background-opacity: 0,
+	icon-clear-size: 8px
+) !default;
+
+// DROPDOWN
+$dropdown-config: (
+  main-color: #1b5e20,
+  layout-type: normal,
+  layout-width: normal,
+  layout-alignment: align,
+  background-color: #fff,
+  border-radius: 4,
+  border-width: 1,
+  border-color: #efebe9,
+  box-shadow: light,
+  branding-position: bottom,
+  spacing: normal,
+  include-desc: yes,
+  background-category-header:  #ffffff,
+  font-size: normal,
+  header-color: #2f2625,
+  title-color: #0b140f,
+  subtitle-color: #a29f9c,
+  text-color: #3f4145,
+  highlight-color: #388e3c,
+  highlight-opacity: .1,
+  highlight-type: underline
+) !default;
+
+$builder-height: 260px;
+*/
+
+
+.algolia-autocomplete.algolia-autocomplete-right .ds-dropdown-menu {
+  right: 0 !important;
+  left: inherit !important;
+}
+
+.algolia-autocomplete.algolia-autocomplete-right .ds-dropdown-menu:before {
+  right: 48px;
+}
+
+.algolia-autocomplete.algolia-autocomplete-left .ds-dropdown-menu {
+  left: 0 !important;
+  right: inherit !important;
+}
+
+.algolia-autocomplete.algolia-autocomplete-left .ds-dropdown-menu:before {
+  left: 48px;
+}
+
+.algolia-autocomplete .ds-dropdown-menu {
+  position: relative;
+  top: -6px;
+  border-radius: 4px;
+  margin: 6px 0 0;
+  padding: 0;
+  text-align: left;
+  height: auto;
+  position: relative;
+  background: transparent;
+  border: none;
+  z-index: 999;
+  max-width: 600px;
+  min-width: 500px;
+  -webkit-box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.2), 0 2px 3px 0 rgba(0, 0, 0, 0.1);
+          box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.2), 0 2px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.algolia-autocomplete .ds-dropdown-menu:before {
+  display: block;
+  position: absolute;
+  content: '';
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  z-index: 1000;
+  top: -7px;
+  border-top: 1px solid #efebe9;
+  border-right: 1px solid #efebe9;
+  -webkit-transform: rotate(-45deg);
+          transform: rotate(-45deg);
+  border-radius: 2px;
+}
+
+.algolia-autocomplete .ds-dropdown-menu .ds-suggestions {
+  position: relative;
+  z-index: 1000;
+  margin-top: 8px;
+}
+
+.algolia-autocomplete .ds-dropdown-menu .ds-suggestion {
+  cursor: pointer;
+}
+
+.algolia-autocomplete .ds-dropdown-menu .ds-suggestion.ds-cursor .algolia-docsearch-suggestion.suggestion-layout-simple {
+  background-color: rgba(27, 94, 32, 0.05);
+}
+
+.algolia-autocomplete .ds-dropdown-menu .ds-suggestion.ds-cursor .algolia-docsearch-suggestion:not(.suggestion-layout-simple) .algolia-docsearch-suggestion--content {
+  background-color: rgba(27, 94, 32, 0.05);
+}
+
+.algolia-autocomplete .ds-dropdown-menu [class^="ds-dataset-"] {
+  position: relative;
+  border: solid 1px #efebe9;
+  background: #fff;
+  border-radius: 4px;
+  overflow: auto;
+  padding: 0 8px 8px;
+}
+
+.algolia-autocomplete .ds-dropdown-menu * {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion {
+  position: relative;
+  padding: 0 8px;
+  background: #fff;
+  color: #0b140f;
+  overflow: hidden;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion--highlight {
+  color: #020502;
+  background: rgba(118, 158, 121, 0.1);
+  padding: 0.1em 0.05em;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion--category-header .algolia-docsearch-suggestion--category-header-lvl0 .algolia-docsearch-suggestion--highlight,
+.algolia-autocomplete .algolia-docsearch-suggestion--category-header .algolia-docsearch-suggestion--category-header-lvl1 .algolia-docsearch-suggestion--highlight {
+  color: inherit;
+  background: inherit;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion--text .algolia-docsearch-suggestion--highlight {
+  padding: 0 0 1px;
+  background: inherit;
+  -webkit-box-shadow: inset 0 -2px 0 0 rgba(27, 94, 32, 0.8);
+          box-shadow: inset 0 -2px 0 0 rgba(27, 94, 32, 0.8);
+  color: inherit;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion--content {
+  display: block;
+  float: right;
+  width: 70%;
+  position: relative;
+  padding: 5.33333px 0 5.33333px 10.66667px;
+  cursor: pointer;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion--content:before {
+  content: '';
+  position: absolute;
+  display: block;
+  top: 0;
+  height: 100%;
+  width: 1px;
+  background: #ddd;
+  left: -1px;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion--category-header {
+  position: relative;
+  border-bottom: 1px solid #ddd;
+  display: none;
+  margin-top: 8px;
+  padding: 4px 0;
+  font-size: 1em;
+  color: #2f2625;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion--wrapper {
+  width: 100%;
+  float: left;
+  padding: 8px 0 0 0;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion--subcategory-column {
+  float: left;
+  width: 30%;
+  padding-left: 0;
+  text-align: right;
+  position: relative;
+  padding: 5.33333px 10.66667px;
+  color: #a29f9c;
+  font-size: 0.9em;
+  word-wrap: break-word;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion--subcategory-column:before {
+  content: '';
+  position: absolute;
+  display: block;
+  top: 0;
+  height: 100%;
+  width: 1px;
+  background: #ddd;
+  right: 0;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion--subcategory-column .algolia-docsearch-suggestion--highlight {
+  background-color: inherit;
+  color: inherit;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion--subcategory-inline {
+  display: none;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion--title {
+  margin-bottom: 4px;
+  color: #0b140f;
+  font-size: 0.9em;
+  font-weight: bold;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion--text {
+  display: block;
+  line-height: 1.2em;
+  font-size: 0.85em;
+  color: #3f4145;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion--no-results {
+  width: 100%;
+  padding: 8px 0;
+  text-align: center;
+  font-size: 1.2em;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion--no-results::before {
+  display: none;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion code {
+  padding: 1px 5px;
+  font-size: 90%;
+  border: none;
+  color: #222222;
+  background-color: #EBEBEB;
+  border-radius: 3px;
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion code .algolia-docsearch-suggestion--highlight {
+  background: none;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion.algolia-docsearch-suggestion__main .algolia-docsearch-suggestion--category-header {
+  display: block;
+}
+
+.algolia-autocomplete .algolia-docsearch-suggestion.algolia-docsearch-suggestion__secondary {
+  display: block;
+}
+
+@media all and (min-width: 768px) {
+  .algolia-autocomplete .algolia-docsearch-suggestion .algolia-docsearch-suggestion--subcategory-column {
+    display: block;
+  }
+}
+
+@media all and (max-width: 768px) {
+  .algolia-autocomplete .algolia-docsearch-suggestion .algolia-docsearch-suggestion--subcategory-column {
+    display: inline-block;
+    width: auto;
+    text-align: left;
+    float: left;
+    padding: 0;
+    color: #02060C;
+    font-size: 0.9em;
+    font-weight: bold;
+    text-align: left;
+    opacity: 0.5;
+  }
+  .algolia-autocomplete .algolia-docsearch-suggestion .algolia-docsearch-suggestion--subcategory-column:before {
+    display: none;
+  }
+  .algolia-autocomplete .algolia-docsearch-suggestion .algolia-docsearch-suggestion--subcategory-column:after {
+    content: "|";
+  }
+  .algolia-autocomplete .algolia-docsearch-suggestion .algolia-docsearch-suggestion--content {
+    display: inline-block;
+    width: auto;
+    text-align: left;
+    float: left;
+    padding: 0;
+  }
+  .algolia-autocomplete .algolia-docsearch-suggestion .algolia-docsearch-suggestion--content:before {
+    display: none;
+  }
+}
+
+.algolia-autocomplete .suggestion-layout-simple.algolia-docsearch-suggestion {
+  border-bottom: solid 1px #eee;
+  padding: 8px;
+  margin: 0;
+}
+
+.algolia-autocomplete .suggestion-layout-simple .algolia-docsearch-suggestion--content {
+  width: 100%;
+  padding: 0;
+}
+
+.algolia-autocomplete .suggestion-layout-simple .algolia-docsearch-suggestion--content::before {
+  display: none;
+}
+
+.algolia-autocomplete .suggestion-layout-simple .algolia-docsearch-suggestion--category-header {
+  margin: 0;
+  padding: 0;
+  display: block;
+  width: 100%;
+  border: none;
+}
+
+.algolia-autocomplete .suggestion-layout-simple .algolia-docsearch-suggestion--category-header-lvl0 {
+  opacity: .6;
+  font-size: 0.85em;
+}
+
+.algolia-autocomplete .suggestion-layout-simple .algolia-docsearch-suggestion--category-header-lvl1 {
+  opacity: .6;
+  font-size: 0.85em;
+}
+
+.algolia-autocomplete .suggestion-layout-simple .algolia-docsearch-suggestion--category-header-lvl1::before {
+  background-image: url('data:image/svg+xml;utf8,<svg width="10" height="10" viewBox="0 0 20 38" xmlns="http://www.w3.org/2000/svg"><path d="M1.49 4.31l14 16.126.002-2.624-14 16.074-1.314 1.51 3.017 2.626 1.313-1.508 14-16.075 1.142-1.313-1.14-1.313-14-16.125L3.2.18.18 2.8l1.31 1.51z" fill-rule="evenodd" fill="%231D3657" /></svg>');
+  content: '';
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+}
+
+.algolia-autocomplete .suggestion-layout-simple .algolia-docsearch-suggestion--wrapper {
+  width: 100%;
+  float: left;
+  margin: 0;
+  padding: 0;
+}
+
+.algolia-autocomplete .suggestion-layout-simple .algolia-docsearch-suggestion--duplicate-content, .algolia-autocomplete .suggestion-layout-simple .algolia-docsearch-suggestion--subcategory-inline {
+  display: none !important;
+}
+
+.algolia-autocomplete .suggestion-layout-simple .algolia-docsearch-suggestion--title {
+  margin: 0;
+  color: #1b5e20;
+  font-size: 0.9em;
+  font-weight: normal;
+}
+
+.algolia-autocomplete .suggestion-layout-simple .algolia-docsearch-suggestion--title::before {
+  content: "#";
+  font-weight: bold;
+  color: #1b5e20;
+  display: inline-block;
+}
+
+.algolia-autocomplete .suggestion-layout-simple .algolia-docsearch-suggestion--text {
+  margin: 4px 0 0;
+  display: block;
+  line-height: 1.4em;
+  padding: 5.33333px 8px;
+  background: #f8f8f8;
+  font-size: 0.85em;
+  opacity: .8;
+}
+
+.algolia-autocomplete .suggestion-layout-simple .algolia-docsearch-suggestion--text .algolia-docsearch-suggestion--highlight {
+  color: #1a1b1d;
+  font-weight: bold;
+  -webkit-box-shadow: none;
+          box-shadow: none;
+}
+
+.algolia-autocomplete .algolia-docsearch-footer {
+  width: 110px;
+  height: 20px;
+  z-index: 2000;
+  margin-top: 10.66667px;
+  float: right;
+  font-size: 0;
+  line-height: 0;
+}
+
+/* Adapted from https://github.com/FarhadG/code-mirror-themes/blob/master/themes/twilight.css */
+
+.CodeMirror,
+.placeholder-code {
+  letter-spacing: 0.3px;
+  color: #f8f8f8;
+  /* Prevent mobile Safari from zooming in on our code editors; the code is 16px naturally, but somehow being explicit about it prevents the zooming */
+  font-size: 16px;
+}
+@media (min-width: 768px) {
+  .CodeMirror,
+  .placeholder-code {
+    font-size: 90%; /* Matching Bootstrap’s font size for code, which calculates to 14.4px */
+  }
+}
+.CodeMirror-lines {
+  padding: 0.5em 0;
+}
+.placeholder-code {
+  padding: 0.5em 4px;
+  margin-bottom: 1.37em;
+  white-space: pre-wrap;
+}
+div.CodeMirror-cursor {
+  border-left: 3px solid #f8f8f8;
+}
+.CodeMirror-activeline-background {
+  background: #ffffff08;
+}
+.CodeMirror-selected {
+  background: #ddf0ff33;
+}
+.cm-comment,
+.placeholder-code .comment {
+  font-style: italic;
+  color: #5f5a60;
+}
+.cm-keyword,
+.placeholder-code .keyword {
+  color: #cda869;
+}
+.cm-string,
+.placeholder-code .string {
+  color: #8f9d6a;
+}
+.cm-property,
+.placeholder-code .attribute {
+  color: #dad085;
+}
+.cm-atom {
+  color: #dad085;
+}
+.cm-number,
+.placeholder-code .number,
+.placeholder-code .built_in,
+.placeholder-code .builtin-name,
+.placeholder-code .literal,
+.placeholder-code .type,
+/*.placeholder-code .params,*/
+.placeholder-code .meta,
+.placeholder-code .link {
+  color: #dad085;
+}
+.cm-operator,
+.placeholder-code .punctuation,
+.placeholder-code .symbol,
+.placeholder-code .bullet,
+.placeholder-code .addition,
+.placeholder-code .operator {
+  color: #cda869;
+}
+
+/* Uneditable code blocks are inverted, so use darker versions of the above */
+
+.uneditable-code-block .comment {
+  font-style: italic;
+  color: #837B85;
+}
+.uneditable-code-block .class,
+.uneditable-code-block .function,
+.uneditable-code-block .keyword,
+.uneditable-code-block .reserved,
+.uneditable-code-block .title {
+  color: #534328;
+}
+.uneditable-code-block .string
+.uneditable-code-block .value
+.uneditable-code-block .inheritance
+.uneditable-code-block .header {
+  color: #3A4029;
+}
+.uneditable-code-block .variable,
+.uneditable-code-block .literal,
+.uneditable-code-block .tag,
+.uneditable-code-block .regexp,
+.uneditable-code-block .subst,
+.uneditable-code-block .property {
+  color: #474429;
+}
+.uneditable-code-block .number,
+.uneditable-code-block .preprocessor,
+.uneditable-code-block .built_in,
+.uneditable-code-block .params,
+.uneditable-code-block .constant {
+  color: #474429;
+}
+
 html,
 body {
   /* Prevent scroll on narrow devices */
@@ -109,7 +623,8 @@ button:focus, .navbar-dark .navbar-toggler:focus {
   top: 3.5em;
   height: calc(100% - 3.5rem);
   /* Scrollable contents if viewport is shorter than content */
-  overflow: visible;
+  overflow-y: auto;
+  overflow-x: hidden;
   left: 0;
   bottom: 0;
   z-index: 1000;
@@ -128,6 +643,9 @@ button:focus, .navbar-dark .navbar-toggler:focus {
   .sidebar.show {
     left: 0;
   }
+  .sidebar.show .flex-column {
+    flex-grow: 1;
+  }
 }
 
 .contents {
@@ -141,8 +659,6 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 .contents .nav .nav {
   margin-left: 1em;
   font-size: 0.9em;
-  overflow-x: auto;
-  overflow-y: hidden;
 }
 
 .contents .nav-link {
@@ -155,10 +671,54 @@ button:focus, .navbar-dark .navbar-toggler:focus {
   font-weight: 800;
 }
 
-.searchbox {
-  min-width: calc(100% - 1.4em);
-  margin: 0.7em 0.7em 0 0.7em;
+
+/*
+ * Search input; see search.css for most of the styling of the dropdown
+ */
+
+.algolia-search-form {
   font-family: 'Lato';
+}
+.algolia-search-form-sidebar {
+  min-width: 100%;
+  margin: 0.7em 1.2em 0.7em 0.7em;
+}
+.algolia-search-form-sidebar .algolia-autocomplete {
+  width: calc(100% - 1.9em);
+}
+
+.algolia-search-input {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg alt="Search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M6.02945,10.20327a4.17382,4.17382,0,1,1,4.17382-4.17382A4.15609,4.15609,0,0,1,6.02945,10.20327Zm9.69195,4.2199L10.8989,9.59979A5.88021,5.88021,0,0,0,12.058,6.02856,6.00467,6.00467,0,1,0,9.59979,10.8989l4.82338,4.82338a.89729.89729,0,0,0,1.29912,0,.89749.89749,0,0,0-.00087-1.29909Z" fill="#2f2625"/></svg>');
+  background-size: 1em 1em;
+  background-repeat: no-repeat;
+  background-position-y: center;
+  background-position-x: 0.5em;
+  padding-left: 2em;
+  color: #2f2625;
+}
+.form-control::-webkit-input-placeholder {
+  color: #998f8e;
+}
+.form-control:-ms-input-placeholder {
+  color: #998f8e;
+}
+.form-control::-ms-input-placeholder {
+  color: #998f8e;
+}
+.form-control::placeholder {
+  color: #998f8e;
+}
+.form-control:focus {
+  border-color: #1b5e20;
+  box-shadow: 0 0 0 0.2rem rgba(27, 94, 32, 0.25);
+  color: #2f2625;
+}
+
+.algolia-search-form-sidebar .algolia-autocomplete .ds-dropdown-menu {
+  min-width: 100%;
+  max-width: 100%;
 }
 
 
@@ -395,113 +955,6 @@ textarea {
   }
 }
 
-/* Adapted from https://github.com/FarhadG/code-mirror-themes/blob/master/themes/twilight.css */
-
-.CodeMirror,
-.placeholder-code {
-  letter-spacing: 0.3px;
-  color: #f8f8f8;
-  /* Prevent mobile Safari from zooming in on our code editors; the code is 16px naturally, but somehow being explicit about it prevents the zooming */
-  font-size: 16px;
-}
-@media (min-width: 768px) {
-  .CodeMirror,
-  .placeholder-code {
-    font-size: 90%; /* Matching Bootstrap’s font size for code, which calculates to 14.4px */
-  }
-}
-.CodeMirror-lines {
-  padding: 0.5em 0;
-}
-.placeholder-code {
-  padding: 0.5em 4px;
-  margin-bottom: 1.37em;
-  white-space: pre-wrap;
-}
-div.CodeMirror-cursor {
-  border-left: 3px solid #f8f8f8;
-}
-.CodeMirror-activeline-background {
-  background: #ffffff08;
-}
-.CodeMirror-selected {
-  background: #ddf0ff33;
-}
-.cm-comment,
-.placeholder-code .comment {
-  font-style: italic;
-  color: #5f5a60;
-}
-.cm-keyword,
-.placeholder-code .keyword {
-  color: #cda869;
-}
-.cm-string,
-.placeholder-code .string {
-  color: #8f9d6a;
-}
-.cm-property,
-.placeholder-code .attribute {
-  color: #dad085;
-}
-.cm-atom {
-  color: #dad085;
-}
-.cm-number,
-.placeholder-code .number,
-.placeholder-code .built_in,
-.placeholder-code .builtin-name,
-.placeholder-code .literal,
-.placeholder-code .type,
-/*.placeholder-code .params,*/
-.placeholder-code .meta,
-.placeholder-code .link {
-  color: #dad085;
-}
-.cm-operator,
-.placeholder-code .punctuation,
-.placeholder-code .symbol,
-.placeholder-code .bullet,
-.placeholder-code .addition,
-.placeholder-code .operator {
-  color: #cda869;
-}
-
-/* Uneditable code blocks are inverted, so use darker versions of the above */
-
-.uneditable-code-block .comment {
-  font-style: italic;
-  color: #837B85;
-}
-.uneditable-code-block .class,
-.uneditable-code-block .function,
-.uneditable-code-block .keyword,
-.uneditable-code-block .reserved,
-.uneditable-code-block .title {
-  color: #534328;
-}
-.uneditable-code-block .string
-.uneditable-code-block .value
-.uneditable-code-block .inheritance
-.uneditable-code-block .header {
-  color: #3A4029;
-}
-.uneditable-code-block .variable,
-.uneditable-code-block .literal,
-.uneditable-code-block .tag,
-.uneditable-code-block .regexp,
-.uneditable-code-block .subst,
-.uneditable-code-block .property {
-  color: #474429;
-}
-.uneditable-code-block .number,
-.uneditable-code-block .preprocessor,
-.uneditable-code-block .built_in,
-.uneditable-code-block .params,
-.uneditable-code-block .constant {
-  color: #474429;
-}
-
 </style>
 
 </head>
@@ -527,6 +980,10 @@ div.CodeMirror-cursor {
       <a href="https://github.com/jashkenas/coffeescript/" class="nav-item nav-link" data-close="try">GitHub
         </a>
     </div>
+
+    <form class="form-inline algolia-search-form" role="search" novalidate="novalidate">
+      <input class="form-control algolia-search-input" id="algolia-search-input-navbar" type="search" name="algolia-search" placeholder="Search docs" aria-label="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-labelledby="algolia-doc-search" aria-owns="algolia-autocomplete-listbox-0" dir="auto" />
+    </form>
   </nav>
 </nav>
 
@@ -554,29 +1011,13 @@ div.CodeMirror-cursor {
 <div class="container-fluid" id="top">
   <div class="row flex-nowrap">
     <nav class="sidebar col-lg-3 bg-ribbed-light">
-      <form novalidate="novalidate" onsubmit="return false;" class="searchbox">
-        <div role="search" class="searchbox__wrapper">
-          <input id='q' type="search" name="search" placeholder="Search the docs" autocomplete="off" required="required" class="searchbox__input"/>
-          <button type="submit" title="Submit your search query." class="searchbox__submit" >
-            <svg width=12 height=12 role="img" aria-label="Search">
-              <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#sbx-icon-search-13"></use>
-            </svg>
-          </button>
-          <button type="reset" title="Clear the search query." class="searchbox__reset hide">
-            <svg width=12 height=12 role="img" aria-label="Reset">
-              <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#sbx-icon-clear-3"></use>
-            </svg>
-          </button>
-        </div>
-      </form>
-      <div class="svg-icons" style="height: 0; width: 0; position: absolute; visibility: hidden">
-        <svg xmlns="http://www.w3.org/2000/svg">
-          <symbol id="sbx-icon-clear-3" viewBox="0 0 40 40"><path d="M16.228 20L1.886 5.657 0 3.772 3.772 0l1.885 1.886L20 16.228 34.343 1.886 36.228 0 40 3.772l-1.886 1.885L23.772 20l14.342 14.343L40 36.228 36.228 40l-1.885-1.886L20 23.772 5.657 38.114 3.772 40 0 36.228l1.886-1.885L16.228 20z" fill-rule="evenodd"></symbol>
-          <symbol id="sbx-icon-search-13" viewBox="0 0 40 40"><path d="M26.806 29.012a16.312 16.312 0 0 1-10.427 3.746C7.332 32.758 0 25.425 0 16.378 0 7.334 7.333 0 16.38 0c9.045 0 16.378 7.333 16.378 16.38 0 3.96-1.406 7.593-3.746 10.426L39.547 37.34c.607.608.61 1.59-.004 2.203a1.56 1.56 0 0 1-2.202.004L26.807 29.012zm-10.427.627c7.322 0 13.26-5.938 13.26-13.26 0-7.324-5.938-13.26-13.26-13.26-7.324 0-13.26 5.936-13.26 13.26 0 7.322 5.936 13.26 13.26 13.26z" fill-rule="evenodd"></symbol>
-        </svg>
-      </div>
       <nav id="contents" class="navbar contents">
   <nav class="nav flex-column">
+    <div class="d-md-none">
+      <form class="algolia-search-form algolia-search-form-sidebar" role="search" novalidate="novalidate">
+        <input class="form-control algolia-search-input" id="algolia-search-input-sidebar" type="search" name="algolia-search" placeholder="Search docs" aria-label="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-labelledby="algolia-doc-search" aria-owns="algolia-autocomplete-listbox-0" dir="auto" />
+      </form>
+    </div>
     <a href="#try" class="nav-link d-md-none" data-action="sidebar-nav" data-toggle="try">Try CoffeeScript</a>
     <a href="#top" class="nav-link" data-action="sidebar-nav">Overview</a>
     <a href="#coffeescript-2" class="nav-link" data-action="sidebar-nav">CoffeeScript 2</a>
@@ -1780,29 +2221,29 @@ currentUser = { user..., status: 'Uncertain' }
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="object_spread-js">var currentUser, user,
-  _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+      <textarea class="javascript-output" id="object_spread-js">var currentUser, user;
 
 user = {
   name: 'Werner Heisenberg',
   occupation: 'theoretical physicist'
 };
 
-currentUser = _extends({}, user, {
+currentUser = {
+  ...user,
   status: 'Uncertain'
-});
+};
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">currentUser</span>, <span class="cm-def">user</span>,
-  <span class="cm-def">_extends</span> <span class="cm-operator">=</span> <span class="cm-variable">Object</span>.<span class="cm-property">assign</span> <span class="cm-operator">||</span> <span class="cm-keyword">function</span> (<span class="cm-def">target</span>) { <span class="cm-keyword">for</span> (<span class="cm-keyword">var</span> <span class="cm-def">i</span> <span class="cm-operator">=</span> <span class="cm-number">1</span>; <span class="cm-variable-2">i</span> <span class="cm-operator">&lt;</span> <span class="cm-variable-2">arguments</span>.<span class="cm-property">length</span>; <span class="cm-variable-2">i</span><span class="cm-operator">++</span>) { <span class="cm-keyword">var</span> <span class="cm-def">source</span> <span class="cm-operator">=</span> <span class="cm-variable-2">arguments</span>[<span class="cm-variable-2">i</span>]; <span class="cm-keyword">for</span> (<span class="cm-keyword">var</span> <span class="cm-def">key</span> <span class="cm-keyword">in</span> <span class="cm-variable-2">source</span>) { <span class="cm-keyword">if</span> (<span class="cm-variable">Object</span>.<span class="cm-property">prototype</span>.<span class="cm-property">hasOwnProperty</span>.<span class="cm-property">call</span>(<span class="cm-variable-2">source</span>, <span class="cm-variable-2">key</span>)) { <span class="cm-variable-2">target</span>[<span class="cm-variable-2">key</span>] <span class="cm-operator">=</span> <span class="cm-variable-2">source</span>[<span class="cm-variable-2">key</span>]; } } } <span class="cm-keyword">return</span> <span class="cm-variable-2">target</span>; };
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">currentUser</span>, <span class="cm-def">user</span>;
 
 <span class="cm-variable">user</span> <span class="cm-operator">=</span> {
   <span class="cm-property">name</span>: <span class="cm-string">'Werner Heisenberg'</span>,
   <span class="cm-property">occupation</span>: <span class="cm-string">'theoretical physicist'</span>
 };
 
-<span class="cm-variable">currentUser</span> <span class="cm-operator">=</span> <span class="cm-variable">_extends</span>({}, <span class="cm-variable">user</span>, {
+<span class="cm-variable">currentUser</span> <span class="cm-operator">=</span> {
+  <span class="cm-meta">...</span><span class="cm-variable">user</span>,
   <span class="cm-property">status</span>: <span class="cm-string">'Uncertain'</span>
-});
+};
 </pre>
     </div>
   </div>
@@ -2491,7 +2932,7 @@ alert((function() {
 
 <span class="cm-variable">alert</span>((<span class="cm-keyword">function</span>() {
   <span class="cm-keyword">try</span> {
-    <span class="cm-keyword">return</span> <span class="cm-variable">nonexistent</span> <span class="cm-operator">/</span> <span class="cm-variable">void</span> <span class="cm-number">0</span>;
+    <span class="cm-keyword">return</span> <span class="cm-variable">nonexistent</span> <span class="cm-operator">/</span> <span class="cm-keyword">void</span> <span class="cm-number">0</span>;
   } <span class="cm-keyword">catch</span> (<span class="cm-def">error1</span>) {
     <span class="cm-variable">error</span> <span class="cm-operator">=</span> <span class="cm-variable-2">error1</span>;
     <span class="cm-keyword">return</span> <span class="cm-string-2">`And the error is ... ${</span><span class="cm-variable">error</span><span class="cm-string-2">}`</span>;
@@ -2855,7 +3296,7 @@ zip = typeof lottery.drawWinner === "function" ? (ref = lottery.drawWinner().add
 </textarea>
       <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">ref</span>, <span class="cm-def">zip</span>;
 
-<span class="cm-variable">zip</span> <span class="cm-operator">=</span> <span class="cm-keyword">typeof</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span> <span class="cm-operator">===</span> <span class="cm-string">"function"</span> <span class="cm-operator">?</span> (<span class="cm-variable">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span>().<span class="cm-property">address</span>) <span class="cm-operator">!=</span> <span class="cm-atom">null</span> <span class="cm-operator">?</span> <span class="cm-variable">ref</span>.<span class="cm-property">zipcode</span> : <span class="cm-variable">void</span> <span class="cm-number">0</span> : <span class="cm-variable">void</span> <span class="cm-number">0</span>;
+<span class="cm-variable">zip</span> <span class="cm-operator">=</span> <span class="cm-keyword">typeof</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span> <span class="cm-operator">===</span> <span class="cm-string">"function"</span> <span class="cm-operator">?</span> (<span class="cm-variable">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span>().<span class="cm-property">address</span>) <span class="cm-operator">!=</span> <span class="cm-atom">null</span> <span class="cm-operator">?</span> <span class="cm-variable">ref</span>.<span class="cm-property">zipcode</span> : <span class="cm-keyword">void</span> <span class="cm-number">0</span> : <span class="cm-keyword">void</span> <span class="cm-number">0</span>;
 </pre>
     </div>
   </div>
@@ -6264,33 +6705,14 @@ The <code>extends</code> keyword now functions identically to <code>goog.inherit
 
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js" integrity="sha384-xBuQ/xzmlsLoJpyjoggmTEz8OWUFM0/RC5BsqQBDX2v5cMvDHcMakNTNrHIW2I5f" crossorigin="anonymous"></script>
-<script>
-  window.Popper = {}; // Remove if we want to use Bootstrap tooltips
-</script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/combine/npm/codemirror@5.29.0/lib/codemirror.js,npm/codemirror@5.29.0/mode/coffeescript/coffeescript.js,npm/codemirror@5.29.0/addon/lint/coffeescript-lint.js,npm/codemirror@5.29.0/mode/javascript/javascript.js,npm/docsearch.js@2/dist/cdn/docsearch.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/combine/npm/codemirror@5.37.0/lib/codemirror.js,npm/codemirror@5.37.0/mode/coffeescript/coffeescript.js,npm/codemirror@5.37.0/addon/lint/coffeescript-lint.js,npm/codemirror@5.37.0/mode/javascript/javascript.js,npm/docsearch.js@2/dist/cdn/docsearch.min.js"></script>
 
 <script src="browser-compiler/coffeescript.js"></script>
 <script>
-(function(){window.location.origin||(window.location.origin=window.location.protocol+'//'+window.location.hostname),$(document).ready(function(){var a,b,c,d,e,f,g,h,i,j,k,l;if(k=function(){return $('.navbar-toggler, .sidebar').toggleClass('show')},$('[data-toggle="offcanvas"]').click(k),$('[data-action="sidebar-nav"]').click(function(a){return $('.navbar-toggler').is(':visible')&&(a.preventDefault(),k(),setTimeout(function(){return window.location=a.target.href},260)),gtag('event','sidebar_navigate',{event_category:'navigation',event_label:a.target.href.replace(window.location.origin,'')})}),$('body').scrollspy({target:'#contents',offset:Math.round($('main').css('padding-top').replace('px',''))}),e=function(a){return $('#contents a.active[href!=\''+a+'\']').removeClass('show')},$(window).on('activate.bs.scrollspy',function(a,b){var c;if($('#contents a.active[href!=\''+b.relatedTarget+'\']').removeClass('show'),c=$('#contents a[href=\''+b.relatedTarget+'\']'),c.prop('href')!==window.location.origin+'/#try')return i(c.prop('href')),gtag('config',GA_TRACKING_ID,{page_path:c.prop('href').replace(window.location.origin,'')})}),j=[],c=[],g=200,$('textarea').each(function(a){return j[a]=this,$(this).data('index',a)}),d=function(a){var b,d,e,f;if(d=a.data('index'),e=a.hasClass('javascript-output')?'javascript':'coffeescript',c[d]=b=CodeMirror.fromTextArea(a[0],{mode:e,theme:'twilight',indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:'contenteditable',readOnly:'coffeescript'!==e,viewportMargin:2e308}),'coffeescript'===e)return f=null,b.on('change',function(){return clearTimeout(f),f=setTimeout(function(){var e,f,h,j,k;h=Date.now();try{if(e=b.getValue(),0===d&&$('#try').hasClass('show')){$('#try').hasClass('show')&&(j='try:'+encodeURIComponent(e),i(window.location.href.split('#')[0]+'#'+j));try{null!=window.localStorage&&window.localStorage.setItem('tryCoffeeScriptCode',e)}catch(a){f=a}}k=CoffeeScript.compile(e,{bare:!0}),g=Math.max(200,Date.now()-h)}catch(a){f=a,k=''+f}return c[d+1].setValue(k),gtag('event','edit_code',{event_category:'engagement',event_label:a.closest('[data-example]').data('example')})},g)}),b.addKeyMap({Tab:function Tab(a){return a.somethingSelected()?a.indentSelection('add'):/^\t/m.test(a.getValue())?a.execCommand('insertTab'):a.execCommand('insertSoftTab')},"Shift-Tab":function ShiftTab(a){return a.indentSelection('subtract')},Enter:function Enter(a){return a.options.indentWithTabs=/^\t/m.test(a.getValue()),a.execCommand('newlineAndIndent')}})},$('.placeholder-code').one('mouseover',function(){var a,b;return b=$(this).prev('textarea'),$(this).remove(),d(b),a=$(b.parent().siblings()[0]),a.children('.placeholder-code').remove(),d($(a.children('textarea')[0]))}),f=function(){return d($('#try-coffeescript-coffee')),d($('#try-coffeescript-js'))},$('[data-action="run-code-example"]').click(function(){var a,b,d;return d=$(this).data('run'),a=$('#'+$(this).data('example')+'-js').data('index'),b=null==c[a]?$(j[a]).val():c[a].getValue(),!0!==d&&(b=b+'\nalert('+unescape(d)+');'),eval(b),gtag('event','run_code',{event_category:'engagement',event_label:$(this).closest('[data-example]').data('example')})}),h=null,l=function(b){var d,e;if($('#try, #try-link').toggleClass('show'),!$('#try').hasClass('show'))return h?i(h):a();if(window.location.hash&&(h=window.location.hash),0===$('#try .CodeMirror').length&&f(),b&&null!=window.localStorage)try{return d=window.localStorage.getItem('tryCoffeeScriptCode'),null==d?i('#try'):c[0].setValue(d)}catch(a){return e=a,i('#try')}else return i('#try')},b=function(){return $('#try, #try-link').removeClass('show'),h?i(h):a()},$('[data-toggle="try"]').click(function(a){return a.preventDefault(),l(!0)}),$('[data-close="try"]').click(b),a=function(){return window.history.replaceState({},document.title,window.location.pathname)},i=function(a){return 0===(null==a?void 0:a.indexOf('#'))&&(a=''+window.location.pathname+a),window.history.replaceState({},document.title,a||'')},$(window).on('hashchange',function(){if(''===window.location.hash)return a()}),null!=window.location.hash){if('#try'===window.location.hash)return l(!0);if(0===window.location.hash.indexOf('#try'))return 0===$('#try .CodeMirror').length&&f(),c[0].setValue(decodeURIComponent(window.location.hash.slice(5))),l(!1);if(''===window.location.hash)return a();if(e(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,'')).scrollIntoView()}})}).call(this);
+(function(){window.location.origin||(window.location.origin=window.location.protocol+'//'+window.location.hostname),$('#algolia-search-form').on('submit',function(){return!1}),window.GA_TRACKING_ID='UA-106156830-1',null==window.dataLayer&&(window.dataLayer=[]),window.gtag=function(){window.dataLayer.push(arguments)},window.gtag('js',new Date),window.gtag('config',window.GA_TRACKING_ID),$(document).ready(function(){var clearHash,closeTry,docSearchInputSelector,editors,i,initializeEditor,initializeScrollspyFromHash,initializeTryEditors,lastCompilationElapsedTime,len,previousHash,queryTimeout,ref,replaceState,textareas,toggleSidebar,toggleTry;for(toggleSidebar=function(){return $('.navbar-toggler, .sidebar').toggleClass('show')},$('[data-toggle="offcanvas"]').click(toggleSidebar),$('[data-action="sidebar-nav"]').click(function(a){return $('.navbar-toggler').is(':visible')&&(a.preventDefault(),toggleSidebar(),setTimeout(function(){return window.location=a.target.href},260)),gtag('event','sidebar_navigate',{event_category:'navigation',event_label:a.target.href.replace(window.location.origin,'')})}),$('body').scrollspy({target:'#contents',offset:Math.round($('main').css('padding-top').replace('px',''))}),initializeScrollspyFromHash=function(a){return $('#contents a.active[href!=\''+a+'\']').removeClass('show')},$(window).on('activate.bs.scrollspy',function(a,b){var c;if($('#contents a.active[href!=\''+b.relatedTarget+'\']').removeClass('show'),c=$('#contents a[href=\''+b.relatedTarget+'\']'),c.prop('href')!==window.location.origin+'/#try')return replaceState(c.prop('href')),gtag('config',GA_TRACKING_ID,{page_path:c.prop('href').replace(window.location.origin,'')})}),textareas=[],editors=[],lastCompilationElapsedTime=200,$('textarea').each(function(a){return textareas[a]=this,$(this).data('index',a)}),initializeEditor=function(a){var b,c,d,e;if(c=a.data('index'),d=a.hasClass('javascript-output')?'javascript':'coffeescript',editors[c]=b=CodeMirror.fromTextArea(a[0],{mode:d,theme:'twilight',indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:'contenteditable',readOnly:'coffeescript'!==d,viewportMargin:2e308}),'coffeescript'===d)return e=null,b.on('change',function(){return clearTimeout(e),e=setTimeout(function(){var d,e,f,g,h;f=Date.now();try{if(d=b.getValue(),0===c&&$('#try').hasClass('show')){$('#try').hasClass('show')&&(g='try:'+encodeURIComponent(d),replaceState(window.location.href.split('#')[0]+'#'+g));try{null!=window.localStorage&&window.localStorage.setItem('tryCoffeeScriptCode',d)}catch(a){e=a}}h=CoffeeScript.compile(d,{bare:!0}),lastCompilationElapsedTime=Math.max(200,Date.now()-f)}catch(a){e=a,h=''+e}return editors[c+1].setValue(h),gtag('event','edit_code',{event_category:'engagement',event_label:a.closest('[data-example]').data('example')})},lastCompilationElapsedTime)}),b.addKeyMap({Tab:function Tab(a){return a.somethingSelected()?a.indentSelection('add'):/^\t/m.test(a.getValue())?a.execCommand('insertTab'):a.execCommand('insertSoftTab')},"Shift-Tab":function ShiftTab(a){return a.indentSelection('subtract')},Enter:function Enter(a){return a.options.indentWithTabs=/^\t/m.test(a.getValue()),a.execCommand('newlineAndIndent')}})},$('.placeholder-code').one('mouseover',function(){var a,b;return b=$(this).prev('textarea'),$(this).remove(),initializeEditor(b),a=$(b.parent().siblings()[0]),a.children('.placeholder-code').remove(),initializeEditor($(a.children('textarea')[0]))}),initializeTryEditors=function(){return initializeEditor($('#try-coffeescript-coffee')),initializeEditor($('#try-coffeescript-js'))},$('[data-action="run-code-example"]').click(function(){var index,js,run;return run=$(this).data('run'),index=$('#'+$(this).data('example')+'-js').data('index'),js=null==editors[index]?$(textareas[index]).val():editors[index].getValue(),!0!==run&&(js=js+'\nalert('+unescape(run)+');'),eval(js),gtag('event','run_code',{event_category:'engagement',event_label:$(this).closest('[data-example]').data('example')})}),previousHash=null,toggleTry=function(a){var b,c;if($('#try, #try-link').toggleClass('show'),!$('#try').hasClass('show'))return previousHash?replaceState(previousHash):clearHash();if(window.location.hash&&(previousHash=window.location.hash),0===$('#try .CodeMirror').length&&initializeTryEditors(),a&&null!=window.localStorage)try{return b=window.localStorage.getItem('tryCoffeeScriptCode'),null==b?replaceState('#try'):editors[0].setValue(b)}catch(a){return c=a,replaceState('#try')}else return replaceState('#try')},closeTry=function(){return $('#try, #try-link').removeClass('show'),previousHash?replaceState(previousHash):clearHash()},$('[data-toggle="try"]').click(function(a){return a.preventDefault(),toggleTry(!0)}),$('[data-close="try"]').click(closeTry),queryTimeout=null,ref=['#algolia-search-input-navbar','#algolia-search-input-sidebar'],(i=0,len=ref.length);i<len;i++)docSearchInputSelector=ref[i],window.docsearch({apiKey:'d8c0290b3e915152f833b7eb80aa8d45',indexName:'coffeescript',inputSelector:docSearchInputSelector,debug:!0,queryHook:function queryHook(a){return clearTimeout(queryTimeout),queryTimeout=setTimeout(function(){return gtag('event','search',{event_category:'engagement',event_label:a})},500),a},transformData:function transformData(a){var b,c,d,e;if(0!==(null==a?void 0:a.length))for(e=/^(.+)#/.exec(a[0].url)[1],c=0,d=a.length;c<d;c++)b=a[c],b.url=b.url.replace(e,window.location.origin)},handleSelected:function handleSelected(a,b,c){var d;d=c.url.replace(window.location.origin,''),window.location=d,gtag('event','search_navigate',{event_category:'navigation',event_label:d})}});if(clearHash=function(){return window.history.replaceState({},document.title,window.location.pathname)},replaceState=function(a){return 0===(null==a?void 0:a.indexOf('#'))&&(a=''+window.location.pathname+a),window.history.replaceState({},document.title,a||'')},$(window).on('hashchange',function(){if(''===window.location.hash)return clearHash()}),null!=window.location.hash){if('#try'===window.location.hash)return toggleTry(!0);if(0===window.location.hash.indexOf('#try'))return 0===$('#try .CodeMirror').length&&initializeTryEditors(),editors[0].setValue(decodeURIComponent(window.location.hash.slice(5))),toggleTry(!1);if(''===window.location.hash)return clearHash();if(initializeScrollspyFromHash(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,'')).scrollIntoView()}})}).call(this);
 </script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-106156830-1"></script>
-<script>
-  window.GA_TRACKING_ID = 'UA-106156830-1';
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments)};
-  gtag('js', new Date());
-  gtag('config', GA_TRACKING_ID);
-</script>
-<script>
-  docsearch({
-    apiKey: 'd8c0290b3e915152f833b7eb80aa8d45',
-    indexName: 'coffeescript',
-    // enhancedSearchInput:true,
-    inputSelector: '#q',
-    debug: false // Set debug to true if you want to inspect the dropdown
-  });
-</script>
 
 </body>
 </html>
