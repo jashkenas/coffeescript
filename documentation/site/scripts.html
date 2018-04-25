@@ -10,19 +10,3 @@
 <%= includeScript('docs.coffee') %>
 </script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-106156830-1"></script>
-<script>
-  window.GA_TRACKING_ID = 'UA-106156830-1';
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments)};
-  gtag('js', new Date());
-  gtag('config', GA_TRACKING_ID);
-</script>
-<script>
-  docsearch({
-    apiKey: 'd8c0290b3e915152f833b7eb80aa8d45',
-    indexName: 'coffeescript',
-    // enhancedSearchInput:true,
-    inputSelector: '#q',
-    debug: false // Set debug to true if you want to inspect the dropdown
-  });
-</script>

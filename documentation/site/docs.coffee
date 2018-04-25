@@ -1,6 +1,26 @@
 unless window.location.origin # Polyfill `location.origin` for IE < 11
   window.location.origin = "#{window.location.protocol}//#{window.location.hostname}"
 
+
+# Initialize Algolia search
+window.docsearch
+  apiKey: 'd8c0290b3e915152f833b7eb80aa8d45'
+  indexName: 'coffeescript'
+  inputSelector: '#search'
+  debug: off # Toggle on to inspect the search dropdown
+
+
+# Initialize Google Analytics
+window.GA_TRACKING_ID = 'UA-106156830-1'
+window.dataLayer ?= []
+window.gtag = ->
+  window.dataLayer.push arguments
+  return
+window.gtag 'js', new Date()
+window.gtag 'config', window.GA_TRACKING_ID
+
+
+# Initialize the CoffeeScript docs interactions
 $(document).ready ->
   # Mobile navigation
   toggleSidebar = ->
