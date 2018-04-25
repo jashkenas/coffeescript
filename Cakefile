@@ -452,6 +452,7 @@ runTests = (CoffeeScript) ->
   skipUnless 'async () => {}', ['async.coffee', 'async_iterators.coffee']
   skipUnless 'async function* generator() { yield 42; }', ['async_iterators.coffee']
   skipUnless 'var a = 2 ** 2; a **= 3', ['exponentiation.coffee']
+  skipUnless 'var {...a} = {}', ['object_rest_spread.coffee']
   skipUnless '/foo.bar/s.test("foo\tbar")', ['regex_dotall.coffee']
   files = fs.readdirSync('test').filter (filename) ->
     filename not in testFilesToSkip
