@@ -177,6 +177,11 @@ $(document).ready ->
     toggleTry yes
   $('[data-close="try"]').click closeTry
 
+  $('[data-action="scroll-to-top"]').click (event) ->
+    return if $('#try').hasClass('show')
+    $('.main')[0].scrollTop = 0
+    setTimeout clearHash, 10
+
   clearHash = ->
     window.history.replaceState {}, document.title, window.location.pathname
 

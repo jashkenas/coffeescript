@@ -151,6 +151,7 @@ button:focus, .navbar-dark .navbar-toggler:focus {
  */
 
 .main {
+  max-width: 100%;
   padding: 1.3em;
 }
 @media (min-width: 992px) {
