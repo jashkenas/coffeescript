@@ -3224,13 +3224,7 @@ is the index of the beginning.</p>
             
             <div class="content"><div class='highlight'><pre>  hasSplat: <span class="hljs-function">-&gt;</span>
     <span class="hljs-keyword">return</span> <span class="hljs-literal">yes</span> <span class="hljs-keyword">for</span> prop <span class="hljs-keyword">in</span> @properties <span class="hljs-keyword">when</span> prop <span class="hljs-keyword">instanceof</span> Splat
-    <span class="hljs-literal">no</span>
-
-  compileNode: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
-    props = @properties
-    <span class="hljs-keyword">if</span> @generated
-      <span class="hljs-keyword">for</span> node <span class="hljs-keyword">in</span> props <span class="hljs-keyword">when</span> node <span class="hljs-keyword">instanceof</span> Value
-        node.error <span class="hljs-string">'cannot have an implicit value in an implicit object'</span></pre></div></div>
+    <span class="hljs-literal">no</span></pre></div></div>
             
         </li>
         
@@ -3241,11 +3235,25 @@ is the index of the beginning.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-136">&#182;</a>
               </div>
-              <p>Object spread properties. <a href="https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md">https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md</a></p>
+              <p>Move rest property to the end of the list.
+<code>{a, rest..., b} = obj</code> -&gt; <code>{a, b, rest...} = obj</code>
+<code>foo = ({a, rest..., b}) -&gt;</code> -&gt; <code>foo = {a, b, rest...}) -&gt;</code></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">return</span> @compileSpread o <span class="hljs-keyword">if</span> @hasSplat() <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @csx
+            <div class="content"><div class='highlight'><pre>  reorderProperties: <span class="hljs-function">-&gt;</span>
+    props = @properties
+    splatProps = (i <span class="hljs-keyword">for</span> prop, i <span class="hljs-keyword">in</span> props <span class="hljs-keyword">when</span> prop <span class="hljs-keyword">instanceof</span> Splat)
+    props[splatProps[<span class="hljs-number">1</span>]].error <span class="hljs-string">"multiple spread elements are disallowed"</span> <span class="hljs-keyword">if</span> splatProps?.length &gt; <span class="hljs-number">1</span>
+    splatProp = props.splice splatProps[<span class="hljs-number">0</span>], <span class="hljs-number">1</span>
+    @objects = @properties = [].concat props, splatProp
+
+  compileNode: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
+    @reorderProperties() <span class="hljs-keyword">if</span> @hasSplat() <span class="hljs-keyword">and</span> @lhs
+    props = @properties
+    <span class="hljs-keyword">if</span> @generated
+      <span class="hljs-keyword">for</span> node <span class="hljs-keyword">in</span> props <span class="hljs-keyword">when</span> node <span class="hljs-keyword">instanceof</span> Value
+        node.error <span class="hljs-string">'cannot have an implicit value in an implicit object'</span>
 
     idt      = o.indent += TAB
     lastNode = @lastNode @properties</pre></div></div>
@@ -3357,7 +3365,7 @@ are too.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>            prop = <span class="hljs-keyword">new</span> Assign key, prop.base.value, <span class="hljs-string">'object'</span>
-        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> prop.bareLiteral?(IdentifierLiteral)
+        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> prop.bareLiteral?(IdentifierLiteral) <span class="hljs-keyword">and</span> prop <span class="hljs-keyword">not</span> <span class="hljs-keyword">instanceof</span> Splat
           prop = <span class="hljs-keyword">new</span> Assign prop, prop, <span class="hljs-string">'object'</span>
       <span class="hljs-keyword">if</span> indent <span class="hljs-keyword">then</span> answer.push @makeCode indent
       answer.push prop.compileToFragments(o, LEVEL_TOP)...
@@ -3374,56 +3382,7 @@ are too.</p>
     <span class="hljs-keyword">for</span> prop <span class="hljs-keyword">in</span> @properties
       prop = prop.value <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">instanceof</span> Assign <span class="hljs-keyword">and</span> prop.context <span class="hljs-keyword">is</span> <span class="hljs-string">'object'</span>
       prop = prop.unwrapAll()
-      prop.eachName iterator <span class="hljs-keyword">if</span> prop.eachName?</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-141">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-141">&#182;</a>
-              </div>
-              <p>Object spread properties. <a href="https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md">https://github.com/tc39/proposal-object-rest-spread/blob/master/Spread.md</a>
-<code>obj2 = {a: 1, obj..., c: 3, d: 4}</code> → <code>obj2 = _extends({}, {a: 1}, obj, {c: 3, d: 4})</code></p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  compileSpread: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
-    props = @properties</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-142">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-142">&#182;</a>
-              </div>
-              <p>Store object spreads.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    splatSlice = []
-    propSlices = []
-    slices = []
-<span class="hljs-function">    <span class="hljs-title">addSlice</span> = -&gt;</span>
-      slices.push <span class="hljs-keyword">new</span> Obj propSlices <span class="hljs-keyword">if</span> propSlices.length
-      slices.push splatSlice... <span class="hljs-keyword">if</span> splatSlice.length
-      splatSlice = []
-      propSlices = []
-    <span class="hljs-keyword">for</span> prop <span class="hljs-keyword">in</span> props
-      <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">instanceof</span> Splat
-        splatSlice.push <span class="hljs-keyword">new</span> Value prop.name
-        addSlice()
-      <span class="hljs-keyword">else</span>
-        propSlices.push prop
-    addSlice()
-    slices.unshift <span class="hljs-keyword">new</span> Obj <span class="hljs-keyword">unless</span> slices[<span class="hljs-number">0</span>] <span class="hljs-keyword">instanceof</span> Obj
-    _extends = <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> Literal utility <span class="hljs-string">'_extends'</span>, o
-    (<span class="hljs-keyword">new</span> Call _extends, slices).compileToFragments o
+      prop.eachName iterator <span class="hljs-keyword">if</span> prop.eachName?
 
   compileCSXAttributes: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
     props = @properties
@@ -3439,11 +3398,11 @@ are too.</p>
         </li>
         
         
-        <li id="section-143">
+        <li id="section-141">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-143">&#182;</a>
+                <a class="pilcrow" href="#section-141">&#182;</a>
               </div>
               <h3 id="arr">Arr</h3>
 
@@ -3452,11 +3411,11 @@ are too.</p>
         </li>
         
         
-        <li id="section-144">
+        <li id="section-142">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-144">&#182;</a>
+                <a class="pilcrow" href="#section-142">&#182;</a>
               </div>
               <p>An array literal.</p>
 
@@ -3492,11 +3451,11 @@ are too.</p>
         </li>
         
         
-        <li id="section-145">
+        <li id="section-143">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-145">&#182;</a>
+                <a class="pilcrow" href="#section-143">&#182;</a>
               </div>
               <p>Detect if <code>Elisions</code> at the beginning of the array are processed (e.g. [, , , a]).</p>
 
@@ -3511,11 +3470,11 @@ are too.</p>
         </li>
         
         
-        <li id="section-146">
+        <li id="section-144">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-146">&#182;</a>
+                <a class="pilcrow" href="#section-144">&#182;</a>
               </div>
               <p>Let <code>compileCommentFragments</code> know to intersperse block comments
 into the fragments created when compiling this array.</p>
@@ -3529,11 +3488,11 @@ into the fragments created when compiling this array.</p>
         </li>
         
         
-        <li id="section-147">
+        <li id="section-145">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-147">&#182;</a>
+                <a class="pilcrow" href="#section-145">&#182;</a>
               </div>
               <p>If this array is the left-hand side of an assignment, all its children
 are too.</p>
@@ -3549,11 +3508,11 @@ are too.</p>
         </li>
         
         
-        <li id="section-148">
+        <li id="section-146">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-148">&#182;</a>
+                <a class="pilcrow" href="#section-146">&#182;</a>
               </div>
               <p>If <code>compiledObjs</code> includes newlines, we will output this as a multiline
 array (i.e. with a newline and indentation after the <code>[</code>). If an element
@@ -3576,11 +3535,11 @@ first element’s line comments get output before or after the array.</p>
         </li>
         
         
-        <li id="section-149">
+        <li id="section-147">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-149">&#182;</a>
+                <a class="pilcrow" href="#section-147">&#182;</a>
               </div>
               <p>Add ‘, ‘ if all <code>Elisions</code> from the beginning of the array are processed (e.g. [, , , a]) and
 element isn’t <code>Elision</code> or last element is <code>Elision</code> (e.g. [a,,b,,])</p>
@@ -3618,11 +3577,11 @@ element isn’t <code>Elision</code> or last element is <code>Elision</code> (e.
         </li>
         
         
-        <li id="section-150">
+        <li id="section-148">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-150">&#182;</a>
+                <a class="pilcrow" href="#section-148">&#182;</a>
               </div>
               <h3 id="class">Class</h3>
 
@@ -3631,11 +3590,11 @@ element isn’t <code>Elision</code> or last element is <code>Elision</code> (e.
         </li>
         
         
-        <li id="section-151">
+        <li id="section-149">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-151">&#182;</a>
+                <a class="pilcrow" href="#section-149">&#182;</a>
               </div>
               <p>The CoffeeScript class definition.
 Initialize a <strong>Class</strong> with its name, an optional superclass, and a body.</p>
@@ -3656,11 +3615,11 @@ exports.Class = <span class="hljs-class"><span class="hljs-keyword">class</span>
         </li>
         
         
-        <li id="section-152">
+        <li id="section-150">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-152">&#182;</a>
+                <a class="pilcrow" href="#section-150">&#182;</a>
               </div>
               <p>Special handling to allow <code>class expr.A extends A</code> declarations</p>
 
@@ -3678,11 +3637,11 @@ exports.Class = <span class="hljs-class"><span class="hljs-keyword">class</span>
         </li>
         
         
-        <li id="section-153">
+        <li id="section-151">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-153">&#182;</a>
+                <a class="pilcrow" href="#section-151">&#182;</a>
               </div>
               <p>Anonymous classes are only valid in expressions</p>
 
@@ -3731,11 +3690,11 @@ exports.Class = <span class="hljs-class"><span class="hljs-keyword">class</span>
         </li>
         
         
-        <li id="section-154">
+        <li id="section-152">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-154">&#182;</a>
+                <a class="pilcrow" href="#section-152">&#182;</a>
               </div>
               <p>Figure out the appropriate name for this class</p>
 
@@ -3806,11 +3765,11 @@ exports.Class = <span class="hljs-class"><span class="hljs-keyword">class</span>
         </li>
         
         
-        <li id="section-155">
+        <li id="section-153">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-155">&#182;</a>
+                <a class="pilcrow" href="#section-153">&#182;</a>
               </div>
               <p>Add an expression to the class initializer</p>
 <p>This is the key method for determining whether an expression in a class
@@ -3839,11 +3798,11 @@ opposed to the <code>Object.defineProperty</code> method).</p>
         </li>
         
         
-        <li id="section-156">
+        <li id="section-154">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-156">&#182;</a>
+                <a class="pilcrow" href="#section-154">&#182;</a>
               </div>
               <p>Checks if the given node is a valid ES class initializer method.</p>
 
@@ -3857,11 +3816,11 @@ opposed to the <code>Object.defineProperty</code> method).</p>
         </li>
         
         
-        <li id="section-157">
+        <li id="section-155">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-157">&#182;</a>
+                <a class="pilcrow" href="#section-155">&#182;</a>
               </div>
               <p>Returns a configured class initializer method</p>
 
@@ -3958,11 +3917,11 @@ exports.ExecutableClassBody = <span class="hljs-class"><span class="hljs-keyword
         </li>
         
         
-        <li id="section-158">
+        <li id="section-156">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-158">&#182;</a>
+                <a class="pilcrow" href="#section-156">&#182;</a>
               </div>
               <p>Traverse the class’s children and:</p>
 <ul>
@@ -4010,11 +3969,11 @@ exports.ExecutableClassBody = <span class="hljs-class"><span class="hljs-keyword
         </li>
         
         
-        <li id="section-159">
+        <li id="section-157">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-159">&#182;</a>
+                <a class="pilcrow" href="#section-157">&#182;</a>
               </div>
               <p>Make class/prototype assignments for invalid ES properties</p>
 
@@ -4034,11 +3993,11 @@ exports.ExecutableClassBody = <span class="hljs-class"><span class="hljs-keyword
         </li>
         
         
-        <li id="section-160">
+        <li id="section-158">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-160">&#182;</a>
+                <a class="pilcrow" href="#section-158">&#182;</a>
               </div>
               <p>The class scope is not available yet, so return the assignment to update later</p>
 
@@ -4060,11 +4019,11 @@ exports.ExecutableClassBody = <span class="hljs-class"><span class="hljs-keyword
         </li>
         
         
-        <li id="section-161">
+        <li id="section-159">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-161">&#182;</a>
+                <a class="pilcrow" href="#section-159">&#182;</a>
               </div>
               <h3 id="import-and-export">Import and Export</h3>
 
@@ -4138,11 +4097,11 @@ exports.ExportDeclaration = <span class="hljs-class"><span class="hljs-keyword">
         </li>
         
         
-        <li id="section-162">
+        <li id="section-160">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-162">&#182;</a>
+                <a class="pilcrow" href="#section-160">&#182;</a>
               </div>
               <p>Prevent exporting an anonymous class; all exported members must be named</p>
 
@@ -4206,11 +4165,11 @@ exports.ModuleSpecifier = <span class="hljs-class"><span class="hljs-keyword">cl
         </li>
         
         
-        <li id="section-163">
+        <li id="section-161">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-163">&#182;</a>
+                <a class="pilcrow" href="#section-161">&#182;</a>
               </div>
               <p>The name of the variable entering the local scope</p>
 
@@ -4236,11 +4195,11 @@ exports.ImportSpecifier = <span class="hljs-class"><span class="hljs-keyword">cl
         </li>
         
         
-        <li id="section-164">
+        <li id="section-162">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-164">&#182;</a>
+                <a class="pilcrow" href="#section-162">&#182;</a>
               </div>
               <p>Per the spec, symbols can’t be imported multiple times
 (e.g. <code>import { foo, foo } from &#39;lib&#39;</code> is invalid)</p>
@@ -4264,11 +4223,11 @@ exports.ExportSpecifier = <span class="hljs-class"><span class="hljs-keyword">cl
         </li>
         
         
-        <li id="section-165">
+        <li id="section-163">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-165">&#182;</a>
+                <a class="pilcrow" href="#section-163">&#182;</a>
               </div>
               <h3 id="assign">Assign</h3>
 
@@ -4277,11 +4236,11 @@ exports.ExportSpecifier = <span class="hljs-class"><span class="hljs-keyword">cl
         </li>
         
         
-        <li id="section-166">
+        <li id="section-164">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-166">&#182;</a>
+                <a class="pilcrow" href="#section-164">&#182;</a>
               </div>
               <p>The <strong>Assign</strong> is used to assign a local variable to value, or to set the
 property of an object – including within object literals.</p>
@@ -4314,11 +4273,11 @@ property of an object – including within object literals.</p>
         </li>
         
         
-        <li id="section-167">
+        <li id="section-165">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-167">&#182;</a>
+                <a class="pilcrow" href="#section-165">&#182;</a>
               </div>
               <p>Compile an assignment, delegating to <code>compileDestructuring</code> or
 <code>compileSplice</code> if appropriate. Keep track of the name of the base object
@@ -4334,11 +4293,11 @@ has not been seen yet within the current scope, declare it.</p>
         </li>
         
         
-        <li id="section-168">
+        <li id="section-166">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-168">&#182;</a>
+                <a class="pilcrow" href="#section-166">&#182;</a>
               </div>
               <p>When compiling <code>@variable</code>, remember if it is part of a function parameter.</p>
 
@@ -4349,11 +4308,11 @@ has not been seen yet within the current scope, declare it.</p>
         </li>
         
         
-        <li id="section-169">
+        <li id="section-167">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-169">&#182;</a>
+                <a class="pilcrow" href="#section-167">&#182;</a>
               </div>
               <p>If <code>@variable</code> is an array or an object, we’re destructuring;
 if it’s also <code>isAssignable()</code>, the destructuring syntax is supported
@@ -4367,11 +4326,11 @@ and convert this ES-unsupported destructuring into acceptable output.</p>
         </li>
         
         
-        <li id="section-170">
+        <li id="section-168">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-170">&#182;</a>
+                <a class="pilcrow" href="#section-168">&#182;</a>
               </div>
               <p>This is the left-hand side of an assignment; let <code>Arr</code> and <code>Obj</code>
 know that, so that those nodes know that they’re assignable as
@@ -4379,45 +4338,18 @@ destructured variables.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        @variable.base.lhs = <span class="hljs-literal">yes</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-171">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-171">&#182;</a>
-              </div>
-              <p>Check if @variable contains Obj with splats.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>        hasSplat = @variable.contains (node) -&gt; node <span class="hljs-keyword">instanceof</span> Obj <span class="hljs-keyword">and</span> node.hasSplat()
-        <span class="hljs-keyword">return</span> @compileDestructuring o <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> @variable.isAssignable() <span class="hljs-keyword">or</span> @variable.isArray() <span class="hljs-keyword">and</span> hasSplat</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-172">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-172">&#182;</a>
-              </div>
-              <p>Object destructuring. Can be removed once ES proposal hits Stage 4.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>        objDestructAnswer = @compileObjectDestruct(o) <span class="hljs-keyword">if</span> @variable.isObject() <span class="hljs-keyword">and</span> hasSplat
-        <span class="hljs-keyword">return</span> objDestructAnswer <span class="hljs-keyword">if</span> objDestructAnswer
+            <div class="content"><div class='highlight'><pre>        @variable.base.lhs = <span class="hljs-literal">yes</span>
+        <span class="hljs-keyword">unless</span> @variable.isAssignable()
+          <span class="hljs-keyword">if</span> @variable.isObject() <span class="hljs-keyword">and</span> @variable.base.hasSplat()
+            <span class="hljs-keyword">return</span> @compileObjectDestruct o
+          <span class="hljs-keyword">else</span>
+            <span class="hljs-keyword">return</span> @compileDestructuring o
 
       <span class="hljs-keyword">return</span> @compileSplice       o <span class="hljs-keyword">if</span> @variable.isSplice()
       <span class="hljs-keyword">return</span> @compileConditional  o <span class="hljs-keyword">if</span> @context <span class="hljs-keyword">in</span> [<span class="hljs-string">'||='</span>, <span class="hljs-string">'&amp;&amp;='</span>, <span class="hljs-string">'?='</span>]
-      <span class="hljs-keyword">return</span> @compileSpecialMath  o <span class="hljs-keyword">if</span> @context <span class="hljs-keyword">in</span> [<span class="hljs-string">'**='</span>, <span class="hljs-string">'//='</span>, <span class="hljs-string">'%%='</span>]
+      <span class="hljs-keyword">return</span> @compileSpecialMath  o <span class="hljs-keyword">if</span> @context <span class="hljs-keyword">in</span> [<span class="hljs-string">'//='</span>, <span class="hljs-string">'%%='</span>]
 
-    <span class="hljs-keyword">unless</span> @context
+    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> @context <span class="hljs-keyword">or</span> @context <span class="hljs-keyword">is</span> <span class="hljs-string">'**='</span>
       varBase = @variable.unwrapAll()
       <span class="hljs-keyword">unless</span> varBase.isAssignable()
         @variable.error <span class="hljs-string">"'<span class="hljs-subst">#{@variable.compile o}</span>' can't be assigned"</span>
@@ -4431,11 +4363,11 @@ destructured variables.</p>
         </li>
         
         
-        <li id="section-173">
+        <li id="section-169">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-173">&#182;</a>
+                <a class="pilcrow" href="#section-169">&#182;</a>
               </div>
               <p><code>moduleDeclaration</code> can be <code>&#39;import&#39;</code> or <code>&#39;export&#39;</code>.</p>
 
@@ -4456,11 +4388,11 @@ destructured variables.</p>
         </li>
         
         
-        <li id="section-174">
+        <li id="section-170">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-174">&#182;</a>
+                <a class="pilcrow" href="#section-170">&#182;</a>
               </div>
               <p>If this assignment identifier has one or more herecomments
 attached, output them as part of the declarations line (unless
@@ -4502,11 +4434,11 @@ the comment to be between the class name and the <code>{</code>.</p>
         </li>
         
         
-        <li id="section-175">
+        <li id="section-171">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-175">&#182;</a>
+                <a class="pilcrow" href="#section-171">&#182;</a>
               </div>
               <p>Per <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration">https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration</a>,
 if we’re destructuring without declaring, the destructuring assignment must be wrapped in parentheses.
@@ -4523,249 +4455,36 @@ The assignment is wrapped in parentheses if ‘o.level’ has lower precedence t
         </li>
         
         
-        <li id="section-176">
+        <li id="section-172">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-176">&#182;</a>
+                <a class="pilcrow" href="#section-172">&#182;</a>
               </div>
-              <p>Check object destructuring variable for rest elements;
-can be removed once ES proposal hits Stage 4.</p>
+              <p>Object rest property is not assignable: <code>{{a}...}</code></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  compileObjectDestruct: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  compileObjectDestruct: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
+    @variable.base.reorderProperties()
+    {properties: props} = @variable.base
+    [..., splat] = props
+    splatProp = splat.name
+    assigns = []
+    refVal = <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> IdentifierLiteral o.scope.freeVariable <span class="hljs-string">'ref'</span>
+    props.splice <span class="hljs-number">-1</span>, <span class="hljs-number">1</span>, <span class="hljs-keyword">new</span> Splat refVal
+    assigns.push <span class="hljs-keyword">new</span> Assign(<span class="hljs-keyword">new</span> Value(<span class="hljs-keyword">new</span> Obj props), @value).compileToFragments o, LEVEL_LIST
+    assigns.push <span class="hljs-keyword">new</span> Assign(<span class="hljs-keyword">new</span> Value(splatProp), refVal).compileToFragments o, LEVEL_LIST
+    @joinFragmentArrays assigns, <span class="hljs-string">', '</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-177">
+        <li id="section-173">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-177">&#182;</a>
-              </div>
-              <p>Returns a safe (cached) reference to the key for a given property</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre><span class="hljs-function">    <span class="hljs-title">getPropKey</span> = <span class="hljs-params">(prop)</span> -&gt;</span>
-      <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">instanceof</span> Assign
-        [prop.variable, key] = prop.variable.cache o
-        key
-      <span class="hljs-keyword">else</span>
-        prop</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-178">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-178">&#182;</a>
-              </div>
-              <p>Returns the name of a given property for use with excludeProps
-Property names are quoted (e.g. <code>a: b</code> -&gt; ‘a’), and everything else uses the key reference
-(e.g. <code>&#39;a&#39;: b -&gt; &#39;a&#39;</code>, <code>&quot;#{a}&quot;: b</code> -&gt; <cached>`)</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre><span class="hljs-function">    <span class="hljs-title">getPropName</span> = <span class="hljs-params">(prop)</span> -&gt;</span>
-      key = getPropKey prop
-      cached = prop <span class="hljs-keyword">instanceof</span> Assign <span class="hljs-keyword">and</span> prop.variable <span class="hljs-keyword">isnt</span> key
-      <span class="hljs-keyword">if</span> cached <span class="hljs-keyword">or</span> <span class="hljs-keyword">not</span> key.isAssignable()
-        key
-      <span class="hljs-keyword">else</span>
-        <span class="hljs-keyword">new</span> Literal <span class="hljs-string">"'<span class="hljs-subst">#{key.compileWithoutComments o}</span>'"</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-179">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-179">&#182;</a>
-              </div>
-              <p>Recursive function for searching and storing rest elements in objects.
-e.g. <code>{[properties...]} = source</code>.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre><span class="hljs-function">    <span class="hljs-title">traverseRest</span> = <span class="hljs-params">(properties, source)</span> =&gt;</span>
-      restElements = []
-      restIndex = <span class="hljs-literal">undefined</span>
-      source = <span class="hljs-keyword">new</span> Value source <span class="hljs-keyword">unless</span> source.properties?
-
-      <span class="hljs-keyword">for</span> prop, index <span class="hljs-keyword">in</span> properties
-        nestedSourceDefault = nestedSource = nestedProperties = <span class="hljs-literal">null</span>
-        <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">instanceof</span> Assign</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-180">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-180">&#182;</a>
-              </div>
-              <p>prop is <code>k: expr</code>, we need to check <code>expr</code> for nested splats</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>          <span class="hljs-keyword">if</span> prop.value.isObject?()</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-181">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-181">&#182;</a>
-              </div>
-              <p>prop is <code>k = {...}</code></p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">continue</span> <span class="hljs-keyword">unless</span> prop.context <span class="hljs-keyword">is</span> <span class="hljs-string">'object'</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-182">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-182">&#182;</a>
-              </div>
-              <p>prop is <code>k: {...}</code></p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>            nestedProperties = prop.value.base.properties
-          <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> prop.value <span class="hljs-keyword">instanceof</span> Assign <span class="hljs-keyword">and</span> prop.value.variable.isObject()</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-183">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-183">&#182;</a>
-              </div>
-              <p>prop is <code>k: {...} = default</code></p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>            nestedProperties = prop.value.variable.base.properties
-            [prop.value.value, nestedSourceDefault] = prop.value.value.cache o
-          <span class="hljs-keyword">if</span> nestedProperties
-            nestedSource = <span class="hljs-keyword">new</span> Value source.base, source.properties.concat [<span class="hljs-keyword">new</span> Access getPropKey prop]
-            nestedSource = <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> Op <span class="hljs-string">'?'</span>, nestedSource, nestedSourceDefault <span class="hljs-keyword">if</span> nestedSourceDefault
-            restElements.push traverseRest(nestedProperties, nestedSource)...
-        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> prop <span class="hljs-keyword">instanceof</span> Splat
-          prop.error <span class="hljs-string">"multiple rest elements are disallowed in object destructuring"</span> <span class="hljs-keyword">if</span> restIndex?
-          restIndex = index
-          restElements.push {
-            name: prop.name.unwrapAll()
-            source
-            excludeProps: <span class="hljs-keyword">new</span> Arr (getPropName p <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> properties <span class="hljs-keyword">when</span> p <span class="hljs-keyword">isnt</span> prop)
-          }
-
-      <span class="hljs-keyword">if</span> restIndex?</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-184">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-184">&#182;</a>
-              </div>
-              <p>Remove rest element from the properties after iteration</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>        properties.splice restIndex, <span class="hljs-number">1</span>
-
-      restElements</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-185">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-185">&#182;</a>
-              </div>
-              <p>Cache the value for reuse with rest elements.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    valueRefTemp =
-      <span class="hljs-keyword">if</span> @value.shouldCache()
-        <span class="hljs-keyword">new</span> IdentifierLiteral o.scope.freeVariable <span class="hljs-string">'ref'</span>, reserve: <span class="hljs-literal">false</span>
-      <span class="hljs-keyword">else</span>
-        @value.base</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-186">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-186">&#182;</a>
-              </div>
-              <p>Find all rest elements.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    restElements = traverseRest @variable.base.properties, valueRefTemp
-    <span class="hljs-keyword">return</span> <span class="hljs-literal">no</span> <span class="hljs-keyword">unless</span> restElements <span class="hljs-keyword">and</span> restElements.length &gt; <span class="hljs-number">0</span>
-
-    [@value, valueRef] = @value.cache o
-    result = <span class="hljs-keyword">new</span> Block [@]
-
-    <span class="hljs-keyword">for</span> restElement <span class="hljs-keyword">in</span> restElements
-      value = <span class="hljs-keyword">new</span> Call <span class="hljs-keyword">new</span> Value(<span class="hljs-keyword">new</span> Literal utility <span class="hljs-string">'objectWithoutKeys'</span>, o), [restElement.source, restElement.excludeProps]
-      result.push <span class="hljs-keyword">new</span> Assign <span class="hljs-keyword">new</span> Value(restElement.name), value, <span class="hljs-literal">null</span>, param: <span class="hljs-keyword">if</span> @param <span class="hljs-keyword">then</span> <span class="hljs-string">'alwaysDeclare'</span> <span class="hljs-keyword">else</span> <span class="hljs-literal">null</span>
-
-    fragments = result.compileToFragments o
-    <span class="hljs-keyword">if</span> o.level <span class="hljs-keyword">is</span> LEVEL_TOP</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-187">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-187">&#182;</a>
-              </div>
-              <p>Remove leading tab and trailing semicolon</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>      fragments.shift()
-      fragments.pop()
-
-    fragments</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-188">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-188">&#182;</a>
+                <a class="pilcrow" href="#section-173">&#182;</a>
               </div>
               <p>Brief implementation of recursive pattern matching, when assigning array or
 object literals to a value. Peeks at their properties to assign inner names.</p>
@@ -4781,11 +4500,11 @@ object literals to a value. Peeks at their properties to assign inner names.</p>
         </li>
         
         
-        <li id="section-189">
+        <li id="section-174">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-189">&#182;</a>
+                <a class="pilcrow" href="#section-174">&#182;</a>
               </div>
               <p>Special-case for <code>{} = a</code> and <code>[] = a</code> (empty patterns).
 Compile to simply <code>a</code>.</p>
@@ -4800,11 +4519,11 @@ Compile to simply <code>a</code>.</p>
         </li>
         
         
-        <li id="section-190">
+        <li id="section-175">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-190">&#182;</a>
+                <a class="pilcrow" href="#section-175">&#182;</a>
               </div>
               <p>Disallow <code>[...] = a</code> for some reason. (Could be equivalent to <code>[] = a</code>?)</p>
 
@@ -4816,11 +4535,11 @@ Compile to simply <code>a</code>.</p>
         </li>
         
         
-        <li id="section-191">
+        <li id="section-176">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-191">&#182;</a>
+                <a class="pilcrow" href="#section-176">&#182;</a>
               </div>
               <p>Count all <code>Splats</code>: [a, b, c…, d, e]</p>
 
@@ -4831,11 +4550,11 @@ Compile to simply <code>a</code>.</p>
         </li>
         
         
-        <li id="section-192">
+        <li id="section-177">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-192">&#182;</a>
+                <a class="pilcrow" href="#section-177">&#182;</a>
               </div>
               <p>Count all <code>Expansions</code>: [a, b, …, c, d]</p>
 
@@ -4846,11 +4565,11 @@ Compile to simply <code>a</code>.</p>
         </li>
         
         
-        <li id="section-193">
+        <li id="section-178">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-193">&#182;</a>
+                <a class="pilcrow" href="#section-178">&#182;</a>
               </div>
               <p>Combine splats and expansions.</p>
 
@@ -4861,11 +4580,11 @@ Compile to simply <code>a</code>.</p>
         </li>
         
         
-        <li id="section-194">
+        <li id="section-179">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-194">&#182;</a>
+                <a class="pilcrow" href="#section-179">&#182;</a>
               </div>
               <p>Show error if there is more than one <code>Splat</code>, or <code>Expansion</code>.
 Examples: [a, b, c…, d, e, f…], [a, b, …, c, d, …], [a, b, …, c, d, e…]</p>
@@ -4877,11 +4596,11 @@ Examples: [a, b, c…, d, e, f…], [a, b, …, c, d, …], [a, b, …, c, d, e�
         </li>
         
         
-        <li id="section-195">
+        <li id="section-180">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-195">&#182;</a>
+                <a class="pilcrow" href="#section-180">&#182;</a>
               </div>
               <p>Sort ‘splatsAndExpans’ so we can show error at first disallowed token.</p>
 
@@ -4891,21 +4610,28 @@ Examples: [a, b, c…, d, e, f…], [a, b, …, c, d, …], [a, b, …, c, d, e�
 
     isSplat = splats?.length &gt; <span class="hljs-number">0</span>
     isExpans = expans?.length &gt; <span class="hljs-number">0</span>
-    isObject = @variable.isObject()
-    isArray = @variable.isArray()
 
     vvar     = value.compileToFragments o, LEVEL_LIST
     vvarText = fragmentsToText vvar
-    assigns  = []</pre></div></div>
+    assigns  = []
+<span class="hljs-function">    <span class="hljs-title">pushAssign</span> = <span class="hljs-params">(variable, val)</span> =&gt;</span>
+      assigns.push <span class="hljs-keyword">new</span> Assign(variable, val, <span class="hljs-literal">null</span>, param: @param, subpattern: <span class="hljs-literal">yes</span>).compileToFragments o, LEVEL_LIST
+
+    <span class="hljs-keyword">if</span> isSplat
+      splatVar = objects[splats[<span class="hljs-number">0</span>]].name.unwrap()
+      <span class="hljs-keyword">if</span> splatVar <span class="hljs-keyword">instanceof</span> Arr <span class="hljs-keyword">or</span> splatVar <span class="hljs-keyword">instanceof</span> Obj
+        splatVarRef = <span class="hljs-keyword">new</span> IdentifierLiteral o.scope.freeVariable <span class="hljs-string">'ref'</span>
+        objects[splats[<span class="hljs-number">0</span>]].name = splatVarRef
+<span class="hljs-function">        <span class="hljs-title">splatVarAssign</span> = -&gt;</span> pushAssign <span class="hljs-keyword">new</span> Value(splatVar), splatVarRef</pre></div></div>
             
         </li>
         
         
-        <li id="section-196">
+        <li id="section-181">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-196">&#182;</a>
+                <a class="pilcrow" href="#section-181">&#182;</a>
               </div>
               <p>At this point, there are several things to destructure. So the <code>fn()</code> in
 <code>{a, b} = fn()</code> must be cached, for example. Make vvar into a simple
@@ -4929,11 +4655,11 @@ variable if it isn’t already.</p>
         </li>
         
         
-        <li id="section-197">
+        <li id="section-182">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-197">&#182;</a>
+                <a class="pilcrow" href="#section-182">&#182;</a>
               </div>
               <p>Helper which outputs <code>[].slice</code> code.</p>
 
@@ -4944,11 +4670,11 @@ variable if it isn’t already.</p>
         </li>
         
         
-        <li id="section-198">
+        <li id="section-183">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-198">&#182;</a>
+                <a class="pilcrow" href="#section-183">&#182;</a>
               </div>
               <p>Helper which outputs <code>[].splice</code> code.</p>
 
@@ -4959,27 +4685,11 @@ variable if it isn’t already.</p>
         </li>
         
         
-        <li id="section-199">
+        <li id="section-184">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-199">&#182;</a>
-              </div>
-              <p>Check if <code>objects</code> array contains object spread (<code>{a, r...}</code>), e.g. <code>[a, b, {c, r...}]</code>.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre><span class="hljs-function">    <span class="hljs-title">hasObjSpreads</span> = <span class="hljs-params">(objs)</span> -&gt;</span>
-      (i <span class="hljs-keyword">for</span> obj, i <span class="hljs-keyword">in</span> objs <span class="hljs-keyword">when</span> obj.base <span class="hljs-keyword">instanceof</span> Obj <span class="hljs-keyword">and</span> obj.base.hasSplat())</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-200">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-200">&#182;</a>
+                <a class="pilcrow" href="#section-184">&#182;</a>
               </div>
               <p>Check if <code>objects</code> array contains any instance of <code>Assign</code>, e.g. {a:1}.</p>
 
@@ -4991,11 +4701,11 @@ variable if it isn’t already.</p>
         </li>
         
         
-        <li id="section-201">
+        <li id="section-185">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-201">&#182;</a>
+                <a class="pilcrow" href="#section-185">&#182;</a>
               </div>
               <p>Check if <code>objects</code> array contains any unassignable object.</p>
 
@@ -5008,28 +4718,28 @@ variable if it isn’t already.</p>
         </li>
         
         
-        <li id="section-202">
+        <li id="section-186">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-202">&#182;</a>
+                <a class="pilcrow" href="#section-186">&#182;</a>
               </div>
-              <p><code>objects</code> are complex when there is object spread ({a…}), object assign ({a:1}),
+              <p><code>objects</code> are complex when there is object assign ({a:1}),
 unassignable object, or just a single node.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-function">    <span class="hljs-title">complexObjects</span> = <span class="hljs-params">(objs)</span> -&gt;</span>
-      hasObjSpreads(objs).length <span class="hljs-keyword">or</span> hasObjAssigns(objs).length <span class="hljs-keyword">or</span> objIsUnassignable(objs) <span class="hljs-keyword">or</span> olen <span class="hljs-keyword">is</span> <span class="hljs-number">1</span></pre></div></div>
+      hasObjAssigns(objs).length <span class="hljs-keyword">or</span> objIsUnassignable(objs) <span class="hljs-keyword">or</span> olen <span class="hljs-keyword">is</span> <span class="hljs-number">1</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-203">
+        <li id="section-187">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-203">&#182;</a>
+                <a class="pilcrow" href="#section-187">&#182;</a>
               </div>
               <p>“Complex” <code>objects</code> are processed in a loop.
 Examples: [a, b, {c, r…}, d], [a, …, {b, r…}, c, d]</p>
@@ -5037,17 +4747,16 @@ Examples: [a, b, {c, r…}, d], [a, …, {b, r…}, c, d]</p>
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-function">    <span class="hljs-title">loopObjects</span> = <span class="hljs-params">(objs, vvar, vvarTxt)</span> =&gt;</span>
-      objSpreads = hasObjSpreads objs
       <span class="hljs-keyword">for</span> obj, i <span class="hljs-keyword">in</span> objs</pre></div></div>
             
         </li>
         
         
-        <li id="section-204">
+        <li id="section-188">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-204">&#182;</a>
+                <a class="pilcrow" href="#section-188">&#182;</a>
               </div>
               <p><code>Elision</code> can be skipped.</p>
 
@@ -5058,11 +4767,11 @@ Examples: [a, b, {c, r…}, d], [a, …, {b, r…}, c, d]</p>
         </li>
         
         
-        <li id="section-205">
+        <li id="section-189">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-205">&#182;</a>
+                <a class="pilcrow" href="#section-189">&#182;</a>
               </div>
               <p>If <code>obj</code> is {a: 1}</p>
 
@@ -5083,11 +4792,11 @@ Examples: [a, b, {c, r…}, d], [a, …, {b, r…}, c, d]</p>
         </li>
         
         
-        <li id="section-206">
+        <li id="section-190">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-206">&#182;</a>
+                <a class="pilcrow" href="#section-190">&#182;</a>
               </div>
               <p><code>obj</code> is [a…], {a…} or a</p>
 
@@ -5095,23 +4804,22 @@ Examples: [a, b, {c, r…}, d], [a, …, {b, r…}, c, d]</p>
             
             <div class="content"><div class='highlight'><pre>          vvar = <span class="hljs-keyword">switch</span>
             <span class="hljs-keyword">when</span> obj <span class="hljs-keyword">instanceof</span> Splat <span class="hljs-keyword">then</span> <span class="hljs-keyword">new</span> Value obj.name
-            <span class="hljs-keyword">when</span> i <span class="hljs-keyword">in</span> objSpreads <span class="hljs-keyword">then</span> <span class="hljs-keyword">new</span> Value obj.base
             <span class="hljs-keyword">else</span> obj
           vval = <span class="hljs-keyword">switch</span>
             <span class="hljs-keyword">when</span> obj <span class="hljs-keyword">instanceof</span> Splat <span class="hljs-keyword">then</span> compSlice(vvarTxt, i)
             <span class="hljs-keyword">else</span> <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> Literal(vvarTxt), [<span class="hljs-keyword">new</span> Index <span class="hljs-keyword">new</span> NumberLiteral i]
         message = isUnassignable vvar.unwrap().value
         vvar.error message <span class="hljs-keyword">if</span> message
-        assigns.push <span class="hljs-keyword">new</span> Assign(vvar, vval, <span class="hljs-literal">null</span>, param: @param, subpattern: <span class="hljs-literal">yes</span>).compileToFragments o, LEVEL_LIST</pre></div></div>
+        pushAssign vvar, vval</pre></div></div>
             
         </li>
         
         
-        <li id="section-207">
+        <li id="section-191">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-207">&#182;</a>
+                <a class="pilcrow" href="#section-191">&#182;</a>
               </div>
               <p>“Simple” <code>objects</code> can be split and compiled to arrays, [a, b, c] = arr, [a, b, c…] = arr</p>
 
@@ -5120,7 +4828,7 @@ Examples: [a, b, {c, r…}, d], [a, …, {b, r…}, c, d]</p>
             <div class="content"><div class='highlight'><pre><span class="hljs-function">    <span class="hljs-title">assignObjects</span> = <span class="hljs-params">(objs, vvar, vvarTxt)</span> =&gt;</span>
       vvar = <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> Arr(objs, <span class="hljs-literal">yes</span>)
       vval = <span class="hljs-keyword">if</span> vvarTxt <span class="hljs-keyword">instanceof</span> Value <span class="hljs-keyword">then</span> vvarTxt <span class="hljs-keyword">else</span> <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> Literal(vvarTxt)
-      assigns.push <span class="hljs-keyword">new</span> Assign(vvar, vval, <span class="hljs-literal">null</span>, param: @param, subpattern: <span class="hljs-literal">yes</span>).compileToFragments o, LEVEL_LIST
+      pushAssign vvar, vval
 <span class="hljs-function">
     <span class="hljs-title">processObjects</span> = <span class="hljs-params">(objs, vvar, vvarTxt)</span> -&gt;</span>
       <span class="hljs-keyword">if</span> complexObjects objs
@@ -5131,11 +4839,11 @@ Examples: [a, b, {c, r…}, d], [a, …, {b, r…}, c, d]</p>
         </li>
         
         
-        <li id="section-208">
+        <li id="section-192">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-208">&#182;</a>
+                <a class="pilcrow" href="#section-192">&#182;</a>
               </div>
               <p>In case there is <code>Splat</code> or <code>Expansion</code> in <code>objects</code>,
 we can split array in two simple subarrays.
@@ -5161,11 +4869,11 @@ b) <code>Expansion</code>
         </li>
         
         
-        <li id="section-209">
+        <li id="section-193">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-209">&#182;</a>
+                <a class="pilcrow" href="#section-193">&#182;</a>
               </div>
               <p>Slice or splice <code>objects</code>.</p>
 
@@ -5184,17 +4892,18 @@ b) <code>Expansion</code>
         </li>
         
         
-        <li id="section-210">
+        <li id="section-194">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-210">&#182;</a>
+                <a class="pilcrow" href="#section-194">&#182;</a>
               </div>
               <p>There is no <code>Splat</code> or <code>Expansion</code> in <code>objects</code>.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>      processObjects objects, vvar, vvarText
+    splatVarAssign?()
     assigns.push vvar <span class="hljs-keyword">unless</span> top <span class="hljs-keyword">or</span> @subpattern
     fragments = @joinFragmentArrays assigns, <span class="hljs-string">', '</span>
     <span class="hljs-keyword">if</span> o.level &lt; LEVEL_LIST <span class="hljs-keyword">then</span> fragments <span class="hljs-keyword">else</span> @wrapInParentheses fragments</pre></div></div>
@@ -5202,11 +4911,11 @@ b) <code>Expansion</code>
         </li>
         
         
-        <li id="section-211">
+        <li id="section-195">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-211">&#182;</a>
+                <a class="pilcrow" href="#section-195">&#182;</a>
               </div>
               <p>When compiling a conditional assignment, take care to ensure that the
 operands are only evaluated once, even though we have to reference them
@@ -5220,11 +4929,11 @@ more than once.</p>
         </li>
         
         
-        <li id="section-212">
+        <li id="section-196">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-212">&#182;</a>
+                <a class="pilcrow" href="#section-196">&#182;</a>
               </div>
               <p>Disallow conditional assignment of undefined variables.</p>
 
@@ -5243,13 +4952,13 @@ more than once.</p>
         </li>
         
         
-        <li id="section-213">
+        <li id="section-197">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-213">&#182;</a>
+                <a class="pilcrow" href="#section-197">&#182;</a>
               </div>
-              <p>Convert special math assignment operators like <code>a **= b</code> to the equivalent
+              <p>Convert special math assignment operators like <code>a //= b</code> to the equivalent
 extended form <code>a = a ** b</code> and then compiles that.</p>
 
             </div>
@@ -5261,11 +4970,11 @@ extended form <code>a = a ** b</code> and then compiles that.</p>
         </li>
         
         
-        <li id="section-214">
+        <li id="section-198">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-214">&#182;</a>
+                <a class="pilcrow" href="#section-198">&#182;</a>
               </div>
               <p>Compile the assignment from an array splice literal, using JavaScript’s
 <code>Array#splice</code> method.</p>
@@ -5302,11 +5011,11 @@ extended form <code>a = a ** b</code> and then compiles that.</p>
         </li>
         
         
-        <li id="section-215">
+        <li id="section-199">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-215">&#182;</a>
+                <a class="pilcrow" href="#section-199">&#182;</a>
               </div>
               <h3 id="funcglyph">FuncGlyph</h3>
 
@@ -5320,11 +5029,11 @@ exports.FuncGlyph = <span class="hljs-class"><span class="hljs-keyword">class</s
         </li>
         
         
-        <li id="section-216">
+        <li id="section-200">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-216">&#182;</a>
+                <a class="pilcrow" href="#section-200">&#182;</a>
               </div>
               <h3 id="code">Code</h3>
 
@@ -5333,11 +5042,11 @@ exports.FuncGlyph = <span class="hljs-class"><span class="hljs-keyword">class</s
         </li>
         
         
-        <li id="section-217">
+        <li id="section-201">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-217">&#182;</a>
+                <a class="pilcrow" href="#section-201">&#182;</a>
               </div>
               <p>A function definition. This is the only node that creates a new Scope.
 When for the purposes of walking the contents of a function body, the Code
@@ -5361,8 +5070,8 @@ has no <em>children</em> – they’re within the inner scope.</p>
         @isGenerator = <span class="hljs-literal">yes</span>
       <span class="hljs-keyword">if</span> (node <span class="hljs-keyword">instanceof</span> Op <span class="hljs-keyword">and</span> node.isAwait()) <span class="hljs-keyword">or</span> node <span class="hljs-keyword">instanceof</span> AwaitReturn
         @isAsync = <span class="hljs-literal">yes</span>
-      <span class="hljs-keyword">if</span> @isGenerator <span class="hljs-keyword">and</span> @isAsync
-        node.error <span class="hljs-string">"function can't contain both yield and await"</span>
+      <span class="hljs-keyword">if</span> node <span class="hljs-keyword">instanceof</span> For <span class="hljs-keyword">and</span> node.isAwait()
+        @isAsync = <span class="hljs-literal">yes</span>
 
   children: [<span class="hljs-string">'params'</span>, <span class="hljs-string">'body'</span>]
 
@@ -5375,11 +5084,11 @@ has no <em>children</em> – they’re within the inner scope.</p>
         </li>
         
         
-        <li id="section-218">
+        <li id="section-202">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-218">&#182;</a>
+                <a class="pilcrow" href="#section-202">&#182;</a>
               </div>
               <p>Compilation creates a new scope unless explicitly asked to share with the
 outer scope. Handles splat parameters in the parameter list by setting
@@ -5414,11 +5123,11 @@ function body.</p>
         </li>
         
         
-        <li id="section-219">
+        <li id="section-203">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-219">&#182;</a>
+                <a class="pilcrow" href="#section-203">&#182;</a>
               </div>
               <p>Check for duplicate parameters and separate <code>this</code> assignments.</p>
 
@@ -5437,11 +5146,11 @@ function body.</p>
         </li>
         
         
-        <li id="section-220">
+        <li id="section-204">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-220">&#182;</a>
+                <a class="pilcrow" href="#section-204">&#182;</a>
               </div>
               <p><code>Param</code> is object destructuring with a default value: ({@prop = 1}) -&gt;
 In a case when the variable name is already reserved, we have to assign
@@ -5461,11 +5170,11 @@ a new variable name to the destructured variable: ({prop:prop1 = 1}) -&gt;</p>
         </li>
         
         
-        <li id="section-221">
+        <li id="section-205">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-221">&#182;</a>
+                <a class="pilcrow" href="#section-205">&#182;</a>
               </div>
               <p>Parse the parameters, adding them to the list of parameters to put in the
 function definition; and dealing with splats or expansions, including
@@ -5483,11 +5192,11 @@ any non-idempotent parameters are evaluated in the correct order.</p>
         </li>
         
         
-        <li id="section-222">
+        <li id="section-206">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-222">&#182;</a>
+                <a class="pilcrow" href="#section-206">&#182;</a>
               </div>
               <p>Was <code>...</code> used with this parameter? (Only one such parameter is allowed
 per function.) Splat/expansion parameters cannot have default values,
@@ -5502,16 +5211,16 @@ so we need not worry about that.</p>
           param.error <span class="hljs-string">'an expansion parameter cannot be the only parameter in a function definition'</span>
         haveSplatParam = <span class="hljs-literal">yes</span>
         <span class="hljs-keyword">if</span> param.splat
-          <span class="hljs-keyword">if</span> param.name <span class="hljs-keyword">instanceof</span> Arr</pre></div></div>
+          <span class="hljs-keyword">if</span> param.name <span class="hljs-keyword">instanceof</span> Arr <span class="hljs-keyword">or</span> param.name <span class="hljs-keyword">instanceof</span> Obj</pre></div></div>
             
         </li>
         
         
-        <li id="section-223">
+        <li id="section-207">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-223">&#182;</a>
+                <a class="pilcrow" href="#section-207">&#182;</a>
               </div>
               <p>Splat arrays are treated oddly by ES; deal with them the legacy
 way in the function body. TODO: Should this be handled in the
@@ -5536,11 +5245,11 @@ function parameter list, and if so, how?</p>
         </li>
         
         
-        <li id="section-224">
+        <li id="section-208">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-224">&#182;</a>
+                <a class="pilcrow" href="#section-208">&#182;</a>
               </div>
               <p>Parse all other parameters; if a splat paramater has not yet been
 encountered, add these other parameters to the list to be output in
@@ -5556,11 +5265,11 @@ the function definition.</p>
         </li>
         
         
-        <li id="section-225">
+        <li id="section-209">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-225">&#182;</a>
+                <a class="pilcrow" href="#section-209">&#182;</a>
               </div>
               <p>This parameter cannot be declared or assigned in the parameter
 list. So put a reference in the parameter list and add a statement
@@ -5579,11 +5288,11 @@ to the function body assigning it, e.g.
         </li>
         
         
-        <li id="section-226">
+        <li id="section-210">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-226">&#182;</a>
+                <a class="pilcrow" href="#section-210">&#182;</a>
               </div>
               <p>If this parameter comes before the splat or expansion, it will go
 in the function definition parameter list.</p>
@@ -5595,11 +5304,11 @@ in the function definition parameter list.</p>
         </li>
         
         
-        <li id="section-227">
+        <li id="section-211">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-227">&#182;</a>
+                <a class="pilcrow" href="#section-211">&#182;</a>
               </div>
               <p>If this parameter has a default value, and it hasn’t already been
 set by the <code>shouldCache()</code> block above, define it as a statement in
@@ -5619,11 +5328,11 @@ so we can’t define its default value in the parameter list.</p>
         </li>
         
         
-        <li id="section-228">
+        <li id="section-212">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-228">&#182;</a>
+                <a class="pilcrow" href="#section-212">&#182;</a>
               </div>
               <p>Add this parameter’s reference(s) to the function scope.</p>
 
@@ -5634,54 +5343,18 @@ so we can’t define its default value in the parameter list.</p>
         </li>
         
         
-        <li id="section-229">
+        <li id="section-213">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-229">&#182;</a>
+                <a class="pilcrow" href="#section-213">&#182;</a>
               </div>
               <p>This parameter is destructured.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>            param.name.lhs = <span class="hljs-literal">yes</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-230">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-230">&#182;</a>
-              </div>
-              <p>Compile <code>foo({a, b...}) -&gt;</code> to <code>foo(arg) -&gt; {a, b...} = arg</code>.
-Can be removed once ES proposal hits Stage 4.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">if</span> param.name <span class="hljs-keyword">instanceof</span> Obj <span class="hljs-keyword">and</span> param.name.hasSplat()
-              splatParamName = o.scope.freeVariable <span class="hljs-string">'arg'</span>
-              o.scope.parameter splatParamName
-              ref = <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> IdentifierLiteral splatParamName
-              exprs.push <span class="hljs-keyword">new</span> Assign <span class="hljs-keyword">new</span> Value(param.name), ref, <span class="hljs-literal">null</span>, param: <span class="hljs-string">'alwaysDeclare'</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-231">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-231">&#182;</a>
-              </div>
-              <p>Compile <code>foo({a, b...} = {}) -&gt;</code> to <code>foo(arg = {}) -&gt; {a, b...} = arg</code>.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>              <span class="hljs-keyword">if</span> param.value? <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> param.assignedInBody
-                ref = <span class="hljs-keyword">new</span> Assign ref, param.value, <span class="hljs-literal">null</span>, param: <span class="hljs-literal">yes</span>
-            <span class="hljs-keyword">else</span> <span class="hljs-keyword">unless</span> param.shouldCache()
+            <div class="content"><div class='highlight'><pre>            param.name.lhs = <span class="hljs-literal">yes</span>
+            <span class="hljs-keyword">unless</span> param.shouldCache()
               param.name.eachName (prop) -&gt;
                 o.scope.parameter prop.value
           <span class="hljs-keyword">else</span></pre></div></div>
@@ -5689,11 +5362,11 @@ Can be removed once ES proposal hits Stage 4.</p>
         </li>
         
         
-        <li id="section-232">
+        <li id="section-214">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-232">&#182;</a>
+                <a class="pilcrow" href="#section-214">&#182;</a>
               </div>
               <p>This compilation of the parameter is only to get its name to add
 to the scope name tracking; since the compilation output here
@@ -5712,11 +5385,11 @@ is compiled.</p>
         </li>
         
         
-        <li id="section-233">
+        <li id="section-215">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-233">&#182;</a>
+                <a class="pilcrow" href="#section-215">&#182;</a>
               </div>
               <p>If this parameter had a default value, since it’s no longer in the
 function parameter list we need to assign its default value
@@ -5732,11 +5405,11 @@ function parameter list we need to assign its default value
         </li>
         
         
-        <li id="section-234">
+        <li id="section-216">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-234">&#182;</a>
+                <a class="pilcrow" href="#section-216">&#182;</a>
               </div>
               <p>Add this parameter to the scope, since it wouldn’t have been added
 yet since it was skipped earlier.</p>
@@ -5748,11 +5421,11 @@ yet since it was skipped earlier.</p>
         </li>
         
         
-        <li id="section-235">
+        <li id="section-217">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-235">&#182;</a>
+                <a class="pilcrow" href="#section-217">&#182;</a>
               </div>
               <p>If there were parameters after the splat or expansion parameter, those
 parameters need to be assigned in the body of the function.</p>
@@ -5764,11 +5437,11 @@ parameters need to be assigned in the body of the function.</p>
         </li>
         
         
-        <li id="section-236">
+        <li id="section-218">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-236">&#182;</a>
+                <a class="pilcrow" href="#section-218">&#182;</a>
               </div>
               <p>Create a destructured assignment, e.g. <code>[a, b, c] = [args..., b, c]</code></p>
 
@@ -5781,11 +5454,11 @@ parameters need to be assigned in the body of the function.</p>
         </li>
         
         
-        <li id="section-237">
+        <li id="section-219">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-237">&#182;</a>
+                <a class="pilcrow" href="#section-219">&#182;</a>
               </div>
               <p>Add new expressions to the function body</p>
 
@@ -5802,11 +5475,11 @@ parameters need to be assigned in the body of the function.</p>
         </li>
         
         
-        <li id="section-238">
+        <li id="section-220">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-238">&#182;</a>
+                <a class="pilcrow" href="#section-220">&#182;</a>
               </div>
               <p>JavaScript doesn’t allow bound (<code>=&gt;</code>) functions to also be generators.
 This is usually caught via <code>Op::compileContinuation</code>, but double-check:</p>
@@ -5820,11 +5493,11 @@ This is usually caught via <code>Op::compileContinuation</code>, but double-chec
         </li>
         
         
-        <li id="section-239">
+        <li id="section-221">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-239">&#182;</a>
+                <a class="pilcrow" href="#section-221">&#182;</a>
               </div>
               <p>Assemble the output</p>
 
@@ -5843,11 +5516,11 @@ This is usually caught via <code>Op::compileContinuation</code>, but double-chec
         </li>
         
         
-        <li id="section-240">
+        <li id="section-222">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-240">&#182;</a>
+                <a class="pilcrow" href="#section-222">&#182;</a>
               </div>
               <p>Block comments between a function name and <code>(</code> get output between
 <code>function</code> and <code>(</code>.</p>
@@ -5863,11 +5536,11 @@ This is usually caught via <code>Op::compileContinuation</code>, but double-chec
         </li>
         
         
-        <li id="section-241">
+        <li id="section-223">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-241">&#182;</a>
+                <a class="pilcrow" href="#section-223">&#182;</a>
               </div>
               <p>Compile this parameter, but if any generated variables get created
 (e.g. <code>ref</code>), shift those into the parent scope since we can’t put a
@@ -5885,11 +5558,11 @@ This is usually caught via <code>Op::compileContinuation</code>, but double-chec
         </li>
         
         
-        <li id="section-242">
+        <li id="section-224">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-242">&#182;</a>
+                <a class="pilcrow" href="#section-224">&#182;</a>
               </div>
               <p>Block comments between <code>)</code> and <code>-&gt;</code>/<code>=&gt;</code> get output between <code>)</code> and <code>{</code>.</p>
 
@@ -5904,11 +5577,11 @@ This is usually caught via <code>Op::compileContinuation</code>, but double-chec
         </li>
         
         
-        <li id="section-243">
+        <li id="section-225">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-243">&#182;</a>
+                <a class="pilcrow" href="#section-225">&#182;</a>
               </div>
               <p>We need to compile the body before method names to ensure <code>super</code>
 references are handled.</p>
@@ -5939,11 +5612,11 @@ references are handled.</p>
         </li>
         
         
-        <li id="section-244">
+        <li id="section-226">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-244">&#182;</a>
+                <a class="pilcrow" href="#section-226">&#182;</a>
               </div>
               <p>Short-circuit <code>traverseChildren</code> method to prevent it from crossing scope
 boundaries unless <code>crossScope</code> is <code>true</code>.</p>
@@ -5956,11 +5629,11 @@ boundaries unless <code>crossScope</code> is <code>true</code>.</p>
         </li>
         
         
-        <li id="section-245">
+        <li id="section-227">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-245">&#182;</a>
+                <a class="pilcrow" href="#section-227">&#182;</a>
               </div>
               <p>Short-circuit <code>replaceInContext</code> method to prevent it from crossing context boundaries. Bound
 functions have the same context.</p>
@@ -5993,11 +5666,11 @@ functions have the same context.</p>
         </li>
         
         
-        <li id="section-246">
+        <li id="section-228">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-246">&#182;</a>
+                <a class="pilcrow" href="#section-228">&#182;</a>
               </div>
               <p>Find all super calls in the given context node;
 returns <code>true</code> if <code>iterator</code> is called.</p>
@@ -6013,11 +5686,11 @@ returns <code>true</code> if <code>iterator</code> is called.</p>
         </li>
         
         
-        <li id="section-247">
+        <li id="section-229">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-247">&#182;</a>
+                <a class="pilcrow" href="#section-229">&#182;</a>
               </div>
               <p><code>super</code> in a constructor (the only <code>super</code> without an accessor)
 cannot be given an argument with a reference to <code>this</code>, as that would
@@ -6038,11 +5711,11 @@ be referencing <code>this</code> before calling <code>super</code>.</p>
         </li>
         
         
-        <li id="section-248">
+        <li id="section-230">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-248">&#182;</a>
+                <a class="pilcrow" href="#section-230">&#182;</a>
               </div>
               <p><code>super</code> has the same target in bound (arrow) functions, so check them too</p>
 
@@ -6055,11 +5728,11 @@ be referencing <code>this</code> before calling <code>super</code>.</p>
         </li>
         
         
-        <li id="section-249">
+        <li id="section-231">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-249">&#182;</a>
+                <a class="pilcrow" href="#section-231">&#182;</a>
               </div>
               <h3 id="param">Param</h3>
 
@@ -6068,11 +5741,11 @@ be referencing <code>this</code> before calling <code>super</code>.</p>
         </li>
         
         
-        <li id="section-250">
+        <li id="section-232">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-250">&#182;</a>
+                <a class="pilcrow" href="#section-232">&#182;</a>
               </div>
               <p>A parameter in a function definition. Beyond a typical JavaScript parameter,
 these parameters can also attach themselves to the context of the function,
@@ -6117,11 +5790,11 @@ as well as be a splat, gathering up a group of parameters into an array.</p>
         </li>
         
         
-        <li id="section-251">
+        <li id="section-233">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-251">&#182;</a>
+                <a class="pilcrow" href="#section-233">&#182;</a>
               </div>
               <p>Iterates the name or names of a <code>Param</code>.
 In a sense, a destructured parameter represents multiple JS parameters. This
@@ -6138,11 +5811,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-252">
+        <li id="section-234">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-252">&#182;</a>
+                <a class="pilcrow" href="#section-234">&#182;</a>
               </div>
               <ul>
 <li>simple literals <code>foo</code></li>
@@ -6155,11 +5828,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-253">
+        <li id="section-235">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-253">&#182;</a>
+                <a class="pilcrow" href="#section-235">&#182;</a>
               </div>
               <ul>
 <li>at-params <code>@foo</code></li>
@@ -6173,11 +5846,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-254">
+        <li id="section-236">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-254">&#182;</a>
+                <a class="pilcrow" href="#section-236">&#182;</a>
               </div>
               <p>Save original obj.</p>
 
@@ -6188,11 +5861,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-255">
+        <li id="section-237">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-255">&#182;</a>
+                <a class="pilcrow" href="#section-237">&#182;</a>
               </div>
               <ul>
 <li>destructured parameter with default value</li>
@@ -6206,11 +5879,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-256">
+        <li id="section-238">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-256">&#182;</a>
+                <a class="pilcrow" href="#section-238">&#182;</a>
               </div>
               <ul>
 <li>assignments within destructured parameters <code>{foo:bar}</code></li>
@@ -6223,11 +5896,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-257">
+        <li id="section-239">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-257">&#182;</a>
+                <a class="pilcrow" href="#section-239">&#182;</a>
               </div>
               <p>… possibly with a default value</p>
 
@@ -6242,11 +5915,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-258">
+        <li id="section-240">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-258">&#182;</a>
+                <a class="pilcrow" href="#section-240">&#182;</a>
               </div>
               <ul>
 <li>splats within destructured parameters <code>[xs...]</code></li>
@@ -6262,11 +5935,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-259">
+        <li id="section-241">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-259">&#182;</a>
+                <a class="pilcrow" href="#section-241">&#182;</a>
               </div>
               <ul>
 <li>destructured parameters within destructured parameters <code>[{a}]</code></li>
@@ -6280,11 +5953,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-260">
+        <li id="section-242">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-260">&#182;</a>
+                <a class="pilcrow" href="#section-242">&#182;</a>
               </div>
               <ul>
 <li>at-params within destructured parameters <code>{@foo}</code></li>
@@ -6298,11 +5971,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-261">
+        <li id="section-243">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-261">&#182;</a>
+                <a class="pilcrow" href="#section-243">&#182;</a>
               </div>
               <ul>
 <li>simple destructured parameters {foo}</li>
@@ -6320,11 +5993,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-262">
+        <li id="section-244">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-262">&#182;</a>
+                <a class="pilcrow" href="#section-244">&#182;</a>
               </div>
               <p>Rename a param by replacing the given AST node for a name with a new node.
 This needs to ensure that the the source for object destructuring does not change.</p>
@@ -6341,11 +6014,11 @@ This needs to ensure that the the source for object destructuring does not chang
         </li>
         
         
-        <li id="section-263">
+        <li id="section-245">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-263">&#182;</a>
+                <a class="pilcrow" href="#section-245">&#182;</a>
               </div>
               <p>No need to assign a new variable for the destructured variable if the variable isn’t reserved.
 Examples:
@@ -6366,11 +6039,11 @@ Examples:
         </li>
         
         
-        <li id="section-264">
+        <li id="section-246">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-264">&#182;</a>
+                <a class="pilcrow" href="#section-246">&#182;</a>
               </div>
               <h3 id="splat">Splat</h3>
 
@@ -6379,11 +6052,11 @@ Examples:
         </li>
         
         
-        <li id="section-265">
+        <li id="section-247">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-265">&#182;</a>
+                <a class="pilcrow" href="#section-247">&#182;</a>
               </div>
               <p>A splat, either as a parameter to a function, an argument to a call,
 or as part of a destructuring assignment.</p>
@@ -6397,7 +6070,10 @@ or as part of a destructuring assignment.</p>
 
   children: [<span class="hljs-string">'name'</span>]
 
+  shouldCache: <span class="hljs-function">-&gt;</span> <span class="hljs-literal">no</span>
+
   isAssignable: <span class="hljs-function">-&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">no</span> <span class="hljs-keyword">if</span> @name <span class="hljs-keyword">instanceof</span> Obj <span class="hljs-keyword">or</span> @name <span class="hljs-keyword">instanceof</span> Parens
     @name.isAssignable() <span class="hljs-keyword">and</span> (<span class="hljs-keyword">not</span> @name.isAtomic <span class="hljs-keyword">or</span> @name.isAtomic())
 
   assigns: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
@@ -6411,11 +6087,11 @@ or as part of a destructuring assignment.</p>
         </li>
         
         
-        <li id="section-266">
+        <li id="section-248">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-266">&#182;</a>
+                <a class="pilcrow" href="#section-248">&#182;</a>
               </div>
               <h3 id="expansion">Expansion</h3>
 
@@ -6424,11 +6100,11 @@ or as part of a destructuring assignment.</p>
         </li>
         
         
-        <li id="section-267">
+        <li id="section-249">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-267">&#182;</a>
+                <a class="pilcrow" href="#section-249">&#182;</a>
               </div>
               <p>Used to skip values inside an array destructuring (pattern matching) or
 parameter list.</p>
@@ -6450,11 +6126,11 @@ parameter list.</p>
         </li>
         
         
-        <li id="section-268">
+        <li id="section-250">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-268">&#182;</a>
+                <a class="pilcrow" href="#section-250">&#182;</a>
               </div>
               <h3 id="elision">Elision</h3>
 
@@ -6463,11 +6139,11 @@ parameter list.</p>
         </li>
         
         
-        <li id="section-269">
+        <li id="section-251">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-269">&#182;</a>
+                <a class="pilcrow" href="#section-251">&#182;</a>
               </div>
               <p>Array elision element (for example, [,a, , , b, , c, ,]).</p>
 
@@ -6495,11 +6171,11 @@ parameter list.</p>
         </li>
         
         
-        <li id="section-270">
+        <li id="section-252">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-270">&#182;</a>
+                <a class="pilcrow" href="#section-252">&#182;</a>
               </div>
               <h3 id="while">While</h3>
 
@@ -6508,11 +6184,11 @@ parameter list.</p>
         </li>
         
         
-        <li id="section-271">
+        <li id="section-253">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-271">&#182;</a>
+                <a class="pilcrow" href="#section-253">&#182;</a>
               </div>
               <p>A while loop, the only sort of low-level loop exposed by CoffeeScript. From
 it, all other loops can be manufactured. Useful in cases where you need more
@@ -6551,11 +6227,11 @@ flexibility or more speed than a comprehension can provide.</p>
         </li>
         
         
-        <li id="section-272">
+        <li id="section-254">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-272">&#182;</a>
+                <a class="pilcrow" href="#section-254">&#182;</a>
               </div>
               <p>The main difference from a JavaScript <em>while</em> is that the CoffeeScript
 <em>while</em> can be used as a part of a larger expression – while loops may
@@ -6588,11 +6264,11 @@ return an array containing the computed result of each iteration.</p>
         </li>
         
         
-        <li id="section-273">
+        <li id="section-255">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-273">&#182;</a>
+                <a class="pilcrow" href="#section-255">&#182;</a>
               </div>
               <h3 id="op">Op</h3>
 
@@ -6601,11 +6277,11 @@ return an array containing the computed result of each iteration.</p>
         </li>
         
         
-        <li id="section-274">
+        <li id="section-256">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-274">&#182;</a>
+                <a class="pilcrow" href="#section-256">&#182;</a>
               </div>
               <p>Simple Arithmetic and logical operations. Performs some conversion from
 CoffeeScript operations into their JavaScript equivalents.</p>
@@ -6633,11 +6309,11 @@ CoffeeScript operations into their JavaScript equivalents.</p>
         </li>
         
         
-        <li id="section-275">
+        <li id="section-257">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-275">&#182;</a>
+                <a class="pilcrow" href="#section-257">&#182;</a>
               </div>
               <p>The map of conversions from CoffeeScript to JavaScript symbols.</p>
 
@@ -6652,11 +6328,11 @@ CoffeeScript operations into their JavaScript equivalents.</p>
         </li>
         
         
-        <li id="section-276">
+        <li id="section-258">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-276">&#182;</a>
+                <a class="pilcrow" href="#section-258">&#182;</a>
               </div>
               <p>The map of invertible operators.</p>
 
@@ -6687,11 +6363,11 @@ CoffeeScript operations into their JavaScript equivalents.</p>
         </li>
         
         
-        <li id="section-277">
+        <li id="section-259">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-277">&#182;</a>
+                <a class="pilcrow" href="#section-259">&#182;</a>
               </div>
               <p>Am I capable of
 <a href="https://docs.python.org/3/reference/expressions.html#not-in">Python-style comparison chaining</a>?</p>
@@ -6753,11 +6429,11 @@ CoffeeScript operations into their JavaScript equivalents.</p>
         </li>
         
         
-        <li id="section-278">
+        <li id="section-260">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-278">&#182;</a>
+                <a class="pilcrow" href="#section-260">&#182;</a>
               </div>
               <p>In chains, there’s no need to wrap bare obj literals in parens,
 as the chained expression is wrapped.</p>
@@ -6775,7 +6451,6 @@ as the chained expression is wrapped.</p>
     <span class="hljs-keyword">return</span> @compileChain        o <span class="hljs-keyword">if</span> isChain
     <span class="hljs-keyword">switch</span> @operator
       <span class="hljs-keyword">when</span> <span class="hljs-string">'?'</span>  <span class="hljs-keyword">then</span> @compileExistence o, @second.isDefaultValue
-      <span class="hljs-keyword">when</span> <span class="hljs-string">'**'</span> <span class="hljs-keyword">then</span> @compilePower o
       <span class="hljs-keyword">when</span> <span class="hljs-string">'//'</span> <span class="hljs-keyword">then</span> @compileFloorDivision o
       <span class="hljs-keyword">when</span> <span class="hljs-string">'%%'</span> <span class="hljs-keyword">then</span> @compileModulo o
       <span class="hljs-keyword">else</span>
@@ -6787,11 +6462,11 @@ as the chained expression is wrapped.</p>
         </li>
         
         
-        <li id="section-279">
+        <li id="section-261">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-279">&#182;</a>
+                <a class="pilcrow" href="#section-261">&#182;</a>
               </div>
               <p>Mimic Python’s chained comparisons when multiple comparison operators are
 used sequentially. For example:</p>
@@ -6810,11 +6485,11 @@ used sequentially. For example:</p>
         </li>
         
         
-        <li id="section-280">
+        <li id="section-262">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-280">&#182;</a>
+                <a class="pilcrow" href="#section-262">&#182;</a>
               </div>
               <p>Keep reference to the left expression, unless this an existential assignment</p>
 
@@ -6832,11 +6507,11 @@ used sequentially. For example:</p>
         </li>
         
         
-        <li id="section-281">
+        <li id="section-263">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-281">&#182;</a>
+                <a class="pilcrow" href="#section-263">&#182;</a>
               </div>
               <p>Compile a unary <strong>Op</strong>.</p>
 
@@ -6877,24 +6552,6 @@ used sequentially. For example:</p>
       parts.push [@makeCode <span class="hljs-string">")"</span>] <span class="hljs-keyword">if</span> o.level &gt;= LEVEL_PAREN
     @joinFragmentArrays parts, <span class="hljs-string">''</span>
 
-  compilePower: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-282">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-282">&#182;</a>
-              </div>
-              <p>Make a Math.pow call</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    pow = <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> IdentifierLiteral(<span class="hljs-string">'Math'</span>), [<span class="hljs-keyword">new</span> Access <span class="hljs-keyword">new</span> PropertyName <span class="hljs-string">'pow'</span>]
-    <span class="hljs-keyword">new</span> Call(pow, [@first, @second]).compileToFragments o
-
   compileFloorDivision: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
     floor = <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> IdentifierLiteral(<span class="hljs-string">'Math'</span>), [<span class="hljs-keyword">new</span> Access <span class="hljs-keyword">new</span> PropertyName <span class="hljs-string">'floor'</span>]
     second = <span class="hljs-keyword">if</span> @second.shouldCache() <span class="hljs-keyword">then</span> <span class="hljs-keyword">new</span> Parens @second <span class="hljs-keyword">else</span> @second
@@ -6911,11 +6568,11 @@ used sequentially. For example:</p>
         </li>
         
         
-        <li id="section-283">
+        <li id="section-264">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-283">&#182;</a>
+                <a class="pilcrow" href="#section-264">&#182;</a>
               </div>
               <h3 id="in">In</h3>
 
@@ -6938,11 +6595,11 @@ used sequentially. For example:</p>
         </li>
         
         
-        <li id="section-284">
+        <li id="section-265">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-284">&#182;</a>
+                <a class="pilcrow" href="#section-265">&#182;</a>
               </div>
               <p><code>compileOrTest</code> only if we have an array literal with no splats</p>
 
@@ -6974,11 +6631,11 @@ used sequentially. For example:</p>
         </li>
         
         
-        <li id="section-285">
+        <li id="section-266">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-285">&#182;</a>
+                <a class="pilcrow" href="#section-266">&#182;</a>
               </div>
               <h3 id="try">Try</h3>
 
@@ -6987,11 +6644,11 @@ used sequentially. For example:</p>
         </li>
         
         
-        <li id="section-286">
+        <li id="section-267">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-286">&#182;</a>
+                <a class="pilcrow" href="#section-267">&#182;</a>
               </div>
               <p>A classic <em>try/catch/finally</em> block.</p>
 
@@ -7015,11 +6672,11 @@ used sequentially. For example:</p>
         </li>
         
         
-        <li id="section-287">
+        <li id="section-268">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-287">&#182;</a>
+                <a class="pilcrow" href="#section-268">&#182;</a>
               </div>
               <p>Compilation is more or less as you would expect – the <em>finally</em> clause
 is optional, the <em>catch</em> is not.</p>
@@ -7055,11 +6712,11 @@ is optional, the <em>catch</em> is not.</p>
         </li>
         
         
-        <li id="section-288">
+        <li id="section-269">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-288">&#182;</a>
+                <a class="pilcrow" href="#section-269">&#182;</a>
               </div>
               <h3 id="throw">Throw</h3>
 
@@ -7068,11 +6725,11 @@ is optional, the <em>catch</em> is not.</p>
         </li>
         
         
-        <li id="section-289">
+        <li id="section-270">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-289">&#182;</a>
+                <a class="pilcrow" href="#section-270">&#182;</a>
               </div>
               <p>Simple node to throw an exception.</p>
 
@@ -7090,11 +6747,11 @@ is optional, the <em>catch</em> is not.</p>
         </li>
         
         
-        <li id="section-290">
+        <li id="section-271">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-290">&#182;</a>
+                <a class="pilcrow" href="#section-271">&#182;</a>
               </div>
               <p>A <strong>Throw</strong> is already a return, of sorts…</p>
 
@@ -7112,11 +6769,11 @@ is optional, the <em>catch</em> is not.</p>
         </li>
         
         
-        <li id="section-291">
+        <li id="section-272">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-291">&#182;</a>
+                <a class="pilcrow" href="#section-272">&#182;</a>
               </div>
               <h3 id="existence">Existence</h3>
 
@@ -7125,11 +6782,11 @@ is optional, the <em>catch</em> is not.</p>
         </li>
         
         
-        <li id="section-292">
+        <li id="section-273">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-292">&#182;</a>
+                <a class="pilcrow" href="#section-273">&#182;</a>
               </div>
               <p>Checks a variable for existence – not <code>null</code> and not <code>undefined</code>. This is
 similar to <code>.nil?</code> in Ruby, and avoids having to consult a JavaScript truth
@@ -7165,11 +6822,11 @@ table. Optionally only check if a variable is not <code>undefined</code>.</p>
         </li>
         
         
-        <li id="section-293">
+        <li id="section-274">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-293">&#182;</a>
+                <a class="pilcrow" href="#section-274">&#182;</a>
               </div>
               <p>We explicity want to use loose equality (<code>==</code>) when comparing against <code>null</code>,
 so that an existence check roughly corresponds to a check for truthiness.
@@ -7190,11 +6847,11 @@ which only get assigned when the variable is <code>undefined</code> (but not <co
         </li>
         
         
-        <li id="section-294">
+        <li id="section-275">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-294">&#182;</a>
+                <a class="pilcrow" href="#section-275">&#182;</a>
               </div>
               <h3 id="parens">Parens</h3>
 
@@ -7203,11 +6860,11 @@ which only get assigned when the variable is <code>undefined</code> (but not <co
         </li>
         
         
-        <li id="section-295">
+        <li id="section-276">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-295">&#182;</a>
+                <a class="pilcrow" href="#section-276">&#182;</a>
               </div>
               <p>An extra set of parentheses, specified explicitly in the source. At one time
 we tried to clean up the results by detecting and removing redundant
@@ -7232,11 +6889,11 @@ parentheses, but no longer – you can put in as many as you please.</p>
         </li>
         
         
-        <li id="section-296">
+        <li id="section-277">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-296">&#182;</a>
+                <a class="pilcrow" href="#section-277">&#182;</a>
               </div>
               <p>If these parentheses are wrapping an <code>IdentifierLiteral</code> followed by a
 block comment, output the parentheses (or put another way, don’t optimize
@@ -7262,11 +6919,11 @@ by comment-based type annotations from JavaScript labels.</p>
         </li>
         
         
-        <li id="section-297">
+        <li id="section-278">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-297">&#182;</a>
+                <a class="pilcrow" href="#section-278">&#182;</a>
               </div>
               <h3 id="stringwithinterpolations">StringWithInterpolations</h3>
 
@@ -7282,11 +6939,11 @@ exports.StringWithInterpolations = <span class="hljs-class"><span class="hljs-ke
         </li>
         
         
-        <li id="section-298">
+        <li id="section-279">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-298">&#182;</a>
+                <a class="pilcrow" href="#section-279">&#182;</a>
               </div>
               <p><code>unwrap</code> returns <code>this</code> to stop ancestor nodes reaching in to grab @body,
 and using @body.compileNode. <code>StringWithInterpolations.compileNode</code> is
@@ -7307,11 +6964,11 @@ and using @body.compileNode. <code>StringWithInterpolations.compileNode</code> i
         </li>
         
         
-        <li id="section-299">
+        <li id="section-280">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-299">&#182;</a>
+                <a class="pilcrow" href="#section-280">&#182;</a>
               </div>
               <p>Assumes that <code>expr</code> is <code>Value</code> » <code>StringLiteral</code> or <code>Op</code></p>
 
@@ -7341,11 +6998,11 @@ and using @body.compileNode. <code>StringWithInterpolations.compileNode</code> i
         </li>
         
         
-        <li id="section-300">
+        <li id="section-281">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-300">&#182;</a>
+                <a class="pilcrow" href="#section-281">&#182;</a>
               </div>
               <p>This node is getting discarded, but salvage its comments.</p>
 
@@ -7371,11 +7028,11 @@ and using @body.compileNode. <code>StringWithInterpolations.compileNode</code> i
         </li>
         
         
-        <li id="section-301">
+        <li id="section-282">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-301">&#182;</a>
+                <a class="pilcrow" href="#section-282">&#182;</a>
               </div>
               <p>Backticks and <code>${</code> inside template literals must be escaped.</p>
 
@@ -7396,11 +7053,11 @@ and using @body.compileNode. <code>StringWithInterpolations.compileNode</code> i
         </li>
         
         
-        <li id="section-302">
+        <li id="section-283">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-302">&#182;</a>
+                <a class="pilcrow" href="#section-283">&#182;</a>
               </div>
               <p>Flag the <code>{</code> and <code>}</code> fragments as having been generated by this
 <code>StringWithInterpolations</code> node, so that <code>compileComments</code> knows
@@ -7423,11 +7080,11 @@ report minified variable names when this compiler is minified.</p>
         </li>
         
         
-        <li id="section-303">
+        <li id="section-284">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-303">&#182;</a>
+                <a class="pilcrow" href="#section-284">&#182;</a>
               </div>
               <h3 id="for">For</h3>
 
@@ -7436,11 +7093,11 @@ report minified variable names when this compiler is minified.</p>
         </li>
         
         
-        <li id="section-304">
+        <li id="section-285">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-304">&#182;</a>
+                <a class="pilcrow" href="#section-285">&#182;</a>
               </div>
               <p>CoffeeScript’s replacement for the <em>for</em> loop is our array and object
 comprehensions, that compile into <em>for</em> loops here. They also act as an
@@ -7454,15 +7111,27 @@ you can map and filter in a single pass.</p>
             <div class="content"><div class='highlight'><pre>exports.For = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">For</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">While</span></span>
   constructor: <span class="hljs-function"><span class="hljs-params">(body, source)</span> -&gt;</span>
     <span class="hljs-keyword">super</span>()
-    {@source, @guard, @step, @name, @index} = source
-    @body    = Block.wrap [body]
-    @own     = source.own?
-    @object  = source.object?
-    @from    = source.<span class="hljs-keyword">from</span>?
+    @addBody body
+    @addSource source
+
+  children: [<span class="hljs-string">'body'</span>, <span class="hljs-string">'source'</span>, <span class="hljs-string">'guard'</span>, <span class="hljs-string">'step'</span>]
+
+  isAwait: <span class="hljs-function">-&gt;</span> @await ? <span class="hljs-literal">no</span>
+
+  addBody: <span class="hljs-function"><span class="hljs-params">(body)</span> -&gt;</span>
+    @body = Block.wrap [body]
+    <span class="hljs-keyword">this</span>
+
+  addSource: <span class="hljs-function"><span class="hljs-params">(source)</span> -&gt;</span>
+    {@source  = <span class="hljs-literal">no</span>} = source
+    attribs   = [<span class="hljs-string">"name"</span>, <span class="hljs-string">"index"</span>, <span class="hljs-string">"guard"</span>, <span class="hljs-string">"step"</span>, <span class="hljs-string">"own"</span>, <span class="hljs-string">"ownTag"</span>, <span class="hljs-string">"await"</span>, <span class="hljs-string">"awaitTag"</span>, <span class="hljs-string">"object"</span>, <span class="hljs-string">"from"</span>]
+    @[attr]   = source[attr] ? @[attr] <span class="hljs-keyword">for</span> attr <span class="hljs-keyword">in</span> attribs
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span> <span class="hljs-keyword">unless</span> @source
     @index.error <span class="hljs-string">'cannot use index with for-from'</span> <span class="hljs-keyword">if</span> @from <span class="hljs-keyword">and</span> @index
-    source.ownTag.error <span class="hljs-string">"cannot use own with for-<span class="hljs-subst">#{<span class="hljs-keyword">if</span> @from <span class="hljs-keyword">then</span> <span class="hljs-string">'from'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'in'</span>}</span>"</span> <span class="hljs-keyword">if</span> @own <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @object
+    @ownTag.error <span class="hljs-string">"cannot use own with for-<span class="hljs-subst">#{<span class="hljs-keyword">if</span> @from <span class="hljs-keyword">then</span> <span class="hljs-string">'from'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'in'</span>}</span>"</span> <span class="hljs-keyword">if</span> @own <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @object
     [@name, @index] = [@index, @name] <span class="hljs-keyword">if</span> @object
     @index.error <span class="hljs-string">'index cannot be a pattern matching expression'</span> <span class="hljs-keyword">if</span> @index?.isArray?() <span class="hljs-keyword">or</span> @index?.isObject?()
+    @awaitTag.error <span class="hljs-string">'await must be used with for-from'</span> <span class="hljs-keyword">if</span> @await <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @from
     @range   = @source <span class="hljs-keyword">instanceof</span> Value <span class="hljs-keyword">and</span> @source.base <span class="hljs-keyword">instanceof</span> Range <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @source.properties.length <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @from
     @pattern = @name <span class="hljs-keyword">instanceof</span> Value
     @index.error <span class="hljs-string">'indexes do not apply to range loops'</span> <span class="hljs-keyword">if</span> @range <span class="hljs-keyword">and</span> @index
@@ -7472,11 +7141,11 @@ you can map and filter in a single pass.</p>
         </li>
         
         
-        <li id="section-305">
+        <li id="section-286">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-305">&#182;</a>
+                <a class="pilcrow" href="#section-286">&#182;</a>
               </div>
               <p>Move up any comments in the “<code>for</code> line”, i.e. the line of code with <code>for</code>,
 from any child nodes of that line up to the <code>for</code> node itself so that these
@@ -7491,11 +7160,11 @@ comments get output, and get output above the <code>for</code> loop.</p>
         </li>
         
         
-        <li id="section-306">
+        <li id="section-287">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-306">&#182;</a>
+                <a class="pilcrow" href="#section-287">&#182;</a>
               </div>
               <p>These comments are buried pretty deeply, so if they happen to be
 trailing comments the line they trail will be unrecognizable when
@@ -7507,17 +7176,16 @@ output above the <code>for</code> line.</p>
             <div class="content"><div class='highlight'><pre>          comment.newLine = comment.unshift = <span class="hljs-literal">yes</span> <span class="hljs-keyword">for</span> comment <span class="hljs-keyword">in</span> node.comments
           moveComments node, @[attribute]
       moveComments @[attribute], @
-
-  children: [<span class="hljs-string">'body'</span>, <span class="hljs-string">'source'</span>, <span class="hljs-string">'guard'</span>, <span class="hljs-string">'step'</span>]</pre></div></div>
+    <span class="hljs-keyword">this</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-307">
+        <li id="section-288">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-307">&#182;</a>
+                <a class="pilcrow" href="#section-288">&#182;</a>
               </div>
               <p>Welcome to the hairiest method in all of CoffeeScript. Handles the inner
 loop, filtering, stepping, and result saving for array, object, and range
@@ -7598,15 +7266,21 @@ some cannot.</p>
       forPartFragments = [@makeCode(<span class="hljs-string">"<span class="hljs-subst">#{kvar}</span> in <span class="hljs-subst">#{svar}</span>"</span>)]
       guardPart = <span class="hljs-string">"\n<span class="hljs-subst">#{idt1}</span>if (!<span class="hljs-subst">#{utility <span class="hljs-string">'hasProp'</span>, o}</span>.call(<span class="hljs-subst">#{svar}</span>, <span class="hljs-subst">#{kvar}</span>)) continue;"</span> <span class="hljs-keyword">if</span> @own
     <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> @from
-      forPartFragments = [@makeCode(<span class="hljs-string">"<span class="hljs-subst">#{kvar}</span> of <span class="hljs-subst">#{svar}</span>"</span>)]
+      <span class="hljs-keyword">if</span> @await
+        forPartFragments = <span class="hljs-keyword">new</span> Op <span class="hljs-string">'await'</span>, <span class="hljs-keyword">new</span> Parens <span class="hljs-keyword">new</span> Literal <span class="hljs-string">"<span class="hljs-subst">#{kvar}</span> of <span class="hljs-subst">#{svar}</span>"</span>
+        forPartFragments = forPartFragments.compileToFragments o, LEVEL_TOP
+      <span class="hljs-keyword">else</span>
+        forPartFragments = [@makeCode(<span class="hljs-string">"<span class="hljs-subst">#{kvar}</span> of <span class="hljs-subst">#{svar}</span>"</span>)]
     bodyFragments = body.compileToFragments merge(o, indent: idt1), LEVEL_TOP
     <span class="hljs-keyword">if</span> bodyFragments <span class="hljs-keyword">and</span> bodyFragments.length &gt; <span class="hljs-number">0</span>
       bodyFragments = [].concat @makeCode(<span class="hljs-string">'\n'</span>), bodyFragments, @makeCode(<span class="hljs-string">'\n'</span>)
 
     fragments = [@makeCode(defPart)]
     fragments.push @makeCode(resultPart) <span class="hljs-keyword">if</span> resultPart
-    fragments = fragments.concat @makeCode(@tab), @makeCode( <span class="hljs-string">'for ('</span>),
-      forPartFragments, @makeCode(<span class="hljs-string">") {<span class="hljs-subst">#{guardPart}</span><span class="hljs-subst">#{varPart}</span>"</span>), bodyFragments,
+    forCode = <span class="hljs-keyword">if</span> @await <span class="hljs-keyword">then</span> <span class="hljs-string">'for '</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'for ('</span>
+    forClose = <span class="hljs-keyword">if</span> @await <span class="hljs-keyword">then</span> <span class="hljs-string">''</span> <span class="hljs-keyword">else</span> <span class="hljs-string">')'</span>
+    fragments = fragments.concat @makeCode(@tab), @makeCode( forCode),
+      forPartFragments, @makeCode(<span class="hljs-string">"<span class="hljs-subst">#{forClose}</span> {<span class="hljs-subst">#{guardPart}</span><span class="hljs-subst">#{varPart}</span>"</span>), bodyFragments,
       @makeCode(@tab), @makeCode(<span class="hljs-string">'}'</span>)
     fragments.push @makeCode(returnResult) <span class="hljs-keyword">if</span> returnResult
     fragments</pre></div></div>
@@ -7614,11 +7288,11 @@ some cannot.</p>
         </li>
         
         
-        <li id="section-308">
+        <li id="section-289">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-308">&#182;</a>
+                <a class="pilcrow" href="#section-289">&#182;</a>
               </div>
               <h3 id="switch">Switch</h3>
 
@@ -7627,11 +7301,11 @@ some cannot.</p>
         </li>
         
         
-        <li id="section-309">
+        <li id="section-290">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-309">&#182;</a>
+                <a class="pilcrow" href="#section-290">&#182;</a>
               </div>
               <p>A JavaScript <em>switch</em> statement. Converts into a returnable expression on-demand.</p>
 
@@ -7679,11 +7353,11 @@ some cannot.</p>
         </li>
         
         
-        <li id="section-310">
+        <li id="section-291">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-310">&#182;</a>
+                <a class="pilcrow" href="#section-291">&#182;</a>
               </div>
               <h3 id="if">If</h3>
 
@@ -7692,11 +7366,11 @@ some cannot.</p>
         </li>
         
         
-        <li id="section-311">
+        <li id="section-292">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-311">&#182;</a>
+                <a class="pilcrow" href="#section-292">&#182;</a>
               </div>
               <p><em>If/else</em> statements. Acts as an expression by pushing down requested returns
 to the last line of each clause.</p>
@@ -7722,11 +7396,11 @@ because ternaries are already proper expressions, and don’t need conversion.</
         </li>
         
         
-        <li id="section-312">
+        <li id="section-293">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-312">&#182;</a>
+                <a class="pilcrow" href="#section-293">&#182;</a>
               </div>
               <p>Rewrite a chain of <strong>Ifs</strong> to add a default case as the final <em>else</em>.</p>
 
@@ -7744,11 +7418,11 @@ because ternaries are already proper expressions, and don’t need conversion.</
         </li>
         
         
-        <li id="section-313">
+        <li id="section-294">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-313">&#182;</a>
+                <a class="pilcrow" href="#section-294">&#182;</a>
               </div>
               <p>The <strong>If</strong> only compiles into a statement if either of its bodies needs
 to be a statement. Otherwise a conditional operator is safe.</p>
@@ -7776,11 +7450,11 @@ to be a statement. Otherwise a conditional operator is safe.</p>
         </li>
         
         
-        <li id="section-314">
+        <li id="section-295">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-314">&#182;</a>
+                <a class="pilcrow" href="#section-295">&#182;</a>
               </div>
               <p>Compile the <code>If</code> as a regular <em>if-else</em> statement. Flattened chains
 force inner <em>else</em> bodies into statement form.</p>
@@ -7811,11 +7485,11 @@ force inner <em>else</em> bodies into statement form.</p>
         </li>
         
         
-        <li id="section-315">
+        <li id="section-296">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-315">&#182;</a>
+                <a class="pilcrow" href="#section-296">&#182;</a>
               </div>
               <p>Compile the <code>If</code> as a conditional operator.</p>
 
@@ -7834,11 +7508,11 @@ force inner <em>else</em> bodies into statement form.</p>
         </li>
         
         
-        <li id="section-316">
+        <li id="section-297">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-316">&#182;</a>
+                <a class="pilcrow" href="#section-297">&#182;</a>
               </div>
               <h2 id="constants">Constants</h2>
 
@@ -7847,11 +7521,11 @@ force inner <em>else</em> bodies into statement form.</p>
         </li>
         
         
-        <li id="section-317">
+        <li id="section-298">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-317">&#182;</a>
+                <a class="pilcrow" href="#section-298">&#182;</a>
               </div>
               
             </div>
@@ -7859,42 +7533,23 @@ force inner <em>else</em> bodies into statement form.</p>
             <div class="content"><div class='highlight'><pre>
 UTILITIES =
   modulo: <span class="hljs-function">-&gt;</span> <span class="hljs-string">'function(a, b) { return (+a % (b = +b) + b) % b; }'</span>
-  objectWithoutKeys: <span class="hljs-function">-&gt;</span> <span class="hljs-string">"
-      function(o, ks) {
-        var res = {};
-        for (var k in o) ([].indexOf.call(ks, k) &lt; 0 &amp;&amp; {}.hasOwnProperty.call(o, k)) &amp;&amp; (res[k] = o[k]);
-        return res;
-      }
-    "</span>
+
   boundMethodCheck: <span class="hljs-function">-&gt;</span> <span class="hljs-string">"
     function(instance, Constructor) {
       if (!(instance instanceof Constructor)) {
         throw new Error('Bound instance method accessed before binding');
       }
     }
-  "</span>
-  _extends: <span class="hljs-function">-&gt;</span> <span class="hljs-string">"
-    Object.assign || function (target) {
-      for (var i = 1; i &lt; arguments.length; i++) {
-        var source = arguments[i];
-        for (var key in source) {
-          if (Object.prototype.hasOwnProperty.call(source, key)) {
-            target[key] = source[key];
-          }
-        }
-      }
-      return target;
-    }
   "</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-318">
+        <li id="section-299">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-318">&#182;</a>
+                <a class="pilcrow" href="#section-299">&#182;</a>
               </div>
               <p>Shortcuts to speed up the lookup time for native functions.</p>
 
@@ -7908,11 +7563,11 @@ UTILITIES =
         </li>
         
         
-        <li id="section-319">
+        <li id="section-300">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-319">&#182;</a>
+                <a class="pilcrow" href="#section-300">&#182;</a>
               </div>
               <p>Levels indicate a node’s position in the AST. Useful for knowing if
 parens are necessary or superfluous.</p>
@@ -7929,11 +7584,11 @@ LEVEL_ACCESS = <span class="hljs-number">6</span>  <span class="hljs-comment"># 
         </li>
         
         
-        <li id="section-320">
+        <li id="section-301">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-320">&#182;</a>
+                <a class="pilcrow" href="#section-301">&#182;</a>
               </div>
               <p>Tabs are two spaces for pretty printing.</p>
 
@@ -7946,11 +7601,11 @@ SIMPLENUM = <span class="hljs-regexp">/^[+-]?\d+$/</span></pre></div></div>
         </li>
         
         
-        <li id="section-321">
+        <li id="section-302">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-321">&#182;</a>
+                <a class="pilcrow" href="#section-302">&#182;</a>
               </div>
               <h2 id="helper-functions">Helper Functions</h2>
 
@@ -7959,11 +7614,11 @@ SIMPLENUM = <span class="hljs-regexp">/^[+-]?\d+$/</span></pre></div></div>
         </li>
         
         
-        <li id="section-322">
+        <li id="section-303">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-322">&#182;</a>
+                <a class="pilcrow" href="#section-303">&#182;</a>
               </div>
               
             </div>
@@ -7971,11 +7626,11 @@ SIMPLENUM = <span class="hljs-regexp">/^[+-]?\d+$/</span></pre></div></div>
         </li>
         
         
-        <li id="section-323">
+        <li id="section-304">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-323">&#182;</a>
+                <a class="pilcrow" href="#section-304">&#182;</a>
               </div>
               <p>Helper for ensuring that utility functions are assigned at the top level.</p>
 
@@ -8000,11 +7655,11 @@ SIMPLENUM = <span class="hljs-regexp">/^[+-]?\d+$/</span></pre></div></div>
         </li>
         
         
-        <li id="section-324">
+        <li id="section-305">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-324">&#182;</a>
+                <a class="pilcrow" href="#section-305">&#182;</a>
               </div>
               <p>Wherever in CoffeeScript 1 we might’ve inserted a <code>makeCode &quot;#{@tab}&quot;</code> to
 indent a line of code, now we must account for the possibility of comments
@@ -8031,11 +7686,11 @@ such comments, and <em>then</em> indent the first following line of code.</p>
         </li>
         
         
-        <li id="section-325">
+        <li id="section-306">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-325">&#182;</a>
+                <a class="pilcrow" href="#section-306">&#182;</a>
               </div>
               <p>Move the <code>comments</code> property from one object to another, deleting it from
 the first object.</p>
@@ -8050,11 +7705,11 @@ the first object.</p>
         </li>
         
         
-        <li id="section-326">
+        <li id="section-307">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-326">&#182;</a>
+                <a class="pilcrow" href="#section-307">&#182;</a>
               </div>
               <p>Sometimes when compiling a node, we want to insert a fragment at the start
 of an array of fragments; but if the start has one or more comment fragments,
@@ -8082,11 +7737,11 @@ we want to insert this fragment after those but before any non-comments.</p>
         </li>
         
         
-        <li id="section-327">
+        <li id="section-308">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-327">&#182;</a>
+                <a class="pilcrow" href="#section-308">&#182;</a>
               </div>
               <p>Unfold a node’s child if soak, then tuck the node under created <code>If</code></p>
 
