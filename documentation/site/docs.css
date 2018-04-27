@@ -235,12 +235,6 @@ h3, h4, h2 time {
   font-weight: 400;
 }
 
-.main section {
-  /* Offset the anchor so that clicking on the sidebar links don’t hide the heading under the header bar */
-  padding-top: 2.3rem;
-  margin-top: -2.3rem;
-}
-
 @media (min-width: 1200px) {
   .main > header, .main section > h2, .main section > h3, .main section > h4, .main section > p, .main section > blockquote, .main section > ul, .main section > table {
     max-width: 80%;

@@ -33,14 +33,14 @@ $(document).ready ->
 
   # Initialize Scrollspy for sidebar navigation; https://getbootstrap.com/docs/4.0/components/scrollspy/
   # See also http://www.codingeverything.com/2014/02/BootstrapDocsSideBar.html and http://jsfiddle.net/KyleMit/v6zhz/
-  $('body').scrollspy
+  $('.main').scrollspy
     target: '#contents'
     offset: Math.round $('main').css('padding-top').replace('px', '')
 
   initializeScrollspyFromHash = (hash) ->
     $("#contents a.active[href!='#{hash}']").removeClass 'show'
 
-  $(window).on 'activate.bs.scrollspy', (event, target) -> # Why `window`? https://github.com/twbs/bootstrap/issues/20086
+  $('.main').on 'activate.bs.scrollspy', (event, target) ->
     # We only want one active link in the nav
     $("#contents a.active[href!='#{target.relatedTarget}']").removeClass 'show'
     $target = $("#contents a[href='#{target.relatedTarget}']")
