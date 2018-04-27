@@ -246,7 +246,7 @@ code {
 
 
 /*
- * Code examples
+ * Chrome around code examples; see code.css for the styling of the code blocks themselves
  */
 
 textarea {
@@ -281,31 +281,6 @@ textarea {
 
 .play-button {
   height: 1em;
-}
-
-.CodeMirror pre, pre.placeholder-code {
-  line-height: 1.4em;
-}
-
-.CodeMirror,
-.placeholder-code {
-  /* https://codemirror.net/demo/resize.html */
-  height: auto;
-  background: transparent;
-  font-family: 'Roboto Mono';
-  font-weight: 400;
-  line-height: 1.25;
-  font-size: 0.9em;
-}
-@media (min-width: 768px) {
-  .CodeMirror,
-  .placeholder-code {
-    font-size: 1em;
-  }
-}
-
-.CodeMirror-code:focus {
-  outline: none;
 }
 
 .javascript-output-column .CodeMirror-cursor {

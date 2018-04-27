@@ -2,6 +2,12 @@
 
 .CodeMirror,
 .placeholder-code {
+  /* https://codemirror.net/demo/resize.html */
+  height: auto;
+  background: transparent;
+  font-family: 'Roboto Mono';
+  font-weight: 400;
+  line-height: 1.25;
   letter-spacing: 0.3px;
   color: #f8f8f8;
   /* Prevent mobile Safari from zooming in on our code editors; the code is 16px naturally, but somehow being explicit about it prevents the zooming */
@@ -10,7 +16,7 @@
 @media (min-width: 768px) {
   .CodeMirror,
   .placeholder-code {
-    font-size: 90%; /* Matching Bootstrap’s font size for code, which calculates to 14.4px */
+    font-size: 87.5%; /* Matching Bootstrap’s font size for code, which calculates to 14.4px */
   }
 }
 .CodeMirror-lines {
@@ -20,6 +26,12 @@
   padding: 0.5em 4px;
   margin-bottom: 1.37em;
   white-space: pre-wrap;
+}
+.CodeMirror pre, pre.placeholder-code {
+  line-height: 1.4em;
+}
+.CodeMirror-code:focus {
+  outline: none;
 }
 div.CodeMirror-cursor {
   border-left: 3px solid #f8f8f8;
