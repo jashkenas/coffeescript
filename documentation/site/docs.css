@@ -80,13 +80,17 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 
 
 /*
+ * Layout; based on https://codepen.io/Sphinxxxx/pen/WjwbEO
+ */
+.main-row {
+  height: calc(100vh - 3.5rem);
+}
+
+/*
  * Sidebar
  */
 
 .sidebar {
-  position: fixed;
-  top: 3.5em;
-  height: calc(100% - 3.5rem);
   /* Scrollable contents if viewport is shorter than content */
   overflow-y: auto;
   overflow-x: hidden;
@@ -102,11 +106,19 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 }
 @media screen and (max-width: 991px) {
   .sidebar {
+    position: fixed;
+    top: 3.5em;
+    height: calc(100% - 3.5rem);
     left: -100%;
     transition: 0.25s left ease-in-out;
   }
   .sidebar.show {
     left: 0;
+  }
+}
+@media (min-width: 992px) {
+  .sidebar {
+    flex: 0 0 auto;
   }
 }
 
@@ -143,6 +155,8 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 }
 @media (min-width: 992px) {
   .main {
+    flex: 1 1 auto;
+    overflow: auto;
     padding-right: 2em;
     padding-left: 2em;
   }
@@ -299,6 +313,7 @@ textarea {
   right: 0;
   opacity: 0;
   transition: opacity 0.15s ease-in-out;
+  z-index: -1001;
 }
 .try-coffeescript.show {
   opacity: 1;
