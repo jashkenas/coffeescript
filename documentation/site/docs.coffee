@@ -1,6 +1,18 @@
 unless window.location.origin # Polyfill `location.origin` for IE < 11
   window.location.origin = "#{window.location.protocol}//#{window.location.hostname}"
 
+
+# Initialize Google Analytics
+window.GA_TRACKING_ID = 'UA-106156830-1'
+window.dataLayer ?= []
+window.gtag = ->
+  window.dataLayer.push arguments
+  return
+window.gtag 'js', new Date()
+window.gtag 'config', window.GA_TRACKING_ID
+
+
+# Initialize the CoffeeScript docs interactions
 $(document).ready ->
   # Mobile navigation
   toggleSidebar = ->
@@ -21,14 +33,14 @@ $(document).ready ->
 
   # Initialize Scrollspy for sidebar navigation; https://getbootstrap.com/docs/4.0/components/scrollspy/
   # See also http://www.codingeverything.com/2014/02/BootstrapDocsSideBar.html and http://jsfiddle.net/KyleMit/v6zhz/
-  $('body').scrollspy
+  $('.main').scrollspy
     target: '#contents'
     offset: Math.round $('main').css('padding-top').replace('px', '')
 
   initializeScrollspyFromHash = (hash) ->
     $("#contents a.active[href!='#{hash}']").removeClass 'show'
 
-  $(window).on 'activate.bs.scrollspy', (event, target) -> # Why `window`? https://github.com/twbs/bootstrap/issues/20086
+  $('.main').on 'activate.bs.scrollspy', (event, target) ->
     # We only want one active link in the nav
     $("#contents a.active[href!='#{target.relatedTarget}']").removeClass 'show'
     $target = $("#contents a[href='#{target.relatedTarget}']")
@@ -164,6 +176,11 @@ $(document).ready ->
     event.preventDefault()
     toggleTry yes
   $('[data-close="try"]').click closeTry
+
+  $('[data-action="scroll-to-top"]').click (event) ->
+    return if $('#try').hasClass('show')
+    $('.main')[0].scrollTop = 0
+    setTimeout clearHash, 10
 
   clearHash = ->
     window.history.replaceState {}, document.title, window.location.pathname

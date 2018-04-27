@@ -1,7 +1,15 @@
-/* Adapted from https://github.com/FarhadG/code-mirror-themes/blob/master/themes/twilight.css */
+/* Adapted from https://github.com/FarhadG/code-mirror-themes/blob/master/themes/twilight.css and https://github.com/codemirror/CodeMirror/blob/master/theme/twilight.css */
+
+/* CodeMirror general styling */
 
 .CodeMirror,
 .placeholder-code {
+  /* https://codemirror.net/demo/resize.html */
+  height: auto;
+  background: transparent;
+  font-family: 'Roboto Mono';
+  font-weight: 400;
+  line-height: 1.25;
   letter-spacing: 0.3px;
   color: #f8f8f8;
   /* Prevent mobile Safari from zooming in on our code editors; the code is 16px naturally, but somehow being explicit about it prevents the zooming */
@@ -10,7 +18,7 @@
 @media (min-width: 768px) {
   .CodeMirror,
   .placeholder-code {
-    font-size: 90%; /* Matching Bootstrap’s font size for code, which calculates to 14.4px */
+    font-size: 87.5%; /* Matching Bootstrap’s font size for code, which calculates to 14.4px */
   }
 }
 .CodeMirror-lines {
@@ -21,6 +29,13 @@
   margin-bottom: 1.37em;
   white-space: pre-wrap;
 }
+.CodeMirror pre,
+pre.placeholder-code {
+  line-height: 1.4em;
+}
+.CodeMirror-code:focus {
+  outline: none;
+}
 div.CodeMirror-cursor {
   border-left: 3px solid #f8f8f8;
 }
@@ -30,27 +45,18 @@ div.CodeMirror-cursor {
 .CodeMirror-selected {
   background: #ddf0ff33;
 }
-.cm-comment,
-.placeholder-code .comment {
-  font-style: italic;
-  color: #5f5a60;
-}
+
+/* Syntax highlighting */
+
 .cm-keyword,
 .placeholder-code .keyword {
   color: #cda869;
-}
-.cm-string,
-.placeholder-code .string {
-  color: #8f9d6a;
-}
-.cm-property,
-.placeholder-code .attribute {
-  color: #dad085;
 }
 .cm-atom {
   color: #dad085;
 }
 .cm-number,
+.cm-meta,
 .placeholder-code .number,
 .placeholder-code .built_in,
 .placeholder-code .builtin-name,
@@ -61,6 +67,18 @@ div.CodeMirror-cursor {
 .placeholder-code .link {
   color: #dad085;
 }
+.cm-def {
+  color: #f8f8f8;
+}
+span.cm-variable-2,
+span.cm-tag {
+  color: #f8f8f8;
+}
+span.cm-variable-3,
+span.cm-def,
+span.cm-type {
+  color: #f8f8f8;
+}
 .cm-operator,
 .placeholder-code .punctuation,
 .placeholder-code .symbol,
@@ -69,8 +87,49 @@ div.CodeMirror-cursor {
 .placeholder-code .operator {
   color: #cda869;
 }
+.cm-comment,
+.placeholder-code .comment {
+  font-style: italic;
+  color: #5f5a60;
+}
+.cm-string,
+.cm-string-2,
+.placeholder-code .string {
+  color: #8f9d6a;
+}
+.cm-property,
+.placeholder-code .attribute {
+  color: #dad085;
+}
+.cm-builtin {
+  color: #cda869;
+}
+.cm-tag {
+  color: #997643;
+}
+.cm-attribute {
+  color: #d6bb6d;
+}
+.cm-header {
+  color: #FF6400;
+}
+.cm-hr {
+  color: #AEAEAE;
+}
+.cm-link {
+  color: #ad9361;
+  font-style: italic;
+  text-decoration: none;
+}
+.cm-error {
+  border-bottom: 1px solid rgba(142, 22, 22, 0.67);
+}
 
 /* Uneditable code blocks are inverted, so use darker versions of the above */
+
+.uneditable-code-block code {
+  padding: 0;
+}
 
 .uneditable-code-block .comment {
   font-style: italic;
