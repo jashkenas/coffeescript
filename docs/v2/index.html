@@ -13,11 +13,118 @@
 <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
 <meta name="theme-color" content="#ffffff">
 
-<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
 <!-- The CoffeeScript logo font is Google’s Galada -->
 <link href="https://fonts.googleapis.com/css?family=Alegreya+Sans:400,800|Lato:300,300i,400,700|Roboto+Mono:400,400i" rel="stylesheet" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/codemirror/4.5.0/codemirror.css" crossorigin="anonymous">
+<link href="https://cdn.jsdelivr.net/npm/codemirror@5.37.0/lib/codemirror.css" rel="stylesheet" crossorigin="anonymous">
 <style>
+/* Adapted from https://github.com/FarhadG/code-mirror-themes/blob/master/themes/twilight.css */
+
+.CodeMirror,
+.placeholder-code {
+  letter-spacing: 0.3px;
+  color: #f8f8f8;
+  /* Prevent mobile Safari from zooming in on our code editors; the code is 16px naturally, but somehow being explicit about it prevents the zooming */
+  font-size: 16px;
+}
+@media (min-width: 768px) {
+  .CodeMirror,
+  .placeholder-code {
+    font-size: 90%; /* Matching Bootstrap’s font size for code, which calculates to 14.4px */
+  }
+}
+.CodeMirror-lines {
+  padding: 0.5em 0;
+}
+.placeholder-code {
+  padding: 0.5em 4px;
+  margin-bottom: 1.37em;
+  white-space: pre-wrap;
+}
+div.CodeMirror-cursor {
+  border-left: 3px solid #f8f8f8;
+}
+.CodeMirror-activeline-background {
+  background: #ffffff08;
+}
+.CodeMirror-selected {
+  background: #ddf0ff33;
+}
+.cm-comment,
+.placeholder-code .comment {
+  font-style: italic;
+  color: #5f5a60;
+}
+.cm-keyword,
+.placeholder-code .keyword {
+  color: #cda869;
+}
+.cm-string,
+.placeholder-code .string {
+  color: #8f9d6a;
+}
+.cm-property,
+.placeholder-code .attribute {
+  color: #dad085;
+}
+.cm-atom {
+  color: #dad085;
+}
+.cm-number,
+.placeholder-code .number,
+.placeholder-code .built_in,
+.placeholder-code .builtin-name,
+.placeholder-code .literal,
+.placeholder-code .type,
+/*.placeholder-code .params,*/
+.placeholder-code .meta,
+.placeholder-code .link {
+  color: #dad085;
+}
+.cm-operator,
+.placeholder-code .punctuation,
+.placeholder-code .symbol,
+.placeholder-code .bullet,
+.placeholder-code .addition,
+.placeholder-code .operator {
+  color: #cda869;
+}
+
+/* Uneditable code blocks are inverted, so use darker versions of the above */
+
+.uneditable-code-block .comment {
+  font-style: italic;
+  color: #837B85;
+}
+.uneditable-code-block .class,
+.uneditable-code-block .function,
+.uneditable-code-block .keyword,
+.uneditable-code-block .reserved,
+.uneditable-code-block .title {
+  color: #534328;
+}
+.uneditable-code-block .string
+.uneditable-code-block .value
+.uneditable-code-block .inheritance
+.uneditable-code-block .header {
+  color: #3A4029;
+}
+.uneditable-code-block .variable,
+.uneditable-code-block .literal,
+.uneditable-code-block .tag,
+.uneditable-code-block .regexp,
+.uneditable-code-block .subst,
+.uneditable-code-block .property {
+  color: #474429;
+}
+.uneditable-code-block .number,
+.uneditable-code-block .preprocessor,
+.uneditable-code-block .built_in,
+.uneditable-code-block .params,
+.uneditable-code-block .constant {
+  color: #474429;
+}
+
 html,
 body {
   /* Prevent scroll on narrow devices */
@@ -387,113 +494,6 @@ textarea {
   }
 }
 
-/* Adapted from https://github.com/FarhadG/code-mirror-themes/blob/master/themes/twilight.css */
-
-.CodeMirror,
-.placeholder-code {
-  letter-spacing: 0.3px;
-  color: #f8f8f8;
-  /* Prevent mobile Safari from zooming in on our code editors; the code is 16px naturally, but somehow being explicit about it prevents the zooming */
-  font-size: 16px;
-}
-@media (min-width: 768px) {
-  .CodeMirror,
-  .placeholder-code {
-    font-size: 90%; /* Matching Bootstrap’s font size for code, which calculates to 14.4px */
-  }
-}
-.CodeMirror-lines {
-  padding: 0.5em 0;
-}
-.placeholder-code {
-  padding: 0.5em 4px;
-  margin-bottom: 1.37em;
-  white-space: pre-wrap;
-}
-div.CodeMirror-cursor {
-  border-left: 3px solid #f8f8f8;
-}
-.CodeMirror-activeline-background {
-  background: #ffffff08;
-}
-.CodeMirror-selected {
-  background: #ddf0ff33;
-}
-.cm-comment,
-.placeholder-code .comment {
-  font-style: italic;
-  color: #5f5a60;
-}
-.cm-keyword,
-.placeholder-code .keyword {
-  color: #cda869;
-}
-.cm-string,
-.placeholder-code .string {
-  color: #8f9d6a;
-}
-.cm-property,
-.placeholder-code .attribute {
-  color: #dad085;
-}
-.cm-atom {
-  color: #dad085;
-}
-.cm-number,
-.placeholder-code .number,
-.placeholder-code .built_in,
-.placeholder-code .builtin-name,
-.placeholder-code .literal,
-.placeholder-code .type,
-/*.placeholder-code .params,*/
-.placeholder-code .meta,
-.placeholder-code .link {
-  color: #dad085;
-}
-.cm-operator,
-.placeholder-code .punctuation,
-.placeholder-code .symbol,
-.placeholder-code .bullet,
-.placeholder-code .addition,
-.placeholder-code .operator {
-  color: #cda869;
-}
-
-/* Uneditable code blocks are inverted, so use darker versions of the above */
-
-.uneditable-code-block .comment {
-  font-style: italic;
-  color: #837B85;
-}
-.uneditable-code-block .class,
-.uneditable-code-block .function,
-.uneditable-code-block .keyword,
-.uneditable-code-block .reserved,
-.uneditable-code-block .title {
-  color: #534328;
-}
-.uneditable-code-block .string
-.uneditable-code-block .value
-.uneditable-code-block .inheritance
-.uneditable-code-block .header {
-  color: #3A4029;
-}
-.uneditable-code-block .variable,
-.uneditable-code-block .literal,
-.uneditable-code-block .tag,
-.uneditable-code-block .regexp,
-.uneditable-code-block .subst,
-.uneditable-code-block .property {
-  color: #474429;
-}
-.uneditable-code-block .number,
-.uneditable-code-block .preprocessor,
-.uneditable-code-block .built_in,
-.uneditable-code-block .params,
-.uneditable-code-block .constant {
-  color: #474429;
-}
-
 </style>
 
 </head>
@@ -845,8 +845,14 @@ cubes = (function() {
         </section>
         <section id="compatibility">
           <h3>Compatibility</h3>
-<p>With the exception of <a href="#modules">modules</a> (<code>import</code> and <code>export</code> statements) and <a href="#jsx">JSX</a>, all the modern JavaScript features that CoffeeScript supports can run natively in Node 7.6+, meaning that Node can run CoffeeScript’s output without any further processing required. You can <a href="test.html">run the tests in your browser</a> to see if your browser can do the same. For older browsers or older versions of Node, however, <a href="#transpilation">transpilation</a> is required.</p>
-<p>Support for modern JavaScript syntax is important to ensure compatibility with frameworks that assume modern features. Now that CoffeeScript compiles classes to the <code>class</code> keyword, it’s possible to <code>extend</code> a JavaScript class; that wasn’t possible in CoffeeScript 1. Parity in how language features work is also important on its own; CoffeeScript “is just JavaScript,” and so things like <a href="#breaking-changes-default-values">function parameter default values</a> should behave the same in CoffeeScript as in JavaScript. Some such features behave slightly differently in JavaScript than they did in CoffeeScript 1; in such cases we are conforming with the JavaScript spec, and we’ve documented the differences as <a href="#breaking-changes">breaking changes</a>.</p>
+<p>Most modern JavaScript features that CoffeeScript supports can run natively in Node 7.6+, meaning that Node can run CoffeeScript’s output without any further processing required. Here are some notable exceptions:</p>
+<ul>
+<li><a href="#jsx">JSX</a> always requires transpilation.</li>
+<li><a href="#modules">Modules</a> (<code>import</code> and <code>export</code> statements) are supported by Node 10+, provided you specify an output filename with an <code>.mjs</code> extension (or rename the extensions of the generated <code>.js</code> files) and execute such files via <code>node</code>, not <code>coffee</code>.</li>
+<li><a href="http://coffeescript.org/#splats">Splats, a.k.a. object rest/spread syntax, for objects</a> are supported by Node 8.6+.</li>
+<li>The <a href="https://github.com/tc39/proposal-regexp-dotall-flag">regular expression <code>s</code> (dotall) flag</a> is supported by Node 9+.</li>
+</ul>
+<p>This list may be incomplete, and excludes versions of Node that support newer features behind flags; please refer to <a href="http://node.green/">node.green</a> for full details. You can <a href="test.html">run the tests in your browser</a> to see what your browser supports. It is your responsibility to ensure that your runtime supports the modern features you use; or that you <a href="#transpilation">transpile</a> your code. When in doubt, transpile.</p>
 
         </section>
       </section>
@@ -1746,29 +1752,29 @@ currentUser = { user..., status: 'Uncertain' }
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="object_spread-js">var currentUser, user,
-  _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+      <textarea class="javascript-output" id="object_spread-js">var currentUser, user;
 
 user = {
   name: 'Werner Heisenberg',
   occupation: 'theoretical physicist'
 };
 
-currentUser = _extends({}, user, {
+currentUser = {
+  ...user,
   status: 'Uncertain'
-});
+};
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">currentUser</span>, <span class="cm-def">user</span>,
-  <span class="cm-def">_extends</span> <span class="cm-operator">=</span> <span class="cm-variable">Object</span>.<span class="cm-property">assign</span> <span class="cm-operator">||</span> <span class="cm-keyword">function</span> (<span class="cm-def">target</span>) { <span class="cm-keyword">for</span> (<span class="cm-keyword">var</span> <span class="cm-def">i</span> <span class="cm-operator">=</span> <span class="cm-number">1</span>; <span class="cm-variable-2">i</span> <span class="cm-operator">&lt;</span> <span class="cm-variable-2">arguments</span>.<span class="cm-property">length</span>; <span class="cm-variable-2">i</span><span class="cm-operator">++</span>) { <span class="cm-keyword">var</span> <span class="cm-def">source</span> <span class="cm-operator">=</span> <span class="cm-variable-2">arguments</span>[<span class="cm-variable-2">i</span>]; <span class="cm-keyword">for</span> (<span class="cm-keyword">var</span> <span class="cm-def">key</span> <span class="cm-keyword">in</span> <span class="cm-variable-2">source</span>) { <span class="cm-keyword">if</span> (<span class="cm-variable">Object</span>.<span class="cm-property">prototype</span>.<span class="cm-property">hasOwnProperty</span>.<span class="cm-property">call</span>(<span class="cm-variable-2">source</span>, <span class="cm-variable-2">key</span>)) { <span class="cm-variable-2">target</span>[<span class="cm-variable-2">key</span>] <span class="cm-operator">=</span> <span class="cm-variable-2">source</span>[<span class="cm-variable-2">key</span>]; } } } <span class="cm-keyword">return</span> <span class="cm-variable-2">target</span>; };
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">currentUser</span>, <span class="cm-def">user</span>;
 
 <span class="cm-variable">user</span> <span class="cm-operator">=</span> {
   <span class="cm-property">name</span>: <span class="cm-string">'Werner Heisenberg'</span>,
   <span class="cm-property">occupation</span>: <span class="cm-string">'theoretical physicist'</span>
 };
 
-<span class="cm-variable">currentUser</span> <span class="cm-operator">=</span> <span class="cm-variable">_extends</span>({}, <span class="cm-variable">user</span>, {
+<span class="cm-variable">currentUser</span> <span class="cm-operator">=</span> {
+  <span class="cm-meta">...</span><span class="cm-variable">user</span>,
   <span class="cm-property">status</span>: <span class="cm-string">'Uncertain'</span>
-});
+};
 </pre>
     </div>
   </div>
@@ -4354,7 +4360,7 @@ export {
   
 </aside>
 <div id="modules-note" class="bookmark"></div>
-<p>Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an <code>import</code> or <code>export</code> statement in CoffeeScript will produce an <code>import</code> or <code>export</code> statement in the resulting output. It is your responsibility attach another transpiler, such as <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>, <a href="http://babeljs.io/">Babel</a> or <a href="https://github.com/rollup/rollup">Rollup</a>, to convert this ES2015 syntax into code that will work in your target runtimes.</p>
+<p>Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an <code>import</code> or <code>export</code> statement in CoffeeScript will produce an <code>import</code> or <code>export</code> statement in the resulting output. It is your responsibility to <a href="#transpilation">transpile</a> this ES2015 syntax into code that will work in your target runtimes, unless you know that your code will be executed by a runtime that supports <a href="https://nodejs.org/api/esm.html">ES modules</a>. Node supports such modules only for files with <code>.mjs</code> extensions; you can generate such an extension via the <code>coffee</code> command for a single file via <code>--output</code>, as in <code>coffee --compile --output index.mjs index.coffee</code>. When compiling folders or globs, it is your responsibility to rename the generated <code>.js</code> files as needed.</p>
 <p>Also note that any file with an <code>import</code> or <code>export</code> statement will be output without a <a href="#lexical-scope">top-level function safety wrapper</a>; in other words, importing or exporting modules will automatically trigger <a href="#usage">bare</a> mode for that file. This is because per the ES2015 spec, <code>import</code> or <code>export</code> statements must occur at the topmost scope.</p>
 
         </section>
@@ -6230,24 +6236,14 @@ The <code>extends</code> keyword now functions identically to <code>goog.inherit
 
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js" integrity="sha384-xBuQ/xzmlsLoJpyjoggmTEz8OWUFM0/RC5BsqQBDX2v5cMvDHcMakNTNrHIW2I5f" crossorigin="anonymous"></script>
-<script>
-  window.Popper = {}; // Remove if we want to use Bootstrap tooltips
-</script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/combine/npm/codemirror@5.29.0/lib/codemirror.js,npm/codemirror@5.29.0/mode/coffeescript/coffeescript.js,npm/codemirror@5.29.0/addon/lint/coffeescript-lint.js,npm/codemirror@5.29.0/mode/javascript/javascript.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/combine/npm/codemirror@5.37.0/lib/codemirror.js,npm/codemirror@5.37.0/mode/coffeescript/coffeescript.js,npm/codemirror@5.37.0/addon/lint/coffeescript-lint.js,npm/codemirror@5.37.0/mode/javascript/javascript.js"></script>
 
 <script src="browser-compiler/coffeescript.js"></script>
 <script>
-(function(){window.location.origin||(window.location.origin=window.location.protocol+'//'+window.location.hostname),$(document).ready(function(){var clearHash,closeTry,editors,initializeEditor,initializeScrollspyFromHash,initializeTryEditors,lastCompilationElapsedTime,previousHash,replaceState,textareas,toggleSidebar,toggleTry;if(toggleSidebar=function(){return $('.navbar-toggler, .sidebar').toggleClass('show')},$('[data-toggle="offcanvas"]').click(toggleSidebar),$('[data-action="sidebar-nav"]').click(function(a){return $('.navbar-toggler').is(':visible')&&(a.preventDefault(),toggleSidebar(),setTimeout(function(){return window.location=a.target.href},260)),gtag('event','sidebar_navigate',{event_category:'navigation',event_label:a.target.href.replace(window.location.origin,'')})}),$('body').scrollspy({target:'#contents',offset:Math.round($('main').css('padding-top').replace('px',''))}),initializeScrollspyFromHash=function(a){return $('#contents a.active[href!=\''+a+'\']').removeClass('show')},$(window).on('activate.bs.scrollspy',function(a,b){var c;if($('#contents a.active[href!=\''+b.relatedTarget+'\']').removeClass('show'),c=$('#contents a[href=\''+b.relatedTarget+'\']'),c.prop('href')!==window.location.origin+'/#try')return replaceState(c.prop('href')),gtag('config',GA_TRACKING_ID,{page_path:c.prop('href').replace(window.location.origin,'')})}),textareas=[],editors=[],lastCompilationElapsedTime=200,$('textarea').each(function(a){return textareas[a]=this,$(this).data('index',a)}),initializeEditor=function(a){var b,c,d,e;if(c=a.data('index'),d=a.hasClass('javascript-output')?'javascript':'coffeescript',editors[c]=b=CodeMirror.fromTextArea(a[0],{mode:d,theme:'twilight',indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:'contenteditable',readOnly:'coffeescript'!==d,viewportMargin:2e308}),'coffeescript'===d)return e=null,b.on('change',function(){return clearTimeout(e),e=setTimeout(function(){var d,e,f,g,h;f=Date.now();try{if(d=b.getValue(),0===c&&$('#try').hasClass('show')){$('#try').hasClass('show')&&(g='try:'+encodeURIComponent(d),replaceState(window.location.href.split('#')[0]+'#'+g));try{null!=window.localStorage&&window.localStorage.setItem('tryCoffeeScriptCode',d)}catch(a){e=a}}h=CoffeeScript.compile(d,{bare:!0}),lastCompilationElapsedTime=Math.max(200,Date.now()-f)}catch(a){e=a,h=''+e}return editors[c+1].setValue(h),gtag('event','edit_code',{event_category:'engagement',event_label:a.closest('[data-example]').data('example')})},lastCompilationElapsedTime)}),b.addKeyMap({Tab:function Tab(a){return a.somethingSelected()?a.indentSelection('add'):/^\t/m.test(a.getValue())?a.execCommand('insertTab'):a.execCommand('insertSoftTab')},"Shift-Tab":function ShiftTab(a){return a.indentSelection('subtract')},Enter:function Enter(a){return a.options.indentWithTabs=/^\t/m.test(a.getValue()),a.execCommand('newlineAndIndent')}})},$('.placeholder-code').one('mouseover',function(){var a,b;return b=$(this).prev('textarea'),$(this).remove(),initializeEditor(b),a=$(b.parent().siblings()[0]),a.children('.placeholder-code').remove(),initializeEditor($(a.children('textarea')[0]))}),initializeTryEditors=function(){return initializeEditor($('#try-coffeescript-coffee')),initializeEditor($('#try-coffeescript-js'))},$('[data-action="run-code-example"]').click(function(){var index,js,run;return run=$(this).data('run'),index=$('#'+$(this).data('example')+'-js').data('index'),js=null==editors[index]?$(textareas[index]).val():editors[index].getValue(),!0!==run&&(js=js+'\nalert('+unescape(run)+');'),eval(js),gtag('event','run_code',{event_category:'engagement',event_label:$(this).closest('[data-example]').data('example')})}),previousHash=null,toggleTry=function(a){var b,c;if($('#try, #try-link').toggleClass('show'),!$('#try').hasClass('show'))return previousHash?replaceState(previousHash):clearHash();if(window.location.hash&&(previousHash=window.location.hash),0===$('#try .CodeMirror').length&&initializeTryEditors(),a&&null!=window.localStorage)try{return b=window.localStorage.getItem('tryCoffeeScriptCode'),null==b?replaceState('#try'):editors[0].setValue(b)}catch(a){return c=a,replaceState('#try')}else return replaceState('#try')},closeTry=function(){return $('#try, #try-link').removeClass('show'),previousHash?replaceState(previousHash):clearHash()},$('[data-toggle="try"]').click(function(a){return a.preventDefault(),toggleTry(!0)}),$('[data-close="try"]').click(closeTry),clearHash=function(){return window.history.replaceState({},document.title,window.location.pathname)},replaceState=function(a){return 0===(null==a?void 0:a.indexOf('#'))&&(a=''+window.location.pathname+a),window.history.replaceState({},document.title,a||'')},$(window).on('hashchange',function(){if(''===window.location.hash)return clearHash()}),null!=window.location.hash){if('#try'===window.location.hash)return toggleTry(!0);if(0===window.location.hash.indexOf('#try'))return 0===$('#try .CodeMirror').length&&initializeTryEditors(),editors[0].setValue(decodeURIComponent(window.location.hash.slice(5))),toggleTry(!1);if(''===window.location.hash)return clearHash();if(initializeScrollspyFromHash(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,'')).scrollIntoView()}})}).call(this);
+(function(){window.location.origin||(window.location.origin=window.location.protocol+'//'+window.location.hostname),window.GA_TRACKING_ID='UA-106156830-1',null==window.dataLayer&&(window.dataLayer=[]),window.gtag=function(){window.dataLayer.push(arguments)},window.gtag('js',new Date),window.gtag('config',window.GA_TRACKING_ID),$(document).ready(function(){var clearHash,closeTry,editors,initializeEditor,initializeScrollspyFromHash,initializeTryEditors,lastCompilationElapsedTime,previousHash,replaceState,textareas,toggleSidebar,toggleTry;if(toggleSidebar=function(){return $('.navbar-toggler, .sidebar').toggleClass('show')},$('[data-toggle="offcanvas"]').click(toggleSidebar),$('[data-action="sidebar-nav"]').click(function(a){return $('.navbar-toggler').is(':visible')&&(a.preventDefault(),toggleSidebar(),setTimeout(function(){return window.location=a.target.href},260)),gtag('event','sidebar_navigate',{event_category:'navigation',event_label:a.target.href.replace(window.location.origin,'')})}),$('body').scrollspy({target:'#contents',offset:Math.round($('main').css('padding-top').replace('px',''))}),initializeScrollspyFromHash=function(a){return $('#contents a.active[href!=\''+a+'\']').removeClass('show')},$(window).on('activate.bs.scrollspy',function(a,b){var c;if($('#contents a.active[href!=\''+b.relatedTarget+'\']').removeClass('show'),c=$('#contents a[href=\''+b.relatedTarget+'\']'),c.prop('href')!==window.location.origin+'/#try')return replaceState(c.prop('href')),gtag('config',GA_TRACKING_ID,{page_path:c.prop('href').replace(window.location.origin,'')})}),textareas=[],editors=[],lastCompilationElapsedTime=200,$('textarea').each(function(a){return textareas[a]=this,$(this).data('index',a)}),initializeEditor=function(a){var b,c,d,e;if(c=a.data('index'),d=a.hasClass('javascript-output')?'javascript':'coffeescript',editors[c]=b=CodeMirror.fromTextArea(a[0],{mode:d,theme:'twilight',indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:'contenteditable',readOnly:'coffeescript'!==d,viewportMargin:2e308}),'coffeescript'===d)return e=null,b.on('change',function(){return clearTimeout(e),e=setTimeout(function(){var d,e,f,g,h;f=Date.now();try{if(d=b.getValue(),0===c&&$('#try').hasClass('show')){$('#try').hasClass('show')&&(g='try:'+encodeURIComponent(d),replaceState(window.location.href.split('#')[0]+'#'+g));try{null!=window.localStorage&&window.localStorage.setItem('tryCoffeeScriptCode',d)}catch(a){e=a}}h=CoffeeScript.compile(d,{bare:!0}),lastCompilationElapsedTime=Math.max(200,Date.now()-f)}catch(a){e=a,h=''+e}return editors[c+1].setValue(h),gtag('event','edit_code',{event_category:'engagement',event_label:a.closest('[data-example]').data('example')})},lastCompilationElapsedTime)}),b.addKeyMap({Tab:function Tab(a){return a.somethingSelected()?a.indentSelection('add'):/^\t/m.test(a.getValue())?a.execCommand('insertTab'):a.execCommand('insertSoftTab')},"Shift-Tab":function ShiftTab(a){return a.indentSelection('subtract')},Enter:function Enter(a){return a.options.indentWithTabs=/^\t/m.test(a.getValue()),a.execCommand('newlineAndIndent')}})},$('.placeholder-code').one('mouseover',function(){var a,b;return b=$(this).prev('textarea'),$(this).remove(),initializeEditor(b),a=$(b.parent().siblings()[0]),a.children('.placeholder-code').remove(),initializeEditor($(a.children('textarea')[0]))}),initializeTryEditors=function(){return initializeEditor($('#try-coffeescript-coffee')),initializeEditor($('#try-coffeescript-js'))},$('[data-action="run-code-example"]').click(function(){var index,js,run;return run=$(this).data('run'),index=$('#'+$(this).data('example')+'-js').data('index'),js=null==editors[index]?$(textareas[index]).val():editors[index].getValue(),!0!==run&&(js=js+'\nalert('+unescape(run)+');'),eval(js),gtag('event','run_code',{event_category:'engagement',event_label:$(this).closest('[data-example]').data('example')})}),previousHash=null,toggleTry=function(a){var b,c;if($('#try, #try-link').toggleClass('show'),!$('#try').hasClass('show'))return previousHash?replaceState(previousHash):clearHash();if(window.location.hash&&(previousHash=window.location.hash),0===$('#try .CodeMirror').length&&initializeTryEditors(),a&&null!=window.localStorage)try{return b=window.localStorage.getItem('tryCoffeeScriptCode'),null==b?replaceState('#try'):editors[0].setValue(b)}catch(a){return c=a,replaceState('#try')}else return replaceState('#try')},closeTry=function(){return $('#try, #try-link').removeClass('show'),previousHash?replaceState(previousHash):clearHash()},$('[data-toggle="try"]').click(function(a){return a.preventDefault(),toggleTry(!0)}),$('[data-close="try"]').click(closeTry),clearHash=function(){return window.history.replaceState({},document.title,window.location.pathname)},replaceState=function(a){return 0===(null==a?void 0:a.indexOf('#'))&&(a=''+window.location.pathname+a),window.history.replaceState({},document.title,a||'')},$(window).on('hashchange',function(){if(''===window.location.hash)return clearHash()}),null!=window.location.hash){if('#try'===window.location.hash)return toggleTry(!0);if(0===window.location.hash.indexOf('#try'))return 0===$('#try .CodeMirror').length&&initializeTryEditors(),editors[0].setValue(decodeURIComponent(window.location.hash.slice(5))),toggleTry(!1);if(''===window.location.hash)return clearHash();if(initializeScrollspyFromHash(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,'')).scrollIntoView()}})}).call(this);
 </script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-106156830-1"></script>
-<script>
-  window.GA_TRACKING_ID = 'UA-106156830-1';
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments)};
-  gtag('js', new Date());
-  gtag('config', GA_TRACKING_ID);
-</script>
 
 </body>
 </html>
