@@ -780,7 +780,7 @@ exports.Lexer = class Lexer
       rest = str[interpolationOffset..]
       {tokens: nested, index} =
         new Lexer().tokenize rest, line: line, column: column, untilBalanced: on
-      # Account for the `#` in `#{`
+      # Account for the `#` in `#{`.
       index += interpolationOffset
 
       braceInterpolator = str[index - 1] is '}'
@@ -875,7 +875,7 @@ exports.Lexer = class Lexer
           locationToken = token
           tokensToPush = [token]
       if @tokens.length > firstIndex
-        # Create a 0-length "+" token.
+        # Create a 0-length `+` token.
         plusToken = @token '+', '+'
         plusToken[2] =
           first_line:   locationToken[2].first_line
@@ -949,8 +949,8 @@ exports.Lexer = class Lexer
     [locationData.first_line, locationData.first_column] =
       @getLineAndColumnFromChunk offsetInChunk
 
-    # Use length - 1 for the final offset - we're supplying the last_line and the last_column,
-    # so if last_column == first_column, then we're looking at a character of length 1.
+    # Use length - 1 for the final offset - we’re supplying the last_line and the last_column,
+    # so if last_column == first_column, then we’re looking at a character of length 1.
     lastCharacter = if length > 0 then (length - 1) else 0
     [locationData.last_line, locationData.last_column] =
       @getLineAndColumnFromChunk offsetInChunk + lastCharacter
