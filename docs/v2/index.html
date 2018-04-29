@@ -13,11 +13,177 @@
 <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
 <meta name="theme-color" content="#ffffff">
 
-<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
 <!-- The CoffeeScript logo font is Google’s Galada -->
 <link href="https://fonts.googleapis.com/css?family=Alegreya+Sans:400,800|Lato:300,300i,400,700|Roboto+Mono:400,400i" rel="stylesheet" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/codemirror/4.5.0/codemirror.css" crossorigin="anonymous">
+<link href="https://cdn.jsdelivr.net/npm/codemirror@5.37.0/lib/codemirror.css" rel="stylesheet" crossorigin="anonymous">
 <style>
+/* Adapted from https://github.com/FarhadG/code-mirror-themes/blob/master/themes/twilight.css and https://github.com/codemirror/CodeMirror/blob/master/theme/twilight.css */
+
+/* CodeMirror general styling */
+
+.CodeMirror,
+.placeholder-code {
+  /* https://codemirror.net/demo/resize.html */
+  height: auto;
+  background: transparent;
+  font-family: 'Roboto Mono';
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: 0.3px;
+  color: #f8f8f8;
+  /* Prevent mobile Safari from zooming in on our code editors; the code is 16px naturally, but somehow being explicit about it prevents the zooming */
+  font-size: 16px;
+}
+@media (min-width: 768px) {
+  .CodeMirror,
+  .placeholder-code {
+    font-size: 87.5%; /* Matching Bootstrap’s font size for code, which calculates to 14.4px */
+  }
+}
+.CodeMirror-lines {
+  padding: 0.5em 0;
+}
+.placeholder-code {
+  padding: 0.5em 4px;
+  margin-bottom: 1.37em;
+  white-space: pre-wrap;
+}
+.CodeMirror pre,
+pre.placeholder-code {
+  line-height: 1.4em;
+}
+.CodeMirror-code:focus {
+  outline: none;
+}
+div.CodeMirror-cursor {
+  border-left: 3px solid #f8f8f8;
+}
+.CodeMirror-activeline-background {
+  background: #ffffff08;
+}
+.CodeMirror-selected {
+  background: #ddf0ff33;
+}
+
+/* Syntax highlighting */
+
+.cm-keyword,
+.placeholder-code .keyword {
+  color: #cda869;
+}
+.cm-atom {
+  color: #dad085;
+}
+.cm-number,
+.cm-meta,
+.placeholder-code .number,
+.placeholder-code .built_in,
+.placeholder-code .builtin-name,
+.placeholder-code .literal,
+.placeholder-code .type,
+/*.placeholder-code .params,*/
+.placeholder-code .meta,
+.placeholder-code .link {
+  color: #dad085;
+}
+.cm-def {
+  color: #f8f8f8;
+}
+span.cm-variable-2,
+span.cm-tag {
+  color: #f8f8f8;
+}
+span.cm-variable-3,
+span.cm-def,
+span.cm-type {
+  color: #f8f8f8;
+}
+.cm-operator,
+.placeholder-code .punctuation,
+.placeholder-code .symbol,
+.placeholder-code .bullet,
+.placeholder-code .addition,
+.placeholder-code .operator {
+  color: #cda869;
+}
+.cm-comment,
+.placeholder-code .comment {
+  font-style: italic;
+  color: #5f5a60;
+}
+.cm-string,
+.cm-string-2,
+.placeholder-code .string {
+  color: #8f9d6a;
+}
+.cm-property,
+.placeholder-code .attribute {
+  color: #dad085;
+}
+.cm-builtin {
+  color: #cda869;
+}
+.cm-tag {
+  color: #997643;
+}
+.cm-attribute {
+  color: #d6bb6d;
+}
+.cm-header {
+  color: #FF6400;
+}
+.cm-hr {
+  color: #AEAEAE;
+}
+.cm-link {
+  color: #ad9361;
+  font-style: italic;
+  text-decoration: none;
+}
+.cm-error {
+  border-bottom: 1px solid rgba(142, 22, 22, 0.67);
+}
+
+/* Uneditable code blocks are inverted, so use darker versions of the above */
+
+.uneditable-code-block code {
+  padding: 0;
+}
+
+.uneditable-code-block .comment {
+  font-style: italic;
+  color: #837B85;
+}
+.uneditable-code-block .class,
+.uneditable-code-block .function,
+.uneditable-code-block .keyword,
+.uneditable-code-block .reserved,
+.uneditable-code-block .title {
+  color: #534328;
+}
+.uneditable-code-block .string
+.uneditable-code-block .value
+.uneditable-code-block .inheritance
+.uneditable-code-block .header {
+  color: #3A4029;
+}
+.uneditable-code-block .variable,
+.uneditable-code-block .literal,
+.uneditable-code-block .tag,
+.uneditable-code-block .regexp,
+.uneditable-code-block .subst,
+.uneditable-code-block .property {
+  color: #474429;
+}
+.uneditable-code-block .number,
+.uneditable-code-block .preprocessor,
+.uneditable-code-block .built_in,
+.uneditable-code-block .params,
+.uneditable-code-block .constant {
+  color: #474429;
+}
+
 html,
 body {
   /* Prevent scroll on narrow devices */
@@ -100,13 +266,17 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 
 
 /*
+ * Layout; based on https://codepen.io/Sphinxxxx/pen/WjwbEO
+ */
+.main-row {
+  height: calc(100vh - 3.5rem);
+}
+
+/*
  * Sidebar
  */
 
 .sidebar {
-  position: fixed;
-  top: 3.5em;
-  height: calc(100% - 3.5rem);
   /* Scrollable contents if viewport is shorter than content */
   overflow-y: auto;
   overflow-x: hidden;
@@ -122,11 +292,19 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 }
 @media screen and (max-width: 991px) {
   .sidebar {
+    position: fixed;
+    top: 3.5em;
+    height: calc(100% - 3.5rem);
     left: -100%;
     transition: 0.25s left ease-in-out;
   }
   .sidebar.show {
     left: 0;
+  }
+}
+@media (min-width: 992px) {
+  .sidebar {
+    flex: 0 0 auto;
   }
 }
 
@@ -159,10 +337,13 @@ button:focus, .navbar-dark .navbar-toggler:focus {
  */
 
 .main {
+  max-width: 100%;
   padding: 1.3em;
 }
 @media (min-width: 992px) {
   .main {
+    flex: 1 1 auto;
+    overflow: auto;
     padding-right: 2em;
     padding-left: 2em;
   }
@@ -241,12 +422,6 @@ h3, h4, h2 time {
   font-weight: 400;
 }
 
-.main section {
-  /* Offset the anchor so that clicking on the sidebar links don’t hide the heading under the header bar */
-  padding-top: 2.3rem;
-  margin-top: -2.3rem;
-}
-
 @media (min-width: 1200px) {
   .main > header, .main section > h2, .main section > h3, .main section > h4, .main section > p, .main section > blockquote, .main section > ul, .main section > table {
     max-width: 80%;
@@ -266,7 +441,7 @@ code {
 
 
 /*
- * Code examples
+ * Chrome around code examples; see code.css for the styling of the code blocks themselves
  */
 
 textarea {
@@ -301,31 +476,7 @@ textarea {
 
 .play-button {
   height: 1em;
-}
-
-.CodeMirror pre, pre.placeholder-code {
-  line-height: 1.4em;
-}
-
-.CodeMirror,
-.placeholder-code {
-  /* https://codemirror.net/demo/resize.html */
-  height: auto;
-  background: transparent;
-  font-family: 'Roboto Mono';
-  font-weight: 400;
-  line-height: 1.25;
-  font-size: 0.9em;
-}
-@media (min-width: 768px) {
-  .CodeMirror,
-  .placeholder-code {
-    font-size: 1em;
-  }
-}
-
-.CodeMirror-code:focus {
-  outline: none;
+  width: 1em;
 }
 
 .javascript-output-column .CodeMirror-cursor {
@@ -344,6 +495,8 @@ textarea {
   right: 0;
   opacity: 0;
   transition: opacity 0.15s ease-in-out;
+  z-index: -1001;
+  background-color: #2f2625;
 }
 .try-coffeescript.show {
   opacity: 1;
@@ -387,124 +540,17 @@ textarea {
   }
 }
 
-/* Adapted from https://github.com/FarhadG/code-mirror-themes/blob/master/themes/twilight.css */
-
-.CodeMirror,
-.placeholder-code {
-  letter-spacing: 0.3px;
-  color: #f8f8f8;
-  /* Prevent mobile Safari from zooming in on our code editors; the code is 16px naturally, but somehow being explicit about it prevents the zooming */
-  font-size: 16px;
-}
-@media (min-width: 768px) {
-  .CodeMirror,
-  .placeholder-code {
-    font-size: 90%; /* Matching Bootstrap’s font size for code, which calculates to 14.4px */
-  }
-}
-.CodeMirror-lines {
-  padding: 0.5em 0;
-}
-.placeholder-code {
-  padding: 0.5em 4px;
-  margin-bottom: 1.37em;
-  white-space: pre-wrap;
-}
-div.CodeMirror-cursor {
-  border-left: 3px solid #f8f8f8;
-}
-.CodeMirror-activeline-background {
-  background: #ffffff08;
-}
-.CodeMirror-selected {
-  background: #ddf0ff33;
-}
-.cm-comment,
-.placeholder-code .comment {
-  font-style: italic;
-  color: #5f5a60;
-}
-.cm-keyword,
-.placeholder-code .keyword {
-  color: #cda869;
-}
-.cm-string,
-.placeholder-code .string {
-  color: #8f9d6a;
-}
-.cm-property,
-.placeholder-code .attribute {
-  color: #dad085;
-}
-.cm-atom {
-  color: #dad085;
-}
-.cm-number,
-.placeholder-code .number,
-.placeholder-code .built_in,
-.placeholder-code .builtin-name,
-.placeholder-code .literal,
-.placeholder-code .type,
-/*.placeholder-code .params,*/
-.placeholder-code .meta,
-.placeholder-code .link {
-  color: #dad085;
-}
-.cm-operator,
-.placeholder-code .punctuation,
-.placeholder-code .symbol,
-.placeholder-code .bullet,
-.placeholder-code .addition,
-.placeholder-code .operator {
-  color: #cda869;
-}
-
-/* Uneditable code blocks are inverted, so use darker versions of the above */
-
-.uneditable-code-block .comment {
-  font-style: italic;
-  color: #837B85;
-}
-.uneditable-code-block .class,
-.uneditable-code-block .function,
-.uneditable-code-block .keyword,
-.uneditable-code-block .reserved,
-.uneditable-code-block .title {
-  color: #534328;
-}
-.uneditable-code-block .string
-.uneditable-code-block .value
-.uneditable-code-block .inheritance
-.uneditable-code-block .header {
-  color: #3A4029;
-}
-.uneditable-code-block .variable,
-.uneditable-code-block .literal,
-.uneditable-code-block .tag,
-.uneditable-code-block .regexp,
-.uneditable-code-block .subst,
-.uneditable-code-block .property {
-  color: #474429;
-}
-.uneditable-code-block .number,
-.uneditable-code-block .preprocessor,
-.uneditable-code-block .built_in,
-.uneditable-code-block .params,
-.uneditable-code-block .constant {
-  color: #474429;
-}
-
 </style>
 
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark bg-ribbed-dark site-navbar">
-  <a class="navbar-brand" href="#" data-close="try"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-22 347 566 100">
+  <a class="navbar-brand" href="#" data-close="try" data-action="scroll-to-top"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-22 347 566 100">
   <title>
     CoffeeScript Logo
   </title>
-  <path d="M21.7 351.1c.1.6-.2 1.1-1.2 1.6-1.3-.7-4.1-1.1-6.4-.9-2.5.2-4.6 1-4.3 2.7.4 1.7 2.8 2.7 7.1 2.3 10.5-.9 10.4-8 25.8-9.4 12-1.1 18.7 2.6 19.6 7.1.7 3.5-2.2 6.9-10.9 7.6-7.7.7-12.2-1.4-12.6-3.5-.2-1.1.4-2.7 4.1-3.1.4 1.7 2.5 3.5 7.5 3 3.6-.3 6.6-1.6 6.2-3.6-.4-2.1-4.2-3.3-10.2-2.8-12.2 1.1-15.2 7.8-25.6 8.7-7.4.7-13.4-2-14.2-6-.3-1.5-.3-5 7.5-5.7 4-.3 7.2.4 7.6 2zm-39 41.8c-3.4 4.3-4.9 9.3-4.6 14.2.3 4.9 2.7 8.9 6.5 12 4 3.1 8.3 4 13.2 3.1 1.9-.3 4-1.3 5.9-1.9-4 0-7.4-1.3-10.8-4-3.7-2.7-6.2-6.5-6.8-11.1-.9-4.3 0-8.3 2.4-11.8 2.7-3.4 6.2-5.3 10.8-5.9 4.6-.3 8.6.9 12.6 3.7-.9-1.3-2.2-2.2-3.4-3.4-4-2.7-8.3-4-13.6-2.7-4.8 1-8.8 3.5-12.2 7.8zm53.6-23.1c-12.9 0-24.4-1.3-32.7-3.1-8.9-2.2-13.6-4.6-13.6-7.7 0-1.3.6-2.4 2.4-3.7-5.6 2.2-8.6 4-8.6 6.8.3 3.1 5.3 6.2 15.5 8.6 9.6 2.4 21.9 3.7 36.7 3.7 15.1 0 27.1-1.3 36.7-3.7 10.2-2.4 15.1-5.6 15.1-8.6 0-2.2-2.2-4.3-6.2-5.9.9.6 1.6 1.6 1.6 2.7 0 3.1-4.6 5.6-13.9 7.7-8.6 1.9-19.6 3.2-33 3.2zm36.8 8.6c-9.6 2.2-21.9 3.7-36.7 3.7-15.1 0-27.4-1.6-37-3.7-8.6-2.2-13.2-4.6-14.8-7.1 1.6 10.8 5.3 21 10.2 30 3.7 5.6 7.4 10.5 11.1 15.8 1.6 3.1 2.7 6.2 3.4 9.3 2.4 3.4 5.9 5.6 10.2 6.8 5.3 1.9 10.8 2.7 16.4 2.4h.6c5.6.3 11.5-.6 16.9-2.4 4-1.3 7.4-3.4 9.9-6.8h.3c.6-3.1 1.6-6.2 3.1-9.3 3.7-5.3 7.4-10.2 11.1-15.8 4.9-8.9 8.3-19.1 10.2-30-2 2.8-6.6 5.2-14.9 7.1zm106.2 30.1c-4.8 12.1-17.6 16.9-25.9 16.9-13.4 0-19.9-6-19.9-22.3 0-16.5 7.9-47.3 31.7-47.3 8.5 0 15.2 3.3 15.2 12.1 0 4.8-1.8 8.3-6.4 8.3-1.5 0-3.4-.4-5.2-2.4 2.2-1.1 4.2-4.9 4.2-8.3 0-2.9-1.5-5.6-5.6-5.6-10 0-18.9 23.9-18.9 42.4 0 8.3 2.2 14.2 10.9 14.2 7.1 0 13.5-3.4 17.7-9.1l2.2 1.1zm32.9-16.3c.4.2.7.2 1 .2 4.2 0 10.1-2.7 14-5.5l.8 2.4c-3.4 3.7-9.5 6.5-16.1 7.5-1.5 16.8-10.6 27.3-21.7 27.3-8.4 0-14.5-4-14.5-14.4 0-10.5 6.2-32.2 24.9-32.2 7.8.3 11.6 5.3 11.6 14.7zm-7.7 5c-1.9-.5-2.4-2-2.4-3.8 0-2.5 1.2-4.2 2.8-4.9-.2-3.8-1.1-5.3-3.4-5.3-6.5 0-12 16.6-12 25.6 0 6 1.2 7.3 4.6 7.3 4.2.1 8.9-8 10.4-18.9zm-6.6 39.7c0-8.3 7.1-11 15.8-13.6l10.9-51.9c2.7-13 10.6-15.5 16.5-15.5 4.1 0 8 2.2 9.7 5.7 3.6-4.6 8.4-5.7 12.4-5.7 5.6 0 10.8 3.9 10.8 9.8 0 1.5-.1 2.6-.3 3.7h-4.3c.1-.9.2-1.7.2-2.4 0-2.1-1.7-3.1-3.4-3.1-2 0-4.8 1.1-6.2 7.1l-1.7 7.4h9.1l-.8 3.6h-9l-10.3 49.1c-2.7 13-10.6 15.5-16.5 15.5-5.2 0-8.3-2.3-9.8-5.7-3.5 4.6-8.3 5.7-12.3 5.7-5.6.1-10.8-3.8-10.8-9.7zm9.1 1.8c1.9 0 4.2-1.8 5.4-7.1l1.1-5.3c-5.7 2-10.1 4.4-10.1 9.4 0 1.2 1.7 3 3.6 3zm21.7 0c1.9 0 4.2-1.8 5.4-7.1l2.2-10.4-9.4 1.8-1.8 8.3c-.5 2.1-1.1 4-1.8 5.6.9 1.3 3 1.8 5.4 1.8zm-1.4-18l9.4-1.7 7.7-36.8h-9l-8.1 38.5zm16.6-56.7c-2 0-4.8 1.1-6.2 7.1l-1.7 7.4h9l2.1-9.5c.2-.7.2-1.3.2-2 .1-2-1.5-3-3.4-3zm37.9 53c7.1 0 11.6-4 16.1-9.2h3.1c-5.2 8.3-12.9 16.8-25 16.8-8.5 0-14.2-4.2-14.2-14.5 0-10.5 5.9-32.3 24.6-32.3 8.1 0 10 4.2 10 8.7 0 10.5-10 18.5-20.9 19.2-.1 1.3-.2 2.5-.2 3.6 0 6.2 2.2 7.7 6.5 7.7zm5.3-34.4c-4.6 0-9.1 9.7-10.9 18.7 7-.5 13.2-7.4 13.2-15 0-2.2-.5-3.7-2.3-3.7zm28.6 33.4c3.4 0 7.8-2.3 10.8-4.8-2 10.4-8.4 13.4-15.8 13.4-8.4 0-14.1-4.2-14.1-14.5 0-10.5 5.9-32.3 24.6-32.3 8.1 0 10 4.2 10 8.7 0 10.6-10 18.5-20.9 19.2-.1.9-.2 2-.2 2.7 0 5.7 2.5 7.6 5.6 7.6zm6.2-33.4c-4.5 0-9.1 10.1-11 18.7 7.1-.4 13.3-7.3 13.3-15 0-2.2-.6-3.7-2.3-3.7zm51.3-6.7c-1.7 0-3-.6-4.2-1.9 2.4-1.5 4.1-4.8 4.1-7.8 0-3.1-1.8-6.1-6.8-6.1s-8.3 2.8-8.3 8.2c0 13.3 20.5 15.2 20.5 34.8 0 15.3-12.3 22.7-25.6 22.7-10.4 0-19.3-4.5-19.3-15.7 0-9.8 7-14.9 13.3-14.9 3.1 0 7.7 1.3 8 6-4.9 0-10.7 2.3-10.7 8.5 0 4.5 2.9 8.7 8.7 8.7 6.1 0 10.6-4.4 10.6-12 0-15.6-18.6-21.1-18.6-34.5 0-9.5 9.3-16.3 21-16.3 4.3 0 14.6.9 14.6 10.9.1 5.5-2.8 9.4-7.3 9.4zm36.2 10.3c0-2.3-.8-3.7-2.5-3.7-5.7 0-11.7 16.6-11.7 26.7 0 6.2 2.2 7.6 6.6 7.6 7.1 0 11.6-4 16.1-9.2h3.1c-5.2 8.3-12.9 16.8-25 16.8-8.5 0-14.2-4.2-14.2-14.5 0-10.6 6-32.3 24.5-32.3 8.1 0 10.1 4.2 10.1 8.3 0 4.4-2.2 6.7-4.8 6.7-1 0-2.1-.4-3.1-1.1.5-1.9.9-3.6.9-5.3zm27.7-7.6l-1.2 5.7c3.1-2.7 6.7-5.7 11-5.7 4.1 0 6.3 3.3 6.3 6.9 0 3.1-2.1 6.7-6.6 6.7-5.1 0-2.5-6-5.3-6-2.7 0-4.4 1.4-6.7 3.4l-7.2 34.6h-13.1l9.6-45.4 13.2-.2zm34.2 0l-6.6 30.9c-.3 1.2-.4 2.1-.4 2.9 0 2.5 1.2 3.3 3.7 3.3 3.5 0 6.9-3.4 8.1-8h3.8c-5.2 14.8-14.2 16.8-19.1 16.8-5.5 0-9.7-3.2-9.7-10.9 0-1.8.3-3.7.7-5.9l6.2-29.2 13.3.1zm-4.1-19.4c4 0 7.2 3.2 7.2 7.2s-3.2 7.1-7.2 7.1-7.1-3.1-7.1-7.1c-.1-4 3.2-7.2 7.1-7.2zm29.1 16l-1.5 6.9c2.6-2.3 6.1-3.9 10.7-3.9 6.2 0 11.1 3.5 11.1 14.4 0 12.2-4.7 32.1-22.3 32.1-4.5 0-6.8-1.6-7.7-3.2l-4.7 22.1-13.7 3.2 15.2-71.5 12.9-.1zm7.8 17c0-7-2.9-7.5-4.5-7.5-2 0-4.5 1.6-6.3 4.4l-5.4 25.5c.4 1 1.4 2.1 3.4 2.1 9.7 0 12.8-15.9 12.8-24.5zm27.8 17.3c-.3 1.1-.5 2.2-.5 3.1 0 1.9.7 3.2 3.1 3.2.7 0 1.7 0 2.4-.3-2.5 7.8-6.6 8.9-9.6 8.9-6.4 0-9.1-4.4-9.1-10.3 0-1.6.2-3.1.6-4.8l5.8-27.2h-3l.7-3.6h3L528 366l13.4-1.9s-1.4 6.2-3.1 14.4h5.5l-.7 3.6h-5.5l-5.7 27.4z"/>
+  <path d="M21.7 351.1c.1.6-.2 1.1-1.2 1.6-1.3-.7-4.1-1.1-6.4-.9-2.5.2-4.6 1-4.3 2.7.4 1.7 2.8 2.7 7.1 2.3 10.5-.9 10.4-8 25.8-9.4 12-1.1 18.7 2.6 19.6 7.1.7 3.5-2.2 6.9-10.9 7.6-7.7.7-12.2-1.4-12.6-3.5-.2-1.1.4-2.7 4.1-3.1.4 1.7 2.5 3.5 7.5 3 3.6-.3 6.6-1.6 6.2-3.6-.4-2.1-4.2-3.3-10.2-2.8-12.2 1.1-15.2 7.8-25.6 8.7-7.4.7-13.4-2-14.2-6-.3-1.5-.3-5 7.5-5.7 4-.3 7.2.4 7.6 2zm-39 41.8c-3.4 4.3-4.9 9.3-4.6 14.2.3 4.9 2.7 8.9 6.5 12 4 3.1 8.3 4 13.2 3.1 1.9-.3 4-1.3 5.9-1.9-4 0-7.4-1.3-10.8-4-3.7-2.7-6.2-6.5-6.8-11.1-.9-4.3 0-8.3 2.4-11.8 2.7-3.4 6.2-5.3 10.8-5.9 4.6-.3 8.6.9 12.6 3.7-.9-1.3-2.2-2.2-3.4-3.4-4-2.7-8.3-4-13.6-2.7-4.8 1-8.8 3.5-12.2 7.8zm53.6-23.1c-12.9 0-24.4-1.3-32.7-3.1-8.9-2.2-13.6-4.6-13.6-7.7 0-1.3.6-2.4 2.4-3.7-5.6 2.2-8.6 4-8.6 6.8.3 3.1 5.3 6.2 15.5 8.6 9.6 2.4 21.9 3.7 36.7 3.7 15.1 0 27.1-1.3 36.7-3.7 10.2-2.4 15.1-5.6 15.1-8.6 0-2.2-2.2-4.3-6.2-5.9.9.6 1.6 1.6 1.6 2.7 0 3.1-4.6 5.6-13.9 7.7-8.6 1.9-19.6 3.2-33 3.2zm36.8 8.6c-9.6 2.2-21.9 3.7-36.7 3.7-15.1 0-27.4-1.6-37-3.7-8.6-2.2-13.2-4.6-14.8-7.1 1.6 10.8 5.3 21 10.2 30 3.7 5.6 7.4 10.5 11.1 15.8 1.6 3.1 2.7 6.2 3.4 9.3 2.4 3.4 5.9 5.6 10.2 6.8 5.3 1.9 10.8 2.7 16.4 2.4h.6c5.6.3 11.5-.6 16.9-2.4 4-1.3 7.4-3.4 9.9-6.8h.3c.6-3.1 1.6-6.2 3.1-9.3 3.7-5.3 7.4-10.2 11.1-15.8 4.9-8.9 8.3-19.1 10.2-30-2 2.8-6.6 5.2-14.9 7.1zm106.2 30.1c-4.8 12.1-17.6 16.9-25.9 16.9-13.4 0-19.9-6-19.9-22.3 0-16.5 7.9-47.3 31.7-47.3 8.5 0 15.2 3.3 15.2 12.1 0 4.8-1.8 8.3-6.4 8.3-1.5 0-3.4-.4-5.2-2.4 2.2-1.1 4.2-4.9 4.2-8.3 0-2.9-1.5-5.6-5.6-5.6-10 0-18.9 23.9-18.9 42.4 0 8.3 2.2 14.2 10.9 14.2 7.1 0 13.5-3.4 17.7-9.1l2.2 1.1zm32.9-16.3c.4.2.7.2 1 .2 4.2 0 10.1-2.7 14-5.5l.8 2.4c-3.4 3.7-9.5 6.5-16.1 7.5-1.5 16.8-10.6 27.3-21.7 27.3-8.4 0-14.5-4-14.5-14.4 0-10.5 6.2-32.2 24.9-32.2 7.8.3 11.6 5.3 11.6 14.7zm-7.7 5c-1.9-.5-2.4-2-2.4-3.8 0-2.5 1.2-4.2 2.8-4.9-.2-3.8-1.1-5.3-3.4-5.3-6.5 0-12 16.6-12 25.6 0 6 1.2 7.3 4.6 7.3 4.2.1 8.9-8 10.4-18.9zm-6.6 39.7c0-8.3 7.1-11 15.8-13.6l10.9-51.9c2.7-13 10.6-15.5 16.5-15.5 4.1 0 8 2.2 9.7 5.7 3.6-4.6 8.4-5.7 12.4-5.7 5.6 0 10.8 3.9 10.8 9.8 0 1.5-.1 2.6-.3 3.7h-4.3c.1-.9.2-1.7.2-2.4 0-2.1-1.7-3.1-3.4-3.1-2 0-4.8 1.1-6.2 7.1l-1.7 7.4h9.1l-.8 3.6h-9l-10.3 49.1c-2.7 13-10.6 15.5-16.5 15.5-5.2 0-8.3-2.3-9.8-5.7-3.5 4.6-8.3 5.7-12.3 5.7-5.6.1-10.8-3.8-10.8-9.7zm9.1 1.8c1.9 0 4.2-1.8 5.4-7.1l1.1-5.3c-5.7 2-10.1 4.4-10.1 9.4 0 1.2 1.7 3 3.6 3zm21.7 0c1.9 0 4.2-1.8 5.4-7.1l2.2-10.4-9.4 1.8-1.8 8.3c-.5 2.1-1.1 4-1.8 5.6.9 1.3 3 1.8 5.4 1.8zm-1.4-18l9.4-1.7 7.7-36.8h-9l-8.1 38.5zm16.6-56.7c-2 0-4.8 1.1-6.2 7.1l-1.7 7.4h9l2.1-9.5c.2-.7.2-1.3.2-2 .1-2-1.5-3-3.4-3zm37.9 53c7.1 0 11.6-4 16.1-9.2h3.1c-5.2 8.3-12.9 16.8-25 16.8-8.5 0-14.2-4.2-14.2-14.5 0-10.5 5.9-32.3 24.6-32.3 8.1 0 10 4.2 10 8.7 0 10.5-10 18.5-20.9 19.2-.1 1.3-.2 2.5-.2 3.6 0 6.2 2.2 7.7 6.5 7.7zm5.3-34.4c-4.6 0-9.1 9.7-10.9 18.7 7-.5 13.2-7.4 13.2-15 0-2.2-.5-3.7-2.3-3.7zm28.6 33.4c3.4 0 7.8-2.3 10.8-4.8-2 10.4-8.4 13.4-15.8 13.4-8.4 0-14.1-4.2-14.1-14.5 0-10.5 5.9-32.3 24.6-32.3 8.1 0 10 4.2 10 8.7 0 10.6-10 18.5-20.9 19.2-.1.9-.2 2-.2 2.7 0 5.7 2.5 7.6 5.6 7.6zm6.2-33.4c-4.5 0-9.1 10.1-11 18.7 7.1-.4 13.3-7.3 13.3-15 0-2.2-.6-3.7-2.3-3.7zm51.3-6.7c-1.7 0-3-.6-4.2-1.9 2.4-1.5 4.1-4.8 4.1-7.8 0-3.1-1.8-6.1-6.8-6.1s-8.3 2.8-8.3 8.2c0 13.3 20.5 15.2 20.5 34.8 0 15.3-12.3 22.7-25.6 22.7-10.4 0-19.3-4.5-19.3-15.7 0-9.8 7-14.9 13.3-14.9 3.1 0 7.7 1.3 8 6-4.9 0-10.7 2.3-10.7 8.5 0 4.5 2.9 8.7 8.7 8.7 6.1 0 10.6-4.4 10.6-12 0-15.6-18.6-21.1-18.6-34.5 0-9.5 9.3-16.3 21-16.3 4.3 0 14.6.9 14.6 10.9.1 5.5-2.8 9.4-7.3 9.4zm36.2 10.3c0-2.3-.8-3.7-2.5-3.7-5.7 0-11.7 16.6-11.7 26.7 0 6.2 2.2 7.6 6.6 7.6 7.1 0 11.6-4 16.1-9.2h3.1c-5.2 8.3-12.9 16.8-25 16.8-8.5 0-14.2-4.2-14.2-14.5 0-10.6 6-32.3 24.5-32.3 8.1 0 10.1 4.2 10.1 8.3 0 4.4-2.2 6.7-4.8 6.7-1 0-2.1-.4-3.1-1.1.5-1.9.9-3.6.9-5.3zm27.7-7.6l-1.2 5.7c3.1-2.7 6.7-5.7 11-5.7 4.1 0 6.3 3.3 6.3 6.9 0 3.1-2.1 6.7-6.6 6.7-5.1 0-2.5-6-5.3-6-2.7 0-4.4 1.4-6.7 3.4l-7.2 34.6h-13.1l9.6-45.4 13.2-.2zm34.2 0l-6.6 30.9c-.3 1.2-.4 2.1-.4 2.9 0 2.5 1.2 3.3 3.7 3.3 3.5 0 6.9-3.4 8.1-8h3.8c-5.2 14.8-14.2 16.8-19.1 16.8-5.5 0-9.7-3.2-9.7-10.9 0-1.8.3-3.7.7-5.9l6.2-29.2 13.3.1zm-4.1-19.4c4 0 7.2 3.2 7.2 7.2s-3.2 7.1-7.2 7.1-7.1-3.1-7.1-7.1c-.1-4 3.2-7.2 7.1-7.2zm29.1 16l-1.5 6.9c2.6-2.3 6.1-3.9 10.7-3.9 6.2 0 11.1 3.5 11.1 14.4 0 12.2-4.7 32.1-22.3 32.1-4.5 0-6.8-1.6-7.7-3.2l-4.7 22.1-13.7 3.2 15.2-71.5 12.9-.1zm7.8 17c0-7-2.9-7.5-4.5-7.5-2 0-4.5 1.6-6.3 4.4l-5.4 25.5c.4 1 1.4 2.1 3.4 2.1 9.7 0 12.8-15.9 12.8-24.5zm27.8 17.3c-.3 1.1-.5 2.2-.5 3.1 0 1.9.7 3.2 3.1 3.2.7 0 1.7 0 2.4-.3-2.5 7.8-6.6 8.9-9.6 8.9-6.4 0-9.1-4.4-9.1-10.3 0-1.6.2-3.1.6-4.8l5.8-27.2h-3l.7-3.6h3L528 366l13.4-1.9s-1.4 6.2-3.1 14.4h5.5l-.7 3.6h-5.5l-5.7 27.4z"></path>
 </svg>
 </a>
   <button class="navbar-toggler" type="button" data-toggle="offcanvas" data-close="try" aria-label="Toggle sidebar">
@@ -535,7 +581,7 @@ div.CodeMirror-cursor {
   <div class="row">
     <div class="col text-right try-buttons">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="try-coffeescript" data-run="true"><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </button>&emsp;
     </div>
@@ -544,8 +590,8 @@ div.CodeMirror-cursor {
 
 
 <div class="container-fluid" id="top">
-  <div class="row flex-nowrap">
-    <nav class="sidebar col-lg-3 bg-ribbed-light">
+  <div class="row flex-nowrap main-row">
+    <nav class="sidebar bg-ribbed-light">
       <nav id="contents" class="navbar contents">
   <nav class="nav flex-column">
     <a href="#try" class="nav-link d-md-none" data-action="sidebar-nav" data-toggle="try">Try CoffeeScript</a>
@@ -631,14 +677,14 @@ div.CodeMirror-cursor {
 </nav>
 
     </nav>
-    <main class="main col-lg-9 ml-auto">
+    <main class="main">
       <header class="d-none d-lg-block">
         <p class="title-logo">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="-22 347 566 100">
   <title>
     CoffeeScript Logo
   </title>
-  <path d="M21.7 351.1c.1.6-.2 1.1-1.2 1.6-1.3-.7-4.1-1.1-6.4-.9-2.5.2-4.6 1-4.3 2.7.4 1.7 2.8 2.7 7.1 2.3 10.5-.9 10.4-8 25.8-9.4 12-1.1 18.7 2.6 19.6 7.1.7 3.5-2.2 6.9-10.9 7.6-7.7.7-12.2-1.4-12.6-3.5-.2-1.1.4-2.7 4.1-3.1.4 1.7 2.5 3.5 7.5 3 3.6-.3 6.6-1.6 6.2-3.6-.4-2.1-4.2-3.3-10.2-2.8-12.2 1.1-15.2 7.8-25.6 8.7-7.4.7-13.4-2-14.2-6-.3-1.5-.3-5 7.5-5.7 4-.3 7.2.4 7.6 2zm-39 41.8c-3.4 4.3-4.9 9.3-4.6 14.2.3 4.9 2.7 8.9 6.5 12 4 3.1 8.3 4 13.2 3.1 1.9-.3 4-1.3 5.9-1.9-4 0-7.4-1.3-10.8-4-3.7-2.7-6.2-6.5-6.8-11.1-.9-4.3 0-8.3 2.4-11.8 2.7-3.4 6.2-5.3 10.8-5.9 4.6-.3 8.6.9 12.6 3.7-.9-1.3-2.2-2.2-3.4-3.4-4-2.7-8.3-4-13.6-2.7-4.8 1-8.8 3.5-12.2 7.8zm53.6-23.1c-12.9 0-24.4-1.3-32.7-3.1-8.9-2.2-13.6-4.6-13.6-7.7 0-1.3.6-2.4 2.4-3.7-5.6 2.2-8.6 4-8.6 6.8.3 3.1 5.3 6.2 15.5 8.6 9.6 2.4 21.9 3.7 36.7 3.7 15.1 0 27.1-1.3 36.7-3.7 10.2-2.4 15.1-5.6 15.1-8.6 0-2.2-2.2-4.3-6.2-5.9.9.6 1.6 1.6 1.6 2.7 0 3.1-4.6 5.6-13.9 7.7-8.6 1.9-19.6 3.2-33 3.2zm36.8 8.6c-9.6 2.2-21.9 3.7-36.7 3.7-15.1 0-27.4-1.6-37-3.7-8.6-2.2-13.2-4.6-14.8-7.1 1.6 10.8 5.3 21 10.2 30 3.7 5.6 7.4 10.5 11.1 15.8 1.6 3.1 2.7 6.2 3.4 9.3 2.4 3.4 5.9 5.6 10.2 6.8 5.3 1.9 10.8 2.7 16.4 2.4h.6c5.6.3 11.5-.6 16.9-2.4 4-1.3 7.4-3.4 9.9-6.8h.3c.6-3.1 1.6-6.2 3.1-9.3 3.7-5.3 7.4-10.2 11.1-15.8 4.9-8.9 8.3-19.1 10.2-30-2 2.8-6.6 5.2-14.9 7.1zm106.2 30.1c-4.8 12.1-17.6 16.9-25.9 16.9-13.4 0-19.9-6-19.9-22.3 0-16.5 7.9-47.3 31.7-47.3 8.5 0 15.2 3.3 15.2 12.1 0 4.8-1.8 8.3-6.4 8.3-1.5 0-3.4-.4-5.2-2.4 2.2-1.1 4.2-4.9 4.2-8.3 0-2.9-1.5-5.6-5.6-5.6-10 0-18.9 23.9-18.9 42.4 0 8.3 2.2 14.2 10.9 14.2 7.1 0 13.5-3.4 17.7-9.1l2.2 1.1zm32.9-16.3c.4.2.7.2 1 .2 4.2 0 10.1-2.7 14-5.5l.8 2.4c-3.4 3.7-9.5 6.5-16.1 7.5-1.5 16.8-10.6 27.3-21.7 27.3-8.4 0-14.5-4-14.5-14.4 0-10.5 6.2-32.2 24.9-32.2 7.8.3 11.6 5.3 11.6 14.7zm-7.7 5c-1.9-.5-2.4-2-2.4-3.8 0-2.5 1.2-4.2 2.8-4.9-.2-3.8-1.1-5.3-3.4-5.3-6.5 0-12 16.6-12 25.6 0 6 1.2 7.3 4.6 7.3 4.2.1 8.9-8 10.4-18.9zm-6.6 39.7c0-8.3 7.1-11 15.8-13.6l10.9-51.9c2.7-13 10.6-15.5 16.5-15.5 4.1 0 8 2.2 9.7 5.7 3.6-4.6 8.4-5.7 12.4-5.7 5.6 0 10.8 3.9 10.8 9.8 0 1.5-.1 2.6-.3 3.7h-4.3c.1-.9.2-1.7.2-2.4 0-2.1-1.7-3.1-3.4-3.1-2 0-4.8 1.1-6.2 7.1l-1.7 7.4h9.1l-.8 3.6h-9l-10.3 49.1c-2.7 13-10.6 15.5-16.5 15.5-5.2 0-8.3-2.3-9.8-5.7-3.5 4.6-8.3 5.7-12.3 5.7-5.6.1-10.8-3.8-10.8-9.7zm9.1 1.8c1.9 0 4.2-1.8 5.4-7.1l1.1-5.3c-5.7 2-10.1 4.4-10.1 9.4 0 1.2 1.7 3 3.6 3zm21.7 0c1.9 0 4.2-1.8 5.4-7.1l2.2-10.4-9.4 1.8-1.8 8.3c-.5 2.1-1.1 4-1.8 5.6.9 1.3 3 1.8 5.4 1.8zm-1.4-18l9.4-1.7 7.7-36.8h-9l-8.1 38.5zm16.6-56.7c-2 0-4.8 1.1-6.2 7.1l-1.7 7.4h9l2.1-9.5c.2-.7.2-1.3.2-2 .1-2-1.5-3-3.4-3zm37.9 53c7.1 0 11.6-4 16.1-9.2h3.1c-5.2 8.3-12.9 16.8-25 16.8-8.5 0-14.2-4.2-14.2-14.5 0-10.5 5.9-32.3 24.6-32.3 8.1 0 10 4.2 10 8.7 0 10.5-10 18.5-20.9 19.2-.1 1.3-.2 2.5-.2 3.6 0 6.2 2.2 7.7 6.5 7.7zm5.3-34.4c-4.6 0-9.1 9.7-10.9 18.7 7-.5 13.2-7.4 13.2-15 0-2.2-.5-3.7-2.3-3.7zm28.6 33.4c3.4 0 7.8-2.3 10.8-4.8-2 10.4-8.4 13.4-15.8 13.4-8.4 0-14.1-4.2-14.1-14.5 0-10.5 5.9-32.3 24.6-32.3 8.1 0 10 4.2 10 8.7 0 10.6-10 18.5-20.9 19.2-.1.9-.2 2-.2 2.7 0 5.7 2.5 7.6 5.6 7.6zm6.2-33.4c-4.5 0-9.1 10.1-11 18.7 7.1-.4 13.3-7.3 13.3-15 0-2.2-.6-3.7-2.3-3.7zm51.3-6.7c-1.7 0-3-.6-4.2-1.9 2.4-1.5 4.1-4.8 4.1-7.8 0-3.1-1.8-6.1-6.8-6.1s-8.3 2.8-8.3 8.2c0 13.3 20.5 15.2 20.5 34.8 0 15.3-12.3 22.7-25.6 22.7-10.4 0-19.3-4.5-19.3-15.7 0-9.8 7-14.9 13.3-14.9 3.1 0 7.7 1.3 8 6-4.9 0-10.7 2.3-10.7 8.5 0 4.5 2.9 8.7 8.7 8.7 6.1 0 10.6-4.4 10.6-12 0-15.6-18.6-21.1-18.6-34.5 0-9.5 9.3-16.3 21-16.3 4.3 0 14.6.9 14.6 10.9.1 5.5-2.8 9.4-7.3 9.4zm36.2 10.3c0-2.3-.8-3.7-2.5-3.7-5.7 0-11.7 16.6-11.7 26.7 0 6.2 2.2 7.6 6.6 7.6 7.1 0 11.6-4 16.1-9.2h3.1c-5.2 8.3-12.9 16.8-25 16.8-8.5 0-14.2-4.2-14.2-14.5 0-10.6 6-32.3 24.5-32.3 8.1 0 10.1 4.2 10.1 8.3 0 4.4-2.2 6.7-4.8 6.7-1 0-2.1-.4-3.1-1.1.5-1.9.9-3.6.9-5.3zm27.7-7.6l-1.2 5.7c3.1-2.7 6.7-5.7 11-5.7 4.1 0 6.3 3.3 6.3 6.9 0 3.1-2.1 6.7-6.6 6.7-5.1 0-2.5-6-5.3-6-2.7 0-4.4 1.4-6.7 3.4l-7.2 34.6h-13.1l9.6-45.4 13.2-.2zm34.2 0l-6.6 30.9c-.3 1.2-.4 2.1-.4 2.9 0 2.5 1.2 3.3 3.7 3.3 3.5 0 6.9-3.4 8.1-8h3.8c-5.2 14.8-14.2 16.8-19.1 16.8-5.5 0-9.7-3.2-9.7-10.9 0-1.8.3-3.7.7-5.9l6.2-29.2 13.3.1zm-4.1-19.4c4 0 7.2 3.2 7.2 7.2s-3.2 7.1-7.2 7.1-7.1-3.1-7.1-7.1c-.1-4 3.2-7.2 7.1-7.2zm29.1 16l-1.5 6.9c2.6-2.3 6.1-3.9 10.7-3.9 6.2 0 11.1 3.5 11.1 14.4 0 12.2-4.7 32.1-22.3 32.1-4.5 0-6.8-1.6-7.7-3.2l-4.7 22.1-13.7 3.2 15.2-71.5 12.9-.1zm7.8 17c0-7-2.9-7.5-4.5-7.5-2 0-4.5 1.6-6.3 4.4l-5.4 25.5c.4 1 1.4 2.1 3.4 2.1 9.7 0 12.8-15.9 12.8-24.5zm27.8 17.3c-.3 1.1-.5 2.2-.5 3.1 0 1.9.7 3.2 3.1 3.2.7 0 1.7 0 2.4-.3-2.5 7.8-6.6 8.9-9.6 8.9-6.4 0-9.1-4.4-9.1-10.3 0-1.6.2-3.1.6-4.8l5.8-27.2h-3l.7-3.6h3L528 366l13.4-1.9s-1.4 6.2-3.1 14.4h5.5l-.7 3.6h-5.5l-5.7 27.4z"/>
+  <path d="M21.7 351.1c.1.6-.2 1.1-1.2 1.6-1.3-.7-4.1-1.1-6.4-.9-2.5.2-4.6 1-4.3 2.7.4 1.7 2.8 2.7 7.1 2.3 10.5-.9 10.4-8 25.8-9.4 12-1.1 18.7 2.6 19.6 7.1.7 3.5-2.2 6.9-10.9 7.6-7.7.7-12.2-1.4-12.6-3.5-.2-1.1.4-2.7 4.1-3.1.4 1.7 2.5 3.5 7.5 3 3.6-.3 6.6-1.6 6.2-3.6-.4-2.1-4.2-3.3-10.2-2.8-12.2 1.1-15.2 7.8-25.6 8.7-7.4.7-13.4-2-14.2-6-.3-1.5-.3-5 7.5-5.7 4-.3 7.2.4 7.6 2zm-39 41.8c-3.4 4.3-4.9 9.3-4.6 14.2.3 4.9 2.7 8.9 6.5 12 4 3.1 8.3 4 13.2 3.1 1.9-.3 4-1.3 5.9-1.9-4 0-7.4-1.3-10.8-4-3.7-2.7-6.2-6.5-6.8-11.1-.9-4.3 0-8.3 2.4-11.8 2.7-3.4 6.2-5.3 10.8-5.9 4.6-.3 8.6.9 12.6 3.7-.9-1.3-2.2-2.2-3.4-3.4-4-2.7-8.3-4-13.6-2.7-4.8 1-8.8 3.5-12.2 7.8zm53.6-23.1c-12.9 0-24.4-1.3-32.7-3.1-8.9-2.2-13.6-4.6-13.6-7.7 0-1.3.6-2.4 2.4-3.7-5.6 2.2-8.6 4-8.6 6.8.3 3.1 5.3 6.2 15.5 8.6 9.6 2.4 21.9 3.7 36.7 3.7 15.1 0 27.1-1.3 36.7-3.7 10.2-2.4 15.1-5.6 15.1-8.6 0-2.2-2.2-4.3-6.2-5.9.9.6 1.6 1.6 1.6 2.7 0 3.1-4.6 5.6-13.9 7.7-8.6 1.9-19.6 3.2-33 3.2zm36.8 8.6c-9.6 2.2-21.9 3.7-36.7 3.7-15.1 0-27.4-1.6-37-3.7-8.6-2.2-13.2-4.6-14.8-7.1 1.6 10.8 5.3 21 10.2 30 3.7 5.6 7.4 10.5 11.1 15.8 1.6 3.1 2.7 6.2 3.4 9.3 2.4 3.4 5.9 5.6 10.2 6.8 5.3 1.9 10.8 2.7 16.4 2.4h.6c5.6.3 11.5-.6 16.9-2.4 4-1.3 7.4-3.4 9.9-6.8h.3c.6-3.1 1.6-6.2 3.1-9.3 3.7-5.3 7.4-10.2 11.1-15.8 4.9-8.9 8.3-19.1 10.2-30-2 2.8-6.6 5.2-14.9 7.1zm106.2 30.1c-4.8 12.1-17.6 16.9-25.9 16.9-13.4 0-19.9-6-19.9-22.3 0-16.5 7.9-47.3 31.7-47.3 8.5 0 15.2 3.3 15.2 12.1 0 4.8-1.8 8.3-6.4 8.3-1.5 0-3.4-.4-5.2-2.4 2.2-1.1 4.2-4.9 4.2-8.3 0-2.9-1.5-5.6-5.6-5.6-10 0-18.9 23.9-18.9 42.4 0 8.3 2.2 14.2 10.9 14.2 7.1 0 13.5-3.4 17.7-9.1l2.2 1.1zm32.9-16.3c.4.2.7.2 1 .2 4.2 0 10.1-2.7 14-5.5l.8 2.4c-3.4 3.7-9.5 6.5-16.1 7.5-1.5 16.8-10.6 27.3-21.7 27.3-8.4 0-14.5-4-14.5-14.4 0-10.5 6.2-32.2 24.9-32.2 7.8.3 11.6 5.3 11.6 14.7zm-7.7 5c-1.9-.5-2.4-2-2.4-3.8 0-2.5 1.2-4.2 2.8-4.9-.2-3.8-1.1-5.3-3.4-5.3-6.5 0-12 16.6-12 25.6 0 6 1.2 7.3 4.6 7.3 4.2.1 8.9-8 10.4-18.9zm-6.6 39.7c0-8.3 7.1-11 15.8-13.6l10.9-51.9c2.7-13 10.6-15.5 16.5-15.5 4.1 0 8 2.2 9.7 5.7 3.6-4.6 8.4-5.7 12.4-5.7 5.6 0 10.8 3.9 10.8 9.8 0 1.5-.1 2.6-.3 3.7h-4.3c.1-.9.2-1.7.2-2.4 0-2.1-1.7-3.1-3.4-3.1-2 0-4.8 1.1-6.2 7.1l-1.7 7.4h9.1l-.8 3.6h-9l-10.3 49.1c-2.7 13-10.6 15.5-16.5 15.5-5.2 0-8.3-2.3-9.8-5.7-3.5 4.6-8.3 5.7-12.3 5.7-5.6.1-10.8-3.8-10.8-9.7zm9.1 1.8c1.9 0 4.2-1.8 5.4-7.1l1.1-5.3c-5.7 2-10.1 4.4-10.1 9.4 0 1.2 1.7 3 3.6 3zm21.7 0c1.9 0 4.2-1.8 5.4-7.1l2.2-10.4-9.4 1.8-1.8 8.3c-.5 2.1-1.1 4-1.8 5.6.9 1.3 3 1.8 5.4 1.8zm-1.4-18l9.4-1.7 7.7-36.8h-9l-8.1 38.5zm16.6-56.7c-2 0-4.8 1.1-6.2 7.1l-1.7 7.4h9l2.1-9.5c.2-.7.2-1.3.2-2 .1-2-1.5-3-3.4-3zm37.9 53c7.1 0 11.6-4 16.1-9.2h3.1c-5.2 8.3-12.9 16.8-25 16.8-8.5 0-14.2-4.2-14.2-14.5 0-10.5 5.9-32.3 24.6-32.3 8.1 0 10 4.2 10 8.7 0 10.5-10 18.5-20.9 19.2-.1 1.3-.2 2.5-.2 3.6 0 6.2 2.2 7.7 6.5 7.7zm5.3-34.4c-4.6 0-9.1 9.7-10.9 18.7 7-.5 13.2-7.4 13.2-15 0-2.2-.5-3.7-2.3-3.7zm28.6 33.4c3.4 0 7.8-2.3 10.8-4.8-2 10.4-8.4 13.4-15.8 13.4-8.4 0-14.1-4.2-14.1-14.5 0-10.5 5.9-32.3 24.6-32.3 8.1 0 10 4.2 10 8.7 0 10.6-10 18.5-20.9 19.2-.1.9-.2 2-.2 2.7 0 5.7 2.5 7.6 5.6 7.6zm6.2-33.4c-4.5 0-9.1 10.1-11 18.7 7.1-.4 13.3-7.3 13.3-15 0-2.2-.6-3.7-2.3-3.7zm51.3-6.7c-1.7 0-3-.6-4.2-1.9 2.4-1.5 4.1-4.8 4.1-7.8 0-3.1-1.8-6.1-6.8-6.1s-8.3 2.8-8.3 8.2c0 13.3 20.5 15.2 20.5 34.8 0 15.3-12.3 22.7-25.6 22.7-10.4 0-19.3-4.5-19.3-15.7 0-9.8 7-14.9 13.3-14.9 3.1 0 7.7 1.3 8 6-4.9 0-10.7 2.3-10.7 8.5 0 4.5 2.9 8.7 8.7 8.7 6.1 0 10.6-4.4 10.6-12 0-15.6-18.6-21.1-18.6-34.5 0-9.5 9.3-16.3 21-16.3 4.3 0 14.6.9 14.6 10.9.1 5.5-2.8 9.4-7.3 9.4zm36.2 10.3c0-2.3-.8-3.7-2.5-3.7-5.7 0-11.7 16.6-11.7 26.7 0 6.2 2.2 7.6 6.6 7.6 7.1 0 11.6-4 16.1-9.2h3.1c-5.2 8.3-12.9 16.8-25 16.8-8.5 0-14.2-4.2-14.2-14.5 0-10.6 6-32.3 24.5-32.3 8.1 0 10.1 4.2 10.1 8.3 0 4.4-2.2 6.7-4.8 6.7-1 0-2.1-.4-3.1-1.1.5-1.9.9-3.6.9-5.3zm27.7-7.6l-1.2 5.7c3.1-2.7 6.7-5.7 11-5.7 4.1 0 6.3 3.3 6.3 6.9 0 3.1-2.1 6.7-6.6 6.7-5.1 0-2.5-6-5.3-6-2.7 0-4.4 1.4-6.7 3.4l-7.2 34.6h-13.1l9.6-45.4 13.2-.2zm34.2 0l-6.6 30.9c-.3 1.2-.4 2.1-.4 2.9 0 2.5 1.2 3.3 3.7 3.3 3.5 0 6.9-3.4 8.1-8h3.8c-5.2 14.8-14.2 16.8-19.1 16.8-5.5 0-9.7-3.2-9.7-10.9 0-1.8.3-3.7.7-5.9l6.2-29.2 13.3.1zm-4.1-19.4c4 0 7.2 3.2 7.2 7.2s-3.2 7.1-7.2 7.1-7.1-3.1-7.1-7.1c-.1-4 3.2-7.2 7.1-7.2zm29.1 16l-1.5 6.9c2.6-2.3 6.1-3.9 10.7-3.9 6.2 0 11.1 3.5 11.1 14.4 0 12.2-4.7 32.1-22.3 32.1-4.5 0-6.8-1.6-7.7-3.2l-4.7 22.1-13.7 3.2 15.2-71.5 12.9-.1zm7.8 17c0-7-2.9-7.5-4.5-7.5-2 0-4.5 1.6-6.3 4.4l-5.4 25.5c.4 1 1.4 2.1 3.4 2.1 9.7 0 12.8-15.9 12.8-24.5zm27.8 17.3c-.3 1.1-.5 2.2-.5 3.1 0 1.9.7 3.2 3.1 3.2.7 0 1.7 0 2.4-.3-2.5 7.8-6.6 8.9-9.6 8.9-6.4 0-9.1-4.4-9.1-10.3 0-1.6.2-3.1.6-4.8l5.8-27.2h-3l.7-3.6h3L528 366l13.4-1.9s-1.4 6.2-3.1 14.4h5.5l-.7 3.6h-5.5l-5.7 27.4z"></path>
 </svg>
 
         </p>
@@ -646,7 +692,7 @@ div.CodeMirror-cursor {
       <section id="overview">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.2.4">2.2.4</a></p>
+<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.3.0">2.3.0</a></p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash"><span class="comment"># Install locally for a project:</span>
 npm install --save-dev coffeescript
 
@@ -825,7 +871,7 @@ cubes = (function() {
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="overview" data-run="cubes"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>cubes</button>
     </div>
@@ -845,8 +891,14 @@ cubes = (function() {
         </section>
         <section id="compatibility">
           <h3>Compatibility</h3>
-<p>With the exception of <a href="#modules">modules</a> (<code>import</code> and <code>export</code> statements) and <a href="#jsx">JSX</a>, all the modern JavaScript features that CoffeeScript supports can run natively in Node 7.6+, meaning that Node can run CoffeeScript’s output without any further processing required. You can <a href="test.html">run the tests in your browser</a> to see if your browser can do the same. For older browsers or older versions of Node, however, <a href="#transpilation">transpilation</a> is required.</p>
-<p>Support for modern JavaScript syntax is important to ensure compatibility with frameworks that assume modern features. Now that CoffeeScript compiles classes to the <code>class</code> keyword, it’s possible to <code>extend</code> a JavaScript class; that wasn’t possible in CoffeeScript 1. Parity in how language features work is also important on its own; CoffeeScript “is just JavaScript,” and so things like <a href="#breaking-changes-default-values">function parameter default values</a> should behave the same in CoffeeScript as in JavaScript. Some such features behave slightly differently in JavaScript than they did in CoffeeScript 1; in such cases we are conforming with the JavaScript spec, and we’ve documented the differences as <a href="#breaking-changes">breaking changes</a>.</p>
+<p>Most modern JavaScript features that CoffeeScript supports can run natively in Node 7.6+, meaning that Node can run CoffeeScript’s output without any further processing required. Here are some notable exceptions:</p>
+<ul>
+<li><a href="#modules">Modules</a> and <a href="#jsx">JSX</a> always require transpilation.</li>
+<li><a href="http://coffeescript.org/#splats">Splats, a.k.a. object rest/spread syntax, for objects</a> are supported by Node 8.6+.</li>
+<li>The <a href="https://github.com/tc39/proposal-regexp-dotall-flag">regular expression <code>s</code> (dotall) flag</a> is supported by Node 9+.</li>
+<li><a href="https://github.com/tc39/proposal-async-iteration">Async generator functions</a> are supported by Node 10+.</li>
+</ul>
+<p>This list may be incomplete, and excludes versions of Node that support newer features behind flags; please refer to <a href="http://node.green/">node.green</a> for full details. You can <a href="test.html">run the tests in your browser</a> to see what your browser supports. It is your responsibility to ensure that your runtime supports the modern features you use; or that you <a href="#transpilation">transpile</a> your code. When in doubt, transpile.</p>
 
         </section>
       </section>
@@ -1067,7 +1119,7 @@ cube = function(x) {
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="functions" data-run="cube%285%29"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>cube(5)</button>
     </div>
@@ -1104,7 +1156,7 @@ fill = function(container, liquid = "coffee") {
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="default_args" data-run="fill%28%22cup%22%29"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>fill(&quot;cup&quot;)</button>
     </div>
@@ -1153,7 +1205,7 @@ sentence = `${22 / 7} is a decent approximation of π`;
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="interpolation" data-run="sentence"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>sentence</button>
     </div>
@@ -1194,7 +1246,7 @@ mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- 
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="strings" data-run="mobyDick"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>mobyDick</button>
     </div>
@@ -1233,7 +1285,7 @@ html = "<strong>\n  cup of coffeescript\n</strong>";
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="heredocs" data-run="html"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>html</button>
     </div>
@@ -1337,7 +1389,7 @@ kids = {
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="objects_and_arrays" data-run="song.join%28%22%20%u2026%20%22%29"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>song.join(&quot; … &quot;)</button>
     </div>
@@ -1493,7 +1545,7 @@ inner = changeNumbers();
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="scope" data-run="inner"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>inner</button>
     </div>
@@ -1674,7 +1726,7 @@ alert(`Gold: ${gold}\nSilver: ${silver}\nThe Field: ${rest.join(', ')}`);
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="splats" data-run="true"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small></button>
     </div>
@@ -1720,7 +1772,7 @@ all = [...popular, ...unwanted, 'mushrooms'];
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="array_spread" data-run="all"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>all</button>
     </div>
@@ -1746,29 +1798,29 @@ currentUser = { user..., status: 'Uncertain' }
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="object_spread-js">var currentUser, user,
-  _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+      <textarea class="javascript-output" id="object_spread-js">var currentUser, user;
 
 user = {
   name: 'Werner Heisenberg',
   occupation: 'theoretical physicist'
 };
 
-currentUser = _extends({}, user, {
+currentUser = {
+  ...user,
   status: 'Uncertain'
-});
+};
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">currentUser</span>, <span class="cm-def">user</span>,
-  <span class="cm-def">_extends</span> <span class="cm-operator">=</span> <span class="cm-variable">Object</span>.<span class="cm-property">assign</span> <span class="cm-operator">||</span> <span class="cm-keyword">function</span> (<span class="cm-def">target</span>) { <span class="cm-keyword">for</span> (<span class="cm-keyword">var</span> <span class="cm-def">i</span> <span class="cm-operator">=</span> <span class="cm-number">1</span>; <span class="cm-variable-2">i</span> <span class="cm-operator">&lt;</span> <span class="cm-variable-2">arguments</span>.<span class="cm-property">length</span>; <span class="cm-variable-2">i</span><span class="cm-operator">++</span>) { <span class="cm-keyword">var</span> <span class="cm-def">source</span> <span class="cm-operator">=</span> <span class="cm-variable-2">arguments</span>[<span class="cm-variable-2">i</span>]; <span class="cm-keyword">for</span> (<span class="cm-keyword">var</span> <span class="cm-def">key</span> <span class="cm-keyword">in</span> <span class="cm-variable-2">source</span>) { <span class="cm-keyword">if</span> (<span class="cm-variable">Object</span>.<span class="cm-property">prototype</span>.<span class="cm-property">hasOwnProperty</span>.<span class="cm-property">call</span>(<span class="cm-variable-2">source</span>, <span class="cm-variable-2">key</span>)) { <span class="cm-variable-2">target</span>[<span class="cm-variable-2">key</span>] <span class="cm-operator">=</span> <span class="cm-variable-2">source</span>[<span class="cm-variable-2">key</span>]; } } } <span class="cm-keyword">return</span> <span class="cm-variable-2">target</span>; };
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">currentUser</span>, <span class="cm-def">user</span>;
 
 <span class="cm-variable">user</span> <span class="cm-operator">=</span> {
   <span class="cm-property">name</span>: <span class="cm-string">'Werner Heisenberg'</span>,
   <span class="cm-property">occupation</span>: <span class="cm-string">'theoretical physicist'</span>
 };
 
-<span class="cm-variable">currentUser</span> <span class="cm-operator">=</span> <span class="cm-variable">_extends</span>({}, <span class="cm-variable">user</span>, {
+<span class="cm-variable">currentUser</span> <span class="cm-operator">=</span> {
+  <span class="cm-meta">...</span><span class="cm-variable">user</span>,
   <span class="cm-property">status</span>: <span class="cm-string">'Uncertain'</span>
-});
+};
 </pre>
     </div>
   </div>
@@ -1776,14 +1828,14 @@ currentUser = _extends({}, user, {
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="object_spread" data-run="JSON.stringify%28currentUser%29"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>JSON.stringify(currentUser)</button>
     </div>
   </div>
   
 </aside>
-<p>In ECMAScript this is called <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator">spread syntax</a>, and has been supported for arrays since ES2015 but is <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator#Spread_in_object_literals">coming soon for objects</a>. Until object spread syntax is officially supported, the CoffeeScript compiler outputs the same polyfill as <a href="https://babeljs.io/docs/plugins/transform-object-rest-spread/">Babel’s rest spread transform</a>; but once it is supported, we will revise the compiler’s output. Note that there are <a href="https://developers.google.com/web/updates/2017/06/object-rest-spread">very subtle differences</a> between the polyfill and the current proposal.</p>
+<p>In ECMAScript this is called <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator">spread syntax</a>, and has been supported for arrays since ES2015 and objects since ES2018.</p>
 
         </section>
         <section id="loops">
@@ -1934,7 +1986,7 @@ countdown = (function() {
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="range_comprehensions" data-run="countdown"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>countdown</button>
     </div>
@@ -2004,7 +2056,7 @@ ages = (function() {
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="object_comprehensions" data-run="ages.join%28%22%2C%20%22%29"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>ages.join(&quot;, &quot;)</button>
     </div>
@@ -2095,7 +2147,7 @@ lyrics = (function() {
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="while" data-run="lyrics.join%28%22%5Cn%22%29"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>lyrics.join(&quot;\n&quot;)</button>
     </div>
@@ -2211,7 +2263,7 @@ copy = numbers.slice(0);
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="slices" data-run="middle"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>middle</button>
     </div>
@@ -2252,7 +2304,7 @@ splice.apply(numbers, [3, 4].concat(ref = [-3, -4, -5, -6])), ref;
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="splices" data-run="numbers"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>numbers</button>
     </div>
@@ -2332,7 +2384,7 @@ eldest = 24 > 21 ? "Liz" : "Ike";
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="expressions" data-run="eldest"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>eldest</button>
     </div>
@@ -2364,7 +2416,7 @@ six = (one = 1) + (two = 2) + (three = 3);
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="expressions_assignment" data-run="six"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>six</button>
     </div>
@@ -2415,7 +2467,7 @@ globals = ((function() {
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="expressions_comprehension" data-run="globals"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>globals</button>
     </div>
@@ -2470,7 +2522,7 @@ alert((function() {
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="expressions_try" data-run="true"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small></button>
     </div>
@@ -2582,7 +2634,7 @@ tabs.selectTabAtIndex(modulo(tabs.currentIndex - count, tabs.length));
 </tr>
 <tr>
 <td><code>a ** b</code></td>
-<td><code>Math.pow(a, b)</code></td>
+<td><code>a ** b</code></td>
 </tr>
 <tr>
 <td><code>a // b</code></td>
@@ -2734,7 +2786,7 @@ footprints = typeof yeti !== "undefined" && yeti !== null ? yeti : "bear";
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="existence" data-run="footprints"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>footprints</button>
     </div>
@@ -2936,7 +2988,7 @@ theSwitch = 0;
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="parallel_assignment" data-run="theBait"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>theBait</button>
     </div>
@@ -2985,7 +3037,7 @@ weatherReport = function(location) {
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="multiple_return_values" data-run="forecast"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>forecast</button>
     </div>
@@ -3072,7 +3124,7 @@ futurists = {
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="object_extraction" data-run="name%20+%20%22-%22%20+%20street"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>name + &quot;-&quot; + street</button>
     </div>
@@ -3113,7 +3165,7 @@ ref = tag.split(""), [open, ...contents] = ref, [close] = splice.call(contents, 
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="patterns_and_splats" data-run="contents.join%28%22%22%29"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>contents.join(&quot;&quot;)</button>
     </div>
@@ -3156,7 +3208,7 @@ ref = text.split(" "), [first] = ref, [last] = slice.call(ref, -1);
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="expansion" data-run="first%20+%20%22%20%22%20+%20last"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>first + &quot; &quot; + last</button>
     </div>
@@ -3215,7 +3267,7 @@ tim = new Person({
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="constructor_destructuring" data-run="tim.age%20+%20%22%20%22%20+%20tim.height"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>tim.age + &quot; &quot; + tim.height</button>
     </div>
@@ -3227,7 +3279,7 @@ tim = new Person({
         </section>
         <section id="fat-arrow">
           <h2>Bound (Fat Arrow) Functions</h2>
-<p>In JavaScript, the <code>this</code> keyword is dynamically scoped to mean the object that the current function is attached to. If you pass a function as a callback or attach it to a different object, the original value of <code>this</code> will be lost. If you’re not familiar with this behavior, <a href="http://64.13.255.16/articles/scope_in_javascript/">this Digital Web article</a> gives a good overview of the quirks.</p>
+<p>In JavaScript, the <code>this</code> keyword is dynamically scoped to mean the object that the current function is attached to. If you pass a function as a callback or attach it to a different object, the original value of <code>this</code> will be lost. If you’re not familiar with this behavior, <a href="https://web.archive.org/web/20150316122013/http://www.digital-web.com/articles/scope_in_javascript">this Digital Web article</a> gives a good overview of the quirks.</p>
 <p>The fat arrow <code>=&gt;</code> can be used to both define a function, and to bind it to the current value of <code>this</code>, right on the spot. This is helpful when using callback-based libraries like Prototype or jQuery, for creating iterator functions to pass to <code>each</code>, or event-handler functions to use with <code>on</code>. Functions created with the fat arrow are able to access properties of the <code>this</code> where they’re defined.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="fat_arrow">
   <div class="row">
@@ -3334,7 +3386,7 @@ window.ps || (window.ps = perfectSquares());
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="generators" data-run="ps.next%28%29.value"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>ps.next().value</button>
     </div>
@@ -3431,7 +3483,7 @@ getFibonacciNumbers = function(length) {
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="generator_iteration" data-run="getFibonacciNumbers%2810%29"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>getFibonacciNumbers(10)</button>
     </div>
@@ -3545,7 +3597,7 @@ countdown(3);
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="async" data-run="true"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small></button>
     </div>
@@ -3686,7 +3738,7 @@ tom.move();
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="classes" data-run="true"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small></button>
     </div>
@@ -3765,7 +3817,7 @@ Teenager = class Teenager {
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="static" data-run="Teenager.say%28%22Are%20we%20there%20yet%3F%22%29"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>Teenager.say(&quot;Are we there yet?&quot;)</button>
     </div>
@@ -3803,7 +3855,7 @@ Teenager = class Teenager {
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="prototypes" data-run="%22one_two%22.dasherize%28%29"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>&quot;one_two&quot;.dasherize()</button>
     </div>
@@ -4055,7 +4107,7 @@ healthy = (200 > cholesterol && cholesterol > 60);
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="comparisons" data-run="healthy"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>healthy</button>
     </div>
@@ -4162,7 +4214,7 @@ greet = function(name, adjective) {
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="tagged_template_literals" data-run="greet%28%22greg%22%2C%20%22awesome%22%29"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>greet(&quot;greg&quot;, &quot;awesome&quot;)</button>
     </div>
@@ -4354,7 +4406,7 @@ export {
   
 </aside>
 <div id="modules-note" class="bookmark"></div>
-<p>Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an <code>import</code> or <code>export</code> statement in CoffeeScript will produce an <code>import</code> or <code>export</code> statement in the resulting output. It is your responsibility attach another transpiler, such as <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>, <a href="http://babeljs.io/">Babel</a> or <a href="https://github.com/rollup/rollup">Rollup</a>, to convert this ES2015 syntax into code that will work in your target runtimes.</p>
+<p>Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an <code>import</code> or <code>export</code> statement in CoffeeScript will produce an <code>import</code> or <code>export</code> statement in the resulting output. It is your responsibility to <a href="#transpilation">transpile</a> this ES2015 syntax into code that will work in your target runtimes.</p>
 <p>Also note that any file with an <code>import</code> or <code>export</code> statement will be output without a <a href="#lexical-scope">top-level function safety wrapper</a>; in other words, importing or exporting modules will automatically trigger <a href="#usage">bare</a> mode for that file. This is because per the ES2015 spec, <code>import</code> or <code>export</code> statements must occur at the topmost scope.</p>
 
         </section>
@@ -4392,7 +4444,7 @@ hi = function() {
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="embedded" data-run="hi%28%29"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>hi()</button>
     </div>
@@ -4432,7 +4484,7 @@ markdown = function () {
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="embedded_escaped" data-run="markdown%28%29"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>markdown()</button>
     </div>
@@ -4477,7 +4529,7 @@ function time() {
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="embedded_block" data-run="time%28%29"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>time()</button>
     </div>
@@ -4790,7 +4842,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
         <section id="annotated-source">
           <h2>Annotated Source</h2>
-<p>You can browse the CoffeeScript 2.2.4 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+<p>You can browse the CoffeeScript 2.3.0 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
 <li><a href="annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
@@ -4911,7 +4963,7 @@ Object.defineProperty(screen, 'height', {
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="get_set" data-run="screen.height"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>screen.height</button>
     </div>
@@ -4975,7 +5027,7 @@ outer(1, 2); // Returns '' in CoffeeScript 1.x, '1, 2' in CoffeeScript 2
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="breaking_change_fat_arrow" data-run="outer%281%2C%202%29"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>outer(1, 2)</button>
     </div>
@@ -5022,7 +5074,7 @@ f(null); // Returns 1 in CoffeeScript 1.x, null in CoffeeScript 2
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="breaking_change_function_parameter_default_values" data-run="f%28null%29"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>f(null)</button>
     </div>
@@ -5064,7 +5116,7 @@ a; // Equals 1 in CoffeeScript 1.x, null in CoffeeScript 2
   <div class="row">
     <div class="col text-right">
       <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="breaking_change_destructuring_default_values" data-run="a"><small><svg class="play-button" viewBox="0 0 24 24">
-  <path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"/>
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
 </svg>
 </small>a</button>
     </div>
@@ -5467,6 +5519,17 @@ x = <span class="number">2</span> + <span class="number">2</span>
       </section>
       <section id="changelog">
         <h2>Changelog</h2>
+<div class="anchor" id="2.3.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/2.2.4...2.3.0">2.3.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2018-04-29">April 29, 2018</time></span>
+</h2><ul>
+<li>This release adds support for all the new features and syntaxes in ES2018 that weren’t already possible in CoffeeScript. For all of the below features, make sure that you <a href="#transpilation">transpile</a> unless you know that your target runtime(s) support each feature.</li>
+<li>Asynchronous iterators are now supported. You can now <code>yield</code> an <code>await</code> call, e.g. <code>do -&gt; until file.EOF then yield await file.readLine()</code>.</li>
+<li>Object splats/destructuring, a.k.a. object rest/spread syntax, has been standardized as part of ES2018 and therefore this release removes the polyfill that had previously been supporting this syntax. Code like <code>{a, b, rest...} = obj</code> now outputs more or less just like it appears, rather than being converted into an <code>Object.assign</code> call. Note that there are <a href="https://developers.google.com/web/updates/2017/06/object-rest-spread">some subtle differences</a> between the <code>Object.assign</code> polyfill and the native implementation.</li>
+<li>The exponentiation operator, <code>**</code>, and exponentiation assignment operator <code>**=</code> are new to JavaScript in ES2018. Now code like <code>a ** 3</code> is output as it appears, rather than being converted into <code>Math.pow(a, 3)</code> as it was before.</li>
+<li>The <code>s</code> (dotAll) flag is now supported in regular expressions.</li>
+</ul>
 <div class="anchor" id="2.2.4"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/2.2.3...2.2.4">2.2.4</a>
@@ -6230,24 +6293,14 @@ The <code>extends</code> keyword now functions identically to <code>goog.inherit
 
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js" integrity="sha384-xBuQ/xzmlsLoJpyjoggmTEz8OWUFM0/RC5BsqQBDX2v5cMvDHcMakNTNrHIW2I5f" crossorigin="anonymous"></script>
-<script>
-  window.Popper = {}; // Remove if we want to use Bootstrap tooltips
-</script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/combine/npm/codemirror@5.29.0/lib/codemirror.js,npm/codemirror@5.29.0/mode/coffeescript/coffeescript.js,npm/codemirror@5.29.0/addon/lint/coffeescript-lint.js,npm/codemirror@5.29.0/mode/javascript/javascript.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/combine/npm/codemirror@5.37.0/lib/codemirror.js,npm/codemirror@5.37.0/mode/coffeescript/coffeescript.js,npm/codemirror@5.37.0/addon/lint/coffeescript-lint.js,npm/codemirror@5.37.0/mode/javascript/javascript.js"></script>
 
 <script src="browser-compiler/coffeescript.js"></script>
 <script>
-(function(){window.location.origin||(window.location.origin=window.location.protocol+'//'+window.location.hostname),$(document).ready(function(){var clearHash,closeTry,editors,initializeEditor,initializeScrollspyFromHash,initializeTryEditors,lastCompilationElapsedTime,previousHash,replaceState,textareas,toggleSidebar,toggleTry;if(toggleSidebar=function(){return $('.navbar-toggler, .sidebar').toggleClass('show')},$('[data-toggle="offcanvas"]').click(toggleSidebar),$('[data-action="sidebar-nav"]').click(function(a){return $('.navbar-toggler').is(':visible')&&(a.preventDefault(),toggleSidebar(),setTimeout(function(){return window.location=a.target.href},260)),gtag('event','sidebar_navigate',{event_category:'navigation',event_label:a.target.href.replace(window.location.origin,'')})}),$('body').scrollspy({target:'#contents',offset:Math.round($('main').css('padding-top').replace('px',''))}),initializeScrollspyFromHash=function(a){return $('#contents a.active[href!=\''+a+'\']').removeClass('show')},$(window).on('activate.bs.scrollspy',function(a,b){var c;if($('#contents a.active[href!=\''+b.relatedTarget+'\']').removeClass('show'),c=$('#contents a[href=\''+b.relatedTarget+'\']'),c.prop('href')!==window.location.origin+'/#try')return replaceState(c.prop('href')),gtag('config',GA_TRACKING_ID,{page_path:c.prop('href').replace(window.location.origin,'')})}),textareas=[],editors=[],lastCompilationElapsedTime=200,$('textarea').each(function(a){return textareas[a]=this,$(this).data('index',a)}),initializeEditor=function(a){var b,c,d,e;if(c=a.data('index'),d=a.hasClass('javascript-output')?'javascript':'coffeescript',editors[c]=b=CodeMirror.fromTextArea(a[0],{mode:d,theme:'twilight',indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:'contenteditable',readOnly:'coffeescript'!==d,viewportMargin:2e308}),'coffeescript'===d)return e=null,b.on('change',function(){return clearTimeout(e),e=setTimeout(function(){var d,e,f,g,h;f=Date.now();try{if(d=b.getValue(),0===c&&$('#try').hasClass('show')){$('#try').hasClass('show')&&(g='try:'+encodeURIComponent(d),replaceState(window.location.href.split('#')[0]+'#'+g));try{null!=window.localStorage&&window.localStorage.setItem('tryCoffeeScriptCode',d)}catch(a){e=a}}h=CoffeeScript.compile(d,{bare:!0}),lastCompilationElapsedTime=Math.max(200,Date.now()-f)}catch(a){e=a,h=''+e}return editors[c+1].setValue(h),gtag('event','edit_code',{event_category:'engagement',event_label:a.closest('[data-example]').data('example')})},lastCompilationElapsedTime)}),b.addKeyMap({Tab:function Tab(a){return a.somethingSelected()?a.indentSelection('add'):/^\t/m.test(a.getValue())?a.execCommand('insertTab'):a.execCommand('insertSoftTab')},"Shift-Tab":function ShiftTab(a){return a.indentSelection('subtract')},Enter:function Enter(a){return a.options.indentWithTabs=/^\t/m.test(a.getValue()),a.execCommand('newlineAndIndent')}})},$('.placeholder-code').one('mouseover',function(){var a,b;return b=$(this).prev('textarea'),$(this).remove(),initializeEditor(b),a=$(b.parent().siblings()[0]),a.children('.placeholder-code').remove(),initializeEditor($(a.children('textarea')[0]))}),initializeTryEditors=function(){return initializeEditor($('#try-coffeescript-coffee')),initializeEditor($('#try-coffeescript-js'))},$('[data-action="run-code-example"]').click(function(){var index,js,run;return run=$(this).data('run'),index=$('#'+$(this).data('example')+'-js').data('index'),js=null==editors[index]?$(textareas[index]).val():editors[index].getValue(),!0!==run&&(js=js+'\nalert('+unescape(run)+');'),eval(js),gtag('event','run_code',{event_category:'engagement',event_label:$(this).closest('[data-example]').data('example')})}),previousHash=null,toggleTry=function(a){var b,c;if($('#try, #try-link').toggleClass('show'),!$('#try').hasClass('show'))return previousHash?replaceState(previousHash):clearHash();if(window.location.hash&&(previousHash=window.location.hash),0===$('#try .CodeMirror').length&&initializeTryEditors(),a&&null!=window.localStorage)try{return b=window.localStorage.getItem('tryCoffeeScriptCode'),null==b?replaceState('#try'):editors[0].setValue(b)}catch(a){return c=a,replaceState('#try')}else return replaceState('#try')},closeTry=function(){return $('#try, #try-link').removeClass('show'),previousHash?replaceState(previousHash):clearHash()},$('[data-toggle="try"]').click(function(a){return a.preventDefault(),toggleTry(!0)}),$('[data-close="try"]').click(closeTry),clearHash=function(){return window.history.replaceState({},document.title,window.location.pathname)},replaceState=function(a){return 0===(null==a?void 0:a.indexOf('#'))&&(a=''+window.location.pathname+a),window.history.replaceState({},document.title,a||'')},$(window).on('hashchange',function(){if(''===window.location.hash)return clearHash()}),null!=window.location.hash){if('#try'===window.location.hash)return toggleTry(!0);if(0===window.location.hash.indexOf('#try'))return 0===$('#try .CodeMirror').length&&initializeTryEditors(),editors[0].setValue(decodeURIComponent(window.location.hash.slice(5))),toggleTry(!1);if(''===window.location.hash)return clearHash();if(initializeScrollspyFromHash(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,'')).scrollIntoView()}})}).call(this);
+(function(){window.location.origin||(window.location.origin=window.location.protocol+'//'+window.location.hostname),window.GA_TRACKING_ID='UA-106156830-1',null==window.dataLayer&&(window.dataLayer=[]),window.gtag=function(){window.dataLayer.push(arguments)},window.gtag('js',new Date),window.gtag('config',window.GA_TRACKING_ID),$(document).ready(function(){var clearHash,closeTry,editors,initializeEditor,initializeScrollspyFromHash,initializeTryEditors,lastCompilationElapsedTime,previousHash,replaceState,textareas,toggleSidebar,toggleTry;if(toggleSidebar=function(){return $('.navbar-toggler, .sidebar').toggleClass('show')},$('[data-toggle="offcanvas"]').click(toggleSidebar),$('[data-action="sidebar-nav"]').click(function(a){return $('.navbar-toggler').is(':visible')&&(a.preventDefault(),toggleSidebar(),setTimeout(function(){return window.location=a.target.href},260)),gtag('event','sidebar_navigate',{event_category:'navigation',event_label:a.target.href.replace(window.location.origin,'')})}),$('.main').scrollspy({target:'#contents',offset:Math.round($('main').css('padding-top').replace('px',''))}),initializeScrollspyFromHash=function(a){return $('#contents a.active[href!=\''+a+'\']').removeClass('show')},$('.main').on('activate.bs.scrollspy',function(a,b){var c;if($('#contents a.active[href!=\''+b.relatedTarget+'\']').removeClass('show'),c=$('#contents a[href=\''+b.relatedTarget+'\']'),c.prop('href')!==window.location.origin+'/#try')return replaceState(c.prop('href')),gtag('config',GA_TRACKING_ID,{page_path:c.prop('href').replace(window.location.origin,'')})}),textareas=[],editors=[],lastCompilationElapsedTime=200,$('textarea').each(function(a){return textareas[a]=this,$(this).data('index',a)}),initializeEditor=function(a){var b,c,d,e;if(c=a.data('index'),d=a.hasClass('javascript-output')?'javascript':'coffeescript',editors[c]=b=CodeMirror.fromTextArea(a[0],{mode:d,theme:'twilight',indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:'contenteditable',readOnly:'coffeescript'!==d,viewportMargin:2e308}),'coffeescript'===d)return e=null,b.on('change',function(){return clearTimeout(e),e=setTimeout(function(){var d,e,f,g,h;f=Date.now();try{if(d=b.getValue(),0===c&&$('#try').hasClass('show')){$('#try').hasClass('show')&&(g='try:'+encodeURIComponent(d),replaceState(window.location.href.split('#')[0]+'#'+g));try{null!=window.localStorage&&window.localStorage.setItem('tryCoffeeScriptCode',d)}catch(a){e=a}}h=CoffeeScript.compile(d,{bare:!0}),lastCompilationElapsedTime=Math.max(200,Date.now()-f)}catch(a){e=a,h=''+e}return editors[c+1].setValue(h),gtag('event','edit_code',{event_category:'engagement',event_label:a.closest('[data-example]').data('example')})},lastCompilationElapsedTime)}),b.addKeyMap({Tab:function Tab(a){return a.somethingSelected()?a.indentSelection('add'):/^\t/m.test(a.getValue())?a.execCommand('insertTab'):a.execCommand('insertSoftTab')},"Shift-Tab":function ShiftTab(a){return a.indentSelection('subtract')},Enter:function Enter(a){return a.options.indentWithTabs=/^\t/m.test(a.getValue()),a.execCommand('newlineAndIndent')}})},$('.placeholder-code').one('mouseover',function(){var a,b;return b=$(this).prev('textarea'),$(this).remove(),initializeEditor(b),a=$(b.parent().siblings()[0]),a.children('.placeholder-code').remove(),initializeEditor($(a.children('textarea')[0]))}),initializeTryEditors=function(){return initializeEditor($('#try-coffeescript-coffee')),initializeEditor($('#try-coffeescript-js'))},$('[data-action="run-code-example"]').click(function(){var index,js,run;return run=$(this).data('run'),index=$('#'+$(this).data('example')+'-js').data('index'),js=null==editors[index]?$(textareas[index]).val():editors[index].getValue(),!0!==run&&(js=js+'\nalert('+unescape(run)+');'),eval(js),gtag('event','run_code',{event_category:'engagement',event_label:$(this).closest('[data-example]').data('example')})}),previousHash=null,toggleTry=function(a){var b,c;if($('#try, #try-link').toggleClass('show'),!$('#try').hasClass('show'))return previousHash?replaceState(previousHash):clearHash();if(window.location.hash&&(previousHash=window.location.hash),0===$('#try .CodeMirror').length&&initializeTryEditors(),a&&null!=window.localStorage)try{return b=window.localStorage.getItem('tryCoffeeScriptCode'),null==b?replaceState('#try'):editors[0].setValue(b)}catch(a){return c=a,replaceState('#try')}else return replaceState('#try')},closeTry=function(){return $('#try, #try-link').removeClass('show'),previousHash?replaceState(previousHash):clearHash()},$('[data-toggle="try"]').click(function(a){return a.preventDefault(),toggleTry(!0)}),$('[data-close="try"]').click(closeTry),$('[data-action="scroll-to-top"]').click(function(){if(!$('#try').hasClass('show'))return $('.main')[0].scrollTop=0,setTimeout(clearHash,10)}),clearHash=function(){return window.history.replaceState({},document.title,window.location.pathname)},replaceState=function(a){return 0===(null==a?void 0:a.indexOf('#'))&&(a=''+window.location.pathname+a),window.history.replaceState({},document.title,a||'')},$(window).on('hashchange',function(){if(''===window.location.hash)return clearHash()}),null!=window.location.hash){if('#try'===window.location.hash)return toggleTry(!0);if(0===window.location.hash.indexOf('#try'))return 0===$('#try .CodeMirror').length&&initializeTryEditors(),editors[0].setValue(decodeURIComponent(window.location.hash.slice(5))),toggleTry(!1);if(''===window.location.hash)return clearHash();if(initializeScrollspyFromHash(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,'')).scrollIntoView()}})}).call(this);
 </script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-106156830-1"></script>
-<script>
-  window.GA_TRACKING_ID = 'UA-106156830-1';
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments)};
-  gtag('js', new Date());
-  gtag('config', GA_TRACKING_ID);
-</script>
 
 </body>
 </html>

@@ -39,7 +39,7 @@ All together now:
 | `a in b` | `[].indexOf.call(b, a) >= 0` |
 | `a of b` | `a in b` |
 | `for a from b` | `for (a of b)` |
-| `a ** b` | `Math.pow(a, b)` |
+| `a ** b` | `a ** b` |
 | `a // b` | `Math.floor(a / b)` |
 | `a %% b` | `(a % b + b) % b` |
 
