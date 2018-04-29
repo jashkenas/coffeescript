@@ -1,3 +1,4 @@
+```
       @@@@@@@                @@@@  @@@@@
      @@@@@@@@@@              @@@   @@@                                           {
     @@@@     @@              @@@   @@@                                        }   }   {
@@ -22,6 +23,7 @@
                                        @@@          @@@@
                                       @@@
                                       @@@
+```
 
 CoffeeScript is a little language that compiles into JavaScript.
 
