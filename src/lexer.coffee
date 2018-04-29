@@ -944,7 +944,7 @@ exports.Lexer = class Lexer
 
   # Same as `token`, except this just returns the token without adding it
   # to the results.
-  makeToken: (tag, value, offsetInChunk = 0, length = value.length) ->
+  makeToken: (tag, value, offsetInChunk = 0, length = value.length, origin, data) ->
     locationData = {}
     [locationData.first_line, locationData.first_column] =
       @getLineAndColumnFromChunk offsetInChunk
@@ -956,6 +956,8 @@ exports.Lexer = class Lexer
       @getLineAndColumnFromChunk offsetInChunk + lastCharacter
 
     token = [tag, value, locationData]
+    token.origin = origin if origin
+    token.data = data if data
 
     token
 
@@ -965,9 +967,8 @@ exports.Lexer = class Lexer
   # not specified, the length of `value` will be used.
   #
   # Returns the new token.
-  token: (tag, value, offsetInChunk, length, origin) ->
-    token = @makeToken tag, value, offsetInChunk, length
-    token.origin = origin if origin
+  token: (tag, value, offsetInChunk, length, origin, data) ->
+    token = @makeToken tag, value, offsetInChunk, length, origin, data
     @tokens.push token
     token
 
