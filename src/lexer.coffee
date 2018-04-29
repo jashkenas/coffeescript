@@ -305,6 +305,7 @@ exports.Lexer = class Lexer
     else
       @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
         value = @formatString value, delimiter: quote
+        # Remove indentation from multiline single-quoted strings.
         value = value.replace SIMPLE_STRING_OMIT, (match, offset) ->
           if (i is 0 and offset is 0) or
              (i is $ and offset + match.length is value.length)
@@ -766,7 +767,10 @@ exports.Lexer = class Lexer
       @validateEscapes strPart, {isRegex: delimiter.charAt(0) is '/', offsetInChunk}
 
       # Push a fake `'NEOSTRING'` token, which will get turned into a real string later.
-      tokens.push @makeToken 'NEOSTRING', strPart, offsetInChunk
+      tokens.push @makeToken 'NEOSTRING', strPart, offsetInChunk, strPart.length, undefined,
+        delimiter: delimiter
+        rawValue: strPart
+        indentLiteral: @indentLiteral
 
       str = str[strPart.length..]
       offsetInChunk += strPart.length
