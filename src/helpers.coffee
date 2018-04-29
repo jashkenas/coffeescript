@@ -111,16 +111,28 @@ buildLocationData = (first, last) ->
 buildLocationHash = (loc) ->
   "#{loc.first_line}x#{loc.first_column}-#{loc.last_line}x#{loc.last_column}"
 
-# Build a dictionary of comments organized by tokens’ locations used as
-# lookup hashes.
-consolidateComments = (parserState) ->
-  parserState.tokenComments = {}
-  for token in parserState.parser.tokens when token.comments
+# Build a dictionary of extra token properties organized by tokens’ locations
+# used as lookup hashes.
+buildTokenDataDictionary = (parserState) ->
+  tokenData = {}
+  for token in parserState.parser.tokens when token.comments or token.data
     tokenHash = buildLocationHash token[2]
-    unless parserState.tokenComments[tokenHash]?
-      parserState.tokenComments[tokenHash] = token.comments
-    else
-      parserState.tokenComments[tokenHash].push token.comments...
+    # Multiple tokens might have the same location hash, such as the generated
+    # `JS` tokens added at the start or end of the token stream to hold
+    # comments that start or end a file. On such “overlapping” tokens, we want
+    # to merge the comments together.
+    tokenData[tokenHash] ?= {}
+    if token.comments # `comments` is always an array.
+      if tokenData[tokenHash].comments?
+        tokenData[tokenHash].comments.push token.comments...
+      else
+        tokenData[tokenHash].comments = token.comments
+    if token.data # `data` is always an object.
+      # It doesn’t make sense to combine two tokens’ extra data properties, so
+      # just overwrite one with the other in case two tokens with the same hash
+      # both have metadata; but such an overlap shouldn’t happen.
+      tokenData[tokenHash].data = token.data
+  tokenData
 
 # This returns a function which takes an object as a parameter, and if that
 # object is an AST node, updates that object's locationData.
@@ -131,13 +143,14 @@ exports.addDataToNode = (parserState, first, last) ->
     if obj?.updateLocationDataIfMissing? and first?
       obj.updateLocationDataIfMissing buildLocationData(first, last)
 
-    # Add comments data
-    consolidateComments parserState unless parserState.tokenComments
+    # Add comments and data
+    parserState.tokenData ?= buildTokenDataDictionary parserState
     if obj.locationData?
       objHash = buildLocationHash obj.locationData
-      if parserState.tokenComments[objHash]?
-        attachCommentsToNode parserState.tokenComments[objHash], obj
-
+      if parserState.tokenData[objHash]?.comments?
+        attachCommentsToNode parserState.tokenData[objHash].comments, obj
+      if parserState.tokenData[objHash]?.data?
+        obj.data = parserState.tokenData[objHash].data
     obj
 
 exports.attachCommentsToNode = attachCommentsToNode = (comments, node) ->
