@@ -1,6 +1,15 @@
 ## Changelog
 
 ```
+releaseHeader('2018-04-29', '2.3.0', '2.2.4')
+```
+*   This release adds support for all the new features and syntaxes in ES2018 that weren’t already possible in CoffeeScript. For all of the below features, make sure that you [transpile](#transpilation) unless you know that your target runtime(s) support each feature.
+*   Asynchronous iterators are now supported. You can now `yield` an `await` call, e.g. `do -> until file.EOF then yield await file.readLine()`. 
+*   Object splats/destructuring, a.k.a. object rest/spread syntax, has been standardized as part of ES2018 and therefore this release removes the polyfill that had previously been supporting this syntax. Code like `{a, b, rest...} = obj` now outputs more or less just like it appears, rather than being converted into an `Object.assign` call. Note that there are [some subtle differences](https://developers.google.com/web/updates/2017/06/object-rest-spread) between the `Object.assign` polyfill and the native implementation.
+*   The exponentiation operator, `**`, and exponentiation assignment operator `**=` are new to JavaScript in ES2018. Now code like `a ** 3` is output as it appears, rather than being converted into `Math.pow(a, 3)` as it was before.
+*   The `s` (dotAll) flag is now supported in regular expressions.
+
+```
 releaseHeader('2018-03-29', '2.2.4', '2.2.3')
 ```
 *   When the `by` value in a `for` loop is a literal number, e.g. `for x in [2..1] by -1`, fewer checks are necessary to determine if the loop is in range.

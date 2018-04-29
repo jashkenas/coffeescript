@@ -580,11 +580,11 @@ the ordinary <strong>Assign</strong> is that these allow numbers and strings as 
     o <span class="hljs-string">'Identifier'</span>
     o <span class="hljs-string">'Property'</span>
     o <span class="hljs-string">'ThisProperty'</span>
-    o <span class="hljs-string">'[ Expression ]'</span>,          <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> ComputedPropertyName $<span class="hljs-number">2</span>
   ]
 
   ObjAssignable: [
     o <span class="hljs-string">'SimpleObjAssignable'</span>
+    o <span class="hljs-string">'[ Expression ]'</span>,          <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> ComputedPropertyName $<span class="hljs-number">2</span>
     o <span class="hljs-string">'AlphaNumeric'</span>
   ]</pre></div></div>
             
@@ -1492,26 +1492,31 @@ or postfix, with a single expression.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  For: [
-    o <span class="hljs-string">'Statement  ForBody'</span>,                     <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> For $<span class="hljs-number">1</span>, $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'Expression ForBody'</span>,                     <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> For $<span class="hljs-number">1</span>, $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'ForBody    Block'</span>,                       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> For $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'ForLineBody  Block'</span>,                     <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> For $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'Statement    ForBody'</span>,  <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2.</span>addBody $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'Expression   ForBody'</span>,  <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2.</span>addBody $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'ForBody      Block'</span>,    <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>addBody $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'ForLineBody  Block'</span>,    <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>addBody $<span class="hljs-number">2</span>
   ]
 
   ForBody: [
-    o <span class="hljs-string">'FOR Range'</span>,                              <span class="hljs-function">-&gt;</span> source: (LOC(<span class="hljs-number">2</span>) <span class="hljs-keyword">new</span> Value($<span class="hljs-number">2</span>))
-    o <span class="hljs-string">'FOR Range BY Expression'</span>,                <span class="hljs-function">-&gt;</span> source: (LOC(<span class="hljs-number">2</span>) <span class="hljs-keyword">new</span> Value($<span class="hljs-number">2</span>)), step: $<span class="hljs-number">4</span>
-    o <span class="hljs-string">'ForStart ForSource'</span>,                     <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2.</span>own = $<span class="hljs-number">1.</span>own; $<span class="hljs-number">2.</span>ownTag = $<span class="hljs-number">1.</span>ownTag; $<span class="hljs-number">2.</span>name = $<span class="hljs-number">1</span>[<span class="hljs-number">0</span>]; $<span class="hljs-number">2.</span>index = $<span class="hljs-number">1</span>[<span class="hljs-number">1</span>]; $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'FOR Range'</span>,                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> For [], source: (LOC(<span class="hljs-number">2</span>) <span class="hljs-keyword">new</span> Value($<span class="hljs-number">2</span>))
+    o <span class="hljs-string">'FOR Range BY Expression'</span>,  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> For [], source: (LOC(<span class="hljs-number">2</span>) <span class="hljs-keyword">new</span> Value($<span class="hljs-number">2</span>)), step: $<span class="hljs-number">4</span>
+    o <span class="hljs-string">'ForStart ForSource'</span>,       <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>addSource $<span class="hljs-number">2</span>
   ]
 
   ForLineBody: [
-    o <span class="hljs-string">'FOR Range BY ExpressionLine'</span>,            <span class="hljs-function">-&gt;</span> source: (LOC(<span class="hljs-number">2</span>) <span class="hljs-keyword">new</span> Value($<span class="hljs-number">2</span>)), step: $<span class="hljs-number">4</span>
-    o <span class="hljs-string">'ForStart ForLineSource'</span>,                 <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2.</span>own = $<span class="hljs-number">1.</span>own; $<span class="hljs-number">2.</span>ownTag = $<span class="hljs-number">1.</span>ownTag; $<span class="hljs-number">2.</span>name = $<span class="hljs-number">1</span>[<span class="hljs-number">0</span>]; $<span class="hljs-number">2.</span>index = $<span class="hljs-number">1</span>[<span class="hljs-number">1</span>]; $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'FOR Range BY ExpressionLine'</span>,  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> For [], source: (LOC(<span class="hljs-number">2</span>) <span class="hljs-keyword">new</span> Value($<span class="hljs-number">2</span>)), step: $<span class="hljs-number">4</span>
+    o <span class="hljs-string">'ForStart ForLineSource'</span>,       <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>addSource $<span class="hljs-number">2</span>
   ]
 
   ForStart: [
-    o <span class="hljs-string">'FOR ForVariables'</span>,                       <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'FOR OWN ForVariables'</span>,                   <span class="hljs-function">-&gt;</span> $<span class="hljs-number">3.</span>own = <span class="hljs-literal">yes</span>; $<span class="hljs-number">3.</span>ownTag = (LOC(<span class="hljs-number">2</span>) <span class="hljs-keyword">new</span> Literal($<span class="hljs-number">2</span>)); $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'FOR ForVariables'</span>,        <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> For [], name: $<span class="hljs-number">2</span>[<span class="hljs-number">0</span>], index: $<span class="hljs-number">2</span>[<span class="hljs-number">1</span>]
+    o <span class="hljs-string">'FOR AWAIT ForVariables'</span>,  <span class="hljs-function">-&gt;</span>
+        [name, index] = $<span class="hljs-number">3</span>
+        <span class="hljs-keyword">new</span> For [], {name, index, await: <span class="hljs-literal">yes</span>, awaitTag: (LOC(<span class="hljs-number">2</span>) <span class="hljs-keyword">new</span> Literal($<span class="hljs-number">2</span>))}
+    o <span class="hljs-string">'FOR OWN ForVariables'</span>,    <span class="hljs-function">-&gt;</span>
+        [name, index] = $<span class="hljs-number">3</span>
+        <span class="hljs-keyword">new</span> For [], {name, index, own: <span class="hljs-literal">yes</span>, ownTag: (LOC(<span class="hljs-number">2</span>) <span class="hljs-keyword">new</span> Literal($<span class="hljs-number">2</span>))}
   ]</pre></div></div>
             
         </li>

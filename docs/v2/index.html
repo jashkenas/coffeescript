@@ -692,7 +692,7 @@ textarea {
       <section id="overview">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.2.4">2.2.4</a></p>
+<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.3.0">2.3.0</a></p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash"><span class="comment"># Install locally for a project:</span>
 npm install --save-dev coffeescript
 
@@ -896,6 +896,7 @@ cubes = (function() {
 <li><a href="#modules">Modules</a> and <a href="#jsx">JSX</a> always require transpilation.</li>
 <li><a href="http://coffeescript.org/#splats">Splats, a.k.a. object rest/spread syntax, for objects</a> are supported by Node 8.6+.</li>
 <li>The <a href="https://github.com/tc39/proposal-regexp-dotall-flag">regular expression <code>s</code> (dotall) flag</a> is supported by Node 9+.</li>
+<li><a href="https://github.com/tc39/proposal-async-iteration">Async generator functions</a> are supported by Node 10+.</li>
 </ul>
 <p>This list may be incomplete, and excludes versions of Node that support newer features behind flags; please refer to <a href="http://node.green/">node.green</a> for full details. You can <a href="test.html">run the tests in your browser</a> to see what your browser supports. It is your responsibility to ensure that your runtime supports the modern features you use; or that you <a href="#transpilation">transpile</a> your code. When in doubt, transpile.</p>
 
@@ -1834,7 +1835,7 @@ currentUser = {
   </div>
   
 </aside>
-<p>In ECMAScript this is called <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator">spread syntax</a>, and has been supported for arrays since ES2015 but is <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator#Spread_in_object_literals">coming soon for objects</a>. Until object spread syntax is officially supported, the CoffeeScript compiler outputs the same polyfill as <a href="https://babeljs.io/docs/plugins/transform-object-rest-spread/">Babel’s rest spread transform</a>; but once it is supported, we will revise the compiler’s output. Note that there are <a href="https://developers.google.com/web/updates/2017/06/object-rest-spread">very subtle differences</a> between the polyfill and the current proposal.</p>
+<p>In ECMAScript this is called <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator">spread syntax</a>, and has been supported for arrays since ES2015 and objects since ES2018.</p>
 
         </section>
         <section id="loops">
@@ -2633,7 +2634,7 @@ tabs.selectTabAtIndex(modulo(tabs.currentIndex - count, tabs.length));
 </tr>
 <tr>
 <td><code>a ** b</code></td>
-<td><code>Math.pow(a, b)</code></td>
+<td><code>a ** b</code></td>
 </tr>
 <tr>
 <td><code>a // b</code></td>
@@ -3278,7 +3279,7 @@ tim = new Person({
         </section>
         <section id="fat-arrow">
           <h2>Bound (Fat Arrow) Functions</h2>
-<p>In JavaScript, the <code>this</code> keyword is dynamically scoped to mean the object that the current function is attached to. If you pass a function as a callback or attach it to a different object, the original value of <code>this</code> will be lost. If you’re not familiar with this behavior, <a href="http://64.13.255.16/articles/scope_in_javascript/">this Digital Web article</a> gives a good overview of the quirks.</p>
+<p>In JavaScript, the <code>this</code> keyword is dynamically scoped to mean the object that the current function is attached to. If you pass a function as a callback or attach it to a different object, the original value of <code>this</code> will be lost. If you’re not familiar with this behavior, <a href="https://web.archive.org/web/20150316122013/http://www.digital-web.com/articles/scope_in_javascript">this Digital Web article</a> gives a good overview of the quirks.</p>
 <p>The fat arrow <code>=&gt;</code> can be used to both define a function, and to bind it to the current value of <code>this</code>, right on the spot. This is helpful when using callback-based libraries like Prototype or jQuery, for creating iterator functions to pass to <code>each</code>, or event-handler functions to use with <code>on</code>. Functions created with the fat arrow are able to access properties of the <code>this</code> where they’re defined.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="fat_arrow">
   <div class="row">
@@ -4841,7 +4842,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
         <section id="annotated-source">
           <h2>Annotated Source</h2>
-<p>You can browse the CoffeeScript 2.2.4 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+<p>You can browse the CoffeeScript 2.3.0 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
 <li><a href="annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
@@ -5518,6 +5519,17 @@ x = <span class="number">2</span> + <span class="number">2</span>
       </section>
       <section id="changelog">
         <h2>Changelog</h2>
+<div class="anchor" id="2.3.0"></div>
+<h2 class="header">
+  <a href="https://github.com/jashkenas/coffeescript/compare/2.2.4...2.3.0">2.3.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2018-04-29">April 29, 2018</time></span>
+</h2><ul>
+<li>This release adds support for all the new features and syntaxes in ES2018 that weren’t already possible in CoffeeScript. For all of the below features, make sure that you <a href="#transpilation">transpile</a> unless you know that your target runtime(s) support each feature.</li>
+<li>Asynchronous iterators are now supported. You can now <code>yield</code> an <code>await</code> call, e.g. <code>do -&gt; until file.EOF then yield await file.readLine()</code>.</li>
+<li>Object splats/destructuring, a.k.a. object rest/spread syntax, has been standardized as part of ES2018 and therefore this release removes the polyfill that had previously been supporting this syntax. Code like <code>{a, b, rest...} = obj</code> now outputs more or less just like it appears, rather than being converted into an <code>Object.assign</code> call. Note that there are <a href="https://developers.google.com/web/updates/2017/06/object-rest-spread">some subtle differences</a> between the <code>Object.assign</code> polyfill and the native implementation.</li>
+<li>The exponentiation operator, <code>**</code>, and exponentiation assignment operator <code>**=</code> are new to JavaScript in ES2018. Now code like <code>a ** 3</code> is output as it appears, rather than being converted into <code>Math.pow(a, 3)</code> as it was before.</li>
+<li>The <code>s</code> (dotAll) flag is now supported in regular expressions.</li>
+</ul>
 <div class="anchor" id="2.2.4"></div>
 <h2 class="header">
   <a href="https://github.com/jashkenas/coffeescript/compare/2.2.3...2.2.4">2.2.4</a>
