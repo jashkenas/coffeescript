@@ -206,7 +206,8 @@ compileScript = (file, input, base = null) ->
     if opts.tokens
       printTokens CoffeeScript.tokens task.input, task.options
     else if opts.nodes
-      printLine CoffeeScript.nodes(task.input, task.options).toString().trim()
+      compiled = CoffeeScript.compile task.input, task.options
+      printLine JSON.stringify(compiled, null, 2)
     else if opts.run
       CoffeeScript.register()
       CoffeeScript.eval opts.prelude, task.options if opts.prelude
@@ -499,6 +500,7 @@ compileOptions = (filename, base) ->
     transpile: opts.transpile
     sourceMap: opts.map
     inlineMap: opts['inline-map']
+    nodes: opts.nodes
 
   if filename
     if base
