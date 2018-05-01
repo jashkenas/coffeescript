@@ -143,7 +143,7 @@ $(document).ready ->
     else
       $(textareas[index]).val()
     js = "#{js}\nalert(#{unescape run});" unless run is yes
-    eval js
+    window.eval js
     gtag 'event', 'run_code',
       event_category: 'engagement'
       event_label: $(@).closest('[data-example]').data('example')
