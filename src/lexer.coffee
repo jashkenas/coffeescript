@@ -769,8 +769,6 @@ exports.Lexer = class Lexer
       # Push a fake `'NEOSTRING'` token, which will get turned into a real string later.
       tokens.push @makeToken 'NEOSTRING', strPart, offsetInChunk, strPart.length, undefined,
         delimiter: delimiter
-        rawValue: strPart
-        indentLiteral: @indentLiteral
 
       str = str[strPart.length..]
       offsetInChunk += strPart.length
@@ -961,8 +959,13 @@ exports.Lexer = class Lexer
 
     token = [tag, value, locationData]
     token.origin = origin if origin
-    token.data = data if data
-
+    token.data =
+      tag: tag
+      value: value
+      baseIndent: @baseIndent
+      indent: @indent
+      indentLiteral: @indentLiteral
+    Object.assign token.data, data if data
     token
 
   # Add a token to the results.

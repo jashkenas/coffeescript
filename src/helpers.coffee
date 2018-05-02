@@ -120,18 +120,18 @@ buildTokenDataDictionary = (parserState) ->
     # Multiple tokens might have the same location hash, such as the generated
     # `JS` tokens added at the start or end of the token stream to hold
     # comments that start or end a file. On such “overlapping” tokens, we want
-    # to merge the comments together.
-    tokenData[tokenHash] ?= {}
+    # to merge the comments together; and store the data under keys for each
+    # token tag. In testing with the CoffeeScript codebase, the only time
+    # multiple tokens with the same tag overlap is for `OUTDENT` tags, which
+    # never become nodes, so we’re okay with one `OUTDENT` token’s data
+    # overwriting an earlier one.
+    tokenData[tokenHash] ?= data: {}
+    tokenData[tokenHash].data[token.data.tag] = token.data
     if token.comments # `comments` is always an array.
       if tokenData[tokenHash].comments?
         tokenData[tokenHash].comments.push token.comments...
       else
         tokenData[tokenHash].comments = token.comments
-    if token.data # `data` is always an object.
-      # It doesn’t make sense to combine two tokens’ extra data properties, so
-      # just overwrite one with the other in case two tokens with the same hash
-      # both have metadata; but such an overlap shouldn’t happen.
-      tokenData[tokenHash].data = token.data
   tokenData
 
 # This returns a function which takes an object as a parameter, and if that
@@ -150,7 +150,7 @@ exports.addDataToNode = (parserState, first, last) ->
       if parserState.tokenData[objHash]?.comments?
         attachCommentsToNode parserState.tokenData[objHash].comments, obj
       if parserState.tokenData[objHash]?.data?
-        obj.data = parserState.tokenData[objHash].data
+        obj.tokenData = parserState.tokenData[objHash].data
     obj
 
 exports.attachCommentsToNode = attachCommentsToNode = (comments, node) ->
