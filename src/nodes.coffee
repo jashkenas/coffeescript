@@ -478,14 +478,17 @@ exports.Block = class Block extends Base
   # ensures that the final expression is returned.
   makeReturn: (res) ->
     len = @expressions.length
+    [..., lastExp] = @expressions
+    lastExp = lastExp?.unwrap() or no
     # We also need to check that we’re not returning a CSX tag if there’s an
     # adjacent one at the same level; JSX doesn’t allow that.
-    if len > 1
-      [..., penult, last] = @expressions
+    if lastExp and lastExp instanceof Parens and lastExp.body.expressions.length > 1
+      {body:{expressions}} = lastExp
+      [..., penult, last] = expressions
       penult = penult.unwrap()
       last = last.unwrap()
       if penult instanceof Call and penult.csx and last instanceof Call and last.csx
-        @expressions[len-1].error 'Adjacent JSX elements must be wrapped in an enclosing tag'
+        expressions[expressions.length - 1].error 'Adjacent JSX elements must be wrapped in an enclosing tag'
     while len--
       expr = @expressions[len]
       @expressions[len] = expr.makeReturn res
