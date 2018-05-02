@@ -125,13 +125,15 @@ buildTokenDataDictionary = (parserState) ->
     # multiple tokens with the same tag overlap is for `OUTDENT` tags, which
     # never become nodes, so we’re okay with one `OUTDENT` token’s data
     # overwriting an earlier one.
-    tokenData[tokenHash] ?= data: {}
-    tokenData[tokenHash].data[token.data.tag] = token.data
+    tokenData[tokenHash] ?= {}
     if token.comments # `comments` is always an array.
       if tokenData[tokenHash].comments?
         tokenData[tokenHash].comments.push token.comments...
       else
         tokenData[tokenHash].comments = token.comments
+    if token.data
+      tokenData[tokenHash].data ?= {}
+      tokenData[tokenHash].data[token.data.tag] = token.data
   tokenData
 
 # This returns a function which takes an object as a parameter, and if that
