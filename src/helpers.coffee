@@ -111,6 +111,36 @@ buildLocationData = (first, last) ->
 buildLocationHash = (loc) ->
   "#{loc.first_line}x#{loc.first_column}-#{loc.last_line}x#{loc.last_column}"
 
+# Build a dictionary of extra token properties organized by tokens’ locations
+# used as lookup hashes.
+buildTokenDataDictionary = (parserState) ->
+  tokenData = {}
+  for token in parserState.parser.tokens when token.comments or token.data
+    tokenHash = buildLocationHash token[2]
+    # Multiple tokens might have the same location hash, such as the generated
+    # `JS` tokens added at the start or end of the token stream to hold
+    # comments that start or end a file.
+    tokenData[tokenHash] ?= {}
+    if token.comments # `comments` is always an array.
+      # For “overlapping” tokens, that is tokens with the same location data
+      # and therefore matching `tokenHash`es, merge the comments from both/all
+      # tokens together into one array, even if there are duplicate comments;
+      # they will get sorted out later.
+      if tokenData[tokenHash].comments?
+        tokenData[tokenHash].comments.push token.comments...
+      else
+        tokenData[tokenHash].comments = token.comments
+    if token.data
+      # For overlapping tokens that both have token data, add each token’s data
+      # under keys defined by each token’s tag. In testing with the
+      # CoffeeScript codebase, the only type of token that overlaps with other
+      # tokens that use the same tag is for `OUTDENT` tags, which never become
+      # nodes, so we’re okay with one `OUTDENT` token’s data overwriting an
+      # earlier one.
+      tokenData[tokenHash].data ?= {}
+      tokenData[tokenHash].data[token.data.tag] = token.data
+  tokenData
+
 # This returns a function which takes an object as a parameter, and if that
 # object is an AST node, updates that object's locationData.
 # The object is returned either way.
@@ -120,21 +150,14 @@ exports.addDataToNode = (parserState, first, last) ->
     if obj?.updateLocationDataIfMissing? and first?
       obj.updateLocationDataIfMissing buildLocationData(first, last)
 
-    # Add comments data
-    unless parserState.tokenComments
-      parserState.tokenComments = {}
-      for token in parserState.parser.tokens when token.comments
-        tokenHash = buildLocationHash token[2]
-        unless parserState.tokenComments[tokenHash]?
-          parserState.tokenComments[tokenHash] = token.comments
-        else
-          parserState.tokenComments[tokenHash].push token.comments...
-
+    # Add comments and data
+    parserState.tokenData ?= buildTokenDataDictionary parserState
     if obj.locationData?
       objHash = buildLocationHash obj.locationData
-      if parserState.tokenComments[objHash]?
-        attachCommentsToNode parserState.tokenComments[objHash], obj
-
+      if parserState.tokenData[objHash]?.comments?
+        attachCommentsToNode parserState.tokenData[objHash].comments, obj
+      if parserState.tokenData[objHash]?.data?
+        obj.tokenData = parserState.tokenData[objHash].data
     obj
 
 exports.attachCommentsToNode = attachCommentsToNode = (comments, node) ->
