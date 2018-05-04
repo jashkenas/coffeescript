@@ -908,4 +908,19 @@ test "#5052: implicit call of class with no body", ->
   doesNotThrow -> CoffeeScript.compile 'f class'
   doesNotThrow -> CoffeeScript.compile 'f class A'
   doesNotThrow -> CoffeeScript.compile 'f class A extends B'
-  doesNotThrow -> CoffeeScript.compile 'f class A, b'
+
+  f = (args...) -> args
+  a = 1
+
+  [klass, shouldBeA] = f class A, a
+  eq shouldBeA, a
+
+  [shouldBeA] = f a, class A
+  eq shouldBeA, a
+
+  [obj, klass, shouldBeA] =
+    f
+      b: 1
+      class A
+      a
+  eq shouldBeA, a
