@@ -148,6 +148,8 @@ diffOutput = (expectedOutput, actualOutput) ->
         ok yes
       else if e.toString().indexOf('[stdin]') is 0 # Handle comparing error messages
         ok err e
+      else if err instanceof RegExp
+        ok err.test e
       else
         eq e, err
     else

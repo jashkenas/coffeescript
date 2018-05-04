@@ -521,6 +521,12 @@ exports.Block = class Block extends Base
       expr = @expressions[len]
       @expressions[len] = expr.makeReturn res
       @expressions.splice(len, 1) if expr instanceof Return and not expr.expression
+      # We also need to check that we’re not returning a CSX tag if there’s an
+      # adjacent one at the same level; JSX doesn’t allow that.
+      if expr.unwrapAll().csx
+        for csxCheckIndex in [len..0]
+          if @expressions[csxCheckIndex].unwrapAll().csx
+            expr.error 'Adjacent JSX elements must be wrapped in an enclosing tag'
       break
     this
 
