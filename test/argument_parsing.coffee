@@ -119,6 +119,7 @@ Usage: coffee [options] path/to/script.coffee [args]
 
 If called without options, `coffee` will run your script.
 
+      --ast          generate an abstract syntax tree of nodes
   -b, --bare         compile without a top-level function wrapper
   -c, --compile      compile to JavaScript and save as .js files
   -e, --eval         pass a string from the command line as input

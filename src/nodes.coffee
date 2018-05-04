@@ -267,8 +267,8 @@ exports.Base = class Base
 
   # Plain JavaScript object representation of the node, that can be serialized
   # as JSON. This is used for generating an abstract syntax tree (AST).
-  # This is what the `nodes` option in the Node API returns.
-  toPlainObject: ->
+  # This is what the `ast` option in the Node API returns.
+  toJSON: ->
     # We try to follow the [Babel AST spec](https://github.com/babel/babel/blob/master/packages/babylon/ast/spec.md)
     # as closely as possible, for improved interoperability with other tools.
     obj =
@@ -285,7 +285,7 @@ exports.Base = class Base
     # Add serializable properties to the output. Properties that aren’t
     # automatically serializable (because they’re already a primitive type)
     # should be handled on a case-by-case basis in child node classes’ own
-    # `toPlainObject` methods.
+    # `toJSON` methods.
     for property, value of this
       continue if property in ['locationData', 'children']
       continue if value is undefined # Don’t skip `null` or `false` values.
@@ -298,9 +298,9 @@ exports.Base = class Base
       if Array.isArray(@[attr])
         obj[attr] = []
         for child in flatten [@[attr]]
-          obj[attr].push child.unwrap().toPlainObject()
+          obj[attr].push child.unwrap().toJSON()
       else
-        obj[attr] = @[attr].unwrap().toPlainObject()
+        obj[attr] = @[attr].unwrap().toJSON()
 
     obj
 

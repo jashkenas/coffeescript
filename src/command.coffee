@@ -32,6 +32,7 @@ BANNER = '''
 
 # The list of all the valid option flags that `coffee` knows how to handle.
 SWITCHES = [
+  [      '--ast',               'generate an abstract syntax tree of nodes']
   ['-b', '--bare',              'compile without a top-level function wrapper']
   ['-c', '--compile',           'compile to JavaScript and save as .js files']
   ['-e', '--eval',              'pass a string from the command line as input']
@@ -206,6 +207,8 @@ compileScript = (file, input, base = null) ->
     if opts.tokens
       printTokens CoffeeScript.tokens task.input, task.options
     else if opts.nodes
+      printLine CoffeeScript.nodes(task.input, task.options).toString().trim()
+    else if opts.ast
       compiled = CoffeeScript.compile task.input, task.options
       printLine JSON.stringify(compiled, null, 2)
     else if opts.run
@@ -500,7 +503,7 @@ compileOptions = (filename, base) ->
     transpile: opts.transpile
     sourceMap: opts.map
     inlineMap: opts['inline-map']
-    nodes: opts.nodes
+    ast: opts.ast
 
   if filename
     if base
