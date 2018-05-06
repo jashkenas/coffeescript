@@ -11,7 +11,7 @@ Error.stackTraceLimit = Infinity
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, some,
 addDataToNode, attachCommentsToNode, locationDataToString,
-throwSyntaxError, dump} = require './helpers'
+throwSyntaxError, dump, makeDelimitedLiteral} = require './helpers'
 
 # Functions required by parser.
 exports.extend = extend
@@ -747,25 +747,47 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
     if o.level >= LEVEL_OP then @wrapInParentheses code else code
 
 exports.StringLiteral = class StringLiteral extends Literal
-  constructor: (value, {@quote, @initialChunk, @finalChunk} = {}) ->
-    super value
-    dump {value, @initialChunk, @finalChunk}
+  constructor: (@originalValue, {@quote, @initialChunk, @finalChunk, @indent, @double} = {}) ->
+    super ''
+    @fromSourceString = @quote?
+    @quote ?= '"'
+    @formatValue()
 
   formatValue: ->
-    @value.replace SIMPLE_STRING_OMIT, (match, offset) =>
-      if (@initialChunk and offset is 0) or
-         (@finalChunk and offset + match.length is value.length)
-        ''
-      else
-        ' '
+    heredoc = @quote.length is 3
+    @value = do =>
+      val = @originalValue
+      val =
+        unless @fromSourceString
+          val
+        else if heredoc
+          indentRegex = /// \n#{@indent} ///g if @indent
+
+          val = val.replace indentRegex, '\n' if indentRegex
+          val = val.replace LEADING_BLANK_LINE,  '' if @initialChunk
+          val = val.replace TRAILING_BLANK_LINE, '' if @finalChunk
+          val
+        else
+          val.replace SIMPLE_STRING_OMIT, (match, offset) =>
+            if (@initialChunk and offset is 0) or
+               (@finalChunk and offset + match.length is val.length)
+              ''
+            else
+              ' '
+      makeDelimitedLiteral val, {
+        delimiter: @quote.charAt 0
+        @double
+      }
 
   compileNode: (o) ->
-    res = if @csx then [@makeCode @unquote(yes, yes)] else super()
+    return [@makeCode @unquote(yes, yes)] if @csx
+    # @formatValue()
+    super o
 
-  unquote: (doubleQuote = no, newLine = no) ->
+  unquote: (doubleQuote = no, csx = no) ->
     unquoted = @value[1...-1]
     unquoted = unquoted.replace /\\"/g, '"'  if doubleQuote
-    unquoted = unquoted.replace /\\n/g, '\n' if newLine
+    unquoted = unquoted.replace /\\n/g, '\n' if csx
     unquoted
 
 exports.RegexLiteral = class RegexLiteral extends Literal
@@ -3497,6 +3519,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
     fragments.push @makeCode '`' unless @csx
     for element in elements
       if element instanceof StringLiteral
+        # element.formatValue()
         element.value = element.unquote yes, @csx
         unless @csx
           # Backticks and `${` inside template literals must be escaped.
@@ -3835,6 +3858,8 @@ TAB = '  '
 
 SIMPLENUM = /^[+-]?\d+$/
 SIMPLE_STRING_OMIT = /\s*\n\s*/g
+LEADING_BLANK_LINE  = /^[^\n\S]*\n/
+TRAILING_BLANK_LINE = /\n[^\n\S]*$/
 
 # Helper Functions
 # ----------------

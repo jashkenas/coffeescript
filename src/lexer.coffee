@@ -13,7 +13,8 @@
 
 # Import the helpers we need.
 {count, starts, compact, repeat, invertLiterate, merge,
-attachCommentsToNode, locationDataToString, throwSyntaxError, dump} = require './helpers'
+attachCommentsToNode, locationDataToString, throwSyntaxError
+dump, makeDelimitedLiteral} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -282,12 +283,10 @@ exports.Lexer = class Lexer
       when '"'   then STRING_DOUBLE
       when "'''" then HEREDOC_SINGLE
       when '"""' then HEREDOC_DOUBLE
-    heredoc = quote.length is 3
 
     {tokens, index: end} = @matchWithInterpolations regex, quote
-    $ = tokens.length - 1
 
-    delimiter = quote.charAt(0)
+    heredoc = quote.length is 3
     if heredoc
       # Find the smallest indentation. It will be removed from all lines later.
       indent = null
@@ -295,22 +294,10 @@ exports.Lexer = class Lexer
       while match = HEREDOC_INDENT.exec doc
         attempt = match[1]
         indent = attempt if indent is null or 0 < attempt.length < indent.length
-      indentRegex = /// \n#{indent} ///g if indent
-      @mergeInterpolationTokens tokens, {delimiter, quote}, (value, i) =>
-        value = @formatString value, delimiter: quote
-        value = value.replace indentRegex, '\n' if indentRegex
-        value = value.replace LEADING_BLANK_LINE,  '' if i is 0
-        value = value.replace TRAILING_BLANK_LINE, '' if i is $
-        value
-    else
-      @mergeInterpolationTokens tokens, {delimiter, quote}, (value, i) =>
-        @formatString value, delimiter: quote
-        # value = value.replace SIMPLE_STRING_OMIT, (match, offset) ->
-        #   if (i is 0 and offset is 0) or
-        #      (i is $ and offset + match.length is value.length)
-        #     ''
-        #   else
-        #     ' '
+
+    delimiter = quote.charAt(0)
+    @mergeInterpolationTokens tokens, {delimiter, quote, indent}, (value, i) =>
+      @formatString value, delimiter: quote
 
     if @atCSXTag()
       @token ',', ',', 0, 0, @prev
@@ -432,7 +419,7 @@ exports.Lexer = class Lexer
           @formatHeregex str, { flags }
         if flags
           @token ',', ',', index - 1, 0
-          @token 'STRING', '"' + flags + '"', index - 1, flags.length
+          @token 'STRING', flags, index - 1, flags.length
         @token ')', ')', end - 1, 0
         @token 'REGEX_END', ')', end - 1, 0
 
@@ -825,17 +812,25 @@ exports.Lexer = class Lexer
   # of `'NEOSTRING'`s are converted using `fn` and turned into strings using
   # `options` first.
   mergeInterpolationTokens: (tokens, options, fn) ->
-    {quote} = options
+    {quote, indent, double} = options
     attachQuote = (token) ->
-      token[1] = new String token[1]
+      token[1] = preserveTagged(token) new String token[1]
       token[1].quote = quote
+    attachDouble = (token) ->
+      return unless double
+      token[1] = preserveTagged(token) new String token[1]
+      token[1].double = double
     markInitialChunk = (token) ->
-      token[1] = new String token[1]
+      token[1] = preserveTagged(token) new String token[1]
       token[1].initialChunk = yes
     markFinalChunk = (token) ->
-      token[1] = new String token[1]
+      token[1] = preserveTagged(token) new String token[1]
       token[1].finalChunk = yes
-    tags = ['quote', 'initialChunk', 'finalChunk']
+    markIndent = (token) ->
+      return unless indent
+      token[1] = preserveTagged(token) new String token[1]
+      token[1].indent = indent
+    tags = ['quote', 'initialChunk', 'finalChunk', 'indent', 'double']
     preserveTagged = (token) -> (converted) ->
       return converted unless do ->
         return yes for tag in tags when token[1][tag]
@@ -862,7 +857,7 @@ exports.Lexer = class Lexer
               # This is an interpolated string, not a CSX tag; and for whatever
               # reason `` `a${/*test*/}b` `` is invalid JS. So compile to
               # `` `a${/*test*/''}b` `` instead.
-              placeholderToken = @makeToken 'STRING', "''"
+              placeholderToken = @makeToken 'STRING', ''
             else
               placeholderToken = @makeToken 'JS', ''
             # Use the same location data as the first parenthesis.
@@ -890,14 +885,14 @@ exports.Lexer = class Lexer
           # empty string.
           if i is 2 and firstEmptyStringIndex?
             @tokens.splice firstEmptyStringIndex, 2 # Remove empty string and the plus.
-            attachQuote token
-          else if i is 0
-            attachQuote token
-            markInitialChunk token
-          else if i is $
-            markFinalChunk token
+          markInitialChunk token if i is 0
+          markFinalChunk token if i is $
+          markIndent token
+          attachQuote token
+          attachDouble token
           token[0] = 'STRING'
-          token[1] = preserveTagged(token) @makeDelimitedLiteral converted, options
+          # token[1] = preserveTagged(token) @makeDelimitedLiteral converted, options
+          token[1] = preserveTagged(token) converted
           locationToken = token
           tokensToPush = [token]
       if @tokens.length > firstIndex
@@ -1074,26 +1069,7 @@ exports.Lexer = class Lexer
       length: invalidEscape.length
 
   # Constructs a string or regex by escaping certain characters.
-  makeDelimitedLiteral: (body, options = {}) ->
-    body = '(?:)' if body is '' and options.delimiter is '/'
-    regex = ///
-        (\\\\)                               # Escaped backslash.
-      | (\\0(?=[1-7]))                       # Null character mistaken as octal escape.
-      | \\?(#{options.delimiter})            # (Possibly escaped) delimiter.
-      | \\?(?: (\n)|(\r)|(\u2028)|(\u2029) ) # (Possibly escaped) newlines.
-      | (\\.)                                # Other escapes.
-    ///g
-    body = body.replace regex, (match, backslash, nul, delimiter, lf, cr, ls, ps, other) -> switch
-      # Ignore escaped backslashes.
-      when backslash then (if options.double then backslash + backslash else backslash)
-      when nul       then '\\x00'
-      when delimiter then "\\#{delimiter}"
-      when lf        then '\\n'
-      when cr        then '\\r'
-      when ls        then '\\u2028'
-      when ps        then '\\u2029'
-      when other     then (if options.double then "\\#{other}" else other)
-    "#{options.delimiter}#{body}#{options.delimiter}"
+  makeDelimitedLiteral: makeDelimitedLiteral
 
   suppressSemicolons: ->
     while @value() is ';'
@@ -1342,9 +1318,6 @@ UNICODE_CODE_POINT_ESCAPE = ///
   |
   \\u\{ ( [\da-fA-F]+ ) \}
 ///g
-
-LEADING_BLANK_LINE  = /^[^\n\S]*\n/
-TRAILING_BLANK_LINE = /\n[^\n\S]*$/
 
 TRAILING_SPACES     = /\s+$/
 
