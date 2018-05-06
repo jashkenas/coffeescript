@@ -786,3 +786,16 @@ test 'JSX fragments: fragment with component nodes', ->
       </Fragment>;
     };
   '''
+
+test '#5055: JSX expression indentation bug', ->
+  eqJS '''
+    <div>
+      {someCondition &&
+        <span />
+      }
+    </div>
+  ''', '''
+    <div>
+      {someCondition && <span />}
+    </div>;
+  '''
