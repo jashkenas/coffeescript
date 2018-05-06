@@ -829,10 +829,19 @@ exports.Lexer = class Lexer
     attachQuote = (token) ->
       token[1] = new String token[1]
       token[1].quote = quote
-    preserveQuote = (token) -> (converted) ->
-      return converted unless token[1].quote
+    markInitialChunk = (token) ->
+      token[1] = new String token[1]
+      token[1].initialChunk = yes
+    markFinalChunk = (token) ->
+      token[1] = new String token[1]
+      token[1].finalChunk = yes
+    tags = ['quote', 'initialChunk', 'finalChunk']
+    preserveTagged = (token) -> (converted) ->
+      return converted unless do ->
+        return yes for tag in tags when token[1][tag]
       ret = new String converted
-      ret.quote = quote
+      for tag in tags
+        ret[tag] = token[1][tag]
       ret
 
     if tokens.length > 1
@@ -840,6 +849,7 @@ exports.Lexer = class Lexer
       attachQuote lparen
 
     firstIndex = @tokens.length
+    $ = tokens.length - 1
     for token, i in tokens
       [tag, value] = token
       switch tag
@@ -883,8 +893,11 @@ exports.Lexer = class Lexer
             attachQuote token
           else if i is 0
             attachQuote token
+            markInitialChunk token
+          else if i is $
+            markFinalChunk token
           token[0] = 'STRING'
-          token[1] = preserveQuote(token) @makeDelimitedLiteral converted, options
+          token[1] = preserveTagged(token) @makeDelimitedLiteral converted, options
           locationToken = token
           tokensToPush = [token]
       if @tokens.length > firstIndex
@@ -1259,7 +1272,6 @@ STRING_OMIT    = ///
     ((?:\\\\)+)      # Consume (and preserve) an even number of backslashes.
   | \\[^\S\n]*\n\s*  # Remove escaped newlines.
 ///g
-SIMPLE_STRING_OMIT = /\s*\n\s*/g
 HEREDOC_INDENT     = /\n+([^\n\S]*)(?=\S)/g
 
 # Regex-matching-regexes.

@@ -166,7 +166,7 @@ grammar =
   ]
 
   String: [
-    o 'STRING',                                 -> new StringLiteral $1, quote: $1.quote
+    o 'STRING',                                 -> new StringLiteral $1, quote: $1.quote, initialChunk: $1.initialChunk, finalChunk: $1.finalChunk
     o 'STRING_START Body STRING_END',           -> new StringWithInterpolations $2, quote: $1.quote
   ]
 

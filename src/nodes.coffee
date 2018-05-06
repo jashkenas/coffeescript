@@ -747,8 +747,17 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
     if o.level >= LEVEL_OP then @wrapInParentheses code else code
 
 exports.StringLiteral = class StringLiteral extends Literal
-  constructor: (value, {@quote} = {}) ->
+  constructor: (value, {@quote, @initialChunk, @finalChunk} = {}) ->
     super value
+    dump {value, @initialChunk, @finalChunk}
+
+  formatValue: ->
+    @value.replace SIMPLE_STRING_OMIT, (match, offset) =>
+      if (@initialChunk and offset is 0) or
+         (@finalChunk and offset + match.length is value.length)
+        ''
+      else
+        ' '
 
   compileNode: (o) ->
     res = if @csx then [@makeCode @unquote(yes, yes)] else super()
@@ -3825,6 +3834,7 @@ LEVEL_ACCESS = 6  # ...[0]
 TAB = '  '
 
 SIMPLENUM = /^[+-]?\d+$/
+SIMPLE_STRING_OMIT = /\s*\n\s*/g
 
 # Helper Functions
 # ----------------
