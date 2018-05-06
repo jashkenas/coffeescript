@@ -5,7 +5,7 @@
 # shorthand into the unambiguous long form, add implicit indentation and
 # parentheses, and generally clean things up.
 
-{throwSyntaxError} = require './helpers'
+{throwSyntaxError, dump} = require './helpers'
 
 # Move attached comments from one token to another.
 moveComments = (fromToken, toToken) ->
@@ -41,6 +41,7 @@ exports.Rewriter = class Rewriter
   # like this. The order of these passes matters—indentation must be
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (@tokens) ->
+    # dump {@tokens}
     # Set environment variable `DEBUG_TOKEN_STREAM` to `true` to output token
     # debugging info. Also set `DEBUG_REWRITTEN_TOKEN_STREAM` to `true` to
     # output the token stream after it has been rewritten by this file.

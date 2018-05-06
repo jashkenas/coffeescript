@@ -233,3 +233,7 @@ exports.nameWhitespaceCharacter = (string) ->
     when '\r' then 'carriage return'
     when '\t' then 'tab'
     else string
+
+exports.dump = dump = (...args, obj) ->
+  util = require 'util'
+  console.log ...args, util.inspect obj, no, null

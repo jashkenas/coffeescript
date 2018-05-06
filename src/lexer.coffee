@@ -13,7 +13,7 @@
 
 # Import the helpers we need.
 {count, starts, compact, repeat, invertLiterate, merge,
-attachCommentsToNode, locationDataToString, throwSyntaxError} = require './helpers'
+attachCommentsToNode, locationDataToString, throwSyntaxError, dump} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -296,22 +296,21 @@ exports.Lexer = class Lexer
         attempt = match[1]
         indent = attempt if indent is null or 0 < attempt.length < indent.length
       indentRegex = /// \n#{indent} ///g if indent
-      @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
+      @mergeInterpolationTokens tokens, {delimiter, quote}, (value, i) =>
         value = @formatString value, delimiter: quote
         value = value.replace indentRegex, '\n' if indentRegex
         value = value.replace LEADING_BLANK_LINE,  '' if i is 0
         value = value.replace TRAILING_BLANK_LINE, '' if i is $
         value
     else
-      @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
-        value = @formatString value, delimiter: quote
-        value = value.replace SIMPLE_STRING_OMIT, (match, offset) ->
-          if (i is 0 and offset is 0) or
-             (i is $ and offset + match.length is value.length)
-            ''
-          else
-            ' '
-        value
+      @mergeInterpolationTokens tokens, {delimiter, quote}, (value, i) =>
+        @formatString value, delimiter: quote
+        # value = value.replace SIMPLE_STRING_OMIT, (match, offset) ->
+        #   if (i is 0 and offset is 0) or
+        #      (i is $ and offset + match.length is value.length)
+        #     ''
+        #   else
+        #     ' '
 
     if @atCSXTag()
       @token ',', ',', 0, 0, @prev
@@ -826,8 +825,19 @@ exports.Lexer = class Lexer
   # of `'NEOSTRING'`s are converted using `fn` and turned into strings using
   # `options` first.
   mergeInterpolationTokens: (tokens, options, fn) ->
+    {quote} = options
+    attachQuote = (token) ->
+      token[1] = new String token[1]
+      token[1].quote = quote
+    preserveQuote = (token) -> (converted) ->
+      return converted unless token[1].quote
+      ret = new String converted
+      ret.quote = quote
+      ret
+
     if tokens.length > 1
       lparen = @token 'STRING_START', '(', 0, 0
+      attachQuote lparen
 
     firstIndex = @tokens.length
     for token, i in tokens
@@ -870,8 +880,11 @@ exports.Lexer = class Lexer
           # empty string.
           if i is 2 and firstEmptyStringIndex?
             @tokens.splice firstEmptyStringIndex, 2 # Remove empty string and the plus.
+            attachQuote token
+          else if i is 0
+            attachQuote token
           token[0] = 'STRING'
-          token[1] = @makeDelimitedLiteral converted, options
+          token[1] = preserveQuote(token) @makeDelimitedLiteral converted, options
           locationToken = token
           tokensToPush = [token]
       if @tokens.length > firstIndex

@@ -11,7 +11,7 @@ Error.stackTraceLimit = Infinity
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, some,
 addDataToNode, attachCommentsToNode, locationDataToString,
-throwSyntaxError} = require './helpers'
+throwSyntaxError, dump} = require './helpers'
 
 # Functions required by parser.
 exports.extend = extend
@@ -747,6 +747,9 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
     if o.level >= LEVEL_OP then @wrapInParentheses code else code
 
 exports.StringLiteral = class StringLiteral extends Literal
+  constructor: (value, {@quote} = {}) ->
+    super value
+
   compileNode: (o) ->
     res = if @csx then [@makeCode @unquote(yes, yes)] else super()
 
@@ -3430,8 +3433,9 @@ exports.Parens = class Parens extends Base
 #### StringWithInterpolations
 
 exports.StringWithInterpolations = class StringWithInterpolations extends Base
-  constructor: (@body) ->
+  constructor: (@body, {@quote} = {}) ->
     super()
+    # dump {@quote}
 
   children: ['body']
 

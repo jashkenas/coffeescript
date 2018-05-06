@@ -166,8 +166,8 @@ grammar =
   ]
 
   String: [
-    o 'STRING',                                 -> new StringLiteral $1
-    o 'STRING_START Body STRING_END',           -> new StringWithInterpolations $2
+    o 'STRING',                                 -> new StringLiteral $1, quote: $1.quote
+    o 'STRING_START Body STRING_END',           -> new StringWithInterpolations $2, quote: $1.quote
   ]
 
   Regex: [
