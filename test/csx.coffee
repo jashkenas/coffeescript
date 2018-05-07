@@ -801,14 +801,12 @@ test '#5055: JSX expression indentation bug', ->
   '''
 
   eqJS '''
-    <div>
-      {someString +
-          "abc"
+    <div>{someString +
+         "abc"
       }
     </div>
   ''', '''
-    <div>
-      {someString + "abc"}
+    <div>{someString + "abc"}
     </div>;
   '''
 
