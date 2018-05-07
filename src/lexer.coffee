@@ -971,12 +971,18 @@ exports.Lexer = class Lexer
   # Peek at the last value in the token stream.
   value: (useOrigin = no) ->
     [..., token] = @tokens
-    normalizeStringObject(
+    useToken =
       if useOrigin and token?.origin?
-        token.origin?[1]
+        token.origin
       else
-        token?[1]
-    )
+        token
+    # now that STRING tokens don't have surrounding quotes, allow the fact that
+    # they're wrapped in a String() object to guard against false comparisons
+    # to eg ';'
+    if useToken?[0] is 'STRING'
+      useToken[1]
+    else
+      normalizeStringObject useToken?[1]
 
   # Get the previous token in the token stream.
   prev: ->
