@@ -258,3 +258,6 @@ exports.makeDelimitedLiteral = (body, options = {}) ->
       when ps        then '\\u2029'
       when other     then (if options.double then "\\#{other}" else other)
     "#{options.delimiter}#{body}#{options.delimiter}"
+
+exports.normalizeStringObject = (str) ->
+  str?.valueOf?() ? str

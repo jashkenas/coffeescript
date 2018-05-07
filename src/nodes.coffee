@@ -11,7 +11,7 @@ Error.stackTraceLimit = Infinity
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, some,
 addDataToNode, attachCommentsToNode, locationDataToString,
-throwSyntaxError, makeDelimitedLiteral} = require './helpers'
+throwSyntaxError, makeDelimitedLiteral, normalizeStringObject} = require './helpers'
 
 # Functions required by parser.
 exports.extend = extend
@@ -3100,6 +3100,9 @@ exports.Op = class Op extends Base
         return firstCall.newInstance()
       first = new Parens first   if first instanceof Code and first.bound or first.do
 
+    @originalOperator = op.original
+    op = normalizeStringObject op
+    @originalOperator ?= op
     @operator = CONVERSIONS[op] or op
     @first    = first
     @second   = second
