@@ -847,6 +847,10 @@ exports.NullLiteral = class NullLiteral extends Literal
     super 'null'
 
 exports.BooleanLiteral = class BooleanLiteral extends Literal
+  constructor: (value) ->
+    {original} = value
+    super value
+    @originalValue = original ? @value
 
 #### Return
 
