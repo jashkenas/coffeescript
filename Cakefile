@@ -179,15 +179,17 @@ buildDocs = (watch = no) ->
   sectionsSourceFolder = 'documentation/sections'
   examplesSourceFolder = 'documentation/examples'
   outputFolder         = "docs/v#{majorVersion}"
+  searchCollections    = docs: [], changelogs: []
+  {structure}          = require "./documentation/structure.coffee"
+
+  monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
+  formatDate = (date) ->
+    date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
+      "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
 
   # Helpers
   releaseHeader = (date, version, prevVersion) ->
-    monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-
-    formatDate = (date) ->
-      date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
-        "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
-
     """
       <div class="anchor" id="#{version}"></div>
       <h2 class="header">
@@ -197,6 +199,69 @@ buildDocs = (watch = no) ->
     """
 
   codeFor = require "./documentation/site/code.coffee"
+
+  # Template for search results.
+  searchResults = """
+        <div class="ds-suggestion">
+          <div class="cs-docsearch-suggestion cs-docsearch-suggestion__main cs-docsearch-suggestion__secondary" style="white-space: normal;">
+            <div class="cs-docsearch-suggestion--category-header">
+              <span class="cs-docsearch-suggestion--category-header-lvl0"><%= section %></span>
+            </div>
+            <%= results %>
+        </div>
+      </div>
+  """
+  # Template for search result item.
+  searchResultsList = """
+    <div class="cs-docsearch-suggestion--wrapper searchWrapper" data-href="<%= href %>">
+      <div class="cs-docsearch-suggestion--subcategory-column">
+        <span class="cs-docsearch-suggestion--subcategory-column-text">
+          <%= subsection %>
+        </span>
+      </div>
+      <div class="cs-docsearch-suggestion--content">
+        <div class="cs-docsearch-suggestion--title">
+          <%= title %>
+        </div>
+        <div class="cs-docsearch-suggestion--text"><%= content %></div>
+      </div>
+    </div>
+  """
+  searchResultsTemplate = _.template(searchResults).source
+  searchResultsListTemplate = _.template(searchResultsList).source
+
+  #  Remove markup from content used for search collections
+  clean = (content) ->
+    content
+      .replace /<[^>]*>/g, " "                  # remove HTML tags
+      .replace /\[([^\]]+)\]\([^\)]+\)/g, "$1"  # remove URL link
+      .replace /\*[^\S]+/g, ""                  # remove list markup
+      .replace /\*\*?|__?|#+?/g, ""             # remove Markdown format
+      .replace /\t|\n/g, " "
+      .replace /^\s+/g, " "
+
+  # Build search catalogue.
+  searchCatalogue = (mdDoc, section, data) ->
+    return unless match = /^(#+?)\s+([^\n]+)\s+([\s\S]+)/.exec mdDoc
+    [, level, title, body] = match
+    content = clean body
+    unless section is "changelog"
+      content = content.replace /```[^\`]+```/g, ""
+      weight = level.length
+      searchCollections.docs.push {section, title, weight, content, data...}
+    else
+      # Break changelogs into (release) chunks.
+      releaseLogs = content.split /```\s*releaseHeader\(([^\)]+)\)\s*```/
+      for rlog, ix in releaseLogs when ix % 2 isnt 0
+        data = rlog.replace(/\\?'/g, "").split /,\s*/
+        date = formatDate data[0]
+        release = data[1]
+        searchCollections.changelogs.push
+          section: "Changelogs"
+          title: "#{release} &mdash; #{date}"
+          content: releaseLogs[ix + 1]
+          parent: "Changelogs"
+          href: "##{release}"
 
   htmlFor = ->
     hljs = require 'highlight.js'
@@ -212,7 +277,6 @@ buildDocs = (watch = no) ->
           catch ex
         return '' # No syntax highlighting
 
-
     # Add some custom overrides to Markdown-It’s rendering, per
     # https://github.com/markdown-it/markdown-it/blob/master/docs/architecture.md#renderer
     defaultFence = markdownRenderer.renderer.rules.fence
@@ -223,11 +287,12 @@ buildDocs = (watch = no) ->
       else
         "<blockquote class=\"uneditable-code-block\">#{defaultFence.apply @, arguments}</blockquote>"
 
-    (file, bookmark) ->
+    (file, searchData) ->
       md = fs.readFileSync "#{sectionsSourceFolder}/#{file}.md", 'utf-8'
       md = md.replace /<%= releaseHeader %>/g, releaseHeader
       md = md.replace /<%= majorVersion %>/g, majorVersion
       md = md.replace /<%= fullVersion %>/g, CoffeeScript.VERSION
+      searchCatalogue md, file, searchData
       html = markdownRenderer.render md
       html = _.template(html)
         codeFor: codeFor()
@@ -241,6 +306,64 @@ buildDocs = (watch = no) ->
       code = transpile code
       code
 
+  # Build body HTML.
+  buildBody = ->
+    sectionTemplate = """
+      <section id="<%= id %>">
+        <%= sectionBody %>
+      </section>
+    """
+    body = []
+    sectionTemplate = _.template sectionTemplate
+    buildSection = (section) ->
+      sectionTemplate section
+
+    for section in structure when section.html and section.html.length > 0
+      {id, title, html, href = no, children = []} = section
+      href = "##{id}" unless href
+      sectionBody = (@htmlFor(h, {parent: title, href}) for h in html)
+      if children.length > 0
+        for child in children when child.html and child.html.length > 0
+          cHref = "##{child.id}" unless child.href
+          childBody = (@htmlFor(h, {parent: title, href:cHref}) for h in child.html)
+          sectionBody.push buildSection {id: child.id, sectionBody: childBody.join("")}
+      body.push buildSection {id: section.id, sectionBody: sectionBody.join("")}
+
+    body.join ""
+
+  # Build sidebar HTML.
+  buildSidebar = ->
+    link = """
+       <a href="<%= href %>" class="nav-link<%= className %>" data-action="sidebar-nav"><%= title %></a>
+    """
+    nav = """
+      <nav class="nav flex-column">
+      <%= links %>
+      </nav>
+    """
+    sidebar = []
+    linkTemplate = _.template link
+    navTemplate = _.template nav
+    buildNav = (links) ->
+      navTemplate links
+    buildLink = (link) ->
+      link.className = " #{link.className}" unless link.className is ""
+      linkTemplate link
+
+    for section in structure
+      {id, title, href = no, className = "", children = []} = section
+      href = "##{id}" unless href
+      sidebar.push buildLink {title, href, className}
+      if children.length > 0
+        childLinks = []
+        for child in children
+          {id:cId, title:cTitle, href:cHref = no, className:cClassName = ""} = child
+          cHref = "##{cId}" unless cHref
+          childLinks.push buildLink {title: cTitle, href: cHref, className: cClassName}
+        sidebar.push buildNav {links: childLinks.join ""}
+
+    buildNav links: sidebar.join ""
+
   include = ->
     (file) ->
       file = "#{siteSourceFolder}/#{file}" unless '/' in file
@@ -252,16 +375,23 @@ buildDocs = (watch = no) ->
           majorVersion: majorVersion
           fullVersion: CoffeeScript.VERSION
           htmlFor: htmlFor()
+          buildBody: buildBody
+          buildSidebar: buildSidebar
           codeFor: codeFor()
           include: include()
           includeScript: includeScript()
       output
 
-  # Task
   do renderIndex = ->
     render = _.template fs.readFileSync(indexFile, 'utf-8')
     output = render
       include: include()
+    searchIdx = """
+      window.searchResultTemplate = #{searchResultsTemplate};
+      window.searchResultsListTemplate = #{searchResultsListTemplate};
+      window.searchCollections = #{JSON.stringify searchCollections};
+    """
+    fs.writeFileSync "#{outputFolder}/search_index.js", searchIdx
     fs.writeFileSync "#{outputFolder}/index.html", output
     log 'compiled', green, "#{indexFile} → #{outputFolder}/index.html"
   try

@@ -208,3 +208,88 @@ $(document).ready ->
       if window.location.hash.length > 1
         # Initializing the code editors might’ve thrown off our vertical scroll position
         document.getElementById(window.location.hash.slice(1).replace(/try:.*/, '')).scrollIntoView()
+
+  buildSearch = (catalogue, keys) ->
+    searchOptions = {
+      includeScore: true,
+      shouldSort: true,
+      includeMatches: true,
+      threshold: 0.2,
+      location: 0,
+      distance: 1000,
+      maxPatternLength: 32,
+      minMatchCharLength: 4,
+      keys
+    }
+    new Fuse window.searchCollections[catalogue], searchOptions
+
+  window.fuseDocs = buildSearch "docs", ["section", "content"]
+  window.fuseLogs = buildSearch "changelogs", ["content"]
+
+
+$(document).on "keyup", "#cs-search-input-navbar", ->
+  resContainer = $("#search-results")
+  searchResultBox = $("#searchResultBox")
+  resContainer.hide().html ""
+  searchResultBox.hide()
+  return unless @value.length >= 3
+  markText = (text) ->
+    """<span class="cs-docsearch-suggestion--highlight">#{text}</span>"""
+  markTitle = (title, matches) ->
+    for m in matches
+      marked = markText title[m[0]...m[1]]
+      title = title[0...m[0]] + marked + title[m[1]...]
+    title
+  markContent = (content, matches) ->
+    mContent = []
+    for m in matches
+      marked = markText content[m[0]...m[1]]
+      start = if m[0] > 50 then m[0] - 50 else 0
+      end = m[1] + 50
+      mContent.push "&hellip;" + content[start...m[0]] + marked + content[m[1]...end] + "&hellip;"
+    mContent.join " "
+
+  tmpl = window.searchResultTemplate
+  tmplList = window.searchResultsListTemplate
+  resultList = {}
+  results = []
+  parseResults = (docs) ->
+    for doc in docs
+      {item: {title, href, content, parent}, matches} = doc
+      resultList[parent] = [] unless resultList[parent] and resultList[parent].length > 0
+      countMatches = 0
+      for match in matches
+        {key, indices} = match
+        if key is "section" and indices.length > 0
+          title = markTitle title, indices
+          countMatches += indices.length
+        if key is "content"
+          content = markContent content, indices
+          countMatches += indices.length
+      continue if countMatches < 1
+      resultList[parent].push tmplList
+        title: title
+        subsection: title
+        content: content
+        href: href
+
+  parseResults window.fuseDocs.search @value
+  parseResults window.fuseLogs.search @value
+
+  for key, list of resultList
+    continue if list.length < 1
+    ctmpl = tmpl
+      section: key
+      results: list.join ""
+    results.push ctmpl
+
+  if results.length > 0
+    searchResultBox.show()
+    resContainer.show().html results.join ""
+
+$(document).on "click", ".searchWrapper", ->
+  href = $(this).data "href"
+  if href[0] is "#"
+    window.location.hash = href
+  else
+    window.location = href
