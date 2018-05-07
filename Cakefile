@@ -230,7 +230,7 @@ buildDocs = (watch = no) ->
   searchResultsTemplate = _.template(searchResults).source
   searchResultsListTemplate = _.template(searchResultsList).source
 
-  #  Remove markup from content used for search collections
+  # Remove markup from content used for search collections
   clean = (content) ->
     content
       .replace /<[^>]*>/g, " "                  # remove HTML tags
@@ -240,7 +240,7 @@ buildDocs = (watch = no) ->
       .replace /\t|\n/g, " "
       .replace /^\s+/g, " "
 
-  # Build search catalogue.
+  # Build search catalog.
   searchCatalogue = (mdDoc, section, data) ->
     return unless match = /^(#+?)\s+([^\n]+)\s+([\s\S]+)/.exec mdDoc
     [, level, title, body] = match
@@ -248,7 +248,8 @@ buildDocs = (watch = no) ->
     unless section is "changelog"
       content = content.replace /```[^\`]+```/g, ""
       weight = level.length
-      searchCollections.docs.push {section, title, weight, content, data...}
+      {parent, href} = data
+      searchCollections.docs.push {section, title, weight, content, parent, href}
     else
       # Break changelogs into (release) chunks.
       releaseLogs = content.split /```\s*releaseHeader\(([^\)]+)\)\s*```/
