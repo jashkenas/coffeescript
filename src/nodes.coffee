@@ -751,7 +751,7 @@ exports.StringLiteral = class StringLiteral extends Literal
     super ''
     @fromSourceString = @quote?
     @quote ?= '"'
-    @originalValue = unwrapStringObject @originalValue
+    @originalValue = normalizeStringObject @originalValue
     @formatValue()
 
   formatValue: ->
@@ -3935,5 +3935,5 @@ unfoldSoak = (o, parent, name) ->
   ifn.body = new Value parent
   ifn
 
-unwrapStringObject = (str) ->
+normalizeStringObject = (str) ->
   str.valueOf?() ? str
