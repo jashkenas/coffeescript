@@ -799,3 +799,27 @@ test '#5055: JSX expression indentation bug', ->
       {someCondition && <span />}
     </div>;
   '''
+
+  eqJS '''
+    <div>
+      {someString +
+          "abc"
+      }
+    </div>
+  ''', '''
+    <div>
+      {someString + "abc"}
+    </div>;
+  '''
+
+  eqJS '''
+    <div>
+      {a ?
+      <span />
+      }
+    </div>
+  ''', '''
+    <div>
+      {typeof a !== "undefined" && a !== null ? a : <span />}
+    </div>;
+  '''
