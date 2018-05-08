@@ -184,7 +184,8 @@ exports.Lexer = class Lexer
           tag = 'RELATION'
           if @value() is '!'
             poppedToken = @tokens.pop()
-            id = '!' + id
+            id = new String id
+            id.invert = poppedToken[1]
     else if tag is 'IDENTIFIER' and @seenFor and id is 'from' and
        isForFrom(prev)
       tag = 'FORFROM'

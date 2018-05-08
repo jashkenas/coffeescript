@@ -847,11 +847,7 @@ grammar =
     o 'Expression &&       Expression',         -> new Op $2, $1, $3
     o 'Expression ||       Expression',         -> new Op $2, $1, $3
     o 'Expression BIN?     Expression',         -> new Op $2, $1, $3
-    o 'Expression RELATION Expression',         ->
-      if $2.charAt(0) is '!'
-        new Op($2[1..], $1, $3).invert()
-      else
-        new Op $2, $1, $3
+    o 'Expression RELATION Expression',         -> new Op $2, $1, $3, null, invertOperator: $2.invert
 
     o 'SimpleAssignable COMPOUND_ASSIGN
        Expression',                             -> new Assign $1, $3, $2
