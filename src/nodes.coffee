@@ -3196,10 +3196,12 @@ exports.Op = class Op extends Base
     call
 
   compileNode: (o) ->
+    if @originalOperator is 'in'
+      inNode = new In @first, @second
+      return (if @invertOperator then inNode.invert() else inNode).compileNode o
     if @invertOperator
       @invertOperator = null
       return @invert().compileNode(o)
-    return new In(@first, @second).compileNode o if @originalOperator is 'in'
     isChain = @isChainable() and @first.isChainable()
     # In chains, there's no need to wrap bare obj literals in parens,
     # as the chained expression is wrapped.
