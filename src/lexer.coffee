@@ -363,13 +363,13 @@ exports.Lexer = class Lexer
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
     return 0 unless @chunk.charAt(0) is '`' and
-      (match = HERE_JSTOKEN.exec(@chunk) or JSTOKEN.exec(@chunk))
+      (match = (matchedHere = HERE_JSTOKEN.exec(@chunk)) or JSTOKEN.exec(@chunk))
     # Convert escaped backticks to backticks, and escaped backslashes
     # just before escaped backticks to backslashes
-    script = match[1].replace /\\+(`|$)/g, (string) ->
-      # `string` is always a value like '\`', '\\\`', '\\\\\`', etc.
-      # By reducing it to its latter half, we turn '\`' to '`', '\\\`' to '\`', etc.
-      string[-Math.ceil(string.length / 2)..]
+    script = match[1]
+    if matchedHere
+      script = new String script
+      script.here = yes
     @token 'JS', script, 0, match[0].length
     match[0].length
 
