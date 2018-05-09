@@ -641,7 +641,14 @@ exports.Lexer = class Lexer
       skipToken = false
       if value is '=' and normalizeStringObject(prev[1]) in ['||', '&&'] and not prev.spaced
         prev[0] = 'COMPOUND_ASSIGN'
-        prev[1] += '='
+        prev[1] = do ->
+          val = prev[1]
+          {original} = val
+          val += '='
+          return val unless original
+          val = new String val
+          val.original = "#{original}="
+          val
         prev = @tokens[@tokens.length - 2]
         skipToken = true
       if prev and prev[0] isnt 'PROPERTY'

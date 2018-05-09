@@ -2209,6 +2209,9 @@ exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options = {}) ->
     super()
     {@param, @subpattern, @operatorToken, @moduleDeclaration} = options
+    @originalContext = @context?.original
+    @context = normalizeStringObject @context
+    @originalContext ?= @context
 
   children: ['variable', 'value']
 
