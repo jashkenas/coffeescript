@@ -174,13 +174,14 @@ grammar =
         finalChunk:   $1.finalChunk
         indent:       $1.indent
         double:       $1.double
+        heregex:      $1.heregex
       )
     o 'STRING_START Body STRING_END',           -> new StringWithInterpolations $2, quote: $1.quote
   ]
 
   Regex: [
-    o 'REGEX',                                  -> new RegexLiteral $1
-    o 'REGEX_START Invocation REGEX_END',       -> new RegexWithInterpolations $2.args
+    o 'REGEX',                                  -> new RegexLiteral "#{$1}", delimiter: $1.delimiter
+    o 'REGEX_START Invocation REGEX_END',       -> new RegexWithInterpolations $2
   ]
 
   # All of our immediate values. Generally these can be passed straight

@@ -14,7 +14,7 @@
 # Import the helpers we need.
 {count, starts, compact, repeat, invertLiterate, merge,
 attachCommentsToNode, locationDataToString, throwSyntaxError
-dump, makeDelimitedLiteral} = require './helpers'
+replaceUnicodeCodePointEscapes} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -298,8 +298,8 @@ exports.Lexer = class Lexer
         indent = attempt if indent is null or 0 < attempt.length < indent.length
 
     delimiter = quote.charAt(0)
-    @mergeInterpolationTokens tokens, {delimiter, quote, indent}, (value, i) =>
-      @formatString value, delimiter: quote
+    @mergeInterpolationTokens tokens, {quote, indent}, (value) =>
+      @validateUnicodeCodePointEscapes value, delimiter: quote
 
     if @atCSXTag()
       @token ',', ',', length: 0, origin: @prev
@@ -406,17 +406,16 @@ exports.Lexer = class Lexer
       when not VALID_FLAGS.test flags
         @error "invalid regular expression flags #{flags}", offset: index, length: flags.length
       when regex or tokens.length is 1
-        if body
-          body = @formatRegex body, { flags, delimiter: '/' }
-        else
-          body = @formatHeregex tokens[0][1], { flags }
-        @token 'REGEX', "#{@makeDelimitedLiteral body, delimiter: '/'}#{flags}", {length: end, origin}
+        delimiter = if body then '/' else '///'
+        body ?= tokens[0][1]
+        @validateUnicodeCodePointEscapes body, {delimiter}
+        @token 'REGEX', "/#{body}/#{flags}", {length: end, origin, data: {delimiter}}
       else
         @token 'REGEX_START', '(',    {length: 0, origin}
         @token 'IDENTIFIER', 'RegExp', length: 0
         @token 'CALL_START', '(',      length: 0
-        @mergeInterpolationTokens tokens, {delimiter: '"', double: yes}, (str) =>
-          @formatHeregex str, { flags }
+        @mergeInterpolationTokens tokens, {double: yes, heregex: {flags}}, (str) =>
+          @validateUnicodeCodePointEscapes str, {delimiter}
         if flags
           @token ',', ',',                    offset: index - 1, length: 0
           @token 'STRING', '"' + flags + '"', offset: index - 1, length: flags.length
@@ -586,8 +585,8 @@ exports.Lexer = class Lexer
         @token ',', ','
         {tokens, index: end} =
           @matchWithInterpolations INSIDE_CSX, '>', '</', CSX_INTERPOLATION
-        @mergeInterpolationTokens tokens, {delimiter: '"'}, (value, i) =>
-          @formatString value, delimiter: '>'
+        @mergeInterpolationTokens tokens, {}, (value) =>
+          @validateUnicodeCodePointEscapes value, delimiter: '>'
         match = CSX_IDENTIFIER.exec(@chunk[end...]) or CSX_FRAGMENT_IDENTIFIER.exec(@chunk[end...])
         if not match or match[1] isnt csxTag.name
           @error "expected corresponding CSX closing tag for #{csxTag.name}",
@@ -813,7 +812,7 @@ exports.Lexer = class Lexer
   # of `'NEOSTRING'`s are converted using `fn` and turned into strings using
   # `options` first.
   mergeInterpolationTokens: (tokens, options, fn) ->
-    {quote, indent, double} = options
+    {quote, indent, double, heregex} = options
 
     if tokens.length > 1
       lparen = @token 'STRING_START', '(', length: 0, data: {quote}
@@ -863,6 +862,7 @@ exports.Lexer = class Lexer
           addTokenData token, initialChunk: yes if i is 0
           addTokenData token, finalChunk: yes   if i is $
           addTokenData token, {indent, quote, double}
+          addTokenData token, {heregex} if heregex
           token[0] = 'STRING'
           token[1] = '"' + converted + '"'
           locationToken = token
@@ -987,39 +987,8 @@ exports.Lexer = class Lexer
     LINE_CONTINUER.test(@chunk) or
     @tag() in UNFINISHED
 
-  formatString: (str, options) ->
-    @replaceUnicodeCodePointEscapes str.replace(STRING_OMIT, '$1'), options
-
-  formatHeregex: (str, options) ->
-    @formatRegex str.replace(HEREGEX_OMIT, '$1$2'), merge(options, delimiter: '///')
-
-  formatRegex: (str, options) ->
-    @replaceUnicodeCodePointEscapes str, options
-
-  unicodeCodePointToUnicodeEscapes: (codePoint) ->
-    toUnicodeEscape = (val) ->
-      str = val.toString 16
-      "\\u#{repeat '0', 4 - str.length}#{str}"
-    return toUnicodeEscape(codePoint) if codePoint < 0x10000
-    # surrogate pair
-    high = Math.floor((codePoint - 0x10000) / 0x400) + 0xD800
-    low = (codePoint - 0x10000) % 0x400 + 0xDC00
-    "#{toUnicodeEscape(high)}#{toUnicodeEscape(low)}"
-
-  # Replace `\u{...}` with `\uxxxx[\uxxxx]` in regexes without `u` flag
-  replaceUnicodeCodePointEscapes: (str, options) ->
-    shouldReplace = options.flags? and 'u' not in options.flags
-    str.replace UNICODE_CODE_POINT_ESCAPE, (match, escapedBackslash, codePointHex, offset) =>
-      return escapedBackslash if escapedBackslash
-
-      codePointDecimal = parseInt codePointHex, 16
-      if codePointDecimal > 0x10ffff
-        @error "unicode code point escapes greater than \\u{10ffff} are not allowed",
-          offset: offset + options.delimiter.length
-          length: codePointHex.length + 4
-      return match unless shouldReplace
-
-      @unicodeCodePointToUnicodeEscapes codePointDecimal
+  validateUnicodeCodePointEscapes: (str, options) ->
+    replaceUnicodeCodePointEscapes str, merge options, {@error}
 
   # Validates escapes in strings and regexes.
   validateEscapes: (str, options = {}) ->
@@ -1041,9 +1010,6 @@ exports.Lexer = class Lexer
       offset: (options.offsetInChunk ? 0) + match.index + before.length
       length: invalidEscape.length
 
-  # Constructs a string or regex by escaping certain characters.
-  makeDelimitedLiteral: makeDelimitedLiteral
-
   suppressSemicolons: ->
     while @value() is ';'
       @tokens.pop()
@@ -1051,7 +1017,7 @@ exports.Lexer = class Lexer
 
   # Throws an error at either a given offset from the current chunk or at the
   # location of a token (`token[2]`).
-  error: (message, options = {}) ->
+  error: (message, options = {}) =>
     location =
       if 'first_line' of options
         options
@@ -1220,10 +1186,6 @@ CSX_INTERPOLATION = /// ^(?:
     | <(?!/)   # CSX opening tag.
   )///
 
-STRING_OMIT    = ///
-    ((?:\\\\)+)      # Consume (and preserve) an even number of backslashes.
-  | \\[^\S\n]*\n\s*  # Remove escaped newlines.
-///g
 HEREDOC_INDENT     = /\n+([^\n\S]*)(?=\S)/g
 
 # Regex-matching-regexes.
@@ -1255,12 +1217,6 @@ HEREGEX      = /// ^
   )*
 ///
 
-HEREGEX_OMIT = ///
-    ((?:\\\\)+)     # Consume (and preserve) an even number of backslashes.
-  | \\(\s)          # Preserve escaped whitespace.
-  | \s+(?:#.*)?     # Remove whitespace and comments.
-///g
-
 REGEX_ILLEGAL = /// ^ ( / | /{3}\s*) (\*) ///
 
 POSSIBLY_DIVISION   = /// ^ /=?\s ///
@@ -1288,12 +1244,6 @@ REGEX_INVALID_ESCAPE = ///
       | (u(?!\{|[\da-fA-F]{4}).{0,4}) # unicode escape
   )
 ///
-
-UNICODE_CODE_POINT_ESCAPE = ///
-  ( \\\\ )        # Make sure the escape isn’t escaped.
-  |
-  \\u\{ ( [\da-fA-F]+ ) \}
-///g
 
 TRAILING_SPACES     = /\s+$/
 

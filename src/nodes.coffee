@@ -11,7 +11,7 @@ Error.stackTraceLimit = Infinity
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, some,
 addDataToNode, attachCommentsToNode, locationDataToString,
-throwSyntaxError, makeDelimitedLiteral} = require './helpers'
+throwSyntaxError, makeDelimitedLiteral, replaceUnicodeCodePointEscapes} = require './helpers'
 
 # Functions required by parser.
 exports.extend = extend
@@ -747,7 +747,7 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
     if o.level >= LEVEL_OP then @wrapInParentheses code else code
 
 exports.StringLiteral = class StringLiteral extends Literal
-  constructor: (@originalValue, {@quote, @initialChunk, @finalChunk, @indent, @double} = {}) ->
+  constructor: (@originalValue, {@quote, @initialChunk, @finalChunk, @indent, @double, @heregex} = {}) ->
     super ''
     @fromSourceString = @quote?
     @quote ?= '"'
@@ -757,23 +757,28 @@ exports.StringLiteral = class StringLiteral extends Literal
     heredoc = @quote.length is 3
     @value = do =>
       val = @originalValue
-      val =
-        unless @fromSourceString
-          val
-        else if heredoc
-          indentRegex = /// \n#{@indent} ///g if @indent
+      if @heregex
+        val = val.replace HEREGEX_OMIT, '$1$2'
+        val = replaceUnicodeCodePointEscapes val, flags: @heregex.flags
+      else
+        val = val.replace STRING_OMIT, '$1'
+        val =
+          unless @fromSourceString
+            val
+          else if heredoc
+            indentRegex = /// \n#{@indent} ///g if @indent
 
-          val = val.replace indentRegex, '\n' if indentRegex
-          val = val.replace LEADING_BLANK_LINE,  '' if @initialChunk
-          val = val.replace TRAILING_BLANK_LINE, '' if @finalChunk
-          val
-        else
-          val.replace SIMPLE_STRING_OMIT, (match, offset) =>
-            if (@initialChunk and offset is 0) or
-               (@finalChunk and offset + match.length is val.length)
-              ''
-            else
-              ' '
+            val = val.replace indentRegex, '\n' if indentRegex
+            val = val.replace LEADING_BLANK_LINE,  '' if @initialChunk
+            val = val.replace TRAILING_BLANK_LINE, '' if @finalChunk
+            val
+          else
+            val.replace SIMPLE_STRING_OMIT, (match, offset) =>
+              if (@initialChunk and offset is 0) or
+                 (@finalChunk and offset + match.length is val.length)
+                ''
+              else
+                ' '
       makeDelimitedLiteral val, {
         delimiter: @quote.charAt 0
         @double
@@ -790,6 +795,19 @@ exports.StringLiteral = class StringLiteral extends Literal
     unquoted
 
 exports.RegexLiteral = class RegexLiteral extends Literal
+  constructor: (value, {@delimiter = '/'} = {}) ->
+    super ''
+    @formatValue value
+
+  formatValue: (val) ->
+    heregex = @delimiter is '///'
+    endDelimiterIndex = val.lastIndexOf '/'
+    @flags = val[endDelimiterIndex + 1..]
+    @value = do =>
+      val = @originalValue = val[1...endDelimiterIndex]
+      val = val.replace HEREGEX_OMIT, '$1$2' if heregex
+      val = replaceUnicodeCodePointEscapes val, {@flags}
+      "#{makeDelimitedLiteral val, delimiter: '/'}#{@flags}"
 
 exports.PassthroughLiteral = class PassthroughLiteral extends Literal
   constructor: (@originalValue, {@here} = {}) ->
@@ -1293,9 +1311,12 @@ exports.Super = class Super extends Base
 
 # Regexes with interpolations are in fact just a variation of a `Call` (a
 # `RegExp()` call to be precise) with a `StringWithInterpolations` inside.
-exports.RegexWithInterpolations = class RegexWithInterpolations extends Call
-  constructor: (args = []) ->
-    super (new Value new IdentifierLiteral 'RegExp'), args, false
+exports.RegexWithInterpolations = class RegexWithInterpolations extends Base
+  constructor: (@call) ->
+    super()
+
+  compileNode: (o) ->
+    @call.compileNode o
 
 #### TaggedTemplateCall
 
@@ -3877,6 +3898,15 @@ SIMPLENUM = /^[+-]?\d+$/
 SIMPLE_STRING_OMIT = /\s*\n\s*/g
 LEADING_BLANK_LINE  = /^[^\n\S]*\n/
 TRAILING_BLANK_LINE = /\n[^\n\S]*$/
+STRING_OMIT    = ///
+    ((?:\\\\)+)      # Consume (and preserve) an even number of backslashes.
+  | \\[^\S\n]*\n\s*  # Remove escaped newlines.
+///g
+HEREGEX_OMIT = ///
+    ((?:\\\\)+)     # Consume (and preserve) an even number of backslashes.
+  | \\(\s)          # Preserve escaped whitespace.
+  | \s+(?:#.*)?     # Remove whitespace and comments.
+///g
 
 # Helper Functions
 # ----------------
