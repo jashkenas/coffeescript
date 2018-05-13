@@ -14,7 +14,7 @@
 # Import the helpers we need.
 {count, starts, compact, repeat, invertLiterate, merge,
 attachCommentsToNode, locationDataToString, throwSyntaxError
-dump, makeDelimitedLiteral} = require './helpers'
+makeDelimitedLiteral, replaceUnicodeCodePointEscapes} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -296,8 +296,8 @@ exports.Lexer = class Lexer
         indent = attempt if indent is null or 0 < attempt.length < indent.length
 
     delimiter = quote.charAt(0)
-    @mergeInterpolationTokens tokens, {delimiter, quote, indent}, (value, i) =>
-      @formatString value, delimiter: quote
+    @mergeInterpolationTokens tokens, {delimiter, quote, indent}, (value) =>
+      @validateUnicodeCodePointEscapes value, delimiter: quote
 
     if @atCSXTag()
       @token ',', ',', length: 0, origin: @prev
@@ -584,8 +584,8 @@ exports.Lexer = class Lexer
         @token ',', ','
         {tokens, index: end} =
           @matchWithInterpolations INSIDE_CSX, '>', '</', CSX_INTERPOLATION
-        @mergeInterpolationTokens tokens, {delimiter: '"'}, (value, i) =>
-          @formatString value, delimiter: '>'
+        @mergeInterpolationTokens tokens, {delimiter: '"'}, (value) =>
+          @validateUnicodeCodePointEscapes value, delimiter: '>'
         match = CSX_IDENTIFIER.exec(@chunk[end...]) or CSX_FRAGMENT_IDENTIFIER.exec(@chunk[end...])
         if not match or match[1] isnt csxTag.name
           @error "expected corresponding CSX closing tag for #{csxTag.name}",
@@ -984,39 +984,14 @@ exports.Lexer = class Lexer
     LINE_CONTINUER.test(@chunk) or
     @tag() in UNFINISHED
 
-  formatString: (str, options) ->
-    @replaceUnicodeCodePointEscapes str.replace(STRING_OMIT, '$1'), options
-
   formatHeregex: (str, options) ->
     @formatRegex str.replace(HEREGEX_OMIT, '$1$2'), merge(options, delimiter: '///')
 
   formatRegex: (str, options) ->
-    @replaceUnicodeCodePointEscapes str, options
+    @validateUnicodeCodePointEscapes str, options
 
-  unicodeCodePointToUnicodeEscapes: (codePoint) ->
-    toUnicodeEscape = (val) ->
-      str = val.toString 16
-      "\\u#{repeat '0', 4 - str.length}#{str}"
-    return toUnicodeEscape(codePoint) if codePoint < 0x10000
-    # surrogate pair
-    high = Math.floor((codePoint - 0x10000) / 0x400) + 0xD800
-    low = (codePoint - 0x10000) % 0x400 + 0xDC00
-    "#{toUnicodeEscape(high)}#{toUnicodeEscape(low)}"
-
-  # Replace `\u{...}` with `\uxxxx[\uxxxx]` in regexes without `u` flag
-  replaceUnicodeCodePointEscapes: (str, options) ->
-    shouldReplace = options.flags? and 'u' not in options.flags
-    str.replace UNICODE_CODE_POINT_ESCAPE, (match, escapedBackslash, codePointHex, offset) =>
-      return escapedBackslash if escapedBackslash
-
-      codePointDecimal = parseInt codePointHex, 16
-      if codePointDecimal > 0x10ffff
-        @error "unicode code point escapes greater than \\u{10ffff} are not allowed",
-          offset: offset + options.delimiter.length
-          length: codePointHex.length + 4
-      return match unless shouldReplace
-
-      @unicodeCodePointToUnicodeEscapes codePointDecimal
+  validateUnicodeCodePointEscapes: (str, options) ->
+    replaceUnicodeCodePointEscapes str, merge options, {@error}
 
   # Validates escapes in strings and regexes.
   validateEscapes: (str, options = {}) ->
@@ -1048,7 +1023,7 @@ exports.Lexer = class Lexer
 
   # Throws an error at either a given offset from the current chunk or at the
   # location of a token (`token[2]`).
-  error: (message, options = {}) ->
+  error: (message, options = {}) =>
     location =
       if 'first_line' of options
         options
@@ -1217,10 +1192,6 @@ CSX_INTERPOLATION = /// ^(?:
     | <(?!/)   # CSX opening tag.
   )///
 
-STRING_OMIT    = ///
-    ((?:\\\\)+)      # Consume (and preserve) an even number of backslashes.
-  | \\[^\S\n]*\n\s*  # Remove escaped newlines.
-///g
 HEREDOC_INDENT     = /\n+([^\n\S]*)(?=\S)/g
 
 # Regex-matching-regexes.
@@ -1285,12 +1256,6 @@ REGEX_INVALID_ESCAPE = ///
       | (u(?!\{|[\da-fA-F]{4}).{0,4}) # unicode escape
   )
 ///
-
-UNICODE_CODE_POINT_ESCAPE = ///
-  ( \\\\ )        # Make sure the escape isn’t escaped.
-  |
-  \\u\{ ( [\da-fA-F]+ ) \}
-///g
 
 TRAILING_SPACES     = /\s+$/
 

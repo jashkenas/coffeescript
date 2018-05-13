@@ -757,6 +757,7 @@ exports.StringLiteral = class StringLiteral extends Literal
     heredoc = @quote.length is 3
     @value = do =>
       val = @originalValue
+      val = val.replace STRING_OMIT, '$1'
       val =
         unless @fromSourceString
           val
@@ -3863,6 +3864,10 @@ SIMPLENUM = /^[+-]?\d+$/
 SIMPLE_STRING_OMIT = /\s*\n\s*/g
 LEADING_BLANK_LINE  = /^[^\n\S]*\n/
 TRAILING_BLANK_LINE = /\n[^\n\S]*$/
+STRING_OMIT    = ///
+    ((?:\\\\)+)      # Consume (and preserve) an even number of backslashes.
+  | \\[^\S\n]*\n\s*  # Remove escaped newlines.
+///g
 
 # Helper Functions
 # ----------------
