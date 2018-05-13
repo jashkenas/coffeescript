@@ -69,7 +69,7 @@ getMatchingTokens = (str, wantedTokens...) ->
   matchingTokens
 
 test 'Verify locations in string interpolation (in "string")', ->
-  [a, b, c] = getMatchingTokens '"a#{b}c"', 'a', 'b', 'c'
+  [a, b, c] = getMatchingTokens '"a#{b}c"', '"a"', 'b', '"c"'
 
   eq a[2].first_line, 0
   eq a[2].first_column, 0
@@ -87,7 +87,7 @@ test 'Verify locations in string interpolation (in "string")', ->
   eq c[2].last_column, 7
 
 test 'Verify locations in string interpolation (in "string", multiple interpolation)', ->
-  [a, b, c] = getMatchingTokens '"#{a}b#{c}"', 'a', 'b', 'c'
+  [a, b, c] = getMatchingTokens '"#{a}b#{c}"', 'a', '"b"', 'c'
 
   eq a[2].first_line, 0
   eq a[2].first_column, 3
@@ -105,7 +105,7 @@ test 'Verify locations in string interpolation (in "string", multiple interpolat
   eq c[2].last_column, 8
 
 test 'Verify locations in string interpolation (in "string", multiple interpolation and line breaks)', ->
-  [a, b, c] = getMatchingTokens '"#{a}\nb\n#{c}"', 'a', '\nb\n', 'c'
+  [a, b, c] = getMatchingTokens '"#{a}\nb\n#{c}"', 'a', '"\nb\n"', 'c'
 
   eq a[2].first_line, 0
   eq a[2].first_column, 3
@@ -123,7 +123,7 @@ test 'Verify locations in string interpolation (in "string", multiple interpolat
   eq c[2].last_column, 2
 
 test 'Verify locations in string interpolation (in "string", multiple interpolation and starting with line breaks)', ->
-  [a, b, c] = getMatchingTokens '"\n#{a}\nb\n#{c}"', 'a', '\nb\n', 'c'
+  [a, b, c] = getMatchingTokens '"\n#{a}\nb\n#{c}"', 'a', '"\nb\n"', 'c'
 
   eq a[2].first_line, 1
   eq a[2].first_column, 2
@@ -141,7 +141,7 @@ test 'Verify locations in string interpolation (in "string", multiple interpolat
   eq c[2].last_column, 2
 
 test 'Verify locations in string interpolation (in "string", multiple interpolation and starting with line breaks)', ->
-  [a, b, c] = getMatchingTokens '"\n\n#{a}\n\nb\n\n#{c}"', 'a', '\n\nb\n\n', 'c'
+  [a, b, c] = getMatchingTokens '"\n\n#{a}\n\nb\n\n#{c}"', 'a', '"\n\nb\n\n"', 'c'
 
   eq a[2].first_line, 2
   eq a[2].first_column, 2
@@ -159,7 +159,7 @@ test 'Verify locations in string interpolation (in "string", multiple interpolat
   eq c[2].last_column, 2
 
 test 'Verify locations in string interpolation (in "string", multiple interpolation and starting with line breaks)', ->
-  [a, b, c] = getMatchingTokens '"\n\n\n#{a}\n\n\nb\n\n\n#{c}"', 'a', '\n\n\nb\n\n\n', 'c'
+  [a, b, c] = getMatchingTokens '"\n\n\n#{a}\n\n\nb\n\n\n#{c}"', 'a', '"\n\n\nb\n\n\n"', 'c'
 
   eq a[2].first_line, 3
   eq a[2].first_column, 2
@@ -177,7 +177,7 @@ test 'Verify locations in string interpolation (in "string", multiple interpolat
   eq c[2].last_column, 2
 
 test 'Verify locations in string interpolation (in """string""", line breaks)', ->
-  [a, b, c] = getMatchingTokens '"""a\n#{b}\nc"""', 'a\n', 'b', '\nc'
+  [a, b, c] = getMatchingTokens '"""a\n#{b}\nc"""', '"a\n"', 'b', '"\nc"'
 
   eq a[2].first_line, 0
   eq a[2].first_column, 0
@@ -195,7 +195,7 @@ test 'Verify locations in string interpolation (in """string""", line breaks)', 
   eq c[2].last_column, 3
 
 test 'Verify locations in string interpolation (in """string""", starting with a line break)', ->
-  [b, c] = getMatchingTokens '"""\n#{b}\nc"""', 'b', '\nc'
+  [b, c] = getMatchingTokens '"""\n#{b}\nc"""', 'b', '"\nc"'
 
   eq b[2].first_line, 1
   eq b[2].first_column, 2
@@ -208,7 +208,7 @@ test 'Verify locations in string interpolation (in """string""", starting with a
   eq c[2].last_column, 3
 
 test 'Verify locations in string interpolation (in """string""", starting with line breaks)', ->
-  [a, b, c] = getMatchingTokens '"""\n\n#{b}\nc"""', '\n\n', 'b', '\nc'
+  [a, b, c] = getMatchingTokens '"""\n\n#{b}\nc"""', '"\n\n"', 'b', '"\nc"'
 
   eq a[2].first_line, 0
   eq a[2].first_column, 0
@@ -226,7 +226,7 @@ test 'Verify locations in string interpolation (in """string""", starting with l
   eq c[2].last_column, 3
 
 test 'Verify locations in string interpolation (in """string""", multiple interpolation)', ->
-  [a, b, c] = getMatchingTokens '"""#{a}\nb\n#{c}"""', 'a', '\nb\n', 'c'
+  [a, b, c] = getMatchingTokens '"""#{a}\nb\n#{c}"""', 'a', '"\nb\n"', 'c'
 
   eq a[2].first_line, 0
   eq a[2].first_column, 5
@@ -244,7 +244,7 @@ test 'Verify locations in string interpolation (in """string""", multiple interp
   eq c[2].last_column, 2
 
 test 'Verify locations in string interpolation (in """string""", multiple interpolation, and starting with line breaks)', ->
-  [a, b, c] = getMatchingTokens '"""\n\n#{a}\n\nb\n\n#{c}"""', 'a', '\n\nb\n\n', 'c'
+  [a, b, c] = getMatchingTokens '"""\n\n#{a}\n\nb\n\n#{c}"""', 'a', '"\n\nb\n\n"', 'c'
 
   eq a[2].first_line, 2
   eq a[2].first_column, 2
@@ -262,7 +262,7 @@ test 'Verify locations in string interpolation (in """string""", multiple interp
   eq c[2].last_column, 2
 
 test 'Verify locations in string interpolation (in """string""", multiple interpolation, and starting with line breaks)', ->
-  [a, b, c] = getMatchingTokens '"""\n\n\n#{a}\n\n\nb\n\n\n#{c}"""', 'a', '\n\n\nb\n\n\n', 'c'
+  [a, b, c] = getMatchingTokens '"""\n\n\n#{a}\n\n\nb\n\n\n#{c}"""', 'a', '"\n\n\nb\n\n\n"', 'c'
 
   eq a[2].first_line, 3
   eq a[2].first_column, 2
@@ -280,7 +280,7 @@ test 'Verify locations in string interpolation (in """string""", multiple interp
   eq c[2].last_column, 2
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation)', ->
-  [a, b, c] = getMatchingTokens '///#{a}b#{c}///', 'a', 'b', 'c'
+  [a, b, c] = getMatchingTokens '///#{a}b#{c}///', 'a', '"b"', 'c'
 
   eq a[2].first_line, 0
   eq a[2].first_column, 5
@@ -298,7 +298,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].last_column, 10
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation)', ->
-  [a, b, c] = getMatchingTokens '///a#{b}c///', 'a', 'b', 'c'
+  [a, b, c] = getMatchingTokens '///a#{b}c///', '"a"', 'b', '"c"'
 
   eq a[2].first_line, 0
   eq a[2].first_column, 0
@@ -316,7 +316,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].last_column, 11
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks)', ->
-  [a, b, c] = getMatchingTokens '///#{a}\nb\n#{c}///', 'a', 'b', 'c'
+  [a, b, c] = getMatchingTokens '///#{a}\nb\n#{c}///', 'a', '"b"', 'c'
 
   eq a[2].first_line, 0
   eq a[2].first_column, 5
@@ -334,7 +334,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].last_column, 2
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks)', ->
-  [a, b, c] = getMatchingTokens '///#{a}\n\n\nb\n\n\n#{c}///', 'a', 'b', 'c'
+  [a, b, c] = getMatchingTokens '///#{a}\n\n\nb\n\n\n#{c}///', 'a', '"b"', 'c'
 
   eq a[2].first_line, 0
   eq a[2].first_column, 5
@@ -352,7 +352,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].last_column, 2
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks)', ->
-  [a, b, c] = getMatchingTokens '///a\n\n\n#{b}\n\n\nc///', 'a', 'b', 'c'
+  [a, b, c] = getMatchingTokens '///a\n\n\n#{b}\n\n\nc///', '"a"', 'b', '"c"'
 
   eq a[2].first_line, 0
   eq a[2].first_column, 0
@@ -370,7 +370,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].last_column, 3
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks and starting with linebreak)', ->
-  [a, b, c] = getMatchingTokens '///\n#{a}\nb\n#{c}///', 'a', 'b', 'c'
+  [a, b, c] = getMatchingTokens '///\n#{a}\nb\n#{c}///', 'a', '"b"', 'c'
 
   eq a[2].first_line, 1
   eq a[2].first_column, 2
@@ -388,7 +388,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].last_column, 2
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks and starting with linebreak)', ->
-  [a, b, c] = getMatchingTokens '///\n\n\n#{a}\n\n\nb\n\n\n#{c}///', 'a', 'b', 'c'
+  [a, b, c] = getMatchingTokens '///\n\n\n#{a}\n\n\nb\n\n\n#{c}///', 'a', '"b"', 'c'
 
   eq a[2].first_line, 3
   eq a[2].first_column, 2
@@ -406,7 +406,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].last_column, 2
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks and starting with linebreak)', ->
-  [a, b, c] = getMatchingTokens '///\n\n\na\n\n\n#{b}\n\n\nc///', 'a', 'b', 'c'
+  [a, b, c] = getMatchingTokens '///\n\n\na\n\n\n#{b}\n\n\nc///', '"a"', 'b', '"c"'
 
   eq a[2].first_line, 0
   eq a[2].first_column, 0
@@ -436,9 +436,6 @@ test "#3822: Simple string/regex start/end should include delimiters", ->
   eq regexToken[2].last_line, 0
   eq regexToken[2].last_column, 6
 
-strVal = (str) ->
-  str.valueOf?() ? str
-
 test "#3621: Multiline regex and manual `Regex` call with interpolation should
       result in the same tokens", ->
   tokensA = CoffeeScript.tokens '(RegExp(".*#{a}[0-9]"))'
@@ -448,7 +445,7 @@ test "#3621: Multiline regex and manual `Regex` call with interpolation should
     tokenA = tokensA[i]
     tokenB = tokensB[i]
     eq tokenA[0], tokenB[0] unless tokenB[0] in ['REGEX_START', 'REGEX_END']
-    eq strVal(tokenA[1]), strVal(tokenB[1])
+    eq "#{tokenA[1]}", "#{tokenB[1]}"
     unless tokenA[0] is 'STRING_START' or tokenB[0] is 'REGEX_START'
       eq tokenA.origin?[1], tokenB.origin?[1]
     eq tokenA.stringEnd, tokenB.stringEnd

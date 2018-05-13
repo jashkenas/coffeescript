@@ -166,7 +166,15 @@ grammar =
   ]
 
   String: [
-    o 'STRING',                                 -> new StringLiteral $1, {quote: $1.quote, initialChunk: $1.initialChunk, finalChunk: $1.finalChunk, indent: $1.indent, double: $1.double}
+    o 'STRING', ->
+      new StringLiteral(
+        $1.slice 1, -1 # strip artificial quotes and unwrap to primitive string
+        quote:        $1.quote
+        initialChunk: $1.initialChunk
+        finalChunk:   $1.finalChunk
+        indent:       $1.indent
+        double:       $1.double
+      )
     o 'STRING_START Body STRING_END',           -> new StringWithInterpolations $2, quote: $1.quote
   ]
 
@@ -179,7 +187,7 @@ grammar =
   # through and printed to JavaScript.
   Literal: [
     o 'AlphaNumeric'
-    o 'JS',                                     -> new PassthroughLiteral $1
+    o 'JS',                                     -> new PassthroughLiteral "#{$1}", here: $1.here
     o 'Regex'
     o 'UNDEFINED',                              -> new UndefinedLiteral $1
     o 'NULL',                                   -> new NullLiteral $1

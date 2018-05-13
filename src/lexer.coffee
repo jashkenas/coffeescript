@@ -221,17 +221,17 @@ exports.Lexer = class Lexer
         when '&&', '||'          then id
         else  tag
 
-    tagToken = @token tag, id, 0, idLength
+    tagToken = @token tag, id, length: idLength
     tagToken.origin = [tag, alias, tagToken[2]] if alias
     if poppedToken
       [tagToken[2].first_line, tagToken[2].first_column] =
         [poppedToken[2].first_line, poppedToken[2].first_column]
     if colon
       colonOffset = input.lastIndexOf if inCSXTag then '=' else ':'
-      colonToken = @token ':', ':', colonOffset, colon.length
+      colonToken = @token ':', ':', offset: colonOffset, length: colon.length
       colonToken.csxColon = yes if inCSXTag # used by rewriter
     if inCSXTag and tag is 'IDENTIFIER' and prev[0] isnt ':'
-      @token ',', ',', 0, 0, tagToken
+      @token ',', ',', length: 0, origin: tagToken
 
     input.length
 
@@ -263,7 +263,7 @@ exports.Lexer = class Lexer
     numberValue = if base? then parseInt(number[2..], base) else parseFloat(number)
 
     tag = if numberValue is Infinity then 'INFINITY' else 'NUMBER'
-    @token tag, number, 0, lexedLength
+    @token tag, number, length: lexedLength
     lexedLength
 
   # Matches strings, including multiline strings, as well as heredocs, with or without
@@ -300,7 +300,7 @@ exports.Lexer = class Lexer
       @formatString value, delimiter: quote
 
     if @atCSXTag()
-      @token ',', ',', 0, 0, @prev
+      @token ',', ',', length: 0, origin: @prev
 
     end
 
@@ -367,11 +367,9 @@ exports.Lexer = class Lexer
     # Convert escaped backticks to backticks, and escaped backslashes
     # just before escaped backticks to backslashes
     script = match[1]
-    if matchedHere
-      script = new String script
-      script.here = yes
-    @token 'JS', script, 0, match[0].length
-    match[0].length
+    {length} = match[0]
+    @token 'JS', script, {length, data: {here: !!matchedHere}}
+    length
 
   # Matches regular expression literals, as well as multiline extended ones.
   # Lexing regular expressions is difficult to distinguish from division, so we
@@ -401,7 +399,7 @@ exports.Lexer = class Lexer
 
     [flags] = REGEX_FLAGS.exec @chunk[index..]
     end = index + flags.length
-    origin = @makeToken 'REGEX', null, 0, end
+    origin = @makeToken 'REGEX', null, length: end
     switch
       when not VALID_FLAGS.test flags
         @error "invalid regular expression flags #{flags}", offset: index, length: flags.length
@@ -410,18 +408,18 @@ exports.Lexer = class Lexer
           body = @formatRegex body, { flags, delimiter: '/' }
         else
           body = @formatHeregex tokens[0][1], { flags }
-        @token 'REGEX', "#{@makeDelimitedLiteral body, delimiter: '/'}#{flags}", 0, end, origin
+        @token 'REGEX', "#{@makeDelimitedLiteral body, delimiter: '/'}#{flags}", {length: end, origin}
       else
-        @token 'REGEX_START', '(', 0, 0, origin
-        @token 'IDENTIFIER', 'RegExp', 0, 0
-        @token 'CALL_START', '(', 0, 0
+        @token 'REGEX_START', '(',    {length: 0, origin}
+        @token 'IDENTIFIER', 'RegExp', length: 0
+        @token 'CALL_START', '(',      length: 0
         @mergeInterpolationTokens tokens, {delimiter: '"', double: yes}, (str) =>
           @formatHeregex str, { flags }
         if flags
-          @token ',', ',', index - 1, 0
-          @token 'STRING', flags, index - 1, flags.length
-        @token ')', ')', end - 1, 0
-        @token 'REGEX_END', ')', end - 1, 0
+          @token ',', ',',                    offset: index - 1, length: 0
+          @token 'STRING', '"' + flags + '"', offset: index - 1, length: flags.length
+        @token ')', ')',                      offset: end - 1,   length: 0
+        @token 'REGEX_END', ')',              offset: end - 1,   length: 0
 
     end
 
@@ -472,7 +470,7 @@ exports.Lexer = class Lexer
         @indentLiteral = newIndentLiteral
         return indent.length
       diff = size - @indent + @outdebt
-      @token 'INDENT', diff, indent.length - size, size
+      @token 'INDENT', diff, offset: indent.length - size, length: size
       @indents.push diff
       @ends.push {tag: 'OUTDENT'}
       @outdebt = @indebt = 0
@@ -504,12 +502,12 @@ exports.Lexer = class Lexer
         @outdebt = 0
         # pair might call outdentToken, so preserve decreasedIndent
         @pair 'OUTDENT'
-        @token 'OUTDENT', moveOut, 0, outdentLength
+        @token 'OUTDENT', moveOut, length: outdentLength
         moveOut -= dent
     @outdebt -= moveOut if dent
     @suppressSemicolons()
 
-    @token 'TERMINATOR', '\n', outdentLength, 0 unless @tag() is 'TERMINATOR' or noNewlines
+    @token 'TERMINATOR', '\n', offset: outdentLength, length: 0 unless @tag() is 'TERMINATOR' or noNewlines
     @indent = decreasedIndent
     @indentLiteral = @indentLiteral[...decreasedIndent]
     this
@@ -526,7 +524,7 @@ exports.Lexer = class Lexer
   # Generate a newline token. Consecutive newlines get merged together.
   newlineToken: (offset) ->
     @suppressSemicolons()
-    @token 'TERMINATOR', '\n', offset, 0 unless @tag() is 'TERMINATOR'
+    @token 'TERMINATOR', '\n', {offset, length: 0} unless @tag() is 'TERMINATOR'
     this
 
   # Use a `\` at a line-ending to suppress the newline.
@@ -557,7 +555,7 @@ exports.Lexer = class Lexer
         prev[0] not in COMPARABLE_LEFT_SIDE
       )
       [input, id, colon] = match
-      origin = @token 'CSX_TAG', id, 1, id.length
+      origin = @token 'CSX_TAG', id, offset: 1, length: id.length
       @token 'CALL_START', '('
       @token '[', '['
       @ends.push tag: '/>', origin: origin, name: id
@@ -566,8 +564,8 @@ exports.Lexer = class Lexer
     else if csxTag = @atCSXTag()
       if @chunk[...2] is '/>'
         @pair '/>'
-        @token ']', ']', 0, 2
-        @token 'CALL_END', ')', 0, 2
+        @token ']', ']',        length: 2
+        @token 'CALL_END', ')', length: 2
         @csxDepth--
         return 2
       else if firstChar is '{'
@@ -596,7 +594,7 @@ exports.Lexer = class Lexer
         if @chunk[afterTag] isnt '>'
           @error "missing closing > after tag name", offset: afterTag, length: 1
         # +1 for the closing `>`.
-        @token 'CALL_END', ')', end, csxTag.name.length + 1
+        @token 'CALL_END', ')', offset: end, length: csxTag.name.length + 1
         @csxDepth--
         return afterTag + 1
       else
@@ -752,7 +750,7 @@ exports.Lexer = class Lexer
       @validateEscapes strPart, {isRegex: delimiter.charAt(0) is '/', offsetInChunk}
 
       # Push a fake `'NEOSTRING'` token, which will get turned into a real string later.
-      tokens.push @makeToken 'NEOSTRING', strPart, offsetInChunk
+      tokens.push @makeToken 'NEOSTRING', strPart, offset: offsetInChunk
 
       str = str[strPart.length..]
       offsetInChunk += strPart.length
@@ -783,8 +781,8 @@ exports.Lexer = class Lexer
 
       unless braceInterpolator
         # We are not using `{` and `}`, so wrap the interpolated tokens instead.
-        open = @makeToken '(', '(', offsetInChunk, 0
-        close = @makeToken ')', ')', offsetInChunk + index, 0
+        open = @makeToken '(', '(',  offset: offsetInChunk,         length: 0
+        close = @makeToken ')', ')', offset: offsetInChunk + index, length: 0
         nested = [open, nested..., close]
 
       # Push a fake `'TOKENS'` token, which will get turned into real tokens later.
@@ -813,35 +811,9 @@ exports.Lexer = class Lexer
   # `options` first.
   mergeInterpolationTokens: (tokens, options, fn) ->
     {quote, indent, double} = options
-    attachQuote = (token) ->
-      token[1] = preserveTagged(token) new String token[1]
-      token[1].quote = quote
-    attachDouble = (token) ->
-      return unless double
-      token[1] = preserveTagged(token) new String token[1]
-      token[1].double = double
-    markInitialChunk = (token) ->
-      token[1] = preserveTagged(token) new String token[1]
-      token[1].initialChunk = yes
-    markFinalChunk = (token) ->
-      token[1] = preserveTagged(token) new String token[1]
-      token[1].finalChunk = yes
-    markIndent = (token) ->
-      return unless indent
-      token[1] = preserveTagged(token) new String token[1]
-      token[1].indent = indent
-    tags = ['quote', 'initialChunk', 'finalChunk', 'indent', 'double']
-    preserveTagged = (token) -> (converted) ->
-      return converted unless do ->
-        return yes for tag in tags when token[1][tag]
-      ret = new String converted
-      for tag in tags
-        ret[tag] = token[1][tag]
-      ret
 
     if tokens.length > 1
-      lparen = @token 'STRING_START', '(', 0, 0
-      attachQuote lparen
+      lparen = @token 'STRING_START', '(', length: 0, data: {quote}
 
     firstIndex = @tokens.length
     $ = tokens.length - 1
@@ -857,7 +829,7 @@ exports.Lexer = class Lexer
               # This is an interpolated string, not a CSX tag; and for whatever
               # reason `` `a${/*test*/}b` `` is invalid JS. So compile to
               # `` `a${/*test*/''}b` `` instead.
-              placeholderToken = @makeToken 'STRING', ''
+              placeholderToken = @makeToken 'STRING', '""'
             else
               placeholderToken = @makeToken 'JS', ''
             # Use the same location data as the first parenthesis.
@@ -885,14 +857,11 @@ exports.Lexer = class Lexer
           # empty string.
           if i is 2 and firstEmptyStringIndex?
             @tokens.splice firstEmptyStringIndex, 2 # Remove empty string and the plus.
-          markInitialChunk token if i is 0
-          markFinalChunk token if i is $
-          markIndent token
-          attachQuote token
-          attachDouble token
+          addTokenData token, initialChunk: yes if i is 0
+          addTokenData token, finalChunk: yes   if i is $
+          addTokenData token, {indent, quote, double}
           token[0] = 'STRING'
-          # token[1] = preserveTagged(token) @makeDelimitedLiteral converted, options
-          token[1] = preserveTagged(token) converted
+          token[1] = '"' + converted + '"'
           locationToken = token
           tokensToPush = [token]
       if @tokens.length > firstIndex
@@ -965,7 +934,7 @@ exports.Lexer = class Lexer
 
   # Same as `token`, except this just returns the token without adding it
   # to the results.
-  makeToken: (tag, value, offsetInChunk = 0, length = value.length) ->
+  makeToken: (tag, value, {offset: offsetInChunk = 0, length = value.length} = {}) ->
     locationData = {}
     [locationData.first_line, locationData.first_column] =
       @getLineAndColumnFromChunk offsetInChunk
@@ -986,9 +955,10 @@ exports.Lexer = class Lexer
   # not specified, the length of `value` will be used.
   #
   # Returns the new token.
-  token: (tag, value, offsetInChunk, length, origin) ->
-    token = @makeToken tag, value, offsetInChunk, length
+  token: (tag, value, {offset, length, origin, data} = {}) ->
+    token = @makeToken tag, value, {offset, length}
     token.origin = origin if origin
+    addTokenData token, data if data
     @tokens.push token
     token
 
@@ -1122,6 +1092,9 @@ isForFrom = (prev) ->
     no
   else
     yes
+
+addTokenData = (token, data) ->
+  Object.assign (token.data ?= {}), data
 
 # Constants
 # ---------

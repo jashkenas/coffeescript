@@ -11,7 +11,7 @@ Error.stackTraceLimit = Infinity
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, some,
 addDataToNode, attachCommentsToNode, locationDataToString,
-throwSyntaxError, dump, makeDelimitedLiteral} = require './helpers'
+throwSyntaxError, makeDelimitedLiteral} = require './helpers'
 
 # Functions required by parser.
 exports.extend = extend
@@ -751,7 +751,6 @@ exports.StringLiteral = class StringLiteral extends Literal
     super ''
     @fromSourceString = @quote?
     @quote ?= '"'
-    @originalValue = normalizeStringObject @originalValue
     @formatValue()
 
   formatValue: ->
@@ -782,7 +781,6 @@ exports.StringLiteral = class StringLiteral extends Literal
 
   compileNode: (o) ->
     return [@makeCode @unquote(yes, yes)] if @csx
-    # @formatValue()
     super o
 
   unquote: (doubleQuote = no, csx = no) ->
@@ -794,10 +792,8 @@ exports.StringLiteral = class StringLiteral extends Literal
 exports.RegexLiteral = class RegexLiteral extends Literal
 
 exports.PassthroughLiteral = class PassthroughLiteral extends Literal
-  constructor: (@originalValue) ->
+  constructor: (@originalValue, {@here} = {}) ->
     super ''
-    {@here} = @originalValue
-    @originalValue = normalizeStringObject @originalValue
     @value = @originalValue.replace /\\+(`|$)/g, (string) ->
       # `string` is always a value like '\`', '\\\`', '\\\\\`', etc.
       # By reducing it to its latter half, we turn '\`' to '`', '\\\`' to '\`', etc.
@@ -3475,7 +3471,6 @@ exports.Parens = class Parens extends Base
 exports.StringWithInterpolations = class StringWithInterpolations extends Base
   constructor: (@body, {@quote} = {}) ->
     super()
-    # dump {@quote}
 
   children: ['body']
 
@@ -3528,7 +3523,6 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
     fragments.push @makeCode '`' unless @csx
     for element in elements
       if element instanceof StringLiteral
-        # element.formatValue()
         element.value = element.unquote yes, @csx
         unless @csx
           # Backticks and `${` inside template literals must be escaped.
@@ -3942,6 +3936,3 @@ unfoldSoak = (o, parent, name) ->
   parent[name] = ifn.body
   ifn.body = new Value parent
   ifn
-
-normalizeStringObject = (str) ->
-  str.valueOf?() ? str

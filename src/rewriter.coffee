@@ -5,7 +5,7 @@
 # shorthand into the unambiguous long form, add implicit indentation and
 # parentheses, and generally clean things up.
 
-{throwSyntaxError, dump} = require './helpers'
+{throwSyntaxError} = require './helpers'
 
 # Move attached comments from one token to another.
 moveComments = (fromToken, toToken) ->
@@ -41,7 +41,6 @@ exports.Rewriter = class Rewriter
   # like this. The order of these passes matters—indentation must be
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (@tokens) ->
-    # dump {@tokens}
     # Set environment variable `DEBUG_TOKEN_STREAM` to `true` to output token
     # debugging info. Also set `DEBUG_REWRITTEN_TOKEN_STREAM` to `true` to
     # output the token stream after it has been rewritten by this file.
@@ -59,6 +58,7 @@ exports.Rewriter = class Rewriter
     @addLocationDataToGeneratedTokens()
     @enforceValidCSXAttributes()
     @fixOutdentLocationData()
+    @exposeTokenDataToGrammar()
     if process?.env?.DEBUG_REWRITTEN_TOKEN_STREAM
       console.log 'Rewritten token stream:' if process.env.DEBUG_TOKEN_STREAM
       console.log (t[0] + '/' + t[1] + (if t.comments then '*' else '') for t in @tokens).join ' '
@@ -659,6 +659,18 @@ exports.Rewriter = class Rewriter
       original = token
       @detectEnd i + 1, condition, action
       return 1
+
+  # For tokens with extra data, we want to make that data visible to the grammar
+  # by wrapping the token value as a String() object and setting the data as
+  # properties of that object. The grammar should then be responsible for
+  # cleaning this up for the node constructor: unwrapping the token value to a
+  # primitive string and separately passing any expected token data properties
+  exposeTokenDataToGrammar: ->
+    @scanTokens (token, i) ->
+      if token.data
+        token[1] = new String token[1]
+        token[1][key] = val for own key, val of token.data
+      1
 
   # Generate the indentation tokens, based on another token on the same line.
   indentation: (origin) ->
