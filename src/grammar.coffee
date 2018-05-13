@@ -191,7 +191,7 @@ grammar =
     o 'Regex'
     o 'UNDEFINED',                              -> new UndefinedLiteral $1
     o 'NULL',                                   -> new NullLiteral $1
-    o 'BOOL',                                   -> new BooleanLiteral $1
+    o 'BOOL',                                   -> new BooleanLiteral "#{$1}", originalValue: $1.original
     o 'INFINITY',                               -> new InfinityLiteral $1
     o 'NAN',                                    -> new NaNLiteral $1
   ]
@@ -819,7 +819,7 @@ grammar =
   ]
 
   Operation: [
-    o 'UNARY Expression',                       -> new Op $1 , $2
+    o 'UNARY Expression',                       -> new Op "#{$1}", $2, null, null, originalOperator: $1.original
     o 'UNARY_MATH Expression',                  -> new Op $1 , $2
     o '-     Expression',                      (-> new Op '-', $2), prec: 'UNARY_MATH'
     o '+     Expression',                      (-> new Op '+', $2), prec: 'UNARY_MATH'
@@ -840,21 +840,21 @@ grammar =
     o 'Expression MATH     Expression',         -> new Op $2, $1, $3
     o 'Expression **       Expression',         -> new Op $2, $1, $3
     o 'Expression SHIFT    Expression',         -> new Op $2, $1, $3
-    o 'Expression COMPARE  Expression',         -> new Op $2, $1, $3
+    o 'Expression COMPARE  Expression',         -> new Op "#{$2}", $1, $3, null, originalOperator: $2.original
     o 'Expression &        Expression',         -> new Op $2, $1, $3
     o 'Expression ^        Expression',         -> new Op $2, $1, $3
     o 'Expression |        Expression',         -> new Op $2, $1, $3
-    o 'Expression &&       Expression',         -> new Op $2, $1, $3
-    o 'Expression ||       Expression',         -> new Op $2, $1, $3
+    o 'Expression &&       Expression',         -> new Op "#{$2}", $1, $3, null, originalOperator: $2.original
+    o 'Expression ||       Expression',         -> new Op "#{$2}", $1, $3, null, originalOperator: $2.original
     o 'Expression BIN?     Expression',         -> new Op $2, $1, $3
-    o 'Expression RELATION Expression',         -> new Op $2, $1, $3, null, invertOperator: $2.invert
+    o 'Expression RELATION Expression',         -> new Op "#{$2}", $1, $3, null, invertOperator: $2.invert?.original ? $2.invert
 
     o 'SimpleAssignable COMPOUND_ASSIGN
-       Expression',                             -> new Assign $1, $3, $2
+       Expression',                             -> new Assign $1, $3, "#{$2}", originalContext: $2.original
     o 'SimpleAssignable COMPOUND_ASSIGN
-       INDENT Expression OUTDENT',              -> new Assign $1, $4, $2
+       INDENT Expression OUTDENT',              -> new Assign $1, $4, "#{$2}", originalContext: $2.original
     o 'SimpleAssignable COMPOUND_ASSIGN TERMINATOR
-       Expression',                             -> new Assign $1, $4, $2
+       Expression',                             -> new Assign $1, $4, "#{$2}", originalContext: $2.original
   ]
 
 # Precedence

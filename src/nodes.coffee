@@ -11,7 +11,7 @@ Error.stackTraceLimit = Infinity
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, some,
 addDataToNode, attachCommentsToNode, locationDataToString,
-throwSyntaxError, makeDelimitedLiteral, normalizeStringObject} = require './helpers'
+throwSyntaxError, makeDelimitedLiteral} = require './helpers'
 
 # Functions required by parser.
 exports.extend = extend
@@ -719,7 +719,6 @@ exports.Block = class Block extends Base
 exports.Literal = class Literal extends Base
   constructor: (@value) ->
     super()
-    @value = normalizeStringObject @value
 
   shouldCache: NO
 
@@ -847,10 +846,9 @@ exports.NullLiteral = class NullLiteral extends Literal
     super 'null'
 
 exports.BooleanLiteral = class BooleanLiteral extends Literal
-  constructor: (value) ->
-    {original} = value
+  constructor: (value, {@originalValue} = {}) ->
     super value
-    @originalValue = original ? @value
+    @originalValue ?= @value
 
 #### Return
 
@@ -2208,10 +2206,7 @@ exports.ExportSpecifier = class ExportSpecifier extends ModuleSpecifier
 exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options = {}) ->
     super()
-    {@param, @subpattern, @operatorToken, @moduleDeclaration} = options
-    @originalContext = @context?.original
-    @context = normalizeStringObject @context
-    @originalContext ?= @context
+    {@param, @subpattern, @operatorToken, @moduleDeclaration, @originalContext = @context} = options
 
   children: ['variable', 'value']
 
@@ -3097,12 +3092,9 @@ exports.While = class While extends Base
 # Simple Arithmetic and logical operations. Performs some conversion from
 # CoffeeScript operations into their JavaScript equivalents.
 exports.Op = class Op extends Base
-  constructor: (op, first, second, flip, {@invertOperator} = {}) ->
+  constructor: (op, first, second, flip, {@invertOperator, @originalOperator = op} = {}) ->
     super()
 
-    @originalOperator = op.original
-    op = normalizeStringObject op
-    @originalOperator ?= op
     if op is 'do'
       return Op::generateDo first
     if op is 'new'
@@ -3114,7 +3106,6 @@ exports.Op = class Op extends Base
     @first    = first
     @second   = second
     @flip     = !!flip
-    @invertOperator = @invertOperator?.original ? normalizeStringObject @invertOperator
     return this
 
   # The map of conversions from CoffeeScript to JavaScript symbols.
