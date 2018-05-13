@@ -667,7 +667,7 @@ exports.Rewriter = class Rewriter
   # primitive string and separately passing any expected token data properties
   exposeTokenDataToGrammar: ->
     @scanTokens (token, i) ->
-      if token.data
+      if token.data and Object.keys(token.data).length
         token[1] = new String token[1]
         token[1][key] = val for own key, val of token.data
       1
