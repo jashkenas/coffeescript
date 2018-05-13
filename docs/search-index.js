@@ -1,0 +1,1 @@
+v2/search-index.js
