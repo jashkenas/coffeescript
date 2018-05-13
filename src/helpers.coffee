@@ -115,7 +115,7 @@ buildLocationHash = (loc) ->
 # used as lookup hashes.
 buildTokenDataDictionary = (parserState) ->
   tokenData = {}
-  for token in parserState.parser.tokens when token.comments or token.data
+  for token in parserState.parser.tokens when token.comments
     tokenHash = buildLocationHash token[2]
     # Multiple tokens might have the same location hash, such as the generated
     # `JS` tokens added at the start or end of the token stream to hold
@@ -130,15 +130,6 @@ buildTokenDataDictionary = (parserState) ->
         tokenData[tokenHash].comments.push token.comments...
       else
         tokenData[tokenHash].comments = token.comments
-    if token.data
-      # For overlapping tokens that both have token data, add each token’s data
-      # under keys defined by each token’s tag. In testing with the
-      # CoffeeScript codebase, the only type of token that overlaps with other
-      # tokens that use the same tag is for `OUTDENT` tags, which never become
-      # nodes, so we’re okay with one `OUTDENT` token’s data overwriting an
-      # earlier one.
-      tokenData[tokenHash].data ?= {}
-      tokenData[tokenHash].data[token.data.tag] = token.data
   tokenData
 
 # This returns a function which takes an object as a parameter, and if that
@@ -146,18 +137,17 @@ buildTokenDataDictionary = (parserState) ->
 # The object is returned either way.
 exports.addDataToNode = (parserState, first, last) ->
   (obj) ->
-    # Add location data
+    # Add location data.
     if obj?.updateLocationDataIfMissing? and first?
       obj.updateLocationDataIfMissing buildLocationData(first, last)
 
-    # Add comments and data
+    # Add comments, building the dictionary of token data if it hasn’t been
+    # built yet.
     parserState.tokenData ?= buildTokenDataDictionary parserState
     if obj.locationData?
       objHash = buildLocationHash obj.locationData
       if parserState.tokenData[objHash]?.comments?
         attachCommentsToNode parserState.tokenData[objHash].comments, obj
-      if parserState.tokenData[objHash]?.data?
-        obj.tokenData = parserState.tokenData[objHash].data
     obj
 
 exports.attachCommentsToNode = attachCommentsToNode = (comments, node) ->

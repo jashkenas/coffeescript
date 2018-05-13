@@ -767,8 +767,7 @@ exports.Lexer = class Lexer
       @validateEscapes strPart, {isRegex: delimiter.charAt(0) is '/', offsetInChunk}
 
       # Push a fake `'NEOSTRING'` token, which will get turned into a real string later.
-      tokens.push @makeToken 'NEOSTRING', strPart, offsetInChunk, strPart.length, undefined,
-        delimiter: delimiter
+      tokens.push @makeToken 'NEOSTRING', strPart, offsetInChunk
 
       str = str[strPart.length..]
       offsetInChunk += strPart.length
@@ -948,7 +947,7 @@ exports.Lexer = class Lexer
 
   # Same as `token`, except this just returns the token without adding it
   # to the results.
-  makeToken: (tag, value, offsetInChunk = 0, length = value.length, origin, data) ->
+  makeToken: (tag, value, offsetInChunk = 0, length = value.length, origin) ->
     locationData = {}
     [locationData.first_line, locationData.first_column] =
       @getLineAndColumnFromChunk offsetInChunk
@@ -961,13 +960,6 @@ exports.Lexer = class Lexer
 
     token = [tag, value, locationData]
     token.origin = origin if origin
-    token.data =
-      tag: tag
-      value: value
-      baseIndent: @baseIndent
-      indent: @indent
-      indentLiteral: @indentLiteral
-    Object.assign token.data, data if data
     token
 
   # Add a token to the results.
@@ -976,8 +968,8 @@ exports.Lexer = class Lexer
   # not specified, the length of `value` will be used.
   #
   # Returns the new token.
-  token: (tag, value, offsetInChunk, length, origin, data) ->
-    token = @makeToken tag, value, offsetInChunk, length, origin, data
+  token: (tag, value, offsetInChunk, length, origin) ->
+    token = @makeToken tag, value, offsetInChunk, length, origin
     @tokens.push token
     token
 

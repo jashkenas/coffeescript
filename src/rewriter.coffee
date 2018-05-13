@@ -27,11 +27,7 @@ moveComments = (fromToken, toToken) ->
 generate = (tag, value, origin, commentsToken) ->
   token = [tag, value]
   token.generated = yes
-  if origin
-    token.origin = origin
-    token.data = origin.data
-  else
-    token.data = {tag, value}
+  token.origin = origin if origin
   moveComments commentsToken, token if commentsToken
   token
 
