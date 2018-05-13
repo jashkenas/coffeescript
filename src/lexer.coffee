@@ -796,6 +796,8 @@ exports.Lexer = class Lexer
 
       # Remove leading `'TERMINATOR'` (if any).
       nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
+      # Remove trailing `'INDENT'/'OUTDENT'` pair (if any).
+      nested.splice -3, 2 if nested[nested.length - 3]?[0] is 'INDENT' and nested[nested.length - 2][0] is 'OUTDENT'
 
       unless braceInterpolator
         # We are not using `{` and `}`, so wrap the interpolated tokens instead.
