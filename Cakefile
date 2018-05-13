@@ -392,7 +392,7 @@ buildDocs = (watch = no) ->
       window.searchResultsListTemplate = #{searchResultsListTemplate};
       window.searchCollections = #{JSON.stringify searchCollections};
     """
-    fs.writeFileSync "#{outputFolder}/search_index.js", searchIdx
+    fs.writeFileSync "#{outputFolder}/search-index.js", searchIdx
     fs.writeFileSync "#{outputFolder}/index.html", output
     log 'compiled', green, "#{indexFile} → #{outputFolder}/index.html"
   try
