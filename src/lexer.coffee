@@ -14,7 +14,7 @@
 # Import the helpers we need.
 {count, starts, compact, repeat, invertLiterate, merge,
 attachCommentsToNode, locationDataToString, throwSyntaxError
-makeDelimitedLiteral, replaceUnicodeCodePointEscapes} = require './helpers'
+replaceUnicodeCodePointEscapes} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -296,7 +296,7 @@ exports.Lexer = class Lexer
         indent = attempt if indent is null or 0 < attempt.length < indent.length
 
     delimiter = quote.charAt(0)
-    @mergeInterpolationTokens tokens, {delimiter, quote, indent}, (value) =>
+    @mergeInterpolationTokens tokens, {quote, indent}, (value) =>
       @validateUnicodeCodePointEscapes value, delimiter: quote
 
     if @atCSXTag()
@@ -404,17 +404,16 @@ exports.Lexer = class Lexer
       when not VALID_FLAGS.test flags
         @error "invalid regular expression flags #{flags}", offset: index, length: flags.length
       when regex or tokens.length is 1
-        if body
-          body = @formatRegex body, { flags, delimiter: '/' }
-        else
-          body = @formatHeregex tokens[0][1], { flags }
-        @token 'REGEX', "#{@makeDelimitedLiteral body, delimiter: '/'}#{flags}", {length: end, origin}
+        delimiter = if body then '/' else '///'
+        body ?= tokens[0][1]
+        @validateUnicodeCodePointEscapes body, {delimiter}
+        @token 'REGEX', "/#{body}/#{flags}", {length: end, origin, data: {delimiter}}
       else
         @token 'REGEX_START', '(',    {length: 0, origin}
         @token 'IDENTIFIER', 'RegExp', length: 0
         @token 'CALL_START', '(',      length: 0
-        @mergeInterpolationTokens tokens, {delimiter: '"', double: yes}, (str) =>
-          @formatHeregex str, { flags }
+        @mergeInterpolationTokens tokens, {double: yes, heregex: {flags}}, (str) =>
+          @validateUnicodeCodePointEscapes str, {delimiter}
         if flags
           @token ',', ',',                    offset: index - 1, length: 0
           @token 'STRING', '"' + flags + '"', offset: index - 1, length: flags.length
@@ -584,7 +583,7 @@ exports.Lexer = class Lexer
         @token ',', ','
         {tokens, index: end} =
           @matchWithInterpolations INSIDE_CSX, '>', '</', CSX_INTERPOLATION
-        @mergeInterpolationTokens tokens, {delimiter: '"'}, (value) =>
+        @mergeInterpolationTokens tokens, {}, (value) =>
           @validateUnicodeCodePointEscapes value, delimiter: '>'
         match = CSX_IDENTIFIER.exec(@chunk[end...]) or CSX_FRAGMENT_IDENTIFIER.exec(@chunk[end...])
         if not match or match[1] isnt csxTag.name
@@ -810,7 +809,7 @@ exports.Lexer = class Lexer
   # of `'NEOSTRING'`s are converted using `fn` and turned into strings using
   # `options` first.
   mergeInterpolationTokens: (tokens, options, fn) ->
-    {quote, indent, double} = options
+    {quote, indent, double, heregex} = options
 
     if tokens.length > 1
       lparen = @token 'STRING_START', '(', length: 0, data: {quote}
@@ -860,6 +859,7 @@ exports.Lexer = class Lexer
           addTokenData token, initialChunk: yes if i is 0
           addTokenData token, finalChunk: yes   if i is $
           addTokenData token, {indent, quote, double}
+          addTokenData token, {heregex} if heregex
           token[0] = 'STRING'
           token[1] = '"' + converted + '"'
           locationToken = token
@@ -984,12 +984,6 @@ exports.Lexer = class Lexer
     LINE_CONTINUER.test(@chunk) or
     @tag() in UNFINISHED
 
-  formatHeregex: (str, options) ->
-    @formatRegex str.replace(HEREGEX_OMIT, '$1$2'), merge(options, delimiter: '///')
-
-  formatRegex: (str, options) ->
-    @validateUnicodeCodePointEscapes str, options
-
   validateUnicodeCodePointEscapes: (str, options) ->
     replaceUnicodeCodePointEscapes str, merge options, {@error}
 
@@ -1012,9 +1006,6 @@ exports.Lexer = class Lexer
     @error "#{message} #{invalidEscape}",
       offset: (options.offsetInChunk ? 0) + match.index + before.length
       length: invalidEscape.length
-
-  # Constructs a string or regex by escaping certain characters.
-  makeDelimitedLiteral: makeDelimitedLiteral
 
   suppressSemicolons: ->
     while @value() is ';'
@@ -1222,12 +1213,6 @@ HEREGEX      = /// ^
     | \s+(?:#(?!\{).*)?
   )*
 ///
-
-HEREGEX_OMIT = ///
-    ((?:\\\\)+)     # Consume (and preserve) an even number of backslashes.
-  | \\(\s)          # Preserve escaped whitespace.
-  | \s+(?:#.*)?     # Remove whitespace and comments.
-///g
 
 REGEX_ILLEGAL = /// ^ ( / | /{3}\s*) (\*) ///
 

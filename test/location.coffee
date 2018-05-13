@@ -316,7 +316,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].last_column, 11
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks)', ->
-  [a, b, c] = getMatchingTokens '///#{a}\nb\n#{c}///', 'a', '"b"', 'c'
+  [a, b, c] = getMatchingTokens '///#{a}\nb\n#{c}///', 'a', '"\nb\n"', 'c'
 
   eq a[2].first_line, 0
   eq a[2].first_column, 5
@@ -334,7 +334,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].last_column, 2
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks)', ->
-  [a, b, c] = getMatchingTokens '///#{a}\n\n\nb\n\n\n#{c}///', 'a', '"b"', 'c'
+  [a, b, c] = getMatchingTokens '///#{a}\n\n\nb\n\n\n#{c}///', 'a', '"\n\n\nb\n\n\n"', 'c'
 
   eq a[2].first_line, 0
   eq a[2].first_column, 5
@@ -352,7 +352,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].last_column, 2
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks)', ->
-  [a, b, c] = getMatchingTokens '///a\n\n\n#{b}\n\n\nc///', '"a"', 'b', '"c"'
+  [a, b, c] = getMatchingTokens '///a\n\n\n#{b}\n\n\nc///', '"a\n\n\n"', 'b', '"\n\n\nc"'
 
   eq a[2].first_line, 0
   eq a[2].first_column, 0
@@ -370,7 +370,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].last_column, 3
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks and starting with linebreak)', ->
-  [a, b, c] = getMatchingTokens '///\n#{a}\nb\n#{c}///', 'a', '"b"', 'c'
+  [a, b, c] = getMatchingTokens '///\n#{a}\nb\n#{c}///', 'a', '"\nb\n"', 'c'
 
   eq a[2].first_line, 1
   eq a[2].first_column, 2
@@ -388,7 +388,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].last_column, 2
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks and starting with linebreak)', ->
-  [a, b, c] = getMatchingTokens '///\n\n\n#{a}\n\n\nb\n\n\n#{c}///', 'a', '"b"', 'c'
+  [a, b, c] = getMatchingTokens '///\n\n\n#{a}\n\n\nb\n\n\n#{c}///', 'a', '"\n\n\nb\n\n\n"', 'c'
 
   eq a[2].first_line, 3
   eq a[2].first_column, 2
@@ -406,7 +406,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].last_column, 2
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks and starting with linebreak)', ->
-  [a, b, c] = getMatchingTokens '///\n\n\na\n\n\n#{b}\n\n\nc///', '"a"', 'b', '"c"'
+  [a, b, c] = getMatchingTokens '///\n\n\na\n\n\n#{b}\n\n\nc///', '"\n\n\na\n\n\n"', 'b', '"\n\n\nc"'
 
   eq a[2].first_line, 0
   eq a[2].first_column, 0

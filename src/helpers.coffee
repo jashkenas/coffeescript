@@ -238,6 +238,7 @@ exports.dump = (args..., obj) ->
   util = require 'util'
   console.log args..., util.inspect obj, no, null
 
+# Constructs a string or regex by escaping certain characters.
 exports.makeDelimitedLiteral = (body, options = {}) ->
     body = '(?:)' if body is '' and options.delimiter is '/'
     regex = ///
@@ -270,7 +271,7 @@ unicodeCodePointToUnicodeEscapes = (codePoint) ->
   "#{toUnicodeEscape(high)}#{toUnicodeEscape(low)}"
 
 # Replace `\u{...}` with `\uxxxx[\uxxxx]` in regexes without `u` flag
-exports.replaceUnicodeCodePointEscapes = (str, {flags, error, delimiter = ''}) ->
+exports.replaceUnicodeCodePointEscapes = (str, {flags, error, delimiter = ''} = {}) ->
   shouldReplace = flags? and 'u' not in flags
   str.replace UNICODE_CODE_POINT_ESCAPE, (match, escapedBackslash, codePointHex, offset) ->
     return escapedBackslash if escapedBackslash
