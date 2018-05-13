@@ -126,10 +126,7 @@ buildTokenDataDictionary = (parserState) ->
       # and therefore matching `tokenHash`es, merge the comments from both/all
       # tokens together into one array, even if there are duplicate comments;
       # they will get sorted out later.
-      if tokenData[tokenHash].comments?
-        tokenData[tokenHash].comments.push token.comments...
-      else
-        tokenData[tokenHash].comments = token.comments
+      (tokenData[tokenHash].comments ?= []).push token.comments...
   tokenData
 
 # This returns a function which takes an object as a parameter, and if that
