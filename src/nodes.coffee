@@ -1291,9 +1291,12 @@ exports.Super = class Super extends Base
 
 # Regexes with interpolations are in fact just a variation of a `Call` (a
 # `RegExp()` call to be precise) with a `StringWithInterpolations` inside.
-exports.RegexWithInterpolations = class RegexWithInterpolations extends Call
-  constructor: (args = []) ->
-    super (new Value new IdentifierLiteral 'RegExp'), args, false
+exports.RegexWithInterpolations = class RegexWithInterpolations extends Base
+  constructor: (@call) ->
+    super()
+
+  compileNode: (o) ->
+    @call.compileNode o
 
 #### TaggedTemplateCall
 
