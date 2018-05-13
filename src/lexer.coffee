@@ -209,7 +209,7 @@ exports.Lexer = class Lexer
     if tag is 'IDENTIFIER' and id in RESERVED
       @error "reserved word '#{id}'", length: id.length
 
-    unless tag is 'PROPERTY' or @exportSpecifierList
+    unless tag is 'PROPERTY' or @exportSpecifierList or @importSpecifierList
       if id in COFFEE_ALIASES
         alias = id
         id = COFFEE_ALIAS_MAP[id]
