@@ -209,28 +209,29 @@ $(document).ready ->
         # Initializing the code editors might’ve thrown off our vertical scroll position
         document.getElementById(window.location.hash.slice(1).replace(/try:.*/, '')).scrollIntoView()
 
-  buildSearch = (catalogue, keys) ->
-    searchOptions = {
-      includeScore: true,
-      shouldSort: true,
-      includeMatches: true,
-      threshold: 0.2,
-      location: 0,
-      distance: 1000,
-      maxPatternLength: 32,
-      minMatchCharLength: 4,
-      keys
-    }
-    new Fuse window.searchCollections[catalogue], searchOptions
 
-  window.fuseDocs = buildSearch "docs", ["section", "content"]
-  window.fuseLogs = buildSearch "changelogs", ["content"]
+# This function is called from search-index.js, which is loaded asynchronously
+window.initializeSearch = ->
+  buildSearch = (catalog, keys) ->
+    searchOptions =
+      keys: keys
+      includeScore: yes
+      shouldSort: yes
+      includeMatches: yes
+      threshold: 0.2
+      location: 0
+      distance: 1000
+      maxPatternLength: 32
+      minMatchCharLength: 4
+    new Fuse window.searchCollections[catalog], searchOptions
 
+  window.fuseDocs = buildSearch 'docs', ['section', 'content']
+  window.fuseLogs = buildSearch 'changelogs', ['content']
 
-$(document).on "keyup", "#cs-search-input-navbar", ->
-  resContainer = $("#search-results")
-  searchResultBox = $("#searchResultBox")
-  resContainer.hide().html ""
+$(document).on 'keyup', '#cs-search-input-navbar', ->
+  resContainer = $('#search-results')
+  searchResultBox = $('#searchResultBox')
+  resContainer.hide().html ''
   searchResultBox.hide()
   return unless @value.length >= 3
   markText = (text) ->
@@ -246,8 +247,8 @@ $(document).on "keyup", "#cs-search-input-navbar", ->
       marked = markText content[m[0]...m[1]]
       start = if m[0] > 50 then m[0] - 50 else 0
       end = m[1] + 50
-      mContent.push "&hellip;" + content[start...m[0]] + marked + content[m[1]...end] + "&hellip;"
-    mContent.join " "
+      mContent.push '&hellip;' + content[start...m[0]] + marked + content[m[1]...end] + '&hellip;'
+    mContent.join ' '
 
   tmpl = window.searchResultTemplate
   tmplList = window.searchResultsListTemplate
@@ -260,10 +261,10 @@ $(document).on "keyup", "#cs-search-input-navbar", ->
       countMatches = 0
       for match in matches
         {key, indices} = match
-        if key is "section" and indices.length > 0
+        if key is 'section' and indices.length > 0
           title = markTitle title, indices
           countMatches += indices.length
-        if key is "content"
+        if key is 'content'
           content = markContent content, indices
           countMatches += indices.length
       continue if countMatches < 1
@@ -280,16 +281,16 @@ $(document).on "keyup", "#cs-search-input-navbar", ->
     continue if list.length < 1
     ctmpl = tmpl
       section: key
-      results: list.join ""
+      results: list.join ''
     results.push ctmpl
 
   if results.length > 0
     searchResultBox.show()
-    resContainer.show().html results.join ""
+    resContainer.show().html results.join ''
 
-$(document).on "click", ".searchWrapper", ->
-  href = $(this).data "href"
-  if href[0] is "#"
+$(document).on 'click', '.searchWrapper', ->
+  href = $(this).data 'href'
+  if href[0] is '#'
     window.location.hash = href
   else
     window.location = href

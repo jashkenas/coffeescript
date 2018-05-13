@@ -179,14 +179,11 @@ buildDocs = (watch = no) ->
   sectionsSourceFolder = 'documentation/sections'
   examplesSourceFolder = 'documentation/examples'
   outputFolder         = "docs/v#{majorVersion}"
-  searchCollections    = docs: [], changelogs: []
   {structure}          = require "./documentation/structure.coffee"
 
-  monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-
-  formatDate = (date) ->
-    date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
-      "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
+  searchCollections =
+    docs: []
+    changelogs: []
 
   # Helpers
   releaseHeader = (date, version, prevVersion) ->
@@ -197,6 +194,11 @@ buildDocs = (watch = no) ->
         <span class="timestamp"> &mdash; <time datetime="#{date}">#{formatDate date}</time></span>
       </h2>
     """
+
+  monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  formatDate = (date) ->
+    date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
+      "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
 
   codeFor = require "./documentation/site/code.coffee"
 
@@ -241,7 +243,7 @@ buildDocs = (watch = no) ->
       .replace /^\s+/g, " "
 
   # Build search catalog.
-  searchCatalogue = (mdDoc, section, data) ->
+  searchCatalog = (mdDoc, section, data) ->
     return unless match = /^(#+?)\s+([^\n]+)\s+([\s\S]+)/.exec mdDoc
     [, level, title, body] = match
     content = clean body
@@ -293,7 +295,7 @@ buildDocs = (watch = no) ->
       md = md.replace /<%= releaseHeader %>/g, releaseHeader
       md = md.replace /<%= majorVersion %>/g, majorVersion
       md = md.replace /<%= fullVersion %>/g, CoffeeScript.VERSION
-      searchCatalogue md, file, searchData
+      searchCatalog md, file, searchData
       html = markdownRenderer.render md
       html = _.template(html)
         codeFor: codeFor()
@@ -391,11 +393,14 @@ buildDocs = (watch = no) ->
       window.searchResultTemplate = #{searchResultsTemplate};
       window.searchResultsListTemplate = #{searchResultsListTemplate};
       window.searchCollections = #{JSON.stringify searchCollections};
+      window.initializeSearch();
     """
     fs.writeFileSync "#{outputFolder}/search-index.js", searchIdx
+    log 'output', green, "#{outputFolder}/search-index.js"
     fs.writeFileSync "#{outputFolder}/index.html", output
     log 'compiled', green, "#{indexFile} → #{outputFolder}/index.html"
   try
+    fs.symlinkSync "v#{majorVersion}/search-index.js", 'docs/search-index.js'
     fs.symlinkSync "v#{majorVersion}/index.html", 'docs/index.html'
   catch exception
 
