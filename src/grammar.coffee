@@ -371,6 +371,7 @@ grammar =
     o ':: Property',                            -> [LOC(1)(new Access new PropertyName('prototype')), LOC(2)(new Access $2)]
     o '?:: Property',                           -> [LOC(1)(new Access new PropertyName('prototype'), 'soak'), LOC(2)(new Access $2)]
     o '::',                                     -> new Access new PropertyName 'prototype'
+    o '?::',                                    -> new Access new PropertyName('prototype'), 'soak'
     o 'Index'
   ]
 
