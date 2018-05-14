@@ -244,10 +244,6 @@ exports.nameWhitespaceCharacter = (string) ->
     when '\t' then 'tab'
     else string
 
-exports.dump = (args..., obj) ->
-  util = require 'util'
-  console.log args..., util.inspect obj, no, null
-
 # Constructs a string or regex by escaping certain characters.
 exports.makeDelimitedLiteral = (body, options = {}) ->
     body = '(?:)' if body is '' and options.delimiter is '/'
