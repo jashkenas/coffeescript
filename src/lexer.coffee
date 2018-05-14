@@ -766,7 +766,7 @@ exports.Lexer = class Lexer
       rest = str[interpolationOffset..]
       {tokens: nested, index} =
         new Lexer().tokenize rest, line: line, column: column, untilBalanced: on
-      # Account for the `#` in `#{`
+      # Account for the `#` in `#{`.
       index += interpolationOffset
 
       braceInterpolator = str[index - 1] is '}'
@@ -780,6 +780,8 @@ exports.Lexer = class Lexer
 
       # Remove leading `'TERMINATOR'` (if any).
       nested.splice 1, 1 if nested[1]?[0] is 'TERMINATOR'
+      # Remove trailing `'INDENT'/'OUTDENT'` pair (if any).
+      nested.splice -3, 2 if nested[nested.length - 3]?[0] is 'INDENT' and nested[nested.length - 2][0] is 'OUTDENT'
 
       unless braceInterpolator
         # We are not using `{` and `}`, so wrap the interpolated tokens instead.
@@ -868,7 +870,7 @@ exports.Lexer = class Lexer
           locationToken = token
           tokensToPush = [token]
       if @tokens.length > firstIndex
-        # Create a 0-length "+" token.
+        # Create a 0-length `+` token.
         plusToken = @token '+', '+'
         plusToken[2] =
           first_line:   locationToken[2].first_line
@@ -937,19 +939,19 @@ exports.Lexer = class Lexer
 
   # Same as `token`, except this just returns the token without adding it
   # to the results.
-  makeToken: (tag, value, {offset: offsetInChunk = 0, length = value.length} = {}) ->
+  makeToken: (tag, value, {offset: offsetInChunk = 0, length = value.length, origin} = {}) ->
     locationData = {}
     [locationData.first_line, locationData.first_column] =
       @getLineAndColumnFromChunk offsetInChunk
 
-    # Use length - 1 for the final offset - we're supplying the last_line and the last_column,
-    # so if last_column == first_column, then we're looking at a character of length 1.
+    # Use length - 1 for the final offset - we’re supplying the last_line and the last_column,
+    # so if last_column == first_column, then we’re looking at a character of length 1.
     lastCharacter = if length > 0 then (length - 1) else 0
     [locationData.last_line, locationData.last_column] =
       @getLineAndColumnFromChunk offsetInChunk + lastCharacter
 
     token = [tag, value, locationData]
-
+    token.origin = origin if origin
     token
 
   # Add a token to the results.
@@ -959,7 +961,7 @@ exports.Lexer = class Lexer
   #
   # Returns the new token.
   token: (tag, value, {offset, length, origin, data} = {}) ->
-    token = @makeToken tag, value, {offset, length}
+    token = @makeToken tag, value, {offset, length, origin}
     token.origin = origin if origin
     addTokenData token, data if data
     @tokens.push token
@@ -1224,7 +1226,7 @@ POSSIBLY_DIVISION   = /// ^ /=?\s ///
 # Other regexes.
 HERECOMMENT_ILLEGAL = /\*\//
 
-LINE_CONTINUER      = /// ^ \s* (?: , | \??\.(?![.\d]) | :: ) ///
+LINE_CONTINUER      = /// ^ \s* (?: , | \??\.(?![.\d]) | \??:: ) ///
 
 STRING_INVALID_ESCAPE = ///
   ( (?:^|[^\\]) (?:\\\\)* )        # Make sure the escape isn’t escaped.
