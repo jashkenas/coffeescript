@@ -50,33 +50,21 @@ run = (args, callback) ->
 
 
 # Build the CoffeeScript language from source.
-buildParser = ({toTmpDir} = {}) ->
+buildParser = ->
   helpers.extend global, require 'util'
   require 'jison'
   # We don't need `moduleMain`, since the parser is unlikely to be run standalone.
   parser = require('./lib/coffeescript/grammar').parser.generate(moduleMain: ->)
-  fs.mkdirSync 'lib/coffeescript/tmp' if toTmpDir and not fs.existsSync 'lib/coffeescript/tmp'
-  fs.writeFileSync "lib/coffeescript/#{if toTmpDir then 'tmp/' else ''}parser.js", parser
+  fs.writeFileSync 'lib/coffeescript/parser.js', parser
 
-buildExceptParser = (callback, {match} = {}) ->
+buildExceptParser = (callback) ->
   files = fs.readdirSync 'src'
-  files = ('src/' + file for file in files when file.match(/\.(lit)?coffee$/) and if match then file.match(match) else true)
+  files = ('src/' + file for file in files when file.match(/\.(lit)?coffee$/))
   run ['-c', '-o', 'lib/coffeescript'].concat(files), callback
 
 build = (callback) ->
   buildParser()
   buildExceptParser callback
-
-buildWithUpdatedGrammar = (callback) ->
-  buildExceptParser(
-    ->
-      buildParser toTmpDir: yes
-      buildExceptParser ->
-        fs.renameSync 'lib/coffeescript/tmp/parser.js', 'lib/coffeescript/parser.js'
-        fs.rmdirSync 'lib/coffeescript/tmp'
-        callback?()
-    match: /grammar/
-  )
 
 transpile = (code) ->
   babel = require 'babel-core'
@@ -133,7 +121,6 @@ task 'build', 'build the CoffeeScript compiler from source', build
 task 'build:parser', 'build the Jison parser only', buildParser
 
 task 'build:except-parser', 'build the CoffeeScript compiler, except for the Jison parser', buildExceptParser
-task 'build:with-updated-grammar', "build the CoffeeScript compiler when there's a breaking grammar change", buildWithUpdatedGrammar
 
 task 'build:full', 'build the CoffeeScript compiler from source twice, and run the tests', ->
   build ->
