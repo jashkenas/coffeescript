@@ -182,16 +182,10 @@ buildDocs = (watch = no) ->
 
   # Helpers
   releaseHeader = (date, version, prevVersion) ->
-    monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-
-    formatDate = (date) ->
-      date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
-        "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
-
     """
       <h3 id="#{version}" class="header">
         #{prevVersion and "<a href=\"https://github.com/jashkenas/coffeescript/compare/#{prevVersion}...#{version}\">#{version}</a>" or version}
-        <span class="timestamp"> &mdash; <time datetime="#{date}">#{formatDate date}</time></span>
+        <span class="timestamp"> &mdash; <time datetime="#{date}">#{date}</time></span>
       </h3>
     """
 
