@@ -959,7 +959,6 @@ exports.Lexer = class Lexer
   # Returns the new token.
   token: (tag, value, {offset, length, origin, data} = {}) ->
     token = @makeToken tag, value, {offset, length, origin}
-    token.origin = origin if origin
     addTokenData token, data if data
     @tokens.push token
     token
