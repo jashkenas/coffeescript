@@ -661,7 +661,7 @@ textarea {
       </nav>
     <a href="#breaking-changes" class="nav-link" data-action="sidebar-nav">Breaking Changes From 1.x</a>
       <nav class="nav flex-column">
-        <a href="#breaking-change-fat-arrow" class="nav-link" data-action="sidebar-nav">Bound (Fat Arrow) Functions</a>
+        <a href="#breaking-changes-fat-arrow" class="nav-link" data-action="sidebar-nav">Bound (Fat Arrow) Functions</a>
         <a href="#breaking-changes-default-values" class="nav-link" data-action="sidebar-nav">Default Values</a>
         <a href="#breaking-changes-bound-generator-functions" class="nav-link" data-action="sidebar-nav">Bound Generator Functions</a>
         <a href="#breaking-changes-classes" class="nav-link" data-action="sidebar-nav">Classes</a>
@@ -4977,7 +4977,7 @@ Object.defineProperty(screen, 'height', {
         <h2>Breaking Changes From CoffeeScript 1.x to 2</h2>
 <p>CoffeeScript 2 aims to output as much idiomatic ES2015+ syntax as possible with as few breaking changes from CoffeeScript 1.x as possible. Some breaking changes, unfortunately, were unavoidable.</p>
 
-        <section id="breaking-change-fat-arrow">
+        <section id="breaking-changes-fat-arrow">
           <h3>Bound (fat arrow) functions</h3>
 <p>In CoffeeScript 1.x, <code>=&gt;</code> compiled to a regular <code>function</code> but with references to <code>this</code>/<code>@</code> rewritten to use the outer scope’s <code>this</code>, or with the inner function bound to the outer scope via <code>.bind</code> (hence the name “bound function”). In CoffeeScript 2, <code>=&gt;</code> compiles to <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions">ES2015’s <code>=&gt;</code></a>, which behaves slightly differently. The largest difference is that in ES2015, <code>=&gt;</code> functions lack an <code>arguments</code> object:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="breaking_change_fat_arrow">
