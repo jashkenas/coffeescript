@@ -189,11 +189,10 @@ buildDocs = (watch = no) ->
         "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
 
     """
-      <div class="anchor" id="#{version}"></div>
-      <h2 class="header">
+      <h3 id="#{version}" class="header">
         #{prevVersion and "<a href=\"https://github.com/jashkenas/coffeescript/compare/#{prevVersion}...#{version}\">#{version}</a>" or version}
         <span class="timestamp"> &mdash; <time datetime="#{date}">#{formatDate date}</time></span>
-      </h2>
+      </h3>
     """
 
   codeFor = require "./documentation/site/code.coffee"
