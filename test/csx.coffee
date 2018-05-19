@@ -771,11 +771,11 @@ test 'JSX fragments: fragment with text nodes', ->
 
 test 'JSX fragments: fragment with component nodes', ->
   eqJS '''
-   Component = (props) =>
-     <Fragment>
-       <OtherComponent />
-       <OtherComponent />
-     </Fragment>
+    Component = (props) =>
+      <Fragment>
+        <OtherComponent />
+        <OtherComponent />
+      </Fragment>
   ''', '''
     var Component;
 
