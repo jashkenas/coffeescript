@@ -379,6 +379,8 @@ exports.Rewriter = class Rewriter
           else if inImplicitObject() and tag is 'TERMINATOR' and prevTag isnt ',' and
                   not (startsLine and @looksObjectish(i + 1))
             endImplicitObject()
+          else if inImplicitControl() and tokens[stackTop()[1]][0] is 'CLASS' and tag is 'TERMINATOR'
+            stack.pop()
           else
             break
 
