@@ -786,3 +786,20 @@ test 'JSX fragments: fragment with component nodes', ->
       </Fragment>;
     };
   '''
+
+# JSX is like XML, in that there needs to be a root element; but
+# technically, adjacent top-level elements where only the last one
+# is returned (as opposed to a fragment or root element) is permissible
+# syntax. It’s almost certainly an error, but it’s valid, so need to leave it
+# to linters to catch. https://github.com/jashkenas/coffeescript/pull/5049
+test '“Adjacent” tags on separate lines should still compile', ->
+  eqJS '''
+    ->
+      <a />
+      <b />
+  ''', '''
+    (function() {
+      <a />;
+      return <b />;
+    });
+  '''
