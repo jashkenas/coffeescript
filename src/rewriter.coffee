@@ -53,6 +53,7 @@ exports.Rewriter = class Rewriter
     @normalizeLines()
     @tagPostfixConditionals()
     @addImplicitBracesAndParens()
+    @tagLeadingLogical()
     @rescueStowawayComments()
     @addLocationDataToGeneratedTokens()
     @enforceValidCSXAttributes()
@@ -126,6 +127,16 @@ exports.Rewriter = class Rewriter
 
     @scanTokens (token, i) ->
       @detectEnd i + 1, condition, action if token[0] is 'INDEX_START'
+      1
+
+  tagLeadingLogical: ->
+    @scanTokens (token, i, tokens) ->
+      return 1 unless token[0] is 'TERMINATOR' and tokens.length >= i + 2 and (operatorToken = tokens[i + 1])[0] in ['&&', '||']
+      token[0] = "LEADING_#{operatorToken[0]}"
+      token[1] = operatorToken[1]
+      token[2].last_line = operatorToken[2].last_line
+      token[2].last_column = operatorToken[2].last_column
+      tokens.splice i + 1, 1
       1
 
   # Match tags in token stream starting at `i` with `pattern`.
