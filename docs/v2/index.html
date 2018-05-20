@@ -595,7 +595,8 @@ textarea {
       <nav id="contents" class="navbar contents">
   <nav class="nav flex-column">
     <a href="#try" class="nav-link d-md-none" data-action="sidebar-nav" data-toggle="try">Try CoffeeScript</a>
-    <a href="#top" class="nav-link" data-action="sidebar-nav">Overview</a>
+    <a href="#introduction" class="nav-link" data-action="sidebar-nav">Introduction</a>
+    <a href="#overview" class="nav-link" data-action="sidebar-nav">Overview</a>
     <a href="#coffeescript-2" class="nav-link" data-action="sidebar-nav">CoffeeScript 2</a>
     <nav class="nav flex-column">
       <a href="#whats-new-in-coffeescript-2" class="nav-link" data-action="sidebar-nav">What’s New in CoffeeScript 2</a>
@@ -661,7 +662,7 @@ textarea {
       </nav>
     <a href="#breaking-changes" class="nav-link" data-action="sidebar-nav">Breaking Changes From 1.x</a>
       <nav class="nav flex-column">
-        <a href="#breaking-change-fat-arrow" class="nav-link" data-action="sidebar-nav">Bound (Fat Arrow) Functions</a>
+        <a href="#breaking-changes-fat-arrow" class="nav-link" data-action="sidebar-nav">Bound (Fat Arrow) Functions</a>
         <a href="#breaking-changes-default-values" class="nav-link" data-action="sidebar-nav">Default Values</a>
         <a href="#breaking-changes-bound-generator-functions" class="nav-link" data-action="sidebar-nav">Bound Generator Functions</a>
         <a href="#breaking-changes-classes" class="nav-link" data-action="sidebar-nav">Classes</a>
@@ -689,7 +690,7 @@ textarea {
 
         </p>
       </header>
-      <section id="overview">
+      <section id="introduction">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
 <p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.3.0">2.3.0</a></p>
@@ -700,6 +701,8 @@ npm install --save-dev coffeescript
 npm install --global coffeescript
 </code></pre>
 </blockquote>
+      </section>
+      <section id="overview">
         <h2>Overview</h2>
 <p><em>CoffeeScript on the <span class="d-md-none">top</span><span class="d-none d-md-inline">left</span>, compiled JavaScript output on the <span class="d-md-none">bottom</span><span class="d-none d-md-inline">right</span>. The CoffeeScript is editable!</em></p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="overview">
@@ -4977,7 +4980,7 @@ Object.defineProperty(screen, 'height', {
         <h2>Breaking Changes From CoffeeScript 1.x to 2</h2>
 <p>CoffeeScript 2 aims to output as much idiomatic ES2015+ syntax as possible with as few breaking changes from CoffeeScript 1.x as possible. Some breaking changes, unfortunately, were unavoidable.</p>
 
-        <section id="breaking-change-fat-arrow">
+        <section id="breaking-changes-fat-arrow">
           <h3>Bound (fat arrow) functions</h3>
 <p>In CoffeeScript 1.x, <code>=&gt;</code> compiled to a regular <code>function</code> but with references to <code>this</code>/<code>@</code> rewritten to use the outer scope’s <code>this</code>, or with the inner function bound to the outer scope via <code>.bind</code> (hence the name “bound function”). In CoffeeScript 2, <code>=&gt;</code> compiles to <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions">ES2015’s <code>=&gt;</code></a>, which behaves slightly differently. The largest difference is that in ES2015, <code>=&gt;</code> functions lack an <code>arguments</code> object:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="breaking_change_fat_arrow">
@@ -5519,54 +5522,59 @@ x = <span class="number">2</span> + <span class="number">2</span>
       </section>
       <section id="changelog">
         <h2>Changelog</h2>
-<div class="anchor" id="2.3.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/2.2.4...2.3.0">2.3.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2018-04-29">April 29, 2018</time></span>
-</h2><ul>
+
+        <section id="2.3.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.2.4...2.3.0">2.3.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2018-04-29">2018-04-29</time></span>
+</h3><ul>
 <li>This release adds support for all the new features and syntaxes in ES2018 that weren’t already possible in CoffeeScript. For all of the below features, make sure that you <a href="#transpilation">transpile</a> unless you know that your target runtime(s) support each feature.</li>
 <li>Asynchronous iterators are now supported. You can now <code>yield</code> an <code>await</code> call, e.g. <code>do -&gt; until file.EOF then yield await file.readLine()</code>.</li>
 <li>Object splats/destructuring, a.k.a. object rest/spread syntax, has been standardized as part of ES2018 and therefore this release removes the polyfill that had previously been supporting this syntax. Code like <code>{a, b, rest...} = obj</code> now outputs more or less just like it appears, rather than being converted into an <code>Object.assign</code> call. Note that there are <a href="https://developers.google.com/web/updates/2017/06/object-rest-spread">some subtle differences</a> between the <code>Object.assign</code> polyfill and the native implementation.</li>
 <li>The exponentiation operator, <code>**</code>, and exponentiation assignment operator <code>**=</code> are new to JavaScript in ES2018. Now code like <code>a ** 3</code> is output as it appears, rather than being converted into <code>Math.pow(a, 3)</code> as it was before.</li>
 <li>The <code>s</code> (dotAll) flag is now supported in regular expressions.</li>
 </ul>
-<div class="anchor" id="2.2.4"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/2.2.3...2.2.4">2.2.4</a>
-  <span class="timestamp"> &mdash; <time datetime="2018-03-29">March 29, 2018</time></span>
-</h2><ul>
+
+        </section>
+        <section id="2.2.4">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.2.3...2.2.4">2.2.4</a>
+  <span class="timestamp"> &mdash; <time datetime="2018-03-29">2018-03-29</time></span>
+</h3><ul>
 <li>When the <code>by</code> value in a <code>for</code> loop is a literal number, e.g. <code>for x in [2..1] by -1</code>, fewer checks are necessary to determine if the loop is in range.</li>
 <li>Bugfix for regression in 2.2.0 where a statement inside parentheses, e.g. <code>(fn(); break) while condition</code>, was compiling. Pure statements like <code>break</code> or <code>return</code> cannot turn a parenthesized block into an expression, and should throw an error.</li>
 </ul>
-<div class="anchor" id="2.2.3"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/2.2.2...2.2.3">2.2.3</a>
-  <span class="timestamp"> &mdash; <time datetime="2018-03-11">March 11, 2018</time></span>
-</h2><ul>
+
+        </section>
+        <section id="2.2.3">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.2.2...2.2.3">2.2.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2018-03-11">2018-03-11</time></span>
+</h3><ul>
 <li>Bugfix for object destructuring with an empty array as a key’s value: <code>{ key: [] } = obj</code>.</li>
 <li>Bugfix for array destructuring onto targets attached to <code>this</code>: <code>[ @most... , @penultimate, @last ] = arr</code>.</li>
 </ul>
-<div class="anchor" id="2.2.2"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/2.2.1...2.2.2">2.2.2</a>
-  <span class="timestamp"> &mdash; <time datetime="2018-02-21">February 21, 2018</time></span>
-</h2><ul>
+
+        </section>
+        <section id="2.2.2">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.2.1...2.2.2">2.2.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2018-02-21">2018-02-21</time></span>
+</h3><ul>
 <li>Bugfix for regression in 2.2.0 where a range with a <code>by</code> (step) value that increments or decrements in the opposite direction as the range was returning an array containing the first value of the range, whereas it should be returning an empty array. In other words, <code>x for x in [2..1] by 1</code> should equal <code>[]</code>, not <code>[2]</code> (because the step value is positive 1, counting up, whereas the range goes from 2 to 1, counting down).</li>
 <li>Bugfixes for allowing backslashes in <code>import</code> and <code>export</code> statements and lines that trigger the start of an indented block, like an <code>if</code> statement.</li>
 </ul>
-<div class="anchor" id="2.2.1"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/2.2.0...2.2.1">2.2.1</a>
-  <span class="timestamp"> &mdash; <time datetime="2018-02-06">February 6, 2018</time></span>
-</h2><ul>
+
+        </section>
+        <section id="2.2.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.2.0...2.2.1">2.2.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2018-02-06">2018-02-06</time></span>
+</h3><ul>
 <li>Bugfix for regression in 2.2.0 involving an error thrown by the compiler in certain cases when using destructuring with a splat or expansion in an array.</li>
 <li>Bugfix for regression in 2.2.0 where in certain cases a range iterator variable was declared in the global scope.</li>
 </ul>
-<div class="anchor" id="2.2.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/2.1.1...2.2.0">2.2.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2018-02-01">February 1, 2018</time></span>
-</h2><ul>
+
+        </section>
+        <section id="2.2.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.1.1...2.2.0">2.2.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2018-02-01">2018-02-01</time></span>
+</h3><ul>
 <li>This release fixes <em>all</em> currently open bugs, dating as far back as 2014, 2012 and 2011.</li>
 <li><strong>Potential breaking change:</strong> An inline <code>if</code> or <code>switch</code> statement with an ambiguous <code>else</code>, such as <code>if no then if yes then alert 1 else alert 2</code>, now compiles where the <code>else</code> always corresponds to the closest open <code>then</code>. Previously the behavior of an ambiguous <code>else</code> was unpredictable. If your code has any <code>if … then</code> or <code>switch … then</code> statements with multiple <code>then</code>s (and one or more <code>else</code>s) the compiled output might be different now, unless you had resolved ambiguity via parentheses. We made this change because the previous behavior was inconsistent and basically a bug: depending on what grammar was where, for example if there was an inline function or something that implied a block, the <code>else</code> might bind to an earlier <code>then</code> rather than a later <code>then</code>. Now an <code>else</code> essentially closes a block opened by a <code>then</code>, similar to closing an open parenthesis.</li>
 <li>When a required <code>then</code> is missing, the error more accurately points out the location of the mistake.</li>
@@ -5584,30 +5592,33 @@ x = <span class="number">2</span> + <span class="number">2</span>
 <li>Bugfix for an expression in a property access, e.g. <code>a[!b in c..]</code>.</li>
 <li>Bugfix to allow a line continuation backslash (<code>\</code>) at any point in a <code>for</code> line.</li>
 </ul>
-<div class="anchor" id="2.1.1"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/2.1.0...2.1.1">2.1.1</a>
-  <span class="timestamp"> &mdash; <time datetime="2017-12-29">December 29, 2017</time></span>
-</h2><ul>
+
+        </section>
+        <section id="2.1.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.1.0...2.1.1">2.1.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-12-29">2017-12-29</time></span>
+</h3><ul>
 <li>Bugfix to set the correct context for executable class bodies. So in <code>class @B extends @A then @property = 1</code>, the <code>@</code> in <code>@property</code> now refers to the class, not the global object.</li>
 <li>Bugfix where anonymous classes were getting created using the same automatic variable name. They now each receive unique names, so as not to override each other.</li>
 </ul>
-<div class="anchor" id="2.1.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/2.0.3...2.1.0">2.1.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2017-12-10">December 10, 2017</time></span>
-</h2><ul>
+
+        </section>
+        <section id="2.1.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.0.3...2.1.0">2.1.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-12-10">2017-12-10</time></span>
+</h3><ul>
 <li>Computed property keys in object literals are now supported: <code>obj = { ['key' + i]: 42 }</code>, or <code>obj = [Symbol.iterator]: -&gt; yield i++</code>.</li>
 <li>Skipping of array elements, a.k.a. elision, is now supported: <code>arr = [a, , b]</code>, or <code>[, protocol] = url.match /^(.*):\/\//</code>.</li>
 <li><a href="https://reactjs.org/blog/2017/11/28/react-v16.2.0-fragment-support.html">JSX fragments syntax</a> is now supported.</li>
 <li>Bugfix where <code>///</code> within a <code>#</code> line comment inside a <code>///</code> block regex was erroneously closing the regex, rather than being treated as part of the comment.</li>
 <li>Bugfix for incorrect output for object rest destructuring inside array destructuring.</li>
 </ul>
-<div class="anchor" id="2.0.3"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/2.0.2...2.0.3">2.0.3</a>
-  <span class="timestamp"> &mdash; <time datetime="2017-11-26">November 26, 2017</time></span>
-</h2><ul>
+
+        </section>
+        <section id="2.0.3">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.0.2...2.0.3">2.0.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-11-26">2017-11-26</time></span>
+</h3><ul>
 <li>Bugfix for <code>export default</code> followed by an implicit object that contains an explicit object, for example <code>exportedMember: { obj... }</code>.</li>
 <li>Bugfix for <code>key, val of obj</code> after an implicit object member, e.g. <code>foo: bar for key, val of obj</code>.</li>
 <li>Bugfix for combining array and object destructuring, e.g. <code>[ ..., {a, b} ] = arr</code>.</li>
@@ -5616,11 +5627,12 @@ x = <span class="number">2</span> + <span class="number">2</span>
 <li>Bugfix for incorrect source maps generated when using <code>--transpile</code> with <code>--map</code> for multiple input files.</li>
 <li>Bugfix for comments at the beginning or end of input into the REPL (<code>coffee --interactive</code>).</li>
 </ul>
-<div class="anchor" id="2.0.2"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/2.0.1...2.0.2">2.0.2</a>
-  <span class="timestamp"> &mdash; <time datetime="2017-10-26">October 26, 2017</time></span>
-</h2><ul>
+
+        </section>
+        <section id="2.0.2">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.0.1...2.0.2">2.0.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-10-26">2017-10-26</time></span>
+</h3><ul>
 <li><code>--transpile</code> now also applies to <code>require</code>d or <code>import</code>ed CoffeeScript files.</li>
 <li><code>--transpile</code> can be used with the REPL: <code>coffee --interactive --transpile</code>.</li>
 <li>Improvements to comments output that should now cover all of the <a href="https://flow.org/en/docs/types/comments/">Flow comment-based syntax</a>. Inline <code>###</code> comments near <a href="https://flow.org/en/docs/types/variables/">variable</a> initial assignments are now output in the variable declaration statement, and <code>###</code> comments near a <a href="https://flow.org/en/docs/types/generics/">class and method names</a> are now output where Flow expects them.</li>
@@ -5631,30 +5643,33 @@ x = <span class="number">2</span> + <span class="number">2</span>
 <li>Bugfix for comments not output before a complex <code>?</code> operation, e.g. <code>@a ? b</code>.</li>
 <li>All tests now pass in Windows.</li>
 </ul>
-<div class="anchor" id="2.0.1"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/2.0.0...2.0.1">2.0.1</a>
-  <span class="timestamp"> &mdash; <time datetime="2017-09-26">September 26, 2017</time></span>
-</h2><ul>
+
+        </section>
+        <section id="2.0.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.0.0...2.0.1">2.0.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-09-26">2017-09-26</time></span>
+</h3><ul>
 <li><code>babel-core</code> is no longer listed in <code>package.json</code>, even as an <code>optionalDependency</code>, to avoid it being automatically installed for most users. If you wish to use <code>--transpile</code>, simply install <code>babel-core</code> manually. See <a href="#transpilation">Transpilation</a>.</li>
 <li><code>--transpile</code> now relies on Babel to find its options, i.e. the <code>.babelrc</code> file in the path of the file(s) being compiled. (Previously the CoffeeScript compiler was duplicating this logic, so nothing has changed from a user’s perspective.) This provides automatic support for additional ways to pass options to Babel in future versions, such as the <code>.babelrc.js</code> file coming in Babel 7.</li>
 <li>Backticked expressions in a class body, outside any class methods, are now output in the JavaScript class body itself. This allows for passing through experimental JavaScript syntax like the <a href="https://github.com/tc39/proposal-class-fields">class fields proposal</a>, assuming your <a href="https://babeljs.io/docs/plugins/transform-class-properties/">transpiler supports it</a>.</li>
 </ul>
-<div class="anchor" id="2.0.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta5...2.0.0">2.0.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2017-09-18">September 18, 2017</time></span>
-</h2><ul>
+
+        </section>
+        <section id="2.0.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta5...2.0.0">2.0.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-09-18">2017-09-18</time></span>
+</h3><ul>
 <li>Added <code>--transpile</code> flag or <code>transpile</code> Node API option to tell the CoffeeScript compiler to pipe its output through Babel before saving or returning it; see <a href="#transpilation">Transpilation</a>. Also changed the <code>-t</code> short flag to refer to <code>--transpile</code> instead of <code>--tokens</code>.</li>
 <li>Always populate source maps’ <code>sourcesContent</code> property.</li>
 <li>Bugfixes for destructuring and for comments in JSX.</li>
 <li><em>Note that these are only the changes between 2.0.0-beta5 and 2.0.0. See below for all changes since 1.x.</em></li>
 </ul>
-<div class="anchor" id="2.0.0-beta5"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta4...2.0.0-beta5">2.0.0-beta5</a>
-  <span class="timestamp"> &mdash; <time datetime="2017-09-02">September 2, 2017</time></span>
-</h2><ul>
+
+        </section>
+        <section id="2.0.0-beta5">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta4...2.0.0-beta5">2.0.0-beta5</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-09-02">2017-09-02</time></span>
+</h3><ul>
 <li>Node 6 is now supported, and we will try to maintain that as the minimum required version for CoffeeScript 2 via the <code>coffee</code> command or Node API. Older versions of Node, or non-evergreen browsers, can compile via the <a href="./browser-compiler/coffeescript.js">browser compiler</a>.</li>
 <li>The command line <code>--output</code> flag now allows you to specify an output filename, not just an output folder.</li>
 <li>The command line <code>--require</code> flag now properly handles filenames or module names that are invalid identifiers (like an NPM module with a hyphen in the name).</li>
@@ -5667,11 +5682,12 @@ x = <span class="number">2</span> + <span class="number">2</span>
 <li>Bugfixes for syntactical edge cases: semicolons after <code>=</code> and other “mid-expression” tokens; spaces after <code>::</code>; and scripts that begin with <code>:</code> or <code>*</code>.</li>
 <li>Bugfixes for source maps generated via the Node API; and stack trace line numbers when compiling CoffeeScript via the Node API from within a <code>.coffee</code> file.</li>
 </ul>
-<div class="anchor" id="2.0.0-beta4"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta3...2.0.0-beta4">2.0.0-beta4</a>
-  <span class="timestamp"> &mdash; <time datetime="2017-08-03">August 3, 2017</time></span>
-</h2><ul>
+
+        </section>
+        <section id="2.0.0-beta4">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta3...2.0.0-beta4">2.0.0-beta4</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-08-03">2017-08-03</time></span>
+</h3><ul>
 <li>This release includes <a href="#1.12.7">all the changes from 1.12.6 to 1.12.7</a>.</li>
 <li><a href="#comments">Line comments</a> (starting with <code>#</code>) are now output in the generated JavaScript.</li>
 <li><a href="#comments">Block comments</a> (delimited by <code>###</code>) are now allowed anywhere, including inline where they previously weren’t possible. This provides support for <a href="#type-annotations">static type annotations</a> using Flow’s comments-based syntax.</li>
@@ -5685,30 +5701,24 @@ x = <span class="number">2</span> + <span class="number">2</span>
 <li>Bugfixes for object spread syntax in nested properties.</li>
 <li>Bugfixes for destructured function parameter default values.</li>
 </ul>
-<div class="anchor" id="1.12.7"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.12.6...1.12.7">1.12.7</a>
-  <span class="timestamp"> &mdash; <time datetime="2017-07-16">July 16, 2017</time></span>
-</h2><ul>
-<li>Fix regressions in 1.12.6 related to chained function calls and indented <code>return</code> and <code>throw</code> arguments.</li>
-<li>The REPL no longer warns about assigning to <code>_</code>.</li>
-</ul>
-<div class="anchor" id="2.0.0-beta3"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta2...2.0.0-beta3">2.0.0-beta3</a>
-  <span class="timestamp"> &mdash; <time datetime="2017-06-30">June 30, 2017</time></span>
-</h2><ul>
+
+        </section>
+        <section id="2.0.0-beta3">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta2...2.0.0-beta3">2.0.0-beta3</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-06-30">2017-06-30</time></span>
+</h3><ul>
 <li><a href="#jsx">JSX</a> is now supported.</li>
 <li><a href="#object-spread">Object rest/spread properties</a> are now supported.</li>
 <li>Bound (fat arrow) methods are once again supported in classes; though an error will be thrown if you attempt to call the method before it is bound. See <a href="#breaking-changes-classes">breaking changes for classes</a>.</li>
 <li>The REPL no longer warns about assigning to <code>_</code>.</li>
 <li>Bugfixes for destructured nested default values and issues related to chaining or continuing expressions across multiple lines.</li>
 </ul>
-<div class="anchor" id="2.0.0-beta2"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta1...2.0.0-beta2">2.0.0-beta2</a>
-  <span class="timestamp"> &mdash; <time datetime="2017-05-16">May 16, 2017</time></span>
-</h2><ul>
+
+        </section>
+        <section id="2.0.0-beta2">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta1...2.0.0-beta2">2.0.0-beta2</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-05-16">2017-05-16</time></span>
+</h3><ul>
 <li>This release includes <a href="#1.12.6">all the changes from 1.12.5 to 1.12.6</a>.</li>
 <li>Bound (fat arrow) methods in classes must be declared in the class constructor, after <code>super()</code> if the class is extending a parent class. See <a href="#breaking-changes-classes">breaking changes for classes</a>.</li>
 <li>All unnecessary utility helper functions have been removed, including the polyfills for <code>indexOf</code> and <code>bind</code>.</li>
@@ -5721,42 +5731,24 @@ x = <span class="number">2</span> + <span class="number">2</span>
 <li>Calling functions <code>@get</code> or <code>@set</code> no longer throws an error about required parentheses. (Bare <code>get</code> or <code>set</code>, not attached to an object or <code>@</code>, <a href="#unsupported-get-set">still intentionally throws a compiler error</a>.)</li>
 <li>If <code>$XDG_CACHE_HOME</code> is set, the REPL <code>.coffee_history</code> file is saved there.</li>
 </ul>
-<div class="anchor" id="1.12.6"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.12.5...1.12.6">1.12.6</a>
-  <span class="timestamp"> &mdash; <time datetime="2017-05-15">May 15, 2017</time></span>
-</h2><ul>
-<li>The <code>return</code> and <code>export</code> keywords can now accept implicit objects (defined by indentation, without needing braces).</li>
-<li>Support Unicode code point escapes (e.g. <code>\u{1F4A9}</code>).</li>
-<li>The <code>coffee</code> command now first looks to see if CoffeeScript is installed under <code>node_modules</code> in the current folder, and executes the <code>coffee</code> binary there if so; or otherwise it runs the globally installed one. This allows you to have one version of CoffeeScript installed globally and a different one installed locally for a particular project. (Likewise for the <code>cake</code> command.)</li>
-<li>Bugfixes for chained function calls not closing implicit objects or ternaries.</li>
-<li>Bugfixes for incorrect code generated by the <code>?</code> operator within a termary <code>if</code> statement.</li>
-<li>Fixed some tests, and failing tests now result in a nonzero exit code.</li>
-</ul>
-<div class="anchor" id="2.0.0-beta1"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-alpha1...2.0.0-beta1">2.0.0-beta1</a>
-  <span class="timestamp"> &mdash; <time datetime="2017-04-14">April 14, 2017</time></span>
-</h2><ul>
+
+        </section>
+        <section id="2.0.0-beta1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-alpha1...2.0.0-beta1">2.0.0-beta1</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-04-14">2017-04-14</time></span>
+</h3><ul>
 <li>Initial beta release of CoffeeScript 2. No further breaking changes are anticipated.</li>
 <li>Destructured objects and arrays now output using ES2015+ syntax whenever possible.</li>
 <li>Literate CoffeeScript now has much better support for parsing Markdown, thanks to using <a href="https://github.com/markdown-it/markdown-it">Markdown-It</a> to detect Markdown sections rather than just looking at indentation.</li>
 <li>Calling a function named <code>get</code> or <code>set</code> now requires parentheses, to disambiguate from the <code>get</code> or <code>set</code> keywords (which are <a href="#unsupported-get-set">disallowed</a>).</li>
 <li>The compiler now requires Node 7.6+, the first version of Node to support asynchronous functions without requiring a flag.</li>
 </ul>
-<div class="anchor" id="1.12.5"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.12.4...1.12.5">1.12.5</a>
-  <span class="timestamp"> &mdash; <time datetime="2017-04-10">April 10, 2017</time></span>
-</h2><ul>
-<li>Better handling of <code>default</code>, <code>from</code>, <code>as</code> and <code>*</code> within <code>import</code> and <code>export</code> statements. You can now import or export a member named <code>default</code> and the compiler won’t interpret it as the <code>default</code> keyword.</li>
-<li>Fixed a bug where invalid octal escape sequences weren’t throwing errors in the compiler.</li>
-</ul>
-<div class="anchor" id="2.0.0-alpha1"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.12.4...2.0.0-alpha1">2.0.0-alpha1</a>
-  <span class="timestamp"> &mdash; <time datetime="2017-02-21">February 21, 2017</time></span>
-</h2><ul>
+
+        </section>
+        <section id="2.0.0-alpha1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.12.4...2.0.0-alpha1">2.0.0-alpha1</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-02-21">2017-02-21</time></span>
+</h3><ul>
 <li>Initial alpha release of CoffeeScript 2. The CoffeeScript compiler now outputs ES2015+ syntax whenever possible. See <a href="#breaking-changes">breaking changes</a>.</li>
 <li>Classes are output using ES2015 <code>class</code> and <code>extends</code> keywords.</li>
 <li>Added support for <code>async</code>/<code>await</code>.</li>
@@ -5770,48 +5762,84 @@ x = <span class="number">2</span> + <span class="number">2</span>
 <li>Browser compiler is now minified using the Google Closure Compiler (JavaScript version).</li>
 <li>Node 7+ required for CoffeeScript 2.</li>
 </ul>
-<div class="anchor" id="1.12.4"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.12.3...1.12.4">1.12.4</a>
-  <span class="timestamp"> &mdash; <time datetime="2017-02-18">February 18, 2017</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.12.7">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.12.6...1.12.7">1.12.7</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-07-16">2017-07-16</time></span>
+</h3><ul>
+<li>Fix regressions in 1.12.6 related to chained function calls and indented <code>return</code> and <code>throw</code> arguments.</li>
+<li>The REPL no longer warns about assigning to <code>_</code>.</li>
+</ul>
+
+        </section>
+        <section id="1.12.6">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.12.5...1.12.6">1.12.6</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-05-15">2017-05-15</time></span>
+</h3><ul>
+<li>The <code>return</code> and <code>export</code> keywords can now accept implicit objects (defined by indentation, without needing braces).</li>
+<li>Support Unicode code point escapes (e.g. <code>\u{1F4A9}</code>).</li>
+<li>The <code>coffee</code> command now first looks to see if CoffeeScript is installed under <code>node_modules</code> in the current folder, and executes the <code>coffee</code> binary there if so; or otherwise it runs the globally installed one. This allows you to have one version of CoffeeScript installed globally and a different one installed locally for a particular project. (Likewise for the <code>cake</code> command.)</li>
+<li>Bugfixes for chained function calls not closing implicit objects or ternaries.</li>
+<li>Bugfixes for incorrect code generated by the <code>?</code> operator within a termary <code>if</code> statement.</li>
+<li>Fixed some tests, and failing tests now result in a nonzero exit code.</li>
+</ul>
+
+        </section>
+        <section id="1.12.5">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.12.4...1.12.5">1.12.5</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-04-10">2017-04-10</time></span>
+</h3><ul>
+<li>Better handling of <code>default</code>, <code>from</code>, <code>as</code> and <code>*</code> within <code>import</code> and <code>export</code> statements. You can now import or export a member named <code>default</code> and the compiler won’t interpret it as the <code>default</code> keyword.</li>
+<li>Fixed a bug where invalid octal escape sequences weren’t throwing errors in the compiler.</li>
+</ul>
+
+        </section>
+        <section id="1.12.4">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.12.3...1.12.4">1.12.4</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-02-18">2017-02-18</time></span>
+</h3><ul>
 <li>The <code>cake</code> commands have been updated, with new <code>watch</code> options for most tasks. Clone the <a href="https://github.com/jashkenas/coffeescript">CoffeeScript repo</a> and run <code>cake</code> at the root of the repo to see the options.</li>
 <li>Fixed a bug where <code>export</code>ing a referenced variable was preventing the variable from being declared.</li>
 <li>Fixed a bug where the <code>coffee</code> command wasn’t working for a <code>.litcoffee</code> file.</li>
 <li>Bugfixes related to tokens and location data, for better source maps and improved compatibility with downstream tools.</li>
 </ul>
-<div class="anchor" id="1.12.3"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.12.2...1.12.3">1.12.3</a>
-  <span class="timestamp"> &mdash; <time datetime="2017-01-24">January 24, 2017</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.12.3">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.12.2...1.12.3">1.12.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2017-01-24">2017-01-24</time></span>
+</h3><ul>
 <li><code>@</code> values can now be used as indices in <code>for</code> expressions. This loosens the compilation of <code>for</code> expressions to allow the index variable to be an <code>@</code> value, e.g. <code>do @visit for @node, @index in nodes</code>. Within <code>@visit</code>, the index of the current node (<code>@node</code>) would be available as <code>@index</code>.</li>
 <li>CoffeeScript’s patched <code>Error.prepareStackTrace</code> has been restored, with some revisions that should prevent the erroneous exceptions that were making life difficult for some downstream projects. This fixes the incorrect line numbers in stack traces since 1.12.2.</li>
 <li>The <code>//=</code> operator’s output now wraps parentheses around the right operand, like the other assignment operators.</li>
 </ul>
-<div class="anchor" id="1.12.2"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.12.1...1.12.2">1.12.2</a>
-  <span class="timestamp"> &mdash; <time datetime="2016-12-16">December 16, 2016</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.12.2">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.12.1...1.12.2">1.12.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2016-12-16">2016-12-16</time></span>
+</h3><ul>
 <li>The browser compiler can once again be built unminified via <code>MINIFY=false cake build:browser</code>.</li>
 <li>The error-prone patched version of <code>Error.prepareStackTrace</code> has been removed.</li>
 <li>Command completion in the REPL (pressing tab to get suggestions) has been fixed for Node 6.9.1+.</li>
 <li>The <a href="/v2/test.html">browser-based tests</a> now include all the tests as the Node-based version.</li>
 </ul>
-<div class="anchor" id="1.12.1"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.12.0...1.12.1">1.12.1</a>
-  <span class="timestamp"> &mdash; <time datetime="2016-12-07">December 7, 2016</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.12.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.12.0...1.12.1">1.12.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2016-12-07">2016-12-07</time></span>
+</h3><ul>
 <li>You can now import a module member named <code>default</code>, e.g. <code>import { default } from 'lib'</code>. Though like in ES2015, you cannot import an entire module and name it <code>default</code> (so <code>import default from 'lib'</code> is not allowed).</li>
 <li>Fix regression where <code>from</code> as a variable name was breaking <code>for</code> loop declarations. For the record, <code>from</code> is not a reserved word in CoffeeScript; you may use it for variable names. <code>from</code> behaves like a keyword within the context of <code>import</code> and <code>export</code> statements, and in the declaration of a <code>for</code> loop; though you should also be able to use variables named <code>from</code> in those contexts, and the compiler should be able to tell the difference.</li>
 </ul>
-<div class="anchor" id="1.12.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.11.1...1.12.0">1.12.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2016-12-04">December 4, 2016</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.12.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.11.1...1.12.0">1.12.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2016-12-04">2016-12-04</time></span>
+</h3><ul>
 <li>CoffeeScript now supports ES2015 <a href="#tagged-template-literals">tagged template literals</a>. Note that using tagged template literals in your code makes you responsible for ensuring that either your runtime supports tagged template literals or that you transpile the output JavaScript further to a version your target runtime(s) support.</li>
 <li>CoffeeScript now provides a <a href="#generator-iteration"><code>for…from</code></a> syntax for outputting ES2015 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of"><code>for…of</code></a>. (Sorry they couldn’t match, but we came up with <code>for…of</code> first for something else.) This allows iterating over generators or any other iterable object. Note that using <code>for…from</code> in your code makes you responsible for ensuring that either your runtime supports <code>for…of</code> or that you transpile the output JavaScript further to a version your target runtime(s) support.</li>
 <li>Triple backticks (<code>```​</code>) allow the creation of embedded JavaScript blocks where escaping single backticks is not required, which should improve interoperability with ES2015 template literals and with Markdown.</li>
@@ -5821,21 +5849,23 @@ x = <span class="number">2</span> + <span class="number">2</span>
 <li>The compiler now throws an error on trying to export an anonymous class.</li>
 <li>Bugfixes related to tokens and location data, for better source maps and improved compatibility with downstream tools.</li>
 </ul>
-<div class="anchor" id="1.11.1"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.11.0...1.11.1">1.11.1</a>
-  <span class="timestamp"> &mdash; <time datetime="2016-10-02">October 2, 2016</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.11.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.11.0...1.11.1">1.11.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2016-10-02">2016-10-02</time></span>
+</h3><ul>
 <li>Bugfix for shorthand object syntax after interpolated keys.</li>
 <li>Bugfix for indentation-stripping in <code>&quot;&quot;&quot;</code> strings.</li>
 <li>Bugfix for not being able to use the name “arguments” for a prototype property of class.</li>
 <li>Correctly compile large hexadecimal numbers literals to <code>2e308</code> (just like all other large number literals do).</li>
 </ul>
-<div class="anchor" id="1.11.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.10.0...1.11.0">1.11.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2016-09-24">September 24, 2016</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.11.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.10.0...1.11.0">1.11.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2016-09-24">2016-09-24</time></span>
+</h3><ul>
 <li>CoffeeScript now supports ES2015 <a href="#modules"><code>import</code> and <code>export</code> syntax</a>.</li>
 <li>Added the <code>-M, --inline-map</code> flag to the compiler, allowing you embed the source map directly into the output JavaScript, rather than as a separate file.</li>
 <li>A bunch of fixes for <code>yield</code>:
@@ -5869,11 +5899,12 @@ six = -&gt;
 </ul>
 </li>
 </ul>
-<div class="anchor" id="1.10.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.9.3...1.10.0">1.10.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2015-09-03">September 3, 2015</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.10.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.9.3...1.10.0">1.10.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2015-09-03">2015-09-03</time></span>
+</h3><ul>
 <li>CoffeeScript now supports ES2015-style destructuring defaults.</li>
 <li><code>(offsetHeight: height) -&gt;</code> no longer compiles. That syntax was accidental and partly broken. Use <code>({offsetHeight: height}) -&gt;</code> instead. Object destructuring always requires braces.</li>
 <li>Several minor bug fixes, including:
@@ -5885,54 +5916,59 @@ six = -&gt;
 </ul>
 </li>
 </ul>
-<div class="anchor" id="1.9.3"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.9.2...1.9.3">1.9.3</a>
-  <span class="timestamp"> &mdash; <time datetime="2015-05-27">May 27, 2015</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.9.3">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.9.2...1.9.3">1.9.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2015-05-27">2015-05-27</time></span>
+</h3><ul>
 <li>Bugfix for interpolation in the first key of an object literal in an implicit call.</li>
 <li>Fixed broken error messages in the REPL, as well as a few minor bugs with the REPL.</li>
 <li>Fixed source mappings for tokens at the beginning of lines when compiling with the <code>--bare</code> option. This has the nice side effect of generating smaller source maps.</li>
 <li>Slight formatting improvement of compiled block comments.</li>
 <li>Better error messages for <code>on</code>, <code>off</code>, <code>yes</code> and <code>no</code>.</li>
 </ul>
-<div class="anchor" id="1.9.2"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.9.1...1.9.2">1.9.2</a>
-  <span class="timestamp"> &mdash; <time datetime="2015-04-15">April 15, 2015</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.9.2">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.9.1...1.9.2">1.9.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2015-04-15">2015-04-15</time></span>
+</h3><ul>
 <li>Fixed a <strong>watch</strong> mode error introduced in 1.9.1 when compiling multiple files with the same filename.</li>
 <li>Bugfix for <code>yield</code> around expressions containing <code>this</code>.</li>
 <li>Added a Ruby-style <code>-r</code> option to the REPL, which allows requiring a module before execution with <code>--eval</code> or <code>--interactive</code>.</li>
 <li>In <code>&lt;script type=&quot;text/coffeescript&quot;&gt;</code> tags, to avoid possible duplicate browser requests for .coffee files, you can now use the <code>data-src</code> attribute instead of <code>src</code>.</li>
 <li>Minor bug fixes for IE8, strict ES5 regular expressions and Browserify.</li>
 </ul>
-<div class="anchor" id="1.9.1"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.9.0...1.9.1">1.9.1</a>
-  <span class="timestamp"> &mdash; <time datetime="2015-02-18">February 18, 2015</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.9.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.9.0...1.9.1">1.9.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2015-02-18">2015-02-18</time></span>
+</h3><ul>
 <li>Interpolation now works in object literal keys (again). You can use this to dynamically name properties.</li>
 <li>Internal compiler variable names no longer start with underscores. This makes the generated JavaScript a bit prettier, and also fixes an issue with the completely broken and ungodly way that AngularJS “parses” function arguments.</li>
 <li>Fixed a few <code>yield</code>-related edge cases with <code>yield return</code> and <code>yield throw</code>.</li>
 <li>Minor bug fixes and various improvements to compiler error messages.</li>
 </ul>
-<div class="anchor" id="1.9.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.8.0...1.9.0">1.9.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2015-01-29">January 29, 2015</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.9.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.8.0...1.9.0">1.9.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2015-01-29">2015-01-29</time></span>
+</h3><ul>
 <li>CoffeeScript now supports ES2015 generators. A generator is simply a function that <code>yield</code>s.</li>
 <li>More robust parsing and improved error messages for strings and regexes — especially with respect to interpolation.</li>
 <li>Changed strategy for the generation of internal compiler variable names. Note that this means that <code>@example</code> function parameters are no longer available as naked <code>example</code> variables within the function body.</li>
 <li>Fixed REPL compatibility with latest versions of Node and Io.js.</li>
 <li>Various minor bug fixes.</li>
 </ul>
-<div class="anchor" id="1.8.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.7.1...1.8.0">1.8.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2014-08-26">August 26, 2014</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.8.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.7.1...1.8.0">1.8.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2014-08-26">2014-08-26</time></span>
+</h3><ul>
 <li>The <code>--join</code> option of the CLI is now deprecated.</li>
 <li>Source maps now use <code>.js.map</code> as file extension, instead of just <code>.map</code>.</li>
 <li>The CLI now exits with the exit code 1 when it fails to write a file to disk.</li>
@@ -5945,18 +5981,20 @@ six = -&gt;
 <li>The CoffeeScript REPL is now exported and can be required using <code>require 'coffeescript/repl'</code>.</li>
 <li>Fixes for the REPL in Node 0.11.</li>
 </ul>
-<div class="anchor" id="1.7.1"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.7.0...1.7.1">1.7.1</a>
-  <span class="timestamp"> &mdash; <time datetime="2014-01-29">January 29, 2014</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.7.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.7.0...1.7.1">1.7.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2014-01-29">2014-01-29</time></span>
+</h3><ul>
 <li>Fixed a typo that broke node module lookup when running a script directly with the <code>coffee</code> binary.</li>
 </ul>
-<div class="anchor" id="1.7.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.6.3...1.7.0">1.7.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2014-01-28">January 28, 2014</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.7.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.6.3...1.7.0">1.7.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2014-01-28">2014-01-28</time></span>
+</h3><ul>
 <li>When requiring CoffeeScript files in Node you must now explicitly register the compiler. This can be done with <code>require 'coffeescript/register'</code> or <code>CoffeeScript.register()</code>. Also for configuration such as Mocha’s, use <strong>coffeescript/register</strong>.</li>
 <li>Improved error messages, source maps and stack traces. Source maps now use the updated <code>//#</code> syntax.</li>
 <li>Leading <code>.</code> now closes all open calls, allowing for simpler chaining syntax.</li>
@@ -5968,72 +6006,79 @@ six = -&gt;
 <li>No more <code>-p</code> folders on Windows.</li>
 <li>The <code>options</code> object passed to CoffeeScript is no longer mutated.</li>
 </ul>
-<div class="anchor" id="1.6.3"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.6.2...1.6.3">1.6.3</a>
-  <span class="timestamp"> &mdash; <time datetime="2013-06-02">June 2, 2013</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.6.3">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.6.2...1.6.3">1.6.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2013-06-02">2013-06-02</time></span>
+</h3><ul>
 <li>The CoffeeScript REPL now remembers your history between sessions. Just like a proper REPL should.</li>
 <li>You can now use <code>require</code> in Node to load <code>.coffee.md</code> Literate CoffeeScript files. In the browser, <code>text/literate-coffeescript</code> script tags.</li>
 <li>The old <code>coffee --lint</code> command has been removed. It was useful while originally working on the compiler, but has been surpassed by JSHint. You may now use <code>-l</code> to pass literate files in over <strong>stdio</strong>.</li>
 <li>Bugfixes for Windows path separators, <code>catch</code> without naming the error, and executable-class-bodies-with- prototypal-property-attachment.</li>
 </ul>
-<div class="anchor" id="1.6.2"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.6.1...1.6.2">1.6.2</a>
-  <span class="timestamp"> &mdash; <time datetime="2013-03-18">March 18, 2013</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.6.2">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.6.1...1.6.2">1.6.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2013-03-18">2013-03-18</time></span>
+</h3><ul>
 <li>Source maps have been used to provide automatic line-mapping when running CoffeeScript directly via the <code>coffee</code> command, and for automatic line-mapping when running CoffeeScript directly in the browser. Also, to provide better error messages for semantic errors thrown by the compiler — <a href="http://cl.ly/NdOA">with colors, even</a>.</li>
 <li>Improved support for mixed literate/vanilla-style CoffeeScript projects, and generating source maps for both at the same time.</li>
 <li>Fixes for <strong>1.6.x</strong> regressions with overriding inherited bound functions, and for Windows file path management.</li>
 <li>The <code>coffee</code> command can now correctly <code>fork()</code> both <code>.coffee</code> and <code>.js</code> files. (Requires Node.js 0.9+)</li>
 </ul>
-<div class="anchor" id="1.6.1"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.5.0...1.6.1">1.6.1</a>
-  <span class="timestamp"> &mdash; <time datetime="2013-03-05">March 5, 2013</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.6.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.5.0...1.6.1">1.6.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2013-03-05">2013-03-05</time></span>
+</h3><ul>
 <li>First release of <a href="#source-maps">source maps</a>. Pass the <code>--map</code> flag to the compiler, and off you go. Direct all your thanks over to <a href="https://github.com/jwalton">Jason Walton</a>.</li>
 <li>Fixed a 1.5.0 regression with multiple implicit calls against an indented implicit object. Combinations of implicit function calls and implicit objects should generally be parsed better now — but it still isn’t good <em>style</em> to nest them too heavily.</li>
 <li><code>.coffee.md</code> is now also supported as a Literate CoffeeScript file extension, for existing tooling. <code>.litcoffee</code> remains the canonical one.</li>
 <li>Several minor fixes surrounding member properties, bound methods and <code>super</code> in class declarations.</li>
 </ul>
-<div class="anchor" id="1.5.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.4.0...1.5.0">1.5.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2013-02-25">February 25, 2013</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.5.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.4.0...1.5.0">1.5.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2013-02-25">2013-02-25</time></span>
+</h3><ul>
 <li>First release of <a href="#literate">Literate CoffeeScript</a>.</li>
 <li>The CoffeeScript REPL is now based on the Node.js REPL, and should work better and more familiarly.</li>
 <li>Returning explicit values from constructors is now forbidden. If you want to return an arbitrary value, use a function, not a constructor.</li>
 <li>You can now loop over an array backwards, without having to manually deal with the indexes: <code>for item in list by -1</code></li>
 <li>Source locations are now preserved in the CoffeeScript AST, although source maps are not yet being emitted.</li>
 </ul>
-<div class="anchor" id="1.4.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.3.3...1.4.0">1.4.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2012-10-23">October 23, 2012</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.4.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.3.3...1.4.0">1.4.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2012-10-23">2012-10-23</time></span>
+</h3><ul>
 <li>The CoffeeScript compiler now strips Microsoft’s UTF-8 BOM if it exists, allowing you to compile BOM-borked source files.</li>
 <li>Fix Node/compiler deprecation warnings by removing <code>registerExtension</code>, and moving from <code>path.exists</code> to <code>fs.exists</code>.</li>
 <li>Small tweaks to splat compilation, backticks, slicing, and the error for duplicate keys in object literals.</li>
 </ul>
-<div class="anchor" id="1.3.3"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.3.1...1.3.3">1.3.3</a>
-  <span class="timestamp"> &mdash; <time datetime="2012-05-15">May 15, 2012</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.3.3">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.3.1...1.3.3">1.3.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2012-05-15">2012-05-15</time></span>
+</h3><ul>
 <li>Due to the new semantics of JavaScript’s strict mode, CoffeeScript no longer guarantees that constructor functions have names in all runtimes. See <a href="https://github.com/jashkenas/coffeescript/issues/2052">#2052</a> for discussion.</li>
 <li>Inside of a nested function inside of an instance method, it’s now possible to call <code>super</code> more reliably (walks recursively up).</li>
 <li>Named loop variables no longer have different scoping heuristics than other local variables. (Reverts #643)</li>
 <li>Fix for splats nested within the LHS of destructuring assignment.</li>
 <li>Corrections to our compile time strict mode forbidding of octal literals.</li>
 </ul>
-<div class="anchor" id="1.3.1"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.2.0...1.3.1">1.3.1</a>
-  <span class="timestamp"> &mdash; <time datetime="2012-04-10">April 10, 2012</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.3.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.2.0...1.3.1">1.3.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2012-04-10">2012-04-10</time></span>
+</h3><ul>
 <li>CoffeeScript now enforces all of JavaScript’s <strong>Strict Mode</strong> early syntax errors at compile time. This includes old-style octal literals, duplicate property names in object literals, duplicate parameters in a function definition, deleting naked variables, setting the value of <code>eval</code> or <code>arguments</code>, and more. See a full discussion at <a href="https://github.com/jashkenas/coffeescript/issues/1547">#1547</a>.</li>
 <li>The REPL now has a handy new multi-line mode for entering large blocks of code. It’s useful when copy-and-pasting examples into the REPL. Enter multi-line mode with <code>Ctrl-V</code>. You may also now pipe input directly into the REPL.</li>
 <li>CoffeeScript now prints a <code>Generated by CoffeeScript VERSION</code> header at the top of each compiled file.</li>
@@ -6043,21 +6088,23 @@ six = -&gt;
 <li>Both endpoints of a slice are now allowed to be omitted for consistency, effectively creating a shallow copy of the list.</li>
 <li>Additional tweaks and improvements to <code>coffee --watch</code> under Node’s “new” file watching API. Watch will now beep by default if you introduce a syntax error into a watched script. We also now ignore hidden directories by default when watching recursively.</li>
 </ul>
-<div class="anchor" id="1.2.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.1.3...1.2.0">1.2.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2011-12-18">December 18, 2011</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.2.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.1.3...1.2.0">1.2.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2011-12-18">2011-12-18</time></span>
+</h3><ul>
 <li>Multiple improvements to <code>coffee --watch</code> and <code>--join</code>. You may now use both together, as well as add and remove files and directories within a <code>--watch</code>’d folder.</li>
 <li>The <code>throw</code> statement can now be used as part of an expression.</li>
 <li>Block comments at the top of the file will now appear outside of the safety closure wrapper.</li>
 <li>Fixed a number of minor 1.1.3 regressions having to do with trailing operators and unfinished lines, and a more major 1.1.3 regression that caused bound functions <em>within</em> bound class functions to have the incorrect <code>this</code>.</li>
 </ul>
-<div class="anchor" id="1.1.3"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.1.2...1.1.3">1.1.3</a>
-  <span class="timestamp"> &mdash; <time datetime="2011-11-08">November 8, 2011</time></span>
-</h2><ul>
+
+        </section>
+        <section id="1.1.3">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.1.2...1.1.3">1.1.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2011-11-08">2011-11-08</time></span>
+</h3><ul>
 <li>Ahh, whitespace. CoffeeScript’s compiled JS now tries to space things out and keep it readable, as you can see in the examples on this page.</li>
 <li>You can now call <code>super</code> in class level methods in class bodies, and bound class methods now preserve their correct context.</li>
 <li>JavaScript has always supported octal numbers <code>010 is 8</code>, and hexadecimal numbers <code>0xf is 15</code>, but CoffeeScript now also supports binary numbers: <code>0b10 is 2</code>.</li>
@@ -6066,226 +6113,268 @@ six = -&gt;
 <li>The <code>coffee --watch</code> feature now only works on Node.js 0.6.0 and higher, but now also works properly on Windows.</li>
 <li>Lots of small bug fixes from <strong><a href="https://github.com/michaelficarra">@michaelficarra</a></strong>, <strong><a href="https://github.com/geraldalewis">@geraldalewis</a></strong>, <strong><a href="https://github.com/satyr">@satyr</a></strong>, and <strong><a href="https://github.com/trevorburnham">@trevorburnham</a></strong>.</li>
 </ul>
-<div class="anchor" id="1.1.2"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.1.1...1.1.2">1.1.2</a>
-  <span class="timestamp"> &mdash; <time datetime="2011-08-04">August 4, 2011</time></span>
-</h2><p>Fixes for block comment formatting, <code>?=</code> compilation, implicit calls against control structures, implicit invocation of a try/catch block, variadic arguments leaking from local scope, line numbers in syntax errors following heregexes, property access on parenthesized number literals, bound class methods and super with reserved names, a REPL overhaul, consecutive compiled semicolons, block comments in implicitly called objects, and a Chrome bug.</p>
-<div class="anchor" id="1.1.1"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.1.0...1.1.1">1.1.1</a>
-  <span class="timestamp"> &mdash; <time datetime="2011-05-10">May 10, 2011</time></span>
-</h2><p>Bugfix release for classes with external constructor functions, see issue #1182.</p>
-<div class="anchor" id="1.1.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.0.1...1.1.0">1.1.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2011-05-01">May 1, 2011</time></span>
-</h2><p>When running via the <code>coffee</code> executable, <code>process.argv</code> and friends now report <code>coffee</code> instead of <code>node</code>. Better compatibility with <strong>Node.js 0.4.x</strong> module lookup changes. The output in the REPL is now colorized, like Node’s is. Giving your concatenated CoffeeScripts a name when using <code>--join</code> is now mandatory. Fix for lexing compound division <code>/=</code> as a regex accidentally. All <code>text/coffeescript</code> tags should now execute in the order they’re included. Fixed an issue with extended subclasses using external constructor functions. Fixed an edge-case infinite loop in <code>addImplicitParentheses</code>. Fixed exponential slowdown with long chains of function calls. Globals no longer leak into the CoffeeScript REPL. Splatted parameters are declared local to the function.</p>
-<div class="anchor" id="1.0.1"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/1.0.0...1.0.1">1.0.1</a>
-  <span class="timestamp"> &mdash; <time datetime="2011-01-31">January 31, 2011</time></span>
-</h2><p>Fixed a lexer bug with Unicode identifiers. Updated REPL for compatibility with Node.js 0.3.7. Fixed requiring relative paths in the REPL. Trailing <code>return</code> and <code>return undefined</code> are now optimized away. Stopped requiring the core Node.js <code>util</code> module for back-compatibility with Node.js 0.2.5. Fixed a case where a conditional <code>return</code> would cause fallthrough in a <code>switch</code> statement. Optimized empty objects in destructuring assignment.</p>
-<div class="anchor" id="1.0.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.9.6...1.0.0">1.0.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-12-24">December 24, 2010</time></span>
-</h2><p>CoffeeScript loops no longer try to preserve block scope when functions are being generated within the loop body. Instead, you can use the <code>do</code> keyword to create a convenient closure wrapper. Added a <code>--nodejs</code> flag for passing through options directly to the <code>node</code> executable. Better behavior around the use of pure statements within expressions. Fixed inclusive slicing through <code>-1</code>, for all browsers, and splicing with arbitrary expressions as endpoints.</p>
-<div class="anchor" id="0.9.6"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.9.5...0.9.6">0.9.6</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-12-06">December 6, 2010</time></span>
-</h2><p>The REPL now properly formats stacktraces, and stays alive through asynchronous exceptions. Using <code>--watch</code> now prints timestamps as files are compiled. Fixed some accidentally-leaking variables within plucked closure-loops. Constructors now maintain their declaration location within a class body. Dynamic object keys were removed. Nested classes are now supported. Fixes execution context for naked splatted functions. Bugfix for inversion of chained comparisons. Chained class instantiation now works properly with splats.</p>
-<div class="anchor" id="0.9.5"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.9.4...0.9.5">0.9.5</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-11-21">November 21, 2010</time></span>
-</h2><p>0.9.5 should be considered the first release candidate for CoffeeScript 1.0. There have been a large number of internal changes since the previous release, many contributed from <strong>satyr</strong>’s <a href="https://github.com/satyr/coco">Coco</a> dialect of CoffeeScript. Heregexes (extended regexes) were added. Functions can now have default arguments. Class bodies are now executable code. Improved syntax errors for invalid CoffeeScript. <code>undefined</code> now works like <code>null</code>, and cannot be assigned a new value. There was a precedence change with respect to single-line comprehensions: <code>result = i for i in list</code>
+
+        </section>
+        <section id="1.1.2">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.1.1...1.1.2">1.1.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2011-08-04">2011-08-04</time></span>
+</h3><p>Fixes for block comment formatting, <code>?=</code> compilation, implicit calls against control structures, implicit invocation of a try/catch block, variadic arguments leaking from local scope, line numbers in syntax errors following heregexes, property access on parenthesized number literals, bound class methods and super with reserved names, a REPL overhaul, consecutive compiled semicolons, block comments in implicitly called objects, and a Chrome bug.</p>
+
+        </section>
+        <section id="1.1.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.1.0...1.1.1">1.1.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2011-05-10">2011-05-10</time></span>
+</h3><p>Bugfix release for classes with external constructor functions, see issue #1182.</p>
+
+        </section>
+        <section id="1.1.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.0.1...1.1.0">1.1.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2011-05-01">2011-05-01</time></span>
+</h3><p>When running via the <code>coffee</code> executable, <code>process.argv</code> and friends now report <code>coffee</code> instead of <code>node</code>. Better compatibility with <strong>Node.js 0.4.x</strong> module lookup changes. The output in the REPL is now colorized, like Node’s is. Giving your concatenated CoffeeScripts a name when using <code>--join</code> is now mandatory. Fix for lexing compound division <code>/=</code> as a regex accidentally. All <code>text/coffeescript</code> tags should now execute in the order they’re included. Fixed an issue with extended subclasses using external constructor functions. Fixed an edge-case infinite loop in <code>addImplicitParentheses</code>. Fixed exponential slowdown with long chains of function calls. Globals no longer leak into the CoffeeScript REPL. Splatted parameters are declared local to the function.</p>
+
+        </section>
+        <section id="1.0.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/1.0.0...1.0.1">1.0.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2011-01-31">2011-01-31</time></span>
+</h3><p>Fixed a lexer bug with Unicode identifiers. Updated REPL for compatibility with Node.js 0.3.7. Fixed requiring relative paths in the REPL. Trailing <code>return</code> and <code>return undefined</code> are now optimized away. Stopped requiring the core Node.js <code>util</code> module for back-compatibility with Node.js 0.2.5. Fixed a case where a conditional <code>return</code> would cause fallthrough in a <code>switch</code> statement. Optimized empty objects in destructuring assignment.</p>
+
+        </section>
+        <section id="1.0.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.9.6...1.0.0">1.0.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-12-24">2010-12-24</time></span>
+</h3><p>CoffeeScript loops no longer try to preserve block scope when functions are being generated within the loop body. Instead, you can use the <code>do</code> keyword to create a convenient closure wrapper. Added a <code>--nodejs</code> flag for passing through options directly to the <code>node</code> executable. Better behavior around the use of pure statements within expressions. Fixed inclusive slicing through <code>-1</code>, for all browsers, and splicing with arbitrary expressions as endpoints.</p>
+
+        </section>
+        <section id="0.9.6">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.9.5...0.9.6">0.9.6</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-12-06">2010-12-06</time></span>
+</h3><p>The REPL now properly formats stacktraces, and stays alive through asynchronous exceptions. Using <code>--watch</code> now prints timestamps as files are compiled. Fixed some accidentally-leaking variables within plucked closure-loops. Constructors now maintain their declaration location within a class body. Dynamic object keys were removed. Nested classes are now supported. Fixes execution context for naked splatted functions. Bugfix for inversion of chained comparisons. Chained class instantiation now works properly with splats.</p>
+
+        </section>
+        <section id="0.9.5">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.9.4...0.9.5">0.9.5</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-11-21">2010-11-21</time></span>
+</h3><p>0.9.5 should be considered the first release candidate for CoffeeScript 1.0. There have been a large number of internal changes since the previous release, many contributed from <strong>satyr</strong>’s <a href="https://github.com/satyr/coco">Coco</a> dialect of CoffeeScript. Heregexes (extended regexes) were added. Functions can now have default arguments. Class bodies are now executable code. Improved syntax errors for invalid CoffeeScript. <code>undefined</code> now works like <code>null</code>, and cannot be assigned a new value. There was a precedence change with respect to single-line comprehensions: <code>result = i for i in list</code>
 used to parse as <code>result = (i for i in list)</code> by default … it now parses as
 <code>(result = i) for i in list</code>.</p>
-<div class="anchor" id="0.9.4"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.9.3...0.9.4">0.9.4</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-09-21">September 21, 2010</time></span>
-</h2><p>CoffeeScript now uses appropriately-named temporary variables, and recycles their references after use. Added <code>require.extensions</code> support for <strong>Node.js 0.3</strong>. Loading CoffeeScript in the browser now adds just a single <code>CoffeeScript</code> object to global scope. Fixes for implicit object and block comment edge cases.</p>
-<div class="anchor" id="0.9.3"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.9.2...0.9.3">0.9.3</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-09-16">September 16, 2010</time></span>
-</h2><p>CoffeeScript <code>switch</code> statements now compile into JS <code>switch</code> statements — they previously compiled into <code>if/else</code> chains for JavaScript 1.3 compatibility. Soaking a function invocation is now supported. Users of the RubyMine editor should now be able to use <code>--watch</code> mode.</p>
-<div class="anchor" id="0.9.2"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.9.1...0.9.2">0.9.2</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-08-23">August 23, 2010</time></span>
-</h2><p>Specifying the start and end of a range literal is now optional, eg. <code>array[3..]</code>. You can now say <code>a not instanceof b</code>. Fixed important bugs with nested significant and non-significant indentation (Issue #637). Added a <code>--require</code> flag that allows you to hook into the <code>coffee</code> command. Added a custom <code>jsl.conf</code> file for our preferred JavaScriptLint setup. Sped up Jison grammar compilation time by flattening rules for operations. Block comments can now be used with JavaScript-minifier-friendly syntax. Added JavaScript’s compound assignment bitwise operators. Bugfixes to implicit object literals with leading number and string keys, as the subject of implicit calls, and as part of compound assignment.</p>
-<div class="anchor" id="0.9.1"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.9.0...0.9.1">0.9.1</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-08-11">August 11, 2010</time></span>
-</h2><p>Bugfix release for <strong>0.9.1</strong>. Greatly improves the handling of mixed implicit objects, implicit function calls, and implicit indentation. String and regex interpolation is now strictly <code>#{ … }</code> (Ruby style). The compiler now takes a <code>--require</code> flag, which specifies scripts to run before compilation.</p>
-<div class="anchor" id="0.9.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.7.2...0.9.0">0.9.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-08-04">August 4, 2010</time></span>
-</h2><p>The CoffeeScript <strong>0.9</strong> series is considered to be a release candidate for <strong>1.0</strong>; let’s give her a shakedown cruise. <strong>0.9.0</strong> introduces a massive backwards-incompatible change: Assignment now uses <code>=</code>, and object literals use <code>:</code>, as in JavaScript. This allows us to have implicit object literals, and YAML-style object definitions. Half assignments are removed, in favor of <code>+=</code>, <code>or=</code>, and friends. Interpolation now uses a hash mark <code>#</code> instead of the dollar sign <code>$</code> — because dollar signs may be part of a valid JS identifier. Downwards range comprehensions are now safe again, and are optimized to straight for loops when created with integer endpoints. A fast, unguarded form of object comprehension was added: <code>for all key, value of object</code>. Mentioning the <code>super</code> keyword with no arguments now forwards all arguments passed to the function, as in Ruby. If you extend class <code>B</code> from parent class <code>A</code>, if <code>A</code> has an <code>extended</code> method defined, it will be called, passing in <code>B</code> — this enables static inheritance, among other things. Cleaner output for functions bound with the fat arrow. <code>@variables</code> can now be used in parameter lists, with the parameter being automatically set as a property on the object — useful in constructors and setter functions. Constructor functions can now take splats.</p>
-<div class="anchor" id="0.7.2"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.7.1...0.7.2">0.7.2</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-07-12">July 12, 2010</time></span>
-</h2><p>Quick bugfix (right after 0.7.1) for a problem that prevented <code>coffee</code> command-line options from being parsed in some circumstances.</p>
-<div class="anchor" id="0.7.1"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.7.0...0.7.1">0.7.1</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-07-11">July 11, 2010</time></span>
-</h2><p>Block-style comments are now passed through and printed as JavaScript block comments – making them useful for licenses and copyright headers. Better support for running coffee scripts standalone via hashbangs. Improved syntax errors for tokens that are not in the grammar.</p>
-<div class="anchor" id="0.7.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.6.2...0.7.0">0.7.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-06-28">June 28, 2010</time></span>
-</h2><p>Official CoffeeScript variable style is now camelCase, as in JavaScript. Reserved words are now allowed as object keys, and will be quoted for you. Range comprehensions now generate cleaner code, but you have to specify <code>by -1</code> if you’d like to iterate downward. Reporting of syntax errors is greatly improved from the previous release. Running <code>coffee</code> with no arguments now launches the REPL, with Readline support. The <code>&lt;-</code> bind operator has been removed from CoffeeScript. The <code>loop</code> keyword was added, which is equivalent to a <code>while true</code> loop. Comprehensions that contain closures will now close over their variables, like the semantics of a <code>forEach</code>. You can now use bound function in class definitions (bound to the instance). For consistency, <code>a in b</code> is now an array presence check, and <code>a of b</code> is an object-key check. Comments are no longer passed through to the generated JavaScript.</p>
-<div class="anchor" id="0.6.2"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.6.1...0.6.2">0.6.2</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-05-15">May 15, 2010</time></span>
-</h2><p>The <code>coffee</code> command will now preserve directory structure when compiling a directory full of scripts. Fixed two omissions that were preventing the CoffeeScript compiler from running live within Internet Explorer. There’s now a syntax for block comments, similar in spirit to CoffeeScript’s heredocs. ECMA Harmony DRY-style pattern matching is now supported, where the name of the property is the same as the name of the value: <code>{name, length}: func</code>. Pattern matching is now allowed within comprehension variables. <code>unless</code> is now allowed in block form. <code>until</code> loops were added, as the inverse of <code>while</code> loops. <code>switch</code> statements are now allowed without switch object clauses. Compatible with Node.js <strong>v0.1.95</strong>.</p>
-<div class="anchor" id="0.6.1"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.6.0...0.6.1">0.6.1</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-04-12">April 12, 2010</time></span>
-</h2><p>Upgraded CoffeeScript for compatibility with the new Node.js <strong>v0.1.90</strong> series.</p>
-<div class="anchor" id="0.6.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.5.6...0.6.0">0.6.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-04-03">April 3, 2010</time></span>
-</h2><p>Trailing commas are now allowed, a-la Python. Static properties may be assigned directly within class definitions, using <code>@property</code> notation.</p>
-<div class="anchor" id="0.5.6"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.5.5...0.5.6">0.5.6</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-03-23">March 23, 2010</time></span>
-</h2><p>Interpolation can now be used within regular expressions and heredocs, as well as strings. Added the <code>&lt;-</code> bind operator. Allowing assignment to half-expressions instead of special <code>||=</code>-style operators. The arguments object is no longer automatically converted into an array. After requiring <code>coffeescript</code>, Node.js can now directly load <code>.coffee</code> files, thanks to <strong>registerExtension</strong>. Multiple splats can now be used in function calls, arrays, and pattern matching.</p>
-<div class="anchor" id="0.5.5"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.5.4...0.5.5">0.5.5</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-03-08">March 8, 2010</time></span>
-</h2><p>String interpolation, contributed by <a href="https://github.com/StanAngeloff">Stan Angeloff</a>. Since <code>--run</code> has been the default since <strong>0.5.3</strong>, updating <code>--stdio</code> and <code>--eval</code> to run by default, pass <code>--compile</code> as well if you’d like to print the result.</p>
-<div class="anchor" id="0.5.4"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.5.3...0.5.4">0.5.4</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-03-03">March 3, 2010</time></span>
-</h2><p>Bugfix that corrects the Node.js global constants <code>__filename</code> and <code>__dirname</code>. Tweaks for more flexible parsing of nested function literals and improperly-indented comments. Updates for the latest Node.js API.</p>
-<div class="anchor" id="0.5.3"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.5.2...0.5.3">0.5.3</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-02-27">February 27, 2010</time></span>
-</h2><p>CoffeeScript now has a syntax for defining classes. Many of the core components (Nodes, Lexer, Rewriter, Scope, Optparse) are using them. Cakefiles can use <code>optparse.coffee</code> to define options for tasks. <code>--run</code> is now the default flag for the <code>coffee</code> command, use <code>--compile</code> to save JavaScripts. Bugfix for an ambiguity between RegExp literals and chained divisions.</p>
-<div class="anchor" id="0.5.2"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.5.1...0.5.2">0.5.2</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-02-25">February 25, 2010</time></span>
-</h2><p>Added a compressed version of the compiler for inclusion in web pages as
+
+        </section>
+        <section id="0.9.4">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.9.3...0.9.4">0.9.4</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-09-21">2010-09-21</time></span>
+</h3><p>CoffeeScript now uses appropriately-named temporary variables, and recycles their references after use. Added <code>require.extensions</code> support for <strong>Node.js 0.3</strong>. Loading CoffeeScript in the browser now adds just a single <code>CoffeeScript</code> object to global scope. Fixes for implicit object and block comment edge cases.</p>
+
+        </section>
+        <section id="0.9.3">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.9.2...0.9.3">0.9.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-09-16">2010-09-16</time></span>
+</h3><p>CoffeeScript <code>switch</code> statements now compile into JS <code>switch</code> statements — they previously compiled into <code>if/else</code> chains for JavaScript 1.3 compatibility. Soaking a function invocation is now supported. Users of the RubyMine editor should now be able to use <code>--watch</code> mode.</p>
+
+        </section>
+        <section id="0.9.2">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.9.1...0.9.2">0.9.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-08-23">2010-08-23</time></span>
+</h3><p>Specifying the start and end of a range literal is now optional, eg. <code>array[3..]</code>. You can now say <code>a not instanceof b</code>. Fixed important bugs with nested significant and non-significant indentation (Issue #637). Added a <code>--require</code> flag that allows you to hook into the <code>coffee</code> command. Added a custom <code>jsl.conf</code> file for our preferred JavaScriptLint setup. Sped up Jison grammar compilation time by flattening rules for operations. Block comments can now be used with JavaScript-minifier-friendly syntax. Added JavaScript’s compound assignment bitwise operators. Bugfixes to implicit object literals with leading number and string keys, as the subject of implicit calls, and as part of compound assignment.</p>
+
+        </section>
+        <section id="0.9.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.9.0...0.9.1">0.9.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-08-11">2010-08-11</time></span>
+</h3><p>Bugfix release for <strong>0.9.1</strong>. Greatly improves the handling of mixed implicit objects, implicit function calls, and implicit indentation. String and regex interpolation is now strictly <code>#{ … }</code> (Ruby style). The compiler now takes a <code>--require</code> flag, which specifies scripts to run before compilation.</p>
+
+        </section>
+        <section id="0.9.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.7.2...0.9.0">0.9.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-08-04">2010-08-04</time></span>
+</h3><p>The CoffeeScript <strong>0.9</strong> series is considered to be a release candidate for <strong>1.0</strong>; let’s give her a shakedown cruise. <strong>0.9.0</strong> introduces a massive backwards-incompatible change: Assignment now uses <code>=</code>, and object literals use <code>:</code>, as in JavaScript. This allows us to have implicit object literals, and YAML-style object definitions. Half assignments are removed, in favor of <code>+=</code>, <code>or=</code>, and friends. Interpolation now uses a hash mark <code>#</code> instead of the dollar sign <code>$</code> — because dollar signs may be part of a valid JS identifier. Downwards range comprehensions are now safe again, and are optimized to straight for loops when created with integer endpoints. A fast, unguarded form of object comprehension was added: <code>for all key, value of object</code>. Mentioning the <code>super</code> keyword with no arguments now forwards all arguments passed to the function, as in Ruby. If you extend class <code>B</code> from parent class <code>A</code>, if <code>A</code> has an <code>extended</code> method defined, it will be called, passing in <code>B</code> — this enables static inheritance, among other things. Cleaner output for functions bound with the fat arrow. <code>@variables</code> can now be used in parameter lists, with the parameter being automatically set as a property on the object — useful in constructors and setter functions. Constructor functions can now take splats.</p>
+
+        </section>
+        <section id="0.7.2">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.7.1...0.7.2">0.7.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-07-12">2010-07-12</time></span>
+</h3><p>Quick bugfix (right after 0.7.1) for a problem that prevented <code>coffee</code> command-line options from being parsed in some circumstances.</p>
+
+        </section>
+        <section id="0.7.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.7.0...0.7.1">0.7.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-07-11">2010-07-11</time></span>
+</h3><p>Block-style comments are now passed through and printed as JavaScript block comments – making them useful for licenses and copyright headers. Better support for running coffee scripts standalone via hashbangs. Improved syntax errors for tokens that are not in the grammar.</p>
+
+        </section>
+        <section id="0.7.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.6.2...0.7.0">0.7.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-06-28">2010-06-28</time></span>
+</h3><p>Official CoffeeScript variable style is now camelCase, as in JavaScript. Reserved words are now allowed as object keys, and will be quoted for you. Range comprehensions now generate cleaner code, but you have to specify <code>by -1</code> if you’d like to iterate downward. Reporting of syntax errors is greatly improved from the previous release. Running <code>coffee</code> with no arguments now launches the REPL, with Readline support. The <code>&lt;-</code> bind operator has been removed from CoffeeScript. The <code>loop</code> keyword was added, which is equivalent to a <code>while true</code> loop. Comprehensions that contain closures will now close over their variables, like the semantics of a <code>forEach</code>. You can now use bound function in class definitions (bound to the instance). For consistency, <code>a in b</code> is now an array presence check, and <code>a of b</code> is an object-key check. Comments are no longer passed through to the generated JavaScript.</p>
+
+        </section>
+        <section id="0.6.2">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.6.1...0.6.2">0.6.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-05-15">2010-05-15</time></span>
+</h3><p>The <code>coffee</code> command will now preserve directory structure when compiling a directory full of scripts. Fixed two omissions that were preventing the CoffeeScript compiler from running live within Internet Explorer. There’s now a syntax for block comments, similar in spirit to CoffeeScript’s heredocs. ECMA Harmony DRY-style pattern matching is now supported, where the name of the property is the same as the name of the value: <code>{name, length}: func</code>. Pattern matching is now allowed within comprehension variables. <code>unless</code> is now allowed in block form. <code>until</code> loops were added, as the inverse of <code>while</code> loops. <code>switch</code> statements are now allowed without switch object clauses. Compatible with Node.js <strong>v0.1.95</strong>.</p>
+
+        </section>
+        <section id="0.6.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.6.0...0.6.1">0.6.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-04-12">2010-04-12</time></span>
+</h3><p>Upgraded CoffeeScript for compatibility with the new Node.js <strong>v0.1.90</strong> series.</p>
+
+        </section>
+        <section id="0.6.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.5.6...0.6.0">0.6.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-04-03">2010-04-03</time></span>
+</h3><p>Trailing commas are now allowed, a-la Python. Static properties may be assigned directly within class definitions, using <code>@property</code> notation.</p>
+
+        </section>
+        <section id="0.5.6">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.5.5...0.5.6">0.5.6</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-03-23">2010-03-23</time></span>
+</h3><p>Interpolation can now be used within regular expressions and heredocs, as well as strings. Added the <code>&lt;-</code> bind operator. Allowing assignment to half-expressions instead of special <code>||=</code>-style operators. The arguments object is no longer automatically converted into an array. After requiring <code>coffeescript</code>, Node.js can now directly load <code>.coffee</code> files, thanks to <strong>registerExtension</strong>. Multiple splats can now be used in function calls, arrays, and pattern matching.</p>
+
+        </section>
+        <section id="0.5.5">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.5.4...0.5.5">0.5.5</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-03-08">2010-03-08</time></span>
+</h3><p>String interpolation, contributed by <a href="https://github.com/StanAngeloff">Stan Angeloff</a>. Since <code>--run</code> has been the default since <strong>0.5.3</strong>, updating <code>--stdio</code> and <code>--eval</code> to run by default, pass <code>--compile</code> as well if you’d like to print the result.</p>
+
+        </section>
+        <section id="0.5.4">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.5.3...0.5.4">0.5.4</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-03-03">2010-03-03</time></span>
+</h3><p>Bugfix that corrects the Node.js global constants <code>__filename</code> and <code>__dirname</code>. Tweaks for more flexible parsing of nested function literals and improperly-indented comments. Updates for the latest Node.js API.</p>
+
+        </section>
+        <section id="0.5.3">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.5.2...0.5.3">0.5.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-02-27">2010-02-27</time></span>
+</h3><p>CoffeeScript now has a syntax for defining classes. Many of the core components (Nodes, Lexer, Rewriter, Scope, Optparse) are using them. Cakefiles can use <code>optparse.coffee</code> to define options for tasks. <code>--run</code> is now the default flag for the <code>coffee</code> command, use <code>--compile</code> to save JavaScripts. Bugfix for an ambiguity between RegExp literals and chained divisions.</p>
+
+        </section>
+        <section id="0.5.2">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.5.1...0.5.2">0.5.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-02-25">2010-02-25</time></span>
+</h3><p>Added a compressed version of the compiler for inclusion in web pages as
 <code>/v2/browser-compiler/coffeescript.js</code>. It’ll automatically run any script tags with type <code>text/coffeescript</code> for you. Added a <code>--stdio</code> option to the <code>coffee</code> command, for piped-in compiles.</p>
-<div class="anchor" id="0.5.1"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.5.0...0.5.1">0.5.1</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-02-24">February 24, 2010</time></span>
-</h2><p>Improvements to null soaking with the existential operator, including soaks on indexed properties. Added conditions to <code>while</code> loops, so you can use them as filters with <code>when</code>, in the same manner as comprehensions.</p>
-<div class="anchor" id="0.5.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.3.2...0.5.0">0.5.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-02-21">February 21, 2010</time></span>
-</h2><p>CoffeeScript 0.5.0 is a major release, While there are no language changes, the Ruby compiler has been removed in favor of a self-hosting compiler written in pure CoffeeScript.</p>
-<div class="anchor" id="0.3.2"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.3.0...0.3.2">0.3.2</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-02-08">February 8, 2010</time></span>
-</h2><p><code>@property</code> is now a shorthand for <code>this.property</code>.
+
+        </section>
+        <section id="0.5.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.5.0...0.5.1">0.5.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-02-24">2010-02-24</time></span>
+</h3><p>Improvements to null soaking with the existential operator, including soaks on indexed properties. Added conditions to <code>while</code> loops, so you can use them as filters with <code>when</code>, in the same manner as comprehensions.</p>
+
+        </section>
+        <section id="0.5.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.3.2...0.5.0">0.5.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-02-21">2010-02-21</time></span>
+</h3><p>CoffeeScript 0.5.0 is a major release, While there are no language changes, the Ruby compiler has been removed in favor of a self-hosting compiler written in pure CoffeeScript.</p>
+
+        </section>
+        <section id="0.3.2">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.3.0...0.3.2">0.3.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-02-08">2010-02-08</time></span>
+</h3><p><code>@property</code> is now a shorthand for <code>this.property</code>.
 Switched the default JavaScript engine from Narwhal to Node.js. Pass the <code>--narwhal</code> flag if you’d like to continue using it.</p>
-<div class="anchor" id="0.3.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.2.6...0.3.0">0.3.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-01-26">January 26, 2010</time></span>
-</h2><p>CoffeeScript 0.3 includes major syntax changes:
+
+        </section>
+        <section id="0.3.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.2.6...0.3.0">0.3.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-01-26">2010-01-26</time></span>
+</h3><p>CoffeeScript 0.3 includes major syntax changes:
 The function symbol was changed to <code>-&gt;</code>, and the bound function symbol is now <code>=&gt;</code>.
 Parameter lists in function definitions must now be wrapped in parentheses.
 Added property soaking, with the <code>?.</code> operator.
 Made parentheses optional, when invoking functions with arguments.
 Removed the obsolete block literal syntax.</p>
-<div class="anchor" id="0.2.6"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.2.5...0.2.6">0.2.6</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-01-17">January 17, 2010</time></span>
-</h2><p>Added Python-style chained comparisons, the conditional existence operator <code>?=</code>, and some examples from <em>Beautiful Code</em>. Bugfixes relating to statement-to-expression conversion, arguments-to-array conversion, and the TextMate syntax highlighter.</p>
-<div class="anchor" id="0.2.5"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.2.4...0.2.5">0.2.5</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-01-13">January 13, 2010</time></span>
-</h2><p>The conditions in switch statements can now take multiple values at once — If any of them are true, the case will run. Added the long arrow <code>==&gt;</code>, which defines and immediately binds a function to <code>this</code>. While loops can now be used as expressions, in the same way that comprehensions can. Splats can be used within pattern matches to soak up the rest of an array.</p>
-<div class="anchor" id="0.2.4"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.2.3...0.2.4">0.2.4</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-01-12">January 12, 2010</time></span>
-</h2><p>Added ECMAScript Harmony style destructuring assignment, for dealing with extracting values from nested arrays and objects. Added indentation-sensitive heredocs for nicely formatted strings or chunks of code.</p>
-<div class="anchor" id="0.2.3"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.2.2...0.2.3">0.2.3</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-01-11">January 11, 2010</time></span>
-</h2><p>Axed the unsatisfactory <code>ino</code> keyword, replacing it with <code>of</code> for object comprehensions. They now look like: <code>for prop, value of object</code>.</p>
-<div class="anchor" id="0.2.2"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.2.1...0.2.2">0.2.2</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-01-10">January 10, 2010</time></span>
-</h2><p>When performing a comprehension over an object, use <code>ino</code>, instead of <code>in</code>, which helps us generate smaller, more efficient code at compile time.
+
+        </section>
+        <section id="0.2.6">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.2.5...0.2.6">0.2.6</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-01-17">2010-01-17</time></span>
+</h3><p>Added Python-style chained comparisons, the conditional existence operator <code>?=</code>, and some examples from <em>Beautiful Code</em>. Bugfixes relating to statement-to-expression conversion, arguments-to-array conversion, and the TextMate syntax highlighter.</p>
+
+        </section>
+        <section id="0.2.5">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.2.4...0.2.5">0.2.5</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-01-13">2010-01-13</time></span>
+</h3><p>The conditions in switch statements can now take multiple values at once — If any of them are true, the case will run. Added the long arrow <code>==&gt;</code>, which defines and immediately binds a function to <code>this</code>. While loops can now be used as expressions, in the same way that comprehensions can. Splats can be used within pattern matches to soak up the rest of an array.</p>
+
+        </section>
+        <section id="0.2.4">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.2.3...0.2.4">0.2.4</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-01-12">2010-01-12</time></span>
+</h3><p>Added ECMAScript Harmony style destructuring assignment, for dealing with extracting values from nested arrays and objects. Added indentation-sensitive heredocs for nicely formatted strings or chunks of code.</p>
+
+        </section>
+        <section id="0.2.3">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.2.2...0.2.3">0.2.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-01-11">2010-01-11</time></span>
+</h3><p>Axed the unsatisfactory <code>ino</code> keyword, replacing it with <code>of</code> for object comprehensions. They now look like: <code>for prop, value of object</code>.</p>
+
+        </section>
+        <section id="0.2.2">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.2.1...0.2.2">0.2.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-01-10">2010-01-10</time></span>
+</h3><p>When performing a comprehension over an object, use <code>ino</code>, instead of <code>in</code>, which helps us generate smaller, more efficient code at compile time.
 Added <code>::</code> as a shorthand for saying <code>.prototype.</code>
 The “splat” symbol has been changed from a prefix asterisk <code>*</code>, to a postfix ellipsis <code>...</code>
 Added JavaScript’s <code>in</code> operator, empty <code>return</code> statements, and empty <code>while</code> loops.
 Constructor functions that start with capital letters now include a safety check to make sure that the new instance of the object is returned.
 The <code>extends</code> keyword now functions identically to <code>goog.inherits</code> in Google’s Closure Library.</p>
-<div class="anchor" id="0.2.1"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.2.0...0.2.1">0.2.1</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-01-05">January 5, 2010</time></span>
-</h2><p>Arguments objects are now converted into real arrays when referenced.</p>
-<div class="anchor" id="0.2.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.1.6...0.2.0">0.2.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2010-01-05">January 5, 2010</time></span>
-</h2><p>Major release. Significant whitespace. Better statement-to-expression conversion. Splats. Splice literals. Object comprehensions. Blocks. The existential operator. Many thanks to all the folks who posted issues, with special thanks to <a href="https://github.com/liamoc">Liam O’Connor-Davis</a> for whitespace and expression help.</p>
-<div class="anchor" id="0.1.6"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.1.5...0.1.6">0.1.6</a>
-  <span class="timestamp"> &mdash; <time datetime="2009-12-27">December 27, 2009</time></span>
-</h2><p>Bugfix for running <code>coffee --interactive</code> and <code>--run</code> from outside of the CoffeeScript directory. Bugfix for nested function/if-statements.</p>
-<div class="anchor" id="0.1.5"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.1.4...0.1.5">0.1.5</a>
-  <span class="timestamp"> &mdash; <time datetime="2009-12-26">December 26, 2009</time></span>
-</h2><p>Array slice literals and array comprehensions can now both take Ruby-style ranges to specify the start and end. JavaScript variable declaration is now pushed up to the top of the scope, making all assignment statements into expressions. You can use <code>\</code> to escape newlines. The <code>coffeescript</code> command is now called <code>coffee</code>.</p>
-<div class="anchor" id="0.1.4"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.1.3...0.1.4">0.1.4</a>
-  <span class="timestamp"> &mdash; <time datetime="2009-12-25">December 25, 2009</time></span>
-</h2><p>The official CoffeeScript extension is now <code>.coffee</code> instead of <code>.cs</code>, which properly belongs to <a href="https://en.wikipedia.org/wiki/C_Sharp_(programming_language)">C#</a>. Due to popular demand, you can now also use <code>=</code> to assign. Unlike JavaScript, <code>=</code> can also be used within object literals, interchangeably with <code>:</code>. Made a grammatical fix for chained function calls like <code>func(1)(2)(3)(4)</code>. Inheritance and super no longer use <code>__proto__</code>, so they should be IE-compatible now.</p>
-<div class="anchor" id="0.1.3"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.1.2...0.1.3">0.1.3</a>
-  <span class="timestamp"> &mdash; <time datetime="2009-12-25">December 25, 2009</time></span>
-</h2><p>The <code>coffee</code> command now includes <code>--interactive</code>, which launches an interactive CoffeeScript session, and <code>--run</code>, which directly compiles and executes a script. Both options depend on a working installation of Narwhal. The <code>aint</code> keyword has been replaced by <code>isnt</code>, which goes together a little smoother with <code>is</code>. Quoted strings are now allowed as identifiers within object literals: eg. <code>{&quot;5+5&quot;: 10}</code>. All assignment operators now use a colon: <code>+:</code>, <code>-:</code>, <code>*:</code>, etc.</p>
-<div class="anchor" id="0.1.2"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.1.1...0.1.2">0.1.2</a>
-  <span class="timestamp"> &mdash; <time datetime="2009-12-24">December 24, 2009</time></span>
-</h2><p>Fixed a bug with calling <code>super()</code> through more than one level of inheritance, with the re-addition of the <code>extends</code> keyword. Added experimental <a href="http://narwhaljs.org/">Narwhal</a> support (as a Tusk package), contributed by <a href="http://blog.tlrobinson.net/">Tom Robinson</a>, including <strong>bin/cs</strong> as a CoffeeScript REPL and interpreter. New <code>--no-wrap</code> option to suppress the safety function wrapper.</p>
-<div class="anchor" id="0.1.1"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/0.1.0...0.1.1">0.1.1</a>
-  <span class="timestamp"> &mdash; <time datetime="2009-12-24">December 24, 2009</time></span>
-</h2><p>Added <code>instanceof</code> and <code>typeof</code> as operators.</p>
-<div class="anchor" id="0.1.0"></div>
-<h2 class="header">
-  <a href="https://github.com/jashkenas/coffeescript/compare/8e9d637985d2dc9b44922076ad54ffef7fa8e9c2...0.1.0">0.1.0</a>
-  <span class="timestamp"> &mdash; <time datetime="2009-12-24">December 24, 2009</time></span>
-</h2><p>Initial CoffeeScript release.</p>
 
+        </section>
+        <section id="0.2.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.2.0...0.2.1">0.2.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-01-05">2010-01-05</time></span>
+</h3><p>Arguments objects are now converted into real arrays when referenced.</p>
+
+        </section>
+        <section id="0.2.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.1.6...0.2.0">0.2.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2010-01-05">2010-01-05</time></span>
+</h3><p>Major release. Significant whitespace. Better statement-to-expression conversion. Splats. Splice literals. Object comprehensions. Blocks. The existential operator. Many thanks to all the folks who posted issues, with special thanks to <a href="https://github.com/liamoc">Liam O’Connor-Davis</a> for whitespace and expression help.</p>
+
+        </section>
+        <section id="0.1.6">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.1.5...0.1.6">0.1.6</a>
+  <span class="timestamp"> &mdash; <time datetime="2009-12-27">2009-12-27</time></span>
+</h3><p>Bugfix for running <code>coffee --interactive</code> and <code>--run</code> from outside of the CoffeeScript directory. Bugfix for nested function/if-statements.</p>
+
+        </section>
+        <section id="0.1.5">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.1.4...0.1.5">0.1.5</a>
+  <span class="timestamp"> &mdash; <time datetime="2009-12-26">2009-12-26</time></span>
+</h3><p>Array slice literals and array comprehensions can now both take Ruby-style ranges to specify the start and end. JavaScript variable declaration is now pushed up to the top of the scope, making all assignment statements into expressions. You can use <code>\</code> to escape newlines. The <code>coffeescript</code> command is now called <code>coffee</code>.</p>
+
+        </section>
+        <section id="0.1.4">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.1.3...0.1.4">0.1.4</a>
+  <span class="timestamp"> &mdash; <time datetime="2009-12-25">2009-12-25</time></span>
+</h3><p>The official CoffeeScript extension is now <code>.coffee</code> instead of <code>.cs</code>, which properly belongs to <a href="https://en.wikipedia.org/wiki/C_Sharp_(programming_language)">C#</a>. Due to popular demand, you can now also use <code>=</code> to assign. Unlike JavaScript, <code>=</code> can also be used within object literals, interchangeably with <code>:</code>. Made a grammatical fix for chained function calls like <code>func(1)(2)(3)(4)</code>. Inheritance and super no longer use <code>__proto__</code>, so they should be IE-compatible now.</p>
+
+        </section>
+        <section id="0.1.3">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.1.2...0.1.3">0.1.3</a>
+  <span class="timestamp"> &mdash; <time datetime="2009-12-25">2009-12-25</time></span>
+</h3><p>The <code>coffee</code> command now includes <code>--interactive</code>, which launches an interactive CoffeeScript session, and <code>--run</code>, which directly compiles and executes a script. Both options depend on a working installation of Narwhal. The <code>aint</code> keyword has been replaced by <code>isnt</code>, which goes together a little smoother with <code>is</code>. Quoted strings are now allowed as identifiers within object literals: eg. <code>{&quot;5+5&quot;: 10}</code>. All assignment operators now use a colon: <code>+:</code>, <code>-:</code>, <code>*:</code>, etc.</p>
+
+        </section>
+        <section id="0.1.2">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.1.1...0.1.2">0.1.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2009-12-24">2009-12-24</time></span>
+</h3><p>Fixed a bug with calling <code>super()</code> through more than one level of inheritance, with the re-addition of the <code>extends</code> keyword. Added experimental <a href="http://narwhaljs.org/">Narwhal</a> support (as a Tusk package), contributed by <a href="http://blog.tlrobinson.net/">Tom Robinson</a>, including <strong>bin/cs</strong> as a CoffeeScript REPL and interpreter. New <code>--no-wrap</code> option to suppress the safety function wrapper.</p>
+
+        </section>
+        <section id="0.1.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.1.0...0.1.1">0.1.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2009-12-24">2009-12-24</time></span>
+</h3><p>Added <code>instanceof</code> and <code>typeof</code> as operators.</p>
+
+        </section>
+        <section id="0.1.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/8e9d637985d2dc9b44922076ad54ffef7fa8e9c2...0.1.0">0.1.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2009-12-24">2009-12-24</time></span>
+</h3><p>Initial CoffeeScript release.</p>
+
+        </section>
       </section>
     </main>
   </div>
@@ -6298,7 +6387,7 @@ The <code>extends</code> keyword now functions identically to <code>goog.inherit
 
 <script src="browser-compiler/coffeescript.js"></script>
 <script>
-(function(){window.location.origin||(window.location.origin=window.location.protocol+'//'+window.location.hostname),window.GA_TRACKING_ID='UA-106156830-1',null==window.dataLayer&&(window.dataLayer=[]),window.gtag=function(){window.dataLayer.push(arguments)},window.gtag('js',new Date),window.gtag('config',window.GA_TRACKING_ID),$(document).ready(function(){var clearHash,closeTry,editors,initializeEditor,initializeScrollspyFromHash,initializeTryEditors,lastCompilationElapsedTime,previousHash,replaceState,textareas,toggleSidebar,toggleTry;if(toggleSidebar=function(){return $('.navbar-toggler, .sidebar').toggleClass('show')},$('[data-toggle="offcanvas"]').click(toggleSidebar),$('[data-action="sidebar-nav"]').click(function(event){return $('.navbar-toggler').is(':visible')&&(event.preventDefault(),toggleSidebar(),setTimeout(function(){return window.location=event.target.href},260)),gtag('event','sidebar_navigate',{event_category:'navigation',event_label:event.target.href.replace(window.location.origin,'')})}),$('.main').scrollspy({target:'#contents',offset:Math.round($('main').css('padding-top').replace('px',''))}),initializeScrollspyFromHash=function(hash){return $('#contents a.active[href!=\''+hash+'\']').removeClass('show')},$('.main').on('activate.bs.scrollspy',function(event,target){var $target;if($('#contents a.active[href!=\''+target.relatedTarget+'\']').removeClass('show'),$target=$('#contents a[href=\''+target.relatedTarget+'\']'),$target.prop('href')!==window.location.origin+'/#try')return replaceState($target.prop('href')),gtag('config',GA_TRACKING_ID,{page_path:$target.prop('href').replace(window.location.origin,'')})}),textareas=[],editors=[],lastCompilationElapsedTime=200,$('textarea').each(function(index){return textareas[index]=this,$(this).data('index',index)}),initializeEditor=function($textarea){var editor,index,mode,pending;if(index=$textarea.data('index'),mode=$textarea.hasClass('javascript-output')?'javascript':'coffeescript',editors[index]=editor=CodeMirror.fromTextArea($textarea[0],{mode:mode,theme:'twilight',indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:'contenteditable',readOnly:'coffeescript'!==mode,viewportMargin:2e308}),'coffeescript'===mode)return pending=null,editor.on('change',function(){return clearTimeout(pending),pending=setTimeout(function(){var coffee,exception,lastCompilationStartTime,link,output;lastCompilationStartTime=Date.now();try{if(coffee=editor.getValue(),0===index&&$('#try').hasClass('show')){$('#try').hasClass('show')&&(link='try:'+encodeURIComponent(coffee),replaceState(window.location.href.split('#')[0]+'#'+link));try{null!=window.localStorage&&window.localStorage.setItem('tryCoffeeScriptCode',coffee)}catch(error){exception=error}}output=CoffeeScript.compile(coffee,{bare:!0}),lastCompilationElapsedTime=Math.max(200,Date.now()-lastCompilationStartTime)}catch(error){exception=error,output=''+exception}return editors[index+1].setValue(output),gtag('event','edit_code',{event_category:'engagement',event_label:$textarea.closest('[data-example]').data('example')})},lastCompilationElapsedTime)}),editor.addKeyMap({Tab:function Tab(cm){return cm.somethingSelected()?cm.indentSelection('add'):/^\t/m.test(cm.getValue())?cm.execCommand('insertTab'):cm.execCommand('insertSoftTab')},"Shift-Tab":function ShiftTab(cm){return cm.indentSelection('subtract')},Enter:function Enter(cm){return cm.options.indentWithTabs=/^\t/m.test(cm.getValue()),cm.execCommand('newlineAndIndent')}})},$('.placeholder-code').one('mouseover',function(){var $siblingColumn,$textarea;return $textarea=$(this).prev('textarea'),$(this).remove(),initializeEditor($textarea),$siblingColumn=$($textarea.parent().siblings()[0]),$siblingColumn.children('.placeholder-code').remove(),initializeEditor($($siblingColumn.children('textarea')[0]))}),initializeTryEditors=function(){return initializeEditor($('#try-coffeescript-coffee')),initializeEditor($('#try-coffeescript-js'))},$('[data-action="run-code-example"]').click(function(){var index,js,run;return run=$(this).data('run'),index=$('#'+$(this).data('example')+'-js').data('index'),js=null==editors[index]?$(textareas[index]).val():editors[index].getValue(),!0!==run&&(js=js+'\nalert('+unescape(run)+');'),window.eval(js),gtag('event','run_code',{event_category:'engagement',event_label:$(this).closest('[data-example]').data('example')})}),previousHash=null,toggleTry=function(checkLocalStorage){var coffee,exception;if($('#try, #try-link').toggleClass('show'),!$('#try').hasClass('show'))return previousHash?replaceState(previousHash):clearHash();if(window.location.hash&&(previousHash=window.location.hash),0===$('#try .CodeMirror').length&&initializeTryEditors(),checkLocalStorage&&null!=window.localStorage)try{return coffee=window.localStorage.getItem('tryCoffeeScriptCode'),null==coffee?replaceState('#try'):editors[0].setValue(coffee)}catch(error){return exception=error,replaceState('#try')}else return replaceState('#try')},closeTry=function(){return $('#try, #try-link').removeClass('show'),previousHash?replaceState(previousHash):clearHash()},$('[data-toggle="try"]').click(function(event){return event.preventDefault(),toggleTry(!0)}),$('[data-close="try"]').click(closeTry),$('[data-action="scroll-to-top"]').click(function(){if(!$('#try').hasClass('show'))return $('.main')[0].scrollTop=0,setTimeout(clearHash,10)}),clearHash=function(){return window.history.replaceState({},document.title,window.location.pathname)},replaceState=function(newURL){return 0===(null==newURL?void 0:newURL.indexOf('#'))&&(newURL=''+window.location.pathname+newURL),window.history.replaceState({},document.title,newURL||'')},$(window).on('hashchange',function(){if(''===window.location.hash)return clearHash()}),null!=window.location.hash){if('#try'===window.location.hash)return toggleTry(!0);if(0===window.location.hash.indexOf('#try'))return 0===$('#try .CodeMirror').length&&initializeTryEditors(),editors[0].setValue(decodeURIComponent(window.location.hash.slice(5))),toggleTry(!1);if(''===window.location.hash)return clearHash();if(initializeScrollspyFromHash(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,'')).scrollIntoView()}})}).call(this);
+(function(){window.location.origin||(window.location.origin=window.location.protocol+'//'+window.location.hostname),window.GA_TRACKING_ID='UA-106156830-1',null==window.dataLayer&&(window.dataLayer=[]),window.gtag=function(){window.dataLayer.push(arguments)},window.gtag('js',new Date),window.gtag('config',window.GA_TRACKING_ID),$(document).ready(function(){var clearHash,closeTry,editors,initializeEditor,initializeScrollspyFromHash,initializeTryEditors,lastCompilationElapsedTime,previousHash,replaceState,textareas,toggleSidebar,toggleTry;if($('time').each(function(index,el){var date,formattedDate;return date=el.dateTime||$(el).text(),formattedDate=new Date(date).toLocaleDateString(void 0,{year:'numeric',month:'long',day:'numeric'}),$(el).text(formattedDate.toString())}),toggleSidebar=function(){return $('.navbar-toggler, .sidebar').toggleClass('show')},$('[data-toggle="offcanvas"]').click(toggleSidebar),$('[data-action="sidebar-nav"]').click(function(event){return $('.navbar-toggler').is(':visible')&&(event.preventDefault(),toggleSidebar(),setTimeout(function(){return window.location=event.target.href},260)),gtag('event','sidebar_navigate',{event_category:'navigation',event_label:event.target.href.replace(window.location.origin,'')})}),$('.main').scrollspy({target:'#contents',offset:Math.round($('main').css('padding-top').replace('px',''))}),initializeScrollspyFromHash=function(hash){return $('#contents a.active[href!=\''+hash+'\']').removeClass('show')},$('.main').on('activate.bs.scrollspy',function(event,target){var $target;if($('#contents a.active[href!=\''+target.relatedTarget+'\']').removeClass('show'),$target=$('#contents a[href=\''+target.relatedTarget+'\']'),$target.prop('href')!==window.location.origin+'/#try')return replaceState($target.prop('href')),gtag('config',GA_TRACKING_ID,{page_path:$target.prop('href').replace(window.location.origin,'')})}),textareas=[],editors=[],lastCompilationElapsedTime=200,$('textarea').each(function(index){return textareas[index]=this,$(this).data('index',index)}),initializeEditor=function($textarea){var editor,index,mode,pending;if(index=$textarea.data('index'),mode=$textarea.hasClass('javascript-output')?'javascript':'coffeescript',editors[index]=editor=CodeMirror.fromTextArea($textarea[0],{mode:mode,theme:'twilight',indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:'contenteditable',readOnly:'coffeescript'!==mode,viewportMargin:2e308}),'coffeescript'===mode)return pending=null,editor.on('change',function(){return clearTimeout(pending),pending=setTimeout(function(){var coffee,exception,lastCompilationStartTime,link,output;lastCompilationStartTime=Date.now();try{if(coffee=editor.getValue(),0===index&&$('#try').hasClass('show')){$('#try').hasClass('show')&&(link='try:'+encodeURIComponent(coffee),replaceState(window.location.href.split('#')[0]+'#'+link));try{null!=window.localStorage&&window.localStorage.setItem('tryCoffeeScriptCode',coffee)}catch(error){exception=error}}output=CoffeeScript.compile(coffee,{bare:!0}),lastCompilationElapsedTime=Math.max(200,Date.now()-lastCompilationStartTime)}catch(error){exception=error,output=''+exception}return editors[index+1].setValue(output),gtag('event','edit_code',{event_category:'engagement',event_label:$textarea.closest('[data-example]').data('example')})},lastCompilationElapsedTime)}),editor.addKeyMap({Tab:function Tab(cm){return cm.somethingSelected()?cm.indentSelection('add'):/^\t/m.test(cm.getValue())?cm.execCommand('insertTab'):cm.execCommand('insertSoftTab')},"Shift-Tab":function ShiftTab(cm){return cm.indentSelection('subtract')},Enter:function Enter(cm){return cm.options.indentWithTabs=/^\t/m.test(cm.getValue()),cm.execCommand('newlineAndIndent')}})},$('.placeholder-code').one('mouseover',function(){var $siblingColumn,$textarea;return $textarea=$(this).prev('textarea'),$(this).remove(),initializeEditor($textarea),$siblingColumn=$($textarea.parent().siblings()[0]),$siblingColumn.children('.placeholder-code').remove(),initializeEditor($($siblingColumn.children('textarea')[0]))}),initializeTryEditors=function(){return initializeEditor($('#try-coffeescript-coffee')),initializeEditor($('#try-coffeescript-js'))},$('[data-action="run-code-example"]').click(function(){var index,js,run;return run=$(this).data('run'),index=$('#'+$(this).data('example')+'-js').data('index'),js=null==editors[index]?$(textareas[index]).val():editors[index].getValue(),!0!==run&&(js=js+'\nalert('+unescape(run)+');'),window.eval(js),gtag('event','run_code',{event_category:'engagement',event_label:$(this).closest('[data-example]').data('example')})}),previousHash=null,toggleTry=function(checkLocalStorage){var coffee,exception;if($('#try, #try-link').toggleClass('show'),!$('#try').hasClass('show'))return previousHash?replaceState(previousHash):clearHash();if(window.location.hash&&(previousHash=window.location.hash),0===$('#try .CodeMirror').length&&initializeTryEditors(),checkLocalStorage&&null!=window.localStorage)try{return coffee=window.localStorage.getItem('tryCoffeeScriptCode'),null==coffee?replaceState('#try'):editors[0].setValue(coffee)}catch(error){return exception=error,replaceState('#try')}else return replaceState('#try')},closeTry=function(){return $('#try, #try-link').removeClass('show'),previousHash?replaceState(previousHash):clearHash()},$('[data-toggle="try"]').click(function(event){return event.preventDefault(),toggleTry(!0)}),$('[data-close="try"]').click(closeTry),$('[data-action="scroll-to-top"]').click(function(){if(!$('#try').hasClass('show'))return $('.main')[0].scrollTop=0,setTimeout(clearHash,10)}),clearHash=function(){return window.history.replaceState({},document.title,window.location.pathname)},replaceState=function(newURL){return 0===(null==newURL?void 0:newURL.indexOf('#'))&&(newURL=''+window.location.pathname+newURL),window.history.replaceState({},document.title,newURL||'')},$(window).on('hashchange',function(){if(''===window.location.hash)return clearHash()}),null!=window.location.hash){if('#try'===window.location.hash)return toggleTry(!0);if(0===window.location.hash.indexOf('#try'))return 0===$('#try .CodeMirror').length&&initializeTryEditors(),editors[0].setValue(decodeURIComponent(window.location.hash.slice(5))),toggleTry(!1);if(''===window.location.hash)return clearHash();if(initializeScrollspyFromHash(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,'')).scrollIntoView()}})}).call(this);
 </script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-106156830-1"></script>
 

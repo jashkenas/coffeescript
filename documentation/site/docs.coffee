@@ -14,6 +14,16 @@ window.gtag 'config', window.GA_TRACKING_ID
 
 # Initialize the CoffeeScript docs interactions
 $(document).ready ->
+  # Format dates for the user’s locale, e.g. 'December 24, 2009' or '24 décembre 2009'
+  $('time').each (index, el) ->
+    date = el.dateTime or $(el).text()
+    formattedDate = new Date(date).toLocaleDateString undefined, # undefined to use browser locale
+      year: 'numeric'
+      month: 'long'
+      day: 'numeric'
+    $(el).text formattedDate.toString()
+
+
   # Mobile navigation
   toggleSidebar = ->
     $('.navbar-toggler, .sidebar').toggleClass 'show'
