@@ -4,7 +4,7 @@
 <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
 <title>CoffeeScript</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="canonical" href="http://coffeescript.org" />
+<link rel="canonical" href="https://coffeescript.org" />
 
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
@@ -693,7 +693,7 @@ textarea {
       <section id="introduction">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.3.0">2.3.0</a></p>
+<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.3.1">2.3.1</a></p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash"><span class="comment"># Install locally for a project:</span>
 npm install --save-dev coffeescript
 
@@ -897,7 +897,7 @@ cubes = (function() {
 <p>Most modern JavaScript features that CoffeeScript supports can run natively in Node 7.6+, meaning that Node can run CoffeeScript’s output without any further processing required. Here are some notable exceptions:</p>
 <ul>
 <li><a href="#modules">Modules</a> and <a href="#jsx">JSX</a> always require transpilation.</li>
-<li><a href="http://coffeescript.org/#splats">Splats, a.k.a. object rest/spread syntax, for objects</a> are supported by Node 8.6+.</li>
+<li><a href="https://coffeescript.org/#splats">Splats, a.k.a. object rest/spread syntax, for objects</a> are supported by Node 8.6+.</li>
 <li>The <a href="https://github.com/tc39/proposal-regexp-dotall-flag">regular expression <code>s</code> (dotall) flag</a> is supported by Node 9+.</li>
 <li><a href="https://github.com/tc39/proposal-async-iteration">Async generator functions</a> are supported by Node 10+.</li>
 </ul>
@@ -4845,7 +4845,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
         <section id="annotated-source">
           <h2>Annotated Source</h2>
-<p>You can browse the CoffeeScript 2.3.0 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+<p>You can browse the CoffeeScript 2.3.1 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
 <li><a href="annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
@@ -5523,6 +5523,15 @@ x = <span class="number">2</span> + <span class="number">2</span>
       <section id="changelog">
         <h2>Changelog</h2>
 
+        <section id="2.3.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.3.0...2.3.1">2.3.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2018-05-21">2018-05-21</time></span>
+</h3><ul>
+<li>Returning a JSX tag that is adjacent to another JSX tag, as opposed to returning a root JSX tag or fragment, is invalid JSX syntax. Babel throws an error on this, and now the CoffeeScript compiler does too.</li>
+<li>Syntax cleanup: it is now possible for an implicit function call to take a body-less class as an argument, and <code>?::</code> now behaves identically to <code>::</code> with regard to implying a line continuation.</li>
+</ul>
+
+        </section>
         <section id="2.3.0">
           <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.2.4...2.3.0">2.3.0</a>
   <span class="timestamp"> &mdash; <time datetime="2018-04-29">2018-04-29</time></span>
