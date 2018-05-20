@@ -921,9 +921,9 @@ grammar =
     o 'Expression ^        Expression',         -> new Op $2, $1, $3
     o 'Expression |        Expression',         -> new Op $2, $1, $3
     o 'Expression &&       Expression',         -> new Op $2.toString(), $1, $3, undefined, originalOperator: $2.original
-    o 'Expression LEADING_&& Expression',       -> new Op $2.toString(), $1, $3, undefined, originalOperator: $2.original
+    o 'Expression LEADING_AND Expression',      -> new Op $2.toString(), $1, $3, undefined, originalOperator: $2.original
     o 'Expression ||       Expression',         -> new Op $2.toString(), $1, $3, undefined, originalOperator: $2.original
-    o 'Expression LEADING_|| Expression',       -> new Op $2.toString(), $1, $3, undefined, originalOperator: $2.original
+    o 'Expression LEADING_OR Expression',       -> new Op $2.toString(), $1, $3, undefined, originalOperator: $2.original
     o 'Expression BIN?     Expression',         -> new Op $2, $1, $3
     o 'Expression RELATION Expression',         -> new Op $2.toString(), $1, $3, undefined, invertOperator: $2.invert?.original ? $2.invert
 
@@ -968,8 +968,8 @@ operators = [
   ['left',      '&']
   ['left',      '^']
   ['left',      '|']
-  ['left',      '&&', 'LEADING_&&']
-  ['left',      '||', 'LEADING_||']
+  ['left',      '&&', 'LEADING_AND']
+  ['left',      '||', 'LEADING_OR']
   ['left',      'BIN?']
   ['nonassoc',  'INDENT', 'OUTDENT']
   ['right',     'YIELD']
