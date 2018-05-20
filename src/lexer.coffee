@@ -1394,7 +1394,13 @@ POSSIBLY_DIVISION   = /// ^ /=?\s ///
 # Other regexes.
 HERECOMMENT_ILLEGAL = /\*\//
 
+# When appearing at the beginning of a line, suppresses TERMINATOR and INDENT
+# tokens. So unless the line is outdented, the line's tokens will appear (in the
+# unrewritten token stream) to be a continuation of the previous line
 LINE_CONTINUER      = /// ^ \s* (?: , | \??\.(?![.\d]) | \??:: ) ///
+
+# When appearing at the beginning of an indented line, causes a TERMINATOR token
+# to be generated rather than an INDENT
 INDENT_SUPPRESSOR   = /// ^ \s* (?: and\s+(?!:)\S | or\s+(?!:)\S | && | \|\| ) ///
 
 STRING_INVALID_ESCAPE = ///
