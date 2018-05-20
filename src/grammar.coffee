@@ -824,7 +824,7 @@ grammar =
     o 'SimpleAssignable --',                    -> new Op '--', $1, null, true
     o 'SimpleAssignable ++',                    -> new Op '++', $1, null, true
 
-    # [The existential operator](http://coffeescript.org/#existential-operator).
+    # [The existential operator](https://coffeescript.org/#existential-operator).
     o 'Expression ?',                           -> new Existence $1
 
     o 'Expression +  Expression',               -> new Op '+' , $1, $3
