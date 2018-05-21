@@ -663,3 +663,23 @@ test "logical and/or should continue lines", ->
       c:
         1
     or 3
+
+  eq 3,
+    if yes
+    and yes
+      3
+
+  eq 3,
+    if yes
+     and yes
+      3
+
+  eq 3,
+    if yes
+      and yes
+      3
+
+  eq 3,
+    if yes
+       and yes
+      3
