@@ -353,6 +353,7 @@ grammar =
     o 'Parenthetical',                          -> new Value $1
     o 'Range',                                  -> new Value $1
     o 'Invocation',                             -> new Value $1
+    o 'DoIife',                                 -> new Value $1
     o 'This'
     o 'Super',                                  -> new Value $1
   ]
@@ -816,7 +817,6 @@ grammar =
   Operation: [
     o 'UNARY Expression',                       -> new Op $1 , $2
     o 'DO Expression',                          -> new Op $1 , $2
-    o 'DO_IIFE Code',                           -> new Op $1 , $2
     o 'UNARY_MATH Expression',                  -> new Op $1 , $2
     o '-     Expression',                      (-> new Op '-', $2), prec: 'UNARY_MATH'
     o '+     Expression',                      (-> new Op '+', $2), prec: 'UNARY_MATH'
@@ -856,6 +856,10 @@ grammar =
        INDENT Expression OUTDENT',              -> new Assign $1, $4, $2
     o 'SimpleAssignable COMPOUND_ASSIGN TERMINATOR
        Expression',                             -> new Assign $1, $4, $2
+  ]
+
+  DoIife: [
+    o 'DO_IIFE Code',                           -> new Op $1 , $2
   ]
 
 # Precedence
