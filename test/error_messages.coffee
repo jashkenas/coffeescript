@@ -1796,6 +1796,28 @@ test "#3199: error message for throw indented comprehension", ->
       ^
   '''
 
+test "#3199: error message for yield indented non-object", ->
+  assertErrorFormat '''
+    ->
+      yield
+        1
+  ''', '''
+    [stdin]:3:5: error: unexpected number
+        1
+        ^
+  '''
+
+test "#3199: error message for yield indented comprehension", ->
+  assertErrorFormat '''
+    ->
+      yield
+        x for x in [1, 2, 3]
+  ''', '''
+    [stdin]:3:5: error: unexpected identifier
+        x for x in [1, 2, 3]
+        ^
+  '''
+
 test "#3098: suppressed newline should be unsuppressed by semicolon", ->
   assertErrorFormat '''
     a = ; 5

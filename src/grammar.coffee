@@ -138,6 +138,7 @@ grammar =
   Yield: [
     o 'YIELD',                                  -> new Op $1, new Value new Literal ''
     o 'YIELD Expression',                       -> new Op $1, $2
+    o 'YIELD INDENT Object OUTDENT',            -> new Op $1, $3
     o 'YIELD FROM Expression',                  -> new Op $1.concat($2), $3
   ]
 
