@@ -192,7 +192,7 @@ module.exports =
           or
             npm install --global babel-core
           And you must save options to configure Babel in one of the places it looks to find its options.
-          See http://coffeescript.org/#transpilation
+          See https://coffeescript.org/#transpilation
         '''
         process.exit 1
       transpile.options =
