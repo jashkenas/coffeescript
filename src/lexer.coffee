@@ -287,6 +287,13 @@ exports.Lexer = class Lexer
     {tokens, index: end} = @matchWithInterpolations regex, quote
     $ = tokens.length - 1
 
+    nlRegEx = """(\n|\r|\u2028|\u2029)"""
+    str = @chunk[quote.length..end-4].replace ///^#{nlRegEx}///, ""
+    countNewlines = (str.match(///#{nlRegEx}///mg) || []).length
+    countNewlines -= 1 if str.match ///#{nlRegEx}$///
+    newlines = no
+    newlines = yes for token in tokens when token[0] is 'TOKENS'
+
     delimiter = quote.charAt(0)
     if heredoc
       # Find the smallest indentation. It will be removed from all lines later.
@@ -296,14 +303,14 @@ exports.Lexer = class Lexer
         attempt = match[1]
         indent = attempt if indent is null or 0 < attempt.length < indent.length
       indentRegex = /// \n#{indent} ///g if indent
-      @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
+      @mergeInterpolationTokens tokens, {delimiter, heredoc, newlines}, (value, i) =>
         value = @formatString value, delimiter: quote
         value = value.replace indentRegex, '\n' if indentRegex
         value = value.replace LEADING_BLANK_LINE,  '' if i is 0
         value = value.replace TRAILING_BLANK_LINE, '' if i is $
         value
     else
-      @mergeInterpolationTokens tokens, {delimiter}, (value, i) =>
+      @mergeInterpolationTokens tokens, {delimiter, heredoc: no, newlines: no}, (value, i) =>
         value = @formatString value, delimiter: quote
         # Remove indentation from multiline single-quoted strings.
         value = value.replace SIMPLE_STRING_OMIT, (match, offset) ->
@@ -1052,12 +1059,16 @@ exports.Lexer = class Lexer
   # Constructs a string or regex by escaping certain characters.
   makeDelimitedLiteral: (body, options = {}) ->
     body = '(?:)' if body is '' and options.delimiter is '/'
+    heredoc = options?.heredoc or no
+    newLines = options?.newlines or no
+    # Newlines are not escaped in block strings with interpolations.
+    strictNewline = if heredoc and newLines then "" else "?"
     regex = ///
-        (\\\\)                               # Escaped backslash.
-      | (\\0(?=[1-7]))                       # Null character mistaken as octal escape.
-      | \\?(#{options.delimiter})            # (Possibly escaped) delimiter.
-      | \\?(?: (\n)|(\r)|(\u2028)|(\u2029) ) # (Possibly escaped) newlines.
-      | (\\.)                                # Other escapes.
+        (\\\\)                                              # Escaped backslash.
+      | (\\0(?=[1-7]))                                      # Null character mistaken as octal escape.
+      | \\?(#{options.delimiter})                           # (Possibly escaped) delimiter.
+      | \\#{strictNewline}(?: (\n)|(\r)|(\u2028)|(\u2029) ) # (Possibly escaped) newlines.
+      | (\\.)                                               # Other escapes.
     ///g
     body = body.replace regex, (match, backslash, nul, delimiter, lf, cr, ls, ps, other) -> switch
       # Ignore escaped backslashes.
