@@ -371,6 +371,7 @@ grammar =
     o ':: Property',                            -> [LOC(1)(new Access new PropertyName('prototype')), LOC(2)(new Access $2)]
     o '?:: Property',                           -> [LOC(1)(new Access new PropertyName('prototype'), 'soak'), LOC(2)(new Access $2)]
     o '::',                                     -> new Access new PropertyName 'prototype'
+    o '?::',                                    -> new Access new PropertyName('prototype'), 'soak'
     o 'Index'
   ]
 
@@ -823,7 +824,7 @@ grammar =
     o 'SimpleAssignable --',                    -> new Op '--', $1, null, true
     o 'SimpleAssignable ++',                    -> new Op '++', $1, null, true
 
-    # [The existential operator](http://coffeescript.org/#existential-operator).
+    # [The existential operator](https://coffeescript.org/#existential-operator).
     o 'Expression ?',                           -> new Existence $1
 
     o 'Expression +  Expression',               -> new Op '+' , $1, $3

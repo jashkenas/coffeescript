@@ -903,3 +903,24 @@ test "#4473: variable scope in chained calls", ->
 
   obj.foo({f} = {f: 1}).bar(-> f = 5)
   eq f, 5
+
+test "#5052: implicit call of class with no body", ->
+  doesNotThrow -> CoffeeScript.compile 'f class'
+  doesNotThrow -> CoffeeScript.compile 'f class A'
+  doesNotThrow -> CoffeeScript.compile 'f class A extends B'
+
+  f = (args...) -> args
+  a = 1
+
+  [klass, shouldBeA] = f class A, a
+  eq shouldBeA, a
+
+  [shouldBeA] = f a, class A
+  eq shouldBeA, a
+
+  [obj, klass, shouldBeA] =
+    f
+      b: 1
+      class A
+      a
+  eq shouldBeA, a

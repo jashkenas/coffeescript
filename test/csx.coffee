@@ -771,11 +771,11 @@ test 'JSX fragments: fragment with text nodes', ->
 
 test 'JSX fragments: fragment with component nodes', ->
   eqJS '''
-   Component = (props) =>
-     <Fragment>
-       <OtherComponent />
-       <OtherComponent />
-     </Fragment>
+    Component = (props) =>
+      <Fragment>
+        <OtherComponent />
+        <OtherComponent />
+      </Fragment>
   ''', '''
     var Component;
 
@@ -785,4 +785,56 @@ test 'JSX fragments: fragment with component nodes', ->
         <OtherComponent />
       </Fragment>;
     };
+  '''
+
+test '#5055: JSX expression indentation bug', ->
+  eqJS '''
+    <div>
+      {someCondition &&
+        <span />
+      }
+    </div>
+  ''', '''
+    <div>
+      {someCondition && <span />}
+    </div>;
+  '''
+
+  eqJS '''
+    <div>{someString +
+         "abc"
+      }
+    </div>
+  ''', '''
+    <div>{someString + "abc"}
+    </div>;
+  '''
+
+  eqJS '''
+    <div>
+      {a ?
+      <span />
+      }
+    </div>
+  ''', '''
+    <div>
+      {typeof a !== "undefined" && a !== null ? a : <span />}
+    </div>;
+  '''
+
+# JSX is like XML, in that there needs to be a root element; but
+# technically, adjacent top-level elements where only the last one
+# is returned (as opposed to a fragment or root element) is permissible
+# syntax. It’s almost certainly an error, but it’s valid, so need to leave it
+# to linters to catch. https://github.com/jashkenas/coffeescript/pull/5049
+test '“Adjacent” tags on separate lines should still compile', ->
+  eqJS '''
+    ->
+      <a />
+      <b />
+  ''', '''
+    (function() {
+      <a />;
+      return <b />;
+    });
   '''
