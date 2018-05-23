@@ -1277,7 +1277,7 @@ LINE_CONTINUER      = /// ^ \s* (?: , | \??\.(?![.\d]) | \??:: ) ///
 
 # When appearing at the beginning of an indented line, causes a TERMINATOR token
 # to be generated rather than an INDENT
-INDENT_SUPPRESSOR   = /// ^ \s* (?: and\s+(?!:)\S | or\s+(?!:)\S | && | \|\| ) ///
+INDENT_SUPPRESSOR   = /// ^ \s* (?: and\s+(?!:[^:])\S | or\s+(?!:[^:])\S | && | \|\| ) ///
 
 STRING_INVALID_ESCAPE = ///
   ( (?:^|[^\\]) (?:\\\\)* )        # Make sure the escape isn’t escaped.
