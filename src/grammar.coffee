@@ -818,8 +818,8 @@ grammar =
     o '-     Expression',                      (-> new Op '-', $2), prec: 'UNARY_MATH'
     o '+     Expression',                      (-> new Op '+', $2), prec: 'UNARY_MATH'
 
-    o 'AWAIT Expression',                       -> new Op $1 , $2
-    o 'AWAIT INDENT Object OUTDENT',            -> new Op $1 , $3
+    o 'AWAIT Expression',                       -> new Op $1, $2
+    o 'AWAIT INDENT Object OUTDENT',            -> new Op $1, $3
 
     o '-- SimpleAssignable',                    -> new Op '--', $2
     o '++ SimpleAssignable',                    -> new Op '++', $2

@@ -196,3 +196,11 @@ test "async methods in classes", ->
 
   eq await Child.static(), 1
   eq await new Child().method(), 2
+
+test "#3199: await multiline implicit object", ->
+  do ->
+    y =
+      if no then await
+        type: 'a'
+        msg: 'b'
+    eq undefined, y

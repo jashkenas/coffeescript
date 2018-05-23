@@ -433,13 +433,6 @@ test "#3199: throw multiline implicit object", ->
   {value, done} = y.next()
   ok value is 1 and done is yes
 
-  do ->
-    y =
-      if no then await
-        type: 'a'
-        msg: 'b'
-    eq undefined, y
-
 test "#4576: multiple row function chaining", ->
   ->
     eq @a, 3
