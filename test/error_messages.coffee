@@ -2002,3 +2002,13 @@ test "#4834: dynamic import requires explicit call parentheses", ->
     promise = import 'foo'
                           ^
   '''
+
+test 'leading logical followed by :: should parse as continuation', ->
+  assertErrorFormat '''
+    a
+      and ::b
+  ''','''
+    [stdin]:2:7: error: unexpected ::
+      and ::b
+          ^^
+  '''
