@@ -42,6 +42,7 @@
     "babel-core": "6.26.3",
     "babel-preset-env": "1.6.1",
     "babel-preset-minify": "0.4.0",
+    "cheerio": "^1.0.0-rc.2",
     "codemirror": "^5.37.0",
     "docco": "~0.8.0",
     "highlight.js": "~9.12.0",

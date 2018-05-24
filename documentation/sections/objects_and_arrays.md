@@ -1,4 +1,4 @@
-## Objects and Arrays
+### Objects and Arrays
 
 The CoffeeScript literals for objects and arrays look very similar to their JavaScript cousins. When each property is listed on its own line, the commas are optional. Objects may be created using indentation instead of explicit braces, similar to [YAML](http://yaml.org).
 

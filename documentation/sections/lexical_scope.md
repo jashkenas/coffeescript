@@ -1,4 +1,4 @@
-## Lexical Scoping and Variable Safety
+### Lexical Scoping and Variable Safety
 
 The CoffeeScript compiler takes care to make sure that all of your variables are properly declared within lexical scope — you never need to write `var` yourself.
 

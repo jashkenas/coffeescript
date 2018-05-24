@@ -1,4 +1,4 @@
-## Books
+### Books
 
 There are a number of excellent resources to help you get started with CoffeeScript, some of which are freely available online.
 

@@ -12,8 +12,98 @@ window.gtag 'js', new Date()
 window.gtag 'config', window.GA_TRACKING_ID
 
 
+window.docSearch =
+  initializeSearchIndex: ->
+    searchOptions =
+      keys: ['title', 'content']
+      includeScore: yes
+      shouldSort: yes
+      includeMatches: yes
+      threshold: 0.2
+      location: 0
+      distance: 1000
+      maxPatternLength: 32
+      minMatchCharLength: 4
+    @fuseBase = new Fuse window.searchCollection.data, searchOptions
+    @searchTree = window.searchCollection.tree
+    @searchResultTemplate = window.searchResultTemplate
+    @searchResultsListTemplate = window.searchResultsListTemplate
+    @resultContainer = $('#search-results')
+    @searchResultBox = $('#searchResultBox')
+
+  hideSearchResults: (clear = no) ->
+    @resultContainer.html("") if clear
+    @resultContainer.hide()
+    @searchResultBox.hide()
+
+  showSearchResults: (content = no) ->
+    @searchResultBox.show()
+    @resultContainer.show()
+    @resultContainer.html(content) if content
+
+  gotoResult: (element) ->
+    href = element.data 'href'
+    window.location.hash = "##{href}"
+    @hideSearchResults()
+
+  query: (value) ->
+    unless value.length >= 3
+      @hideSearchResults yes
+      return
+    markText = (text) ->
+      """<span class="cs-docsearch-suggestion--highlight">#{text}</span>"""
+    markTitle = (title, matches) ->
+      for m in matches
+        marked = markText title[m[0]...m[1]]
+        title = title[0...m[0]] + marked + title[m[1]...]
+      title
+    markContent = (content, matches) ->
+      mContent = []
+      for m in matches
+        marked = markText content[m[0]...m[1]]
+        start = if m[0] > 50 then m[0] - 50 else 0
+        end = m[1] + 50
+        mContent.push '&hellip;' + content[start...m[0]] + marked + content[m[1]...end] + '&hellip;'
+      mContent.join ' '
+
+    resultList = {}
+    results = []
+    parseResult = (result) =>
+      {item: {title, section, content, parent, dataLevel}, matches} = result
+      resultList[dataLevel] = {} unless resultList[dataLevel]
+      unless resultList[dataLevel][parent] and resultList[dataLevel][parent].results.length > 0
+        resultList[dataLevel][parent] =
+          title: @searchTree[parent].title
+          results: []
+      countMatches = 0
+      for match in matches
+        {key, indices} = match
+        if key is 'title' and indices.length > 0
+          title = markTitle title, indices
+          countMatches += indices.length
+        if key is 'content'
+          content = markContent content, indices
+          countMatches += indices.length
+      return if countMatches < 1
+      resultList[dataLevel][parent].results.push @searchResultsListTemplate {title, content, section, subsection: title}
+
+    searchResults = @fuseBase.search value
+    return if searchResults.length < 1
+    parseResult result for result in searchResults
+
+    for level in Object.keys(resultList).sort()
+      for key, list of resultList[level]
+        continue if list.results.length < 1
+        ctmpl = @searchResultTemplate
+          section: list.title
+          results: list.results.join ''
+        results.push ctmpl
+
+    @showSearchResults results.join ''
+
 # Initialize the CoffeeScript docs interactions
 $(document).ready ->
+  window.docSearch.initializeSearchIndex()
   # Format dates for the user’s locale, e.g. 'December 24, 2009' or '24 décembre 2009'
   $('time').each (index, el) ->
     date = el.dateTime or $(el).text()
@@ -22,7 +112,6 @@ $(document).ready ->
       month: 'long'
       day: 'numeric'
     $(el).text formattedDate.toString()
-
 
   # Mobile navigation
   toggleSidebar = ->
@@ -220,87 +309,7 @@ $(document).ready ->
         document.getElementById(window.location.hash.slice(1).replace(/try:.*/, '')).scrollIntoView()
 
 
-# This function is called from search-index.js, which is loaded asynchronously
-window.initializeSearch = ->
-  buildSearch = (catalog, keys) ->
-    searchOptions =
-      keys: keys
-      includeScore: yes
-      shouldSort: yes
-      includeMatches: yes
-      threshold: 0.2
-      location: 0
-      distance: 1000
-      maxPatternLength: 32
-      minMatchCharLength: 4
-    new Fuse window.searchCollections[catalog], searchOptions
-
-  window.fuseDocs = buildSearch 'docs', ['section', 'content']
-  window.fuseLogs = buildSearch 'changelogs', ['content']
-
-$(document).on 'keyup', '#cs-search-input-navbar', ->
-  resContainer = $('#search-results')
-  searchResultBox = $('#searchResultBox')
-  resContainer.hide().html ''
-  searchResultBox.hide()
-  return unless @value.length >= 3
-  markText = (text) ->
-    """<span class="cs-docsearch-suggestion--highlight">#{text}</span>"""
-  markTitle = (title, matches) ->
-    for m in matches
-      marked = markText title[m[0]...m[1]]
-      title = title[0...m[0]] + marked + title[m[1]...]
-    title
-  markContent = (content, matches) ->
-    mContent = []
-    for m in matches
-      marked = markText content[m[0]...m[1]]
-      start = if m[0] > 50 then m[0] - 50 else 0
-      end = m[1] + 50
-      mContent.push '&hellip;' + content[start...m[0]] + marked + content[m[1]...end] + '&hellip;'
-    mContent.join ' '
-
-  tmpl = window.searchResultTemplate
-  tmplList = window.searchResultsListTemplate
-  resultList = {}
-  results = []
-  parseResults = (docs) ->
-    for doc in docs
-      {item: {title, href, content, parent}, matches} = doc
-      resultList[parent] = [] unless resultList[parent] and resultList[parent].length > 0
-      countMatches = 0
-      for match in matches
-        {key, indices} = match
-        if key is 'section' and indices.length > 0
-          title = markTitle title, indices
-          countMatches += indices.length
-        if key is 'content'
-          content = markContent content, indices
-          countMatches += indices.length
-      continue if countMatches < 1
-      resultList[parent].push tmplList
-        title: title
-        subsection: title
-        content: content
-        href: href
-
-  parseResults window.fuseDocs.search @value
-  parseResults window.fuseLogs.search @value
-
-  for key, list of resultList
-    continue if list.length < 1
-    ctmpl = tmpl
-      section: key
-      results: list.join ''
-    results.push ctmpl
-
-  if results.length > 0
-    searchResultBox.show()
-    resContainer.show().html results.join ''
-
-$(document).on 'click', '.searchWrapper', ->
-  href = $(this).data 'href'
-  if href[0] is '#'
-    window.location.hash = href
-  else
-    window.location = href
+$(document).on 'keydown', (event) -> if event.which is 27 then window.docSearch.hideSearchResults()
+$(document).on 'keyup', '#cs-search-input-navbar', -> window.docSearch.query @value
+$(document).on 'focus', '#cs-search-input-navbar', -> window.docSearch.query @value
+$(document).on 'click', '.searchWrapper', -> window.docSearch.gotoResult $(this)

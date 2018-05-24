@@ -1,4 +1,4 @@
-## Modules
+### Modules
 
 ES2015 modules are supported in CoffeeScript, with very similar `import` and `export` syntax:
 

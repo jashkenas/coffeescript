@@ -1,4 +1,4 @@
-## Examples
+### Examples
 
 The [best list of open-source CoffeeScript examples](https://github.com/trending?l=coffeescript&since=monthly) can be found on GitHub. But just to throw out a few more:
 

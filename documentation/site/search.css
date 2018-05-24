@@ -21,9 +21,334 @@
   color: #eee;
   background: rgba(255,255,255,.3);
 }
+
 #cs-search-input-navbar:focus + #searchIcon {
   display: none;
 }
+
+.cs-autocomplete.cs-autocomplete-right .ds-dropdown-menu {
+  right: 0 !important;
+  left: inherit !important;
+}
+
+.cs-autocomplete.cs-autocomplete-right .ds-dropdown-menu:before {
+  right: 48px;
+}
+
+.cs-autocomplete.cs-autocomplete-left .ds-dropdown-menu {
+  left: 0 !important;
+  right: inherit !important;
+}
+
+.cs-autocomplete.cs-autocomplete-left .ds-dropdown-menu:before {
+  left: 48px;
+}
+
+.cs-autocomplete .ds-dropdown-menu {
+  position: relative;
+  top: -6px;
+  border-radius: 4px;
+  margin: 6px 0 0;
+  padding: 0;
+  text-align: left;
+  height: auto;
+  position: relative;
+  background: transparent;
+  border: none;
+  z-index: 999;
+  max-width: 600px;
+  min-width: 400px;
+  -webkit-box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.2), 0 2px 3px 0 rgba(0, 0, 0, 0.1);
+          box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.2), 0 2px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.cs-autocomplete .ds-dropdown-menu:before {
+  display: block;
+  position: absolute;
+  content: '';
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  z-index: 1000;
+  top: -7px;
+  border-top: 1px solid #efebe9;
+  border-right: 1px solid #efebe9;
+  -webkit-transform: rotate(-45deg);
+          transform: rotate(-45deg);
+  border-radius: 2px;
+}
+
+.cs-autocomplete .ds-dropdown-menu .ds-suggestions {
+  position: relative;
+  z-index: 1000;
+  margin-top: 8px;
+}
+
+.cs-autocomplete .ds-dropdown-menu .ds-suggestion {
+  cursor: pointer;
+}
+
+.cs-autocomplete .ds-dropdown-menu .ds-suggestion.ds-cursor .cs-docsearch-suggestion.suggestion-layout-simple {
+  background-color: rgba(27, 94, 32, 0.05);
+}
+
+.cs-autocomplete .ds-dropdown-menu .ds-suggestion.ds-cursor .cs-docsearch-suggestion:not(.suggestion-layout-simple) .cs-docsearch-suggestion--content {
+  background-color: rgba(27, 94, 32, 0.05);
+}
+
+.cs-autocomplete .ds-dropdown-menu [class^="ds-dataset-"] {
+  position: relative;
+  border: solid 1px #efebe9;
+  background: #fff;
+  border-radius: 4px;
+  overflow: auto;
+  padding: 0 8px 8px;
+}
+
+.cs-autocomplete .ds-dropdown-menu * {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion {
+  position: relative;
+  padding: 0 8px;
+  background: #fff;
+  color: #0b140f;
+  overflow: hidden;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--highlight {
+  color: #020502;
+  background: rgba(118, 158, 121, 0.1);
+  padding: 0.1em 0.05em;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--category-header .cs-docsearch-suggestion--category-header-lvl0 .cs-docsearch-suggestion--highlight,
+.cs-autocomplete .cs-docsearch-suggestion--category-header .cs-docsearch-suggestion--category-header-lvl1 .cs-docsearch-suggestion--highlight {
+  color: inherit;
+  background: inherit;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--text .cs-docsearch-suggestion--highlight {
+  padding: 0 0 1px;
+  background: inherit;
+  -webkit-box-shadow: inset 0 -2px 0 0 rgba(27, 94, 32, 0.8);
+          box-shadow: inset 0 -2px 0 0 rgba(27, 94, 32, 0.8);
+  color: inherit;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--content {
+  display: block;
+  position: relative;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+
+.cs-autocomplete .cs-docsearch-suggestion--category-header {
+  position: relative;
+  border-bottom: 1px solid #ddd;
+  display: none;
+  margin-top: 8px;
+  padding: 4px 0;
+  font-size: 1em;
+  color: #2f2625;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--wrapper {
+  width: 100%;
+  float: left;
+  padding: 8px 0 0 0;
+}
+
+
+
+
+.cs-autocomplete .cs-docsearch-suggestion--subcategory-inline {
+  display: none;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--title {
+  margin-bottom: 4px;
+  color: #0b140f;
+  font-size: 0.9em;
+  font-weight: bold;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--text {
+  display: block;
+  line-height: 1.2em;
+  font-size: 0.85em;
+  color: #3f4145;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--no-results {
+  width: 100%;
+  padding: 8px 0;
+  text-align: center;
+  font-size: 1.2em;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--no-results::before {
+  display: none;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion code {
+  padding: 1px 5px;
+  font-size: 90%;
+  border: none;
+  color: #222222;
+  background-color: #EBEBEB;
+  border-radius: 3px;
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion code .cs-docsearch-suggestion--highlight {
+  background: none;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion.cs-docsearch-suggestion__main .cs-docsearch-suggestion--category-header {
+  display: block;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion.cs-docsearch-suggestion__secondary {
+  display: block;
+}
+
+
+@media all and (max-width: 768px) {
+  .cs-autocomplete .cs-docsearch-suggestion .cs-docsearch-suggestion--content {
+    display: inline-block;
+    width: auto;
+    text-align: left;
+    padding: 0;
+  }
+}
+
+.cs-autocomplete .suggestion-layout-simple.cs-docsearch-suggestion {
+  border-bottom: solid 1px #eee;
+  padding: 8px;
+  margin: 0;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--content {
+  width: 100%;
+  padding: 0;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--category-header {
+  margin: 0;
+  padding: 0;
+  display: block;
+  width: 100%;
+  border: none;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--category-header-lvl0 {
+  opacity: .6;
+  font-size: 0.85em;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--category-header-lvl1 {
+  opacity: .6;
+  font-size: 0.85em;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--category-header-lvl1::before {
+  background-image: url('data:image/svg+xml;utf8,<svg width="10" height="10" viewBox="0 0 20 38" xmlns="http://www.w3.org/2000/svg"><path d="M1.49 4.31l14 16.126.002-2.624-14 16.074-1.314 1.51 3.017 2.626 1.313-1.508 14-16.075 1.142-1.313-1.14-1.313-14-16.125L3.2.18.18 2.8l1.31 1.51z" fill-rule="evenodd" fill="%231D3657" /></svg>');
+  content: '';
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--wrapper {
+  width: 100%;
+  float: left;
+  margin: 0;
+  padding: 0;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--duplicate-content, .cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--subcategory-inline {
+  display: none !important;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--title {
+  margin: 0;
+  color: #1b5e20;
+  font-size: 0.9em;
+  font-weight: normal;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--title::before {
+  content: "#";
+  font-weight: bold;
+  color: #1b5e20;
+  display: inline-block;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--text {
+  margin: 4px 0 0;
+  display: block;
+  line-height: 1.4em;
+  padding: 5.33333px 8px;
+  background: #f8f8f8;
+  font-size: 0.85em;
+  opacity: .8;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--text .cs-docsearch-suggestion--highlight {
+  color: #1a1b1d;
+  font-weight: bold;
+  -webkit-box-shadow: none;
+          box-shadow: none;
+}
+
+.cs-autocomplete .cs-docsearch-footer {
+  width: 110px;
+  height: 20px;
+  z-index: 2000;
+  margin-top: 10.66667px;
+  float: right;
+  font-size: 0;
+  line-height: 0;
+}
+
+
+/*
+ * Search input; see search.css for most of the styling of the dropdown
+ */
+
+.cs-search-form {
+  font-family: 'Lato';
+}
+.cs-search-form-sidebar {
+  min-width: 100%;
+  margin: 0.7em 1.2em 0.7em 0.7em;
+}
+.cs-search-form-sidebar .cs-autocomplete {
+  width: calc(100% - 1.9em);
+}
+
+.cs-search-input {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg alt="Search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M6.02945,10.20327a4.17382,4.17382,0,1,1,4.17382-4.17382A4.15609,4.15609,0,0,1,6.02945,10.20327Zm9.69195,4.2199L10.8989,9.59979A5.88021,5.88021,0,0,0,12.058,6.02856,6.00467,6.00467,0,1,0,9.59979,10.8989l4.82338,4.82338a.89729.89729,0,0,0,1.29912,0,.89749.89749,0,0,0-.00087-1.29909Z" fill="#2f2625"/></svg>');
+  background-size: 1em 1em;
+  background-repeat: no-repeat;
+  background-position-y: center;
+  background-position-x: 0.5em;
+  padding-left: 2em;
+  color: #2f2625;
+}
+
+.cs-search-form-sidebar .cs-autocomplete .ds-dropdown-menu {
+  min-width: 100%;
+  max-width: 100%;
+}
+
+/*
 
 .cs-autocomplete.cs-autocomplete-right .ds-dropdown-menu {
   right: 0 !important;
@@ -381,3 +706,4 @@
   font-size: 0;
   line-height: 0;
 }
+*/

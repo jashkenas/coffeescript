@@ -1,4 +1,4 @@
-## Strings
+### Strings
 
 Like JavaScript and many other languages, CoffeeScript supports strings as delimited by the `"` or `'` characters. CoffeeScript also supports string interpolation within `"`-quoted strings, using `#{ … }`. Single-quoted strings are literal. You may even use interpolation in object keys.
 

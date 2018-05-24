@@ -1,4 +1,4 @@
-## Contributing
+### Contributing
 
 Contributions are welcome! Feel free to fork [the repo](https://github.com/jashkenas/coffeescript) and submit a pull request.
 

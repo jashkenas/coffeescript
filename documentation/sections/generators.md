@@ -1,4 +1,4 @@
-## Generator Functions
+### Generator Functions
 
 CoffeeScript supports ES2015 [generator functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) through the `yield` keyword. There's no `function*(){}` nonsense — a generator in CoffeeScript is simply a function that yields.
 

@@ -1,4 +1,4 @@
-## Switch/When/Else
+### Switch/When/Else
 
 `switch` statements in JavaScript are a bit awkward. You need to remember to `break` at the end of every `case` statement to avoid accidentally falling through to the default case. CoffeeScript prevents accidental fall-through, and can convert the `switch` into a returnable, assignable expression. The format is: `switch` condition, `when` clauses, `else` the default case.
 

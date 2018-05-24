@@ -1,4 +1,4 @@
-## Classes
+### Classes
 
 CoffeeScript 1 provided the `class` and `extends` keywords as syntactic sugar for working with prototypal functions. With ES2015, JavaScript has adopted those keywords; so CoffeeScript 2 compiles its `class` and `extends` keywords to ES2015 classes.
 

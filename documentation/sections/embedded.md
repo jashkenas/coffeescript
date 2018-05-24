@@ -1,4 +1,4 @@
-## Embedded JavaScript
+### Embedded JavaScript
 
 Hopefully, you’ll never need to use it, but if you ever need to intersperse snippets of JavaScript within your CoffeeScript, you can use backticks to pass it straight through.
 
