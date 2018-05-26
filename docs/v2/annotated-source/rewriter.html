@@ -910,6 +910,8 @@ the continuation of an object.</p>
             <div class="content"><div class='highlight'><pre>          <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> inImplicitObject() <span class="hljs-keyword">and</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'TERMINATOR'</span> <span class="hljs-keyword">and</span> prevTag <span class="hljs-keyword">isnt</span> <span class="hljs-string">','</span> <span class="hljs-keyword">and</span>
                   <span class="hljs-keyword">not</span> (startsLine <span class="hljs-keyword">and</span> @looksObjectish(i + <span class="hljs-number">1</span>))
             endImplicitObject()
+          <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> inImplicitControl() <span class="hljs-keyword">and</span> tokens[stackTop()[<span class="hljs-number">1</span>]][<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'CLASS'</span> <span class="hljs-keyword">and</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'TERMINATOR'</span>
+            stack.pop()
           <span class="hljs-keyword">else</span>
             <span class="hljs-keyword">break</span></pre></div></div>
             

@@ -463,14 +463,14 @@ compileOptions = (filename, base) ->
           To use --transpile, you must have babel-core installed:
             npm install --save-dev babel-core
           And you must save options to configure Babel in one of the places it looks to find its options.
-          See http://coffeescript.org/#transpilation
+          See https://coffeescript.org/#transpilation
         '''
       else
         console.error '''
           To use --transpile with globally-installed CoffeeScript, you must have babel-core installed globally:
             npm install --global babel-core
           And you must save options to configure Babel in one of the places it looks to find its options, relative to the file being compiled or to the current folder.
-          See http://coffeescript.org/#transpilation
+          See https://coffeescript.org/#transpilation
         '''
       process.exit 1
 

@@ -3,7 +3,7 @@
 Most modern JavaScript features that CoffeeScript supports can run natively in Node 7.6+, meaning that Node can run CoffeeScript’s output without any further processing required. Here are some notable exceptions:
 
 *  [Modules](#modules) and [JSX](#jsx) always require transpilation.
-*  [Splats, a.k.a. object rest/spread syntax, for objects](http://coffeescript.org/#splats) are supported by Node 8.6+.
+*  [Splats, a.k.a. object rest/spread syntax, for objects](https://coffeescript.org/#splats) are supported by Node 8.6+.
 *  The [regular expression `s` (dotall) flag](https://github.com/tc39/proposal-regexp-dotall-flag) is supported by Node 9+.
 *  [Async generator functions](https://github.com/tc39/proposal-async-iteration) are supported by Node 10+.
 

@@ -7509,11 +7509,11 @@ test 'JSX fragments: fragment with text nodes', ->
 
 test 'JSX fragments: fragment with component nodes', ->
   eqJS '''
-   Component = (props) =>
-     <Fragment>
-       <OtherComponent />
-       <OtherComponent />
-     </Fragment>
+    Component = (props) =>
+      <Fragment>
+        <OtherComponent />
+        <OtherComponent />
+      </Fragment>
   ''', '''
     var Component;
 
@@ -7523,6 +7523,58 @@ test 'JSX fragments: fragment with component nodes', ->
         <OtherComponent />
       </Fragment>;
     };
+  '''
+
+test '#5055: JSX expression indentation bug', ->
+  eqJS '''
+    <div>
+      {someCondition &&
+        <span />
+      }
+    </div>
+  ''', '''
+    <div>
+      {someCondition && <span />}
+    </div>;
+  '''
+
+  eqJS '''
+    <div>{someString +
+         "abc"
+      }
+    </div>
+  ''', '''
+    <div>{someString + "abc"}
+    </div>;
+  '''
+
+  eqJS '''
+    <div>
+      {a ?
+      <span />
+      }
+    </div>
+  ''', '''
+    <div>
+      {typeof a !== "undefined" && a !== null ? a : <span />}
+    </div>;
+  '''
+
+# JSX is like XML, in that there needs to be a root element; but
+# technically, adjacent top-level elements where only the last one
+# is returned (as opposed to a fragment or root element) is permissible
+# syntax. It’s almost certainly an error, but it’s valid, so need to leave it
+# to linters to catch. https://github.com/jashkenas/coffeescript/pull/5049
+test '“Adjacent” tags on separate lines should still compile', ->
+  eqJS '''
+    ->
+      <a />
+      <b />
+  ''', '''
+    (function() {
+      <a />;
+      return <b />;
+    });
   '''
 
 </script>
@@ -9191,6 +9243,28 @@ test 'CSX error: invalid attributes', ->
          ^^^^^^^^^^^^^^^^
   '''
 
+test '#5034: CSX error: Adjacent JSX elements must be wrapped in an enclosing tag', ->
+  assertErrorFormat '''
+    render = -> (
+      <Row>a</Row>
+      <Row>b</Row>
+    )
+  ''', '''
+    [stdin]:3:4: error: Adjacent JSX elements must be wrapped in an enclosing tag
+      <Row>b</Row>
+       ^^^^^^^^^^^
+  '''
+  assertErrorFormat '''
+    render = -> (
+      a = "foo"
+      <Row>a</Row>
+      <Row>b</Row>
+    )
+  ''', '''
+    [stdin]:4:4: error: Adjacent JSX elements must be wrapped in an enclosing tag
+      <Row>b</Row>
+       ^^^^^^^^^^^
+  '''
 test 'Bound method called as callback before binding throws runtime error', ->
   class Base
     constructor: ->
@@ -9370,6 +9444,7 @@ test "#3933: prevent implicit calls when cotrol flow is missing `THEN`", ->
       when a ->
              ^^
   '''
+
 </script>
 <script type="text/x-coffeescript" class="test" id="eval">
 if vm = require? 'vm'
@@ -9684,6 +9759,12 @@ test "`?.` and `::` should continue lines", ->
   ok not (
     Date
     ::
+    ?.foo
+  )
+
+  ok not (
+    Date
+    ?::
     ?.foo
   )
   #eq Object::toString, Date?.
@@ -10972,6 +11053,27 @@ test "#4473: variable scope in chained calls", ->
 
   obj.foo({f} = {f: 1}).bar(-> f = 5)
   eq f, 5
+
+test "#5052: implicit call of class with no body", ->
+  doesNotThrow -> CoffeeScript.compile 'f class'
+  doesNotThrow -> CoffeeScript.compile 'f class A'
+  doesNotThrow -> CoffeeScript.compile 'f class A extends B'
+
+  f = (args...) -> args
+  a = 1
+
+  [klass, shouldBeA] = f class A, a
+  eq shouldBeA, a
+
+  [shouldBeA] = f a, class A
+  eq shouldBeA, a
+
+  [obj, klass, shouldBeA] =
+    f
+      b: 1
+      class A
+      a
+  eq shouldBeA, a
 
 </script>
 <script type="text/x-coffeescript" class="test" id="functions">
@@ -15919,7 +16021,16 @@ test "#2567: Optimization of negated existential produces correct result", ->
 
 test "#2508: Existential access of the prototype", ->
   eq NonExistent?::nothing, undefined
+  eq(
+    NonExistent
+    ?::nothing
+    undefined
+  )
   ok Object?::toString
+  ok(
+    Object
+    ?::toString
+  )
 
 test "floor division operator", ->
   eq 2, 7 // 3

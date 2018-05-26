@@ -124,7 +124,7 @@ We add support for loading remote Coffee scripts via <strong>XHR</strong>, and
             
             <div class="content"><div class='highlight'><pre>
 CoffeeScript = <span class="hljs-built_in">require</span> <span class="hljs-string">'./coffeescript'</span>
-compile = CoffeeScript.compile</pre></div></div>
+{ compile } = CoffeeScript</pre></div></div>
             
         </li>
         
@@ -135,13 +135,17 @@ compile = CoffeeScript.compile</pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <p>Use standard JavaScript <code>eval</code> to eval code.</p>
+              <p>Use <code>window.eval</code> to evaluate code, rather than just <code>eval</code>, to run the
+script in a clean global scope rather than inheriting the scope of the
+CoffeeScript compiler. (So that <code>cake test:browser</code> also works in Node,
+use either <code>window.eval</code> or <code>global.eval</code> as appropriate).</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>CoffeeScript.eval = <span class="hljs-function"><span class="hljs-params">(code, options = {})</span> -&gt;</span>
   options.bare ?= <span class="hljs-literal">on</span>
-  eval compile code, options</pre></div></div>
+  globalRoot = <span class="hljs-keyword">if</span> <span class="hljs-built_in">window</span>? <span class="hljs-keyword">then</span> <span class="hljs-built_in">window</span> <span class="hljs-keyword">else</span> <span class="hljs-built_in">global</span>
+  globalRoot[<span class="hljs-string">'eval'</span>] compile code, options</pre></div></div>
             
         </li>
         
