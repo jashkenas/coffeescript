@@ -404,6 +404,10 @@ exports.Base = class Base
     @eachChild (child) ->
       child.updateLocationDataIfMissing locationData
 
+  # Add location data from another node
+  withLocationDataFrom: ({locationData}) ->
+    @updateLocationDataIfMissing locationData
+
   # Throw a SyntaxError associated with this node’s location.
   error: (message) ->
     throwSyntaxError message, @locationData
@@ -847,7 +851,7 @@ exports.RegexLiteral = class RegexLiteral extends Literal
     @value = "#{makeDelimitedLiteral val, delimiter: '/'}#{@flags}"
 
 exports.PassthroughLiteral = class PassthroughLiteral extends Literal
-  constructor: (@originalValue, {@here} = {}) ->
+  constructor: (@originalValue, {@here, @generated} = {}) ->
     super ''
     @value = @originalValue.replace /\\+(`|$)/g, (string) ->
       # `string` is always a value like '\`', '\\\`', '\\\\\`', etc.
@@ -3545,25 +3549,32 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
       wrapped.csxAttribute = yes
       return wrapped.compileNode o
 
-    # Assumes that `expr` is `Value` » `StringLiteral` or `Op`
+    # Assumes that `expr` is `Block`
     expr = @body.unwrap()
 
     elements = []
     salvagedComments = []
-    expr.traverseChildren no, (node) ->
+    expr.traverseChildren no, (node) =>
       if node instanceof StringLiteral
         if node.comments
           salvagedComments.push node.comments...
           delete node.comments
         elements.push node
         return yes
-      else if node instanceof Parens
+      else if node instanceof Interpolation
         if salvagedComments.length isnt 0
           for comment in salvagedComments
             comment.unshift = yes
             comment.newLine = yes
           attachCommentsToNode salvagedComments, node
-        elements.push node
+        if (unwrapped = node.expression?.unwrapAll()) instanceof PassthroughLiteral and unwrapped.generated and not @csx
+          commentPlaceholder = new StringLiteral('').withLocationDataFrom node
+          commentPlaceholder.comments = unwrapped.comments
+          (commentPlaceholder.comments ?= []).push node.comments... if node.comments
+          elements.push new Value commentPlaceholder
+        else if node.expression
+          (node.expression.comments ?= []).push node.comments... if node.comments
+          elements.push node.expression
         return no
       else if node.comments
         # This node is getting discarded, but salvage its comments.
@@ -3606,9 +3617,14 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
     fragments
 
   isNestedTag: (element) ->
-    exprs = element.body?.expressions
-    call = exprs?[0].unwrap()
-    @csx and exprs and exprs.length is 1 and call instanceof Call and call.csx
+    call = element.unwrapAll?()
+    @csx and call instanceof Call and call.csx
+
+exports.Interpolation = class Interpolation extends Base
+  constructor: (@expression) ->
+    super()
+
+  children: ['expression']
 
 #### For
 

@@ -177,7 +177,19 @@ grammar =
         double:       $1.double
         heregex:      $1.heregex
       )
-    o 'STRING_START Body STRING_END',           -> new StringWithInterpolations $2, quote: $1.quote
+    o 'STRING_START Interpolations STRING_END', -> new StringWithInterpolations Block.wrap($2), quote: $1.quote
+  ]
+
+  Interpolations: [
+    o 'InterpolationChunk',                     -> [$1]
+    o 'Interpolations InterpolationChunk',      -> $1.concat $2
+  ]
+
+  InterpolationChunk: [
+    o 'INTERPOLATION_START Body INTERPOLATION_END',                -> new Interpolation $2
+    o 'INTERPOLATION_START INDENT Body OUTDENT INTERPOLATION_END', -> new Interpolation $3
+    o 'INTERPOLATION_START INTERPOLATION_END',                     -> new Interpolation
+    o 'String',                                                    -> $1
   ]
 
   Regex: [
@@ -189,7 +201,7 @@ grammar =
   # through and printed to JavaScript.
   Literal: [
     o 'AlphaNumeric'
-    o 'JS',                                     -> new PassthroughLiteral "#{$1}", here: $1.here
+    o 'JS',                                     -> new PassthroughLiteral "#{$1}", here: $1.here, generated: $1.generated
     o 'Regex'
     o 'UNDEFINED',                              -> new UndefinedLiteral $1
     o 'NULL',                                   -> new NullLiteral $1
