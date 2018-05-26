@@ -148,6 +148,8 @@ diffOutput = (expectedOutput, actualOutput) ->
         ok yes
       else if e.toString().indexOf('[stdin]') is 0 # Handle comparing error messages
         ok err e
+      else if err instanceof RegExp
+        ok err.test e
       else
         eq e, err
     else
@@ -812,17 +814,6 @@ test "#4787 destructuring of objects within arrays", ->
   eq b, arr[1].b
   deepEqual {a, b}, arr[1]
 
-test "#4798 destructuring of objects with splat within arrays", ->
-  arr = [1, {a:1, b:2}]
-  [...,{a, r...}] = arr
-  eq a, 1
-  deepEqual r, {b:2}
-  [b, {q...}] = arr
-  eq b, 1
-  deepEqual q, arr[1]
-  eq q.b, r.b
-  eq q.a, a
-
 test "destructuring assignment with splats", ->
   a = {}; b = {}; c = {}; d = {}; e = {}
   [x,y...,z] = [a,b,c,d,e]
@@ -890,311 +881,6 @@ test "destructuring assignment against an expression", ->
   [y, z] = if true then [a, b] else [b, a]
   eq a, y
   eq b, z
-
-test "destructuring assignment with objects and splats: ES2015", ->
-  obj = {a: 1, b: 2, c: 3, d: 4, e: 5}
-  throws (-> CoffeeScript.compile "{a, r..., s...} = x"), null, "multiple rest elements are disallowed"
-  throws (-> CoffeeScript.compile "{a, r..., s..., b} = x"), null, "multiple rest elements are disallowed"
-  prop = "b"
-  {a, b, r...} = obj
-  eq a, 1
-  eq b, 2
-  eq r.e, obj.e
-  eq r.a, undefined
-  {d, c: x, r...} = obj
-  eq x, 3
-  eq d, 4
-  eq r.c, undefined
-  eq r.b, 2
-  {a, 'b': z, g = 9, r...} = obj
-  eq g, 9
-  eq z, 2
-  eq r.b, undefined
-
-test "destructuring assignment with splats and default values", ->
-  obj = {}
-  c = {b: 1}
-  { a: {b} = c, d...} = obj
-
-  eq b, 1
-  deepEqual d, {}
-
-  # Should not trigger implicit call, e.g. rest ... => rest(...)
-  {
-    a: {b} = c
-    d ...
-  } = obj
-
-  eq b, 1
-  deepEqual d, {}
-
-test "destructuring assignment with splat with default value", ->
-  obj = {}
-  c = {val: 1}
-  { a: {b...} = c } = obj
-
-  deepEqual b, val: 1
-
-test "destructuring assignment with multiple splats in different objects", ->
-  obj = { a: {val: 1}, b: {val: 2} }
-  { a: {a...}, b: {b...} } = obj
-  deepEqual a, val: 1
-  deepEqual b, val: 2
-
-  o = {
-    props: {
-      p: {
-        n: 1
-        m: 5
-      }
-      s: 6
-    }
-  }
-  {p: {m, q..., t = {obj...}}, r...} = o.props
-  eq m, o.props.p.m
-  deepEqual r, s: 6
-  deepEqual q, n: 1
-  deepEqual t, obj
-
-  @props = o.props
-  {p: {m}, r...} = @props
-  eq m, @props.p.m
-  deepEqual r, s: 6
-
-  {p: {m}, r...} = {o.props..., p:{m:9}}
-  eq m, 9
-
-  # Should not trigger implicit call, e.g. rest ... => rest(...)
-  {
-    a: {
-      a ...
-    }
-    b: {
-      b ...
-    }
-  } = obj
-  deepEqual a, val: 1
-  deepEqual b, val: 2
-
-test "destructuring assignment with dynamic keys and splats", ->
-  i = 0
-  foo = -> ++i
-
-  obj = {1: 'a', 2: 'b'}
-  { "#{foo()}": a, b... } = obj
-
-  eq a, 'a'
-  eq i, 1
-  deepEqual b, 2: 'b'
-
-# Tests from https://babeljs.io/docs/plugins/transform-object-rest-spread/.
-test "destructuring assignment with objects and splats: Babel tests", ->
-  # What Babel calls “rest properties:”
-  { x, y, z... } = { x: 1, y: 2, a: 3, b: 4 }
-  eq x, 1
-  eq y, 2
-  deepEqual z, { a: 3, b: 4 }
-
-  # What Babel calls “spread properties:”
-  n = { x, y, z... }
-  deepEqual n, { x: 1, y: 2, a: 3, b: 4 }
-
-  # Should not trigger implicit call, e.g. rest ... => rest(...)
-  { x, y, z ... } = { x: 1, y: 2, a: 3, b: 4 }
-  eq x, 1
-  eq y, 2
-  deepEqual z, { a: 3, b: 4 }
-
-  n = { x, y, z ... }
-  deepEqual n, { x: 1, y: 2, a: 3, b: 4 }
-
-test "deep destructuring assignment with objects: ES2015", ->
-  a1={}; b1={}; c1={}; d1={}
-  obj = {
-    a: a1
-    b: {
-      'c': {
-        d: {
-          b1
-          e: c1
-          f: d1
-        }
-      }
-    }
-    b2: {b1, c1}
-  }
-  {a: w, b: {c: {d: {b1: bb, r1...}}}, r2...} = obj
-  eq r1.e, c1
-  eq r2.b, undefined
-  eq bb, b1
-  eq r2.b2, obj.b2
-
-  # Should not trigger implicit call, e.g. rest ... => rest(...)
-  {a: w, b: {c: {d: {b1: bb, r1 ...}}}, r2 ...} = obj
-  eq r1.e, c1
-  eq r2.b, undefined
-  eq bb, b1
-  eq r2.b2, obj.b2
-
-test "deep destructuring assignment with defaults: ES2015", ->
-  obj =
-    b: { c: 1, baz: 'qux' }
-    foo: 'bar'
-  j =
-    f: 'world'
-  i =
-    some: 'prop'
-  {
-    a...
-    b: { c, d... }
-    e: {
-      f: hello
-      g: { h... } = i
-    } = j
-  } = obj
-
-  deepEqual a, foo: 'bar'
-  eq c, 1
-  deepEqual d, baz: 'qux'
-  eq hello, 'world'
-  deepEqual h, some: 'prop'
-
-  # Should not trigger implicit call, e.g. rest ... => rest(...)
-  {
-    a ...
-    b: {
-      c,
-      d ...
-    }
-    e: {
-      f: hello
-      g: {
-        h ...
-      } = i
-    } = j
-  } = obj
-
-  deepEqual a, foo: 'bar'
-  eq c, 1
-  deepEqual d, baz: 'qux'
-  eq hello, 'world'
-  deepEqual h, some: 'prop'
-
-test "object spread properties: ES2015", ->
-  obj = {a: 1, b: 2, c: 3, d: 4, e: 5}
-  obj2 = {obj..., c:9}
-  eq obj2.c, 9
-  eq obj.a, obj2.a
-
-  # Should not trigger implicit call, e.g. rest ... => rest(...)
-  obj2 = {
-    obj ...
-    c:9
-  }
-  eq obj2.c, 9
-  eq obj.a, obj2.a
-
-  obj2 = {obj..., a: 8, c: 9, obj...}
-  eq obj2.c, 3
-  eq obj.a, obj2.a
-
-  # Should not trigger implicit call, e.g. rest ... => rest(...)
-  obj2 = {
-    obj ...
-    a: 8
-    c: 9
-    obj ...
-  }
-  eq obj2.c, 3
-  eq obj.a, obj2.a
-
-  obj3 = {obj..., b: 7, g: {obj2..., c: 1}}
-  eq obj3.g.c, 1
-  eq obj3.b, 7
-  deepEqual obj3.g, {obj..., c: 1}
-
-  (({a, b, r...}) ->
-    eq 1, a
-    deepEqual r, {c: 3, d: 44, e: 55}
-  ) {obj2..., d: 44, e: 55}
-
-  obj = {a: 1, b: 2, c: {d: 3, e: 4, f: {g: 5}}}
-  obj4 = {a: 10, obj.c...}
-  eq obj4.a, 10
-  eq obj4.d, 3
-  eq obj4.f.g, 5
-  deepEqual obj4.f, obj.c.f
-
-  # Should not trigger implicit call, e.g. rest ... => rest(...)
-  (({
-    a
-    b
-    r ...
-    }) ->
-    eq 1, a
-    deepEqual r, {c: 3, d: 44, e: 55}
-  ) {
-    obj2 ...
-    d: 44
-    e: 55
-  }
-
-  # Should not trigger implicit call, e.g. rest ... => rest(...)
-  obj4 = {
-    a: 10
-    obj.c ...
-  }
-  eq obj4.a, 10
-  eq obj4.d, 3
-  eq obj4.f.g, 5
-  deepEqual obj4.f, obj.c.f
-
-  obj5 = {obj..., ((k) -> {b: k})(99)...}
-  eq obj5.b, 99
-  deepEqual obj5.c, obj.c
-
-  # Should not trigger implicit call, e.g. rest ... => rest(...)
-  obj5 = {
-    obj ...
-    ((k) -> {b: k})(99) ...
-  }
-  eq obj5.b, 99
-  deepEqual obj5.c, obj.c
-
-  fn = -> {c: {d: 33, e: 44, f: {g: 55}}}
-  obj6 = {obj..., fn()...}
-  eq obj6.c.d, 33
-  deepEqual obj6.c, {d: 33, e: 44, f: {g: 55}}
-
-  obj7 = {obj..., fn()..., {c: {d: 55, e: 66, f: {77}}}...}
-  eq obj7.c.d, 55
-  deepEqual obj6.c, {d: 33, e: 44, f: {g: 55}}
-
-  # Should not trigger implicit call, e.g. rest ... => rest(...)
-  obj7 = {
-    obj ...
-    fn() ...
-    {c: {d: 55, e: 66, f: {77}}} ...
-  }
-  eq obj7.c.d, 55
-  deepEqual obj6.c, {d: 33, e: 44, f: {g: 55}}
-
-  obj =
-    a:
-      b:
-        c:
-          d:
-            e: {}
-  obj9 = {a:1, obj.a.b.c..., g:3}
-  deepEqual obj9.d, {e: {}}
-
-  a = "a"
-  c = "c"
-  obj9 = {a:1, obj[a].b[c]..., g:3}
-  deepEqual obj9.d, {e: {}}
-
-  obj9 = {a:1, obj.a["b"].c["d"]..., g:3}
-  deepEqual obj9["e"], {}
 
 test "bracket insertion when necessary", ->
   [a] = [0] ? [1]
@@ -1543,36 +1229,6 @@ test "#4566: destructuring with nested default values", ->
   {e: {f = 5} = {}} = {}
   eq 5, f
 
-test "#4674: _extends utility for object spreads 1", ->
-  eqJS(
-    "{a, b..., c..., d}"
-    """
-      var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-      _extends({a}, b, c, {d});
-    """
-  )
-
-test "#4674: _extends utility for object spreads 2", ->
-  _extends = -> 3
-  a = b: 1
-  c = d: 2
-  e = {a..., c...}
-  eq e.b, 1
-  eq e.d, 2
-
-test "#4673: complex destructured object spread variables", ->
-  b = c: 1
-  {{a...}...} = b
-  eq a.c, 1
-
-  d = {}
-  {d.e...} = f: 1
-  eq d.e.f, 1
-
-  {{g}...} = g: 1
-  eq g, 1
-
 test "#4878: Compile error when using destructuring with a splat or expansion in an array", ->
   arr = ['a', 'b', 'c', 'd']
 
@@ -1659,6 +1315,41 @@ test "#5004: array destructuring with accessors", ->
   [obj.list.middle..., d] = obj.arr
   eq d, 'd'
   arrayEq obj.list.middle, ['a', 'b', 'c']
+
+test "#4884: destructured object splat", ->
+  [{length}...] = [1, 2, 3]
+  eq length, 3
+  [{length: len}...] = [1, 2, 3]
+  eq len, 3
+  [{length}..., three] = [1, 2, 3]
+  eq length, 2
+  eq three, 3
+  [{length: len}..., three] = [1, 2, 3]
+  eq len, 2
+  eq three, 3
+  x = [{length}..., three] = [1, 2, 3]
+  eq length, 2
+  eq three, 3
+  eq x[2], 3
+  x = [{length: len}..., three] = [1, 2, 3]
+  eq len, 2
+  eq three, 3
+  eq x[2], 3
+
+test "#4884: destructured array splat", ->
+  [[one, two, three]...] = [1, 2, 3]
+  eq one, 1
+  eq two, 2
+  eq three, 3
+  [[one, two]..., three] = [1, 2, 3]
+  eq one, 1
+  eq two, 2
+  eq three, 3
+  x = [[one, two]..., three] = [1, 2, 3]
+  eq one, 1
+  eq two, 2
+  eq three, 3
+  eq x[2], 3
 
 </script>
 <script type="text/x-coffeescript" class="test" id="async">
@@ -1860,6 +1551,41 @@ test "async methods in classes", ->
 
   eq await Child.static(), 1
   eq await new Child().method(), 2
+
+</script>
+<script type="text/x-coffeescript" class="test" id="async_iterators">
+# This is always fulfilled.
+winLater = (val, ms) ->
+  new Promise (resolve) -> setTimeout (-> resolve val), ms
+
+# This is always rejected.
+failLater = (val, ms) ->
+  new Promise (resolve, reject) -> setTimeout (-> reject new Error val), ms
+
+createAsyncIterable = (syncIterable) ->
+  for elem in syncIterable
+    yield await winLater elem, 50
+
+test "async iteration", ->
+  foo = (x for await x from createAsyncIterable [1,2,3])
+  arrayEq foo, [1, 2, 3]
+
+test "async generator functions", ->
+  foo = (val) ->
+    yield await winLater val + 1, 50
+
+  bar = (val) ->
+    yield await failLater val - 1, 50
+
+  a = await foo(41).next()
+  eq a.value, 42
+
+  try
+    b = do -> await bar(41).next()
+    b.catch (err) ->
+      eq "40", err.message
+  catch err
+    ok no
 
 </script>
 <script type="text/x-coffeescript" class="test" id="booleans">
@@ -7783,11 +7509,11 @@ test 'JSX fragments: fragment with text nodes', ->
 
 test 'JSX fragments: fragment with component nodes', ->
   eqJS '''
-   Component = (props) =>
-     <Fragment>
-       <OtherComponent />
-       <OtherComponent />
-     </Fragment>
+    Component = (props) =>
+      <Fragment>
+        <OtherComponent />
+        <OtherComponent />
+      </Fragment>
   ''', '''
     var Component;
 
@@ -7797,6 +7523,58 @@ test 'JSX fragments: fragment with component nodes', ->
         <OtherComponent />
       </Fragment>;
     };
+  '''
+
+test '#5055: JSX expression indentation bug', ->
+  eqJS '''
+    <div>
+      {someCondition &&
+        <span />
+      }
+    </div>
+  ''', '''
+    <div>
+      {someCondition && <span />}
+    </div>;
+  '''
+
+  eqJS '''
+    <div>{someString +
+         "abc"
+      }
+    </div>
+  ''', '''
+    <div>{someString + "abc"}
+    </div>;
+  '''
+
+  eqJS '''
+    <div>
+      {a ?
+      <span />
+      }
+    </div>
+  ''', '''
+    <div>
+      {typeof a !== "undefined" && a !== null ? a : <span />}
+    </div>;
+  '''
+
+# JSX is like XML, in that there needs to be a root element; but
+# technically, adjacent top-level elements where only the last one
+# is returned (as opposed to a fragment or root element) is permissible
+# syntax. It’s almost certainly an error, but it’s valid, so need to leave it
+# to linters to catch. https://github.com/jashkenas/coffeescript/pull/5049
+test '“Adjacent” tags on separate lines should still compile', ->
+  eqJS '''
+    ->
+      <a />
+      <b />
+  ''', '''
+    (function() {
+      <a />;
+      return <b />;
+    });
   '''
 
 </script>
@@ -9033,28 +8811,6 @@ test "CoffeeScript keywords cannot be used as local names in import list aliases
                     ^^^^^^
   '''
 
-test "function cannot contain both `await` and `yield`", ->
-  assertErrorFormat '''
-    f = () ->
-      yield 5
-      await a
-  ''', '''
-    [stdin]:3:3: error: function can't contain both yield and await
-      await a
-      ^^^^^^^
-  '''
-
-test "function cannot contain both `await` and `yield from`", ->
-  assertErrorFormat '''
-    f = () ->
-      yield from a
-      await b
-  ''', '''
-    [stdin]:3:3: error: function can't contain both yield and await
-      await b
-      ^^^^^^^
-  '''
-
 test "cannot have `await` outside a function", ->
   assertErrorFormat '''
     await 1
@@ -9487,6 +9243,28 @@ test 'CSX error: invalid attributes', ->
          ^^^^^^^^^^^^^^^^
   '''
 
+test '#5034: CSX error: Adjacent JSX elements must be wrapped in an enclosing tag', ->
+  assertErrorFormat '''
+    render = -> (
+      <Row>a</Row>
+      <Row>b</Row>
+    )
+  ''', '''
+    [stdin]:3:4: error: Adjacent JSX elements must be wrapped in an enclosing tag
+      <Row>b</Row>
+       ^^^^^^^^^^^
+  '''
+  assertErrorFormat '''
+    render = -> (
+      a = "foo"
+      <Row>a</Row>
+      <Row>b</Row>
+    )
+  ''', '''
+    [stdin]:4:4: error: Adjacent JSX elements must be wrapped in an enclosing tag
+      <Row>b</Row>
+       ^^^^^^^^^^^
+  '''
 test 'Bound method called as callback before binding throws runtime error', ->
   class Base
     constructor: ->
@@ -9666,6 +9444,7 @@ test "#3933: prevent implicit calls when cotrol flow is missing `THEN`", ->
       when a ->
              ^^
   '''
+
 </script>
 <script type="text/x-coffeescript" class="test" id="eval">
 if vm = require? 'vm'
@@ -9711,7 +9490,7 @@ nonce = {}
 # Throw
 
 test "basic exception throwing", ->
-  throws (-> throw 'error'), 'error'
+  throws (-> throw 'error'), /^error$/
 
 
 # Empty Try/Catch/Finally
@@ -9887,6 +9666,28 @@ test "#3789: throwing a throw", ->
     eq err.message, 'whoa!'
 
 </script>
+<script type="text/x-coffeescript" class="test" id="exponentiation">
+# The `**` and `**=` operators are only supported in Node 7.5+, so the tests
+# for these exponentiation operators are split out into their own file to be
+# loaded only by supported runtimes.
+
+test "exponentiation operator", ->
+  eq 27, 3 ** 3
+
+test "exponentiation operator has higher precedence than other maths operators", ->
+  eq 55, 1 + 3 ** 3 * 2
+  eq -4, -2 ** 2
+  eq 0, (!2) ** 2
+
+test "exponentiation operator is right associative", ->
+  eq 2, 2 ** 1 ** 3
+
+test "exponentiation operator compound assignment", ->
+  a = 2
+  a **= 3
+  eq 8, a
+
+</script>
 <script type="text/x-coffeescript" class="test" id="formatting">
 # Formatting
 # ----------
@@ -9958,6 +9759,12 @@ test "`?.` and `::` should continue lines", ->
   ok not (
     Date
     ::
+    ?.foo
+  )
+
+  ok not (
+    Date
+    ?::
     ?.foo
   )
   #eq Object::toString, Date?.
@@ -11247,6 +11054,27 @@ test "#4473: variable scope in chained calls", ->
   obj.foo({f} = {f: 1}).bar(-> f = 5)
   eq f, 5
 
+test "#5052: implicit call of class with no body", ->
+  doesNotThrow -> CoffeeScript.compile 'f class'
+  doesNotThrow -> CoffeeScript.compile 'f class A'
+  doesNotThrow -> CoffeeScript.compile 'f class A extends B'
+
+  f = (args...) -> args
+  a = 1
+
+  [klass, shouldBeA] = f class A, a
+  eq shouldBeA, a
+
+  [shouldBeA] = f a, class A
+  eq shouldBeA, a
+
+  [obj, klass, shouldBeA] =
+    f
+      b: 1
+      class A
+      a
+  eq shouldBeA, a
+
 </script>
 <script type="text/x-coffeescript" class="test" id="functions">
 # Function Literals
@@ -11378,6 +11206,16 @@ test "destructured splatted parameters", ->
   splatArray = ([a ...]) -> a
   splatArrayRest = ([a ...],b ...) -> arrayEq(a,b); b
 
+test "#4884: object-destructured splatted parameters", ->
+  f = ({length}...) -> length
+  eq f(4, 5, 6), 3
+  f = ({length: len}...) -> len
+  eq f(4, 5, 6), 3
+  f = ({length}..., last) -> [length, last]
+  arrayEq f(4, 5, 6), [2, 6]
+  f = ({length: len}..., last) -> [len, last]
+  arrayEq f(4, 5, 6), [2, 6]
+
 test "@-parameters: automatically assign an argument's value to a property of the context", ->
   nonce = {}
 
@@ -11465,86 +11303,6 @@ test "destructuring in function definition", ->
   deepEqual ajax('/home', beforeSend: fn, method: 'post'), {
     url: '/home', async: true, beforeSend: fn, cache: true, method: 'post', data: {}
   }
-
-test "rest element destructuring in function definition", ->
-  obj = {a: 1, b: 2, c: 3, d: 4, e: 5}
-
-  (({a, b, r...}) ->
-    eq 1, a
-    eq 2, b,
-    deepEqual r, {c: 3, d: 4, e: 5}
-  ) obj
-
-  (({a: p, b, r...}, q) ->
-    eq p, 1
-    eq q, 9
-    deepEqual r, {c: 3, d: 4, e: 5}
-  ) {a:1, b:2, c:3, d:4, e:5}, 9
-
-  # Should not trigger implicit call, e.g. rest ... => rest(...)
-  (({
-      a: p
-      b
-      r ...
-    }, q) ->
-    eq p, 1
-    eq q, 9
-    deepEqual r, {c: 3, d: 4, e: 5}
-  ) {a:1, b:2, c:3, d:4, e:5}, 9
-
-  a1={}; b1={}; c1={}; d1={}
-  obj1 = {
-    a: a1
-    b: {
-      'c': {
-        d: {
-          b1
-          e: c1
-          f: d1
-        }
-      }
-    }
-    b2: {b1, c1}
-  }
-
-  (({a: w, b: {c: {d: {b1: bb, r1...}}}, r2...}) ->
-    eq a1, w
-    eq bb, b1
-    eq r2.b, undefined
-    deepEqual r1, {e: c1, f: d1}
-    deepEqual r2.b2, {b1, c1}
-  ) obj1
-
-  b = 3
-  f = ({a, b...}) ->
-  f {}
-  eq 3, b
-
-  (({a, r...} = {}) ->
-    eq a, undefined
-    deepEqual r, {}
-  )()
-
-  (({a, r...} = {}) ->
-    eq a, 1
-    deepEqual r, {b: 2, c: 3}
-  ) {a: 1, b: 2, c: 3}
-
-  f = ({a, r...} = {}) -> [a, r]
-  deepEqual [undefined, {}], f()
-  deepEqual [1, {b: 2}], f {a: 1, b: 2}
-  deepEqual [1, {}], f {a: 1}
-
-  f = ({a, r...} = {a: 1, b: 2}) -> [a, r]
-  deepEqual [1, {b:2}], f()
-  deepEqual [2, {}], f {a:2}
-  deepEqual [3, {c:5}], f {a:3, c:5}
-
-  f = ({ a: aa = 0, b: bb = 0 }) -> [aa, bb]
-  deepEqual [0, 0], f {}
-  deepEqual [0, 42], f {b:42}
-  deepEqual [42, 0], f {a:42}
-  deepEqual [42, 43], f {a:42, b:43}
 
 test "#4005: `([a = {}]..., b) ->` weirdness", ->
   fn = ([a = {}]..., b) -> [a, b]
@@ -11801,15 +11559,6 @@ test "#4413: expressions in function parameters that create generated variables 
   eq f(), 33
   eq g(), 34
 
-test "#4673: complex destructured object spread variables", ->
-  f = ({{a...}...}) ->
-    a
-  eq f(c: 1).c, 1
-
-  g = ({@y...}) ->
-    eq @y.b, 1
-  g b: 1
-
 test "#4657: destructured array param declarations", ->
   a = 1
   b = 2
@@ -11996,7 +11745,7 @@ test "`throw` can be yielded", ->
   throws -> x.next()
 
 test "symbolic operators has precedence over the `yield`", ->
-  symbolic   = '+ - * / << >> & | || && ** ^ // or and'.split ' '
+  symbolic   = '+ - * / << >> & | || && ^ // or and'.split ' '
   compound   = ("#{op}=" for op in symbolic)
   relations  = '< > == != <= >= is isnt'.split ' '
 
@@ -12479,7 +12228,7 @@ eq 'multiline nested "interpolations" work', """multiline #{
 
 eq 'function(){}', "#{->}".replace /\s/g, ''
 ok /^a[\s\S]+b$/.test "a#{=>}b"
-ok /^a[\s\S]+b$/.test "a#{ (x) -> x ** 2 }b"
+ok /^a[\s\S]+b$/.test "a#{ (x) -> x %% 2 }b"
 
 # Regular Expression Interpolation
 
@@ -14635,6 +14384,429 @@ test "NaN", ->
   ok isNaN 1/NaN
 
 </script>
+<script type="text/x-coffeescript" class="test" id="object_rest_spread">
+test "#4798 destructuring of objects with splat within arrays", ->
+  arr = [1, {a:1, b:2}]
+  [...,{a, r...}] = arr
+  eq a, 1
+  deepEqual r, {b:2}
+  [b, {q...}] = arr
+  eq b, 1
+  deepEqual q, arr[1]
+  eq q.b, r.b
+  eq q.a, a
+
+  arr2 = [arr[1]]
+  [{a2...}] = arr2
+  eq a2.a, arr2[0].a
+
+test "destructuring assignment with objects and splats: ES2015", ->
+  obj = {a: 1, b: 2, c: 3, d: 4, e: 5}
+  throws (-> CoffeeScript.compile "{a, r..., s...} = x"), null, "multiple rest elements are disallowed"
+  throws (-> CoffeeScript.compile "{a, r..., s..., b} = x"), null, "multiple rest elements are disallowed"
+  prop = "b"
+  {a, b, r...} = obj
+  eq a, 1
+  eq b, 2
+  eq r.e, obj.e
+  eq r.a, undefined
+  {d, c: x, r...} = obj
+  eq x, 3
+  eq d, 4
+  eq r.c, undefined
+  eq r.b, 2
+  {a, 'b': z, g = 9, r...} = obj
+  eq g, 9
+  eq z, 2
+  eq r.b, undefined
+
+test "destructuring assignment with splats and default values", ->
+  obj = {}
+  c = {b: 1}
+  { a: {b} = c, d...} = obj
+
+  eq b, 1
+  deepEqual d, {}
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  {
+    a: {b} = c
+    d ...
+  } = obj
+
+  eq b, 1
+  deepEqual d, {}
+
+test "destructuring assignment with splat with default value", ->
+  obj = {}
+  c = {val: 1}
+  { a: {b...} = c } = obj
+
+  deepEqual b, val: 1
+
+test "destructuring assignment with multiple splats in different objects", ->
+  obj = { a: {val: 1}, b: {val: 2} }
+  { a: {a...}, b: {b...} } = obj
+  deepEqual a, val: 1
+  deepEqual b, val: 2
+
+  o = {
+    props: {
+      p: {
+        n: 1
+        m: 5
+      }
+      s: 6
+    }
+  }
+  {p: {m, q..., t = {obj...}}, r...} = o.props
+  eq m, o.props.p.m
+  deepEqual r, s: 6
+  deepEqual q, n: 1
+  deepEqual t, obj
+
+  @props = o.props
+  {p: {m}, r...} = @props
+  eq m, @props.p.m
+  deepEqual r, s: 6
+
+  {p: {m}, r...} = {o.props..., p:{m:9}}
+  eq m, 9
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  {
+    a: {
+      a ...
+    }
+    b: {
+      b ...
+    }
+  } = obj
+  deepEqual a, val: 1
+  deepEqual b, val: 2
+
+test "destructuring assignment with dynamic keys and splats", ->
+  i = 0
+  foo = -> ++i
+
+  obj = {1: 'a', 2: 'b'}
+  { "#{foo()}": a, b... } = obj
+
+  eq a, 'a'
+  eq i, 1
+  deepEqual b, 2: 'b'
+
+# Tests from https://babeljs.io/docs/plugins/transform-object-rest-spread/.
+test "destructuring assignment with objects and splats: Babel tests", ->
+  # What Babel calls “rest properties:”
+  { x, y, z... } = { x: 1, y: 2, a: 3, b: 4 }
+  eq x, 1
+  eq y, 2
+  deepEqual z, { a: 3, b: 4 }
+
+  # What Babel calls “spread properties:”
+  n = { x, y, z... }
+  deepEqual n, { x: 1, y: 2, a: 3, b: 4 }
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  { x, y, z ... } = { x: 1, y: 2, a: 3, b: 4 }
+  eq x, 1
+  eq y, 2
+  deepEqual z, { a: 3, b: 4 }
+
+  n = { x, y, z ... }
+  deepEqual n, { x: 1, y: 2, a: 3, b: 4 }
+
+test "deep destructuring assignment with objects: ES2015", ->
+  a1={}; b1={}; c1={}; d1={}
+  obj = {
+    a: a1
+    b: {
+      'c': {
+        d: {
+          b1
+          e: c1
+          f: d1
+        }
+      }
+    }
+    b2: {b1, c1}
+  }
+  {a: w, b: {c: {d: {b1: bb, r1...}}}, r2...} = obj
+  eq r1.e, c1
+  eq r2.b, undefined
+  eq bb, b1
+  eq r2.b2, obj.b2
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  {a: w, b: {c: {d: {b1: bb, r1 ...}}}, r2 ...} = obj
+  eq r1.e, c1
+  eq r2.b, undefined
+  eq bb, b1
+  eq r2.b2, obj.b2
+
+test "deep destructuring assignment with defaults: ES2015", ->
+  obj =
+    b: { c: 1, baz: 'qux' }
+    foo: 'bar'
+  j =
+    f: 'world'
+  i =
+    some: 'prop'
+  {
+    a...
+    b: { c, d... }
+    e: {
+      f: hello
+      g: { h... } = i
+    } = j
+  } = obj
+
+  deepEqual a, foo: 'bar'
+  eq c, 1
+  deepEqual d, baz: 'qux'
+  eq hello, 'world'
+  deepEqual h, some: 'prop'
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  {
+    a ...
+    b: {
+      c,
+      d ...
+    }
+    e: {
+      f: hello
+      g: {
+        h ...
+      } = i
+    } = j
+  } = obj
+
+  deepEqual a, foo: 'bar'
+  eq c, 1
+  deepEqual d, baz: 'qux'
+  eq hello, 'world'
+  deepEqual h, some: 'prop'
+
+test "object spread properties: ES2015", ->
+  obj = {a: 1, b: 2, c: 3, d: 4, e: 5}
+  obj2 = {obj..., c:9}
+  eq obj2.c, 9
+  eq obj.a, obj2.a
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  obj2 = {
+    obj ...
+    c:9
+  }
+  eq obj2.c, 9
+  eq obj.a, obj2.a
+
+  obj2 = {obj..., a: 8, c: 9, obj...}
+  eq obj2.c, 3
+  eq obj.a, obj2.a
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  obj2 = {
+    obj ...
+    a: 8
+    c: 9
+    obj ...
+  }
+  eq obj2.c, 3
+  eq obj.a, obj2.a
+
+  obj3 = {obj..., b: 7, g: {obj2..., c: 1}}
+  eq obj3.g.c, 1
+  eq obj3.b, 7
+  deepEqual obj3.g, {obj..., c: 1}
+
+  (({a, b, r...}) ->
+    eq 1, a
+    deepEqual r, {c: 3, d: 44, e: 55}
+  ) {obj2..., d: 44, e: 55}
+
+  obj = {a: 1, b: 2, c: {d: 3, e: 4, f: {g: 5}}}
+  obj4 = {a: 10, obj.c...}
+  eq obj4.a, 10
+  eq obj4.d, 3
+  eq obj4.f.g, 5
+  deepEqual obj4.f, obj.c.f
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  (({
+    a
+    b
+    r ...
+    }) ->
+    eq 1, a
+    deepEqual r, {c: 3, d: 44, e: 55}
+  ) {
+    obj2 ...
+    d: 44
+    e: 55
+  }
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  obj4 = {
+    a: 10
+    obj.c ...
+  }
+  eq obj4.a, 10
+  eq obj4.d, 3
+  eq obj4.f.g, 5
+  deepEqual obj4.f, obj.c.f
+
+  obj5 = {obj..., ((k) -> {b: k})(99)...}
+  eq obj5.b, 99
+  deepEqual obj5.c, obj.c
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  obj5 = {
+    obj ...
+    ((k) -> {b: k})(99) ...
+  }
+  eq obj5.b, 99
+  deepEqual obj5.c, obj.c
+
+  fn = -> {c: {d: 33, e: 44, f: {g: 55}}}
+  obj6 = {obj..., fn()...}
+  eq obj6.c.d, 33
+  deepEqual obj6.c, {d: 33, e: 44, f: {g: 55}}
+
+  obj7 = {obj..., fn()..., {c: {d: 55, e: 66, f: {77}}}...}
+  eq obj7.c.d, 55
+  deepEqual obj6.c, {d: 33, e: 44, f: {g: 55}}
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  obj7 = {
+    obj ...
+    fn() ...
+    {c: {d: 55, e: 66, f: {77}}} ...
+  }
+  eq obj7.c.d, 55
+  deepEqual obj6.c, {d: 33, e: 44, f: {g: 55}}
+
+  obj =
+    a:
+      b:
+        c:
+          d:
+            e: {}
+  obj9 = {a:1, obj.a.b.c..., g:3}
+  deepEqual obj9.d, {e: {}}
+
+  a = "a"
+  c = "c"
+  obj9 = {a:1, obj[a].b[c]..., g:3}
+  deepEqual obj9.d, {e: {}}
+
+  obj9 = {a:1, obj.a["b"].c["d"]..., g:3}
+  deepEqual obj9["e"], {}
+
+test "#4673: complex destructured object spread variables", ->
+  b = c: 1
+  {{a...}...} = b
+  eq a.c, 1
+
+  d = {}
+  {d.e...} = f: 1
+  eq d.e.f, 1
+
+  {{g}...} = g: 1
+  eq g, 1
+
+test "rest element destructuring in function definition", ->
+  obj = {a: 1, b: 2, c: 3, d: 4, e: 5}
+
+  (({a, b, r...}) ->
+    eq 1, a
+    eq 2, b,
+    deepEqual r, {c: 3, d: 4, e: 5}
+  ) obj
+
+  (({a: p, b, r...}, q) ->
+    eq p, 1
+    eq q, 9
+    deepEqual r, {c: 3, d: 4, e: 5}
+  ) {a:1, b:2, c:3, d:4, e:5}, 9
+
+  # Should not trigger implicit call, e.g. rest ... => rest(...)
+  (({
+      a: p
+      b
+      r ...
+    }, q) ->
+    eq p, 1
+    eq q, 9
+    deepEqual r, {c: 3, d: 4, e: 5}
+  ) {a:1, b:2, c:3, d:4, e:5}, 9
+
+  a1={}; b1={}; c1={}; d1={}
+  obj1 = {
+    a: a1
+    b: {
+      'c': {
+        d: {
+          b1
+          e: c1
+          f: d1
+        }
+      }
+    }
+    b2: {b1, c1}
+  }
+
+  (({a: w, b: {c: {d: {b1: bb, r1...}}}, r2...}) ->
+    eq a1, w
+    eq bb, b1
+    eq r2.b, undefined
+    deepEqual r1, {e: c1, f: d1}
+    deepEqual r2.b2, {b1, c1}
+  ) obj1
+
+  b = 3
+  f = ({a, b...}) ->
+  f {}
+  eq 3, b
+
+  (({a, r...} = {}) ->
+    eq a, undefined
+    deepEqual r, {}
+  )()
+
+  (({a, r...} = {}) ->
+    eq a, 1
+    deepEqual r, {b: 2, c: 3}
+  ) {a: 1, b: 2, c: 3}
+
+  f = ({a, r...} = {}) -> [a, r]
+  deepEqual [undefined, {}], f()
+  deepEqual [1, {b: 2}], f {a: 1, b: 2}
+  deepEqual [1, {}], f {a: 1}
+
+  f = ({a, r...} = {a: 1, b: 2}) -> [a, r]
+  deepEqual [1, {b:2}], f()
+  deepEqual [2, {}], f {a:2}
+  deepEqual [3, {c:5}], f {a:3, c:5}
+
+  f = ({ a: aa = 0, b: bb = 0 }) -> [aa, bb]
+  deepEqual [0, 0], f {}
+  deepEqual [0, 42], f {b:42}
+  deepEqual [42, 0], f {a:42}
+  deepEqual [42, 43], f {a:42, b:43}
+
+test "#4673: complex destructured object spread variables", ->
+  f = ({{a...}...}) ->
+    a
+  eq f(c: 1).c, 1
+
+  g = ({@y...}) ->
+    eq @y.b, 1
+  g b: 1
+
+</script>
 <script type="text/x-coffeescript" class="test" id="objects">
 # Object Literals
 # ---------------
@@ -15849,25 +16021,16 @@ test "#2567: Optimization of negated existential produces correct result", ->
 
 test "#2508: Existential access of the prototype", ->
   eq NonExistent?::nothing, undefined
+  eq(
+    NonExistent
+    ?::nothing
+    undefined
+  )
   ok Object?::toString
-
-test "power operator", ->
-  eq 27, 3 ** 3
-
-test "power operator has higher precedence than other maths operators", ->
-  eq 55, 1 + 3 ** 3 * 2
-  eq -4, -2 ** 2
-  eq false, !2 ** 2
-  eq 0, (!2) ** 2
-  eq -2, ~1 ** 5
-
-test "power operator is right associative", ->
-  eq 2, 2 ** 1 ** 3
-
-test "power operator compound assignment", ->
-  a = 2
-  a **= 3
-  eq 8, a
+  ok(
+    Object
+    ?::toString
+  )
 
 test "floor division operator", ->
   eq 2, 7 // 3
@@ -16435,7 +16598,7 @@ test "counting up by too much returns just the first value", ->
   arrayEq countup, [1]
 
 </script>
-<script type="text/x-coffeescript" class="test" id="regexps">
+<script type="text/x-coffeescript" class="test" id="regex">
 # Regular Expression Literals
 # ---------------------------
 
@@ -16764,6 +16927,16 @@ test "#4811, heregex comments with ///", ->
    // /// 'heregex' in comment will be consumed
    /a|b/;
   """
+
+</script>
+<script type="text/x-coffeescript" class="test" id="regex_dotall">
+# Regex “dotall” flag, or `s`, is only supported in Node 9+, so put tests for
+# the feature in their own file. The feature detection in `Cakefile` that
+# causes this test to load is adapted from
+# https://github.com/tc39/proposal-regexp-dotall-flag#proposed-solution.
+
+test "dotall flag", ->
+  doesNotThrow -> /a.b/s.test 'a\nb'
 
 </script>
 <script type="text/x-coffeescript" class="test" id="repl">

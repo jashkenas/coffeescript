@@ -1,7 +1,29 @@
 unless window.location.origin # Polyfill `location.origin` for IE < 11
   window.location.origin = "#{window.location.protocol}//#{window.location.hostname}"
 
+
+# Initialize Google Analytics
+window.GA_TRACKING_ID = 'UA-106156830-1'
+window.dataLayer ?= []
+window.gtag = ->
+  window.dataLayer.push arguments
+  return
+window.gtag 'js', new Date()
+window.gtag 'config', window.GA_TRACKING_ID
+
+
+# Initialize the CoffeeScript docs interactions
 $(document).ready ->
+  # Format dates for the user’s locale, e.g. 'December 24, 2009' or '24 décembre 2009'
+  $('time').each (index, el) ->
+    date = el.dateTime or $(el).text()
+    formattedDate = new Date(date).toLocaleDateString undefined, # undefined to use browser locale
+      year: 'numeric'
+      month: 'long'
+      day: 'numeric'
+    $(el).text formattedDate.toString()
+
+
   # Mobile navigation
   toggleSidebar = ->
     $('.navbar-toggler, .sidebar').toggleClass 'show'
@@ -21,21 +43,21 @@ $(document).ready ->
 
   # Initialize Scrollspy for sidebar navigation; https://getbootstrap.com/docs/4.0/components/scrollspy/
   # See also http://www.codingeverything.com/2014/02/BootstrapDocsSideBar.html and http://jsfiddle.net/KyleMit/v6zhz/
-  $('body').scrollspy
+  $('.main').scrollspy
     target: '#contents'
     offset: Math.round $('main').css('padding-top').replace('px', '')
 
   initializeScrollspyFromHash = (hash) ->
     $("#contents a.active[href!='#{hash}']").removeClass 'show'
 
-  $(window).on 'activate.bs.scrollspy', (event, target) -> # Why `window`? https://github.com/twbs/bootstrap/issues/20086
+  $('.main').on 'activate.bs.scrollspy', (event, target) ->
     # We only want one active link in the nav
     $("#contents a.active[href!='#{target.relatedTarget}']").removeClass 'show'
     $target = $("#contents a[href='#{target.relatedTarget}']")
     return if $target.prop('href') is "#{window.location.origin}/#try"
     # Update the browser address bar on scroll, without adding to the history; clicking the sidebar links will automatically add to the history
     replaceState $target.prop('href')
-    # Track this as a new pageview; we only want '/#hash', not 'http://coffeescript.org/#hash'
+    # Track this as a new pageview; we only want '/#hash', not 'https://coffeescript.org/#hash'
     gtag 'config', GA_TRACKING_ID,
       page_path: $target.prop('href').replace window.location.origin, ''
 
@@ -131,7 +153,7 @@ $(document).ready ->
     else
       $(textareas[index]).val()
     js = "#{js}\nalert(#{unescape run});" unless run is yes
-    eval js
+    window.eval js
     gtag 'event', 'run_code',
       event_category: 'engagement'
       event_label: $(@).closest('[data-example]').data('example')
@@ -164,6 +186,11 @@ $(document).ready ->
     event.preventDefault()
     toggleTry yes
   $('[data-close="try"]').click closeTry
+
+  $('[data-action="scroll-to-top"]').click (event) ->
+    return if $('#try').hasClass('show')
+    $('.main')[0].scrollTop = 0
+    setTimeout clearHash, 10
 
   clearHash = ->
     window.history.replaceState {}, document.title, window.location.pathname

@@ -227,11 +227,11 @@ grammar =
     o 'Identifier'
     o 'Property'
     o 'ThisProperty'
-    o '[ Expression ]',          -> new Value new ComputedPropertyName $2
   ]
 
   ObjAssignable: [
     o 'SimpleObjAssignable'
+    o '[ Expression ]',          -> new Value new ComputedPropertyName $2
     o 'AlphaNumeric'
   ]
 
@@ -377,11 +377,12 @@ grammar =
   # The general group of accessors into an object, by property, by prototype
   # or by array index or slice.
   Accessor: [
-    o '.  Property',      -> new Access $2
-    o '?. Property',      -> new Access $2, 'soak'
-    o ':: Property',      -> [LOC(1)(new Access new PropertyName('prototype')), LOC(2)(new Access $2)]
-    o '?:: Property',     -> [LOC(1)(new Access new PropertyName('prototype'), 'soak'), LOC(2)(new Access $2)]
-    o '::',               -> new Access new PropertyName 'prototype'
+    o '.  Property',                            -> new Access $2
+    o '?. Property',                            -> new Access $2, 'soak'
+    o ':: Property',                            -> [LOC(1)(new Access new PropertyName('prototype')), LOC(2)(new Access $2)]
+    o '?:: Property',                           -> [LOC(1)(new Access new PropertyName('prototype'), 'soak'), LOC(2)(new Access $2)]
+    o '::',                                     -> new Access new PropertyName 'prototype'
+    o '?::',                                    -> new Access new PropertyName('prototype'), 'soak'
     o 'Index'
   ]
 
@@ -671,26 +672,31 @@ grammar =
   # Comprehensions can either be normal, with a block of expressions to execute,
   # or postfix, with a single expression.
   For: [
-    o 'Statement  ForBody',                     -> new For $1, $2
-    o 'Expression ForBody',                     -> new For $1, $2
-    o 'ForBody    Block',                       -> new For $2, $1
-    o 'ForLineBody  Block',                     -> new For $2, $1
+    o 'Statement    ForBody',  -> $2.addBody $1
+    o 'Expression   ForBody',  -> $2.addBody $1
+    o 'ForBody      Block',    -> $1.addBody $2
+    o 'ForLineBody  Block',    -> $1.addBody $2
   ]
 
   ForBody: [
-    o 'FOR Range',                              -> source: (LOC(2) new Value($2))
-    o 'FOR Range BY Expression',                -> source: (LOC(2) new Value($2)), step: $4
-    o 'ForStart ForSource',                     -> $2.own = $1.own; $2.ownTag = $1.ownTag; $2.name = $1[0]; $2.index = $1[1]; $2
+    o 'FOR Range',                -> new For [], source: (LOC(2) new Value($2))
+    o 'FOR Range BY Expression',  -> new For [], source: (LOC(2) new Value($2)), step: $4
+    o 'ForStart ForSource',       -> $1.addSource $2
   ]
 
   ForLineBody: [
-    o 'FOR Range BY ExpressionLine',            -> source: (LOC(2) new Value($2)), step: $4
-    o 'ForStart ForLineSource',                 -> $2.own = $1.own; $2.ownTag = $1.ownTag; $2.name = $1[0]; $2.index = $1[1]; $2
+    o 'FOR Range BY ExpressionLine',  -> new For [], source: (LOC(2) new Value($2)), step: $4
+    o 'ForStart ForLineSource',       -> $1.addSource $2
   ]
 
   ForStart: [
-    o 'FOR ForVariables',                       -> $2
-    o 'FOR OWN ForVariables',                   -> $3.own = yes; $3.ownTag = (LOC(2) new Literal($2)); $3
+    o 'FOR ForVariables',        -> new For [], name: $2[0], index: $2[1]
+    o 'FOR AWAIT ForVariables',  ->
+        [name, index] = $3
+        new For [], {name, index, await: yes, awaitTag: (LOC(2) new Literal($2))}
+    o 'FOR OWN ForVariables',    ->
+        [name, index] = $3
+        new For [], {name, index, own: yes, ownTag: (LOC(2) new Literal($2))}
   ]
 
   # An array of all accepted values for a variable inside the loop.
@@ -829,7 +835,7 @@ grammar =
     o 'SimpleAssignable --',                    -> new Op '--', $1, null, true
     o 'SimpleAssignable ++',                    -> new Op '++', $1, null, true
 
-    # [The existential operator](http://coffeescript.org/#existential-operator).
+    # [The existential operator](https://coffeescript.org/#existential-operator).
     o 'Expression ?',                           -> new Existence $1
 
     o 'Expression +  Expression',               -> new Op '+' , $1, $3

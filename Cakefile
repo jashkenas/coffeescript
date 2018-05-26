@@ -19,7 +19,7 @@ unless process.env.NODE_DISABLE_COLORS
 header = """
   /**
    * CoffeeScript Compiler v#{CoffeeScript.VERSION}
-   * http://coffeescript.org
+   * https://coffeescript.org
    *
    * Copyright 2011, Jeremy Ashkenas
    * Released under the MIT License
@@ -72,7 +72,7 @@ transpile = (code) ->
   # Exclude the `modules` plugin in order to not break the `}(this));`
   # at the end of the `build:browser` code block.
   presets.push ['env', {modules: no}] unless process.env.TRANSFORM is 'false'
-  presets.push 'minify' unless process.env.MINIFY is 'false'
+  presets.push ['minify', {mangle: no}] unless process.env.MINIFY is 'false'
   babelOptions =
     compact: process.env.MINIFY isnt 'false'
     presets: presets
@@ -182,18 +182,10 @@ buildDocs = (watch = no) ->
 
   # Helpers
   releaseHeader = (date, version, prevVersion) ->
-    monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-
-    formatDate = (date) ->
-      date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
-        "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
-
     """
-      <div class="anchor" id="#{version}"></div>
-      <h2 class="header">
-        #{prevVersion and "<a href=\"https://github.com/jashkenas/coffeescript/compare/#{prevVersion}...#{version}\">#{version}</a>" or version}
-        <span class="timestamp"> &mdash; <time datetime="#{date}">#{formatDate date}</time></span>
-      </h2>
+      <h3>#{prevVersion and "<a href=\"https://github.com/jashkenas/coffeescript/compare/#{prevVersion}...#{version}\">#{version}</a>" or version}
+        <span class="timestamp"> &mdash; <time datetime="#{date}">#{date}</time></span>
+      </h3>
     """
 
   codeFor = require "./documentation/site/code.coffee"
@@ -224,7 +216,7 @@ buildDocs = (watch = no) ->
         "<blockquote class=\"uneditable-code-block\">#{defaultFence.apply @, arguments}</blockquote>"
 
     (file, bookmark) ->
-      md = fs.readFileSync "#{sectionsSourceFolder}/#{file}.md", 'utf-8'
+      md = fs.readFileSync "#{sectionsSourceFolder}/#{file.replace /\//g, path.sep}.md", 'utf-8'
       md = md.replace /<%= releaseHeader %>/g, releaseHeader
       md = md.replace /<%= majorVersion %>/g, majorVersion
       md = md.replace /<%= fullVersion %>/g, CoffeeScript.VERSION
@@ -452,6 +444,7 @@ runTests = (CoffeeScript) ->
   skipUnless 'async () => {}', ['async.coffee', 'async_iterators.coffee']
   skipUnless 'async function* generator() { yield 42; }', ['async_iterators.coffee']
   skipUnless 'var a = 2 ** 2; a **= 3', ['exponentiation.coffee']
+  skipUnless 'var {...a} = {}', ['object_rest_spread.coffee']
   skipUnless '/foo.bar/s.test("foo\tbar")', ['regex_dotall.coffee']
   files = fs.readdirSync('test').filter (filename) ->
     filename not in testFilesToSkip

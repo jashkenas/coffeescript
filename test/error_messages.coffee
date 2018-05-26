@@ -1230,28 +1230,6 @@ test "CoffeeScript keywords cannot be used as local names in import list aliases
                     ^^^^^^
   '''
 
-test "function cannot contain both `await` and `yield`", ->
-  assertErrorFormat '''
-    f = () ->
-      yield 5
-      await a
-  ''', '''
-    [stdin]:3:3: error: function can't contain both yield and await
-      await a
-      ^^^^^^^
-  '''
-
-test "function cannot contain both `await` and `yield from`", ->
-  assertErrorFormat '''
-    f = () ->
-      yield from a
-      await b
-  ''', '''
-    [stdin]:3:3: error: function can't contain both yield and await
-      await b
-      ^^^^^^^
-  '''
-
 test "cannot have `await` outside a function", ->
   assertErrorFormat '''
     await 1
@@ -1684,6 +1662,28 @@ test 'CSX error: invalid attributes', ->
          ^^^^^^^^^^^^^^^^
   '''
 
+test '#5034: CSX error: Adjacent JSX elements must be wrapped in an enclosing tag', ->
+  assertErrorFormat '''
+    render = -> (
+      <Row>a</Row>
+      <Row>b</Row>
+    )
+  ''', '''
+    [stdin]:3:4: error: Adjacent JSX elements must be wrapped in an enclosing tag
+      <Row>b</Row>
+       ^^^^^^^^^^^
+  '''
+  assertErrorFormat '''
+    render = -> (
+      a = "foo"
+      <Row>a</Row>
+      <Row>b</Row>
+    )
+  ''', '''
+    [stdin]:4:4: error: Adjacent JSX elements must be wrapped in an enclosing tag
+      <Row>b</Row>
+       ^^^^^^^^^^^
+  '''
 test 'Bound method called as callback before binding throws runtime error', ->
   class Base
     constructor: ->

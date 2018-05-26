@@ -8,7 +8,7 @@
     "compiler"
   ],
   "author": "Jeremy Ashkenas",
-  "version": "2.2.4",
+  "version": "2.3.1",
   "license": "MIT",
   "engines": {
     "node": ">=6"
@@ -32,24 +32,23 @@
     "test": "node ./bin/cake test",
     "test-harmony": "node --harmony ./bin/cake test"
   },
-  "homepage": "http://coffeescript.org",
+  "homepage": "https://coffeescript.org",
   "bugs": "https://github.com/jashkenas/coffeescript/issues",
   "repository": {
     "type": "git",
     "url": "git://github.com/jashkenas/coffeescript.git"
   },
   "devDependencies": {
-    "babel-core": "~6.26.0",
-    "babel-preset-babili": "~0.1.4",
-    "babel-preset-env": "~1.6.1",
-    "babel-preset-minify": "^0.3.0",
-    "codemirror": "^5.35.0",
+    "babel-core": "6.26.3",
+    "babel-preset-env": "1.6.1",
+    "babel-preset-minify": "0.4.0",
+    "codemirror": "^5.37.0",
     "docco": "~0.8.0",
     "highlight.js": "~9.12.0",
     "jison": ">=0.4.18",
     "markdown-it": "~8.4.1",
-    "underscore": "~1.8.3",
-    "webpack": "~4.1.1"
+    "underscore": "~1.9.0",
+    "webpack": "~4.6.0"
   },
   "dependencies": {}
 }

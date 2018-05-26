@@ -303,7 +303,16 @@ test "#2567: Optimization of negated existential produces correct result", ->
 
 test "#2508: Existential access of the prototype", ->
   eq NonExistent?::nothing, undefined
+  eq(
+    NonExistent
+    ?::nothing
+    undefined
+  )
   ok Object?::toString
+  ok(
+    Object
+    ?::toString
+  )
 
 test "floor division operator", ->
   eq 2, 7 // 3

@@ -193,7 +193,7 @@ lexer = new Lexer
 
 # The real Lexer produces a generic stream of tokens. This object provides a
 # thin wrapper around it, compatible with the Jison API. We can then pass it
-# directly as a "Jison lexer".
+# directly as a “Jison lexer.”
 parser.lexer =
   lex: ->
     token = parser.tokens[@pos++]

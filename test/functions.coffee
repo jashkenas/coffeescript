@@ -127,6 +127,16 @@ test "destructured splatted parameters", ->
   splatArray = ([a ...]) -> a
   splatArrayRest = ([a ...],b ...) -> arrayEq(a,b); b
 
+test "#4884: object-destructured splatted parameters", ->
+  f = ({length}...) -> length
+  eq f(4, 5, 6), 3
+  f = ({length: len}...) -> len
+  eq f(4, 5, 6), 3
+  f = ({length}..., last) -> [length, last]
+  arrayEq f(4, 5, 6), [2, 6]
+  f = ({length: len}..., last) -> [len, last]
+  arrayEq f(4, 5, 6), [2, 6]
+
 test "@-parameters: automatically assign an argument's value to a property of the context", ->
   nonce = {}
 
@@ -214,86 +224,6 @@ test "destructuring in function definition", ->
   deepEqual ajax('/home', beforeSend: fn, method: 'post'), {
     url: '/home', async: true, beforeSend: fn, cache: true, method: 'post', data: {}
   }
-
-test "rest element destructuring in function definition", ->
-  obj = {a: 1, b: 2, c: 3, d: 4, e: 5}
-
-  (({a, b, r...}) ->
-    eq 1, a
-    eq 2, b,
-    deepEqual r, {c: 3, d: 4, e: 5}
-  ) obj
-
-  (({a: p, b, r...}, q) ->
-    eq p, 1
-    eq q, 9
-    deepEqual r, {c: 3, d: 4, e: 5}
-  ) {a:1, b:2, c:3, d:4, e:5}, 9
-
-  # Should not trigger implicit call, e.g. rest ... => rest(...)
-  (({
-      a: p
-      b
-      r ...
-    }, q) ->
-    eq p, 1
-    eq q, 9
-    deepEqual r, {c: 3, d: 4, e: 5}
-  ) {a:1, b:2, c:3, d:4, e:5}, 9
-
-  a1={}; b1={}; c1={}; d1={}
-  obj1 = {
-    a: a1
-    b: {
-      'c': {
-        d: {
-          b1
-          e: c1
-          f: d1
-        }
-      }
-    }
-    b2: {b1, c1}
-  }
-
-  (({a: w, b: {c: {d: {b1: bb, r1...}}}, r2...}) ->
-    eq a1, w
-    eq bb, b1
-    eq r2.b, undefined
-    deepEqual r1, {e: c1, f: d1}
-    deepEqual r2.b2, {b1, c1}
-  ) obj1
-
-  b = 3
-  f = ({a, b...}) ->
-  f {}
-  eq 3, b
-
-  (({a, r...} = {}) ->
-    eq a, undefined
-    deepEqual r, {}
-  )()
-
-  (({a, r...} = {}) ->
-    eq a, 1
-    deepEqual r, {b: 2, c: 3}
-  ) {a: 1, b: 2, c: 3}
-
-  f = ({a, r...} = {}) -> [a, r]
-  deepEqual [undefined, {}], f()
-  deepEqual [1, {b: 2}], f {a: 1, b: 2}
-  deepEqual [1, {}], f {a: 1}
-
-  f = ({a, r...} = {a: 1, b: 2}) -> [a, r]
-  deepEqual [1, {b:2}], f()
-  deepEqual [2, {}], f {a:2}
-  deepEqual [3, {c:5}], f {a:3, c:5}
-
-  f = ({ a: aa = 0, b: bb = 0 }) -> [aa, bb]
-  deepEqual [0, 0], f {}
-  deepEqual [0, 42], f {b:42}
-  deepEqual [42, 0], f {a:42}
-  deepEqual [42, 43], f {a:42, b:43}
 
 test "#4005: `([a = {}]..., b) ->` weirdness", ->
   fn = ([a = {}]..., b) -> [a, b]
@@ -549,15 +479,6 @@ test "#4413: expressions in function parameters that create generated variables 
   g = (a = foo() ? bar()) -> a + 1
   eq f(), 33
   eq g(), 34
-
-test "#4673: complex destructured object spread variables", ->
-  f = ({{a...}...}) ->
-    a
-  eq f(c: 1).c, 1
-
-  g = ({@y...}) ->
-    eq @y.b, 1
-  g b: 1
 
 test "#4657: destructured array param declarations", ->
   a = 1
