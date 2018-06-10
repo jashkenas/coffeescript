@@ -493,3 +493,25 @@ test "#4657: destructured array parameters", ->
   result = f [1, 2, 3, 4]
   arrayEq result.a, [1, 2, 3]
   eq result.b, 4
+
+test "allow linebreak/indentation before default param value", ->
+  a = {}
+  b = {}
+  obj = f: (
+    q =
+    a,
+    @p =
+      b
+  ) -> q
+  eq a, obj.f()
+  eq b, obj.p
+
+  obj = f: (
+    q = # trailing comment
+    a
+    @p =
+      # preceding comment
+      b
+  ) -> q
+  eq a, obj.f()
+  eq b, obj.p
