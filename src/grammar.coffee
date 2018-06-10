@@ -346,6 +346,8 @@ grammar =
     o 'ParamVar ...',                           -> new Param $1, null, on
     o '... ParamVar',                           -> new Param $2, null, postfix: no
     o 'ParamVar = Expression',                  -> new Param $1, $3
+    o 'ParamVar = TERMINATOR Expression',       -> new Param $1, $4
+    o 'ParamVar = INDENT Expression OUTDENT',   -> new Param $1, $4
     o '...',                                    -> new Expansion
   ]
 
