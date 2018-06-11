@@ -138,6 +138,7 @@ grammar =
   Yield: [
     o 'YIELD',                                  -> new Op $1, new Value new Literal ''
     o 'YIELD Expression',                       -> new Op $1, $2
+    o 'YIELD INDENT Object OUTDENT',            -> new Op $1, $3
     o 'YIELD FROM Expression',                  -> new Op $1.concat($2), $3
   ]
 
@@ -826,7 +827,8 @@ grammar =
     o '-     Expression',                      (-> new Op '-', $2), prec: 'UNARY_MATH'
     o '+     Expression',                      (-> new Op '+', $2), prec: 'UNARY_MATH'
 
-    o 'AWAIT Expression',                       -> new Op $1 , $2
+    o 'AWAIT Expression',                       -> new Op $1, $2
+    o 'AWAIT INDENT Object OUTDENT',            -> new Op $1, $3
 
     o '-- SimpleAssignable',                    -> new Op '--', $2
     o '++ SimpleAssignable',                    -> new Op '++', $2
