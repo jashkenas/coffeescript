@@ -756,38 +756,35 @@ exports.StringLiteral = class StringLiteral extends Literal
     super ''
     @fromSourceString = @quote?
     @quote ?= '"'
-    @formatValue()
-
-  formatValue: ->
     heredoc = @quote.length is 3
-    @value = do =>
-      val = @originalValue
-      if @heregex
-        val = val.replace HEREGEX_OMIT, '$1$2'
-        val = replaceUnicodeCodePointEscapes val, flags: @heregex.flags
-      else
-        val = val.replace STRING_OMIT, '$1'
-        val =
-          unless @fromSourceString
-            val
-          else if heredoc
-            indentRegex = /// \n#{@indent} ///g if @indent
 
-            val = val.replace indentRegex, '\n' if indentRegex
-            val = val.replace LEADING_BLANK_LINE,  '' if @initialChunk
-            val = val.replace TRAILING_BLANK_LINE, '' if @finalChunk
-            val
-          else
-            val.replace SIMPLE_STRING_OMIT, (match, offset) =>
-              if (@initialChunk and offset is 0) or
-                 (@finalChunk and offset + match.length is val.length)
-                ''
-              else
-                ' '
-      makeDelimitedLiteral val, {
-        delimiter: @quote.charAt 0
-        @double
-      }
+    val = @originalValue
+    if @heregex
+      val = val.replace HEREGEX_OMIT, '$1$2'
+      val = replaceUnicodeCodePointEscapes val, flags: @heregex.flags
+    else
+      val = val.replace STRING_OMIT, '$1'
+      val =
+        unless @fromSourceString
+          val
+        else if heredoc
+          indentRegex = /// \n#{@indent} ///g if @indent
+
+          val = val.replace indentRegex, '\n' if indentRegex
+          val = val.replace LEADING_BLANK_LINE,  '' if @initialChunk
+          val = val.replace TRAILING_BLANK_LINE, '' if @finalChunk
+          val
+        else
+          val.replace SIMPLE_STRING_OMIT, (match, offset) =>
+            if (@initialChunk and offset is 0) or
+               (@finalChunk and offset + match.length is val.length)
+              ''
+            else
+              ' '
+    @value = makeDelimitedLiteral val, {
+      delimiter: @quote.charAt 0
+      @double
+    }
 
   compileNode: (o) ->
     return [@makeCode @unquote(yes, yes)] if @csx
@@ -802,17 +799,13 @@ exports.StringLiteral = class StringLiteral extends Literal
 exports.RegexLiteral = class RegexLiteral extends Literal
   constructor: (value, {@delimiter = '/'} = {}) ->
     super ''
-    @formatValue value
-
-  formatValue: (val) ->
     heregex = @delimiter is '///'
-    endDelimiterIndex = val.lastIndexOf '/'
-    @flags = val[endDelimiterIndex + 1..]
-    @value = do =>
-      val = @originalValue = val[1...endDelimiterIndex]
-      val = val.replace HEREGEX_OMIT, '$1$2' if heregex
-      val = replaceUnicodeCodePointEscapes val, {@flags}
-      "#{makeDelimitedLiteral val, delimiter: '/'}#{@flags}"
+    endDelimiterIndex = value.lastIndexOf '/'
+    @flags = value[endDelimiterIndex + 1..]
+    val = @originalValue = value[1...endDelimiterIndex]
+    val = val.replace HEREGEX_OMIT, '$1$2' if heregex
+    val = replaceUnicodeCodePointEscapes val, {@flags}
+    @value = "#{makeDelimitedLiteral val, delimiter: '/'}#{@flags}"
 
 exports.PassthroughLiteral = class PassthroughLiteral extends Literal
   constructor: (@originalValue, {@here} = {}) ->
