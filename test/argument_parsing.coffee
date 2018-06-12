@@ -119,12 +119,14 @@ Usage: coffee [options] path/to/script.coffee [args]
 
 If called without options, `coffee` will run your script.
 
+      --ast          generate an abstract syntax tree of nodes
   -b, --bare         compile without a top-level function wrapper
   -c, --compile      compile to JavaScript and save as .js files
   -e, --eval         pass a string from the command line as input
   -h, --help         display this help message
   -i, --interactive  run an interactive CoffeeScript REPL
   -j, --join         concatenate the source CoffeeScript before compiling
+  -l, --literate     treat stdio as literate style coffeescript
   -m, --map          generate source map and save as .js.map files
   -M, --inline-map   generate source map and include it directly in output
   -n, --nodes        print out the parse tree that the parser produces
@@ -134,7 +136,6 @@ If called without options, `coffee` will run your script.
   -p, --print        print out the compiled JavaScript
   -r, --require      require the given module before eval or REPL
   -s, --stdio        listen for and compile scripts over stdio
-  -l, --literate     treat stdio as literate style coffeescript
   -t, --transpile    pipe generated JavaScript through Babel
       --tokens       print out the tokens that the lexer/rewriter produce
   -v, --version      display the version number

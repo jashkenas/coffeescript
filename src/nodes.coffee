@@ -257,13 +257,52 @@ exports.Base = class Base
   lastNode: (list) ->
     if list.length is 0 then null else list[list.length - 1]
 
-  # `toString` representation of the node, for inspecting the parse tree.
+  # Debugging representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
   toString: (idt = '', name = @constructor.name) ->
     tree = '\n' + idt + name
     tree += '?' if @soak
     @eachChild (node) -> tree += node.toString idt + TAB
     tree
+
+  # Plain JavaScript object representation of the node, that can be serialized
+  # as JSON. This is used for generating an abstract syntax tree (AST).
+  # This is what the `ast` option in the Node API returns.
+  toJSON: ->
+    # We try to follow the [Babel AST spec](https://github.com/babel/babel/blob/master/packages/babylon/ast/spec.md)
+    # as closely as possible, for improved interoperability with other tools.
+    obj =
+      type: @constructor.name
+      # Convert `locationData` to Babel’s style.
+      loc:
+        start:
+          line: @locationData.first_line
+          column: @locationData.first_column
+        end:
+          line: @locationData.last_line
+          column: @locationData.last_column
+
+    # Add serializable properties to the output. Properties that aren’t
+    # automatically serializable (because they’re already a primitive type)
+    # should be handled on a case-by-case basis in child node classes’ own
+    # `toJSON` methods.
+    for property, value of this
+      continue if property in ['locationData', 'children']
+      continue if value is undefined # Don’t skip `null` or `false` values.
+      if typeof value is 'boolean' or typeof value is 'number' or typeof value is 'string'
+        obj[property] = value
+
+    # Work our way down the tree. This is like `eachChild`, except that we
+    # preserve the child node name, and arrays.
+    for attr in @children when @[attr]
+      if Array.isArray(@[attr])
+        obj[attr] = []
+        for child in flatten [@[attr]]
+          obj[attr].push child.unwrap().toJSON()
+      else
+        obj[attr] = @[attr].unwrap().toJSON()
+
+    obj
 
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
