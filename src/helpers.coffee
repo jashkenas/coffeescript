@@ -244,28 +244,6 @@ exports.nameWhitespaceCharacter = (string) ->
     when '\t' then 'tab'
     else string
 
-# Constructs a string or regex by escaping certain characters.
-exports.makeDelimitedLiteral = (body, options = {}) ->
-    body = '(?:)' if body is '' and options.delimiter is '/'
-    regex = ///
-        (\\\\)                               # Escaped backslash.
-      | (\\0(?=[1-7]))                       # Null character mistaken as octal escape.
-      | \\?(#{options.delimiter})            # (Possibly escaped) delimiter.
-      | \\?(?: (\n)|(\r)|(\u2028)|(\u2029) ) # (Possibly escaped) newlines.
-      | (\\.)                                # Other escapes.
-    ///g
-    body = body.replace regex, (match, backslash, nul, delimiter, lf, cr, ls, ps, other) -> switch
-      # Ignore escaped backslashes.
-      when backslash then (if options.double then backslash + backslash else backslash)
-      when nul       then '\\x00'
-      when delimiter then "\\#{delimiter}"
-      when lf        then '\\n'
-      when cr        then '\\r'
-      when ls        then '\\u2028'
-      when ps        then '\\u2029'
-      when other     then (if options.double then "\\#{other}" else other)
-    "#{options.delimiter}#{body}#{options.delimiter}"
-
 unicodeCodePointToUnicodeEscapes = (codePoint) ->
   toUnicodeEscape = (val) ->
     str = val.toString 16
@@ -296,3 +274,6 @@ UNICODE_CODE_POINT_ESCAPE = ///
   |
   \\u\{ ( [\da-fA-F]+ ) \}
 ///g
+
+# Convert a String object to a primitive string
+exports.toPrimitiveString = (strObject) -> "#{strObject}"
