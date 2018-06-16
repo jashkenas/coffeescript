@@ -11,12 +11,12 @@ Error.stackTraceLimit = Infinity
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, some,
 addDataToNode, attachCommentsToNode, locationDataToString,
-throwSyntaxError, replaceUnicodeCodePointEscapes, toPrimitiveString} = require './helpers'
+throwSyntaxError, replaceUnicodeCodePointEscapes} = require './helpers'
 
 # Functions required by parser.
 exports.extend = extend
 exports.addDataToNode = addDataToNode
-exports.toPrimitiveString = toPrimitiveString
+exports.toPrimitiveString = (strObject) -> "#{strObject}"
 
 # Constant functions for nodes that don’t need customization.
 YES     = -> yes

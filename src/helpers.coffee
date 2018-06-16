@@ -274,6 +274,3 @@ UNICODE_CODE_POINT_ESCAPE = ///
   |
   \\u\{ ( [\da-fA-F]+ ) \}
 ///g
-
-# Convert a String object to a primitive string
-exports.toPrimitiveString = (strObject) -> "#{strObject}"
