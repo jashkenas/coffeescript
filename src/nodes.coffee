@@ -11,7 +11,7 @@ Error.stackTraceLimit = Infinity
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, some,
 addDataToNode, attachCommentsToNode, locationDataToString,
-throwSyntaxError} = require './helpers'
+throwSyntaxError, makeDelimitedLiteral, replaceUnicodeCodePointEscapes} = require './helpers'
 
 # Functions required by parser.
 exports.extend = extend
@@ -791,18 +791,68 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
     if o.level >= LEVEL_OP then @wrapInParentheses code else code
 
 exports.StringLiteral = class StringLiteral extends Literal
-  compileNode: (o) ->
-    res = if @csx then [@makeCode @unquote(yes, yes)] else super()
+  constructor: (@originalValue, {@quote, @initialChunk, @finalChunk, @indent, @double, @heregex} = {}) ->
+    super ''
+    @fromSourceString = @quote?
+    @quote ?= '"'
+    heredoc = @quote.length is 3
 
-  unquote: (doubleQuote = no, newLine = no) ->
+    val = @originalValue
+    if @heregex
+      val = val.replace HEREGEX_OMIT, '$1$2'
+      val = replaceUnicodeCodePointEscapes val, flags: @heregex.flags
+    else
+      val = val.replace STRING_OMIT, '$1'
+      val =
+        unless @fromSourceString
+          val
+        else if heredoc
+          indentRegex = /// \n#{@indent} ///g if @indent
+
+          val = val.replace indentRegex, '\n' if indentRegex
+          val = val.replace LEADING_BLANK_LINE,  '' if @initialChunk
+          val = val.replace TRAILING_BLANK_LINE, '' if @finalChunk
+          val
+        else
+          val.replace SIMPLE_STRING_OMIT, (match, offset) =>
+            if (@initialChunk and offset is 0) or
+               (@finalChunk and offset + match.length is val.length)
+              ''
+            else
+              ' '
+    @value = makeDelimitedLiteral val, {
+      delimiter: @quote.charAt 0
+      @double
+    }
+
+  compileNode: (o) ->
+    return [@makeCode @unquote(yes, yes)] if @csx
+    super o
+
+  unquote: (doubleQuote = no, csx = no) ->
     unquoted = @value[1...-1]
     unquoted = unquoted.replace /\\"/g, '"'  if doubleQuote
-    unquoted = unquoted.replace /\\n/g, '\n' if newLine
+    unquoted = unquoted.replace /\\n/g, '\n' if csx
     unquoted
 
 exports.RegexLiteral = class RegexLiteral extends Literal
+  constructor: (value, {@delimiter = '/'} = {}) ->
+    super ''
+    heregex = @delimiter is '///'
+    endDelimiterIndex = value.lastIndexOf '/'
+    @flags = value[endDelimiterIndex + 1..]
+    val = @originalValue = value[1...endDelimiterIndex]
+    val = val.replace HEREGEX_OMIT, '$1$2' if heregex
+    val = replaceUnicodeCodePointEscapes val, {@flags}
+    @value = "#{makeDelimitedLiteral val, delimiter: '/'}#{@flags}"
 
 exports.PassthroughLiteral = class PassthroughLiteral extends Literal
+  constructor: (@originalValue, {@here} = {}) ->
+    super ''
+    @value = @originalValue.replace /\\+(`|$)/g, (string) ->
+      # `string` is always a value like '\`', '\\\`', '\\\\\`', etc.
+      # By reducing it to its latter half, we turn '\`' to '`', '\\\`' to '\`', etc.
+      string[-Math.ceil(string.length / 2)..]
 
 exports.IdentifierLiteral = class IdentifierLiteral extends Literal
   isAssignable: YES
@@ -1295,9 +1345,12 @@ exports.Super = class Super extends Base
 
 # Regexes with interpolations are in fact just a variation of a `Call` (a
 # `RegExp()` call to be precise) with a `StringWithInterpolations` inside.
-exports.RegexWithInterpolations = class RegexWithInterpolations extends Call
-  constructor: (args = []) ->
-    super (new Value new IdentifierLiteral 'RegExp'), args, false
+exports.RegexWithInterpolations = class RegexWithInterpolations extends Base
+  constructor: (@call) ->
+    super()
+
+  compileNode: (o) ->
+    @call.compileNode o
 
 #### TaggedTemplateCall
 
@@ -3474,7 +3527,7 @@ exports.Parens = class Parens extends Base
 #### StringWithInterpolations
 
 exports.StringWithInterpolations = class StringWithInterpolations extends Base
-  constructor: (@body) ->
+  constructor: (@body, {@quote} = {}) ->
     super()
 
   children: ['body']
@@ -3865,6 +3918,18 @@ LEVEL_ACCESS = 6  # ...[0]
 TAB = '  '
 
 SIMPLENUM = /^[+-]?\d+$/
+SIMPLE_STRING_OMIT = /\s*\n\s*/g
+LEADING_BLANK_LINE  = /^[^\n\S]*\n/
+TRAILING_BLANK_LINE = /\n[^\n\S]*$/
+STRING_OMIT    = ///
+    ((?:\\\\)+)      # Consume (and preserve) an even number of backslashes.
+  | \\[^\S\n]*\n\s*  # Remove escaped newlines.
+///g
+HEREGEX_OMIT = ///
+    ((?:\\\\)+)     # Consume (and preserve) an even number of backslashes.
+  | \\(\s)          # Preserve escaped whitespace.
+  | \s+(?:#.*)?     # Remove whitespace and comments.
+///g
 
 # Helper Functions
 # ----------------
