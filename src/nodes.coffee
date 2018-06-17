@@ -16,6 +16,8 @@ throwSyntaxError, replaceUnicodeCodePointEscapes} = require './helpers'
 # Functions required by parser.
 exports.extend = extend
 exports.addDataToNode = addDataToNode
+# Convert `String` object back to primitive string now that we've retrieved
+# stowaway extra properties
 exports.toPrimitiveString = (strObject) -> "#{strObject}"
 
 # Constant functions for nodes that don’t need customization.
