@@ -1,4 +1,4 @@
-## Splats, or Rest Parameters/Spread Syntax
+### Splats, or Rest Parameters/Spread Syntax
 
 The JavaScript `arguments` object is a useful way to work with functions that accept variable numbers of arguments. CoffeeScript provides splats `...`, both for function definition as well as invocation, making variable numbers of arguments a little bit more palatable. ES2015 adopted this feature as their [rest parameters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/rest_parameters).
 

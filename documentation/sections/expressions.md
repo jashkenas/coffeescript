@@ -1,4 +1,4 @@
-## Everything is an Expression (at least, as much as possible)
+### Everything is an Expression (at least, as much as possible)
 
 You might have noticed how even though we don’t add return statements to CoffeeScript functions, they nonetheless return their final value. The CoffeeScript compiler tries to make sure that all statements in the language can be used as expressions. Watch how the `return` gets pushed down into each possible branch of execution in the function below.
 

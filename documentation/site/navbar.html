@@ -12,5 +12,18 @@
       <a href="https://github.com/jashkenas/coffeescript/" class="nav-item nav-link" data-close="try">GitHub
         </a>
     </div>
+
+    <form class="form-inline cs-search-form" role="search" novalidate="novalidate">
+      <span class="cs-autocomplete cs-autocomplete-right" style="position: relative; display: inline-block; direction: ltr;">
+      <input class="form-control cs-search-input" id="cs-search-input-navbar" type="search" name="cs-search" placeholder="Search docs" aria-label="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-labelledby="cs-doc-search" aria-owns="cs-autocomplete-listbox-0" dir="auto" />
+      <span id="searchIcon"><%= include('search.svg') %></span>
+      <span id="searchResultBox" class="ds-dropdown-menu ds-with-1" role="listbox" id="cs-autocomplete-listbox-0" style="position: absolute; top: 100%; z-index: 100; left: 0px; right: auto; display: none;">
+        <div class="ds-dataset-1">
+          <span id="search-results" class="ds-suggestions" style="display: block;"></span>
+        </div>
+      </span>
+    </span>
+    </form>
   </nav>
 </nav>
+

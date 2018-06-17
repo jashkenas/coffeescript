@@ -3,23 +3,23 @@
 <%= include('try.html') %>
 
 <div class="container-fluid" id="top">
-  <div class="row flex-nowrap main-row">
-    <nav class="sidebar bg-ribbed-light">
+  <div class="row flex-nowrap">
+     <nav class="sidebar col-lg-3 bg-ribbed-light">
       <%= include('sidebar.html') %>
     </nav>
-    <main class="main">
+    <main class="main col-lg-9 ml-auto">
       <header class="d-none d-lg-block">
         <p class="title-logo">
           <%= include('logo.svg') %>
         </p>
       </header>
-      <section id="introduction">
+      <section id="introduction" data-level="2">
         <%= htmlFor('introduction') %>
       </section>
-      <section id="overview">
+      <section id="overview" data-level="2">
         <%= htmlFor('overview') %>
       </section>
-      <section id="coffeescript-2">
+      <section id="coffeescript-2" data-level="2">
         <%= htmlFor('coffeescript_2') %>
         <section id="whats-new-in-coffeescript-2">
           <%= htmlFor('whats_new_in_coffeescript_2') %>
@@ -31,7 +31,7 @@
       <section id="installation">
         <%= htmlFor('installation') %>
       </section>
-      <section id="usage">
+      <section id="usage" data-level="2">
         <%= htmlFor('usage') %>
         <section id="cli">
           <%= htmlFor('command_line_interface') %>
@@ -43,7 +43,7 @@
           <%= htmlFor('transpilation') %>
         </section>
       </section>
-      <section id="language">
+      <section id="language" data-level="1">
         <%= htmlFor('language') %>
         <section id="functions">
           <%= htmlFor('functions') %>
@@ -127,22 +127,22 @@
           <%= htmlFor('jsx') %>
         </section>
       </section>
-      <section id="type-annotations">
+      <section id="type-annotations" data-level="1">
         <%= htmlFor('type_annotations') %>
       </section>
-      <section id="literate">
+      <section id="literate" data-level="1">
         <%= htmlFor('literate') %>
       </section>
-      <section id="source-maps">
+      <section id="source-maps" data-level="1">
         <%= htmlFor('source_maps') %>
       </section>
-      <section id="cake">
+      <section id="cake" data-level="1">
         <%= htmlFor('cake') %>
       </section>
-      <section id="scripts">
+      <section id="scripts" data-level="1">
         <%= htmlFor('scripts') %>
       </section>
-      <section id="resources">
+      <section id="resources" data-level="2">
         <%= htmlFor('resources') %>
         <section id="books">
           <%= htmlFor('books') %>
@@ -163,7 +163,7 @@
           <%= htmlFor('contributing') %>
         </section>
       </section>
-      <section id="unsupported">
+      <section id="unsupported" data-level="2">
         <%= htmlFor('unsupported') %>
         <section id="unsupported-let-const">
           <%= htmlFor('unsupported_let_const') %>
@@ -175,7 +175,7 @@
           <%= htmlFor('unsupported_get_set') %>
         </section>
       </section>
-      <section id="breaking-changes">
+      <section id="breaking-changes" data-level="3">
         <%= htmlFor('breaking_changes') %>
         <section id="breaking-changes-fat-arrow">
           <%= htmlFor('breaking_changes_fat_arrow') %>
@@ -205,7 +205,7 @@
           <%= htmlFor('breaking_changes_argument_parsing_and_shebang_lines') %>
         </section>
       </section>
-      <section id="changelog">
+      <section id="changelog" data-level="3">
         <%= htmlFor('changelog') %>
         <section id="2.3.1">
           <%= htmlFor('changelog/2.3.1') %>

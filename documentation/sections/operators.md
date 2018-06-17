@@ -1,4 +1,4 @@
-## Operators and Aliases
+### Operators and Aliases
 
 Because the `==` operator frequently causes undesirable coercion, is intransitive, and has a different meaning than in other languages, CoffeeScript compiles `==` into `===`, and `!=` into `!==`. In addition, `is` compiles into `===`, and `isnt` into `!==`.
 

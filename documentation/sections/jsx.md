@@ -1,4 +1,4 @@
-## JSX
+### JSX
 
 [JSX](https://facebook.github.io/react/docs/introducing-jsx.html) is JavaScript containing interspersed XML elements. While conceived for [React](https://facebook.github.io/react/), it is not specific to any particular library or framework.
 

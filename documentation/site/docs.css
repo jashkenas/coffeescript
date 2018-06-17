@@ -80,17 +80,13 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 
 
 /*
- * Layout; based on https://codepen.io/Sphinxxxx/pen/WjwbEO
- */
-.main-row {
-  height: calc(100vh - 3.5rem);
-}
-
-/*
  * Sidebar
  */
 
 .sidebar {
+  position: fixed;
+  top: 3.5em;
+  height: calc(100% - 3.5rem);
   /* Scrollable contents if viewport is shorter than content */
   overflow-y: auto;
   overflow-x: hidden;
@@ -106,19 +102,14 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 }
 @media screen and (max-width: 991px) {
   .sidebar {
-    position: fixed;
-    top: 3.5em;
-    height: calc(100% - 3.5rem);
     left: -100%;
     transition: 0.25s left ease-in-out;
   }
   .sidebar.show {
     left: 0;
   }
-}
-@media (min-width: 992px) {
-  .sidebar {
-    flex: 0 0 auto;
+  .sidebar.show .flex-column {
+    flex-grow: 1;
   }
 }
 
@@ -147,17 +138,36 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 
 
 /*
+ * Search input; see search.css for most of the styling of the dropdown
+ */
+
+.form-control::-webkit-input-placeholder {
+  color: #998f8e;
+}
+.form-control:-ms-input-placeholder {
+  color: #998f8e;
+}
+.form-control::-ms-input-placeholder {
+  color: #998f8e;
+}
+.form-control::placeholder {
+  color: #998f8e;
+}
+.form-control:focus {
+  border-color: #1b5e20;
+  box-shadow: 0 0 0 0.2rem rgba(27, 94, 32, 0.25);
+  color: #2f2625;
+}
+
+/*
  * Main content
  */
 
 .main {
-  max-width: 100%;
   padding: 1.3em;
 }
 @media (min-width: 992px) {
   .main {
-    flex: 1 1 auto;
-    overflow: auto;
     padding-right: 2em;
     padding-left: 2em;
   }
@@ -236,6 +246,12 @@ h3, h4, h2 time {
   font-weight: 400;
 }
 
+.main section {
+  /* Offset the anchor so that clicking on the sidebar links don’t hide the heading under the header bar */
+  padding-top: 2.3rem;
+  margin-top: -2.3rem;
+}
+
 @media (min-width: 1200px) {
   .main > header, .main section > h2, .main section > h3, .main section > h4, .main section > p, .main section > blockquote, .main section > ul, .main section > table {
     max-width: 80%;
@@ -255,7 +271,7 @@ code {
 
 
 /*
- * Chrome around code examples; see code.css for the styling of the code blocks themselves
+ * Code examples
  */
 
 textarea {
@@ -290,7 +306,31 @@ textarea {
 
 .play-button {
   height: 1em;
-  width: 1em;
+}
+
+.CodeMirror pre, pre.placeholder-code {
+  line-height: 1.4em;
+}
+
+.CodeMirror,
+.placeholder-code {
+  /* https://codemirror.net/demo/resize.html */
+  height: auto;
+  background: transparent;
+  font-family: 'Roboto Mono';
+  font-weight: 400;
+  line-height: 1.25;
+  font-size: 0.9em;
+}
+@media (min-width: 768px) {
+  .CodeMirror,
+  .placeholder-code {
+    font-size: 1em;
+  }
+}
+
+.CodeMirror-code:focus {
+  outline: none;
 }
 
 .javascript-output-column .CodeMirror-cursor {
@@ -309,8 +349,6 @@ textarea {
   right: 0;
   opacity: 0;
   transition: opacity 0.15s ease-in-out;
-  z-index: -1001;
-  background-color: #2f2625;
 }
 .try-coffeescript.show {
   opacity: 1;

@@ -18,6 +18,715 @@
 <link href="https://fonts.googleapis.com/css?family=Alegreya+Sans:400,800|Lato:300,300i,400,700|Roboto+Mono:400,400i" rel="stylesheet" crossorigin="anonymous">
 <link href="https://cdn.jsdelivr.net/npm/codemirror@5.37.0/lib/codemirror.css" rel="stylesheet" crossorigin="anonymous">
 <style>
+#cs-search-input-navbar {
+  border-radius: 0;
+  background: transparent;
+  border-width: 0 0 1px 0;
+  border-color: #666;
+  padding-left: calc(20px + .75rem);
+}
+#searchIcon {
+  position: absolute;
+  display: inline-block;
+  bottom: 5px;
+  left: 0px;
+  width: 20px;
+}
+#searchIcon path {
+  fill: #ccc;
+}
+
+#cs-search-input-navbar:focus {
+  padding-left: 0.75rem;
+  color: #eee;
+  background: rgba(255,255,255,.3);
+}
+
+#cs-search-input-navbar:focus + #searchIcon {
+  display: none;
+}
+
+.cs-autocomplete.cs-autocomplete-right .ds-dropdown-menu {
+  right: 0 !important;
+  left: inherit !important;
+}
+
+.cs-autocomplete.cs-autocomplete-right .ds-dropdown-menu:before {
+  right: 48px;
+}
+
+.cs-autocomplete.cs-autocomplete-left .ds-dropdown-menu {
+  left: 0 !important;
+  right: inherit !important;
+}
+
+.cs-autocomplete.cs-autocomplete-left .ds-dropdown-menu:before {
+  left: 48px;
+}
+
+.cs-autocomplete .ds-dropdown-menu {
+  position: relative;
+  top: -6px;
+  border-radius: 4px;
+  margin: 6px 0 0;
+  padding: 0;
+  text-align: left;
+  height: auto;
+  position: relative;
+  background: transparent;
+  border: none;
+  z-index: 999;
+  max-width: 600px;
+  min-width: 400px;
+  -webkit-box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.2), 0 2px 3px 0 rgba(0, 0, 0, 0.1);
+          box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.2), 0 2px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.cs-autocomplete .ds-dropdown-menu:before {
+  display: block;
+  position: absolute;
+  content: '';
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  z-index: 1000;
+  top: -7px;
+  border-top: 1px solid #efebe9;
+  border-right: 1px solid #efebe9;
+  -webkit-transform: rotate(-45deg);
+          transform: rotate(-45deg);
+  border-radius: 2px;
+}
+
+.cs-autocomplete .ds-dropdown-menu .ds-suggestions {
+  position: relative;
+  z-index: 1000;
+  margin-top: 8px;
+}
+
+.cs-autocomplete .ds-dropdown-menu .ds-suggestion {
+  cursor: pointer;
+}
+
+.cs-autocomplete .ds-dropdown-menu .ds-suggestion.ds-cursor .cs-docsearch-suggestion.suggestion-layout-simple {
+  background-color: rgba(27, 94, 32, 0.05);
+}
+
+.cs-autocomplete .ds-dropdown-menu .ds-suggestion.ds-cursor .cs-docsearch-suggestion:not(.suggestion-layout-simple) .cs-docsearch-suggestion--content {
+  background-color: rgba(27, 94, 32, 0.05);
+}
+
+.cs-autocomplete .ds-dropdown-menu [class^="ds-dataset-"] {
+  position: relative;
+  border: solid 1px #efebe9;
+  background: #fff;
+  border-radius: 4px;
+  overflow: auto;
+  padding: 0 8px 8px;
+}
+
+.cs-autocomplete .ds-dropdown-menu * {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion {
+  position: relative;
+  padding: 0 8px;
+  background: #fff;
+  color: #0b140f;
+  overflow: hidden;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--highlight {
+  color: #020502;
+  background: rgba(118, 158, 121, 0.1);
+  padding: 0.1em 0.05em;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--category-header .cs-docsearch-suggestion--category-header-lvl0 .cs-docsearch-suggestion--highlight,
+.cs-autocomplete .cs-docsearch-suggestion--category-header .cs-docsearch-suggestion--category-header-lvl1 .cs-docsearch-suggestion--highlight {
+  color: inherit;
+  background: inherit;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--text .cs-docsearch-suggestion--highlight {
+  padding: 0 0 1px;
+  background: inherit;
+  -webkit-box-shadow: inset 0 -2px 0 0 rgba(27, 94, 32, 0.8);
+          box-shadow: inset 0 -2px 0 0 rgba(27, 94, 32, 0.8);
+  color: inherit;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--content {
+  display: block;
+  position: relative;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+
+.cs-autocomplete .cs-docsearch-suggestion--category-header {
+  position: relative;
+  border-bottom: 1px solid #ddd;
+  display: none;
+  margin-top: 8px;
+  padding: 4px 0;
+  font-size: 1em;
+  color: #2f2625;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--wrapper {
+  width: 100%;
+  float: left;
+  padding: 8px 0 0 0;
+}
+
+
+
+
+.cs-autocomplete .cs-docsearch-suggestion--subcategory-inline {
+  display: none;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--title {
+  margin-bottom: 4px;
+  color: #0b140f;
+  font-size: 0.9em;
+  font-weight: bold;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--text {
+  display: block;
+  line-height: 1.2em;
+  font-size: 0.85em;
+  color: #3f4145;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--no-results {
+  width: 100%;
+  padding: 8px 0;
+  text-align: center;
+  font-size: 1.2em;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--no-results::before {
+  display: none;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion code {
+  padding: 1px 5px;
+  font-size: 90%;
+  border: none;
+  color: #222222;
+  background-color: #EBEBEB;
+  border-radius: 3px;
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion code .cs-docsearch-suggestion--highlight {
+  background: none;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion.cs-docsearch-suggestion__main .cs-docsearch-suggestion--category-header {
+  display: block;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion.cs-docsearch-suggestion__secondary {
+  display: block;
+}
+
+
+@media all and (max-width: 768px) {
+  .cs-autocomplete .cs-docsearch-suggestion .cs-docsearch-suggestion--content {
+    display: inline-block;
+    width: auto;
+    text-align: left;
+    padding: 0;
+  }
+}
+
+.cs-autocomplete .suggestion-layout-simple.cs-docsearch-suggestion {
+  border-bottom: solid 1px #eee;
+  padding: 8px;
+  margin: 0;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--content {
+  width: 100%;
+  padding: 0;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--category-header {
+  margin: 0;
+  padding: 0;
+  display: block;
+  width: 100%;
+  border: none;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--category-header-lvl0 {
+  opacity: .6;
+  font-size: 0.85em;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--category-header-lvl1 {
+  opacity: .6;
+  font-size: 0.85em;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--category-header-lvl1::before {
+  background-image: url('data:image/svg+xml;utf8,<svg width="10" height="10" viewBox="0 0 20 38" xmlns="http://www.w3.org/2000/svg"><path d="M1.49 4.31l14 16.126.002-2.624-14 16.074-1.314 1.51 3.017 2.626 1.313-1.508 14-16.075 1.142-1.313-1.14-1.313-14-16.125L3.2.18.18 2.8l1.31 1.51z" fill-rule="evenodd" fill="%231D3657" /></svg>');
+  content: '';
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--wrapper {
+  width: 100%;
+  float: left;
+  margin: 0;
+  padding: 0;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--duplicate-content, .cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--subcategory-inline {
+  display: none !important;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--title {
+  margin: 0;
+  color: #1b5e20;
+  font-size: 0.9em;
+  font-weight: normal;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--title::before {
+  content: "#";
+  font-weight: bold;
+  color: #1b5e20;
+  display: inline-block;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--text {
+  margin: 4px 0 0;
+  display: block;
+  line-height: 1.4em;
+  padding: 5.33333px 8px;
+  background: #f8f8f8;
+  font-size: 0.85em;
+  opacity: .8;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--text .cs-docsearch-suggestion--highlight {
+  color: #1a1b1d;
+  font-weight: bold;
+  -webkit-box-shadow: none;
+          box-shadow: none;
+}
+
+.cs-autocomplete .cs-docsearch-footer {
+  width: 110px;
+  height: 20px;
+  z-index: 2000;
+  margin-top: 10.66667px;
+  float: right;
+  font-size: 0;
+  line-height: 0;
+}
+
+
+/*
+ * Search input; see search.css for most of the styling of the dropdown
+ */
+
+.cs-search-form {
+  font-family: 'Lato';
+}
+.cs-search-form-sidebar {
+  min-width: 100%;
+  margin: 0.7em 1.2em 0.7em 0.7em;
+}
+.cs-search-form-sidebar .cs-autocomplete {
+  width: calc(100% - 1.9em);
+}
+
+.cs-search-input {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg alt="Search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M6.02945,10.20327a4.17382,4.17382,0,1,1,4.17382-4.17382A4.15609,4.15609,0,0,1,6.02945,10.20327Zm9.69195,4.2199L10.8989,9.59979A5.88021,5.88021,0,0,0,12.058,6.02856,6.00467,6.00467,0,1,0,9.59979,10.8989l4.82338,4.82338a.89729.89729,0,0,0,1.29912,0,.89749.89749,0,0,0-.00087-1.29909Z" fill="#2f2625"/></svg>');
+  background-size: 1em 1em;
+  background-repeat: no-repeat;
+  background-position-y: center;
+  background-position-x: 0.5em;
+  padding-left: 2em;
+  color: #2f2625;
+}
+
+.cs-search-form-sidebar .cs-autocomplete .ds-dropdown-menu {
+  min-width: 100%;
+  max-width: 100%;
+}
+
+/*
+
+.cs-autocomplete.cs-autocomplete-right .ds-dropdown-menu {
+  right: 0 !important;
+  left: inherit !important;
+}
+
+.cs-autocomplete.cs-autocomplete-right .ds-dropdown-menu:before {
+  right: 48px;
+}
+
+.cs-autocomplete.cs-autocomplete-left .ds-dropdown-menu {
+  left: 0 !important;
+  right: inherit !important;
+}
+
+.cs-autocomplete.cs-autocomplete-left .ds-dropdown-menu:before {
+  left: 48px;
+}
+
+.cs-autocomplete .ds-dropdown-menu {
+  position: relative;
+  top: -6px;
+  border-radius: 4px;
+  margin: 6px 0 0;
+  padding: 0;
+  text-align: left;
+  height: auto;
+  position: relative;
+  background: transparent;
+  border: none;
+  z-index: 999;
+  max-width: 600px;
+  min-width: 500px;
+  -webkit-box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.2), 0 2px 3px 0 rgba(0, 0, 0, 0.1);
+          box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.2), 0 2px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.cs-autocomplete .ds-dropdown-menu:before {
+  display: block;
+  position: absolute;
+  content: '';
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  z-index: 1000;
+  top: -7px;
+  border-top: 1px solid #efebe9;
+  border-right: 1px solid #efebe9;
+  -webkit-transform: rotate(-45deg);
+          transform: rotate(-45deg);
+  border-radius: 2px;
+}
+
+.cs-autocomplete .ds-dropdown-menu .ds-suggestions {
+  position: relative;
+  z-index: 1000;
+  margin-top: 8px;
+}
+
+.cs-autocomplete .ds-dropdown-menu .ds-suggestion {
+  cursor: pointer;
+}
+
+.cs-autocomplete .ds-dropdown-menu .ds-suggestion.ds-cursor .cs-docsearch-suggestion.suggestion-layout-simple {
+  background-color: rgba(27, 94, 32, 0.05);
+}
+
+.cs-autocomplete .ds-dropdown-menu .ds-suggestion.ds-cursor .cs-docsearch-suggestion:not(.suggestion-layout-simple) .cs-docsearch-suggestion--content {
+  background-color: rgba(27, 94, 32, 0.05);
+}
+
+.cs-autocomplete .ds-dropdown-menu [class^="ds-dataset-"] {
+  position: relative;
+  border: solid 1px #efebe9;
+  background: #fff;
+  border-radius: 4px;
+  overflow: auto;
+  padding: 0 8px 8px;
+}
+
+.cs-autocomplete .ds-dropdown-menu * {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion {
+  position: relative;
+  padding: 0 8px;
+  background: #fff;
+  color: #0b140f;
+  overflow: hidden;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--highlight {
+  color: #020502;
+  background: rgba(118, 158, 121, 0.1);
+  padding: 0.1em 0.05em;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--category-header .cs-docsearch-suggestion--category-header-lvl0 .cs-docsearch-suggestion--highlight,
+.cs-autocomplete .cs-docsearch-suggestion--category-header .cs-docsearch-suggestion--category-header-lvl1 .cs-docsearch-suggestion--highlight {
+  color: inherit;
+  background: inherit;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--text .cs-docsearch-suggestion--highlight {
+  padding: 0 0 1px;
+  background: inherit;
+  -webkit-box-shadow: inset 0 -2px 0 0 rgba(27, 94, 32, 0.8);
+          box-shadow: inset 0 -2px 0 0 rgba(27, 94, 32, 0.8);
+  color: inherit;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--content {
+  display: block;
+  float: right;
+  width: 70%;
+  position: relative;
+  padding: 5.33333px 0 5.33333px 10.66667px;
+  cursor: pointer;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--content:before {
+  content: '';
+  position: absolute;
+  display: block;
+  top: 0;
+  height: 100%;
+  width: 1px;
+  background: #ddd;
+  left: -1px;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--category-header {
+  position: relative;
+  border-bottom: 1px solid #ddd;
+  display: none;
+  margin-top: 8px;
+  padding: 4px 0;
+  font-size: 1em;
+  color: #2f2625;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--wrapper {
+  width: 100%;
+  float: left;
+  padding: 8px 0 0 0;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--subcategory-column {
+  float: left;
+  width: 30%;
+  padding-left: 0;
+  text-align: right;
+  position: relative;
+  padding: 5.33333px 10.66667px;
+  color: #a29f9c;
+  font-size: 0.9em;
+  word-wrap: break-word;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--subcategory-column:before {
+  content: '';
+  position: absolute;
+  display: block;
+  top: 0;
+  height: 100%;
+  width: 1px;
+  background: #ddd;
+  right: 0;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--subcategory-column .cs-docsearch-suggestion--highlight {
+  background-color: inherit;
+  color: inherit;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--subcategory-inline {
+  display: none;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--title {
+  margin-bottom: 4px;
+  color: #0b140f;
+  font-size: 0.9em;
+  font-weight: bold;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--text {
+  display: block;
+  line-height: 1.2em;
+  font-size: 0.85em;
+  color: #3f4145;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--no-results {
+  width: 100%;
+  padding: 8px 0;
+  text-align: center;
+  font-size: 1.2em;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion--no-results::before {
+  display: none;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion code {
+  padding: 1px 5px;
+  font-size: 90%;
+  border: none;
+  color: #222222;
+  background-color: #EBEBEB;
+  border-radius: 3px;
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion code .cs-docsearch-suggestion--highlight {
+  background: none;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion.cs-docsearch-suggestion__main .cs-docsearch-suggestion--category-header {
+  display: block;
+}
+
+.cs-autocomplete .cs-docsearch-suggestion.cs-docsearch-suggestion__secondary {
+  display: block;
+}
+
+@media all and (min-width: 768px) {
+  .cs-autocomplete .cs-docsearch-suggestion .cs-docsearch-suggestion--subcategory-column {
+    display: block;
+  }
+}
+
+@media all and (max-width: 768px) {
+  .cs-autocomplete .cs-docsearch-suggestion .cs-docsearch-suggestion--subcategory-column {
+    display: inline-block;
+    width: auto;
+    text-align: left;
+    float: left;
+    padding: 0;
+    color: #02060C;
+    font-size: 0.9em;
+    font-weight: bold;
+    text-align: left;
+    opacity: 0.5;
+  }
+  .cs-autocomplete .cs-docsearch-suggestion .cs-docsearch-suggestion--subcategory-column:before {
+    display: none;
+  }
+  .cs-autocomplete .cs-docsearch-suggestion .cs-docsearch-suggestion--subcategory-column:after {
+    content: "|";
+  }
+  .cs-autocomplete .cs-docsearch-suggestion .cs-docsearch-suggestion--content {
+    display: inline-block;
+    width: auto;
+    text-align: left;
+    float: left;
+    padding: 0;
+  }
+  .cs-autocomplete .cs-docsearch-suggestion .cs-docsearch-suggestion--content:before {
+    display: none;
+  }
+}
+
+.cs-autocomplete .suggestion-layout-simple.cs-docsearch-suggestion {
+  border-bottom: solid 1px #eee;
+  padding: 8px;
+  margin: 0;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--content {
+  width: 100%;
+  padding: 0;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--content::before {
+  display: none;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--category-header {
+  margin: 0;
+  padding: 0;
+  display: block;
+  width: 100%;
+  border: none;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--category-header-lvl0 {
+  opacity: .6;
+  font-size: 0.85em;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--category-header-lvl1 {
+  opacity: .6;
+  font-size: 0.85em;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--category-header-lvl1::before {
+  background-image: url('data:image/svg+xml;utf8,<svg width="10" height="10" viewBox="0 0 20 38" xmlns="http://www.w3.org/2000/svg"><path d="M1.49 4.31l14 16.126.002-2.624-14 16.074-1.314 1.51 3.017 2.626 1.313-1.508 14-16.075 1.142-1.313-1.14-1.313-14-16.125L3.2.18.18 2.8l1.31 1.51z" fill-rule="evenodd" fill="%231D3657" /></svg>');
+  content: '';
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--wrapper {
+  width: 100%;
+  float: left;
+  margin: 0;
+  padding: 0;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--duplicate-content, .cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--subcategory-inline {
+  display: none !important;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--title {
+  margin: 0;
+  color: #1b5e20;
+  font-size: 0.9em;
+  font-weight: normal;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--title::before {
+  content: "#";
+  font-weight: bold;
+  color: #1b5e20;
+  display: inline-block;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--text {
+  margin: 4px 0 0;
+  display: block;
+  line-height: 1.4em;
+  padding: 5.33333px 8px;
+  background: #f8f8f8;
+  font-size: 0.85em;
+  opacity: .8;
+}
+
+.cs-autocomplete .suggestion-layout-simple .cs-docsearch-suggestion--text .cs-docsearch-suggestion--highlight {
+  color: #1a1b1d;
+  font-weight: bold;
+  -webkit-box-shadow: none;
+          box-shadow: none;
+}
+
+.cs-autocomplete .cs-docsearch-footer {
+  width: 110px;
+  height: 20px;
+  z-index: 2000;
+  margin-top: 10.66667px;
+  float: right;
+  font-size: 0;
+  line-height: 0;
+}
+*/
 /* Adapted from https://github.com/FarhadG/code-mirror-themes/blob/master/themes/twilight.css and https://github.com/codemirror/CodeMirror/blob/master/theme/twilight.css */
 
 /* CodeMirror general styling */
@@ -266,17 +975,13 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 
 
 /*
- * Layout; based on https://codepen.io/Sphinxxxx/pen/WjwbEO
- */
-.main-row {
-  height: calc(100vh - 3.5rem);
-}
-
-/*
  * Sidebar
  */
 
 .sidebar {
+  position: fixed;
+  top: 3.5em;
+  height: calc(100% - 3.5rem);
   /* Scrollable contents if viewport is shorter than content */
   overflow-y: auto;
   overflow-x: hidden;
@@ -292,19 +997,14 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 }
 @media screen and (max-width: 991px) {
   .sidebar {
-    position: fixed;
-    top: 3.5em;
-    height: calc(100% - 3.5rem);
     left: -100%;
     transition: 0.25s left ease-in-out;
   }
   .sidebar.show {
     left: 0;
   }
-}
-@media (min-width: 992px) {
-  .sidebar {
-    flex: 0 0 auto;
+  .sidebar.show .flex-column {
+    flex-grow: 1;
   }
 }
 
@@ -333,17 +1033,36 @@ button:focus, .navbar-dark .navbar-toggler:focus {
 
 
 /*
+ * Search input; see search.css for most of the styling of the dropdown
+ */
+
+.form-control::-webkit-input-placeholder {
+  color: #998f8e;
+}
+.form-control:-ms-input-placeholder {
+  color: #998f8e;
+}
+.form-control::-ms-input-placeholder {
+  color: #998f8e;
+}
+.form-control::placeholder {
+  color: #998f8e;
+}
+.form-control:focus {
+  border-color: #1b5e20;
+  box-shadow: 0 0 0 0.2rem rgba(27, 94, 32, 0.25);
+  color: #2f2625;
+}
+
+/*
  * Main content
  */
 
 .main {
-  max-width: 100%;
   padding: 1.3em;
 }
 @media (min-width: 992px) {
   .main {
-    flex: 1 1 auto;
-    overflow: auto;
     padding-right: 2em;
     padding-left: 2em;
   }
@@ -422,6 +1141,12 @@ h3, h4, h2 time {
   font-weight: 400;
 }
 
+.main section {
+  /* Offset the anchor so that clicking on the sidebar links don’t hide the heading under the header bar */
+  padding-top: 2.3rem;
+  margin-top: -2.3rem;
+}
+
 @media (min-width: 1200px) {
   .main > header, .main section > h2, .main section > h3, .main section > h4, .main section > p, .main section > blockquote, .main section > ul, .main section > table {
     max-width: 80%;
@@ -441,7 +1166,7 @@ code {
 
 
 /*
- * Chrome around code examples; see code.css for the styling of the code blocks themselves
+ * Code examples
  */
 
 textarea {
@@ -476,7 +1201,31 @@ textarea {
 
 .play-button {
   height: 1em;
-  width: 1em;
+}
+
+.CodeMirror pre, pre.placeholder-code {
+  line-height: 1.4em;
+}
+
+.CodeMirror,
+.placeholder-code {
+  /* https://codemirror.net/demo/resize.html */
+  height: auto;
+  background: transparent;
+  font-family: 'Roboto Mono';
+  font-weight: 400;
+  line-height: 1.25;
+  font-size: 0.9em;
+}
+@media (min-width: 768px) {
+  .CodeMirror,
+  .placeholder-code {
+    font-size: 1em;
+  }
+}
+
+.CodeMirror-code:focus {
+  outline: none;
 }
 
 .javascript-output-column .CodeMirror-cursor {
@@ -495,8 +1244,6 @@ textarea {
   right: 0;
   opacity: 0;
   transition: opacity 0.15s ease-in-out;
-  z-index: -1001;
-  background-color: #2f2625;
 }
 .try-coffeescript.show {
   opacity: 1;
@@ -539,7 +1286,6 @@ textarea {
     z-index: 1002;
   }
 }
-
 </style>
 
 </head>
@@ -565,8 +1311,23 @@ textarea {
       <a href="https://github.com/jashkenas/coffeescript/" class="nav-item nav-link" data-close="try">GitHub
         </a>
     </div>
+
+    <form class="form-inline cs-search-form" role="search" novalidate="novalidate">
+      <span class="cs-autocomplete cs-autocomplete-right" style="position: relative; display: inline-block; direction: ltr;">
+      <input class="form-control cs-search-input" id="cs-search-input-navbar" type="search" name="cs-search" placeholder="Search docs" aria-label="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-labelledby="cs-doc-search" aria-owns="cs-autocomplete-listbox-0" dir="auto" />
+      <span id="searchIcon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 598.7 599.2">
+  <path d="M577.5 599.2L338.9 360.7c-37.2 32.3-84.2 49.9-134 49.9-54.8 0-106.2-21.4-144.9-60.1-79.9-80-79.9-210.2 0-290.3C98.7 21.4 150.2 0 205 0s106.2 21.4 144.9 60.1c38.7 38.8 60 90.3 60 145.1 0 49.8-17.6 96.9-49.8 134.2L598.7 578l-21.2 21.2zM205 30c-46.7 0-90.7 18.2-123.7 51.3-68.3 68.4-68.3 179.6 0 247.9 33.1 33.1 77 51.3 123.7 51.3s90.7-18.2 123.7-51.3c68.2-68.3 68.2-179.5 0-247.9C295.6 48.2 251.7 30 205 30z"/>
+</svg></span>
+      <span id="searchResultBox" class="ds-dropdown-menu ds-with-1" role="listbox" id="cs-autocomplete-listbox-0" style="position: absolute; top: 100%; z-index: 100; left: 0px; right: auto; display: none;">
+        <div class="ds-dataset-1">
+          <span id="search-results" class="ds-suggestions" style="display: block;"></span>
+        </div>
+      </span>
+    </span>
+    </form>
   </nav>
 </nav>
+
 
 
 <aside id="try" class="try-coffeescript container-fluid" data-example="try">
@@ -590,10 +1351,15 @@ textarea {
 
 
 <div class="container-fluid" id="top">
-  <div class="row flex-nowrap main-row">
-    <nav class="sidebar bg-ribbed-light">
+  <div class="row flex-nowrap">
+     <nav class="sidebar col-lg-3 bg-ribbed-light">
       <nav id="contents" class="navbar contents">
   <nav class="nav flex-column">
+    <div class="d-md-none">
+      <form class="cs-search-form cs-search-form-sidebar" role="search" novalidate="novalidate">
+        <input class="form-control cs-search-input" id="cs-search-input-sidebar" type="search" name="cs-search" placeholder="Search docs" aria-label="Search docs" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-labelledby="cs-doc-search" aria-owns="cs-autocomplete-listbox-0" dir="auto" />
+      </form>
+    </div>
     <a href="#try" class="nav-link d-md-none" data-action="sidebar-nav" data-toggle="try">Try CoffeeScript</a>
     <a href="#introduction" class="nav-link" data-action="sidebar-nav">Introduction</a>
     <a href="#overview" class="nav-link" data-action="sidebar-nav">Overview</a>
@@ -678,7 +1444,7 @@ textarea {
 </nav>
 
     </nav>
-    <main class="main">
+    <main class="main col-lg-9 ml-auto">
       <header class="d-none d-lg-block">
         <p class="title-logo">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="-22 347 566 100">
@@ -690,7 +1456,7 @@ textarea {
 
         </p>
       </header>
-      <section id="introduction">
+      <section id="introduction" data-level="2">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
 <p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.3.1">2.3.1</a></p>
@@ -702,7 +1468,7 @@ npm install --global coffeescript
 </code></pre>
 </blockquote>
       </section>
-      <section id="overview">
+      <section id="overview" data-level="2">
         <h2>Overview</h2>
 <p><em>CoffeeScript on the <span class="d-md-none">top</span><span class="d-none d-md-inline">left</span>, compiled JavaScript output on the <span class="d-md-none">bottom</span><span class="d-none d-md-inline">right</span>. The CoffeeScript is editable!</em></p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="overview">
@@ -883,7 +1649,7 @@ cubes = (function() {
 </aside>
 
       </section>
-      <section id="coffeescript-2">
+      <section id="coffeescript-2" data-level="2">
         <h2>CoffeeScript 2</h2>
 
         <section id="whats-new-in-coffeescript-2">
@@ -919,7 +1685,7 @@ cubes = (function() {
 <p>If you plan to use the <code>--transpile</code> option (see <a href="#transpilation">Transpilation</a>) you will need to also install <code>babel-core</code> either globally or locally, depending on whether you are running a globally or locally installed version of CoffeeScript.</p>
 
       </section>
-      <section id="usage">
+      <section id="usage" data-level="2">
         <h2>Usage</h2>
 
         <section id="cli">
@@ -1074,7 +1840,7 @@ coffee --compile --transpile --inline-map some-file.coffee
 
         </section>
       </section>
-      <section id="language">
+      <section id="language" data-level="1">
         <h2>Language Reference</h2>
 <p><em>This reference is structured so that it can be read from top to bottom, if you like. Later sections use ideas and syntax previously introduced. Familiarity with JavaScript is assumed. In all of the following examples, the source CoffeeScript is provided on the left, and the direct compilation into JavaScript is on the right.</em></p>
 <p><em>Many of the examples can be run (where it makes sense) by pressing the</em> <small>▶</small> <em>button on the right. The CoffeeScript on the left is editable, and the JavaScript will update as you edit.</em></p>
@@ -1083,7 +1849,7 @@ coffee --compile --transpile --inline-map some-file.coffee
 <code>console.log sys.inspect object</code> → <code>console.log(sys.inspect(object));</code></p>
 
         <section id="functions">
-          <h2>Functions</h2>
+          <h3>Functions</h3>
 <p>Functions are defined by an optional list of parameters in parentheses, an arrow, and the function body. The empty function looks like this: <code>-&gt;</code></p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="functions">
   <div class="row">
@@ -1169,7 +1935,7 @@ fill = function(container, liquid = "coffee") {
 
         </section>
         <section id="strings">
-          <h2>Strings</h2>
+          <h3>Strings</h3>
 <p>Like JavaScript and many other languages, CoffeeScript supports strings as delimited by the <code>&quot;</code> or <code>'</code> characters. CoffeeScript also supports string interpolation within <code>&quot;</code>-quoted strings, using <code>#{ … }</code>. Single-quoted strings are literal. You may even use interpolation in object keys.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="interpolation">
   <div class="row">
@@ -1299,7 +2065,7 @@ html = "<strong>\n  cup of coffeescript\n</strong>";
 
         </section>
         <section id="objects-and-arrays">
-          <h2>Objects and Arrays</h2>
+          <h3>Objects and Arrays</h3>
 <p>The CoffeeScript literals for objects and arrays look very similar to their JavaScript cousins. When each property is listed on its own line, the commas are optional. Objects may be created using indentation instead of explicit braces, similar to <a href="http://yaml.org">YAML</a>.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="objects_and_arrays">
   <div class="row">
@@ -1448,7 +2214,7 @@ output = `${turtle.name} wears an ${turtle.mask} mask. Watch out for his ${turtl
 
         </section>
         <section id="comments">
-          <h2>Comments</h2>
+          <h3>Comments</h3>
 <p>In CoffeeScript, comments are denoted by the <code>#</code> character to the end of a line, or from <code>###</code> to the next appearance of <code>###</code>. Comments are ignored by the compiler, though the compiler makes its best effort at reinserting your comments into the output JavaScript after compilation.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="comment">
   <div class="row">
@@ -1499,7 +2265,7 @@ sayFortune = function(fortune) {
 
         </section>
         <section id="lexical-scope">
-          <h2>Lexical Scoping and Variable Safety</h2>
+          <h3>Lexical Scoping and Variable Safety</h3>
 <p>The CoffeeScript compiler takes care to make sure that all of your variables are properly declared within lexical scope — you never need to write <code>var</code> yourself.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="scope">
   <div class="row">
@@ -1563,7 +2329,7 @@ inner = changeNumbers();
 
         </section>
         <section id="conditionals">
-          <h2>If, Else, Unless, and Conditional Assignment</h2>
+          <h3>If, Else, Unless, and Conditional Assignment</h3>
 <p><code>if</code>/<code>else</code> statements can be written without the use of parentheses and curly brackets. As with functions and other block expressions, multi-line conditionals are delimited by indentation. There’s also a handy postfix form, with the <code>if</code> or <code>unless</code> at the end.</p>
 <p>CoffeeScript can compile <code>if</code> statements into JavaScript expressions, using the ternary operator when possible, and closure wrapping otherwise. There is no explicit ternary statement in CoffeeScript — you simply use a regular <code>if</code> statement on a single line.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="conditionals">
@@ -1628,7 +2394,7 @@ date = friday ? sue : jill;
 
         </section>
         <section id="splats">
-          <h2>Splats, or Rest Parameters/Spread Syntax</h2>
+          <h3>Splats, or Rest Parameters/Spread Syntax</h3>
 <p>The JavaScript <code>arguments</code> object is a useful way to work with functions that accept variable numbers of arguments. CoffeeScript provides splats <code>...</code>, both for function definition as well as invocation, making variable numbers of arguments a little bit more palatable. ES2015 adopted this feature as their <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/rest_parameters">rest parameters</a>.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="splats">
   <div class="row">
@@ -1842,7 +2608,7 @@ currentUser = {
 
         </section>
         <section id="loops">
-          <h2>Loops and Comprehensions</h2>
+          <h3>Loops and Comprehensions</h3>
 <p>Most of the loops you’ll write in CoffeeScript will be <strong>comprehensions</strong> over arrays, objects, and ranges. Comprehensions replace (and compile into) <code>for</code> loops, with optional guard clauses and the value of the current array index. Unlike for loops, array comprehensions are expressions, and can be returned and assigned.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="array_comprehensions">
   <div class="row">
@@ -2209,7 +2975,7 @@ for (i = 0, len = list.length; i < len; i++) {
 
         </section>
         <section id="slices">
-          <h2>Array Slicing and Splicing with Ranges</h2>
+          <h3>Array Slicing and Splicing with Ranges</h3>
 <p>Ranges can also be used to extract slices of arrays. With two dots (<code>3..6</code>), the range is inclusive (<code>3, 4, 5, 6</code>); with three dots (<code>3...6</code>), the range excludes the end (<code>3, 4, 5</code>). Slices indices have useful defaults. An omitted first index defaults to zero and an omitted second index defaults to the size of the array.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="slices">
   <div class="row">
@@ -2318,7 +3084,7 @@ splice.apply(numbers, [3, 4].concat(ref = [-3, -4, -5, -6])), ref;
 
         </section>
         <section id="expressions">
-          <h2>Everything is an Expression (at least, as much as possible)</h2>
+          <h3>Everything is an Expression (at least, as much as possible)</h3>
 <p>You might have noticed how even though we don’t add return statements to CoffeeScript functions, they nonetheless return their final value. The CoffeeScript compiler tries to make sure that all statements in the language can be used as expressions. Watch how the <code>return</code> gets pushed down into each possible branch of execution in the function below.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="expressions">
   <div class="row">
@@ -2536,7 +3302,7 @@ alert((function() {
 
         </section>
         <section id="operators">
-          <h2>Operators and Aliases</h2>
+          <h3>Operators and Aliases</h3>
 <p>Because the <code>==</code> operator frequently causes undesirable coercion, is intransitive, and has a different meaning than in other languages, CoffeeScript compiles <code>==</code> into <code>===</code>, and <code>!=</code> into <code>!==</code>. In addition, <code>is</code> compiles into <code>===</code>, and <code>isnt</code> into <code>!==</code>.</p>
 <p>You can use <code>not</code> as an alias for <code>!</code>.</p>
 <p>For logic, <code>and</code> compiles to <code>&amp;&amp;</code>, and <code>or</code> into <code>||</code>.</p>
@@ -2733,7 +3499,7 @@ print(inspect(`My name is ${this.name}`));
 
         </section>
         <section id="existential-operator">
-          <h2>The Existential Operator</h2>
+          <h3>The Existential Operator</h3>
 <p>It’s a little difficult to check for the existence of a variable in JavaScript. <code>if (variable) …</code> comes close, but fails for zero, the empty string, and false (to name just the most common cases). CoffeeScript’s existential operator <code>?</code> returns true unless a variable is <code>null</code> or <code>undefined</code> or undeclared, which makes it analogous to Ruby’s <code>nil?</code>.</p>
 <p>It can also be used for safer conditional assignment than the JavaScript pattern <code>a = a || value</code> provides, for cases where you may be handling numbers or strings.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="existence">
@@ -2916,7 +3682,7 @@ zip = typeof lottery.drawWinner === "function" ? (ref = lottery.drawWinner().add
 
         </section>
         <section id="chaining">
-          <h2>Chaining Function Calls</h2>
+          <h3>Chaining Function Calls</h3>
 <p>Leading <code>.</code> closes all open calls, allowing for simpler chaining syntax.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="chaining">
   <div class="row">
@@ -2952,7 +3718,7 @@ zip = typeof lottery.drawWinner === "function" ? (ref = lottery.drawWinner().add
 
         </section>
         <section id="destructuring">
-          <h2>Destructuring Assignment</h2>
+          <h3>Destructuring Assignment</h3>
 <p>Just like JavaScript (since ES2015), CoffeeScript has destructuring assignment syntax. When you assign an array or object literal to a value, CoffeeScript breaks up and matches both sides against each other, assigning the values on the right to the variables on the left. In the simplest case, it can be used for parallel assignment:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="parallel_assignment">
   <div class="row">
@@ -3281,7 +4047,7 @@ tim = new Person({
 
         </section>
         <section id="fat-arrow">
-          <h2>Bound (Fat Arrow) Functions</h2>
+          <h3>Bound (Fat Arrow) Functions</h3>
 <p>In JavaScript, the <code>this</code> keyword is dynamically scoped to mean the object that the current function is attached to. If you pass a function as a callback or attach it to a different object, the original value of <code>this</code> will be lost. If you’re not familiar with this behavior, <a href="https://web.archive.org/web/20150316122013/http://www.digital-web.com/articles/scope_in_javascript">this Digital Web article</a> gives a good overview of the quirks.</p>
 <p>The fat arrow <code>=&gt;</code> can be used to both define a function, and to bind it to the current value of <code>this</code>, right on the spot. This is helpful when using callback-based libraries like Prototype or jQuery, for creating iterator functions to pass to <code>each</code>, or event-handler functions to use with <code>on</code>. Functions created with the fat arrow are able to access properties of the <code>this</code> where they’re defined.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="fat_arrow">
@@ -3332,7 +4098,7 @@ Account = function(customer, cart) {
 
         </section>
         <section id="generators">
-          <h2>Generator Functions</h2>
+          <h3>Generator Functions</h3>
 <p>CoffeeScript supports ES2015 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*">generator functions</a> through the <code>yield</code> keyword. There’s no <code>function*(){}</code> nonsense — a generator in CoffeeScript is simply a function that yields.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="generators">
   <div class="row">
@@ -3496,7 +4262,7 @@ getFibonacciNumbers = function(length) {
 
         </section>
         <section id="async-functions">
-          <h2>Async Functions</h2>
+          <h3>Async Functions</h3>
 <p>ES2017’s <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function">async functions</a> are supported through the <code>await</code> keyword. Like with generators, there’s no need for an <code>async</code> keyword; an async function in CoffeeScript is simply a function that awaits.</p>
 <p>Similar to how <code>yield return</code> forces a generator, <code>await return</code> may be used to force a function to be async.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="async">
@@ -3610,7 +4376,7 @@ countdown(3);
 
         </section>
         <section id="classes">
-          <h2>Classes</h2>
+          <h3>Classes</h3>
 <p>CoffeeScript 1 provided the <code>class</code> and <code>extends</code> keywords as syntactic sugar for working with prototypal functions. With ES2015, JavaScript has adopted those keywords; so CoffeeScript 2 compiles its <code>class</code> and <code>extends</code> keywords to ES2015 classes.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="classes">
   <div class="row">
@@ -3831,7 +4597,7 @@ Teenager = class Teenager {
 
         </section>
         <section id="prototypal-inheritance">
-          <h2>Prototypal Inheritance</h2>
+          <h3>Prototypal Inheritance</h3>
 <p>In addition to supporting ES2015 classes, CoffeeScript provides a shortcut for working with prototypes. The <code>::</code> operator gives you quick access to an object’s prototype:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="prototypes">
   <div class="row">
@@ -3868,7 +4634,7 @@ Teenager = class Teenager {
 
         </section>
         <section id="switch">
-          <h2>Switch/When/Else</h2>
+          <h3>Switch/When/Else</h3>
 <p><code>switch</code> statements in JavaScript are a bit awkward. You need to remember to <code>break</code> at the end of every <code>case</code> statement to avoid accidentally falling through to the default case. CoffeeScript prevents accidental fall-through, and can convert the <code>switch</code> into a returnable, assignable expression. The format is: <code>switch</code> condition, <code>when</code> clauses, <code>else</code> the default case.</p>
 <p>As in Ruby, <code>switch</code> statements in CoffeeScript can take multiple values for each <code>when</code> clause. If any of the values match, the clause runs.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="switch">
@@ -4023,7 +4789,7 @@ grade = (function() {
 
         </section>
         <section id="try">
-          <h2>Try/Catch/Finally</h2>
+          <h3>Try/Catch/Finally</h3>
 <p><code>try</code> expressions have the same semantics as <code>try</code> statements in JavaScript, though in CoffeeScript, you may omit <em>both</em> the catch and finally parts. The catch part may also omit the error parameter if it is not needed.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="try">
   <div class="row">
@@ -4077,7 +4843,7 @@ try {
 
         </section>
         <section id="comparisons">
-          <h2>Chained Comparisons</h2>
+          <h3>Chained Comparisons</h3>
 <p>CoffeeScript borrows <a href="https://docs.python.org/3/reference/expressions.html#not-in">chained comparisons</a> from Python — making it easy to test if a value falls within a certain range.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="comparisons">
   <div class="row">
@@ -4120,7 +4886,7 @@ healthy = (200 > cholesterol && cholesterol > 60);
 
         </section>
         <section id="regexes">
-          <h2>Block Regular Expressions</h2>
+          <h3>Block Regular Expressions</h3>
 <p>Similar to block strings and comments, CoffeeScript supports block regexes — extended regular expressions that ignore internal whitespace and can contain comments and interpolation. Modeled after Perl’s <code>/x</code> modifier, CoffeeScript’s block regexes are delimited by <code>///</code> and go a long way towards making complex regular expressions readable. To quote from the CoffeeScript source:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="heregexes">
   <div class="row">
@@ -4162,7 +4928,7 @@ NUMBER = /^0b[01]+|^0o[0-7]+|^0x[\da-f]+|^\d*\.?\d+(?:e[+-]?\d+)?/i; // binary
 
         </section>
         <section id="tagged-template-literals">
-          <h2>Tagged Template Literals</h2>
+          <h3>Tagged Template Literals</h3>
 <p>CoffeeScript supports <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals">ES2015 tagged template literals</a>, which enable customized string interpolation. If you immediately prefix a string with a function name (no space between the two), CoffeeScript will output this “function plus string” combination as an ES2015 tagged template literal, which will <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals">behave accordingly</a>: the function is called, with the parameters being the input text and expression parts that make up the interpolated string. The function can then assemble these parts into an output string, providing custom string interpolation.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="tagged_template_literals">
   <div class="row">
@@ -4227,7 +4993,7 @@ greet = function(name, adjective) {
 
         </section>
         <section id="modules">
-          <h2>Modules</h2>
+          <h3>Modules</h3>
 <p>ES2015 modules are supported in CoffeeScript, with very similar <code>import</code> and <code>export</code> syntax:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="modules">
   <div class="row">
@@ -4414,7 +5180,7 @@ export {
 
         </section>
         <section id="embedded">
-          <h2>Embedded JavaScript</h2>
+          <h3>Embedded JavaScript</h3>
 <p>Hopefully, you’ll never need to use it, but if you ever need to intersperse snippets of JavaScript within your CoffeeScript, you can use backticks to pass it straight through.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="embedded">
   <div class="row">
@@ -4542,7 +5308,7 @@ function time() {
 
         </section>
         <section id="jsx">
-          <h2>JSX</h2>
+          <h3>JSX</h3>
 <p><a href="https://facebook.github.io/react/docs/introducing-jsx.html">JSX</a> is JavaScript containing interspersed XML elements. While conceived for <a href="https://facebook.github.io/react/">React</a>, it is not specific to any particular library or framework.</p>
 <p>CoffeeScript supports interspersed XML elements, without the need for separate plugins or special settings. The XML elements will be compiled as such, outputting JSX that could be parsed like any normal JSX file, for example by <a href="https://babeljs.io/docs/plugins/transform-react-jsx/">Babel with the React JSX transform</a>. CoffeeScript does <em>not</em> output <code>React.createElement</code> calls or any code specific to React or any other framework. It is up to you to attach another step in your build chain to convert this JSX to whatever function calls you wish the XML elements to compile to.</p>
 <p>Just like in JSX and HTML, denote XML tags using <code>&lt;</code> and <code>&gt;</code>. You can interpolate CoffeeScript code inside a tag using <code>{</code> and <code>}</code>. To avoid compiler errors, when using <code>&lt;</code> and <code>&gt;</code> to mean “less than” or “greater than,” you should wrap the operators in spaces to distinguish them from XML tags. So <code>i &lt; len</code>, not <code>i&lt;len</code>. The compiler tries to be forgiving when it can be sure what you intend, but always putting spaces around the “less than” and “greater than” operators will remove ambiguity.</p>
@@ -4629,7 +5395,7 @@ renderStarRating = function({rating, maxStars}) {
 
         </section>
       </section>
-      <section id="type-annotations">
+      <section id="type-annotations" data-level="1">
         <h2>Type Annotations</h2>
 <p>Static type checking can be achieved in CoffeeScript by using <a href="https://flow.org/">Flow</a>’s <a href="https://flow.org/en/docs/types/comments/">Comment Types syntax</a>:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="type_annotations">
@@ -4694,7 +5460,7 @@ fn = function(str/*: string */, obj/*: Obj */)/*: string */ {
 <p>If you know of another way to achieve static type checking with CoffeeScript, please <a href="https://github.com/jashkenas/coffeescript/issues/new">create an issue</a> and let us know.</p>
 
       </section>
-      <section id="literate">
+      <section id="literate" data-level="1">
         <h2>Literate CoffeeScript</h2>
 <p>Besides being used as an ordinary programming language, CoffeeScript may also be written in “literate” mode. If you name your file with a <code>.litcoffee</code> extension, you can write it as a Markdown document — a document that also happens to be executable CoffeeScript code. The compiler will treat any indented blocks (Markdown’s way of indicating source code) as executable code, and ignore the rest as comments. Code blocks must also be separated from comments by at least one blank line.</p>
 <p>Just for kicks, a little bit of the compiler is currently implemented in this fashion: See it <a href="https://gist.github.com/jashkenas/3fc3c1a8b1009c00d9df">as a document</a>, <a href="https://raw.githubusercontent.com/jashkenas/coffeescript/master/src/scope.litcoffee">raw</a>, and <a href="http://cl.ly/LxEu">properly highlighted in a text editor</a>.</p>
@@ -4706,13 +5472,13 @@ fn = function(str/*: string */, obj/*: Obj */)/*: string */ {
 </ul>
 
       </section>
-      <section id="source-maps">
+      <section id="source-maps" data-level="1">
         <h2>Source Maps</h2>
 <p>CoffeeScript includes support for generating source maps, a way to tell your JavaScript engine what part of your CoffeeScript program matches up with the code being evaluated. Browsers that support it can automatically use source maps to show your original source code in the debugger. To generate source maps alongside your JavaScript files, pass the <code>--map</code> or <code>-m</code> flag to the compiler.</p>
 <p>For a full introduction to source maps, how they work, and how to hook them up in your browser, read the <a href="https://www.html5rocks.com/en/tutorials/developertools/sourcemaps/">HTML5 Tutorial</a>.</p>
 
       </section>
-      <section id="cake">
+      <section id="cake" data-level="1">
         <h2>Cake, and Cakefiles</h2>
 <p>CoffeeScript includes a (very) simple build system similar to <a href="http://www.gnu.org/software/make/">Make</a> and <a href="http://rake.rubyforge.org/">Rake</a>. Naturally, it’s called Cake, and is used for the tasks that build and test the CoffeeScript language itself. Tasks are defined in a file named <code>Cakefile</code>, and can be invoked by running <code>cake [task]</code> from within the directory. To print a list of all the tasks and options, just type <code>cake</code>.</p>
 <p>Task definitions are written in CoffeeScript, so you can put arbitrary code in your Cakefile. Define a task with a name, a long description, and the function to invoke when the task is run. If your task takes a command-line option, you can define the option with short and long flags, and it will be made available in the <code>options</code> object. Here’s a task that uses the Node.js API to rebuild CoffeeScript’s parser:</p>
@@ -4776,13 +5542,13 @@ task('build:parser', 'rebuild the Jison parser', function(options) {
 <p>If you need to invoke one task before another — for example, running <code>build</code> before <code>test</code>, you can use the <code>invoke</code> function: <code>invoke 'build'</code>. Cake tasks are a minimal way to expose your CoffeeScript functions to the command line, so <a href="/v2/annotated-source/cake.html">don’t expect any fanciness built-in</a>. If you need dependencies, or async callbacks, it’s best to put them in your code itself — not the cake task.</p>
 
       </section>
-      <section id="scripts">
+      <section id="scripts" data-level="1">
         <h2><code>&quot;text/coffeescript&quot;</code> Script Tags</h2>
 <p>While it’s not recommended for serious use, CoffeeScripts may be included directly within the browser using <code>&lt;script type=&quot;text/coffeescript&quot;&gt;</code> tags. The source includes a compressed and minified version of the compiler (<a href="/v2/browser-compiler/coffeescript.js">Download current version here, 51k when gzipped</a>) as <code>docs/v2/browser-compiler/coffeescript.js</code>. Include this file on a page with inline CoffeeScript tags, and it will compile and evaluate them in order.</p>
 <p>The usual caveats about CoffeeScript apply — your inline scripts will run within a closure wrapper, so if you want to expose global variables or functions, attach them to the <code>window</code> object.</p>
 
       </section>
-      <section id="resources">
+      <section id="resources" data-level="2">
         <h2>Resources</h2>
 <ul>
 <li><a href="https://github.com/jashkenas/coffeescript/">CoffeeScript on GitHub</a></li>
@@ -4801,7 +5567,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
 </ul>
 
         <section id="books">
-          <h2>Books</h2>
+          <h3>Books</h3>
 <p>There are a number of excellent resources to help you get started with CoffeeScript, some of which are freely available online.</p>
 <ul>
 <li><a href="http://arcturo.github.io/library/coffeescript/">The Little Book on CoffeeScript</a> is a brief 5-chapter introduction to CoffeeScript, written with great clarity and precision by <a href="http://alexmaccaw.co.uk/">Alex MacCaw</a>.</li>
@@ -4817,7 +5583,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
 
         </section>
         <section id="screencasts">
-          <h2>Screencasts</h2>
+          <h3>Screencasts</h3>
 <ul>
 <li><a href="http://coffeescript.codeschool.com/">A Sip of CoffeeScript</a> is a <a href="https://www.codeschool.com">Code School Course</a> which combines 6 screencasts with in-browser coding to make learning fun. The first level is free to try out.</li>
 <li><a href="https://www.pluralsight.com/courses/meet-coffeescript">Meet CoffeeScript</a> is a 75-minute long screencast by PeepCode, now <a href="https://www.pluralsight.com/">PluralSight</a>. Highly memorable for its animations which demonstrate transforming CoffeeScript into the equivalent JS.</li>
@@ -4826,7 +5592,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
 
         </section>
         <section id="examples">
-          <h2>Examples</h2>
+          <h3>Examples</h3>
 <p>The <a href="https://github.com/trending?l=coffeescript&amp;since=monthly">best list of open-source CoffeeScript examples</a> can be found on GitHub. But just to throw out a few more:</p>
 <ul>
 <li><strong>GitHub</strong>’s <a href="https://hubot.github.com/">Hubot</a>, a friendly IRC robot that can perform any number of useful and useless tasks.</li>
@@ -4839,12 +5605,12 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
 
         </section>
         <section id="chat">
-          <h2>Web Chat (IRC)</h2>
+          <h3>Web Chat (IRC)</h3>
 <p>Quick help and advice can often be found in the CoffeeScript IRC room <code>#coffeescript</code> on <code>irc.freenode.net</code>, which you can <a href="http://webchat.freenode.net/?channels=coffeescript">join via your web browser</a>.</p>
 
         </section>
         <section id="annotated-source">
-          <h2>Annotated Source</h2>
+          <h3>Annotated Source</h3>
 <p>You can browse the CoffeeScript 2.3.1 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
@@ -4863,7 +5629,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
 
         </section>
         <section id="contributing">
-          <h2>Contributing</h2>
+          <h3>Contributing</h3>
 <p>Contributions are welcome! Feel free to fork <a href="https://github.com/jashkenas/coffeescript">the repo</a> and submit a pull request.</p>
 <p><a href="#unsupported">Some features of ECMAScript are intentionally unsupported</a>. Please review both the open and closed <a href="https://github.com/jashkenas/coffeescript/issues">issues on GitHub</a> to see if the feature you’re looking for has already been discussed. As a general rule, we don’t support ECMAScript syntax for features that aren’t yet finalized (at Stage 4 in the proposal approval process).</p>
 <p>For more resources on adding to CoffeeScript, please see <a href="https://github.com/jashkenas/coffeescript/wiki/%5BHowto%5D-Hacking-on-the-CoffeeScript-Compiler">the Wiki</a>, especially <a href="https://github.com/jashkenas/coffeescript/wiki/%5BHowTo%5D-How-parsing-works">How The Parser Works</a>.</p>
@@ -4878,7 +5644,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
 
         </section>
       </section>
-      <section id="unsupported">
+      <section id="unsupported" data-level="2">
         <h2>Unsupported ECMAScript Features</h2>
 <p>There are a few ECMAScript features that CoffeeScript intentionally doesn’t support.</p>
 
@@ -4976,7 +5742,7 @@ Object.defineProperty(screen, 'height', {
 
         </section>
       </section>
-      <section id="breaking-changes">
+      <section id="breaking-changes" data-level="3">
         <h2>Breaking Changes From CoffeeScript 1.x to 2</h2>
 <p>CoffeeScript 2 aims to output as much idiomatic ES2015+ syntax as possible with as few breaking changes from CoffeeScript 1.x as possible. Some breaking changes, unfortunately, were unavoidable.</p>
 
@@ -5520,7 +6286,7 @@ x = <span class="number">2</span> + <span class="number">2</span>
 
         </section>
       </section>
-      <section id="changelog">
+      <section id="changelog" data-level="3">
         <h2>Changelog</h2>
 
         <section id="2.3.1">
@@ -6394,12 +7160,12 @@ The <code>extends</code> keyword now functions identically to <code>goog.inherit
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js" integrity="sha384-xBuQ/xzmlsLoJpyjoggmTEz8OWUFM0/RC5BsqQBDX2v5cMvDHcMakNTNrHIW2I5f" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/combine/npm/codemirror@5.37.0/lib/codemirror.js,npm/codemirror@5.37.0/mode/coffeescript/coffeescript.js,npm/codemirror@5.37.0/addon/lint/coffeescript-lint.js,npm/codemirror@5.37.0/mode/javascript/javascript.js"></script>
-
+<script src="https://cdn.jsdelivr.net/combine/npm/codemirror@5.37.0/lib/codemirror.js,npm/codemirror@5.37.0/mode/coffeescript/coffeescript.js,npm/codemirror@5.37.0/addon/lint/coffeescript-lint.js,npm/codemirror@5.37.0/mode/javascript/javascript.js,npm/fuse.js@3.2.0/dist/fuse.min.js"></script>
 <script src="browser-compiler/coffeescript.js"></script>
 <script>
-(function(){window.location.origin||(window.location.origin=window.location.protocol+'//'+window.location.hostname),window.GA_TRACKING_ID='UA-106156830-1',null==window.dataLayer&&(window.dataLayer=[]),window.gtag=function(){window.dataLayer.push(arguments)},window.gtag('js',new Date),window.gtag('config',window.GA_TRACKING_ID),$(document).ready(function(){var clearHash,closeTry,editors,initializeEditor,initializeScrollspyFromHash,initializeTryEditors,lastCompilationElapsedTime,previousHash,replaceState,textareas,toggleSidebar,toggleTry;if($('time').each(function(index,el){var date,formattedDate;return date=el.dateTime||$(el).text(),formattedDate=new Date(date).toLocaleDateString(void 0,{year:'numeric',month:'long',day:'numeric'}),$(el).text(formattedDate.toString())}),toggleSidebar=function(){return $('.navbar-toggler, .sidebar').toggleClass('show')},$('[data-toggle="offcanvas"]').click(toggleSidebar),$('[data-action="sidebar-nav"]').click(function(event){return $('.navbar-toggler').is(':visible')&&(event.preventDefault(),toggleSidebar(),setTimeout(function(){return window.location=event.target.href},260)),gtag('event','sidebar_navigate',{event_category:'navigation',event_label:event.target.href.replace(window.location.origin,'')})}),$('.main').scrollspy({target:'#contents',offset:Math.round($('main').css('padding-top').replace('px',''))}),initializeScrollspyFromHash=function(hash){return $('#contents a.active[href!=\''+hash+'\']').removeClass('show')},$('.main').on('activate.bs.scrollspy',function(event,target){var $target;if($('#contents a.active[href!=\''+target.relatedTarget+'\']').removeClass('show'),$target=$('#contents a[href=\''+target.relatedTarget+'\']'),$target.prop('href')!==window.location.origin+'/#try')return replaceState($target.prop('href')),gtag('config',GA_TRACKING_ID,{page_path:$target.prop('href').replace(window.location.origin,'')})}),textareas=[],editors=[],lastCompilationElapsedTime=200,$('textarea').each(function(index){return textareas[index]=this,$(this).data('index',index)}),initializeEditor=function($textarea){var editor,index,mode,pending;if(index=$textarea.data('index'),mode=$textarea.hasClass('javascript-output')?'javascript':'coffeescript',editors[index]=editor=CodeMirror.fromTextArea($textarea[0],{mode:mode,theme:'twilight',indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:'contenteditable',readOnly:'coffeescript'!==mode,viewportMargin:2e308}),'coffeescript'===mode)return pending=null,editor.on('change',function(){return clearTimeout(pending),pending=setTimeout(function(){var coffee,exception,lastCompilationStartTime,link,output;lastCompilationStartTime=Date.now();try{if(coffee=editor.getValue(),0===index&&$('#try').hasClass('show')){$('#try').hasClass('show')&&(link='try:'+encodeURIComponent(coffee),replaceState(window.location.href.split('#')[0]+'#'+link));try{null!=window.localStorage&&window.localStorage.setItem('tryCoffeeScriptCode',coffee)}catch(error){exception=error}}output=CoffeeScript.compile(coffee,{bare:!0}),lastCompilationElapsedTime=Math.max(200,Date.now()-lastCompilationStartTime)}catch(error){exception=error,output=''+exception}return editors[index+1].setValue(output),gtag('event','edit_code',{event_category:'engagement',event_label:$textarea.closest('[data-example]').data('example')})},lastCompilationElapsedTime)}),editor.addKeyMap({Tab:function Tab(cm){return cm.somethingSelected()?cm.indentSelection('add'):/^\t/m.test(cm.getValue())?cm.execCommand('insertTab'):cm.execCommand('insertSoftTab')},"Shift-Tab":function ShiftTab(cm){return cm.indentSelection('subtract')},Enter:function Enter(cm){return cm.options.indentWithTabs=/^\t/m.test(cm.getValue()),cm.execCommand('newlineAndIndent')}})},$('.placeholder-code').one('mouseover',function(){var $siblingColumn,$textarea;return $textarea=$(this).prev('textarea'),$(this).remove(),initializeEditor($textarea),$siblingColumn=$($textarea.parent().siblings()[0]),$siblingColumn.children('.placeholder-code').remove(),initializeEditor($($siblingColumn.children('textarea')[0]))}),initializeTryEditors=function(){return initializeEditor($('#try-coffeescript-coffee')),initializeEditor($('#try-coffeescript-js'))},$('[data-action="run-code-example"]').click(function(){var index,js,run;return run=$(this).data('run'),index=$('#'+$(this).data('example')+'-js').data('index'),js=null==editors[index]?$(textareas[index]).val():editors[index].getValue(),!0!==run&&(js=js+'\nalert('+unescape(run)+');'),window.eval(js),gtag('event','run_code',{event_category:'engagement',event_label:$(this).closest('[data-example]').data('example')})}),previousHash=null,toggleTry=function(checkLocalStorage){var coffee,exception;if($('#try, #try-link').toggleClass('show'),!$('#try').hasClass('show'))return previousHash?replaceState(previousHash):clearHash();if(window.location.hash&&(previousHash=window.location.hash),0===$('#try .CodeMirror').length&&initializeTryEditors(),checkLocalStorage&&null!=window.localStorage)try{return coffee=window.localStorage.getItem('tryCoffeeScriptCode'),null==coffee?replaceState('#try'):editors[0].setValue(coffee)}catch(error){return exception=error,replaceState('#try')}else return replaceState('#try')},closeTry=function(){return $('#try, #try-link').removeClass('show'),previousHash?replaceState(previousHash):clearHash()},$('[data-toggle="try"]').click(function(event){return event.preventDefault(),toggleTry(!0)}),$('[data-close="try"]').click(closeTry),$('[data-action="scroll-to-top"]').click(function(){if(!$('#try').hasClass('show'))return $('.main')[0].scrollTop=0,setTimeout(clearHash,10)}),clearHash=function(){return window.history.replaceState({},document.title,window.location.pathname)},replaceState=function(newURL){return 0===(null==newURL?void 0:newURL.indexOf('#'))&&(newURL=''+window.location.pathname+newURL),window.history.replaceState({},document.title,newURL||'')},$(window).on('hashchange',function(){if(''===window.location.hash)return clearHash()}),null!=window.location.hash){if('#try'===window.location.hash)return toggleTry(!0);if(0===window.location.hash.indexOf('#try'))return 0===$('#try .CodeMirror').length&&initializeTryEditors(),editors[0].setValue(decodeURIComponent(window.location.hash.slice(5))),toggleTry(!1);if(''===window.location.hash)return clearHash();if(initializeScrollspyFromHash(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,'')).scrollIntoView()}})}).call(this);
+(function(){window.location.origin||(window.location.origin=window.location.protocol+'//'+window.location.hostname),window.GA_TRACKING_ID='UA-106156830-1',null==window.dataLayer&&(window.dataLayer=[]),window.gtag=function(){window.dataLayer.push(arguments)},window.gtag('js',new Date),window.gtag('config',window.GA_TRACKING_ID),window.docSearch={initializeSearchIndex:function initializeSearchIndex(){var searchOptions;return searchOptions={keys:['title','content'],includeScore:!0,shouldSort:!0,includeMatches:!0,threshold:.2,location:0,distance:1e3,maxPatternLength:32,minMatchCharLength:4},this.fuseBase=new Fuse(window.searchCollection.data,searchOptions),this.searchTree=window.searchCollection.tree,this.searchResultTemplate=window.searchResultTemplate,this.searchResultsListTemplate=window.searchResultsListTemplate,this.resultContainer=$('#search-results'),this.searchResultBox=$('#searchResultBox')},hideSearchResults:function hideSearchResults(){var clear=!!(0<arguments.length&&void 0!==arguments[0])&&arguments[0];return clear&&this.resultContainer.html(''),this.resultContainer.hide(),this.searchResultBox.hide()},showSearchResults:function showSearchResults(){var content=!!(0<arguments.length&&void 0!==arguments[0])&&arguments[0];if(this.searchResultBox.show(),this.resultContainer.show(),content)return this.resultContainer.html(content)},gotoResult:function gotoResult(element){var href;return href=element.data('href'),window.location.hash='#'+href,this.hideSearchResults()},query:function query(value){var ctmpl,i,j,key,len,len1,level,list,markContent,markText,markTitle,parseResult,ref,ref1,result,resultList,results,searchResults,_this=this;if(!(3<=value.length))return void this.hideSearchResults(!0);if(markText=function(text){return'<span class="cs-docsearch-suggestion--highlight">'+text+'</span>'},markTitle=function(title,matches){var i,len,m,marked;for(i=0,len=matches.length;i<len;i++)m=matches[i],marked=markText(title.slice(m[0],m[1])),title=title.slice(0,m[0])+marked+title.slice(m[1]);return title},markContent=function(content,matches){var end,i,len,m,mContent,marked,start;for(mContent=[],i=0,len=matches.length;i<len;i++)m=matches[i],marked=markText(content.slice(m[0],m[1])),start=50<m[0]?m[0]-50:0,end=m[1]+50,mContent.push('&hellip;'+content.slice(start,m[0])+marked+content.slice(m[1],end)+'&hellip;');return mContent.join(' ')},resultList={},results=[],parseResult=function(result){var content,countMatches,dataLevel,i,indices,key,len,match,matches,parent,section,title,_result$item=result.item;for(title=_result$item.title,section=_result$item.section,content=_result$item.content,parent=_result$item.parent,dataLevel=_result$item.dataLevel,matches=result.matches,resultList[dataLevel]||(resultList[dataLevel]={}),resultList[dataLevel][parent]&&0<resultList[dataLevel][parent].results.length||(resultList[dataLevel][parent]={title:_this.searchTree[parent].title,results:[]}),countMatches=0,(i=0,len=matches.length);i<len;i++){match=matches[i];var _match=match;key=_match.key,indices=_match.indices,'title'===key&&0<indices.length&&(title=markTitle(title,indices),countMatches+=indices.length),'content'===key&&(content=markContent(content,indices),countMatches+=indices.length)}return 1>countMatches?void 0:resultList[dataLevel][parent].results.push(_this.searchResultsListTemplate({title:title,content:content,section:section,subsection:title}))},searchResults=this.fuseBase.search(value),!(1>searchResults.length)){for(i=0,len=searchResults.length;i<len;i++)result=searchResults[i],parseResult(result);for(ref=Object.keys(resultList).sort(),j=0,len1=ref.length;j<len1;j++)for(key in level=ref[j],ref1=resultList[level],ref1)(list=ref1[key],!(1>list.results.length))&&(ctmpl=this.searchResultTemplate({section:list.title,results:list.results.join('')}),results.push(ctmpl));return this.showSearchResults(results.join(''))}}},$(document).ready(function(){var clearHash,closeTry,editors,initializeEditor,initializeScrollspyFromHash,initializeTryEditors,lastCompilationElapsedTime,previousHash,replaceState,textareas,toggleSidebar,toggleTry;if(window.docSearch.initializeSearchIndex(),$('time').each(function(index,el){var date,formattedDate;return date=el.dateTime||$(el).text(),formattedDate=new Date(date).toLocaleDateString(void 0,{year:'numeric',month:'long',day:'numeric'}),$(el).text(formattedDate.toString())}),toggleSidebar=function(){return $('.navbar-toggler, .sidebar').toggleClass('show')},$('[data-toggle="offcanvas"]').click(toggleSidebar),$('[data-action="sidebar-nav"]').click(function(event){return $('.navbar-toggler').is(':visible')&&(event.preventDefault(),toggleSidebar(),setTimeout(function(){return window.location=event.target.href},260)),gtag('event','sidebar_navigate',{event_category:'navigation',event_label:event.target.href.replace(window.location.origin,'')})}),$('.main').scrollspy({target:'#contents',offset:Math.round($('main').css('padding-top').replace('px',''))}),initializeScrollspyFromHash=function(hash){return $('#contents a.active[href!=\''+hash+'\']').removeClass('show')},$('.main').on('activate.bs.scrollspy',function(event,target){var $target;if($('#contents a.active[href!=\''+target.relatedTarget+'\']').removeClass('show'),$target=$('#contents a[href=\''+target.relatedTarget+'\']'),$target.prop('href')!==window.location.origin+'/#try')return replaceState($target.prop('href')),gtag('config',GA_TRACKING_ID,{page_path:$target.prop('href').replace(window.location.origin,'')})}),textareas=[],editors=[],lastCompilationElapsedTime=200,$('textarea').each(function(index){return textareas[index]=this,$(this).data('index',index)}),initializeEditor=function($textarea){var editor,index,mode,pending;if(index=$textarea.data('index'),mode=$textarea.hasClass('javascript-output')?'javascript':'coffeescript',editors[index]=editor=CodeMirror.fromTextArea($textarea[0],{mode:mode,theme:'twilight',indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:'contenteditable',readOnly:'coffeescript'!==mode,viewportMargin:2e308}),'coffeescript'===mode)return pending=null,editor.on('change',function(){return clearTimeout(pending),pending=setTimeout(function(){var coffee,exception,lastCompilationStartTime,link,output;lastCompilationStartTime=Date.now();try{if(coffee=editor.getValue(),0===index&&$('#try').hasClass('show')){$('#try').hasClass('show')&&(link='try:'+encodeURIComponent(coffee),replaceState(window.location.href.split('#')[0]+'#'+link));try{null!=window.localStorage&&window.localStorage.setItem('tryCoffeeScriptCode',coffee)}catch(error){exception=error}}output=CoffeeScript.compile(coffee,{bare:!0}),lastCompilationElapsedTime=Math.max(200,Date.now()-lastCompilationStartTime)}catch(error){exception=error,output=''+exception}return editors[index+1].setValue(output),gtag('event','edit_code',{event_category:'engagement',event_label:$textarea.closest('[data-example]').data('example')})},lastCompilationElapsedTime)}),editor.addKeyMap({Tab:function Tab(cm){return cm.somethingSelected()?cm.indentSelection('add'):/^\t/m.test(cm.getValue())?cm.execCommand('insertTab'):cm.execCommand('insertSoftTab')},"Shift-Tab":function ShiftTab(cm){return cm.indentSelection('subtract')},Enter:function Enter(cm){return cm.options.indentWithTabs=/^\t/m.test(cm.getValue()),cm.execCommand('newlineAndIndent')}})},$('.placeholder-code').one('mouseover',function(){var $siblingColumn,$textarea;return $textarea=$(this).prev('textarea'),$(this).remove(),initializeEditor($textarea),$siblingColumn=$($textarea.parent().siblings()[0]),$siblingColumn.children('.placeholder-code').remove(),initializeEditor($($siblingColumn.children('textarea')[0]))}),initializeTryEditors=function(){return initializeEditor($('#try-coffeescript-coffee')),initializeEditor($('#try-coffeescript-js'))},$('[data-action="run-code-example"]').click(function(){var index,js,run;return run=$(this).data('run'),index=$('#'+$(this).data('example')+'-js').data('index'),js=null==editors[index]?$(textareas[index]).val():editors[index].getValue(),!0!==run&&(js=js+'\nalert('+unescape(run)+');'),window.eval(js),gtag('event','run_code',{event_category:'engagement',event_label:$(this).closest('[data-example]').data('example')})}),previousHash=null,toggleTry=function(checkLocalStorage){var coffee,exception;if($('#try, #try-link').toggleClass('show'),!$('#try').hasClass('show'))return previousHash?replaceState(previousHash):clearHash();if(window.location.hash&&(previousHash=window.location.hash),0===$('#try .CodeMirror').length&&initializeTryEditors(),checkLocalStorage&&null!=window.localStorage)try{return coffee=window.localStorage.getItem('tryCoffeeScriptCode'),null==coffee?replaceState('#try'):editors[0].setValue(coffee)}catch(error){return exception=error,replaceState('#try')}else return replaceState('#try')},closeTry=function(){return $('#try, #try-link').removeClass('show'),previousHash?replaceState(previousHash):clearHash()},$('[data-toggle="try"]').click(function(event){return event.preventDefault(),toggleTry(!0)}),$('[data-close="try"]').click(closeTry),$('[data-action="scroll-to-top"]').click(function(){if(!$('#try').hasClass('show'))return $('.main')[0].scrollTop=0,setTimeout(clearHash,10)}),clearHash=function(){return window.history.replaceState({},document.title,window.location.pathname)},replaceState=function(newURL){return 0===(null==newURL?void 0:newURL.indexOf('#'))&&(newURL=''+window.location.pathname+newURL),window.history.replaceState({},document.title,newURL||'')},$(window).on('hashchange',function(){if(''===window.location.hash)return clearHash()}),null!=window.location.hash){if('#try'===window.location.hash)return toggleTry(!0);if(0===window.location.hash.indexOf('#try'))return 0===$('#try .CodeMirror').length&&initializeTryEditors(),editors[0].setValue(decodeURIComponent(window.location.hash.slice(5))),toggleTry(!1);if(''===window.location.hash)return clearHash();if(initializeScrollspyFromHash(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,'')).scrollIntoView()}}),$(document).on('keydown',function(event){if(27===event.which)return window.docSearch.hideSearchResults()}),$(document).on('keyup','#cs-search-input-navbar',function(){return window.docSearch.query(this.value)}),$(document).on('focus','#cs-search-input-navbar',function(){return window.docSearch.query(this.value)}),$(document).on('click','.searchWrapper',function(){return window.docSearch.gotoResult($(this))})}).call(this);
 </script>
+<script async src="search-index.js"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-106156830-1"></script>
 
 </body>

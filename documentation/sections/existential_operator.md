@@ -1,4 +1,4 @@
-## The Existential Operator
+### The Existential Operator
 
 It’s a little difficult to check for the existence of a variable in JavaScript. `if (variable) …` comes close, but fails for zero, the empty string, and false (to name just the most common cases). CoffeeScript’s existential operator `?` returns true unless a variable is `null` or `undefined` or undeclared, which makes it analogous to Ruby’s `nil?`.
 

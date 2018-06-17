@@ -1,4 +1,4 @@
-## Bound (Fat Arrow) Functions
+### Bound (Fat Arrow) Functions
 
 In JavaScript, the `this` keyword is dynamically scoped to mean the object that the current function is attached to. If you pass a function as a callback or attach it to a different object, the original value of `this` will be lost. If you’re not familiar with this behavior, [this Digital Web article](https://web.archive.org/web/20150316122013/http://www.digital-web.com/articles/scope_in_javascript) gives a good overview of the quirks.
 

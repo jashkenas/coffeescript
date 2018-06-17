@@ -179,6 +179,11 @@ buildDocs = (watch = no) ->
   sectionsSourceFolder = 'documentation/sections'
   examplesSourceFolder = 'documentation/examples'
   outputFolder         = "docs/v#{majorVersion}"
+  cheerio              = require "cheerio"
+
+  searchCollection =
+    tree: {}
+    data: []
 
   # Helpers
   releaseHeader = (date, version, prevVersion) ->
@@ -188,7 +193,78 @@ buildDocs = (watch = no) ->
       </h3>
     """
 
+  formatDate = (date) ->
+    monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
+      "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
+
   codeFor = require "./documentation/site/code.coffee"
+
+  # Template for search results.
+  searchResults = """
+        <div class="ds-suggestion">
+          <div class="cs-docsearch-suggestion cs-docsearch-suggestion__main cs-docsearch-suggestion__secondary" style="white-space: normal;">
+            <div class="cs-docsearch-suggestion--category-header">
+              <span class="cs-docsearch-suggestion--category-header-lvl0"><%= section %></span>
+            </div>
+            <%= results %>
+        </div>
+      </div>
+  """
+  # Template for search result item.
+  searchResultsList = """
+    <div class="cs-docsearch-suggestion--wrapper searchWrapper" data-href="<%= section %>">
+      <div class="cs-docsearch-suggestion--content">
+        <div class="cs-docsearch-suggestion--title">
+          <%= title %>
+        </div>
+        <div class="cs-docsearch-suggestion--text"><%= content %></div>
+      </div>
+    </div>
+  """
+  searchResultsTemplate = _.template(searchResults).source
+  searchResultsListTemplate = _.template(searchResultsList).source
+
+  # Build search catalog.
+  buildSearchCatalog = (html) ->
+    $ = cheerio.load html
+    parseSectionContent = (section, level) ->
+      sectionId = $(section).attr "id"
+      header = "> h#{level + 1}"
+      # Chagelogs subsections, e.g. <a>2.3.0</a> - <time>May 21, 2018</time>
+      version = $("#{header} a", section).text()
+      date = $("#{header} span time", section).text()
+      title = if version and date then "#{version} - #{date}" else $(header, section).text()
+      dataLevel = $(section).data("level") or no
+      content = $(":not(section)", section).text()
+                  .replace ///^#{title}///, ""    # Remove title from the content.
+                  .replace /\n+/g, " "            # Convertnewlines into spaces.
+                  .replace /^(?:\t|\s)+/g, " "    # Remove extra spaces.
+      {section:sectionId, title, content, dataLevel}
+
+    addCollection = ({el, level, parent=no}) ->
+      {section, title, dataLevel} = data = Object.assign {}, parseSectionContent(el, level), {level, parent}
+      if not dataLevel and parent
+        dataLevel = searchCollection.tree[parent].dataLevel
+      searchCollection.tree[section] = {title, parent, dataLevel}
+      searchCollection.data.push Object.assign {}, data, {dataLevel}
+      section
+
+    parseSections = (sections, level=1, parent=no) ->
+      # Level 1, e.g. main > section
+      sections.each (i, el) ->
+        section = addCollection {el, level, parent}
+        # Level 2, e.g. main > section > section
+        subSections = $("section", el)
+        if subSections?.length > 1
+          parseSections subSections, level + 1, section
+
+    parseSections $("main.main > section")
+    """
+      window.searchResultTemplate = #{searchResultsTemplate};
+      window.searchResultsListTemplate = #{searchResultsListTemplate};
+      window.searchCollection = #{JSON.stringify searchCollection};
+    """
 
   htmlFor = ->
     hljs = require 'highlight.js'
@@ -203,7 +279,6 @@ buildDocs = (watch = no) ->
             return hljs.highlight(lang, str).value
           catch ex
         return '' # No syntax highlighting
-
 
     # Add some custom overrides to Markdown-It’s rendering, per
     # https://github.com/markdown-it/markdown-it/blob/master/docs/architecture.md#renderer
@@ -249,14 +324,16 @@ buildDocs = (watch = no) ->
           includeScript: includeScript()
       output
 
-  # Task
   do renderIndex = ->
     render = _.template fs.readFileSync(indexFile, 'utf-8')
-    output = render
-      include: include()
+    output = render include: include()
+    searchIndex = buildSearchCatalog output
+    fs.writeFileSync "#{outputFolder}/search-index.js", searchIndex
+    log 'compiled', green, "search index → #{outputFolder}/search-index.js"
     fs.writeFileSync "#{outputFolder}/index.html", output
     log 'compiled', green, "#{indexFile} → #{outputFolder}/index.html"
   try
+    fs.symlinkSync "v#{majorVersion}/search-index.js", 'docs/search-index.js'
     fs.symlinkSync "v#{majorVersion}/index.html", 'docs/index.html'
   catch exception
 

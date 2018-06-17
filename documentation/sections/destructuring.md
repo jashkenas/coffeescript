@@ -1,4 +1,4 @@
-## Destructuring Assignment
+### Destructuring Assignment
 
 Just like JavaScript (since ES2015), CoffeeScript has destructuring assignment syntax. When you assign an array or object literal to a value, CoffeeScript breaks up and matches both sides against each other, assigning the values on the right to the variables on the left. In the simplest case, it can be used for parallel assignment:
 
