@@ -38,7 +38,7 @@ o = (patternString, action, options) ->
 
     # All runtime functions we need are defined on `yy`
     action = action.replace /\bnew /g, '$&yy.'
-    action = action.replace /\b(?:Block\.wrap|extend|toPrimitiveString)\b/g, 'yy.$&'
+    action = action.replace /\b(?:Block\.wrap|extend)\b/g, 'yy.$&'
 
     # Returns strings of functions to add to `parser.js` which add extra data
     # that nodes may have, such as comments or location data. Location data
@@ -192,8 +192,10 @@ grammar =
     o 'String',                                                    -> $1
   ]
 
+  # The .toString() calls here and elsewhere are to convert `String` objects
+  # back to primitive strings now that we've retrieved stowaway extra properties
   Regex: [
-    o 'REGEX',                                  -> new RegexLiteral toPrimitiveString($1), delimiter: $1.delimiter
+    o 'REGEX',                                  -> new RegexLiteral $1.toString(), delimiter: $1.delimiter
     o 'REGEX_START Invocation REGEX_END',       -> new RegexWithInterpolations $2
   ]
 
@@ -201,7 +203,7 @@ grammar =
   # through and printed to JavaScript.
   Literal: [
     o 'AlphaNumeric'
-    o 'JS',                                     -> new PassthroughLiteral toPrimitiveString($1), here: $1.here, generated: $1.generated
+    o 'JS',                                     -> new PassthroughLiteral $1.toString(), here: $1.here, generated: $1.generated
     o 'Regex'
     o 'UNDEFINED',                              -> new UndefinedLiteral $1
     o 'NULL',                                   -> new NullLiteral $1
