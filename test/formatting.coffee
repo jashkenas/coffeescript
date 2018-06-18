@@ -417,6 +417,22 @@ test "#3199: throw multiline implicit object", ->
       msg: 'b'
   eq undefined, y
 
+  y = do ->
+    yield
+      type: 'a'
+      msg: 'b'
+
+    if no then yield
+      type: 'c'
+      msg: 'd'
+
+    1
+  {value, done} = y.next()
+  ok value.type is 'a' and done is no
+
+  {value, done} = y.next()
+  ok value is 1 and done is yes
+
 test "#4576: multiple row function chaining", ->
   ->
     eq @a, 3

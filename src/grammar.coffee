@@ -138,6 +138,7 @@ grammar =
   Yield: [
     o 'YIELD',                                  -> new Op $1, new Value new Literal ''
     o 'YIELD Expression',                       -> new Op $1, $2
+    o 'YIELD INDENT Object OUTDENT',            -> new Op $1, $3
     o 'YIELD FROM Expression',                  -> new Op $1.concat($2), $3
   ]
 
@@ -176,11 +177,25 @@ grammar =
         double:       $1.double
         heregex:      $1.heregex
       )
-    o 'STRING_START Body STRING_END',           -> new StringWithInterpolations $2, quote: $1.quote
+    o 'STRING_START Interpolations STRING_END', -> new StringWithInterpolations Block.wrap($2), quote: $1.quote
   ]
 
+  Interpolations: [
+    o 'InterpolationChunk',                     -> [$1]
+    o 'Interpolations InterpolationChunk',      -> $1.concat $2
+  ]
+
+  InterpolationChunk: [
+    o 'INTERPOLATION_START Body INTERPOLATION_END',                -> new Interpolation $2
+    o 'INTERPOLATION_START INDENT Body OUTDENT INTERPOLATION_END', -> new Interpolation $3
+    o 'INTERPOLATION_START INTERPOLATION_END',                     -> new Interpolation
+    o 'String',                                                    -> $1
+  ]
+
+  # The .toString() calls here and elsewhere are to convert `String` objects
+  # back to primitive strings now that we've retrieved stowaway extra properties
   Regex: [
-    o 'REGEX',                                  -> new RegexLiteral "#{$1}", delimiter: $1.delimiter
+    o 'REGEX',                                  -> new RegexLiteral $1.toString(), delimiter: $1.delimiter
     o 'REGEX_START Invocation REGEX_END',       -> new RegexWithInterpolations $2
   ]
 
@@ -188,11 +203,11 @@ grammar =
   # through and printed to JavaScript.
   Literal: [
     o 'AlphaNumeric'
-    o 'JS',                                     -> new PassthroughLiteral "#{$1}", here: $1.here
+    o 'JS',                                     -> new PassthroughLiteral $1.toString(), here: $1.here, generated: $1.generated
     o 'Regex'
     o 'UNDEFINED',                              -> new UndefinedLiteral $1
     o 'NULL',                                   -> new NullLiteral $1
-    o 'BOOL',                                   -> new BooleanLiteral "#{$1}", originalValue: $1.original
+    o 'BOOL',                                   -> new BooleanLiteral $1.toString(), originalValue: $1.original
     o 'INFINITY',                               -> new InfinityLiteral $1
     o 'NAN',                                    -> new NaNLiteral $1
   ]
@@ -821,19 +836,20 @@ grammar =
   ]
 
   Operation: [
-    o 'UNARY Expression',                       -> new Op "#{$1}", $2, null, null, originalOperator: $1.original
+    o 'UNARY Expression',                       -> new Op $1.toString(), $2, null, null, originalOperator: $1.original
     o 'UNARY_MATH Expression',                  -> new Op $1 , $2
     o '-     Expression',                      (-> new Op '-', $2), prec: 'UNARY_MATH'
     o '+     Expression',                      (-> new Op '+', $2), prec: 'UNARY_MATH'
 
-    o 'AWAIT Expression',                       -> new Op $1 , $2
+    o 'AWAIT Expression',                       -> new Op $1, $2
+    o 'AWAIT INDENT Object OUTDENT',            -> new Op $1, $3
 
     o '-- SimpleAssignable',                    -> new Op '--', $2
     o '++ SimpleAssignable',                    -> new Op '++', $2
     o 'SimpleAssignable --',                    -> new Op '--', $1, null, true
     o 'SimpleAssignable ++',                    -> new Op '++', $1, null, true
 
-    # [The existential operator](http://coffeescript.org/#existential-operator).
+    # [The existential operator](https://coffeescript.org/#existential-operator).
     o 'Expression ?',                           -> new Existence $1
 
     o 'Expression +  Expression',               -> new Op '+' , $1, $3
@@ -842,21 +858,21 @@ grammar =
     o 'Expression MATH     Expression',         -> new Op $2, $1, $3
     o 'Expression **       Expression',         -> new Op $2, $1, $3
     o 'Expression SHIFT    Expression',         -> new Op $2, $1, $3
-    o 'Expression COMPARE  Expression',         -> new Op "#{$2}", $1, $3, null, originalOperator: $2.original
+    o 'Expression COMPARE  Expression',         -> new Op $2.toString(), $1, $3, null, originalOperator: $2.original
     o 'Expression &        Expression',         -> new Op $2, $1, $3
     o 'Expression ^        Expression',         -> new Op $2, $1, $3
     o 'Expression |        Expression',         -> new Op $2, $1, $3
-    o 'Expression &&       Expression',         -> new Op "#{$2}", $1, $3, null, originalOperator: $2.original
-    o 'Expression ||       Expression',         -> new Op "#{$2}", $1, $3, null, originalOperator: $2.original
+    o 'Expression &&       Expression',         -> new Op $2.toString(), $1, $3, null, originalOperator: $2.original
+    o 'Expression ||       Expression',         -> new Op $2.toString(), $1, $3, null, originalOperator: $2.original
     o 'Expression BIN?     Expression',         -> new Op $2, $1, $3
-    o 'Expression RELATION Expression',         -> new Op "#{$2}", $1, $3, null, invertOperator: $2.invert?.original ? $2.invert
+    o 'Expression RELATION Expression',         -> new Op $2.toString(), $1, $3, null, invertOperator: $2.invert?.original ? $2.invert
 
     o 'SimpleAssignable COMPOUND_ASSIGN
-       Expression',                             -> new Assign $1, $3, "#{$2}", originalContext: $2.original
+       Expression',                             -> new Assign $1, $3, $2.toString(), originalContext: $2.original
     o 'SimpleAssignable COMPOUND_ASSIGN
-       INDENT Expression OUTDENT',              -> new Assign $1, $4, "#{$2}", originalContext: $2.original
+       INDENT Expression OUTDENT',              -> new Assign $1, $4, $2.toString(), originalContext: $2.original
     o 'SimpleAssignable COMPOUND_ASSIGN TERMINATOR
-       Expression',                             -> new Assign $1, $4, "#{$2}", originalContext: $2.original
+       Expression',                             -> new Assign $1, $4, $2.toString(), originalContext: $2.original
   ]
 
 # Precedence

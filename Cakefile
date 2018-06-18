@@ -19,7 +19,7 @@ unless process.env.NODE_DISABLE_COLORS
 header = """
   /**
    * CoffeeScript Compiler v#{CoffeeScript.VERSION}
-   * http://coffeescript.org
+   * https://coffeescript.org
    *
    * Copyright 2011, Jeremy Ashkenas
    * Released under the MIT License
@@ -195,18 +195,10 @@ buildDocs = (watch = no) ->
 
   # Helpers
   releaseHeader = (date, version, prevVersion) ->
-    monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-
-    formatDate = (date) ->
-      date.replace /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (match, $1, $2, $3) ->
-        "#{monthNames[$2 - 1]} #{+$3}, #{$1}"
-
     """
-      <div class="anchor" id="#{version}"></div>
-      <h2 class="header">
-        #{prevVersion and "<a href=\"https://github.com/jashkenas/coffeescript/compare/#{prevVersion}...#{version}\">#{version}</a>" or version}
-        <span class="timestamp"> &mdash; <time datetime="#{date}">#{formatDate date}</time></span>
-      </h2>
+      <h3>#{prevVersion and "<a href=\"https://github.com/jashkenas/coffeescript/compare/#{prevVersion}...#{version}\">#{version}</a>" or version}
+        <span class="timestamp"> &mdash; <time datetime="#{date}">#{date}</time></span>
+      </h3>
     """
 
   codeFor = require "./documentation/site/code.coffee"
@@ -237,7 +229,7 @@ buildDocs = (watch = no) ->
         "<blockquote class=\"uneditable-code-block\">#{defaultFence.apply @, arguments}</blockquote>"
 
     (file, bookmark) ->
-      md = fs.readFileSync "#{sectionsSourceFolder}/#{file}.md", 'utf-8'
+      md = fs.readFileSync "#{sectionsSourceFolder}/#{file.replace /\//g, path.sep}.md", 'utf-8'
       md = md.replace /<%= releaseHeader %>/g, releaseHeader
       md = md.replace /<%= majorVersion %>/g, majorVersion
       md = md.replace /<%= fullVersion %>/g, CoffeeScript.VERSION

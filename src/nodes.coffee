@@ -11,7 +11,7 @@ Error.stackTraceLimit = Infinity
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, some,
 addDataToNode, attachCommentsToNode, locationDataToString,
-throwSyntaxError, makeDelimitedLiteral, replaceUnicodeCodePointEscapes} = require './helpers'
+throwSyntaxError, replaceUnicodeCodePointEscapes} = require './helpers'
 
 # Functions required by parser.
 exports.extend = extend
@@ -257,13 +257,52 @@ exports.Base = class Base
   lastNode: (list) ->
     if list.length is 0 then null else list[list.length - 1]
 
-  # `toString` representation of the node, for inspecting the parse tree.
+  # Debugging representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
   toString: (idt = '', name = @constructor.name) ->
     tree = '\n' + idt + name
     tree += '?' if @soak
     @eachChild (node) -> tree += node.toString idt + TAB
     tree
+
+  # Plain JavaScript object representation of the node, that can be serialized
+  # as JSON. This is used for generating an abstract syntax tree (AST).
+  # This is what the `ast` option in the Node API returns.
+  toJSON: ->
+    # We try to follow the [Babel AST spec](https://github.com/babel/babel/blob/master/packages/babylon/ast/spec.md)
+    # as closely as possible, for improved interoperability with other tools.
+    obj =
+      type: @constructor.name
+      # Convert `locationData` to Babel’s style.
+      loc:
+        start:
+          line: @locationData.first_line
+          column: @locationData.first_column
+        end:
+          line: @locationData.last_line
+          column: @locationData.last_column
+
+    # Add serializable properties to the output. Properties that aren’t
+    # automatically serializable (because they’re already a primitive type)
+    # should be handled on a case-by-case basis in child node classes’ own
+    # `toJSON` methods.
+    for property, value of this
+      continue if property in ['locationData', 'children']
+      continue if value is undefined # Don’t skip `null` or `false` values.
+      if typeof value is 'boolean' or typeof value is 'number' or typeof value is 'string'
+        obj[property] = value
+
+    # Work our way down the tree. This is like `eachChild`, except that we
+    # preserve the child node name, and arrays.
+    for attr in @children when @[attr]
+      if Array.isArray(@[attr])
+        obj[attr] = []
+        for child in flatten [@[attr]]
+          obj[attr].push child.unwrap().toJSON()
+      else
+        obj[attr] = @[attr].unwrap().toJSON()
+
+    obj
 
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
@@ -364,6 +403,10 @@ exports.Base = class Base
 
     @eachChild (child) ->
       child.updateLocationDataIfMissing locationData
+
+  # Add location data from another node
+  withLocationDataFrom: ({locationData}) ->
+    @updateLocationDataIfMissing locationData
 
   # Throw a SyntaxError associated with this node’s location.
   error: (message) ->
@@ -478,16 +521,21 @@ exports.Block = class Block extends Base
   # ensures that the final expression is returned.
   makeReturn: (res) ->
     len = @expressions.length
+    [..., lastExp] = @expressions
+    lastExp = lastExp?.unwrap() or no
+    # We also need to check that we’re not returning a CSX tag if there’s an
+    # adjacent one at the same level; JSX doesn’t allow that.
+    if lastExp and lastExp instanceof Parens and lastExp.body.expressions.length > 1
+      {body:{expressions}} = lastExp
+      [..., penult, last] = expressions
+      penult = penult.unwrap()
+      last = last.unwrap()
+      if penult instanceof Call and penult.csx and last instanceof Call and last.csx
+        expressions[expressions.length - 1].error 'Adjacent JSX elements must be wrapped in an enclosing tag'
     while len--
       expr = @expressions[len]
       @expressions[len] = expr.makeReturn res
       @expressions.splice(len, 1) if expr instanceof Return and not expr.expression
-      # We also need to check that we’re not returning a CSX tag if there’s an
-      # adjacent one at the same level; JSX doesn’t allow that.
-      if expr.unwrapAll().csx
-        for csxCheckIndex in [len..0]
-          if @expressions[csxCheckIndex].unwrapAll().csx
-            expr.error 'Adjacent JSX elements must be wrapped in an enclosing tag'
       break
     this
 
@@ -751,38 +799,35 @@ exports.StringLiteral = class StringLiteral extends Literal
     super ''
     @fromSourceString = @quote?
     @quote ?= '"'
-    @formatValue()
-
-  formatValue: ->
     heredoc = @quote.length is 3
-    @value = do =>
-      val = @originalValue
-      if @heregex
-        val = val.replace HEREGEX_OMIT, '$1$2'
-        val = replaceUnicodeCodePointEscapes val, flags: @heregex.flags
-      else
-        val = val.replace STRING_OMIT, '$1'
-        val =
-          unless @fromSourceString
-            val
-          else if heredoc
-            indentRegex = /// \n#{@indent} ///g if @indent
 
-            val = val.replace indentRegex, '\n' if indentRegex
-            val = val.replace LEADING_BLANK_LINE,  '' if @initialChunk
-            val = val.replace TRAILING_BLANK_LINE, '' if @finalChunk
-            val
-          else
-            val.replace SIMPLE_STRING_OMIT, (match, offset) =>
-              if (@initialChunk and offset is 0) or
-                 (@finalChunk and offset + match.length is val.length)
-                ''
-              else
-                ' '
-      makeDelimitedLiteral val, {
-        delimiter: @quote.charAt 0
-        @double
-      }
+    val = @originalValue
+    if @heregex
+      val = val.replace HEREGEX_OMIT, '$1$2'
+      val = replaceUnicodeCodePointEscapes val, flags: @heregex.flags
+    else
+      val = val.replace STRING_OMIT, '$1'
+      val =
+        unless @fromSourceString
+          val
+        else if heredoc
+          indentRegex = /// \n#{@indent} ///g if @indent
+
+          val = val.replace indentRegex, '\n' if indentRegex
+          val = val.replace LEADING_BLANK_LINE,  '' if @initialChunk
+          val = val.replace TRAILING_BLANK_LINE, '' if @finalChunk
+          val
+        else
+          val.replace SIMPLE_STRING_OMIT, (match, offset) =>
+            if (@initialChunk and offset is 0) or
+               (@finalChunk and offset + match.length is val.length)
+              ''
+            else
+              ' '
+    @value = makeDelimitedLiteral val, {
+      delimiter: @quote.charAt 0
+      @double
+    }
 
   compileNode: (o) ->
     return [@makeCode @unquote(yes, yes)] if @csx
@@ -797,20 +842,16 @@ exports.StringLiteral = class StringLiteral extends Literal
 exports.RegexLiteral = class RegexLiteral extends Literal
   constructor: (value, {@delimiter = '/'} = {}) ->
     super ''
-    @formatValue value
-
-  formatValue: (val) ->
     heregex = @delimiter is '///'
-    endDelimiterIndex = val.lastIndexOf '/'
-    @flags = val[endDelimiterIndex + 1..]
-    @value = do =>
-      val = @originalValue = val[1...endDelimiterIndex]
-      val = val.replace HEREGEX_OMIT, '$1$2' if heregex
-      val = replaceUnicodeCodePointEscapes val, {@flags}
-      "#{makeDelimitedLiteral val, delimiter: '/'}#{@flags}"
+    endDelimiterIndex = value.lastIndexOf '/'
+    @flags = value[endDelimiterIndex + 1..]
+    val = @originalValue = value[1...endDelimiterIndex]
+    val = val.replace HEREGEX_OMIT, '$1$2' if heregex
+    val = replaceUnicodeCodePointEscapes val, {@flags}
+    @value = "#{makeDelimitedLiteral val, delimiter: '/'}#{@flags}"
 
 exports.PassthroughLiteral = class PassthroughLiteral extends Literal
-  constructor: (@originalValue, {@here} = {}) ->
+  constructor: (@originalValue, {@here, @generated} = {}) ->
     super ''
     @value = @originalValue.replace /\\+(`|$)/g, (string) ->
       # `string` is always a value like '\`', '\\\`', '\\\\\`', etc.
@@ -3522,25 +3563,32 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
       wrapped.csxAttribute = yes
       return wrapped.compileNode o
 
-    # Assumes that `expr` is `Value` » `StringLiteral` or `Op`
+    # Assumes that `expr` is `Block`
     expr = @body.unwrap()
 
     elements = []
     salvagedComments = []
-    expr.traverseChildren no, (node) ->
+    expr.traverseChildren no, (node) =>
       if node instanceof StringLiteral
         if node.comments
           salvagedComments.push node.comments...
           delete node.comments
         elements.push node
         return yes
-      else if node instanceof Parens
+      else if node instanceof Interpolation
         if salvagedComments.length isnt 0
           for comment in salvagedComments
             comment.unshift = yes
             comment.newLine = yes
           attachCommentsToNode salvagedComments, node
-        elements.push node
+        if (unwrapped = node.expression?.unwrapAll()) instanceof PassthroughLiteral and unwrapped.generated and not @csx
+          commentPlaceholder = new StringLiteral('').withLocationDataFrom node
+          commentPlaceholder.comments = unwrapped.comments
+          (commentPlaceholder.comments ?= []).push node.comments... if node.comments
+          elements.push new Value commentPlaceholder
+        else if node.expression
+          (node.expression.comments ?= []).push node.comments... if node.comments
+          elements.push node.expression
         return no
       else if node.comments
         # This node is getting discarded, but salvage its comments.
@@ -3583,9 +3631,14 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
     fragments
 
   isNestedTag: (element) ->
-    exprs = element.body?.expressions
-    call = exprs?[0].unwrap()
-    @csx and exprs and exprs.length is 1 and call instanceof Call and call.csx
+    call = element.unwrapAll?()
+    @csx and call instanceof Call and call.csx
+
+exports.Interpolation = class Interpolation extends Base
+  constructor: (@expression) ->
+    super()
+
+  children: ['expression']
 
 #### For
 
@@ -3980,3 +4033,25 @@ unfoldSoak = (o, parent, name) ->
   parent[name] = ifn.body
   ifn.body = new Value parent
   ifn
+
+# Constructs a string or regex by escaping certain characters.
+makeDelimitedLiteral = (body, options = {}) ->
+  body = '(?:)' if body is '' and options.delimiter is '/'
+  regex = ///
+      (\\\\)                               # Escaped backslash.
+    | (\\0(?=[1-7]))                       # Null character mistaken as octal escape.
+    | \\?(#{options.delimiter})            # (Possibly escaped) delimiter.
+    | \\?(?: (\n)|(\r)|(\u2028)|(\u2029) ) # (Possibly escaped) newlines.
+    | (\\.)                                # Other escapes.
+  ///g
+  body = body.replace regex, (match, backslash, nul, delimiter, lf, cr, ls, ps, other) -> switch
+    # Ignore escaped backslashes.
+    when backslash then (if options.double then backslash + backslash else backslash)
+    when nul       then '\\x00'
+    when delimiter then "\\#{delimiter}"
+    when lf        then '\\n'
+    when cr        then '\\r'
+    when ls        then '\\u2028'
+    when ps        then '\\u2029'
+    when other     then (if options.double then "\\#{other}" else other)
+  "#{options.delimiter}#{body}#{options.delimiter}"

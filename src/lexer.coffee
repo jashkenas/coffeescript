@@ -738,10 +738,7 @@ exports.Lexer = class Lexer
   #
   # This method allows us to have strings within interpolations within strings,
   # ad infinitum.
-  matchWithInterpolations: (regex, delimiter, closingDelimiter, interpolators) ->
-    closingDelimiter ?= delimiter
-    interpolators ?= /^#\{/
-
+  matchWithInterpolations: (regex, delimiter, closingDelimiter = delimiter, interpolators = /^#\{/) ->
     tokens = []
     offsetInChunk = delimiter.length
     return null unless @chunk[...offsetInChunk] is delimiter
@@ -774,8 +771,10 @@ exports.Lexer = class Lexer
         # Turn the leading and trailing `{` and `}` into parentheses. Unnecessary
         # parentheses will be removed later.
         [open, ..., close] = nested
-        open[0]  = open[1]  = '('
-        close[0] = close[1] = ')'
+        open[0]  = 'INTERPOLATION_START'
+        open[1]  = '('
+        close[0]  = 'INTERPOLATION_END'
+        close[1] = ')'
         close.origin = ['', 'end of interpolation', close[2]]
 
       # Remove leading `'TERMINATOR'` (if any).
@@ -785,8 +784,8 @@ exports.Lexer = class Lexer
 
       unless braceInterpolator
         # We are not using `{` and `}`, so wrap the interpolated tokens instead.
-        open = @makeToken '(', '(',  offset: offsetInChunk,         length: 0
-        close = @makeToken ')', ')', offset: offsetInChunk + index, length: 0
+        open = @makeToken 'INTERPOLATION_START', '(', offset: offsetInChunk,         length: 0
+        close = @makeToken 'INTERPOLATION_END', ')',  offset: offsetInChunk + index, length: 0
         nested = [open, nested..., close]
 
       # Push a fake `'TOKENS'` token, which will get turned into real tokens later.
@@ -825,17 +824,10 @@ exports.Lexer = class Lexer
       [tag, value] = token
       switch tag
         when 'TOKENS'
-          if value.length is 2
-            # Optimize out empty interpolations (an empty pair of parentheses).
-            continue unless value[0].comments or value[1].comments
-            # There are comments (and nothing else) in this interpolation.
-            if @csxDepth is 0
-              # This is an interpolated string, not a CSX tag; and for whatever
-              # reason `` `a${/*test*/}b` `` is invalid JS. So compile to
-              # `` `a${/*test*/''}b` `` instead.
-              placeholderToken = @makeToken 'STRING', '""'
-            else
-              placeholderToken = @makeToken 'JS', ''
+          # There are comments (and nothing else) in this interpolation.
+          if value.length is 2 and (value[0].comments or value[1].comments)
+            placeholderToken = @makeToken 'JS', ''
+            placeholderToken.generated = yes
             # Use the same location data as the first parenthesis.
             placeholderToken[2] = value[0][2]
             for val in value when val.comments
@@ -849,18 +841,6 @@ exports.Lexer = class Lexer
         when 'NEOSTRING'
           # Convert `'NEOSTRING'` into `'STRING'`.
           converted = fn.call this, token[1], i
-          # Optimize out empty strings. We ensure that the tokens stream always
-          # starts with a string token, though, to make sure that the result
-          # really is a string.
-          if converted.length is 0
-            if i is 0
-              firstEmptyStringIndex = @tokens.length
-            else
-              continue
-          # However, there is one case where we can optimize away a starting
-          # empty string.
-          if i is 2 and firstEmptyStringIndex?
-            @tokens.splice firstEmptyStringIndex, 2 # Remove empty string and the plus.
           addTokenData token, initialChunk: yes if i is 0
           addTokenData token, finalChunk: yes   if i is $
           addTokenData token, {indent, quote, double}
@@ -869,14 +849,6 @@ exports.Lexer = class Lexer
           token[1] = '"' + converted + '"'
           locationToken = token
           tokensToPush = [token]
-      if @tokens.length > firstIndex
-        # Create a 0-length `+` token.
-        plusToken = @token '+', '+'
-        plusToken[2] =
-          first_line:   locationToken[2].first_line
-          first_column: locationToken[2].first_column
-          last_line:    locationToken[2].first_line
-          last_column:  locationToken[2].first_column
       @tokens.push tokensToPush...
 
     if lparen
@@ -962,7 +934,6 @@ exports.Lexer = class Lexer
   # Returns the new token.
   token: (tag, value, {offset, length, origin, data} = {}) ->
     token = @makeToken tag, value, {offset, length, origin}
-    token.origin = origin if origin
     addTokenData token, data if data
     @tokens.push token
     token
