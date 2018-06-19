@@ -161,6 +161,7 @@ exports.Lexer = class Lexer
       else
         'IDENTIFIER'
 
+    tokenData = {}
     if tag is 'IDENTIFIER' and (id in JS_KEYWORDS or id in COFFEE_KEYWORDS) and
        not (@exportSpecifierList and id in COFFEE_KEYWORDS)
       tag = id.toUpperCase()
@@ -184,7 +185,7 @@ exports.Lexer = class Lexer
           tag = 'RELATION'
           if @value() is '!'
             poppedToken = @tokens.pop()
-            id = '!' + id
+            tokenData.invert = poppedToken.data?.original ? poppedToken[1]
     else if tag is 'IDENTIFIER' and @seenFor and id is 'from' and
        isForFrom(prev)
       tag = 'FORFROM'
@@ -208,10 +209,11 @@ exports.Lexer = class Lexer
     if tag is 'IDENTIFIER' and id in RESERVED
       @error "reserved word '#{id}'", length: id.length
 
-    unless tag is 'PROPERTY' or @exportSpecifierList
+    unless tag is 'PROPERTY' or @exportSpecifierList or @importSpecifierList
       if id in COFFEE_ALIASES
         alias = id
         id = COFFEE_ALIAS_MAP[id]
+        tokenData.original = alias
       tag = switch id
         when '!'                 then 'UNARY'
         when '==', '!='          then 'COMPARE'
@@ -221,7 +223,7 @@ exports.Lexer = class Lexer
         when '&&', '||'          then id
         else  tag
 
-    tagToken = @token tag, id, length: idLength
+    tagToken = @token tag, id, length: idLength, data: tokenData
     tagToken.origin = [tag, alias, tagToken[2]] if alias
     if poppedToken
       [tagToken[2].first_line, tagToken[2].first_column] =
@@ -639,6 +641,7 @@ exports.Lexer = class Lexer
       if value is '=' and prev[1] in ['||', '&&'] and not prev.spaced
         prev[0] = 'COMPOUND_ASSIGN'
         prev[1] += '='
+        prev.data.original += '=' if prev.data?.original
         prev = @tokens[@tokens.length - 2]
         skipToken = true
       if prev and prev[0] isnt 'PROPERTY'
@@ -944,7 +947,7 @@ exports.Lexer = class Lexer
   value: (useOrigin = no) ->
     [..., token] = @tokens
     if useOrigin and token?.origin?
-      token.origin?[1]
+      token.origin[1]
     else
       token?[1]
 

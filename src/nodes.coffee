@@ -905,6 +905,9 @@ exports.NullLiteral = class NullLiteral extends Literal
     super 'null'
 
 exports.BooleanLiteral = class BooleanLiteral extends Literal
+  constructor: (value, {@originalValue} = {}) ->
+    super value
+    @originalValue ?= @value
 
 #### Return
 
@@ -2265,7 +2268,7 @@ exports.ExportSpecifier = class ExportSpecifier extends ModuleSpecifier
 exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options = {}) ->
     super()
-    {@param, @subpattern, @operatorToken, @moduleDeclaration} = options
+    {@param, @subpattern, @operatorToken, @moduleDeclaration, @originalContext = @context} = options
 
   children: ['variable', 'value']
 
@@ -3151,10 +3154,9 @@ exports.While = class While extends Base
 # Simple Arithmetic and logical operations. Performs some conversion from
 # CoffeeScript operations into their JavaScript equivalents.
 exports.Op = class Op extends Base
-  constructor: (op, first, second, flip) ->
+  constructor: (op, first, second, flip, {@invertOperator, @originalOperator = op} = {}) ->
     super()
 
-    return new In first, second if op is 'in'
     if op is 'do'
       return Op::generateDo first
     if op is 'new'
@@ -3204,6 +3206,9 @@ exports.Op = class Op extends Base
     @operator in ['<', '>', '>=', '<=', '===', '!==']
 
   invert: ->
+    if @isInOperator()
+      @invertOperator = '!'
+      return @
     if @isChainable() and @first.isChainable()
       allInvertable = yes
       curr = this
@@ -3249,7 +3254,16 @@ exports.Op = class Op extends Base
     call.do = yes
     call
 
+  isInOperator: ->
+    @originalOperator is 'in'
+
   compileNode: (o) ->
+    if @isInOperator()
+      inNode = new In @first, @second
+      return (if @invertOperator then inNode.invert() else inNode).compileNode o
+    if @invertOperator
+      @invertOperator = null
+      return @invert().compileNode(o)
     isChain = @isChainable() and @first.isChainable()
     # In chains, there's no need to wrap bare obj literals in parens,
     # as the chained expression is wrapped.
@@ -3522,7 +3536,7 @@ exports.Parens = class Parens extends Base
       return expr.compileToFragments o
     fragments = expr.compileToFragments o, LEVEL_PAREN
     bare = o.level < LEVEL_OP and not shouldWrapComment and (
-        expr instanceof Op or expr.unwrap() instanceof Call or
+        expr instanceof Op and not expr.isInOperator() or expr.unwrap() instanceof Call or
         (expr instanceof For and expr.returns)
       ) and (o.level < LEVEL_COND or fragments.length <= 3)
     return @wrapInBraces fragments if @csxAttribute
