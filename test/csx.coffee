@@ -365,7 +365,7 @@ test 'heregex', ->
     6 / 432 / gm; // this is division
 
     <Tag>
-    {(test = /<Tag>/)} this is a regex containing something which looks like a tag
+    {test = /<Tag>/} this is a regex containing something which looks like a tag
     </Tag>;
 
     <Person />;

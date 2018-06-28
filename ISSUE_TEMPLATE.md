@@ -7,7 +7,7 @@ Our issues history stretches back to 2009, so the odds are good that your topic 
 If you have a support request or question please use Stack Overflow:
 https://stackoverflow.com/questions/tagged/coffeescript
 
-Issues on GitHub are only related to problems of the CoffeeScript compiler itself and we cannot answer 
+Issues on GitHub are only related to problems of the CoffeeScript compiler itself and we cannot answer
 support questions here.
 -->
 
@@ -21,18 +21,18 @@ with “Proposal:”. Once your issue is reviewed, a maintainer will edit the ti
 of the codebase most relevant to the issue (if applicable).
 
 If your request is that CoffeeScript support a new feature recently arrived to JavaScript, please note
-that we generally only add features that have reached Stage 4 in the specification (in other words, 
+that we generally only add features that have reached Stage 4 in the specification (in other words,
 the syntax is finalized and the feature is approved to be part of the next ES release). You can still
 open an issue, but it will likely be tagged with “[Awaiting Stage 4]” until the relevant ES feature is
-approved for release. See http://coffeescript.org/#contributing
+approved for release. See https://coffeescript.org/#contributing
 
 There are also a handful of JavaScript features that CoffeeScript intentionally does not support.
-Please do not open issues regarding these. They’re listed in http://coffeescript.org/#unsupported
+Please do not open issues regarding these. They’re listed in https://coffeescript.org/#unsupported
 -->
 
 ### Input Code
 <!--- If you're describing a bug, please let us know which sample code reproduces your problem. -->
-<!--- If you have link from http://coffeescript.org/#try or a standalone repo please include that! -->
+<!--- If you have link from https://coffeescript.org/#try or a standalone repo please include that! -->
 
 ```coffee
 your (code) => here

@@ -11,7 +11,7 @@ Error.stackTraceLimit = Infinity
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, some,
 addDataToNode, attachCommentsToNode, locationDataToString,
-throwSyntaxError} = require './helpers'
+throwSyntaxError, replaceUnicodeCodePointEscapes} = require './helpers'
 
 # Functions required by parser.
 exports.extend = extend
@@ -257,13 +257,52 @@ exports.Base = class Base
   lastNode: (list) ->
     if list.length is 0 then null else list[list.length - 1]
 
-  # `toString` representation of the node, for inspecting the parse tree.
+  # Debugging representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
   toString: (idt = '', name = @constructor.name) ->
     tree = '\n' + idt + name
     tree += '?' if @soak
     @eachChild (node) -> tree += node.toString idt + TAB
     tree
+
+  # Plain JavaScript object representation of the node, that can be serialized
+  # as JSON. This is used for generating an abstract syntax tree (AST).
+  # This is what the `ast` option in the Node API returns.
+  toJSON: ->
+    # We try to follow the [Babel AST spec](https://github.com/babel/babel/blob/master/packages/babylon/ast/spec.md)
+    # as closely as possible, for improved interoperability with other tools.
+    obj =
+      type: @constructor.name
+      # Convert `locationData` to Babel’s style.
+      loc:
+        start:
+          line: @locationData.first_line
+          column: @locationData.first_column
+        end:
+          line: @locationData.last_line
+          column: @locationData.last_column
+
+    # Add serializable properties to the output. Properties that aren’t
+    # automatically serializable (because they’re already a primitive type)
+    # should be handled on a case-by-case basis in child node classes’ own
+    # `toJSON` methods.
+    for property, value of this
+      continue if property in ['locationData', 'children']
+      continue if value is undefined # Don’t skip `null` or `false` values.
+      if typeof value is 'boolean' or typeof value is 'number' or typeof value is 'string'
+        obj[property] = value
+
+    # Work our way down the tree. This is like `eachChild`, except that we
+    # preserve the child node name, and arrays.
+    for attr in @children when @[attr]
+      if Array.isArray(@[attr])
+        obj[attr] = []
+        for child in flatten [@[attr]]
+          obj[attr].push child.unwrap().toJSON()
+      else
+        obj[attr] = @[attr].unwrap().toJSON()
+
+    obj
 
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
@@ -364,6 +403,10 @@ exports.Base = class Base
 
     @eachChild (child) ->
       child.updateLocationDataIfMissing locationData
+
+  # Add location data from another node
+  withLocationDataFrom: ({locationData}) ->
+    @updateLocationDataIfMissing locationData
 
   # Throw a SyntaxError associated with this node’s location.
   error: (message) ->
@@ -752,18 +795,68 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
     if o.level >= LEVEL_OP then @wrapInParentheses code else code
 
 exports.StringLiteral = class StringLiteral extends Literal
-  compileNode: (o) ->
-    res = if @csx then [@makeCode @unquote(yes, yes)] else super()
+  constructor: (@originalValue, {@quote, @initialChunk, @finalChunk, @indent, @double, @heregex} = {}) ->
+    super ''
+    @fromSourceString = @quote?
+    @quote ?= '"'
+    heredoc = @quote.length is 3
 
-  unquote: (doubleQuote = no, newLine = no) ->
+    val = @originalValue
+    if @heregex
+      val = val.replace HEREGEX_OMIT, '$1$2'
+      val = replaceUnicodeCodePointEscapes val, flags: @heregex.flags
+    else
+      val = val.replace STRING_OMIT, '$1'
+      val =
+        unless @fromSourceString
+          val
+        else if heredoc
+          indentRegex = /// \n#{@indent} ///g if @indent
+
+          val = val.replace indentRegex, '\n' if indentRegex
+          val = val.replace LEADING_BLANK_LINE,  '' if @initialChunk
+          val = val.replace TRAILING_BLANK_LINE, '' if @finalChunk
+          val
+        else
+          val.replace SIMPLE_STRING_OMIT, (match, offset) =>
+            if (@initialChunk and offset is 0) or
+               (@finalChunk and offset + match.length is val.length)
+              ''
+            else
+              ' '
+    @value = makeDelimitedLiteral val, {
+      delimiter: @quote.charAt 0
+      @double
+    }
+
+  compileNode: (o) ->
+    return [@makeCode @unquote(yes, yes)] if @csx
+    super o
+
+  unquote: (doubleQuote = no, csx = no) ->
     unquoted = @value[1...-1]
     unquoted = unquoted.replace /\\"/g, '"'  if doubleQuote
-    unquoted = unquoted.replace /\\n/g, '\n' if newLine
+    unquoted = unquoted.replace /\\n/g, '\n' if csx
     unquoted
 
 exports.RegexLiteral = class RegexLiteral extends Literal
+  constructor: (value, {@delimiter = '/'} = {}) ->
+    super ''
+    heregex = @delimiter is '///'
+    endDelimiterIndex = value.lastIndexOf '/'
+    @flags = value[endDelimiterIndex + 1..]
+    val = @originalValue = value[1...endDelimiterIndex]
+    val = val.replace HEREGEX_OMIT, '$1$2' if heregex
+    val = replaceUnicodeCodePointEscapes val, {@flags}
+    @value = "#{makeDelimitedLiteral val, delimiter: '/'}#{@flags}"
 
 exports.PassthroughLiteral = class PassthroughLiteral extends Literal
+  constructor: (@originalValue, {@here, @generated} = {}) ->
+    super ''
+    @value = @originalValue.replace /\\+(`|$)/g, (string) ->
+      # `string` is always a value like '\`', '\\\`', '\\\\\`', etc.
+      # By reducing it to its latter half, we turn '\`' to '`', '\\\`' to '\`', etc.
+      string[-Math.ceil(string.length / 2)..]
 
 exports.IdentifierLiteral = class IdentifierLiteral extends Literal
   isAssignable: YES
@@ -812,6 +905,9 @@ exports.NullLiteral = class NullLiteral extends Literal
     super 'null'
 
 exports.BooleanLiteral = class BooleanLiteral extends Literal
+  constructor: (value, {@originalValue} = {}) ->
+    super value
+    @originalValue ?= @value
 
 #### Return
 
@@ -1256,9 +1352,12 @@ exports.Super = class Super extends Base
 
 # Regexes with interpolations are in fact just a variation of a `Call` (a
 # `RegExp()` call to be precise) with a `StringWithInterpolations` inside.
-exports.RegexWithInterpolations = class RegexWithInterpolations extends Call
-  constructor: (args = []) ->
-    super (new Value new IdentifierLiteral 'RegExp'), args, false
+exports.RegexWithInterpolations = class RegexWithInterpolations extends Base
+  constructor: (@call) ->
+    super()
+
+  compileNode: (o) ->
+    @call.compileNode o
 
 #### TaggedTemplateCall
 
@@ -2169,7 +2268,7 @@ exports.ExportSpecifier = class ExportSpecifier extends ModuleSpecifier
 exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options = {}) ->
     super()
-    {@param, @subpattern, @operatorToken, @moduleDeclaration} = options
+    {@param, @subpattern, @operatorToken, @moduleDeclaration, @originalContext = @context} = options
 
   children: ['variable', 'value']
 
@@ -3055,10 +3154,9 @@ exports.While = class While extends Base
 # Simple Arithmetic and logical operations. Performs some conversion from
 # CoffeeScript operations into their JavaScript equivalents.
 exports.Op = class Op extends Base
-  constructor: (op, first, second, flip) ->
+  constructor: (op, first, second, flip, {@invertOperator, @originalOperator = op} = {}) ->
     super()
 
-    return new In first, second if op is 'in'
     if op is 'do'
       return Op::generateDo first
     if op is 'new'
@@ -3108,6 +3206,9 @@ exports.Op = class Op extends Base
     @operator in ['<', '>', '>=', '<=', '===', '!==']
 
   invert: ->
+    if @isInOperator()
+      @invertOperator = '!'
+      return @
     if @isChainable() and @first.isChainable()
       allInvertable = yes
       curr = this
@@ -3153,7 +3254,16 @@ exports.Op = class Op extends Base
     call.do = yes
     call
 
+  isInOperator: ->
+    @originalOperator is 'in'
+
   compileNode: (o) ->
+    if @isInOperator()
+      inNode = new In @first, @second
+      return (if @invertOperator then inNode.invert() else inNode).compileNode o
+    if @invertOperator
+      @invertOperator = null
+      return @invert().compileNode(o)
     isChain = @isChainable() and @first.isChainable()
     # In chains, there's no need to wrap bare obj literals in parens,
     # as the chained expression is wrapped.
@@ -3426,7 +3536,7 @@ exports.Parens = class Parens extends Base
       return expr.compileToFragments o
     fragments = expr.compileToFragments o, LEVEL_PAREN
     bare = o.level < LEVEL_OP and not shouldWrapComment and (
-        expr instanceof Op or expr.unwrap() instanceof Call or
+        expr instanceof Op and not expr.isInOperator() or expr.unwrap() instanceof Call or
         (expr instanceof For and expr.returns)
       ) and (o.level < LEVEL_COND or fragments.length <= 3)
     return @wrapInBraces fragments if @csxAttribute
@@ -3435,7 +3545,7 @@ exports.Parens = class Parens extends Base
 #### StringWithInterpolations
 
 exports.StringWithInterpolations = class StringWithInterpolations extends Base
-  constructor: (@body) ->
+  constructor: (@body, {@quote} = {}) ->
     super()
 
   children: ['body']
@@ -3453,25 +3563,32 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
       wrapped.csxAttribute = yes
       return wrapped.compileNode o
 
-    # Assumes that `expr` is `Value` » `StringLiteral` or `Op`
+    # Assumes that `expr` is `Block`
     expr = @body.unwrap()
 
     elements = []
     salvagedComments = []
-    expr.traverseChildren no, (node) ->
+    expr.traverseChildren no, (node) =>
       if node instanceof StringLiteral
         if node.comments
           salvagedComments.push node.comments...
           delete node.comments
         elements.push node
         return yes
-      else if node instanceof Parens
+      else if node instanceof Interpolation
         if salvagedComments.length isnt 0
           for comment in salvagedComments
             comment.unshift = yes
             comment.newLine = yes
           attachCommentsToNode salvagedComments, node
-        elements.push node
+        if (unwrapped = node.expression?.unwrapAll()) instanceof PassthroughLiteral and unwrapped.generated and not @csx
+          commentPlaceholder = new StringLiteral('').withLocationDataFrom node
+          commentPlaceholder.comments = unwrapped.comments
+          (commentPlaceholder.comments ?= []).push node.comments... if node.comments
+          elements.push new Value commentPlaceholder
+        else if node.expression
+          (node.expression.comments ?= []).push node.comments... if node.comments
+          elements.push node.expression
         return no
       else if node.comments
         # This node is getting discarded, but salvage its comments.
@@ -3514,9 +3631,14 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
     fragments
 
   isNestedTag: (element) ->
-    exprs = element.body?.expressions
-    call = exprs?[0].unwrap()
-    @csx and exprs and exprs.length is 1 and call instanceof Call and call.csx
+    call = element.unwrapAll?()
+    @csx and call instanceof Call and call.csx
+
+exports.Interpolation = class Interpolation extends Base
+  constructor: (@expression) ->
+    super()
+
+  children: ['expression']
 
 #### For
 
@@ -3826,6 +3948,18 @@ LEVEL_ACCESS = 6  # ...[0]
 TAB = '  '
 
 SIMPLENUM = /^[+-]?\d+$/
+SIMPLE_STRING_OMIT = /\s*\n\s*/g
+LEADING_BLANK_LINE  = /^[^\n\S]*\n/
+TRAILING_BLANK_LINE = /\n[^\n\S]*$/
+STRING_OMIT    = ///
+    ((?:\\\\)+)      # Consume (and preserve) an even number of backslashes.
+  | \\[^\S\n]*\n\s*  # Remove escaped newlines.
+///g
+HEREGEX_OMIT = ///
+    ((?:\\\\)+)     # Consume (and preserve) an even number of backslashes.
+  | \\(\s)          # Preserve escaped whitespace.
+  | \s+(?:#.*)?     # Remove whitespace and comments.
+///g
 
 # Helper Functions
 # ----------------
@@ -3899,3 +4033,25 @@ unfoldSoak = (o, parent, name) ->
   parent[name] = ifn.body
   ifn.body = new Value parent
   ifn
+
+# Constructs a string or regex by escaping certain characters.
+makeDelimitedLiteral = (body, options = {}) ->
+  body = '(?:)' if body is '' and options.delimiter is '/'
+  regex = ///
+      (\\\\)                               # Escaped backslash.
+    | (\\0(?=[1-7]))                       # Null character mistaken as octal escape.
+    | \\?(#{options.delimiter})            # (Possibly escaped) delimiter.
+    | \\?(?: (\n)|(\r)|(\u2028)|(\u2029) ) # (Possibly escaped) newlines.
+    | (\\.)                                # Other escapes.
+  ///g
+  body = body.replace regex, (match, backslash, nul, delimiter, lf, cr, ls, ps, other) -> switch
+    # Ignore escaped backslashes.
+    when backslash then (if options.double then backslash + backslash else backslash)
+    when nul       then '\\x00'
+    when delimiter then "\\#{delimiter}"
+    when lf        then '\\n'
+    when cr        then '\\r'
+    when ls        then '\\u2028'
+    when ps        then '\\u2029'
+    when other     then (if options.double then "\\#{other}" else other)
+  "#{options.delimiter}#{body}#{options.delimiter}"

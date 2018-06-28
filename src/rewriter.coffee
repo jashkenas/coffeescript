@@ -57,6 +57,7 @@ exports.Rewriter = class Rewriter
     @addLocationDataToGeneratedTokens()
     @enforceValidCSXAttributes()
     @fixOutdentLocationData()
+    @exposeTokenDataToGrammar()
     if process?.env?.DEBUG_REWRITTEN_TOKEN_STREAM
       console.log 'Rewritten token stream:' if process.env.DEBUG_TOKEN_STREAM
       console.log (t[0] + '/' + t[1] + (if t.comments then '*' else '') for t in @tokens).join ' '
@@ -425,6 +426,13 @@ exports.Rewriter = class Rewriter
       tokens[method] generate 'TERMINATOR', '\n', tokens[j] unless tokens[j][0] is 'TERMINATOR'
       tokens[method] generate 'JS', '', tokens[j], token
 
+    dontShiftForward = (i, tokens) ->
+      j = i + 1
+      while j isnt tokens.length and tokens[j][0] in DISCARDED
+        return yes if tokens[j][0] is 'INTERPOLATION_END'
+        j++
+      no
+
     shiftCommentsForward = (token, i, tokens) ->
       # Find the next surviving token and attach this token’s comments to it,
       # with a flag that we know to output such comments *before* that
@@ -473,7 +481,7 @@ exports.Rewriter = class Rewriter
           ret = shiftCommentsBackward dummyToken, i - 1, tokens
         if token.comments.length isnt 0
           shiftCommentsForward token, i, tokens
-      else
+      else unless dontShiftForward i, tokens
         # If any of this token’s comments start a line—there’s only
         # whitespace between the preceding newline and the start of the
         # comment—and this isn’t one of the special `JS` tokens, then
@@ -636,6 +644,19 @@ exports.Rewriter = class Rewriter
       @detectEnd i + 1, condition, action
       return 1
 
+  # For tokens with extra data, we want to make that data visible to the grammar
+  # by wrapping the token value as a String() object and setting the data as
+  # properties of that object. The grammar should then be responsible for
+  # cleaning this up for the node constructor: unwrapping the token value to a
+  # primitive string and separately passing any expected token data properties
+  exposeTokenDataToGrammar: ->
+    @scanTokens (token, i) ->
+      if token.data and Object.keys(token.data).length or token[0] is 'JS' and token.generated
+        token[1] = new String token[1]
+        token[1][key] = val for own key, val of (token.data ? {})
+        token[1].generated = yes if token.generated
+      1
+
   # Generate the indentation tokens, based on another token on the same line.
   indentation: (origin) ->
     indent  = ['INDENT', 2]
@@ -665,6 +686,7 @@ BALANCED_PAIRS = [
   ['PARAM_START', 'PARAM_END']
   ['INDEX_START', 'INDEX_END']
   ['STRING_START', 'STRING_END']
+  ['INTERPOLATION_START', 'INTERPOLATION_END']
   ['REGEX_START', 'REGEX_END']
 ]
 
@@ -723,8 +745,8 @@ CONTROL_IN_IMPLICIT = ['IF', 'TRY', 'FINALLY', 'CATCH', 'CLASS', 'SWITCH']
 # the node that becomes `StringWithInterpolations`, and therefore
 # `addDataToNode` attaches `STRING_START`’s tokens to that node.
 DISCARDED = ['(', ')', '[', ']', '{', '}', '.', '..', '...', ',', '=', '++', '--', '?',
-  'AS', 'AWAIT', 'CALL_START', 'CALL_END', 'DEFAULT', 'ELSE', 'EXTENDS', 'EXPORT',
-  'FORIN', 'FOROF', 'FORFROM', 'IMPORT', 'INDENT', 'INDEX_SOAK', 'LEADING_WHEN',
-  'OUTDENT', 'PARAM_END', 'REGEX_START', 'REGEX_END', 'RETURN', 'STRING_END', 'THROW',
-  'UNARY', 'DO', 'DO_IIFE', 'YIELD'
+  'AS', 'AWAIT', 'CALL_START', 'CALL_END', 'DEFAULT', 'DO', 'DO_IIFE', 'ELSE',
+  'EXTENDS', 'EXPORT', 'FORIN', 'FOROF', 'FORFROM', 'IMPORT', 'INDENT', 'INDEX_SOAK',
+  'INTERPOLATION_START', 'INTERPOLATION_END', 'LEADING_WHEN', 'OUTDENT', 'PARAM_END',
+  'REGEX_START', 'REGEX_END', 'RETURN', 'STRING_END', 'THROW', 'UNARY', 'YIELD'
 ].concat IMPLICIT_UNSPACED_CALL.concat IMPLICIT_END.concat CALL_CLOSERS.concat CONTROL_IN_IMPLICIT

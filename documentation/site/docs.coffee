@@ -57,7 +57,7 @@ $(document).ready ->
     return if $target.prop('href') is "#{window.location.origin}/#try"
     # Update the browser address bar on scroll, without adding to the history; clicking the sidebar links will automatically add to the history
     replaceState $target.prop('href')
-    # Track this as a new pageview; we only want '/#hash', not 'http://coffeescript.org/#hash'
+    # Track this as a new pageview; we only want '/#hash', not 'https://coffeescript.org/#hash'
     gtag 'config', GA_TRACKING_ID,
       page_path: $target.prop('href').replace window.location.origin, ''
 

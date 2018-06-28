@@ -32,12 +32,14 @@ BANNER = '''
 
 # The list of all the valid option flags that `coffee` knows how to handle.
 SWITCHES = [
+  [      '--ast',               'generate an abstract syntax tree of nodes']
   ['-b', '--bare',              'compile without a top-level function wrapper']
   ['-c', '--compile',           'compile to JavaScript and save as .js files']
   ['-e', '--eval',              'pass a string from the command line as input']
   ['-h', '--help',              'display this help message']
   ['-i', '--interactive',       'run an interactive CoffeeScript REPL']
   ['-j', '--join [FILE]',       'concatenate the source CoffeeScript before compiling']
+  ['-l', '--literate',          'treat stdio as literate style coffeescript']
   ['-m', '--map',               'generate source map and save as .js.map files']
   ['-M', '--inline-map',        'generate source map and include it directly in output']
   ['-n', '--nodes',             'print out the parse tree that the parser produces']
@@ -47,7 +49,6 @@ SWITCHES = [
   ['-p', '--print',             'print out the compiled JavaScript']
   ['-r', '--require [MODULE*]', 'require the given module before eval or REPL']
   ['-s', '--stdio',             'listen for and compile scripts over stdio']
-  ['-l', '--literate',          'treat stdio as literate style coffeescript']
   ['-t', '--transpile',         'pipe generated JavaScript through Babel']
   [      '--tokens',            'print out the tokens that the lexer/rewriter produce']
   ['-v', '--version',           'display the version number']
@@ -207,6 +208,9 @@ compileScript = (file, input, base = null) ->
       printTokens CoffeeScript.tokens task.input, task.options
     else if opts.nodes
       printLine CoffeeScript.nodes(task.input, task.options).toString().trim()
+    else if opts.ast
+      compiled = CoffeeScript.compile task.input, task.options
+      printLine JSON.stringify(compiled, null, 2)
     else if opts.run
       CoffeeScript.register()
       CoffeeScript.eval opts.prelude, task.options if opts.prelude
@@ -463,14 +467,14 @@ compileOptions = (filename, base) ->
           To use --transpile, you must have babel-core installed:
             npm install --save-dev babel-core
           And you must save options to configure Babel in one of the places it looks to find its options.
-          See http://coffeescript.org/#transpilation
+          See https://coffeescript.org/#transpilation
         '''
       else
         console.error '''
           To use --transpile with globally-installed CoffeeScript, you must have babel-core installed globally:
             npm install --global babel-core
           And you must save options to configure Babel in one of the places it looks to find its options, relative to the file being compiled or to the current folder.
-          See http://coffeescript.org/#transpilation
+          See https://coffeescript.org/#transpilation
         '''
       process.exit 1
 
@@ -499,6 +503,7 @@ compileOptions = (filename, base) ->
     transpile: opts.transpile
     sourceMap: opts.map
     inlineMap: opts['inline-map']
+    ast: opts.ast
 
   if filename
     if base
