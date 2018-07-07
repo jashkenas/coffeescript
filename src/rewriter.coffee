@@ -378,7 +378,7 @@ exports.Rewriter = class Rewriter
           # and the implicit object didn't start the line or the next line doesn’t look like
           # the continuation of an object.
           else if inImplicitObject() and tag is 'TERMINATOR' and prevTag isnt ',' and
-                  not (startsLine and @looksObjectish(i + 1))
+                  not (startsLine and (@looksObjectish(i + 1) or @isLeadingLogical(i)))
             endImplicitObject()
           else if inImplicitControl() and tokens[stackTop()[1]][0] is 'CLASS' and tag is 'TERMINATOR'
             stack.pop()
@@ -645,8 +645,7 @@ exports.Rewriter = class Rewriter
     condition = (token, i) ->
       [tag] = token
       [prevTag] = @tokens[i - 1]
-      [nextTag] = @tokens[i + 1] unless i is @tokens.length - 1
-      tag is 'TERMINATOR' and nextTag not in LEADING_LOGICAL or (tag is 'INDENT' and prevTag not in SINGLE_LINERS)
+      tag is 'TERMINATOR' and not @isLeadingLogical(i) or (tag is 'INDENT' and prevTag not in SINGLE_LINERS)
 
     action = (token, i) ->
       if token[0] isnt 'INDENT' or (token.generated and not token.fromThen)
@@ -670,6 +669,11 @@ exports.Rewriter = class Rewriter
         token[1][key] = val for own key, val of (token.data ? {})
         token[1].generated = yes if token.generated
       1
+
+  # Returns `yes` if standing in front of what will become a LEADING_AND or
+  # LEADING_OR, ie TERMINATOR followed by && or ||
+  isLeadingLogical: (i) ->
+    @tag(i) is 'TERMINATOR' and @tag(i + 1) in LEADING_LOGICAL
 
   # Convert TERMINATOR followed by && or || into a single LEADING_AND or
   # LEADING_OR token to disambiguate grammar.

@@ -658,3 +658,27 @@ test "logical and/or should continue lines", ->
     if yes
        and yes
       3
+
+test "leading and/or should continue object property", ->
+  obj =
+    a: yes
+      and yes
+  eq yes, obj.a
+
+  obj =
+    b: 1
+    a: yes
+    and yes
+  eq yes, obj.a
+
+  obj =
+    a: yes
+        and yes
+    b: 1
+  eq yes, obj.a
+
+  # when object doesn't start line, don't treat as continuation of object property
+  f = -> no
+  eq yes,
+    f a: 1
+      or yes
