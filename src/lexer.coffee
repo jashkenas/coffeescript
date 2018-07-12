@@ -695,7 +695,7 @@ exports.Lexer = class Lexer
   # definitions versus argument lists in function calls. Walk backwards, tagging
   # parameters specially in order to make things easier for the parser.
   tagParameters: ->
-    return this if @tag() isnt ')'
+    return @tagDoIife() if @tag() isnt ')'
     stack = []
     {tokens} = this
     i = tokens.length
@@ -709,10 +709,18 @@ exports.Lexer = class Lexer
           if stack.length then stack.pop()
           else if tok[0] is '('
             tok[0] = 'PARAM_START'
-            return this
+            return @tagDoIife i - 1
           else
             paramEndToken[0] = 'CALL_END'
             return this
+    this
+
+  # Tag `do` followed by a function differently than `do` followed by eg an
+  # identifier to allow for different grammar precedence
+  tagDoIife: (tokenIndex) ->
+    tok = @tokens[tokenIndex ? @tokens.length - 1]
+    return this unless tok?[0] is 'DO'
+    tok[0] = 'DO_IIFE'
     this
 
   # Close up all remaining open blocks at the end of the file.
@@ -1227,7 +1235,7 @@ COMPOUND_ASSIGN = [
 ]
 
 # Unary tokens.
-UNARY = ['NEW', 'TYPEOF', 'DELETE', 'DO']
+UNARY = ['NEW', 'TYPEOF', 'DELETE']
 
 UNARY_MATH = ['!', '~']
 
@@ -1273,6 +1281,6 @@ LINE_BREAK = ['INDENT', 'OUTDENT', 'TERMINATOR']
 INDENTABLE_CLOSERS = [')', '}', ']']
 
 # Tokens that, when appearing at the end of a line, suppress a following TERMINATOR/INDENT token
-UNFINISHED = ['\\', '.', '?.', '?::', 'UNARY', 'MATH', 'UNARY_MATH', '+', '-',
+UNFINISHED = ['\\', '.', '?.', '?::', 'UNARY', 'DO', 'DO_IIFE', 'MATH', 'UNARY_MATH', '+', '-',
            '**', 'SHIFT', 'RELATION', 'COMPARE', '&', '^', '|', '&&', '||',
            'BIN?', 'EXTENDS']

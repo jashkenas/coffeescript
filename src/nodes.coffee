@@ -3162,7 +3162,7 @@ exports.Op = class Op extends Base
     if op is 'new'
       if (firstCall = first.unwrap()) instanceof Call and not firstCall.do and not firstCall.isNew
         return firstCall.newInstance()
-      first = new Parens first   if first instanceof Code and first.bound or first.do
+      first = new Parens firstCall if firstCall instanceof Code and firstCall.bound or firstCall.do
 
     @operator = CONVERSIONS[op] or op
     @first    = first

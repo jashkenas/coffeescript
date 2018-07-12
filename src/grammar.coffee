@@ -377,6 +377,7 @@ grammar =
     o 'Parenthetical',                          -> new Value $1
     o 'Range',                                  -> new Value $1
     o 'Invocation',                             -> new Value $1
+    o 'DoIife',                                 -> new Value $1
     o 'This'
     o 'Super',                                  -> new Value $1
   ]
@@ -833,11 +834,14 @@ grammar =
   # rules are necessary.
   OperationLine: [
     o 'UNARY ExpressionLine',                   -> new Op $1, $2
+    o 'DO ExpressionLine',                      -> new Op $1, $2
+    o 'DO_IIFE CodeLine',                       -> new Op $1, $2
   ]
 
   Operation: [
     o 'UNARY Expression',                       -> new Op $1.toString(), $2, undefined, undefined, originalOperator: $1.original
-    o 'UNARY_MATH Expression',                  -> new Op $1 , $2
+    o 'DO Expression',                          -> new Op $1, $2
+    o 'UNARY_MATH Expression',                  -> new Op $1, $2
     o '-     Expression',                      (-> new Op '-', $2), prec: 'UNARY_MATH'
     o '+     Expression',                      (-> new Op '+', $2), prec: 'UNARY_MATH'
 
@@ -875,6 +879,10 @@ grammar =
        Expression',                             -> new Assign $1, $4, $2.toString(), originalContext: $2.original
   ]
 
+  DoIife: [
+    o 'DO_IIFE Code',                           -> new Op $1 , $2
+  ]
+
 # Precedence
 # ----------
 
@@ -887,11 +895,12 @@ grammar =
 #
 #     (2 + 3) * 4
 operators = [
+  ['right',     'DO_IIFE']
   ['left',      '.', '?.', '::', '?::']
   ['left',      'CALL_START', 'CALL_END']
   ['nonassoc',  '++', '--']
   ['left',      '?']
-  ['right',     'UNARY']
+  ['right',     'UNARY', 'DO']
   ['right',     'AWAIT']
   ['right',     '**']
   ['right',     'UNARY_MATH']
