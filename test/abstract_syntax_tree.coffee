@@ -156,40 +156,213 @@ test "AST as expected for Call node", ->
 
 test "AST as expected for SuperCall node", ->
   expression = getExpression 'class child extends parent then constructor: -> super()'
-  # TODO
+  expression = expression.body.base.properties[0].value.body.base
+  eq expression.type, 'SuperCall'
 
 test "AST as expected for Super node", ->
-  # TODO
+  expression = getExpression 'class child extends parent then func: -> super.prop'
+  expression = expression.body.base.properties[0].value.body.base
+  eq expression.type, 'Super'
+  eq expression.accessor.type, 'Access'
 
 test "AST as expected for RegexWithInterpolations node", ->
-  # TODO
+  expression = getExpression '///^#{flavor}script$///'
+  eq expression.type, 'RegexWithInterpolations'
+  # TODO: Shouldn't there be more info we can check for?
 
 test "AST as expected for TaggedTemplateCall node", ->
-  # TODO
+  expression = getExpression 'func"tagged"'
+  eq expression.type, 'TaggedTemplateCall'
+  eq expression.args[0].type, 'StringWithInterpolations'
 
 test "AST as expected for Extends node", ->
-  # TODO
+  expression = getExpression 'class child extends parent'
+  eq expression.type, 'Class'
+  eq expression.variable.value, 'child'
+  eq expression.parent.value, 'parent'
+  # TODO: Is there no Extends node?
 
 test "AST as expected for Access node", ->
-  # TODO
+  expression = getExpression 'obj.prop'
+  eq expression.properties[0].type, 'Access'
+
+  expression = getExpression 'obj?.prop'
+  eq expression.properties[0].type, 'Access'
+  eq expression.properties[0].soak, yes
 
 test "AST as expected for Index node", ->
-  # TODO
+  expression = getExpression 'for x, i in iterable then'
+  eq expression.type, 'For'
+  # TODO: Where's the Index node?
 
 test "AST as expected for Range node", ->
-  # TODO
+  expression = getExpression '[x..y]'
+  eq expression.type, 'Range'
+  eq expression.exclusive, no
+  eq expression.equals, '='
+  eq expression.from.value, 'x'
+  eq expression.to.value, 'y'
+
+  expression = getExpression '[4...2]'
+  eq expression.type, 'Range'
+  eq expression.exclusive, yes
+  eq expression.equals, ''
+  eq expression.from.value, '4'
+  eq expression.to.value, '2'
+
+  expression = {source} = getExpression 'for x in [42...43] then'
+  eq expression.range, yes
+  eq source.type, 'Range'
+  eq source.exclusive, yes
+  eq source.equals, ''
+  eq source.from.value, '42'
+  eq source.to.value, '43'
+
+  expression = {source} = getExpression 'for x in [y..z] then'
+  eq expression.range, yes
+  eq source.type, 'Range'
+  eq source.exclusive, no
+  eq source.equals, '='
+  eq source.from.value, 'y'
+  eq source.to.value, 'z'
+
+  expression = getExpression 'x[..y]'
+  [{range}] = expression.properties
+  eq range.type, 'Range'
+  eq range.exclusive, no
+  eq range.equals, '='
+  eq range.to.value, 'y'
+  eq range.from, undefined
+
+  expression = getExpression 'x[y...]'
+  [{range}] = expression.properties
+  eq range.type, 'Range'
+  eq range.exclusive, yes
+  eq range.equals, ''
+  eq range.from.value, 'y'
+  eq range.to, undefined
+
+  expression = getExpression 'x[...]'
+  [{range}] = expression.properties
+  eq range.type, 'Range'
+  eq range.exclusive, yes
+  eq range.equals, ''
+  eq range.to, undefined
+  eq range.from, undefined
 
 test "AST as expected for Slice node", ->
-  # TODO
+  expression = getExpression '"abc"[...2]'
+  eq expression.properties[0].type, 'Slice'
+
+  expression = getExpression 'x[...][a..][b...][..c][...d]'
+  eq expression.properties.length, 5
+  for slice in expression.properties
+    eq slice.type, 'Slice'
+    eq slice.range.type, 'Range'
 
 test "AST as expected for Obj node", ->
-  # TODO
+  expression = getExpression '{a: a1: x, a2: y; b: b1: z, b2: w}'
+
+  expected =
+    type: 'Obj'
+    generated: no
+    lhs: no
+    properties: [
+      type: 'Assign'
+      variable: value: 'a'
+      value:
+        type: 'Obj'
+        generated: true
+        lhs: no
+        properties: [
+          type: 'Assign'
+          context: 'object'
+          originalContext: 'object'
+          variable: value: 'a1'
+          value: value: 'x'
+        ,
+          type: 'Assign'
+          context: 'object'
+          originalContext: 'object'
+          variable: value: 'a2'
+          value: value: 'y'
+        ]
+    ,
+      type: 'Assign'
+      variable: value: 'b'
+      value:
+        type: 'Obj'
+        generated: true
+        lhs: no
+        properties: [
+          type: 'Assign'
+          context: 'object'
+          originalContext: 'object'
+          variable: value: 'b1'
+          value: value: 'z'
+        ,
+          type: 'Assign'
+          context: 'object'
+          originalContext: 'object'
+          variable: value: 'b2'
+          value: value: 'w'
+        ]
+    ]
+
+  hasActualAllExpectedPropsAndAreTheyEqual = (actual, expected) ->
+    for k , v of expected
+      if 'object' is typeof v
+        hasActualAllExpectedPropsAndAreTheyEqual actual[k], v
+      else
+        eq actual[k], v
+    return
+
+  hasActualAllExpectedPropsAndAreTheyEqual expression, expected
+
+  # TODO: Test destructuring.
+
+  # console.log JSON.stringify expression, ["type", "generated", "lhs", "value", "properties", "variable"], 2
 
 test "AST as expected for Arr node", ->
-  # TODO
+  expression = getExpression '[]'
+  eq expression.type, 'Arr'
+  eq expression.lhs, no
+  eq expression.objects.length, 0
+
+  expression = getExpression '[3, "coffee", tables, !1]'
+  eq expression.type, 'Arr'
+  eq expression.lhs, no
+  eq expression.objects.length, 4
+  eq expression.objects[0].value, '3'
+  eq expression.objects[1].value, '"coffee"'
+  eq expression.objects[2].value, 'tables'
+  eq expression.objects[3].type, 'Op'
+
+  # TODO: Test destructuring.
 
 test "AST as expected for Class node", ->
-  # TODO
+  expression = getExpression 'class Klass'
+  eq expression.type, 'Class'
+  eq expression.variable.value, 'Klass'
+  eq expression.body.type, 'Block'
+  eq expression.body.expressions.length, 0
+
+  expression = getExpression 'class child extends parent'
+  eq expression.type, 'Class'
+  eq expression.variable.value, 'child'
+  eq expression.parent.value, 'parent'
+  eq expression.body.type, 'Block'
+  eq expression.body.expressions.length, 0
+
+  expression = getExpression 'class Klass then constructor: ->'
+  eq expression.type, 'Class'
+  eq expression.variable.value, 'Klass'
+  eq expression.body.type, 'Value'
+  eq expression.body.properties.length, 0
+  eq expression.body.base.type, 'Obj'
+  eq expression.body.base.generated, yes
+  eq expression.body.base.properties[0].variable.value, 'constructor'
+  eq expression.body.base.properties[0].value.type, 'Code'
 
 test "AST as expected for ExecutableClassBody node", ->
   # TODO
