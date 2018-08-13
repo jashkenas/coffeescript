@@ -124,6 +124,12 @@ test "AST as expected for StringLiteral node", ->
   testExpression '"string cheese"',
     type: 'StringLiteral'
     value: '"string cheese"'
+    quote: '"'
+
+  testExpression "'cheese string'",
+    type: 'StringLiteral'
+    value: "'cheese string'"
+    quote: "'"
 
 test "AST as expected for RegexLiteral node", ->
   testExpression '/^(?!.*(.).*\\1)[gimsuy]*$/',
