@@ -13,16 +13,19 @@ getExpression = (code) -> getExpressions(code)[0]
 # Recursively compare all values of enumerable properties of `expected` with
 # those of `actual`. Use `looseArray` helper function to skip array length
 # comparison.
+
 deepStrictEqualExpectedProps = (actual, expected) ->
+  white = (text, values...) -> (text[i] + "#{reset}#{v}#{red}" for v, i in values).join('') + text[i]
   eq actual.length, expected.length if expected instanceof Array and not expected.loose
   for k , v of expected
     if 'object' is typeof v
+      fail white"`actual` misses #{k} property." unless k of actual
       deepStrictEqualExpectedProps actual[k], v
     else
-      eq actual[k], v
+      eq actual[k], v, white"Property #{k}: expected #{actual[k]} to equal #{v}"
   actual
 
-# Flag array for loose copmarision. See above code/comment.
+# Flag array for loose comparision. See above code/comment.
 looseArray = (arr) ->
   Object.defineProperty arr, 'loose',
     value: yes
@@ -38,6 +41,53 @@ testExpression = (code, expected) ->
   ast = getExpression code
   return console.log ast unless expected?
   deepStrictEqualExpectedProps ast, expected
+
+
+test 'Confirm functionality of `deepStrictEqualExpectedProps`', ->
+  actual =
+    name: 'Name'
+    a:
+      b: 1
+      c: 2
+    x: [1, 2, 3]
+
+  check = (message, test, expected) ->
+    test (-> deepStrictEqualExpectedProps actual, expected), message
+
+  check 'Expected prop does not match', throws,
+    name: '"Name"'
+
+  check 'Array length mismatch', throws,
+    x: [1, 2]
+
+  check 'Skip array length check', doesNotThrow,
+    x: looseArray [
+      1
+      2
+    ]
+
+  check 'Array length matches', doesNotThrow,
+    x: [1, 2, 3]
+
+  check 'Array prop mismatch', throws,
+    x: [3, 2, 1]
+
+  check 'Partial object comparison', doesNotThrow,
+    a: c: 2
+    forbidden: undefined
+
+  check 'Actual has forbidden prop', throws,
+    a:
+      b: 1
+      c: undefined
+
+  check 'Check prop for existence only', doesNotThrow,
+    name: {}
+    a: {}
+    x: {}
+
+  check 'Prop is missing', throws,
+    missingProp: {}
 
 
 # Check each node type in the same order as they appear in `nodes.coffee`.
@@ -86,7 +136,7 @@ test "AST as expected for PassthroughLiteral node", ->
     type: 'PassthroughLiteral'
     value: code
     originalValue: code
-    here: false
+    here: no
 
   code = '\nconst CONSTANT = "unreassignable!"\n'
   testExpression "```#{code}```",
@@ -186,8 +236,19 @@ test "AST as expected for Value node", ->
   testExpression 'for i in [] then i',
     body:
       type: 'Value'
+      isDefaultValue: no
       base: value: 'i'
       properties: []
+
+  testExpression 'if 1 then 1 else 2',
+    body:
+      type: 'Value'
+      isDefaultValue: no
+    elseBody:
+      type: 'Value'
+      isDefaultValue: no
+
+  # TODO: Figgure out the purpose of `isDefaultValue`. It's not set in `Switch` either.
 
 # Comments aren’t nodes, so they shouldn’t appear in the AST.
 
@@ -461,25 +522,83 @@ test "AST as expected for Class node", ->
         ]
 
 test "AST as expected for ExecutableClassBody node", ->
-  # TODO
+  code = """
+    class Klass
+      privateStatic = if 42 then yes else no
+      getPrivateStatic: -> privateStatic
+    """
+  testExpression code,
+    type: 'Class'
+    variable: value: 'Klass'
+    body:
+      type: 'Block'
+      expressions: [
+        type: 'Assign'
+        variable: value: 'privateStatic'
+        value: type: 'If'
+      ,
+        type: 'Obj'
+        generated: true
+        properties: [
+          type: 'Assign'
+          variable: value: 'getPrivateStatic'
+          value:
+            type: 'Code'
+            body:
+              type: 'Value'
+              properties: []
+        ]
+      ]
 
 test "AST as expected for ModuleDeclaration node", ->
-  # TODO
+  testExpression 'export {X}',
+    clause: specifiers: [
+      type: 'ExportSpecifier'
+      moduleDeclarationType: 'export'
+      identifier: 'X'
+    ]
+
+  testExpression 'import X from "."',
+    clause: defaultBinding:
+      type: 'ImportDefaultSpecifier'
+      moduleDeclarationType: 'import'
+      identifier: 'X'
 
 test "AST as expected for ImportDeclaration node", ->
-  # TODO
+  testExpression 'import React, {Component} from "react"',
+    type: 'ImportDeclaration'
+    source:
+      type: 'StringLiteral'
+      value: '"react"'
+      originalValue: 'react'
 
 test "AST as expected for ImportClause node", ->
-  # TODO
+  testExpression 'import React, {Component} from "react"',
+    clause:
+      type: 'ImportClause'
+      defaultBinding: type: 'ImportDefaultSpecifier'
+      namedImports: type: 'ImportSpecifierList'
 
 test "AST as expected for ExportDeclaration node", ->
-  # TODO
+  testExpression 'export {X}',
+    clause: specifiers: [
+      type: 'ExportSpecifier'
+      moduleDeclarationType: 'export'
+      identifier: 'X'
+    ]
 
 test "AST as expected for ExportNamedDeclaration node", ->
-  # TODO
+  testExpression 'export fn = ->',
+    type: 'ExportNamedDeclaration'
+    clause:
+      type: 'Assign'
+      variable: value: 'fn'
+      value: type: 'Code'
 
 test "AST as expected for ExportDefaultDeclaration node", ->
-  # TODO
+  testExpression 'export default class',
+    type: 'ExportDefaultDeclaration'
+    clause: type: 'Class'
 
 test "AST as expected for ExportAllDeclaration node", ->
   # TODO
@@ -488,40 +607,101 @@ test "AST as expected for ModuleSpecifierList node", ->
   # TODO
 
 test "AST as expected for ImportSpecifierList node", ->
-  # TODO
+  testExpression 'import React, {Component} from "react"',
+    clause: namedImports:
+      type: 'ImportSpecifierList'
+      specifiers: [
+        identifier: 'Component'
+      ]
 
 test "AST as expected for ExportSpecifierList node", ->
-  # TODO
+  testExpression 'export {a, b, c}',
+    clause:
+      type: 'ExportSpecifierList'
+      specifiers: [
+        {identifier: 'a'}
+        {identifier: 'b'}
+        {identifier: 'c'}
+      ]
 
 test "AST as expected for ModuleSpecifier node", ->
   # TODO
 
 test "AST as expected for ImportSpecifier node", ->
-  # TODO
+  testExpression 'import {Component, PureComponent} from "react"',
+    clause: namedImports: specifiers: [
+      type: 'ImportSpecifier'
+      identifier: 'Component'
+      moduleDeclarationType: 'import'
+      original:
+        type: 'IdentifierLiteral'
+        value: 'Component'
+    ,
+      type: 'ImportSpecifier'
+      identifier: 'PureComponent'
+    ]
 
 test "AST as expected for ImportDefaultSpecifier node", ->
-  # TODO
+  testExpression 'import React from "react"',
+    clause: defaultBinding:
+      type: 'ImportDefaultSpecifier'
+      moduleDeclarationType: 'import'
+      identifier: 'React'
+      original: type: 'IdentifierLiteral'
 
 test "AST as expected for ImportNamespaceSpecifier node", ->
   # TODO
 
 test "AST as expected for ExportSpecifier node", ->
-  # TODO
+  testExpression 'export {X}',
+    clause: specifiers: [
+      type: 'ExportSpecifier'
+      moduleDeclarationType: 'export'
+      identifier: 'X'
+      original: type: 'IdentifierLiteral'
+    ]
 
 test "AST as expected for Assign node", ->
-  # TODO
+  testExpression 'a = 1',
+    type: 'Assign'
+    variable: value: 'a'
+    value: value: '1'
+
+  testExpression 'a: 1',
+    properties: [
+      type: 'Assign'
+      context: 'object'
+      originalContext: 'object'
+      variable: value: 'a'
+      value: value: '1'
+    ]
 
 test "AST as expected for FuncGlyph node", ->
   # TODO
 
 test "AST as expected for Code node", ->
-  # TODO
+  testExpression '=>',
+    type: 'Code'
+    bound: yes
+    body: type: 'Block'
 
 test "AST as expected for Param node", ->
-  # TODO
+  testExpression '(a = 1) ->',
+    params: [
+      type: 'Param'
+      name: value: 'a'
+      value: value: '1'
+    ]
 
 test "AST as expected for Splat node", ->
-  # TODO
+  testExpression '(a...) ->',
+    params: [
+      type: 'Param'
+      splat: yes
+      name: value: 'a'
+    ]
+
+  # TODO: Test object splats.
 
 test "AST as expected for Expansion node", ->
   # TODO
@@ -530,34 +710,246 @@ test "AST as expected for Elision node", ->
   # TODO
 
 test "AST as expected for While node", ->
-  # TODO
+  testExpression 'loop 1',
+    type: 'While'
+    condition:
+      type: 'BooleanLiteral'
+      value: 'true'
+      originalValue: 'true'   # TODO: This should probably be changed for Prettier.
+    body: type: 'Value'
+
+  testExpression 'while 1 < 2 then',
+    type: 'While'
+    condition: type: 'Op'
+    body: type: 'Block'
 
 test "AST as expected for Op node", ->
-  # TODO
+  testExpression '1 <= 2',
+    type: 'Op'
+    operator: '<='
+    originalOperator: '<='
+    flip: no
+    first: value: '1'
+    second: value: '2'
+
+  testExpression '1 is 2',
+    type: 'Op'
+    operator: '==='
+    originalOperator: 'is'
+    flip: no
+
+  testExpression '1 // 2',
+    type: 'Op'
+    operator: '//'
+    originalOperator: '//'
+    flip: no
+
+  testExpression '1 << 2',
+    type: 'Op'
+    operator: '<<'
+    originalOperator: '<<'
+    flip: no
+
+  testExpression 'new Old',   # NOTE: `new` with params is a `Call` node.
+    type: 'Op'
+    operator: 'new'
+    originalOperator: 'new'
+    flip: no
+    first: value: 'Old'
 
 test "AST as expected for In node", ->
-  # TODO
+  testExpression '1 in 2',
+    type: 'Op'
+    operator: 'in'
+    originalOperator: 'in'
+    flip: no
+    first: value: '1'
+    second: value: '2'
+
+  testExpression 'for x in 2 then',
+    type: 'For'
+    range: no
+    pattern: no
 
 test "AST as expected for Try node", ->
-  # TODO
+  testExpression 'try cappuccino',
+    type: 'Try'
+    attempt: type: 'Value'
+    recovery: undefined
+
+  testExpression 'try to catch it then log it',
+    type: 'Try'
+    attempt: type: 'Value'
+    recovery:
+      type: 'Value'
+      base: type: 'Call'
 
 test "AST as expected for Throw node", ->
-  # TODO
+  testExpression 'throw new BallError "catch"',
+    type: 'Throw'
+    expression:
+      type: 'Call'
+      isNew: yes
 
 test "AST as expected for Existence node", ->
-  # TODO
+  testExpression 'Ghosts?',
+    type: 'Existence',
+    comparisonTarget: 'null'
+    expression: value: 'Ghosts'
+
+  # NOTE: Soaking is covered in `Call` and `Access` nodes.
 
 test "AST as expected for Parens node", ->
-  # TODO
+  testExpression '(hmmmmm)',
+    type: 'Parens',
+    body: type: 'Value'
+
+  testExpression '(a + b) / c',
+    type: 'Op'
+    operator: '/'
+    first:
+      type: 'Parens'
+      body:
+        type: 'Op'
+        operator: '+'
+
+  testExpression '(((1)))',
+    type: 'Parens',
+    body:
+      type: 'Value'
+      base:
+        type: 'Block'
+        expressions: [
+          type: 'Parens',
+          body:
+            type: 'Value'
+            base: value: '1'
+        ]
 
 test "AST as expected for StringWithInterpolations node", ->
-  # TODO
+  testExpression '"#{o}/"',
+    type: 'StringWithInterpolations'
+    quote: '"'
+    body:
+      type: 'Block'
+      expressions: [
+        originalValue: ''
+      ,
+        type: 'Interpolation'
+        expression:
+          type: 'Value'
+          base: value: 'o'
+      ,
+        originalValue: '/'
+      ]
 
 test "AST as expected for For node", ->
-  # TODO
+  testExpression 'for x, i in arr when x? then return',
+    type: 'For'
+    from: undefined
+    object: undefined
+    range: no
+    pattern: no
+    returns: no
+    guard: type: 'Existence'
+    source: type: 'IdentifierLiteral'
+    body: type: 'Return'
+
+  testExpression 'for k, v of obj then return',
+    type: 'For'
+    from: undefined
+    object: yes
+    range: no
+    pattern: no
+    returns: no
+    guard: undefined
+    source: type: 'IdentifierLiteral'
+
+  testExpression 'for x from iterable then',
+    type: 'For'
+    from: yes
+    object: undefined
+    body: type: 'Block'
+    source: type: 'IdentifierLiteral'
+
+  testExpression 'for i in [0...42] by step when not i % 2 then',
+    type: 'For'
+    from: undefined
+    object: undefined
+    range: yes
+    pattern: no
+    returns: no
+    body: type: 'Block'
+    source: type: 'Range'
+    guard: type: 'Op'
+    step: type: 'IdentifierLiteral'
+
+  testExpression 'a = (x for x in y)',
+    type: 'Assign'
+    value:
+      type: 'Parens'
+      body:
+        type: 'For'
+        returns: no
+        pattern: no
+
+  # TODO: Figgure out the purpose of `pattern` and `returns`.
 
 test "AST as expected for Switch node", ->
-  # TODO
+  testExpression 'switch x \n when a then a; when b, c then c else 42',
+    type: 'Switch'
+    subject:
+      type: 'IdentifierLiteral'
+      value: 'x'
+    cases: [
+      {type: 'IdentifierLiteral', value: 'a'}
+      {type: 'Value', base: value: 'a'}
+      {type: 'IdentifierLiteral', value: 'b'}
+      {type: 'IdentifierLiteral', value: 'c'}
+      {type: 'Value', base: value: 'c'}
+    ]
+    otherwise:
+      type: 'Value'
+      base: value: '42'
+      isDefaultValue: no
+
+  # TODO: File issue for compile error when using `then` or `;` where `\n` is rn.
 
 test "AST as expected for If node", ->
-  # TODO
+  testExpression 'if maybe then yes',
+    type: 'If'
+    isChain: no
+    condition: type: 'IdentifierLiteral'
+    body:
+      type: 'Value'
+      base: type: 'BooleanLiteral'
+
+  testExpression 'yes if maybe',
+    type: 'If'
+    isChain: no
+    condition: type: 'IdentifierLiteral'
+    body:
+      type: 'Value'
+      base: type: 'BooleanLiteral'
+
+  # TODO: Where's the post-if flag?
+
+  testExpression 'unless x then x else if y then y else z',
+    type: 'If'
+    isChain: yes
+    condition:
+      type: 'Op'
+      operator: '!'
+      originalOperator: '!'
+      flip: no
+    body: type: 'Value'
+    elseBody:
+      type: 'If'
+      isChain: no
+      condition: type: 'IdentifierLiteral'
+      body: type: 'Value'
+      elseBody:
+        type: 'Value'
+        isDefaultValue: no
+
+  # TODO: AST generator should preserve use of `unless`.
