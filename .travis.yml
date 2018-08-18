@@ -10,11 +10,11 @@ cache:
     - node_modules
 
 script:
-  - node ./bin/cake build:except-parser
-  - node ./bin/cake build:parser
-  - node ./bin/cake build:full
-  - node ./bin/cake build:browser
   - node ./bin/cake test
   - node --harmony ./bin/cake test
   - node ./bin/cake test:browser
   - node ./bin/cake test:integrations
+  - node ./bin/cake build:except-parser
+  - node ./bin/cake build:parser
+  - node ./bin/cake build:full
+  - node ./bin/cake build:browser
