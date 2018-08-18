@@ -72,7 +72,7 @@ transpile = (code) ->
   # Exclude the `modules` plugin in order to not break the `}(this));`
   # at the end of the `build:browser` code block.
   presets.push ['env', {modules: no}] unless process.env.TRANSFORM is 'false'
-  presets.push ['minify', {mangle: no}] unless process.env.MINIFY is 'false'
+  presets.push ['minify', {mangle: no, evaluate: no, removeUndefined: no}] unless process.env.MINIFY is 'false'
   babelOptions =
     compact: process.env.MINIFY isnt 'false'
     presets: presets
