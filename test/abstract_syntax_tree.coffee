@@ -32,15 +32,14 @@ looseArray = (arr) ->
     enumerable: no
   arr
 
-testExpressions = (code, expected) ->
-  ast = getExpressions code
-  return console.log ast unless expected?
-  deepStrictEqualExpectedProps ast, expected
-
 testExpression = (code, expected) ->
   ast = getExpression code
-  return console.log ast unless expected?
-  deepStrictEqualExpectedProps ast, expected
+  if expected?
+    deepStrictEqualExpectedProps ast, expected
+  else
+    console.log require('util').inspect ast,
+      depth: 10
+      colors: yes
 
 
 test 'Confirm functionality of `deepStrictEqualExpectedProps`', ->
