@@ -471,7 +471,7 @@ test "AST as expected for Obj node", ->
         value: 'a'
       value:
         type: 'Obj'
-        generated: true
+        generated: yes
         lhs: no
         properties: [
           type: 'Assign'
@@ -496,7 +496,7 @@ test "AST as expected for Obj node", ->
         value: 'b'
       value:
         type: 'Obj'
-        generated: true
+        generated: yes
         lhs: no
         properties: [
           type: 'Assign'
@@ -596,7 +596,7 @@ test "AST as expected for ExecutableClassBody node", ->
           type: 'If'
       ,
         type: 'Obj'
-        generated: true
+        generated: yes
         properties: [
           type: 'Assign'
           variable:
@@ -730,9 +730,21 @@ test "AST as expected for ImportDefaultSpecifier node", ->
         identifier: 'React'
         original:
           type: 'IdentifierLiteral'
+          value: 'React'
 
 test "AST as expected for ImportNamespaceSpecifier node", ->
-  # TODO
+  testExpression 'import * as React from "react"',
+    clause:
+      namedImports:
+        type: 'ImportNamespaceSpecifier'
+        moduleDeclarationType: 'import'
+        identifier: 'React'
+        original:
+          type: 'Literal'
+          value: '*'
+        alias:
+          type: 'IdentifierLiteral'
+          value: 'React'
 
 test "AST as expected for ExportSpecifier node", ->
   testExpression 'export {X}',
@@ -817,7 +829,11 @@ test "AST as expected for Splat node", ->
   # TODO: Test object splats.
 
 test "AST as expected for Expansion node", ->
-  # TODO: Seems to not be exported, confirm and strip test.
+  testExpression '(...) ->',
+    type: 'Code'
+    params: [
+      {type: 'Expansion'}
+    ]
 
 test "AST as expected for Elision node", ->
   testExpression '[,,,a,,,b] = "asdfqwer"',
@@ -1077,7 +1093,7 @@ test "AST as expected for For node", ->
         returns: no
         pattern: no
 
-  # TODO: Figgure out the purpose of `pattern` and `returns`.
+  # TODO: Figure out the purpose of `pattern` and `returns`.
 
 test "AST as expected for Switch node", ->
   testExpression 'switch x \n when a then a; when b, c then c else 42',
