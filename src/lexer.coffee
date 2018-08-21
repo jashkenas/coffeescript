@@ -56,6 +56,8 @@ exports.Lexer = class Lexer
       opts.line or 0             # The start line for the current @chunk.
     @chunkColumn =
       opts.column or 0           # The start column of the current @chunk.
+    @chunkOffset =
+      opts.offset or 0           # The start offset for the current @chunk.
     code = @clean code           # The stripped, cleaned original source code.
 
     # At every position, run through this list of attempted matches,
@@ -76,7 +78,7 @@ exports.Lexer = class Lexer
            @literalToken()
 
       # Update position.
-      [@chunkLine, @chunkColumn] = @getLineAndColumnFromChunk consumed
+      [@chunkLine, @chunkColumn, @chunkOffset] = @getLineAndColumnFromChunk consumed
 
       i += consumed
 
@@ -226,8 +228,8 @@ exports.Lexer = class Lexer
     tagToken = @token tag, id, length: idLength, data: tokenData
     tagToken.origin = [tag, alias, tagToken[2]] if alias
     if poppedToken
-      [tagToken[2].first_line, tagToken[2].first_column] =
-        [poppedToken[2].first_line, poppedToken[2].first_column]
+      [tagToken[2].first_line, tagToken[2].first_column, tagToken[2].range[0]] =
+        [poppedToken[2].first_line, poppedToken[2].first_column, poppedToken[2].range[0]]
     if colon
       colonOffset = input.lastIndexOf if inCSXTag then '=' else ':'
       colonToken = @token ':', ':', offset: colonOffset, length: colon.length
@@ -767,10 +769,10 @@ exports.Lexer = class Lexer
 
       # To remove the `#` in `#{`.
       interpolationOffset = interpolator.length - 1
-      [line, column] = @getLineAndColumnFromChunk offsetInChunk + interpolationOffset
+      [line, column, offset] = @getLineAndColumnFromChunk offsetInChunk + interpolationOffset
       rest = str[interpolationOffset..]
       {tokens: nested, index} =
-        new Lexer().tokenize rest, line: line, column: column, untilBalanced: on
+        new Lexer().tokenize rest, {line, column, offset, untilBalanced: on}
       # Account for the `#` in `#{`.
       index += interpolationOffset
 
@@ -807,12 +809,16 @@ exports.Lexer = class Lexer
 
     [firstToken, ..., lastToken] = tokens
     firstToken[2].first_column -= delimiter.length
+    firstToken[2].range[0]     -= delimiter.length
+    lastToken[2].range[1]      += closingDelimiter.length
     if lastToken[1].substr(-1) is '\n'
       lastToken[2].last_line += 1
       lastToken[2].last_column = closingDelimiter.length - 1
     else
       lastToken[2].last_column += closingDelimiter.length
-    lastToken[2].last_column -= 1 if lastToken[1].length is 0
+    if lastToken[1].length is 0
+      lastToken[2].last_column -= 1
+      lastToken[2].range[1]    -= 1
 
     {tokens, index: offsetInChunk + closingDelimiter.length}
 
@@ -866,6 +872,10 @@ exports.Lexer = class Lexer
         first_column: lparen[2].first_column
         last_line:    lastToken[2].last_line
         last_column:  lastToken[2].last_column
+        range: [
+          lparen[2].range[0]
+          lastToken[2].range[1]
+        ]
       ]
       lparen[2] = lparen.origin[2]
       rparen = @token 'STRING_END', ')'
@@ -874,6 +884,7 @@ exports.Lexer = class Lexer
         first_column: lastToken[2].last_column
         last_line:    lastToken[2].last_line
         last_column:  lastToken[2].last_column
+        range:        lastToken[2].range
 
   # Pairs up a closing token, ensuring that all listed pairs of tokens are
   # correctly balanced throughout the course of the token stream.
@@ -899,7 +910,7 @@ exports.Lexer = class Lexer
   # `offset` is a number of characters into `@chunk`.
   getLineAndColumnFromChunk: (offset) ->
     if offset is 0
-      return [@chunkLine, @chunkColumn]
+      return [@chunkLine, @chunkColumn, @chunkOffset]
 
     if offset >= @chunk.length
       string = @chunk
@@ -915,22 +926,25 @@ exports.Lexer = class Lexer
     else
       column += string.length
 
-    [@chunkLine + lineCount, column]
+    [@chunkLine + lineCount, column, @chunkOffset + offset]
 
-  # Same as `token`, except this just returns the token without adding it
-  # to the results.
-  makeToken: (tag, value, {offset: offsetInChunk = 0, length = value.length, origin} = {}) ->
-    locationData = {}
-    [locationData.first_line, locationData.first_column] =
+  makeLocationData: ({ offsetInChunk, length }) ->
+    locationData = range: []
+    [locationData.first_line, locationData.first_column, locationData.range[0]] =
       @getLineAndColumnFromChunk offsetInChunk
 
     # Use length - 1 for the final offset - we’re supplying the last_line and the last_column,
     # so if last_column == first_column, then we’re looking at a character of length 1.
     lastCharacter = if length > 0 then (length - 1) else 0
-    [locationData.last_line, locationData.last_column] =
+    [locationData.last_line, locationData.last_column, locationData.range[1]] =
       @getLineAndColumnFromChunk offsetInChunk + lastCharacter
 
-    token = [tag, value, locationData]
+    locationData
+
+  # Same as `token`, except this just returns the token without adding it
+  # to the results.
+  makeToken: (tag, value, {offset: offsetInChunk = 0, length = value.length, origin} = {}) ->
+    token = [tag, value, @makeLocationData {offsetInChunk, length}]
     token.origin = origin if origin
     token
 

@@ -1181,10 +1181,12 @@ exports.Call = class Call extends Base
     if @locationData and @needsUpdatedStartLocation
       @locationData.first_line = locationData.first_line
       @locationData.first_column = locationData.first_column
+      @locationData.range[0] = locationData.range[0]
       base = @variable?.base or @variable
       if base.needsUpdatedStartLocation
         @variable.locationData.first_line = locationData.first_line
         @variable.locationData.first_column = locationData.first_column
+        @variable.locationData.range[0] = locationData.range[0]
         base.updateLocationDataIfMissing locationData
       delete @needsUpdatedStartLocation
     super locationData

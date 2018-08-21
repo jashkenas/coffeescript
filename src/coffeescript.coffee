@@ -201,6 +201,10 @@ lexer = new Lexer
 # thin wrapper around it, compatible with the Jison API. We can then pass it
 # directly as a “Jison lexer.”
 parser.lexer =
+  yylloc:
+    range: []
+  options:
+    ranges: yes
   lex: ->
     token = parser.tokens[@pos++]
     if token
