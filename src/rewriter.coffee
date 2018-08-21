@@ -512,16 +512,19 @@ exports.Rewriter = class Rewriter
       return 1 if     token[2]
       return 1 unless token.generated or token.explicit
       if token[0] is '{' and nextLocation=tokens[i + 1]?[2]
-        {first_line: line, first_column: column} = nextLocation
+        {first_line: line, first_column: column, range} = nextLocation
       else if prevLocation = tokens[i - 1]?[2]
-        {last_line: line, last_column: column} = prevLocation
+        {last_line: line, last_column: column, range} = prevLocation
       else
         line = column = 0
-      token[2] =
+        range = [0, 0]
+      token[2] = {
         first_line:   line
         first_column: column
         last_line:    line
         last_column:  column
+        range
+      }
       return 1
 
   # `OUTDENT` tokens should always be positioned at the last character of the
@@ -538,6 +541,7 @@ exports.Rewriter = class Rewriter
         first_column: prevLocationData.last_column
         last_line:    prevLocationData.last_line
         last_column:  prevLocationData.last_column
+        range:        prevLocationData.range
       return 1
 
   # Because our grammar is LALR(1), it can’t handle some single-line
