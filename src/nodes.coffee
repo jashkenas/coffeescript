@@ -326,6 +326,7 @@ exports.Base = class Base
     return @astChildren o if isFunction @astChildren
     childAsts = {}
     addChildAst = ({propName, key = propName, level}) =>
+      propName ?= key
       val = @[propName]
       childAsts[key] =
         if isArray val
@@ -339,7 +340,7 @@ exports.Base = class Base
     else
       for key, propName of children
         {propName, level} = propName if isPlainObject propName
-        addChildAst {prop, key, level}
+        addChildAst {propName, key, level}
     childAsts
 
   astProps: []
