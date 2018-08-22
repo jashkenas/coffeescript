@@ -248,6 +248,53 @@ exports.nameWhitespaceCharacter = (string) ->
     when '\t' then 'tab'
     else string
 
+exports.locationDataToBabylon = ({first_line, first_column, last_line, last_column, range}) ->
+  loc:
+    start:
+      line: first_line + 1
+      column: first_column
+    end:
+      line: last_line + 1
+      column: last_column + 1
+  range: [
+    range[0]
+    range[1] + 1
+  ]
+  start: range[0]
+  end: range[1] + 1
+
+exports.babylonLocationFields = ['loc', 'range', 'start', 'end']
+
+exports.isArray = isArray = (obj) -> Array.isArray obj
+exports.isFunction = (obj) -> Object::toString.call(obj) is '[object Function]'
+exports.isNumber = isNumber = (obj) -> Object::toString.call(obj) is '[object Number]'
+exports.isString = isString = (obj) -> Object::toString.call(obj) is '[object String]'
+exports.isBoolean = isBoolean = (obj) -> obj is yes or obj is no or Object::toString.call(obj) is '[object Boolean]'
+exports.isPlainObject = (obj) -> typeof obj is 'object' and !!obj and not isArray(obj) and not isNumber(obj) and not isString(obj) and not isBoolean(obj)
+
+# Converts a number, string, or node (Value/NumberLiteral/unary +/- Op) to its
+# corresponding number value.
+exports.getNumberValue = (number) ->
+  return number if isNumber number
+  invert = no
+  unless isString number
+    number = do ->
+      number = number.unwrap()
+      if number.operator
+        invert = yes if number.operator is '-'
+        number.first.unwrap().value
+      else
+        number.value
+  base = switch number.charAt 1
+    when 'b' then 2
+    when 'o' then 8
+    when 'x' then 16
+    else null
+
+  val = if base? then parseInt(number[2..], base) else parseFloat(number)
+  return val unless invert
+  val * -1
+
 unicodeCodePointToUnicodeEscapes = (codePoint) ->
   toUnicodeEscape = (val) ->
     str = val.toString 16

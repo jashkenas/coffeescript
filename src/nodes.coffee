@@ -11,7 +11,11 @@ Error.stackTraceLimit = Infinity
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, some,
 addDataToNode, attachCommentsToNode, locationDataToString,
-throwSyntaxError, replaceUnicodeCodePointEscapes} = require './helpers'
+throwSyntaxError, replaceUnicodeCodePointEscapes,
+locationDataToBabylon, babylonLocationFields,
+isArray, isFunction, isPlainObject,
+getNumberValue,
+} = require './helpers'
 
 # Functions required by parser.
 exports.extend = extend
@@ -268,41 +272,100 @@ exports.Base = class Base
   # Plain JavaScript object representation of the node, that can be serialized
   # as JSON. This is used for generating an abstract syntax tree (AST).
   # This is what the `ast` option in the Node API returns.
-  toJSON: ->
+  toJSON: (o) ->
     # We try to follow the [Babel AST spec](https://github.com/babel/babel/blob/master/packages/babylon/ast/spec.md)
     # as closely as possible, for improved interoperability with other tools.
-    obj =
-      type: @constructor.name
-      # Convert `locationData` to Babel’s style.
-      loc:
-        start:
-          line: @locationData.first_line
-          column: @locationData.first_column
-        end:
-          line: @locationData.last_line
-          column: @locationData.last_column
+    @toAst o
 
-    # Add serializable properties to the output. Properties that aren’t
-    # automatically serializable (because they’re already a primitive type)
-    # should be handled on a case-by-case basis in child node classes’ own
-    # `toJSON` methods.
-    for property, value of this
-      continue if property in ['locationData', 'children']
-      continue if value is undefined # Don’t skip `null` or `false` values.
-      if typeof value is 'boolean' or typeof value is 'number' or typeof value is 'string'
-        obj[property] = value
+  # Returns the full AST for the node.
+  toAst: (o, level) ->
+    o = extend {}, o
+    o.level = level if level
+    @withBabylonLocationData @withAstType @_toAst(o), o
 
-    # Work our way down the tree. This is like `eachChild`, except that we
-    # preserve the child node name, and arrays.
-    for attr in @children when @[attr]
-      if Array.isArray(@[attr])
-        obj[attr] = []
-        for child in flatten [@[attr]]
-          obj[attr].push child.unwrap().toJSON()
-      else
-        obj[attr] = @[attr].unwrap().toJSON()
+  # Adds `type` to an AST.
+  # A node class typically defines `astType` (as a string or callback) if it
+  # needs to override the default-generated `type` (ie its constructor name)
+  withAstType: (ast, o) ->
+    return ast unless ast
+    return ast if isArray ast
+    return ast if ast.type
+    return ast unless @emptyAst or do ->
+      return yes for key in Object.keys(ast) when key not in ['comments', babylonLocationFields...]
 
-    obj
+    merge ast,
+      type: do =>
+        return @constructor.name unless @astType
+        @astType?(o) ? @astType
+
+  # Returns the "content" (ie not `type` or location data) of the AST for the node.
+  # By default, recursively generates AST nodes for `children`.
+  # To override, a node class can either:
+  #   - define `astChildren` to specify how to generate full child nodes, and/or
+  #     `astProps` to specify how to generate non-child-node fields
+  #   - override the `_toAst()` method
+  _toAst: (o) ->
+    merge(
+      @getAstChildren o
+      @getAstProps o
+    )
+
+  # Returns the child-nodes fields of the AST node.
+  # By default, recursively generates AST nodes for `children`.
+  # To override, a node class defines `astChildren`, which can be either:
+  # - an array of property names (like `children`) which should have their generated
+  #   AST nodes included recursively.
+  # - an object whose keys are the desired AST field names and whose values are either:
+  #   - a string, which is the name of the node object property whose generated AST node
+  #     should be the corresponding value included in the AST
+  #   - an object with `key` and/or `level` fields. `key` corresponds to the simple string
+  #     value above, ie it's the name of a node object property. `level` is the desired
+  #     AST "compilation" level for that child node, eg `LEVEL_PAREN`
+  # - a callback function, which should return all the AST child-node fields
+  getAstChildren: (o) ->
+    return @astChildren o if isFunction @astChildren
+    childAsts = {}
+    addChildAst = ({propName, key = propName, level}) =>
+      val = @[propName]
+      childAsts[key] =
+        if isArray val
+          item.toAst o, level for item in val
+        else
+          val?.toAst o, level
+
+    children = @astChildren ? @children
+    if isArray children
+      addChildAst {propName} for propName in children
+    else
+      for key, propName of children
+        {propName, level} = propName if isPlainObject propName
+        addChildAst {prop, key, level}
+    childAsts
+
+  astProps: []
+  # Returns the "simple" (ie non-child-nodes) fields of the AST node.
+  # By default, returns an empty object.
+  # To override, a node class defines `astProps`, which can be either:
+  # - an array of property names which should have their values included.
+  # - an object whose keys are the desired AST field names and whose values are
+  #   the corresponding "mapped" node class property names whose values should be included.
+  # - a callback function, which should return all the AST non-child-node fields
+  getAstProps: (o) ->
+    return @astProps o if isFunction @astProps
+    astFields = {}
+    if isArray @astProps
+      for propName in @astProps
+        astFields[propName] = @[propName]
+    else
+      for key, propName of @astProps
+        astFields[key] = @[propName]
+    astFields
+
+  withBabylonLocationData: (ast, node) ->
+    return (@withBabylonLocationData(item, node) for item in ast) if isArray ast
+    {locationData} = node ? @
+    return ast unless locationData and ast and not ast.start?
+    merge ast, locationDataToBabylon locationData
 
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
@@ -776,15 +839,29 @@ exports.Literal = class Literal extends Base
   compileNode: (o) ->
     [@makeCode @value]
 
+  astProps: ['value']
+
   toString: ->
     # This is only intended for debugging.
     " #{if @isStatement() then super() else @constructor.name}: #{@value}"
 
 exports.NumberLiteral = class NumberLiteral extends Literal
+  astType: 'NumericLiteral'
+  astProps: ->
+    numberValue = getNumberValue @value
+
+    value: numberValue
+    extra:
+      rawValue: numberValue
+      raw: "#{@value}"
 
 exports.InfinityLiteral = class InfinityLiteral extends NumberLiteral
   compileNode: ->
     [@makeCode '2e308']
+
+  astType: 'Identifier'
+  astProps: ->
+    name: 'Infinity'
 
 exports.NaNLiteral = class NaNLiteral extends NumberLiteral
   constructor: ->
@@ -793,6 +870,10 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
   compileNode: (o) ->
     code = [@makeCode '0/0']
     if o.level >= LEVEL_OP then @wrapInParentheses code else code
+
+  astType: 'Identifier'
+  astProps: ->
+    name: 'NaN'
 
 exports.StringLiteral = class StringLiteral extends Literal
   constructor: (@originalValue, {@quote, @initialChunk, @finalChunk, @indent, @double, @heregex} = {}) ->
@@ -864,6 +945,15 @@ exports.IdentifierLiteral = class IdentifierLiteral extends Literal
   eachName: (iterator) ->
     iterator @
 
+  astType: ->
+    if @csx
+      'JSXIdentifier'
+    else
+      'Identifier'
+
+  astProps:
+    name: 'value'
+
 exports.CSXTag = class CSXTag extends IdentifierLiteral
 
 exports.PropertyName = class PropertyName extends Literal
@@ -885,13 +975,23 @@ exports.StatementLiteral = class StatementLiteral extends Literal
   compileNode: (o) ->
     [@makeCode "#{@tab}#{@value};"]
 
+  astType: ->
+    switch @value
+      when 'continue' then 'ContinueStatement'
+      when 'break'    then 'BreakStatement'
+      when 'debugger' then 'DebuggerStatement'
+
 exports.ThisLiteral = class ThisLiteral extends Literal
-  constructor: ->
+  constructor: (value) ->
     super 'this'
+    @shorthand = value is '@'
 
   compileNode: (o) ->
     code = if o.scope.method?.bound then o.scope.method.context else @value
     [@makeCode code]
+
+  astType: 'ThisExpression'
+  astProps: ['shorthand']
 
 exports.UndefinedLiteral = class UndefinedLiteral extends Literal
   constructor: ->
@@ -900,14 +1000,25 @@ exports.UndefinedLiteral = class UndefinedLiteral extends Literal
   compileNode: (o) ->
     [@makeCode if o.level >= LEVEL_ACCESS then '(void 0)' else 'void 0']
 
+  astType: 'Identifier'
+  astProps:
+    name: 'value'
+
 exports.NullLiteral = class NullLiteral extends Literal
   constructor: ->
     super 'null'
+
+  astProps: []
+  emptyAst: yes
 
 exports.BooleanLiteral = class BooleanLiteral extends Literal
   constructor: (value, {@originalValue} = {}) ->
     super value
     @originalValue ?= @value
+
+  astProps: (o) ->
+    value: if @value is 'true' then yes else no
+    name: @originalValue
 
 #### Return
 
@@ -1079,6 +1190,10 @@ exports.Value = class Value extends Base
       fragments.push (prop.compileToFragments o)...
 
     fragments
+
+  _toAst: (o) ->
+    @base.toAst o
+    # TODO: will include AST generation for properties here
 
   # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
