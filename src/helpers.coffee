@@ -265,12 +265,11 @@ exports.locationDataToBabel = ({first_line, first_column, last_line, last_column
 
 exports.babelLocationFields = ['loc', 'range', 'start', 'end']
 
-exports.isArray = isArray = (obj) -> Array.isArray obj
 exports.isFunction = (obj) -> Object::toString.call(obj) is '[object Function]'
 exports.isNumber = isNumber = (obj) -> Object::toString.call(obj) is '[object Number]'
 exports.isString = isString = (obj) -> Object::toString.call(obj) is '[object String]'
 exports.isBoolean = isBoolean = (obj) -> obj is yes or obj is no or Object::toString.call(obj) is '[object Boolean]'
-exports.isPlainObject = (obj) -> typeof obj is 'object' and !!obj and not isArray(obj) and not isNumber(obj) and not isString(obj) and not isBoolean(obj)
+exports.isPlainObject = (obj) -> typeof obj is 'object' and !!obj and not Array.isArray(obj) and not isNumber(obj) and not isString(obj) and not isBoolean(obj)
 
 # Converts a number, string, or node (Value/NumberLiteral/unary +/- Op) to its
 # corresponding number value.

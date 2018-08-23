@@ -13,7 +13,7 @@ Error.stackTraceLimit = Infinity
 addDataToNode, attachCommentsToNode, locationDataToString,
 throwSyntaxError, replaceUnicodeCodePointEscapes,
 locationDataToBabel, babelLocationFields,
-isArray, isFunction, isPlainObject,
+isFunction, isPlainObject,
 getNumberValue,
 } = require './helpers'
 
@@ -288,7 +288,7 @@ exports.Base = class Base
   # needs to override the default-generated `type` (ie its constructor name)
   withAstType: (ast, o) ->
     return ast unless ast
-    return ast if isArray ast
+    return ast if Array.isArray ast
     return ast if ast.type
     return ast unless @emptyAst or do ->
       return yes for key in Object.keys(ast) when key not in ['comments', babelLocationFields...]
@@ -329,13 +329,13 @@ exports.Base = class Base
       propName ?= key
       val = @[propName]
       childAsts[key] =
-        if isArray val
+        if Array.isArray val
           item.toAst o, level for item in val
         else
           val?.toAst o, level
 
     children = @astChildren ? @children
-    if isArray children
+    if Array.isArray children
       addChildAst {propName} for propName in children
     else
       for key, propName of children
@@ -354,7 +354,7 @@ exports.Base = class Base
   getAstProps: (o) ->
     return @astProps o if isFunction @astProps
     astFields = {}
-    if isArray @astProps
+    if Array.isArray @astProps
       for propName in @astProps
         astFields[propName] = @[propName]
     else
@@ -363,7 +363,7 @@ exports.Base = class Base
     astFields
 
   withBabelLocationData: (ast, node) ->
-    return (@withBabelLocationData(item, node) for item in ast) if isArray ast
+    return (@withBabelLocationData(item, node) for item in ast) if Array.isArray ast
     {locationData} = node ? @
     return ast unless locationData and ast and not ast.start?
     merge ast, locationDataToBabel locationData
