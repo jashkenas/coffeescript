@@ -248,7 +248,7 @@ exports.nameWhitespaceCharacter = (string) ->
     when '\t' then 'tab'
     else string
 
-exports.locationDataToBabylon = ({first_line, first_column, last_line, last_column, range}) ->
+exports.locationDataToBabel = ({first_line, first_column, last_line, last_column, range}) ->
   loc:
     start:
       line: first_line + 1
@@ -263,7 +263,7 @@ exports.locationDataToBabylon = ({first_line, first_column, last_line, last_colu
   start: range[0]
   end: range[1] + 1
 
-exports.babylonLocationFields = ['loc', 'range', 'start', 'end']
+exports.babelLocationFields = ['loc', 'range', 'start', 'end']
 
 exports.isArray = isArray = (obj) -> Array.isArray obj
 exports.isFunction = (obj) -> Object::toString.call(obj) is '[object Function]'

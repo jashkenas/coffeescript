@@ -12,7 +12,7 @@ Error.stackTraceLimit = Infinity
 {compact, flatten, extend, merge, del, starts, ends, some,
 addDataToNode, attachCommentsToNode, locationDataToString,
 throwSyntaxError, replaceUnicodeCodePointEscapes,
-locationDataToBabylon, babylonLocationFields,
+locationDataToBabel, babelLocationFields,
 isArray, isFunction, isPlainObject,
 getNumberValue,
 } = require './helpers'
@@ -281,7 +281,7 @@ exports.Base = class Base
   toAst: (o, level) ->
     o = extend {}, o
     o.level = level if level
-    @withBabylonLocationData @withAstType @_toAst(o), o
+    @withBabelLocationData @withAstType @_toAst(o), o
 
   # Adds `type` to an AST.
   # A node class typically defines `astType` (as a string or callback) if it
@@ -291,7 +291,7 @@ exports.Base = class Base
     return ast if isArray ast
     return ast if ast.type
     return ast unless @emptyAst or do ->
-      return yes for key in Object.keys(ast) when key not in ['comments', babylonLocationFields...]
+      return yes for key in Object.keys(ast) when key not in ['comments', babelLocationFields...]
 
     merge ast,
       type: do =>
@@ -362,11 +362,11 @@ exports.Base = class Base
         astFields[key] = @[propName]
     astFields
 
-  withBabylonLocationData: (ast, node) ->
-    return (@withBabylonLocationData(item, node) for item in ast) if isArray ast
+  withBabelLocationData: (ast, node) ->
+    return (@withBabelLocationData(item, node) for item in ast) if isArray ast
     {locationData} = node ? @
     return ast unless locationData and ast and not ast.start?
-    merge ast, locationDataToBabylon locationData
+    merge ast, locationDataToBabel locationData
 
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
