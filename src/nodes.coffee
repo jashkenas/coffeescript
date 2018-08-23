@@ -283,6 +283,9 @@ exports.Base = class Base
     o.level = level if level
     @withBabelLocationData @withAstType @_toAst(o), o
 
+  # By default, a node class's AST `type` is the class name
+  astType: -> @constructor.name
+
   # Adds `type` to an AST.
   # A node class typically defines `astType` (as a string or callback) if it
   # needs to override the default-generated `type` (ie its constructor name)
@@ -294,9 +297,7 @@ exports.Base = class Base
       return yes for key in Object.keys(ast) when key not in ['comments', babelLocationFields...]
 
     merge ast,
-      type: do =>
-        return @constructor.name unless @astType
-        @astType?(o) ? @astType
+      type: @astType?(o) ? @astType
 
   # Returns the "content" (ie not `type` or location data) of the AST for the node.
   # By default, recursively generates AST nodes for `children`.
