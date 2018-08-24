@@ -4,11 +4,14 @@
 # Ensure that errors of different kinds (lexer, parser and compiler) are shown
 # in a consistent way.
 
-assertErrorFormat = (code, expectedErrorFormat) ->
-  throws (-> CoffeeScript.run code), (err) ->
+assertErrorFormat = (code, expectedErrorFormat, {ast} = {}) ->
+  errCallback = (err) ->
     err.colorful = no
     eq expectedErrorFormat, "#{err}"
     yes
+
+  throws (-> CoffeeScript.run code), errCallback
+  throws (-> CoffeeScript.compile code, ast: yes), errCallback if ast
 
 test "lexer errors formatting", ->
   assertErrorFormat '''
@@ -769,14 +772,14 @@ test "strict mode errors", ->
     [stdin]:1:1: error: 'arguments' can't be assigned
     arguments++
     ^^^^^^^^^
-  '''
+  ''', ast: yes
   assertErrorFormat '''
     --arguments
   ''', '''
     [stdin]:1:3: error: 'arguments' can't be assigned
     --arguments
       ^^^^^^^^^
-  '''
+  ''', ast: yes
 
 test "invalid numbers", ->
   assertErrorFormat '''
