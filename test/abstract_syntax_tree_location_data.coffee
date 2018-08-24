@@ -262,6 +262,45 @@ test "AST location data as expected for Access node", ->
         line: 1
         column: 4
 
+  testExpression '''
+    (
+      obj
+    ).prop
+  ''',
+    type: 'MemberExpression'
+    object:
+      start: 4
+      end: 7
+      range: [4, 7]
+      loc:
+        start:
+          line: 2
+          column: 2
+        end:
+          line: 2
+          column: 5
+    property:
+      start: 10
+      end: 14
+      range: [10, 14]
+      loc:
+        start:
+          line: 3
+          column: 2
+        end:
+          line: 3
+          column: 6
+    start: 0
+    end: 14
+    range: [0, 14]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 6
+
 test "AST location data as expected for Index node", ->
   testExpression 'a[b]',
     type: 'MemberExpression'
