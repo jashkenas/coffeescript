@@ -1307,12 +1307,18 @@ exports.Call = class Call extends Base
     if @locationData and @needsUpdatedStartLocation
       @locationData.first_line = locationData.first_line
       @locationData.first_column = locationData.first_column
-      @locationData.range[0] = locationData.range[0]
+      @locationData.range = [
+        locationData.range[0]
+        @locationData.range[1]
+      ]
       base = @variable?.base or @variable
       if base.needsUpdatedStartLocation
         @variable.locationData.first_line = locationData.first_line
         @variable.locationData.first_column = locationData.first_column
-        @variable.locationData.range[0] = locationData.range[0]
+        @variable.locationData.range = [
+          locationData.range[0]
+          @variable.locationData.range[1]
+        ]
         base.updateLocationDataIfMissing locationData
       delete @needsUpdatedStartLocation
     super locationData
@@ -3298,12 +3304,10 @@ exports.Op = class Op extends Base
   constructor: (op, first, second, flip, {@invertOperator, @originalOperator = op} = {}) ->
     super()
 
-    if op is 'do'
-      return Op::generateDo first
     if op is 'new'
-      if (firstCall = first.unwrap()) instanceof Call and not firstCall.do and not firstCall.isNew
-        return firstCall.newInstance()
-      first = new Parens firstCall if firstCall instanceof Code and firstCall.bound or firstCall.do
+      if ((firstCall = unwrapped = first.unwrap()) instanceof Call or (firstCall = unwrapped.base) instanceof Call) and not firstCall.do and not firstCall.isNew
+        return new Value firstCall.newInstance(), if firstCall is unwrapped then [] else unwrapped.properties
+      first = new Parens first if unwrapped instanceof Op and unwrapped.operator is 'do'
 
     @operator = CONVERSIONS[op] or op
     @first    = first
@@ -3398,6 +3402,15 @@ exports.Op = class Op extends Base
   isInOperator: ->
     @originalOperator is 'in'
 
+  checkDeleteOperand: (o) ->
+    if @operator is 'delete' and o.scope.check(@first.unwrapAll().value)
+      @error 'delete operand may not be argument or var'
+
+  checkUpdateAssignability: ->
+    if @operator in ['--', '++']
+      message = isUnassignable @first.unwrapAll().value
+      @first.error message if message
+
   compileNode: (o) ->
     if @isInOperator()
       inNode = new In @first, @second
@@ -3405,15 +3418,13 @@ exports.Op = class Op extends Base
     if @invertOperator
       @invertOperator = null
       return @invert().compileNode(o)
+    return Op::generateDo(@first).compileNode o if @operator is 'do'
     isChain = @isChainable() and @first.isChainable()
     # In chains, there's no need to wrap bare obj literals in parens,
     # as the chained expression is wrapped.
     @first.front = @front unless isChain
-    if @operator is 'delete' and o.scope.check(@first.unwrapAll().value)
-      @error 'delete operand may not be argument or var'
-    if @operator in ['--', '++']
-      message = isUnassignable @first.unwrapAll().value
-      @first.error message if message
+    @checkDeleteOperand o
+    @checkUpdateAssignability()
     return @compileContinuation o if @isYield() or @isAwait()
     return @compileUnary        o if @isUnary()
     return @compileChain        o if isChain
@@ -3426,6 +3437,42 @@ exports.Op = class Op extends Base
         rhs = @second.compileToFragments o, LEVEL_OP
         answer = [].concat lhs, @makeCode(" #{@operator} "), rhs
         if o.level <= LEVEL_OP then answer else @wrapInParentheses answer
+
+  astType: ->
+    switch @operator
+      when 'new'         then 'NewExpression'
+      when '||', '&&'    then 'LogicalExpression'
+      when '++', '--'    then 'UpdateExpression'
+      else
+        if @isUnary()    then 'UnaryExpression'
+        else                  'BinaryExpression'
+
+  _toAst: (o) ->
+    @checkUpdateAssignability()
+    super o
+
+  astChildren: (o) ->
+    firstAst = @first.toAst o, LEVEL_OP
+    secondAst = @second?.toAst o, LEVEL_OP
+    switch
+      when @operator is 'new'
+        callee: firstAst
+        arguments: []
+      when @isUnary()
+        argument: firstAst
+      else
+        left: firstAst
+        right: secondAst
+
+  astProps: (o) ->
+    switch
+      when @operator is 'new'
+        {}
+      when @isUnary()
+        operator: @originalOperator
+        prefix: !@flip
+      else
+        operator: "#{if @invertOperator then "#{@invertOperator} " else ''}#{@originalOperator}"
 
   # Mimic Python's chained comparisons when multiple comparison operators are
   # used sequentially. For example:

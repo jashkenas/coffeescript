@@ -418,18 +418,6 @@ test "AST location data as expected for Parens node", ->
       start:
         line: 1
         column: 1
-      end:
-        line: 1
-        column: 7
-
-#   testExpression '(a + b) / c',
-#     type: 'Op'
-#     operator: '/'
-#     first:
-#       type: 'Parens'
-#       body:
-#         type: 'Op'
-#         operator: '+'
 
   testAstLocationData '(((1)))',
     type: 'NumericLiteral'
@@ -443,3 +431,192 @@ test "AST location data as expected for Parens node", ->
       end:
         line: 1
         column: 4
+
+test "AST location data as expected for Op node", ->
+  testExpression '1 <= 2',
+    type: 'BinaryExpression'
+    left:
+      start: 0
+      end: 1
+      range: [0, 1]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 1
+    right:
+      start: 5
+      end: 6
+      range: [5, 6]
+      loc:
+        start:
+          line: 1
+          column: 5
+        end:
+          line: 1
+          column: 6
+    start: 0
+    end: 6
+    range: [0, 6]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 6
+
+  testExpression 'new Old',
+    type: 'NewExpression'
+    callee:
+      start: 4
+      end: 7
+      range: [4, 7]
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 1
+          column: 7
+    start: 0
+    end: 7
+    range: [0, 7]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 7
+
+  testExpression '!x',
+    type: 'UnaryExpression'
+    argument:
+      start: 1
+      end: 2
+      range: [1, 2]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 2
+    start: 0
+    end: 2
+    range: [0, 2]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 2
+
+  testExpression 'not x',
+    type: 'UnaryExpression'
+    argument:
+      start: 4
+      end: 5
+      range: [4, 5]
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 1
+          column: 5
+    start: 0
+    end: 5
+    range: [0, 5]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 5
+
+  testExpression 'x++',
+    type: 'UpdateExpression'
+    argument:
+      start: 0
+      end: 1
+      range: [0, 1]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 1
+    start: 0
+    end: 3
+    range: [0, 3]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 3
+
+  testExpression '(x + y) * z',
+    type: 'BinaryExpression'
+    left:
+      left:
+        start: 1
+        end: 2
+        range: [1, 2]
+        loc:
+          start:
+            line: 1
+            column: 1
+          end:
+            line: 1
+            column: 2
+      right:
+        start: 5
+        end: 6
+        range: [5, 6]
+        loc:
+          start:
+            line: 1
+            column: 5
+          end:
+            line: 1
+            column: 6
+      start: 1
+      end: 6
+      range: [1, 6]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 6
+    right:
+      start: 10
+      end: 11
+      range: [10, 11]
+      loc:
+        start:
+          line: 1
+          column: 10
+        end:
+          line: 1
+          column: 11
+    start: 0
+    end: 11
+    range: [0, 11]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 11
