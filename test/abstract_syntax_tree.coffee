@@ -357,33 +357,155 @@ test "AST as expected for BooleanLiteral node", ->
 #       value: 'parent'
 #   # TODO: Is there no Extends node?
 
-# test "AST as expected for Access node", ->
-#   testExpression 'obj.prop',
-#     base:
-#       value: 'obj'
-#     properties: [
-#       type: 'Access'
-#       soak: no
-#       name:
-#         type: 'PropertyName'
-#         value: 'prop'
-#     ]
+test "AST as expected for Access node", ->
+  testExpression 'obj.prop',
+    type: 'MemberExpression'
+    object:
+      type: 'Identifier'
+      name: 'obj'
+    property:
+      type: 'Identifier'
+      name: 'prop'
+    computed: no
+    optional: no
+    shorthand: no
 
-#   testExpression 'obj?.prop',
-#     base:
-#       value: 'obj'
-#     properties: [
-#       type: 'Access'
-#       soak: yes
-#       name:
-#         type: 'PropertyName'
-#         value: 'prop'
-#     ]
+  testExpression 'obj?.prop',
+    type: 'MemberExpression'
+    object:
+      type: 'Identifier'
+      name: 'obj'
+    property:
+      type: 'Identifier'
+      name: 'prop'
+    computed: no
+    optional: yes
+    shorthand: no
 
-# test "AST as expected for Index node", ->
-#   testExpression 'for x, i in iterable then',
-#     type: 'For'
-#   # TODO: Where's the Index node?
+  testExpression 'a::b',
+    type: 'MemberExpression'
+    object:
+      type: 'MemberExpression'
+      object:
+        type: 'Identifier'
+        name: 'a'
+      property:
+        type: 'Identifier'
+        name: 'prototype'
+      computed: no
+      optional: no
+      shorthand: yes
+    property:
+      type: 'Identifier'
+      name: 'b'
+    computed: no
+    optional: no
+    shorthand: no
+
+  testExpression 'a.prototype.b',
+    type: 'MemberExpression'
+    object:
+      type: 'MemberExpression'
+      object:
+        type: 'Identifier'
+        name: 'a'
+      property:
+        type: 'Identifier'
+        name: 'prototype'
+      computed: no
+      optional: no
+      shorthand: no
+    property:
+      type: 'Identifier'
+      name: 'b'
+    computed: no
+    optional: no
+    shorthand: no
+
+  testExpression 'a?.b.c',
+    type: 'MemberExpression'
+    object:
+      type: 'MemberExpression'
+      object:
+        type: 'Identifier'
+        name: 'a'
+      property:
+        type: 'Identifier'
+        name: 'b'
+      computed: no
+      optional: yes
+      shorthand: no
+    property:
+      type: 'Identifier'
+      name: 'c'
+    computed: no
+    optional: no
+    shorthand: no
+
+test "AST as expected for Index node", ->
+  testExpression 'a[b]',
+    type: 'MemberExpression'
+    object:
+      type: 'Identifier'
+      name: 'a'
+    property:
+      type: 'Identifier'
+      name: 'b'
+    computed: yes
+    optional: no
+    shorthand: no
+
+  testExpression 'a?[b]',
+    type: 'MemberExpression'
+    object:
+      type: 'Identifier'
+      name: 'a'
+    property:
+      type: 'Identifier'
+      name: 'b'
+    computed: yes
+    optional: yes
+    shorthand: no
+
+  testExpression 'a::[b]',
+    type: 'MemberExpression'
+    object:
+      type: 'MemberExpression'
+      object:
+        type: 'Identifier'
+        name: 'a'
+      property:
+        type: 'Identifier'
+        name: 'prototype'
+      computed: no
+      optional: no
+      shorthand: yes
+    property:
+      type: 'Identifier'
+      name: 'b'
+    computed: yes
+    optional: no
+    shorthand: no
+
+  testExpression 'a[b][3]',
+    type: 'MemberExpression'
+    object:
+      type: 'MemberExpression'
+      object:
+        type: 'Identifier'
+        name: 'a'
+      property:
+        type: 'Identifier'
+        name: 'b'
+      computed: yes
+      optional: no
+      shorthand: no
+    property:
+      type: 'NumericLiteral'
+      value: 3
+    computed: yes
+    optional: no
+    shorthand: no
 
 # test "AST as expected for Range node", ->
 #   testExpression '[x..y]',

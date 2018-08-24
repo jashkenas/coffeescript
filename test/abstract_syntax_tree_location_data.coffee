@@ -178,3 +178,179 @@ test "AST location data as expected for BooleanLiteral node", ->
       end:
         line: 1
         column: 4
+
+test "AST location data as expected for Access node", ->
+  testExpression 'obj.prop',
+    type: 'MemberExpression'
+    object:
+      start: 0
+      end: 3
+      range: [0, 3]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 3
+    property:
+      start: 4
+      end: 8
+      range: [4, 8]
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 1
+          column: 8
+    start: 0
+    end: 8
+    range: [0, 8]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 8
+
+  testExpression 'a::b',
+    type: 'MemberExpression'
+    object:
+      object:
+        start: 0
+        end: 1
+        range: [0, 1]
+        loc:
+          start:
+            line: 1
+            column: 0
+          end:
+            line: 1
+            column: 1
+      property:
+        start: 1
+        end: 3
+        range: [1, 3]
+        loc:
+          start:
+            line: 1
+            column: 1
+          end:
+            line: 1
+            column: 3
+    property:
+      start: 3
+      end: 4
+      range: [3, 4]
+      loc:
+        start:
+          line: 1
+          column: 3
+        end:
+          line: 1
+          column: 4
+    start: 0
+    end: 4
+    range: [0, 4]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 4
+
+test "AST location data as expected for Index node", ->
+  testExpression 'a[b]',
+    type: 'MemberExpression'
+    object:
+      start: 0
+      end: 1
+      range: [0, 1]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 1
+    property:
+      start: 2
+      end: 3
+      range: [2, 3]
+      loc:
+        start:
+          line: 1
+          column: 2
+        end:
+          line: 1
+          column: 3
+    start: 0
+    end: 4
+    range: [0, 4]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 4
+
+  testExpression 'a?[b][3]',
+    type: 'MemberExpression'
+    object:
+      object:
+        start: 0
+        end: 1
+        range: [0, 1]
+        loc:
+          start:
+            line: 1
+            column: 0
+          end:
+            line: 1
+            column: 1
+      property:
+        start: 3
+        end: 4
+        range: [3, 4]
+        loc:
+          start:
+            line: 1
+            column: 3
+          end:
+            line: 1
+            column: 4
+      start: 0
+      end: 5
+      range: [0, 5]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 5
+    property:
+      start: 6
+      end: 7
+      range: [6, 7]
+      loc:
+        start:
+          line: 1
+          column: 6
+        end:
+          line: 1
+          column: 7
+    start: 0
+    end: 8
+    range: [0, 8]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 8
