@@ -258,10 +258,10 @@ exports.locationDataToBabel = ({first_line, first_column, last_line, last_column
       column: last_column + 1
   range: [
     range[0]
-    range[1] + 1
+    range[1]
   ]
   start: range[0]
-  end: range[1] + 1
+  end: range[1]
 
 exports.babelLocationFields = ['loc', 'range', 'start', 'end']
 
