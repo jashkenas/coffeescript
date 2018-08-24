@@ -248,7 +248,7 @@ exports.nameWhitespaceCharacter = (string) ->
     when '\t' then 'tab'
     else string
 
-exports.locationDataToBabel = ({first_line, first_column, last_line, last_column, range}) ->
+exports.locationDataToAst = ({first_line, first_column, last_line, last_column, range}) ->
   loc:
     start:
       line: first_line + 1
@@ -263,7 +263,7 @@ exports.locationDataToBabel = ({first_line, first_column, last_line, last_column
   start: range[0]
   end: range[1]
 
-exports.babelLocationFields = ['loc', 'range', 'start', 'end']
+exports.astLocationFields = ['loc', 'range', 'start', 'end']
 
 exports.isFunction = (obj) -> Object::toString.call(obj) is '[object Function]'
 exports.isNumber = isNumber = (obj) -> Object::toString.call(obj) is '[object Number]'

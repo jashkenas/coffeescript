@@ -12,7 +12,7 @@ Error.stackTraceLimit = Infinity
 {compact, flatten, extend, merge, del, starts, ends, some,
 addDataToNode, attachCommentsToNode, locationDataToString,
 throwSyntaxError, replaceUnicodeCodePointEscapes,
-locationDataToBabel, babelLocationFields,
+locationDataToAst, astLocationFields,
 isFunction, isPlainObject,
 getNumberValue,
 } = require './helpers'
@@ -281,7 +281,7 @@ exports.Base = class Base
   toAst: (o, level) ->
     o = extend {}, o
     o.level = level if level
-    @withBabelLocationData @withAstType @_toAst(o), o
+    @withAstLocationData @withAstType @_toAst(o), o
 
   # By default, a node class's AST `type` is the class name
   astType: -> @constructor.name
@@ -294,7 +294,7 @@ exports.Base = class Base
     return ast if Array.isArray ast
     return ast if ast.type
     return ast unless @emptyAst or do ->
-      return yes for key in Object.keys(ast) when key not in ['comments', babelLocationFields...]
+      return yes for key in Object.keys(ast) when key not in ['comments', astLocationFields...]
 
     merge ast,
       type: @astType?(o) ? @astType
@@ -363,11 +363,11 @@ exports.Base = class Base
         astFields[key] = @[propName]
     astFields
 
-  withBabelLocationData: (ast, node) ->
-    return (@withBabelLocationData(item, node) for item in ast) if Array.isArray ast
+  withAstLocationData: (ast, node) ->
+    return (@withAstLocationData(item, node) for item in ast) if Array.isArray ast
     {locationData} = node ? @
     return ast unless locationData and ast and not ast.start?
-    merge ast, locationDataToBabel locationData
+    merge ast, locationDataToAst locationData
 
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
