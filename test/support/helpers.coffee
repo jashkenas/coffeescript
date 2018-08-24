@@ -38,3 +38,36 @@ exports.eqJS = (input, expectedOutput, msg) ->
   ok egal(expectedOutput, actualOutput), msg or diffOutput expectedOutput, actualOutput
 
 exports.isWindows = -> process.platform is 'win32'
+
+# Helpers to get AST nodes for a string of code. The root node is always a
+# `Block` node, so for brevity in the tests return its children from
+# `expressions`.
+getAstExpressions = (code) ->
+  ast = CoffeeScript.compile code, ast: yes
+  ast.expressions
+
+getExpressionAst = (code) -> getAstExpressions(code)[0]
+
+# Recursively compare all values of enumerable properties of `expected` with
+# those of `actual`. Use `looseArray` helper function to skip array length
+# comparison.
+
+exports.deepStrictEqualExpectedProps = deepStrictEqualExpectedProps = (actual, expected) ->
+  white = (text, values...) -> (text[i] + "#{reset}#{v}#{red}" for v, i in values).join('') + text[i]
+  eq actual.length, expected.length if expected instanceof Array and not expected.loose
+  for k , v of expected
+    if 'object' is typeof v
+      fail white"`actual` misses #{k} property." unless k of actual
+      deepStrictEqualExpectedProps actual[k], v
+    else
+      eq actual[k], v, white"Property #{k}: expected #{actual[k]} to equal #{v}"
+  actual
+
+exports.expressionAstMatchesObject = (code, expected) ->
+  ast = getExpressionAst code
+  if expected?
+    deepStrictEqualExpectedProps ast, expected
+  else
+    console.log require('util').inspect ast,
+      depth: 10
+      colors: yes

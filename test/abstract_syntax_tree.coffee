@@ -1,29 +1,7 @@
 # Astract Syntax Tree generation
 # ------------------------------
 
-# Helpers to get AST nodes for a string of code. The root node is always a
-# `Block` node, so for brevity in the tests return its children from
-# `expressions`.
-getExpressions = (code) ->
-  ast = CoffeeScript.compile code, ast: yes
-  ast.expressions
-
-getExpression = (code) -> getExpressions(code)[0]
-
-# Recursively compare all values of enumerable properties of `expected` with
-# those of `actual`. Use `looseArray` helper function to skip array length
-# comparison.
-
-deepStrictEqualExpectedProps = (actual, expected) ->
-  white = (text, values...) -> (text[i] + "#{reset}#{v}#{red}" for v, i in values).join('') + text[i]
-  eq actual.length, expected.length if expected instanceof Array and not expected.loose
-  for k , v of expected
-    if 'object' is typeof v
-      fail white"`actual` misses #{k} property." unless k of actual
-      deepStrictEqualExpectedProps actual[k], v
-    else
-      eq actual[k], v, white"Property #{k}: expected #{actual[k]} to equal #{v}"
-  actual
+testExpression = expressionAstMatchesObject
 
 # Flag array for loose comparision. See above code/comment.
 looseArray = (arr) ->
@@ -31,16 +9,6 @@ looseArray = (arr) ->
     value: yes
     enumerable: no
   arr
-
-testExpression = (code, expected) ->
-  ast = getExpression code
-  if expected?
-    deepStrictEqualExpectedProps ast, expected
-  else
-    console.log require('util').inspect ast,
-      depth: 10
-      colors: yes
-
 
 test 'Confirm functionality of `deepStrictEqualExpectedProps`', ->
   actual =
@@ -109,46 +77,16 @@ test "AST as expected for NumberLiteral node", ->
     extra:
       rawValue: 42
       raw: '42'
-    start: 0
-    end: 2
-    range: [0, 2]
-    loc:
-      start:
-        line: 1
-        column: 0
-      end:
-        line: 1
-        column: 2
 
 test "AST as expected for InfinityLiteral node", ->
   testExpression 'Infinity',
     type: 'Identifier'
     name: 'Infinity'
-    start: 0
-    end: 8
-    range: [0, 8]
-    loc:
-      start:
-        line: 1
-        column: 0
-      end:
-        line: 1
-        column: 8
 
 test "AST as expected for NaNLiteral node", ->
   testExpression 'NaN',
     type: 'Identifier'
     name: 'NaN'
-    start: 0
-    end: 3
-    range: [0, 3]
-    loc:
-      start:
-        line: 1
-        column: 0
-      end:
-        line: 1
-        column: 3
 
 # test "AST as expected for StringLiteral node", ->
 #   testExpression '"string cheese"',
@@ -185,16 +123,6 @@ test "AST as expected for IdentifierLiteral node", ->
   testExpression 'id',
     type: 'Identifier'
     name: 'id'
-    start: 0
-    end: 2
-    range: [0, 2]
-    loc:
-      start:
-        line: 1
-        column: 0
-      end:
-        line: 1
-        column: 2
 
 # test "AST as expected for CSXTag node", ->
 #   testExpression '<CSXY />',
@@ -226,57 +154,17 @@ test "AST as expected for IdentifierLiteral node", ->
 test "AST as expected for StatementLiteral node", ->
   testExpression 'break',
     type: 'BreakStatement'
-    start: 0
-    end: 5
-    range: [0, 5]
-    loc:
-      start:
-        line: 1
-        column: 0
-      end:
-        line: 1
-        column: 5
 
   testExpression 'continue',
     type: 'ContinueStatement'
-    start: 0
-    end: 8
-    range: [0, 8]
-    loc:
-      start:
-        line: 1
-        column: 0
-      end:
-        line: 1
-        column: 8
 
   testExpression 'debugger',
     type: 'DebuggerStatement'
-    start: 0
-    end: 8
-    range: [0, 8]
-    loc:
-      start:
-        line: 1
-        column: 0
-      end:
-        line: 1
-        column: 8
 
 test "AST as expected for ThisLiteral node", ->
   testExpression 'this',
     type: 'ThisExpression'
     shorthand: no
-    start: 0
-    end: 4
-    range: [0, 4]
-    loc:
-      start:
-        line: 1
-        column: 0
-      end:
-        line: 1
-        column: 4
 
   testExpression '@',
     type: 'ThisExpression'
@@ -287,30 +175,10 @@ test "AST as expected for UndefinedLiteral node", ->
   testExpression 'undefined',
     type: 'Identifier'
     name: 'undefined'
-    start: 0
-    end: 9
-    range: [0, 9]
-    loc:
-      start:
-        line: 1
-        column: 0
-      end:
-        line: 1
-        column: 9
 
 test "AST as expected for NullLiteral node", ->
   testExpression 'null',
     type: 'NullLiteral'
-    start: 0
-    end: 4
-    range: [0, 4]
-    loc:
-      start:
-        line: 1
-        column: 0
-      end:
-        line: 1
-        column: 4
 
 test "AST as expected for BooleanLiteral node", ->
   testExpression 'true',
