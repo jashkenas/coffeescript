@@ -392,11 +392,11 @@ grammar =
   # or by array index or slice.
   Accessor: [
     o '.  Property',                            -> new Access $2
-    o '?. Property',                            -> new Access $2, 'soak'
-    o ':: Property',                            -> [LOC(1)(new Access new PropertyName('prototype')), LOC(2)(new Access $2)]
-    o '?:: Property',                           -> [LOC(1)(new Access new PropertyName('prototype'), 'soak'), LOC(2)(new Access $2)]
-    o '::',                                     -> new Access new PropertyName 'prototype'
-    o '?::',                                    -> new Access new PropertyName('prototype'), 'soak'
+    o '?. Property',                            -> new Access $2, soak: yes
+    o ':: Property',                            -> [LOC(1)(new Access new PropertyName('prototype'), shorthand: yes), LOC(2)(new Access $2)]
+    o '?:: Property',                           -> [LOC(1)(new Access new PropertyName('prototype'), shorthand: yes, soak: yes), LOC(2)(new Access $2)]
+    o '::',                                     -> new Access new PropertyName('prototype'), shorthand: yes
+    o '?::',                                    -> new Access new PropertyName('prototype'), shorthand: yes, soak: yes
     o 'Index'
   ]
 

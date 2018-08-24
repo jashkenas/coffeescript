@@ -12,6 +12,7 @@ Error.stackTraceLimit = Infinity
 {compact, flatten, extend, merge, del, starts, ends, some,
 addDataToNode, attachCommentsToNode, locationDataToString,
 throwSyntaxError, replaceUnicodeCodePointEscapes,
+mergeAstLocationData,
 isFunction, isPlainObject, isNumber} = require './helpers'
 
 # Functions required by parser.
@@ -1145,6 +1146,25 @@ exports.Value = class Value extends Base
 
     fragments
 
+  _toAst: (o) ->
+    props = @properties
+    ret = @base.toAst o, if props.length then LEVEL_ACCESS else null
+    for prop, propIndex in props
+      ret =
+        mergeAstLocationData(
+          prop.withAstLocationData
+            type: 'MemberExpression'
+            object: ret
+            property: prop.toAst o
+            computed: prop instanceof Index or prop.name?.unwrap() not instanceof PropertyName
+            optional: !!prop.soak
+            shorthand: !!prop.shorthand
+          ret
+        )
+      if propIndex is 0 and @base instanceof Parens and @base.locationData?
+        mergeAstLocationData ret, @base.astLocationData()
+    ret
+
   checkNewTarget: (o) ->
     return unless @base instanceof IdentifierLiteral and @base.value is 'new' and @properties.length
     if @properties[0] instanceof Access and @properties[0].name.value is 'target'
@@ -1470,9 +1490,8 @@ exports.Extends = class Extends extends Base
 # A `.` access into a property of a value, or the `::` shorthand for
 # an access into the object's prototype.
 exports.Access = class Access extends Base
-  constructor: (@name, tag) ->
+  constructor: (@name, {@soak, @shorthand} = {}) ->
     super()
-    @soak  = tag is 'soak'
 
   children: ['name']
 
@@ -1483,6 +1502,9 @@ exports.Access = class Access extends Base
       [@makeCode('.'), name...]
     else
       [@makeCode('['), name..., @makeCode(']')]
+
+  _toAst: (o) ->
+    @name.toAst o
 
   shouldCache: NO
 
