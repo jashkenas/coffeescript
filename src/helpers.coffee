@@ -277,8 +277,8 @@ exports.getNumberValue = (number) ->
   return number if isNumber number
   invert = no
   unless isString number
-    number = do ->
-      number = number.unwrap()
+    number = number.unwrap()
+    number =
       if number.operator
         invert = yes if number.operator is '-'
         number.first.unwrap().value
