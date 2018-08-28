@@ -454,25 +454,28 @@ compileOptions = (filename, base) ->
     # run CoffeeScript’s output without transpilation (modern Node or evergreen
     # browsers) or use a proper build chain like Gulp or Webpack.
     try
-      require 'babel-core'
+      require '@babel/core'
     catch
-      # Give appropriate instructions depending on whether `coffee` was run
-      # locally or globally.
-      if require.resolve('.').indexOf(process.cwd()) is 0
-        console.error '''
-          To use --transpile, you must have babel-core installed:
-            npm install --save-dev babel-core
-          And you must save options to configure Babel in one of the places it looks to find its options.
-          See https://coffeescript.org/#transpilation
-        '''
-      else
-        console.error '''
-          To use --transpile with globally-installed CoffeeScript, you must have babel-core installed globally:
-            npm install --global babel-core
-          And you must save options to configure Babel in one of the places it looks to find its options, relative to the file being compiled or to the current folder.
-          See https://coffeescript.org/#transpilation
-        '''
-      process.exit 1
+      try
+        require 'babel-core'
+      catch
+        # Give appropriate instructions depending on whether `coffee` was run
+        # locally or globally.
+        if require.resolve('.').indexOf(process.cwd()) is 0
+          console.error '''
+            To use --transpile, you must have @babel/core installed:
+              npm install --save-dev @babel/core
+            And you must save options to configure Babel in one of the places it looks to find its options.
+            See https://coffeescript.org/#transpilation
+          '''
+        else
+          console.error '''
+            To use --transpile with globally-installed CoffeeScript, you must have @babel/core installed globally:
+              npm install --global @babel/core
+            And you must save options to configure Babel in one of the places it looks to find its options, relative to the file being compiled or to the current folder.
+            See https://coffeescript.org/#transpilation
+          '''
+        process.exit 1
 
     opts.transpile = {} unless typeof opts.transpile is 'object'
 
