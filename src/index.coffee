@@ -8,11 +8,14 @@ helpers       = CoffeeScript.helpers
 
 CoffeeScript.transpile = (js, options) ->
   try
-    babel = require 'babel-core'
+    babel = require '@babel/core'
   catch
-    # This error is only for Node, as CLI users will see a different error
-    # earlier if they don’t have Babel installed.
-    throw new Error 'To use the transpile option, you must have the \'babel-core\' module installed'
+    try
+      babel = require 'babel-core'
+    catch
+      # This error is only for Node, as CLI users will see a different error
+      # earlier if they don’t have Babel installed.
+      throw new Error 'To use the transpile option, you must have the \'@babel/core\' module installed'
   babel.transform js, options
 
 # The `compile` method shared by the CLI, Node and browser APIs.
