@@ -270,18 +270,13 @@ exports.Base = class Base
     tree
 
   # Plain JavaScript object representation of the node, that can be serialized
-  # as JSON. This is used for generating an abstract syntax tree (AST).
-  # This is what the `ast` option in the Node API returns.
-  toJSON: (o) ->
-    # We try to follow the [Babel AST spec](https://github.com/babel/babel/blob/master/packages/babylon/ast/spec.md)
-    # as closely as possible, for improved interoperability with other tools.
-    @toAst o
-
-  # Returns the full AST for the node.
+  # as JSON. This is what the `ast` option in the Node API returns.
+  # We try to follow the [Babel AST spec](https://github.com/babel/babel/blob/master/packages/babylon/ast/spec.md)
+  # as closely as possible, for improved interoperability with other tools.
   toAst: (o, level) ->
     o = extend {}, o
     o.level = level if level
-    @withAstLocationData @withAstType @_toAst(o), o
+    @withAstLocationData @withAstType @getAstContent(o), o
 
   # By default, a node class's AST `type` is the class name
   astType: -> @constructor.name
@@ -304,8 +299,8 @@ exports.Base = class Base
   # To override, a node class can either:
   #   - define `astChildren` to specify how to generate full child nodes, and/or
   #     `astProps` to specify how to generate non-child-node fields
-  #   - override the `_toAst()` method
-  _toAst: (o) ->
+  #   - override the `getAstContent()` method
+  getAstContent: (o) ->
     merge(
       @getAstChildren o
       @getAstProps o
@@ -1193,7 +1188,7 @@ exports.Value = class Value extends Base
 
     fragments
 
-  _toAst: (o) ->
+  getAstContent: (o) ->
     @base.toAst o
     # TODO: will include AST generation for properties here
 
