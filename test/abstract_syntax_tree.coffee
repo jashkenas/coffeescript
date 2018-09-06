@@ -78,6 +78,13 @@ test "AST as expected for NumberLiteral node", ->
       rawValue: 42
       raw: '42'
 
+  testExpression '0xE1',
+    type: 'NumericLiteral'
+    value: 225
+    extra:
+      rawValue: 225
+      raw: '0xE1'
+
 test "AST as expected for InfinityLiteral node", ->
   testExpression 'Infinity',
     type: 'Identifier'

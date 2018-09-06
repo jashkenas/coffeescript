@@ -271,29 +271,6 @@ exports.isString = isString = (obj) -> Object::toString.call(obj) is '[object St
 exports.isBoolean = isBoolean = (obj) -> obj is yes or obj is no or Object::toString.call(obj) is '[object Boolean]'
 exports.isPlainObject = (obj) -> typeof obj is 'object' and !!obj and not Array.isArray(obj) and not isNumber(obj) and not isString(obj) and not isBoolean(obj)
 
-# Converts a number, string, or node (Value/NumberLiteral/unary +/- Op) to its
-# corresponding number value.
-exports.getNumberValue = (number) ->
-  return number if isNumber number
-  invert = no
-  unless isString number
-    number = number.unwrap()
-    number =
-      if number.operator
-        invert = yes if number.operator is '-'
-        number.first.unwrap().value
-      else
-        number.value
-  base = switch number.charAt 1
-    when 'b' then 2
-    when 'o' then 8
-    when 'x' then 16
-    else null
-
-  val = if base? then parseInt(number[2..], base) else parseFloat(number)
-  return val unless invert
-  val * -1
-
 unicodeCodePointToUnicodeEscapes = (codePoint) ->
   toUnicodeEscape = (val) ->
     str = val.toString 16

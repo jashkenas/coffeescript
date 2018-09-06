@@ -162,7 +162,7 @@ grammar =
   # Alphanumerics are separated from the other **Literal** matchers because
   # they can also serve as keys in object literals.
   AlphaNumeric: [
-    o 'NUMBER',                                 -> new NumberLiteral $1
+    o 'NUMBER',                                 -> new NumberLiteral $1.toString(), parsedValue: $1.parsedValue
     o 'String'
   ]
 
