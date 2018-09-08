@@ -273,26 +273,30 @@ exports.isPlainObject = (obj) -> typeof obj is 'object' and !!obj and not Array.
 
 # Converts a number, string, or node (Value/NumberLiteral/unary +/- Op) to its
 # corresponding number value.
-exports.getNumberValue = (number) ->
-  return number if isNumber number
-  invert = no
-  unless isString number
-    number = number.unwrap()
-    number =
-      if number.operator
-        invert = yes if number.operator is '-'
-        number.first.unwrap().value
-      else
-        number.value
-  base = switch number.charAt 1
-    when 'b' then 2
-    when 'o' then 8
-    when 'x' then 16
-    else null
+exports.getNumberValue = getNumberValue = (number) ->
+  switch
+    when isNumber number
+      number
+    when isString number
+      base = switch number.charAt 1
+        when 'b' then 2
+        when 'o' then 8
+        when 'x' then 16
+        else null
 
-  val = if base? then parseInt(number[2..], base) else parseFloat(number)
-  return val unless invert
-  val * -1
+      if base? then parseInt(number[2..], base) else parseFloat(number)
+    else
+      number = number.unwrap()
+      return number.parsedValue if number.parsedValue?
+      invert = no
+      val = getNumberValue(
+        if number.operator
+          invert = yes if number.operator is '-'
+          number.first
+        else
+          number.value
+      )
+      if invert then val * -1 else val
 
 unicodeCodePointToUnicodeEscapes = (codePoint) ->
   toUnicodeEscape = (val) ->

@@ -258,10 +258,12 @@ exports.Lexer = class Lexer
       when /^0\d+/.test number
         @error "octal literal '#{number}' must be prefixed with '0o'", length: lexedLength
 
-    numberValue = getNumberValue number
+    parsedValue = getNumberValue number
 
-    tag = if numberValue is Infinity then 'INFINITY' else 'NUMBER'
-    @token tag, number, length: lexedLength
+    tag = if parsedValue is Infinity then 'INFINITY' else 'NUMBER'
+    @token tag, number,
+      length: lexedLength
+      data: {parsedValue}
     lexedLength
 
   # Matches strings, including multiline strings, as well as heredocs, with or without

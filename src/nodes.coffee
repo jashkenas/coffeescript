@@ -13,7 +13,7 @@ Error.stackTraceLimit = Infinity
 addDataToNode, attachCommentsToNode, locationDataToString,
 throwSyntaxError, replaceUnicodeCodePointEscapes,
 locationDataToAst, astLocationFields,
-isFunction, isPlainObject,
+isFunction, isPlainObject, isNumber,
 getNumberValue,
 } = require './helpers'
 
@@ -843,14 +843,21 @@ exports.Literal = class Literal extends Base
     " #{if @isStatement() then super() else @constructor.name}: #{@value}"
 
 exports.NumberLiteral = class NumberLiteral extends Literal
+  constructor: (@value, {@parsedValue} = {}) ->
+    super()
+    unless @parsedValue?
+      if isNumber @value
+        @parsedValue = @value
+        @value = "#{@value}"
+      else
+        @parsedValue = getNumberValue @value
+
   astType: 'NumericLiteral'
   astProps: ->
-    numberValue = getNumberValue @value
-
-    value: numberValue
+    value: @parsedValue
     extra:
-      rawValue: numberValue
-      raw: "#{@value}"
+      rawValue: @parsedValue
+      raw: @value
 
 exports.InfinityLiteral = class InfinityLiteral extends NumberLiteral
   compileNode: ->
