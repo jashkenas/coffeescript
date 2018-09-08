@@ -275,6 +275,7 @@ exports.isPlainObject = (obj) -> typeof obj is 'object' and !!obj and not Array.
 # corresponding number value.
 exports.getNumberValue = (number) ->
   return number if isNumber number
+  return number.parsedValue if number.parsedValue?
   invert = no
   unless isString number
     number = number.unwrap()
