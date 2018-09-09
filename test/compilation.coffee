@@ -11,7 +11,7 @@ transpile = (method, code, options = {}) ->
   options.bare = yes
   options.transpile =
     # Target Internet Explorer 6, which supports no ES2015+ features.
-    presets: [['env', {targets: browsers: ['ie 6']}]]
+    presets: [['@babel/env', {targets: browsers: ['ie 6']}]]
   CoffeeScript[method] code, options
 
 
