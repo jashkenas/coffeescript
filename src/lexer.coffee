@@ -14,7 +14,7 @@
 # Import the helpers we need.
 {count, starts, compact, repeat, invertLiterate, merge,
 attachCommentsToNode, locationDataToString, throwSyntaxError
-replaceUnicodeCodePointEscapes, getNumberValue} = require './helpers'
+replaceUnicodeCodePointEscapes, parseNumber} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -258,7 +258,7 @@ exports.Lexer = class Lexer
       when /^0\d+/.test number
         @error "octal literal '#{number}' must be prefixed with '0o'", length: lexedLength
 
-    parsedValue = getNumberValue number
+    parsedValue = parseNumber number
 
     tag = if parsedValue is Infinity then 'INFINITY' else 'NUMBER'
     @token tag, number,

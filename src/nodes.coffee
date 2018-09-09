@@ -14,7 +14,7 @@ addDataToNode, attachCommentsToNode, locationDataToString,
 throwSyntaxError, replaceUnicodeCodePointEscapes,
 locationDataToAst, astLocationFields,
 isFunction, isPlainObject, isNumber,
-getNumberValue,
+parseNumber,
 } = require './helpers'
 
 # Functions required by parser.
@@ -850,7 +850,7 @@ exports.NumberLiteral = class NumberLiteral extends Literal
         @parsedValue = @value
         @value = "#{@value}"
       else
-        @parsedValue = getNumberValue @value
+        @parsedValue = parseNumber @value
 
   astType: 'NumericLiteral'
   astProps: ->
