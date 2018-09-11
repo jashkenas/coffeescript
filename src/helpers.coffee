@@ -271,16 +271,6 @@ exports.isString = isString = (obj) -> Object::toString.call(obj) is '[object St
 exports.isBoolean = isBoolean = (obj) -> obj is yes or obj is no or Object::toString.call(obj) is '[object Boolean]'
 exports.isPlainObject = (obj) -> typeof obj is 'object' and !!obj and not Array.isArray(obj) and not isNumber(obj) and not isString(obj) and not isBoolean(obj)
 
-# Converts a string to its corresponding number value.
-exports.parseNumber = (str) ->
-  base = switch str.charAt 1
-    when 'b' then 2
-    when 'o' then 8
-    when 'x' then 16
-    else null
-
-  if base? then parseInt(str[2..], base) else parseFloat(str)
-
 unicodeCodePointToUnicodeEscapes = (codePoint) ->
   toUnicodeEscape = (val) ->
     str = val.toString 16
