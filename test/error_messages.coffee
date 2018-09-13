@@ -1907,3 +1907,21 @@ test "#3933: prevent implicit calls when cotrol flow is missing `THEN`", ->
       when a ->
              ^^
   '''
+
+test "`new.target` outside of a function", ->
+  assertErrorFormat '''
+    new.target
+  ''', '''
+    [stdin]:1:1: error: new.target can only occur inside functions
+    new.target
+    ^^^^^^^^^^
+  '''
+
+test "`new.target` is only allowed meta property", ->
+  assertErrorFormat '''
+    -> new.something
+  ''', '''
+    [stdin]:1:4: error: the only valid meta property for new is new.target
+    -> new.something
+       ^^^^^^^^^^^^^
+  '''
