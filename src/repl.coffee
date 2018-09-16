@@ -182,19 +182,22 @@ module.exports =
     CoffeeScript.register()
     process.argv = ['coffee'].concat process.argv[2..]
     if opts.transpile
+      transpile = {}
       try
-        transpile = {}
-        transpile.transpile = require('babel-core').transform
+        transpile.transpile = require('@babel/core').transform
       catch
-        console.error '''
-          To use --transpile with an interactive REPL, babel-core must be installed either in the current folder or globally:
-            npm install --save-dev babel-core
-          or
-            npm install --global babel-core
-          And you must save options to configure Babel in one of the places it looks to find its options.
-          See https://coffeescript.org/#transpilation
-        '''
-        process.exit 1
+        try
+          transpile.transpile = require('babel-core').transform
+        catch
+          console.error '''
+            To use --transpile with an interactive REPL, @babel/core must be installed either in the current folder or globally:
+              npm install --save-dev @babel/core
+            or
+              npm install --global @babel/core
+            And you must save options to configure Babel in one of the places it looks to find its options.
+            See https://coffeescript.org/#transpilation
+          '''
+          process.exit 1
       transpile.options =
         filename: path.resolve process.cwd(), '<repl>'
       # Since the REPL compilation path is unique (in `eval` above), we need

@@ -39,8 +39,8 @@
     "url": "git://github.com/jashkenas/coffeescript.git"
   },
   "devDependencies": {
-    "babel-core": "^6.26.3",
-    "babel-preset-env": "1.7.0",
+    "@babel/core": "^7.0.0",
+    "@babel/preset-env": "^7.0.0",
     "babel-preset-minify": "^0.4.3",
     "codemirror": "^5.39.2",
     "docco": "~0.8.0",
@@ -48,7 +48,7 @@
     "jison": ">=0.4.18",
     "markdown-it": "~8.4.2",
     "underscore": "~1.9.1",
-    "webpack": "~4.16.5"
+    "webpack": "~4.17.2"
   },
   "dependencies": {}
 }
