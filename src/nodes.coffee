@@ -1182,8 +1182,8 @@ exports.Value = class Value extends Base
   astType: ->
     @base.astType()
 
-  astProperties: (o) ->
-    @base.ast o
+  astProperties: ->
+    @base.ast()
 
 #### HereComment
 
