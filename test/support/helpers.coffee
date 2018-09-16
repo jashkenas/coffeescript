@@ -51,22 +51,21 @@ getExpressionAst = (code) -> getAstExpressions(code)[0]
 # Recursively compare all values of enumerable properties of `expected` with
 # those of `actual`. Use `looseArray` helper function to skip array length
 # comparison.
-
-exports.deepStrictEqualExpectedProps = deepStrictEqualExpectedProps = (actual, expected) ->
-  white = (text, values...) -> (text[i] + "#{reset}#{v}#{red}" for v, i in values).join('') + text[i]
+exports.deepStrictEqualExpectedProperties = deepStrictEqualExpectedProperties = (actual, expected) ->
+  white = (text, values...) -> (text[i] + "#{reset}#{value}#{red}" for value, i in values).join('') + text[i]
   eq actual.length, expected.length if expected instanceof Array and not expected.loose
-  for k , v of expected
-    if 'object' is typeof v
-      fail white"`actual` misses #{k} property." unless k of actual
-      deepStrictEqualExpectedProps actual[k], v
+  for key, val of expected
+    if 'object' is typeof val
+      fail white"Property #{key} expected, but was missing" unless actual[key]
+      deepStrictEqualExpectedProperties actual[key], val
     else
-      eq actual[k], v, white"Property #{k}: expected #{actual[k]} to equal #{v}"
+      eq actual[key], val, white"Property #{key}: expected #{actual[key]} to equal #{val}"
   actual
 
 exports.expressionAstMatchesObject = (code, expected) ->
   ast = getExpressionAst code
   if expected?
-    deepStrictEqualExpectedProps ast, expected
+    deepStrictEqualExpectedProperties ast, expected
   else
     console.log require('util').inspect ast,
       depth: 10
