@@ -272,7 +272,7 @@ exports.Base = class Base
   # We try to follow the [Babel AST spec](https://github.com/babel/babel/blob/master/packages/babylon/ast/spec.md)
   # as closely as possible, for improved interoperability with other tools.
   toAst: (o, level) ->
-    o = extend {}, o
+    o = Object.assign {}, o
     o.level = level if level
     @withAstLocationData @withAstType @getAstContent(o), o
 
@@ -289,7 +289,7 @@ exports.Base = class Base
     return ast unless @emptyAst or do ->
       return yes for key in Object.keys(ast) when key not in ['comments', astLocationFields...]
 
-    merge ast,
+    Object.assign ast,
       type: @astType?(o) ? @astType
 
   # Returns the "content" (ie not `type` or location data) of the AST for the node.
@@ -299,10 +299,7 @@ exports.Base = class Base
   #     `astProps` to specify how to generate non-child-node fields
   #   - override the `getAstContent()` method
   getAstContent: (o) ->
-    merge(
-      @getAstChildren o
-      @getAstProps o
-    )
+    Object.assign {}, @getAstChildren(o), @getAstProps(o)
 
   # Returns the child-nodes fields of the AST node.
   # By default, recursively generates AST nodes for `children`.
@@ -360,7 +357,7 @@ exports.Base = class Base
     return (@withAstLocationData(item, node) for item in ast) if Array.isArray ast
     {locationData} = node ? @
     return ast unless locationData and ast and not ast.start?
-    merge ast, locationDataToAst locationData
+    Object.assign ast, locationDataToAst locationData
 
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
