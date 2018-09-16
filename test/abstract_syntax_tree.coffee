@@ -1,16 +1,49 @@
 # Astract Syntax Tree generation
 # ------------------------------
 
-testExpression = expressionAstMatchesObject
+# Helpers to get AST nodes for a string of code. The root node is always a
+# `Block` node, so for brevity in the tests return its children from
+# `expressions`.
+getAstExpressions = (code) ->
+  ast = CoffeeScript.compile code, ast: yes
+  ast.expressions
 
-# Flag array for loose comparision. See above code/comment.
+getExpressionAst = (code) -> getAstExpressions(code)[0]
+
+# Recursively compare all values of enumerable properties of `expected` with
+# those of `actual`. Use `looseArray` helper function to skip array length
+# comparison.
+deepStrictEqualExpectedProperties = (actual, expected) ->
+  white = (text, values...) -> (text[i] + "#{reset}#{value}#{red}" for value, i in values).join('') + text[i]
+  eq actual.length, expected.length if expected instanceof Array and not expected.loose
+  for key, val of expected
+    if 'object' is typeof val
+      fail white"Property #{key} expected, but was missing" unless actual[key]
+      deepStrictEqualExpectedProperties actual[key], val
+    else
+      eq actual[key], val, white"Property #{key}: expected #{actual[key]} to equal #{val}"
+  actual
+
+testExpression = (code, expected) ->
+  ast = getExpressionAst code
+  if expected?
+    deepStrictEqualExpectedProperties ast, expected
+  else
+    # Convenience for creating new tests; call `testExpression` with no second
+    # parameter to see what the current AST generation is for your input code.
+    console.log require('util').inspect ast,
+      depth: 10
+      colors: yes
+
+# Flag array for loose comparision. See reference to `.loose` in
+# `deepStrictEqualExpectedProperties` above.
 looseArray = (arr) ->
   Object.defineProperty arr, 'loose',
     value: yes
     enumerable: no
   arr
 
-test 'Confirm functionality of `deepStrictEqualExpectedProps`', ->
+test 'Confirm functionality of `deepStrictEqualExpectedProperties`', ->
   actual =
     name: 'Name'
     a:
@@ -19,9 +52,9 @@ test 'Confirm functionality of `deepStrictEqualExpectedProps`', ->
     x: [1, 2, 3]
 
   check = (message, test, expected) ->
-    test (-> deepStrictEqualExpectedProps actual, expected), message
+    test (-> deepStrictEqualExpectedProperties actual, expected), message
 
-  check 'Expected prop does not match', throws,
+  check 'Expected property does not match', throws,
     name: '"Name"'
 
   check 'Array length mismatch', throws,
@@ -63,12 +96,12 @@ test 'Confirm functionality of `deepStrictEqualExpectedProps`', ->
 # the type and properties match. When relevant, also check that values of
 # properties are as expected.
 
-# test "AST as expected for Block node", ->
-#   deepStrictEqualExpectedProps CoffeeScript.compile('return', ast: yes),
-#     type: 'Block'
-#     expressions: [
-#       type: 'Return'
-#     ]
+test "AST as expected for Block node", ->
+  deepStrictEqualExpectedProperties CoffeeScript.compile('return', ast: yes),
+    type: 'Block'
+    expressions: [
+      type: 'Return'
+    ]
 
 test "AST as expected for NumberLiteral node", ->
   testExpression '42',
