@@ -13,9 +13,7 @@ Error.stackTraceLimit = Infinity
 addDataToNode, attachCommentsToNode, locationDataToString,
 throwSyntaxError, replaceUnicodeCodePointEscapes,
 locationDataToAst, astLocationFields,
-isFunction, isPlainObject, isNumber,
-parseNumber,
-} = require './helpers'
+isFunction, isPlainObject, isNumber} = require './helpers'
 
 # Functions required by parser.
 exports.extend = extend
@@ -850,7 +848,7 @@ exports.NumberLiteral = class NumberLiteral extends Literal
         @parsedValue = @value
         @value = "#{@value}"
       else
-        @parsedValue = parseNumber @value
+        @parsedValue = Number @value
 
   astType: 'NumericLiteral'
   astProps: ->
