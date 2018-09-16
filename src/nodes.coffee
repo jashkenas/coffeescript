@@ -269,7 +269,7 @@ exports.Base = class Base
 
   # Plain JavaScript object representation of the node, that can be serialized
   # as JSON. This is what the `ast` option in the Node API returns.
-  # We try to follow the [Babel AST spec](https://github.com/babel/babel/blob/master/packages/babylon/ast/spec.md)
+  # We try to follow the [Babel AST spec](https://github.com/babel/babel/blob/master/packages/babel-parser/ast/spec.md)
   # as closely as possible, for improved interoperability with other tools.
   toAst: (o, level) ->
     o = Object.assign {}, o
