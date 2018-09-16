@@ -200,6 +200,8 @@ exports.Lexer = class Lexer
          @tokens.length > 1 and @tokens[@tokens.length - 2][0] not in ['.', '?.', '@']
         @error "'#{prev[1]}' cannot be used as a keyword, or as a function call
         without parentheses", prev[2]
+      else if prev[0] is '.' and @tokens.length > 1 and (prevprev = @tokens[@tokens.length - 2])[0] is 'UNARY' and prevprev[1] is 'new'
+        prevprev[0] = 'IDENTIFIER'
       else if @tokens.length > 2
         prevprev = @tokens[@tokens.length - 2]
         if prev[0] in ['@', 'THIS'] and prevprev and prevprev.spaced and

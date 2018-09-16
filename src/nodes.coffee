@@ -1176,6 +1176,7 @@ exports.Value = class Value extends Base
   # operators `?.` interspersed. Then we have to take care not to accidentally
   # evaluate anything twice when building the soak chain.
   compileNode: (o) ->
+    @checkNewTarget o
     @base.front = @front
     props = @properties
     if props.length and @base.cached?
@@ -1198,6 +1199,14 @@ exports.Value = class Value extends Base
   getAstContent: (o) ->
     @base.toAst o
     # TODO: will include AST generation for properties here
+
+  checkNewTarget: (o) ->
+    return unless @base instanceof IdentifierLiteral and @base.value is 'new' and @properties.length
+    if @properties[0] instanceof Access and @properties[0].name.value is 'target'
+      unless o.scope.parent?
+        @error "new.target can only occur inside functions"
+    else
+      @error "the only valid meta property for new is new.target"
 
   # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
