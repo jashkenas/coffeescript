@@ -742,6 +742,47 @@ test '#4686: comments inside interpolations that also contain CSX attributes', -
     </div>;
   '''
 
+test '#5086: comments inside CSX tags but outside interpolations', ->
+  eqJS '''
+    <div>
+      <div ###comment### attribute={value} />
+    </div>
+  ''', '''
+    <div>
+      <div /*comment*/attribute={value} />
+    </div>;
+  '''
+
+test '#5086: comments inside CSX attributes but outside interpolations', ->
+  eqJS '''
+    <div>
+      <div attribute={###attr comment### value} />
+    </div>
+  ''', '''
+    <div>
+      <div attribute={/*attr comment*/value} />
+    </div>;
+  '''
+
+test '#5086: comments inside nested CSX tags and attributes but outside interpolations', ->
+  eqJS '''
+    <div>
+      <div>
+        <div>
+          <div ###comment### attribute={###attr comment### value} />
+        </div>
+      </div>
+    </div>
+  ''', '''
+    <div>
+      <div>
+        <div>
+          <div /*comment*/attribute={/*attr comment*/value} />
+        </div>
+      </div>
+    </div>;
+  '''
+
 # https://reactjs.org/blog/2017/11/28/react-v16.2.0-fragment-support.html
 test 'JSX fragments: empty fragment', ->
   eqJS '''
