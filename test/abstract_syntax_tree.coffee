@@ -1,15 +1,6 @@
 # Astract Syntax Tree generation
 # ------------------------------
 
-# Helpers to get AST nodes for a string of code. The root node is always a
-# `Block` node, so for brevity in the tests return its children from
-# `expressions`.
-getAstExpressions = (code) ->
-  ast = CoffeeScript.compile code, ast: yes
-  ast.expressions
-
-getExpressionAst = (code) -> getAstExpressions(code)[0]
-
 # Recursively compare all values of enumerable properties of `expected` with
 # those of `actual`. Use `looseArray` helper function to skip array length
 # comparison.
