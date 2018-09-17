@@ -1129,7 +1129,7 @@ test "AST as expected for Op node", ->
       name: 'y'
 
   testExpression 'x ? y',
-    type: 'BinaryExpression'
+    type: 'LogicalExpression'
     operator: '?'
     left:
       type: 'Identifier'

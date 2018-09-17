@@ -3437,12 +3437,12 @@ exports.Op = class Op extends Base
 
   astType: ->
     switch @operator
-      when 'new'         then 'NewExpression'
-      when '||', '&&'    then 'LogicalExpression'
-      when '++', '--'    then 'UpdateExpression'
+      when 'new'           then 'NewExpression'
+      when '||', '&&', '?' then 'LogicalExpression'
+      when '++', '--'      then 'UpdateExpression'
       else
-        if @isUnary()    then 'UnaryExpression'
-        else                  'BinaryExpression'
+        if @isUnary()      then 'UnaryExpression'
+        else                    'BinaryExpression'
 
   ast: ->
     @checkUpdateAssignability()
