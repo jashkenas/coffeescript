@@ -433,7 +433,7 @@ test "AST location data as expected for Parens node", ->
         column: 4
 
 test "AST location data as expected for Op node", ->
-  testExpression '1 <= 2',
+  testAstLocationData '1 <= 2',
     type: 'BinaryExpression'
     left:
       start: 0
@@ -468,7 +468,7 @@ test "AST location data as expected for Op node", ->
         line: 1
         column: 6
 
-  testExpression 'new Old',
+  testAstLocationData 'new Old',
     type: 'NewExpression'
     callee:
       start: 4
@@ -492,7 +492,7 @@ test "AST location data as expected for Op node", ->
         line: 1
         column: 7
 
-  testExpression '!x',
+  testAstLocationData '!x',
     type: 'UnaryExpression'
     argument:
       start: 1
@@ -516,7 +516,7 @@ test "AST location data as expected for Op node", ->
         line: 1
         column: 2
 
-  testExpression 'not x',
+  testAstLocationData 'not x',
     type: 'UnaryExpression'
     argument:
       start: 4
@@ -540,7 +540,7 @@ test "AST location data as expected for Op node", ->
         line: 1
         column: 5
 
-  testExpression 'x++',
+  testAstLocationData 'x++',
     type: 'UpdateExpression'
     argument:
       start: 0
@@ -564,7 +564,7 @@ test "AST location data as expected for Op node", ->
         line: 1
         column: 3
 
-  testExpression '(x + y) * z',
+  testAstLocationData '(x + y) * z',
     type: 'BinaryExpression'
     left:
       left:

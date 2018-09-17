@@ -3447,31 +3447,24 @@ exports.Op = class Op extends Base
         if @isUnary()    then 'UnaryExpression'
         else                  'BinaryExpression'
 
-  _toAst: (o) ->
+  ast: ->
     @checkUpdateAssignability()
-    super o
+    super()
 
-  astChildren: (o) ->
-    firstAst = @first.toAst o, LEVEL_OP
-    secondAst = @second?.toAst o, LEVEL_OP
+  astProperties: ->
+    firstAst = @first.ast()
+    secondAst = @second?.ast()
     switch
       when @operator is 'new'
         callee: firstAst
         arguments: []
       when @isUnary()
         argument: firstAst
-      else
-        left: firstAst
-        right: secondAst
-
-  astProps: (o) ->
-    switch
-      when @operator is 'new'
-        {}
-      when @isUnary()
         operator: @originalOperator
         prefix: !@flip
       else
+        left: firstAst
+        right: secondAst
         operator: "#{if @invertOperator then "#{@invertOperator} " else ''}#{@originalOperator}"
 
   # Mimic Python's chained comparisons when multiple comparison operators are
