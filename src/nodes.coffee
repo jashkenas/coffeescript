@@ -3402,10 +3402,6 @@ exports.Op = class Op extends Base
   isInOperator: ->
     @originalOperator is 'in'
 
-  checkDeleteOperand: (o) ->
-    if @operator is 'delete' and o.scope.check(@first.unwrapAll().value)
-      @error 'delete operand may not be argument or var'
-
   checkUpdateAssignability: ->
     if @operator in ['--', '++']
       message = isUnassignable @first.unwrapAll().value
@@ -3423,7 +3419,8 @@ exports.Op = class Op extends Base
     # In chains, there's no need to wrap bare obj literals in parens,
     # as the chained expression is wrapped.
     @first.front = @front unless isChain
-    @checkDeleteOperand o
+    if @operator is 'delete' and o.scope.check(@first.unwrapAll().value)
+      @error 'delete operand may not be argument or var'
     @checkUpdateAssignability()
     return @compileContinuation o if @isYield() or @isAwait()
     return @compileUnary        o if @isUnary()
