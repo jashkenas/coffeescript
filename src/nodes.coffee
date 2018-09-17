@@ -12,7 +12,6 @@ Error.stackTraceLimit = Infinity
 {compact, flatten, extend, merge, del, starts, ends, some,
 addDataToNode, attachCommentsToNode, locationDataToString,
 throwSyntaxError, replaceUnicodeCodePointEscapes,
-mergeAstLocationData,
 isFunction, isPlainObject, isNumber} = require './helpers'
 
 # Functions required by parser.
@@ -914,9 +913,9 @@ exports.CSXTag = class CSXTag extends IdentifierLiteral
 exports.PropertyName = class PropertyName extends Literal
   isAssignable: YES
 
-  astType: 'Identifier'
-  astProps:
-    name: 'value'
+  astType: -> 'Identifier'
+  astProperties: ->
+    name: @value
 
 exports.ComputedPropertyName = class ComputedPropertyName extends PropertyName
   compileNode: (o) ->
@@ -1151,19 +1150,19 @@ exports.Value = class Value extends Base
 
     fragments
 
-  _toAst: (o) ->
-    props = @properties
-    ret = @base.toAst o, if props.length then LEVEL_ACCESS else null
-    for prop, propIndex in props
+  ast: ->
+    ret = @base.ast()
+    for prop, propIndex in @properties
       ret =
         mergeAstLocationData(
-          prop.withAstLocationData
+          merge {
             type: 'MemberExpression'
             object: ret
-            property: prop.toAst o
+            property: prop.ast()
             computed: prop instanceof Index or prop.name?.unwrap() not instanceof PropertyName
             optional: !!prop.soak
             shorthand: !!prop.shorthand
+          }, prop.astLocationData()
           ret
         )
       if propIndex is 0 and @base instanceof Parens and @base.locationData?
@@ -1203,12 +1202,6 @@ exports.Value = class Value extends Base
       @base.eachName iterator
     else
       @error 'tried to assign to unassignable value'
-
-  astType: ->
-    @base.astType()
-
-  astProperties: ->
-    @base.ast()
 
 #### HereComment
 
@@ -1508,8 +1501,8 @@ exports.Access = class Access extends Base
     else
       [@makeCode('['), name..., @makeCode(']')]
 
-  _toAst: (o) ->
-    @name.toAst o
+  ast: ->
+    @name.ast()
 
   shouldCache: NO
 
@@ -1525,8 +1518,8 @@ exports.Index = class Index extends Base
   compileToFragments: (o) ->
     [].concat @makeCode("["), @index.compileToFragments(o, LEVEL_PAREN), @makeCode("]")
 
-  _toAst: (o) ->
-    @index.toAst o
+  ast: ->
+    @index.ast()
 
   shouldCache: ->
     @index.shouldCache()
@@ -3653,8 +3646,8 @@ exports.Parens = class Parens extends Base
     return @wrapInBraces fragments if @csxAttribute
     if bare then fragments else @wrapInParentheses fragments
 
-  _toAst: (o) ->
-    @body.unwrap().toAst o, LEVEL_PAREN
+  ast: ->
+    @body.unwrap().ast()
 
 #### StringWithInterpolations
 
@@ -4169,3 +4162,29 @@ makeDelimitedLiteral = (body, options = {}) ->
     when ps        then '\\u2029'
     when other     then (if options.double then "\\#{other}" else other)
   "#{options.delimiter}#{body}#{options.delimiter}"
+
+# Extends the location data of an AST node to include the location data from
+# another AST node.
+mergeAstLocationData = (intoNode, fromNode) ->
+  {range: intoRange} = intoNode
+  {range: fromRange} = fromNode
+  return intoNode unless intoRange and fromRange
+  if fromRange[0] < intoRange[0]
+    intoNode.range = intoRange = [
+      fromRange[0]
+      intoRange[1]
+    ]
+    intoNode.start = fromNode.start
+    intoNode.loc =
+      start: fromNode.loc.start
+      end: intoNode.loc.end
+  if fromRange[1] > intoRange[1]
+    intoNode.range = [
+      intoRange[0]
+      fromRange[1]
+    ]
+    intoNode.end = fromNode.end
+    intoNode.loc =
+      start: intoNode.loc.start
+      end: fromNode.loc.end
+  intoNode

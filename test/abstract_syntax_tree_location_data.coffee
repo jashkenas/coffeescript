@@ -180,7 +180,7 @@ test "AST location data as expected for BooleanLiteral node", ->
         column: 4
 
 test "AST location data as expected for Access node", ->
-  testExpression 'obj.prop',
+  testAstLocationData 'obj.prop',
     type: 'MemberExpression'
     object:
       start: 0
@@ -215,7 +215,7 @@ test "AST location data as expected for Access node", ->
         line: 1
         column: 8
 
-  testExpression 'a::b',
+  testAstLocationData 'a::b',
     type: 'MemberExpression'
     object:
       object:
@@ -262,7 +262,7 @@ test "AST location data as expected for Access node", ->
         line: 1
         column: 4
 
-  testExpression '''
+  testAstLocationData '''
     (
       obj
     ).prop
@@ -302,7 +302,7 @@ test "AST location data as expected for Access node", ->
         column: 6
 
 test "AST location data as expected for Index node", ->
-  testExpression 'a[b]',
+  testAstLocationData 'a[b]',
     type: 'MemberExpression'
     object:
       start: 0
@@ -337,7 +337,7 @@ test "AST location data as expected for Index node", ->
         line: 1
         column: 4
 
-  testExpression 'a?[b][3]',
+  testAstLocationData 'a?[b][3]',
     type: 'MemberExpression'
     object:
       object:
