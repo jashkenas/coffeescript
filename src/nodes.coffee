@@ -11,7 +11,8 @@ Error.stackTraceLimit = Infinity
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, some,
 addDataToNode, attachCommentsToNode, locationDataToString,
-throwSyntaxError, replaceUnicodeCodePointEscapes} = require './helpers'
+throwSyntaxError, replaceUnicodeCodePointEscapes,
+isFunction, isPlainObject, isNumber} = require './helpers'
 
 # Functions required by parser.
 exports.extend = extend
@@ -266,43 +267,44 @@ exports.Base = class Base
     tree
 
   # Plain JavaScript object representation of the node, that can be serialized
-  # as JSON. This is used for generating an abstract syntax tree (AST).
-  # This is what the `ast` option in the Node API returns.
-  toJSON: ->
-    # We try to follow the [Babel AST spec](https://github.com/babel/babel/blob/master/packages/babylon/ast/spec.md)
-    # as closely as possible, for improved interoperability with other tools.
-    obj =
-      type: @constructor.name
-      # Convert `locationData` to Babel’s style.
+  # as JSON. This is what the `ast` option in the Node API returns.
+  # We try to follow the [Babel AST spec](https://github.com/babel/babel/blob/master/packages/babel-parser/ast/spec.md)
+  # as closely as possible, for improved interoperability with other tools.
+  ast: ->
+    # Every abstract syntax tree node object has four categories of properties:
+    # - type, stored in the `type` field and a string like `NumberLiteral`.
+    # - location data, stored in the `loc`, `start`, `end` and `range` fields.
+    # - properties specific to this node, like `parsedValue`.
+    # - properties that are themselves child nodes, like `body`.
+    # These fields are all intermixed in the Babel spec; `type` and `start` and
+    # `parsedValue` are all top level fields in the AST node object. We have
+    # separate methods for returning each category, that we merge together here.
+    Object.assign {}, @astProperties(), {type: @astType()}, @astLocationData()
+
+  # By default, a node class has no specific properties.
+  astProperties: -> {}
+
+  # By default, a node class’s AST `type` is its class name.
+  astType: -> @constructor.name
+
+  # The AST location data is a rearranged version of our Jison location data,
+  # mutated into the structure that the Babel spec uses.
+  astLocationData: ->
+    {first_line, first_column, last_line, last_column, range} = @locationData
+    return
       loc:
         start:
-          line: @locationData.first_line
-          column: @locationData.first_column
+          line: first_line + 1
+          column: first_column
         end:
-          line: @locationData.last_line
-          column: @locationData.last_column
-
-    # Add serializable properties to the output. Properties that aren’t
-    # automatically serializable (because they’re already a primitive type)
-    # should be handled on a case-by-case basis in child node classes’ own
-    # `toJSON` methods.
-    for property, value of this
-      continue if property in ['locationData', 'children']
-      continue if value is undefined # Don’t skip `null` or `false` values.
-      if typeof value is 'boolean' or typeof value is 'number' or typeof value is 'string'
-        obj[property] = value
-
-    # Work our way down the tree. This is like `eachChild`, except that we
-    # preserve the child node name, and arrays.
-    for attr in @children when @[attr]
-      if Array.isArray(@[attr])
-        obj[attr] = []
-        for child in flatten [@[attr]]
-          obj[attr].push child.unwrap().toJSON()
-      else
-        obj[attr] = @[attr].unwrap().toJSON()
-
-    obj
+          line: last_line + 1
+          column: last_column + 1
+      range: [
+        range[0]
+        range[1]
+      ]
+      start: range[0]
+      end: range[1]
 
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
@@ -759,6 +761,9 @@ exports.Block = class Block extends Base
     return nodes[0] if nodes.length is 1 and nodes[0] instanceof Block
     new Block nodes
 
+  astProperties: ->
+    expressions: @expressions.map (child) => child.ast()
+
 #### Literal
 
 # `Literal` is a base class for static values that can be passed through
@@ -776,15 +781,39 @@ exports.Literal = class Literal extends Base
   compileNode: (o) ->
     [@makeCode @value]
 
+  astProperties: ->
+    value: @value
+
   toString: ->
     # This is only intended for debugging.
     " #{if @isStatement() then super() else @constructor.name}: #{@value}"
 
 exports.NumberLiteral = class NumberLiteral extends Literal
+  constructor: (@value, {@parsedValue} = {}) ->
+    super()
+    unless @parsedValue?
+      if isNumber @value
+        @parsedValue = @value
+        @value = "#{@value}"
+      else
+        @parsedValue = Number @value
+
+  astType: -> 'NumericLiteral'
+
+  astProperties: ->
+    value: @parsedValue
+    extra:
+      rawValue: @parsedValue
+      raw: @value
 
 exports.InfinityLiteral = class InfinityLiteral extends NumberLiteral
   compileNode: ->
     [@makeCode '2e308']
+
+  astType: -> 'Identifier'
+
+  astProperties: ->
+    name: 'Infinity'
 
 exports.NaNLiteral = class NaNLiteral extends NumberLiteral
   constructor: ->
@@ -793,6 +822,11 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
   compileNode: (o) ->
     code = [@makeCode '0/0']
     if o.level >= LEVEL_OP then @wrapInParentheses code else code
+
+  astType: -> 'Identifier'
+
+  astProperties: ->
+    name: 'NaN'
 
 exports.StringLiteral = class StringLiteral extends Literal
   constructor: (@originalValue, {@quote, @initialChunk, @finalChunk, @indent, @double, @heregex} = {}) ->
@@ -864,6 +898,15 @@ exports.IdentifierLiteral = class IdentifierLiteral extends Literal
   eachName: (iterator) ->
     iterator @
 
+  astType: ->
+    if @csx
+      'JSXIdentifier'
+    else
+      'Identifier'
+
+  astProperties: ->
+    name: @value
+
 exports.CSXTag = class CSXTag extends IdentifierLiteral
 
 exports.PropertyName = class PropertyName extends Literal
@@ -885,13 +928,25 @@ exports.StatementLiteral = class StatementLiteral extends Literal
   compileNode: (o) ->
     [@makeCode "#{@tab}#{@value};"]
 
+  astType: ->
+    switch @value
+      when 'continue' then 'ContinueStatement'
+      when 'break'    then 'BreakStatement'
+      when 'debugger' then 'DebuggerStatement'
+
 exports.ThisLiteral = class ThisLiteral extends Literal
-  constructor: ->
+  constructor: (value) ->
     super 'this'
+    @shorthand = value is '@'
 
   compileNode: (o) ->
     code = if o.scope.method?.bound then o.scope.method.context else @value
     [@makeCode code]
+
+  astType: -> 'ThisExpression'
+
+  astProperties: ->
+    shorthand: @shorthand
 
 exports.UndefinedLiteral = class UndefinedLiteral extends Literal
   constructor: ->
@@ -899,6 +954,11 @@ exports.UndefinedLiteral = class UndefinedLiteral extends Literal
 
   compileNode: (o) ->
     [@makeCode if o.level >= LEVEL_ACCESS then '(void 0)' else 'void 0']
+
+  astType: -> 'Identifier'
+
+  astProperties: ->
+    name: @value
 
 exports.NullLiteral = class NullLiteral extends Literal
   constructor: ->
@@ -908,6 +968,10 @@ exports.BooleanLiteral = class BooleanLiteral extends Literal
   constructor: (value, {@originalValue} = {}) ->
     super value
     @originalValue ?= @value
+
+  astProperties: ->
+    value: if @value is 'true' then yes else no
+    name: @originalValue
 
 #### Return
 
@@ -1114,6 +1178,12 @@ exports.Value = class Value extends Base
       @base.eachName iterator
     else
       @error 'tried to assign to unassignable value'
+
+  astType: ->
+    @base.astType()
+
+  astProperties: ->
+    @base.ast()
 
 #### HereComment
 
