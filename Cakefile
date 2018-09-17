@@ -279,7 +279,10 @@ buildDocTests = (watch = no) ->
   outputFolder      = "docs/v#{majorVersion}"
 
   # Included in test.html
-  testHelpers = fs.readFileSync('test/support/helpers.coffee', 'utf-8').replace /exports\./g, '@'
+  readHelpersFile = (basename) ->
+    fs.readFileSync("test/support/#{basename}.coffee", 'utf-8').replace /exports\./g, '@'
+  testHelpers = readHelpersFile('helpers') + '\n'
+  testHelpers += readHelpersFile('abstract_syntax_tree_helpers')
 
   # Helpers
   testsInScriptBlocks = ->
@@ -418,6 +421,7 @@ runTests = (CoffeeScript) ->
       onFail description, fn, err
 
   helpers.extend global, require './test/support/helpers'
+  helpers.extend global, require './test/support/abstract_syntax_tree_helpers'
 
   # When all the tests have run, collect and print errors.
   # If a stacktrace is available, output the compiled function source.
