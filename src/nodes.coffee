@@ -12,7 +12,6 @@ Error.stackTraceLimit = Infinity
 {compact, flatten, extend, merge, del, starts, ends, some,
 addDataToNode, attachCommentsToNode, locationDataToString,
 throwSyntaxError, replaceUnicodeCodePointEscapes,
-locationDataToAst, astLocationFields,
 isFunction, isPlainObject, isNumber} = require './helpers'
 
 # Functions required by parser.
@@ -269,98 +268,43 @@ exports.Base = class Base
 
   # Plain JavaScript object representation of the node, that can be serialized
   # as JSON. This is what the `ast` option in the Node API returns.
-  # We try to follow the [Babel AST spec](https://github.com/babel/babel/blob/master/packages/babylon/ast/spec.md)
+  # We try to follow the [Babel AST spec](https://github.com/babel/babel/blob/master/packages/babel-parser/ast/spec.md)
   # as closely as possible, for improved interoperability with other tools.
-  toAst: (o, level) ->
-    o = extend {}, o
-    o.level = level if level
-    @withAstLocationData @withAstType @getAstContent(o), o
+  ast: ->
+    # Every abstract syntax tree node object has four categories of properties:
+    # - type, stored in the `type` field and a string like `NumberLiteral`.
+    # - location data, stored in the `loc`, `start`, `end` and `range` fields.
+    # - properties specific to this node, like `parsedValue`.
+    # - properties that are themselves child nodes, like `body`.
+    # These fields are all intermixed in the Babel spec; `type` and `start` and
+    # `parsedValue` are all top level fields in the AST node object. We have
+    # separate methods for returning each category, that we merge together here.
+    Object.assign {}, @astProperties(), {type: @astType()}, @astLocationData()
 
-  # By default, a node class's AST `type` is the class name
+  # By default, a node class has no specific properties.
+  astProperties: -> {}
+
+  # By default, a node class’s AST `type` is its class name.
   astType: -> @constructor.name
 
-  # Adds `type` to an AST.
-  # A node class typically defines `astType` (as a string or callback) if it
-  # needs to override the default-generated `type` (ie its constructor name)
-  withAstType: (ast, o) ->
-    return ast unless ast
-    return ast if Array.isArray ast
-    return ast if ast.type
-    return ast unless @emptyAst or do ->
-      return yes for key in Object.keys(ast) when key not in ['comments', astLocationFields...]
-
-    merge ast,
-      type: @astType?(o) ? @astType
-
-  # Returns the "content" (ie not `type` or location data) of the AST for the node.
-  # By default, recursively generates AST nodes for `children`.
-  # To override, a node class can either:
-  #   - define `astChildren` to specify how to generate full child nodes, and/or
-  #     `astProps` to specify how to generate non-child-node fields
-  #   - override the `getAstContent()` method
-  getAstContent: (o) ->
-    merge(
-      @getAstChildren o
-      @getAstProps o
-    )
-
-  # Returns the child-nodes fields of the AST node.
-  # By default, recursively generates AST nodes for `children`.
-  # To override, a node class defines `astChildren`, which can be either:
-  # - an array of property names (like `children`) which should have their generated
-  #   AST nodes included recursively.
-  # - an object whose keys are the desired AST field names and whose values are either:
-  #   - a string, which is the name of the node object property whose generated AST node
-  #     should be the corresponding value included in the AST
-  #   - an object with `key` and/or `level` fields. `key` corresponds to the simple string
-  #     value above, ie it's the name of a node object property. `level` is the desired
-  #     AST "compilation" level for that child node, eg `LEVEL_PAREN`
-  # - a callback function, which should return all the AST child-node fields
-  getAstChildren: (o) ->
-    return @astChildren o if isFunction @astChildren
-    childAsts = {}
-    addChildAst = ({propName, key = propName, level}) =>
-      propName ?= key
-      val = @[propName]
-      childAsts[key] =
-        if Array.isArray val
-          item.toAst o, level for item in val
-        else
-          val?.toAst o, level
-
-    children = @astChildren ? @children
-    if Array.isArray children
-      addChildAst {propName} for propName in children
-    else
-      for key, propName of children
-        {propName, level} = propName if isPlainObject propName
-        addChildAst {propName, key, level}
-    childAsts
-
-  astProps: []
-  # Returns the "simple" (ie non-child-nodes) fields of the AST node.
-  # By default, returns an empty object.
-  # To override, a node class defines `astProps`, which can be either:
-  # - an array of property names which should have their values included.
-  # - an object whose keys are the desired AST field names and whose values are
-  #   the corresponding "mapped" node class property names whose values should be included.
-  # - a callback function, which should return all the AST non-child-node fields
-  getAstProps: (o) ->
-    return @astProps o if isFunction @astProps
-    astFields = {}
-    if Array.isArray @astProps
-      for propName in @astProps
-        astFields[propName] = @[propName]
-    else
-      for key, propName of @astProps
-        astFields[key] = @[propName]
-    astFields
-
-  withAstLocationData: (ast, node) ->
-    return (@withAstLocationData(item, node) for item in ast) if Array.isArray ast
-    {locationData} = node ? @
-    return ast unless locationData and ast and not ast.start?
-    merge ast, locationDataToAst locationData
+  # The AST location data is a rearranged version of our Jison location data,
+  # mutated into the structure that the Babel spec uses.
+  astLocationData: ->
+    {first_line, first_column, last_line, last_column, range} = @locationData
+    return
+      loc:
+        start:
+          line: first_line + 1
+          column: first_column
+        end:
+          line: last_line + 1
+          column: last_column + 1
+      range: [
+        range[0]
+        range[1]
+      ]
+      start: range[0]
+      end: range[1]
 
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
@@ -817,6 +761,9 @@ exports.Block = class Block extends Base
     return nodes[0] if nodes.length is 1 and nodes[0] instanceof Block
     new Block nodes
 
+  astProperties: ->
+    expressions: @expressions.map (child) => child.ast()
+
 #### Literal
 
 # `Literal` is a base class for static values that can be passed through
@@ -834,7 +781,8 @@ exports.Literal = class Literal extends Base
   compileNode: (o) ->
     [@makeCode @value]
 
-  astProps: ['value']
+  astProperties: ->
+    value: @value
 
   toString: ->
     # This is only intended for debugging.
@@ -850,8 +798,9 @@ exports.NumberLiteral = class NumberLiteral extends Literal
       else
         @parsedValue = Number @value
 
-  astType: 'NumericLiteral'
-  astProps: ->
+  astType: -> 'NumericLiteral'
+
+  astProperties: ->
     value: @parsedValue
     extra:
       rawValue: @parsedValue
@@ -861,8 +810,9 @@ exports.InfinityLiteral = class InfinityLiteral extends NumberLiteral
   compileNode: ->
     [@makeCode '2e308']
 
-  astType: 'Identifier'
-  astProps: ->
+  astType: -> 'Identifier'
+
+  astProperties: ->
     name: 'Infinity'
 
 exports.NaNLiteral = class NaNLiteral extends NumberLiteral
@@ -873,8 +823,9 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
     code = [@makeCode '0/0']
     if o.level >= LEVEL_OP then @wrapInParentheses code else code
 
-  astType: 'Identifier'
-  astProps: ->
+  astType: -> 'Identifier'
+
+  astProperties: ->
     name: 'NaN'
 
 exports.StringLiteral = class StringLiteral extends Literal
@@ -953,8 +904,8 @@ exports.IdentifierLiteral = class IdentifierLiteral extends Literal
     else
       'Identifier'
 
-  astProps:
-    name: 'value'
+  astProperties: ->
+    name: @value
 
 exports.CSXTag = class CSXTag extends IdentifierLiteral
 
@@ -992,8 +943,10 @@ exports.ThisLiteral = class ThisLiteral extends Literal
     code = if o.scope.method?.bound then o.scope.method.context else @value
     [@makeCode code]
 
-  astType: 'ThisExpression'
-  astProps: ['shorthand']
+  astType: -> 'ThisExpression'
+
+  astProperties: ->
+    shorthand: @shorthand
 
 exports.UndefinedLiteral = class UndefinedLiteral extends Literal
   constructor: ->
@@ -1002,23 +955,21 @@ exports.UndefinedLiteral = class UndefinedLiteral extends Literal
   compileNode: (o) ->
     [@makeCode if o.level >= LEVEL_ACCESS then '(void 0)' else 'void 0']
 
-  astType: 'Identifier'
-  astProps:
-    name: 'value'
+  astType: -> 'Identifier'
+
+  astProperties: ->
+    name: @value
 
 exports.NullLiteral = class NullLiteral extends Literal
   constructor: ->
     super 'null'
-
-  astProps: []
-  emptyAst: yes
 
 exports.BooleanLiteral = class BooleanLiteral extends Literal
   constructor: (value, {@originalValue} = {}) ->
     super value
     @originalValue ?= @value
 
-  astProps: (o) ->
+  astProperties: ->
     value: if @value is 'true' then yes else no
     name: @originalValue
 
@@ -1194,10 +1145,6 @@ exports.Value = class Value extends Base
 
     fragments
 
-  getAstContent: (o) ->
-    @base.toAst o
-    # TODO: will include AST generation for properties here
-
   checkNewTarget: (o) ->
     return unless @base instanceof IdentifierLiteral and @base.value is 'new' and @properties.length
     if @properties[0] instanceof Access and @properties[0].name.value is 'target'
@@ -1231,6 +1178,12 @@ exports.Value = class Value extends Base
       @base.eachName iterator
     else
       @error 'tried to assign to unassignable value'
+
+  astType: ->
+    @base.astType()
+
+  astProperties: ->
+    @base.ast()
 
 #### HereComment
 

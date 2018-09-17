@@ -98,7 +98,7 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
   # If all that was requested was a POJO representation of the nodes, e.g.
   # the abstract syntax tree (AST), we can stop now and just return that.
   if options.ast
-    return nodes.toAst options
+    return nodes.ast options
 
   fragments = nodes.compileToFragments options
 
