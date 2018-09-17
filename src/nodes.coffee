@@ -1155,7 +1155,7 @@ exports.Value = class Value extends Base
     for prop, propIndex in @properties
       ret =
         mergeAstLocationData(
-          merge {
+          Object.assign {
             type: 'MemberExpression'
             object: ret
             property: prop.ast()
