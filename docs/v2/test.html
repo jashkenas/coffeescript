@@ -1552,6 +1552,14 @@ test "async methods in classes", ->
   eq await Child.static(), 1
   eq await new Child().method(), 2
 
+test "#3199: await multiline implicit object", ->
+  do ->
+    y =
+      if no then await
+        type: 'a'
+        msg: 'b'
+    eq undefined, y
+
 </script>
 <script type="text/x-coffeescript" class="test" id="async_iterators">
 # This is always fulfilled.
@@ -3515,6 +3523,29 @@ test "#4868: Incorrect ‘Can’t call super with @params’ error", ->
 
   d = new (new D).c
   eq 3, d.a
+
+test "#4609: Support new.target", ->
+  class A
+    constructor: ->
+      @calledAs = new.target.name
+
+  class B extends A
+
+  b = new B
+  eq b.calledAs, 'B'
+
+  newTarget = null
+  Foo = ->
+    newTarget = !!new.target
+
+  Foo()
+  eq newTarget, no
+
+  newTarget = null
+
+  new Foo()
+  eq newTarget, yes
+
 </script>
 <script type="text/x-coffeescript" class="test" id="cluster">
 # Cluster Module
@@ -4673,7 +4704,7 @@ transpile = (method, code, options = {}) ->
   options.bare = yes
   options.transpile =
     # Target Internet Explorer 6, which supports no ES2015+ features.
-    presets: [['env', {targets: browsers: ['ie 6']}]]
+    presets: [['@babel/env', {targets: browsers: ['ie 6']}]]
   CoffeeScript[method] code, options
 
 
@@ -4839,6 +4870,7 @@ test "#3306: trailing comma in a function call in the last line", ->
   ''', '''
   foo(bar);
   '''
+
 </script>
 <script type="text/x-coffeescript" class="test" id="comprehensions">
 # Comprehensions
@@ -7480,6 +7512,47 @@ test '#4686: comments inside interpolations that also contain CSX attributes', -
     </div>;
   '''
 
+test '#5086: comments inside CSX tags but outside interpolations', ->
+  eqJS '''
+    <div>
+      <div ###comment### attribute={value} />
+    </div>
+  ''', '''
+    <div>
+      <div /*comment*/attribute={value} />
+    </div>;
+  '''
+
+test '#5086: comments inside CSX attributes but outside interpolations', ->
+  eqJS '''
+    <div>
+      <div attribute={###attr comment### value} />
+    </div>
+  ''', '''
+    <div>
+      <div attribute={/*attr comment*/value} />
+    </div>;
+  '''
+
+test '#5086: comments inside nested CSX tags and attributes but outside interpolations', ->
+  eqJS '''
+    <div>
+      <div>
+        <div>
+          <div ###comment### attribute={###attr comment### value} />
+        </div>
+      </div>
+    </div>
+  ''', '''
+    <div>
+      <div>
+        <div>
+          <div /*comment*/attribute={/*attr comment*/value} />
+        </div>
+      </div>
+    </div>;
+  '''
+
 # https://reactjs.org/blog/2017/11/28/react-v16.2.0-fragment-support.html
 test 'JSX fragments: empty fragment', ->
   eqJS '''
@@ -9377,6 +9450,50 @@ test "#3199: error message for throw indented comprehension", ->
       ^
   '''
 
+test "#3199: error message for yield indented non-object", ->
+  assertErrorFormat '''
+    ->
+      yield
+        1
+  ''', '''
+    [stdin]:3:5: error: unexpected number
+        1
+        ^
+  '''
+
+test "#3199: error message for yield indented comprehension", ->
+  assertErrorFormat '''
+    ->
+      yield
+        x for x in [1, 2, 3]
+  ''', '''
+    [stdin]:3:5: error: unexpected identifier
+        x for x in [1, 2, 3]
+        ^
+  '''
+
+test "#3199: error message for await indented non-object", ->
+  assertErrorFormat '''
+    ->
+      await
+        1
+  ''', '''
+    [stdin]:3:5: error: unexpected number
+        1
+        ^
+  '''
+
+test "#3199: error message for await indented comprehension", ->
+  assertErrorFormat '''
+    ->
+      await
+        x for x in [1, 2, 3]
+  ''', '''
+    [stdin]:3:5: error: unexpected identifier
+        x for x in [1, 2, 3]
+        ^
+  '''
+
 test "#3098: suppressed newline should be unsuppressed by semicolon", ->
   assertErrorFormat '''
     a = ; 5
@@ -9443,6 +9560,24 @@ test "#3933: prevent implicit calls when cotrol flow is missing `THEN`", ->
     [stdin]:2:10: error: unexpected ->
       when a ->
              ^^
+  '''
+
+test "`new.target` outside of a function", ->
+  assertErrorFormat '''
+    new.target
+  ''', '''
+    [stdin]:1:1: error: new.target can only occur inside functions
+    new.target
+    ^^^^^^^^^^
+  '''
+
+test "`new.target` is only allowed meta property", ->
+  assertErrorFormat '''
+    -> new.something
+  ''', '''
+    [stdin]:1:4: error: the only valid meta property for new is new.target
+    -> new.something
+       ^^^^^^^^^^^^^
   '''
 
 </script>
@@ -10107,6 +10242,22 @@ test "#3199: throw multiline implicit object", ->
       type: 'a'
       msg: 'b'
   eq undefined, y
+
+  y = do ->
+    yield
+      type: 'a'
+      msg: 'b'
+
+    if no then yield
+      type: 'c'
+      msg: 'd'
+
+    1
+  {value, done} = y.next()
+  ok value.type is 'a' and done is no
+
+  {value, done} = y.next()
+  ok value is 1 and done is yes
 
 test "#4576: multiple row function chaining", ->
   ->
