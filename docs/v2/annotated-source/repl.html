@@ -699,19 +699,22 @@ undeclared variable <code>__</code>.</p>
     CoffeeScript.register()
     process.argv = [<span class="hljs-string">'coffee'</span>].concat process.argv[<span class="hljs-number">2.</span>.]
     <span class="hljs-keyword">if</span> opts.transpile
+      transpile = {}
       <span class="hljs-keyword">try</span>
-        transpile = {}
-        transpile.transpile = <span class="hljs-built_in">require</span>(<span class="hljs-string">'babel-core'</span>).transform
+        transpile.transpile = <span class="hljs-built_in">require</span>(<span class="hljs-string">'@babel/core'</span>).transform
       <span class="hljs-keyword">catch</span>
-        <span class="hljs-built_in">console</span>.error <span class="hljs-string">'''
-          To use --transpile with an interactive REPL, babel-core must be installed either in the current folder or globally:
-            npm install --save-dev babel-core
-          or
-            npm install --global babel-core
-          And you must save options to configure Babel in one of the places it looks to find its options.
-          See https://coffeescript.org/#transpilation
-        '''</span>
-        process.exit <span class="hljs-number">1</span>
+        <span class="hljs-keyword">try</span>
+          transpile.transpile = <span class="hljs-built_in">require</span>(<span class="hljs-string">'babel-core'</span>).transform
+        <span class="hljs-keyword">catch</span>
+          <span class="hljs-built_in">console</span>.error <span class="hljs-string">'''
+            To use --transpile with an interactive REPL, @babel/core must be installed either in the current folder or globally:
+              npm install --save-dev @babel/core
+            or
+              npm install --global @babel/core
+            And you must save options to configure Babel in one of the places it looks to find its options.
+            See https://coffeescript.org/#transpilation
+          '''</span>
+          process.exit <span class="hljs-number">1</span>
       transpile.options =
         filename: path.resolve process.cwd(), <span class="hljs-string">'&lt;repl&gt;'</span></pre></div></div>
             

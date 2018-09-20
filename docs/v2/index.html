@@ -693,7 +693,7 @@ textarea {
       <section id="introduction">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.3.1">2.3.1</a></p>
+<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.3.2">2.3.2</a></p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash"><span class="comment"># Install locally for a project:</span>
 npm install --save-dev coffeescript
 
@@ -4845,7 +4845,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
         <section id="annotated-source">
           <h2>Annotated Source</h2>
-<p>You can browse the CoffeeScript 2.3.1 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+<p>You can browse the CoffeeScript 2.3.2 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
 <li><a href="annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
@@ -5523,6 +5523,17 @@ x = <span class="number">2</span> + <span class="number">2</span>
       <section id="changelog">
         <h2>Changelog</h2>
 
+        <section id="2.3.2">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.3.1...2.3.2">2.3.2</a>
+  <span class="timestamp"> &mdash; <time datetime="2018-09-19">2018-09-19</time></span>
+</h3><ul>
+<li>Babel 7 is now supported. With version 7, the Babel team moved from <code>babel-core</code> on NPM to <code>@babel/core</code>. Now the CoffeeScript <code>--transpile</code> option will first search for <code>@babel/core</code> (Babel versions 7 and above) and then search for <code>babel-core</code> (versions 6 and below) to try to find an installed version of Babel to use for transpilation.</li>
+<li>The syntax <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new.target"><code>new.target</code></a> is now supported.</li>
+<li>You can now follow the keyword <code>yield</code> with an indented object, like has already been allowed for <code>return</code> and other keywords.</li>
+<li>Previously, any comments inside a JSX tag or attribute would cause interpolation braces (<code>{</code> and <code>}</code>) to be output. This is only necessary for line (<code>#</code>, or <code>//</code> in JavaScript) comments, not here (<code>###</code>, or <code>/* */</code>) comments; so now the compiler checks if all the comments that would trigger the braces are here comments, and if so it doesn’t generate the unnecessary interpolation braces.</li>
+</ul>
+
+        </section>
         <section id="2.3.1">
           <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.3.0...2.3.1">2.3.1</a>
   <span class="timestamp"> &mdash; <time datetime="2018-05-21">2018-05-21</time></span>

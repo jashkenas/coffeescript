@@ -442,6 +442,7 @@ wrapped in braces: E.g <code>a = b if do -&gt; f a is 1</code>, <code>if f (a) -
   Yield: [
     o <span class="hljs-string">'YIELD'</span>,                                  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1</span>, <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> Literal <span class="hljs-string">''</span>
     o <span class="hljs-string">'YIELD Expression'</span>,                       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1</span>, $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'YIELD INDENT Object OUTDENT'</span>,            <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
     o <span class="hljs-string">'YIELD FROM Expression'</span>,                  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1.</span>concat($<span class="hljs-number">2</span>), $<span class="hljs-number">3</span>
   ]</pre></div></div>
             
@@ -1733,7 +1734,8 @@ rules are necessary.</p>
     o <span class="hljs-string">'-     Expression'</span>,                      (<span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op <span class="hljs-string">'-'</span>, $<span class="hljs-number">2</span>), prec: <span class="hljs-string">'UNARY_MATH'</span>
     o <span class="hljs-string">'+     Expression'</span>,                      (<span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op <span class="hljs-string">'+'</span>, $<span class="hljs-number">2</span>), prec: <span class="hljs-string">'UNARY_MATH'</span>
 
-    o <span class="hljs-string">'AWAIT Expression'</span>,                       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1</span> , $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'AWAIT Expression'</span>,                       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1</span>, $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'AWAIT INDENT Object OUTDENT'</span>,            <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
 
     o <span class="hljs-string">'-- SimpleAssignable'</span>,                    <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op <span class="hljs-string">'--'</span>, $<span class="hljs-number">2</span>
     o <span class="hljs-string">'++ SimpleAssignable'</span>,                    <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op <span class="hljs-string">'++'</span>, $<span class="hljs-number">2</span>
