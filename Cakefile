@@ -382,7 +382,8 @@ runTests = (CoffeeScript) ->
   global.passedTests = 0
   global.failures    = []
 
-  global[name] = func for name, func of require 'assert'
+  global[name]   = func for name, func of require 'assert'
+  global.inspect = if global.testingBrowser then console.log else require('util').inspect
 
   # Convenience aliases.
   global.CoffeeScript = CoffeeScript
