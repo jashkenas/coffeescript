@@ -17,10 +17,9 @@ testAstNodeLocationData = (node, expected, path = '') ->
       for expectedItem, index in expectedChild
         testAstNodeLocationData node[key][index], expectedItem, extendPath "#{key}[#{index}]"
     else if typeof expectedChild is 'object'
-      testAstNodeLocationData node[key], expectedChild, extendPath key
+      testAstNodeLocationData node[key], expectedChild, extendPath(key)
 
-testSingleNodeLocationData = (node, expected, path) ->
-  pathStr = if path then " at '#{path}'" else ''
+testSingleNodeLocationData = (node, expected, path = '') ->
   # Even though it’s not part of the location data, check the type to ensure
   # that we’re testing the node we think we are.
   if expected.type?
@@ -28,19 +27,19 @@ testSingleNodeLocationData = (node, expected, path) ->
       "Expected AST node type #{reset}#{node.type}#{red} to equal #{reset}#{expected.type}#{red}"
 
   eq node.start, expected.start, \
-    "Expected location start #{reset}#{node.start}#{red} to equal #{reset}#{expected.start}#{red}#{pathStr}"
+    "Expected #{path}.start: #{reset}#{node.start}#{red} to equal #{reset}#{expected.start}#{red}"
   eq node.end, expected.end, \
-    "Expected location end #{reset}#{node.end}#{red} to equal #{reset}#{expected.end}#{red}#{pathStr}"
+    "Expected #{path}.end: #{reset}#{node.end}#{red} to equal #{reset}#{expected.end}#{red}"
   arrayEq node.range, expected.range, \
-    "Expected location range #{reset}#{JSON.stringify node.range}#{red} to equal #{reset}#{JSON.stringify expected.range}#{red}#{pathStr}"
+    "Expected #{path}.range: #{reset}#{JSON.stringify node.range}#{red} to equal #{reset}#{JSON.stringify expected.range}#{red}"
   eq node.loc.start.line, expected.loc.start.line, \
-    "Expected location start line #{reset}#{node.loc.start.line}#{red} to equal #{reset}#{expected.loc.start.line}#{red}#{pathStr}"
+    "Expected #{path}.loc.start.line: #{reset}#{node.loc.start.line}#{red} to equal #{reset}#{expected.loc.start.line}#{red}"
   eq node.loc.start.column, expected.loc.start.column, \
-    "Expected location start column #{reset}#{node.loc.start.column}#{red} to equal #{reset}#{expected.loc.start.column}#{red}#{pathStr}"
+    "Expected #{path}.loc.start.column: #{reset}#{node.loc.start.column}#{red} to equal #{reset}#{expected.loc.start.column}#{red}"
   eq node.loc.end.line, expected.loc.end.line, \
-    "Expected location end line #{reset}#{node.loc.end.line}#{red} to equal #{reset}#{expected.loc.end.line}#{red}#{pathStr}"
+    "Expected #{path}.loc.end.line: #{reset}#{node.loc.end.line}#{red} to equal #{reset}#{expected.loc.end.line}#{red}"
   eq node.loc.end.column, expected.loc.end.column, \
-    "Expected location end column #{reset}#{node.loc.end.column}#{red} to equal #{reset}#{expected.loc.end.column}#{red}#{pathStr}"
+    "Expected #{path}.loc.end.column: #{reset}#{node.loc.end.column}#{red} to equal #{reset}#{expected.loc.end.column}#{red}"
 
 test "AST location data as expected for NumberLiteral node", ->
   testAstLocationData '42',
