@@ -2,7 +2,8 @@
 # ---------------------------------
 
 testAstLocationData = (code, expected) ->
-  testAstNodeLocationData getExpressionAst(code), expected
+  ast = CoffeeScript.compile code, ast: yes
+  testAstNodeLocationData ast.expressions[0], expected
 
 testAstNodeLocationData = (node, expected, path = '') ->
   extendPath = (additionalPath) ->

@@ -15,8 +15,25 @@ deepStrictEqualExpectedProperties = (actual, expected) ->
       eq actual[key], val, white"Property #{key}: expected #{actual[key]} to equal #{val}"
   actual
 
+# Flag array for loose comparison. See reference to `.loose` in
+# `deepStrictEqualExpectedProperties` above.
+looseArray = (arr) ->
+  Object.defineProperty arr, 'loose',
+    value: yes
+    enumerable: no
+  arr
+
+# Helpers to get AST nodes for a string of code. The root node is always a
+# `Block` node, so for brevity in the tests return its children from
+# `expressions`.
+getAstExpressions = (code) ->
+  ast = CoffeeScript.compile code, ast: yes
+  ast.expressions
+
+getAstExpression = (code) -> getAstExpressions(code)[0]
+
 testExpression = (code, expected) ->
-  ast = getExpressionAst code
+  ast = getAstExpression code
   if expected?
     deepStrictEqualExpectedProperties ast, expected
   else
@@ -26,13 +43,6 @@ testExpression = (code, expected) ->
       depth: 10
       colors: yes
 
-# Flag array for loose comparision. See reference to `.loose` in
-# `deepStrictEqualExpectedProperties` above.
-looseArray = (arr) ->
-  Object.defineProperty arr, 'loose',
-    value: yes
-    enumerable: no
-  arr
 
 test 'Confirm functionality of `deepStrictEqualExpectedProperties`', ->
   actual =
