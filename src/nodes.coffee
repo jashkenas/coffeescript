@@ -398,7 +398,7 @@ exports.Base = class Base
 
   # For this node and all descendents, set the location data to `locationData`
   # if the location data is not already set.
-  updateLocationDataIfMissing: (locationData, {force} = {}) ->
+  updateLocationDataIfMissing: (locationData, force) ->
     @forceUpdateLocation = yes if force
     return this if @locationData and not @forceUpdateLocation
     delete @forceUpdateLocation
