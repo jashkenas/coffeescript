@@ -1,6 +1,14 @@
 # Astract Syntax Tree generation
 # ------------------------------
 
+inspect = (obj) ->
+  if global.testingBrowser
+    JSON.stringify obj, null, 2
+  else
+    require('util').inspect obj,
+      depth: 10
+      colors: yes
+
 # Recursively compare all values of enumerable properties of `expected` with
 # those of `actual`. Use `looseArray` helper function to skip array length
 # comparison.
@@ -14,9 +22,9 @@ deepStrictIncludeExpectedProperties = (actual, expected) ->
       eq actual[key], val, """
         Property #{reset}#{key}#{red}: expected #{reset}#{actual[key]}#{red} to equal #{reset}#{val}#{red}
           Expected AST output to include:
-          #{reset}#{inspect expected, {depth: 10, colors: yes}}#{red}
+          #{reset}#{inspect expected}#{red}
           but instead it was:
-          #{reset}#{inspect actual, {depth: 10, colors: yes}}#{red}
+          #{reset}#{inspect actual}#{red}
       """
   actual
 
@@ -44,9 +52,7 @@ testExpression = (code, expected) ->
   else
     # Convenience for creating new tests; call `testExpression` with no second
     # parameter to see what the current AST generation is for your input code.
-    console.log inspect ast,
-      depth: 10
-      colors: yes
+    console.log inspect ast
 
 
 test 'Confirm functionality of `deepStrictIncludeExpectedProperties`', ->
