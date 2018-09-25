@@ -1,14 +1,6 @@
 # Astract Syntax Tree generation
 # ------------------------------
 
-inspect = (obj) ->
-  if global.testingBrowser
-    JSON.stringify obj, null, 2
-  else
-    require('util').inspect obj,
-      depth: 10
-      colors: yes
-
 # Recursively compare all values of enumerable properties of `expected` with
 # those of `actual`. Use `looseArray` helper function to skip array length
 # comparison.
@@ -35,15 +27,6 @@ looseArray = (arr) ->
     value: yes
     enumerable: no
   arr
-
-# Helpers to get AST nodes for a string of code. The root node is always a
-# `Block` node, so for brevity in the tests return its children from
-# `expressions`.
-getAstExpressions = (code) ->
-  ast = CoffeeScript.compile code, ast: yes
-  ast.expressions
-
-getAstExpression = (code) -> getAstExpressions(code)[0]
 
 testExpression = (code, expected) ->
   ast = getAstExpression code

@@ -2,8 +2,7 @@
 # ---------------------------------
 
 testAstLocationData = (code, expected) ->
-  ast = CoffeeScript.compile code, ast: yes
-  testAstNodeLocationData ast.expressions[0], expected
+  testAstNodeLocationData getAstExpression(code), expected
 
 testAstNodeLocationData = (node, expected, path = '') ->
   extendPath = (additionalPath) ->
@@ -40,6 +39,7 @@ testSingleNodeLocationData = (node, expected, path = '') ->
     "Expected #{path}.loc.end.line: #{reset}#{node.loc.end.line}#{red} to equal #{reset}#{expected.loc.end.line}#{red}"
   eq node.loc.end.column, expected.loc.end.column, \
     "Expected #{path}.loc.end.column: #{reset}#{node.loc.end.column}#{red} to equal #{reset}#{expected.loc.end.column}#{red}"
+
 
 test "AST location data as expected for NumberLiteral node", ->
   testAstLocationData '42',
