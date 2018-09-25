@@ -1154,19 +1154,13 @@ exports.Value = class Value extends Base
     ret = @base.ast()
     for prop, propIndex in @properties
       ret =
-        mergeAstLocationData(
-          Object.assign {
-            type: 'MemberExpression'
-            object: ret
-            property: prop.ast()
-            computed: prop instanceof Index or prop.name?.unwrap() not instanceof PropertyName
-            optional: !!prop.soak
-            shorthand: !!prop.shorthand
-          }, prop.astLocationData()
-          ret
-        )
-      if propIndex is 0 and @base instanceof Parens and @base.locationData?
-        mergeAstLocationData ret, @base.astLocationData()
+        type: 'MemberExpression'
+        object: ret
+        property: prop.ast()
+        computed: prop instanceof Index or prop.name?.unwrap() not instanceof PropertyName
+        optional: !!prop.soak
+        shorthand: !!prop.shorthand
+      Object.assign ret, mergeAstLocationData(@base.astLocationData(), prop.astLocationData())
     ret
 
   checkNewTarget: (o) ->
