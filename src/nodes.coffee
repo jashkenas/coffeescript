@@ -3669,7 +3669,7 @@ exports.Parens = class Parens extends Base
   astProperties: ->
     @body.unwrap().astProperties()
 
-  # Don’t unwrap for astLocationData; keep the location data of `Parens`.
+  # Don’t unwrap for `astLocationData`; keep the location data of `Parens`.
 
 #### StringWithInterpolations
 
