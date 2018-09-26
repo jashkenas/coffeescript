@@ -1042,6 +1042,7 @@ exports.Value = class Value extends Base
     return base if not props and base instanceof Value
     @base           = base
     @properties     = props or []
+    @tag            = tag
     @[tag]          = yes if tag
     @isDefaultValue = isDefaultValue
     # If this is a `@foo =` assignment, if there are comments on `@` move them
@@ -1189,28 +1190,30 @@ exports.Value = class Value extends Base
     # If the `Value` has no properties, the AST node is just whatever this
     # node’s `base` is.
     return @base.ast() unless @hasProperties()
+    super()
 
-    astType = 'MemberExpression'
+  astType: -> 'MemberExpression'
 
-    # If this `Value` has properties, the *last* property (e.g. `c` in `a.b.c`)
-    # becomes the `property`, and the preceding properties (e.g. `a.b`) become
-    # a child `Value` node assigned to the `object` property.
-    property = @properties[@properties.length - 1]
-    astProperties =
-      object: new Value(@base.unwrap(), @properties[0...(@properties.length - 1)], @tag, @isDefaultValue).ast()
-      property: property.ast()
-      computed: property instanceof Index or property.name?.unwrap() not instanceof PropertyName
-      optional: !!property.soak
-      shorthand: !!property.shorthand
+  # If this `Value` has properties, the *last* property (e.g. `c` in `a.b.c`)
+  # becomes the `property`, and the preceding properties (e.g. `a.b`) become
+  # a child `Value` node assigned to the `object` property.
+  astProperties: ->
+    [initialProps..., property] = @properties
 
-    # When the `Value` has properties, the location data of a
-    # `MemberExpression` AST node corresponding to a given property should
-    # span the location of the `Value`’s `base` (including parentheses if
-    # present) through the property’s location.
-    astLocationData = mergeAstLocationData @base.astLocationData(), \
+    object: new Value(@base, initialProps, @tag, @isDefaultValue).ast()
+    property: property.ast()
+    computed: property instanceof Index or property.name?.unwrap() not instanceof PropertyName
+    optional: !!property.soak
+    shorthand: !!property.shorthand
+
+  # When the `Value` has properties, the location data of a
+  # `MemberExpression` AST node corresponding to a given property should
+  # span the location of the `Value`’s `base` (including parentheses if
+  # present) through the property’s location.
+  astLocationData: ->
+    return super() if @locationData?
+    mergeAstLocationData @base.astLocationData(),
       @properties[@properties.length - 1].astLocationData()
-
-    return Object.assign {}, astProperties, {type: astType}, astLocationData
 
 #### HereComment
 

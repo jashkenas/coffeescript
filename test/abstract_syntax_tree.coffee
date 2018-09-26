@@ -1113,11 +1113,10 @@ test "AST as expected for Index node", ->
 
 #   # NOTE: Soaking is covered in `Call` and `Access` nodes.
 
-# test "AST as expected for Parens node", ->
-#   testExpression '(hmmmmm)',
-#     type: 'Parens',
-#     body:
-#       type: 'Value'
+test "AST as expected for Parens node", ->
+  testExpression '(hmmmmm)',
+    type: 'Identifier'
+    name: 'hmmmmm'
 
 #   testExpression '(a + b) / c',
 #     type: 'Op'
@@ -1128,19 +1127,9 @@ test "AST as expected for Index node", ->
 #         type: 'Op'
 #         operator: '+'
 
-#   testExpression '(((1)))',
-#     type: 'Parens',
-#     body:
-#       type: 'Value'
-#       base:
-#         type: 'Block'
-#         expressions: [
-#           type: 'Parens',
-#           body:
-#             type: 'Value'
-#             base:
-#               value: '1'
-#         ]
+  testExpression '(((1)))',
+    type: 'NumericLiteral'
+    value: 1
 
 # test "AST as expected for StringWithInterpolations node", ->
 #   testExpression '"#{o}/"',

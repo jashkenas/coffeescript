@@ -407,3 +407,39 @@ test "AST location data as expected for Index node", ->
       end:
         line: 1
         column: 8
+
+test "AST location data as expected for Parens node", ->
+  testAstLocationData '(hmmmmm)',
+    type: 'Identifier'
+    start: 1
+    end: 7
+    range: [1, 7]
+    loc:
+      start:
+        line: 1
+        column: 1
+      end:
+        line: 1
+        column: 7
+
+#   testExpression '(a + b) / c',
+#     type: 'Op'
+#     operator: '/'
+#     first:
+#       type: 'Parens'
+#       body:
+#         type: 'Op'
+#         operator: '+'
+
+  testAstLocationData '(((1)))',
+    type: 'NumericLiteral'
+    start: 3
+    end: 4
+    range: [3, 4]
+    loc:
+      start:
+        line: 1
+        column: 3
+      end:
+        line: 1
+        column: 4
