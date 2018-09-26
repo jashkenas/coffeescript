@@ -38,3 +38,21 @@ exports.eqJS = (input, expectedOutput, msg) ->
   ok egal(expectedOutput, actualOutput), msg or diffOutput expectedOutput, actualOutput
 
 exports.isWindows = -> process.platform is 'win32'
+
+exports.inspect = (obj) ->
+  if global.testingBrowser
+    JSON.stringify obj, null, 2
+  else
+    require('util').inspect obj,
+      depth: 10
+      colors: if process.env.NODE_DISABLE_COLORS then no else yes
+
+# Helpers to get AST nodes for a string of code. The root node is always a
+# `Block` node, so for brevity in the tests return its children from
+# `expressions`.
+exports.getAstExpressions = (code) ->
+  ast = CoffeeScript.compile code, ast: yes
+  ast.expressions
+
+# Many tests want just the root node.
+exports.getAstExpression = (code) -> getAstExpressions(code)[0]

@@ -294,17 +294,17 @@ exports.Base = class Base
     return
       loc:
         start:
-          line: first_line + 1
+          line:   first_line + 1
           column: first_column
         end:
-          line: last_line + 1
+          line:   last_line + 1
           column: last_column + 1
       range: [
         range[0]
         range[1]
       ]
       start: range[0]
-      end: range[1]
+      end:   range[1]
 
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
@@ -398,7 +398,7 @@ exports.Base = class Base
 
   # For this node and all descendents, set the location data to `locationData`
   # if the location data is not already set.
-  updateLocationDataIfMissing: (locationData, {force} = {}) ->
+  updateLocationDataIfMissing: (locationData, force) ->
     @forceUpdateLocation = yes if force
     return this if @locationData and not @forceUpdateLocation
     delete @forceUpdateLocation
@@ -1154,19 +1154,16 @@ exports.Value = class Value extends Base
     ret = @base.ast()
     for prop, propIndex in @properties
       ret =
-        mergeAstLocationData(
-          Object.assign {
-            type: 'MemberExpression'
-            object: ret
-            property: prop.ast()
-            computed: prop instanceof Index or prop.name?.unwrap() not instanceof PropertyName
-            optional: !!prop.soak
-            shorthand: !!prop.shorthand
-          }, prop.astLocationData()
-          ret
-        )
-      if propIndex is 0 and @base instanceof Parens and @base.locationData?
-        mergeAstLocationData ret, @base.astLocationData()
+        type: 'MemberExpression'
+        object: ret
+        property: prop.ast()
+        computed: prop instanceof Index or prop.name?.unwrap() not instanceof PropertyName
+        optional: !!prop.soak
+        shorthand: !!prop.shorthand
+      # When the `Value` has properties, the location data of a `MemberExpression` AST node
+      # corresponding to a given property should span the location of the `Value`'s `base`
+      # (including parens if present) through the property's location
+      Object.assign ret, mergeAstLocationData(@base.astLocationData(), prop.astLocationData())
     ret
 
   checkNewTarget: (o) ->
@@ -4166,28 +4163,24 @@ makeDelimitedLiteral = (body, options = {}) ->
     when other     then (if options.double then "\\#{other}" else other)
   "#{options.delimiter}#{body}#{options.delimiter}"
 
-# Extends the location data of an AST node to include the location data from
-# another AST node.
-mergeAstLocationData = (intoNode, fromNode) ->
-  {range: intoRange} = intoNode
-  {range: fromRange} = fromNode
-  return intoNode unless intoRange and fromRange
-  if fromRange[0] < intoRange[0]
-    intoNode.range = intoRange = [
-      fromRange[0]
-      intoRange[1]
+# Take two AST nodes, or two AST nodes’ location data objects, and return a new
+# location data object that encompasses the location data of both nodes. So the
+# new `start` value will be the earlier of the two nodes’ `start` values, the
+# new `end` value will be the later of the two nodes’ `end` values, etc.
+lesser  = (a, b) -> if a < b then a else b
+greater = (a, b) -> if a > b then a else b
+mergeAstLocationData = (nodeA, nodeB) ->
+  return
+    loc:
+      start:
+        line:   lesser nodeA.loc.start.line,   nodeB.loc.start.line
+        column: lesser nodeA.loc.start.column, nodeB.loc.start.column
+      end:
+        line:   greater nodeA.loc.end.line,   nodeB.loc.end.line
+        column: greater nodeA.loc.end.column, nodeB.loc.end.column
+    range: [
+      lesser  nodeA.range[0], nodeB.range[0]
+      greater nodeA.range[1], nodeB.range[1]
     ]
-    intoNode.start = fromNode.start
-    intoNode.loc =
-      start: fromNode.loc.start
-      end: intoNode.loc.end
-  if fromRange[1] > intoRange[1]
-    intoNode.range = [
-      intoRange[0]
-      fromRange[1]
-    ]
-    intoNode.end = fromNode.end
-    intoNode.loc =
-      start: intoNode.loc.start
-      end: fromNode.loc.end
-  intoNode
+    start: lesser  nodeA.start, nodeB.start
+    end:   greater nodeA.end,   nodeB.end
