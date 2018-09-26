@@ -1514,9 +1514,8 @@ exports.Access = class Access extends Base
 
   ast: ->
     # Babel doesn’t have an AST node for `Access`, but rather just includes
-    # this Access node’s child `name` Identifier node as the direct child of
-    # whatever node contains this `Access`. So we skip a level directly down
-    # to `@name`.
+    # this Access node’s child `name` Identifier node as the `property` of
+    # the `MemberExpression` node.
     @name.ast()
 
 #### Index
@@ -1536,9 +1535,10 @@ exports.Index = class Index extends Base
 
   ast: ->
     # Babel doesn’t have an AST node for `Index`, but rather just includes
-    # this Index node’s child `index` Identifier node as the direct child of
-    # whatever node contains this `Index`. So we skip a level directly down
-    # to `@index`.
+    # this Index node’s child `index` Identifier node as the `property` of
+    # the `MemberExpression` node. The fact that the `MemberExpression`’s
+    # `property` is an Index means that `computed` is `true` for the
+    # `MemberExpression`.
     @index.ast()
 
 #### Range
