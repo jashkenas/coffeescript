@@ -1160,6 +1160,9 @@ exports.Value = class Value extends Base
         computed: prop instanceof Index or prop.name?.unwrap() not instanceof PropertyName
         optional: !!prop.soak
         shorthand: !!prop.shorthand
+      # When the `Value` has properties, the location data of a `MemberExpression` AST node
+      # corresponding to a given property should span the location of the `Value`'s `base`
+      # (including parens if present) through the property's location
       Object.assign ret, mergeAstLocationData(@base.astLocationData(), prop.astLocationData())
     ret
 
