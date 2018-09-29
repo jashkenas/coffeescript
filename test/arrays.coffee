@@ -115,6 +115,12 @@ test "array elisions nested destructuring", ->
   deepEqual d, {x:2}
   arrayEq w, [1,2,4]
 
+test "#5112: array elisions not detected inside strings", ->
+  arr = [
+    str: ", #{3}"
+  ]
+  eq arr[0].str, ', 3'
+
 # Splats in Array Literals
 
 test "array splat expansions with assignments", ->

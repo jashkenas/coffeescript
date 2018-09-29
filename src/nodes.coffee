@@ -1644,8 +1644,9 @@ exports.Arr = class Arr extends Base
   compileNode: (o) ->
     return [@makeCode '[]'] unless @objects.length
     o.indent += TAB
-    fragmentIsElision = (fragment) -> fragmentsToText(fragment).trim() is ','
-    # Detect if `Elisions` at the beginning of the array are processed (e.g. [, , , a]).
+    fragmentIsElision = ([ fragment ]) ->
+      fragment.type is 'Elision' and fragment.code.trim() is ','
+    # Detect if `Elision`s at the beginning of the array are processed (e.g. [, , , a]).
     passedElision = no
 
     answer = []
@@ -1687,7 +1688,7 @@ exports.Arr = class Arr extends Base
       for fragment, fragmentIndex in answer
         if fragment.isHereComment
           fragment.code = "#{multident(fragment.code, o.indent, no)}\n#{o.indent}"
-        else if fragment.code is ', ' and not fragment?.isElision
+        else if fragment.code is ', ' and not fragment?.isElision and fragment.type isnt 'StringLiteral'
           fragment.code = ",\n#{o.indent}"
       answer.unshift @makeCode "[\n#{o.indent}"
       answer.push @makeCode "\n#{@tab}]"
