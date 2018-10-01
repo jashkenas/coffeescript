@@ -3668,13 +3668,7 @@ exports.Parens = class Parens extends Base
     return @wrapInBraces fragments if @csxAttribute
     if bare then fragments else @wrapInParentheses fragments
 
-  astType: ->
-    @body.unwrap().astType()
-
-  astProperties: ->
-    @body.unwrap().astProperties()
-
-  # Don’t unwrap for `astLocationData`; keep the location data of `Parens`.
+  ast: -> @body.unwrap().ast()
 
 #### StringWithInterpolations
 
