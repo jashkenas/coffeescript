@@ -1190,6 +1190,8 @@ exports.Value = class Value extends Base
     # If the `Value` has no properties, the AST node is just whatever this
     # node’s `base` is.
     return @base.ast() unless @hasProperties()
+    # Otherwise, call `Base::ast` which in turn calls the `astType`,
+    # `astProperties` and `astLocationData` methods below.
     super()
 
   astType: -> 'MemberExpression'
@@ -1198,9 +1200,9 @@ exports.Value = class Value extends Base
   # becomes the `property`, and the preceding properties (e.g. `a.b`) become
   # a child `Value` node assigned to the `object` property.
   astProperties: ->
-    [initialProps..., property] = @properties
+    [initialProperties..., property] = @properties
 
-    object: new Value(@base, initialProps, @tag, @isDefaultValue).ast()
+    object: new Value(@base, initialProperties, @tag, @isDefaultValue).ast()
     property: property.ast()
     computed: property instanceof Index or property.name?.unwrap() not instanceof PropertyName
     optional: !!property.soak
