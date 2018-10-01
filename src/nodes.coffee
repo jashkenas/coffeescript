@@ -3435,35 +3435,6 @@ exports.Op = class Op extends Base
         answer = [].concat lhs, @makeCode(" #{@operator} "), rhs
         if o.level <= LEVEL_OP then answer else @wrapInParentheses answer
 
-  astType: ->
-    switch @operator
-      when 'new'           then 'NewExpression'
-      when '||', '&&', '?' then 'LogicalExpression'
-      when '++', '--'      then 'UpdateExpression'
-      else
-        if @isUnary()      then 'UnaryExpression'
-        else                    'BinaryExpression'
-
-  ast: ->
-    @checkUpdateAssignability()
-    super()
-
-  astProperties: ->
-    firstAst = @first.ast()
-    secondAst = @second?.ast()
-    switch
-      when @operator is 'new'
-        callee: firstAst
-        arguments: []
-      when @isUnary()
-        argument: firstAst
-        operator: @originalOperator
-        prefix: !@flip
-      else
-        left: firstAst
-        right: secondAst
-        operator: "#{if @invertOperator then "#{@invertOperator} " else ''}#{@originalOperator}"
-
   # Mimic Python's chained comparisons when multiple comparison operators are
   # used sequentially. For example:
   #
@@ -3534,6 +3505,35 @@ exports.Op = class Op extends Base
 
   toString: (idt) ->
     super idt, @constructor.name + ' ' + @operator
+
+  ast: ->
+    @checkUpdateAssignability()
+    super()
+
+  astType: ->
+    switch @operator
+      when 'new'           then 'NewExpression'
+      when '||', '&&', '?' then 'LogicalExpression'
+      when '++', '--'      then 'UpdateExpression'
+      else
+        if @isUnary()      then 'UnaryExpression'
+        else                    'BinaryExpression'
+
+  astProperties: ->
+    firstAst = @first.ast()
+    secondAst = @second?.ast()
+    switch
+      when @operator is 'new'
+        callee: firstAst
+        arguments: []
+      when @isUnary()
+        argument: firstAst
+        operator: @originalOperator
+        prefix: !@flip
+      else
+        left: firstAst
+        right: secondAst
+        operator: "#{if @invertOperator then "#{@invertOperator} " else ''}#{@originalOperator}"
 
 #### In
 exports.In = class In extends Base
