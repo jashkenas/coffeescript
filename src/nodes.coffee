@@ -914,6 +914,7 @@ exports.PropertyName = class PropertyName extends Literal
   isAssignable: YES
 
   astType: -> 'Identifier'
+
   astProperties: ->
     name: @value
 
@@ -1041,6 +1042,7 @@ exports.Value = class Value extends Base
     return base if not props and base instanceof Value
     @base           = base
     @properties     = props or []
+    @tag            = tag
     @[tag]          = yes if tag
     @isDefaultValue = isDefaultValue
     # If this is a `@foo =` assignment, if there are comments on `@` move them
@@ -1095,8 +1097,8 @@ exports.Value = class Value extends Base
     @base.hasElision()
 
   isSplice: ->
-    [..., lastProp] = @properties
-    lastProp instanceof Slice
+    [..., lastProperty] = @properties
+    lastProperty instanceof Slice
 
   looksStatic: (className) ->
     (@this or @base instanceof ThisLiteral or @base.value is className) and
@@ -1150,22 +1152,6 @@ exports.Value = class Value extends Base
 
     fragments
 
-  ast: ->
-    ret = @base.ast()
-    for prop, propIndex in @properties
-      ret =
-        type: 'MemberExpression'
-        object: ret
-        property: prop.ast()
-        computed: prop instanceof Index or prop.name?.unwrap() not instanceof PropertyName
-        optional: !!prop.soak
-        shorthand: !!prop.shorthand
-      # When the `Value` has properties, the location data of a `MemberExpression` AST node
-      # corresponding to a given property should span the location of the `Value`'s `base`
-      # (including parens if present) through the property's location
-      Object.assign ret, mergeAstLocationData(@base.astLocationData(), prop.astLocationData())
-    ret
-
   checkNewTarget: (o) ->
     return unless @base instanceof IdentifierLiteral and @base.value is 'new' and @properties.length
     if @properties[0] instanceof Access and @properties[0].name.value is 'target'
@@ -1199,6 +1185,52 @@ exports.Value = class Value extends Base
       @base.eachName iterator
     else
       @error 'tried to assign to unassignable value'
+
+  # For AST generation, we need an `object` that’s this `Value` minus its last
+  # property, if it has properties.
+  object: ->
+    return @ unless @hasProperties()
+    # Get all properties except the last one; for a `Value` with only one
+    # property, `initialProperties` is an empty array.
+    initialProperties = @properties[0...@properties.length - 1]
+    # Create the `object` that becomes the new “base” for the split-off final
+    # property.
+    object = new Value @base, initialProperties, @tag, @isDefaultValue
+    # Add location data to our new node, so that it has correct location data
+    # for source maps or later conversion into AST location data.
+    object.locationData =
+      if initialProperties.length is 0
+        # This new `Value` has only one property, so the location data is just
+        # that of the parent `Value`’s base.
+        @base.locationData
+      else
+        # This new `Value` has multiple properties, so the location data spans
+        # from the parent `Value`’s base to the last property that’s included
+        # in this new node (a.k.a. the second-to-last property of the parent).
+        mergeLocationData @base.locationData, initialProperties[initialProperties.length - 1].locationData
+    object
+
+  ast: ->
+    # If the `Value` has no properties, the AST node is just whatever this
+    # node’s `base` is.
+    return @base.ast() unless @hasProperties()
+    # Otherwise, call `Base::ast` which in turn calls the `astType` and
+    # `astProperties` methods below.
+    super()
+
+  astType: -> 'MemberExpression'
+
+  # If this `Value` has properties, the *last* property (e.g. `c` in `a.b.c`)
+  # becomes the `property`, and the preceding properties (e.g. `a.b`) become
+  # a child `Value` node assigned to the `object` property.
+  astProperties: ->
+    [..., property] = @properties
+    return
+      object: @object().ast()
+      property: property.ast()
+      computed: property instanceof Index or property.name?.unwrap() not instanceof PropertyName
+      optional: !!property.soak
+      shorthand: !!property.shorthand
 
 #### HereComment
 
@@ -1498,10 +1530,13 @@ exports.Access = class Access extends Base
     else
       [@makeCode('['), name..., @makeCode(']')]
 
-  ast: ->
-    @name.ast()
-
   shouldCache: NO
+
+  ast: ->
+    # Babel doesn’t have an AST node for `Access`, but rather just includes
+    # this Access node’s child `name` Identifier node as the `property` of
+    # the `MemberExpression` node.
+    @name.ast()
 
 #### Index
 
@@ -1515,11 +1550,16 @@ exports.Index = class Index extends Base
   compileToFragments: (o) ->
     [].concat @makeCode("["), @index.compileToFragments(o, LEVEL_PAREN), @makeCode("]")
 
-  ast: ->
-    @index.ast()
-
   shouldCache: ->
     @index.shouldCache()
+
+  ast: ->
+    # Babel doesn’t have an AST node for `Index`, but rather just includes
+    # this Index node’s child `index` Identifier node as the `property` of
+    # the `MemberExpression` node. The fact that the `MemberExpression`’s
+    # `property` is an Index means that `computed` is `true` for the
+    # `MemberExpression`.
+    @index.ast()
 
 #### Range
 
@@ -3643,8 +3683,7 @@ exports.Parens = class Parens extends Base
     return @wrapInBraces fragments if @csxAttribute
     if bare then fragments else @wrapInParentheses fragments
 
-  ast: ->
-    @body.unwrap().ast()
+  ast: -> @body.unwrap().ast()
 
 #### StringWithInterpolations
 
@@ -4163,12 +4202,29 @@ makeDelimitedLiteral = (body, options = {}) ->
     when other     then (if options.double then "\\#{other}" else other)
   "#{options.delimiter}#{body}#{options.delimiter}"
 
+# Helpers for `mergeLocationData` and `mergeAstLocationData` below.
+lesser  = (a, b) -> if a < b then a else b
+greater = (a, b) -> if a > b then a else b
+
+# Take two nodes’ location data and return a new `locationData` object that
+# encompasses the location data of both nodes. So the new `first_line` value
+# will be the earlier of the two nodes’ `first_line` values, the new
+# `last_column` the later of the two nodes’ `last_column` values, etc.
+mergeLocationData = (locationDataA, locationDataB) ->
+  return
+    first_line:   lesser locationDataA.first_line,   locationDataB.first_line
+    first_column: lesser locationDataA.first_column, locationDataB.first_column
+    last_line:    greater locationDataA.last_line,   locationDataB.last_line
+    last_column:  greater locationDataA.last_column, locationDataB.last_column
+    range: [
+      lesser  locationDataA.range[0], locationDataB.range[0]
+      greater locationDataA.range[1], locationDataB.range[1]
+    ]
+
 # Take two AST nodes, or two AST nodes’ location data objects, and return a new
 # location data object that encompasses the location data of both nodes. So the
 # new `start` value will be the earlier of the two nodes’ `start` values, the
 # new `end` value will be the later of the two nodes’ `end` values, etc.
-lesser  = (a, b) -> if a < b then a else b
-greater = (a, b) -> if a > b then a else b
 mergeAstLocationData = (nodeA, nodeB) ->
   return
     loc:
