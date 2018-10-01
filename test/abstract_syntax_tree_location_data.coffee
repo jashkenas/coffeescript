@@ -418,6 +418,9 @@ test "AST location data as expected for Parens node", ->
       start:
         line: 1
         column: 1
+      end:
+        line: 1
+        column: 7
 
   testAstLocationData '(((1)))',
     type: 'NumericLiteral'
