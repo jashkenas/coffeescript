@@ -4193,12 +4193,29 @@ makeDelimitedLiteral = (body, options = {}) ->
     when other     then (if options.double then "\\#{other}" else other)
   "#{options.delimiter}#{body}#{options.delimiter}"
 
+# Helpers for `mergeLocationData` and `mergeAstLocationData` below.
+lesser  = (a, b) -> if a < b then a else b
+greater = (a, b) -> if a > b then a else b
+
+# Take two nodes’ location data and return a new `locationData` object that
+# encompasses the location data of both nodes. So the new `first_line` value
+# will be the earlier of the two nodes’ `first_line` values, the new
+# `last_column` the later of the two nodes’ `last_column` values, etc.
+mergeLocationData = (locationDataA, locationDataB) ->
+  return
+    first_line:   lesser locationDataA.first_line,   locationDataB.first_line
+    first_column: lesser locationDataA.first_column, locationDataB.first_column
+    last_line:    greater locationDataA.last_line,   locationDataB.last_line
+    last_column:  greater locationDataA.last_column, locationDataB.last_column
+    range: [
+      lesser  locationDataA.range[0], locationDataB.range[0]
+      greater locationDataA.range[1], locationDataB.range[1]
+    ]
+
 # Take two AST nodes, or two AST nodes’ location data objects, and return a new
 # location data object that encompasses the location data of both nodes. So the
 # new `start` value will be the earlier of the two nodes’ `start` values, the
 # new `end` value will be the later of the two nodes’ `end` values, etc.
-lesser  = (a, b) -> if a < b then a else b
-greater = (a, b) -> if a > b then a else b
 mergeAstLocationData = (nodeA, nodeB) ->
   return
     loc:
