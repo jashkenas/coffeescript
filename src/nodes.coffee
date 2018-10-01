@@ -1097,8 +1097,8 @@ exports.Value = class Value extends Base
     @base.hasElision()
 
   isSplice: ->
-    [..., lastProp] = @properties
-    lastProp instanceof Slice
+    [..., lastProperty] = @properties
+    lastProperty instanceof Slice
 
   looksStatic: (className) ->
     (@this or @base instanceof ThisLiteral or @base.value is className) and
@@ -1186,12 +1186,36 @@ exports.Value = class Value extends Base
     else
       @error 'tried to assign to unassignable value'
 
+  # For AST generation, we need an `object` that’s this `Value` minus its last
+  # property, if it has properties.
+  object: ->
+    return @ unless @hasProperties()
+    # Get all properties except the last one; for a `Value` with only one
+    # property, `initialProperties` is an empty array.
+    initialProperties = @properties[0...@properties.length - 1]
+    # Create the `object` that becomes the new “base” for the split-off final
+    # property.
+    object = new Value @base, initialProperties, @tag, @isDefaultValue
+    # Add location data to our new node, so that it has correct location data
+    # for source maps or later conversion into AST location data.
+    object.locationData =
+      if initialProperties.length is 0
+        # This new `Value` has only one property, so the location data is just
+        # that of the parent `Value`’s base.
+        @base.locationData
+      else
+        # This new `Value` has multiple properties, so the location data spans
+        # from the parent `Value`’s base to the last property that’s included
+        # in this new node (a.k.a. the second-to-last property of the parent).
+        mergeLocationData @base.locationData, initialProperties[initialProperties.length - 1].locationData
+    object
+
   ast: ->
     # If the `Value` has no properties, the AST node is just whatever this
     # node’s `base` is.
     return @base.ast() unless @hasProperties()
-    # Otherwise, call `Base::ast` which in turn calls the `astType`,
-    # `astProperties` and `astLocationData` methods below.
+    # Otherwise, call `Base::ast` which in turn calls the `astType` and
+    # `astProperties` methods below.
     super()
 
   astType: -> 'MemberExpression'
@@ -1200,22 +1224,13 @@ exports.Value = class Value extends Base
   # becomes the `property`, and the preceding properties (e.g. `a.b`) become
   # a child `Value` node assigned to the `object` property.
   astProperties: ->
-    [initialProperties..., property] = @properties
-
-    object: new Value(@base, initialProperties, @tag, @isDefaultValue).ast()
-    property: property.ast()
-    computed: property instanceof Index or property.name?.unwrap() not instanceof PropertyName
-    optional: !!property.soak
-    shorthand: !!property.shorthand
-
-  # When the `Value` has properties, the location data of a
-  # `MemberExpression` AST node corresponding to a given property should
-  # span the location of the `Value`’s `base` (including parentheses if
-  # present) through the property’s location.
-  astLocationData: ->
-    return super() if @locationData?
-    mergeAstLocationData @base.astLocationData(),
-      @properties[@properties.length - 1].astLocationData()
+    [..., property] = @properties
+    return
+      object: @object().ast()
+      property: property.ast()
+      computed: property instanceof Index or property.name?.unwrap() not instanceof PropertyName
+      optional: !!property.soak
+      shorthand: !!property.shorthand
 
 #### HereComment
 
