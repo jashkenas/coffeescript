@@ -1007,42 +1007,42 @@ test "AST as expected for Index node", ->
 #       type: 'Block'
 
 test "AST as expected for Op node", ->
-  testExpression '1 <= 2',
+  testExpression 'a <= 2',
     type: 'BinaryExpression'
     operator: '<='
     left:
-      type: 'NumericLiteral'
-      value: 1
+      type: 'Identifier'
+      name: 'a'
     right:
       type: 'NumericLiteral'
       value: 2
 
-  testExpression '1 is 2',
+  testExpression 'a is 2',
     type: 'BinaryExpression'
     operator: 'is'
     left:
-      type: 'NumericLiteral'
-      value: 1
+      type: 'Identifier'
+      name: 'a'
     right:
       type: 'NumericLiteral'
       value: 2
 
-  testExpression '1 // 2',
+  testExpression 'a // 2',
     type: 'BinaryExpression'
     operator: '//'
     left:
-      type: 'NumericLiteral'
-      value: 1
+      type: 'Identifier'
+      name: 'a'
     right:
       type: 'NumericLiteral'
       value: 2
 
-  testExpression '1 << 2',
+  testExpression 'a << 2',
     type: 'BinaryExpression'
     operator: '<<'
     left:
-      type: 'NumericLiteral'
-      value: 1
+      type: 'Identifier'
+      name: 'a'
     right:
       type: 'NumericLiteral'
       value: 2

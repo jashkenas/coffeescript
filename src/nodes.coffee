@@ -3313,6 +3313,11 @@ exports.Op = class Op extends Base
     @first    = first
     @second   = second
     @flip     = !!flip
+
+    if @operator in ['--', '++']
+      message = isUnassignable @first.unwrapAll().value
+      @first.error message if message
+
     return this
 
   # The map of conversions from CoffeeScript to JavaScript symbols.
@@ -3402,11 +3407,6 @@ exports.Op = class Op extends Base
   isInOperator: ->
     @originalOperator is 'in'
 
-  checkUpdateAssignability: ->
-    if @operator in ['--', '++']
-      message = isUnassignable @first.unwrapAll().value
-      @first.error message if message
-
   compileNode: (o) ->
     if @isInOperator()
       inNode = new In @first, @second
@@ -3421,7 +3421,6 @@ exports.Op = class Op extends Base
     @first.front = @front unless isChain
     if @operator is 'delete' and o.scope.check(@first.unwrapAll().value)
       @error 'delete operand may not be argument or var'
-    @checkUpdateAssignability()
     return @compileContinuation o if @isYield() or @isAwait()
     return @compileUnary        o if @isUnary()
     return @compileChain        o if isChain
@@ -3506,10 +3505,6 @@ exports.Op = class Op extends Base
   toString: (idt) ->
     super idt, @constructor.name + ' ' + @operator
 
-  ast: ->
-    @checkUpdateAssignability()
-    super()
-
   astType: ->
     switch @operator
       when 'new'           then 'NewExpression'
@@ -3524,16 +3519,19 @@ exports.Op = class Op extends Base
     secondAst = @second?.ast()
     switch
       when @operator is 'new'
-        callee: firstAst
-        arguments: []
+        return
+          callee: firstAst
+          arguments: []
       when @isUnary()
-        argument: firstAst
-        operator: @originalOperator
-        prefix: !@flip
+        return
+          argument: firstAst
+          operator: @originalOperator
+          prefix: !@flip
       else
-        left: firstAst
-        right: secondAst
-        operator: "#{if @invertOperator then "#{@invertOperator} " else ''}#{@originalOperator}"
+        return
+          left: firstAst
+          right: secondAst
+          operator: "#{if @invertOperator then "#{@invertOperator} " else ''}#{@originalOperator}"
 
 #### In
 exports.In = class In extends Base

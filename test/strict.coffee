@@ -17,7 +17,7 @@
 # * `eval` or `arguments` as the operand of a post/pre-fix inc/dec-rement expression
 
 # helper to assert that code complies with strict prohibitions
-strict = (code, msg, {ast} = {}) ->
+strict = (code, msg, ast) ->
   throws (-> CoffeeScript.compile code), null, msg ? code
   if ast
     throws (-> CoffeeScript.compile code, ast: yes), null, msg ? code
@@ -142,10 +142,10 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
     check "#{keyword} *= 1"
     check "#{keyword} /= 1"
     check "#{keyword} ?= 1"
-    check "#{keyword}++", ast: yes
-    check "++#{keyword}", ast: yes
-    check "#{keyword}--", ast: yes
-    check "--#{keyword}", ast: yes
+    check "#{keyword}++", null, yes
+    check "++#{keyword}", null, yes
+    check "#{keyword}--", null, yes
+    check "--#{keyword}", null, yes
   destruct = (keyword, check = strict) ->
     check "{#{keyword}}"
     check "o = {#{keyword}}"
