@@ -17,10 +17,11 @@
 # * `eval` or `arguments` as the operand of a post/pre-fix inc/dec-rement expression
 
 # helper to assert that code complies with strict prohibitions
-strict = (code, msg, ast) ->
+strict = (code, msg) ->
   throws (-> CoffeeScript.compile code), null, msg ? code
-  if ast
-    throws (-> CoffeeScript.compile code, ast: yes), null, msg ? code
+strictAst = (code, msg) ->
+  strict code, msg
+  throws (-> CoffeeScript.compile code, ast: yes), null, msg ? code
 strictOk = (code, msg) ->
   doesNotThrow (-> CoffeeScript.compile code), msg ? code
 
@@ -142,10 +143,11 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
     check "#{keyword} *= 1"
     check "#{keyword} /= 1"
     check "#{keyword} ?= 1"
-    check "#{keyword}++", null, yes
-    check "++#{keyword}", null, yes
-    check "#{keyword}--", null, yes
-    check "--#{keyword}", null, yes
+  update = (keyword, check = strictAst) ->
+    check "#{keyword}++"
+    check "++#{keyword}"
+    check "#{keyword}--"
+    check "--#{keyword}"
   destruct = (keyword, check = strict) ->
     check "{#{keyword}}"
     check "o = {#{keyword}}"
@@ -166,6 +168,7 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
   for keyword in future
     access   keyword
     assign   keyword
+    update   keyword
     destruct keyword
     invoke   keyword
     fnDecl   keyword
@@ -176,6 +179,7 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
   for keyword in ['eval', 'arguments']
     access   keyword, strictOk
     assign   keyword
+    update   keyword
     destruct keyword, strictOk
     invoke   keyword, strictOk
     fnDecl   keyword
