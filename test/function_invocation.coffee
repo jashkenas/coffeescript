@@ -504,6 +504,8 @@ test "don't wrap 'pure' statements in a closure", ->
 test "usage of `new` is careful about where the invocation parens end up", ->
   eq 'object', typeof new try Array
   eq 'object', typeof new do -> ->
+  a = b: ->
+  eq 'object', typeof new (do -> a).b
 
 
 test "implicit call against control structures", ->

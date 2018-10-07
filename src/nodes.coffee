@@ -1077,7 +1077,7 @@ exports.Value = class Value extends Base
   isBoolean      : -> @bareLiteral(BooleanLiteral)
   isAtomic       : ->
     for node in @properties.concat @base
-      return no if node.soak or node instanceof Call
+      return no if node.soak or node instanceof Call or node instanceof Op and node.operator is 'do'
     yes
 
   isNotCallable  : -> @isNumber() or @isString() or @isRegex() or
@@ -3307,7 +3307,7 @@ exports.Op = class Op extends Base
     if op is 'new'
       if ((firstCall = unwrapped = first.unwrap()) instanceof Call or (firstCall = unwrapped.base) instanceof Call) and not firstCall.do and not firstCall.isNew
         return new Value firstCall.newInstance(), if firstCall is unwrapped then [] else unwrapped.properties
-      first = new Parens first if unwrapped instanceof Op and unwrapped.operator is 'do'
+      first = new Parens first unless first instanceof Parens or first.unwrap() instanceof IdentifierLiteral or first.hasProperties?()
       call = new Call first, []
       call.locationData = @locationData
       call.isNew = yes
@@ -3471,9 +3471,9 @@ exports.Op = class Op extends Base
     if o.level >= LEVEL_ACCESS
       return (new Parens this).compileToFragments o
     plusMinus = op in ['+', '-']
-    parts.push [@makeCode(' ')] if op in ['new', 'typeof', 'delete'] or
+    parts.push [@makeCode(' ')] if op in ['typeof', 'delete'] or
                       plusMinus and @first instanceof Op and @first.operator is op
-    if (plusMinus and @first instanceof Op) or (op is 'new' and @first.isStatement o)
+    if plusMinus and @first instanceof Op
       @first = new Parens @first
     parts.push @first.compileToFragments o, LEVEL_OP
     parts.reverse() if @flip
