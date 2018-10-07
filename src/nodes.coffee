@@ -1434,10 +1434,11 @@ exports.Call = class Call extends Base
       'CallExpression'
 
   astProperties: ->
-    callee: @variable.toAst()
-    arguments: arg.toAst() for arg in @args
-    optional: !!@soak
-    implicit: !!@implicit
+    return
+      callee: @variable.ast()
+      arguments: arg.ast() for arg in @args
+      optional: !!@soak
+      implicit: !!@implicit
 
 #### Super
 
