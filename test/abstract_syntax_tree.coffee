@@ -282,6 +282,12 @@ test "AST as expected for BooleanLiteral node", ->
 #       value: 'Date'
 #     isNew: yes
 
+#   testExpression 'new Old',
+#     type: 'NewExpression'
+#     callee:
+#       type: 'Identifier'
+#       name: 'Old'
+
 #   testExpression 'maybe?()',
 #     type: 'Call'
 #     soak: yes
@@ -1046,12 +1052,6 @@ test "AST as expected for Op node", ->
     right:
       type: 'NumericLiteral'
       value: 2
-
-  testExpression 'new Old',   # NOTE: `new` with params is a `Call` node.
-    type: 'NewExpression'
-    callee:
-      type: 'Identifier'
-      name: 'Old'
 
   testExpression 'typeof x',
     type: 'UnaryExpression'

@@ -3308,6 +3308,10 @@ exports.Op = class Op extends Base
       if ((firstCall = unwrapped = first.unwrap()) instanceof Call or (firstCall = unwrapped.base) instanceof Call) and not firstCall.do and not firstCall.isNew
         return new Value firstCall.newInstance(), if firstCall is unwrapped then [] else unwrapped.properties
       first = new Parens first if unwrapped instanceof Op and unwrapped.operator is 'do'
+      call = new Call first, []
+      call.locationData = @locationData
+      call.isNew = yes
+      return call
 
     @operator = CONVERSIONS[op] or op
     @first    = first
@@ -3507,7 +3511,6 @@ exports.Op = class Op extends Base
 
   astType: ->
     switch @operator
-      when 'new'           then 'NewExpression'
       when '||', '&&', '?' then 'LogicalExpression'
       when '++', '--'      then 'UpdateExpression'
       else
@@ -3518,10 +3521,6 @@ exports.Op = class Op extends Base
     firstAst = @first.ast()
     secondAst = @second?.ast()
     switch
-      when @operator is 'new'
-        return
-          callee: firstAst
-          arguments: []
       when @isUnary()
         return
           argument: firstAst

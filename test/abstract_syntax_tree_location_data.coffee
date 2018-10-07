@@ -471,30 +471,6 @@ test "AST location data as expected for Op node", ->
         line: 1
         column: 6
 
-  testAstLocationData 'new Old',
-    type: 'NewExpression'
-    callee:
-      start: 4
-      end: 7
-      range: [4, 7]
-      loc:
-        start:
-          line: 1
-          column: 4
-        end:
-          line: 1
-          column: 7
-    start: 0
-    end: 7
-    range: [0, 7]
-    loc:
-      start:
-        line: 1
-        column: 0
-      end:
-        line: 1
-        column: 7
-
   testAstLocationData '!x',
     type: 'UnaryExpression'
     argument:
@@ -623,3 +599,28 @@ test "AST location data as expected for Op node", ->
       end:
         line: 1
         column: 11
+
+# test "AST location data as expected for Call node", ->
+#   testAstLocationData 'new Old',
+#     type: 'NewExpression'
+#     callee:
+#       start: 4
+#       end: 7
+#       range: [4, 7]
+#       loc:
+#         start:
+#           line: 1
+#           column: 4
+#         end:
+#           line: 1
+#           column: 7
+#     start: 0
+#     end: 7
+#     range: [0, 7]
+#     loc:
+#       start:
+#         line: 1
+#         column: 0
+#       end:
+#         line: 1
+#         column: 7
