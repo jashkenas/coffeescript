@@ -1305,20 +1305,24 @@ exports.Call = class Call extends Base
   # expands the range on the left, but not the right.
   updateLocationDataIfMissing: (locationData) ->
     if @locationData and @needsUpdatedStartLocation
-      @locationData.first_line = locationData.first_line
-      @locationData.first_column = locationData.first_column
-      @locationData.range = [
-        locationData.range[0]
-        @locationData.range[1]
-      ]
+      @locationData = Object.assign {},
+        @locationData,
+        first_line: locationData.first_line
+        first_column: locationData.first_column
+        range: [
+          locationData.range[0]
+          @locationData.range[1]
+        ]
       base = @variable?.base or @variable
       if base.needsUpdatedStartLocation
-        @variable.locationData.first_line = locationData.first_line
-        @variable.locationData.first_column = locationData.first_column
-        @variable.locationData.range = [
-          locationData.range[0]
-          @variable.locationData.range[1]
-        ]
+        @variable.locationData = Object.assign {},
+          @variable.locationData,
+          first_line: locationData.first_line
+          first_column: locationData.first_column
+          range: [
+            locationData.range[0]
+            @variable.locationData.range[1]
+          ]
         base.updateLocationDataIfMissing locationData
       delete @needsUpdatedStartLocation
     super locationData
