@@ -282,6 +282,12 @@ test "AST as expected for BooleanLiteral node", ->
 #       value: 'Date'
 #     isNew: yes
 
+#   testExpression 'new Old',
+#     type: 'NewExpression'
+#     callee:
+#       type: 'Identifier'
+#       name: 'Old'
+
 #   testExpression 'maybe?()',
 #     type: 'Call'
 #     soak: yes
@@ -1006,80 +1012,205 @@ test "AST as expected for Index node", ->
 #     body:
 #       type: 'Block'
 
-# test "AST as expected for Op node", ->
-#   testExpression '1 <= 2',
-#     type: 'Op'
-#     operator: '<='
-#     originalOperator: '<='
-#     flip: no
-#     first:
-#       value: '1'
-#     second:
-#       value: '2'
+test "AST as expected for Op node", ->
+  testExpression 'a <= 2',
+    type: 'BinaryExpression'
+    operator: '<='
+    left:
+      type: 'Identifier'
+      name: 'a'
+    right:
+      type: 'NumericLiteral'
+      value: 2
 
-#   testExpression '1 is 2',
-#     type: 'Op'
-#     operator: '==='
-#     originalOperator: 'is'
-#     flip: no
+  testExpression 'a is 2',
+    type: 'BinaryExpression'
+    operator: 'is'
+    left:
+      type: 'Identifier'
+      name: 'a'
+    right:
+      type: 'NumericLiteral'
+      value: 2
 
-#   testExpression '1 // 2',
-#     type: 'Op'
-#     operator: '//'
-#     originalOperator: '//'
-#     flip: no
+  testExpression 'a // 2',
+    type: 'BinaryExpression'
+    operator: '//'
+    left:
+      type: 'Identifier'
+      name: 'a'
+    right:
+      type: 'NumericLiteral'
+      value: 2
 
-#   testExpression '1 << 2',
-#     type: 'Op'
-#     operator: '<<'
-#     originalOperator: '<<'
-#     flip: no
+  testExpression 'a << 2',
+    type: 'BinaryExpression'
+    operator: '<<'
+    left:
+      type: 'Identifier'
+      name: 'a'
+    right:
+      type: 'NumericLiteral'
+      value: 2
 
-#   testExpression 'new Old',   # NOTE: `new` with params is a `Call` node.
-#     type: 'Op'
-#     operator: 'new'
-#     originalOperator: 'new'
-#     flip: no
-#     first:
-#       value: 'Old'
+  testExpression 'typeof x',
+    type: 'UnaryExpression'
+    operator: 'typeof'
+    prefix: yes
+    argument:
+      type: 'Identifier'
+      name: 'x'
 
-#   testExpression '-> await 2',
-#     type: 'Code'
-#     isAsync: yes
-#     body:
-#       type: 'Op'
-#       operator: 'await'
-#       originalOperator: 'await'
-#       first:
-#         type: 'NumberLiteral'
-#         value: '2'
+  testExpression 'delete x.y',
+    type: 'UnaryExpression'
+    operator: 'delete'
+    prefix: yes
+    argument:
+      type: 'MemberExpression'
 
-#   testExpression '-> yield 2',
-#     type: 'Code'
-#     isGenerator: yes
-#     body:
-#       type: 'Op'
-#       operator: 'yield'
-#       originalOperator: 'yield'
-#       first:
-#         type: 'NumberLiteral'
-#         value: '2'
+  testExpression 'do x',
+    type: 'UnaryExpression'
+    operator: 'do'
+    prefix: yes
+    argument:
+      type: 'Identifier'
+      name: 'x'
 
-# test "AST as expected for In node", ->
-#   testExpression '1 in 2',
-#     type: 'Op'
-#     operator: 'in'
-#     originalOperator: 'in'
-#     flip: no
-#     first:
-#       value: '1'
-#     second:
-#       value: '2'
+  testExpression '!x',
+    type: 'UnaryExpression'
+    operator: '!'
+    prefix: yes
+    argument:
+      type: 'Identifier'
+      name: 'x'
 
-#   testExpression 'for x in 2 then',
-#     type: 'For'
-#     range: no
-#     pattern: no
+  testExpression 'not x',
+    type: 'UnaryExpression'
+    operator: 'not'
+    prefix: yes
+    argument:
+      type: 'Identifier'
+      name: 'x'
+
+  testExpression '--x',
+    type: 'UpdateExpression'
+    operator: '--'
+    prefix: yes
+    argument:
+      type: 'Identifier'
+      name: 'x'
+
+  testExpression 'x++',
+    type: 'UpdateExpression'
+    operator: '++'
+    prefix: no
+    argument:
+      type: 'Identifier'
+      name: 'x'
+
+  testExpression 'x && y',
+    type: 'LogicalExpression'
+    operator: '&&'
+    left:
+      type: 'Identifier'
+      name: 'x'
+    right:
+      type: 'Identifier'
+      name: 'y'
+
+  testExpression 'x or y',
+    type: 'LogicalExpression'
+    operator: 'or'
+    left:
+      type: 'Identifier'
+      name: 'x'
+    right:
+      type: 'Identifier'
+      name: 'y'
+
+  testExpression 'x ? y',
+    type: 'LogicalExpression'
+    operator: '?'
+    left:
+      type: 'Identifier'
+      name: 'x'
+    right:
+      type: 'Identifier'
+      name: 'y'
+
+  testExpression 'x in y',
+    type: 'BinaryExpression'
+    operator: 'in'
+    left:
+      type: 'Identifier'
+      name: 'x'
+    right:
+      type: 'Identifier'
+      name: 'y'
+
+  testExpression 'x not in y',
+    type: 'BinaryExpression'
+    operator: 'not in'
+    left:
+      type: 'Identifier'
+      name: 'x'
+    right:
+      type: 'Identifier'
+      name: 'y'
+
+  testExpression 'x + y * z',
+    type: 'BinaryExpression'
+    operator: '+'
+    left:
+      type: 'Identifier'
+      name: 'x'
+    right:
+      type: 'BinaryExpression'
+      operator: '*'
+      left:
+        type: 'Identifier'
+        name: 'y'
+      right:
+        type: 'Identifier'
+        name: 'z'
+
+  testExpression '(x + y) * z',
+    type: 'BinaryExpression'
+    operator: '*'
+    left:
+      type: 'BinaryExpression'
+      operator: '+'
+      left:
+        type: 'Identifier'
+        name: 'x'
+      right:
+        type: 'Identifier'
+        name: 'y'
+    right:
+      type: 'Identifier'
+      name: 'z'
+
+  # testExpression '-> await 2',
+  #   type: 'Code'
+  #   isAsync: yes
+  #   body:
+  #     type: 'Op'
+  #     operator: 'await'
+  #     originalOperator: 'await'
+  #     first:
+  #       type: 'NumberLiteral'
+  #       value: '2'
+
+  # testExpression '-> yield 2',
+  #   type: 'Code'
+  #   isGenerator: yes
+  #   body:
+  #     type: 'Op'
+  #     operator: 'yield'
+  #     originalOperator: 'yield'
+  #     first:
+  #       type: 'NumberLiteral'
+  #       value: '2'
 
 # test "AST as expected for Try node", ->
 #   testExpression 'try cappuccino',

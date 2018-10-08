@@ -1077,7 +1077,7 @@ exports.Value = class Value extends Base
   isBoolean      : -> @bareLiteral(BooleanLiteral)
   isAtomic       : ->
     for node in @properties.concat @base
-      return no if node.soak or node instanceof Call
+      return no if node.soak or node instanceof Call or node instanceof Op and node.operator is 'do'
     yes
 
   isNotCallable  : -> @isNumber() or @isString() or @isRegex() or
@@ -1305,14 +1305,24 @@ exports.Call = class Call extends Base
   # expands the range on the left, but not the right.
   updateLocationDataIfMissing: (locationData) ->
     if @locationData and @needsUpdatedStartLocation
-      @locationData.first_line = locationData.first_line
-      @locationData.first_column = locationData.first_column
-      @locationData.range[0] = locationData.range[0]
+      @locationData = Object.assign {},
+        @locationData,
+        first_line: locationData.first_line
+        first_column: locationData.first_column
+        range: [
+          locationData.range[0]
+          @locationData.range[1]
+        ]
       base = @variable?.base or @variable
       if base.needsUpdatedStartLocation
-        @variable.locationData.first_line = locationData.first_line
-        @variable.locationData.first_column = locationData.first_column
-        @variable.locationData.range[0] = locationData.range[0]
+        @variable.locationData = Object.assign {},
+          @variable.locationData,
+          first_line: locationData.first_line
+          first_column: locationData.first_column
+          range: [
+            locationData.range[0]
+            @variable.locationData.range[1]
+          ]
         base.updateLocationDataIfMissing locationData
       delete @needsUpdatedStartLocation
     super locationData
@@ -3298,17 +3308,24 @@ exports.Op = class Op extends Base
   constructor: (op, first, second, flip, {@invertOperator, @originalOperator = op} = {}) ->
     super()
 
-    if op is 'do'
-      return Op::generateDo first
     if op is 'new'
-      if (firstCall = first.unwrap()) instanceof Call and not firstCall.do and not firstCall.isNew
-        return firstCall.newInstance()
-      first = new Parens firstCall if firstCall instanceof Code and firstCall.bound or firstCall.do
+      if ((firstCall = unwrapped = first.unwrap()) instanceof Call or (firstCall = unwrapped.base) instanceof Call) and not firstCall.do and not firstCall.isNew
+        return new Value firstCall.newInstance(), if firstCall is unwrapped then [] else unwrapped.properties
+      first = new Parens first unless first instanceof Parens or first.unwrap() instanceof IdentifierLiteral or first.hasProperties?()
+      call = new Call first, []
+      call.locationData = @locationData
+      call.isNew = yes
+      return call
 
     @operator = CONVERSIONS[op] or op
     @first    = first
     @second   = second
     @flip     = !!flip
+
+    if @operator in ['--', '++']
+      message = isUnassignable @first.unwrapAll().value
+      @first.error message if message
+
     return this
 
   # The map of conversions from CoffeeScript to JavaScript symbols.
@@ -3405,15 +3422,13 @@ exports.Op = class Op extends Base
     if @invertOperator
       @invertOperator = null
       return @invert().compileNode(o)
+    return Op::generateDo(@first).compileNode o if @operator is 'do'
     isChain = @isChainable() and @first.isChainable()
     # In chains, there's no need to wrap bare obj literals in parens,
     # as the chained expression is wrapped.
     @first.front = @front unless isChain
     if @operator is 'delete' and o.scope.check(@first.unwrapAll().value)
       @error 'delete operand may not be argument or var'
-    if @operator in ['--', '++']
-      message = isUnassignable @first.unwrapAll().value
-      @first.error message if message
     return @compileContinuation o if @isYield() or @isAwait()
     return @compileUnary        o if @isUnary()
     return @compileChain        o if isChain
@@ -3460,9 +3475,9 @@ exports.Op = class Op extends Base
     if o.level >= LEVEL_ACCESS
       return (new Parens this).compileToFragments o
     plusMinus = op in ['+', '-']
-    parts.push [@makeCode(' ')] if op in ['new', 'typeof', 'delete'] or
+    parts.push [@makeCode(' ')] if op in ['typeof', 'delete'] or
                       plusMinus and @first instanceof Op and @first.operator is op
-    if (plusMinus and @first instanceof Op) or (op is 'new' and @first.isStatement o)
+    if plusMinus and @first instanceof Op
       @first = new Parens @first
     parts.push @first.compileToFragments o, LEVEL_OP
     parts.reverse() if @flip
@@ -3497,6 +3512,29 @@ exports.Op = class Op extends Base
 
   toString: (idt) ->
     super idt, @constructor.name + ' ' + @operator
+
+  astType: ->
+    switch @operator
+      when '||', '&&', '?' then 'LogicalExpression'
+      when '++', '--'      then 'UpdateExpression'
+      else
+        if @isUnary()      then 'UnaryExpression'
+        else                    'BinaryExpression'
+
+  astProperties: ->
+    firstAst = @first.ast()
+    secondAst = @second?.ast()
+    switch
+      when @isUnary()
+        return
+          argument: firstAst
+          operator: @originalOperator
+          prefix: !@flip
+      else
+        return
+          left: firstAst
+          right: secondAst
+          operator: "#{if @invertOperator then "#{@invertOperator} " else ''}#{@originalOperator}"
 
 #### In
 exports.In = class In extends Base

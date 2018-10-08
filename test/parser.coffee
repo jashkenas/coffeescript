@@ -52,7 +52,7 @@ test "new calls have a range including the new", ->
     eq node.locationData.last_column, lastColumn
 
   [assign] = block.expressions
-  outerCall = assign.value
+  outerCall = assign.value.base
   innerValue = outerCall.variable
   innerCall = innerValue.base
 
@@ -73,7 +73,7 @@ test "location data is properly set for nested `new`", ->
     eq node.locationData.last_line, 0
     eq node.locationData.last_column, lastColumn
 
-  [outerCall] = block.expressions
+  [{base: outerCall}] = block.expressions
   innerCall = outerCall.variable
 
   assertColumnRange outerCall, 0, 12
