@@ -655,7 +655,7 @@ exports.Rewriter = class Rewriter
   # primitive string and separately passing any expected token data properties
   exposeTokenDataToGrammar: ->
     @scanTokens (token, i) ->
-      if token.data and Object.keys(token.data).length or token[0] in ['JS', 'CALL_START'] and token.generated
+      if token.generated or (token.data and Object.keys(token.data).length isnt 0)
         token[1] = new String token[1]
         token[1][key] = val for own key, val of (token.data ? {})
         token[1].generated = yes if token.generated
