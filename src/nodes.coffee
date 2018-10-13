@@ -1972,6 +1972,13 @@ exports.Arr = class Arr extends Base
       obj = obj.unwrapAll()
       obj.eachName iterator
 
+  astType: -> 'ArrayExpression'
+
+  astProperties: ->
+    return
+      elements:
+        object.ast() for object in @objects
+
 #### Class
 
 # The CoffeeScript class definition.
@@ -3208,7 +3215,7 @@ exports.Param = class Param extends Base
 # A splat, either as a parameter to a function, an argument to a call,
 # or as part of a destructuring assignment.
 exports.Splat = class Splat extends Base
-  constructor: (name) ->
+  constructor: (name, {@postfix = true} = {}) ->
     super()
     @name = if name.compile then name else new Literal name
 
@@ -3227,6 +3234,13 @@ exports.Splat = class Splat extends Base
     [@makeCode('...'), @name.compileToFragments(o, LEVEL_OP)...]
 
   unwrap: -> @name
+
+  astType: -> 'SpreadElement'
+
+  astProperties: -> {
+    argument: @name.ast()
+    @postfix
+  }
 
 #### Expansion
 
@@ -3265,6 +3279,9 @@ exports.Elision = class Elision extends Base
     this
 
   eachName: (iterator) ->
+
+  ast: ->
+    null
 
 #### While
 
