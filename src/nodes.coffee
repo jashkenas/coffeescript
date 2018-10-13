@@ -1697,6 +1697,12 @@ exports.Range = class Range extends Base
     args   = ', arguments' if hasArgs(@from) or hasArgs(@to)
     [@makeCode "(function() {#{pre}\n#{idt}for (#{body})#{post}}).apply(this#{args ? ''})"]
 
+  astProperties: -> {
+    from: @from?.ast() ? null
+    to: @to?.ast() ? null
+    @exclusive
+  }
+
 #### Slice
 
 # An array slice literal. Unlike JavaScript's `Array#slice`, the second parameter
@@ -1732,6 +1738,9 @@ exports.Slice = class Slice extends Base
           compiled = to.compileToFragments o, LEVEL_ACCESS
           "+#{fragmentsToText compiled} + 1 || 9e9"
     [@makeCode ".slice(#{ fragmentsToText fromCompiled }#{ toStr or '' })"]
+
+  ast: ->
+    @range.ast()
 
 #### Obj
 

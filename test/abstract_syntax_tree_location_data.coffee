@@ -765,3 +765,155 @@ test "AST location data as expected for Call node", ->
       end:
         line: 1
         column: 7
+
+test "AST location data as expected for Range node", ->
+  testAstLocationData '[x..y]',
+    type: 'Range'
+    from:
+      start: 1
+      end: 2
+      range: [1, 2]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 2
+    to:
+      start: 4
+      end: 5
+      range: [4, 5]
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 1
+          column: 5
+    start: 0
+    end: 6
+    range: [0, 6]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 6
+
+  testAstLocationData '[4...2]',
+    type: 'Range'
+    from:
+      start: 1
+      end: 2
+      range: [1, 2]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 2
+    to:
+      start: 5
+      end: 6
+      range: [5, 6]
+      loc:
+        start:
+          line: 1
+          column: 5
+        end:
+          line: 1
+          column: 6
+    start: 0
+    end: 7
+    range: [0, 7]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 7
+
+test "AST location data as expected for Slice node", ->
+  testAstLocationData 'x[..y]',
+    property:
+      to:
+        start: 4
+        end: 5
+        range: [4, 5]
+        loc:
+          start:
+            line: 1
+            column: 4
+          end:
+            line: 1
+            column: 5
+      start: 2
+      end: 5
+      range: [2, 5]
+      loc:
+        start:
+          line: 1
+          column: 2
+        end:
+          line: 1
+          column: 5
+    start: 0
+    end: 6
+    range: [0, 6]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 6
+
+  testAstLocationData 'x[y...z]',
+    property:
+      start: 2
+      end: 7
+      range: [2, 7]
+      loc:
+        start:
+          line: 1
+          column: 2
+        end:
+          line: 1
+          column: 7
+    start: 0
+    end: 8
+    range: [0, 8]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 8
+
+  testAstLocationData 'x[...]',
+    property:
+      start: 2
+      end: 5
+      range: [2, 5]
+      loc:
+        start:
+          line: 1
+          column: 2
+        end:
+          line: 1
+          column: 5
+    start: 0
+    end: 6
+    range: [0, 6]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 6

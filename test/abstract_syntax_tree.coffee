@@ -7,7 +7,7 @@
 deepStrictIncludeExpectedProperties = (actual, expected) ->
   eq actual.length, expected.length if expected instanceof Array and not expected.loose
   for key, val of expected
-    if 'object' is typeof val
+    if 'object' is typeof val and val != null
       fail "Property #{reset}#{key}#{red} expected, but was missing" unless actual[key]
       deepStrictIncludeExpectedProperties actual[key], val
     else
@@ -561,90 +561,121 @@ test "AST as expected for Index node", ->
     optional: no
     shorthand: no
 
-# test "AST as expected for Range node", ->
-#   testExpression '[x..y]',
-#     type: 'Range'
-#     exclusive: no
-#     equals: '='
-#     from:
-#       value: 'x'
-#     to:
-#       value: 'y'
+test "AST as expected for Range node", ->
+  testExpression '[x..y]',
+    type: 'Range'
+    exclusive: no
+    from:
+      name: 'x'
+    to:
+      name: 'y'
 
-#   testExpression '[4...2]',
-#     type: 'Range'
-#     exclusive: yes
-#     equals: ''
-#     from:
-#       value: '4'
-#     to:
-#       value: '2'
+  testExpression '[4...2]',
+    type: 'Range'
+    exclusive: yes
+    from:
+      value: 4
+    to:
+      value: 2
 
-#   testExpression 'for x in [42...43] then',
-#     range: yes
-#     source:
-#       type: 'Range'
-#       exclusive: yes
-#       equals: ''
-#       from:
-#         value: '42'
-#       to:
-#         value: '43'
+  # testExpression 'for x in [42...43] then',
+  #   range: yes
+  #   source:
+  #     type: 'Range'
+  #     exclusive: yes
+  #     equals: ''
+  #     from:
+  #       value: '42'
+  #     to:
+  #       value: '43'
 
-#   testExpression 'for x in [y..z] then',
-#     range: yes
-#     source:
-#       type: 'Range'
-#       exclusive: no
-#       equals: '='
-#       from:
-#         value: 'y'
-#       to:
-#         value: 'z'
+  # testExpression 'for x in [y..z] then',
+  #   range: yes
+  #   source:
+  #     type: 'Range'
+  #     exclusive: no
+  #     equals: '='
+  #     from:
+  #       value: 'y'
+  #     to:
+  #       value: 'z'
 
-#   testExpression 'x[..y]',
-#     properties: [
-#       range:
-#         type: 'Range'
-#         exclusive: no
-#         equals: '='
-#         from: undefined
-#         to:
-#           value: 'y'
-#     ]
+test "AST as expected for Slice node", ->
+  testExpression 'x[..y]',
+    property:
+      type: 'Range'
+      exclusive: no
+      from: null
+      to:
+        name: 'y'
 
-#   testExpression 'x[y...]',
-#     properties: [
-#       range:
-#         type: 'Range'
-#         exclusive: yes
-#         equals: ''
-#         from:
-#           value: 'y'
-#         to: undefined
-#     ]
+  testExpression 'x[y...]',
+    property:
+      type: 'Range'
+      exclusive: yes
+      from:
+        name: 'y'
+      to: null
 
-#   testExpression 'x[...]',
-#     properties: [
-#       range:
-#         type: 'Range'
-#         exclusive: yes
-#         equals: ''
-#         from: undefined
-#         to: undefined
-#     ]
+  testExpression 'x[...]',
+    property:
+      type: 'Range'
+      exclusive: yes
+      from: null
+      to: null
 
-# test "AST as expected for Slice node", ->
-#   testExpression '"abc"[...2]',
-#     properties: [
-#       type: 'Slice'
-#     ]
+  # testExpression '"abc"[...2]',
+  #   type: 'MemberExpression'
+  #   property:
+  #     type: 'Range'
+  #     from: null
+  #     to:
+  #       type: 'NumericLiteral'
+  #       value: 2
+  #     exclusive: yes
+  #   computed: yes
+  #   optional: no
+  #   shorthand: no
 
-#   expression = getExpression 'x[...][a..][b...][..c][...d]'
-#   eq expression.properties.length, 5
-#   for slice in expression.properties
-#     eq slice.type, 'Slice'
-#     eq slice.range.type, 'Range'
+  testExpression 'x[...][a..][b...][..c][...d]',
+    type: 'MemberExpression'
+    object:
+      type: 'MemberExpression'
+      object:
+        type: 'MemberExpression'
+        object:
+          type: 'MemberExpression'
+          object:
+            type: 'MemberExpression'
+            property:
+              type: 'Range'
+              from: null
+              to: null
+              exclusive: yes
+          property:
+            type: 'Range'
+            from:
+              name: 'a'
+            to: null
+            exclusive: no
+        property:
+          type: 'Range'
+          from:
+            name: 'b'
+          to: null
+          exclusive: yes
+      property:
+        type: 'Range'
+        from: null
+        to:
+          name: 'c'
+        exclusive: no
+    property:
+      type: 'Range'
+      from: null
+      to:
+        name: 'd'
+      exclusive: yes
 
 # test "AST as expected for Obj node", ->
 #   testExpression '{a: a1: x, a2: y; b: b1: z, b2: w}',
