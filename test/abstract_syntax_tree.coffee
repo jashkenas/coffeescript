@@ -423,6 +423,8 @@ test "AST as expected for Access node", ->
     shorthand: no
 
   testExpression 'obj?.prop',
+    # TODO: support Babel 7-style OptionalMemberExpression type
+    # type: 'OptionalMemberExpression'
     type: 'MemberExpression'
     object:
       type: 'Identifier'
