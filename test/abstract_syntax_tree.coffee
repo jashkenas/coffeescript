@@ -270,47 +270,98 @@ test "AST as expected for BooleanLiteral node", ->
 
 # # Comments aren’t nodes, so they shouldn’t appear in the AST.
 
-# test "AST as expected for Call node", ->
-#   testExpression 'fn()',
-#     type: 'Call'
-#     variable:
-#       value: 'fn'
+test "AST as expected for Call node", ->
+  testExpression 'fn()',
+    type: 'CallExpression'
+    callee:
+      type: 'Identifier'
+      name: 'fn'
+    arguments: []
+    optional: no
+    implicit: no
 
-#   testExpression 'new Date()',
-#     type: 'Call'
-#     variable:
-#       value: 'Date'
-#     isNew: yes
+  testExpression 'new Date()',
+    type: 'NewExpression'
+    callee:
+      type: 'Identifier'
+      name: 'Date'
+    arguments: []
+    optional: no
+    implicit: no
 
-#   testExpression 'new Old',
-#     type: 'NewExpression'
-#     callee:
-#       type: 'Identifier'
-#       name: 'Old'
+  testExpression 'new Date?()',
+    type: 'NewExpression'
+    callee:
+      type: 'Identifier'
+      name: 'Date'
+    arguments: []
+    optional: yes
+    implicit: no
 
-#   testExpression 'maybe?()',
-#     type: 'Call'
-#     soak: yes
+  testExpression 'new Old',
+    type: 'NewExpression'
+    callee:
+      type: 'Identifier'
+      name: 'Old'
+    arguments: []
+    optional: no
+    implicit: no
 
-#   testExpression 'goDo this, that',
-#     type: 'Call'
-#     args: [
-#       {value: 'this'}
-#       {value: 'that'}
-#     ]
+  testExpression 'new Old(1)',
+    type: 'NewExpression'
+    callee:
+      type: 'Identifier'
+      name: 'Old'
+    arguments: [
+      type: 'NumericLiteral'
+      value: 1
+    ]
+    optional: no
+    implicit: no
 
-#   testExpression 'do ->',
-#     type: 'Call'
-#     do: yes
-#     variable:
-#       type: 'Code'
+  testExpression 'new Old 1',
+    type: 'NewExpression'
+    callee:
+      type: 'Identifier'
+      name: 'Old'
+    arguments: [
+      type: 'NumericLiteral'
+      value: 1
+    ]
+    optional: no
+    implicit: yes
 
-#   testExpression 'do fn',
-#     type: 'Call'
-#     do: yes
-#     variable:
-#       type: 'IdentifierLiteral'
-#       value: 'fn'
+  testExpression 'maybe?()',
+    type: 'CallExpression'
+    optional: yes
+    implicit: no
+
+  testExpression 'maybe?(1 + 1)',
+    type: 'CallExpression'
+    arguments: [
+      type: 'BinaryExpression'
+    ]
+    optional: yes
+    implicit: no
+
+  testExpression 'maybe? 1 + 1',
+    type: 'CallExpression'
+    arguments: [
+      type: 'BinaryExpression'
+    ]
+    optional: yes
+    implicit: yes
+
+  testExpression 'goDo this, that',
+    type: 'CallExpression'
+    arguments: [
+      type: 'ThisExpression'
+    ,
+      type: 'Identifier'
+      name: 'that'
+    ]
+    implicit: yes
+    optional: no
 
 # test "AST as expected for SuperCall node", ->
 #   testExpression 'class child extends parent then constructor: -> super()',
@@ -372,6 +423,8 @@ test "AST as expected for Access node", ->
     shorthand: no
 
   testExpression 'obj?.prop',
+    # TODO: support Babel 7-style OptionalMemberExpression type
+    # type: 'OptionalMemberExpression'
     type: 'MemberExpression'
     object:
       type: 'Identifier'
@@ -1075,6 +1128,13 @@ test "AST as expected for Op node", ->
     argument:
       type: 'Identifier'
       name: 'x'
+
+  # testExpression 'do ->',
+  #   type: 'UnaryExpression'
+  #   operator: 'do'
+  #   prefix: yes
+  #   argument:
+  #     type: 'FunctionExpression'
 
   testExpression '!x',
     type: 'UnaryExpression'

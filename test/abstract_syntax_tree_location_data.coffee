@@ -600,27 +600,168 @@ test "AST location data as expected for Op node", ->
         line: 1
         column: 11
 
-# test "AST location data as expected for Call node", ->
-#   testAstLocationData 'new Old',
-#     type: 'NewExpression'
-#     callee:
-#       start: 4
-#       end: 7
-#       range: [4, 7]
-#       loc:
-#         start:
-#           line: 1
-#           column: 4
-#         end:
-#           line: 1
-#           column: 7
-#     start: 0
-#     end: 7
-#     range: [0, 7]
-#     loc:
-#       start:
-#         line: 1
-#         column: 0
-#       end:
-#         line: 1
-#         column: 7
+test "AST location data as expected for Call node", ->
+  testAstLocationData 'fn()',
+    type: 'CallExpression'
+    start: 0
+    end: 4
+    range: [0, 4]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 4
+    callee:
+      start: 0
+      end: 2
+      range: [0, 2]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 2
+
+  testAstLocationData 'new Date()',
+    type: 'NewExpression'
+    start: 0
+    end: 10
+    range: [0, 10]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 10
+    callee:
+      start: 4
+      end: 8
+      range: [4, 8]
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 1
+          column: 8
+
+  testAstLocationData '''
+    new Old(
+      1
+    )
+  ''',
+    start: 0
+    end: 14
+    range: [0, 14]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 1
+    type: 'NewExpression'
+    arguments: [
+      start: 11
+      end: 12
+      range: [11, 12]
+      loc:
+        start:
+          line: 2
+          column: 2
+        end:
+          line: 2
+          column: 3
+    ]
+
+  testAstLocationData 'maybe? 1 + 1',
+    type: 'CallExpression'
+    start: 0
+    end: 12
+    range: [0, 12]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 12
+    arguments: [
+      start: 7
+      end: 12
+      range: [7, 12]
+      loc:
+        start:
+          line: 1
+          column: 7
+        end:
+          line: 1
+          column: 12
+    ]
+
+  testAstLocationData '''
+    goDo(this,
+      that)
+  ''',
+    type: 'CallExpression'
+    start: 0
+    end: 18
+    range: [0, 18]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 2
+        column: 7
+    arguments: [
+      start: 5
+      end: 9
+      range: [5, 9]
+      loc:
+        start:
+          line: 1
+          column: 5
+        end:
+          line: 1
+          column: 9
+    ,
+      start: 13
+      end: 17
+      range: [13, 17]
+      loc:
+        start:
+          line: 2
+          column: 2
+        end:
+          line: 2
+          column: 6
+    ]
+
+  testAstLocationData 'new Old',
+    type: 'NewExpression'
+    callee:
+      start: 4
+      end: 7
+      range: [4, 7]
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 1
+          column: 7
+    start: 0
+    end: 7
+    range: [0, 7]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 7

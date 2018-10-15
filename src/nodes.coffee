@@ -1285,6 +1285,7 @@ exports.Call = class Call extends Base
   constructor: (@variable, @args = [], @soak, @token) ->
     super()
 
+    @implicit = @args.implicit
     @isNew = no
     if @variable instanceof Value and @variable.isNotCallable()
       @variable.error "literal is not a function"
@@ -1425,6 +1426,19 @@ exports.Call = class Call extends Base
     else
       fragments.push @makeCode(' />')
     fragments
+
+  astType: ->
+    if @isNew
+      'NewExpression'
+    else
+      'CallExpression'
+
+  astProperties: ->
+    return
+      callee: @variable.ast()
+      arguments: arg.ast() for arg in @args
+      optional: !!@soak
+      implicit: !!@implicit
 
 #### Super
 

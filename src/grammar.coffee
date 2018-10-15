@@ -520,7 +520,7 @@ grammar =
   # The list of arguments to a function call.
   Arguments: [
     o 'CALL_START CALL_END',                    -> []
-    o 'CALL_START ArgList OptComma CALL_END',   -> $2
+    o 'CALL_START ArgList OptComma CALL_END',   -> $2.implicit = $1.generated; $2
   ]
 
   # A reference to the *this* current object.
