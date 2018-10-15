@@ -7,7 +7,7 @@
 deepStrictIncludeExpectedProperties = (actual, expected) ->
   eq actual.length, expected.length if expected instanceof Array and not expected.loose
   for key, val of expected
-    if 'object' is typeof val and val != null
+    if val? and typeof val is 'object'
       fail "Property #{reset}#{key}#{red} expected, but was missing" unless actual[key]
       deepStrictIncludeExpectedProperties actual[key], val
     else

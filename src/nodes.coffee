@@ -1697,11 +1697,12 @@ exports.Range = class Range extends Base
     args   = ', arguments' if hasArgs(@from) or hasArgs(@to)
     [@makeCode "(function() {#{pre}\n#{idt}for (#{body})#{post}}).apply(this#{args ? ''})"]
 
-  astProperties: -> {
-    from: @from?.ast() ? null
-    to: @to?.ast() ? null
-    @exclusive
-  }
+  astProperties: ->
+    return {
+      from: @from?.ast() ? null
+      to: @to?.ast() ? null
+      @exclusive
+    }
 
 #### Slice
 
