@@ -738,21 +738,18 @@ test "AST as expected for Slice node", ->
 
 #   # console.log JSON.stringify expression, ["type", "generated", "lhs", "value", "properties", "variable"], 2
 
-# test "AST as expected for Arr node", ->
-#   testExpression '[]',
-#     type: 'Arr'
-#     lhs: no
-#     objects: []
+test "AST as expected for Arr node", ->
+  testExpression '[]',
+    type: 'ArrayExpression'
+    elements: []
 
-#   testExpression '[3, "coffee", tables, !1]',
-#     type: 'Arr'
-#     lhs: no
-#     objects: [
-#       {value: '3'}
-#       {value: '"coffee"'}
-#       {value: 'tables'}     # TODO: File issue for `, value: whatever` syntax not splitting objects properly.
-#       {type: 'Op'}
-#     ]
+  testExpression '[3, tables, !1]',
+    type: 'ArrayExpression'
+    elements: [
+      {value: 3}
+      {name: 'tables'}
+      {operator: '!'}
+    ]
 
 #   # TODO: Test destructuring.
 
@@ -1034,14 +1031,36 @@ test "AST as expected for Slice node", ->
 #         value: '1'
 #     ]
 
-# test "AST as expected for Splat node", ->
-#   testExpression '(a...) ->',
-#     params: [
-#       type: 'Param'
-#       splat: yes
-#       name:
-#         value: 'a'
-#     ]
+test "AST as expected for Splat node", ->
+  testExpression '[a...]',
+    type: 'ArrayExpression'
+    elements: [
+      type: 'SpreadElement'
+      argument:
+        type: 'Identifier'
+        name: 'a'
+      postfix: yes
+    ]
+
+  testExpression '[b, ...c]',
+    type: 'ArrayExpression'
+    elements: [
+      name: 'b'
+    ,
+      type: 'SpreadElement'
+      argument:
+        type: 'Identifier'
+        name: 'c'
+      postfix: no
+    ]
+
+  # testExpression '(a...) ->',
+  #   params: [
+  #     type: 'Param'
+  #     splat: yes
+  #     name:
+  #       value: 'a'
+  #   ]
 
 #   # TODO: Test object splats.
 
@@ -1052,32 +1071,41 @@ test "AST as expected for Slice node", ->
 #       {type: 'Expansion'}
 #     ]
 
-# test "AST as expected for Elision node", ->
-#   testExpression '[,,,a,,,b] = "asdfqwer"',
-#     type: 'Assign'
-#     variable:
-#       type: 'Arr'
-#       lhs: no
-#       objects: [
-#         {type: 'Elision'}
-#         {type: 'Elision'}
-#         {type: 'Elision'}
-#         {
-#           type: 'IdentifierLiteral'
-#           value: 'a'
-#         }
-#         {type: 'Elision'}
-#         {type: 'Elision'}
-#         {
-#           type: 'IdentifierLiteral'
-#           value: 'b'
-#         }
-#       ]
-#     value:
-#       type: 'StringLiteral'
-#       value: '"asdfqwer"'
-#       originalValue: 'asdfqwer'
-#       quote: '"'
+test "AST as expected for Elision node", ->
+  testExpression '[,,,a,,,b]',
+    type: 'ArrayExpression'
+    elements: [
+      null, null, null
+      name: 'a'
+      null, null
+      name: 'b'
+    ]
+
+  # testExpression '[,,,a,,,b] = "asdfqwer"',
+  #   type: 'Assign'
+  #   variable:
+  #     type: 'Arr'
+  #     lhs: no
+  #     objects: [
+  #       {type: 'Elision'}
+  #       {type: 'Elision'}
+  #       {type: 'Elision'}
+  #       {
+  #         type: 'IdentifierLiteral'
+  #         value: 'a'
+  #       }
+  #       {type: 'Elision'}
+  #       {type: 'Elision'}
+  #       {
+  #         type: 'IdentifierLiteral'
+  #         value: 'b'
+  #       }
+  #     ]
+  #   value:
+  #     type: 'StringLiteral'
+  #     value: '"asdfqwer"'
+  #     originalValue: 'asdfqwer'
+  #     quote: '"'
 
 # test "AST as expected for While node", ->
 #   testExpression 'loop 1',

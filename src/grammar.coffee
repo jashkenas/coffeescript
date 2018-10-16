@@ -351,7 +351,7 @@ grammar =
   # A splat that occurs outside of a parameter list.
   Splat: [
     o 'Expression ...',                         -> new Splat $1
-    o '... Expression',                         -> new Splat $2
+    o '... Expression',                         -> new Splat $2, {postfix: no}
   ]
 
   # Variables and properties that can be assigned to.
