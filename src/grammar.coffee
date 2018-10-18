@@ -460,8 +460,8 @@ grammar =
   ImportSpecifier: [
     o 'Identifier',                             -> new ImportSpecifier $1
     o 'Identifier AS Identifier',               -> new ImportSpecifier $1, $3
-    o 'DEFAULT',                                -> new ImportSpecifier new Literal $1
-    o 'DEFAULT AS Identifier',                  -> new ImportSpecifier new Literal($1), $3
+    o 'DEFAULT',                                -> new ImportSpecifier new DefaultLiteral $1
+    o 'DEFAULT AS Identifier',                  -> new ImportSpecifier new DefaultLiteral($1), $3
   ]
 
   ImportDefaultSpecifier: [
@@ -485,6 +485,7 @@ grammar =
     o 'EXPORT DEFAULT Expression',                           -> new ExportDefaultDeclaration $3
     o 'EXPORT DEFAULT INDENT Object OUTDENT',                -> new ExportDefaultDeclaration new Value $4
     o 'EXPORT EXPORT_ALL FROM String',                       -> new ExportAllDeclaration new Literal($2), $4
+    o 'EXPORT { } FROM String',                              -> new ExportNamedDeclaration new ExportSpecifierList([]), $5
     o 'EXPORT { ExportSpecifierList OptComma } FROM String', -> new ExportNamedDeclaration new ExportSpecifierList($3), $7
   ]
 
@@ -499,9 +500,9 @@ grammar =
   ExportSpecifier: [
     o 'Identifier',                             -> new ExportSpecifier $1
     o 'Identifier AS Identifier',               -> new ExportSpecifier $1, $3
-    o 'Identifier AS DEFAULT',                  -> new ExportSpecifier $1, new Literal $3
-    o 'DEFAULT',                                -> new ExportSpecifier new Literal $1
-    o 'DEFAULT AS Identifier',                  -> new ExportSpecifier new Literal($1), $3
+    o 'Identifier AS DEFAULT',                  -> new ExportSpecifier $1, new DefaultLiteral $3
+    o 'DEFAULT',                                -> new ExportSpecifier new DefaultLiteral $1
+    o 'DEFAULT AS Identifier',                  -> new ExportSpecifier new DefaultLiteral($1), $3
   ]
 
   # Ordinary function invocation, or a chained series of calls.
