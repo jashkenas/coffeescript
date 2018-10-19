@@ -460,8 +460,8 @@ grammar =
   ImportSpecifier: [
     o 'Identifier',                             -> new ImportSpecifier $1
     o 'Identifier AS Identifier',               -> new ImportSpecifier $1, $3
-    o 'DEFAULT',                                -> new ImportSpecifier new DefaultLiteral $1
-    o 'DEFAULT AS Identifier',                  -> new ImportSpecifier new DefaultLiteral($1), $3
+    o 'DEFAULT',                                -> new ImportSpecifier LOC(1)(new DefaultLiteral $1)
+    o 'DEFAULT AS Identifier',                  -> new ImportSpecifier LOC(1)(new DefaultLiteral($1)), $3
   ]
 
   ImportDefaultSpecifier: [
@@ -500,9 +500,9 @@ grammar =
   ExportSpecifier: [
     o 'Identifier',                             -> new ExportSpecifier $1
     o 'Identifier AS Identifier',               -> new ExportSpecifier $1, $3
-    o 'Identifier AS DEFAULT',                  -> new ExportSpecifier $1, new DefaultLiteral $3
-    o 'DEFAULT',                                -> new ExportSpecifier new DefaultLiteral $1
-    o 'DEFAULT AS Identifier',                  -> new ExportSpecifier new DefaultLiteral($1), $3
+    o 'Identifier AS DEFAULT',                  -> new ExportSpecifier $1, LOC(3)(new DefaultLiteral $3)
+    o 'DEFAULT',                                -> new ExportSpecifier LOC(1)(new DefaultLiteral $1)
+    o 'DEFAULT AS Identifier',                  -> new ExportSpecifier LOC(1)(new DefaultLiteral($1)), $3
   ]
 
   # Ordinary function invocation, or a chained series of calls.

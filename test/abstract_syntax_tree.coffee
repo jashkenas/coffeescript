@@ -823,153 +823,228 @@ test "AST as expected for Arr node", ->
 #         ]
 #       ]
 
-# test "AST as expected for ModuleDeclaration node", ->
-#   testExpression 'export {X}',
-#     clause:
-#       specifiers: [
-#         type: 'ExportSpecifier'
-#         moduleDeclarationType: 'export'
-#         identifier: 'X'
-#       ]
+test "AST as expected for ModuleDeclaration node", ->
+  testExpression 'export {X}',
+    type: 'ExportNamedDeclaration'
+    declaration: null
+    specifiers: [
+      type: 'ExportSpecifier'
+      local:
+        type: 'Identifier'
+        name: 'X'
+      exported:
+        type: 'Identifier'
+        name: 'X'
+    ]
+    source: null
+    exportKind: 'value'
 
-#   testExpression 'import X from "."',
-#     clause:
-#       defaultBinding:
-#         type: 'ImportDefaultSpecifier'
-#         moduleDeclarationType: 'import'
-#         identifier: 'X'
+  testExpression 'import X from "."',
+    type: 'ImportDeclaration'
+    specifiers: [
+      type: 'ImportDefaultSpecifier'
+      local:
+        type: 'Identifier'
+        name: 'X'
+    ]
+    importKind: 'value'
+    source:
+      type: 'StringLiteral'
+      value: '.'
 
-# test "AST as expected for ImportDeclaration node", ->
-#   testExpression 'import React, {Component} from "react"',
-#     type: 'ImportDeclaration'
-#     source:
-#       type: 'StringLiteral'
-#       value: '"react"'
-#       originalValue: 'react'
+test "AST as expected for ImportDeclaration node", ->
+  testExpression 'import React, {Component} from "react"',
+    type: 'ImportDeclaration'
+    specifiers: [
+      type: 'ImportDefaultSpecifier'
+      local:
+        type: 'Identifier'
+        name: 'React'
+    ,
+      type: 'ImportSpecifier'
+      imported:
+        type: 'Identifier'
+        name: 'Component'
+      importKind: null
+      local:
+        type: 'Identifier'
+        name: 'Component'
+    ]
+    importKind: 'value'
+    source:
+      type: 'StringLiteral'
+      value: 'react'
+      extra:
+        raw: '"react"'
 
-# test "AST as expected for ImportClause node", ->
-#   testExpression 'import React, {Component} from "react"',
-#     clause:
-#       type: 'ImportClause'
-#       defaultBinding:
-#         type: 'ImportDefaultSpecifier'
-#       namedImports:
-#         type: 'ImportSpecifierList'
+test "AST as expected for ExportNamedDeclaration node", ->
+  testExpression 'export {}',
+    type: 'ExportNamedDeclaration'
+    declaration: null
+    specifiers: []
+    source: null
+    exportKind: 'value'
 
-# test "AST as expected for ExportDeclaration node", ->
-#   testExpression 'export {X}',
-#     clause:
-#       specifiers: [
-#         type: 'ExportSpecifier'
-#         moduleDeclarationType: 'export'
-#         identifier: 'X'
-#       ]
+  # testExpression 'export fn = ->',
+  #   type: 'ExportNamedDeclaration'
+  #   clause:
+  #     type: 'Assign'
+  #     variable:
+  #       value: 'fn'
+  #     value:
+  #       type: 'Code'
 
-# test "AST as expected for ExportNamedDeclaration node", ->
-#   testExpression 'export fn = ->',
-#     type: 'ExportNamedDeclaration'
-#     clause:
-#       type: 'Assign'
-#       variable:
-#         value: 'fn'
-#       value:
-#         type: 'Code'
+  # testExpression 'export class A',
 
-# test "AST as expected for ExportDefaultDeclaration node", ->
-#   testExpression 'export default class',
-#     type: 'ExportDefaultDeclaration'
-#     clause:
-#       type: 'Class'
+  testExpression 'export {x as y, z as default}',
+    type: 'ExportNamedDeclaration'
+    declaration: null
+    specifiers: [
+      type: 'ExportSpecifier'
+      local:
+        type: 'Identifier'
+        name: 'x'
+      exported:
+        type: 'Identifier'
+        name: 'y'
+    ,
+      type: 'ExportSpecifier'
+      local:
+        type: 'Identifier'
+        name: 'z'
+      exported:
+        type: 'Identifier'
+        name: 'default'
+    ]
+    source: null
+    exportKind: 'value'
 
-# test "AST as expected for ExportAllDeclaration node", ->
-#   testExpression 'export * from "module-name"',
-#     type: 'ExportAllDeclaration'
-#     clause:
-#       type: 'Literal'
-#       value: '*'
-#     source:
-#       type: 'StringLiteral'
-#       value: '"module-name"'
-#       originalValue: 'module-name'
-#       quote: '"'
-#       initialChunk: yes
-#       finalChunk: yes
-#       fromSourceString: yes
+  testExpression 'export {default, default as b} from "./abc"',
+    type: 'ExportNamedDeclaration'
+    declaration: null
+    specifiers: [
+      type: 'ExportSpecifier'
+      local:
+        type: 'Identifier'
+        name: 'default'
+      exported:
+        type: 'Identifier'
+        name: 'default'
+    ,
+      type: 'ExportSpecifier'
+      local:
+        type: 'Identifier'
+        name: 'default'
+      exported:
+        type: 'Identifier'
+        name: 'b'
+    ]
+    source:
+      type: 'StringLiteral'
+      value: './abc'
+      extra:
+        raw: '"./abc"'
+    exportKind: 'value'
 
-# # `ModuleSpecifierList` never makes it into the AST.
+test "AST as expected for ExportDefaultDeclaration node", ->
+  # testExpression 'export default class',
+  #   type: 'ExportDefaultDeclaration'
+  #   clause:
+  #     type: 'Class'
 
-# test "AST as expected for ImportSpecifierList node", ->
-#   testExpression 'import React, {Component} from "react"',
-#     clause:
-#       namedImports:
-#         type: 'ImportSpecifierList'
-#         specifiers: [
-#           identifier: 'Component'
-#         ]
+  testExpression 'export default "abc"',
+    type: 'ExportDefaultDeclaration'
+    declaration:
+      type: 'StringLiteral'
+      value: 'abc'
+      extra:
+        raw: '"abc"'
 
-# test "AST as expected for ExportSpecifierList node", ->
-#   testExpression 'export {a, b, c}',
-#     clause:
-#       type: 'ExportSpecifierList'
-#       specifiers: [
-#         {identifier: 'a'}
-#         {identifier: 'b'}
-#         {identifier: 'c'}
-#       ]
+test "AST as expected for ExportAllDeclaration node", ->
+  testExpression 'export * from "module-name"',
+    type: 'ExportAllDeclaration'
+    source:
+      type: 'StringLiteral'
+      value: 'module-name'
+      extra:
+        raw: '"module-name"'
+    exportKind: 'value'
 
-# # `ModuleSpecifier` never makes it into the AST.
+test "AST as expected for ExportSpecifierList node", ->
+  testExpression 'export {a, b, c}',
+    type: 'ExportNamedDeclaration'
+    declaration: null
+    specifiers: [
+      type: 'ExportSpecifier'
+      local:
+        type: 'Identifier'
+        name: 'a'
+      exported:
+        type: 'Identifier'
+        name: 'a'
+    ,
+      type: 'ExportSpecifier'
+      local:
+        type: 'Identifier'
+        name: 'b'
+      exported:
+        type: 'Identifier'
+        name: 'b'
+    ,
+      type: 'ExportSpecifier'
+      local:
+        type: 'Identifier'
+        name: 'c'
+      exported:
+        type: 'Identifier'
+        name: 'c'
+    ]
 
-# test "AST as expected for ImportSpecifier node", ->
-#   testExpression 'import {Component, PureComponent} from "react"',
-#     clause:
-#       namedImports:
-#         specifiers: [
-#           type: 'ImportSpecifier'
-#           identifier: 'Component'
-#           moduleDeclarationType: 'import'
-#           original:
-#             type: 'IdentifierLiteral'
-#             value: 'Component'
-#         ,
-#           type: 'ImportSpecifier'
-#           identifier: 'PureComponent'
-#         ]
+test "AST as expected for ImportDefaultSpecifier node", ->
+  testExpression 'import React from "react"',
+    type: 'ImportDeclaration'
+    specifiers: [
+      type: 'ImportDefaultSpecifier'
+      local:
+        type: 'Identifier'
+        name: 'React'
+    ]
+    importKind: 'value'
+    source:
+      type: 'StringLiteral'
+      value: 'react'
 
-# test "AST as expected for ImportDefaultSpecifier node", ->
-#   testExpression 'import React from "react"',
-#     clause:
-#       defaultBinding:
-#         type: 'ImportDefaultSpecifier'
-#         moduleDeclarationType: 'import'
-#         identifier: 'React'
-#         original:
-#           type: 'IdentifierLiteral'
-#           value: 'React'
+test "AST as expected for ImportNamespaceSpecifier node", ->
+  testExpression 'import * as React from "react"',
+    type: 'ImportDeclaration'
+    specifiers: [
+      type: 'ImportNamespaceSpecifier'
+      local:
+        type: 'Identifier'
+        name: 'React'
+    ]
+    importKind: 'value'
+    source:
+      type: 'StringLiteral'
+      value: 'react'
 
-# test "AST as expected for ImportNamespaceSpecifier node", ->
-#   testExpression 'import * as React from "react"',
-#     clause:
-#       namedImports:
-#         type: 'ImportNamespaceSpecifier'
-#         moduleDeclarationType: 'import'
-#         identifier: 'React'
-#         original:
-#           type: 'Literal'
-#           value: '*'
-#         alias:
-#           type: 'IdentifierLiteral'
-#           value: 'React'
-
-# test "AST as expected for ExportSpecifier node", ->
-#   testExpression 'export {X}',
-#     clause:
-#       specifiers: [
-#         type: 'ExportSpecifier'
-#         moduleDeclarationType: 'export'
-#         identifier: 'X'
-#         original:
-#           type: 'IdentifierLiteral'
-#       ]
+  testExpression 'import React, * as ReactStar from "react"',
+    type: 'ImportDeclaration'
+    specifiers: [
+      type: 'ImportDefaultSpecifier'
+      local:
+        type: 'Identifier'
+        name: 'React'
+    ,
+      type: 'ImportNamespaceSpecifier'
+      local:
+        type: 'Identifier'
+        name: 'ReactStar'
+    ]
+    importKind: 'value'
+    source:
+      type: 'StringLiteral'
+      value: 'react'
 
 # test "AST as expected for Assign node", ->
 #   testExpression 'a = 1',
