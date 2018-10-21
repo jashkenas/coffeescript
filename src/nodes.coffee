@@ -2340,14 +2340,11 @@ exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
     code
 
   astProperties: ->
-    Object.assign
+    ret =
       specifiers: @clause?.ast() ? []
       source: @source.ast()
-    ,
-      if @clause
-        importKind: 'value'
-      else
-        {}
+    ret.importKind = 'value' if @clause
+    ret
 
 exports.ImportClause = class ImportClause extends Base
   constructor: (@defaultBinding, @namedImports) ->
@@ -2401,27 +2398,28 @@ exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
 
 exports.ExportNamedDeclaration = class ExportNamedDeclaration extends ExportDeclaration
   astProperties: ->
-    clauseAst = @clause.ast()
-    Object.assign(
-      if @clause instanceof ExportSpecifierList
-        specifiers: clauseAst
-        declaration: null
-      else
-        specifiers: []
-        declaration: clauseAst
-    ,
+    ret =
       source: @source?.ast() ? null
       exportKind: 'value'
-    )
+    clauseAst = @clause.ast()
+    if @clause instanceof ExportSpecifierList
+      ret.specifiers = clauseAst
+      ret.declaration = null
+    else
+      ret.specifiers = []
+      ret.declaration = clauseAst
+    ret
 
 exports.ExportDefaultDeclaration = class ExportDefaultDeclaration extends ExportDeclaration
   astProperties: ->
-    declaration: @clause.ast()
+    return
+      declaration: @clause.ast()
 
 exports.ExportAllDeclaration = class ExportAllDeclaration extends ExportDeclaration
   astProperties: ->
-    source: @source.ast()
-    exportKind: 'value'
+    return
+      source: @source.ast()
+      exportKind: 'value'
 
 exports.ModuleSpecifierList = class ModuleSpecifierList extends Base
   constructor: (@specifiers) ->
@@ -2494,11 +2492,13 @@ exports.ImportSpecifier = class ImportSpecifier extends ModuleSpecifier
 
 exports.ImportDefaultSpecifier = class ImportDefaultSpecifier extends ImportSpecifier
   astProperties: ->
-    local: @original.ast()
+    return
+      local: @original.ast()
 
 exports.ImportNamespaceSpecifier = class ImportNamespaceSpecifier extends ImportSpecifier
   astProperties: ->
-    local: @alias.ast()
+    return
+      local: @alias.ast()
 
 exports.ExportSpecifier = class ExportSpecifier extends ModuleSpecifier
   constructor: (local, exported) ->
