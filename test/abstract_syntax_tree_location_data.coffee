@@ -1030,3 +1030,527 @@ test "AST location data as expected for Elision node", ->
       end:
         line: 1
         column: 11
+
+test "AST loctaion data as expected for ModuleDeclaration node", ->
+  testAstLocationData 'export {X}',
+    type: 'ExportNamedDeclaration'
+    specifiers: [
+      local:
+        start: 8
+        end: 9
+        range: [8, 9]
+        loc:
+          start:
+            line: 1
+            column: 8
+          end:
+            line: 1
+            column: 9
+      exported:
+        start: 8
+        end: 9
+        range: [8, 9]
+        loc:
+          start:
+            line: 1
+            column: 8
+          end:
+            line: 1
+            column: 9
+      start: 8
+      end: 9
+      range: [8, 9]
+      loc:
+        start:
+          line: 1
+          column: 8
+        end:
+          line: 1
+          column: 9
+    ]
+    start: 0
+    end: 10
+    range: [0, 10]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 10
+
+  testAstLocationData 'import X from "."',
+    type: 'ImportDeclaration'
+    specifiers: [
+      start: 7
+      end: 8
+      range: [7, 8]
+      loc:
+        start:
+          line: 1
+          column: 7
+        end:
+          line: 1
+          column: 8
+    ]
+    source:
+      start: 14
+      end: 17
+      range: [14, 17]
+      loc:
+        start:
+          line: 1
+          column: 14
+        end:
+          line: 1
+          column: 17
+    start: 0
+    end: 17
+    range: [0, 17]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 17
+
+test "AST as expected for ImportDeclaration node", ->
+  testAstLocationData '''
+    import React, {
+      Component
+    } from "react"
+  ''',
+    type: 'ImportDeclaration'
+    specifiers: [
+      start: 7
+      end: 12
+      range: [7, 12]
+      loc:
+        start:
+          line: 1
+          column: 7
+        end:
+          line: 1
+          column: 12
+    ,
+      imported:
+        start: 18
+        end: 27
+        range: [18, 27]
+        loc:
+          start:
+            line: 2
+            column: 2
+          end:
+            line: 2
+            column: 11
+      start: 18
+      end: 27
+      range: [18, 27]
+      loc:
+        start:
+          line: 2
+          column: 2
+        end:
+          line: 2
+          column: 11
+    ]
+    source:
+      start: 35
+      end: 42
+      range: [35, 42]
+      loc:
+        start:
+          line: 3
+          column: 7
+        end:
+          line: 3
+          column: 14
+    start: 0
+    end: 42
+    range: [0, 42]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 14
+
+test "AST as expected for ExportNamedDeclaration node", ->
+  testAstLocationData 'export {}',
+    type: 'ExportNamedDeclaration'
+    start: 0
+    end: 9
+    range: [0, 9]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 9
+
+  # testAstLocationData 'export fn = ->',
+  #   type: 'ExportNamedDeclaration'
+  #   clause:
+  #     type: 'Assign'
+  #     variable:
+  #       value: 'fn'
+  #     value:
+  #       type: 'Code'
+
+  # testAstLocationData 'export class A',
+
+  testAstLocationData '''
+    export {
+      x as y
+      z as default
+      }
+  ''',
+    type: 'ExportNamedDeclaration'
+    specifiers: [
+      local:
+        start: 11
+        end: 12
+        range: [11, 12]
+        loc:
+          start:
+            line: 2
+            column: 2
+          end:
+            line: 2
+            column: 3
+      exported:
+        start: 16
+        end: 17
+        range: [16, 17]
+        loc:
+          start:
+            line: 2
+            column: 7
+          end:
+            line: 2
+            column: 8
+      start: 11
+      end: 17
+      range: [11, 17]
+      loc:
+        start:
+          line: 2
+          column: 2
+        end:
+          line: 2
+          column: 8
+    ,
+      local:
+        start: 20
+        end: 21
+        range: [20, 21]
+        loc:
+          start:
+            line: 3
+            column: 2
+          end:
+            line: 3
+            column: 3
+      exported:
+        start: 25
+        end: 32
+        range: [25, 32]
+        loc:
+          start:
+            line: 3
+            column: 7
+          end:
+            line: 3
+            column: 14
+      start: 20
+      end: 32
+      range: [20, 32]
+      loc:
+        start:
+          line: 3
+          column: 2
+        end:
+          line: 3
+          column: 14
+    ]
+    start: 0
+    end: 36
+    range: [0, 36]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 3
+
+  testAstLocationData 'export {default, default as b} from "./abc"',
+    type: 'ExportNamedDeclaration'
+    specifiers: [
+      local:
+        start: 8
+        end: 15
+        range: [8, 15]
+        loc:
+          start:
+            line: 1
+            column: 8
+          end:
+            line: 1
+            column: 15
+      start: 8
+      end: 15
+      range: [8, 15]
+      loc:
+        start:
+          line: 1
+          column: 8
+        end:
+          line: 1
+          column: 15
+    ,
+      local:
+        start: 17
+        end: 24
+        range: [17, 24]
+        loc:
+          start:
+            line: 1
+            column: 17
+          end:
+            line: 1
+            column: 24
+      exported:
+        start: 28
+        end: 29
+        range: [28, 29]
+        loc:
+          start:
+            line: 1
+            column: 28
+          end:
+            line: 1
+            column: 29
+      start: 17
+      end: 29
+      range: [17, 29]
+      loc:
+        start:
+          line: 1
+          column: 17
+        end:
+          line: 1
+          column: 29
+    ]
+    source:
+      start: 36
+      end: 43
+      range: [36, 43]
+      loc:
+        start:
+          line: 1
+          column: 36
+        end:
+          line: 1
+          column: 43
+    start: 0
+    end: 43
+    range: [0, 43]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 43
+
+test "AST as expected for ExportDefaultDeclaration node", ->
+  # testAstLocationData 'export default class',
+  #   type: 'ExportDefaultDeclaration'
+  #   clause:
+  #     type: 'Class'
+
+  testAstLocationData 'export default "abc"',
+    type: 'ExportDefaultDeclaration'
+    declaration:
+      start: 15
+      end: 20
+      range: [15, 20]
+      loc:
+        start:
+          line: 1
+          column: 15
+        end:
+          line: 1
+          column: 20
+    start: 0
+    end: 20
+    range: [0, 20]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 20
+
+test "AST as expected for ExportAllDeclaration node", ->
+  testAstLocationData 'export * from "module-name"',
+    type: 'ExportAllDeclaration'
+    source:
+      start: 14
+      end: 27
+      range: [14, 27]
+      loc:
+        start:
+          line: 1
+          column: 14
+        end:
+          line: 1
+          column: 27
+    start: 0
+    end: 27
+    range: [0, 27]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 27
+
+test "AST as expected for ImportDefaultSpecifier node", ->
+  testAstLocationData 'import React from "react"',
+    type: 'ImportDeclaration'
+    specifiers: [
+      start: 7
+      end: 12
+      range: [7, 12]
+      loc:
+        start:
+          line: 1
+          column: 7
+        end:
+          line: 1
+          column: 12
+    ]
+    source:
+      start: 18
+      end: 25
+      range: [18, 25]
+      loc:
+        start:
+          line: 1
+          column: 18
+        end:
+          line: 1
+          column: 25
+    start: 0
+    end: 25
+    range: [0, 25]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 25
+
+test "AST as expected for ImportNamespaceSpecifier node", ->
+  testAstLocationData 'import * as React from "react"',
+    type: 'ImportDeclaration'
+    specifiers: [
+      start: 7
+      end: 17
+      range: [7, 17]
+      loc:
+        start:
+          line: 1
+          column: 7
+        end:
+          line: 1
+          column: 17
+    ]
+    source:
+      start: 23
+      end: 30
+      range: [23, 30]
+      loc:
+        start:
+          line: 1
+          column: 23
+        end:
+          line: 1
+          column: 30
+    start: 0
+    end: 30
+    range: [0, 30]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 30
+
+  testAstLocationData 'import React, * as ReactStar from "react"',
+    type: 'ImportDeclaration'
+    specifiers: [
+      start: 7
+      end: 12
+      range: [7, 12]
+      loc:
+        start:
+          line: 1
+          column: 7
+        end:
+          line: 1
+          column: 12
+    ,
+      local:
+        start: 19
+        end: 28
+        range: [19, 28]
+        loc:
+          start:
+            line: 1
+            column: 19
+          end:
+            line: 1
+            column: 28
+      start: 14
+      end: 28
+      range: [14, 28]
+      loc:
+        start:
+          line: 1
+          column: 14
+        end:
+          line: 1
+          column: 28
+    ]
+    source:
+      start: 34
+      end: 41
+      range: [34, 41]
+      loc:
+        start:
+          line: 1
+          column: 34
+        end:
+          line: 1
+          column: 41
+    start: 0
+    end: 41
+    range: [0, 41]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 41

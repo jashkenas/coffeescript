@@ -859,8 +859,9 @@ exports.StringLiteral = class StringLiteral extends Literal
               ''
             else
               ' '
+    @delimiter = @quote.charAt 0
     @value = makeDelimitedLiteral val, {
-      delimiter: @quote.charAt 0
+      @delimiter
       @double
     }
 
@@ -873,6 +874,12 @@ exports.StringLiteral = class StringLiteral extends Literal
     unquoted = unquoted.replace /\\"/g, '"'  if doubleQuote
     unquoted = unquoted.replace /\\n/g, '\n' if csx
     unquoted
+
+  astProperties: ->
+    return
+      value: @originalValue
+      extra:
+        raw: "#{@delimiter}#{@originalValue}#{@delimiter}"
 
 exports.RegexLiteral = class RegexLiteral extends Literal
   constructor: (value, {@delimiter = '/'} = {}) ->
@@ -978,6 +985,12 @@ exports.BooleanLiteral = class BooleanLiteral extends Literal
   astProperties: ->
     value: if @value is 'true' then yes else no
     name: @originalValue
+
+exports.DefaultLiteral = class DefaultLiteral extends Literal
+  astType: -> 'Identifier'
+
+  astProperties: ->
+    name: 'default'
 
 #### Return
 
@@ -2326,6 +2339,13 @@ exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
     code.push @makeCode ';'
     code
 
+  astProperties: ->
+    ret =
+      specifiers: @clause?.ast() ? []
+      source: @source.ast()
+    ret.importKind = 'value' if @clause
+    ret
+
 exports.ImportClause = class ImportClause extends Base
   constructor: (@defaultBinding, @namedImports) ->
     super()
@@ -2343,6 +2363,14 @@ exports.ImportClause = class ImportClause extends Base
       code.push @namedImports.compileNode(o)...
 
     code
+
+  ast: ->
+    # The AST for `ImportClause` is the non-nested list of import specifiers
+    # that will be the `specifiers` property of an `ImportDeclaration` AST
+    compact flatten [
+      @defaultBinding?.ast()
+      @namedImports?.ast()
+    ]
 
 exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
   compileNode: (o) ->
@@ -2371,10 +2399,29 @@ exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
     code
 
 exports.ExportNamedDeclaration = class ExportNamedDeclaration extends ExportDeclaration
+  astProperties: ->
+    ret =
+      source: @source?.ast() ? null
+      exportKind: 'value'
+    clauseAst = @clause.ast()
+    if @clause instanceof ExportSpecifierList
+      ret.specifiers = clauseAst
+      ret.declaration = null
+    else
+      ret.specifiers = []
+      ret.declaration = clauseAst
+    ret
 
 exports.ExportDefaultDeclaration = class ExportDefaultDeclaration extends ExportDeclaration
+  astProperties: ->
+    return
+      declaration: @clause.ast()
 
 exports.ExportAllDeclaration = class ExportAllDeclaration extends ExportDeclaration
+  astProperties: ->
+    return
+      source: @source.ast()
+      exportKind: 'value'
 
 exports.ModuleSpecifierList = class ModuleSpecifierList extends Base
   constructor: (@specifiers) ->
@@ -2396,6 +2443,9 @@ exports.ModuleSpecifierList = class ModuleSpecifierList extends Base
     else
       code.push @makeCode '{}'
     code
+
+  ast: ->
+    specifier.ast() for specifier in @specifiers
 
 exports.ImportSpecifierList = class ImportSpecifierList extends ModuleSpecifierList
 
@@ -2435,13 +2485,32 @@ exports.ImportSpecifier = class ImportSpecifier extends ModuleSpecifier
       o.importedSymbols.push @identifier
     super o
 
+  astProperties: ->
+    originalAst = @original.ast()
+    return
+      imported: originalAst
+      local: @alias?.ast() ? originalAst
+      importKind: null
+
 exports.ImportDefaultSpecifier = class ImportDefaultSpecifier extends ImportSpecifier
+  astProperties: ->
+    return
+      local: @original.ast()
 
 exports.ImportNamespaceSpecifier = class ImportNamespaceSpecifier extends ImportSpecifier
+  astProperties: ->
+    return
+      local: @alias.ast()
 
 exports.ExportSpecifier = class ExportSpecifier extends ModuleSpecifier
   constructor: (local, exported) ->
     super local, exported, 'export'
+
+  astProperties: ->
+    originalAst = @original.ast()
+    return
+      local: originalAst
+      exported: @alias?.ast() ? originalAst
 
 #### Assign
 
