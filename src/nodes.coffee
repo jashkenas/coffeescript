@@ -2365,6 +2365,8 @@ exports.ImportClause = class ImportClause extends Base
     code
 
   ast: ->
+    # The AST for `ImportClause` is the non-nested list of import specifiers
+    # that will be the `specifiers` property of an `ImportDeclaration` AST
     compact flatten [
       @defaultBinding?.ast()
       @namedImports?.ast()
