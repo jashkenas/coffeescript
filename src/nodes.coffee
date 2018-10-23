@@ -929,6 +929,9 @@ exports.ComputedPropertyName = class ComputedPropertyName extends PropertyName
   compileNode: (o) ->
     [@makeCode('['), @value.compileToFragments(o, LEVEL_LIST)..., @makeCode(']')]
 
+  ast: ->
+    Object.assign @value.ast(), @astLocationData()
+
 exports.StatementLiteral = class StatementLiteral extends Literal
   isStatement: YES
 
@@ -1894,6 +1897,54 @@ exports.Obj = class Obj extends Base
       answer.push @makeCode join
     if @front then @wrapInParentheses answer else answer
 
+  expandProperty: (property) ->
+    {variable, context, operatorToken} = property
+    key = if property instanceof Assign and context is 'object'
+      variable
+    else if property instanceof Assign
+      operatorToken.error "unexpected #{operatorToken.value}" unless @lhs
+      variable
+    else
+      property
+    if key instanceof Value and key.hasProperties()
+      key.error 'invalid object key' unless context isnt 'object' and key.this
+      return new Assign(key, property, 'object', shorthand: yes).withLocationDataFrom property
+    return property unless key is property
+    return property if property instanceof Splat
+
+    new Assign(property, property, 'object', shorthand: yes).withLocationDataFrom property
+
+  expandProperties: ->
+    @expandProperty(property) for property in @properties
+
+  getPropertyAst: (property) ->
+    return property.ast() if property instanceof Splat
+
+    {variable, value, shorthand} = property
+    isComputedPropertyName = variable instanceof Value and variable.base instanceof ComputedPropertyName
+
+    key =
+      if isComputedPropertyName
+        variable.base.value
+      else
+        variable.unwrap()
+
+    Object.assign
+      type: 'ObjectProperty'
+      key: key.ast()
+      value: value.ast()
+      shorthand: !!shorthand
+      computed: !!isComputedPropertyName
+      method: no
+    , property.astLocationData()
+
+  astType: -> 'ObjectExpression'
+
+  astProperties: ->
+    properties:
+      @getPropertyAst(property) for property in @expandProperties()
+    implicit: !!@generated
+
 #### Arr
 
 # An array literal.
@@ -2519,7 +2570,7 @@ exports.ExportSpecifier = class ExportSpecifier extends ModuleSpecifier
 exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options = {}) ->
     super()
-    {@param, @subpattern, @operatorToken, @moduleDeclaration, @originalContext = @context} = options
+    {@param, @subpattern, @operatorToken, @moduleDeclaration, @shorthand, @originalContext = @context} = options
 
   children: ['variable', 'value']
 

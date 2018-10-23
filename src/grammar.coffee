@@ -251,9 +251,9 @@ grammar =
   # Object literal spread properties.
   ObjRestValue: [
     o 'SimpleObjAssignable ...', -> new Splat new Value $1
-    o '... SimpleObjAssignable', -> new Splat new Value $2
+    o '... SimpleObjAssignable', -> new Splat new Value($2), postfix: no
     o 'ObjSpreadExpr ...',       -> new Splat $1
-    o '... ObjSpreadExpr',       -> new Splat $2
+    o '... ObjSpreadExpr',       -> new Splat $2, postfix: no
   ]
 
   ObjSpreadExpr: [
