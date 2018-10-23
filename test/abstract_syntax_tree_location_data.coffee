@@ -1031,7 +1031,7 @@ test "AST location data as expected for Elision node", ->
         line: 1
         column: 11
 
-test "AST loctaion data as expected for ModuleDeclaration node", ->
+test "AST location data as expected for ModuleDeclaration node", ->
   testAstLocationData 'export {X}',
     type: 'ExportNamedDeclaration'
     specifiers: [
@@ -1115,7 +1115,7 @@ test "AST loctaion data as expected for ModuleDeclaration node", ->
         line: 1
         column: 17
 
-test "AST as expected for ImportDeclaration node", ->
+test "AST location data as expected for ImportDeclaration node", ->
   testAstLocationData '''
     import React, {
       Component
@@ -1178,7 +1178,7 @@ test "AST as expected for ImportDeclaration node", ->
         line: 3
         column: 14
 
-test "AST as expected for ExportNamedDeclaration node", ->
+test "AST location data as expected for ExportNamedDeclaration node", ->
   testAstLocationData 'export {}',
     type: 'ExportNamedDeclaration'
     start: 0
@@ -1368,7 +1368,7 @@ test "AST as expected for ExportNamedDeclaration node", ->
         line: 1
         column: 43
 
-test "AST as expected for ExportDefaultDeclaration node", ->
+test "AST location data as expected for ExportDefaultDeclaration node", ->
   # testAstLocationData 'export default class',
   #   type: 'ExportDefaultDeclaration'
   #   clause:
@@ -1398,7 +1398,7 @@ test "AST as expected for ExportDefaultDeclaration node", ->
         line: 1
         column: 20
 
-test "AST as expected for ExportAllDeclaration node", ->
+test "AST location data as expected for ExportAllDeclaration node", ->
   testAstLocationData 'export * from "module-name"',
     type: 'ExportAllDeclaration'
     source:
@@ -1423,7 +1423,7 @@ test "AST as expected for ExportAllDeclaration node", ->
         line: 1
         column: 27
 
-test "AST as expected for ImportDefaultSpecifier node", ->
+test "AST location data as expected for ImportDefaultSpecifier node", ->
   testAstLocationData 'import React from "react"',
     type: 'ImportDeclaration'
     specifiers: [
@@ -1460,7 +1460,7 @@ test "AST as expected for ImportDefaultSpecifier node", ->
         line: 1
         column: 25
 
-test "AST as expected for ImportNamespaceSpecifier node", ->
+test "AST location data as expected for ImportNamespaceSpecifier node", ->
   testAstLocationData 'import * as React from "react"',
     type: 'ImportDeclaration'
     specifiers: [
@@ -1554,3 +1554,351 @@ test "AST as expected for ImportNamespaceSpecifier node", ->
       end:
         line: 1
         column: 41
+
+test "AST location data as expected for Obj node", ->
+  testAstLocationData "{a: 1, b, [c], @d, [e()]: f, 'g': 2, ...h, i...}",
+    type: 'ObjectExpression'
+    properties: [
+      key:
+        start: 1
+        end: 2
+        range: [1, 2]
+        loc:
+          start:
+            line: 1
+            column: 1
+          end:
+            line: 1
+            column: 2
+      value:
+        start: 4
+        end: 5
+        range: [4, 5]
+        loc:
+          start:
+            line: 1
+            column: 4
+          end:
+            line: 1
+            column: 5
+      start: 1
+      end: 5
+      range: [1, 5]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 5
+    ,
+      key:
+        start: 7
+        end: 8
+        range: [7, 8]
+        loc:
+          start:
+            line: 1
+            column: 7
+          end:
+            line: 1
+            column: 8
+      value:
+        start: 7
+        end: 8
+        range: [7, 8]
+        loc:
+          start:
+            line: 1
+            column: 7
+          end:
+            line: 1
+            column: 8
+      start: 7
+      end: 8
+      range: [7, 8]
+      loc:
+        start:
+          line: 1
+          column: 7
+        end:
+          line: 1
+          column: 8
+    ,
+      key:
+        start: 11
+        end: 12
+        range: [11, 12]
+        loc:
+          start:
+            line: 1
+            column: 11
+          end:
+            line: 1
+            column: 12
+      value:
+        start: 11
+        end: 12
+        range: [11, 12]
+        loc:
+          start:
+            line: 1
+            column: 11
+          end:
+            line: 1
+            column: 12
+      start: 10
+      end: 13
+      range: [10, 13]
+      loc:
+        start:
+          line: 1
+          column: 10
+        end:
+          line: 1
+          column: 13
+    ,
+      key:
+        object:
+          start: 15
+          end: 16
+          range: [15, 16]
+          loc:
+            start:
+              line: 1
+              column: 15
+            end:
+              line: 1
+              column: 16
+        property:
+          start: 16
+          end: 17
+          range: [16, 17]
+          loc:
+            start:
+              line: 1
+              column: 16
+            end:
+              line: 1
+              column: 17
+        start: 15
+        end: 17
+        range: [15, 17]
+        loc:
+          start:
+            line: 1
+            column: 15
+          end:
+            line: 1
+            column: 17
+      value:
+        object:
+          start: 15
+          end: 16
+          range: [15, 16]
+          loc:
+            start:
+              line: 1
+              column: 15
+            end:
+              line: 1
+              column: 16
+        property:
+          start: 16
+          end: 17
+          range: [16, 17]
+          loc:
+            start:
+              line: 1
+              column: 16
+            end:
+              line: 1
+              column: 17
+        start: 15
+        end: 17
+        range: [15, 17]
+        loc:
+          start:
+            line: 1
+            column: 15
+          end:
+            line: 1
+            column: 17
+      start: 15
+      end: 17
+      range: [15, 17]
+      loc:
+        start:
+          line: 1
+          column: 15
+        end:
+          line: 1
+          column: 17
+    ,
+      key:
+        start: 20
+        end: 23
+        range: [20, 23]
+        loc:
+          start:
+            line: 1
+            column: 20
+          end:
+            line: 1
+            column: 23
+      value:
+        start: 26
+        end: 27
+        range: [26, 27]
+        loc:
+          start:
+            line: 1
+            column: 26
+          end:
+            line: 1
+            column: 27
+      start: 19
+      end: 27
+      range: [19, 27]
+      loc:
+        start:
+          line: 1
+          column: 19
+        end:
+          line: 1
+          column: 27
+    ,
+      key:
+        start: 29
+        end: 32
+        range: [29, 32]
+        loc:
+          start:
+            line: 1
+            column: 29
+          end:
+            line: 1
+            column: 32
+      value:
+        start: 34
+        end: 35
+        range: [34, 35]
+        loc:
+          start:
+            line: 1
+            column: 34
+          end:
+            line: 1
+            column: 35
+      start: 29
+      end: 35
+      range: [29, 35]
+      loc:
+        start:
+          line: 1
+          column: 29
+        end:
+          line: 1
+          column: 35
+    ,
+      argument:
+        start: 40
+        end: 41
+        range: [40, 41]
+        loc:
+          start:
+            line: 1
+            column: 40
+          end:
+            line: 1
+            column: 41
+      start: 37
+      end: 41
+      range: [37, 41]
+      loc:
+        start:
+          line: 1
+          column: 37
+        end:
+          line: 1
+          column: 41
+    ,
+      argument:
+        start: 43
+        end: 44
+        range: [43, 44]
+        loc:
+          start:
+            line: 1
+            column: 43
+          end:
+            line: 1
+            column: 44
+      start: 43
+      end: 47
+      range: [43, 47]
+      loc:
+        start:
+          line: 1
+          column: 43
+        end:
+          line: 1
+          column: 47
+    ]
+    start: 0
+    end: 48
+    range: [0, 48]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 48
+
+  testAstLocationData 'a: 1',
+    type: 'ObjectExpression'
+    properties: [
+      key:
+        start: 0
+        end: 1
+        range: [0, 1]
+        loc:
+          start:
+            line: 1
+            column: 0
+          end:
+            line: 1
+            column: 1
+      value:
+        start: 3
+        end: 4
+        range: [3, 4]
+        loc:
+          start:
+            line: 1
+            column: 3
+          end:
+            line: 1
+            column: 4
+      start: 0
+      end: 4
+      range: [0, 4]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 4
+    ]
+    start: 0
+    end: 4
+    range: [0, 4]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 4

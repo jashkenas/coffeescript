@@ -930,7 +930,7 @@ exports.ComputedPropertyName = class ComputedPropertyName extends PropertyName
     [@makeCode('['), @value.compileToFragments(o, LEVEL_LIST)..., @makeCode(']')]
 
   ast: ->
-    Object.assign @value.ast(), @astLocationData()
+    @value.ast()
 
 exports.StatementLiteral = class StatementLiteral extends Literal
   isStatement: YES
@@ -1923,15 +1923,9 @@ exports.Obj = class Obj extends Base
     {variable, value, shorthand} = property
     isComputedPropertyName = variable instanceof Value and variable.base instanceof ComputedPropertyName
 
-    key =
-      if isComputedPropertyName
-        variable.base.value
-      else
-        variable.unwrap()
-
     Object.assign
       type: 'ObjectProperty'
-      key: key.ast()
+      key: variable.ast()
       value: value.ast()
       shorthand: !!shorthand
       computed: !!isComputedPropertyName
