@@ -1938,6 +1938,7 @@ exports.ObjectProperty = class ObjectProperty extends Base
         @value = value
       else
         # LHS shorthand with default eg {a = 1} = b
+        @value = fromAssign
         @shorthand = yes
       @locationData = fromAssign.locationData
     else
