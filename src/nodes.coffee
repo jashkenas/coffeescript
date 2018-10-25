@@ -2583,7 +2583,7 @@ exports.ExportSpecifier = class ExportSpecifier extends ModuleSpecifier
 exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options = {}) ->
     super()
-    {@param, @subpattern, @operatorToken, @moduleDeclaration, @shorthand, @originalContext = @context} = options
+    {@param, @subpattern, @operatorToken, @moduleDeclaration, @originalContext = @context} = options
 
   children: ['variable', 'value']
 
