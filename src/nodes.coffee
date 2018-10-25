@@ -1897,6 +1897,7 @@ exports.Obj = class Obj extends Base
       answer.push @makeCode join
     if @front then @wrapInParentheses answer else answer
 
+  # Convert "bare" properties to `ObjectProperty`s (or `Splat`s)
   expandProperty: (property) ->
     {variable, context, operatorToken} = property
     key = if property instanceof Assign and context is 'object'
@@ -1908,36 +1909,53 @@ exports.Obj = class Obj extends Base
       property
     if key instanceof Value and key.hasProperties()
       key.error 'invalid object key' unless context isnt 'object' and key.this
-      return new Assign(key, property, 'object', shorthand: yes).withLocationDataFrom property
-    return property unless key is property
+      if property instanceof Assign
+        return new ObjectProperty fromAssign: property
+      else
+        return new ObjectProperty key: property
+    return new ObjectProperty(fromAssign: property) unless key is property
     return property if property instanceof Splat
 
-    new Assign(property, property, 'object', shorthand: yes).withLocationDataFrom property
+    new ObjectProperty key: property
 
   expandProperties: ->
     @expandProperty(property) for property in @properties
-
-  getPropertyAst: (property) ->
-    return property.ast() if property instanceof Splat
-
-    {variable, value, shorthand} = property
-    isComputedPropertyName = variable instanceof Value and variable.base instanceof ComputedPropertyName
-
-    Object.assign
-      type: 'ObjectProperty'
-      key: variable.ast()
-      value: value.ast()
-      shorthand: !!shorthand
-      computed: !!isComputedPropertyName
-      method: no
-    , property.astLocationData()
 
   astType: -> 'ObjectExpression'
 
   astProperties: ->
     properties:
-      @getPropertyAst(property) for property in @expandProperties()
+      property.ast() for property in @expandProperties()
     implicit: !!@generated
+
+exports.ObjectProperty = class ObjectProperty extends Base
+  constructor: ({key, fromAssign}) ->
+    super()
+    if fromAssign
+      {variable: @key, value, context} = fromAssign
+      if context is 'object'
+        # All non-shorthand properties (ie includes `:`)
+        @value = value
+      else
+        # LHS shorthand with default eg {a = 1} = b
+        @shorthand = yes
+      @locationData = fromAssign.locationData
+    else
+      # shorthand without default eg {a} or {@a} or {[a]}
+      @key = key
+      @shorthand = yes
+      @locationData = key.locationData
+
+  astProperties: ->
+    isComputedPropertyName = @key instanceof Value and @key.base instanceof ComputedPropertyName
+    keyAst = @key.ast()
+
+    return
+      key: keyAst
+      value: @value?.ast() ? keyAst
+      shorthand: !!@shorthand
+      computed: !!isComputedPropertyName
+      method: no
 
 #### Arr
 
