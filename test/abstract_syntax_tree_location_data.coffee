@@ -1939,6 +1939,41 @@ test "AST location data as expected for Assign node", ->
         line: 1
         column: 5
 
+  testAstLocationData 'a += b',
+    type: 'AssignmentExpression'
+    left:
+      start: 0
+      end: 1
+      range: [0, 1]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 1
+    right:
+      start: 5
+      end: 6
+      range: [5, 6]
+      loc:
+        start:
+          line: 1
+          column: 5
+        end:
+          line: 1
+          column: 6
+    start: 0
+    end: 6
+    range: [0, 6]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 6
+
   testAstLocationData '{a: [...b]} = c',
     type: 'AssignmentExpression'
     left:

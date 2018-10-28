@@ -1117,6 +1117,17 @@ test "AST as expected for Assign node", ->
     right:
       type: 'Identifier'
       name: 'b'
+    operator: '='
+
+  testExpression 'a += b',
+    type: 'AssignmentExpression'
+    left:
+      type: 'Identifier'
+      name: 'a'
+    right:
+      type: 'Identifier'
+      name: 'b'
+    operator: '+='
 
   testExpression '[@a = 2, {b: {c = 3} = {}, d...}, ...e] = f',
     type: 'AssignmentExpression'
