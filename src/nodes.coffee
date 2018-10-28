@@ -1763,7 +1763,7 @@ exports.Slice = class Slice extends Base
 
 # An object literal, nothing fancy.
 exports.Obj = class Obj extends Base
-  constructor: (props, @generated = no, @lhs = no) ->
+  constructor: (props, @generated = no) ->
     super()
 
     @objects = @properties = props or []
@@ -1815,14 +1815,7 @@ exports.Obj = class Obj extends Base
 
     # If this object is the left-hand side of an assignment, all its children
     # are too.
-    if @lhs
-      for prop in props when prop instanceof Assign
-        {value} = prop
-        unwrappedVal = value.unwrapAll()
-        if unwrappedVal instanceof Arr or unwrappedVal instanceof Obj
-          unwrappedVal.lhs = yes
-        else if unwrappedVal instanceof Assign
-          unwrappedVal.nestedLhs = yes
+    @propagateLhs()
 
     isCompact = yes
     for prop in @properties
@@ -1921,7 +1914,29 @@ exports.Obj = class Obj extends Base
   expandProperties: ->
     @expandProperty(property) for property in @properties
 
-  astType: -> 'ObjectExpression'
+  propagateLhs: (setLhs) ->
+    @lhs = yes if setLhs
+    return unless @lhs
+
+    for property in @properties
+      if property instanceof Assign and property.context is 'object'
+        {value} = property
+        unwrappedValue = value.unwrapAll()
+        if unwrappedValue instanceof Arr or unwrappedValue instanceof Obj
+          unwrappedValue.propagateLhs yes
+        else if unwrappedValue instanceof Assign
+          unwrappedValue.nestedLhs = yes
+      else if property instanceof Assign
+        # shorthand property with default eg {a = 1} = b
+        property.nestedLhs = yes
+      else if property instanceof Splat
+        property.lhs = yes
+
+  astType: ->
+    if @lhs
+      'ObjectPattern'
+    else
+      'ObjectExpression'
 
   astProperties: ->
     properties:
@@ -1965,6 +1980,7 @@ exports.Arr = class Arr extends Base
   constructor: (objs, @lhs = no) ->
     super()
     @objects = objs or []
+    @propagateLhs()
 
   children: ['objects']
 
@@ -1998,10 +2014,6 @@ exports.Arr = class Arr extends Base
       if unwrappedObj.comments and
          unwrappedObj.comments.filter((comment) -> not comment.here).length is 0
         unwrappedObj.includeCommentFragments = YES
-      # If this array is the left-hand side of an assignment, all its children
-      # are too.
-      if @lhs
-        unwrappedObj.lhs = yes if unwrappedObj instanceof Arr or unwrappedObj instanceof Obj
 
     compiledObjs = (obj.compileToFragments o, LEVEL_LIST for obj in @objects)
     olen = compiledObjs.length
@@ -2049,7 +2061,24 @@ exports.Arr = class Arr extends Base
       obj = obj.unwrapAll()
       obj.eachName iterator
 
-  astType: -> 'ArrayExpression'
+  # If this array is the left-hand side of an assignment, all its children
+  # are too.
+  propagateLhs: (setLhs) ->
+    @lhs = yes if setLhs
+    return unless @lhs
+    for object in @objects
+      object.lhs = yes if object instanceof Splat
+      unwrappedObject = object.unwrapAll()
+      if unwrappedObject instanceof Arr or unwrappedObject instanceof Obj
+        unwrappedObject.propagateLhs yes
+      else if unwrappedObject instanceof Assign
+        unwrappedObject.nestedLhs = yes
+
+  astType: ->
+    if @lhs
+      'ArrayPattern'
+    else
+      'ArrayExpression'
 
   astProperties: ->
     return
@@ -2584,6 +2613,7 @@ exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options = {}) ->
     super()
     {@param, @subpattern, @operatorToken, @moduleDeclaration, @originalContext = @context} = options
+    @propagateLhs()
 
   children: ['variable', 'value']
 
@@ -2610,18 +2640,11 @@ exports.Assign = class Assign extends Base
   compileNode: (o) ->
     isValue = @variable instanceof Value
     if isValue
-      # When compiling `@variable`, remember if it is part of a function parameter.
-      @variable.param = @param
-
       # If `@variable` is an array or an object, we’re destructuring;
       # if it’s also `isAssignable()`, the destructuring syntax is supported
       # in ES and we can output it as is; otherwise we `@compileDestructuring`
       # and convert this ES-unsupported destructuring into acceptable output.
       if @variable.isArray() or @variable.isObject()
-        # This is the left-hand side of an assignment; let `Arr` and `Obj`
-        # know that, so that those nodes know that they’re assignable as
-        # destructured variables.
-        @variable.base.lhs = yes
         unless @variable.isAssignable()
           if @variable.isObject() and @variable.base.hasSplat()
             return @compileObjectDestruct o
@@ -2918,6 +2941,31 @@ exports.Assign = class Assign extends Base
 
   eachName: (iterator) ->
     @variable.unwrapAll().eachName iterator
+
+  isDefaultAssignment: -> @param or @nestedLhs
+
+  propagateLhs: ->
+    return unless @variable?.isArray?() or @variable?.isObject?()
+    # This is the left-hand side of an assignment; let `Arr` and `Obj`
+    # know that, so that those nodes know that they’re assignable as
+    # destructured variables.
+    @variable.base.propagateLhs yes
+
+  astType: ->
+    if @isDefaultAssignment()
+      'AssignmentPattern'
+    else
+      'AssignmentExpression'
+
+  astProperties: ->
+    ret =
+      right: @value.ast()
+      left: @variable.ast()
+
+    unless @isDefaultAssignment()
+      ret.operator = @originalContext ? '='
+
+    ret
 
 #### FuncGlyph
 
@@ -3368,7 +3416,11 @@ exports.Splat = class Splat extends Base
 
   unwrap: -> @name
 
-  astType: -> 'SpreadElement'
+  astType: ->
+    if @lhs
+      'RestElement'
+    else
+      'SpreadElement'
 
   astProperties: -> {
     argument: @name.ast()
