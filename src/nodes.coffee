@@ -1890,7 +1890,7 @@ exports.Obj = class Obj extends Base
       answer.push @makeCode join
     if @front then @wrapInParentheses answer else answer
 
-  # Convert "bare" properties to `ObjectProperty`s (or `Splat`s)
+  # Convert “bare” properties to `ObjectProperty`s (or `Splat`s).
   expandProperty: (property) ->
     {variable, context, operatorToken} = property
     key = if property instanceof Assign and context is 'object'
@@ -1939,9 +1939,10 @@ exports.Obj = class Obj extends Base
       'ObjectExpression'
 
   astProperties: ->
-    properties:
-      property.ast() for property in @expandProperties()
-    implicit: !!@generated
+    return
+      implicit: !!@generated
+      properties:
+        property.ast() for property in @expandProperties()
 
 exports.ObjectProperty = class ObjectProperty extends Base
   constructor: ({key, fromAssign}) ->
@@ -1949,15 +1950,15 @@ exports.ObjectProperty = class ObjectProperty extends Base
     if fromAssign
       {variable: @key, value, context} = fromAssign
       if context is 'object'
-        # All non-shorthand properties (ie includes `:`)
+        # All non-shorthand properties (i.e. includes `:`).
         @value = value
       else
-        # LHS shorthand with default eg {a = 1} = b
+        # Left-hand-side shorthand with default e.g. `{a = 1} = b`.
         @value = fromAssign
         @shorthand = yes
       @locationData = fromAssign.locationData
     else
-      # shorthand without default eg {a} or {@a} or {[a]}
+      # Shorthand without default e.g. `{a}` or `{@a}` or `{[a]}`.
       @key = key
       @shorthand = yes
       @locationData = key.locationData
