@@ -1902,3 +1902,156 @@ test "AST location data as expected for Obj node", ->
       end:
         line: 1
         column: 4
+
+test "AST location data as expected for Assign node", ->
+  testAstLocationData 'a = b',
+    type: 'AssignmentExpression'
+    left:
+      start: 0
+      end: 1
+      range: [0, 1]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 1
+    right:
+      start: 4
+      end: 5
+      range: [4, 5]
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 1
+          column: 5
+    start: 0
+    end: 5
+    range: [0, 5]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 5
+
+  testAstLocationData 'a += b',
+    type: 'AssignmentExpression'
+    left:
+      start: 0
+      end: 1
+      range: [0, 1]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 1
+    right:
+      start: 5
+      end: 6
+      range: [5, 6]
+      loc:
+        start:
+          line: 1
+          column: 5
+        end:
+          line: 1
+          column: 6
+    start: 0
+    end: 6
+    range: [0, 6]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 6
+
+  testAstLocationData '{a: [...b]} = c',
+    type: 'AssignmentExpression'
+    left:
+      properties: [
+        type: 'ObjectProperty'
+        key:
+          start: 1
+          end: 2
+          range: [1, 2]
+          loc:
+            start:
+              line: 1
+              column: 1
+            end:
+              line: 1
+              column: 2
+        value:
+          elements: [
+            start: 5
+            end: 9
+            range: [5, 9]
+            loc:
+              start:
+                line: 1
+                column: 5
+              end:
+                line: 1
+                column: 9
+          ]
+          start: 4
+          end: 10
+          range: [4, 10]
+          loc:
+            start:
+              line: 1
+              column: 4
+            end:
+              line: 1
+              column: 10
+        start: 1
+        end: 10
+        range: [1, 10]
+        loc:
+          start:
+            line: 1
+            column: 1
+          end:
+            line: 1
+            column: 10
+      ]
+      start: 0
+      end: 11
+      range: [0, 11]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 11
+    right:
+      start: 14
+      end: 15
+      range: [14, 15]
+      loc:
+        start:
+          line: 1
+          column: 14
+        end:
+          line: 1
+          column: 15
+    start: 0
+    end: 15
+    range: [0, 15]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 15

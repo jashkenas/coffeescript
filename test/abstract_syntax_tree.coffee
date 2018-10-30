@@ -1108,24 +1108,93 @@ test "AST as expected for ImportNamespaceSpecifier node", ->
       type: 'StringLiteral'
       value: 'react'
 
-# test "AST as expected for Assign node", ->
-#   testExpression 'a = 1',
-#     type: 'Assign'
-#     variable:
-#       value: 'a'
-#     value:
-#       value: '1'
+test "AST as expected for Assign node", ->
+  testExpression 'a = b',
+    type: 'AssignmentExpression'
+    left:
+      type: 'Identifier'
+      name: 'a'
+    right:
+      type: 'Identifier'
+      name: 'b'
+    operator: '='
 
-#   testExpression 'a: 1',
-#     properties: [
-#       type: 'Assign'
-#       context: 'object'
-#       originalContext: 'object'
-#       variable:
-#         value: 'a'
-#       value:
-#         value: '1'
-#     ]
+  testExpression 'a += b',
+    type: 'AssignmentExpression'
+    left:
+      type: 'Identifier'
+      name: 'a'
+    right:
+      type: 'Identifier'
+      name: 'b'
+    operator: '+='
+
+  testExpression '[@a = 2, {b: {c = 3} = {}, d...}, ...e] = f',
+    type: 'AssignmentExpression'
+    left:
+      type: 'ArrayPattern'
+      elements: [
+        type: 'AssignmentPattern'
+        left:
+          type: 'MemberExpression'
+          object:
+            type: 'ThisExpression'
+          property:
+            name: 'a'
+        right:
+          type: 'NumericLiteral'
+      ,
+        type: 'ObjectPattern'
+        properties: [
+          type: 'ObjectProperty'
+          key:
+            name: 'b'
+          value:
+            type: 'AssignmentPattern'
+            left:
+              type: 'ObjectPattern'
+              properties: [
+                type: 'ObjectProperty'
+                key:
+                  name: 'c'
+                value:
+                  type: 'AssignmentPattern'
+                  left:
+                    name: 'c'
+                  right:
+                    value: 3
+                shorthand: yes
+              ]
+            right:
+              type: 'ObjectExpression'
+              properties: []
+        ,
+          type: 'RestElement'
+          postfix: yes
+        ]
+      ,
+        type: 'RestElement'
+        postfix: no
+      ]
+    right:
+      name: 'f'
+
+  testExpression '{a: [...b]} = c',
+    type: 'AssignmentExpression'
+    left:
+      type: 'ObjectPattern'
+      properties: [
+        type: 'ObjectProperty'
+        key:
+          name: 'a'
+        value:
+          type: 'ArrayPattern'
+          elements: [
+            type: 'RestElement'
+          ]
+      ]
+    right:
+      name: 'c'
 
 # # `FuncGlyph` node isn't exported.
 
@@ -1218,31 +1287,24 @@ test "AST as expected for Elision node", ->
       name: 'b'
     ]
 
-  # testExpression '[,,,a,,,b] = "asdfqwer"',
-  #   type: 'Assign'
-  #   variable:
-  #     type: 'Arr'
-  #     lhs: no
-  #     objects: [
-  #       {type: 'Elision'}
-  #       {type: 'Elision'}
-  #       {type: 'Elision'}
-  #       {
-  #         type: 'IdentifierLiteral'
-  #         value: 'a'
-  #       }
-  #       {type: 'Elision'}
-  #       {type: 'Elision'}
-  #       {
-  #         type: 'IdentifierLiteral'
-  #         value: 'b'
-  #       }
-  #     ]
-  #   value:
-  #     type: 'StringLiteral'
-  #     value: '"asdfqwer"'
-  #     originalValue: 'asdfqwer'
-  #     quote: '"'
+  testExpression '[,,,a,,,b] = "asdfqwer"',
+    type: 'AssignmentExpression'
+    left:
+      type: 'ArrayPattern'
+      elements: [
+        null, null, null
+      ,
+        type: 'Identifier'
+        name: 'a'
+      ,
+        null, null
+      ,
+        type: 'Identifier'
+        name: 'b'
+      ]
+    right:
+      type: 'StringLiteral'
+      value: 'asdfqwer'
 
 # test "AST as expected for While node", ->
 #   testExpression 'loop 1',
