@@ -929,6 +929,9 @@ exports.ComputedPropertyName = class ComputedPropertyName extends PropertyName
   compileNode: (o) ->
     [@makeCode('['), @value.compileToFragments(o, LEVEL_LIST)..., @makeCode(']')]
 
+  ast: ->
+    @value.ast()
+
 exports.StatementLiteral = class StatementLiteral extends Literal
   isStatement: YES
 
@@ -1893,6 +1896,68 @@ exports.Obj = class Obj extends Base
       answer.push prop.compileToFragments(o, LEVEL_TOP)...
       answer.push @makeCode join
     if @front then @wrapInParentheses answer else answer
+
+  # Convert “bare” properties to `ObjectProperty`s (or `Splat`s).
+  expandProperty: (property) ->
+    {variable, context, operatorToken} = property
+    key = if property instanceof Assign and context is 'object'
+      variable
+    else if property instanceof Assign
+      operatorToken.error "unexpected #{operatorToken.value}" unless @lhs
+      variable
+    else
+      property
+    if key instanceof Value and key.hasProperties()
+      key.error 'invalid object key' unless context isnt 'object' and key.this
+      if property instanceof Assign
+        return new ObjectProperty fromAssign: property
+      else
+        return new ObjectProperty key: property
+    return new ObjectProperty(fromAssign: property) unless key is property
+    return property if property instanceof Splat
+
+    new ObjectProperty key: property
+
+  expandProperties: ->
+    @expandProperty(property) for property in @properties
+
+  astType: -> 'ObjectExpression'
+
+  astProperties: ->
+    return
+      implicit: !!@generated
+      properties:
+        property.ast() for property in @expandProperties()
+
+exports.ObjectProperty = class ObjectProperty extends Base
+  constructor: ({key, fromAssign}) ->
+    super()
+    if fromAssign
+      {variable: @key, value, context} = fromAssign
+      if context is 'object'
+        # All non-shorthand properties (i.e. includes `:`).
+        @value = value
+      else
+        # Left-hand-side shorthand with default e.g. `{a = 1} = b`.
+        @value = fromAssign
+        @shorthand = yes
+      @locationData = fromAssign.locationData
+    else
+      # Shorthand without default e.g. `{a}` or `{@a}` or `{[a]}`.
+      @key = key
+      @shorthand = yes
+      @locationData = key.locationData
+
+  astProperties: ->
+    isComputedPropertyName = @key instanceof Value and @key.base instanceof ComputedPropertyName
+    keyAst = @key.ast()
+
+    return
+      key: keyAst
+      value: @value?.ast() ? keyAst
+      shorthand: !!@shorthand
+      computed: !!isComputedPropertyName
+      method: no
 
 #### Arr
 

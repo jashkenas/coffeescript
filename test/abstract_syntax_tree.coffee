@@ -173,18 +173,33 @@ test "AST as expected for IdentifierLiteral node", ->
 #         value: 'assign'
 #     ]
 
-# test "AST as expected for ComputedPropertyName node", ->
-#   testExpression '[fn]: ->',
-#     type: 'Obj'
-#     properties: [
-#       type: 'Assign'
-#       context: 'object'
-#       variable:
-#         type: 'ComputedPropertyName'
-#       value:
-#         type: 'Code'
-#     ]
-#   # TODO: `'fn'` identifier is missing from AST.
+test "AST as expected for ComputedPropertyName node", ->
+  # testExpression '[fn]: ->',
+  #   type: 'Obj'
+  #   properties: [
+  #     type: 'Assign'
+  #     context: 'object'
+  #     variable:
+  #       type: 'ComputedPropertyName'
+  #     value:
+  #       type: 'Code'
+  #   ]
+
+  testExpression '[a]: b',
+    type: 'ObjectExpression'
+    properties: [
+      type: 'ObjectProperty'
+      key:
+        type: 'Identifier'
+        name: 'a'
+      value:
+        type: 'Identifier'
+        name: 'b'
+      computed: yes
+      shorthand: no
+      method: no
+    ]
+    implicit: yes
 
 test "AST as expected for StatementLiteral node", ->
   testExpression 'break',
@@ -677,62 +692,109 @@ test "AST as expected for Slice node", ->
         name: 'd'
       exclusive: yes
 
-# test "AST as expected for Obj node", ->
-#   testExpression '{a: a1: x, a2: y; b: b1: z, b2: w}',
-#     type: 'Obj'
-#     generated: no
-#     lhs: no
-#     properties: [
-#       type: 'Assign'
-#       variable:
-#         value: 'a'
-#       value:
-#         type: 'Obj'
-#         generated: yes
-#         lhs: no
-#         properties: [
-#           type: 'Assign'
-#           context: 'object'
-#           originalContext: 'object'
-#           variable:
-#             value: 'a1'
-#           value:
-#             value: 'x'
-#         ,
-#           type: 'Assign'
-#           context: 'object'
-#           originalContext: 'object'
-#           variable:
-#             value: 'a2'
-#           value:
-#             value: 'y'
-#         ]
-#     ,
-#       type: 'Assign'
-#       variable:
-#         value: 'b'
-#       value:
-#         type: 'Obj'
-#         generated: yes
-#         lhs: no
-#         properties: [
-#           type: 'Assign'
-#           context: 'object'
-#           originalContext: 'object'
-#           variable:
-#             value: 'b1'
-#           value:
-#             value: 'z'
-#         ,
-#           type: 'Assign'
-#           context: 'object'
-#           originalContext: 'object'
-#           variable:
-#             value: 'b2'
-#           value:
-#             value: 'w'
-#         ]
-#     ]
+test "AST as expected for Obj node", ->
+  testExpression "{a: 1, b, [c], @d, [e()]: f, 'g': 2, ...h, i...}",
+    type: 'ObjectExpression'
+    properties: [
+      type: 'ObjectProperty'
+      key:
+        type: 'Identifier'
+        name: 'a'
+      value:
+        type: 'NumericLiteral'
+        value: 1
+      computed: no
+      shorthand: no
+    ,
+      type: 'ObjectProperty'
+      key:
+        type: 'Identifier'
+        name: 'b'
+      value:
+        type: 'Identifier'
+        name: 'b'
+      computed: no
+      shorthand: yes
+    ,
+      type: 'ObjectProperty'
+      key:
+        type: 'Identifier'
+        name: 'c'
+      value:
+        type: 'Identifier'
+        name: 'c'
+      computed: yes
+      shorthand: yes
+    ,
+      type: 'ObjectProperty'
+      key:
+        type: 'MemberExpression'
+        object:
+          type: 'ThisExpression'
+        property:
+          type: 'Identifier'
+          name: 'd'
+      value:
+        type: 'MemberExpression'
+        object:
+          type: 'ThisExpression'
+        property:
+          type: 'Identifier'
+          name: 'd'
+      computed: no
+      shorthand: yes
+    ,
+      type: 'ObjectProperty'
+      key:
+        type: 'CallExpression'
+        callee:
+          type: 'Identifier'
+          name: 'e'
+        arguments: []
+      value:
+        type: 'Identifier'
+        name: 'f'
+      computed: yes
+      shorthand: no
+    ,
+      type: 'ObjectProperty'
+      key:
+        type: 'StringLiteral'
+        value: 'g'
+      value:
+        type: 'NumericLiteral'
+        value: 2
+      computed: no
+      shorthand: no
+    ,
+      type: 'SpreadElement'
+      argument:
+        type: 'Identifier'
+        name: 'h'
+      postfix: no
+    ,
+      type: 'SpreadElement'
+      argument:
+        type: 'Identifier'
+        name: 'i'
+      postfix: yes
+    ]
+    implicit: no
+
+  testExpression 'a: 1',
+    type: 'ObjectExpression'
+    properties: [
+      type: 'ObjectProperty'
+      key:
+        type: 'Identifier'
+        name: 'a'
+      value:
+        type: 'NumericLiteral'
+        value: 1
+      shorthand: no
+      computed: no
+    ]
+    implicit: yes
 
 #   # TODO: Test destructuring.
 
