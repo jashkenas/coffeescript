@@ -1927,7 +1927,7 @@ exports.Obj = class Obj extends Base
         else if unwrappedValue instanceof Assign
           unwrappedValue.nestedLhs = yes
       else if property instanceof Assign
-        # shorthand property with default eg {a = 1} = b
+        # Shorthand property with default, e.g. `{a = 1} = b`.
         property.nestedLhs = yes
       else if property instanceof Splat
         property.lhs = yes
