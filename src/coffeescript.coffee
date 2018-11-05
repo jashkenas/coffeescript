@@ -59,10 +59,14 @@ sourceMaps = {}
 # original coffee code should be added with this method in order to enable the
 # Error.prepareStackTrace below to correctly adjust the stack trace for the
 # corresponding file (the source map will be generated on demand).
-exports._addSource = addSource = (filename, code) ->
+exports.registerCompiled = registerCompiled = (filename, source, output, sourcemap) ->
 
   sources[filename] ?= []
-  sources[filename].push code
+  sources[filename].push source
+
+  if sourcemap?
+    sourceMaps[filename] ?= []
+    sourceMaps[filename].push sourcemap
 
 # Compile CoffeeScript code to JavaScript, using the Coffee/Jison compiler.
 #
@@ -84,7 +88,6 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
   filename = options.filename or '<anonymous>'
 
   checkShebangLine filename, code
-  addSource filename, code
 
   map = new SourceMap if generateSourceMap
 
@@ -135,8 +138,6 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
 
   if generateSourceMap
     v3SourceMap = map.generate options, code
-    sourceMaps[filename] ?= []
-    sourceMaps[filename].push map
 
   if options.transpile
     if typeof options.transpile isnt 'object'
@@ -166,6 +167,8 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
     sourceMapDataURI = "//# sourceMappingURL=data:application/json;base64,#{encoded}"
     sourceURL = "//# sourceURL=#{options.filename ? 'coffeescript'}"
     js = "#{js}\n#{sourceMapDataURI}\n#{sourceURL}"
+
+  registerCompiled filename, code, js, map
 
   if options.sourceMap
     {
