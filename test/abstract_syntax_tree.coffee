@@ -1270,12 +1270,23 @@ test "AST as expected for Splat node", ->
 
 #   # TODO: Test object splats.
 
-# test "AST as expected for Expansion node", ->
-#   testExpression '(...) ->',
-#     type: 'Code'
-#     params: [
-#       {type: 'Expansion'}
-#     ]
+test "AST as expected for Expansion node", ->
+  # testExpression '(...) ->',
+  #   type: 'Code'
+  #   params: [
+  #     {type: 'Expansion'}
+  #   ]
+
+  testExpression '[..., b] = c',
+    type: 'AssignmentExpression'
+    left:
+      type: 'ArrayPattern'
+      elements: [
+        type: 'RestElement'
+        argument: null
+      ,
+        type: 'Identifier'
+      ]
 
 test "AST as expected for Elision node", ->
   testExpression '[,,,a,,,b]',
@@ -1546,19 +1557,19 @@ test "AST as expected for Op node", ->
 #       base:
 #         type: 'Call'
 
-# test "AST as expected for Throw node", ->
-#   testExpression 'throw new BallError "catch"',
-#     type: 'Throw'
-#     expression:
-#       type: 'Call'
-#       isNew: yes
+test "AST as expected for Throw node", ->
+  testExpression 'throw new BallError "catch"',
+    type: 'ThrowStatement'
+    argument:
+      type: 'NewExpression'
 
-# test "AST as expected for Existence node", ->
-#   testExpression 'Ghosts?',
-#     type: 'Existence',
-#     comparisonTarget: 'null'
-#     expression:
-#       value: 'Ghosts'
+test "AST as expected for Existence node", ->
+  testExpression 'Ghosts?',
+    type: 'UnaryExpression',
+    argument:
+      name: 'Ghosts'
+    operator: '?'
+    prefix: no
 
 #   # NOTE: Soaking is covered in `Call` and `Access` nodes.
 

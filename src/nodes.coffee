@@ -3444,6 +3444,11 @@ exports.Expansion = class Expansion extends Base
 
   eachName: (iterator) ->
 
+  astType: -> 'RestElement'
+
+  astProperties: ->
+    argument: null
+
 #### Elision
 
 # Array elision element (for example, [,a, , , b, , c, ,]).
@@ -3869,6 +3874,11 @@ exports.Throw = class Throw extends Base
     fragments.push @makeCode ';'
     fragments
 
+  astType: -> 'ThrowStatement'
+
+  astProperties: ->
+    argument: @expression.ast()
+
 #### Existence
 
 # Checks a variable for existence -- not `null` and not `undefined`. This is
@@ -3910,6 +3920,13 @@ exports.Existence = class Existence extends Base
         if @negated then '===' else '!=='
       code = "#{code} #{cmp} #{@comparisonTarget}"
     [@makeCode(if o.level <= LEVEL_COND then code else "(#{code})")]
+
+  astType: -> 'UnaryExpression'
+
+  astProperties: ->
+    argument: @expression.ast()
+    operator: '?'
+    prefix: no
 
 #### Parens
 
