@@ -1587,9 +1587,9 @@ test "CSX error: non-matching tag names", ->
     <div><span></div></span>
   ''',
   '''
-    [stdin]:1:7: error: expected corresponding CSX closing tag for span
+    [stdin]:1:6: error: expected corresponding CSX closing tag for span
     <div><span></div></span>
-          ^^^^
+         ^^^^^
   '''
 
 test "CSX error: bare expressions not allowed", ->
@@ -1673,9 +1673,9 @@ test '#5034: CSX error: Adjacent JSX elements must be wrapped in an enclosing ta
       <Row>b</Row>
     )
   ''', '''
-    [stdin]:3:4: error: Adjacent JSX elements must be wrapped in an enclosing tag
+    [stdin]:3:3: error: Adjacent JSX elements must be wrapped in an enclosing tag
       <Row>b</Row>
-       ^^^^^^^^^^^
+      ^^^^^^^^^^^^
   '''
   assertErrorFormat '''
     render = -> (
@@ -1684,9 +1684,9 @@ test '#5034: CSX error: Adjacent JSX elements must be wrapped in an enclosing ta
       <Row>b</Row>
     )
   ''', '''
-    [stdin]:4:4: error: Adjacent JSX elements must be wrapped in an enclosing tag
+    [stdin]:4:3: error: Adjacent JSX elements must be wrapped in an enclosing tag
       <Row>b</Row>
-       ^^^^^^^^^^^
+      ^^^^^^^^^^^^
   '''
 test 'Bound method called as callback before binding throws runtime error', ->
   class Base

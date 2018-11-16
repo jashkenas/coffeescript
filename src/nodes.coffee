@@ -1530,7 +1530,7 @@ exports.Call = class Call extends Base
 
   ast: ->
     return @CSXToAst() if @csx
-    super o
+    super()
 
   astType: ->
     if @isNew
