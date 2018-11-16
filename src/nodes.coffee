@@ -1104,6 +1104,7 @@ exports.Value = class Value extends Base
                       @isUndefined() or @isNull() or @isBoolean()
 
   isStatement : (o)    -> not @properties.length and @base.isStatement o
+  isCSXTag    : -> @base instanceof CSXTag
   assigns     : (name) -> not @properties.length and @base.assigns name
   jumps       : (o)    -> not @properties.length and @base.jumps o
 
@@ -1238,7 +1239,7 @@ exports.Value = class Value extends Base
     super()
 
   astType: ->
-    if @base instanceof CSXTag
+    if @isCSXTag()
       'JSXMemberExpression'
     else
       'MemberExpression'
@@ -1248,13 +1249,21 @@ exports.Value = class Value extends Base
   # a child `Value` node assigned to the `object` property.
   astProperties: ->
     [..., property] = @properties
-    property.name.csx = yes if @base instanceof CSXTag
+    property.name.csx = yes if @isCSXTag()
     return
       object: @object().ast()
       property: property.ast()
       computed: property instanceof Index or property.name?.unwrap() not instanceof PropertyName
       optional: !!property.soak
       shorthand: !!property.shorthand
+
+  astLocationData: ->
+    return super() unless @isCSXTag()
+    # don't include leading < of JSX tag in location data
+    mergeAstLocationData(
+      locationDataToAst @base.tagNameLocationData
+      locationDataToAst @properties[@properties.length - 1].locationData
+    )
 
 #### HereComment
 
@@ -1485,6 +1494,14 @@ exports.Call = class Call extends Base
           ]
           node.start += rangeDiff
           node.end += rangeDiff
+          node.loc.start = {
+            line: node.loc.start.line
+            column: node.loc.start.column + rangeDiff
+          }
+          node.loc.end = {
+            line: node.loc.end.line
+            column: node.loc.end.column + rangeDiff
+          }
         currentExpr = closingElement.name
         while currentExpr.type is 'JSXMemberExpression'
           shiftAstLocationData currentExpr unless currentExpr is closingElement.name
@@ -1506,10 +1523,10 @@ exports.Call = class Call extends Base
     tagName = @variable.base
     tagName.locationData = tagName.tagNameLocationData
     Object.assign(
-      if tagName.value.length
-        @CSXElementToAst {tagName, attributes, content}
-      else
-        @CSXFragmentToAst {tagName, attributes, content}
+      # if tagName.value.length
+      @CSXElementToAst {tagName, attributes, content}
+      # else
+      #   @CSXFragmentToAst {tagName, attributes, content}
     ,
       children: []
         # if content and not content.base.isEmpty?()
