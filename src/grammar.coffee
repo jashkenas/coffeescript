@@ -152,11 +152,16 @@ grammar =
 
   Identifier: [
     o 'IDENTIFIER',                             -> new IdentifierLiteral $1
-    o 'CSX_TAG',                                -> new CSXTag $1
+    o 'CSX_TAG',                                -> new CSXTag $1.toString(),
+                                                     tagNameLocationData:                  $1.tagNameToken[2]
+                                                     closingTagOpeningBracketLocationData: $1.closingTagOpeningBracketToken?[2]
+                                                     closingTagSlashLocationData:          $1.closingTagSlashToken?[2]
+                                                     closingTagNameLocationData:           $1.closingTagNameToken?[2]
+                                                     closingTagClosingBracketLocationData: $1.closingTagClosingBracketToken?[2]
   ]
 
   Property: [
-    o 'PROPERTY',                               -> new PropertyName $1
+    o 'PROPERTY',                               -> new PropertyName $1.toString()
   ]
 
   # Alphanumerics are separated from the other **Literal** matchers because

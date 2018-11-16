@@ -916,11 +916,28 @@ exports.IdentifierLiteral = class IdentifierLiteral extends Literal
     name: @value
 
 exports.CSXTag = class CSXTag extends IdentifierLiteral
+  constructor: (value, {
+    @tagNameLocationData
+    @closingTagOpeningBracketLocationData
+    @closingTagSlashLocationData
+    @closingTagNameLocationData
+    @closingTagClosingBracketLocationData
+  }) ->
+    super value
+
+  astType: -> 'JSXIdentifier'
+
+  astProperties: ->
+    name: @value
 
 exports.PropertyName = class PropertyName extends Literal
   isAssignable: YES
 
-  astType: -> 'Identifier'
+  astType: ->
+    if @csx
+      'JSXIdentifier'
+    else
+      'Identifier'
 
   astProperties: ->
     name: @value
@@ -1442,6 +1459,78 @@ exports.Call = class Call extends Base
     else
       fragments.push @makeCode(' />')
     fragments
+
+  CSXElementToAst: ({tagName}) ->
+    openingElementLocationData = tagName.astLocationData()
+    for property in @variable.properties
+      openingElementLocationData = mergeAstLocationData openingElementLocationData, locationDataToAst property.locationData
+    openingElement = Object.assign {
+      type: 'JSXOpeningElement'
+      name: @variable.unwrap().ast()
+      selfClosing: not content
+      attributes: []
+    }, openingElementLocationData
+    closingElement = null
+    if content
+      closingElementLocationData = mergeAstLocationData(
+        locationDataToAst tagName.closingTagOpeningBracketLocationData
+        locationDataToAst tagName.closingTagClosingBracketLocationData
+      )
+      closingElement = Object.assign {
+        type: 'JSXClosingElement'
+        name: Object.assign(
+          @variable.unwrap().ast(),
+          locationDataToAst tagName.closingTagNameLocationData
+        )
+      }, closingElementLocationData
+      if closingElement.name.type is 'JSXMemberExpression'
+        rangeDiff = closingElement.range[0] - openingElement.range[0] + '/'.length
+        shiftAstLocationData = (node) ->
+          node.range = [
+            node.range[0] + rangeDiff
+            node.range[1] + rangeDiff
+          ]
+          node.start += rangeDiff
+          node.end += rangeDiff
+        currentExpr = closingElement.name
+        while currentExpr.type is 'JSXMemberExpression'
+          shiftAstLocationData currentExpr unless currentExpr is closingElement.name
+          shiftAstLocationData currentExpr.property
+          currentExpr = currentExpr.object
+        shiftAstLocationData currentExpr
+
+    Object.assign {
+      type: 'JSXElement',
+      openingElement, closingElement
+    },
+    if closingElement?
+      mergeAstLocationData openingElementLocationData, closingElementLocationData
+    else
+      openingElementLocationData
+
+  CSXToAst: ->
+    [attributes, content] = @args
+    tagName = @variable.base
+    tagName.locationData = tagName.tagNameLocationData
+    Object.assign(
+      if tagName.value.length
+        @CSXElementToAst {tagName, content}
+      else
+        @CSXFragmentToAst {tagName, content}
+    ,
+      children:
+        if content and not content.base.isEmpty?()
+          content.base.csx = yes
+          compact flatten [
+            content.ast()
+          ]
+        else
+          []
+    )
+
+  ast: ->
+    return @CSXToAst() if @csx
+    super o
 
   astType: ->
     if @isNew
