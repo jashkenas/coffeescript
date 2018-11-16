@@ -290,21 +290,7 @@ exports.Base = class Base
   # The AST location data is a rearranged version of our Jison location data,
   # mutated into the structure that the Babel spec uses.
   astLocationData: ->
-    {first_line, first_column, last_line, last_column, range} = @locationData
-    return
-      loc:
-        start:
-          line:   first_line + 1
-          column: first_column
-        end:
-          line:   last_line + 1
-          column: last_column + 1
-      range: [
-        range[0]
-        range[1]
-      ]
-      start: range[0]
-      end:   range[1]
+    locationDataToAst @locationData
 
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
@@ -1251,13 +1237,18 @@ exports.Value = class Value extends Base
     # `astProperties` methods below.
     super()
 
-  astType: -> 'MemberExpression'
+  astType: ->
+    if @base instanceof CSXTag
+      'JSXMemberExpression'
+    else
+      'MemberExpression'
 
   # If this `Value` has properties, the *last* property (e.g. `c` in `a.b.c`)
   # becomes the `property`, and the preceding properties (e.g. `a.b`) become
   # a child `Value` node assigned to the `object` property.
   astProperties: ->
     [..., property] = @properties
+    property.name.csx = yes if @base instanceof CSXTag
     return
       object: @object().ast()
       property: property.ast()
@@ -1460,16 +1451,18 @@ exports.Call = class Call extends Base
       fragments.push @makeCode(' />')
     fragments
 
-  CSXElementToAst: ({tagName}) ->
-    openingElementLocationData = tagName.astLocationData()
-    for property in @variable.properties
-      openingElementLocationData = mergeAstLocationData openingElementLocationData, locationDataToAst property.locationData
+  CSXElementToAst: ({tagName, attributes, content}) ->
+    # The location data spanning the opening element < ... > is captured by
+    # the generated Arr which contains the element's attributes
+    openingElementLocationData = locationDataToAst attributes.base.locationData
+
     openingElement = Object.assign {
       type: 'JSXOpeningElement'
       name: @variable.unwrap().ast()
       selfClosing: not content
       attributes: []
     }, openingElementLocationData
+
     closingElement = null
     if content
       closingElementLocationData = mergeAstLocationData(
@@ -1514,18 +1507,18 @@ exports.Call = class Call extends Base
     tagName.locationData = tagName.tagNameLocationData
     Object.assign(
       if tagName.value.length
-        @CSXElementToAst {tagName, content}
+        @CSXElementToAst {tagName, attributes, content}
       else
-        @CSXFragmentToAst {tagName, content}
+        @CSXFragmentToAst {tagName, attributes, content}
     ,
-      children:
-        if content and not content.base.isEmpty?()
-          content.base.csx = yes
-          compact flatten [
-            content.ast()
-          ]
-        else
-          []
+      children: []
+        # if content and not content.base.isEmpty?()
+        #   content.base.csx = yes
+        #   compact flatten [
+        #     content.ast()
+        #   ]
+        # else
+        #   []
     )
 
   ast: ->
@@ -4611,3 +4604,20 @@ mergeAstLocationData = (nodeA, nodeB) ->
     ]
     start: lesser  nodeA.start, nodeB.start
     end:   greater nodeA.end,   nodeB.end
+
+# Convert Jison-style node class location data to Babel-style location data
+locationDataToAst = ({first_line, first_column, last_line, last_column, range}) ->
+  return
+    loc:
+      start:
+        line:   first_line + 1
+        column: first_column
+      end:
+        line:   last_line + 1
+        column: last_column + 1
+    range: [
+      range[0]
+      range[1]
+    ]
+    start: range[0]
+    end:   range[1]

@@ -630,7 +630,7 @@ exports.Lexer = class Lexer
             closingTagSlashToken: @makeToken '/', '/', offset: end - 1
             # TODO: individual tokens for complex tag name? eg < / A . B >
             closingTagNameToken: @makeToken 'IDENTIFIER', fullTagName, offset: end
-            closingTagNameClosingBracketToken: @makeToken '>', '>', offset: end + fullTagName.length
+            closingTagClosingBracketToken: @makeToken '>', '>', offset: end + fullTagName.length
         # make the closing tag location data more easily accessible to the grammar
         addTokenData openingTagToken, endToken.data
         @csxDepth--

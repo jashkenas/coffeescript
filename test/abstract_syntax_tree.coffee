@@ -159,11 +159,87 @@ test "AST as expected for IdentifierLiteral node", ->
     type: 'Identifier'
     name: 'id'
 
-# test "AST as expected for CSXTag node", ->
-#   testExpression '<CSXY />',
-#     variable:
-#       type: 'CSXTag'
-#       value: 'CSXY'
+test "AST as expected for CSXTag node", ->
+  testExpression '<CSXY />',
+    type: 'JSXElement'
+    openingElement:
+      type: 'JSXOpeningElement'
+      name:
+        type: 'JSXIdentifier'
+        name: 'CSXY'
+      attributes: []
+      selfClosing: yes
+    closingElement: null
+    children: []
+
+  testExpression '<div></div>',
+    type: 'JSXElement'
+    openingElement:
+      type: 'JSXOpeningElement'
+      name:
+        type: 'JSXIdentifier'
+        name: 'div'
+      attributes: []
+      selfClosing: no
+    closingElement:
+      type: 'JSXClosingElement'
+      name:
+        type: 'JSXIdentifier'
+        name: 'div'
+    children: []
+
+  testExpression '<A.B />',
+    type: 'JSXElement'
+    openingElement:
+      type: 'JSXOpeningElement'
+      name:
+        type: 'JSXMemberExpression'
+        object:
+          type: 'JSXIdentifier'
+          name: 'A'
+        property:
+          type: 'JSXIdentifier'
+          name: 'B'
+      attributes: []
+      selfClosing: yes
+    closingElement: null
+    children: []
+
+  testExpression '<Tag.Name.Here></Tag.Name.Here>',
+    type: 'JSXElement'
+    openingElement:
+      type: 'JSXOpeningElement'
+      name:
+        type: 'JSXMemberExpression'
+        object:
+          type: 'JSXMemberExpression'
+          object:
+            type: 'JSXIdentifier'
+            name: 'Tag'
+          property:
+            type: 'JSXIdentifier'
+            name: 'Name'
+        property:
+          type: 'JSXIdentifier'
+          name: 'Here'
+      attributes: []
+      selfClosing: no
+    closingElement:
+      type: 'JSXClosingElement'
+      name:
+        type: 'JSXMemberExpression'
+        object:
+          type: 'JSXMemberExpression'
+          object:
+            type: 'JSXIdentifier'
+            name: 'Tag'
+          property:
+            type: 'JSXIdentifier'
+            name: 'Name'
+        property:
+          type: 'JSXIdentifier'
+          name: 'Here'
+    children: []
 
 # test "AST as expected for PropertyName node", ->
 #   testExpression 'Object.assign',
