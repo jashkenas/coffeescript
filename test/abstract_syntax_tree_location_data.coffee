@@ -2055,3 +2055,90 @@ test "AST location data as expected for Assign node", ->
       end:
         line: 1
         column: 15
+
+test "AST location data as expected for Expansion node", ->
+  testAstLocationData '[..., b] = c',
+    type: 'AssignmentExpression'
+    left:
+      elements: [
+        start: 1
+        end: 4
+        range: [1, 4]
+        loc:
+          start:
+            line: 1
+            column: 1
+          end:
+            line: 1
+            column: 4
+      ]
+      start: 0
+      end: 8
+      range: [0, 8]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 8
+    start: 0
+    end: 12
+    range: [0, 12]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 12
+
+test "AST location data as expected for Throw node", ->
+  testAstLocationData 'throw new BallError "catch"',
+    type: 'ThrowStatement'
+    argument:
+      start: 6
+      end: 27
+      range: [6, 27]
+      loc:
+        start:
+          line: 1
+          column: 6
+        end:
+          line: 1
+          column: 27
+    start: 0
+    end: 27
+    range: [0, 27]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 27
+
+test "AST location data as expected for Existence node", ->
+  testAstLocationData 'Ghosts?',
+    type: 'UnaryExpression'
+    argument:
+      start: 0
+      end: 6
+      range: [0, 6]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 6
+    start: 0
+    end: 7
+    range: [0, 7]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 7
