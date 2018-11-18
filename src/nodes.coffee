@@ -3546,7 +3546,8 @@ exports.Expansion = class Expansion extends Base
   astType: -> 'RestElement'
 
   astProperties: ->
-    argument: null
+    return
+      argument: null
 
 #### Elision
 
@@ -3976,7 +3977,8 @@ exports.Throw = class Throw extends Base
   astType: -> 'ThrowStatement'
 
   astProperties: ->
-    argument: @expression.ast()
+    return
+      argument: @expression.ast()
 
 #### Existence
 
@@ -4023,9 +4025,10 @@ exports.Existence = class Existence extends Base
   astType: -> 'UnaryExpression'
 
   astProperties: ->
-    argument: @expression.ast()
-    operator: '?'
-    prefix: no
+    return
+      argument: @expression.ast()
+      operator: '?'
+      prefix: no
 
 #### Parens
 
