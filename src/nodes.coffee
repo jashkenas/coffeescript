@@ -748,8 +748,43 @@ exports.Block = class Block extends Base
     return nodes[0] if nodes.length is 1 and nodes[0] instanceof Block
     new Block nodes
 
-  astProperties: ->
-    expressions: @expressions.map (child) => child.ast()
+  asExpressionStatementAst: (ast) ->
+    # return ast if ast.type in ['ImportDeclaration']
+
+    Object.assign
+      type: 'ExpressionStatement'
+      expression: ast
+    ,
+      extractAstLocationData ast
+
+  getExpressionAst: (expression) ->
+    ast = expression.ast()
+    # return ast if expression.isStatement o
+    @asExpressionStatementAst ast
+
+  bodyToAst: ->
+    @getExpressionAst(expression) for expression in @expressions
+
+  rootToAst: ->
+    programLocationData = @astLocationData()
+
+    programAst = Object.assign
+      type: 'Program'
+      sourceType: 'module'
+      body: @bodyToAst()
+      directives: []
+    ,
+      programLocationData
+
+    Object.assign
+      type: 'File'
+      program: programAst
+      comments: []
+    ,
+      programLocationData
+
+  ast: ->
+    @rootToAst()
 
 #### Literal
 
@@ -4645,3 +4680,10 @@ jisonLocationDataToAstLocationData = ({first_line, first_column, last_line, last
     ]
     start: range[0]
     end:   range[1]
+
+# Extract location data fields from an AST node
+extractAstLocationData = (ast) ->
+  loc: ast.loc
+  range: ast.range
+  start: ast.start
+  end: ast.end

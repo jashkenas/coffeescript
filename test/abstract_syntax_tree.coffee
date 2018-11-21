@@ -92,11 +92,18 @@ test 'Confirm functionality of `deepStrictIncludeExpectedProperties`', ->
 # properties are as expected.
 
 test "AST as expected for Block node", ->
-  deepStrictIncludeExpectedProperties CoffeeScript.compile('return', ast: yes),
-    type: 'Block'
-    expressions: [
-      type: 'Return'
-    ]
+  deepStrictIncludeExpectedProperties CoffeeScript.compile('a', ast: yes),
+    type: 'File'
+    program:
+      type: 'Program'
+      sourceType: 'module' # TODO: should this always be module?
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'Identifier'
+      ]
+      directives: []
+    comments: []
 
 test "AST as expected for NumberLiteral node", ->
   testExpression '42',
