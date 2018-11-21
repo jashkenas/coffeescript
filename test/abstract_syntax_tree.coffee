@@ -241,6 +241,14 @@ test "AST as expected for CSXTag node", ->
           name: 'Here'
     children: []
 
+  testExpression '<></>',
+    type: 'JSXFragment'
+    openingFragment:
+      type: 'JSXOpeningFragment'
+    closingFragment:
+      type: 'JSXClosingFragment'
+    children: []
+
 # test "AST as expected for PropertyName node", ->
 #   testExpression 'Object.assign',
 #     properties: [

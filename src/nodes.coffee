@@ -1360,10 +1360,16 @@ exports.CSXElement = class CSXElement extends Base
 
     super()
 
-  astType: ->
-    'JSXElement'
+  isFragment: ->
+    !@tagName.base.value.length
 
-  astProperties: ->
+  astType: ->
+    if @isFragment()
+      'JSXFragment'
+    else
+      'JSXElement'
+
+  elementAstProperties: ->
     openingElement = Object.assign {
       type: 'JSXOpeningElement'
       name: @tagName.unwrap().ast()
@@ -1402,18 +1408,28 @@ exports.CSXElement = class CSXElement extends Base
           currentExpr = currentExpr.object
         shiftAstLocationData currentExpr
 
-    return {
-      openingElement, closingElement
+    {openingElement, closingElement}
+
+  fragmentAstProperties: ->
+    openingFragment = Object.assign {
+      type: 'JSXOpeningFragment'
+    }, @openingElementLocationData
+
+    closingFragment = Object.assign {
+      type: 'JSXClosingFragment'
+    }, @closingElementLocationData
+
+    {openingFragment, closingFragment}
+
+  astProperties: ->
+    Object.assign(
+      if @isFragment()
+        @fragmentAstProperties()
+      else
+        @elementAstProperties()
+    ,
       children: []
-        # TODO: uncomment when adding support for JSX content AST
-        # if content and not content.base.isEmpty?()
-        #   content.base.csx = yes
-        #   compact flatten [
-        #     content.ast()
-        #   ]
-        # else
-        #   []
-    }
+    )
 
   astLocationData: ->
     if @closingElementLocationData?
