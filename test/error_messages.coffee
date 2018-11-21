@@ -1587,9 +1587,9 @@ test "CSX error: non-matching tag names", ->
     <div><span></div></span>
   ''',
   '''
-    [stdin]:1:6: error: expected corresponding CSX closing tag for span
+    [stdin]:1:7: error: expected corresponding CSX closing tag for span
     <div><span></div></span>
-         ^^^^^
+          ^^^^
   '''
 
 test "CSX error: bare expressions not allowed", ->

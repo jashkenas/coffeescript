@@ -914,7 +914,8 @@ exports.CSXTag = class CSXTag extends IdentifierLiteral
   astType: -> 'JSXIdentifier'
 
   astProperties: ->
-    name: @value
+    return
+      name: @value
 
 exports.PropertyName = class PropertyName extends Literal
   isAssignable: YES
@@ -1261,8 +1262,8 @@ exports.Value = class Value extends Base
     return super() unless @isCSXTag()
     # don't include leading < of JSX tag in location data
     mergeAstLocationData(
-      locationDataToAst @base.tagNameLocationData
-      locationDataToAst @properties[@properties.length - 1].locationData
+      locationDataToAst(@base.tagNameLocationData),
+      locationDataToAst(@properties[@properties.length - 1].locationData)
     )
 
 #### HereComment

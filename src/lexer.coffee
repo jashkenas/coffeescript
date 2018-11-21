@@ -578,7 +578,7 @@ exports.Lexer = class Lexer
       @csxDepth++
       return fullId.length + 1
     else if csxTag = @atCSXTag()
-      if @chunk[...2] is '/>' # self-closing tag
+      if @chunk[...2] is '/>' # Self-closing tag.
         @pair '/>'
         @token ']', ']',
           length: 2
@@ -615,7 +615,7 @@ exports.Lexer = class Lexer
         match = CSX_IDENTIFIER.exec(@chunk[end...]) or CSX_FRAGMENT_IDENTIFIER.exec(@chunk[end...])
         if not match or match[1] isnt "#{csxTag.name}#{(".#{property}" for property in csxTag.properties).join ''}"
           @error "expected corresponding CSX closing tag for #{csxTag.name}",
-            csxTag.origin[2]
+            csxTag.origin.data.tagNameToken[2]
         [, fullTagName] = match
         afterTag = end + fullTagName.length
         if @chunk[afterTag] isnt '>'
