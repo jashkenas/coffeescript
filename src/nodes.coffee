@@ -1524,12 +1524,14 @@ exports.Call = class Call extends Base
     tagName = @variable.base
     tagName.locationData = tagName.tagNameLocationData
     Object.assign(
+      # TODO: uncomment when adding support for JSX fragment AST
       # if tagName.value.length
       @CSXElementToAst {tagName, attributes, content}
       # else
       #   @CSXFragmentToAst {tagName, attributes, content}
     ,
       children: []
+        # TODO: uncomment when adding support for JSX content AST
         # if content and not content.base.isEmpty?()
         #   content.base.csx = yes
         #   compact flatten [
