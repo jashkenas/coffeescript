@@ -249,6 +249,59 @@ test "AST as expected for CSXTag node", ->
       type: 'JSXClosingFragment'
     children: []
 
+  testExpression '<div a b="c" d={e} {...f} />',
+    type: 'JSXElement'
+    openingElement:
+      type: 'JSXOpeningElement'
+      name:
+        type: 'JSXIdentifier'
+        name: 'div'
+      attributes: [
+        type: 'JSXAttribute'
+        name:
+          type: 'JSXIdentifier'
+          name: 'a'
+      ,
+        type: 'JSXAttribute'
+        name:
+          type: 'JSXIdentifier'
+          name: 'b'
+        value:
+          type: 'StringLiteral'
+          value: 'c'
+      ,
+        type: 'JSXAttribute'
+        name:
+          type: 'JSXIdentifier'
+          name: 'd'
+        value:
+          type: 'JSXExpressionContainer'
+          expression:
+            type: 'Identifier'
+            name: 'e'
+      ,
+        type: 'JSXSpreadAttribute'
+        argument:
+          type: 'Identifier'
+          name: 'f'
+        postfix: no
+      ]
+      selfClosing: yes
+    closingElement: null
+    children: []
+
+  testExpression '<div {f...} />',
+    type: 'JSXElement'
+    openingElement:
+      type: 'JSXOpeningElement'
+      attributes: [
+        type: 'JSXSpreadAttribute'
+        argument:
+          type: 'Identifier'
+          name: 'f'
+        postfix: yes
+      ]
+
 # test "AST as expected for PropertyName node", ->
 #   testExpression 'Object.assign',
 #     properties: [

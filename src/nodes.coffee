@@ -1327,14 +1327,9 @@ exports.CSXElement = class CSXElement extends Base
     fragments.push (tag = @tagName.compileToFragments(o, LEVEL_ACCESS))...
     if @attributes.base instanceof Arr
       for obj in @attributes.base.objects
+        @checkValidAttribute obj
         attr = obj.base
-        attrProps = attr?.properties or []
-        # Catch invalid CSX attributes: <div {a:"b", props} {props} "value" />
-        if not (attr instanceof Obj or attr instanceof IdentifierLiteral) or (attr instanceof Obj and not attr.generated and (attrProps.length > 1 or not (attrProps[0] instanceof Splat)))
-          obj.error """
-            Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
-          """
-        obj.base.csx = yes if obj.base instanceof Obj
+        attr.csx = yes if attr instanceof Obj
         fragments.push @makeCode ' '
         fragments.push obj.compileToFragments(o, LEVEL_PAREN)...
     if @content
@@ -1344,6 +1339,18 @@ exports.CSXElement = class CSXElement extends Base
     else
       fragments.push @makeCode(' />')
     fragments
+
+  # Catch invalid attributes: <div {a:"b", props} {props} "value" />
+  checkValidAttribute: (object) ->
+    {base: attribute} = object
+    properties = attribute?.properties or []
+    if not (attribute instanceof Obj or attribute instanceof IdentifierLiteral) or (attribute instanceof Obj and not attribute.generated and (properties.length > 1 or not (properties[0] instanceof Splat)))
+      object.error """
+        Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+      """
+
+  isFragment: ->
+    !@tagName.base.value.length
 
   ast: ->
     # The location data spanning the opening element < ... > is captured by
@@ -1360,21 +1367,30 @@ exports.CSXElement = class CSXElement extends Base
 
     super()
 
-  isFragment: ->
-    !@tagName.base.value.length
-
   astType: ->
     if @isFragment()
       'JSXFragment'
     else
       'JSXElement'
 
+  getAttributeAst: (object) ->
+    @checkValidAttribute object
+    {base: attribute} = object
+    attribute.csx = yes
+    ast = attribute.ast()
+    return ast unless attribute instanceof IdentifierLiteral
+    Object.assign {
+      type: 'JSXAttribute'
+      name: ast
+      value: null
+    }, attribute.astLocationData()
+
   elementAstProperties: ->
     openingElement = Object.assign {
       type: 'JSXOpeningElement'
       name: @tagName.unwrap().ast()
       selfClosing: not @closingElementLocationData?
-      attributes: []
+      attributes: flatten(@getAttributeAst(object) for object in @attributes.base.objects)
     }, @openingElementLocationData
 
     closingElement = null
@@ -2050,6 +2066,19 @@ exports.Obj = class Obj extends Base
         property.nestedLhs = yes
       else if property instanceof Splat
         property.lhs = yes
+
+  CSXAttributesToAst: ->
+    propertiesAst =
+      for property in @properties
+        property.csx = yes
+        property.ast()
+    return propertiesAst unless @properties.length is 1 and @properties[0] instanceof Splat
+    # Include surrounding `{` and `}` of spread prop `{...b}` in location data.
+    Object.assign propertiesAst[0], @astLocationData()
+
+  ast: ->
+    return @CSXAttributesToAst() if @csx
+    super()
 
   astType: ->
     if @lhs
@@ -3071,6 +3100,31 @@ exports.Assign = class Assign extends Base
     # destructured variables.
     @variable.base.propagateLhs yes
 
+  getCSXAttributeValueAst: ->
+    value = @value.base
+    value.csxAttribute = yes
+    ast = value.ast()
+    return ast if value instanceof StringLiteral
+    Object.assign
+      type: 'JSXExpressionContainer'
+      expression: ast
+    , value.astLocationData()
+
+  CSXAttributeToAst: ->
+    Object.assign
+      type: 'JSXAttribute'
+      name:
+        Object.assign
+          type: 'JSXIdentifier'
+          name: @variable.base.value
+        , @variable.base.astLocationData()
+      value: @getCSXAttributeValueAst()
+    , @astLocationData()
+
+  ast: ->
+    return @CSXAttributeToAst() if @csx
+    super()
+
   astType: ->
     if @isDefaultAssignment()
       'AssignmentPattern'
@@ -3537,7 +3591,9 @@ exports.Splat = class Splat extends Base
   unwrap: -> @name
 
   astType: ->
-    if @lhs
+    if @csx
+      'JSXSpreadAttribute'
+    else if @lhs
       'RestElement'
     else
       'SpreadElement'
