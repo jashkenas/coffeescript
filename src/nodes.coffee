@@ -290,7 +290,7 @@ exports.Base = class Base
   # The AST location data is a rearranged version of our Jison location data,
   # mutated into the structure that the Babel spec uses.
   astLocationData: ->
-    locationDataToAst @locationData
+    jisonLocationDataToAstLocationData @locationData
 
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
@@ -1262,8 +1262,8 @@ exports.Value = class Value extends Base
     return super() unless @isCSXTag()
     # don't include leading < of JSX tag in location data
     mergeAstLocationData(
-      locationDataToAst(@base.tagNameLocationData),
-      locationDataToAst(@properties[@properties.length - 1].locationData)
+      jisonLocationDataToAstLocationData(@base.tagNameLocationData),
+      jisonLocationDataToAstLocationData(@properties[@properties.length - 1].locationData)
     )
 
 #### HereComment
@@ -1348,14 +1348,14 @@ exports.CSXElement = class CSXElement extends Base
   ast: ->
     # The location data spanning the opening element < ... > is captured by
     # the generated Arr which contains the element's attributes
-    @openingElementLocationData = locationDataToAst @attributes.base.locationData
+    @openingElementLocationData = jisonLocationDataToAstLocationData @attributes.base.locationData
 
     tagName = @tagName.base
     tagName.locationData = tagName.tagNameLocationData
     if @content?
       @closingElementLocationData = mergeAstLocationData(
-        locationDataToAst tagName.closingTagOpeningBracketLocationData
-        locationDataToAst tagName.closingTagClosingBracketLocationData
+        jisonLocationDataToAstLocationData tagName.closingTagOpeningBracketLocationData
+        jisonLocationDataToAstLocationData tagName.closingTagClosingBracketLocationData
       )
 
     super()
@@ -1377,7 +1377,7 @@ exports.CSXElement = class CSXElement extends Base
         type: 'JSXClosingElement'
         name: Object.assign(
           @tagName.unwrap().ast(),
-          locationDataToAst @tagName.base.closingTagNameLocationData
+          jisonLocationDataToAstLocationData @tagName.base.closingTagNameLocationData
         )
       }, @closingElementLocationData
       if closingElement.name.type is 'JSXMemberExpression'
@@ -4632,7 +4632,7 @@ mergeAstLocationData = (nodeA, nodeB) ->
     end:   greater nodeA.end,   nodeB.end
 
 # Convert Jison-style node class location data to Babel-style location data
-locationDataToAst = ({first_line, first_column, last_line, last_column, range}) ->
+jisonLocationDataToAstLocationData = ({first_line, first_column, last_line, last_column, range}) ->
   return
     loc:
       start:
