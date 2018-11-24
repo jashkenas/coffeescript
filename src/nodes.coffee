@@ -1438,7 +1438,7 @@ exports.Call = class Call extends Base
         tagName: @variable
         attributes: @args[0]
         content: @args[1]
-      )#.withLocationDataFrom @
+      )
 
     # `@variable` never gets output as a result of this node getting created as
     # part of `RegexWithInterpolations`, so for that case move any comments to
