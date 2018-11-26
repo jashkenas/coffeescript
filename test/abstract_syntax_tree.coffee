@@ -96,7 +96,7 @@ test "AST as expected for Block node", ->
     type: 'File'
     program:
       type: 'Program'
-      sourceType: 'module' # TODO: should this always be module?
+      # sourceType: 'module'
       body: [
         type: 'ExpressionStatement'
         expression:

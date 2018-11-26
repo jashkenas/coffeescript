@@ -482,6 +482,13 @@ exports.Root = class Root extends Base
     return fragments if o.bare
     [].concat @makeCode("(function() {\n"), fragments, @makeCode("\n}).call(this);\n")
 
+  astType: -> 'File'
+
+  astProperties: ->
+    return
+      program: @body.ast()
+      comments: []
+
 #### Block
 
 # The block is the list of expressions that forms the body of an
@@ -776,26 +783,13 @@ exports.Block = class Block extends Base
   bodyToAst: ->
     @getExpressionAst(expression) for expression in @expressions
 
-  rootToAst: ->
-    programLocationData = @astLocationData()
+  astType: -> 'Program'
 
-    programAst = Object.assign
-      type: 'Program'
-      sourceType: 'module'
+  astProperties: ->
+    return
+      # sourceType: 'module'
       body: @bodyToAst()
       directives: []
-    ,
-      programLocationData
-
-    Object.assign
-      type: 'File'
-      program: programAst
-      comments: []
-    ,
-      programLocationData
-
-  ast: ->
-    @rootToAst()
 
 #### Literal
 
