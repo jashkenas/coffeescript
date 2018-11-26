@@ -41,7 +41,7 @@ replDefaults =
       # Collect referenced variable names just like in `CoffeeScript.compile`.
       referencedVars = (token[1] for token in tokens when token[0] is 'IDENTIFIER')
       # Generate the AST of the tokens.
-      ast = CoffeeScript.nodes tokens
+      {body: ast} = CoffeeScript.nodes tokens
       # Add assignment to `__` variable to force the input to be an expression.
       ast = new Block [new Assign (new Value new Literal '__'), ast, '=']
       # Wrap the expression in a closure to support top-level `await`.

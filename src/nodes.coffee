@@ -461,6 +461,27 @@ exports.HoistTarget = class HoistTarget extends Base
   compileClosure: (o) ->
     @compileToFragments o
 
+#### Root
+
+# The root node of the node tree
+exports.Root = class Root extends Base
+  constructor: (@body) ->
+    super()
+
+  # Wrap everything in a safety closure, unless requested not to. It would be
+  # better not to generate them in the first place, but for now, clean up
+  # obvious double-parentheses.
+  compileNode: (o) ->
+    o.indent  = if o.bare then '' else TAB
+    o.level   = LEVEL_TOP
+    o.scope   = new Scope null, @body, null, o.referencedVars ? []
+    # Mark given local variables in the root scope as parameters so they don’t
+    # end up being declared on the root block.
+    o.scope.parameter name for name in o.locals or []
+    fragments = @body.compileRoot o
+    return fragments if o.bare
+    [].concat @makeCode("(function() {\n"), fragments, @makeCode("\n}).call(this);\n")
+
 #### Block
 
 # The block is the list of expressions that forms the body of an
@@ -528,9 +549,10 @@ exports.Block = class Block extends Base
       break
     this
 
-  # A **Block** is the only node that can serve as the root.
-  compileToFragments: (o = {}, level) ->
-    if o.scope then super o, level else @compileRoot o
+  compile: (o, lvl) ->
+    return new Root(this).withLocationDataFrom(this).compile o, lvl unless o.scope
+
+    super o, lvl
 
   # Compile all expressions within the **Block** body. If we need to return
   # the result, and it’s an expression, simply return it. If it’s a statement,
@@ -574,22 +596,11 @@ exports.Block = class Block extends Base
       answer = [@makeCode 'void 0']
     if compiledNodes.length > 1 and o.level >= LEVEL_LIST then @wrapInParentheses answer else answer
 
-  # If we happen to be the top-level **Block**, wrap everything in a safety
-  # closure, unless requested not to. It would be better not to generate them
-  # in the first place, but for now, clean up obvious double-parentheses.
   compileRoot: (o) ->
-    o.indent  = if o.bare then '' else TAB
-    o.level   = LEVEL_TOP
-    @spaced   = yes
-    o.scope   = new Scope null, this, null, o.referencedVars ? []
-    # Mark given local variables in the root scope as parameters so they don’t
-    # end up being declared on this block.
-    o.scope.parameter name for name in o.locals or []
+    @spaced = yes
     fragments = @compileWithDeclarations o
     HoistTarget.expand fragments
-    fragments = @compileComments fragments
-    return fragments if o.bare
-    [].concat @makeCode("(function() {\n"), fragments, @makeCode("\n}).call(this);\n")
+    @compileComments fragments
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
