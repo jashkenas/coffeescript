@@ -181,10 +181,8 @@ exports.tokens = withPrettyErrors (code, options) ->
 # return the AST. You can then compile it by calling `.compile()` on the root,
 # or traverse it by using `.traverseChildren()` with a callback.
 exports.nodes = withPrettyErrors (source, options) ->
-  if typeof source is 'string'
-    parser.parse lexer.tokenize source, options
-  else
-    parser.parse source
+  source = lexer.tokenize source, options if typeof source is 'string'
+  parser.parse(source).body
 
 # This file used to export these methods; leave stubs that throw warnings
 # instead. These methods have been moved into `index.coffee` to provide

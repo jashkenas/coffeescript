@@ -621,7 +621,7 @@ test 'Values with properties end up with a location that includes the properties
     a['b']
     a[b.c()].d
   '''
-  {body: block} = CoffeeScript.nodes source
+  block = CoffeeScript.nodes source
   [
     singleProperty
     twoProperties
