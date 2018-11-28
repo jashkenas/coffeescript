@@ -59,7 +59,7 @@ sourceMaps = {}
 # original coffee code should be added with this method in order to enable the
 # Error.prepareStackTrace below to correctly adjust the stack trace for the
 # corresponding file (the source map will be generated on demand).
-exports.registerCompiled = registerCompiled = (filename, source, output, sourcemap) ->
+exports.registerCompiled = registerCompiled = (filename, source, sourcemap) ->
 
   sources[filename] ?= []
   sources[filename].push source
@@ -168,7 +168,7 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
     sourceURL = "//# sourceURL=#{options.filename ? 'coffeescript'}"
     js = "#{js}\n#{sourceMapDataURI}\n#{sourceURL}"
 
-  registerCompiled filename, code, js, map
+  registerCompiled filename, code, map
 
   if options.sourceMap
     {
