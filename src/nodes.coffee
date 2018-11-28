@@ -1389,14 +1389,12 @@ exports.CSXElement = class CSXElement extends Base
           ]
           node.start += rangeDiff
           node.end += rangeDiff
-          node.loc.start = {
+          node.loc.start =
             line: node.loc.start.line
             column: node.loc.start.column + rangeDiff
-          }
-          node.loc.end = {
+          node.loc.end =
             line: node.loc.end.line
             column: node.loc.end.column + rangeDiff
-          }
         currentExpr = closingElement.name
         while currentExpr.type is 'JSXMemberExpression'
           shiftAstLocationData currentExpr unless currentExpr is closingElement.name
@@ -1404,7 +1402,7 @@ exports.CSXElement = class CSXElement extends Base
           currentExpr = currentExpr.object
         shiftAstLocationData currentExpr
 
-    {
+    return {
       openingElement, closingElement
       children: []
         # TODO: uncomment when adding support for JSX content AST
