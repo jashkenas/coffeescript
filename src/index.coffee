@@ -110,8 +110,8 @@ if require.extensions
       Use CoffeeScript.register() or require the coffeescript/register module to require #{ext} files.
       """
 
-CoffeeScript._compileFile = (filename, options = {}) ->
-  raw = fs.readFileSync filename, 'utf8'
+CoffeeScript._compileRawFileContent = (raw, filename, options = {}) ->
+
   # Strip the Unicode byte order mark, if this file begins with one.
   stripped = if raw.charCodeAt(0) is 0xFEFF then raw.substring 1 else raw
 
@@ -130,5 +130,10 @@ CoffeeScript._compileFile = (filename, options = {}) ->
     throw helpers.updateSyntaxError err, stripped, filename
 
   answer
+
+CoffeeScript._compileFile = (filename, options = {}) ->
+  raw = fs.readFileSync filename, 'utf8'
+
+  CoffeeScript._compileRawFileContent raw, filename, options
 
 module.exports = CoffeeScript
