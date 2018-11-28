@@ -555,18 +555,40 @@ exports.Lexer = class Lexer
         prev.spaced or
         prev[0] not in COMPARABLE_LEFT_SIDE
       )
-      [input, id, colon] = match
-      origin = @token 'CSX_TAG', id, offset: 1, length: id.length
-      @token 'CALL_START', '('
-      @token '[', '['
-      @ends.push tag: '/>', origin: origin, name: id
+      [input, id] = match
+      fullId = id
+      if '.' in id
+        [id, properties...] = id.split '.'
+      else
+        properties = []
+      tagToken = @token 'CSX_TAG', id,
+        length: id.length + 1
+        data:
+          openingBracketToken: @makeToken '<', '<'
+          tagNameToken: @makeToken 'IDENTIFIER', id, offset: 1
+      offset = id.length + 1
+      for property in properties
+        @token '.', '.', {offset}
+        offset += 1
+        @token 'PROPERTY', property, {offset}
+        offset += property.length
+      @token 'CALL_START', '(', generated: yes
+      @token '[', '[', generated: yes
+      @ends.push {tag: '/>', origin: tagToken, name: id, properties}
       @csxDepth++
-      return id.length + 1
+      return fullId.length + 1
     else if csxTag = @atCSXTag()
-      if @chunk[...2] is '/>'
+      if @chunk[...2] is '/>' # Self-closing tag.
         @pair '/>'
-        @token ']', ']',        length: 2
-        @token 'CALL_END', ')', length: 2
+        @token ']', ']',
+          length: 2
+          generated: yes
+        @token 'CALL_END', ')',
+          length: 2
+          generated: yes
+          data:
+            selfClosingSlashToken: @makeToken '/', '/'
+            closingBracketToken: @makeToken '>', '>', offset: 1
         @csxDepth--
         return 2
       else if firstChar is '{'
@@ -578,24 +600,39 @@ exports.Lexer = class Lexer
           @csxObjAttribute[@csxDepth] = yes
         @ends.push {tag: '}', origin: token}
         return 1
-      else if firstChar is '>'
+      else if firstChar is '>' # end of opening tag
         # Ignore terminators inside a tag.
-        @pair '/>' # As if the current tag was self-closing.
-        origin = @token ']', ']'
-        @token ',', ','
+        {origin: openingTagToken} = @pair '/>' # As if the current tag was self-closing.
+        @token ']', ']',
+          generated: yes
+          data:
+            closingBracketToken: @makeToken '>', '>'
+        @token ',', 'JSX_COMMA', generated: yes
         {tokens, index: end} =
           @matchWithInterpolations INSIDE_CSX, '>', '</', CSX_INTERPOLATION
         @mergeInterpolationTokens tokens, {}, (value) =>
           @validateUnicodeCodePointEscapes value, delimiter: '>'
         match = CSX_IDENTIFIER.exec(@chunk[end...]) or CSX_FRAGMENT_IDENTIFIER.exec(@chunk[end...])
-        if not match or match[1] isnt csxTag.name
+        if not match or match[1] isnt "#{csxTag.name}#{(".#{property}" for property in csxTag.properties).join ''}"
           @error "expected corresponding CSX closing tag for #{csxTag.name}",
-            csxTag.origin[2]
-        afterTag = end + csxTag.name.length
+            csxTag.origin.data.tagNameToken[2]
+        [, fullTagName] = match
+        afterTag = end + fullTagName.length
         if @chunk[afterTag] isnt '>'
           @error "missing closing > after tag name", offset: afterTag, length: 1
-        # +1 for the closing `>`.
-        @token 'CALL_END', ')', offset: end, length: csxTag.name.length + 1
+        # -2/+2 for the opening `</` and +1 for the closing `>`.
+        endToken = @token 'CALL_END', ')',
+          offset: end - 2
+          length: fullTagName.length + 3
+          generated: yes
+          data:
+            closingTagOpeningBracketToken: @makeToken '<', '<', offset: end - 2
+            closingTagSlashToken: @makeToken '/', '/', offset: end - 1
+            # TODO: individual tokens for complex tag name? eg < / A . B >
+            closingTagNameToken: @makeToken 'IDENTIFIER', fullTagName, offset: end
+            closingTagClosingBracketToken: @makeToken '>', '>', offset: end + fullTagName.length
+        # make the closing tag location data more easily accessible to the grammar
+        addTokenData openingTagToken, endToken.data
         @csxDepth--
         return afterTag + 1
       else

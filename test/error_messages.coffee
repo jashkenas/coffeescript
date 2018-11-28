@@ -1673,9 +1673,9 @@ test '#5034: CSX error: Adjacent JSX elements must be wrapped in an enclosing ta
       <Row>b</Row>
     )
   ''', '''
-    [stdin]:3:4: error: Adjacent JSX elements must be wrapped in an enclosing tag
+    [stdin]:3:3: error: Adjacent JSX elements must be wrapped in an enclosing tag
       <Row>b</Row>
-       ^^^^^^^^^^^
+      ^^^^^^^^^^^^
   '''
   assertErrorFormat '''
     render = -> (
@@ -1684,9 +1684,9 @@ test '#5034: CSX error: Adjacent JSX elements must be wrapped in an enclosing ta
       <Row>b</Row>
     )
   ''', '''
-    [stdin]:4:4: error: Adjacent JSX elements must be wrapped in an enclosing tag
+    [stdin]:4:3: error: Adjacent JSX elements must be wrapped in an enclosing tag
       <Row>b</Row>
-       ^^^^^^^^^^^
+      ^^^^^^^^^^^^
   '''
 test 'Bound method called as callback before binding throws runtime error', ->
   class Base

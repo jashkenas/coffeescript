@@ -2142,3 +2142,299 @@ test "AST location data as expected for Existence node", ->
       end:
         line: 1
         column: 7
+
+test "AST location Data as expected for CSXTag node", ->
+  testAstLocationData '<CSXY />',
+    type: 'JSXElement'
+    openingElement:
+      name:
+        start: 1
+        end: 5
+        range: [1, 5]
+        loc:
+          start:
+            line: 1
+            column: 1
+          end:
+            line: 1
+            column: 5
+      start: 0
+      end: 8
+      range: [0, 8]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 8
+    start: 0
+    end: 8
+    range: [0, 8]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 8
+
+  testAstLocationData '<div></div>',
+    type: 'JSXElement'
+    openingElement:
+      name:
+        start: 1
+        end: 4
+        range: [1, 4]
+        loc:
+          start:
+            line: 1
+            column: 1
+          end:
+            line: 1
+            column: 4
+      start: 0
+      end: 5
+      range: [0, 5]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 5
+    closingElement:
+      name:
+        start: 7
+        end: 10
+        range: [7, 10]
+        loc:
+          start:
+            line: 1
+            column: 7
+          end:
+            line: 1
+            column: 10
+      start: 5
+      end: 11
+      range: [5, 11]
+      loc:
+        start:
+          line: 1
+          column: 5
+        end:
+          line: 1
+          column: 11
+    start: 0
+    end: 11
+    range: [0, 11]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 11
+
+  testAstLocationData '<A.B />',
+    type: 'JSXElement'
+    openingElement:
+      name:
+        object:
+          start: 1
+          end: 2
+          range: [1, 2]
+          loc:
+            start:
+              line: 1
+              column: 1
+            end:
+              line: 1
+              column: 2
+        property:
+          start: 3
+          end: 4
+          range: [3, 4]
+          loc:
+            start:
+              line: 1
+              column: 3
+            end:
+              line: 1
+              column: 4
+        start: 1
+        end: 4
+        range: [1, 4]
+        loc:
+          start:
+            line: 1
+            column: 1
+          end:
+            line: 1
+            column: 4
+      start: 0
+      end: 7
+      range: [0, 7]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 7
+    start: 0
+    end: 7
+    range: [0, 7]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 7
+
+  testAstLocationData '<Tag.Name.Here></Tag.Name.Here>',
+    type: 'JSXElement'
+    openingElement:
+      name:
+        object:
+          object:
+            start: 1
+            end: 4
+            range: [1, 4]
+            loc:
+              start:
+                line: 1
+                column: 1
+              end:
+                line: 1
+                column: 4
+          property:
+            start: 5
+            end: 9
+            range: [5, 9]
+            loc:
+              start:
+                line: 1
+                column: 5
+              end:
+                line: 1
+                column: 9
+          start: 1
+          end: 9
+          range: [1, 9]
+          loc:
+            start:
+              line: 1
+              column: 1
+            end:
+              line: 1
+              column: 9
+        property:
+          start: 10
+          end: 14
+          range: [10, 14]
+          loc:
+            start:
+              line: 1
+              column: 10
+            end:
+              line: 1
+              column: 14
+        start: 1
+        end: 14
+        range: [1, 14]
+        loc:
+          start:
+            line: 1
+            column: 1
+          end:
+            line: 1
+            column: 14
+      start: 0
+      end: 15
+      range: [0, 15]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 15
+    closingElement:
+      name:
+        object:
+          object:
+            start: 17
+            end: 20
+            range: [17, 20]
+            loc:
+              start:
+                line: 1
+                column: 17
+              end:
+                line: 1
+                column: 20
+          property:
+            start: 21
+            end: 25
+            range: [21, 25]
+            loc:
+              start:
+                line: 1
+                column: 21
+              end:
+                line: 1
+                column: 25
+          start: 17
+          end: 25
+          range: [17, 25]
+          loc:
+            start:
+              line: 1
+              column: 17
+            end:
+              line: 1
+              column: 25
+        property:
+          start: 26
+          end: 30
+          range: [26, 30]
+          loc:
+            start:
+              line: 1
+              column: 26
+            end:
+              line: 1
+              column: 30
+        start: 17
+        end: 30
+        range: [17, 30]
+        loc:
+          start:
+            line: 1
+            column: 17
+          end:
+            line: 1
+            column: 30
+      start: 15
+      end: 31
+      range: [15, 31]
+      loc:
+        start:
+          line: 1
+          column: 15
+        end:
+          line: 1
+          column: 31
+    start: 0
+    end: 31
+    range: [0, 31]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 31
+

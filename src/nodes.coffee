@@ -290,21 +290,7 @@ exports.Base = class Base
   # The AST location data is a rearranged version of our Jison location data,
   # mutated into the structure that the Babel spec uses.
   astLocationData: ->
-    {first_line, first_column, last_line, last_column, range} = @locationData
-    return
-      loc:
-        start:
-          line:   first_line + 1
-          column: first_column
-        end:
-          line:   last_line + 1
-          column: last_column + 1
-      range: [
-        range[0]
-        range[1]
-      ]
-      start: range[0]
-      end:   range[1]
+    jisonLocationDataToAstLocationData @locationData
 
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
@@ -533,7 +519,7 @@ exports.Block = class Block extends Base
       [..., penult, last] = expressions
       penult = penult.unwrap()
       last = last.unwrap()
-      if penult instanceof Call and penult.csx and last instanceof Call and last.csx
+      if penult instanceof CSXElement and last instanceof CSXElement
         expressions[expressions.length - 1].error 'Adjacent JSX elements must be wrapped in an enclosing tag'
     while len--
       expr = @expressions[len]
@@ -916,11 +902,29 @@ exports.IdentifierLiteral = class IdentifierLiteral extends Literal
     name: @value
 
 exports.CSXTag = class CSXTag extends IdentifierLiteral
+  constructor: (value, {
+    @tagNameLocationData
+    @closingTagOpeningBracketLocationData
+    @closingTagSlashLocationData
+    @closingTagNameLocationData
+    @closingTagClosingBracketLocationData
+  }) ->
+    super value
+
+  astType: -> 'JSXIdentifier'
+
+  astProperties: ->
+    return
+      name: @value
 
 exports.PropertyName = class PropertyName extends Literal
   isAssignable: YES
 
-  astType: -> 'Identifier'
+  astType: ->
+    if @csx
+      'JSXIdentifier'
+    else
+      'Identifier'
 
   astProperties: ->
     name: @value
@@ -1101,6 +1105,7 @@ exports.Value = class Value extends Base
                       @isUndefined() or @isNull() or @isBoolean()
 
   isStatement : (o)    -> not @properties.length and @base.isStatement o
+  isCSXTag    : -> @base instanceof CSXTag
   assigns     : (name) -> not @properties.length and @base.assigns name
   jumps       : (o)    -> not @properties.length and @base.jumps o
 
@@ -1234,19 +1239,32 @@ exports.Value = class Value extends Base
     # `astProperties` methods below.
     super()
 
-  astType: -> 'MemberExpression'
+  astType: ->
+    if @isCSXTag()
+      'JSXMemberExpression'
+    else
+      'MemberExpression'
 
   # If this `Value` has properties, the *last* property (e.g. `c` in `a.b.c`)
   # becomes the `property`, and the preceding properties (e.g. `a.b`) become
   # a child `Value` node assigned to the `object` property.
   astProperties: ->
     [..., property] = @properties
+    property.name.csx = yes if @isCSXTag()
     return
       object: @object().ast()
       property: property.ast()
       computed: property instanceof Index or property.name?.unwrap() not instanceof PropertyName
       optional: !!property.soak
       shorthand: !!property.shorthand
+
+  astLocationData: ->
+    return super() unless @isCSXTag()
+    # don't include leading < of JSX tag in location data
+    mergeAstLocationData(
+      jisonLocationDataToAstLocationData(@base.tagNameLocationData),
+      jisonLocationDataToAstLocationData(@properties[@properties.length - 1].locationData)
+    )
 
 #### HereComment
 
@@ -1296,6 +1314,113 @@ exports.LineComment = class LineComment extends Base
 
 #### Call
 
+exports.CSXElement = class CSXElement extends Base
+  constructor: ({@tagName, @attributes, @content}) ->
+    super()
+
+  children: ['tagName', 'attributes', 'content']
+
+  compileNode: (o) ->
+    @attributes.base.csx = yes
+    @content?.base.csx = yes
+    fragments = [@makeCode('<')]
+    fragments.push (tag = @tagName.compileToFragments(o, LEVEL_ACCESS))...
+    if @attributes.base instanceof Arr
+      for obj in @attributes.base.objects
+        attr = obj.base
+        attrProps = attr?.properties or []
+        # Catch invalid CSX attributes: <div {a:"b", props} {props} "value" />
+        if not (attr instanceof Obj or attr instanceof IdentifierLiteral) or (attr instanceof Obj and not attr.generated and (attrProps.length > 1 or not (attrProps[0] instanceof Splat)))
+          obj.error """
+            Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+          """
+        obj.base.csx = yes if obj.base instanceof Obj
+        fragments.push @makeCode ' '
+        fragments.push obj.compileToFragments(o, LEVEL_PAREN)...
+    if @content
+      fragments.push @makeCode('>')
+      fragments.push @content.compileNode(o, LEVEL_LIST)...
+      fragments.push [@makeCode('</'), tag..., @makeCode('>')]...
+    else
+      fragments.push @makeCode(' />')
+    fragments
+
+  ast: ->
+    # The location data spanning the opening element < ... > is captured by
+    # the generated Arr which contains the element's attributes
+    @openingElementLocationData = jisonLocationDataToAstLocationData @attributes.base.locationData
+
+    tagName = @tagName.base
+    tagName.locationData = tagName.tagNameLocationData
+    if @content?
+      @closingElementLocationData = mergeAstLocationData(
+        jisonLocationDataToAstLocationData tagName.closingTagOpeningBracketLocationData
+        jisonLocationDataToAstLocationData tagName.closingTagClosingBracketLocationData
+      )
+
+    super()
+
+  astType: ->
+    'JSXElement'
+
+  astProperties: ->
+    openingElement = Object.assign {
+      type: 'JSXOpeningElement'
+      name: @tagName.unwrap().ast()
+      selfClosing: not @closingElementLocationData?
+      attributes: []
+    }, @openingElementLocationData
+
+    closingElement = null
+    if @closingElementLocationData?
+      closingElement = Object.assign {
+        type: 'JSXClosingElement'
+        name: Object.assign(
+          @tagName.unwrap().ast(),
+          jisonLocationDataToAstLocationData @tagName.base.closingTagNameLocationData
+        )
+      }, @closingElementLocationData
+      if closingElement.name.type is 'JSXMemberExpression'
+        rangeDiff = closingElement.range[0] - openingElement.range[0] + '/'.length
+        shiftAstLocationData = (node) ->
+          node.range = [
+            node.range[0] + rangeDiff
+            node.range[1] + rangeDiff
+          ]
+          node.start += rangeDiff
+          node.end += rangeDiff
+          node.loc.start =
+            line: node.loc.start.line
+            column: node.loc.start.column + rangeDiff
+          node.loc.end =
+            line: node.loc.end.line
+            column: node.loc.end.column + rangeDiff
+        currentExpr = closingElement.name
+        while currentExpr.type is 'JSXMemberExpression'
+          shiftAstLocationData currentExpr unless currentExpr is closingElement.name
+          shiftAstLocationData currentExpr.property
+          currentExpr = currentExpr.object
+        shiftAstLocationData currentExpr
+
+    return {
+      openingElement, closingElement
+      children: []
+        # TODO: uncomment when adding support for JSX content AST
+        # if content and not content.base.isEmpty?()
+        #   content.base.csx = yes
+        #   compact flatten [
+        #     content.ast()
+        #   ]
+        # else
+        #   []
+    }
+
+  astLocationData: ->
+    if @closingElementLocationData?
+      mergeAstLocationData @openingElementLocationData, @closingElementLocationData
+    else
+      @openingElementLocationData
+
 # Node for a function invocation.
 exports.Call = class Call extends Base
   constructor: (@variable, @args = [], @soak, @token) ->
@@ -1306,7 +1431,12 @@ exports.Call = class Call extends Base
     if @variable instanceof Value and @variable.isNotCallable()
       @variable.error "literal is not a function"
 
-    @csx = @variable.base instanceof CSXTag
+    if @variable.base instanceof CSXTag
+      return new CSXElement(
+        tagName: @variable
+        attributes: @args[0]
+        content: @args[1]
+      )
 
     # `@variable` never gets output as a result of this node getting created as
     # part of `RegexWithInterpolations`, so for that case move any comments to
@@ -1389,7 +1519,6 @@ exports.Call = class Call extends Base
 
   # Compile a vanilla function call.
   compileNode: (o) ->
-    return @compileCSX o if @csx
     @variable?.front = @front
     compiledArgs = []
     # If variable is `Accessor` fragments are cached and used later
@@ -1415,32 +1544,6 @@ exports.Call = class Call extends Base
       fragments.push @makeCode 'new '
     fragments.push @variable.compileToFragments(o, LEVEL_ACCESS)...
     fragments.push @makeCode('('), compiledArgs..., @makeCode(')')
-    fragments
-
-  compileCSX: (o) ->
-    [attributes, content] = @args
-    attributes.base.csx = yes
-    content?.base.csx = yes
-    fragments = [@makeCode('<')]
-    fragments.push (tag = @variable.compileToFragments(o, LEVEL_ACCESS))...
-    if attributes.base instanceof Arr
-      for obj in attributes.base.objects
-        attr = obj.base
-        attrProps = attr?.properties or []
-        # Catch invalid CSX attributes: <div {a:"b", props} {props} "value" />
-        if not (attr instanceof Obj or attr instanceof IdentifierLiteral) or (attr instanceof Obj and not attr.generated and (attrProps.length > 1 or not (attrProps[0] instanceof Splat)))
-          obj.error """
-            Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
-          """
-        obj.base.csx = yes if obj.base instanceof Obj
-        fragments.push @makeCode ' '
-        fragments.push obj.compileToFragments(o, LEVEL_PAREN)...
-    if content
-      fragments.push @makeCode('>')
-      fragments.push content.compileNode(o, LEVEL_LIST)...
-      fragments.push [@makeCode('</'), tag..., @makeCode('>')]...
-    else
-      fragments.push @makeCode(' />')
     fragments
 
   astType: ->
@@ -4063,7 +4166,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
 
   isNestedTag: (element) ->
     call = element.unwrapAll?()
-    @csx and call instanceof Call and call.csx
+    @csx and call instanceof CSXElement
 
 exports.Interpolation = class Interpolation extends Base
   constructor: (@expression) ->
@@ -4525,3 +4628,20 @@ mergeAstLocationData = (nodeA, nodeB) ->
     ]
     start: lesser  nodeA.start, nodeB.start
     end:   greater nodeA.end,   nodeB.end
+
+# Convert Jison-style node class location data to Babel-style location data
+jisonLocationDataToAstLocationData = ({first_line, first_column, last_line, last_column, range}) ->
+  return
+    loc:
+      start:
+        line:   first_line + 1
+        column: first_column
+      end:
+        line:   last_line + 1
+        column: last_column + 1
+    range: [
+      range[0]
+      range[1]
+    ]
+    start: range[0]
+    end:   range[1]
