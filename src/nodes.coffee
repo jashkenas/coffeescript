@@ -3959,19 +3959,18 @@ exports.In = class In extends Base
 
 # A classic *try/catch/finally* block.
 exports.Try = class Try extends Base
-  constructor: (@attempt, @errorVariable, @recovery, @ensure, @catchToken) ->
+  constructor: (@attempt, @catch, @ensure) ->
     super()
-    @errorVariable?.unwrap().propagateLhs? yes
 
-  children: ['attempt', 'recovery', 'ensure']
+  children: ['attempt', 'catch', 'ensure']
 
   isStatement: YES
 
-  jumps: (o) -> @attempt.jumps(o) or @recovery?.jumps(o)
+  jumps: (o) -> @attempt.jumps(o) or @catch?.jumps(o)
 
   makeReturn: (res) ->
-    @attempt  = @attempt .makeReturn res if @attempt
-    @recovery = @recovery.makeReturn res if @recovery
+    @attempt = @attempt.makeReturn res if @attempt
+    @catch   = @catch  .makeReturn res if @catch
     this
 
   # Compilation is more or less as you would expect -- the *finally* clause
@@ -3980,16 +3979,9 @@ exports.Try = class Try extends Base
     o.indent  += TAB
     tryPart   = @attempt.compileToFragments o, LEVEL_TOP
 
-    catchPart = if @recovery
-      generatedErrorVariableName = o.scope.freeVariable 'error', reserve: no
-      placeholder = new IdentifierLiteral generatedErrorVariableName
-      if @errorVariable
-        message = isUnassignable @errorVariable.unwrapAll().value
-        @errorVariable.error message if message
-        @recovery.unshift new Assign @errorVariable, placeholder
-      [].concat @makeCode(" catch ("), placeholder.compileToFragments(o), @makeCode(") {\n"),
-        @recovery.compileToFragments(o, LEVEL_TOP), @makeCode("\n#{@tab}}")
-    else unless @ensure or @recovery
+    catchPart = if @catch
+      @catch.compileToFragments o, LEVEL_TOP
+    else unless @ensure or @catch
       generatedErrorVariableName = o.scope.freeVariable 'error', reserve: no
       [@makeCode(" catch (#{generatedErrorVariableName}) {}")]
     else
@@ -4004,20 +3996,43 @@ exports.Try = class Try extends Base
 
   astType: -> 'TryStatement'
 
-  getHandlerAst: (o) ->
-    return null unless @recovery?
-
-    Object.assign
-      type: 'CatchClause'
-      param: @errorVariable?.ast(o) ? null
-      body: @recovery.ast o
-    , @recovery.astLocationData()
-
   astProperties: (o) ->
     return
       block: @attempt.ast o
-      handler: @getHandlerAst o
+      handler: @catch?.ast(o) ? null
       finalizer: @ensure?.ast(o) ? null
+
+exports.Catch = class Catch extends Base
+  constructor: (@recovery, @errorVariable) ->
+    super()
+    @errorVariable?.unwrap().propagateLhs? yes
+
+  children: ['recovery', 'errorVariable']
+
+  isStatement: YES
+
+  jumps: (o) -> @recovery.jumps(o)
+
+  makeReturn: (res) ->
+    @recovery = @recovery.makeReturn res
+    this
+
+  compileNode: (o) ->
+    generatedErrorVariableName = o.scope.freeVariable 'error', reserve: no
+    placeholder = new IdentifierLiteral generatedErrorVariableName
+    if @errorVariable
+      message = isUnassignable @errorVariable.unwrapAll().value
+      @errorVariable.error message if message
+      @recovery.unshift new Assign @errorVariable, placeholder
+    [].concat @makeCode(" catch ("), placeholder.compileToFragments(o), @makeCode(") {\n"),
+      @recovery.compileToFragments(o, LEVEL_TOP), @makeCode("\n#{@tab}}")
+
+  astType: -> 'CatchClause'
+
+  astProperties: (o) ->
+    return
+      param: @errorVariable?.ast(o) ? null
+      body: @recovery.ast o
 
 #### Throw
 
