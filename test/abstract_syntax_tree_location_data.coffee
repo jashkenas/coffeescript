@@ -2,7 +2,7 @@
 # ---------------------------------
 
 testAstLocationData = (code, expected) ->
-  testAstNodeLocationData getAstExpression(code), expected
+  testAstNodeLocationData getAstExpressionOrStatement(code), expected
 
 testAstNodeLocationData = (node, expected, path = '') ->
   extendPath = (additionalPath) ->
@@ -2437,4 +2437,193 @@ test "AST location Data as expected for CSXTag node", ->
       end:
         line: 1
         column: 31
+
+test "AST as expected for Try node", ->
+  testAstLocationData 'try cappuccino',
+    type: 'TryStatement'
+    block:
+      type: 'BlockStatement'
+      body: [
+        expression:
+          start: 4
+          end: 14
+          range: [4, 14]
+          loc:
+            start:
+              line: 1
+              column: 4
+            end:
+              line: 1
+              column: 14
+        start: 4
+        end: 14
+        range: [4, 14]
+        loc:
+          start:
+            line: 1
+            column: 4
+          end:
+            line: 1
+            column: 14
+      ]
+      # TODO: the location data for the block is wrong (wrong location data on generated INDENT)
+      # start: 4
+      # end: 14
+      # range: [4, 14]
+      # loc:
+      #   start:
+      #     line: 1
+      #     column: 4
+      #   end:
+      #     line: 1
+      #     column: 14
+    start: 0
+    end: 14
+    range: [0, 14]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 14
+
+  testAstLocationData '''
+    try
+      x = 1
+      y()
+    catch e
+      d()
+    finally
+      f + g
+  ''',
+    type: 'TryStatement'
+    block:
+      type: 'BlockStatement'
+      body: [
+        expression:
+          start: 6
+          end: 11
+          range: [6, 11]
+          loc:
+            start:
+              line: 2
+              column: 2
+            end:
+              line: 2
+              column: 7
+        start: 6
+        end: 11
+        range: [6, 11]
+        loc:
+          start:
+            line: 2
+            column: 2
+          end:
+            line: 2
+            column: 7
+      ,
+        expression:
+          start: 14
+          end: 17
+          range: [14, 17]
+          loc:
+            start:
+              line: 3
+              column: 2
+            end:
+              line: 3
+              column: 5
+        start: 14
+        end: 17
+        range: [14, 17]
+        loc:
+          start:
+            line: 3
+            column: 2
+          end:
+            line: 3
+            column: 5
+      ]
+      start: 4
+      end: 17
+      range: [4, 17]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 5
+    handler:
+      # param:
+      # body:
+      #   body: [
+      #   ]
+      start: 18
+      end: 31
+      range: [18, 31]
+      loc:
+        start:
+          line: 4
+          column: 0
+        end:
+          line: 5
+          column: 5
+    finalizer:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'BinaryExpression'
+      ]
+    start: 0
+    end: 47
+    range: [0, 47]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 7
+        column: 7
+
+  # testAstLocationData '''
+  #   try
+  #   catch
+  #   finally
+  # ''',
+  #   type: 'TryStatement'
+  #   block:
+  #     type: 'BlockStatement'
+  #     body: []
+  #   handler:
+  #     type: 'CatchClause'
+  #     param: null
+  #     body:
+  #       type: 'BlockStatement'
+  #       body: []
+  #   finalizer:
+  #     type: 'BlockStatement'
+  #     body: []
+
+  # testAstLocationData '''
+  #   try
+  #   catch {e}
+  #     f
+  # ''',
+  #   type: 'TryStatement'
+  #   block:
+  #     type: 'BlockStatement'
+  #     body: []
+  #   handler:
+  #     type: 'CatchClause'
+  #     param:
+  #       type: 'ObjectPattern'
+  #     body:
+  #       type: 'BlockStatement'
+  #       body: [
+  #         type: 'ExpressionStatement'
+  #       ]
+  #   finalizer: null
 

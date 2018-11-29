@@ -28,8 +28,7 @@ looseArray = (arr) ->
     enumerable: no
   arr
 
-testExpression = (code, expected) ->
-  ast = getAstExpression code
+testAgainstExpected = (ast, expected) ->
   if expected?
     deepStrictIncludeExpectedProperties ast, expected
   else
@@ -37,6 +36,13 @@ testExpression = (code, expected) ->
     # parameter to see what the current AST generation is for your input code.
     console.log inspect ast
 
+testExpression = (code, expected) ->
+  ast = getAstExpression code
+  testAgainstExpected ast, expected
+
+testStatement = (code, expected) ->
+  ast = getAstStatement code
+  testAgainstExpected ast, expected
 
 test 'Confirm functionality of `deepStrictIncludeExpectedProperties`', ->
   actual =
@@ -285,13 +291,13 @@ test "AST as expected for ComputedPropertyName node", ->
     implicit: yes
 
 test "AST as expected for StatementLiteral node", ->
-  testExpression 'break',
+  testStatement 'break',
     type: 'BreakStatement'
 
-  testExpression 'continue',
+  testStatement 'continue',
     type: 'ContinueStatement'
 
-  testExpression 'debugger',
+  testStatement 'debugger',
     type: 'DebuggerStatement'
 
 test "AST as expected for ThisLiteral node", ->
@@ -969,7 +975,7 @@ test "AST as expected for Arr node", ->
 #       ]
 
 test "AST as expected for ModuleDeclaration node", ->
-  testExpression 'export {X}',
+  testStatement 'export {X}',
     type: 'ExportNamedDeclaration'
     declaration: null
     specifiers: [
@@ -984,7 +990,7 @@ test "AST as expected for ModuleDeclaration node", ->
     source: null
     exportKind: 'value'
 
-  testExpression 'import X from "."',
+  testStatement 'import X from "."',
     type: 'ImportDeclaration'
     specifiers: [
       type: 'ImportDefaultSpecifier'
@@ -998,7 +1004,7 @@ test "AST as expected for ModuleDeclaration node", ->
       value: '.'
 
 test "AST as expected for ImportDeclaration node", ->
-  testExpression 'import React, {Component} from "react"',
+  testStatement 'import React, {Component} from "react"',
     type: 'ImportDeclaration'
     specifiers: [
       type: 'ImportDefaultSpecifier'
@@ -1023,14 +1029,14 @@ test "AST as expected for ImportDeclaration node", ->
         raw: '"react"'
 
 test "AST as expected for ExportNamedDeclaration node", ->
-  testExpression 'export {}',
+  testStatement 'export {}',
     type: 'ExportNamedDeclaration'
     declaration: null
     specifiers: []
     source: null
     exportKind: 'value'
 
-  # testExpression 'export fn = ->',
+  # testStatement 'export fn = ->',
   #   type: 'ExportNamedDeclaration'
   #   clause:
   #     type: 'Assign'
@@ -1039,9 +1045,9 @@ test "AST as expected for ExportNamedDeclaration node", ->
   #     value:
   #       type: 'Code'
 
-  # testExpression 'export class A',
+  # testStatement 'export class A',
 
-  testExpression 'export {x as y, z as default}',
+  testStatement 'export {x as y, z as default}',
     type: 'ExportNamedDeclaration'
     declaration: null
     specifiers: [
@@ -1064,7 +1070,7 @@ test "AST as expected for ExportNamedDeclaration node", ->
     source: null
     exportKind: 'value'
 
-  testExpression 'export {default, default as b} from "./abc"',
+  testStatement 'export {default, default as b} from "./abc"',
     type: 'ExportNamedDeclaration'
     declaration: null
     specifiers: [
@@ -1092,12 +1098,12 @@ test "AST as expected for ExportNamedDeclaration node", ->
     exportKind: 'value'
 
 test "AST as expected for ExportDefaultDeclaration node", ->
-  # testExpression 'export default class',
+  # testStatement 'export default class',
   #   type: 'ExportDefaultDeclaration'
   #   clause:
   #     type: 'Class'
 
-  testExpression 'export default "abc"',
+  testStatement 'export default "abc"',
     type: 'ExportDefaultDeclaration'
     declaration:
       type: 'StringLiteral'
@@ -1106,7 +1112,7 @@ test "AST as expected for ExportDefaultDeclaration node", ->
         raw: '"abc"'
 
 test "AST as expected for ExportAllDeclaration node", ->
-  testExpression 'export * from "module-name"',
+  testStatement 'export * from "module-name"',
     type: 'ExportAllDeclaration'
     source:
       type: 'StringLiteral'
@@ -1116,7 +1122,7 @@ test "AST as expected for ExportAllDeclaration node", ->
     exportKind: 'value'
 
 test "AST as expected for ExportSpecifierList node", ->
-  testExpression 'export {a, b, c}',
+  testStatement 'export {a, b, c}',
     type: 'ExportNamedDeclaration'
     declaration: null
     specifiers: [
@@ -1146,7 +1152,7 @@ test "AST as expected for ExportSpecifierList node", ->
     ]
 
 test "AST as expected for ImportDefaultSpecifier node", ->
-  testExpression 'import React from "react"',
+  testStatement 'import React from "react"',
     type: 'ImportDeclaration'
     specifiers: [
       type: 'ImportDefaultSpecifier'
@@ -1160,7 +1166,7 @@ test "AST as expected for ImportDefaultSpecifier node", ->
       value: 'react'
 
 test "AST as expected for ImportNamespaceSpecifier node", ->
-  testExpression 'import * as React from "react"',
+  testStatement 'import * as React from "react"',
     type: 'ImportDeclaration'
     specifiers: [
       type: 'ImportNamespaceSpecifier'
@@ -1173,7 +1179,7 @@ test "AST as expected for ImportNamespaceSpecifier node", ->
       type: 'StringLiteral'
       value: 'react'
 
-  testExpression 'import React, * as ReactStar from "react"',
+  testStatement 'import React, * as ReactStar from "react"',
     type: 'ImportDeclaration'
     specifiers: [
       type: 'ImportDefaultSpecifier'
@@ -1624,24 +1630,102 @@ test "AST as expected for Op node", ->
   #       type: 'NumberLiteral'
   #       value: '2'
 
-# test "AST as expected for Try node", ->
-#   testExpression 'try cappuccino',
-#     type: 'Try'
-#     attempt:
-#       type: 'Value'
-#     recovery: undefined
+test "AST as expected for Try node", ->
+  testStatement 'try cappuccino',
+    type: 'TryStatement'
+    block:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'Identifier'
+          name: 'cappuccino'
+      ]
+    handler: null
+    finalizer: null
 
-#   testExpression 'try to catch it then log it',
-#     type: 'Try'
-#     attempt:
-#       type: 'Value'
-#     recovery:
-#       type: 'Value'
-#       base:
-#         type: 'Call'
+  testStatement '''
+    try
+      x = 1
+      y()
+    catch e
+      d()
+    finally
+      f + g
+  ''',
+    type: 'TryStatement'
+    block:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'AssignmentExpression'
+      ,
+        type: 'ExpressionStatement'
+        expression:
+          type: 'CallExpression'
+      ]
+    handler:
+      type: 'CatchClause'
+      param:
+        type: 'Identifier'
+        name: 'e'
+      body:
+        type: 'BlockStatement'
+        body: [
+          type: 'ExpressionStatement'
+          expression:
+            type: 'CallExpression'
+        ]
+    finalizer:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'BinaryExpression'
+      ]
+
+  testStatement '''
+    try
+    catch
+    finally
+  ''',
+    type: 'TryStatement'
+    block:
+      type: 'BlockStatement'
+      body: []
+    handler:
+      type: 'CatchClause'
+      param: null
+      body:
+        type: 'BlockStatement'
+        body: []
+    finalizer:
+      type: 'BlockStatement'
+      body: []
+
+  testStatement '''
+    try
+    catch {e}
+      f
+  ''',
+    type: 'TryStatement'
+    block:
+      type: 'BlockStatement'
+      body: []
+    handler:
+      type: 'CatchClause'
+      param:
+        type: 'ObjectPattern'
+      body:
+        type: 'BlockStatement'
+        body: [
+          type: 'ExpressionStatement'
+        ]
+    finalizer: null
 
 test "AST as expected for Throw node", ->
-  testExpression 'throw new BallError "catch"',
+  testStatement 'throw new BallError "catch"',
     type: 'ThrowStatement'
     argument:
       type: 'NewExpression'

@@ -3959,8 +3959,9 @@ exports.In = class In extends Base
 
 # A classic *try/catch/finally* block.
 exports.Try = class Try extends Base
-  constructor: (@attempt, @errorVariable, @recovery, @ensure) ->
+  constructor: (@attempt, @errorVariable, @recovery, @ensure, @catchToken) ->
     super()
+    @errorVariable?.unwrap().propagateLhs? yes
 
   children: ['attempt', 'recovery', 'ensure']
 

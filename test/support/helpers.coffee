@@ -56,6 +56,16 @@ getAstExpressions = (code) ->
 
 # Many tests want just the root node.
 exports.getAstExpression = (code) ->
+  expressionStatementAst = getAstExpressions(code)[0]
+  ok expressionStatementAst.type is 'ExpressionStatement', 'Expected ExpressionStatement AST wrapper'
+  expressionStatementAst.expression
+
+exports.getAstStatement = (code) ->
+  statement = getAstExpressions(code)[0]
+  ok statement.type isnt 'ExpressionStatement', "Didn't expect ExpressionStatement AST wrapper"
+  statement
+
+exports.getAstExpressionOrStatement = (code) ->
   expressionAst = getAstExpressions(code)[0]
   return expressionAst unless expressionAst.type is 'ExpressionStatement'
-  return expressionAst.expression
+  expressionAst.expression
