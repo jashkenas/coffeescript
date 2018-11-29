@@ -768,8 +768,6 @@ exports.Block = class Block extends Base
     new Block nodes
 
   asExpressionStatementAst: (ast) ->
-    # return ast if ast.type in ['ImportDeclaration']
-
     Object.assign
       type: 'ExpressionStatement'
       expression: ast
