@@ -636,9 +636,9 @@ grammar =
 
   # A catch clause names its error and runs a block of code.
   Catch: [
-    o 'CATCH Identifier Block',                 -> [$2, $3, $1]
-    o 'CATCH Object Block',                     -> [LOC(2)(new Value($2)), $3, $1]
-    o 'CATCH Block',                            -> [null, $2, $1]
+    o 'CATCH Identifier Block',                 -> [$2, $3, LOC(1) new Literal($1)]
+    o 'CATCH Object Block',                     -> [LOC(2)(new Value($2)), $3, LOC(1) new Literal($1)]
+    o 'CATCH Block',                            -> [null, $2, LOC(1) new Literal($1)]
   ]
 
   # Throw an exception object.
