@@ -58,8 +58,8 @@ test 'object attribute', ->
     <div x={{y: 42}} />
   ''', '''
     <div x={{
-        y: 42
-      }} />;
+      y: 42
+    }} />;
   '''
 
 test 'attribute without value', ->
@@ -230,9 +230,9 @@ test 'nested CSX within an attribute, with object attr value', ->
   ''', '''
     <Company>
       <Person name={<NameComponent attr3={{
-          'a': {},
-          b: '{'
-        }} />} />
+      'a': {},
+      b: '{'
+    }} />} />
     </Company>;
   '''
 
@@ -241,11 +241,11 @@ test 'complex nesting', ->
     <div code={someFunc({a:{b:{}, C:'}{}{'}})} />
   ''', '''
     <div code={someFunc({
-        a: {
-          b: {},
-          C: '}{}{'
-        }
-      })} />;
+      a: {
+        b: {},
+        C: '}{}{'
+      }
+    })} />;
   '''
 
 test 'multiline tag with nested CSX within an attribute', ->
@@ -456,10 +456,10 @@ test 'tag with {{}}', ->
     <Person name={{value: item, key, item}} />
   ''', '''
     <Person name={{
-        value: item,
-        key,
-        item
-      }} />;
+      value: item,
+      key,
+      item
+    }} />;
   '''
 
 test 'tag with namespace', ->
@@ -545,11 +545,11 @@ test 'complex multiline spread attribute', ->
   ''', '''
     <Component {...y} a={b} {...x} b="c" {...z}>
       <div code={someFunc({
-        a: {
-          b: {},
-          C: '}'
-        }
-      })} />
+      a: {
+        b: {},
+        C: '}'
+      }
+    })} />
     </Component>;
   '''
 

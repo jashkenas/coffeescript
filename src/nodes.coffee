@@ -397,6 +397,13 @@ exports.Base = class Base
   withLocationDataFrom: ({locationData}) ->
     @updateLocationDataIfMissing locationData
 
+  # Add location data and comments from another node
+  withLocationDataAndCommentsFrom: (node) ->
+    @withLocationDataFrom node
+    {comments} = node
+    @comments = comments if comments?.length
+    this
+
   # Throw a SyntaxError associated with this node’s location.
   error: (message) ->
     throwSyntaxError message, @locationData
@@ -1347,6 +1354,7 @@ exports.CSXAttribute = class CSXAttribute extends Base
           new CSXExpressionContainer value
       else
         null
+    @value?.comments = value.comments
 
   children: ['name', 'value']
 
@@ -1372,7 +1380,7 @@ exports.CSXAttributes = class CSXAttributes extends Base
       {base} = object
       if base instanceof IdentifierLiteral
         # attribute with no value eg disabled
-        attribute = new CSXAttribute name: new CSXIdentifier(base.value).withLocationDataFrom base
+        attribute = new CSXAttribute name: new CSXIdentifier(base.value).withLocationDataAndCommentsFrom base
         attribute.locationData = base.locationData
         @attributes.push attribute
       else if not base.generated
@@ -1386,7 +1394,7 @@ exports.CSXAttributes = class CSXAttributes extends Base
         for property in base.properties
           {variable, value} = property
           attribute = new CSXAttribute {
-            name: new CSXIdentifier(variable.base.value).withLocationDataFrom variable.base
+            name: new CSXIdentifier(variable.base.value).withLocationDataAndCommentsFrom variable.base
             value
           }
           attribute.locationData = property.locationData
@@ -4741,4 +4749,3 @@ jisonLocationDataToAstLocationData = ({first_line, first_column, last_line, last
     ]
     start: range[0]
     end:   range[1]
-dump = (obj) -> console.log require('util').inspect obj, no, null
