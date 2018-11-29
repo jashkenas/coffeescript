@@ -630,8 +630,8 @@ grammar =
   Try: [
     o 'TRY Block',                              -> new Try $2
     o 'TRY Block Catch',                        -> new Try $2, $3
-    o 'TRY Block FINALLY Block',                -> new Try $2, null, $4
-    o 'TRY Block Catch FINALLY Block',          -> new Try $2, $3, $5
+    o 'TRY Block FINALLY Block',                -> new Try $2, null, $4, LOC(3)(new Literal $3)
+    o 'TRY Block Catch FINALLY Block',          -> new Try $2, $3, $5, LOC(4)(new Literal $4)
   ]
 
   # A catch clause names its error and runs a block of code.

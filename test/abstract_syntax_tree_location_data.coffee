@@ -2556,10 +2556,40 @@ test "AST as expected for Try node", ->
           line: 3
           column: 5
     handler:
-      # param:
-      # body:
-      #   body: [
-      #   ]
+      param:
+        start: 24
+        end: 25
+        range: [24, 25]
+        loc:
+          start:
+            line: 4
+            column: 6
+          end:
+            line: 4
+            column: 7
+      body:
+        body: [
+          start: 28
+          end: 31
+          range: [28, 31]
+          loc:
+            start:
+              line: 5
+              column: 2
+            end:
+              line: 5
+              column: 5
+        ]
+        start: 26
+        end: 31
+        range: [26, 31]
+        loc:
+          start:
+            line: 5
+            column: 0
+          end:
+            line: 5
+            column: 5
       start: 18
       end: 31
       range: [18, 31]
@@ -2571,12 +2601,21 @@ test "AST as expected for Try node", ->
           line: 5
           column: 5
     finalizer:
-      type: 'BlockStatement'
       body: [
         type: 'ExpressionStatement'
         expression:
           type: 'BinaryExpression'
       ]
+      start: 32
+      end: 47
+      range: [32, 47]
+      loc:
+        start:
+          line: 6
+          column: 0
+        end:
+          line: 7
+          column: 7
     start: 0
     end: 47
     range: [0, 47]

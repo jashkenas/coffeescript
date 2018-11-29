@@ -3959,7 +3959,7 @@ exports.In = class In extends Base
 
 # A classic *try/catch/finally* block.
 exports.Try = class Try extends Base
-  constructor: (@attempt, @catch, @ensure) ->
+  constructor: (@attempt, @catch, @ensure, @finallyTag) ->
     super()
 
   children: ['attempt', 'catch', 'ensure']
@@ -3976,11 +3976,12 @@ exports.Try = class Try extends Base
   # Compilation is more or less as you would expect -- the *finally* clause
   # is optional, the *catch* is not.
   compileNode: (o) ->
+    originalIndent = o.indent
     o.indent  += TAB
     tryPart   = @attempt.compileToFragments o, LEVEL_TOP
 
     catchPart = if @catch
-      @catch.compileToFragments o, LEVEL_TOP
+      @catch.compileToFragments merge(o, indent: originalIndent), LEVEL_TOP
     else unless @ensure or @catch
       generatedErrorVariableName = o.scope.freeVariable 'error', reserve: no
       [@makeCode(" catch (#{generatedErrorVariableName}) {}")]
@@ -4018,6 +4019,7 @@ exports.Catch = class Catch extends Base
     this
 
   compileNode: (o) ->
+    o.indent  += TAB
     generatedErrorVariableName = o.scope.freeVariable 'error', reserve: no
     placeholder = new IdentifierLiteral generatedErrorVariableName
     if @errorVariable
