@@ -899,7 +899,8 @@ exports.IdentifierLiteral = class IdentifierLiteral extends Literal
       'Identifier'
 
   astProperties: ->
-    name: @value
+    return
+      name: @value
 
 exports.CSXTag = class CSXTag extends IdentifierLiteral
   constructor: (value, {
@@ -1312,33 +1313,87 @@ exports.LineComment = class LineComment extends Base
     fragment.isComment = fragment.isLineComment = yes
     fragment
 
-#### Call
+#### CSX
 
-exports.CSXElement = class CSXElement extends Base
-  constructor: ({@tagName, @attributes, @content}) ->
+exports.CSXIdentifier = class CSXIdentifier extends IdentifierLiteral
+  astType: -> 'JSXIdentifier'
+
+exports.CSXExpressionContainer = class CSXExpressionContainer extends Base
+  constructor: (@expression) ->
     super()
+    @expression.csxAttribute = yes
+    @locationData = @expression.locationData
 
-  children: ['tagName', 'attributes', 'content']
+  children: ['expression']
 
   compileNode: (o) ->
-    @attributes.base.csx = yes
-    @content?.base.csx = yes
-    fragments = [@makeCode('<')]
-    fragments.push (tag = @tagName.compileToFragments(o, LEVEL_ACCESS))...
-    if @attributes.base instanceof Arr
-      for obj in @attributes.base.objects
-        @checkValidAttribute obj
-        attr = obj.base
-        attr.csx = yes if attr instanceof Obj
-        fragments.push @makeCode ' '
-        fragments.push obj.compileToFragments(o, LEVEL_PAREN)...
-    if @content
-      fragments.push @makeCode('>')
-      fragments.push @content.compileNode(o, LEVEL_LIST)...
-      fragments.push [@makeCode('</'), tag..., @makeCode('>')]...
-    else
-      fragments.push @makeCode(' />')
-    fragments
+    @expression.compileNode(o)
+
+  astType: -> 'JSXExpressionContainer'
+
+  astProperties: ->
+    return
+      expression: @expression.ast()
+
+exports.CSXAttribute = class CSXAttribute extends Base
+  constructor: ({@name, value}) ->
+    super()
+    @value =
+      if value?
+        value = value.base
+        if value instanceof StringLiteral
+          value
+        else
+          new CSXExpressionContainer value
+      else
+        null
+
+  children: ['name', 'value']
+
+  compileNode: (o) ->
+    compiledName = @name.compileToFragments o, LEVEL_LIST
+    return compiledName unless @value?
+    val = @value.compileToFragments o, LEVEL_LIST
+    compiledName.concat @makeCode('='), val
+
+  astType: -> 'JSXAttribute'
+
+  astProperties: ->
+    return
+      name: @name.ast()
+      value: @value?.ast() ? null
+
+exports.CSXAttributes = class CSXAttributes extends Base
+  constructor: (arr) ->
+    super()
+    @attributes = []
+    for object in arr.objects
+      @checkValidAttribute object
+      {base} = object
+      if base instanceof IdentifierLiteral
+        # attribute with no value eg disabled
+        attribute = new CSXAttribute name: new CSXIdentifier(base.value).withLocationDataFrom base
+        attribute.locationData = base.locationData
+        @attributes.push attribute
+      else if not base.generated
+        # object spread attribute eg {...props}
+        attribute = base.properties[0]
+        attribute.csx = yes
+        attribute.locationData = base.locationData
+        @attributes.push attribute
+      else
+        # Obj containing attributes with values eg a="b" c={d}
+        for property in base.properties
+          {variable, value} = property
+          attribute = new CSXAttribute {
+            name: new CSXIdentifier(variable.base.value).withLocationDataFrom variable.base
+            value
+          }
+          attribute.locationData = property.locationData
+          @attributes.push attribute
+    @locationData = arr.locationData
+
+  children: ['attributes']
 
   # Catch invalid attributes: <div {a:"b", props} {props} "value" />
   checkValidAttribute: (object) ->
@@ -1349,13 +1404,43 @@ exports.CSXElement = class CSXElement extends Base
         Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
       """
 
+  compileNode: (o) ->
+    fragments = []
+    for attribute in @attributes
+      fragments.push @makeCode ' '
+      fragments.push attribute.compileToFragments(o, LEVEL_TOP)...
+    fragments
+
+  ast: ->
+    attribute.ast() for attribute in @attributes
+
+# Node for a CSX element
+exports.CSXElement = class CSXElement extends Base
+  constructor: ({@tagName, @attributes, @content}) ->
+    super()
+
+  children: ['tagName', 'attributes', 'content']
+
+  compileNode: (o) ->
+    @content?.base.csx = yes
+    fragments = [@makeCode('<')]
+    fragments.push (tag = @tagName.compileToFragments(o, LEVEL_ACCESS))...
+    fragments.push @attributes.compileToFragments(o)...
+    if @content
+      fragments.push @makeCode('>')
+      fragments.push @content.compileNode(o, LEVEL_LIST)...
+      fragments.push [@makeCode('</'), tag..., @makeCode('>')]...
+    else
+      fragments.push @makeCode(' />')
+    fragments
+
   isFragment: ->
     !@tagName.base.value.length
 
   ast: ->
     # The location data spanning the opening element < ... > is captured by
     # the generated Arr which contains the element's attributes
-    @openingElementLocationData = jisonLocationDataToAstLocationData @attributes.base.locationData
+    @openingElementLocationData = jisonLocationDataToAstLocationData @attributes.locationData
 
     tagName = @tagName.base
     tagName.locationData = tagName.tagNameLocationData
@@ -1373,24 +1458,12 @@ exports.CSXElement = class CSXElement extends Base
     else
       'JSXElement'
 
-  getAttributeAst: (object) ->
-    @checkValidAttribute object
-    {base: attribute} = object
-    attribute.csx = yes
-    ast = attribute.ast()
-    return ast unless attribute instanceof IdentifierLiteral
-    Object.assign {
-      type: 'JSXAttribute'
-      name: ast
-      value: null
-    }, attribute.astLocationData()
-
   elementAstProperties: ->
     openingElement = Object.assign {
       type: 'JSXOpeningElement'
       name: @tagName.unwrap().ast()
       selfClosing: not @closingElementLocationData?
-      attributes: flatten(@getAttributeAst(object) for object in @attributes.base.objects)
+      attributes: @attributes.ast()
     }, @openingElementLocationData
 
     closingElement = null
@@ -1453,6 +1526,8 @@ exports.CSXElement = class CSXElement extends Base
     else
       @openingElementLocationData
 
+#### Call
+
 # Node for a function invocation.
 exports.Call = class Call extends Base
   constructor: (@variable, @args = [], @soak, @token) ->
@@ -1466,7 +1541,7 @@ exports.Call = class Call extends Base
     if @variable.base instanceof CSXTag
       return new CSXElement(
         tagName: @variable
-        attributes: @args[0]
+        attributes: new CSXAttributes @args[0].base
         content: @args[1]
       )
 
@@ -1945,9 +2020,6 @@ exports.Obj = class Obj extends Base
     idt      = o.indent += TAB
     lastNode = @lastNode @properties
 
-    # CSX attributes <div id="val" attr={aaa} {props...} />
-    return @compileCSXAttributes o if @csx
-
     # If this object is the left-hand side of an assignment, all its children
     # are too.
     @propagateLhs()
@@ -2014,17 +2086,6 @@ exports.Obj = class Obj extends Base
       prop = prop.unwrapAll()
       prop.eachName iterator if prop.eachName?
 
-  compileCSXAttributes: (o) ->
-    props = @properties
-    answer = []
-    for prop, i in props
-      prop.csx = yes
-      join = if i is props.length - 1 then '' else ' '
-      prop = new Literal "{#{prop.compile(o)}}" if prop instanceof Splat
-      answer.push prop.compileToFragments(o, LEVEL_TOP)...
-      answer.push @makeCode join
-    if @front then @wrapInParentheses answer else answer
-
   # Convert “bare” properties to `ObjectProperty`s (or `Splat`s).
   expandProperty: (property) ->
     {variable, context, operatorToken} = property
@@ -2066,19 +2127,6 @@ exports.Obj = class Obj extends Base
         property.nestedLhs = yes
       else if property instanceof Splat
         property.lhs = yes
-
-  CSXAttributesToAst: ->
-    propertiesAst =
-      for property in @properties
-        property.csx = yes
-        property.ast()
-    return propertiesAst unless @properties.length is 1 and @properties[0] instanceof Splat
-    # Include surrounding `{` and `}` of spread prop `{...b}` in location data.
-    Object.assign propertiesAst[0], @astLocationData()
-
-  ast: ->
-    return @CSXAttributesToAst() if @csx
-    super()
 
   astType: ->
     if @lhs
@@ -2849,7 +2897,6 @@ exports.Assign = class Assign extends Base
         [properties..., prototype, name] = @variable.properties
         @value.name = name if prototype.name?.value is 'prototype'
 
-    @value.base.csxAttribute = yes if @csx
     val = @value.compileToFragments o, LEVEL_LIST
     compiledName = @variable.compileToFragments o, LEVEL_LIST
 
@@ -2857,7 +2904,7 @@ exports.Assign = class Assign extends Base
       if @variable.shouldCache()
         compiledName.unshift @makeCode '['
         compiledName.push @makeCode ']'
-      return compiledName.concat @makeCode(if @csx then '=' else ': '), val
+      return compiledName.concat @makeCode(': '), val
 
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
     # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration,
@@ -3099,31 +3146,6 @@ exports.Assign = class Assign extends Base
     # know that, so that those nodes know that they’re assignable as
     # destructured variables.
     @variable.base.propagateLhs yes
-
-  getCSXAttributeValueAst: ->
-    value = @value.base
-    value.csxAttribute = yes
-    ast = value.ast()
-    return ast if value instanceof StringLiteral
-    Object.assign
-      type: 'JSXExpressionContainer'
-      expression: ast
-    , value.astLocationData()
-
-  CSXAttributeToAst: ->
-    Object.assign
-      type: 'JSXAttribute'
-      name:
-        Object.assign
-          type: 'JSXIdentifier'
-          name: @variable.base.value
-        , @variable.base.astLocationData()
-      value: @getCSXAttributeValueAst()
-    , @astLocationData()
-
-  ast: ->
-    return @CSXAttributeToAst() if @csx
-    super()
 
   astType: ->
     if @isDefaultAssignment()
@@ -3586,7 +3608,9 @@ exports.Splat = class Splat extends Base
     @name.assigns name
 
   compileNode: (o) ->
-    [@makeCode('...'), @name.compileToFragments(o, LEVEL_OP)...]
+    compiledSplat = [@makeCode('...'), @name.compileToFragments(o, LEVEL_OP)...]
+    return compiledSplat unless @csx
+    return [@makeCode('{'), compiledSplat..., @makeCode('}')]
 
   unwrap: -> @name
 
@@ -4717,3 +4741,4 @@ jisonLocationDataToAstLocationData = ({first_line, first_column, last_line, last
     ]
     start: range[0]
     end:   range[1]
+dump = (obj) -> console.log require('util').inspect obj, no, null
