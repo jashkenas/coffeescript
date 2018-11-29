@@ -4001,7 +4001,16 @@ exports.Try = class Try extends Base
     return
       block: @attempt.ast o
       handler: @catch?.ast(o) ? null
-      finalizer: @ensure?.ast(o) ? null
+      finalizer:
+        if @ensure?
+          Object.assign @ensure.ast(o),
+            # Include `finally` keyword in location data.
+            mergeAstLocationData(
+              jisonLocationDataToAstLocationData(@finallyTag.locationData),
+              @ensure.astLocationData()
+            )
+        else
+          null
 
 exports.Catch = class Catch extends Base
   constructor: (@recovery, @errorVariable) ->

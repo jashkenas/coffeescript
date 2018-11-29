@@ -2602,9 +2602,27 @@ test "AST as expected for Try node", ->
           column: 5
     finalizer:
       body: [
-        type: 'ExpressionStatement'
         expression:
-          type: 'BinaryExpression'
+          start: 42
+          end: 47
+          range: [42, 47]
+          loc:
+            start:
+              line: 7
+              column: 2
+            end:
+              line: 7
+              column: 7
+        start: 42
+        end: 47
+        range: [42, 47]
+        loc:
+          start:
+            line: 7
+            column: 2
+          end:
+            line: 7
+            column: 7
       ]
       start: 32
       end: 47
@@ -2627,42 +2645,42 @@ test "AST as expected for Try node", ->
         line: 7
         column: 7
 
-  # testAstLocationData '''
-  #   try
-  #   catch
-  #   finally
-  # ''',
-  #   type: 'TryStatement'
-  #   block:
-  #     type: 'BlockStatement'
-  #     body: []
-  #   handler:
-  #     type: 'CatchClause'
-  #     param: null
-  #     body:
-  #       type: 'BlockStatement'
-  #       body: []
-  #   finalizer:
-  #     type: 'BlockStatement'
-  #     body: []
-
-  # testAstLocationData '''
-  #   try
-  #   catch {e}
-  #     f
-  # ''',
-  #   type: 'TryStatement'
-  #   block:
-  #     type: 'BlockStatement'
-  #     body: []
-  #   handler:
-  #     type: 'CatchClause'
-  #     param:
-  #       type: 'ObjectPattern'
-  #     body:
-  #       type: 'BlockStatement'
-  #       body: [
-  #         type: 'ExpressionStatement'
-  #       ]
-  #   finalizer: null
-
+  testAstLocationData '''
+    try
+    catch {e}
+      f
+  ''',
+    type: 'TryStatement'
+    handler:
+      param:
+        start: 10
+        end: 13
+        range: [10, 13]
+        loc:
+          start:
+            line: 2
+            column: 6
+          end:
+            line: 2
+            column: 9
+      body:
+        start: 14
+        end: 17
+        range: [14, 17]
+        loc:
+          start:
+            line: 3
+            column: 0
+          end:
+            line: 3
+            column: 3
+      start: 4
+      end: 17
+      range: [4, 17]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 3
