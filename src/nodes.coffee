@@ -773,28 +773,22 @@ exports.Block = class Block extends Base
     return nodes[0] if nodes.length is 1 and nodes[0] instanceof Block
     new Block nodes
 
-  # Wraps a non-statement expression’s AST in an `ExpressionStatement` AST node.
-  asExpressionStatementAst: (ast) ->
-    Object.assign
-      type: 'ExpressionStatement'
-      expression: ast
-    ,
-      extractAstLocationData ast
-
-  # Returns the AST for a given top-level expression: either the expression's
-  # AST as-is (if the expression is a statement) or the expression's AST wrapped
-  # in an `ExpressionStatement` AST node.
-  getExpressionAst: (expression) ->
-    ast = expression.ast()
-    # return ast if expression.isStatement o
-    @asExpressionStatementAst ast
-
-  bodyToAst: ->
-    @getExpressionAst(expression) for expression in @expressions
-
   astType: -> 'Program'
 
-  astProperties: ->
+  astProperties: (o) ->
+    body = []
+    for expression in @expressions
+      # If an expression is a statement, it can be added to the body as is.
+      if expression.isStatement o
+        body.push expression.ast()
+      # Otherwise, we need to wrap it in an `ExpressionStatement` AST node.
+      else
+        body.push Object.assign
+            type: 'ExpressionStatement'
+            expression: expression.ast()
+          ,
+            expression.astLocationData()
+
     return
       # For now, we’re not including `sourceType` on the `Program` AST node.
       # Its value could be either `'script'` or `'module'`, and there’s no way
@@ -809,8 +803,8 @@ exports.Block = class Block extends Base
       # then CoffeeScript can copy Node’s algorithm.
 
       # sourceType: 'module'
-      body: @bodyToAst()
-      directives: []
+      body: body
+      directives: [] # Directives like `'use strict'` are coming soon.
 
 #### Literal
 
@@ -4755,14 +4749,6 @@ makeDelimitedLiteral = (body, options = {}) ->
     when ps        then '\\u2029'
     when other     then (if options.double then "\\#{other}" else other)
   "#{options.delimiter}#{body}#{options.delimiter}"
-
-# Extract location data fields from an AST node.
-extractAstLocationData = (ast) ->
-  return
-    loc: ast.loc
-    range: ast.range
-    start: ast.start
-    end: ast.end
 
 # Helpers for `mergeLocationData` and `mergeAstLocationData` below.
 lesser  = (a, b) -> if a < b then a else b
