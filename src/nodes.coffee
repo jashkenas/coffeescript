@@ -493,7 +493,7 @@ exports.Root = class Root extends Base
 
   astProperties: ->
     return
-      program: @body.ast()
+      program: Object.assign @body.ast(), @astLocationData()
       comments: []
 
 #### Block

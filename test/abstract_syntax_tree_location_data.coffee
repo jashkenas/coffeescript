@@ -4,6 +4,9 @@
 testAstLocationData = (code, expected) ->
   testAstNodeLocationData getAstExpression(code), expected
 
+testAstRootLocationData = (code, expected) ->
+  testAstNodeLocationData getAstRoot(code), expected
+
 testAstNodeLocationData = (node, expected, path = '') ->
   extendPath = (additionalPath) ->
     return additionalPath unless path
@@ -2143,7 +2146,7 @@ test "AST location data as expected for Existence node", ->
         line: 1
         column: 7
 
-test "AST location Data as expected for CSXTag node", ->
+test "AST location data as expected for CSXTag node", ->
   testAstLocationData '<CSXY />',
     type: 'JSXElement'
     openingElement:
@@ -2663,3 +2666,62 @@ test "AST location Data as expected for CSXTag node", ->
             line: 1
             column: 11
       ]
+
+test "AST location data as expected for Root node", ->
+  testAstRootLocationData '''
+    a = 1
+    b
+  ''',
+    type: 'File'
+    program:
+      start: 0
+      end: 7
+      range: [0, 7]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 2
+          column: 2
+    start: 0
+    end: 7
+    range: [0, 7]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 2
+        # TODO: this should be column: 1, it’s currently incorrectly
+        # including a trailing generated TERMINATOR
+        column: 2
+
+  # TODO: this should pass. It’s currently failing to include the
+  # trailing newline in the location data.
+  # testAstRootLocationData '''
+  #   a = 1
+  #   b\n
+  # ''',
+  #   type: 'File'
+  #   program:
+  #     start: 0
+  #     end: 8
+  #     range: [0, 8]
+  #     loc:
+  #       start:
+  #         line: 1
+  #         column: 0
+  #       end:
+  #         line: 2
+  #         column: 2
+  #   start: 0
+  #   end: 8
+  #   range: [0, 8]
+  #   loc:
+  #     start:
+  #       line: 1
+  #       column: 0
+  #     end:
+  #       line: 2
+  #       column: 2
