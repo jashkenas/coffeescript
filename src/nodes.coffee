@@ -773,7 +773,7 @@ exports.Block = class Block extends Base
     return nodes[0] if nodes.length is 1 and nodes[0] instanceof Block
     new Block nodes
 
-  # Wraps a non-statement expression's AST in an `ExpressionStatement` AST node.
+  # Wraps a non-statement expression’s AST in an `ExpressionStatement` AST node.
   asExpressionStatementAst: (ast) ->
     Object.assign
       type: 'ExpressionStatement'
@@ -4739,6 +4739,14 @@ makeDelimitedLiteral = (body, options = {}) ->
     when other     then (if options.double then "\\#{other}" else other)
   "#{options.delimiter}#{body}#{options.delimiter}"
 
+# Extract location data fields from an AST node.
+extractAstLocationData = (ast) ->
+  return
+    loc: ast.loc
+    range: ast.range
+    start: ast.start
+    end: ast.end
+
 # Helpers for `mergeLocationData` and `mergeAstLocationData` below.
 lesser  = (a, b) -> if a < b then a else b
 greater = (a, b) -> if a > b then a else b
@@ -4794,10 +4802,3 @@ jisonLocationDataToAstLocationData = ({first_line, first_column, last_line, last
     ]
     start: range[0]
     end:   range[1]
-
-# Extract location data fields from an AST node
-extractAstLocationData = (ast) ->
-  loc: ast.loc
-  range: ast.range
-  start: ast.start
-  end: ast.end
