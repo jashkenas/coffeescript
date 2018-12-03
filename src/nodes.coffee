@@ -821,7 +821,8 @@ exports.Literal = class Literal extends Base
     [@makeCode @value]
 
   astProperties: ->
-    value: @value
+    return
+      value: @value
 
   toString: ->
     # This is only intended for debugging.
@@ -840,10 +841,11 @@ exports.NumberLiteral = class NumberLiteral extends Literal
   astType: -> 'NumericLiteral'
 
   astProperties: ->
-    value: @parsedValue
-    extra:
-      rawValue: @parsedValue
-      raw: @value
+    return
+      value: @parsedValue
+      extra:
+        rawValue: @parsedValue
+        raw: @value
 
 exports.InfinityLiteral = class InfinityLiteral extends NumberLiteral
   compileNode: ->
@@ -852,7 +854,8 @@ exports.InfinityLiteral = class InfinityLiteral extends NumberLiteral
   astType: -> 'Identifier'
 
   astProperties: ->
-    name: 'Infinity'
+    return
+      name: 'Infinity'
 
 exports.NaNLiteral = class NaNLiteral extends NumberLiteral
   constructor: ->
@@ -865,7 +868,8 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
   astType: -> 'Identifier'
 
   astProperties: ->
-    name: 'NaN'
+    return
+      name: 'NaN'
 
 exports.StringLiteral = class StringLiteral extends Literal
   constructor: (@originalValue, {@quote, @initialChunk, @finalChunk, @indent, @double, @heregex} = {}) ->
@@ -980,7 +984,8 @@ exports.PropertyName = class PropertyName extends Literal
       'Identifier'
 
   astProperties: ->
-    name: @value
+    return
+      name: @value
 
 exports.ComputedPropertyName = class ComputedPropertyName extends PropertyName
   compileNode: (o) ->
@@ -1019,7 +1024,8 @@ exports.ThisLiteral = class ThisLiteral extends Literal
   astType: -> 'ThisExpression'
 
   astProperties: ->
-    shorthand: @shorthand
+    return
+      shorthand: @shorthand
 
 exports.UndefinedLiteral = class UndefinedLiteral extends Literal
   constructor: ->
@@ -1031,7 +1037,8 @@ exports.UndefinedLiteral = class UndefinedLiteral extends Literal
   astType: -> 'Identifier'
 
   astProperties: ->
-    name: @value
+    return
+      name: @value
 
 exports.NullLiteral = class NullLiteral extends Literal
   constructor: ->
@@ -1050,7 +1057,8 @@ exports.DefaultLiteral = class DefaultLiteral extends Literal
   astType: -> 'Identifier'
 
   astProperties: ->
-    name: 'default'
+    return
+      name: 'default'
 
 #### Return
 
