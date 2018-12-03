@@ -57,5 +57,7 @@ getAstExpressions = (code) ->
 # Many tests want just the root node.
 exports.getAstExpression = (code) ->
   expressionAst = getAstExpressions(code)[0]
-  return expressionAst unless expressionAst.type is 'ExpressionStatement'
-  return expressionAst.expression
+  if expressionAst.type is 'ExpressionStatement'
+    expressionAst.expression
+  else
+    expressionAst
