@@ -1922,3 +1922,11 @@ test "#4609: Support new.target", ->
 
   new Foo()
   eq newTarget, yes
+
+test "#5085: Bug: @ reference to class not maintained in do block", ->
+  thisFoo = 0
+  class A
+    @foo = 2
+    do => thisFoo = @foo
+
+  eq thisFoo, 2
