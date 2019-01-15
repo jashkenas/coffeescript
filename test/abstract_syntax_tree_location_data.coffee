@@ -2668,10 +2668,31 @@ test "AST location data as expected for CSXTag node", ->
       ]
 
 test "AST location data as expected for Root node", ->
-  testAstRootLocationData '''
-    a = 1
-    b
-  ''',
+  testAstRootLocationData '1\n2',
+    type: 'File'
+    program:
+      start: 0
+      end: 3
+      range: [0, 3]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 2
+          column: 1
+    start: 0
+    end: 3
+    range: [0, 3]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 2
+        column: 1
+
+  testAstRootLocationData 'a = 1\nb',
     type: 'File'
     program:
       start: 0
@@ -2683,7 +2704,7 @@ test "AST location data as expected for Root node", ->
           column: 0
         end:
           line: 2
-          column: 2
+          column: 1
     start: 0
     end: 7
     range: [0, 7]
@@ -2693,35 +2714,76 @@ test "AST location data as expected for Root node", ->
         column: 0
       end:
         line: 2
-        # TODO: this should be column: 1, it’s currently incorrectly
-        # including a trailing generated TERMINATOR
-        column: 2
+        column: 1
 
-  # TODO: this should pass. It’s currently failing to include the
-  # trailing newline in the location data.
-  # testAstRootLocationData '''
-  #   a = 1
-  #   b\n
-  # ''',
-  #   type: 'File'
-  #   program:
-  #     start: 0
-  #     end: 8
-  #     range: [0, 8]
-  #     loc:
-  #       start:
-  #         line: 1
-  #         column: 0
-  #       end:
-  #         line: 2
-  #         column: 2
-  #   start: 0
-  #   end: 8
-  #   range: [0, 8]
-  #   loc:
-  #     start:
-  #       line: 1
-  #       column: 0
-  #     end:
-  #       line: 2
-  #       column: 2
+  testAstRootLocationData 'a = 1\nb\n\n',
+    type: 'File'
+    program:
+      start: 0
+      end: 9
+      range: [0, 9]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 4
+          column: 0
+    start: 0
+    end: 9
+    range: [0, 9]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 0
+
+  testAstRootLocationData 'a = 1\n\n# Comment',
+    type: 'File'
+    program:
+      start: 0
+      end: 16
+      range: [0, 16]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 3
+          column: 9
+    start: 0
+    end: 16
+    range: [0, 16]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 9
+
+  testAstRootLocationData 'a = 1\n\n# Comment\n',
+    type: 'File'
+    program:
+      start: 0
+      end: 17
+      range: [0, 17]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 4
+          column: 0
+    start: 0
+    end: 17
+    range: [0, 17]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 0
