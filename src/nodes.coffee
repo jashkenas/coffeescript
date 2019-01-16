@@ -468,6 +468,34 @@ exports.HoistTarget = class HoistTarget extends Base
   compileClosure: (o) ->
     @compileToFragments o
 
+#### Root
+
+# The root node of the node tree
+exports.Root = class Root extends Base
+  constructor: (@body) ->
+    super()
+
+  # Wrap everything in a safety closure, unless requested not to. It would be
+  # better not to generate them in the first place, but for now, clean up
+  # obvious double-parentheses.
+  compileNode: (o) ->
+    o.indent  = if o.bare then '' else TAB
+    o.level   = LEVEL_TOP
+    o.scope   = new Scope null, @body, null, o.referencedVars ? []
+    # Mark given local variables in the root scope as parameters so they don’t
+    # end up being declared on the root block.
+    o.scope.parameter name for name in o.locals or []
+    fragments = @body.compileRoot o
+    return fragments if o.bare
+    [].concat @makeCode("(function() {\n"), fragments, @makeCode("\n}).call(this);\n")
+
+  astType: -> 'File'
+
+  astProperties: ->
+    return
+      program: Object.assign @body.ast(), @astLocationData()
+      comments: []
+
 #### Block
 
 # The block is the list of expressions that forms the body of an
@@ -535,9 +563,10 @@ exports.Block = class Block extends Base
       break
     this
 
-  # A **Block** is the only node that can serve as the root.
-  compileToFragments: (o = {}, level) ->
-    if o.scope then super o, level else @compileRoot o
+  compile: (o, lvl) ->
+    return new Root(this).withLocationDataFrom(this).compile o, lvl unless o.scope
+
+    super o, lvl
 
   # Compile all expressions within the **Block** body. If we need to return
   # the result, and it’s an expression, simply return it. If it’s a statement,
@@ -581,22 +610,11 @@ exports.Block = class Block extends Base
       answer = [@makeCode 'void 0']
     if compiledNodes.length > 1 and o.level >= LEVEL_LIST then @wrapInParentheses answer else answer
 
-  # If we happen to be the top-level **Block**, wrap everything in a safety
-  # closure, unless requested not to. It would be better not to generate them
-  # in the first place, but for now, clean up obvious double-parentheses.
   compileRoot: (o) ->
-    o.indent  = if o.bare then '' else TAB
-    o.level   = LEVEL_TOP
-    @spaced   = yes
-    o.scope   = new Scope null, this, null, o.referencedVars ? []
-    # Mark given local variables in the root scope as parameters so they don’t
-    # end up being declared on this block.
-    o.scope.parameter name for name in o.locals or []
+    @spaced = yes
     fragments = @compileWithDeclarations o
     HoistTarget.expand fragments
-    fragments = @compileComments fragments
-    return fragments if o.bare
-    [].concat @makeCode("(function() {\n"), fragments, @makeCode("\n}).call(this);\n")
+    @compileComments fragments
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
@@ -755,8 +773,38 @@ exports.Block = class Block extends Base
     return nodes[0] if nodes.length is 1 and nodes[0] instanceof Block
     new Block nodes
 
-  astProperties: ->
-    expressions: @expressions.map (child) => child.ast()
+  astType: -> 'Program'
+
+  astProperties: (o) ->
+    body = []
+    for expression in @expressions
+      # If an expression is a statement, it can be added to the body as is.
+      if expression.isStatement o
+        body.push expression.ast()
+      # Otherwise, we need to wrap it in an `ExpressionStatement` AST node.
+      else
+        body.push Object.assign
+            type: 'ExpressionStatement'
+            expression: expression.ast()
+          ,
+            expression.astLocationData()
+
+    return
+      # For now, we’re not including `sourceType` on the `Program` AST node.
+      # Its value could be either `'script'` or `'module'`, and there’s no way
+      # for CoffeeScript to always know which it should be. The presence of an
+      # `import` or `export` statement in source code would imply that it should
+      # be a `module`, but a project may consist of mostly such files and also
+      # an outlier file that lacks `import` or `export` but is still imported
+      # into the project and therefore expects to be treated as a `module`.
+      # Determining the value of `sourceType` is essentially the same challenge
+      # posed by determining the parse goal of a JavaScript file, also `module`
+      # or `script`, and so if Node figures out a way to do so for `.js` files
+      # then CoffeeScript can copy Node’s algorithm.
+
+      # sourceType: 'module'
+      body: body
+      directives: [] # Directives like `'use strict'` are coming soon.
 
 #### Literal
 
@@ -776,7 +824,8 @@ exports.Literal = class Literal extends Base
     [@makeCode @value]
 
   astProperties: ->
-    value: @value
+    return
+      value: @value
 
   toString: ->
     # This is only intended for debugging.
@@ -795,10 +844,11 @@ exports.NumberLiteral = class NumberLiteral extends Literal
   astType: -> 'NumericLiteral'
 
   astProperties: ->
-    value: @parsedValue
-    extra:
-      rawValue: @parsedValue
-      raw: @value
+    return
+      value: @parsedValue
+      extra:
+        rawValue: @parsedValue
+        raw: @value
 
 exports.InfinityLiteral = class InfinityLiteral extends NumberLiteral
   compileNode: ->
@@ -807,7 +857,8 @@ exports.InfinityLiteral = class InfinityLiteral extends NumberLiteral
   astType: -> 'Identifier'
 
   astProperties: ->
-    name: 'Infinity'
+    return
+      name: 'Infinity'
 
 exports.NaNLiteral = class NaNLiteral extends NumberLiteral
   constructor: ->
@@ -820,7 +871,8 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
   astType: -> 'Identifier'
 
   astProperties: ->
-    name: 'NaN'
+    return
+      name: 'NaN'
 
 exports.StringLiteral = class StringLiteral extends Literal
   constructor: (@originalValue, {@quote, @initialChunk, @finalChunk, @indent, @double, @heregex} = {}) ->
@@ -935,7 +987,8 @@ exports.PropertyName = class PropertyName extends Literal
       'Identifier'
 
   astProperties: ->
-    name: @value
+    return
+      name: @value
 
 exports.ComputedPropertyName = class ComputedPropertyName extends PropertyName
   compileNode: (o) ->
@@ -974,7 +1027,8 @@ exports.ThisLiteral = class ThisLiteral extends Literal
   astType: -> 'ThisExpression'
 
   astProperties: ->
-    shorthand: @shorthand
+    return
+      shorthand: @shorthand
 
 exports.UndefinedLiteral = class UndefinedLiteral extends Literal
   constructor: ->
@@ -986,7 +1040,8 @@ exports.UndefinedLiteral = class UndefinedLiteral extends Literal
   astType: -> 'Identifier'
 
   astProperties: ->
-    name: @value
+    return
+      name: @value
 
 exports.NullLiteral = class NullLiteral extends Literal
   constructor: ->
@@ -1005,7 +1060,8 @@ exports.DefaultLiteral = class DefaultLiteral extends Literal
   astType: -> 'Identifier'
 
   astProperties: ->
-    name: 'default'
+    return
+      name: 'default'
 
 #### Return
 

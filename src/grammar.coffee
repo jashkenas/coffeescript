@@ -73,8 +73,8 @@ grammar =
   # The **Root** is the top-level node in the syntax tree. Since we parse bottom-up,
   # all parsing must end here.
   Root: [
-    o '',                                       -> new Block
-    o 'Body'
+    o '',                                       -> new Root new Block
+    o 'Body',                                   -> new Root $1
   ]
 
   # Any list of statements and expressions, separated by line breaks or semicolons.

@@ -47,12 +47,20 @@ exports.inspect = (obj) ->
       depth: 10
       colors: if process.env.NODE_DISABLE_COLORS then no else yes
 
-# Helpers to get AST nodes for a string of code. The root node is always a
-# `Block` node, so for brevity in the tests return its children from
-# `expressions`.
-exports.getAstExpressions = (code) ->
-  ast = CoffeeScript.compile code, ast: yes
-  ast.expressions
+# Helpers to get AST nodes for a string of code.
+exports.getAstRoot = getAstRoot = (code) ->
+  CoffeeScript.compile code, ast: yes
+
+# The root node is always a `File` node, so for brevity in the tests return its
+# children from `program.body`.
+getAstExpressions = (code) ->
+  ast = getAstRoot code
+  ast.program.body
 
 # Many tests want just the root node.
-exports.getAstExpression = (code) -> getAstExpressions(code)[0]
+exports.getAstExpression = (code) ->
+  expressionAst = getAstExpressions(code)[0]
+  if expressionAst.type is 'ExpressionStatement'
+    expressionAst.expression
+  else
+    expressionAst

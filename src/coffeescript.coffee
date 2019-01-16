@@ -96,9 +96,18 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
 
   nodes = parser.parse tokens
   # If all that was requested was a POJO representation of the nodes, e.g.
-  # the abstract syntax tree (AST), we can stop now and just return that.
+  # the abstract syntax tree (AST), we can stop now and just return that
+  # (after fixing the location data for the root/`File`»`Program` node,
+  # which might’ve gotten misaligned from the original source due to the
+  # `clean` function in the lexer).
   if options.ast
-    return nodes.ast options
+    sourceCodeNumberOfLines = (code.match(/\r?\n/g) or '').length + 1
+    sourceCodeLastLine = /.*$/.exec(code)[0] # `.*` matches all but line break characters.
+    ast = nodes.ast options
+    ast.end = ast.range[1] = ast.program.end = ast.program.range[1] = code.length
+    ast.loc.end.line = ast.program.loc.end.line = sourceCodeNumberOfLines
+    ast.loc.end.column = ast.program.loc.end.column = sourceCodeLastLine.length
+    return ast
 
   fragments = nodes.compileToFragments options
 
@@ -181,10 +190,8 @@ exports.tokens = withPrettyErrors (code, options) ->
 # return the AST. You can then compile it by calling `.compile()` on the root,
 # or traverse it by using `.traverseChildren()` with a callback.
 exports.nodes = withPrettyErrors (source, options) ->
-  if typeof source is 'string'
-    parser.parse lexer.tokenize source, options
-  else
-    parser.parse source
+  source = lexer.tokenize source, options if typeof source is 'string'
+  parser.parse(source).body
 
 # This file used to export these methods; leave stubs that throw warnings
 # instead. These methods have been moved into `index.coffee` to provide
