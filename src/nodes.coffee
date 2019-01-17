@@ -4543,12 +4543,12 @@ exports.Switch = class Switch extends Base
   isStatement: YES
 
   jumps: (o = {block: yes}) ->
-    for [conds, block] in @cases
+    for {block} in @cases
       return jumpNode if jumpNode = block.jumps o
     @otherwise?.jumps o
 
   makeReturn: (res) ->
-    pair[1].makeReturn res for pair in @cases
+    block.makeReturn res for {block} in @cases
     @otherwise or= new Block [new Literal 'void 0'] if res
     @otherwise?.makeReturn res
     this
@@ -4559,7 +4559,7 @@ exports.Switch = class Switch extends Base
     fragments = [].concat @makeCode(@tab + "switch ("),
       (if @subject then @subject.compileToFragments(o, LEVEL_PAREN) else @makeCode "false"),
       @makeCode(") {\n")
-    for [conditions, block], i in @cases
+    for {conditions, block}, i in @cases
       for cond in flatten [conditions]
         cond  = cond.invert() unless @subject
         fragments = fragments.concat @makeCode(idt1 + "case "), cond.compileToFragments(o, LEVEL_PAREN), @makeCode(":\n")
@@ -4572,6 +4572,53 @@ exports.Switch = class Switch extends Base
       fragments.push @makeCode(idt1 + "default:\n"), (@otherwise.compileToFragments o, LEVEL_TOP)..., @makeCode("\n")
     fragments.push @makeCode @tab + '}'
     fragments
+
+  astType: -> 'SwitchStatement'
+
+  getCasesAst: (o) ->
+    cases = []
+
+    for kase, caseIndex in @cases
+      {tests, block: consequent} = kase
+      tests = flatten [tests]
+      lastTestIndex = tests.length - 1
+      for test, testIndex in tests
+        consequentAst =
+          if testIndex is lastTestIndex
+            consequent.ast(o).body
+          else []
+
+        caseLocationData = test.astLocationData()
+        caseLocationData = mergeAstLocationData caseLocationData, consequentAst[consequentAst.length - 1]  if consequentAst.length
+        caseLocationData = mergeAstLocationData caseLocationData, kase.astLocationData(), justLeading: yes if testIndex is 0
+        caseLocationData = mergeAstLocationData caseLocationData, kase.astLocationData(), justEnding:  yes if testIndex is lastTestIndex
+
+        Object.assign {
+          type: 'SwitchCase'
+          test: test.ast o
+          consequent: consequentAst
+          trailing: testIndex is lastTestIndex
+        }, caseLocationData
+
+    if @otherwise?.expressions.length
+      cases.push Object.assign
+        type: 'SwitchCase'
+        test: null
+        consequent: @otherwise.ast(o).body
+      , @otherwise.astLocationData()
+
+    cases
+
+  astProperties: (o) ->
+    return
+      discriminant: @subject?.ast o
+      cases: @getCasesAst o
+
+exports.SwitchWhen = class SwitchWhen extends Base
+  constructor: (@conditions, @block) ->
+    super()
+
+  children: ['conditions', 'block']
 
 #### If
 
@@ -4802,6 +4849,20 @@ makeDelimitedLiteral = (body, options = {}) ->
 # Helpers for `mergeLocationData` and `mergeAstLocationData` below.
 lesser  = (a, b) -> if a < b then a else b
 greater = (a, b) -> if a > b then a else b
+isAstLocGreater = (a, b) ->
+  return yes if a.line > b.line
+  return no unless a.line is b.line
+  a.column > b.column
+
+isLocationDataStartGreater = (a, b) ->
+  return yes if a.first_line > b.first_line
+  return no unless a.first_line is b.first_line
+  a.first_column > b.first_column
+
+isLocationDataEndGreater = (a, b) ->
+  return yes if a.last_line > b.last_line
+  return no unless a.last_line is b.last_line
+  a.last_column > b.last_column
 
 isAstLocGreater = (a, b) ->
   return yes if a.line > b.line
@@ -4848,25 +4909,46 @@ mergeLocationData = (locationDataA, locationDataB) ->
 # location data object that encompasses the location data of both nodes. So the
 # new `start` value will be the earlier of the two nodes’ `start` values, the
 # new `end` value will be the later of the two nodes’ `end` values, etc.
-mergeAstLocationData = (nodeA, nodeB) ->
+mergeAstLocationData = (nodeA, nodeB, {justLeading, justEnding} = {}) ->
   return
     loc:
       start:
-        if isAstLocGreater nodeA.loc.start, nodeB.loc.start
-          nodeB.loc.start
-        else
+        if justEnding
           nodeA.loc.start
+        else
+          if isAstLocGreater nodeA.loc.start, nodeB.loc.start
+            nodeB.loc.start
+          else
+            nodeA.loc.start
       end:
-        if isAstLocGreater nodeA.loc.end, nodeB.loc.end
+        if justLeading
           nodeA.loc.end
         else
-          nodeB.loc.end
+          if isAstLocGreater nodeA.loc.end, nodeB.loc.end
+            nodeA.loc.end
+          else
+            nodeB.loc.end
     range: [
-      lesser  nodeA.range[0], nodeB.range[0]
-      greater nodeA.range[1], nodeB.range[1]
+      if justEnding
+        nodeA.range[0]
+      else
+        lesser nodeA.range[0], nodeB.range[0]
+    ,
+      if justLeading
+        nodeA.range[1]
+      else
+        greater nodeA.range[1], nodeB.range[1]
     ]
-    start: lesser  nodeA.start, nodeB.start
-    end:   greater nodeA.end,   nodeB.end
+    start:
+      if justEnding
+        nodeA.start
+      else
+        lesser nodeA.start, nodeB.start
+    end:
+      if justLeading
+        nodeA.end
+      else
+        greater nodeA.end, nodeB.end
 
 # Convert Jison-style node class location data to Babel-style location data
 jisonLocationDataToAstLocationData = ({first_line, first_column, last_line, last_column, range}) ->
