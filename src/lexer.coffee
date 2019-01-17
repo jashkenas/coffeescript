@@ -973,7 +973,7 @@ exports.Lexer = class Lexer
     lastCharacter = if length > 0 then (length - 1) else 0
     [locationData.last_line, locationData.last_column, endOffset] =
       @getLineAndColumnFromChunk offsetInChunk + lastCharacter
-    locationData.range[1] = endOffset + 1
+    locationData.range[1] = if length > 0 then endOffset + 1 else endOffset
 
     locationData
 

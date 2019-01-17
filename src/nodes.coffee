@@ -494,7 +494,7 @@ exports.Root = class Root extends Base
   astProperties: (o) ->
     @body.isRootBlock = yes
     return
-      program: @body.ast o
+      program: Object.assign @body.ast(o), @astLocationData()
       comments: []
 
 #### Block
@@ -774,25 +774,6 @@ exports.Block = class Block extends Base
     return nodes[0] if nodes.length is 1 and nodes[0] instanceof Block
     new Block nodes
 
-  # Wraps a non-statement expression's AST in an `ExpressionStatement` AST node.
-  asExpressionStatementAst: (ast) ->
-    Object.assign
-      type: 'ExpressionStatement'
-      expression: ast
-    ,
-      extractAstLocationData ast
-
-  # Returns the AST for a given top-level expression: either the expression's
-  # AST as-is (if the expression is a statement) or the expression's AST wrapped
-  # in an `ExpressionStatement` AST node.
-  getExpressionAst: (expression, o) ->
-    ast = expression.ast o
-    return ast if expression.isStatement o
-    @asExpressionStatementAst ast
-
-  bodyToAst: (o) ->
-    @getExpressionAst(expression, o) for expression in @expressions
-
   astType: ->
     if @isRootBlock
       'Program'
@@ -800,13 +781,35 @@ exports.Block = class Block extends Base
       'BlockStatement'
 
   astProperties: (o) ->
+    body = []
+    for expression in @expressions
+      # If an expression is a statement, it can be added to the body as is.
+      if expression.isStatement o
+        body.push expression.ast o
+      # Otherwise, we need to wrap it in an `ExpressionStatement` AST node.
+      else
+        body.push Object.assign
+            type: 'ExpressionStatement'
+            expression: expression.ast o
+          ,
+            expression.astLocationData()
+
     return
-      # For now, we are not including `sourceType` on the `Program` AST node,
-      # as we'd like to have a reliable way to determine its proper value and
-      # things like the ongoing Node modules discussion make that unclear.
+      # For now, we’re not including `sourceType` on the `Program` AST node.
+      # Its value could be either `'script'` or `'module'`, and there’s no way
+      # for CoffeeScript to always know which it should be. The presence of an
+      # `import` or `export` statement in source code would imply that it should
+      # be a `module`, but a project may consist of mostly such files and also
+      # an outlier file that lacks `import` or `export` but is still imported
+      # into the project and therefore expects to be treated as a `module`.
+      # Determining the value of `sourceType` is essentially the same challenge
+      # posed by determining the parse goal of a JavaScript file, also `module`
+      # or `script`, and so if Node figures out a way to do so for `.js` files
+      # then CoffeeScript can copy Node’s algorithm.
+
       # sourceType: 'module'
-      body: @bodyToAst o
-      directives: []
+      body: body
+      directives: [] # Directives like `'use strict'` are coming soon.
 
 #### Literal
 
@@ -826,7 +829,8 @@ exports.Literal = class Literal extends Base
     [@makeCode @value]
 
   astProperties: ->
-    value: @value
+    return
+      value: @value
 
   toString: ->
     # This is only intended for debugging.
@@ -845,10 +849,11 @@ exports.NumberLiteral = class NumberLiteral extends Literal
   astType: -> 'NumericLiteral'
 
   astProperties: ->
-    value: @parsedValue
-    extra:
-      rawValue: @parsedValue
-      raw: @value
+    return
+      value: @parsedValue
+      extra:
+        rawValue: @parsedValue
+        raw: @value
 
 exports.InfinityLiteral = class InfinityLiteral extends NumberLiteral
   compileNode: ->
@@ -857,7 +862,8 @@ exports.InfinityLiteral = class InfinityLiteral extends NumberLiteral
   astType: -> 'Identifier'
 
   astProperties: ->
-    name: 'Infinity'
+    return
+      name: 'Infinity'
 
 exports.NaNLiteral = class NaNLiteral extends NumberLiteral
   constructor: ->
@@ -870,7 +876,8 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
   astType: -> 'Identifier'
 
   astProperties: ->
-    name: 'NaN'
+    return
+      name: 'NaN'
 
 exports.StringLiteral = class StringLiteral extends Literal
   constructor: (@originalValue, {@quote, @initialChunk, @finalChunk, @indent, @double, @heregex} = {}) ->
@@ -985,7 +992,8 @@ exports.PropertyName = class PropertyName extends Literal
       'Identifier'
 
   astProperties: ->
-    name: @value
+    return
+      name: @value
 
 exports.ComputedPropertyName = class ComputedPropertyName extends PropertyName
   compileNode: (o) ->
@@ -1024,7 +1032,8 @@ exports.ThisLiteral = class ThisLiteral extends Literal
   astType: -> 'ThisExpression'
 
   astProperties: ->
-    shorthand: @shorthand
+    return
+      shorthand: @shorthand
 
 exports.UndefinedLiteral = class UndefinedLiteral extends Literal
   constructor: ->
@@ -1036,7 +1045,8 @@ exports.UndefinedLiteral = class UndefinedLiteral extends Literal
   astType: -> 'Identifier'
 
   astProperties: ->
-    name: @value
+    return
+      name: @value
 
 exports.NullLiteral = class NullLiteral extends Literal
   constructor: ->
@@ -1055,7 +1065,8 @@ exports.DefaultLiteral = class DefaultLiteral extends Literal
   astType: -> 'Identifier'
 
   astProperties: ->
-    name: 'default'
+    return
+      name: 'default'
 
 #### Return
 
@@ -4843,10 +4854,3 @@ jisonLocationDataToAstLocationData = ({first_line, first_column, last_line, last
     ]
     start: range[0]
     end:   range[1]
-
-# Extract location data fields from an AST node
-extractAstLocationData = (ast) ->
-  loc: ast.loc
-  range: ast.range
-  start: ast.start
-  end: ast.end

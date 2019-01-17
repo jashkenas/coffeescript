@@ -4,6 +4,9 @@
 testAstLocationData = (code, expected) ->
   testAstNodeLocationData getAstExpressionOrStatement(code), expected
 
+testAstRootLocationData = (code, expected) ->
+  testAstNodeLocationData getAstRoot(code), expected
+
 testAstNodeLocationData = (node, expected, path = '') ->
   extendPath = (additionalPath) ->
     return additionalPath unless path
@@ -2143,7 +2146,7 @@ test "AST location data as expected for Existence node", ->
         line: 1
         column: 7
 
-test "AST location Data as expected for CSXTag node", ->
+test "AST location data as expected for CSXTag node", ->
   testAstLocationData '<CSXY />',
     type: 'JSXElement'
     openingElement:
@@ -2910,3 +2913,124 @@ test "AST as expected for Try node", ->
         end:
           line: 3
           column: 3
+
+test "AST location data as expected for Root node", ->
+  testAstRootLocationData '1\n2',
+    type: 'File'
+    program:
+      start: 0
+      end: 3
+      range: [0, 3]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 2
+          column: 1
+    start: 0
+    end: 3
+    range: [0, 3]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 2
+        column: 1
+
+  testAstRootLocationData 'a = 1\nb',
+    type: 'File'
+    program:
+      start: 0
+      end: 7
+      range: [0, 7]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 2
+          column: 1
+    start: 0
+    end: 7
+    range: [0, 7]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 2
+        column: 1
+
+  testAstRootLocationData 'a = 1\nb\n\n',
+    type: 'File'
+    program:
+      start: 0
+      end: 9
+      range: [0, 9]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 4
+          column: 0
+    start: 0
+    end: 9
+    range: [0, 9]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 0
+
+  testAstRootLocationData 'a = 1\n\n# Comment',
+    type: 'File'
+    program:
+      start: 0
+      end: 16
+      range: [0, 16]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 3
+          column: 9
+    start: 0
+    end: 16
+    range: [0, 16]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 9
+
+  testAstRootLocationData 'a = 1\n\n# Comment\n',
+    type: 'File'
+    program:
+      start: 0
+      end: 17
+      range: [0, 17]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 4
+          column: 0
+    start: 0
+    end: 17
+    range: [0, 17]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 0
