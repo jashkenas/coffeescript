@@ -4579,7 +4579,7 @@ exports.Switch = class Switch extends Base
     cases = []
 
     for kase, caseIndex in @cases
-      {tests, block: consequent} = kase
+      {conditions: tests, block: consequent} = kase
       tests = flatten [tests]
       lastTestIndex = tests.length - 1
       for test, testIndex in tests
@@ -4593,7 +4593,7 @@ exports.Switch = class Switch extends Base
         caseLocationData = mergeAstLocationData caseLocationData, kase.astLocationData(), justLeading: yes if testIndex is 0
         caseLocationData = mergeAstLocationData caseLocationData, kase.astLocationData(), justEnding:  yes if testIndex is lastTestIndex
 
-        Object.assign {
+        cases.push Object.assign {
           type: 'SwitchCase'
           test: test.ast o
           consequent: consequentAst
@@ -4611,7 +4611,7 @@ exports.Switch = class Switch extends Base
 
   astProperties: (o) ->
     return
-      discriminant: @subject?.ast o
+      discriminant: @subject?.ast(o) ? null
       cases: @getCasesAst o
 
 exports.SwitchWhen = class SwitchWhen extends Base
