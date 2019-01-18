@@ -2,7 +2,7 @@
 # ---------------------------------
 
 testAstLocationData = (code, expected) ->
-  testAstNodeLocationData getAstExpression(code), expected
+  testAstNodeLocationData getAstExpressionOrStatement(code), expected
 
 testAstRootLocationData = (code, expected) ->
   testAstNodeLocationData getAstRoot(code), expected
@@ -2666,6 +2666,253 @@ test "AST location data as expected for CSXTag node", ->
             line: 1
             column: 11
       ]
+
+test "AST as expected for Try node", ->
+  testAstLocationData 'try cappuccino',
+    type: 'TryStatement'
+    block:
+      type: 'BlockStatement'
+      body: [
+        expression:
+          start: 4
+          end: 14
+          range: [4, 14]
+          loc:
+            start:
+              line: 1
+              column: 4
+            end:
+              line: 1
+              column: 14
+        start: 4
+        end: 14
+        range: [4, 14]
+        loc:
+          start:
+            line: 1
+            column: 4
+          end:
+            line: 1
+            column: 14
+      ]
+      # TODO: the location data for the block is wrong (wrong location data on generated INDENT)
+      # start: 4
+      # end: 14
+      # range: [4, 14]
+      # loc:
+      #   start:
+      #     line: 1
+      #     column: 4
+      #   end:
+      #     line: 1
+      #     column: 14
+    start: 0
+    end: 14
+    range: [0, 14]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 14
+
+  testAstLocationData '''
+    try
+      x = 1
+      y()
+    catch e
+      d()
+    finally
+      f + g
+  ''',
+    type: 'TryStatement'
+    block:
+      type: 'BlockStatement'
+      body: [
+        expression:
+          start: 6
+          end: 11
+          range: [6, 11]
+          loc:
+            start:
+              line: 2
+              column: 2
+            end:
+              line: 2
+              column: 7
+        start: 6
+        end: 11
+        range: [6, 11]
+        loc:
+          start:
+            line: 2
+            column: 2
+          end:
+            line: 2
+            column: 7
+      ,
+        expression:
+          start: 14
+          end: 17
+          range: [14, 17]
+          loc:
+            start:
+              line: 3
+              column: 2
+            end:
+              line: 3
+              column: 5
+        start: 14
+        end: 17
+        range: [14, 17]
+        loc:
+          start:
+            line: 3
+            column: 2
+          end:
+            line: 3
+            column: 5
+      ]
+      start: 4
+      end: 17
+      range: [4, 17]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 5
+    handler:
+      param:
+        start: 24
+        end: 25
+        range: [24, 25]
+        loc:
+          start:
+            line: 4
+            column: 6
+          end:
+            line: 4
+            column: 7
+      body:
+        body: [
+          start: 28
+          end: 31
+          range: [28, 31]
+          loc:
+            start:
+              line: 5
+              column: 2
+            end:
+              line: 5
+              column: 5
+        ]
+        start: 26
+        end: 31
+        range: [26, 31]
+        loc:
+          start:
+            line: 5
+            column: 0
+          end:
+            line: 5
+            column: 5
+      start: 18
+      end: 31
+      range: [18, 31]
+      loc:
+        start:
+          line: 4
+          column: 0
+        end:
+          line: 5
+          column: 5
+    finalizer:
+      body: [
+        expression:
+          start: 42
+          end: 47
+          range: [42, 47]
+          loc:
+            start:
+              line: 7
+              column: 2
+            end:
+              line: 7
+              column: 7
+        start: 42
+        end: 47
+        range: [42, 47]
+        loc:
+          start:
+            line: 7
+            column: 2
+          end:
+            line: 7
+            column: 7
+      ]
+      start: 32
+      end: 47
+      range: [32, 47]
+      loc:
+        start:
+          line: 6
+          column: 0
+        end:
+          line: 7
+          column: 7
+    start: 0
+    end: 47
+    range: [0, 47]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 7
+        column: 7
+
+  testAstLocationData '''
+    try
+    catch {e}
+      f
+  ''',
+    type: 'TryStatement'
+    handler:
+      param:
+        start: 10
+        end: 13
+        range: [10, 13]
+        loc:
+          start:
+            line: 2
+            column: 6
+          end:
+            line: 2
+            column: 9
+      body:
+        start: 14
+        end: 17
+        range: [14, 17]
+        loc:
+          start:
+            line: 3
+            column: 0
+          end:
+            line: 3
+            column: 3
+      start: 4
+      end: 17
+      range: [4, 17]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 3
 
 test "AST location data as expected for Root node", ->
   testAstRootLocationData '1\n2',
