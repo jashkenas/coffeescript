@@ -2695,17 +2695,16 @@ test "AST as expected for Try node", ->
             line: 1
             column: 14
       ]
-      # TODO: the location data for the block is wrong (wrong location data on generated INDENT)
-      # start: 4
-      # end: 14
-      # range: [4, 14]
-      # loc:
-      #   start:
-      #     line: 1
-      #     column: 4
-      #   end:
-      #     line: 1
-      #     column: 14
+      start: 3
+      end: 14
+      range: [3, 14]
+      loc:
+        start:
+          line: 1
+          column: 3
+        end:
+          line: 1
+          column: 14
     start: 0
     end: 14
     range: [0, 14]

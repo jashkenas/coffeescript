@@ -4803,20 +4803,46 @@ makeDelimitedLiteral = (body, options = {}) ->
 lesser  = (a, b) -> if a < b then a else b
 greater = (a, b) -> if a > b then a else b
 
+isAstLocGreater = (a, b) ->
+  return yes if a.line > b.line
+  return no unless a.line is b.line
+  a.column > b.column
+
+isLocationDataStartGreater = (a, b) ->
+  return yes if a.first_line > b.first_line
+  return no unless a.first_line is b.first_line
+  a.first_column > b.first_column
+
+isLocationDataEndGreater = (a, b) ->
+  return yes if a.last_line > b.last_line
+  return no unless a.last_line is b.last_line
+  a.last_column > b.last_column
+
 # Take two nodes’ location data and return a new `locationData` object that
 # encompasses the location data of both nodes. So the new `first_line` value
 # will be the earlier of the two nodes’ `first_line` values, the new
 # `last_column` the later of the two nodes’ `last_column` values, etc.
 mergeLocationData = (locationDataA, locationDataB) ->
-  return
-    first_line:   lesser locationDataA.first_line,   locationDataB.first_line
-    first_column: lesser locationDataA.first_column, locationDataB.first_column
-    last_line:    greater locationDataA.last_line,   locationDataB.last_line
-    last_column:  greater locationDataA.last_column, locationDataB.last_column
+  return Object.assign(
+    if isLocationDataStartGreater locationDataA, locationDataB
+      first_line:   locationDataB.first_line
+      first_column: locationDataB.first_column
+    else
+      first_line:   locationDataA.first_line
+      first_column: locationDataA.first_column
+  ,
+    if isLocationDataEndGreater locationDataA, locationDataB
+      last_line:   locationDataA.last_line
+      last_column: locationDataA.last_column
+    else
+      last_line:   locationDataB.last_line
+      last_column: locationDataB.last_column
+  ,
     range: [
       lesser  locationDataA.range[0], locationDataB.range[0]
       greater locationDataA.range[1], locationDataB.range[1]
     ]
+  )
 
 # Take two AST nodes, or two AST nodes’ location data objects, and return a new
 # location data object that encompasses the location data of both nodes. So the
@@ -4826,11 +4852,15 @@ mergeAstLocationData = (nodeA, nodeB) ->
   return
     loc:
       start:
-        line:   lesser nodeA.loc.start.line,   nodeB.loc.start.line
-        column: lesser nodeA.loc.start.column, nodeB.loc.start.column
+        if isAstLocGreater nodeA.loc.start, nodeB.loc.start
+          nodeB.loc.start
+        else
+          nodeA.loc.start
       end:
-        line:   greater nodeA.loc.end.line,   nodeB.loc.end.line
-        column: greater nodeA.loc.end.column, nodeB.loc.end.column
+        if isAstLocGreater nodeA.loc.end, nodeB.loc.end
+          nodeA.loc.end
+        else
+          nodeB.loc.end
     range: [
       lesser  nodeA.range[0], nodeB.range[0]
       greater nodeA.range[1], nodeB.range[1]

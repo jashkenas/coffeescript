@@ -512,18 +512,19 @@ exports.Rewriter = class Rewriter
       return 1 if     token[2]
       return 1 unless token.generated or token.explicit
       if token[0] is '{' and nextLocation=tokens[i + 1]?[2]
-        {first_line: line, first_column: column, range} = nextLocation
+        {first_line: line, first_column: column, range: [rangeIndex]} = nextLocation
       else if prevLocation = tokens[i - 1]?[2]
-        {last_line: line, last_column: column, range} = prevLocation
+        {last_line: line, last_column: column, range: [, rangeIndex]} = prevLocation
+        column += 1
       else
         line = column = 0
-        range = [0, 0]
+        rangeIndex = 0
       token[2] = {
         first_line:   line
         first_column: column
         last_line:    line
         last_column:  column
-        range
+        range: [rangeIndex, rangeIndex]
       }
       return 1
 
