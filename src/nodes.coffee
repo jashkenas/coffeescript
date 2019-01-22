@@ -4575,7 +4575,7 @@ exports.Switch = class Switch extends Base
 
   astType: -> 'SwitchStatement'
 
-  getCasesAst: (o) ->
+  casesAst: (o) ->
     cases = []
 
     for kase, caseIndex in @cases
@@ -4612,7 +4612,7 @@ exports.Switch = class Switch extends Base
   astProperties: (o) ->
     return
       discriminant: @subject?.ast(o) ? null
-      cases: @getCasesAst o
+      cases: @casesAst o
 
 exports.SwitchWhen = class SwitchWhen extends Base
   constructor: (@conditions, @block) ->
@@ -4849,6 +4849,7 @@ makeDelimitedLiteral = (body, options = {}) ->
 # Helpers for `mergeLocationData` and `mergeAstLocationData` below.
 lesser  = (a, b) -> if a < b then a else b
 greater = (a, b) -> if a > b then a else b
+
 isAstLocGreater = (a, b) ->
   return yes if a.line > b.line
   return no unless a.line is b.line
