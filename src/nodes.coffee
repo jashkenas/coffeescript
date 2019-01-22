@@ -4864,21 +4864,6 @@ isLocationDataEndGreater = (a, b) ->
   return no unless a.last_line is b.last_line
   a.last_column > b.last_column
 
-isAstLocGreater = (a, b) ->
-  return yes if a.line > b.line
-  return no unless a.line is b.line
-  a.column > b.column
-
-isLocationDataStartGreater = (a, b) ->
-  return yes if a.first_line > b.first_line
-  return no unless a.first_line is b.first_line
-  a.first_column > b.first_column
-
-isLocationDataEndGreater = (a, b) ->
-  return yes if a.last_line > b.last_line
-  return no unless a.last_line is b.last_line
-  a.last_column > b.last_column
-
 # Take two nodes’ location data and return a new `locationData` object that
 # encompasses the location data of both nodes. So the new `first_line` value
 # will be the earlier of the two nodes’ `first_line` values, the new
