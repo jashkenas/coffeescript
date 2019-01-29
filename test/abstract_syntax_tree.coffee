@@ -1921,12 +1921,14 @@ test "AST as expected for Switch node", ->
           type: 'Identifier'
           name: 'a'
       ]
+      trailing: yes
     ,
       type: 'SwitchCase'
       test:
         type: 'Identifier'
         name: 'b'
       consequent: []
+      trailing: no
     ,
       type: 'SwitchCase'
       test:
@@ -1938,6 +1940,7 @@ test "AST as expected for Switch node", ->
           type: 'Identifier'
           name: 'c'
       ]
+      trailing: yes
     ,
       type: 'SwitchCase'
       test: null
@@ -1970,6 +1973,7 @@ test "AST as expected for Switch node", ->
         expression:
           type: 'Identifier'
       ]
+      trailing: yes
     ]
 
   testStatement '''
@@ -1989,18 +1993,21 @@ test "AST as expected for Switch node", ->
         type: 'NumericLiteral'
         value: 1
       consequent: []
+      trailing: no
     ,
       type: 'SwitchCase'
       test:
         type: 'NumericLiteral'
         value: 2
       consequent: []
+      trailing: no
     ,
       type: 'SwitchCase'
       test:
         type: 'NumericLiteral'
         value: 3
       consequent: []
+      trailing: no
     ,
       type: 'SwitchCase'
       test:
@@ -2011,6 +2018,7 @@ test "AST as expected for Switch node", ->
         expression:
           type: 'Identifier'
       ]
+      trailing: yes
     ,
       type: 'SwitchCase'
       test: null
