@@ -3262,6 +3262,8 @@ exports.Code = class Code extends Base
       if node instanceof For and node.isAwait()
         @isAsync = yes
 
+    @propagateLhs()
+
   children: ['params', 'body']
 
   isStatement: -> @isMethod
@@ -3551,6 +3553,33 @@ exports.Code = class Code extends Base
 
     seenSuper
 
+  propagateLhs: ->
+    for {name} in @params when name instanceof Arr or name instanceof Obj
+      name.propagateLhs yes
+
+  astType: -> 'FunctionExpression'
+
+  paramForAst: (param) ->
+    return param if param instanceof Expansion
+    {name, value, splat} = param
+    if splat
+      new Splat name, lhs: yes, postfix: splat.postfix
+      .withLocationDataFrom name
+    else if value?
+      new Assign name, value, null, param: yes
+      .withLocationDataFrom locationData: mergeLocationData name.locationData, value.locationData
+    else
+      name
+
+  astProperties: (o) ->
+    return
+      params: @paramForAst(param).ast(o) for param in @params
+      body: @body.ast o
+      generator: !!@isGenerator
+      async: !!@isAsync
+      bound: !!@bound
+      id: null
+
 #### Param
 
 # A parameter in a function definition. Beyond a typical JavaScript parameter,
@@ -3661,7 +3690,7 @@ exports.Param = class Param extends Base
 # A splat, either as a parameter to a function, an argument to a call,
 # or as part of a destructuring assignment.
 exports.Splat = class Splat extends Base
-  constructor: (name, {@postfix = true} = {}) ->
+  constructor: (name, {@lhs, @postfix = true} = {}) ->
     super()
     @name = if name.compile then name else new Literal name
 

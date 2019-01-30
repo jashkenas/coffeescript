@@ -91,6 +91,22 @@ test 'Confirm functionality of `deepStrictIncludeExpectedProperties`', ->
   check 'Prop is missing', throws,
     missingProp: {}
 
+# Shorthand helpers for common AST patterns.
+
+EMPTY_BLOCK =
+  type: 'BlockStatement'
+  body: []
+  directives: []
+
+ID = (name) -> {
+  type: 'Identifier'
+  name
+}
+
+NUMBER = (value) -> {
+  type: 'NumericLiteral'
+  value
+}
 
 # Check each node type in the same order as they appear in `nodes.coffee`.
 # For nodes that have equivalents in Babel’s AST spec, we’re checking that
@@ -324,16 +340,20 @@ test "AST as expected for CSXTag node", ->
 #     ]
 
 test "AST as expected for ComputedPropertyName node", ->
-  # testExpression '[fn]: ->',
-  #   type: 'Obj'
-  #   properties: [
-  #     type: 'Assign'
-  #     context: 'object'
-  #     variable:
-  #       type: 'ComputedPropertyName'
-  #     value:
-  #       type: 'Code'
-  #   ]
+  testExpression '[fn]: ->',
+    type: 'ObjectExpression'
+    properties: [
+      type: 'ObjectProperty'
+      key:
+        type: 'Identifier'
+        name: 'fn'
+      value:
+        type: 'FunctionExpression'
+      computed: yes
+      shorthand: no
+      method: no
+    ]
+    implicit: yes
 
   testExpression '[a]: b',
     type: 'ObjectExpression'
@@ -1097,14 +1117,17 @@ test "AST as expected for ExportNamedDeclaration node", ->
     source: null
     exportKind: 'value'
 
-  # testStatement 'export fn = ->',
-  #   type: 'ExportNamedDeclaration'
-  #   clause:
-  #     type: 'Assign'
-  #     variable:
-  #       value: 'fn'
-  #     value:
-  #       type: 'Code'
+  testStatement 'export fn = ->',
+    type: 'ExportNamedDeclaration'
+    declaration:
+      type: 'AssignmentExpression'
+      left:
+        type: 'Identifier'
+      right:
+        type: 'FunctionExpression'
+    specifiers: []
+    source: null
+    exportKind: 'value'
 
   # testStatement 'export class A',
 
@@ -1348,34 +1371,167 @@ test "AST as expected for Assign node", ->
 
 # # `FuncGlyph` node isn't exported.
 
-# test "AST as expected for Code node", ->
-#   testExpression '=>',
-#     type: 'Code'
-#     bound: yes
-#     body:
-#       type: 'Block'
+test "AST as expected for Code node", ->
+  testExpression '=>',
+    type: 'FunctionExpression'
+    params: []
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    bound: yes
+    id: null
 
-#   testExpression '-> await 3',
-#     type: 'Code'
-#     bound: no
-#     isAsync: yes
-#     isMethod: no      # TODO: What's this flag?
-#     body:
-#       type: 'Op'
-#       operator: 'await'
-#       first:
-#         type: 'NumberLiteral'
-#         value: '3'
+  testExpression '''
+    (a, b = 1) ->
+      c
+      d()
+  ''',
+    type: 'FunctionExpression'
+    params: [
+      type: 'Identifier'
+      name: 'a'
+    ,
+      type: 'AssignmentPattern'
+      left:
+        type: 'Identifier'
+        name: 'b'
+      right:
+        type: 'NumericLiteral'
+        value: 1
+    ]
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'Identifier'
+          name: 'c'
+      ,
+        type: 'ExpressionStatement'
+        expression:
+          type: 'CallExpression'
+      ]
+      directives: []
+    generator: no
+    async: no
+    bound: no
+    id: null
 
-#   testExpression '-> yield 4',
-#     type: 'Code'
-#     isGenerator: yes
-#     body:
-#       type: 'Op'
-#       operator: 'yield'
-#       first:
-#         type: 'NumberLiteral'
-#         value: '4'
+  testExpression '({a}) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'ObjectPattern'
+      properties: [
+        type: 'ObjectProperty'
+        key: ID('a')
+        value: ID('a')
+        shorthand: yes
+      ]
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    bound: no
+    id: null
+
+  testExpression '([a]) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'ArrayPattern'
+      elements: [
+        ID('a')
+      ]
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    bound: no
+    id: null
+
+  testExpression '({a = 1} = {}) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'AssignmentPattern'
+      left:
+        type: 'ObjectPattern'
+        properties: [
+          type: 'ObjectProperty'
+          key: ID('a')
+          value:
+            type: 'AssignmentPattern'
+            left: ID('a')
+            right: NUMBER(1)
+          shorthand: yes
+        ]
+      right:
+        type: 'ObjectExpression'
+        properties: []
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    bound: no
+    id: null
+
+  testExpression '([a = 1] = []) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'AssignmentPattern'
+      left:
+        type: 'ArrayPattern'
+        elements: [
+          type: 'AssignmentPattern'
+          left: ID('a')
+          right: NUMBER(1)
+        ]
+      right:
+        type: 'ArrayExpression'
+        elements: []
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    bound: no
+    id: null
+
+  testExpression '() ->',
+    type: 'FunctionExpression'
+    params: []
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    bound: no
+    id: null
+
+  # testExpression '(@a) ->',
+  # testExpression '(@a = 1) ->',
+  # testExpression '({@a}) ->',
+  # testExpression '({[a]}) ->',
+  # testExpression '(...a) ->',
+  # testExpression '(a...) ->',
+  # testExpression '(..., a) ->',
+  # testExpression '-> a',
+  # testExpression '-> await 3',
+  #   type: 'Code'
+  #   bound: no
+  #   isAsync: yes
+  #   isMethod: no      # TODO: What's this flag?
+  #   body:
+  #     type: 'Op'
+  #     operator: 'await'
+  #     first:
+  #       type: 'NumberLiteral'
+  #       value: '3'
+
+  # testExpression '-> yield 4',
+  #   type: 'Code'
+  #   isGenerator: yes
+  #   body:
+  #     type: 'Op'
+  #     operator: 'yield'
+  #     first:
+  #       type: 'NumberLiteral'
+  #       value: '4'
 
 # test "AST as expected for Param node", ->
 #   testExpression '(a = 1) ->',
