@@ -4895,7 +4895,17 @@ mergeLocationData = (locationDataA, locationDataB) ->
 # location data object that encompasses the location data of both nodes. So the
 # new `start` value will be the earlier of the two nodes’ `start` values, the
 # new `end` value will be the later of the two nodes’ `end` values, etc.
-mergeAstLocationData = (nodeA, nodeB, {justLeading, justEnding} = {}) ->
+# 
+# If you only want to extend the first node’s location data with the start or
+# end location data of the second node, pass the `justLeading` or `justEnding`
+# options. So e.g. if `first`’s range is [4, 5] and `second`’s range is [1, 10],
+# you’d get:
+# ```
+# mergeAstLocationData(first, second).range                   # [1, 10]
+# mergeAstLocationData(first, second, justLeading: yes).range # [1, 5]
+# mergeAstLocationData(first, second, justEnding:  yes).range # [4, 10]
+# ```
+exports.mergeAstLocationData = mergeAstLocationData = (nodeA, nodeB, {justLeading, justEnding} = {}) ->
   return
     loc:
       start:

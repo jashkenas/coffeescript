@@ -43,6 +43,55 @@ testSingleNodeLocationData = (node, expected, path = '') ->
   eq node.loc.end.column, expected.loc.end.column, \
     "Expected #{path}.loc.end.column: #{reset}#{node.loc.end.column}#{red} to equal #{reset}#{expected.loc.end.column}#{red}"
 
+if require?
+  {mergeAstLocationData} = require './../lib/coffeescript/nodes'
+
+  test "the `mergeAstLocationData` helper accepts `justLeading` and `justEnding` options", ->
+    first =
+      range: [4, 5]
+      start: 4
+      end: 5
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 1
+          column: 5
+    second =
+      range: [1, 10]
+      start: 1
+      end: 10
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 2
+          column: 2
+    testSingleNodeLocationData mergeAstLocationData(first, second), second
+    testSingleNodeLocationData mergeAstLocationData(first, second, justLeading: yes),
+      range: [1, 5]
+      start: 1
+      end: 5
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 5
+    testSingleNodeLocationData mergeAstLocationData(first, second, justEnding: yes),
+      range: [4, 10]
+      start: 4
+      end: 10
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 2
+          column: 2
 
 test "AST location data as expected for NumberLiteral node", ->
   testAstLocationData '42',
