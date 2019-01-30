@@ -44,7 +44,7 @@ testSingleNodeLocationData = (node, expected, path = '') ->
     "Expected #{path}.loc.end.column: #{reset}#{node.loc.end.column}#{red} to equal #{reset}#{expected.loc.end.column}#{red}"
 
 if require?
-  {mergeAstLocationData} = require './../lib/coffeescript/nodes'
+  {mergeAstLocationData, mergeLocationData} = require './../lib/coffeescript/nodes'
 
   test "the `mergeAstLocationData` helper accepts `justLeading` and `justEnding` options", ->
     first =
@@ -92,6 +92,39 @@ if require?
         end:
           line: 2
           column: 2
+
+  test "the `mergeLocationData` helper accepts `justLeading` and `justEnding` options", ->
+    testLocationData = (node, expected) ->
+      arrayEq node.range, expected.range
+      for field in ['first_line', 'first_column', 'last_line', 'last_column']
+        eq node[field], expected[field]
+
+    first =
+      range: [4, 5]
+      first_line: 0
+      first_column: 4
+      last_line: 0
+      last_column: 4
+    second =
+      range: [1, 10]
+      first_line: 0
+      first_column: 1
+      last_line: 1
+      last_column: 2
+
+    testLocationData mergeLocationData(first, second), second
+    testLocationData mergeLocationData(first, second, justLeading: yes),
+      range: [1, 5]
+      first_line: 0
+      first_column: 1
+      last_line: 0
+      last_column: 4
+    testLocationData mergeLocationData(first, second, justEnding: yes),
+      range: [4, 10]
+      first_line: 0
+      first_column: 4
+      last_line: 1
+      last_column: 2
 
 test "AST location data as expected for NumberLiteral node", ->
   testAstLocationData '42',

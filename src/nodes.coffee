@@ -4583,36 +4583,40 @@ exports.Switch = class Switch extends Base
       tests = flatten [tests]
       lastTestIndex = tests.length - 1
       for test, testIndex in tests
-        consequentAst =
+        testConsequent =
           if testIndex is lastTestIndex
-            consequent.ast(o).body
-          else []
+            consequent
+          else
+            null
 
-        caseLocationData = test.astLocationData()
-        caseLocationData = mergeAstLocationData caseLocationData, consequentAst[consequentAst.length - 1]  if consequentAst.length
-        caseLocationData = mergeAstLocationData caseLocationData, kase.astLocationData(), justLeading: yes if testIndex is 0
-        caseLocationData = mergeAstLocationData caseLocationData, kase.astLocationData(), justEnding:  yes if testIndex is lastTestIndex
+        caseLocationData = test.locationData
+        caseLocationData = mergeLocationData caseLocationData, testConsequent.expressions[testConsequent.expressions.length - 1].locationData if testConsequent?.expressions.length
+        caseLocationData = mergeLocationData caseLocationData, kase.locationData, justLeading: yes if testIndex is 0
+        caseLocationData = mergeLocationData caseLocationData, kase.locationData, justEnding:  yes if testIndex is lastTestIndex
 
-        cases.push Object.assign {
-          type: 'SwitchCase'
-          test: test.ast o
-          consequent: consequentAst
-          trailing: testIndex is lastTestIndex
-        }, caseLocationData
+        cases.push new SwitchCase(test, testConsequent, trailing: testIndex is lastTestIndex).withLocationDataFrom locationData: caseLocationData
 
     if @otherwise?.expressions.length
-      cases.push Object.assign
-        type: 'SwitchCase'
-        test: null
-        consequent: @otherwise.ast(o).body
-      , @otherwise.astLocationData()
+      cases.push new SwitchCase(null, @otherwise).withLocationDataFrom @otherwise
 
-    cases
+    kase.ast(o) for kase in cases
 
   astProperties: (o) ->
     return
       discriminant: @subject?.ast(o) ? null
       cases: @casesAst o
+
+class SwitchCase extends Base
+  constructor: (@test, @block, {@trailing} = {}) ->
+    super()
+
+  children: ['test', 'block']
+
+  astProperties: (o) ->
+    return
+      test: @test?.ast(o) ? null
+      consequent: @block?.ast(o).body ? []
+      trailing: !!@trailing
 
 exports.SwitchWhen = class SwitchWhen extends Base
   constructor: (@conditions, @block) ->
@@ -4869,25 +4873,50 @@ isLocationDataEndGreater = (a, b) ->
 # encompasses the location data of both nodes. So the new `first_line` value
 # will be the earlier of the two nodes’ `first_line` values, the new
 # `last_column` the later of the two nodes’ `last_column` values, etc.
-mergeLocationData = (locationDataA, locationDataB) ->
+# 
+# If you only want to extend the first node’s location data with the start or
+# end location data of the second node, pass the `justLeading` or `justEnding`
+# options. So e.g. if `first`’s range is [4, 5] and `second`’s range is [1, 10],
+# you’d get:
+# ```
+# mergeLocationData(first, second).range                   # [1, 10]
+# mergeLocationData(first, second, justLeading: yes).range # [1, 5]
+# mergeLocationData(first, second, justEnding:  yes).range # [4, 10]
+# ```
+exports.mergeLocationData = mergeLocationData = (locationDataA, locationDataB, {justLeading, justEnding} = {}) ->
   return Object.assign(
-    if isLocationDataStartGreater locationDataA, locationDataB
-      first_line:   locationDataB.first_line
-      first_column: locationDataB.first_column
-    else
+    if justEnding
       first_line:   locationDataA.first_line
       first_column: locationDataA.first_column
+    else
+      if isLocationDataStartGreater locationDataA, locationDataB
+        first_line:   locationDataB.first_line
+        first_column: locationDataB.first_column
+      else
+        first_line:   locationDataA.first_line
+        first_column: locationDataA.first_column
   ,
-    if isLocationDataEndGreater locationDataA, locationDataB
+    if justLeading
       last_line:   locationDataA.last_line
       last_column: locationDataA.last_column
     else
-      last_line:   locationDataB.last_line
-      last_column: locationDataB.last_column
+      if isLocationDataEndGreater locationDataA, locationDataB
+        last_line:   locationDataA.last_line
+        last_column: locationDataA.last_column
+      else
+        last_line:   locationDataB.last_line
+        last_column: locationDataB.last_column
   ,
     range: [
-      lesser  locationDataA.range[0], locationDataB.range[0]
-      greater locationDataA.range[1], locationDataB.range[1]
+      if justEnding
+        locationDataA.range[0]
+      else
+        lesser locationDataA.range[0], locationDataB.range[0]
+    ,
+      if justLeading
+        locationDataA.range[1]
+      else
+        greater locationDataA.range[1], locationDataB.range[1]
     ]
   )
 
