@@ -44,12 +44,13 @@ o = (patternString, action, options) ->
     # that nodes may have, such as comments or location data. Location data
     # is added to the first parameter passed in, and the parameter is returned.
     # If the parameter is not a node, it will just be passed through unaffected.
-    getAddDataToNodeFunctionString = (first, last) ->
-      "yy.addDataToNode(yy, @#{first}#{if last then ", @#{last}" else ''})"
+    getAddDataToNodeFunctionString = (first, last, forceUpdateLocation = yes) ->
+      "yy.addDataToNode(yy, @#{first}, #{if last then "@#{last}" else 'null'}, #{if forceUpdateLocation then 'true' else 'false'})"
 
+    returnsLoc = /^LOC/.test action
     action = action.replace /LOC\(([0-9]*)\)/g, getAddDataToNodeFunctionString('$1')
     action = action.replace /LOC\(([0-9]*),\s*([0-9]*)\)/g, getAddDataToNodeFunctionString('$1', '$2')
-    performActionFunctionString = "$$ = #{getAddDataToNodeFunctionString(1, patternCount)}(#{action});"
+    performActionFunctionString = "$$ = #{getAddDataToNodeFunctionString(1, patternCount, not returnsLoc)}(#{action});"
   else
     performActionFunctionString = '$$ = $1;'
 
@@ -786,21 +787,21 @@ grammar =
   Switch: [
     o 'SWITCH Expression INDENT Whens OUTDENT',                -> new Switch $2, $4
     o 'SWITCH ExpressionLine INDENT Whens OUTDENT',            -> new Switch $2, $4
-    o 'SWITCH Expression INDENT Whens ELSE Block OUTDENT',     -> new Switch $2, $4, $6
-    o 'SWITCH ExpressionLine INDENT Whens ELSE Block OUTDENT', -> new Switch $2, $4, $6
+    o 'SWITCH Expression INDENT Whens ELSE Block OUTDENT',     -> new Switch $2, $4, LOC(5,6) $6
+    o 'SWITCH ExpressionLine INDENT Whens ELSE Block OUTDENT', -> new Switch $2, $4, LOC(5,6) $6
     o 'SWITCH INDENT Whens OUTDENT',                           -> new Switch null, $3
-    o 'SWITCH INDENT Whens ELSE Block OUTDENT',                -> new Switch null, $3, $5
+    o 'SWITCH INDENT Whens ELSE Block OUTDENT',                -> new Switch null, $3, LOC(4,5) $5
   ]
 
   Whens: [
-    o 'When'
+    o 'When',                                   -> [$1]
     o 'Whens When',                             -> $1.concat $2
   ]
 
   # An individual **When** clause, with action.
   When: [
-    o 'LEADING_WHEN SimpleArgs Block',            -> [[$2, $3]]
-    o 'LEADING_WHEN SimpleArgs Block TERMINATOR', -> [[$2, $3]]
+    o 'LEADING_WHEN SimpleArgs Block',            -> new SwitchWhen $2, $3
+    o 'LEADING_WHEN SimpleArgs Block TERMINATOR', -> LOC(1, 3) new SwitchWhen $2, $3
   ]
 
   # The most basic form of *if* is a condition and an action. The following

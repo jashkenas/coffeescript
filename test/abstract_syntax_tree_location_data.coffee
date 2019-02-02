@@ -43,6 +43,88 @@ testSingleNodeLocationData = (node, expected, path = '') ->
   eq node.loc.end.column, expected.loc.end.column, \
     "Expected #{path}.loc.end.column: #{reset}#{node.loc.end.column}#{red} to equal #{reset}#{expected.loc.end.column}#{red}"
 
+if require?
+  {mergeAstLocationData, mergeLocationData} = require './../lib/coffeescript/nodes'
+
+  test "the `mergeAstLocationData` helper accepts `justLeading` and `justEnding` options", ->
+    first =
+      range: [4, 5]
+      start: 4
+      end: 5
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 1
+          column: 5
+    second =
+      range: [1, 10]
+      start: 1
+      end: 10
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 2
+          column: 2
+    testSingleNodeLocationData mergeAstLocationData(first, second), second
+    testSingleNodeLocationData mergeAstLocationData(first, second, justLeading: yes),
+      range: [1, 5]
+      start: 1
+      end: 5
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 5
+    testSingleNodeLocationData mergeAstLocationData(first, second, justEnding: yes),
+      range: [4, 10]
+      start: 4
+      end: 10
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 2
+          column: 2
+
+  test "the `mergeLocationData` helper accepts `justLeading` and `justEnding` options", ->
+    testLocationData = (node, expected) ->
+      arrayEq node.range, expected.range
+      for field in ['first_line', 'first_column', 'last_line', 'last_column']
+        eq node[field], expected[field]
+
+    first =
+      range: [4, 5]
+      first_line: 0
+      first_column: 4
+      last_line: 0
+      last_column: 4
+    second =
+      range: [1, 10]
+      first_line: 0
+      first_column: 1
+      last_line: 1
+      last_column: 2
+
+    testLocationData mergeLocationData(first, second), second
+    testLocationData mergeLocationData(first, second, justLeading: yes),
+      range: [1, 5]
+      first_line: 0
+      first_column: 1
+      last_line: 0
+      last_column: 4
+    testLocationData mergeLocationData(first, second, justEnding: yes),
+      range: [4, 10]
+      first_line: 0
+      first_column: 4
+      last_line: 1
+      last_column: 2
 
 test "AST location data as expected for NumberLiteral node", ->
   testAstLocationData '42',
@@ -3033,3 +3115,237 @@ test "AST location data as expected for Root node", ->
       end:
         line: 4
         column: 0
+
+test "AST location data as expected for Switch node", ->
+  testAstLocationData '''
+    switch x
+      when a then a
+      when b, c then c
+      else 42
+  ''',
+    type: 'SwitchStatement'
+    discriminant:
+      start: 7
+      end: 8
+      range: [7, 8]
+      loc:
+        start:
+          line: 1
+          column: 7
+        end:
+          line: 1
+          column: 8
+    cases: [
+      test:
+        start: 16
+        end: 17
+        range: [16, 17]
+        loc:
+          start:
+            line: 2
+            column: 7
+          end:
+            line: 2
+            column: 8
+      consequent: [
+        expression:
+          start: 23
+          end: 24
+          range: [23, 24]
+          loc:
+            start:
+              line: 2
+              column: 14
+            end:
+              line: 2
+              column: 15
+        start: 23
+        end: 24
+        range: [23, 24]
+        loc:
+          start:
+            line: 2
+            column: 14
+          end:
+            line: 2
+            column: 15
+      ]
+      start: 11
+      end: 24
+      range: [11, 24]
+      loc:
+        start:
+          line: 2
+          column: 2
+        end:
+          line: 2
+          column: 15
+    ,
+      test:
+        start: 32
+        end: 33
+        range: [32, 33]
+        loc:
+          start:
+            line: 3
+            column: 7
+          end:
+            line: 3
+            column: 8
+      start: 27
+      end: 33
+      range: [27, 33]
+      loc:
+        start:
+          line: 3
+          column: 2
+        end:
+          line: 3
+          column: 8
+    ,
+      test:
+        start: 35
+        end: 36
+        range: [35, 36]
+        loc:
+          start:
+            line: 3
+            column: 10
+          end:
+            line: 3
+            column: 11
+      consequent: [
+        expression:
+          start: 42
+          end: 43
+          range: [42, 43]
+          loc:
+            start:
+              line: 3
+              column: 17
+            end:
+              line: 3
+              column: 18
+        start: 42
+        end: 43
+        range: [42, 43]
+        loc:
+          start:
+            line: 3
+            column: 17
+          end:
+            line: 3
+            column: 18
+      ]
+      start: 35
+      end: 43
+      range: [35, 43]
+      loc:
+        start:
+          line: 3
+          column: 10
+        end:
+          line: 3
+          column: 18
+    ,
+      consequent: [
+        expression:
+          start: 51
+          end: 53
+          range: [51, 53]
+          loc:
+            start:
+              line: 4
+              column: 7
+            end:
+              line: 4
+              column: 9
+        start: 51
+        end: 53
+        range: [51, 53]
+        loc:
+          start:
+            line: 4
+            column: 7
+          end:
+            line: 4
+            column: 9
+      ]
+      start: 46
+      end: 53
+      range: [46, 53]
+      loc:
+        start:
+          line: 4
+          column: 2
+        end:
+          line: 4
+          column: 9
+    ,
+    ]
+    start: 0
+    end: 53
+    range: [0, 53]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 9
+
+  testAstLocationData '''
+    switch
+      when some(condition)
+        doSomething()
+        andThenSomethingElse
+  ''',
+    type: 'SwitchStatement'
+    cases: [
+      test:
+        start: 14
+        end: 29
+        range: [14, 29]
+        loc:
+          start:
+            line: 2
+            column: 7
+          end:
+            line: 2
+            column: 22
+      consequent: [
+        expression:
+          start: 34
+          end: 47
+          range: [34, 47]
+          loc:
+            start:
+              line: 3
+              column: 4
+            end:
+              line: 3
+              column: 17
+        start: 34
+        end: 47
+        range: [34, 47]
+        loc:
+          start:
+            line: 3
+            column: 4
+          end:
+            line: 3
+            column: 17
+      ,
+        expression:
+          start: 52
+          end: 72
+          range: [52, 72]
+          loc:
+            start:
+              line: 4
+              column: 4
+            end:
+              line: 4
+              column: 24
+      ]
+    ]

@@ -4543,12 +4543,12 @@ exports.Switch = class Switch extends Base
   isStatement: YES
 
   jumps: (o = {block: yes}) ->
-    for [conds, block] in @cases
+    for {block} in @cases
       return jumpNode if jumpNode = block.jumps o
     @otherwise?.jumps o
 
   makeReturn: (res) ->
-    pair[1].makeReturn res for pair in @cases
+    block.makeReturn res for {block} in @cases
     @otherwise or= new Block [new Literal 'void 0'] if res
     @otherwise?.makeReturn res
     this
@@ -4559,7 +4559,7 @@ exports.Switch = class Switch extends Base
     fragments = [].concat @makeCode(@tab + "switch ("),
       (if @subject then @subject.compileToFragments(o, LEVEL_PAREN) else @makeCode "false"),
       @makeCode(") {\n")
-    for [conditions, block], i in @cases
+    for {conditions, block}, i in @cases
       for cond in flatten [conditions]
         cond  = cond.invert() unless @subject
         fragments = fragments.concat @makeCode(idt1 + "case "), cond.compileToFragments(o, LEVEL_PAREN), @makeCode(":\n")
@@ -4572,6 +4572,57 @@ exports.Switch = class Switch extends Base
       fragments.push @makeCode(idt1 + "default:\n"), (@otherwise.compileToFragments o, LEVEL_TOP)..., @makeCode("\n")
     fragments.push @makeCode @tab + '}'
     fragments
+
+  astType: -> 'SwitchStatement'
+
+  casesAst: (o) ->
+    cases = []
+
+    for kase, caseIndex in @cases
+      {conditions: tests, block: consequent} = kase
+      tests = flatten [tests]
+      lastTestIndex = tests.length - 1
+      for test, testIndex in tests
+        testConsequent =
+          if testIndex is lastTestIndex
+            consequent
+          else
+            null
+
+        caseLocationData = test.locationData
+        caseLocationData = mergeLocationData caseLocationData, testConsequent.expressions[testConsequent.expressions.length - 1].locationData if testConsequent?.expressions.length
+        caseLocationData = mergeLocationData caseLocationData, kase.locationData, justLeading: yes if testIndex is 0
+        caseLocationData = mergeLocationData caseLocationData, kase.locationData, justEnding:  yes if testIndex is lastTestIndex
+
+        cases.push new SwitchCase(test, testConsequent, trailing: testIndex is lastTestIndex).withLocationDataFrom locationData: caseLocationData
+
+    if @otherwise?.expressions.length
+      cases.push new SwitchCase(null, @otherwise).withLocationDataFrom @otherwise
+
+    kase.ast(o) for kase in cases
+
+  astProperties: (o) ->
+    return
+      discriminant: @subject?.ast(o) ? null
+      cases: @casesAst o
+
+class SwitchCase extends Base
+  constructor: (@test, @block, {@trailing} = {}) ->
+    super()
+
+  children: ['test', 'block']
+
+  astProperties: (o) ->
+    return
+      test: @test?.ast(o) ? null
+      consequent: @block?.ast(o).body ? []
+      trailing: !!@trailing
+
+exports.SwitchWhen = class SwitchWhen extends Base
+  constructor: (@conditions, @block) ->
+    super()
+
+  children: ['conditions', 'block']
 
 #### If
 
@@ -4822,25 +4873,50 @@ isLocationDataEndGreater = (a, b) ->
 # encompasses the location data of both nodes. So the new `first_line` value
 # will be the earlier of the two nodes’ `first_line` values, the new
 # `last_column` the later of the two nodes’ `last_column` values, etc.
-mergeLocationData = (locationDataA, locationDataB) ->
+# 
+# If you only want to extend the first node’s location data with the start or
+# end location data of the second node, pass the `justLeading` or `justEnding`
+# options. So e.g. if `first`’s range is [4, 5] and `second`’s range is [1, 10],
+# you’d get:
+# ```
+# mergeLocationData(first, second).range                   # [1, 10]
+# mergeLocationData(first, second, justLeading: yes).range # [1, 5]
+# mergeLocationData(first, second, justEnding:  yes).range # [4, 10]
+# ```
+exports.mergeLocationData = mergeLocationData = (locationDataA, locationDataB, {justLeading, justEnding} = {}) ->
   return Object.assign(
-    if isLocationDataStartGreater locationDataA, locationDataB
-      first_line:   locationDataB.first_line
-      first_column: locationDataB.first_column
-    else
+    if justEnding
       first_line:   locationDataA.first_line
       first_column: locationDataA.first_column
+    else
+      if isLocationDataStartGreater locationDataA, locationDataB
+        first_line:   locationDataB.first_line
+        first_column: locationDataB.first_column
+      else
+        first_line:   locationDataA.first_line
+        first_column: locationDataA.first_column
   ,
-    if isLocationDataEndGreater locationDataA, locationDataB
+    if justLeading
       last_line:   locationDataA.last_line
       last_column: locationDataA.last_column
     else
-      last_line:   locationDataB.last_line
-      last_column: locationDataB.last_column
+      if isLocationDataEndGreater locationDataA, locationDataB
+        last_line:   locationDataA.last_line
+        last_column: locationDataA.last_column
+      else
+        last_line:   locationDataB.last_line
+        last_column: locationDataB.last_column
   ,
     range: [
-      lesser  locationDataA.range[0], locationDataB.range[0]
-      greater locationDataA.range[1], locationDataB.range[1]
+      if justEnding
+        locationDataA.range[0]
+      else
+        lesser locationDataA.range[0], locationDataB.range[0]
+    ,
+      if justLeading
+        locationDataA.range[1]
+      else
+        greater locationDataA.range[1], locationDataB.range[1]
     ]
   )
 
@@ -4848,25 +4924,56 @@ mergeLocationData = (locationDataA, locationDataB) ->
 # location data object that encompasses the location data of both nodes. So the
 # new `start` value will be the earlier of the two nodes’ `start` values, the
 # new `end` value will be the later of the two nodes’ `end` values, etc.
-mergeAstLocationData = (nodeA, nodeB) ->
+# 
+# If you only want to extend the first node’s location data with the start or
+# end location data of the second node, pass the `justLeading` or `justEnding`
+# options. So e.g. if `first`’s range is [4, 5] and `second`’s range is [1, 10],
+# you’d get:
+# ```
+# mergeAstLocationData(first, second).range                   # [1, 10]
+# mergeAstLocationData(first, second, justLeading: yes).range # [1, 5]
+# mergeAstLocationData(first, second, justEnding:  yes).range # [4, 10]
+# ```
+exports.mergeAstLocationData = mergeAstLocationData = (nodeA, nodeB, {justLeading, justEnding} = {}) ->
   return
     loc:
       start:
-        if isAstLocGreater nodeA.loc.start, nodeB.loc.start
-          nodeB.loc.start
-        else
+        if justEnding
           nodeA.loc.start
+        else
+          if isAstLocGreater nodeA.loc.start, nodeB.loc.start
+            nodeB.loc.start
+          else
+            nodeA.loc.start
       end:
-        if isAstLocGreater nodeA.loc.end, nodeB.loc.end
+        if justLeading
           nodeA.loc.end
         else
-          nodeB.loc.end
+          if isAstLocGreater nodeA.loc.end, nodeB.loc.end
+            nodeA.loc.end
+          else
+            nodeB.loc.end
     range: [
-      lesser  nodeA.range[0], nodeB.range[0]
-      greater nodeA.range[1], nodeB.range[1]
+      if justEnding
+        nodeA.range[0]
+      else
+        lesser nodeA.range[0], nodeB.range[0]
+    ,
+      if justLeading
+        nodeA.range[1]
+      else
+        greater nodeA.range[1], nodeB.range[1]
     ]
-    start: lesser  nodeA.start, nodeB.start
-    end:   greater nodeA.end,   nodeB.end
+    start:
+      if justEnding
+        nodeA.start
+      else
+        lesser nodeA.start, nodeB.start
+    end:
+      if justLeading
+        nodeA.end
+      else
+        greater nodeA.end, nodeB.end
 
 # Convert Jison-style node class location data to Babel-style location data
 jisonLocationDataToAstLocationData = ({first_line, first_column, last_line, last_column, range}) ->

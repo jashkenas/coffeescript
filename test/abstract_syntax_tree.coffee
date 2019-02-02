@@ -1899,41 +1899,139 @@ test "AST as expected for Parens node", ->
 
 #   # TODO: Figure out the purpose of `pattern` and `returns`.
 
-# test "AST as expected for Switch node", ->
-#   testExpression 'switch x \n when a then a; when b, c then c else 42',
-#     type: 'Switch'
-#     subject:
-#       type: 'IdentifierLiteral'
-#       value: 'x'
-#     cases: [
-#       {
-#         type: 'IdentifierLiteral'
-#         value: 'a'
-#       }
-#       {
-#         type: 'Value'
-#         base:
-#           value: 'a'
-#       }
-#       {
-#         type: 'IdentifierLiteral'
-#         value: 'b'
-#       }
-#       {
-#         type: 'IdentifierLiteral'
-#         value: 'c'
-#       }
-#       {
-#         type: 'Value'
-#         base:
-#           value: 'c'
-#       }
-#     ]
-#     otherwise:
-#       type: 'Value'
-#       base:
-#         value: '42'
-#       isDefaultValue: no
+test "AST as expected for Switch node", ->
+  testStatement '''
+    switch x
+      when a then a
+      when b, c then c
+      else 42
+  ''',
+    type: 'SwitchStatement'
+    discriminant:
+      type: 'Identifier'
+      name: 'x'
+    cases: [
+      type: 'SwitchCase'
+      test:
+        type: 'Identifier'
+        name: 'a'
+      consequent: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'Identifier'
+          name: 'a'
+      ]
+      trailing: yes
+    ,
+      type: 'SwitchCase'
+      test:
+        type: 'Identifier'
+        name: 'b'
+      consequent: []
+      trailing: no
+    ,
+      type: 'SwitchCase'
+      test:
+        type: 'Identifier'
+        name: 'c'
+      consequent: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'Identifier'
+          name: 'c'
+      ]
+      trailing: yes
+    ,
+      type: 'SwitchCase'
+      test: null
+      consequent: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'NumericLiteral'
+          value: 42
+      ]
+    ]
+
+  testStatement '''
+    switch
+      when some(condition)
+        doSomething()
+        andThenSomethingElse
+  ''',
+    type: 'SwitchStatement'
+    discriminant: null
+    cases: [
+      type: 'SwitchCase'
+      test:
+        type: 'CallExpression'
+      consequent: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'CallExpression'
+      ,
+        type: 'ExpressionStatement'
+        expression:
+          type: 'Identifier'
+      ]
+      trailing: yes
+    ]
+
+  testStatement '''
+    switch a
+      when 1, 2, 3, 4
+        b
+      else
+        c
+        d
+  ''',
+    type: 'SwitchStatement'
+    discriminant:
+      type: 'Identifier'
+    cases: [
+      type: 'SwitchCase'
+      test:
+        type: 'NumericLiteral'
+        value: 1
+      consequent: []
+      trailing: no
+    ,
+      type: 'SwitchCase'
+      test:
+        type: 'NumericLiteral'
+        value: 2
+      consequent: []
+      trailing: no
+    ,
+      type: 'SwitchCase'
+      test:
+        type: 'NumericLiteral'
+        value: 3
+      consequent: []
+      trailing: no
+    ,
+      type: 'SwitchCase'
+      test:
+        type: 'NumericLiteral'
+        value: 4
+      consequent: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'Identifier'
+      ]
+      trailing: yes
+    ,
+      type: 'SwitchCase'
+      test: null
+      consequent: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'Identifier'
+      ,
+        type: 'ExpressionStatement'
+        expression:
+          type: 'Identifier'
+      ]
+    ]
 
 #   # TODO: File issue for compile error when using `then` or `;` where `\n` is rn.
 
