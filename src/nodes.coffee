@@ -4044,6 +4044,8 @@ exports.Op = class Op extends Base
     super idt, @constructor.name + ' ' + @operator
 
   astType: ->
+    return 'AwaitExpression' if @isAwait()
+    return 'YieldExpression' if @isYield()
     switch @operator
       when '||', '&&', '?' then 'LogicalExpression'
       when '++', '--'      then 'UpdateExpression'
@@ -4056,10 +4058,21 @@ exports.Op = class Op extends Base
     secondAst = @second?.ast o
     switch
       when @isUnary()
-        return
-          argument: firstAst
+        argument =
+          if @isYield() and @first.unwrap().value is ''
+            null
+          else
+            firstAst
+        return {argument} if @isAwait()
+        return {
+          argument
+          delegate: @operator is 'yield*'
+        } if @isYield()
+        return {
+          argument
           operator: @originalOperator
           prefix: !@flip
+        }
       else
         return
           left: firstAst

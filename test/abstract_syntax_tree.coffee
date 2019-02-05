@@ -1596,39 +1596,83 @@ test "AST as expected for Code node", ->
     bound: no
     id: null
 
-  # testExpression '(..., a) ->',
-  # testExpression '-> a',
-  # testExpression '-> await 3',
-  #   type: 'Code'
-  #   bound: no
-  #   isAsync: yes
-  #   isMethod: no      # TODO: What's this flag?
-  #   body:
-  #     type: 'Op'
-  #     operator: 'await'
-  #     first:
-  #       type: 'NumberLiteral'
-  #       value: '3'
+  testExpression '(..., a) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'RestElement'
+      argument: null
+    ,
+      ID 'a'
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    bound: no
+    id: null
 
-  # testExpression '-> yield 4',
-  #   type: 'Code'
-  #   isGenerator: yes
-  #   body:
-  #     type: 'Op'
-  #     operator: 'yield'
-  #     first:
-  #       type: 'NumberLiteral'
-  #       value: '4'
+  testExpression '-> a',
+    type: 'FunctionExpression'
+    params: []
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression: ID 'a'
+      ]
+    generator: no
+    async: no
+    bound: no
+    id: null
 
-# test "AST as expected for Param node", ->
-#   testExpression '(a = 1) ->',
-#     params: [
-#       type: 'Param'
-#       name:
-#         value: 'a'
-#       value:
-#         value: '1'
-#     ]
+  testExpression '-> await 3',
+    type: 'FunctionExpression'
+    params: []
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'AwaitExpression'
+          argument: NUMBER 3
+      ]
+    generator: no
+    async: yes
+    bound: no
+    id: null
+
+  testExpression '-> yield 4',
+    type: 'FunctionExpression'
+    params: []
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'YieldExpression'
+          argument: NUMBER 4
+          delegate: no
+      ]
+    generator: yes
+    async: no
+    bound: no
+    id: null
+
+  testExpression '-> yield',
+    type: 'FunctionExpression'
+    params: []
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'YieldExpression'
+          argument: null
+          delegate: no
+      ]
+    generator: yes
+    async: no
+    bound: no
+    id: null
 
 test "AST as expected for Splat node", ->
   testExpression '[a...]',
@@ -1791,12 +1835,12 @@ test "AST as expected for Op node", ->
       type: 'Identifier'
       name: 'x'
 
-  # testExpression 'do ->',
-  #   type: 'UnaryExpression'
-  #   operator: 'do'
-  #   prefix: yes
-  #   argument:
-  #     type: 'FunctionExpression'
+  testExpression 'do ->',
+    type: 'UnaryExpression'
+    operator: 'do'
+    prefix: yes
+    argument:
+      type: 'FunctionExpression'
 
   testExpression '!x',
     type: 'UnaryExpression'
@@ -1911,28 +1955,6 @@ test "AST as expected for Op node", ->
     right:
       type: 'Identifier'
       name: 'z'
-
-  # testExpression '-> await 2',
-  #   type: 'Code'
-  #   isAsync: yes
-  #   body:
-  #     type: 'Op'
-  #     operator: 'await'
-  #     originalOperator: 'await'
-  #     first:
-  #       type: 'NumberLiteral'
-  #       value: '2'
-
-  # testExpression '-> yield 2',
-  #   type: 'Code'
-  #   isGenerator: yes
-  #   body:
-  #     type: 'Op'
-  #     operator: 'yield'
-  #     originalOperator: 'yield'
-  #     first:
-  #       type: 'NumberLiteral'
-  #       value: '2'
 
 test "AST as expected for Try node", ->
   testStatement 'try cappuccino',
