@@ -1503,12 +1503,99 @@ test "AST as expected for Code node", ->
     bound: no
     id: null
 
-  # testExpression '(@a) ->',
-  # testExpression '(@a = 1) ->',
-  # testExpression '({@a}) ->',
-  # testExpression '({[a]}) ->',
-  # testExpression '(...a) ->',
-  # testExpression '(a...) ->',
+  testExpression '(@a) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'MemberExpression'
+      object:
+        type: 'ThisExpression'
+        shorthand: yes
+      property: ID 'a'
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    bound: no
+    id: null
+
+  testExpression '(@a = 1) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'AssignmentPattern'
+      left:
+        type: 'MemberExpression'
+      right: NUMBER 1
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    bound: no
+    id: null
+
+  testExpression '({@a}) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'ObjectPattern'
+      properties: [
+        type: 'ObjectProperty'
+        key:
+          type: 'MemberExpression'
+        value:
+          type: 'MemberExpression'
+        shorthand: yes
+        computed: no
+      ]
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    bound: no
+    id: null
+
+  testExpression '({[a]}) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'ObjectPattern'
+      properties: [
+        type: 'ObjectProperty'
+        key:   ID 'a'
+        value: ID 'a'
+        shorthand: yes
+        computed: yes
+      ]
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    bound: no
+    id: null
+
+  testExpression '(...a) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'RestElement'
+      argument: ID 'a'
+      postfix: no
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    bound: no
+    id: null
+
+  testExpression '(a...) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'RestElement'
+      argument: ID 'a'
+      postfix: yes
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    bound: no
+    id: null
+
   # testExpression '(..., a) ->',
   # testExpression '-> a',
   # testExpression '-> await 3',
