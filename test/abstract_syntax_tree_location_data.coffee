@@ -3511,8 +3511,7 @@ test "AST location data as expected for Code node", ->
           column: 2
         end:
           line: 1
-          # column: 2 TODO: make this accurate/should match range?
-          column: 3
+          column: 2
     start: 0
     end: 2
     range: [0, 2]
@@ -3522,5 +3521,4 @@ test "AST location data as expected for Code node", ->
         column: 0
       end:
         line: 1
-        # column: 2
-        column: 3
+        column: 2
