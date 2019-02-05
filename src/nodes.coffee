@@ -493,6 +493,7 @@ exports.Root = class Root extends Base
 
   astProperties: (o) ->
     @body.isRootBlock = yes
+    # dump {@body}
     return
       program: Object.assign @body.ast(o), @astLocationData()
       comments: []
@@ -4944,15 +4945,21 @@ exports.mergeLocationData = mergeLocationData = (locationDataA, locationDataB, {
         first_column: locationDataA.first_column
   ,
     if justLeading
-      last_line:   locationDataA.last_line
-      last_column: locationDataA.last_column
+      last_line:             locationDataA.last_line
+      last_column:           locationDataA.last_column
+      last_line_exclusive:   locationDataA.last_line_exclusive
+      last_column_exclusive: locationDataA.last_column_exclusive
     else
       if isLocationDataEndGreater locationDataA, locationDataB
-        last_line:   locationDataA.last_line
-        last_column: locationDataA.last_column
+        last_line:             locationDataA.last_line
+        last_column:           locationDataA.last_column
+        last_line_exclusive:   locationDataA.last_line_exclusive
+        last_column_exclusive: locationDataA.last_column_exclusive
       else
-        last_line:   locationDataB.last_line
-        last_column: locationDataB.last_column
+        last_line:             locationDataB.last_line
+        last_column:           locationDataB.last_column
+        last_line_exclusive:   locationDataB.last_line_exclusive
+        last_column_exclusive: locationDataB.last_column_exclusive
   ,
     range: [
       if justEnding
@@ -5023,18 +5030,19 @@ exports.mergeAstLocationData = mergeAstLocationData = (nodeA, nodeB, {justLeadin
         greater nodeA.end, nodeB.end
 
 # Convert Jison-style node class location data to Babel-style location data
-jisonLocationDataToAstLocationData = ({first_line, first_column, last_line, last_column, range}) ->
+jisonLocationDataToAstLocationData = ({first_line, first_column, last_line_exclusive, last_column_exclusive, range}) ->
   return
     loc:
       start:
         line:   first_line + 1
         column: first_column
       end:
-        line:   last_line + 1
-        column: last_column + 1
+        line:   last_line_exclusive + 1
+        column: last_column_exclusive
     range: [
       range[0]
       range[1]
     ]
     start: range[0]
     end:   range[1]
+dump = (obj) -> console.log require('util').inspect obj, no, null

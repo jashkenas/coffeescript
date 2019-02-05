@@ -5,7 +5,7 @@
 #
 #     [tag, value, locationData]
 #
-# where locationData is {first_line, first_column, last_line, last_column}, which is a
+# where locationData is {first_line, first_column, last_line, last_column, last_line_exclusive, last_column_exclusive}, which is a
 # format that can be fed directly into [Jison](https://github.com/zaach/jison).  These
 # are read by jison in the `parser.lexer` function defined in coffeescript.coffee.
 
@@ -903,10 +903,12 @@ exports.Lexer = class Lexer
     if lparen
       [..., lastToken] = tokens
       lparen.origin = ['STRING', null,
-        first_line:   lparen[2].first_line
-        first_column: lparen[2].first_column
-        last_line:    lastToken[2].last_line
-        last_column:  lastToken[2].last_column
+        first_line:            lparen[2].first_line
+        first_column:          lparen[2].first_column
+        last_line:             lastToken[2].last_line
+        last_column:           lastToken[2].last_column
+        last_line_exclusive:   lastToken[2].last_line_exclusive
+        last_column_exclusive: lastToken[2].last_column_exclusive
         range: [
           lparen[2].range[0]
           lastToken[2].range[1]
@@ -915,11 +917,13 @@ exports.Lexer = class Lexer
       lparen[2] = lparen.origin[2]
       rparen = @token 'STRING_END', ')'
       rparen[2] =
-        first_line:   lastToken[2].last_line
-        first_column: lastToken[2].last_column
-        last_line:    lastToken[2].last_line
-        last_column:  lastToken[2].last_column
-        range:        lastToken[2].range
+        first_line:            lastToken[2].last_line
+        first_column:          lastToken[2].last_column
+        last_line:             lastToken[2].last_line
+        last_column:           lastToken[2].last_column
+        last_line_exclusive:   lastToken[2].last_line_exclusive
+        last_column_exclusive: lastToken[2].last_column_exclusive
+        range:                 lastToken[2].range
 
   # Pairs up a closing token, ensuring that all listed pairs of tokens are
   # correctly balanced throughout the course of the token stream.
@@ -973,6 +977,8 @@ exports.Lexer = class Lexer
     lastCharacter = if length > 0 then (length - 1) else 0
     [locationData.last_line, locationData.last_column, endOffset] =
       @getLineAndColumnFromChunk offsetInChunk + lastCharacter
+    [locationData.last_line_exclusive, locationData.last_column_exclusive] =
+      @getLineAndColumnFromChunk offsetInChunk + lastCharacter + 1
     locationData.range[1] = if length > 0 then endOffset + 1 else endOffset
 
     locationData
