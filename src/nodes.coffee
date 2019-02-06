@@ -3557,7 +3557,11 @@ exports.Code = class Code extends Base
     for {name} in @params when name instanceof Arr or name instanceof Obj
       name.propagateLhs yes
 
-  astType: -> 'FunctionExpression'
+  astType: ->
+    if @bound
+      'ArrowFunctionExpression'
+    else
+      'FunctionExpression'
 
   paramForAst: (param) ->
     return param if param instanceof Expansion
@@ -3577,7 +3581,8 @@ exports.Code = class Code extends Base
       body: @body.ast o
       generator: !!@isGenerator
       async: !!@isAsync
-      bound: !!@bound
+      # We never generate named functions, so specify `id` as `null`, which
+      # matches the Babel AST for anonymous function expressions/arrow functions
       id: null
 
 #### Param

@@ -1373,12 +1373,11 @@ test "AST as expected for Assign node", ->
 
 test "AST as expected for Code node", ->
   testExpression '=>',
-    type: 'FunctionExpression'
+    type: 'ArrowFunctionExpression'
     params: []
     body: EMPTY_BLOCK
     generator: no
     async: no
-    bound: yes
     id: null
 
   testExpression '''
@@ -1414,7 +1413,6 @@ test "AST as expected for Code node", ->
       directives: []
     generator: no
     async: no
-    bound: no
     id: null
 
   testExpression '({a}) ->',
@@ -1431,7 +1429,6 @@ test "AST as expected for Code node", ->
     body: EMPTY_BLOCK
     generator: no
     async: no
-    bound: no
     id: null
 
   testExpression '([a]) ->',
@@ -1445,7 +1442,6 @@ test "AST as expected for Code node", ->
     body: EMPTY_BLOCK
     generator: no
     async: no
-    bound: no
     id: null
 
   testExpression '({a = 1} = {}) ->',
@@ -1470,7 +1466,6 @@ test "AST as expected for Code node", ->
     body: EMPTY_BLOCK
     generator: no
     async: no
-    bound: no
     id: null
 
   testExpression '([a = 1] = []) ->',
@@ -1491,7 +1486,6 @@ test "AST as expected for Code node", ->
     body: EMPTY_BLOCK
     generator: no
     async: no
-    bound: no
     id: null
 
   testExpression '() ->',
@@ -1500,7 +1494,6 @@ test "AST as expected for Code node", ->
     body: EMPTY_BLOCK
     generator: no
     async: no
-    bound: no
     id: null
 
   testExpression '(@a) ->',
@@ -1515,7 +1508,6 @@ test "AST as expected for Code node", ->
     body: EMPTY_BLOCK
     generator: no
     async: no
-    bound: no
     id: null
 
   testExpression '(@a = 1) ->',
@@ -1529,7 +1521,6 @@ test "AST as expected for Code node", ->
     body: EMPTY_BLOCK
     generator: no
     async: no
-    bound: no
     id: null
 
   testExpression '({@a}) ->',
@@ -1549,7 +1540,6 @@ test "AST as expected for Code node", ->
     body: EMPTY_BLOCK
     generator: no
     async: no
-    bound: no
     id: null
 
   testExpression '({[a]}) ->',
@@ -1567,7 +1557,6 @@ test "AST as expected for Code node", ->
     body: EMPTY_BLOCK
     generator: no
     async: no
-    bound: no
     id: null
 
   testExpression '(...a) ->',
@@ -1580,7 +1569,6 @@ test "AST as expected for Code node", ->
     body: EMPTY_BLOCK
     generator: no
     async: no
-    bound: no
     id: null
 
   testExpression '(a...) ->',
@@ -1593,7 +1581,6 @@ test "AST as expected for Code node", ->
     body: EMPTY_BLOCK
     generator: no
     async: no
-    bound: no
     id: null
 
   testExpression '(..., a) ->',
@@ -1607,7 +1594,6 @@ test "AST as expected for Code node", ->
     body: EMPTY_BLOCK
     generator: no
     async: no
-    bound: no
     id: null
 
   testExpression '-> a',
@@ -1621,7 +1607,6 @@ test "AST as expected for Code node", ->
       ]
     generator: no
     async: no
-    bound: no
     id: null
 
   testExpression '-> await 3',
@@ -1637,7 +1622,6 @@ test "AST as expected for Code node", ->
       ]
     generator: no
     async: yes
-    bound: no
     id: null
 
   testExpression '-> yield 4',
@@ -1654,7 +1638,6 @@ test "AST as expected for Code node", ->
       ]
     generator: yes
     async: no
-    bound: no
     id: null
 
   testExpression '-> yield',
@@ -1671,7 +1654,6 @@ test "AST as expected for Code node", ->
       ]
     generator: yes
     async: no
-    bound: no
     id: null
 
 test "AST as expected for Splat node", ->
