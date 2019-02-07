@@ -144,6 +144,8 @@ exports.addDataToNode = (parserState, firstLocationData, firstValue, lastLocatio
     # Add location data.
     if obj?.updateLocationDataIfMissing? and firstLocationData?
       obj.updateLocationDataIfMissing buildLocationData(firstValue?.locationData ? firstLocationData, lastValue?.locationData ? lastLocationData), forceUpdateLocation
+    else# if Array.isArray obj
+      obj.locationData = buildLocationData(firstValue?.locationData ? firstLocationData, lastValue?.locationData ? lastLocationData)
 
     # Add comments, building the dictionary of token data if it hasn’t been
     # built yet.

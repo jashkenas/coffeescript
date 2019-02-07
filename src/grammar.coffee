@@ -550,24 +550,24 @@ grammar =
 
   # Inclusive and exclusive range dots.
   RangeDots: [
-    o '..',                                     -> 'inclusive'
-    o '...',                                    -> 'exclusive'
+    o '..',                                     -> String 'inclusive'
+    o '...',                                    -> String 'exclusive'
   ]
 
   # The CoffeeScript range literal.
   Range: [
-    o '[ Expression RangeDots Expression ]',      -> new Range $2, $4, $3
-    o '[ ExpressionLine RangeDots Expression ]',  -> new Range $2, $4, $3
+    o '[ Expression RangeDots Expression ]',      -> new Range $2, $4, $3.toString()
+    o '[ ExpressionLine RangeDots Expression ]',  -> new Range $2, $4, $3.toString()
   ]
 
   # Array slice literals.
   Slice: [
-    o 'Expression RangeDots Expression',        -> new Range $1, $3, $2
-    o 'Expression RangeDots',                   -> new Range $1, null, $2
-    o 'ExpressionLine RangeDots Expression',    -> new Range $1, $3, $2
-    o 'ExpressionLine RangeDots',               -> new Range $1, null, $2
-    o 'RangeDots Expression',                   -> new Range null, $2, $1
-    o 'RangeDots',                              -> new Range null, null, $1
+    o 'Expression RangeDots Expression',        -> new Range $1, $3, $2.toString()
+    o 'Expression RangeDots',                   -> new Range $1, null, $2.toString()
+    o 'ExpressionLine RangeDots Expression',    -> new Range $1, $3, $2.toString()
+    o 'ExpressionLine RangeDots',               -> new Range $1, null, $2.toString()
+    o 'RangeDots Expression',                   -> new Range null, $2, $1.toString()
+    o 'RangeDots',                              -> new Range null, null, $1.toString()
   ]
 
   # The **ArgList** is the list of objects passed into a function call
