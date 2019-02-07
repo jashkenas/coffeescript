@@ -45,7 +45,7 @@ o = (patternString, action, options) ->
     # is added to the first parameter passed in, and the parameter is returned.
     # If the parameter is not a node, it will just be passed through unaffected.
     getAddDataToNodeFunctionString = (first, last, forceUpdateLocation = yes) ->
-      "yy.addDataToNode(yy, @#{first}, #{if last then "@#{last}" else 'null'}, #{if forceUpdateLocation then 'true' else 'false'})"
+      "yy.addDataToNode(yy, @#{first}, $#{first}, #{if last then "@#{last}, $#{last}" else 'null, null'}, #{if forceUpdateLocation then 'true' else 'false'})"
 
     returnsLoc = /^LOC/.test action
     action = action.replace /LOC\(([0-9]*)\)/g, getAddDataToNodeFunctionString('$1')
