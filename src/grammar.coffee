@@ -550,24 +550,24 @@ grammar =
 
   # Inclusive and exclusive range dots.
   RangeDots: [
-    o '..',                                     -> String 'inclusive'
-    o '...',                                    -> String 'exclusive'
+    o '..',                                     -> exclusive: no
+    o '...',                                    -> exclusive: yes
   ]
 
   # The CoffeeScript range literal.
   Range: [
-    o '[ Expression RangeDots Expression ]',      -> new Range $2, $4, $3.toString()
-    o '[ ExpressionLine RangeDots Expression ]',  -> new Range $2, $4, $3.toString()
+    o '[ Expression RangeDots Expression ]',      -> new Range $2, $4, if $3.exclusive then 'exclusive' else 'inclusive'
+    o '[ ExpressionLine RangeDots Expression ]',  -> new Range $2, $4, if $3.exclusive then 'exclusive' else 'inclusive'
   ]
 
   # Array slice literals.
   Slice: [
-    o 'Expression RangeDots Expression',        -> new Range $1, $3, $2.toString()
-    o 'Expression RangeDots',                   -> new Range $1, null, $2.toString()
-    o 'ExpressionLine RangeDots Expression',    -> new Range $1, $3, $2.toString()
-    o 'ExpressionLine RangeDots',               -> new Range $1, null, $2.toString()
-    o 'RangeDots Expression',                   -> new Range null, $2, $1.toString()
-    o 'RangeDots',                              -> new Range null, null, $1.toString()
+    o 'Expression RangeDots Expression',        -> new Range $1, $3, if $2.exclusive then 'exclusive' else 'inclusive'
+    o 'Expression RangeDots',                   -> new Range $1, null, if $2.exclusive then 'exclusive' else 'inclusive'
+    o 'ExpressionLine RangeDots Expression',    -> new Range $1, $3, if $2.exclusive then 'exclusive' else 'inclusive'
+    o 'ExpressionLine RangeDots',               -> new Range $1, null, if $2.exclusive then 'exclusive' else 'inclusive'
+    o 'RangeDots Expression',                   -> new Range null, $2, if $1.exclusive then 'exclusive' else 'inclusive'
+    o 'RangeDots',                              -> new Range null, null, if $1.exclusive then 'exclusive' else 'inclusive'
   ]
 
   # The **ArgList** is the list of objects passed into a function call
