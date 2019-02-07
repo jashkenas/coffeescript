@@ -141,10 +141,11 @@ buildTokenDataDictionary = (parserState) ->
 exports.addDataToNode = (parserState, firstLocationData, firstValue, lastLocationData, lastValue, forceUpdateLocation = yes) ->
   (obj) ->
     # Add location data.
+    locationData = buildLocationData(firstValue?.locationData ? firstLocationData, lastValue?.locationData ? lastLocationData)
     if obj?.updateLocationDataIfMissing? and firstLocationData?
-      obj.updateLocationDataIfMissing buildLocationData(firstValue?.locationData ? firstLocationData, lastValue?.locationData ? lastLocationData), forceUpdateLocation
+      obj.updateLocationDataIfMissing locationData, forceUpdateLocation
     else
-      obj.locationData = buildLocationData(firstValue?.locationData ? firstLocationData, lastValue?.locationData ? lastLocationData)
+      obj.locationData = locationData
 
     # Add comments, building the dictionary of token data if it hasn’t been
     # built yet.
