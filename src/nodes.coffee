@@ -3262,6 +3262,8 @@ exports.Code = class Code extends Base
       if node instanceof For and node.isAwait()
         @isAsync = yes
 
+    @propagateLhs()
+
   children: ['params', 'body']
 
   isStatement: -> @isMethod
@@ -3551,6 +3553,38 @@ exports.Code = class Code extends Base
 
     seenSuper
 
+  propagateLhs: ->
+    for {name} in @params when name instanceof Arr or name instanceof Obj
+      name.propagateLhs yes
+
+  astType: ->
+    if @bound
+      'ArrowFunctionExpression'
+    else
+      'FunctionExpression'
+
+  paramForAst: (param) ->
+    return param if param instanceof Expansion
+    {name, value, splat} = param
+    if splat
+      new Splat name, lhs: yes, postfix: splat.postfix
+      .withLocationDataFrom name
+    else if value?
+      new Assign name, value, null, param: yes
+      .withLocationDataFrom locationData: mergeLocationData name.locationData, value.locationData
+    else
+      name
+
+  astProperties: (o) ->
+    return
+      params: @paramForAst(param).ast(o) for param in @params
+      body: @body.ast o
+      generator: !!@isGenerator
+      async: !!@isAsync
+      # We never generate named functions, so specify `id` as `null`, which
+      # matches the Babel AST for anonymous function expressions/arrow functions
+      id: null
+
 #### Param
 
 # A parameter in a function definition. Beyond a typical JavaScript parameter,
@@ -3661,7 +3695,7 @@ exports.Param = class Param extends Base
 # A splat, either as a parameter to a function, an argument to a call,
 # or as part of a destructuring assignment.
 exports.Splat = class Splat extends Base
-  constructor: (name, {@postfix = true} = {}) ->
+  constructor: (name, {@lhs, @postfix = true} = {}) ->
     super()
     @name = if name.compile then name else new Literal name
 
@@ -4015,6 +4049,8 @@ exports.Op = class Op extends Base
     super idt, @constructor.name + ' ' + @operator
 
   astType: ->
+    return 'AwaitExpression' if @isAwait()
+    return 'YieldExpression' if @isYield()
     switch @operator
       when '||', '&&', '?' then 'LogicalExpression'
       when '++', '--'      then 'UpdateExpression'
@@ -4027,10 +4063,21 @@ exports.Op = class Op extends Base
     secondAst = @second?.ast o
     switch
       when @isUnary()
-        return
-          argument: firstAst
+        argument =
+          if @isYield() and @first.unwrap().value is ''
+            null
+          else
+            firstAst
+        return {argument} if @isAwait()
+        return {
+          argument
+          delegate: @operator is 'yield*'
+        } if @isYield()
+        return {
+          argument
           operator: @originalOperator
           prefix: !@flip
+        }
       else
         return
           left: firstAst

@@ -91,6 +91,22 @@ test 'Confirm functionality of `deepStrictIncludeExpectedProperties`', ->
   check 'Prop is missing', throws,
     missingProp: {}
 
+# Shorthand helpers for common AST patterns.
+
+EMPTY_BLOCK =
+  type: 'BlockStatement'
+  body: []
+  directives: []
+
+ID = (name) -> {
+  type: 'Identifier'
+  name
+}
+
+NUMBER = (value) -> {
+  type: 'NumericLiteral'
+  value
+}
 
 # Check each node type in the same order as they appear in `nodes.coffee`.
 # For nodes that have equivalents in Babel’s AST spec, we’re checking that
@@ -324,16 +340,20 @@ test "AST as expected for CSXTag node", ->
 #     ]
 
 test "AST as expected for ComputedPropertyName node", ->
-  # testExpression '[fn]: ->',
-  #   type: 'Obj'
-  #   properties: [
-  #     type: 'Assign'
-  #     context: 'object'
-  #     variable:
-  #       type: 'ComputedPropertyName'
-  #     value:
-  #       type: 'Code'
-  #   ]
+  testExpression '[fn]: ->',
+    type: 'ObjectExpression'
+    properties: [
+      type: 'ObjectProperty'
+      key:
+        type: 'Identifier'
+        name: 'fn'
+      value:
+        type: 'FunctionExpression'
+      computed: yes
+      shorthand: no
+      method: no
+    ]
+    implicit: yes
 
   testExpression '[a]: b',
     type: 'ObjectExpression'
@@ -1097,14 +1117,17 @@ test "AST as expected for ExportNamedDeclaration node", ->
     source: null
     exportKind: 'value'
 
-  # testStatement 'export fn = ->',
-  #   type: 'ExportNamedDeclaration'
-  #   clause:
-  #     type: 'Assign'
-  #     variable:
-  #       value: 'fn'
-  #     value:
-  #       type: 'Code'
+  testStatement 'export fn = ->',
+    type: 'ExportNamedDeclaration'
+    declaration:
+      type: 'AssignmentExpression'
+      left:
+        type: 'Identifier'
+      right:
+        type: 'FunctionExpression'
+    specifiers: []
+    source: null
+    exportKind: 'value'
 
   # testStatement 'export class A',
 
@@ -1348,44 +1371,290 @@ test "AST as expected for Assign node", ->
 
 # # `FuncGlyph` node isn't exported.
 
-# test "AST as expected for Code node", ->
-#   testExpression '=>',
-#     type: 'Code'
-#     bound: yes
-#     body:
-#       type: 'Block'
+test "AST as expected for Code node", ->
+  testExpression '=>',
+    type: 'ArrowFunctionExpression'
+    params: []
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    id: null
 
-#   testExpression '-> await 3',
-#     type: 'Code'
-#     bound: no
-#     isAsync: yes
-#     isMethod: no      # TODO: What's this flag?
-#     body:
-#       type: 'Op'
-#       operator: 'await'
-#       first:
-#         type: 'NumberLiteral'
-#         value: '3'
+  testExpression '''
+    (a, b = 1) ->
+      c
+      d()
+  ''',
+    type: 'FunctionExpression'
+    params: [
+      type: 'Identifier'
+      name: 'a'
+    ,
+      type: 'AssignmentPattern'
+      left:
+        type: 'Identifier'
+        name: 'b'
+      right:
+        type: 'NumericLiteral'
+        value: 1
+    ]
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'Identifier'
+          name: 'c'
+      ,
+        type: 'ExpressionStatement'
+        expression:
+          type: 'CallExpression'
+      ]
+      directives: []
+    generator: no
+    async: no
+    id: null
 
-#   testExpression '-> yield 4',
-#     type: 'Code'
-#     isGenerator: yes
-#     body:
-#       type: 'Op'
-#       operator: 'yield'
-#       first:
-#         type: 'NumberLiteral'
-#         value: '4'
+  testExpression '({a}) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'ObjectPattern'
+      properties: [
+        type: 'ObjectProperty'
+        key: ID('a')
+        value: ID('a')
+        shorthand: yes
+      ]
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    id: null
 
-# test "AST as expected for Param node", ->
-#   testExpression '(a = 1) ->',
-#     params: [
-#       type: 'Param'
-#       name:
-#         value: 'a'
-#       value:
-#         value: '1'
-#     ]
+  testExpression '([a]) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'ArrayPattern'
+      elements: [
+        ID('a')
+      ]
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    id: null
+
+  testExpression '({a = 1} = {}) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'AssignmentPattern'
+      left:
+        type: 'ObjectPattern'
+        properties: [
+          type: 'ObjectProperty'
+          key: ID('a')
+          value:
+            type: 'AssignmentPattern'
+            left: ID('a')
+            right: NUMBER(1)
+          shorthand: yes
+        ]
+      right:
+        type: 'ObjectExpression'
+        properties: []
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    id: null
+
+  testExpression '([a = 1] = []) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'AssignmentPattern'
+      left:
+        type: 'ArrayPattern'
+        elements: [
+          type: 'AssignmentPattern'
+          left: ID('a')
+          right: NUMBER(1)
+        ]
+      right:
+        type: 'ArrayExpression'
+        elements: []
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    id: null
+
+  testExpression '() ->',
+    type: 'FunctionExpression'
+    params: []
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    id: null
+
+  testExpression '(@a) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'MemberExpression'
+      object:
+        type: 'ThisExpression'
+        shorthand: yes
+      property: ID 'a'
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    id: null
+
+  testExpression '(@a = 1) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'AssignmentPattern'
+      left:
+        type: 'MemberExpression'
+      right: NUMBER 1
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    id: null
+
+  testExpression '({@a}) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'ObjectPattern'
+      properties: [
+        type: 'ObjectProperty'
+        key:
+          type: 'MemberExpression'
+        value:
+          type: 'MemberExpression'
+        shorthand: yes
+        computed: no
+      ]
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    id: null
+
+  testExpression '({[a]}) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'ObjectPattern'
+      properties: [
+        type: 'ObjectProperty'
+        key:   ID 'a'
+        value: ID 'a'
+        shorthand: yes
+        computed: yes
+      ]
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    id: null
+
+  testExpression '(...a) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'RestElement'
+      argument: ID 'a'
+      postfix: no
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    id: null
+
+  testExpression '(a...) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'RestElement'
+      argument: ID 'a'
+      postfix: yes
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    id: null
+
+  testExpression '(..., a) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'RestElement'
+      argument: null
+    ,
+      ID 'a'
+    ]
+    body: EMPTY_BLOCK
+    generator: no
+    async: no
+    id: null
+
+  testExpression '-> a',
+    type: 'FunctionExpression'
+    params: []
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression: ID 'a'
+      ]
+    generator: no
+    async: no
+    id: null
+
+  testExpression '-> await 3',
+    type: 'FunctionExpression'
+    params: []
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'AwaitExpression'
+          argument: NUMBER 3
+      ]
+    generator: no
+    async: yes
+    id: null
+
+  testExpression '-> yield 4',
+    type: 'FunctionExpression'
+    params: []
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'YieldExpression'
+          argument: NUMBER 4
+          delegate: no
+      ]
+    generator: yes
+    async: no
+    id: null
+
+  testExpression '-> yield',
+    type: 'FunctionExpression'
+    params: []
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'YieldExpression'
+          argument: null
+          delegate: no
+      ]
+    generator: yes
+    async: no
+    id: null
 
 test "AST as expected for Splat node", ->
   testExpression '[a...]',
@@ -1548,12 +1817,12 @@ test "AST as expected for Op node", ->
       type: 'Identifier'
       name: 'x'
 
-  # testExpression 'do ->',
-  #   type: 'UnaryExpression'
-  #   operator: 'do'
-  #   prefix: yes
-  #   argument:
-  #     type: 'FunctionExpression'
+  testExpression 'do ->',
+    type: 'UnaryExpression'
+    operator: 'do'
+    prefix: yes
+    argument:
+      type: 'FunctionExpression'
 
   testExpression '!x',
     type: 'UnaryExpression'
@@ -1668,28 +1937,6 @@ test "AST as expected for Op node", ->
     right:
       type: 'Identifier'
       name: 'z'
-
-  # testExpression '-> await 2',
-  #   type: 'Code'
-  #   isAsync: yes
-  #   body:
-  #     type: 'Op'
-  #     operator: 'await'
-  #     originalOperator: 'await'
-  #     first:
-  #       type: 'NumberLiteral'
-  #       value: '2'
-
-  # testExpression '-> yield 2',
-  #   type: 'Code'
-  #   isGenerator: yes
-  #   body:
-  #     type: 'Op'
-  #     operator: 'yield'
-  #     originalOperator: 'yield'
-  #     first:
-  #       type: 'NumberLiteral'
-  #       value: '2'
 
 test "AST as expected for Try node", ->
   testStatement 'try cappuccino',

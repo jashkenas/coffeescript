@@ -3349,3 +3349,178 @@ test "AST location data as expected for Switch node", ->
               column: 24
       ]
     ]
+test "AST location data as expected for Code node", ->
+  testAstLocationData '''
+    (a) ->
+      b
+      c()
+  ''',
+    type: 'FunctionExpression'
+    params: [
+      start: 1
+      end: 2
+      range: [1, 2]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 2
+    ]
+    body:
+      body: [
+        start: 9
+        end: 10
+        range: [9, 10]
+        loc:
+          start:
+            line: 2
+            column: 2
+          end:
+            line: 2
+            column: 3
+      ,
+        start: 13
+        end: 16
+        range: [13, 16]
+        loc:
+          start:
+            line: 3
+            column: 2
+          end:
+            line: 3
+            column: 5
+      ]
+      start: 7
+      end: 16
+      range: [7, 16]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 5
+
+  testAstLocationData '''
+    -> a
+  ''',
+    type: 'FunctionExpression'
+    body:
+      start: 2
+      end: 4
+      range: [2, 4]
+      loc:
+        start:
+          line: 1
+          column: 2
+        end:
+          line: 1
+          column: 4
+    start: 0
+    end: 4
+    range: [0, 4]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 4
+
+  testAstLocationData '''
+    (
+      a,
+      [
+        b
+        c
+      ]
+    ) ->
+      d
+  ''',
+    type: 'FunctionExpression'
+    params: [
+      start: 4
+      end: 5
+      range: [4, 5]
+      loc:
+        start:
+          line: 2
+          column: 2
+        end:
+          line: 2
+          column: 3
+    ,
+      elements: [
+        start: 15
+        end: 16
+        range: [15, 16]
+        loc:
+          start:
+            line: 4
+            column: 4
+          end:
+            line: 4
+            column: 5
+      ,
+        start: 21
+        end: 22
+        range: [21, 22]
+        loc:
+          start:
+            line: 5
+            column: 4
+          end:
+            line: 5
+            column: 5
+      ]
+      start: 9
+      end: 26
+      range: [9, 26]
+      loc:
+        start:
+          line: 3
+          column: 2
+        end:
+          line: 6
+          column: 3
+    ]
+    start: 0
+    end: 35
+    range: [0, 35]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 8
+        column: 3
+
+  testAstLocationData '''
+    ->
+  ''',
+    type: 'FunctionExpression'
+    body:
+      start: 2
+      end: 2
+      range: [2, 2]
+      loc:
+        start:
+          line: 1
+          column: 2
+        end:
+          line: 1
+          # column: 2 TODO: make this accurate/should match range?
+          column: 3
+    start: 0
+    end: 2
+    range: [0, 2]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        # column: 2
+        column: 3
