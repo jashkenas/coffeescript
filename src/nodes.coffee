@@ -3599,6 +3599,7 @@ exports.Param = class Param extends Base
     @name.error message if message
     if @name instanceof Obj and @name.generated
       token = @name.objects[0].operatorToken
+      # dump {@name}
       token.error "unexpected #{token.value}"
 
   children: ['name', 'value']

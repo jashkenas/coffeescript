@@ -140,6 +140,7 @@ buildTokenDataDictionary = (parserState) ->
 # The object is returned either way.
 exports.addDataToNode = (parserState, firstLocationData, firstValue, lastLocationData, lastValue, forceUpdateLocation = yes) ->
   (obj) ->
+    # console.log {obj, firstLocationData, firstValue, lastLocationData, lastValue}
     # Add location data.
     if obj?.updateLocationDataIfMissing? and firstLocationData?
       obj.updateLocationDataIfMissing buildLocationData(firstValue?.locationData ? firstLocationData, lastValue?.locationData ? lastLocationData), forceUpdateLocation
