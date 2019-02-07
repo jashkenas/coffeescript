@@ -493,7 +493,6 @@ exports.Root = class Root extends Base
 
   astProperties: (o) ->
     @body.isRootBlock = yes
-    # dump {@body}
     return
       program: Object.assign @body.ast(o), @astLocationData()
       comments: []
@@ -3599,7 +3598,6 @@ exports.Param = class Param extends Base
     @name.error message if message
     if @name instanceof Obj and @name.generated
       token = @name.objects[0].operatorToken
-      # dump {@name}
       token.error "unexpected #{token.value}"
 
   children: ['name', 'value']
@@ -5046,4 +5044,3 @@ jisonLocationDataToAstLocationData = ({first_line, first_column, last_line_exclu
     ]
     start: range[0]
     end:   range[1]
-dump = (obj) -> console.log require('util').inspect obj, no, null

@@ -61,7 +61,6 @@ exports.Rewriter = class Rewriter
     if process?.env?.DEBUG_REWRITTEN_TOKEN_STREAM
       console.log 'Rewritten token stream:' if process.env.DEBUG_TOKEN_STREAM
       console.log (t[0] + '/' + t[1] + (if t.comments then '*' else '') for t in @tokens).join ' '
-    # dump @tokens
     @tokens
 
   # Rewrite the token stream, looking one token ahead and behind.
@@ -760,4 +759,3 @@ DISCARDED = ['(', ')', '[', ']', '{', '}', '.', '..', '...', ',', '=', '++', '--
   'INTERPOLATION_START', 'INTERPOLATION_END', 'LEADING_WHEN', 'OUTDENT', 'PARAM_END',
   'REGEX_START', 'REGEX_END', 'RETURN', 'STRING_END', 'THROW', 'UNARY', 'YIELD'
 ].concat IMPLICIT_UNSPACED_CALL.concat IMPLICIT_END.concat CALL_CLOSERS.concat CONTROL_IN_IMPLICIT
-dump = (obj) -> console.log require('util').inspect obj, no, null

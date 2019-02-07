@@ -1341,4 +1341,3 @@ INDENTABLE_CLOSERS = [')', '}', ']']
 UNFINISHED = ['\\', '.', '?.', '?::', 'UNARY', 'DO', 'DO_IIFE', 'MATH', 'UNARY_MATH', '+', '-',
            '**', 'SHIFT', 'RELATION', 'COMPARE', '&', '^', '|', '&&', '||',
            'BIN?', 'EXTENDS']
-dump = (obj) -> console.log require('util').inspect obj, no, null
