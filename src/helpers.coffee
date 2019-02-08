@@ -107,6 +107,8 @@ buildLocationData = (first, last) ->
     first_column: first.first_column
     last_line: last.last_line
     last_column: last.last_column
+    last_line_exclusive: last.last_line_exclusive
+    last_column_exclusive: last.last_column_exclusive
     range: [
       first.range[0]
       last.range[1]
@@ -136,11 +138,14 @@ buildTokenDataDictionary = (parserState) ->
 # This returns a function which takes an object as a parameter, and if that
 # object is an AST node, updates that object's locationData.
 # The object is returned either way.
-exports.addDataToNode = (parserState, first, last, forceUpdateLocation = yes) ->
+exports.addDataToNode = (parserState, firstLocationData, firstValue, lastLocationData, lastValue, forceUpdateLocation = yes) ->
   (obj) ->
     # Add location data.
-    if obj?.updateLocationDataIfMissing? and first?
-      obj.updateLocationDataIfMissing buildLocationData(first, last), forceUpdateLocation
+    locationData = buildLocationData(firstValue?.locationData ? firstLocationData, lastValue?.locationData ? lastLocationData)
+    if obj?.updateLocationDataIfMissing? and firstLocationData?
+      obj.updateLocationDataIfMissing locationData, forceUpdateLocation
+    else
+      obj.locationData = locationData
 
     # Add comments, building the dictionary of token data if it hasn’t been
     # built yet.

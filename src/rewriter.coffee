@@ -520,10 +520,12 @@ exports.Rewriter = class Rewriter
         line = column = 0
         rangeIndex = 0
       token[2] = {
-        first_line:   line
-        first_column: column
-        last_line:    line
-        last_column:  column
+        first_line:            line
+        first_column:          column
+        last_line:             line
+        last_column:           column
+        last_line_exclusive:   line
+        last_column_exclusive: column
         range: [rangeIndex, rangeIndex]
       }
       return 1
@@ -538,11 +540,13 @@ exports.Rewriter = class Rewriter
         (token.generated and token[0] is '}')
       prevLocationData = tokens[i - 1][2]
       token[2] =
-        first_line:   prevLocationData.last_line
-        first_column: prevLocationData.last_column
-        last_line:    prevLocationData.last_line
-        last_column:  prevLocationData.last_column
-        range:        prevLocationData.range
+        first_line:             prevLocationData.last_line
+        first_column:           prevLocationData.last_column
+        last_line:              prevLocationData.last_line
+        last_column:            prevLocationData.last_column
+        last_line_exclusive:    prevLocationData.last_line_exclusive
+        last_column_exclusive:  prevLocationData.last_column_exclusive
+        range:                  prevLocationData.range
       return 1
 
   # Because our grammar is LALR(1), it can’t handle some single-line

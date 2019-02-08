@@ -45,7 +45,7 @@ o = (patternString, action, options) ->
     # is added to the first parameter passed in, and the parameter is returned.
     # If the parameter is not a node, it will just be passed through unaffected.
     getAddDataToNodeFunctionString = (first, last, forceUpdateLocation = yes) ->
-      "yy.addDataToNode(yy, @#{first}, #{if last then "@#{last}" else 'null'}, #{if forceUpdateLocation then 'true' else 'false'})"
+      "yy.addDataToNode(yy, @#{first}, #{if first[0] is '$' then '$$' else '$'}#{first}, #{if last then "@#{last}, #{if last[0] is '$' then '$$' else '$'}#{last}" else 'null, null'}, #{if forceUpdateLocation then 'true' else 'false'})"
 
     returnsLoc = /^LOC/.test action
     action = action.replace /LOC\(([0-9]*)\)/g, getAddDataToNodeFunctionString('$1')
@@ -550,24 +550,24 @@ grammar =
 
   # Inclusive and exclusive range dots.
   RangeDots: [
-    o '..',                                     -> 'inclusive'
-    o '...',                                    -> 'exclusive'
+    o '..',                                     -> exclusive: no
+    o '...',                                    -> exclusive: yes
   ]
 
   # The CoffeeScript range literal.
   Range: [
-    o '[ Expression RangeDots Expression ]',      -> new Range $2, $4, $3
-    o '[ ExpressionLine RangeDots Expression ]',  -> new Range $2, $4, $3
+    o '[ Expression RangeDots Expression ]',      -> new Range $2, $4, if $3.exclusive then 'exclusive' else 'inclusive'
+    o '[ ExpressionLine RangeDots Expression ]',  -> new Range $2, $4, if $3.exclusive then 'exclusive' else 'inclusive'
   ]
 
   # Array slice literals.
   Slice: [
-    o 'Expression RangeDots Expression',        -> new Range $1, $3, $2
-    o 'Expression RangeDots',                   -> new Range $1, null, $2
-    o 'ExpressionLine RangeDots Expression',    -> new Range $1, $3, $2
-    o 'ExpressionLine RangeDots',               -> new Range $1, null, $2
-    o 'RangeDots Expression',                   -> new Range null, $2, $1
-    o 'RangeDots',                              -> new Range null, null, $1
+    o 'Expression RangeDots Expression',        -> new Range $1, $3, if $2.exclusive then 'exclusive' else 'inclusive'
+    o 'Expression RangeDots',                   -> new Range $1, null, if $2.exclusive then 'exclusive' else 'inclusive'
+    o 'ExpressionLine RangeDots Expression',    -> new Range $1, $3, if $2.exclusive then 'exclusive' else 'inclusive'
+    o 'ExpressionLine RangeDots',               -> new Range $1, null, if $2.exclusive then 'exclusive' else 'inclusive'
+    o 'RangeDots Expression',                   -> new Range null, $2, if $1.exclusive then 'exclusive' else 'inclusive'
+    o 'RangeDots',                              -> new Range null, null, if $1.exclusive then 'exclusive' else 'inclusive'
   ]
 
   # The **ArgList** is the list of objects passed into a function call
