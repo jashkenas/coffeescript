@@ -1123,51 +1123,42 @@ exports.Return = class Return extends Base
   astProperties: (o) ->
     argument: @expression?.ast(o) ? null
 
+# Parent class for `YieldReturn`/`AwaitReturn`.
+exports.FuncDirectiveReturn = class FuncDirectiveReturn extends Return
+  constructor: (expression, {@returnKeyword}) ->
+    super expression
+
+  compileNode: (o) ->
+    @checkScope o
+    super o
+
+  checkScope: (o) ->
+    unless o.scope.parent?
+      @error "#{@keyword} can only occur inside functions"
+
+  isStatementAst: NO
+
+  ast: (o) ->
+    @checkScope o
+
+    new Op @keyword,
+      new Return @expression
+      .withLocationDataFrom(
+        if @expression?
+          locationData: mergeLocationData @returnKeyword.locationData, @expression.locationData
+        else
+          @returnKeyword
+      )
+    .withLocationDataFrom @
+    .ast o
+
 # `yield return` works exactly like `return`, except that it turns the function
 # into a generator.
-exports.YieldReturn = class YieldReturn extends Return
-  constructor: (expression, {@returnKeyword}) ->
-    super expression
+exports.YieldReturn = class YieldReturn extends FuncDirectiveReturn
+  keyword: 'yield'
 
-  checkScope: (o) ->
-    unless o.scope.parent?
-      @error 'yield can only occur inside functions'
-
-  compileNode: (o) ->
-    @checkScope o
-    super o
-
-  isStatementAst: NO
-
-  ast: (o) ->
-    @checkScope o
-
-    new Op 'yield',
-      new Return(@expression).withLocationDataFrom mergeLocationData @returnKeyword, @expression
-    .withLocationDataFrom @
-    .ast o
-
-exports.AwaitReturn = class AwaitReturn extends Return
-  constructor: (expression, {@returnKeyword}) ->
-    super expression
-
-  checkScope: (o) ->
-    unless o.scope.parent?
-      @error 'await can only occur inside functions'
-
-  compileNode: (o) ->
-    @checkScope o
-    super o
-
-  isStatementAst: NO
-
-  ast: (o) ->
-    @checkScope o
-
-    new Op 'await',
-      new Return(@expression).withLocationDataFrom mergeLocationData @returnKeyword, @expression
-    .withLocationDataFrom @
-    .ast o
+exports.AwaitReturn = class AwaitReturn extends FuncDirectiveReturn
+  keyword: 'await'
 
 #### Value
 
