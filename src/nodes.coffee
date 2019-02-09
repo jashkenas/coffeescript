@@ -292,6 +292,11 @@ exports.Base = class Base
   astLocationData: ->
     jisonLocationDataToAstLocationData @locationData
 
+  # Determines whether an AST node needs an `ExpressionStatement` wrapper.
+  # Typically matches our `isStatement()` logic but this allows overriding.
+  isStatementAst: (o) ->
+    @isStatement o
+
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
     return this unless @children
@@ -481,13 +486,20 @@ exports.Root = class Root extends Base
   compileNode: (o) ->
     o.indent  = if o.bare then '' else TAB
     o.level   = LEVEL_TOP
-    o.scope   = new Scope null, @body, null, o.referencedVars ? []
-    # Mark given local variables in the root scope as parameters so they don’t
-    # end up being declared on the root block.
-    o.scope.parameter name for name in o.locals or []
+    @initializeScope o
     fragments = @body.compileRoot o
     return fragments if o.bare
     [].concat @makeCode("(function() {\n"), fragments, @makeCode("\n}).call(this);\n")
+
+  initializeScope: (o) ->
+    o.scope = new Scope null, @body, null, o.referencedVars ? []
+    # Mark given local variables in the root scope as parameters so they don’t
+    # end up being declared on the root block.
+    o.scope.parameter name for name in o.locals or []
+
+  ast: (o) ->
+    @initializeScope o
+    super o
 
   astType: -> 'File'
 
@@ -784,7 +796,7 @@ exports.Block = class Block extends Base
     body = []
     for expression in @expressions
       # If an expression is a statement, it can be added to the body as is.
-      if expression.isStatement o
+      if expression.isStatementAst o
         body.push expression.ast o
       # Otherwise, we need to wrap it in an `ExpressionStatement` AST node.
       else
@@ -1106,20 +1118,56 @@ exports.Return = class Return extends Base
     answer.push @makeCode ';'
     answer
 
+  astType: -> 'ReturnStatement'
+
+  astProperties: (o) ->
+    argument: @expression?.ast(o) ? null
+
 # `yield return` works exactly like `return`, except that it turns the function
 # into a generator.
 exports.YieldReturn = class YieldReturn extends Return
-  compileNode: (o) ->
+  constructor: (expression, {@returnKeyword}) ->
+    super expression
+
+  checkScope: (o) ->
     unless o.scope.parent?
       @error 'yield can only occur inside functions'
+
+  compileNode: (o) ->
+    @checkScope o
     super o
+
+  isStatementAst: NO
+
+  ast: (o) ->
+    @checkScope o
+
+    new Op 'yield',
+      new Return(@expression).withLocationDataFrom mergeLocationData @returnKeyword, @expression
+    .withLocationDataFrom @
+    .ast o
 
 exports.AwaitReturn = class AwaitReturn extends Return
-  compileNode: (o) ->
+  constructor: (expression, {@returnKeyword}) ->
+    super expression
+
+  checkScope: (o) ->
     unless o.scope.parent?
       @error 'await can only occur inside functions'
+
+  compileNode: (o) ->
+    @checkScope o
     super o
 
+  isStatementAst: NO
+
+  ast: (o) ->
+    @checkScope o
+
+    new Op 'await',
+      new Return(@expression).withLocationDataFrom mergeLocationData @returnKeyword, @expression
+    .withLocationDataFrom @
+    .ast o
 
 #### Value
 
@@ -3287,11 +3335,7 @@ exports.Code = class Code extends Base
       @context = o.scope.method.context if o.scope.method?.bound
       @context = 'this' unless @context
 
-    o.scope         = del(o, 'classScope') or @makeScope o.scope
-    o.scope.shared  = del(o, 'sharedScope')
-    o.indent        += TAB
-    delete o.bare
-    delete o.isExistentialEquals
+    @updateOptions o
     params           = []
     exprs            = []
     thisAssignments  = @thisAssignments?.slice() ? []
@@ -3495,6 +3539,13 @@ exports.Code = class Code extends Base
     return indentInitial answer, @ if @isMethod
     if @front or (o.level >= LEVEL_ACCESS) then @wrapInParentheses answer else answer
 
+  updateOptions: (o) ->
+    o.scope         = del(o, 'classScope') or @makeScope o.scope
+    o.scope.shared  = del(o, 'sharedScope')
+    o.indent        += TAB
+    delete o.bare
+    delete o.isExistentialEquals
+
   eachParamName: (iterator) ->
     param.eachName iterator for param in @params
 
@@ -3556,6 +3607,10 @@ exports.Code = class Code extends Base
   propagateLhs: ->
     for {name} in @params when name instanceof Arr or name instanceof Obj
       name.propagateLhs yes
+
+  ast: (o) ->
+    @updateOptions o
+    super o
 
   astType: ->
     if @bound
