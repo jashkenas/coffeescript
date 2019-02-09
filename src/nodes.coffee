@@ -4067,10 +4067,7 @@ exports.Op = class Op extends Base
   compileContinuation: (o) ->
     parts = []
     op = @operator
-    unless o.scope.parent?
-      @error "#{@operator} can only occur inside functions"
-    if o.scope.method?.bound and o.scope.method.isGenerator
-      @error 'yield cannot occur inside bound (fat arrow) functions'
+    @checkContinuation o
     if 'expression' in Object.keys(@first) and not (@first instanceof Throw)
       parts.push @first.expression.compileToFragments o, LEVEL_OP if @first.expression?
     else
@@ -4080,6 +4077,12 @@ exports.Op = class Op extends Base
       parts.push @first.compileToFragments o, LEVEL_OP
       parts.push [@makeCode ")"] if o.level >= LEVEL_PAREN
     @joinFragmentArrays parts, ''
+
+  checkContinuation: (o) ->
+    unless o.scope.parent?
+      @error "#{@operator} can only occur inside functions"
+    if o.scope.method?.bound and o.scope.method.isGenerator
+      @error 'yield cannot occur inside bound (fat arrow) functions'
 
   compileFloorDivision: (o) ->
     floor = new Value new IdentifierLiteral('Math'), [new Access new PropertyName 'floor']
@@ -4093,6 +4096,10 @@ exports.Op = class Op extends Base
 
   toString: (idt) ->
     super idt, @constructor.name + ' ' + @operator
+
+  ast: (o) ->
+    @checkContinuation o if @isYield() or @isAwait()
+    super o
 
   astType: ->
     return 'AwaitExpression' if @isAwait()

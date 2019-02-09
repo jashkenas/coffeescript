@@ -942,14 +942,14 @@ test "#4130: unassignable in destructured param", ->
   '''
 
 test "`yield` outside of a function", ->
-  assertErrorFormat '''
+  assertErrorFormatAst '''
     yield 1
   ''', '''
     [stdin]:1:1: error: yield can only occur inside functions
     yield 1
     ^^^^^^^
   '''
-  assertErrorFormat '''
+  assertErrorFormatAst '''
     yield return
   ''', '''
     [stdin]:1:1: error: yield can only occur inside functions
@@ -1235,12 +1235,19 @@ test "CoffeeScript keywords cannot be used as local names in import list aliases
   '''
 
 test "cannot have `await` outside a function", ->
-  assertErrorFormat '''
+  assertErrorFormatAst '''
     await 1
   ''', '''
     [stdin]:1:1: error: await can only occur inside functions
     await 1
     ^^^^^^^
+  '''
+  assertErrorFormatAst '''
+    await return
+  ''', '''
+    [stdin]:1:1: error: await can only occur inside functions
+    await return
+    ^^^^^^^^^^^^
   '''
 
 test "indexes are not supported in for-from loops", ->
