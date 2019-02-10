@@ -207,7 +207,7 @@ exports.Base = class Base
 
   # Occasionally it may be useful to make an expression behave as if it was 'hoisted', whereby the
   # result of the expression is available before its location in the source, but the expression's
-  # variable scope corresponds the source position. This is used extensively to deal with executable
+  # variable scope corresponds to the source position. This is used extensively to deal with executable
   # class bodies in classes.
   #
   # Calling this method mutates the node, proxying the `compileNode` and `compileToFragments`
