@@ -1924,9 +1924,14 @@ test "#4609: Support new.target", ->
   eq newTarget, yes
 
 test "#5085: Bug: @ reference to class not maintained in do block", ->
-  thisFoo = 0
-  class A
-    @foo = 2
-    do => thisFoo = @foo
+  thisFoo = 'initial foo'
+  thisBar = 'initial bar'
+  fn = (o) -> o.bar()
 
-  eq thisFoo, 2
+  class A
+    @foo = 'foo assigned in class'
+    do => thisFoo = @foo
+    fn bar: => thisBar = @foo
+
+  eq thisFoo, 'foo assigned in class'
+  eq thisBar, 'foo assigned in class'
