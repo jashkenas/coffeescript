@@ -1900,3 +1900,25 @@ test "#4868: Incorrect ‘Can’t call super with @params’ error", ->
 
   d = new (new D).c
   eq 3, d.a
+
+test "#4609: Support new.target", ->
+  class A
+    constructor: ->
+      @calledAs = new.target.name
+
+  class B extends A
+
+  b = new B
+  eq b.calledAs, 'B'
+
+  newTarget = null
+  Foo = ->
+    newTarget = !!new.target
+
+  Foo()
+  eq newTarget, no
+
+  newTarget = null
+
+  new Foo()
+  eq newTarget, yes

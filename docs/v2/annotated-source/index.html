@@ -128,8 +128,11 @@ helpers       = CoffeeScript.helpers
 
 CoffeeScript.transpile = <span class="hljs-function"><span class="hljs-params">(js, options)</span> -&gt;</span>
   <span class="hljs-keyword">try</span>
-    babel = <span class="hljs-built_in">require</span> <span class="hljs-string">'babel-core'</span>
-  <span class="hljs-keyword">catch</span></pre></div></div>
+    babel = <span class="hljs-built_in">require</span> <span class="hljs-string">'@babel/core'</span>
+  <span class="hljs-keyword">catch</span>
+    <span class="hljs-keyword">try</span>
+      babel = <span class="hljs-built_in">require</span> <span class="hljs-string">'babel-core'</span>
+    <span class="hljs-keyword">catch</span></pre></div></div>
             
         </li>
         
@@ -145,7 +148,7 @@ earlier if they don’t have Babel installed.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">'To use the transpile option, you must have the \'babel-core\' module installed'</span>
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">'To use the transpile option, you must have the \'@babel/core\' module installed'</span>
   babel.transform js, options</pre></div></div>
             
         </li>

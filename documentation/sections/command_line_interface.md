@@ -5,7 +5,7 @@ Once installed, you should have access to the `coffee` command, which can execut
 | Option | Description |
 | --- | --- |
 | `-c, --compile` | Compile a `.coffee` script into a `.js` JavaScript file of the same name. |
-| `-t, --transpile` | Pipe the CoffeeScript compiler’s output through Babel before saving or running the generated JavaScript. Requires `babel-core` to be installed, and options to pass to Babel in a `.babelrc` file or a `package.json` with a `babel` key in the path of the file or folder to be compiled. See [Transpilation](#transpilation).
+| `-t, --transpile` | Pipe the CoffeeScript compiler’s output through Babel before saving or running the generated JavaScript. Requires `@babel/core` to be installed, and options to pass to Babel in a `.babelrc` file or a `package.json` with a `babel` key in the path of the file or folder to be compiled. See [Transpilation](#transpilation).
 | `-m, --map` | Generate source maps alongside the compiled JavaScript files. Adds `sourceMappingURL` directives to the JavaScript as well. |
 | `-M, --inline-map` | Just like `--map`, but include the source map directly in the compiled JavaScript files, rather than in a separate file. |
 | `-i, --interactive` | Launch an interactive CoffeeScript session to try short snippets. Identical to calling `coffee` with no arguments. |

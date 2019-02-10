@@ -18,4 +18,4 @@ npm install --save-dev coffeescript
 
 The `coffee` and `cake` commands will first look in the current folder to see if CoffeeScript is installed locally, and use that version if so. This allows different versions of CoffeeScript to be installed globally and locally.
 
-If you plan to use the `--transpile` option (see [Transpilation](#transpilation)) you will need to also install `babel-core` either globally or locally, depending on whether you are running a globally or locally installed version of CoffeeScript.
+If you plan to use the `--transpile` option (see [Transpilation](#transpilation)) you will need to also install `@babel/core` either globally or locally, depending on whether you are running a globally or locally installed version of CoffeeScript.
