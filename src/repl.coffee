@@ -9,10 +9,11 @@ sawSIGINT = no
 transpile = no
 
 greeting = """
+
     CoffeeScript v#{CoffeeScript.VERSION} REPL
     Type Ctrl-V to enter and exit multi-line mode.
     Enter '.help' to see a list of repl commands.
-    \n
+
   """
 
 console.log greeting
@@ -90,7 +91,7 @@ addMultilineHandler = (repl) ->
 
   multiline =
     showHint: true
-    hint: 'Press Ctrl-V again to exit multi-line mode.'
+    hint: '\nPress Ctrl-V again to exit multi-line mode.'
     enabled: off
     initialPrompt: origPrompt.replace /^[^> ]*/, (x) -> x.replace /./g, '-'
     prompt: origPrompt.replace /^[^> ]*>?/, (x) -> x.replace /./g, '.'
