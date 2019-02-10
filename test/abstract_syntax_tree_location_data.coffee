@@ -3522,3 +3522,370 @@ test "AST location data as expected for Code node", ->
       end:
         line: 1
         column: 2
+
+test "AST location data as expected for Return node", ->
+  testAstLocationData 'return no',
+    type: 'ReturnStatement'
+    argument:
+      start: 7
+      end: 9
+      range: [7, 9]
+      loc:
+        start:
+          line: 1
+          column: 7
+        end:
+          line: 1
+          column: 9
+    start: 0
+    end: 9
+    range: [0, 9]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 9
+
+  testAstLocationData '''
+    (a, b) ->
+      return a + b
+  ''',
+    type: 'FunctionExpression'
+    body:
+      body: [
+        argument:
+          start: 19
+          end: 24
+          range: [19, 24]
+          loc:
+            start:
+              line: 2
+              column: 9
+            end:
+              line: 2
+              column: 14
+        start: 12
+        end: 24
+        range: [12, 24]
+        loc:
+          start:
+            line: 2
+            column: 2
+          end:
+            line: 2
+            column: 14
+      ]
+      start: 10
+      end: 24
+      range: [10, 24]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 2
+          column: 14
+    start: 0
+    end: 24
+    range: [0, 24]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 2
+        column: 14
+
+  testAstLocationData '-> return',
+    type: 'FunctionExpression'
+    body:
+      body: [
+        start: 3
+        end: 9
+        range: [3, 9]
+        loc:
+          start:
+            line: 1
+            column: 3
+          end:
+            line: 1
+            column: 9
+      ]
+      start: 2
+      end: 9
+      range: [2, 9]
+      loc:
+        start:
+          line: 1
+          column: 2
+        end:
+          line: 1
+          column: 9
+    start: 0
+    end: 9
+    range: [0, 9]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 9
+
+test "AST as expected for YieldReturn node", ->
+  testAstLocationData '-> yield return 1',
+    type: 'FunctionExpression'
+    body:
+      body: [
+        expression:
+          argument:
+            argument:
+              start: 16
+              end: 17
+              range: [16, 17]
+              loc:
+                start:
+                  line: 1
+                  column: 16
+                end:
+                  line: 1
+                  column: 17
+            start: 9
+            end: 17
+            range: [9, 17]
+            loc:
+              start:
+                line: 1
+                column: 9
+              end:
+                line: 1
+                column: 17
+          start: 3
+          end: 17
+          range: [3, 17]
+          loc:
+            start:
+              line: 1
+              column: 3
+            end:
+              line: 1
+              column: 17
+        start: 3
+        end: 17
+        range: [3, 17]
+        loc:
+          start:
+            line: 1
+            column: 3
+          end:
+            line: 1
+            column: 17
+      ]
+      start: 2
+      end: 17
+      range: [2, 17]
+      loc:
+        start:
+          line: 1
+          column: 2
+        end:
+          line: 1
+          column: 17
+    start: 0
+    end: 17
+    range: [0, 17]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 17
+
+  testAstLocationData '-> yield return',
+    type: 'FunctionExpression'
+    body:
+      body: [
+        expression:
+          argument:
+            start: 9
+            end: 15
+            range: [9, 15]
+            loc:
+              start:
+                line: 1
+                column: 9
+              end:
+                line: 1
+                column: 15
+          start: 3
+          end: 15
+          range: [3, 15]
+          loc:
+            start:
+              line: 1
+              column: 3
+            end:
+              line: 1
+              column: 15
+        start: 3
+        end: 15
+        range: [3, 15]
+        loc:
+          start:
+            line: 1
+            column: 3
+          end:
+            line: 1
+            column: 15
+      ]
+      start: 2
+      end: 15
+      range: [2, 15]
+      loc:
+        start:
+          line: 1
+          column: 2
+        end:
+          line: 1
+          column: 15
+    start: 0
+    end: 15
+    range: [0, 15]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 15
+
+test "AST as expected for AwaitReturn node", ->
+  testAstLocationData '-> await return 1',
+    type: 'FunctionExpression'
+    body:
+      body: [
+        expression:
+          argument:
+            argument:
+              start: 16
+              end: 17
+              range: [16, 17]
+              loc:
+                start:
+                  line: 1
+                  column: 16
+                end:
+                  line: 1
+                  column: 17
+            start: 9
+            end: 17
+            range: [9, 17]
+            loc:
+              start:
+                line: 1
+                column: 9
+              end:
+                line: 1
+                column: 17
+          start: 3
+          end: 17
+          range: [3, 17]
+          loc:
+            start:
+              line: 1
+              column: 3
+            end:
+              line: 1
+              column: 17
+        start: 3
+        end: 17
+        range: [3, 17]
+        loc:
+          start:
+            line: 1
+            column: 3
+          end:
+            line: 1
+            column: 17
+      ]
+      start: 2
+      end: 17
+      range: [2, 17]
+      loc:
+        start:
+          line: 1
+          column: 2
+        end:
+          line: 1
+          column: 17
+    start: 0
+    end: 17
+    range: [0, 17]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 17
+
+  testAstLocationData '-> await return',
+    type: 'FunctionExpression'
+    body:
+      body: [
+        expression:
+          argument:
+            start: 9
+            end: 15
+            range: [9, 15]
+            loc:
+              start:
+                line: 1
+                column: 9
+              end:
+                line: 1
+                column: 15
+          start: 3
+          end: 15
+          range: [3, 15]
+          loc:
+            start:
+              line: 1
+              column: 3
+            end:
+              line: 1
+              column: 15
+        start: 3
+        end: 15
+        range: [3, 15]
+        loc:
+          start:
+            line: 1
+            column: 3
+          end:
+            line: 1
+            column: 15
+      ]
+      start: 2
+      end: 15
+      range: [2, 15]
+      loc:
+        start:
+          line: 1
+          column: 2
+        end:
+          line: 1
+          column: 15
+    start: 0
+    end: 15
+    range: [0, 15]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 15

@@ -291,13 +291,13 @@ grammar =
   ]
 
   YieldReturn: [
-    o 'YIELD RETURN Expression',                -> new YieldReturn $3
-    o 'YIELD RETURN',                           -> new YieldReturn
+    o 'YIELD RETURN Expression',                -> new YieldReturn $3,   returnKeyword: LOC(2)(new Literal $2)
+    o 'YIELD RETURN',                           -> new YieldReturn null, returnKeyword: LOC(2)(new Literal $2)
   ]
 
   AwaitReturn: [
-    o 'AWAIT RETURN Expression',                -> new AwaitReturn $3
-    o 'AWAIT RETURN',                           -> new AwaitReturn
+    o 'AWAIT RETURN Expression',                -> new AwaitReturn $3,   returnKeyword: LOC(2)(new Literal $2)
+    o 'AWAIT RETURN',                           -> new AwaitReturn null, returnKeyword: LOC(2)(new Literal $2)
   ]
 
   # The **Code** node is the function literal. It's defined by an indented block

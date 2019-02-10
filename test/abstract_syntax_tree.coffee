@@ -416,23 +416,62 @@ test "AST as expected for BooleanLiteral node", ->
     value: true
     name: 'yes'
 
-# test "AST as expected for Return node", ->
-#   testExpression 'return no',
-#     type: 'Return'
-#     expression:
-#       type: 'BooleanLiteral'
+test "AST as expected for Return node", ->
+  testStatement 'return no',
+    type: 'ReturnStatement'
+    argument:
+      type: 'BooleanLiteral'
 
-# test "AST as expected for YieldReturn node", ->
-#   testExpression 'yield return ->',
-#     type: 'YieldReturn'
-#     expression:
-#       type: 'Code'
+  testExpression '''
+    (a, b) ->
+      return a + b
+  ''',
+    type: 'FunctionExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ReturnStatement'
+        argument:
+          type: 'BinaryExpression'
+      ]
 
-# test "AST as expected for AwaitReturn node", ->
-#   testExpression 'await return ->',
-#     type: 'AwaitReturn'
-#     expression:
-#       type: 'Code'
+  testExpression '-> return',
+    type: 'FunctionExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ReturnStatement'
+        argument: null
+      ]
+
+test "AST as expected for YieldReturn node", ->
+  testExpression '-> yield return 1',
+    type: 'FunctionExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'YieldExpression'
+          argument:
+            type: 'ReturnStatement'
+            argument: NUMBER 1
+          delegate: no
+      ]
+
+test "AST as expected for AwaitReturn node", ->
+  testExpression '-> await return 2',
+    type: 'FunctionExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'AwaitExpression'
+          argument:
+            type: 'ReturnStatement'
+            argument: NUMBER 2
+      ]
 
 # test "AST as expected for Value node", ->
 #   testExpression 'for i in [] then i',
