@@ -2,6 +2,7 @@ fs = require 'fs'
 path = require 'path'
 vm = require 'vm'
 nodeREPL = require 'repl'
+process = require 'process'
 CoffeeScript = require './'
 {merge, updateSyntaxError} = require './helpers'
 
@@ -10,13 +11,13 @@ transpile = no
 
 greeting = """
 
-    CoffeeScript v#{CoffeeScript.VERSION} REPL
+    CoffeeScript v#{CoffeeScript.VERSION} REPL, running on NodeJS #{process.version}.
     Press Ctrl-V to enter and exit multi-line mode.
     Enter '.help' to see a list of repl commands.
 
   """
 
-console.log greeting
+hint = '\n(Press Ctrl-V again to exit multi-line mode.)'
 
 replDefaults =
   prompt: 'coffee> ',
@@ -91,7 +92,7 @@ addMultilineHandler = (repl) ->
 
   multiline =
     showHint: true
-    hint: '\n(Press Ctrl-V again to exit multi-line mode.)'
+    hint: hint
     enabled: off
     initialPrompt: origPrompt.replace /^[^> ]*/, (x) -> x.replace /./g, '-'
     prompt: origPrompt.replace /^[^> ]*>?/, (x) -> x.replace /./g, '.'
@@ -193,6 +194,8 @@ module.exports =
     if major < 6
       console.warn "Node 6+ required for CoffeeScript REPL"
       process.exit 1
+
+    console.log greeting
 
     CoffeeScript.register()
     process.argv = ['coffee'].concat process.argv[2..]
