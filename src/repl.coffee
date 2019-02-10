@@ -8,6 +8,15 @@ CoffeeScript = require './'
 sawSIGINT = no
 transpile = no
 
+greeting = """
+    CoffeeScript v#{CoffeeScript.VERSION} REPL
+    Type Ctrl-V to enter and exit multi-line mode.
+    Enter '.help' to see a list of repl commands.
+    \n
+  """
+
+console.log greeting
+
 replDefaults =
   prompt: 'coffee> ',
   historyFile: do ->
@@ -80,6 +89,8 @@ addMultilineHandler = (repl) ->
   origPrompt = repl._prompt ? repl.prompt
 
   multiline =
+    showHint: true
+    hint: 'Press Ctrl-V again to exit multi-line mode.'
     enabled: off
     initialPrompt: origPrompt.replace /^[^> ]*/, (x) -> x.replace /./g, '-'
     prompt: origPrompt.replace /^[^> ]*>?/, (x) -> x.replace /./g, '.'
@@ -121,6 +132,9 @@ addMultilineHandler = (repl) ->
       rli.emit 'line', multiline.buffer
       multiline.buffer = ''
     else
+      if multiline.showHint
+        console.log multiline.hint
+        multiline.showHint = false
       multiline.enabled = not multiline.enabled
       rli.setPrompt multiline.initialPrompt
       rli.prompt true
