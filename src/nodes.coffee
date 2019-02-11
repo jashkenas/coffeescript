@@ -4815,9 +4815,7 @@ exports.If = class If extends Base
     @processedConditionCache ?= if @type is 'unless' then @condition.invert() else @condition
 
   isStatementAst: (o) ->
-    return no if @postfix
-    return yes if o.level is LEVEL_TOP
-    no
+    o.level is LEVEL_TOP
 
   astType: (o) ->
     if @isStatementAst o

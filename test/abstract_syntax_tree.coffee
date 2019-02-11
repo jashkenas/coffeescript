@@ -2336,11 +2336,16 @@ test "AST as expected for If node", ->
     postfix: no
     inverted: no
 
-  testExpression 'yes if maybe',
-    type: 'ConditionalExpression'
+  testStatement 'yes if maybe',
+    type: 'IfStatement'
     test: ID 'maybe'
     consequent:
-      type: 'BooleanLiteral'
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'BooleanLiteral'
+      ]
     alternate: null
     postfix: yes
     inverted: no
@@ -2451,3 +2456,16 @@ test "AST as expected for If node", ->
         postfix: no
         inverted: no
       ]
+
+  testStatement 'a unless b',
+    type: 'IfStatement'
+    test: ID 'b'
+    consequent:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression: ID 'a'
+      ]
+    alternate: null
+    postfix: yes
+    inverted: yes
