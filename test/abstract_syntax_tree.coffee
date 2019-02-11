@@ -2332,38 +2332,122 @@ test "AST as expected for If node", ->
         expression:
           type: 'BooleanLiteral'
       ]
+    alternate: null
+    postfix: no
+    inverted: no
 
   testExpression 'yes if maybe',
     type: 'ConditionalExpression'
     test: ID 'maybe'
     consequent:
+      type: 'BooleanLiteral'
+    alternate: null
+    postfix: yes
+    inverted: no
+
+  testStatement 'unless x then x else if y then y else z',
+    type: 'IfStatement'
+    test: ID 'x'
+    consequent:
       type: 'BlockStatement'
       body: [
         type: 'ExpressionStatement'
-        expression:
-          type: 'BooleanLiteral'
+        expression: ID 'x'
       ]
-    postfix: yes
+    alternate:
+      type: 'IfStatement'
+      test: ID 'y'
+      consequent:
+        type: 'BlockStatement'
+        body: [
+          type: 'ExpressionStatement'
+          expression: ID 'y'
+        ]
+      alternate:
+        type: 'BlockStatement'
+        body: [
+          type: 'ExpressionStatement'
+          expression: ID 'z'
+        ]
+      postfix: no
+      inverted: no
+    postfix: no
+    inverted: yes
 
-  # testExpression 'unless x then x else if y then y else z',
-  #   type: 'If'
-  #   isChain: yes
-  #   condition:
-  #     type: 'Op'
-  #     operator: '!'
-  #     originalOperator: '!'
-  #     flip: no
-  #   body:
-  #     type: 'Value'
-  #   elseBody:
-  #     type: 'If'
-  #     isChain: no
-  #     condition:
-  #       type: 'IdentifierLiteral'
-  #     body:
-  #       type: 'Value'
-  #     elseBody:
-  #       type: 'Value'
-  #       isDefaultValue: no
+  testStatement '''
+    if a
+      b
+    else
+      if c
+        d
+  ''',
+    type: 'IfStatement'
+    test: ID 'a'
+    consequent:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression: ID 'b'
+      ]
+    alternate:
+      type: 'BlockStatement'
+      body: [
+        type: 'IfStatement'
+        test: ID 'c'
+        consequent:
+          type: 'BlockStatement'
+          body: [
+            type: 'ExpressionStatement'
+            expression: ID 'd'
+          ]
+        alternate: null
+        postfix: no
+        inverted: no
+      ]
+    postfix: no
+    inverted: no
 
-  # # TODO: AST generator should preserve use of `unless`.
+  testExpression '''
+    a =
+      if b then c else if d then e
+  ''',
+    type: 'AssignmentExpression'
+    right:
+      type: 'ConditionalExpression'
+      test: ID 'b'
+      consequent: ID 'c'
+      alternate:
+        type: 'ConditionalExpression'
+        test: ID 'd'
+        consequent: ID 'e'
+        alternate: null
+        postfix: no
+        inverted: no
+      postfix: no
+      inverted: no
+
+    testExpression '''
+      f(
+        if b
+          c
+          d
+      )
+    ''',
+      type: 'CallExpression'
+      arguments: [
+        type: 'ConditionalExpression'
+        test: ID 'b'
+        consequent:
+          type: 'BlockStatement'
+          body: [
+            type: 'ExpressionStatement'
+            expression:
+              ID 'c'
+          ,
+            type: 'ExpressionStatement'
+            expression:
+              ID 'd'
+          ]
+        postfix: no
+        inverted: no
+      ]

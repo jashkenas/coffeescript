@@ -270,7 +270,9 @@ exports.Base = class Base
   # as JSON. This is what the `ast` option in the Node API returns.
   # We try to follow the [Babel AST spec](https://github.com/babel/babel/blob/master/packages/babel-parser/ast/spec.md)
   # as closely as possible, for improved interoperability with other tools.
-  ast: (o) ->
+  ast: (o, level) ->
+    o = extend {}, o
+    o.level = level if level?
     # Every abstract syntax tree node object has four categories of properties:
     # - type, stored in the `type` field and a string like `NumberLiteral`.
     # - location data, stored in the `loc`, `start`, `end` and `range` fields.
@@ -279,7 +281,7 @@ exports.Base = class Base
     # These fields are all intermixed in the Babel spec; `type` and `start` and
     # `parsedValue` are all top level fields in the AST node object. We have
     # separate methods for returning each category, that we merge together here.
-    Object.assign {}, {type: @astType()}, @astProperties(o), @astLocationData()
+    Object.assign {}, {type: @astType(o)}, @astProperties(o), @astLocationData()
 
   # By default, a node class has no specific properties.
   astProperties: -> {}
@@ -1012,8 +1014,8 @@ exports.ComputedPropertyName = class ComputedPropertyName extends PropertyName
   compileNode: (o) ->
     [@makeCode('['), @value.compileToFragments(o, LEVEL_LIST)..., @makeCode(']')]
 
-  ast: (o) ->
-    @value.ast o
+  ast: (o, level) ->
+    @value.ast o, level
 
 exports.StatementLiteral = class StatementLiteral extends Literal
   isStatement: YES
@@ -1122,7 +1124,7 @@ exports.Return = class Return extends Base
   astType: -> 'ReturnStatement'
 
   astProperties: (o) ->
-    argument: @expression?.ast(o) ? null
+    argument: @expression?.ast(o, LEVEL_PAREN) ? null
 
 # Parent class for `YieldReturn`/`AwaitReturn`.
 exports.FuncDirectiveReturn = class FuncDirectiveReturn extends Return
@@ -1139,7 +1141,7 @@ exports.FuncDirectiveReturn = class FuncDirectiveReturn extends Return
 
   isStatementAst: NO
 
-  ast: (o) ->
+  ast: (o, level) ->
     @checkScope o
 
     new Op @keyword,
@@ -1151,7 +1153,7 @@ exports.FuncDirectiveReturn = class FuncDirectiveReturn extends Return
           @returnKeyword
       )
     .withLocationDataFrom @
-    .ast o
+    .ast o, level
 
 # `yield return` works exactly like `return`, except that it turns the function
 # into a generator.
@@ -1340,13 +1342,13 @@ exports.Value = class Value extends Base
         mergeLocationData @base.locationData, initialProperties[initialProperties.length - 1].locationData
     object
 
-  ast: (o) ->
+  ast: (o, level) ->
     # If the `Value` has no properties, the AST node is just whatever this
     # node’s `base` is.
-    return @base.ast o unless @hasProperties()
+    return @base.ast o, level unless @hasProperties()
     # Otherwise, call `Base::ast` which in turn calls the `astType` and
     # `astProperties` methods below.
-    super o
+    super o, level
 
   astType: ->
     if @isCSXTag()
@@ -1361,7 +1363,7 @@ exports.Value = class Value extends Base
     [..., property] = @properties
     property.name.csx = yes if @isCSXTag()
     return
-      object: @object().ast o
+      object: @object().ast o, LEVEL_ACCESS
       property: property.ast o
       computed: property instanceof Index or property.name?.unwrap() not instanceof PropertyName
       optional: !!property.soak
@@ -1520,8 +1522,8 @@ exports.CSXAttributes = class CSXAttributes extends Base
       fragments.push attribute.compileToFragments(o, LEVEL_TOP)...
     fragments
 
-  ast: ->
-    attribute.ast() for attribute in @attributes
+  ast: (o) ->
+    attribute.ast(o) for attribute in @attributes
 
 # Node for a CSX element
 exports.CSXElement = class CSXElement extends Base
@@ -1546,7 +1548,7 @@ exports.CSXElement = class CSXElement extends Base
   isFragment: ->
     !@tagName.base.value.length
 
-  ast: (o) ->
+  ast: (o, level) ->
     # The location data spanning the opening element < ... > is captured by
     # the generated Arr which contains the element's attributes
     @openingElementLocationData = jisonLocationDataToAstLocationData @attributes.locationData
@@ -1559,7 +1561,7 @@ exports.CSXElement = class CSXElement extends Base
         jisonLocationDataToAstLocationData tagName.closingTagClosingBracketLocationData
       )
 
-    super o
+    super o, level
 
   astType: ->
     if @isFragment()
@@ -1770,8 +1772,8 @@ exports.Call = class Call extends Base
 
   astProperties: (o) ->
     return
-      callee: @variable.ast o
-      arguments: arg.ast(o) for arg in @args
+      callee: @variable.ast o, LEVEL_ACCESS
+      arguments: arg.ast(o, LEVEL_LIST) for arg in @args
       optional: !!@soak
       implicit: !!@implicit
 
@@ -1891,11 +1893,11 @@ exports.Access = class Access extends Base
 
   shouldCache: NO
 
-  ast: (o) ->
+  ast: (o, level) ->
     # Babel doesn’t have an AST node for `Access`, but rather just includes
     # this Access node’s child `name` Identifier node as the `property` of
     # the `MemberExpression` node.
-    @name.ast o
+    @name.ast o, level
 
 #### Index
 
@@ -1912,13 +1914,13 @@ exports.Index = class Index extends Base
   shouldCache: ->
     @index.shouldCache()
 
-  ast: (o) ->
+  ast: (o, level) ->
     # Babel doesn’t have an AST node for `Index`, but rather just includes
     # this Index node’s child `index` Identifier node as the `property` of
     # the `MemberExpression` node. The fact that the `MemberExpression`’s
     # `property` is an Index means that `computed` is `true` for the
     # `MemberExpression`.
-    @index.ast o
+    @index.ast o, level
 
 #### Range
 
@@ -2075,8 +2077,8 @@ exports.Slice = class Slice extends Base
           "+#{fragmentsToText compiled} + 1 || 9e9"
     [@makeCode ".slice(#{ fragmentsToText fromCompiled }#{ toStr or '' })"]
 
-  ast: (o) ->
-    @range.ast(o)
+  ast: (o, level) ->
+    @range.ast(o, level)
 
 #### Obj
 
@@ -2389,7 +2391,7 @@ exports.Arr = class Arr extends Base
   astProperties: (o) ->
     return
       elements:
-        object.ast(o) for object in @objects
+        object.ast(o, LEVEL_LIST) for object in @objects
 
 #### Class
 
@@ -3264,8 +3266,8 @@ exports.Assign = class Assign extends Base
 
   astProperties: (o) ->
     ret =
-      right: @value.ast o
-      left: @variable.ast o
+      right: @value.ast o, LEVEL_LIST
+      left: @variable.ast o, LEVEL_LIST
 
     unless @isDefaultAssignment()
       ret.operator = @originalContext ? '='
@@ -3600,9 +3602,9 @@ exports.Code = class Code extends Base
     for {name} in @params when name instanceof Arr or name instanceof Obj
       name.propagateLhs yes
 
-  ast: (o) ->
+  ast: (o, level) ->
     @updateOptions o
-    super o
+    super o, level
 
   astType: ->
     if @bound
@@ -3625,7 +3627,7 @@ exports.Code = class Code extends Base
   astProperties: (o) ->
     return
       params: @paramForAst(param).ast(o) for param in @params
-      body: @body.ast o
+      body: @body.ast o, LEVEL_TOP
       generator: !!@isGenerator
       async: !!@isAsync
       # We never generate named functions, so specify `id` as `null`, which
@@ -3773,7 +3775,7 @@ exports.Splat = class Splat extends Base
       'SpreadElement'
 
   astProperties: (o) -> {
-    argument: @name.ast o
+    argument: @name.ast o, LEVEL_OP
     @postfix
   }
 
@@ -4098,9 +4100,9 @@ exports.Op = class Op extends Base
   toString: (idt) ->
     super idt, @constructor.name + ' ' + @operator
 
-  ast: (o) ->
+  ast: (o, level) ->
     @checkContinuation o if @isYield() or @isAwait()
-    super o
+    super o, level
 
   astType: ->
     return 'AwaitExpression' if @isAwait()
@@ -4113,8 +4115,8 @@ exports.Op = class Op extends Base
         else                    'BinaryExpression'
 
   astProperties: (o) ->
-    firstAst = @first.ast o
-    secondAst = @second?.ast o
+    firstAst = @first.ast o, LEVEL_OP
+    secondAst = @second?.ast o, LEVEL_OP
     switch
       when @isUnary()
         argument =
@@ -4220,11 +4222,11 @@ exports.Try = class Try extends Base
 
   astProperties: (o) ->
     return
-      block: @attempt.ast o
+      block: @attempt.ast o, LEVEL_TOP
       handler: @catch?.ast(o) ? null
       finalizer:
         if @ensure?
-          Object.assign @ensure.ast(o),
+          Object.assign @ensure.ast(o, LEVEL_TOP),
             # Include `finally` keyword in location data.
             mergeAstLocationData(
               jisonLocationDataToAstLocationData(@finallyTag.locationData),
@@ -4264,7 +4266,7 @@ exports.Catch = class Catch extends Base
   astProperties: (o) ->
     return
       param: @errorVariable?.ast(o) ? null
-      body: @recovery.ast o
+      body: @recovery.ast o, LEVEL_TOP
 
 #### Throw
 
@@ -4292,7 +4294,7 @@ exports.Throw = class Throw extends Base
 
   astProperties: (o) ->
     return
-      argument: @expression.ast o
+      argument: @expression.ast o, LEVEL_LIST
 
 #### Existence
 
@@ -4381,7 +4383,7 @@ exports.Parens = class Parens extends Base
     return @wrapInBraces fragments if @csxAttribute
     if bare then fragments else @wrapInParentheses fragments
 
-  ast: (o) -> @body.unwrap().ast o
+  ast: (o) -> @body.unwrap().ast o, LEVEL_PAREN
 
 #### StringWithInterpolations
 
@@ -4704,7 +4706,7 @@ exports.Switch = class Switch extends Base
 
   astProperties: (o) ->
     return
-      discriminant: @subject?.ast(o) ? null
+      discriminant: @subject?.ast(o, LEVEL_PAREN) ? null
       cases: @casesAst o
 
 class SwitchCase extends Base
@@ -4715,8 +4717,8 @@ class SwitchCase extends Base
 
   astProperties: (o) ->
     return
-      test: @test?.ast(o) ? null
-      consequent: @block?.ast(o).body ? []
+      test: @test?.ast(o, LEVEL_PAREN) ? null
+      consequent: @block?.ast(o, LEVEL_TOP).body ? []
       trailing: !!@trailing
 
 exports.SwitchWhen = class SwitchWhen extends Base
@@ -4733,12 +4735,11 @@ exports.SwitchWhen = class SwitchWhen extends Base
 # Single-expression **Ifs** are compiled into conditional operators if possible,
 # because ternaries are already proper expressions, and don’t need conversion.
 exports.If = class If extends Base
-  constructor: (condition, @body, options = {}) ->
+  constructor: (@condition, @body, options = {}) ->
     super()
-    @condition = if options.type is 'unless' then condition.invert() else condition
     @elseBody  = null
     @isChain   = false
-    {@soak, @postfix} = options
+    {@soak, @postfix, @type} = options
     moveComments @condition, @ if @condition.comments
 
   children: ['condition', 'body', 'elseBody']
@@ -4783,10 +4784,10 @@ exports.If = class If extends Base
     exeq     = del o, 'isExistentialEquals'
 
     if exeq
-      return new If(@condition.invert(), @elseBodyNode(), type: 'if').compileToFragments o
+      return new If(@processedCondition().invert(), @elseBodyNode(), type: 'if').compileToFragments o
 
     indent   = o.indent + TAB
-    cond     = @condition.compileToFragments o, LEVEL_PAREN
+    cond     = @processedCondition().compileToFragments o, LEVEL_PAREN
     body     = @ensureBlock(@body).compileToFragments merge o, {indent}
     ifPart   = [].concat @makeCode("if ("), cond, @makeCode(") {\n"), body, @makeCode("\n#{@tab}}")
     ifPart.unshift @makeCode @tab unless child
@@ -4801,7 +4802,7 @@ exports.If = class If extends Base
 
   # Compile the `If` as a conditional operator.
   compileExpression: (o) ->
-    cond = @condition.compileToFragments o, LEVEL_COND
+    cond = @processedCondition().compileToFragments o, LEVEL_COND
     body = @bodyNode().compileToFragments o, LEVEL_LIST
     alt  = if @elseBodyNode() then @elseBodyNode().compileToFragments(o, LEVEL_LIST) else [@makeCode('void 0')]
     fragments = cond.concat @makeCode(" ? "), body, @makeCode(" : "), alt
@@ -4810,18 +4811,37 @@ exports.If = class If extends Base
   unfoldSoak: ->
     @soak and this
 
+  processedCondition: ->
+    @processedConditionCache ?= if @type is 'unless' then @condition.invert() else @condition
+
   isStatementAst: (o) ->
     return no if @postfix
-    yes
+    return yes if o.level is LEVEL_TOP
+    no
 
-  astType: ->
-    'IfStatement'
+  astType: (o) ->
+    if @isStatementAst o
+      'IfStatement'
+    else
+      'ConditionalExpression'
 
   astProperties: (o) ->
+    isStatement = @isStatementAst o
+
     return
-      test: @condition.ast o
-      consequent: @body.ast o
-      alternate: @elseBody?.ast(o) ? null
+      test: @condition.ast o, if isStatement then LEVEL_PAREN else LEVEL_COND
+      consequent:
+        if isStatement
+          @body.ast o, LEVEL_TOP
+        else
+          @bodyNode().ast o, LEVEL_TOP
+      alternate:
+        if @isChain
+          @elseBody.unwrap().ast o, if isStatement then LEVEL_TOP else LEVEL_COND
+        else
+          @elseBody?.ast(o, LEVEL_TOP) ? null
+      postfix: !!@postfix
+      inverted: @type is 'unless'
 
 # Constants
 # ---------

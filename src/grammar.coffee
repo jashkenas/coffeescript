@@ -829,8 +829,8 @@ grammar =
   IfLine: [
     o 'IfBlockLine'
     o 'IfBlockLine ELSE Block',               -> $1.addElse $3
-    o 'Statement  POST_IF ExpressionLine',    -> new If $3, LOC(1)(Block.wrap [$1]), type: $2, statement: true
-    o 'Expression POST_IF ExpressionLine',    -> new If $3, LOC(1)(Block.wrap [$1]), type: $2, statement: true
+    o 'Statement  POST_IF ExpressionLine',    -> new If $3, LOC(1)(Block.wrap [$1]), type: $2, postfix: true
+    o 'Expression POST_IF ExpressionLine',    -> new If $3, LOC(1)(Block.wrap [$1]), type: $2, postfix: true
   ]
 
   # Arithmetic and logical operators, working on one or more operands.
