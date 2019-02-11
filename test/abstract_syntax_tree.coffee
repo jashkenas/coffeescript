@@ -2321,48 +2321,49 @@ test "AST as expected for Switch node", ->
 
 #   # TODO: File issue for compile error when using `then` or `;` where `\n` is rn.
 
-# test "AST as expected for If node", ->
-#   testExpression 'if maybe then yes',
-#     type: 'If'
-#     isChain: no
-#     condition:
-#       type: 'IdentifierLiteral'
-#     body:
-#       type: 'Value'
-#       base:
-#         type: 'BooleanLiteral'
+test "AST as expected for If node", ->
+  testStatement 'if maybe then yes',
+    type: 'IfStatement'
+    test: ID 'maybe'
+    consequent:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'BooleanLiteral'
+      ]
 
-#   testExpression 'yes if maybe',
-#     type: 'If'
-#     isChain: no
-#     condition:
-#       type: 'IdentifierLiteral'
-#     body:
-#       type: 'Value'
-#       base:
-#         type: 'BooleanLiteral'
+  testExpression 'yes if maybe',
+    type: 'ConditionalExpression'
+    test: ID 'maybe'
+    consequent:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'BooleanLiteral'
+      ]
+    postfix: yes
 
-#   # TODO: Where's the post-if flag?
+  # testExpression 'unless x then x else if y then y else z',
+  #   type: 'If'
+  #   isChain: yes
+  #   condition:
+  #     type: 'Op'
+  #     operator: '!'
+  #     originalOperator: '!'
+  #     flip: no
+  #   body:
+  #     type: 'Value'
+  #   elseBody:
+  #     type: 'If'
+  #     isChain: no
+  #     condition:
+  #       type: 'IdentifierLiteral'
+  #     body:
+  #       type: 'Value'
+  #     elseBody:
+  #       type: 'Value'
+  #       isDefaultValue: no
 
-#   testExpression 'unless x then x else if y then y else z',
-#     type: 'If'
-#     isChain: yes
-#     condition:
-#       type: 'Op'
-#       operator: '!'
-#       originalOperator: '!'
-#       flip: no
-#     body:
-#       type: 'Value'
-#     elseBody:
-#       type: 'If'
-#       isChain: no
-#       condition:
-#         type: 'IdentifierLiteral'
-#       body:
-#         type: 'Value'
-#       elseBody:
-#         type: 'Value'
-#         isDefaultValue: no
-
-#   # TODO: AST generator should preserve use of `unless`.
+  # # TODO: AST generator should preserve use of `unless`.

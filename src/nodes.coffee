@@ -498,6 +498,7 @@ exports.Root = class Root extends Base
     o.scope.parameter name for name in o.locals or []
 
   ast: (o) ->
+    o.level = LEVEL_TOP
     @initializeScope o
     super o
 
@@ -4737,7 +4738,7 @@ exports.If = class If extends Base
     @condition = if options.type is 'unless' then condition.invert() else condition
     @elseBody  = null
     @isChain   = false
-    {@soak}    = options
+    {@soak, @postfix} = options
     moveComments @condition, @ if @condition.comments
 
   children: ['condition', 'body', 'elseBody']
@@ -4808,6 +4809,19 @@ exports.If = class If extends Base
 
   unfoldSoak: ->
     @soak and this
+
+  isStatementAst: (o) ->
+    return no if @postfix
+    yes
+
+  astType: ->
+    'IfStatement'
+
+  astProperties: (o) ->
+    return
+      test: @condition.ast o
+      consequent: @body.ast o
+      alternate: @elseBody?.ast(o) ? null
 
 # Constants
 # ---------
