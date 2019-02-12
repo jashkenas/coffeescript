@@ -271,7 +271,7 @@ exports.Base = class Base
   # We try to follow the [Babel AST spec](https://github.com/babel/babel/blob/master/packages/babel-parser/ast/spec.md)
   # as closely as possible, for improved interoperability with other tools.
   ast: (o, level) ->
-    o = extend {}, o
+    o = Object.assign {}, o
     o.level = level if level?
     # Every abstract syntax tree node object has four categories of properties:
     # - type, stored in the `type` field and a string like `NumberLiteral`.
