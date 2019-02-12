@@ -4751,10 +4751,12 @@ exports.If = class If extends Base
   addElse: (elseBody) ->
     if @isChain
       @elseBodyNode().addElse elseBody
+      @locationData = mergeLocationData @locationData, @elseBodyNode().locationData
     else
       @isChain  = elseBody instanceof If
       @elseBody = @ensureBlock elseBody
       @elseBody.updateLocationDataIfMissing elseBody.locationData
+      @locationData = mergeLocationData @locationData, @elseBody.locationData if @locationData? and @elseBody.locationData?
     this
 
   # The **If** only compiles into a statement if either of its bodies needs
