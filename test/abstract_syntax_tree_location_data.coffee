@@ -3889,3 +3889,570 @@ test "AST as expected for AwaitReturn node", ->
       end:
         line: 1
         column: 15
+
+test "AST as expected for If node", ->
+  testAstLocationData 'if maybe then yes',
+    type: 'IfStatement'
+    test:
+      start: 3
+      end: 8
+      range: [3, 8]
+      loc:
+        start:
+          line: 1
+          column: 3
+        end:
+          line: 1
+          column: 8
+    consequent:
+      body: [
+        expression:
+          start: 14
+          end: 17
+          range: [14, 17]
+          loc:
+            start:
+              line: 1
+              column: 14
+            end:
+              line: 1
+              column: 17
+        start: 14
+        end: 17
+        range: [14, 17]
+        loc:
+          start:
+            line: 1
+            column: 14
+          end:
+            line: 1
+            column: 17
+      ]
+      start: 8
+      end: 17
+      range: [8, 17]
+      loc:
+        start:
+          line: 1
+          column: 8
+        end:
+          line: 1
+          column: 17
+    start: 0
+    end: 17
+    range: [0, 17]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 17
+
+  testAstLocationData 'yes if maybe',
+    type: 'IfStatement'
+    test:
+      start: 7
+      end: 12
+      range: [7, 12]
+      loc:
+        start:
+          line: 1
+          column: 7
+        end:
+          line: 1
+          column: 12
+    consequent:
+      body: [
+        expression:
+          start: 0
+          end: 3
+          range: [0, 3]
+          loc:
+            start:
+              line: 1
+              column: 0
+            end:
+              line: 1
+              column: 3
+        start: 0
+        end: 3
+        range: [0, 3]
+        loc:
+          start:
+            line: 1
+            column: 0
+          end:
+            line: 1
+            column: 3
+      ]
+      start: 0
+      end: 3
+      range: [0, 3]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 3
+    start: 0
+    end: 12
+    range: [0, 12]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 12
+
+  testAstLocationData 'unless x then x else if y then y else z',
+    type: 'IfStatement'
+    test:
+      start: 7
+      end: 8
+      range: [7, 8]
+      loc:
+        start:
+          line: 1
+          column: 7
+        end:
+          line: 1
+          column: 8
+    consequent:
+      body: [
+        expression:
+          start: 14
+          end: 15
+          range: [14, 15]
+          loc:
+            start:
+              line: 1
+              column: 14
+            end:
+              line: 1
+              column: 15
+        start: 14
+        end: 15
+        range: [14, 15]
+        loc:
+          start:
+            line: 1
+            column: 14
+          end:
+            line: 1
+            column: 15
+      ]
+      start: 8
+      end: 15
+      range: [8, 15]
+      loc:
+        start:
+          line: 1
+          column: 8
+        end:
+          line: 1
+          column: 15
+    alternate:
+      test:
+        start: 24
+        end: 25
+        range: [24, 25]
+        loc:
+          start:
+            line: 1
+            column: 24
+          end:
+            line: 1
+            column: 25
+      consequent:
+        body: [
+          expression:
+            start: 31
+            end: 32
+            range: [31, 32]
+            loc:
+              start:
+                line: 1
+                column: 31
+              end:
+                line: 1
+                column: 32
+          start: 31
+          end: 32
+          range: [31, 32]
+          loc:
+            start:
+              line: 1
+              column: 31
+            end:
+              line: 1
+              column: 32
+        ]
+        start: 25
+        end: 32
+        range: [25, 32]
+        loc:
+          start:
+            line: 1
+            column: 25
+          end:
+            line: 1
+            column: 32
+      alternate:
+        body: [
+          expression:
+            start: 38
+            end: 39
+            range: [38, 39]
+            loc:
+              start:
+                line: 1
+                column: 38
+              end:
+                line: 1
+                column: 39
+          start: 38
+          end: 39
+          range: [38, 39]
+          loc:
+            start:
+              line: 1
+              column: 38
+            end:
+              line: 1
+              column: 39
+        ]
+        start: 37
+        end: 39
+        range: [37, 39]
+        loc:
+          start:
+            line: 1
+            column: 37
+          end:
+            line: 1
+            column: 39
+      start: 21
+      end: 39
+      range: [21, 39]
+      loc:
+        start:
+          line: 1
+          column: 21
+        end:
+          line: 1
+          column: 39
+    start: 0
+    end: 39
+    range: [0, 39]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 39
+
+  testAstLocationData '''
+    if a
+      b
+    else
+      if c
+        d
+  ''',
+    type: 'IfStatement'
+    test:
+      start: 3
+      end: 4
+      range: [3, 4]
+      loc:
+        start:
+          line: 1
+          column: 3
+        end:
+          line: 1
+          column: 4
+    consequent:
+      body: [
+        expression:
+          start: 7
+          end: 8
+          range: [7, 8]
+          loc:
+            start:
+              line: 2
+              column: 2
+            end:
+              line: 2
+              column: 3
+        start: 7
+        end: 8
+        range: [7, 8]
+        loc:
+          start:
+            line: 2
+            column: 2
+          end:
+            line: 2
+            column: 3
+      ]
+      start: 5
+      end: 8
+      range: [5, 8]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 2
+          column: 3
+    alternate:
+      body: [
+        test:
+          start: 19
+          end: 20
+          range: [19, 20]
+          loc:
+            start:
+              line: 4
+              column: 5
+            end:
+              line: 4
+              column: 6
+        consequent:
+          body: [
+            expression:
+              start: 25
+              end: 26
+              range: [25, 26]
+              loc:
+                start:
+                  line: 5
+                  column: 4
+                end:
+                  line: 5
+                  column: 5
+            start: 25
+            end: 26
+            range: [25, 26]
+            loc:
+              start:
+                line: 5
+                column: 4
+              end:
+                line: 5
+                column: 5
+          ]
+          start: 21
+          end: 26
+          range: [21, 26]
+          loc:
+            start:
+              line: 5
+              column: 0
+            end:
+              line: 5
+              column: 5
+        start: 16
+        end: 26
+        range: [16, 26]
+        loc:
+          start:
+            line: 4
+            column: 2
+          end:
+            line: 5
+            column: 5
+      ]
+      start: 14
+      end: 26
+      range: [14, 26]
+      loc:
+        start:
+          line: 4
+          column: 0
+        end:
+          line: 5
+          column: 5
+    start: 0
+    end: 26
+    range: [0, 26]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 5
+        column: 5
+
+  testAstLocationData '''
+    a =
+      if b then c else if d then e
+  ''',
+    type: 'AssignmentExpression'
+    right:
+      test:
+        start: 9
+        end: 10
+        range: [9, 10]
+        loc:
+          start:
+            line: 2
+            column: 5
+          end:
+            line: 2
+            column: 6
+      consequent:
+        start: 16
+        end: 17
+        range: [16, 17]
+        loc:
+          start:
+            line: 2
+            column: 12
+          end:
+            line: 2
+            column: 13
+      alternate:
+        test:
+          start: 26
+          end: 27
+          range: [26, 27]
+          loc:
+            start:
+              line: 2
+              column: 22
+            end:
+              line: 2
+              column: 23
+        consequent:
+          start: 33
+          end: 34
+          range: [33, 34]
+          loc:
+            start:
+              line: 2
+              column: 29
+            end:
+              line: 2
+              column: 30
+        start: 23
+        end: 34
+        range: [23, 34]
+        loc:
+          start:
+            line: 2
+            column: 19
+          end:
+            line: 2
+            column: 30
+      start: 6
+      end: 34
+      range: [6, 34]
+      loc:
+        start:
+          line: 2
+          column: 2
+        end:
+          line: 2
+          column: 30
+    start: 0
+    end: 34
+    range: [0, 34]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 2
+        column: 30
+
+  testAstLocationData '''
+    f(
+      if b
+        c
+        d
+    )
+  ''',
+    type: 'CallExpression'
+    arguments: [
+      test:
+        start: 8
+        end: 9
+        range: [8, 9]
+        loc:
+          start:
+            line: 2
+            column: 5
+          end:
+            line: 2
+            column: 6
+      consequent:
+        body: [
+          expression:
+            start: 14
+            end: 15
+            range: [14, 15]
+            loc:
+              start:
+                line: 3
+                column: 4
+              end:
+                line: 3
+                column: 5
+          start: 14
+          end: 15
+          range: [14, 15]
+          loc:
+            start:
+              line: 3
+              column: 4
+            end:
+              line: 3
+              column: 5
+        ,
+          expression:
+            start: 20
+            end: 21
+            range: [20, 21]
+            loc:
+              start:
+                line: 4
+                column: 4
+              end:
+                line: 4
+                column: 5
+          start: 20
+          end: 21
+          range: [20, 21]
+          loc:
+            start:
+              line: 4
+              column: 4
+            end:
+              line: 4
+              column: 5
+        ]
+        start: 10
+        end: 21
+        range: [10, 21]
+        loc:
+          start:
+            line: 3
+            column: 0
+          end:
+            line: 4
+            column: 5
+    ]
+    start: 0
+    end: 23
+    range: [0, 23]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 5
+        column: 1
