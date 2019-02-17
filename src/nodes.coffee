@@ -4664,6 +4664,25 @@ exports.For = class For extends While
     fragments.push @makeCode(returnResult) if returnResult
     fragments
 
+  astType: -> 'For'
+
+  astProperties: (o) ->
+    return
+      source: @source?.ast o
+      body: @body.ast o, LEVEL_TOP
+      guard: @guard?.ast(o) ? null
+      name: @name?.ast(o) ? null
+      index: @index?.ast(o) ? null
+      step: @step?.ast(o) ? null
+      postfix: !!@postfix
+      own: !!@own
+      await: !!@await
+      style: switch
+        when @from   then 'from'
+        when @object then 'of'
+        when @name   then 'in'
+        else              'range'
+
 #### Switch
 
 # A JavaScript *switch* statement. Converts into a returnable expression on-demand.
