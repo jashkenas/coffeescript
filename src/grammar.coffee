@@ -699,8 +699,8 @@ grammar =
   # Comprehensions can either be normal, with a block of expressions to execute,
   # or postfix, with a single expression.
   For: [
-    o 'Statement    ForBody',  -> $2.addBody $1
-    o 'Expression   ForBody',  -> $2.addBody $1
+    o 'Statement    ForBody',  -> $2.postfix = yes; $2.addBody $1
+    o 'Expression   ForBody',  -> $2.postfix = yes; $2.addBody $1
     o 'ForBody      Block',    -> $1.addBody $2
     o 'ForLineBody  Block',    -> $1.addBody $2
   ]
