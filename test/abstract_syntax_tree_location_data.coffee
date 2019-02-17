@@ -3928,13 +3928,13 @@ test "AST as expected for If node", ->
             line: 1
             column: 17
       ]
-      start: 8
+      start: 9
       end: 17
-      range: [8, 17]
+      range: [9, 17]
       loc:
         start:
           line: 1
-          column: 8
+          column: 9
         end:
           line: 1
           column: 17
@@ -4044,13 +4044,13 @@ test "AST as expected for If node", ->
             line: 1
             column: 15
       ]
-      start: 8
+      start: 9
       end: 15
-      range: [8, 15]
+      range: [9, 15]
       loc:
         start:
           line: 1
-          column: 8
+          column: 9
         end:
           line: 1
           column: 15
@@ -4090,13 +4090,13 @@ test "AST as expected for If node", ->
               line: 1
               column: 32
         ]
-        start: 25
+        start: 26
         end: 32
-        range: [25, 32]
+        range: [26, 32]
         loc:
           start:
             line: 1
-            column: 25
+            column: 26
           end:
             line: 1
             column: 32
@@ -4456,3 +4456,384 @@ test "AST as expected for If node", ->
       end:
         line: 5
         column: 1
+
+test "AST as expected for While node", ->
+  testAstLocationData 'loop 1',
+    type: 'WhileStatement'
+    test:
+      start: 0
+      end: 4
+      range: [0, 4]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 4
+    body:
+      body: [
+        expression:
+          start: 5
+          end: 6
+          range: [5, 6]
+          loc:
+            start:
+              line: 1
+              column: 5
+            end:
+              line: 1
+              column: 6
+        start: 5
+        end: 6
+        range: [5, 6]
+        loc:
+          start:
+            line: 1
+            column: 5
+          end:
+            line: 1
+            column: 6
+      ]
+      start: 5
+      end: 6
+      range: [5, 6]
+      loc:
+        start:
+          line: 1
+          column: 5
+        end:
+          line: 1
+          column: 6
+    start: 0
+    end: 6
+    range: [0, 6]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 6
+
+  testAstLocationData 'while 1 < 2 then',
+    type: 'WhileStatement'
+    test:
+      start: 6
+      end: 11
+      range: [6, 11]
+      loc:
+        start:
+          line: 1
+          column: 6
+        end:
+          line: 1
+          column: 11
+    body:
+      start: 12
+      end: 16
+      range: [12, 16]
+      loc:
+        start:
+          line: 1
+          column: 12
+        end:
+          line: 1
+          column: 16
+    start: 0
+    end: 16
+    range: [0, 16]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 16
+
+  testAstLocationData '''
+    x() until y
+  ''',
+    type: 'WhileStatement'
+    test:
+      start: 10
+      end: 11
+      range: [10, 11]
+      loc:
+        start:
+          line: 1
+          column: 10
+        end:
+          line: 1
+          column: 11
+    body:
+      body: [
+        expression:
+          start: 0
+          end: 3
+          range: [0, 3]
+          loc:
+            start:
+              line: 1
+              column: 0
+            end:
+              line: 1
+              column: 3
+        start: 0
+        end: 3
+        range: [0, 3]
+        loc:
+          start:
+            line: 1
+            column: 0
+          end:
+            line: 1
+            column: 3
+      ]
+      start: 0
+      end: 3
+      range: [0, 3]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 3
+    start: 0
+    end: 11
+    range: [0, 11]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 11
+
+  testAstLocationData '''
+    until x when y
+      z++
+  ''',
+    type: 'WhileStatement'
+    test:
+      start: 6
+      end: 7
+      range: [6, 7]
+      loc:
+        start:
+          line: 1
+          column: 6
+        end:
+          line: 1
+          column: 7
+    body:
+      body: [
+        expression:
+          start: 17
+          end: 20
+          range: [17, 20]
+          loc:
+            start:
+              line: 2
+              column: 2
+            end:
+              line: 2
+              column: 5
+        start: 17
+        end: 20
+        range: [17, 20]
+        loc:
+          start:
+            line: 2
+            column: 2
+          end:
+            line: 2
+            column: 5
+      ]
+      start: 15
+      end: 20
+      range: [15, 20]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 2
+          column: 5
+    guard:
+      start: 13
+      end: 14
+      range: [13, 14]
+      loc:
+        start:
+          line: 1
+          column: 13
+        end:
+          line: 1
+          column: 14
+    start: 0
+    end: 20
+    range: [0, 20]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 2
+        column: 5
+
+  testAstLocationData '''
+    x while y when z
+  ''',
+    type: 'WhileStatement'
+    test:
+      start: 8
+      end: 9
+      range: [8, 9]
+      loc:
+        start:
+          line: 1
+          column: 8
+        end:
+          line: 1
+          column: 9
+    body:
+      body: [
+        expression:
+          start: 0
+          end: 1
+          range: [0, 1]
+          loc:
+            start:
+              line: 1
+              column: 0
+            end:
+              line: 1
+              column: 1
+        start: 0
+        end: 1
+        range: [0, 1]
+        loc:
+          start:
+            line: 1
+            column: 0
+          end:
+            line: 1
+            column: 1
+      ]
+      start: 0
+      end: 1
+      range: [0, 1]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 1
+    guard:
+      start: 15
+      end: 16
+      range: [15, 16]
+      loc:
+        start:
+          line: 1
+          column: 15
+        end:
+          line: 1
+          column: 16
+    start: 0
+    end: 16
+    range: [0, 16]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 16
+
+  testAstLocationData '''
+    loop
+      a()
+      b++
+  ''',
+    type: 'WhileStatement'
+    test:
+      start: 0
+      end: 4
+      range: [0, 4]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 4
+    body:
+      body: [
+        expression:
+          start: 7
+          end: 10
+          range: [7, 10]
+          loc:
+            start:
+              line: 2
+              column: 2
+            end:
+              line: 2
+              column: 5
+        start: 7
+        end: 10
+        range: [7, 10]
+        loc:
+          start:
+            line: 2
+            column: 2
+          end:
+            line: 2
+            column: 5
+      ,
+        expression:
+          start: 13
+          end: 16
+          range: [13, 16]
+          loc:
+            start:
+              line: 3
+              column: 2
+            end:
+              line: 3
+              column: 5
+        start: 13
+        end: 16
+        range: [13, 16]
+        loc:
+          start:
+            line: 3
+            column: 2
+          end:
+            line: 3
+            column: 5
+      ]
+      start: 5
+      end: 16
+      range: [5, 16]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 5
+    start: 0
+    end: 16
+    range: [0, 16]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 5
