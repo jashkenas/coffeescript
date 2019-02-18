@@ -4551,6 +4551,65 @@ test "AST as expected for While node", ->
         line: 1
         column: 16
 
+  testAstLocationData 'while 1 < 2 then fn()',
+    type: 'WhileStatement'
+    test:
+      start: 6
+      end: 11
+      range: [6, 11]
+      loc:
+        start:
+          line: 1
+          column: 6
+        end:
+          line: 1
+          column: 11
+    body:
+      body: [
+        expression:
+          start: 17
+          end: 21
+          range: [17, 21]
+          loc:
+            start:
+              line: 1
+              column: 17
+            end:
+              line: 1
+              column: 21
+        start: 17
+        end: 21
+        range: [17, 21]
+        loc:
+          start:
+            line: 1
+            column: 17
+          end:
+            line: 1
+            column: 21
+      ]
+      start: 12
+      end: 21
+      range: [12, 21]
+      loc:
+        start:
+          line: 1
+          column: 12
+        end:
+          line: 1
+          column: 21
+    start: 0
+    end: 21
+    range: [0, 21]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 21
+
+
   testAstLocationData '''
     x() until y
   ''',

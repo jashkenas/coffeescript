@@ -1804,6 +1804,22 @@ test "AST as expected for While node", ->
     postfix: no
     loop: no
 
+  testStatement 'while 1 < 2 then fn()',
+    type: 'WhileStatement'
+    test:
+      type: 'BinaryExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'CallExpression'
+      ]
+    guard: null
+    inverted: no
+    postfix: no
+    loop: no
+
   testStatement '''
     x() until y
   ''',
