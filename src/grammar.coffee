@@ -679,14 +679,14 @@ grammar =
   While: [
     o 'WhileSource Block',                      -> $1.addBody $2
     o 'WhileLineSource Block',                  -> $1.addBody $2
-    o 'Statement  WhileSource',                 -> $2.addBody LOC(1) Block.wrap([$1])
-    o 'Expression WhileSource',                 -> $2.addBody LOC(1) Block.wrap([$1])
+    o 'Statement  WhileSource',                 -> (Object.assign $2, postfix: yes).addBody LOC(1) Block.wrap([$1])
+    o 'Expression WhileSource',                 -> (Object.assign $2, postfix: yes).addBody LOC(1) Block.wrap([$1])
     o 'Loop',                                   -> $1
   ]
 
   Loop: [
-    o 'LOOP Block',                             -> new While(LOC(1) new BooleanLiteral 'true').addBody $2
-    o 'LOOP Expression',                        -> new While(LOC(1) new BooleanLiteral 'true').addBody LOC(2) Block.wrap [$2]
+    o 'LOOP Block',                             -> new While(LOC(1)(new BooleanLiteral 'true'), isLoop: yes).addBody $2
+    o 'LOOP Expression',                        -> new While(LOC(1)(new BooleanLiteral 'true'), isLoop: yes).addBody LOC(2) Block.wrap [$2]
   ]
 
   # Array, object, and range comprehensions, at the most generic level.

@@ -3832,11 +3832,8 @@ exports.Elision = class Elision extends Base
 # it, all other loops can be manufactured. Useful in cases where you need more
 # flexibility or more speed than a comprehension can provide.
 exports.While = class While extends Base
-  constructor: (condition, options) ->
+  constructor: (@condition, {@invert, @guard, @isLoop} = {}) ->
     super()
-
-    @condition = if options?.invert then condition.invert() else condition
-    @guard     = options?.guard
 
   children: ['condition', 'guard', 'body']
 
@@ -3878,11 +3875,25 @@ exports.While = class While extends Base
         else
           body = Block.wrap [new If @guard, body] if @guard
       body = [].concat @makeCode("\n"), (body.compileToFragments o, LEVEL_TOP), @makeCode("\n#{@tab}")
-    answer = [].concat @makeCode(set + @tab + "while ("), @condition.compileToFragments(o, LEVEL_PAREN),
+    answer = [].concat @makeCode(set + @tab + "while ("), @processedCondition().compileToFragments(o, LEVEL_PAREN),
       @makeCode(") {"), body, @makeCode("}")
     if @returns
       answer.push @makeCode "\n#{@tab}return #{rvar};"
     answer
+
+  processedCondition: ->
+    @processedConditionCache ?= if @invert then @condition.invert() else @condition
+
+  astType: -> 'WhileStatement'
+
+  astProperties: (o) ->
+    return
+      test: @condition.ast o, LEVEL_PAREN
+      body: @body.ast o, LEVEL_TOP
+      guard: @guard?.ast(o) ? null
+      inverted: !!@invert
+      postfix: !!@postfix
+      loop: !!@isLoop
 
 #### Op
 

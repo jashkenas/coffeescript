@@ -1775,22 +1775,125 @@ test "AST as expected for Elision node", ->
       type: 'StringLiteral'
       value: 'asdfqwer'
 
-# test "AST as expected for While node", ->
-#   testExpression 'loop 1',
-#     type: 'While'
-#     condition:
-#       type: 'BooleanLiteral'
-#       value: 'true'
-#       originalValue: 'true'   # TODO: This should probably be changed for Prettier.
-#     body:
-#       type: 'Value'
+test "AST as expected for While node", ->
+  testStatement 'loop 1',
+    type: 'WhileStatement'
+    test:
+      type: 'BooleanLiteral'
+      value: true
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression: NUMBER 1
+      ]
+    guard: null
+    inverted: no
+    postfix: no
+    loop: yes
 
-#   testExpression 'while 1 < 2 then',
-#     type: 'While'
-#     condition:
-#       type: 'Op'
-#     body:
-#       type: 'Block'
+  testStatement 'while 1 < 2 then',
+    type: 'WhileStatement'
+    test:
+      type: 'BinaryExpression'
+    body:
+      type: 'BlockStatement'
+      body: []
+    guard: null
+    inverted: no
+    postfix: no
+    loop: no
+
+  testStatement 'while 1 < 2 then fn()',
+    type: 'WhileStatement'
+    test:
+      type: 'BinaryExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'CallExpression'
+      ]
+    guard: null
+    inverted: no
+    postfix: no
+    loop: no
+
+  testStatement '''
+    x() until y
+  ''',
+    type: 'WhileStatement'
+    test: ID 'y'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'CallExpression'
+      ]
+    guard: null
+    inverted: yes
+    postfix: yes
+    loop: no
+
+  testStatement '''
+    until x when y
+      z++
+  ''',
+    type: 'WhileStatement'
+    test: ID 'x'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'UpdateExpression'
+      ]
+    guard: ID 'y'
+    inverted: yes
+    postfix: no
+    loop: no
+
+  testStatement '''
+    x while y when z
+  ''',
+    type: 'WhileStatement'
+    test: ID 'y'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression: ID 'x'
+      ]
+    guard: ID 'z'
+    inverted: no
+    postfix: yes
+    loop: no
+
+  testStatement '''
+    loop
+      a()
+      b++
+  ''',
+    type: 'WhileStatement'
+    test:
+      type: 'BooleanLiteral'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'CallExpression'
+      ,
+        type: 'ExpressionStatement'
+        expression:
+          type: 'UpdateExpression'
+      ]
+    guard: null
+    inverted: no
+    postfix: no
+    loop: yes
 
 test "AST as expected for Op node", ->
   testExpression 'a <= 2',

@@ -511,6 +511,9 @@ exports.Rewriter = class Rewriter
     @scanTokens (token, i, tokens) ->
       return 1 if     token[2]
       return 1 unless token.generated or token.explicit
+      if token.fromThen and token[0] is 'INDENT'
+        token[2] = token.origin[2]
+        return 1
       if token[0] is '{' and nextLocation=tokens[i + 1]?[2]
         {first_line: line, first_column: column, range: [rangeIndex]} = nextLocation
       else if prevLocation = tokens[i - 1]?[2]
