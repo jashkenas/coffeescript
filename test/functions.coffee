@@ -493,3 +493,7 @@ test "#4657: destructured array parameters", ->
   result = f [1, 2, 3, 4]
   arrayEq result.a, [1, 2, 3]
   eq result.b, 4
+
+test "#5128: default parameters of function in binary operation", ->
+  foo = yes or (a, b = {}) -> null
+  eq foo, yes
