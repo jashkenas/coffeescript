@@ -1925,3 +1925,29 @@ test "`new.target` is only allowed meta property", ->
     -> new.something
        ^^^^^^^^^^^^^
   '''
+
+test "#4834: dynamic import requires exactly one argument", ->
+  assertErrorFormat '''
+    import()
+  ''', '''
+    [stdin]:1:1: error: import() requires exactly one argument
+    import()
+    ^^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    import('x', {})
+  ''', '''
+    [stdin]:1:1: error: import() requires exactly one argument
+    import('x', {})
+    ^^^^^^^^^^^^^^^
+  '''
+
+test "#4834: dynamic import requires explicit call parentheses", ->
+  assertErrorFormat '''
+    promise = import 'foo'
+  ''', '''
+    [stdin]:1:23: error: unexpected end of input
+    promise = import 'foo'
+                          ^
+  '''

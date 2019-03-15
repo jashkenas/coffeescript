@@ -920,3 +920,24 @@ test "#4874: backslash `export`", ->
       min
     } from 'underscore';
     """
+
+test "#4834: dynamic import", ->
+  eqJS """
+    import('module').then ->
+  """,
+  """
+    import('module').then(function() {});
+  """
+
+  eqJS """
+    foo = ->
+      bar = await import('bar')
+  """,
+  """
+    var foo;
+
+    foo = async function() {
+      var bar;
+      return bar = (await import('bar'));
+    };
+  """

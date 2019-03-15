@@ -667,6 +667,9 @@ exports.Lexer = class Lexer
         @error message, origin[2] if message
       return value.length if skipToken
 
+    if prev?[0] is 'IMPORT' and value is '('
+      prev[0] = 'IDENTIFIER'
+
     if value is '{' and @seenImport
       @importSpecifierList = yes
     else if @importSpecifierList and value is '}'

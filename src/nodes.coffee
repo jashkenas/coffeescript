@@ -1145,9 +1145,16 @@ exports.Call = class Call extends Base
       ifn = unfoldSoak o, call, 'variable'
     ifn
 
+  checkDynamicImport: (o) ->
+    unwrappedVariable = @variable?.unwrap()
+    return unless unwrappedVariable instanceof IdentifierLiteral and unwrappedVariable.value is 'import'
+    unless @args?.length is 1
+      @error 'import() requires exactly one argument'
+
   # Compile a vanilla function call.
   compileNode: (o) ->
     return @compileCSX o if @csx
+    @checkDynamicImport o
     @variable?.front = @front
     compiledArgs = []
     # If variable is `Accessor` fragments are cached and used later
