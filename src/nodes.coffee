@@ -1145,16 +1145,9 @@ exports.Call = class Call extends Base
       ifn = unfoldSoak o, call, 'variable'
     ifn
 
-  checkDynamicImport: (o) ->
-    unwrappedVariable = @variable?.unwrap()
-    return unless unwrappedVariable instanceof IdentifierLiteral and unwrappedVariable.value is 'import'
-    unless @args?.length is 1
-      @error 'import() requires exactly one argument'
-
   # Compile a vanilla function call.
   compileNode: (o) ->
     return @compileCSX o if @csx
-    @checkDynamicImport o
     @variable?.front = @front
     compiledArgs = []
     # If variable is `Accessor` fragments are cached and used later
@@ -2178,6 +2171,21 @@ exports.ImportNamespaceSpecifier = class ImportNamespaceSpecifier extends Import
 exports.ExportSpecifier = class ExportSpecifier extends ModuleSpecifier
   constructor: (local, exported) ->
     super local, exported, 'export'
+
+exports.DynamicImport = class DynamicImport extends Base
+  constructor: (@args) ->
+    super()
+
+  compileNode: (o) ->
+    unless @args.length is 1
+      @error 'import() requires exactly one argument'
+    [arg] = @args
+
+    fragments = []
+    fragments.push @makeCode('import(')
+    fragments.push (arg.compileToFragments o, LEVEL_LIST)...
+    fragments.push @makeCode(')')
+    fragments
 
 #### Assign
 

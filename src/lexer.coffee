@@ -668,7 +668,7 @@ exports.Lexer = class Lexer
       return value.length if skipToken
 
     if prev?[0] is 'IMPORT' and value is '('
-      prev[0] = 'IDENTIFIER'
+      prev[0] = 'DYNAMIC_IMPORT'
 
     if value is '{' and @seenImport
       @importSpecifierList = yes
