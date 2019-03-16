@@ -397,7 +397,7 @@ grammar =
 
   # A "meta-property" access e.g. `new.target`
   MetaProperty: [
-    o 'NEW_TARGET . Property',                  -> new MetaProperty LOC(1)(new IdentifierLiteral $1), $3
+    o 'NEW_TARGET . Property',                  -> new MetaProperty LOC(1)(new IdentifierLiteral $1), LOC(3)(new Access $3)
   ]
 
   # The general group of accessors into an object, by property, by prototype

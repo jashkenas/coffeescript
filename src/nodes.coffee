@@ -1375,7 +1375,6 @@ exports.MetaProperty = class MetaProperty extends Base
   children: ['meta', 'property']
 
   checkValid: (o) ->
-    console.log {@property}
     if @meta.value is 'new'
       if @property instanceof Access and @property.name.value is 'target'
         unless o.scope.parent?
@@ -1387,7 +1386,6 @@ exports.MetaProperty = class MetaProperty extends Base
     @checkValid o
     fragments = []
     fragments.push @meta.compileToFragments(o, LEVEL_ACCESS)...
-    fragments.push @makeCode '.'
     fragments.push @property.compileToFragments(o)...
     fragments
 
