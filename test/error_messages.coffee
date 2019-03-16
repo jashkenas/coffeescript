@@ -1936,3 +1936,13 @@ test "`new.target` is only allowed meta property", ->
     -> new.something
        ^^^^^^^^^^^^^
   '''
+
+test "`new.target` cannot be assigned", ->
+  assertErrorFormat '''
+    ->
+      new.target = b
+  ''', '''
+    [stdin]:2:14: error: unexpected =
+      new.target = b
+                 ^
+  '''

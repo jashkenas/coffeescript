@@ -386,7 +386,7 @@ grammar =
     o 'DoIife',                                 -> new Value $1
     o 'This'
     o 'Super',                                  -> new Value $1
-    o 'MetaProperty'
+    o 'MetaProperty',                           -> new Value $1
   ]
 
   # A `super`-based expression that can be used as a value.
