@@ -1264,7 +1264,6 @@ exports.Value = class Value extends Base
   # operators `?.` interspersed. Then we have to take care not to accidentally
   # evaluate anything twice when building the soak chain.
   compileNode: (o) ->
-    @checkNewTarget o
     @base.front = @front
     props = @properties
     if props.length and @base.cached?
@@ -1283,14 +1282,6 @@ exports.Value = class Value extends Base
       fragments.push (prop.compileToFragments o)...
 
     fragments
-
-  checkNewTarget: (o) ->
-    return unless @base instanceof IdentifierLiteral and @base.value is 'new' and @properties.length
-    if @properties[0] instanceof Access and @properties[0].name.value is 'target'
-      unless o.scope.parent?
-        @error "new.target can only occur inside functions"
-    else
-      @error "the only valid meta property for new is new.target"
 
   # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
@@ -1376,6 +1367,36 @@ exports.Value = class Value extends Base
       jisonLocationDataToAstLocationData(@base.tagNameLocationData),
       jisonLocationDataToAstLocationData(@properties[@properties.length - 1].locationData)
     )
+
+exports.MetaProperty = class MetaProperty extends Base
+  constructor: (@meta, @property) ->
+    super()
+
+  children: ['meta', 'property']
+
+  checkValid: (o) ->
+    console.log {@property}
+    if @meta.value is 'new'
+      if @property instanceof Access and @property.name.value is 'target'
+        unless o.scope.parent?
+          @error "new.target can only occur inside functions"
+      else
+        @error "the only valid meta property for new is new.target"
+
+  compileNode: (o) ->
+    @checkValid o
+    fragments = []
+    fragments.push @meta.compileToFragments(o, LEVEL_ACCESS)...
+    fragments.push @makeCode '.'
+    fragments.push @property.compileToFragments(o)...
+    fragments
+
+  astProperties: (o) ->
+    @checkValid o
+
+    return
+      meta: @meta.ast o, LEVEL_ACCESS
+      property: @property.ast o
 
 #### HereComment
 
