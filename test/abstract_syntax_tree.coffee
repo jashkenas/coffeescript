@@ -2534,31 +2534,32 @@ test "AST as expected for If node", ->
       postfix: no
       inverted: no
 
-    testExpression '''
-      f(
-        if b
-          c
-          d
-      )
-    ''',
-      type: 'CallExpression'
-      arguments: [
-        type: 'ConditionalExpression'
-        test: ID 'b'
-        consequent:
-          type: 'BlockStatement'
-          body: [
-            type: 'ExpressionStatement'
-            expression:
-              ID 'c'
-          ,
-            type: 'ExpressionStatement'
-            expression:
-              ID 'd'
-          ]
-        postfix: no
-        inverted: no
-      ]
+  testExpression '''
+    f(
+      if b
+        c
+        d
+    )
+  ''',
+    type: 'CallExpression'
+    arguments: [
+      type: 'ConditionalExpression'
+      test: ID 'b'
+      consequent:
+        type: 'BlockStatement'
+        body: [
+          type: 'ExpressionStatement'
+          expression:
+            ID 'c'
+        ,
+          type: 'ExpressionStatement'
+          expression:
+            ID 'd'
+        ]
+      alternate: null
+      postfix: no
+      inverted: no
+    ]
 
   testStatement 'a unless b',
     type: 'IfStatement'
@@ -2572,3 +2573,21 @@ test "AST as expected for If node", ->
     alternate: null
     postfix: yes
     inverted: yes
+
+  testExpression '''
+    f(
+      if b
+        c
+      else
+        d
+    )
+  ''',
+      type: 'CallExpression'
+      arguments: [
+        type: 'ConditionalExpression'
+        test: ID 'b'
+        consequent: ID 'c'
+        alternate: ID 'd'
+        postfix: no
+        inverted: no
+      ]
