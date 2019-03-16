@@ -2173,19 +2173,14 @@ exports.ExportSpecifier = class ExportSpecifier extends ModuleSpecifier
     super local, exported, 'export'
 
 exports.DynamicImport = class DynamicImport extends Base
-  constructor: (@args) ->
-    super()
+  compileNode: ->
+    [@makeCode 'import']
 
+exports.DynamicImportCall = class DynamicImportCall extends Call
   compileNode: (o) ->
     unless @args.length is 1
       @error 'import() requires exactly one argument'
-    [arg] = @args
-
-    fragments = []
-    fragments.push @makeCode('import(')
-    fragments.push (arg.compileToFragments o, LEVEL_LIST)...
-    fragments.push @makeCode(')')
-    fragments
+    super o
 
 #### Assign
 
