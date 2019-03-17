@@ -1487,15 +1487,6 @@ test "ES6 prototypes can be overriden", ->
 #   # Should throw, but doesn't
 #   a = new A
 
-# TODO: new.target needs support  Separate issue
-# test "ES6 support for new.target (functions and constructors)", ->
-#   throwsA = """
-#   class A
-#     constructor: () ->
-#       a = new.target.name
-#   """
-#   throws -> CoffeeScript.compile throwsA, bare: yes
-
 test "only one method named constructor allowed", ->
   throwsA = """
   class A
