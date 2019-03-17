@@ -4868,6 +4868,8 @@ exports.If = class If extends Base
       alternate:
         if @isChain
           @elseBody.unwrap().ast o, if isStatement then LEVEL_TOP else LEVEL_COND
+        else if not isStatement and @elseBody?.expressions?.length is 1
+          @elseBody.expressions[0].ast o, LEVEL_TOP
         else
           @elseBody?.ast(o, LEVEL_TOP) ? null
       postfix: !!@postfix
