@@ -871,8 +871,16 @@ exports.NumberLiteral = class NumberLiteral extends Literal
         raw: @value
 
 exports.InfinityLiteral = class InfinityLiteral extends NumberLiteral
+  constructor: (@value, {@originalValue = 'Infinity'} = {}) ->
+    super()
+
   compileNode: ->
     [@makeCode '2e308']
+
+  ast: (o, level) ->
+    unless @originalValue is 'Infinity'
+      return new NumberLiteral(@value).withLocationDataFrom(@).ast o, level
+    super o, level
 
   astType: -> 'Identifier'
 

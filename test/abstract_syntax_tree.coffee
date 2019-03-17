@@ -147,6 +147,13 @@ test "AST as expected for InfinityLiteral node", ->
     type: 'Identifier'
     name: 'Infinity'
 
+  testExpression '2e308',
+    type: 'NumericLiteral'
+    value: Infinity
+    extra:
+      raw: '2e308'
+      rawValue: Infinity
+
 test "AST as expected for NaNLiteral node", ->
   testExpression 'NaN',
     type: 'Identifier'
