@@ -657,19 +657,6 @@ exports.Rewriter = class Rewriter
       @detectEnd i + 1, condition, action
       return 1
 
-  # For tokens with extra data, we want to make that data visible to the grammar
-  # by wrapping the token value as a String() object and setting the data as
-  # properties of that object. The grammar should then be responsible for
-  # cleaning this up for the node constructor: unwrapping the token value to a
-  # primitive string and separately passing any expected token data properties
-  exposeTokenDataToGrammar: ->
-    @scanTokens (token, i) ->
-      if token.generated or (token.data and Object.keys(token.data).length isnt 0)
-        token[1] = new String token[1]
-        token[1][key] = val for own key, val of (token.data ? {})
-        token[1].generated = yes if token.generated
-      1
-
   # Returns `yes` if standing in front of what will become a LEADING_AND or
   # LEADING_OR, ie TERMINATOR followed by && or ||
   isLeadingLogical: (i) ->
@@ -684,7 +671,27 @@ exports.Rewriter = class Rewriter
       token[1] = operatorToken[1]
       token[2].last_line = operatorToken[2].last_line
       token[2].last_column = operatorToken[2].last_column
+      @mergeTokenData token, operatorToken
       tokens.splice i + 1, 1
+      1
+
+  # Ensure that a token’s `data` gets carried over to another token.
+  # Does a simple top-level merge with the existing `data` (if any)
+  mergeTokenData: (intoToken, fromToken) ->
+    return unless fromToken.data
+    Object.assign (intoToken.data ?= {}), fromToken.data
+
+  # For tokens with extra data, we want to make that data visible to the grammar
+  # by wrapping the token value as a String() object and setting the data as
+  # properties of that object. The grammar should then be responsible for
+  # cleaning this up for the node constructor: unwrapping the token value to a
+  # primitive string and separately passing any expected token data properties
+  exposeTokenDataToGrammar: ->
+    @scanTokens (token, i) ->
+      if token.generated or (token.data and Object.keys(token.data).length isnt 0)
+        token[1] = new String token[1]
+        token[1][key] = val for own key, val of (token.data ? {})
+        token[1].generated = yes if token.generated
       1
 
   # Generate the indentation tokens, based on another token on the same line.
