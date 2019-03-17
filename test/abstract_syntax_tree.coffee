@@ -2382,6 +2382,58 @@ test "AST as expected for For node", ->
         await: yes
       ]
 
+  testStatement '''
+    for {x} in y
+      z
+  ''',
+    type: 'For'
+    name:
+      type: 'ObjectPattern'
+      properties: [
+        type: 'ObjectProperty'
+        key: ID 'x'
+        value: ID 'x'
+        shorthand: yes
+        computed: no
+      ]
+    index: null
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression: ID 'z'
+      ]
+    source: ID 'y'
+    guard: null
+    step: null
+    style: 'in'
+    postfix: no
+    await: no
+
+  testStatement '''
+    for [x] in y
+      z
+  ''',
+    type: 'For'
+    name:
+      type: 'ArrayPattern'
+      elements: [
+        ID 'x'
+      ]
+    index: null
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression: ID 'z'
+      ]
+    source: ID 'y'
+    guard: null
+    step: null
+    style: 'in'
+    postfix: no
+    await: no
+
 #   # TODO: Figure out the purpose of `pattern` and `returns`.
 
 test "AST as expected for Switch node", ->
