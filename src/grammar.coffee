@@ -386,12 +386,18 @@ grammar =
     o 'DoIife',                                 -> new Value $1
     o 'This'
     o 'Super',                                  -> new Value $1
+    o 'MetaProperty',                           -> new Value $1
   ]
 
   # A `super`-based expression that can be used as a value.
   Super: [
     o 'SUPER . Property',                       -> new Super LOC(3)(new Access $3), [], no, $1
     o 'SUPER INDEX_START Expression INDEX_END', -> new Super LOC(3)(new Index $3),  [], no, $1
+  ]
+
+  # A "meta-property" access e.g. `new.target`
+  MetaProperty: [
+    o 'NEW_TARGET . Property',                  -> new MetaProperty LOC(1)(new IdentifierLiteral $1), LOC(3)(new Access $3)
   ]
 
   # The general group of accessors into an object, by property, by prototype

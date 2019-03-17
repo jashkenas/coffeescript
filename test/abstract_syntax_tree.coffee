@@ -2591,3 +2591,36 @@ test "AST as expected for If node", ->
         postfix: no
         inverted: no
       ]
+
+test "AST as expected for MetaProperty node", ->
+  testExpression '''
+    -> new.target
+  ''',
+    type: 'FunctionExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'MetaProperty'
+          meta: ID 'new'
+          property: ID 'target'
+      ]
+
+  testExpression '''
+    -> new.target.name
+  ''',
+    type: 'FunctionExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'MemberExpression'
+          object:
+            type: 'MetaProperty'
+            meta: ID 'new'
+            property: ID 'target'
+          property: ID 'name'
+          computed: no
+      ]

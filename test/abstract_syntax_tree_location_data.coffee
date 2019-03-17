@@ -4896,3 +4896,55 @@ test "AST as expected for While node", ->
       end:
         line: 3
         column: 5
+
+test "AST location data as expected for MetaProperty node", ->
+  testAstLocationData '''
+    -> new.target
+  ''',
+    type: 'FunctionExpression'
+    body:
+      body: [
+        expression:
+          meta:
+            start: 3
+            end: 6
+            range: [3, 6]
+            loc:
+              start:
+                line: 1
+                column: 3
+              end:
+                line: 1
+                column: 6
+          property:
+            start: 7
+            end: 13
+            range: [7, 13]
+            loc:
+              start:
+                line: 1
+                column: 7
+              end:
+                line: 1
+                column: 13
+          start: 3
+          end: 13
+          range: [3, 13]
+          loc:
+            start:
+              line: 1
+              column: 3
+            end:
+              line: 1
+              column: 13
+      ]
+    start: 0
+    end: 13
+    range: [0, 13]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 13
