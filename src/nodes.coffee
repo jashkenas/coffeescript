@@ -488,7 +488,6 @@ exports.Root = class Root extends Base
   compileNode: (o) ->
     o.indent  = if o.bare then '' else TAB
     o.level   = LEVEL_TOP
-    o.compiling = yes
     @initializeScope o
     fragments = @body.compileRoot o
     return fragments if o.bare
