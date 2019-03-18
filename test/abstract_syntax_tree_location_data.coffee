@@ -5376,3 +5376,117 @@ test "AST location data as expected for For node", ->
       end:
         line: 2
         column: 3
+
+test "AST location data as expected for StringWithInterpolations node", ->
+  # testExpression '"#{o}/"',
+  #   type: 'TemplateLiteral'
+  #   quote: '"'
+  #   body:
+  #     type: 'Block'
+  #     expressions: [
+  #       originalValue: ''
+  #     ,
+  #       type: 'Interpolation'
+  #       expression:
+  #         type: 'Value'
+  #         base:
+  #           value: 'o'
+  #     ,
+  #       originalValue: '/'
+  #     ]
+
+  testAstLocationData '"a#{b}c"',
+    type: 'TemplateLiteral'
+    expressions: [
+      start: 4
+      end: 5
+      range: [4, 5]
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 1
+          column: 5
+    ]
+    quasis: [
+      start: 1
+      end: 2
+      range: [1, 2]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 2
+    ,
+      start: 6
+      end: 7
+      range: [6, 7]
+      loc:
+        start:
+          line: 1
+          column: 6
+        end:
+          line: 1
+          column: 7
+    ]
+    start: 0
+    end: 8
+    range: [0, 8]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 8
+
+  testAstLocationData '"""a#{b}c"""',
+    type: 'TemplateLiteral'
+    expressions: [
+      start: 6
+      end: 7
+      range: [6, 7]
+      loc:
+        start:
+          line: 1
+          column: 6
+        end:
+          line: 1
+          column: 7
+    ]
+    quasis: [
+      start: 3
+      end: 4
+      range: [3, 4]
+      loc:
+        start:
+          line: 1
+          column: 3
+        end:
+          line: 1
+          column: 4
+    ,
+      start: 8
+      end: 9
+      range: [8, 9]
+      loc:
+        start:
+          line: 1
+          column: 8
+        end:
+          line: 1
+          column: 9
+    ]
+    start: 0
+    end: 12
+    range: [0, 12]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 12

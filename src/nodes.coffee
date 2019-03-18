@@ -488,6 +488,7 @@ exports.Root = class Root extends Base
   compileNode: (o) ->
     o.indent  = if o.bare then '' else TAB
     o.level   = LEVEL_TOP
+    o.compiling = yes
     @initializeScope o
     fragments = @body.compileRoot o
     return fragments if o.bare
@@ -4426,7 +4427,7 @@ exports.Parens = class Parens extends Base
 #### StringWithInterpolations
 
 exports.StringWithInterpolations = class StringWithInterpolations extends Base
-  constructor: (@body, {@quote} = {}) ->
+  constructor: (@body, {@quote, @startQuote} = {}) ->
     super()
 
   children: ['body']
@@ -4438,12 +4439,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
 
   shouldCache: -> @body.shouldCache()
 
-  compileNode: (o) ->
-    if @csxAttribute
-      wrapped = new Parens new StringWithInterpolations @body
-      wrapped.csxAttribute = yes
-      return wrapped.compileNode o
-
+  extractElements: (o) ->
     # Assumes that `expr` is `Block`
     expr = @body.unwrap()
 
@@ -4483,6 +4479,18 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
         delete node.comments
       return yes
 
+    elements
+
+  compileNode: (o) ->
+    @comments ?= @startQuote?.comments
+
+    if @csxAttribute
+      wrapped = new Parens new StringWithInterpolations @body
+      wrapped.csxAttribute = yes
+      return wrapped.compileNode o
+
+    elements = @extractElements o
+
     fragments = []
     fragments.push @makeCode '`' unless @csx
     for element in elements
@@ -4517,6 +4525,37 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
   isNestedTag: (element) ->
     call = element.unwrapAll?()
     @csx and call instanceof CSXElement
+
+  astType: -> 'TemplateLiteral'
+
+  astProperties: (o) ->
+    elements = @extractElements o
+    [..., last] = elements
+
+    quasis = []
+    expressions = []
+
+    for element, index in elements
+      if element instanceof StringLiteral
+        quasis.push new TemplateElement(
+          element.originalValue
+          tail: element is last
+        ).withLocationDataFrom(element).ast o
+      else
+        expressions.push element.unwrap().ast o
+
+    {expressions, quasis, @quote}
+
+exports.TemplateElement = class TemplateElement extends Base
+  constructor: (@value, {@tail} = {}) ->
+    super()
+
+  astProperties: ->
+    return
+      value:
+        raw: @value
+        cooked: @value
+      tail: !!@tail
 
 exports.Interpolation = class Interpolation extends Base
   constructor: (@expression) ->

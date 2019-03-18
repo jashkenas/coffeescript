@@ -2215,23 +2215,61 @@ test "AST as expected for Parens node", ->
     type: 'NumericLiteral'
     value: 1
 
-# test "AST as expected for StringWithInterpolations node", ->
-#   testExpression '"#{o}/"',
-#     type: 'StringWithInterpolations'
-#     quote: '"'
-#     body:
-#       type: 'Block'
-#       expressions: [
-#         originalValue: ''
-#       ,
-#         type: 'Interpolation'
-#         expression:
-#           type: 'Value'
-#           base:
-#             value: 'o'
-#       ,
-#         originalValue: '/'
-#       ]
+test "AST as expected for StringWithInterpolations node", ->
+  # testExpression '"#{o}/"',
+  #   type: 'TemplateLiteral'
+  #   quote: '"'
+  #   body:
+  #     type: 'Block'
+  #     expressions: [
+  #       originalValue: ''
+  #     ,
+  #       type: 'Interpolation'
+  #       expression:
+  #         type: 'Value'
+  #         base:
+  #           value: 'o'
+  #     ,
+  #       originalValue: '/'
+  #     ]
+
+  testExpression '"a#{b}c"',
+    type: 'TemplateLiteral'
+    expressions: [
+      ID 'b'
+    ]
+    quasis: [
+      type: 'TemplateElement'
+      value:
+        raw: 'a'
+        cooked: 'a'
+      tail: no
+    ,
+      type: 'TemplateElement'
+      value:
+        cooked: 'c'
+      tail: yes
+    ]
+    quote: '"'
+
+  testExpression '"""a#{b}c"""',
+    type: 'TemplateLiteral'
+    expressions: [
+      ID 'b'
+    ]
+    quasis: [
+      type: 'TemplateElement'
+      value:
+        raw: 'a'
+        cooked: 'a'
+      tail: no
+    ,
+      type: 'TemplateElement'
+      value:
+        cooked: 'c'
+      tail: yes
+    ]
+    quote: '"""'
 
 test "AST as expected for For node", ->
   testStatement 'for x, i in arr when x? then return',

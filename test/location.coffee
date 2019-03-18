@@ -72,7 +72,7 @@ test 'Verify locations in string interpolation (in "string")', ->
   [a, b, c] = getMatchingTokens '"a#{b}c"', '"a"', 'b', '"c"'
 
   eq a[2].first_line, 0
-  eq a[2].first_column, 0
+  eq a[2].first_column, 1
   eq a[2].last_line, 0
   eq a[2].last_column, 1
 
@@ -84,7 +84,7 @@ test 'Verify locations in string interpolation (in "string")', ->
   eq c[2].first_line, 0
   eq c[2].first_column, 6
   eq c[2].last_line, 0
-  eq c[2].last_column, 7
+  eq c[2].last_column, 6
 
 test 'Verify locations in string interpolation (in "string", multiple interpolation)', ->
   [a, b, c] = getMatchingTokens '"#{a}b#{c}"', 'a', '"b"', 'c'
@@ -180,7 +180,7 @@ test 'Verify locations in string interpolation (in """string""", line breaks)', 
   [a, b, c] = getMatchingTokens '"""a\n#{b}\nc"""', '"a\n"', 'b', '"\nc"'
 
   eq a[2].first_line, 0
-  eq a[2].first_column, 0
+  eq a[2].first_column, 3
   eq a[2].last_line, 0
   eq a[2].last_column, 4
 
@@ -192,7 +192,7 @@ test 'Verify locations in string interpolation (in """string""", line breaks)', 
   eq c[2].first_line, 1
   eq c[2].first_column, 4
   eq c[2].last_line, 2
-  eq c[2].last_column, 3
+  eq c[2].last_column, 0
 
 test 'Verify locations in string interpolation (in """string""", starting with a line break)', ->
   [b, c] = getMatchingTokens '"""\n#{b}\nc"""', 'b', '"\nc"'
@@ -205,13 +205,13 @@ test 'Verify locations in string interpolation (in """string""", starting with a
   eq c[2].first_line, 1
   eq c[2].first_column, 4
   eq c[2].last_line, 2
-  eq c[2].last_column, 3
+  eq c[2].last_column, 0
 
 test 'Verify locations in string interpolation (in """string""", starting with line breaks)', ->
   [a, b, c] = getMatchingTokens '"""\n\n#{b}\nc"""', '"\n\n"', 'b', '"\nc"'
 
   eq a[2].first_line, 0
-  eq a[2].first_column, 0
+  eq a[2].first_column, 3
   eq a[2].last_line, 1
   eq a[2].last_column, 0
 
@@ -223,7 +223,7 @@ test 'Verify locations in string interpolation (in """string""", starting with l
   eq c[2].first_line, 2
   eq c[2].first_column, 4
   eq c[2].last_line, 3
-  eq c[2].last_column, 3
+  eq c[2].last_column, 0
 
 test 'Verify locations in string interpolation (in """string""", multiple interpolation)', ->
   [a, b, c] = getMatchingTokens '"""#{a}\nb\n#{c}"""', 'a', '"\nb\n"', 'c'
@@ -301,7 +301,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   [a, b, c] = getMatchingTokens '///a#{b}c///', '"a"', 'b', '"c"'
 
   eq a[2].first_line, 0
-  eq a[2].first_column, 0
+  eq a[2].first_column, 3
   eq a[2].last_line, 0
   eq a[2].last_column, 3
 
@@ -313,7 +313,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].first_line, 0
   eq c[2].first_column, 8
   eq c[2].last_line, 0
-  eq c[2].last_column, 11
+  eq c[2].last_column, 8
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks)', ->
   [a, b, c] = getMatchingTokens '///#{a}\nb\n#{c}///', 'a', '"\nb\n"', 'c'
@@ -355,7 +355,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   [a, b, c] = getMatchingTokens '///a\n\n\n#{b}\n\n\nc///', '"a\n\n\n"', 'b', '"\n\n\nc"'
 
   eq a[2].first_line, 0
-  eq a[2].first_column, 0
+  eq a[2].first_column, 3
   eq a[2].last_line, 2
   eq a[2].last_column, 0
 
@@ -367,7 +367,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].first_line, 3
   eq c[2].first_column, 4
   eq c[2].last_line, 6
-  eq c[2].last_column, 3
+  eq c[2].last_column, 0
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks and starting with linebreak)', ->
   [a, b, c] = getMatchingTokens '///\n#{a}\nb\n#{c}///', 'a', '"\nb\n"', 'c'
@@ -409,7 +409,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   [a, b, c] = getMatchingTokens '///\n\n\na\n\n\n#{b}\n\n\nc///', '"\n\n\na\n\n\n"', 'b', '"\n\n\nc"'
 
   eq a[2].first_line, 0
-  eq a[2].first_column, 0
+  eq a[2].first_column, 3
   eq a[2].last_line, 5
   eq a[2].last_column, 0
 
@@ -421,7 +421,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].first_line, 6
   eq c[2].first_column, 4
   eq c[2].last_line, 9
-  eq c[2].last_column, 3
+  eq c[2].last_column, 0
 
 test "#3822: Simple string/regex start/end should include delimiters", ->
   [stringToken] = CoffeeScript.tokens "'string'"

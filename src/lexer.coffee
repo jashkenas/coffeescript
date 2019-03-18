@@ -301,7 +301,7 @@ exports.Lexer = class Lexer
         indent = attempt if indent is null or 0 < attempt.length < indent.length
 
     delimiter = quote.charAt(0)
-    @mergeInterpolationTokens tokens, {quote, indent}, (value) =>
+    @mergeInterpolationTokens tokens, {quote, indent, endOffset: end}, (value) =>
       @validateUnicodeCodePointEscapes value, delimiter: quote
 
     if @atCSXTag()
@@ -355,8 +355,7 @@ exports.Lexer = class Lexer
       # this comment to; and follow with a newline.
       commentAttachments[0].newLine = yes
       @lineToken @chunk[comment.length..] # Set the indent.
-      placeholderToken = @makeToken 'JS', ''
-      placeholderToken.generated = yes
+      placeholderToken = @makeToken 'JS', '', generated: yes
       placeholderToken.comments = commentAttachments
       @tokens.push placeholderToken
       @newlineToken 0
@@ -417,7 +416,7 @@ exports.Lexer = class Lexer
         @token 'REGEX_START', '(',    {length: 0, origin}
         @token 'IDENTIFIER', 'RegExp', length: 0
         @token 'CALL_START', '(',      length: 0
-        @mergeInterpolationTokens tokens, {double: yes, heregex: {flags}}, (str) =>
+        @mergeInterpolationTokens tokens, {double: yes, heregex: {flags}, endOffset: end}, (str) =>
           @validateUnicodeCodePointEscapes str, {delimiter}
         if flags
           @token ',', ',',                    offset: index - 1, length: 0
@@ -613,7 +612,7 @@ exports.Lexer = class Lexer
         @token ',', 'JSX_COMMA', generated: yes
         {tokens, index: end} =
           @matchWithInterpolations INSIDE_CSX, '>', '</', CSX_INTERPOLATION
-        @mergeInterpolationTokens tokens, {}, (value) =>
+        @mergeInterpolationTokens tokens, {endOffset: end}, (value) =>
           @validateUnicodeCodePointEscapes value, delimiter: '>'
         match = CSX_IDENTIFIER.exec(@chunk[end...]) or CSX_FRAGMENT_IDENTIFIER.exec(@chunk[end...])
         if not match or match[1] isnt "#{csxTag.name}#{(".#{property}" for property in csxTag.properties).join ''}"
@@ -845,20 +844,6 @@ exports.Lexer = class Lexer
     unless str[...closingDelimiter.length] is closingDelimiter
       @error "missing #{closingDelimiter}", length: delimiter.length
 
-    [firstToken, ..., lastToken] = tokens
-    firstToken[2].first_column -= delimiter.length
-    firstToken[2].range[0]     -= delimiter.length
-    lastToken[2].range[1]      += closingDelimiter.length
-    if lastToken[1].substr(-1) is '\n'
-      lastToken[2].last_line += 1
-      lastToken[2].last_column = closingDelimiter.length - 1
-    else
-      lastToken[2].last_column += closingDelimiter.length
-    lastToken[2].last_column_exclusive += closingDelimiter.length
-    if lastToken[1].length is 0
-      lastToken[2].last_column -= 1
-      lastToken[2].range[1]    -= 1
-
     {tokens, index: offsetInChunk + closingDelimiter.length}
 
   # Merge the array `tokens` of the fake token types `'TOKENS'` and `'NEOSTRING'`
@@ -866,10 +851,10 @@ exports.Lexer = class Lexer
   # of `'NEOSTRING'`s are converted using `fn` and turned into strings using
   # `options` first.
   mergeInterpolationTokens: (tokens, options, fn) ->
-    {quote, indent, double, heregex} = options
+    {quote, indent, double, heregex, endOffset} = options
 
     if tokens.length > 1
-      lparen = @token 'STRING_START', '(', length: 0, data: {quote}
+      lparen = @token 'STRING_START', '(', length: quote?.length ? 0, data: {quote}
 
     firstIndex = @tokens.length
     $ = tokens.length - 1
@@ -900,6 +885,19 @@ exports.Lexer = class Lexer
           addTokenData token, {heregex} if heregex
           token[0] = 'STRING'
           token[1] = '"' + converted + '"'
+          if tokens.length is 1 and quote?
+            token[2].first_column -= quote.length
+            if token[1].substr(-2, 1) is '\n'
+              token[2].last_line +=1
+              token[2].last_column = quote.length - 1
+            else
+              token[2].last_column += quote.length
+              token[2].last_column -= 1 if token[1].length is 2
+            token[2].last_column_exclusive += quote.length
+            token[2].range = [
+              token[2].range[0] - quote.length
+              token[2].range[1] + quote.length
+            ]
           locationToken = token
           tokensToPush = [token]
       @tokens.push tokensToPush...
@@ -919,15 +917,7 @@ exports.Lexer = class Lexer
         ]
       ]
       lparen[2] = lparen.origin[2]
-      rparen = @token 'STRING_END', ')'
-      rparen[2] =
-        first_line:            lastToken[2].last_line
-        first_column:          lastToken[2].last_column
-        last_line:             lastToken[2].last_line
-        last_column:           lastToken[2].last_column
-        last_line_exclusive:   lastToken[2].last_line_exclusive
-        last_column_exclusive: lastToken[2].last_column_exclusive
-        range:                 lastToken[2].range
+      rparen = @token 'STRING_END', ')', offset: endOffset - (quote ? '').length, length: quote?.length ? 0
 
   # Pairs up a closing token, ensuring that all listed pairs of tokens are
   # correctly balanced throughout the course of the token stream.
@@ -989,9 +979,10 @@ exports.Lexer = class Lexer
 
   # Same as `token`, except this just returns the token without adding it
   # to the results.
-  makeToken: (tag, value, {offset: offsetInChunk = 0, length = value.length, origin} = {}) ->
+  makeToken: (tag, value, {offset: offsetInChunk = 0, length = value.length, origin, generated} = {}) ->
     token = [tag, value, @makeLocationData {offsetInChunk, length}]
     token.origin = origin if origin
+    token.generated = yes if generated
     token
 
   # Add a token to the results.
@@ -1000,8 +991,8 @@ exports.Lexer = class Lexer
   # not specified, the length of `value` will be used.
   #
   # Returns the new token.
-  token: (tag, value, {offset, length, origin, data} = {}) ->
-    token = @makeToken tag, value, {offset, length, origin}
+  token: (tag, value, {offset, length, origin, data, generated} = {}) ->
+    token = @makeToken tag, value, {offset, length, origin, generated}
     addTokenData token, data if data
     @tokens.push token
     token
