@@ -261,11 +261,14 @@ exports.Lexer = class Lexer
         @error "octal literal '#{number}' must be prefixed with '0o'", length: lexedLength
 
     parsedValue = Number number
+    tokenData = {parsedValue}
 
     tag = if Number.isFinite(parsedValue) then 'NUMBER' else 'INFINITY'
+    if tag is 'INFINITY'
+      tokenData.original = number
     @token tag, number,
       length: lexedLength
-      data: {parsedValue}
+      data: tokenData
     lexedLength
 
   # Matches strings, including multiline strings, as well as heredocs, with or without

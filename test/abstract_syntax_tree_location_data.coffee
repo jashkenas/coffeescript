@@ -154,6 +154,19 @@ test "AST location data as expected for InfinityLiteral node", ->
         line: 1
         column: 8
 
+  testAstLocationData '2e308',
+    type: 'NumericLiteral'
+    start: 0
+    end: 5
+    range: [0, 5]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 5
+
 test "AST location data as expected for NaNLiteral node", ->
   testAstLocationData 'NaN',
     type: 'Identifier'

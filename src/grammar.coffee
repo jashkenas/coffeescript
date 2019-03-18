@@ -214,7 +214,7 @@ grammar =
     o 'UNDEFINED',                              -> new UndefinedLiteral $1
     o 'NULL',                                   -> new NullLiteral $1
     o 'BOOL',                                   -> new BooleanLiteral $1.toString(), originalValue: $1.original
-    o 'INFINITY',                               -> new InfinityLiteral $1
+    o 'INFINITY',                               -> new InfinityLiteral $1.toString(), originalValue: $1.original
     o 'NAN',                                    -> new NaNLiteral $1
   ]
 
