@@ -5378,23 +5378,6 @@ test "AST location data as expected for For node", ->
         column: 3
 
 test "AST location data as expected for StringWithInterpolations node", ->
-  # testExpression '"#{o}/"',
-  #   type: 'TemplateLiteral'
-  #   quote: '"'
-  #   body:
-  #     type: 'Block'
-  #     expressions: [
-  #       originalValue: ''
-  #     ,
-  #       type: 'Interpolation'
-  #       expression:
-  #         type: 'Value'
-  #         base:
-  #           value: 'o'
-  #     ,
-  #       originalValue: '/'
-  #     ]
-
   testAstLocationData '"a#{b}c"',
     type: 'TemplateLiteral'
     expressions: [
