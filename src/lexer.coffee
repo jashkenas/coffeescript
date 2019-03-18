@@ -820,6 +820,11 @@ exports.Lexer = class Lexer
         [open, ..., close] = nested
         open[0]  = 'INTERPOLATION_START'
         open[1]  = '('
+        open[2].first_column -= interpolationOffset
+        open[2].range = [
+          open[2].range[0] - interpolationOffset
+          open[2].range[1]
+        ]
         close[0]  = 'INTERPOLATION_END'
         close[1] = ')'
         close.origin = ['', 'end of interpolation', close[2]]
@@ -972,7 +977,7 @@ exports.Lexer = class Lexer
     [locationData.last_line, locationData.last_column, endOffset] =
       @getLineAndColumnFromChunk offsetInChunk + lastCharacter
     [locationData.last_line_exclusive, locationData.last_column_exclusive] =
-      @getLineAndColumnFromChunk offsetInChunk + lastCharacter + 1
+      @getLineAndColumnFromChunk offsetInChunk + lastCharacter + (if length > 0 then 1 else 0)
     locationData.range[1] = if length > 0 then endOffset + 1 else endOffset
 
     locationData

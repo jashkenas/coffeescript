@@ -2216,23 +2216,6 @@ test "AST as expected for Parens node", ->
     value: 1
 
 test "AST as expected for StringWithInterpolations node", ->
-  # testExpression '"#{o}/"',
-  #   type: 'TemplateLiteral'
-  #   quote: '"'
-  #   body:
-  #     type: 'Block'
-  #     expressions: [
-  #       originalValue: ''
-  #     ,
-  #       type: 'Interpolation'
-  #       expression:
-  #         type: 'Value'
-  #         base:
-  #           value: 'o'
-  #     ,
-  #       originalValue: '/'
-  #     ]
-
   testExpression '"a#{b}c"',
     type: 'TemplateLiteral'
     expressions: [
@@ -2242,12 +2225,11 @@ test "AST as expected for StringWithInterpolations node", ->
       type: 'TemplateElement'
       value:
         raw: 'a'
-        cooked: 'a'
       tail: no
     ,
       type: 'TemplateElement'
       value:
-        cooked: 'c'
+        raw: 'c'
       tail: yes
     ]
     quote: '"'
@@ -2261,12 +2243,77 @@ test "AST as expected for StringWithInterpolations node", ->
       type: 'TemplateElement'
       value:
         raw: 'a'
-        cooked: 'a'
       tail: no
     ,
       type: 'TemplateElement'
       value:
-        cooked: 'c'
+        raw: 'c'
+      tail: yes
+    ]
+    quote: '"""'
+
+  testExpression '"#{b}"',
+    type: 'TemplateLiteral'
+    expressions: [
+      ID 'b'
+    ]
+    quasis: [
+      type: 'TemplateElement'
+      value:
+        raw: ''
+      tail: no
+    ,
+      type: 'TemplateElement'
+      value:
+        raw: ''
+      tail: yes
+    ]
+    quote: '"'
+
+  testExpression '''
+    " a
+      #{b}
+      c
+    "
+  ''',
+    type: 'TemplateLiteral'
+    expressions: [
+      ID 'b'
+    ]
+    quasis: [
+      type: 'TemplateElement'
+      value:
+        raw: ' a\n  '
+      tail: no
+    ,
+      type: 'TemplateElement'
+      value:
+        raw: '\n  c\n'
+      tail: yes
+    ]
+    quote: '"'
+
+  testExpression '''
+    """
+      a
+        b#{
+        c
+      }d
+    """
+  ''',
+    type: 'TemplateLiteral'
+    expressions: [
+      ID 'c'
+    ]
+    quasis: [
+      type: 'TemplateElement'
+      value:
+        raw: '\n  a\n    b'
+      tail: no
+    ,
+      type: 'TemplateElement'
+      value:
+        raw: 'd\n'
       tail: yes
     ]
     quote: '"""'

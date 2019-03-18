@@ -4554,7 +4554,6 @@ exports.TemplateElement = class TemplateElement extends Base
     return
       value:
         raw: @value
-        cooked: @value
       tail: !!@tail
 
 exports.Interpolation = class Interpolation extends Base
