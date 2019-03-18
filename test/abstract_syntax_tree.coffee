@@ -2226,65 +2226,213 @@ test "AST as expected for Parens node", ->
 #         originalValue: '/'
 #       ]
 
-# test "AST as expected for For node", ->
-#   testExpression 'for x, i in arr when x? then return',
-#     type: 'For'
-#     from: undefined
-#     object: undefined
-#     range: no
-#     pattern: no
-#     returns: no
-#     guard:
-#       type: 'Existence'
-#     source:
-#       type: 'IdentifierLiteral'
-#     body:
-#       type: 'Return'
+test "AST as expected for For node", ->
+  testStatement 'for x, i in arr when x? then return',
+    type: 'For'
+    name: ID 'x'
+    index: ID 'i'
+    guard:
+      type: 'UnaryExpression'
+    source: ID 'arr'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ReturnStatement'
+      ]
+    style: 'in'
+    own: no
+    postfix: no
+    await: no
+    step: null
 
-#   testExpression 'for k, v of obj then return',
-#     type: 'For'
-#     from: undefined
-#     object: yes
-#     range: no
-#     pattern: no
-#     returns: no
-#     guard: undefined
-#     source:
-#       type: 'IdentifierLiteral'
+  testStatement 'for k, v of obj then return',
+    type: 'For'
+    name: ID 'v'
+    index: ID 'k'
+    guard: null
+    source: ID 'obj'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ReturnStatement'
+      ]
+    style: 'of'
+    own: no
+    postfix: no
+    await: no
+    step: null
 
-#   testExpression 'for x from iterable then',
-#     type: 'For'
-#     from: yes
-#     object: undefined
-#     body:
-#       type: 'Block'
-#     source:
-#       type: 'IdentifierLiteral'
+  testStatement 'for x from iterable then',
+    type: 'For'
+    name: ID 'x'
+    index: null
+    guard: null
+    body: EMPTY_BLOCK
+    source: ID 'iterable'
+    style: 'from'
+    own: no
+    postfix: no
+    await: no
+    step: null
 
-#   testExpression 'for i in [0...42] by step when not i % 2 then',
-#     type: 'For'
-#     from: undefined
-#     object: undefined
-#     range: yes
-#     pattern: no
-#     returns: no
-#     body:
-#       type: 'Block'
-#     source:
-#       type: 'Range'
-#     guard:
-#       type: 'Op'
-#     step:
-#       type: 'IdentifierLiteral'
+  testStatement 'for i in [0...42] by step when not (i % 2) then',
+    type: 'For'
+    name: ID 'i'
+    index: null
+    body: EMPTY_BLOCK
+    source:
+      type: 'Range'
+    guard:
+      type: 'UnaryExpression'
+    step: ID 'step'
+    style: 'in'
+    own: no
+    postfix: no
+    await: no
 
-#   testExpression 'a = (x for x in y)',
-#     type: 'Assign'
-#     value:
-#       type: 'Parens'
-#       body:
-#         type: 'For'
-#         returns: no
-#         pattern: no
+  testExpression 'a = (x for x in y)',
+    type: 'AssignmentExpression'
+    right:
+      type: 'For'
+      name: ID 'x'
+      index: null
+      body:
+        type: 'BlockStatement'
+        body: [
+          type: 'ExpressionStatement'
+          expression: ID 'x'
+        ]
+      source: ID 'y'
+      guard: null
+      step: null
+      style: 'in'
+      own: no
+      postfix: yes
+      await: no
+
+  testStatement 'x for [0...1]',
+    type: 'For'
+    name: null
+    index: null
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression: ID 'x'
+      ]
+    source:
+      type: 'Range'
+    guard: null
+    step: null
+    style: 'range'
+    own: no
+    postfix: yes
+    await: no
+
+  testStatement '''
+    for own x, y of z
+      c()
+      d
+  ''',
+    type: 'For'
+    name: ID 'y'
+    index: ID 'x'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'CallExpression'
+      ,
+        type: 'ExpressionStatement'
+        expression: ID 'd'
+      ]
+    source: ID 'z'
+    guard: null
+    step: null
+    style: 'of'
+    own: yes
+    postfix: no
+    await: no
+
+  testExpression '''
+    ->
+      for await x from y
+        z
+  ''',
+    type: 'FunctionExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'For'
+        name: ID 'x'
+        index: null
+        body:
+          type: 'BlockStatement'
+          body: [
+            type: 'ExpressionStatement'
+            expression: ID 'z'
+          ]
+        source: ID 'y'
+        guard: null
+        step: null
+        style: 'from'
+        own: no
+        postfix: no
+        await: yes
+      ]
+
+  testStatement '''
+    for {x} in y
+      z
+  ''',
+    type: 'For'
+    name:
+      type: 'ObjectPattern'
+      properties: [
+        type: 'ObjectProperty'
+        key: ID 'x'
+        value: ID 'x'
+        shorthand: yes
+        computed: no
+      ]
+    index: null
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression: ID 'z'
+      ]
+    source: ID 'y'
+    guard: null
+    step: null
+    style: 'in'
+    postfix: no
+    await: no
+
+  testStatement '''
+    for [x] in y
+      z
+  ''',
+    type: 'For'
+    name:
+      type: 'ArrayPattern'
+      elements: [
+        ID 'x'
+      ]
+    index: null
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression: ID 'z'
+      ]
+    source: ID 'y'
+    guard: null
+    step: null
+    style: 'in'
+    postfix: no
+    await: no
 
 #   # TODO: Figure out the purpose of `pattern` and `returns`.
 

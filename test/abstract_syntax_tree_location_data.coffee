@@ -4948,3 +4948,418 @@ test "AST location data as expected for MetaProperty node", ->
       end:
         line: 1
         column: 13
+
+test "AST location data as expected for For node", ->
+  testAstLocationData 'for x, i in arr when x? then return',
+    type: 'For'
+    name:
+      start: 4
+      end: 5
+      range: [4, 5]
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 1
+          column: 5
+    index:
+      start: 7
+      end: 8
+      range: [7, 8]
+      loc:
+        start:
+          line: 1
+          column: 7
+        end:
+          line: 1
+          column: 8
+    guard:
+      start: 21
+      end: 23
+      range: [21, 23]
+      loc:
+        start:
+          line: 1
+          column: 21
+        end:
+          line: 1
+          column: 23
+    source:
+      start: 12
+      end: 15
+      range: [12, 15]
+      loc:
+        start:
+          line: 1
+          column: 12
+        end:
+          line: 1
+          column: 15
+    body:
+      body: [
+        start: 29
+        end: 35
+        range: [29, 35]
+        loc:
+          start:
+            line: 1
+            column: 29
+          end:
+            line: 1
+            column: 35
+      ]
+      start: 24
+      end: 35
+      range: [24, 35]
+      loc:
+        start:
+          line: 1
+          column: 24
+        end:
+          line: 1
+          column: 35
+    start: 0
+    end: 35
+    range: [0, 35]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 35
+
+  testAstLocationData 'a = (x for x in y)',
+    type: 'AssignmentExpression'
+    right:
+      name:
+        start: 11
+        end: 12
+        range: [11, 12]
+        loc:
+          start:
+            line: 1
+            column: 11
+          end:
+            line: 1
+            column: 12
+      body:
+        start: 5
+        end: 6
+        range: [5, 6]
+        loc:
+          start:
+            line: 1
+            column: 5
+          end:
+            line: 1
+            column: 6
+      source:
+        start: 16
+        end: 17
+        range: [16, 17]
+        loc:
+          start:
+            line: 1
+            column: 16
+          end:
+            line: 1
+            column: 17
+      start: 5
+      end: 17
+      range: [5, 17]
+      loc:
+        start:
+          line: 1
+          column: 5
+        end:
+          line: 1
+          column: 17
+    start: 0
+    end: 18
+    range: [0, 18]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 18
+
+  testAstLocationData 'x for [0...1]',
+    type: 'For'
+    body:
+      start: 0
+      end: 1
+      range: [0, 1]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 1
+    source:
+      start: 6
+      end: 13
+      range: [6, 13]
+      loc:
+        start:
+          line: 1
+          column: 6
+        end:
+          line: 1
+          column: 13
+    start: 0
+    end: 13
+    range: [0, 13]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 13
+
+  testAstLocationData '''
+    for own x, y of z
+      c()
+      d
+  ''',
+    type: 'For'
+    name:
+      start: 11
+      end: 12
+      range: [11, 12]
+      loc:
+        start:
+          line: 1
+          column: 11
+        end:
+          line: 1
+          column: 12
+    index:
+      start: 8
+      end: 9
+      range: [8, 9]
+      loc:
+        start:
+          line: 1
+          column: 8
+        end:
+          line: 1
+          column: 9
+    body:
+      body: [
+        start: 20
+        end: 23
+        range: [20, 23]
+        loc:
+          start:
+            line: 2
+            column: 2
+          end:
+            line: 2
+            column: 5
+      ,
+        start: 26
+        end: 27
+        range: [26, 27]
+        loc:
+          start:
+            line: 3
+            column: 2
+          end:
+            line: 3
+            column: 3
+      ]
+      start: 18
+      end: 27
+      range: [18, 27]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 3
+    source:
+      start: 16
+      end: 17
+      range: [16, 17]
+      loc:
+        start:
+          line: 1
+          column: 16
+        end:
+          line: 1
+          column: 17
+    start: 0
+    end: 27
+    range: [0, 27]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 3
+
+  testAstLocationData '''
+    ->
+      for await x from y
+        z
+  ''',
+    type: 'FunctionExpression'
+    body:
+      body: [
+        name:
+          start: 15
+          end: 16
+          range: [15, 16]
+          loc:
+            start:
+              line: 2
+              column: 12
+            end:
+              line: 2
+              column: 13
+        body:
+          body: [
+            start: 28
+            end: 29
+            range: [28, 29]
+            loc:
+              start:
+                line: 3
+                column: 4
+              end:
+                line: 3
+                column: 5
+          ]
+          start: 24
+          end: 29
+          range: [24, 29]
+          loc:
+            start:
+              line: 3
+              column: 0
+            end:
+              line: 3
+              column: 5
+        source:
+          start: 22
+          end: 23
+          range: [22, 23]
+          loc:
+            start:
+              line: 2
+              column: 19
+            end:
+              line: 2
+              column: 20
+        start: 5
+        end: 29
+        range: [5, 29]
+        loc:
+          start:
+            line: 2
+            column: 2
+          end:
+            line: 3
+            column: 5
+      ]
+      start: 3
+      end: 29
+      range: [3, 29]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 5
+    start: 0
+    end: 29
+    range: [0, 29]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 5
+
+  testAstLocationData '''
+    for {x} in y
+      z
+  ''',
+    type: 'For'
+    name:
+      properties: [
+        start: 5
+        end: 6
+        range: [5, 6]
+        loc:
+          start:
+            line: 1
+            column: 5
+          end:
+            line: 1
+            column: 6
+      ]
+      start: 4
+      end: 7
+      range: [4, 7]
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 1
+          column: 7
+    body:
+      body: [
+        start: 15
+        end: 16
+        range: [15, 16]
+        loc:
+          start:
+            line: 2
+            column: 2
+          end:
+            line: 2
+            column: 3
+      ]
+      start: 13
+      end: 16
+      range: [13, 16]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 2
+          column: 3
+    source:
+      start: 11
+      end: 12
+      range: [11, 12]
+      loc:
+        start:
+          line: 1
+          column: 11
+        end:
+          line: 1
+          column: 12
+    start: 0
+    end: 16
+    range: [0, 16]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 2
+        column: 3

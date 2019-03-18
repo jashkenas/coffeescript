@@ -4537,6 +4537,9 @@ exports.For = class For extends While
 
   addBody: (body) ->
     @body = Block.wrap [body]
+    {expressions} = @body
+    if expressions.length
+      @body.locationData ?= mergeLocationData expressions[0].locationData, expressions[expressions.length - 1].locationData
     this
 
   addSource: (source) ->
@@ -4551,6 +4554,7 @@ exports.For = class For extends While
     @awaitTag.error 'await must be used with for-from' if @await and not @from
     @range   = @source instanceof Value and @source.base instanceof Range and not @source.properties.length and not @from
     @pattern = @name instanceof Value
+    @name.unwrap().propagateLhs?(yes) if @pattern
     @index.error 'indexes do not apply to range loops' if @range and @index
     @name.error 'cannot pattern match over range loops' if @range and @pattern
     @returns = no
@@ -4663,6 +4667,25 @@ exports.For = class For extends While
       @makeCode(@tab), @makeCode('}')
     fragments.push @makeCode(returnResult) if returnResult
     fragments
+
+  astType: -> 'For'
+
+  astProperties: (o) ->
+    return
+      source: @source?.ast o
+      body: @body.ast o, LEVEL_TOP
+      guard: @guard?.ast(o) ? null
+      name: @name?.ast(o) ? null
+      index: @index?.ast(o) ? null
+      step: @step?.ast(o) ? null
+      postfix: !!@postfix
+      own: !!@own
+      await: !!@await
+      style: switch
+        when @from   then 'from'
+        when @object then 'of'
+        when @name   then 'in'
+        else              'range'
 
 #### Switch
 
