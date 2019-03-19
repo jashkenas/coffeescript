@@ -114,6 +114,10 @@ buildLocationData = (first, last) ->
       last.range[1]
     ]
 
+# Get a lookup hash for a token based on its location data.
+# Multiple tokens might have the same location hash, but using exclusive
+# location data distinguishes e.g. zero-length generated tokens from
+# actual source tokens.
 buildLocationHash = (loc) ->
   "#{loc.range[0]}-#{loc.range[1]}"
 
