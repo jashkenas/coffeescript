@@ -2172,6 +2172,16 @@ exports.ExportSpecifier = class ExportSpecifier extends ModuleSpecifier
   constructor: (local, exported) ->
     super local, exported, 'export'
 
+exports.DynamicImport = class DynamicImport extends Base
+  compileNode: ->
+    [@makeCode 'import']
+
+exports.DynamicImportCall = class DynamicImportCall extends Call
+  compileNode: (o) ->
+    unless @args.length is 1
+      @error 'import() requires exactly one argument'
+    super o
+
 #### Assign
 
 # The **Assign** is used to assign a local variable to value, or to set the

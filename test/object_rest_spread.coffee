@@ -418,3 +418,13 @@ test "#4673: complex destructured object spread variables", ->
   g = ({@y...}) ->
     eq @y.b, 1
   g b: 1
+
+test "#4834: dynamic import can technically be object spread", ->
+  eqJS """
+    x = {...import('module')}
+  """,
+  """
+    var x;
+
+    x = {...import('module')};
+  """
