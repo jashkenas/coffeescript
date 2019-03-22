@@ -17,6 +17,7 @@
     "lib": "./lib/coffeescript"
   },
   "main": "./lib/coffeescript/index",
+  "module": "./docs/v2/browser-compiler-modern/coffeescript.js",
   "browser": "./lib/coffeescript/browser",
   "bin": {
     "coffee": "./bin/coffee",

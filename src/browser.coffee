@@ -58,7 +58,7 @@ CoffeeScript.load = (url, callback, options = {}, hold = false) ->
 # Activate CoffeeScript in the browser by having it compile and evaluate
 # all script tags with a content-type of `text/coffeescript`.
 # This happens on page load.
-runScripts = ->
+CoffeeScript.runScripts = ->
   scripts = window.document.getElementsByTagName 'script'
   coffeetypes = ['text/coffeescript', 'text/literate-coffeescript']
   coffees = (s for s in scripts when s.type in coffeetypes)
@@ -97,6 +97,6 @@ runScripts = ->
 
 # Listen for window load, both in decent browsers and in IE.
 if window.addEventListener
-  window.addEventListener 'DOMContentLoaded', runScripts, no
+  window.addEventListener 'DOMContentLoaded', CoffeeScript.runScripts, no
 else
-  window.attachEvent 'onload', runScripts
+  window.attachEvent 'onload', CoffeeScript.runScripts
