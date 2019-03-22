@@ -1,4 +1,4 @@
-import 'local-file.coffee'
+import './local-file.coffee'
 import 'coffeescript'
 
 import _ from 'underscore'

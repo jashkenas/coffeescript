@@ -4232,7 +4232,7 @@ greet = function(name, adjective) {
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="modules">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
-      <textarea class="coffeescript-input" id="modules-coffee">import 'local-file.coffee'
+      <textarea class="coffeescript-input" id="modules-coffee">import './local-file.coffee'
 import 'coffeescript'
 
 import _ from 'underscore'
@@ -4255,7 +4255,7 @@ export { Mathematics as default, sqrt as squareRoot }
 export * from 'underscore'
 export { max, min } from 'underscore'
 </textarea>
-      <pre class="placeholder-code"><span class="cm-variable">import</span> <span class="cm-string">'local-file.coffee'</span>
+      <pre class="placeholder-code"><span class="cm-variable">import</span> <span class="cm-string">'./local-file.coffee'</span>
 <span class="cm-variable">import</span> <span class="cm-string">'coffeescript'</span>
 
 <span class="cm-variable">import</span> <span class="cm-variable">_</span> <span class="cm-variable">from</span> <span class="cm-string">'underscore'</span>
@@ -4280,7 +4280,7 @@ export { max, min } from 'underscore'
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="modules-js">import 'local-file.coffee';
+      <textarea class="javascript-output" id="modules-js">import './local-file.coffee';
 
 import 'coffeescript';
 
@@ -4342,7 +4342,7 @@ export {
   min
 } from 'underscore';
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">import</span> <span class="cm-string">'local-file.coffee'</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">import</span> <span class="cm-string">'./local-file.coffee'</span>;
 
 <span class="cm-keyword">import</span> <span class="cm-string">'coffeescript'</span>;
 
@@ -4404,6 +4404,61 @@ export {
   <span class="cm-variable">min</span>
 } <span class="cm-keyword">from</span> <span class="cm-string">'underscore'</span>;
 </pre>
+    </div>
+  </div>
+  
+</aside>
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import#Dynamic_Imports">Dynamic import</a> is also supported, with mandatory parentheses:</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="dynamic_import">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="dynamic_import-coffee"># Your browser must support dynamic import to run this example.
+
+do ->
+  { run } = await import('./browser-compiler-modern/coffeescript.js')
+  run '''
+    if 5 < new Date().getHours() < 9
+      alert 'Time to make the coffee!'
+    else
+      alert 'Time to get some work done.'
+  '''
+</textarea>
+      <pre class="placeholder-code"><span class="cm-comment"># Your browser must support dynamic import to run this example.</span>
+
+<span class="cm-keyword">do</span> <span class="cm-operator">-></span>
+  <span class="cm-punctuation">{</span> <span class="cm-variable">run</span> <span class="cm-punctuation">}</span> <span class="cm-punctuation">=</span> <span class="cm-variable">await</span> <span class="cm-variable">import</span><span class="cm-punctuation">(</span><span class="cm-string">'./browser-compiler-modern/coffeescript.js'</span><span class="cm-punctuation">)</span>
+  <span class="cm-variable">run</span> <span class="cm-string">'''</span>
+<span class="cm-string">    if 5 &lt; new Date().getHours() &lt; 9</span>
+<span class="cm-string">      alert 'Time to make the coffee!'</span>
+<span class="cm-string">    else</span>
+<span class="cm-string">      alert 'Time to get some work done.'</span>
+<span class="cm-string">  '''</span>
+</pre>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="dynamic_import-js">// Your browser must support dynamic import to run this example.
+(async function() {
+  var run;
+  ({run} = (await import('./browser-compiler-modern/coffeescript.js')));
+  return run('if 5 < new Date().getHours() < 9\n  alert \'Time to make the coffee!\'\nelse\n  alert \'Time to get some work done.\'');
+})();
+</textarea>
+      <pre class="placeholder-code"><span class="cm-comment">// Your browser must support dynamic import to run this example.</span>
+(<span class="cm-keyword">async</span> <span class="cm-keyword">function</span>() {
+  <span class="cm-keyword">var</span> <span class="cm-def">run</span>;
+  ({<span class="cm-property">run</span>} <span class="cm-operator">=</span> (<span class="cm-keyword">await</span> <span class="cm-keyword">import</span>(<span class="cm-string">'./browser-compiler-modern/coffeescript.js'</span>)));
+  <span class="cm-keyword">return</span> <span class="cm-variable-2">run</span>(<span class="cm-string">'if 5 &lt; new Date().getHours() &lt; 9\n  alert \'Time to make the coffee!\'\nelse\n  alert \'Time to get some work done.\''</span>);
+})();
+</pre>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col text-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="dynamic_import" data-run="true"><small><svg class="play-button" viewBox="0 0 24 24">
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
+</svg>
+</small></button>
     </div>
   </div>
   
