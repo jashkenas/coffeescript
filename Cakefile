@@ -75,6 +75,7 @@ transpile = (code) ->
   presets.push ['minify', {mangle: no, evaluate: no, removeUndefined: no}] unless process.env.MINIFY is 'false'
   babelOptions =
     compact: process.env.MINIFY isnt 'false'
+    comments: process.env.MINIFY isnt 'false'
     presets: presets
     sourceType: 'script'
   { code } = babel.transform code, babelOptions unless presets.length is 0
