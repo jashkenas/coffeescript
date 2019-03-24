@@ -1113,11 +1113,7 @@ exports.isUnassignable = isUnassignable
 # “sometimes” keyword.
 isForFrom = (prev) ->
   if prev[0] is 'IDENTIFIER'
-    # `for i from from`, `for from from iterable`
-    if prev[1] is 'from'
-      prev[1][0] = 'IDENTIFIER'
-      yes
-    # `for i from iterable`
+    # `for i from from`, `for from from iterable`, `for i from iterable`
     yes
   # `for from…`
   else if prev[0] is 'FOR'
