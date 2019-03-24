@@ -66,16 +66,18 @@ build = (callback) ->
   buildParser()
   buildExceptParser callback
 
-transpile = (code) ->
+transpile = (code, options = {}) ->
+  options.minify =    process.env.MINIFY isnt 'false'
+  options.transform = process.env.TRANSFORM isnt 'false'
   babel = require '@babel/core'
   presets = []
   # Exclude the `modules` plugin in order to not break the `}(this));`
   # at the end of the `build:browser` code block.
-  presets.push ['@babel/env', {modules: no}] unless process.env.TRANSFORM is 'false'
-  presets.push ['minify', {mangle: no, evaluate: no, removeUndefined: no}] unless process.env.MINIFY is 'false'
+  presets.push ['@babel/env', {modules: no}] if options.transform
+  presets.push ['minify', {mangle: no, evaluate: no, removeUndefined: no}] if options.minify
   babelOptions =
-    compact: process.env.MINIFY isnt 'false'
-    comments: process.env.MINIFY isnt 'false'
+    compact: not options.minify
+    comments: not options.minify
     presets: presets
     sourceType: 'script'
   { code } = babel.transform code, babelOptions unless presets.length is 0
