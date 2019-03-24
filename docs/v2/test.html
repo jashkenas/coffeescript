@@ -3,7 +3,11 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
   <title>CoffeeScript Test Suite</title>
-  <script src="browser-compiler/coffeescript.js"></script>
+  <script nomodule src="browser-compiler/coffeescript.js"></script>
+  <script type="module">
+    import CoffeeScript from './browser-compiler-modern/coffeescript.js';
+    window.CoffeeScript = CoffeeScript;
+  </script>
   <script src="https://cdn.jsdelivr.net/underscorejs/1.8.3/underscore-min.js"></script>
   <style>
     body, pre {
@@ -451,6 +455,12 @@ test "array elisions nested destructuring", ->
   [,d,,[,,{w}]] = aobj
   deepEqual d, {x:2}
   arrayEq w, [1,2,4]
+
+test "#5112: array elisions not detected inside strings", ->
+  arr = [
+    str: ", #{3}"
+  ]
+  eq arr[0].str, ', 3'
 
 # Splats in Array Literals
 
@@ -3545,6 +3555,19 @@ test "#4609: Support new.target", ->
 
   new Foo()
   eq newTarget, yes
+
+test "#5085: Bug: @ reference to class not maintained in do block", ->
+  thisFoo = 'initial foo'
+  thisBar = 'initial bar'
+  fn = (o) -> o.bar()
+
+  class A
+    @foo = 'foo assigned in class'
+    do => thisFoo = @foo
+    fn bar: => thisBar = @foo
+
+  eq thisFoo, 'foo assigned in class'
+  eq thisBar, 'foo assigned in class'
 
 </script>
 <script type="text/x-coffeescript" class="test" id="cluster">
@@ -9580,6 +9603,32 @@ test "`new.target` is only allowed meta property", ->
        ^^^^^^^^^^^^^
   '''
 
+test "#4834: dynamic import requires exactly one argument", ->
+  assertErrorFormat '''
+    import()
+  ''', '''
+    [stdin]:1:1: error: import() requires exactly one argument
+    import()
+    ^^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    import('x', {})
+  ''', '''
+    [stdin]:1:1: error: import() requires exactly one argument
+    import('x', {})
+    ^^^^^^^^^^^^^^^
+  '''
+
+test "#4834: dynamic import requires explicit call parentheses", ->
+  assertErrorFormat '''
+    promise = import 'foo'
+  ''', '''
+    [stdin]:1:23: error: unexpected end of input
+    promise = import 'foo'
+                          ^
+  '''
+
 </script>
 <script type="text/x-coffeescript" class="test" id="eval">
 if vm = require? 'vm'
@@ -11723,6 +11772,10 @@ test "#4657: destructured array parameters", ->
   result = f [1, 2, 3, 4]
   arrayEq result.a, [1, 2, 3]
   eq result.b, 4
+
+test "#5128: default parameters of function in binary operation", ->
+  foo = yes or (a, b = {}) -> null
+  eq foo, yes
 
 </script>
 <script type="text/x-coffeescript" class="test" id="generators">
@@ -14443,6 +14496,27 @@ test "#4874: backslash `export`", ->
     } from 'underscore';
     """
 
+test "#4834: dynamic import", ->
+  eqJS """
+    import('module').then ->
+  """,
+  """
+    import('module').then(function() {});
+  """
+
+  eqJS """
+    foo = ->
+      bar = await import('bar')
+  """,
+  """
+    var foo;
+
+    foo = async function() {
+      var bar;
+      return bar = (await import('bar'));
+    };
+  """
+
 </script>
 <script type="text/x-coffeescript" class="test" id="numbers">
 # Number Literals
@@ -14956,6 +15030,16 @@ test "#4673: complex destructured object spread variables", ->
   g = ({@y...}) ->
     eq @y.b, 1
   g b: 1
+
+test "#4834: dynamic import can technically be object spread", ->
+  eqJS """
+    x = {...import('module')}
+  """,
+  """
+    var x;
+
+    x = {...import('module')};
+  """
 
 </script>
 <script type="text/x-coffeescript" class="test" id="objects">

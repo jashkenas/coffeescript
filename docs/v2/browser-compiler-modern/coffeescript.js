@@ -27,8 +27,8 @@ var CoffeeScript = function() {
     "lib": "./lib/coffeescript"
   },
   "main": "./lib/coffeescript/index",
-  "browser": "./docs/v2/browser-compiler/coffeescript.js",
   "module": "./docs/v2/browser-compiler-modern/coffeescript.js",
+  "browser": "./lib/coffeescript/browser",
   "bin": {
     "coffee": "./bin/coffee",
     "cake": "./bin/cake"
@@ -56,7 +56,7 @@ var CoffeeScript = function() {
     "codemirror": "^5.45.0",
     "docco": "~0.8.0",
     "highlight.js": "~9.15.6",
-    "jison": ">=0.4.18",
+    "jison": "^0.4.18",
     "markdown-it": "~8.4.2",
     "underscore": "~1.9.1",
     "webpack": "~4.29.6"
@@ -2930,12 +2930,7 @@ var CoffeeScript = function() {
   isForFrom = function(prev) {
     var ref;
     if (prev[0] === 'IDENTIFIER') {
-      // `for i from from`, `for from from iterable`
-      if (prev[1] === 'from') {
-        prev[1][0] = 'IDENTIFIER';
-        true;
-      }
-      // `for i from iterable`
+      // `for i from from`, `for from from iterable`, `for i from iterable`
       return true;
     // `for from…`
     } else if (prev[0] === 'FOR') {

@@ -3,7 +3,11 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
   <title>CoffeeScript Test Suite</title>
-  <script src="browser-compiler/coffeescript.js"></script>
+  <script nomodule src="browser-compiler/coffeescript.js"></script>
+  <script type="module">
+    import CoffeeScript from './browser-compiler-modern/coffeescript.js';
+    window.CoffeeScript = CoffeeScript;
+  </script>
   <script src="https://cdn.jsdelivr.net/underscorejs/1.8.3/underscore-min.js"></script>
   <style>
     body, pre {
