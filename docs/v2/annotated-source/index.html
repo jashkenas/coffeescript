@@ -403,8 +403,7 @@ CoffeeScript.register = <span class="hljs-function">-&gt;</span> <span class="hl
       Use CoffeeScript.register() or require the coffeescript/register module to require <span class="hljs-subst">#{ext}</span> files.
       """</span>
 
-CoffeeScript._compileFile = <span class="hljs-function"><span class="hljs-params">(filename, options = {})</span> -&gt;</span>
-  raw = fs.readFileSync filename, <span class="hljs-string">'utf8'</span></pre></div></div>
+CoffeeScript._compileRawFileContent = <span class="hljs-function"><span class="hljs-params">(raw, filename, options = {})</span> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -449,6 +448,11 @@ information to error so it can be pretty-printed later.</p>
             <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">throw</span> helpers.updateSyntaxError err, stripped, filename
 
   answer
+
+CoffeeScript._compileFile = <span class="hljs-function"><span class="hljs-params">(filename, options = {})</span> -&gt;</span>
+  raw = fs.readFileSync filename, <span class="hljs-string">'utf8'</span>
+
+  CoffeeScript._compileRawFileContent raw, filename, options
 
 <span class="hljs-built_in">module</span>.exports = CoffeeScript</pre></div></div>
             

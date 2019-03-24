@@ -542,7 +542,7 @@ the two values are raw nodes which have not been compiled.</p>
               </div>
               <p>Occasionally it may be useful to make an expression behave as if it was ‘hoisted’, whereby the
 result of the expression is available before its location in the source, but the expression’s
-variable scope corresponds the source position. This is used extensively to deal with executable
+variable scope corresponds to the source position. This is used extensively to deal with executable
 class bodies in classes.</p>
 <p>Calling this method mutates the node, proxying the <code>compileNode</code> and <code>compileToFragments</code>
 methods to store their result for later replacing the <code>target</code> node, which is returned by the
@@ -3479,7 +3479,8 @@ are too.</p>
   compileNode: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
     <span class="hljs-keyword">return</span> [@makeCode <span class="hljs-string">'[]'</span>] <span class="hljs-keyword">unless</span> @objects.length
     o.indent += TAB
-<span class="hljs-function">    <span class="hljs-title">fragmentIsElision</span> = <span class="hljs-params">(fragment)</span> -&gt;</span> fragmentsToText(fragment).trim() <span class="hljs-keyword">is</span> <span class="hljs-string">','</span></pre></div></div>
+<span class="hljs-function">    <span class="hljs-title">fragmentIsElision</span> = <span class="hljs-params">([ fragment ])</span> -&gt;</span>
+      fragment.type <span class="hljs-keyword">is</span> <span class="hljs-string">'Elision'</span> <span class="hljs-keyword">and</span> fragment.code.trim() <span class="hljs-keyword">is</span> <span class="hljs-string">','</span></pre></div></div>
             
         </li>
         
@@ -3490,7 +3491,7 @@ are too.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-144">&#182;</a>
               </div>
-              <p>Detect if <code>Elisions</code> at the beginning of the array are processed (e.g. [, , , a]).</p>
+              <p>Detect if <code>Elision</code>s at the beginning of the array are processed (e.g. [, , , a]).</p>
 
             </div>
             
@@ -3587,7 +3588,7 @@ element isn’t <code>Elision</code> or last element is <code>Elision</code> (e.
       <span class="hljs-keyword">for</span> fragment, fragmentIndex <span class="hljs-keyword">in</span> answer
         <span class="hljs-keyword">if</span> fragment.isHereComment
           fragment.code = <span class="hljs-string">"<span class="hljs-subst">#{multident(fragment.code, o.indent, <span class="hljs-literal">no</span>)}</span>\n<span class="hljs-subst">#{o.indent}</span>"</span>
-        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> fragment.code <span class="hljs-keyword">is</span> <span class="hljs-string">', '</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> fragment?.isElision
+        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> fragment.code <span class="hljs-keyword">is</span> <span class="hljs-string">', '</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> fragment?.isElision <span class="hljs-keyword">and</span> fragment.type <span class="hljs-keyword">isnt</span> <span class="hljs-string">'StringLiteral'</span>
           fragment.code = <span class="hljs-string">",\n<span class="hljs-subst">#{o.indent}</span>"</span>
       answer.unshift @makeCode <span class="hljs-string">"[\n<span class="hljs-subst">#{o.indent}</span>"</span>
       answer.push @makeCode <span class="hljs-string">"\n<span class="hljs-subst">#{@tab}</span>]"</span>
@@ -3996,7 +3997,7 @@ exports.ExecutableClassBody = <span class="hljs-class"><span class="hljs-keyword
     @body.traverseChildren <span class="hljs-literal">false</span>, <span class="hljs-function"><span class="hljs-params">(node)</span> =&gt;</span>
       <span class="hljs-keyword">if</span> node <span class="hljs-keyword">instanceof</span> ThisLiteral
         node.value   = @name
-      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> node <span class="hljs-keyword">instanceof</span> Code <span class="hljs-keyword">and</span> node.bound <span class="hljs-keyword">and</span> node.isStatic
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> node <span class="hljs-keyword">instanceof</span> Code <span class="hljs-keyword">and</span> node.bound <span class="hljs-keyword">and</span> (node.isStatic <span class="hljs-keyword">or</span> <span class="hljs-keyword">not</span> node.name)
         node.context = @name</pre></div></div>
             
         </li>
@@ -4251,7 +4252,17 @@ exports.ImportNamespaceSpecifier = <span class="hljs-class"><span class="hljs-ke
 
 exports.ExportSpecifier = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ExportSpecifier</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ModuleSpecifier</span></span>
   constructor: <span class="hljs-function"><span class="hljs-params">(local, exported)</span> -&gt;</span>
-    <span class="hljs-keyword">super</span> local, exported, <span class="hljs-string">'export'</span></pre></div></div>
+    <span class="hljs-keyword">super</span> local, exported, <span class="hljs-string">'export'</span>
+
+exports.DynamicImport = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">DynamicImport</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
+  compileNode: <span class="hljs-function">-&gt;</span>
+    [@makeCode <span class="hljs-string">'import'</span>]
+
+exports.DynamicImportCall = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">DynamicImportCall</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Call</span></span>
+  compileNode: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
+    <span class="hljs-keyword">unless</span> @args.length <span class="hljs-keyword">is</span> <span class="hljs-number">1</span>
+      @error <span class="hljs-string">'import() requires exactly one argument'</span>
+    <span class="hljs-keyword">super</span> o</pre></div></div>
             
         </li>
         
@@ -5582,7 +5593,7 @@ This is usually caught via <code>Op::compileContinuation</code>, but double-chec
             </div>
             
             <div class="content"><div class='highlight'><pre>      scopeVariablesCount = o.scope.variables.length
-      signature.push param.compileToFragments(o)...
+      signature.push param.compileToFragments(o, LEVEL_PAREN)...
       <span class="hljs-keyword">if</span> scopeVariablesCount <span class="hljs-keyword">isnt</span> o.scope.variables.length
         generatedVariables = o.scope.variables.splice scopeVariablesCount
         o.scope.parent.variables.push generatedVariables...

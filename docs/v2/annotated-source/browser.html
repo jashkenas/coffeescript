@@ -262,7 +262,7 @@ This happens on page load.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">runScripts</span> = -&gt;</span>
+            <div class="content"><div class='highlight'><pre>CoffeeScript.runScripts = <span class="hljs-function">-&gt;</span>
   scripts = <span class="hljs-built_in">window</span>.<span class="hljs-built_in">document</span>.getElementsByTagName <span class="hljs-string">'script'</span>
   coffeetypes = [<span class="hljs-string">'text/coffeescript'</span>, <span class="hljs-string">'text/literate-coffeescript'</span>]
   coffees = (s <span class="hljs-keyword">for</span> s <span class="hljs-keyword">in</span> scripts <span class="hljs-keyword">when</span> s.type <span class="hljs-keyword">in</span> coffeetypes)
@@ -326,9 +326,9 @@ only one CoffeeScript script block to parse.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">if</span> <span class="hljs-built_in">window</span>.addEventListener
-  <span class="hljs-built_in">window</span>.addEventListener <span class="hljs-string">'DOMContentLoaded'</span>, runScripts, <span class="hljs-literal">no</span>
+  <span class="hljs-built_in">window</span>.addEventListener <span class="hljs-string">'DOMContentLoaded'</span>, CoffeeScript.runScripts, <span class="hljs-literal">no</span>
 <span class="hljs-keyword">else</span>
-  <span class="hljs-built_in">window</span>.attachEvent <span class="hljs-string">'onload'</span>, runScripts</pre></div></div>
+  <span class="hljs-built_in">window</span>.attachEvent <span class="hljs-string">'onload'</span>, CoffeeScript.runScripts</pre></div></div>
             
         </li>
         

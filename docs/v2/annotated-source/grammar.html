@@ -616,6 +616,7 @@ the ordinary <strong>Assign</strong> is that these allow numbers and strings as 
     o <span class="hljs-string">'Super'</span>
     o <span class="hljs-string">'This'</span>
     o <span class="hljs-string">'SUPER Arguments'</span>,               <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> SuperCall LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Super), $<span class="hljs-number">2</span>, <span class="hljs-literal">no</span>, $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'DYNAMIC_IMPORT Arguments'</span>,      <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> DynamicImportCall LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> DynamicImport), $<span class="hljs-number">2</span>
     o <span class="hljs-string">'SimpleObjAssignable Arguments'</span>, <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Call (<span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>), $<span class="hljs-number">2</span>
     o <span class="hljs-string">'ObjSpreadExpr Arguments'</span>,       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Call $<span class="hljs-number">1</span>, $<span class="hljs-number">2</span>
   ]
@@ -1089,6 +1090,7 @@ and optional references to the superclass.</p>
     o <span class="hljs-string">'Value OptFuncExist String'</span>,              <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> TaggedTemplateCall $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">2</span>
     o <span class="hljs-string">'Value OptFuncExist Arguments'</span>,           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Call $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">2</span>
     o <span class="hljs-string">'SUPER OptFuncExist Arguments'</span>,           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> SuperCall LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Super), $<span class="hljs-number">3</span>, $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'DYNAMIC_IMPORT Arguments'</span>,               <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> DynamicImportCall LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> DynamicImport), $<span class="hljs-number">2</span>
   ]</pre></div></div>
             
         </li>
@@ -1850,7 +1852,7 @@ down. Following these rules is what makes <code>2 + 3 * 4</code> parse as:</p>
   [<span class="hljs-string">'right'</span>,     <span class="hljs-string">'YIELD'</span>]
   [<span class="hljs-string">'right'</span>,     <span class="hljs-string">'='</span>, <span class="hljs-string">':'</span>, <span class="hljs-string">'COMPOUND_ASSIGN'</span>, <span class="hljs-string">'RETURN'</span>, <span class="hljs-string">'THROW'</span>, <span class="hljs-string">'EXTENDS'</span>]
   [<span class="hljs-string">'right'</span>,     <span class="hljs-string">'FORIN'</span>, <span class="hljs-string">'FOROF'</span>, <span class="hljs-string">'FORFROM'</span>, <span class="hljs-string">'BY'</span>, <span class="hljs-string">'WHEN'</span>]
-  [<span class="hljs-string">'right'</span>,     <span class="hljs-string">'IF'</span>, <span class="hljs-string">'ELSE'</span>, <span class="hljs-string">'FOR'</span>, <span class="hljs-string">'WHILE'</span>, <span class="hljs-string">'UNTIL'</span>, <span class="hljs-string">'LOOP'</span>, <span class="hljs-string">'SUPER'</span>, <span class="hljs-string">'CLASS'</span>, <span class="hljs-string">'IMPORT'</span>, <span class="hljs-string">'EXPORT'</span>]
+  [<span class="hljs-string">'right'</span>,     <span class="hljs-string">'IF'</span>, <span class="hljs-string">'ELSE'</span>, <span class="hljs-string">'FOR'</span>, <span class="hljs-string">'WHILE'</span>, <span class="hljs-string">'UNTIL'</span>, <span class="hljs-string">'LOOP'</span>, <span class="hljs-string">'SUPER'</span>, <span class="hljs-string">'CLASS'</span>, <span class="hljs-string">'IMPORT'</span>, <span class="hljs-string">'EXPORT'</span>, <span class="hljs-string">'DYNAMIC_IMPORT'</span>]
   [<span class="hljs-string">'left'</span>,      <span class="hljs-string">'POST_IF'</span>]
 ]</pre></div></div>
             
