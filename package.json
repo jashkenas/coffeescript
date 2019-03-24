@@ -45,7 +45,7 @@
     "codemirror": "^5.45.0",
     "docco": "~0.8.0",
     "highlight.js": "~9.15.6",
-    "jison": ">=0.4.18",
+    "jison": "^0.4.18",
     "markdown-it": "~8.4.2",
     "underscore": "~1.9.1",
     "webpack": "~4.29.6"
