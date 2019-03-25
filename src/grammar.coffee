@@ -269,6 +269,7 @@ grammar =
     o 'Super'
     o 'This'
     o 'SUPER Arguments',               -> new SuperCall LOC(1)(new Super), $2, no, $1
+    o 'DYNAMIC_IMPORT Arguments',      -> new DynamicImportCall LOC(1)(new DynamicImport), $2
     o 'SimpleObjAssignable Arguments', -> new Call (new Value $1), $2
     o 'ObjSpreadExpr Arguments',       -> new Call $1, $2
   ]
@@ -522,6 +523,7 @@ grammar =
     o 'Value OptFuncExist String',              -> new TaggedTemplateCall $1, $3, $2
     o 'Value OptFuncExist Arguments',           -> new Call $1, $3, $2
     o 'SUPER OptFuncExist Arguments',           -> new SuperCall LOC(1)(new Super), $3, $2, $1
+    o 'DYNAMIC_IMPORT Arguments',               -> new DynamicImportCall LOC(1)(new DynamicImport), $2
   ]
 
   # An optional existence check on a function.
@@ -932,7 +934,7 @@ operators = [
   ['right',     'YIELD']
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN', 'THROW', 'EXTENDS']
   ['right',     'FORIN', 'FOROF', 'FORFROM', 'BY', 'WHEN']
-  ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS', 'IMPORT', 'EXPORT']
+  ['right',     'IF', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP', 'SUPER', 'CLASS', 'IMPORT', 'EXPORT', 'DYNAMIC_IMPORT']
   ['left',      'POST_IF']
 ]
 

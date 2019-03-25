@@ -486,6 +486,9 @@ task 'test:integrations', 'test the module integrated with other libraries and e
   webpack = require 'webpack'
   webpack {
     entry: './'
+    optimization:
+      # Webpack’s minification causes the CoffeeScript module to fail some tests.
+      minimize: off
     output:
       path: tmpdir
       filename: 'coffeescript.js'

@@ -689,6 +689,9 @@ exports.Lexer = class Lexer
         @error message, origin[2] if message
       return value.length if skipToken
 
+    if value is '(' and prev?[0] is 'IMPORT'
+      prev[0] = 'DYNAMIC_IMPORT'
+
     if value is '{' and @seenImport
       @importSpecifierList = yes
     else if @importSpecifierList and value is '}'
@@ -1313,7 +1316,7 @@ BOOL = ['TRUE', 'FALSE']
 # Tokens which could legitimately be invoked or indexed. An opening
 # parentheses or bracket following these tokens will be recorded as the start
 # of a function invocation or indexing operation.
-CALLABLE  = ['IDENTIFIER', 'PROPERTY', ')', ']', '?', '@', 'THIS', 'SUPER']
+CALLABLE  = ['IDENTIFIER', 'PROPERTY', ')', ']', '?', '@', 'THIS', 'SUPER', 'DYNAMIC_IMPORT']
 INDEXABLE = CALLABLE.concat [
   'NUMBER', 'INFINITY', 'NAN', 'STRING', 'STRING_END', 'REGEX', 'REGEX_END'
   'BOOL', 'NULL', 'UNDEFINED', '}', '::'

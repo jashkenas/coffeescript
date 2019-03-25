@@ -54,6 +54,20 @@ sources = {}
 # Also save source maps if generated, in form of `(source)`: [`(source map)`].
 sourceMaps = {}
 
+# This is exported to enable an external module to implement caching of
+# compilation results. When the compiled js source is loaded from cache, the
+# original coffee code should be added with this method in order to enable the
+# Error.prepareStackTrace below to correctly adjust the stack trace for the
+# corresponding file (the source map will be generated on demand).
+exports.registerCompiled = registerCompiled = (filename, source, sourcemap) ->
+
+  sources[filename] ?= []
+  sources[filename].push source
+
+  if sourcemap?
+    sourceMaps[filename] ?= []
+    sourceMaps[filename].push sourcemap
+
 # Compile CoffeeScript code to JavaScript, using the Coffee/Jison compiler.
 #
 # If `options.sourceMap` is specified, then `options.filename` must also be
@@ -75,8 +89,6 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
 
   checkShebangLine filename, code
 
-  sources[filename] ?= []
-  sources[filename].push code
   map = new SourceMap if generateSourceMap
 
   tokens = lexer.tokenize code, options
@@ -141,8 +153,6 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
 
   if generateSourceMap
     v3SourceMap = map.generate options, code
-    sourceMaps[filename] ?= []
-    sourceMaps[filename].push map
 
   if options.transpile
     if typeof options.transpile isnt 'object'
@@ -172,6 +182,8 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
     sourceMapDataURI = "//# sourceMappingURL=data:application/json;base64,#{encoded}"
     sourceURL = "//# sourceURL=#{options.filename ? 'coffeescript'}"
     js = "#{js}\n#{sourceMapDataURI}\n#{sourceURL}"
+
+  registerCompiled filename, code, map
 
   if options.sourceMap
     {

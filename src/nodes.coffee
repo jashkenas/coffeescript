@@ -208,7 +208,7 @@ exports.Base = class Base
 
   # Occasionally it may be useful to make an expression behave as if it was 'hoisted', whereby the
   # result of the expression is available before its location in the source, but the expression's
-  # variable scope corresponds the source position. This is used extensively to deal with executable
+  # variable scope corresponds to the source position. This is used extensively to deal with executable
   # class bodies in classes.
   #
   # Calling this method mutates the node, proxying the `compileNode` and `compileToFragments`
@@ -2337,8 +2337,9 @@ exports.Arr = class Arr extends Base
   compileNode: (o) ->
     return [@makeCode '[]'] unless @objects.length
     o.indent += TAB
-    fragmentIsElision = (fragment) -> fragmentsToText(fragment).trim() is ','
-    # Detect if `Elisions` at the beginning of the array are processed (e.g. [, , , a]).
+    fragmentIsElision = ([ fragment ]) ->
+      fragment.type is 'Elision' and fragment.code.trim() is ','
+    # Detect if `Elision`s at the beginning of the array are processed (e.g. [, , , a]).
     passedElision = no
 
     answer = []
@@ -2376,7 +2377,7 @@ exports.Arr = class Arr extends Base
       for fragment, fragmentIndex in answer
         if fragment.isHereComment
           fragment.code = "#{multident(fragment.code, o.indent, no)}\n#{o.indent}"
-        else if fragment.code is ', ' and not fragment?.isElision
+        else if fragment.code is ', ' and not fragment?.isElision and fragment.type isnt 'StringLiteral'
           fragment.code = ",\n#{o.indent}"
       answer.unshift @makeCode "[\n#{o.indent}"
       answer.push @makeCode "\n#{@tab}]"
@@ -2701,7 +2702,7 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
     @body.traverseChildren false, (node) =>
       if node instanceof ThisLiteral
         node.value   = @name
-      else if node instanceof Code and node.bound and node.isStatic
+      else if node instanceof Code and node.bound and (node.isStatic or not node.name)
         node.context = @name
 
   # Make class/prototype assignments for invalid ES properties
@@ -2939,6 +2940,16 @@ exports.ExportSpecifier = class ExportSpecifier extends ModuleSpecifier
     return
       local: originalAst
       exported: @alias?.ast(o) ? originalAst
+
+exports.DynamicImport = class DynamicImport extends Base
+  compileNode: ->
+    [@makeCode 'import']
+
+exports.DynamicImportCall = class DynamicImportCall extends Call
+  compileNode: (o) ->
+    unless @args.length is 1
+      @error 'import() requires exactly one argument'
+    super o
 
 #### Assign
 
@@ -3528,7 +3539,7 @@ exports.Code = class Code extends Base
       # (e.g. `ref`), shift those into the parent scope since we can’t put a
       # `var` line inside a function parameter list.
       scopeVariablesCount = o.scope.variables.length
-      signature.push param.compileToFragments(o)...
+      signature.push param.compileToFragments(o, LEVEL_PAREN)...
       if scopeVariablesCount isnt o.scope.variables.length
         generatedVariables = o.scope.variables.splice scopeVariablesCount
         o.scope.parent.variables.push generatedVariables...
@@ -5107,7 +5118,7 @@ isLocationDataEndGreater = (a, b) ->
 # encompasses the location data of both nodes. So the new `first_line` value
 # will be the earlier of the two nodes’ `first_line` values, the new
 # `last_column` the later of the two nodes’ `last_column` values, etc.
-# 
+#
 # If you only want to extend the first node’s location data with the start or
 # end location data of the second node, pass the `justLeading` or `justEnding`
 # options. So e.g. if `first`’s range is [4, 5] and `second`’s range is [1, 10],
@@ -5164,7 +5175,7 @@ exports.mergeLocationData = mergeLocationData = (locationDataA, locationDataB, {
 # location data object that encompasses the location data of both nodes. So the
 # new `start` value will be the earlier of the two nodes’ `start` values, the
 # new `end` value will be the later of the two nodes’ `end` values, etc.
-# 
+#
 # If you only want to extend the first node’s location data with the start or
 # end location data of the second node, pass the `justLeading` or `justEnding`
 # options. So e.g. if `first`’s range is [4, 5] and `second`’s range is [1, 10],

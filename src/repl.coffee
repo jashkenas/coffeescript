@@ -75,7 +75,7 @@ runInContext = (js, context, filename) ->
     vm.runInContext js, context, filename
 
 addMultilineHandler = (repl) ->
-  {rli, inputStream, outputStream} = repl
+  {inputStream, outputStream} = repl
   # Node 0.11.12 changed API, prompt is now _prompt.
   origPrompt = repl._prompt ? repl.prompt
 
@@ -86,15 +86,15 @@ addMultilineHandler = (repl) ->
     buffer: ''
 
   # Proxy node's line listener
-  nodeLineListener = rli.listeners('line')[0]
-  rli.removeListener 'line', nodeLineListener
-  rli.on 'line', (cmd) ->
+  nodeLineListener = repl.listeners('line')[0]
+  repl.removeListener 'line', nodeLineListener
+  repl.on 'line', (cmd) ->
     if multiline.enabled
       multiline.buffer += "#{cmd}\n"
-      rli.setPrompt multiline.prompt
-      rli.prompt true
+      repl.setPrompt multiline.prompt
+      repl.prompt true
     else
-      rli.setPrompt origPrompt
+      repl.setPrompt origPrompt
       nodeLineListener cmd
     return
 
@@ -105,25 +105,25 @@ addMultilineHandler = (repl) ->
       # allow arbitrarily switching between modes any time before multiple lines are entered
       unless multiline.buffer.match /\n/
         multiline.enabled = not multiline.enabled
-        rli.setPrompt origPrompt
-        rli.prompt true
+        repl.setPrompt origPrompt
+        repl.prompt true
         return
       # no-op unless the current line is empty
-      return if rli.line? and not rli.line.match /^\s*$/
+      return if repl.line? and not repl.line.match /^\s*$/
       # eval, print, loop
       multiline.enabled = not multiline.enabled
-      rli.line = ''
-      rli.cursor = 0
-      rli.output.cursorTo 0
-      rli.output.clearLine 1
+      repl.line = ''
+      repl.cursor = 0
+      repl.output.cursorTo 0
+      repl.output.clearLine 1
       # XXX: multiline hack
       multiline.buffer = multiline.buffer.replace /\n/g, '\uFF00'
-      rli.emit 'line', multiline.buffer
+      repl.emit 'line', multiline.buffer
       multiline.buffer = ''
     else
       multiline.enabled = not multiline.enabled
-      rli.setPrompt multiline.initialPrompt
-      rli.prompt true
+      repl.setPrompt multiline.initialPrompt
+      repl.prompt true
     return
 
 # Store and load command history from a file
@@ -139,17 +139,17 @@ addHistory = (repl, filename, maxSize) ->
     fs.readSync readFd, buffer, 0, size, stat.size - size
     fs.closeSync readFd
     # Set the history on the interpreter
-    repl.rli.history = buffer.toString().split('\n').reverse()
+    repl.history = buffer.toString().split('\n').reverse()
     # If the history file was truncated we should pop off a potential partial line
-    repl.rli.history.pop() if stat.size > maxSize
+    repl.history.pop() if stat.size > maxSize
     # Shift off the final blank newline
-    repl.rli.history.shift() if repl.rli.history[0] is ''
-    repl.rli.historyIndex = -1
-    lastLine = repl.rli.history[0]
+    repl.history.shift() if repl.history[0] is ''
+    repl.historyIndex = -1
+    lastLine = repl.history[0]
 
   fd = fs.openSync filename, 'a'
 
-  repl.rli.addListener 'line', (code) ->
+  repl.addListener 'line', (code) ->
     if code and code.length and code isnt '.history' and code isnt '.exit' and lastLine isnt code
       # Save the latest command in the file
       fs.writeSync fd, "#{code}\n"
@@ -163,7 +163,7 @@ addHistory = (repl, filename, maxSize) ->
   repl.commands[getCommandId(repl, 'history')] =
     help: 'Show command history'
     action: ->
-      repl.outputStream.write "#{repl.rli.history[..].reverse().join '\n'}\n"
+      repl.outputStream.write "#{repl.history[..].reverse().join '\n'}\n"
       repl.displayPrompt()
 
 getCommandId = (repl, commandName) ->
@@ -212,7 +212,7 @@ module.exports =
     opts = merge replDefaults, opts
     repl = nodeREPL.start opts
     runInContext opts.prelude, repl.context, 'prelude' if opts.prelude
-    repl.on 'exit', -> repl.outputStream.write '\n' if not repl.rli.closed
+    repl.on 'exit', -> repl.outputStream.write '\n' if not repl.closed
     addMultilineHandler repl
     addHistory repl, opts.historyFile, opts.historyMaxInputSize if opts.historyFile
     # Adapt help inherited from the node REPL

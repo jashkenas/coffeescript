@@ -45,7 +45,7 @@ ctrlV = { ctrl: true, name: 'v'}
 
 
 testRepl 'reads history file', (input, output, repl) ->
-  input.emitLine repl.rli.history[0]
+  input.emitLine repl.history[0]
   eq '3', output.lastWrite()
 
 testRepl "starts with coffee prompt", (input, output) ->
