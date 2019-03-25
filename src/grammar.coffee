@@ -183,7 +183,7 @@ grammar =
         double:       $1.double
         heregex:      $1.heregex
       )
-    o 'STRING_START Interpolations STRING_END', -> new StringWithInterpolations Block.wrap($2), quote: $1.quote
+    o 'STRING_START Interpolations STRING_END', -> new StringWithInterpolations Block.wrap($2), quote: $1.quote, startQuote: LOC(1)(new Literal $1.toString())
   ]
 
   Interpolations: [

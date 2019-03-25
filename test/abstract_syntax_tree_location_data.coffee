@@ -5376,3 +5376,256 @@ test "AST location data as expected for For node", ->
       end:
         line: 2
         column: 3
+
+test "AST location data as expected for StringWithInterpolations node", ->
+  testAstLocationData '"a#{b}c"',
+    type: 'TemplateLiteral'
+    expressions: [
+      start: 4
+      end: 5
+      range: [4, 5]
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 1
+          column: 5
+    ]
+    quasis: [
+      start: 1
+      end: 2
+      range: [1, 2]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 2
+    ,
+      start: 6
+      end: 7
+      range: [6, 7]
+      loc:
+        start:
+          line: 1
+          column: 6
+        end:
+          line: 1
+          column: 7
+    ]
+    start: 0
+    end: 8
+    range: [0, 8]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 8
+
+  testAstLocationData '"""a#{b}c"""',
+    type: 'TemplateLiteral'
+    expressions: [
+      start: 6
+      end: 7
+      range: [6, 7]
+      loc:
+        start:
+          line: 1
+          column: 6
+        end:
+          line: 1
+          column: 7
+    ]
+    quasis: [
+      start: 3
+      end: 4
+      range: [3, 4]
+      loc:
+        start:
+          line: 1
+          column: 3
+        end:
+          line: 1
+          column: 4
+    ,
+      start: 8
+      end: 9
+      range: [8, 9]
+      loc:
+        start:
+          line: 1
+          column: 8
+        end:
+          line: 1
+          column: 9
+    ]
+    start: 0
+    end: 12
+    range: [0, 12]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 12
+
+  testAstLocationData '"#{b}"',
+    type: 'TemplateLiteral'
+    expressions: [
+      start: 3
+      end: 4
+      range: [3, 4]
+      loc:
+        start:
+          line: 1
+          column: 3
+        end:
+          line: 1
+          column: 4
+    ]
+    quasis: [
+      start: 1
+      end: 1
+      range: [1, 1]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 1
+    ,
+      start: 5
+      end: 5
+      range: [5, 5]
+      loc:
+        start:
+          line: 1
+          column: 5
+        end:
+          line: 1
+          column: 5
+    ]
+    start: 0
+    end: 6
+    range: [0, 6]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 6
+
+  testAstLocationData '''
+    " a
+      #{b}
+      c
+    "
+  ''',
+    type: 'TemplateLiteral'
+    expressions: [
+      start: 8
+      end: 9
+      range: [8, 9]
+      loc:
+        start:
+          line: 2
+          column: 4
+        end:
+          line: 2
+          column: 5
+    ]
+    quasis: [
+      start: 1
+      end: 6
+      range: [1, 6]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 2
+          column: 2
+    ,
+      start: 10
+      end: 15
+      range: [10, 15]
+      loc:
+        start:
+          line: 2
+          column: 6
+        end:
+          line: 4
+          column: 0
+    ]
+    start: 0
+    end: 16
+    range: [0, 16]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 1
+
+  testAstLocationData '''
+    """
+      a
+        b#{
+        c
+      }d
+    """
+  ''',
+    type: 'TemplateLiteral'
+    expressions: [
+      start: 20
+      end: 21
+      range: [20, 21]
+      loc:
+        start:
+          line: 4
+          column: 4
+        end:
+          line: 4
+          column: 5
+    ]
+    quasis: [
+      start: 3
+      end: 13
+      range: [3, 13]
+      loc:
+        start:
+          line: 1
+          column: 3
+        end:
+          line: 3
+          column: 5
+    ,
+      start: 25
+      end: 27
+      range: [25, 27]
+      loc:
+        start:
+          line: 5
+          column: 3
+        end:
+          line: 6
+          column: 0
+    ]
+    start: 0
+    end: 30
+    range: [0, 30]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 6
+        column: 3

@@ -114,8 +114,12 @@ buildLocationData = (first, last) ->
       last.range[1]
     ]
 
+# Get a lookup hash for a token based on its location data.
+# Multiple tokens might have the same location hash, but using exclusive
+# location data distinguishes e.g. zero-length generated tokens from
+# actual source tokens.
 buildLocationHash = (loc) ->
-  "#{loc.first_line}x#{loc.first_column}-#{loc.last_line}x#{loc.last_column}"
+  "#{loc.range[0]}-#{loc.range[1]}"
 
 # Build a dictionary of extra token properties organized by tokens’ locations
 # used as lookup hashes.
