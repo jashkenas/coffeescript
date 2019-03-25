@@ -376,7 +376,7 @@ undeclared variable <code>__</code>.</p>
     vm.runInContext js, context, filename
 <span class="hljs-function">
 <span class="hljs-title">addMultilineHandler</span> = <span class="hljs-params">(repl)</span> -&gt;</span>
-  {rli, inputStream, outputStream} = repl</pre></div></div>
+  {inputStream, outputStream} = repl</pre></div></div>
             
         </li>
         
@@ -412,15 +412,15 @@ undeclared variable <code>__</code>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  nodeLineListener = rli.listeners(<span class="hljs-string">'line'</span>)[<span class="hljs-number">0</span>]
-  rli.removeListener <span class="hljs-string">'line'</span>, nodeLineListener
-  rli.<span class="hljs-literal">on</span> <span class="hljs-string">'line'</span>, <span class="hljs-function"><span class="hljs-params">(cmd)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  nodeLineListener = repl.listeners(<span class="hljs-string">'line'</span>)[<span class="hljs-number">0</span>]
+  repl.removeListener <span class="hljs-string">'line'</span>, nodeLineListener
+  repl.<span class="hljs-literal">on</span> <span class="hljs-string">'line'</span>, <span class="hljs-function"><span class="hljs-params">(cmd)</span> -&gt;</span>
     <span class="hljs-keyword">if</span> multiline.enabled
       multiline.buffer += <span class="hljs-string">"<span class="hljs-subst">#{cmd}</span>\n"</span>
-      rli.setPrompt multiline.prompt
-      rli.prompt <span class="hljs-literal">true</span>
+      repl.setPrompt multiline.prompt
+      repl.prompt <span class="hljs-literal">true</span>
     <span class="hljs-keyword">else</span>
-      rli.setPrompt origPrompt
+      repl.setPrompt origPrompt
       nodeLineListener cmd
     <span class="hljs-keyword">return</span></pre></div></div>
             
@@ -456,8 +456,8 @@ undeclared variable <code>__</code>.</p>
             
             <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">unless</span> multiline.buffer.match <span class="hljs-regexp">/\n/</span>
         multiline.enabled = <span class="hljs-keyword">not</span> multiline.enabled
-        rli.setPrompt origPrompt
-        rli.prompt <span class="hljs-literal">true</span>
+        repl.setPrompt origPrompt
+        repl.prompt <span class="hljs-literal">true</span>
         <span class="hljs-keyword">return</span></pre></div></div>
             
         </li>
@@ -473,7 +473,7 @@ undeclared variable <code>__</code>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">return</span> <span class="hljs-keyword">if</span> rli.line? <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> rli.line.match <span class="hljs-regexp">/^\s*$/</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">return</span> <span class="hljs-keyword">if</span> repl.line? <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> repl.line.match <span class="hljs-regexp">/^\s*$/</span></pre></div></div>
             
         </li>
         
@@ -489,10 +489,10 @@ undeclared variable <code>__</code>.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>      multiline.enabled = <span class="hljs-keyword">not</span> multiline.enabled
-      rli.line = <span class="hljs-string">''</span>
-      rli.cursor = <span class="hljs-number">0</span>
-      rli.output.cursorTo <span class="hljs-number">0</span>
-      rli.output.clearLine <span class="hljs-number">1</span></pre></div></div>
+      repl.line = <span class="hljs-string">''</span>
+      repl.cursor = <span class="hljs-number">0</span>
+      repl.output.cursorTo <span class="hljs-number">0</span>
+      repl.output.clearLine <span class="hljs-number">1</span></pre></div></div>
             
         </li>
         
@@ -508,12 +508,12 @@ undeclared variable <code>__</code>.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>      multiline.buffer = multiline.buffer.replace <span class="hljs-regexp">/\n/g</span>, <span class="hljs-string">'\uFF00'</span>
-      rli.emit <span class="hljs-string">'line'</span>, multiline.buffer
+      repl.emit <span class="hljs-string">'line'</span>, multiline.buffer
       multiline.buffer = <span class="hljs-string">''</span>
     <span class="hljs-keyword">else</span>
       multiline.enabled = <span class="hljs-keyword">not</span> multiline.enabled
-      rli.setPrompt multiline.initialPrompt
-      rli.prompt <span class="hljs-literal">true</span>
+      repl.setPrompt multiline.initialPrompt
+      repl.prompt <span class="hljs-literal">true</span>
     <span class="hljs-keyword">return</span></pre></div></div>
             
         </li>
@@ -580,7 +580,7 @@ undeclared variable <code>__</code>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    repl.rli.history = buffer.toString().split(<span class="hljs-string">'\n'</span>).reverse()</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    repl.history = buffer.toString().split(<span class="hljs-string">'\n'</span>).reverse()</pre></div></div>
             
         </li>
         
@@ -595,7 +595,7 @@ undeclared variable <code>__</code>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    repl.rli.history.pop() <span class="hljs-keyword">if</span> stat.size &gt; maxSize</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    repl.history.pop() <span class="hljs-keyword">if</span> stat.size &gt; maxSize</pre></div></div>
             
         </li>
         
@@ -610,13 +610,13 @@ undeclared variable <code>__</code>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    repl.rli.history.shift() <span class="hljs-keyword">if</span> repl.rli.history[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">''</span>
-    repl.rli.historyIndex = <span class="hljs-number">-1</span>
-    lastLine = repl.rli.history[<span class="hljs-number">0</span>]
+            <div class="content"><div class='highlight'><pre>    repl.history.shift() <span class="hljs-keyword">if</span> repl.history[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">''</span>
+    repl.historyIndex = <span class="hljs-number">-1</span>
+    lastLine = repl.history[<span class="hljs-number">0</span>]
 
   fd = fs.openSync filename, <span class="hljs-string">'a'</span>
 
-  repl.rli.addListener <span class="hljs-string">'line'</span>, <span class="hljs-function"><span class="hljs-params">(code)</span> -&gt;</span>
+  repl.addListener <span class="hljs-string">'line'</span>, <span class="hljs-function"><span class="hljs-params">(code)</span> -&gt;</span>
     <span class="hljs-keyword">if</span> code <span class="hljs-keyword">and</span> code.length <span class="hljs-keyword">and</span> code <span class="hljs-keyword">isnt</span> <span class="hljs-string">'.history'</span> <span class="hljs-keyword">and</span> code <span class="hljs-keyword">isnt</span> <span class="hljs-string">'.exit'</span> <span class="hljs-keyword">and</span> lastLine <span class="hljs-keyword">isnt</span> code</pre></div></div>
             
         </li>
@@ -667,7 +667,7 @@ undeclared variable <code>__</code>.</p>
             <div class="content"><div class='highlight'><pre>  repl.commands[getCommandId(repl, <span class="hljs-string">'history'</span>)] =
     help: <span class="hljs-string">'Show command history'</span>
     action: <span class="hljs-function">-&gt;</span>
-      repl.outputStream.write <span class="hljs-string">"<span class="hljs-subst">#{repl.rli.history[..].reverse().join <span class="hljs-string">'\n'</span>}</span>\n"</span>
+      repl.outputStream.write <span class="hljs-string">"<span class="hljs-subst">#{repl.history[..].reverse().join <span class="hljs-string">'\n'</span>}</span>\n"</span>
       repl.displayPrompt()
 <span class="hljs-function">
 <span class="hljs-title">getCommandId</span> = <span class="hljs-params">(repl, commandName)</span> -&gt;</span></pre></div></div>
@@ -742,7 +742,7 @@ the REPL, the only applicable option is <code>transpile</code>.</p>
     opts = merge replDefaults, opts
     repl = nodeREPL.start opts
     runInContext opts.prelude, repl.context, <span class="hljs-string">'prelude'</span> <span class="hljs-keyword">if</span> opts.prelude
-    repl.<span class="hljs-literal">on</span> <span class="hljs-string">'exit'</span>, <span class="hljs-function">-&gt;</span> repl.outputStream.write <span class="hljs-string">'\n'</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> repl.rli.closed
+    repl.<span class="hljs-literal">on</span> <span class="hljs-string">'exit'</span>, <span class="hljs-function">-&gt;</span> repl.outputStream.write <span class="hljs-string">'\n'</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> repl.closed
     addMultilineHandler repl
     addHistory repl, opts.historyFile, opts.historyMaxInputSize <span class="hljs-keyword">if</span> opts.historyFile</pre></div></div>
             
