@@ -96,7 +96,12 @@ CoffeeScript.runScripts = ->
   execute()
 
 # Listen for window load, both in decent browsers and in IE.
-if window.addEventListener
-  window.addEventListener 'DOMContentLoaded', CoffeeScript.runScripts, no
-else
-  window.attachEvent 'onload', CoffeeScript.runScripts
+# Only attach this event handler on startup for the
+# non-ES module version of the browser compiler, to preserve
+# backward compatibility while letting the ES module version
+# be importable without side effects.
+if this is window
+  if window.addEventListener
+    window.addEventListener 'DOMContentLoaded', CoffeeScript.runScripts, no
+  else
+    window.attachEvent 'onload', CoffeeScript.runScripts
