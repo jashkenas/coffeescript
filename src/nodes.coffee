@@ -2945,6 +2945,8 @@ exports.DynamicImport = class DynamicImport extends Base
   compileNode: ->
     [@makeCode 'import']
 
+  astType: -> 'Import'
+
 exports.DynamicImportCall = class DynamicImportCall extends Call
   compileNode: (o) ->
     unless @args.length is 1

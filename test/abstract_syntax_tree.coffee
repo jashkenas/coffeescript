@@ -108,6 +108,11 @@ NUMBER = (value) -> {
   value
 }
 
+STRING = (value) -> {
+  type: 'StringLiteral'
+  value
+}
+
 # Check each node type in the same order as they appear in `nodes.coffee`.
 # For nodes that have equivalents in Babel’s AST spec, we’re checking that
 # the type and properties match. When relevant, also check that values of
@@ -2864,3 +2869,12 @@ test "AST as expected for MetaProperty node", ->
           property: ID 'name'
           computed: no
       ]
+
+test "AST as expected for dynamic import", ->
+  testExpression '''
+    import('a')
+  ''',
+    type: 'CallExpression'
+    callee:
+      type: 'Import'
+    arguments: [STRING 'a']

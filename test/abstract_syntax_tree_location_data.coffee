@@ -5629,3 +5629,42 @@ test "AST location data as expected for StringWithInterpolations node", ->
       end:
         line: 6
         column: 3
+
+test "AST location data as expected for dynamic import", ->
+  testAstLocationData '''
+    import('a')
+  ''',
+    type: 'CallExpression'
+    callee:
+      start: 0
+      end: 6
+      range: [0, 6]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 6
+    arguments: [
+      start: 7
+      end: 10
+      range: [7, 10]
+      loc:
+        start:
+          line: 1
+          column: 7
+        end:
+          line: 1
+          column: 10
+    ]
+    start: 0
+    end: 11
+    range: [0, 11]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 11
