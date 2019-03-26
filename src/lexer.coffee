@@ -1112,8 +1112,8 @@ exports.isUnassignable = isUnassignable
 # loop. Try to detect when `from` is a variable identifier and when it is this
 # “sometimes” keyword.
 isForFrom = (prev) ->
+  # `for i from from`, `for from from iterable`, `for i from iterable`
   if prev[0] is 'IDENTIFIER'
-    # `for i from from`, `for from from iterable`, `for i from iterable`
     yes
   # `for from…`
   else if prev[0] is 'FOR'
