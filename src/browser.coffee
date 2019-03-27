@@ -58,7 +58,7 @@ CoffeeScript.load = (url, callback, options = {}, hold = false) ->
 # Activate CoffeeScript in the browser by having it compile and evaluate
 # all script tags with a content-type of `text/coffeescript`.
 # This happens on page load.
-runScripts = ->
+CoffeeScript.runScripts = ->
   scripts = window.document.getElementsByTagName 'script'
   coffeetypes = ['text/coffeescript', 'text/literate-coffeescript']
   coffees = (s for s in scripts when s.type in coffeetypes)
@@ -96,7 +96,12 @@ runScripts = ->
   execute()
 
 # Listen for window load, both in decent browsers and in IE.
-if window.addEventListener
-  window.addEventListener 'DOMContentLoaded', runScripts, no
-else
-  window.attachEvent 'onload', runScripts
+# Only attach this event handler on startup for the
+# non-ES module version of the browser compiler, to preserve
+# backward compatibility while letting the ES module version
+# be importable without side effects.
+if this is window
+  if window.addEventListener
+    window.addEventListener 'DOMContentLoaded', CoffeeScript.runScripts, no
+  else
+    window.attachEvent 'onload', CoffeeScript.runScripts

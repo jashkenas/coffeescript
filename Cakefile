@@ -66,15 +66,18 @@ build = (callback) ->
   buildParser()
   buildExceptParser callback
 
-transpile = (code) ->
+transpile = (code, options = {}) ->
+  options.minify =    process.env.MINIFY isnt 'false'
+  options.transform = process.env.TRANSFORM isnt 'false'
   babel = require '@babel/core'
   presets = []
   # Exclude the `modules` plugin in order to not break the `}(this));`
   # at the end of the `build:browser` code block.
-  presets.push ['@babel/env', {modules: no}] unless process.env.TRANSFORM is 'false'
-  presets.push ['minify', {mangle: no, evaluate: no, removeUndefined: no}] unless process.env.MINIFY is 'false'
+  presets.push ['@babel/env', {modules: no}] if options.transform
+  presets.push ['minify', {mangle: no, evaluate: no, removeUndefined: no}] if options.minify
   babelOptions =
-    compact: process.env.MINIFY isnt 'false'
+    compact: not options.minify
+    comments: not options.minify
     presets: presets
     sourceType: 'script'
   { code } = babel.transform code, babelOptions unless presets.length is 0
@@ -140,13 +143,18 @@ task 'build:browser', 'merge the built scripts into a single file for use in a b
         return module.exports;
       })();
     """
+  # From here, we generate two outputs: a legacy script output for all browsers
+  # and a module output for browsers that support `<script type="module">`.
   code = """
+    var CoffeeScript = function() {
+      function require(path){ return require[path]; }
+      #{code}
+      return require['./browser'];
+    }();
+  """
+  scriptCode = transpile """
     (function(root) {
-      var CoffeeScript = function() {
-        function require(path){ return require[path]; }
-        #{code}
-        return require['./browser'];
-      }();
+      #{code}
 
       if (typeof define === 'function' && define.amd) {
         define(function() { return CoffeeScript; });
@@ -155,10 +163,20 @@ task 'build:browser', 'merge the built scripts into a single file for use in a b
       }
     }(this));
   """
-  code = transpile code
-  outputFolder = "docs/v#{majorVersion}/browser-compiler"
-  fs.mkdirSync outputFolder unless fs.existsSync outputFolder
-  fs.writeFileSync "#{outputFolder}/coffeescript.js", header + '\n' + code
+  moduleCode = """
+    #{code}
+
+    export default CoffeeScript;
+    const { VERSION, compile, eval: evaluate, load, run, runScripts } = CoffeeScript;
+    export { VERSION, compile, evaluate as eval, load, run, runScripts };
+  """
+  for folder in ['browser-compiler', 'browser-compiler-modern']
+    outputFolder = "docs/v#{majorVersion}/#{folder}"
+    fs.mkdirSync outputFolder unless fs.existsSync outputFolder
+    fs.writeFileSync "#{outputFolder}/coffeescript.js", """
+      #{header}
+      #{if folder is 'browser-compiler' then scriptCode else moduleCode}
+    """
 
 task 'build:browser:full', 'merge the built scripts into a single file for use in a browser, and test it', ->
   invoke 'build:browser'
