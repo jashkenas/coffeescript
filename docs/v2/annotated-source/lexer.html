@@ -2273,8 +2273,7 @@ loop. Try to detect when <code>from</code> is a variable identifier and when it 
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">isForFrom</span> = <span class="hljs-params">(prev)</span> -&gt;</span>
-  <span class="hljs-keyword">if</span> prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'IDENTIFIER'</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">isForFrom</span> = <span class="hljs-params">(prev)</span> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -2285,11 +2284,12 @@ loop. Try to detect when <code>from</code> is a variable identifier and when it 
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-88">&#182;</a>
               </div>
-              <p><code>for i from from</code>, <code>for from from iterable</code>, <code>for i from iterable</code></p>
+              <p><code>for i from iterable</code></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-literal">yes</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">if</span> prev[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'IDENTIFIER'</span>
+    <span class="hljs-literal">yes</span></pre></div></div>
             
         </li>
         
