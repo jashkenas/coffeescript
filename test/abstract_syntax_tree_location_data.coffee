@@ -5668,3 +5668,126 @@ test "AST location data as expected for dynamic import", ->
       end:
         line: 1
         column: 11
+
+test "AST location data as expected for RegexWithInterpolations node", ->
+  testAstLocationData '///^#{flavor}script$///',
+    type: 'InterpolatedRegExpLiteral'
+    interpolatedPattern:
+      expressions: [
+        start: 6
+        end: 12
+        range: [6, 12]
+        loc:
+          start:
+            line: 1
+            column: 6
+          end:
+            line: 1
+            column: 12
+      ]
+      quasis: [
+        start: 3
+        end: 4
+        range: [3, 4]
+        loc:
+          start:
+            line: 1
+            column: 3
+          end:
+            line: 1
+            column: 4
+      ,
+        start: 13
+        end: 20
+        range: [13, 20]
+        loc:
+          start:
+            line: 1
+            column: 13
+          end:
+            line: 1
+            column: 20
+      ]
+      start: 0
+      end: 23
+      range: [0, 23]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 23
+    start: 0
+    end: 23
+    range: [0, 23]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 23
+
+  testAstLocationData '''
+    ///
+      a
+      #{b}///ig
+  ''',
+    type: 'InterpolatedRegExpLiteral'
+    interpolatedPattern:
+      expressions: [
+        start: 12
+        end: 13
+        range: [12, 13]
+        loc:
+          start:
+            line: 3
+            column: 4
+          end:
+            line: 3
+            column: 5
+      ]
+      quasis: [
+        start: 3
+        end: 10
+        range: [3, 10]
+        loc:
+          start:
+            line: 1
+            column: 3
+          end:
+            line: 3
+            column: 2
+      ,
+        start: 14
+        end: 14
+        range: [14, 14]
+        loc:
+          start:
+            line: 3
+            column: 6
+          end:
+            line: 3
+            column: 6
+      ]
+      start: 0
+      end: 17
+      range: [0, 17]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 3
+          column: 9
+    start: 0
+    end: 19
+    range: [0, 19]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 11

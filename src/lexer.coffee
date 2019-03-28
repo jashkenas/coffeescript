@@ -416,13 +416,13 @@ exports.Lexer = class Lexer
         @token 'REGEX_START', '(',    {length: 0, origin}
         @token 'IDENTIFIER', 'RegExp', length: 0
         @token 'CALL_START', '(',      length: 0
-        @mergeInterpolationTokens tokens, {double: yes, heregex: {flags}, endOffset: end}, (str) =>
+        @mergeInterpolationTokens tokens, {double: yes, heregex: {flags}, endOffset: end - flags.length, quote: '///'}, (str) =>
           @validateUnicodeCodePointEscapes str, {delimiter}
         if flags
           @token ',', ',',                    offset: index - 1, length: 0
           @token 'STRING', '"' + flags + '"', offset: index - 1, length: flags.length
-        @token ')', ')',                      offset: end - 1,   length: 0
-        @token 'REGEX_END', ')',              offset: end - 1,   length: 0
+        @token ')', ')',                      offset: end,       length: 0
+        @token 'REGEX_END', ')',              offset: end,       length: 0
 
     end
 
@@ -889,7 +889,11 @@ exports.Lexer = class Lexer
           converted = fn.call this, token[1], i
           addTokenData token, initialChunk: yes if i is 0
           addTokenData token, finalChunk: yes   if i is $
-          addTokenData token, {indent, quote, double}
+          addTokenData token, {
+            indent
+            quote: quote unless quote is '///'
+            double
+          }
           addTokenData token, {heregex} if heregex
           token[0] = 'STRING'
           token[1] = '"' + converted + '"'

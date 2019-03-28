@@ -1872,8 +1872,16 @@ exports.RegexWithInterpolations = class RegexWithInterpolations extends Base
   constructor: (@call) ->
     super()
 
+  children: ['call']
+
   compileNode: (o) ->
     @call.compileNode o
+
+  astType: -> 'InterpolatedRegExpLiteral'
+
+  astProperties: (o) ->
+    interpolatedPattern: @call.args[0].ast o
+    flags: @call.args[1]?.unwrap().originalValue ? ''
 
 #### TaggedTemplateCall
 
