@@ -889,11 +889,7 @@ exports.Lexer = class Lexer
           converted = fn.call this, token[1], i
           addTokenData token, initialChunk: yes if i is 0
           addTokenData token, finalChunk: yes   if i is $
-          addTokenData token, {
-            indent
-            quote: quote unless quote is '///'
-            double
-          }
+          addTokenData token, {indent, quote, double}
           addTokenData token, {heregex} if heregex
           token[0] = 'STRING'
           token[1] = '"' + converted + '"'

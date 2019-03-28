@@ -905,6 +905,7 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
 exports.StringLiteral = class StringLiteral extends Literal
   constructor: (@originalValue, {@quote, @initialChunk, @finalChunk, @indent, @double, @heregex} = {}) ->
     super ''
+    @quote = null if @quote is '///'
     @fromSourceString = @quote?
     @quote ?= '"'
     heredoc = @quote.length is 3
