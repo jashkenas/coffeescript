@@ -5791,3 +5791,84 @@ test "AST location data as expected for RegexWithInterpolations node", ->
       end:
         line: 3
         column: 11
+
+test "AST location data as expected for RegexLiteral node", ->
+  testAstLocationData '/a/ig',
+    type: 'RegExpLiteral'
+    start: 0
+    end: 5
+    range: [0, 5]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 5
+
+  testAstLocationData '''
+    ///
+      a
+    ///i
+  ''',
+    type: 'RegExpLiteral'
+    start: 0
+    end: 12
+    range: [0, 12]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 4
+
+  testAstLocationData '/a\\w\\u1111\\u{11111}/',
+    type: 'RegExpLiteral'
+    start: 0
+    end: 20
+    range: [0, 20]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 20
+
+  testAstLocationData '''
+    ///
+      a
+      \\w\\u1111\\u{11111}
+    ///
+  ''',
+    type: 'RegExpLiteral'
+    start: 0
+    end: 31
+    range: [0, 31]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 3
+
+  testAstLocationData '''
+    ///
+      /
+      (.+)
+      /
+    ///
+  ''',
+    type: 'RegExpLiteral'
+    start: 0
+    end: 22
+    range: [0, 22]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 5
+        column: 3
