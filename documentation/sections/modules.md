@@ -6,6 +6,8 @@ ES2015 modules are supported in CoffeeScript, with very similar `import` and `ex
 codeFor('modules')
 ```
 
+<div id="dynamic-import" class="bookmark"></div>
+
 [Dynamic import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import#Dynamic_Imports) is also supported, with mandatory parentheses:
 
 ```
