@@ -905,6 +905,7 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
 exports.StringLiteral = class StringLiteral extends Literal
   constructor: (@originalValue, {@quote, @initialChunk, @finalChunk, @indent, @double, @heregex} = {}) ->
     super ''
+    @quote = null if @quote is '///'
     @fromSourceString = @quote?
     @quote ?= '"'
     heredoc = @quote.length is 3
@@ -1872,8 +1873,16 @@ exports.RegexWithInterpolations = class RegexWithInterpolations extends Base
   constructor: (@call) ->
     super()
 
+  children: ['call']
+
   compileNode: (o) ->
     @call.compileNode o
+
+  astType: -> 'InterpolatedRegExpLiteral'
+
+  astProperties: (o) ->
+    interpolatedPattern: @call.args[0].ast o
+    flags: @call.args[1]?.unwrap().originalValue ? ''
 
 #### TaggedTemplateCall
 

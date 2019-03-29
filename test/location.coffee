@@ -595,18 +595,21 @@ test "Verify heregexes with interpolations have the right ending position", ->
   eq comma[0], ','
   eq arrayEnd[0], ']'
 
-  assertColumn = (token, column) ->
+  assertColumn = (token, column, width = 0) ->
     eq token[2].first_line, 0
     eq token[2].first_column, column
     eq token[2].last_line, 0
     eq token[2].last_column, column
+    eq token[2].last_column_exclusive, column + width
 
   arrayEndColumn = arrayEnd[2].first_column
-  for token in [comma, flagsString]
+  for token in [comma]
     assertColumn token, arrayEndColumn - 2
+  for token in [flagsString]
+    assertColumn token, arrayEndColumn - 2, 1
   for token in [regexCallEnd, regexEnd, fnCallEnd]
-    assertColumn token, arrayEndColumn - 1
-  assertColumn arrayEnd, arrayEndColumn
+    assertColumn token, arrayEndColumn
+  assertColumn arrayEnd, arrayEndColumn, 1
 
 test "Verify all tokens get a location", ->
   doesNotThrow ->
