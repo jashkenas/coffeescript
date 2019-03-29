@@ -838,6 +838,17 @@ test "AST as expected for Index node", ->
     optional: no
     shorthand: no
 
+  testExpression 'a[if b then c]',
+    type: 'MemberExpression'
+    object: ID 'a'
+    property:
+      type: 'ConditionalExpression'
+      test: ID 'b'
+      consequent: ID 'c'
+    computed: yes
+    optional: no
+    shorthand: no
+
 test "AST as expected for Range node", ->
   testExpression '[x..y]',
     type: 'Range'
