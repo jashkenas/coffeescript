@@ -966,6 +966,22 @@ exports.RegexLiteral = class RegexLiteral extends Literal
     val = replaceUnicodeCodePointEscapes val, {@flags}
     @value = "#{makeDelimitedLiteral val, delimiter: '/'}#{@flags}"
 
+  REGEX_REGEX: /// ^ / (.*) / \w* $ ///
+
+  astType: -> 'RegExpLiteral'
+
+  astProperties: ->
+    [, pattern] = @REGEX_REGEX.exec @value
+    return {
+      value: undefined
+      pattern, @flags, @delimiter
+      originalPattern: @originalValue
+      extra:
+        raw: @value
+        originalRaw: "#{@delimiter}#{@originalValue}#{@delimiter}#{@flags}"
+        rawValue: undefined
+    }
+
 exports.PassthroughLiteral = class PassthroughLiteral extends Literal
   constructor: (@originalValue, {@here, @generated} = {}) ->
     super ''
