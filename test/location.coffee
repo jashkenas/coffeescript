@@ -651,3 +651,72 @@ test 'Values with properties end up with a location that includes the properties
   eq complexIndex.locationData.first_column, 0
   eq complexIndex.locationData.last_line, 3
   eq complexIndex.locationData.last_column, 9
+
+test 'StringWithInterpolations::fromStringLiteral() assigns correct location to tagged template literal', ->
+  checkLocationData = (source, {stringWithInterpolationsLocationData, stringLocationData}) ->
+    block = CoffeeScript.nodes source
+    taggedTemplateLiteral = block.expressions[0].unwrap()
+    {args: [stringWithInterpolations]} = taggedTemplateLiteral
+    {body} = stringWithInterpolations
+    {expressions: [stringValue]} = body
+    string = stringValue.unwrap()
+
+    for field in ['first_line', 'first_column', 'last_line', 'last_column', 'last_line_exclusive', 'last_column_exclusive']
+      eq stringWithInterpolations.locationData[field], stringWithInterpolationsLocationData[field]
+      eq stringValue.locationData[field], stringLocationData[field]
+      eq string.locationData[field], stringLocationData[field]
+
+  checkLocationData 'a"b"',
+    stringWithInterpolationsLocationData:
+      first_line: 0
+      first_column: 1
+      last_line: 0
+      last_column: 3
+      last_line_exclusive: 0
+      last_column_exclusive: 4
+    stringLocationData:
+      first_line: 0
+      first_column: 2
+      last_line: 0
+      last_column: 2
+      last_line_exclusive: 0
+      last_column_exclusive: 3
+
+  checkLocationData '''
+    a"""
+      b
+    """
+  ''',
+    stringWithInterpolationsLocationData:
+      first_line: 0
+      first_column: 1
+      last_line: 2
+      last_column: 2
+      last_line_exclusive: 2
+      last_column_exclusive: 3
+    stringLocationData:
+      first_line: 0
+      first_column: 4
+      last_line: 1
+      last_column: 3
+      last_line_exclusive: 2
+      last_column_exclusive: 0
+
+  checkLocationData '''
+    a"""b
+    """
+  ''',
+    stringWithInterpolationsLocationData:
+      first_line: 0
+      first_column: 1
+      last_line: 1
+      last_column: 2
+      last_line_exclusive: 1
+      last_column_exclusive: 3
+    stringLocationData:
+      first_line: 0
+      first_column: 4
+      last_line: 0
+      last_column: 5
+      last_line_exclusive: 1
+      last_column_exclusive: 0
