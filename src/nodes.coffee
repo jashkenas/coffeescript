@@ -949,6 +949,34 @@ exports.StringLiteral = class StringLiteral extends Literal
     unquoted = unquoted.replace /\\n/g, '\n' if csx
     unquoted
 
+  # `StringLiteral`s can represent either entire literal strings
+  # or pieces of text inside of e.g. an interpolated string.
+  # When parsed as the former but needing to be treated as the latter
+  # (e.g. the string part of a tagged template literal), this will return
+  # a copy of the `StringLiteral` with the quotes trimmed from its location
+  # data (like it would have if parsed as part of an interpolated string).
+  withoutQuotesInLocationData: ->
+    endsWithNewline = @originalValue[-1..] is '\n'
+    locationData = Object.assign {}, @locationData
+    locationData.first_column          += @quote.length
+    if endsWithNewline
+      locationData.last_line -= 1
+      locationData.last_column =
+        if locationData.last_line is locationData.first_line
+          locationData.first_column + @originalValue.length - '\n'.length
+        else
+          @originalValue[...-1].length - '\n'.length - @originalValue[...-1].lastIndexOf('\n')
+    else
+      locationData.last_column         -= @quote.length
+    locationData.last_column_exclusive -= @quote.length
+    locationData.range = [
+      locationData.range[0] + @quote.length
+      locationData.range[1] - @quote.length
+    ]
+    copy = new StringLiteral @originalValue, {@quote, @initialChunk, @finalChunk, @indent, @double, @heregex}
+    copy.locationData = locationData
+    copy
+
   astProperties: ->
     return
       value: @originalValue
@@ -1906,11 +1934,18 @@ exports.RegexWithInterpolations = class RegexWithInterpolations extends Base
 
 exports.TaggedTemplateCall = class TaggedTemplateCall extends Call
   constructor: (variable, arg, soak) ->
-    arg = new StringWithInterpolations Block.wrap([ new Value arg ]) if arg instanceof StringLiteral
+    arg = StringWithInterpolations.fromStringLiteral arg if arg instanceof StringLiteral
     super variable, [ arg ], soak
 
   compileNode: (o) ->
     @variable.compileToFragments(o, LEVEL_ACCESS).concat @args[0].compileToFragments(o, LEVEL_LIST)
+
+  astType: -> 'TaggedTemplateExpression'
+
+  astProperties: (o) ->
+    return
+      tag: @variable.ast o, LEVEL_ACCESS
+      quasi: @args[0].ast o, LEVEL_LIST
 
 #### Extends
 
@@ -4468,6 +4503,12 @@ exports.Parens = class Parens extends Base
 exports.StringWithInterpolations = class StringWithInterpolations extends Base
   constructor: (@body, {@quote, @startQuote} = {}) ->
     super()
+
+  @fromStringLiteral: (stringLiteral) ->
+    updatedString = stringLiteral.withoutQuotesInLocationData()
+    updatedStringValue = new Value(updatedString).withLocationDataFrom updatedString
+    new StringWithInterpolations Block.wrap([updatedStringValue]), quote: stringLiteral.quote
+    .withLocationDataFrom stringLiteral
 
   children: ['body']
 

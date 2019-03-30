@@ -670,12 +670,80 @@ test "AST as expected for RegexWithInterpolations node", ->
       quote: '///'
     flags: 'ig'
 
-# test "AST as expected for TaggedTemplateCall node", ->
-#   testExpression 'func"tagged"',
-#     type: 'TaggedTemplateCall'
-#     args: [
-#       type: 'StringWithInterpolations'
-#     ]
+test "AST as expected for TaggedTemplateCall node", ->
+  testExpression 'func"tagged"',
+    type: 'TaggedTemplateExpression'
+    tag: ID 'func'
+    quasi:
+      type: 'TemplateLiteral'
+      expressions: []
+      quasis: [
+        type: 'TemplateElement'
+        value:
+          raw: 'tagged'
+        tail: yes
+      ]
+
+  testExpression 'a"b#{c}"',
+    type: 'TaggedTemplateExpression'
+    tag: ID 'a'
+    quasi:
+      type: 'TemplateLiteral'
+      expressions: [
+        ID 'c'
+      ]
+      quasis: [
+        type: 'TemplateElement'
+        value:
+          raw: 'b'
+        tail: no
+      ,
+        type: 'TemplateElement'
+        value:
+          raw: ''
+        tail: yes
+      ]
+
+  testExpression '''
+    a"""
+      b#{c}
+    """
+  ''',
+    type: 'TaggedTemplateExpression'
+    tag: ID 'a'
+    quasi:
+      type: 'TemplateLiteral'
+      expressions: [
+        ID 'c'
+      ]
+      quasis: [
+        type: 'TemplateElement'
+        value:
+          raw: '\n  b'
+        tail: no
+      ,
+        type: 'TemplateElement'
+        value:
+          raw: '\n'
+        tail: yes
+      ]
+
+  testExpression """
+    a'''
+      b
+    '''
+  """,
+    type: 'TaggedTemplateExpression'
+    tag: ID 'a'
+    quasi:
+      type: 'TemplateLiteral'
+      expressions: []
+      quasis: [
+        type: 'TemplateElement'
+        value:
+          raw: '\n  b\n'
+        tail: yes
+      ]
 
 # test "AST as expected for Extends node", ->
 #   testExpression 'class child extends parent',

@@ -5872,3 +5872,246 @@ test "AST location data as expected for RegexLiteral node", ->
       end:
         line: 5
         column: 3
+
+test "AST as expected for TaggedTemplateCall node", ->
+  testAstLocationData 'func"tagged"',
+    type: 'TaggedTemplateExpression'
+    tag:
+      start: 0
+      end: 4
+      range: [0, 4]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 4
+    quasi:
+      quasis: [
+        start: 5
+        end: 11
+        range: [5, 11]
+        loc:
+          start:
+            line: 1
+            column: 5
+          end:
+            line: 1
+            column: 11
+      ]
+      start: 4
+      end: 12
+      range: [4, 12]
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 1
+          column: 12
+    start: 0
+    end: 12
+    range: [0, 12]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 12
+
+  testAstLocationData 'a"b#{c}"',
+    type: 'TaggedTemplateExpression'
+    tag:
+      start: 0
+      end: 1
+      range: [0, 1]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 1
+    quasi:
+      expressions: [
+        start: 5
+        end: 6
+        range: [5, 6]
+        loc:
+          start:
+            line: 1
+            column: 5
+          end:
+            line: 1
+            column: 6
+      ]
+      quasis: [
+        start: 2
+        end: 3
+        range: [2, 3]
+        loc:
+          start:
+            line: 1
+            column: 2
+          end:
+            line: 1
+            column: 3
+      ,
+        start: 7
+        end: 7
+        range: [7, 7]
+        loc:
+          start:
+            line: 1
+            column: 7
+          end:
+            line: 1
+            column: 7
+      ]
+      start: 1
+      end: 8
+      range: [1, 8]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 8
+    start: 0
+    end: 8
+    range: [0, 8]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 8
+
+  testAstLocationData '''
+    a"""
+      b#{c}
+    """
+  ''',
+    type: 'TaggedTemplateExpression'
+    tag:
+      start: 0
+      end: 1
+      range: [0, 1]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 1
+    quasi:
+      expressions: [
+        start: 10
+        end: 11
+        range: [10, 11]
+        loc:
+          start:
+            line: 2
+            column: 5
+          end:
+            line: 2
+            column: 6
+      ]
+      quasis: [
+        start: 4
+        end: 8
+        range: [4, 8]
+        loc:
+          start:
+            line: 1
+            column: 4
+          end:
+            line: 2
+            column: 3
+      ,
+        start: 12
+        end: 13
+        range: [12, 13]
+        loc:
+          start:
+            line: 2
+            column: 7
+          end:
+            line: 3
+            column: 0
+      ]
+      start: 1
+      end: 16
+      range: [1, 16]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 3
+          column: 3
+    start: 0
+    end: 16
+    range: [0, 16]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 3
+
+  testAstLocationData """
+    a'''
+      b
+    '''
+  """,
+    type: 'TaggedTemplateExpression'
+    tag:
+      start: 0
+      end: 1
+      range: [0, 1]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 1
+    quasi:
+      quasis: [
+        start: 4
+        end: 9
+        range: [4, 9]
+        loc:
+          start:
+            line: 1
+            column: 4
+          end:
+            line: 3
+            column: 0
+      ]
+      start: 1
+      end: 12
+      range: [1, 12]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 3
+          column: 3
+    start: 0
+    end: 12
+    range: [0, 12]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 3
