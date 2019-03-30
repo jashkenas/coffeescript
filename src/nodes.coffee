@@ -1503,10 +1503,10 @@ exports.CSXIdentifier = class CSXIdentifier extends IdentifierLiteral
   astType: -> 'JSXIdentifier'
 
 exports.CSXExpressionContainer = class CSXExpressionContainer extends Base
-  constructor: (@expression) ->
+  constructor: (@expression, {locationData} = {}) ->
     super()
     @expression.csxAttribute = yes
-    @locationData = @expression.locationData
+    @locationData = locationData ? @expression.locationData
 
   children: ['expression']
 
@@ -1518,6 +1518,24 @@ exports.CSXExpressionContainer = class CSXExpressionContainer extends Base
   astProperties: ->
     return
       expression: @expression.ast()
+
+exports.CSXEmptyExpression = class CSXEmptyExpression extends Base
+  astType: -> 'JSXEmptyExpression'
+
+exports.CSXText = class CSXText extends Base
+  constructor: (stringLiteral) ->
+    super()
+    @value = stringLiteral.unquote yes, yes
+    @locationData = stringLiteral.locationData
+
+  astType: -> 'JSXText'
+
+  astProperties: ->
+    return {
+      @value
+      extra:
+        raw: @value
+    }
 
 exports.CSXAttribute = class CSXAttribute extends Base
   constructor: ({@name, value}) ->
@@ -1695,6 +1713,30 @@ exports.CSXElement = class CSXElement extends Base
 
     {openingFragment, closingFragment}
 
+  contentAst: (o) ->
+    return [] unless @content and not @content.base.isEmpty?()
+
+    content = @content.unwrapAll()
+    children =
+      if content instanceof StringLiteral
+        [new CSXText content]
+      else # StringWithInterpolations
+        for element in @content.unwrapAll().extractElements o, includeInterpolationWrappers: yes
+          if element instanceof StringLiteral
+            new CSXText element
+          else # Interpolation
+            {expression} = element
+            unless expression?
+              new CSXEmptyExpression().withLocationDataFrom element
+            else
+              unwrapped = expression.unwrapAll()
+              if unwrapped instanceof CSXElement
+                unwrapped
+              else
+                new CSXExpressionContainer unwrapped, locationData: element.locationData
+
+    child.ast(o) for child in children when not (child instanceof CSXText and child.value.length is 0)
+
   astProperties: (o) ->
     Object.assign(
       if @isFragment()
@@ -1702,7 +1744,7 @@ exports.CSXElement = class CSXElement extends Base
       else
         @elementAstProperties o
     ,
-      children: []
+      children: @contentAst o
     )
 
   astLocationData: ->
@@ -4519,7 +4561,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
 
   shouldCache: -> @body.shouldCache()
 
-  extractElements: (o) ->
+  extractElements: (o, {includeInterpolationWrappers} = {}) ->
     # Assumes that `expr` is `Block`
     expr = @body.unwrap()
 
@@ -4543,9 +4585,9 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
           commentPlaceholder.comments = unwrapped.comments
           (commentPlaceholder.comments ?= []).push node.comments... if node.comments
           elements.push new Value commentPlaceholder
-        else if node.expression
-          (node.expression.comments ?= []).push node.comments... if node.comments
-          elements.push node.expression
+        else if node.expression or includeInterpolationWrappers
+          (node.expression?.comments ?= []).push node.comments... if node.comments
+          elements.push if includeInterpolationWrappers then node else node.expression
         return no
       else if node.comments
         # This node is getting discarded, but salvage its comments.

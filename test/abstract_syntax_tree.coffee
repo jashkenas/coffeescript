@@ -343,6 +343,91 @@ test "AST as expected for CSXTag node", ->
         postfix: yes
       ]
 
+  testExpression '<div>abc</div>',
+    type: 'JSXElement'
+    openingElement:
+      type: 'JSXOpeningElement'
+      name:
+        type: 'JSXIdentifier'
+        name: 'div'
+      attributes: []
+      selfClosing: no
+    closingElement:
+      type: 'JSXClosingElement'
+      name:
+        type: 'JSXIdentifier'
+        name: 'div'
+    children: [
+      type: 'JSXText'
+      extra:
+        raw: 'abc'
+      value: 'abc'
+    ]
+
+  testExpression '''
+    <a>
+      {b}
+      <c />
+    </a>
+  ''',
+    type: 'JSXElement'
+    openingElement:
+      type: 'JSXOpeningElement'
+      name:
+        type: 'JSXIdentifier'
+        name: 'a'
+      attributes: []
+      selfClosing: no
+    closingElement:
+      type: 'JSXClosingElement'
+      name:
+        type: 'JSXIdentifier'
+        name: 'a'
+    children: [
+      type: 'JSXText'
+      extra:
+        raw: '\n  '
+      value: '\n  '
+    ,
+      type: 'JSXExpressionContainer'
+      expression: ID 'b'
+    ,
+      type: 'JSXText'
+      extra:
+        raw: '\n  '
+      value: '\n  '
+    ,
+      type: 'JSXElement'
+      openingElement:
+        type: 'JSXOpeningElement'
+        name:
+          type: 'JSXIdentifier'
+          name: 'c'
+        selfClosing: true
+      closingElement: null
+      children: []
+    ,
+      type: 'JSXText'
+      extra:
+        raw: '\n'
+      value: '\n'
+    ]
+
+  testExpression '<>abc{}</>',
+    type: 'JSXFragment'
+    openingFragment:
+      type: 'JSXOpeningFragment'
+    closingFragment:
+      type: 'JSXClosingFragment'
+    children: [
+      type: 'JSXText'
+      extra:
+        raw: 'abc'
+      value: 'abc'
+    ,
+      type: 'JSXEmptyExpression'
+    ]
+
 # test "AST as expected for PropertyName node", ->
 #   testExpression 'Object.assign',
 #     properties: [

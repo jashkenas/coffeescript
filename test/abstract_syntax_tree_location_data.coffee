@@ -2762,6 +2762,262 @@ test "AST location data as expected for CSXTag node", ->
             column: 11
       ]
 
+  testAstLocationData '<div>abc</div>',
+    type: 'JSXElement'
+    openingElement:
+      name:
+        start: 1
+        end: 4
+        range: [1, 4]
+        loc:
+          start:
+            line: 1
+            column: 1
+          end:
+            line: 1
+            column: 4
+      start: 0
+      end: 5
+      range: [0, 5]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 5
+    closingElement:
+      name:
+        start: 10
+        end: 13
+        range: [10, 13]
+        loc:
+          start:
+            line: 1
+            column: 10
+          end:
+            line: 1
+            column: 13
+      start: 8
+      end: 14
+      range: [8, 14]
+      loc:
+        start:
+          line: 1
+          column: 8
+        end:
+          line: 1
+          column: 14
+    children: [
+      start: 5
+      end: 8
+      range: [5, 8]
+      loc:
+        start:
+          line: 1
+          column: 5
+        end:
+          line: 1
+          column: 8
+    ]
+    start: 0
+    end: 14
+    range: [0, 14]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 14
+
+  testAstLocationData '''
+    <a>
+      {b}
+      <c />
+    </a>
+  ''',
+    type: 'JSXElement'
+    openingElement:
+      name:
+        start: 1
+        end: 2
+        range: [1, 2]
+        loc:
+          start:
+            line: 1
+            column: 1
+          end:
+            line: 1
+            column: 2
+      start: 0
+      end: 3
+      range: [0, 3]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 3
+    closingElement:
+      name:
+        start: 20
+        end: 21
+        range: [20, 21]
+        loc:
+          start:
+            line: 4
+            column: 2
+          end:
+            line: 4
+            column: 3
+      start: 18
+      end: 22
+      range: [18, 22]
+      loc:
+        start:
+          line: 4
+          column: 0
+        end:
+          line: 4
+          column: 4
+    children: [
+      start: 3
+      end: 6
+      range: [3, 6]
+      loc:
+        start:
+          line: 1
+          column: 3
+        end:
+          line: 2
+          column: 2
+    ,
+      expression:
+        start: 7
+        end: 8
+        range: [7, 8]
+        loc:
+          start:
+            line: 2
+            column: 3
+          end:
+            line: 2
+            column: 4
+      start: 6
+      end: 9
+      range: [6, 9]
+      loc:
+        start:
+          line: 2
+          column: 2
+        end:
+          line: 2
+          column: 5
+    ,
+      start: 9
+      end: 12
+      range: [9, 12]
+      loc:
+        start:
+          line: 2
+          column: 5
+        end:
+          line: 3
+          column: 2
+    ,
+      start: 12
+      end: 17
+      range: [12, 17]
+      loc:
+        start:
+          line: 3
+          column: 2
+        end:
+          line: 3
+          column: 7
+    ,
+      start: 17
+      end: 18
+      range: [17, 18]
+      loc:
+        start:
+          line: 3
+          column: 7
+        end:
+          line: 4
+          column: 0
+    ]
+    start: 0
+    end: 22
+    range: [0, 22]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 4
+
+  testAstLocationData '<>abc{}</>',
+    type: 'JSXFragment'
+    openingFragment:
+      start: 0
+      end: 2
+      range: [0, 2]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 2
+    closingFragment:
+      start: 7
+      end: 10
+      range: [7, 10]
+      loc:
+        start:
+          line: 1
+          column: 7
+        end:
+          line: 1
+          column: 10
+    children: [
+      start: 2
+      end: 5
+      range: [2, 5]
+      loc:
+        start:
+          line: 1
+          column: 2
+        end:
+          line: 1
+          column: 5
+    ,
+      start: 5
+      end: 7
+      range: [5, 7]
+      loc:
+        start:
+          line: 1
+          column: 5
+        end:
+          line: 1
+          column: 7
+    ]
+    start: 0
+    end: 10
+    range: [0, 10]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 10
+
 test "AST as expected for Try node", ->
   testAstLocationData 'try cappuccino',
     type: 'TryStatement'
