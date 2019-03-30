@@ -949,6 +949,12 @@ exports.StringLiteral = class StringLiteral extends Literal
     unquoted = unquoted.replace /\\n/g, '\n' if csx
     unquoted
 
+  # `StringLiteral`s can represent either entire literal strings
+  # or pieces of text inside of e.g. an interpolated string.
+  # When parsed as the former but needing to be treated as the latter
+  # (e.g. the string part of a tagged template literal), this will return
+  # a copy of the `StringLiteral` with the quotes trimmed from its location
+  # data (like it would have if parsed as part of an interpolated string).
   withoutQuotesInLocationData: ->
     endsWithNewline = @originalValue[-1..] is '\n'
     locationData = Object.assign {}, @locationData
