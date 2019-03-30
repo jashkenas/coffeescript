@@ -25,6 +25,8 @@
   },
   "files": [
     "bin",
+    "docs/v2/browser-compiler/coffeescript.js",
+    "docs/v2/browser-compiler-modern/coffeescript.js",
     "lib",
     "register.js",
     "repl.js"
