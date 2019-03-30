@@ -192,11 +192,12 @@ task 'build:watch:harmony', 'watch and continually rebuild the CoffeeScript comp
 
 buildDocs = (watch = no) ->
   # Constants
-  indexFile            = 'documentation/site/index.html'
-  siteSourceFolder     = "documentation/site"
-  sectionsSourceFolder = 'documentation/sections'
-  examplesSourceFolder = 'documentation/examples'
-  outputFolder         = "docs/v#{majorVersion}"
+  indexFile             = 'documentation/site/index.html'
+  siteSourceFolder      = "documentation/site"
+  sectionsSourceFolder  = 'documentation/sections'
+  changelogSourceFolder = 'documentation/sections/changelog'
+  examplesSourceFolder  = 'documentation/examples'
+  outputFolder          = "docs/v#{majorVersion}"
 
   # Helpers
   releaseHeader = (date, version, prevVersion) ->
@@ -279,7 +280,7 @@ buildDocs = (watch = no) ->
   catch exception
 
   if watch
-    for target in [indexFile, siteSourceFolder, examplesSourceFolder, sectionsSourceFolder]
+    for target in [indexFile, siteSourceFolder, examplesSourceFolder, sectionsSourceFolder, changelogSourceFolder]
       fs.watch target, interval: 200, renderIndex
     log 'watching...', green
 

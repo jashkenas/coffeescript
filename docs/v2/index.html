@@ -693,7 +693,7 @@ textarea {
       <section id="introduction">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.3.2">2.3.2</a></p>
+<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.4.0">2.4.0</a></p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash"><span class="comment"># Install locally for a project:</span>
 npm install --save-dev coffeescript
 
@@ -4408,6 +4408,7 @@ export {
   </div>
   
 </aside>
+<div id="dynamic-import" class="bookmark"></div>
 <p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import#Dynamic_Imports">Dynamic import</a> is also supported, with mandatory parentheses:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="dynamic_import">
   <div class="row">
@@ -4900,7 +4901,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
         <section id="annotated-source">
           <h2>Annotated Source</h2>
-<p>You can browse the CoffeeScript 2.3.2 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+<p>You can browse the CoffeeScript 2.4.0 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
 <li><a href="annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
@@ -5578,6 +5579,17 @@ x = <span class="number">2</span> + <span class="number">2</span>
       <section id="changelog">
         <h2>Changelog</h2>
 
+        <section id="2.4.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.3.2...2.4.0">2.4.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2019-03-29">2019-03-29</time></span>
+</h3><ul>
+<li>Dynamic <code>import()</code> expressions are now supported. The parentheses are always required, to distinguish from <code>import</code> statements. See <a href="#dynamic-import">Modules</a>. Note that as of this writing, the JavaScript feature itself is still Stage 3; if it changes before being fully standardized, it may change in CoffeeScript too. Using <code>import()</code> before its upstream <a href="https://github.com/tc39/proposal-dynamic-import">ECMAScript proposal</a> is finalized should be considered provisional, subject to breaking changes if the proposal changes or is rejected. We have also revised our <a href="#contributing">policy</a> on Stage 3 ECMAScript features, to support them when the features are <a href="https://caniuse.com/#feat=es6-module-dynamic-import">shipped</a> in significant runtimes such as major browsers or Node.js.</li>
+<li>There are now two browser versions of the CoffeeScript compiler: the traditional one that’s been published for years, and a new <a href="/browser-compiler-modern/coffeescript.js">ES module version</a> that can be used via <code>import</code>. If your browser supports it, it is in effect on this page. A reference to the ES module browser compiler is in the <code>package.json</code> <code>&quot;module&quot;</code> field.</li>
+<li>The Node API now exposes the previously private <code>registerCompiled</code> method, to allow plugins that use the <code>coffeescript</code> package to take advantage of CoffeeScript’s internal caching.</li>
+<li>Bugfixes for commas in strings in block arrays, a reference to <code>@</code> not being maintained in a <code>do</code> block in a class, and function default parameters should no longer be wrapped by extraneous parentheses.</li>
+</ul>
+
+        </section>
         <section id="2.3.2">
           <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.3.1...2.3.2">2.3.2</a>
   <span class="timestamp"> &mdash; <time datetime="2018-09-19">2018-09-19</time></span>
