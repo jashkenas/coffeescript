@@ -1718,7 +1718,25 @@ exports.JSXElement = class JSXElement extends Base
           else # Interpolation
             {expression} = element
             unless expression?
-              new JSXEmptyExpression().withLocationDataFrom element
+              emptyExpression = new JSXEmptyExpression()
+              # We don’t currently have a token corresponding to the empty space
+              # between the JSX expression braces, so piece together the location
+              # data by trimming the braces from the Interpolation’s location data.
+              # Technically the last_line/last_column calculation here could be
+              # incorrect if the ending brace is preceded by a newline, but
+              # last_line/last_column aren’t used for AST generation anyway.
+              emptyExpression.locationData =
+                first_line:            element.locationData.first_line
+                first_column:          element.locationData.first_column + 1
+                last_line:             element.locationData.last_line
+                last_column:           element.locationData.last_column - 1
+                last_line_exclusive:   element.locationData.last_line
+                last_column_exclusive: element.locationData.last_column
+                range: [
+                  element.locationData.range[0] + 1
+                  element.locationData.range[1] - 1
+                ]
+              new JSXExpressionContainer emptyExpression, locationData: element.locationData
             else
               unwrapped = expression.unwrapAll()
               if unwrapped instanceof JSXElement
