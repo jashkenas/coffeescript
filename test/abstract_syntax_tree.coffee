@@ -200,7 +200,7 @@ test "AST as expected for IdentifierLiteral node", ->
     type: 'Identifier'
     name: 'id'
 
-test "AST as expected for CSXTag node", ->
+test "AST as expected for JSXTag node", ->
   testExpression '<CSXY />',
     type: 'JSXElement'
     openingElement:

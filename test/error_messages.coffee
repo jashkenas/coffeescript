@@ -1589,17 +1589,17 @@ test "#4248: Unicode code point escapes", ->
       \    ^\^^^^^^^^^^^^^
   '''
 
-test "CSX error: non-matching tag names", ->
+test "JSX error: non-matching tag names", ->
   assertErrorFormat '''
     <div><span></div></span>
   ''',
   '''
-    [stdin]:1:7: error: expected corresponding CSX closing tag for span
+    [stdin]:1:7: error: expected corresponding JSX closing tag for span
     <div><span></div></span>
           ^^^^
   '''
 
-test "CSX error: bare expressions not allowed", ->
+test "JSX error: bare expressions not allowed", ->
   assertErrorFormat '''
     <div x=3 />
   ''',
@@ -1609,7 +1609,7 @@ test "CSX error: bare expressions not allowed", ->
            ^
   '''
 
-test "CSX error: unescaped opening tag angle bracket disallowed", ->
+test "JSX error: unescaped opening tag angle bracket disallowed", ->
   assertErrorFormat '''
     <Person><<</Person>
   ''',
@@ -1619,7 +1619,7 @@ test "CSX error: unescaped opening tag angle bracket disallowed", ->
             ^^
   '''
 
-test "CSX error: ambiguous tag-like expression", ->
+test "JSX error: ambiguous tag-like expression", ->
   assertErrorFormat '''
     x = a <b > c
   ''',
@@ -1629,51 +1629,51 @@ test "CSX error: ambiguous tag-like expression", ->
              ^
   '''
 
-test 'CSX error: invalid attributes', ->
+test 'JSX error: invalid attributes', ->
   assertErrorFormatAst '''
     <div a="b" {props} />
   ''', '''
-    [stdin]:1:12: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    [stdin]:1:12: error: Unexpected token. Allowed JSX attributes are: id="val", src={source}, {props...} or attribute.
     <div a="b" {props} />
                ^^^^^^^
   '''
   assertErrorFormatAst '''
     <div a={b} {a:{b}} />
   ''', '''
-    [stdin]:1:12: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    [stdin]:1:12: error: Unexpected token. Allowed JSX attributes are: id="val", src={source}, {props...} or attribute.
     <div a={b} {a:{b}} />
                ^^^^^^^
   '''
   assertErrorFormatAst '''
     <div {"#{a}"} />
   ''', '''
-    [stdin]:1:6: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    [stdin]:1:6: error: Unexpected token. Allowed JSX attributes are: id="val", src={source}, {props...} or attribute.
     <div {"#{a}"} />
          ^^^^^^^^
   '''
   assertErrorFormatAst '''
     <div props... />
   ''', '''
-    [stdin]:1:11: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    [stdin]:1:11: error: Unexpected token. Allowed JSX attributes are: id="val", src={source}, {props...} or attribute.
     <div props... />
               ^^^
   '''
   assertErrorFormatAst '''
     <div {a:"b", props..., c:d()} />
   ''', '''
-    [stdin]:1:6: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    [stdin]:1:6: error: Unexpected token. Allowed JSX attributes are: id="val", src={source}, {props...} or attribute.
     <div {a:"b", props..., c:d()} />
          ^^^^^^^^^^^^^^^^^^^^^^^^
   '''
   assertErrorFormatAst '''
     <div {props..., a, b} />
   ''', '''
-    [stdin]:1:6: error: Unexpected token. Allowed CSX attributes are: id="val", src={source}, {props...} or attribute.
+    [stdin]:1:6: error: Unexpected token. Allowed JSX attributes are: id="val", src={source}, {props...} or attribute.
     <div {props..., a, b} />
          ^^^^^^^^^^^^^^^^
   '''
 
-test '#5034: CSX error: Adjacent JSX elements must be wrapped in an enclosing tag', ->
+test '#5034: JSX error: Adjacent JSX elements must be wrapped in an enclosing tag', ->
   assertErrorFormat '''
     render = -> (
       <Row>a</Row>

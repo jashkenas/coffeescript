@@ -725,7 +725,7 @@ test "Block comment in an interpolated string", ->
   eqJS '"a#{### Comment ###}b"', '`a${/* Comment */""}b`;'
   eqJS '"a#{### 1 ###}b#{### 2 ###}c"', '`a${/* 1 */""}b${/* 2 */""}c`;'
 
-test "#4629: Block comment in CSX interpolation", ->
+test "#4629: Block comment in JSX interpolation", ->
   eqJS '<div>{### Comment ###}</div>', '<div>{/* Comment */}</div>;'
   eqJS '''
   <div>
