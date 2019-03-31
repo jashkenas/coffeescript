@@ -49,8 +49,8 @@ exports.Lexer = class Lexer
     @seenExport = no             # Used to recognize `EXPORT FROM? AS?` tokens.
     @importSpecifierList = no    # Used to identify when in an `IMPORT {...} FROM? ...`.
     @exportSpecifierList = no    # Used to identify when in an `EXPORT {...} FROM? ...`.
-    @csxDepth = 0                # Used to optimize CSX checks, how deep in CSX we are.
-    @csxObjAttribute = {}        # Used to detect if CSX attributes is wrapped in {} (<div {props...} />).
+    @jsxDepth = 0                # Used to optimize JSX checks, how deep in JSX we are.
+    @jsxObjAttribute = {}        # Used to detect if JSX attributes is wrapped in {} (<div {props...} />).
 
     @chunkLine =
       opts.line or 0             # The start line for the current @chunk.
@@ -72,7 +72,7 @@ exports.Lexer = class Lexer
            @lineToken()       or
            @stringToken()     or
            @numberToken()     or
-           @csxToken()        or
+           @jsxToken()        or
            @regexToken()      or
            @jsToken()         or
            @literalToken()
@@ -111,8 +111,8 @@ exports.Lexer = class Lexer
   # referenced as property names here, so you can still do `jQuery.is()` even
   # though `is` means `===` otherwise.
   identifierToken: ->
-    inCSXTag = @atCSXTag()
-    regex = if inCSXTag then CSX_ATTRIBUTE else IDENTIFIER
+    inJSXTag = @atJSXTag()
+    regex = if inJSXTag then JSX_ATTRIBUTE else IDENTIFIER
     return 0 unless match = regex.exec @chunk
     [input, id, colon] = match
 
@@ -233,10 +233,10 @@ exports.Lexer = class Lexer
       [tagToken[2].first_line, tagToken[2].first_column, tagToken[2].range[0]] =
         [poppedToken[2].first_line, poppedToken[2].first_column, poppedToken[2].range[0]]
     if colon
-      colonOffset = input.lastIndexOf if inCSXTag then '=' else ':'
+      colonOffset = input.lastIndexOf if inJSXTag then '=' else ':'
       colonToken = @token ':', ':', offset: colonOffset, length: colon.length
-      colonToken.csxColon = yes if inCSXTag # used by rewriter
-    if inCSXTag and tag is 'IDENTIFIER' and prev[0] isnt ':'
+      colonToken.jsxColon = yes if inJSXTag # used by rewriter
+    if inJSXTag and tag is 'IDENTIFIER' and prev[0] isnt ':'
       @token ',', ',', length: 0, origin: tagToken
 
     input.length
@@ -304,7 +304,7 @@ exports.Lexer = class Lexer
     @mergeInterpolationTokens tokens, {quote, indent, endOffset: end}, (value) =>
       @validateUnicodeCodePointEscapes value, delimiter: quote
 
-    if @atCSXTag()
+    if @atJSXTag()
       @token ',', ',', length: 0, origin: @prev
 
     end
@@ -543,15 +543,14 @@ exports.Lexer = class Lexer
       @tokens.pop()
     this
 
-  # CSX is like JSX but for CoffeeScript.
-  csxToken: ->
+  jsxToken: ->
     firstChar = @chunk[0]
     # Check the previous token to detect if attribute is spread.
     prevChar = if @tokens.length > 0 then @tokens[@tokens.length - 1][0] else ''
     if firstChar is '<'
-      match = CSX_IDENTIFIER.exec(@chunk[1...]) or CSX_FRAGMENT_IDENTIFIER.exec(@chunk[1...])
+      match = JSX_IDENTIFIER.exec(@chunk[1...]) or JSX_FRAGMENT_IDENTIFIER.exec(@chunk[1...])
       return 0 unless match and (
-        @csxDepth > 0 or
+        @jsxDepth > 0 or
         # Not the right hand side of an unspaced comparison (i.e. `a<b`).
         not (prev = @prev()) or
         prev.spaced or
@@ -563,7 +562,7 @@ exports.Lexer = class Lexer
         [id, properties...] = id.split '.'
       else
         properties = []
-      tagToken = @token 'CSX_TAG', id,
+      tagToken = @token 'JSX_TAG', id,
         length: id.length + 1
         data:
           openingBracketToken: @makeToken '<', '<'
@@ -577,9 +576,9 @@ exports.Lexer = class Lexer
       @token 'CALL_START', '(', generated: yes
       @token '[', '[', generated: yes
       @ends.push {tag: '/>', origin: tagToken, name: id, properties}
-      @csxDepth++
+      @jsxDepth++
       return fullId.length + 1
-    else if csxTag = @atCSXTag()
+    else if jsxTag = @atJSXTag()
       if @chunk[...2] is '/>' # Self-closing tag.
         @pair '/>'
         @token ']', ']',
@@ -591,15 +590,15 @@ exports.Lexer = class Lexer
           data:
             selfClosingSlashToken: @makeToken '/', '/'
             closingBracketToken: @makeToken '>', '>', offset: 1
-        @csxDepth--
+        @jsxDepth--
         return 2
       else if firstChar is '{'
         if prevChar is ':'
           token = @token '(', '('
-          @csxObjAttribute[@csxDepth] = no
+          @jsxObjAttribute[@jsxDepth] = no
         else
           token = @token '{', '{'
-          @csxObjAttribute[@csxDepth] = yes
+          @jsxObjAttribute[@jsxDepth] = yes
         @ends.push {tag: '}', origin: token}
         return 1
       else if firstChar is '>' # end of opening tag
@@ -611,13 +610,13 @@ exports.Lexer = class Lexer
             closingBracketToken: @makeToken '>', '>'
         @token ',', 'JSX_COMMA', generated: yes
         {tokens, index: end} =
-          @matchWithInterpolations INSIDE_CSX, '>', '</', CSX_INTERPOLATION
+          @matchWithInterpolations INSIDE_JSX, '>', '</', JSX_INTERPOLATION
         @mergeInterpolationTokens tokens, {endOffset: end}, (value) =>
           @validateUnicodeCodePointEscapes value, delimiter: '>'
-        match = CSX_IDENTIFIER.exec(@chunk[end...]) or CSX_FRAGMENT_IDENTIFIER.exec(@chunk[end...])
-        if not match or match[1] isnt "#{csxTag.name}#{(".#{property}" for property in csxTag.properties).join ''}"
-          @error "expected corresponding CSX closing tag for #{csxTag.name}",
-            csxTag.origin.data.tagNameToken[2]
+        match = JSX_IDENTIFIER.exec(@chunk[end...]) or JSX_FRAGMENT_IDENTIFIER.exec(@chunk[end...])
+        if not match or match[1] isnt "#{jsxTag.name}#{(".#{property}" for property in jsxTag.properties).join ''}"
+          @error "expected corresponding JSX closing tag for #{jsxTag.name}",
+            jsxTag.origin.data.tagNameToken[2]
         [, fullTagName] = match
         afterTag = end + fullTagName.length
         if @chunk[afterTag] isnt '>'
@@ -635,16 +634,16 @@ exports.Lexer = class Lexer
             closingTagClosingBracketToken: @makeToken '>', '>', offset: end + fullTagName.length
         # make the closing tag location data more easily accessible to the grammar
         addTokenData openingTagToken, endToken.data
-        @csxDepth--
+        @jsxDepth--
         return afterTag + 1
       else
         return 0
-    else if @atCSXTag 1
+    else if @atJSXTag 1
       if firstChar is '}'
         @pair firstChar
-        if @csxObjAttribute[@csxDepth]
+        if @jsxObjAttribute[@jsxDepth]
           @token '}', '}'
-          @csxObjAttribute[@csxDepth] = no
+          @jsxObjAttribute[@jsxDepth] = no
         else
           @token ')', ')'
         @token ',', ','
@@ -654,8 +653,8 @@ exports.Lexer = class Lexer
     else
       return 0
 
-  atCSXTag: (depth = 0) ->
-    return no if @csxDepth is 0
+  atJSXTag: (depth = 0) ->
+    return no if @jsxDepth is 0
     i = @ends.length - 1
     i-- while @ends[i]?.tag is 'OUTDENT' or depth-- > 0 # Ignore indents.
     last = @ends[i]
@@ -782,9 +781,9 @@ exports.Lexer = class Lexer
   #    `#{` if interpolations are desired).
   #  - `delimiter` is the delimiter of the token. Examples are `'`, `"`, `'''`,
   #    `"""` and `///`.
-  #  - `closingDelimiter` is different from `delimiter` only in CSX
-  #  - `interpolators` matches the start of an interpolation, for CSX it's both
-  #    `{` and `<` (i.e. nested CSX tag)
+  #  - `closingDelimiter` is different from `delimiter` only in JSX
+  #  - `interpolators` matches the start of an interpolation, for JSX it's both
+  #    `{` and `<` (i.e. nested JSX tag)
   #
   # This method allows us to have strings within interpolations within strings,
   # ad infinitum.
@@ -1163,17 +1162,17 @@ IDENTIFIER = /// ^
   ( [^\n\S]* : (?!:) )?  # Is this a property name?
 ///
 
-CSX_IDENTIFIER = /// ^
+JSX_IDENTIFIER = /// ^
   (?![\d<]) # Must not start with `<`.
   ( (?: (?!\s)[\.\-$\w\x7f-\uffff] )+ ) # Like `IDENTIFIER`, but includes `-`s and `.`s.
 ///
 
 # Fragment: <></>
-CSX_FRAGMENT_IDENTIFIER = /// ^
+JSX_FRAGMENT_IDENTIFIER = /// ^
   ()> # Ends immediately with `>`.
 ///
 
-CSX_ATTRIBUTE = /// ^
+JSX_ATTRIBUTE = /// ^
   (?!\d)
   ( (?: (?!\s)[\-$\w\x7f-\uffff] )+ ) # Like `IDENTIFIER`, but includes `-`s.
   ( [^\S]* = (?!=) )?  # Is this an attribute with a value?
@@ -1215,15 +1214,15 @@ STRING_DOUBLE  = /// ^(?: [^\\"#] | \\[\s\S] |           \#(?!\{) )* ///
 HEREDOC_SINGLE = /// ^(?: [^\\']  | \\[\s\S] | '(?!'')            )* ///
 HEREDOC_DOUBLE = /// ^(?: [^\\"#] | \\[\s\S] | "(?!"") | \#(?!\{) )* ///
 
-INSIDE_CSX = /// ^(?:
+INSIDE_JSX = /// ^(?:
     [^
       \{ # Start of CoffeeScript interpolation.
-      <  # Maybe CSX tag (`<` not allowed even if bare).
+      <  # Maybe JSX tag (`<` not allowed even if bare).
     ]
   )* /// # Similar to `HEREDOC_DOUBLE` but there is no escaping.
-CSX_INTERPOLATION = /// ^(?:
+JSX_INTERPOLATION = /// ^(?:
       \{       # CoffeeScript interpolation.
-    | <(?!/)   # CSX opening tag.
+    | <(?!/)   # JSX opening tag.
   )///
 
 HEREDOC_INDENT     = /\n+([^\n\S]*)(?=\S)/g

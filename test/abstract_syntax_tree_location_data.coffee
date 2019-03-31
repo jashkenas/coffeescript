@@ -2241,7 +2241,7 @@ test "AST location data as expected for Existence node", ->
         line: 1
         column: 7
 
-test "AST location data as expected for CSXTag node", ->
+test "AST location data as expected for JSXTag node", ->
   testAstLocationData '<CSXY />',
     type: 'JSXElement'
     openingElement:

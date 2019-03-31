@@ -55,7 +55,7 @@ exports.Rewriter = class Rewriter
     @addImplicitBracesAndParens()
     @rescueStowawayComments()
     @addLocationDataToGeneratedTokens()
-    @enforceValidCSXAttributes()
+    @enforceValidJSXAttributes()
     @fixOutdentLocationData()
     @exposeTokenDataToGrammar()
     if process?.env?.DEBUG_REWRITTEN_TOKEN_STREAM
@@ -409,10 +409,10 @@ exports.Rewriter = class Rewriter
           endImplicitObject i + offset
       return forward(1)
 
-  # Make sure only strings and wrapped expressions are used in CSX attributes.
-  enforceValidCSXAttributes: ->
+  # Make sure only strings and wrapped expressions are used in JSX attributes.
+  enforceValidJSXAttributes: ->
     @scanTokens (token, i, tokens) ->
-      if token.csxColon
+      if token.jsxColon
         next = tokens[i + 1]
         if next[0] not in ['STRING_START', 'STRING', '(']
           throwSyntaxError 'expected wrapped or quoted JSX attribute', next[2]
@@ -722,7 +722,7 @@ IMPLICIT_FUNC    = ['IDENTIFIER', 'PROPERTY', 'SUPER', ')', 'CALL_END', ']', 'IN
 
 # If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
 IMPLICIT_CALL    = [
-  'IDENTIFIER', 'CSX_TAG', 'PROPERTY', 'NUMBER', 'INFINITY', 'NAN'
+  'IDENTIFIER', 'JSX_TAG', 'PROPERTY', 'NUMBER', 'INFINITY', 'NAN'
   'STRING', 'STRING_START', 'REGEX', 'REGEX_START', 'JS'
   'NEW', 'PARAM_START', 'CLASS', 'IF', 'TRY', 'SWITCH', 'THIS'
   'UNDEFINED', 'NULL', 'BOOL'
