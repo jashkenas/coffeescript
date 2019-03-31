@@ -425,7 +425,9 @@ test "AST as expected for JSXTag node", ->
         raw: 'abc'
       value: 'abc'
     ,
-      type: 'JSXEmptyExpression'
+      type: 'JSXExpressionContainer'
+      expression:
+        type: 'JSXEmptyExpression'
     ]
 
 # test "AST as expected for PropertyName node", ->

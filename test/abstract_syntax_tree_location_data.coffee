@@ -2996,6 +2996,17 @@ test "AST location data as expected for JSXTag node", ->
           line: 1
           column: 5
     ,
+      expression:
+        start: 6
+        end: 6
+        range: [6, 6]
+        loc:
+          start:
+            line: 1
+            column: 6
+          end:
+            line: 1
+            column: 6
       start: 5
       end: 7
       range: [5, 7]
