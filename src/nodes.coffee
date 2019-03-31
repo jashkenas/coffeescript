@@ -1034,22 +1034,6 @@ exports.IdentifierLiteral = class IdentifierLiteral extends Literal
     return
       name: @value
 
-exports.JSXTag = class JSXTag extends IdentifierLiteral
-  constructor: (value, {
-    @tagNameLocationData
-    @closingTagOpeningBracketLocationData
-    @closingTagSlashLocationData
-    @closingTagNameLocationData
-    @closingTagClosingBracketLocationData
-  }) ->
-    super value
-
-  astType: -> 'JSXIdentifier'
-
-  astProperties: ->
-    return
-      name: @value
-
 exports.PropertyName = class PropertyName extends Literal
   isAssignable: YES
 
@@ -1500,6 +1484,21 @@ exports.LineComment = class LineComment extends Base
 #### JSX
 
 exports.JSXIdentifier = class JSXIdentifier extends IdentifierLiteral
+  astType: -> 'JSXIdentifier'
+
+exports.JSXTag = class JSXTag extends JSXIdentifier
+  constructor: (value, {
+    @tagNameLocationData
+    @closingTagOpeningBracketLocationData
+    @closingTagSlashLocationData
+    @closingTagNameLocationData
+    @closingTagClosingBracketLocationData
+  }) ->
+    super value
+
+  astProperties: ->
+    return
+      name: @value
 
 exports.JSXExpressionContainer = class JSXExpressionContainer extends Base
   constructor: (@expression, {locationData} = {}) ->
