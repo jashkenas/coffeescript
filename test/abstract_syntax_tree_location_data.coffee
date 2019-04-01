@@ -3029,6 +3029,44 @@ test "AST location data as expected for JSXTag node", ->
         line: 1
         column: 10
 
+  testAstLocationData '''
+    <a>{<b />}</a>
+  ''',
+    type: 'JSXElement'
+    children: [
+      expression:
+        start: 4
+        end: 9
+        range: [4, 9]
+        loc:
+          start:
+            line: 1
+            column: 4
+          end:
+            line: 1
+            column: 9
+      start: 3
+      end: 10
+      range: [3, 10]
+      loc:
+        start:
+          line: 1
+          column: 3
+        end:
+          line: 1
+          column: 10
+    ]
+    start: 0
+    end: 14
+    range: [0, 14]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 14
+
 test "AST as expected for Try node", ->
   testAstLocationData 'try cappuccino',
     type: 'TryStatement'
