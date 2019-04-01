@@ -430,6 +430,36 @@ test "AST as expected for JSXTag node", ->
         type: 'JSXEmptyExpression'
     ]
 
+  testExpression '''
+    <a>{<b />}</a>
+  ''',
+    type: 'JSXElement'
+    openingElement:
+      type: 'JSXOpeningElement'
+      name:
+        type: 'JSXIdentifier'
+        name: 'a'
+      attributes: []
+      selfClosing: no
+    closingElement:
+      type: 'JSXClosingElement'
+      name:
+        type: 'JSXIdentifier'
+        name: 'a'
+    children: [
+      type: 'JSXExpressionContainer'
+      expression:
+        type: 'JSXElement'
+        openingElement:
+          type: 'JSXOpeningElement'
+          name:
+            type: 'JSXIdentifier'
+            name: 'b'
+          selfClosing: true
+        closingElement: null
+        children: []
+    ]
+
 # test "AST as expected for PropertyName node", ->
 #   testExpression 'Object.assign',
 #     properties: [

@@ -1739,7 +1739,9 @@ exports.JSXElement = class JSXElement extends Base
               new JSXExpressionContainer emptyExpression, locationData: element.locationData
             else
               unwrapped = expression.unwrapAll()
-              if unwrapped instanceof JSXElement
+              if unwrapped instanceof JSXElement and
+                  # distinguish `<a><b /></a>` from `<a>{<b />}</a>`
+                  unwrapped.locationData.range[0] is element.locationData.range[0]
                 unwrapped
               else
                 new JSXExpressionContainer unwrapped, locationData: element.locationData
