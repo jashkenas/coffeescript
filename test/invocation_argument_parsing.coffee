@@ -11,7 +11,7 @@ coffeeCommand = if isWindows() then 'node coffee' else 'coffee'
 spawnOptions =
   cwd: coffeeBinFolder
   encoding: 'utf8'
-  env:
+  env: Object.assign {}, process.env,
     PATH: coffeeBinFolder + (if isWindows() then ';' else ':') + process.env.PATH
   shell: isWindows()
 
