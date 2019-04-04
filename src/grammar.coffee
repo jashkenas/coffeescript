@@ -280,8 +280,9 @@ grammar =
   ]
 
   ObjSpreadAccessor: [
-    o '. Property',                             -> new Access $2
-    o 'INDEX_START IndexValue INDEX_END',       -> $2
+    o '. Property',                                      -> new Access $2
+    o 'INDEX_START IndexValue INDEX_END',                -> $2
+    o 'INDEX_START INDENT IndexValue OUTDENT INDEX_END', -> $3
   ]
 
   # A return statement from a function body.
@@ -392,8 +393,9 @@ grammar =
 
   # A `super`-based expression that can be used as a value.
   Super: [
-    o 'SUPER . Property',                       -> new Super LOC(3)(new Access $3), [], no, $1
-    o 'SUPER INDEX_START Expression INDEX_END', -> new Super LOC(3)(new Index $3),  [], no, $1
+    o 'SUPER . Property',                                      -> new Super LOC(3)(new Access $3), [], no, $1
+    o 'SUPER INDEX_START Expression INDEX_END',                -> new Super LOC(3)(new Index $3),  [], no, $1
+    o 'SUPER INDEX_START INDENT Expression OUTDENT INDEX_END', -> new Super LOC(4)(new Index $4),  [], no, $1
   ]
 
   # A "meta-property" access e.g. `new.target`
@@ -415,8 +417,9 @@ grammar =
 
   # Indexing into an object or array using bracket notation.
   Index: [
-    o 'INDEX_START IndexValue INDEX_END',       -> $2
-    o 'INDEX_SOAK  Index',                      -> extend $2, soak: yes
+    o 'INDEX_START IndexValue INDEX_END',                -> $2
+    o 'INDEX_START INDENT IndexValue OUTDENT INDEX_END', -> $3
+    o 'INDEX_SOAK  Index',                               -> extend $2, soak: yes
   ]
 
   IndexValue: [

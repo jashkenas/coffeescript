@@ -470,3 +470,29 @@ test "#3736: chaining after do IIFE", ->
   eq 4,
     do b
     .c
+
+test "#5168: allow indented property index", ->
+  a = b: 3
+
+  eq 3, a[
+    if yes
+      'b'
+    else
+      'c'
+  ]
+
+  d = [1, 2, 3]
+  arrayEq [1, 2], d[
+    ...2
+  ]
+
+  class A
+    b: -> 3
+
+  class B extends A
+    c: ->
+      super[
+        'b'
+      ]()
+
+  eq 3, new B().c()

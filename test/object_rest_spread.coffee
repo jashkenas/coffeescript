@@ -428,3 +428,15 @@ test "#4834: dynamic import can technically be object spread", ->
 
     x = {...import('module')};
   """
+
+test "#5168: allow indented property index", ->
+  a = b: c: 3
+
+  eq 3, {
+    ...a[
+      if yes
+        'b'
+      else
+        'c'
+    ]
+  }.c
