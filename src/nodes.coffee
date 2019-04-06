@@ -792,6 +792,8 @@ exports.Block = class Block extends Base
   astType: ->
     if @isRootBlock
       'Program'
+    else if @isClassBody
+      'ClassBody'
     else
       'BlockStatement'
 
@@ -2544,8 +2546,11 @@ exports.Arr = class Arr extends Base
 exports.Class = class Class extends Base
   children: ['variable', 'parent', 'body']
 
-  constructor: (@variable, @parent, @body = new Block) ->
+  constructor: (@variable, @parent, @body) ->
     super()
+    unless @body?
+      @body = new Block
+      @hasGeneratedBody = yes
 
   compileNode: (o) ->
     @name          = @determineName()
@@ -2733,6 +2738,27 @@ exports.Class = class Class extends Base
       new Assign name, new Call(new Value(name, [new Access new PropertyName 'bind']), [new ThisLiteral])
 
     null
+
+  isStatementAst: -> yes
+
+  ast: (o, level) ->
+    @body.isClassBody = yes
+    @body.locationData = zeroWidthLocationDataFromEndLocation @locationData if @hasGeneratedBody
+    @walkBody()
+
+    super o, level
+
+  astType: (o) ->
+    if o.level is LEVEL_TOP
+      'ClassDeclaration'
+    else
+      'ClassExpression'
+
+  astProperties: (o) ->
+    return
+      id: @variable?.ast(o) ? null
+      superClass: @parent?.ast(o, LEVEL_PAREN) ? null
+      body: @body.ast o, LEVEL_TOP
 
 exports.ExecutableClassBody = class ExecutableClassBody extends Base
   children: [ 'class', 'body' ]
@@ -3762,7 +3788,9 @@ exports.Code = class Code extends Base
     super o, level
 
   astType: ->
-    if @bound
+    if @isMethod
+      'ClassMethod'
+    else if @bound
       'ArrowFunctionExpression'
     else
       'FunctionExpression'
@@ -3779,8 +3807,19 @@ exports.Code = class Code extends Base
     else
       name
 
-  astProperties: (o) ->
+  methodAstProperties: (o) ->
     return
+      static: no
+      key: @name.ast o
+      computed: no
+      kind:
+        if @ctor
+          'constructor'
+        else
+          'method'
+
+  astProperties: (o) ->
+    return Object.assign
       params: @paramForAst(param).ast(o) for param in @params
       body: @body.ast o, LEVEL_TOP
       generator: !!@isGenerator
@@ -3788,6 +3827,14 @@ exports.Code = class Code extends Base
       # We never generate named functions, so specify `id` as `null`, which
       # matches the Babel AST for anonymous function expressions/arrow functions
       id: null
+    ,
+      if @isMethod then @methodAstProperties o else {}
+
+  astLocationData: ->
+    functionLocationData = super()
+    return functionLocationData unless @isMethod
+
+    mergeAstLocationData @name.astLocationData(), functionLocationData
 
 #### Param
 
@@ -5365,3 +5412,14 @@ jisonLocationDataToAstLocationData = ({first_line, first_column, last_line_exclu
     ]
     start: range[0]
     end:   range[1]
+
+# Generate a zero-width location data that corresponds to the end of another node’s location.
+zeroWidthLocationDataFromEndLocation = ({range: [, endRange], last_line_exclusive, last_column_exclusive}) -> {
+  first_line: last_line_exclusive
+  first_column: last_column_exclusive
+  last_line: last_line_exclusive
+  last_column: last_column_exclusive
+  last_line_exclusive
+  last_column_exclusive
+  range: [endRange, endRange]
+}

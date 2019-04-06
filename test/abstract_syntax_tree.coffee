@@ -862,15 +862,6 @@ test "AST as expected for TaggedTemplateCall node", ->
         tail: yes
       ]
 
-# test "AST as expected for Extends node", ->
-#   testExpression 'class child extends parent',
-#     type: 'Class'
-#     variable:
-#       value: 'child'
-#     parent:
-#       value: 'parent'
-#   # TODO: Is there no Extends node?
-
 test "AST as expected for Access node", ->
   testExpression 'obj.prop',
     type: 'MemberExpression'
@@ -1273,42 +1264,71 @@ test "AST as expected for Arr node", ->
 
 #   # TODO: Test destructuring.
 
-# test "AST as expected for Class node", ->
-#   testExpression 'class Klass',
-#     type: 'Class'
-#     variable:
-#       value: 'Klass'
-#     body:
-#       type: 'Block'
-#       expressions: []
+test "AST as expected for Class node", ->
+  testStatement 'class Klass',
+    type: 'ClassDeclaration'
+    id: ID 'Klass'
+    superClass: null
+    body:
+      type: 'ClassBody'
+      body: []
 
-#   testExpression 'class child extends parent',
-#     type: 'Class'
-#     variable:
-#       value: 'child'
-#     parent:
-#       value: 'parent'
-#     body:
-#       type: 'Block'
-#       expressions: []
+  testStatement 'class child extends parent',
+    type: 'ClassDeclaration'
+    id: ID 'child'
+    superClass: ID 'parent'
+    body:
+      type: 'ClassBody'
+      body: []
 
-#   testExpression 'class Klass then constructor: ->',
-#     type: 'Class'
-#     variable:
-#       value: 'Klass'
-#     parent: undefined
-#     body:
-#       type: 'Value'
-#       properties: []
-#       base:
-#         type: 'Obj'
-#         generated: yes
-#         properties: [
-#           variable:
-#             value: 'constructor'
-#           value:
-#             type: 'Code'
-#         ]
+  testStatement 'class Klass then constructor: ->',
+    type: 'ClassDeclaration'
+    id: ID 'Klass'
+    superClass: null
+    body:
+      type: 'ClassBody'
+      body: [
+        type: 'ClassMethod'
+        static: no
+        key: ID 'constructor'
+        computed: no
+        kind: 'constructor'
+        id: null
+        generator: no
+        async: no
+        params: []
+        body: EMPTY_BLOCK
+      ]
+
+  testExpression '''
+    a = class A
+      b: ->
+        c
+  ''',
+    type: 'AssignmentExpression'
+    right:
+      type: 'ClassExpression'
+      id: ID 'A'
+      superClass: null
+      body:
+        type: 'ClassBody'
+        body: [
+          type: 'ClassMethod'
+          static: no
+          key: ID 'b'
+          computed: no
+          kind: 'method'
+          id: null
+          generator: no
+          async: no
+          params: []
+          body:
+            type: 'BlockStatement'
+            body: [
+              type: 'ExpressionStatement'
+              expression: ID 'c'
+            ]
+        ]
 
 # test "AST as expected for ExecutableClassBody node", ->
 #   code = """

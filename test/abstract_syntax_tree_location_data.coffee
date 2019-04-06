@@ -6420,3 +6420,239 @@ test "AST as expected for TaggedTemplateCall node", ->
       end:
         line: 3
         column: 3
+
+test "AST as expected for Class node", ->
+  testAstLocationData 'class Klass',
+    type: 'ClassDeclaration'
+    id:
+      start: 6
+      end: 11
+      range: [6, 11]
+      loc:
+        start:
+          line: 1
+          column: 6
+        end:
+          line: 1
+          column: 11
+    body:
+      start: 11
+      end: 11
+      range: [11, 11]
+      loc:
+        start:
+          line: 1
+          column: 11
+        end:
+          line: 1
+          column: 11
+    start: 0
+    end: 11
+    range: [0, 11]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 11
+
+  testAstLocationData 'class child extends parent',
+    type: 'ClassDeclaration'
+    id:
+      start: 6
+      end: 11
+      range: [6, 11]
+      loc:
+        start:
+          line: 1
+          column: 6
+        end:
+          line: 1
+          column: 11
+    superClass:
+      start: 20
+      end: 26
+      range: [20, 26]
+      loc:
+        start:
+          line: 1
+          column: 20
+        end:
+          line: 1
+          column: 26
+    body:
+      start: 26
+      end: 26
+      range: [26, 26]
+      loc:
+        start:
+          line: 1
+          column: 26
+        end:
+          line: 1
+          column: 26
+    start: 0
+    end: 26
+    range: [0, 26]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 26
+
+  testAstLocationData 'class Klass then constructor: ->',
+    type: 'ClassDeclaration'
+    id:
+      start: 6
+      end: 11
+      range: [6, 11]
+      loc:
+        start:
+          line: 1
+          column: 6
+        end:
+          line: 1
+          column: 11
+    body:
+      body: [
+        key:
+          start: 17
+          end: 28
+          range: [17, 28]
+          loc:
+            start:
+              line: 1
+              column: 17
+            end:
+              line: 1
+              column: 28
+        start: 17
+        end: 32
+        range: [17, 32]
+        loc:
+          start:
+            line: 1
+            column: 17
+          end:
+            line: 1
+            column: 32
+      ]
+      start: 12
+      end: 32
+      range: [12, 32]
+      loc:
+        start:
+          line: 1
+          column: 12
+        end:
+          line: 1
+          column: 32
+    start: 0
+    end: 32
+    range: [0, 32]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 32
+
+  testAstLocationData '''
+    a = class A
+      b: ->
+        c
+  ''',
+    type: 'AssignmentExpression'
+    right:
+      id:
+        start: 10
+        end: 11
+        range: [10, 11]
+        loc:
+          start:
+            line: 1
+            column: 10
+          end:
+            line: 1
+            column: 11
+      body:
+        body: [
+          key:
+            start: 14
+            end: 15
+            range: [14, 15]
+            loc:
+              start:
+                line: 2
+                column: 2
+              end:
+                line: 2
+                column: 3
+          body:
+            body: [
+              start: 24
+              end: 25
+              range: [24, 25]
+              loc:
+                start:
+                  line: 3
+                  column: 4
+                end:
+                  line: 3
+                  column: 5
+            ]
+            start: 20
+            end: 25
+            range: [20, 25]
+            loc:
+              start:
+                line: 3
+                column: 0
+              end:
+                line: 3
+                column: 5
+          start: 14
+          end: 25
+          range: [14, 25]
+          loc:
+            start:
+              line: 2
+              column: 2
+            end:
+              line: 3
+              column: 5
+        ]
+        start: 12
+        end: 25
+        range: [12, 25]
+        loc:
+          start:
+            line: 2
+            column: 0
+          end:
+            line: 3
+            column: 5
+      start: 4
+      end: 25
+      range: [4, 25]
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 3
+          column: 5
+    start: 0
+    end: 25
+    range: [0, 25]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 5
