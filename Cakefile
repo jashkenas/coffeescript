@@ -21,7 +21,7 @@ header = """
    * CoffeeScript Compiler v#{CoffeeScript.VERSION}
    * https://coffeescript.org
    *
-   * Copyright 2011, Jeremy Ashkenas
+   * Copyright 2011-#{new Date().getFullYear()}, Jeremy Ashkenas
    * Released under the MIT License
    */
 """
@@ -67,8 +67,9 @@ build = (callback) ->
   buildExceptParser callback
 
 transpile = (code, options = {}) ->
-  options.minify =    process.env.MINIFY isnt 'false'
-  options.transform = process.env.TRANSFORM isnt 'false'
+  options.minify =      process.env.MINIFY    isnt 'false'
+  options.transform =   process.env.TRANSFORM isnt 'false'
+  options.sourceType ?= 'script'
   babel = require '@babel/core'
   presets = []
   # Exclude the `modules` plugin in order to not break the `}(this));`
@@ -76,10 +77,10 @@ transpile = (code, options = {}) ->
   presets.push ['@babel/env', {modules: no}] if options.transform
   presets.push ['minify', {mangle: no, evaluate: no, removeUndefined: no}] if options.minify
   babelOptions =
+    presets: presets
     compact: not options.minify
     comments: not options.minify
-    presets: presets
-    sourceType: 'script'
+    sourceType: options.sourceType
   { code } = babel.transform code, babelOptions unless presets.length is 0
   code
 
@@ -163,19 +164,24 @@ task 'build:browser', 'merge the built scripts into a single file for use in a b
       }
     }(this));
   """
-  moduleCode = """
+  moduleCode = transpile """
     #{code}
 
     export default CoffeeScript;
     const { VERSION, compile, eval: evaluate, load, run, runScripts } = CoffeeScript;
     export { VERSION, compile, evaluate as eval, load, run, runScripts };
-  """
-  for folder in ['browser-compiler', 'browser-compiler-modern']
-    outputFolder = "docs/v#{majorVersion}/#{folder}"
+  """, {sourceType: 'module'}
+  outputFolders = [
+    "docs/v#{majorVersion}/browser-compiler-legacy"
+    "docs/v#{majorVersion}/browser-compiler-modern"
+    "lib/coffeescript-browser-compiler-legacy"
+    "lib/coffeescript-browser-compiler-modern"
+  ]
+  for outputFolder in outputFolders
     fs.mkdirSync outputFolder unless fs.existsSync outputFolder
     fs.writeFileSync "#{outputFolder}/coffeescript.js", """
       #{header}
-      #{if folder is 'browser-compiler' then scriptCode else moduleCode}
+      #{if outputFolder.includes('legacy') then scriptCode else moduleCode}
     """
 
 task 'build:browser:full', 'merge the built scripts into a single file for use in a browser, and test it', ->
@@ -487,7 +493,7 @@ task 'test', 'run the CoffeeScript language test suite', ->
 
 
 task 'test:browser', 'run the test suite against the merged browser script', ->
-  source = fs.readFileSync "docs/v#{majorVersion}/browser-compiler/coffeescript.js", 'utf-8'
+  source = fs.readFileSync "lib/coffeescript-browser-compiler-legacy/coffeescript.js", 'utf-8'
   result = {}
   global.testingBrowser = yes
   (-> eval source).call result
