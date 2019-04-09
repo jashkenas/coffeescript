@@ -2416,11 +2416,11 @@ exports.ObjectProperty = class ObjectProperty extends Base
 
   astProperties: (o) ->
     isComputedPropertyName = @key instanceof Value and @key.base instanceof ComputedPropertyName
-    keyAst = @key.ast o
+    keyAst = @key.ast o, LEVEL_LIST
 
     return
       key: keyAst
-      value: @value?.ast(o) ? keyAst
+      value: @value?.ast(o, LEVEL_LIST) ? keyAst
       shorthand: !!@shorthand
       computed: !!isComputedPropertyName
       method: no
