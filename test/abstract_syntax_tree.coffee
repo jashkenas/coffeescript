@@ -1245,6 +1245,36 @@ test "AST as expected for Obj node", ->
     ]
     implicit: yes
 
+  testExpression '''
+    a:
+      if b then c
+  ''',
+    type: 'ObjectExpression'
+    properties: [
+      type: 'ObjectProperty'
+      key: ID 'a'
+      value:
+        type: 'ConditionalExpression'
+        test: ID 'b'
+        consequent: ID 'c'
+    ]
+    implicit: yes
+
+  testExpression '''
+    a:
+      c if b
+  ''',
+    type: 'ObjectExpression'
+    properties: [
+      type: 'ObjectProperty'
+      key: ID 'a'
+      value:
+        type: 'ConditionalExpression'
+        test: ID 'b'
+        consequent: ID 'c'
+    ]
+    implicit: yes
+
 #   # TODO: Test destructuring.
 
 #   # console.log JSON.stringify expression, ["type", "generated", "lhs", "value", "properties", "variable"], 2
