@@ -2898,7 +2898,7 @@ exports.ClassProperty = class ClassProperty extends Base
   constructor: ({@name, @isStatic, @staticClassName, @value, @operatorToken}) ->
     super()
 
-  children: ['name', 'value']
+  children: ['name', 'value', 'staticClassName']
 
   isStatement: YES
 
