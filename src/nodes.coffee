@@ -486,8 +486,9 @@ exports.Root = class Root extends Base
   # better not to generate them in the first place, but for now, clean up
   # obvious double-parentheses.
   compileNode: (o) ->
-    o.indent  = if o.bare then '' else TAB
-    o.level   = LEVEL_TOP
+    o.indent    = if o.bare then '' else TAB
+    o.level     = LEVEL_TOP
+    o.compiling = yes
     @initializeScope o
     fragments = @body.compileRoot o
     return fragments if o.bare
@@ -1272,8 +1273,10 @@ exports.Value = class Value extends Base
     lastProperty instanceof Slice
 
   looksStatic: (className) ->
-    (@this or @base instanceof ThisLiteral or @base.value is className) and
+    return no unless ((thisLiteral = @base) instanceof ThisLiteral or (name = @base).value is className) and
       @properties.length is 1 and @properties[0].name?.value isnt 'prototype'
+    return
+      staticClassName: thisLiteral ? name
 
   # The value can be unwrapped as its inner node, if there are no attached
   # properties.
@@ -2554,7 +2557,7 @@ exports.Class = class Class extends Base
 
   compileNode: (o) ->
     @name          = @determineName()
-    executableBody = @walkBody()
+    executableBody = @walkBody o
 
     # Special handling to allow `class expr.A extends A` declarations
     parentName    = @parent.base.value if @parent instanceof Value and not @parent.hasProperties()
@@ -2622,7 +2625,7 @@ exports.Class = class Class extends Base
       @variable.error message if message
     if name in JS_FORBIDDEN then "_#{name}" else name
 
-  walkBody: ->
+  walkBody: (o) ->
     @ctor          = null
     @boundMethods  = []
     executableBody = null
@@ -2640,7 +2643,7 @@ exports.Class = class Class extends Base
         pushSlice = -> exprs.push new Value new Obj properties[start...end], true if end > start
 
         while assign = properties[end]
-          if initializerExpression = @addInitializerExpression assign
+          if initializerExpression = @addInitializerExpression assign, o
             pushSlice()
             exprs.push initializerExpression
             initializer.push initializerExpression
@@ -2651,7 +2654,7 @@ exports.Class = class Class extends Base
         expressions[i..i] = exprs
         i += exprs.length
       else
-        if initializerExpression = @addInitializerExpression expression
+        if initializerExpression = @addInitializerExpression expression, o
           initializer.push initializerExpression
           expressions[i] = initializerExpression
         i += 1
@@ -2684,11 +2687,13 @@ exports.Class = class Class extends Base
   # initializer as an escape hatch for ES features that are not implemented
   # (e.g. getters and setters defined via the `get` and `set` keywords as
   # opposed to the `Object.defineProperty` method).
-  addInitializerExpression: (node) ->
+  addInitializerExpression: (node, o) ->
     if node.unwrapAll() instanceof PassthroughLiteral
       node
     else if @validInitializerMethod node
       @addInitializerMethod node
+    else if not o.compiling and @validClassProperty node
+      @addClassProperty node
     else
       null
 
@@ -2700,7 +2705,7 @@ exports.Class = class Class extends Base
 
   # Returns a configured class initializer method
   addInitializerMethod: (assign) ->
-    { variable, value: method } = assign
+    { variable, value: method, operatorToken } = assign
     method.isMethod = yes
     method.isStatic = variable.looksStatic @name
 
@@ -2713,7 +2718,23 @@ exports.Class = class Class extends Base
       method.ctor = (if @parent then 'derived' else 'base') if methodName.value is 'constructor'
       method.error 'Cannot define a constructor as a bound (fat arrow) function' if method.bound and method.ctor
 
+    method.operatorToken = operatorToken
     method
+
+  validClassProperty: (node) ->
+    return no unless node instanceof Assign
+    return node.variable.looksStatic @name
+
+  addClassProperty: (assign) ->
+    {variable, value, operatorToken} = assign
+    {staticClassName} = variable.looksStatic @name
+    new ClassProperty({
+      name: variable.properties[0]
+      isStatic: yes
+      staticClassName
+      value
+      operatorToken
+    }).withLocationDataFrom assign
 
   makeDefaultConstructor: ->
     ctor = @addInitializerMethod new Assign (new Value new PropertyName 'constructor'), new Code
@@ -2742,9 +2763,10 @@ exports.Class = class Class extends Base
   isStatementAst: -> yes
 
   ast: (o, level) ->
+    @name = @determineName()
     @body.isClassBody = yes
     @body.locationData = zeroWidthLocationDataFromEndLocation @locationData if @hasGeneratedBody
-    @walkBody()
+    @walkBody o
 
     super o, level
 
@@ -2871,6 +2893,23 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
 
       assign
     compact result
+
+exports.ClassProperty = class ClassProperty extends Base
+  constructor: ({@name, @isStatic, @staticClassName, @value, @operatorToken}) ->
+    super()
+
+  children: ['name', 'value']
+
+  isStatement: YES
+
+  astProperties: (o) ->
+    return
+      key: @name.ast o, LEVEL_LIST
+      value: @value.ast o, LEVEL_LIST
+      static: !!@isStatic
+      computed: no
+      operator: @operatorToken?.value ? '='
+      staticClassName: @staticClassName?.ast(o) ? null
 
 #### Import and Export
 
@@ -3809,7 +3848,7 @@ exports.Code = class Code extends Base
 
   methodAstProperties: (o) ->
     return
-      static: no
+      static: !!@isStatic
       key: @name.ast o
       computed: no
       kind:
@@ -3817,6 +3856,8 @@ exports.Code = class Code extends Base
           'constructor'
         else
           'method'
+      operator: @operatorToken?.value ? '='
+      staticClassName: @isStatic.staticClassName?.ast(o) ? null
 
   astProperties: (o) ->
     return Object.assign
@@ -3834,7 +3875,10 @@ exports.Code = class Code extends Base
     functionLocationData = super()
     return functionLocationData unless @isMethod
 
-    mergeAstLocationData @name.astLocationData(), functionLocationData
+    astLocationData = mergeAstLocationData @name.astLocationData(), functionLocationData
+    if @isStatic.staticClassName?
+      astLocationData = mergeAstLocationData @isStatic.staticClassName.astLocationData(), astLocationData
+    astLocationData
 
 #### Param
 

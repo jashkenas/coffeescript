@@ -6656,3 +6656,357 @@ test "AST as expected for Class node", ->
       end:
         line: 3
         column: 5
+
+  testAstLocationData '''
+    class A
+      @b: ->
+      @c = ->
+      @d: 1
+      @e = 2
+      A.f = 3
+      A.g = ->
+      this.h = ->
+      this.i = 4
+  ''',
+    type: 'ClassDeclaration'
+    id:
+      start: 6
+      end: 7
+      range: [6, 7]
+      loc:
+        start:
+          line: 1
+          column: 6
+        end:
+          line: 1
+          column: 7
+    body:
+      body: [
+        key:
+          start: 11
+          end: 12
+          range: [11, 12]
+          loc:
+            start:
+              line: 2
+              column: 3
+            end:
+              line: 2
+              column: 4
+        staticClassName:
+          start: 10
+          end: 11
+          range: [10, 11]
+          loc:
+            start:
+              line: 2
+              column: 2
+            end:
+              line: 2
+              column: 3
+        start: 10
+        end: 16
+        range: [10, 16]
+        loc:
+          start:
+            line: 2
+            column: 2
+          end:
+            line: 2
+            column: 8
+      ,
+        key:
+          start: 20
+          end: 21
+          range: [20, 21]
+          loc:
+            start:
+              line: 3
+              column: 3
+            end:
+              line: 3
+              column: 4
+        staticClassName:
+          start: 19
+          end: 20
+          range: [19, 20]
+          loc:
+            start:
+              line: 3
+              column: 2
+            end:
+              line: 3
+              column: 3
+        start: 19
+        end: 26
+        range: [19, 26]
+        loc:
+          start:
+            line: 3
+            column: 2
+          end:
+            line: 3
+            column: 9
+      ,
+        key:
+          start: 30
+          end: 31
+          range: [30, 31]
+          loc:
+            start:
+              line: 4
+              column: 3
+            end:
+              line: 4
+              column: 4
+        staticClassName:
+          start: 29
+          end: 30
+          range: [29, 30]
+          loc:
+            start:
+              line: 4
+              column: 2
+            end:
+              line: 4
+              column: 3
+        value:
+          start: 33
+          end: 34
+          range: [33, 34]
+          loc:
+            start:
+              line: 4
+              column: 6
+            end:
+              line: 4
+              column: 7
+        start: 29
+        end: 34
+        range: [29, 34]
+        loc:
+          start:
+            line: 4
+            column: 2
+          end:
+            line: 4
+            column: 7
+      ,
+        key:
+          start: 38
+          end: 39
+          range: [38, 39]
+          loc:
+            start:
+              line: 5
+              column: 3
+            end:
+              line: 5
+              column: 4
+        staticClassName:
+          start: 37
+          end: 38
+          range: [37, 38]
+          loc:
+            start:
+              line: 5
+              column: 2
+            end:
+              line: 5
+              column: 3
+        value:
+          start: 42
+          end: 43
+          range: [42, 43]
+          loc:
+            start:
+              line: 5
+              column: 7
+            end:
+              line: 5
+              column: 8
+        start: 37
+        end: 43
+        range: [37, 43]
+        loc:
+          start:
+            line: 5
+            column: 2
+          end:
+            line: 5
+            column: 8
+      ,
+        key:
+          start: 48
+          end: 49
+          range: [48, 49]
+          loc:
+            start:
+              line: 6
+              column: 4
+            end:
+              line: 6
+              column: 5
+        staticClassName:
+          start: 46
+          end: 47
+          range: [46, 47]
+          loc:
+            start:
+              line: 6
+              column: 2
+            end:
+              line: 6
+              column: 3
+        value:
+          start: 52
+          end: 53
+          range: [52, 53]
+          loc:
+            start:
+              line: 6
+              column: 8
+            end:
+              line: 6
+              column: 9
+        start: 46
+        end: 53
+        range: [46, 53]
+        loc:
+          start:
+            line: 6
+            column: 2
+          end:
+            line: 6
+            column: 9
+      ,
+        key:
+          start: 58
+          end: 59
+          range: [58, 59]
+          loc:
+            start:
+              line: 7
+              column: 4
+            end:
+              line: 7
+              column: 5
+        staticClassName:
+          start: 56
+          end: 57
+          range: [56, 57]
+          loc:
+            start:
+              line: 7
+              column: 2
+            end:
+              line: 7
+              column: 3
+        start: 56
+        end: 64
+        range: [56, 64]
+        loc:
+          start:
+            line: 7
+            column: 2
+          end:
+            line: 7
+            column: 10
+      ,
+        key:
+          start: 72
+          end: 73
+          range: [72, 73]
+          loc:
+            start:
+              line: 8
+              column: 7
+            end:
+              line: 8
+              column: 8
+        staticClassName:
+          start: 67
+          end: 71
+          range: [67, 71]
+          loc:
+            start:
+              line: 8
+              column: 2
+            end:
+              line: 8
+              column: 6
+        start: 67
+        end: 78
+        range: [67, 78]
+        loc:
+          start:
+            line: 8
+            column: 2
+          end:
+            line: 8
+            column: 13
+      ,
+        key:
+          start: 86
+          end: 87
+          range: [86, 87]
+          loc:
+            start:
+              line: 9
+              column: 7
+            end:
+              line: 9
+              column: 8
+        staticClassName:
+          start: 81
+          end: 85
+          range: [81, 85]
+          loc:
+            start:
+              line: 9
+              column: 2
+            end:
+              line: 9
+              column: 6
+        value:
+          start: 90
+          end: 91
+          range: [90, 91]
+          loc:
+            start:
+              line: 9
+              column: 11
+            end:
+              line: 9
+              column: 12
+        start: 81
+        end: 91
+        range: [81, 91]
+        loc:
+          start:
+            line: 9
+            column: 2
+          end:
+            line: 9
+            column: 12
+      ]
+      start: 8
+      end: 91
+      range: [8, 91]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 9
+          column: 12
+    start: 0
+    end: 91
+    range: [0, 91]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 9
+        column: 12
