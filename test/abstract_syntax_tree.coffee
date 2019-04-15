@@ -1358,7 +1358,122 @@ test "AST as expected for Class node", ->
               type: 'ExpressionStatement'
               expression: ID 'c'
             ]
+          operator: ':'
         ]
+
+  testStatement '''
+    class A
+      @b: ->
+      @c = ->
+      @d: 1
+      @e = 2
+      A.f = 3
+      A.g = ->
+      this.h = ->
+      this.i = 4
+  ''',
+    type: 'ClassDeclaration'
+    id: ID 'A'
+    superClass: null
+    body:
+      type: 'ClassBody'
+      body: [
+        type: 'ClassMethod'
+        static: yes
+        key: ID 'b'
+        computed: no
+        kind: 'method'
+        id: null
+        generator: no
+        async: no
+        params: []
+        body: EMPTY_BLOCK
+        operator: ':'
+        staticClassName:
+          type: 'ThisExpression'
+          shorthand: yes
+      ,
+        type: 'ClassMethod'
+        static: yes
+        key: ID 'c'
+        computed: no
+        kind: 'method'
+        id: null
+        generator: no
+        async: no
+        params: []
+        body: EMPTY_BLOCK
+        operator: '='
+        staticClassName:
+          type: 'ThisExpression'
+          shorthand: yes
+      ,
+        type: 'ClassProperty'
+        static: yes
+        key: ID 'd'
+        computed: no
+        value: NUMBER 1
+        operator: ':'
+        staticClassName:
+          type: 'ThisExpression'
+          shorthand: yes
+      ,
+        type: 'ClassProperty'
+        static: yes
+        key: ID 'e'
+        computed: no
+        value: NUMBER 2
+        operator: '='
+        staticClassName:
+          type: 'ThisExpression'
+          shorthand: yes
+      ,
+        type: 'ClassProperty'
+        static: yes
+        key: ID 'f'
+        computed: no
+        value: NUMBER 3
+        operator: '='
+        staticClassName: ID 'A'
+      ,
+        type: 'ClassMethod'
+        static: yes
+        key: ID 'g'
+        computed: no
+        kind: 'method'
+        id: null
+        generator: no
+        async: no
+        params: []
+        body: EMPTY_BLOCK
+        operator: '='
+        staticClassName: ID 'A'
+      ,
+        type: 'ClassMethod'
+        static: yes
+        key: ID 'h'
+        computed: no
+        kind: 'method'
+        id: null
+        generator: no
+        async: no
+        params: []
+        body: EMPTY_BLOCK
+        operator: '='
+        staticClassName:
+          type: 'ThisExpression'
+          shorthand: no
+      ,
+        type: 'ClassProperty'
+        static: yes
+        key: ID 'i'
+        computed: no
+        value: NUMBER 4
+        operator: '='
+        staticClassName:
+          type: 'ThisExpression'
+          shorthand: no
+      ]
 
 # test "AST as expected for ExecutableClassBody node", ->
 #   code = """
