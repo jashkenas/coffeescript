@@ -564,7 +564,8 @@ grammar =
   ArgElisionList: [
     o 'ArgElision'
     o 'ArgElisionList , ArgElision',                                          -> $1.concat $3
-    o 'ArgElisionList OptElisions TERMINATOR ArgElision',                     -> $1.concat $2, $4
+    o 'ArgElisionList , TERMINATOR ArgElision',                               -> $1.concat $4
+    o 'ArgElisionList TERMINATOR ArgElision',                                 -> $1.concat $3
     o 'INDENT ArgElisionList OptElisions OUTDENT',                            -> $2.concat $3
     o 'ArgElisionList OptElisions INDENT ArgElisionList OptElisions OUTDENT', -> $1.concat $2, $4, $5
   ]
@@ -586,6 +587,7 @@ grammar =
 
   Elision: [
     o ',',                    -> new Elision
+    o 'Elision TERMINATOR',   -> $1
   ]
 
   # Just simple, comma-separated, required arguments (no fancy syntax). We need
