@@ -293,3 +293,41 @@ test "for-from comprehensions over Array", ->
 
   array2 = (a + b for [a, b] from [[10, 20], [30, 40], [50, 60]] when a + b >= 70)
   ok array2.join(' ') is '70 110'
+
+test "#5201: simple indented elisions", ->
+  arr1 = [
+    ,
+    1,
+    2,
+    ,
+    ,
+    3,
+    4,
+    5,
+    6
+    ,
+    ,
+    8,
+    9,
+  ]
+  eq arr1.length, 12
+  eq arr1[5], 3
+  eq arr1[9], undefined
+  arr2 = [
+    ,
+    ,
+    1,
+    2,
+    ,
+    3,
+    ,
+    4,
+    5
+    6
+    ,
+    ,
+    ,
+  ]
+  eq arr2.length, 12
+  eq arr2[8], 5
+  eq arr2[1], undefined
