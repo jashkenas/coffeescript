@@ -313,6 +313,7 @@ test "#5201: simple indented elisions", ->
   eq arr1.length, 12
   eq arr1[5], 3
   eq arr1[9], undefined
+
   arr2 = [
     ,
     ,
