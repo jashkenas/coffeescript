@@ -2694,8 +2694,8 @@ exports.Class = class Class extends Base
       @addInitializerMethod node
     else if not o.compiling and @validClassProperty node
       @addClassProperty node
-    else if not o.compiling and @validClassInstanceProperty node
-      @addClassInstanceProperty node
+    else if not o.compiling and @validClassPrototypeProperty node
+      @addClassPrototypeProperty node
     else
       null
 
@@ -2738,11 +2738,11 @@ exports.Class = class Class extends Base
       operatorToken
     }).withLocationDataFrom assign
 
-  validClassInstanceProperty: (node) ->
+  validClassPrototypeProperty: (node) ->
     return no unless node instanceof Assign
     node.context is 'object' and not node.variable.hasProperties()
 
-  addClassInstanceProperty: (assign) ->
+  addClassPrototypeProperty: (assign) ->
     {variable, value} = assign
     new ClassPrototypeProperty({
       name: variable.base
