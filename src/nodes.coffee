@@ -2694,6 +2694,8 @@ exports.Class = class Class extends Base
       @addInitializerMethod node
     else if not o.compiling and @validClassProperty node
       @addClassProperty node
+    else if not o.compiling and @validClassInstanceProperty node
+      @addClassInstanceProperty node
     else
       null
 
@@ -2734,6 +2736,17 @@ exports.Class = class Class extends Base
       staticClassName
       value
       operatorToken
+    }).withLocationDataFrom assign
+
+  validClassInstanceProperty: (node) ->
+    return no unless node instanceof Assign
+    node.context is 'object' and not node.variable.hasProperties()
+
+  addClassInstanceProperty: (assign) ->
+    {variable, value} = assign
+    new ClassPrototypeProperty({
+      name: variable.base
+      value
     }).withLocationDataFrom assign
 
   makeDefaultConstructor: ->
@@ -2883,7 +2896,11 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
         # The class scope is not available yet, so return the assignment to update later
         assign = @externalCtor = new Assign new Value, value
       else if not assign.variable.this
-        name      = new (if base.shouldCache() then Index else Access) base
+        name =
+          if base instanceof ComputedPropertyName
+            new Index base.value
+          else
+            new (if base.shouldCache() then Index else Access) base
         prototype = new Access new PropertyName 'prototype'
         variable  = new Value new ThisLiteral(), [ prototype, name ]
 
@@ -2910,6 +2927,20 @@ exports.ClassProperty = class ClassProperty extends Base
       computed: no
       operator: @operatorToken?.value ? '='
       staticClassName: @staticClassName?.ast(o) ? null
+
+exports.ClassPrototypeProperty = class ClassPrototypeProperty extends Base
+  constructor: ({@name, @value}) ->
+    super()
+
+  children: ['name', 'value']
+
+  isStatement: YES
+
+  astProperties: (o) ->
+    return
+      key: @name.ast o, LEVEL_LIST
+      value: @value.ast o, LEVEL_LIST
+      computed: @name instanceof ComputedPropertyName
 
 #### Import and Export
 

@@ -1475,6 +1475,28 @@ test "AST as expected for Class node", ->
           shorthand: no
       ]
 
+  testStatement '''
+    class A
+      b: 1
+      [c]: 2
+  ''',
+    type: 'ClassDeclaration'
+    id: ID 'A'
+    superClass: null
+    body:
+      type: 'ClassBody'
+      body: [
+        type: 'ClassPrototypeProperty'
+        key: ID 'b'
+        value: NUMBER 1
+        computed: no
+      ,
+        type: 'ClassPrototypeProperty'
+        key: ID 'c'
+        value: NUMBER 2
+        computed: yes
+      ]
+
 # test "AST as expected for ExecutableClassBody node", ->
 #   code = """
 #     class Klass
