@@ -7105,3 +7105,109 @@ test "AST as expected for Class node", ->
       end:
         line: 3
         column: 8
+
+  testAstLocationData '''
+    class A
+      @[b]: 1
+      @[c]: ->
+  ''',
+    type: 'ClassDeclaration'
+    body:
+      body: [
+        key:
+          start: 12
+          end: 13
+          range: [12, 13]
+          loc:
+            start:
+              line: 2
+              column: 4
+            end:
+              line: 2
+              column: 5
+        staticClassName:
+          start: 10
+          end: 11
+          range: [10, 11]
+          loc:
+            start:
+              line: 2
+              column: 2
+            end:
+              line: 2
+              column: 3
+        value:
+          start: 16
+          end: 17
+          range: [16, 17]
+          loc:
+            start:
+              line: 2
+              column: 8
+            end:
+              line: 2
+              column: 9
+        start: 10
+        end: 17
+        range: [10, 17]
+        loc:
+          start:
+            line: 2
+            column: 2
+          end:
+            line: 2
+            column: 9
+      ,
+        key:
+          start: 22
+          end: 23
+          range: [22, 23]
+          loc:
+            start:
+              line: 3
+              column: 4
+            end:
+              line: 3
+              column: 5
+        staticClassName:
+          start: 20
+          end: 21
+          range: [20, 21]
+          loc:
+            start:
+              line: 3
+              column: 2
+            end:
+              line: 3
+              column: 3
+        start: 20
+        end: 28
+        range: [20, 28]
+        loc:
+          start:
+            line: 3
+            column: 2
+          end:
+            line: 3
+            column: 10
+      ]
+      start: 8
+      end: 28
+      range: [8, 28]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 10
+    start: 0
+    end: 28
+    range: [0, 28]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 10

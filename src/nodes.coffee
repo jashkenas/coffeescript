@@ -3889,6 +3889,7 @@ exports.Code = class Code extends Base
           'method'
       operator: @operatorToken?.value ? '='
       staticClassName: @isStatic.staticClassName?.ast(o) ? null
+      bound: !!@bound
 
   astProperties: (o) ->
     return Object.assign
