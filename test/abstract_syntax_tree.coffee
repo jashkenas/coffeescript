@@ -1572,39 +1572,6 @@ test "AST as expected for Class node", ->
           shorthand: yes
       ]
 
-# test "AST as expected for ExecutableClassBody node", ->
-#   code = """
-#     class Klass
-#       privateStatic = if 42 then yes else no
-#       getPrivateStatic: -> privateStatic
-#     """
-#   testExpression code,
-#     type: 'Class'
-#     variable:
-#       value: 'Klass'
-#     body:
-#       type: 'Block'
-#       expressions: [
-#         type: 'Assign'
-#         variable:
-#           value: 'privateStatic'
-#         value:
-#           type: 'If'
-#       ,
-#         type: 'Obj'
-#         generated: yes
-#         properties: [
-#           type: 'Assign'
-#           variable:
-#             value: 'getPrivateStatic'
-#           value:
-#             type: 'Code'
-#             body:
-#               type: 'Value'
-#               properties: []
-#         ]
-#       ]
-
 test "AST as expected for ModuleDeclaration node", ->
   testStatement 'export {X}',
     type: 'ExportNamedDeclaration'
