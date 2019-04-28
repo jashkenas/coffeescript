@@ -1943,3 +1943,12 @@ test "#5204: Computed class property", ->
   a = new A()
   eq a.bar, 'baz'
   eq A::bar, 'baz'
+
+test "#5204: Static computed class property", ->
+  foo = 'bar'
+  qux = 'quux'
+  class A
+    @[foo]: 'baz'
+    @[qux]: -> 3
+  eq A.bar, 'baz'
+  eq A.quux(), 3
