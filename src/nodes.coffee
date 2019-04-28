@@ -2896,11 +2896,7 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
         # The class scope is not available yet, so return the assignment to update later
         assign = @externalCtor = new Assign new Value, value
       else if not assign.variable.this
-        name =
-          if base instanceof ComputedPropertyName
-            new Index base.value
-          else
-            new (if base.shouldCache() then Index else Access) base
+        name      = new (if base.shouldCache() then Index else Access) base
         prototype = new Access new PropertyName 'prototype'
         variable  = new Value new ThisLiteral(), [ prototype, name ]
 
