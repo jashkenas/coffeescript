@@ -1930,3 +1930,20 @@ test "#5085: Bug: @ reference to class not maintained in do block", ->
 
   eq thisFoo, 'foo assigned in class'
   eq thisBar, 'foo assigned in class'
+
+test "#5204: Computed class property", ->
+  foo = 'bar'
+  class A
+    [foo]: 'baz'
+  a = new A()
+  eq a.bar, 'baz'
+  eq A::bar, 'baz'
+
+test "#5204: Static computed class property", ->
+  foo = 'bar'
+  qux = 'quux'
+  class A
+    @[foo]: 'baz'
+    @[qux]: -> 3
+  eq A.bar, 'baz'
+  eq A.quux(), 3

@@ -8,7 +8,7 @@
     "compiler"
   ],
   "author": "Jeremy Ashkenas",
-  "version": "2.3.2",
+  "version": "2.4.1",
   "license": "MIT",
   "engines": {
     "node": ">=6"
@@ -17,7 +17,8 @@
     "lib": "./lib/coffeescript"
   },
   "main": "./lib/coffeescript/index",
-  "browser": "./lib/coffeescript/browser",
+  "module": "./lib/coffeescript-browser-compiler-modern/coffeescript.js",
+  "browser": "./lib/coffeescript-browser-compiler-legacy/coffeescript.js",
   "bin": {
     "coffee": "./bin/coffee",
     "cake": "./bin/cake"

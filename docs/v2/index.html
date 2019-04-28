@@ -693,7 +693,7 @@ textarea {
       <section id="introduction">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.3.2">2.3.2</a></p>
+<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.4.1">2.4.1</a></p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash"><span class="comment"># Install locally for a project:</span>
 npm install --save-dev coffeescript
 
@@ -907,7 +907,7 @@ cubes = (function() {
       </section>
       <section id="installation">
         <h2>Installation</h2>
-<p>The command-line version of <code>coffee</code> is available as a <a href="https://nodejs.org/">Node.js</a> utility, requiring Node 6 or later. The <a href="/v2/browser-compiler/coffeescript.js">core compiler</a> however, does not depend on Node, and can be run in any JavaScript environment, or in the browser (see <a href="#try">Try CoffeeScript</a>).</p>
+<p>The command-line version of <code>coffee</code> is available as a <a href="https://nodejs.org/">Node.js</a> utility, requiring Node 6 or later. The <a href="/v2/browser-compiler-modern/coffeescript.js">core compiler</a> however, does not depend on Node, and can be run in any JavaScript environment, or in the browser (see <a href="#try">Try CoffeeScript</a>).</p>
 <p>To install, first make sure you have a working copy of the latest stable version of <a href="https://nodejs.org/">Node.js</a>. You can then install CoffeeScript globally with <a href="https://www.npmjs.com/">npm</a>:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --global coffeescript
 </code></pre>
@@ -1399,7 +1399,7 @@ kids = {
   </div>
   
 </aside>
-<p>CoffeeScript has a shortcut for creating objects when you want the key to be set with a variable of the same name.</p>
+<p>CoffeeScript has a shortcut for creating objects when you want the key to be set with a variable of the same name. Note that the <code>{</code> and <code>}</code> are required for this shorthand.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="objects_shorthand">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
@@ -4232,7 +4232,7 @@ greet = function(name, adjective) {
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="modules">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
-      <textarea class="coffeescript-input" id="modules-coffee">import 'local-file.coffee'
+      <textarea class="coffeescript-input" id="modules-coffee">import './local-file.coffee'
 import 'coffeescript'
 
 import _ from 'underscore'
@@ -4255,7 +4255,7 @@ export { Mathematics as default, sqrt as squareRoot }
 export * from 'underscore'
 export { max, min } from 'underscore'
 </textarea>
-      <pre class="placeholder-code"><span class="cm-variable">import</span> <span class="cm-string">'local-file.coffee'</span>
+      <pre class="placeholder-code"><span class="cm-variable">import</span> <span class="cm-string">'./local-file.coffee'</span>
 <span class="cm-variable">import</span> <span class="cm-string">'coffeescript'</span>
 
 <span class="cm-variable">import</span> <span class="cm-variable">_</span> <span class="cm-variable">from</span> <span class="cm-string">'underscore'</span>
@@ -4280,7 +4280,7 @@ export { max, min } from 'underscore'
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="modules-js">import 'local-file.coffee';
+      <textarea class="javascript-output" id="modules-js">import './local-file.coffee';
 
 import 'coffeescript';
 
@@ -4342,7 +4342,7 @@ export {
   min
 } from 'underscore';
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">import</span> <span class="cm-string">'local-file.coffee'</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">import</span> <span class="cm-string">'./local-file.coffee'</span>;
 
 <span class="cm-keyword">import</span> <span class="cm-string">'coffeescript'</span>;
 
@@ -4404,6 +4404,62 @@ export {
   <span class="cm-variable">min</span>
 } <span class="cm-keyword">from</span> <span class="cm-string">'underscore'</span>;
 </pre>
+    </div>
+  </div>
+  
+</aside>
+<div id="dynamic-import" class="bookmark"></div>
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import#Dynamic_Imports">Dynamic import</a> is also supported, with mandatory parentheses:</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="dynamic_import">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="dynamic_import-coffee"># Your browser must support dynamic import to run this example.
+
+do ->
+  { run } = await import('./browser-compiler-modern/coffeescript.js')
+  run '''
+    if 5 < new Date().getHours() < 9
+      alert 'Time to make the coffee!'
+    else
+      alert 'Time to get some work done.'
+  '''
+</textarea>
+      <pre class="placeholder-code"><span class="cm-comment"># Your browser must support dynamic import to run this example.</span>
+
+<span class="cm-keyword">do</span> <span class="cm-operator">-></span>
+  <span class="cm-punctuation">{</span> <span class="cm-variable">run</span> <span class="cm-punctuation">}</span> <span class="cm-punctuation">=</span> <span class="cm-variable">await</span> <span class="cm-variable">import</span><span class="cm-punctuation">(</span><span class="cm-string">'./browser-compiler-modern/coffeescript.js'</span><span class="cm-punctuation">)</span>
+  <span class="cm-variable">run</span> <span class="cm-string">'''</span>
+<span class="cm-string">    if 5 &lt; new Date().getHours() &lt; 9</span>
+<span class="cm-string">      alert 'Time to make the coffee!'</span>
+<span class="cm-string">    else</span>
+<span class="cm-string">      alert 'Time to get some work done.'</span>
+<span class="cm-string">  '''</span>
+</pre>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="dynamic_import-js">// Your browser must support dynamic import to run this example.
+(async function() {
+  var run;
+  ({run} = (await import('./browser-compiler-modern/coffeescript.js')));
+  return run('if 5 < new Date().getHours() < 9\n  alert \'Time to make the coffee!\'\nelse\n  alert \'Time to get some work done.\'');
+})();
+</textarea>
+      <pre class="placeholder-code"><span class="cm-comment">// Your browser must support dynamic import to run this example.</span>
+(<span class="cm-keyword">async</span> <span class="cm-keyword">function</span>() {
+  <span class="cm-keyword">var</span> <span class="cm-def">run</span>;
+  ({<span class="cm-property">run</span>} <span class="cm-operator">=</span> (<span class="cm-keyword">await</span> <span class="cm-keyword">import</span>(<span class="cm-string">'./browser-compiler-modern/coffeescript.js'</span>)));
+  <span class="cm-keyword">return</span> <span class="cm-variable-2">run</span>(<span class="cm-string">'if 5 &lt; new Date().getHours() &lt; 9\n  alert \'Time to make the coffee!\'\nelse\n  alert \'Time to get some work done.\''</span>);
+})();
+</pre>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col text-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="dynamic_import" data-run="true"><small><svg class="play-button" viewBox="0 0 24 24">
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
+</svg>
+</small></button>
     </div>
   </div>
   
@@ -4778,7 +4834,7 @@ task('build:parser', 'rebuild the Jison parser', function(options) {
       </section>
       <section id="scripts">
         <h2><code>&quot;text/coffeescript&quot;</code> Script Tags</h2>
-<p>While it’s not recommended for serious use, CoffeeScripts may be included directly within the browser using <code>&lt;script type=&quot;text/coffeescript&quot;&gt;</code> tags. The source includes a compressed and minified version of the compiler (<a href="/v2/browser-compiler/coffeescript.js">Download current version here, 51k when gzipped</a>) as <code>docs/v2/browser-compiler/coffeescript.js</code>. Include this file on a page with inline CoffeeScript tags, and it will compile and evaluate them in order.</p>
+<p>While it’s not recommended for serious use, CoffeeScripts may be included directly within the browser using <code>&lt;script type=&quot;text/coffeescript&quot;&gt;</code> tags. The source includes a compressed and minified version of the compiler (<a href="/v2/browser-compiler-legacy/coffeescript.js">Download current version here, 77k when gzipped</a>) as <code>docs/v2/browser-compiler-legacy/coffeescript.js</code>. Include this file on a page with inline CoffeeScript tags, and it will compile and evaluate them in order.</p>
 <p>The usual caveats about CoffeeScript apply — your inline scripts will run within a closure wrapper, so if you want to expose global variables or functions, attach them to the <code>window</code> object.</p>
 
       </section>
@@ -4845,7 +4901,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
         <section id="annotated-source">
           <h2>Annotated Source</h2>
-<p>You can browse the CoffeeScript 2.3.2 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+<p>You can browse the CoffeeScript 2.4.1 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
 <li><a href="annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
@@ -4865,13 +4921,13 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         <section id="contributing">
           <h2>Contributing</h2>
 <p>Contributions are welcome! Feel free to fork <a href="https://github.com/jashkenas/coffeescript">the repo</a> and submit a pull request.</p>
-<p><a href="#unsupported">Some features of ECMAScript are intentionally unsupported</a>. Please review both the open and closed <a href="https://github.com/jashkenas/coffeescript/issues">issues on GitHub</a> to see if the feature you’re looking for has already been discussed. As a general rule, we don’t support ECMAScript syntax for features that aren’t yet finalized (at Stage 4 in the proposal approval process).</p>
+<p><a href="#unsupported">Some features of ECMAScript are intentionally unsupported</a>. Please review both the open and closed <a href="https://github.com/jashkenas/coffeescript/issues">issues on GitHub</a> to see if the feature you’re looking for has already been discussed. As a general rule, we don’t support ECMAScript syntax for features that aren’t yet finalized (at Stage 4 in the <a href="https://github.com/tc39/proposals">proposal approval process</a>) or implemented in major browsers and/or Node (which can sometimes happen for features in Stage 3). Any Stage 3 features that CoffeeScript chooses to support should be considered experimental, subject to breaking changes or removal until the feature reaches Stage 4.</p>
 <p>For more resources on adding to CoffeeScript, please see <a href="https://github.com/jashkenas/coffeescript/wiki/%5BHowto%5D-Hacking-on-the-CoffeeScript-Compiler">the Wiki</a>, especially <a href="https://github.com/jashkenas/coffeescript/wiki/%5BHowTo%5D-How-parsing-works">How The Parser Works</a>.</p>
 <p>There are several things you can do to increase your odds of having your pull request accepted:</p>
 <ul>
 <li>Create tests! Any pull request should probably include basic tests to verify you didn’t break anything, or future changes won’t break your code.</li>
 <li>Follow the style of the rest of the CoffeeScript codebase.</li>
-<li>Ensure any ECMAScript syntax is mature (at Stage 4), with no further potential changes.</li>
+<li>Ensure any ECMAScript syntax is mature (at Stage 4, or at Stage 3 with support in major browsers or runtimes).</li>
 <li>Add only features that have broad utility, rather than a feature aimed at a specific use case or framework.</li>
 </ul>
 <p>Of course, it’s entirely possible that you have a great addition, but it doesn’t fit within these constraints. Feel free to roll your own solution; you will have <a href="https://github.com/jashkenas/coffeescript/wiki/In-The-Wild">plenty of company</a>.</p>
@@ -5523,6 +5579,25 @@ x = <span class="number">2</span> + <span class="number">2</span>
       <section id="changelog">
         <h2>Changelog</h2>
 
+        <section id="2.4.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.4.0...2.4.1">2.4.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2019-04-08">2019-04-08</time></span>
+</h3><ul>
+<li>Both the <a href="/browser-compiler-legacy/coffeescript.js">traditional ES5</a> and <a href="/browser-compiler-modern/coffeescript.js">modern ES module</a> versions of the CoffeeScript broswer compiler are now published to NPM, enabling the browser compilers’ use via services that provide NPM modules’ code available via public CDN. The traditional version is referenced via the <code>package.json</code> <code>&quot;browser&quot;</code> field, and the ES module version via the <code>&quot;module&quot;</code> field.</li>
+</ul>
+
+        </section>
+        <section id="2.4.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.3.2...2.4.0">2.4.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2019-03-29">2019-03-29</time></span>
+</h3><ul>
+<li>Dynamic <code>import()</code> expressions are now supported. The parentheses are always required, to distinguish from <code>import</code> statements. See <a href="#dynamic-import">Modules</a>. Note that as of this writing, the JavaScript feature itself is still Stage 3; if it changes before being fully standardized, it may change in CoffeeScript too. Using <code>import()</code> before its upstream <a href="https://github.com/tc39/proposal-dynamic-import">ECMAScript proposal</a> is finalized should be considered provisional, subject to breaking changes if the proposal changes or is rejected. We have also revised our <a href="#contributing">policy</a> on Stage 3 ECMAScript features, to support them when the features are <a href="https://caniuse.com/#feat=es6-module-dynamic-import">shipped</a> in significant runtimes such as major browsers or Node.js.</li>
+<li>There are now two browser versions of the CoffeeScript compiler: the traditional one that’s been published for years, and a new <a href="/browser-compiler-modern/coffeescript.js">ES module version</a> that can be used via <code>import</code>. If your browser supports it, it is in effect on this page. A reference to the ES module browser compiler is in the <code>package.json</code> <code>&quot;module&quot;</code> field.</li>
+<li>The Node API now exposes the previously private <code>registerCompiled</code> method, to allow plugins that use the <code>coffeescript</code> package to take advantage of CoffeeScript’s internal caching.</li>
+<li>Bugfixes for commas in strings in block arrays, a reference to <code>@</code> not being maintained in a <code>do</code> block in a class, and function default parameters should no longer be wrapped by extraneous parentheses.</li>
+</ul>
+
+        </section>
         <section id="2.3.2">
           <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.3.1...2.3.2">2.3.2</a>
   <span class="timestamp"> &mdash; <time datetime="2018-09-19">2018-09-19</time></span>
@@ -5692,7 +5767,7 @@ x = <span class="number">2</span> + <span class="number">2</span>
           <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.0.0-beta4...2.0.0-beta5">2.0.0-beta5</a>
   <span class="timestamp"> &mdash; <time datetime="2017-09-02">2017-09-02</time></span>
 </h3><ul>
-<li>Node 6 is now supported, and we will try to maintain that as the minimum required version for CoffeeScript 2 via the <code>coffee</code> command or Node API. Older versions of Node, or non-evergreen browsers, can compile via the <a href="./browser-compiler/coffeescript.js">browser compiler</a>.</li>
+<li>Node 6 is now supported, and we will try to maintain that as the minimum required version for CoffeeScript 2 via the <code>coffee</code> command or Node API. Older versions of Node, or non-evergreen browsers, can compile via the <a href="./browser-compiler-legacy/coffeescript.js">legacy browser compiler</a>.</li>
 <li>The command line <code>--output</code> flag now allows you to specify an output filename, not just an output folder.</li>
 <li>The command line <code>--require</code> flag now properly handles filenames or module names that are invalid identifiers (like an NPM module with a hyphen in the name).</li>
 <li><code>Object.assign</code>, output when object destructuring is used, is polyfilled using the same polyfill that Babel outputs. This means that polyfills shouldn’t be required unless support for Internet Explorer 8 or below is desired (or your own code uses a feature that requires a polyfill). See <a href="#es2015plus-output">ES2015+ Output</a>.</li>
@@ -6275,7 +6350,7 @@ used to parse as <code>result = (i for i in list)</code> by default … it now p
           <h3><a href="https://github.com/jashkenas/coffeescript/compare/0.5.1...0.5.2">0.5.2</a>
   <span class="timestamp"> &mdash; <time datetime="2010-02-25">2010-02-25</time></span>
 </h3><p>Added a compressed version of the compiler for inclusion in web pages as
-<code>/v2/browser-compiler/coffeescript.js</code>. It’ll automatically run any script tags with type <code>text/coffeescript</code> for you. Added a <code>--stdio</code> option to the <code>coffee</code> command, for piped-in compiles.</p>
+<code>/v2/browser-compiler-legacy/coffeescript.js</code>. It’ll automatically run any script tags with type <code>text/coffeescript</code> for you. Added a <code>--stdio</code> option to the <code>coffee</code> command, for piped-in compiles.</p>
 
         </section>
         <section id="0.5.1">
@@ -6403,14 +6478,19 @@ The <code>extends</code> keyword now functions identically to <code>goog.inherit
 </div>
 
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js" integrity="sha384-xBuQ/xzmlsLoJpyjoggmTEz8OWUFM0/RC5BsqQBDX2v5cMvDHcMakNTNrHIW2I5f" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/combine/npm/codemirror@5.37.0/lib/codemirror.js,npm/codemirror@5.37.0/mode/coffeescript/coffeescript.js,npm/codemirror@5.37.0/addon/lint/coffeescript-lint.js,npm/codemirror@5.37.0/mode/javascript/javascript.js"></script>
 
-<script src="browser-compiler/coffeescript.js"></script>
-<script>
-(function(){window.location.origin||(window.location.origin="".concat(window.location.protocol,"//").concat(window.location.hostname)),window.GA_TRACKING_ID="UA-106156830-1",null==window.dataLayer&&(window.dataLayer=[]),window.gtag=function(){window.dataLayer.push(arguments)},window.gtag("js",new Date),window.gtag("config",window.GA_TRACKING_ID),$(document).ready(function(){var clearHash,closeTry,editors,initializeEditor,initializeScrollspyFromHash,initializeTryEditors,lastCompilationElapsedTime,previousHash,replaceState,textareas,toggleSidebar,toggleTry;if($("time").each(function(index,el){var date,formattedDate;return date=el.dateTime||$(el).text(),formattedDate=new Date(date).toLocaleDateString(void 0,{year:"numeric",month:"long",day:"numeric"}),$(el).text(formattedDate.toString())}),toggleSidebar=function(){return $(".navbar-toggler, .sidebar").toggleClass("show")},$("[data-toggle=\"offcanvas\"]").click(toggleSidebar),$("[data-action=\"sidebar-nav\"]").click(function(event){return $(".navbar-toggler").is(":visible")&&(event.preventDefault(),toggleSidebar(),setTimeout(function(){return window.location=event.target.href},260)),gtag("event","sidebar_navigate",{event_category:"navigation",event_label:event.target.href.replace(window.location.origin,"")})}),$(".main").scrollspy({target:"#contents",offset:Math.round($("main").css("padding-top").replace("px",""))}),initializeScrollspyFromHash=function(hash){return $("#contents a.active[href!='".concat(hash,"']")).removeClass("show")},$(".main").on("activate.bs.scrollspy",function(event,target){var $target;if($("#contents a.active[href!='".concat(target.relatedTarget,"']")).removeClass("show"),$target=$("#contents a[href='".concat(target.relatedTarget,"']")),$target.prop("href")!=="".concat(window.location.origin,"/#try"))return replaceState($target.prop("href")),gtag("config",GA_TRACKING_ID,{page_path:$target.prop("href").replace(window.location.origin,"")})}),textareas=[],editors=[],lastCompilationElapsedTime=200,$("textarea").each(function(index){return textareas[index]=this,$(this).data("index",index)}),initializeEditor=function($textarea){var editor,index,mode,pending;if(index=$textarea.data("index"),mode=$textarea.hasClass("javascript-output")?"javascript":"coffeescript",editors[index]=editor=CodeMirror.fromTextArea($textarea[0],{mode:mode,theme:"twilight",indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:"contenteditable",readOnly:"coffeescript"!==mode,viewportMargin:2e308}),"coffeescript"===mode)return pending=null,editor.on("change",function(){return clearTimeout(pending),pending=setTimeout(function(){var coffee,exception,lastCompilationStartTime,link,output;lastCompilationStartTime=Date.now();try{if(coffee=editor.getValue(),0===index&&$("#try").hasClass("show")){$("#try").hasClass("show")&&(link="try:".concat(encodeURIComponent(coffee)),replaceState("".concat(window.location.href.split("#")[0],"#").concat(link)));try{null!=window.localStorage&&window.localStorage.setItem("tryCoffeeScriptCode",coffee)}catch(error){exception=error}}output=CoffeeScript.compile(coffee,{bare:!0}),lastCompilationElapsedTime=Math.max(200,Date.now()-lastCompilationStartTime)}catch(error){exception=error,output="".concat(exception)}return editors[index+1].setValue(output),gtag("event","edit_code",{event_category:"engagement",event_label:$textarea.closest("[data-example]").data("example")})},lastCompilationElapsedTime)}),editor.addKeyMap({Tab:function Tab(cm){return cm.somethingSelected()?cm.indentSelection("add"):/^\t/m.test(cm.getValue())?cm.execCommand("insertTab"):cm.execCommand("insertSoftTab")},"Shift-Tab":function ShiftTab(cm){return cm.indentSelection("subtract")},Enter:function Enter(cm){return cm.options.indentWithTabs=/^\t/m.test(cm.getValue()),cm.execCommand("newlineAndIndent")}})},$(".placeholder-code").one("mouseover",function(){var $siblingColumn,$textarea;return $textarea=$(this).prev("textarea"),$(this).remove(),initializeEditor($textarea),$siblingColumn=$($textarea.parent().siblings()[0]),$siblingColumn.children(".placeholder-code").remove(),initializeEditor($($siblingColumn.children("textarea")[0]))}),initializeTryEditors=function(){return initializeEditor($("#try-coffeescript-coffee")),initializeEditor($("#try-coffeescript-js"))},$("[data-action=\"run-code-example\"]").click(function(){var index,js,run;return run=$(this).data("run"),index=$("#".concat($(this).data("example"),"-js")).data("index"),js=null==editors[index]?$(textareas[index]).val():editors[index].getValue(),!0!==run&&(js="".concat(js,"\nalert(").concat(unescape(run),");")),window.eval(js),gtag("event","run_code",{event_category:"engagement",event_label:$(this).closest("[data-example]").data("example")})}),previousHash=null,toggleTry=function(checkLocalStorage){var coffee,exception;if($("#try, #try-link").toggleClass("show"),!$("#try").hasClass("show"))return previousHash?replaceState(previousHash):clearHash();if(window.location.hash&&(previousHash=window.location.hash),0===$("#try .CodeMirror").length&&initializeTryEditors(),checkLocalStorage&&null!=window.localStorage)try{return coffee=window.localStorage.getItem("tryCoffeeScriptCode"),null==coffee?replaceState("#try"):editors[0].setValue(coffee)}catch(error){return exception=error,replaceState("#try")}else return replaceState("#try")},closeTry=function(){return $("#try, #try-link").removeClass("show"),previousHash?replaceState(previousHash):clearHash()},$("[data-toggle=\"try\"]").click(function(event){return event.preventDefault(),toggleTry(!0)}),$("[data-close=\"try\"]").click(closeTry),$("[data-action=\"scroll-to-top\"]").click(function(){if(!$("#try").hasClass("show"))return $(".main")[0].scrollTop=0,setTimeout(clearHash,10)}),clearHash=function(){return window.history.replaceState({},document.title,window.location.pathname)},replaceState=function(newURL){return 0===(null==newURL?void 0:newURL.indexOf("#"))&&(newURL="".concat(window.location.pathname).concat(newURL)),window.history.replaceState({},document.title,newURL||"")},$(window).on("hashchange",function(){if(""===window.location.hash)return clearHash()}),null!=window.location.hash){if("#try"===window.location.hash)return toggleTry(!0);if(0===window.location.hash.indexOf("#try"))return 0===$("#try .CodeMirror").length&&initializeTryEditors(),editors[0].setValue(decodeURIComponent(window.location.hash.slice(5))),toggleTry(!1);if(""===window.location.hash)return clearHash();if(initializeScrollspyFromHash(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,"")).scrollIntoView()}})}).call(this);
+<script nomodule src="./browser-compiler-legacy/coffeescript.js"></script>
+<script nomodule>
+(function(){window.location.origin||(window.location.origin="".concat(window.location.protocol,"//").concat(window.location.hostname)),window.GA_TRACKING_ID="UA-106156830-1",null==window.dataLayer&&(window.dataLayer=[]),window.gtag=function(){window.dataLayer.push(arguments)},window.gtag("js",new Date),window.gtag("config",window.GA_TRACKING_ID),$(document).ready(function(){var clearHash,closeTry,editors,initializeEditor,initializeScrollspyFromHash,initializeTryEditors,lastCompilationElapsedTime,previousHash,replaceState,textareas,toggleSidebar,toggleTry,_Mathround=Math.round;if($("time").each(function(index,el){var date,formattedDate;return date=el.dateTime||$(el).text(),formattedDate=new Date(date).toLocaleDateString(void 0,{year:"numeric",month:"long",day:"numeric"}),$(el).text(formattedDate.toString())}),toggleSidebar=function(){return $(".navbar-toggler, .sidebar").toggleClass("show")},$("[data-toggle=\"offcanvas\"]").click(toggleSidebar),$("[data-action=\"sidebar-nav\"]").click(function(event){return $(".navbar-toggler").is(":visible")&&(event.preventDefault(),toggleSidebar(),setTimeout(function(){return window.location=event.target.href},260)),gtag("event","sidebar_navigate",{event_category:"navigation",event_label:event.target.href.replace(window.location.origin,"")})}),$(".main").scrollspy({target:"#contents",offset:_Mathround($("main").css("padding-top").replace("px",""))}),initializeScrollspyFromHash=function(hash){return $("#contents a.active[href!='".concat(hash,"']")).removeClass("show")},$(".main").on("activate.bs.scrollspy",function(event,target){var $target;if($("#contents a.active[href!='".concat(target.relatedTarget,"']")).removeClass("show"),$target=$("#contents a[href='".concat(target.relatedTarget,"']")),$target.prop("href")!=="".concat(window.location.origin,"/#try"))return replaceState($target.prop("href")),gtag("config",GA_TRACKING_ID,{page_path:$target.prop("href").replace(window.location.origin,"")})}),textareas=[],editors=[],lastCompilationElapsedTime=200,$("textarea").each(function(index){return textareas[index]=this,$(this).data("index",index)}),initializeEditor=function($textarea){var editor,index,mode,pending;if(index=$textarea.data("index"),mode=$textarea.hasClass("javascript-output")?"javascript":"coffeescript",editors[index]=editor=CodeMirror.fromTextArea($textarea[0],{mode:mode,theme:"twilight",indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:"contenteditable",readOnly:"coffeescript"!==mode,viewportMargin:2e308}),"coffeescript"===mode)return pending=null,editor.on("change",function(){return clearTimeout(pending),pending=setTimeout(function(){var coffee,exception,lastCompilationStartTime,link,output,_Mathmax=Math.max;lastCompilationStartTime=Date.now();try{if(coffee=editor.getValue(),0===index&&$("#try").hasClass("show")){$("#try").hasClass("show")&&(link="try:".concat(encodeURIComponent(coffee)),replaceState("".concat(window.location.href.split("#")[0],"#").concat(link)));try{null!=window.localStorage&&window.localStorage.setItem("tryCoffeeScriptCode",coffee)}catch(error){exception=error}}output=CoffeeScript.compile(coffee,{bare:!0}),lastCompilationElapsedTime=_Mathmax(200,Date.now()-lastCompilationStartTime)}catch(error){exception=error,output="".concat(exception)}return editors[index+1].setValue(output),gtag("event","edit_code",{event_category:"engagement",event_label:$textarea.closest("[data-example]").data("example")})},lastCompilationElapsedTime)}),editor.addKeyMap({Tab:function Tab(cm){return cm.somethingSelected()?cm.indentSelection("add"):/^\t/m.test(cm.getValue())?cm.execCommand("insertTab"):cm.execCommand("insertSoftTab")},"Shift-Tab":function ShiftTab(cm){return cm.indentSelection("subtract")},Enter:function Enter(cm){return cm.options.indentWithTabs=/^\t/m.test(cm.getValue()),cm.execCommand("newlineAndIndent")}})},$(".placeholder-code").one("mouseover",function(){var $siblingColumn,$textarea;return $textarea=$(this).prev("textarea"),$(this).remove(),initializeEditor($textarea),$siblingColumn=$($textarea.parent().siblings()[0]),$siblingColumn.children(".placeholder-code").remove(),initializeEditor($($siblingColumn.children("textarea")[0]))}),initializeTryEditors=function(){return initializeEditor($("#try-coffeescript-coffee")),initializeEditor($("#try-coffeescript-js"))},$("[data-action=\"run-code-example\"]").click(function(){var index,js,run;return run=$(this).data("run"),index=$("#".concat($(this).data("example"),"-js")).data("index"),js=null==editors[index]?$(textareas[index]).val():editors[index].getValue(),!0!==run&&(js="".concat(js,"\nalert(").concat(unescape(run),");")),window.eval(js),gtag("event","run_code",{event_category:"engagement",event_label:$(this).closest("[data-example]").data("example")})}),previousHash=null,toggleTry=function(checkLocalStorage){var coffee,exception;if($("#try, #try-link").toggleClass("show"),!$("#try").hasClass("show"))return previousHash?replaceState(previousHash):clearHash();if(window.location.hash&&(previousHash=window.location.hash),0===$("#try .CodeMirror").length&&initializeTryEditors(),checkLocalStorage&&null!=window.localStorage)try{return coffee=window.localStorage.getItem("tryCoffeeScriptCode"),null==coffee?replaceState("#try"):editors[0].setValue(coffee)}catch(error){return exception=error,replaceState("#try")}else return replaceState("#try")},closeTry=function(){return $("#try, #try-link").removeClass("show"),previousHash?replaceState(previousHash):clearHash()},$("[data-toggle=\"try\"]").click(function(event){return event.preventDefault(),toggleTry(!0)}),$("[data-close=\"try\"]").click(closeTry),$("[data-action=\"scroll-to-top\"]").click(function(){if(!$("#try").hasClass("show"))return $(".main")[0].scrollTop=0,setTimeout(clearHash,10)}),clearHash=function(){return window.history.replaceState({},document.title,window.location.pathname)},replaceState=function(newURL){return 0===(null==newURL?void 0:newURL.indexOf("#"))&&(newURL="".concat(window.location.pathname).concat(newURL)),window.history.replaceState({},document.title,newURL||"")},$(window).on("hashchange",function(){if(""===window.location.hash)return clearHash()}),null!=window.location.hash){if("#try"===window.location.hash)return toggleTry(!0);if(0===window.location.hash.indexOf("#try"))return 0===$("#try .CodeMirror").length&&initializeTryEditors(),editors[0].setValue(decodeURIComponent(window.location.hash.slice(5))),toggleTry(!1);if(""===window.location.hash)return clearHash();if(initializeScrollspyFromHash(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,"")).scrollIntoView()}})}).call(this);
 </script>
+<script type="module">
+import CoffeeScript from './browser-compiler-modern/coffeescript.js';
+(function(){window.location.origin||(window.location.origin="".concat(window.location.protocol,"//").concat(window.location.hostname)),window.GA_TRACKING_ID="UA-106156830-1",null==window.dataLayer&&(window.dataLayer=[]),window.gtag=function(){window.dataLayer.push(arguments)},window.gtag("js",new Date),window.gtag("config",window.GA_TRACKING_ID),$(document).ready(function(){var clearHash,closeTry,editors,initializeEditor,initializeScrollspyFromHash,initializeTryEditors,lastCompilationElapsedTime,previousHash,replaceState,textareas,toggleSidebar,toggleTry,_Mathround=Math.round;if($("time").each(function(index,el){var date,formattedDate;return date=el.dateTime||$(el).text(),formattedDate=new Date(date).toLocaleDateString(void 0,{year:"numeric",month:"long",day:"numeric"}),$(el).text(formattedDate.toString())}),toggleSidebar=function(){return $(".navbar-toggler, .sidebar").toggleClass("show")},$("[data-toggle=\"offcanvas\"]").click(toggleSidebar),$("[data-action=\"sidebar-nav\"]").click(function(event){return $(".navbar-toggler").is(":visible")&&(event.preventDefault(),toggleSidebar(),setTimeout(function(){return window.location=event.target.href},260)),gtag("event","sidebar_navigate",{event_category:"navigation",event_label:event.target.href.replace(window.location.origin,"")})}),$(".main").scrollspy({target:"#contents",offset:_Mathround($("main").css("padding-top").replace("px",""))}),initializeScrollspyFromHash=function(hash){return $("#contents a.active[href!='".concat(hash,"']")).removeClass("show")},$(".main").on("activate.bs.scrollspy",function(event,target){var $target;if($("#contents a.active[href!='".concat(target.relatedTarget,"']")).removeClass("show"),$target=$("#contents a[href='".concat(target.relatedTarget,"']")),$target.prop("href")!=="".concat(window.location.origin,"/#try"))return replaceState($target.prop("href")),gtag("config",GA_TRACKING_ID,{page_path:$target.prop("href").replace(window.location.origin,"")})}),textareas=[],editors=[],lastCompilationElapsedTime=200,$("textarea").each(function(index){return textareas[index]=this,$(this).data("index",index)}),initializeEditor=function($textarea){var editor,index,mode,pending;if(index=$textarea.data("index"),mode=$textarea.hasClass("javascript-output")?"javascript":"coffeescript",editors[index]=editor=CodeMirror.fromTextArea($textarea[0],{mode:mode,theme:"twilight",indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:"contenteditable",readOnly:"coffeescript"!==mode,viewportMargin:2e308}),"coffeescript"===mode)return pending=null,editor.on("change",function(){return clearTimeout(pending),pending=setTimeout(function(){var coffee,exception,lastCompilationStartTime,link,output,_Mathmax=Math.max;lastCompilationStartTime=Date.now();try{if(coffee=editor.getValue(),0===index&&$("#try").hasClass("show")){$("#try").hasClass("show")&&(link="try:".concat(encodeURIComponent(coffee)),replaceState("".concat(window.location.href.split("#")[0],"#").concat(link)));try{null!=window.localStorage&&window.localStorage.setItem("tryCoffeeScriptCode",coffee)}catch(error){exception=error}}output=CoffeeScript.compile(coffee,{bare:!0}),lastCompilationElapsedTime=_Mathmax(200,Date.now()-lastCompilationStartTime)}catch(error){exception=error,output="".concat(exception)}return editors[index+1].setValue(output),gtag("event","edit_code",{event_category:"engagement",event_label:$textarea.closest("[data-example]").data("example")})},lastCompilationElapsedTime)}),editor.addKeyMap({Tab:function Tab(cm){return cm.somethingSelected()?cm.indentSelection("add"):/^\t/m.test(cm.getValue())?cm.execCommand("insertTab"):cm.execCommand("insertSoftTab")},"Shift-Tab":function ShiftTab(cm){return cm.indentSelection("subtract")},Enter:function Enter(cm){return cm.options.indentWithTabs=/^\t/m.test(cm.getValue()),cm.execCommand("newlineAndIndent")}})},$(".placeholder-code").one("mouseover",function(){var $siblingColumn,$textarea;return $textarea=$(this).prev("textarea"),$(this).remove(),initializeEditor($textarea),$siblingColumn=$($textarea.parent().siblings()[0]),$siblingColumn.children(".placeholder-code").remove(),initializeEditor($($siblingColumn.children("textarea")[0]))}),initializeTryEditors=function(){return initializeEditor($("#try-coffeescript-coffee")),initializeEditor($("#try-coffeescript-js"))},$("[data-action=\"run-code-example\"]").click(function(){var index,js,run;return run=$(this).data("run"),index=$("#".concat($(this).data("example"),"-js")).data("index"),js=null==editors[index]?$(textareas[index]).val():editors[index].getValue(),!0!==run&&(js="".concat(js,"\nalert(").concat(unescape(run),");")),window.eval(js),gtag("event","run_code",{event_category:"engagement",event_label:$(this).closest("[data-example]").data("example")})}),previousHash=null,toggleTry=function(checkLocalStorage){var coffee,exception;if($("#try, #try-link").toggleClass("show"),!$("#try").hasClass("show"))return previousHash?replaceState(previousHash):clearHash();if(window.location.hash&&(previousHash=window.location.hash),0===$("#try .CodeMirror").length&&initializeTryEditors(),checkLocalStorage&&null!=window.localStorage)try{return coffee=window.localStorage.getItem("tryCoffeeScriptCode"),null==coffee?replaceState("#try"):editors[0].setValue(coffee)}catch(error){return exception=error,replaceState("#try")}else return replaceState("#try")},closeTry=function(){return $("#try, #try-link").removeClass("show"),previousHash?replaceState(previousHash):clearHash()},$("[data-toggle=\"try\"]").click(function(event){return event.preventDefault(),toggleTry(!0)}),$("[data-close=\"try\"]").click(closeTry),$("[data-action=\"scroll-to-top\"]").click(function(){if(!$("#try").hasClass("show"))return $(".main")[0].scrollTop=0,setTimeout(clearHash,10)}),clearHash=function(){return window.history.replaceState({},document.title,window.location.pathname)},replaceState=function(newURL){return 0===(null==newURL?void 0:newURL.indexOf("#"))&&(newURL="".concat(window.location.pathname).concat(newURL)),window.history.replaceState({},document.title,newURL||"")},$(window).on("hashchange",function(){if(""===window.location.hash)return clearHash()}),null!=window.location.hash){if("#try"===window.location.hash)return toggleTry(!0);if(0===window.location.hash.indexOf("#try"))return 0===$("#try .CodeMirror").length&&initializeTryEditors(),editors[0].setValue(decodeURIComponent(window.location.hash.slice(5))),toggleTry(!1);if(""===window.location.hash)return clearHash();if(initializeScrollspyFromHash(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,"")).scrollIntoView()}})}).call(this);
+</script>
+
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-106156830-1"></script>
 
 </body>

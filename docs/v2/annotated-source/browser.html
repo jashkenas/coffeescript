@@ -262,7 +262,7 @@ This happens on page load.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">runScripts</span> = -&gt;</span>
+            <div class="content"><div class='highlight'><pre>CoffeeScript.runScripts = <span class="hljs-function">-&gt;</span>
   scripts = <span class="hljs-built_in">window</span>.<span class="hljs-built_in">document</span>.getElementsByTagName <span class="hljs-string">'script'</span>
   coffeetypes = [<span class="hljs-string">'text/coffeescript'</span>, <span class="hljs-string">'text/literate-coffeescript'</span>]
   coffees = (s <span class="hljs-keyword">for</span> s <span class="hljs-keyword">in</span> scripts <span class="hljs-keyword">when</span> s.type <span class="hljs-keyword">in</span> coffeetypes)
@@ -321,14 +321,19 @@ only one CoffeeScript script block to parse.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
-              <p>Listen for window load, both in decent browsers and in IE.</p>
+              <p>Listen for window load, both in decent browsers and in IE.
+Only attach this event handler on startup for the
+non-ES module version of the browser compiler, to preserve
+backward compatibility while letting the ES module version
+be importable without side effects.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">if</span> <span class="hljs-built_in">window</span>.addEventListener
-  <span class="hljs-built_in">window</span>.addEventListener <span class="hljs-string">'DOMContentLoaded'</span>, runScripts, <span class="hljs-literal">no</span>
-<span class="hljs-keyword">else</span>
-  <span class="hljs-built_in">window</span>.attachEvent <span class="hljs-string">'onload'</span>, runScripts</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">if</span> <span class="hljs-keyword">this</span> <span class="hljs-keyword">is</span> <span class="hljs-built_in">window</span>
+  <span class="hljs-keyword">if</span> <span class="hljs-built_in">window</span>.addEventListener
+    <span class="hljs-built_in">window</span>.addEventListener <span class="hljs-string">'DOMContentLoaded'</span>, CoffeeScript.runScripts, <span class="hljs-literal">no</span>
+  <span class="hljs-keyword">else</span>
+    <span class="hljs-built_in">window</span>.attachEvent <span class="hljs-string">'onload'</span>, CoffeeScript.runScripts</pre></div></div>
             
         </li>
         

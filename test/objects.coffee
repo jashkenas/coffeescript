@@ -903,3 +903,6 @@ test "#4579: Postfix for/while/until in first line of implicit object literals",
       baz: 1337
   arrayEq [4, 3, 2, 1, 0], six.foo.bar
   eq 1337, six.foo.baz
+
+test "#5204: not parsed as static property", ->
+  doesNotThrow -> CoffeeScript.compile "@ [b]: 2"

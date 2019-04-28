@@ -251,6 +251,7 @@ grammar =
   ObjAssignable: [
     o 'SimpleObjAssignable'
     o '[ Expression ]',          -> new Value new ComputedPropertyName $2
+    o '@ [ Expression ]',        -> new Value LOC(1)(new ThisLiteral $1), [LOC(3)(new ComputedPropertyName($3))], 'this'
     o 'AlphaNumeric'
   ]
 
@@ -604,7 +605,7 @@ grammar =
   ArgElisionList: [
     o 'ArgElision'
     o 'ArgElisionList , ArgElision',                                          -> $1.concat $3
-    o 'ArgElisionList OptElisions TERMINATOR ArgElision',                     -> $1.concat $2, $4
+    o 'ArgElisionList OptComma TERMINATOR ArgElision',                        -> $1.concat $4
     o 'INDENT ArgElisionList OptElisions OUTDENT',                            -> $2.concat $3
     o 'ArgElisionList OptElisions INDENT ArgElisionList OptElisions OUTDENT', -> $1.concat $2, $4, $5
   ]
@@ -626,6 +627,7 @@ grammar =
 
   Elision: [
     o ',',                    -> new Elision
+    o 'Elision TERMINATOR',   -> $1
   ]
 
   # Just simple, comma-separated, required arguments (no fancy syntax). We need

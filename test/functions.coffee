@@ -497,3 +497,10 @@ test "#4657: destructured array parameters", ->
 test "#5128: default parameters of function in binary operation", ->
   foo = yes or (a, b = {}) -> null
   eq foo, yes
+
+test "#5121: array end bracket after function glyph", ->
+  a = [->]
+  eq a.length, 1
+
+  b = [c: ->]
+  eq b.length, 1

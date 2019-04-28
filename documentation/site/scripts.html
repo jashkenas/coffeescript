@@ -1,9 +1,14 @@
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js" integrity="sha384-xBuQ/xzmlsLoJpyjoggmTEz8OWUFM0/RC5BsqQBDX2v5cMvDHcMakNTNrHIW2I5f" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/combine/npm/codemirror@5.37.0/lib/codemirror.js,npm/codemirror@5.37.0/mode/coffeescript/coffeescript.js,npm/codemirror@5.37.0/addon/lint/coffeescript-lint.js,npm/codemirror@5.37.0/mode/javascript/javascript.js"></script>
 
-<script src="browser-compiler/coffeescript.js"></script>
-<script>
+<script nomodule src="./browser-compiler-legacy/coffeescript.js"></script>
+<script nomodule>
 <%= includeScript('docs.coffee') %>
 </script>
+<script type="module">
+import CoffeeScript from './browser-compiler-modern/coffeescript.js';
+<%= includeScript('docs.coffee') %>
+</script>
+
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-106156830-1"></script>

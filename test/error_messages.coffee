@@ -859,6 +859,13 @@ test "invalid object keys", ->
     {a=2}
       ^
   '''
+  assertErrorFormat '''
+    @[a]: 1
+  ''', '''
+    [stdin]:1:1: error: invalid object key
+    @[a]: 1
+    ^^^^
+  '''
 
 test "invalid destructuring default target", ->
   assertErrorFormat '''

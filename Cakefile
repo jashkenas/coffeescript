@@ -21,7 +21,7 @@ header = """
    * CoffeeScript Compiler v#{CoffeeScript.VERSION}
    * https://coffeescript.org
    *
-   * Copyright 2011, Jeremy Ashkenas
+   * Copyright 2011-#{new Date().getFullYear()}, Jeremy Ashkenas
    * Released under the MIT License
    */
 """
@@ -66,17 +66,21 @@ build = (callback) ->
   buildParser()
   buildExceptParser callback
 
-transpile = (code) ->
+transpile = (code, options = {}) ->
+  options.minify =      process.env.MINIFY    isnt 'false'
+  options.transform =   process.env.TRANSFORM isnt 'false'
+  options.sourceType ?= 'script'
   babel = require '@babel/core'
   presets = []
   # Exclude the `modules` plugin in order to not break the `}(this));`
   # at the end of the `build:browser` code block.
-  presets.push ['@babel/env', {modules: no}] unless process.env.TRANSFORM is 'false'
-  presets.push ['minify', {mangle: no, evaluate: no, removeUndefined: no}] unless process.env.MINIFY is 'false'
+  presets.push ['@babel/env', {modules: no}] if options.transform
+  presets.push ['minify', {mangle: no, evaluate: no, removeUndefined: no}] if options.minify
   babelOptions =
-    compact: process.env.MINIFY isnt 'false'
     presets: presets
-    sourceType: 'script'
+    compact: not options.minify
+    comments: not options.minify
+    sourceType: options.sourceType
   { code } = babel.transform code, babelOptions unless presets.length is 0
   code
 
@@ -140,13 +144,18 @@ task 'build:browser', 'merge the built scripts into a single file for use in a b
         return module.exports;
       })();
     """
+  # From here, we generate two outputs: a legacy script output for all browsers
+  # and a module output for browsers that support `<script type="module">`.
   code = """
+    var CoffeeScript = function() {
+      function require(path){ return require[path]; }
+      #{code}
+      return require['./browser'];
+    }();
+  """
+  scriptCode = transpile """
     (function(root) {
-      var CoffeeScript = function() {
-        function require(path){ return require[path]; }
-        #{code}
-        return require['./browser'];
-      }();
+      #{code}
 
       if (typeof define === 'function' && define.amd) {
         define(function() { return CoffeeScript; });
@@ -155,10 +164,25 @@ task 'build:browser', 'merge the built scripts into a single file for use in a b
       }
     }(this));
   """
-  code = transpile code
-  outputFolder = "docs/v#{majorVersion}/browser-compiler"
-  fs.mkdirSync outputFolder unless fs.existsSync outputFolder
-  fs.writeFileSync "#{outputFolder}/coffeescript.js", header + '\n' + code
+  moduleCode = transpile """
+    #{code}
+
+    export default CoffeeScript;
+    const { VERSION, compile, eval: evaluate, load, run, runScripts } = CoffeeScript;
+    export { VERSION, compile, evaluate as eval, load, run, runScripts };
+  """, {sourceType: 'module'}
+  outputFolders = [
+    "docs/v#{majorVersion}/browser-compiler-legacy"
+    "docs/v#{majorVersion}/browser-compiler-modern"
+    "lib/coffeescript-browser-compiler-legacy"
+    "lib/coffeescript-browser-compiler-modern"
+  ]
+  for outputFolder in outputFolders
+    fs.mkdirSync outputFolder unless fs.existsSync outputFolder
+    fs.writeFileSync "#{outputFolder}/coffeescript.js", """
+      #{header}
+      #{if outputFolder.includes('legacy') then scriptCode else moduleCode}
+    """
 
 task 'build:browser:full', 'merge the built scripts into a single file for use in a browser, and test it', ->
   invoke 'build:browser'
@@ -174,11 +198,12 @@ task 'build:watch:harmony', 'watch and continually rebuild the CoffeeScript comp
 
 buildDocs = (watch = no) ->
   # Constants
-  indexFile            = 'documentation/site/index.html'
-  siteSourceFolder     = "documentation/site"
-  sectionsSourceFolder = 'documentation/sections'
-  examplesSourceFolder = 'documentation/examples'
-  outputFolder         = "docs/v#{majorVersion}"
+  indexFile             = 'documentation/site/index.html'
+  siteSourceFolder      = "documentation/site"
+  sectionsSourceFolder  = 'documentation/sections'
+  changelogSourceFolder = 'documentation/sections/changelog'
+  examplesSourceFolder  = 'documentation/examples'
+  outputFolder          = "docs/v#{majorVersion}"
 
   # Helpers
   releaseHeader = (date, version, prevVersion) ->
@@ -261,7 +286,7 @@ buildDocs = (watch = no) ->
   catch exception
 
   if watch
-    for target in [indexFile, siteSourceFolder, examplesSourceFolder, sectionsSourceFolder]
+    for target in [indexFile, siteSourceFolder, examplesSourceFolder, sectionsSourceFolder, changelogSourceFolder]
       fs.watch target, interval: 200, renderIndex
     log 'watching...', green
 
@@ -468,7 +493,7 @@ task 'test', 'run the CoffeeScript language test suite', ->
 
 
 task 'test:browser', 'run the test suite against the merged browser script', ->
-  source = fs.readFileSync "docs/v#{majorVersion}/browser-compiler/coffeescript.js", 'utf-8'
+  source = fs.readFileSync "lib/coffeescript-browser-compiler-legacy/coffeescript.js", 'utf-8'
   result = {}
   global.testingBrowser = yes
   (-> eval source).call result
