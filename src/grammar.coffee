@@ -222,6 +222,7 @@ grammar =
   ObjAssignable: [
     o 'SimpleObjAssignable'
     o '[ Expression ]',          -> new Value new ComputedPropertyName $2
+    o '@ [ Expression ]',        -> new Value LOC(1)(new ThisLiteral $1), [LOC(3)(new ComputedPropertyName($3))], 'this'
     o 'AlphaNumeric'
   ]
 

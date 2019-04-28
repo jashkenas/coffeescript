@@ -118,14 +118,21 @@ exports.Rewriter = class Rewriter
   # The lexer has tagged the opening bracket of an indexing operation call.
   # Match it with its paired close.
   closeOpenIndexes: ->
+    startToken = null
     condition = (token, i) ->
       token[0] in [']', 'INDEX_END']
 
     action = (token, i) ->
-      token[0] = 'INDEX_END'
+      if @tokens.length >= i and @tokens[i + 1][0] is ':'
+        startToken[0] = '['
+        token[0] = ']'
+      else
+        token[0] = 'INDEX_END'
 
     @scanTokens (token, i) ->
-      @detectEnd i + 1, condition, action if token[0] is 'INDEX_START'
+      if token[0] is 'INDEX_START'
+        startToken = token
+        @detectEnd i + 1, condition, action
       1
 
   # Match tags in token stream starting at `i` with `pattern`.
@@ -321,7 +328,12 @@ exports.Rewriter = class Rewriter
       if tag is ':'
         # Go back to the (implicit) start of the object.
         s = switch
-          when @tag(i - 1) in EXPRESSION_END then start[1]
+          when @tag(i - 1) in EXPRESSION_END
+            [startTag, startIndex] = start
+            if startTag is '[' and startIndex > 0 and @tag(startIndex - 1) is '@' and not tokens[startIndex - 1].spaced
+              startIndex - 1
+            else
+              startIndex
           when @tag(i - 2) is '@' then i - 2
           else i - 1
 
