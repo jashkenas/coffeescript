@@ -1389,6 +1389,7 @@ test "AST as expected for Class node", ->
       @c = =>
       @d: 1
       @e = 2
+      j = 5
       A.f = 3
       A.g = ->
       this.h = ->
@@ -1451,6 +1452,12 @@ test "AST as expected for Class node", ->
         staticClassName:
           type: 'ThisExpression'
           shorthand: yes
+      ,
+        type: 'ExpressionStatement'
+        expression:
+          type: 'AssignmentExpression'
+          left: ID 'j'
+          right: NUMBER 5
       ,
         type: 'ClassProperty'
         static: yes

@@ -2668,6 +2668,7 @@ exports.Class = class Class extends Base
       else if method.bound
         @boundMethods.push method
 
+    return unless o.compiling
     if initializer.length isnt expressions.length
       @body.expressions = (expression.hoist() for expression in initializer)
       new Block expressions
