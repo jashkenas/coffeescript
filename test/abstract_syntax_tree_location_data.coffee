@@ -7010,3 +7010,98 @@ test "AST as expected for Class node", ->
       end:
         line: 9
         column: 12
+
+  testAstLocationData '''
+    class A
+      b: 1
+      [c]: 2
+  ''',
+    type: 'ClassDeclaration'
+    body:
+      body: [
+        key:
+          start: 10
+          end: 11
+          range: [10, 11]
+          loc:
+            start:
+              line: 2
+              column: 2
+            end:
+              line: 2
+              column: 3
+        value:
+          start: 13
+          end: 14
+          range: [13, 14]
+          loc:
+            start:
+              line: 2
+              column: 5
+            end:
+              line: 2
+              column: 6
+        start: 10
+        end: 14
+        range: [10, 14]
+        loc:
+          start:
+            line: 2
+            column: 2
+          end:
+            line: 2
+            column: 6
+      ,
+        key:
+          start: 18
+          end: 19
+          range: [18, 19]
+          loc:
+            start:
+              line: 3
+              column: 3
+            end:
+              line: 3
+              column: 4
+        value:
+          start: 22
+          end: 23
+          range: [22, 23]
+          loc:
+            start:
+              line: 3
+              column: 7
+            end:
+              line: 3
+              column: 8
+        start: 17
+        end: 23
+        range: [17, 23]
+        loc:
+          start:
+            line: 3
+            column: 2
+          end:
+            line: 3
+            column: 8
+      ]
+      start: 8
+      end: 23
+      range: [8, 23]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 8
+    start: 0
+    end: 23
+    range: [0, 23]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 8

@@ -2694,6 +2694,8 @@ exports.Class = class Class extends Base
       @addInitializerMethod node
     else if not o.compiling and @validClassProperty node
       @addClassProperty node
+    else if not o.compiling and @validClassPrototypeProperty node
+      @addClassPrototypeProperty node
     else
       null
 
@@ -2734,6 +2736,17 @@ exports.Class = class Class extends Base
       staticClassName
       value
       operatorToken
+    }).withLocationDataFrom assign
+
+  validClassPrototypeProperty: (node) ->
+    return no unless node instanceof Assign
+    node.context is 'object' and not node.variable.hasProperties()
+
+  addClassPrototypeProperty: (assign) ->
+    {variable, value} = assign
+    new ClassPrototypeProperty({
+      name: variable.base
+      value
     }).withLocationDataFrom assign
 
   makeDefaultConstructor: ->
@@ -2914,6 +2927,20 @@ exports.ClassProperty = class ClassProperty extends Base
       computed: no
       operator: @operatorToken?.value ? '='
       staticClassName: @staticClassName?.ast(o) ? null
+
+exports.ClassPrototypeProperty = class ClassPrototypeProperty extends Base
+  constructor: ({@name, @value}) ->
+    super()
+
+  children: ['name', 'value']
+
+  isStatement: YES
+
+  astProperties: (o) ->
+    return
+      key: @name.ast o, LEVEL_LIST
+      value: @value.ast o, LEVEL_LIST
+      computed: @name instanceof ComputedPropertyName
 
 #### Import and Export
 
