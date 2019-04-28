@@ -799,20 +799,27 @@ exports.Block = class Block extends Base
       'BlockStatement'
 
   astProperties: (o) ->
+    checkForDirectives = del o, 'checkForDirectives'
+
+    sniffDirectives @expressions, notFinalExpression: checkForDirectives if @isRootBlock or checkForDirectives
+    directives = []
     body = []
     for expression in @expressions
+      expressionAst = expression.ast o
+      if expression instanceof Directive
+        directives.push expressionAst
       # If an expression is a statement, it can be added to the body as is.
-      if expression.isStatementAst o
-        body.push expression.ast o
+      else if expression.isStatementAst o
+        body.push expressionAst
       # Otherwise, we need to wrap it in an `ExpressionStatement` AST node.
       else
         body.push Object.assign
             type: 'ExpressionStatement'
-            expression: expression.ast o
+            expression: expressionAst
           ,
             expression.astLocationData()
 
-    return
+    return {
       # For now, we’re not including `sourceType` on the `Program` AST node.
       # Its value could be either `'script'` or `'module'`, and there’s no way
       # for CoffeeScript to always know which it should be. The presence of an
@@ -826,8 +833,20 @@ exports.Block = class Block extends Base
       # then CoffeeScript can copy Node’s algorithm.
 
       # sourceType: 'module'
-      body: body
-      directives: [] # Directives like `'use strict'` are coming soon.
+      body, directives
+    }
+
+# A directive e.g. 'use strict'.
+# Currently only used during AST generation.
+exports.Directive = class Directive extends Base
+  constructor: (@value) ->
+    super()
+
+  astProperties: (o) ->
+    return
+      value: Object.assign {},
+        @value.ast o
+        type: 'DirectiveLiteral'
 
 #### Literal
 
@@ -979,6 +998,9 @@ exports.StringLiteral = class StringLiteral extends Literal
     copy = new StringLiteral @originalValue, {@quote, @initialChunk, @finalChunk, @indent, @double, @heregex}
     copy.locationData = locationData
     copy
+
+  shouldGenerateTemplateLiteralAst: ->
+    @quote.length is 3
 
   astProperties: ->
     return
@@ -2781,6 +2803,7 @@ exports.Class = class Class extends Base
     @body.isClassBody = yes
     @body.locationData = zeroWidthLocationDataFromEndLocation @locationData if @hasGeneratedBody
     @walkBody o
+    sniffDirectives @body.expressions
 
     super o, level
 
@@ -3895,7 +3918,7 @@ exports.Code = class Code extends Base
   astProperties: (o) ->
     return Object.assign
       params: @paramForAst(param).ast(o) for param in @params
-      body: @body.ast o, LEVEL_TOP
+      body: @body.ast (merge o, checkForDirectives: yes), LEVEL_TOP
       generator: !!@isGenerator
       async: !!@isAsync
       # We never generate named functions, so specify `id` as `null`, which
@@ -5341,6 +5364,17 @@ makeDelimitedLiteral = (body, options = {}) ->
     when ps        then '\\u2029'
     when other     then (if options.double then "\\#{other}" else other)
   "#{options.delimiter}#{body}#{options.delimiter}"
+
+sniffDirectives = (expressions, {notFinalExpression} = {}) ->
+  index = 0
+  lastIndex = expressions.length - 1
+  while index <= lastIndex and expression = expressions[index]
+    break if index is lastIndex and notFinalExpression
+    break unless expression instanceof Value and expression.isString() and not expression.unwrap().shouldGenerateTemplateLiteralAst()
+    expressions[index] =
+      new Directive expression
+      .withLocationDataFrom expression
+    index++
 
 # Helpers for `mergeLocationData` and `mergeAstLocationData` below.
 lesser  = (a, b) -> if a < b then a else b

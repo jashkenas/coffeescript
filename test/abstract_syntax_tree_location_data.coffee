@@ -6178,7 +6178,7 @@ test "AST location data as expected for RegexLiteral node", ->
         line: 5
         column: 3
 
-test "AST as expected for TaggedTemplateCall node", ->
+test "AST location data as expected for TaggedTemplateCall node", ->
   testAstLocationData 'func"tagged"',
     type: 'TaggedTemplateExpression'
     tag:
@@ -6421,7 +6421,7 @@ test "AST as expected for TaggedTemplateCall node", ->
         line: 3
         column: 3
 
-test "AST as expected for Class node", ->
+test "AST location data as expected for Class node", ->
   testAstLocationData 'class Klass',
     type: 'ClassDeclaration'
     id:
@@ -7282,4 +7282,199 @@ test "AST as expected for Class node", ->
         column: 0
       end:
         line: 2
+        column: 7
+
+test "AST location data as expected for directives", ->
+  testAstRootLocationData '''
+    'directive 1'
+    'use strict'
+    f()
+  ''',
+    type: 'File'
+    program:
+      body: [
+        start: 27
+        end: 30
+        range: [27, 30]
+        loc:
+          start:
+            line: 3
+            column: 0
+          end:
+            line: 3
+            column: 3
+      ]
+      directives: [
+        start: 0
+        end: 13
+        range: [0, 13]
+        loc:
+          start:
+            line: 1
+            column: 0
+          end:
+            line: 1
+            column: 13
+      ,
+        start: 14
+        end: 26
+        range: [14, 26]
+        loc:
+          start:
+            line: 2
+            column: 0
+          end:
+            line: 2
+            column: 12
+      ]
+      start: 0
+      end: 30
+      range: [0, 30]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 3
+          column: 3
+    start: 0
+    end: 30
+    range: [0, 30]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 3
+
+  testAstRootLocationData '''
+    'use strict'
+  ''',
+    type: 'File'
+    program:
+      directives: [
+        start: 0
+        end: 12
+        range: [0, 12]
+        loc:
+          start:
+            line: 1
+            column: 0
+          end:
+            line: 1
+            column: 12
+      ]
+      start: 0
+      end: 12
+      range: [0, 12]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 12
+    start: 0
+    end: 12
+    range: [0, 12]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 12
+
+  testAstLocationData '''
+    ->
+      'use strict'
+      f()
+      'not a directive'
+      g
+  ''',
+    type: 'FunctionExpression'
+    body:
+      directives: [
+        value:
+          start: 5
+          end: 17
+          range: [5, 17]
+          loc:
+            start:
+              line: 2
+              column: 2
+            end:
+              line: 2
+              column: 14
+        start: 5
+        end: 17
+        range: [5, 17]
+        loc:
+          start:
+            line: 2
+            column: 2
+          end:
+            line: 2
+            column: 14
+      ]
+      start: 3
+      end: 47
+      range: [3, 47]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 5
+          column: 3
+    start: 0
+    end: 47
+    range: [0, 47]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 5
+        column: 3
+
+  testAstLocationData '''
+    class A
+      'classes can have directives too'
+      a: ->
+  ''',
+    type: 'ClassDeclaration'
+    body:
+      directives: [
+        start: 10
+        end: 43
+        range: [10, 43]
+        loc:
+          start:
+            line: 2
+            column: 2
+          end:
+            line: 2
+            column: 35
+      ]
+      start: 8
+      end: 51
+      range: [8, 51]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 7
+    start: 0
+    end: 51
+    range: [0, 51]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
         column: 7
