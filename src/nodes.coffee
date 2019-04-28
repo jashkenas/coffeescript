@@ -1002,6 +1002,10 @@ exports.StringLiteral = class StringLiteral extends Literal
   shouldGenerateTemplateLiteralAst: ->
     @quote.length is 3
 
+  ast: (o, level) ->
+    return StringWithInterpolations.fromStringLiteral(@).ast o if @shouldGenerateTemplateLiteralAst()
+    super o, level
+
   astProperties: ->
     return
       value: @originalValue

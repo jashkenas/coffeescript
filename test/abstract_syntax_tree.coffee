@@ -164,21 +164,36 @@ test "AST as expected for NaNLiteral node", ->
     type: 'Identifier'
     name: 'NaN'
 
-# test "AST as expected for StringLiteral node", ->
-#   testExpression '"string cheese"',
-#     type: 'StringLiteral'
-#     value: '"string cheese"'
-#     quote: '"'
+test "AST as expected for StringLiteral node", ->
+  # Just a standalone string literal would be treated as a directive
+  testExpression 'a "string cheese"',
+    type: 'CallExpression'
+    arguments: [
+      type: 'StringLiteral'
+      value: 'string cheese'
+      extra:
+        raw: '"string cheese"'
+    ]
 
-#   testExpression "'cheese string'",
-#     type: 'StringLiteral'
-#     value: "'cheese string'"
-#     quote: "'"
+  testExpression "b 'cheese string'",
+    type: 'CallExpression'
+    arguments: [
+      type: 'StringLiteral'
+      value: 'cheese string'
+      extra:
+        raw: "'cheese string'"
+    ]
 
-# test "AST as expected for RegexLiteral node", ->
-#   testExpression '/^(?!.*(.).*\\1)[gimsuy]*$/',
-#     type: 'RegexLiteral'
-#     value: '/^(?!.*(.).*\\1)[gimsuy]*$/'
+  testExpression "'''heredoc'''",
+    type: 'TemplateLiteral'
+    expressions: []
+    quasis: [
+      type: 'TemplateElement'
+      value:
+        raw: 'heredoc'
+      tail: yes
+    ]
+    quote: "'''"
 
 # test "AST as expected for PassthroughLiteral node", ->
 #   code = 'const CONSTANT = "unreassignable!"'
@@ -3539,6 +3554,24 @@ test "AST as expected for directives", ->
       body: [
         type: 'ExpressionStatement'
         expression: STRING "but other blocks can't"
+      ,
+        type: 'ExpressionStatement'
+        expression: ID 'b'
+      ]
+      directives: []
+
+  testExpression '''
+    ->
+      """not a directive"""
+      b
+  ''',
+    type: 'FunctionExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'TemplateLiteral'
       ,
         type: 'ExpressionStatement'
         expression: ID 'b'
