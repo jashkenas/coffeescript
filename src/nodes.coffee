@@ -2925,7 +2925,7 @@ exports.ClassProperty = class ClassProperty extends Base
       key: @name.ast o, LEVEL_LIST
       value: @value.ast o, LEVEL_LIST
       static: !!@isStatic
-      computed: no
+      computed: @name instanceof ComputedPropertyName
       operator: @operatorToken?.value ? '='
       staticClassName: @staticClassName?.ast(o) ? null
 
@@ -3882,7 +3882,7 @@ exports.Code = class Code extends Base
     return
       static: !!@isStatic
       key: @name.ast o
-      computed: no
+      computed: @name instanceof ComputedPropertyName or @name.name instanceof ComputedPropertyName
       kind:
         if @ctor
           'constructor'
