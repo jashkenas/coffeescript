@@ -1328,12 +1328,15 @@ test "AST as expected for Class node", ->
         async: no
         params: []
         body: EMPTY_BLOCK
+        bound: no
       ]
 
   testExpression '''
     a = class A
       b: ->
         c
+      d: =>
+        e
   ''',
     type: 'AssignmentExpression'
     right:
@@ -1359,14 +1362,34 @@ test "AST as expected for Class node", ->
               expression: ID 'c'
             ]
           operator: ':'
+          bound: no
+        ,
+          type: 'ClassMethod'
+          static: no
+          key: ID 'd'
+          computed: no
+          kind: 'method'
+          id: null
+          generator: no
+          async: no
+          params: []
+          body:
+            type: 'BlockStatement'
+            body: [
+              type: 'ExpressionStatement'
+              expression: ID 'e'
+            ]
+          operator: ':'
+          bound: yes
         ]
 
   testStatement '''
     class A
       @b: ->
-      @c = ->
+      @c = =>
       @d: 1
       @e = 2
+      j = 5
       A.f = 3
       A.g = ->
       this.h = ->
@@ -1392,6 +1415,7 @@ test "AST as expected for Class node", ->
         staticClassName:
           type: 'ThisExpression'
           shorthand: yes
+        bound: no
       ,
         type: 'ClassMethod'
         static: yes
@@ -1407,6 +1431,7 @@ test "AST as expected for Class node", ->
         staticClassName:
           type: 'ThisExpression'
           shorthand: yes
+        bound: yes
       ,
         type: 'ClassProperty'
         static: yes
@@ -1428,6 +1453,12 @@ test "AST as expected for Class node", ->
           type: 'ThisExpression'
           shorthand: yes
       ,
+        type: 'ExpressionStatement'
+        expression:
+          type: 'AssignmentExpression'
+          left: ID 'j'
+          right: NUMBER 5
+      ,
         type: 'ClassProperty'
         static: yes
         key: ID 'f'
@@ -1448,6 +1479,7 @@ test "AST as expected for Class node", ->
         body: EMPTY_BLOCK
         operator: '='
         staticClassName: ID 'A'
+        bound: no
       ,
         type: 'ClassMethod'
         static: yes
@@ -1463,6 +1495,7 @@ test "AST as expected for Class node", ->
         staticClassName:
           type: 'ThisExpression'
           shorthand: no
+        bound: no
       ,
         type: 'ClassProperty'
         static: yes
@@ -1479,6 +1512,9 @@ test "AST as expected for Class node", ->
     class A
       b: 1
       [c]: 2
+      [d]: ->
+      @[e]: ->
+      @[f]: 3
   ''',
     type: 'ClassDeclaration'
     id: ID 'A'
@@ -1495,40 +1531,46 @@ test "AST as expected for Class node", ->
         key: ID 'c'
         value: NUMBER 2
         computed: yes
+      ,
+        type: 'ClassMethod'
+        static: no
+        key: ID 'd'
+        computed: yes
+        kind: 'method'
+        id: null
+        generator: no
+        async: no
+        params: []
+        body: EMPTY_BLOCK
+        operator: ':'
+        bound: no
+      ,
+        type: 'ClassMethod'
+        static: yes
+        key: ID 'e'
+        computed: yes
+        kind: 'method'
+        id: null
+        generator: no
+        async: no
+        params: []
+        body: EMPTY_BLOCK
+        operator: ':'
+        bound: no
+        staticClassName:
+          type: 'ThisExpression'
+          shorthand: yes
+      ,
+        type: 'ClassProperty'
+        static: yes
+        key: ID 'f'
+        computed: yes
+        value: NUMBER 3
+        operator: ':'
+        staticClassName:
+          type: 'ThisExpression'
+          shorthand: yes
       ]
-
-# test "AST as expected for ExecutableClassBody node", ->
-#   code = """
-#     class Klass
-#       privateStatic = if 42 then yes else no
-#       getPrivateStatic: -> privateStatic
-#     """
-#   testExpression code,
-#     type: 'Class'
-#     variable:
-#       value: 'Klass'
-#     body:
-#       type: 'Block'
-#       expressions: [
-#         type: 'Assign'
-#         variable:
-#           value: 'privateStatic'
-#         value:
-#           type: 'If'
-#       ,
-#         type: 'Obj'
-#         generated: yes
-#         properties: [
-#           type: 'Assign'
-#           variable:
-#             value: 'getPrivateStatic'
-#           value:
-#             type: 'Code'
-#             body:
-#               type: 'Value'
-#               properties: []
-#         ]
-#       ]
 
 test "AST as expected for ModuleDeclaration node", ->
   testStatement 'export {X}',
