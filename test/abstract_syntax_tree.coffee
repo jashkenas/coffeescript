@@ -165,7 +165,8 @@ test "AST as expected for NaNLiteral node", ->
     name: 'NaN'
 
 test "AST as expected for StringLiteral node", ->
-  # Just a standalone string literal would be treated as a directive
+  # Just a standalone string literal would be treated as a directive,
+  # so embed the string literal in an enclosing expression (e.g. a call).
   testExpression 'a "string cheese"',
     type: 'CallExpression'
     arguments: [

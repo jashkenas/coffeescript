@@ -3922,7 +3922,7 @@ exports.Code = class Code extends Base
   astProperties: (o) ->
     return Object.assign
       params: @paramForAst(param).ast(o) for param in @params
-      body: @body.ast (merge o, checkForDirectives: yes), LEVEL_TOP
+      body: @body.ast (Object.assign {}, o, checkForDirectives: yes), LEVEL_TOP
       generator: !!@isGenerator
       async: !!@isAsync
       # We never generate named functions, so specify `id` as `null`, which
@@ -5372,8 +5372,9 @@ makeDelimitedLiteral = (body, options = {}) ->
 sniffDirectives = (expressions, {notFinalExpression} = {}) ->
   index = 0
   lastIndex = expressions.length - 1
-  while index <= lastIndex and expression = expressions[index]
+  while index <= lastIndex
     break if index is lastIndex and notFinalExpression
+    expression = expressions[index]
     break unless expression instanceof Value and expression.isString() and not expression.unwrap().shouldGenerateTemplateLiteralAst()
     expressions[index] =
       new Directive expression
