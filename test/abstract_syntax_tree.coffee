@@ -164,21 +164,37 @@ test "AST as expected for NaNLiteral node", ->
     type: 'Identifier'
     name: 'NaN'
 
-# test "AST as expected for StringLiteral node", ->
-#   testExpression '"string cheese"',
-#     type: 'StringLiteral'
-#     value: '"string cheese"'
-#     quote: '"'
+test "AST as expected for StringLiteral node", ->
+  # Just a standalone string literal would be treated as a directive,
+  # so embed the string literal in an enclosing expression (e.g. a call).
+  testExpression 'a "string cheese"',
+    type: 'CallExpression'
+    arguments: [
+      type: 'StringLiteral'
+      value: 'string cheese'
+      extra:
+        raw: '"string cheese"'
+    ]
 
-#   testExpression "'cheese string'",
-#     type: 'StringLiteral'
-#     value: "'cheese string'"
-#     quote: "'"
+  testExpression "b 'cheese string'",
+    type: 'CallExpression'
+    arguments: [
+      type: 'StringLiteral'
+      value: 'cheese string'
+      extra:
+        raw: "'cheese string'"
+    ]
 
-# test "AST as expected for RegexLiteral node", ->
-#   testExpression '/^(?!.*(.).*\\1)[gimsuy]*$/',
-#     type: 'RegexLiteral'
-#     value: '/^(?!.*(.).*\\1)[gimsuy]*$/'
+  testExpression "'''heredoc'''",
+    type: 'TemplateLiteral'
+    expressions: []
+    quasis: [
+      type: 'TemplateElement'
+      value:
+        raw: 'heredoc'
+      tail: yes
+    ]
+    quote: "'''"
 
 # test "AST as expected for PassthroughLiteral node", ->
 #   code = 'const CONSTANT = "unreassignable!"'
@@ -3420,3 +3436,145 @@ test "AST as expected for RegexLiteral node", ->
       raw: "/\\/(.+)\\//"
       originalRaw: "///\n  /\n  (.+)\n  /\n///"
       rawValue: undefined
+
+test "AST as expected for directives", ->
+  deepStrictIncludeExpectedProperties CoffeeScript.compile('''
+    'directive 1'
+    'use strict'
+    f()
+  ''', ast: yes),
+    type: 'File'
+    program:
+      type: 'Program'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'CallExpression'
+      ]
+      directives: [
+        type: 'Directive'
+        value:
+          type: 'DirectiveLiteral'
+          value: 'directive 1'
+          extra:
+            raw: "'directive 1'"
+      ,
+        type: 'Directive'
+        value:
+          type: 'DirectiveLiteral'
+          value: 'use strict'
+          extra:
+            raw: "'use strict'"
+      ]
+
+  testExpression '''
+    ->
+      'use strict'
+      f()
+      'not a directive'
+      g
+  ''',
+    type: 'FunctionExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'CallExpression'
+      ,
+        type: 'ExpressionStatement'
+        expression: STRING 'not a directive'
+      ,
+        type: 'ExpressionStatement'
+        expression: ID 'g'
+      ]
+      directives: [
+        type: 'Directive'
+        value:
+          type: 'DirectiveLiteral'
+          value: 'use strict'
+          extra:
+            raw: "'use strict'"
+      ]
+
+  testExpression '''
+    ->
+      "not a directive because it's implicitly returned"
+  ''',
+    type: 'FunctionExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression: STRING "not a directive because it's implicitly returned"
+      ]
+      directives: []
+
+  deepStrictIncludeExpectedProperties CoffeeScript.compile('''
+    'use strict'
+  ''', ast: yes),
+    type: 'File'
+    program:
+      type: 'Program'
+      body: []
+      directives: [
+        type: 'Directive'
+        value:
+          type: 'DirectiveLiteral'
+          value: 'use strict'
+          extra:
+            raw: "'use strict'"
+      ]
+
+  testStatement '''
+    class A
+      'classes can have directives too'
+      a: ->
+  ''',
+    type: 'ClassDeclaration'
+    body:
+      type: 'ClassBody'
+      body: [
+        type: 'ClassMethod'
+      ]
+      directives: [
+        type: 'Directive'
+        value:
+          type: 'DirectiveLiteral'
+          value: 'classes can have directives too'
+      ]
+
+  testStatement '''
+    if a
+      "but other blocks can't"
+      b
+  ''',
+    type: 'IfStatement'
+    consequent:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression: STRING "but other blocks can't"
+      ,
+        type: 'ExpressionStatement'
+        expression: ID 'b'
+      ]
+      directives: []
+
+  testExpression '''
+    ->
+      """not a directive"""
+      b
+  ''',
+    type: 'FunctionExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'TemplateLiteral'
+      ,
+        type: 'ExpressionStatement'
+        expression: ID 'b'
+      ]
+      directives: []
