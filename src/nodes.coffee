@@ -930,7 +930,7 @@ exports.StringLiteral = class StringLiteral extends Literal
     @quote = null if @quote is '///'
     @fromSourceString = @quote?
     @quote ?= '"'
-    heredoc = @quote.length is 3
+    heredoc = @isFromHeredoc()
 
     val = @originalValue
     if @heregex
@@ -961,15 +961,24 @@ exports.StringLiteral = class StringLiteral extends Literal
       @double
     }
 
-  compileNode: (o) ->
-    return [@makeCode @unquote(yes, yes)] if @jsx
-    super o
+    @unquotedValueForTemplateLiteral = makeDelimitedLiteral val, {
+      delimiter: '`'
+      @double
+      escapeNewlines: no
+      includeDelimiters: no
+    }
 
-  unquote: (doubleQuote = no, jsx = no) ->
-    unquoted = @value[1...-1]
-    unquoted = unquoted.replace /\\"/g, '"'  if doubleQuote
-    unquoted = unquoted.replace /\\n/g, '\n' if jsx
-    unquoted
+    @unquotedValueForJSX = makeDelimitedLiteral val, {
+      @double
+      escapeNewlines: no
+      includeDelimiters: no
+      escapeDelimiter: no
+    }
+
+  compileNode: (o) ->
+    return StringWithInterpolations.fromStringLiteral(@).compileNode o if @shouldGenerateTemplateLiteral()
+    return [@makeCode @unquotedValueForJSX] if @jsx
+    super o
 
   # `StringLiteral`s can represent either entire literal strings
   # or pieces of text inside of e.g. an interpolated string.
@@ -999,11 +1008,14 @@ exports.StringLiteral = class StringLiteral extends Literal
     copy.locationData = locationData
     copy
 
-  shouldGenerateTemplateLiteralAst: ->
+  isFromHeredoc: ->
     @quote.length is 3
 
+  shouldGenerateTemplateLiteral: ->
+    @isFromHeredoc()
+
   ast: (o, level) ->
-    return StringWithInterpolations.fromStringLiteral(@).ast o if @shouldGenerateTemplateLiteralAst()
+    return StringWithInterpolations.fromStringLiteral(@).ast o if @shouldGenerateTemplateLiteral()
     super o, level
 
   astProperties: ->
@@ -1551,7 +1563,7 @@ exports.JSXEmptyExpression = class JSXEmptyExpression extends Base
 exports.JSXText = class JSXText extends Base
   constructor: (stringLiteral) ->
     super()
-    @value = stringLiteral.unquote yes, yes
+    @value = stringLiteral.unquotedValueForJSX
     @locationData = stringLiteral.locationData
 
   astProperties: ->
@@ -2523,7 +2535,7 @@ exports.Arr = class Arr extends Base
       for fragment, fragmentIndex in answer
         if fragment.isHereComment
           fragment.code = "#{multident(fragment.code, o.indent, no)}\n#{o.indent}"
-        else if fragment.code is ', ' and not fragment?.isElision and fragment.type isnt 'StringLiteral'
+        else if fragment.code is ', ' and not fragment?.isElision and fragment.type not in ['StringLiteral', 'StringWithInterpolations']
           fragment.code = ",\n#{o.indent}"
       answer.unshift @makeCode "[\n#{o.indent}"
       answer.push @makeCode "\n#{@tab}]"
@@ -4779,15 +4791,8 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
     fragments.push @makeCode '`' unless @jsx
     for element in elements
       if element instanceof StringLiteral
-        element.value = element.unquote yes, @jsx
-        unless @jsx
-          # Backticks and `${` inside template literals must be escaped.
-          element.value = element.value.replace /(\\*)(`|\$\{)/g, (match, backslashes, toBeEscaped) ->
-            if backslashes.length % 2 is 0
-              "#{backslashes}\\#{toBeEscaped}"
-            else
-              match
-        fragments.push element.compileToFragments(o)...
+        unquotedElementValue = if @jsx then element.unquotedValueForJSX else element.unquotedValueForTemplateLiteral
+        fragments.push @makeCode unquotedElementValue
       else
         fragments.push @makeCode '$' unless @jsx
         code = element.compileToFragments(o, LEVEL_PAREN)
@@ -5348,26 +5353,53 @@ unfoldSoak = (o, parent, name) ->
   ifn
 
 # Constructs a string or regex by escaping certain characters.
-makeDelimitedLiteral = (body, options = {}) ->
-  body = '(?:)' if body is '' and options.delimiter is '/'
+makeDelimitedLiteral = (body, {delimiter: delimiterOption, escapeNewlines, double, includeDelimiters = yes, escapeDelimiter = yes} = {}) ->
+  body = '(?:)' if body is '' and delimiterOption is '/'
+  escapeTemplateLiteralCurlies = delimiterOption is '`'
   regex = ///
       (\\\\)                               # Escaped backslash.
     | (\\0(?=[1-7]))                       # Null character mistaken as octal escape.
-    | \\?(#{options.delimiter})            # (Possibly escaped) delimiter.
-    | \\?(?: (\n)|(\r)|(\u2028)|(\u2029) ) # (Possibly escaped) newlines.
+    #{
+      if escapeDelimiter
+        "|\\\\?(#{delimiterOption})"       # (Possibly escaped) delimiter.
+      else
+        ''
+    }
+    #{
+      if escapeTemplateLiteralCurlies
+        "|\\\\?(\\$\\{)"                   # `${` inside template literals must be escaped.
+      else
+        ''
+    }
+    | \\?(?:
+        #{if escapeNewlines then '(\n)|' else ''}
+          (\r)
+        | (\u2028)
+        | (\u2029)
+      )                                    # (Possibly escaped) newlines.
     | (\\.)                                # Other escapes.
   ///g
-  body = body.replace regex, (match, backslash, nul, delimiter, lf, cr, ls, ps, other) -> switch
-    # Ignore escaped backslashes.
-    when backslash then (if options.double then backslash + backslash else backslash)
-    when nul       then '\\x00'
-    when delimiter then "\\#{delimiter}"
-    when lf        then '\\n'
-    when cr        then '\\r'
-    when ls        then '\\u2028'
-    when ps        then '\\u2029'
-    when other     then (if options.double then "\\#{other}" else other)
-  "#{options.delimiter}#{body}#{options.delimiter}"
+  body = body.replace regex, (match, backslash, nul, ...args) ->
+    delimiter =
+      args.shift() if escapeDelimiter
+    templateLiteralCurly =
+      args.shift() if escapeTemplateLiteralCurlies
+    lf =
+      args.shift() if escapeNewlines
+    [cr, ls, ps, other] = args
+    switch
+      # Ignore escaped backslashes.
+      when backslash then (if double then backslash + backslash else backslash)
+      when nul                  then '\\x00'
+      when delimiter            then "\\#{delimiter}"
+      when templateLiteralCurly then "\\${"
+      when lf                   then '\\n'
+      when cr                   then '\\r'
+      when ls                   then '\\u2028'
+      when ps                   then '\\u2029'
+      when other                then (if double then "\\#{other}" else other)
+  printedDelimiter = if includeDelimiters then delimiterOption else ''
+  "#{printedDelimiter}#{body}#{printedDelimiter}"
 
 sniffDirectives = (expressions, {notFinalExpression} = {}) ->
   index = 0
@@ -5375,7 +5407,7 @@ sniffDirectives = (expressions, {notFinalExpression} = {}) ->
   while index <= lastIndex
     break if index is lastIndex and notFinalExpression
     expression = expressions[index]
-    break unless expression instanceof Value and expression.isString() and not expression.unwrap().shouldGenerateTemplateLiteralAst()
+    break unless expression instanceof Value and expression.isString() and not expression.unwrap().shouldGenerateTemplateLiteral()
     expressions[index] =
       new Directive expression
       .withLocationDataFrom expression
