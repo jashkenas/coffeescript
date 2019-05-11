@@ -5358,7 +5358,7 @@ makeDelimitedLiteral = (body, {delimiter: delimiterOption, escapeNewlines, doubl
   escapeTemplateLiteralCurlies = delimiterOption is '`'
   regex = ///
       (\\\\)                               # Escaped backslash.
-    | (\\0(?=[1-7]))                       # Null character mistaken as octal escape.
+    | (\\0(?=\d))                          # Null character mistaken as octal escape.
     #{
       if escapeDelimiter
         "|\\\\?(#{delimiterOption})"       # (Possibly escaped) delimiter.
