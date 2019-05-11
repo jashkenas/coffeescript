@@ -489,6 +489,22 @@ test "octal escapes", ->
       #{b} \\01///
            ^\^^
   '''
+  # per #5211, also treat \0[8-9] as (disallowed) octal escapes
+  assertErrorFormat '''
+    "a\\0\\tb\\\\\\09c"
+  ''', '''
+    [stdin]:1:10: error: octal escape sequences are not allowed \\09
+    "a\\0\\tb\\\\\\09c"
+      \  \   \ \ ^\^^
+  '''
+  assertErrorFormat '''
+    ///a
+      #{b} \\08///
+  ''', '''
+    [stdin]:2:8: error: octal escape sequences are not allowed \\08
+      #{b} \\08///
+           ^\^^
+  '''
 
 test "#3795: invalid escapes", ->
   assertErrorFormat '''

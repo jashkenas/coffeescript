@@ -45,8 +45,7 @@ test "octal escape sequences prohibited", ->
   strict    '"\\\\\\1"'
   strictOk  '"\\0"'
   eq "\x00", "\0"
-  strictOk  '"\\08"'
-  eq "\x008", "\08"
+  strict    '"\\08"'
   strictOk  '"\\0\\8"'
   eq "\x008", "\0\8"
   strictOk  '"\\8"'
@@ -60,13 +59,10 @@ test "octal escape sequences prohibited", ->
 
   # Also test other string types.
   strict           "'\\\\\\1'"
-  eq "\x008",      '\08'
   eq "\\\\" + "1", '\\\\1'
   strict           "'''\\\\\\1'''"
-  eq "\x008",      '''\08'''
   eq "\\\\" + "1", '''\\\\1'''
   strict           '"""\\\\\\1"""'
-  eq "\x008",      """\08"""
   eq "\\\\" + "1", """\\\\1"""
 
 test "duplicate formal parameters are prohibited", ->
