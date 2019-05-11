@@ -966,6 +966,7 @@ exports.StringLiteral = class StringLiteral extends Literal
       @double
       escapeNewlines: no
       includeDelimiters: no
+      convertTrailingNullEscapes: yes
     }
 
     @unquotedValueForJSX = makeDelimitedLiteral val, {
@@ -5353,12 +5354,18 @@ unfoldSoak = (o, parent, name) ->
   ifn
 
 # Constructs a string or regex by escaping certain characters.
-makeDelimitedLiteral = (body, {delimiter: delimiterOption, escapeNewlines, double, includeDelimiters = yes, escapeDelimiter = yes} = {}) ->
+makeDelimitedLiteral = (body, {delimiter: delimiterOption, escapeNewlines, double, includeDelimiters = yes, escapeDelimiter = yes, convertTrailingNullEscapes} = {}) ->
   body = '(?:)' if body is '' and delimiterOption is '/'
   escapeTemplateLiteralCurlies = delimiterOption is '`'
   regex = ///
       (\\\\)                               # Escaped backslash.
     | (\\0(?=\d))                          # Null character mistaken as octal escape.
+    #{
+      if convertTrailingNullEscapes
+        "|(\\\\0)$"                        # Trailing null character that could be mistaken as octal escape.
+      else
+        ''
+    }
     #{
       if escapeDelimiter
         "|\\\\?(#{delimiterOption})"       # (Possibly escaped) delimiter.
@@ -5380,6 +5387,8 @@ makeDelimitedLiteral = (body, {delimiter: delimiterOption, escapeNewlines, doubl
     | (\\.)                                # Other escapes.
   ///g
   body = body.replace regex, (match, backslash, nul, ...args) ->
+    trailingNullEscape =
+      args.shift() if convertTrailingNullEscapes
     delimiter =
       args.shift() if escapeDelimiter
     templateLiteralCurly =
@@ -5391,6 +5400,7 @@ makeDelimitedLiteral = (body, {delimiter: delimiterOption, escapeNewlines, doubl
       # Ignore escaped backslashes.
       when backslash then (if double then backslash + backslash else backslash)
       when nul                  then '\\x00'
+      when trailingNullEscape   then "\\x00"
       when delimiter            then "\\#{delimiter}"
       when templateLiteralCurly then "\\${"
       when lf                   then '\\n'
