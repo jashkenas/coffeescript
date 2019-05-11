@@ -5362,19 +5362,19 @@ makeDelimitedLiteral = (body, {delimiter: delimiterOption, escapeNewlines, doubl
     | (\\0(?=\d))                          # Null character mistaken as octal escape.
     #{
       if convertTrailingNullEscapes
-        "|(\\\\0)$"                        # Trailing null character that could be mistaken as octal escape.
+        /// | (\\0) $ ///.source           # Trailing null character that could be mistaken as octal escape.
       else
         ''
     }
     #{
       if escapeDelimiter
-        "|\\\\?(#{delimiterOption})"       # (Possibly escaped) delimiter.
+        /// | \\?(#{delimiterOption}) ///.source # (Possibly escaped) delimiter.
       else
         ''
     }
     #{
       if escapeTemplateLiteralCurlies
-        "|\\\\?(\\$\\{)"                   # `${` inside template literals must be escaped.
+        /// | \\?(\$\{) ///.source         # `${` inside template literals must be escaped.
       else
         ''
     }
