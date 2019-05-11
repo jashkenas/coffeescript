@@ -45,7 +45,6 @@ test "octal escape sequences prohibited", ->
   strict    '"\\\\\\1"'
   strictOk  '"\\0"'
   eq "\x00", "\0"
-  strict    '"\\08"'
   strictOk  '"\\0\\8"'
   eq "\x008", "\0\8"
   strictOk  '"\\8"'
