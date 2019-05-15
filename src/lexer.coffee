@@ -1264,7 +1264,7 @@ LINE_CONTINUER      = /// ^ \s* (?: , | \??\.(?![.\d]) | \??:: ) ///
 STRING_INVALID_ESCAPE = ///
   ( (?:^|[^\\]) (?:\\\\)* )        # Make sure the escape isn’t escaped.
   \\ (
-     ?: (0[0-7]|[1-7])             # octal escape
+     ?: (0\d|[1-7])                # octal escape
       | (x(?![\da-fA-F]{2}).{0,2}) # hex escape
       | (u\{(?![\da-fA-F]{1,}\})[^}]*\}?) # unicode code point escape
       | (u(?!\{|[\da-fA-F]{4}).{0,4}) # unicode escape
@@ -1273,7 +1273,7 @@ STRING_INVALID_ESCAPE = ///
 REGEX_INVALID_ESCAPE = ///
   ( (?:^|[^\\]) (?:\\\\)* )        # Make sure the escape isn’t escaped.
   \\ (
-     ?: (0[0-7])                   # octal escape
+     ?: (0\d)                      # octal escape
       | (x(?![\da-fA-F]{2}).{0,2}) # hex escape
       | (u\{(?![\da-fA-F]{1,}\})[^}]*\}?) # unicode code point escape
       | (u(?!\{|[\da-fA-F]{4}).{0,4}) # unicode escape
