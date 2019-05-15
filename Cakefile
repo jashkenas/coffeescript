@@ -78,10 +78,11 @@ transpile = (code, options = {}) ->
   presets.push ['minify', {mangle: no, evaluate: no, removeUndefined: no}] if options.minify
   babelOptions =
     presets: presets
-    compact: not options.minify
+    compact: options.minify
+    minified: options.minify
     comments: not options.minify
     sourceType: options.sourceType
-  { code } = babel.transform code, babelOptions unless presets.length is 0
+  { code } = babel.transformSync code, babelOptions unless presets.length is 0
   code
 
 testBuiltCode = (watch = no) ->
