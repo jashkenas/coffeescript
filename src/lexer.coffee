@@ -314,55 +314,90 @@ exports.Lexer = class Lexer
   # everything has been parsed and the JavaScript code generated.
   commentToken: (chunk = @chunk) ->
     return 0 unless match = chunk.match COMMENT
-    [comment, here] = match
+    [withLeadingWhitespace, hereLeadingWhitespace, here, hereTrailingWhitespace, nonHere] = match
     contents = null
     # Does this comment follow code on the same line?
-    newLine = /^\s*\n+\s*#/.test comment
+    leadingNewline = /^\s*\n+\s*#/.test withLeadingWhitespace
     if here
-      matchIllegal = HERECOMMENT_ILLEGAL.exec comment
+      matchIllegal = HERECOMMENT_ILLEGAL.exec here
       if matchIllegal
         @error "block comments cannot contain #{matchIllegal[0]}",
-          offset: matchIllegal.index, length: matchIllegal[0].length
+          offset: '###'.length + matchIllegal.index, length: matchIllegal[0].length
 
       # Parse indentation or outdentation as if this block comment didn’t exist.
       chunk = chunk.replace "####{here}###", ''
       # Remove leading newlines, like `Rewriter::removeLeadingNewlines`, to
       # avoid the creation of unwanted `TERMINATOR` tokens.
       chunk = chunk.replace /^\n+/, ''
-      @lineToken chunk
+      @lineToken {chunk}
 
       # Pull out the ###-style comment’s content, and format it.
       content = here
-      if '\n' in content
-        content = content.replace /// \n #{repeat ' ', @indent} ///g, '\n'
-      contents = [content]
+      contents = [{
+        content
+        length: withLeadingWhitespace.length - hereLeadingWhitespace.length - hereTrailingWhitespace.length
+        leadingWhitespace: hereLeadingWhitespace
+      }]
     else
       # The `COMMENT` regex captures successive line comments as one token.
       # Remove any leading newlines before the first comment, but preserve
       # blank lines between line comments.
-      content = comment.replace /^(\n*)/, ''
-      content = content.replace /^([ |\t]*)#/gm, ''
-      contents = content.split '\n'
+      leadingNewlines = ''
+      content = nonHere.replace /^(\n*)/, (leading) ->
+        leadingNewlines = leading
+        ''
+      precedingNonCommentLines = ''
+      hasSeenFirstCommentLine = no
+      contents =
+        content.split '\n'
+        .map (line, index) ->
+          unless line.indexOf('#') > -1
+            precedingNonCommentLines += "\n#{line}"
+            return
+          leadingWhitespace = ''
+          content = line.replace /^([ |\t]*)#/, (_, whitespace) ->
+            leadingWhitespace = whitespace
+            ''
+          comment = {
+            content
+            length: '#'.length + content.length
+            leadingWhitespace: "#{unless hasSeenFirstCommentLine then leadingNewlines else ''}#{precedingNonCommentLines}#{leadingWhitespace}"
+            precededByBlankLine: !!precedingNonCommentLines
+          }
+          hasSeenFirstCommentLine = yes
+          precedingNonCommentLines = ''
+          comment
+        .filter (comment) -> comment
 
-    commentAttachments = for content, i in contents
-      content: content
-      here: here?
-      newLine: newLine or i isnt 0 # Line comments after the first one start new lines, by definition.
+    offsetInChunk = 0
+    commentAttachments = for {content, length, leadingWhitespace, precededByBlankLine}, i in contents
+      nonInitial = i isnt 0
+      leadingNewlineOffset = if nonInitial then 1 else 0
+      offsetInChunk += leadingNewlineOffset + leadingWhitespace.length
+      commentAttachment = {
+        content
+        here: here?
+        newLine: leadingNewline or nonInitial # Line comments after the first one start new lines, by definition.
+        locationData: @makeLocationData {offsetInChunk, length}
+        precededByBlankLine
+      }
+      offsetInChunk += length
+      commentAttachment
 
     prev = @prev()
     unless prev
       # If there’s no previous token, create a placeholder token to attach
       # this comment to; and follow with a newline.
       commentAttachments[0].newLine = yes
-      @lineToken @chunk[comment.length..] # Set the indent.
-      placeholderToken = @makeToken 'JS', '', generated: yes
+      @lineToken chunk: @chunk[withLeadingWhitespace.length..], offset: withLeadingWhitespace.length # Set the indent.
+      placeholderToken = @makeToken 'JS', '', offset: withLeadingWhitespace.length, generated: yes
       placeholderToken.comments = commentAttachments
       @tokens.push placeholderToken
-      @newlineToken 0
+      @newlineToken withLeadingWhitespace.length
     else
       attachCommentsToNode commentAttachments, prev
 
-    comment.length
+    withLeadingWhitespace.length
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
@@ -436,7 +471,7 @@ exports.Lexer = class Lexer
   #
   # Keeps track of the level of indentation, because a single outdent token
   # can close multiple indents, so we need to know how far in we happen to be.
-  lineToken: (chunk = @chunk) ->
+  lineToken: ({chunk = @chunk, offset = 0} = {}) ->
     return 0 unless match = MULTI_DENT.exec chunk
     indent = match[0]
 
@@ -460,7 +495,7 @@ exports.Lexer = class Lexer
       return indent.length
 
     if size - @indebt is @indent
-      if noNewlines then @suppressNewlines() else @newlineToken 0
+      if noNewlines then @suppressNewlines() else @newlineToken offset
       return indent.length
 
     if size > @indent
@@ -473,22 +508,22 @@ exports.Lexer = class Lexer
         @indentLiteral = newIndentLiteral
         return indent.length
       diff = size - @indent + @outdebt
-      @token 'INDENT', diff, offset: indent.length - size, length: size
+      @token 'INDENT', diff, offset: offset + indent.length - size, length: size
       @indents.push diff
       @ends.push {tag: 'OUTDENT'}
       @outdebt = @indebt = 0
       @indent = size
       @indentLiteral = newIndentLiteral
     else if size < @baseIndent
-      @error 'missing indentation', offset: indent.length
+      @error 'missing indentation', offset: offset + indent.length
     else
       @indebt = 0
-      @outdentToken @indent - size, noNewlines, indent.length
+      @outdentToken {moveOut: @indent - size, noNewlines, outdentLength: indent.length, offset}
     indent.length
 
   # Record an outdent token or multiple tokens, if we happen to be moving back
   # inwards past several recorded indents. Sets new @indent value.
-  outdentToken: (moveOut, noNewlines, outdentLength) ->
+  outdentToken: ({moveOut, noNewlines, outdentLength = 0, offset = 0}) ->
     decreasedIndent = @indent - moveOut
     while moveOut > 0
       lastIndent = @indents[@indents.length - 1]
@@ -510,7 +545,7 @@ exports.Lexer = class Lexer
     @outdebt -= moveOut if dent
     @suppressSemicolons()
 
-    @token 'TERMINATOR', '\n', offset: outdentLength, length: 0 unless @tag() is 'TERMINATOR' or noNewlines
+    @token 'TERMINATOR', '\n', offset: offset + outdentLength, length: 0 unless @tag() is 'TERMINATOR' or noNewlines
     @indent = decreasedIndent
     @indentLiteral = @indentLiteral[...decreasedIndent]
     this
@@ -766,7 +801,7 @@ exports.Lexer = class Lexer
 
   # Close up all remaining open blocks at the end of the file.
   closeIndentation: ->
-    @outdentToken @indent
+    @outdentToken moveOut: @indent
 
   # Match the contents of a delimited token and expand variables and expressions
   # inside it using Ruby-like notation for substitution of arbitrary
@@ -938,7 +973,7 @@ exports.Lexer = class Lexer
       #       el.hide())
       #
       [..., lastIndent] = @indents
-      @outdentToken lastIndent, true
+      @outdentToken moveOut: lastIndent, noNewlines: true
       return @pair tag
     @ends.pop()
 
@@ -1193,7 +1228,7 @@ OPERATOR   = /// ^ (
 
 WHITESPACE = /^[^\n\S]+/
 
-COMMENT    = /^\s*###([^#][\s\S]*?)(?:###[^\n\S]*|###$)|^(?:\s*#(?!##[^#]).*)+/
+COMMENT    = /^(\s*)###([^#][\s\S]*?)(?:###([^\n\S]*)|###$)|^((?:\s*#(?!##[^#]).*)+)/
 
 CODE       = /^[-=]>/
 

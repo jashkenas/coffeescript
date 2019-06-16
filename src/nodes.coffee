@@ -500,6 +500,9 @@ exports.Root = class Root extends Base
     # end up being declared on the root block.
     o.scope.parameter name for name in o.locals or []
 
+  commentsAst: ->
+    []
+
   ast: (o) ->
     o.level = LEVEL_TOP
     @initializeScope o
@@ -511,7 +514,7 @@ exports.Root = class Root extends Base
     @body.isRootBlock = yes
     return
       program: Object.assign @body.ast(o), @astLocationData()
-      comments: []
+      comments: @commentsAst()
 
 #### Block
 
@@ -1483,22 +1486,23 @@ exports.MetaProperty = class MetaProperty extends Base
 
 # Comment delimited by `###` (becoming `/* */`).
 exports.HereComment = class HereComment extends Base
-  constructor: ({ @content, @newLine, @unshift }) ->
+  constructor: ({ @content, @newLine, @unshift, @locationData }) ->
     super()
 
   compileNode: (o) ->
     multiline = '\n' in @content
-    hasLeadingMarks = /\n\s*[#|\*]/.test @content
-    @content = @content.replace /^([ \t]*)#(?=\s)/gm, ' *' if hasLeadingMarks
 
     # Unindent multiline comments. They will be reindented later.
     if multiline
-      largestIndent = ''
+      indent = null
       for line in @content.split '\n'
         leadingWhitespace = /^\s*/.exec(line)[0]
-        if leadingWhitespace.length > largestIndent.length
-          largestIndent = leadingWhitespace
-      @content = @content.replace ///^(#{leadingWhitespace})///gm, ''
+        if not indent or leadingWhitespace.length < indent.length
+          indent = leadingWhitespace
+      @content = @content.replace /// \n #{indent} ///g, '\n' if indent
+
+    hasLeadingMarks = /\n\s*[#|\*]/.test @content
+    @content = @content.replace /^([ \t]*)#(?=\s)/gm, ' *' if hasLeadingMarks
 
     @content = "/*#{@content}#{if hasLeadingMarks then ' ' else ''}*/"
     fragment = @makeCode @content
@@ -1513,11 +1517,11 @@ exports.HereComment = class HereComment extends Base
 
 # Comment running from `#` to the end of a line (becoming `//`).
 exports.LineComment = class LineComment extends Base
-  constructor: ({ @content, @newLine, @unshift }) ->
+  constructor: ({ @content, @newLine, @unshift, @locationData, @precededByBlankLine }) ->
     super()
 
   compileNode: (o) ->
-    fragment = @makeCode(if /^\s*$/.test @content then '' else "//#{@content}")
+    fragment = @makeCode(if /^\s*$/.test @content then '' else "#{if @precededByBlankLine then "\n#{o.indent}" else ''}//#{@content}")
     fragment.newLine = @newLine
     fragment.unshift = @unshift
     fragment.trail = not @newLine and not @unshift
