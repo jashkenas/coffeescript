@@ -69,6 +69,20 @@ test 'attribute without value', ->
     <div checked x="hello" />;
   '''
 
+test 'reserved-word attribute without value', ->
+  eqJS '''
+    <div static x="hello" />
+  ''', '''
+    <div static x="hello" />;
+  '''
+
+test 'reserved-word attribute with value', ->
+  eqJS '''
+    <div static="yes" x="hello" />
+  ''', '''
+    <div static="yes" x="hello" />;
+  '''
+
 test 'attribute with namespace', ->
   eqJS '''
     <image xlink:href="data:image/png" />

@@ -206,7 +206,7 @@ exports.Lexer = class Lexer
           @error "'#{prevprev[1]}' cannot be used as a keyword, or as a
           function call without parentheses", prevprev[2]
 
-    if tag is 'IDENTIFIER' and id in RESERVED
+    if tag is 'IDENTIFIER' and id in RESERVED and not inCSXTag
       @error "reserved word '#{id}'", length: id.length
 
     unless tag is 'PROPERTY' or @exportSpecifierList
