@@ -472,25 +472,46 @@ test 'tag with {{}}', ->
       }} />;
   '''
 
-test 'tag with namespace', ->
+test 'tag with member expression', ->
   eqJS '''
     <Something.Tag></Something.Tag>
   ''', '''
     <Something.Tag></Something.Tag>;
   '''
 
-test 'tag with lowercase namespace', ->
+test 'tag with lowercase member expression', ->
   eqJS '''
     <something.tag></something.tag>
   ''', '''
     <something.tag></something.tag>;
   '''
 
-test 'self closing tag with namespace', ->
+test 'self closing tag with member expression', ->
   eqJS '''
     <Something.Tag />
   ''', '''
     <Something.Tag />;
+  '''
+
+test 'tag with namespace', ->
+  eqJS '''
+    <Something:Tag></Something:Tag>
+  ''', '''
+    <Something:Tag></Something:Tag>;
+  '''
+
+test 'tag with lowercase namespace', ->
+  eqJS '''
+    <something:tag></something:tag>
+  ''', '''
+    <something:tag></something:tag>;
+  '''
+
+test 'self closing tag with namespace', ->
+  eqJS '''
+    <Something:Tag />
+  ''', '''
+    <Something:Tag />;
   '''
 
 test 'self closing tag with spread attribute', ->
