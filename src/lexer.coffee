@@ -1192,9 +1192,14 @@ CSX_FRAGMENT_IDENTIFIER = /// ^
   ()> # Ends immediately with `>`.
 ///
 
+# In https://facebook.github.io/jsx/ spec, JSXAttributeName can be either
+# JSXIdentifier or JSXNamespacedName which is JSXIdentifier : JSXIdentifier
 CSX_ATTRIBUTE = /// ^
   (?!\d)
-  ( (?: (?!\s)[\-$\w\x7f-\uffff] )+ ) # Like `IDENTIFIER`, but includes `-`s.
+  ( (?: (?!\s)[\-$\w\x7f-\uffff] )+ # Like `IDENTIFIER`, but includes `-`s.
+    (?: \s* : \s*                   # Namespaced attribute
+        (?: (?!\s)[\-$\w\x7f-\uffff] )+ # Like identifier above
+    )? )
   ( [^\S]* = (?!=) )?  # Is this an attribute with a value?
 ///
 

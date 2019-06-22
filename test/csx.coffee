@@ -69,6 +69,16 @@ test 'attribute without value', ->
     <div checked x="hello" />;
   '''
 
+test 'attribute with namespace', ->
+  eqJS '''
+    <image xlink:href="data:image/png" />
+  ''', '''
+    <image xlink:href="data:image/png" />;
+  '''
+
+test 'attribute with double namespace disallowed', ->
+  throws -> CoffeeScript.compile '<image xlink:href:tag="data:image/png" />'
+
 test 'paired', ->
   eqJS '''
     <div></div>
