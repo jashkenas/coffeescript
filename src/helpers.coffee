@@ -114,6 +114,17 @@ buildLocationData = (first, last) ->
       last.range[1]
     ]
 
+# Build a list of all comments attached to tokens.
+exports.extractAllCommentTokens = (tokens) ->
+  allCommentsObj = {}
+  for token in tokens when token.comments
+    for comment in token.comments
+      commentKey = comment.locationData.range[0]
+      allCommentsObj[commentKey] = comment
+  sortedKeys = Object.keys(allCommentsObj).sort (a, b) -> a - b
+  for key in sortedKeys
+    allCommentsObj[key]
+
 # Get a lookup hash for a token based on its location data.
 # Multiple tokens might have the same location hash, but using exclusive
 # location data distinguishes e.g. zero-length generated tokens from

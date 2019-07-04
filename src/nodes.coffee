@@ -501,7 +501,13 @@ exports.Root = class Root extends Base
     o.scope.parameter name for name in o.locals or []
 
   commentsAst: ->
-    []
+    @allComments ?=
+      for commentToken in (@allCommentTokens ? [])
+        if commentToken.here
+          new HereComment commentToken
+        else
+          new LineComment commentToken
+    comment.ast() for comment in @allComments
 
   ast: (o) ->
     o.level = LEVEL_TOP
@@ -809,7 +815,10 @@ exports.Block = class Block extends Base
     body = []
     for expression in @expressions
       expressionAst = expression.ast o
-      if expression instanceof Directive
+      # Ignore generated PassthroughLiteral
+      if not expressionAst?
+        continue
+      else if expression instanceof Directive
         directives.push expressionAst
       # If an expression is a statement, it can be added to the body as is.
       else if expression.isStatementAst o
@@ -1062,6 +1071,16 @@ exports.PassthroughLiteral = class PassthroughLiteral extends Literal
       # `string` is always a value like '\`', '\\\`', '\\\\\`', etc.
       # By reducing it to its latter half, we turn '\`' to '`', '\\\`' to '\`', etc.
       string[-Math.ceil(string.length / 2)..]
+
+  ast: (o, level) ->
+    return null if @generated
+    super o, level
+
+  astProperties: ->
+    return {
+      @value
+      here: !!@here
+    }
 
 exports.IdentifierLiteral = class IdentifierLiteral extends Literal
   isAssignable: YES
@@ -1513,6 +1532,12 @@ exports.HereComment = class HereComment extends Base
     fragment.isComment = fragment.isHereComment = yes
     fragment
 
+  astType: -> 'CommentBlock'
+
+  astProperties: ->
+    return
+      value: @content
+
 #### LineComment
 
 # Comment running from `#` to the end of a line (becoming `//`).
@@ -1528,6 +1553,12 @@ exports.LineComment = class LineComment extends Base
     # Don’t rely on `fragment.type`, which can break when the compiler is minified.
     fragment.isComment = fragment.isLineComment = yes
     fragment
+
+  astType: -> 'CommentLine'
+
+  astProperties: ->
+    return
+      value: @content
 
 #### JSX
 
@@ -4760,13 +4791,18 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
             comment.newLine = yes
           attachCommentsToNode salvagedComments, node
         if (unwrapped = node.expression?.unwrapAll()) instanceof PassthroughLiteral and unwrapped.generated and not @jsx
-          commentPlaceholder = new StringLiteral('').withLocationDataFrom node
-          commentPlaceholder.comments = unwrapped.comments
-          (commentPlaceholder.comments ?= []).push node.comments... if node.comments
-          elements.push new Value commentPlaceholder
+          if o.compiling
+            commentPlaceholder = new StringLiteral('').withLocationDataFrom node
+            commentPlaceholder.comments = unwrapped.comments
+            (commentPlaceholder.comments ?= []).push node.comments... if node.comments
+            elements.push new Value commentPlaceholder
+          else
+            elements.push null
         else if node.expression or includeInterpolationWrappers
           (node.expression?.comments ?= []).push node.comments... if node.comments
           elements.push if includeInterpolationWrappers then node else node.expression
+        else if not o.compiling
+          elements.push null
         return no
       else if node.comments
         # This node is getting discarded, but salvage its comments.
@@ -4836,7 +4872,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
           tail: element is last
         ).withLocationDataFrom(element).ast o
       else
-        expressions.push element.unwrap().ast o
+        expressions.push element?.unwrap().ast(o) ? null
 
     {expressions, quasis, @quote}
 

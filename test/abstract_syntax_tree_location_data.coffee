@@ -43,6 +43,9 @@ testSingleNodeLocationData = (node, expected, path = '') ->
   eq node.loc.end.column, expected.loc.end.column, \
     "Expected #{path}.loc.end.column: #{reset}#{node.loc.end.column}#{red} to equal #{reset}#{expected.loc.end.column}#{red}"
 
+testAstCommentsLocationData = (code, expected) ->
+  testAstNodeLocationData getAstRoot(code).comments, expected
+
 if require?
   {mergeAstLocationData, mergeLocationData} = require './../lib/coffeescript/nodes'
 
@@ -7478,3 +7481,266 @@ test "AST location data as expected for directives", ->
       end:
         line: 3
         column: 7
+
+test "AST location data as expected for PassthroughLiteral node", ->
+  testAstLocationData "`abc`",
+    type: 'PassthroughLiteral'
+    start: 0
+    end: 5
+    range: [0, 5]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 5
+
+  code = '\nconst CONSTANT = "unreassignable!"\n'
+  testAstLocationData """
+    ```
+      abc
+    ```
+  """,
+    type: 'PassthroughLiteral'
+    start: 0
+    end: 13
+    range: [0, 13]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 3
+
+  testAstLocationData "``",
+    type: 'PassthroughLiteral'
+    start: 0
+    end: 2
+    range: [0, 2]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 2
+
+test "AST as expected for comments", ->
+  testAstCommentsLocationData '''
+    a # simple line comment
+  ''', [
+    start: 2
+    end: 23
+    range: [2, 23]
+    loc:
+      start:
+        line: 1
+        column: 2
+      end:
+        line: 1
+        column: 23
+  ]
+
+  testAstCommentsLocationData '''
+    a ### simple here comment ###
+  ''', [
+    start: 2
+    end: 29
+    range: [2, 29]
+    loc:
+      start:
+        line: 1
+        column: 2
+      end:
+        line: 1
+        column: 29
+  ]
+
+  testAstCommentsLocationData '''
+    # just a line comment
+  ''', [
+    start: 0
+    end: 21
+    range: [0, 21]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 21
+  ]
+
+  testAstCommentsLocationData '''
+    ### just a here comment ###
+  ''', [
+    start: 0
+    end: 27
+    range: [0, 27]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 27
+  ]
+
+  testAstCommentsLocationData '''
+    "#{
+      # empty interpolation line comment
+     }"
+  ''', [
+    start: 6
+    end: 40
+    range: [6, 40]
+    loc:
+      start:
+        line: 2
+        column: 2
+      end:
+        line: 2
+        column: 36
+  ]
+
+  testAstCommentsLocationData '''
+    "#{
+      ### empty interpolation block comment ###
+     }"
+  ''', [
+    start: 6
+    end: 47
+    range: [6, 47]
+    loc:
+      start:
+        line: 2
+        column: 2
+      end:
+        line: 2
+        column: 43
+  ]
+
+  testAstCommentsLocationData '''
+    # multiple line comments
+    # on consecutive lines
+  ''', [
+    start: 0
+    end: 24
+    range: [0, 24]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 24
+  ,
+    start: 25
+    end: 47
+    range: [25, 47]
+    loc:
+      start:
+        line: 2
+        column: 0
+      end:
+        line: 2
+        column: 22
+  ]
+
+  testAstCommentsLocationData '''
+    # multiple line comments
+
+    # with blank line
+  ''', [
+    start: 0
+    end: 24
+    range: [0, 24]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 24
+  ,
+    start: 26
+    end: 43
+    range: [26, 43]
+    loc:
+      start:
+        line: 3
+        column: 0
+      end:
+        line: 3
+        column: 17
+  ]
+
+  testAstCommentsLocationData '''
+    #no whitespace line comment
+  ''', [
+    start: 0
+    end: 27
+    range: [0, 27]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 27
+  ]
+
+  testAstCommentsLocationData '''
+    ###no whitespace here comment###
+  ''', [
+    start: 0
+    end: 32
+    range: [0, 32]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 32
+  ]
+
+  testAstCommentsLocationData '''
+    ###
+    # multiline
+    # here comment
+    ###
+  ''', [
+    start: 0
+    end: 34
+    range: [0, 34]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 3
+  ]
+
+  testAstCommentsLocationData '''
+    if b
+      ###
+      # multiline
+      # indented here comment
+      ###
+      c
+  ''', [
+    start: 7
+    end: 56
+    range: [7, 56]
+    loc:
+      start:
+        line: 2
+        column: 2
+      end:
+        line: 5
+        column: 5
+  ]
