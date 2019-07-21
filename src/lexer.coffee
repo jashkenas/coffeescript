@@ -314,28 +314,28 @@ exports.Lexer = class Lexer
   # everything has been parsed and the JavaScript code generated.
   commentToken: (chunk = @chunk) ->
     return 0 unless match = chunk.match COMMENT
-    [withLeadingWhitespace, hereLeadingWhitespace, here, hereTrailingWhitespace, nonHere] = match
+    [commentWithSurroundingWhitespace, hereLeadingWhitespace, hereComment, hereTrailingWhitespace, lineComment] = match
     contents = null
     # Does this comment follow code on the same line?
-    leadingNewline = /^\s*\n+\s*#/.test withLeadingWhitespace
-    if here
-      matchIllegal = HERECOMMENT_ILLEGAL.exec here
+    leadingNewline = /^\s*\n+\s*#/.test commentWithSurroundingWhitespace
+    if hereComment
+      matchIllegal = HERECOMMENT_ILLEGAL.exec hereComment
       if matchIllegal
         @error "block comments cannot contain #{matchIllegal[0]}",
           offset: '###'.length + matchIllegal.index, length: matchIllegal[0].length
 
       # Parse indentation or outdentation as if this block comment didn’t exist.
-      chunk = chunk.replace "####{here}###", ''
+      chunk = chunk.replace "####{hereComment}###", ''
       # Remove leading newlines, like `Rewriter::removeLeadingNewlines`, to
       # avoid the creation of unwanted `TERMINATOR` tokens.
       chunk = chunk.replace /^\n+/, ''
       @lineToken {chunk}
 
       # Pull out the ###-style comment’s content, and format it.
-      content = here
+      content = hereComment
       contents = [{
         content
-        length: withLeadingWhitespace.length - hereLeadingWhitespace.length - hereTrailingWhitespace.length
+        length: commentWithSurroundingWhitespace.length - hereLeadingWhitespace.length - hereTrailingWhitespace.length
         leadingWhitespace: hereLeadingWhitespace
       }]
     else
@@ -343,7 +343,7 @@ exports.Lexer = class Lexer
       # Remove any leading newlines before the first comment, but preserve
       # blank lines between line comments.
       leadingNewlines = ''
-      content = nonHere.replace /^(\n*)/, (leading) ->
+      content = lineComment.replace /^(\n*)/, (leading) ->
         leadingNewlines = leading
         ''
       precedingNonCommentLines = ''
@@ -376,7 +376,7 @@ exports.Lexer = class Lexer
       offsetInChunk += leadingNewlineOffset + leadingWhitespace.length
       commentAttachment = {
         content
-        here: here?
+        here: hereComment?
         newLine: leadingNewline or nonInitial # Line comments after the first one start new lines, by definition.
         locationData: @makeLocationData {offsetInChunk, length}
         precededByBlankLine
@@ -389,15 +389,15 @@ exports.Lexer = class Lexer
       # If there’s no previous token, create a placeholder token to attach
       # this comment to; and follow with a newline.
       commentAttachments[0].newLine = yes
-      @lineToken chunk: @chunk[withLeadingWhitespace.length..], offset: withLeadingWhitespace.length # Set the indent.
-      placeholderToken = @makeToken 'JS', '', offset: withLeadingWhitespace.length, generated: yes
+      @lineToken chunk: @chunk[commentWithSurroundingWhitespace.length..], offset: commentWithSurroundingWhitespace.length # Set the indent.
+      placeholderToken = @makeToken 'JS', '', offset: commentWithSurroundingWhitespace.length, generated: yes
       placeholderToken.comments = commentAttachments
       @tokens.push placeholderToken
-      @newlineToken withLeadingWhitespace.length
+      @newlineToken commentWithSurroundingWhitespace.length
     else
       attachCommentsToNode commentAttachments, prev
 
-    withLeadingWhitespace.length
+    commentWithSurroundingWhitespace.length
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
