@@ -1414,6 +1414,16 @@ exports.Value = class Value extends Base
         mergeLocationData @base.locationData, initialProperties[initialProperties.length - 1].locationData
     object
 
+  containsSoak: ->
+    return no unless @hasProperties()
+
+    for property in @properties when property.soak
+      return yes
+
+    return yes if @base instanceof Call and @base.soak
+
+    no
+
   ast: (o, level) ->
     # If the `Value` has no properties, the AST node is just whatever this
     # node’s `base` is.
@@ -1425,6 +1435,8 @@ exports.Value = class Value extends Base
   astType: ->
     if @isJSXTag()
       'JSXMemberExpression'
+    else if @containsSoak()
+      'OptionalMemberExpression'
     else
       'MemberExpression'
 
@@ -1935,9 +1947,16 @@ exports.Call = class Call extends Base
     fragments.push @makeCode('('), compiledArgs..., @makeCode(')')
     fragments
 
+  containsSoak: ->
+    return yes if @soak
+    return yes if @variable?.containsSoak?()
+    no
+
   astType: ->
     if @isNew
       'NewExpression'
+    else if @containsSoak()
+      'OptionalCallExpression'
     else
       'CallExpression'
 

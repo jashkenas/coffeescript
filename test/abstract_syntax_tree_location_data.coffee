@@ -450,7 +450,7 @@ test "AST location data as expected for Index node", ->
         column: 4
 
   testAstLocationData 'a?[b][3]',
-    type: 'MemberExpression'
+    type: 'OptionalMemberExpression'
     object:
       object:
         start: 0
@@ -777,7 +777,7 @@ test "AST location data as expected for Call node", ->
     ]
 
   testAstLocationData 'maybe? 1 + 1',
-    type: 'CallExpression'
+    type: 'OptionalCallExpression'
     start: 0
     end: 12
     range: [0, 12]

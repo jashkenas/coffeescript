@@ -701,12 +701,12 @@ test "AST as expected for Call node", ->
     implicit: yes
 
   testExpression 'maybe?()',
-    type: 'CallExpression'
+    type: 'OptionalCallExpression'
     optional: yes
     implicit: no
 
   testExpression 'maybe?(1 + 1)',
-    type: 'CallExpression'
+    type: 'OptionalCallExpression'
     arguments: [
       type: 'BinaryExpression'
     ]
@@ -714,7 +714,7 @@ test "AST as expected for Call node", ->
     implicit: no
 
   testExpression 'maybe? 1 + 1',
-    type: 'CallExpression'
+    type: 'OptionalCallExpression'
     arguments: [
       type: 'BinaryExpression'
     ]
@@ -730,6 +730,60 @@ test "AST as expected for Call node", ->
       name: 'that'
     ]
     implicit: yes
+    optional: no
+
+  testExpression 'a?().b',
+    type: 'OptionalMemberExpression'
+    object:
+      type: 'OptionalCallExpression'
+      optional: yes
+    optional: no
+
+  testExpression 'a?.b.c()',
+    type: 'OptionalCallExpression'
+    callee:
+      type: 'OptionalMemberExpression'
+      object:
+        type: 'OptionalMemberExpression'
+        optional: yes
+      optional: no
+    optional: no
+
+  testExpression 'a?.b?()',
+    type: 'OptionalCallExpression'
+    callee:
+      type: 'OptionalMemberExpression'
+      optional: yes
+    optional: yes
+
+  testExpression 'a?().b?()',
+    type: 'OptionalCallExpression'
+    callee:
+      type: 'OptionalMemberExpression'
+      optional: no
+      object:
+        type: 'OptionalCallExpression'
+        optional: yes
+    optional: yes
+
+  testExpression 'a().b?()',
+    type: 'OptionalCallExpression'
+    callee:
+      type: 'MemberExpression'
+      optional: no
+      object:
+        type: 'CallExpression'
+        optional: no
+    optional: yes
+
+  testExpression 'a?().b()',
+    type: 'OptionalCallExpression'
+    callee:
+      type: 'OptionalMemberExpression'
+      optional: no
+      object:
+        type: 'OptionalCallExpression'
+        optional: yes
     optional: no
 
 # test "AST as expected for SuperCall node", ->
@@ -892,9 +946,7 @@ test "AST as expected for Access node", ->
     shorthand: no
 
   testExpression 'obj?.prop',
-    # TODO: support Babel 7-style OptionalMemberExpression type
-    # type: 'OptionalMemberExpression'
-    type: 'MemberExpression'
+    type: 'OptionalMemberExpression'
     object:
       type: 'Identifier'
       name: 'obj'
@@ -946,9 +998,9 @@ test "AST as expected for Access node", ->
     shorthand: no
 
   testExpression 'a?.b.c',
-    type: 'MemberExpression'
+    type: 'OptionalMemberExpression'
     object:
-      type: 'MemberExpression'
+      type: 'OptionalMemberExpression'
       object:
         type: 'Identifier'
         name: 'a'
@@ -979,7 +1031,7 @@ test "AST as expected for Index node", ->
     shorthand: no
 
   testExpression 'a?[b]',
-    type: 'MemberExpression'
+    type: 'OptionalMemberExpression'
     object:
       type: 'Identifier'
       name: 'a'
