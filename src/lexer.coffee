@@ -1182,16 +1182,17 @@ IDENTIFIER = /// ^
   ( [^\n\S]* : (?!:) )?  # Is this a property name?
 ///
 
+# Like `IDENTIFIER`, but includes `-`s
+CSX_IDENTIFIER_PART = /// (?: (?!\s)[\-$\w\x7f-\uffff] )+ ///.source
+
 # In https://facebook.github.io/jsx/ spec, JSXElementName can be
 # JSXIdentifier, JSXNamespacedName (JSXIdentifier : JSXIdentifier), or
 # JSXMemberExpression (two or more JSXIdentifier connected by `.`s).
 CSX_IDENTIFIER = /// ^
   (?![\d<]) # Must not start with `<`.
-  ( (?: (?!\s)[\-$\w\x7f-\uffff] )+      # Like `IDENTIFIER`, but includes `-`s
-    (?: \s* : \s*                        # JSXNamespacedName
-        (?: (?!\s)[\-$\w\x7f-\uffff] )+  # Like identifier above
-    | (?: \s* \. \s*                     # JSXMemberExpression
-       (?: (?!\s)[\-$\w\x7f-\uffff] )+)+ # Like identifier above
+  ( #{CSX_IDENTIFIER_PART}
+    (?: \s* : \s* #{CSX_IDENTIFIER_PART}       # JSXNamespacedName
+    | (?: \s* \. \s* #{CSX_IDENTIFIER_PART} )+ # JSXMemberExpression
     )? )
 ///
 
@@ -1204,9 +1205,8 @@ CSX_FRAGMENT_IDENTIFIER = /// ^
 # JSXIdentifier or JSXNamespacedName which is JSXIdentifier : JSXIdentifier
 CSX_ATTRIBUTE = /// ^
   (?!\d)
-  ( (?: (?!\s)[\-$\w\x7f-\uffff] )+ # Like `IDENTIFIER`, but includes `-`s.
-    (?: \s* : \s*                   # JSXNamespacedName
-        (?: (?!\s)[\-$\w\x7f-\uffff] )+ # Like identifier above
+  ( #{CSX_IDENTIFIER_PART}
+    (?: \s* : \s* #{CSX_IDENTIFIER_PART}       # JSXNamespacedName
     )? )
   ( [^\S]* = (?!=) )?  # Is this an attribute with a value?
 ///

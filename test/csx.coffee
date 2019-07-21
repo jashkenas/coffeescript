@@ -23,6 +23,13 @@ test 'self closing multiline', ->
     <div />;
   '''
 
+test 'reserved-word self closing', ->
+  eqJS '''
+    <static />
+  ''', '''
+    <static />;
+  '''
+
 test 'regex attribute', ->
   eqJS '''
     <div x={/>asds/} />
@@ -92,6 +99,9 @@ test 'attribute with namespace', ->
 
 test 'attribute with double namespace disallowed', ->
   throws -> CoffeeScript.compile '<image xlink:href:tag="data:image/png" />'
+
+test 'attribute with member expression disallowed', ->
+  throws -> CoffeeScript.compile '<image xlink.href="data:image/png" />'
 
 test 'paired', ->
   eqJS '''
@@ -507,6 +517,13 @@ test 'self closing tag with member expression', ->
     <Something.Tag />;
   '''
 
+test 'self closing tag with multiple member expressions', ->
+  eqJS '''
+    <Something.Tag.More />
+  ''', '''
+    <Something.Tag.More />;
+  '''
+
 test 'tag with namespace', ->
   eqJS '''
     <Something:Tag></Something:Tag>
@@ -526,6 +543,11 @@ test 'self closing tag with namespace', ->
     <Something:Tag />
   ''', '''
     <Something:Tag />;
+  '''
+
+test 'self closing tag with namespace and member expression disallowed', ->
+  throws -> CoffeeScript.compile '''
+    <Namespace:Something.Tag />
   '''
 
 test 'self closing tag with spread attribute', ->
