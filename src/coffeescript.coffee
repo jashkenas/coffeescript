@@ -113,6 +113,7 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
   # which might’ve gotten misaligned from the original source due to the
   # `clean` function in the lexer).
   if options.ast
+    nodes.allCommentTokens = helpers.extractAllCommentTokens tokens
     sourceCodeNumberOfLines = (code.match(/\r?\n/g) or '').length + 1
     sourceCodeLastLine = /.*$/.exec(code)[0] # `.*` matches all but line break characters.
     ast = nodes.ast options

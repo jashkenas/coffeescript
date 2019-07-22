@@ -44,6 +44,10 @@ testStatement = (code, expected) ->
   ast = getAstStatement code
   testAgainstExpected ast, expected
 
+testComments = (code, expected) ->
+  ast = getAstRoot code
+  testAgainstExpected ast.comments, expected
+
 test 'Confirm functionality of `deepStrictIncludeExpectedProperties`', ->
   actual =
     name: 'Name'
@@ -132,6 +136,17 @@ test "AST as expected for Block node", ->
       directives: []
     comments: []
 
+  deepStrictIncludeExpectedProperties CoffeeScript.compile('# comment', ast: yes),
+    type: 'File'
+    program:
+      type: 'Program'
+      body: []
+      directives: []
+    comments: [
+      type: 'CommentLine'
+      value: ' comment'
+    ]
+
 test "AST as expected for NumberLiteral node", ->
   testExpression '42',
     type: 'NumericLiteral'
@@ -196,20 +211,23 @@ test "AST as expected for StringLiteral node", ->
     ]
     quote: "'''"
 
-# test "AST as expected for PassthroughLiteral node", ->
-#   code = 'const CONSTANT = "unreassignable!"'
-#   testExpression "`#{code}`",
-#     type: 'PassthroughLiteral'
-#     value: code
-#     originalValue: code
-#     here: no
+test "AST as expected for PassthroughLiteral node", ->
+  code = 'const CONSTANT = "unreassignable!"'
+  testExpression "`#{code}`",
+    type: 'PassthroughLiteral'
+    value: code
+    here: no
 
-#   code = '\nconst CONSTANT = "unreassignable!"\n'
-#   testExpression "```#{code}```",
-#     type: 'PassthroughLiteral'
-#     value: code
-#     originalValue: code
-#     here: yes
+  code = '\nconst CONSTANT = "unreassignable!"\n'
+  testExpression "```#{code}```",
+    type: 'PassthroughLiteral'
+    value: code
+    here: yes
+
+  testExpression "``",
+    type: 'PassthroughLiteral'
+    value: ''
+    here: no
 
 test "AST as expected for IdentifierLiteral node", ->
   testExpression 'id',
@@ -636,8 +654,6 @@ test "AST as expected for AwaitReturn node", ->
 #       isDefaultValue: no
 
 #   # TODO: Figgure out the purpose of `isDefaultValue`. It's not set in `Switch` either.
-
-# # Comments aren’t nodes, so they shouldn’t appear in the AST.
 
 test "AST as expected for Call node", ->
   testExpression 'fn()',
@@ -2805,6 +2821,47 @@ test "AST as expected for StringWithInterpolations node", ->
     ]
     quote: '"""'
 
+  # empty interpolation
+  testExpression '"#{}"',
+    type: 'TemplateLiteral'
+    expressions: [
+      null
+    ]
+    quasis: [
+      type: 'TemplateElement'
+      value:
+        raw: ''
+      tail: no
+    ,
+      type: 'TemplateElement'
+      value:
+        raw: ''
+      tail: yes
+    ]
+    quote: '"'
+
+  testExpression '''
+    "#{
+      # comment
+     }"
+    ''',
+    type: 'TemplateLiteral'
+    expressions: [
+      null
+    ]
+    quasis: [
+      type: 'TemplateElement'
+      value:
+        raw: ''
+      tail: no
+    ,
+      type: 'TemplateElement'
+      value:
+        raw: ''
+      tail: yes
+    ]
+    quote: '"'
+
 test "AST as expected for For node", ->
   testStatement 'for x, i in arr when x? then return',
     type: 'For'
@@ -3578,3 +3635,109 @@ test "AST as expected for directives", ->
         expression: ID 'b'
       ]
       directives: []
+
+test "AST as expected for comments", ->
+  testComments '''
+    a # simple line comment
+  ''', [
+    type: 'CommentLine'
+    value: ' simple line comment'
+  ]
+
+  testComments '''
+    a ### simple here comment ###
+  ''', [
+    type: 'CommentBlock'
+    value: ' simple here comment '
+  ]
+
+  testComments '''
+    # just a line comment
+  ''', [
+    type: 'CommentLine'
+    value: ' just a line comment'
+  ]
+
+  testComments '''
+    ### just a here comment ###
+  ''', [
+    type: 'CommentBlock'
+    value: ' just a here comment '
+  ]
+
+  testComments '''
+    "#{
+      # empty interpolation line comment
+     }"
+  ''', [
+    type: 'CommentLine'
+    value: ' empty interpolation line comment'
+  ]
+
+  testComments '''
+    "#{
+      ### empty interpolation block comment ###
+     }"
+  ''', [
+    type: 'CommentBlock'
+    value: ' empty interpolation block comment '
+  ]
+
+  testComments '''
+    # multiple line comments
+    # on consecutive lines
+  ''', [
+    type: 'CommentLine'
+    value: ' multiple line comments'
+  ,
+    type: 'CommentLine'
+    value: ' on consecutive lines'
+  ]
+
+  testComments '''
+    # multiple line comments
+
+    # with blank line
+  ''', [
+    type: 'CommentLine'
+    value: ' multiple line comments'
+  ,
+    type: 'CommentLine'
+    value: ' with blank line'
+  ]
+
+  testComments '''
+    #no whitespace line comment
+  ''', [
+    type: 'CommentLine'
+    value: 'no whitespace line comment'
+  ]
+
+  testComments '''
+    ###no whitespace here comment###
+  ''', [
+    type: 'CommentBlock'
+    value: 'no whitespace here comment'
+  ]
+
+  testComments '''
+    ###
+    # multiline
+    # here comment
+    ###
+  ''', [
+    type: 'CommentBlock'
+    value: '\n# multiline\n# here comment\n'
+  ]
+
+  testComments '''
+    if b
+      ###
+      # multiline
+      # indented here comment
+      ###
+      c
+  ''', [
+    type: 'CommentBlock'
+    value: '\n  # multiline\n  # indented here comment\n  '
+  ]

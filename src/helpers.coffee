@@ -114,6 +114,17 @@ buildLocationData = (first, last) ->
       last.range[1]
     ]
 
+# Build a list of all comments attached to tokens.
+exports.extractAllCommentTokens = (tokens) ->
+  allCommentsObj = {}
+  for token in tokens when token.comments
+    for comment in token.comments
+      commentKey = comment.locationData.range[0]
+      allCommentsObj[commentKey] = comment
+  sortedKeys = Object.keys(allCommentsObj).sort (a, b) -> a - b
+  for key in sortedKeys
+    allCommentsObj[key]
+
 # Get a lookup hash for a token based on its location data.
 # Multiple tokens might have the same location hash, but using exclusive
 # location data distinguishes e.g. zero-length generated tokens from
@@ -123,9 +134,9 @@ buildLocationHash = (loc) ->
 
 # Build a dictionary of extra token properties organized by tokens’ locations
 # used as lookup hashes.
-buildTokenDataDictionary = (parserState) ->
+exports.buildTokenDataDictionary = buildTokenDataDictionary = (tokens) ->
   tokenData = {}
-  for token in parserState.parser.tokens when token.comments
+  for token in tokens when token.comments
     tokenHash = buildLocationHash token[2]
     # Multiple tokens might have the same location hash, such as the generated
     # `JS` tokens added at the start or end of the token stream to hold
@@ -153,7 +164,7 @@ exports.addDataToNode = (parserState, firstLocationData, firstValue, lastLocatio
 
     # Add comments, building the dictionary of token data if it hasn’t been
     # built yet.
-    parserState.tokenData ?= buildTokenDataDictionary parserState
+    parserState.tokenData ?= buildTokenDataDictionary parserState.parser.tokens
     if obj.locationData?
       objHash = buildLocationHash obj.locationData
       if parserState.tokenData[objHash]?.comments?

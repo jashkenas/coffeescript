@@ -500,6 +500,15 @@ exports.Root = class Root extends Base
     # end up being declared on the root block.
     o.scope.parameter name for name in o.locals or []
 
+  commentsAst: ->
+    @allComments ?=
+      for commentToken in (@allCommentTokens ? [])
+        if commentToken.here
+          new HereComment commentToken
+        else
+          new LineComment commentToken
+    comment.ast() for comment in @allComments
+
   ast: (o) ->
     o.level = LEVEL_TOP
     @initializeScope o
@@ -511,7 +520,7 @@ exports.Root = class Root extends Base
     @body.isRootBlock = yes
     return
       program: Object.assign @body.ast(o), @astLocationData()
-      comments: []
+      comments: @commentsAst()
 
 #### Block
 
@@ -806,7 +815,10 @@ exports.Block = class Block extends Base
     body = []
     for expression in @expressions
       expressionAst = expression.ast o
-      if expression instanceof Directive
+      # Ignore generated PassthroughLiteral
+      if not expressionAst?
+        continue
+      else if expression instanceof Directive
         directives.push expressionAst
       # If an expression is a statement, it can be added to the body as is.
       else if expression.isStatementAst o
@@ -1059,6 +1071,16 @@ exports.PassthroughLiteral = class PassthroughLiteral extends Literal
       # `string` is always a value like '\`', '\\\`', '\\\\\`', etc.
       # By reducing it to its latter half, we turn '\`' to '`', '\\\`' to '\`', etc.
       string[-Math.ceil(string.length / 2)..]
+
+  ast: (o, level) ->
+    return null if @generated
+    super o, level
+
+  astProperties: ->
+    return {
+      @value
+      here: !!@here
+    }
 
 exports.IdentifierLiteral = class IdentifierLiteral extends Literal
   isAssignable: YES
@@ -1483,22 +1505,23 @@ exports.MetaProperty = class MetaProperty extends Base
 
 # Comment delimited by `###` (becoming `/* */`).
 exports.HereComment = class HereComment extends Base
-  constructor: ({ @content, @newLine, @unshift }) ->
+  constructor: ({ @content, @newLine, @unshift, @locationData }) ->
     super()
 
   compileNode: (o) ->
     multiline = '\n' in @content
-    hasLeadingMarks = /\n\s*[#|\*]/.test @content
-    @content = @content.replace /^([ \t]*)#(?=\s)/gm, ' *' if hasLeadingMarks
 
     # Unindent multiline comments. They will be reindented later.
     if multiline
-      largestIndent = ''
+      indent = null
       for line in @content.split '\n'
         leadingWhitespace = /^\s*/.exec(line)[0]
-        if leadingWhitespace.length > largestIndent.length
-          largestIndent = leadingWhitespace
-      @content = @content.replace ///^(#{leadingWhitespace})///gm, ''
+        if not indent or leadingWhitespace.length < indent.length
+          indent = leadingWhitespace
+      @content = @content.replace /// \n #{indent} ///g, '\n' if indent
+
+    hasLeadingMarks = /\n\s*[#|\*]/.test @content
+    @content = @content.replace /^([ \t]*)#(?=\s)/gm, ' *' if hasLeadingMarks
 
     @content = "/*#{@content}#{if hasLeadingMarks then ' ' else ''}*/"
     fragment = @makeCode @content
@@ -1509,21 +1532,33 @@ exports.HereComment = class HereComment extends Base
     fragment.isComment = fragment.isHereComment = yes
     fragment
 
+  astType: -> 'CommentBlock'
+
+  astProperties: ->
+    return
+      value: @content
+
 #### LineComment
 
 # Comment running from `#` to the end of a line (becoming `//`).
 exports.LineComment = class LineComment extends Base
-  constructor: ({ @content, @newLine, @unshift }) ->
+  constructor: ({ @content, @newLine, @unshift, @locationData, @precededByBlankLine }) ->
     super()
 
   compileNode: (o) ->
-    fragment = @makeCode(if /^\s*$/.test @content then '' else "//#{@content}")
+    fragment = @makeCode(if /^\s*$/.test @content then '' else "#{if @precededByBlankLine then "\n#{o.indent}" else ''}//#{@content}")
     fragment.newLine = @newLine
     fragment.unshift = @unshift
     fragment.trail = not @newLine and not @unshift
     # Don’t rely on `fragment.type`, which can break when the compiler is minified.
     fragment.isComment = fragment.isLineComment = yes
     fragment
+
+  astType: -> 'CommentLine'
+
+  astProperties: ->
+    return
+      value: @content
 
 #### JSX
 
@@ -4756,13 +4791,18 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
             comment.newLine = yes
           attachCommentsToNode salvagedComments, node
         if (unwrapped = node.expression?.unwrapAll()) instanceof PassthroughLiteral and unwrapped.generated and not @jsx
-          commentPlaceholder = new StringLiteral('').withLocationDataFrom node
-          commentPlaceholder.comments = unwrapped.comments
-          (commentPlaceholder.comments ?= []).push node.comments... if node.comments
-          elements.push new Value commentPlaceholder
+          if o.compiling
+            commentPlaceholder = new StringLiteral('').withLocationDataFrom node
+            commentPlaceholder.comments = unwrapped.comments
+            (commentPlaceholder.comments ?= []).push node.comments... if node.comments
+            elements.push new Value commentPlaceholder
+          else
+            elements.push null
         else if node.expression or includeInterpolationWrappers
           (node.expression?.comments ?= []).push node.comments... if node.comments
           elements.push if includeInterpolationWrappers then node else node.expression
+        else if not o.compiling
+          elements.push null
         return no
       else if node.comments
         # This node is getting discarded, but salvage its comments.
@@ -4832,7 +4872,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
           tail: element is last
         ).withLocationDataFrom(element).ast o
       else
-        expressions.push element.unwrap().ast o
+        expressions.push element?.unwrap().ast(o) ? null
 
     {expressions, quasis, @quote}
 
