@@ -3793,3 +3793,48 @@ test "AST as expected for comments", ->
     type: 'CommentBlock'
     value: '\n  # multiline\n  # indented here comment\n  '
   ]
+
+test "AST as expected for chained comparisons", ->
+  testExpression '''
+    a < b < c
+  ''',
+    type: 'ChainedComparison'
+    operands: [
+      ID 'a'
+      ID 'b'
+      ID 'c'
+    ]
+    operators: [
+      '<'
+      '<'
+    ]
+
+  testExpression '''
+    a isnt b is c isnt d
+  ''',
+    type: 'ChainedComparison'
+    operands: [
+      ID 'a'
+      ID 'b'
+      ID 'c'
+      ID 'd'
+    ]
+    operators: [
+      'isnt'
+      'is'
+      'isnt'
+    ]
+
+  testExpression '''
+    a >= b < c
+  ''',
+    type: 'ChainedComparison'
+    operands: [
+      ID 'a'
+      ID 'b'
+      ID 'c'
+    ]
+    operators: [
+      '>='
+      '<'
+    ]
