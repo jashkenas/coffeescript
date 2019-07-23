@@ -867,6 +867,116 @@ test "AST location data as expected for Call node", ->
         line: 1
         column: 7
 
+test "AST location data as expected for SuperCall node", ->
+  testAstLocationData 'class child then constructor: -> super()',
+    type: 'ClassDeclaration'
+    body:
+      body: [
+        body:
+          body: [
+            expression:
+              callee:
+                start: 33
+                end: 38
+                range: [33, 38]
+                loc:
+                  start:
+                    line: 1
+                    column: 33
+                  end:
+                    line: 1
+                    column: 38
+              start: 33
+              end: 40
+              range: [33, 40]
+              loc:
+                start:
+                  line: 1
+                  column: 33
+                end:
+                  line: 1
+                  column: 40
+          ]
+      ]
+    start: 0
+    end: 40
+    range: [0, 40]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 40
+
+test "AST location data as expected for Super node", ->
+  testAstLocationData '''
+    class child extends parent
+      func: ->
+        super[prop]()
+  ''',
+    type: 'ClassDeclaration'
+    body:
+      body: [
+        body:
+          body: [
+            expression:
+              callee:
+                object:
+                  start: 42
+                  end: 47
+                  range: [42, 47]
+                  loc:
+                    start:
+                      line: 3
+                      column: 4
+                    end:
+                      line: 3
+                      column: 9
+                property:
+                  start: 48
+                  end: 52
+                  range: [48, 52]
+                  loc:
+                    start:
+                      line: 3
+                      column: 10
+                    end:
+                      line: 3
+                      column: 14
+                start: 42
+                end: 53
+                range: [42, 53]
+                loc:
+                  start:
+                    line: 3
+                    column: 4
+                  end:
+                    line: 3
+                    column: 15
+              start: 42
+              end: 55
+              range: [42, 55]
+              loc:
+                start:
+                  line: 3
+                  column: 4
+                end:
+                  line: 3
+                  column: 17
+          ]
+      ]
+    start: 0
+    end: 55
+    range: [0, 55]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 17
+
 test "AST location data as expected for Range node", ->
   testAstLocationData '[x..y]',
     type: 'Range'

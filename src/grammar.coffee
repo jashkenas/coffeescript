@@ -394,9 +394,9 @@ grammar =
 
   # A `super`-based expression that can be used as a value.
   Super: [
-    o 'SUPER . Property',                                      -> new Super LOC(3)(new Access $3), [], no, $1
-    o 'SUPER INDEX_START Expression INDEX_END',                -> new Super LOC(3)(new Index $3),  [], no, $1
-    o 'SUPER INDEX_START INDENT Expression OUTDENT INDEX_END', -> new Super LOC(4)(new Index $4),  [], no, $1
+    o 'SUPER . Property',                                      -> new Super LOC(3)(new Access $3), LOC(1)(new Literal $1)
+    o 'SUPER INDEX_START Expression INDEX_END',                -> new Super LOC(3)(new Index $3),  LOC(1)(new Literal $1)
+    o 'SUPER INDEX_START INDENT Expression OUTDENT INDEX_END', -> new Super LOC(4)(new Index $4),  LOC(1)(new Literal $1)
   ]
 
   # A "meta-property" access e.g. `new.target`

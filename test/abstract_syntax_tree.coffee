@@ -802,29 +802,65 @@ test "AST as expected for Call node", ->
         optional: yes
     optional: no
 
-# test "AST as expected for SuperCall node", ->
-#   testExpression 'class child extends parent then constructor: -> super()',
-#     body:
-#       base:
-#         properties: [
-#           value:
-#             body:
-#               base:
-#                 type: 'SuperCall'
-#         ]
+test "AST as expected for SuperCall node", ->
+  testStatement 'class child extends parent then constructor: -> super()',
+    type: 'ClassDeclaration'
+    body:
+      type: 'ClassBody'
+      body: [
+        body:
+          type: 'BlockStatement'
+          body: [
+            type: 'ExpressionStatement'
+            expression:
+              type: 'CallExpression'
+              callee:
+                type: 'Super'
+          ]
+      ]
 
-# test "AST as expected for Super node", ->
-#   testExpression 'class child extends parent then func: -> super.prop',
-#     body:
-#       base:
-#         properties: [
-#           value:
-#             body:
-#               base:
-#                 type: 'Super'
-#                 accessor:
-#                   type: 'Access'
-#     ]
+test "AST as expected for Super node", ->
+  testStatement 'class child extends parent then func: -> super.prop',
+    type: 'ClassDeclaration'
+    body:
+      type: 'ClassBody'
+      body: [
+        body:
+          type: 'BlockStatement'
+          body: [
+            type: 'ExpressionStatement'
+            expression:
+              type: 'MemberExpression'
+              object:
+                type: 'Super'
+              property: ID 'prop'
+              computed: no
+          ]
+      ]
+
+  testStatement '''
+    class child extends parent
+      func: ->
+        super[prop]()
+  ''',
+    type: 'ClassDeclaration'
+    body:
+      type: 'ClassBody'
+      body: [
+        body:
+          type: 'BlockStatement'
+          body: [
+            type: 'ExpressionStatement'
+            expression:
+              type: 'CallExpression'
+              callee:
+                type: 'MemberExpression'
+                object:
+                  type: 'Super'
+                property: ID 'prop'
+                computed: yes
+          ]
+      ]
 
 test "AST as expected for RegexWithInterpolations node", ->
   testExpression '///^#{flavor}script$///',
