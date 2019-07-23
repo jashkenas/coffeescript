@@ -2030,7 +2030,7 @@ exports.SuperCall = class SuperCall extends Call
     replacement.compileToFragments o, if o.level is LEVEL_TOP then o.level else LEVEL_LIST
 
 exports.Super = class Super extends Base
-  constructor: (@accessor) ->
+  constructor: (@accessor, @superLiteral) ->
     super()
 
   children: ['accessor']
@@ -2061,6 +2061,17 @@ exports.Super = class Super extends Base
     .compileToFragments o
     attachCommentsToNode salvagedComments, @accessor.name if salvagedComments
     fragments
+
+  ast: (o, level) ->
+    if @accessor?
+      return (
+        new Value(
+          new Super().withLocationDataFrom (@superLiteral ? @)
+          [@accessor]
+        ).withLocationDataFrom @
+      ).ast o, level
+
+    super o, level
 
 #### RegexWithInterpolations
 
