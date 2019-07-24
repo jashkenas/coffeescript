@@ -7854,3 +7854,53 @@ test "AST as expected for comments", ->
         line: 5
         column: 5
   ]
+
+test "AST location data as expected for chained comparisons", ->
+  testAstLocationData '''
+    a >= b < c
+  ''',
+    type: 'ChainedComparison'
+    operands: [
+      start: 0
+      end: 1
+      range: [0, 1]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 1
+    ,
+      start: 5
+      end: 6
+      range: [5, 6]
+      loc:
+        start:
+          line: 1
+          column: 5
+        end:
+          line: 1
+          column: 6
+    ,
+      start: 9
+      end: 10
+      range: [9, 10]
+      loc:
+        start:
+          line: 1
+          column: 9
+        end:
+          line: 1
+          column: 10
+    ]
+    start: 0
+    end: 10
+    range: [0, 10]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 10

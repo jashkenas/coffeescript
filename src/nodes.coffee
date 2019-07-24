@@ -4342,11 +4342,14 @@ exports.Op = class Op extends Base
   isChainable: ->
     @operator in ['<', '>', '>=', '<=', '===', '!==']
 
+  isChain: ->
+    @isChainable() and @first.isChainable()
+
   invert: ->
     if @isInOperator()
       @invertOperator = '!'
       return @
-    if @isChainable() and @first.isChainable()
+    if @isChain()
       allInvertable = yes
       curr = this
       while curr and curr.operator
@@ -4402,7 +4405,7 @@ exports.Op = class Op extends Base
       @invertOperator = null
       return @invert().compileNode(o)
     return Op::generateDo(@first).compileNode o if @operator is 'do'
-    isChain = @isChainable() and @first.isChainable()
+    isChain = @isChain()
     # In chains, there's no need to wrap bare obj literals in parens,
     # as the chained expression is wrapped.
     @first.front = @front unless isChain
@@ -4502,6 +4505,7 @@ exports.Op = class Op extends Base
   astType: ->
     return 'AwaitExpression' if @isAwait()
     return 'YieldExpression' if @isYield()
+    return 'ChainedComparison' if @isChain()
     switch @operator
       when '||', '&&', '?' then 'LogicalExpression'
       when '++', '--'      then 'UpdateExpression'
@@ -4509,9 +4513,31 @@ exports.Op = class Op extends Base
         if @isUnary()      then 'UnaryExpression'
         else                    'BinaryExpression'
 
+  operatorAst: ->
+    "#{if @invertOperator then "#{@invertOperator} " else ''}#{@originalOperator}"
+
+  chainAstProperties: (o) ->
+    operators = [@operatorAst()]
+    operands = [@second]
+    currentOp = @first
+    loop
+      operators.unshift currentOp.operatorAst()
+      operands.unshift currentOp.second
+      currentOp = currentOp.first
+      unless currentOp.isChainable()
+        operands.unshift currentOp
+        break
+    return {
+      operators
+      operands: (operand.ast(o, LEVEL_OP) for operand in operands)
+    }
+
   astProperties: (o) ->
+    return @chainAstProperties(o) if @isChain()
+
     firstAst = @first.ast o, LEVEL_OP
     secondAst = @second?.ast o, LEVEL_OP
+    operatorAst = @operatorAst()
     switch
       when @isUnary()
         argument =
@@ -4526,14 +4552,14 @@ exports.Op = class Op extends Base
         } if @isYield()
         return {
           argument
-          operator: @originalOperator
+          operator: operatorAst
           prefix: !@flip
         }
       else
         return
           left: firstAst
           right: secondAst
-          operator: "#{if @invertOperator then "#{@invertOperator} " else ''}#{@originalOperator}"
+          operator: operatorAst
 
 #### In
 exports.In = class In extends Base
