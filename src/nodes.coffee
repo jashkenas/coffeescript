@@ -4516,7 +4516,7 @@ exports.Op = class Op extends Base
       unless currentOp.isChainable()
         operands.unshift currentOp
         break
-    {
+    return {
       operators
       operands: (operand.ast(o, LEVEL_OP) for operand in operands)
     }
