@@ -2016,6 +2016,7 @@ test "AST as expected for Code node", ->
     generator: no
     async: no
     id: null
+    hasIndentedBody: no
 
   testExpression '''
     (a, b = 1) ->
@@ -2051,6 +2052,7 @@ test "AST as expected for Code node", ->
     generator: no
     async: no
     id: null
+    hasIndentedBody: yes
 
   testExpression '({a}) ->',
     type: 'FunctionExpression'
@@ -2245,6 +2247,7 @@ test "AST as expected for Code node", ->
     generator: no
     async: no
     id: null
+    hasIndentedBody: no
 
   testExpression '-> await 3',
     type: 'FunctionExpression'

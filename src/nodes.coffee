@@ -4006,6 +4006,7 @@ exports.Code = class Code extends Base
       # We never generate named functions, so specify `id` as `null`, which
       # matches the Babel AST for anonymous function expressions/arrow functions
       id: null
+      hasIndentedBody: @body.locationData.first_line > @funcGlyph?.locationData.first_line
     ,
       if @isMethod then @methodAstProperties o else {}
 
