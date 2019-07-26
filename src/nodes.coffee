@@ -5513,6 +5513,9 @@ sniffDirectives = (expressions, {notFinalExpression} = {}) ->
   while index <= lastIndex
     break if index is lastIndex and notFinalExpression
     expression = expressions[index]
+    if (unwrapped = expression?.unwrap?()) instanceof PassthroughLiteral and unwrapped.generated
+      index++
+      continue
     break unless expression instanceof Value and expression.isString() and not expression.unwrap().shouldGenerateTemplateLiteral()
     expressions[index] =
       new Directive expression

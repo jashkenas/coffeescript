@@ -3724,6 +3724,28 @@ test "AST as expected for directives", ->
       ]
       directives: []
 
+  testExpression '''
+    ->
+      # leading comment
+      'use strict'
+      b
+  ''',
+    type: 'FunctionExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression: ID 'b'
+      ]
+      directives: [
+        type: 'Directive'
+        value:
+          type: 'DirectiveLiteral'
+          value: 'use strict'
+          extra:
+            raw: "'use strict'"
+      ]
+
 test "AST as expected for comments", ->
   testComments '''
     a # simple line comment
