@@ -1602,9 +1602,9 @@ exports.JSXExpressionContainer = class JSXExpressionContainer extends Base
   compileNode: (o) ->
     @expression.compileNode(o)
 
-  astProperties: ->
+  astProperties: (o) ->
     return
-      expression: @expression.ast()
+      expression: @expression.ast o
 
 exports.JSXEmptyExpression = class JSXEmptyExpression extends Base
 
