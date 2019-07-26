@@ -1187,7 +1187,7 @@ exports.JS_FORBIDDEN = JS_KEYWORDS.concat(RESERVED).concat(STRICT_PROSCRIBED)
 BOM = 65279
 
 # Token matching regexes.
-IDENTIFIER = /// ^
+exports.IDENTIFIER = IDENTIFIER = /// ^
   (?!\d)
   ( (?: (?!\s)[$\w\x7f-\uffff] )+ )
   ( [^\n\S]* : (?!:) )?  # Is this a property name?
