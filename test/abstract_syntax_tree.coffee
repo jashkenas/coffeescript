@@ -494,13 +494,51 @@ test "AST as expected for JSXTag node", ->
         children: []
     ]
 
-# test "AST as expected for PropertyName node", ->
-#   testExpression 'Object.assign',
-#     properties: [
-#       name:
-#         type: 'PropertyName'
-#         value: 'assign'
-#     ]
+  testExpression '''
+    <div>{
+      # comment
+    }</div>
+  ''',
+    type: 'JSXElement'
+    openingElement:
+      type: 'JSXOpeningElement'
+      name:
+        type: 'JSXIdentifier'
+        name: 'div'
+      attributes: []
+      selfClosing: no
+    closingElement:
+      type: 'JSXClosingElement'
+      name:
+        type: 'JSXIdentifier'
+        name: 'div'
+    children: [
+      type: 'JSXExpressionContainer'
+      expression:
+        type: 'JSXEmptyExpression'
+    ]
+
+  testExpression '''
+    <div>{### here ###}</div>
+  ''',
+    type: 'JSXElement'
+    openingElement:
+      type: 'JSXOpeningElement'
+      name:
+        type: 'JSXIdentifier'
+        name: 'div'
+      attributes: []
+      selfClosing: no
+    closingElement:
+      type: 'JSXClosingElement'
+      name:
+        type: 'JSXIdentifier'
+        name: 'div'
+    children: [
+      type: 'JSXExpressionContainer'
+      expression:
+        type: 'JSXEmptyExpression'
+    ]
 
 test "AST as expected for ComputedPropertyName node", ->
   testExpression '[fn]: ->',
@@ -2916,7 +2954,7 @@ test "AST as expected for StringWithInterpolations node", ->
   testExpression '"#{}"',
     type: 'TemplateLiteral'
     expressions: [
-      null
+      type: 'EmptyInterpolation'
     ]
     quasis: [
       type: 'TemplateElement'
@@ -2938,7 +2976,25 @@ test "AST as expected for StringWithInterpolations node", ->
     ''',
     type: 'TemplateLiteral'
     expressions: [
-      null
+      type: 'EmptyInterpolation'
+    ]
+    quasis: [
+      type: 'TemplateElement'
+      value:
+        raw: ''
+      tail: no
+    ,
+      type: 'TemplateElement'
+      value:
+        raw: ''
+      tail: yes
+    ]
+    quote: '"'
+
+  testExpression '"#{ ### here ### }"',
+    type: 'TemplateLiteral'
+    expressions: [
+      type: 'EmptyInterpolation'
     ]
     quasis: [
       type: 'TemplateElement'
