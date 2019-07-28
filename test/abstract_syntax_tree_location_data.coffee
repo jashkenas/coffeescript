@@ -7904,3 +7904,91 @@ test "AST location data as expected for chained comparisons", ->
       end:
         line: 1
         column: 10
+
+test "AST location data as expected for Sequence", ->
+  testAstLocationData '''
+    (a; b)
+  ''',
+    type: 'SequenceExpression'
+    expressions: [
+      start: 1
+      end: 2
+      range: [1, 2]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 2
+    ,
+      start: 4
+      end: 5
+      range: [4, 5]
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 1
+          column: 5
+    ]
+    start: 1
+    end: 5
+    range: [1, 5]
+    loc:
+      start:
+        line: 1
+        column: 1
+      end:
+        line: 1
+        column: 5
+
+  testAstLocationData '''
+    (a; b)""
+  ''',
+    type: 'TaggedTemplateExpression'
+    tag:
+      expressions: [
+        start: 1
+        end: 2
+        range: [1, 2]
+        loc:
+          start:
+            line: 1
+            column: 1
+          end:
+            line: 1
+            column: 2
+      ,
+        start: 4
+        end: 5
+        range: [4, 5]
+        loc:
+          start:
+            line: 1
+            column: 4
+          end:
+            line: 1
+            column: 5
+      ]
+      start: 1
+      end: 5
+      range: [1, 5]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 5
+    start: 0
+    end: 8
+    range: [0, 8]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 8

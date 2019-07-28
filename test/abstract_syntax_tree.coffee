@@ -3899,3 +3899,24 @@ test "AST as expected for chained comparisons", ->
       '>='
       '<'
     ]
+
+test "AST as expected for Sequence", ->
+  testExpression '''
+    (a; b)
+  ''',
+    type: 'SequenceExpression'
+    expressions: [
+      ID 'a'
+      ID 'b'
+    ]
+
+  testExpression '''
+    (a; b)""
+  ''',
+    type: 'TaggedTemplateExpression'
+    tag:
+      type: 'SequenceExpression'
+      expressions: [
+        ID 'a'
+        ID 'b'
+      ]

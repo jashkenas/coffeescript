@@ -799,6 +799,12 @@ exports.Block = class Block extends Base
     return nodes[0] if nodes.length is 1 and nodes[0] instanceof Block
     new Block nodes
 
+  ast: (o, level) ->
+    if (level? and level isnt LEVEL_TOP) and @expressions.length
+      return (new Sequence(@expressions).withLocationDataFrom @).ast o, level
+
+    super o
+
   astType: ->
     if @isRootBlock
       'Program'
@@ -5330,6 +5336,25 @@ exports.If = class If extends Base
           @elseBody?.ast(o, LEVEL_TOP) ? null
       postfix: !!@postfix
       inverted: @type is 'unless'
+
+# A sequence expression e.g. `(a; b)`.
+# Currently only used during AST generation.
+exports.Sequence = class Sequence extends Base
+  children: ['expressions']
+
+  constructor: (@expressions) ->
+    super()
+
+  ast: (o, level) ->
+    return @expressions[0].ast(o, level) if @expressions.length is 1
+    super o
+
+  astType: -> 'SequenceExpression'
+
+  astProperties: (o) ->
+    return
+      expressions:
+        expression.ast(o) for expression in @expressions
 
 # Constants
 # ---------
