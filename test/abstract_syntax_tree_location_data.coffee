@@ -3547,6 +3547,33 @@ test "AST location data as expected for Root node", ->
         line: 4
         column: 0
 
+  testAstRootLocationData '''
+    # comment
+    "use strict"
+  ''',
+    type: 'File'
+    program:
+      start: 0
+      end: 22
+      range: [0, 22]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 2
+          column: 12
+    start: 0
+    end: 22
+    range: [0, 22]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 2
+        column: 12
+
 test "AST location data as expected for Switch node", ->
   testAstLocationData '''
     switch x
@@ -7637,7 +7664,7 @@ test "AST location data as expected for PassthroughLiteral node", ->
         line: 1
         column: 2
 
-test "AST as expected for comments", ->
+test "AST location data as expected for comments", ->
   testAstCommentsLocationData '''
     a # simple line comment
   ''', [
