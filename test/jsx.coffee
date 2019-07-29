@@ -23,6 +23,13 @@ test 'self closing multiline', ->
     <div />;
   '''
 
+test 'reserved-word self closing', ->
+  eqJS '''
+    <static />
+  ''', '''
+    <static />;
+  '''
+
 test 'regex attribute', ->
   eqJS '''
     <div x={/>asds/} />
@@ -68,6 +75,33 @@ test 'attribute without value', ->
   ''', '''
     <div checked x="hello" />;
   '''
+
+test 'reserved-word attribute without value', ->
+  eqJS '''
+    <div static x="hello" />
+  ''', '''
+    <div static x="hello" />;
+  '''
+
+test 'reserved-word attribute with value', ->
+  eqJS '''
+    <div static="yes" x="hello" />
+  ''', '''
+    <div static="yes" x="hello" />;
+  '''
+
+test 'attribute with namespace', ->
+  eqJS '''
+    <image xlink:href="data:image/png" />
+  ''', '''
+    <image xlink:href="data:image/png" />;
+  '''
+
+test 'attribute with double namespace disallowed', ->
+  throws -> CoffeeScript.compile '<image xlink:href:tag="data:image/png" />'
+
+test 'attribute with member expression disallowed', ->
+  throws -> CoffeeScript.compile '<image xlink.href="data:image/png" />'
 
 test 'paired', ->
   eqJS '''
@@ -462,25 +496,58 @@ test 'tag with {{}}', ->
     }} />;
   '''
 
-test 'tag with namespace', ->
+test 'tag with member expression', ->
   eqJS '''
     <Something.Tag></Something.Tag>
   ''', '''
     <Something.Tag></Something.Tag>;
   '''
 
-test 'tag with lowercase namespace', ->
+test 'tag with lowercase member expression', ->
   eqJS '''
     <something.tag></something.tag>
   ''', '''
     <something.tag></something.tag>;
   '''
 
-test 'self closing tag with namespace', ->
+test 'self closing tag with member expression', ->
   eqJS '''
     <Something.Tag />
   ''', '''
     <Something.Tag />;
+  '''
+
+test 'self closing tag with multiple member expressions', ->
+  eqJS '''
+    <Something.Tag.More />
+  ''', '''
+    <Something.Tag.More />;
+  '''
+
+test 'tag with namespace', ->
+  eqJS '''
+    <Something:Tag></Something:Tag>
+  ''', '''
+    <Something:Tag></Something:Tag>;
+  '''
+
+test 'tag with lowercase namespace', ->
+  eqJS '''
+    <something:tag></something:tag>
+  ''', '''
+    <something:tag></something:tag>;
+  '''
+
+test 'self closing tag with namespace', ->
+  eqJS '''
+    <Something:Tag />
+  ''', '''
+    <Something:Tag />;
+  '''
+
+test 'self closing tag with namespace and member expression disallowed', ->
+  throws -> CoffeeScript.compile '''
+    <Namespace:Something.Tag />
   '''
 
 test 'self closing tag with spread attribute', ->
