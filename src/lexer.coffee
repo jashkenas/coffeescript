@@ -369,17 +369,28 @@ exports.Lexer = class Lexer
           comment
         .filter (comment) -> comment
 
+    getIndentSize = ({leadingWhitespace, nonInitial}) ->
+      lastNewlineIndex = leadingWhitespace.lastIndexOf '\n'
+      if hereComment? or not nonInitial
+        return null unless lastNewlineIndex > -1
+      else
+        lastNewlineIndex ?= -1
+      leadingWhitespace.length - 1 - lastNewlineIndex
     offsetInChunk = 0
     commentAttachments = for {content, length, leadingWhitespace, precededByBlankLine}, i in contents
       nonInitial = i isnt 0
       leadingNewlineOffset = if nonInitial then 1 else 0
       offsetInChunk += leadingNewlineOffset + leadingWhitespace.length
+      indentSize = getIndentSize {leadingWhitespace, nonInitial}
+      noIndent = not indentSize? or indentSize is -1
       commentAttachment = {
         content
         here: hereComment?
         newLine: leadingNewline or nonInitial # Line comments after the first one start new lines, by definition.
         locationData: @makeLocationData {offsetInChunk, length}
         precededByBlankLine
+        indentSize
+        outdented: not noIndent and indentSize < @indent
       }
       offsetInChunk += length
       commentAttachment
@@ -518,12 +529,12 @@ exports.Lexer = class Lexer
       @error 'missing indentation', offset: offset + indent.length
     else
       @indebt = 0
-      @outdentToken {moveOut: @indent - size, noNewlines, outdentLength: indent.length, offset}
+      @outdentToken {moveOut: @indent - size, noNewlines, outdentLength: indent.length, offset, indentSize: size}
     indent.length
 
   # Record an outdent token or multiple tokens, if we happen to be moving back
   # inwards past several recorded indents. Sets new @indent value.
-  outdentToken: ({moveOut, noNewlines, outdentLength = 0, offset = 0}) ->
+  outdentToken: ({moveOut, noNewlines, outdentLength = 0, offset = 0, indentSize}) ->
     decreasedIndent = @indent - moveOut
     while moveOut > 0
       lastIndent = @indents[@indents.length - 1]
@@ -540,7 +551,7 @@ exports.Lexer = class Lexer
         @outdebt = 0
         # pair might call outdentToken, so preserve decreasedIndent
         @pair 'OUTDENT'
-        @token 'OUTDENT', moveOut, length: outdentLength
+        @token 'OUTDENT', moveOut, length: outdentLength, indentSize: indentSize
         moveOut -= dent
     @outdebt -= moveOut if dent
     @suppressSemicolons()
@@ -1021,10 +1032,11 @@ exports.Lexer = class Lexer
 
   # Same as `token`, except this just returns the token without adding it
   # to the results.
-  makeToken: (tag, value, {offset: offsetInChunk = 0, length = value.length, origin, generated} = {}) ->
+  makeToken: (tag, value, {offset: offsetInChunk = 0, length = value.length, origin, generated, indentSize} = {}) ->
     token = [tag, value, @makeLocationData {offsetInChunk, length}]
     token.origin = origin if origin
     token.generated = yes if generated
+    token.indentSize = indentSize if indentSize?
     token
 
   # Add a token to the results.
@@ -1033,8 +1045,8 @@ exports.Lexer = class Lexer
   # not specified, the length of `value` will be used.
   #
   # Returns the new token.
-  token: (tag, value, {offset, length, origin, data, generated} = {}) ->
-    token = @makeToken tag, value, {offset, length, origin, generated}
+  token: (tag, value, {offset, length, origin, data, generated, indentSize} = {}) ->
+    token = @makeToken tag, value, {offset, length, origin, generated, indentSize}
     addTokenData token, data if data
     @tokens.push token
     token

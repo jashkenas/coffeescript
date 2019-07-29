@@ -5,7 +5,7 @@
 # shorthand into the unambiguous long form, add implicit indentation and
 # parentheses, and generally clean things up.
 
-{throwSyntaxError} = require './helpers'
+{throwSyntaxError, extractAllCommentTokens} = require './helpers'
 
 # Move attached comments from one token to another.
 moveComments = (fromToken, toToken) ->
@@ -56,7 +56,7 @@ exports.Rewriter = class Rewriter
     @rescueStowawayComments()
     @addLocationDataToGeneratedTokens()
     @enforceValidJSXAttributes()
-    @fixOutdentLocationData()
+    @fixIndentationLocationData()
     @exposeTokenDataToGrammar()
     if process?.env?.DEBUG_REWRITTEN_TOKEN_STREAM
       console.log 'Rewritten token stream:' if process.env.DEBUG_TOKEN_STREAM
@@ -548,15 +548,35 @@ exports.Rewriter = class Rewriter
   # `OUTDENT` tokens should always be positioned at the last character of the
   # previous token, so that AST nodes ending in an `OUTDENT` token end up with a
   # location corresponding to the last “real” token under the node.
-  fixOutdentLocationData: ->
+  fixIndentationLocationData: ->
+    @allComments ?= extractAllCommentTokens @tokens
+    findPrecedingComment = (token, {afterPosition, indentSize}) =>
+      tokenStart = token[2].range[0]
+      matches = (comment) ->
+        # if comment.outdented
+        #   return no unless indentSize? and comment.indentSize > indentSize
+        return no if comment.outdented
+        return no unless comment.locationData.range[0] < tokenStart
+        return no unless comment.locationData.range[0] > afterPosition
+        yes
+      for comment in @allComments when matches comment by -1
+        return comment
+      null
+
     @scanTokens (token, i, tokens) ->
+      # return 1 unless token[0] in ['INDENT', 'OUTDENT'] or
       return 1 unless token[0] is 'OUTDENT' or
         (token.generated and token[0] is 'CALL_END' and not token.data?.closingTagNameToken) or
         (token.generated and token[0] is '}')
-      prevLocationData = tokens[i - 1][2]
+      prevToken = tokens[i - 1]
+      prevLocationData = prevToken[2]
+      precedingComment = findPrecedingComment token,
+        afterPosition: prevLocationData.range[0]
+        indentSize: token.indentSize
+      prevLocationData = precedingComment.locationData if precedingComment?
       token[2] =
-        first_line:             prevLocationData.last_line
-        first_column:           prevLocationData.last_column
+        first_line:             if precedingComment? then prevLocationData.first_line else prevLocationData.last_line
+        first_column:           if precedingComment? then prevLocationData.first_column else prevLocationData.last_column
         last_line:              prevLocationData.last_line
         last_column:            prevLocationData.last_column
         last_line_exclusive:    prevLocationData.last_line_exclusive

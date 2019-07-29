@@ -8471,6 +8471,7 @@ test "AST location data as expected for chained comparisons", ->
         line: 1
         column: 10
 
+<<<<<<< HEAD
 test "AST location data as expected for Sequence", ->
   testAstLocationData '''
     (a; b)
@@ -8558,3 +8559,62 @@ test "AST location data as expected for Sequence", ->
       end:
         line: 1
         column: 8
+
+test "AST location data as expected for blocks with comments", ->
+  # trailing indented comment
+  testAstLocationData '''
+    ->
+      a
+      # b
+  ''',
+    type: 'FunctionExpression'
+    body:
+      start: 3
+      end: 12
+      range: [3, 12]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 5
+    start: 0
+    end: 12
+    range: [0, 12]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 5
+
+  # trailing non-indented comment
+  testAstLocationData '''
+    ->
+      a
+    # b
+  ''',
+    type: 'FunctionExpression'
+    body:
+      start: 3
+      end: 6
+      range: [3, 6]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 2
+          column: 3
+    start: 0
+    end: 6
+    range: [0, 6]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 2
+        column: 3
