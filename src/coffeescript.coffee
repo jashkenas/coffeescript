@@ -117,7 +117,11 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
     sourceCodeNumberOfLines = (code.match(/\r?\n/g) or '').length + 1
     sourceCodeLastLine = /.*$/.exec(code)[0] # `.*` matches all but line break characters.
     ast = nodes.ast options
-    ast.end = ast.range[1] = ast.program.end = ast.program.range[1] = code.length
+    range = [0, code.length]
+    ast.start = ast.program.start = range[0]
+    ast.end = ast.program.end = range[1]
+    ast.range = ast.program.range = range
+    ast.loc.start = ast.program.loc.start = {line: 1, column: 0}
     ast.loc.end.line = ast.program.loc.end.line = sourceCodeNumberOfLines
     ast.loc.end.column = ast.program.loc.end.column = sourceCodeLastLine.length
     return ast

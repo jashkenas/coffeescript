@@ -494,13 +494,51 @@ test "AST as expected for JSXTag node", ->
         children: []
     ]
 
-# test "AST as expected for PropertyName node", ->
-#   testExpression 'Object.assign',
-#     properties: [
-#       name:
-#         type: 'PropertyName'
-#         value: 'assign'
-#     ]
+  testExpression '''
+    <div>{
+      # comment
+    }</div>
+  ''',
+    type: 'JSXElement'
+    openingElement:
+      type: 'JSXOpeningElement'
+      name:
+        type: 'JSXIdentifier'
+        name: 'div'
+      attributes: []
+      selfClosing: no
+    closingElement:
+      type: 'JSXClosingElement'
+      name:
+        type: 'JSXIdentifier'
+        name: 'div'
+    children: [
+      type: 'JSXExpressionContainer'
+      expression:
+        type: 'JSXEmptyExpression'
+    ]
+
+  testExpression '''
+    <div>{### here ###}</div>
+  ''',
+    type: 'JSXElement'
+    openingElement:
+      type: 'JSXOpeningElement'
+      name:
+        type: 'JSXIdentifier'
+        name: 'div'
+      attributes: []
+      selfClosing: no
+    closingElement:
+      type: 'JSXClosingElement'
+      name:
+        type: 'JSXIdentifier'
+        name: 'div'
+    children: [
+      type: 'JSXExpressionContainer'
+      expression:
+        type: 'JSXEmptyExpression'
+    ]
 
 test "AST as expected for ComputedPropertyName node", ->
   testExpression '[fn]: ->',
@@ -2016,6 +2054,7 @@ test "AST as expected for Code node", ->
     generator: no
     async: no
     id: null
+    hasIndentedBody: no
 
   testExpression '''
     (a, b = 1) ->
@@ -2051,6 +2090,7 @@ test "AST as expected for Code node", ->
     generator: no
     async: no
     id: null
+    hasIndentedBody: yes
 
   testExpression '({a}) ->',
     type: 'FunctionExpression'
@@ -2245,6 +2285,7 @@ test "AST as expected for Code node", ->
     generator: no
     async: no
     id: null
+    hasIndentedBody: no
 
   testExpression '-> await 3',
     type: 'FunctionExpression'
@@ -2913,7 +2954,7 @@ test "AST as expected for StringWithInterpolations node", ->
   testExpression '"#{}"',
     type: 'TemplateLiteral'
     expressions: [
-      null
+      type: 'EmptyInterpolation'
     ]
     quasis: [
       type: 'TemplateElement'
@@ -2935,7 +2976,25 @@ test "AST as expected for StringWithInterpolations node", ->
     ''',
     type: 'TemplateLiteral'
     expressions: [
-      null
+      type: 'EmptyInterpolation'
+    ]
+    quasis: [
+      type: 'TemplateElement'
+      value:
+        raw: ''
+      tail: no
+    ,
+      type: 'TemplateElement'
+      value:
+        raw: ''
+      tail: yes
+    ]
+    quote: '"'
+
+  testExpression '"#{ ### here ### }"',
+    type: 'TemplateLiteral'
+    expressions: [
+      type: 'EmptyInterpolation'
     ]
     quasis: [
       type: 'TemplateElement'
@@ -3724,6 +3783,28 @@ test "AST as expected for directives", ->
       ]
       directives: []
 
+  testExpression '''
+    ->
+      # leading comment
+      'use strict'
+      b
+  ''',
+    type: 'FunctionExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression: ID 'b'
+      ]
+      directives: [
+        type: 'Directive'
+        value:
+          type: 'DirectiveLiteral'
+          value: 'use strict'
+          extra:
+            raw: "'use strict'"
+      ]
+
 test "AST as expected for comments", ->
   testComments '''
     a # simple line comment
@@ -3874,3 +3955,24 @@ test "AST as expected for chained comparisons", ->
       '>='
       '<'
     ]
+
+test "AST as expected for Sequence", ->
+  testExpression '''
+    (a; b)
+  ''',
+    type: 'SequenceExpression'
+    expressions: [
+      ID 'a'
+      ID 'b'
+    ]
+
+  testExpression '''
+    (a; b)""
+  ''',
+    type: 'TaggedTemplateExpression'
+    tag:
+      type: 'SequenceExpression'
+      expressions: [
+        ID 'a'
+        ID 'b'
+      ]

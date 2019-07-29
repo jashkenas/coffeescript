@@ -3180,6 +3180,84 @@ test "AST location data as expected for JSXTag node", ->
         line: 1
         column: 14
 
+  testAstLocationData '''
+    <div>{
+      # comment
+    }</div>
+  ''',
+    type: 'JSXElement'
+    children: [
+      expression:
+        start: 6
+        end: 19
+        range: [6, 19]
+        loc:
+          start:
+            line: 1
+            column: 6
+          end:
+            line: 3
+            column: 0
+      start: 5
+      end: 20
+      range: [5, 20]
+      loc:
+        start:
+          line: 1
+          column: 5
+        end:
+          line: 3
+          column: 1
+    ]
+    start: 0
+    end: 26
+    range: [0, 26]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 7
+
+  testAstLocationData '''
+    <div>{### here ###}</div>
+  ''',
+    type: 'JSXElement'
+    children: [
+      expression:
+        start: 6
+        end: 18
+        range: [6, 18]
+        loc:
+          start:
+            line: 1
+            column: 6
+          end:
+            line: 1
+            column: 18
+      start: 5
+      end: 19
+      range: [5, 19]
+      loc:
+        start:
+          line: 1
+          column: 5
+        end:
+          line: 1
+          column: 19
+    ]
+    start: 0
+    end: 25
+    range: [0, 25]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 25
+
 test "AST as expected for Try node", ->
   testAstLocationData 'try cappuccino',
     type: 'TryStatement'
@@ -3546,6 +3624,33 @@ test "AST location data as expected for Root node", ->
       end:
         line: 4
         column: 0
+
+  testAstRootLocationData '''
+    # comment
+    "use strict"
+  ''',
+    type: 'File'
+    program:
+      start: 0
+      end: 22
+      range: [0, 22]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 2
+          column: 12
+    start: 0
+    end: 22
+    range: [0, 22]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 2
+        column: 12
 
 test "AST location data as expected for Switch node", ->
   testAstLocationData '''
@@ -6048,6 +6153,155 @@ test "AST location data as expected for StringWithInterpolations node", ->
         line: 6
         column: 3
 
+  # empty interpolation
+  testAstLocationData '"#{}"',
+    type: 'TemplateLiteral'
+    expressions: [
+      start: 3
+      end: 3
+      range: [3, 3]
+      loc:
+        start:
+          line: 1
+          column: 3
+        end:
+          line: 1
+          column: 3
+    ]
+    quasis: [
+      start: 1
+      end: 1
+      range: [1, 1]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 1
+    ,
+      start: 4
+      end: 4
+      range: [4, 4]
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 1
+          column: 4
+    ]
+    start: 0
+    end: 5
+    range: [0, 5]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 5
+
+  testAstLocationData '''
+    "#{
+      # comment
+     }"
+    ''',
+    type: 'TemplateLiteral'
+    expressions: [
+      start: 3
+      end: 17
+      range: [3, 17]
+      loc:
+        start:
+          line: 1
+          column: 3
+        end:
+          line: 3
+          column: 1
+    ]
+    quasis: [
+      start: 1
+      end: 1
+      range: [1, 1]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 1
+    ,
+      start: 18
+      end: 18
+      range: [18, 18]
+      loc:
+        start:
+          line: 3
+          column: 2
+        end:
+          line: 3
+          column: 2
+    ]
+    start: 0
+    end: 19
+    range: [0, 19]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 3
+
+  testAstLocationData '"#{ ### here ### }"',
+    type: 'TemplateLiteral'
+    expressions: [
+      start: 3
+      end: 17
+      range: [3, 17]
+      loc:
+        start:
+          line: 1
+          column: 3
+        end:
+          line: 1
+          column: 17
+    ]
+    quasis: [
+      start: 1
+      end: 1
+      range: [1, 1]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 1
+    ,
+      start: 18
+      end: 18
+      range: [18, 18]
+      loc:
+        start:
+          line: 1
+          column: 18
+        end:
+          line: 1
+          column: 18
+    ]
+    start: 0
+    end: 19
+    range: [0, 19]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 19
+
 test "AST location data as expected for dynamic import", ->
   testAstLocationData '''
     import('a')
@@ -7637,7 +7891,7 @@ test "AST location data as expected for PassthroughLiteral node", ->
         line: 1
         column: 2
 
-test "AST as expected for comments", ->
+test "AST location data as expected for comments", ->
   testAstCommentsLocationData '''
     a # simple line comment
   ''', [
@@ -7904,3 +8158,91 @@ test "AST location data as expected for chained comparisons", ->
       end:
         line: 1
         column: 10
+
+test "AST location data as expected for Sequence", ->
+  testAstLocationData '''
+    (a; b)
+  ''',
+    type: 'SequenceExpression'
+    expressions: [
+      start: 1
+      end: 2
+      range: [1, 2]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 2
+    ,
+      start: 4
+      end: 5
+      range: [4, 5]
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 1
+          column: 5
+    ]
+    start: 1
+    end: 5
+    range: [1, 5]
+    loc:
+      start:
+        line: 1
+        column: 1
+      end:
+        line: 1
+        column: 5
+
+  testAstLocationData '''
+    (a; b)""
+  ''',
+    type: 'TaggedTemplateExpression'
+    tag:
+      expressions: [
+        start: 1
+        end: 2
+        range: [1, 2]
+        loc:
+          start:
+            line: 1
+            column: 1
+          end:
+            line: 1
+            column: 2
+      ,
+        start: 4
+        end: 5
+        range: [4, 5]
+        loc:
+          start:
+            line: 1
+            column: 4
+          end:
+            line: 1
+            column: 5
+      ]
+      start: 1
+      end: 5
+      range: [1, 5]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 5
+    start: 0
+    end: 8
+    range: [0, 8]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 8

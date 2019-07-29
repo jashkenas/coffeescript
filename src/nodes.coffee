@@ -799,6 +799,12 @@ exports.Block = class Block extends Base
     return nodes[0] if nodes.length is 1 and nodes[0] instanceof Block
     new Block nodes
 
+  ast: (o, level) ->
+    if (level? and level isnt LEVEL_TOP) and @expressions.length
+      return (new Sequence(@expressions).withLocationDataFrom @).ast o, level
+
+    super o
+
   astType: ->
     if @isRootBlock
       'Program'
@@ -1602,9 +1608,9 @@ exports.JSXExpressionContainer = class JSXExpressionContainer extends Base
   compileNode: (o) ->
     @expression.compileNode(o)
 
-  astProperties: ->
+  astProperties: (o) ->
     return
-      expression: @expression.ast()
+      expression: @expression.ast o
 
 exports.JSXEmptyExpression = class JSXEmptyExpression extends Base
 
@@ -1803,30 +1809,19 @@ exports.JSXElement = class JSXElement extends Base
       if content instanceof StringLiteral
         [new JSXText content]
       else # StringWithInterpolations
-        for element in @content.unwrapAll().extractElements o, includeInterpolationWrappers: yes
+        for element in @content.unwrapAll().extractElements o, includeInterpolationWrappers: yes, isJsx: yes
           if element instanceof StringLiteral
             new JSXText element
           else # Interpolation
             {expression} = element
             unless expression?
               emptyExpression = new JSXEmptyExpression()
-              # We don’t currently have a token corresponding to the empty space
-              # between the JSX expression braces, so piece together the location
-              # data by trimming the braces from the Interpolation’s location data.
-              # Technically the last_line/last_column calculation here could be
-              # incorrect if the ending brace is preceded by a newline, but
-              # last_line/last_column aren’t used for AST generation anyway.
-              emptyExpression.locationData =
-                first_line:            element.locationData.first_line
-                first_column:          element.locationData.first_column + 1
-                last_line:             element.locationData.last_line
-                last_column:           element.locationData.last_column - 1
-                last_line_exclusive:   element.locationData.last_line
-                last_column_exclusive: element.locationData.last_column
-                range: [
-                  element.locationData.range[0] + 1
-                  element.locationData.range[1] - 1
-                ]
+              emptyExpression.locationData = emptyExpressionLocationData {
+                interpolationNode: element
+                openingBrace: '{'
+                closingBrace: '}'
+              }
+              
               new JSXExpressionContainer emptyExpression, locationData: element.locationData
             else
               unwrapped = expression.unwrapAll()
@@ -4006,6 +4001,7 @@ exports.Code = class Code extends Base
       # We never generate named functions, so specify `id` as `null`, which
       # matches the Babel AST for anonymous function expressions/arrow functions
       id: null
+      hasIndentedBody: @body.locationData.first_line > @funcGlyph?.locationData.first_line
     ,
       if @isMethod then @methodAstProperties o else {}
 
@@ -4827,7 +4823,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
 
   shouldCache: -> @body.shouldCache()
 
-  extractElements: (o, {includeInterpolationWrappers} = {}) ->
+  extractElements: (o, {includeInterpolationWrappers, isJsx} = {}) ->
     # Assumes that `expr` is `Block`
     expr = @body.unwrap()
 
@@ -4846,19 +4842,19 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
             comment.unshift = yes
             comment.newLine = yes
           attachCommentsToNode salvagedComments, node
-        if (unwrapped = node.expression?.unwrapAll()) instanceof PassthroughLiteral and unwrapped.generated and not @jsx
+        if (unwrapped = node.expression?.unwrapAll()) instanceof PassthroughLiteral and unwrapped.generated and not (isJsx and o.compiling)
           if o.compiling
             commentPlaceholder = new StringLiteral('').withLocationDataFrom node
             commentPlaceholder.comments = unwrapped.comments
             (commentPlaceholder.comments ?= []).push node.comments... if node.comments
             elements.push new Value commentPlaceholder
           else
-            elements.push null
+            empty = new Interpolation().withLocationDataFrom node
+            empty.comments = node.comments
+            elements.push empty
         else if node.expression or includeInterpolationWrappers
           (node.expression?.comments ?= []).push node.comments... if node.comments
           elements.push if includeInterpolationWrappers then node else node.expression
-        else if not o.compiling
-          elements.push null
         return no
       else if node.comments
         # This node is getting discarded, but salvage its comments.
@@ -4882,7 +4878,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
       wrapped.jsxAttribute = yes
       return wrapped.compileNode o
 
-    elements = @extractElements o
+    elements = @extractElements o, isJsx: @jsx
 
     fragments = []
     fragments.push @makeCode '`' unless @jsx
@@ -4915,7 +4911,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
   astType: -> 'TemplateLiteral'
 
   astProperties: (o) ->
-    elements = @extractElements o
+    elements = @extractElements o, includeInterpolationWrappers: yes
     [..., last] = elements
 
     quasis = []
@@ -4927,8 +4923,20 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
           element.originalValue
           tail: element is last
         ).withLocationDataFrom(element).ast o
-      else
-        expressions.push element?.unwrap().ast(o) ? null
+      else # Interpolation
+        {expression} = element
+        node =
+          unless expression?
+            emptyInterpolation = new EmptyInterpolation()
+            emptyInterpolation.locationData = emptyExpressionLocationData {
+              interpolationNode: element
+              openingBrace: '#{'
+              closingBrace: '}'
+            }
+            emptyInterpolation
+          else
+            expression.unwrapAll()
+        expressions.push node.ast o
 
     {expressions, quasis, @quote}
 
@@ -4947,6 +4955,12 @@ exports.Interpolation = class Interpolation extends Base
     super()
 
   children: ['expression']
+
+# Represents the contents of an empty interpolation (e.g. `#{}`).
+# Only used during AST generation.
+exports.EmptyInterpolation = class EmptyInterpolation extends Base
+  constructor: ->
+    super()
 
 #### For
 
@@ -5330,6 +5344,25 @@ exports.If = class If extends Base
       postfix: !!@postfix
       inverted: @type is 'unless'
 
+# A sequence expression e.g. `(a; b)`.
+# Currently only used during AST generation.
+exports.Sequence = class Sequence extends Base
+  children: ['expressions']
+
+  constructor: (@expressions) ->
+    super()
+
+  ast: (o, level) ->
+    return @expressions[0].ast(o, level) if @expressions.length is 1
+    super o
+
+  astType: -> 'SequenceExpression'
+
+  astProperties: (o) ->
+    return
+      expressions:
+        expression.ast(o) for expression in @expressions
+
 # Constants
 # ---------
 
@@ -5513,6 +5546,9 @@ sniffDirectives = (expressions, {notFinalExpression} = {}) ->
   while index <= lastIndex
     break if index is lastIndex and notFinalExpression
     expression = expressions[index]
+    if (unwrapped = expression?.unwrap?()) instanceof PassthroughLiteral and unwrapped.generated
+      index++
+      continue
     break unless expression instanceof Value and expression.isString() and not expression.unwrap().shouldGenerateTemplateLiteral()
     expressions[index] =
       new Directive expression
@@ -5677,3 +5713,21 @@ zeroWidthLocationDataFromEndLocation = ({range: [, endRange], last_line_exclusiv
   last_column_exclusive
   range: [endRange, endRange]
 }
+
+# We don’t currently have a token corresponding to the empty space
+# between interpolation/JSX expression braces, so piece together the location
+# data by trimming the braces from the Interpolation’s location data.
+# Technically the last_line/last_column calculation here could be
+# incorrect if the ending brace is preceded by a newline, but
+# last_line/last_column aren’t used for AST generation anyway.
+emptyExpressionLocationData = ({interpolationNode: element, openingBrace, closingBrace}) ->
+  first_line:            element.locationData.first_line
+  first_column:          element.locationData.first_column + openingBrace.length
+  last_line:             element.locationData.last_line
+  last_column:           element.locationData.last_column - closingBrace.length
+  last_line_exclusive:   element.locationData.last_line
+  last_column_exclusive: element.locationData.last_column
+  range: [
+    element.locationData.range[0] + openingBrace.length
+    element.locationData.range[1] - closingBrace.length
+  ]
