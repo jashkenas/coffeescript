@@ -8590,6 +8590,34 @@ test "AST location data as expected for blocks with comments", ->
         line: 3
         column: 5
 
+  testAstLocationData '''
+    if a
+      b
+      ### c ###
+  ''',
+    type: 'IfStatement'
+    consequent:
+      start: 5
+      end: 20
+      range: [5, 20]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 11
+    start: 0
+    end: 20
+    range: [0, 20]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 11
+
   # trailing non-indented comment
   testAstLocationData '''
     ->
@@ -8618,3 +8646,120 @@ test "AST location data as expected for blocks with comments", ->
       end:
         line: 2
         column: 3
+
+  testAstLocationData '''
+    if a
+      b
+    ### c ###
+  ''',
+    type: 'IfStatement'
+    consequent:
+      start: 5
+      end: 8
+      range: [5, 8]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 2
+          column: 3
+    start: 0
+    end: 8
+    range: [0, 8]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 2
+        column: 3
+
+  # multiple trailing indented comments
+  testAstLocationData '''
+    class A
+      a: ->
+      # b
+      #comment
+  ''',
+    type: 'ClassDeclaration'
+    body:
+      start: 8
+      end: 32
+      range: [8, 32]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 4
+          column: 10
+    start: 0
+    end: 32
+    range: [0, 32]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 10
+
+  testAstLocationData '''
+    a = ->
+      c
+      # b
+      ### comment ###
+  ''',
+    type: 'AssignmentExpression'
+    right:
+      start: 4
+      end: 34
+      range: [4, 34]
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 4
+          column: 17
+    start: 0
+    end: 34
+    range: [0, 34]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 17
+
+  # multiple trailing comments, some indented
+  testAstLocationData '''
+    class A
+      a: ->
+      # b
+    #comment
+  ''',
+    type: 'ClassDeclaration'
+    body:
+      start: 8
+      end: 21
+      range: [8, 21]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 5
+    start: 0
+    end: 21
+    range: [0, 21]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 5
