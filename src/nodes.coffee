@@ -1819,7 +1819,7 @@ exports.JSXElement = class JSXElement extends Base
               emptyExpression.locationData = emptyExpressionLocationData {
                 interpolationNode: element
                 openingBrace: '{'
-                closingBrace: '{'
+                closingBrace: '}'
               }
               
               new JSXExpressionContainer emptyExpression, locationData: element.locationData
@@ -4931,7 +4931,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
             emptyInterpolation.locationData = emptyExpressionLocationData {
               interpolationNode: element
               openingBrace: '#{'
-              closingBrace: '{'
+              closingBrace: '}'
             }
             emptyInterpolation
           else
