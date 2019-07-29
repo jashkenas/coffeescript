@@ -206,7 +206,7 @@ exports.Lexer = class Lexer
           @error "'#{prevprev[1]}' cannot be used as a keyword, or as a
           function call without parentheses", prevprev[2]
 
-    if tag is 'IDENTIFIER' and id in RESERVED
+    if tag is 'IDENTIFIER' and id in RESERVED and not inCSXTag
       @error "reserved word '#{id}'", length: id.length
 
     unless tag is 'PROPERTY' or @exportSpecifierList
@@ -1182,9 +1182,18 @@ IDENTIFIER = /// ^
   ( [^\n\S]* : (?!:) )?  # Is this a property name?
 ///
 
+# Like `IDENTIFIER`, but includes `-`s
+CSX_IDENTIFIER_PART = /// (?: (?!\s)[\-$\w\x7f-\uffff] )+ ///.source
+
+# In https://facebook.github.io/jsx/ spec, JSXElementName can be
+# JSXIdentifier, JSXNamespacedName (JSXIdentifier : JSXIdentifier), or
+# JSXMemberExpression (two or more JSXIdentifier connected by `.`s).
 CSX_IDENTIFIER = /// ^
   (?![\d<]) # Must not start with `<`.
-  ( (?: (?!\s)[\.\-$\w\x7f-\uffff] )+ ) # Like `IDENTIFIER`, but includes `-`s and `.`s.
+  ( #{CSX_IDENTIFIER_PART}
+    (?: \s* : \s* #{CSX_IDENTIFIER_PART}       # JSXNamespacedName
+    | (?: \s* \. \s* #{CSX_IDENTIFIER_PART} )+ # JSXMemberExpression
+    )? )
 ///
 
 # Fragment: <></>
@@ -1192,9 +1201,13 @@ CSX_FRAGMENT_IDENTIFIER = /// ^
   ()> # Ends immediately with `>`.
 ///
 
+# In https://facebook.github.io/jsx/ spec, JSXAttributeName can be either
+# JSXIdentifier or JSXNamespacedName which is JSXIdentifier : JSXIdentifier
 CSX_ATTRIBUTE = /// ^
   (?!\d)
-  ( (?: (?!\s)[\-$\w\x7f-\uffff] )+ ) # Like `IDENTIFIER`, but includes `-`s.
+  ( #{CSX_IDENTIFIER_PART}
+    (?: \s* : \s* #{CSX_IDENTIFIER_PART}       # JSXNamespacedName
+    )? )
   ( [^\S]* = (?!=) )?  # Is this an attribute with a value?
 ///
 
