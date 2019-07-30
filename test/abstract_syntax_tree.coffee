@@ -540,6 +540,31 @@ test "AST as expected for JSXTag node", ->
         type: 'JSXEmptyExpression'
     ]
 
+  testExpression '<div:a b:c />',
+    type: 'JSXElement'
+    openingElement:
+      type: 'JSXOpeningElement'
+      name:
+        type: 'JSXNamespacedName'
+        namespace:
+          type: 'JSXIdentifier'
+          name: 'div'
+        name:
+          type: 'JSXIdentifier'
+          name: 'a'
+      attributes: [
+        type: 'JSXAttribute'
+        name:
+          type: 'JSXNamespacedName'
+          namespace:
+            type: 'JSXIdentifier'
+            name: 'b'
+          name:
+            type: 'JSXIdentifier'
+            name: 'c'
+      ]
+      selfClosing: yes
+
 test "AST as expected for ComputedPropertyName node", ->
   testExpression '[fn]: ->',
     type: 'ObjectExpression'
