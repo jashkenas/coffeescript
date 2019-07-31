@@ -1649,10 +1649,13 @@ exports.JSXAttribute = class JSXAttribute extends Base
     val = @value.compileToFragments o, LEVEL_LIST
     compiledName.concat @makeCode('='), val
 
-  astProperties: ->
+  astProperties: (o) ->
+    name = @name
+    if ':' in name.value
+      name = new JSXNamespacedName name
     return
-      name: @name.ast()
-      value: @value?.ast() ? null
+      name: name.ast o
+      value: @value?.ast(o) ? null
 
 exports.JSXAttributes = class JSXAttributes extends Base
   constructor: (arr) ->
@@ -1705,6 +1708,21 @@ exports.JSXAttributes = class JSXAttributes extends Base
   ast: (o) ->
     attribute.ast(o) for attribute in @attributes
 
+exports.JSXNamespacedName = class JSXNamespacedName extends Base
+  constructor: (tag) ->
+    super()
+    [namespace, name] = tag.value.split ':'
+    @namespace = new JSXIdentifier(namespace).withLocationDataFrom locationData: extractSameLineLocationDataFirst(namespace.length) tag.locationData
+    @name      = new JSXIdentifier(name     ).withLocationDataFrom locationData: extractSameLineLocationDataLast(name.length      ) tag.locationData
+    @locationData = tag.locationData
+
+  children: ['namespace', 'name']
+
+  astProperties: (o) ->
+    return
+      namespace: @namespace.ast o
+      name: @name.ast o
+
 # Node for a JSX element
 exports.JSXElement = class JSXElement extends Base
   constructor: ({@tagName, @attributes, @content}) ->
@@ -1750,9 +1768,15 @@ exports.JSXElement = class JSXElement extends Base
       'JSXElement'
 
   elementAstProperties: (o) ->
+    tagNameAst = =>
+      tag = @tagName.unwrap()
+      if tag?.value and ':' in tag.value
+        tag = new JSXNamespacedName tag
+      tag.ast o
+
     openingElement = Object.assign {
       type: 'JSXOpeningElement'
-      name: @tagName.unwrap().ast o
+      name: tagNameAst()
       selfClosing: not @closingElementLocationData?
       attributes: @attributes.ast o
     }, @openingElementLocationData
@@ -1762,13 +1786,14 @@ exports.JSXElement = class JSXElement extends Base
       closingElement = Object.assign {
         type: 'JSXClosingElement'
         name: Object.assign(
-          @tagName.unwrap().ast(o),
+          tagNameAst(),
           jisonLocationDataToAstLocationData @tagName.base.closingTagNameLocationData
         )
       }, @closingElementLocationData
-      if closingElement.name.type is 'JSXMemberExpression'
+      if closingElement.name.type in ['JSXMemberExpression', 'JSXNamespacedName']
         rangeDiff = closingElement.range[0] - openingElement.range[0] + '/'.length
-        shiftAstLocationData = (node) ->
+        columnDiff = closingElement.loc.start.column - openingElement.loc.start.column + '/'.length
+        shiftAstLocationData = (node) =>
           node.range = [
             node.range[0] + rangeDiff
             node.range[1] + rangeDiff
@@ -1776,17 +1801,21 @@ exports.JSXElement = class JSXElement extends Base
           node.start += rangeDiff
           node.end += rangeDiff
           node.loc.start =
-            line: node.loc.start.line
-            column: node.loc.start.column + rangeDiff
+            line: @closingElementLocationData.loc.start.line
+            column: node.loc.start.column + columnDiff
           node.loc.end =
-            line: node.loc.end.line
-            column: node.loc.end.column + rangeDiff
-        currentExpr = closingElement.name
-        while currentExpr.type is 'JSXMemberExpression'
-          shiftAstLocationData currentExpr unless currentExpr is closingElement.name
-          shiftAstLocationData currentExpr.property
-          currentExpr = currentExpr.object
-        shiftAstLocationData currentExpr
+            line: @closingElementLocationData.loc.start.line
+            column: node.loc.end.column + columnDiff
+        if closingElement.name.type is 'JSXMemberExpression'
+          currentExpr = closingElement.name
+          while currentExpr.type is 'JSXMemberExpression'
+            shiftAstLocationData currentExpr unless currentExpr is closingElement.name
+            shiftAstLocationData currentExpr.property
+            currentExpr = currentExpr.object
+          shiftAstLocationData currentExpr
+        else # JSXNamespacedName
+          shiftAstLocationData closingElement.name.namespace
+          shiftAstLocationData closingElement.name.name
 
     {openingElement, closingElement}
 
@@ -5712,6 +5741,26 @@ zeroWidthLocationDataFromEndLocation = ({range: [, endRange], last_line_exclusiv
   last_line_exclusive
   last_column_exclusive
   range: [endRange, endRange]
+}
+
+extractSameLineLocationDataFirst = (numChars) -> ({range: [startRange], first_line, first_column}) -> {
+  first_line
+  first_column
+  last_line: first_line
+  last_column: first_column + numChars - 1
+  last_line_exclusive: first_line
+  last_column_exclusive: first_column + numChars
+  range: [startRange, startRange + numChars]
+}
+
+extractSameLineLocationDataLast = (numChars) -> ({range: [, endRange], last_line, last_column, last_line_exclusive, last_column_exclusive}) -> {
+  first_line: last_line
+  first_column: last_column - (numChars - 1)
+  last_line: last_line
+  last_column: last_column
+  last_line_exclusive
+  last_column_exclusive
+  range: [endRange - numChars, endRange]
 }
 
 # We don’t currently have a token corresponding to the empty space
