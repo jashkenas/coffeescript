@@ -565,6 +565,33 @@ test "AST as expected for JSXTag node", ->
       ]
       selfClosing: yes
 
+  testExpression '''
+    <div:a>
+      {b}
+    </div:a>
+  ''',
+    type: 'JSXElement'
+    openingElement:
+      type: 'JSXOpeningElement'
+      name:
+        type: 'JSXNamespacedName'
+        namespace:
+          type: 'JSXIdentifier'
+          name: 'div'
+        name:
+          type: 'JSXIdentifier'
+          name: 'a'
+    closingElement:
+      type: 'JSXClosingElement'
+      name:
+        type: 'JSXNamespacedName'
+        namespace:
+          type: 'JSXIdentifier'
+          name: 'div'
+        name:
+          type: 'JSXIdentifier'
+          name: 'a'
+
 test "AST as expected for ComputedPropertyName node", ->
   testExpression '[fn]: ->',
     type: 'ObjectExpression'

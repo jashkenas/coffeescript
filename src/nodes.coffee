@@ -1790,9 +1790,10 @@ exports.JSXElement = class JSXElement extends Base
           jisonLocationDataToAstLocationData @tagName.base.closingTagNameLocationData
         )
       }, @closingElementLocationData
-      if closingElement.name.type is 'JSXMemberExpression'
+      if closingElement.name.type in ['JSXMemberExpression', 'JSXNamespacedName']
         rangeDiff = closingElement.range[0] - openingElement.range[0] + '/'.length
-        shiftAstLocationData = (node) ->
+        columnDiff = closingElement.loc.start.column - openingElement.loc.start.column + '/'.length
+        shiftAstLocationData = (node) =>
           node.range = [
             node.range[0] + rangeDiff
             node.range[1] + rangeDiff
@@ -1800,17 +1801,21 @@ exports.JSXElement = class JSXElement extends Base
           node.start += rangeDiff
           node.end += rangeDiff
           node.loc.start =
-            line: node.loc.start.line
-            column: node.loc.start.column + rangeDiff
+            line: @closingElementLocationData.loc.start.line
+            column: node.loc.start.column + columnDiff
           node.loc.end =
-            line: node.loc.end.line
-            column: node.loc.end.column + rangeDiff
-        currentExpr = closingElement.name
-        while currentExpr.type is 'JSXMemberExpression'
-          shiftAstLocationData currentExpr unless currentExpr is closingElement.name
-          shiftAstLocationData currentExpr.property
-          currentExpr = currentExpr.object
-        shiftAstLocationData currentExpr
+            line: @closingElementLocationData.loc.start.line
+            column: node.loc.end.column + columnDiff
+        if closingElement.name.type is 'JSXMemberExpression'
+          currentExpr = closingElement.name
+          while currentExpr.type is 'JSXMemberExpression'
+            shiftAstLocationData currentExpr unless currentExpr is closingElement.name
+            shiftAstLocationData currentExpr.property
+            currentExpr = currentExpr.object
+          shiftAstLocationData currentExpr
+        else # JSXNamespacedName
+          shiftAstLocationData closingElement.name.namespace
+          shiftAstLocationData closingElement.name.name
 
     {openingElement, closingElement}
 
@@ -5742,15 +5747,15 @@ extractSameLineLocationDataFirst = (numChars) -> ({range: [startRange], first_li
   first_line
   first_column
   last_line: first_line
-  last_column: first_column + numChars
+  last_column: first_column + numChars - 1
   last_line_exclusive: first_line
-  last_column_exclusive: first_column + numChars + 1
+  last_column_exclusive: first_column + numChars
   range: [startRange, startRange + numChars]
 }
 
 extractSameLineLocationDataLast = (numChars) -> ({range: [, endRange], last_line, last_column, last_line_exclusive, last_column_exclusive}) -> {
   first_line: last_line
-  first_column: last_column - numChars
+  first_column: last_column - (numChars - 1)
   last_line: last_line
   last_column: last_column
   last_line_exclusive
