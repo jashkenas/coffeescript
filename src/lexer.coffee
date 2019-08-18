@@ -552,7 +552,7 @@ exports.Lexer = class Lexer
         @outdebt = 0
         # pair might call outdentToken, so preserve decreasedIndent
         @pair 'OUTDENT'
-        @token 'OUTDENT', moveOut, length: outdentLength, indentSize: indentSize
+        @token 'OUTDENT', moveOut, length: outdentLength, indentSize: indentSize + moveOut - dent
         moveOut -= dent
     @outdebt -= moveOut if dent
     @suppressSemicolons()

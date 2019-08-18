@@ -8972,6 +8972,18 @@ test "AST location data as expected for blocks with comments", ->
       # d
   ''',
     type: 'SwitchStatement'
+    cases: [
+      start: 11
+      end: 23
+      range: [11, 23]
+      loc:
+        start:
+          line: 2
+          column: 2
+        end:
+          line: 3
+          column: 5
+    ]
     start: 0
     end: 29
     range: [0, 29]
