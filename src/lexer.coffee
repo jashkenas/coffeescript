@@ -390,6 +390,7 @@ exports.Lexer = class Lexer
         locationData: @makeLocationData {offsetInChunk, length}
         precededByBlankLine
         indentSize
+        indented:  not noIndent and indentSize > @indent
         outdented: not noIndent and indentSize < @indent
       }
       offsetInChunk += length

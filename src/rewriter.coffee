@@ -550,12 +550,13 @@ exports.Rewriter = class Rewriter
   # location corresponding to the last “real” token under the node.
   fixIndentationLocationData: ->
     @allComments ?= extractAllCommentTokens @tokens
-    findPrecedingComment = (token, {afterPosition, indentSize, first}) =>
+    findPrecedingComment = (token, {afterPosition, indentSize, first, indented}) =>
       tokenStart = token[2].range[0]
       matches = (comment) ->
         # if comment.outdented
         #   return no unless indentSize? and comment.indentSize > indentSize
         return no if comment.outdented
+        return no if indented and not comment.indented
         return no unless comment.locationData.range[0] < tokenStart
         return no unless comment.locationData.range[0] > afterPosition
         yes
@@ -578,10 +579,21 @@ exports.Rewriter = class Rewriter
       isIndent = token[0] is 'INDENT'
       prevToken = tokens[i - 1]
       prevLocationData = prevToken[2]
-      precedingComment = findPrecedingComment token,
+      useNextToken = token.explicit or token.generated
+      if useNextToken
+        nextToken = token
+        nextTokenIndex = i
+        nextToken = tokens[nextTokenIndex++] while (nextToken.explicit or nextToken.generated) and nextTokenIndex isnt tokens.length - 1
+      precedingComment = findPrecedingComment(
+        if useNextToken
+          nextToken
+        else
+          token
         afterPosition: prevLocationData.range[0]
         indentSize: token.indentSize
         first: isIndent
+        indented: useNextToken
+      )
       if isIndent
         return 1 unless precedingComment?.newLine
       prevLocationData = precedingComment.locationData if precedingComment?

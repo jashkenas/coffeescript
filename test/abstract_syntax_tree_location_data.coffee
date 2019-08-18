@@ -8878,3 +8878,88 @@ test "AST location data as expected for blocks with comments", ->
       end:
         line: 4
         column: 3
+
+  # just a comment
+  testAstLocationData '''
+    ->
+      # a
+  ''',
+    type: 'FunctionExpression'
+    body:
+      start: 3
+      end: 8
+      range: [3, 8]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 2
+          column: 5
+    start: 0
+    end: 8
+    range: [0, 8]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 2
+        column: 5
+
+  testAstLocationData '''
+    if a
+      ### b ###
+    else
+      c
+  ''',
+    type: 'IfStatement'
+    consequent:
+      start: 5
+      end: 16
+      range: [5, 16]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 2
+          column: 11
+    start: 0
+    end: 25
+    range: [0, 25]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 3
+
+  # just a non-indented comment
+  testAstLocationData '''
+    ->
+    # a
+  ''',
+    type: 'FunctionExpression'
+    body:
+      start: 2
+      end: 2
+      range: [2, 2]
+      loc:
+        start:
+          line: 1
+          column: 2
+        end:
+          line: 1
+          column: 2
+    start: 0
+    end: 2
+    range: [0, 2]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 2
