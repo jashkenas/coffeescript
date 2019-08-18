@@ -550,7 +550,7 @@ exports.Rewriter = class Rewriter
   # location corresponding to the last “real” token under the node.
   fixIndentationLocationData: ->
     @allComments ?= extractAllCommentTokens @tokens
-    findPrecedingComment = (token, {afterPosition, indentSize}) =>
+    findPrecedingComment = (token, {afterPosition, indentSize, first}) =>
       tokenStart = token[2].range[0]
       matches = (comment) ->
         # if comment.outdented
@@ -559,29 +559,58 @@ exports.Rewriter = class Rewriter
         return no unless comment.locationData.range[0] < tokenStart
         return no unless comment.locationData.range[0] > afterPosition
         yes
+      if first
+        lastMatching = null
+        for comment in @allComments by -1
+          if matches comment
+            lastMatching = comment
+          else if lastMatching
+            return lastMatching
+        return lastMatching
       for comment in @allComments when matches comment by -1
         return comment
       null
 
     @scanTokens (token, i, tokens) ->
-      # return 1 unless token[0] in ['INDENT', 'OUTDENT'] or
-      return 1 unless token[0] is 'OUTDENT' or
+      return 1 unless token[0] in ['INDENT', 'OUTDENT'] or
         (token.generated and token[0] is 'CALL_END' and not token.data?.closingTagNameToken) or
         (token.generated and token[0] is '}')
+      isIndent = token[0] is 'INDENT'
       prevToken = tokens[i - 1]
       prevLocationData = prevToken[2]
       precedingComment = findPrecedingComment token,
         afterPosition: prevLocationData.range[0]
         indentSize: token.indentSize
+        first: isIndent
+      if isIndent
+        return 1 unless precedingComment?.newLine
       prevLocationData = precedingComment.locationData if precedingComment?
       token[2] =
-        first_line:             if precedingComment? then prevLocationData.first_line else prevLocationData.last_line
-        first_column:           if precedingComment? then prevLocationData.first_column else prevLocationData.last_column
+        first_line:
+          if precedingComment?
+            prevLocationData.first_line
+          else
+            prevLocationData.last_line
+        first_column:
+          if precedingComment?
+            if isIndent
+              0
+            else
+              prevLocationData.first_column
+          else
+            prevLocationData.last_column
         last_line:              prevLocationData.last_line
         last_column:            prevLocationData.last_column
         last_line_exclusive:    prevLocationData.last_line_exclusive
         last_column_exclusive:  prevLocationData.last_column_exclusive
-        range:                  prevLocationData.range
+        range:
+          if isIndent and precedingComment?
+            [
+              prevLocationData.range[0] - precedingComment.indentSize
+              prevLocationData.range[1]
+            ]
+          else
+            prevLocationData.range
       return 1
 
   # Because our grammar is LALR(1), it can’t handle some single-line

@@ -8762,3 +8762,119 @@ test "AST location data as expected for blocks with comments", ->
       end:
         line: 3
         column: 5
+
+  # leading indented comment
+  testAstLocationData '''
+    ->
+      # a
+      b
+  ''',
+    type: 'FunctionExpression'
+    body:
+      start: 3
+      end: 12
+      range: [3, 12]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 3
+    start: 0
+    end: 12
+    range: [0, 12]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 3
+
+  testAstLocationData '''
+    if a
+      ### b ###
+      c
+  ''',
+    type: 'IfStatement'
+    consequent:
+      start: 5
+      end: 20
+      range: [5, 20]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 3
+    start: 0
+    end: 20
+    range: [0, 20]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 3
+
+  # multiple leading indented comments
+  testAstLocationData '''
+    ->
+      # a
+      # b
+      c
+  ''',
+    type: 'FunctionExpression'
+    body:
+      start: 3
+      end: 18
+      range: [3, 18]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 4
+          column: 3
+    start: 0
+    end: 18
+    range: [0, 18]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 3
+
+  testAstLocationData '''
+    if a
+      ### b ###
+      # c
+      d
+  ''',
+    type: 'IfStatement'
+    consequent:
+      start: 5
+      end: 26
+      range: [5, 26]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 4
+          column: 3
+    start: 0
+    end: 26
+    range: [0, 26]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 3
