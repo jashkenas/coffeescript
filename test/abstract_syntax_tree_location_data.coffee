@@ -8994,3 +8994,43 @@ test "AST location data as expected for blocks with comments", ->
       end:
         line: 4
         column: 5
+
+  # trailing implicit call in condition followed by indented comment
+  testAstLocationData '''
+    if a b
+      # c
+      d
+  ''',
+    type: 'IfStatement'
+    test:
+      start: 3
+      end: 6
+      range: [3, 6]
+      loc:
+        start:
+          line: 1
+          column: 3
+        end:
+          line: 1
+          column: 6
+    consequent:
+      start: 7
+      end: 16
+      range: [7, 16]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 3
+    start: 0
+    end: 16
+    range: [0, 16]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 3

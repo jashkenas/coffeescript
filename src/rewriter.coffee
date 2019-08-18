@@ -578,6 +578,9 @@ exports.Rewriter = class Rewriter
       isIndent = token[0] is 'INDENT'
       prevToken = tokens[i - 1]
       prevLocationData = prevToken[2]
+      # addLocationDataToGeneratedTokens() set the outdent’s location data
+      # to the preceding token’s, but in order to detect comments inside an
+      # empty "block" we want to look for comments preceding the next token.
       useNextToken = token.explicit or token.generated
       if useNextToken
         nextToken = token
@@ -595,6 +598,9 @@ exports.Rewriter = class Rewriter
       )
       if isIndent
         return 1 unless precedingComment?.newLine
+      # We don’t want e.g. an implicit call at the end of an `if` condition to
+      # include a following indented comment.
+      return 1 if token.generated and token[0] is 'CALL_END' and precedingComment?.indented
       prevLocationData = precedingComment.locationData if precedingComment?
       token[2] =
         first_line:
