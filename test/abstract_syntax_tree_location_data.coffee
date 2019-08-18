@@ -8471,7 +8471,6 @@ test "AST location data as expected for chained comparisons", ->
         line: 1
         column: 10
 
-<<<<<<< HEAD
 test "AST location data as expected for Sequence", ->
   testAstLocationData '''
     (a; b)
