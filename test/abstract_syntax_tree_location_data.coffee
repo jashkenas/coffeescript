@@ -8963,3 +8963,22 @@ test "AST location data as expected for blocks with comments", ->
       end:
         line: 1
         column: 2
+
+  # nested dedented comment
+  testAstLocationData '''
+    switch a
+      when b
+        c
+      # d
+  ''',
+    type: 'SwitchStatement'
+    start: 0
+    end: 29
+    range: [0, 29]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 5

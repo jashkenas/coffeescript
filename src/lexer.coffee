@@ -813,7 +813,7 @@ exports.Lexer = class Lexer
 
   # Close up all remaining open blocks at the end of the file.
   closeIndentation: ->
-    @outdentToken moveOut: @indent
+    @outdentToken moveOut: @indent, indentSize: 0
 
   # Match the contents of a delimited token and expand variables and expressions
   # inside it using Ruby-like notation for substitution of arbitrary

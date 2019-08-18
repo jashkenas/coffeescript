@@ -553,9 +553,8 @@ exports.Rewriter = class Rewriter
     findPrecedingComment = (token, {afterPosition, indentSize, first, indented}) =>
       tokenStart = token[2].range[0]
       matches = (comment) ->
-        # if comment.outdented
-        #   return no unless indentSize? and comment.indentSize > indentSize
-        return no if comment.outdented
+        if comment.outdented
+          return no unless indentSize? and comment.indentSize > indentSize
         return no if indented and not comment.indented
         return no unless comment.locationData.range[0] < tokenStart
         return no unless comment.locationData.range[0] > afterPosition
