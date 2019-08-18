@@ -803,7 +803,7 @@ exports.Block = class Block extends Base
     if (level? and level isnt LEVEL_TOP) and @expressions.length
       return (new Sequence(@expressions).withLocationDataFrom @).ast o, level
 
-    super o
+    super o, level
 
   astType: ->
     if @isRootBlock
