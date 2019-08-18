@@ -1788,6 +1788,25 @@ test "AST as expected for Class node", ->
           shorthand: yes
       ]
 
+  testStatement '''
+    class A
+      @[b] = ->
+      "#{c}": ->
+      @[d] = 1
+  ''',
+    type: 'ClassDeclaration'
+    body:
+      body: [
+        type: 'ClassMethod'
+        computed: yes
+      ,
+        type: 'ClassMethod'
+        computed: no
+      ,
+        type: 'ClassProperty'
+        computed: yes
+      ]
+
 test "AST as expected for ModuleDeclaration node", ->
   testStatement 'export {X}',
     type: 'ExportNamedDeclaration'
