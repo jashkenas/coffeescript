@@ -9034,3 +9034,25 @@ test "AST location data as expected for blocks with comments", ->
       end:
         line: 3
         column: 3
+
+test "AST location data as expected for heregex comments", ->
+  code = '''
+    ///
+      a # b
+    ///
+  '''
+
+  testAstLocationData code,
+    type: 'RegExpLiteral'
+    start: 0
+    end: 15
+    range: [0, 15]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 3
+
+  eq getAstRoot(code).comments.length, 0

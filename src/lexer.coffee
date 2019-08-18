@@ -312,7 +312,7 @@ exports.Lexer = class Lexer
   # Matches and consumes comments. The comments are taken out of the token
   # stream and saved for later, to be reinserted into the output after
   # everything has been parsed and the JavaScript code generated.
-  commentToken: (chunk = @chunk) ->
+  commentToken: (chunk = @chunk, {heregex} = {}) ->
     return 0 unless match = chunk.match COMMENT
     [commentWithSurroundingWhitespace, hereLeadingWhitespace, hereComment, hereTrailingWhitespace, lineComment] = match
     contents = null
@@ -393,6 +393,7 @@ exports.Lexer = class Lexer
         indented:  not noIndent and indentSize > @indent
         outdented: not noIndent and indentSize < @indent
       }
+      commentAttachment.heregex = yes if heregex
       offsetInChunk += length
       commentAttachment
 
@@ -433,7 +434,7 @@ exports.Lexer = class Lexer
       when match = @matchWithInterpolations HEREGEX, '///'
         {tokens, index} = match
         comments = @chunk[0...index].match /\s+(#(?!{).*)/g
-        @commentToken comment for comment in comments if comments
+        @commentToken(comment, heregex: yes) for comment in comments if comments
       when match = REGEX.exec @chunk
         [regex, body, closed] = match
         @validateEscapes body, isRegex: yes, offsetInChunk: 1

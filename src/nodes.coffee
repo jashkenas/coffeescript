@@ -502,7 +502,7 @@ exports.Root = class Root extends Base
 
   commentsAst: ->
     @allComments ?=
-      for commentToken in (@allCommentTokens ? [])
+      for commentToken in (@allCommentTokens ? []) when not commentToken.heregex
         if commentToken.here
           new HereComment commentToken
         else
