@@ -3309,6 +3309,7 @@ exports.Assign = class Assign extends Base
   isAssignable: YES
 
   isStatement: (o) ->
+    return no unless o.compiling
     o?.level is LEVEL_TOP and @context? and (@moduleDeclaration or "?" in @context)
 
   checkAssignability: (o, varBase) ->

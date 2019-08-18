@@ -2096,6 +2096,16 @@ test "AST as expected for Assign node", ->
     right:
       name: 'c'
 
+  testExpression 'a ?= b',
+    type: 'AssignmentExpression'
+    left:
+      type: 'Identifier'
+      name: 'a'
+    right:
+      type: 'Identifier'
+      name: 'b'
+    operator: '?='
+
 # # `FuncGlyph` node isn't exported.
 
 test "AST as expected for Code node", ->
