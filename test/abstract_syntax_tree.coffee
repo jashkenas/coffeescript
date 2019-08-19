@@ -229,6 +229,12 @@ test "AST as expected for PassthroughLiteral node", ->
     value: ''
     here: no
 
+  # escaped backticks
+  testExpression "`\\`abc\\``",
+    type: 'PassthroughLiteral'
+    value: '\\`abc\\`'
+    here: no
+
 test "AST as expected for IdentifierLiteral node", ->
   testExpression 'id',
     type: 'Identifier'
@@ -1782,6 +1788,25 @@ test "AST as expected for Class node", ->
           shorthand: yes
       ]
 
+  testStatement '''
+    class A
+      @[b] = ->
+      "#{c}": ->
+      @[d] = 1
+  ''',
+    type: 'ClassDeclaration'
+    body:
+      body: [
+        type: 'ClassMethod'
+        computed: yes
+      ,
+        type: 'ClassMethod'
+        computed: no
+      ,
+        type: 'ClassProperty'
+        computed: yes
+      ]
+
 test "AST as expected for ModuleDeclaration node", ->
   testStatement 'export {X}',
     type: 'ExportNamedDeclaration'
@@ -2095,6 +2120,16 @@ test "AST as expected for Assign node", ->
       ]
     right:
       name: 'c'
+
+  testExpression 'a ?= b',
+    type: 'AssignmentExpression'
+    left:
+      type: 'Identifier'
+      name: 'a'
+    right:
+      type: 'Identifier'
+      name: 'b'
+    operator: '?='
 
 # # `FuncGlyph` node isn't exported.
 

@@ -803,7 +803,7 @@ exports.Block = class Block extends Base
     if (level? and level isnt LEVEL_TOP) and @expressions.length
       return (new Sequence(@expressions).withLocationDataFrom @).ast o, level
 
-    super o
+    super o, level
 
   astType: ->
     if @isRootBlock
@@ -1084,7 +1084,7 @@ exports.PassthroughLiteral = class PassthroughLiteral extends Literal
 
   astProperties: ->
     return {
-      @value
+      value: @originalValue
       here: !!@here
     }
 
@@ -3054,7 +3054,7 @@ exports.ClassProperty = class ClassProperty extends Base
       key: @name.ast o, LEVEL_LIST
       value: @value.ast o, LEVEL_LIST
       static: !!@isStatic
-      computed: @name instanceof ComputedPropertyName
+      computed: @name instanceof Index or @name instanceof ComputedPropertyName
       operator: @operatorToken?.value ? '='
       staticClassName: @staticClassName?.ast(o) ? null
 
@@ -3639,6 +3639,8 @@ exports.Assign = class Assign extends Base
     # destructured variables.
     @variable.base.propagateLhs yes
 
+  isStatementAst: NO
+
   astType: ->
     if @isDefaultAssignment()
       'AssignmentPattern'
@@ -4008,10 +4010,18 @@ exports.Code = class Code extends Base
       name
 
   methodAstProperties: (o) ->
+    getIsComputed = =>
+      if @name instanceof Index
+        return no if @name.index instanceof StringWithInterpolations
+        return yes
+      return yes if @name instanceof ComputedPropertyName
+      return yes if @name.name instanceof ComputedPropertyName
+      no
+
     return
       static: !!@isStatic
       key: @name.ast o
-      computed: @name instanceof ComputedPropertyName or @name.name instanceof ComputedPropertyName
+      computed: getIsComputed()
       kind:
         if @ctor
           'constructor'
