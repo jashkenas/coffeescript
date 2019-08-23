@@ -6776,6 +6776,37 @@ test "AST location data as expected for RegexWithInterpolations node", ->
         line: 3
         column: 11
 
+  testAstLocationData '''
+    ///
+      a # first
+      #{b} ### second ###
+    ///ig
+  ''',
+    type: 'InterpolatedRegExpLiteral'
+    comments: [
+      start: 8
+      end: 15
+      range: [8, 15]
+      loc:
+        start:
+          line: 2
+          column: 4
+        end:
+          line: 2
+          column: 11
+    ,
+      start: 23
+      end: 37
+      range: [23, 37]
+      loc:
+        start:
+          line: 3
+          column: 7
+        end:
+          line: 3
+          column: 21
+    ]
+
 test "AST location data as expected for RegexLiteral node", ->
   testAstLocationData '/a/ig',
     type: 'RegExpLiteral'
@@ -6855,6 +6886,47 @@ test "AST location data as expected for RegexLiteral node", ->
         column: 0
       end:
         line: 5
+        column: 3
+
+  testAstLocationData '''
+    ///
+      a # first
+      b ### second ###
+    ///
+  ''',
+    type: 'RegExpLiteral'
+    comments: [
+      start: 8
+      end: 15
+      range: [8, 15]
+      loc:
+        start:
+          line: 2
+          column: 4
+        end:
+          line: 2
+          column: 11
+    ,
+      start: 20
+      end: 34
+      range: [20, 34]
+      loc:
+        start:
+          line: 3
+          column: 4
+        end:
+          line: 3
+          column: 18
+    ]
+    start: 0
+    end: 38
+    range: [0, 38]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
         column: 3
 
 test "AST location data as expected for TaggedTemplateCall node", ->

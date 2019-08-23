@@ -312,7 +312,7 @@ exports.Lexer = class Lexer
   # Matches and consumes comments. The comments are taken out of the token
   # stream and saved for later, to be reinserted into the output after
   # everything has been parsed and the JavaScript code generated.
-  commentToken: (chunk = @chunk, {heregex, returnCommentTokens = no} = {}) ->
+  commentToken: (chunk = @chunk, {heregex, returnCommentTokens = no, offsetInChunk = 0} = {}) ->
     return 0 unless match = chunk.match COMMENT
     [commentWithSurroundingWhitespace, hereLeadingWhitespace, hereComment, hereTrailingWhitespace, lineComment] = match
     contents = null
@@ -376,7 +376,6 @@ exports.Lexer = class Lexer
       else
         lastNewlineIndex ?= -1
       leadingWhitespace.length - 1 - lastNewlineIndex
-    offsetInChunk = 0
     commentAttachments = for {content, length, leadingWhitespace, precededByBlankLine}, i in contents
       nonInitial = i isnt 0
       leadingNewlineOffset = if nonInitial then 1 else 0
@@ -434,12 +433,15 @@ exports.Lexer = class Lexer
           offset: match.index + match[1].length
       when match = @matchWithInterpolations HEREGEX, '///'
         {tokens, index} = match
-        comments = @chunk[0...index].match /\s+(#(?!{).*)/g
-        if comments
-          commentTokens = flatten(
-            for comment in comments
-              @commentToken comment, heregex: yes, returnCommentTokens: yes
-          )
+        comments = []
+        while matchedComment = HEREGEX_COMMENT.exec @chunk[0...index]
+          {index: commentIndex} = matchedComment
+          [fullMatch, leadingWhitespace, comment] = matchedComment
+          comments.push {comment, offsetInChunk: commentIndex + leadingWhitespace.length}
+        commentTokens = flatten(
+          for {comment, ...opts} in comments
+            @commentToken comment, Object.assign opts, heregex: yes, returnCommentTokens: yes
+        )
       when match = REGEX.exec @chunk
         [regex, body, closed] = match
         @validateEscapes body, isRegex: yes, offsetInChunk: 1
@@ -1323,6 +1325,8 @@ HEREGEX      = /// ^
     | \s+(?:#(?!\{).*)?
   )*
 ///
+
+HEREGEX_COMMENT = /(\s+)(#(?!{).*)/gm
 
 REGEX_ILLEGAL = /// ^ ( / | /{3}\s*) (\*) ///
 
