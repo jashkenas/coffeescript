@@ -439,8 +439,8 @@ exports.Lexer = class Lexer
           [fullMatch, leadingWhitespace, comment] = matchedComment
           comments.push {comment, offsetInChunk: commentIndex + leadingWhitespace.length}
         commentTokens = flatten(
-          for {comment, ...opts} in comments
-            @commentToken comment, Object.assign opts, heregex: yes, returnCommentTokens: yes
+          for commentOpts in comments
+            @commentToken commentOpts.comment, Object.assign commentOpts, heregex: yes, returnCommentTokens: yes
         )
       when match = REGEX.exec @chunk
         [regex, body, closed] = match
