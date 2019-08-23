@@ -201,8 +201,8 @@ grammar =
   # The .toString() calls here and elsewhere are to convert `String` objects
   # back to primitive strings now that we've retrieved stowaway extra properties
   Regex: [
-    o 'REGEX',                                  -> new RegexLiteral $1.toString(), delimiter: $1.delimiter
-    o 'REGEX_START Invocation REGEX_END',       -> new RegexWithInterpolations $2
+    o 'REGEX',                                  -> new RegexLiteral $1.toString(), delimiter: $1.delimiter, heregexCommentTokens: $1.heregexCommentTokens
+    o 'REGEX_START Invocation REGEX_END',       -> new RegexWithInterpolations $2, heregexCommentTokens: $3.heregexCommentTokens
   ]
 
   # All of our immediate values. Generally these can be passed straight

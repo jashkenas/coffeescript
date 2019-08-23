@@ -1044,7 +1044,7 @@ exports.StringLiteral = class StringLiteral extends Literal
         raw: "#{@delimiter}#{@originalValue}#{@delimiter}"
 
 exports.RegexLiteral = class RegexLiteral extends Literal
-  constructor: (value, {@delimiter = '/'} = {}) ->
+  constructor: (value, {@delimiter = '/', @heregexCommentTokens = []} = {}) ->
     super ''
     heregex = @delimiter is '///'
     endDelimiterIndex = value.lastIndexOf '/'
@@ -1058,7 +1058,7 @@ exports.RegexLiteral = class RegexLiteral extends Literal
 
   astType: -> 'RegExpLiteral'
 
-  astProperties: ->
+  astProperties: (o) ->
     [, pattern] = @REGEX_REGEX.exec @value
     return {
       value: undefined
@@ -1068,6 +1068,12 @@ exports.RegexLiteral = class RegexLiteral extends Literal
         raw: @value
         originalRaw: "#{@delimiter}#{@originalValue}#{@delimiter}#{@flags}"
         rawValue: undefined
+      comments:
+        for heregexCommentToken in @heregexCommentTokens
+          if heregexCommentToken.here
+            new HereComment(heregexCommentToken).ast o
+          else
+            new LineComment(heregexCommentToken).ast o
     }
 
 exports.PassthroughLiteral = class PassthroughLiteral extends Literal
@@ -2102,7 +2108,7 @@ exports.Super = class Super extends Base
 # Regexes with interpolations are in fact just a variation of a `Call` (a
 # `RegExp()` call to be precise) with a `StringWithInterpolations` inside.
 exports.RegexWithInterpolations = class RegexWithInterpolations extends Base
-  constructor: (@call) ->
+  constructor: (@call, {@heregexCommentTokens = []} = {}) ->
     super()
 
   children: ['call']
@@ -2115,6 +2121,12 @@ exports.RegexWithInterpolations = class RegexWithInterpolations extends Base
   astProperties: (o) ->
     interpolatedPattern: @call.args[0].ast o
     flags: @call.args[1]?.unwrap().originalValue ? ''
+    comments:
+      for heregexCommentToken in @heregexCommentTokens
+        if heregexCommentToken.here
+          new HereComment(heregexCommentToken).ast o
+        else
+          new LineComment(heregexCommentToken).ast o
 
 #### TaggedTemplateCall
 

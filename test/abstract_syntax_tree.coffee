@@ -999,6 +999,39 @@ test "AST as expected for RegexWithInterpolations node", ->
       quote: '///'
     flags: 'ig'
 
+  testExpression '''
+    ///
+      a # first
+      #{b} ### second ###
+    ///ig
+  ''',
+    type: 'InterpolatedRegExpLiteral'
+    interpolatedPattern:
+      type: 'TemplateLiteral'
+      expressions: [
+        ID 'b'
+      ]
+      quasis: [
+        type: 'TemplateElement'
+        value:
+          raw: '\n  a # first\n  '
+        tail: no
+      ,
+        type: 'TemplateElement'
+        value:
+          raw: ' ### second ###\n'
+        tail: yes
+      ]
+      quote: '///'
+    flags: 'ig'
+    comments: [
+      type: 'CommentLine'
+      value: ' first'
+    ,
+      type: 'CommentBlock'
+      value: ' second '
+    ]
+
 test "AST as expected for TaggedTemplateCall node", ->
   testExpression 'func"tagged"',
     type: 'TaggedTemplateExpression'
@@ -3692,6 +3725,23 @@ test "AST as expected for RegexLiteral node", ->
       raw: "/\\/(.+)\\//"
       originalRaw: "///\n  /\n  (.+)\n  /\n///"
       rawValue: undefined
+
+  testExpression '''
+    ///
+      a # first
+      b ### second ###
+    ///
+  ''',
+    type: 'RegExpLiteral'
+    pattern: 'ab'
+    originalPattern: '\n  a # first\n  b ### second ###\n'
+    comments: [
+      type: 'CommentLine'
+      value: ' first'
+    ,
+      type: 'CommentBlock'
+      value: ' second '
+    ]
 
 test "AST as expected for directives", ->
   deepStrictIncludeExpectedProperties CoffeeScript.compile('''

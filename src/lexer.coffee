@@ -14,7 +14,7 @@
 # Import the helpers we need.
 {count, starts, compact, repeat, invertLiterate, merge,
 attachCommentsToNode, locationDataToString, throwSyntaxError
-replaceUnicodeCodePointEscapes} = require './helpers'
+replaceUnicodeCodePointEscapes, flatten} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -312,7 +312,7 @@ exports.Lexer = class Lexer
   # Matches and consumes comments. The comments are taken out of the token
   # stream and saved for later, to be reinserted into the output after
   # everything has been parsed and the JavaScript code generated.
-  commentToken: (chunk = @chunk, {heregex} = {}) ->
+  commentToken: (chunk = @chunk, {heregex, returnCommentTokens = no} = {}) ->
     return 0 unless match = chunk.match COMMENT
     [commentWithSurroundingWhitespace, hereLeadingWhitespace, hereComment, hereTrailingWhitespace, lineComment] = match
     contents = null
@@ -410,6 +410,7 @@ exports.Lexer = class Lexer
     else
       attachCommentsToNode commentAttachments, prev
 
+    return commentAttachments if returnCommentTokens
     commentWithSurroundingWhitespace.length
 
   # Matches JavaScript interpolated directly into the source via backticks.
@@ -434,7 +435,11 @@ exports.Lexer = class Lexer
       when match = @matchWithInterpolations HEREGEX, '///'
         {tokens, index} = match
         comments = @chunk[0...index].match /\s+(#(?!{).*)/g
-        @commentToken(comment, heregex: yes) for comment in comments if comments
+        if comments
+          commentTokens = flatten(
+            for comment in comments
+              @commentToken comment, heregex: yes, returnCommentTokens: yes
+          )
       when match = REGEX.exec @chunk
         [regex, body, closed] = match
         @validateEscapes body, isRegex: yes, offsetInChunk: 1
@@ -471,6 +476,11 @@ exports.Lexer = class Lexer
           @token 'STRING', '"' + flags + '"', offset: index - 1, length: flags.length
         @token ')', ')',                      offset: end,       length: 0
         @token 'REGEX_END', ')',              offset: end,       length: 0
+
+    # Explicitly attach any heregex comments to the REGEX/REGEX_END token.
+    if commentTokens?.length
+      addTokenData @tokens[@tokens.length - 1],
+        heregexCommentTokens: commentTokens
 
     end
 
