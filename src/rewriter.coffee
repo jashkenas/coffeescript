@@ -5,7 +5,7 @@
 # shorthand into the unambiguous long form, add implicit indentation and
 # parentheses, and generally clean things up.
 
-{throwSyntaxError} = require './helpers'
+{throwSyntaxError, extractAllCommentTokens} = require './helpers'
 
 # Move attached comments from one token to another.
 moveComments = (fromToken, toToken) ->
@@ -56,7 +56,7 @@ exports.Rewriter = class Rewriter
     @rescueStowawayComments()
     @addLocationDataToGeneratedTokens()
     @enforceValidJSXAttributes()
-    @fixOutdentLocationData()
+    @fixIndentationLocationData()
     @exposeTokenDataToGrammar()
     if process?.env?.DEBUG_REWRITTEN_TOKEN_STREAM
       console.log 'Rewritten token stream:' if process.env.DEBUG_TOKEN_STREAM
@@ -548,20 +548,86 @@ exports.Rewriter = class Rewriter
   # `OUTDENT` tokens should always be positioned at the last character of the
   # previous token, so that AST nodes ending in an `OUTDENT` token end up with a
   # location corresponding to the last “real” token under the node.
-  fixOutdentLocationData: ->
+  fixIndentationLocationData: ->
+    @allComments ?= extractAllCommentTokens @tokens
+    findPrecedingComment = (token, {afterPosition, indentSize, first, indented}) =>
+      tokenStart = token[2].range[0]
+      matches = (comment) ->
+        if comment.outdented
+          return no unless indentSize? and comment.indentSize > indentSize
+        return no if indented and not comment.indented
+        return no unless comment.locationData.range[0] < tokenStart
+        return no unless comment.locationData.range[0] > afterPosition
+        yes
+      if first
+        lastMatching = null
+        for comment in @allComments by -1
+          if matches comment
+            lastMatching = comment
+          else if lastMatching
+            return lastMatching
+        return lastMatching
+      for comment in @allComments when matches comment by -1
+        return comment
+      null
+
     @scanTokens (token, i, tokens) ->
-      return 1 unless token[0] is 'OUTDENT' or
+      return 1 unless token[0] in ['INDENT', 'OUTDENT'] or
         (token.generated and token[0] is 'CALL_END' and not token.data?.closingTagNameToken) or
         (token.generated and token[0] is '}')
-      prevLocationData = tokens[i - 1][2]
+      isIndent = token[0] is 'INDENT'
+      prevToken = tokens[i - 1]
+      prevLocationData = prevToken[2]
+      # addLocationDataToGeneratedTokens() set the outdent’s location data
+      # to the preceding token’s, but in order to detect comments inside an
+      # empty "block" we want to look for comments preceding the next token.
+      useNextToken = token.explicit or token.generated
+      if useNextToken
+        nextToken = token
+        nextTokenIndex = i
+        nextToken = tokens[nextTokenIndex++] while (nextToken.explicit or nextToken.generated) and nextTokenIndex isnt tokens.length - 1
+      precedingComment = findPrecedingComment(
+        if useNextToken
+          nextToken
+        else
+          token
+        afterPosition: prevLocationData.range[0]
+        indentSize: token.indentSize
+        first: isIndent
+        indented: useNextToken
+      )
+      if isIndent
+        return 1 unless precedingComment?.newLine
+      # We don’t want e.g. an implicit call at the end of an `if` condition to
+      # include a following indented comment.
+      return 1 if token.generated and token[0] is 'CALL_END' and precedingComment?.indented
+      prevLocationData = precedingComment.locationData if precedingComment?
       token[2] =
-        first_line:             prevLocationData.last_line
-        first_column:           prevLocationData.last_column
+        first_line:
+          if precedingComment?
+            prevLocationData.first_line
+          else
+            prevLocationData.last_line
+        first_column:
+          if precedingComment?
+            if isIndent
+              0
+            else
+              prevLocationData.first_column
+          else
+            prevLocationData.last_column
         last_line:              prevLocationData.last_line
         last_column:            prevLocationData.last_column
         last_line_exclusive:    prevLocationData.last_line_exclusive
         last_column_exclusive:  prevLocationData.last_column_exclusive
-        range:                  prevLocationData.range
+        range:
+          if isIndent and precedingComment?
+            [
+              prevLocationData.range[0] - precedingComment.indentSize
+              prevLocationData.range[1]
+            ]
+          else
+            prevLocationData.range
       return 1
 
   # Because our grammar is LALR(1), it can’t handle some single-line

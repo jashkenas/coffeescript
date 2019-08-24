@@ -6776,6 +6776,37 @@ test "AST location data as expected for RegexWithInterpolations node", ->
         line: 3
         column: 11
 
+  testAstLocationData '''
+    ///
+      a # first
+      #{b} ### second ###
+    ///ig
+  ''',
+    type: 'InterpolatedRegExpLiteral'
+    comments: [
+      start: 8
+      end: 15
+      range: [8, 15]
+      loc:
+        start:
+          line: 2
+          column: 4
+        end:
+          line: 2
+          column: 11
+    ,
+      start: 23
+      end: 37
+      range: [23, 37]
+      loc:
+        start:
+          line: 3
+          column: 7
+        end:
+          line: 3
+          column: 21
+    ]
+
 test "AST location data as expected for RegexLiteral node", ->
   testAstLocationData '/a/ig',
     type: 'RegExpLiteral'
@@ -6855,6 +6886,47 @@ test "AST location data as expected for RegexLiteral node", ->
         column: 0
       end:
         line: 5
+        column: 3
+
+  testAstLocationData '''
+    ///
+      a # first
+      b ### second ###
+    ///
+  ''',
+    type: 'RegExpLiteral'
+    comments: [
+      start: 8
+      end: 15
+      range: [8, 15]
+      loc:
+        start:
+          line: 2
+          column: 4
+        end:
+          line: 2
+          column: 11
+    ,
+      start: 20
+      end: 34
+      range: [20, 34]
+      loc:
+        start:
+          line: 3
+          column: 4
+        end:
+          line: 3
+          column: 18
+    ]
+    start: 0
+    end: 38
+    range: [0, 38]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
         column: 3
 
 test "AST location data as expected for TaggedTemplateCall node", ->
@@ -8558,3 +8630,501 @@ test "AST location data as expected for Sequence", ->
       end:
         line: 1
         column: 8
+
+test "AST location data as expected for blocks with comments", ->
+  # trailing indented comment
+  testAstLocationData '''
+    ->
+      a
+      # b
+  ''',
+    type: 'FunctionExpression'
+    body:
+      start: 3
+      end: 12
+      range: [3, 12]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 5
+    start: 0
+    end: 12
+    range: [0, 12]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 5
+
+  testAstLocationData '''
+    if a
+      b
+      ### c ###
+  ''',
+    type: 'IfStatement'
+    consequent:
+      start: 5
+      end: 20
+      range: [5, 20]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 11
+    start: 0
+    end: 20
+    range: [0, 20]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 11
+
+  # trailing non-indented comment
+  testAstLocationData '''
+    ->
+      a
+    # b
+  ''',
+    type: 'FunctionExpression'
+    body:
+      start: 3
+      end: 6
+      range: [3, 6]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 2
+          column: 3
+    start: 0
+    end: 6
+    range: [0, 6]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 2
+        column: 3
+
+  testAstLocationData '''
+    if a
+      b
+    ### c ###
+  ''',
+    type: 'IfStatement'
+    consequent:
+      start: 5
+      end: 8
+      range: [5, 8]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 2
+          column: 3
+    start: 0
+    end: 8
+    range: [0, 8]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 2
+        column: 3
+
+  # multiple trailing indented comments
+  testAstLocationData '''
+    class A
+      a: ->
+      # b
+      #comment
+  ''',
+    type: 'ClassDeclaration'
+    body:
+      start: 8
+      end: 32
+      range: [8, 32]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 4
+          column: 10
+    start: 0
+    end: 32
+    range: [0, 32]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 10
+
+  testAstLocationData '''
+    a = ->
+      c
+      # b
+      ### comment ###
+  ''',
+    type: 'AssignmentExpression'
+    right:
+      start: 4
+      end: 34
+      range: [4, 34]
+      loc:
+        start:
+          line: 1
+          column: 4
+        end:
+          line: 4
+          column: 17
+    start: 0
+    end: 34
+    range: [0, 34]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 17
+
+  # multiple trailing comments, some indented
+  testAstLocationData '''
+    class A
+      a: ->
+      # b
+    #comment
+  ''',
+    type: 'ClassDeclaration'
+    body:
+      start: 8
+      end: 21
+      range: [8, 21]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 5
+    start: 0
+    end: 21
+    range: [0, 21]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 5
+
+  # leading indented comment
+  testAstLocationData '''
+    ->
+      # a
+      b
+  ''',
+    type: 'FunctionExpression'
+    body:
+      start: 3
+      end: 12
+      range: [3, 12]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 3
+    start: 0
+    end: 12
+    range: [0, 12]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 3
+
+  testAstLocationData '''
+    if a
+      ### b ###
+      c
+  ''',
+    type: 'IfStatement'
+    consequent:
+      start: 5
+      end: 20
+      range: [5, 20]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 3
+    start: 0
+    end: 20
+    range: [0, 20]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 3
+
+  # multiple leading indented comments
+  testAstLocationData '''
+    ->
+      # a
+      # b
+      c
+  ''',
+    type: 'FunctionExpression'
+    body:
+      start: 3
+      end: 18
+      range: [3, 18]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 4
+          column: 3
+    start: 0
+    end: 18
+    range: [0, 18]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 3
+
+  testAstLocationData '''
+    if a
+      ### b ###
+      # c
+      d
+  ''',
+    type: 'IfStatement'
+    consequent:
+      start: 5
+      end: 26
+      range: [5, 26]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 4
+          column: 3
+    start: 0
+    end: 26
+    range: [0, 26]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 3
+
+  # just a comment
+  testAstLocationData '''
+    ->
+      # a
+  ''',
+    type: 'FunctionExpression'
+    body:
+      start: 3
+      end: 8
+      range: [3, 8]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 2
+          column: 5
+    start: 0
+    end: 8
+    range: [0, 8]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 2
+        column: 5
+
+  testAstLocationData '''
+    if a
+      ### b ###
+    else
+      c
+  ''',
+    type: 'IfStatement'
+    consequent:
+      start: 5
+      end: 16
+      range: [5, 16]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 2
+          column: 11
+    start: 0
+    end: 25
+    range: [0, 25]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 3
+
+  # just a non-indented comment
+  testAstLocationData '''
+    ->
+    # a
+  ''',
+    type: 'FunctionExpression'
+    body:
+      start: 2
+      end: 2
+      range: [2, 2]
+      loc:
+        start:
+          line: 1
+          column: 2
+        end:
+          line: 1
+          column: 2
+    start: 0
+    end: 2
+    range: [0, 2]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 2
+
+  # nested dedented comment
+  testAstLocationData '''
+    switch a
+      when b
+        c
+      # d
+  ''',
+    type: 'SwitchStatement'
+    cases: [
+      start: 11
+      end: 23
+      range: [11, 23]
+      loc:
+        start:
+          line: 2
+          column: 2
+        end:
+          line: 3
+          column: 5
+    ]
+    start: 0
+    end: 29
+    range: [0, 29]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 5
+
+  # trailing implicit call in condition followed by indented comment
+  testAstLocationData '''
+    if a b
+      # c
+      d
+  ''',
+    type: 'IfStatement'
+    test:
+      start: 3
+      end: 6
+      range: [3, 6]
+      loc:
+        start:
+          line: 1
+          column: 3
+        end:
+          line: 1
+          column: 6
+    consequent:
+      start: 7
+      end: 16
+      range: [7, 16]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 3
+          column: 3
+    start: 0
+    end: 16
+    range: [0, 16]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 3
+
+test "AST location data as expected for heregex comments", ->
+  code = '''
+    ///
+      a # b
+    ///
+  '''
+
+  testAstLocationData code,
+    type: 'RegExpLiteral'
+    start: 0
+    end: 15
+    range: [0, 15]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 3
+        column: 3
+
+  eq getAstRoot(code).comments.length, 0

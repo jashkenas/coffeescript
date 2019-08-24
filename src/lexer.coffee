@@ -14,7 +14,7 @@
 # Import the helpers we need.
 {count, starts, compact, repeat, invertLiterate, merge,
 attachCommentsToNode, locationDataToString, throwSyntaxError
-replaceUnicodeCodePointEscapes} = require './helpers'
+replaceUnicodeCodePointEscapes, flatten} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -312,7 +312,7 @@ exports.Lexer = class Lexer
   # Matches and consumes comments. The comments are taken out of the token
   # stream and saved for later, to be reinserted into the output after
   # everything has been parsed and the JavaScript code generated.
-  commentToken: (chunk = @chunk) ->
+  commentToken: (chunk = @chunk, {heregex, returnCommentTokens = no, offsetInChunk = 0} = {}) ->
     return 0 unless match = chunk.match COMMENT
     [commentWithSurroundingWhitespace, hereLeadingWhitespace, hereComment, hereTrailingWhitespace, lineComment] = match
     contents = null
@@ -369,18 +369,30 @@ exports.Lexer = class Lexer
           comment
         .filter (comment) -> comment
 
-    offsetInChunk = 0
+    getIndentSize = ({leadingWhitespace, nonInitial}) ->
+      lastNewlineIndex = leadingWhitespace.lastIndexOf '\n'
+      if hereComment? or not nonInitial
+        return null unless lastNewlineIndex > -1
+      else
+        lastNewlineIndex ?= -1
+      leadingWhitespace.length - 1 - lastNewlineIndex
     commentAttachments = for {content, length, leadingWhitespace, precededByBlankLine}, i in contents
       nonInitial = i isnt 0
       leadingNewlineOffset = if nonInitial then 1 else 0
       offsetInChunk += leadingNewlineOffset + leadingWhitespace.length
+      indentSize = getIndentSize {leadingWhitespace, nonInitial}
+      noIndent = not indentSize? or indentSize is -1
       commentAttachment = {
         content
         here: hereComment?
         newLine: leadingNewline or nonInitial # Line comments after the first one start new lines, by definition.
         locationData: @makeLocationData {offsetInChunk, length}
         precededByBlankLine
+        indentSize
+        indented:  not noIndent and indentSize > @indent
+        outdented: not noIndent and indentSize < @indent
       }
+      commentAttachment.heregex = yes if heregex
       offsetInChunk += length
       commentAttachment
 
@@ -397,6 +409,7 @@ exports.Lexer = class Lexer
     else
       attachCommentsToNode commentAttachments, prev
 
+    return commentAttachments if returnCommentTokens
     commentWithSurroundingWhitespace.length
 
   # Matches JavaScript interpolated directly into the source via backticks.
@@ -420,8 +433,15 @@ exports.Lexer = class Lexer
           offset: match.index + match[1].length
       when match = @matchWithInterpolations HEREGEX, '///'
         {tokens, index} = match
-        comments = @chunk[0...index].match /\s+(#(?!{).*)/g
-        @commentToken comment for comment in comments if comments
+        comments = []
+        while matchedComment = HEREGEX_COMMENT.exec @chunk[0...index]
+          {index: commentIndex} = matchedComment
+          [fullMatch, leadingWhitespace, comment] = matchedComment
+          comments.push {comment, offsetInChunk: commentIndex + leadingWhitespace.length}
+        commentTokens = flatten(
+          for commentOpts in comments
+            @commentToken commentOpts.comment, Object.assign commentOpts, heregex: yes, returnCommentTokens: yes
+        )
       when match = REGEX.exec @chunk
         [regex, body, closed] = match
         @validateEscapes body, isRegex: yes, offsetInChunk: 1
@@ -458,6 +478,11 @@ exports.Lexer = class Lexer
           @token 'STRING', '"' + flags + '"', offset: index - 1, length: flags.length
         @token ')', ')',                      offset: end,       length: 0
         @token 'REGEX_END', ')',              offset: end,       length: 0
+
+    # Explicitly attach any heregex comments to the REGEX/REGEX_END token.
+    if commentTokens?.length
+      addTokenData @tokens[@tokens.length - 1],
+        heregexCommentTokens: commentTokens
 
     end
 
@@ -518,12 +543,12 @@ exports.Lexer = class Lexer
       @error 'missing indentation', offset: offset + indent.length
     else
       @indebt = 0
-      @outdentToken {moveOut: @indent - size, noNewlines, outdentLength: indent.length, offset}
+      @outdentToken {moveOut: @indent - size, noNewlines, outdentLength: indent.length, offset, indentSize: size}
     indent.length
 
   # Record an outdent token or multiple tokens, if we happen to be moving back
   # inwards past several recorded indents. Sets new @indent value.
-  outdentToken: ({moveOut, noNewlines, outdentLength = 0, offset = 0}) ->
+  outdentToken: ({moveOut, noNewlines, outdentLength = 0, offset = 0, indentSize}) ->
     decreasedIndent = @indent - moveOut
     while moveOut > 0
       lastIndent = @indents[@indents.length - 1]
@@ -540,7 +565,7 @@ exports.Lexer = class Lexer
         @outdebt = 0
         # pair might call outdentToken, so preserve decreasedIndent
         @pair 'OUTDENT'
-        @token 'OUTDENT', moveOut, length: outdentLength
+        @token 'OUTDENT', moveOut, length: outdentLength, indentSize: indentSize + moveOut - dent
         moveOut -= dent
     @outdebt -= moveOut if dent
     @suppressSemicolons()
@@ -801,7 +826,7 @@ exports.Lexer = class Lexer
 
   # Close up all remaining open blocks at the end of the file.
   closeIndentation: ->
-    @outdentToken moveOut: @indent
+    @outdentToken moveOut: @indent, indentSize: 0
 
   # Match the contents of a delimited token and expand variables and expressions
   # inside it using Ruby-like notation for substitution of arbitrary
@@ -1021,10 +1046,11 @@ exports.Lexer = class Lexer
 
   # Same as `token`, except this just returns the token without adding it
   # to the results.
-  makeToken: (tag, value, {offset: offsetInChunk = 0, length = value.length, origin, generated} = {}) ->
+  makeToken: (tag, value, {offset: offsetInChunk = 0, length = value.length, origin, generated, indentSize} = {}) ->
     token = [tag, value, @makeLocationData {offsetInChunk, length}]
     token.origin = origin if origin
     token.generated = yes if generated
+    token.indentSize = indentSize if indentSize?
     token
 
   # Add a token to the results.
@@ -1033,8 +1059,8 @@ exports.Lexer = class Lexer
   # not specified, the length of `value` will be used.
   #
   # Returns the new token.
-  token: (tag, value, {offset, length, origin, data, generated} = {}) ->
-    token = @makeToken tag, value, {offset, length, origin, generated}
+  token: (tag, value, {offset, length, origin, data, generated, indentSize} = {}) ->
+    token = @makeToken tag, value, {offset, length, origin, generated, indentSize}
     addTokenData token, data if data
     @tokens.push token
     token
@@ -1299,6 +1325,8 @@ HEREGEX      = /// ^
     | \s+(?:#(?!\{).*)?
   )*
 ///
+
+HEREGEX_COMMENT = /(\s+)(#(?!{).*)/gm
 
 REGEX_ILLEGAL = /// ^ ( / | /{3}\s*) (\*) ///
 
