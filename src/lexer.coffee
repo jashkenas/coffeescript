@@ -1199,12 +1199,13 @@ CSX_ATTRIBUTE = /// ^
 ///
 
 NUMBER     = ///
-  ^ 0b[01](?:_?[01])*        |    # binary
-  ^ 0o[0-7](?:_?[0-7])*      |    # octal
-  ^ 0x[\da-f](?:_?[\da-f])*  |    # hex
-  # ^ \d*\.?\d+ (?:e[+-]?\d+)?    # decimal
-  ^ (?:\d(?:_?\d)*)?    \.?   (?:\d(?:_?\d)*)+
+  ^ 0b[01](?:_?[01])*                           | # binary
+  ^ 0o[0-7](?:_?[0-7])*                         | # octal
+  ^ 0x[\da-f](?:_?[\da-f])*                     | # hex
+  ^ (?:\d(?:_?\d)*)?    \.?   (?:\d(?:_?\d)*)+    # decimal
                     (?:e[+-]? (?:\d(?:_?\d)*)+ )?
+  # decimal without support for numeric literal separators for reference:
+  # ^ \d*\.?\d+ (?:e[+-]?\d+)?
 ///i
 
 OPERATOR   = /// ^ (
