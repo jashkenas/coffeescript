@@ -88,7 +88,7 @@ if require?
 
     eq error.message, 'hello world'
     doesNotThrow(-> error.stack)
-    notEqual error.stack.toString().indexOf(filePath), -1
+    notEqual error.stack.toString().indexOf(filePath), -1, "Expected " + filePath + "in stack trace: " + error.stack.toString()
 
   test "#4418: stack traces for compiled files reference the correct line number", ->
     # The browser is already compiling other anonymous scripts (the tests)
