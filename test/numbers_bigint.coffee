@@ -10,8 +10,8 @@ test "Parser recognizes decimal BigInt literals", ->
 test "Parser recognizes binary BigInt literals", ->
   eq 42n, 0b101010n
 
-test "Parser recognizes decimal BigInt literals", ->
+test "Parser recognizes octal BigInt literals", ->
   eq 42n, 0o52n
 
-test "Parser recognizes decimal BigInt literals", ->
+test "Parser recognizes hexadecimal BigInt literals", ->
   eq 42n, 0x2an
