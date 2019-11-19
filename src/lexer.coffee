@@ -270,9 +270,6 @@ exports.Lexer = class Lexer
     switch
       when /^0[BOX]/.test number
         @error "radix prefix in '#{number}' must be lowercase", offset: 1
-      when /^(?!0x).*E/.test number
-        @error "exponential notation in '#{number}' must be indicated with a lowercase 'e'",
-          offset: number.indexOf('E')
       when /^0\d*[89]/.test number
         @error "decimal literal '#{number}' must not be prefixed with '0'", length: lexedLength
       when /^0\d+/.test number
