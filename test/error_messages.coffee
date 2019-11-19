@@ -807,13 +807,6 @@ test "invalid numbers", ->
      ^
   '''
   assertErrorFormat '''
-    10E0
-  ''', '''
-    [stdin]:1:3: error: exponential notation in '10E0' must be indicated with a lowercase 'e'
-    10E0
-      ^
-  '''
-  assertErrorFormat '''
     018
   ''', '''
     [stdin]:1:1: error: decimal literal '018' must not be prefixed with '0'
