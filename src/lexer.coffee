@@ -1215,7 +1215,7 @@ NUMBER     = ///
   ^ 0b[01](?:_?[01])*                           | # binary
   ^ 0o[0-7](?:_?[0-7])*                         | # octal
   ^ 0x[\da-f](?:_?[\da-f])*                     | # hex
-  ^ \d+n         |                                # decimal bigint
+  ^ \d+n                                        | # decimal bigint
   ^ (?:\d(?:_?\d)*)?    \.?   (?:\d(?:_?\d)*)+    # decimal
                     (?:e[+-]? (?:\d(?:_?\d)*)+ )?
   # decimal without support for numeric literal separators for reference:
