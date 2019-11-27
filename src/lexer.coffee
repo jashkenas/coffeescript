@@ -1212,9 +1212,10 @@ CSX_ATTRIBUTE = /// ^
 ///
 
 NUMBER     = ///
-  ^ 0b[01]+    |              # binary
-  ^ 0o[0-7]+   |              # octal
-  ^ 0x[\da-f]+ |              # hex
+  ^ 0b[01]+n?    |            # binary
+  ^ 0o[0-7]+n?   |            # octal
+  ^ 0x[\da-f]+n? |            # hex
+  ^ \d+n         |            # decimal bigint
   ^ \d*\.?\d+ (?:e[+-]?\d+)?  # decimal
 ///i
 
