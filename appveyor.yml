@@ -3,7 +3,8 @@ environment:
     - nodejs_version: '6'
     - nodejs_version: '8'
     - nodejs_version: '10'
-    - nodejs_version: '' # Installs latest.
+    - nodejs_version: '12'
+    - nodejs_version: '' # Latest
 
 install:
   - ps: Install-Product node $env:nodejs_version
