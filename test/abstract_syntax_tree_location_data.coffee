@@ -3964,6 +3964,102 @@ test "AST location data as expected for Root node", ->
         line: 2
         column: 12
 
+  testAstRootLocationData ' \n',
+    type: 'File'
+    program:
+      start: 0
+      end: 2
+      range: [0, 2]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 2
+          column: 0
+    start: 0
+    end: 2
+    range: [0, 2]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 2
+        column: 0
+
+  testAstRootLocationData '\n',
+    type: 'File'
+    program:
+      start: 0
+      end: 1
+      range: [0, 1]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 2
+          column: 0
+    start: 0
+    end: 1
+    range: [0, 1]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 2
+        column: 0
+
+  testAstRootLocationData '',
+    type: 'File'
+    program:
+      start: 0
+      end: 0
+      range: [0, 0]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 0
+    start: 0
+    end: 0
+    range: [0, 0]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 0
+
+  testAstRootLocationData ' ',
+    type: 'File'
+    program:
+      start: 0
+      end: 1
+      range: [0, 1]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 1
+    start: 0
+    end: 1
+    range: [0, 1]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 1
+
 test "AST location data as expected for Switch node", ->
   testAstLocationData '''
     switch x

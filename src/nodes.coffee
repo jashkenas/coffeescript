@@ -854,6 +854,10 @@ exports.Block = class Block extends Base
       body, directives
     }
 
+  astLocationData: ->
+    return if @isRootBlock and not @locationData?
+    super()
+
 # A directive e.g. 'use strict'.
 # Currently only used during AST generation.
 exports.Directive = class Directive extends Base

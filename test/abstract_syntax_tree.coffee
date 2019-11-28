@@ -147,6 +147,20 @@ test "AST as expected for Block node", ->
       value: ' comment'
     ]
 
+  deepStrictIncludeExpectedProperties CoffeeScript.compile('', ast: yes),
+    type: 'File'
+    program:
+      type: 'Program'
+      body: []
+      directives: []
+
+  deepStrictIncludeExpectedProperties CoffeeScript.compile(' ', ast: yes),
+    type: 'File'
+    program:
+      type: 'Program'
+      body: []
+      directives: []
+
 test "AST as expected for NumberLiteral node", ->
   testExpression '42',
     type: 'NumericLiteral'
