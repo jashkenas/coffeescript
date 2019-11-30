@@ -2572,7 +2572,11 @@ exports.ObjectProperty = class ObjectProperty extends Base
     keyAst = @key.ast o, LEVEL_LIST
 
     return
-      key: keyAst
+      key:
+        if keyAst?.declaration
+          Object.assign {}, keyAst, declaration: no
+        else
+          keyAst
       value: @value?.ast(o, LEVEL_LIST) ? keyAst
       shorthand: !!@shorthand
       computed: !!isComputedPropertyName
@@ -5182,6 +5186,14 @@ exports.For = class For extends While
       @makeCode(@tab), @makeCode('}')
     fragments.push @makeCode(returnResult) if returnResult
     fragments
+
+  ast: (o, level) ->
+    addToScope = (name) ->
+      alreadyDeclared = o.scope.find name.value
+      name.isDeclaration = not alreadyDeclared
+    @name?.eachName addToScope
+    @index?.eachName addToScope
+    super o, level
 
   astType: -> 'For'
 

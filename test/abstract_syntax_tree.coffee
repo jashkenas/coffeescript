@@ -102,10 +102,11 @@ EMPTY_BLOCK =
   body: []
   directives: []
 
-ID = (name) -> {
-  type: 'Identifier'
-  name
-}
+ID = (name, additionalProperties = {}) ->
+  Object.assign({
+    type: 'Identifier'
+    name
+  }, additionalProperties)
 
 NUMBER = (value) -> {
   type: 'NumericLiteral'
@@ -3166,11 +3167,11 @@ test "AST as expected for StringWithInterpolations node", ->
 test "AST as expected for For node", ->
   testStatement 'for x, i in arr when x? then return',
     type: 'For'
-    name: ID 'x'
-    index: ID 'i'
+    name: ID 'x', declaration: yes
+    index: ID 'i', declaration: yes
     guard:
       type: 'UnaryExpression'
-    source: ID 'arr'
+    source: ID 'arr', declaration: no
     body:
       type: 'BlockStatement'
       body: [
@@ -3184,10 +3185,10 @@ test "AST as expected for For node", ->
 
   testStatement 'for k, v of obj then return',
     type: 'For'
-    name: ID 'v'
-    index: ID 'k'
+    name: ID 'v', declaration: yes
+    index: ID 'k', declaration: yes
     guard: null
-    source: ID 'obj'
+    source: ID 'obj', declaration: no
     body:
       type: 'BlockStatement'
       body: [
@@ -3201,11 +3202,11 @@ test "AST as expected for For node", ->
 
   testStatement 'for x from iterable then',
     type: 'For'
-    name: ID 'x'
+    name: ID 'x', declaration: yes
     index: null
     guard: null
     body: EMPTY_BLOCK
-    source: ID 'iterable'
+    source: ID 'iterable', declaration: no
     style: 'from'
     own: no
     postfix: no
@@ -3214,14 +3215,14 @@ test "AST as expected for For node", ->
 
   testStatement 'for i in [0...42] by step when not (i % 2) then',
     type: 'For'
-    name: ID 'i'
+    name: ID 'i', declaration: yes
     index: null
     body: EMPTY_BLOCK
     source:
       type: 'Range'
     guard:
       type: 'UnaryExpression'
-    step: ID 'step'
+    step: ID 'step', declaration: no
     style: 'in'
     own: no
     postfix: no
@@ -3231,15 +3232,15 @@ test "AST as expected for For node", ->
     type: 'AssignmentExpression'
     right:
       type: 'For'
-      name: ID 'x'
+      name: ID 'x', declaration: yes
       index: null
       body:
         type: 'BlockStatement'
         body: [
           type: 'ExpressionStatement'
-          expression: ID 'x'
+          expression: ID 'x', declaration: no
         ]
-      source: ID 'y'
+      source: ID 'y', declaration: no
       guard: null
       step: null
       style: 'in'
@@ -3255,7 +3256,7 @@ test "AST as expected for For node", ->
       type: 'BlockStatement'
       body: [
         type: 'ExpressionStatement'
-        expression: ID 'x'
+        expression: ID 'x', declaration: no
       ]
     source:
       type: 'Range'
@@ -3272,8 +3273,8 @@ test "AST as expected for For node", ->
       d
   ''',
     type: 'For'
-    name: ID 'y'
-    index: ID 'x'
+    name: ID 'y', declaration: yes
+    index: ID 'x', declaration: yes
     body:
       type: 'BlockStatement'
       body: [
@@ -3282,9 +3283,9 @@ test "AST as expected for For node", ->
           type: 'CallExpression'
       ,
         type: 'ExpressionStatement'
-        expression: ID 'd'
+        expression: ID 'd', declaration: no
       ]
-    source: ID 'z'
+    source: ID 'z', declaration: no
     guard: null
     step: null
     style: 'of'
@@ -3302,15 +3303,15 @@ test "AST as expected for For node", ->
       type: 'BlockStatement'
       body: [
         type: 'For'
-        name: ID 'x'
+        name: ID 'x', declaration: yes
         index: null
         body:
           type: 'BlockStatement'
           body: [
             type: 'ExpressionStatement'
-            expression: ID 'z'
+            expression: ID 'z', declaration: no
           ]
-        source: ID 'y'
+        source: ID 'y', declaration: no
         guard: null
         step: null
         style: 'from'
@@ -3328,8 +3329,8 @@ test "AST as expected for For node", ->
       type: 'ObjectPattern'
       properties: [
         type: 'ObjectProperty'
-        key: ID 'x'
-        value: ID 'x'
+        key: ID 'x', declaration: no
+        value: ID 'x', declaration: yes
         shorthand: yes
         computed: no
       ]
@@ -3355,7 +3356,7 @@ test "AST as expected for For node", ->
     name:
       type: 'ArrayPattern'
       elements: [
-        ID 'x'
+        ID 'x', declaration: yes
       ]
     index: null
     body:
