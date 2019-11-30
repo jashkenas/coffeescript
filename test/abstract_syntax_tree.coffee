@@ -2261,11 +2261,13 @@ test "AST as expected for Code node", ->
     params: [
       type: 'Identifier'
       name: 'a'
+      declaration: no
     ,
       type: 'AssignmentPattern'
       left:
         type: 'Identifier'
         name: 'b'
+        declaration: no
       right:
         type: 'NumericLiteral'
         value: 1
@@ -2294,8 +2296,8 @@ test "AST as expected for Code node", ->
       type: 'ObjectPattern'
       properties: [
         type: 'ObjectProperty'
-        key: ID('a')
-        value: ID('a')
+        key: ID 'a', declaration: no
+        value: ID 'a', declaration: no
         shorthand: yes
       ]
     ]
@@ -2309,7 +2311,7 @@ test "AST as expected for Code node", ->
     params: [
       type: 'ArrayPattern'
       elements: [
-        ID('a')
+        ID 'a', declaration: no
       ]
     ]
     body: EMPTY_BLOCK
@@ -2325,10 +2327,10 @@ test "AST as expected for Code node", ->
         type: 'ObjectPattern'
         properties: [
           type: 'ObjectProperty'
-          key: ID('a')
+          key: ID 'a', declaration: no
           value:
             type: 'AssignmentPattern'
-            left: ID('a')
+            left: ID 'a', declaration: no
             right: NUMBER(1)
           shorthand: yes
         ]
@@ -2349,7 +2351,7 @@ test "AST as expected for Code node", ->
         type: 'ArrayPattern'
         elements: [
           type: 'AssignmentPattern'
-          left: ID('a')
+          left: ID 'a', declaration: no
           right: NUMBER(1)
         ]
       right:
@@ -2376,7 +2378,7 @@ test "AST as expected for Code node", ->
       object:
         type: 'ThisExpression'
         shorthand: yes
-      property: ID 'a'
+      property: ID 'a', declaration: no
     ]
     body: EMPTY_BLOCK
     generator: no
@@ -2421,8 +2423,8 @@ test "AST as expected for Code node", ->
       type: 'ObjectPattern'
       properties: [
         type: 'ObjectProperty'
-        key:   ID 'a'
-        value: ID 'a'
+        key:   ID 'a', declaration: no
+        value: ID 'a', declaration: no
         shorthand: yes
         computed: yes
       ]
@@ -2436,7 +2438,7 @@ test "AST as expected for Code node", ->
     type: 'FunctionExpression'
     params: [
       type: 'RestElement'
-      argument: ID 'a'
+      argument: ID 'a', declaration: no
       postfix: no
     ]
     body: EMPTY_BLOCK
@@ -2538,6 +2540,7 @@ test "AST as expected for Splat node", ->
       argument:
         type: 'Identifier'
         name: 'a'
+        declaration: no
       postfix: yes
     ]
 
@@ -2545,21 +2548,15 @@ test "AST as expected for Splat node", ->
     type: 'ArrayExpression'
     elements: [
       name: 'b'
+      declaration: no
     ,
       type: 'SpreadElement'
       argument:
         type: 'Identifier'
         name: 'c'
+        declaration: no
       postfix: no
     ]
-
-  # testExpression '(a...) ->',
-  #   params: [
-  #     type: 'Param'
-  #     splat: yes
-  #     name:
-  #       value: 'a'
-  #   ]
 
 #   # TODO: Test object splats.
 
