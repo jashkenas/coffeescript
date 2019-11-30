@@ -4757,6 +4757,13 @@ exports.Catch = class Catch extends Base
     [].concat @makeCode(" catch ("), placeholder.compileToFragments(o), @makeCode(") {\n"),
       @recovery.compileToFragments(o, LEVEL_TOP), @makeCode("\n#{@tab}}")
 
+  ast: (o, level) ->
+    @errorVariable?.eachName (name) ->
+      alreadyDeclared = o.scope.find name.value
+      name.isDeclaration = not alreadyDeclared
+
+    super o, level
+
   astType: -> 'CatchClause'
 
   astProperties: (o) ->

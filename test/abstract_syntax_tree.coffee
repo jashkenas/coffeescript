@@ -2952,6 +2952,7 @@ test "AST as expected for Try node", ->
       param:
         type: 'Identifier'
         name: 'e'
+        declaration: yes
       body:
         type: 'BlockStatement'
         body: [
@@ -2999,6 +3000,11 @@ test "AST as expected for Try node", ->
       type: 'CatchClause'
       param:
         type: 'ObjectPattern'
+        properties: [
+          type: 'ObjectProperty'
+          key: ID 'e', declaration: no
+          value: ID 'e', declaration: yes
+        ]
       body:
         type: 'BlockStatement'
         body: [
