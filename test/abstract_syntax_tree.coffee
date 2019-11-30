@@ -2086,9 +2086,11 @@ test "AST as expected for Assign node", ->
     left:
       type: 'Identifier'
       name: 'a'
+      declaration: yes
     right:
       type: 'Identifier'
       name: 'b'
+      declaration: no
     operator: '='
 
   testExpression 'a += b',
@@ -2096,9 +2098,11 @@ test "AST as expected for Assign node", ->
     left:
       type: 'Identifier'
       name: 'a'
+      declaration: no
     right:
       type: 'Identifier'
       name: 'b'
+      declaration: no
     operator: '+='
 
   testExpression '[@a = 2, {b: {c = 3} = {}, d...}, ...e] = f',
@@ -2113,6 +2117,7 @@ test "AST as expected for Assign node", ->
             type: 'ThisExpression'
           property:
             name: 'a'
+            declaration: no
         right:
           type: 'NumericLiteral'
       ,
@@ -2121,6 +2126,7 @@ test "AST as expected for Assign node", ->
           type: 'ObjectProperty'
           key:
             name: 'b'
+            declaration: no
           value:
             type: 'AssignmentPattern'
             left:
@@ -2133,6 +2139,7 @@ test "AST as expected for Assign node", ->
                   type: 'AssignmentPattern'
                   left:
                     name: 'c'
+                    declaration: yes
                   right:
                     value: 3
                 shorthand: yes
@@ -2142,10 +2149,16 @@ test "AST as expected for Assign node", ->
               properties: []
         ,
           type: 'RestElement'
+          argument:
+            name: 'd'
+            declaration: yes
           postfix: yes
         ]
       ,
         type: 'RestElement'
+        argument:
+          name: 'e'
+          declaration: yes
         postfix: no
       ]
     right:
@@ -2159,23 +2172,30 @@ test "AST as expected for Assign node", ->
         type: 'ObjectProperty'
         key:
           name: 'a'
+          declaration: no
         value:
           type: 'ArrayPattern'
           elements: [
             type: 'RestElement'
+            argument:
+              name: 'b'
+              declaration: yes
           ]
       ]
     right:
       name: 'c'
+      declaration: no
 
   testExpression 'a ?= b',
     type: 'AssignmentExpression'
     left:
       type: 'Identifier'
       name: 'a'
+      declaration: no
     right:
       type: 'Identifier'
       name: 'b'
+      declaration: no
     operator: '?='
 
 # # `FuncGlyph` node isn't exported.

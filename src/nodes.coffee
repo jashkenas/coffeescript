@@ -931,6 +931,7 @@ exports.InfinityLiteral = class InfinityLiteral extends NumberLiteral
   astProperties: ->
     return
       name: 'Infinity'
+      declaration: no
 
 exports.NaNLiteral = class NaNLiteral extends NumberLiteral
   constructor: ->
@@ -945,6 +946,7 @@ exports.NaNLiteral = class NaNLiteral extends NumberLiteral
   astProperties: ->
     return
       name: 'NaN'
+      declaration: no
 
 exports.StringLiteral = class StringLiteral extends Literal
   constructor: (@originalValue, {@quote, @initialChunk, @finalChunk, @indent, @double, @heregex} = {}) ->
@@ -1113,6 +1115,7 @@ exports.IdentifierLiteral = class IdentifierLiteral extends Literal
   astProperties: ->
     return
       name: @value
+      declaration: !!@isDeclaration
 
 exports.PropertyName = class PropertyName extends Literal
   isAssignable: YES
@@ -1126,6 +1129,7 @@ exports.PropertyName = class PropertyName extends Literal
   astProperties: ->
     return
       name: @value
+      declaration: no
 
 exports.ComputedPropertyName = class ComputedPropertyName extends PropertyName
   compileNode: (o) ->
@@ -1179,6 +1183,7 @@ exports.UndefinedLiteral = class UndefinedLiteral extends Literal
   astProperties: ->
     return
       name: @value
+      declaration: no
 
 exports.NullLiteral = class NullLiteral extends Literal
   constructor: ->
@@ -1199,6 +1204,7 @@ exports.DefaultLiteral = class DefaultLiteral extends Literal
   astProperties: ->
     return
       name: 'default'
+      declaration: no
 
 #### Return
 
@@ -3327,9 +3333,8 @@ exports.Assign = class Assign extends Base
   isStatement: (o) ->
     o?.level is LEVEL_TOP and @context? and (@moduleDeclaration or "?" in @context)
 
-  checkAssignability: (o, varBase) ->
-    if Object::hasOwnProperty.call(o.scope.positions, varBase.value) and
-       o.scope.variables[o.scope.positions[varBase.value]].type is 'import'
+  checkNameAssignability: (o, varBase) ->
+    if o.scope.type(varBase.value) is 'import'
       varBase.error "'#{varBase.value}' is read-only"
 
   assigns: (name) ->
@@ -3337,6 +3342,48 @@ exports.Assign = class Assign extends Base
 
   unfoldSoak: (o) ->
     unfoldSoak o, this, 'variable'
+
+  addScopeVariables: (o, {checkAssignability = yes} = {}) ->
+    return unless not @context or @context is '**='
+
+    varBase = @variable.unwrapAll()
+    if checkAssignability and not varBase.isAssignable()
+      @variable.error "'#{@variable.compile o}' can't be assigned"
+
+    varBase.eachName (name) =>
+      return if name.hasProperties?()
+
+      message = isUnassignable name.value
+      name.error message if message
+
+      # `moduleDeclaration` can be `'import'` or `'export'`.
+      @checkNameAssignability o, name
+      if @moduleDeclaration
+        o.scope.add name.value, @moduleDeclaration
+        name.isDeclaration = yes
+      else if @param
+        o.scope.add name.value,
+          if @param is 'alwaysDeclare'
+            'var'
+          else
+            'param'
+      else
+        alreadyDeclared = o.scope.find name.value
+        name.isDeclaration ?= not alreadyDeclared
+        # If this assignment identifier has one or more herecomments
+        # attached, output them as part of the declarations line (unless
+        # other herecomments are already staged there) for compatibility
+        # with Flow typing. Don’t do this if this assignment is for a
+        # class, e.g. `ClassName = class ClassName {`, as Flow requires
+        # the comment to be between the class name and the `{`.
+        if name.comments and not o.scope.comments[name.value] and
+           @value not instanceof Class and
+           name.comments.every((comment) -> comment.here and not comment.multiline)
+          commentsNode = new IdentifierLiteral name.value
+          commentsNode.comments = name.comments
+          commentFragments = []
+          @compileCommentFragments o, commentsNode, commentFragments
+          o.scope.comments[name.value] = commentFragments
 
   # Compile an assignment, delegating to `compileDestructuring` or
   # `compileSplice` if appropriate. Keep track of the name of the base object
@@ -3360,44 +3407,7 @@ exports.Assign = class Assign extends Base
       return @compileConditional  o if @context in ['||=', '&&=', '?=']
       return @compileSpecialMath  o if @context in ['//=', '%%=']
 
-    if not @context or @context is '**='
-      varBase = @variable.unwrapAll()
-      unless varBase.isAssignable()
-        @variable.error "'#{@variable.compile o}' can't be assigned"
-
-      varBase.eachName (name) =>
-        return if name.hasProperties?()
-
-        message = isUnassignable name.value
-        name.error message if message
-
-        # `moduleDeclaration` can be `'import'` or `'export'`.
-        @checkAssignability o, name
-        if @moduleDeclaration
-          o.scope.add name.value, @moduleDeclaration
-        else if @param
-          o.scope.add name.value,
-            if @param is 'alwaysDeclare'
-              'var'
-            else
-              'param'
-        else
-          o.scope.find name.value
-          # If this assignment identifier has one or more herecomments
-          # attached, output them as part of the declarations line (unless
-          # other herecomments are already staged there) for compatibility
-          # with Flow typing. Don’t do this if this assignment is for a
-          # class, e.g. `ClassName = class ClassName {`, as Flow requires
-          # the comment to be between the class name and the `{`.
-          if name.comments and not o.scope.comments[name.value] and
-             @value not instanceof Class and
-             name.comments.every((comment) -> comment.here and not comment.multiline)
-            commentsNode = new IdentifierLiteral name.value
-            commentsNode.comments = name.comments
-            commentFragments = []
-            @compileCommentFragments o, commentsNode, commentFragments
-            o.scope.comments[name.value] = commentFragments
-
+    @addScopeVariables o
     if @value instanceof Code
       if @value.isStatic
         @value.name = @variable.properties[0]
@@ -3656,6 +3666,10 @@ exports.Assign = class Assign extends Base
     @variable.base.propagateLhs yes
 
   isStatementAst: NO
+
+  ast: (o, level) ->
+    @addScopeVariables o, checkAssignability: no
+    super o, level
 
   astType: ->
     if @isDefaultAssignment()
