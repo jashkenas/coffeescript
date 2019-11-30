@@ -720,3 +720,24 @@ test 'StringWithInterpolations::fromStringLiteral() assigns correct location to 
       last_column: 5
       last_line_exclusive: 1
       last_column_exclusive: 0
+
+test "Verify compound assignment operators have the right position", ->
+  source = '''
+    a or= b
+  '''
+  [a, operatorToken] = CoffeeScript.tokens source
+  eq operatorToken[2].first_line, 0
+  eq operatorToken[2].first_column, 2
+  eq operatorToken[2].last_line, 0
+  eq operatorToken[2].last_column, 4
+  eq operatorToken[2].last_column_exclusive, 5
+
+  source = '''
+    a and= b
+  '''
+  [a, operatorToken] = CoffeeScript.tokens source
+  eq operatorToken[2].first_line, 0
+  eq operatorToken[2].first_column, 2
+  eq operatorToken[2].last_line, 0
+  eq operatorToken[2].last_column, 5
+  eq operatorToken[2].last_column_exclusive, 6

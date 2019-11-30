@@ -740,6 +740,12 @@ exports.Lexer = class Lexer
         prev[0] = 'COMPOUND_ASSIGN'
         prev[1] += '='
         prev.data.original += '=' if prev.data?.original
+        prev[2].range = [
+          prev[2].range[0]
+          prev[2].range[1] + 1
+        ]
+        prev[2].last_column += 1
+        prev[2].last_column_exclusive += 1
         prev = @tokens[@tokens.length - 2]
         skipToken = true
       if prev and prev[0] isnt 'PROPERTY'
