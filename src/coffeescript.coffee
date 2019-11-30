@@ -124,6 +124,7 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
     ast.loc.start = ast.program.loc.start = {line: 1, column: 0}
     ast.loc.end.line = ast.program.loc.end.line = sourceCodeNumberOfLines
     ast.loc.end.column = ast.program.loc.end.column = sourceCodeLastLine.length
+    ast.tokens = tokens
     return ast
 
   fragments = nodes.compileToFragments options
