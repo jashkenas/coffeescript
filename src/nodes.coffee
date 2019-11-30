@@ -5742,7 +5742,7 @@ exports.mergeAstLocationData = mergeAstLocationData = (nodeA, nodeB, {justLeadin
         greater nodeA.end, nodeB.end
 
 # Convert Jison-style node class location data to Babel-style location data
-jisonLocationDataToAstLocationData = ({first_line, first_column, last_line_exclusive, last_column_exclusive, range}) ->
+exports.jisonLocationDataToAstLocationData = jisonLocationDataToAstLocationData = ({first_line, first_column, last_line_exclusive, last_column_exclusive, range}) ->
   return
     loc:
       start:
