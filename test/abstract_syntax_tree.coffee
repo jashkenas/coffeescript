@@ -1873,9 +1873,11 @@ test "AST as expected for ModuleDeclaration node", ->
       local:
         type: 'Identifier'
         name: 'X'
+        declaration: no
       exported:
         type: 'Identifier'
         name: 'X'
+        declaration: no
     ]
     source: null
     exportKind: 'value'
@@ -1887,6 +1889,7 @@ test "AST as expected for ModuleDeclaration node", ->
       local:
         type: 'Identifier'
         name: 'X'
+        declaration: no
     ]
     importKind: 'value'
     source:
@@ -1901,15 +1904,18 @@ test "AST as expected for ImportDeclaration node", ->
       local:
         type: 'Identifier'
         name: 'React'
+        declaration: no
     ,
       type: 'ImportSpecifier'
       imported:
         type: 'Identifier'
         name: 'Component'
+        declaration: no
       importKind: null
       local:
         type: 'Identifier'
         name: 'Component'
+        declaration: no
     ]
     importKind: 'value'
     source:
@@ -1932,6 +1938,7 @@ test "AST as expected for ExportNamedDeclaration node", ->
       type: 'AssignmentExpression'
       left:
         type: 'Identifier'
+        declaration: yes
       right:
         type: 'FunctionExpression'
     specifiers: []
@@ -1948,17 +1955,21 @@ test "AST as expected for ExportNamedDeclaration node", ->
       local:
         type: 'Identifier'
         name: 'x'
+        declaration: no
       exported:
         type: 'Identifier'
         name: 'y'
+        declaration: no
     ,
       type: 'ExportSpecifier'
       local:
         type: 'Identifier'
         name: 'z'
+        declaration: no
       exported:
         type: 'Identifier'
         name: 'default'
+        declaration: no
     ]
     source: null
     exportKind: 'value'
@@ -1971,17 +1982,21 @@ test "AST as expected for ExportNamedDeclaration node", ->
       local:
         type: 'Identifier'
         name: 'default'
+        declaration: no
       exported:
         type: 'Identifier'
         name: 'default'
+        declaration: no
     ,
       type: 'ExportSpecifier'
       local:
         type: 'Identifier'
         name: 'default'
+        declaration: no
       exported:
         type: 'Identifier'
         name: 'b'
+        declaration: no
     ]
     source:
       type: 'StringLiteral'
@@ -1991,10 +2006,10 @@ test "AST as expected for ExportNamedDeclaration node", ->
     exportKind: 'value'
 
 test "AST as expected for ExportDefaultDeclaration node", ->
-  # testStatement 'export default class',
-  #   type: 'ExportDefaultDeclaration'
-  #   clause:
-  #     type: 'Class'
+  testStatement 'export default class',
+    type: 'ExportDefaultDeclaration'
+    declaration:
+      type: 'ClassDeclaration'
 
   testStatement 'export default "abc"',
     type: 'ExportDefaultDeclaration'
@@ -2003,6 +2018,13 @@ test "AST as expected for ExportDefaultDeclaration node", ->
       value: 'abc'
       extra:
         raw: '"abc"'
+
+  testStatement 'export default a = b',
+    type: 'ExportDefaultDeclaration'
+    declaration:
+      type: 'AssignmentExpression'
+      left: ID 'a', declaration: yes
+      right: ID 'b', declaration: no
 
 test "AST as expected for ExportAllDeclaration node", ->
   testStatement 'export * from "module-name"',
@@ -2023,25 +2045,31 @@ test "AST as expected for ExportSpecifierList node", ->
       local:
         type: 'Identifier'
         name: 'a'
+        declaration: no
       exported:
         type: 'Identifier'
         name: 'a'
+        declaration: no
     ,
       type: 'ExportSpecifier'
       local:
         type: 'Identifier'
         name: 'b'
+        declaration: no
       exported:
         type: 'Identifier'
         name: 'b'
+        declaration: no
     ,
       type: 'ExportSpecifier'
       local:
         type: 'Identifier'
         name: 'c'
+        declaration: no
       exported:
         type: 'Identifier'
         name: 'c'
+        declaration: no
     ]
 
 test "AST as expected for ImportDefaultSpecifier node", ->
@@ -2052,6 +2080,7 @@ test "AST as expected for ImportDefaultSpecifier node", ->
       local:
         type: 'Identifier'
         name: 'React'
+        declaration: no
     ]
     importKind: 'value'
     source:
@@ -2066,6 +2095,7 @@ test "AST as expected for ImportNamespaceSpecifier node", ->
       local:
         type: 'Identifier'
         name: 'React'
+        declaration: no
     ]
     importKind: 'value'
     source:
@@ -2079,11 +2109,13 @@ test "AST as expected for ImportNamespaceSpecifier node", ->
       local:
         type: 'Identifier'
         name: 'React'
+        declaration: no
     ,
       type: 'ImportNamespaceSpecifier'
       local:
         type: 'Identifier'
         name: 'ReactStar'
+        declaration: no
     ]
     importKind: 'value'
     source:
