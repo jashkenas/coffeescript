@@ -1561,7 +1561,7 @@ test "AST as expected for Arr node", ->
 test "AST as expected for Class node", ->
   testStatement 'class Klass',
     type: 'ClassDeclaration'
-    id: ID 'Klass'
+    id: ID 'Klass', declaration: yes
     superClass: null
     body:
       type: 'ClassBody'
@@ -1569,22 +1569,22 @@ test "AST as expected for Class node", ->
 
   testStatement 'class child extends parent',
     type: 'ClassDeclaration'
-    id: ID 'child'
-    superClass: ID 'parent'
+    id: ID 'child', declaration: yes
+    superClass: ID 'parent', declaration: no
     body:
       type: 'ClassBody'
       body: []
 
   testStatement 'class Klass then constructor: ->',
     type: 'ClassDeclaration'
-    id: ID 'Klass'
+    id: ID 'Klass', declaration: yes
     superClass: null
     body:
       type: 'ClassBody'
       body: [
         type: 'ClassMethod'
         static: no
-        key: ID 'constructor'
+        key: ID 'constructor', declaration: no
         computed: no
         kind: 'constructor'
         id: null
@@ -1605,7 +1605,7 @@ test "AST as expected for Class node", ->
     type: 'AssignmentExpression'
     right:
       type: 'ClassExpression'
-      id: ID 'A'
+      id: ID 'A', declaration: yes
       superClass: null
       body:
         type: 'ClassBody'
@@ -1660,7 +1660,7 @@ test "AST as expected for Class node", ->
       this.i = 4
   ''',
     type: 'ClassDeclaration'
-    id: ID 'A'
+    id: ID 'A', declaration: yes
     superClass: null
     body:
       type: 'ClassBody'
@@ -1720,7 +1720,7 @@ test "AST as expected for Class node", ->
         type: 'ExpressionStatement'
         expression:
           type: 'AssignmentExpression'
-          left: ID 'j'
+          left: ID 'j', declaration: yes
           right: NUMBER 5
       ,
         type: 'ClassProperty'
@@ -1781,13 +1781,13 @@ test "AST as expected for Class node", ->
       @[f]: 3
   ''',
     type: 'ClassDeclaration'
-    id: ID 'A'
+    id: ID 'A', declaration: yes
     superClass: null
     body:
       type: 'ClassBody'
       body: [
         type: 'ClassPrototypeProperty'
-        key: ID 'b'
+        key: ID 'b', declaration: no
         value: NUMBER 1
         computed: no
       ,
@@ -1854,6 +1854,15 @@ test "AST as expected for Class node", ->
         type: 'ClassProperty'
         computed: yes
       ]
+
+  testStatement '''
+    class A.b
+  ''',
+    type: 'ClassDeclaration'
+    id:
+      type: 'MemberExpression'
+      object: ID 'A', declaration: no
+      property: ID 'b', declaration: no
 
 test "AST as expected for ModuleDeclaration node", ->
   testStatement 'export {X}',

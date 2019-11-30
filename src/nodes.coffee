@@ -2928,9 +2928,15 @@ exports.Class = class Class extends Base
 
     null
 
+  declareName: (o) ->
+    return unless (name = @variable?.unwrap()) instanceof IdentifierLiteral
+    alreadyDeclared = o.scope.find name.value
+    name.isDeclaration = not alreadyDeclared
+
   isStatementAst: -> yes
 
   ast: (o, level) ->
+    @declareName o
     @name = @determineName()
     @body.isClassBody = yes
     @body.locationData = zeroWidthLocationDataFromEndLocation @locationData if @hasGeneratedBody
