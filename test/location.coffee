@@ -46,6 +46,8 @@ test "Verify location of generated tokens (with indented first line)", ->
   eq aToken[2].first_column, 2
   eq aToken[2].last_line, 0
   eq aToken[2].last_column, 2
+  eq aToken[2].range[0], 2
+  eq aToken[2].range[1], 3
 
   eq equalsToken[2].first_line, 0
   eq equalsToken[2].first_column, 4
@@ -731,6 +733,8 @@ test "Verify compound assignment operators have the right position", ->
   eq operatorToken[2].last_line, 0
   eq operatorToken[2].last_column, 4
   eq operatorToken[2].last_column_exclusive, 5
+  eq operatorToken[2].range[0], 2
+  eq operatorToken[2].range[1], 5
 
   source = '''
     a and= b
@@ -741,3 +745,61 @@ test "Verify compound assignment operators have the right position", ->
   eq operatorToken[2].last_line, 0
   eq operatorToken[2].last_column, 5
   eq operatorToken[2].last_column_exclusive, 6
+  eq operatorToken[2].range[0], 2
+  eq operatorToken[2].range[1], 6
+
+test "Verify BOM is accounted for in location data", ->
+  source = '''
+    \ufeffa
+    b
+  '''
+  [aToken, terminator, bToken] = CoffeeScript.tokens source
+  eq aToken[2].first_line, 0
+  eq aToken[2].first_column, 1
+  eq aToken[2].last_line, 0
+  eq aToken[2].last_column, 1
+  eq aToken[2].last_column_exclusive, 2
+  eq aToken[2].range[0], 1
+  eq aToken[2].range[1], 2
+  eq bToken[2].first_line, 1
+  eq bToken[2].first_column, 0
+  eq bToken[2].last_line, 1
+  eq bToken[2].last_column, 0
+  eq bToken[2].last_column_exclusive, 1
+  eq bToken[2].range[0], 3
+  eq bToken[2].range[1], 4
+
+test "Verify carriage returns are accounted for in location data", ->
+  source = '''
+    a\r+
+    b\r\r- c
+  '''
+  [aToken, plusToken, bToken, minusToken] = CoffeeScript.tokens source
+  eq aToken[2].first_line, 0
+  eq aToken[2].first_column, 0
+  eq aToken[2].last_line, 0
+  eq aToken[2].last_column, 0
+  eq aToken[2].last_column_exclusive, 1
+  eq aToken[2].range[0], 0
+  eq aToken[2].range[1], 1
+  eq plusToken[2].first_line, 0
+  eq plusToken[2].first_column, 2
+  eq plusToken[2].last_line, 0
+  eq plusToken[2].last_column, 2
+  eq plusToken[2].last_column_exclusive, 3
+  eq plusToken[2].range[0], 2
+  eq plusToken[2].range[1], 3
+  eq bToken[2].first_line, 1
+  eq bToken[2].first_column, 0
+  eq bToken[2].last_line, 1
+  eq bToken[2].last_column, 0
+  eq bToken[2].last_column_exclusive, 1
+  eq bToken[2].range[0], 4
+  eq bToken[2].range[1], 5
+  eq minusToken[2].first_line, 1
+  eq minusToken[2].first_column, 3
+  eq minusToken[2].last_line, 1
+  eq minusToken[2].last_column, 3
+  eq minusToken[2].last_column_exclusive, 4
+  eq minusToken[2].range[0], 7
+  eq minusToken[2].range[1], 8
