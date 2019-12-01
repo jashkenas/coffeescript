@@ -58,6 +58,8 @@ exports.Lexer = class Lexer
       opts.column or 0           # The start column of the current @chunk.
     @chunkOffset =
       opts.offset or 0           # The start offset for the current @chunk.
+    @locationDataCompensations =
+      opts.locationDataCompensations or {} # The location data compensations for the current @chunk.
     code = @clean code           # The stripped, cleaned original source code.
 
     # At every position, run through this list of attempted matches,
@@ -93,11 +95,21 @@ exports.Lexer = class Lexer
   # returns, etc. If we’re lexing literate CoffeeScript, strip external Markdown
   # by removing all lines that aren’t indented by at least four spaces or a tab.
   clean: (code) ->
-    code = code.slice(1) if code.charCodeAt(0) is BOM
-    code = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
+    thusFar = 0
+    if code.charCodeAt(0) is BOM
+      code = code.slice 1
+      @locationDataCompensations[0] = 1
+      thusFar += 1
     if WHITESPACE.test code
       code = "\n#{code}"
       @chunkLine--
+      @locationDataCompensations[0] ?= 0
+      @locationDataCompensations[0] -= 1
+    code = code
+      .replace /\r/g, (match, offset) =>
+        @locationDataCompensations[thusFar + offset] = 1
+        ''
+      .replace TRAILING_SPACES, ''
     code = invertLiterate code if @literate
     code
 
@@ -877,7 +889,7 @@ exports.Lexer = class Lexer
       [line, column, offset] = @getLineAndColumnFromChunk offsetInChunk + interpolationOffset
       rest = str[interpolationOffset..]
       {tokens: nested, index} =
-        new Lexer().tokenize rest, {line, column, offset, untilBalanced: on}
+        new Lexer().tokenize rest, {line, column, offset, untilBalanced: on, @locationDataCompensations}
       # Account for the `#` in `#{`.
       index += interpolationOffset
 
@@ -1011,12 +1023,26 @@ exports.Lexer = class Lexer
   # Helpers
   # -------
 
+  # Compensate for the things we strip out initially (e.g. carriage returns)
+  # so that location data stays accurate with respect to the original source file.
+  getLocationDataCompensation: (start, end) ->
+    compensation = 0
+    initialEnd = end
+    for index, length of @locationDataCompensations
+      index = parseInt index, 10
+      continue unless start <= index and (index < end or index is end and start is initialEnd)
+      compensation += length
+      end += length
+    compensation
+
   # Returns the line and column number from an offset into the current chunk.
   #
   # `offset` is a number of characters into `@chunk`.
   getLineAndColumnFromChunk: (offset) ->
+    compensation = @getLocationDataCompensation @chunkOffset, @chunkOffset + offset
+
     if offset is 0
-      return [@chunkLine, @chunkColumn, @chunkOffset]
+      return [@chunkLine, @chunkColumn + compensation, @chunkOffset + compensation]
 
     if offset >= @chunk.length
       string = @chunk
@@ -1029,10 +1055,18 @@ exports.Lexer = class Lexer
     if lineCount > 0
       [..., lastLine] = string.split '\n'
       column = lastLine.length
+      previousLinesCompensation = @getLocationDataCompensation @chunkOffset, @chunkOffset + offset - column
+      # Don't recompensate for initially inserted newline.
+      previousLinesCompensation = 0 if previousLinesCompensation < 0
+      columnCompensation = @getLocationDataCompensation(
+        @chunkOffset + offset + previousLinesCompensation - column
+        @chunkOffset + offset + previousLinesCompensation
+      )
     else
       column += string.length
+      columnCompensation = compensation
 
-    [@chunkLine + lineCount, column, @chunkOffset + offset]
+    [@chunkLine + lineCount, column + columnCompensation, @chunkOffset + offset + compensation]
 
   makeLocationData: ({ offsetInChunk, length }) ->
     locationData = range: []
