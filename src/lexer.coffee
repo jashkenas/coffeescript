@@ -1055,7 +1055,13 @@ exports.Lexer = class Lexer
     if lineCount > 0
       [..., lastLine] = string.split '\n'
       column = lastLine.length
-      columnCompensation = @getLocationDataCompensation @chunkOffset + offset - column, @chunkOffset + offset
+      previousLinesCompensation = @getLocationDataCompensation @chunkOffset, @chunkOffset + offset - column
+      # Don't recompensate for initially inserted newline.
+      previousLinesCompensation = 0 if previousLinesCompensation < 0
+      columnCompensation = @getLocationDataCompensation(
+        @chunkOffset + offset + previousLinesCompensation - column
+        @chunkOffset + offset + previousLinesCompensation
+      )
     else
       column += string.length
       columnCompensation = compensation

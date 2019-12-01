@@ -9224,3 +9224,70 @@ test "AST location data as expected for heregex comments", ->
         column: 3
 
   eq getAstRoot(code).comments.length, 0
+
+test "AST location data as expected with carriage returns", ->
+  code = '''
+    a =\r
+    "#{\r
+      b\r
+    }"
+  '''
+
+  testAstLocationData code,
+    type: 'AssignmentExpression'
+    right:
+      expressions: [
+        start: 12
+        end: 13
+        range: [12, 13]
+        loc:
+          start:
+            line: 3
+            column: 2
+          end:
+            line: 3
+            column: 3
+      ]
+      quasis: [
+        start: 6
+        end: 6
+        range: [6, 6]
+        loc:
+          start:
+            line: 2
+            column: 1
+          end:
+            line: 2
+            column: 1
+      ,
+        start: 16
+        end: 16
+        range: [16, 16]
+        loc:
+          start:
+            line: 4
+            column: 1
+          end:
+            line: 4
+            column: 1
+      ]
+      start: 5
+      end: 17
+      range: [5, 17]
+      loc:
+        start:
+          line: 2
+          column: 0
+        end:
+          line: 4
+          column: 2
+    start: 0
+    end: 17
+    range: [0, 17]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 4
+        column: 2
