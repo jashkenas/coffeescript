@@ -102,10 +102,11 @@ EMPTY_BLOCK =
   body: []
   directives: []
 
-ID = (name) -> {
-  type: 'Identifier'
-  name
-}
+ID = (name, additionalProperties = {}) ->
+  Object.assign({
+    type: 'Identifier'
+    name
+  }, additionalProperties)
 
 NUMBER = (value) -> {
   type: 'NumericLiteral'
@@ -1560,7 +1561,7 @@ test "AST as expected for Arr node", ->
 test "AST as expected for Class node", ->
   testStatement 'class Klass',
     type: 'ClassDeclaration'
-    id: ID 'Klass'
+    id: ID 'Klass', declaration: yes
     superClass: null
     body:
       type: 'ClassBody'
@@ -1568,22 +1569,22 @@ test "AST as expected for Class node", ->
 
   testStatement 'class child extends parent',
     type: 'ClassDeclaration'
-    id: ID 'child'
-    superClass: ID 'parent'
+    id: ID 'child', declaration: yes
+    superClass: ID 'parent', declaration: no
     body:
       type: 'ClassBody'
       body: []
 
   testStatement 'class Klass then constructor: ->',
     type: 'ClassDeclaration'
-    id: ID 'Klass'
+    id: ID 'Klass', declaration: yes
     superClass: null
     body:
       type: 'ClassBody'
       body: [
         type: 'ClassMethod'
         static: no
-        key: ID 'constructor'
+        key: ID 'constructor', declaration: no
         computed: no
         kind: 'constructor'
         id: null
@@ -1604,7 +1605,7 @@ test "AST as expected for Class node", ->
     type: 'AssignmentExpression'
     right:
       type: 'ClassExpression'
-      id: ID 'A'
+      id: ID 'A', declaration: yes
       superClass: null
       body:
         type: 'ClassBody'
@@ -1659,7 +1660,7 @@ test "AST as expected for Class node", ->
       this.i = 4
   ''',
     type: 'ClassDeclaration'
-    id: ID 'A'
+    id: ID 'A', declaration: yes
     superClass: null
     body:
       type: 'ClassBody'
@@ -1719,7 +1720,7 @@ test "AST as expected for Class node", ->
         type: 'ExpressionStatement'
         expression:
           type: 'AssignmentExpression'
-          left: ID 'j'
+          left: ID 'j', declaration: yes
           right: NUMBER 5
       ,
         type: 'ClassProperty'
@@ -1780,13 +1781,13 @@ test "AST as expected for Class node", ->
       @[f]: 3
   ''',
     type: 'ClassDeclaration'
-    id: ID 'A'
+    id: ID 'A', declaration: yes
     superClass: null
     body:
       type: 'ClassBody'
       body: [
         type: 'ClassPrototypeProperty'
-        key: ID 'b'
+        key: ID 'b', declaration: no
         value: NUMBER 1
         computed: no
       ,
@@ -1854,6 +1855,15 @@ test "AST as expected for Class node", ->
         computed: yes
       ]
 
+  testStatement '''
+    class A.b
+  ''',
+    type: 'ClassDeclaration'
+    id:
+      type: 'MemberExpression'
+      object: ID 'A', declaration: no
+      property: ID 'b', declaration: no
+
 test "AST as expected for ModuleDeclaration node", ->
   testStatement 'export {X}',
     type: 'ExportNamedDeclaration'
@@ -1863,9 +1873,11 @@ test "AST as expected for ModuleDeclaration node", ->
       local:
         type: 'Identifier'
         name: 'X'
+        declaration: no
       exported:
         type: 'Identifier'
         name: 'X'
+        declaration: no
     ]
     source: null
     exportKind: 'value'
@@ -1877,6 +1889,7 @@ test "AST as expected for ModuleDeclaration node", ->
       local:
         type: 'Identifier'
         name: 'X'
+        declaration: no
     ]
     importKind: 'value'
     source:
@@ -1891,15 +1904,18 @@ test "AST as expected for ImportDeclaration node", ->
       local:
         type: 'Identifier'
         name: 'React'
+        declaration: no
     ,
       type: 'ImportSpecifier'
       imported:
         type: 'Identifier'
         name: 'Component'
+        declaration: no
       importKind: null
       local:
         type: 'Identifier'
         name: 'Component'
+        declaration: no
     ]
     importKind: 'value'
     source:
@@ -1922,6 +1938,7 @@ test "AST as expected for ExportNamedDeclaration node", ->
       type: 'AssignmentExpression'
       left:
         type: 'Identifier'
+        declaration: yes
       right:
         type: 'FunctionExpression'
     specifiers: []
@@ -1938,17 +1955,21 @@ test "AST as expected for ExportNamedDeclaration node", ->
       local:
         type: 'Identifier'
         name: 'x'
+        declaration: no
       exported:
         type: 'Identifier'
         name: 'y'
+        declaration: no
     ,
       type: 'ExportSpecifier'
       local:
         type: 'Identifier'
         name: 'z'
+        declaration: no
       exported:
         type: 'Identifier'
         name: 'default'
+        declaration: no
     ]
     source: null
     exportKind: 'value'
@@ -1961,17 +1982,21 @@ test "AST as expected for ExportNamedDeclaration node", ->
       local:
         type: 'Identifier'
         name: 'default'
+        declaration: no
       exported:
         type: 'Identifier'
         name: 'default'
+        declaration: no
     ,
       type: 'ExportSpecifier'
       local:
         type: 'Identifier'
         name: 'default'
+        declaration: no
       exported:
         type: 'Identifier'
         name: 'b'
+        declaration: no
     ]
     source:
       type: 'StringLiteral'
@@ -1981,10 +2006,10 @@ test "AST as expected for ExportNamedDeclaration node", ->
     exportKind: 'value'
 
 test "AST as expected for ExportDefaultDeclaration node", ->
-  # testStatement 'export default class',
-  #   type: 'ExportDefaultDeclaration'
-  #   clause:
-  #     type: 'Class'
+  testStatement 'export default class',
+    type: 'ExportDefaultDeclaration'
+    declaration:
+      type: 'ClassDeclaration'
 
   testStatement 'export default "abc"',
     type: 'ExportDefaultDeclaration'
@@ -1993,6 +2018,13 @@ test "AST as expected for ExportDefaultDeclaration node", ->
       value: 'abc'
       extra:
         raw: '"abc"'
+
+  testStatement 'export default a = b',
+    type: 'ExportDefaultDeclaration'
+    declaration:
+      type: 'AssignmentExpression'
+      left: ID 'a', declaration: yes
+      right: ID 'b', declaration: no
 
 test "AST as expected for ExportAllDeclaration node", ->
   testStatement 'export * from "module-name"',
@@ -2013,25 +2045,31 @@ test "AST as expected for ExportSpecifierList node", ->
       local:
         type: 'Identifier'
         name: 'a'
+        declaration: no
       exported:
         type: 'Identifier'
         name: 'a'
+        declaration: no
     ,
       type: 'ExportSpecifier'
       local:
         type: 'Identifier'
         name: 'b'
+        declaration: no
       exported:
         type: 'Identifier'
         name: 'b'
+        declaration: no
     ,
       type: 'ExportSpecifier'
       local:
         type: 'Identifier'
         name: 'c'
+        declaration: no
       exported:
         type: 'Identifier'
         name: 'c'
+        declaration: no
     ]
 
 test "AST as expected for ImportDefaultSpecifier node", ->
@@ -2042,6 +2080,7 @@ test "AST as expected for ImportDefaultSpecifier node", ->
       local:
         type: 'Identifier'
         name: 'React'
+        declaration: no
     ]
     importKind: 'value'
     source:
@@ -2056,6 +2095,7 @@ test "AST as expected for ImportNamespaceSpecifier node", ->
       local:
         type: 'Identifier'
         name: 'React'
+        declaration: no
     ]
     importKind: 'value'
     source:
@@ -2069,11 +2109,13 @@ test "AST as expected for ImportNamespaceSpecifier node", ->
       local:
         type: 'Identifier'
         name: 'React'
+        declaration: no
     ,
       type: 'ImportNamespaceSpecifier'
       local:
         type: 'Identifier'
         name: 'ReactStar'
+        declaration: no
     ]
     importKind: 'value'
     source:
@@ -2086,9 +2128,11 @@ test "AST as expected for Assign node", ->
     left:
       type: 'Identifier'
       name: 'a'
+      declaration: yes
     right:
       type: 'Identifier'
       name: 'b'
+      declaration: no
     operator: '='
 
   testExpression 'a += b',
@@ -2096,9 +2140,11 @@ test "AST as expected for Assign node", ->
     left:
       type: 'Identifier'
       name: 'a'
+      declaration: no
     right:
       type: 'Identifier'
       name: 'b'
+      declaration: no
     operator: '+='
 
   testExpression '[@a = 2, {b: {c = 3} = {}, d...}, ...e] = f',
@@ -2113,6 +2159,7 @@ test "AST as expected for Assign node", ->
             type: 'ThisExpression'
           property:
             name: 'a'
+            declaration: no
         right:
           type: 'NumericLiteral'
       ,
@@ -2121,6 +2168,7 @@ test "AST as expected for Assign node", ->
           type: 'ObjectProperty'
           key:
             name: 'b'
+            declaration: no
           value:
             type: 'AssignmentPattern'
             left:
@@ -2133,6 +2181,7 @@ test "AST as expected for Assign node", ->
                   type: 'AssignmentPattern'
                   left:
                     name: 'c'
+                    declaration: yes
                   right:
                     value: 3
                 shorthand: yes
@@ -2142,10 +2191,16 @@ test "AST as expected for Assign node", ->
               properties: []
         ,
           type: 'RestElement'
+          argument:
+            name: 'd'
+            declaration: yes
           postfix: yes
         ]
       ,
         type: 'RestElement'
+        argument:
+          name: 'e'
+          declaration: yes
         postfix: no
       ]
     right:
@@ -2159,23 +2214,30 @@ test "AST as expected for Assign node", ->
         type: 'ObjectProperty'
         key:
           name: 'a'
+          declaration: no
         value:
           type: 'ArrayPattern'
           elements: [
             type: 'RestElement'
+            argument:
+              name: 'b'
+              declaration: yes
           ]
       ]
     right:
       name: 'c'
+      declaration: no
 
   testExpression 'a ?= b',
     type: 'AssignmentExpression'
     left:
       type: 'Identifier'
       name: 'a'
+      declaration: no
     right:
       type: 'Identifier'
       name: 'b'
+      declaration: no
     operator: '?='
 
 # # `FuncGlyph` node isn't exported.
@@ -2199,11 +2261,13 @@ test "AST as expected for Code node", ->
     params: [
       type: 'Identifier'
       name: 'a'
+      declaration: no
     ,
       type: 'AssignmentPattern'
       left:
         type: 'Identifier'
         name: 'b'
+        declaration: no
       right:
         type: 'NumericLiteral'
         value: 1
@@ -2232,8 +2296,8 @@ test "AST as expected for Code node", ->
       type: 'ObjectPattern'
       properties: [
         type: 'ObjectProperty'
-        key: ID('a')
-        value: ID('a')
+        key: ID 'a', declaration: no
+        value: ID 'a', declaration: no
         shorthand: yes
       ]
     ]
@@ -2247,7 +2311,7 @@ test "AST as expected for Code node", ->
     params: [
       type: 'ArrayPattern'
       elements: [
-        ID('a')
+        ID 'a', declaration: no
       ]
     ]
     body: EMPTY_BLOCK
@@ -2263,10 +2327,10 @@ test "AST as expected for Code node", ->
         type: 'ObjectPattern'
         properties: [
           type: 'ObjectProperty'
-          key: ID('a')
+          key: ID 'a', declaration: no
           value:
             type: 'AssignmentPattern'
-            left: ID('a')
+            left: ID 'a', declaration: no
             right: NUMBER(1)
           shorthand: yes
         ]
@@ -2287,7 +2351,7 @@ test "AST as expected for Code node", ->
         type: 'ArrayPattern'
         elements: [
           type: 'AssignmentPattern'
-          left: ID('a')
+          left: ID 'a', declaration: no
           right: NUMBER(1)
         ]
       right:
@@ -2314,7 +2378,7 @@ test "AST as expected for Code node", ->
       object:
         type: 'ThisExpression'
         shorthand: yes
-      property: ID 'a'
+      property: ID 'a', declaration: no
     ]
     body: EMPTY_BLOCK
     generator: no
@@ -2359,8 +2423,8 @@ test "AST as expected for Code node", ->
       type: 'ObjectPattern'
       properties: [
         type: 'ObjectProperty'
-        key:   ID 'a'
-        value: ID 'a'
+        key:   ID 'a', declaration: no
+        value: ID 'a', declaration: no
         shorthand: yes
         computed: yes
       ]
@@ -2374,7 +2438,7 @@ test "AST as expected for Code node", ->
     type: 'FunctionExpression'
     params: [
       type: 'RestElement'
-      argument: ID 'a'
+      argument: ID 'a', declaration: no
       postfix: no
     ]
     body: EMPTY_BLOCK
@@ -2476,6 +2540,7 @@ test "AST as expected for Splat node", ->
       argument:
         type: 'Identifier'
         name: 'a'
+        declaration: no
       postfix: yes
     ]
 
@@ -2483,21 +2548,15 @@ test "AST as expected for Splat node", ->
     type: 'ArrayExpression'
     elements: [
       name: 'b'
+      declaration: no
     ,
       type: 'SpreadElement'
       argument:
         type: 'Identifier'
         name: 'c'
+        declaration: no
       postfix: no
     ]
-
-  # testExpression '(a...) ->',
-  #   params: [
-  #     type: 'Param'
-  #     splat: yes
-  #     name:
-  #       value: 'a'
-  #   ]
 
 #   # TODO: Test object splats.
 
@@ -2893,6 +2952,7 @@ test "AST as expected for Try node", ->
       param:
         type: 'Identifier'
         name: 'e'
+        declaration: yes
       body:
         type: 'BlockStatement'
         body: [
@@ -2940,6 +3000,11 @@ test "AST as expected for Try node", ->
       type: 'CatchClause'
       param:
         type: 'ObjectPattern'
+        properties: [
+          type: 'ObjectProperty'
+          key: ID 'e', declaration: no
+          value: ID 'e', declaration: yes
+        ]
       body:
         type: 'BlockStatement'
         body: [
@@ -3146,11 +3211,11 @@ test "AST as expected for StringWithInterpolations node", ->
 test "AST as expected for For node", ->
   testStatement 'for x, i in arr when x? then return',
     type: 'For'
-    name: ID 'x'
-    index: ID 'i'
+    name: ID 'x', declaration: yes
+    index: ID 'i', declaration: yes
     guard:
       type: 'UnaryExpression'
-    source: ID 'arr'
+    source: ID 'arr', declaration: no
     body:
       type: 'BlockStatement'
       body: [
@@ -3164,10 +3229,10 @@ test "AST as expected for For node", ->
 
   testStatement 'for k, v of obj then return',
     type: 'For'
-    name: ID 'v'
-    index: ID 'k'
+    name: ID 'v', declaration: yes
+    index: ID 'k', declaration: yes
     guard: null
-    source: ID 'obj'
+    source: ID 'obj', declaration: no
     body:
       type: 'BlockStatement'
       body: [
@@ -3181,11 +3246,11 @@ test "AST as expected for For node", ->
 
   testStatement 'for x from iterable then',
     type: 'For'
-    name: ID 'x'
+    name: ID 'x', declaration: yes
     index: null
     guard: null
     body: EMPTY_BLOCK
-    source: ID 'iterable'
+    source: ID 'iterable', declaration: no
     style: 'from'
     own: no
     postfix: no
@@ -3194,14 +3259,14 @@ test "AST as expected for For node", ->
 
   testStatement 'for i in [0...42] by step when not (i % 2) then',
     type: 'For'
-    name: ID 'i'
+    name: ID 'i', declaration: yes
     index: null
     body: EMPTY_BLOCK
     source:
       type: 'Range'
     guard:
       type: 'UnaryExpression'
-    step: ID 'step'
+    step: ID 'step', declaration: no
     style: 'in'
     own: no
     postfix: no
@@ -3211,15 +3276,15 @@ test "AST as expected for For node", ->
     type: 'AssignmentExpression'
     right:
       type: 'For'
-      name: ID 'x'
+      name: ID 'x', declaration: yes
       index: null
       body:
         type: 'BlockStatement'
         body: [
           type: 'ExpressionStatement'
-          expression: ID 'x'
+          expression: ID 'x', declaration: no
         ]
-      source: ID 'y'
+      source: ID 'y', declaration: no
       guard: null
       step: null
       style: 'in'
@@ -3235,7 +3300,7 @@ test "AST as expected for For node", ->
       type: 'BlockStatement'
       body: [
         type: 'ExpressionStatement'
-        expression: ID 'x'
+        expression: ID 'x', declaration: no
       ]
     source:
       type: 'Range'
@@ -3252,8 +3317,8 @@ test "AST as expected for For node", ->
       d
   ''',
     type: 'For'
-    name: ID 'y'
-    index: ID 'x'
+    name: ID 'y', declaration: yes
+    index: ID 'x', declaration: yes
     body:
       type: 'BlockStatement'
       body: [
@@ -3262,9 +3327,9 @@ test "AST as expected for For node", ->
           type: 'CallExpression'
       ,
         type: 'ExpressionStatement'
-        expression: ID 'd'
+        expression: ID 'd', declaration: no
       ]
-    source: ID 'z'
+    source: ID 'z', declaration: no
     guard: null
     step: null
     style: 'of'
@@ -3282,15 +3347,15 @@ test "AST as expected for For node", ->
       type: 'BlockStatement'
       body: [
         type: 'For'
-        name: ID 'x'
+        name: ID 'x', declaration: yes
         index: null
         body:
           type: 'BlockStatement'
           body: [
             type: 'ExpressionStatement'
-            expression: ID 'z'
+            expression: ID 'z', declaration: no
           ]
-        source: ID 'y'
+        source: ID 'y', declaration: no
         guard: null
         step: null
         style: 'from'
@@ -3308,8 +3373,8 @@ test "AST as expected for For node", ->
       type: 'ObjectPattern'
       properties: [
         type: 'ObjectProperty'
-        key: ID 'x'
-        value: ID 'x'
+        key: ID 'x', declaration: no
+        value: ID 'x', declaration: yes
         shorthand: yes
         computed: no
       ]
@@ -3335,7 +3400,7 @@ test "AST as expected for For node", ->
     name:
       type: 'ArrayPattern'
       elements: [
-        ID 'x'
+        ID 'x', declaration: yes
       ]
     index: null
     body:
