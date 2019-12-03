@@ -2962,6 +2962,7 @@ exports.Class = class Class extends Base
     @body.locationData = zeroWidthLocationDataFromEndLocation @locationData if @hasGeneratedBody
     @walkBody o
     sniffDirectives @body.expressions
+    @ctor?.noReturn = yes
 
     super o
 

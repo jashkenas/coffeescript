@@ -1576,7 +1576,7 @@ test "AST as expected for Class node", ->
       type: 'ClassBody'
       body: []
 
-  testStatement 'class Klass then constructor: ->',
+  testStatement 'class Klass then constructor: -> @a = 1',
     type: 'ClassDeclaration'
     id: ID 'Klass', declaration: yes
     superClass: null
@@ -1592,7 +1592,14 @@ test "AST as expected for Class node", ->
         generator: no
         async: no
         params: []
-        body: EMPTY_BLOCK
+        body:
+          type: 'BlockStatement'
+          body: [
+            type: 'ExpressionStatement'
+            expression:
+              type: 'AssignmentExpression'
+              returns: undefined
+          ]
         bound: no
       ]
 
@@ -1624,7 +1631,7 @@ test "AST as expected for Class node", ->
             type: 'BlockStatement'
             body: [
               type: 'ExpressionStatement'
-              expression: ID 'c'
+              expression: ID 'c', returns: yes
             ]
           operator: ':'
           bound: no
