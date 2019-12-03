@@ -1872,6 +1872,29 @@ test "AST as expected for Class node", ->
       object: ID 'A', declaration: no
       property: ID 'b', declaration: no
 
+  testStatement '''
+    class A
+      'constructor': ->
+  ''',
+    type: 'ClassDeclaration'
+    body:
+      type: 'ClassBody'
+      body: [
+        type: 'ClassMethod'
+        static: no
+        key:
+          type: 'StringLiteral'
+        computed: no
+        kind: 'constructor'
+        id: null
+        generator: no
+        async: no
+        params: []
+        body: EMPTY_BLOCK
+        bound: no
+      ]
+
+
 test "AST as expected for ModuleDeclaration node", ->
   testStatement 'export {X}',
     type: 'ExportNamedDeclaration'

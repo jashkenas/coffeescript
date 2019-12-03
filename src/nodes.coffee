@@ -2900,7 +2900,12 @@ exports.Class = class Class extends Base
       methodName  = variable.base
       method.name = new (if methodName.shouldCache() then Index else Access) methodName
       method.name.updateLocationDataIfMissing methodName.locationData
-      method.ctor = (if @parent then 'derived' else 'base') if methodName.value is 'constructor'
+      isConstructor =
+        if methodName instanceof StringLiteral
+          methodName.originalValue is 'constructor'
+        else
+          methodName.value is 'constructor'
+      method.ctor = (if @parent then 'derived' else 'base') if isConstructor
       method.error 'Cannot define a constructor as a bound (fat arrow) function' if method.bound and method.ctor
 
     method.operatorToken = operatorToken
