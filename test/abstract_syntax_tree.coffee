@@ -775,6 +775,7 @@ test "AST as expected for Call node", ->
     arguments: []
     optional: no
     implicit: no
+    returns: undefined
 
   testExpression 'new Date()',
     type: 'NewExpression'
@@ -2283,6 +2284,7 @@ test "AST as expected for Code node", ->
         type: 'ExpressionStatement'
         expression:
           type: 'CallExpression'
+          returns: yes
       ]
       directives: []
     generator: no
@@ -2478,7 +2480,7 @@ test "AST as expected for Code node", ->
       type: 'BlockStatement'
       body: [
         type: 'ExpressionStatement'
-        expression: ID 'a'
+        expression: ID 'a', returns: yes
       ]
     generator: no
     async: no
@@ -2495,6 +2497,7 @@ test "AST as expected for Code node", ->
         expression:
           type: 'AwaitExpression'
           argument: NUMBER 3
+          returns: yes
       ]
     generator: no
     async: yes
@@ -2663,6 +2666,7 @@ test "AST as expected for While node", ->
         type: 'ExpressionStatement'
         expression:
           type: 'CallExpression'
+          returns: undefined
       ]
     guard: null
     inverted: yes
@@ -2726,6 +2730,21 @@ test "AST as expected for While node", ->
     inverted: no
     postfix: no
     loop: yes
+
+  testExpression '''
+    x = (z() while y)
+  ''',
+    type: 'AssignmentExpression'
+    right:
+      type: 'WhileStatement'
+      body:
+        type: 'BlockStatement'
+        body: [
+          type: 'ExpressionStatement'
+          expression:
+            type: 'CallExpression'
+            returns: yes
+        ]
 
 test "AST as expected for Op node", ->
   testExpression 'a <= 2',
@@ -3282,7 +3301,7 @@ test "AST as expected for For node", ->
         type: 'BlockStatement'
         body: [
           type: 'ExpressionStatement'
-          expression: ID 'x', declaration: no
+          expression: ID 'x', declaration: no, returns: yes
         ]
       source: ID 'y', declaration: no
       guard: null
@@ -3300,7 +3319,7 @@ test "AST as expected for For node", ->
       type: 'BlockStatement'
       body: [
         type: 'ExpressionStatement'
-        expression: ID 'x', declaration: no
+        expression: ID 'x', declaration: no, returns: undefined
       ]
     source:
       type: 'Range'
@@ -3325,9 +3344,10 @@ test "AST as expected for For node", ->
         type: 'ExpressionStatement'
         expression:
           type: 'CallExpression'
+          returns: undefined
       ,
         type: 'ExpressionStatement'
-        expression: ID 'd', declaration: no
+        expression: ID 'd', declaration: no, returns: undefined
       ]
     source: ID 'z', declaration: no
     guard: null
@@ -3353,7 +3373,7 @@ test "AST as expected for For node", ->
           type: 'BlockStatement'
           body: [
             type: 'ExpressionStatement'
-            expression: ID 'z', declaration: no
+            expression: ID 'z', declaration: no, returns: yes
           ]
         source: ID 'y', declaration: no
         guard: null
