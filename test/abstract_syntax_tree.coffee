@@ -2565,6 +2565,84 @@ test "AST as expected for Code node", ->
     async: no
     id: null
 
+  testExpression '(a) -> a = 1',
+    type: 'FunctionExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'AssignmentExpression'
+          left:
+            ID 'a', declaration: no
+      ]
+
+  testExpression '(...a) -> a = 1',
+    type: 'FunctionExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'AssignmentExpression'
+          left:
+            ID 'a', declaration: no
+      ]
+
+  testExpression '({a}) -> a = 1',
+    type: 'FunctionExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'AssignmentExpression'
+          left:
+            ID 'a', declaration: no
+      ]
+
+  testExpression '([a]) -> a = 1',
+    type: 'FunctionExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'AssignmentExpression'
+          left:
+            ID 'a', declaration: no
+      ]
+
+  testExpression '(a = 1) -> a = 1',
+    type: 'FunctionExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'AssignmentExpression'
+          left:
+            ID 'a', declaration: no
+      ]
+    generator: no
+    async: no
+    id: null
+
+  testExpression '({a} = 1) -> a = 1',
+    type: 'FunctionExpression'
+    body:
+      type: 'BlockStatement'
+      body: [
+        type: 'ExpressionStatement'
+        expression:
+          type: 'AssignmentExpression'
+          left:
+            ID 'a', declaration: no
+      ]
+    generator: no
+    async: no
+    id: null
+
 test "AST as expected for Splat node", ->
   testExpression '[a...]',
     type: 'ArrayExpression'

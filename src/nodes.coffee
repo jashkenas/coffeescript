@@ -4059,8 +4059,14 @@ exports.Code = class Code extends Base
     for {name} in @params when name instanceof Arr or name instanceof Obj
       name.propagateLhs yes
 
+  astAddParamsToScope: (o) ->
+    for param in @params
+      param.eachName (name) ->
+        o.scope.add name, 'param'
+
   astNode: (o) ->
     @updateOptions o
+    @astAddParamsToScope o
     @body.makeReturn null, yes unless @body.isEmpty() or @noReturn
 
     super o
