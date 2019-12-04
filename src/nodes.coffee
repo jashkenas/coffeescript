@@ -278,11 +278,11 @@ exports.Base = class Base
     o.level = level if level?
     @makeReturn mark: yes if @isStatement(o) and o.level isnt LEVEL_TOP and o.scope?
 
-    fullAst = @astFull o
+    fullAst = @astNode o
     return fullAst unless fullAst?
     Object.assign fullAst, @astReturns()
 
-  astFull: (o) ->
+  astNode: (o) ->
     # Every abstract syntax tree node object has four categories of properties:
     # - type, stored in the `type` field and a string like `NumberLiteral`.
     # - location data, stored in the `loc`, `start`, `end` and `range` fields.
@@ -819,7 +819,7 @@ exports.Block = class Block extends Base
     return nodes[0] if nodes.length is 1 and nodes[0] instanceof Block
     new Block nodes
 
-  astFull: (o) ->
+  astNode: (o) ->
     if (o.level? and o.level isnt LEVEL_TOP) and @expressions.length
       return (new Sequence(@expressions).withLocationDataFrom @).ast o
 
@@ -1059,7 +1059,7 @@ exports.StringLiteral = class StringLiteral extends Literal
   shouldGenerateTemplateLiteral: ->
     @isFromHeredoc()
 
-  astFull: (o) ->
+  astNode: (o) ->
     return StringWithInterpolations.fromStringLiteral(@).ast o if @shouldGenerateTemplateLiteral()
     super o
 
@@ -1110,7 +1110,7 @@ exports.PassthroughLiteral = class PassthroughLiteral extends Literal
       # By reducing it to its latter half, we turn '\`' to '`', '\\\`' to '\`', etc.
       string[-Math.ceil(string.length / 2)..]
 
-  astFull: (o) ->
+  astNode: (o) ->
     return null if @generated
     super o
 
@@ -1155,7 +1155,7 @@ exports.ComputedPropertyName = class ComputedPropertyName extends PropertyName
   compileNode: (o) ->
     [@makeCode('['), @value.compileToFragments(o, LEVEL_LIST)..., @makeCode(']')]
 
-  astFull: (o) ->
+  astNode: (o) ->
     @value.ast o
 
 exports.StatementLiteral = class StatementLiteral extends Literal
@@ -1284,7 +1284,7 @@ exports.FuncDirectiveReturn = class FuncDirectiveReturn extends Return
 
   isStatementAst: NO
 
-  astFull: (o) ->
+  astNode: (o) ->
     @checkScope o
 
     new Op @keyword,
@@ -1296,7 +1296,7 @@ exports.FuncDirectiveReturn = class FuncDirectiveReturn extends Return
           @returnKeyword
       )
     .withLocationDataFrom @
-    .astFull o
+    .astNode o
 
 # `yield return` works exactly like `return`, except that it turns the function
 # into a generator.
@@ -1488,7 +1488,7 @@ exports.Value = class Value extends Base
 
     no
 
-  astFull: (o) ->
+  astNode: (o) ->
     # If the `Value` has no properties, the AST node is just whatever this
     # node’s `base` is.
     return @base.ast o unless @hasProperties()
@@ -1741,7 +1741,7 @@ exports.JSXAttributes = class JSXAttributes extends Base
       fragments.push attribute.compileToFragments(o, LEVEL_TOP)...
     fragments
 
-  astFull: (o) ->
+  astNode: (o) ->
     attribute.ast(o) for attribute in @attributes
 
 exports.JSXNamespacedName = class JSXNamespacedName extends Base
@@ -1782,7 +1782,7 @@ exports.JSXElement = class JSXElement extends Base
   isFragment: ->
     !@tagName.base.value.length
 
-  astFull: (o) ->
+  astNode: (o) ->
     # The location data spanning the opening element < ... > is captured by
     # the generated Arr which contains the element's attributes
     @openingElementLocationData = jisonLocationDataToAstLocationData @attributes.locationData
@@ -2122,7 +2122,7 @@ exports.Super = class Super extends Base
     attachCommentsToNode salvagedComments, @accessor.name if salvagedComments
     fragments
 
-  astFull: (o) ->
+  astNode: (o) ->
     if @accessor?
       return (
         new Value(
@@ -2210,7 +2210,7 @@ exports.Access = class Access extends Base
 
   shouldCache: NO
 
-  astFull: (o) ->
+  astNode: (o) ->
     # Babel doesn’t have an AST node for `Access`, but rather just includes
     # this Access node’s child `name` Identifier node as the `property` of
     # the `MemberExpression` node.
@@ -2231,7 +2231,7 @@ exports.Index = class Index extends Base
   shouldCache: ->
     @index.shouldCache()
 
-  astFull: (o) ->
+  astNode: (o) ->
     # Babel doesn’t have an AST node for `Index`, but rather just includes
     # this Index node’s child `index` Identifier node as the `property` of
     # the `MemberExpression` node. The fact that the `MemberExpression`’s
@@ -2394,7 +2394,7 @@ exports.Slice = class Slice extends Base
           "+#{fragmentsToText compiled} + 1 || 9e9"
     [@makeCode ".slice(#{ fragmentsToText fromCompiled }#{ toStr or '' })"]
 
-  astFull: (o) ->
+  astNode: (o) ->
     @range.ast o
 
 #### Obj
@@ -2955,7 +2955,7 @@ exports.Class = class Class extends Base
 
   isStatementAst: -> yes
 
-  astFull: (o) ->
+  astNode: (o) ->
     @declareName o
     @name = @determineName()
     @body.isClassBody = yes
@@ -3187,7 +3187,7 @@ exports.ImportClause = class ImportClause extends Base
 
     code
 
-  astFull: (o) ->
+  astNode: (o) ->
     # The AST for `ImportClause` is the non-nested list of import specifiers
     # that will be the `specifiers` property of an `ImportDeclaration` AST
     compact flatten [
@@ -3267,7 +3267,7 @@ exports.ModuleSpecifierList = class ModuleSpecifierList extends Base
       code.push @makeCode '{}'
     code
 
-  astFull: (o) ->
+  astNode: (o) ->
     specifier.ast(o) for specifier in @specifiers
 
 exports.ImportSpecifierList = class ImportSpecifierList extends ModuleSpecifierList
@@ -3698,7 +3698,7 @@ exports.Assign = class Assign extends Base
 
   isStatementAst: NO
 
-  astFull: (o) ->
+  astNode: (o) ->
     @addScopeVariables o, checkAssignability: no
     super o
 
@@ -4046,7 +4046,7 @@ exports.Code = class Code extends Base
     for {name} in @params when name instanceof Arr or name instanceof Obj
       name.propagateLhs yes
 
-  astFull: (o) ->
+  astNode: (o) ->
     @updateOptions o
     @body.makeReturn mark: yes unless @body.isEmpty() or @noReturn
 
@@ -4305,7 +4305,7 @@ exports.Elision = class Elision extends Base
 
   eachName: (iterator) ->
 
-  astFull: ->
+  astNode: ->
     null
 
 #### While
@@ -4597,7 +4597,7 @@ exports.Op = class Op extends Base
   toString: (idt) ->
     super idt, @constructor.name + ' ' + @operator
 
-  astFull: (o) ->
+  astNode: (o) ->
     @checkContinuation o if @isYield() or @isAwait()
     super o
 
@@ -4787,7 +4787,7 @@ exports.Catch = class Catch extends Base
     [].concat @makeCode(" catch ("), placeholder.compileToFragments(o), @makeCode(") {\n"),
       @recovery.compileToFragments(o, LEVEL_TOP), @makeCode("\n#{@tab}}")
 
-  astFull: (o) ->
+  astNode: (o) ->
     @errorVariable?.eachName (name) ->
       alreadyDeclared = o.scope.find name.value
       name.isDeclaration = not alreadyDeclared
@@ -4916,7 +4916,7 @@ exports.Parens = class Parens extends Base
     return @wrapInBraces fragments if @jsxAttribute
     if bare then fragments else @wrapInParentheses fragments
 
-  astFull: (o) -> @body.unwrap().ast o, LEVEL_PAREN
+  astNode: (o) -> @body.unwrap().ast o, LEVEL_PAREN
 
 #### StringWithInterpolations
 
@@ -5230,7 +5230,7 @@ exports.For = class For extends While
     fragments.push @makeCode(returnResult) if returnResult
     fragments
 
-  astFull: (o) ->
+  astNode: (o) ->
     addToScope = (name) ->
       alreadyDeclared = o.scope.find name.value
       name.isDeclaration = not alreadyDeclared
@@ -5480,7 +5480,7 @@ exports.Sequence = class Sequence extends Base
   constructor: (@expressions) ->
     super()
 
-  astFull: (o) ->
+  astNode: (o) ->
     return @expressions[0].ast(o) if @expressions.length is 1
     super o
 
