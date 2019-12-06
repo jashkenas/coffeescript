@@ -278,18 +278,21 @@ exports.Base = class Base
   # **WARNING: DO NOT OVERRIDE THIS METHOD IN CHILD CLASSES.**
   # Only override the component `ast*` methods as needed.
   ast: (o, level) ->
+    o = @astInitialize o, level
+    ast = @astNode o
+    return ast unless ast?
+    # Mark AST nodes that correspond to expressions that (implicitly) return.
+    ast.returns = yes if @canBeReturned
+    ast
+
+  astInitialize: (o, level) ->
     o = Object.assign {}, o
     o.level = level if level?
     # `@makeReturn` must be called before `astProperties`, because the latter may call
     # `.ast()` for child nodes and those nodes would need the return logic from `makeReturn`
     # already executed by then.
     @makeReturn null, yes if @isStatement(o) and o.level isnt LEVEL_TOP and o.scope?
-
-    ast = @astNode o
-    return ast unless ast?
-    # Mark AST nodes that correspond to expressions that (implicitly) return.
-    ast.returns = yes if @canBeReturned
-    ast
+    o
 
   astNode: (o) ->
     # Every abstract syntax tree node object has four categories of properties:
