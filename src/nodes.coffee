@@ -275,9 +275,14 @@ exports.Base = class Base
   # as JSON. This is what the `ast` option in the Node API returns.
   # We try to follow the [Babel AST spec](https://github.com/babel/babel/blob/master/packages/babel-parser/ast/spec.md)
   # as closely as possible, for improved interoperability with other tools.
+  # **WARNING: DO NOT OVERRIDE THIS METHOD IN CHILD CLASSES.**
+  # Only override the component `ast*` methods as needed.
   ast: (o, level) ->
     o = Object.assign {}, o
     o.level = level if level?
+    # `@makeReturn` must be called before `astProperties`, because the latter may call
+    # `.ast()` for child nodes and those nodes would need the return logic from `makeReturn`
+    # already executed by then.
     @makeReturn null, yes if @isStatement(o) and o.level isnt LEVEL_TOP and o.scope?
 
     ast = @astNode o
