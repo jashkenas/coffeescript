@@ -232,15 +232,20 @@ exports.Base = class Base
   cacheToCodeFragments: (cacheValues) ->
     [fragmentsToText(cacheValues[0]), fragmentsToText(cacheValues[1])]
 
-  # Construct a node that returns the current node's result.
+  # Construct a node that returns the current node’s result.
   # Note that this is overridden for smarter behavior for
-  # many statement nodes (e.g. If, For)...
-  makeReturn: (res) ->
-    me = @unwrapAll()
-    if res
-      new Call new Literal("#{res}.push"), [me]
+  # many statement nodes (e.g. `If`, `For`).
+  makeReturn: (results, mark) ->
+    if mark
+      # Mark this node as implicitly returned, so that it can be part of the
+      # node metadata returned in the AST.
+      @canBeReturned = yes
+      return
+    node = @unwrapAll()
+    if results
+      new Call new Literal("#{results}.push"), [node]
     else
-      new Return me
+      new Return node
 
   # Does this node, or any of its children, contain a node of a certain kind?
   # Recursively traverses down the *children* nodes and returns the first one
@@ -569,7 +574,7 @@ exports.Block = class Block extends Base
 
   # A Block node does not return its entire body, rather it
   # ensures that the final expression is returned.
-  makeReturn: (res) ->
+  makeReturn: (results, mark) ->
     len = @expressions.length
     [..., lastExp] = @expressions
     lastExp = lastExp?.unwrap() or no
@@ -582,9 +587,12 @@ exports.Block = class Block extends Base
       last = last.unwrap()
       if penult instanceof JSXElement and last instanceof JSXElement
         expressions[expressions.length - 1].error 'Adjacent JSX elements must be wrapped in an enclosing tag'
+    if mark
+      @expressions[len - 1]?.makeReturn results, mark
+      return
     while len--
       expr = @expressions[len]
-      @expressions[len] = expr.makeReturn res
+      @expressions[len] = expr.makeReturn results
       @expressions.splice(len, 1) if expr instanceof Return and not expr.expression
       break
     this
@@ -2340,7 +2348,7 @@ exports.Range = class Range extends Base
 
 #### Slice
 
-# An array slice literal. Unlike JavaScript's `Array#slice`, the second parameter
+# An array slice literal. Unlike JavaScript’s `Array#slice`, the second parameter
 # specifies the index of the end of the slice, just as the first parameter
 # is the index of the beginning.
 exports.Slice = class Slice extends Base
@@ -4298,12 +4306,13 @@ exports.While = class While extends Base
 
   isStatement: YES
 
-  makeReturn: (res) ->
-    if res
-      super res
-    else
-      @returns = not @jumps()
-      this
+  makeReturn: (results, mark) ->
+    return super(results, mark) if results
+    @returns = not @jumps()
+    if mark
+      @body.makeReturn(results, mark) if @returns
+      return
+    this
 
   addBody: (@body) ->
     this
@@ -4687,9 +4696,13 @@ exports.Try = class Try extends Base
 
   jumps: (o) -> @attempt.jumps(o) or @catch?.jumps(o)
 
-  makeReturn: (res) ->
-    @attempt = @attempt.makeReturn res if @attempt
-    @catch   = @catch  .makeReturn res if @catch
+  makeReturn: (results, mark) ->
+    if mark
+      @attempt?.makeReturn results, mark
+      @catch?.makeReturn results, mark
+      return
+    @attempt = @attempt.makeReturn results if @attempt
+    @catch   = @catch  .makeReturn results if @catch
     this
 
   # Compilation is more or less as you would expect -- the *finally* clause
@@ -4742,8 +4755,10 @@ exports.Catch = class Catch extends Base
 
   jumps: (o) -> @recovery.jumps(o)
 
-  makeReturn: (res) ->
-    @recovery = @recovery.makeReturn res
+  makeReturn: (results, mark) ->
+    ret = @recovery.makeReturn results, mark
+    return if mark
+    @recovery = ret
     this
 
   compileNode: (o) ->
@@ -5243,10 +5258,10 @@ exports.Switch = class Switch extends Base
       return jumpNode if jumpNode = block.jumps o
     @otherwise?.jumps o
 
-  makeReturn: (res) ->
-    block.makeReturn res for {block} in @cases
-    @otherwise or= new Block [new Literal 'void 0'] if res
-    @otherwise?.makeReturn res
+  makeReturn: (results, mark) ->
+    block.makeReturn(results, mark) for {block} in @cases
+    @otherwise or= new Block [new Literal 'void 0'] if results
+    @otherwise?.makeReturn results, mark
     this
 
   compileNode: (o) ->
@@ -5363,10 +5378,14 @@ exports.If = class If extends Base
   compileNode: (o) ->
     if @isStatement o then @compileStatement o else @compileExpression o
 
-  makeReturn: (res) ->
-    @elseBody  or= new Block [new Literal 'void 0'] if res
-    @body     and= new Block [@body.makeReturn res]
-    @elseBody and= new Block [@elseBody.makeReturn res]
+  makeReturn: (results, mark) ->
+    if mark
+      @body?.makeReturn results, mark
+      @elseBody?.makeReturn results, mark
+      return
+    @elseBody  or= new Block [new Literal 'void 0'] if results
+    @body     and= new Block [@body.makeReturn results]
+    @elseBody and= new Block [@elseBody.makeReturn results]
     this
 
   ensureBlock: (node) ->
