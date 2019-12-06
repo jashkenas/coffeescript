@@ -523,7 +523,7 @@ exports.Root = class Root extends Base
           new LineComment commentToken
     comment.ast() for comment in @allComments
 
-  ast: (o) ->
+  astNode: (o) ->
     o.level = LEVEL_TOP
     @initializeScope o
     super o
@@ -938,10 +938,10 @@ exports.InfinityLiteral = class InfinityLiteral extends NumberLiteral
   compileNode: ->
     [@makeCode '2e308']
 
-  ast: (o, level) ->
+  astNode: (o) ->
     unless @originalValue is 'Infinity'
-      return new NumberLiteral(@value).withLocationDataFrom(@).ast o, level
-    super o, level
+      return new NumberLiteral(@value).withLocationDataFrom(@).ast o
+    super o
 
   astType: -> 'Identifier'
 
