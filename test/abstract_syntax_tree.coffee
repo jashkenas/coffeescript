@@ -4255,6 +4255,15 @@ test "AST as expected for comments", ->
     value: '\n  # multiline\n  # indented here comment\n  '
   ]
 
+  testComments '''
+    if foo
+      ;
+      ### empty ###
+  ''', [
+    type: 'CommentBlock'
+    value: ' empty '
+  ]
+
 test "AST as expected for chained comparisons", ->
   testExpression '''
     a < b < c
