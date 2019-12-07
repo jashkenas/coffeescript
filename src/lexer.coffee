@@ -249,7 +249,7 @@ exports.Lexer = class Lexer
       colonToken = @token ':', ':', offset: colonOffset
       colonToken.jsxColon = yes if inJSXTag # used by rewriter
     if inJSXTag and tag is 'IDENTIFIER' and prev[0] isnt ':'
-      @token ',', ',', length: 0, origin: tagToken
+      @token ',', ',', length: 0, origin: tagToken, generated: yes
 
     input.length
 
@@ -317,7 +317,7 @@ exports.Lexer = class Lexer
       @validateUnicodeCodePointEscapes value, delimiter: quote
 
     if @atJSXTag()
-      @token ',', ',', length: 0, origin: @prev
+      @token ',', ',', length: 0, origin: @prev, generated: yes
 
     end
 
