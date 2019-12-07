@@ -279,11 +279,7 @@ exports.Base = class Base
   # Only override the component `ast*` methods as needed.
   ast: (o, level) ->
     o = @astInitialize o, level
-    ast = @astNode o
-    return ast unless ast?
-    # Mark AST nodes that correspond to expressions that (implicitly) return.
-    ast.returns = yes if @canBeReturned
-    ast
+    @astAddReturns @astNode o
 
   astInitialize: (o, level) ->
     o = Object.assign {}, o
@@ -315,6 +311,12 @@ exports.Base = class Base
   # mutated into the structure that the Babel spec uses.
   astLocationData: ->
     jisonLocationDataToAstLocationData @locationData
+
+  # Mark AST nodes that correspond to expressions that (implicitly) return.
+  astAddReturns: (ast) ->
+    return ast unless ast?
+    ast.returns = yes if @canBeReturned
+    ast
 
   # Determines whether an AST node needs an `ExpressionStatement` wrapper.
   # Typically matches our `isStatement()` logic but this allows overriding.
