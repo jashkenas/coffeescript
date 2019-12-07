@@ -279,7 +279,8 @@ exports.Base = class Base
   # Only override the component `ast*` methods as needed.
   ast: (o, level) ->
     o = @astInitialize o, level
-    @astAddReturns @astNode o
+    astNode = @astNode o
+    @astAddReturns astNode
 
   astInitialize: (o, level) ->
     o = Object.assign {}, o
