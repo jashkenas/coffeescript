@@ -1894,7 +1894,7 @@ exports.JSXElement = class JSXElement extends Base
                 openingBrace: '{'
                 closingBrace: '}'
               }
-              
+
               new JSXExpressionContainer emptyExpression, locationData: element.locationData
             else
               unwrapped = expression.unwrapAll()

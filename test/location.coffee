@@ -803,3 +803,16 @@ test "Verify carriage returns are accounted for in location data", ->
   eq minusToken[2].last_column_exclusive, 4
   eq minusToken[2].range[0], 7
   eq minusToken[2].range[1], 8
+
+test "Verify object colon location data", ->
+  source = '''
+    a : b
+  '''
+  [implicitBraceToken, aToken, colonToken] = CoffeeScript.tokens source
+  eq colonToken[2].first_line, 0
+  eq colonToken[2].first_column, 2
+  eq colonToken[2].last_line, 0
+  eq colonToken[2].last_column, 2
+  eq colonToken[2].last_column_exclusive, 3
+  eq colonToken[2].range[0], 2
+  eq colonToken[2].range[1], 3
