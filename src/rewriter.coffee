@@ -687,6 +687,7 @@ exports.Rewriter = class Rewriter
         if @tag(i + 1) in EXPRESSION_CLOSE
           if token[1] is ';' and @tag(i + 1) is 'OUTDENT'
             tokens[i + 1].prevToken = token
+            moveComments token, tokens[i + 1]
           tokens.splice i, 1
           return 0
       if tag is 'CATCH'

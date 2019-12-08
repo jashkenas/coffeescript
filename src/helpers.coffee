@@ -117,8 +117,8 @@ buildLocationData = (first, last) ->
 # Build a list of all comments attached to tokens.
 exports.extractAllCommentTokens = (tokens) ->
   allCommentsObj = {}
-  for token in tokens when token.comments or token.prevToken?.comments
-    for comment in [(token.prevToken?.comments ? [])..., (token.comments ? [])...]
+  for token in tokens when token.comments
+    for comment in token.comments
       commentKey = comment.locationData.range[0]
       allCommentsObj[commentKey] = comment
   sortedKeys = Object.keys(allCommentsObj).sort (a, b) -> a - b
