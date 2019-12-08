@@ -666,6 +666,10 @@ exports.Lexer = class Lexer
         return 2
       else if firstChar is '{'
         if prevChar is ':'
+          # This token represents the start of a JSX attribute value
+          # that’s an expression (e.g. the `{b}` in `<div a={b} />`).
+          # Our grammar represents the beginnings of expressions as `(`
+          # tokens, so make this into a `(` token that displays as `{`.
           token = @token '(', '{'
           @jsxObjAttribute[@jsxDepth] = no
           # tag attribute name as JSX
