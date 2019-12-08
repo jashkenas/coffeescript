@@ -249,7 +249,7 @@ exports.Lexer = class Lexer
       colonToken = @token ':', ':', offset: colonOffset
       colonToken.jsxColon = yes if inJSXTag # used by rewriter
     if inJSXTag and tag is 'IDENTIFIER' and prev[0] isnt ':'
-      @token ',', ',', length: 0, origin: tagToken
+      @token ',', ',', length: 0, origin: tagToken, generated: yes
 
     input.length
 
@@ -317,7 +317,7 @@ exports.Lexer = class Lexer
       @validateUnicodeCodePointEscapes value, delimiter: quote
 
     if @atJSXTag()
-      @token ',', ',', length: 0, origin: @prev
+      @token ',', ',', length: 0, origin: @prev, generated: yes
 
     end
 
@@ -666,8 +666,15 @@ exports.Lexer = class Lexer
         return 2
       else if firstChar is '{'
         if prevChar is ':'
-          token = @token '(', '('
+          # This token represents the start of a JSX attribute value
+          # that’s an expression (e.g. the `{b}` in `<div a={b} />`).
+          # Our grammar represents the beginnings of expressions as `(`
+          # tokens, so make this into a `(` token that displays as `{`.
+          token = @token '(', '{'
           @jsxObjAttribute[@jsxDepth] = no
+          # tag attribute name as JSX
+          addTokenData @tokens[@tokens.length - 3],
+            jsx: yes
         else
           token = @token '{', '{'
           @jsxObjAttribute[@jsxDepth] = yes
@@ -683,7 +690,7 @@ exports.Lexer = class Lexer
         @token ',', 'JSX_COMMA', generated: yes
         {tokens, index: end} =
           @matchWithInterpolations INSIDE_JSX, '>', '</', JSX_INTERPOLATION
-        @mergeInterpolationTokens tokens, {endOffset: end}, (value) =>
+        @mergeInterpolationTokens tokens, {endOffset: end, jsx: yes}, (value) =>
           @validateUnicodeCodePointEscapes value, delimiter: '>'
         match = JSX_IDENTIFIER.exec(@chunk[end...]) or JSX_FRAGMENT_IDENTIFIER.exec(@chunk[end...])
         if not match or match[1] isnt "#{jsxTag.name}#{(".#{property}" for property in jsxTag.properties).join ''}"
@@ -717,8 +724,8 @@ exports.Lexer = class Lexer
           @token '}', '}'
           @jsxObjAttribute[@jsxDepth] = no
         else
-          @token ')', ')'
-        @token ',', ','
+          @token ')', '}'
+        @token ',', ',', generated: yes
         return 1
       else
         return 0
@@ -916,8 +923,8 @@ exports.Lexer = class Lexer
 
       unless braceInterpolator
         # We are not using `{` and `}`, so wrap the interpolated tokens instead.
-        open = @makeToken 'INTERPOLATION_START', '(', offset: offsetInChunk,         length: 0
-        close = @makeToken 'INTERPOLATION_END', ')',  offset: offsetInChunk + index, length: 0
+        open = @makeToken 'INTERPOLATION_START', '(', offset: offsetInChunk,         length: 0, generated: yes
+        close = @makeToken 'INTERPOLATION_END', ')',  offset: offsetInChunk + index, length: 0, generated: yes
         nested = [open, nested..., close]
 
       # Push a fake `'TOKENS'` token, which will get turned into real tokens later.
@@ -936,10 +943,10 @@ exports.Lexer = class Lexer
   # of `'NEOSTRING'`s are converted using `fn` and turned into strings using
   # `options` first.
   mergeInterpolationTokens: (tokens, options, fn) ->
-    {quote, indent, double, heregex, endOffset} = options
+    {quote, indent, double, heregex, endOffset, jsx} = options
 
     if tokens.length > 1
-      lparen = @token 'STRING_START', '(', length: quote?.length ? 0, data: {quote}
+      lparen = @token 'STRING_START', '(', length: quote?.length ? 0, data: {quote}, generated: not quote?.length
 
     firstIndex = @tokens.length
     $ = tokens.length - 1
@@ -949,8 +956,7 @@ exports.Lexer = class Lexer
         when 'TOKENS'
           # There are comments (and nothing else) in this interpolation.
           if value.length is 2 and (value[0].comments or value[1].comments)
-            placeholderToken = @makeToken 'JS', ''
-            placeholderToken.generated = yes
+            placeholderToken = @makeToken 'JS', '', generated: yes
             # Use the same location data as the first parenthesis.
             placeholderToken[2] = value[0][2]
             for val in value when val.comments
@@ -968,12 +974,13 @@ exports.Lexer = class Lexer
           addTokenData token, finalChunk: yes   if i is $
           addTokenData token, {indent, quote, double}
           addTokenData token, {heregex} if heregex
+          addTokenData token, {jsx} if jsx
           token[0] = 'STRING'
           token[1] = '"' + converted + '"'
           if tokens.length is 1 and quote?
             token[2].first_column -= quote.length
             if token[1].substr(-2, 1) is '\n'
-              token[2].last_line +=1
+              token[2].last_line += 1
               token[2].last_column = quote.length - 1
             else
               token[2].last_column += quote.length
@@ -1002,7 +1009,7 @@ exports.Lexer = class Lexer
         ]
       ]
       lparen[2] = lparen.origin[2]
-      rparen = @token 'STRING_END', ')', offset: endOffset - (quote ? '').length, length: quote?.length ? 0
+      rparen = @token 'STRING_END', ')', offset: endOffset - (quote ? '').length, length: quote?.length ? 0, generated: not quote?.length
 
   # Pairs up a closing token, ensuring that all listed pairs of tokens are
   # correctly balanced throughout the course of the token stream.
