@@ -576,7 +576,7 @@ exports.Rewriter = class Rewriter
         (token.generated and token[0] is 'CALL_END' and not token.data?.closingTagNameToken) or
         (token.generated and token[0] is '}')
       isIndent = token[0] is 'INDENT'
-      prevToken = tokens[i - 1]
+      prevToken = token.prevToken ? tokens[i - 1]
       prevLocationData = prevToken[2]
       # addLocationDataToGeneratedTokens() set the outdent’s location data
       # to the preceding token’s, but in order to detect comments inside an
@@ -685,6 +685,9 @@ exports.Rewriter = class Rewriter
           tokens.splice i, 1, @indentation()...
           return 1
         if @tag(i + 1) in EXPRESSION_CLOSE
+          if token[1] is ';' and @tag(i + 1) is 'OUTDENT'
+            tokens[i + 1].prevToken = token
+            moveComments token, tokens[i + 1]
           tokens.splice i, 1
           return 0
       if tag is 'CATCH'
