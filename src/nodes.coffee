@@ -1454,10 +1454,10 @@ exports.Value = class Value extends Base
         return new If new Existence(fst), snd, soak: on
       no
 
-  eachName: (iterator) ->
+  eachName: (iterator, {checkAssignability = yes} = {}) ->
     if @hasProperties()
       iterator @
-    else if @base.isAssignable()
+    else if not checkAssignability or @base.isAssignable()
       @base.eachName iterator
     else
       @error 'tried to assign to unassignable value'
@@ -1654,7 +1654,7 @@ exports.JSXExpressionContainer = class JSXExpressionContainer extends Base
 
   astProperties: (o) ->
     return
-      expression: @expression.ast o
+      expression: astAsBlockIfNeeded @expression, o
 
 exports.JSXEmptyExpression = class JSXEmptyExpression extends Base
 
@@ -5071,7 +5071,7 @@ exports.StringWithInterpolations = class StringWithInterpolations extends Base
             emptyInterpolation
           else
             expression.unwrapAll()
-        expressions.push node.ast o
+        expressions.push astAsBlockIfNeeded node, o
 
     {expressions, quasis, @quote}
 
@@ -5253,8 +5253,8 @@ exports.For = class For extends While
     addToScope = (name) ->
       alreadyDeclared = o.scope.find name.value
       name.isDeclaration = not alreadyDeclared
-    @name?.eachName addToScope
-    @index?.eachName addToScope
+    @name?.eachName addToScope, checkAssignability: no
+    @index?.eachName addToScope, checkAssignability: no
     super o
 
   astType: -> 'For'
@@ -5701,6 +5701,14 @@ sniffDirectives = (expressions, {notFinalExpression} = {}) ->
       new Directive expression
       .withLocationDataFrom expression
     index++
+
+astAsBlockIfNeeded = (node, o) ->
+  unwrapped = node.unwrap()
+  if unwrapped instanceof Block and unwrapped.expressions.length > 1
+    unwrapped.makeReturn null, yes
+    unwrapped.ast o, LEVEL_TOP
+  else
+    node.ast o, LEVEL_PAREN
 
 # Helpers for `mergeLocationData` and `mergeAstLocationData` below.
 lesser  = (a, b) -> if a < b then a else b
