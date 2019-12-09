@@ -613,6 +613,28 @@ test "AST as expected for JSXTag node", ->
           type: 'JSXIdentifier'
           name: 'a'
 
+  testExpression '''
+    <div b={
+      c
+      d
+    } />
+  ''',
+    type: 'JSXElement'
+    openingElement:
+      attributes: [
+        value:
+          type: 'JSXExpressionContainer'
+          expression:
+            type: 'BlockStatement'
+            body: [
+              type: 'ExpressionStatement'
+            ,
+              type: 'ExpressionStatement'
+              expression:
+                returns: yes
+            ]
+      ]
+
 test "AST as expected for ComputedPropertyName node", ->
   testExpression '[fn]: ->',
     type: 'ObjectExpression'
@@ -3335,6 +3357,27 @@ test "AST as expected for StringWithInterpolations node", ->
     ]
     quote: '"'
 
+  testExpression '''
+    a "#{
+      b
+      c
+    }"
+  ''',
+    type: 'CallExpression'
+    arguments: [
+      type: 'TemplateLiteral'
+      expressions: [
+        type: 'BlockStatement'
+        body: [
+          type: 'ExpressionStatement'
+        ,
+          type: 'ExpressionStatement'
+          expression:
+            returns: yes
+        ]
+      ]
+    ]
+
 test "AST as expected for For node", ->
   testStatement 'for x, i in arr when x? then return',
     type: 'For'
@@ -3543,6 +3586,14 @@ test "AST as expected for For node", ->
     style: 'in'
     postfix: no
     await: no
+
+  testStatement '''
+    for [x..., y] in z
+      y()
+  ''',
+    type: 'For'
+    name:
+      type: 'ArrayPattern'
 
 #   # TODO: Figure out the purpose of `pattern` and `returns`.
 
