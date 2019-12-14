@@ -2467,12 +2467,11 @@ exports.Obj = class Obj extends Base
   # `foo = ({a, rest..., b}) ->` -> `foo = {a, b, rest...}) ->`
   reorderProperties: ->
     props = @properties
-    splatProps = (i for prop, i in props when prop instanceof Splat)
+    splatProps = @getAndCheckSplatProps()
     splatProp = props.splice splatProps[0], 1
     @objects = @properties = [].concat props, splatProp
 
   compileNode: (o) ->
-    @checkForMultipleSplats()
     @reorderProperties() if @hasSplat() and @lhs
     props = @properties
     if @generated
@@ -2538,11 +2537,12 @@ exports.Obj = class Obj extends Base
     answer = @wrapInBraces answer
     if @front then @wrapInParentheses answer else answer
 
-  checkForMultipleSplats: ->
+  getAndCheckSplatProps: ->
     return unless @hasSplat() and @lhs
     props = @properties
     splatProps = (i for prop, i in props when prop instanceof Splat)
     props[splatProps[1]].error "multiple spread elements are disallowed" if splatProps?.length > 1
+    splatProps
 
   assigns: (name) ->
     for prop in @properties when prop.assigns name then return yes
@@ -2597,7 +2597,7 @@ exports.Obj = class Obj extends Base
         property.lhs = yes
 
   astNode: (o) ->
-    @checkForMultipleSplats()
+    @getAndCheckSplatProps()
     super o
 
   astType: ->
