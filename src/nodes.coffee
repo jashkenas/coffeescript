@@ -3005,6 +3005,10 @@ exports.Class = class Class extends Base
   isStatementAst: -> yes
 
   astNode: (o) ->
+    if jumpNode = @body.jumps()
+      jumpNode.error 'Class bodies cannot contain pure statements'
+    if argumentsNode = @body.contains isLiteralArguments
+      argumentsNode.error "Class bodies shouldn't reference arguments"
     @declareName o
     @name = @determineName()
     @body.isClassBody = yes

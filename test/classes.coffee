@@ -681,8 +681,7 @@ test "directives in class with extends ", ->
   CoffeeScript.run strictTest, bare: yes
 
 test "#2630: class bodies can't reference arguments", ->
-  throws ->
-    CoffeeScript.compile('class Test then arguments')
+  throwsCompileError 'class Test then arguments'
 
   # #4320: Don't be too eager when checking, though.
   class Test
@@ -779,7 +778,7 @@ test "#2796: ditto, ditto, ditto", ->
   eq answer, 'right!'
 
 test "#3063: Class bodies cannot contain pure statements", ->
-  throws -> CoffeeScript.compile """
+  throwsCompileError """
     class extends S
       return if S.f
       @f: => this
@@ -1144,7 +1143,7 @@ test "@ params without super, including errors", ->
     constructor: (@drink) ->
   b = new B('Machiato')
   """
-  throws -> CoffeeScript.compile classA + throwsB, bare: yes
+  throwsCompileError classA + throwsB, bare: yes
 
 test "@ params super race condition", ->
   classA = """
@@ -1159,7 +1158,7 @@ test "@ params super race condition", ->
 
   b = new B('Machiato')
   """
-  throws -> CoffeeScript.compile classA + throwsB, bare: yes
+  throwsCompileError classA + throwsB, bare: yes
 
   # Race condition with @ and super
   throwsC = """
@@ -1169,7 +1168,7 @@ test "@ params super race condition", ->
 
   c = new C('Machiato')
   """
-  throws -> CoffeeScript.compile classA + throwsC, bare: yes
+  throwsCompileError classA + throwsC, bare: yes
 
 
 test "@ with super call", ->
@@ -1217,7 +1216,7 @@ test "super and external constructors", ->
     constructor: ctorC
   c = new C('Machiato')
   """
-  throws -> CoffeeScript.compile throwsC, bare: yes
+  throwsCompileError throwsC, bare: yes
 
 
 test "bound functions without super", ->
@@ -1230,7 +1229,7 @@ test "bound functions without super", ->
       @drink = drink
 
   """
-  throws -> CoffeeScript.compile throwsA, bare: yes
+  throwsCompileError throwsA, bare: yes
 
 test "super in a bound function in a constructor", ->
   throwsB = """
@@ -1238,7 +1237,7 @@ test "super in a bound function in a constructor", ->
   class B extends A
     constructor: do => super
   """
-  throws -> CoffeeScript.compile throwsB, bare: yes
+  throwsCompileError throwsB, bare: yes
 
 test "super in a bound function", ->
   class A
@@ -1493,7 +1492,7 @@ test "only one method named constructor allowed", ->
     constructor: (@first) ->
     constructor: (@last) ->
   """
-  throws -> CoffeeScript.compile throwsA, bare: yes
+  throwsCompileError throwsA, bare: yes
 
 test "If the constructor of a child class does not call super,it should return an object.", ->
   nonce = {}
@@ -1512,7 +1511,7 @@ test "super can only exist in extended classes", ->
     constructor: (@name) ->
       super()
   """
-  throws -> CoffeeScript.compile throwsA, bare: yes
+  throwsCompileError throwsA, bare: yes
 
 # --- CS1 classes compatability breaks ---
 test "CS6 Class extends a CS1 compiled class", ->
