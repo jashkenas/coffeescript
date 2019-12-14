@@ -2741,7 +2741,7 @@ exports.Arr = class Arr extends Base
     @lhs = yes if setLhs
     return unless @lhs
     for object in @objects
-      object.lhs = yes if object instanceof Splat
+      object.lhs = yes if object instanceof Splat or object instanceof Expansion
       unwrappedObject = object.unwrapAll()
       if unwrappedObject instanceof Arr or unwrappedObject instanceof Obj
         unwrappedObject.propagateLhs yes
@@ -3571,6 +3571,7 @@ exports.Assign = class Assign extends Base
     [obj] = objects
 
     @disallowLoneExpansion()
+    @disallowMultipleSplats()
 
     # Count all `Splats`: [a, b, c..., d, e]
     splats = (i for obj, i in objects when obj instanceof Splat)
@@ -3720,6 +3721,22 @@ exports.Assign = class Assign extends Base
     if loneObject instanceof Expansion
       loneObject.error 'Destructuring assignment has no target'
 
+  # Show error if there is more than one `Splat`, or `Expansion`.
+  # Examples: [a, b, c..., d, e, f...], [a, b, ..., c, d, ...], [a, b, ..., c, d, e...]
+  disallowMultipleSplats: ->
+    return unless @variable.base instanceof Arr
+    {objects} = @variable.base
+
+    # Count all `Splats`: [a, b, c..., d, e]
+    splats = (i for obj, i in objects when obj instanceof Splat)
+    # Count all `Expansions`: [a, b, ..., c, d]
+    expans = (i for obj, i in objects when obj instanceof Expansion)
+    # Combine splats and expansions.
+    splatsAndExpans = [splats..., expans...]
+    if splatsAndExpans.length > 1
+      # Sort 'splatsAndExpans' so we can show error at first disallowed token.
+      objects[splatsAndExpans.sort()[1]].error "multiple splats/expansions are disallowed in an assignment"
+
   # When compiling a conditional assignment, take care to ensure that the
   # operands are only evaluated once, even though we have to reference them
   # more than once.
@@ -3784,6 +3801,7 @@ exports.Assign = class Assign extends Base
 
   astNode: (o) ->
     @disallowLoneExpansion()
+    @disallowMultipleSplats()
     @addScopeVariables o, allowAssignmentToExpansion: yes
     super o
 
@@ -4151,8 +4169,12 @@ exports.Code = class Code extends Base
     seenSuper
 
   propagateLhs: ->
-    for {name} in @params when name instanceof Arr or name instanceof Obj
-      name.propagateLhs yes
+    for param in @params
+      {name} = param
+      if name instanceof Arr or name instanceof Obj
+        name.propagateLhs yes
+      else if param instanceof Expansion
+        param.lhs = yes
 
   astAddParamsToScope: (o) ->
     @eachParamName (name) ->
@@ -4402,12 +4424,21 @@ exports.Expansion = class Expansion extends Base
   shouldCache: NO
 
   compileNode: (o) ->
-    @error 'Expansion must be used inside a destructuring assignment or parameter list'
+    @throwLhsError()
 
   asReference: (o) ->
     this
 
   eachName: (iterator) ->
+
+  throwLhsError: ->
+    @error 'Expansion must be used inside a destructuring assignment or parameter list'
+
+  astNode: (o) ->
+    unless @lhs
+      @throwLhsError()
+
+    super o
 
   astType: -> 'RestElement'
 

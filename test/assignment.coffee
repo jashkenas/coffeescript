@@ -278,12 +278,12 @@ test "#1024: destructure empty assignments to produce javascript-like results", 
 
 test "#1005: invalid identifiers allowed on LHS of destructuring assignment", ->
   disallowed = ['eval', 'arguments'].concat CoffeeScript.RESERVED
-  throws (-> CoffeeScript.compile "[#{disallowed.join ', '}] = x"), null, 'all disallowed'
-  throws (-> CoffeeScript.compile "[#{disallowed.join '..., '}...] = x"), null, 'all disallowed as splats'
+  throwsCompileError "[#{disallowed.join ', '}] = x", null, null, 'all disallowed'
+  throwsCompileError "[#{disallowed.join '..., '}...] = x", null, null, 'all disallowed as splats'
   t = tSplat = null
   for v in disallowed when v isnt 'class' # `class` by itself is an expression
-    throws (-> CoffeeScript.compile t), null, t = "[#{v}] = x"
-    throws (-> CoffeeScript.compile tSplat), null, tSplat = "[#{v}...] = x"
+    throwsCompileError t, null, null, t = "[#{v}] = x"
+    throwsCompileError tSplat, null, null, tSplat = "[#{v}...] = x"
   doesNotThrow ->
     for v in disallowed
       CoffeeScript.compile "[a.#{v}] = x"
@@ -307,16 +307,16 @@ test "#156: destructuring with expansion", ->
   eq 2, second
   [..., last] = 'strings as well -> x'
   eq 'x', last
-  throws (-> CoffeeScript.compile "[1, ..., 3]"),        null, "prohibit expansion outside of assignment"
-  throws (-> CoffeeScript.compile "[..., a, b...] = c"), null, "prohibit expansion and a splat"
-  throws (-> CoffeeScript.compile "[...] = c"),          null, "prohibit lone expansion"
+  throwsCompileError "[1, ..., 3]",        null, null, "prohibit expansion outside of assignment"
+  throwsCompileError "[..., a, b...] = c", null, null, "prohibit expansion and a splat"
+  throwsCompileError "[...] = c",          null, null, "prohibit lone expansion"
 
 test "destructuring with dynamic keys", ->
   {"#{'a'}": a, """#{'b'}""": b, c} = {a: 1, b: 2, c: 3}
   eq 1, a
   eq 2, b
   eq 3, c
-  throws -> CoffeeScript.compile '{"#{a}"} = b'
+  throwsCompileError '{"#{a}"} = b'
 
 test "simple array destructuring defaults", ->
   [a = 1] = []
@@ -427,12 +427,12 @@ test "existential assignment", ->
   eq nonce, c
 
 test "#1627: prohibit conditional assignment of undefined variables", ->
-  throws (-> CoffeeScript.compile "x ?= 10"),        null, "prohibit (x ?= 10)"
-  throws (-> CoffeeScript.compile "x ||= 10"),       null, "prohibit (x ||= 10)"
-  throws (-> CoffeeScript.compile "x or= 10"),       null, "prohibit (x or= 10)"
-  throws (-> CoffeeScript.compile "do -> x ?= 10"),  null, "prohibit (do -> x ?= 10)"
-  throws (-> CoffeeScript.compile "do -> x ||= 10"), null, "prohibit (do -> x ||= 10)"
-  throws (-> CoffeeScript.compile "do -> x or= 10"), null, "prohibit (do -> x or= 10)"
+  throwsCompileError "x ?= 10",        null, null, "prohibit (x ?= 10)"
+  throwsCompileError "x ||= 10",       null, null, "prohibit (x ||= 10)"
+  throwsCompileError "x or= 10",       null, null, "prohibit (x or= 10)"
+  throwsCompileError "do -> x ?= 10",  null, null, "prohibit (do -> x ?= 10)"
+  throwsCompileError "do -> x ||= 10", null, null, "prohibit (do -> x ||= 10)"
+  throwsCompileError "do -> x or= 10", null, null, "prohibit (do -> x or= 10)"
   doesNotThrow (-> CoffeeScript.compile "x = null; x ?= 10"),        "allow (x = null; x ?= 10)"
   doesNotThrow (-> CoffeeScript.compile "x = null; x ||= 10"),       "allow (x = null; x ||= 10)"
   doesNotThrow (-> CoffeeScript.compile "x = null; x or= 10"),       "allow (x = null; x or= 10)"
@@ -440,7 +440,7 @@ test "#1627: prohibit conditional assignment of undefined variables", ->
   doesNotThrow (-> CoffeeScript.compile "x = null; do -> x ||= 10"), "allow (x = null; do -> x ||= 10)"
   doesNotThrow (-> CoffeeScript.compile "x = null; do -> x or= 10"), "allow (x = null; do -> x or= 10)"
 
-  throws (-> CoffeeScript.compile "-> -> -> x ?= 10"), null, "prohibit (-> -> -> x ?= 10)"
+  throwsCompileError "-> -> -> x ?= 10", null, null, "prohibit (-> -> -> x ?= 10)"
   doesNotThrow (-> CoffeeScript.compile "x = null; -> -> -> x ?= 10"), "allow (x = null; -> -> -> x ?= 10)"
 
 test "more existential assignment", ->
@@ -501,16 +501,16 @@ test '#2211: splats in destructured parameters', ->
   doesNotThrow -> CoffeeScript.compile '([a...]) ->'
   doesNotThrow -> CoffeeScript.compile '([a...],b) ->'
   doesNotThrow -> CoffeeScript.compile '([a...],[b...]) ->'
-  throws -> CoffeeScript.compile '([a...,[a...]]) ->'
+  throwsCompileError '([a...,[a...]]) ->'
   doesNotThrow -> CoffeeScript.compile '([a...,[b...]]) ->'
 
 test '#2213: invocations within destructured parameters', ->
-  throws -> CoffeeScript.compile '([a()])->'
-  throws -> CoffeeScript.compile '([a:b()])->'
-  throws -> CoffeeScript.compile '([a:b.c()])->'
-  throws -> CoffeeScript.compile '({a()})->'
-  throws -> CoffeeScript.compile '({a:b()})->'
-  throws -> CoffeeScript.compile '({a:b.c()})->'
+  throwsCompileError '([a()])->'
+  throwsCompileError '([a:b()])->'
+  throwsCompileError '([a:b.c()])->'
+  throwsCompileError '({a()})->'
+  throwsCompileError '({a:b()})->'
+  throwsCompileError '({a:b.c()})->'
 
 test '#2532: compound assignment with terminator', ->
   doesNotThrow -> CoffeeScript.compile """
