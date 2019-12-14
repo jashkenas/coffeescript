@@ -1414,6 +1414,13 @@ test "new with 'super'", ->
                                      ^^^^^
   '''
 
+test "'super' outside method", ->
+  assertErrorFormat 'super()', '''
+    [stdin]:1:1: error: cannot use super outside of an instance method
+    super()
+    ^^^^^
+  '''
+
 test "getter keyword in object", ->
   assertErrorFormat '''
     obj =

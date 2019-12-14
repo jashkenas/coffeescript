@@ -2000,11 +2000,11 @@ exports.Call = class Call extends Base
 
   # Soaked chained invocations unfold into if/else ternary structures.
   unfoldSoak: (o) ->
-    @checkForSoakedSuper o
     if @soak
       if @variable instanceof Super
         left = new Literal @variable.compile o
         rite = new Value left
+        @variable.error "Unsupported reference to 'super'" unless @variable.accessor?
       else
         return ifn if ifn = unfoldSoak o, this, 'variable'
         [left, rite] = new Value(@variable).cacheReference o
@@ -2064,18 +2064,15 @@ exports.Call = class Call extends Base
     if @isNew
       @variable.error "Unsupported reference to 'super'" if @variable instanceof Super
 
-  checkForSoakedSuper: (o) ->
-    if @soak and @variable instanceof Super and not @variable.accessor?
-      @variable.error "Unsupported reference to 'super'"
-
   containsSoak: ->
     return yes if @soak
     return yes if @variable?.containsSoak?()
     no
 
   astNode: (o) ->
+    if @soak and @variable instanceof Super and o.scope.namedMethod()?.ctor
+      @variable.error "Unsupported reference to 'super'"
     @checkForNewSuper()
-    @checkForSoakedSuper()
     super o
 
   astType: ->
@@ -2127,9 +2124,9 @@ exports.Super = class Super extends Base
   children: ['accessor']
 
   compileNode: (o) ->
-    method = o.scope.namedMethod()
-    @error 'cannot use super outside of an instance method' unless method?.isMethod
+    @checkInInstanceMethod o
 
+    method = o.scope.namedMethod()
     unless method.ctor? or @accessor?
       {name, variable} = method
       if name.shouldCache() or (name instanceof Index and name.index.isAssignable())
@@ -2153,7 +2150,13 @@ exports.Super = class Super extends Base
     attachCommentsToNode salvagedComments, @accessor.name if salvagedComments
     fragments
 
+  checkInInstanceMethod: (o) ->
+    method = o.scope.namedMethod()
+    @error 'cannot use super outside of an instance method' unless method?.isMethod
+
   astNode: (o) ->
+    @checkInInstanceMethod o
+
     if @accessor?
       return (
         new Value(
