@@ -3583,11 +3583,6 @@ exports.Assign = class Assign extends Base
     expans = (i for obj, i in objects when obj instanceof Expansion)
     # Combine splats and expansions.
     splatsAndExpans = [splats..., expans...]
-    # Show error if there is more than one `Splat`, or `Expansion`.
-    # Examples: [a, b, c..., d, e, f...], [a, b, ..., c, d, ...], [a, b, ..., c, d, e...]
-    if splatsAndExpans.length > 1
-      # Sort 'splatsAndExpans' so we can show error at first disallowed token.
-      objects[splatsAndExpans.sort()[1]].error "multiple splats/expansions are disallowed in an assignment"
 
     isSplat = splats?.length > 0
     isExpans = expans?.length > 0
