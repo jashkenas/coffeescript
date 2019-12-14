@@ -197,7 +197,7 @@ test "invoking functions with implicit object literals", ->
   ok result.length is 4
   ok result[2].b is 1
 
-  throws -> CoffeeScript.compile "a = b:1, c"
+  throwsCompileError "a = b:1, c"
 
 test "some weird indentation in YAML-style object literals", ->
   two = (a, b) -> b
@@ -905,4 +905,4 @@ test "#4579: Postfix for/while/until in first line of implicit object literals",
   eq 1337, six.foo.baz
 
 test "#5204: not parsed as static property", ->
-  doesNotThrow -> CoffeeScript.compile "@ [b]: 2"
+  doesNotThrowCompileError "@ [b]: 2"

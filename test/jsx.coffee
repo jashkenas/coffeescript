@@ -98,10 +98,10 @@ test 'attribute with namespace', ->
   '''
 
 test 'attribute with double namespace disallowed', ->
-  throws -> CoffeeScript.compile '<image xlink:href:tag="data:image/png" />'
+  throwsCompileError '<image xlink:href:tag="data:image/png" />'
 
 test 'attribute with member expression disallowed', ->
-  throws -> CoffeeScript.compile '<image xlink.href="data:image/png" />'
+  throwsCompileError '<image xlink.href="data:image/png" />'
 
 test 'paired', ->
   eqJS '''
@@ -168,16 +168,16 @@ test 'interpolation in string attribute value', ->
 
 # Unlike in `coffee-react-transform`.
 test 'bare numbers not allowed', ->
-  throws -> CoffeeScript.compile '<div x=3 />'
+  throwsCompileError '<div x=3 />'
 
 test 'bare expressions not allowed', ->
-  throws -> CoffeeScript.compile '<div x=y />'
+  throwsCompileError '<div x=y />'
 
 test 'bare complex expressions not allowed', ->
-  throws -> CoffeeScript.compile '<div x=f(3) />'
+  throwsCompileError '<div x=f(3) />'
 
 test 'unescaped opening tag angle bracket disallowed', ->
-  throws -> CoffeeScript.compile '<Person><<</Person>'
+  throwsCompileError '<Person><<</Person>'
 
 test 'space around equal sign', ->
   eqJS '''
@@ -190,7 +190,7 @@ test 'space around equal sign', ->
 # [https://github.com/jsdf/coffee-react-transform](https://github.com/jsdf/coffee-react-transform).
 
 test 'ambiguous tag-like expression', ->
-  throws -> CoffeeScript.compile 'x = a <b > c'
+  throwsCompileError 'x = a <b > c'
 
 test 'ambiguous tag', ->
   eqJS '''
@@ -453,14 +453,14 @@ test 'comment at end of JSX escape', ->
   '''
 
 test 'JSX comment cannot be used inside interpolation', ->
-  throws -> CoffeeScript.compile '''
+  throwsCompileError '''
     <Person>
     {# i am a comment}
     </Person>
   '''
 
 test 'comment syntax cannot be used inline', ->
-  throws -> CoffeeScript.compile '''
+  throwsCompileError '''
     <Person>{#comment inline}</Person>
   '''
 
@@ -546,7 +546,7 @@ test 'self closing tag with namespace', ->
   '''
 
 test 'self closing tag with namespace and member expression disallowed', ->
-  throws -> CoffeeScript.compile '''
+  throwsCompileError '''
     <Namespace:Something.Tag />
   '''
 
@@ -668,7 +668,7 @@ test 'empty strings are not converted to true', ->
   '''
 
 test 'CoffeeScript @ syntax in tag name', ->
-  throws -> CoffeeScript.compile '''
+  throwsCompileError '''
     <@Component>
       <Component />
     </@Component>
@@ -682,7 +682,7 @@ test 'hyphens in tag names', ->
   '''
 
 test 'closing tags must be closed', ->
-  throws -> CoffeeScript.compile '''
+  throwsCompileError '''
     <a></a
   '''
 

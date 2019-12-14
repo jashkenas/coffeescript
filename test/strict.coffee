@@ -18,12 +18,9 @@
 
 # helper to assert that code complies with strict prohibitions
 strict = (code, msg) ->
-  throws (-> CoffeeScript.compile code), null, msg ? code
-strictAst = (code, msg) ->
-  strict code, msg
-  throws (-> CoffeeScript.compile code, ast: yes), null, msg ? code
+  throwsCompileError code, null, null, msg ? code
 strictOk = (code, msg) ->
-  doesNotThrow (-> CoffeeScript.compile code), msg ? code
+  doesNotThrowCompileError code, null, msg ? code
 
 
 test "octal integer literals prohibited", ->
@@ -138,7 +135,7 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
     check "#{keyword} *= 1"
     check "#{keyword} /= 1"
     check "#{keyword} ?= 1"
-  update = (keyword, check = strictAst) ->
+  update = (keyword, check = strict) ->
     check "#{keyword}++"
     check "++#{keyword}"
     check "#{keyword}--"

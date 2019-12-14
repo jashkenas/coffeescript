@@ -4640,8 +4640,7 @@ exports.Op = class Op extends Base
     # In chains, there's no need to wrap bare obj literals in parens,
     # as the chained expression is wrapped.
     @first.front = @front unless isChain
-    if @operator is 'delete' and o.scope.check(@first.unwrapAll().value)
-      @error 'delete operand may not be argument or var'
+    @checkDeleteOperand o
     return @compileContinuation o if @isYield() or @isAwait()
     return @compileUnary        o if @isUnary()
     return @compileChain        o if isChain
@@ -4729,8 +4728,13 @@ exports.Op = class Op extends Base
   toString: (idt) ->
     super idt, @constructor.name + ' ' + @operator
 
+  checkDeleteOperand: (o) ->
+    if @operator is 'delete' and o.scope.check(@first.unwrapAll().value)
+      @error 'delete operand may not be argument or var'
+
   astNode: (o) ->
     @checkContinuation o if @isYield() or @isAwait()
+    @checkDeleteOperand o
     super o
 
   astType: ->
@@ -4912,14 +4916,19 @@ exports.Catch = class Catch extends Base
     o.indent  += TAB
     generatedErrorVariableName = o.scope.freeVariable 'error', reserve: no
     placeholder = new IdentifierLiteral generatedErrorVariableName
+    @checkUnassignable()
     if @errorVariable
-      message = isUnassignable @errorVariable.unwrapAll().value
-      @errorVariable.error message if message
       @recovery.unshift new Assign @errorVariable, placeholder
     [].concat @makeCode(" catch ("), placeholder.compileToFragments(o), @makeCode(") {\n"),
       @recovery.compileToFragments(o, LEVEL_TOP), @makeCode("\n#{@tab}}")
 
+  checkUnassignable: ->
+    if @errorVariable
+      message = isUnassignable @errorVariable.unwrapAll().value
+      @errorVariable.error message if message
+
   astNode: (o) ->
+    @checkUnassignable()
     @errorVariable?.eachName (name) ->
       alreadyDeclared = o.scope.find name.value
       name.isDeclaration = not alreadyDeclared
