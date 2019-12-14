@@ -868,7 +868,7 @@ test "AST location data as expected for Call node", ->
         column: 7
 
 test "AST location data as expected for SuperCall node", ->
-  testAstLocationData 'class child then constructor: -> super()',
+  testAstLocationData 'class child extends parent then constructor: -> super()',
     type: 'ClassDeclaration'
     body:
       body: [
@@ -876,38 +876,38 @@ test "AST location data as expected for SuperCall node", ->
           body: [
             expression:
               callee:
-                start: 33
-                end: 38
-                range: [33, 38]
+                start: 48
+                end: 53
+                range: [48, 53]
                 loc:
                   start:
                     line: 1
-                    column: 33
+                    column: 48
                   end:
                     line: 1
-                    column: 38
-              start: 33
-              end: 40
-              range: [33, 40]
+                    column: 53
+              start: 48
+              end: 55
+              range: [48, 55]
               loc:
                 start:
                   line: 1
-                  column: 33
+                  column: 48
                 end:
                   line: 1
-                  column: 40
+                  column: 55
           ]
       ]
     start: 0
-    end: 40
-    range: [0, 40]
+    end: 55
+    range: [0, 55]
     loc:
       start:
         line: 1
         column: 0
       end:
         line: 1
-        column: 40
+        column: 55
 
 test "AST location data as expected for Super node", ->
   testAstLocationData '''

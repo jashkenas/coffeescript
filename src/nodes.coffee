@@ -1243,7 +1243,7 @@ exports.DefaultLiteral = class DefaultLiteral extends Literal
 
 # A `return` is a *pureStatement*—wrapping it in a closure wouldn’t make sense.
 exports.Return = class Return extends Base
-  constructor: (@expression) ->
+  constructor: (@expression, {@belongsToFuncDirectiveReturn} = {}) ->
     super()
 
   children: ['expression']
@@ -1277,6 +1277,11 @@ exports.Return = class Return extends Base
     answer.push @makeCode ';'
     answer
 
+  checkForPureStatementInExpression: ->
+    # don’t flag `return` from `await return`/`yield return` as invalid.
+    return if @belongsToFuncDirectiveReturn
+    super()
+
   astType: -> 'ReturnStatement'
 
   astProperties: (o) ->
@@ -1301,7 +1306,7 @@ exports.FuncDirectiveReturn = class FuncDirectiveReturn extends Return
     @checkScope o
 
     new Op @keyword,
-      new Return @expression
+      new Return @expression, belongsToFuncDirectiveReturn: yes
       .withLocationDataFrom(
         if @expression?
           locationData: mergeLocationData @returnKeyword.locationData, @expression.locationData
@@ -2643,12 +2648,12 @@ exports.Arr = class Arr extends Base
     return yes for obj in @objects when obj instanceof Elision
     no
 
-  isAssignable: ->
+  isAssignable: ({allowExpansion} = {}) ->
     return no unless @objects.length
 
     for obj, i in @objects
       return no if obj instanceof Splat and i + 1 isnt @objects.length
-      return no unless obj.isAssignable() and (not obj.isAtomic or obj.isAtomic())
+      return no unless (allowExpansion and obj instanceof Expansion) or (obj.isAssignable() and (not obj.isAtomic or obj.isAtomic()))
     yes
 
   shouldCache: ->
@@ -3429,11 +3434,11 @@ exports.Assign = class Assign extends Base
   unfoldSoak: (o) ->
     unfoldSoak o, this, 'variable'
 
-  addScopeVariables: (o, {checkAssignability = yes} = {}) ->
+  addScopeVariables: (o, {allowAssignmentToExpansion = no} = {}) ->
     return unless not @context or @context is '**='
 
     varBase = @variable.unwrapAll()
-    if checkAssignability and not varBase.isAssignable()
+    if not varBase.isAssignable allowExpansion: allowAssignmentToExpansion
       @variable.error "'#{@variable.compile o}' can't be assigned"
 
     varBase.eachName (name) =>
@@ -3762,7 +3767,7 @@ exports.Assign = class Assign extends Base
 
   astNode: (o) ->
     @disallowLoneExpansion()
-    @addScopeVariables o, checkAssignability: no
+    @addScopeVariables o, allowAssignmentToExpansion: yes
     super o
 
   astType: ->
@@ -4133,9 +4138,8 @@ exports.Code = class Code extends Base
       name.propagateLhs yes
 
   astAddParamsToScope: (o) ->
-    for param in @params
-      param.eachName (name) ->
-        o.scope.add name, 'param'
+    @eachParamName (name) ->
+      o.scope.add name, 'param'
 
   astNode: (o) ->
     @updateOptions o
@@ -4262,9 +4266,18 @@ exports.Param = class Param extends Base
   # `name` is the name of the parameter and `node` is the AST node corresponding
   # to that name.
   eachName: (iterator, name = @name) ->
+    checkAssignabilityOfLiteral = (literal) ->
+      message = isUnassignable literal.value
+      if message
+        literal.error message
+      unless literal.isAssignable()
+        literal.error "'#{literal.value}' can't be assigned"
+
     atParam = (obj, originalObj = null) => iterator "@#{obj.properties[0].name.value}", obj, @, originalObj
     # * simple literals `foo`
-    return iterator name.value, name, @ if name instanceof Literal
+    if name instanceof Literal
+      checkAssignabilityOfLiteral name
+      return iterator name.value, name, @
     # * at-params `@foo`
     return atParam name if name instanceof Value
     for obj in name.objects ? []
@@ -4293,7 +4306,9 @@ exports.Param = class Param extends Base
         else if obj.this
           atParam obj, nObj
         # * simple destructured parameters {foo}
-        else iterator obj.base.value, obj.base, @
+        else
+          checkAssignabilityOfLiteral obj.base
+          iterator obj.base.value, obj.base, @
       else if obj instanceof Elision
         obj
       else if obj not instanceof Expansion

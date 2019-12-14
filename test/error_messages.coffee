@@ -68,7 +68,7 @@ if require?
     fs.writeFileSync tempFile, 'foo in bar or in baz'
 
     try
-      assertErrorFormat """
+      assertErrorFormatNoAst """
         require '#{tempFile.replace /\\/g, '\\\\'}'
       """,
       """
