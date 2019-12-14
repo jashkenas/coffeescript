@@ -10,10 +10,9 @@ errCallback = (expectedErrorFormat) -> (err) ->
   yes
 assertErrorFormatNoAst = (code, expectedErrorFormat) ->
   throws (-> CoffeeScript.run code), errCallback(expectedErrorFormat)
-assertErrorFormatAst = (code, expectedErrorFormat) ->
+assertErrorFormat = (code, expectedErrorFormat) ->
   assertErrorFormatNoAst code, expectedErrorFormat
   throws (-> CoffeeScript.compile code, ast: yes), errCallback(expectedErrorFormat)
-assertErrorFormat = assertErrorFormatAst
 
 test "lexer errors formatting", ->
   assertErrorFormat '''
@@ -784,14 +783,14 @@ test "strict mode errors", ->
     class eval
           ^^^^
   '''
-  assertErrorFormatAst '''
+  assertErrorFormat '''
     arguments++
   ''', '''
     [stdin]:1:1: error: 'arguments' can't be assigned
     arguments++
     ^^^^^^^^^
   '''
-  assertErrorFormatAst '''
+  assertErrorFormat '''
     --arguments
   ''', '''
     [stdin]:1:3: error: 'arguments' can't be assigned
@@ -966,14 +965,14 @@ test "#4130: unassignable in destructured param", ->
   '''
 
 test "`yield` outside of a function", ->
-  assertErrorFormatAst '''
+  assertErrorFormat '''
     yield 1
   ''', '''
     [stdin]:1:1: error: yield can only occur inside functions
     yield 1
     ^^^^^^^
   '''
-  assertErrorFormatAst '''
+  assertErrorFormat '''
     yield return
   ''', '''
     [stdin]:1:1: error: yield can only occur inside functions
@@ -1123,7 +1122,7 @@ test "cannot export * without a module to export from", ->
   '''
 
 test "imports and exports must be top-level", ->
-  assertErrorFormat '''
+  assertErrorFormatNoAst '''
     if foo
       import { bar } from 'lib'
   ''', '''
@@ -1131,7 +1130,7 @@ test "imports and exports must be top-level", ->
       import { bar } from 'lib'
       ^^^^^^^^^^^^^^^^^^^^^^^^^
   '''
-  assertErrorFormat '''
+  assertErrorFormatNoAst '''
     foo = ->
       export { bar }
   ''', '''
@@ -1259,14 +1258,14 @@ test "CoffeeScript keywords cannot be used as local names in import list aliases
   '''
 
 test "cannot have `await` outside a function", ->
-  assertErrorFormatAst '''
+  assertErrorFormat '''
     await 1
   ''', '''
     [stdin]:1:1: error: await can only occur inside functions
     await 1
     ^^^^^^^
   '''
-  assertErrorFormatAst '''
+  assertErrorFormat '''
     await return
   ''', '''
     [stdin]:1:1: error: await can only occur inside functions
@@ -1654,42 +1653,42 @@ test "JSX error: ambiguous tag-like expression", ->
   '''
 
 test 'JSX error: invalid attributes', ->
-  assertErrorFormatAst '''
+  assertErrorFormat '''
     <div a="b" {props} />
   ''', '''
     [stdin]:1:12: error: Unexpected token. Allowed JSX attributes are: id="val", src={source}, {props...} or attribute.
     <div a="b" {props} />
                ^^^^^^^
   '''
-  assertErrorFormatAst '''
+  assertErrorFormat '''
     <div a={b} {a:{b}} />
   ''', '''
     [stdin]:1:12: error: Unexpected token. Allowed JSX attributes are: id="val", src={source}, {props...} or attribute.
     <div a={b} {a:{b}} />
                ^^^^^^^
   '''
-  assertErrorFormatAst '''
+  assertErrorFormat '''
     <div {"#{a}"} />
   ''', '''
     [stdin]:1:6: error: Unexpected token. Allowed JSX attributes are: id="val", src={source}, {props...} or attribute.
     <div {"#{a}"} />
          ^^^^^^^^
   '''
-  assertErrorFormatAst '''
+  assertErrorFormat '''
     <div props... />
   ''', '''
     [stdin]:1:11: error: Unexpected token. Allowed JSX attributes are: id="val", src={source}, {props...} or attribute.
     <div props... />
               ^^^
   '''
-  assertErrorFormatAst '''
+  assertErrorFormat '''
     <div {a:"b", props..., c:d()} />
   ''', '''
     [stdin]:1:6: error: Unexpected token. Allowed JSX attributes are: id="val", src={source}, {props...} or attribute.
     <div {a:"b", props..., c:d()} />
          ^^^^^^^^^^^^^^^^^^^^^^^^
   '''
-  assertErrorFormatAst '''
+  assertErrorFormat '''
     <div {props..., a, b} />
   ''', '''
     [stdin]:1:6: error: Unexpected token. Allowed JSX attributes are: id="val", src={source}, {props...} or attribute.
@@ -1944,7 +1943,7 @@ test "#3933: prevent implicit calls when cotrol flow is missing `THEN`", ->
   '''
 
 test "`new.target` outside of a function", ->
-  assertErrorFormatAst '''
+  assertErrorFormat '''
     new.target
   ''', '''
     [stdin]:1:1: error: new.target can only occur inside functions
@@ -1953,7 +1952,7 @@ test "`new.target` outside of a function", ->
   '''
 
 test "`new.target` is only allowed meta property", ->
-  assertErrorFormatAst '''
+  assertErrorFormat '''
     -> new.something
   ''', '''
     [stdin]:1:4: error: the only valid meta property for new is new.target
@@ -1962,7 +1961,7 @@ test "`new.target` is only allowed meta property", ->
   '''
 
 test "`new.target` cannot be assigned", ->
-  assertErrorFormatAst '''
+  assertErrorFormat '''
     ->
       new.target = b
   ''', '''

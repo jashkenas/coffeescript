@@ -114,8 +114,7 @@ exports.Base = class Base
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
   compileClosure: (o) ->
-    if jumpNode = @jumps()
-      jumpNode.error 'cannot use a pure statement in an expression'
+    @checkForPureStatementInExpression()
     o.sharedScope = yes
     func = new Code [], Block.wrap [this]
     args = []
@@ -271,6 +270,10 @@ exports.Base = class Base
     @eachChild (node) -> tree += node.toString idt + TAB
     tree
 
+  checkForPureStatementInExpression: ->
+    if jumpNode = @jumps()
+      jumpNode.error 'cannot use a pure statement in an expression'
+
   # Plain JavaScript object representation of the node, that can be serialized
   # as JSON. This is what the `ast` option in the Node API returns.
   # We try to follow the [Babel AST spec](https://github.com/babel/babel/blob/master/packages/babel-parser/ast/spec.md)
@@ -285,6 +288,8 @@ exports.Base = class Base
   astInitialize: (o, level) ->
     o = Object.assign {}, o
     o.level = level if level?
+    if o.level > LEVEL_TOP
+      @checkForPureStatementInExpression()
     # `@makeReturn` must be called before `astProperties`, because the latter may call
     # `.ast()` for child nodes and those nodes would need the return logic from `makeReturn`
     # already executed by then.
@@ -3188,6 +3193,10 @@ exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
     code.push @makeCode ';'
     code
 
+  astNode: (o) ->
+    o.importedSymbols = []
+    super o
+
   astProperties: (o) ->
     ret =
       specifiers: @clause?.ast(o) ? []
@@ -3224,6 +3233,7 @@ exports.ImportClause = class ImportClause extends Base
 exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
   compileNode: (o) ->
     @checkScope o, 'export'
+    @checkForAnonymousClassExport()
 
     code = []
     code.push @makeCode "#{@tab}export "
@@ -3231,10 +3241,6 @@ exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
 
     if @ not instanceof ExportDefaultDeclaration and
        (@clause instanceof Assign or @clause instanceof Class)
-      # Prevent exporting an anonymous class; all exported members must be named
-      if @clause instanceof Class and not @clause.variable
-        @clause.error 'anonymous classes cannot be exported'
-
       code.push @makeCode 'var '
       @clause.moduleDeclaration = 'export'
 
@@ -3246,6 +3252,15 @@ exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
     code.push @makeCode " from #{@source.value}" if @source?.value?
     code.push @makeCode ';'
     code
+
+  # Prevent exporting an anonymous class; all exported members must be named
+  checkForAnonymousClassExport: ->
+    if @ not instanceof ExportDefaultDeclaration and @clause instanceof Class and not @clause.variable
+      @clause.error 'anonymous classes cannot be exported'
+
+  astNode: (o) ->
+    @checkForAnonymousClassExport()
+    super o
 
 exports.ExportNamedDeclaration = class ExportNamedDeclaration extends ExportDeclaration
   astProperties: (o) ->
@@ -3315,17 +3330,24 @@ exports.ModuleSpecifier = class ModuleSpecifier extends Base
   children: ['original', 'alias']
 
   compileNode: (o) ->
-    o.scope.find @identifier, @moduleDeclarationType
+    @addIdentifierToScope o
     code = []
     code.push @makeCode @original.value
     code.push @makeCode " as #{@alias.value}" if @alias?
     code
 
+  addIdentifierToScope: (o) ->
+    o.scope.find @identifier, @moduleDeclarationType
+
+  astNode: (o) ->
+    @addIdentifierToScope o
+    super o
+
 exports.ImportSpecifier = class ImportSpecifier extends ModuleSpecifier
   constructor: (imported, local) ->
     super imported, local, 'import'
 
-  compileNode: (o) ->
+  addIdentifierToScope: (o) ->
     # Per the spec, symbols can’t be imported multiple times
     # (e.g. `import { foo, foo } from 'lib'` is invalid)
     if @identifier in o.importedSymbols or o.scope.check(@identifier)
@@ -3806,9 +3828,7 @@ exports.Code = class Code extends Base
   # parameters after the splat, they are declared via expressions in the
   # function body.
   compileNode: (o) ->
-    if @ctor
-      @name.error 'Class constructor may not be async'       if @isAsync
-      @name.error 'Class constructor may not be a generator' if @isGenerator
+    @checkForAsyncOrGeneratorConstructor()
 
     if @bound
       @context = o.scope.method.context if o.scope.method?.bound
@@ -4065,6 +4085,11 @@ exports.Code = class Code extends Base
   flagThisParamInDerivedClassConstructorWithoutCallingSuper: (param) ->
     param.error "Can't use @params in derived class constructors without calling super"
 
+  checkForAsyncOrGeneratorConstructor: ->
+    if @ctor
+      @name.error 'Class constructor may not be async'       if @isAsync
+      @name.error 'Class constructor may not be a generator' if @isGenerator
+
   expandCtorSuper: (thisAssignments) ->
     return false unless @ctor
 
@@ -4114,6 +4139,7 @@ exports.Code = class Code extends Base
 
   astNode: (o) ->
     @updateOptions o
+    @checkForAsyncOrGeneratorConstructor()
     @checkForDuplicateParams()
     @disallowSuperInParamDefaults forAst: yes
     seenSuper = @checkSuperCallsInConstructorBody()
