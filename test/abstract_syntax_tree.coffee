@@ -2281,17 +2281,22 @@ test "AST as expected for Assign node", ->
       name: 'c'
       declaration: no
 
-  testExpression 'a ?= b',
-    type: 'AssignmentExpression'
-    left:
-      type: 'Identifier'
-      name: 'a'
-      declaration: no
-    right:
-      type: 'Identifier'
-      name: 'b'
-      declaration: no
-    operator: '?='
+  testExpression '(a = 1; a ?= b)',
+    type: 'SequenceExpression'
+    expressions: [
+      type: 'AssignmentExpression'
+    ,
+      type: 'AssignmentExpression'
+      left:
+        type: 'Identifier'
+        name: 'a'
+        declaration: no
+      right:
+        type: 'Identifier'
+        name: 'b'
+        declaration: no
+      operator: '?='
+    ]
 
 # # `FuncGlyph` node isn't exported.
 

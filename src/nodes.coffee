@@ -3512,7 +3512,7 @@ exports.Assign = class Assign extends Base
             return @compileDestructuring o
 
       return @compileSplice       o if @variable.isSplice()
-      return @compileConditional  o if @context in ['||=', '&&=', '?=']
+      return @compileConditional  o if @isConditional()
       return @compileSpecialMath  o if @context in ['//=', '%%=']
 
     @addScopeVariables o
@@ -3745,7 +3745,7 @@ exports.Assign = class Assign extends Base
     # Disallow conditional assignment of undefined variables.
     if not left.properties.length and left.base instanceof Literal and
            left.base not instanceof ThisLiteral and not o.scope.check left.base.value
-      @variable.error "the variable \"#{left.base.value}\" can't be assigned with #{@context} because it has not been declared before"
+      @throwUnassignableConditionalError left.base.value
     if "?" in @context
       o.isExistentialEquals = true
       new If(new Existence(left), right, type: 'if').addElse(new Assign(right, @value, '=')).compileToFragments o
@@ -3797,11 +3797,21 @@ exports.Assign = class Assign extends Base
     # destructured variables.
     @variable.base.propagateLhs yes
 
+  throwUnassignableConditionalError: (name) ->
+    @variable.error "the variable \"#{name}\" can't be assigned with #{@context} because it has not been declared before"
+
+  isConditional: ->
+    @context in ['||=', '&&=', '?=']
+
   isStatementAst: NO
 
   astNode: (o) ->
     @disallowLoneExpansion()
     @disallowMultipleSplats()
+    if @isConditional()
+      variable = @variable.unwrap()
+      if variable instanceof IdentifierLiteral and not o.scope.check variable.value
+        @throwUnassignableConditionalError variable.value
     @addScopeVariables o, allowAssignmentToExpansion: yes
     super o
 
@@ -4313,6 +4323,9 @@ exports.Param = class Param extends Base
         literal.error "'#{literal.value}' can't be assigned"
 
     atParam = (obj, originalObj = null) => iterator "@#{obj.properties[0].name.value}", obj, @, originalObj
+    if name instanceof Call
+      name.error "Function invocation can't be assigned"
+
     # * simple literals `foo`
     if name instanceof Literal
       checkAssignabilityOfLiteral name
