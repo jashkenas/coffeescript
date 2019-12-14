@@ -3182,6 +3182,10 @@ exports.ModuleDeclaration = class ModuleDeclaration extends Base
       @source.error 'the name of the module to be imported from must be an uninterpolated string'
 
   checkScope: (o, moduleDeclarationType) ->
+    # TODO: would be appropriate to flag this error during AST generation (as
+    # well as when compiling to JS). But `o.indent` isn’t tracked during AST
+    # generation, and there doesn’t seem to be a current alternative way to track
+    # whether we’re at the “program top-level”.
     if o.indent.length isnt 0
       @error "#{moduleDeclarationType} statements must be at top-level scope"
 
