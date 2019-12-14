@@ -7,7 +7,7 @@
 #   string literals -> string literals
 #   function invocations -> function invocations
 
-doesNotThrow -> CoffeeScript.compile "a = then b"
+doesNotThrowCompileError "a = then b"
 
 test "multiple semicolon-separated statements in parentheticals", ->
   nonce = {}
@@ -211,7 +211,7 @@ test "#1495, method call chaining", ->
   eq 'a, b, c', result
 
 test "chaining should not wrap spilling ternary", ->
-  throws -> CoffeeScript.compile """
+  throwsCompileError """
     if 0 then 1 else g
       a: 42
     .h()

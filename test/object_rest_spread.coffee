@@ -15,8 +15,8 @@ test "#4798 destructuring of objects with splat within arrays", ->
 
 test "destructuring assignment with objects and splats: ES2015", ->
   obj = {a: 1, b: 2, c: 3, d: 4, e: 5}
-  throws (-> CoffeeScript.compile "{a, r..., s...} = x"), null, "multiple rest elements are disallowed"
-  throws (-> CoffeeScript.compile "{a, r..., s..., b} = x"), null, "multiple rest elements are disallowed"
+  throwsCompileError "{a, r..., s...} = x", null, null, "multiple rest elements are disallowed"
+  throwsCompileError "{a, r..., s..., b} = x", null, null, "multiple rest elements are disallowed"
   prop = "b"
   {a, b, r...} = obj
   eq a, 1

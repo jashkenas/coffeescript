@@ -69,8 +69,8 @@ test "Python-style octal literal notation '0o777'", ->
 test "#2060: Disallow uppercase radix prefixes and exponential notation", ->
   for char in ['b', 'o', 'x', 'e']
     program = "0#{char}0"
-    doesNotThrow -> CoffeeScript.compile program, bare: yes
-    throws -> CoffeeScript.compile program.toUpperCase(), bare: yes
+    doesNotThrowCompileError program, bare: yes
+    throwsCompileError program.toUpperCase(), bare: yes
 
 test "#2224: hex literals with 0b or B or E", ->
   eq 176, 0x0b0
