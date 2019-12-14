@@ -3893,6 +3893,7 @@ exports.Code = class Code extends Base
     haveBodyParam    = no
 
     @checkForDuplicateParams()
+    @disallowLoneExpansionAndMultipleSplats()
 
     # Separate `this` assignments.
     @eachParamName (name, node, param, obj) ->
@@ -3925,10 +3926,6 @@ exports.Code = class Code extends Base
       # per function.) Splat/expansion parameters cannot have default values,
       # so we need not worry about that.
       if param.splat or param instanceof Expansion
-        if haveSplatParam
-          param.error 'only one splat or expansion parameter is allowed per function definition'
-        else if param instanceof Expansion and @params.length is 1
-          param.error 'an expansion parameter cannot be the only parameter in a function definition'
         haveSplatParam = yes
         if param.splat
           if param.name instanceof Arr or param.name instanceof Obj
@@ -4140,6 +4137,19 @@ exports.Code = class Code extends Base
       @name.error 'Class constructor may not be async'       if @isAsync
       @name.error 'Class constructor may not be a generator' if @isGenerator
 
+  disallowLoneExpansionAndMultipleSplats: ->
+    haveSplatParam   = no
+    for param, i in @params
+      # Was `...` used with this parameter? (Only one such parameter is allowed
+      # per function.) Splat/expansion parameters cannot have default values,
+      # so we need not worry about that.
+      if param.splat or param instanceof Expansion
+        if haveSplatParam
+          param.error 'only one splat or expansion parameter is allowed per function definition'
+        else if param instanceof Expansion and @params.length is 1
+          param.error 'an expansion parameter cannot be the only parameter in a function definition'
+        haveSplatParam = yes
+
   expandCtorSuper: (thisAssignments) ->
     return false unless @ctor
 
@@ -4195,6 +4205,7 @@ exports.Code = class Code extends Base
     @checkForAsyncOrGeneratorConstructor()
     @checkForDuplicateParams()
     @disallowSuperInParamDefaults forAst: yes
+    @disallowLoneExpansionAndMultipleSplats()
     seenSuper = @checkSuperCallsInConstructorBody()
     if @ctor is 'derived' and not seenSuper
       @eachParamName (name, node) =>

@@ -350,15 +350,15 @@ test "#1046, empty string interpolations", ->
   eq "#{ }", ''
 
 test "strings are not callable", ->
-  throws -> CoffeeScript.compile '"a"()'
-  throws -> CoffeeScript.compile '"a#{b}"()'
-  throws -> CoffeeScript.compile '"a" 1'
-  throws -> CoffeeScript.compile '"a#{b}" 1'
-  throws -> CoffeeScript.compile '''
+  throwsCompileError '"a"()'
+  throwsCompileError '"a#{b}"()'
+  throwsCompileError '"a" 1'
+  throwsCompileError '"a#{b}" 1'
+  throwsCompileError '''
     "a"
        k: v
   '''
-  throws -> CoffeeScript.compile '''
+  throwsCompileError '''
     "a#{b}"
        k: v
   '''

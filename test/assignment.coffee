@@ -284,12 +284,11 @@ test "#1005: invalid identifiers allowed on LHS of destructuring assignment", ->
   for v in disallowed when v isnt 'class' # `class` by itself is an expression
     throwsCompileError t, null, null, t = "[#{v}] = x"
     throwsCompileError tSplat, null, null, tSplat = "[#{v}...] = x"
-  doesNotThrow ->
-    for v in disallowed
-      CoffeeScript.compile "[a.#{v}] = x"
-      CoffeeScript.compile "[a.#{v}...] = x"
-      CoffeeScript.compile "[@#{v}] = x"
-      CoffeeScript.compile "[@#{v}...] = x"
+  for v in disallowed
+    doesNotThrowCompileError "[a.#{v}] = x"
+    doesNotThrowCompileError "[a.#{v}...] = x"
+    doesNotThrowCompileError "[@#{v}] = x"
+    doesNotThrowCompileError "[@#{v}...] = x"
 
 test "#2055: destructuring assignment with `new`", ->
   {length} = new Array
@@ -433,15 +432,15 @@ test "#1627: prohibit conditional assignment of undefined variables", ->
   throwsCompileError "do -> x ?= 10",  null, null, "prohibit (do -> x ?= 10)"
   throwsCompileError "do -> x ||= 10", null, null, "prohibit (do -> x ||= 10)"
   throwsCompileError "do -> x or= 10", null, null, "prohibit (do -> x or= 10)"
-  doesNotThrow (-> CoffeeScript.compile "x = null; x ?= 10"),        "allow (x = null; x ?= 10)"
-  doesNotThrow (-> CoffeeScript.compile "x = null; x ||= 10"),       "allow (x = null; x ||= 10)"
-  doesNotThrow (-> CoffeeScript.compile "x = null; x or= 10"),       "allow (x = null; x or= 10)"
-  doesNotThrow (-> CoffeeScript.compile "x = null; do -> x ?= 10"),  "allow (x = null; do -> x ?= 10)"
-  doesNotThrow (-> CoffeeScript.compile "x = null; do -> x ||= 10"), "allow (x = null; do -> x ||= 10)"
-  doesNotThrow (-> CoffeeScript.compile "x = null; do -> x or= 10"), "allow (x = null; do -> x or= 10)"
+  doesNotThrowCompileError "x = null; x ?= 10",        null, "allow (x = null; x ?= 10)"
+  doesNotThrowCompileError "x = null; x ||= 10",       null, "allow (x = null; x ||= 10)"
+  doesNotThrowCompileError "x = null; x or= 10",       null, "allow (x = null; x or= 10)"
+  doesNotThrowCompileError "x = null; do -> x ?= 10",  null, "allow (x = null; do -> x ?= 10)"
+  doesNotThrowCompileError "x = null; do -> x ||= 10", null, "allow (x = null; do -> x ||= 10)"
+  doesNotThrowCompileError "x = null; do -> x or= 10", null, "allow (x = null; do -> x or= 10)"
 
   throwsCompileError "-> -> -> x ?= 10", null, null, "prohibit (-> -> -> x ?= 10)"
-  doesNotThrow (-> CoffeeScript.compile "x = null; -> -> -> x ?= 10"), "allow (x = null; -> -> -> x ?= 10)"
+  doesNotThrowCompileError "x = null; -> -> -> x ?= 10", null, "allow (x = null; -> -> -> x ?= 10)"
 
 test "more existential assignment", ->
   global.temp ?= 0
@@ -498,11 +497,11 @@ test "#1838: Regression with variable assignment", ->
   eq name, 'dave'
 
 test '#2211: splats in destructured parameters', ->
-  doesNotThrow -> CoffeeScript.compile '([a...]) ->'
-  doesNotThrow -> CoffeeScript.compile '([a...],b) ->'
-  doesNotThrow -> CoffeeScript.compile '([a...],[b...]) ->'
+  doesNotThrowCompileError '([a...]) ->'
+  doesNotThrowCompileError '([a...],b) ->'
+  doesNotThrowCompileError '([a...],[b...]) ->'
   throwsCompileError '([a...,[a...]]) ->'
-  doesNotThrow -> CoffeeScript.compile '([a...,[b...]]) ->'
+  doesNotThrowCompileError '([a...,[b...]]) ->'
 
 test '#2213: invocations within destructured parameters', ->
   throwsCompileError '([a()])->'
@@ -513,7 +512,7 @@ test '#2213: invocations within destructured parameters', ->
   throwsCompileError '({a:b.c()})->'
 
 test '#2532: compound assignment with terminator', ->
-  doesNotThrow -> CoffeeScript.compile """
+  doesNotThrowCompileError """
   a = "hello"
   a +=
   "
@@ -568,7 +567,7 @@ test "#1500: Assignment to variables similar to generated variables", ->
 
   eq error, 'foo'
 
-  doesNotThrow -> CoffeeScript.compile '(@slice...) ->'
+  doesNotThrowCompileError '(@slice...) ->'
 
 test "Assignment to variables similar to helper functions", ->
   f = (slice...) -> slice
