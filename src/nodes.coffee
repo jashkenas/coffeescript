@@ -1990,11 +1990,11 @@ exports.Call = class Call extends Base
 
   # Soaked chained invocations unfold into if/else ternary structures.
   unfoldSoak: (o) ->
+    @checkForSoakedSuper o
     if @soak
       if @variable instanceof Super
         left = new Literal @variable.compile o
         rite = new Value left
-        @variable.error "Unsupported reference to 'super'" unless @variable.accessor?
       else
         return ifn if ifn = unfoldSoak o, this, 'variable'
         [left, rite] = new Value(@variable).cacheReference o
@@ -2023,6 +2023,7 @@ exports.Call = class Call extends Base
 
   # Compile a vanilla function call.
   compileNode: (o) ->
+    @checkForNewSuper()
     @variable?.front = @front
     compiledArgs = []
     # If variable is `Accessor` fragments are cached and used later
@@ -2044,16 +2045,28 @@ exports.Call = class Call extends Base
 
     fragments = []
     if @isNew
-      @variable.error "Unsupported reference to 'super'" if @variable instanceof Super
       fragments.push @makeCode 'new '
     fragments.push @variable.compileToFragments(o, LEVEL_ACCESS)...
     fragments.push @makeCode('('), compiledArgs..., @makeCode(')')
     fragments
 
+  checkForNewSuper: ->
+    if @isNew
+      @variable.error "Unsupported reference to 'super'" if @variable instanceof Super
+
+  checkForSoakedSuper: (o) ->
+    if @soak and @variable instanceof Super and not @variable.accessor?
+      @variable.error "Unsupported reference to 'super'"
+
   containsSoak: ->
     return yes if @soak
     return yes if @variable?.containsSoak?()
     no
+
+  astNode: (o) ->
+    @checkForNewSuper()
+    @checkForSoakedSuper()
+    super o
 
   astType: ->
     if @isNew
@@ -3356,8 +3369,15 @@ exports.DynamicImport = class DynamicImport extends Base
 
 exports.DynamicImportCall = class DynamicImportCall extends Call
   compileNode: (o) ->
+    @checkArguments()
+    super o
+
+  checkArguments: ->
     unless @args.length is 1
       @error 'import() requires exactly one argument'
+
+  astNode: (o) ->
+    @checkArguments()
     super o
 
 #### Assign
@@ -3506,9 +3526,7 @@ exports.Assign = class Assign extends Base
       return if o.level >= LEVEL_OP then @wrapInParentheses code else code
     [obj] = objects
 
-    # Disallow `[...] = a` for some reason. (Could be equivalent to `[] = a`?)
-    if olen is 1 and obj instanceof Expansion
-      obj.error 'Destructuring assignment has no target'
+    @disallowLoneExpansion()
 
     # Count all `Splats`: [a, b, c..., d, e]
     splats = (i for obj, i in objects when obj instanceof Splat)
@@ -3649,6 +3667,15 @@ exports.Assign = class Assign extends Base
     fragments = @joinFragmentArrays assigns, ', '
     if o.level < LEVEL_LIST then fragments else @wrapInParentheses fragments
 
+  # Disallow `[...] = a` for some reason. (Could be equivalent to `[] = a`?)
+  disallowLoneExpansion: ->
+    return unless @variable.base instanceof Arr
+    {objects} = @variable.base
+    return unless objects?.length is 1
+    [loneObject] = objects
+    if loneObject instanceof Expansion
+      loneObject.error 'Destructuring assignment has no target'
+
   # When compiling a conditional assignment, take care to ensure that the
   # operands are only evaluated once, even though we have to reference them
   # more than once.
@@ -3712,6 +3739,7 @@ exports.Assign = class Assign extends Base
   isStatementAst: NO
 
   astNode: (o) ->
+    @disallowLoneExpansion()
     @addScopeVariables o, checkAssignability: no
     super o
 
@@ -3794,12 +3822,10 @@ exports.Code = class Code extends Base
     haveSplatParam   = no
     haveBodyParam    = no
 
-    # Check for duplicate parameters and separate `this` assignments.
-    paramNames = []
-    @eachParamName (name, node, param, obj) ->
-      node.error "multiple parameters named '#{name}'" if name in paramNames
-      paramNames.push name
+    @checkForDuplicateParams()
 
+    # Separate `this` assignments.
+    @eachParamName (name, node, param, obj) ->
       if node.this
         name   = node.properties[0].name.value
         name   = "_#{name}" if name in JS_FORBIDDEN
@@ -3924,6 +3950,8 @@ exports.Code = class Code extends Base
 
     # Add new expressions to the function body
     wasEmpty = @body.isEmpty()
+    @disallowSuperInParamDefaults()
+    @checkSuperCallsInConstructorBody()
     @body.expressions.unshift thisAssignments... unless @expandCtorSuper thisAssignments
     @body.expressions.unshift exprs...
     if @isMethod and @bound and not @isStatic and @classVariable
@@ -3997,6 +4025,12 @@ exports.Code = class Code extends Base
     delete o.bare
     delete o.isExistentialEquals
 
+  checkForDuplicateParams: ->
+    paramNames = []
+    @eachParamName (name, node, param) ->
+      node.error "multiple parameters named '#{name}'" if name in paramNames
+      paramNames.push name
+
   eachParamName: (iterator) ->
     param.eachName iterator for param in @params
 
@@ -4013,26 +4047,40 @@ exports.Code = class Code extends Base
     else
       false
 
-  expandCtorSuper: (thisAssignments) ->
+  disallowSuperInParamDefaults: ({forAst} = {}) ->
     return false unless @ctor
 
     @eachSuperCall Block.wrap(@params), (superCall) ->
       superCall.error "'super' is not allowed in constructor parameter defaults"
+    , checkForThisBeforeSuper: not forAst
+
+  checkSuperCallsInConstructorBody: ->
+    return false unless @ctor
 
     seenSuper = @eachSuperCall @body, (superCall) =>
       superCall.error "'super' is only allowed in derived class constructors" if @ctor is 'base'
+
+    seenSuper
+
+  flagThisParamInDerivedClassConstructorWithoutCallingSuper: (param) ->
+    param.error "Can't use @params in derived class constructors without calling super"
+
+  expandCtorSuper: (thisAssignments) ->
+    return false unless @ctor
+
+    seenSuper = @eachSuperCall @body, (superCall) =>
       superCall.expressions = thisAssignments
 
     haveThisParam = thisAssignments.length and thisAssignments.length isnt @thisAssignments?.length
     if @ctor is 'derived' and not seenSuper and haveThisParam
       param = thisAssignments[0].variable
-      param.error "Can't use @params in derived class constructors without calling super"
+      @flagThisParamInDerivedClassConstructorWithoutCallingSuper param
 
     seenSuper
 
   # Find all super calls in the given context node;
   # returns `true` if `iterator` is called.
-  eachSuperCall: (context, iterator) ->
+  eachSuperCall: (context, iterator, {checkForThisBeforeSuper = yes} = {}) ->
     seenSuper = no
 
     context.traverseChildren yes, (child) =>
@@ -4047,7 +4095,7 @@ exports.Code = class Code extends Base
             node.error "Can't call super with @params in derived class constructors" if node.this
         seenSuper = yes
         iterator child
-      else if child instanceof ThisLiteral and @ctor is 'derived' and not seenSuper
+      else if checkForThisBeforeSuper and child instanceof ThisLiteral and @ctor is 'derived' and not seenSuper
         child.error "Can't reference 'this' before calling super in derived class constructors"
 
       # `super` has the same target in bound (arrow) functions, so check them too
@@ -4066,6 +4114,13 @@ exports.Code = class Code extends Base
 
   astNode: (o) ->
     @updateOptions o
+    @checkForDuplicateParams()
+    @disallowSuperInParamDefaults forAst: yes
+    seenSuper = @checkSuperCallsInConstructorBody()
+    if @ctor is 'derived' and not seenSuper
+      @eachParamName (name, node) =>
+        if node.this
+          @flagThisParamInDerivedClassConstructorWithoutCallingSuper node
     @astAddParamsToScope o
     @body.makeReturn null, yes unless @body.isEmpty() or @noReturn
 

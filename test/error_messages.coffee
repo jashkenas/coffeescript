@@ -8,11 +8,12 @@ errCallback = (expectedErrorFormat) -> (err) ->
   err.colorful = no
   eq expectedErrorFormat, "#{err}"
   yes
-assertErrorFormat = (code, expectedErrorFormat) ->
+assertErrorFormatNoAst = (code, expectedErrorFormat) ->
   throws (-> CoffeeScript.run code), errCallback(expectedErrorFormat)
 assertErrorFormatAst = (code, expectedErrorFormat) ->
-  assertErrorFormat code, expectedErrorFormat
+  assertErrorFormatNoAst code, expectedErrorFormat
   throws (-> CoffeeScript.compile code, ast: yes), errCallback(expectedErrorFormat)
+assertErrorFormat = assertErrorFormatAst
 
 test "lexer errors formatting", ->
   assertErrorFormat '''
