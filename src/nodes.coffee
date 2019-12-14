@@ -114,8 +114,7 @@ exports.Base = class Base
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
   compileClosure: (o) ->
-    if jumpNode = @jumps()
-      jumpNode.error 'cannot use a pure statement in an expression'
+    @checkForPureStatementInExpression()
     o.sharedScope = yes
     func = new Code [], Block.wrap [this]
     args = []
@@ -271,6 +270,10 @@ exports.Base = class Base
     @eachChild (node) -> tree += node.toString idt + TAB
     tree
 
+  checkForPureStatementInExpression: ->
+    if jumpNode = @jumps()
+      jumpNode.error 'cannot use a pure statement in an expression'
+
   # Plain JavaScript object representation of the node, that can be serialized
   # as JSON. This is what the `ast` option in the Node API returns.
   # We try to follow the [Babel AST spec](https://github.com/babel/babel/blob/master/packages/babel-parser/ast/spec.md)
@@ -285,6 +288,8 @@ exports.Base = class Base
   astInitialize: (o, level) ->
     o = Object.assign {}, o
     o.level = level if level?
+    if o.level > LEVEL_TOP
+      @checkForPureStatementInExpression()
     # `@makeReturn` must be called before `astProperties`, because the latter may call
     # `.ast()` for child nodes and those nodes would need the return logic from `makeReturn`
     # already executed by then.
@@ -1238,7 +1243,7 @@ exports.DefaultLiteral = class DefaultLiteral extends Literal
 
 # A `return` is a *pureStatement*—wrapping it in a closure wouldn’t make sense.
 exports.Return = class Return extends Base
-  constructor: (@expression) ->
+  constructor: (@expression, {@belongsToFuncDirectiveReturn} = {}) ->
     super()
 
   children: ['expression']
@@ -1272,6 +1277,11 @@ exports.Return = class Return extends Base
     answer.push @makeCode ';'
     answer
 
+  checkForPureStatementInExpression: ->
+    # don’t flag `return` from `await return`/`yield return` as invalid.
+    return if @belongsToFuncDirectiveReturn
+    super()
+
   astType: -> 'ReturnStatement'
 
   astProperties: (o) ->
@@ -1296,7 +1306,7 @@ exports.FuncDirectiveReturn = class FuncDirectiveReturn extends Return
     @checkScope o
 
     new Op @keyword,
-      new Return @expression
+      new Return @expression, belongsToFuncDirectiveReturn: yes
       .withLocationDataFrom(
         if @expression?
           locationData: mergeLocationData @returnKeyword.locationData, @expression.locationData
@@ -2023,6 +2033,7 @@ exports.Call = class Call extends Base
 
   # Compile a vanilla function call.
   compileNode: (o) ->
+    @checkForNewSuper()
     @variable?.front = @front
     compiledArgs = []
     # If variable is `Accessor` fragments are cached and used later
@@ -2044,16 +2055,25 @@ exports.Call = class Call extends Base
 
     fragments = []
     if @isNew
-      @variable.error "Unsupported reference to 'super'" if @variable instanceof Super
       fragments.push @makeCode 'new '
     fragments.push @variable.compileToFragments(o, LEVEL_ACCESS)...
     fragments.push @makeCode('('), compiledArgs..., @makeCode(')')
     fragments
 
+  checkForNewSuper: ->
+    if @isNew
+      @variable.error "Unsupported reference to 'super'" if @variable instanceof Super
+
   containsSoak: ->
     return yes if @soak
     return yes if @variable?.containsSoak?()
     no
+
+  astNode: (o) ->
+    if @soak and @variable instanceof Super and o.scope.namedMethod()?.ctor
+      @variable.error "Unsupported reference to 'super'"
+    @checkForNewSuper()
+    super o
 
   astType: ->
     if @isNew
@@ -2104,9 +2124,9 @@ exports.Super = class Super extends Base
   children: ['accessor']
 
   compileNode: (o) ->
-    method = o.scope.namedMethod()
-    @error 'cannot use super outside of an instance method' unless method?.isMethod
+    @checkInInstanceMethod o
 
+    method = o.scope.namedMethod()
     unless method.ctor? or @accessor?
       {name, variable} = method
       if name.shouldCache() or (name instanceof Index and name.index.isAssignable())
@@ -2130,7 +2150,13 @@ exports.Super = class Super extends Base
     attachCommentsToNode salvagedComments, @accessor.name if salvagedComments
     fragments
 
+  checkInInstanceMethod: (o) ->
+    method = o.scope.namedMethod()
+    @error 'cannot use super outside of an instance method' unless method?.isMethod
+
   astNode: (o) ->
+    @checkInInstanceMethod o
+
     if @accessor?
       return (
         new Value(
@@ -2625,12 +2651,12 @@ exports.Arr = class Arr extends Base
     return yes for obj in @objects when obj instanceof Elision
     no
 
-  isAssignable: ->
+  isAssignable: ({allowExpansion} = {}) ->
     return no unless @objects.length
 
     for obj, i in @objects
       return no if obj instanceof Splat and i + 1 isnt @objects.length
-      return no unless obj.isAssignable() and (not obj.isAtomic or obj.isAtomic())
+      return no unless (allowExpansion and obj instanceof Expansion) or (obj.isAssignable() and (not obj.isAtomic or obj.isAtomic()))
     yes
 
   shouldCache: ->
@@ -3156,6 +3182,10 @@ exports.ModuleDeclaration = class ModuleDeclaration extends Base
       @source.error 'the name of the module to be imported from must be an uninterpolated string'
 
   checkScope: (o, moduleDeclarationType) ->
+    # TODO: would be appropriate to flag this error during AST generation (as
+    # well as when compiling to JS). But `o.indent` isn’t tracked during AST
+    # generation, and there doesn’t seem to be a current alternative way to track
+    # whether we’re at the “program top-level”.
     if o.indent.length isnt 0
       @error "#{moduleDeclarationType} statements must be at top-level scope"
 
@@ -3174,6 +3204,10 @@ exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
 
     code.push @makeCode ';'
     code
+
+  astNode: (o) ->
+    o.importedSymbols = []
+    super o
 
   astProperties: (o) ->
     ret =
@@ -3211,6 +3245,7 @@ exports.ImportClause = class ImportClause extends Base
 exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
   compileNode: (o) ->
     @checkScope o, 'export'
+    @checkForAnonymousClassExport()
 
     code = []
     code.push @makeCode "#{@tab}export "
@@ -3218,10 +3253,6 @@ exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
 
     if @ not instanceof ExportDefaultDeclaration and
        (@clause instanceof Assign or @clause instanceof Class)
-      # Prevent exporting an anonymous class; all exported members must be named
-      if @clause instanceof Class and not @clause.variable
-        @clause.error 'anonymous classes cannot be exported'
-
       code.push @makeCode 'var '
       @clause.moduleDeclaration = 'export'
 
@@ -3233,6 +3264,15 @@ exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
     code.push @makeCode " from #{@source.value}" if @source?.value?
     code.push @makeCode ';'
     code
+
+  # Prevent exporting an anonymous class; all exported members must be named
+  checkForAnonymousClassExport: ->
+    if @ not instanceof ExportDefaultDeclaration and @clause instanceof Class and not @clause.variable
+      @clause.error 'anonymous classes cannot be exported'
+
+  astNode: (o) ->
+    @checkForAnonymousClassExport()
+    super o
 
 exports.ExportNamedDeclaration = class ExportNamedDeclaration extends ExportDeclaration
   astProperties: (o) ->
@@ -3302,17 +3342,24 @@ exports.ModuleSpecifier = class ModuleSpecifier extends Base
   children: ['original', 'alias']
 
   compileNode: (o) ->
-    o.scope.find @identifier, @moduleDeclarationType
+    @addIdentifierToScope o
     code = []
     code.push @makeCode @original.value
     code.push @makeCode " as #{@alias.value}" if @alias?
     code
 
+  addIdentifierToScope: (o) ->
+    o.scope.find @identifier, @moduleDeclarationType
+
+  astNode: (o) ->
+    @addIdentifierToScope o
+    super o
+
 exports.ImportSpecifier = class ImportSpecifier extends ModuleSpecifier
   constructor: (imported, local) ->
     super imported, local, 'import'
 
-  compileNode: (o) ->
+  addIdentifierToScope: (o) ->
     # Per the spec, symbols can’t be imported multiple times
     # (e.g. `import { foo, foo } from 'lib'` is invalid)
     if @identifier in o.importedSymbols or o.scope.check(@identifier)
@@ -3356,8 +3403,15 @@ exports.DynamicImport = class DynamicImport extends Base
 
 exports.DynamicImportCall = class DynamicImportCall extends Call
   compileNode: (o) ->
+    @checkArguments()
+    super o
+
+  checkArguments: ->
     unless @args.length is 1
       @error 'import() requires exactly one argument'
+
+  astNode: (o) ->
+    @checkArguments()
     super o
 
 #### Assign
@@ -3387,11 +3441,11 @@ exports.Assign = class Assign extends Base
   unfoldSoak: (o) ->
     unfoldSoak o, this, 'variable'
 
-  addScopeVariables: (o, {checkAssignability = yes} = {}) ->
+  addScopeVariables: (o, {allowAssignmentToExpansion = no} = {}) ->
     return unless not @context or @context is '**='
 
     varBase = @variable.unwrapAll()
-    if checkAssignability and not varBase.isAssignable()
+    if not varBase.isAssignable allowExpansion: allowAssignmentToExpansion
       @variable.error "'#{@variable.compile o}' can't be assigned"
 
     varBase.eachName (name) =>
@@ -3506,9 +3560,7 @@ exports.Assign = class Assign extends Base
       return if o.level >= LEVEL_OP then @wrapInParentheses code else code
     [obj] = objects
 
-    # Disallow `[...] = a` for some reason. (Could be equivalent to `[] = a`?)
-    if olen is 1 and obj instanceof Expansion
-      obj.error 'Destructuring assignment has no target'
+    @disallowLoneExpansion()
 
     # Count all `Splats`: [a, b, c..., d, e]
     splats = (i for obj, i in objects when obj instanceof Splat)
@@ -3649,6 +3701,15 @@ exports.Assign = class Assign extends Base
     fragments = @joinFragmentArrays assigns, ', '
     if o.level < LEVEL_LIST then fragments else @wrapInParentheses fragments
 
+  # Disallow `[...] = a` for some reason. (Could be equivalent to `[] = a`?)
+  disallowLoneExpansion: ->
+    return unless @variable.base instanceof Arr
+    {objects} = @variable.base
+    return unless objects?.length is 1
+    [loneObject] = objects
+    if loneObject instanceof Expansion
+      loneObject.error 'Destructuring assignment has no target'
+
   # When compiling a conditional assignment, take care to ensure that the
   # operands are only evaluated once, even though we have to reference them
   # more than once.
@@ -3712,7 +3773,8 @@ exports.Assign = class Assign extends Base
   isStatementAst: NO
 
   astNode: (o) ->
-    @addScopeVariables o, checkAssignability: no
+    @disallowLoneExpansion()
+    @addScopeVariables o, allowAssignmentToExpansion: yes
     super o
 
   astType: ->
@@ -3778,9 +3840,7 @@ exports.Code = class Code extends Base
   # parameters after the splat, they are declared via expressions in the
   # function body.
   compileNode: (o) ->
-    if @ctor
-      @name.error 'Class constructor may not be async'       if @isAsync
-      @name.error 'Class constructor may not be a generator' if @isGenerator
+    @checkForAsyncOrGeneratorConstructor()
 
     if @bound
       @context = o.scope.method.context if o.scope.method?.bound
@@ -3794,12 +3854,10 @@ exports.Code = class Code extends Base
     haveSplatParam   = no
     haveBodyParam    = no
 
-    # Check for duplicate parameters and separate `this` assignments.
-    paramNames = []
-    @eachParamName (name, node, param, obj) ->
-      node.error "multiple parameters named '#{name}'" if name in paramNames
-      paramNames.push name
+    @checkForDuplicateParams()
 
+    # Separate `this` assignments.
+    @eachParamName (name, node, param, obj) ->
       if node.this
         name   = node.properties[0].name.value
         name   = "_#{name}" if name in JS_FORBIDDEN
@@ -3924,6 +3982,8 @@ exports.Code = class Code extends Base
 
     # Add new expressions to the function body
     wasEmpty = @body.isEmpty()
+    @disallowSuperInParamDefaults()
+    @checkSuperCallsInConstructorBody()
     @body.expressions.unshift thisAssignments... unless @expandCtorSuper thisAssignments
     @body.expressions.unshift exprs...
     if @isMethod and @bound and not @isStatic and @classVariable
@@ -3997,6 +4057,12 @@ exports.Code = class Code extends Base
     delete o.bare
     delete o.isExistentialEquals
 
+  checkForDuplicateParams: ->
+    paramNames = []
+    @eachParamName (name, node, param) ->
+      node.error "multiple parameters named '#{name}'" if name in paramNames
+      paramNames.push name
+
   eachParamName: (iterator) ->
     param.eachName iterator for param in @params
 
@@ -4013,26 +4079,45 @@ exports.Code = class Code extends Base
     else
       false
 
-  expandCtorSuper: (thisAssignments) ->
+  disallowSuperInParamDefaults: ({forAst} = {}) ->
     return false unless @ctor
 
     @eachSuperCall Block.wrap(@params), (superCall) ->
       superCall.error "'super' is not allowed in constructor parameter defaults"
+    , checkForThisBeforeSuper: not forAst
+
+  checkSuperCallsInConstructorBody: ->
+    return false unless @ctor
 
     seenSuper = @eachSuperCall @body, (superCall) =>
       superCall.error "'super' is only allowed in derived class constructors" if @ctor is 'base'
+
+    seenSuper
+
+  flagThisParamInDerivedClassConstructorWithoutCallingSuper: (param) ->
+    param.error "Can't use @params in derived class constructors without calling super"
+
+  checkForAsyncOrGeneratorConstructor: ->
+    if @ctor
+      @name.error 'Class constructor may not be async'       if @isAsync
+      @name.error 'Class constructor may not be a generator' if @isGenerator
+
+  expandCtorSuper: (thisAssignments) ->
+    return false unless @ctor
+
+    seenSuper = @eachSuperCall @body, (superCall) =>
       superCall.expressions = thisAssignments
 
     haveThisParam = thisAssignments.length and thisAssignments.length isnt @thisAssignments?.length
     if @ctor is 'derived' and not seenSuper and haveThisParam
       param = thisAssignments[0].variable
-      param.error "Can't use @params in derived class constructors without calling super"
+      @flagThisParamInDerivedClassConstructorWithoutCallingSuper param
 
     seenSuper
 
   # Find all super calls in the given context node;
   # returns `true` if `iterator` is called.
-  eachSuperCall: (context, iterator) ->
+  eachSuperCall: (context, iterator, {checkForThisBeforeSuper = yes} = {}) ->
     seenSuper = no
 
     context.traverseChildren yes, (child) =>
@@ -4047,7 +4132,7 @@ exports.Code = class Code extends Base
             node.error "Can't call super with @params in derived class constructors" if node.this
         seenSuper = yes
         iterator child
-      else if child instanceof ThisLiteral and @ctor is 'derived' and not seenSuper
+      else if checkForThisBeforeSuper and child instanceof ThisLiteral and @ctor is 'derived' and not seenSuper
         child.error "Can't reference 'this' before calling super in derived class constructors"
 
       # `super` has the same target in bound (arrow) functions, so check them too
@@ -4060,12 +4145,19 @@ exports.Code = class Code extends Base
       name.propagateLhs yes
 
   astAddParamsToScope: (o) ->
-    for param in @params
-      param.eachName (name) ->
-        o.scope.add name, 'param'
+    @eachParamName (name) ->
+      o.scope.add name, 'param'
 
   astNode: (o) ->
     @updateOptions o
+    @checkForAsyncOrGeneratorConstructor()
+    @checkForDuplicateParams()
+    @disallowSuperInParamDefaults forAst: yes
+    seenSuper = @checkSuperCallsInConstructorBody()
+    if @ctor is 'derived' and not seenSuper
+      @eachParamName (name, node) =>
+        if node.this
+          @flagThisParamInDerivedClassConstructorWithoutCallingSuper node
     @astAddParamsToScope o
     @body.makeReturn null, yes unless @body.isEmpty() or @noReturn
 
@@ -4181,9 +4273,18 @@ exports.Param = class Param extends Base
   # `name` is the name of the parameter and `node` is the AST node corresponding
   # to that name.
   eachName: (iterator, name = @name) ->
+    checkAssignabilityOfLiteral = (literal) ->
+      message = isUnassignable literal.value
+      if message
+        literal.error message
+      unless literal.isAssignable()
+        literal.error "'#{literal.value}' can't be assigned"
+
     atParam = (obj, originalObj = null) => iterator "@#{obj.properties[0].name.value}", obj, @, originalObj
     # * simple literals `foo`
-    return iterator name.value, name, @ if name instanceof Literal
+    if name instanceof Literal
+      checkAssignabilityOfLiteral name
+      return iterator name.value, name, @
     # * at-params `@foo`
     return atParam name if name instanceof Value
     for obj in name.objects ? []
@@ -4212,7 +4313,9 @@ exports.Param = class Param extends Base
         else if obj.this
           atParam obj, nObj
         # * simple destructured parameters {foo}
-        else iterator obj.base.value, obj.base, @
+        else
+          checkAssignabilityOfLiteral obj.base
+          iterator obj.base.value, obj.base, @
       else if obj instanceof Elision
         obj
       else if obj not instanceof Expansion
