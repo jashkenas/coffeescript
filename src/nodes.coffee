@@ -3575,14 +3575,7 @@ exports.Assign = class Assign extends Base
     [obj] = objects
 
     @disallowLoneExpansion()
-    @disallowMultipleSplats()
-
-    # Count all `Splats`: [a, b, c..., d, e]
-    splats = (i for obj, i in objects when obj instanceof Splat)
-    # Count all `Expansions`: [a, b, ..., c, d]
-    expans = (i for obj, i in objects when obj instanceof Expansion)
-    # Combine splats and expansions.
-    splatsAndExpans = [splats..., expans...]
+    {splats, expans, splatsAndExpans} = @getAndCheckSplatsAndExpansions()
 
     isSplat = splats?.length > 0
     isExpans = expans?.length > 0
@@ -3722,8 +3715,8 @@ exports.Assign = class Assign extends Base
 
   # Show error if there is more than one `Splat`, or `Expansion`.
   # Examples: [a, b, c..., d, e, f...], [a, b, ..., c, d, ...], [a, b, ..., c, d, e...]
-  disallowMultipleSplats: ->
-    return unless @variable.base instanceof Arr
+  getAndCheckSplatsAndExpansions: ->
+    return {splats: [], expans: [], splatsAndExpans: []} unless @variable.base instanceof Arr
     {objects} = @variable.base
 
     # Count all `Splats`: [a, b, c..., d, e]
@@ -3735,6 +3728,7 @@ exports.Assign = class Assign extends Base
     if splatsAndExpans.length > 1
       # Sort 'splatsAndExpans' so we can show error at first disallowed token.
       objects[splatsAndExpans.sort()[1]].error "multiple splats/expansions are disallowed in an assignment"
+    {splats, expans, splatsAndExpans}
 
   # When compiling a conditional assignment, take care to ensure that the
   # operands are only evaluated once, even though we have to reference them
@@ -3806,7 +3800,7 @@ exports.Assign = class Assign extends Base
 
   astNode: (o) ->
     @disallowLoneExpansion()
-    @disallowMultipleSplats()
+    @getAndCheckSplatsAndExpansions()
     if @isConditional()
       variable = @variable.unwrap()
       if variable instanceof IdentifierLiteral and not o.scope.check variable.value
