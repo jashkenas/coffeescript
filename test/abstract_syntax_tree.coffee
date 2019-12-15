@@ -685,7 +685,20 @@ test "AST as expected for ThisLiteral node", ->
   testExpression '@',
     type: 'ThisExpression'
     shorthand: yes
-  # TODO: `@prop` property access isn't covered yet in these tests.
+
+  testExpression '@b',
+    type: 'MemberExpression'
+    object:
+      type: 'ThisExpression'
+      shorthand: yes
+    property: ID 'b'
+
+  testExpression 'this.b',
+    type: 'MemberExpression'
+    object:
+      type: 'ThisExpression'
+      shorthand: no
+    property: ID 'b'
 
 test "AST as expected for UndefinedLiteral node", ->
   testExpression 'undefined',
