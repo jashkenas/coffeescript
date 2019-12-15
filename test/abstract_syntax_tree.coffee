@@ -782,25 +782,6 @@ test "AST as expected for AwaitReturn node", ->
             argument: NUMBER 2
       ]
 
-# test "AST as expected for Value node", ->
-#   testExpression 'for i in [] then i',
-#     body:
-#       type: 'Value'
-#       isDefaultValue: no
-#       base:
-#         value: 'i'
-#       properties: []
-
-#   testExpression 'if 1 then 1 else 2',
-#     body:
-#       type: 'Value'
-#       isDefaultValue: no
-#     elseBody:
-#       type: 'Value'
-#       isDefaultValue: no
-
-#   # TODO: Figgure out the purpose of `isDefaultValue`. It's not set in `Switch` either.
-
 test "AST as expected for Call node", ->
   testExpression 'fn()',
     type: 'CallExpression'
@@ -1342,28 +1323,6 @@ test "AST as expected for Range node", ->
     to:
       value: 2
 
-  # testExpression 'for x in [42...43] then',
-  #   range: yes
-  #   source:
-  #     type: 'Range'
-  #     exclusive: yes
-  #     equals: ''
-  #     from:
-  #       value: '42'
-  #     to:
-  #       value: '43'
-
-  # testExpression 'for x in [y..z] then',
-  #   range: yes
-  #   source:
-  #     type: 'Range'
-  #     exclusive: no
-  #     equals: '='
-  #     from:
-  #       value: 'y'
-  #     to:
-  #       value: 'z'
-
 test "AST as expected for Slice node", ->
   testExpression 'x[..y]',
     property:
@@ -1388,18 +1347,18 @@ test "AST as expected for Slice node", ->
       from: null
       to: null
 
-  # testExpression '"abc"[...2]',
-  #   type: 'MemberExpression'
-  #   property:
-  #     type: 'Range'
-  #     from: null
-  #     to:
-  #       type: 'NumericLiteral'
-  #       value: 2
-  #     exclusive: yes
-  #   computed: yes
-  #   optional: no
-  #   shorthand: no
+  testExpression '"abc"[...2]',
+    type: 'MemberExpression'
+    property:
+      type: 'Range'
+      from: null
+      to:
+        type: 'NumericLiteral'
+        value: 2
+      exclusive: yes
+    computed: yes
+    optional: no
+    shorthand: no
 
   testExpression 'x[...][a..][b...][..c][...d]',
     type: 'MemberExpression'
@@ -1575,10 +1534,6 @@ test "AST as expected for Obj node", ->
     ]
     implicit: yes
 
-#   # TODO: Test destructuring.
-
-#   # console.log JSON.stringify expression, ["type", "generated", "lhs", "value", "properties", "variable"], 2
-
 test "AST as expected for Arr node", ->
   testExpression '[]',
     type: 'ArrayExpression'
@@ -1591,8 +1546,6 @@ test "AST as expected for Arr node", ->
       {name: 'tables'}
       {operator: '!'}
     ]
-
-#   # TODO: Test destructuring.
 
 test "AST as expected for Class node", ->
   testStatement 'class Klass',
@@ -2011,7 +1964,18 @@ test "AST as expected for ExportNamedDeclaration node", ->
     source: null
     exportKind: 'value'
 
-  # testStatement 'export class A',
+  testStatement 'export class A',
+    type: 'ExportNamedDeclaration'
+    declaration:
+      type: 'ClassDeclaration'
+      id: ID 'A', declaration: yes
+      superClass: null
+      body:
+        type: 'ClassBody'
+        body: []
+    specifiers: []
+    source: null
+    exportKind: 'value'
 
   testStatement 'export {x as y, z as default}',
     type: 'ExportNamedDeclaration'
@@ -2310,8 +2274,6 @@ test "AST as expected for Assign node", ->
         declaration: no
       operator: '?='
     ]
-
-# # `FuncGlyph` node isn't exported.
 
 test "AST as expected for Code node", ->
   testExpression '=>',
@@ -2709,14 +2671,15 @@ test "AST as expected for Splat node", ->
       postfix: no
     ]
 
-#   # TODO: Test object splats.
-
 test "AST as expected for Expansion node", ->
-  # testExpression '(...) ->',
-  #   type: 'Code'
-  #   params: [
-  #     {type: 'Expansion'}
-  #   ]
+  testExpression '(..., b) ->',
+    type: 'FunctionExpression'
+    params: [
+      type: 'RestElement'
+      argument: null
+    ,
+      ID 'b'
+    ]
 
   testExpression '[..., b] = c',
     type: 'AssignmentExpression'
@@ -3193,21 +3156,20 @@ test "AST as expected for Existence node", ->
     operator: '?'
     prefix: no
 
-#   # NOTE: Soaking is covered in `Call` and `Access` nodes.
-
 test "AST as expected for Parens node", ->
   testExpression '(hmmmmm)',
     type: 'Identifier'
     name: 'hmmmmm'
 
-#   testExpression '(a + b) / c',
-#     type: 'Op'
-#     operator: '/'
-#     first:
-#       type: 'Parens'
-#       body:
-#         type: 'Op'
-#         operator: '+'
+  testExpression '(a + b) / c',
+    type: 'BinaryExpression'
+    operator: '/'
+    left:
+      type: 'BinaryExpression'
+      operator: '+'
+      left: ID 'a'
+      right: ID 'b'
+    right: ID 'c'
 
   testExpression '(((1)))',
     type: 'NumericLiteral'
@@ -3613,8 +3575,6 @@ test "AST as expected for For node", ->
     name:
       type: 'ArrayPattern'
 
-#   # TODO: Figure out the purpose of `pattern` and `returns`.
-
 test "AST as expected for Switch node", ->
   testStatement '''
     switch x
@@ -3748,8 +3708,6 @@ test "AST as expected for Switch node", ->
           type: 'Identifier'
       ]
     ]
-
-#   # TODO: File issue for compile error when using `then` or `;` where `\n` is rn.
 
 test "AST as expected for If node", ->
   testStatement 'if maybe then yes',
