@@ -3915,9 +3915,8 @@ exports.Code = class Code extends Base
     # declare and assign all subsequent parameters in the function body so that
     # any non-idempotent parameters are evaluated in the correct order.
     for param, i in @params
-      # Was `...` used with this parameter? (Only one such parameter is allowed
-      # per function.) Splat/expansion parameters cannot have default values,
-      # so we need not worry about that.
+      # Was `...` used with this parameter? Splat/expansion parameters cannot
+      # have default values, so we need not worry about that.
       if param.splat or param instanceof Expansion
         haveSplatParam = yes
         if param.splat
@@ -4131,17 +4130,16 @@ exports.Code = class Code extends Base
       @name.error 'Class constructor may not be a generator' if @isGenerator
 
   disallowLoneExpansionAndMultipleSplats: ->
-    haveSplatParam   = no
-    for param, i in @params
+    seenSplatParam = no
+    for param in @params
       # Was `...` used with this parameter? (Only one such parameter is allowed
-      # per function.) Splat/expansion parameters cannot have default values,
-      # so we need not worry about that.
+      # per function.)
       if param.splat or param instanceof Expansion
-        if haveSplatParam
+        if seenSplatParam
           param.error 'only one splat or expansion parameter is allowed per function definition'
         else if param instanceof Expansion and @params.length is 1
           param.error 'an expansion parameter cannot be the only parameter in a function definition'
-        haveSplatParam = yes
+        seenSplatParam = yes
 
   expandCtorSuper: (thisAssignments) ->
     return false unless @ctor
