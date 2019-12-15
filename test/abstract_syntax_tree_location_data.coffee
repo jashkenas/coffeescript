@@ -1650,10 +1650,29 @@ test "AST location data as expected for ExportNamedDeclaration node", ->
         column: 43
 
 test "AST location data as expected for ExportDefaultDeclaration node", ->
-  # testAstLocationData 'export default class',
-  #   type: 'ExportDefaultDeclaration'
-  #   clause:
-  #     type: 'Class'
+  testAstLocationData 'export default class',
+    type: 'ExportDefaultDeclaration'
+    declaration:
+      start: 15
+      end: 20
+      range: [15, 20]
+      loc:
+        start:
+          line: 1
+          column: 15
+        end:
+          line: 1
+          column: 20
+    start: 0
+    end: 20
+    range: [0, 20]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 20
 
   testAstLocationData 'export default "abc"',
     type: 'ExportDefaultDeclaration'
