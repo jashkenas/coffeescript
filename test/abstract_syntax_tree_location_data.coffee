@@ -1403,14 +1403,31 @@ test "AST location data as expected for ExportNamedDeclaration node", ->
         line: 1
         column: 9
 
-  # testAstLocationData 'export fn = ->',
-  #   type: 'ExportNamedDeclaration'
-  #   clause:
-  #     type: 'Assign'
-  #     variable:
-  #       value: 'fn'
-  #     value:
-  #       type: 'Code'
+  testAstLocationData 'export fn = ->',
+    type: 'ExportNamedDeclaration'
+    declaration:
+      # left:
+      # right:
+      start: 7
+      end: 14
+      range: [7, 14]
+      loc:
+        start:
+          line: 1
+          column: 7
+        end:
+          line: 1
+          column: 14
+    start: 0
+    end: 14
+    range: [0, 14]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 14
 
   # testAstLocationData 'export class A',
 
