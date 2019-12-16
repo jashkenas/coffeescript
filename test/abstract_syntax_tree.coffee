@@ -2275,6 +2275,20 @@ test "AST as expected for Assign node", ->
       operator: '?='
     ]
 
+  testExpression '[a..., b] = c',
+    type: 'AssignmentExpression'
+    left:
+      type: 'ArrayPattern'
+      elements: [
+        type: 'RestElement'
+        argument: ID 'a', declaration: yes
+        postfix: yes
+      ,
+        ID 'b'
+      ]
+    right:
+      ID 'c'
+
 test "AST as expected for Code node", ->
   testExpression '=>',
     type: 'ArrowFunctionExpression'
