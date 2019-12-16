@@ -228,7 +228,7 @@ test "#584: slashes are allowed unescaped in character classes", ->
   ok /^a\/[/]b$/.test 'a//b'
 
 test "does not allow to escape newlines", ->
-  throws -> CoffeeScript.compile '/a\\\nb/'
+  throwsCompileError '/a\\\nb/'
 
 
 # Heregexe(n|s)
@@ -253,15 +253,15 @@ test '#2388: `///` in heregex interpolations', ->
   eq '/\t  /', /// #{scan /// [#{ws}]* ///} /// + ''
 
 test "regexes are not callable", ->
-  throws -> CoffeeScript.compile '/a/()'
-  throws -> CoffeeScript.compile '///a#{b}///()'
-  throws -> CoffeeScript.compile '/a/ 1'
-  throws -> CoffeeScript.compile '///a#{b}/// 1'
-  throws -> CoffeeScript.compile '''
+  throwsCompileError '/a/()'
+  throwsCompileError '///a#{b}///()'
+  throwsCompileError '/a/ 1'
+  throwsCompileError '///a#{b}/// 1'
+  throwsCompileError '''
     /a/
        k: v
   '''
-  throws -> CoffeeScript.compile '''
+  throwsCompileError '''
     ///a#{b}///
        k: v
   '''

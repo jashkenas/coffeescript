@@ -619,7 +619,7 @@ test "invalid regex flags", ->
     ///a///ii
            ^^
   '''
-  doesNotThrow -> CoffeeScript.compile '/a/ymgi'
+  doesNotThrowCompileError '/a/ymgi'
 
 test "missing `)`, `}`, `]`", ->
   assertErrorFormat '''

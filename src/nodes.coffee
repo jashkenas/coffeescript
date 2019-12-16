@@ -2467,8 +2467,7 @@ exports.Obj = class Obj extends Base
   # `foo = ({a, rest..., b}) ->` -> `foo = {a, b, rest...}) ->`
   reorderProperties: ->
     props = @properties
-    splatProps = (i for prop, i in props when prop instanceof Splat)
-    props[splatProps[1]].error "multiple spread elements are disallowed" if splatProps?.length > 1
+    splatProps = @getAndCheckSplatProps()
     splatProp = props.splice splatProps[0], 1
     @objects = @properties = [].concat props, splatProp
 
@@ -2538,6 +2537,13 @@ exports.Obj = class Obj extends Base
     answer = @wrapInBraces answer
     if @front then @wrapInParentheses answer else answer
 
+  getAndCheckSplatProps: ->
+    return unless @hasSplat() and @lhs
+    props = @properties
+    splatProps = (i for prop, i in props when prop instanceof Splat)
+    props[splatProps[1]].error "multiple spread elements are disallowed" if splatProps?.length > 1
+    splatProps
+
   assigns: (name) ->
     for prop in @properties when prop.assigns name then return yes
     no
@@ -2589,6 +2595,10 @@ exports.Obj = class Obj extends Base
         property.nestedLhs = yes
       else if property instanceof Splat
         property.lhs = yes
+
+  astNode: (o) ->
+    @getAndCheckSplatProps()
+    super o
 
   astType: ->
     if @lhs
@@ -2731,7 +2741,7 @@ exports.Arr = class Arr extends Base
     @lhs = yes if setLhs
     return unless @lhs
     for object in @objects
-      object.lhs = yes if object instanceof Splat
+      object.lhs = yes if object instanceof Splat or object instanceof Expansion
       unwrappedObject = object.unwrapAll()
       if unwrappedObject instanceof Arr or unwrappedObject instanceof Obj
         unwrappedObject.propagateLhs yes
@@ -2995,6 +3005,10 @@ exports.Class = class Class extends Base
   isStatementAst: -> yes
 
   astNode: (o) ->
+    if jumpNode = @body.jumps()
+      jumpNode.error 'Class bodies cannot contain pure statements'
+    if argumentsNode = @body.contains isLiteralArguments
+      argumentsNode.error "Class bodies shouldn't reference arguments"
     @declareName o
     @name = @determineName()
     @body.isClassBody = yes
@@ -3502,7 +3516,7 @@ exports.Assign = class Assign extends Base
             return @compileDestructuring o
 
       return @compileSplice       o if @variable.isSplice()
-      return @compileConditional  o if @context in ['||=', '&&=', '?=']
+      return @compileConditional  o if @isConditional()
       return @compileSpecialMath  o if @context in ['//=', '%%=']
 
     @addScopeVariables o
@@ -3561,18 +3575,7 @@ exports.Assign = class Assign extends Base
     [obj] = objects
 
     @disallowLoneExpansion()
-
-    # Count all `Splats`: [a, b, c..., d, e]
-    splats = (i for obj, i in objects when obj instanceof Splat)
-    # Count all `Expansions`: [a, b, ..., c, d]
-    expans = (i for obj, i in objects when obj instanceof Expansion)
-    # Combine splats and expansions.
-    splatsAndExpans = [splats..., expans...]
-    # Show error if there is more than one `Splat`, or `Expansion`.
-    # Examples: [a, b, c..., d, e, f...], [a, b, ..., c, d, ...], [a, b, ..., c, d, e...]
-    if splatsAndExpans.length > 1
-      # Sort 'splatsAndExpans' so we can show error at first disallowed token.
-      objects[splatsAndExpans.sort()[1]].error "multiple splats/expansions are disallowed in an assignment"
+    {splats, expans, splatsAndExpans} = @getAndCheckSplatsAndExpansions()
 
     isSplat = splats?.length > 0
     isExpans = expans?.length > 0
@@ -3710,6 +3713,23 @@ exports.Assign = class Assign extends Base
     if loneObject instanceof Expansion
       loneObject.error 'Destructuring assignment has no target'
 
+  # Show error if there is more than one `Splat`, or `Expansion`.
+  # Examples: [a, b, c..., d, e, f...], [a, b, ..., c, d, ...], [a, b, ..., c, d, e...]
+  getAndCheckSplatsAndExpansions: ->
+    return {splats: [], expans: [], splatsAndExpans: []} unless @variable.base instanceof Arr
+    {objects} = @variable.base
+
+    # Count all `Splats`: [a, b, c..., d, e]
+    splats = (i for obj, i in objects when obj instanceof Splat)
+    # Count all `Expansions`: [a, b, ..., c, d]
+    expans = (i for obj, i in objects when obj instanceof Expansion)
+    # Combine splats and expansions.
+    splatsAndExpans = [splats..., expans...]
+    if splatsAndExpans.length > 1
+      # Sort 'splatsAndExpans' so we can show error at first disallowed token.
+      objects[splatsAndExpans.sort()[1]].error "multiple splats/expansions are disallowed in an assignment"
+    {splats, expans, splatsAndExpans}
+
   # When compiling a conditional assignment, take care to ensure that the
   # operands are only evaluated once, even though we have to reference them
   # more than once.
@@ -3718,7 +3738,7 @@ exports.Assign = class Assign extends Base
     # Disallow conditional assignment of undefined variables.
     if not left.properties.length and left.base instanceof Literal and
            left.base not instanceof ThisLiteral and not o.scope.check left.base.value
-      @variable.error "the variable \"#{left.base.value}\" can't be assigned with #{@context} because it has not been declared before"
+      @throwUnassignableConditionalError left.base.value
     if "?" in @context
       o.isExistentialEquals = true
       new If(new Existence(left), right, type: 'if').addElse(new Assign(right, @value, '=')).compileToFragments o
@@ -3770,10 +3790,21 @@ exports.Assign = class Assign extends Base
     # destructured variables.
     @variable.base.propagateLhs yes
 
+  throwUnassignableConditionalError: (name) ->
+    @variable.error "the variable \"#{name}\" can't be assigned with #{@context} because it has not been declared before"
+
+  isConditional: ->
+    @context in ['||=', '&&=', '?=']
+
   isStatementAst: NO
 
   astNode: (o) ->
     @disallowLoneExpansion()
+    @getAndCheckSplatsAndExpansions()
+    if @isConditional()
+      variable = @variable.unwrap()
+      if variable instanceof IdentifierLiteral and not o.scope.check variable.value
+        @throwUnassignableConditionalError variable.value
     @addScopeVariables o, allowAssignmentToExpansion: yes
     super o
 
@@ -3855,6 +3886,7 @@ exports.Code = class Code extends Base
     haveBodyParam    = no
 
     @checkForDuplicateParams()
+    @disallowLoneExpansionAndMultipleSplats()
 
     # Separate `this` assignments.
     @eachParamName (name, node, param, obj) ->
@@ -3883,14 +3915,9 @@ exports.Code = class Code extends Base
     # declare and assign all subsequent parameters in the function body so that
     # any non-idempotent parameters are evaluated in the correct order.
     for param, i in @params
-      # Was `...` used with this parameter? (Only one such parameter is allowed
-      # per function.) Splat/expansion parameters cannot have default values,
-      # so we need not worry about that.
+      # Was `...` used with this parameter? Splat/expansion parameters cannot
+      # have default values, so we need not worry about that.
       if param.splat or param instanceof Expansion
-        if haveSplatParam
-          param.error 'only one splat or expansion parameter is allowed per function definition'
-        else if param instanceof Expansion and @params.length is 1
-          param.error 'an expansion parameter cannot be the only parameter in a function definition'
         haveSplatParam = yes
         if param.splat
           if param.name instanceof Arr or param.name instanceof Obj
@@ -4102,6 +4129,18 @@ exports.Code = class Code extends Base
       @name.error 'Class constructor may not be async'       if @isAsync
       @name.error 'Class constructor may not be a generator' if @isGenerator
 
+  disallowLoneExpansionAndMultipleSplats: ->
+    seenSplatParam = no
+    for param in @params
+      # Was `...` used with this parameter? (Only one such parameter is allowed
+      # per function.)
+      if param.splat or param instanceof Expansion
+        if seenSplatParam
+          param.error 'only one splat or expansion parameter is allowed per function definition'
+        else if param instanceof Expansion and @params.length is 1
+          param.error 'an expansion parameter cannot be the only parameter in a function definition'
+        seenSplatParam = yes
+
   expandCtorSuper: (thisAssignments) ->
     return false unless @ctor
 
@@ -4141,8 +4180,12 @@ exports.Code = class Code extends Base
     seenSuper
 
   propagateLhs: ->
-    for {name} in @params when name instanceof Arr or name instanceof Obj
-      name.propagateLhs yes
+    for param in @params
+      {name} = param
+      if name instanceof Arr or name instanceof Obj
+        name.propagateLhs yes
+      else if param instanceof Expansion
+        param.lhs = yes
 
   astAddParamsToScope: (o) ->
     @eachParamName (name) ->
@@ -4153,6 +4196,7 @@ exports.Code = class Code extends Base
     @checkForAsyncOrGeneratorConstructor()
     @checkForDuplicateParams()
     @disallowSuperInParamDefaults forAst: yes
+    @disallowLoneExpansionAndMultipleSplats()
     seenSuper = @checkSuperCallsInConstructorBody()
     if @ctor is 'derived' and not seenSuper
       @eachParamName (name, node) =>
@@ -4281,6 +4325,9 @@ exports.Param = class Param extends Base
         literal.error "'#{literal.value}' can't be assigned"
 
     atParam = (obj, originalObj = null) => iterator "@#{obj.properties[0].name.value}", obj, @, originalObj
+    if name instanceof Call
+      name.error "Function invocation can't be assigned"
+
     # * simple literals `foo`
     if name instanceof Literal
       checkAssignabilityOfLiteral name
@@ -4392,12 +4439,21 @@ exports.Expansion = class Expansion extends Base
   shouldCache: NO
 
   compileNode: (o) ->
-    @error 'Expansion must be used inside a destructuring assignment or parameter list'
+    @throwLhsError()
 
   asReference: (o) ->
     this
 
   eachName: (iterator) ->
+
+  throwLhsError: ->
+    @error 'Expansion must be used inside a destructuring assignment or parameter list'
+
+  astNode: (o) ->
+    unless @lhs
+      @throwLhsError()
+
+    super o
 
   astType: -> 'RestElement'
 
@@ -4630,8 +4686,7 @@ exports.Op = class Op extends Base
     # In chains, there's no need to wrap bare obj literals in parens,
     # as the chained expression is wrapped.
     @first.front = @front unless isChain
-    if @operator is 'delete' and o.scope.check(@first.unwrapAll().value)
-      @error 'delete operand may not be argument or var'
+    @checkDeleteOperand o
     return @compileContinuation o if @isYield() or @isAwait()
     return @compileUnary        o if @isUnary()
     return @compileChain        o if isChain
@@ -4719,8 +4774,13 @@ exports.Op = class Op extends Base
   toString: (idt) ->
     super idt, @constructor.name + ' ' + @operator
 
+  checkDeleteOperand: (o) ->
+    if @operator is 'delete' and o.scope.check(@first.unwrapAll().value)
+      @error 'delete operand may not be argument or var'
+
   astNode: (o) ->
     @checkContinuation o if @isYield() or @isAwait()
+    @checkDeleteOperand o
     super o
 
   astType: ->
@@ -4902,14 +4962,19 @@ exports.Catch = class Catch extends Base
     o.indent  += TAB
     generatedErrorVariableName = o.scope.freeVariable 'error', reserve: no
     placeholder = new IdentifierLiteral generatedErrorVariableName
+    @checkUnassignable()
     if @errorVariable
-      message = isUnassignable @errorVariable.unwrapAll().value
-      @errorVariable.error message if message
       @recovery.unshift new Assign @errorVariable, placeholder
     [].concat @makeCode(" catch ("), placeholder.compileToFragments(o), @makeCode(") {\n"),
       @recovery.compileToFragments(o, LEVEL_TOP), @makeCode("\n#{@tab}}")
 
+  checkUnassignable: ->
+    if @errorVariable
+      message = isUnassignable @errorVariable.unwrapAll().value
+      @errorVariable.error message if message
+
   astNode: (o) ->
+    @checkUnassignable()
     @errorVariable?.eachName (name) ->
       alreadyDeclared = o.scope.find name.value
       name.isDeclaration = not alreadyDeclared

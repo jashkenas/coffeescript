@@ -68,10 +68,10 @@ test "`yield from` support", ->
   ok y.done is true
 
 test "error if `yield from` occurs outside of a function", ->
-  throws -> CoffeeScript.compile 'yield from 1'
+  throwsCompileError 'yield from 1'
 
 test "`yield from` at the end of a function errors", ->
-  throws -> CoffeeScript.compile 'x = -> x = 1; yield from'
+  throwsCompileError 'x = -> x = 1; yield from'
 
 test "yield in if statements", ->
   x = do -> if 1 is yield 2 then 3 else 4

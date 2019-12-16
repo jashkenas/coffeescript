@@ -7,7 +7,7 @@
 #   string literals -> string literals
 #   function invocations -> function invocations
 
-doesNotThrow -> CoffeeScript.compile "a = then b"
+doesNotThrowCompileError "a = then b"
 
 test "multiple semicolon-separated statements in parentheticals", ->
   nonce = {}
@@ -81,13 +81,13 @@ test "`?.` and `::` should continue lines", ->
   #::
   #?.foo
 
-doesNotThrow -> CoffeeScript.compile """
+doesNotThrowCompileError """
   oh. yes
   oh?. true
   oh:: return
   """
 
-doesNotThrow -> CoffeeScript.compile """
+doesNotThrowCompileError """
   a?[b..]
   a?[...b]
   a?[b..c]
@@ -109,7 +109,7 @@ test "indented array literals don't trigger whitespace rewriting", ->
 
 # Function Invocations
 
-doesNotThrow -> CoffeeScript.compile """
+doesNotThrowCompileError """
   obj = then fn 1,
     1: 1
     a:
@@ -211,7 +211,7 @@ test "#1495, method call chaining", ->
   eq 'a, b, c', result
 
 test "chaining should not wrap spilling ternary", ->
-  throws -> CoffeeScript.compile """
+  throwsCompileError """
     if 0 then 1 else g
       a: 42
     .h()
@@ -267,7 +267,7 @@ test "#1195 Ignore trailing semicolons (before newlines or as the last char in a
   CoffeeScript.run(preNewline(n), bare: true) for n in [1,2,3]
 
   lastChar = '-> lastChar;'
-  doesNotThrow -> CoffeeScript.compile lastChar, bare: true
+  doesNotThrowCompileError lastChar, bare: true
 
 test "#1299: Disallow token misnesting", ->
   try
@@ -287,7 +287,7 @@ test "#2981: Enforce initial indentation", ->
     eq 'missing indentation', e.message
 
 test "'single-line' expression containing multiple lines", ->
-  doesNotThrow -> CoffeeScript.compile """
+  doesNotThrowCompileError """
     (a, b) -> if a
       -a
     else if b
@@ -320,8 +320,7 @@ test "don’t allow mixing of spaces and tabs for indentation", ->
     eq 'indentation mismatch', e.message
 
 test "each code block that starts at indentation 0 can use a different style", ->
-  doesNotThrow ->
-    CoffeeScript.compile '''
+  doesNotThrowCompileError '''
       new Layer
        x: 0
        y: 1
