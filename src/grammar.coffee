@@ -493,12 +493,12 @@ grammar =
     o 'EXPORT { }',                                          -> new ExportNamedDeclaration new ExportSpecifierList []
     o 'EXPORT { ExportSpecifierList OptComma }',             -> new ExportNamedDeclaration new ExportSpecifierList $3
     o 'EXPORT Class',                                        -> new ExportNamedDeclaration $2
-    o 'EXPORT Identifier = Expression',                      -> new ExportNamedDeclaration new Assign $2, $4, null,
-                                                                                                      moduleDeclaration: 'export'
-    o 'EXPORT Identifier = TERMINATOR Expression',           -> new ExportNamedDeclaration new Assign $2, $5, null,
-                                                                                                      moduleDeclaration: 'export'
-    o 'EXPORT Identifier = INDENT Expression OUTDENT',       -> new ExportNamedDeclaration new Assign $2, $5, null,
-                                                                                                      moduleDeclaration: 'export'
+    o 'EXPORT Identifier = Expression',                      -> new ExportNamedDeclaration LOC(2,4)(new Assign $2, $4, null,
+                                                                                                      moduleDeclaration: 'export')
+    o 'EXPORT Identifier = TERMINATOR Expression',           -> new ExportNamedDeclaration LOC(2,5)(new Assign $2, $5, null,
+                                                                                                      moduleDeclaration: 'export')
+    o 'EXPORT Identifier = INDENT Expression OUTDENT',       -> new ExportNamedDeclaration LOC(2,6)(new Assign $2, $5, null,
+                                                                                                      moduleDeclaration: 'export')
     o 'EXPORT DEFAULT Expression',                           -> new ExportDefaultDeclaration $3
     o 'EXPORT DEFAULT INDENT Object OUTDENT',                -> new ExportDefaultDeclaration new Value $4
     o 'EXPORT EXPORT_ALL FROM String',                       -> new ExportAllDeclaration new Literal($2), $4
