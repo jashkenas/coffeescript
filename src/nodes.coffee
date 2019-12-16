@@ -2661,8 +2661,8 @@ exports.Arr = class Arr extends Base
     return yes for obj in @objects when obj instanceof Elision
     no
 
-  isAssignable: ({allowExpansion, allowNontrailingSplat} = {}) ->
-    return no unless @objects.length
+  isAssignable: ({allowExpansion, allowNontrailingSplat, allowEmptyArray = no} = {}) ->
+    return allowEmptyArray unless @objects.length
 
     for obj, i in @objects
       return no if not allowNontrailingSplat and obj instanceof Splat and i + 1 isnt @objects.length
@@ -3455,11 +3455,15 @@ exports.Assign = class Assign extends Base
   unfoldSoak: (o) ->
     unfoldSoak o, this, 'variable'
 
-  addScopeVariables: (o, {allowAssignmentToExpansion = no, allowAssignmentToNontrailingSplat = no} = {}) ->
+  addScopeVariables: (o, {allowAssignmentToExpansion = no, allowAssignmentToNontrailingSplat = no, allowAssignmentToEmptyArray = no} = {}) ->
     return unless not @context or @context is '**='
 
     varBase = @variable.unwrapAll()
-    if not varBase.isAssignable allowExpansion: allowAssignmentToExpansion, allowNontrailingSplat: allowAssignmentToNontrailingSplat
+    if not varBase.isAssignable {
+      allowExpansion: allowAssignmentToExpansion
+      allowNontrailingSplat: allowAssignmentToNontrailingSplat
+      allowEmptyArray: allowAssignmentToEmptyArray
+    }
       @variable.error "'#{@variable.compile o}' can't be assigned"
 
     varBase.eachName (name) =>
@@ -3805,7 +3809,7 @@ exports.Assign = class Assign extends Base
       variable = @variable.unwrap()
       if variable instanceof IdentifierLiteral and not o.scope.check variable.value
         @throwUnassignableConditionalError variable.value
-    @addScopeVariables o, allowAssignmentToExpansion: yes, allowAssignmentToNontrailingSplat: yes
+    @addScopeVariables o, allowAssignmentToExpansion: yes, allowAssignmentToNontrailingSplat: yes, allowAssignmentToEmptyArray: yes
     super o
 
   astType: ->

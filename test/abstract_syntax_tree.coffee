@@ -2289,6 +2289,14 @@ test "AST as expected for Assign node", ->
     right:
       ID 'c'
 
+  testExpression '[] = c',
+    type: 'AssignmentExpression'
+    left:
+      type: 'ArrayPattern'
+      elements: []
+    right:
+      ID 'c'
+
 test "AST as expected for Code node", ->
   testExpression '=>',
     type: 'ArrowFunctionExpression'
