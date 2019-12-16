@@ -480,16 +480,16 @@ exports.Lexer = class Lexer
         @validateUnicodeCodePointEscapes body, {delimiter}
         @token 'REGEX', "/#{body}/#{flags}", {length: end, origin, data: {delimiter}}
       else
-        @token 'REGEX_START', '(',    {length: 0, origin}
-        @token 'IDENTIFIER', 'RegExp', length: 0
-        @token 'CALL_START', '(',      length: 0
+        @token 'REGEX_START', '(',    {length: 0, origin, generated: yes}
+        @token 'IDENTIFIER', 'RegExp', length: 0, generated: yes
+        @token 'CALL_START', '(',      length: 0, generated: yes
         @mergeInterpolationTokens tokens, {double: yes, heregex: {flags}, endOffset: end - flags.length, quote: '///'}, (str) =>
           @validateUnicodeCodePointEscapes str, {delimiter}
         if flags
-          @token ',', ',',                    offset: index - 1, length: 0
-          @token 'STRING', '"' + flags + '"', offset: index - 1, length: flags.length
-        @token ')', ')',                      offset: end,       length: 0
-        @token 'REGEX_END', ')',              offset: end,       length: 0
+          @token ',', ',',                    offset: index - 1, length: 0, generated: yes
+          @token 'STRING', '"' + flags + '"', offset: index,     length: flags.length
+        @token ')', ')',                      offset: end,       length: 0, generated: yes
+        @token 'REGEX_END', ')',              offset: end,       length: 0, generated: yes
 
     # Explicitly attach any heregex comments to the REGEX/REGEX_END token.
     if commentTokens?.length
@@ -1008,7 +1008,7 @@ exports.Lexer = class Lexer
           lastToken[2].range[1]
         ]
       ]
-      lparen[2] = lparen.origin[2]
+      lparen[2] = lparen.origin[2] unless quote?.length
       rparen = @token 'STRING_END', ')', offset: endOffset - (quote ? '').length, length: quote?.length ? 0, generated: not quote?.length
 
   # Pairs up a closing token, ensuring that all listed pairs of tokens are

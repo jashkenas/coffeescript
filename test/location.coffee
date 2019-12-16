@@ -607,9 +607,9 @@ test "Verify heregexes with interpolations have the right ending position", ->
   arrayEndColumn = arrayEnd[2].first_column
   for token in [comma]
     assertColumn token, arrayEndColumn - 2
-  for token in [flagsString]
-    assertColumn token, arrayEndColumn - 2, 1
-  for token in [regexCallEnd, regexEnd, fnCallEnd]
+  for token in [flagsString, regexCallEnd]
+    assertColumn token, arrayEndColumn - 1, 1
+  for token in [regexEnd, fnCallEnd]
     assertColumn token, arrayEndColumn
   assertColumn arrayEnd, arrayEndColumn, 1
 
