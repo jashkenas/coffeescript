@@ -3455,7 +3455,15 @@ exports.Assign = class Assign extends Base
   unfoldSoak: (o) ->
     unfoldSoak o, this, 'variable'
 
-  addScopeVariables: (o, {allowAssignmentToExpansion = no, allowAssignmentToNontrailingSplat = no, allowAssignmentToEmptyArray = no, allowAssignmentToComplexSplat = no} = {}) ->
+  addScopeVariables: (o, {
+    # During AST generation, we need to allow assignment to these constructs
+    # that are considered “unassignable” during compile-to-JS, while still
+    # flagging things like `[null] = b`.
+    allowAssignmentToExpansion = no,
+    allowAssignmentToNontrailingSplat = no,
+    allowAssignmentToEmptyArray = no,
+    allowAssignmentToComplexSplat = no
+  } = {}) ->
     return unless not @context or @context is '**='
 
     varBase = @variable.unwrapAll()
