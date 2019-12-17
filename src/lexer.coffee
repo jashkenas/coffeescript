@@ -1056,11 +1056,11 @@ exports.Lexer = class Lexer
     else
       string = @chunk[..offset-1]
 
-    lineCount = count string, '\n'
+    lineCount = (string.match(LINEBREAK) or []).length
 
     column = @chunkColumn
     if lineCount > 0
-      [..., lastLine] = string.split '\n'
+      [..., lastLine] = string.split LINEBREAK
       column = lastLine.length
       previousLinesCompensation = @getLocationDataCompensation @chunkOffset, @chunkOffset + offset - column
       # Don't recompensate for initially inserted newline.
@@ -1313,6 +1313,8 @@ OPERATOR   = /// ^ (
 ) ///
 
 WHITESPACE = /^[^\n\S]+/
+
+exports.LINEBREAK = LINEBREAK = /\r\n|[\r\n\u2028\u2029]/ug
 
 COMMENT    = /^(\s*)###([^#][\s\S]*?)(?:###([^\n\S]*)|###$)|^((?:\s*#(?!##[^#]).*)+)/
 
