@@ -2297,6 +2297,63 @@ test "AST as expected for Assign node", ->
     right:
       ID 'c'
 
+  testExpression '{{a...}...} = b',
+    type: 'AssignmentExpression'
+    left:
+      type: 'ObjectPattern'
+      properties: [
+        type: 'RestElement'
+        argument:
+          type: 'ObjectPattern'
+          properties: [
+            type: 'RestElement'
+            argument: ID 'a'
+          ]
+        postfix: yes
+      ]
+    right: ID 'b'
+
+  testExpression '{a..., b} = c',
+    type: 'AssignmentExpression'
+    left:
+      type: 'ObjectPattern'
+      properties: [
+        type: 'RestElement'
+        argument: ID 'a'
+        postfix: yes
+      ,
+        type: 'ObjectProperty'
+      ]
+    right: ID 'c'
+
+  testExpression '{a.b...} = c',
+    type: 'AssignmentExpression'
+    left:
+      type: 'ObjectPattern'
+      properties: [
+        type: 'RestElement'
+        argument:
+          type: 'MemberExpression'
+        postfix: yes
+      ]
+    right: ID 'c'
+
+  testExpression '{{a}...} = b',
+    type: 'AssignmentExpression'
+    left:
+      type: 'ObjectPattern'
+      properties: [
+        type: 'RestElement'
+        argument:
+          type: 'ObjectPattern'
+          properties: [
+            type: 'ObjectProperty'
+            shorthand: yes
+          ]
+        postfix: yes
+      ]
+    right: ID 'b'
+
 test "AST as expected for Code node", ->
   testExpression '=>',
     type: 'ArrowFunctionExpression'

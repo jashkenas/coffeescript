@@ -2442,7 +2442,7 @@ exports.Obj = class Obj extends Base
 
   children: ['properties']
 
-  isAssignable: ->
+  isAssignable: (opts) ->
     for prop in @properties
       # Check for reserved words.
       message = isUnassignable prop.unwrapAll().value
@@ -2451,7 +2451,7 @@ exports.Obj = class Obj extends Base
       prop = prop.value if prop instanceof Assign and
         prop.context is 'object' and
         prop.value?.base not instanceof Arr
-      return no unless prop.isAssignable()
+      return no unless prop.isAssignable opts
     yes
 
   shouldCache: ->
@@ -2594,7 +2594,7 @@ exports.Obj = class Obj extends Base
         # Shorthand property with default, e.g. `{a = 1} = b`.
         property.nestedLhs = yes
       else if property instanceof Splat
-        property.lhs = yes
+        property.propagateLhs yes
 
   astNode: (o) ->
     @getAndCheckSplatProps()
@@ -3455,7 +3455,7 @@ exports.Assign = class Assign extends Base
   unfoldSoak: (o) ->
     unfoldSoak o, this, 'variable'
 
-  addScopeVariables: (o, {allowAssignmentToExpansion = no, allowAssignmentToNontrailingSplat = no, allowAssignmentToEmptyArray = no} = {}) ->
+  addScopeVariables: (o, {allowAssignmentToExpansion = no, allowAssignmentToNontrailingSplat = no, allowAssignmentToEmptyArray = no, allowAssignmentToComplexSplat = no} = {}) ->
     return unless not @context or @context is '**='
 
     varBase = @variable.unwrapAll()
@@ -3463,6 +3463,7 @@ exports.Assign = class Assign extends Base
       allowExpansion: allowAssignmentToExpansion
       allowNontrailingSplat: allowAssignmentToNontrailingSplat
       allowEmptyArray: allowAssignmentToEmptyArray
+      allowComplexSplat: allowAssignmentToComplexSplat
     }
       @variable.error "'#{@variable.compile o}' can't be assigned"
 
@@ -3809,7 +3810,7 @@ exports.Assign = class Assign extends Base
       variable = @variable.unwrap()
       if variable instanceof IdentifierLiteral and not o.scope.check variable.value
         @throwUnassignableConditionalError variable.value
-    @addScopeVariables o, allowAssignmentToExpansion: yes, allowAssignmentToNontrailingSplat: yes, allowAssignmentToEmptyArray: yes
+    @addScopeVariables o, allowAssignmentToExpansion: yes, allowAssignmentToNontrailingSplat: yes, allowAssignmentToEmptyArray: yes, allowAssignmentToComplexSplat: yes
     super o
 
   astType: ->
@@ -4407,8 +4408,8 @@ exports.Splat = class Splat extends Base
 
   shouldCache: -> no
 
-  isAssignable: ->
-    return no if @name instanceof Obj or @name instanceof Parens
+  isAssignable: ({allowComplexSplat = no} = {})->
+    return allowComplexSplat if @name instanceof Obj or @name instanceof Parens
     @name.isAssignable() and (not @name.isAtomic or @name.isAtomic())
 
   assigns: (name) ->
@@ -4420,6 +4421,11 @@ exports.Splat = class Splat extends Base
     return [@makeCode('{'), compiledSplat..., @makeCode('}')]
 
   unwrap: -> @name
+
+  propagateLhs: (setLhs) ->
+    @lhs = yes if setLhs
+    return unless @lhs
+    @name.propagateLhs? yes
 
   astType: ->
     if @jsx
