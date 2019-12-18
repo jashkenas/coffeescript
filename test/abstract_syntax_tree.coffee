@@ -2354,6 +2354,14 @@ test "AST as expected for Assign node", ->
       ]
     right: ID 'b'
 
+  testExpression '[u, [v, ...w, x], ...{...y}, z] = a',
+    left:
+      type: 'ArrayPattern'
+
+  testExpression '{...{a: [...b, c]}} = d',
+    left:
+      type: 'ObjectPattern'
+
 test "AST as expected for Code node", ->
   testExpression '=>',
     type: 'ArrowFunctionExpression'

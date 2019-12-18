@@ -1360,7 +1360,7 @@ exports.Value = class Value extends Base
   isArray        : -> @bareLiteral(Arr)
   isRange        : -> @bareLiteral(Range)
   shouldCache    : -> @hasProperties() or @base.shouldCache()
-  isAssignable   : -> @hasProperties() or @base.isAssignable()
+  isAssignable   : (opts) -> @hasProperties() or @base.isAssignable opts
   isNumber       : -> @bareLiteral(NumberLiteral)
   isString       : -> @bareLiteral(StringLiteral)
   isRegex        : -> @bareLiteral(RegexLiteral)
@@ -2661,12 +2661,13 @@ exports.Arr = class Arr extends Base
     return yes for obj in @objects when obj instanceof Elision
     no
 
-  isAssignable: ({allowExpansion, allowNontrailingSplat, allowEmptyArray = no} = {}) ->
+  isAssignable: (opts) ->
+    {allowExpansion, allowNontrailingSplat, allowEmptyArray = no} = opts ? {}
     return allowEmptyArray unless @objects.length
 
     for obj, i in @objects
       return no if not allowNontrailingSplat and obj instanceof Splat and i + 1 isnt @objects.length
-      return no unless (allowExpansion and obj instanceof Expansion) or (obj.isAssignable() and (not obj.isAtomic or obj.isAtomic()))
+      return no unless (allowExpansion and obj instanceof Expansion) or (obj.isAssignable(opts) and (not obj.isAtomic or obj.isAtomic()))
     yes
 
   shouldCache: ->
