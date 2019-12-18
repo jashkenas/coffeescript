@@ -4556,6 +4556,82 @@ test "AST location data as expected for Code node", ->
         line: 1
         column: 2
 
+  testAstLocationData '''
+    (a...) ->
+  ''',
+    type: 'FunctionExpression'
+    params: [
+      argument:
+        start: 1
+        end: 2
+        range: [1, 2]
+        loc:
+          start:
+            line: 1
+            column: 1
+          end:
+            line: 1
+            column: 2
+      start: 1
+      end: 5
+      range: [1, 5]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 5
+    ]
+    start: 0
+    end: 9
+    range: [0, 9]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 9
+
+  testAstLocationData '''
+    (...a) ->
+  ''',
+    type: 'FunctionExpression'
+    params: [
+      argument:
+        start: 4
+        end: 5
+        range: [4, 5]
+        loc:
+          start:
+            line: 1
+            column: 4
+          end:
+            line: 1
+            column: 5
+      start: 1
+      end: 5
+      range: [1, 5]
+      loc:
+        start:
+          line: 1
+          column: 1
+        end:
+          line: 1
+          column: 5
+    ]
+    start: 0
+    end: 9
+    range: [0, 9]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 9
+
 test "AST location data as expected for Return node", ->
   testAstLocationData 'return no',
     type: 'ReturnStatement'

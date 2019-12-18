@@ -4234,7 +4234,7 @@ exports.Code = class Code extends Base
     {name, value, splat} = param
     if splat
       new Splat name, lhs: yes, postfix: splat.postfix
-      .withLocationDataFrom name
+      .withLocationDataFrom param
     else if value?
       new Assign name, value, null, param: yes
       .withLocationDataFrom locationData: mergeLocationData name.locationData, value.locationData
