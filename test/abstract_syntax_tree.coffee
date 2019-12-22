@@ -1534,6 +1534,23 @@ test "AST as expected for Obj node", ->
     ]
     implicit: yes
 
+  testExpression '"#{a}": 1',
+    type: 'ObjectExpression'
+    properties: [
+      type: 'ObjectProperty'
+      key:
+        type: 'TemplateLiteral'
+        expressions: [
+          ID 'a'
+        ]
+      value:
+        type: 'NumericLiteral'
+        value: 1
+      shorthand: no
+      computed: yes
+    ]
+    implicit: yes
+
 test "AST as expected for Arr node", ->
   testExpression '[]',
     type: 'ArrayExpression'
@@ -1837,6 +1854,9 @@ test "AST as expected for Class node", ->
       @[b] = ->
       "#{c}": ->
       @[d] = 1
+      [e]: 2
+      "#{f}": 3
+      @[g]: 4
   ''',
     type: 'ClassDeclaration'
     body:
@@ -1845,7 +1865,16 @@ test "AST as expected for Class node", ->
         computed: yes
       ,
         type: 'ClassMethod'
-        computed: no
+        computed: yes
+      ,
+        type: 'ClassProperty'
+        computed: yes
+      ,
+        type: 'ClassPrototypeProperty'
+        computed: yes
+      ,
+        type: 'ClassPrototypeProperty'
+        computed: yes
       ,
         type: 'ClassProperty'
         computed: yes
@@ -2361,6 +2390,19 @@ test "AST as expected for Assign node", ->
   testExpression '{...{a: [...b, c]}} = d',
     left:
       type: 'ObjectPattern'
+
+  testExpression '{"#{a}": b} = c',
+    left:
+      type: 'ObjectPattern'
+      properties: [
+        type: 'ObjectProperty'
+        key:
+          type: 'TemplateLiteral'
+          expressions: [
+            ID 'a'
+          ]
+        computed: yes
+      ]
 
 test "AST as expected for Code node", ->
   testExpression '=>',
