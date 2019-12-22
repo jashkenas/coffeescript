@@ -2632,7 +2632,7 @@ exports.ObjectProperty = class ObjectProperty extends Base
       @locationData = key.locationData
 
   astProperties: (o) ->
-    isComputedPropertyName = @key instanceof Value and @key.base instanceof ComputedPropertyName
+    isComputedPropertyName = (@key instanceof Value and @key.base instanceof ComputedPropertyName) or @key.unwrap() instanceof StringWithInterpolations
     keyAst = @key.ast o, LEVEL_LIST
 
     return
@@ -3177,7 +3177,7 @@ exports.ClassPrototypeProperty = class ClassPrototypeProperty extends Base
     return
       key: @name.ast o, LEVEL_LIST
       value: @value.ast o, LEVEL_LIST
-      computed: @name instanceof ComputedPropertyName
+      computed: @name instanceof ComputedPropertyName or @name instanceof StringWithInterpolations
 
 #### Import and Export
 
@@ -4243,9 +4243,7 @@ exports.Code = class Code extends Base
 
   methodAstProperties: (o) ->
     getIsComputed = =>
-      if @name instanceof Index
-        return no if @name.index instanceof StringWithInterpolations
-        return yes
+      return yes if @name instanceof Index
       return yes if @name instanceof ComputedPropertyName
       return yes if @name.name instanceof ComputedPropertyName
       no
