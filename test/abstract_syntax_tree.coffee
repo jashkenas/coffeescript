@@ -2391,6 +2391,19 @@ test "AST as expected for Assign node", ->
     left:
       type: 'ObjectPattern'
 
+  testExpression '{"#{a}": b} = c',
+    left:
+      type: 'ObjectPattern'
+      properties: [
+        type: 'ObjectProperty'
+        key:
+          type: 'TemplateLiteral'
+          expressions: [
+            ID 'a'
+          ]
+        computed: yes
+      ]
+
 test "AST as expected for Code node", ->
   testExpression '=>',
     type: 'ArrowFunctionExpression'
