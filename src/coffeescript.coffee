@@ -100,11 +100,15 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
   )
 
   # Check for import or export; if found, force bare mode.
-  unless options.bare? and options.bare is yes
+  sourceType = options.sourceType ? 'unambiguous'
+  if sourceType is 'unambiguous'
+    sourceType = 'script'
     for token in tokens
       if token[0] in ['IMPORT', 'EXPORT']
-        options.bare = yes
+        sourceType = 'module'
         break
+
+  options.bare = yes if sourceType is 'module'
 
   fragments = parser.parse(tokens).compileToFragments options
 
@@ -170,9 +174,10 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
 
   registerCompiled filename, code, map
 
-  if options.sourceMap
+  if options.sourceMap or options.sourceType
     {
       js
+      sourceType
       sourceMap: map
       v3SourceMap: JSON.stringify v3SourceMap, null, 2
     }

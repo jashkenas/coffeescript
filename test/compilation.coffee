@@ -177,3 +177,24 @@ test "#3306: trailing comma in a function call in the last line", ->
   ''', '''
   foo(bar);
   '''
+
+test 'sourceType is returned if requested', ->
+  result = CoffeeScript.compile '''
+  console.log 'is a script'
+  ''', sourceType: 'unambiguous'
+  eq result.sourceType, 'script'
+
+  result = CoffeeScript.compile '''
+  export default 'is a module'
+  ''', sourceType: 'unambiguous'
+  eq result.sourceType, 'module'
+
+  # sourceType: 'module' implies bare
+  result = CoffeeScript.compile '''
+  console.log 'is a module'
+  ''', sourceType: 'module'
+  eq result.sourceType, 'module'
+  eq result.js, '''
+  console.log('is a module');
+
+  '''
