@@ -1212,14 +1212,14 @@ CSX_ATTRIBUTE = /// ^
 ///
 
 NUMBER     = ///
-  ^ 0b[01](?:_?[01])*                           | # binary
-  ^ 0o[0-7](?:_?[0-7])*                         | # octal
-  ^ 0x[\da-f](?:_?[\da-f])*                     | # hex
+  ^ 0b[01](?:_?[01])*n?                         | # binary
+  ^ 0o[0-7](?:_?[0-7])*n?                       | # octal
+  ^ 0x[\da-f](?:_?[\da-f])*n?                   | # hex
   ^ \d+n                                        | # decimal bigint
   ^ (?:\d(?:_?\d)*)?    \.?   (?:\d(?:_?\d)*)+    # decimal
                     (?:e[+-]? (?:\d(?:_?\d)*)+ )?
   # decimal without support for numeric literal separators for reference:
-  # ^ \d*\.?\d+ (?:e[+-]?\d+)?
+  # \d*\.?\d+ (?:e[+-]?\d+)?
 ///i
 
 OPERATOR   = /// ^ (
