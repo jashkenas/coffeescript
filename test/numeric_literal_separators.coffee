@@ -10,7 +10,8 @@ test 'valid decimal literal separators compile', ->
 
 test 'invalid decimal literal separators do not compile', ->
   doesNotCompile '1_.23'
-  doesNotCompile '1._23'
+  # The next one is a valid property access:
+  # doesNotCompile '1._23'
   doesNotCompile '1e_2'
   doesNotCompile '1e2_'
   doesNotCompile '1_'
