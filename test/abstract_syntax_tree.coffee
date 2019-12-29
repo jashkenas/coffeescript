@@ -177,6 +177,27 @@ test "AST as expected for NumberLiteral node", ->
       rawValue: 225
       raw: '0xE1'
 
+  testExpression '10_000',
+    type: 'NumericLiteral'
+    value: 10000
+    extra:
+      rawValue: 10000
+      raw: '10_000'
+
+  testExpression '1_2.34_5e6_7',
+    type: 'NumericLiteral'
+    value: 12.345e67
+    extra:
+      rawValue: 12.345e67
+      raw: '1_2.34_5e6_7'
+
+  testExpression '0o7_7_7',
+    type: 'NumericLiteral'
+    value: 0o777
+    extra:
+      rawValue: 0o777
+      raw: '0o7_7_7'
+
 test "AST as expected for InfinityLiteral node", ->
   testExpression 'Infinity',
     type: 'Identifier'

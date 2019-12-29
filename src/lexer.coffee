@@ -278,7 +278,7 @@ exports.Lexer = class Lexer
       when 'x' then 16
       else null
 
-    parsedValue = if base? then parseInt(number[2..], base) else parseFloat(number)
+    parsedValue = if base? then parseInt(number[2..].replace(/_/g, ''), base) else parseFloat(number.replace(/_/g, ''))
     tokenData = {parsedValue}
 
     tag = if parsedValue is Infinity then 'INFINITY' else 'NUMBER'
