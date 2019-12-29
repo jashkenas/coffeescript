@@ -26,7 +26,10 @@ test 'property access on a number', ->
   eq 3.toFixed(), '3'
   # Where this can conflict with numeric literal separators is when the
   # property name contains an underscore.
-  eq 3.__proto__.constructor.name, 'Number'
+  Number::_23 = _23 = 'x'
+  eq 1._23, 'x'
+  ok 1._34 is undefined
+  delete Number::_23
 
 test 'invalid decimal literal separators do not compile', ->
   # `1._23` is a valid property access (see previous test)
