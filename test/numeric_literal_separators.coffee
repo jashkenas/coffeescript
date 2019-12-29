@@ -19,6 +19,14 @@ test 'binary literals with separators', ->
 test 'octal literals with separators', ->
   eq 0o7_7_7, 0o777
 
+test 'infinity with separator', ->
+  eq 2e3_08, Infinity
+
+test 'range with separators', ->
+  range = [10_000...10_002]
+  eq range.length, 2
+  eq range[0], 10000
+
 test 'property access on a number', ->
   # Somehow, `3..toFixed()` is valid JavaScript; though just `3.toFixed()`
   # is not. CoffeeScript has long allowed code like `3.toFixed()` to compile

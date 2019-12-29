@@ -268,6 +268,20 @@ exports.nameWhitespaceCharacter = (string) ->
     when '\t' then 'tab'
     else string
 
+exports.parseNumber = (string) ->
+  return NaN unless string?
+
+  base = switch string.charAt 1
+    when 'b' then 2
+    when 'o' then 8
+    when 'x' then 16
+    else null
+
+  if base?
+    parseInt string[2..].replace(/_/g, ''), base
+  else
+    parseFloat string.replace(/_/g, '')
+
 exports.isFunction = (obj) -> Object::toString.call(obj) is '[object Function]'
 exports.isNumber = isNumber = (obj) -> Object::toString.call(obj) is '[object Number]'
 exports.isString = isString = (obj) -> Object::toString.call(obj) is '[object String]'
