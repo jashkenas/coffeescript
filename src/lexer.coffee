@@ -272,10 +272,16 @@ exports.Lexer = class Lexer
       when /^0\d+/.test number
         @error "octal literal '#{number}' must be prefixed with '0o'", length: lexedLength
 
-    parsedValue = Number number
+    base = switch number.charAt 1
+      when 'b' then 2
+      when 'o' then 8
+      when 'x' then 16
+      else null
+
+    parsedValue = if base? then parseInt(number[2..], base) else parseFloat(number)
     tokenData = {parsedValue}
 
-    tag = if Number.isFinite(parsedValue) then 'NUMBER' else 'INFINITY'
+    tag = if parsedValue is Infinity then 'INFINITY' else 'NUMBER'
     if tag is 'INFINITY'
       tokenData.original = number
     @token tag, number,
