@@ -281,9 +281,16 @@ exports.Base = class Base
   # **WARNING: DO NOT OVERRIDE THIS METHOD IN CHILD CLASSES.**
   # Only override the component `ast*` methods as needed.
   ast: (o, level) ->
+    # Merge `level` into `o` and perform other universal checks.
     o = @astInitialize o, level
+    # Create serializable representation of this node.
     astNode = @astNode o
-    @astAddReturns astNode
+    # Mark AST nodes that correspond to expressions that (implicitly) return.
+    # We can’t do this as part of `astNode` because we need to assemble child
+    # nodes first before marking the parent being returned.
+    if @astNode? and @canBeReturned
+      Object.assign astNode, {returns: yes}
+    astNode
 
   astInitialize: (o, level) ->
     o = Object.assign {}, o
@@ -317,12 +324,6 @@ exports.Base = class Base
   # mutated into the structure that the Babel spec uses.
   astLocationData: ->
     jisonLocationDataToAstLocationData @locationData
-
-  # Mark AST nodes that correspond to expressions that (implicitly) return.
-  astAddReturns: (ast) ->
-    return ast unless ast?
-    ast.returns = yes if @canBeReturned
-    ast
 
   # Determines whether an AST node needs an `ExpressionStatement` wrapper.
   # Typically matches our `isStatement()` logic but this allows overriding.
