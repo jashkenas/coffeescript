@@ -12,7 +12,7 @@ Error.stackTraceLimit = Infinity
 {compact, flatten, extend, merge, del, starts, ends, some,
 addDataToNode, attachCommentsToNode, locationDataToString,
 throwSyntaxError, replaceUnicodeCodePointEscapes,
-isFunction, isPlainObject, isNumber} = require './helpers'
+isFunction, isPlainObject, isNumber, parseNumber} = require './helpers'
 
 # Functions required by parser.
 exports.extend = extend
@@ -936,15 +936,30 @@ exports.NumberLiteral = class NumberLiteral extends Literal
         @parsedValue = @value
         @value = "#{@value}"
       else
-        @parsedValue = Number @value
+        @parsedValue = parseNumber @value
 
-  astType: -> 'NumericLiteral'
+  isBigInt: ->
+    /n$/.test @value
+
+  astType: ->
+    if @isBigInt()
+      'BigIntLiteral'
+    else
+      'NumericLiteral'
 
   astProperties: ->
     return
-      value: @parsedValue
+      value:
+        if @isBigInt()
+          @parsedValue.toString()
+        else
+          @parsedValue
       extra:
-        rawValue: @parsedValue
+        rawValue:
+          if @isBigInt()
+            @parsedValue.toString()
+          else
+            @parsedValue
         raw: @value
 
 exports.InfinityLiteral = class InfinityLiteral extends NumberLiteral
@@ -2296,9 +2311,9 @@ exports.Range = class Range extends Base
     [@fromC, @fromVar] = @cacheToCodeFragments @from.cache o, LEVEL_LIST, shouldCache
     [@toC, @toVar]     = @cacheToCodeFragments @to.cache o, LEVEL_LIST, shouldCache
     [@step, @stepVar]  = @cacheToCodeFragments step.cache o, LEVEL_LIST, shouldCache if step = del o, 'step'
-    @fromNum = if @from.isNumber() then Number @fromVar else null
-    @toNum   = if @to.isNumber()   then Number @toVar   else null
-    @stepNum = if step?.isNumber() then Number @stepVar else null
+    @fromNum = if @from.isNumber() then parseNumber @fromVar else null
+    @toNum   = if @to.isNumber()   then parseNumber @toVar   else null
+    @stepNum = if step?.isNumber() then parseNumber @stepVar else null
 
   # When compiled normally, the range returns the contents of the *for loop*
   # needed to iterate over the values in the range. Used by comprehensions.
@@ -5362,7 +5377,7 @@ exports.For = class For extends While
     kvarAssign  = if kvar isnt ivar then "#{kvar} = " else ""
     if @step and not @range
       [step, stepVar] = @cacheToCodeFragments @step.cache o, LEVEL_LIST, shouldCacheOrIsAssignable
-      stepNum   = Number stepVar if @step.isNumber()
+      stepNum   = parseNumber stepVar if @step.isNumber()
     name        = ivar if @pattern
     varPart     = ''
     guardPart   = ''

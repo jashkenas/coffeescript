@@ -14,7 +14,7 @@
 # Import the helpers we need.
 {count, starts, compact, repeat, invertLiterate, merge,
 attachCommentsToNode, locationDataToString, throwSyntaxError
-replaceUnicodeCodePointEscapes, flatten} = require './helpers'
+replaceUnicodeCodePointEscapes, flatten, parseNumber} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -272,13 +272,7 @@ exports.Lexer = class Lexer
       when /^0\d+/.test number
         @error "octal literal '#{number}' must be prefixed with '0o'", length: lexedLength
 
-    base = switch number.charAt 1
-      when 'b' then 2
-      when 'o' then 8
-      when 'x' then 16
-      else null
-
-    parsedValue = if base? then parseInt(number[2..], base) else parseFloat(number)
+    parsedValue = parseNumber number
     tokenData = {parsedValue}
 
     tag = if parsedValue is Infinity then 'INFINITY' else 'NUMBER'
@@ -1302,10 +1296,14 @@ JSX_ATTRIBUTE = /// ^
 ///
 
 NUMBER     = ///
-  ^ 0b[01]+    |              # binary
-  ^ 0o[0-7]+   |              # octal
-  ^ 0x[\da-f]+ |              # hex
-  ^ \d*\.?\d+ (?:e[+-]?\d+)?  # decimal
+  ^ 0b[01](?:_?[01])*n?                         | # binary
+  ^ 0o[0-7](?:_?[0-7])*n?                       | # octal
+  ^ 0x[\da-f](?:_?[\da-f])*n?                   | # hex
+  ^ \d+n                                        | # decimal bigint
+  ^ (?:\d(?:_?\d)*)?    \.?   (?:\d(?:_?\d)*)+    # decimal
+                    (?:e[+-]? (?:\d(?:_?\d)*)+ )?
+  # decimal without support for numeric literal separators for reference:
+  # \d*\.?\d+ (?:e[+-]?\d+)?
 ///i
 
 OPERATOR   = /// ^ (
