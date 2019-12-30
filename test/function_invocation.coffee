@@ -9,10 +9,6 @@
 # shared identity function
 id = (_) -> if arguments.length is 1 then _ else [arguments...]
 
-# helper to assert that a string should fail compilation
-cantCompile = (code) ->
-  throws -> CoffeeScript.compile code
-
 test "basic argument passing", ->
 
   a = {}
@@ -63,11 +59,11 @@ test "hanging commas and semicolons in argument list", ->
   2
   eq 2, fn(0, 1;)
   # TODO: this test fails (the string compiles), but should it?
-  #throws -> CoffeeScript.compile "fn(0,1,;)"
-  throws -> CoffeeScript.compile "fn(0,1,;;)"
-  throws -> CoffeeScript.compile "fn(0, 1;,)"
-  throws -> CoffeeScript.compile "fn(,0)"
-  throws -> CoffeeScript.compile "fn(;0)"
+  #throwsCompileError "fn(0,1,;)"
+  throwsCompileError "fn(0,1,;;)"
+  throwsCompileError "fn(0, 1;,)"
+  throwsCompileError "fn(,0)"
+  throwsCompileError "fn(;0)"
 
 
 test "function invocation", ->
@@ -504,6 +500,8 @@ test "don't wrap 'pure' statements in a closure", ->
 test "usage of `new` is careful about where the invocation parens end up", ->
   eq 'object', typeof new try Array
   eq 'object', typeof new do -> ->
+  a = b: ->
+  eq 'object', typeof new (do -> a).b
 
 
 test "implicit call against control structures", ->
@@ -565,7 +563,7 @@ test "#1416: don't omit one 'new' when compiling 'new new fn()()'", ->
   eq obj.b, argNonceB
 
 test "#1840: accessing the `prototype` after function invocation should compile", ->
-  doesNotThrow -> CoffeeScript.compile 'fn()::prop'
+  doesNotThrowCompileError 'fn()::prop'
 
   nonce = {}
   class Test then id: nonce
@@ -696,26 +694,26 @@ test "Loose tokens inside of explicit call lists", ->
   eq bar.one, 1
 
 test "Non-callable literals shouldn't compile", ->
-  cantCompile '1(2)'
-  cantCompile '1 2'
-  cantCompile '/t/(2)'
-  cantCompile '/t/ 2'
-  cantCompile '///t///(2)'
-  cantCompile '///t/// 2'
-  cantCompile "''(2)"
-  cantCompile "'' 2"
-  cantCompile '""(2)'
-  cantCompile '"" 2'
-  cantCompile '""""""(2)'
-  cantCompile '"""""" 2'
-  cantCompile '{}(2)'
-  cantCompile '{} 2'
-  cantCompile '[](2)'
-  cantCompile '[] 2'
-  cantCompile '[2..9] 2'
-  cantCompile '[2..9](2)'
-  cantCompile '[1..10][2..9] 2'
-  cantCompile '[1..10][2..9](2)'
+  throwsCompileError '1(2)'
+  throwsCompileError '1 2'
+  throwsCompileError '/t/(2)'
+  throwsCompileError '/t/ 2'
+  throwsCompileError '///t///(2)'
+  throwsCompileError '///t/// 2'
+  throwsCompileError "''(2)"
+  throwsCompileError "'' 2"
+  throwsCompileError '""(2)'
+  throwsCompileError '"" 2'
+  throwsCompileError '""""""(2)'
+  throwsCompileError '"""""" 2'
+  throwsCompileError '{}(2)'
+  throwsCompileError '{} 2'
+  throwsCompileError '[](2)'
+  throwsCompileError '[] 2'
+  throwsCompileError '[2..9] 2'
+  throwsCompileError '[2..9](2)'
+  throwsCompileError '[1..10][2..9] 2'
+  throwsCompileError '[1..10][2..9](2)'
 
 test "implicit invocation with implicit object literal", ->
   f = (obj) -> eq 1, obj.a
@@ -905,9 +903,9 @@ test "#4473: variable scope in chained calls", ->
   eq f, 5
 
 test "#5052: implicit call of class with no body", ->
-  doesNotThrow -> CoffeeScript.compile 'f class'
-  doesNotThrow -> CoffeeScript.compile 'f class A'
-  doesNotThrow -> CoffeeScript.compile 'f class A extends B'
+  doesNotThrowCompileError 'f class'
+  doesNotThrowCompileError 'f class A'
+  doesNotThrowCompileError 'f class A extends B'
 
   f = (args...) -> args
   a = 1

@@ -65,8 +65,8 @@ test 'object attribute', ->
     <div x={{y: 42}} />
   ''', '''
     <div x={{
-        y: 42
-      }} />;
+      y: 42
+    }} />;
   '''
 
 test 'attribute without value', ->
@@ -98,10 +98,10 @@ test 'attribute with namespace', ->
   '''
 
 test 'attribute with double namespace disallowed', ->
-  throws -> CoffeeScript.compile '<image xlink:href:tag="data:image/png" />'
+  throwsCompileError '<image xlink:href:tag="data:image/png" />'
 
 test 'attribute with member expression disallowed', ->
-  throws -> CoffeeScript.compile '<image xlink.href="data:image/png" />'
+  throwsCompileError '<image xlink.href="data:image/png" />'
 
 test 'paired', ->
   eqJS '''
@@ -168,16 +168,16 @@ test 'interpolation in string attribute value', ->
 
 # Unlike in `coffee-react-transform`.
 test 'bare numbers not allowed', ->
-  throws -> CoffeeScript.compile '<div x=3 />'
+  throwsCompileError '<div x=3 />'
 
 test 'bare expressions not allowed', ->
-  throws -> CoffeeScript.compile '<div x=y />'
+  throwsCompileError '<div x=y />'
 
 test 'bare complex expressions not allowed', ->
-  throws -> CoffeeScript.compile '<div x=f(3) />'
+  throwsCompileError '<div x=f(3) />'
 
 test 'unescaped opening tag angle bracket disallowed', ->
-  throws -> CoffeeScript.compile '<Person><<</Person>'
+  throwsCompileError '<Person><<</Person>'
 
 test 'space around equal sign', ->
   eqJS '''
@@ -190,7 +190,7 @@ test 'space around equal sign', ->
 # [https://github.com/jsdf/coffee-react-transform](https://github.com/jsdf/coffee-react-transform).
 
 test 'ambiguous tag-like expression', ->
-  throws -> CoffeeScript.compile 'x = a <b > c'
+  throwsCompileError 'x = a <b > c'
 
 test 'ambiguous tag', ->
   eqJS '''
@@ -218,7 +218,7 @@ test 'escaped CoffeeScript attribute over multiple lines', ->
     <Person name={test() ? 'yes' : 'no'} />;
   '''
 
-test 'multiple line escaped CoffeeScript with nested CSX', ->
+test 'multiple line escaped CoffeeScript with nested JSX', ->
   eqJS '''
     <Person name={
       if test()
@@ -256,7 +256,7 @@ test 'multiple line escaped CoffeeScript with nested CSX', ->
     </Person>;
   '''
 
-test 'nested CSX within an attribute, with object attr value', ->
+test 'nested JSX within an attribute, with object attr value', ->
   eqJS '''
     <Company>
       <Person name={<NameComponent attr3={ {'a': {}, b: '{'} } />} />
@@ -264,9 +264,9 @@ test 'nested CSX within an attribute, with object attr value', ->
   ''', '''
     <Company>
       <Person name={<NameComponent attr3={{
-          'a': {},
-          b: '{'
-        }} />} />
+      'a': {},
+      b: '{'
+    }} />} />
     </Company>;
   '''
 
@@ -275,14 +275,14 @@ test 'complex nesting', ->
     <div code={someFunc({a:{b:{}, C:'}{}{'}})} />
   ''', '''
     <div code={someFunc({
-        a: {
-          b: {},
-          C: '}{}{'
-        }
-      })} />;
+      a: {
+        b: {},
+        C: '}{}{'
+      }
+    })} />;
   '''
 
-test 'multiline tag with nested CSX within an attribute', ->
+test 'multiline tag with nested JSX within an attribute', ->
   eqJS '''
     <Person
       name={
@@ -333,7 +333,7 @@ test 'lots of attributes', ->
     <Person eyes={2} friends={getFriends()} popular="yes" active={isActive() ? 'active' : 'inactive'} data-attr='works' checked check={me_out} />;
   '''
 
-# TODO: fix partially indented CSX
+# TODO: fix partially indented JSX
 # test 'multiline elements', ->
 #   eqJS '''
 #     <div something={
@@ -399,7 +399,7 @@ test 'heregex', ->
     6 / 432 / gm; // this is division
 
     <Tag>
-    {(test = /<Tag>/)} this is a regex containing something which looks like a tag
+    {test = /<Tag>/} this is a regex containing something which looks like a tag
     </Tag>;
 
     <Person />;
@@ -412,7 +412,7 @@ test 'heregex', ->
     <Person />;
   '''
 
-test 'comment within CSX is not treated as comment', ->
+test 'comment within JSX is not treated as comment', ->
   eqJS '''
     <Person>
     # i am not a comment
@@ -423,7 +423,7 @@ test 'comment within CSX is not treated as comment', ->
     </Person>;
   '''
 
-test 'comment at start of CSX escape', ->
+test 'comment at start of JSX escape', ->
   eqJS '''
     <Person>
     {# i am a comment
@@ -437,7 +437,7 @@ test 'comment at start of CSX escape', ->
     </Person>;
   '''
 
-test 'comment at end of CSX escape', ->
+test 'comment at end of JSX escape', ->
   eqJS '''
     <Person>
     {"i am a string"
@@ -452,33 +452,33 @@ test 'comment at end of CSX escape', ->
     </Person>;
   '''
 
-test 'CSX comment cannot be used inside interpolation', ->
-  throws -> CoffeeScript.compile '''
+test 'JSX comment cannot be used inside interpolation', ->
+  throwsCompileError '''
     <Person>
     {# i am a comment}
     </Person>
   '''
 
 test 'comment syntax cannot be used inline', ->
-  throws -> CoffeeScript.compile '''
+  throwsCompileError '''
     <Person>{#comment inline}</Person>
   '''
 
-test 'string within CSX is ignored', ->
+test 'string within JSX is ignored', ->
   eqJS '''
     <Person> "i am not a string" 'nor am i' </Person>
   ''', '''
     <Person> "i am not a string" 'nor am i' </Person>;
   '''
 
-test 'special chars within CSX are ignored', ->
+test 'special chars within JSX are ignored', ->
   eqJS """
     <Person> a,/';][' a\''@$%^&˚¬∑˜˚∆å∂¬˚*()*&^%$>> '"''"'''\'\'m' i </Person>
   """, """
     <Person> a,/';][' a''@$%^&˚¬∑˜˚∆å∂¬˚*()*&^%$>> '"''"'''''m' i </Person>;
   """
 
-test 'html entities (name, decimal, hex) within CSX', ->
+test 'html entities (name, decimal, hex) within JSX', ->
   eqJS '''
     <Person>  &&&&euro;  &#8364; &#x20AC;;; </Person>
   ''', '''
@@ -490,10 +490,10 @@ test 'tag with {{}}', ->
     <Person name={{value: item, key, item}} />
   ''', '''
     <Person name={{
-        value: item,
-        key,
-        item
-      }} />;
+      value: item,
+      key,
+      item
+    }} />;
   '''
 
 test 'tag with member expression', ->
@@ -546,7 +546,7 @@ test 'self closing tag with namespace', ->
   '''
 
 test 'self closing tag with namespace and member expression disallowed', ->
-  throws -> CoffeeScript.compile '''
+  throwsCompileError '''
     <Namespace:Something.Tag />
   '''
 
@@ -612,11 +612,11 @@ test 'complex multiline spread attribute', ->
   ''', '''
     <Component {...y} a={b} {...x} b="c" {...z}>
       <div code={someFunc({
-        a: {
-          b: {},
-          C: '}'
-        }
-      })} />
+      a: {
+        b: {},
+        C: '}'
+      }
+    })} />
     </Component>;
   '''
 
@@ -668,7 +668,7 @@ test 'empty strings are not converted to true', ->
   '''
 
 test 'CoffeeScript @ syntax in tag name', ->
-  throws -> CoffeeScript.compile '''
+  throwsCompileError '''
     <@Component>
       <Component />
     </@Component>
@@ -682,59 +682,59 @@ test 'hyphens in tag names', ->
   '''
 
 test 'closing tags must be closed', ->
-  throws -> CoffeeScript.compile '''
+  throwsCompileError '''
     <a></a
   '''
 
-# Tests for allowing less than operator without spaces when ther is no CSX
+# Tests for allowing less than operator without spaces when ther is no JSX
 
-test 'unspaced less than without CSX: identifier', ->
+test 'unspaced less than without JSX: identifier', ->
   a = 3
   div = 5
   ok a<div
 
-test 'unspaced less than without CSX: number', ->
+test 'unspaced less than without JSX: number', ->
   div = 5
   ok 3<div
 
-test 'unspaced less than without CSX: paren', ->
+test 'unspaced less than without JSX: paren', ->
   div = 5
   ok (3)<div
 
-test 'unspaced less than without CSX: index', ->
+test 'unspaced less than without JSX: index', ->
   div = 5
   a = [3]
   ok a[0]<div
 
-test 'tag inside CSX works following: identifier', ->
+test 'tag inside JSX works following: identifier', ->
   eqJS '''
     <span>a<div /></span>
   ''', '''
     <span>a<div /></span>;
   '''
 
-test 'tag inside CSX works following: number', ->
+test 'tag inside JSX works following: number', ->
   eqJS '''
     <span>3<div /></span>
   ''', '''
     <span>3<div /></span>;
   '''
 
-test 'tag inside CSX works following: paren', ->
+test 'tag inside JSX works following: paren', ->
   eqJS '''
     <span>(3)<div /></span>
   ''', '''
     <span>(3)<div /></span>;
   '''
 
-test 'tag inside CSX works following: square bracket', ->
+test 'tag inside JSX works following: square bracket', ->
   eqJS '''
     <span>]<div /></span>
   ''', '''
     <span>]<div /></span>;
   '''
 
-test 'unspaced less than inside CSX works but is not encouraged', ->
+test 'unspaced less than inside JSX works but is not encouraged', ->
   eqJS '''
       a = 3
       div = 5
@@ -749,7 +749,7 @@ test 'unspaced less than inside CSX works but is not encouraged', ->
       html = <span>{a < div}</span>;
     '''
 
-test 'unspaced less than before CSX works but is not encouraged', ->
+test 'unspaced less than before JSX works but is not encouraged', ->
   eqJS '''
       div = 5
       res = 2<div
@@ -764,7 +764,7 @@ test 'unspaced less than before CSX works but is not encouraged', ->
       html = <span />;
     '''
 
-test 'unspaced less than after CSX works but is not encouraged', ->
+test 'unspaced less than after JSX works but is not encouraged', ->
   eqJS '''
       div = 5
       html = <span />
@@ -779,7 +779,7 @@ test 'unspaced less than after CSX works but is not encouraged', ->
       res = 2 < div;
     '''
 
-test '#4686: comments inside interpolations that also contain CSX tags', ->
+test '#4686: comments inside interpolations that also contain JSX tags', ->
   eqJS '''
     <div>
       {
@@ -794,7 +794,7 @@ test '#4686: comments inside interpolations that also contain CSX tags', ->
     </div>;
   '''
 
-test '#4686: comments inside interpolations that also contain CSX attributes', ->
+test '#4686: comments inside interpolations that also contain JSX attributes', ->
   eqJS '''
     <div>
       <div anAttr={
@@ -809,7 +809,7 @@ test '#4686: comments inside interpolations that also contain CSX attributes', -
     </div>;
   '''
 
-test '#5086: comments inside CSX tags but outside interpolations', ->
+test '#5086: comments inside JSX tags but outside interpolations', ->
   eqJS '''
     <div>
       <div ###comment### attribute={value} />
@@ -820,7 +820,7 @@ test '#5086: comments inside CSX tags but outside interpolations', ->
     </div>;
   '''
 
-test '#5086: comments inside CSX attributes but outside interpolations', ->
+test '#5086: comments inside JSX attributes but outside interpolations', ->
   eqJS '''
     <div>
       <div attribute={###attr comment### value} />
@@ -831,7 +831,7 @@ test '#5086: comments inside CSX attributes but outside interpolations', ->
     </div>;
   '''
 
-test '#5086: comments inside nested CSX tags and attributes but outside interpolations', ->
+test '#5086: comments inside nested JSX tags and attributes but outside interpolations', ->
   eqJS '''
     <div>
       <div>

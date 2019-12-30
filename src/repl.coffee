@@ -25,30 +25,30 @@ replDefaults =
     input = input.replace /^\s*try\s*{([\s\S]*)}\s*catch.*$/m, '$1'
 
     # Require AST nodes to do some AST manipulation.
-    {Block, Assign, Value, Literal, Call, Code} = require './nodes'
+    {Block, Assign, Value, Literal, Call, Code, Root} = require './nodes'
 
     try
       # Tokenize the clean input.
       tokens = CoffeeScript.tokens input
       # Filter out tokens generated just to hold comments.
       if tokens.length >= 2 and tokens[0].generated and
-         tokens[0].comments?.length isnt 0 and tokens[0][1] is '' and
+         tokens[0].comments?.length isnt 0 and "#{tokens[0][1]}" is '' and
          tokens[1][0] is 'TERMINATOR'
         tokens = tokens[2...]
       if tokens.length >= 1 and tokens[tokens.length - 1].generated and
-         tokens[tokens.length - 1].comments?.length isnt 0 and tokens[tokens.length - 1][1] is ''
+         tokens[tokens.length - 1].comments?.length isnt 0 and "#{tokens[tokens.length - 1][1]}" is ''
         tokens.pop()
       # Collect referenced variable names just like in `CoffeeScript.compile`.
       referencedVars = (token[1] for token in tokens when token[0] is 'IDENTIFIER')
       # Generate the AST of the tokens.
-      ast = CoffeeScript.nodes tokens
+      ast = CoffeeScript.nodes(tokens).body
       # Add assignment to `__` variable to force the input to be an expression.
       ast = new Block [new Assign (new Value new Literal '__'), ast, '=']
       # Wrap the expression in a closure to support top-level `await`.
       ast     = new Code [], ast
       isAsync = ast.isAsync
       # Invoke the wrapping closure.
-      ast    = new Block [new Call ast]
+      ast    = new Root new Block [new Call ast]
       js     = ast.compile {bare: yes, locals: Object.keys(context), referencedVars, sharedScope: yes}
       if transpile
         js = transpile.transpile(js, transpile.options).code

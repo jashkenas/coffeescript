@@ -1,10 +1,6 @@
 # Compilation
 # -----------
 
-# Helper to assert that a string should fail compilation.
-cantCompile = (code) ->
-  throws -> CoffeeScript.compile code
-
 # Helper to pipe the CoffeeScript compiler’s output through a transpiler.
 transpile = (method, code, options = {}) ->
   # `method` should be 'compile' or 'eval' or 'run'
@@ -16,7 +12,7 @@ transpile = (method, code, options = {}) ->
 
 
 test "ensure that carriage returns don't break compilation on Windows", ->
-  doesNotThrow -> CoffeeScript.compile 'one\r\ntwo', bare: on
+  doesNotThrowCompileError 'one\r\ntwo', bare: on
 
 test "#3089 - don't mutate passed in options to compile", ->
   opts = {}
@@ -43,19 +39,19 @@ test "multiple generated references", ->
   ok a.b[0<++c<2] d...
 
 test "splat on a line by itself is invalid", ->
-  cantCompile "x 'a'\n...\n"
+  throwsCompileError "x 'a'\n...\n"
 
 test "Issue 750", ->
 
-  cantCompile 'f(->'
+  throwsCompileError 'f(->'
 
-  cantCompile 'a = (break)'
+  throwsCompileError 'a = (break)'
 
-  cantCompile 'a = (return 5 for item in list)'
+  throwsCompileError 'a = (return 5 for item in list)'
 
-  cantCompile 'a = (return 5 while condition)'
+  throwsCompileError 'a = (return 5 while condition)'
 
-  cantCompile 'a = for x in y\n  return 5'
+  throwsCompileError 'a = for x in y\n  return 5'
 
 test "Issue #986: Unicode identifiers", ->
   λ = 5
@@ -91,7 +87,7 @@ test "don't accidentally stringify keywords", ->
   ok (-> this == 'this')() is false
 
 test "#1026: no if/else/else allowed", ->
-  cantCompile '''
+  throwsCompileError '''
     if a
       b
     else
@@ -101,11 +97,11 @@ test "#1026: no if/else/else allowed", ->
   '''
 
 test "#1050: no closing asterisk comments from within block comments", ->
-  cantCompile "### */ ###"
+  throwsCompileError "### */ ###"
 
 test "#1273: escaping quotes at the end of heredocs", ->
-  cantCompile '"""\\"""' # """\"""
-  cantCompile '"""\\\\\\"""' # """\\\"""
+  throwsCompileError '"""\\"""' # """\"""
+  throwsCompileError '"""\\\\\\"""' # """\\\"""
 
 test "#1106: __proto__ compilation", ->
   object = eq
@@ -116,10 +112,10 @@ test "reference named hasOwnProperty", ->
   CoffeeScript.compile 'hasOwnProperty = 0; a = 1'
 
 test "#1055: invalid keys in real (but not work-product) objects", ->
-  cantCompile "@key: value"
+  throwsCompileError "@key: value"
 
 test "#1066: interpolated strings are not implicit functions", ->
-  cantCompile '"int#{er}polated" arg'
+  throwsCompileError '"int#{er}polated" arg'
 
 test "#2846: while with empty body", ->
   CoffeeScript.compile 'while 1 then', {sourceMap: true}
@@ -128,10 +124,10 @@ test "#2944: implicit call with a regex argument", ->
   CoffeeScript.compile 'o[key] /regex/'
 
 test "#3001: `own` shouldn't be allowed in a `for`-`in` loop", ->
-  cantCompile "a for own b in c"
+  throwsCompileError "a for own b in c"
 
 test "#2994: single-line `if` requires `then`", ->
-  cantCompile "if b else x"
+  throwsCompileError "if b else x"
 
 test "transpile option, for Node API CoffeeScript.compile", ->
   return if global.testingBrowser

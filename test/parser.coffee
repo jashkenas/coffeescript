@@ -5,7 +5,7 @@ test "operator precedence for logical operators", ->
   source = '''
     a or b and c
   '''
-  block = CoffeeScript.nodes source
+  {body: block} = CoffeeScript.nodes source
   [expression] = block.expressions
   eq expression.first.base.value, 'a'
   eq expression.operator, '||'
@@ -17,7 +17,7 @@ test "operator precedence for bitwise operators", ->
   source = '''
     a | b ^ c & d
   '''
-  block = CoffeeScript.nodes source
+  {body: block} = CoffeeScript.nodes source
   [expression] = block.expressions
   eq expression.first.base.value, 'a'
   eq expression.operator, '|'
@@ -31,7 +31,7 @@ test "operator precedence for binary ? operator", ->
   source = '''
      a ? b and c
   '''
-  block = CoffeeScript.nodes source
+  {body: block} = CoffeeScript.nodes source
   [expression] = block.expressions
   eq expression.first.base.value, 'a'
   eq expression.operator, '?'
@@ -43,7 +43,7 @@ test "new calls have a range including the new", ->
   source = '''
     a = new B().c(d)
   '''
-  block = CoffeeScript.nodes source
+  {body: block} = CoffeeScript.nodes source
 
   assertColumnRange = (node, firstColumn, lastColumn) ->
     eq node.locationData.first_line, 0
@@ -52,7 +52,7 @@ test "new calls have a range including the new", ->
     eq node.locationData.last_column, lastColumn
 
   [assign] = block.expressions
-  outerCall = assign.value
+  outerCall = assign.value.base
   innerValue = outerCall.variable
   innerCall = innerValue.base
 
@@ -65,7 +65,7 @@ test "location data is properly set for nested `new`", ->
   source = '''
     new new A()()
   '''
-  block = CoffeeScript.nodes source
+  {body: block} = CoffeeScript.nodes source
 
   assertColumnRange = (node, firstColumn, lastColumn) ->
     eq node.locationData.first_line, 0
@@ -73,7 +73,7 @@ test "location data is properly set for nested `new`", ->
     eq node.locationData.last_line, 0
     eq node.locationData.last_column, lastColumn
 
-  [outerCall] = block.expressions
+  [{base: outerCall}] = block.expressions
   innerCall = outerCall.variable
 
   assertColumnRange outerCall, 0, 12

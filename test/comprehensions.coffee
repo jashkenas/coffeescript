@@ -254,7 +254,7 @@ test "#3671: Allow step in optimized range comprehensions.", ->
 
 test "#3671: Disallow guard in optimized range comprehensions.", ->
 
-  throws -> CoffeeScript.compile "exxes = ('x' for [0...10] when a)"
+  throwsCompileError "exxes = ('x' for [0...10] when a)"
 
 
 test "Loop variables should be able to reference outer variables", ->

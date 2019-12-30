@@ -350,15 +350,15 @@ test "#1046, empty string interpolations", ->
   eq "#{ }", ''
 
 test "strings are not callable", ->
-  throws -> CoffeeScript.compile '"a"()'
-  throws -> CoffeeScript.compile '"a#{b}"()'
-  throws -> CoffeeScript.compile '"a" 1'
-  throws -> CoffeeScript.compile '"a#{b}" 1'
-  throws -> CoffeeScript.compile '''
+  throwsCompileError '"a"()'
+  throwsCompileError '"a#{b}"()'
+  throwsCompileError '"a" 1'
+  throwsCompileError '"a#{b}" 1'
+  throwsCompileError '''
     "a"
        k: v
   '''
-  throws -> CoffeeScript.compile '''
+  throwsCompileError '''
     "a#{b}"
        k: v
   '''
@@ -372,10 +372,16 @@ test "#3795: Escape otherwise invalid characters", ->
   eq " ", '\u2029'
   eq "\0\
       1", '\x001'
+  eq "\0\
+      9", '\x009'
+  eq "\0#{}0", '\x000'
   eq ''' ''', '\u2028'
   eq ''' ''', '\u2029'
   eq '''\0\
       1''', '\x001'
+  eq '''\0\
+      9''', '\x009'
+  eq """\0#{}1""", '\x001'
   eq """ """, '\u2028'
   eq """ """, '\u2029'
   eq """\0\

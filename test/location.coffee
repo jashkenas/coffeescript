@@ -46,6 +46,8 @@ test "Verify location of generated tokens (with indented first line)", ->
   eq aToken[2].first_column, 2
   eq aToken[2].last_line, 0
   eq aToken[2].last_column, 2
+  eq aToken[2].range[0], 2
+  eq aToken[2].range[1], 3
 
   eq equalsToken[2].first_line, 0
   eq equalsToken[2].first_column, 4
@@ -72,7 +74,7 @@ test 'Verify locations in string interpolation (in "string")', ->
   [a, b, c] = getMatchingTokens '"a#{b}c"', '"a"', 'b', '"c"'
 
   eq a[2].first_line, 0
-  eq a[2].first_column, 0
+  eq a[2].first_column, 1
   eq a[2].last_line, 0
   eq a[2].last_column, 1
 
@@ -84,7 +86,7 @@ test 'Verify locations in string interpolation (in "string")', ->
   eq c[2].first_line, 0
   eq c[2].first_column, 6
   eq c[2].last_line, 0
-  eq c[2].last_column, 7
+  eq c[2].last_column, 6
 
 test 'Verify locations in string interpolation (in "string", multiple interpolation)', ->
   [a, b, c] = getMatchingTokens '"#{a}b#{c}"', 'a', '"b"', 'c'
@@ -105,7 +107,7 @@ test 'Verify locations in string interpolation (in "string", multiple interpolat
   eq c[2].last_column, 8
 
 test 'Verify locations in string interpolation (in "string", multiple interpolation and line breaks)', ->
-  [a, b, c] = getMatchingTokens '"#{a}\nb\n#{c}"', 'a', '" b "', 'c'
+  [a, b, c] = getMatchingTokens '"#{a}\nb\n#{c}"', 'a', '"\nb\n"', 'c'
 
   eq a[2].first_line, 0
   eq a[2].first_column, 3
@@ -123,7 +125,7 @@ test 'Verify locations in string interpolation (in "string", multiple interpolat
   eq c[2].last_column, 2
 
 test 'Verify locations in string interpolation (in "string", multiple interpolation and starting with line breaks)', ->
-  [a, b, c] = getMatchingTokens '"\n#{a}\nb\n#{c}"', 'a', '" b "', 'c'
+  [a, b, c] = getMatchingTokens '"\n#{a}\nb\n#{c}"', 'a', '"\nb\n"', 'c'
 
   eq a[2].first_line, 1
   eq a[2].first_column, 2
@@ -141,7 +143,7 @@ test 'Verify locations in string interpolation (in "string", multiple interpolat
   eq c[2].last_column, 2
 
 test 'Verify locations in string interpolation (in "string", multiple interpolation and starting with line breaks)', ->
-  [a, b, c] = getMatchingTokens '"\n\n#{a}\n\nb\n\n#{c}"', 'a', '" b "', 'c'
+  [a, b, c] = getMatchingTokens '"\n\n#{a}\n\nb\n\n#{c}"', 'a', '"\n\nb\n\n"', 'c'
 
   eq a[2].first_line, 2
   eq a[2].first_column, 2
@@ -159,7 +161,7 @@ test 'Verify locations in string interpolation (in "string", multiple interpolat
   eq c[2].last_column, 2
 
 test 'Verify locations in string interpolation (in "string", multiple interpolation and starting with line breaks)', ->
-  [a, b, c] = getMatchingTokens '"\n\n\n#{a}\n\n\nb\n\n\n#{c}"', 'a', '" b "', 'c'
+  [a, b, c] = getMatchingTokens '"\n\n\n#{a}\n\n\nb\n\n\n#{c}"', 'a', '"\n\n\nb\n\n\n"', 'c'
 
   eq a[2].first_line, 3
   eq a[2].first_column, 2
@@ -177,10 +179,10 @@ test 'Verify locations in string interpolation (in "string", multiple interpolat
   eq c[2].last_column, 2
 
 test 'Verify locations in string interpolation (in """string""", line breaks)', ->
-  [a, b, c] = getMatchingTokens '"""a\n#{b}\nc"""', '"a\\n"', 'b', '"\\nc"'
+  [a, b, c] = getMatchingTokens '"""a\n#{b}\nc"""', '"a\n"', 'b', '"\nc"'
 
   eq a[2].first_line, 0
-  eq a[2].first_column, 0
+  eq a[2].first_column, 3
   eq a[2].last_line, 0
   eq a[2].last_column, 4
 
@@ -192,10 +194,10 @@ test 'Verify locations in string interpolation (in """string""", line breaks)', 
   eq c[2].first_line, 1
   eq c[2].first_column, 4
   eq c[2].last_line, 2
-  eq c[2].last_column, 3
+  eq c[2].last_column, 0
 
 test 'Verify locations in string interpolation (in """string""", starting with a line break)', ->
-  [b, c] = getMatchingTokens '"""\n#{b}\nc"""', 'b', '"\\nc"'
+  [b, c] = getMatchingTokens '"""\n#{b}\nc"""', 'b', '"\nc"'
 
   eq b[2].first_line, 1
   eq b[2].first_column, 2
@@ -205,13 +207,13 @@ test 'Verify locations in string interpolation (in """string""", starting with a
   eq c[2].first_line, 1
   eq c[2].first_column, 4
   eq c[2].last_line, 2
-  eq c[2].last_column, 3
+  eq c[2].last_column, 0
 
 test 'Verify locations in string interpolation (in """string""", starting with line breaks)', ->
-  [a, b, c] = getMatchingTokens '"""\n\n#{b}\nc"""', '"\\n"', 'b', '"\\nc"'
+  [a, b, c] = getMatchingTokens '"""\n\n#{b}\nc"""', '"\n\n"', 'b', '"\nc"'
 
   eq a[2].first_line, 0
-  eq a[2].first_column, 0
+  eq a[2].first_column, 3
   eq a[2].last_line, 1
   eq a[2].last_column, 0
 
@@ -223,10 +225,10 @@ test 'Verify locations in string interpolation (in """string""", starting with l
   eq c[2].first_line, 2
   eq c[2].first_column, 4
   eq c[2].last_line, 3
-  eq c[2].last_column, 3
+  eq c[2].last_column, 0
 
 test 'Verify locations in string interpolation (in """string""", multiple interpolation)', ->
-  [a, b, c] = getMatchingTokens '"""#{a}\nb\n#{c}"""', 'a', '"\\nb\\n"', 'c'
+  [a, b, c] = getMatchingTokens '"""#{a}\nb\n#{c}"""', 'a', '"\nb\n"', 'c'
 
   eq a[2].first_line, 0
   eq a[2].first_column, 5
@@ -244,7 +246,7 @@ test 'Verify locations in string interpolation (in """string""", multiple interp
   eq c[2].last_column, 2
 
 test 'Verify locations in string interpolation (in """string""", multiple interpolation, and starting with line breaks)', ->
-  [a, b, c] = getMatchingTokens '"""\n\n#{a}\n\nb\n\n#{c}"""', 'a', '"\\n\\nb\\n\\n"', 'c'
+  [a, b, c] = getMatchingTokens '"""\n\n#{a}\n\nb\n\n#{c}"""', 'a', '"\n\nb\n\n"', 'c'
 
   eq a[2].first_line, 2
   eq a[2].first_column, 2
@@ -262,7 +264,7 @@ test 'Verify locations in string interpolation (in """string""", multiple interp
   eq c[2].last_column, 2
 
 test 'Verify locations in string interpolation (in """string""", multiple interpolation, and starting with line breaks)', ->
-  [a, b, c] = getMatchingTokens '"""\n\n\n#{a}\n\n\nb\n\n\n#{c}"""', 'a', '"\\n\\n\\nb\\n\\n\\n"', 'c'
+  [a, b, c] = getMatchingTokens '"""\n\n\n#{a}\n\n\nb\n\n\n#{c}"""', 'a', '"\n\n\nb\n\n\n"', 'c'
 
   eq a[2].first_line, 3
   eq a[2].first_column, 2
@@ -301,7 +303,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   [a, b, c] = getMatchingTokens '///a#{b}c///', '"a"', 'b', '"c"'
 
   eq a[2].first_line, 0
-  eq a[2].first_column, 0
+  eq a[2].first_column, 3
   eq a[2].last_line, 0
   eq a[2].last_column, 3
 
@@ -313,10 +315,10 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].first_line, 0
   eq c[2].first_column, 8
   eq c[2].last_line, 0
-  eq c[2].last_column, 11
+  eq c[2].last_column, 8
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks)', ->
-  [a, b, c] = getMatchingTokens '///#{a}\nb\n#{c}///', 'a', '"b"', 'c'
+  [a, b, c] = getMatchingTokens '///#{a}\nb\n#{c}///', 'a', '"\nb\n"', 'c'
 
   eq a[2].first_line, 0
   eq a[2].first_column, 5
@@ -334,7 +336,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].last_column, 2
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks)', ->
-  [a, b, c] = getMatchingTokens '///#{a}\n\n\nb\n\n\n#{c}///', 'a', '"b"', 'c'
+  [a, b, c] = getMatchingTokens '///#{a}\n\n\nb\n\n\n#{c}///', 'a', '"\n\n\nb\n\n\n"', 'c'
 
   eq a[2].first_line, 0
   eq a[2].first_column, 5
@@ -352,10 +354,10 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].last_column, 2
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks)', ->
-  [a, b, c] = getMatchingTokens '///a\n\n\n#{b}\n\n\nc///', '"a"', 'b', '"c"'
+  [a, b, c] = getMatchingTokens '///a\n\n\n#{b}\n\n\nc///', '"a\n\n\n"', 'b', '"\n\n\nc"'
 
   eq a[2].first_line, 0
-  eq a[2].first_column, 0
+  eq a[2].first_column, 3
   eq a[2].last_line, 2
   eq a[2].last_column, 0
 
@@ -367,10 +369,10 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].first_line, 3
   eq c[2].first_column, 4
   eq c[2].last_line, 6
-  eq c[2].last_column, 3
+  eq c[2].last_column, 0
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks and starting with linebreak)', ->
-  [a, b, c] = getMatchingTokens '///\n#{a}\nb\n#{c}///', 'a', '"b"', 'c'
+  [a, b, c] = getMatchingTokens '///\n#{a}\nb\n#{c}///', 'a', '"\nb\n"', 'c'
 
   eq a[2].first_line, 1
   eq a[2].first_column, 2
@@ -388,7 +390,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].last_column, 2
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks and starting with linebreak)', ->
-  [a, b, c] = getMatchingTokens '///\n\n\n#{a}\n\n\nb\n\n\n#{c}///', 'a', '"b"', 'c'
+  [a, b, c] = getMatchingTokens '///\n\n\n#{a}\n\n\nb\n\n\n#{c}///', 'a', '"\n\n\nb\n\n\n"', 'c'
 
   eq a[2].first_line, 3
   eq a[2].first_column, 2
@@ -406,10 +408,10 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].last_column, 2
 
 test 'Verify locations in heregex interpolation (in ///regex///, multiple interpolation and line breaks and starting with linebreak)', ->
-  [a, b, c] = getMatchingTokens '///\n\n\na\n\n\n#{b}\n\n\nc///', '"a"', 'b', '"c"'
+  [a, b, c] = getMatchingTokens '///\n\n\na\n\n\n#{b}\n\n\nc///', '"\n\n\na\n\n\n"', 'b', '"\n\n\nc"'
 
   eq a[2].first_line, 0
-  eq a[2].first_column, 0
+  eq a[2].first_column, 3
   eq a[2].last_line, 5
   eq a[2].last_column, 0
 
@@ -421,7 +423,7 @@ test 'Verify locations in heregex interpolation (in ///regex///, multiple interp
   eq c[2].first_line, 6
   eq c[2].first_column, 4
   eq c[2].last_line, 9
-  eq c[2].last_column, 3
+  eq c[2].last_column, 0
 
 test "#3822: Simple string/regex start/end should include delimiters", ->
   [stringToken] = CoffeeScript.tokens "'string'"
@@ -445,7 +447,7 @@ test "#3621: Multiline regex and manual `Regex` call with interpolation should
     tokenA = tokensA[i]
     tokenB = tokensB[i]
     eq tokenA[0], tokenB[0] unless tokenB[0] in ['REGEX_START', 'REGEX_END']
-    eq tokenA[1], tokenB[1]
+    eq "#{tokenA[1]}", "#{tokenB[1]}"
     unless tokenA[0] is 'STRING_START' or tokenB[0] is 'REGEX_START'
       eq tokenA.origin?[1], tokenB.origin?[1]
     eq tokenA.stringEnd, tokenB.stringEnd
@@ -595,18 +597,21 @@ test "Verify heregexes with interpolations have the right ending position", ->
   eq comma[0], ','
   eq arrayEnd[0], ']'
 
-  assertColumn = (token, column) ->
+  assertColumn = (token, column, width = 0) ->
     eq token[2].first_line, 0
     eq token[2].first_column, column
     eq token[2].last_line, 0
     eq token[2].last_column, column
+    eq token[2].last_column_exclusive, column + width
 
   arrayEndColumn = arrayEnd[2].first_column
-  for token in [comma, flagsString]
+  for token in [comma]
     assertColumn token, arrayEndColumn - 2
-  for token in [regexCallEnd, regexEnd, fnCallEnd]
-    assertColumn token, arrayEndColumn - 1
-  assertColumn arrayEnd, arrayEndColumn
+  for token in [flagsString, regexCallEnd]
+    assertColumn token, arrayEndColumn - 1, 1
+  for token in [regexEnd, fnCallEnd]
+    assertColumn token, arrayEndColumn
+  assertColumn arrayEnd, arrayEndColumn, 1
 
 test "Verify all tokens get a location", ->
   doesNotThrow ->
@@ -621,7 +626,7 @@ test 'Values with properties end up with a location that includes the properties
     a['b']
     a[b.c()].d
   '''
-  block = CoffeeScript.nodes source
+  {body: block} = CoffeeScript.nodes source
   [
     singleProperty
     twoProperties
@@ -648,3 +653,166 @@ test 'Values with properties end up with a location that includes the properties
   eq complexIndex.locationData.first_column, 0
   eq complexIndex.locationData.last_line, 3
   eq complexIndex.locationData.last_column, 9
+
+test 'StringWithInterpolations::fromStringLiteral() assigns correct location to tagged template literal', ->
+  checkLocationData = (source, {stringWithInterpolationsLocationData, stringLocationData}) ->
+    {body: block} = CoffeeScript.nodes source
+    taggedTemplateLiteral = block.expressions[0].unwrap()
+    {args: [stringWithInterpolations]} = taggedTemplateLiteral
+    {body} = stringWithInterpolations
+    {expressions: [stringValue]} = body
+    string = stringValue.unwrap()
+
+    for field in ['first_line', 'first_column', 'last_line', 'last_column', 'last_line_exclusive', 'last_column_exclusive']
+      eq stringWithInterpolations.locationData[field], stringWithInterpolationsLocationData[field]
+      eq stringValue.locationData[field], stringLocationData[field]
+      eq string.locationData[field], stringLocationData[field]
+
+  checkLocationData 'a"b"',
+    stringWithInterpolationsLocationData:
+      first_line: 0
+      first_column: 1
+      last_line: 0
+      last_column: 3
+      last_line_exclusive: 0
+      last_column_exclusive: 4
+    stringLocationData:
+      first_line: 0
+      first_column: 2
+      last_line: 0
+      last_column: 2
+      last_line_exclusive: 0
+      last_column_exclusive: 3
+
+  checkLocationData '''
+    a"""
+      b
+    """
+  ''',
+    stringWithInterpolationsLocationData:
+      first_line: 0
+      first_column: 1
+      last_line: 2
+      last_column: 2
+      last_line_exclusive: 2
+      last_column_exclusive: 3
+    stringLocationData:
+      first_line: 0
+      first_column: 4
+      last_line: 1
+      last_column: 3
+      last_line_exclusive: 2
+      last_column_exclusive: 0
+
+  checkLocationData '''
+    a"""b
+    """
+  ''',
+    stringWithInterpolationsLocationData:
+      first_line: 0
+      first_column: 1
+      last_line: 1
+      last_column: 2
+      last_line_exclusive: 1
+      last_column_exclusive: 3
+    stringLocationData:
+      first_line: 0
+      first_column: 4
+      last_line: 0
+      last_column: 5
+      last_line_exclusive: 1
+      last_column_exclusive: 0
+
+test "Verify compound assignment operators have the right position", ->
+  source = '''
+    a or= b
+  '''
+  [a, operatorToken] = CoffeeScript.tokens source
+  eq operatorToken[2].first_line, 0
+  eq operatorToken[2].first_column, 2
+  eq operatorToken[2].last_line, 0
+  eq operatorToken[2].last_column, 4
+  eq operatorToken[2].last_column_exclusive, 5
+  eq operatorToken[2].range[0], 2
+  eq operatorToken[2].range[1], 5
+
+  source = '''
+    a and= b
+  '''
+  [a, operatorToken] = CoffeeScript.tokens source
+  eq operatorToken[2].first_line, 0
+  eq operatorToken[2].first_column, 2
+  eq operatorToken[2].last_line, 0
+  eq operatorToken[2].last_column, 5
+  eq operatorToken[2].last_column_exclusive, 6
+  eq operatorToken[2].range[0], 2
+  eq operatorToken[2].range[1], 6
+
+test "Verify BOM is accounted for in location data", ->
+  source = '''
+    \ufeffa
+    b
+  '''
+  [aToken, terminator, bToken] = CoffeeScript.tokens source
+  eq aToken[2].first_line, 0
+  eq aToken[2].first_column, 1
+  eq aToken[2].last_line, 0
+  eq aToken[2].last_column, 1
+  eq aToken[2].last_column_exclusive, 2
+  eq aToken[2].range[0], 1
+  eq aToken[2].range[1], 2
+  eq bToken[2].first_line, 1
+  eq bToken[2].first_column, 0
+  eq bToken[2].last_line, 1
+  eq bToken[2].last_column, 0
+  eq bToken[2].last_column_exclusive, 1
+  eq bToken[2].range[0], 3
+  eq bToken[2].range[1], 4
+
+test "Verify carriage returns are accounted for in location data", ->
+  source = '''
+    a\r+
+    b\r\r- c
+  '''
+  [aToken, plusToken, bToken, minusToken] = CoffeeScript.tokens source
+  eq aToken[2].first_line, 0
+  eq aToken[2].first_column, 0
+  eq aToken[2].last_line, 0
+  eq aToken[2].last_column, 0
+  eq aToken[2].last_column_exclusive, 1
+  eq aToken[2].range[0], 0
+  eq aToken[2].range[1], 1
+  eq plusToken[2].first_line, 0
+  eq plusToken[2].first_column, 2
+  eq plusToken[2].last_line, 0
+  eq plusToken[2].last_column, 2
+  eq plusToken[2].last_column_exclusive, 3
+  eq plusToken[2].range[0], 2
+  eq plusToken[2].range[1], 3
+  eq bToken[2].first_line, 1
+  eq bToken[2].first_column, 0
+  eq bToken[2].last_line, 1
+  eq bToken[2].last_column, 0
+  eq bToken[2].last_column_exclusive, 1
+  eq bToken[2].range[0], 4
+  eq bToken[2].range[1], 5
+  eq minusToken[2].first_line, 1
+  eq minusToken[2].first_column, 3
+  eq minusToken[2].last_line, 1
+  eq minusToken[2].last_column, 3
+  eq minusToken[2].last_column_exclusive, 4
+  eq minusToken[2].range[0], 7
+  eq minusToken[2].range[1], 8
+
+test "Verify object colon location data", ->
+  source = '''
+    a : b
+  '''
+  [implicitBraceToken, aToken, colonToken] = CoffeeScript.tokens source
+  eq colonToken[2].first_line, 0
+  eq colonToken[2].first_column, 2
+  eq colonToken[2].last_line, 0
+  eq colonToken[2].last_column, 2
+  eq colonToken[2].last_column_exclusive, 3
+  eq colonToken[2].range[0], 2
+  eq colonToken[2].range[1], 3

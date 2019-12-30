@@ -38,7 +38,7 @@ eq "#{/\\'/}",               "/\\\\'/"
 eq "#{4/2}/", '2/'
 curWidth = 4
 eq "<i style='left:#{ curWidth/2 }%;'></i>",   "<i style='left:2%;'></i>"
-throws -> CoffeeScript.compile '''
+throwsCompileError '''
    "<i style='left:#{ curWidth /2 }%;'></i>"'''
 #                 valid regex--^^^^^^^^^^^ ^--unclosed string
 eq "<i style='left:#{ curWidth/2 }%;'></i>",   "<i style='left:2%;'></i>"

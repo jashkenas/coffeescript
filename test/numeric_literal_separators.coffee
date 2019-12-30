@@ -19,6 +19,14 @@ test 'binary literals with separators', ->
 test 'octal literals with separators', ->
   eq 0o7_7_7, 0o777
 
+test 'infinity with separator', ->
+  eq 2e3_08, Infinity
+
+test 'range with separators', ->
+  range = [10_000...10_002]
+  eq range.length, 2
+  eq range[0], 10000
+
 test 'property access on a number', ->
   # Somehow, `3..toFixed()` is valid JavaScript; though just `3.toFixed()`
   # is not. CoffeeScript has long allowed code like `3.toFixed()` to compile
@@ -33,23 +41,23 @@ test 'property access on a number', ->
 
 test 'invalid decimal literal separators do not compile', ->
   # `1._23` is a valid property access (see previous test)
-  throws -> CoffeeScript.compile '1_.23'
-  throws -> CoffeeScript.compile '1e_2'
-  throws -> CoffeeScript.compile '1e2_'
-  throws -> CoffeeScript.compile '1_'
-  throws -> CoffeeScript.compile '1__2'
+  throwsCompileError '1_.23'
+  throwsCompileError '1e_2'
+  throwsCompileError '1e2_'
+  throwsCompileError '1_'
+  throwsCompileError '1__2'
 
 test 'invalid hexadecimal literal separators do not compile', ->
-  throws -> CoffeeScript.compile '0x_1234'
-  throws -> CoffeeScript.compile '0x1234_'
-  throws -> CoffeeScript.compile '0x1__34'
+  throwsCompileError '0x_1234'
+  throwsCompileError '0x1234_'
+  throwsCompileError '0x1__34'
 
 test 'invalid binary literal separators do not compile', ->
-  throws -> CoffeeScript.compile '0b_100'
-  throws -> CoffeeScript.compile '0b100_'
-  throws -> CoffeeScript.compile '0b1__1'
+  throwsCompileError '0b_100'
+  throwsCompileError '0b100_'
+  throwsCompileError '0b1__1'
 
 test 'invalid octal literal separators do not compile', ->
-  throws -> CoffeeScript.compile '0o_777'
-  throws -> CoffeeScript.compile '0o777_'
-  throws -> CoffeeScript.compile '0o6__6'
+  throwsCompileError '0o_777'
+  throwsCompileError '0o777_'
+  throwsCompileError '0o6__6'

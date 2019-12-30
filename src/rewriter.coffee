@@ -5,7 +5,7 @@
 # shorthand into the unambiguous long form, add implicit indentation and
 # parentheses, and generally clean things up.
 
-{throwSyntaxError} = require './helpers'
+{throwSyntaxError, extractAllCommentTokens} = require './helpers'
 
 # Move attached comments from one token to another.
 moveComments = (fromToken, toToken) ->
@@ -53,11 +53,11 @@ exports.Rewriter = class Rewriter
     @normalizeLines()
     @tagPostfixConditionals()
     @addImplicitBracesAndParens()
-    @addParensToChainedDoIife()
     @rescueStowawayComments()
     @addLocationDataToGeneratedTokens()
-    @enforceValidCSXAttributes()
-    @fixOutdentLocationData()
+    @enforceValidJSXAttributes()
+    @fixIndentationLocationData()
+    @exposeTokenDataToGrammar()
     if process?.env?.DEBUG_REWRITTEN_TOKEN_STREAM
       console.log 'Rewritten token stream:' if process.env.DEBUG_TOKEN_STREAM
       console.log (t[0] + '/' + t[1] + (if t.comments then '*' else '') for t in @tokens).join ' '
@@ -421,10 +421,10 @@ exports.Rewriter = class Rewriter
           endImplicitObject i + offset
       return forward(1)
 
-  # Make sure only strings and wrapped expressions are used in CSX attributes.
-  enforceValidCSXAttributes: ->
+  # Make sure only strings and wrapped expressions are used in JSX attributes.
+  enforceValidJSXAttributes: ->
     @scanTokens (token, i, tokens) ->
-      if token.csxColon
+      if token.jsxColon
         next = tokens[i + 1]
         if next[0] not in ['STRING_START', 'STRING', '(']
           throwSyntaxError 'expected wrapped or quoted JSX attribute', next[2]
@@ -437,6 +437,13 @@ exports.Rewriter = class Rewriter
     insertPlaceholder = (token, j, tokens, method) ->
       tokens[method] generate 'TERMINATOR', '\n', tokens[j] unless tokens[j][0] is 'TERMINATOR'
       tokens[method] generate 'JS', '', tokens[j], token
+
+    dontShiftForward = (i, tokens) ->
+      j = i + 1
+      while j isnt tokens.length and tokens[j][0] in DISCARDED
+        return yes if tokens[j][0] is 'INTERPOLATION_END'
+        j++
+      no
 
     shiftCommentsForward = (token, i, tokens) ->
       # Find the next surviving token and attach this token’s comments to it,
@@ -486,7 +493,7 @@ exports.Rewriter = class Rewriter
           ret = shiftCommentsBackward dummyToken, i - 1, tokens
         if token.comments.length isnt 0
           shiftCommentsForward token, i, tokens
-      else
+      else unless dontShiftForward i, tokens
         # If any of this token’s comments start a line—there’s only
         # whitespace between the preceding newline and the start of the
         # comment—and this isn’t one of the special `JS` tokens, then
@@ -516,58 +523,112 @@ exports.Rewriter = class Rewriter
     @scanTokens (token, i, tokens) ->
       return 1 if     token[2]
       return 1 unless token.generated or token.explicit
+      if token.fromThen and token[0] is 'INDENT'
+        token[2] = token.origin[2]
+        return 1
       if token[0] is '{' and nextLocation=tokens[i + 1]?[2]
-        {first_line: line, first_column: column} = nextLocation
+        {first_line: line, first_column: column, range: [rangeIndex]} = nextLocation
       else if prevLocation = tokens[i - 1]?[2]
-        {last_line: line, last_column: column} = prevLocation
+        {last_line: line, last_column: column, range: [, rangeIndex]} = prevLocation
+        column += 1
       else
         line = column = 0
-      token[2] =
-        first_line:   line
-        first_column: column
-        last_line:    line
-        last_column:  column
+        rangeIndex = 0
+      token[2] = {
+        first_line:            line
+        first_column:          column
+        last_line:             line
+        last_column:           column
+        last_line_exclusive:   line
+        last_column_exclusive: column
+        range: [rangeIndex, rangeIndex]
+      }
       return 1
 
   # `OUTDENT` tokens should always be positioned at the last character of the
   # previous token, so that AST nodes ending in an `OUTDENT` token end up with a
   # location corresponding to the last “real” token under the node.
-  fixOutdentLocationData: ->
-    @scanTokens (token, i, tokens) ->
-      return 1 unless token[0] is 'OUTDENT' or
-        (token.generated and token[0] is 'CALL_END') or
-        (token.generated and token[0] is '}')
-      prevLocationData = tokens[i - 1][2]
-      token[2] =
-        first_line:   prevLocationData.last_line
-        first_column: prevLocationData.last_column
-        last_line:    prevLocationData.last_line
-        last_column:  prevLocationData.last_column
-      return 1
+  fixIndentationLocationData: ->
+    @allComments ?= extractAllCommentTokens @tokens
+    findPrecedingComment = (token, {afterPosition, indentSize, first, indented}) =>
+      tokenStart = token[2].range[0]
+      matches = (comment) ->
+        if comment.outdented
+          return no unless indentSize? and comment.indentSize > indentSize
+        return no if indented and not comment.indented
+        return no unless comment.locationData.range[0] < tokenStart
+        return no unless comment.locationData.range[0] > afterPosition
+        yes
+      if first
+        lastMatching = null
+        for comment in @allComments by -1
+          if matches comment
+            lastMatching = comment
+          else if lastMatching
+            return lastMatching
+        return lastMatching
+      for comment in @allComments when matches comment by -1
+        return comment
+      null
 
-  # Add parens around a `do` IIFE followed by a chained `.` so that the
-  # chaining applies to the executed function rather than the function
-  # object (see #3736)
-  addParensToChainedDoIife: ->
-    condition = (token, i) ->
-      @tag(i - 1) is 'OUTDENT'
-    action = (token, i) ->
-      return unless token[0] in CALL_CLOSERS
-      @tokens.splice doIndex, 0, generate '(', '(', @tokens[doIndex]
-      @tokens.splice i + 1, 0, generate ')', ')', @tokens[i]
-    doIndex = null
     @scanTokens (token, i, tokens) ->
-      return 1 unless token[1] is 'do'
-      doIndex = i
-      glyphIndex = i + 1
-      if @tag(i + 1) is 'PARAM_START'
-        glyphIndex = null
-        @detectEnd i + 1,
-          (token, i) -> @tag(i - 1) is 'PARAM_END'
-          (token, i) -> glyphIndex = i
-      return 1 unless glyphIndex? and @tag(glyphIndex) in ['->', '=>'] and @tag(glyphIndex + 1) is 'INDENT'
-      @detectEnd glyphIndex + 1, condition, action
-      return 2
+      return 1 unless token[0] in ['INDENT', 'OUTDENT'] or
+        (token.generated and token[0] is 'CALL_END' and not token.data?.closingTagNameToken) or
+        (token.generated and token[0] is '}')
+      isIndent = token[0] is 'INDENT'
+      prevToken = token.prevToken ? tokens[i - 1]
+      prevLocationData = prevToken[2]
+      # addLocationDataToGeneratedTokens() set the outdent’s location data
+      # to the preceding token’s, but in order to detect comments inside an
+      # empty "block" we want to look for comments preceding the next token.
+      useNextToken = token.explicit or token.generated
+      if useNextToken
+        nextToken = token
+        nextTokenIndex = i
+        nextToken = tokens[nextTokenIndex++] while (nextToken.explicit or nextToken.generated) and nextTokenIndex isnt tokens.length - 1
+      precedingComment = findPrecedingComment(
+        if useNextToken
+          nextToken
+        else
+          token
+        afterPosition: prevLocationData.range[0]
+        indentSize: token.indentSize
+        first: isIndent
+        indented: useNextToken
+      )
+      if isIndent
+        return 1 unless precedingComment?.newLine
+      # We don’t want e.g. an implicit call at the end of an `if` condition to
+      # include a following indented comment.
+      return 1 if token.generated and token[0] is 'CALL_END' and precedingComment?.indented
+      prevLocationData = precedingComment.locationData if precedingComment?
+      token[2] =
+        first_line:
+          if precedingComment?
+            prevLocationData.first_line
+          else
+            prevLocationData.last_line
+        first_column:
+          if precedingComment?
+            if isIndent
+              0
+            else
+              prevLocationData.first_column
+          else
+            prevLocationData.last_column
+        last_line:              prevLocationData.last_line
+        last_column:            prevLocationData.last_column
+        last_line_exclusive:    prevLocationData.last_line_exclusive
+        last_column_exclusive:  prevLocationData.last_column_exclusive
+        range:
+          if isIndent and precedingComment?
+            [
+              prevLocationData.range[0] - precedingComment.indentSize
+              prevLocationData.range[1]
+            ]
+          else
+            prevLocationData.range
+      return 1
 
   # Because our grammar is LALR(1), it can’t handle some single-line
   # expressions that lack ending delimiters. The **Rewriter** adds the implicit
@@ -624,6 +685,9 @@ exports.Rewriter = class Rewriter
           tokens.splice i, 1, @indentation()...
           return 1
         if @tag(i + 1) in EXPRESSION_CLOSE
+          if token[1] is ';' and @tag(i + 1) is 'OUTDENT'
+            tokens[i + 1].prevToken = token
+            moveComments token, tokens[i + 1]
           tokens.splice i, 1
           return 0
       if tag is 'CATCH'
@@ -673,6 +737,19 @@ exports.Rewriter = class Rewriter
       @detectEnd i + 1, condition, action
       return 1
 
+  # For tokens with extra data, we want to make that data visible to the grammar
+  # by wrapping the token value as a String() object and setting the data as
+  # properties of that object. The grammar should then be responsible for
+  # cleaning this up for the node constructor: unwrapping the token value to a
+  # primitive string and separately passing any expected token data properties
+  exposeTokenDataToGrammar: ->
+    @scanTokens (token, i) ->
+      if token.generated or (token.data and Object.keys(token.data).length isnt 0)
+        token[1] = new String token[1]
+        token[1][key] = val for own key, val of (token.data ? {})
+        token[1].generated = yes if token.generated
+      1
+
   # Generate the indentation tokens, based on another token on the same line.
   indentation: (origin) ->
     indent  = ['INDENT', 2]
@@ -702,6 +779,7 @@ BALANCED_PAIRS = [
   ['PARAM_START', 'PARAM_END']
   ['INDEX_START', 'INDEX_END']
   ['STRING_START', 'STRING_END']
+  ['INTERPOLATION_START', 'INTERPOLATION_END']
   ['REGEX_START', 'REGEX_END']
 ]
 
@@ -725,11 +803,11 @@ IMPLICIT_FUNC    = ['IDENTIFIER', 'PROPERTY', 'SUPER', ')', 'CALL_END', ']', 'IN
 
 # If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
 IMPLICIT_CALL    = [
-  'IDENTIFIER', 'CSX_TAG', 'PROPERTY', 'NUMBER', 'INFINITY', 'NAN'
+  'IDENTIFIER', 'JSX_TAG', 'PROPERTY', 'NUMBER', 'INFINITY', 'NAN'
   'STRING', 'STRING_START', 'REGEX', 'REGEX_START', 'JS'
   'NEW', 'PARAM_START', 'CLASS', 'IF', 'TRY', 'SWITCH', 'THIS'
   'UNDEFINED', 'NULL', 'BOOL'
-  'UNARY', 'YIELD', 'AWAIT', 'UNARY_MATH', 'SUPER', 'THROW'
+  'UNARY', 'DO', 'DO_IIFE', 'YIELD', 'AWAIT', 'UNARY_MATH', 'SUPER', 'THROW'
   '@', '->', '=>', '[', '(', '{', '--', '++'
 ]
 
@@ -760,8 +838,8 @@ CONTROL_IN_IMPLICIT = ['IF', 'TRY', 'FINALLY', 'CATCH', 'CLASS', 'SWITCH']
 # the node that becomes `StringWithInterpolations`, and therefore
 # `addDataToNode` attaches `STRING_START`’s tokens to that node.
 DISCARDED = ['(', ')', '[', ']', '{', '}', '.', '..', '...', ',', '=', '++', '--', '?',
-  'AS', 'AWAIT', 'CALL_START', 'CALL_END', 'DEFAULT', 'ELSE', 'EXTENDS', 'EXPORT',
-  'FORIN', 'FOROF', 'FORFROM', 'IMPORT', 'INDENT', 'INDEX_SOAK', 'LEADING_WHEN',
-  'OUTDENT', 'PARAM_END', 'REGEX_START', 'REGEX_END', 'RETURN', 'STRING_END', 'THROW',
-  'UNARY', 'YIELD'
+  'AS', 'AWAIT', 'CALL_START', 'CALL_END', 'DEFAULT', 'DO', 'DO_IIFE', 'ELSE',
+  'EXTENDS', 'EXPORT', 'FORIN', 'FOROF', 'FORFROM', 'IMPORT', 'INDENT', 'INDEX_SOAK',
+  'INTERPOLATION_START', 'INTERPOLATION_END', 'LEADING_WHEN', 'OUTDENT', 'PARAM_END',
+  'REGEX_START', 'REGEX_END', 'RETURN', 'STRING_END', 'THROW', 'UNARY', 'YIELD'
 ].concat IMPLICIT_UNSPACED_CALL.concat IMPLICIT_END.concat CALL_CLOSERS.concat CONTROL_IN_IMPLICIT

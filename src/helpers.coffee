@@ -107,15 +107,36 @@ buildLocationData = (first, last) ->
     first_column: first.first_column
     last_line: last.last_line
     last_column: last.last_column
+    last_line_exclusive: last.last_line_exclusive
+    last_column_exclusive: last.last_column_exclusive
+    range: [
+      first.range[0]
+      last.range[1]
+    ]
 
+# Build a list of all comments attached to tokens.
+exports.extractAllCommentTokens = (tokens) ->
+  allCommentsObj = {}
+  for token in tokens when token.comments
+    for comment in token.comments
+      commentKey = comment.locationData.range[0]
+      allCommentsObj[commentKey] = comment
+  sortedKeys = Object.keys(allCommentsObj).sort (a, b) -> a - b
+  for key in sortedKeys
+    allCommentsObj[key]
+
+# Get a lookup hash for a token based on its location data.
+# Multiple tokens might have the same location hash, but using exclusive
+# location data distinguishes e.g. zero-length generated tokens from
+# actual source tokens.
 buildLocationHash = (loc) ->
-  "#{loc.first_line}x#{loc.first_column}-#{loc.last_line}x#{loc.last_column}"
+  "#{loc.range[0]}-#{loc.range[1]}"
 
 # Build a dictionary of extra token properties organized by tokens’ locations
 # used as lookup hashes.
-buildTokenDataDictionary = (parserState) ->
+exports.buildTokenDataDictionary = buildTokenDataDictionary = (tokens) ->
   tokenData = {}
-  for token in parserState.parser.tokens when token.comments
+  for token in tokens when token.comments
     tokenHash = buildLocationHash token[2]
     # Multiple tokens might have the same location hash, such as the generated
     # `JS` tokens added at the start or end of the token stream to hold
@@ -132,15 +153,18 @@ buildTokenDataDictionary = (parserState) ->
 # This returns a function which takes an object as a parameter, and if that
 # object is an AST node, updates that object's locationData.
 # The object is returned either way.
-exports.addDataToNode = (parserState, first, last) ->
+exports.addDataToNode = (parserState, firstLocationData, firstValue, lastLocationData, lastValue, forceUpdateLocation = yes) ->
   (obj) ->
     # Add location data.
-    if obj?.updateLocationDataIfMissing? and first?
-      obj.updateLocationDataIfMissing buildLocationData(first, last)
+    locationData = buildLocationData(firstValue?.locationData ? firstLocationData, lastValue?.locationData ? lastLocationData)
+    if obj?.updateLocationDataIfMissing? and firstLocationData?
+      obj.updateLocationDataIfMissing locationData, forceUpdateLocation
+    else
+      obj.locationData = locationData
 
     # Add comments, building the dictionary of token data if it hasn’t been
     # built yet.
-    parserState.tokenData ?= buildTokenDataDictionary parserState
+    parserState.tokenData ?= buildTokenDataDictionary parserState.parser.tokens
     if obj.locationData?
       objHash = buildLocationHash obj.locationData
       if parserState.tokenData[objHash]?.comments?
@@ -243,3 +267,54 @@ exports.nameWhitespaceCharacter = (string) ->
     when '\r' then 'carriage return'
     when '\t' then 'tab'
     else string
+
+exports.parseNumber = (string) ->
+  return NaN unless string?
+
+  base = switch string.charAt 1
+    when 'b' then 2
+    when 'o' then 8
+    when 'x' then 16
+    else null
+
+  if base?
+    parseInt string[2..].replace(/_/g, ''), base
+  else
+    parseFloat string.replace(/_/g, '')
+
+exports.isFunction = (obj) -> Object::toString.call(obj) is '[object Function]'
+exports.isNumber = isNumber = (obj) -> Object::toString.call(obj) is '[object Number]'
+exports.isString = isString = (obj) -> Object::toString.call(obj) is '[object String]'
+exports.isBoolean = isBoolean = (obj) -> obj is yes or obj is no or Object::toString.call(obj) is '[object Boolean]'
+exports.isPlainObject = (obj) -> typeof obj is 'object' and !!obj and not Array.isArray(obj) and not isNumber(obj) and not isString(obj) and not isBoolean(obj)
+
+unicodeCodePointToUnicodeEscapes = (codePoint) ->
+  toUnicodeEscape = (val) ->
+    str = val.toString 16
+    "\\u#{repeat '0', 4 - str.length}#{str}"
+  return toUnicodeEscape(codePoint) if codePoint < 0x10000
+  # surrogate pair
+  high = Math.floor((codePoint - 0x10000) / 0x400) + 0xD800
+  low = (codePoint - 0x10000) % 0x400 + 0xDC00
+  "#{toUnicodeEscape(high)}#{toUnicodeEscape(low)}"
+
+# Replace `\u{...}` with `\uxxxx[\uxxxx]` in regexes without `u` flag
+exports.replaceUnicodeCodePointEscapes = (str, {flags, error, delimiter = ''} = {}) ->
+  shouldReplace = flags? and 'u' not in flags
+  str.replace UNICODE_CODE_POINT_ESCAPE, (match, escapedBackslash, codePointHex, offset) ->
+    return escapedBackslash if escapedBackslash
+
+    codePointDecimal = parseInt codePointHex, 16
+    if codePointDecimal > 0x10ffff
+      error "unicode code point escapes greater than \\u{10ffff} are not allowed",
+        offset: offset + delimiter.length
+        length: codePointHex.length + 4
+    return match unless shouldReplace
+
+    unicodeCodePointToUnicodeEscapes codePointDecimal
+
+UNICODE_CODE_POINT_ESCAPE = ///
+  ( \\\\ )        # Make sure the escape isn’t escaped.
+  |
+  \\u\{ ( [\da-fA-F]+ ) \}
+///g

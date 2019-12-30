@@ -18,9 +18,9 @@
 
 # helper to assert that code complies with strict prohibitions
 strict = (code, msg) ->
-  throws (-> CoffeeScript.compile code), null, msg ? code
+  throwsCompileError code, null, null, msg ? code
 strictOk = (code, msg) ->
-  doesNotThrow (-> CoffeeScript.compile code), msg ? code
+  doesNotThrowCompileError code, null, msg ? code
 
 
 test "octal integer literals prohibited", ->
@@ -42,8 +42,6 @@ test "octal escape sequences prohibited", ->
   strict    '"\\\\\\1"'
   strictOk  '"\\0"'
   eq "\x00", "\0"
-  strictOk  '"\\08"'
-  eq "\x008", "\08"
   strictOk  '"\\0\\8"'
   eq "\x008", "\0\8"
   strictOk  '"\\8"'
@@ -57,13 +55,10 @@ test "octal escape sequences prohibited", ->
 
   # Also test other string types.
   strict           "'\\\\\\1'"
-  eq "\x008",      '\08'
   eq "\\\\" + "1", '\\\\1'
   strict           "'''\\\\\\1'''"
-  eq "\x008",      '''\08'''
   eq "\\\\" + "1", '''\\\\1'''
   strict           '"""\\\\\\1"""'
-  eq "\x008",      """\08"""
   eq "\\\\" + "1", """\\\\1"""
 
 test "duplicate formal parameters are prohibited", ->
@@ -140,6 +135,7 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
     check "#{keyword} *= 1"
     check "#{keyword} /= 1"
     check "#{keyword} ?= 1"
+  update = (keyword, check = strict) ->
     check "#{keyword}++"
     check "++#{keyword}"
     check "#{keyword}--"
@@ -164,6 +160,7 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
   for keyword in future
     access   keyword
     assign   keyword
+    update   keyword
     destruct keyword
     invoke   keyword
     fnDecl   keyword
@@ -174,6 +171,7 @@ test "`Future Reserved Word`s, `eval` and `arguments` restrictions", ->
   for keyword in ['eval', 'arguments']
     access   keyword, strictOk
     assign   keyword
+    update   keyword
     destruct keyword, strictOk
     invoke   keyword, strictOk
     fnDecl   keyword
