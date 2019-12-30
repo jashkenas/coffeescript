@@ -512,6 +512,8 @@ exports.Root = class Root extends Base
   constructor: (@body) ->
     super()
 
+  children: ['body']
+
   # Wrap everything in a safety closure, unless requested not to. It would be
   # better not to generate them in the first place, but for now, clean up
   # obvious double-parentheses.

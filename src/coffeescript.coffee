@@ -209,7 +209,7 @@ exports.tokens = withPrettyErrors (code, options) ->
 # or traverse it by using `.traverseChildren()` with a callback.
 exports.nodes = withPrettyErrors (source, options) ->
   source = lexer.tokenize source, options if typeof source is 'string'
-  parser.parse(source).body
+  parser.parse source
 
 # This file used to export these methods; leave stubs that throw warnings
 # instead. These methods have been moved into `index.coffee` to provide

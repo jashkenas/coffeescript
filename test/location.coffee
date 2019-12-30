@@ -626,7 +626,7 @@ test 'Values with properties end up with a location that includes the properties
     a['b']
     a[b.c()].d
   '''
-  block = CoffeeScript.nodes source
+  {body: block} = CoffeeScript.nodes source
   [
     singleProperty
     twoProperties
@@ -656,7 +656,7 @@ test 'Values with properties end up with a location that includes the properties
 
 test 'StringWithInterpolations::fromStringLiteral() assigns correct location to tagged template literal', ->
   checkLocationData = (source, {stringWithInterpolationsLocationData, stringLocationData}) ->
-    block = CoffeeScript.nodes source
+    {body: block} = CoffeeScript.nodes source
     taggedTemplateLiteral = block.expressions[0].unwrap()
     {args: [stringWithInterpolations]} = taggedTemplateLiteral
     {body} = stringWithInterpolations
