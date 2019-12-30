@@ -288,7 +288,8 @@ exports.Base = class Base
     # Mark AST nodes that correspond to expressions that (implicitly) return.
     # We can’t do this as part of `astNode` because we need to assemble child
     # nodes first before marking the parent being returned.
-    astNode.returns = yes if @astNode? and @canBeReturned
+    if @astNode? and @canBeReturned
+      Object.assign astNode, {returns: yes}
     astNode
 
   astInitialize: (o, level) ->
