@@ -49,7 +49,6 @@ testComments = (code, expected) ->
   testAgainstExpected ast.comments, expected
 
 test 'Confirm functionality of `deepStrictIncludeExpectedProperties`', ->
-  return if global.testingBrowser # TODO: Why do these checks fail in Chrome?
   actual =
     name: 'Name'
     a:
@@ -58,7 +57,7 @@ test 'Confirm functionality of `deepStrictIncludeExpectedProperties`', ->
     x: [1, 2, 3]
 
   check = (message, test, expected) ->
-    test (-> deepStrictIncludeExpectedProperties actual, expected), message
+    test (-> deepStrictIncludeExpectedProperties actual, expected), null, message
 
   check 'Expected property does not match', throws,
     name: '"Name"'
