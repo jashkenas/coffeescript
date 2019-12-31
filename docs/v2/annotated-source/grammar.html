@@ -1152,9 +1152,9 @@ and optional references to the superclass.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  Invocation: [
-    o <span class="hljs-string">'Value OptFuncExist String'</span>,              <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> TaggedTemplateCall $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'Value OptFuncExist Arguments'</span>,           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Call $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'SUPER OptFuncExist Arguments'</span>,           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> SuperCall LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Super), $<span class="hljs-number">3</span>, $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'Value OptFuncExist String'</span>,              <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> TaggedTemplateCall $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">2.</span>soak
+    o <span class="hljs-string">'Value OptFuncExist Arguments'</span>,           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Call $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">2.</span>soak
+    o <span class="hljs-string">'SUPER OptFuncExist Arguments'</span>,           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> SuperCall LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Super), $<span class="hljs-number">3</span>, $<span class="hljs-number">2.</span>soak, $<span class="hljs-number">1</span>
     o <span class="hljs-string">'DYNAMIC_IMPORT Arguments'</span>,               <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> DynamicImportCall LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> DynamicImport), $<span class="hljs-number">2</span>
   ]</pre></div></div>
             
@@ -1172,8 +1172,8 @@ and optional references to the superclass.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  OptFuncExist: [
-    o <span class="hljs-string">''</span>,                                       <span class="hljs-function">-&gt;</span> <span class="hljs-literal">no</span>
-    o <span class="hljs-string">'FUNC_EXIST'</span>,                             <span class="hljs-function">-&gt;</span> <span class="hljs-literal">yes</span>
+    o <span class="hljs-string">''</span>,                                       <span class="hljs-function">-&gt;</span> soak: <span class="hljs-literal">no</span>
+    o <span class="hljs-string">'FUNC_EXIST'</span>,                             <span class="hljs-function">-&gt;</span> soak: <span class="hljs-literal">yes</span>
   ]</pre></div></div>
             
         </li>
