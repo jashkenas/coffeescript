@@ -196,7 +196,7 @@ Unwrap that too.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    {Block, Assign, Value, Literal, Call, Code} = <span class="hljs-built_in">require</span> <span class="hljs-string">'./nodes'</span>
+            <div class="content"><div class='highlight'><pre>    {Block, Assign, Value, Literal, Call, Code, Root} = <span class="hljs-built_in">require</span> <span class="hljs-string">'./nodes'</span>
 
     <span class="hljs-keyword">try</span></pre></div></div>
             
@@ -229,11 +229,11 @@ Unwrap that too.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">if</span> tokens.length &gt;= <span class="hljs-number">2</span> <span class="hljs-keyword">and</span> tokens[<span class="hljs-number">0</span>].generated <span class="hljs-keyword">and</span>
-         tokens[<span class="hljs-number">0</span>].comments?.length <span class="hljs-keyword">isnt</span> <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> tokens[<span class="hljs-number">0</span>][<span class="hljs-number">1</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">''</span> <span class="hljs-keyword">and</span>
+         tokens[<span class="hljs-number">0</span>].comments?.length <span class="hljs-keyword">isnt</span> <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> <span class="hljs-string">"<span class="hljs-subst">#{tokens[<span class="hljs-number">0</span>][<span class="hljs-number">1</span>]}</span>"</span> <span class="hljs-keyword">is</span> <span class="hljs-string">''</span> <span class="hljs-keyword">and</span>
          tokens[<span class="hljs-number">1</span>][<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'TERMINATOR'</span>
         tokens = tokens[<span class="hljs-number">2.</span>..]
       <span class="hljs-keyword">if</span> tokens.length &gt;= <span class="hljs-number">1</span> <span class="hljs-keyword">and</span> tokens[tokens.length - <span class="hljs-number">1</span>].generated <span class="hljs-keyword">and</span>
-         tokens[tokens.length - <span class="hljs-number">1</span>].comments?.length <span class="hljs-keyword">isnt</span> <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> tokens[tokens.length - <span class="hljs-number">1</span>][<span class="hljs-number">1</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">''</span>
+         tokens[tokens.length - <span class="hljs-number">1</span>].comments?.length <span class="hljs-keyword">isnt</span> <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> <span class="hljs-string">"<span class="hljs-subst">#{tokens[tokens.length - <span class="hljs-number">1</span>][<span class="hljs-number">1</span>]}</span>"</span> <span class="hljs-keyword">is</span> <span class="hljs-string">''</span>
         tokens.pop()</pre></div></div>
             
         </li>
@@ -264,7 +264,7 @@ Unwrap that too.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      ast = CoffeeScript.nodes tokens</pre></div></div>
+            <div class="content"><div class='highlight'><pre>      ast = CoffeeScript.nodes(tokens).body</pre></div></div>
             
         </li>
         
@@ -310,7 +310,7 @@ Unwrap that too.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      ast    = <span class="hljs-keyword">new</span> Block [<span class="hljs-keyword">new</span> Call ast]
+            <div class="content"><div class='highlight'><pre>      ast    = <span class="hljs-keyword">new</span> Root <span class="hljs-keyword">new</span> Block [<span class="hljs-keyword">new</span> Call ast]
       js     = ast.compile {bare: <span class="hljs-literal">yes</span>, locals: Object.keys(context), referencedVars, sharedScope: <span class="hljs-literal">yes</span>}
       <span class="hljs-keyword">if</span> transpile
         js = transpile.transpile(js, transpile.options).code</pre></div></div>

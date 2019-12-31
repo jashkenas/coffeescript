@@ -383,9 +383,12 @@ If <code>last</code> is not provided, this will simply return <code>first</code>
     first_column: first.first_column
     last_line: last.last_line
     last_column: last.last_column
-<span class="hljs-function">
-<span class="hljs-title">buildLocationHash</span> = <span class="hljs-params">(loc)</span> -&gt;</span>
-  <span class="hljs-string">"<span class="hljs-subst">#{loc.first_line}</span>x<span class="hljs-subst">#{loc.first_column}</span>-<span class="hljs-subst">#{loc.last_line}</span>x<span class="hljs-subst">#{loc.last_column}</span>"</span></pre></div></div>
+    last_line_exclusive: last.last_line_exclusive
+    last_column_exclusive: last.last_column_exclusive
+    range: [
+      first.range[<span class="hljs-number">0</span>]
+      last.range[<span class="hljs-number">1</span>]
+    ]</pre></div></div>
             
         </li>
         
@@ -396,15 +399,19 @@ If <code>last</code> is not provided, this will simply return <code>first</code>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
-              <p>Build a dictionary of extra token properties organized by tokens’ locations
-used as lookup hashes.</p>
+              <p>Build a list of all comments attached to tokens.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">buildTokenDataDictionary</span> = <span class="hljs-params">(parserState)</span> -&gt;</span>
-  tokenData = {}
-  <span class="hljs-keyword">for</span> token <span class="hljs-keyword">in</span> parserState.parser.tokens <span class="hljs-keyword">when</span> token.comments
-    tokenHash = buildLocationHash token[<span class="hljs-number">2</span>]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>exports.extractAllCommentTokens = <span class="hljs-function"><span class="hljs-params">(tokens)</span> -&gt;</span>
+  allCommentsObj = {}
+  <span class="hljs-keyword">for</span> token <span class="hljs-keyword">in</span> tokens <span class="hljs-keyword">when</span> token.comments
+    <span class="hljs-keyword">for</span> comment <span class="hljs-keyword">in</span> token.comments
+      commentKey = comment.locationData.range[<span class="hljs-number">0</span>]
+      allCommentsObj[commentKey] = comment
+  sortedKeys = Object.keys(allCommentsObj).sort (a, b) -&gt; a - b
+  <span class="hljs-keyword">for</span> key <span class="hljs-keyword">in</span> sortedKeys
+    allCommentsObj[key]</pre></div></div>
             
         </li>
         
@@ -414,6 +421,44 @@ used as lookup hashes.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>Get a lookup hash for a token based on its location data.
+Multiple tokens might have the same location hash, but using exclusive
+location data distinguishes e.g. zero-length generated tokens from
+actual source tokens.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">buildLocationHash</span> = <span class="hljs-params">(loc)</span> -&gt;</span>
+  <span class="hljs-string">"<span class="hljs-subst">#{loc.range[<span class="hljs-number">0</span>]}</span>-<span class="hljs-subst">#{loc.range[<span class="hljs-number">1</span>]}</span>"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Build a dictionary of extra token properties organized by tokens’ locations
+used as lookup hashes.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>exports.buildTokenDataDictionary = buildTokenDataDictionary = <span class="hljs-function"><span class="hljs-params">(tokens)</span> -&gt;</span>
+  tokenData = {}
+  <span class="hljs-keyword">for</span> token <span class="hljs-keyword">in</span> tokens <span class="hljs-keyword">when</span> token.comments
+    tokenHash = buildLocationHash token[<span class="hljs-number">2</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Multiple tokens might have the same location hash, such as the generated
 <code>JS</code> tokens added at the start or end of the token stream to hold
@@ -427,11 +472,11 @@ comments that start or end a file.</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>For “overlapping” tokens, that is tokens with the same location data
 and therefore matching <code>tokenHash</code>es, merge the comments from both/all
@@ -446,11 +491,11 @@ they will get sorted out later.</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>This returns a function which takes an object as a parameter, and if that
 object is an AST node, updates that object’s locationData.
@@ -458,40 +503,43 @@ The object is returned either way.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.addDataToNode = <span class="hljs-function"><span class="hljs-params">(parserState, first, last)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>exports.addDataToNode = <span class="hljs-function"><span class="hljs-params">(parserState, firstLocationData, firstValue, lastLocationData, lastValue, forceUpdateLocation = <span class="hljs-literal">yes</span>)</span> -&gt;</span>
   (obj) -&gt;</pre></div></div>
             
         </li>
         
         
-        <li id="section-19">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Add location data.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> obj?.updateLocationDataIfMissing? <span class="hljs-keyword">and</span> first?
-      obj.updateLocationDataIfMissing buildLocationData(first, last)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    locationData = buildLocationData(firstValue?.locationData ? firstLocationData, lastValue?.locationData ? lastLocationData)
+    <span class="hljs-keyword">if</span> obj?.updateLocationDataIfMissing? <span class="hljs-keyword">and</span> firstLocationData?
+      obj.updateLocationDataIfMissing locationData, forceUpdateLocation
+    <span class="hljs-keyword">else</span>
+      obj.locationData = locationData</pre></div></div>
             
         </li>
         
         
-        <li id="section-20">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Add comments, building the dictionary of token data if it hasn’t been
 built yet.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    parserState.tokenData ?= buildTokenDataDictionary parserState
+            <div class="content"><div class='highlight'><pre>    parserState.tokenData ?= buildTokenDataDictionary parserState.parser.tokens
     <span class="hljs-keyword">if</span> obj.locationData?
       objHash = buildLocationHash obj.locationData
       <span class="hljs-keyword">if</span> parserState.tokenData[objHash]?.comments?
@@ -506,11 +554,11 @@ exports.attachCommentsToNode = attachCommentsToNode = <span class="hljs-function
         </li>
         
         
-        <li id="section-21">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Convert jison location data to a string.
 <code>obj</code> can be a token, or a locationData.</p>
@@ -530,11 +578,11 @@ exports.attachCommentsToNode = attachCommentsToNode = <span class="hljs-function
         </li>
         
         
-        <li id="section-22">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>A <code>.coffee.md</code> compatible version of <code>basename</code>, that returns the file sans-extension.</p>
 
@@ -553,11 +601,11 @@ exports.attachCommentsToNode = attachCommentsToNode = <span class="hljs-function
         </li>
         
         
-        <li id="section-23">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Determine if a filename represents a CoffeeScript file.</p>
 
@@ -568,11 +616,11 @@ exports.attachCommentsToNode = attachCommentsToNode = <span class="hljs-function
         </li>
         
         
-        <li id="section-24">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Determine if a filename represents a Literate CoffeeScript file.</p>
 
@@ -583,11 +631,11 @@ exports.attachCommentsToNode = attachCommentsToNode = <span class="hljs-function
         </li>
         
         
-        <li id="section-25">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>Throws a SyntaxError from a given location.
 The error’s <code>toString</code> will return an error message following the “standard”
@@ -604,11 +652,11 @@ marker showing where the error is.</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>Instead of showing the compiler’s stacktrace, show our custom error message
 (this is useful when the error bubbles up in Node.js applications that
@@ -623,11 +671,11 @@ compile CoffeeScript for example).</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Update a compiler SyntaxError with source code information if it didn’t have
 it already.</p>
@@ -639,11 +687,11 @@ it already.</p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Avoid screwing up the <code>stack</code> property of other errors (i.e. possible bugs).</p>
 
@@ -669,11 +717,11 @@ it already.</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>Show only the first line on multi-line errors.</p>
 
@@ -685,11 +733,11 @@ it already.</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>Check to see if we’re running on a color-enabled TTY.</p>
 
@@ -715,7 +763,83 @@ exports.nameWhitespaceCharacter = <span class="hljs-function"><span class="hljs-
     <span class="hljs-keyword">when</span> <span class="hljs-string">'\n'</span> <span class="hljs-keyword">then</span> <span class="hljs-string">'newline'</span>
     <span class="hljs-keyword">when</span> <span class="hljs-string">'\r'</span> <span class="hljs-keyword">then</span> <span class="hljs-string">'carriage return'</span>
     <span class="hljs-keyword">when</span> <span class="hljs-string">'\t'</span> <span class="hljs-keyword">then</span> <span class="hljs-string">'tab'</span>
-    <span class="hljs-keyword">else</span> string</pre></div></div>
+    <span class="hljs-keyword">else</span> string
+
+exports.parseNumber = <span class="hljs-function"><span class="hljs-params">(string)</span> -&gt;</span>
+  <span class="hljs-keyword">return</span> NaN <span class="hljs-keyword">unless</span> string?
+
+  base = <span class="hljs-keyword">switch</span> string.charAt <span class="hljs-number">1</span>
+    <span class="hljs-keyword">when</span> <span class="hljs-string">'b'</span> <span class="hljs-keyword">then</span> <span class="hljs-number">2</span>
+    <span class="hljs-keyword">when</span> <span class="hljs-string">'o'</span> <span class="hljs-keyword">then</span> <span class="hljs-number">8</span>
+    <span class="hljs-keyword">when</span> <span class="hljs-string">'x'</span> <span class="hljs-keyword">then</span> <span class="hljs-number">16</span>
+    <span class="hljs-keyword">else</span> <span class="hljs-literal">null</span>
+
+  <span class="hljs-keyword">if</span> base?
+    parseInt string[<span class="hljs-number">2.</span>.].replace(<span class="hljs-regexp">/_/g</span>, <span class="hljs-string">''</span>), base
+  <span class="hljs-keyword">else</span>
+    parseFloat string.replace(<span class="hljs-regexp">/_/g</span>, <span class="hljs-string">''</span>)
+
+exports.isFunction = <span class="hljs-function"><span class="hljs-params">(obj)</span> -&gt;</span> Object::toString.call(obj) <span class="hljs-keyword">is</span> <span class="hljs-string">'[object Function]'</span>
+exports.isNumber = isNumber = <span class="hljs-function"><span class="hljs-params">(obj)</span> -&gt;</span> Object::toString.call(obj) <span class="hljs-keyword">is</span> <span class="hljs-string">'[object Number]'</span>
+exports.isString = isString = <span class="hljs-function"><span class="hljs-params">(obj)</span> -&gt;</span> Object::toString.call(obj) <span class="hljs-keyword">is</span> <span class="hljs-string">'[object String]'</span>
+exports.isBoolean = isBoolean = <span class="hljs-function"><span class="hljs-params">(obj)</span> -&gt;</span> obj <span class="hljs-keyword">is</span> <span class="hljs-literal">yes</span> <span class="hljs-keyword">or</span> obj <span class="hljs-keyword">is</span> <span class="hljs-literal">no</span> <span class="hljs-keyword">or</span> Object::toString.call(obj) <span class="hljs-keyword">is</span> <span class="hljs-string">'[object Boolean]'</span>
+exports.isPlainObject = <span class="hljs-function"><span class="hljs-params">(obj)</span> -&gt;</span> <span class="hljs-keyword">typeof</span> obj <span class="hljs-keyword">is</span> <span class="hljs-string">'object'</span> <span class="hljs-keyword">and</span> !!obj <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> Array.isArray(obj) <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> isNumber(obj) <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> isString(obj) <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> isBoolean(obj)
+<span class="hljs-function">
+<span class="hljs-title">unicodeCodePointToUnicodeEscapes</span> = <span class="hljs-params">(codePoint)</span> -&gt;</span>
+<span class="hljs-function">  <span class="hljs-title">toUnicodeEscape</span> = <span class="hljs-params">(val)</span> -&gt;</span>
+    str = val.toString <span class="hljs-number">16</span>
+    <span class="hljs-string">"\\u<span class="hljs-subst">#{repeat <span class="hljs-string">'0'</span>, <span class="hljs-number">4</span> - str.length}</span><span class="hljs-subst">#{str}</span>"</span>
+  <span class="hljs-keyword">return</span> toUnicodeEscape(codePoint) <span class="hljs-keyword">if</span> codePoint &lt; <span class="hljs-number">0x10000</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-33">&#182;</a>
+              </div>
+              <p>surrogate pair</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  high = Math.floor((codePoint - <span class="hljs-number">0x10000</span>) / <span class="hljs-number">0x400</span>) + <span class="hljs-number">0xD800</span>
+  low = (codePoint - <span class="hljs-number">0x10000</span>) % <span class="hljs-number">0x400</span> + <span class="hljs-number">0xDC00</span>
+  <span class="hljs-string">"<span class="hljs-subst">#{toUnicodeEscape(high)}</span><span class="hljs-subst">#{toUnicodeEscape(low)}</span>"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-34">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-34">&#182;</a>
+              </div>
+              <p>Replace <code>\u{...}</code> with <code>\uxxxx[\uxxxx]</code> in regexes without <code>u</code> flag</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>exports.replaceUnicodeCodePointEscapes = <span class="hljs-function"><span class="hljs-params">(str, {flags, error, delimiter = <span class="hljs-string">''</span>} = {})</span> -&gt;</span>
+  shouldReplace = flags? <span class="hljs-keyword">and</span> <span class="hljs-string">'u'</span> <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> flags
+  str.replace UNICODE_CODE_POINT_ESCAPE, <span class="hljs-function"><span class="hljs-params">(match, escapedBackslash, codePointHex, offset)</span> -&gt;</span>
+    <span class="hljs-keyword">return</span> escapedBackslash <span class="hljs-keyword">if</span> escapedBackslash
+
+    codePointDecimal = parseInt codePointHex, <span class="hljs-number">16</span>
+    <span class="hljs-keyword">if</span> codePointDecimal &gt; <span class="hljs-number">0x10ffff</span>
+      error <span class="hljs-string">"unicode code point escapes greater than \\u{10ffff} are not allowed"</span>,
+        offset: offset + delimiter.length
+        length: codePointHex.length + <span class="hljs-number">4</span>
+    <span class="hljs-keyword">return</span> match <span class="hljs-keyword">unless</span> shouldReplace
+
+    unicodeCodePointToUnicodeEscapes codePointDecimal
+
+UNICODE_CODE_POINT_ESCAPE = <span class="hljs-regexp">///
+  ( \\\\ )        <span class="hljs-comment"># Make sure the escape isn’t escaped.</span>
+  |
+  \\u\{ ( [\da-fA-F]+ ) \}
+///</span>g</pre></div></div>
             
         </li>
         

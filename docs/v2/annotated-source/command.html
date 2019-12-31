@@ -199,12 +199,14 @@ useWinPathSep  = path.sep <span class="hljs-keyword">is</span> <span class="hljs
             </div>
             
             <div class="content"><div class='highlight'><pre>SWITCHES = [
+  [      <span class="hljs-string">'--ast'</span>,               <span class="hljs-string">'generate an abstract syntax tree of nodes'</span>]
   [<span class="hljs-string">'-b'</span>, <span class="hljs-string">'--bare'</span>,              <span class="hljs-string">'compile without a top-level function wrapper'</span>]
   [<span class="hljs-string">'-c'</span>, <span class="hljs-string">'--compile'</span>,           <span class="hljs-string">'compile to JavaScript and save as .js files'</span>]
   [<span class="hljs-string">'-e'</span>, <span class="hljs-string">'--eval'</span>,              <span class="hljs-string">'pass a string from the command line as input'</span>]
   [<span class="hljs-string">'-h'</span>, <span class="hljs-string">'--help'</span>,              <span class="hljs-string">'display this help message'</span>]
   [<span class="hljs-string">'-i'</span>, <span class="hljs-string">'--interactive'</span>,       <span class="hljs-string">'run an interactive CoffeeScript REPL'</span>]
   [<span class="hljs-string">'-j'</span>, <span class="hljs-string">'--join [FILE]'</span>,       <span class="hljs-string">'concatenate the source CoffeeScript before compiling'</span>]
+  [<span class="hljs-string">'-l'</span>, <span class="hljs-string">'--literate'</span>,          <span class="hljs-string">'treat stdio as literate style coffeescript'</span>]
   [<span class="hljs-string">'-m'</span>, <span class="hljs-string">'--map'</span>,               <span class="hljs-string">'generate source map and save as .js.map files'</span>]
   [<span class="hljs-string">'-M'</span>, <span class="hljs-string">'--inline-map'</span>,        <span class="hljs-string">'generate source map and include it directly in output'</span>]
   [<span class="hljs-string">'-n'</span>, <span class="hljs-string">'--nodes'</span>,             <span class="hljs-string">'print out the parse tree that the parser produces'</span>]
@@ -214,7 +216,6 @@ useWinPathSep  = path.sep <span class="hljs-keyword">is</span> <span class="hljs
   [<span class="hljs-string">'-p'</span>, <span class="hljs-string">'--print'</span>,             <span class="hljs-string">'print out the compiled JavaScript'</span>]
   [<span class="hljs-string">'-r'</span>, <span class="hljs-string">'--require [MODULE*]'</span>, <span class="hljs-string">'require the given module before eval or REPL'</span>]
   [<span class="hljs-string">'-s'</span>, <span class="hljs-string">'--stdio'</span>,             <span class="hljs-string">'listen for and compile scripts over stdio'</span>]
-  [<span class="hljs-string">'-l'</span>, <span class="hljs-string">'--literate'</span>,          <span class="hljs-string">'treat stdio as literate style coffeescript'</span>]
   [<span class="hljs-string">'-t'</span>, <span class="hljs-string">'--transpile'</span>,         <span class="hljs-string">'pipe generated JavaScript through Babel'</span>]
   [      <span class="hljs-string">'--tokens'</span>,            <span class="hljs-string">'print out the tokens that the lexer/rewriter produce'</span>]
   [<span class="hljs-string">'-v'</span>, <span class="hljs-string">'--version'</span>,           <span class="hljs-string">'display the version number'</span>]
@@ -460,6 +461,9 @@ requested options. If evaluating the script directly, set <code>__filename</code
       printTokens CoffeeScript.tokens task.input, task.options
     <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> opts.nodes
       printLine CoffeeScript.nodes(task.input, task.options).toString().trim()
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> opts.ast
+      compiled = CoffeeScript.compile task.input, task.options
+      printLine JSON.stringify(compiled, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>)
     <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> opts.run
       CoffeeScript.register()
       CoffeeScript.eval opts.prelude, task.options <span class="hljs-keyword">if</span> opts.prelude
@@ -960,6 +964,7 @@ along.</p>
     transpile: opts.transpile
     sourceMap: opts.map
     inlineMap: opts[<span class="hljs-string">'inline-map'</span>]
+    ast: opts.ast
 
   <span class="hljs-keyword">if</span> filename
     <span class="hljs-keyword">if</span> base
