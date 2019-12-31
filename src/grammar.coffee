@@ -524,16 +524,16 @@ grammar =
 
   # Ordinary function invocation, or a chained series of calls.
   Invocation: [
-    o 'Value OptFuncExist String',              -> new TaggedTemplateCall $1, $3, $2
-    o 'Value OptFuncExist Arguments',           -> new Call $1, $3, $2
-    o 'SUPER OptFuncExist Arguments',           -> new SuperCall LOC(1)(new Super), $3, $2, $1
+    o 'Value OptFuncExist String',              -> new TaggedTemplateCall $1, $3, $2.soak
+    o 'Value OptFuncExist Arguments',           -> new Call $1, $3, $2.soak
+    o 'SUPER OptFuncExist Arguments',           -> new SuperCall LOC(1)(new Super), $3, $2.soak, $1
     o 'DYNAMIC_IMPORT Arguments',               -> new DynamicImportCall LOC(1)(new DynamicImport), $2
   ]
 
   # An optional existence check on a function.
   OptFuncExist: [
-    o '',                                       -> no
-    o 'FUNC_EXIST',                             -> yes
+    o '',                                       -> soak: no
+    o 'FUNC_EXIST',                             -> soak: yes
   ]
 
   # The list of arguments to a function call.
