@@ -514,7 +514,7 @@ exports.Lexer = class Lexer
 
     prev = @prev()
     backslash = prev?[0] is '\\'
-    @seenFor = no unless backslash or @seenFor?.endsLength isnt @ends.length
+    @seenFor = no unless backslash or @seenFor?.endsLength < @ends.length
     @seenImport = no unless (backslash and @seenImport) or @importSpecifierList
     @seenExport = no unless (backslash and @seenExport) or @exportSpecifierList
 
