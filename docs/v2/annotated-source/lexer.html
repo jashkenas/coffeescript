@@ -438,7 +438,7 @@ though <code>is</code> means <code>===</code> otherwise.</p>
       <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'WHEN'</span> <span class="hljs-keyword">and</span> @tag() <span class="hljs-keyword">in</span> LINE_BREAK
         tag = <span class="hljs-string">'LEADING_WHEN'</span>
       <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'FOR'</span>
-        @seenFor = <span class="hljs-literal">yes</span>
+        @seenFor = {endsLength: @ends.length}
       <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'UNLESS'</span>
         tag = <span class="hljs-string">'IF'</span>
       <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">'IMPORT'</span>
@@ -979,7 +979,7 @@ can close multiple indents, so we need to know how far in we happen to be.</p>
 
     prev = @prev()
     backslash = prev?[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'\\'</span>
-    @seenFor = <span class="hljs-literal">no</span> <span class="hljs-keyword">unless</span> backslash <span class="hljs-keyword">and</span> @seenFor
+    @seenFor = <span class="hljs-literal">no</span> <span class="hljs-keyword">unless</span> (backslash <span class="hljs-keyword">or</span> @seenFor?.endsLength &lt; @ends.length) <span class="hljs-keyword">and</span> @seenFor
     @seenImport = <span class="hljs-literal">no</span> <span class="hljs-keyword">unless</span> (backslash <span class="hljs-keyword">and</span> @seenImport) <span class="hljs-keyword">or</span> @importSpecifierList
     @seenExport = <span class="hljs-literal">no</span> <span class="hljs-keyword">unless</span> (backslash <span class="hljs-keyword">and</span> @seenExport) <span class="hljs-keyword">or</span> @exportSpecifierList
 
