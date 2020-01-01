@@ -397,7 +397,41 @@ the same name.</p>
         options.bare = <span class="hljs-literal">yes</span>
         <span class="hljs-keyword">break</span>
 
-  fragments = parser.parse(tokens).compileToFragments options
+  nodes = parser.parse tokens</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>If all that was requested was a POJO representation of the nodes, e.g.
+the abstract syntax tree (AST), we can stop now and just return that
+(after fixing the location data for the root/<code>File</code>»<code>Program</code> node,
+which might’ve gotten misaligned from the original source due to the
+<code>clean</code> function in the lexer).</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">if</span> options.ast
+    nodes.allCommentTokens = helpers.extractAllCommentTokens tokens
+    sourceCodeNumberOfLines = (code.match(<span class="hljs-regexp">/\r?\n/g</span>) <span class="hljs-keyword">or</span> <span class="hljs-string">''</span>).length + <span class="hljs-number">1</span>
+    sourceCodeLastLine = <span class="hljs-regexp">/.*$/</span>.exec(code)[<span class="hljs-number">0</span>] <span class="hljs-comment"># `.*` matches all but line break characters.</span>
+    ast = nodes.ast options
+    range = [<span class="hljs-number">0</span>, code.length]
+    ast.start = ast.program.start = range[<span class="hljs-number">0</span>]
+    ast.end = ast.program.end = range[<span class="hljs-number">1</span>]
+    ast.range = ast.program.range = range
+    ast.loc.start = ast.program.loc.start = {line: <span class="hljs-number">1</span>, column: <span class="hljs-number">0</span>}
+    ast.loc.end.line = ast.program.loc.end.line = sourceCodeNumberOfLines
+    ast.loc.end.column = ast.program.loc.end.column = sourceCodeLastLine.length
+    ast.tokens = tokens
+    <span class="hljs-keyword">return</span> ast
+
+  fragments = nodes.compileToFragments options
 
   currentLine = <span class="hljs-number">0</span>
   currentLine += <span class="hljs-number">1</span> <span class="hljs-keyword">if</span> options.header
@@ -409,11 +443,11 @@ the same name.</p>
         </li>
         
         
-        <li id="section-16">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Update the sourcemap with data from each fragment.</p>
 
@@ -424,11 +458,11 @@ the same name.</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Do not include empty, whitespace, or semicolon-only fragments.</p>
 
@@ -449,11 +483,11 @@ the same name.</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Copy the code from each fragment into the final JavaScript.</p>
 
@@ -474,11 +508,11 @@ the same name.</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>This only happens if run via the Node API and <code>transpile</code> is set to
 something other than an object.</p>
@@ -490,11 +524,11 @@ something other than an object.</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Get the reference to Babel that we have been passed if this compiler
 is run via the CLI or Node API.</p>
@@ -509,11 +543,11 @@ is run via the CLI or Node API.</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>See <a href="https://github.com/babel/babel/issues/827#issuecomment-77573107">https://github.com/babel/babel/issues/827#issuecomment-77573107</a>:
 Babel can take a v3 source map object as input in <code>inputSourceMap</code>
@@ -548,11 +582,11 @@ and it will return an <em>updated</em> v3 source map object in its output.</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Tokenize a string of CoffeeScript code, and return the array of tokens.</p>
 
@@ -564,11 +598,11 @@ and it will return an <em>updated</em> v3 source map object in its output.</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Parse a string of CoffeeScript code or an array of lexed tokens, and
 return the AST. You can then compile it by calling <code>.compile()</code> on the root,
@@ -577,19 +611,17 @@ or traverse it by using <code>.traverseChildren()</code> with a callback.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>exports.nodes = withPrettyErrors (source, options) -&gt;
-  <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> source <span class="hljs-keyword">is</span> <span class="hljs-string">'string'</span>
-    parser.parse lexer.tokenize source, options
-  <span class="hljs-keyword">else</span>
-    parser.parse source</pre></div></div>
+  source = lexer.tokenize source, options <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> source <span class="hljs-keyword">is</span> <span class="hljs-string">'string'</span>
+  parser.parse source</pre></div></div>
             
         </li>
         
         
-        <li id="section-24">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>This file used to export these methods; leave stubs that throw warnings
 instead. These methods have been moved into <code>index.coffee</code> to provide
@@ -605,11 +637,11 @@ environment.</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Instantiate a Lexer for our use here.</p>
 
@@ -620,11 +652,11 @@ environment.</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>The real Lexer produces a generic stream of tokens. This object provides a
 thin wrapper around it, compatible with the Jison API. We can then pass it
@@ -633,6 +665,10 @@ directly as a “Jison lexer.”</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>parser.lexer =
+  yylloc:
+    range: []
+  options:
+    ranges: <span class="hljs-literal">yes</span>
   lex: <span class="hljs-function">-&gt;</span>
     token = parser.tokens[@pos++]
     <span class="hljs-keyword">if</span> token
@@ -650,11 +686,11 @@ directly as a “Jison lexer.”</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>Make all the AST nodes visible to the parser.</p>
 
@@ -665,11 +701,11 @@ directly as a “Jison lexer.”</p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Override Jison’s default error handling function.</p>
 
@@ -680,11 +716,11 @@ directly as a “Jison lexer.”</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Disregard Jison’s message, it contains redundant line number information.
 Disregard the token, we take its value directly from the lexer in case
@@ -708,11 +744,11 @@ the error is caused by a generated token which might refer to its origin.</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>The second argument has a <code>loc</code> property, which should have the location
 data for this token. Unfortunately, Jison seems to send an outdated <code>loc</code>
@@ -726,11 +762,11 @@ from the lexer.</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>Based on <a href="http://v8.googlecode.com/svn/branches/bleeding_edge/src/messages.js">http://v8.googlecode.com/svn/branches/bleeding_edge/src/messages.js</a>
 Modified to handle sourceMap</p>
@@ -758,11 +794,11 @@ Modified to handle sourceMap</p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>Check for a sourceMap position</p>
 
@@ -805,11 +841,11 @@ Modified to handle sourceMap</p>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <p>Skip files that we didn’t compile, like Node system files that appear in
 the stack trace, as they never have source maps.</p>
@@ -824,11 +860,11 @@ the stack trace, as they never have source maps.</p>
         </li>
         
         
-        <li id="section-34">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>CoffeeScript compiled in a browser or via <code>CoffeeScript.compile</code> or <code>.run</code>
 may get compiled with <code>options.filename</code> that’s missing, which becomes
@@ -843,11 +879,11 @@ filename of the script file. See if we have a source map cached under
         </li>
         
         
-        <li id="section-35">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-35">&#182;</a>
+                <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
               <p>Work backwards from the most recent anonymous source maps, until we find
 one that works. This isn’t foolproof; there is a chance that multiple
@@ -864,11 +900,11 @@ and it’s not foolproof either.</p>
         </li>
         
         
-        <li id="section-36">
+        <li id="section-37">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-36">&#182;</a>
+                <a class="pilcrow" href="#section-37">&#182;</a>
               </div>
               <p>If all else fails, recompile this source to get a source map. We need the
 previous section (for <code>&lt;anonymous&gt;</code>) despite this option, because after it
@@ -891,11 +927,11 @@ time the source map we want is the last one.</p>
         </li>
         
         
-        <li id="section-37">
+        <li id="section-38">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-37">&#182;</a>
+                <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
               <p>Based on <a href="http://goo.gl/ZTx1p">michaelficarra/CoffeeScriptRedux</a>
 NodeJS / V8 have no support for transforming positions in stack traces using

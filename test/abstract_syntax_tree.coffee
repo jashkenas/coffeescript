@@ -57,7 +57,7 @@ test 'Confirm functionality of `deepStrictIncludeExpectedProperties`', ->
     x: [1, 2, 3]
 
   check = (message, test, expected) ->
-    test (-> deepStrictIncludeExpectedProperties actual, expected), message
+    test (-> deepStrictIncludeExpectedProperties actual, expected), null, message
 
   check 'Expected property does not match', throws,
     name: '"Name"'

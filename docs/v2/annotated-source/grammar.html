@@ -244,12 +244,13 @@ If the parameter is not a node, it will just be passed through unaffected.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-function">    <span class="hljs-title">getAddDataToNodeFunctionString</span> = <span class="hljs-params">(first, last)</span> -&gt;</span>
-      <span class="hljs-string">"yy.addDataToNode(yy, @<span class="hljs-subst">#{first}</span><span class="hljs-subst">#{<span class="hljs-keyword">if</span> last <span class="hljs-keyword">then</span> <span class="hljs-string">", @<span class="hljs-subst">#{last}</span>"</span> <span class="hljs-keyword">else</span> <span class="hljs-string">''</span>}</span>)"</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-function">    <span class="hljs-title">getAddDataToNodeFunctionString</span> = <span class="hljs-params">(first, last, forceUpdateLocation = <span class="hljs-literal">yes</span>)</span> -&gt;</span>
+      <span class="hljs-string">"yy.addDataToNode(yy, @<span class="hljs-subst">#{first}</span>, <span class="hljs-subst">#{<span class="hljs-keyword">if</span> first[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'$'</span> <span class="hljs-keyword">then</span> <span class="hljs-string">'$$'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'$'</span>}</span><span class="hljs-subst">#{first}</span>, <span class="hljs-subst">#{<span class="hljs-keyword">if</span> last <span class="hljs-keyword">then</span> <span class="hljs-string">"@<span class="hljs-subst">#{last}</span>, <span class="hljs-subst">#{<span class="hljs-keyword">if</span> last[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'$'</span> <span class="hljs-keyword">then</span> <span class="hljs-string">'$$'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'$'</span>}</span><span class="hljs-subst">#{last}</span>"</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'null, null'</span>}</span>, <span class="hljs-subst">#{<span class="hljs-keyword">if</span> forceUpdateLocation <span class="hljs-keyword">then</span> <span class="hljs-string">'true'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'false'</span>}</span>)"</span>
 
+    returnsLoc = <span class="hljs-regexp">/^LOC/</span>.test action
     action = action.replace <span class="hljs-regexp">/LOC\(([0-9]*)\)/g</span>, getAddDataToNodeFunctionString(<span class="hljs-string">'$1'</span>)
     action = action.replace <span class="hljs-regexp">/LOC\(([0-9]*),\s*([0-9]*)\)/g</span>, getAddDataToNodeFunctionString(<span class="hljs-string">'$1'</span>, <span class="hljs-string">'$2'</span>)
-    performActionFunctionString = <span class="hljs-string">"$$ = <span class="hljs-subst">#{getAddDataToNodeFunctionString(<span class="hljs-number">1</span>, patternCount)}</span>(<span class="hljs-subst">#{action}</span>);"</span>
+    performActionFunctionString = <span class="hljs-string">"$$ = <span class="hljs-subst">#{getAddDataToNodeFunctionString(<span class="hljs-number">1</span>, patternCount, <span class="hljs-keyword">not</span> returnsLoc)}</span>(<span class="hljs-subst">#{action}</span>);"</span>
   <span class="hljs-keyword">else</span>
     performActionFunctionString = <span class="hljs-string">'$$ = $1;'</span>
 
@@ -317,8 +318,8 @@ all parsing must end here.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  Root: [
-    o <span class="hljs-string">''</span>,                                       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Block
-    o <span class="hljs-string">'Body'</span>
+    o <span class="hljs-string">''</span>,                                       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Root <span class="hljs-keyword">new</span> Block
+    o <span class="hljs-string">'Body'</span>,                                   <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Root $<span class="hljs-number">1</span>
   ]</pre></div></div>
             
         </li>
@@ -468,11 +469,16 @@ token stream.</p>
 
   Identifier: [
     o <span class="hljs-string">'IDENTIFIER'</span>,                             <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> IdentifierLiteral $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'CSX_TAG'</span>,                                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> CSXTag $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'JSX_TAG'</span>,                                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> JSXTag $<span class="hljs-number">1.</span>toString(),
+                                                     tagNameLocationData:                  $<span class="hljs-number">1.</span>tagNameToken[<span class="hljs-number">2</span>]
+                                                     closingTagOpeningBracketLocationData: $<span class="hljs-number">1.</span>closingTagOpeningBracketToken?[<span class="hljs-number">2</span>]
+                                                     closingTagSlashLocationData:          $<span class="hljs-number">1.</span>closingTagSlashToken?[<span class="hljs-number">2</span>]
+                                                     closingTagNameLocationData:           $<span class="hljs-number">1.</span>closingTagNameToken?[<span class="hljs-number">2</span>]
+                                                     closingTagClosingBracketLocationData: $<span class="hljs-number">1.</span>closingTagClosingBracketToken?[<span class="hljs-number">2</span>]
   ]
 
   Property: [
-    o <span class="hljs-string">'PROPERTY'</span>,                               <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> PropertyName $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'PROPERTY'</span>,                               <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> PropertyName $<span class="hljs-number">1.</span>toString()
   ]</pre></div></div>
             
         </li>
@@ -490,18 +496,34 @@ they can also serve as keys in object literals.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  AlphaNumeric: [
-    o <span class="hljs-string">'NUMBER'</span>,                                 <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> NumberLiteral $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'NUMBER'</span>,                                 <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> NumberLiteral $<span class="hljs-number">1.</span>toString(), parsedValue: $<span class="hljs-number">1.</span>parsedValue
     o <span class="hljs-string">'String'</span>
   ]
 
   String: [
-    o <span class="hljs-string">'STRING'</span>,                                 <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> StringLiteral $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'STRING_START Body STRING_END'</span>,           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> StringWithInterpolations $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'STRING'</span>, <span class="hljs-function">-&gt;</span>
+      <span class="hljs-keyword">new</span> StringLiteral(
+        $<span class="hljs-number">1.</span>slice <span class="hljs-number">1</span>, <span class="hljs-number">-1</span> <span class="hljs-comment"># strip artificial quotes and unwrap to primitive string</span>
+        quote:        $<span class="hljs-number">1.</span>quote
+        initialChunk: $<span class="hljs-number">1.</span>initialChunk
+        finalChunk:   $<span class="hljs-number">1.</span>finalChunk
+        indent:       $<span class="hljs-number">1.</span>indent
+        double:       $<span class="hljs-number">1.</span>double
+        heregex:      $<span class="hljs-number">1.</span>heregex
+      )
+    o <span class="hljs-string">'STRING_START Interpolations STRING_END'</span>, <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> StringWithInterpolations Block.wrap($<span class="hljs-number">2</span>), quote: $<span class="hljs-number">1.</span>quote, startQuote: LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Literal $<span class="hljs-number">1.</span>toString())
   ]
 
-  Regex: [
-    o <span class="hljs-string">'REGEX'</span>,                                  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> RegexLiteral $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'REGEX_START Invocation REGEX_END'</span>,       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> RegexWithInterpolations $<span class="hljs-number">2.</span>args
+  Interpolations: [
+    o <span class="hljs-string">'InterpolationChunk'</span>,                     <span class="hljs-function">-&gt;</span> [$<span class="hljs-number">1</span>]
+    o <span class="hljs-string">'Interpolations InterpolationChunk'</span>,      <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>concat $<span class="hljs-number">2</span>
+  ]
+
+  InterpolationChunk: [
+    o <span class="hljs-string">'INTERPOLATION_START Body INTERPOLATION_END'</span>,                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Interpolation $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'INTERPOLATION_START INDENT Body OUTDENT INTERPOLATION_END'</span>, <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Interpolation $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'INTERPOLATION_START INTERPOLATION_END'</span>,                     <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Interpolation
+    o <span class="hljs-string">'String'</span>,                                                    <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1</span>
   ]</pre></div></div>
             
         </li>
@@ -513,20 +535,14 @@ they can also serve as keys in object literals.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
-              <p>All of our immediate values. Generally these can be passed straight
-through and printed to JavaScript.</p>
+              <p>The .toString() calls here and elsewhere are to convert <code>String</code> objects
+back to primitive strings now that we’ve retrieved stowaway extra properties</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  Literal: [
-    o <span class="hljs-string">'AlphaNumeric'</span>
-    o <span class="hljs-string">'JS'</span>,                                     <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> PassthroughLiteral $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'Regex'</span>
-    o <span class="hljs-string">'UNDEFINED'</span>,                              <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> UndefinedLiteral $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'NULL'</span>,                                   <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> NullLiteral $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'BOOL'</span>,                                   <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> BooleanLiteral $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'INFINITY'</span>,                               <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> InfinityLiteral $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'NAN'</span>,                                    <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> NaNLiteral $<span class="hljs-number">1</span>
+            <div class="content"><div class='highlight'><pre>  Regex: [
+    o <span class="hljs-string">'REGEX'</span>,                                  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> RegexLiteral $<span class="hljs-number">1.</span>toString(), delimiter: $<span class="hljs-number">1.</span>delimiter, heregexCommentTokens: $<span class="hljs-number">1.</span>heregexCommentTokens
+    o <span class="hljs-string">'REGEX_START Invocation REGEX_END'</span>,       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> RegexWithInterpolations $<span class="hljs-number">2</span>, heregexCommentTokens: $<span class="hljs-number">3.</span>heregexCommentTokens
   ]</pre></div></div>
             
         </li>
@@ -537,6 +553,31 @@ through and printed to JavaScript.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>All of our immediate values. Generally these can be passed straight
+through and printed to JavaScript.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Literal: [
+    o <span class="hljs-string">'AlphaNumeric'</span>
+    o <span class="hljs-string">'JS'</span>,                                     <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> PassthroughLiteral $<span class="hljs-number">1.</span>toString(), here: $<span class="hljs-number">1.</span>here, generated: $<span class="hljs-number">1.</span>generated
+    o <span class="hljs-string">'Regex'</span>
+    o <span class="hljs-string">'UNDEFINED'</span>,                              <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> UndefinedLiteral $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'NULL'</span>,                                   <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> NullLiteral $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'BOOL'</span>,                                   <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> BooleanLiteral $<span class="hljs-number">1.</span>toString(), originalValue: $<span class="hljs-number">1.</span>original
+    o <span class="hljs-string">'INFINITY'</span>,                               <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> InfinityLiteral $<span class="hljs-number">1.</span>toString(), originalValue: $<span class="hljs-number">1.</span>original
+    o <span class="hljs-string">'NAN'</span>,                                    <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> NaNLiteral $<span class="hljs-number">1</span>
+  ]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Assignment of a variable, property, or index to a value.</p>
 
@@ -551,11 +592,11 @@ through and printed to JavaScript.</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Assignment when it happens within an object literal. The difference from
 the ordinary <strong>Assign</strong> is that these allow numbers and strings as keys.</p>
@@ -586,17 +627,18 @@ the ordinary <strong>Assign</strong> is that these allow numbers and strings as 
   ObjAssignable: [
     o <span class="hljs-string">'SimpleObjAssignable'</span>
     o <span class="hljs-string">'[ Expression ]'</span>,          <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Value <span class="hljs-keyword">new</span> ComputedPropertyName $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'@ [ Expression ]'</span>,        <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Value LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> ThisLiteral $<span class="hljs-number">1</span>), [LOC(<span class="hljs-number">3</span>)(<span class="hljs-keyword">new</span> ComputedPropertyName($<span class="hljs-number">3</span>))], <span class="hljs-string">'this'</span>
     o <span class="hljs-string">'AlphaNumeric'</span>
   ]</pre></div></div>
             
         </li>
         
         
-        <li id="section-23">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Object literal spread properties.</p>
 
@@ -604,9 +646,9 @@ the ordinary <strong>Assign</strong> is that these allow numbers and strings as 
             
             <div class="content"><div class='highlight'><pre>  ObjRestValue: [
     o <span class="hljs-string">'SimpleObjAssignable ...'</span>, <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Splat <span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'... SimpleObjAssignable'</span>, <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Splat <span class="hljs-keyword">new</span> Value $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'... SimpleObjAssignable'</span>, <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Splat <span class="hljs-keyword">new</span> Value($<span class="hljs-number">2</span>), postfix: <span class="hljs-literal">no</span>
     o <span class="hljs-string">'ObjSpreadExpr ...'</span>,       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Splat $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'... ObjSpreadExpr'</span>,       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Splat $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'... ObjSpreadExpr'</span>,       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Splat $<span class="hljs-number">2</span>, postfix: <span class="hljs-literal">no</span>
   ]
 
   ObjSpreadExpr: [
@@ -627,18 +669,19 @@ the ordinary <strong>Assign</strong> is that these allow numbers and strings as 
   ]
 
   ObjSpreadAccessor: [
-    o <span class="hljs-string">'. Property'</span>,                             <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Access $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'INDEX_START IndexValue INDEX_END'</span>,       <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'. Property'</span>,                                      <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Access $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'INDEX_START IndexValue INDEX_END'</span>,                <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'INDEX_START INDENT IndexValue OUTDENT INDEX_END'</span>, <span class="hljs-function">-&gt;</span> $<span class="hljs-number">3</span>
   ]</pre></div></div>
             
         </li>
         
         
-        <li id="section-24">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>A return statement from a function body.</p>
 
@@ -651,23 +694,23 @@ the ordinary <strong>Assign</strong> is that these allow numbers and strings as 
   ]
 
   YieldReturn: [
-    o <span class="hljs-string">'YIELD RETURN Expression'</span>,                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> YieldReturn $<span class="hljs-number">3</span>
-    o <span class="hljs-string">'YIELD RETURN'</span>,                           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> YieldReturn
+    o <span class="hljs-string">'YIELD RETURN Expression'</span>,                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> YieldReturn $<span class="hljs-number">3</span>,   returnKeyword: LOC(<span class="hljs-number">2</span>)(<span class="hljs-keyword">new</span> Literal $<span class="hljs-number">2</span>)
+    o <span class="hljs-string">'YIELD RETURN'</span>,                           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> YieldReturn <span class="hljs-literal">null</span>, returnKeyword: LOC(<span class="hljs-number">2</span>)(<span class="hljs-keyword">new</span> Literal $<span class="hljs-number">2</span>)
   ]
 
   AwaitReturn: [
-    o <span class="hljs-string">'AWAIT RETURN Expression'</span>,                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> AwaitReturn $<span class="hljs-number">3</span>
-    o <span class="hljs-string">'AWAIT RETURN'</span>,                           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> AwaitReturn
+    o <span class="hljs-string">'AWAIT RETURN Expression'</span>,                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> AwaitReturn $<span class="hljs-number">3</span>,   returnKeyword: LOC(<span class="hljs-number">2</span>)(<span class="hljs-keyword">new</span> Literal $<span class="hljs-number">2</span>)
+    o <span class="hljs-string">'AWAIT RETURN'</span>,                           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> AwaitReturn <span class="hljs-literal">null</span>, returnKeyword: LOC(<span class="hljs-number">2</span>)(<span class="hljs-keyword">new</span> Literal $<span class="hljs-number">2</span>)
   ]</pre></div></div>
             
         </li>
         
         
-        <li id="section-25">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>The <strong>Code</strong> node is the function literal. It’s defined by an indented block
 of <strong>Block</strong> preceded by a function arrow, with an optional parameter list.</p>
@@ -682,11 +725,11 @@ of <strong>Block</strong> preceded by a function arrow, with an optional paramet
         </li>
         
         
-        <li id="section-26">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>The Codeline is the <strong>Code</strong> node with <strong>Line</strong> instead of indented <strong>Block</strong>.</p>
 
@@ -701,11 +744,11 @@ of <strong>Block</strong> preceded by a function arrow, with an optional paramet
         </li>
         
         
-        <li id="section-27">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>CoffeeScript has two different symbols for functions. <code>-&gt;</code> is for ordinary
 functions, and <code>=&gt;</code> is for functions bound to the current value of <em>this</em>.</p>
@@ -720,11 +763,11 @@ functions, and <code>=&gt;</code> is for functions bound to the current value of
         </li>
         
         
-        <li id="section-28">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>An optional, trailing comma.</p>
 
@@ -738,11 +781,11 @@ functions, and <code>=&gt;</code> is for functions bound to the current value of
         </li>
         
         
-        <li id="section-29">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>The list of parameters that a function accepts can be of any length.</p>
 
@@ -759,11 +802,11 @@ functions, and <code>=&gt;</code> is for functions bound to the current value of
         </li>
         
         
-        <li id="section-30">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>A single parameter in a function definition can be ordinary, or a splat
 that hoovers up the remaining arguments.</p>
@@ -773,7 +816,7 @@ that hoovers up the remaining arguments.</p>
             <div class="content"><div class='highlight'><pre>  Param: [
     o <span class="hljs-string">'ParamVar'</span>,                               <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Param $<span class="hljs-number">1</span>
     o <span class="hljs-string">'ParamVar ...'</span>,                           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Param $<span class="hljs-number">1</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">on</span>
-    o <span class="hljs-string">'... ParamVar'</span>,                           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Param $<span class="hljs-number">2</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">on</span>
+    o <span class="hljs-string">'... ParamVar'</span>,                           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Param $<span class="hljs-number">2</span>, <span class="hljs-literal">null</span>, postfix: <span class="hljs-literal">no</span>
     o <span class="hljs-string">'ParamVar = Expression'</span>,                  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Param $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
     o <span class="hljs-string">'...'</span>,                                    <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Expansion
   ]</pre></div></div>
@@ -781,11 +824,11 @@ that hoovers up the remaining arguments.</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>Function Parameters</p>
 
@@ -801,11 +844,11 @@ that hoovers up the remaining arguments.</p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>A splat that occurs outside of a parameter list.</p>
 
@@ -813,17 +856,17 @@ that hoovers up the remaining arguments.</p>
             
             <div class="content"><div class='highlight'><pre>  Splat: [
     o <span class="hljs-string">'Expression ...'</span>,                         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Splat $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'... Expression'</span>,                         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Splat $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'... Expression'</span>,                         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Splat $<span class="hljs-number">2</span>, {postfix: <span class="hljs-literal">no</span>}
   ]</pre></div></div>
             
         </li>
         
         
-        <li id="section-33">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <p>Variables and properties that can be assigned to.</p>
 
@@ -839,11 +882,11 @@ that hoovers up the remaining arguments.</p>
         </li>
         
         
-        <li id="section-34">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>Everything that can be assigned to.</p>
 
@@ -858,11 +901,11 @@ that hoovers up the remaining arguments.</p>
         </li>
         
         
-        <li id="section-35">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-35">&#182;</a>
+                <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
               <p>The types of things that can be treated as values – assigned to, invoked
 as functions, indexed into, named as a class, etc.</p>
@@ -875,26 +918,10 @@ as functions, indexed into, named as a class, etc.</p>
     o <span class="hljs-string">'Parenthetical'</span>,                          <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>
     o <span class="hljs-string">'Range'</span>,                                  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>
     o <span class="hljs-string">'Invocation'</span>,                             <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'DoIife'</span>,                                 <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>
     o <span class="hljs-string">'This'</span>
     o <span class="hljs-string">'Super'</span>,                                  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>
-  ]</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-36">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-36">&#182;</a>
-              </div>
-              <p>A <code>super</code>-based expression that can be used as a value.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  Super: [
-    o <span class="hljs-string">'SUPER . Property'</span>,                       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Super LOC(<span class="hljs-number">3</span>)(<span class="hljs-keyword">new</span> Access $<span class="hljs-number">3</span>), [], <span class="hljs-literal">no</span>, $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'SUPER INDEX_START Expression INDEX_END'</span>, <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Super LOC(<span class="hljs-number">3</span>)(<span class="hljs-keyword">new</span> Index $<span class="hljs-number">3</span>),  [], <span class="hljs-literal">no</span>, $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'MetaProperty'</span>,                           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>
   ]</pre></div></div>
             
         </li>
@@ -906,19 +933,14 @@ as functions, indexed into, named as a class, etc.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-37">&#182;</a>
               </div>
-              <p>The general group of accessors into an object, by property, by prototype
-or by array index or slice.</p>
+              <p>A <code>super</code>-based expression that can be used as a value.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  Accessor: [
-    o <span class="hljs-string">'.  Property'</span>,                            <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Access $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'?. Property'</span>,                            <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Access $<span class="hljs-number">2</span>, <span class="hljs-string">'soak'</span>
-    o <span class="hljs-string">':: Property'</span>,                            <span class="hljs-function">-&gt;</span> [LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Access <span class="hljs-keyword">new</span> PropertyName(<span class="hljs-string">'prototype'</span>)), LOC(<span class="hljs-number">2</span>)(<span class="hljs-keyword">new</span> Access $<span class="hljs-number">2</span>)]
-    o <span class="hljs-string">'?:: Property'</span>,                           <span class="hljs-function">-&gt;</span> [LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Access <span class="hljs-keyword">new</span> PropertyName(<span class="hljs-string">'prototype'</span>), <span class="hljs-string">'soak'</span>), LOC(<span class="hljs-number">2</span>)(<span class="hljs-keyword">new</span> Access $<span class="hljs-number">2</span>)]
-    o <span class="hljs-string">'::'</span>,                                     <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Access <span class="hljs-keyword">new</span> PropertyName <span class="hljs-string">'prototype'</span>
-    o <span class="hljs-string">'?::'</span>,                                    <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Access <span class="hljs-keyword">new</span> PropertyName(<span class="hljs-string">'prototype'</span>), <span class="hljs-string">'soak'</span>
-    o <span class="hljs-string">'Index'</span>
+            <div class="content"><div class='highlight'><pre>  Super: [
+    o <span class="hljs-string">'SUPER . Property'</span>,                                      <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Super LOC(<span class="hljs-number">3</span>)(<span class="hljs-keyword">new</span> Access $<span class="hljs-number">3</span>), LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Literal $<span class="hljs-number">1</span>)
+    o <span class="hljs-string">'SUPER INDEX_START Expression INDEX_END'</span>,                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Super LOC(<span class="hljs-number">3</span>)(<span class="hljs-keyword">new</span> Index $<span class="hljs-number">3</span>),  LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Literal $<span class="hljs-number">1</span>)
+    o <span class="hljs-string">'SUPER INDEX_START INDENT Expression OUTDENT INDEX_END'</span>, <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Super LOC(<span class="hljs-number">4</span>)(<span class="hljs-keyword">new</span> Index $<span class="hljs-number">4</span>),  LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Literal $<span class="hljs-number">1</span>)
   ]</pre></div></div>
             
         </li>
@@ -930,18 +952,12 @@ or by array index or slice.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
-              <p>Indexing into an object or array using bracket notation.</p>
+              <p>A “meta-property” access e.g. <code>new.target</code></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  Index: [
-    o <span class="hljs-string">'INDEX_START IndexValue INDEX_END'</span>,       <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'INDEX_SOAK  Index'</span>,                      <span class="hljs-function">-&gt;</span> extend $<span class="hljs-number">2</span>, soak: <span class="hljs-literal">yes</span>
-  ]
-
-  IndexValue: [
-    o <span class="hljs-string">'Expression'</span>,                             <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Index $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'Slice'</span>,                                  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Slice $<span class="hljs-number">1</span>
+            <div class="content"><div class='highlight'><pre>  MetaProperty: [
+    o <span class="hljs-string">'NEW_TARGET . Property'</span>,                  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> MetaProperty LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> IdentifierLiteral $<span class="hljs-number">1</span>), LOC(<span class="hljs-number">3</span>)(<span class="hljs-keyword">new</span> Access $<span class="hljs-number">3</span>)
   ]</pre></div></div>
             
         </li>
@@ -952,6 +968,54 @@ or by array index or slice.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-39">&#182;</a>
+              </div>
+              <p>The general group of accessors into an object, by property, by prototype
+or by array index or slice.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Accessor: [
+    o <span class="hljs-string">'.  Property'</span>,                            <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Access $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'?. Property'</span>,                            <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Access $<span class="hljs-number">2</span>, soak: <span class="hljs-literal">yes</span>
+    o <span class="hljs-string">':: Property'</span>,                            <span class="hljs-function">-&gt;</span> [LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Access <span class="hljs-keyword">new</span> PropertyName(<span class="hljs-string">'prototype'</span>), shorthand: <span class="hljs-literal">yes</span>), LOC(<span class="hljs-number">2</span>)(<span class="hljs-keyword">new</span> Access $<span class="hljs-number">2</span>)]
+    o <span class="hljs-string">'?:: Property'</span>,                           <span class="hljs-function">-&gt;</span> [LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Access <span class="hljs-keyword">new</span> PropertyName(<span class="hljs-string">'prototype'</span>), shorthand: <span class="hljs-literal">yes</span>, soak: <span class="hljs-literal">yes</span>), LOC(<span class="hljs-number">2</span>)(<span class="hljs-keyword">new</span> Access $<span class="hljs-number">2</span>)]
+    o <span class="hljs-string">'::'</span>,                                     <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Access <span class="hljs-keyword">new</span> PropertyName(<span class="hljs-string">'prototype'</span>), shorthand: <span class="hljs-literal">yes</span>
+    o <span class="hljs-string">'?::'</span>,                                    <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Access <span class="hljs-keyword">new</span> PropertyName(<span class="hljs-string">'prototype'</span>), shorthand: <span class="hljs-literal">yes</span>, soak: <span class="hljs-literal">yes</span>
+    o <span class="hljs-string">'Index'</span>
+  ]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-40">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-40">&#182;</a>
+              </div>
+              <p>Indexing into an object or array using bracket notation.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Index: [
+    o <span class="hljs-string">'INDEX_START IndexValue INDEX_END'</span>,                <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'INDEX_START INDENT IndexValue OUTDENT INDEX_END'</span>, <span class="hljs-function">-&gt;</span> $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'INDEX_SOAK  Index'</span>,                               <span class="hljs-function">-&gt;</span> extend $<span class="hljs-number">2</span>, soak: <span class="hljs-literal">yes</span>
+  ]
+
+  IndexValue: [
+    o <span class="hljs-string">'Expression'</span>,                             <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Index $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'Slice'</span>,                                  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Slice $<span class="hljs-number">1</span>
+  ]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-41">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-41">&#182;</a>
               </div>
               <p>In CoffeeScript, an object literal is simply a list of assignments.</p>
 
@@ -964,11 +1028,11 @@ or by array index or slice.</p>
         </li>
         
         
-        <li id="section-40">
+        <li id="section-42">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-40">&#182;</a>
+                <a class="pilcrow" href="#section-42">&#182;</a>
               </div>
               <p>Assignment of properties within an object literal can be separated by
 comma, as in JavaScript, or simply by newline.</p>
@@ -986,11 +1050,11 @@ comma, as in JavaScript, or simply by newline.</p>
         </li>
         
         
-        <li id="section-41">
+        <li id="section-43">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-41">&#182;</a>
+                <a class="pilcrow" href="#section-43">&#182;</a>
               </div>
               <p>Class definitions have optional bodies of prototype property assignments,
 and optional references to the superclass.</p>
@@ -1029,8 +1093,8 @@ and optional references to the superclass.</p>
   ImportSpecifier: [
     o <span class="hljs-string">'Identifier'</span>,                             <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ImportSpecifier $<span class="hljs-number">1</span>
     o <span class="hljs-string">'Identifier AS Identifier'</span>,               <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ImportSpecifier $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
-    o <span class="hljs-string">'DEFAULT'</span>,                                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ImportSpecifier <span class="hljs-keyword">new</span> Literal $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'DEFAULT AS Identifier'</span>,                  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ImportSpecifier <span class="hljs-keyword">new</span> Literal($<span class="hljs-number">1</span>), $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'DEFAULT'</span>,                                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ImportSpecifier LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> DefaultLiteral $<span class="hljs-number">1</span>)
+    o <span class="hljs-string">'DEFAULT AS Identifier'</span>,                  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ImportSpecifier LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> DefaultLiteral($<span class="hljs-number">1</span>)), $<span class="hljs-number">3</span>
   ]
 
   ImportDefaultSpecifier: [
@@ -1045,15 +1109,16 @@ and optional references to the superclass.</p>
     o <span class="hljs-string">'EXPORT { }'</span>,                                          <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportNamedDeclaration <span class="hljs-keyword">new</span> ExportSpecifierList []
     o <span class="hljs-string">'EXPORT { ExportSpecifierList OptComma }'</span>,             <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportNamedDeclaration <span class="hljs-keyword">new</span> ExportSpecifierList $<span class="hljs-number">3</span>
     o <span class="hljs-string">'EXPORT Class'</span>,                                        <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportNamedDeclaration $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'EXPORT Identifier = Expression'</span>,                      <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportNamedDeclaration <span class="hljs-keyword">new</span> Assign $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>, <span class="hljs-literal">null</span>,
-                                                                                                      moduleDeclaration: <span class="hljs-string">'export'</span>
-    o <span class="hljs-string">'EXPORT Identifier = TERMINATOR Expression'</span>,           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportNamedDeclaration <span class="hljs-keyword">new</span> Assign $<span class="hljs-number">2</span>, $<span class="hljs-number">5</span>, <span class="hljs-literal">null</span>,
-                                                                                                      moduleDeclaration: <span class="hljs-string">'export'</span>
-    o <span class="hljs-string">'EXPORT Identifier = INDENT Expression OUTDENT'</span>,       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportNamedDeclaration <span class="hljs-keyword">new</span> Assign $<span class="hljs-number">2</span>, $<span class="hljs-number">5</span>, <span class="hljs-literal">null</span>,
-                                                                                                      moduleDeclaration: <span class="hljs-string">'export'</span>
+    o <span class="hljs-string">'EXPORT Identifier = Expression'</span>,                      <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportNamedDeclaration LOC(<span class="hljs-number">2</span>,<span class="hljs-number">4</span>)(<span class="hljs-keyword">new</span> Assign $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>, <span class="hljs-literal">null</span>,
+                                                                                                      moduleDeclaration: <span class="hljs-string">'export'</span>)
+    o <span class="hljs-string">'EXPORT Identifier = TERMINATOR Expression'</span>,           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportNamedDeclaration LOC(<span class="hljs-number">2</span>,<span class="hljs-number">5</span>)(<span class="hljs-keyword">new</span> Assign $<span class="hljs-number">2</span>, $<span class="hljs-number">5</span>, <span class="hljs-literal">null</span>,
+                                                                                                      moduleDeclaration: <span class="hljs-string">'export'</span>)
+    o <span class="hljs-string">'EXPORT Identifier = INDENT Expression OUTDENT'</span>,       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportNamedDeclaration LOC(<span class="hljs-number">2</span>,<span class="hljs-number">6</span>)(<span class="hljs-keyword">new</span> Assign $<span class="hljs-number">2</span>, $<span class="hljs-number">5</span>, <span class="hljs-literal">null</span>,
+                                                                                                      moduleDeclaration: <span class="hljs-string">'export'</span>)
     o <span class="hljs-string">'EXPORT DEFAULT Expression'</span>,                           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportDefaultDeclaration $<span class="hljs-number">3</span>
     o <span class="hljs-string">'EXPORT DEFAULT INDENT Object OUTDENT'</span>,                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportDefaultDeclaration <span class="hljs-keyword">new</span> Value $<span class="hljs-number">4</span>
     o <span class="hljs-string">'EXPORT EXPORT_ALL FROM String'</span>,                       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportAllDeclaration <span class="hljs-keyword">new</span> Literal($<span class="hljs-number">2</span>), $<span class="hljs-number">4</span>
+    o <span class="hljs-string">'EXPORT { } FROM String'</span>,                              <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportNamedDeclaration <span class="hljs-keyword">new</span> ExportSpecifierList([]), $<span class="hljs-number">5</span>
     o <span class="hljs-string">'EXPORT { ExportSpecifierList OptComma } FROM String'</span>, <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportNamedDeclaration <span class="hljs-keyword">new</span> ExportSpecifierList($<span class="hljs-number">3</span>), $<span class="hljs-number">7</span>
   ]
 
@@ -1068,47 +1133,9 @@ and optional references to the superclass.</p>
   ExportSpecifier: [
     o <span class="hljs-string">'Identifier'</span>,                             <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportSpecifier $<span class="hljs-number">1</span>
     o <span class="hljs-string">'Identifier AS Identifier'</span>,               <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportSpecifier $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
-    o <span class="hljs-string">'Identifier AS DEFAULT'</span>,                  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportSpecifier $<span class="hljs-number">1</span>, <span class="hljs-keyword">new</span> Literal $<span class="hljs-number">3</span>
-    o <span class="hljs-string">'DEFAULT'</span>,                                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportSpecifier <span class="hljs-keyword">new</span> Literal $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'DEFAULT AS Identifier'</span>,                  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportSpecifier <span class="hljs-keyword">new</span> Literal($<span class="hljs-number">1</span>), $<span class="hljs-number">3</span>
-  ]</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-42">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-42">&#182;</a>
-              </div>
-              <p>Ordinary function invocation, or a chained series of calls.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  Invocation: [
-    o <span class="hljs-string">'Value OptFuncExist String'</span>,              <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> TaggedTemplateCall $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'Value OptFuncExist Arguments'</span>,           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Call $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'SUPER OptFuncExist Arguments'</span>,           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> SuperCall LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Super), $<span class="hljs-number">3</span>, $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'DYNAMIC_IMPORT Arguments'</span>,               <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> DynamicImportCall LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> DynamicImport), $<span class="hljs-number">2</span>
-  ]</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-43">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-43">&#182;</a>
-              </div>
-              <p>An optional existence check on a function.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  OptFuncExist: [
-    o <span class="hljs-string">''</span>,                                       <span class="hljs-function">-&gt;</span> <span class="hljs-literal">no</span>
-    o <span class="hljs-string">'FUNC_EXIST'</span>,                             <span class="hljs-function">-&gt;</span> <span class="hljs-literal">yes</span>
+    o <span class="hljs-string">'Identifier AS DEFAULT'</span>,                  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportSpecifier $<span class="hljs-number">1</span>, LOC(<span class="hljs-number">3</span>)(<span class="hljs-keyword">new</span> DefaultLiteral $<span class="hljs-number">3</span>)
+    o <span class="hljs-string">'DEFAULT'</span>,                                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportSpecifier LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> DefaultLiteral $<span class="hljs-number">1</span>)
+    o <span class="hljs-string">'DEFAULT AS Identifier'</span>,                  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> ExportSpecifier LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> DefaultLiteral($<span class="hljs-number">1</span>)), $<span class="hljs-number">3</span>
   ]</pre></div></div>
             
         </li>
@@ -1120,13 +1147,15 @@ and optional references to the superclass.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-44">&#182;</a>
               </div>
-              <p>The list of arguments to a function call.</p>
+              <p>Ordinary function invocation, or a chained series of calls.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  Arguments: [
-    o <span class="hljs-string">'CALL_START CALL_END'</span>,                    <span class="hljs-function">-&gt;</span> []
-    o <span class="hljs-string">'CALL_START ArgList OptComma CALL_END'</span>,   <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2</span>
+            <div class="content"><div class='highlight'><pre>  Invocation: [
+    o <span class="hljs-string">'Value OptFuncExist String'</span>,              <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> TaggedTemplateCall $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">2.</span>soak
+    o <span class="hljs-string">'Value OptFuncExist Arguments'</span>,           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Call $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">2.</span>soak
+    o <span class="hljs-string">'SUPER OptFuncExist Arguments'</span>,           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> SuperCall LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Super), $<span class="hljs-number">3</span>, $<span class="hljs-number">2.</span>soak, $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'DYNAMIC_IMPORT Arguments'</span>,               <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> DynamicImportCall LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> DynamicImport), $<span class="hljs-number">2</span>
   ]</pre></div></div>
             
         </li>
@@ -1137,6 +1166,42 @@ and optional references to the superclass.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-45">&#182;</a>
+              </div>
+              <p>An optional existence check on a function.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  OptFuncExist: [
+    o <span class="hljs-string">''</span>,                                       <span class="hljs-function">-&gt;</span> soak: <span class="hljs-literal">no</span>
+    o <span class="hljs-string">'FUNC_EXIST'</span>,                             <span class="hljs-function">-&gt;</span> soak: <span class="hljs-literal">yes</span>
+  ]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-46">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-46">&#182;</a>
+              </div>
+              <p>The list of arguments to a function call.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Arguments: [
+    o <span class="hljs-string">'CALL_START CALL_END'</span>,                    <span class="hljs-function">-&gt;</span> []
+    o <span class="hljs-string">'CALL_START ArgList OptComma CALL_END'</span>,   <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2.</span>implicit = $<span class="hljs-number">1.</span>generated; $<span class="hljs-number">2</span>
+  ]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-47">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-47">&#182;</a>
               </div>
               <p>A reference to the <em>this</em> current object.</p>
 
@@ -1150,11 +1215,11 @@ and optional references to the superclass.</p>
         </li>
         
         
-        <li id="section-46">
+        <li id="section-48">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-46">&#182;</a>
+                <a class="pilcrow" href="#section-48">&#182;</a>
               </div>
               <p>A reference to a property on <em>this</em>.</p>
 
@@ -1167,11 +1232,11 @@ and optional references to the superclass.</p>
         </li>
         
         
-        <li id="section-47">
+        <li id="section-49">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-47">&#182;</a>
+                <a class="pilcrow" href="#section-49">&#182;</a>
               </div>
               <p>The array literal.</p>
 
@@ -1186,59 +1251,19 @@ and optional references to the superclass.</p>
         </li>
         
         
-        <li id="section-48">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-48">&#182;</a>
-              </div>
-              <p>Inclusive and exclusive range dots.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  RangeDots: [
-    o <span class="hljs-string">'..'</span>,                                     <span class="hljs-function">-&gt;</span> <span class="hljs-string">'inclusive'</span>
-    o <span class="hljs-string">'...'</span>,                                    <span class="hljs-function">-&gt;</span> <span class="hljs-string">'exclusive'</span>
-  ]</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-49">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-49">&#182;</a>
-              </div>
-              <p>The CoffeeScript range literal.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  Range: [
-    o <span class="hljs-string">'[ Expression RangeDots Expression ]'</span>,      <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>, $<span class="hljs-number">3</span>
-    o <span class="hljs-string">'[ ExpressionLine RangeDots Expression ]'</span>,  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>, $<span class="hljs-number">3</span>
-  ]</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-50">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-50">&#182;</a>
               </div>
-              <p>Array slice literals.</p>
+              <p>Inclusive and exclusive range dots.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  Slice: [
-    o <span class="hljs-string">'Expression RangeDots Expression'</span>,        <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'Expression RangeDots'</span>,                   <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range $<span class="hljs-number">1</span>, <span class="hljs-literal">null</span>, $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'ExpressionLine RangeDots Expression'</span>,    <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'ExpressionLine RangeDots'</span>,               <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range $<span class="hljs-number">1</span>, <span class="hljs-literal">null</span>, $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'RangeDots Expression'</span>,                   <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range <span class="hljs-literal">null</span>, $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'RangeDots'</span>,                              <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>, $<span class="hljs-number">1</span>
+            <div class="content"><div class='highlight'><pre>  RangeDots: [
+    o <span class="hljs-string">'..'</span>,                                     <span class="hljs-function">-&gt;</span> exclusive: <span class="hljs-literal">no</span>
+    o <span class="hljs-string">'...'</span>,                                    <span class="hljs-function">-&gt;</span> exclusive: <span class="hljs-literal">yes</span>
   ]</pre></div></div>
             
         </li>
@@ -1249,6 +1274,46 @@ and optional references to the superclass.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-51">&#182;</a>
+              </div>
+              <p>The CoffeeScript range literal.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Range: [
+    o <span class="hljs-string">'[ Expression RangeDots Expression ]'</span>,      <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>, <span class="hljs-keyword">if</span> $<span class="hljs-number">3.</span>exclusive <span class="hljs-keyword">then</span> <span class="hljs-string">'exclusive'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'inclusive'</span>
+    o <span class="hljs-string">'[ ExpressionLine RangeDots Expression ]'</span>,  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>, <span class="hljs-keyword">if</span> $<span class="hljs-number">3.</span>exclusive <span class="hljs-keyword">then</span> <span class="hljs-string">'exclusive'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'inclusive'</span>
+  ]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-52">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-52">&#182;</a>
+              </div>
+              <p>Array slice literals.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Slice: [
+    o <span class="hljs-string">'Expression RangeDots Expression'</span>,        <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, <span class="hljs-keyword">if</span> $<span class="hljs-number">2.</span>exclusive <span class="hljs-keyword">then</span> <span class="hljs-string">'exclusive'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'inclusive'</span>
+    o <span class="hljs-string">'Expression RangeDots'</span>,                   <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range $<span class="hljs-number">1</span>, <span class="hljs-literal">null</span>, <span class="hljs-keyword">if</span> $<span class="hljs-number">2.</span>exclusive <span class="hljs-keyword">then</span> <span class="hljs-string">'exclusive'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'inclusive'</span>
+    o <span class="hljs-string">'ExpressionLine RangeDots Expression'</span>,    <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, <span class="hljs-keyword">if</span> $<span class="hljs-number">2.</span>exclusive <span class="hljs-keyword">then</span> <span class="hljs-string">'exclusive'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'inclusive'</span>
+    o <span class="hljs-string">'ExpressionLine RangeDots'</span>,               <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range $<span class="hljs-number">1</span>, <span class="hljs-literal">null</span>, <span class="hljs-keyword">if</span> $<span class="hljs-number">2.</span>exclusive <span class="hljs-keyword">then</span> <span class="hljs-string">'exclusive'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'inclusive'</span>
+    o <span class="hljs-string">'RangeDots Expression'</span>,                   <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range <span class="hljs-literal">null</span>, $<span class="hljs-number">2</span>, <span class="hljs-keyword">if</span> $<span class="hljs-number">1.</span>exclusive <span class="hljs-keyword">then</span> <span class="hljs-string">'exclusive'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'inclusive'</span>
+    o <span class="hljs-string">'RangeDots'</span>,                              <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Range <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>, <span class="hljs-keyword">if</span> $<span class="hljs-number">1.</span>exclusive <span class="hljs-keyword">then</span> <span class="hljs-string">'exclusive'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'inclusive'</span>
+  ]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-53">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-53">&#182;</a>
               </div>
               <p>The <strong>ArgList</strong> is the list of objects passed into a function call
 (i.e. comma-separated expressions). Newlines work as well.</p>
@@ -1266,11 +1331,11 @@ and optional references to the superclass.</p>
         </li>
         
         
-        <li id="section-52">
+        <li id="section-54">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-52">&#182;</a>
+                <a class="pilcrow" href="#section-54">&#182;</a>
               </div>
               <p>Valid arguments are Blocks or Splats.</p>
 
@@ -1286,11 +1351,11 @@ and optional references to the superclass.</p>
         </li>
         
         
-        <li id="section-53">
+        <li id="section-55">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-53">&#182;</a>
+                <a class="pilcrow" href="#section-55">&#182;</a>
               </div>
               <p>The <strong>ArgElisionList</strong> is the list of objects, contents of an array literal
 (i.e. comma-separated expressions and elisions). Newlines work as well.</p>
@@ -1300,7 +1365,7 @@ and optional references to the superclass.</p>
             <div class="content"><div class='highlight'><pre>  ArgElisionList: [
     o <span class="hljs-string">'ArgElision'</span>
     o <span class="hljs-string">'ArgElisionList , ArgElision'</span>,                                          <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>concat $<span class="hljs-number">3</span>
-    o <span class="hljs-string">'ArgElisionList OptElisions TERMINATOR ArgElision'</span>,                     <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>concat $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>
+    o <span class="hljs-string">'ArgElisionList OptComma TERMINATOR ArgElision'</span>,                        <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>concat $<span class="hljs-number">4</span>
     o <span class="hljs-string">'INDENT ArgElisionList OptElisions OUTDENT'</span>,                            <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2.</span>concat $<span class="hljs-number">3</span>
     o <span class="hljs-string">'ArgElisionList OptElisions INDENT ArgElisionList OptElisions OUTDENT'</span>, <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>concat $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>, $<span class="hljs-number">5</span>
   ]
@@ -1322,16 +1387,17 @@ and optional references to the superclass.</p>
 
   Elision: [
     o <span class="hljs-string">','</span>,                    <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Elision
+    o <span class="hljs-string">'Elision TERMINATOR'</span>,   <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1</span>
   ]</pre></div></div>
             
         </li>
         
         
-        <li id="section-54">
+        <li id="section-56">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-54">&#182;</a>
+                <a class="pilcrow" href="#section-56">&#182;</a>
               </div>
               <p>Just simple, comma-separated, required arguments (no fancy syntax). We need
 this to be separate from the <strong>ArgList</strong> for use in <strong>Switch</strong> blocks, where
@@ -1349,11 +1415,11 @@ having the newlines wouldn’t make sense.</p>
         </li>
         
         
-        <li id="section-55">
+        <li id="section-57">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-55">&#182;</a>
+                <a class="pilcrow" href="#section-57">&#182;</a>
               </div>
               <p>The variants of <em>try/catch/finally</em> exception handling blocks.</p>
 
@@ -1361,38 +1427,38 @@ having the newlines wouldn’t make sense.</p>
             
             <div class="content"><div class='highlight'><pre>  Try: [
     o <span class="hljs-string">'TRY Block'</span>,                              <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Try $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'TRY Block Catch'</span>,                        <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Try $<span class="hljs-number">2</span>, $<span class="hljs-number">3</span>[<span class="hljs-number">0</span>], $<span class="hljs-number">3</span>[<span class="hljs-number">1</span>]
-    o <span class="hljs-string">'TRY Block FINALLY Block'</span>,                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Try $<span class="hljs-number">2</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>, $<span class="hljs-number">4</span>
-    o <span class="hljs-string">'TRY Block Catch FINALLY Block'</span>,          <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Try $<span class="hljs-number">2</span>, $<span class="hljs-number">3</span>[<span class="hljs-number">0</span>], $<span class="hljs-number">3</span>[<span class="hljs-number">1</span>], $<span class="hljs-number">5</span>
+    o <span class="hljs-string">'TRY Block Catch'</span>,                        <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Try $<span class="hljs-number">2</span>, $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'TRY Block FINALLY Block'</span>,                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Try $<span class="hljs-number">2</span>, <span class="hljs-literal">null</span>, $<span class="hljs-number">4</span>, LOC(<span class="hljs-number">3</span>)(<span class="hljs-keyword">new</span> Literal $<span class="hljs-number">3</span>)
+    o <span class="hljs-string">'TRY Block Catch FINALLY Block'</span>,          <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Try $<span class="hljs-number">2</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">5</span>, LOC(<span class="hljs-number">4</span>)(<span class="hljs-keyword">new</span> Literal $<span class="hljs-number">4</span>)
   ]</pre></div></div>
             
         </li>
         
         
-        <li id="section-56">
+        <li id="section-58">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-56">&#182;</a>
+                <a class="pilcrow" href="#section-58">&#182;</a>
               </div>
               <p>A catch clause names its error and runs a block of code.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  Catch: [
-    o <span class="hljs-string">'CATCH Identifier Block'</span>,                 <span class="hljs-function">-&gt;</span> [$<span class="hljs-number">2</span>, $<span class="hljs-number">3</span>]
-    o <span class="hljs-string">'CATCH Object Block'</span>,                     <span class="hljs-function">-&gt;</span> [LOC(<span class="hljs-number">2</span>)(<span class="hljs-keyword">new</span> Value($<span class="hljs-number">2</span>)), $<span class="hljs-number">3</span>]
-    o <span class="hljs-string">'CATCH Block'</span>,                            <span class="hljs-function">-&gt;</span> [<span class="hljs-literal">null</span>, $<span class="hljs-number">2</span>]
+    o <span class="hljs-string">'CATCH Identifier Block'</span>,                 <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Catch $<span class="hljs-number">3</span>, $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'CATCH Object Block'</span>,                     <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Catch $<span class="hljs-number">3</span>, LOC(<span class="hljs-number">2</span>)(<span class="hljs-keyword">new</span> Value($<span class="hljs-number">2</span>))
+    o <span class="hljs-string">'CATCH Block'</span>,                            <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Catch $<span class="hljs-number">2</span>
   ]</pre></div></div>
             
         </li>
         
         
-        <li id="section-57">
+        <li id="section-59">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-57">&#182;</a>
+                <a class="pilcrow" href="#section-59">&#182;</a>
               </div>
               <p>Throw an exception object.</p>
 
@@ -1406,11 +1472,11 @@ having the newlines wouldn’t make sense.</p>
         </li>
         
         
-        <li id="section-58">
+        <li id="section-60">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-58">&#182;</a>
+                <a class="pilcrow" href="#section-60">&#182;</a>
               </div>
               <p>Parenthetical expressions. Note that the <strong>Parenthetical</strong> is a <strong>Value</strong>,
 not an <strong>Expression</strong>, so if you need to use an expression in a place
@@ -1427,11 +1493,11 @@ the trick.</p>
         </li>
         
         
-        <li id="section-59">
+        <li id="section-61">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-59">&#182;</a>
+                <a class="pilcrow" href="#section-61">&#182;</a>
               </div>
               <p>The condition portion of a while loop.</p>
 
@@ -1456,11 +1522,11 @@ the trick.</p>
         </li>
         
         
-        <li id="section-60">
+        <li id="section-62">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-60">&#182;</a>
+                <a class="pilcrow" href="#section-62">&#182;</a>
               </div>
               <p>The while loop can either be normal, with a block of expressions to execute,
 or postfix, with a single expression. There is no do..while.</p>
@@ -1470,24 +1536,24 @@ or postfix, with a single expression. There is no do..while.</p>
             <div class="content"><div class='highlight'><pre>  While: [
     o <span class="hljs-string">'WhileSource Block'</span>,                      <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>addBody $<span class="hljs-number">2</span>
     o <span class="hljs-string">'WhileLineSource Block'</span>,                  <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>addBody $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'Statement  WhileSource'</span>,                 <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2.</span>addBody LOC(<span class="hljs-number">1</span>) Block.wrap([$<span class="hljs-number">1</span>])
-    o <span class="hljs-string">'Expression WhileSource'</span>,                 <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2.</span>addBody LOC(<span class="hljs-number">1</span>) Block.wrap([$<span class="hljs-number">1</span>])
+    o <span class="hljs-string">'Statement  WhileSource'</span>,                 <span class="hljs-function">-&gt;</span> (Object.assign $<span class="hljs-number">2</span>, postfix: <span class="hljs-literal">yes</span>).addBody LOC(<span class="hljs-number">1</span>) Block.wrap([$<span class="hljs-number">1</span>])
+    o <span class="hljs-string">'Expression WhileSource'</span>,                 <span class="hljs-function">-&gt;</span> (Object.assign $<span class="hljs-number">2</span>, postfix: <span class="hljs-literal">yes</span>).addBody LOC(<span class="hljs-number">1</span>) Block.wrap([$<span class="hljs-number">1</span>])
     o <span class="hljs-string">'Loop'</span>,                                   <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1</span>
   ]
 
   Loop: [
-    o <span class="hljs-string">'LOOP Block'</span>,                             <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> While(LOC(<span class="hljs-number">1</span>) <span class="hljs-keyword">new</span> BooleanLiteral <span class="hljs-string">'true'</span>).addBody $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'LOOP Expression'</span>,                        <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> While(LOC(<span class="hljs-number">1</span>) <span class="hljs-keyword">new</span> BooleanLiteral <span class="hljs-string">'true'</span>).addBody LOC(<span class="hljs-number">2</span>) Block.wrap [$<span class="hljs-number">2</span>]
+    o <span class="hljs-string">'LOOP Block'</span>,                             <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> While(LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> BooleanLiteral <span class="hljs-string">'true'</span>), isLoop: <span class="hljs-literal">yes</span>).addBody $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'LOOP Expression'</span>,                        <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> While(LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> BooleanLiteral <span class="hljs-string">'true'</span>), isLoop: <span class="hljs-literal">yes</span>).addBody LOC(<span class="hljs-number">2</span>) Block.wrap [$<span class="hljs-number">2</span>]
   ]</pre></div></div>
             
         </li>
         
         
-        <li id="section-61">
+        <li id="section-63">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-61">&#182;</a>
+                <a class="pilcrow" href="#section-63">&#182;</a>
               </div>
               <p>Array, object, and range comprehensions, at the most generic level.
 Comprehensions can either be normal, with a block of expressions to execute,
@@ -1496,8 +1562,8 @@ or postfix, with a single expression.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  For: [
-    o <span class="hljs-string">'Statement    ForBody'</span>,  <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2.</span>addBody $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'Expression   ForBody'</span>,  <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2.</span>addBody $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'Statement    ForBody'</span>,  <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2.</span>postfix = <span class="hljs-literal">yes</span>; $<span class="hljs-number">2.</span>addBody $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'Expression   ForBody'</span>,  <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2.</span>postfix = <span class="hljs-literal">yes</span>; $<span class="hljs-number">2.</span>addBody $<span class="hljs-number">1</span>
     o <span class="hljs-string">'ForBody      Block'</span>,    <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>addBody $<span class="hljs-number">2</span>
     o <span class="hljs-string">'ForLineBody  Block'</span>,    <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>addBody $<span class="hljs-number">2</span>
   ]
@@ -1526,11 +1592,11 @@ or postfix, with a single expression.</p>
         </li>
         
         
-        <li id="section-62">
+        <li id="section-64">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-62">&#182;</a>
+                <a class="pilcrow" href="#section-64">&#182;</a>
               </div>
               <p>An array of all accepted values for a variable inside the loop.
 This enables support for pattern matching.</p>
@@ -1547,11 +1613,11 @@ This enables support for pattern matching.</p>
         </li>
         
         
-        <li id="section-63">
+        <li id="section-65">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-63">&#182;</a>
+                <a class="pilcrow" href="#section-65">&#182;</a>
               </div>
               <p>An array or range comprehension has variables for the current element
 and (optional) reference to the current index. Or, <em>key, value</em>, in the case
@@ -1567,11 +1633,11 @@ of object comprehensions.</p>
         </li>
         
         
-        <li id="section-64">
+        <li id="section-66">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-64">&#182;</a>
+                <a class="pilcrow" href="#section-66">&#182;</a>
               </div>
               <p>The source of a comprehension is an array or object with an optional guard
 clause. If it’s an array comprehension, you can also choose to step through
@@ -1626,43 +1692,43 @@ in fixed-size increments.</p>
   Switch: [
     o <span class="hljs-string">'SWITCH Expression INDENT Whens OUTDENT'</span>,                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Switch $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>
     o <span class="hljs-string">'SWITCH ExpressionLine INDENT Whens OUTDENT'</span>,            <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Switch $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>
-    o <span class="hljs-string">'SWITCH Expression INDENT Whens ELSE Block OUTDENT'</span>,     <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Switch $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>, $<span class="hljs-number">6</span>
-    o <span class="hljs-string">'SWITCH ExpressionLine INDENT Whens ELSE Block OUTDENT'</span>, <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Switch $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>, $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'SWITCH Expression INDENT Whens ELSE Block OUTDENT'</span>,     <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Switch $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>, LOC(<span class="hljs-number">5</span>,<span class="hljs-number">6</span>) $<span class="hljs-number">6</span>
+    o <span class="hljs-string">'SWITCH ExpressionLine INDENT Whens ELSE Block OUTDENT'</span>, <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Switch $<span class="hljs-number">2</span>, $<span class="hljs-number">4</span>, LOC(<span class="hljs-number">5</span>,<span class="hljs-number">6</span>) $<span class="hljs-number">6</span>
     o <span class="hljs-string">'SWITCH INDENT Whens OUTDENT'</span>,                           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Switch <span class="hljs-literal">null</span>, $<span class="hljs-number">3</span>
-    o <span class="hljs-string">'SWITCH INDENT Whens ELSE Block OUTDENT'</span>,                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Switch <span class="hljs-literal">null</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">5</span>
+    o <span class="hljs-string">'SWITCH INDENT Whens ELSE Block OUTDENT'</span>,                <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Switch <span class="hljs-literal">null</span>, $<span class="hljs-number">3</span>, LOC(<span class="hljs-number">4</span>,<span class="hljs-number">5</span>) $<span class="hljs-number">5</span>
   ]
 
   Whens: [
-    o <span class="hljs-string">'When'</span>
+    o <span class="hljs-string">'When'</span>,                                   <span class="hljs-function">-&gt;</span> [$<span class="hljs-number">1</span>]
     o <span class="hljs-string">'Whens When'</span>,                             <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>concat $<span class="hljs-number">2</span>
   ]</pre></div></div>
             
         </li>
         
         
-        <li id="section-65">
+        <li id="section-67">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-65">&#182;</a>
+                <a class="pilcrow" href="#section-67">&#182;</a>
               </div>
               <p>An individual <strong>When</strong> clause, with action.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  When: [
-    o <span class="hljs-string">'LEADING_WHEN SimpleArgs Block'</span>,            <span class="hljs-function">-&gt;</span> [[$<span class="hljs-number">2</span>, $<span class="hljs-number">3</span>]]
-    o <span class="hljs-string">'LEADING_WHEN SimpleArgs Block TERMINATOR'</span>, <span class="hljs-function">-&gt;</span> [[$<span class="hljs-number">2</span>, $<span class="hljs-number">3</span>]]
+    o <span class="hljs-string">'LEADING_WHEN SimpleArgs Block'</span>,            <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> SwitchWhen $<span class="hljs-number">2</span>, $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'LEADING_WHEN SimpleArgs Block TERMINATOR'</span>, <span class="hljs-function">-&gt;</span> LOC(<span class="hljs-number">1</span>, <span class="hljs-number">3</span>) <span class="hljs-keyword">new</span> SwitchWhen $<span class="hljs-number">2</span>, $<span class="hljs-number">3</span>
   ]</pre></div></div>
             
         </li>
         
         
-        <li id="section-66">
+        <li id="section-68">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-66">&#182;</a>
+                <a class="pilcrow" href="#section-68">&#182;</a>
               </div>
               <p>The most basic form of <em>if</em> is a condition and an action. The following
 if-related rules are broken up along these lines in order to avoid
@@ -1678,11 +1744,11 @@ ambiguity.</p>
         </li>
         
         
-        <li id="section-67">
+        <li id="section-69">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-67">&#182;</a>
+                <a class="pilcrow" href="#section-69">&#182;</a>
               </div>
               <p>The full complement of <em>if</em> expressions, including postfix one-liner
 <em>if</em> and <em>unless</em>.</p>
@@ -1692,8 +1758,8 @@ ambiguity.</p>
             <div class="content"><div class='highlight'><pre>  If: [
     o <span class="hljs-string">'IfBlock'</span>
     o <span class="hljs-string">'IfBlock ELSE Block'</span>,                     <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>addElse $<span class="hljs-number">3</span>
-    o <span class="hljs-string">'Statement  POST_IF Expression'</span>,          <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> If $<span class="hljs-number">3</span>, LOC(<span class="hljs-number">1</span>)(Block.wrap [$<span class="hljs-number">1</span>]), type: $<span class="hljs-number">2</span>, statement: <span class="hljs-literal">true</span>
-    o <span class="hljs-string">'Expression POST_IF Expression'</span>,          <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> If $<span class="hljs-number">3</span>, LOC(<span class="hljs-number">1</span>)(Block.wrap [$<span class="hljs-number">1</span>]), type: $<span class="hljs-number">2</span>, statement: <span class="hljs-literal">true</span>
+    o <span class="hljs-string">'Statement  POST_IF Expression'</span>,          <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> If $<span class="hljs-number">3</span>, LOC(<span class="hljs-number">1</span>)(Block.wrap [$<span class="hljs-number">1</span>]), type: $<span class="hljs-number">2</span>, postfix: <span class="hljs-literal">true</span>
+    o <span class="hljs-string">'Expression POST_IF Expression'</span>,          <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> If $<span class="hljs-number">3</span>, LOC(<span class="hljs-number">1</span>)(Block.wrap [$<span class="hljs-number">1</span>]), type: $<span class="hljs-number">2</span>, postfix: <span class="hljs-literal">true</span>
   ]
 
   IfBlockLine: [
@@ -1704,18 +1770,18 @@ ambiguity.</p>
   IfLine: [
     o <span class="hljs-string">'IfBlockLine'</span>
     o <span class="hljs-string">'IfBlockLine ELSE Block'</span>,               <span class="hljs-function">-&gt;</span> $<span class="hljs-number">1.</span>addElse $<span class="hljs-number">3</span>
-    o <span class="hljs-string">'Statement  POST_IF ExpressionLine'</span>,    <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> If $<span class="hljs-number">3</span>, LOC(<span class="hljs-number">1</span>)(Block.wrap [$<span class="hljs-number">1</span>]), type: $<span class="hljs-number">2</span>, statement: <span class="hljs-literal">true</span>
-    o <span class="hljs-string">'Expression POST_IF ExpressionLine'</span>,    <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> If $<span class="hljs-number">3</span>, LOC(<span class="hljs-number">1</span>)(Block.wrap [$<span class="hljs-number">1</span>]), type: $<span class="hljs-number">2</span>, statement: <span class="hljs-literal">true</span>
+    o <span class="hljs-string">'Statement  POST_IF ExpressionLine'</span>,    <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> If $<span class="hljs-number">3</span>, LOC(<span class="hljs-number">1</span>)(Block.wrap [$<span class="hljs-number">1</span>]), type: $<span class="hljs-number">2</span>, postfix: <span class="hljs-literal">true</span>
+    o <span class="hljs-string">'Expression POST_IF ExpressionLine'</span>,    <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> If $<span class="hljs-number">3</span>, LOC(<span class="hljs-number">1</span>)(Block.wrap [$<span class="hljs-number">1</span>]), type: $<span class="hljs-number">2</span>, postfix: <span class="hljs-literal">true</span>
   ]</pre></div></div>
             
         </li>
         
         
-        <li id="section-68">
+        <li id="section-70">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-68">&#182;</a>
+                <a class="pilcrow" href="#section-70">&#182;</a>
               </div>
               <p>Arithmetic and logical operators, working on one or more operands.
 Here they are grouped by order of precedence. The actual precedence rules
@@ -1728,11 +1794,14 @@ rules are necessary.</p>
             
             <div class="content"><div class='highlight'><pre>  OperationLine: [
     o <span class="hljs-string">'UNARY ExpressionLine'</span>,                   <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1</span>, $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'DO ExpressionLine'</span>,                      <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1</span>, $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'DO_IIFE CodeLine'</span>,                       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1</span>, $<span class="hljs-number">2</span>
   ]
 
   Operation: [
-    o <span class="hljs-string">'UNARY Expression'</span>,                       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1</span> , $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'UNARY_MATH Expression'</span>,                  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1</span> , $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'UNARY Expression'</span>,                       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1.</span>toString(), $<span class="hljs-number">2</span>, <span class="hljs-literal">undefined</span>, <span class="hljs-literal">undefined</span>, originalOperator: $<span class="hljs-number">1.</span>original
+    o <span class="hljs-string">'DO Expression'</span>,                          <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1</span>, $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'UNARY_MATH Expression'</span>,                  <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1</span>, $<span class="hljs-number">2</span>
     o <span class="hljs-string">'-     Expression'</span>,                      (<span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op <span class="hljs-string">'-'</span>, $<span class="hljs-number">2</span>), prec: <span class="hljs-string">'UNARY_MATH'</span>
     o <span class="hljs-string">'+     Expression'</span>,                      (<span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op <span class="hljs-string">'+'</span>, $<span class="hljs-number">2</span>), prec: <span class="hljs-string">'UNARY_MATH'</span>
 
@@ -1747,11 +1816,11 @@ rules are necessary.</p>
         </li>
         
         
-        <li id="section-69">
+        <li id="section-71">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-69">&#182;</a>
+                <a class="pilcrow" href="#section-71">&#182;</a>
               </div>
               <p><a href="https://coffeescript.org/#existential-operator">The existential operator</a>.</p>
 
@@ -1765,51 +1834,26 @@ rules are necessary.</p>
     o <span class="hljs-string">'Expression MATH     Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
     o <span class="hljs-string">'Expression **       Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
     o <span class="hljs-string">'Expression SHIFT    Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
-    o <span class="hljs-string">'Expression COMPARE  Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'Expression COMPARE  Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2.</span>toString(), $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, <span class="hljs-literal">undefined</span>, originalOperator: $<span class="hljs-number">2.</span>original
     o <span class="hljs-string">'Expression &amp;        Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
     o <span class="hljs-string">'Expression ^        Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
     o <span class="hljs-string">'Expression |        Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
-    o <span class="hljs-string">'Expression &amp;&amp;       Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
-    o <span class="hljs-string">'Expression ||       Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'Expression &amp;&amp;       Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2.</span>toString(), $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, <span class="hljs-literal">undefined</span>, originalOperator: $<span class="hljs-number">2.</span>original
+    o <span class="hljs-string">'Expression ||       Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2.</span>toString(), $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, <span class="hljs-literal">undefined</span>, originalOperator: $<span class="hljs-number">2.</span>original
     o <span class="hljs-string">'Expression BIN?     Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
-    o <span class="hljs-string">'Expression RELATION Expression'</span>,         <span class="hljs-function">-&gt;</span>
-      <span class="hljs-keyword">if</span> $<span class="hljs-number">2.</span>charAt(<span class="hljs-number">0</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'!'</span>
-        <span class="hljs-keyword">new</span> Op($<span class="hljs-number">2</span>[<span class="hljs-number">1.</span>.], $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>).invert()
-      <span class="hljs-keyword">else</span>
-        <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2</span>, $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'Expression RELATION Expression'</span>,         <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">2.</span>toString(), $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, <span class="hljs-literal">undefined</span>, invertOperator: $<span class="hljs-number">2.</span>invert?.original ? $<span class="hljs-number">2.</span>invert
 
     o <span class="hljs-string">'SimpleAssignable COMPOUND_ASSIGN
-       Expression'</span>,                             <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Assign $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">2</span>
+       Expression'</span>,                             <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Assign $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">2.</span>toString(), originalContext: $<span class="hljs-number">2.</span>original
     o <span class="hljs-string">'SimpleAssignable COMPOUND_ASSIGN
-       INDENT Expression OUTDENT'</span>,              <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Assign $<span class="hljs-number">1</span>, $<span class="hljs-number">4</span>, $<span class="hljs-number">2</span>
+       INDENT Expression OUTDENT'</span>,              <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Assign $<span class="hljs-number">1</span>, $<span class="hljs-number">4</span>, $<span class="hljs-number">2.</span>toString(), originalContext: $<span class="hljs-number">2.</span>original
     o <span class="hljs-string">'SimpleAssignable COMPOUND_ASSIGN TERMINATOR
-       Expression'</span>,                             <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Assign $<span class="hljs-number">1</span>, $<span class="hljs-number">4</span>, $<span class="hljs-number">2</span>
-  ]</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-70">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-70">&#182;</a>
-              </div>
-              <h2 id="precedence">Precedence</h2>
+       Expression'</span>,                             <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Assign $<span class="hljs-number">1</span>, $<span class="hljs-number">4</span>, $<span class="hljs-number">2.</span>toString(), originalContext: $<span class="hljs-number">2.</span>original
+  ]
 
-            </div>
-            
-        </li>
-        
-        
-        <li id="section-71">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-71">&#182;</a>
-              </div>
-              
-            </div>
+  DoIife: [
+    o <span class="hljs-string">'DO_IIFE Code'</span>,                           <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Op $<span class="hljs-number">1</span> , $<span class="hljs-number">2</span>
+  ]</pre></div></div>
             
         </li>
         
@@ -1820,6 +1864,31 @@ rules are necessary.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-72">&#182;</a>
               </div>
+              <h2 id="precedence">Precedence</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-73">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-73">&#182;</a>
+              </div>
+              
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-74">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-74">&#182;</a>
+              </div>
               <p>Operators at the top of this list have higher precedence than the ones lower
 down. Following these rules is what makes <code>2 + 3 * 4</code> parse as:</p>
 <pre><code><span class="hljs-number">2</span> + (<span class="hljs-number">3</span> * <span class="hljs-number">4</span>)
@@ -1829,11 +1898,12 @@ down. Following these rules is what makes <code>2 + 3 * 4</code> parse as:</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>operators = [
+  [<span class="hljs-string">'right'</span>,     <span class="hljs-string">'DO_IIFE'</span>]
   [<span class="hljs-string">'left'</span>,      <span class="hljs-string">'.'</span>, <span class="hljs-string">'?.'</span>, <span class="hljs-string">'::'</span>, <span class="hljs-string">'?::'</span>]
   [<span class="hljs-string">'left'</span>,      <span class="hljs-string">'CALL_START'</span>, <span class="hljs-string">'CALL_END'</span>]
   [<span class="hljs-string">'nonassoc'</span>,  <span class="hljs-string">'++'</span>, <span class="hljs-string">'--'</span>]
   [<span class="hljs-string">'left'</span>,      <span class="hljs-string">'?'</span>]
-  [<span class="hljs-string">'right'</span>,     <span class="hljs-string">'UNARY'</span>]
+  [<span class="hljs-string">'right'</span>,     <span class="hljs-string">'UNARY'</span>, <span class="hljs-string">'DO'</span>]
   [<span class="hljs-string">'right'</span>,     <span class="hljs-string">'AWAIT'</span>]
   [<span class="hljs-string">'right'</span>,     <span class="hljs-string">'**'</span>]
   [<span class="hljs-string">'right'</span>,     <span class="hljs-string">'UNARY_MATH'</span>]
@@ -1859,11 +1929,11 @@ down. Following these rules is what makes <code>2 + 3 * 4</code> parse as:</p>
         </li>
         
         
-        <li id="section-73">
+        <li id="section-75">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-73">&#182;</a>
+                <a class="pilcrow" href="#section-75">&#182;</a>
               </div>
               <h2 id="wrapping-up">Wrapping Up</h2>
 
@@ -1872,11 +1942,11 @@ down. Following these rules is what makes <code>2 + 3 * 4</code> parse as:</p>
         </li>
         
         
-        <li id="section-74">
+        <li id="section-76">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-74">&#182;</a>
+                <a class="pilcrow" href="#section-76">&#182;</a>
               </div>
               
             </div>
@@ -1884,11 +1954,11 @@ down. Following these rules is what makes <code>2 + 3 * 4</code> parse as:</p>
         </li>
         
         
-        <li id="section-75">
+        <li id="section-77">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-75">&#182;</a>
+                <a class="pilcrow" href="#section-77">&#182;</a>
               </div>
               <p>Finally, now that we have our <strong>grammar</strong> and our <strong>operators</strong>, we can create
 our <strong>Jison.Parser</strong>. We do this by processing all of our rules, recording all
@@ -1908,11 +1978,11 @@ as “tokens”.</p>
         </li>
         
         
-        <li id="section-76">
+        <li id="section-78">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-76">&#182;</a>
+                <a class="pilcrow" href="#section-78">&#182;</a>
               </div>
               <p>Initialize the <strong>Parser</strong> with our list of terminal <strong>tokens</strong>, our <strong>grammar</strong>
 rules, and the name of the root. Reverse the operators because Jison orders
