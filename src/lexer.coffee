@@ -182,7 +182,7 @@ exports.Lexer = class Lexer
       if tag is 'WHEN' and @tag() in LINE_BREAK
         tag = 'LEADING_WHEN'
       else if tag is 'FOR'
-        @seenFor = yes
+        @seenFor = {endsLength: @ends.length}
       else if tag is 'UNLESS'
         tag = 'IF'
       else if tag is 'IMPORT'
@@ -514,7 +514,7 @@ exports.Lexer = class Lexer
 
     prev = @prev()
     backslash = prev?[0] is '\\'
-    @seenFor = no unless backslash and @seenFor
+    @seenFor = no unless (backslash or @seenFor?.endsLength < @ends.length) and @seenFor
     @seenImport = no unless (backslash and @seenImport) or @importSpecifierList
     @seenExport = no unless (backslash and @seenExport) or @exportSpecifierList
 
