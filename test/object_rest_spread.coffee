@@ -459,3 +459,8 @@ test "#5291: soaks/prototype shorthands in object spread variables", ->
       c: 3
   eq {soakedCall?().b...}.c, 3
   eq {...soakedCall?().b}.c, 3
+
+  assignToPrototype =
+    prototype: {}
+  {...assignToPrototype::b} = c: 4
+  eq assignToPrototype::b.c, 4
