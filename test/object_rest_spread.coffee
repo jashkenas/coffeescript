@@ -440,3 +440,9 @@ test "#5168: allow indented property index", ->
         'c'
     ]
   }.c
+
+test "#5291: soaks/prototype shorthands in object spread variables", ->
+  a =
+    prototype:
+      b: {c: 1}
+  eq {a::b...}.c, 1

@@ -276,14 +276,8 @@ grammar =
   ]
 
   ObjSpreadIdentifier: [
-    o 'SimpleObjAssignable ObjSpreadAccessor', -> (new Value $1).add $2
-    o 'ObjSpreadExpr ObjSpreadAccessor',       -> (new Value $1).add $2
-  ]
-
-  ObjSpreadAccessor: [
-    o '. Property',                                      -> new Access $2
-    o 'INDEX_START IndexValue INDEX_END',                -> $2
-    o 'INDEX_START INDENT IndexValue OUTDENT INDEX_END', -> $3
+    o 'SimpleObjAssignable Accessor', -> (new Value $1).add $2
+    o 'ObjSpreadExpr Accessor',       -> (new Value $1).add $2
   ]
 
   # A return statement from a function body.
