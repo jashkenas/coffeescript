@@ -269,10 +269,10 @@ grammar =
     o 'Parenthetical'
     o 'Super'
     o 'This'
-    o 'SUPER Arguments',               -> new SuperCall LOC(1)(new Super), $2, no, $1
-    o 'DYNAMIC_IMPORT Arguments',      -> new DynamicImportCall LOC(1)(new DynamicImport), $2
-    o 'SimpleObjAssignable Arguments', -> new Call (new Value $1), $2
-    o 'ObjSpreadExpr Arguments',       -> new Call $1, $2
+    o 'SUPER OptFuncExist Arguments',               -> new SuperCall LOC(1)(new Super), $3, $2.soak, $1
+    o 'DYNAMIC_IMPORT Arguments',                   -> new DynamicImportCall LOC(1)(new DynamicImport), $2
+    o 'SimpleObjAssignable OptFuncExist Arguments', -> new Call (new Value $1), $3, $2.soak
+    o 'ObjSpreadExpr OptFuncExist Arguments',       -> new Call $1, $3, $2.soak
   ]
 
   ObjSpreadIdentifier: [
