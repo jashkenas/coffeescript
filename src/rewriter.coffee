@@ -342,7 +342,8 @@ exports.Rewriter = class Rewriter
         if stackTop()
           [stackTag, stackIdx] = stackTop()
           if (stackTag is '{' or stackTag is 'INDENT' and @tag(stackIdx - 1) is '{') and
-             (startsLine or @tag(s - 1) is ',' or @tag(s - 1) is '{')
+             (startsLine or @tag(s - 1) is ',' or @tag(s - 1) is '{') and
+             @tag(s - 1) not in UNFINISHED
             return forward(1)
 
         startImplicitObject(s, !!startsLine)
@@ -843,3 +844,8 @@ DISCARDED = ['(', ')', '[', ']', '{', '}', ':', '.', '..', '...', ',', '=', '++'
   'INTERPOLATION_START', 'INTERPOLATION_END', 'LEADING_WHEN', 'OUTDENT', 'PARAM_END',
   'REGEX_START', 'REGEX_END', 'RETURN', 'STRING_END', 'THROW', 'UNARY', 'YIELD'
 ].concat IMPLICIT_UNSPACED_CALL.concat IMPLICIT_END.concat CALL_CLOSERS.concat CONTROL_IN_IMPLICIT
+
+# Tokens that, when appearing at the end of a line, suppress a following TERMINATOR/INDENT token
+exports.UNFINISHED = UNFINISHED = ['\\', '.', '?.', '?::', 'UNARY', 'DO', 'DO_IIFE', 'MATH', 'UNARY_MATH', '+', '-',
+           '**', 'SHIFT', 'RELATION', 'COMPARE', '&', '^', '|', '&&', '||',
+           'BIN?', 'EXTENDS']

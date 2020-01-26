@@ -906,3 +906,9 @@ test "#4579: Postfix for/while/until in first line of implicit object literals",
 
 test "#5204: not parsed as static property", ->
   doesNotThrowCompileError "@ [b]: 2"
+
+test "#5292: implicit object after line continuer in implicit object property value", ->
+  a =
+    b: 0 or
+      c: 1
+  eq 1, a.b.c

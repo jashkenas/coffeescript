@@ -9,7 +9,7 @@
 # format that can be fed directly into [Jison](https://github.com/zaach/jison).  These
 # are read by jison in the `parser.lexer` function defined in coffeescript.coffee.
 
-{Rewriter, INVERSES} = require './rewriter'
+{Rewriter, INVERSES, UNFINISHED} = require './rewriter'
 
 # Import the helpers we need.
 {count, starts, compact, repeat, invertLiterate, merge,
@@ -1460,8 +1460,3 @@ LINE_BREAK = ['INDENT', 'OUTDENT', 'TERMINATOR']
 
 # Additional indent in front of these is ignored.
 INDENTABLE_CLOSERS = [')', '}', ']']
-
-# Tokens that, when appearing at the end of a line, suppress a following TERMINATOR/INDENT token
-UNFINISHED = ['\\', '.', '?.', '?::', 'UNARY', 'DO', 'DO_IIFE', 'MATH', 'UNARY_MATH', '+', '-',
-           '**', 'SHIFT', 'RELATION', 'COMPARE', '&', '^', '|', '&&', '||',
-           'BIN?', 'EXTENDS']
