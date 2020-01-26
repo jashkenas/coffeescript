@@ -912,3 +912,10 @@ test "#5292: implicit object after line continuer in implicit object property va
     b: 0 or
       c: 1
   eq 1, a.b.c
+
+  a =
+    b: null ?
+      c: 1
+    d: 2
+  eq 1, a.b.c
+  eq 2, a.d
