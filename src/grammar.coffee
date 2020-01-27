@@ -269,21 +269,15 @@ grammar =
     o 'Parenthetical'
     o 'Super'
     o 'This'
-    o 'SUPER Arguments',               -> new SuperCall LOC(1)(new Super), $2, no, $1
-    o 'DYNAMIC_IMPORT Arguments',      -> new DynamicImportCall LOC(1)(new DynamicImport), $2
-    o 'SimpleObjAssignable Arguments', -> new Call (new Value $1), $2
-    o 'ObjSpreadExpr Arguments',       -> new Call $1, $2
+    o 'SUPER OptFuncExist Arguments',               -> new SuperCall LOC(1)(new Super), $3, $2.soak, $1
+    o 'DYNAMIC_IMPORT Arguments',                   -> new DynamicImportCall LOC(1)(new DynamicImport), $2
+    o 'SimpleObjAssignable OptFuncExist Arguments', -> new Call (new Value $1), $3, $2.soak
+    o 'ObjSpreadExpr OptFuncExist Arguments',       -> new Call $1, $3, $2.soak
   ]
 
   ObjSpreadIdentifier: [
-    o 'SimpleObjAssignable ObjSpreadAccessor', -> (new Value $1).add $2
-    o 'ObjSpreadExpr ObjSpreadAccessor',       -> (new Value $1).add $2
-  ]
-
-  ObjSpreadAccessor: [
-    o '. Property',                                      -> new Access $2
-    o 'INDEX_START IndexValue INDEX_END',                -> $2
-    o 'INDEX_START INDENT IndexValue OUTDENT INDEX_END', -> $3
+    o 'SimpleObjAssignable Accessor', -> (new Value $1).add $2
+    o 'ObjSpreadExpr Accessor',       -> (new Value $1).add $2
   ]
 
   # A return statement from a function body.
