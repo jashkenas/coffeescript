@@ -1033,14 +1033,17 @@ exports.Lexer = class Lexer
   # Compensate for the things we strip out initially (e.g. carriage returns)
   # so that location data stays accurate with respect to the original source file.
   getLocationDataCompensation: (start, end) ->
-    compensation = 0
+    totalCompensation = 0
     initialEnd = end
-    for index, length of @locationDataCompensations
-      index = parseInt index, 10
-      continue unless start <= index and (index < end or index is end and start is initialEnd)
-      compensation += length
-      end += length
-    compensation
+    current = start
+    while current <= end
+      break if current is end and start isnt initialEnd
+      compensation = @locationDataCompensations[current]
+      if compensation?
+        totalCompensation += compensation
+        end += compensation
+      current++
+    return totalCompensation
 
   # Returns the line and column number from an offset into the current chunk.
   #
