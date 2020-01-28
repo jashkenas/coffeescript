@@ -209,8 +209,8 @@ exports.Rewriter = class Rewriter
         tokens.splice i, 0, generate 'CALL_END', ')', ['', 'end of input', token[2]], prevToken
         i += 1
 
-      startImplicitObject = (idx, startsLine = yes) ->
-        stack.push ['{', idx, sameLine: yes, startsLine: startsLine, ours: yes]
+      startImplicitObject = (idx, {startsLine = yes, continuationLineIndent} = {}) ->
+        stack.push ['{', idx, sameLine: yes, startsLine: startsLine, ours: yes, continuationLineIndent: continuationLineIndent]
         val = new String '{'
         val.generated = yes
         tokens.splice idx, 0, generate '{', val, token, prevToken
@@ -346,7 +346,8 @@ exports.Rewriter = class Rewriter
              @tag(s - 1) not in UNFINISHED
             return forward(1)
 
-        startImplicitObject(s, !!startsLine)
+        preObjectToken = if i > 1 then tokens[i - 2] else []
+        startImplicitObject(s, {startsLine: !!startsLine, continuationLineIndent: preObjectToken.continuationLineIndent})
         return forward(2)
 
       # End implicit calls when chaining method calls
@@ -369,6 +370,12 @@ exports.Rewriter = class Rewriter
         for stackItem in stack by -1
           break unless isImplicit stackItem
           stackItem[2].sameLine = no if isImplicitObject stackItem
+
+      # End indented-continuation-line implicit objects once that indentation is over.
+      if tag is 'TERMINATOR' and token.endsContinuationLineIndentation
+        {preContinuationLineIndent} = token.endsContinuationLineIndentation
+        while inImplicitObject() and (implicitObjectIndent = stackTop()[2].continuationLineIndent)? and implicitObjectIndent > preContinuationLineIndent
+          endImplicitObject()
 
       newLine = prevTag is 'OUTDENT' or prevToken.newLine
       if tag in IMPLICIT_END or

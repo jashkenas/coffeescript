@@ -538,6 +538,8 @@ exports.Lexer = class Lexer
     if size > @indent
       if noNewlines
         @indebt = size - @indent unless backslash
+        if @indebt
+          prev.continuationLineIndent = @indent + @indebt
         @suppressNewlines()
         return indent.length
       unless @tokens.length
@@ -554,13 +556,14 @@ exports.Lexer = class Lexer
     else if size < @baseIndent
       @error 'missing indentation', offset: offset + indent.length
     else
+      endsContinuationLineIndentation = @indebt > 0
       @indebt = 0
-      @outdentToken {moveOut: @indent - size, noNewlines, outdentLength: indent.length, offset, indentSize: size}
+      @outdentToken {moveOut: @indent - size, noNewlines, outdentLength: indent.length, offset, indentSize: size, endsContinuationLineIndentation}
     indent.length
 
   # Record an outdent token or multiple tokens, if we happen to be moving back
   # inwards past several recorded indents. Sets new @indent value.
-  outdentToken: ({moveOut, noNewlines, outdentLength = 0, offset = 0, indentSize}) ->
+  outdentToken: ({moveOut, noNewlines, outdentLength = 0, offset = 0, indentSize, endsContinuationLineIndentation}) ->
     decreasedIndent = @indent - moveOut
     while moveOut > 0
       lastIndent = @indents[@indents.length - 1]
@@ -582,7 +585,9 @@ exports.Lexer = class Lexer
     @outdebt -= moveOut if dent
     @suppressSemicolons()
 
-    @token 'TERMINATOR', '\n', offset: offset + outdentLength, length: 0 unless @tag() is 'TERMINATOR' or noNewlines
+    unless @tag() is 'TERMINATOR' or noNewlines
+      terminatorToken = @token 'TERMINATOR', '\n', offset: offset + outdentLength, length: 0
+      terminatorToken.endsContinuationLineIndentation = {preContinuationLineIndent: @indent} if endsContinuationLineIndentation
     @indent = decreasedIndent
     @indentLiteral = @indentLiteral[...decreasedIndent]
     this
