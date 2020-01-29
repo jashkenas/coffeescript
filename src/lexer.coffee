@@ -38,7 +38,7 @@ exports.Lexer = class Lexer
     @literate   = opts.literate  # Are we lexing literate CoffeeScript?
     @indent     = 0              # The current indentation level.
     @baseIndent = 0              # The overall minimum indentation level.
-    @indebt     = 0              # The over-indentation at the current level.
+    @continuationLineAdditionalIndent = 0 # The over-indentation at the current level.
     @outdebt    = 0              # The under-outdentation at the current level.
     @indents    = []             # The stack of all current indentation levels.
     @indentLiteral = ''          # The indentation.
@@ -531,15 +531,15 @@ exports.Lexer = class Lexer
       @error 'indentation mismatch', offset: indent.length
       return indent.length
 
-    if size - @indebt is @indent
+    if size - @continuationLineAdditionalIndent is @indent
       if noNewlines then @suppressNewlines() else @newlineToken offset
       return indent.length
 
     if size > @indent
       if noNewlines
-        @indebt = size - @indent unless backslash
-        if @indebt
-          prev.continuationLineIndent = @indent + @indebt
+        @continuationLineAdditionalIndent = size - @indent unless backslash
+        if @continuationLineAdditionalIndent
+          prev.continuationLineIndent = @indent + @continuationLineAdditionalIndent
         @suppressNewlines()
         return indent.length
       unless @tokens.length
@@ -550,14 +550,14 @@ exports.Lexer = class Lexer
       @token 'INDENT', diff, offset: offset + indent.length - size, length: size
       @indents.push diff
       @ends.push {tag: 'OUTDENT'}
-      @outdebt = @indebt = 0
+      @outdebt = @continuationLineAdditionalIndent = 0
       @indent = size
       @indentLiteral = newIndentLiteral
     else if size < @baseIndent
       @error 'missing indentation', offset: offset + indent.length
     else
-      endsContinuationLineIndentation = @indebt > 0
-      @indebt = 0
+      endsContinuationLineIndentation = @continuationLineAdditionalIndent > 0
+      @continuationLineAdditionalIndent = 0
       @outdentToken {moveOut: @indent - size, noNewlines, outdentLength: indent.length, offset, indentSize: size, endsContinuationLineIndentation}
     indent.length
 
