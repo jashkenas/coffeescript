@@ -9,7 +9,7 @@
 # format that can be fed directly into [Jison](https://github.com/zaach/jison).  These
 # are read by jison in the `parser.lexer` function defined in coffeescript.coffee.
 
-{Rewriter, INVERSES} = require './rewriter'
+{Rewriter, INVERSES, UNFINISHED} = require './rewriter'
 
 # Import the helpers we need.
 {count, starts, compact, repeat, invertLiterate, merge,
@@ -38,7 +38,7 @@ exports.Lexer = class Lexer
     @literate   = opts.literate  # Are we lexing literate CoffeeScript?
     @indent     = 0              # The current indentation level.
     @baseIndent = 0              # The overall minimum indentation level.
-    @indebt     = 0              # The over-indentation at the current level.
+    @continuationLineAdditionalIndent = 0 # The over-indentation at the current level.
     @outdebt    = 0              # The under-outdentation at the current level.
     @indents    = []             # The stack of all current indentation levels.
     @indentLiteral = ''          # The indentation.
@@ -531,13 +531,15 @@ exports.Lexer = class Lexer
       @error 'indentation mismatch', offset: indent.length
       return indent.length
 
-    if size - @indebt is @indent
+    if size - @continuationLineAdditionalIndent is @indent
       if noNewlines then @suppressNewlines() else @newlineToken offset
       return indent.length
 
     if size > @indent
       if noNewlines
-        @indebt = size - @indent unless backslash
+        @continuationLineAdditionalIndent = size - @indent unless backslash
+        if @continuationLineAdditionalIndent
+          prev.continuationLineIndent = @indent + @continuationLineAdditionalIndent
         @suppressNewlines()
         return indent.length
       unless @tokens.length
@@ -548,19 +550,20 @@ exports.Lexer = class Lexer
       @token 'INDENT', diff, offset: offset + indent.length - size, length: size
       @indents.push diff
       @ends.push {tag: 'OUTDENT'}
-      @outdebt = @indebt = 0
+      @outdebt = @continuationLineAdditionalIndent = 0
       @indent = size
       @indentLiteral = newIndentLiteral
     else if size < @baseIndent
       @error 'missing indentation', offset: offset + indent.length
     else
-      @indebt = 0
-      @outdentToken {moveOut: @indent - size, noNewlines, outdentLength: indent.length, offset, indentSize: size}
+      endsContinuationLineIndentation = @continuationLineAdditionalIndent > 0
+      @continuationLineAdditionalIndent = 0
+      @outdentToken {moveOut: @indent - size, noNewlines, outdentLength: indent.length, offset, indentSize: size, endsContinuationLineIndentation}
     indent.length
 
   # Record an outdent token or multiple tokens, if we happen to be moving back
   # inwards past several recorded indents. Sets new @indent value.
-  outdentToken: ({moveOut, noNewlines, outdentLength = 0, offset = 0, indentSize}) ->
+  outdentToken: ({moveOut, noNewlines, outdentLength = 0, offset = 0, indentSize, endsContinuationLineIndentation}) ->
     decreasedIndent = @indent - moveOut
     while moveOut > 0
       lastIndent = @indents[@indents.length - 1]
@@ -582,7 +585,9 @@ exports.Lexer = class Lexer
     @outdebt -= moveOut if dent
     @suppressSemicolons()
 
-    @token 'TERMINATOR', '\n', offset: offset + outdentLength, length: 0 unless @tag() is 'TERMINATOR' or noNewlines
+    unless @tag() is 'TERMINATOR' or noNewlines
+      terminatorToken = @token 'TERMINATOR', '\n', offset: offset + outdentLength, length: 0
+      terminatorToken.endsContinuationLineIndentation = {preContinuationLineIndent: @indent} if endsContinuationLineIndentation
     @indent = decreasedIndent
     @indentLiteral = @indentLiteral[...decreasedIndent]
     this
@@ -1463,8 +1468,3 @@ LINE_BREAK = ['INDENT', 'OUTDENT', 'TERMINATOR']
 
 # Additional indent in front of these is ignored.
 INDENTABLE_CLOSERS = [')', '}', ']']
-
-# Tokens that, when appearing at the end of a line, suppress a following TERMINATOR/INDENT token
-UNFINISHED = ['\\', '.', '?.', '?::', 'UNARY', 'DO', 'DO_IIFE', 'MATH', 'UNARY_MATH', '+', '-',
-           '**', 'SHIFT', 'RELATION', 'COMPARE', '&', '^', '|', '&&', '||',
-           'BIN?', 'EXTENDS']
