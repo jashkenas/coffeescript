@@ -693,7 +693,7 @@ textarea {
       <section id="introduction">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.5.0">2.5.0</a></p>
+<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.5.1">2.5.1</a></p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash"><span class="comment"># Install locally for a project:</span>
 npm install --save-dev coffeescript
 
@@ -4920,7 +4920,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
         <section id="annotated-source">
           <h2>Annotated Source</h2>
-<p>You can browse the CoffeeScript 2.5.0 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+<p>You can browse the CoffeeScript 2.5.1 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
 <li><a href="annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
@@ -5598,6 +5598,16 @@ x = <span class="number">2</span> + <span class="number">2</span>
       <section id="changelog">
         <h2>Changelog</h2>
 
+        <section id="2.5.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.5.0...2.5.1">2.5.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2020-01-31">2020-01-31</time></span>
+</h3><ul>
+<li>Object splats can now include prototype shorthands, such as <code>a = {b::c...}</code>; and soaks, such as <code>a = {b?.c..., d?()...}</code>.</li>
+<li>Bugfix for regression in 2.5.0 where compilation became much slower for files with Windows-style line endings.</li>
+<li>Bugfix for an implicit object after a line continuation keyword like <code>or</code> inside a larger implicit object.</li>
+</ul>
+
+        </section>
         <section id="2.5.0">
           <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.4.1...2.5.0">2.5.0</a>
   <span class="timestamp"> &mdash; <time datetime="2019-12-31">2019-12-31</time></span>

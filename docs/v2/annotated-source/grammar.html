@@ -657,21 +657,15 @@ the ordinary <strong>Assign</strong> is that these allow numbers and strings as 
     o <span class="hljs-string">'Parenthetical'</span>
     o <span class="hljs-string">'Super'</span>
     o <span class="hljs-string">'This'</span>
-    o <span class="hljs-string">'SUPER Arguments'</span>,               <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> SuperCall LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Super), $<span class="hljs-number">2</span>, <span class="hljs-literal">no</span>, $<span class="hljs-number">1</span>
-    o <span class="hljs-string">'DYNAMIC_IMPORT Arguments'</span>,      <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> DynamicImportCall LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> DynamicImport), $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'SimpleObjAssignable Arguments'</span>, <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Call (<span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>), $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'ObjSpreadExpr Arguments'</span>,       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Call $<span class="hljs-number">1</span>, $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'SUPER OptFuncExist Arguments'</span>,               <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> SuperCall LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> Super), $<span class="hljs-number">3</span>, $<span class="hljs-number">2.</span>soak, $<span class="hljs-number">1</span>
+    o <span class="hljs-string">'DYNAMIC_IMPORT Arguments'</span>,                   <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> DynamicImportCall LOC(<span class="hljs-number">1</span>)(<span class="hljs-keyword">new</span> DynamicImport), $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'SimpleObjAssignable OptFuncExist Arguments'</span>, <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Call (<span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>), $<span class="hljs-number">3</span>, $<span class="hljs-number">2.</span>soak
+    o <span class="hljs-string">'ObjSpreadExpr OptFuncExist Arguments'</span>,       <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Call $<span class="hljs-number">1</span>, $<span class="hljs-number">3</span>, $<span class="hljs-number">2.</span>soak
   ]
 
   ObjSpreadIdentifier: [
-    o <span class="hljs-string">'SimpleObjAssignable ObjSpreadAccessor'</span>, <span class="hljs-function">-&gt;</span> (<span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>).add $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'ObjSpreadExpr ObjSpreadAccessor'</span>,       <span class="hljs-function">-&gt;</span> (<span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>).add $<span class="hljs-number">2</span>
-  ]
-
-  ObjSpreadAccessor: [
-    o <span class="hljs-string">'. Property'</span>,                                      <span class="hljs-function">-&gt;</span> <span class="hljs-keyword">new</span> Access $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'INDEX_START IndexValue INDEX_END'</span>,                <span class="hljs-function">-&gt;</span> $<span class="hljs-number">2</span>
-    o <span class="hljs-string">'INDEX_START INDENT IndexValue OUTDENT INDEX_END'</span>, <span class="hljs-function">-&gt;</span> $<span class="hljs-number">3</span>
+    o <span class="hljs-string">'SimpleObjAssignable Accessor'</span>, <span class="hljs-function">-&gt;</span> (<span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>).add $<span class="hljs-number">2</span>
+    o <span class="hljs-string">'ObjSpreadExpr Accessor'</span>,       <span class="hljs-function">-&gt;</span> (<span class="hljs-keyword">new</span> Value $<span class="hljs-number">1</span>).add $<span class="hljs-number">2</span>
   ]</pre></div></div>
             
         </li>
