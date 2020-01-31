@@ -127,7 +127,7 @@ are read by jison in the <code>parser.lexer</code> function defined in coffeescr
             </div>
             
             <div class="content"><div class='highlight'><pre>
-{Rewriter, INVERSES} = <span class="hljs-built_in">require</span> <span class="hljs-string">'./rewriter'</span></pre></div></div>
+{Rewriter, INVERSES, UNFINISHED} = <span class="hljs-built_in">require</span> <span class="hljs-string">'./rewriter'</span></pre></div></div>
             
         </li>
         
@@ -212,7 +212,7 @@ it has consumed.</p>
     @literate   = opts.literate  <span class="hljs-comment"># Are we lexing literate CoffeeScript?</span>
     @indent     = <span class="hljs-number">0</span>              <span class="hljs-comment"># The current indentation level.</span>
     @baseIndent = <span class="hljs-number">0</span>              <span class="hljs-comment"># The overall minimum indentation level.</span>
-    @indebt     = <span class="hljs-number">0</span>              <span class="hljs-comment"># The over-indentation at the current level.</span>
+    @continuationLineAdditionalIndent = <span class="hljs-number">0</span> <span class="hljs-comment"># The over-indentation at the current level.</span>
     @outdebt    = <span class="hljs-number">0</span>              <span class="hljs-comment"># The under-outdentation at the current level.</span>
     @indents    = []             <span class="hljs-comment"># The stack of all current indentation levels.</span>
     @indentLiteral = <span class="hljs-string">''</span>          <span class="hljs-comment"># The indentation.</span>
@@ -996,13 +996,15 @@ can close multiple indents, so we need to know how far in we happen to be.</p>
       @error <span class="hljs-string">'indentation mismatch'</span>, offset: indent.length
       <span class="hljs-keyword">return</span> indent.length
 
-    <span class="hljs-keyword">if</span> size - @indebt <span class="hljs-keyword">is</span> @indent
+    <span class="hljs-keyword">if</span> size - @continuationLineAdditionalIndent <span class="hljs-keyword">is</span> @indent
       <span class="hljs-keyword">if</span> noNewlines <span class="hljs-keyword">then</span> @suppressNewlines() <span class="hljs-keyword">else</span> @newlineToken offset
       <span class="hljs-keyword">return</span> indent.length
 
     <span class="hljs-keyword">if</span> size &gt; @indent
       <span class="hljs-keyword">if</span> noNewlines
-        @indebt = size - @indent <span class="hljs-keyword">unless</span> backslash
+        @continuationLineAdditionalIndent = size - @indent <span class="hljs-keyword">unless</span> backslash
+        <span class="hljs-keyword">if</span> @continuationLineAdditionalIndent
+          prev.continuationLineIndent = @indent + @continuationLineAdditionalIndent
         @suppressNewlines()
         <span class="hljs-keyword">return</span> indent.length
       <span class="hljs-keyword">unless</span> @tokens.length
@@ -1013,14 +1015,15 @@ can close multiple indents, so we need to know how far in we happen to be.</p>
       @token <span class="hljs-string">'INDENT'</span>, diff, offset: offset + indent.length - size, length: size
       @indents.push diff
       @ends.push {tag: <span class="hljs-string">'OUTDENT'</span>}
-      @outdebt = @indebt = <span class="hljs-number">0</span>
+      @outdebt = @continuationLineAdditionalIndent = <span class="hljs-number">0</span>
       @indent = size
       @indentLiteral = newIndentLiteral
     <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> size &lt; @baseIndent
       @error <span class="hljs-string">'missing indentation'</span>, offset: offset + indent.length
     <span class="hljs-keyword">else</span>
-      @indebt = <span class="hljs-number">0</span>
-      @outdentToken {moveOut: @indent - size, noNewlines, outdentLength: indent.length, offset, indentSize: size}
+      endsContinuationLineIndentation = @continuationLineAdditionalIndent &gt; <span class="hljs-number">0</span>
+      @continuationLineAdditionalIndent = <span class="hljs-number">0</span>
+      @outdentToken {moveOut: @indent - size, noNewlines, outdentLength: indent.length, offset, indentSize: size, endsContinuationLineIndentation}
     indent.length</pre></div></div>
             
         </li>
@@ -1037,7 +1040,7 @@ inwards past several recorded indents. Sets new @indent value.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  outdentToken: <span class="hljs-function"><span class="hljs-params">({moveOut, noNewlines, outdentLength = <span class="hljs-number">0</span>, offset = <span class="hljs-number">0</span>, indentSize})</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  outdentToken: <span class="hljs-function"><span class="hljs-params">({moveOut, noNewlines, outdentLength = <span class="hljs-number">0</span>, offset = <span class="hljs-number">0</span>, indentSize, endsContinuationLineIndentation})</span> -&gt;</span>
     decreasedIndent = @indent - moveOut
     <span class="hljs-keyword">while</span> moveOut &gt; <span class="hljs-number">0</span>
       lastIndent = @indents[@indents.length - <span class="hljs-number">1</span>]
@@ -1072,7 +1075,9 @@ inwards past several recorded indents. Sets new @indent value.</p>
     @outdebt -= moveOut <span class="hljs-keyword">if</span> dent
     @suppressSemicolons()
 
-    @token <span class="hljs-string">'TERMINATOR'</span>, <span class="hljs-string">'\n'</span>, offset: offset + outdentLength, length: <span class="hljs-number">0</span> <span class="hljs-keyword">unless</span> @tag() <span class="hljs-keyword">is</span> <span class="hljs-string">'TERMINATOR'</span> <span class="hljs-keyword">or</span> noNewlines
+    <span class="hljs-keyword">unless</span> @tag() <span class="hljs-keyword">is</span> <span class="hljs-string">'TERMINATOR'</span> <span class="hljs-keyword">or</span> noNewlines
+      terminatorToken = @token <span class="hljs-string">'TERMINATOR'</span>, <span class="hljs-string">'\n'</span>, offset: offset + outdentLength, length: <span class="hljs-number">0</span>
+      terminatorToken.endsContinuationLineIndentation = {preContinuationLineIndent: @indent} <span class="hljs-keyword">if</span> endsContinuationLineIndentation
     @indent = decreasedIndent
     @indentLiteral = @indentLiteral[...decreasedIndent]
     <span class="hljs-keyword">this</span></pre></div></div>
@@ -1977,14 +1982,17 @@ so that location data stays accurate with respect to the original source file.</
             </div>
             
             <div class="content"><div class='highlight'><pre>  getLocationDataCompensation: <span class="hljs-function"><span class="hljs-params">(start, end)</span> -&gt;</span>
-    compensation = <span class="hljs-number">0</span>
+    totalCompensation = <span class="hljs-number">0</span>
     initialEnd = end
-    <span class="hljs-keyword">for</span> index, length <span class="hljs-keyword">of</span> @locationDataCompensations
-      index = parseInt index, <span class="hljs-number">10</span>
-      <span class="hljs-keyword">continue</span> <span class="hljs-keyword">unless</span> start &lt;= index <span class="hljs-keyword">and</span> (index &lt; end <span class="hljs-keyword">or</span> index <span class="hljs-keyword">is</span> end <span class="hljs-keyword">and</span> start <span class="hljs-keyword">is</span> initialEnd)
-      compensation += length
-      end += length
-    compensation</pre></div></div>
+    current = start
+    <span class="hljs-keyword">while</span> current &lt;= end
+      <span class="hljs-keyword">break</span> <span class="hljs-keyword">if</span> current <span class="hljs-keyword">is</span> end <span class="hljs-keyword">and</span> start <span class="hljs-keyword">isnt</span> initialEnd
+      compensation = @locationDataCompensations[current]
+      <span class="hljs-keyword">if</span> compensation?
+        totalCompensation += compensation
+        end += compensation
+      current++
+    <span class="hljs-keyword">return</span> totalCompensation</pre></div></div>
             
         </li>
         
@@ -3012,23 +3020,6 @@ avoid an ambiguity in the grammar.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>INDENTABLE_CLOSERS = [<span class="hljs-string">')'</span>, <span class="hljs-string">'}'</span>, <span class="hljs-string">']'</span>]</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-120">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-120">&#182;</a>
-              </div>
-              <p>Tokens that, when appearing at the end of a line, suppress a following TERMINATOR/INDENT token</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>UNFINISHED = [<span class="hljs-string">'\\'</span>, <span class="hljs-string">'.'</span>, <span class="hljs-string">'?.'</span>, <span class="hljs-string">'?::'</span>, <span class="hljs-string">'UNARY'</span>, <span class="hljs-string">'DO'</span>, <span class="hljs-string">'DO_IIFE'</span>, <span class="hljs-string">'MATH'</span>, <span class="hljs-string">'UNARY_MATH'</span>, <span class="hljs-string">'+'</span>, <span class="hljs-string">'-'</span>,
-           <span class="hljs-string">'**'</span>, <span class="hljs-string">'SHIFT'</span>, <span class="hljs-string">'RELATION'</span>, <span class="hljs-string">'COMPARE'</span>, <span class="hljs-string">'&amp;'</span>, <span class="hljs-string">'^'</span>, <span class="hljs-string">'|'</span>, <span class="hljs-string">'&amp;&amp;'</span>, <span class="hljs-string">'||'</span>,
-           <span class="hljs-string">'BIN?'</span>, <span class="hljs-string">'EXTENDS'</span>]</pre></div></div>
             
         </li>
         
