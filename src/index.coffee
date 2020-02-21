@@ -95,12 +95,11 @@ CoffeeScript.eval = (code, options = {}) ->
   o[k] = v for own k, v of options
   o.bare = on # ensure return value
   js = CoffeeScript.compile code, o
-  streaming = options['stream-input']
   if sandbox is global
-    global.line = options['current-line'] if streaming
+    global.line = options.current_line if options.stream
     vm.runInThisContext js
   else
-    sandbox.line = options['current-line'] if streaming
+    sandbox.line = options.current_line if options.stream
     vm.runInContext js, sandbox
 
 CoffeeScript.register = -> require './register'

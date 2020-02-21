@@ -13,7 +13,7 @@ Once installed, you should have access to the `coffee` command, which can execut
 | `-w, --watch` | Watch files for changes, rerunning the specified command when any file is updated. |
 | `-p, --print` | Instead of writing out the JavaScript as a file, print it directly to **stdout**. |
 | `-s, --stdio` | Pipe in CoffeeScript to STDIN and get back JavaScript over STDOUT. Good for use with processes written in other languages. An example:<br>`cat src/cake.coffee | coffee -sc` |
-| `-S, --stream-input` | Run script on each line of STDIN, like perl's `-n` switch. For example:<br>`coffee -S -e 'console.log line.length, line' < src/cake.coffee` |
+| `-S, --stream` | Run script on each line of STDIN, like perl's `-n` switch. For example:<br>`coffee -Se 'console.log line.length, line' < src/cake.coffee` |
 | `-l, --literate` | Parses the code as Literate CoffeeScript. You only need to specify this when passing in code directly over **stdio**, or using some sort of extension-less file name. |
 | `-e, --eval` | Compile and print a little snippet of CoffeeScript directly from the command line. For example:<br>`coffee -e "console.log num for num in [10..1]"` |
 | `-r, --require [MODULE]`&emsp; | `require()` the given module before starting the REPL or evaluating the code given with the `--eval` flag. |

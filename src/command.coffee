@@ -50,7 +50,7 @@ SWITCHES = [
   ['-p', '--print',             'print out the compiled JavaScript']
   ['-r', '--require [MODULE*]', 'require the given module before eval or REPL']
   ['-s', '--stdio',             'listen for and compile scripts over stdio']
-  ['-S', '--stream-input',      'stream stdin and run script on each line']
+  ['-S', '--stream',            'stream stdin and run script on each line']
   ['-t', '--transpile',         'pipe generated JavaScript through Babel']
   [      '--tokens',            'print out the tokens that the lexer/rewriter produce']
   ['-v', '--version',           'display the version number']
@@ -101,7 +101,7 @@ exports.run = ->
   return version()                              if opts.version
   return require('./repl').start(replCliOpts)   if opts.interactive
   return compileStdio()                         if opts.stdio
-  return compileScript null, opts.arguments[0]  if opts.eval or opts['stream-input']
+  return compileScript null, opts.arguments[0]  if opts.eval or opts.stream
   return require('./repl').start(replCliOpts)   unless opts.arguments.length
   literals = if opts.run then opts.arguments.splice 1 else []
   process.argv = process.argv[0..1].concat literals
@@ -213,10 +213,10 @@ compileScript = (file, input, base = null) ->
     else if opts.ast
       compiled = CoffeeScript.compile task.input, task.options
       printLine JSON.stringify(compiled, null, 2)
-    else if opts.run or opts['stream-input']
+    else if opts.run or opts.stream
       CoffeeScript.register()
       CoffeeScript.eval opts.prelude, task.options if opts.prelude
-      if opts['stream-input']
+      if opts.stream
         streamInput task.input, task.options
       else
         CoffeeScript.run task.input, task.options
@@ -266,18 +266,18 @@ compileStdio = ->
 # Read each line of **stdin** and eval the passed-in script with `line` set to
 # the current line.
 streamInput = (input, options) ->
-  options['stream-input'] = yes
+  options.stream = yes
   if not input
-    console.error '--stream-input requires a script to run via filename or -e'
+    console.error '--stream requires a script to run via filename or -e'
     process.exit 1
   if opts.stdio
-    console.error '--stream-input and --stdio cannot be used together'
+    console.error '--stream and --stdio cannot be used together'
     process.exit 1
   rl = readline.createInterface
     input: process.stdin
     terminal: false
   rl.on 'line', (line) ->
-    options['current-line'] = line
+    options.current_line = line
     CoffeeScript.eval input, options
 
 # If all of the source files are done being read, concatenate and compile
