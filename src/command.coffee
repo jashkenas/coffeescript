@@ -101,7 +101,7 @@ exports.run = ->
   return version()                              if opts.version
   return require('./repl').start(replCliOpts)   if opts.interactive
   return compileStdio()                         if opts.stdio
-  return compileScript null, opts.arguments[0]  if opts.eval
+  return compileScript null, opts.arguments[0]  if opts.eval or opts['stream-input']
   return require('./repl').start(replCliOpts)   unless opts.arguments.length
   literals = if opts.run then opts.arguments.splice 1 else []
   process.argv = process.argv[0..1].concat literals
@@ -213,7 +213,7 @@ compileScript = (file, input, base = null) ->
     else if opts.ast
       compiled = CoffeeScript.compile task.input, task.options
       printLine JSON.stringify(compiled, null, 2)
-    else if opts.run
+    else if opts.run or opts['stream-input']
       CoffeeScript.register()
       CoffeeScript.eval opts.prelude, task.options if opts.prelude
       if opts['stream-input']
@@ -267,9 +267,14 @@ compileStdio = ->
 # the current line.
 streamInput = (input, options) ->
   options['stream-input'] = yes
+  if not input
+    console.error '--stream-input requires a script to run via filename or -e'
+    process.exit 1
+  if opts.stdio
+    console.error '--stream-input and --stdio cannot be used together'
+    process.exit 1
   rl = readline.createInterface
     input: process.stdin
-    output: process.stdout
     terminal: false
   rl.on 'line', (line) ->
     options['current-line'] = line
