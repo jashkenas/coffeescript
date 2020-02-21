@@ -136,6 +136,7 @@ If called without options, `coffee` will run your script.
   -p, --print        print out the compiled JavaScript
   -r, --require      require the given module before eval or REPL
   -s, --stdio        listen for and compile scripts over stdio
+  -S, --stream-input stream stdin and run script on each line
   -t, --transpile    pipe generated JavaScript through Babel
       --tokens       print out the tokens that the lexer/rewriter produce
   -v, --version      display the version number

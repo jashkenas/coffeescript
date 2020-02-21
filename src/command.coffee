@@ -12,6 +12,7 @@ optparse       = require './optparse'
 CoffeeScript   = require './'
 {spawn, exec}  = require 'child_process'
 {EventEmitter} = require 'events'
+readline       = require 'readline'
 
 useWinPathSep  = path.sep is '\\'
 
@@ -49,6 +50,7 @@ SWITCHES = [
   ['-p', '--print',             'print out the compiled JavaScript']
   ['-r', '--require [MODULE*]', 'require the given module before eval or REPL']
   ['-s', '--stdio',             'listen for and compile scripts over stdio']
+  ['-S', '--stream-input',      'stream stdin and run script on each line']
   ['-t', '--transpile',         'pipe generated JavaScript through Babel']
   [      '--tokens',            'print out the tokens that the lexer/rewriter produce']
   ['-v', '--version',           'display the version number']
@@ -214,7 +216,10 @@ compileScript = (file, input, base = null) ->
     else if opts.run
       CoffeeScript.register()
       CoffeeScript.eval opts.prelude, task.options if opts.prelude
-      CoffeeScript.run task.input, task.options
+      if opts['stream-input']
+        streamInput task.input, task.options
+      else
+        CoffeeScript.run task.input, task.options
     else if opts.join and task.file isnt opts.join
       task.input = helpers.invertLiterate task.input if helpers.isLiterate file
       sourceCode[sources.indexOf(task.file)] = task.input
@@ -257,6 +262,18 @@ compileStdio = ->
     buffers.push buffer if buffer
   stdin.on 'end', ->
     compileScript null, Buffer.concat(buffers).toString()
+
+# Read each line of **stdin** and eval the passed-in script with `line` set to
+# the current line.
+streamInput = (input, options) ->
+  options['stream-input'] = yes
+  rl = readline.createInterface
+    input: process.stdin
+    output: process.stdout
+    terminal: false
+  rl.on 'line', (line) ->
+    options['current-line'] = line
+    CoffeeScript.eval input, options
 
 # If all of the source files are done being read, concatenate and compile
 # them together.
