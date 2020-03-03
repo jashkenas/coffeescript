@@ -77,18 +77,18 @@ test "outputs expected help text", ->
 
 banner text
 
-  -r, --required     desc required
-  -o, --optional     desc optional
-  -l, --list         desc list
+  -r, --required         desc required
+  -o, --optional         desc optional
+  -l, --list             desc list
 
   '''
   ok opt.help() is expectedBanner
 
   expected = [
     ''
-    '  -r, --required     desc required'
-    '  -o, --optional     desc optional'
-    '  -l, --list         desc list'
+    '  -r, --required         desc required'
+    '  -o, --optional         desc optional'
+    '  -l, --list             desc list'
     ''
   ].join('\n')
   ok new OptionParser(flags).help() is expected
