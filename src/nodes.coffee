@@ -2811,8 +2811,9 @@ exports.Class = class Class extends Base
     if @boundMethods.length and @parent
       @variable ?= new IdentifierLiteral o.scope.freeVariable '_class'
       [@variable, @variableRef] = @variable.cache o unless @variableRef?
-
-    if @variable
+    
+    # create assignment when node is not a class or when it is, then the option noClassAssign needs to be false
+    if @variable and (node not instanceof Class or (node instanceof Class and not o.noClassAssign))
       node = new Assign @variable, node, null, { @moduleDeclaration }
 
     @compileNode = @compileClassDeclaration
