@@ -10,6 +10,7 @@ transpile = (method, code, options = {}) ->
     presets: [['@babel/env', {targets: browsers: ['ie 6']}]]
   CoffeeScript[method] code, options
 
+compileWithNoClassAssign = (code) -> CoffeeScript.compile(code, {noClassAssign: on, bare: on}).replace /^\s+|\s+$/g, ''
 
 test "ensure that carriage returns don't break compilation on Windows", ->
   doesNotThrowCompileError 'one\r\ntwo', bare: on
@@ -173,3 +174,22 @@ test "#3306: trailing comma in a function call in the last line", ->
   ''', '''
   foo(bar);
   '''
+
+test "no class assignment to variables of named classes", ->
+  cs = "class A"
+  js = "class A {};"
+  eq compileWithNoClassAssign(cs), js
+
+  cs = '''
+  angular.module("app").service class MyService
+    constructor: (@$log) ->
+  '''
+  js = '''
+  angular.module("app").service(class MyService {
+    constructor($log) {
+      this.$log = $log;
+    }
+
+  });
+  '''
+  eq compileWithNoClassAssign(cs), js
