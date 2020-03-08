@@ -4527,7 +4527,7 @@ exports.Elision = class Elision extends Base
 # it, all other loops can be manufactured. Useful in cases where you need more
 # flexibility or more speed than a comprehension can provide.
 exports.While = class While extends Base
-  constructor: (@condition, {@invert, @guard, @isLoop} = {}) ->
+  constructor: (@condition, {invert: @inverted, @guard, @isLoop} = {}) ->
     super()
 
   children: ['condition', 'guard', 'body']
@@ -4578,7 +4578,7 @@ exports.While = class While extends Base
     answer
 
   processedCondition: ->
-    @processedConditionCache ?= if @invert then @condition.invert() else @condition
+    @processedConditionCache ?= if @inverted then @condition.invert() else @condition
 
   astType: -> 'WhileStatement'
 
@@ -4587,7 +4587,7 @@ exports.While = class While extends Base
       test: @condition.ast o, LEVEL_PAREN
       body: @body.ast o, LEVEL_TOP
       guard: @guard?.ast(o) ? null
-      inverted: !!@invert
+      inverted: !!@inverted
       postfix: !!@postfix
       loop: !!@isLoop
 
