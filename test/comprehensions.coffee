@@ -613,3 +613,8 @@ test "for pattern variables can linebreak/indent", ->
     anotherNonexistentElement
   ] in listOfArrays
   eq a, 2
+
+test "#5309: comprehension as postfix condition", ->
+  doesNotThrowCompileError """
+    throw new Error "DOOM was called with a null element" unless elm? for elm in elms
+  """
