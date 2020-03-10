@@ -43,13 +43,13 @@
     "@babel/core": "7.7.7",
     "@babel/preset-env": "7.7.7",
     "babel-preset-minify": "^0.5.1",
-    "codemirror": "^5.50.0",
+    "codemirror": "^5.52.0",
     "docco": "~0.8.0",
-    "highlight.js": "~9.17.1",
+    "highlight.js": "^9.18.1",
     "jison": "^0.4.18",
     "markdown-it": "~10.0.0",
-    "underscore": "~1.9.1",
-    "webpack": "~4.41.5"
+    "underscore": "^1.9.2",
+    "webpack": "^4.42.0"
   },
   "dependencies": {}
 }
