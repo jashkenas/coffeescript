@@ -186,7 +186,11 @@ exports.Lexer = class Lexer
       else if tag is 'UNLESS'
         tag = 'IF'
       else if tag is 'IMPORT'
-        @seenImport = yes
+        if match.input.match /^import\.meta/
+          tag = 'IMPORT_META'
+          #tag = 'IDENTIFIER' # Easy solver, poor result.
+        else
+          @seenImport = yes
       else if tag is 'EXPORT'
         @seenExport = yes
       else if tag in UNARY

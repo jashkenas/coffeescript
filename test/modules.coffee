@@ -941,3 +941,22 @@ test "#4834: dynamic import", ->
       return bar = (await import('bar'));
     };
   """
+
+test "#5317: Support import.meta", ->
+  eqJS """
+    foo = import.meta
+  """,
+  """
+    foo = import.meta;
+  """
+
+  eqJS """
+    foo = import.meta.bar
+  """,
+  """
+    foo = import.meta.bar;
+  """
+
+  throwsCompileError """
+    foo = import.something
+  """

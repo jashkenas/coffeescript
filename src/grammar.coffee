@@ -246,6 +246,7 @@ grammar =
     o 'Identifier'
     o 'Property'
     o 'ThisProperty'
+    o 'IMPORT_META'
   ]
 
   ObjAssignable: [
@@ -458,6 +459,10 @@ grammar =
     o 'IMPORT { ImportSpecifierList OptComma } FROM String',                          -> new ImportDeclaration new ImportClause(null, new ImportSpecifierList $3), $7
     o 'IMPORT ImportDefaultSpecifier , ImportNamespaceSpecifier FROM String',         -> new ImportDeclaration new ImportClause($2, $4), $6
     o 'IMPORT ImportDefaultSpecifier , { ImportSpecifierList OptComma } FROM String', -> new ImportDeclaration new ImportClause($2, new ImportSpecifierList $5), $9
+    # Fail with "unexpected import"
+    #o 'IMPORT_META',                                                                  -> new ImportMeta $1
+    # Fail with "unexpected end of input"
+    o 'IMPORT_META . Property',                                                       -> new ImportMeta $1, new PropertyName $3
   ]
 
   ImportSpecifierList: [
