@@ -246,7 +246,6 @@ grammar =
     o 'Identifier'
     o 'Property'
     o 'ThisProperty'
-    o 'IMPORT_META'
   ]
 
   ObjAssignable: [
@@ -397,6 +396,7 @@ grammar =
   # A "meta-property" access e.g. `new.target`
   MetaProperty: [
     o 'NEW_TARGET . Property',                  -> new MetaProperty LOC(1)(new IdentifierLiteral $1), LOC(3)(new Access $3)
+    o 'IMPORT_META . Property',                 -> new MetaProperty LOC(1)(new IdentifierLiteral $1), LOC(3)(new Access $3)
   ]
 
   # The general group of accessors into an object, by property, by prototype
@@ -459,10 +459,6 @@ grammar =
     o 'IMPORT { ImportSpecifierList OptComma } FROM String',                          -> new ImportDeclaration new ImportClause(null, new ImportSpecifierList $3), $7
     o 'IMPORT ImportDefaultSpecifier , ImportNamespaceSpecifier FROM String',         -> new ImportDeclaration new ImportClause($2, $4), $6
     o 'IMPORT ImportDefaultSpecifier , { ImportSpecifierList OptComma } FROM String', -> new ImportDeclaration new ImportClause($2, new ImportSpecifierList $5), $9
-    # Fail with "unexpected import"
-    #o 'IMPORT_META',                                                                  -> new ImportMeta $1
-    # Fail with "unexpected end of input"
-    o 'IMPORT_META . Property',                                                       -> new ImportMeta $1, new PropertyName $3
   ]
 
   ImportSpecifierList: [

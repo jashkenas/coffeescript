@@ -947,6 +947,8 @@ test "#5317: Support import.meta", ->
     foo = import.meta
   """,
   """
+    var foo;
+
     foo = import.meta;
   """
 
@@ -954,6 +956,8 @@ test "#5317: Support import.meta", ->
     foo = import.meta.bar
   """,
   """
+    var foo;
+
     foo = import.meta.bar;
   """
 

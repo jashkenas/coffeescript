@@ -1576,6 +1576,9 @@ exports.MetaProperty = class MetaProperty extends Base
           @error "new.target can only occur inside functions"
       else
         @error "the only valid meta property for new is new.target"
+    else if @meta.value is 'import'
+      unless @property instanceof Access and @property.name.value is 'meta'
+        @error "the only valid meta property for import is import.meta"
 
   compileNode: (o) ->
     @checkValid o
@@ -3221,26 +3224,6 @@ exports.ModuleDeclaration = class ModuleDeclaration extends Base
     # whether we’re at the “program top-level”.
     if o.indent.length isnt 0
       @error "#{moduleDeclarationType} statements must be at top-level scope"
-
-exports.ImportMeta = class ImportMeta extends Literal
-  isAssignable: YES
-
-  constructor: (value, @meta) ->
-    super value
-    if @meta and @meta.value.value isnt 'meta'
-      @error "\"#{@meta.value.value}\" is not a valid import attribute."
-
-  astProperties: ->
-    return
-      name: @value
-      declaration: no
-
-  # compileNode: (o) ->
-  #   code = []
-  #   code.push @makeCode "#{@tab}import.meta"
-  #   code.push @makeCode ';'
-  #   code
-
 
 exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
   compileNode: (o) ->
