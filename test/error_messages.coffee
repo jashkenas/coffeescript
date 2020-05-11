@@ -1967,6 +1967,15 @@ test "`new.target` is only allowed meta property", ->
        ^^^^^^^^^^^^^
   '''
 
+test "`import.meta` is only allowed meta property", ->
+  assertErrorFormat '''
+    foo = import.something
+  ''', '''
+    [stdin]:1:7: error: the only valid meta property for import is import.meta
+    foo = import.something
+          ^^^^^^^^^^^^^^^^
+  '''
+
 test "`new.target` cannot be assigned", ->
   assertErrorFormat '''
     ->

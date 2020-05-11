@@ -991,7 +991,3 @@ test "#5317: Support import.meta", ->
 
     foo = import.meta.bar;
   """
-
-  throwsCompileError """
-    foo = import.something
-  """
