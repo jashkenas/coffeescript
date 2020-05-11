@@ -186,10 +186,7 @@ exports.Lexer = class Lexer
       else if tag is 'UNLESS'
         tag = 'IF'
       else if tag is 'IMPORT'
-        if match.input.match /^import\s*\.\s*[_a-zA-Z$][_a-zA-Z$0-9]*/
-          tag = 'IMPORT_META'
-        else
-          @seenImport = yes
+        @seenImport = yes
       else if tag is 'EXPORT'
         @seenExport = yes
       else if tag in UNARY
@@ -217,6 +214,9 @@ exports.Lexer = class Lexer
         without parentheses", prev[2]
       else if prev[0] is '.' and @tokens.length > 1 and (prevprev = @tokens[@tokens.length - 2])[0] is 'UNARY' and prevprev[1] is 'new'
         prevprev[0] = 'NEW_TARGET'
+      else if prev[0] is '.' and @tokens.length > 1 and (prevprev = @tokens[@tokens.length - 2])[0] is 'IMPORT' and prevprev[1] is 'import'
+        @seenImport = no
+        prevprev[0] = 'IMPORT_META'
       else if @tokens.length > 2
         prevprev = @tokens[@tokens.length - 2]
         if prev[0] in ['@', 'THIS'] and prevprev and prevprev.spaced and
