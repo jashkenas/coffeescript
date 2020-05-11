@@ -186,7 +186,7 @@ exports.Lexer = class Lexer
       else if tag is 'UNLESS'
         tag = 'IF'
       else if tag is 'IMPORT'
-        if match.input.match /^import\..+/
+        if match.input.match /^import\s*\.\s*[_a-zA-Z$][_a-zA-Z$0-9]*/
           tag = 'IMPORT_META'
         else
           @seenImport = yes

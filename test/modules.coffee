@@ -953,7 +953,38 @@ test "#5317: Support import.meta", ->
   """
 
   eqJS """
+    foo = import
+        .meta
+  """,
+  """
+    var foo;
+
+    foo = import.meta;
+  """
+
+  eqJS """
+    foo = import.
+        meta
+  """,
+  """
+    var foo;
+
+    foo = import.meta;
+  """
+
+  eqJS """
     foo = import.meta.bar
+  """,
+  """
+    var foo;
+
+    foo = import.meta.bar;
+  """
+
+  eqJS """
+    foo = import
+        .meta
+        .bar
   """,
   """
     var foo;
