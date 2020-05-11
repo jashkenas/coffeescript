@@ -4041,7 +4041,7 @@ test "AST as expected for If node", ->
         inverted: no
       ]
 
-test "AST as expected for MetaProperty node", ->
+test "AST as expected for `new.target` MetaProperty node", ->
   testExpression '''
     -> new.target
   ''',
@@ -4073,6 +4073,25 @@ test "AST as expected for MetaProperty node", ->
           property: ID 'name'
           computed: no
       ]
+
+test "AST as expected for `import.meta` MetaProperty node", ->
+  testExpression '''
+    import.meta
+  ''',
+    type: 'MetaProperty'
+    meta: ID 'import'
+    property: ID 'meta'
+
+  testExpression '''
+    import.meta.name
+  ''',
+    type: 'MemberExpression'
+    object:
+      type: 'MetaProperty'
+      meta: ID 'import'
+      property: ID 'meta'
+    property: ID 'name'
+    computed: no
 
 test "AST as expected for dynamic import", ->
   testExpression '''
