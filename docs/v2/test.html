@@ -50,9 +50,10 @@ start = new Date
 @currentFile = ''
 @passedTests = failedTests = total = done = 0
 
-say = (msg, className) ->
+say = (msg, className, id) ->
   div = document.createElement 'div'
   div.className = className if className?
+  div.id = id if id?
   div.appendChild document.createTextNode msg
   stdout.appendChild div
   msg
@@ -219,7 +220,7 @@ done = ->
   sec = (new Date - start) / 1000
   msg = "passed #{passedTests} tests in #{sec.toFixed 2} seconds"
   msg = "failed #{total - passedTests} tests and #{msg}" unless yay
-  say msg, (if yay then 'good' else 'bad')
+  say msg, (if yay then 'good' else 'bad'), 'result'
 
   gtag 'event', 'tests_complete',
     event_category: 'tests'
