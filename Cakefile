@@ -368,11 +368,13 @@ task 'release', 'build and test the CoffeeScript source, and build the documenta
   execSync '''
     cake build:full
     cake build:browser
+    cake doc:test
+    cake test:browser:node
     cake test:browser
     cake test:integrations
     cake doc:site
-    cake doc:test
-    cake doc:source''', stdio: 'inherit'
+    cake doc:source
+  ''', stdio: 'inherit'
 
 
 task 'bench', 'quick benchmark of compilation time', ->
@@ -495,7 +497,65 @@ task 'test', 'run the CoffeeScript language test suite', ->
   runTests(CoffeeScript).catch -> process.exit 1
 
 
-task 'test:browser', 'run the test suite against the merged browser script', ->
+task 'test:browser', 'run the test suite against the modern browser compiler in a headless browser', ->
+  # This test uses Puppeteer to launch headless Chrome to test the ES module
+  # version of the browser compiler. There’s no reason to run this test in old
+  # versions of Node (the runtime is the headless Chrome browser, not Node),
+  # and Puppeteer 3 only supports Node >= 10.18.1, so limit this test to those
+  # versions. The code below uses `Promise.prototype.finally` because the 
+  # CoffeeScript codebase currently maintains compatibility with Node 6, which
+  # did not support `async`/`await` syntax. Even though this test doesn’t run
+  # in Node 6, it needs to still _parse_ in Node 6 so that this file can load.
+  [major, minor, build] = process.versions.node.split('.').map (n) -> parseInt(n, 10)
+  return if major < 10 or (major is 10 and minor < 18) or (major is 10 and minor is 18 and build < 1)
+
+  # Create very simple web server to serve the two files we need.
+  http = require 'http'
+  serveFile = (res, fileToServe, mimeType) ->
+    res.statusCode = 200
+    res.setHeader 'Content-Type', mimeType
+    fs.createReadStream(fileToServe).pipe res
+  server = http.createServer (req, res) ->
+    if req.url is '/'
+      serveFile res, path.join(__dirname, 'docs', "v#{majorVersion}", 'test.html'), 'text/html'
+    else if req.url is '/browser-compiler-modern/coffeescript.js'
+      # The `text/javascript` MIME type is required for an ES module file to be
+      # loaded in a browser.
+      serveFile res, path.join(__dirname, 'docs', "v#{majorVersion}", 'browser-compiler-modern', 'coffeescript.js'), 'text/javascript'
+    else
+      res.statusCode = 404
+      res.end()
+  server.listen 8080
+
+  puppeteer = require 'puppeteer'
+  browser = page = result = null
+  puppeteer.launch()
+  .then((browserHandle) ->
+    browser = browserHandle
+    browser.newPage()
+  ).then((pageHandle) ->
+    page = pageHandle
+    page.goto 'http://localhost:8080/'
+  ).then(->
+    page.waitFor '#result',
+      visible: yes
+      polling: 'mutation'
+  ).then((element) ->
+    page.evaluate ((el) => el.textContent), element
+  ).then((elementText) ->
+    result = elementText
+  ).finally(->
+    browser.close()
+  ).finally ->
+    server.close()
+    if result and 'failed' not in result
+      log result, green
+    else
+      log result, red
+      process.exit 1
+
+
+task 'test:browser:node', 'run the test suite against the legacy browser compiler in Node', ->
   source = fs.readFileSync "lib/coffeescript-browser-compiler-legacy/coffeescript.js", 'utf-8'
   result = {}
   global.testingBrowser = yes
