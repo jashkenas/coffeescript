@@ -941,3 +941,53 @@ test "#4834: dynamic import", ->
       return bar = (await import('bar'));
     };
   """
+
+test "#5317: Support import.meta", ->
+  eqJS """
+    foo = import.meta
+  """,
+  """
+    var foo;
+
+    foo = import.meta;
+  """
+
+  eqJS """
+    foo = import
+        .meta
+  """,
+  """
+    var foo;
+
+    foo = import.meta;
+  """
+
+  eqJS """
+    foo = import.
+        meta
+  """,
+  """
+    var foo;
+
+    foo = import.meta;
+  """
+
+  eqJS """
+    foo = import.meta.bar
+  """,
+  """
+    var foo;
+
+    foo = import.meta.bar;
+  """
+
+  eqJS """
+    foo = import
+        .meta
+        .bar
+  """,
+  """
+    var foo;
+
+    foo = import.meta.bar;
+  """

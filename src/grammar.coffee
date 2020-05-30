@@ -34,6 +34,9 @@ o = (patternString, action, options) ->
   patternString = patternString.replace /\s{2,}/g, ' '
   patternCount = patternString.split(' ').length
   if action
+    # This code block does string replacements in the generated `parser.js`
+    # file, replacing the calls to the `LOC` function and other strings as
+    # listed below.
     action = if match = unwrap.exec action then match[1] else "(#{action}())"
 
     # All runtime functions we need are defined on `yy`
@@ -47,8 +50,33 @@ o = (patternString, action, options) ->
     getAddDataToNodeFunctionString = (first, last, forceUpdateLocation = yes) ->
       "yy.addDataToNode(yy, @#{first}, #{if first[0] is '$' then '$$' else '$'}#{first}, #{if last then "@#{last}, #{if last[0] is '$' then '$$' else '$'}#{last}" else 'null, null'}, #{if forceUpdateLocation then 'true' else 'false'})"
 
+    # This code replaces the calls to `LOC` with the `yy.addDataToNode` string
+    # defined above. The `LOC` function, when used below in the grammar rules,
+    # is used to make sure that newly created node class objects get correct
+    # location data assigned to them. By default, the grammar will assign the
+    # location data spanned by *all* of the tokens on the left (e.g. a string
+    # such as `'Body TERMINATOR Line'`) to the “top-level” node returned by 
+    # the grammar rule (the function on the right). But for “inner” node class
+    # objects created by grammar rules, they won’t get correct location data
+    # assigned to them without adding `LOC`.
+    
+    # For example, consider the grammar rule `'NEW_TARGET . Property'`, which
+    # is handled by a function that returns
+    # `new MetaProperty LOC(1)(new IdentifierLiteral $1), LOC(3)(new Access $3)`.
+    # The `1` in `LOC(1)` refers to the first token (`NEW_TARGET`) and the `3`
+    # in `LOC(3)` refers to the third token (`Property`). In order for the
+    # `new IdentifierLiteral` to get assigned the location data corresponding
+    # to `new` in the source code, we use
+    # `LOC(1)(new IdentifierLiteral ...)` to mean “assign the location data of
+    # the *first* token of this grammar rule (`NEW_TARGET`) to this
+    # `new IdentifierLiteral`”. The `LOC(3)` means “assign the location data of
+    # the *third* token of this grammar rule (`Property`) to this
+    # `new Access`”.
     returnsLoc = /^LOC/.test action
     action = action.replace /LOC\(([0-9]*)\)/g, getAddDataToNodeFunctionString('$1')
+    # A call to `LOC` with two arguments, e.g. `LOC(2,4)`, sets the location
+    # data for the generated node on both of the referenced tokens  (the second
+    # and fourth in this example).
     action = action.replace /LOC\(([0-9]*),\s*([0-9]*)\)/g, getAddDataToNodeFunctionString('$1', '$2')
     performActionFunctionString = "$$ = #{getAddDataToNodeFunctionString(1, patternCount, not returnsLoc)}(#{action});"
   else
@@ -396,6 +424,7 @@ grammar =
   # A "meta-property" access e.g. `new.target`
   MetaProperty: [
     o 'NEW_TARGET . Property',                  -> new MetaProperty LOC(1)(new IdentifierLiteral $1), LOC(3)(new Access $3)
+    o 'IMPORT_META . Property',                 -> new MetaProperty LOC(1)(new IdentifierLiteral $1), LOC(3)(new Access $3)
   ]
 
   # The general group of accessors into an object, by property, by prototype

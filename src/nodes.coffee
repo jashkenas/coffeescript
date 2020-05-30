@@ -1576,6 +1576,9 @@ exports.MetaProperty = class MetaProperty extends Base
           @error "new.target can only occur inside functions"
       else
         @error "the only valid meta property for new is new.target"
+    else if @meta.value is 'import'
+      unless @property instanceof Access and @property.name.value is 'meta'
+        @error "the only valid meta property for import is import.meta"
 
   compileNode: (o) ->
     @checkValid o
