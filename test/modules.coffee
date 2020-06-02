@@ -942,6 +942,13 @@ test "#4834: dynamic import", ->
     };
   """
 
+  eqJS """
+    console.log import('foo')
+  """,
+  """
+    console.log(import('foo'));
+  """
+
 test "#5317: Support import.meta", ->
   eqJS """
     foo = import.meta
