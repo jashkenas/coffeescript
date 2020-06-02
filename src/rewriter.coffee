@@ -814,6 +814,7 @@ IMPLICIT_CALL    = [
   'IDENTIFIER', 'JSX_TAG', 'PROPERTY', 'NUMBER', 'INFINITY', 'NAN'
   'STRING', 'STRING_START', 'REGEX', 'REGEX_START', 'JS'
   'NEW', 'PARAM_START', 'CLASS', 'IF', 'TRY', 'SWITCH', 'THIS'
+  'IMPORT_META', 'NEW_TARGET'
   'UNDEFINED', 'NULL', 'BOOL'
   'UNARY', 'DO', 'DO_IIFE', 'YIELD', 'AWAIT', 'UNARY_MATH', 'SUPER', 'THROW'
   '@', '->', '=>', '[', '(', '{', '--', '++'
