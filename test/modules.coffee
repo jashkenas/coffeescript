@@ -991,3 +991,10 @@ test "#5317: Support import.meta", ->
 
     foo = import.meta.bar;
   """
+
+  eqJS """
+    console.log import.meta.url
+  """,
+  """
+    console.log(import.meta.url);
+  """
