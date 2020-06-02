@@ -113,7 +113,7 @@ grammar =
     o 'Body TERMINATOR'
   ]
 
-  # Block and statements, which make up a line in a body. YieldReturn is a
+  # Block and statements, which make up a line in a body. FuncDirective is a
   # statement, but not included in Statement because that results in an ambiguous
   # grammar.
   Line: [
@@ -325,7 +325,7 @@ grammar =
     o 'AWAIT RETURN',                           -> new AwaitReturn null, returnKeyword: LOC(2)(new Literal $2)
   ]
 
-  # The **Code** node is the function literal. It's defined by an indented block
+  # The **Code** node is the function literal. It’s defined by an indented block
   # of **Block** preceded by a function arrow, with an optional parameter list.
   Code: [
     o 'PARAM_START ParamList PARAM_END FuncGlyph Block', -> new Code $2, $5, $4, LOC(1)(new Literal $1)
@@ -421,7 +421,8 @@ grammar =
     o 'SUPER INDEX_START INDENT Expression OUTDENT INDEX_END', -> new Super LOC(4)(new Index $4),  LOC(1)(new Literal $1)
   ]
 
-  # A "meta-property" access e.g. `new.target`
+  # A “meta-property” access e.g. `new.target` or `import.meta`, where
+  # something that looks like a property is referenced on a keyword.
   MetaProperty: [
     o 'NEW_TARGET . Property',                  -> new MetaProperty LOC(1)(new IdentifierLiteral $1), LOC(3)(new Access $3)
     o 'IMPORT_META . Property',                 -> new MetaProperty LOC(1)(new IdentifierLiteral $1), LOC(3)(new Access $3)
@@ -774,7 +775,7 @@ grammar =
   ]
 
   # The source of a comprehension is an array or object with an optional guard
-  # clause. If it's an array comprehension, you can also choose to step through
+  # clause. If it’s an array comprehension, you can also choose to step through
   # in fixed-size increments.
   ForSource: [
     o 'FORIN Expression',                                           -> source: $2
