@@ -1,17 +1,6 @@
 unless window.location.origin # Polyfill `location.origin` for IE < 11
   window.location.origin = "#{window.location.protocol}//#{window.location.hostname}"
 
-
-# Initialize Google Analytics
-window.GA_TRACKING_ID = 'UA-106156830-1'
-window.dataLayer ?= []
-window.gtag = ->
-  window.dataLayer.push arguments
-  return
-window.gtag 'js', new Date()
-window.gtag 'config', window.GA_TRACKING_ID
-
-
 # Initialize the CoffeeScript docs interactions
 $(document).ready ->
   # Format dates for the user’s locale, e.g. 'December 24, 2009' or '24 décembre 2009'
