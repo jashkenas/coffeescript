@@ -393,11 +393,17 @@ exports.Base = class Base
   includeCommentFragments: NO
 
   # `jumps` tells you if an expression, or an internal part of an expression
-  # has a flow control construct (like `break`, or `continue`, or `return`,
-  # or `throw`) that jumps out of the normal flow of control and can’t be
-  # used as a value. This is important because things like this make no sense;
-  # we have to disallow them.
+  # has a flow control construct (like `break`, `continue`, or `return`)
+  # that jumps out of the normal flow of control and can’t be used as a value.
+  # This is important because things like this make no sense;
+  # we have to disallow them.  Note that `throw` *is* allowed here though.
   jumps: NO
+
+  # `alwaysJumps` tells you whether this node *always* has a flow control
+  # construct (like `break`, `continue`, `return`, or `throw`) that jumps out
+  # of the normal flow of control, so that the immediately following node
+  # definitely won't execute.
+  alwaysJumps: NO
 
   # If `node.shouldCache() is false`, it is safe to use `node` more than once.
   # Otherwise you need to store the value of `node` in a variable and output
@@ -599,6 +605,13 @@ exports.Block = class Block extends Base
   jumps: (o) ->
     for exp in @expressions
       return jumpNode if jumpNode = exp.jumps o
+
+  # Block is executed in sequence, so if any statement always jumps,
+  # then so does the block.
+  alwaysJumps: (o) ->
+    for exp in @expressions
+      return yes if exp.alwaysJumps o
+    no
 
   # A Block node does not return its entire body, rather it
   # ensures that the final expression is returned.
@@ -1198,6 +1211,8 @@ exports.StatementLiteral = class StatementLiteral extends Literal
     return this if @value is 'break' and not (o?.loop or o?.block)
     return this if @value is 'continue' and not o?.loop
 
+  alwaysJumps: (o) -> Boolean @jumps o
+
   compileNode: (o) ->
     [@makeCode "#{@tab}#{@value};"]
 
@@ -1269,6 +1284,7 @@ exports.Return = class Return extends Base
   isStatement:     YES
   makeReturn:      THIS
   jumps:           THIS
+  alwaysJumps:     YES
 
   compileToFragments: (o, level) ->
     expr = @expression?.makeReturn()
@@ -1398,6 +1414,7 @@ exports.Value = class Value extends Base
   isJSXTag    : -> @base instanceof JSXTag
   assigns     : (name) -> not @properties.length and @base.assigns name
   jumps       : (o)    -> not @properties.length and @base.jumps o
+  alwaysJumps : (o)    -> not @properties.length and @base.alwaysJumps o
 
   isObject: (onlyGenerated) ->
     return no if @properties.length
@@ -3211,6 +3228,7 @@ exports.ModuleDeclaration = class ModuleDeclaration extends Base
 
   isStatement: YES
   jumps:       THIS
+  alwaysJumps: NO
   makeReturn:  THIS
 
   checkSource: ->
@@ -3896,6 +3914,7 @@ exports.Code = class Code extends Base
   isStatement: -> @isMethod
 
   jumps: NO
+  alwaysJumps: NO
 
   makeScope: (parentScope) -> new Scope parentScope, @body, this
 
@@ -4555,6 +4574,13 @@ exports.While = class While extends Base
       return jumpNode if jumpNode = node.jumps loop: yes
     no
 
+  alwaysJumps: ->
+    {expressions} = @body
+    return no unless expressions.length
+    for node in expressions
+      return yes if node.alwaysJumps loop: yes
+    no
+
   # The main difference from a JavaScript *while* is that the CoffeeScript
   # *while* can be used as a part of a larger expression -- while loops may
   # return an array containing the computed result of each iteration.
@@ -4931,6 +4957,10 @@ exports.Try = class Try extends Base
 
   jumps: (o) -> @attempt.jumps(o) or @catch?.jumps(o)
 
+  alwaysJumps: (o) ->
+    (@attempt.alwaysJumps(o) and @catch?.alwaysJumps(o)) or
+    @ensure?.alwaysJumps(o)
+
   makeReturn: (results, mark) ->
     if mark
       @attempt?.makeReturn results, mark
@@ -4988,7 +5018,9 @@ exports.Catch = class Catch extends Base
 
   isStatement: YES
 
-  jumps: (o) -> @recovery.jumps(o)
+  jumps: (o) -> @recovery.jumps o
+
+  alwaysJumps: (o) -> @recovery.alwaysJumps o
 
   makeReturn: (results, mark) ->
     ret = @recovery.makeReturn results, mark
@@ -5037,6 +5069,7 @@ exports.Throw = class Throw extends Base
 
   isStatement: YES
   jumps:       NO
+  alwaysJumps: YES
 
   # A **Throw** is already a return, of sorts...
   makeReturn: THIS
@@ -5498,6 +5531,12 @@ exports.Switch = class Switch extends Base
       return jumpNode if jumpNode = block.jumps o
     @otherwise?.jumps o
 
+  alwaysJumps: (o = {block: yes}) ->
+    return no unless @cases.length
+    for {block} in @cases
+      return no unless block.alwaysJumps o
+    yes
+
   makeReturn: (results, mark) ->
     block.makeReturn(results, mark) for {block} in @cases
     @otherwise or= new Block [new Literal 'void 0'] if results
@@ -5516,8 +5555,7 @@ exports.Switch = class Switch extends Base
         fragments = fragments.concat @makeCode(idt1 + "case "), cond.compileToFragments(o, LEVEL_PAREN), @makeCode(":\n")
       fragments = fragments.concat body, @makeCode('\n') if (body = block.compileToFragments o, LEVEL_TOP).length > 0
       break if i is @cases.length - 1 and not @otherwise
-      expr = @lastNode block.expressions
-      continue if expr instanceof Return or expr instanceof Throw or (expr instanceof Literal and expr.jumps() and expr.value isnt 'debugger')
+      continue if block.alwaysJumps()
       fragments.push cond.makeCode(idt2 + 'break;\n')
     if @otherwise and @otherwise.expressions.length
       fragments.push @makeCode(idt1 + "default:\n"), (@otherwise.compileToFragments o, LEVEL_TOP)..., @makeCode("\n")
@@ -5614,6 +5652,8 @@ exports.If = class If extends Base
       @bodyNode().isStatement(o) or @elseBodyNode()?.isStatement(o)
 
   jumps: (o) -> @body.jumps(o) or @elseBody?.jumps(o)
+
+  alwaysJumps: (o) -> @body.alwaysJumps(o) and @elseBody?.alwaysJumps(o)
 
   compileNode: (o) ->
     if @isStatement o then @compileStatement o else @compileExpression o

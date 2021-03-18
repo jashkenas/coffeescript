@@ -440,6 +440,22 @@ test "Issue #997. Switch doesn't fallthrough.", ->
 
   eq val, 1
 
+test "Issue #5344. Switch doesn't generate unnecessary break statements.", ->
+  js = CoffeeScript.compile '''
+    identify = (n) ->
+      switch n
+        when 1, 2, 3, 4, 5
+          if n % 2 == 0
+            'small even'
+          else
+            'small odd'
+        when 0
+          'perfect'
+        else
+          null
+  '''
+  ok not js.includes 'break'
+
 # Throw
 
 test "Throw should be usable as an expression.", ->
