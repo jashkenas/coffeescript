@@ -45,12 +45,11 @@
     "babel-preset-minify": "~0.5.1",
     "codemirror": "~5.52.0",
     "docco": "~0.8.0",
-    "highlight.js": "~9.18.1",
+    "highlight.js": ">=10.4.1",
     "jison": "~0.4.18",
     "markdown-it": "~10.0.0",
     "puppeteer": "~3.1.0",
     "underscore": "~1.9.2",
     "webpack": "~4.42.0"
-  },
-  "dependencies": {}
+  }
 }
