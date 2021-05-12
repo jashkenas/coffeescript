@@ -43,7 +43,7 @@
     "@babel/core": "~7.7.7",
     "@babel/preset-env": "~7.7.7",
     "babel-preset-minify": "~0.5.1",
-    "codemirror": "~5.52.0",
+    "codemirror": "~5.58.2",
     "docco": "~0.8.0",
     "highlight.js": ">=10.4.1",
     "jison": "~0.4.18",
