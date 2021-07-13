@@ -119,7 +119,7 @@ export interface helpers {
  * @param {babel.TransformOptions} [options.transpile={}] Babel transpilation options - see `babel.TransformOptions`.
  * @returns {babel.BabelFileResult} Babel transpiler result for file.
  */
-export function transpile(code: string, options?: ICoffeeScriptOptions): babel.BabelFileResult | undefined;
+export function transpile(code: string, options?: ICoffeeScriptOptions): babel.BabelFileResult;
 
 /**
  * Compiles CoffeeScript to JavaScript code, then outputs it as a string.
@@ -135,7 +135,7 @@ export function transpile(code: string, options?: ICoffeeScriptOptions): babel.B
  * @param {babel.TransformOptions} [options.transpile={}] Babel transpilation options - see `babel.TransformOptions`.
  * @returns {string} Compiled and unevaluated JavaScript code.
  */
-export function compile(code: string, options?: ICoffeeScriptOptions): string | undefined;
+export function compile(code: string, options?: ICoffeeScriptOptions): string;
 
 /**
  * Parse a string of CoffeeScript code or an array of lexed tokens, and return the AST. You can then compile it by
@@ -153,7 +153,7 @@ export function compile(code: string, options?: ICoffeeScriptOptions): string | 
  * @param {babel.TransformOptions} [options.transpile={}] Babel transpilation options - see `babel.TransformOptions`.
  * @returns {CoffeeScriptASTBody} Compiled and unevaluated JavaScript code.
  */
-export function nodes(code: string, options?: ICoffeeScriptOptions): CoffeeScriptASTBody | undefined;
+export function nodes(code: string, options?: ICoffeeScriptOptions): CoffeeScriptASTBody;
 
 /**
  * Compiles and executes a CoffeeScript string in the NodeJS environment.
@@ -195,8 +195,8 @@ export interface eval { (code: string, options?: ICoffeeScriptOptions): any } //
  * This is a horrible thing that should not be required.
  */
 export function register(): {
-  [path: string]: IObject | undefined;
-  (path: string): IObject | undefined;
+  [path: string]: IObject;
+  (path: string): IObject;
 };
 
 /**
@@ -207,7 +207,7 @@ export function register(): {
  */
 export interface require {
   [path: string]: IObject;
-  (path: string): require[keyof require] | undefined;
+  (path: string): require[keyof require];
 }
 
 /**
@@ -226,7 +226,7 @@ export interface require {
  * @param {boolean} [options.sourceMap=false] If true, output a source map object with the code.
  * @private
  */
-export function _compileRawFileContent(raw: string, filename: string, options?: ICoffeeScriptOptions): string | undefined;
+export function _compileRawFileContent(raw: string, filename: string, options?: ICoffeeScriptOptions): string;
 
 /**
  * Reads and compiles a CoffeeScript file using `fs.readFileSync`.
@@ -244,4 +244,4 @@ export function _compileRawFileContent(raw: string, filename: string, options?: 
  * @param {boolean} [options.sourceMap=false] If true, output a source map object with the code.
  * @private
  */
-export function _compileFile(filename: string, options?: ICoffeeScriptOptions): string | undefined;
+export function _compileFile(filename: string, options?: ICoffeeScriptOptions): string;
