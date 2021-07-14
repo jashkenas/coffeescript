@@ -89,7 +89,7 @@ export interface CoffeeScriptASTBody {
 /**
  * List of precompiled CoffeeScript file extensions.
  */
-export let FILE_EXTENSIONS: string[];
+export let FILE_EXTENSIONS: ['.coffee', '.coffee.md', '.litcoffee'];
 
 /**
  * Version number of the CoffeeScript compiler.
