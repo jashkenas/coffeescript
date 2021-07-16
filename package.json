@@ -23,6 +23,7 @@
     "coffee": "./bin/coffee",
     "cake": "./bin/cake"
   },
+  "types": "./coffeescript.d.ts",
   "files": [
     "bin",
     "lib",
