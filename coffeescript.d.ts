@@ -1,7 +1,5 @@
 import * as babel from "babel-core";
 
-type IObject = Record<string, unknown>;
-
 /**
  * CoffeeScript compiler options.
  *
@@ -26,62 +24,76 @@ export interface ICoffeeScriptOptions {
 /**
  * CoffeeScript abstract syntax tree location data.
  */
- export interface CoffeeScriptASTNodeLocationData {
+export interface CoffeeScriptASTNodeLocationData {
   first_column: number;
   first_line: number;
   last_line: number;
   last_column: number;
 }
 
-/**
- * CoffeeScript abstract syntax tree member for base namespaces.
- */
- export interface CoffeeScriptASTBase {
+export interface CoffeeScriptASTRange {
+  from: CoffeeScriptASTNode | null;
+  to: CoffeeScriptASTNode | null;
+  exclusive: boolean;
+  equals: string;
   locationData: CoffeeScriptASTNodeLocationData;
-  value: string;
-}
-
-/**
- * CoffeeScript abstract syntax tree member for variable names.
- */
- export interface CoffeeScriptASTName {
-  locationData: CoffeeScriptASTNodeLocationData;
-  name: CoffeeScriptASTName;
-  soak: boolean;
-}
-
-/**
- * CoffeeScript abstract syntax tree for properties and indexes.
- */
- export interface CoffeeScriptASTProperty {
-  locationData: CoffeeScriptASTNodeLocationData;
-  name: CoffeeScriptASTName;
 }
 
 /**
  * CoffeeScript's abstract syntax tree node interfaces with all possible node properties.
  */
 export interface CoffeeScriptASTNode {
-  args: CoffeeScriptASTNode[] | [];
-  base?: CoffeeScriptASTBase;
-  body: CoffeeScriptASTBody;
-  boundFuncs?: CoffeeScriptASTNode[] | [];
-  context?: string;
+  array?: boolean | CoffeeScriptASTNode;
+  asKey?: boolean;
+  args?: CoffeeScriptASTNode[];
+  base?: CoffeeScriptASTNode;
+  body?: CoffeeScriptASTBody | CoffeeScriptASTNode;
+  bound?: boolean;
+  boundFuncs?: CoffeeScriptASTNode[];
+  cases?: CoffeeScriptASTNode[][];
   classBody?: boolean;
-  expressions?: CoffeeScriptASTNode[] | [];
+  condition?: CoffeeScriptASTNode;
+  context?: string;
+  elseBody?: CoffeeScriptASTNode | null;
+  expression?: CoffeeScriptASTNode;
+  expressions?: CoffeeScriptASTNode[];
+  first?: CoffeeScriptASTNode;
+  flip?: boolean;
+  generated?: boolean;
+  guard?: CoffeeScriptASTNode;
+  index?: CoffeeScriptASTNode;
+  isChain?: boolean;
+  isGenerator?: boolean;
   isNew?: boolean;
   isSuper?: boolean;
   locationData: CoffeeScriptASTNodeLocationData;
-  properties?: CoffeeScriptASTProperty[] | [];
+  name?: CoffeeScriptASTNode;
+  negated?: boolean;
+  object?: boolean | CoffeeScriptASTNode;
+  objects?: CoffeeScriptASTNode[];
+  operator?: string;
+  otherwise?: CoffeeScriptASTNode;
+  own?: boolean;
   param?: boolean;
-  parent?: CoffeeScriptASTNode;
+  params?: CoffeeScriptASTNode[];
+  parent?: CoffeeScriptASTNode | null;
+  pattern?: boolean;
+  properties?: CoffeeScriptASTNode[];
+  range?: boolean | CoffeeScriptASTRange;
+  returns?: boolean;
+  subject?: CoffeeScriptASTNode;
+  second?: CoffeeScriptASTNode;
   soak?: boolean;
+  source?: CoffeeScriptASTNode;
   subpattern?: boolean;
-  variable: CoffeeScriptASTNode;
+  this?: boolean;
+  val?: string;
+  value?: CoffeeScriptASTNode | string;
+  variable?: CoffeeScriptASTNode;
 }
 
 export interface CoffeeScriptASTBody {
-  classBody: boolean;
+  classBody?: boolean;
   expressions: CoffeeScriptASTNode[] | [];
   locationData: CoffeeScriptASTNodeLocationData;
 }
@@ -188,15 +200,17 @@ export function run(code: string, options?: ICoffeeScriptOptions): any;
  * @param {babel.TransformOptions} [options.transpile={}] Babel transpilation options - see `babel.TransformOptions`.
  * @returns Output of evaluated CoffeeScript code in the browser environment.
  */
-export interface eval { (code: string, options?: ICoffeeScriptOptions): any } // hack to avoid TS eval call protection
+export interface eval {
+  (code: string, options?: ICoffeeScriptOptions): any;
+} // hack to avoid TS eval call protection
 
 /**
  * Node's module loader, patched to be able to handle multi-dot extensions.
  * This is a horrible thing that should not be required.
  */
 export function register(): {
-  [path: string]: IObject;
-  (path: string): IObject;
+  [path: string]: Record<string, unknown>;
+  (path: string): Record<string, unknown>;
 };
 
 /**
@@ -206,7 +220,7 @@ export function register(): {
  * @returns {(object|undefined)} CoffeeScript library submodule.
  */
 export interface require {
-  [path: string]: IObject;
+  [path: string]: Record<string, unknown>;
   (path: string): require[keyof require];
 }
 
