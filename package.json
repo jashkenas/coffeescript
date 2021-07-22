@@ -31,7 +31,8 @@
     "repl.js"
   ],
   "scripts": {
-    "test": "node ./bin/cake test",
+    "dtslint": "dtslint types",
+    "test": "npm run dtslint && node ./bin/cake test",
     "test-harmony": "node --harmony ./bin/cake test"
   },
   "homepage": "https://coffeescript.org",
@@ -46,6 +47,7 @@
     "babel-preset-minify": "~0.5.1",
     "codemirror": "~5.52.0",
     "docco": "~0.8.0",
+    "dtslint": "^4.1.2",
     "highlight.js": "~9.18.1",
     "jison": "~0.4.18",
     "markdown-it": "~10.0.0",

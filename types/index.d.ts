@@ -11,7 +11,7 @@ import * as babel from "babel-core";
  * @member sourceMap If true, output a source map object with the code.
  * @member transpile Babel transpilation options - see `babel.TransformOptions`.
  */
-export interface ICoffeeScriptOptions {
+export interface Options {
   ast?: boolean;
   bare?: boolean;
   filename?: string;
@@ -24,7 +24,7 @@ export interface ICoffeeScriptOptions {
 /**
  * CoffeeScript abstract syntax tree location data.
  */
-export type CoffeeScriptASTNodeLocationData =
+export type ASTNodeLocationData =
   | {
       first_column: number;
       first_line: number;
@@ -50,75 +50,75 @@ export type CoffeeScriptASTNodeLocationData =
 /**
  * Range data interface for CoffeeScript abstract syntax tree nodes.
  */
-export interface CoffeeScriptASTNodeRange {
-  from: CoffeeScriptASTNode | null;
-  to: CoffeeScriptASTNode | null;
+export interface ASTNodeRange {
+  from: ASTNode | null;
+  to: ASTNode | null;
   exclusive: boolean;
   equals: string;
-  locationData: CoffeeScriptASTNodeLocationData;
+  locationData: ASTNodeLocationData;
 }
 
 /**
  * CoffeeScript's abstract syntax tree node interfaces with all possible node properties.
  */
-export interface CoffeeScriptASTNode {
-  array?: boolean | CoffeeScriptASTNode;
+export interface ASTNode {
+  array?: boolean | ASTNode;
   asKey?: boolean;
-  args?: CoffeeScriptASTNode[];
-  base?: CoffeeScriptASTNode;
-  body?: CoffeeScriptASTBody | CoffeeScriptASTNode;
+  args?: ASTNode[];
+  base?: ASTNode;
+  body?: ASTBody | ASTNode;
   bound?: boolean;
-  boundFuncs?: CoffeeScriptASTNode[];
-  cases?: CoffeeScriptASTNode[][];
+  boundFuncs?: ASTNode[];
+  cases?: ASTNode[][];
   classBody?: boolean;
   comments?: string[];
-  condition?: CoffeeScriptASTNode;
+  condition?: ASTNode;
   context?: string;
-  elseBody?: CoffeeScriptASTNode | null;
-  expression?: CoffeeScriptASTNode;
-  expressions?: CoffeeScriptASTNode[];
-  first?: CoffeeScriptASTNode;
+  elseBody?: ASTNode | null;
+  expression?: ASTNode;
+  expressions?: ASTNode[];
+  first?: ASTNode;
   flip?: boolean;
   generated?: boolean;
-  guard?: CoffeeScriptASTNode;
-  index?: CoffeeScriptASTNode;
+  guard?: ASTNode;
+  index?: ASTNode;
   isChain?: boolean;
   isGenerator?: boolean;
   isNew?: boolean;
   isSuper?: boolean;
-  locationData: CoffeeScriptASTNodeLocationData;
-  name?: CoffeeScriptASTNode;
+  locationData: ASTNodeLocationData;
+  name?: ASTNode;
   negated?: boolean;
-  object?: boolean | CoffeeScriptASTNode;
-  objects?: CoffeeScriptASTNode[];
+  object?: boolean | ASTNode;
+  objects?: ASTNode[];
   operator?: string;
-  otherwise?: CoffeeScriptASTNode;
+  otherwise?: ASTNode;
   own?: boolean;
   param?: boolean;
-  params?: CoffeeScriptASTNode[];
-  parent?: CoffeeScriptASTNode | null;
+  params?: ASTNode[];
+  parent?: ASTNode | null;
   pattern?: boolean;
-  properties?: CoffeeScriptASTNode[];
-  range?: boolean | CoffeeScriptASTNodeRange[];
+  properties?: ASTNode[];
+  range?: boolean | ASTNodeRange[];
   returns?: boolean;
-  subject?: CoffeeScriptASTNode;
-  second?: CoffeeScriptASTNode;
+  subject?: ASTNode;
+  second?: ASTNode;
   soak?: boolean;
-  source?: CoffeeScriptASTNode;
+  source?: ASTNode;
   subpattern?: boolean;
   this?: boolean;
   val?: string;
-  value?: CoffeeScriptASTNode | string;
-  variable?: CoffeeScriptASTNode;
+  value?: ASTNode | string;
+  variable?: ASTNode;
 }
 
 /**
  * Container interface for CoffeeScript abstract syntax trees.
  */
-export interface CoffeeScriptASTBody {
+export interface ASTBody {
   classBody?: boolean;
-  expressions: CoffeeScriptASTNode[] | [];
-  locationData: CoffeeScriptASTNodeLocationData;
+  expressions: ASTNode[] | [];
+  locationData: ASTNodeLocationData;
 }
 
 /**
@@ -130,12 +130,26 @@ export interface CoffeeScriptASTBody {
  * @member stack String representation of syntax error.
  * @member toString Stack trace generator for error.
  */
-export interface CoffeeScriptSyntaxError {
+export interface SyntaxError {
   code?: string;
   filename?: string;
-  location: CoffeeScriptASTNodeLocationData;
-  stack: ReturnType<CoffeeScriptSyntaxError["toString"]>;
+  location: ASTNodeLocationData;
+  stack: ReturnType<SyntaxError["toString"]>;
   toString: () => string;
+}
+
+/**
+ *
+ * @member {string} [error=unicode code point escapes greater than \\u{10ffff} are not allowed]
+ *   Error message if `coffeescript.helpers.replaceUnicodeEscapesOptions` fails.
+ * @member {string} flags
+ *   Which flags are present in the regular expression for the replacement operation.
+ *   Must include `u` if provided to support Unicode escapes.
+ */
+export interface ReplaceUnicodeCodePointEscapesOptions {
+  error?: string;
+  flags?: string;
+  delimiter?: string;
 }
 
 /**
@@ -149,9 +163,9 @@ export let FILE_EXTENSIONS: [".coffee", ".coffee.md", ".litcoffee"];
 export let VERSION: string;
 
 /**
- * Helpers used internally to compile CoffeeScript.
+ * Helpers used internally to compile CoffeeScript code.
  *
- * @deprecated for external use.
+ * @deprecated Unstable and designed for internal use.
  */
 export interface helpers {
   /**
@@ -160,9 +174,9 @@ export interface helpers {
    * @param {string} string Target string to check the prefix literal against.
    * @param {string} literal Literal string to use for the prefix check.
    * @param {number} start Zero-indexed starting position of the prefix.
-   * The offset preceding the first character of the string is `0`.
+   *   The offset preceding the first character of the string is `0`.
    * @returns {boolean} Whether the `literal` prefix is found in `string`
-   * at the provided `start` position.
+   *   at the provided `start` position.
    */
   starts(string: string, literal: string, start: number): boolean;
   /**
@@ -171,9 +185,9 @@ export interface helpers {
    * @param {string} string Target string to check the suffix literal against.
    * @param {string} literal Literal string to use for the suffix check.
    * @param {number} [back=0] Zero-indexed backtracking position of the prefix.
-   * The offset following the last character of the string is `0`.
+   *   The offset following the last character of the string is `0`.
    * @returns {boolean} Whether the `literal` suffix is found in `string`
-   * at the backtracking position or end of the string.
+   *   at the backtracking position or end of the string.
    */
   ends(string: string, literal: string, back?: number): boolean;
   /**
@@ -198,7 +212,7 @@ export interface helpers {
    * @param {string} string Target string to search.
    * @param {string} substring Search string to compute against target.
    * @returns {number} Number of times the search string appears in the
-   * target string.
+   *   target string.
    */
   count(string: string, substr: any): number;
   /**
@@ -209,7 +223,7 @@ export interface helpers {
    * @param {object} options  Original, target object for merge operation.
    * @param {object} overrides Map of override key-values for merge operation.
    * @returns {object} Cloned object that merges `options` with `overrides`. The
-   * `overrides` properties have a higher merge priority than `options` properties.
+   *   `overrides` properties have a higher merge priority than `options` properties.
    */
   merge(options: object, overrides: object): object;
   /**
@@ -245,7 +259,7 @@ export interface helpers {
    * @this {Array} Array instance or prototype to polyfill.
    * @param {function} fn Predicate function test for each array element.
    * @returns {boolean} Whether one or more elements return `true` when passed to
-   * the predicate `fn(...)`.
+   *   the predicate `fn(...)`.
    */
   some:
     | typeof Array.prototype.some
@@ -263,7 +277,7 @@ export interface helpers {
    * Build a list of all comments attached to tokens.
    *
    * @param {CoffeeScriptASTNode[]} tokens Collection of CoffeeScript abstract
-   * syntax tree tokens, all sorted by source order.
+   *   syntax tree tokens, all sorted by source order.
    * @returns {string[]} List of comment strings present in CoffeeScript AST.
    */
   extractAllCommentTokens(tokens: any[]): string[];
@@ -281,7 +295,7 @@ export interface helpers {
    * If there are duplicate comments, they will get sorted out later.
    *
    * @param {CoffeeScriptASTNode[]} tokens List of CoffeeScript abstract syntax
-   * tree tokens with or without comments.
+   *   tree tokens with or without comments.
    * @returns {object} Hashmap of token comments vs token location offsets.
    */
   buildTokenDataDictionary(tokens: any[]): object;
@@ -295,7 +309,7 @@ export interface helpers {
    * @param {CoffeeScriptASTLocationData} lastLocationData Location data for last node.
    * @param {CoffeeScriptASTNode} lastValue Abstract syntax tree for first node.
    * @param {boolean} [forceUpdateLocation=true] Whether to override the location data of the
-   * container and child nodes if the container has location data already.
+   *   container and child nodes if the container has location data already.
    */
   addDataToNode(
     parserState: object,
@@ -326,7 +340,7 @@ export interface helpers {
    * @param {string} file File name path. Can be relative, absolute or missing a directory.
    * @param {boolean} [stripExt=false]
    * @param {*} [useWinPathSep=false] Whether to  use the Windows path separator `\`
-   * as well as the Unix path separator `/`.
+   *   as well as the Unix path separator `/`.
    * @returns {string} File name without extension.
    */
   baseFileName(file: string, stripExt?: boolean, useWinPathSep?: any): string;
@@ -359,7 +373,7 @@ export interface helpers {
    * compile CoffeeScript for example).
    *
    * @throws {CoffeeScriptSyntaxError} Error object with location data and string
-   * representation.
+   *   representation.
    */
   throwSyntaxError(message: any, location: any): never;
   /**
@@ -367,7 +381,7 @@ export interface helpers {
    * it already.
    *
    * @param {CoffeeScriptSyntaxError} error Syntax error with or without source code
-   * information.
+   *   information.
    * @param {string} code Source code that produced the syntax error.
    * @param {string} filename File name for invalid CoffeeScript resource.
    * @returns {CoffeeScriptSyntaxError} Syntax error with source code.
@@ -427,20 +441,18 @@ export interface helpers {
    * Replace `\u{...}` with `\uxxxx[\uxxxx]` in regexes without the `u` flag.
    *
    * @param {string} str String that may contain Unicode brace syntax - `\u{...}`.
-   * @param {object} options Options for Unicode replacement
+   * @param {object} options Options for Unicode replacement.
+   * @param {string} options.flags Regex.
    * @returns RegExp string with Unicode brace groups in the format `\uxxxx[\uxxxx]`.
    */
-  replaceUnicodeCodePointEscapes(
-    str: string,
-    { flags, error, delimiter }?: object
-  ): string;
+  replaceUnicodeCodePointEscapes(str: string, options?: ReplaceUnicodeCodePointEscapesOptions): string;
 }
 
 /**
  * Transpiles CoffeeScript to legacy, high-compatibility ECMAScript versions using Babel.
  *
  * @param {string} code CoffeeScript code to be compiled.
- * @param {ICoffeeScriptOptions} [options] CoffeeScript compiler options.
+ * @param {coffeescript.Options} [options] CoffeeScript compiler options.
  * @param {boolean} [options.ast=false] If true, output an abstract syntax tree of the input CoffeeScript source code.
  * @param {boolean} [options.bare=false] If true, omit a top-level IIFE safety wrapper.
  * @param {string} [options.filename=index.js] File name to compile.
@@ -450,16 +462,13 @@ export interface helpers {
  * @param {babel.TransformOptions} [options.transpile={}] Babel transpilation options - see `babel.TransformOptions`.
  * @returns {babel.BabelFileResult} Babel transpiler result for file.
  */
-export function transpile(
-  code: string,
-  options?: ICoffeeScriptOptions
-): babel.BabelFileResult;
+export function transpile(code: string, options?: Options): babel.BabelFileResult;
 
 /**
  * Compiles CoffeeScript to JavaScript code, then outputs it as a string.
  *
  * @param {string} code CoffeeScript code to be compiled.
- * @param {ICoffeeScriptOptions} [options] CoffeeScript compiler options.
+ * @param {coffeescript.Options} [options] CoffeeScript compiler options.
  * @param {boolean} [options.ast=false] If true, output an abstract syntax tree of the input CoffeeScript source code.
  * @param {boolean} [options.bare=false] If true, omit a top-level IIFE safety wrapper.
  * @param {string} [options.filename=index.js] File name to compile.
@@ -469,35 +478,32 @@ export function transpile(
  * @param {babel.TransformOptions} [options.transpile={}] Babel transpilation options - see `babel.TransformOptions`.
  * @returns {string} Compiled and unevaluated JavaScript code.
  */
-export function compile(code: string, options?: ICoffeeScriptOptions): string;
+export function compile(code: string, options?: Options): string;
 
 /**
  * Parse a string of CoffeeScript code or an array of lexed tokens, and return the AST. You can then compile it by
  * calling `.compile()` on the root, or traverse it by using `.traverseChildren()` with a callback.
  *
  * @param {string} code CoffeeScript code to be compiled.
- * @param {ICoffeeScriptOptions} [options] CoffeeScript compiler options.
+ * @param {coffeescript.Options} [options] CoffeeScript compiler options.
  * @param {boolean} [options.ast=false] If true, output an abstract syntax tree of the input CoffeeScript source code.
  * @param {boolean} [options.bare=false] If true, omit a top-level IIFE safety wrapper.
  * @param {string} [options.filename=index.js] File name to compile.
  * @param {boolean} [options.header=false] If true, output the `Generated by CoffeeScript` header.
  * @param {boolean} [options.inlineMap=false] If true, output the source map as a base64-encoded string in a comment
- * at the bottom.
+ *   at the bottom.
  * @param {boolean} [options.sourceMap=false] If true, output a source map object with the code.
  * @param {babel.TransformOptions} [options.transpile={}] Babel transpilation options - see `babel.TransformOptions`.
  * @returns {CoffeeScriptASTBody} Compiled and unevaluated JavaScript code.
  */
-export function nodes(
-  code: string,
-  options?: ICoffeeScriptOptions
-): CoffeeScriptASTBody;
+export function nodes(code: string, options?: Options): ASTBody;
 
 /**
  * Compiles and executes a CoffeeScript string in the NodeJS environment.
  * Evaluates `__filename` and `__dirname` correctly in order to execute the CoffeeScript input.
  *
  * @param {string} code CoffeeScript code to be compiled.
- * @param {ICoffeeScriptOptions} [options] CoffeeScript compiler options.
+ * @param {coffeescript.Options} [options] CoffeeScript compiler options.
  * @param {boolean} [options.ast=false] If true, output an abstract syntax tree of the input CoffeeScript source code.
  * @param {boolean} [options.bare=false] If true, omit a top-level IIFE safety wrapper.
  * @param {string} [options.filename=index.js] File name to compile.
@@ -507,7 +513,7 @@ export function nodes(
  * @param {babel.TransformOptions} [options.transpile={}] Babel transpilation options - see `babel.TransformOptions`.
  * @returns Output of evaluated CoffeeScript code in the NodeJS environment.
  */
-export function run(code: string, options?: ICoffeeScriptOptions): any;
+export function run(code: string, options?: Options): any;
 
 /**
  * Compiles and executes a CoffeeScript string in a NodeJS-like browser environment.
@@ -515,7 +521,7 @@ export function run(code: string, options?: ICoffeeScriptOptions): any;
  *
  * @function eval
  * @param {string} code CoffeeScript code to be compiled.
- * @param {ICoffeeScriptOptions} [options] CoffeeScript compiler options.
+ * @param {coffeescript.Options} [options] CoffeeScript compiler options.
  * @param {boolean} [options.ast=false] If true, output an abstract syntax tree of the input CoffeeScript source code.
  * @param {boolean} [options.bare=false] If true, omit a top-level IIFE safety wrapper.
  * @param {string} [options.filename=index.js] File name to compile.
@@ -526,7 +532,7 @@ export function run(code: string, options?: ICoffeeScriptOptions): any;
  * @returns Output of evaluated CoffeeScript code in the browser environment.
  */
 export interface eval {
-  (code: string, options?: ICoffeeScriptOptions): any;
+  (code: string, options?: Options): any;
 } // hack to avoid TS eval call protection
 
 /**
@@ -556,7 +562,7 @@ export interface require {
  *
  * @param {string} raw Raw UTF-8 CoffeeScript file contents.
  * @param {string} filename File name with extension (not including directories).
- * @param {ICoffeeScriptOptions} [options] CoffeeScript compiler options.
+ * @param {coffeescript.Options} [options] CoffeeScript compiler options.
  * @param {boolean} [options.ast=false] If true, output an abstract syntax tree of the input CoffeeScript source code.
  * @param {boolean} [options.bare=false] If true, omit a top-level IIFE safety wrapper.
  * @param {string} [options.filename=index.js] File name to compile.
@@ -565,11 +571,7 @@ export interface require {
  * @param {boolean} [options.sourceMap=false] If true, output a source map object with the code.
  * @private
  */
-export function _compileRawFileContent(
-  raw: string,
-  filename: string,
-  options?: ICoffeeScriptOptions
-): string;
+export function _compileRawFileContent(raw: string, filename: string, options?: Options): string;
 
 /**
  * Reads and compiles a CoffeeScript file using `fs.readFileSync`.
@@ -578,7 +580,7 @@ export function _compileRawFileContent(
  *
  * @param {string} raw Raw UTF-8 CoffeeScript file contents.
  * @param {string} filename File name with extension (not including directories).
- * @param {ICoffeeScriptOptions} [options] CoffeeScript compiler options.
+ * @param {coffeescript.Options} [options] CoffeeScript compiler options.
  * @param {boolean} [options.ast=false] If true, output an abstract syntax tree of the input CoffeeScript source code.
  * @param {boolean} [options.bare=false] If true, omit a top-level IIFE safety wrapper.
  * @param {string} [options.filename=index.js] File name to compile.
@@ -587,7 +589,4 @@ export function _compileRawFileContent(
  * @param {boolean} [options.sourceMap=false] If true, output a source map object with the code.
  * @private
  */
-export function _compileFile(
-  filename: string,
-  options?: ICoffeeScriptOptions
-): string;
+export function _compileFile(filename: string, options?: Options): string;
