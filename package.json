@@ -53,5 +53,7 @@
     "underscore": "~1.9.2",
     "webpack": "~4.42.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@types/babel-core": "^6.25.7"
+  }
 }

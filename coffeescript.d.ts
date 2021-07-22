@@ -24,14 +24,33 @@ export interface ICoffeeScriptOptions {
 /**
  * CoffeeScript abstract syntax tree location data.
  */
-export interface CoffeeScriptASTNodeLocationData {
-  first_column: number;
-  first_line: number;
-  last_line: number;
-  last_column: number;
-}
+export type CoffeeScriptASTNodeLocationData =
+  | {
+      first_column: number;
+      first_line: number;
+      last_line: number;
+      last_column: number;
+    }
+  | {
+      end: number;
+      loc: {
+        end: {
+          line: number;
+          column: number;
+        };
+        start: {
+          line: number;
+          column: number;
+        };
+      };
+      range: [number, number];
+      start: number;
+    };
 
-export interface CoffeeScriptASTRange {
+/**
+ * Range data interface for CoffeeScript abstract syntax tree nodes.
+ */
+export interface CoffeeScriptASTNodeRange {
   from: CoffeeScriptASTNode | null;
   to: CoffeeScriptASTNode | null;
   exclusive: boolean;
@@ -52,6 +71,7 @@ export interface CoffeeScriptASTNode {
   boundFuncs?: CoffeeScriptASTNode[];
   cases?: CoffeeScriptASTNode[][];
   classBody?: boolean;
+  comments?: string[];
   condition?: CoffeeScriptASTNode;
   context?: string;
   elseBody?: CoffeeScriptASTNode | null;
@@ -79,7 +99,7 @@ export interface CoffeeScriptASTNode {
   parent?: CoffeeScriptASTNode | null;
   pattern?: boolean;
   properties?: CoffeeScriptASTNode[];
-  range?: boolean | CoffeeScriptASTRange;
+  range?: boolean | CoffeeScriptASTNodeRange[];
   returns?: boolean;
   subject?: CoffeeScriptASTNode;
   second?: CoffeeScriptASTNode;
@@ -92,6 +112,9 @@ export interface CoffeeScriptASTNode {
   variable?: CoffeeScriptASTNode;
 }
 
+/**
+ * Container interface for CoffeeScript abstract syntax trees.
+ */
 export interface CoffeeScriptASTBody {
   classBody?: boolean;
   expressions: CoffeeScriptASTNode[] | [];
@@ -99,9 +122,26 @@ export interface CoffeeScriptASTBody {
 }
 
 /**
+ * Syntax error thrown by CoffeeScript compiler.
+ *
+ * @member code Source code that generated the `coffee` compiler error
+ * @member filename File name for invalid CoffeeScript resource.
+ * @member location Starting and ending location data.
+ * @member stack String representation of syntax error.
+ * @member toString Stack trace generator for error.
+ */
+export interface CoffeeScriptSyntaxError {
+  code?: string;
+  filename?: string;
+  location: CoffeeScriptASTNodeLocationData;
+  stack: ReturnType<CoffeeScriptSyntaxError["toString"]>;
+  toString: () => string;
+}
+
+/**
  * List of precompiled CoffeeScript file extensions.
  */
-export let FILE_EXTENSIONS: ['.coffee', '.coffee.md', '.litcoffee'];
+export let FILE_EXTENSIONS: [".coffee", ".coffee.md", ".litcoffee"];
 
 /**
  * Version number of the CoffeeScript compiler.
@@ -111,10 +151,289 @@ export let VERSION: string;
 /**
  * Helpers used internally to compile CoffeeScript.
  *
- * @deprecated for external use and lacking TypeScript definitions.
+ * @deprecated for external use.
  */
 export interface helpers {
-  [handle: string]: (...args: any[]) => any;
+  /**
+   * Peek at the start of a given string to see if it matches a sequence.
+   *
+   * @param {string} string Target string to check the prefix literal against.
+   * @param {string} literal Literal string to use for the prefix check.
+   * @param {number} start Zero-indexed starting position of the prefix.
+   * The offset preceding the first character of the string is `0`.
+   * @returns {boolean} Whether the `literal` prefix is found in `string`
+   * at the provided `start` position.
+   */
+  starts(string: string, literal: string, start: number): boolean;
+  /**
+   * Peek at the end of a given string to see if it matches a sequence.
+   *
+   * @param {string} string Target string to check the suffix literal against.
+   * @param {string} literal Literal string to use for the suffix check.
+   * @param {number} [back=0] Zero-indexed backtracking position of the prefix.
+   * The offset following the last character of the string is `0`.
+   * @returns {boolean} Whether the `literal` suffix is found in `string`
+   * at the backtracking position or end of the string.
+   */
+  ends(string: string, literal: string, back?: number): boolean;
+  /**
+   * Repeat a string `n` times.
+   * Uses a clever algorithm to have O(log(n)) string concatenation operations.
+   *
+   * @param {string} str String to repeat.
+   * @param {number} n 1-indexed number of repetitions.
+   * @returns {string} Repeated string.
+   */
+  repeat(str: string, n: number): string;
+  /**
+   * Trim out all falsy values from an array.
+   *
+   * @param {Array} array Array of boolean-operator indeterminate values.
+   * @returns {Array} Array of truthy values.
+   */
+  compact(array: any[]): any[];
+  /**
+   * Count the number of occurrences of a search string in another string.
+   *
+   * @param {string} string Target string to search.
+   * @param {string} substring Search string to compute against target.
+   * @returns {number} Number of times the search string appears in the
+   * target string.
+   */
+  count(string: string, substr: any): number;
+  /**
+   * Merge objects, returning a fresh copy with attributes from both sides.
+   * Used every time `CoffeeScript.compile` is called, to allow properties in the
+   * options hash to propagate down the tree without polluting other branches.
+   *
+   * @param {object} options  Original, target object for merge operation.
+   * @param {object} overrides Map of override key-values for merge operation.
+   * @returns {object} Cloned object that merges `options` with `overrides`. The
+   * `overrides` properties have a higher merge priority than `options` properties.
+   */
+  merge(options: object, overrides: object): object;
+  /**
+   * Extend a source object with the properties of another object (shallow copy).
+   *
+   * @param {object} object Target object to extend.
+   * @param {object} properties Source object to extend the source object.
+   * @returns {object} The original `object` extended by the `properties` object.
+   */
+  extend(object: object, properties: object): object;
+  /**
+   * Flattens an array recursively.
+   * Handy for getting a list of descendants from the nodes.
+   *
+   * @param {Array} array Array containing array and non-array elements.
+   * @returns {Array} A flattened version of the array with an array depth of `0`.
+   */
+  flatten(array: any[]): any[];
+  /**
+   * Delete a key from an object, returning the value. Useful when a node is
+   * looking for a particular method in an options hash.
+   *
+   * @param {object} obj Object to delete a key from.
+   * @param {*} key Target key of object for the deletion operation.
+   * @returns {*} The value of the deleted object entry.
+   */
+  del(obj: object, key: any): any;
+  /**
+   * Polyfill for `Array.prototype.some` used pre-transpilation in the compiler.
+   * Determines whether the specified callback function returns true for any
+   * element of an array.
+   *
+   * @this {Array} Array instance or prototype to polyfill.
+   * @param {function} fn Predicate function test for each array element.
+   * @returns {boolean} Whether one or more elements return `true` when passed to
+   * the predicate `fn(...)`.
+   */
+  some:
+    | typeof Array.prototype.some
+    | ((this: any[], predicate: (value: any) => unknown) => boolean);
+  /**
+   * Helper function for extracting code from Literate CoffeeScript by stripping
+   * out all non-code blocks, producing a string of CoffeeScript code that can
+   * be compiled "normally."
+   *
+   * @param {string} code Literate CoffeeScript code to extract code blocks from.
+   * @returns {string} CoffeeScript code without surrounding Markdown documentation.
+   */
+  invertLiterate(code: string): string;
+  /**
+   * Build a list of all comments attached to tokens.
+   *
+   * @param {CoffeeScriptASTNode[]} tokens Collection of CoffeeScript abstract
+   * syntax tree tokens, all sorted by source order.
+   * @returns {string[]} List of comment strings present in CoffeeScript AST.
+   */
+  extractAllCommentTokens(tokens: any[]): string[];
+  /**
+   * Build a dictionary of token comments organized by tokens’ locations
+   * used as lookup hashes.
+   *
+   * Though multiple tokens can have the same location hash, using exclusive
+   * location data allows to distinguish between zero-length generated tokens and
+   * actual source tokens, for example.
+   *
+   * The ranges for "overlapping" tokens with the same location data and
+   * and matching token hashes are merged into one array.
+   *
+   * If there are duplicate comments, they will get sorted out later.
+   *
+   * @param {CoffeeScriptASTNode[]} tokens List of CoffeeScript abstract syntax
+   * tree tokens with or without comments.
+   * @returns {object} Hashmap of token comments vs token location offsets.
+   */
+  buildTokenDataDictionary(tokens: any[]): object;
+  /**
+   * Generates a setter function that updates the location data of an object
+   * if it is a CoffeeScript abstract syntax tree node.
+   *
+   * @param {object} parserState CoffeeScript parser state.
+   * @param {CoffeeScriptASTLocationData} firstLocationData Location data for first node.
+   * @param {CoffeeScriptASTNode} firstValue Abstract syntax tree for first node.
+   * @param {CoffeeScriptASTLocationData} lastLocationData Location data for last node.
+   * @param {CoffeeScriptASTNode} lastValue Abstract syntax tree for first node.
+   * @param {boolean} [forceUpdateLocation=true] Whether to override the location data of the
+   * container and child nodes if the container has location data already.
+   */
+  addDataToNode(
+    parserState: object,
+    firstLocationData: any,
+    firstValue: any,
+    lastLocationData: any,
+    lastValue: any,
+    forceUpdateLocation?: boolean
+  ): (obj: any) => any;
+  /**
+   * Attaches a set of comments to the supplied node.
+   *
+   * @param {string[]} comments Collection of comment strings.
+   * @param {CofffeScriptASTNode} node Node associated with `comments`.
+   * @returns {CofffeScriptASTNode} The `node` merged with the `comments` array.
+   */
+  attachCommentsToNode(comments: string[], node: any): any;
+  /**
+   * Convert JISON location data to a string.
+   *
+   * @param obj Token or `CoffeeScriptASTLocationData` object.
+   * @returns {string} String representation of location data.
+   */
+  locationDataToString(obj: any): string;
+  /**
+   * A `.coffee.md` compatible version of `path.basename`.
+   *
+   * @param {string} file File name path. Can be relative, absolute or missing a directory.
+   * @param {boolean} [stripExt=false]
+   * @param {*} [useWinPathSep=false] Whether to  use the Windows path separator `\`
+   * as well as the Unix path separator `/`.
+   * @returns {string} File name without extension.
+   */
+  baseFileName(file: string, stripExt?: boolean, useWinPathSep?: any): string;
+  /**
+   * Determine if a filename represents a CoffeeScript file.
+   * A CoffeeScript file has the file extensions `.coffee`, `.coffee.md` or
+   * `.litcoffee`.
+   *
+   * @param {string} file Filename without directories.
+   * @returns {boolean} Whether a filename is a CoffeeScript file.
+   */
+  isCoffee(file: string): boolean;
+  /**
+   * Determine if a filename represents a Literate CoffeeScript file.
+   * A Literate CoffeeScript file has the file extensions `.litcoffee`,
+   * or `.coffee.md`.
+   *
+   * @param {string} file Filename without directories.
+   * @returns {boolean} Whether a filename is a CoffeeScript file.
+   */
+  isLiterate(file: string): boolean;
+  /**
+   * Throws a `CoffeeScriptSyntaxError` from a given location.
+   * The error's `toString` will return an error message following the "standard"
+   * format `<filename>:<line>:<col>: <message>` plus the line with the error and a
+   * marker showing where the error is.
+   *
+   * Instead of showing the compiler's stacktrace, show our custom error message
+   * (this is useful when the error bubbles up in Node.js applications that
+   * compile CoffeeScript for example).
+   *
+   * @throws {CoffeeScriptSyntaxError} Error object with location data and string
+   * representation.
+   */
+  throwSyntaxError(message: any, location: any): never;
+  /**
+   * Update a compiler `SyntaxError` with source code information if it didn't have
+   * it already.
+   *
+   * @param {CoffeeScriptSyntaxError} error Syntax error with or without source code
+   * information.
+   * @param {string} code Source code that produced the syntax error.
+   * @param {string} filename File name for invalid CoffeeScript resource.
+   * @returns {CoffeeScriptSyntaxError} Syntax error with source code.
+   */
+  updateSyntaxError(error: any, code: string, filename: string): any;
+  /**
+   * Maps a whitespace character to a character name.
+   *
+   * @param {string} Single-character string.
+   * @returns {string} Human-readable identifier for whitespace character, or the
+   * `string` parameter.
+   */
+  nameWhitespaceCharacter(string: any): string;
+  /**
+   * Parses a CoffeeScript number string to a primitive JS number.
+   *
+   * @param {string} string String representation of a number.
+   * @retuns {number} Parsed float or integer corresponding to number.
+   */
+  parseNumber(string: string): number;
+  /**
+   * Checks if a value is a function.
+   *
+   * @param {*} obj JavaScript value to check.
+   * @returns {boolean} True if `obj` is a function.
+   */
+  isFunction(obj: any): boolean;
+  /**
+   * Checks if a value is a number.
+   *
+   * @param {*} obj JavaScript value to check.
+   * @returns {boolean} True if `obj` is a number.
+   */
+  isNumber(obj: any): boolean;
+  /**
+   * Checks if an value is a string.
+   *
+   * @param {*} obj JavaScript value to check.
+   * @returns {boolean} True if `obj` is a string.
+   */
+  isString(obj: any): boolean;
+  /**
+   * Checks if an value is a primitive boolean or `Boolean` instance.
+   *
+   * @param {*} obj JavaScript value to check.
+   * @returns {boolean} True if `obj` is a boolean.
+   */
+  isBoolean(obj: any): boolean;
+  /**
+   * Checks if an value is a literal JS object - `{}`.
+   *
+   * @param {*} obj JavaScript value to check.
+   * @returns {boolean} True if `obj` is a literal JS object.
+   */
+  isPlainObject(obj: any): boolean;
+  /**
+   * Replace `\u{...}` with `\uxxxx[\uxxxx]` in regexes without the `u` flag.
+   *
+   * @param {string} str String that may contain Unicode brace syntax - `\u{...}`.
+   * @param {object} options Options for Unicode replacement
+   * @returns RegExp string with Unicode brace groups in the format `\uxxxx[\uxxxx]`.
+   */
+  replaceUnicodeCodePointEscapes(
+    str: string,
+    { flags, error, delimiter }?: object
+  ): string;
 }
 
 /**
@@ -131,7 +450,10 @@ export interface helpers {
  * @param {babel.TransformOptions} [options.transpile={}] Babel transpilation options - see `babel.TransformOptions`.
  * @returns {babel.BabelFileResult} Babel transpiler result for file.
  */
-export function transpile(code: string, options?: ICoffeeScriptOptions): babel.BabelFileResult;
+export function transpile(
+  code: string,
+  options?: ICoffeeScriptOptions
+): babel.BabelFileResult;
 
 /**
  * Compiles CoffeeScript to JavaScript code, then outputs it as a string.
@@ -165,7 +487,10 @@ export function compile(code: string, options?: ICoffeeScriptOptions): string;
  * @param {babel.TransformOptions} [options.transpile={}] Babel transpilation options - see `babel.TransformOptions`.
  * @returns {CoffeeScriptASTBody} Compiled and unevaluated JavaScript code.
  */
-export function nodes(code: string, options?: ICoffeeScriptOptions): CoffeeScriptASTBody;
+export function nodes(
+  code: string,
+  options?: ICoffeeScriptOptions
+): CoffeeScriptASTBody;
 
 /**
  * Compiles and executes a CoffeeScript string in the NodeJS environment.
@@ -209,8 +534,8 @@ export interface eval {
  * This is a horrible thing that should not be required.
  */
 export function register(): {
-  [path: string]: Record<string, unknown>;
-  (path: string): Record<string, unknown>;
+  [path: string]: object;
+  (path: string): object;
 };
 
 /**
@@ -220,7 +545,7 @@ export function register(): {
  * @returns {(object|undefined)} CoffeeScript library submodule.
  */
 export interface require {
-  [path: string]: Record<string, unknown>;
+  [path: string]: object;
   (path: string): require[keyof require];
 }
 
@@ -240,7 +565,11 @@ export interface require {
  * @param {boolean} [options.sourceMap=false] If true, output a source map object with the code.
  * @private
  */
-export function _compileRawFileContent(raw: string, filename: string, options?: ICoffeeScriptOptions): string;
+export function _compileRawFileContent(
+  raw: string,
+  filename: string,
+  options?: ICoffeeScriptOptions
+): string;
 
 /**
  * Reads and compiles a CoffeeScript file using `fs.readFileSync`.
@@ -258,4 +587,7 @@ export function _compileRawFileContent(raw: string, filename: string, options?: 
  * @param {boolean} [options.sourceMap=false] If true, output a source map object with the code.
  * @private
  */
-export function _compileFile(filename: string, options?: ICoffeeScriptOptions): string;
+export function _compileFile(
+  filename: string,
+  options?: ICoffeeScriptOptions
+): string;
