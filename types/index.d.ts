@@ -1,4 +1,18 @@
 /**
+ * Babel AST source location.
+ */
+ interface BabelSourceLocation {
+  start: {
+      line: number;
+      column: number;
+  };
+  end: {
+      line: number;
+      column: number;
+  };
+}
+
+/**
  * Babel abstract syntax tree comment.
  */
 interface BabelComment {
@@ -9,56 +23,32 @@ interface BabelComment {
 }
 
 /**
- * Babel AST source location for node.
- */
-interface BabelSourceLocation {
-    start: {
-        line: number;
-        column: number;
-    };
-    end: {
-        line: number;
-        column: number;
-    };
-}
-
-/**
- * Babel abstract syntax tree node.
- */
-interface BabelNode {
-  type: string;
-  leadingComments?: BabelComment[];
-  innerComments?: BabelComment[];
-  trailingComments?: BabelComment[];
-  start: number;
-  end: number;
-  loc: BabelSourceLocation;
-}
-
-/**
- * Babel file metadata object.
- */
-interface BabelFileMetadata {
-  usedHelpers: string[];
-  marked: Array<{ type: string; message: string; loc: object; }>;
-  modules: {
-    imports: object[];
-    exports: {
-        exported: object[],
-        specifiers: object[]
-    };
-  };
-}
-
-/**
  * Babel transpilation result for file.
  */
 interface BabelFileResult {
-  ast?: BabelNode;
+  ast?: {
+    type: string;
+    leadingComments?: BabelComment[];
+    innerComments?: BabelComment[];
+    trailingComments?: BabelComment[];
+    start: number;
+    end: number;
+    loc: BabelSourceLocation;
+  };
   code?: string;
   ignored?: boolean;
   map?: object;
-  metadata?: BabelFileMetadata;
+  metadata?: {
+    usedHelpers: string[];
+    marked: Array<{ type: string; message: string; loc: object; }>;
+    modules: {
+      imports: object[];
+      exports: {
+          exported: object[],
+          specifiers: object[]
+      };
+    };
+  };
 }
 
 
