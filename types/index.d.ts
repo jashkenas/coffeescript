@@ -1,4 +1,178 @@
-import * as babel from "babel-core";
+/**
+ * Babel abstract syntax tree comment.
+ */
+interface BabelComment {
+  value: string;
+  start: number;
+  end: number;
+  loc: BabelSourceLocation;
+}
+
+/**
+ * Babel AST source location for node.
+ */
+interface BabelSourceLocation {
+    start: {
+        line: number;
+        column: number;
+    };
+    end: {
+        line: number;
+        column: number;
+    };
+}
+
+/**
+ * Babel abstract syntax tree node.
+ */
+interface BabelNode {
+  type: string;
+  leadingComments?: BabelComment[];
+  innerComments?: BabelComment[];
+  trailingComments?: BabelComment[];
+  start: number;
+  end: number;
+  loc: BabelSourceLocation;
+}
+
+/**
+ * Babel file metadata object.
+ */
+interface BabelFileMetadata {
+  usedHelpers: string[];
+  marked: Array<{ type: string; message: string; loc: object; }>;
+  modules: {
+    imports: object[];
+    exports: {
+        exported: object[],
+        specifiers: object[]
+    };
+  };
+}
+
+/**
+ * Babel transpilation result for file.
+ */
+interface BabelFileResult {
+  ast?: BabelNode;
+  code?: string;
+  ignored?: boolean;
+  map?: object;
+  metadata?: BabelFileMetadata;
+}
+
+
+
+interface BabelTransformOptions {
+  /**
+   * Include the AST in the returned object.
+   */
+  ast?: boolean;
+  /**
+   * Attach a comment after all non-user injected code.
+   */
+  auxiliaryCommentAfter?: string;
+  /**
+   * Attach a comment before all non-user injected code.
+   */
+  auxiliaryCommentBefore?: string;
+  /**
+   * Enable code generation
+   */
+  code?: boolean;
+  /**
+   * Output comments in generated output.
+   */
+  comments?: boolean;
+  /**
+   * Do not include superfluous whitespace characters and line terminators.
+   * When set to "auto" compact is set to true on input sizes of >500KB.
+   */
+  compact?: "auto" | true | false;
+  /**
+   * A path to a .babelrc file to extend.
+   */
+  extends?: string;
+  /**
+   * Filename for use in errors etc.
+   */
+  filename?: string;
+  /**
+   * Filename relative to sourceRoot Defaults to "filename".
+   */
+  filenameRelative?: string;
+  /**
+   * ANSI highlight syntax error code frames.
+   */
+  highlightCode?: boolean;
+  /**
+   * Opposite of the "only" option.
+   */
+  ignore?: string | string[];
+  /**
+   * If true, attempt to load an input sourcemap from the file itself.
+   * If an object is provided, it will be treated as the source map object itself.
+   */
+  inputSourceMap?: boolean | { [k: string]: unknown };
+  /**
+   * Keep extensions in module ids
+   */
+  keepModuleIdExtensions?: boolean;
+  /**
+   * Specify a custom name for module ids.
+   */
+  moduleId?: string;
+  /**
+   * If truthy, insert an explicit id for modules. By default, all modules are
+   * anonymous. (Not available for common modules)
+   */
+  moduleIds?: boolean & string;
+  /**
+   * Optional prefix for the AMD module formatter that will be prepend to the
+   * filename on module definitions. Defaults to "sourceRoot".
+   */
+  moduleRoot?: string;
+  /**
+   * A glob, regex, or mixed array of both, matching paths to only compile. Can
+   * also be an array of arrays containing paths to explicitly match. When
+   * attempting to compile a non-matching file it's returned verbatim.
+   */
+  only?: string | string[];
+  /**
+   * List of plugins to load and use
+   */
+  plugins?: Array<string | string[] | [string, { [k: string]: unknown }]>;
+  /**
+   * List of presets (a set of plugins) to load and use
+   */
+  presets?: Array<string | string[] | [string, { [k: string]: unknown }]>;
+  /**
+   * Retain line numbers. This will lead to wacky code but is handy for
+   * scenarios where you can't use source maps. NOTE: This will obviously not
+   * retain the columns.
+   */
+  retainLines?: boolean;
+  /**
+   * Set sources[0] on returned source map. Defaults to "filenameRelative".
+   */
+  sourceFileName?: string;
+  /**
+   * If truthy, adds a map property to returned output. If set to "inline", a
+   * comment with a sourceMappingURL directive is added to the bottom of the
+   * returned code. If set to "both" then a map property is returned as well
+   * as a source map comment appended.
+   */
+  sourceMaps?: "both" | "inline" | true | false;
+  /**
+   * Set file on returned source map. Defaults to "filenameRelative".
+   */
+  sourceMapTarget?: string;
+  /**
+   * The root from which all sources are relative. Defaults to "moduleRoot".
+   */
+  sourceRoot?: string;
+  [k: string]: unknown;
+}
 
 /**
  * CoffeeScript compiler options.
@@ -18,7 +192,7 @@ export interface Options {
   header?: boolean;
   inlineMap?: boolean;
   sourceMap?: boolean;
-  transpile?: babel.TransformOptions;
+  transpile?: BabelTransformOptions;
 }
 
 /**
@@ -473,7 +647,7 @@ export interface helpers {
  * @param {babel.TransformOptions} [options.transpile={}] Babel transpilation options - see `babel.TransformOptions`.
  * @returns {babel.BabelFileResult} Babel transpiler result for file.
  */
-export function transpile(code: string, options?: Options): babel.BabelFileResult;
+export function transpile(code: string, options?: Options): BabelFileResult;
 
 /**
  * Compiles CoffeeScript to JavaScript code, then outputs it as a string.
@@ -572,10 +746,14 @@ export interface require {
  * Strip the Unicode byte order mark, if `filename` begins with one.
  *
  * @param {string} raw Raw UTF-8 CoffeeScript file contents.
- * @param {string} filename File name with extension (not including directories).
- * @param {coffeescript.Options} [options] CoffeeScript compiler options.
- * @param {boolean} [options.ast=false] If true, output an abstract syntax tree of the input CoffeeScript source code.
- * @param {boolean} [options.bare=false] If true, omit a top-level IIFE safety wrapper.
+ * @param {string} filename File name with extension (not including
+ *   directories).
+ * @param {coffeescript.Options} [options] CoffeeScript compiler
+ *   options.
+ * @param {boolean} [options.ast=false] If true, output an abstract syntax
+ *   tree of the input CoffeeScript source code.
+ * @param {boolean} [options.bare=false] If true, omit a top-level IIFE safety
+ *   wrapper.
  * @param {string} [options.filename=index.js] File name to compile.
  * @param {boolean} [options.header=false] If true, output the `Generated by CoffeeScript` header.
  * @param {boolean} [options.inlineMap=false] If true, output the source map as a Base64-encoded string in a comment at the bottom.
@@ -592,12 +770,17 @@ export function _compileRawFileContent(raw: string, filename: string, options?: 
  * @param {string} raw Raw UTF-8 CoffeeScript file contents.
  * @param {string} filename File name with extension (not including directories).
  * @param {coffeescript.Options} [options] CoffeeScript compiler options.
- * @param {boolean} [options.ast=false] If true, output an abstract syntax tree of the input CoffeeScript source code.
- * @param {boolean} [options.bare=false] If true, omit a top-level IIFE safety wrapper.
+ * @param {boolean} [options.ast=false] If true, output an abstract syntax tree
+ *   of the input CoffeeScript source code.
+ * @param {boolean} [options.bare=false] If true, omit a top-level IIFE safety
+ *   wrapper.
  * @param {string} [options.filename=index.js] File name to compile.
- * @param {boolean} [options.header=false] If true, output the `Generated by CoffeeScript` header.
- * @param {boolean} [options.inlineMap=false] If true, output the source map as a Base64-encoded string in a comment at the bottom.
- * @param {boolean} [options.sourceMap=false] If true, output a source map object with the code.
+ * @param {boolean} [options.header=false] If true, output the `Generated by
+ *   CoffeeScript` header.
+ * @param {boolean} [options.inlineMap=false] If true, output the source map as
+ *   a Base64-encoded string in a comment at the bottom.
+ * @param {boolean} [options.sourceMap=false] If true, output a source map
+ *   object with the code.
  * @private
  */
 export function _compileFile(filename: string, options?: Options): string;
