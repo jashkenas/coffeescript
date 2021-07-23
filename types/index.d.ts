@@ -139,10 +139,14 @@ export interface SyntaxError {
 }
 
 /**
+ * Options for `coffeescript.helpers.replaceUnicodeCodePointEscapes`.
  *
+ * @member {string} [delimiter]
+ *   Separator between two Unicode characters in `str` parameter of
+ *   `coffeescript.helpers.replaceUnicodeCodePointEscapes`.
  * @member {string} [error=unicode code point escapes greater than \\u{10ffff} are not allowed]
- *   Error message if `coffeescript.helpers.replaceUnicodeEscapesOptions` fails.
- * @member {string} flags
+ *   Error message if `coffeescript.helpers.replaceUnicodeCodePointEscapes` fails.
+ * @member {string} [flags]
  *   Which flags are present in the regular expression for the replacement operation.
  *   Must include `u` if provided to support Unicode escapes.
  */
@@ -442,7 +446,14 @@ export interface helpers {
    *
    * @param {string} str String that may contain Unicode brace syntax - `\u{...}`.
    * @param {object} options Options for Unicode replacement.
-   * @param {string} options.flags Regex.
+   * @member {string} [options.delimiter]
+   *   Separator between two Unicode characters in `str` parameter of
+   *   `coffeescript.helpers.replaceUnicodeCodePointEscapes`.
+   * @member {string} [options.error=unicode code point escapes greater than \\u{10ffff} are not allowed]
+   *   Error message if `coffeescript.helpers.replaceUnicodeCodePointEscapes` fails.
+   * @member {string} [options.flags]
+   *   Which flags are present in the regular expression for the replacement operation.
+   *   Must include `u` if provided to support Unicode escapes.
    * @returns RegExp string with Unicode brace groups in the format `\uxxxx[\uxxxx]`.
    */
   replaceUnicodeCodePointEscapes(str: string, options?: ReplaceUnicodeCodePointEscapesOptions): string;
