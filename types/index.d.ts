@@ -186,30 +186,38 @@ export interface Options {
 }
 
 /**
+ * Acorn.js parser location data object.
+ */
+export interface AcornLocationData {
+  end: number;
+  loc: {
+    end: {
+      line: number;
+      column: number;
+    };
+    start: {
+      line: number;
+      column: number;
+    };
+  };
+  range: [number, number];
+  start: number;
+}
+
+/**
+ * Jison parser location data object.
+ */
+ export interface JisonLocationData {
+  first_column: number;
+  first_line: number;
+  last_line: number;
+  last_column: number;
+}
+
+/**
  * CoffeeScript abstract syntax tree location data.
  */
-export type ASTNodeLocationData =
-  | {
-      first_column: number;
-      first_line: number;
-      last_line: number;
-      last_column: number;
-    }
-  | {
-      end: number;
-      loc: {
-        end: {
-          line: number;
-          column: number;
-        };
-        start: {
-          line: number;
-          column: number;
-        };
-      };
-      range: [number, number];
-      start: number;
-    };
+export type ASTNodeLocationData = AcornLocationData | JisonLocationData;
 
 /**
  * Range data interface for CoffeeScript abstract syntax tree nodes.
