@@ -27,6 +27,7 @@
   "files": [
     "bin",
     "lib",
+    "types",
     "register.js",
     "repl.js"
   ],
