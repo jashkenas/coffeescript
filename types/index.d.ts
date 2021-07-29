@@ -1,21 +1,21 @@
 /**
  * Babel AST source location.
  */
- interface BabelSourceLocation {
+export interface BabelSourceLocation {
   start: {
-      line: number;
-      column: number;
+    line: number;
+    column: number;
   };
   end: {
-      line: number;
-      column: number;
+    line: number;
+    column: number;
   };
 }
 
 /**
  * Babel abstract syntax tree comment.
  */
-interface BabelComment {
+export interface BabelComment {
   value: string;
   start: number;
   end: number;
@@ -25,7 +25,7 @@ interface BabelComment {
 /**
  * Babel transpilation result for file.
  */
-interface BabelFileResult {
+export interface BabelFileResult {
   ast?: {
     type: string;
     leadingComments?: BabelComment[];
@@ -40,18 +40,19 @@ interface BabelFileResult {
   map?: object;
   metadata?: {
     usedHelpers: string[];
-    marked: Array<{ type: string; message: string; loc: object; }>;
+    marked: Array<{ type: string; message: string; loc: object }>;
     modules: {
       imports: object[];
       exports: {
-          exported: object[],
-          specifiers: object[]
+        exported: object[];
+        specifiers: object[];
       };
     };
   };
 }
 
-interface BabelTransformOptions {
+export interface BabelTransformOptions {
+  [k: string]: unknown;
   /**
    * Include the AST in the returned object.
    */
@@ -159,7 +160,6 @@ interface BabelTransformOptions {
    * The root from which all sources are relative. Defaults to "moduleRoot".
    */
   sourceRoot?: string;
-  [k: string]: unknown;
 }
 
 /**
@@ -207,6 +207,7 @@ export interface SourceMapOptions {
 
 /**
  * Source location array.
+ *
  * @member {number} 1 Zero-indexed line number.
  * @member {number} 2 Zero-indexed column number.
  */
@@ -214,6 +215,7 @@ export type SourceLocation = [number, number];
 
 /**
  * Mozilla V3 raw source map.
+ *
  * @member file The generated filename this source map is associated with (optional).
  * @member mappings A string of base64 VLQs which contain the actual mappings.
  * @member names An array of identifiers which can be referenced by individual mappings.
@@ -238,14 +240,15 @@ export interface RawSourceMap {
  */
 export interface LineMap {
   columns: {
-    column: number,
-    line: number,
-    sourceColumn: number,
-    sourceLine: number
+    column: number;
+    line: number;
+    sourceColumn: number;
+    sourceLine: number;
   };
   line: number;
   /**
    * Add source location data to line map.
+   *
    * @param {number} column Zero-indexed column number.
    * @param {SourceLocation} source Source line and column to insert into map.
    * @param {object} [options={}] Column insertion options,
@@ -255,19 +258,21 @@ export interface LineMap {
   add: (column: number, source: SourceLocation, options?: { noReplace: boolean }) => SourceLocation | undefined;
   /**
    * Fetch source location data for a specific column.
+   *
    * @param {number} column Zero-indexed column number.
    * @returns {SourceLocation|undefined} `[sourceLine, sourceColumn]` if it exists in line map.
    */
-   sourceLocation: (column: number) => SourceLocation | void;
+  sourceLocation: (column: number) => SourceLocation | void;
 }
 
 /**
- * Maps locations 
+ * Maps locations.
  */
 export interface SourceMap {
-  lines: Array<LineMap>;
+  lines: LineMap[];
   /**
    * Adds a mapping to the source map.
+   *
    * @param {SourceLocation} sourceLocation Zero-indexed source location.
    * @param {SourceLocation} generatedLocation Source line and column to insert into map.
    * @param {object} [options={}] Column insertion options.
@@ -277,12 +282,14 @@ export interface SourceMap {
   add: (sourceLocation: SourceLocation, generatedLocation: SourceLocation, options?: { noReplace: boolean }) => ReturnType<LineMap["add"]>;
   /**
    * Fetch source location data for a specific column.
+   *
    * @param {number} column Zero-indexed column number.
    * @returns {SourceLocation|undefined} `[sourceLine, sourceColumn]` if it exists in line map.
    */
   sourceLocation: (column: number) => SourceLocation | void;
   /**
    * Generates a V3 source map, returning the generated JSON as a string.
+   *
    * @param {object} [options={}] Column insertion options
    * @param {string} [options.generatedFile] Property `generatedFile` in source map.
    * @param {string[]} [options.sourceFiles] Property `sources` in source map.
@@ -292,6 +299,7 @@ export interface SourceMap {
   generate: (column: number, source: SourceLocation, options?: { noReplace: boolean }) => string;
   /**
    * VLQ encoding in reverse byte order.
+   *
    * @param {string} value Base-64 encoded value.
    * @returns {string} Reversed VLQ-encoded value.
    * @throws "Cannot Base64 encode value: ${value}"
@@ -299,11 +307,12 @@ export interface SourceMap {
   encodeVlq: (value: string) => string;
   /**
    * Base-64 encoding for byte number.
+   *
    * @param {string} value Byte number in ASCII.
    * @returns {string} Base-64 encoded value or undefined.
    * @throws "Cannot Base64 encode value: ${value}"
    */
-   encodeBase64: (value: string) => string;
+  encodeBase64: (value: string) => string;
 }
 
 /**
@@ -338,7 +347,7 @@ export interface AcornLocationData {
 /**
  * Jison parser location data object.
  */
- export interface JisonLocationData {
+export interface JisonLocationData {
   first_column: number;
   first_line: number;
   last_line: number;
@@ -476,6 +485,19 @@ export let VERSION: string;
  */
 export interface helpers {
   /**
+   * Polyfill for `Array.prototype.some` used pre-transpilation in the compiler.
+   * Determines whether the specified callback function returns true for any
+   * element of an array.
+   *
+   * @this {Array} Array instance or prototype to polyfill.
+   * @param {function} fn Predicate function test for each array element.
+   * @returns {boolean} Whether one or more elements return `true` when passed to
+   *   the predicate `fn(...)`.
+   */
+  some:
+    | typeof Array.prototype.some
+    | ((this: any[], predicate: (value: any) => unknown) => boolean);
+  /**
    * Peek at the start of a given string to see if it matches a sequence.
    *
    * @param {string} string Target string to check the prefix literal against.
@@ -559,19 +581,6 @@ export interface helpers {
    */
   del(obj: object, key: any): any;
   /**
-   * Polyfill for `Array.prototype.some` used pre-transpilation in the compiler.
-   * Determines whether the specified callback function returns true for any
-   * element of an array.
-   *
-   * @this {Array} Array instance or prototype to polyfill.
-   * @param {function} fn Predicate function test for each array element.
-   * @returns {boolean} Whether one or more elements return `true` when passed to
-   *   the predicate `fn(...)`.
-   */
-  some:
-    | typeof Array.prototype.some
-    | ((this: any[], predicate: (value: any) => unknown) => boolean);
-  /**
    * Helper function for extracting code from Literate CoffeeScript by stripping
    * out all non-code blocks, producing a string of CoffeeScript code that can
    * be compiled "normally."
@@ -618,14 +627,7 @@ export interface helpers {
    * @param {boolean} [forceUpdateLocation=true] Whether to override the location data of the
    *   container and child nodes if the container has location data already.
    */
-  addDataToNode(
-    parserState: object,
-    firstLocationData: any,
-    firstValue: any,
-    lastLocationData: any,
-    lastValue: any,
-    forceUpdateLocation?: boolean
-  ): (obj: any) => any;
+  addDataToNode(parserState: object, firstLocationData: any, firstValue: any, lastLocationData: any, lastValue: any, forceUpdateLocation?: boolean): (obj: any) => any;
   /**
    * Attaches a set of comments to the supplied node.
    *
