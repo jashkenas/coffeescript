@@ -51,8 +51,6 @@ interface BabelFileResult {
   };
 }
 
-
-
 interface BabelTransformOptions {
   /**
    * Include the AST in the returned object.
