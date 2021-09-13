@@ -513,13 +513,7 @@ exports.Root = class Root extends Base
   constructor: (@body) ->
     super()
 
-    # Detect top-level async similar to Code::constructor
-    @isAsync = no
-    @body.traverseChildren no, (node) =>
-      if (node instanceof Op and node.isAwait()) or node instanceof AwaitReturn
-        @isAsync = yes
-      if node instanceof For and node.isAwait()
-        @isAsync = yes
+    @isAsync = (new Code [], @body).isAsync
 
   children: ['body']
 
