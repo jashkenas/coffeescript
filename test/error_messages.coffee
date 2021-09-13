@@ -1257,14 +1257,7 @@ test "CoffeeScript keywords cannot be used as local names in import list aliases
                     ^^^^^^
   '''
 
-test "cannot have `await` outside a function", ->
-  assertErrorFormat '''
-    await 1
-  ''', '''
-    [stdin]:1:1: error: await can only occur inside functions
-    await 1
-    ^^^^^^^
-  '''
+test "cannot have `await return` outside a function", ->
   assertErrorFormat '''
     await return
   ''', '''

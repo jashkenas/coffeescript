@@ -513,6 +513,14 @@ exports.Root = class Root extends Base
   constructor: (@body) ->
     super()
 
+    # Detect top-level async similar to Code::constructor
+    @isAsync = no
+    @body.traverseChildren no, (node) =>
+      if (node instanceof Op and node.isAwait()) or node instanceof AwaitReturn
+        @isAsync = yes
+      if node instanceof For and node.isAwait()
+        @isAsync = yes
+
   children: ['body']
 
   # Wrap everything in a safety closure, unless requested not to. It would be
@@ -525,7 +533,13 @@ exports.Root = class Root extends Base
     @initializeScope o
     fragments = @body.compileRoot o
     return fragments if o.bare
-    [].concat @makeCode("(function() {\n"), fragments, @makeCode("\n}).call(this);\n")
+    parts = []
+    parts.push @makeCode '('
+    parts.push @makeCode 'async ' if @isAsync
+    parts.push @makeCode 'function() {\n'
+    parts.push ...fragments
+    parts.push @makeCode '\n}).call(this);\n'
+    [].concat ...parts
 
   initializeScope: (o) ->
     o.scope = new Scope null, @body, null, o.referencedVars ? []
@@ -4782,7 +4796,7 @@ exports.Op = class Op extends Base
   compileContinuation: (o) ->
     parts = []
     op = @operator
-    @checkContinuation o
+    @checkContinuation o unless @isAwait()
     if 'expression' in Object.keys(@first) and not (@first instanceof Throw)
       parts.push @first.expression.compileToFragments o, LEVEL_OP if @first.expression?
     else
@@ -4817,7 +4831,7 @@ exports.Op = class Op extends Base
       @error 'delete operand may not be argument or var'
 
   astNode: (o) ->
-    @checkContinuation o if @isYield() or @isAwait()
+    @checkContinuation o if @isYield()
     @checkDeleteOperand o
     super o
 

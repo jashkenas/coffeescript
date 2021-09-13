@@ -204,3 +204,19 @@ test "#3199: await multiline implicit object", ->
         type: 'a'
         msg: 'b'
     eq undefined, y
+
+test "top-level await", ->
+  eq CoffeeScript.compile('await null').trimEnd(), '''
+    (async function() {
+      await null;
+
+    }).call(this);
+  '''
+  eq CoffeeScript.compile('-> await null').trimEnd(), '''
+    (function() {
+      (async function() {
+        return (await null);
+      });
+
+    }).call(this);
+  '''
