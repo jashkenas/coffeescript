@@ -32,8 +32,8 @@ exports.arrayEq = (a, b, msg) ->
   ok arrayEgal(a, b), msg or
   "Expected #{reset}#{a}#{red} to deep equal #{reset}#{b}#{red}"
 
-exports.eqJS = (input, expectedOutput, msg, options = bare: yes) ->
-  actualOutput = CoffeeScript.compile input, options
+exports.eqJS = (input, expectedOutput, msg) ->
+  actualOutput = CoffeeScript.compile input, bare: yes
   .replace /^\s+|\s+$/g, '' # Trim leading/trailing whitespace.
   ok egal(expectedOutput, actualOutput), msg or diffOutput expectedOutput, actualOutput
 

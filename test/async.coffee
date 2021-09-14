@@ -209,17 +209,12 @@ test "top-level await", ->
   eqJS 'await null', 'await null;'
 
 test "top-level wrapper has correct async attribute", ->
-  eqJS 'await null', '''
-    (async function() {
-      await null;
-
-    }).call(this);
-  ''', undefined, bare: no
-  eqJS 'do -> await null', '''
-    (function() {
-      (async function() {
-        return (await null);
-      })();
-
-    }).call(this);
-  ''', undefined, bare: no
+  starts = (code, prefix) ->
+    compiled = CoffeeScript.compile code
+    unless compiled.startsWith prefix
+      fail """Expected generated JavaScript to start with:
+        #{reset}#{prefix}#{red}
+        but instead it was:
+        #{reset}#{compiled}#{red}"""
+  starts 'await null', '(async function'
+  starts 'do -> await null', '(function'
