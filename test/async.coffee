@@ -206,19 +206,20 @@ test "#3199: await multiline implicit object", ->
     eq undefined, y
 
 test "top-level await", ->
-  eq CoffeeScript.compile('await null'), '''
+  eqJS 'await null', 'await null;'
+
+test "top-level wrapper has correct async attribute", ->
+  eqJS 'await null', '''
     (async function() {
       await null;
 
     }).call(this);
-
-  '''
-  eq CoffeeScript.compile('-> await null'), '''
+  ''', undefined, bare: no
+  eqJS 'do -> await null', '''
     (function() {
       (async function() {
         return (await null);
-      });
+      })();
 
     }).call(this);
-
-  '''
+  ''', undefined, bare: no
