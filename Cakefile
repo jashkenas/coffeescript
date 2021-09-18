@@ -502,7 +502,7 @@ task 'test:browser', 'run the test suite against the modern browser compiler in 
   # version of the browser compiler. There’s no reason to run this test in old
   # versions of Node (the runtime is the headless Chrome browser, not Node),
   # and Puppeteer 3 only supports Node >= 10.18.1, so limit this test to those
-  # versions. The code below uses `Promise.prototype.finally` because the 
+  # versions. The code below uses `Promise.prototype.finally` because the
   # CoffeeScript codebase currently maintains compatibility with Node 6, which
   # did not support `async`/`await` syntax. Even though this test doesn’t run
   # in Node 6, it needs to still _parse_ in Node 6 so that this file can load.
@@ -594,7 +594,7 @@ task 'test:integrations', 'test the module integrated with other libraries and e
       process.exit 1
 
     builtCompiler = path.join tmpdir, 'coffeescript.js'
-    CoffeeScript = require builtCompiler
+    { CoffeeScript } = require builtCompiler
     global.testingBrowser = yes
     testResults = runTests CoffeeScript
     fs.unlinkSync builtCompiler
