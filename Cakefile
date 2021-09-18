@@ -548,7 +548,7 @@ task 'test:browser', 'run the test suite against the modern browser compiler in 
     browser.close()
   ).finally ->
     server.close()
-    if result and 'failed' not in result
+    if result and not result.includes('failed')
       log result, green
     else
       log result, red
