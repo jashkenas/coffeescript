@@ -222,11 +222,11 @@ buildDocs = (watch = no) ->
     markdownRenderer = require('markdown-it')
       html: yes
       typographer: yes
-      highlight: (str, lang) ->
+      highlight: (str, language) ->
         # From https://github.com/markdown-it/markdown-it#syntax-highlighting
-        if lang and hljs.getLanguage(lang)
+        if language and hljs.getLanguage(language)
           try
-            return hljs.highlight(lang, str).value
+            return hljs.highlight(str, { language }).value
           catch ex
         return '' # No syntax highlighting
 
@@ -537,7 +537,7 @@ task 'test:browser', 'run the test suite against the modern browser compiler in 
     page = pageHandle
     page.goto 'http://localhost:8080/'
   ).then(->
-    page.waitFor '#result',
+    page.waitForSelector '#result',
       visible: yes
       polling: 'mutation'
   ).then((element) ->
