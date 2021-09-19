@@ -112,8 +112,8 @@
         <li id="section-1">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-1">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-1">&#x00a7;</a>
               </div>
               <p>Source maps allow JavaScript runtimes to match running JavaScript back to
 the original source code that corresponds to it. This can be minified
@@ -134,8 +134,8 @@ of this information — to write out alongside the generated JavaScript.</p>
         <li id="section-2">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-2">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-2">&#x00a7;</a>
               </div>
               <p>A <strong>LineMap</strong> object keeps track of information about original line and column
 positions for a single line of output JavaScript code.
@@ -161,8 +161,8 @@ positions for a single line of output JavaScript code.
         <li id="section-3">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-3">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-3">&#x00a7;</a>
               </div>
               <h2 id="sourcemap">SourceMap</h2>
 
@@ -174,8 +174,8 @@ positions for a single line of output JavaScript code.
         <li id="section-4">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-4">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-4">&#x00a7;</a>
               </div>
               <p>Maps locations in a single generated JavaScript file back to locations in
 the original CoffeeScript source file.</p>
@@ -195,8 +195,8 @@ through the arrays of line and column buffer to produce it.</p>
         <li id="section-5">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-5">&#x00a7;</a>
               </div>
               <p>Adds a mapping to this SourceMap. <code>sourceLocation</code> and <code>generatedLocation</code>
 are both <code>[line, column]</code> arrays. If <code>options.noReplace</code> is true, then if there
@@ -216,8 +216,8 @@ effect.</p>
         <li id="section-6">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-6">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-6">&#x00a7;</a>
               </div>
               <p>Look up the original position of a given <code>line</code> and <code>column</code> in the generated
 code.</p>
@@ -234,8 +234,8 @@ code.</p>
         <li id="section-7">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-7">&#x00a7;</a>
               </div>
               <h2 id="v3-sourcemap-generation">V3 SourceMap Generation</h2>
 
@@ -247,8 +247,8 @@ code.</p>
         <li id="section-8">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-8">&#x00a7;</a>
               </div>
               <p>Builds up a V3 source map, returning the generated JSON as a string.
 <code>options.sourceRoot</code> may be used to specify the sourceRoot written to the source
@@ -263,14 +263,14 @@ set “sources” and “file”, respectively.</p>
     lastSourceLine    = <span class="hljs-number">0</span>
     lastSourceColumn  = <span class="hljs-number">0</span>
     needComma         = <span class="hljs-literal">no</span>
-    buffer            = <span class="hljs-string">""</span>
+    buffer            = <span class="hljs-string">&quot;&quot;</span>
 
     <span class="hljs-keyword">for</span> lineMap, lineNumber <span class="hljs-keyword">in</span> @lines <span class="hljs-keyword">when</span> lineMap
       <span class="hljs-keyword">for</span> mapping <span class="hljs-keyword">in</span> lineMap.columns <span class="hljs-keyword">when</span> mapping
         <span class="hljs-keyword">while</span> writingline &lt; mapping.line
           lastColumn = <span class="hljs-number">0</span>
           needComma = <span class="hljs-literal">no</span>
-          buffer += <span class="hljs-string">";"</span>
+          buffer += <span class="hljs-string">&quot;;&quot;</span>
           writingline++</pre></div></div>
             
         </li>
@@ -279,15 +279,15 @@ set “sources” and “file”, respectively.</p>
         <li id="section-9">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-9">&#x00a7;</a>
               </div>
               <p>Write a comma if we’ve already written a segment on this line.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> needComma
-          buffer += <span class="hljs-string">","</span>
+          buffer += <span class="hljs-string">&quot;,&quot;</span>
           needComma = <span class="hljs-literal">no</span></pre></div></div>
             
         </li>
@@ -296,8 +296,8 @@ set “sources” and “file”, respectively.</p>
         <li id="section-10">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-10">&#x00a7;</a>
               </div>
               <p>Write the next segment. Segments can be 1, 4, or 5 values.  If just one, then it
 is a generated column which doesn’t match anything in the source code.</p>
@@ -315,8 +315,8 @@ column for the current line:</p>
         <li id="section-11">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-11">&#x00a7;</a>
               </div>
               <p>The index into the list of sources:</p>
 
@@ -330,8 +330,8 @@ column for the current line:</p>
         <li id="section-12">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-12">&#x00a7;</a>
               </div>
               <p>The starting line in the original source, relative to the previous source line.</p>
 
@@ -346,8 +346,8 @@ column for the current line:</p>
         <li id="section-13">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-13">&#x00a7;</a>
               </div>
               <p>The starting column in the original source, relative to the previous column.</p>
 
@@ -363,8 +363,8 @@ column for the current line:</p>
         <li id="section-14">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-14">&#x00a7;</a>
               </div>
               <p>Produce the canonical JSON object format for a “v3” source map.</p>
 
@@ -375,12 +375,12 @@ column for the current line:</p>
     <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> options.filename
       [options.filename]
     <span class="hljs-keyword">else</span>
-      [<span class="hljs-string">'&lt;anonymous&gt;'</span>]
+      [<span class="hljs-string">&#x27;&lt;anonymous&gt;&#x27;</span>]
 
     v3 =
       version:    <span class="hljs-number">3</span>
-      file:       options.generatedFile <span class="hljs-keyword">or</span> <span class="hljs-string">''</span>
-      sourceRoot: options.sourceRoot <span class="hljs-keyword">or</span> <span class="hljs-string">''</span>
+      file:       options.generatedFile <span class="hljs-keyword">or</span> <span class="hljs-string">&#x27;&#x27;</span>
+      sourceRoot: options.sourceRoot <span class="hljs-keyword">or</span> <span class="hljs-string">&#x27;&#x27;</span>
       sources:    sources
       names:      []
       mappings:   buffer
@@ -395,8 +395,8 @@ column for the current line:</p>
         <li id="section-15">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-15">&#x00a7;</a>
               </div>
               <h2 id="base64-vlq-encoding">Base64 VLQ Encoding</h2>
 
@@ -408,8 +408,8 @@ column for the current line:</p>
         <li id="section-16">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-16">&#x00a7;</a>
               </div>
               <p>Note that SourceMap VLQ encoding is “backwards”.  MIDI-style VLQ encoding puts
 the most-significant-bit (MSB) from the original value into the MSB of the VLQ
@@ -424,7 +424,7 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
   VLQ_VALUE_MASK       = VLQ_CONTINUATION_BIT - <span class="hljs-number">1</span>   <span class="hljs-comment"># 0001 1111</span>
 
   encodeVlq: <span class="hljs-function"><span class="hljs-params">(value)</span> -&gt;</span>
-    answer = <span class="hljs-string">''</span></pre></div></div>
+    answer = <span class="hljs-string">&#x27;&#x27;</span></pre></div></div>
             
         </li>
         
@@ -432,8 +432,8 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
         <li id="section-17">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-17">&#x00a7;</a>
               </div>
               <p>Least significant bit represents the sign.</p>
 
@@ -447,14 +447,14 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
         <li id="section-18">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-18">&#x00a7;</a>
               </div>
               <p>The next bits are the actual value.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    valueToEncode = (Math.abs(value) &lt;&lt; <span class="hljs-number">1</span>) + signBit</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    valueToEncode = (<span class="hljs-built_in">Math</span>.abs(value) &lt;&lt; <span class="hljs-number">1</span>) + signBit</pre></div></div>
             
         </li>
         
@@ -462,8 +462,8 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
         <li id="section-19">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-19">&#x00a7;</a>
               </div>
               <p>Make sure we encode at least one character, even if valueToEncode is 0.</p>
 
@@ -483,8 +483,8 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
         <li id="section-20">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-20">&#x00a7;</a>
               </div>
               <h2 id="regular-base64-encoding">Regular Base64 Encoding</h2>
 
@@ -496,16 +496,16 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
         <li id="section-21">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-21">&#x00a7;</a>
               </div>
               
             </div>
             
-            <div class="content"><div class='highlight'><pre>  BASE64_CHARS = <span class="hljs-string">'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'</span>
+            <div class="content"><div class='highlight'><pre>  BASE64_CHARS = <span class="hljs-string">&#x27;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/&#x27;</span>
 
   encodeBase64: <span class="hljs-function"><span class="hljs-params">(value)</span> -&gt;</span>
-    BASE64_CHARS[value] <span class="hljs-keyword">or</span> <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">"Cannot Base64 encode value: <span class="hljs-subst">#{value}</span>"</span></pre></div></div>
+    BASE64_CHARS[value] <span class="hljs-keyword">or</span> <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span> <span class="hljs-string">&quot;Cannot Base64 encode value: <span class="hljs-subst">#{value}</span>&quot;</span></pre></div></div>
             
         </li>
         
@@ -513,14 +513,14 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
         <li id="section-22">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-22">&#x00a7;</a>
               </div>
               <p>Our API for source maps is just the <code>SourceMap</code> class.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">module</span>.exports = SourceMap</pre></div></div>
+            <div class="content"><div class='highlight'><pre>module.<span class="hljs-built_in">exports</span> = SourceMap</pre></div></div>
             
         </li>
         

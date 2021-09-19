@@ -4280,7 +4280,7 @@ test "AST as expected for If node", ->
         inverted: no
       ]
 
-test "AST as expected for MetaProperty node", ->
+test "AST as expected for `new.target` MetaProperty node", ->
   testExpression '''
     -> new.target
   ''',
@@ -4312,6 +4312,25 @@ test "AST as expected for MetaProperty node", ->
           property: ID 'name'
           computed: no
       ]
+
+test "AST as expected for `import.meta` MetaProperty node", ->
+  testExpression '''
+    import.meta
+  ''',
+    type: 'MetaProperty'
+    meta: ID 'import'
+    property: ID 'meta'
+
+  testExpression '''
+    import.meta.name
+  ''',
+    type: 'MemberExpression'
+    object:
+      type: 'MetaProperty'
+      meta: ID 'import'
+      property: ID 'meta'
+    property: ID 'name'
+    computed: no
 
 test "AST as expected for dynamic import", ->
   testExpression '''
@@ -10770,7 +10789,7 @@ test "AST as expected for While node", ->
         line: 3
         column: 5
 
-test "AST location data as expected for MetaProperty node", ->
+test "AST location data as expected for `new.target` MetaProperty node", ->
   testAstLocationData '''
     -> new.target
   ''',
@@ -10821,6 +10840,44 @@ test "AST location data as expected for MetaProperty node", ->
       end:
         line: 1
         column: 13
+
+test "AST location data as expected for `import.meta` MetaProperty node", ->
+  testAstLocationData '''
+    import.meta
+  ''',
+    type: 'MetaProperty'
+    meta:
+      start: 0
+      end: 6
+      range: [0, 6]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 6
+    property:
+      start: 7
+      end: 11
+      range: [7, 11]
+      loc:
+        start:
+          line: 1
+          column: 7
+        end:
+          line: 1
+          column: 11
+    start: 0
+    end: 11
+    range: [0, 11]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 11
 
 test "AST location data as expected for For node", ->
   testAstLocationData 'for x, i in arr when x? then return',
@@ -15649,6 +15706,20 @@ test "#3199: await multiline implicit object", ->
         msg: 'b'
     eq undefined, y
 
+test "top-level await", ->
+  eqJS 'await null', 'await null;'
+
+test "top-level wrapper has correct async attribute", ->
+  starts = (code, prefix) ->
+    compiled = CoffeeScript.compile code
+    unless compiled.startsWith prefix
+      fail """Expected generated JavaScript to start with:
+        #{reset}#{prefix}#{red}
+        but instead it was:
+        #{reset}#{compiled}#{red}"""
+  starts 'await null', '(async function'
+  starts 'do -> await null', '(function'
+
 </script>
 <script type="text/x-coffeescript" class="test" id="async_iterators">
 # This is always fulfilled.
@@ -17628,6 +17699,10 @@ test "#4609: Support new.target", ->
 
   new Foo()
   eq newTarget, yes
+
+test "#5323: new.target can be the argument of a function", ->
+  fn = (arg) -> arg
+  fn new.target
 
 test "#5085: Bug: @ reference to class not maintained in do block", ->
   thisFoo = 'initial foo'
@@ -19610,6 +19685,11 @@ test "for pattern variables can linebreak/indent", ->
     anotherNonexistentElement
   ] in listOfArrays
   eq a, 2
+
+test "#5309: comprehension as postfix condition", ->
+  doesNotThrowCompileError """
+    throw new Error "DOOM was called with a null element" unless elm? for elm in elms
+  """
 
 </script>
 <script type="text/x-coffeescript" class="test" id="control_flow">
@@ -22186,14 +22266,7 @@ test "CoffeeScript keywords cannot be used as local names in import list aliases
                     ^^^^^^
   '''
 
-test "cannot have `await` outside a function", ->
-  assertErrorFormat '''
-    await 1
-  ''', '''
-    [stdin]:1:1: error: await can only occur inside functions
-    await 1
-    ^^^^^^^
-  '''
+test "cannot have `await return` outside a function", ->
   assertErrorFormat '''
     await return
   ''', '''
@@ -22894,6 +22967,15 @@ test "`new.target` is only allowed meta property", ->
     [stdin]:1:4: error: the only valid meta property for new is new.target
     -> new.something
        ^^^^^^^^^^^^^
+  '''
+
+test "`import.meta` is only allowed meta property", ->
+  assertErrorFormat '''
+    foo = import.something
+  ''', '''
+    [stdin]:1:7: error: the only valid meta property for import is import.meta
+    foo = import.something
+          ^^^^^^^^^^^^^^^^
   '''
 
 test "`new.target` cannot be assigned", ->
@@ -28967,6 +29049,70 @@ test "#4834: dynamic import", ->
       var bar;
       return bar = (await import('bar'));
     };
+  """
+
+  eqJS """
+    console.log import('foo')
+  """,
+  """
+    console.log(import('foo'));
+  """
+
+test "#5317: Support import.meta", ->
+  eqJS """
+    foo = import.meta
+  """,
+  """
+    var foo;
+
+    foo = import.meta;
+  """
+
+  eqJS """
+    foo = import
+        .meta
+  """,
+  """
+    var foo;
+
+    foo = import.meta;
+  """
+
+  eqJS """
+    foo = import.
+        meta
+  """,
+  """
+    var foo;
+
+    foo = import.meta;
+  """
+
+  eqJS """
+    foo = import.meta.bar
+  """,
+  """
+    var foo;
+
+    foo = import.meta.bar;
+  """
+
+  eqJS """
+    foo = import
+        .meta
+        .bar
+  """,
+  """
+    var foo;
+
+    foo = import.meta.bar;
+  """
+
+  eqJS """
+    console.log import.meta.url
+  """,
+  """
+    console.log(import.meta.url);
   """
 
 </script>
