@@ -16,7 +16,7 @@
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
 <!-- The CoffeeScript logo font is Google’s Galada -->
 <link href="https://fonts.googleapis.com/css?family=Alegreya+Sans:400,800|Lato:300,300i,400,700|Roboto+Mono:400,400i" rel="stylesheet" crossorigin="anonymous">
-<link href="https://cdn.jsdelivr.net/npm/codemirror@5.37.0/lib/codemirror.css" rel="stylesheet" crossorigin="anonymous">
+<link href="https://cdn.jsdelivr.net/npm/codemirror@5.62.3/lib/codemirror.css" rel="stylesheet" crossorigin="anonymous">
 <style>
 /* Adapted from https://github.com/FarhadG/code-mirror-themes/blob/master/themes/twilight.css and https://github.com/codemirror/CodeMirror/blob/master/theme/twilight.css */
 
@@ -897,10 +897,11 @@ cubes = (function() {
           <h3>Compatibility</h3>
 <p>Most modern JavaScript features that CoffeeScript supports can run natively in Node 7.6+, meaning that Node can run CoffeeScript’s output without any further processing required. Here are some notable exceptions:</p>
 <ul>
-<li><a href="#modules">Modules</a> and <a href="#jsx">JSX</a> always require transpilation.</li>
+<li><a href="#jsx">JSX</a> always requires transpilation.</li>
 <li><a href="https://coffeescript.org/#splats">Splats, a.k.a. object rest/spread syntax, for objects</a> are supported by Node 8.6+.</li>
 <li>The <a href="https://github.com/tc39/proposal-regexp-dotall-flag">regular expression <code>s</code> (dotall) flag</a> is supported by Node 9+.</li>
 <li><a href="https://github.com/tc39/proposal-async-iteration">Async generator functions</a> are supported by Node 10+.</li>
+<li><a href="#modules">Modules</a> are supported by Node 12+ with <code>&quot;type&quot;: &quot;module&quot;</code> in your project’s <code>package.json</code>.</li>
 </ul>
 <p>This list may be incomplete, and excludes versions of Node that support newer features behind flags; please refer to <a href="http://node.green/">node.green</a> for full details. You can <a href="test.html">run the tests in your browser</a> to see what your browser supports. It is your responsibility to ensure that your runtime supports the modern features you use; or that you <a href="#transpilation">transpile</a> your code. When in doubt, transpile.</p>
 
@@ -4242,12 +4243,12 @@ greet = function(name, adjective) {
         </section>
         <section id="modules">
           <h2>Modules</h2>
-<p>ES2015 modules are supported in CoffeeScript, with very similar <code>import</code> and <code>export</code> syntax:</p>
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules">ES2015 modules</a> are supported in CoffeeScript, with very similar <code>import</code> and <code>export</code> syntax:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="modules">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
-      <textarea class="coffeescript-input" id="modules-coffee">import './local-file.coffee'
-import 'coffeescript'
+      <textarea class="coffeescript-input" id="modules-coffee">import './local-file.js' # Must be the filename of the generated file
+import 'package'
 
 import _ from 'underscore'
 import * as underscore from 'underscore'
@@ -4269,8 +4270,8 @@ export { Mathematics as default, sqrt as squareRoot }
 export * from 'underscore'
 export { max, min } from 'underscore'
 </textarea>
-      <pre class="placeholder-code"><span class="cm-variable">import</span> <span class="cm-string">'./local-file.coffee'</span>
-<span class="cm-variable">import</span> <span class="cm-string">'coffeescript'</span>
+      <pre class="placeholder-code"><span class="cm-variable">import</span> <span class="cm-string">'./local-file.js'</span> <span class="cm-comment"># Must be the filename of the generated file</span>
+<span class="cm-variable">import</span> <span class="cm-string">'package'</span>
 
 <span class="cm-variable">import</span> <span class="cm-variable">_</span> <span class="cm-variable">from</span> <span class="cm-string">'underscore'</span>
 <span class="cm-variable">import</span> <span class="cm-operator">*</span> <span class="cm-variable">as</span> <span class="cm-variable">underscore</span> <span class="cm-variable">from</span> <span class="cm-string">'underscore'</span>
@@ -4294,9 +4295,9 @@ export { max, min } from 'underscore'
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="modules-js">import './local-file.coffee';
+      <textarea class="javascript-output" id="modules-js">import './local-file.js';
 
-import 'coffeescript';
+import 'package';
 
 import _ from 'underscore';
 
@@ -4356,9 +4357,9 @@ export {
   min
 } from 'underscore';
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">import</span> <span class="cm-string">'./local-file.coffee'</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">import</span> <span class="cm-string">'./local-file.js'</span>;
 
-<span class="cm-keyword">import</span> <span class="cm-string">'coffeescript'</span>;
+<span class="cm-keyword">import</span> <span class="cm-string">'package'</span>;
 
 <span class="cm-keyword">import</span> <span class="cm-def">_</span> <span class="cm-keyword">from</span> <span class="cm-string">'underscore'</span>;
 
@@ -4485,8 +4486,8 @@ else
   
 </aside>
 <div id="modules-note" class="bookmark"></div>
-<p>Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an <code>import</code> or <code>export</code> statement in CoffeeScript will produce an <code>import</code> or <code>export</code> statement in the resulting output. It is your responsibility to <a href="#transpilation">transpile</a> this ES2015 syntax into code that will work in your target runtimes.</p>
-<p>Also note that any file with an <code>import</code> or <code>export</code> statement will be output without a <a href="#lexical-scope">top-level function safety wrapper</a>; in other words, importing or exporting modules will automatically trigger <a href="#usage">bare</a> mode for that file. This is because per the ES2015 spec, <code>import</code> or <code>export</code> statements must occur at the topmost scope.</p>
+<p>Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an <code>import</code> or <code>export</code> statement in CoffeeScript will produce an <code>import</code> or <code>export</code> statement in the resulting output. Such statements can be run by all modern browsers (when the script is referenced via <code>&lt;script type=&quot;module&quot;&gt;</code>) and <a href="https://nodejs.org/api/esm.html#esm_enabling">by Node.js</a> when the output <code>.js</code> files are in a folder where the nearest parent <code>package.json</code> file contains <code>&quot;type&quot;: &quot;module&quot;</code>. Because the runtime is evaluating the generated output, the <code>import</code> statements must reference the output files; so if <code>file.coffee</code> is output as <code>file.js</code>, it needs to be referenced as <code>file.js</code> in the <code>import</code> statement, with the <code>.js</code> extension included.</p>
+<p>Also, any file with an <code>import</code> or <code>export</code> statement will be output without a <a href="#lexical-scope">top-level function safety wrapper</a>; in other words, importing or exporting modules will automatically trigger <a href="#usage">bare</a> mode for that file. This is because per the ES2015 spec, <code>import</code> or <code>export</code> statements must occur at the topmost scope.</p>
 
         </section>
         <section id="embedded">
