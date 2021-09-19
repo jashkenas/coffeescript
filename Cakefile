@@ -570,6 +570,9 @@ task 'test:integrations', 'test the module integrated with other libraries and e
   # can be built by such tools; if such a build succeeds, it verifies that no
   # Node modules are required as part of the compiler (as opposed to the tests)
   # and that therefore the compiler will run in a browser environment.
+  # Webpack 5 requires Node >= 10.13.0.
+  [major, minor] = process.versions.node.split('.').map (n) -> parseInt(n, 10)
+  return if major < 10 or (major is 10 and minor < 13)
   tmpdir = os.tmpdir()
   webpack = require 'webpack'
   webpack {
