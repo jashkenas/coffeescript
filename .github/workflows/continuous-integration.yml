@@ -22,17 +22,23 @@ jobs:
 
     - run: npm ci
 
-    # Test before building, to ensure that we test the build output that was committed
-    - run: node ./bin/cake test
-    - run: node ./bin/cake test:browser
-    - run: node ./bin/cake test:browser:node
-    - run: node ./bin/cake test:integrations
-
     # Ensure that we can still build in the current version of Node
     - run: node ./bin/cake build:except-parser
     - run: node ./bin/cake build:parser
-    - run: node ./bin/cake build:full
+    # Build twice to ensure that the latest build of the compiler can still build itself
+    - run: node ./bin/cake build:except-parser
+    - run: node ./bin/cake build:parser
+    # Build the browser compiler for the headless browser test
     - run: node ./bin/cake build:browser
 
     # Check that the git diff is clean, to ensure that the updated build output was committed
     - run: git diff --exit-code
+
+    # Build test.html, so that test:browser uses the latest tests
+    - run: node ./bin/cake doc:test
+
+    # Test
+    - run: node ./bin/cake test
+    - run: node ./bin/cake test:browser
+    - run: node ./bin/cake test:browser:node
+    - run: node ./bin/cake test:integrations
