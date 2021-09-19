@@ -11,38 +11,34 @@ jobs:
     strategy:
       matrix:
         operating-system: [ubuntu-latest, macos-latest, windows-latest]
-        node-version: [6.x, 8.x, 10.x, 12.x, 14.x, 16.x]
+        node-version: [10.x, 12.x, 14.x, 16.x]
 
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
 
-    # Puppeteer runs an install script that requires Node 10+.
-    # Also, the `npm ci` command doesn’t exist on the version of npm that shipped with Node 6.
-    - run: node --eval "pjson = JSON.parse(require('fs').readFileSync('./package.json')); delete pjson.devDependencies.puppeteer; require('fs').writeFileSync('./package.json', JSON.stringify(pjson), 'utf8')"
-      if: matrix.node-version == '6.x' || matrix.node-version == '8.x'
-    - run: npm install
-      if: matrix.node-version == '6.x'
     - run: npm ci
-      if: matrix.node-version != '6.x'
 
-    - run: node ./bin/cake test
-    - run: node --harmony ./bin/cake test
-
-    - run: node ./bin/cake test:browser
-      if: matrix.node-version != '6.x' && matrix.node-version != '8.x'
-
-    - run: node ./bin/cake test:browser:node
-
-    - run: node ./bin/cake test:integrations
-
+    # Ensure that we can still build in the current version of Node
     - run: node ./bin/cake build:except-parser
     - run: node ./bin/cake build:parser
-    - run: node ./bin/cake build:full
+    # Build twice to ensure that the latest build of the compiler can still build itself
+    - run: node ./bin/cake build:except-parser
+    - run: node ./bin/cake build:parser
+    # Build the browser compiler for the headless browser test
     - run: node ./bin/cake build:browser
 
+    # Check that the git diff is clean, to ensure that the updated build output was committed
     - run: git diff --exit-code
-      if: matrix.node-version != '6.x' && matrix.node-version != '8.x'
+
+    # Build test.html, so that test:browser uses the latest tests
+    - run: node ./bin/cake doc:test
+
+    # Test
+    - run: node ./bin/cake test
+    - run: node ./bin/cake test:browser
+    - run: node ./bin/cake test:browser:node
+    - run: node ./bin/cake test:integrations

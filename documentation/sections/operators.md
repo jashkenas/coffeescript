@@ -32,7 +32,7 @@ All together now:
 | `isnt` | `!==` |
 | `not` | `!` |
 | `and` | `&&` |
-| `or` | `||` |
+| `or` | <code>&#124;&#124;</code> |
 | `true`, `yes`, `on` | `true` |
 | `false`, `no`, `off`&emsp; | `false` |
 | `@`, `this` | `this` |

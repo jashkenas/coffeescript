@@ -16,7 +16,7 @@
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
 <!-- The CoffeeScript logo font is Google’s Galada -->
 <link href="https://fonts.googleapis.com/css?family=Alegreya+Sans:400,800|Lato:300,300i,400,700|Roboto+Mono:400,400i" rel="stylesheet" crossorigin="anonymous">
-<link href="https://cdn.jsdelivr.net/npm/codemirror@5.37.0/lib/codemirror.css" rel="stylesheet" crossorigin="anonymous">
+<link href="https://cdn.jsdelivr.net/npm/codemirror@5.62.3/lib/codemirror.css" rel="stylesheet" crossorigin="anonymous">
 <style>
 /* Adapted from https://github.com/FarhadG/code-mirror-themes/blob/master/themes/twilight.css and https://github.com/codemirror/CodeMirror/blob/master/theme/twilight.css */
 
@@ -694,7 +694,7 @@ textarea {
       <section id="introduction">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.5.1">2.5.1</a></p>
+<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.6.0">2.6.0</a></p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash"><span class="comment"># Install locally for a project:</span>
 npm install --save-dev coffeescript
 
@@ -897,10 +897,11 @@ cubes = (function() {
           <h3>Compatibility</h3>
 <p>Most modern JavaScript features that CoffeeScript supports can run natively in Node 7.6+, meaning that Node can run CoffeeScript’s output without any further processing required. Here are some notable exceptions:</p>
 <ul>
-<li><a href="#modules">Modules</a> and <a href="#jsx">JSX</a> always require transpilation.</li>
+<li><a href="#jsx">JSX</a> always requires transpilation.</li>
 <li><a href="https://coffeescript.org/#splats">Splats, a.k.a. object rest/spread syntax, for objects</a> are supported by Node 8.6+.</li>
 <li>The <a href="https://github.com/tc39/proposal-regexp-dotall-flag">regular expression <code>s</code> (dotall) flag</a> is supported by Node 9+.</li>
 <li><a href="https://github.com/tc39/proposal-async-iteration">Async generator functions</a> are supported by Node 10+.</li>
+<li><a href="#modules">Modules</a> are supported by Node 12+ with <code>&quot;type&quot;: &quot;module&quot;</code> in your project’s <code>package.json</code>.</li>
 </ul>
 <p>This list may be incomplete, and excludes versions of Node that support newer features behind flags; please refer to <a href="http://node.green/">node.green</a> for full details. You can <a href="test.html">run the tests in your browser</a> to see what your browser supports. It is your responsibility to ensure that your runtime supports the modern features you use; or that you <a href="#transpilation">transpile</a> your code. When in doubt, transpile.</p>
 
@@ -1029,14 +1030,14 @@ cubes = (function() {
         <section id="nodejs-usage">
           <h3>Node.js</h3>
 <p>If you’d like to use Node.js’ CommonJS to <code>require</code> CoffeeScript files, e.g. <code>require './app.coffee'</code>, you must first “register” CoffeeScript as an extension:</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="built_in">require</span> <span class="string">'coffeescript/register'</span>
+<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="built_in">require</span> <span class="string">&#x27;coffeescript/register&#x27;</span>
 
-App = <span class="built_in">require</span> <span class="string">'./app'</span> <span class="comment"># The .coffee extension is optional</span>
+App = <span class="built_in">require</span> <span class="string">&#x27;./app&#x27;</span> <span class="comment"># The .coffee extension is optional</span>
 </code></pre>
 </blockquote><p>If you want to use the compiler’s API, for example to make an app that compiles strings of CoffeeScript on the fly, you can <code>require</code> the full module:</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-coffee">CoffeeScript = <span class="built_in">require</span> <span class="string">'coffeescript'</span>
+<blockquote class="uneditable-code-block"><pre><code class="language-coffee">CoffeeScript = <span class="built_in">require</span> <span class="string">&#x27;coffeescript&#x27;</span>
 
-eval CoffeeScript.compile <span class="string">'console.log "Mmmmm, I could really go for some #{Math.pi}"'</span>
+<span class="built_in">eval</span> CoffeeScript.compile <span class="string">&#x27;console.log &quot;Mmmmm, I could really go for some #{Math.pi}&quot;&#x27;</span>
 </code></pre>
 </blockquote><p>The <code>compile</code> method has the signature <code>compile(code, options)</code> where <code>code</code> is a string of CoffeeScript code, and the optional <code>options</code> is an object with some or all of the following properties:</p>
 <ul>
@@ -1056,7 +1057,7 @@ eval CoffeeScript.compile <span class="string">'console.log "Mmmmm, I could real
 <h4>Quickstart</h4>
 <p>From the root of your project:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --save-dev @babel/core @babel/preset-env
-<span class="built_in">echo</span> <span class="string">'{ "presets": ["@babel/env"] }'</span> &gt; .babelrc
+<span class="built_in">echo</span> <span class="string">&#x27;{ &quot;presets&quot;: [&quot;@babel/env&quot;] }&#x27;</span> &gt; .babelrc
 coffee --compile --transpile --inline-map some-file.coffee
 </code></pre>
 </blockquote><h4>Transpiling with the CoffeeScript compiler</h4>
@@ -1072,7 +1073,7 @@ coffee --compile --transpile --inline-map some-file.coffee
 </blockquote><p>See <a href="https://babeljs.io/docs/plugins/">Babel’s website to learn about presets and plugins</a> and the multitude of options you have. Another preset you might need is <a href="https://babeljs.io/docs/en/babel-plugin-transform-react-jsx/"><code>@babel/plugin-transform-react-jsx</code></a> if you’re using JSX with React (JSX can also be used with other frameworks).</p>
 <p>Once you have <code>@babel/core</code> and <code>@babel/preset-env</code> (or other presets or plugins) installed, and a <code>.babelrc</code> file (or other equivalent) in place, you can use <code>coffee --transpile</code> to pipe CoffeeScript’s output through Babel using the options you’ve saved.</p>
 <p>If you’re using CoffeeScript via the <a href="nodejs_usage">Node API</a>, where you call <code>CoffeeScript.compile</code> with a string to be compiled and an <code>options</code> object, the <code>transpile</code> key of the <code>options</code> object should be the Babel options:</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-js">CoffeeScript.compile(code, {<span class="attr">transpile</span>: {<span class="attr">presets</span>: [<span class="string">'@babel/env'</span>]}})
+<blockquote class="uneditable-code-block"><pre><code class="language-js"><span class="title class_">CoffeeScript</span>.<span class="title function_">compile</span>(code, {<span class="attr">transpile</span>: {<span class="attr">presets</span>: [<span class="string">&#x27;@babel/env&#x27;</span>]}})
 </code></pre>
 </blockquote><p>You can also transpile CoffeeScript’s output without using the <code>transpile</code> option, for example as part of a build chain. This lets you use transpilers other than Babel, and it gives you greater control over the process. There are many great task runners for setting up JavaScript build chains, such as <a href="http://gulpjs.com/">Gulp</a>, <a href="https://webpack.github.io/">Webpack</a>, <a href="https://gruntjs.com/">Grunt</a> and <a href="http://broccolijs.com/">Broccoli</a>.</p>
 <h4>Polyfills</h4>
@@ -4242,12 +4243,12 @@ greet = function(name, adjective) {
         </section>
         <section id="modules">
           <h2>Modules</h2>
-<p>ES2015 modules are supported in CoffeeScript, with very similar <code>import</code> and <code>export</code> syntax:</p>
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules">ES2015 modules</a> are supported in CoffeeScript, with very similar <code>import</code> and <code>export</code> syntax:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="modules">
   <div class="row">
     <div class="col-md-6 coffeescript-input-column">
-      <textarea class="coffeescript-input" id="modules-coffee">import './local-file.coffee'
-import 'coffeescript'
+      <textarea class="coffeescript-input" id="modules-coffee">import './local-file.js' # Must be the filename of the generated file
+import 'package'
 
 import _ from 'underscore'
 import * as underscore from 'underscore'
@@ -4269,8 +4270,8 @@ export { Mathematics as default, sqrt as squareRoot }
 export * from 'underscore'
 export { max, min } from 'underscore'
 </textarea>
-      <pre class="placeholder-code"><span class="cm-variable">import</span> <span class="cm-string">'./local-file.coffee'</span>
-<span class="cm-variable">import</span> <span class="cm-string">'coffeescript'</span>
+      <pre class="placeholder-code"><span class="cm-variable">import</span> <span class="cm-string">'./local-file.js'</span> <span class="cm-comment"># Must be the filename of the generated file</span>
+<span class="cm-variable">import</span> <span class="cm-string">'package'</span>
 
 <span class="cm-variable">import</span> <span class="cm-variable">_</span> <span class="cm-variable">from</span> <span class="cm-string">'underscore'</span>
 <span class="cm-variable">import</span> <span class="cm-operator">*</span> <span class="cm-variable">as</span> <span class="cm-variable">underscore</span> <span class="cm-variable">from</span> <span class="cm-string">'underscore'</span>
@@ -4294,9 +4295,9 @@ export { max, min } from 'underscore'
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="modules-js">import './local-file.coffee';
+      <textarea class="javascript-output" id="modules-js">import './local-file.js';
 
-import 'coffeescript';
+import 'package';
 
 import _ from 'underscore';
 
@@ -4356,9 +4357,9 @@ export {
   min
 } from 'underscore';
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">import</span> <span class="cm-string">'./local-file.coffee'</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">import</span> <span class="cm-string">'./local-file.js'</span>;
 
-<span class="cm-keyword">import</span> <span class="cm-string">'coffeescript'</span>;
+<span class="cm-keyword">import</span> <span class="cm-string">'package'</span>;
 
 <span class="cm-keyword">import</span> <span class="cm-def">_</span> <span class="cm-keyword">from</span> <span class="cm-string">'underscore'</span>;
 
@@ -4485,8 +4486,8 @@ else
   
 </aside>
 <div id="modules-note" class="bookmark"></div>
-<p>Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an <code>import</code> or <code>export</code> statement in CoffeeScript will produce an <code>import</code> or <code>export</code> statement in the resulting output. It is your responsibility to <a href="#transpilation">transpile</a> this ES2015 syntax into code that will work in your target runtimes.</p>
-<p>Also note that any file with an <code>import</code> or <code>export</code> statement will be output without a <a href="#lexical-scope">top-level function safety wrapper</a>; in other words, importing or exporting modules will automatically trigger <a href="#usage">bare</a> mode for that file. This is because per the ES2015 spec, <code>import</code> or <code>export</code> statements must occur at the topmost scope.</p>
+<p>Note that the CoffeeScript compiler <strong>does not resolve modules</strong>; writing an <code>import</code> or <code>export</code> statement in CoffeeScript will produce an <code>import</code> or <code>export</code> statement in the resulting output. Such statements can be run by all modern browsers (when the script is referenced via <code>&lt;script type=&quot;module&quot;&gt;</code>) and <a href="https://nodejs.org/api/esm.html#esm_enabling">by Node.js</a> when the output <code>.js</code> files are in a folder where the nearest parent <code>package.json</code> file contains <code>&quot;type&quot;: &quot;module&quot;</code>. Because the runtime is evaluating the generated output, the <code>import</code> statements must reference the output files; so if <code>file.coffee</code> is output as <code>file.js</code>, it needs to be referenced as <code>file.js</code> in the <code>import</code> statement, with the <code>.js</code> extension included.</p>
+<p>Also, any file with an <code>import</code> or <code>export</code> statement will be output without a <a href="#lexical-scope">top-level function safety wrapper</a>; in other words, importing or exporting modules will automatically trigger <a href="#usage">bare</a> mode for that file. This is because per the ES2015 spec, <code>import</code> or <code>export</code> statements must occur at the topmost scope.</p>
 
         </section>
         <section id="embedded">
@@ -4921,7 +4922,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
         <section id="annotated-source">
           <h2>Annotated Source</h2>
-<p>You can browse the CoffeeScript 2.5.1 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+<p>You can browse the CoffeeScript 2.6.0 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
 <li><a href="annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
@@ -4963,8 +4964,8 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
 <p>When CoffeeScript was designed, <code>var</code> was <a href="https://github.com/jashkenas/coffeescript/issues/238#issuecomment-153502">intentionally omitted</a>. This was to spare developers the mental housekeeping of needing to worry about variable <em>declaration</em> (<code>var foo</code>) as opposed to variable <em>assignment</em> (<code>foo = 1</code>). The CoffeeScript compiler automatically takes care of declaration for you, by generating <code>var</code> statements at the top of every function scope. This makes it impossible to accidentally declare a global variable.</p>
 <p><code>let</code> and <code>const</code> add a useful ability to JavaScript in that you can use them to declare variables within a <em>block</em> scope, for example within an <code>if</code> statement body or a <code>for</code> loop body, whereas <code>var</code> always declares variables in the scope of an entire function. When CoffeeScript 2 was designed, there was much discussion of whether this functionality was useful enough to outweigh the simplicity offered by never needing to consider variable declaration in CoffeeScript. In the end, it was decided that the simplicity was more valued. In CoffeeScript there remains only one type of variable.</p>
 <p>Keep in mind that <code>const</code> only protects you from <em>reassigning</em> a variable; it doesn’t prevent the variable’s value from changing, the way constants usually do in other languages:</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-js"><span class="keyword">const</span> obj = {<span class="attr">foo</span>: <span class="string">'bar'</span>};
-obj.foo = <span class="string">'baz'</span>; <span class="comment">// Allowed!</span>
+<blockquote class="uneditable-code-block"><pre><code class="language-js"><span class="keyword">const</span> obj = {<span class="attr">foo</span>: <span class="string">&#x27;bar&#x27;</span>};
+obj.<span class="property">foo</span> = <span class="string">&#x27;baz&#x27;</span>; <span class="comment">// Allowed!</span>
 obj = {}; <span class="comment">// Throws error</span>
 </code></pre>
 </blockquote>
@@ -5207,7 +5208,7 @@ a; // Equals 1 in CoffeeScript 1.x, null in CoffeeScript 2
         <section id="breaking-changes-bound-generator-functions">
           <h3>Bound generator functions</h3>
 <p>Bound generator functions, a.k.a. generator arrow functions, <a href="http://stackoverflow.com/questions/27661306/can-i-use-es6s-arrow-function-syntax-with-generators-arrow-notation">aren’t allowed in ECMAScript</a>. You can write <code>function*</code> or <code>=&gt;</code>, but not both. Therefore, CoffeeScript code like this:</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="function"><span class="title">f</span> = =&gt;</span> <span class="keyword">yield</span> <span class="keyword">this</span>
+<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="function"><span class="title">f</span> = =&gt;</span> <span class="keyword">yield</span> this
 <span class="comment"># Throws a compiler error</span>
 </code></pre>
 </blockquote><p>Needs to be rewritten the old-fashioned way:</p>
@@ -5260,7 +5261,7 @@ f = function*() {
 
 <span class="class"><span class="keyword">class</span> <span class="title">Component</span> <span class="keyword">extends</span> <span class="title">Base</span></span>
   onClick: <span class="function">=&gt;</span>
-    <span class="built_in">console</span>.log <span class="string">'Clicked!'</span>, @
+    console.log <span class="string">&#x27;Clicked!&#x27;</span>, @
 </code></pre>
 </blockquote><p>Class methods can’t be used with <code>new</code> (uncommon):</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">Namespace</span></span>
@@ -5269,8 +5270,8 @@ f = function*() {
 </code></pre>
 </blockquote><p>Due to the hoisting required to compile to ES2015 classes, dynamic keys in class methods can’t use values from the executable class body unless the methods are assigned in prototype style.</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span>
-  name = <span class="string">'method'</span>
-  <span class="string">"<span class="subst">#{name}</span>"</span>: <span class="function">-&gt;</span>   <span class="comment"># This method will be named 'undefined'</span>
+  name = <span class="string">&#x27;method&#x27;</span>
+  <span class="string">&quot;<span class="subst">#{name}</span>&quot;</span>: <span class="function">-&gt;</span>   <span class="comment"># This method will be named &#x27;undefined&#x27;</span>
   @::[name] = <span class="function">-&gt;</span>  <span class="comment"># This will work; assigns to `A.prototype.method`</span>
 </code></pre>
 </blockquote>
@@ -5279,12 +5280,12 @@ f = function*() {
           <h3><code>super</code> and <code>this</code></h3>
 <p>In the constructor of a derived class (a class that <code>extends</code> another class), <code>this</code> cannot be used before calling <code>super</code>:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>
-  constructor: <span class="function">-&gt;</span> <span class="keyword">this</span>  <span class="comment"># Throws a compiler error</span>
+  constructor: <span class="function">-&gt;</span> this  <span class="comment"># Throws a compiler error</span>
 </code></pre>
 </blockquote><p>This also means you cannot pass a reference to <code>this</code> as an argument to <code>super</code> in the constructor of a derived class:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>
   constructor: <span class="function"><span class="params">(@arg)</span> -&gt;</span>
-    <span class="keyword">super</span> @arg  <span class="comment"># Throws a compiler error</span>
+    super @arg  <span class="comment"># Throws a compiler error</span>
 </code></pre>
 </blockquote><p>This is a limitation of ES2015 classes. As a workaround, assign to <code>this</code> after the <code>super</code> call:</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="breaking_change_super_this">
@@ -5332,7 +5333,7 @@ B = class B extends A {
           <h3><code>super</code> and <code>extends</code></h3>
 <p>Due to a syntax clash with <code>super</code> with accessors, “bare” <code>super</code> (the keyword <code>super</code> without parentheses) no longer compiles to a super call forwarding all arguments.</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>
-  foo: <span class="function">-&gt;</span> <span class="keyword">super</span>
+  foo: <span class="function">-&gt;</span> super
   <span class="comment"># Throws a compiler error</span>
 </code></pre>
 </blockquote><p>Arguments can be forwarded explicitly using splats:</p>
@@ -5406,8 +5407,8 @@ B = class B extends A {
 <p>CoffeeScript 1.x allowed the <code>extends</code> keyword to set up prototypal inheritance between functions, and <code>super</code> could be used manually prototype-assigned functions:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="function"><span class="title">A</span> = -&gt;</span>
 <span class="function"><span class="title">B</span> = -&gt;</span>
-B extends A
-B.prototype.foo = <span class="function">-&gt;</span> <span class="keyword">super</span> arguments...
+B <span class="keyword">extends</span> A
+B.prototype.foo = <span class="function">-&gt;</span> super arguments...
 <span class="comment"># Last two lines each throw compiler errors in CoffeeScript 2</span>
 </code></pre>
 </blockquote><p>Due to the switch to ES2015 <code>extends</code> and <code>super</code>, using these keywords for prototypal functions are no longer supported. The above case could be refactored to:</p>
@@ -5585,7 +5586,7 @@ B = class B extends A {
 <blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="comment">#!/usr/bin/env coffee</span>
 
 x = <span class="number">2</span> + <span class="number">2</span>
-<span class="built_in">console</span>.log x
+console.log x
 </code></pre>
 </blockquote><p>If this were saved as <code>executable.coffee</code>, it could be made executable and run:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash">▶ chmod +x ./executable.coffee
@@ -5599,6 +5600,16 @@ x = <span class="number">2</span> + <span class="number">2</span>
       <section id="changelog">
         <h2>Changelog</h2>
 
+        <section id="2.6.0">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.5.1...2.6.0">2.6.0</a>
+  <span class="timestamp"> &mdash; <time datetime="2021-09-19">2021-09-19</time></span>
+</h3><ul>
+<li>The syntax <code>import.meta</code>, including <code>import.meta.url</code>, is now supported.</li>
+<li>The <code>await</code> keyword is now supported outside of functions (in other words, at the top level). <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await#top_level_await">Note that JavaScript runtimes only support this for ES modules.</a></li>
+<li>Bugfix for a <code>for</code> comprehension at the end of an <code>unless</code> or <code>until</code> line.</li>
+</ul>
+
+        </section>
         <section id="2.5.1">
           <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.5.0...2.5.1">2.5.1</a>
   <span class="timestamp"> &mdash; <time datetime="2020-01-31">2020-01-31</time></span>

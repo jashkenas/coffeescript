@@ -222,11 +222,11 @@ buildDocs = (watch = no) ->
     markdownRenderer = require('markdown-it')
       html: yes
       typographer: yes
-      highlight: (str, lang) ->
+      highlight: (str, language) ->
         # From https://github.com/markdown-it/markdown-it#syntax-highlighting
-        if lang and hljs.getLanguage(lang)
+        if language and hljs.getLanguage(language)
           try
-            return hljs.highlight(lang, str).value
+            return hljs.highlight(str, { language }).value
           catch ex
         return '' # No syntax highlighting
 
@@ -502,7 +502,7 @@ task 'test:browser', 'run the test suite against the modern browser compiler in 
   # version of the browser compiler. There’s no reason to run this test in old
   # versions of Node (the runtime is the headless Chrome browser, not Node),
   # and Puppeteer 3 only supports Node >= 10.18.1, so limit this test to those
-  # versions. The code below uses `Promise.prototype.finally` because the 
+  # versions. The code below uses `Promise.prototype.finally` because the
   # CoffeeScript codebase currently maintains compatibility with Node 6, which
   # did not support `async`/`await` syntax. Even though this test doesn’t run
   # in Node 6, it needs to still _parse_ in Node 6 so that this file can load.
@@ -537,7 +537,7 @@ task 'test:browser', 'run the test suite against the modern browser compiler in 
     page = pageHandle
     page.goto 'http://localhost:8080/'
   ).then(->
-    page.waitFor '#result',
+    page.waitForSelector '#result',
       visible: yes
       polling: 'mutation'
   ).then((element) ->
@@ -548,7 +548,7 @@ task 'test:browser', 'run the test suite against the modern browser compiler in 
     browser.close()
   ).finally ->
     server.close()
-    if result and 'failed' not in result
+    if result and not result.includes('failed')
       log result, green
     else
       log result, red
@@ -570,6 +570,9 @@ task 'test:integrations', 'test the module integrated with other libraries and e
   # can be built by such tools; if such a build succeeds, it verifies that no
   # Node modules are required as part of the compiler (as opposed to the tests)
   # and that therefore the compiler will run in a browser environment.
+  # Webpack 5 requires Node >= 10.13.0.
+  [major, minor] = process.versions.node.split('.').map (n) -> parseInt(n, 10)
+  return if major < 10 or (major is 10 and minor < 13)
   tmpdir = os.tmpdir()
   webpack = require 'webpack'
   webpack {
@@ -594,7 +597,7 @@ task 'test:integrations', 'test the module integrated with other libraries and e
       process.exit 1
 
     builtCompiler = path.join tmpdir, 'coffeescript.js'
-    CoffeeScript = require builtCompiler
+    { CoffeeScript } = require builtCompiler
     global.testingBrowser = yes
     testResults = runTests CoffeeScript
     fs.unlinkSync builtCompiler
