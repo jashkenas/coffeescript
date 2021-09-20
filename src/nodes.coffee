@@ -392,11 +392,12 @@ exports.Base = class Base
   # has special awareness of how to handle comments within its output.
   includeCommentFragments: NO
 
-  # `jumps` tells you if an expression, or an internal part of an expression
-  # has a flow control construct (like `break`, or `continue`, or `return`,
-  # or `throw`) that jumps out of the normal flow of control and can’t be
-  # used as a value. This is important because things like this make no sense;
-  # we have to disallow them.
+  # `jumps` tells you if an expression, or an internal part of an expression,
+  # has a flow control construct (like `break`, `continue`, or `return`)
+  # that jumps out of the normal flow of control and can’t be used as a value.
+  # (Note that `throw` is not considered a flow control construct.)
+  # This is important because flow control in the middle of an expression
+  # makes no sense; we have to disallow it.
   jumps: NO
 
   # If `node.shouldCache() is false`, it is safe to use `node` more than once.
@@ -4996,7 +4997,7 @@ exports.Catch = class Catch extends Base
 
   isStatement: YES
 
-  jumps: (o) -> @recovery.jumps(o)
+  jumps: (o) -> @recovery.jumps o
 
   makeReturn: (results, mark) ->
     ret = @recovery.makeReturn results, mark
