@@ -397,7 +397,7 @@ exports.Base = class Base
   # that jumps out of the normal flow of control and can’t be used as a value.
   # (Note that `throw` is not considered a flow control construct.)
   # This is important because flow control in the middle of an expression
-  # make no sense; we have to disallow them.
+  # makes no sense; we have to disallow it.
   jumps: NO
 
   # If `node.shouldCache() is false`, it is safe to use `node` more than once.
