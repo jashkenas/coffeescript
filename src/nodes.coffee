@@ -528,13 +528,8 @@ exports.Root = class Root extends Base
     @initializeScope o
     fragments = @body.compileRoot o
     return fragments if o.bare
-    parts = []
-    parts.push @makeCode '('
-    parts.push @makeCode 'async ' if @isAsync
-    parts.push @makeCode 'function() {\n'
-    parts.push ...fragments
-    parts.push @makeCode '\n}).call(this);\n'
-    [].concat ...parts
+    functionKeyword = "#{if @isAsync then 'async ' else ''}function"
+    [].concat @makeCode("(#{functionKeyword}() {\n"), fragments, @makeCode("\n}).call(this);\n")
 
   initializeScope: (o) ->
     o.scope = new Scope null, @body, null, o.referencedVars ? []
