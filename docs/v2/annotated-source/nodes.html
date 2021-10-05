@@ -1009,11 +1009,12 @@ has special awareness of how to handle comments within its output.</p>
               <div class="sswrap ">
                 <a class="ss" href="#section-42">&#x00a7;</a>
               </div>
-              <p><code>jumps</code> tells you if an expression, or an internal part of an expression
-has a flow control construct (like <code>break</code>, or <code>continue</code>, or <code>return</code>,
-or <code>throw</code>) that jumps out of the normal flow of control and can’t be
-used as a value. This is important because things like this make no sense;
-we have to disallow them.</p>
+              <p><code>jumps</code> tells you if an expression, or an internal part of an expression,
+has a flow control construct (like <code>break</code>, <code>continue</code>, or <code>return</code>)
+that jumps out of the normal flow of control and can’t be used as a value.
+(Note that <code>throw</code> is not considered a flow control construct.)
+This is important because flow control in the middle of an expression
+makes no sense; we have to disallow it.</p>
 
             </div>
             
@@ -1350,13 +1351,8 @@ obvious double-parentheses.</p>
     @initializeScope o
     fragments = @body.compileRoot o
     <span class="hljs-keyword">return</span> fragments <span class="hljs-keyword">if</span> o.bare
-    parts = []
-    parts.push @makeCode <span class="hljs-string">&#x27;(&#x27;</span>
-    parts.push @makeCode <span class="hljs-string">&#x27;async &#x27;</span> <span class="hljs-keyword">if</span> @isAsync
-    parts.push @makeCode <span class="hljs-string">&#x27;function() {\n&#x27;</span>
-    parts.push ...fragments
-    parts.push @makeCode <span class="hljs-string">&#x27;\n}).call(this);\n&#x27;</span>
-    [].concat ...parts
+    functionKeyword = <span class="hljs-string">&quot;<span class="hljs-subst">#{<span class="hljs-keyword">if</span> @isAsync <span class="hljs-keyword">then</span> <span class="hljs-string">&#x27;async &#x27;</span> <span class="hljs-keyword">else</span> <span class="hljs-string">&#x27;&#x27;</span>}</span>function&quot;</span>
+    [].concat @makeCode(<span class="hljs-string">&quot;(<span class="hljs-subst">#{functionKeyword}</span>() {\n&quot;</span>), fragments, @makeCode(<span class="hljs-string">&quot;\n}).call(this);\n&quot;</span>)
 
   initializeScope: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
     o.scope = <span class="hljs-keyword">new</span> Scope <span class="hljs-literal">null</span>, @body, <span class="hljs-literal">null</span>, o.referencedVars ? []</pre></div></div>
@@ -9055,7 +9051,7 @@ is optional, the <em>catch</em> is not.</p>
 
   isStatement: YES
 
-  jumps: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span> @recovery.jumps(o)
+  jumps: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span> @recovery.jumps o
 
   makeReturn: <span class="hljs-function"><span class="hljs-params">(results, mark)</span> -&gt;</span>
     ret = @recovery.makeReturn results, mark

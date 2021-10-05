@@ -458,6 +458,37 @@ module.<span class="hljs-built_in">exports</span> = CoffeeScript</pre></div></di
             
         </li>
         
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-18">&#x00a7;</a>
+              </div>
+              <p>Explicitly define all named exports so that Node’s automatic detection of
+named exports from CommonJS packages finds all of them. This enables consuming
+packages to write code like <code>import { compile } from &#39;coffeescript&#39;</code>.
+Don’t simplify this into a loop or similar; the <code>module.exports.name</code> part is
+essential for Node’s algorithm to successfully detect the name.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>module.<span class="hljs-built_in">exports</span>.VERSION = CoffeeScript.VERSION
+module.<span class="hljs-built_in">exports</span>.FILE_EXTENSIONS = CoffeeScript.FILE_EXTENSIONS
+module.<span class="hljs-built_in">exports</span>.helpers = CoffeeScript.helpers
+module.<span class="hljs-built_in">exports</span>.registerCompiled = CoffeeScript.registerCompiled
+module.<span class="hljs-built_in">exports</span>.compile = CoffeeScript.compile
+module.<span class="hljs-built_in">exports</span>.tokens = CoffeeScript.tokens
+module.<span class="hljs-built_in">exports</span>.nodes = CoffeeScript.nodes
+module.<span class="hljs-built_in">exports</span>.register = CoffeeScript.register
+module.<span class="hljs-built_in">exports</span>.<span class="hljs-built_in">eval</span> = CoffeeScript.<span class="hljs-built_in">eval</span>
+module.<span class="hljs-built_in">exports</span>.run = CoffeeScript.run
+module.<span class="hljs-built_in">exports</span>.transpile = CoffeeScript.transpile
+module.<span class="hljs-built_in">exports</span>._compileRawFileContent = CoffeeScript._compileRawFileContent
+module.<span class="hljs-built_in">exports</span>._compileFile = CoffeeScript._compileFile</pre></div></div>
+            
+        </li>
+        
     </ul>
   </div>
 </body>
