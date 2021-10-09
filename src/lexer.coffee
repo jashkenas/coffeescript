@@ -131,7 +131,7 @@ exports.Lexer = class Lexer
     # Preserve length of id for location data
     idLength = id.length
     poppedToken = undefined
-    if id is 'own' and @tag() is 'FOR'
+    if id is 'own' and @tag() in ['FOR', 'FORITER']
       @token 'OWN', id
       return id.length
     if id is 'from' and @tag() is 'YIELD'
@@ -204,6 +204,8 @@ exports.Lexer = class Lexer
        isForFrom(prev)
       tag = 'FORFROM'
       @seenFor = no
+    else if tag is 'IDENTIFIER' and @seenFor and id is 'each' and @tag() is 'FOR'
+      tag = 'FORITER'
     # Throw an error on attempts to use `get` or `set` as keywords, or
     # what CoffeeScript would normally interpret as calls to functions named
     # `get` or `set`, i.e. `get({foo: function () {}})`.
@@ -1209,6 +1211,9 @@ isForFrom = (prev) ->
     yes
   # `for from…`
   else if prev[0] is 'FOR'
+    no
+  # `for each from…`
+  else if prev[0] is 'FORITER'
     no
   # `for {from}…`, `for [from]…`, `for {a, from}…`, `for {a: from}…`
   else if prev[1] in ['{', '[', ',', ':']
