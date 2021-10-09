@@ -2083,6 +2083,75 @@ ages = (function() {
 </aside>
 <p>If you would like to iterate over just the keys that are defined on the object itself, by adding a <code>hasOwnProperty</code> check to avoid properties that may be inherited from the prototype, use <code>for own key, value of object</code>.</p>
 <p>To iterate a generator function, use <code>from</code>. See <a href="#generator-iteration">Generator Functions</a>.</p>
+<p>Comprehensions can also be used lazily using the <code>for each</code> syntax, generating an iterator instead of an array. This is useful if the process should be executed on demand. As any iterator, lazy comprehensions can be passed to <code>for .. from</code> and <code>yield from</code>. See <a href="#generator-iteration">Generator Functions</a>.</p>
+<aside class="code-example container-fluid bg-ribbed-dark" data-example="lazy-comprehension">
+  <div class="row">
+    <div class="col-md-6 coffeescript-input-column">
+      <textarea class="coffeescript-input" id="lazy-comprehension-coffee">helloIter = ("Hello #{animal}!" for each animal in ['dog', 'cat', 'birb'])
+
+messageToDog  = helloIter.next().value
+messageToCat  = helloIter.next().value
+messageToBirb = helloIter.next().value
+</textarea>
+      <pre class="placeholder-code"><span class="cm-variable">helloIter</span> <span class="cm-punctuation">=</span> <span class="cm-punctuation">(</span><span class="cm-string">"Hello #{animal}!"</span> <span class="cm-keyword">for</span> <span class="cm-variable">each</span> <span class="cm-variable">animal</span> <span class="cm-operator">in</span> <span class="cm-punctuation">[</span><span class="cm-string">'dog'</span><span class="cm-punctuation">,</span> <span class="cm-string">'cat'</span><span class="cm-punctuation">,</span> <span class="cm-string">'birb'</span><span class="cm-punctuation">])</span>
+
+<span class="cm-variable">messageToDog</span>  <span class="cm-punctuation">=</span> <span class="cm-variable">helloIter</span><span class="cm-punctuation">.</span><span class="cm-property">next</span><span class="cm-punctuation">().</span><span class="cm-property">value</span>
+<span class="cm-variable">messageToCat</span>  <span class="cm-punctuation">=</span> <span class="cm-variable">helloIter</span><span class="cm-punctuation">.</span><span class="cm-property">next</span><span class="cm-punctuation">().</span><span class="cm-property">value</span>
+<span class="cm-variable">messageToBirb</span> <span class="cm-punctuation">=</span> <span class="cm-variable">helloIter</span><span class="cm-punctuation">.</span><span class="cm-property">next</span><span class="cm-punctuation">().</span><span class="cm-property">value</span>
+</pre>
+    </div>
+    <div class="col-md-6 javascript-output-column">
+      <textarea class="javascript-output" id="lazy-comprehension-js">var animal, helloIter, messageToBirb, messageToCat, messageToDog;
+
+helloIter = (function() {
+  var i, len, ref;
+  return (function*() {
+    ref = ['dog', 'cat', 'birb'];
+    for (i = 0, len = ref.length; i < len; i++) {
+      animal = ref[i];
+      yield `Hello ${animal}!`;
+    }
+  }).call(this)
+})();
+
+messageToDog = helloIter.next().value;
+
+messageToCat = helloIter.next().value;
+
+messageToBirb = helloIter.next().value;
+</textarea>
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">animal</span>, <span class="cm-def">helloIter</span>, <span class="cm-def">messageToBirb</span>, <span class="cm-def">messageToCat</span>, <span class="cm-def">messageToDog</span>;
+
+<span class="cm-variable">helloIter</span> <span class="cm-operator">=</span> (<span class="cm-keyword">function</span>() {
+  <span class="cm-keyword">var</span> <span class="cm-def">i</span>, <span class="cm-def">len</span>, <span class="cm-def">ref</span>;
+  <span class="cm-keyword">return</span> (<span class="cm-keyword">function*</span>() {
+    <span class="cm-variable-2">ref</span> <span class="cm-operator">=</span> [<span class="cm-string">'dog'</span>, <span class="cm-string">'cat'</span>, <span class="cm-string">'birb'</span>];
+    <span class="cm-keyword">for</span> (<span class="cm-variable-2">i</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>, <span class="cm-variable-2">len</span> <span class="cm-operator">=</span> <span class="cm-variable-2">ref</span>.<span class="cm-property">length</span>; <span class="cm-variable-2">i</span> <span class="cm-operator">&lt;</span> <span class="cm-variable-2">len</span>; <span class="cm-variable-2">i</span><span class="cm-operator">++</span>) {
+      <span class="cm-variable">animal</span> <span class="cm-operator">=</span> <span class="cm-variable-2">ref</span>[<span class="cm-variable-2">i</span>];
+      <span class="cm-keyword">yield</span> <span class="cm-string-2">`Hello ${</span><span class="cm-variable">animal</span><span class="cm-string-2">}!`</span>;
+    }
+  }).<span class="cm-property">call</span>(<span class="cm-keyword">this</span>)
+})();
+
+<span class="cm-variable">messageToDog</span> <span class="cm-operator">=</span> <span class="cm-variable">helloIter</span>.<span class="cm-property">next</span>().<span class="cm-property">value</span>;
+
+<span class="cm-variable">messageToCat</span> <span class="cm-operator">=</span> <span class="cm-variable">helloIter</span>.<span class="cm-property">next</span>().<span class="cm-property">value</span>;
+
+<span class="cm-variable">messageToBirb</span> <span class="cm-operator">=</span> <span class="cm-variable">helloIter</span>.<span class="cm-property">next</span>().<span class="cm-property">value</span>;
+</pre>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col text-right">
+      <button type="button" class="btn btn-primary" data-action="run-code-example" data-example="lazy-comprehension" data-run="messageToBirb"><small><svg class="play-button" viewBox="0 0 24 24">
+	<path d="M2.56-0.01v24.02L21.44 11.98 2.56-0.01z"></path>
+</svg>
+</small>messageToBirb</button>
+    </div>
+  </div>
+  
+</aside>
 <p>The only low-level loop that CoffeeScript provides is the <code>while</code> loop. The main difference from JavaScript is that the <code>while</code> loop can be used as an expression, returning an array containing the result of each iteration through the loop.</p>
 <aside class="code-example container-fluid bg-ribbed-dark" data-example="while">
   <div class="row">

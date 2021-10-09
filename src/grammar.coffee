@@ -737,24 +737,41 @@ grammar =
   ]
 
   ForBody: [
-    o 'FOR Range',                -> new For [], source: (LOC(2) new Value($2))
-    o 'FOR Range BY Expression',  -> new For [], source: (LOC(2) new Value($2)), step: $4
-    o 'ForStart ForSource',       -> $1.addSource $2
+    o 'FOR Range',                       ->
+      new For [], source: (LOC(2) new Value($2))
+    o 'FOR Range BY Expression',         ->
+      new For [], source: (LOC(2) new Value($2)), step: $4
+    o 'FOR FORITER Range',               ->
+      new For [], source: (LOC(3) new Value($3)), iter: yes, iterTag: (LOC(2) new Literal($2))
+    o 'FOR FORITER Range BY Expression', ->
+      new For [], source: (LOC(3) new Value($3)), iter: yes, iterTag: (LOC(2) new Literal($2)), step: $5
+    o 'ForStart ForSource',              -> $1.addSource $2
   ]
 
   ForLineBody: [
-    o 'FOR Range BY ExpressionLine',  -> new For [], source: (LOC(2) new Value($2)), step: $4
-    o 'ForStart ForLineSource',       -> $1.addSource $2
+    o 'FOR Range BY ExpressionLine',     ->
+      new For [], source: (LOC(2) new Value($2)), step: $4
+    o 'FOR FORITER Range BY Expression', ->
+      new For [], source: (LOC(3) new Value($3)), iter: yes, iterTag: (LOC(2) new Literal($2)), step: $5
+    o 'ForStart ForLineSource',          -> $1.addSource $2
   ]
 
   ForStart: [
-    o 'FOR ForVariables',        -> new For [], name: $2[0], index: $2[1]
-    o 'FOR AWAIT ForVariables',  ->
+    o 'FOR ForVariables',               -> new For [], name: $2[0], index: $2[1]
+    o 'FOR AWAIT ForVariables',         ->
         [name, index] = $3
         new For [], {name, index, await: yes, awaitTag: (LOC(2) new Literal($2))}
-    o 'FOR OWN ForVariables',    ->
+    o 'FOR OWN ForVariables',           ->
         [name, index] = $3
         new For [], {name, index, own: yes, ownTag: (LOC(2) new Literal($2))}
+    o 'FOR FORITER ForVariables',       ->
+        new For [], name: $3[0], iter: yes, iterTag: (LOC(2) new Literal($2)), index: $3[1]
+    o 'FOR FORITER AWAIT ForVariables', ->
+        [name, index] = $4
+        new For [], {name, index, iter: yes, iterTag: (LOC(2) new Literal($2)), await: yes, awaitTag: (LOC(3) new Literal($3))}
+    o 'FOR FORITER OWN ForVariables',   ->
+        [name, index] = $4
+        new For [], {name, index, iter: yes, iterTag: (LOC(2) new Literal($2)), own: yes, ownTag: (LOC(3) new Literal($3))}
   ]
 
   # An array of all accepted values for a variable inside the loop.

@@ -3892,6 +3892,8 @@ exports.Code = class Code extends Base
         @isAsync = yes
       if node instanceof For and node.isAwait()
         @isAsync = yes
+      if node instanceof For and node.isAsync()
+        no
 
     @propagateLhs()
 
@@ -5324,7 +5326,17 @@ exports.For = class For extends While
 
   children: ['body', 'source', 'guard', 'step']
 
-  isAwait: -> @await ? no
+  isAwait: -> @await and not @iter ? no
+
+  isAsync: ->
+    return no unless @iter
+    isAsync = no
+    @body.traverseChildren no, (node) =>
+      if (node instanceof Op or node instanceof For) and node.isAwait()
+        isAsync = yes
+      if node instanceof AwaitReturn
+        isAsync = yes
+    isAsync
 
   addBody: (body) ->
     @body = Block.wrap [body]
@@ -5335,7 +5347,8 @@ exports.For = class For extends While
 
   addSource: (source) ->
     {@source  = no} = source
-    attribs   = ["name", "index", "guard", "step", "own", "ownTag", "await", "awaitTag", "object", "from"]
+    attribs   = ["name", "index", "guard", "step", "own", "ownTag", "await",
+      "iter", "iterTag", "awaitTag", "object", "from"]
     @[attr]   = source[attr] ? @[attr] for attr in attribs
     return this unless @source
     @index.error 'cannot use index with for-from' if @from and @index
@@ -5372,13 +5385,14 @@ exports.For = class For extends While
     body        = Block.wrap [@body]
     [..., last] = body.expressions
     @returns    = no if last?.jumps() instanceof Return
+    @iterTag.error 'cannot use lazy comprehensions as statements' if @iter and not @returns
     source      = if @range then @source.base else @source
     scope       = o.scope
     name        = @name  and (@name.compile o, LEVEL_LIST) if not @pattern
     index       = @index and (@index.compile o, LEVEL_LIST)
     scope.find(name)  if name and not @pattern
     scope.find(index) if index and @index not instanceof Value
-    rvar        = scope.freeVariable 'results' if @returns
+    rvar        = scope.freeVariable 'results' if @returns and not @iter
     if @from
       ivar = scope.freeVariable 'x', single: true if @pattern
     else
@@ -5392,19 +5406,20 @@ exports.For = class For extends While
     varPart     = ''
     guardPart   = ''
     defPart     = ''
-    idt1        = @tab + TAB
+    idt1        = if @iter then @tab + TAB else @tab
+    idt2        = idt1 + TAB
     if @range
       forPartFragments = source.compileToFragments merge o,
         {index: ivar, name, @step, shouldCache: shouldCacheOrIsAssignable}
     else
       svar    = @source.compile o, LEVEL_LIST
       if (name or @own) and @source.unwrap() not instanceof IdentifierLiteral
-        defPart    += "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
+        defPart    += "#{idt1}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
         svar       = ref
       if name and not @pattern and not @from
         namePart   = "#{name} = #{svar}[#{kvar}]"
       if not @object and not @from
-        defPart += "#{@tab}#{step};\n" if step isnt stepVar
+        defPart += "#{idt1}#{step};\n" if step isnt stepVar
         down = stepNum < 0
         lvar = scope.freeVariable 'len' unless @step and stepNum? and down
         declare = "#{kvarAssign}#{ivar} = 0, #{lvar} = #{svar}.length"
@@ -5424,9 +5439,12 @@ exports.For = class For extends While
           increment = "#{if kvar isnt ivar then "++#{ivar}" else "#{ivar}++"}"
         forPartFragments = [@makeCode("#{declare}; #{compare}; #{kvarAssign}#{increment}")]
     if @returns
-      resultPart   = "#{@tab}#{rvar} = [];\n"
-      returnResult = "\n#{@tab}return #{rvar};"
-      body.makeReturn rvar
+      if @iter
+        body = Block.wrap [new Op 'yield', body]
+      else
+        resultPart   = "#{idt1}#{rvar} = [];\n"
+        returnResult = "\n#{idt1}return #{rvar};"
+        body.makeReturn rvar
     if @guard
       if body.expressions.length > 1
         body.expressions.unshift new If (new Parens @guard).invert(), new StatementLiteral "continue"
@@ -5435,17 +5453,17 @@ exports.For = class For extends While
     if @pattern
       body.expressions.unshift new Assign @name, if @from then new IdentifierLiteral kvar else new Literal "#{svar}[#{kvar}]"
 
-    varPart = "\n#{idt1}#{namePart};" if namePart
+    varPart = "\n#{idt2}#{namePart};" if namePart
     if @object
       forPartFragments = [@makeCode("#{kvar} in #{svar}")]
-      guardPart = "\n#{idt1}if (!#{utility 'hasProp', o}.call(#{svar}, #{kvar})) continue;" if @own
+      guardPart = "\n#{idt2}if (!#{utility 'hasProp', o}.call(#{svar}, #{kvar})) continue;" if @own
     else if @from
       if @await
         forPartFragments = new Op 'await', new Parens new Literal "#{kvar} of #{svar}"
         forPartFragments = forPartFragments.compileToFragments o, LEVEL_TOP
       else
         forPartFragments = [@makeCode("#{kvar} of #{svar}")]
-    bodyFragments = body.compileToFragments merge(o, indent: idt1), LEVEL_TOP
+    bodyFragments = body.compileToFragments merge(o, indent: idt2), LEVEL_TOP
     if bodyFragments and bodyFragments.length > 0
       bodyFragments = [].concat @makeCode('\n'), bodyFragments, @makeCode('\n')
 
@@ -5453,10 +5471,14 @@ exports.For = class For extends While
     fragments.push @makeCode(resultPart) if resultPart
     forCode = if @await then 'for ' else 'for ('
     forClose = if @await then '' else ')'
-    fragments = fragments.concat @makeCode(@tab), @makeCode( forCode),
+    fragments = fragments.concat @makeCode(idt1), @makeCode(forCode),
       forPartFragments, @makeCode("#{forClose} {#{guardPart}#{varPart}"), bodyFragments,
-      @makeCode(@tab), @makeCode('}')
+      @makeCode(idt1), @makeCode('}')
     fragments.push @makeCode(returnResult) if returnResult
+    if @iter
+      wrapperStart = @tab + "return (#{if @await or @isAsync() then 'async ' else ''}function*() {\n"
+      wrapperEnd   = "\n#{@tab}}).call(this)"
+      fragments    = [].concat @makeCode(wrapperStart), fragments, @makeCode(wrapperEnd)
     fragments
 
   astNode: (o) ->
@@ -5478,6 +5500,7 @@ exports.For = class For extends While
       index: @index?.ast(o) ? null
       step: @step?.ast(o) ? null
       postfix: !!@postfix
+      iter: !!@iter
       own: !!@own
       await: !!@await
       style: switch

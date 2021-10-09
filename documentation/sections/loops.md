@@ -32,6 +32,12 @@ If you would like to iterate over just the keys that are defined on the object i
 
 To iterate a generator function, use `from`. See [Generator Functions](#generator-iteration).
 
+Comprehensions can also be used lazily using the `for each` syntax, generating an iterator instead of an array. This is useful if the process should be executed on demand. As any iterator, lazy comprehensions can be passed to `for .. from` and `yield from`. See [Generator Functions](#generator-iteration).
+
+```
+codeFor('lazy-comprehension', 'messageToBirb')
+```
+
 The only low-level loop that CoffeeScript provides is the `while` loop. The main difference from JavaScript is that the `while` loop can be used as an expression, returning an array containing the result of each iteration through the loop.
 
 ```
