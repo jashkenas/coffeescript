@@ -3414,7 +3414,7 @@ a child <code>Value</code> node assigned to the <code>object</code> property.</p
     @value =
       <span class="hljs-keyword">if</span> value?
         value = value.base
-        <span class="hljs-keyword">if</span> value <span class="hljs-keyword">instanceof</span> StringLiteral
+        <span class="hljs-keyword">if</span> value <span class="hljs-keyword">instanceof</span> StringLiteral <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> value.shouldGenerateTemplateLiteral()
           value
         <span class="hljs-keyword">else</span>
           <span class="hljs-keyword">new</span> JSXExpressionContainer value
@@ -9327,13 +9327,13 @@ by comment-based type annotations from JavaScript labels.</p>
             
             <div class="content"><div class='highlight'><pre>
 <span class="hljs-built_in">exports</span>.StringWithInterpolations = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">StringWithInterpolations</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
-  constructor: <span class="hljs-function"><span class="hljs-params">(@body, {@quote, @startQuote} = {})</span> -&gt;</span>
+  constructor: <span class="hljs-function"><span class="hljs-params">(@body, {@quote, @startQuote, @jsxAttribute} = {})</span> -&gt;</span>
     super()
 
   @fromStringLiteral: <span class="hljs-function"><span class="hljs-params">(stringLiteral)</span> -&gt;</span>
     updatedString = stringLiteral.withoutQuotesInLocationData()
     updatedStringValue = <span class="hljs-keyword">new</span> Value(updatedString).withLocationDataFrom updatedString
-    <span class="hljs-keyword">new</span> StringWithInterpolations Block.wrap([updatedStringValue]), quote: stringLiteral.quote
+    <span class="hljs-keyword">new</span> StringWithInterpolations Block.wrap([updatedStringValue]), quote: stringLiteral.quote, jsxAttribute: stringLiteral.jsxAttribute
     .withLocationDataFrom stringLiteral
 
   children: [<span class="hljs-string">&#x27;body&#x27;</span>]</pre></div></div>

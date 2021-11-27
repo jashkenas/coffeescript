@@ -27004,6 +27004,27 @@ test '“Adjacent” tags on separate lines should still compile', ->
     });
   '''
 
+test '#5352: triple-quoted non-interpolated attribute values', ->
+  eqJS '''
+    <div a="""
+      b
+      c
+    """ />
+  ''', '''
+    <div a={`b
+    c`} />;
+  '''
+
+  eqJS """
+    <div a='''
+      b
+      c
+    ''' />
+  """, '''
+    <div a={`b
+    c`} />;
+  '''
+
 </script>
 <script type="text/x-literate-coffeescript" class="test" id="literate">
 # Literate CoffeeScript Test
