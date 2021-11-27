@@ -946,3 +946,24 @@ test '“Adjacent” tags on separate lines should still compile', ->
       return <b />;
     });
   '''
+
+test '#5352: triple-quoted non-interpolated attribute values', ->
+  eqJS '''
+    <div a="""
+      b
+      c
+    """ />
+  ''', '''
+    <div a={`b
+    c`} />;
+  '''
+
+  eqJS """
+    <div a='''
+      b
+      c
+    ''' />
+  """, '''
+    <div a={`b
+    c`} />;
+  '''
