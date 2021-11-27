@@ -561,6 +561,7 @@ textarea {
     <div class="navbar-nav mr-auto d-none d-lg-flex">
       <a href="#try" id="try-link" class="nav-item nav-link" data-toggle="try">Try CoffeeScript</a>
       <a href="#language" class="nav-item nav-link" data-close="try">Language Reference</a>
+      <a href="#integrations" class="nav-item nav-link" data-close="try">Integrations</a>
       <a href="#resources" class="nav-item nav-link" data-close="try">Resources</a>
       <a href="https://github.com/jashkenas/coffeescript/" class="nav-item nav-link" data-close="try">GitHub
         </a>
@@ -644,7 +645,14 @@ textarea {
     <a href="#source-maps" class="nav-link" data-action="sidebar-nav">Source Maps</a>
     <a href="#cake" class="nav-link" data-action="sidebar-nav">Cake, and Cakefiles</a>
     <a href="#scripts" class="nav-link" data-action="sidebar-nav"><code>"text/coffeescript"</code> Script Tags</a>
-    <a href="test.html" class="nav-link" data-action="sidebar-nav">Browser-Based Tests</a>
+    <a href="#integrations" class="nav-link" data-action="sidebar-nav">Integrations</a>
+      <nav class="nav flex-column">
+        <a href="#build-tools" class="nav-link" data-action="sidebar-nav">Build Tools</a>
+        <a href="#code-editors" class="nav-link" data-action="sidebar-nav">Code Editors</a>
+        <a href="#frameworks" class="nav-link" data-action="sidebar-nav">Frameworks</a>
+        <a href="#linters-and-formatting" class="nav-link" data-action="sidebar-nav">Linters and Formatting</a>
+        <a href="#testing" class="nav-link" data-action="sidebar-nav">Testing</a>
+      </nav>
     <a href="#resources" class="nav-link" data-action="sidebar-nav">Resources</a>
       <nav class="nav flex-column">
         <a href="#books" class="nav-link" data-action="sidebar-nav">Books</a>
@@ -674,6 +682,7 @@ textarea {
         <a href="#breaking-changes-argument-parsing-and-shebang-lines" class="nav-link" data-action="sidebar-nav">Argument Parsing and <code>#!</code> Lines</a>
       </nav>
     <a href="#changelog" class="nav-link" data-action="sidebar-nav">Changelog</a>
+    <a href="test.html" class="nav-link" data-action="sidebar-nav">Browser-Based Tests</a>
     <a href="/v1/" class="nav-link" data-action="sidebar-nav">Version 1.x Documentation</a>
   </nav>
 </nav>
@@ -904,6 +913,7 @@ cubes = (function() {
 <li><a href="#modules">Modules</a> are supported by Node 12+ with <code>&quot;type&quot;: &quot;module&quot;</code> in your project’s <code>package.json</code>.</li>
 </ul>
 <p>This list may be incomplete, and excludes versions of Node that support newer features behind flags; please refer to <a href="http://node.green/">node.green</a> for full details. You can <a href="test.html">run the tests in your browser</a> to see what your browser supports. It is your responsibility to ensure that your runtime supports the modern features you use; or that you <a href="#transpilation">transpile</a> your code. When in doubt, transpile.</p>
+<p>For compatibility with other JavaScript frameworks and tools, see <a href="#integrations">Integrations</a>.</p>
 
         </section>
       </section>
@@ -1053,7 +1063,7 @@ App = <span class="built_in">require</span> <span class="string">&#x27;./app&#x2
         </section>
         <section id="transpilation">
           <h3>Transpilation</h3>
-<p>CoffeeScript 2 generates JavaScript that uses the latest, modern syntax. The runtime or browsers where you want your code to run <a href="#compatibility">might not support all of that syntax</a>. In that case, we want to convert modern JavaScript into older JavaScript that will run in older versions of Node or older browsers; for example, <code>{ a } = obj</code> into <code>a = obj.a</code>. This is done via transpilers like <a href="http://babeljs.io/">Babel</a>, <a href="https://buble.surge.sh/">Bublé</a> or <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>.</p>
+<p>CoffeeScript 2 generates JavaScript that uses the latest, modern syntax. The runtime or browsers where you want your code to run <a href="#compatibility">might not support all of that syntax</a>. In that case, we want to convert modern JavaScript into older JavaScript that will run in older versions of Node or older browsers; for example, <code>{ a } = obj</code> into <code>a = obj.a</code>. This is done via transpilers like <a href="http://babeljs.io/">Babel</a>, <a href="https://buble.surge.sh/">Bublé</a> or <a href="https://github.com/google/traceur-compiler">Traceur Compiler</a>. See <a href="#build-tools">Build Tools</a>.</p>
 <h4>Quickstart</h4>
 <p>From the root of your project:</p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash">npm install --save-dev @babel/core @babel/preset-env
@@ -1080,71 +1090,6 @@ coffee --compile --transpile --inline-map some-file.coffee
 <p>Note that transpiling doesn’t automatically supply <a href="https://developer.mozilla.org/en-US/docs/Glossary/Polyfill">polyfills</a> for your code. CoffeeScript itself will output <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf"><code>Array.indexOf</code></a> if you use the <code>in</code> operator, or destructuring or spread/rest syntax; and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind"><code>Function.bind</code></a> if you use a bound (<code>=&gt;</code>) method in a class. Both are supported in Internet Explorer 9+ and all more recent browsers, but you will need to supply polyfills if you need to support Internet Explorer 8 or below and are using features that would cause these methods to be output. You’ll also need to supply polyfills if your own code uses these methods or another method added in recent versions of JavaScript. One polyfill option is <a href="https://babeljs.io/docs/en/babel-polyfill/"><code>@babel/polyfill</code></a>, though there are many <a href="https://hackernoon.com/polyfills-everything-you-ever-wanted-to-know-or-maybe-a-bit-less-7c8de164e423">other</a> <a href="https://philipwalton.com/articles/loading-polyfills-only-when-needed/">strategies</a>.</p>
 
         </section>
-      </section>
-      <section id="integrations">
-        <h2><a href="https://github.com/jashkenas/coffeescript/wiki#tools">Integrations</a></h2>
-<p>It is important for any tool to play nice in the vast JavaScript ecosystem, and CoffeeScript 2 gets on well with many popular projects.</p>
-<ul>
-<li><a href="http://js2.coffee">js2coffee</a></li>
-</ul>
-<h3><a href="https://github.com/jashkenas/coffeescript/wiki/Linters-and-Formatting">Linters and Formatting</a></h3>
-<ul>
-<li>
-<p><a href="https://prettier.io">Prettier</a> with <a href="https://github.com/helixbass/prettier-plugin-coffeescript">prettier-plugin-coffeescript</a></p>
-</li>
-<li>
-<p><a href="https://eslint.org">ESLint</a> with <a href="https://github.com/helixbass/eslint-plugin-coffee">eslint-plugin-coffee</a></p>
-</li>
-<li>
-<p><a href="http://coffeelint.org">CoffeeLint</a></p>
-</li>
-</ul>
-<h3><a href="https://github.com/jashkenas/coffeescript/wiki/Build-tools">Build Tools</a></h3>
-<ul>
-<li>
-<p><a href="https://webpack.js.org">Webpack</a> with <a href="https://github.com/webpack-contrib/coffee-loader">coffee-loader</a></p>
-</li>
-<li>
-<p><a href="https://rollupjs.org">Rollup</a> with <a href="https://github.com/lautis/rollup-plugin-coffee-script">rollup-plugin-coffee-script</a></p>
-</li>
-<li>
-<p><a href="https://parceljs.org">Parcel</a> with <a href="https://github.com/parcel-bundler/parcel/tree/v2/packages/transformers/coffeescript">transformer-coffeescript</a></p>
-</li>
-<li>
-<p><a href="http://browserify.org">Browserify</a> with <a href="https://github.com/jnordberg/coffeeify">coffeeify</a></p>
-</li>
-<li>
-<p><a href="https://gulpjs.com">Gulp</a> with <a href="https://github.com/gulp-community/gulp-coffee">gulp-coffee</a></p>
-</li>
-<li>
-<p><a href="https://gruntjs.com">Grunt</a> with <a href="https://github.com/gruntjs/grunt-contrib-coffee">grunt-contrib-coffee</a></p>
-</li>
-</ul>
-<h3><a href="https://github.com/jashkenas/coffeescript/wiki/Frameworks-and-Testing">Frameworks and Testing</a></h3>
-<ul>
-<li>
-<p><a href="https://jestjs.io">Jest</a> testing with <a href="https://github.com/danielbayley/jest-preset-coffeescript">jest-preset-coffeescript</a></p>
-</li>
-<li>
-<p><a href="https://meteor.com">Meteor</a> with <a href="https://atmospherejs.com/meteor/coffeescript-compiler">coffeescript-compiler</a></p>
-</li>
-<li>
-<p><a href="https://emberjs.com">Ember</a> with <a href="https://github.com/kimroen/ember-cli-coffeescript">ember-cli-coffeescript</a></p>
-</li>
-</ul>
-<h3><a href="https://github.com/jashkenas/coffeescript/wiki/Text-editor-plugins">Text Editor Plugins</a></h3>
-<ul>
-<li>
-<p><a href="https://atom.io">Atom</a> <a href="https://atom.io/packages/search?q=coffeescript">packages</a></p>
-</li>
-<li>
-<p><a href="https://code.visualstudio.com">VSCode</a> <a href="https://marketplace.visualstudio.com/search?target=VSCode&amp;term=coffeescript">extensions</a></p>
-</li>
-<li>
-<p><a href="https://sublimetext.com">Sublime Text</a> <a href="https://packagecontrol.io/search/coffeescript">packages</a></p>
-</li>
-</ul>
-
       </section>
       <section id="language">
         <h2>Language Reference</h2>
@@ -4924,6 +4869,85 @@ task('build:parser', 'rebuild the Jison parser', function(options) {
 <p>The usual caveats about CoffeeScript apply — your inline scripts will run within a closure wrapper, so if you want to expose global variables or functions, attach them to the <code>window</code> object.</p>
 
       </section>
+      <section id="integrations">
+        <h2>Integrations</h2>
+<p>CoffeeScript is part of the vast JavaScript ecosystem, and many libraries help integrate CoffeeScript with JavaScript. Major projects, especially projects updated to work with CoffeeScript 2, are listed here; more can be found in the <a href="https://github.com/jashkenas/coffeescript/wiki">wiki pages</a>. If there’s a project that you feel should be added to this section, please open an issue or <a href="https://github.com/jashkenas/coffeescript/wiki/%5BHowTo%5D-Update-the-docs">pull request</a>. Projects are listed in alphabetical order by category.</p>
+
+        <section id="build-tools">
+          <h3>Build Tools</h3>
+<ul>
+<li>
+<p><a href="http://browserify.org">Browserify</a> with <a href="https://github.com/jnordberg/coffeeify">coffeeify</a></p>
+</li>
+<li>
+<p><a href="https://gruntjs.com">Grunt</a> with <a href="https://github.com/gruntjs/grunt-contrib-coffee">grunt-contrib-coffee</a></p>
+</li>
+<li>
+<p><a href="https://gulpjs.com">Gulp</a> with <a href="https://github.com/gulp-community/gulp-coffee">gulp-coffee</a></p>
+</li>
+<li>
+<p><a href="https://parceljs.org">Parcel</a> with <a href="https://github.com/parcel-bundler/parcel/tree/v2/packages/transformers/coffeescript">transformer-coffeescript</a></p>
+</li>
+<li>
+<p><a href="https://rollupjs.org">Rollup</a> with <a href="https://github.com/lautis/rollup-plugin-coffee-script">rollup-plugin-coffee-script</a></p>
+</li>
+<li>
+<p><a href="https://webpack.js.org">Webpack</a> with <a href="https://github.com/webpack-contrib/coffee-loader">coffee-loader</a></p>
+</li>
+</ul>
+
+        </section>
+        <section id="code-editors">
+          <h3>Code Editors</h3>
+<ul>
+<li>
+<p><a href="https://atom.io">Atom</a> <a href="https://atom.io/packages/search?q=coffeescript">packages</a></p>
+</li>
+<li>
+<p><a href="https://sublimetext.com">Sublime Text</a> <a href="https://packagecontrol.io/search/coffeescript">packages</a></p>
+</li>
+<li>
+<p><a href="https://code.visualstudio.com">Visual Studio Code</a> <a href="https://marketplace.visualstudio.com/search?target=VSCode&amp;term=coffeescript">extensions</a></p>
+</li>
+</ul>
+
+        </section>
+        <section id="frameworks">
+          <h3>Frameworks</h3>
+<ul>
+<li>
+<p><a href="https://emberjs.com">Ember</a>
+with <a href="https://github.com/kimroen/ember-cli-coffeescript">ember-cli-coffeescript</a></p>
+</li>
+<li>
+<p><a href="https://meteor.com">Meteor</a> with <a href="https://atmospherejs.com/meteor/coffeescript-compiler">coffeescript-compiler</a></p>
+</li>
+</ul>
+
+        </section>
+        <section id="linters-and-formatting">
+          <h3>Linters and Formatting</h3>
+<ul>
+<li>
+<p><a href="https://coffeelint.github.io/">CoffeeLint</a></p>
+</li>
+<li>
+<p><a href="https://eslint.org">ESLint</a> with <a href="https://github.com/helixbass/eslint-plugin-coffee">eslint-plugin-coffee</a></p>
+</li>
+<li>
+<p><a href="https://prettier.io">Prettier</a> with <a href="https://github.com/helixbass/prettier-plugin-coffeescript">prettier-plugin-coffeescript</a></p>
+</li>
+</ul>
+
+        </section>
+        <section id="testing">
+          <h3>Testing</h3>
+<ul>
+<li><a href="https://jestjs.io">Jest</a> with <a href="https://github.com/danielbayley/jest-preset-coffeescript">jest-preset-coffeescript</a></li>
+</ul>
+
+        </section>
+      </section>
       <section id="resources">
         <h2>Resources</h2>
 <ul>
@@ -4933,7 +4957,7 @@ Bug reports, feature proposals, and ideas for changes to the language belong her
 <li><a href="https://groups.google.com/forum/#!forum/coffeescript">CoffeeScript Google Group</a><br>
 If you’d like to ask a question, the mailing list is a good place to get help.</li>
 <li><a href="https://github.com/jashkenas/coffeescript/wiki">The CoffeeScript Wiki</a><br>
-If you’ve ever learned a neat CoffeeScript tip or trick, or ran into a gotcha — share it on the wiki. The wiki also serves as a directory of handy <a href="https://github.com/jashkenas/coffeescript/wiki/Text-editor-plugins">text editor extensions</a>, <a href="https://github.com/jashkenas/coffeescript/wiki/Web-framework-plugins">web framework plugins</a>, and general <a href="https://github.com/jashkenas/coffeescript/wiki/Build-tools">CoffeeScript build tools</a>.</li>
+If you’ve ever learned a neat CoffeeScript tip or trick, or ran into a gotcha — share it on the wiki.</li>
 <li><a href="https://github.com/jashkenas/coffeescript/wiki/FAQ">The FAQ</a><br>
 Perhaps your CoffeeScript-related question has been asked before. Check the FAQ first.</li>
 <li><a href="http://js2.coffee/">JS2Coffee</a><br>
