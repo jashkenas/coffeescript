@@ -9,3 +9,5 @@ Most modern JavaScript features that CoffeeScript supports can run natively in N
 *  [Modules](#modules) are supported by Node 12+ with `"type": "module"` in your project’s `package.json`.
 
 This list may be incomplete, and excludes versions of Node that support newer features behind flags; please refer to [node.green](http://node.green/) for full details. You can [run the tests in your browser](test.html) to see what your browser supports. It is your responsibility to ensure that your runtime supports the modern features you use; or that you [transpile](#transpilation) your code. When in doubt, transpile.
+
+For compatibility with other JavaScript frameworks and tools, see [Integrations](#integrations).
