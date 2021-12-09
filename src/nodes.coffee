@@ -4052,7 +4052,7 @@ exports.Code = class Code extends Base
     @checkSuperCallsInConstructorBody()
     @body.expressions.unshift thisAssignments... unless @expandCtorSuper thisAssignments
     @body.expressions.unshift exprs...
-    if @isMethod and @bound and not @isStatic and @classVariable
+    if @isMethod and @bound and not @isStatic and @classVariable and o.boundMethodCheck
       boundMethodCheck = new Value new Literal utility 'boundMethodCheck', o
       @body.expressions.unshift new Call(boundMethodCheck, [new Value(new ThisLiteral), @classVariable])
     @body.makeReturn() unless wasEmpty or @noReturn
