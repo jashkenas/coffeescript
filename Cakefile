@@ -476,6 +476,7 @@ runTests = (CoffeeScript) ->
   skipUnless '/foo.bar/s.test("foo\tbar")', ['regex_dotall.coffee']
   skipUnless '1_2_3', ['numeric_literal_separators.coffee']
   skipUnless '1n', ['numbers_bigint.coffee']
+  skipUnless 'async () => { await import(\'data:application/json,{"foo":"bar"}\', { assert: { type: "json" } }) }', ['import_assertions.coffee']
   files = fs.readdirSync('test').filter (filename) ->
     filename not in testFilesToSkip
 

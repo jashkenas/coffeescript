@@ -3447,8 +3447,8 @@ exports.DynamicImportCall = class DynamicImportCall extends Call
     super o
 
   checkArguments: ->
-    unless @args.length is 1
-      @error 'import() requires exactly one argument'
+    unless 1 <= @args.length <= 2
+      @error 'import() accepts either one or two arguments'
 
   astNode: (o) ->
     @checkArguments()
