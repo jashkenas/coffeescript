@@ -158,7 +158,7 @@ exports.Lexer = class Lexer
     if id is 'default' and @seenExport and @tag() in ['EXPORT', 'AS']
       @token 'DEFAULT', id
       return id.length
-    if id is 'assert' and @seenImport and @tag() is 'STRING'
+    if id is 'assert' and (@seenImport or @seenExport) and @tag() is 'STRING'
       @token 'ASSERT', id
       return id.length
     if id is 'do' and regExSuper = /^(\s*super)(?!\(\))/.exec @chunk[3...]

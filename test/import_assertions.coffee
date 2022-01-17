@@ -48,3 +48,22 @@ test "static import assertion", ->
         type: 'unknown'
       };
   """
+
+test "static export with assertion", ->
+  eqJS """
+    export * from 'data:application/json,{"foo":3}' assert { type: 'json' }
+  """, """
+    export * from 'data:application/json,{"foo":3}' assert {
+      type: 'json'
+    };
+  """
+
+  eqJS """
+    export { profile } from './user.json' assert { type: 'json' }
+  """, """
+    export {
+      profile
+    } from './user.json' assert {
+        type: 'json'
+      };
+  """
