@@ -2218,6 +2218,31 @@ test "AST as expected for ModuleDeclaration node", ->
       type: 'StringLiteral'
       value: '.'
 
+  testStatement 'import X from "." assert { type: "json" }',
+    type: 'ImportDeclaration'
+    specifiers: [
+      type: 'ImportDefaultSpecifier'
+      local:
+        type: 'Identifier'
+        name: 'X'
+        declaration: no
+    ]
+    importKind: 'value'
+    source:
+      type: 'StringLiteral'
+      value: '.'
+    assertions: [
+      type: 'ImportAttribute'
+      key:
+        type: 'Identifier'
+        name: 'type'
+      value:
+        type: 'StringLiteral'
+        value: 'json'
+        extra:
+          raw: '"json"'
+    ]
+
 test "AST as expected for ImportDeclaration node", ->
   testStatement 'import React, {Component} from "react"',
     type: 'ImportDeclaration'
@@ -2367,6 +2392,26 @@ test "AST as expected for ExportAllDeclaration node", ->
       value: 'module-name'
       extra:
         raw: '"module-name"'
+    exportKind: 'value'
+
+  testStatement 'export * from "module-name" assert { type: "json" }',
+    type: 'ExportAllDeclaration'
+    source:
+      type: 'StringLiteral'
+      value: 'module-name'
+      extra:
+        raw: '"module-name"'
+    assertions: [
+      type: 'ImportAttribute'
+      key:
+        type: 'Identifier'
+        name: 'type'
+      value:
+        type: 'StringLiteral'
+        value: 'json'
+        extra:
+          raw: '"json"'
+    ]
     exportKind: 'value'
 
 test "AST as expected for ExportSpecifierList node", ->
@@ -22988,21 +23033,21 @@ test "`new.target` cannot be assigned", ->
                  ^
   '''
 
-test "#4834: dynamic import requires exactly one argument", ->
+test "#4834: dynamic import accepts either one or two arguments", ->
   assertErrorFormat '''
     import()
   ''', '''
-    [stdin]:1:1: error: import() requires exactly one argument
+    [stdin]:1:1: error: import() accepts either one or two arguments
     import()
     ^^^^^^^^
   '''
 
   assertErrorFormat '''
-    import('x', {})
+    import('x', {}, 3)
   ''', '''
-    [stdin]:1:1: error: import() requires exactly one argument
-    import('x', {})
-    ^^^^^^^^^^^^^^^
+    [stdin]:1:1: error: import() accepts either one or two arguments
+    import('x', {}, 3)
+    ^^^^^^^^^^^^^^^^^^
   '''
 
 test "#4834: dynamic import requires explicit call parentheses", ->
@@ -25666,6 +25711,78 @@ test "the `baseFileName` helper returns the file name to write to", ->
     name = baseFileName sourceFileName, yes
     filename = name + ext
     eq filename, expectedFileName
+
+</script>
+<script type="text/x-coffeescript" class="test" id="import_assertions">
+# This file is running in CommonJS (in Node) or as a classic Script (in the browser tests) so it can use import() within an async function, but not at the top level; and we can’t use static import.
+test "dynamic import assertion", ->
+  { default: secret } = await import('data:application/json,{"ofLife":42}', { assert: { type: 'json' } })
+  eq secret.ofLife, 42
+
+test "static import assertion", ->
+  eqJS """
+    import 'data:application/json,{"foo":3}' assert { type: 'json' }
+  """, """
+    import 'data:application/json,{"foo":3}' assert {
+      type: 'json'
+    };
+  """
+
+  eqJS """
+    import secret from 'data:application/json,{"ofLife":42}' assert { type: 'json' }
+  """, """
+    import secret from 'data:application/json,{"ofLife":42}' assert {
+      type: 'json'
+    };
+  """
+
+  eqJS """
+    import * as secret from 'data:application/json,{"ofLife":42}' assert { type: 'json' }
+  """, """
+    import * as secret from 'data:application/json,{"ofLife":42}' assert {
+      type: 'json'
+    };
+  """
+
+  # The only file types for which import assertions are currently supported are JSON (Node and browsers) and CSS (browsers), neither of which support named exports; however there’s nothing in the JavaScript grammar preventing a future supported file type from providing named exports.
+  eqJS """
+    import { foo } from './file.unknown' assert { type: 'unknown' }
+  """, """
+    import {
+      foo
+    } from './file.unknown' assert {
+        type: 'unknown'
+      };
+  """
+
+  eqJS """
+    import file, { foo } from './file.unknown' assert { type: 'unknown' }
+  """, """
+    import file, {
+      foo
+    } from './file.unknown' assert {
+        type: 'unknown'
+      };
+  """
+
+test "static export with assertion", ->
+  eqJS """
+    export * from 'data:application/json,{"foo":3}' assert { type: 'json' }
+  """, """
+    export * from 'data:application/json,{"foo":3}' assert {
+      type: 'json'
+    };
+  """
+
+  eqJS """
+    export { profile } from './user.json' assert { type: 'json' }
+  """, """
+    export {
+      profile
+    } from './user.json' assert {
+        type: 'json'
+      };
+  """
 
 </script>
 <script type="text/x-coffeescript" class="test" id="importing">
