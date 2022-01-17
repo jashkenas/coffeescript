@@ -3207,11 +3207,11 @@ exports.ClassPrototypeProperty = class ClassPrototypeProperty extends Base
 #### Import and Export
 
 exports.ModuleDeclaration = class ModuleDeclaration extends Base
-  constructor: (@clause, @source) ->
+  constructor: (@clause, @source, @assertions) ->
     super()
     @checkSource()
 
-  children: ['clause', 'source']
+  children: ['clause', 'source', 'assertions']
 
   isStatement: YES
   jumps:       THIS
@@ -3241,6 +3241,9 @@ exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
     if @source?.value?
       code.push @makeCode ' from ' unless @clause is null
       code.push @makeCode @source.value
+      if @assertions?
+        code.push @makeCode ' assert '
+        code.push @assertions.compileToFragments(o)...
 
     code.push @makeCode ';'
     code
@@ -3250,9 +3253,17 @@ exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
     super o
 
   astProperties: (o) ->
+    assertionsAst = if @assertions?.properties?
+      @assertions.properties.map (assertion) =>
+        { start, end, loc, left, right } = assertion.ast(o)
+        { type: 'ImportAttribute', start, end, loc, key: left, value: right }
+    else
+      []
+
     ret =
       specifiers: @clause?.ast(o) ? []
       source: @source.ast o
+      assertions: assertionsAst
     ret.importKind = 'value' if @clause
     ret
 
