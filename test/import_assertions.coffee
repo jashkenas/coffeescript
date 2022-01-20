@@ -3,6 +3,19 @@ test "dynamic import assertion", ->
   { default: secret } = await import('data:application/json,{"ofLife":42}', { assert: { type: 'json' } })
   eq secret.ofLife, 42
 
+test "assert keyword", ->
+  assert = 1
+
+  { default: assert } = await import('data:application/json,{"thatIAm":42}', { assert: { type: 'json' } })
+  eq assert.thatIAm, 42
+
+  eqJS """
+    import assert from 'regression-test'
+  """, """
+    import assert from 'regression-test';
+  """
+
+
 test "static import assertion", ->
   eqJS """
     import 'data:application/json,{"foo":3}' assert { type: 'json' }
@@ -47,6 +60,12 @@ test "static import assertion", ->
     } from './file.unknown' assert {
         type: 'unknown'
       };
+  """
+
+  eqJS """
+    import foo from 'bar' assert {}
+  """, """
+    import foo from 'bar' assert {};
   """
 
 test "static export with assertion", ->
