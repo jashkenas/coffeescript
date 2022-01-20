@@ -1979,21 +1979,21 @@ test "`new.target` cannot be assigned", ->
                  ^
   '''
 
-test "#4834: dynamic import requires exactly one argument", ->
+test "#4834: dynamic import accepts either one or two arguments", ->
   assertErrorFormat '''
     import()
   ''', '''
-    [stdin]:1:1: error: import() requires exactly one argument
+    [stdin]:1:1: error: import() accepts either one or two arguments
     import()
     ^^^^^^^^
   '''
 
   assertErrorFormat '''
-    import('x', {})
+    import('x', {}, 3)
   ''', '''
-    [stdin]:1:1: error: import() requires exactly one argument
-    import('x', {})
-    ^^^^^^^^^^^^^^^
+    [stdin]:1:1: error: import() accepts either one or two arguments
+    import('x', {}, 3)
+    ^^^^^^^^^^^^^^^^^^
   '''
 
 test "#4834: dynamic import requires explicit call parentheses", ->

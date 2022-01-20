@@ -4268,6 +4268,8 @@ import { now as currentTimestamp } from 'underscore'
 import { first, last } from 'underscore'
 import utilityBelt, { each } from 'underscore'
 
+import dates from './calendar.json' assert { type: 'json' }
+
 export default Math
 export square = (x) -> x * x
 export class Mathematics
@@ -4279,6 +4281,7 @@ export { Mathematics as default, sqrt as squareRoot }
 
 export * from 'underscore'
 export { max, min } from 'underscore'
+export { version } from './package.json' assert { type: 'json' }
 </textarea>
       <pre class="placeholder-code"><span class="cm-variable">import</span> <span class="cm-string">'./local-file.js'</span> <span class="cm-comment"># Must be the filename of the generated file</span>
 <span class="cm-variable">import</span> <span class="cm-string">'package'</span>
@@ -4291,6 +4294,8 @@ export { max, min } from 'underscore'
 <span class="cm-variable">import</span> <span class="cm-punctuation">{</span> <span class="cm-variable">first</span><span class="cm-punctuation">,</span> <span class="cm-variable">last</span> <span class="cm-punctuation">}</span> <span class="cm-variable">from</span> <span class="cm-string">'underscore'</span>
 <span class="cm-variable">import</span> <span class="cm-variable">utilityBelt</span><span class="cm-punctuation">,</span> <span class="cm-punctuation">{</span> <span class="cm-variable">each</span> <span class="cm-punctuation">}</span> <span class="cm-variable">from</span> <span class="cm-string">'underscore'</span>
 
+<span class="cm-variable">import</span> <span class="cm-variable">dates</span> <span class="cm-variable">from</span> <span class="cm-string">'./calendar.json'</span> <span class="cm-variable">assert</span> <span class="cm-punctuation">{</span> <span class="cm-variable">type</span><span class="cm-punctuation">:</span> <span class="cm-string">'json'</span> <span class="cm-punctuation">}</span>
+
 <span class="cm-variable">export</span> <span class="cm-variable">default</span> <span class="cm-variable">Math</span>
 <span class="cm-variable">export</span> <span class="cm-variable">square</span> <span class="cm-punctuation">=</span> <span class="cm-punctuation">(</span><span class="cm-variable">x</span><span class="cm-punctuation">)</span> <span class="cm-operator">-></span> <span class="cm-variable">x</span> <span class="cm-operator">*</span> <span class="cm-variable">x</span>
 <span class="cm-variable">export</span> <span class="cm-keyword">class</span> <span class="cm-variable">Mathematics</span>
@@ -4302,6 +4307,7 @@ export { max, min } from 'underscore'
 
 <span class="cm-variable">export</span> <span class="cm-operator">*</span> <span class="cm-variable">from</span> <span class="cm-string">'underscore'</span>
 <span class="cm-variable">export</span> <span class="cm-punctuation">{</span> <span class="cm-variable">max</span><span class="cm-punctuation">,</span> <span class="cm-variable">min</span> <span class="cm-punctuation">}</span> <span class="cm-variable">from</span> <span class="cm-string">'underscore'</span>
+<span class="cm-variable">export</span> <span class="cm-punctuation">{</span> <span class="cm-variable">version</span> <span class="cm-punctuation">}</span> <span class="cm-variable">from</span> <span class="cm-string">'./package.json'</span> <span class="cm-variable">assert</span> <span class="cm-punctuation">{</span> <span class="cm-variable">type</span><span class="cm-punctuation">:</span> <span class="cm-string">'json'</span> <span class="cm-punctuation">}</span>
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
@@ -4329,6 +4335,10 @@ import {
 import utilityBelt, {
   each
 } from 'underscore';
+
+import dates from './calendar.json' assert {
+  type: 'json'
+};
 
 export default Math;
 
@@ -4366,6 +4376,12 @@ export {
   max,
   min
 } from 'underscore';
+
+export {
+  version
+} from './package.json' assert {
+    type: 'json'
+  };
 </textarea>
       <pre class="placeholder-code"><span class="cm-keyword">import</span> <span class="cm-string">'./local-file.js'</span>;
 
@@ -4391,6 +4407,10 @@ export {
 <span class="cm-keyword">import</span> <span class="cm-def">utilityBelt</span>, {
   <span class="cm-def">each</span>
 } <span class="cm-keyword">from</span> <span class="cm-string">'underscore'</span>;
+
+<span class="cm-keyword">import</span> <span class="cm-def">dates</span> <span class="cm-keyword">from</span> <span class="cm-string">'./calendar.json'</span> <span class="cm-variable">assert</span> {
+  <span class="cm-variable">type</span>: <span class="cm-string">'json'</span>
+};
 
 <span class="cm-keyword">export</span> <span class="cm-keyword">default</span> <span class="cm-variable">Math</span>;
 
@@ -4428,6 +4448,12 @@ export {
   <span class="cm-variable">max</span>,
   <span class="cm-variable">min</span>
 } <span class="cm-keyword">from</span> <span class="cm-string">'underscore'</span>;
+
+<span class="cm-keyword">export</span> {
+  <span class="cm-variable">version</span>
+} <span class="cm-keyword">from</span> <span class="cm-string">'./package.json'</span> <span class="cm-variable">assert</span> {
+    <span class="cm-variable">type</span>: <span class="cm-string">'json'</span>
+  };
 </pre>
     </div>
   </div>

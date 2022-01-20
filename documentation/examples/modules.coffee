@@ -9,6 +9,8 @@ import { now as currentTimestamp } from 'underscore'
 import { first, last } from 'underscore'
 import utilityBelt, { each } from 'underscore'
 
+import dates from './calendar.json' assert { type: 'json' }
+
 export default Math
 export square = (x) -> x * x
 export class Mathematics
@@ -20,3 +22,4 @@ export { Mathematics as default, sqrt as squareRoot }
 
 export * from 'underscore'
 export { max, min } from 'underscore'
+export { version } from './package.json' assert { type: 'json' }

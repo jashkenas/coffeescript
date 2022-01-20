@@ -3207,11 +3207,11 @@ exports.ClassPrototypeProperty = class ClassPrototypeProperty extends Base
 #### Import and Export
 
 exports.ModuleDeclaration = class ModuleDeclaration extends Base
-  constructor: (@clause, @source) ->
+  constructor: (@clause, @source, @assertions) ->
     super()
     @checkSource()
 
-  children: ['clause', 'source']
+  children: ['clause', 'source', 'assertions']
 
   isStatement: YES
   jumps:       THIS
@@ -3229,6 +3229,14 @@ exports.ModuleDeclaration = class ModuleDeclaration extends Base
     if o.indent.length isnt 0
       @error "#{moduleDeclarationType} statements must be at top-level scope"
 
+  astAssertions: (o) ->
+    if @assertions?.properties?
+      @assertions.properties.map (assertion) =>
+        { start, end, loc, left, right } = assertion.ast(o)
+        { type: 'ImportAttribute', start, end, loc, key: left, value: right }
+    else
+      []
+
 exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
   compileNode: (o) ->
     @checkScope o, 'import'
@@ -3241,6 +3249,9 @@ exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
     if @source?.value?
       code.push @makeCode ' from ' unless @clause is null
       code.push @makeCode @source.value
+      if @assertions?
+        code.push @makeCode ' assert '
+        code.push @assertions.compileToFragments(o)...
 
     code.push @makeCode ';'
     code
@@ -3253,6 +3264,7 @@ exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
     ret =
       specifiers: @clause?.ast(o) ? []
       source: @source.ast o
+      assertions: @astAssertions(o)
     ret.importKind = 'value' if @clause
     ret
 
@@ -3301,7 +3313,12 @@ exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
     else
       code = code.concat @clause.compileNode o
 
-    code.push @makeCode " from #{@source.value}" if @source?.value?
+    if @source?.value?
+      code.push @makeCode " from #{@source.value}"
+      if @assertions?
+        code.push @makeCode ' assert '
+        code.push @assertions.compileToFragments(o)...
+
     code.push @makeCode ';'
     code
 
@@ -3318,6 +3335,7 @@ exports.ExportNamedDeclaration = class ExportNamedDeclaration extends ExportDecl
   astProperties: (o) ->
     ret =
       source: @source?.ast(o) ? null
+      assertions: @astAssertions(o)
       exportKind: 'value'
     clauseAst = @clause.ast o
     if @clause instanceof ExportSpecifierList
@@ -3332,11 +3350,13 @@ exports.ExportDefaultDeclaration = class ExportDefaultDeclaration extends Export
   astProperties: (o) ->
     return
       declaration: @clause.ast o
+      assertions: @astAssertions(o)
 
 exports.ExportAllDeclaration = class ExportAllDeclaration extends ExportDeclaration
   astProperties: (o) ->
     return
       source: @source.ast o
+      assertions: @astAssertions(o)
       exportKind: 'value'
 
 exports.ModuleSpecifierList = class ModuleSpecifierList extends Base
@@ -3447,8 +3467,8 @@ exports.DynamicImportCall = class DynamicImportCall extends Call
     super o
 
   checkArguments: ->
-    unless @args.length is 1
-      @error 'import() requires exactly one argument'
+    unless 1 <= @args.length <= 2
+      @error 'import() accepts either one or two arguments'
 
   astNode: (o) ->
     @checkArguments()

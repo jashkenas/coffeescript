@@ -1979,6 +1979,31 @@ test "AST as expected for ModuleDeclaration node", ->
       type: 'StringLiteral'
       value: '.'
 
+  testStatement 'import X from "." assert { type: "json" }',
+    type: 'ImportDeclaration'
+    specifiers: [
+      type: 'ImportDefaultSpecifier'
+      local:
+        type: 'Identifier'
+        name: 'X'
+        declaration: no
+    ]
+    importKind: 'value'
+    source:
+      type: 'StringLiteral'
+      value: '.'
+    assertions: [
+      type: 'ImportAttribute'
+      key:
+        type: 'Identifier'
+        name: 'type'
+      value:
+        type: 'StringLiteral'
+        value: 'json'
+        extra:
+          raw: '"json"'
+    ]
+
 test "AST as expected for ImportDeclaration node", ->
   testStatement 'import React, {Component} from "react"',
     type: 'ImportDeclaration'
@@ -2128,6 +2153,26 @@ test "AST as expected for ExportAllDeclaration node", ->
       value: 'module-name'
       extra:
         raw: '"module-name"'
+    exportKind: 'value'
+
+  testStatement 'export * from "module-name" assert { type: "json" }',
+    type: 'ExportAllDeclaration'
+    source:
+      type: 'StringLiteral'
+      value: 'module-name'
+      extra:
+        raw: '"module-name"'
+    assertions: [
+      type: 'ImportAttribute'
+      key:
+        type: 'Identifier'
+        name: 'type'
+      value:
+        type: 'StringLiteral'
+        value: 'json'
+        extra:
+          raw: '"json"'
+    ]
     exportKind: 'value'
 
 test "AST as expected for ExportSpecifierList node", ->

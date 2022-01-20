@@ -55,11 +55,11 @@ o = (patternString, action, options) ->
     # is used to make sure that newly created node class objects get correct
     # location data assigned to them. By default, the grammar will assign the
     # location data spanned by *all* of the tokens on the left (e.g. a string
-    # such as `'Body TERMINATOR Line'`) to the “top-level” node returned by 
+    # such as `'Body TERMINATOR Line'`) to the “top-level” node returned by
     # the grammar rule (the function on the right). But for “inner” node class
     # objects created by grammar rules, they won’t get correct location data
     # assigned to them without adding `LOC`.
-    
+
     # For example, consider the grammar rule `'NEW_TARGET . Property'`, which
     # is handled by a function that returns
     # `new MetaProperty LOC(1)(new IdentifierLiteral $1), LOC(3)(new Access $3)`.
@@ -481,13 +481,20 @@ grammar =
   ]
 
   Import: [
-    o 'IMPORT String',                                                                -> new ImportDeclaration null, $2
-    o 'IMPORT ImportDefaultSpecifier FROM String',                                    -> new ImportDeclaration new ImportClause($2, null), $4
-    o 'IMPORT ImportNamespaceSpecifier FROM String',                                  -> new ImportDeclaration new ImportClause(null, $2), $4
-    o 'IMPORT { } FROM String',                                                       -> new ImportDeclaration new ImportClause(null, new ImportSpecifierList []), $5
-    o 'IMPORT { ImportSpecifierList OptComma } FROM String',                          -> new ImportDeclaration new ImportClause(null, new ImportSpecifierList $3), $7
-    o 'IMPORT ImportDefaultSpecifier , ImportNamespaceSpecifier FROM String',         -> new ImportDeclaration new ImportClause($2, $4), $6
-    o 'IMPORT ImportDefaultSpecifier , { ImportSpecifierList OptComma } FROM String', -> new ImportDeclaration new ImportClause($2, new ImportSpecifierList $5), $9
+    o 'IMPORT String',                                                                              -> new ImportDeclaration null, $2
+    o 'IMPORT String ASSERT Object',                                                                -> new ImportDeclaration null, $2, $4
+    o 'IMPORT ImportDefaultSpecifier FROM String',                                                  -> new ImportDeclaration new ImportClause($2, null), $4
+    o 'IMPORT ImportDefaultSpecifier FROM String ASSERT Object',                                    -> new ImportDeclaration new ImportClause($2, null), $4, $6
+    o 'IMPORT ImportNamespaceSpecifier FROM String',                                                -> new ImportDeclaration new ImportClause(null, $2), $4
+    o 'IMPORT ImportNamespaceSpecifier FROM String ASSERT Object',                                  -> new ImportDeclaration new ImportClause(null, $2), $4, $6
+    o 'IMPORT { } FROM String',                                                                     -> new ImportDeclaration new ImportClause(null, new ImportSpecifierList []), $5
+    o 'IMPORT { } FROM String ASSERT Object',                                                       -> new ImportDeclaration new ImportClause(null, new ImportSpecifierList []), $5, $7
+    o 'IMPORT { ImportSpecifierList OptComma } FROM String',                                        -> new ImportDeclaration new ImportClause(null, new ImportSpecifierList $3), $7
+    o 'IMPORT { ImportSpecifierList OptComma } FROM String ASSERT Object',                          -> new ImportDeclaration new ImportClause(null, new ImportSpecifierList $3), $7, $9
+    o 'IMPORT ImportDefaultSpecifier , ImportNamespaceSpecifier FROM String',                       -> new ImportDeclaration new ImportClause($2, $4), $6
+    o 'IMPORT ImportDefaultSpecifier , ImportNamespaceSpecifier FROM String ASSERT Object',         -> new ImportDeclaration new ImportClause($2, $4), $6, $8
+    o 'IMPORT ImportDefaultSpecifier , { ImportSpecifierList OptComma } FROM String',               -> new ImportDeclaration new ImportClause($2, new ImportSpecifierList $5), $9
+    o 'IMPORT ImportDefaultSpecifier , { ImportSpecifierList OptComma } FROM String ASSERT Object', -> new ImportDeclaration new ImportClause($2, new ImportSpecifierList $5), $9, $11
   ]
 
   ImportSpecifierList: [
@@ -514,20 +521,23 @@ grammar =
   ]
 
   Export: [
-    o 'EXPORT { }',                                          -> new ExportNamedDeclaration new ExportSpecifierList []
-    o 'EXPORT { ExportSpecifierList OptComma }',             -> new ExportNamedDeclaration new ExportSpecifierList $3
-    o 'EXPORT Class',                                        -> new ExportNamedDeclaration $2
-    o 'EXPORT Identifier = Expression',                      -> new ExportNamedDeclaration LOC(2,4)(new Assign $2, $4, null,
+    o 'EXPORT { }',                                                        -> new ExportNamedDeclaration new ExportSpecifierList []
+    o 'EXPORT { ExportSpecifierList OptComma }',                           -> new ExportNamedDeclaration new ExportSpecifierList $3
+    o 'EXPORT Class',                                                      -> new ExportNamedDeclaration $2
+    o 'EXPORT Identifier = Expression',                                    -> new ExportNamedDeclaration LOC(2,4)(new Assign $2, $4, null,
                                                                                                       moduleDeclaration: 'export')
-    o 'EXPORT Identifier = TERMINATOR Expression',           -> new ExportNamedDeclaration LOC(2,5)(new Assign $2, $5, null,
+    o 'EXPORT Identifier = TERMINATOR Expression',                         -> new ExportNamedDeclaration LOC(2,5)(new Assign $2, $5, null,
                                                                                                       moduleDeclaration: 'export')
-    o 'EXPORT Identifier = INDENT Expression OUTDENT',       -> new ExportNamedDeclaration LOC(2,6)(new Assign $2, $5, null,
+    o 'EXPORT Identifier = INDENT Expression OUTDENT',                     -> new ExportNamedDeclaration LOC(2,6)(new Assign $2, $5, null,
                                                                                                       moduleDeclaration: 'export')
-    o 'EXPORT DEFAULT Expression',                           -> new ExportDefaultDeclaration $3
-    o 'EXPORT DEFAULT INDENT Object OUTDENT',                -> new ExportDefaultDeclaration new Value $4
-    o 'EXPORT EXPORT_ALL FROM String',                       -> new ExportAllDeclaration new Literal($2), $4
-    o 'EXPORT { } FROM String',                              -> new ExportNamedDeclaration new ExportSpecifierList([]), $5
-    o 'EXPORT { ExportSpecifierList OptComma } FROM String', -> new ExportNamedDeclaration new ExportSpecifierList($3), $7
+    o 'EXPORT DEFAULT Expression',                                         -> new ExportDefaultDeclaration $3
+    o 'EXPORT DEFAULT INDENT Object OUTDENT',                              -> new ExportDefaultDeclaration new Value $4
+    o 'EXPORT EXPORT_ALL FROM String',                                     -> new ExportAllDeclaration new Literal($2), $4
+    o 'EXPORT EXPORT_ALL FROM String ASSERT Object',                       -> new ExportAllDeclaration new Literal($2), $4, $6
+    o 'EXPORT { } FROM String',                                            -> new ExportNamedDeclaration new ExportSpecifierList([]), $5
+    o 'EXPORT { } FROM String ASSERT Object',                              -> new ExportNamedDeclaration new ExportSpecifierList([]), $5, $7
+    o 'EXPORT { ExportSpecifierList OptComma } FROM String',               -> new ExportNamedDeclaration new ExportSpecifierList($3), $7
+    o 'EXPORT { ExportSpecifierList OptComma } FROM String ASSERT Object', -> new ExportNamedDeclaration new ExportSpecifierList($3), $7, $9
   ]
 
   ExportSpecifierList: [
