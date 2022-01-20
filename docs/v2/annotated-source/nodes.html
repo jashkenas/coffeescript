@@ -5845,11 +5845,11 @@ opposed to the <code>Object.defineProperty</code> method).</p>
             
             <div class="content"><div class='highlight'><pre>
 <span class="hljs-built_in">exports</span>.ModuleDeclaration = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ModuleDeclaration</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
-  constructor: <span class="hljs-function"><span class="hljs-params">(@clause, @source)</span> -&gt;</span>
+  constructor: <span class="hljs-function"><span class="hljs-params">(@clause, @source, @assertions)</span> -&gt;</span>
     super()
     @checkSource()
 
-  children: [<span class="hljs-string">&#x27;clause&#x27;</span>, <span class="hljs-string">&#x27;source&#x27;</span>]
+  children: [<span class="hljs-string">&#x27;clause&#x27;</span>, <span class="hljs-string">&#x27;source&#x27;</span>, <span class="hljs-string">&#x27;assertions&#x27;</span>]
 
   isStatement: YES
   jumps:       THIS
@@ -5880,6 +5880,14 @@ whether we’re at the “program top-level”.</p>
             <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> o.indent.length <span class="hljs-keyword">isnt</span> <span class="hljs-number">0</span>
       @error <span class="hljs-string">&quot;<span class="hljs-subst">#{moduleDeclarationType}</span> statements must be at top-level scope&quot;</span>
 
+  astAssertions: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> @assertions?.properties?
+      @assertions.properties.map (assertion) =&gt;
+        { start, end, loc, left, right } = assertion.ast(o)
+        { type: <span class="hljs-string">&#x27;ImportAttribute&#x27;</span>, start, end, loc, key: left, value: right }
+    <span class="hljs-keyword">else</span>
+      []
+
 <span class="hljs-built_in">exports</span>.ImportDeclaration = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ImportDeclaration</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ModuleDeclaration</span></span>
   compileNode: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
     @checkScope o, <span class="hljs-string">&#x27;import&#x27;</span>
@@ -5892,6 +5900,9 @@ whether we’re at the “program top-level”.</p>
     <span class="hljs-keyword">if</span> @source?.value?
       code.push @makeCode <span class="hljs-string">&#x27; from &#x27;</span> <span class="hljs-keyword">unless</span> @clause <span class="hljs-keyword">is</span> <span class="hljs-literal">null</span>
       code.push @makeCode @source.value
+      <span class="hljs-keyword">if</span> @assertions?
+        code.push @makeCode <span class="hljs-string">&#x27; assert &#x27;</span>
+        code.push @assertions.compileToFragments(o)...
 
     code.push @makeCode <span class="hljs-string">&#x27;;&#x27;</span>
     code
@@ -5904,6 +5915,7 @@ whether we’re at the “program top-level”.</p>
     ret =
       specifiers: @clause?.ast(o) ? []
       source: @source.ast o
+      assertions: @astAssertions(o)
     ret.importKind = <span class="hljs-string">&#x27;value&#x27;</span> <span class="hljs-keyword">if</span> @clause
     ret
 
@@ -5965,7 +5977,12 @@ that will be the <code>specifiers</code> property of an <code>ImportDeclaration<
     <span class="hljs-keyword">else</span>
       code = code.concat @clause.compileNode o
 
-    code.push @makeCode <span class="hljs-string">&quot; from <span class="hljs-subst">#{@source.value}</span>&quot;</span> <span class="hljs-keyword">if</span> @source?.value?
+    <span class="hljs-keyword">if</span> @source?.value?
+      code.push @makeCode <span class="hljs-string">&quot; from <span class="hljs-subst">#{@source.value}</span>&quot;</span>
+      <span class="hljs-keyword">if</span> @assertions?
+        code.push @makeCode <span class="hljs-string">&#x27; assert &#x27;</span>
+        code.push @assertions.compileToFragments(o)...
+
     code.push @makeCode <span class="hljs-string">&#x27;;&#x27;</span>
     code</pre></div></div>
             
@@ -5994,6 +6011,7 @@ that will be the <code>specifiers</code> property of an <code>ImportDeclaration<
   astProperties: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
     ret =
       source: @source?.ast(o) ? <span class="hljs-literal">null</span>
+      assertions: @astAssertions(o)
       exportKind: <span class="hljs-string">&#x27;value&#x27;</span>
     clauseAst = @clause.ast o
     <span class="hljs-keyword">if</span> @clause <span class="hljs-keyword">instanceof</span> ExportSpecifierList
@@ -6008,11 +6026,13 @@ that will be the <code>specifiers</code> property of an <code>ImportDeclaration<
   astProperties: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
     <span class="hljs-keyword">return</span>
       declaration: @clause.ast o
+      assertions: @astAssertions(o)
 
 <span class="hljs-built_in">exports</span>.ExportAllDeclaration = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ExportAllDeclaration</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ExportDeclaration</span></span>
   astProperties: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
     <span class="hljs-keyword">return</span>
       source: @source.ast o
+      assertions: @astAssertions(o)
       exportKind: <span class="hljs-string">&#x27;value&#x27;</span>
 
 <span class="hljs-built_in">exports</span>.ModuleSpecifierList = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ModuleSpecifierList</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
@@ -6148,8 +6168,8 @@ that will be the <code>specifiers</code> property of an <code>ImportDeclaration<
     super o
 
   checkArguments: <span class="hljs-function">-&gt;</span>
-    <span class="hljs-keyword">unless</span> @args.length <span class="hljs-keyword">is</span> <span class="hljs-number">1</span>
-      @error <span class="hljs-string">&#x27;import() requires exactly one argument&#x27;</span>
+    <span class="hljs-keyword">unless</span> <span class="hljs-number">1</span> &lt;= @args.length &lt;= <span class="hljs-number">2</span>
+      @error <span class="hljs-string">&#x27;import() accepts either one or two arguments&#x27;</span>
 
   astNode: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
     @checkArguments()

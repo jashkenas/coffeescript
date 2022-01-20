@@ -414,6 +414,9 @@ though <code>is</code> means <code>===</code> otherwise.</p>
     <span class="hljs-keyword">if</span> id <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;default&#x27;</span> <span class="hljs-keyword">and</span> @seenExport <span class="hljs-keyword">and</span> @tag() <span class="hljs-keyword">in</span> [<span class="hljs-string">&#x27;EXPORT&#x27;</span>, <span class="hljs-string">&#x27;AS&#x27;</span>]
       @token <span class="hljs-string">&#x27;DEFAULT&#x27;</span>, id
       <span class="hljs-keyword">return</span> id.length
+    <span class="hljs-keyword">if</span> id <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;assert&#x27;</span> <span class="hljs-keyword">and</span> (@seenImport <span class="hljs-keyword">or</span> @seenExport) <span class="hljs-keyword">and</span> @tag() <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;STRING&#x27;</span>
+      @token <span class="hljs-string">&#x27;ASSERT&#x27;</span>, id
+      <span class="hljs-keyword">return</span> id.length
     <span class="hljs-keyword">if</span> id <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;do&#x27;</span> <span class="hljs-keyword">and</span> regExSuper = <span class="hljs-regexp">/^(\s*super)(?!\(\))/</span>.exec @chunk[<span class="hljs-number">3.</span>..]
       @token <span class="hljs-string">&#x27;SUPER&#x27;</span>, <span class="hljs-string">&#x27;super&#x27;</span>
       @token <span class="hljs-string">&#x27;CALL_START&#x27;</span>, <span class="hljs-string">&#x27;(&#x27;</span>
