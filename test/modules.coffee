@@ -220,13 +220,11 @@ test "a variable can be assigned after an import", ->
     import { foo } from 'lib'
     bar = 5""",
   """
-    var bar;
-
     import {
       foo
     } from 'lib';
 
-    bar = 5;"""
+    var bar = 5;"""
 
 test "variables can be assigned before and after an import", ->
   eqJS """
@@ -234,15 +232,13 @@ test "variables can be assigned before and after an import", ->
     import { bar } from 'lib'
     baz = 7""",
   """
-    var baz, foo;
-
-    foo = 5;
+    var foo = 5;
 
     import {
       bar
     } from 'lib';
 
-    baz = 7;"""
+    var baz = 7;"""
 
 # Export statements
 
@@ -406,8 +402,7 @@ test "export assignment function which contains assignments in its body", ->
       console.log bar + baz""",
     """
     export var foo = function(bar) {
-      var baz;
-      baz = '!';
+      var baz = '!';
       return console.log(bar + baz);
     };"""
 
@@ -417,9 +412,7 @@ test "export default predefined function", ->
       console.log bar
     export default foo""",
   """
-    var foo;
-
-    foo = function(bar) {
+    var foo = function(bar) {
       return console.log(bar);
     };
 
@@ -553,13 +546,11 @@ test "a variable named `from` can be assigned after an import", ->
     import { foo } from 'lib'
     from = 5""",
   """
-    var from;
-
     import {
       foo
     } from 'lib';
 
-    from = 5;"""
+    var from = 5;"""
 
 test "`from` can be assigned after a multiline import", ->
   eqJS """
@@ -568,13 +559,11 @@ test "`from` can be assigned after a multiline import", ->
     } from 'lib'
     from = 5""",
   """
-    var from;
-
     import {
       foo
     } from 'lib';
 
-    from = 5;"""
+    var from = 5;"""
 
 test "`from` can be imported as a member name", ->
   eqJS "import { from } from 'lib'",
@@ -653,8 +642,7 @@ test "`*` and `from` can be used in an export default expression", ->
       """
     export default foo.extend({
       bar: function() {
-        var from;
-        from = 5;
+        var from = 5;
         return from = from * 3;
       }
     });"""
@@ -736,9 +724,7 @@ test "#4394: export shouldn't prevent variable declarations", ->
     export { x }
   """,
   """
-    var x;
-
-    x = 1;
+    var x = 1;
 
     export {
       x
@@ -934,9 +920,7 @@ test "#4834: dynamic import", ->
       bar = await import('bar')
   """,
   """
-    var foo;
-
-    foo = async function() {
+    var foo = async function() {
       var bar;
       return bar = (await import('bar'));
     };
@@ -954,9 +938,7 @@ test "#5317: Support import.meta", ->
     foo = import.meta
   """,
   """
-    var foo;
-
-    foo = import.meta;
+    var foo = import.meta;
   """
 
   eqJS """
@@ -964,9 +946,7 @@ test "#5317: Support import.meta", ->
         .meta
   """,
   """
-    var foo;
-
-    foo = import.meta;
+    var foo = import.meta;
   """
 
   eqJS """
@@ -974,18 +954,14 @@ test "#5317: Support import.meta", ->
         meta
   """,
   """
-    var foo;
-
-    foo = import.meta;
+    var foo = import.meta;
   """
 
   eqJS """
     foo = import.meta.bar
   """,
   """
-    var foo;
-
-    foo = import.meta.bar;
+    var foo = import.meta.bar;
   """
 
   eqJS """
@@ -994,9 +970,7 @@ test "#5317: Support import.meta", ->
         .bar
   """,
   """
-    var foo;
-
-    foo = import.meta.bar;
+    var foo = import.meta.bar;
   """
 
   eqJS """

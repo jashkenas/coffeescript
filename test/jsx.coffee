@@ -241,9 +241,8 @@ test 'multiple line escaped CoffeeScript with nested JSX', ->
 
     <Person name={test() ? 'yes' : 'no'}>
     {(function() {
-      var i, len, results;
-      results = [];
-      for (i = 0, len = a.length; i < len; i++) {
+      var results = [];
+      for (var i = 0, len = a.length; i < len; i++) {
         n = a[i];
         results.push(<div> a
           asf
@@ -392,9 +391,7 @@ test 'heregex', ->
     ///
     <Person />
   ''', '''
-    var REGEX, test;
-
-    test = /432/gm; // this is a regex
+    var test = /432/gm; // this is a regex
 
     6 / 432 / gm; // this is division
 
@@ -404,7 +401,7 @@ test 'heregex', ->
 
     <Person />;
 
-    REGEX = /^(\\/(?![s=])[^[\\/ ]*(?:<Tag\\/>(?:\\[sS]|[[^] ]*(?:\\[sS][^] ]*)*<Tag>tag<\\/Tag>])[^[\\/ ]*)*\\/)([imgy]{0,4})(?!w)/; // comment comment <comment>comment</comment>
+    var REGEX = /^(\\/(?![s=])[^[\\/ ]*(?:<Tag\\/>(?:\\[sS]|[[^] ]*(?:\\[sS][^] ]*)*<Tag>tag<\\/Tag>])[^[\\/ ]*)*\\/)([imgy]{0,4})(?!w)/; // comment comment <comment>comment</comment>
     // comment comment
     // comment comment
     // comment comment
@@ -740,13 +737,11 @@ test 'unspaced less than inside JSX works but is not encouraged', ->
       div = 5
       html = <span>{a<div}</span>
     ''', '''
-      var a, div, html;
+      var a = 3;
 
-      a = 3;
+      var div = 5;
 
-      div = 5;
-
-      html = <span>{a < div}</span>;
+      var html = <span>{a < div}</span>;
     '''
 
 test 'unspaced less than before JSX works but is not encouraged', ->
@@ -755,13 +750,11 @@ test 'unspaced less than before JSX works but is not encouraged', ->
       res = 2<div
       html = <span />
     ''', '''
-      var div, html, res;
+      var div = 5;
 
-      div = 5;
+      var res = 2 < div;
 
-      res = 2 < div;
-
-      html = <span />;
+      var html = <span />;
     '''
 
 test 'unspaced less than after JSX works but is not encouraged', ->
@@ -770,13 +763,11 @@ test 'unspaced less than after JSX works but is not encouraged', ->
       html = <span />
       res = 2<div
     ''', '''
-      var div, html, res;
+      var div = 5;
 
-      div = 5;
+      var html = <span />;
 
-      html = <span />;
-
-      res = 2 < div;
+      var res = 2 < div;
     '''
 
 test '#4686: comments inside interpolations that also contain JSX tags', ->
@@ -885,9 +876,7 @@ test 'JSX fragments: fragment with component nodes', ->
         <OtherComponent />
       </Fragment>
   ''', '''
-    var Component;
-
-    Component = (props) => {
+    var Component = (props) => {
       return <Fragment>
         <OtherComponent />
         <OtherComponent />

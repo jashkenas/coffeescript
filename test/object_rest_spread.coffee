@@ -424,9 +424,7 @@ test "#4834: dynamic import can technically be object spread", ->
     x = {...import('module')}
   """,
   """
-    var x;
-
-    x = {...import('module')};
+    var x = {...import('module')};
   """
 
 test "#5168: allow indented property index", ->

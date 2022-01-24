@@ -16,7 +16,6 @@ that should be output as part of variable declarations.
 
       constructor: (@parent, @expressions, @method, @referencedVars) ->
         @variables = [{name: 'arguments', type: 'arguments'}]
-        @comments  = {}
         @positions = {}
         @utilities = {} unless @parent
 
@@ -28,8 +27,8 @@ Adds a new variable or overrides an existing one.
 
       add: (name, type, immediate) ->
         return @parent.add name, type, immediate if @shared and not immediate
-        if Object::hasOwnProperty.call @positions, name
-          @variables[@positions[name]].type = type
+        if variable = @get name
+          variable.type = type
         else
           @positions[name] = @variables.push({name, type}) - 1
 
@@ -55,14 +54,14 @@ Reserve a variable name as originating from a function parameter for this
 scope. No `var` required for internal references.
 
       parameter: (name) ->
-        return if @shared and @parent.check name, yes
-        @add name, 'param'
+        return if @shared and @parent.check name
+        @add name, 'param', yes
 
 Just check to see if a variable has already been declared, without reserving,
 walks up to the root scope.
 
       check: (name) ->
-        !!(@type(name) or @parent?.check(name))
+        @get(name)? or @parent?.check(name)
 
 Generate a temporary variable name at the given index.
 
@@ -78,11 +77,17 @@ Generate a temporary variable name at the given index.
         else
           "#{name}#{index or ''}"
 
-Gets the type of a variable.
+Gets a variable and its associated data from this scope (not ancestors),
+or `undefined` if it doesn't exist.
+
+      get: (name) ->
+        @variables[@positions[name]] if Object::hasOwnProperty.call @positions, name
+
+Gets the type of a variable declared in this scope,
+or `undefined` if it doesn't exist.
 
       type: (name) ->
-        return v.type for v in @variables when v.name is name
-        null
+        @get(name)?.type
 
 If we need to store an intermediate result, find an available name for a
 compiler-generated variable. `_var`, `_var2`, and so on...
@@ -94,27 +99,74 @@ compiler-generated variable. `_var`, `_var2`, and so on...
           break unless @check(temp) or temp in @root.referencedVars
           index++
         @add temp, 'var', yes if options.reserve ? true
+        @laterVar temp if options.laterVar
         temp
 
-Ensure that an assignment is made at the top of this scope
-(or at the top-level scope, if requested).
+Ensure that an assignment is made at the top of this scope.
 
       assign: (name, value) ->
-        @add name, {value, assigned: yes}, yes
-        @hasAssignments = yes
+        @get(name).assigned = value
+
+Add a comment that should appear when the variable is declared
+(for Flow support).
+
+      comment: (name, comments) ->
+        @get(name).comments = comments
+
+Does this variable have a comment attached to it in this scope?
+
+      hasComment: (name) ->
+        @get(name)?.comments?
+
+Add an explicit type for the variable declaration
+(for TypeScript/Flow support).
+
+      explicitType: (name, explicitType) ->
+        v = @get name
+        v?.explicitType = explicitType
+        delete v?.laterVar  # force top var declaration for type sake
+
+Get this variable's explicit type in this scope, if any
+
+      getExplicitType: (name) ->
+        @get(name)?.explicitType
+
+Check whether a var declaration of this variable could go later, and if so,
+mark it as so.
+
+      laterVar: (name) ->
+        # Ensure variable is declared at this scope, as a regular 'var', and
+        # we haven't already given it a var prefix somewhere, and it doesn't
+        # have an attachment that goes with a top var declaration.
+        v = @get name
+        later = v?.type is 'var' and
+                not (v.laterVar or v.comments? or v.explicitType?)
+        v.laterVar = yes if later
+        later
 
 Does this scope have any declared variables?
 
       hasDeclarations: ->
-        !!@declaredVariables().length
+        return true for v in @variables when v.type is 'var' and not v.laterVar
 
-Return the list of variables first declared in this scope.
+Return a list of names of variables declared in this scope.
+Optionally restrict to assigned or unassigned variables.
 
-      declaredVariables: ->
-        (v.name for v in @variables when v.type is 'var').sort()
+      declaredVariables: (assigned) ->
+        (v.name for v in @variables when v.type is 'var' and not v.laterVar and
+          switch assigned
+            when true then v.assigned?
+            when false then not v.assigned?
+            else true
+        ).sort()
 
-Return the list of assignments that are supposed to be made at the top
-of this scope.
+Extract all variables from `start` onward.
 
-      assignedVariables: ->
-        "#{v.name} = #{v.type.value}" for v in @variables when v.type.assigned
+      spliceVariables: (start) ->
+        delete @positions[@variables[i]] for i in [start...@variables.length]
+        @variables.splice start
+
+Add variables to this scope, e.g. as returned from `spliceVariables`.
+
+      addVariables: (vars) ->
+        @positions[v.name] = @variables.push(v) - 1 for v in vars

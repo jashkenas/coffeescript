@@ -66,7 +66,7 @@ test "downward ranges", ->
   arrayEq [1, 0]   , [1...-1]
   arrayEq [2, 1, 0], [2...-1]
 
-test "ranges with variables as enpoints", ->
+test "ranges with variables as endpoints", ->
   [a, b] = [1, 3]
   arrayEq [1, 2, 3], [a..b]
   arrayEq [1, 2]   , [a...b]
