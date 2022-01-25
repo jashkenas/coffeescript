@@ -710,7 +710,6 @@ exports.Block = class Block extends Base
             v = scope.get name
             fragments.push @makeCode v.name
             fragments.push v.comments... if v.comments?
-            fragments.push @makeCode(": "), v.explicitType... if v.explicitType?
             fragments.push @makeCode " = #{v.assigned}" if v.assigned?
             fragments.push @makeCode sep unless i == names.length-1
         declare unassigned, ', '

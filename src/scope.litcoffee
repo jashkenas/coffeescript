@@ -118,19 +118,6 @@ Does this variable have a comment attached to it in this scope?
       hasComment: (name) ->
         @get(name)?.comments?
 
-Add an explicit type for the variable declaration
-(for TypeScript/Flow support).
-
-      explicitType: (name, explicitType) ->
-        v = @get name
-        v?.explicitType = explicitType
-        delete v?.laterVar  # force top var declaration for type sake
-
-Get this variable's explicit type in this scope, if any
-
-      getExplicitType: (name) ->
-        @get(name)?.explicitType
-
 Check whether a var declaration of this variable could go later, and if so,
 mark it as so.
 
@@ -140,7 +127,7 @@ mark it as so.
         # have an attachment that goes with a top var declaration.
         v = @get name
         later = v?.type is 'var' and
-                not (v.laterVar or v.comments? or v.explicitType?)
+                not (v.laterVar or v.comments?)
         v.laterVar = yes if later
         later
 
