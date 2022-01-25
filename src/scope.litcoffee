@@ -91,7 +91,8 @@ compiler-generated variable. `_var`, `_var2`, and so on...
         index = 0
         loop
           temp = @temporary name, index, options.single
-          break unless @check(temp) or temp in @root.referencedVars
+          break unless @check(temp) or @referencedVars.has(temp) or
+            @shared and @parent.referencedVars.has(temp)
           index++
         @add temp, 'var', yes if options.reserve ? true
         temp

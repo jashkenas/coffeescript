@@ -361,6 +361,10 @@ exports.Base = class Base
       else
         return true if children.replaceInContext match, replacement
 
+  findReferencedVars: (scopes) ->
+    @eachChild (child) ->
+      child.findReferencedVars scopes
+
   invert: ->
     new Op '!', this
 
@@ -515,8 +519,12 @@ exports.Root = class Root extends Base
     super()
 
     @isAsync = (new Code [], @body).isAsync
+    @referencedVars = new Set
 
   children: ['body']
+
+  findReferencedVars: (scopes = []) ->
+    super scopes.concat @
 
   # Wrap everything in a safety closure, unless requested not to. It would be
   # better not to generate them in the first place, but for now, clean up
@@ -532,7 +540,7 @@ exports.Root = class Root extends Base
     [].concat @makeCode("(#{functionKeyword}() {\n"), fragments, @makeCode("\n}).call(this);\n")
 
   initializeScope: (o) ->
-    o.scope = new Scope null, @body, null, o.referencedVars ? []
+    o.scope = new Scope null, @body, null, @referencedVars
     # Mark given local variables in the root scope as parameters so they don’t
     # end up being declared on the root block.
     o.scope.parameter name for name in o.locals or []
@@ -1171,6 +1179,9 @@ exports.IdentifierLiteral = class IdentifierLiteral extends Literal
     return
       name: @value
       declaration: !!@isDeclaration
+
+  findReferencedVars: (scopes) ->
+    scope.referencedVars.add @value for scope in scopes
 
 exports.PropertyName = class PropertyName extends Literal
   isAssignable: YES
@@ -3904,6 +3915,7 @@ exports.Code = class Code extends Base
     @isGenerator = no
     @isAsync     = no
     @isMethod    = no
+    @referencedVars = new Set
 
     @body.traverseChildren no, (node) =>
       if (node instanceof Op and node.isYield()) or node instanceof YieldReturn
@@ -3921,7 +3933,11 @@ exports.Code = class Code extends Base
 
   jumps: NO
 
-  makeScope: (parentScope) -> new Scope parentScope, @body, this
+  findReferencedVars: (scopes) ->
+    super scopes.concat @
+
+  makeScope: (parentScope) ->
+    new Scope parentScope, @body, this, @referencedVars
 
   # Compilation creates a new scope unless explicitly asked to share with the
   # outer scope. Handles splat parameters in the parameter list by setting
@@ -5342,7 +5358,7 @@ exports.For = class For extends While
     @addBody body
     @addSource source
 
-  children: ['body', 'source', 'guard', 'step']
+  children: ['body', 'name', 'index', 'source', 'guard', 'step']
 
   isAwait: -> @await ? no
 

@@ -38,8 +38,6 @@ replDefaults =
       if tokens.length >= 1 and tokens[tokens.length - 1].generated and
          tokens[tokens.length - 1].comments?.length isnt 0 and "#{tokens[tokens.length - 1][1]}" is ''
         tokens.pop()
-      # Collect referenced variable names just like in `CoffeeScript.compile`.
-      referencedVars = (token[1] for token in tokens when token[0] is 'IDENTIFIER')
       # Generate the AST of the tokens.
       ast = CoffeeScript.nodes(tokens).body
       # Add assignment to `__` variable to force the input to be an expression.
@@ -49,7 +47,8 @@ replDefaults =
       isAsync = ast.isAsync
       # Invoke the wrapping closure.
       ast    = new Root new Block [new Call ast]
-      js     = ast.compile {bare: yes, locals: Object.keys(context), referencedVars, sharedScope: yes}
+      ast.findReferencedVars()
+      js     = ast.compile {bare: yes, locals: Object.keys(context), sharedScope: yes}
       if transpile
         js = transpile.transpile(js, transpile.options).code
         # Strip `"use strict"`, to avoid an exception on assigning to
