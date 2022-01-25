@@ -183,6 +183,7 @@ exports.Rewriter = class Rewriter
       [prevTag] = prevToken = if i > 0 then tokens[i - 1] else []
       [nextTag] = nextToken = if i < tokens.length - 1 then tokens[i + 1] else []
       stackTop  = -> stack[stack.length - 1]
+      stackTop2 = -> stack[stack.length - 2]
       startIdx  = i
 
       # Helper function, used for keeping track of the number of tokens consumed
@@ -314,12 +315,15 @@ exports.Rewriter = class Rewriter
       #     if f(a: 1)
       #
       # which is probably always unintended.
-      # Furthermore don’t allow this in literal arrays, as
-      # that creates grammatical ambiguities.
+      # Furthermore don’t allow this in the first line of a literal array
+      # or explicit object, as that creates grammatical ambiguities (#5368).
       if tag in IMPLICIT_FUNC and
          @indexOfTag(i + 1, 'INDENT') > -1 and @looksObjectish(i + 2) and
          not @findTagsBackwards(i, ['CLASS', 'EXTENDS', 'IF', 'CATCH',
-          'SWITCH', 'LEADING_WHEN', 'FOR', 'WHILE', 'UNTIL'])
+          'SWITCH', 'LEADING_WHEN', 'FOR', 'WHILE', 'UNTIL']) and
+         not ((s = stackTop()?[0]) in ['{', '['] and
+              not isImplicit(stackTop()) and
+              @findTagsBackwards(i, s))
         startImplicitCall i + 1
         stack.push ['INDENT', i + 2]
         return forward(3)
@@ -339,9 +343,13 @@ exports.Rewriter = class Rewriter
 
         startsLine = s <= 0 or @tag(s - 1) in LINEBREAKS or tokens[s - 1].newLine
         # Are we just continuing an already declared object?
+        # Including the case where we indent on the line after an explicit '{'.
         if stackTop()
           [stackTag, stackIdx] = stackTop()
-          if (stackTag is '{' or stackTag is 'INDENT' and @tag(stackIdx - 1) is '{') and
+          if (stackTag is '{' or
+              stackTag is 'INDENT' and stackTop2()?[0] is '{' and
+              not isImplicit(stackTop2()) and
+              @findTagsBackwards(stackIdx-1, ['{'])) and
              (startsLine or @tag(s - 1) is ',' or @tag(s - 1) is '{') and
              @tag(s - 1) not in UNFINISHED
             return forward(1)

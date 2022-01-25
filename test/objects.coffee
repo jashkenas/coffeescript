@@ -930,3 +930,39 @@ test "#5292: implicit object after line continuer in implicit object property va
   eq 1, a.b.c
   eq 2, a.b.d
   eq 3, a.e
+
+test "#5368: continuing object and array literals", ->
+  { a
+    b: { c }
+  } = {a: 1, b: {c: 2}}
+  eq a, 1
+  eq c, 2
+
+  [d
+   e: f
+  ] = [3, {e: 4}]
+  eq d, 3
+  eq f, 4
+  A =
+    [d
+     e: f
+    ]
+  eq A[0], 3
+  eq A[1].e, 4
+
+  for obj in [
+    {a: a
+     c: c
+    }
+    {a: a
+     c
+    }
+    {a
+     c: c
+    }
+    {a
+     c
+    }
+  ]
+    eq obj.a, 1
+    eq obj.c, 2
