@@ -183,7 +183,6 @@ exports.Rewriter = class Rewriter
       [prevTag] = prevToken = if i > 0 then tokens[i - 1] else []
       [nextTag] = nextToken = if i < tokens.length - 1 then tokens[i + 1] else []
       stackTop  = -> stack[stack.length - 1]
-      stackTop2 = -> stack[stack.length - 2]
       startIdx  = i
 
       # Helper function, used for keeping track of the number of tokens consumed
@@ -346,9 +345,10 @@ exports.Rewriter = class Rewriter
         # Including the case where we indent on the line after an explicit '{'.
         if stackTop()
           [stackTag, stackIdx] = stackTop()
+          stackNext = stack[stack.length - 2]
           if (stackTag is '{' or
-              stackTag is 'INDENT' and stackTop2()?[0] is '{' and
-              not isImplicit(stackTop2()) and
+              stackTag is 'INDENT' and stackNext?[0] is '{' and
+              not isImplicit(stackNext) and
               @findTagsBackwards(stackIdx-1, ['{'])) and
              (startsLine or @tag(s - 1) is ',' or @tag(s - 1) is '{') and
              @tag(s - 1) not in UNFINISHED
