@@ -146,7 +146,6 @@ that should be output as part of variable declarations.</p>
             
             <div class="content"><div class='highlight'><pre>  constructor: <span class="hljs-function"><span class="hljs-params">(@parent, @expressions, @method, @referencedVars)</span> -&gt;</span>
     @variables = [{name: <span class="hljs-string">&#x27;arguments&#x27;</span>, type: <span class="hljs-string">&#x27;arguments&#x27;</span>}]
-    @comments  = {}
     @positions = {}
     @utilities = {} <span class="hljs-keyword">unless</span> @parent</pre></div></div>
             
@@ -180,8 +179,8 @@ that should be output as part of variable declarations.</p>
             
             <div class="content"><div class='highlight'><pre>  add: <span class="hljs-function"><span class="hljs-params">(name, type, immediate)</span> -&gt;</span>
     <span class="hljs-keyword">return</span> @parent.add name, type, immediate <span class="hljs-keyword">if</span> @shared <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> immediate
-    <span class="hljs-keyword">if</span> Object::hasOwnProperty.call @positions, name
-      @variables[@positions[name]].type = type
+    <span class="hljs-keyword">if</span> variable = @get name
+      variable.type = type
     <span class="hljs-keyword">else</span>
       @positions[name] = @variables.push({name, type}) - <span class="hljs-number">1</span></pre></div></div>
             
@@ -240,8 +239,8 @@ scope. No <code>var</code> required for internal references.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  parameter: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">if</span> @shared <span class="hljs-keyword">and</span> @parent.check name, <span class="hljs-literal">yes</span>
-    @add name, <span class="hljs-string">&#x27;param&#x27;</span></pre></div></div>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">if</span> @shared <span class="hljs-keyword">and</span> @parent.check name
+    @add name, <span class="hljs-string">&#x27;param&#x27;</span>, <span class="hljs-literal">yes</span></pre></div></div>
             
         </li>
         
@@ -258,7 +257,7 @@ walks up to the root scope.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  check: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
-    !!(@type(name) <span class="hljs-keyword">or</span> @parent?.check(name))</pre></div></div>
+    @get(name)? <span class="hljs-keyword">or</span> @parent?.check(name)</pre></div></div>
             
         </li>
         
@@ -294,13 +293,13 @@ walks up to the root scope.</p>
               <div class="sswrap ">
                 <a class="ss" href="#section-10">&#x00a7;</a>
               </div>
-              <p>Gets the type of a variable.</p>
+              <p>Gets a variable and its associated data from this scope (not ancestors),
+or <code>undefined</code> if it doesn’t exist.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  type: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
-    <span class="hljs-keyword">return</span> v.type <span class="hljs-keyword">for</span> v <span class="hljs-keyword">in</span> @variables <span class="hljs-keyword">when</span> v.name <span class="hljs-keyword">is</span> name
-    <span class="hljs-literal">null</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  get: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
+    @variables[@positions[name]] <span class="hljs-keyword">if</span> Object::hasOwnProperty.call @positions, name</pre></div></div>
             
         </li>
         
@@ -310,6 +309,23 @@ walks up to the root scope.</p>
               
               <div class="sswrap ">
                 <a class="ss" href="#section-11">&#x00a7;</a>
+              </div>
+              <p>Gets the type of a variable declared in this scope,
+or <code>undefined</code> if it doesn’t exist.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  type: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
+    @get(name)?.type</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-12">&#x00a7;</a>
               </div>
               <p>If we need to store an intermediate result, find an available name for a
 compiler-generated variable. <code>_var</code>, <code>_var2</code>, and so on…</p>
@@ -323,25 +339,8 @@ compiler-generated variable. <code>_var</code>, <code>_var2</code>, and so on…
       <span class="hljs-keyword">break</span> <span class="hljs-keyword">unless</span> @check(temp) <span class="hljs-keyword">or</span> temp <span class="hljs-keyword">in</span> @root.referencedVars
       index++
     @add temp, <span class="hljs-string">&#x27;var&#x27;</span>, <span class="hljs-literal">yes</span> <span class="hljs-keyword">if</span> options.reserve ? <span class="hljs-literal">true</span>
+    @laterVar temp <span class="hljs-keyword">if</span> options.laterVar
     temp</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-12">
-            <div class="annotation">
-              
-              <div class="sswrap ">
-                <a class="ss" href="#section-12">&#x00a7;</a>
-              </div>
-              <p>Ensure that an assignment is made at the top of this scope
-(or at the top-level scope, if requested).</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  assign: <span class="hljs-function"><span class="hljs-params">(name, value)</span> -&gt;</span>
-    @add name, {value, assigned: <span class="hljs-literal">yes</span>}, <span class="hljs-literal">yes</span>
-    @hasAssignments = <span class="hljs-literal">yes</span></pre></div></div>
             
         </li>
         
@@ -352,12 +351,12 @@ compiler-generated variable. <code>_var</code>, <code>_var2</code>, and so on…
               <div class="sswrap ">
                 <a class="ss" href="#section-13">&#x00a7;</a>
               </div>
-              <p>Does this scope have any declared variables?</p>
+              <p>Ensure that an assignment is made at the top of this scope.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  hasDeclarations: <span class="hljs-function">-&gt;</span>
-    !!@declaredVariables().length</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  assign: <span class="hljs-function"><span class="hljs-params">(name, value)</span> -&gt;</span>
+    @get(name).assigned = value</pre></div></div>
             
         </li>
         
@@ -368,12 +367,13 @@ compiler-generated variable. <code>_var</code>, <code>_var2</code>, and so on…
               <div class="sswrap ">
                 <a class="ss" href="#section-14">&#x00a7;</a>
               </div>
-              <p>Return the list of variables first declared in this scope.</p>
+              <p>Add a comment that should appear when the variable is declared
+(for Flow support).</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  declaredVariables: <span class="hljs-function">-&gt;</span>
-    (v.name <span class="hljs-keyword">for</span> v <span class="hljs-keyword">in</span> @variables <span class="hljs-keyword">when</span> v.type <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;var&#x27;</span>).sort()</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  comment: <span class="hljs-function"><span class="hljs-params">(name, comments)</span> -&gt;</span>
+    @get(name).comments = comments</pre></div></div>
             
         </li>
         
@@ -384,13 +384,120 @@ compiler-generated variable. <code>_var</code>, <code>_var2</code>, and so on…
               <div class="sswrap ">
                 <a class="ss" href="#section-15">&#x00a7;</a>
               </div>
-              <p>Return the list of assignments that are supposed to be made at the top
-of this scope.</p>
+              <p>Does this variable have a comment attached to it in this scope?</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  assignedVariables: <span class="hljs-function">-&gt;</span>
-    <span class="hljs-string">&quot;<span class="hljs-subst">#{v.name}</span> = <span class="hljs-subst">#{v.type.value}</span>&quot;</span> <span class="hljs-keyword">for</span> v <span class="hljs-keyword">in</span> @variables <span class="hljs-keyword">when</span> v.type.assigned</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  hasComment: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span>
+    @get(name)?.comments?</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-16">&#x00a7;</a>
+              </div>
+              <p>Check whether a var declaration of this variable could go later, and if so,
+mark it as so.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  laterVar: <span class="hljs-function"><span class="hljs-params">(name)</span> -&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-17">&#x00a7;</a>
+              </div>
+              <p>Ensure variable is declared at this scope, as a regular ‘var’, and
+we haven’t already given it a var prefix somewhere, and it doesn’t
+have an attachment that goes with a top var declaration.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    v = @get name
+    later = v?.type <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;var&#x27;</span> <span class="hljs-keyword">and</span>
+            <span class="hljs-keyword">not</span> (v.laterVar <span class="hljs-keyword">or</span> v.comments?)
+    v.laterVar = <span class="hljs-literal">yes</span> <span class="hljs-keyword">if</span> later
+    later</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-18">&#x00a7;</a>
+              </div>
+              <p>Does this scope have any declared variables?</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  hasDeclarations: <span class="hljs-function">-&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span> <span class="hljs-keyword">for</span> v <span class="hljs-keyword">in</span> @variables <span class="hljs-keyword">when</span> v.type <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;var&#x27;</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> v.laterVar</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-19">&#x00a7;</a>
+              </div>
+              <p>Return a list of names of variables declared in this scope.
+Optionally restrict to assigned or unassigned variables.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  declaredVariables: <span class="hljs-function"><span class="hljs-params">(assigned)</span> -&gt;</span>
+    (v.name <span class="hljs-keyword">for</span> v <span class="hljs-keyword">in</span> @variables <span class="hljs-keyword">when</span> v.type <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;var&#x27;</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> v.laterVar <span class="hljs-keyword">and</span>
+      <span class="hljs-keyword">switch</span> assigned
+        <span class="hljs-keyword">when</span> <span class="hljs-literal">true</span> <span class="hljs-keyword">then</span> v.assigned?
+        <span class="hljs-keyword">when</span> <span class="hljs-literal">false</span> <span class="hljs-keyword">then</span> <span class="hljs-keyword">not</span> v.assigned?
+        <span class="hljs-keyword">else</span> <span class="hljs-literal">true</span>
+    ).sort()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-20">&#x00a7;</a>
+              </div>
+              <p>Extract all variables from <code>start</code> onward.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  spliceVariables: <span class="hljs-function"><span class="hljs-params">(start)</span> -&gt;</span>
+    <span class="hljs-keyword">delete</span> @positions[@variables[i]] <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [start...@variables.length]
+    @variables.splice start</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-21">&#x00a7;</a>
+              </div>
+              <p>Add variables to this scope, e.g. as returned from <code>spliceVariables</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  addVariables: <span class="hljs-function"><span class="hljs-params">(vars)</span> -&gt;</span>
+    @positions[v.name] = @variables.push(v) - <span class="hljs-number">1</span> <span class="hljs-keyword">for</span> v <span class="hljs-keyword">in</span> vars</pre></div></div>
             
         </li>
         
