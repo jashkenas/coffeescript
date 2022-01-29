@@ -310,7 +310,7 @@ buildDocTests = (watch = no) ->
   # Helpers
   testsInScriptBlocks = ->
     output = ''
-    for filename in fs.readdirSync testsSourceFolder
+    for filename in fs.readdirSync(testsSourceFolder).sort()
       if filename.indexOf('.coffee') isnt -1
         type = 'coffeescript'
       else if filename.indexOf('.litcoffee') isnt -1

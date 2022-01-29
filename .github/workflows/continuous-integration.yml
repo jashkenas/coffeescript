@@ -30,12 +30,11 @@ jobs:
     - run: node ./bin/cake build:parser
     # Build the browser compiler for the headless browser test
     - run: node ./bin/cake build:browser
+    # Build test.html, so that test:browser uses the latest tests
+    - run: node ./bin/cake doc:test
 
     # Check that the git diff is clean, to ensure that the updated build output was committed
     - run: git diff --exit-code
-
-    # Build test.html, so that test:browser uses the latest tests
-    - run: node ./bin/cake doc:test
 
     # Test
     - run: node ./bin/cake test
