@@ -18058,9 +18058,7 @@ test "#3132: Format indented block-comment nicely", ->
     ###
     1""",
   """
-  var fn;
-
-  fn = function() {
+  var fn = function() {
     /*
      * Indented
     Multiline
@@ -18086,9 +18084,7 @@ test "#3132: Format jsdoc-style block-comment nicely", ->
    *
    * @type {Function}
    */
-  var fn;
-
-  fn = function() {
+  var fn = function() {
     return 1;
   };"""
 
@@ -18109,9 +18105,7 @@ test "#3132: Format hand-made (raw) jsdoc-style block-comment nicely", ->
    *
    * @type {Function}
    */
-  var fn;
-
-  fn = function() {
+  var fn = function() {
     return 1;
   };"""
 
@@ -18145,9 +18139,7 @@ test "#3132: Place block-comments nicely", ->
    *
    * @class
    */
-  var DummyClass;
-
-  DummyClass = (function() {
+  var DummyClass = (function() {
     class DummyClass {
       /**
        * @constructor
@@ -18211,9 +18203,7 @@ test "Block comments in array literals are properly indented 1", ->
     3
     42
   ]''', '''
-  var arr;
-
-  arr = [/* ! */ 3, 42];'''
+  var arr = [/* ! */ 3, 42];'''
 
 test "Block comments in array literals are properly indented 2", ->
   eqJS '''
@@ -18225,9 +18215,7 @@ test "Block comments in array literals are properly indented 2", ->
     ###
     42
   ]''', '''
-  var arr;
-
-  arr = [
+  var arr = [
     /*  */
     3,
     /*
@@ -18246,9 +18234,7 @@ test "Block comments in array literals are properly indented 3", ->
     ### Who’s on first? ###
     'Who'
   ]''', '''
-  var arr;
-
-  arr = [
+  var arr = [
     /*
       How many stooges are there?
     */
@@ -18269,10 +18255,8 @@ test "Block comments in array literals are properly indented 4", ->
       ### Who’s on first? ###
       'Who'
     ]''', '''
-  var arr;
-
   if (true) {
-    arr = [
+    var arr = [
       1,
       /*
         How many stooges are there?
@@ -18291,9 +18275,7 @@ test "Line comments in array literals are properly indented 1", ->
     # Who’s on first?
     'Who'
   ]''', '''
-  var arr;
-
-  arr = [
+  var arr = [
     // How many stooges are there?
     3,
     // Who’s on first?
@@ -18314,9 +18296,7 @@ test "Line comments in array literals are properly indented 2", ->
       leftField: 'Why'
     }
   ]''', '''
-  var arr;
-
-  arr = [
+  var arr = [
     // How many stooges are there?
     3,
     // Who’s on first?
@@ -18423,9 +18403,7 @@ test "Line comments in classes are properly indented", ->
       ### Ha! ###
       off
   ''', '''
-  var A;
-
-  A = class A extends B {
+  var A = class A extends B {
     // This is a fine class.
     // I could tell you all about it, but what else do you need to know?
     constructor() {
@@ -18496,9 +18474,7 @@ test "Line comments that trail code, followed by line comments that start a new 
   # Comment that starts a new line
   2
   ''', '''
-  var a;
-
-  a = function() {
+  var a = function() {
     return b(1); // Trailing comment
   };
 
@@ -18683,9 +18659,7 @@ test "Comments before static method", ->
     # Static method:
     @method = ->
   ''', '''
-  var Child;
-
-  Child = class Child extends Base {
+  var Child = class Child extends Base {
     // Static method:
     static method() {}
 
@@ -18698,9 +18672,7 @@ test "Comment before method that calls `super()`", ->
     method: ->
       super()
   ''', '''
-  var Dismissed;
-
-  Dismissed = class Dismissed {
+  var Dismissed = class Dismissed {
     // Before a method calling `super`
     method() {
       return super.method();
@@ -18734,9 +18706,7 @@ test "Comments appear above scope `var` declarations", ->
   fn = (str) -> str
   ''', '''
   // @flow
-  var fn;
-
-  fn = function(str) {
+  var fn = function(str) {
     return str;
   };'''
 
@@ -18744,9 +18714,7 @@ test "Block comments can appear with function arguments", ->
   eqJS '''
   fn = (str ###: string ###, num ###: number ###) -> str + num
   ''', '''
-  var fn;
-
-  fn = function(str/*: string */, num/*: number */) {
+  var fn = function(str/*: string */, num/*: number */) {
     return str + num;
   };'''
 
@@ -18755,9 +18723,7 @@ test "Block comments can appear between function parameters and function opening
   fn = (str ###: string ###, num ###: number ###) ###: string ### ->
     str + num
   ''', '''
-  var fn;
-
-  fn = function(str/*: string */, num/*: number */)/*: string */ {
+  var fn = function(str/*: string */, num/*: number */)/*: string */ {
     return str + num;
   };'''
 
@@ -18769,9 +18735,7 @@ test "Flow comment-based syntax support", ->
     str + num
   ''', '''
   // @flow
-  var fn;
-
-  fn = function(str/*: string */, num/*: number */)/*: string */ {
+  var fn = function(str/*: string */, num/*: number */)/*: string */ {
     return str + num;
   };'''
 
@@ -18780,9 +18744,7 @@ test "#4706: Flow comments around function parameters", ->
   identity = ###::<T>### (value ###: T ###) ###: T ### ->
     value
   ''', '''
-  var identity;
-
-  identity = function/*::<T>*/(value/*: T */)/*: T */ {
+  var identity = function/*::<T>*/(value/*: T */)/*: T */ {
     return value;
   };'''
 
@@ -18790,9 +18752,7 @@ test "#4706: Flow comments around function parameters", ->
   eqJS '''
   copy = arr.map(###:: <T> ###(item ###: T ###) ###: T ### => item)
   ''', '''
-  var copy;
-
-  copy = arr.map(/*:: <T> */(item/*: T */)/*: T */ => {
+  var copy = arr.map(/*:: <T> */(item/*: T */)/*: T */ => {
     return item;
   });'''
 
@@ -18801,9 +18761,7 @@ test "#4706: Flow comments after class name", ->
   class Container ###::<T> ###
     method: ###::<U> ### () -> true
   ''', '''
-  var Container;
-
-  Container = class Container/*::<T> */ {
+  var Container = class Container/*::<T> */ {
     method/*::<U> */() {
       return true;
     }
@@ -18813,9 +18771,7 @@ test "#4706: Flow comments after class name", ->
 test "#4706: Identifiers with comments wrapped in parentheses remain wrapped", ->
   eqJS '(arr ###: Array<number> ###)', '(arr/*: Array<number> */);'
   eqJS 'other = (arr ###: any ###)', '''
-  var other;
-
-  other = (arr/*: any */);'''
+  var other = (arr/*: any */);'''
 
 test "#4706: Flow comments before class methods", ->
   eqJS '''
@@ -18826,9 +18782,7 @@ test "#4706: Flow comments before class methods", ->
     ###
     method: -> true
   ''', '''
-  var Container;
-
-  Container = class Container {
+  var Container = class Container {
     /*::
     method: (number) => string;
     method: (string) => number;
@@ -18844,9 +18798,7 @@ test "#4706: Flow comments for class method params", ->
   class Container
     method: (param ###: string ###) -> true
   ''', '''
-  var Container;
-
-  Container = class Container {
+  var Container = class Container {
     method(param/*: string */) {
       return true;
     }
@@ -18858,9 +18810,7 @@ test "#4706: Flow comments for class method returns", ->
   class Container
     method: () ###: string ### -> true
   ''', '''
-  var Container;
-
-  Container = class Container {
+  var Container = class Container {
     method()/*: string */ {
       return true;
     }
@@ -18871,9 +18821,7 @@ test "#4706: Flow comments for function spread", ->
   eqJS '''
   method = (...rest ###: Array<string> ###) =>
   ''', '''
-  var method;
-
-  method = (...rest/*: Array<string> */) => {};'''
+  var method = (...rest/*: Array<string> */) => {};'''
 
 test "#4747: Flow comments for local variable declaration", ->
   eqJS 'a ###: number ### = 1', '''
@@ -26434,9 +26382,8 @@ test 'multiple line escaped CoffeeScript with nested JSX', ->
 
     <Person name={test() ? 'yes' : 'no'}>
     {(function() {
-      var i, len, results;
-      results = [];
-      for (i = 0, len = a.length; i < len; i++) {
+      var results = [];
+      for (var i = 0, len = a.length; i < len; i++) {
         n = a[i];
         results.push(<div> a
           asf
@@ -26585,9 +26532,7 @@ test 'heregex', ->
     ///
     <Person />
   ''', '''
-    var REGEX, test;
-
-    test = /432/gm; // this is a regex
+    var test = /432/gm; // this is a regex
 
     6 / 432 / gm; // this is division
 
@@ -26597,7 +26542,7 @@ test 'heregex', ->
 
     <Person />;
 
-    REGEX = /^(\\/(?![s=])[^[\\/ ]*(?:<Tag\\/>(?:\\[sS]|[[^] ]*(?:\\[sS][^] ]*)*<Tag>tag<\\/Tag>])[^[\\/ ]*)*\\/)([imgy]{0,4})(?!w)/; // comment comment <comment>comment</comment>
+    var REGEX = /^(\\/(?![s=])[^[\\/ ]*(?:<Tag\\/>(?:\\[sS]|[[^] ]*(?:\\[sS][^] ]*)*<Tag>tag<\\/Tag>])[^[\\/ ]*)*\\/)([imgy]{0,4})(?!w)/; // comment comment <comment>comment</comment>
     // comment comment
     // comment comment
     // comment comment
@@ -26933,13 +26878,11 @@ test 'unspaced less than inside JSX works but is not encouraged', ->
       div = 5
       html = <span>{a<div}</span>
     ''', '''
-      var a, div, html;
+      var a = 3;
 
-      a = 3;
+      var div = 5;
 
-      div = 5;
-
-      html = <span>{a < div}</span>;
+      var html = <span>{a < div}</span>;
     '''
 
 test 'unspaced less than before JSX works but is not encouraged', ->
@@ -26948,13 +26891,11 @@ test 'unspaced less than before JSX works but is not encouraged', ->
       res = 2<div
       html = <span />
     ''', '''
-      var div, html, res;
+      var div = 5;
 
-      div = 5;
+      var res = 2 < div;
 
-      res = 2 < div;
-
-      html = <span />;
+      var html = <span />;
     '''
 
 test 'unspaced less than after JSX works but is not encouraged', ->
@@ -26963,13 +26904,11 @@ test 'unspaced less than after JSX works but is not encouraged', ->
       html = <span />
       res = 2<div
     ''', '''
-      var div, html, res;
+      var div = 5;
 
-      div = 5;
+      var html = <span />;
 
-      html = <span />;
-
-      res = 2 < div;
+      var res = 2 < div;
     '''
 
 test '#4686: comments inside interpolations that also contain JSX tags', ->
@@ -27078,9 +27017,7 @@ test 'JSX fragments: fragment with component nodes', ->
         <OtherComponent />
       </Fragment>
   ''', '''
-    var Component;
-
-    Component = (props) => {
+    var Component = (props) => {
       return <Fragment>
         <OtherComponent />
         <OtherComponent />
@@ -28486,13 +28423,11 @@ test "a variable can be assigned after an import", ->
     import { foo } from 'lib'
     bar = 5""",
   """
-    var bar;
-
     import {
       foo
     } from 'lib';
 
-    bar = 5;"""
+    var bar = 5;"""
 
 test "variables can be assigned before and after an import", ->
   eqJS """
@@ -28500,15 +28435,13 @@ test "variables can be assigned before and after an import", ->
     import { bar } from 'lib'
     baz = 7""",
   """
-    var baz, foo;
-
-    foo = 5;
+    var foo = 5;
 
     import {
       bar
     } from 'lib';
 
-    baz = 7;"""
+    var baz = 7;"""
 
 # Export statements
 
@@ -28672,8 +28605,7 @@ test "export assignment function which contains assignments in its body", ->
       console.log bar + baz""",
     """
     export var foo = function(bar) {
-      var baz;
-      baz = '!';
+      var baz = '!';
       return console.log(bar + baz);
     };"""
 
@@ -28683,9 +28615,7 @@ test "export default predefined function", ->
       console.log bar
     export default foo""",
   """
-    var foo;
-
-    foo = function(bar) {
+    var foo = function(bar) {
       return console.log(bar);
     };
 
@@ -28819,13 +28749,11 @@ test "a variable named `from` can be assigned after an import", ->
     import { foo } from 'lib'
     from = 5""",
   """
-    var from;
-
     import {
       foo
     } from 'lib';
 
-    from = 5;"""
+    var from = 5;"""
 
 test "`from` can be assigned after a multiline import", ->
   eqJS """
@@ -28834,13 +28762,11 @@ test "`from` can be assigned after a multiline import", ->
     } from 'lib'
     from = 5""",
   """
-    var from;
-
     import {
       foo
     } from 'lib';
 
-    from = 5;"""
+    var from = 5;"""
 
 test "`from` can be imported as a member name", ->
   eqJS "import { from } from 'lib'",
@@ -28919,8 +28845,7 @@ test "`*` and `from` can be used in an export default expression", ->
       """
     export default foo.extend({
       bar: function() {
-        var from;
-        from = 5;
+        var from = 5;
         return from = from * 3;
       }
     });"""
@@ -29002,9 +28927,7 @@ test "#4394: export shouldn't prevent variable declarations", ->
     export { x }
   """,
   """
-    var x;
-
-    x = 1;
+    var x = 1;
 
     export {
       x
@@ -29200,9 +29123,7 @@ test "#4834: dynamic import", ->
       bar = await import('bar')
   """,
   """
-    var foo;
-
-    foo = async function() {
+    var foo = async function() {
       var bar;
       return bar = (await import('bar'));
     };
@@ -29220,9 +29141,7 @@ test "#5317: Support import.meta", ->
     foo = import.meta
   """,
   """
-    var foo;
-
-    foo = import.meta;
+    var foo = import.meta;
   """
 
   eqJS """
@@ -29230,9 +29149,7 @@ test "#5317: Support import.meta", ->
         .meta
   """,
   """
-    var foo;
-
-    foo = import.meta;
+    var foo = import.meta;
   """
 
   eqJS """
@@ -29240,18 +29157,14 @@ test "#5317: Support import.meta", ->
         meta
   """,
   """
-    var foo;
-
-    foo = import.meta;
+    var foo = import.meta;
   """
 
   eqJS """
     foo = import.meta.bar
   """,
   """
-    var foo;
-
-    foo = import.meta.bar;
+    var foo = import.meta.bar;
   """
 
   eqJS """
@@ -29260,9 +29173,7 @@ test "#5317: Support import.meta", ->
         .bar
   """,
   """
-    var foo;
-
-    foo = import.meta.bar;
+    var foo = import.meta.bar;
   """
 
   eqJS """
@@ -29877,9 +29788,7 @@ test "#4834: dynamic import can technically be object spread", ->
     x = {...import('module')}
   """,
   """
-    var x;
-
-    x = {...import('module')};
+    var x = {...import('module')};
   """
 
 test "#5168: allow indented property index", ->
@@ -31595,7 +31504,7 @@ test "downward ranges", ->
   arrayEq [1, 0]   , [1...-1]
   arrayEq [2, 1, 0], [2...-1]
 
-test "ranges with variables as enpoints", ->
+test "ranges with variables as endpoints", ->
   [a, b] = [1, 3]
   arrayEq [1, 2, 3], [a..b]
   arrayEq [1, 2]   , [a...b]

@@ -257,9 +257,7 @@ test "#3132: Format indented block-comment nicely", ->
     ###
     1""",
   """
-  var fn;
-
-  fn = function() {
+  var fn = function() {
     /*
      * Indented
     Multiline
@@ -285,9 +283,7 @@ test "#3132: Format jsdoc-style block-comment nicely", ->
    *
    * @type {Function}
    */
-  var fn;
-
-  fn = function() {
+  var fn = function() {
     return 1;
   };"""
 
@@ -308,9 +304,7 @@ test "#3132: Format hand-made (raw) jsdoc-style block-comment nicely", ->
    *
    * @type {Function}
    */
-  var fn;
-
-  fn = function() {
+  var fn = function() {
     return 1;
   };"""
 
@@ -344,9 +338,7 @@ test "#3132: Place block-comments nicely", ->
    *
    * @class
    */
-  var DummyClass;
-
-  DummyClass = (function() {
+  var DummyClass = (function() {
     class DummyClass {
       /**
        * @constructor
@@ -410,9 +402,7 @@ test "Block comments in array literals are properly indented 1", ->
     3
     42
   ]''', '''
-  var arr;
-
-  arr = [/* ! */ 3, 42];'''
+  var arr = [/* ! */ 3, 42];'''
 
 test "Block comments in array literals are properly indented 2", ->
   eqJS '''
@@ -424,9 +414,7 @@ test "Block comments in array literals are properly indented 2", ->
     ###
     42
   ]''', '''
-  var arr;
-
-  arr = [
+  var arr = [
     /*  */
     3,
     /*
@@ -445,9 +433,7 @@ test "Block comments in array literals are properly indented 3", ->
     ### Who’s on first? ###
     'Who'
   ]''', '''
-  var arr;
-
-  arr = [
+  var arr = [
     /*
       How many stooges are there?
     */
@@ -468,10 +454,8 @@ test "Block comments in array literals are properly indented 4", ->
       ### Who’s on first? ###
       'Who'
     ]''', '''
-  var arr;
-
   if (true) {
-    arr = [
+    var arr = [
       1,
       /*
         How many stooges are there?
@@ -490,9 +474,7 @@ test "Line comments in array literals are properly indented 1", ->
     # Who’s on first?
     'Who'
   ]''', '''
-  var arr;
-
-  arr = [
+  var arr = [
     // How many stooges are there?
     3,
     // Who’s on first?
@@ -513,9 +495,7 @@ test "Line comments in array literals are properly indented 2", ->
       leftField: 'Why'
     }
   ]''', '''
-  var arr;
-
-  arr = [
+  var arr = [
     // How many stooges are there?
     3,
     // Who’s on first?
@@ -622,9 +602,7 @@ test "Line comments in classes are properly indented", ->
       ### Ha! ###
       off
   ''', '''
-  var A;
-
-  A = class A extends B {
+  var A = class A extends B {
     // This is a fine class.
     // I could tell you all about it, but what else do you need to know?
     constructor() {
@@ -695,9 +673,7 @@ test "Line comments that trail code, followed by line comments that start a new 
   # Comment that starts a new line
   2
   ''', '''
-  var a;
-
-  a = function() {
+  var a = function() {
     return b(1); // Trailing comment
   };
 
@@ -882,9 +858,7 @@ test "Comments before static method", ->
     # Static method:
     @method = ->
   ''', '''
-  var Child;
-
-  Child = class Child extends Base {
+  var Child = class Child extends Base {
     // Static method:
     static method() {}
 
@@ -897,9 +871,7 @@ test "Comment before method that calls `super()`", ->
     method: ->
       super()
   ''', '''
-  var Dismissed;
-
-  Dismissed = class Dismissed {
+  var Dismissed = class Dismissed {
     // Before a method calling `super`
     method() {
       return super.method();
@@ -933,9 +905,7 @@ test "Comments appear above scope `var` declarations", ->
   fn = (str) -> str
   ''', '''
   // @flow
-  var fn;
-
-  fn = function(str) {
+  var fn = function(str) {
     return str;
   };'''
 
@@ -943,9 +913,7 @@ test "Block comments can appear with function arguments", ->
   eqJS '''
   fn = (str ###: string ###, num ###: number ###) -> str + num
   ''', '''
-  var fn;
-
-  fn = function(str/*: string */, num/*: number */) {
+  var fn = function(str/*: string */, num/*: number */) {
     return str + num;
   };'''
 
@@ -954,9 +922,7 @@ test "Block comments can appear between function parameters and function opening
   fn = (str ###: string ###, num ###: number ###) ###: string ### ->
     str + num
   ''', '''
-  var fn;
-
-  fn = function(str/*: string */, num/*: number */)/*: string */ {
+  var fn = function(str/*: string */, num/*: number */)/*: string */ {
     return str + num;
   };'''
 
@@ -968,9 +934,7 @@ test "Flow comment-based syntax support", ->
     str + num
   ''', '''
   // @flow
-  var fn;
-
-  fn = function(str/*: string */, num/*: number */)/*: string */ {
+  var fn = function(str/*: string */, num/*: number */)/*: string */ {
     return str + num;
   };'''
 
@@ -979,9 +943,7 @@ test "#4706: Flow comments around function parameters", ->
   identity = ###::<T>### (value ###: T ###) ###: T ### ->
     value
   ''', '''
-  var identity;
-
-  identity = function/*::<T>*/(value/*: T */)/*: T */ {
+  var identity = function/*::<T>*/(value/*: T */)/*: T */ {
     return value;
   };'''
 
@@ -989,9 +951,7 @@ test "#4706: Flow comments around function parameters", ->
   eqJS '''
   copy = arr.map(###:: <T> ###(item ###: T ###) ###: T ### => item)
   ''', '''
-  var copy;
-
-  copy = arr.map(/*:: <T> */(item/*: T */)/*: T */ => {
+  var copy = arr.map(/*:: <T> */(item/*: T */)/*: T */ => {
     return item;
   });'''
 
@@ -1000,9 +960,7 @@ test "#4706: Flow comments after class name", ->
   class Container ###::<T> ###
     method: ###::<U> ### () -> true
   ''', '''
-  var Container;
-
-  Container = class Container/*::<T> */ {
+  var Container = class Container/*::<T> */ {
     method/*::<U> */() {
       return true;
     }
@@ -1012,9 +970,7 @@ test "#4706: Flow comments after class name", ->
 test "#4706: Identifiers with comments wrapped in parentheses remain wrapped", ->
   eqJS '(arr ###: Array<number> ###)', '(arr/*: Array<number> */);'
   eqJS 'other = (arr ###: any ###)', '''
-  var other;
-
-  other = (arr/*: any */);'''
+  var other = (arr/*: any */);'''
 
 test "#4706: Flow comments before class methods", ->
   eqJS '''
@@ -1025,9 +981,7 @@ test "#4706: Flow comments before class methods", ->
     ###
     method: -> true
   ''', '''
-  var Container;
-
-  Container = class Container {
+  var Container = class Container {
     /*::
     method: (number) => string;
     method: (string) => number;
@@ -1043,9 +997,7 @@ test "#4706: Flow comments for class method params", ->
   class Container
     method: (param ###: string ###) -> true
   ''', '''
-  var Container;
-
-  Container = class Container {
+  var Container = class Container {
     method(param/*: string */) {
       return true;
     }
@@ -1057,9 +1009,7 @@ test "#4706: Flow comments for class method returns", ->
   class Container
     method: () ###: string ### -> true
   ''', '''
-  var Container;
-
-  Container = class Container {
+  var Container = class Container {
     method()/*: string */ {
       return true;
     }
@@ -1070,9 +1020,7 @@ test "#4706: Flow comments for function spread", ->
   eqJS '''
   method = (...rest ###: Array<string> ###) =>
   ''', '''
-  var method;
-
-  method = (...rest/*: Array<string> */) => {};'''
+  var method = (...rest/*: Array<string> */) => {};'''
 
 test "#4747: Flow comments for local variable declaration", ->
   eqJS 'a ###: number ### = 1', '''

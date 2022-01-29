@@ -413,6 +413,7 @@ exports.Base = class Base
 
   isChainable: NO
   isAssignable: NO
+  isDeclarable: NO  # could this be the left-hand side in a `var` declaration?
   isNumber: NO
 
   unwrap: THIS
@@ -699,22 +700,22 @@ exports.Block = class Block extends Base
     post = @compileNode o
     {scope} = o
     if scope.expressions is this
-      declars = o.scope.hasDeclarations()
-      assigns = scope.hasAssignments
-      if declars or assigns
+      if scope.hasDeclarations()
         fragments.push @makeCode '\n' if i
         fragments.push @makeCode "#{@tab}var "
-        if declars
-          declaredVariables = scope.declaredVariables()
-          for declaredVariable, declaredVariablesIndex in declaredVariables
-            fragments.push @makeCode declaredVariable
-            if Object::hasOwnProperty.call o.scope.comments, declaredVariable
-              fragments.push o.scope.comments[declaredVariable]...
-            if declaredVariablesIndex isnt declaredVariables.length - 1
-              fragments.push @makeCode ', '
-        if assigns
-          fragments.push @makeCode ",\n#{@tab + TAB}" if declars
-          fragments.push @makeCode scope.assignedVariables().join(",\n#{@tab + TAB}")
+        unassigned = scope.declaredVariables false
+        assigned = scope.declaredVariables true
+        declare = (names, sep) =>
+          for name, i in names
+            v = scope.get name
+            fragments.push @makeCode v.name
+            fragments.push v.comments... if v.comments?
+            fragments.push @makeCode " = #{v.assigned}" if v.assigned?
+            fragments.push @makeCode sep unless i == names.length-1
+        declare unassigned, ', '
+        if assigned.length
+          fragments.push @makeCode ",\n#{@tab + TAB}" if unassigned.length
+          declare assigned, ",\n#{@tab + TAB}"
         fragments.push @makeCode ";\n#{if @spaced then '\n' else ''}"
       else if fragments.length and post.length
         fragments.push @makeCode "\n"
@@ -1158,6 +1159,11 @@ exports.PassthroughLiteral = class PassthroughLiteral extends Literal
 exports.IdentifierLiteral = class IdentifierLiteral extends Literal
   isAssignable: YES
 
+  isDeclarable: (o) ->
+    # Can declare this variable only if we're at the right scope.
+    # (If it's in a parent scope, declaring here would shadow.)
+    o.scope.get(@value)?
+
   eachName: (iterator) ->
     iterator @
 
@@ -1174,6 +1180,11 @@ exports.IdentifierLiteral = class IdentifierLiteral extends Literal
 
 exports.PropertyName = class PropertyName extends Literal
   isAssignable: YES
+
+  isDeclarable: (o) ->
+    # Can declare this variable only if we're at the right scope.
+    # (If it's in a parent scope, declaring here would shadow.)
+    o.scope.get(@value)?
 
   astType: ->
     if @jsx
@@ -1383,6 +1394,7 @@ exports.Value = class Value extends Base
   isRange        : -> @bareLiteral(Range)
   shouldCache    : -> @hasProperties() or @base.shouldCache()
   isAssignable   : (opts) -> @hasProperties() or @base.isAssignable opts
+  isDeclarable   : (o) -> @properties.length is 0 and @base.isDeclarable(o)
   isNumber       : -> @bareLiteral(NumberLiteral)
   isString       : -> @bareLiteral(StringLiteral)
   isRegex        : -> @bareLiteral(RegexLiteral)
@@ -2336,13 +2348,37 @@ exports.Range = class Range extends Base
     idx      = del o, 'index'
     idxName  = del o, 'name'
     namedIndex = idxName and idxName isnt idx
-    varPart  =
-      if known and not namedIndex
-        "var #{idx} = #{@fromC}"
+    if o.declare  # from compileArray: need to declare all variables as local
+      declare = yes
+    else
+      # Can do var declaration only if all relevant variables are in this scope.
+      # If we declare @fromVar, @toVar, or @stepVar, they're guaranteed
+      # to be in scope (generated in @compileVariables), so don't check those.
+      canDeclare = o.scope.get(idx)? and
+        (not namedIndex or o.scope.get(idxName)?)
+      # Want to do var declaration if at least one of those variables needs
+      # declaration. Also keep track of which variables need declaration.
+      if canDeclare
+        declare = yes if o.scope.laterVar idx
+        declare = yes if namedIndex and o.scope.laterVar idxName
+        if declare
+          o.scope.laterVar @fromVar if @fromC isnt @fromVar
+          o.scope.laterVar @toVar if @toC isnt @toVar
+          o.scope.laterVar @stepVar if @stepC isnt @stepVar
+    varPart = if declare then "var " else ''
+    if @fromC isnt @fromVar
+      varPart += "#{@fromC}, #{idx} = #{@fromVar}"
+    else
+      varPart += "#{idx} = #{@fromC}"
+    if namedIndex
+      if declare
+        varPart += ", #{idxName} = #{idx}"
       else
-        "#{idx} = #{@fromC}"
+        varPart = "#{idxName} = #{varPart}"
     varPart += ", #{@toC}" if @toC isnt @toVar
     varPart += ", #{@step}" if @step isnt @stepVar
+    #if known and not namedIndex or o.scope.laterVar idx
+    #  varPart = "var #{varPart}"
     [lt, gt] = ["#{idx} <#{@equals}", "#{idx} >#{@equals}"]
 
     # Generate the condition.
@@ -2379,8 +2415,6 @@ exports.Range = class Range extends Base
         "#{cond} ? ++#{idx} : --#{idx}"
       else
         "#{cond} ? #{idx}++ : #{idx}--"
-
-    varPart  = "#{idxName} = #{varPart}" if namedIndex
     stepPart = "#{idxName} = #{stepPart}" if namedIndex
 
     # The final loop body.
@@ -2400,6 +2434,7 @@ exports.Range = class Range extends Base
     pre    = "\n#{idt}var #{result} = [];"
     if known
       o.index = i
+      o.declare = true
       body    = fragmentsToText @compileNode o
     else
       vars    = "#{i} = #{@fromC}" + if @toC isnt @toVar then ", #{@toC}" else ''
@@ -2477,6 +2512,10 @@ exports.Obj = class Obj extends Base
         prop.context is 'object' and
         prop.value?.base not instanceof Arr
       return no unless prop.isAssignable opts
+    yes
+  isDeclarable: (o) ->
+    for prop in @properties
+      return no unless prop.isDeclarable(o)
     yes
 
   shouldCache: ->
@@ -2556,7 +2595,7 @@ exports.Obj = class Obj extends Base
         else if not prop.bareLiteral?(IdentifierLiteral) and prop not instanceof Splat
           prop = new Assign prop, prop, 'object'
       if indent then answer.push @makeCode indent
-      answer.push prop.compileToFragments(o, LEVEL_TOP)...
+      answer.push prop.compileToFragments(o, LEVEL_LIST)...
       if join then answer.push @makeCode join
     answer.push @makeCode if isCompact then '' else "\n#{@tab}"
     answer = @wrapInBraces answer
@@ -2693,6 +2732,10 @@ exports.Arr = class Arr extends Base
     for obj, i in @objects
       return no if not allowNontrailingSplat and obj instanceof Splat and i + 1 isnt @objects.length
       return no unless (allowExpansion and obj instanceof Expansion) or (obj.isAssignable(opts) and (not obj.isAtomic or obj.isAtomic()))
+    yes
+  isDeclarable: (o) ->
+    for obj in @objects
+      return no unless obj.isDeclarable(o)
     yes
 
   shouldCache: ->
@@ -3303,11 +3346,13 @@ exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
     code.push @makeCode "#{@tab}export "
     code.push @makeCode 'default ' if @ instanceof ExportDefaultDeclaration
 
-    if @ not instanceof ExportDefaultDeclaration and
+    exportDefault = @ instanceof ExportDefaultDeclaration
+    if not exportDefault and
        (@clause instanceof Assign or @clause instanceof Class)
       code.push @makeCode 'var '
       @clause.moduleDeclaration = 'export'
 
+    o = merge o, undeclarable: true
     if @clause.body? and @clause.body instanceof Block
       code = code.concat @clause.compileToFragments o, LEVEL_TOP
     else
@@ -3482,6 +3527,7 @@ exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context, options = {}) ->
     super()
     {@param, @subpattern, @operatorToken, @moduleDeclaration, @originalContext = @context} = options
+    @declaration = no
     @propagateLhs()
 
   children: ['variable', 'value']
@@ -3547,14 +3593,23 @@ exports.Assign = class Assign extends Base
         # with Flow typing. Don’t do this if this assignment is for a
         # class, e.g. `ClassName = class ClassName {`, as Flow requires
         # the comment to be between the class name and the `{`.
-        if name.comments and not o.scope.comments[name.value] and
+        if name.comments and not o.scope.hasComment(name.value) and
            @value not instanceof Class and
            name.comments.every((comment) -> comment.here and not comment.multiline)
           commentsNode = new IdentifierLiteral name.value
           commentsNode.comments = name.comments
           commentFragments = []
           @compileCommentFragments o, commentsNode, commentFragments
-          o.scope.comments[name.value] = commentFragments
+          o.scope.comment name.value, commentFragments
+
+  makeDeclaration: (o) ->
+    # Consider adding 'var' prefix to this assignment.  Only works at top level
+    # and if LHS is a valid declaration, and assignment is '=' not another op.
+    return unless o.level == LEVEL_TOP and not o.undeclarable and
+                  @variable.isDeclarable(o) and not @context?
+    @eachName (name) =>
+      if o.scope.laterVar name.value
+        @declaration = yes  # at least one variable freshly declared
 
   # Compile an assignment, delegating to `compileDestructuring` or
   # `compileSplice` if appropriate. Keep track of the name of the base object
@@ -3588,6 +3643,7 @@ exports.Assign = class Assign extends Base
 
     val = @value.compileToFragments o, LEVEL_LIST
     compiledName = @variable.compileToFragments o, LEVEL_LIST
+    @makeDeclaration o  # after compiling LHS, so has attachments
 
     if @context is 'object'
       if @variable.shouldCache()
@@ -3596,11 +3652,13 @@ exports.Assign = class Assign extends Base
       return compiledName.concat @makeCode(': '), val
 
     answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
-    # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration,
+    if @declaration
+      [@makeCode("var "), ...answer]
+    # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#assignment_separate_from_declaration_2
     # if we’re destructuring without declaring, the destructuring assignment must be wrapped in parentheses.
     # The assignment is wrapped in parentheses if 'o.level' has lower precedence than LEVEL_LIST (3)
     # (i.e. LEVEL_COND (4), LEVEL_OP (5) or LEVEL_ACCESS (6)), or if we're destructuring object, e.g. {a,b} = obj.
-    if o.level > LEVEL_LIST or isValue and @variable.base instanceof Obj and not @nestedLhs and not (@param is yes)
+    else if o.level > LEVEL_LIST or isValue and @variable.base instanceof Obj and not @nestedLhs and not (@param is yes)
       @wrapInParentheses answer
     else
       answer
@@ -3997,7 +4055,7 @@ exports.Code = class Code extends Base
 
         o.scope.parameter splatParamName
 
-      # Parse all other parameters; if a splat paramater has not yet been
+      # Parse all other parameters; if a splat parameter has not yet been
       # encountered, add these other parameters to the list to be output in
       # the function definition.
       else
@@ -4106,8 +4164,8 @@ exports.Code = class Code extends Base
       scopeVariablesCount = o.scope.variables.length
       signature.push param.compileToFragments(o, LEVEL_PAREN)...
       if scopeVariablesCount isnt o.scope.variables.length
-        generatedVariables = o.scope.variables.splice scopeVariablesCount
-        o.scope.parent.variables.push generatedVariables...
+        generatedVariables = o.scope.spliceVariables scopeVariablesCount
+        o.scope.parent.addVariables generatedVariables
     signature.push @makeCode ')'
     # Block comments between `)` and `->`/`=>` get output between `)` and `{`.
     if @funcGlyph?.comments?
@@ -4142,6 +4200,7 @@ exports.Code = class Code extends Base
     o.indent        += TAB
     delete o.bare
     delete o.isExistentialEquals
+    delete o.undeclarable
 
   checkForDuplicateParams: ->
     paramNames = []
@@ -4529,6 +4588,7 @@ exports.Expansion = class Expansion extends Base
 exports.Elision = class Elision extends Base
 
   isAssignable: YES
+  isDeclarable: YES
 
   shouldCache: NO
 
@@ -5398,13 +5458,18 @@ exports.For = class For extends While
     index       = @index and (@index.compile o, LEVEL_LIST)
     scope.find(name)  if name and not @pattern
     scope.find(index) if index and @index not instanceof Value
-    rvar        = scope.freeVariable 'results' if @returns
+    if @returns
+      rvar = scope.freeVariable 'results', laterVar: true
     if @from
       ivar = scope.freeVariable 'x', single: true if @pattern
     else
       ivar = (@object and index) or scope.freeVariable 'i', single: true
-    kvar        = ((@range or @from) and name) or index or ivar
-    kvarAssign  = if kvar isnt ivar then "#{kvar} = " else ""
+    kvar = ((@range or @from) and name) or index or ivar
+    if kvar isnt ivar
+      kvarDeclare = ", #{kvar} = #{ivar}"
+      kvarAssign  = "#{kvar} = "
+    else
+      kvarDeclare = kvarAssign = ''
     if @step and not @range
       [step, stepVar] = @cacheToCodeFragments @step.cache o, LEVEL_LIST, shouldCacheOrIsAssignable
       stepNum   = parseNumber stepVar if @step.isNumber()
@@ -5419,16 +5484,26 @@ exports.For = class For extends While
     else
       svar    = @source.compile o, LEVEL_LIST
       if (name or @own) and @source.unwrap() not instanceof IdentifierLiteral
-        defPart    += "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
+        ref        = scope.freeVariable 'ref', laterVar: true
+        defPart    += "#{@tab}var #{ref} = #{svar};\n"
         svar       = ref
+      canDeclare = (not @step or stepNum?) and
+                   (not @index? or @index.isDeclarable(o))
       if name and not @pattern and not @from
         namePart   = "#{name} = #{svar}[#{kvar}]"
+        namePart   = "var #{namePart}" if @name.isDeclarable(o) and o.scope.laterVar name
       if not @object and not @from
         defPart += "#{@tab}#{step};\n" if step isnt stepVar
         down = stepNum < 0
-        lvar = scope.freeVariable 'len' unless @step and stepNum? and down
-        declare = "#{kvarAssign}#{ivar} = 0, #{lvar} = #{svar}.length"
-        declareDown = "#{kvarAssign}#{ivar} = #{svar}.length - 1"
+        if canDeclare
+          ivarLater = o.scope.laterVar ivar
+          kvarLater = o.scope.laterVar kvar
+        unless @step and stepNum? and down
+          lvar = scope.freeVariable 'len', laterVar: canDeclare
+          declare = "#{ivar} = 0#{kvarDeclare}, #{lvar} = #{svar}.length"
+          declare = "var #{declare}" if canDeclare  # declare lvar at least
+        declareDown = "#{ivar} = #{svar}.length - 1#{kvarDeclare}"
+        declareDown = "var #{declareDown}" if ivarLater or kvarLater
         compare = "#{ivar} < #{lvar}"
         compareDown = "#{ivar} >= 0"
         if @step
@@ -5444,7 +5519,7 @@ exports.For = class For extends While
           increment = "#{if kvar isnt ivar then "++#{ivar}" else "#{ivar}++"}"
         forPartFragments = [@makeCode("#{declare}; #{compare}; #{kvarAssign}#{increment}")]
     if @returns
-      resultPart   = "#{@tab}#{rvar} = [];\n"
+      resultPart   = "#{@tab}var #{rvar} = [];\n"
       returnResult = "\n#{@tab}return #{rvar};"
       body.makeReturn rvar
     if @guard
@@ -5457,14 +5532,18 @@ exports.For = class For extends While
 
     varPart = "\n#{idt1}#{namePart};" if namePart
     if @object
-      forPartFragments = [@makeCode("#{kvar} in #{svar}")]
+      forPart = "#{kvar} in #{svar}"
+      forPart = "var #{forPart}" if o.scope.laterVar kvar
+      forPartFragments = [@makeCode forPart]
       guardPart = "\n#{idt1}if (!#{utility 'hasProp', o}.call(#{svar}, #{kvar})) continue;" if @own
     else if @from
+      forPart = "#{kvar} of #{svar}"
       if @await
-        forPartFragments = new Op 'await', new Parens new Literal "#{kvar} of #{svar}"
+        forPartFragments = new Op 'await', new Parens new Literal forPart
         forPartFragments = forPartFragments.compileToFragments o, LEVEL_TOP
       else
-        forPartFragments = [@makeCode("#{kvar} of #{svar}")]
+        forPart = "var #{forPart}" if o.scope.laterVar kvar
+        forPartFragments = [@makeCode forPart]
     bodyFragments = body.compileToFragments merge(o, indent: idt1), LEVEL_TOP
     if bodyFragments and bodyFragments.length > 0
       bodyFragments = [].concat @makeCode('\n'), bodyFragments, @makeCode('\n')

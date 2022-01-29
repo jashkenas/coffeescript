@@ -779,11 +779,11 @@ cubes = (math.cube num for num in list)
     </div>
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="overview-js">// Assignment:
-var cubes, list, math, num, number, opposite, race, square;
+var num;
 
-number = 42;
+var number = 42;
 
-opposite = true;
+var opposite = true;
 
 if (opposite) {
   // Conditions:
@@ -791,15 +791,15 @@ if (opposite) {
 }
 
 // Functions:
-square = function(x) {
+var square = function(x) {
   return x * x;
 };
 
 // Arrays:
-list = [1, 2, 3, 4, 5];
+var list = [1, 2, 3, 4, 5];
 
 // Objects:
-math = {
+var math = {
   root: Math.sqrt,
   square: square,
   cube: function(x) {
@@ -808,7 +808,7 @@ math = {
 };
 
 // Splats:
-race = function(winner, ...runners) {
+var race = function(winner, ...runners) {
   return print(winner, runners);
 };
 
@@ -818,10 +818,9 @@ if (typeof elvis !== "undefined" && elvis !== null) {
 }
 
 // Array comprehensions:
-cubes = (function() {
-  var i, len, results;
-  results = [];
-  for (i = 0, len = list.length; i < len; i++) {
+var cubes = (function() {
+  var results = [];
+  for (var i = 0, len = list.length; i < len; i++) {
     num = list[i];
     results.push(math.cube(num));
   }
@@ -829,11 +828,11 @@ cubes = (function() {
 })();
 </textarea>
       <pre class="placeholder-code"><span class="cm-comment">// Assignment:</span>
-<span class="cm-keyword">var</span> <span class="cm-def">cubes</span>, <span class="cm-def">list</span>, <span class="cm-def">math</span>, <span class="cm-def">num</span>, <span class="cm-def">number</span>, <span class="cm-def">opposite</span>, <span class="cm-def">race</span>, <span class="cm-def">square</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">num</span>;
 
-<span class="cm-variable">number</span> <span class="cm-operator">=</span> <span class="cm-number">42</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">number</span> <span class="cm-operator">=</span> <span class="cm-number">42</span>;
 
-<span class="cm-variable">opposite</span> <span class="cm-operator">=</span> <span class="cm-atom">true</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">opposite</span> <span class="cm-operator">=</span> <span class="cm-atom">true</span>;
 
 <span class="cm-keyword">if</span> (<span class="cm-variable">opposite</span>) {
   <span class="cm-comment">// Conditions:</span>
@@ -841,15 +840,15 @@ cubes = (function() {
 }
 
 <span class="cm-comment">// Functions:</span>
-<span class="cm-variable">square</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">x</span>) {
+<span class="cm-keyword">var</span> <span class="cm-def">square</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">x</span>) {
   <span class="cm-keyword">return</span> <span class="cm-variable-2">x</span> <span class="cm-operator">*</span> <span class="cm-variable-2">x</span>;
 };
 
 <span class="cm-comment">// Arrays:</span>
-<span class="cm-variable">list</span> <span class="cm-operator">=</span> [<span class="cm-number">1</span>, <span class="cm-number">2</span>, <span class="cm-number">3</span>, <span class="cm-number">4</span>, <span class="cm-number">5</span>];
+<span class="cm-keyword">var</span> <span class="cm-def">list</span> <span class="cm-operator">=</span> [<span class="cm-number">1</span>, <span class="cm-number">2</span>, <span class="cm-number">3</span>, <span class="cm-number">4</span>, <span class="cm-number">5</span>];
 
 <span class="cm-comment">// Objects:</span>
-<span class="cm-variable">math</span> <span class="cm-operator">=</span> {
+<span class="cm-keyword">var</span> <span class="cm-def">math</span> <span class="cm-operator">=</span> {
   <span class="cm-property">root</span>: <span class="cm-variable">Math</span>.<span class="cm-property">sqrt</span>,
   <span class="cm-property">square</span>: <span class="cm-variable">square</span>,
   <span class="cm-property">cube</span>: <span class="cm-keyword">function</span>(<span class="cm-def">x</span>) {
@@ -858,7 +857,7 @@ cubes = (function() {
 };
 
 <span class="cm-comment">// Splats:</span>
-<span class="cm-variable">race</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">winner</span>, <span class="cm-meta">...</span><span class="cm-def">runners</span>) {
+<span class="cm-keyword">var</span> <span class="cm-def">race</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">winner</span>, <span class="cm-meta">...</span><span class="cm-def">runners</span>) {
   <span class="cm-keyword">return</span> <span class="cm-variable">print</span>(<span class="cm-variable-2">winner</span>, <span class="cm-variable-2">runners</span>);
 };
 
@@ -868,10 +867,9 @@ cubes = (function() {
 }
 
 <span class="cm-comment">// Array comprehensions:</span>
-<span class="cm-variable">cubes</span> <span class="cm-operator">=</span> (<span class="cm-keyword">function</span>() {
-  <span class="cm-keyword">var</span> <span class="cm-def">i</span>, <span class="cm-def">len</span>, <span class="cm-def">results</span>;
-  <span class="cm-variable-2">results</span> <span class="cm-operator">=</span> [];
-  <span class="cm-keyword">for</span> (<span class="cm-variable-2">i</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>, <span class="cm-variable-2">len</span> <span class="cm-operator">=</span> <span class="cm-variable">list</span>.<span class="cm-property">length</span>; <span class="cm-variable-2">i</span> <span class="cm-operator">&lt;</span> <span class="cm-variable-2">len</span>; <span class="cm-variable-2">i</span><span class="cm-operator">++</span>) {
+<span class="cm-keyword">var</span> <span class="cm-def">cubes</span> <span class="cm-operator">=</span> (<span class="cm-keyword">function</span>() {
+  <span class="cm-keyword">var</span> <span class="cm-def">results</span> <span class="cm-operator">=</span> [];
+  <span class="cm-keyword">for</span> (<span class="cm-keyword">var</span> <span class="cm-def">i</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>, <span class="cm-def">len</span> <span class="cm-operator">=</span> <span class="cm-variable">list</span>.<span class="cm-property">length</span>; <span class="cm-variable-2">i</span> <span class="cm-operator">&lt;</span> <span class="cm-variable-2">len</span>; <span class="cm-variable-2">i</span><span class="cm-operator">++</span>) {
     <span class="cm-variable">num</span> <span class="cm-operator">=</span> <span class="cm-variable">list</span>[<span class="cm-variable-2">i</span>];
     <span class="cm-variable-2">results</span>.<span class="cm-property">push</span>(<span class="cm-variable">math</span>.<span class="cm-property">cube</span>(<span class="cm-variable">num</span>));
   }
@@ -1113,23 +1111,19 @@ cube   = (x) -> square(x) * x
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="functions-js">var cube, square;
-
-square = function(x) {
+      <textarea class="javascript-output" id="functions-js">var square = function(x) {
   return x * x;
 };
 
-cube = function(x) {
+var cube = function(x) {
   return square(x) * x;
 };
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">cube</span>, <span class="cm-def">square</span>;
-
-<span class="cm-variable">square</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">x</span>) {
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">square</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">x</span>) {
   <span class="cm-keyword">return</span> <span class="cm-variable-2">x</span> <span class="cm-operator">*</span> <span class="cm-variable-2">x</span>;
 };
 
-<span class="cm-variable">cube</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">x</span>) {
+<span class="cm-keyword">var</span> <span class="cm-def">cube</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">x</span>) {
   <span class="cm-keyword">return</span> <span class="cm-variable">square</span>(<span class="cm-variable-2">x</span>) <span class="cm-operator">*</span> <span class="cm-variable-2">x</span>;
 };
 </pre>
@@ -1158,15 +1152,11 @@ cube = function(x) {
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="default_args-js">var fill;
-
-fill = function(container, liquid = "coffee") {
+      <textarea class="javascript-output" id="default_args-js">var fill = function(container, liquid = "coffee") {
   return `Filling the ${container} with ${liquid}...`;
 };
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">fill</span>;
-
-<span class="cm-variable">fill</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">container</span>, <span class="cm-def">liquid</span> <span class="cm-operator">=</span> <span class="cm-string">"coffee"</span>) {
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">fill</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">container</span>, <span class="cm-def">liquid</span> <span class="cm-operator">=</span> <span class="cm-string">"coffee"</span>) {
   <span class="cm-keyword">return</span> <span class="cm-string-2">`Filling the ${</span><span class="cm-variable-2">container</span><span class="cm-string-2">}</span> <span class="cm-string-2">with ${</span><span class="cm-variable-2">liquid</span><span class="cm-string-2">}...`</span>;
 };
 </pre>
@@ -1203,21 +1193,17 @@ sentence = "#{ 22 / 7 } is a decent approximation of π"
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="interpolation-js">var author, quote, sentence;
+      <textarea class="javascript-output" id="interpolation-js">var author = "Wittgenstein";
 
-author = "Wittgenstein";
+var quote = `A picture is a fact. -- ${author}`;
 
-quote = `A picture is a fact. -- ${author}`;
-
-sentence = `${22 / 7} is a decent approximation of π`;
+var sentence = `${22 / 7} is a decent approximation of π`;
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">author</span>, <span class="cm-def">quote</span>, <span class="cm-def">sentence</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">author</span> <span class="cm-operator">=</span> <span class="cm-string">"Wittgenstein"</span>;
 
-<span class="cm-variable">author</span> <span class="cm-operator">=</span> <span class="cm-string">"Wittgenstein"</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">quote</span> <span class="cm-operator">=</span> <span class="cm-string-2">`A picture is a fact. -- ${</span><span class="cm-variable">author</span><span class="cm-string-2">}`</span>;
 
-<span class="cm-variable">quote</span> <span class="cm-operator">=</span> <span class="cm-string-2">`A picture is a fact. -- ${</span><span class="cm-variable">author</span><span class="cm-string-2">}`</span>;
-
-<span class="cm-variable">sentence</span> <span class="cm-operator">=</span> <span class="cm-string-2">`${</span><span class="cm-number">22</span> <span class="cm-operator">/</span> <span class="cm-number">7</span><span class="cm-string-2">}</span> <span class="cm-string-2">is a decent approximation of π`</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">sentence</span> <span class="cm-operator">=</span> <span class="cm-string-2">`${</span><span class="cm-number">22</span> <span class="cm-operator">/</span> <span class="cm-number">7</span><span class="cm-string-2">}</span> <span class="cm-string-2">is a decent approximation of π`</span>;
 </pre>
     </div>
   </div>
@@ -1252,13 +1238,9 @@ sentence = `${22 / 7} is a decent approximation of π`;
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="strings-js">var mobyDick;
-
-mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world...";
+      <textarea class="javascript-output" id="strings-js">var mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world...";
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">mobyDick</span>;
-
-<span class="cm-variable">mobyDick</span> <span class="cm-operator">=</span> <span class="cm-string">"Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world..."</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">mobyDick</span> <span class="cm-operator">=</span> <span class="cm-string">"Call me Ishmael. Some years ago -- never mind how long precisely -- having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world..."</span>;
 </pre>
     </div>
   </div>
@@ -1291,15 +1273,11 @@ mobyDick = "Call me Ishmael. Some years ago -- never mind how long precisely -- 
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="heredocs-js">var html;
-
-html = `<strong>
+      <textarea class="javascript-output" id="heredocs-js">var html = `<strong>
   cup of coffeescript
 </strong>`;
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">html</span>;
-
-<span class="cm-variable">html</span> <span class="cm-operator">=</span> <span class="cm-string-2">`&lt;strong></span>
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">html</span> <span class="cm-operator">=</span> <span class="cm-string-2">`&lt;strong></span>
   <span class="cm-string-2">cup of coffeescript</span>
 <span class="cm-string-2">&lt;/strong>`</span>;
 </pre>
@@ -1363,18 +1341,16 @@ kids =
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="objects_and_arrays-js">var bitlist, kids, singers, song;
+      <textarea class="javascript-output" id="objects_and_arrays-js">var song = ["do", "re", "mi", "fa", "so"];
 
-song = ["do", "re", "mi", "fa", "so"];
-
-singers = {
+var singers = {
   Jagger: "Rock",
   Elvis: "Roll"
 };
 
-bitlist = [1, 0, 1, 0, 0, 1, 1, 1, 0];
+var bitlist = [1, 0, 1, 0, 0, 1, 1, 1, 0];
 
-kids = {
+var kids = {
   brother: {
     name: "Max",
     age: 11
@@ -1385,18 +1361,16 @@ kids = {
   }
 };
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">bitlist</span>, <span class="cm-def">kids</span>, <span class="cm-def">singers</span>, <span class="cm-def">song</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">song</span> <span class="cm-operator">=</span> [<span class="cm-string">"do"</span>, <span class="cm-string">"re"</span>, <span class="cm-string">"mi"</span>, <span class="cm-string">"fa"</span>, <span class="cm-string">"so"</span>];
 
-<span class="cm-variable">song</span> <span class="cm-operator">=</span> [<span class="cm-string">"do"</span>, <span class="cm-string">"re"</span>, <span class="cm-string">"mi"</span>, <span class="cm-string">"fa"</span>, <span class="cm-string">"so"</span>];
-
-<span class="cm-variable">singers</span> <span class="cm-operator">=</span> {
+<span class="cm-keyword">var</span> <span class="cm-def">singers</span> <span class="cm-operator">=</span> {
   <span class="cm-property">Jagger</span>: <span class="cm-string">"Rock"</span>,
   <span class="cm-property">Elvis</span>: <span class="cm-string">"Roll"</span>
 };
 
-<span class="cm-variable">bitlist</span> <span class="cm-operator">=</span> [<span class="cm-number">1</span>, <span class="cm-number">0</span>, <span class="cm-number">1</span>, <span class="cm-number">0</span>, <span class="cm-number">0</span>, <span class="cm-number">1</span>, <span class="cm-number">1</span>, <span class="cm-number">1</span>, <span class="cm-number">0</span>];
+<span class="cm-keyword">var</span> <span class="cm-def">bitlist</span> <span class="cm-operator">=</span> [<span class="cm-number">1</span>, <span class="cm-number">0</span>, <span class="cm-number">1</span>, <span class="cm-number">0</span>, <span class="cm-number">0</span>, <span class="cm-number">1</span>, <span class="cm-number">1</span>, <span class="cm-number">1</span>, <span class="cm-number">0</span>];
 
-<span class="cm-variable">kids</span> <span class="cm-operator">=</span> {
+<span class="cm-keyword">var</span> <span class="cm-def">kids</span> <span class="cm-operator">=</span> {
   <span class="cm-property">brother</span>: {
     <span class="cm-property">name</span>: <span class="cm-string">"Max"</span>,
     <span class="cm-property">age</span>: <span class="cm-number">11</span>
@@ -1438,29 +1412,25 @@ output = "#{turtle.name} wears an #{turtle.mask} mask. Watch out for his #{turtl
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="objects_shorthand-js">var mask, name, output, turtle, weapon;
+      <textarea class="javascript-output" id="objects_shorthand-js">var name = "Michelangelo";
 
-name = "Michelangelo";
+var mask = "orange";
 
-mask = "orange";
+var weapon = "nunchuks";
 
-weapon = "nunchuks";
+var turtle = {name, mask, weapon};
 
-turtle = {name, mask, weapon};
-
-output = `${turtle.name} wears an ${turtle.mask} mask. Watch out for his ${turtle.weapon}!`;
+var output = `${turtle.name} wears an ${turtle.mask} mask. Watch out for his ${turtle.weapon}!`;
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">mask</span>, <span class="cm-def">name</span>, <span class="cm-def">output</span>, <span class="cm-def">turtle</span>, <span class="cm-def">weapon</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">name</span> <span class="cm-operator">=</span> <span class="cm-string">"Michelangelo"</span>;
 
-<span class="cm-variable">name</span> <span class="cm-operator">=</span> <span class="cm-string">"Michelangelo"</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">mask</span> <span class="cm-operator">=</span> <span class="cm-string">"orange"</span>;
 
-<span class="cm-variable">mask</span> <span class="cm-operator">=</span> <span class="cm-string">"orange"</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">weapon</span> <span class="cm-operator">=</span> <span class="cm-string">"nunchuks"</span>;
 
-<span class="cm-variable">weapon</span> <span class="cm-operator">=</span> <span class="cm-string">"nunchuks"</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">turtle</span> <span class="cm-operator">=</span> {<span class="cm-property">name</span>, <span class="cm-property">mask</span>, <span class="cm-property">weapon</span>};
 
-<span class="cm-variable">turtle</span> <span class="cm-operator">=</span> {<span class="cm-property">name</span>, <span class="cm-property">mask</span>, <span class="cm-property">weapon</span>};
-
-<span class="cm-variable">output</span> <span class="cm-operator">=</span> <span class="cm-string-2">`${</span><span class="cm-variable">turtle</span>.<span class="cm-property">name</span><span class="cm-string-2">}</span> <span class="cm-string-2">wears an ${</span><span class="cm-variable">turtle</span>.<span class="cm-property">mask</span><span class="cm-string-2">}</span> <span class="cm-string-2">mask. Watch out for his ${</span><span class="cm-variable">turtle</span>.<span class="cm-property">weapon</span><span class="cm-string-2">}!`</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">output</span> <span class="cm-operator">=</span> <span class="cm-string-2">`${</span><span class="cm-variable">turtle</span>.<span class="cm-property">name</span><span class="cm-string-2">}</span> <span class="cm-string-2">wears an ${</span><span class="cm-variable">turtle</span>.<span class="cm-property">mask</span><span class="cm-string-2">}</span> <span class="cm-string-2">mask. Watch out for his ${</span><span class="cm-variable">turtle</span>.<span class="cm-property">weapon</span><span class="cm-string-2">}!`</span>;
 </pre>
     </div>
   </div>
@@ -1496,9 +1466,7 @@ sayFortune = (fortune) ->
 Fortune Cookie Reader v1.0
 Released under the MIT License
 */
-var sayFortune;
-
-sayFortune = function(fortune) {
+var sayFortune = function(fortune) {
   return console.log(fortune); // in bed!
 };
 </textarea>
@@ -1506,9 +1474,7 @@ sayFortune = function(fortune) {
 <span class="cm-comment">Fortune Cookie Reader v1.0</span>
 <span class="cm-comment">Released under the MIT License</span>
 <span class="cm-comment">*/</span>
-<span class="cm-keyword">var</span> <span class="cm-def">sayFortune</span>;
-
-<span class="cm-variable">sayFortune</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">fortune</span>) {
+<span class="cm-keyword">var</span> <span class="cm-def">sayFortune</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">fortune</span>) {
   <span class="cm-keyword">return</span> <span class="cm-variable">console</span>.<span class="cm-property">log</span>(<span class="cm-variable-2">fortune</span>); <span class="cm-comment">// in bed!</span>
 };
 </pre>
@@ -1539,29 +1505,23 @@ inner = changeNumbers()
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="scope-js">var changeNumbers, inner, outer;
+      <textarea class="javascript-output" id="scope-js">var outer = 1;
 
-outer = 1;
-
-changeNumbers = function() {
-  var inner;
-  inner = -1;
+var changeNumbers = function() {
+  var inner = -1;
   return outer = 10;
 };
 
-inner = changeNumbers();
+var inner = changeNumbers();
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">changeNumbers</span>, <span class="cm-def">inner</span>, <span class="cm-def">outer</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">outer</span> <span class="cm-operator">=</span> <span class="cm-number">1</span>;
 
-<span class="cm-variable">outer</span> <span class="cm-operator">=</span> <span class="cm-number">1</span>;
-
-<span class="cm-variable">changeNumbers</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>() {
-  <span class="cm-keyword">var</span> <span class="cm-def">inner</span>;
-  <span class="cm-variable-2">inner</span> <span class="cm-operator">=</span> <span class="cm-operator">-</span><span class="cm-number">1</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">changeNumbers</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>() {
+  <span class="cm-keyword">var</span> <span class="cm-def">inner</span> <span class="cm-operator">=</span> <span class="cm-operator">-</span><span class="cm-number">1</span>;
   <span class="cm-keyword">return</span> <span class="cm-variable">outer</span> <span class="cm-operator">=</span> <span class="cm-number">10</span>;
 };
 
-<span class="cm-variable-2">inner</span> <span class="cm-operator">=</span> <span class="cm-variable">changeNumbers</span>();
+<span class="cm-keyword">var</span> <span class="cm-def">inner</span> <span class="cm-operator">=</span> <span class="cm-variable">changeNumbers</span>();
 </pre>
     </div>
   </div>
@@ -1612,10 +1572,8 @@ date = if friday then sue else jill
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="conditionals-js">var date, mood;
-
-if (singing) {
-  mood = greatlyImproved;
+      <textarea class="javascript-output" id="conditionals-js">if (singing) {
+  var mood = greatlyImproved;
 }
 
 if (happy && knowsIt) {
@@ -1625,12 +1583,10 @@ if (happy && knowsIt) {
   showIt();
 }
 
-date = friday ? sue : jill;
+var date = friday ? sue : jill;
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">date</span>, <span class="cm-def">mood</span>;
-
-<span class="cm-keyword">if</span> (<span class="cm-variable">singing</span>) {
-  <span class="cm-variable">mood</span> <span class="cm-operator">=</span> <span class="cm-variable">greatlyImproved</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">if</span> (<span class="cm-variable">singing</span>) {
+  <span class="cm-keyword">var</span> <span class="cm-def">mood</span> <span class="cm-operator">=</span> <span class="cm-variable">greatlyImproved</span>;
 }
 
 <span class="cm-keyword">if</span> (<span class="cm-variable">happy</span> <span class="cm-operator">&amp;&amp;</span> <span class="cm-variable">knowsIt</span>) {
@@ -1640,7 +1596,7 @@ date = friday ? sue : jill;
   <span class="cm-variable">showIt</span>();
 }
 
-<span class="cm-variable">date</span> <span class="cm-operator">=</span> <span class="cm-variable">friday</span> <span class="cm-operator">?</span> <span class="cm-variable">sue</span> : <span class="cm-variable">jill</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">date</span> <span class="cm-operator">=</span> <span class="cm-variable">friday</span> <span class="cm-operator">?</span> <span class="cm-variable">sue</span> : <span class="cm-variable">jill</span>;
 </pre>
     </div>
   </div>
@@ -1712,17 +1668,17 @@ The Field: #{rest.join ', '}
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="splats-js">var awardMedals, contenders, gold, rest, silver;
+      <textarea class="javascript-output" id="splats-js">var rest, silver;
 
-gold = silver = rest = "unknown";
+var gold = silver = rest = "unknown";
 
-awardMedals = function(first, second, ...others) {
+var awardMedals = function(first, second, ...others) {
   gold = first;
   silver = second;
   return rest = others;
 };
 
-contenders = ["Michael Phelps", "Liu Xiang", "Yao Ming", "Allyson Felix", "Shawn Johnson", "Roman Sebrle", "Guo Jingjing", "Tyson Gay", "Asafa Powell", "Usain Bolt"];
+var contenders = ["Michael Phelps", "Liu Xiang", "Yao Ming", "Allyson Felix", "Shawn Johnson", "Roman Sebrle", "Guo Jingjing", "Tyson Gay", "Asafa Powell", "Usain Bolt"];
 
 awardMedals(...contenders);
 
@@ -1730,17 +1686,17 @@ alert(`Gold: ${gold}
 Silver: ${silver}
 The Field: ${rest.join(', ')}`);
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">awardMedals</span>, <span class="cm-def">contenders</span>, <span class="cm-def">gold</span>, <span class="cm-def">rest</span>, <span class="cm-def">silver</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">rest</span>, <span class="cm-def">silver</span>;
 
-<span class="cm-variable">gold</span> <span class="cm-operator">=</span> <span class="cm-variable">silver</span> <span class="cm-operator">=</span> <span class="cm-variable">rest</span> <span class="cm-operator">=</span> <span class="cm-string">"unknown"</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">gold</span> <span class="cm-operator">=</span> <span class="cm-variable">silver</span> <span class="cm-operator">=</span> <span class="cm-variable">rest</span> <span class="cm-operator">=</span> <span class="cm-string">"unknown"</span>;
 
-<span class="cm-variable">awardMedals</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">first</span>, <span class="cm-def">second</span>, <span class="cm-meta">...</span><span class="cm-def">others</span>) {
+<span class="cm-keyword">var</span> <span class="cm-def">awardMedals</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">first</span>, <span class="cm-def">second</span>, <span class="cm-meta">...</span><span class="cm-def">others</span>) {
   <span class="cm-variable">gold</span> <span class="cm-operator">=</span> <span class="cm-variable-2">first</span>;
   <span class="cm-variable">silver</span> <span class="cm-operator">=</span> <span class="cm-variable-2">second</span>;
   <span class="cm-keyword">return</span> <span class="cm-variable">rest</span> <span class="cm-operator">=</span> <span class="cm-variable-2">others</span>;
 };
 
-<span class="cm-variable">contenders</span> <span class="cm-operator">=</span> [<span class="cm-string">"Michael Phelps"</span>, <span class="cm-string">"Liu Xiang"</span>, <span class="cm-string">"Yao Ming"</span>, <span class="cm-string">"Allyson Felix"</span>, <span class="cm-string">"Shawn Johnson"</span>, <span class="cm-string">"Roman Sebrle"</span>, <span class="cm-string">"Guo Jingjing"</span>, <span class="cm-string">"Tyson Gay"</span>, <span class="cm-string">"Asafa Powell"</span>, <span class="cm-string">"Usain Bolt"</span>];
+<span class="cm-keyword">var</span> <span class="cm-def">contenders</span> <span class="cm-operator">=</span> [<span class="cm-string">"Michael Phelps"</span>, <span class="cm-string">"Liu Xiang"</span>, <span class="cm-string">"Yao Ming"</span>, <span class="cm-string">"Allyson Felix"</span>, <span class="cm-string">"Shawn Johnson"</span>, <span class="cm-string">"Roman Sebrle"</span>, <span class="cm-string">"Guo Jingjing"</span>, <span class="cm-string">"Tyson Gay"</span>, <span class="cm-string">"Asafa Powell"</span>, <span class="cm-string">"Usain Bolt"</span>];
 
 <span class="cm-variable">awardMedals</span>(<span class="cm-meta">...</span><span class="cm-variable">contenders</span>);
 
@@ -1778,21 +1734,17 @@ all = [popular..., unwanted..., 'mushrooms']
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="array_spread-js">var all, popular, unwanted;
+      <textarea class="javascript-output" id="array_spread-js">var popular = ['pepperoni', 'sausage', 'cheese'];
 
-popular = ['pepperoni', 'sausage', 'cheese'];
+var unwanted = ['anchovies', 'olives'];
 
-unwanted = ['anchovies', 'olives'];
-
-all = [...popular, ...unwanted, 'mushrooms'];
+var all = [...popular, ...unwanted, 'mushrooms'];
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">all</span>, <span class="cm-def">popular</span>, <span class="cm-def">unwanted</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">popular</span> <span class="cm-operator">=</span> [<span class="cm-string">'pepperoni'</span>, <span class="cm-string">'sausage'</span>, <span class="cm-string">'cheese'</span>];
 
-<span class="cm-variable">popular</span> <span class="cm-operator">=</span> [<span class="cm-string">'pepperoni'</span>, <span class="cm-string">'sausage'</span>, <span class="cm-string">'cheese'</span>];
+<span class="cm-keyword">var</span> <span class="cm-def">unwanted</span> <span class="cm-operator">=</span> [<span class="cm-string">'anchovies'</span>, <span class="cm-string">'olives'</span>];
 
-<span class="cm-variable">unwanted</span> <span class="cm-operator">=</span> [<span class="cm-string">'anchovies'</span>, <span class="cm-string">'olives'</span>];
-
-<span class="cm-variable">all</span> <span class="cm-operator">=</span> [<span class="cm-meta">...</span><span class="cm-variable">popular</span>, <span class="cm-meta">...</span><span class="cm-variable">unwanted</span>, <span class="cm-string">'mushrooms'</span>];
+<span class="cm-keyword">var</span> <span class="cm-def">all</span> <span class="cm-operator">=</span> [<span class="cm-meta">...</span><span class="cm-variable">popular</span>, <span class="cm-meta">...</span><span class="cm-variable">unwanted</span>, <span class="cm-string">'mushrooms'</span>];
 </pre>
     </div>
   </div>
@@ -1826,26 +1778,22 @@ currentUser = { user..., status: 'Uncertain' }
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="object_spread-js">var currentUser, user;
-
-user = {
+      <textarea class="javascript-output" id="object_spread-js">var user = {
   name: 'Werner Heisenberg',
   occupation: 'theoretical physicist'
 };
 
-currentUser = {
+var currentUser = {
   ...user,
   status: 'Uncertain'
 };
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">currentUser</span>, <span class="cm-def">user</span>;
-
-<span class="cm-variable">user</span> <span class="cm-operator">=</span> {
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">user</span> <span class="cm-operator">=</span> {
   <span class="cm-property">name</span>: <span class="cm-string">'Werner Heisenberg'</span>,
   <span class="cm-property">occupation</span>: <span class="cm-string">'theoretical physicist'</span>
 };
 
-<span class="cm-variable">currentUser</span> <span class="cm-operator">=</span> {
+<span class="cm-keyword">var</span> <span class="cm-def">currentUser</span> <span class="cm-operator">=</span> {
   <span class="cm-meta">...</span><span class="cm-variable">user</span>,
   <span class="cm-property">status</span>: <span class="cm-string">'Uncertain'</span>
 };
@@ -1901,34 +1849,32 @@ eat food for food in foods when food isnt 'chocolate'
     </div>
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="array_comprehensions-js">// Eat lunch.
-var courses, dish, eat, food, foods, i, j, k, l, len, len1, len2, menu, ref;
-
-eat = function(food) {
+var eat = function(food) {
   return `${food} eaten.`;
 };
 
-ref = ['toast', 'cheese', 'wine'];
-for (j = 0, len = ref.length; j < len; j++) {
-  food = ref[j];
+var ref = ['toast', 'cheese', 'wine'];
+for (var j = 0, len = ref.length; j < len; j++) {
+  var food = ref[j];
   eat(food);
 }
 
 // Fine five course dining.
-courses = ['greens', 'caviar', 'truffles', 'roast', 'cake'];
+var courses = ['greens', 'caviar', 'truffles', 'roast', 'cake'];
 
-menu = function(i, dish) {
+var menu = function(i, dish) {
   return `Menu Item ${i}: ${dish}`;
 };
 
-for (i = k = 0, len1 = courses.length; k < len1; i = ++k) {
-  dish = courses[i];
+for (var k = 0, i = k, len1 = courses.length; k < len1; i = ++k) {
+  var dish = courses[i];
   menu(i + 1, dish);
 }
 
 // Health conscious meal.
-foods = ['broccoli', 'spinach', 'chocolate'];
+var foods = ['broccoli', 'spinach', 'chocolate'];
 
-for (l = 0, len2 = foods.length; l < len2; l++) {
+for (var l = 0, len2 = foods.length; l < len2; l++) {
   food = foods[l];
   if (food !== 'chocolate') {
     eat(food);
@@ -1936,35 +1882,33 @@ for (l = 0, len2 = foods.length; l < len2; l++) {
 }
 </textarea>
       <pre class="placeholder-code"><span class="cm-comment">// Eat lunch.</span>
-<span class="cm-keyword">var</span> <span class="cm-def">courses</span>, <span class="cm-def">dish</span>, <span class="cm-def">eat</span>, <span class="cm-def">food</span>, <span class="cm-def">foods</span>, <span class="cm-def">i</span>, <span class="cm-def">j</span>, <span class="cm-def">k</span>, <span class="cm-def">l</span>, <span class="cm-def">len</span>, <span class="cm-def">len1</span>, <span class="cm-def">len2</span>, <span class="cm-def">menu</span>, <span class="cm-def">ref</span>;
-
-<span class="cm-variable">eat</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">food</span>) {
+<span class="cm-keyword">var</span> <span class="cm-def">eat</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">food</span>) {
   <span class="cm-keyword">return</span> <span class="cm-string-2">`${</span><span class="cm-variable-2">food</span><span class="cm-string-2">}</span> <span class="cm-string-2">eaten.`</span>;
 };
 
-<span class="cm-variable">ref</span> <span class="cm-operator">=</span> [<span class="cm-string">'toast'</span>, <span class="cm-string">'cheese'</span>, <span class="cm-string">'wine'</span>];
-<span class="cm-keyword">for</span> (<span class="cm-variable">j</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>, <span class="cm-variable">len</span> <span class="cm-operator">=</span> <span class="cm-variable">ref</span>.<span class="cm-property">length</span>; <span class="cm-variable">j</span> <span class="cm-operator">&lt;</span> <span class="cm-variable">len</span>; <span class="cm-variable">j</span><span class="cm-operator">++</span>) {
-  <span class="cm-variable">food</span> <span class="cm-operator">=</span> <span class="cm-variable">ref</span>[<span class="cm-variable">j</span>];
+<span class="cm-keyword">var</span> <span class="cm-def">ref</span> <span class="cm-operator">=</span> [<span class="cm-string">'toast'</span>, <span class="cm-string">'cheese'</span>, <span class="cm-string">'wine'</span>];
+<span class="cm-keyword">for</span> (<span class="cm-keyword">var</span> <span class="cm-def">j</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>, <span class="cm-def">len</span> <span class="cm-operator">=</span> <span class="cm-variable">ref</span>.<span class="cm-property">length</span>; <span class="cm-variable-2">j</span> <span class="cm-operator">&lt;</span> <span class="cm-variable-2">len</span>; <span class="cm-variable-2">j</span><span class="cm-operator">++</span>) {
+  <span class="cm-keyword">var</span> <span class="cm-def">food</span> <span class="cm-operator">=</span> <span class="cm-variable">ref</span>[<span class="cm-variable-2">j</span>];
   <span class="cm-variable">eat</span>(<span class="cm-variable">food</span>);
 }
 
 <span class="cm-comment">// Fine five course dining.</span>
-<span class="cm-variable">courses</span> <span class="cm-operator">=</span> [<span class="cm-string">'greens'</span>, <span class="cm-string">'caviar'</span>, <span class="cm-string">'truffles'</span>, <span class="cm-string">'roast'</span>, <span class="cm-string">'cake'</span>];
+<span class="cm-keyword">var</span> <span class="cm-def">courses</span> <span class="cm-operator">=</span> [<span class="cm-string">'greens'</span>, <span class="cm-string">'caviar'</span>, <span class="cm-string">'truffles'</span>, <span class="cm-string">'roast'</span>, <span class="cm-string">'cake'</span>];
 
-<span class="cm-variable">menu</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">i</span>, <span class="cm-def">dish</span>) {
+<span class="cm-keyword">var</span> <span class="cm-def">menu</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">i</span>, <span class="cm-def">dish</span>) {
   <span class="cm-keyword">return</span> <span class="cm-string-2">`Menu Item ${</span><span class="cm-variable-2">i</span><span class="cm-string-2">}: ${</span><span class="cm-variable-2">dish</span><span class="cm-string-2">}`</span>;
 };
 
-<span class="cm-keyword">for</span> (<span class="cm-variable">i</span> <span class="cm-operator">=</span> <span class="cm-variable">k</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>, <span class="cm-variable">len1</span> <span class="cm-operator">=</span> <span class="cm-variable">courses</span>.<span class="cm-property">length</span>; <span class="cm-variable">k</span> <span class="cm-operator">&lt;</span> <span class="cm-variable">len1</span>; <span class="cm-variable">i</span> <span class="cm-operator">=</span> <span class="cm-operator">++</span><span class="cm-variable">k</span>) {
-  <span class="cm-variable">dish</span> <span class="cm-operator">=</span> <span class="cm-variable">courses</span>[<span class="cm-variable">i</span>];
-  <span class="cm-variable">menu</span>(<span class="cm-variable">i</span> <span class="cm-operator">+</span> <span class="cm-number">1</span>, <span class="cm-variable">dish</span>);
+<span class="cm-keyword">for</span> (<span class="cm-keyword">var</span> <span class="cm-def">k</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>, <span class="cm-def">i</span> <span class="cm-operator">=</span> <span class="cm-variable-2">k</span>, <span class="cm-def">len1</span> <span class="cm-operator">=</span> <span class="cm-variable">courses</span>.<span class="cm-property">length</span>; <span class="cm-variable-2">k</span> <span class="cm-operator">&lt;</span> <span class="cm-variable-2">len1</span>; <span class="cm-variable-2">i</span> <span class="cm-operator">=</span> <span class="cm-operator">++</span><span class="cm-variable-2">k</span>) {
+  <span class="cm-keyword">var</span> <span class="cm-def">dish</span> <span class="cm-operator">=</span> <span class="cm-variable">courses</span>[<span class="cm-variable-2">i</span>];
+  <span class="cm-variable">menu</span>(<span class="cm-variable-2">i</span> <span class="cm-operator">+</span> <span class="cm-number">1</span>, <span class="cm-variable">dish</span>);
 }
 
 <span class="cm-comment">// Health conscious meal.</span>
-<span class="cm-variable">foods</span> <span class="cm-operator">=</span> [<span class="cm-string">'broccoli'</span>, <span class="cm-string">'spinach'</span>, <span class="cm-string">'chocolate'</span>];
+<span class="cm-keyword">var</span> <span class="cm-def">foods</span> <span class="cm-operator">=</span> [<span class="cm-string">'broccoli'</span>, <span class="cm-string">'spinach'</span>, <span class="cm-string">'chocolate'</span>];
 
-<span class="cm-keyword">for</span> (<span class="cm-variable">l</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>, <span class="cm-variable">len2</span> <span class="cm-operator">=</span> <span class="cm-variable">foods</span>.<span class="cm-property">length</span>; <span class="cm-variable">l</span> <span class="cm-operator">&lt;</span> <span class="cm-variable">len2</span>; <span class="cm-variable">l</span><span class="cm-operator">++</span>) {
-  <span class="cm-variable">food</span> <span class="cm-operator">=</span> <span class="cm-variable">foods</span>[<span class="cm-variable">l</span>];
+<span class="cm-keyword">for</span> (<span class="cm-keyword">var</span> <span class="cm-def">l</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>, <span class="cm-def">len2</span> <span class="cm-operator">=</span> <span class="cm-variable">foods</span>.<span class="cm-property">length</span>; <span class="cm-variable-2">l</span> <span class="cm-operator">&lt;</span> <span class="cm-variable-2">len2</span>; <span class="cm-variable-2">l</span><span class="cm-operator">++</span>) {
+  <span class="cm-variable">food</span> <span class="cm-operator">=</span> <span class="cm-variable">foods</span>[<span class="cm-variable-2">l</span>];
   <span class="cm-keyword">if</span> (<span class="cm-variable">food</span> <span class="cm-operator">!==</span> <span class="cm-string">'chocolate'</span>) {
     <span class="cm-variable">eat</span>(<span class="cm-variable">food</span>);
   }
@@ -1986,22 +1930,22 @@ If you know the start and end of your loop, or would like to step through in fix
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="range_comprehensions-js">var countdown, num;
+      <textarea class="javascript-output" id="range_comprehensions-js">var num;
 
-countdown = (function() {
-  var i, results;
-  results = [];
+var countdown = (function() {
+  var i;
+  var results = [];
   for (num = i = 10; i >= 1; num = --i) {
     results.push(num);
   }
   return results;
 })();
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">countdown</span>, <span class="cm-def">num</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">num</span>;
 
-<span class="cm-variable">countdown</span> <span class="cm-operator">=</span> (<span class="cm-keyword">function</span>() {
-  <span class="cm-keyword">var</span> <span class="cm-def">i</span>, <span class="cm-def">results</span>;
-  <span class="cm-variable-2">results</span> <span class="cm-operator">=</span> [];
+<span class="cm-keyword">var</span> <span class="cm-def">countdown</span> <span class="cm-operator">=</span> (<span class="cm-keyword">function</span>() {
+  <span class="cm-keyword">var</span> <span class="cm-def">i</span>;
+  <span class="cm-keyword">var</span> <span class="cm-def">results</span> <span class="cm-operator">=</span> [];
   <span class="cm-keyword">for</span> (<span class="cm-variable">num</span> <span class="cm-operator">=</span> <span class="cm-variable-2">i</span> <span class="cm-operator">=</span> <span class="cm-number">10</span>; <span class="cm-variable-2">i</span> <span class="cm-operator">>=</span> <span class="cm-number">1</span>; <span class="cm-variable">num</span> <span class="cm-operator">=</span> <span class="cm-operator">--</span><span class="cm-variable-2">i</span>) {
     <span class="cm-variable-2">results</span>.<span class="cm-property">push</span>(<span class="cm-variable">num</span>);
   }
@@ -2042,17 +1986,16 @@ ages = for child, age of yearsOld
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="object_comprehensions-js">var age, ages, child, yearsOld;
+      <textarea class="javascript-output" id="object_comprehensions-js">var age, child;
 
-yearsOld = {
+var yearsOld = {
   max: 10,
   ida: 9,
   tim: 11
 };
 
-ages = (function() {
-  var results;
-  results = [];
+var ages = (function() {
+  var results = [];
   for (child in yearsOld) {
     age = yearsOld[child];
     results.push(`${child} is ${age}`);
@@ -2060,17 +2003,16 @@ ages = (function() {
   return results;
 })();
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">age</span>, <span class="cm-def">ages</span>, <span class="cm-def">child</span>, <span class="cm-def">yearsOld</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">age</span>, <span class="cm-def">child</span>;
 
-<span class="cm-variable">yearsOld</span> <span class="cm-operator">=</span> {
+<span class="cm-keyword">var</span> <span class="cm-def">yearsOld</span> <span class="cm-operator">=</span> {
   <span class="cm-property">max</span>: <span class="cm-number">10</span>,
   <span class="cm-property">ida</span>: <span class="cm-number">9</span>,
   <span class="cm-property">tim</span>: <span class="cm-number">11</span>
 };
 
-<span class="cm-variable">ages</span> <span class="cm-operator">=</span> (<span class="cm-keyword">function</span>() {
-  <span class="cm-keyword">var</span> <span class="cm-def">results</span>;
-  <span class="cm-variable-2">results</span> <span class="cm-operator">=</span> [];
+<span class="cm-keyword">var</span> <span class="cm-def">ages</span> <span class="cm-operator">=</span> (<span class="cm-keyword">function</span>() {
+  <span class="cm-keyword">var</span> <span class="cm-def">results</span> <span class="cm-operator">=</span> [];
   <span class="cm-keyword">for</span> (<span class="cm-variable">child</span> <span class="cm-keyword">in</span> <span class="cm-variable">yearsOld</span>) {
     <span class="cm-variable">age</span> <span class="cm-operator">=</span> <span class="cm-variable">yearsOld</span>[<span class="cm-variable">child</span>];
     <span class="cm-variable-2">results</span>.<span class="cm-property">push</span>(<span class="cm-string-2">`${</span><span class="cm-variable">child</span><span class="cm-string-2">}</span> <span class="cm-string-2">is ${</span><span class="cm-variable">age</span><span class="cm-string-2">}`</span>);
@@ -2122,8 +2064,6 @@ lyrics = while num -= 1
     </div>
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="while-js">// Econ 101
-var lyrics, num;
-
 if (this.studyingEconomics) {
   while (supply > demand) {
     buy();
@@ -2134,9 +2074,9 @@ if (this.studyingEconomics) {
 }
 
 // Nursery Rhyme
-num = 6;
+var num = 6;
 
-lyrics = (function() {
+var lyrics = (function() {
   var results;
   results = [];
   while (num -= 1) {
@@ -2146,8 +2086,6 @@ lyrics = (function() {
 })();
 </textarea>
       <pre class="placeholder-code"><span class="cm-comment">// Econ 101</span>
-<span class="cm-keyword">var</span> <span class="cm-def">lyrics</span>, <span class="cm-def">num</span>;
-
 <span class="cm-keyword">if</span> (<span class="cm-keyword">this</span>.<span class="cm-property">studyingEconomics</span>) {
   <span class="cm-keyword">while</span> (<span class="cm-variable">supply</span> <span class="cm-operator">></span> <span class="cm-variable">demand</span>) {
     <span class="cm-variable">buy</span>();
@@ -2158,9 +2096,9 @@ lyrics = (function() {
 }
 
 <span class="cm-comment">// Nursery Rhyme</span>
-<span class="cm-variable">num</span> <span class="cm-operator">=</span> <span class="cm-number">6</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">num</span> <span class="cm-operator">=</span> <span class="cm-number">6</span>;
 
-<span class="cm-variable">lyrics</span> <span class="cm-operator">=</span> (<span class="cm-keyword">function</span>() {
+<span class="cm-keyword">var</span> <span class="cm-def">lyrics</span> <span class="cm-operator">=</span> (<span class="cm-keyword">function</span>() {
   <span class="cm-keyword">var</span> <span class="cm-def">results</span>;
   <span class="cm-variable-2">results</span> <span class="cm-operator">=</span> [];
   <span class="cm-keyword">while</span> (<span class="cm-variable">num</span> <span class="cm-operator">-=</span> <span class="cm-number">1</span>) {
@@ -2201,10 +2139,8 @@ lyrics = (function() {
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="do-js">var filename, i, len;
-
-for (i = 0, len = list.length; i < len; i++) {
-  filename = list[i];
+      <textarea class="javascript-output" id="do-js">for (var i = 0, len = list.length; i < len; i++) {
+  var filename = list[i];
   (function(filename) {
     if (filename !== '.DS_Store' && filename !== 'Thumbs.db' && filename !== 'ehthumbs.db') {
       return fs.readFile(filename, function(err, contents) {
@@ -2214,10 +2150,8 @@ for (i = 0, len = list.length; i < len; i++) {
   })(filename);
 }
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">filename</span>, <span class="cm-def">i</span>, <span class="cm-def">len</span>;
-
-<span class="cm-keyword">for</span> (<span class="cm-variable">i</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>, <span class="cm-variable">len</span> <span class="cm-operator">=</span> <span class="cm-variable">list</span>.<span class="cm-property">length</span>; <span class="cm-variable">i</span> <span class="cm-operator">&lt;</span> <span class="cm-variable">len</span>; <span class="cm-variable">i</span><span class="cm-operator">++</span>) {
-  <span class="cm-variable">filename</span> <span class="cm-operator">=</span> <span class="cm-variable">list</span>[<span class="cm-variable">i</span>];
+      <pre class="placeholder-code"><span class="cm-keyword">for</span> (<span class="cm-keyword">var</span> <span class="cm-def">i</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>, <span class="cm-def">len</span> <span class="cm-operator">=</span> <span class="cm-variable">list</span>.<span class="cm-property">length</span>; <span class="cm-variable-2">i</span> <span class="cm-operator">&lt;</span> <span class="cm-variable-2">len</span>; <span class="cm-variable-2">i</span><span class="cm-operator">++</span>) {
+  <span class="cm-keyword">var</span> <span class="cm-def">filename</span> <span class="cm-operator">=</span> <span class="cm-variable">list</span>[<span class="cm-variable-2">i</span>];
   (<span class="cm-keyword">function</span>(<span class="cm-def">filename</span>) {
     <span class="cm-keyword">if</span> (<span class="cm-variable-2">filename</span> <span class="cm-operator">!==</span> <span class="cm-string">'.DS_Store'</span> <span class="cm-operator">&amp;&amp;</span> <span class="cm-variable-2">filename</span> <span class="cm-operator">!==</span> <span class="cm-string">'Thumbs.db'</span> <span class="cm-operator">&amp;&amp;</span> <span class="cm-variable-2">filename</span> <span class="cm-operator">!==</span> <span class="cm-string">'ehthumbs.db'</span>) {
       <span class="cm-keyword">return</span> <span class="cm-variable">fs</span>.<span class="cm-property">readFile</span>(<span class="cm-variable-2">filename</span>, <span class="cm-keyword">function</span>(<span class="cm-def">err</span>, <span class="cm-def">contents</span>) {
@@ -2261,29 +2195,25 @@ copy    = numbers[..]
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="slices-js">var copy, end, middle, numbers, start;
+      <textarea class="javascript-output" id="slices-js">var numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+var start = numbers.slice(0, 3);
 
-start = numbers.slice(0, 3);
+var middle = numbers.slice(3, -2);
 
-middle = numbers.slice(3, -2);
+var end = numbers.slice(-2);
 
-end = numbers.slice(-2);
-
-copy = numbers.slice(0);
+var copy = numbers.slice(0);
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">copy</span>, <span class="cm-def">end</span>, <span class="cm-def">middle</span>, <span class="cm-def">numbers</span>, <span class="cm-def">start</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">numbers</span> <span class="cm-operator">=</span> [<span class="cm-number">1</span>, <span class="cm-number">2</span>, <span class="cm-number">3</span>, <span class="cm-number">4</span>, <span class="cm-number">5</span>, <span class="cm-number">6</span>, <span class="cm-number">7</span>, <span class="cm-number">8</span>, <span class="cm-number">9</span>];
 
-<span class="cm-variable">numbers</span> <span class="cm-operator">=</span> [<span class="cm-number">1</span>, <span class="cm-number">2</span>, <span class="cm-number">3</span>, <span class="cm-number">4</span>, <span class="cm-number">5</span>, <span class="cm-number">6</span>, <span class="cm-number">7</span>, <span class="cm-number">8</span>, <span class="cm-number">9</span>];
+<span class="cm-keyword">var</span> <span class="cm-def">start</span> <span class="cm-operator">=</span> <span class="cm-variable">numbers</span>.<span class="cm-property">slice</span>(<span class="cm-number">0</span>, <span class="cm-number">3</span>);
 
-<span class="cm-variable">start</span> <span class="cm-operator">=</span> <span class="cm-variable">numbers</span>.<span class="cm-property">slice</span>(<span class="cm-number">0</span>, <span class="cm-number">3</span>);
+<span class="cm-keyword">var</span> <span class="cm-def">middle</span> <span class="cm-operator">=</span> <span class="cm-variable">numbers</span>.<span class="cm-property">slice</span>(<span class="cm-number">3</span>, <span class="cm-operator">-</span><span class="cm-number">2</span>);
 
-<span class="cm-variable">middle</span> <span class="cm-operator">=</span> <span class="cm-variable">numbers</span>.<span class="cm-property">slice</span>(<span class="cm-number">3</span>, <span class="cm-operator">-</span><span class="cm-number">2</span>);
+<span class="cm-keyword">var</span> <span class="cm-def">end</span> <span class="cm-operator">=</span> <span class="cm-variable">numbers</span>.<span class="cm-property">slice</span>(<span class="cm-operator">-</span><span class="cm-number">2</span>);
 
-<span class="cm-variable">end</span> <span class="cm-operator">=</span> <span class="cm-variable">numbers</span>.<span class="cm-property">slice</span>(<span class="cm-operator">-</span><span class="cm-number">2</span>);
-
-<span class="cm-variable">copy</span> <span class="cm-operator">=</span> <span class="cm-variable">numbers</span>.<span class="cm-property">slice</span>(<span class="cm-number">0</span>);
+<span class="cm-keyword">var</span> <span class="cm-def">copy</span> <span class="cm-operator">=</span> <span class="cm-variable">numbers</span>.<span class="cm-property">slice</span>(<span class="cm-number">0</span>);
 </pre>
     </div>
   </div>
@@ -2312,17 +2242,17 @@ numbers[3..6] = [-3, -4, -5, -6]
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="splices-js">var numbers, ref,
+      <textarea class="javascript-output" id="splices-js">var ref,
   splice = [].splice;
 
-numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+var numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 splice.apply(numbers, [3, 4].concat(ref = [-3, -4, -5, -6])), ref;
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">numbers</span>, <span class="cm-def">ref</span>,
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">ref</span>,
   <span class="cm-def">splice</span> <span class="cm-operator">=</span> [].<span class="cm-property">splice</span>;
 
-<span class="cm-variable">numbers</span> <span class="cm-operator">=</span> [<span class="cm-number">0</span>, <span class="cm-number">1</span>, <span class="cm-number">2</span>, <span class="cm-number">3</span>, <span class="cm-number">4</span>, <span class="cm-number">5</span>, <span class="cm-number">6</span>, <span class="cm-number">7</span>, <span class="cm-number">8</span>, <span class="cm-number">9</span>];
+<span class="cm-keyword">var</span> <span class="cm-def">numbers</span> <span class="cm-operator">=</span> [<span class="cm-number">0</span>, <span class="cm-number">1</span>, <span class="cm-number">2</span>, <span class="cm-number">3</span>, <span class="cm-number">4</span>, <span class="cm-number">5</span>, <span class="cm-number">6</span>, <span class="cm-number">7</span>, <span class="cm-number">8</span>, <span class="cm-number">9</span>];
 
 <span class="cm-variable">splice</span>.<span class="cm-property">apply</span>(<span class="cm-variable">numbers</span>, [<span class="cm-number">3</span>, <span class="cm-number">4</span>].<span class="cm-property">concat</span>(<span class="cm-variable">ref</span> <span class="cm-operator">=</span> [<span class="cm-operator">-</span><span class="cm-number">3</span>, <span class="cm-operator">-</span><span class="cm-number">4</span>, <span class="cm-operator">-</span><span class="cm-number">5</span>, <span class="cm-operator">-</span><span class="cm-number">6</span>])), <span class="cm-variable">ref</span>;
 </pre>
@@ -2370,9 +2300,7 @@ eldest = if 24 > 21 then "Liz" else "Ike"
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="expressions-js">var eldest, grade;
-
-grade = function(student) {
+      <textarea class="javascript-output" id="expressions-js">var grade = function(student) {
   if (student.excellentWork) {
     return "A+";
   } else if (student.okayStuff) {
@@ -2386,11 +2314,9 @@ grade = function(student) {
   }
 };
 
-eldest = 24 > 21 ? "Liz" : "Ike";
+var eldest = 24 > 21 ? "Liz" : "Ike";
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">eldest</span>, <span class="cm-def">grade</span>;
-
-<span class="cm-variable">grade</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">student</span>) {
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">grade</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">student</span>) {
   <span class="cm-keyword">if</span> (<span class="cm-variable-2">student</span>.<span class="cm-property">excellentWork</span>) {
     <span class="cm-keyword">return</span> <span class="cm-string">"A+"</span>;
   } <span class="cm-keyword">else</span> <span class="cm-keyword">if</span> (<span class="cm-variable-2">student</span>.<span class="cm-property">okayStuff</span>) {
@@ -2404,7 +2330,7 @@ eldest = 24 > 21 ? "Liz" : "Ike";
   }
 };
 
-<span class="cm-variable">eldest</span> <span class="cm-operator">=</span> <span class="cm-number">24</span> <span class="cm-operator">></span> <span class="cm-number">21</span> <span class="cm-operator">?</span> <span class="cm-string">"Liz"</span> : <span class="cm-string">"Ike"</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">eldest</span> <span class="cm-operator">=</span> <span class="cm-number">24</span> <span class="cm-operator">></span> <span class="cm-number">21</span> <span class="cm-operator">?</span> <span class="cm-string">"Liz"</span> : <span class="cm-string">"Ike"</span>;
 </pre>
     </div>
   </div>
@@ -2430,13 +2356,13 @@ eldest = 24 > 21 ? "Liz" : "Ike";
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="expressions_assignment-js">var one, six, three, two;
+      <textarea class="javascript-output" id="expressions_assignment-js">var one, three, two;
 
-six = (one = 1) + (two = 2) + (three = 3);
+var six = (one = 1) + (two = 2) + (three = 3);
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">one</span>, <span class="cm-def">six</span>, <span class="cm-def">three</span>, <span class="cm-def">two</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">one</span>, <span class="cm-def">three</span>, <span class="cm-def">two</span>;
 
-<span class="cm-variable">six</span> <span class="cm-operator">=</span> (<span class="cm-variable">one</span> <span class="cm-operator">=</span> <span class="cm-number">1</span>) <span class="cm-operator">+</span> (<span class="cm-variable">two</span> <span class="cm-operator">=</span> <span class="cm-number">2</span>) <span class="cm-operator">+</span> (<span class="cm-variable">three</span> <span class="cm-operator">=</span> <span class="cm-number">3</span>);
+<span class="cm-keyword">var</span> <span class="cm-def">six</span> <span class="cm-operator">=</span> (<span class="cm-variable">one</span> <span class="cm-operator">=</span> <span class="cm-number">1</span>) <span class="cm-operator">+</span> (<span class="cm-variable">two</span> <span class="cm-operator">=</span> <span class="cm-number">2</span>) <span class="cm-operator">+</span> (<span class="cm-variable">three</span> <span class="cm-operator">=</span> <span class="cm-number">3</span>);
 </pre>
     </div>
   </div>
@@ -2466,11 +2392,10 @@ globals = (name for name of window)[0...10]
     </div>
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="expressions_comprehension-js">// The first ten global properties.
-var globals, name;
+var name;
 
-globals = ((function() {
-  var results;
-  results = [];
+var globals = ((function() {
+  var results = [];
   for (name in window) {
     results.push(name);
   }
@@ -2478,11 +2403,10 @@ globals = ((function() {
 })()).slice(0, 10);
 </textarea>
       <pre class="placeholder-code"><span class="cm-comment">// The first ten global properties.</span>
-<span class="cm-keyword">var</span> <span class="cm-def">globals</span>, <span class="cm-def">name</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">name</span>;
 
-<span class="cm-variable">globals</span> <span class="cm-operator">=</span> ((<span class="cm-keyword">function</span>() {
-  <span class="cm-keyword">var</span> <span class="cm-def">results</span>;
-  <span class="cm-variable-2">results</span> <span class="cm-operator">=</span> [];
+<span class="cm-keyword">var</span> <span class="cm-def">globals</span> <span class="cm-operator">=</span> ((<span class="cm-keyword">function</span>() {
+  <span class="cm-keyword">var</span> <span class="cm-def">results</span> <span class="cm-operator">=</span> [];
   <span class="cm-keyword">for</span> (<span class="cm-variable">name</span> <span class="cm-keyword">in</span> <span class="cm-variable">window</span>) {
     <span class="cm-variable-2">results</span>.<span class="cm-property">push</span>(<span class="cm-variable">name</span>);
   }
@@ -2703,14 +2627,12 @@ print inspect "My name is #{@name}"
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="aliases-js">var volume, winner;
-
-if (ignition === true) {
+      <textarea class="javascript-output" id="aliases-js">if (ignition === true) {
   launch();
 }
 
 if (band !== SpinalTap) {
-  volume = 10;
+  var volume = 10;
 }
 
 if (answer !== false) {
@@ -2722,19 +2644,17 @@ if (car.speed < limit) {
 }
 
 if (pick === 47 || pick === 92 || pick === 13) {
-  winner = true;
+  var winner = true;
 }
 
 print(inspect(`My name is ${this.name}`));
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">volume</span>, <span class="cm-def">winner</span>;
-
-<span class="cm-keyword">if</span> (<span class="cm-variable">ignition</span> <span class="cm-operator">===</span> <span class="cm-atom">true</span>) {
+      <pre class="placeholder-code"><span class="cm-keyword">if</span> (<span class="cm-variable">ignition</span> <span class="cm-operator">===</span> <span class="cm-atom">true</span>) {
   <span class="cm-variable">launch</span>();
 }
 
 <span class="cm-keyword">if</span> (<span class="cm-variable">band</span> <span class="cm-operator">!==</span> <span class="cm-variable">SpinalTap</span>) {
-  <span class="cm-variable">volume</span> <span class="cm-operator">=</span> <span class="cm-number">10</span>;
+  <span class="cm-keyword">var</span> <span class="cm-def">volume</span> <span class="cm-operator">=</span> <span class="cm-number">10</span>;
 }
 
 <span class="cm-keyword">if</span> (<span class="cm-variable">answer</span> <span class="cm-operator">!==</span> <span class="cm-atom">false</span>) {
@@ -2746,7 +2666,7 @@ print(inspect(`My name is ${this.name}`));
 }
 
 <span class="cm-keyword">if</span> (<span class="cm-variable">pick</span> <span class="cm-operator">===</span> <span class="cm-number">47</span> <span class="cm-operator">||</span> <span class="cm-variable">pick</span> <span class="cm-operator">===</span> <span class="cm-number">92</span> <span class="cm-operator">||</span> <span class="cm-variable">pick</span> <span class="cm-operator">===</span> <span class="cm-number">13</span>) {
-  <span class="cm-variable">winner</span> <span class="cm-operator">=</span> <span class="cm-atom">true</span>;
+  <span class="cm-keyword">var</span> <span class="cm-def">winner</span> <span class="cm-operator">=</span> <span class="cm-atom">true</span>;
 }
 
 <span class="cm-variable">print</span>(<span class="cm-variable">inspect</span>(<span class="cm-string-2">`My name is ${</span><span class="cm-keyword">this</span>.<span class="cm-property">name</span><span class="cm-string-2">}`</span>));
@@ -2780,33 +2700,29 @@ footprints = yeti ? "bear"
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="existence-js">var footprints, solipsism, speed;
-
-if ((typeof mind !== "undefined" && mind !== null) && (typeof world === "undefined" || world === null)) {
-  solipsism = true;
+      <textarea class="javascript-output" id="existence-js">if ((typeof mind !== "undefined" && mind !== null) && (typeof world === "undefined" || world === null)) {
+  var solipsism = true;
 }
 
-speed = 0;
+var speed = 0;
 
 if (speed == null) {
   speed = 15;
 }
 
-footprints = typeof yeti !== "undefined" && yeti !== null ? yeti : "bear";
+var footprints = typeof yeti !== "undefined" && yeti !== null ? yeti : "bear";
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">footprints</span>, <span class="cm-def">solipsism</span>, <span class="cm-def">speed</span>;
-
-<span class="cm-keyword">if</span> ((<span class="cm-keyword">typeof</span> <span class="cm-variable">mind</span> <span class="cm-operator">!==</span> <span class="cm-string">"undefined"</span> <span class="cm-operator">&amp;&amp;</span> <span class="cm-variable">mind</span> <span class="cm-operator">!==</span> <span class="cm-atom">null</span>) <span class="cm-operator">&amp;&amp;</span> (<span class="cm-keyword">typeof</span> <span class="cm-variable">world</span> <span class="cm-operator">===</span> <span class="cm-string">"undefined"</span> <span class="cm-operator">||</span> <span class="cm-variable">world</span> <span class="cm-operator">===</span> <span class="cm-atom">null</span>)) {
-  <span class="cm-variable">solipsism</span> <span class="cm-operator">=</span> <span class="cm-atom">true</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">if</span> ((<span class="cm-keyword">typeof</span> <span class="cm-variable">mind</span> <span class="cm-operator">!==</span> <span class="cm-string">"undefined"</span> <span class="cm-operator">&amp;&amp;</span> <span class="cm-variable">mind</span> <span class="cm-operator">!==</span> <span class="cm-atom">null</span>) <span class="cm-operator">&amp;&amp;</span> (<span class="cm-keyword">typeof</span> <span class="cm-variable">world</span> <span class="cm-operator">===</span> <span class="cm-string">"undefined"</span> <span class="cm-operator">||</span> <span class="cm-variable">world</span> <span class="cm-operator">===</span> <span class="cm-atom">null</span>)) {
+  <span class="cm-keyword">var</span> <span class="cm-def">solipsism</span> <span class="cm-operator">=</span> <span class="cm-atom">true</span>;
 }
 
-<span class="cm-variable">speed</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">speed</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>;
 
 <span class="cm-keyword">if</span> (<span class="cm-variable">speed</span> <span class="cm-operator">==</span> <span class="cm-atom">null</span>) {
   <span class="cm-variable">speed</span> <span class="cm-operator">=</span> <span class="cm-number">15</span>;
 }
 
-<span class="cm-variable">footprints</span> <span class="cm-operator">=</span> <span class="cm-keyword">typeof</span> <span class="cm-variable">yeti</span> <span class="cm-operator">!==</span> <span class="cm-string">"undefined"</span> <span class="cm-operator">&amp;&amp;</span> <span class="cm-variable">yeti</span> <span class="cm-operator">!==</span> <span class="cm-atom">null</span> <span class="cm-operator">?</span> <span class="cm-variable">yeti</span> : <span class="cm-string">"bear"</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">footprints</span> <span class="cm-operator">=</span> <span class="cm-keyword">typeof</span> <span class="cm-variable">yeti</span> <span class="cm-operator">!==</span> <span class="cm-string">"undefined"</span> <span class="cm-operator">&amp;&amp;</span> <span class="cm-variable">yeti</span> <span class="cm-operator">!==</span> <span class="cm-atom">null</span> <span class="cm-operator">?</span> <span class="cm-variable">yeti</span> : <span class="cm-string">"bear"</span>;
 </pre>
     </div>
   </div>
@@ -2837,17 +2753,13 @@ unless major?
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="existence_declared-js">var major;
-
-major = 'Computer Science';
+      <textarea class="javascript-output" id="existence_declared-js">var major = 'Computer Science';
 
 if (major == null) {
   signUpForClass('Introduction to Wines');
 }
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">major</span>;
-
-<span class="cm-variable">major</span> <span class="cm-operator">=</span> <span class="cm-string">'Computer Science'</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">major</span> <span class="cm-operator">=</span> <span class="cm-string">'Computer Science'</span>;
 
 <span class="cm-keyword">if</span> (<span class="cm-variable">major</span> <span class="cm-operator">==</span> <span class="cm-atom">null</span>) {
   <span class="cm-variable">signUpForClass</span>(<span class="cm-string">'Introduction to Wines'</span>);
@@ -2869,16 +2781,12 @@ if (major == null) {
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="existence_undeclared-js">var environment;
-
-if (typeof window !== "undefined" && window !== null) {
-  environment = 'browser (probably)';
+      <textarea class="javascript-output" id="existence_undeclared-js">if (typeof window !== "undefined" && window !== null) {
+  var environment = 'browser (probably)';
 }
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">environment</span>;
-
-<span class="cm-keyword">if</span> (<span class="cm-keyword">typeof</span> <span class="cm-variable">window</span> <span class="cm-operator">!==</span> <span class="cm-string">"undefined"</span> <span class="cm-operator">&amp;&amp;</span> <span class="cm-variable">window</span> <span class="cm-operator">!==</span> <span class="cm-atom">null</span>) {
-  <span class="cm-variable">environment</span> <span class="cm-operator">=</span> <span class="cm-string">'browser (probably)'</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">if</span> (<span class="cm-keyword">typeof</span> <span class="cm-variable">window</span> <span class="cm-operator">!==</span> <span class="cm-string">"undefined"</span> <span class="cm-operator">&amp;&amp;</span> <span class="cm-variable">window</span> <span class="cm-operator">!==</span> <span class="cm-atom">null</span>) {
+  <span class="cm-keyword">var</span> <span class="cm-def">environment</span> <span class="cm-operator">=</span> <span class="cm-string">'browser (probably)'</span>;
 }
 </pre>
     </div>
@@ -2895,13 +2803,13 @@ if (typeof window !== "undefined" && window !== null) {
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="soaks-js">var ref, zip;
+      <textarea class="javascript-output" id="soaks-js">var ref;
 
-zip = typeof lottery.drawWinner === "function" ? (ref = lottery.drawWinner().address) != null ? ref.zipcode : void 0 : void 0;
+var zip = typeof lottery.drawWinner === "function" ? (ref = lottery.drawWinner().address) != null ? ref.zipcode : void 0 : void 0;
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">ref</span>, <span class="cm-def">zip</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">ref</span>;
 
-<span class="cm-variable">zip</span> <span class="cm-operator">=</span> <span class="cm-keyword">typeof</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span> <span class="cm-operator">===</span> <span class="cm-string">"function"</span> <span class="cm-operator">?</span> (<span class="cm-variable">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span>().<span class="cm-property">address</span>) <span class="cm-operator">!=</span> <span class="cm-atom">null</span> <span class="cm-operator">?</span> <span class="cm-variable">ref</span>.<span class="cm-property">zipcode</span> : <span class="cm-keyword">void</span> <span class="cm-number">0</span> : <span class="cm-keyword">void</span> <span class="cm-number">0</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">zip</span> <span class="cm-operator">=</span> <span class="cm-keyword">typeof</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span> <span class="cm-operator">===</span> <span class="cm-string">"function"</span> <span class="cm-operator">?</span> (<span class="cm-variable">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">lottery</span>.<span class="cm-property">drawWinner</span>().<span class="cm-property">address</span>) <span class="cm-operator">!=</span> <span class="cm-atom">null</span> <span class="cm-operator">?</span> <span class="cm-variable">ref</span>.<span class="cm-property">zipcode</span> : <span class="cm-keyword">void</span> <span class="cm-number">0</span> : <span class="cm-keyword">void</span> <span class="cm-number">0</span>;
 </pre>
     </div>
   </div>
@@ -2994,19 +2902,15 @@ theSwitch = 0
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="parallel_assignment-js">var theBait, theSwitch;
+      <textarea class="javascript-output" id="parallel_assignment-js">var theBait = 1000;
 
-theBait = 1000;
-
-theSwitch = 0;
+var theSwitch = 0;
 
 [theBait, theSwitch] = [theSwitch, theBait];
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">theBait</span>, <span class="cm-def">theSwitch</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">theBait</span> <span class="cm-operator">=</span> <span class="cm-number">1000</span>;
 
-<span class="cm-variable">theBait</span> <span class="cm-operator">=</span> <span class="cm-number">1000</span>;
-
-<span class="cm-variable">theSwitch</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">theSwitch</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>;
 
 [<span class="cm-variable">theBait</span>, <span class="cm-variable">theSwitch</span>] <span class="cm-operator">=</span> [<span class="cm-variable">theSwitch</span>, <span class="cm-variable">theBait</span>];
 </pre>
@@ -3041,23 +2945,19 @@ theSwitch = 0;
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="multiple_return_values-js">var city, forecast, temp, weatherReport;
-
-weatherReport = function(location) {
+      <textarea class="javascript-output" id="multiple_return_values-js">var weatherReport = function(location) {
   // Make an Ajax request to fetch the weather...
   return [location, 72, "Mostly Sunny"];
 };
 
-[city, temp, forecast] = weatherReport("Berkeley, CA");
+var [city, temp, forecast] = weatherReport("Berkeley, CA");
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">city</span>, <span class="cm-def">forecast</span>, <span class="cm-def">temp</span>, <span class="cm-def">weatherReport</span>;
-
-<span class="cm-variable">weatherReport</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">location</span>) {
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">weatherReport</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">location</span>) {
   <span class="cm-comment">// Make an Ajax request to fetch the weather...</span>
   <span class="cm-keyword">return</span> [<span class="cm-variable-2">location</span>, <span class="cm-number">72</span>, <span class="cm-string">"Mostly Sunny"</span>];
 };
 
-[<span class="cm-variable">city</span>, <span class="cm-variable">temp</span>, <span class="cm-variable">forecast</span>] <span class="cm-operator">=</span> <span class="cm-variable">weatherReport</span>(<span class="cm-string">"Berkeley, CA"</span>);
+<span class="cm-keyword">var</span> [<span class="cm-def">city</span>, <span class="cm-def">temp</span>, <span class="cm-def">forecast</span>] <span class="cm-operator">=</span> <span class="cm-variable">weatherReport</span>(<span class="cm-string">"Berkeley, CA"</span>);
 </pre>
     </div>
   </div>
@@ -3106,9 +3006,9 @@ weatherReport = function(location) {
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="object_extraction-js">var city, futurists, name, sculptor, street;
+      <textarea class="javascript-output" id="object_extraction-js">var city, name, street;
 
-futurists = {
+var futurists = {
   sculptor: "Umberto Boccioni",
   painter: "Vladimir Burliuk",
   poet: {
@@ -3117,7 +3017,7 @@ futurists = {
   }
 };
 
-({sculptor} = futurists);
+var {sculptor} = futurists;
 
 ({
   poet: {
@@ -3126,9 +3026,9 @@ futurists = {
   }
 } = futurists);
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">city</span>, <span class="cm-def">futurists</span>, <span class="cm-def">name</span>, <span class="cm-def">sculptor</span>, <span class="cm-def">street</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">city</span>, <span class="cm-def">name</span>, <span class="cm-def">street</span>;
 
-<span class="cm-variable">futurists</span> <span class="cm-operator">=</span> {
+<span class="cm-keyword">var</span> <span class="cm-def">futurists</span> <span class="cm-operator">=</span> {
   <span class="cm-property">sculptor</span>: <span class="cm-string">"Umberto Boccioni"</span>,
   <span class="cm-property">painter</span>: <span class="cm-string">"Vladimir Burliuk"</span>,
   <span class="cm-property">poet</span>: {
@@ -3137,7 +3037,7 @@ futurists = {
   }
 };
 
-({<span class="cm-property">sculptor</span>} <span class="cm-operator">=</span> <span class="cm-variable">futurists</span>);
+<span class="cm-keyword">var</span> {<span class="cm-def">sculptor</span>} <span class="cm-operator">=</span> <span class="cm-variable">futurists</span>;
 
 ({
   <span class="cm-property">poet</span>: {
@@ -3173,17 +3073,17 @@ futurists = {
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="patterns_and_splats-js">var close, contents, open, ref, tag,
+      <textarea class="javascript-output" id="patterns_and_splats-js">var close, contents, open, ref,
   splice = [].splice;
 
-tag = "<impossible>";
+var tag = "<impossible>";
 
 ref = tag.split(""), [open, ...contents] = ref, [close] = splice.call(contents, -1);
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">close</span>, <span class="cm-def">contents</span>, <span class="cm-def">open</span>, <span class="cm-def">ref</span>, <span class="cm-def">tag</span>,
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">close</span>, <span class="cm-def">contents</span>, <span class="cm-def">open</span>, <span class="cm-def">ref</span>,
   <span class="cm-def">splice</span> <span class="cm-operator">=</span> [].<span class="cm-property">splice</span>;
 
-<span class="cm-variable">tag</span> <span class="cm-operator">=</span> <span class="cm-string">"&lt;impossible>"</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">tag</span> <span class="cm-operator">=</span> <span class="cm-string">"&lt;impossible>"</span>;
 
 <span class="cm-variable">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">tag</span>.<span class="cm-property">split</span>(<span class="cm-string">""</span>), [<span class="cm-variable">open</span>, <span class="cm-meta">...</span><span class="cm-variable">contents</span>] <span class="cm-operator">=</span> <span class="cm-variable">ref</span>, [<span class="cm-variable">close</span>] <span class="cm-operator">=</span> <span class="cm-variable">splice</span>.<span class="cm-property">call</span>(<span class="cm-variable">contents</span>, <span class="cm-operator">-</span><span class="cm-number">1</span>);
 </pre>
@@ -3216,17 +3116,17 @@ ref = tag.split(""), [open, ...contents] = ref, [close] = splice.call(contents, 
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="expansion-js">var first, last, ref, text,
+      <textarea class="javascript-output" id="expansion-js">var first, last, ref,
   slice = [].slice;
 
-text = "Every literary critic believes he will outwit history and have the last word";
+var text = "Every literary critic believes he will outwit history and have the last word";
 
 ref = text.split(" "), [first] = ref, [last] = slice.call(ref, -1);
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">first</span>, <span class="cm-def">last</span>, <span class="cm-def">ref</span>, <span class="cm-def">text</span>,
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">first</span>, <span class="cm-def">last</span>, <span class="cm-def">ref</span>,
   <span class="cm-def">slice</span> <span class="cm-operator">=</span> [].<span class="cm-property">slice</span>;
 
-<span class="cm-variable">text</span> <span class="cm-operator">=</span> <span class="cm-string">"Every literary critic believes he will outwit history and have the last word"</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">text</span> <span class="cm-operator">=</span> <span class="cm-string">"Every literary critic believes he will outwit history and have the last word"</span>;
 
 <span class="cm-variable">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">text</span>.<span class="cm-property">split</span>(<span class="cm-string">" "</span>), [<span class="cm-variable">first</span>] <span class="cm-operator">=</span> <span class="cm-variable">ref</span>, [<span class="cm-variable">last</span>] <span class="cm-operator">=</span> <span class="cm-variable">slice</span>.<span class="cm-property">call</span>(<span class="cm-variable">ref</span>, <span class="cm-operator">-</span><span class="cm-number">1</span>);
 </pre>
@@ -3261,30 +3161,26 @@ tim = new Person name: 'Tim', age: 4
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="constructor_destructuring-js">var Person, tim;
-
-Person = class Person {
+      <textarea class="javascript-output" id="constructor_destructuring-js">var Person = class Person {
   constructor(options) {
     ({name: this.name, age: this.age, height: this.height = 'average'} = options);
   }
 
 };
 
-tim = new Person({
+var tim = new Person({
   name: 'Tim',
   age: 4
 });
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">Person</span>, <span class="cm-def">tim</span>;
-
-<span class="cm-variable">Person</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">Person</span> {
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">Person</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">Person</span> {
   <span class="cm-property">constructor</span>(<span class="cm-def">options</span>) {
     ({<span class="cm-property">name</span>: <span class="cm-keyword">this</span>.<span class="cm-property">name</span>, <span class="cm-property">age</span>: <span class="cm-keyword">this</span>.<span class="cm-property">age</span>, <span class="cm-property">height</span>: <span class="cm-keyword">this</span>.<span class="cm-property">height</span> <span class="cm-operator">=</span> <span class="cm-string">'average'</span>} <span class="cm-operator">=</span> <span class="cm-variable-2">options</span>);
   }
 
 };
 
-<span class="cm-variable">tim</span> <span class="cm-operator">=</span> <span class="cm-keyword">new</span> <span class="cm-variable">Person</span>({
+<span class="cm-keyword">var</span> <span class="cm-def">tim</span> <span class="cm-operator">=</span> <span class="cm-keyword">new</span> <span class="cm-variable">Person</span>({
   <span class="cm-property">name</span>: <span class="cm-string">'Tim'</span>,
   <span class="cm-property">age</span>: <span class="cm-number">4</span>
 });
@@ -3328,9 +3224,7 @@ tim = new Person({
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="fat_arrow-js">var Account;
-
-Account = function(customer, cart) {
+      <textarea class="javascript-output" id="fat_arrow-js">var Account = function(customer, cart) {
   this.customer = customer;
   this.cart = cart;
   return $('.shopping_cart').on('click', (event) => {
@@ -3338,9 +3232,7 @@ Account = function(customer, cart) {
   });
 };
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">Account</span>;
-
-<span class="cm-variable">Account</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">customer</span>, <span class="cm-def">cart</span>) {
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">Account</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">customer</span>, <span class="cm-def">cart</span>) {
   <span class="cm-keyword">this</span>.<span class="cm-property">customer</span> <span class="cm-operator">=</span> <span class="cm-variable-2">customer</span>;
   <span class="cm-keyword">this</span>.<span class="cm-property">cart</span> <span class="cm-operator">=</span> <span class="cm-variable-2">cart</span>;
   <span class="cm-keyword">return</span> <span class="cm-variable">$</span>(<span class="cm-string">'.shopping_cart'</span>).<span class="cm-property">on</span>(<span class="cm-string">'click'</span>, (<span class="cm-def">event</span>) <span class="cm-operator">=></span> {
@@ -3382,11 +3274,8 @@ window.ps or= perfectSquares()
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="generators-js">var perfectSquares;
-
-perfectSquares = function*() {
-  var num;
-  num = 0;
+      <textarea class="javascript-output" id="generators-js">var perfectSquares = function*() {
+  var num = 0;
   while (true) {
     num += 1;
     yield num * num;
@@ -3395,11 +3284,8 @@ perfectSquares = function*() {
 
 window.ps || (window.ps = perfectSquares());
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">perfectSquares</span>;
-
-<span class="cm-variable">perfectSquares</span> <span class="cm-operator">=</span> <span class="cm-keyword">function*</span>() {
-  <span class="cm-keyword">var</span> <span class="cm-def">num</span>;
-  <span class="cm-variable-2">num</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">perfectSquares</span> <span class="cm-operator">=</span> <span class="cm-keyword">function*</span>() {
+  <span class="cm-keyword">var</span> <span class="cm-def">num</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>;
   <span class="cm-keyword">while</span> (<span class="cm-atom">true</span>) {
     <span class="cm-variable-2">num</span> <span class="cm-operator">+=</span> <span class="cm-number">1</span>;
     <span class="cm-keyword">yield</span> <span class="cm-variable-2">num</span> <span class="cm-operator">*</span> <span class="cm-variable-2">num</span>;
@@ -3457,22 +3343,18 @@ getFibonacciNumbers = (length) ->
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="generator_iteration-js">var fibonacci, getFibonacciNumbers;
-
-fibonacci = function*() {
-  var current, previous;
-  [previous, current] = [1, 1];
+      <textarea class="javascript-output" id="generator_iteration-js">var fibonacci = function*() {
+  var [previous, current] = [1, 1];
   while (true) {
     [previous, current] = [current, previous + current];
     yield current;
   }
 };
 
-getFibonacciNumbers = function(length) {
-  var n, ref, results;
-  results = [1];
-  ref = fibonacci();
-  for (n of ref) {
+var getFibonacciNumbers = function(length) {
+  var results = [1];
+  var ref = fibonacci();
+  for (var n of ref) {
     results.push(n);
     if (results.length === length) {
       break;
@@ -3481,22 +3363,18 @@ getFibonacciNumbers = function(length) {
   return results;
 };
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">fibonacci</span>, <span class="cm-def">getFibonacciNumbers</span>;
-
-<span class="cm-variable">fibonacci</span> <span class="cm-operator">=</span> <span class="cm-keyword">function*</span>() {
-  <span class="cm-keyword">var</span> <span class="cm-def">current</span>, <span class="cm-def">previous</span>;
-  [<span class="cm-variable-2">previous</span>, <span class="cm-variable-2">current</span>] <span class="cm-operator">=</span> [<span class="cm-number">1</span>, <span class="cm-number">1</span>];
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">fibonacci</span> <span class="cm-operator">=</span> <span class="cm-keyword">function*</span>() {
+  <span class="cm-keyword">var</span> [<span class="cm-def">previous</span>, <span class="cm-def">current</span>] <span class="cm-operator">=</span> [<span class="cm-number">1</span>, <span class="cm-number">1</span>];
   <span class="cm-keyword">while</span> (<span class="cm-atom">true</span>) {
     [<span class="cm-variable-2">previous</span>, <span class="cm-variable-2">current</span>] <span class="cm-operator">=</span> [<span class="cm-variable-2">current</span>, <span class="cm-variable-2">previous</span> <span class="cm-operator">+</span> <span class="cm-variable-2">current</span>];
     <span class="cm-keyword">yield</span> <span class="cm-variable-2">current</span>;
   }
 };
 
-<span class="cm-variable">getFibonacciNumbers</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">length</span>) {
-  <span class="cm-keyword">var</span> <span class="cm-def">n</span>, <span class="cm-def">ref</span>, <span class="cm-def">results</span>;
-  <span class="cm-variable-2">results</span> <span class="cm-operator">=</span> [<span class="cm-number">1</span>];
-  <span class="cm-variable-2">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">fibonacci</span>();
-  <span class="cm-keyword">for</span> (<span class="cm-variable-2">n</span> <span class="cm-keyword">of</span> <span class="cm-variable-2">ref</span>) {
+<span class="cm-keyword">var</span> <span class="cm-def">getFibonacciNumbers</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">length</span>) {
+  <span class="cm-keyword">var</span> <span class="cm-def">results</span> <span class="cm-operator">=</span> [<span class="cm-number">1</span>];
+  <span class="cm-keyword">var</span> <span class="cm-def">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">fibonacci</span>();
+  <span class="cm-keyword">for</span> (<span class="cm-keyword">var</span> <span class="cm-def">n</span> <span class="cm-keyword">of</span> <span class="cm-variable-2">ref</span>) {
     <span class="cm-variable-2">results</span>.<span class="cm-property">push</span>(<span class="cm-variable-2">n</span>);
     <span class="cm-keyword">if</span> (<span class="cm-variable-2">results</span>.<span class="cm-property">length</span> <span class="cm-operator">===</span> <span class="cm-variable-2">length</span>) {
       <span class="cm-keyword">break</span>;
@@ -3569,22 +3447,19 @@ countdown 3
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="async-js">// Your browser must support async/await and speech synthesis
 // to run this example.
-var countdown, say, sleep;
-
-sleep = function(ms) {
+var sleep = function(ms) {
   return new Promise(function(resolve) {
     return window.setTimeout(resolve, ms);
   });
 };
 
-say = function(text) {
+var say = function(text) {
   window.speechSynthesis.cancel();
   return window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
 };
 
-countdown = async function(seconds) {
-  var i, j, ref;
-  for (i = j = ref = seconds; (ref <= 1 ? j <= 1 : j >= 1); i = ref <= 1 ? ++j : --j) {
+var countdown = async function(seconds) {
+  for (var ref = seconds, j = ref, i = j; (ref <= 1 ? j <= 1 : j >= 1); i = ref <= 1 ? ++j : --j) {
     say(i);
     await sleep(1000); // wait one second
   }
@@ -3595,22 +3470,19 @@ countdown(3);
 </textarea>
       <pre class="placeholder-code"><span class="cm-comment">// Your browser must support async/await and speech synthesis</span>
 <span class="cm-comment">// to run this example.</span>
-<span class="cm-keyword">var</span> <span class="cm-def">countdown</span>, <span class="cm-def">say</span>, <span class="cm-def">sleep</span>;
-
-<span class="cm-variable">sleep</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">ms</span>) {
+<span class="cm-keyword">var</span> <span class="cm-def">sleep</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">ms</span>) {
   <span class="cm-keyword">return</span> <span class="cm-keyword">new</span> <span class="cm-variable">Promise</span>(<span class="cm-keyword">function</span>(<span class="cm-def">resolve</span>) {
     <span class="cm-keyword">return</span> <span class="cm-variable">window</span>.<span class="cm-property">setTimeout</span>(<span class="cm-variable-2">resolve</span>, <span class="cm-variable-2">ms</span>);
   });
 };
 
-<span class="cm-variable">say</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">text</span>) {
+<span class="cm-keyword">var</span> <span class="cm-def">say</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">text</span>) {
   <span class="cm-variable">window</span>.<span class="cm-property">speechSynthesis</span>.<span class="cm-property">cancel</span>();
   <span class="cm-keyword">return</span> <span class="cm-variable">window</span>.<span class="cm-property">speechSynthesis</span>.<span class="cm-property">speak</span>(<span class="cm-keyword">new</span> <span class="cm-variable">SpeechSynthesisUtterance</span>(<span class="cm-variable-2">text</span>));
 };
 
-<span class="cm-variable">countdown</span> <span class="cm-operator">=</span> <span class="cm-keyword">async</span> <span class="cm-keyword">function</span>(<span class="cm-def">seconds</span>) {
-  <span class="cm-keyword">var</span> <span class="cm-def">i</span>, <span class="cm-def">j</span>, <span class="cm-def">ref</span>;
-  <span class="cm-keyword">for</span> (<span class="cm-variable-2">i</span> <span class="cm-operator">=</span> <span class="cm-variable-2">j</span> <span class="cm-operator">=</span> <span class="cm-variable-2">ref</span> <span class="cm-operator">=</span> <span class="cm-variable-2">seconds</span>; (<span class="cm-variable-2">ref</span> <span class="cm-operator">&lt;=</span> <span class="cm-number">1</span> <span class="cm-operator">?</span> <span class="cm-variable-2">j</span> <span class="cm-operator">&lt;=</span> <span class="cm-number">1</span> : <span class="cm-variable-2">j</span> <span class="cm-operator">>=</span> <span class="cm-number">1</span>); <span class="cm-variable-2">i</span> <span class="cm-operator">=</span> <span class="cm-variable-2">ref</span> <span class="cm-operator">&lt;=</span> <span class="cm-number">1</span> <span class="cm-operator">?</span> <span class="cm-operator">++</span><span class="cm-variable-2">j</span> : <span class="cm-operator">--</span><span class="cm-variable-2">j</span>) {
+<span class="cm-keyword">var</span> <span class="cm-def">countdown</span> <span class="cm-operator">=</span> <span class="cm-keyword">async</span> <span class="cm-keyword">function</span>(<span class="cm-def">seconds</span>) {
+  <span class="cm-keyword">for</span> (<span class="cm-keyword">var</span> <span class="cm-def">ref</span> <span class="cm-operator">=</span> <span class="cm-variable-2">seconds</span>, <span class="cm-def">j</span> <span class="cm-operator">=</span> <span class="cm-variable-2">ref</span>, <span class="cm-def">i</span> <span class="cm-operator">=</span> <span class="cm-variable-2">j</span>; (<span class="cm-variable-2">ref</span> <span class="cm-operator">&lt;=</span> <span class="cm-number">1</span> <span class="cm-operator">?</span> <span class="cm-variable-2">j</span> <span class="cm-operator">&lt;=</span> <span class="cm-number">1</span> : <span class="cm-variable-2">j</span> <span class="cm-operator">>=</span> <span class="cm-number">1</span>); <span class="cm-variable-2">i</span> <span class="cm-operator">=</span> <span class="cm-variable-2">ref</span> <span class="cm-operator">&lt;=</span> <span class="cm-number">1</span> <span class="cm-operator">?</span> <span class="cm-operator">++</span><span class="cm-variable-2">j</span> : <span class="cm-operator">--</span><span class="cm-variable-2">j</span>) {
     <span class="cm-variable">say</span>(<span class="cm-variable-2">i</span>);
     <span class="cm-keyword">await</span> <span class="cm-variable">sleep</span>(<span class="cm-number">1000</span>); <span class="cm-comment">// wait one second</span>
   }
@@ -3686,9 +3558,7 @@ tom.move()
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="classes-js">var Animal, Horse, Snake, sam, tom;
-
-Animal = class Animal {
+      <textarea class="javascript-output" id="classes-js">var Animal = class Animal {
   constructor(name) {
     this.name = name;
   }
@@ -3699,7 +3569,7 @@ Animal = class Animal {
 
 };
 
-Snake = class Snake extends Animal {
+var Snake = class Snake extends Animal {
   move() {
     alert("Slithering...");
     return super.move(5);
@@ -3707,7 +3577,7 @@ Snake = class Snake extends Animal {
 
 };
 
-Horse = class Horse extends Animal {
+var Horse = class Horse extends Animal {
   move() {
     alert("Galloping...");
     return super.move(45);
@@ -3715,17 +3585,15 @@ Horse = class Horse extends Animal {
 
 };
 
-sam = new Snake("Sammy the Python");
+var sam = new Snake("Sammy the Python");
 
-tom = new Horse("Tommy the Palomino");
+var tom = new Horse("Tommy the Palomino");
 
 sam.move();
 
 tom.move();
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">Animal</span>, <span class="cm-def">Horse</span>, <span class="cm-def">Snake</span>, <span class="cm-def">sam</span>, <span class="cm-def">tom</span>;
-
-<span class="cm-variable">Animal</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">Animal</span> {
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">Animal</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">Animal</span> {
   <span class="cm-property">constructor</span>(<span class="cm-def">name</span>) {
     <span class="cm-keyword">this</span>.<span class="cm-property">name</span> <span class="cm-operator">=</span> <span class="cm-variable-2">name</span>;
   }
@@ -3736,7 +3604,7 @@ tom.move();
 
 };
 
-<span class="cm-variable">Snake</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">Snake</span> <span class="cm-keyword">extends</span> <span class="cm-variable">Animal</span> {
+<span class="cm-keyword">var</span> <span class="cm-def">Snake</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">Snake</span> <span class="cm-keyword">extends</span> <span class="cm-variable">Animal</span> {
   <span class="cm-property">move</span>() {
     <span class="cm-variable">alert</span>(<span class="cm-string">"Slithering..."</span>);
     <span class="cm-keyword">return</span> <span class="cm-keyword">super</span>.<span class="cm-property">move</span>(<span class="cm-number">5</span>);
@@ -3744,7 +3612,7 @@ tom.move();
 
 };
 
-<span class="cm-variable">Horse</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">Horse</span> <span class="cm-keyword">extends</span> <span class="cm-variable">Animal</span> {
+<span class="cm-keyword">var</span> <span class="cm-def">Horse</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">Horse</span> <span class="cm-keyword">extends</span> <span class="cm-variable">Animal</span> {
   <span class="cm-property">move</span>() {
     <span class="cm-variable">alert</span>(<span class="cm-string">"Galloping..."</span>);
     <span class="cm-keyword">return</span> <span class="cm-keyword">super</span>.<span class="cm-property">move</span>(<span class="cm-number">45</span>);
@@ -3752,9 +3620,9 @@ tom.move();
 
 };
 
-<span class="cm-variable">sam</span> <span class="cm-operator">=</span> <span class="cm-keyword">new</span> <span class="cm-variable">Snake</span>(<span class="cm-string">"Sammy the Python"</span>);
+<span class="cm-keyword">var</span> <span class="cm-def">sam</span> <span class="cm-operator">=</span> <span class="cm-keyword">new</span> <span class="cm-variable">Snake</span>(<span class="cm-string">"Sammy the Python"</span>);
 
-<span class="cm-variable">tom</span> <span class="cm-operator">=</span> <span class="cm-keyword">new</span> <span class="cm-variable">Horse</span>(<span class="cm-string">"Tommy the Palomino"</span>);
+<span class="cm-keyword">var</span> <span class="cm-def">tom</span> <span class="cm-operator">=</span> <span class="cm-keyword">new</span> <span class="cm-variable">Horse</span>(<span class="cm-string">"Tommy the Palomino"</span>);
 
 <span class="cm-variable">sam</span>.<span class="cm-property">move</span>();
 
@@ -3799,16 +3667,13 @@ tom.move();
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="static-js">var Teenager;
-
-Teenager = class Teenager {
+      <textarea class="javascript-output" id="static-js">var Teenager = class Teenager {
   static say(speech) {
-    var fillers, i, index, len, output, word, words;
-    words = speech.split(' ');
-    fillers = ['uh', 'um', 'like', 'actually', 'so', 'maybe'];
-    output = [];
-    for (index = i = 0, len = words.length; i < len; index = ++i) {
-      word = words[index];
+    var words = speech.split(' ');
+    var fillers = ['uh', 'um', 'like', 'actually', 'so', 'maybe'];
+    var output = [];
+    for (var i = 0, index = i, len = words.length; i < len; index = ++i) {
+      var word = words[index];
       output.push(word);
       if (index !== words.length - 1) {
         output.push(fillers[Math.floor(Math.random() * fillers.length)]);
@@ -3819,16 +3684,13 @@ Teenager = class Teenager {
 
 };
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">Teenager</span>;
-
-<span class="cm-variable">Teenager</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">Teenager</span> {
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">Teenager</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">Teenager</span> {
   <span class="cm-keyword">static</span> <span class="cm-property">say</span>(<span class="cm-def">speech</span>) {
-    <span class="cm-keyword">var</span> <span class="cm-def">fillers</span>, <span class="cm-def">i</span>, <span class="cm-def">index</span>, <span class="cm-def">len</span>, <span class="cm-def">output</span>, <span class="cm-def">word</span>, <span class="cm-def">words</span>;
-    <span class="cm-variable-2">words</span> <span class="cm-operator">=</span> <span class="cm-variable-2">speech</span>.<span class="cm-property">split</span>(<span class="cm-string">' '</span>);
-    <span class="cm-variable-2">fillers</span> <span class="cm-operator">=</span> [<span class="cm-string">'uh'</span>, <span class="cm-string">'um'</span>, <span class="cm-string">'like'</span>, <span class="cm-string">'actually'</span>, <span class="cm-string">'so'</span>, <span class="cm-string">'maybe'</span>];
-    <span class="cm-variable-2">output</span> <span class="cm-operator">=</span> [];
-    <span class="cm-keyword">for</span> (<span class="cm-variable-2">index</span> <span class="cm-operator">=</span> <span class="cm-variable-2">i</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>, <span class="cm-variable-2">len</span> <span class="cm-operator">=</span> <span class="cm-variable-2">words</span>.<span class="cm-property">length</span>; <span class="cm-variable-2">i</span> <span class="cm-operator">&lt;</span> <span class="cm-variable-2">len</span>; <span class="cm-variable-2">index</span> <span class="cm-operator">=</span> <span class="cm-operator">++</span><span class="cm-variable-2">i</span>) {
-      <span class="cm-variable-2">word</span> <span class="cm-operator">=</span> <span class="cm-variable-2">words</span>[<span class="cm-variable-2">index</span>];
+    <span class="cm-keyword">var</span> <span class="cm-def">words</span> <span class="cm-operator">=</span> <span class="cm-variable-2">speech</span>.<span class="cm-property">split</span>(<span class="cm-string">' '</span>);
+    <span class="cm-keyword">var</span> <span class="cm-def">fillers</span> <span class="cm-operator">=</span> [<span class="cm-string">'uh'</span>, <span class="cm-string">'um'</span>, <span class="cm-string">'like'</span>, <span class="cm-string">'actually'</span>, <span class="cm-string">'so'</span>, <span class="cm-string">'maybe'</span>];
+    <span class="cm-keyword">var</span> <span class="cm-def">output</span> <span class="cm-operator">=</span> [];
+    <span class="cm-keyword">for</span> (<span class="cm-keyword">var</span> <span class="cm-def">i</span> <span class="cm-operator">=</span> <span class="cm-number">0</span>, <span class="cm-def">index</span> <span class="cm-operator">=</span> <span class="cm-variable-2">i</span>, <span class="cm-def">len</span> <span class="cm-operator">=</span> <span class="cm-variable-2">words</span>.<span class="cm-property">length</span>; <span class="cm-variable-2">i</span> <span class="cm-operator">&lt;</span> <span class="cm-variable-2">len</span>; <span class="cm-variable-2">index</span> <span class="cm-operator">=</span> <span class="cm-operator">++</span><span class="cm-variable-2">i</span>) {
+      <span class="cm-keyword">var</span> <span class="cm-def">word</span> <span class="cm-operator">=</span> <span class="cm-variable-2">words</span>[<span class="cm-variable-2">index</span>];
       <span class="cm-variable-2">output</span>.<span class="cm-property">push</span>(<span class="cm-variable-2">word</span>);
       <span class="cm-keyword">if</span> (<span class="cm-variable-2">index</span> <span class="cm-operator">!==</span> <span class="cm-variable-2">words</span>.<span class="cm-property">length</span> <span class="cm-operator">-</span> <span class="cm-number">1</span>) {
         <span class="cm-variable-2">output</span>.<span class="cm-property">push</span>(<span class="cm-variable-2">fillers</span>[<span class="cm-variable">Math</span>.<span class="cm-property">floor</span>(<span class="cm-variable">Math</span>.<span class="cm-property">random</span>() <span class="cm-operator">*</span> <span class="cm-variable-2">fillers</span>.<span class="cm-property">length</span>)]);
@@ -3999,11 +3861,9 @@ grade = switch
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="switch_with_no_expression-js">var grade, score;
+      <textarea class="javascript-output" id="switch_with_no_expression-js">var score = 76;
 
-score = 76;
-
-grade = (function() {
+var grade = (function() {
   switch (false) {
     case !(score < 60):
       return 'F';
@@ -4020,11 +3880,9 @@ grade = (function() {
 
 // grade == 'C'
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">grade</span>, <span class="cm-def">score</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">score</span> <span class="cm-operator">=</span> <span class="cm-number">76</span>;
 
-<span class="cm-variable">score</span> <span class="cm-operator">=</span> <span class="cm-number">76</span>;
-
-<span class="cm-variable">grade</span> <span class="cm-operator">=</span> (<span class="cm-keyword">function</span>() {
+<span class="cm-keyword">var</span> <span class="cm-def">grade</span> <span class="cm-operator">=</span> (<span class="cm-keyword">function</span>() {
   <span class="cm-keyword">switch</span> (<span class="cm-atom">false</span>) {
     <span class="cm-keyword">case</span> <span class="cm-operator">!</span>(<span class="cm-variable">score</span> <span class="cm-operator">&lt;</span> <span class="cm-number">60</span>):
       <span class="cm-keyword">return</span> <span class="cm-string">'F'</span>;
@@ -4071,26 +3929,22 @@ finally
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="try-js">var error;
-
-try {
+      <textarea class="javascript-output" id="try-js">try {
   allHellBreaksLoose();
   catsAndDogsLivingTogether();
 } catch (error1) {
-  error = error1;
+  var error = error1;
   print(error);
 } finally {
   cleanUp();
 }
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">error</span>;
-
-<span class="cm-keyword">try</span> {
+      <pre class="placeholder-code"><span class="cm-keyword">try</span> {
   <span class="cm-variable">allHellBreaksLoose</span>();
   <span class="cm-variable">catsAndDogsLivingTogether</span>();
 } <span class="cm-keyword">catch</span> (<span class="cm-def">error1</span>) {
-  <span class="cm-variable">error</span> <span class="cm-operator">=</span> <span class="cm-variable-2">error1</span>;
-  <span class="cm-variable">print</span>(<span class="cm-variable">error</span>);
+  <span class="cm-keyword">var</span> <span class="cm-def">error</span> <span class="cm-operator">=</span> <span class="cm-variable-2">error1</span>;
+  <span class="cm-variable">print</span>(<span class="cm-variable-2">error</span>);
 } <span class="cm-keyword">finally</span> {
   <span class="cm-variable">cleanUp</span>();
 }
@@ -4117,17 +3971,13 @@ healthy = 200 > cholesterol > 60
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="comparisons-js">var cholesterol, healthy;
+      <textarea class="javascript-output" id="comparisons-js">var cholesterol = 127;
 
-cholesterol = 127;
-
-healthy = (200 > cholesterol && cholesterol > 60);
+var healthy = (200 > cholesterol && cholesterol > 60);
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">cholesterol</span>, <span class="cm-def">healthy</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">cholesterol</span> <span class="cm-operator">=</span> <span class="cm-number">127</span>;
 
-<span class="cm-variable">cholesterol</span> <span class="cm-operator">=</span> <span class="cm-number">127</span>;
-
-<span class="cm-variable">healthy</span> <span class="cm-operator">=</span> (<span class="cm-number">200</span> <span class="cm-operator">></span> <span class="cm-variable">cholesterol</span> <span class="cm-operator">&amp;&amp;</span> <span class="cm-variable">cholesterol</span> <span class="cm-operator">></span> <span class="cm-number">60</span>);
+<span class="cm-keyword">var</span> <span class="cm-def">healthy</span> <span class="cm-operator">=</span> (<span class="cm-number">200</span> <span class="cm-operator">></span> <span class="cm-variable">cholesterol</span> <span class="cm-operator">&amp;&amp;</span> <span class="cm-variable">cholesterol</span> <span class="cm-operator">></span> <span class="cm-number">60</span>);
 </pre>
     </div>
   </div>
@@ -4166,16 +4016,12 @@ healthy = (200 > cholesterol && cholesterol > 60);
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="heregexes-js">var NUMBER;
-
-NUMBER = /^0b[01]+|^0o[0-7]+|^0x[\da-f]+|^\d*\.?\d+(?:e[+-]?\d+)?/i; // binary
+      <textarea class="javascript-output" id="heregexes-js">var NUMBER = /^0b[01]+|^0o[0-7]+|^0x[\da-f]+|^\d*\.?\d+(?:e[+-]?\d+)?/i; // binary
 // octal
 // hex
 // decimal
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">NUMBER</span>;
-
-<span class="cm-variable">NUMBER</span> <span class="cm-operator">=</span> <span class="cm-string-2">/^0b[01]+|^0o[0-7]+|^0x[\da-f]+|^\d*\.?\d+(?:e[+-]?\d+)?/i</span>; <span class="cm-comment">// binary</span>
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">NUMBER</span> <span class="cm-operator">=</span> <span class="cm-string-2">/^0b[01]+|^0o[0-7]+|^0x[\da-f]+|^\d*\.?\d+(?:e[+-]?\d+)?/i</span>; <span class="cm-comment">// binary</span>
 <span class="cm-comment">// octal</span>
 <span class="cm-comment">// hex</span>
 <span class="cm-comment">// decimal</span>
@@ -4212,27 +4058,23 @@ greet = (name, adjective) ->
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="tagged_template_literals-js">var greet, upperCaseExpr;
-
-upperCaseExpr = function(textParts, ...expressions) {
+      <textarea class="javascript-output" id="tagged_template_literals-js">var upperCaseExpr = function(textParts, ...expressions) {
   return textParts.reduce(function(text, textPart, i) {
     return text + expressions[i - 1].toUpperCase() + textPart;
   });
 };
 
-greet = function(name, adjective) {
+var greet = function(name, adjective) {
   return upperCaseExpr`Hi ${name}. You look ${adjective}!`;
 };
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">greet</span>, <span class="cm-def">upperCaseExpr</span>;
-
-<span class="cm-variable">upperCaseExpr</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">textParts</span>, <span class="cm-meta">...</span><span class="cm-def">expressions</span>) {
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">upperCaseExpr</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">textParts</span>, <span class="cm-meta">...</span><span class="cm-def">expressions</span>) {
   <span class="cm-keyword">return</span> <span class="cm-variable-2">textParts</span>.<span class="cm-property">reduce</span>(<span class="cm-keyword">function</span>(<span class="cm-def">text</span>, <span class="cm-def">textPart</span>, <span class="cm-def">i</span>) {
     <span class="cm-keyword">return</span> <span class="cm-variable-2">text</span> <span class="cm-operator">+</span> <span class="cm-variable-2">expressions</span>[<span class="cm-variable-2">i</span> <span class="cm-operator">-</span> <span class="cm-number">1</span>].<span class="cm-property">toUpperCase</span>() <span class="cm-operator">+</span> <span class="cm-variable-2">textPart</span>;
   });
 };
 
-<span class="cm-variable">greet</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">name</span>, <span class="cm-def">adjective</span>) {
+<span class="cm-keyword">var</span> <span class="cm-def">greet</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">name</span>, <span class="cm-def">adjective</span>) {
   <span class="cm-keyword">return</span> <span class="cm-variable">upperCaseExpr</span><span class="cm-string-2">`Hi ${</span><span class="cm-variable-2">name</span><span class="cm-string-2">}. You look ${</span><span class="cm-variable-2">adjective</span><span class="cm-string-2">}!`</span>;
 };
 </pre>
@@ -4490,8 +4332,7 @@ do ->
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="dynamic_import-js">// Your browser must support dynamic import to run this example.
 (async function() {
-  var run;
-  ({run} = (await import('./browser-compiler-modern/coffeescript.js')));
+  var {run} = (await import('./browser-compiler-modern/coffeescript.js'));
   return run(`if 5 < new Date().getHours() < 9
   alert 'Time to make the coffee!'
 else
@@ -4500,8 +4341,7 @@ else
 </textarea>
       <pre class="placeholder-code"><span class="cm-comment">// Your browser must support dynamic import to run this example.</span>
 (<span class="cm-keyword">async</span> <span class="cm-keyword">function</span>() {
-  <span class="cm-keyword">var</span> <span class="cm-def">run</span>;
-  ({<span class="cm-property">run</span>} <span class="cm-operator">=</span> (<span class="cm-keyword">await</span> <span class="cm-keyword">import</span>(<span class="cm-string">'./browser-compiler-modern/coffeescript.js'</span>)));
+  <span class="cm-keyword">var</span> {<span class="cm-def">run</span>} <span class="cm-operator">=</span> (<span class="cm-keyword">await</span> <span class="cm-keyword">import</span>(<span class="cm-string">'./browser-compiler-modern/coffeescript.js'</span>));
   <span class="cm-keyword">return</span> <span class="cm-variable-2">run</span>(<span class="cm-string-2">`if 5 &lt; new Date().getHours() &lt; 9</span>
   <span class="cm-string-2">alert 'Time to make the coffee!'</span>
 <span class="cm-string-2">else</span>
@@ -4542,15 +4382,11 @@ else
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="embedded-js">var hi;
-
-hi = function() {
+      <textarea class="javascript-output" id="embedded-js">var hi = function() {
   return [document.title, "Hello JavaScript"].join(": ");
 };
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">hi</span>;
-
-<span class="cm-variable">hi</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>() {
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">hi</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>() {
   <span class="cm-keyword">return</span> [<span class="cm-variable">document</span>.<span class="cm-property">title</span>, <span class="cm-string">"Hello JavaScript"</span>].<span class="cm-property">join</span>(<span class="cm-string">": "</span>);
 };
 </pre>
@@ -4582,15 +4418,11 @@ hi = function() {
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="embedded_escaped-js">var markdown;
-
-markdown = function () {
+      <textarea class="javascript-output" id="embedded_escaped-js">var markdown = function () {
   return `In Markdown, write code like \`this\``;
 };
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">markdown</span>;
-
-<span class="cm-variable">markdown</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span> () {
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">markdown</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span> () {
   <span class="cm-keyword">return</span> <span class="cm-string-2">`In Markdown, write code like \`this\``</span>;
 };
 </pre>
@@ -4684,14 +4516,12 @@ function time() {
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="jsx-js">var renderStarRating;
-
-renderStarRating = function({rating, maxStars}) {
+      <textarea class="javascript-output" id="jsx-js">var renderStarRating = function({rating, maxStars}) {
   var emptyStar, wholeStar;
   return <aside title={`Rating: ${rating} of ${maxStars} stars`}>
     {(function() {
-    var i, ref, results;
-    results = [];
+    var i, ref;
+    var results = [];
     for (wholeStar = i = 0, ref = Math.floor(rating); (0 <= ref ? i < ref : i > ref); wholeStar = 0 <= ref ? ++i : --i) {
       results.push(<Star className="wholeStar" key={wholeStar} />);
     }
@@ -4699,9 +4529,9 @@ renderStarRating = function({rating, maxStars}) {
   })()}
     {rating % 1 !== 0 ? <Star className="halfStar" /> : void 0}
     {(function() {
-    var i, ref, ref1, results;
-    results = [];
-    for (emptyStar = i = ref = Math.ceil(rating), ref1 = maxStars; (ref <= ref1 ? i < ref1 : i > ref1); emptyStar = ref <= ref1 ? ++i : --i) {
+    var i, ref, ref1;
+    var results = [];
+    for (emptyStar = ref = Math.ceil(rating), i = ref, ref1 = maxStars; (ref <= ref1 ? i < ref1 : i > ref1); emptyStar = ref <= ref1 ? ++i : --i) {
       results.push(<Star className="emptyStar" key={emptyStar} />);
     }
     return results;
@@ -4709,14 +4539,12 @@ renderStarRating = function({rating, maxStars}) {
   </aside>;
 };
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">renderStarRating</span>;
-
-<span class="cm-variable">renderStarRating</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>({<span class="cm-def">rating</span>, <span class="cm-def">maxStars</span>}) {
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">renderStarRating</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>({<span class="cm-def">rating</span>, <span class="cm-def">maxStars</span>}) {
   <span class="cm-keyword">var</span> <span class="cm-def">emptyStar</span>, <span class="cm-def">wholeStar</span>;
   <span class="cm-keyword">return</span> <span class="cm-operator">&lt;</span><span class="cm-variable">aside</span> <span class="cm-variable">title</span><span class="cm-operator">=</span>{<span class="cm-string-2">`Rating: ${</span><span class="cm-variable-2">rating</span>} <span class="cm-variable">of</span> <span class="cm-variable">$</span>{<span class="cm-variable-2">maxStars</span>} <span class="cm-variable">stars</span><span class="cm-string-2">`}></span>
     <span class="cm-string-2">{(function() {</span>
-    <span class="cm-string-2">var i, ref, results;</span>
-    <span class="cm-string-2">results = [];</span>
+    <span class="cm-string-2">var i, ref;</span>
+    <span class="cm-string-2">var results = [];</span>
     <span class="cm-string-2">for (wholeStar = i = 0, ref = Math.floor(rating); (0 &lt;= ref ? i &lt; ref : i > ref); wholeStar = 0 &lt;= ref ? ++i : --i) {</span>
       <span class="cm-string-2">results.push(&lt;Star className="wholeStar" key={wholeStar} />);</span>
     <span class="cm-string-2">}</span>
@@ -4724,9 +4552,9 @@ renderStarRating = function({rating, maxStars}) {
   <span class="cm-string-2">})()}</span>
     <span class="cm-string-2">{rating % 1 !== 0 ? &lt;Star className="halfStar" /> : void 0}</span>
     <span class="cm-string-2">{(function() {</span>
-    <span class="cm-string-2">var i, ref, ref1, results;</span>
-    <span class="cm-string-2">results = [];</span>
-    <span class="cm-string-2">for (emptyStar = i = ref = Math.ceil(rating), ref1 = maxStars; (ref &lt;= ref1 ? i &lt; ref1 : i > ref1); emptyStar = ref &lt;= ref1 ? ++i : --i) {</span>
+    <span class="cm-string-2">var i, ref, ref1;</span>
+    <span class="cm-string-2">var results = [];</span>
+    <span class="cm-string-2">for (emptyStar = ref = Math.ceil(rating), i = ref, ref1 = maxStars; (ref &lt;= ref1 ? i &lt; ref1 : i > ref1); emptyStar = ref &lt;= ref1 ? ++i : --i) {</span>
       <span class="cm-string-2">results.push(&lt;Star className="emptyStar" key={emptyStar} />);</span>
     <span class="cm-string-2">}</span>
     <span class="cm-string-2">return results;</span>
@@ -4854,31 +4682,25 @@ task 'build:parser', 'rebuild the Jison parser', (options) ->
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="cake_tasks-js">var fs;
-
-fs = require('fs');
+      <textarea class="javascript-output" id="cake_tasks-js">var fs = require('fs');
 
 option('-o', '--output [DIR]', 'directory for compiled code');
 
 task('build:parser', 'rebuild the Jison parser', function(options) {
-  var code, dir;
   require('jison');
-  code = require('./lib/grammar').parser.generate();
-  dir = options.output || 'lib';
+  var code = require('./lib/grammar').parser.generate();
+  var dir = options.output || 'lib';
   return fs.writeFile(`${dir}/parser.js`, code);
 });
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">fs</span>;
-
-<span class="cm-variable">fs</span> <span class="cm-operator">=</span> <span class="cm-variable">require</span>(<span class="cm-string">'fs'</span>);
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">fs</span> <span class="cm-operator">=</span> <span class="cm-variable">require</span>(<span class="cm-string">'fs'</span>);
 
 <span class="cm-variable">option</span>(<span class="cm-string">'-o'</span>, <span class="cm-string">'--output [DIR]'</span>, <span class="cm-string">'directory for compiled code'</span>);
 
 <span class="cm-variable">task</span>(<span class="cm-string">'build:parser'</span>, <span class="cm-string">'rebuild the Jison parser'</span>, <span class="cm-keyword">function</span>(<span class="cm-def">options</span>) {
-  <span class="cm-keyword">var</span> <span class="cm-def">code</span>, <span class="cm-def">dir</span>;
   <span class="cm-variable">require</span>(<span class="cm-string">'jison'</span>);
-  <span class="cm-variable-2">code</span> <span class="cm-operator">=</span> <span class="cm-variable">require</span>(<span class="cm-string">'./lib/grammar'</span>).<span class="cm-property">parser</span>.<span class="cm-property">generate</span>();
-  <span class="cm-variable-2">dir</span> <span class="cm-operator">=</span> <span class="cm-variable-2">options</span>.<span class="cm-property">output</span> <span class="cm-operator">||</span> <span class="cm-string">'lib'</span>;
+  <span class="cm-keyword">var</span> <span class="cm-def">code</span> <span class="cm-operator">=</span> <span class="cm-variable">require</span>(<span class="cm-string">'./lib/grammar'</span>).<span class="cm-property">parser</span>.<span class="cm-property">generate</span>();
+  <span class="cm-keyword">var</span> <span class="cm-def">dir</span> <span class="cm-operator">=</span> <span class="cm-variable-2">options</span>.<span class="cm-property">output</span> <span class="cm-operator">||</span> <span class="cm-string">'lib'</span>;
   <span class="cm-keyword">return</span> <span class="cm-variable">fs</span>.<span class="cm-property">writeFile</span>(<span class="cm-string-2">`${</span><span class="cm-variable-2">dir</span><span class="cm-string-2">}/parser.js`</span>, <span class="cm-variable-2">code</span>);
 });
 </pre>
@@ -5120,9 +4942,7 @@ Object.defineProperty screen, 'height',
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="get_set-js">var screen;
-
-screen = {
+      <textarea class="javascript-output" id="get_set-js">var screen = {
   width: 1200,
   ratio: 16 / 9
 };
@@ -5136,9 +4956,7 @@ Object.defineProperty(screen, 'height', {
   }
 });
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">screen</span>;
-
-<span class="cm-variable">screen</span> <span class="cm-operator">=</span> {
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">screen</span> <span class="cm-operator">=</span> {
   <span class="cm-property">width</span>: <span class="cm-number">1200</span>,
   <span class="cm-property">ratio</span>: <span class="cm-number">16</span> <span class="cm-operator">/</span> <span class="cm-number">9</span>
 };
@@ -5192,11 +5010,8 @@ outer(1, 2)  # Returns '' in CoffeeScript 1.x, '1, 2' in CoffeeScript 2
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="breaking_change_fat_arrow-js">var outer;
-
-outer = function() {
-  var inner;
-  inner = () => {
+      <textarea class="javascript-output" id="breaking_change_fat_arrow-js">var outer = function() {
+  var inner = () => {
     return Array.from(arguments);
   };
   return inner();
@@ -5204,11 +5019,8 @@ outer = function() {
 
 outer(1, 2); // Returns '' in CoffeeScript 1.x, '1, 2' in CoffeeScript 2
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">outer</span>;
-
-<span class="cm-variable">outer</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>() {
-  <span class="cm-keyword">var</span> <span class="cm-def">inner</span>;
-  <span class="cm-variable-2">inner</span> <span class="cm-operator">=</span> () <span class="cm-operator">=></span> {
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">outer</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>() {
+  <span class="cm-keyword">var</span> <span class="cm-def">inner</span> <span class="cm-operator">=</span> () <span class="cm-operator">=></span> {
     <span class="cm-keyword">return</span> <span class="cm-variable">Array</span>.<span class="cm-property">from</span>(<span class="cm-variable-2">arguments</span>);
   };
   <span class="cm-keyword">return</span> <span class="cm-variable-2">inner</span>();
@@ -5247,17 +5059,13 @@ f(null)  # Returns 1 in CoffeeScript 1.x, null in CoffeeScript 2
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="breaking_change_function_parameter_default_values-js">var f;
-
-f = function(a = 1) {
+      <textarea class="javascript-output" id="breaking_change_function_parameter_default_values-js">var f = function(a = 1) {
   return a;
 };
 
 f(null); // Returns 1 in CoffeeScript 1.x, null in CoffeeScript 2
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">f</span>;
-
-<span class="cm-variable">f</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">a</span> <span class="cm-operator">=</span> <span class="cm-number">1</span>) {
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">f</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">a</span> <span class="cm-operator">=</span> <span class="cm-number">1</span>) {
   <span class="cm-keyword">return</span> <span class="cm-variable-2">a</span>;
 };
 
@@ -5338,19 +5146,15 @@ f = -> yield self
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="breaking_change_bound_generator_function-js">var f, self;
+      <textarea class="javascript-output" id="breaking_change_bound_generator_function-js">var self = this;
 
-self = this;
-
-f = function*() {
+var f = function*() {
   return (yield self);
 };
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">f</span>, <span class="cm-def">self</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">self</span> <span class="cm-operator">=</span> <span class="cm-keyword">this</span>;
 
-<span class="cm-variable">self</span> <span class="cm-operator">=</span> <span class="cm-keyword">this</span>;
-
-<span class="cm-variable">f</span> <span class="cm-operator">=</span> <span class="cm-keyword">function*</span>() {
+<span class="cm-keyword">var</span> <span class="cm-def">f</span> <span class="cm-operator">=</span> <span class="cm-keyword">function*</span>() {
   <span class="cm-keyword">return</span> (<span class="cm-keyword">yield</span> <span class="cm-variable">self</span>);
 };
 </pre>
@@ -5418,9 +5222,7 @@ f = function*() {
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="breaking_change_super_this-js">var B;
-
-B = class B extends A {
+      <textarea class="javascript-output" id="breaking_change_super_this-js">var B = class B extends A {
   constructor(arg) {
     super(arg);
     this.arg = arg;
@@ -5428,9 +5230,7 @@ B = class B extends A {
 
 };
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">B</span>;
-
-<span class="cm-variable">B</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">B</span> <span class="cm-keyword">extends</span> <span class="cm-variable">A</span> {
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">B</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">B</span> <span class="cm-keyword">extends</span> <span class="cm-variable">A</span> {
   <span class="cm-property">constructor</span>(<span class="cm-def">arg</span>) {
     <span class="cm-keyword">super</span>(<span class="cm-variable-2">arg</span>);
     <span class="cm-keyword">this</span>.<span class="cm-property">arg</span> <span class="cm-operator">=</span> <span class="cm-variable-2">arg</span>;
@@ -5463,18 +5263,14 @@ B = class B extends A {
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="breaking_change_super_with_arguments-js">var B;
-
-B = class B extends A {
+      <textarea class="javascript-output" id="breaking_change_super_with_arguments-js">var B = class B extends A {
   foo() {
     return super.foo(...arguments);
   }
 
 };
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">B</span>;
-
-<span class="cm-variable">B</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">B</span> <span class="cm-keyword">extends</span> <span class="cm-variable">A</span> {
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">B</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">B</span> <span class="cm-keyword">extends</span> <span class="cm-variable">A</span> {
   <span class="cm-property">foo</span>() {
     <span class="cm-keyword">return</span> <span class="cm-keyword">super</span>.<span class="cm-property">foo</span>(<span class="cm-meta">...</span><span class="cm-variable-2">arguments</span>);
   }
@@ -5497,18 +5293,14 @@ B = class B extends A {
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="breaking_change_super_without_arguments-js">var B;
-
-B = class B extends A {
+      <textarea class="javascript-output" id="breaking_change_super_without_arguments-js">var B = class B extends A {
   foo() {
     return super.foo();
   }
 
 };
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">B</span>;
-
-<span class="cm-variable">B</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">B</span> <span class="cm-keyword">extends</span> <span class="cm-variable">A</span> {
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">B</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">B</span> <span class="cm-keyword">extends</span> <span class="cm-variable">A</span> {
   <span class="cm-property">foo</span>() {
     <span class="cm-keyword">return</span> <span class="cm-keyword">super</span>.<span class="cm-property">foo</span>();
   }
@@ -5571,16 +5363,13 @@ B.prototype.foo = -> A::foo.apply this, arguments
     </div>
     <div class="col-md-6 javascript-output-column">
       <textarea class="javascript-output" id="breaking_change_super_in_non-class_methods_refactor_with_apply-js">// Helper functions
-var A, B, extend, hasProp;
+var hasProp = {}.hasOwnProperty;
 
-hasProp = {}.hasOwnProperty;
-
-extend = function(child, parent) {
-  var ctor, key;
-  ctor = function() {
+var extend = function(child, parent) {
+  var ctor = function() {
     this.constructor = child;
   };
-  for (key in parent) {
+  for (var key in parent) {
     if (hasProp.call(parent, key)) {
       child[key] = parent[key];
     }
@@ -5590,9 +5379,9 @@ extend = function(child, parent) {
   return child;
 };
 
-A = function() {};
+var A = function() {};
 
-B = function() {};
+var B = function() {};
 
 extend(B, A);
 
@@ -5601,16 +5390,13 @@ B.prototype.foo = function() {
 };
 </textarea>
       <pre class="placeholder-code"><span class="cm-comment">// Helper functions</span>
-<span class="cm-keyword">var</span> <span class="cm-def">A</span>, <span class="cm-def">B</span>, <span class="cm-def">extend</span>, <span class="cm-def">hasProp</span>;
+<span class="cm-keyword">var</span> <span class="cm-def">hasProp</span> <span class="cm-operator">=</span> {}.<span class="cm-property">hasOwnProperty</span>;
 
-<span class="cm-variable">hasProp</span> <span class="cm-operator">=</span> {}.<span class="cm-property">hasOwnProperty</span>;
-
-<span class="cm-variable">extend</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">child</span>, <span class="cm-def">parent</span>) {
-  <span class="cm-keyword">var</span> <span class="cm-def">ctor</span>, <span class="cm-def">key</span>;
-  <span class="cm-variable-2">ctor</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>() {
+<span class="cm-keyword">var</span> <span class="cm-def">extend</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">child</span>, <span class="cm-def">parent</span>) {
+  <span class="cm-keyword">var</span> <span class="cm-def">ctor</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>() {
     <span class="cm-keyword">this</span>.<span class="cm-property">constructor</span> <span class="cm-operator">=</span> <span class="cm-variable-2">child</span>;
   };
-  <span class="cm-keyword">for</span> (<span class="cm-variable-2">key</span> <span class="cm-keyword">in</span> <span class="cm-variable-2">parent</span>) {
+  <span class="cm-keyword">for</span> (<span class="cm-keyword">var</span> <span class="cm-def">key</span> <span class="cm-keyword">in</span> <span class="cm-variable-2">parent</span>) {
     <span class="cm-keyword">if</span> (<span class="cm-variable">hasProp</span>.<span class="cm-property">call</span>(<span class="cm-variable-2">parent</span>, <span class="cm-variable-2">key</span>)) {
       <span class="cm-variable-2">child</span>[<span class="cm-variable-2">key</span>] <span class="cm-operator">=</span> <span class="cm-variable-2">parent</span>[<span class="cm-variable-2">key</span>];
     }
@@ -5620,9 +5406,9 @@ B.prototype.foo = function() {
   <span class="cm-keyword">return</span> <span class="cm-variable-2">child</span>;
 };
 
-<span class="cm-variable">A</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>() {};
+<span class="cm-keyword">var</span> <span class="cm-def">A</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>() {};
 
-<span class="cm-variable">B</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>() {};
+<span class="cm-keyword">var</span> <span class="cm-def">B</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>() {};
 
 <span class="cm-variable">extend</span>(<span class="cm-variable">B</span>, <span class="cm-variable">A</span>);
 
@@ -5648,22 +5434,18 @@ class B extends A
 </pre>
     </div>
     <div class="col-md-6 javascript-output-column">
-      <textarea class="javascript-output" id="breaking_change_super_in_non-class_methods_refactor_with_class-js">var A, B;
+      <textarea class="javascript-output" id="breaking_change_super_in_non-class_methods_refactor_with_class-js">var A = class A {};
 
-A = class A {};
-
-B = class B extends A {
+var B = class B extends A {
   foo() {
     return super.foo(...arguments);
   }
 
 };
 </textarea>
-      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">A</span>, <span class="cm-def">B</span>;
+      <pre class="placeholder-code"><span class="cm-keyword">var</span> <span class="cm-def">A</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">A</span> {};
 
-<span class="cm-variable">A</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">A</span> {};
-
-<span class="cm-variable">B</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">B</span> <span class="cm-keyword">extends</span> <span class="cm-variable">A</span> {
+<span class="cm-keyword">var</span> <span class="cm-def">B</span> <span class="cm-operator">=</span> <span class="cm-keyword">class</span> <span class="cm-def">B</span> <span class="cm-keyword">extends</span> <span class="cm-variable">A</span> {
   <span class="cm-property">foo</span>() {
     <span class="cm-keyword">return</span> <span class="cm-keyword">super</span>.<span class="cm-property">foo</span>(<span class="cm-meta">...</span><span class="cm-variable-2">arguments</span>);
   }
@@ -6663,11 +6445,11 @@ The <code>extends</code> keyword now functions identically to <code>goog.inherit
 
 <script nomodule src="./browser-compiler-legacy/coffeescript.js"></script>
 <script nomodule>
-(function(){window.location.origin||(window.location.origin="".concat(window.location.protocol,"//").concat(window.location.hostname)),window.GA_TRACKING_ID="UA-106156830-1",null==window.dataLayer&&(window.dataLayer=[]),window.gtag=function(){window.dataLayer.push(arguments)},window.gtag("js",new Date),window.gtag("config",window.GA_TRACKING_ID),$(document).ready(function(){var clearHash,closeTry,editors,initializeEditor,initializeScrollspyFromHash,initializeTryEditors,lastCompilationElapsedTime,previousHash,replaceState,textareas,toggleSidebar,toggleTry,_Mathround=Math.round;if($("time").each(function(index,el){var date,formattedDate;return date=el.dateTime||$(el).text(),formattedDate=new Date(date).toLocaleDateString(void 0,{year:"numeric",month:"long",day:"numeric"}),$(el).text(formattedDate.toString())}),toggleSidebar=function(){return $(".navbar-toggler, .sidebar").toggleClass("show")},$("[data-toggle=\"offcanvas\"]").click(toggleSidebar),$("[data-action=\"sidebar-nav\"]").click(function(event){return $(".navbar-toggler").is(":visible")&&(event.preventDefault(),toggleSidebar(),setTimeout(function(){return window.location=event.target.href},260)),gtag("event","sidebar_navigate",{event_category:"navigation",event_label:event.target.href.replace(window.location.origin,"")})}),$(".main").scrollspy({target:"#contents",offset:_Mathround($("main").css("padding-top").replace("px",""))}),initializeScrollspyFromHash=function(hash){return $("#contents a.active[href!='".concat(hash,"']")).removeClass("show")},$(".main").on("activate.bs.scrollspy",function(event,target){var $target;if($("#contents a.active[href!='".concat(target.relatedTarget,"']")).removeClass("show"),$target=$("#contents a[href='".concat(target.relatedTarget,"']")),$target.prop("href")!=="".concat(window.location.origin,"/#try"))return replaceState($target.prop("href")),gtag("config",GA_TRACKING_ID,{page_path:$target.prop("href").replace(window.location.origin,"")})}),textareas=[],editors=[],lastCompilationElapsedTime=200,$("textarea").each(function(index){return textareas[index]=this,$(this).data("index",index)}),initializeEditor=function($textarea){var editor,index,mode,pending;if(index=$textarea.data("index"),mode=$textarea.hasClass("javascript-output")?"javascript":"coffeescript",editors[index]=editor=CodeMirror.fromTextArea($textarea[0],{mode:mode,theme:"twilight",indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:"contenteditable",readOnly:"coffeescript"!==mode,viewportMargin:2e308}),"coffeescript"===mode)return pending=null,editor.on("change",function(){return clearTimeout(pending),pending=setTimeout(function(){var coffee,exception,lastCompilationStartTime,link,output,_Mathmax=Math.max;lastCompilationStartTime=Date.now();try{if(coffee=editor.getValue(),0===index&&$("#try").hasClass("show")){$("#try").hasClass("show")&&(link="try:".concat(encodeURIComponent(coffee)),replaceState("".concat(window.location.href.split("#")[0],"#").concat(link)));try{null!=window.localStorage&&window.localStorage.setItem("tryCoffeeScriptCode",coffee)}catch(error){exception=error}}output=CoffeeScript.compile(coffee,{bare:!0}),lastCompilationElapsedTime=_Mathmax(200,Date.now()-lastCompilationStartTime)}catch(error){exception=error,output="".concat(exception)}return editors[index+1].setValue(output),gtag("event","edit_code",{event_category:"engagement",event_label:$textarea.closest("[data-example]").data("example")})},lastCompilationElapsedTime)}),editor.addKeyMap({Tab:function Tab(cm){return cm.somethingSelected()?cm.indentSelection("add"):/^\t/m.test(cm.getValue())?cm.execCommand("insertTab"):cm.execCommand("insertSoftTab")},"Shift-Tab":function ShiftTab(cm){return cm.indentSelection("subtract")},Enter:function Enter(cm){return cm.options.indentWithTabs=/^\t/m.test(cm.getValue()),cm.execCommand("newlineAndIndent")}})},$(".placeholder-code").one("mouseover",function(){var $siblingColumn,$textarea;return $textarea=$(this).prev("textarea"),$(this).remove(),initializeEditor($textarea),$siblingColumn=$($textarea.parent().siblings()[0]),$siblingColumn.children(".placeholder-code").remove(),initializeEditor($($siblingColumn.children("textarea")[0]))}),initializeTryEditors=function(){return initializeEditor($("#try-coffeescript-coffee")),initializeEditor($("#try-coffeescript-js"))},$("[data-action=\"run-code-example\"]").click(function(){var index,js,run;return run=$(this).data("run"),index=$("#".concat($(this).data("example"),"-js")).data("index"),js=null==editors[index]?$(textareas[index]).val():editors[index].getValue(),!0!==run&&(js="".concat(js,"\nalert(").concat(unescape(run),");")),window.eval(js),gtag("event","run_code",{event_category:"engagement",event_label:$(this).closest("[data-example]").data("example")})}),previousHash=null,toggleTry=function(checkLocalStorage){var coffee,exception;if($("#try, #try-link").toggleClass("show"),!$("#try").hasClass("show"))return previousHash?replaceState(previousHash):clearHash();if(window.location.hash&&(previousHash=window.location.hash),0===$("#try .CodeMirror").length&&initializeTryEditors(),checkLocalStorage&&null!=window.localStorage)try{return coffee=window.localStorage.getItem("tryCoffeeScriptCode"),null==coffee?replaceState("#try"):editors[0].setValue(coffee)}catch(error){return exception=error,replaceState("#try")}else return replaceState("#try")},closeTry=function(){return $("#try, #try-link").removeClass("show"),previousHash?replaceState(previousHash):clearHash()},$("[data-toggle=\"try\"]").click(function(event){return event.preventDefault(),toggleTry(!0)}),$("[data-close=\"try\"]").click(closeTry),$("[data-action=\"scroll-to-top\"]").click(function(){if(!$("#try").hasClass("show"))return $(".main")[0].scrollTop=0,setTimeout(clearHash,10)}),clearHash=function(){return window.history.replaceState({},document.title,window.location.pathname)},replaceState=function(newURL){return 0===(null==newURL?void 0:newURL.indexOf("#"))&&(newURL="".concat(window.location.pathname).concat(newURL)),window.history.replaceState({},document.title,newURL||"")},$(window).on("hashchange",function(){if(""===window.location.hash)return clearHash()}),null!=window.location.hash){if("#try"===window.location.hash)return toggleTry(!0);if(0===window.location.hash.indexOf("#try"))return 0===$("#try .CodeMirror").length&&initializeTryEditors(),editors[0].setValue(decodeURIComponent(window.location.hash.slice(5))),toggleTry(!1);if(""===window.location.hash)return clearHash();if(initializeScrollspyFromHash(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,"")).scrollIntoView()}})}).call(this);
+(function(){window.location.origin||(window.location.origin="".concat(window.location.protocol,"//").concat(window.location.hostname)),window.GA_TRACKING_ID="UA-106156830-1",null==window.dataLayer&&(window.dataLayer=[]),window.gtag=function(){window.dataLayer.push(arguments)},window.gtag("js",new Date),window.gtag("config",window.GA_TRACKING_ID),$(document).ready(function(){var _Mathround=Math.round;$("time").each(function(index,el){var date=el.dateTime||$(el).text(),formattedDate=new Date(date).toLocaleDateString(void 0,{year:"numeric",month:"long",day:"numeric"});return $(el).text(formattedDate.toString())});var toggleSidebar=function(){return $(".navbar-toggler, .sidebar").toggleClass("show")};$("[data-toggle=\"offcanvas\"]").click(toggleSidebar),$("[data-action=\"sidebar-nav\"]").click(function(event){return $(".navbar-toggler").is(":visible")&&(event.preventDefault(),toggleSidebar(),setTimeout(function(){return window.location=event.target.href},260)),gtag("event","sidebar_navigate",{event_category:"navigation",event_label:event.target.href.replace(window.location.origin,"")})}),$(".main").scrollspy({target:"#contents",offset:_Mathround($("main").css("padding-top").replace("px",""))});var initializeScrollspyFromHash=function(hash){return $("#contents a.active[href!='".concat(hash,"']")).removeClass("show")};$(".main").on("activate.bs.scrollspy",function(event,target){$("#contents a.active[href!='".concat(target.relatedTarget,"']")).removeClass("show");var $target=$("#contents a[href='".concat(target.relatedTarget,"']"));if($target.prop("href")!=="".concat(window.location.origin,"/#try"))return replaceState($target.prop("href")),gtag("config",GA_TRACKING_ID,{page_path:$target.prop("href").replace(window.location.origin,"")})});var textareas=[],editors=[],lastCompilationElapsedTime=200;$("textarea").each(function(index){return textareas[index]=this,$(this).data("index",index)});var initializeEditor=function($textarea){var editor,index=$textarea.data("index"),mode=$textarea.hasClass("javascript-output")?"javascript":"coffeescript";if(editors[index]=editor=CodeMirror.fromTextArea($textarea[0],{mode:mode,theme:"twilight",indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:"contenteditable",readOnly:"coffeescript"!==mode,viewportMargin:2e308}),"coffeescript"===mode){var pending=null;return editor.on("change",function(){return clearTimeout(pending),pending=setTimeout(function(){var _Mathmax=Math.max,lastCompilationStartTime=Date.now();try{var coffee=editor.getValue();if(0===index&&$("#try").hasClass("show")){if($("#try").hasClass("show")){var link="try:".concat(encodeURIComponent(coffee));replaceState("".concat(window.location.href.split("#")[0],"#").concat(link))}try{null!=window.localStorage&&window.localStorage.setItem("tryCoffeeScriptCode",coffee)}catch(error){var exception=error}}var output=CoffeeScript.compile(coffee,{bare:!0});lastCompilationElapsedTime=_Mathmax(200,Date.now()-lastCompilationStartTime)}catch(error){exception=error,output="".concat(exception)}return editors[index+1].setValue(output),gtag("event","edit_code",{event_category:"engagement",event_label:$textarea.closest("[data-example]").data("example")})},lastCompilationElapsedTime)}),editor.addKeyMap({Tab:function Tab(cm){return cm.somethingSelected()?cm.indentSelection("add"):/^\t/m.test(cm.getValue())?cm.execCommand("insertTab"):cm.execCommand("insertSoftTab")},"Shift-Tab":function ShiftTab(cm){return cm.indentSelection("subtract")},Enter:function Enter(cm){return cm.options.indentWithTabs=/^\t/m.test(cm.getValue()),cm.execCommand("newlineAndIndent")}})}};$(".placeholder-code").one("mouseover",function(){var $textarea=$(this).prev("textarea");$(this).remove(),initializeEditor($textarea);var $siblingColumn=$($textarea.parent().siblings()[0]);return $siblingColumn.children(".placeholder-code").remove(),initializeEditor($($siblingColumn.children("textarea")[0]))});var initializeTryEditors=function(){return initializeEditor($("#try-coffeescript-coffee")),initializeEditor($("#try-coffeescript-js"))};$("[data-action=\"run-code-example\"]").click(function(){var run=$(this).data("run"),index=$("#".concat($(this).data("example"),"-js")).data("index"),js=null==editors[index]?$(textareas[index]).val():editors[index].getValue();return!0!==run&&(js="".concat(js,"\nalert(").concat(unescape(run),");")),window.eval(js),gtag("event","run_code",{event_category:"engagement",event_label:$(this).closest("[data-example]").data("example")})});var previousHash=null,toggleTry=function(checkLocalStorage){if($("#try, #try-link").toggleClass("show"),!$("#try").hasClass("show"))return previousHash?replaceState(previousHash):clearHash();if(window.location.hash&&(previousHash=window.location.hash),0===$("#try .CodeMirror").length&&initializeTryEditors(),checkLocalStorage&&null!=window.localStorage)try{var coffee=window.localStorage.getItem("tryCoffeeScriptCode");return null==coffee?replaceState("#try"):editors[0].setValue(coffee)}catch(error){return replaceState("#try")}else return replaceState("#try")},closeTry=function(){return $("#try, #try-link").removeClass("show"),previousHash?replaceState(previousHash):clearHash()};$("[data-toggle=\"try\"]").click(function(event){return event.preventDefault(),toggleTry(!0)}),$("[data-close=\"try\"]").click(closeTry),$("[data-action=\"scroll-to-top\"]").click(function(){if(!$("#try").hasClass("show"))return $(".main")[0].scrollTop=0,setTimeout(clearHash,10)});var clearHash=function(){return window.history.replaceState({},document.title,window.location.pathname)},replaceState=function(newURL){return 0===(null==newURL?void 0:newURL.indexOf("#"))&&(newURL="".concat(window.location.pathname).concat(newURL)),window.history.replaceState({},document.title,newURL||"")};if($(window).on("hashchange",function(){if(""===window.location.hash)return clearHash()}),null!=window.location.hash){if("#try"===window.location.hash)return toggleTry(!0);if(0===window.location.hash.indexOf("#try"))return 0===$("#try .CodeMirror").length&&initializeTryEditors(),editors[0].setValue(decodeURIComponent(window.location.hash.slice(5))),toggleTry(!1);if(""===window.location.hash)return clearHash();if(initializeScrollspyFromHash(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,"")).scrollIntoView()}})}).call(this);
 </script>
 <script type="module">
 import CoffeeScript from './browser-compiler-modern/coffeescript.js';
-(function(){window.location.origin||(window.location.origin="".concat(window.location.protocol,"//").concat(window.location.hostname)),window.GA_TRACKING_ID="UA-106156830-1",null==window.dataLayer&&(window.dataLayer=[]),window.gtag=function(){window.dataLayer.push(arguments)},window.gtag("js",new Date),window.gtag("config",window.GA_TRACKING_ID),$(document).ready(function(){var clearHash,closeTry,editors,initializeEditor,initializeScrollspyFromHash,initializeTryEditors,lastCompilationElapsedTime,previousHash,replaceState,textareas,toggleSidebar,toggleTry,_Mathround=Math.round;if($("time").each(function(index,el){var date,formattedDate;return date=el.dateTime||$(el).text(),formattedDate=new Date(date).toLocaleDateString(void 0,{year:"numeric",month:"long",day:"numeric"}),$(el).text(formattedDate.toString())}),toggleSidebar=function(){return $(".navbar-toggler, .sidebar").toggleClass("show")},$("[data-toggle=\"offcanvas\"]").click(toggleSidebar),$("[data-action=\"sidebar-nav\"]").click(function(event){return $(".navbar-toggler").is(":visible")&&(event.preventDefault(),toggleSidebar(),setTimeout(function(){return window.location=event.target.href},260)),gtag("event","sidebar_navigate",{event_category:"navigation",event_label:event.target.href.replace(window.location.origin,"")})}),$(".main").scrollspy({target:"#contents",offset:_Mathround($("main").css("padding-top").replace("px",""))}),initializeScrollspyFromHash=function(hash){return $("#contents a.active[href!='".concat(hash,"']")).removeClass("show")},$(".main").on("activate.bs.scrollspy",function(event,target){var $target;if($("#contents a.active[href!='".concat(target.relatedTarget,"']")).removeClass("show"),$target=$("#contents a[href='".concat(target.relatedTarget,"']")),$target.prop("href")!=="".concat(window.location.origin,"/#try"))return replaceState($target.prop("href")),gtag("config",GA_TRACKING_ID,{page_path:$target.prop("href").replace(window.location.origin,"")})}),textareas=[],editors=[],lastCompilationElapsedTime=200,$("textarea").each(function(index){return textareas[index]=this,$(this).data("index",index)}),initializeEditor=function($textarea){var editor,index,mode,pending;if(index=$textarea.data("index"),mode=$textarea.hasClass("javascript-output")?"javascript":"coffeescript",editors[index]=editor=CodeMirror.fromTextArea($textarea[0],{mode:mode,theme:"twilight",indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:"contenteditable",readOnly:"coffeescript"!==mode,viewportMargin:2e308}),"coffeescript"===mode)return pending=null,editor.on("change",function(){return clearTimeout(pending),pending=setTimeout(function(){var coffee,exception,lastCompilationStartTime,link,output,_Mathmax=Math.max;lastCompilationStartTime=Date.now();try{if(coffee=editor.getValue(),0===index&&$("#try").hasClass("show")){$("#try").hasClass("show")&&(link="try:".concat(encodeURIComponent(coffee)),replaceState("".concat(window.location.href.split("#")[0],"#").concat(link)));try{null!=window.localStorage&&window.localStorage.setItem("tryCoffeeScriptCode",coffee)}catch(error){exception=error}}output=CoffeeScript.compile(coffee,{bare:!0}),lastCompilationElapsedTime=_Mathmax(200,Date.now()-lastCompilationStartTime)}catch(error){exception=error,output="".concat(exception)}return editors[index+1].setValue(output),gtag("event","edit_code",{event_category:"engagement",event_label:$textarea.closest("[data-example]").data("example")})},lastCompilationElapsedTime)}),editor.addKeyMap({Tab:function Tab(cm){return cm.somethingSelected()?cm.indentSelection("add"):/^\t/m.test(cm.getValue())?cm.execCommand("insertTab"):cm.execCommand("insertSoftTab")},"Shift-Tab":function ShiftTab(cm){return cm.indentSelection("subtract")},Enter:function Enter(cm){return cm.options.indentWithTabs=/^\t/m.test(cm.getValue()),cm.execCommand("newlineAndIndent")}})},$(".placeholder-code").one("mouseover",function(){var $siblingColumn,$textarea;return $textarea=$(this).prev("textarea"),$(this).remove(),initializeEditor($textarea),$siblingColumn=$($textarea.parent().siblings()[0]),$siblingColumn.children(".placeholder-code").remove(),initializeEditor($($siblingColumn.children("textarea")[0]))}),initializeTryEditors=function(){return initializeEditor($("#try-coffeescript-coffee")),initializeEditor($("#try-coffeescript-js"))},$("[data-action=\"run-code-example\"]").click(function(){var index,js,run;return run=$(this).data("run"),index=$("#".concat($(this).data("example"),"-js")).data("index"),js=null==editors[index]?$(textareas[index]).val():editors[index].getValue(),!0!==run&&(js="".concat(js,"\nalert(").concat(unescape(run),");")),window.eval(js),gtag("event","run_code",{event_category:"engagement",event_label:$(this).closest("[data-example]").data("example")})}),previousHash=null,toggleTry=function(checkLocalStorage){var coffee,exception;if($("#try, #try-link").toggleClass("show"),!$("#try").hasClass("show"))return previousHash?replaceState(previousHash):clearHash();if(window.location.hash&&(previousHash=window.location.hash),0===$("#try .CodeMirror").length&&initializeTryEditors(),checkLocalStorage&&null!=window.localStorage)try{return coffee=window.localStorage.getItem("tryCoffeeScriptCode"),null==coffee?replaceState("#try"):editors[0].setValue(coffee)}catch(error){return exception=error,replaceState("#try")}else return replaceState("#try")},closeTry=function(){return $("#try, #try-link").removeClass("show"),previousHash?replaceState(previousHash):clearHash()},$("[data-toggle=\"try\"]").click(function(event){return event.preventDefault(),toggleTry(!0)}),$("[data-close=\"try\"]").click(closeTry),$("[data-action=\"scroll-to-top\"]").click(function(){if(!$("#try").hasClass("show"))return $(".main")[0].scrollTop=0,setTimeout(clearHash,10)}),clearHash=function(){return window.history.replaceState({},document.title,window.location.pathname)},replaceState=function(newURL){return 0===(null==newURL?void 0:newURL.indexOf("#"))&&(newURL="".concat(window.location.pathname).concat(newURL)),window.history.replaceState({},document.title,newURL||"")},$(window).on("hashchange",function(){if(""===window.location.hash)return clearHash()}),null!=window.location.hash){if("#try"===window.location.hash)return toggleTry(!0);if(0===window.location.hash.indexOf("#try"))return 0===$("#try .CodeMirror").length&&initializeTryEditors(),editors[0].setValue(decodeURIComponent(window.location.hash.slice(5))),toggleTry(!1);if(""===window.location.hash)return clearHash();if(initializeScrollspyFromHash(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,"")).scrollIntoView()}})}).call(this);
+(function(){window.location.origin||(window.location.origin="".concat(window.location.protocol,"//").concat(window.location.hostname)),window.GA_TRACKING_ID="UA-106156830-1",null==window.dataLayer&&(window.dataLayer=[]),window.gtag=function(){window.dataLayer.push(arguments)},window.gtag("js",new Date),window.gtag("config",window.GA_TRACKING_ID),$(document).ready(function(){var _Mathround=Math.round;$("time").each(function(index,el){var date=el.dateTime||$(el).text(),formattedDate=new Date(date).toLocaleDateString(void 0,{year:"numeric",month:"long",day:"numeric"});return $(el).text(formattedDate.toString())});var toggleSidebar=function(){return $(".navbar-toggler, .sidebar").toggleClass("show")};$("[data-toggle=\"offcanvas\"]").click(toggleSidebar),$("[data-action=\"sidebar-nav\"]").click(function(event){return $(".navbar-toggler").is(":visible")&&(event.preventDefault(),toggleSidebar(),setTimeout(function(){return window.location=event.target.href},260)),gtag("event","sidebar_navigate",{event_category:"navigation",event_label:event.target.href.replace(window.location.origin,"")})}),$(".main").scrollspy({target:"#contents",offset:_Mathround($("main").css("padding-top").replace("px",""))});var initializeScrollspyFromHash=function(hash){return $("#contents a.active[href!='".concat(hash,"']")).removeClass("show")};$(".main").on("activate.bs.scrollspy",function(event,target){$("#contents a.active[href!='".concat(target.relatedTarget,"']")).removeClass("show");var $target=$("#contents a[href='".concat(target.relatedTarget,"']"));if($target.prop("href")!=="".concat(window.location.origin,"/#try"))return replaceState($target.prop("href")),gtag("config",GA_TRACKING_ID,{page_path:$target.prop("href").replace(window.location.origin,"")})});var textareas=[],editors=[],lastCompilationElapsedTime=200;$("textarea").each(function(index){return textareas[index]=this,$(this).data("index",index)});var initializeEditor=function($textarea){var editor,index=$textarea.data("index"),mode=$textarea.hasClass("javascript-output")?"javascript":"coffeescript";if(editors[index]=editor=CodeMirror.fromTextArea($textarea[0],{mode:mode,theme:"twilight",indentUnit:2,tabSize:2,lineWrapping:!0,lineNumbers:!1,inputStyle:"contenteditable",readOnly:"coffeescript"!==mode,viewportMargin:2e308}),"coffeescript"===mode){var pending=null;return editor.on("change",function(){return clearTimeout(pending),pending=setTimeout(function(){var _Mathmax=Math.max,lastCompilationStartTime=Date.now();try{var coffee=editor.getValue();if(0===index&&$("#try").hasClass("show")){if($("#try").hasClass("show")){var link="try:".concat(encodeURIComponent(coffee));replaceState("".concat(window.location.href.split("#")[0],"#").concat(link))}try{null!=window.localStorage&&window.localStorage.setItem("tryCoffeeScriptCode",coffee)}catch(error){var exception=error}}var output=CoffeeScript.compile(coffee,{bare:!0});lastCompilationElapsedTime=_Mathmax(200,Date.now()-lastCompilationStartTime)}catch(error){exception=error,output="".concat(exception)}return editors[index+1].setValue(output),gtag("event","edit_code",{event_category:"engagement",event_label:$textarea.closest("[data-example]").data("example")})},lastCompilationElapsedTime)}),editor.addKeyMap({Tab:function Tab(cm){return cm.somethingSelected()?cm.indentSelection("add"):/^\t/m.test(cm.getValue())?cm.execCommand("insertTab"):cm.execCommand("insertSoftTab")},"Shift-Tab":function ShiftTab(cm){return cm.indentSelection("subtract")},Enter:function Enter(cm){return cm.options.indentWithTabs=/^\t/m.test(cm.getValue()),cm.execCommand("newlineAndIndent")}})}};$(".placeholder-code").one("mouseover",function(){var $textarea=$(this).prev("textarea");$(this).remove(),initializeEditor($textarea);var $siblingColumn=$($textarea.parent().siblings()[0]);return $siblingColumn.children(".placeholder-code").remove(),initializeEditor($($siblingColumn.children("textarea")[0]))});var initializeTryEditors=function(){return initializeEditor($("#try-coffeescript-coffee")),initializeEditor($("#try-coffeescript-js"))};$("[data-action=\"run-code-example\"]").click(function(){var run=$(this).data("run"),index=$("#".concat($(this).data("example"),"-js")).data("index"),js=null==editors[index]?$(textareas[index]).val():editors[index].getValue();return!0!==run&&(js="".concat(js,"\nalert(").concat(unescape(run),");")),window.eval(js),gtag("event","run_code",{event_category:"engagement",event_label:$(this).closest("[data-example]").data("example")})});var previousHash=null,toggleTry=function(checkLocalStorage){if($("#try, #try-link").toggleClass("show"),!$("#try").hasClass("show"))return previousHash?replaceState(previousHash):clearHash();if(window.location.hash&&(previousHash=window.location.hash),0===$("#try .CodeMirror").length&&initializeTryEditors(),checkLocalStorage&&null!=window.localStorage)try{var coffee=window.localStorage.getItem("tryCoffeeScriptCode");return null==coffee?replaceState("#try"):editors[0].setValue(coffee)}catch(error){return replaceState("#try")}else return replaceState("#try")},closeTry=function(){return $("#try, #try-link").removeClass("show"),previousHash?replaceState(previousHash):clearHash()};$("[data-toggle=\"try\"]").click(function(event){return event.preventDefault(),toggleTry(!0)}),$("[data-close=\"try\"]").click(closeTry),$("[data-action=\"scroll-to-top\"]").click(function(){if(!$("#try").hasClass("show"))return $(".main")[0].scrollTop=0,setTimeout(clearHash,10)});var clearHash=function(){return window.history.replaceState({},document.title,window.location.pathname)},replaceState=function(newURL){return 0===(null==newURL?void 0:newURL.indexOf("#"))&&(newURL="".concat(window.location.pathname).concat(newURL)),window.history.replaceState({},document.title,newURL||"")};if($(window).on("hashchange",function(){if(""===window.location.hash)return clearHash()}),null!=window.location.hash){if("#try"===window.location.hash)return toggleTry(!0);if(0===window.location.hash.indexOf("#try"))return 0===$("#try .CodeMirror").length&&initializeTryEditors(),editors[0].setValue(decodeURIComponent(window.location.hash.slice(5))),toggleTry(!1);if(""===window.location.hash)return clearHash();if(initializeScrollspyFromHash(window.location.hash),1<window.location.hash.length)return document.getElementById(window.location.hash.slice(1).replace(/try:.*/,"")).scrollIntoView()}})}).call(this);
 </script>
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-106156830-1"></script>

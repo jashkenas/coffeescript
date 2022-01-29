@@ -1045,6 +1045,7 @@ for brevity.</p>
 
   isChainable: NO
   isAssignable: NO
+  isDeclarable: NO  <span class="hljs-comment"># could this be the left-hand side in a `var` declaration?</span>
   isNumber: NO
 
   unwrap: THIS
@@ -1693,22 +1694,22 @@ declarations of all inner variables pushed up to the top.</p>
     post = @compileNode o
     {scope} = o
     <span class="hljs-keyword">if</span> scope.expressions <span class="hljs-keyword">is</span> this
-      declars = o.scope.hasDeclarations()
-      assigns = scope.hasAssignments
-      <span class="hljs-keyword">if</span> declars <span class="hljs-keyword">or</span> assigns
+      <span class="hljs-keyword">if</span> scope.hasDeclarations()
         fragments.push @makeCode <span class="hljs-string">&#x27;\n&#x27;</span> <span class="hljs-keyword">if</span> i
         fragments.push @makeCode <span class="hljs-string">&quot;<span class="hljs-subst">#{@tab}</span>var &quot;</span>
-        <span class="hljs-keyword">if</span> declars
-          declaredVariables = scope.declaredVariables()
-          <span class="hljs-keyword">for</span> declaredVariable, declaredVariablesIndex <span class="hljs-keyword">in</span> declaredVariables
-            fragments.push @makeCode declaredVariable
-            <span class="hljs-keyword">if</span> Object::hasOwnProperty.call o.scope.comments, declaredVariable
-              fragments.push o.scope.comments[declaredVariable]...
-            <span class="hljs-keyword">if</span> declaredVariablesIndex <span class="hljs-keyword">isnt</span> declaredVariables.length - <span class="hljs-number">1</span>
-              fragments.push @makeCode <span class="hljs-string">&#x27;, &#x27;</span>
-        <span class="hljs-keyword">if</span> assigns
-          fragments.push @makeCode <span class="hljs-string">&quot;,\n<span class="hljs-subst">#{@tab + TAB}</span>&quot;</span> <span class="hljs-keyword">if</span> declars
-          fragments.push @makeCode scope.assignedVariables().join(<span class="hljs-string">&quot;,\n<span class="hljs-subst">#{@tab + TAB}</span>&quot;</span>)
+        unassigned = scope.declaredVariables <span class="hljs-literal">false</span>
+        assigned = scope.declaredVariables <span class="hljs-literal">true</span>
+<span class="hljs-function">        <span class="hljs-title">declare</span> = <span class="hljs-params">(names, sep)</span> =&gt;</span>
+          <span class="hljs-keyword">for</span> name, i <span class="hljs-keyword">in</span> names
+            v = scope.get name
+            fragments.push @makeCode v.name
+            fragments.push v.comments... <span class="hljs-keyword">if</span> v.comments?
+            fragments.push @makeCode <span class="hljs-string">&quot; = <span class="hljs-subst">#{v.assigned}</span>&quot;</span> <span class="hljs-keyword">if</span> v.assigned?
+            fragments.push @makeCode sep <span class="hljs-keyword">unless</span> i == names.length<span class="hljs-number">-1</span>
+        declare unassigned, <span class="hljs-string">&#x27;, &#x27;</span>
+        <span class="hljs-keyword">if</span> assigned.length
+          fragments.push @makeCode <span class="hljs-string">&quot;,\n<span class="hljs-subst">#{@tab + TAB}</span>&quot;</span> <span class="hljs-keyword">if</span> unassigned.length
+          declare assigned, <span class="hljs-string">&quot;,\n<span class="hljs-subst">#{@tab + TAB}</span>&quot;</span>
         fragments.push @makeCode <span class="hljs-string">&quot;;\n<span class="hljs-subst">#{<span class="hljs-keyword">if</span> @spaced <span class="hljs-keyword">then</span> <span class="hljs-string">&#x27;\n&#x27;</span> <span class="hljs-keyword">else</span> <span class="hljs-string">&#x27;&#x27;</span>}</span>&quot;</span>
       <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> fragments.length <span class="hljs-keyword">and</span> post.length
         fragments.push @makeCode <span class="hljs-string">&quot;\n&quot;</span>
@@ -2429,6 +2430,24 @@ By reducing it to its latter half, we turn ‘`‘ to ‘<code>&#39;, &#39;\\\</
 <span class="hljs-built_in">exports</span>.IdentifierLiteral = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">IdentifierLiteral</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Literal</span></span>
   isAssignable: YES
 
+  isDeclarable: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-96">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-96">&#x00a7;</a>
+              </div>
+              <p>Can declare this variable only if we’re at the right scope.
+(If it’s in a parent scope, declaring here would shadow.)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    o.scope.get(@value)?
+
   eachName: <span class="hljs-function"><span class="hljs-params">(iterator)</span> -&gt;</span>
     iterator @
 
@@ -2445,6 +2464,24 @@ By reducing it to its latter half, we turn ‘`‘ to ‘<code>&#39;, &#39;\\\</
 
 <span class="hljs-built_in">exports</span>.PropertyName = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PropertyName</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Literal</span></span>
   isAssignable: YES
+
+  isDeclarable: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-97">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-97">&#x00a7;</a>
+              </div>
+              <p>Can declare this variable only if we’re at the right scope.
+(If it’s in a parent scope, declaring here would shadow.)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    o.scope.get(@value)?
 
   astType: <span class="hljs-function">-&gt;</span>
     <span class="hljs-keyword">if</span> @jsx
@@ -2535,11 +2572,11 @@ By reducing it to its latter half, we turn ‘`‘ to ‘<code>&#39;, &#39;\\\</
         </li>
         
         
-        <li id="section-96">
+        <li id="section-98">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-96">&#x00a7;</a>
+                <a class="ss" href="#section-98">&#x00a7;</a>
               </div>
               <h3 id="return">Return</h3>
 
@@ -2548,11 +2585,11 @@ By reducing it to its latter half, we turn ‘`‘ to ‘<code>&#39;, &#39;\\\</
         </li>
         
         
-        <li id="section-97">
+        <li id="section-99">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-97">&#x00a7;</a>
+                <a class="ss" href="#section-99">&#x00a7;</a>
               </div>
               <p>A <code>return</code> is a <em>pureStatement</em>—wrapping it in a closure wouldn’t make sense.</p>
 
@@ -2578,11 +2615,11 @@ By reducing it to its latter half, we turn ‘`‘ to ‘<code>&#39;, &#39;\\\</
         </li>
         
         
-        <li id="section-98">
+        <li id="section-100">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-98">&#x00a7;</a>
+                <a class="ss" href="#section-100">&#x00a7;</a>
               </div>
               <p>TODO: If we call <code>expression.compile()</code> here twice, we’ll sometimes
 get back different results!</p>
@@ -2596,11 +2633,11 @@ get back different results!</p>
         </li>
         
         
-        <li id="section-99">
+        <li id="section-101">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-99">&#x00a7;</a>
+                <a class="ss" href="#section-101">&#x00a7;</a>
               </div>
               <p>Since the <code>return</code> got indented by <code>@tab</code>, preceding comments that are
 multiline need to be indented.</p>
@@ -2624,11 +2661,11 @@ multiline need to be indented.</p>
         </li>
         
         
-        <li id="section-100">
+        <li id="section-102">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-100">&#x00a7;</a>
+                <a class="ss" href="#section-102">&#x00a7;</a>
               </div>
               <p>don’t flag <code>return</code> from <code>await return</code>/<code>yield return</code> as invalid.</p>
 
@@ -2645,11 +2682,11 @@ multiline need to be indented.</p>
         </li>
         
         
-        <li id="section-101">
+        <li id="section-103">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-101">&#x00a7;</a>
+                <a class="ss" href="#section-103">&#x00a7;</a>
               </div>
               <p>Parent class for <code>YieldReturn</code>/<code>AwaitReturn</code>.</p>
 
@@ -2686,11 +2723,11 @@ multiline need to be indented.</p>
         </li>
         
         
-        <li id="section-102">
+        <li id="section-104">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-102">&#x00a7;</a>
+                <a class="ss" href="#section-104">&#x00a7;</a>
               </div>
               <p><code>yield return</code> works exactly like <code>return</code>, except that it turns the function
 into a generator.</p>
@@ -2706,11 +2743,11 @@ into a generator.</p>
         </li>
         
         
-        <li id="section-103">
+        <li id="section-105">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-103">&#x00a7;</a>
+                <a class="ss" href="#section-105">&#x00a7;</a>
               </div>
               <h3 id="value">Value</h3>
 
@@ -2719,11 +2756,11 @@ into a generator.</p>
         </li>
         
         
-        <li id="section-104">
+        <li id="section-106">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-104">&#x00a7;</a>
+                <a class="ss" href="#section-106">&#x00a7;</a>
               </div>
               <p>A value, variable or literal or parenthesized, indexed or dotted into,
 or vanilla.</p>
@@ -2743,11 +2780,11 @@ or vanilla.</p>
         </li>
         
         
-        <li id="section-105">
+        <li id="section-107">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-105">&#x00a7;</a>
+                <a class="ss" href="#section-107">&#x00a7;</a>
               </div>
               <p>If this is a <code>@foo =</code> assignment, if there are comments on <code>@</code> move them
 to be on <code>foo</code>.</p>
@@ -2762,11 +2799,11 @@ to be on <code>foo</code>.</p>
         </li>
         
         
-        <li id="section-106">
+        <li id="section-108">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-106">&#x00a7;</a>
+                <a class="ss" href="#section-108">&#x00a7;</a>
               </div>
               <p>Add a property (or <em>properties</em> ) <code>Access</code> to the list.</p>
 
@@ -2786,11 +2823,11 @@ to be on <code>foo</code>.</p>
         </li>
         
         
-        <li id="section-107">
+        <li id="section-109">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-107">&#x00a7;</a>
+                <a class="ss" href="#section-109">&#x00a7;</a>
               </div>
               <p>Some boolean checks for the benefit of other nodes.</p>
 
@@ -2800,6 +2837,7 @@ to be on <code>foo</code>.</p>
   isRange        : <span class="hljs-function">-&gt;</span> @bareLiteral(Range)
   shouldCache    : <span class="hljs-function">-&gt;</span> @hasProperties() <span class="hljs-keyword">or</span> @base.shouldCache()
   isAssignable   : <span class="hljs-function"><span class="hljs-params">(opts)</span> -&gt;</span> @hasProperties() <span class="hljs-keyword">or</span> @base.isAssignable opts
+  isDeclarable   : <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span> @properties.length <span class="hljs-keyword">is</span> <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> @base.isDeclarable(o)
   isNumber       : <span class="hljs-function">-&gt;</span> @bareLiteral(NumberLiteral)
   isString       : <span class="hljs-function">-&gt;</span> @bareLiteral(StringLiteral)
   isRegex        : <span class="hljs-function">-&gt;</span> @bareLiteral(RegexLiteral)
@@ -2841,11 +2879,11 @@ to be on <code>foo</code>.</p>
         </li>
         
         
-        <li id="section-108">
+        <li id="section-110">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-108">&#x00a7;</a>
+                <a class="ss" href="#section-110">&#x00a7;</a>
               </div>
               <p>The value can be unwrapped as its inner node, if there are no attached
 properties.</p>
@@ -2858,11 +2896,11 @@ properties.</p>
         </li>
         
         
-        <li id="section-109">
+        <li id="section-111">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-109">&#x00a7;</a>
+                <a class="ss" href="#section-111">&#x00a7;</a>
               </div>
               <p>A reference has base part (<code>this</code> value) and name part.
 We cache them separately for compiling complex expressions.
@@ -2888,11 +2926,11 @@ We cache them separately for compiling complex expressions.
         </li>
         
         
-        <li id="section-110">
+        <li id="section-112">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-110">&#x00a7;</a>
+                <a class="ss" href="#section-112">&#x00a7;</a>
               </div>
               <p>We compile a value to JavaScript by compiling and joining each property.
 Things get much more interesting if the chain of properties has <em>soak</em>
@@ -2909,11 +2947,11 @@ evaluate anything twice when building the soak chain.</p>
         </li>
         
         
-        <li id="section-111">
+        <li id="section-113">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-111">&#x00a7;</a>
+                <a class="ss" href="#section-113">&#x00a7;</a>
               </div>
               <p>Cached fragments enable correct order of the compilation,
 and reuse of variables in the scope.
@@ -2937,11 +2975,11 @@ Example:
         </li>
         
         
-        <li id="section-112">
+        <li id="section-114">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-112">&#x00a7;</a>
+                <a class="ss" href="#section-114">&#x00a7;</a>
               </div>
               <p>Unfold a soak into an <code>If</code>: <code>a?.b</code> -&gt; <code>a.b if a?</code></p>
 
@@ -2975,11 +3013,11 @@ Example:
         </li>
         
         
-        <li id="section-113">
+        <li id="section-115">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-113">&#x00a7;</a>
+                <a class="ss" href="#section-115">&#x00a7;</a>
               </div>
               <p>For AST generation, we need an <code>object</code> that’s this <code>Value</code> minus its last
 property, if it has properties.</p>
@@ -2992,11 +3030,11 @@ property, if it has properties.</p>
         </li>
         
         
-        <li id="section-114">
+        <li id="section-116">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-114">&#x00a7;</a>
+                <a class="ss" href="#section-116">&#x00a7;</a>
               </div>
               <p>Get all properties except the last one; for a <code>Value</code> with only one
 property, <code>initialProperties</code> is an empty array.</p>
@@ -3008,11 +3046,11 @@ property, <code>initialProperties</code> is an empty array.</p>
         </li>
         
         
-        <li id="section-115">
+        <li id="section-117">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-115">&#x00a7;</a>
+                <a class="ss" href="#section-117">&#x00a7;</a>
               </div>
               <p>Create the <code>object</code> that becomes the new “base” for the split-off final
 property.</p>
@@ -3024,11 +3062,11 @@ property.</p>
         </li>
         
         
-        <li id="section-116">
+        <li id="section-118">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-116">&#x00a7;</a>
+                <a class="ss" href="#section-118">&#x00a7;</a>
               </div>
               <p>Add location data to our new node, so that it has correct location data
 for source maps or later conversion into AST location data.</p>
@@ -3041,11 +3079,11 @@ for source maps or later conversion into AST location data.</p>
         </li>
         
         
-        <li id="section-117">
+        <li id="section-119">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-117">&#x00a7;</a>
+                <a class="ss" href="#section-119">&#x00a7;</a>
               </div>
               <p>This new <code>Value</code> has only one property, so the location data is just
 that of the parent <code>Value</code>’s base.</p>
@@ -3058,11 +3096,11 @@ that of the parent <code>Value</code>’s base.</p>
         </li>
         
         
-        <li id="section-118">
+        <li id="section-120">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-118">&#x00a7;</a>
+                <a class="ss" href="#section-120">&#x00a7;</a>
               </div>
               <p>This new <code>Value</code> has multiple properties, so the location data spans
 from the parent <code>Value</code>’s base to the last property that’s included
@@ -3088,11 +3126,11 @@ in this new node (a.k.a. the second-to-last property of the parent).</p>
         </li>
         
         
-        <li id="section-119">
+        <li id="section-121">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-119">&#x00a7;</a>
+                <a class="ss" href="#section-121">&#x00a7;</a>
               </div>
               <p>If the <code>Value</code> has no properties, the AST node is just whatever this
 node’s <code>base</code> is.</p>
@@ -3104,11 +3142,11 @@ node’s <code>base</code> is.</p>
         </li>
         
         
-        <li id="section-120">
+        <li id="section-122">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-120">&#x00a7;</a>
+                <a class="ss" href="#section-122">&#x00a7;</a>
               </div>
               <p>Otherwise, call <code>Base::ast</code> which in turn calls the <code>astType</code> and
 <code>astProperties</code> methods below.</p>
@@ -3128,11 +3166,11 @@ node’s <code>base</code> is.</p>
         </li>
         
         
-        <li id="section-121">
+        <li id="section-123">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-121">&#x00a7;</a>
+                <a class="ss" href="#section-123">&#x00a7;</a>
               </div>
               <p>If this <code>Value</code> has properties, the <em>last</em> property (e.g. <code>c</code> in <code>a.b.c</code>)
 becomes the <code>property</code>, and the preceding properties (e.g. <code>a.b</code>) become
@@ -3158,11 +3196,11 @@ a child <code>Value</code> node assigned to the <code>object</code> property.</p
         </li>
         
         
-        <li id="section-122">
+        <li id="section-124">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-122">&#x00a7;</a>
+                <a class="ss" href="#section-124">&#x00a7;</a>
               </div>
               <p>don’t include leading &lt; of JSX tag in location data</p>
 
@@ -3207,11 +3245,11 @@ a child <code>Value</code> node assigned to the <code>object</code> property.</p
         </li>
         
         
-        <li id="section-123">
+        <li id="section-125">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-123">&#x00a7;</a>
+                <a class="ss" href="#section-125">&#x00a7;</a>
               </div>
               <h3 id="herecomment">HereComment</h3>
 
@@ -3220,11 +3258,11 @@ a child <code>Value</code> node assigned to the <code>object</code> property.</p
         </li>
         
         
-        <li id="section-124">
+        <li id="section-126">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-124">&#x00a7;</a>
+                <a class="ss" href="#section-126">&#x00a7;</a>
               </div>
               <p>Comment delimited by <code>###</code> (becoming <code>/* */</code>).</p>
 
@@ -3240,11 +3278,11 @@ a child <code>Value</code> node assigned to the <code>object</code> property.</p
         </li>
         
         
-        <li id="section-125">
+        <li id="section-127">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-125">&#x00a7;</a>
+                <a class="ss" href="#section-127">&#x00a7;</a>
               </div>
               <p>Unindent multiline comments. They will be reindented later.</p>
 
@@ -3270,11 +3308,11 @@ a child <code>Value</code> node assigned to the <code>object</code> property.</p
         </li>
         
         
-        <li id="section-126">
+        <li id="section-128">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-126">&#x00a7;</a>
+                <a class="ss" href="#section-128">&#x00a7;</a>
               </div>
               <p>Don’t rely on <code>fragment.type</code>, which can break when the compiler is minified.</p>
 
@@ -3292,11 +3330,11 @@ a child <code>Value</code> node assigned to the <code>object</code> property.</p
         </li>
         
         
-        <li id="section-127">
+        <li id="section-129">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-127">&#x00a7;</a>
+                <a class="ss" href="#section-129">&#x00a7;</a>
               </div>
               <h3 id="linecomment">LineComment</h3>
 
@@ -3305,11 +3343,11 @@ a child <code>Value</code> node assigned to the <code>object</code> property.</p
         </li>
         
         
-        <li id="section-128">
+        <li id="section-130">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-128">&#x00a7;</a>
+                <a class="ss" href="#section-130">&#x00a7;</a>
               </div>
               <p>Comment running from <code>#</code> to the end of a line (becoming <code>//</code>).</p>
 
@@ -3328,11 +3366,11 @@ a child <code>Value</code> node assigned to the <code>object</code> property.</p
         </li>
         
         
-        <li id="section-129">
+        <li id="section-131">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-129">&#x00a7;</a>
+                <a class="ss" href="#section-131">&#x00a7;</a>
               </div>
               <p>Don’t rely on <code>fragment.type</code>, which can break when the compiler is minified.</p>
 
@@ -3350,11 +3388,11 @@ a child <code>Value</code> node assigned to the <code>object</code> property.</p
         </li>
         
         
-        <li id="section-130">
+        <li id="section-132">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-130">&#x00a7;</a>
+                <a class="ss" href="#section-132">&#x00a7;</a>
               </div>
               <h3 id="jsx">JSX</h3>
 
@@ -3450,11 +3488,11 @@ a child <code>Value</code> node assigned to the <code>object</code> property.</p
         </li>
         
         
-        <li id="section-131">
+        <li id="section-133">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-131">&#x00a7;</a>
+                <a class="ss" href="#section-133">&#x00a7;</a>
               </div>
               <p>attribute with no value eg disabled</p>
 
@@ -3468,11 +3506,11 @@ a child <code>Value</code> node assigned to the <code>object</code> property.</p
         </li>
         
         
-        <li id="section-132">
+        <li id="section-134">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-132">&#x00a7;</a>
+                <a class="ss" href="#section-134">&#x00a7;</a>
               </div>
               <p>object spread attribute eg {…props}</p>
 
@@ -3487,11 +3525,11 @@ a child <code>Value</code> node assigned to the <code>object</code> property.</p
         </li>
         
         
-        <li id="section-133">
+        <li id="section-135">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-133">&#x00a7;</a>
+                <a class="ss" href="#section-135">&#x00a7;</a>
               </div>
               <p>Obj containing attributes with values eg a=”b” c={d}</p>
 
@@ -3512,11 +3550,11 @@ a child <code>Value</code> node assigned to the <code>object</code> property.</p
         </li>
         
         
-        <li id="section-134">
+        <li id="section-136">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-134">&#x00a7;</a>
+                <a class="ss" href="#section-136">&#x00a7;</a>
               </div>
               <p>Catch invalid attributes: <div {a:"b", props} {props} "value" /></p>
 
@@ -3558,11 +3596,11 @@ a child <code>Value</code> node assigned to the <code>object</code> property.</p
         </li>
         
         
-        <li id="section-135">
+        <li id="section-137">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-135">&#x00a7;</a>
+                <a class="ss" href="#section-137">&#x00a7;</a>
               </div>
               <p>Node for a JSX element</p>
 
@@ -3595,11 +3633,11 @@ a child <code>Value</code> node assigned to the <code>object</code> property.</p
         </li>
         
         
-        <li id="section-136">
+        <li id="section-138">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-136">&#x00a7;</a>
+                <a class="ss" href="#section-138">&#x00a7;</a>
               </div>
               <p>The location data spanning the opening element &lt; … &gt; is captured by
 the generated Arr which contains the element’s attributes</p>
@@ -3716,11 +3754,11 @@ the generated Arr which contains the element’s attributes</p>
         </li>
         
         
-        <li id="section-137">
+        <li id="section-139">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-137">&#x00a7;</a>
+                <a class="ss" href="#section-139">&#x00a7;</a>
               </div>
               <p>distinguish <code>&lt;a&gt;&lt;b /&gt;&lt;/a&gt;</code> from <code>&lt;a&gt;{&lt;b /&gt;}&lt;/a&gt;</code></p>
 
@@ -3752,11 +3790,11 @@ the generated Arr which contains the element’s attributes</p>
         </li>
         
         
-        <li id="section-138">
+        <li id="section-140">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-138">&#x00a7;</a>
+                <a class="ss" href="#section-140">&#x00a7;</a>
               </div>
               <h3 id="call">Call</h3>
 
@@ -3765,11 +3803,11 @@ the generated Arr which contains the element’s attributes</p>
         </li>
         
         
-        <li id="section-139">
+        <li id="section-141">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-139">&#x00a7;</a>
+                <a class="ss" href="#section-141">&#x00a7;</a>
               </div>
               <p>Node for a function invocation.</p>
 
@@ -3794,11 +3832,11 @@ the generated Arr which contains the element’s attributes</p>
         </li>
         
         
-        <li id="section-140">
+        <li id="section-142">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-140">&#x00a7;</a>
+                <a class="ss" href="#section-142">&#x00a7;</a>
               </div>
               <p><code>@variable</code> never gets output as a result of this node getting created as
 part of <code>RegexWithInterpolations</code>, so for that case move any comments to
@@ -3815,11 +3853,11 @@ the grammar.</p>
         </li>
         
         
-        <li id="section-141">
+        <li id="section-143">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-141">&#x00a7;</a>
+                <a class="ss" href="#section-143">&#x00a7;</a>
               </div>
               <p>When setting the location, we sometimes need to update the start location to
 account for a newly-discovered <code>new</code> operator to the left of us. This
@@ -3854,11 +3892,11 @@ expands the range on the left, but not the right.</p>
         </li>
         
         
-        <li id="section-142">
+        <li id="section-144">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-142">&#x00a7;</a>
+                <a class="ss" href="#section-144">&#x00a7;</a>
               </div>
               <p>Tag this invocation as creating a new instance.</p>
 
@@ -3876,11 +3914,11 @@ expands the range on the left, but not the right.</p>
         </li>
         
         
-        <li id="section-143">
+        <li id="section-145">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-143">&#x00a7;</a>
+                <a class="ss" href="#section-145">&#x00a7;</a>
               </div>
               <p>Soaked chained invocations unfold into if/else ternary structures.</p>
 
@@ -3921,11 +3959,11 @@ expands the range on the left, but not the right.</p>
         </li>
         
         
-        <li id="section-144">
+        <li id="section-146">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-144">&#x00a7;</a>
+                <a class="ss" href="#section-146">&#x00a7;</a>
               </div>
               <p>Compile a vanilla function call.</p>
 
@@ -3939,11 +3977,11 @@ expands the range on the left, but not the right.</p>
         </li>
         
         
-        <li id="section-145">
+        <li id="section-147">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-145">&#x00a7;</a>
+                <a class="ss" href="#section-147">&#x00a7;</a>
               </div>
               <p>If variable is <code>Accessor</code> fragments are cached and used later
 in <code>Value::compileNode</code> to ensure correct order of the compilation,
@@ -4005,11 +4043,11 @@ Example:
         </li>
         
         
-        <li id="section-146">
+        <li id="section-148">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-146">&#x00a7;</a>
+                <a class="ss" href="#section-148">&#x00a7;</a>
               </div>
               <h3 id="super">Super</h3>
 
@@ -4018,11 +4056,11 @@ Example:
         </li>
         
         
-        <li id="section-147">
+        <li id="section-149">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-147">&#x00a7;</a>
+                <a class="ss" href="#section-149">&#x00a7;</a>
               </div>
               <p>Takes care of converting <code>super()</code> calls into calls against the prototype’s
 function of the same name.
@@ -4049,11 +4087,11 @@ expression.</p>
         </li>
         
         
-        <li id="section-148">
+        <li id="section-150">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-148">&#x00a7;</a>
+                <a class="ss" href="#section-150">&#x00a7;</a>
               </div>
               <p>If we might be in an expression we need to cache and return the result</p>
 
@@ -4087,11 +4125,11 @@ expression.</p>
         </li>
         
         
-        <li id="section-149">
+        <li id="section-151">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-149">&#x00a7;</a>
+                <a class="ss" href="#section-151">&#x00a7;</a>
               </div>
               <p>A <code>super()</code> call gets compiled to e.g. <code>super.method()</code>, which means
 the <code>method</code> property name gets compiled for the first time here, and
@@ -4131,11 +4169,11 @@ that they’re there for the later compilation.</p>
         </li>
         
         
-        <li id="section-150">
+        <li id="section-152">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-150">&#x00a7;</a>
+                <a class="ss" href="#section-152">&#x00a7;</a>
               </div>
               <h3 id="regexwithinterpolations">RegexWithInterpolations</h3>
 
@@ -4144,11 +4182,11 @@ that they’re there for the later compilation.</p>
         </li>
         
         
-        <li id="section-151">
+        <li id="section-153">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-151">&#x00a7;</a>
+                <a class="ss" href="#section-153">&#x00a7;</a>
               </div>
               <p>Regexes with interpolations are in fact just a variation of a <code>Call</code> (a
 <code>RegExp()</code> call to be precise) with a <code>StringWithInterpolations</code> inside.</p>
@@ -4179,11 +4217,11 @@ that they’re there for the later compilation.</p>
         </li>
         
         
-        <li id="section-152">
+        <li id="section-154">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-152">&#x00a7;</a>
+                <a class="ss" href="#section-154">&#x00a7;</a>
               </div>
               <h3 id="taggedtemplatecall">TaggedTemplateCall</h3>
 
@@ -4208,11 +4246,11 @@ that they’re there for the later compilation.</p>
         </li>
         
         
-        <li id="section-153">
+        <li id="section-155">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-153">&#x00a7;</a>
+                <a class="ss" href="#section-155">&#x00a7;</a>
               </div>
               <h3 id="extends">Extends</h3>
 
@@ -4221,11 +4259,11 @@ that they’re there for the later compilation.</p>
         </li>
         
         
-        <li id="section-154">
+        <li id="section-156">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-154">&#x00a7;</a>
+                <a class="ss" href="#section-156">&#x00a7;</a>
               </div>
               <p>Node to extend an object’s prototype with an ancestor object.
 After <code>goog.inherits</code> from the
@@ -4242,11 +4280,11 @@ After <code>goog.inherits</code> from the
         </li>
         
         
-        <li id="section-155">
+        <li id="section-157">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-155">&#x00a7;</a>
+                <a class="ss" href="#section-157">&#x00a7;</a>
               </div>
               <p>Hooks one constructor into another’s prototype chain.</p>
 
@@ -4258,11 +4296,11 @@ After <code>goog.inherits</code> from the
         </li>
         
         
-        <li id="section-156">
+        <li id="section-158">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-156">&#x00a7;</a>
+                <a class="ss" href="#section-158">&#x00a7;</a>
               </div>
               <h3 id="access">Access</h3>
 
@@ -4271,11 +4309,11 @@ After <code>goog.inherits</code> from the
         </li>
         
         
-        <li id="section-157">
+        <li id="section-159">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-157">&#x00a7;</a>
+                <a class="ss" href="#section-159">&#x00a7;</a>
               </div>
               <p>A <code>.</code> access into a property of a value, or the <code>::</code> shorthand for
 an access into the object’s prototype.</p>
@@ -4303,11 +4341,11 @@ an access into the object’s prototype.</p>
         </li>
         
         
-        <li id="section-158">
+        <li id="section-160">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-158">&#x00a7;</a>
+                <a class="ss" href="#section-160">&#x00a7;</a>
               </div>
               <p>Babel doesn’t have an AST node for <code>Access</code>, but rather just includes
 this Access node’s child <code>name</code> Identifier node as the <code>property</code> of
@@ -4320,11 +4358,11 @@ the <code>MemberExpression</code> node.</p>
         </li>
         
         
-        <li id="section-159">
+        <li id="section-161">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-159">&#x00a7;</a>
+                <a class="ss" href="#section-161">&#x00a7;</a>
               </div>
               <h3 id="index">Index</h3>
 
@@ -4333,11 +4371,11 @@ the <code>MemberExpression</code> node.</p>
         </li>
         
         
-        <li id="section-160">
+        <li id="section-162">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-160">&#x00a7;</a>
+                <a class="ss" href="#section-162">&#x00a7;</a>
               </div>
               <p>A <code>[ ... ]</code> indexed access into an array or object.</p>
 
@@ -4360,11 +4398,11 @@ the <code>MemberExpression</code> node.</p>
         </li>
         
         
-        <li id="section-161">
+        <li id="section-163">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-161">&#x00a7;</a>
+                <a class="ss" href="#section-163">&#x00a7;</a>
               </div>
               <p>Babel doesn’t have an AST node for <code>Index</code>, but rather just includes
 this Index node’s child <code>index</code> Identifier node as the <code>property</code> of
@@ -4379,11 +4417,11 @@ the <code>MemberExpression</code> node. The fact that the <code>MemberExpression
         </li>
         
         
-        <li id="section-162">
+        <li id="section-164">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-162">&#x00a7;</a>
+                <a class="ss" href="#section-164">&#x00a7;</a>
               </div>
               <h3 id="range">Range</h3>
 
@@ -4392,11 +4430,11 @@ the <code>MemberExpression</code> node. The fact that the <code>MemberExpression
         </li>
         
         
-        <li id="section-163">
+        <li id="section-165">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-163">&#x00a7;</a>
+                <a class="ss" href="#section-165">&#x00a7;</a>
               </div>
               <p>A range literal. Ranges can be used to extract portions (slices) of arrays,
 to specify a range for comprehensions, or as a value, to be expanded into the
@@ -4417,11 +4455,11 @@ corresponding array of integers at runtime.</p>
         </li>
         
         
-        <li id="section-164">
+        <li id="section-166">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-164">&#x00a7;</a>
+                <a class="ss" href="#section-166">&#x00a7;</a>
               </div>
               <p>Compiles the range’s source variables – where it starts and where it ends.
 But only if they need to be cached to avoid double evaluation.</p>
@@ -4441,11 +4479,11 @@ But only if they need to be cached to avoid double evaluation.</p>
         </li>
         
         
-        <li id="section-165">
+        <li id="section-167">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-165">&#x00a7;</a>
+                <a class="ss" href="#section-167">&#x00a7;</a>
               </div>
               <p>When compiled normally, the range returns the contents of the <em>for loop</em>
 needed to iterate over the values in the range. Used by comprehensions.</p>
@@ -4459,11 +4497,11 @@ needed to iterate over the values in the range. Used by comprehensions.</p>
         </li>
         
         
-        <li id="section-166">
+        <li id="section-168">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-166">&#x00a7;</a>
+                <a class="ss" href="#section-168">&#x00a7;</a>
               </div>
               <p>Set up endpoints.</p>
 
@@ -4473,23 +4511,86 @@ needed to iterate over the values in the range. Used by comprehensions.</p>
     idx      = del o, <span class="hljs-string">&#x27;index&#x27;</span>
     idxName  = del o, <span class="hljs-string">&#x27;name&#x27;</span>
     namedIndex = idxName <span class="hljs-keyword">and</span> idxName <span class="hljs-keyword">isnt</span> idx
-    varPart  =
-      <span class="hljs-keyword">if</span> known <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> namedIndex
-        <span class="hljs-string">&quot;var <span class="hljs-subst">#{idx}</span> = <span class="hljs-subst">#{@fromC}</span>&quot;</span>
-      <span class="hljs-keyword">else</span>
-        <span class="hljs-string">&quot;<span class="hljs-subst">#{idx}</span> = <span class="hljs-subst">#{@fromC}</span>&quot;</span>
-    varPart += <span class="hljs-string">&quot;, <span class="hljs-subst">#{@toC}</span>&quot;</span> <span class="hljs-keyword">if</span> @toC <span class="hljs-keyword">isnt</span> @toVar
-    varPart += <span class="hljs-string">&quot;, <span class="hljs-subst">#{@step}</span>&quot;</span> <span class="hljs-keyword">if</span> @step <span class="hljs-keyword">isnt</span> @stepVar
-    [lt, gt] = [<span class="hljs-string">&quot;<span class="hljs-subst">#{idx}</span> &lt;<span class="hljs-subst">#{@equals}</span>&quot;</span>, <span class="hljs-string">&quot;<span class="hljs-subst">#{idx}</span> &gt;<span class="hljs-subst">#{@equals}</span>&quot;</span>]</pre></div></div>
+    <span class="hljs-keyword">if</span> o.declare  <span class="hljs-comment"># from compileArray: need to declare all variables as local</span>
+      declare = <span class="hljs-literal">yes</span>
+    <span class="hljs-keyword">else</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-167">
+        <li id="section-169">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-167">&#x00a7;</a>
+                <a class="ss" href="#section-169">&#x00a7;</a>
+              </div>
+              <p>Can do var declaration only if all relevant variables are in this scope.
+If we declare @fromVar, @toVar, or @stepVar, they’re guaranteed
+to be in scope (generated in @compileVariables), so don’t check those.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      canDeclare = o.scope.get(idx)? <span class="hljs-keyword">and</span>
+        (<span class="hljs-keyword">not</span> namedIndex <span class="hljs-keyword">or</span> o.scope.get(idxName)?)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-170">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-170">&#x00a7;</a>
+              </div>
+              <p>Want to do var declaration if at least one of those variables needs
+declaration. Also keep track of which variables need declaration.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">if</span> canDeclare
+        declare = <span class="hljs-literal">yes</span> <span class="hljs-keyword">if</span> o.scope.laterVar idx
+        declare = <span class="hljs-literal">yes</span> <span class="hljs-keyword">if</span> namedIndex <span class="hljs-keyword">and</span> o.scope.laterVar idxName
+        <span class="hljs-keyword">if</span> declare
+          o.scope.laterVar @fromVar <span class="hljs-keyword">if</span> @fromC <span class="hljs-keyword">isnt</span> @fromVar
+          o.scope.laterVar @toVar <span class="hljs-keyword">if</span> @toC <span class="hljs-keyword">isnt</span> @toVar
+          o.scope.laterVar @stepVar <span class="hljs-keyword">if</span> @stepC <span class="hljs-keyword">isnt</span> @stepVar
+    varPart = <span class="hljs-keyword">if</span> declare <span class="hljs-keyword">then</span> <span class="hljs-string">&quot;var &quot;</span> <span class="hljs-keyword">else</span> <span class="hljs-string">&#x27;&#x27;</span>
+    <span class="hljs-keyword">if</span> @fromC <span class="hljs-keyword">isnt</span> @fromVar
+      varPart += <span class="hljs-string">&quot;<span class="hljs-subst">#{@fromC}</span>, <span class="hljs-subst">#{idx}</span> = <span class="hljs-subst">#{@fromVar}</span>&quot;</span>
+    <span class="hljs-keyword">else</span>
+      varPart += <span class="hljs-string">&quot;<span class="hljs-subst">#{idx}</span> = <span class="hljs-subst">#{@fromC}</span>&quot;</span>
+    <span class="hljs-keyword">if</span> namedIndex
+      <span class="hljs-keyword">if</span> declare
+        varPart += <span class="hljs-string">&quot;, <span class="hljs-subst">#{idxName}</span> = <span class="hljs-subst">#{idx}</span>&quot;</span>
+      <span class="hljs-keyword">else</span>
+        varPart = <span class="hljs-string">&quot;<span class="hljs-subst">#{idxName}</span> = <span class="hljs-subst">#{varPart}</span>&quot;</span>
+    varPart += <span class="hljs-string">&quot;, <span class="hljs-subst">#{@toC}</span>&quot;</span> <span class="hljs-keyword">if</span> @toC <span class="hljs-keyword">isnt</span> @toVar
+    varPart += <span class="hljs-string">&quot;, <span class="hljs-subst">#{@step}</span>&quot;</span> <span class="hljs-keyword">if</span> @step <span class="hljs-keyword">isnt</span> @stepVar</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-171">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-171">&#x00a7;</a>
+              </div>
+              <p>if known and not namedIndex or o.scope.laterVar idx
+ varPart = “var #{varPart}”</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    [lt, gt] = [<span class="hljs-string">&quot;<span class="hljs-subst">#{idx}</span> &lt;<span class="hljs-subst">#{@equals}</span>&quot;</span>, <span class="hljs-string">&quot;<span class="hljs-subst">#{idx}</span> &gt;<span class="hljs-subst">#{@equals}</span>&quot;</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-172">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-172">&#x00a7;</a>
               </div>
               <p>Generate the condition.</p>
 
@@ -4500,11 +4601,11 @@ needed to iterate over the values in the range. Used by comprehensions.</p>
         </li>
         
         
-        <li id="section-168">
+        <li id="section-173">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-168">&#x00a7;</a>
+                <a class="ss" href="#section-173">&#x00a7;</a>
               </div>
               <p>Always check if the <code>step</code> isn’t zero to avoid the infinite loop.</p>
 
@@ -4531,11 +4632,11 @@ needed to iterate over the values in the range. Used by comprehensions.</p>
         </li>
         
         
-        <li id="section-169">
+        <li id="section-174">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-169">&#x00a7;</a>
+                <a class="ss" href="#section-174">&#x00a7;</a>
               </div>
               <p>Generate the step.</p>
 
@@ -4553,18 +4654,16 @@ needed to iterate over the values in the range. Used by comprehensions.</p>
         <span class="hljs-string">&quot;<span class="hljs-subst">#{cond}</span> ? ++<span class="hljs-subst">#{idx}</span> : --<span class="hljs-subst">#{idx}</span>&quot;</span>
       <span class="hljs-keyword">else</span>
         <span class="hljs-string">&quot;<span class="hljs-subst">#{cond}</span> ? <span class="hljs-subst">#{idx}</span>++ : <span class="hljs-subst">#{idx}</span>--&quot;</span>
-
-    varPart  = <span class="hljs-string">&quot;<span class="hljs-subst">#{idxName}</span> = <span class="hljs-subst">#{varPart}</span>&quot;</span> <span class="hljs-keyword">if</span> namedIndex
     stepPart = <span class="hljs-string">&quot;<span class="hljs-subst">#{idxName}</span> = <span class="hljs-subst">#{stepPart}</span>&quot;</span> <span class="hljs-keyword">if</span> namedIndex</pre></div></div>
             
         </li>
         
         
-        <li id="section-170">
+        <li id="section-175">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-170">&#x00a7;</a>
+                <a class="ss" href="#section-175">&#x00a7;</a>
               </div>
               <p>The final loop body.</p>
 
@@ -4575,11 +4674,11 @@ needed to iterate over the values in the range. Used by comprehensions.</p>
         </li>
         
         
-        <li id="section-171">
+        <li id="section-176">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-171">&#x00a7;</a>
+                <a class="ss" href="#section-176">&#x00a7;</a>
               </div>
               <p>When used as a value, expand the range into the equivalent array.</p>
 
@@ -4597,6 +4696,7 @@ needed to iterate over the values in the range. Used by comprehensions.</p>
     pre    = <span class="hljs-string">&quot;\n<span class="hljs-subst">#{idt}</span>var <span class="hljs-subst">#{result}</span> = [];&quot;</span>
     <span class="hljs-keyword">if</span> known
       o.index = i
+      o.declare = <span class="hljs-literal">true</span>
       body    = fragmentsToText @compileNode o
     <span class="hljs-keyword">else</span>
       vars    = <span class="hljs-string">&quot;<span class="hljs-subst">#{i}</span> = <span class="hljs-subst">#{@fromC}</span>&quot;</span> + <span class="hljs-keyword">if</span> @toC <span class="hljs-keyword">isnt</span> @toVar <span class="hljs-keyword">then</span> <span class="hljs-string">&quot;, <span class="hljs-subst">#{@toC}</span>&quot;</span> <span class="hljs-keyword">else</span> <span class="hljs-string">&#x27;&#x27;</span>
@@ -4617,11 +4717,11 @@ needed to iterate over the values in the range. Used by comprehensions.</p>
         </li>
         
         
-        <li id="section-172">
+        <li id="section-177">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-172">&#x00a7;</a>
+                <a class="ss" href="#section-177">&#x00a7;</a>
               </div>
               <h3 id="slice">Slice</h3>
 
@@ -4630,11 +4730,11 @@ needed to iterate over the values in the range. Used by comprehensions.</p>
         </li>
         
         
-        <li id="section-173">
+        <li id="section-178">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-173">&#x00a7;</a>
+                <a class="ss" href="#section-178">&#x00a7;</a>
               </div>
               <p>An array slice literal. Unlike JavaScript’s <code>Array#slice</code>, the second parameter
 specifies the index of the end of the slice, just as the first parameter
@@ -4652,11 +4752,11 @@ is the index of the beginning.</p>
         </li>
         
         
-        <li id="section-174">
+        <li id="section-179">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-174">&#x00a7;</a>
+                <a class="ss" href="#section-179">&#x00a7;</a>
               </div>
               <p>We have to be careful when trying to slice through the end of the array,
 <code>9e9</code> is used because not all implementations respect <code>undefined</code> or <code>1/0</code>.
@@ -4670,11 +4770,11 @@ is the index of the beginning.</p>
         </li>
         
         
-        <li id="section-175">
+        <li id="section-180">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-175">&#x00a7;</a>
+                <a class="ss" href="#section-180">&#x00a7;</a>
               </div>
               <p>Handle an expression in the property access, e.g. <code>a[!b in c..]</code>.</p>
 
@@ -4704,11 +4804,11 @@ is the index of the beginning.</p>
         </li>
         
         
-        <li id="section-176">
+        <li id="section-181">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-176">&#x00a7;</a>
+                <a class="ss" href="#section-181">&#x00a7;</a>
               </div>
               <h3 id="obj">Obj</h3>
 
@@ -4717,11 +4817,11 @@ is the index of the beginning.</p>
         </li>
         
         
-        <li id="section-177">
+        <li id="section-182">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-177">&#x00a7;</a>
+                <a class="ss" href="#section-182">&#x00a7;</a>
               </div>
               <p>An object literal, nothing fancy.</p>
 
@@ -4741,11 +4841,11 @@ is the index of the beginning.</p>
         </li>
         
         
-        <li id="section-178">
+        <li id="section-183">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-178">&#x00a7;</a>
+                <a class="ss" href="#section-183">&#x00a7;</a>
               </div>
               <p>Check for reserved words.</p>
 
@@ -4759,6 +4859,10 @@ is the index of the beginning.</p>
         prop.value?.base <span class="hljs-keyword">not</span> <span class="hljs-keyword">instanceof</span> Arr
       <span class="hljs-keyword">return</span> <span class="hljs-literal">no</span> <span class="hljs-keyword">unless</span> prop.isAssignable opts
     <span class="hljs-literal">yes</span>
+  isDeclarable: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
+    <span class="hljs-keyword">for</span> prop <span class="hljs-keyword">in</span> @properties
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">no</span> <span class="hljs-keyword">unless</span> prop.isDeclarable(o)
+    <span class="hljs-literal">yes</span>
 
   shouldCache: <span class="hljs-function">-&gt;</span>
     <span class="hljs-keyword">not</span> @isAssignable()</pre></div></div>
@@ -4766,11 +4870,11 @@ is the index of the beginning.</p>
         </li>
         
         
-        <li id="section-179">
+        <li id="section-184">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-179">&#x00a7;</a>
+                <a class="ss" href="#section-184">&#x00a7;</a>
               </div>
               <p>Check if object contains splat.</p>
 
@@ -4783,11 +4887,11 @@ is the index of the beginning.</p>
         </li>
         
         
-        <li id="section-180">
+        <li id="section-185">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-180">&#x00a7;</a>
+                <a class="ss" href="#section-185">&#x00a7;</a>
               </div>
               <p>Move rest property to the end of the list.
 <code>{a, rest..., b} = obj</code> -&gt; <code>{a, b, rest...} = obj</code>
@@ -4814,11 +4918,11 @@ is the index of the beginning.</p>
         </li>
         
         
-        <li id="section-181">
+        <li id="section-186">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-181">&#x00a7;</a>
+                <a class="ss" href="#section-186">&#x00a7;</a>
               </div>
               <p>If this object is the left-hand side of an assignment, all its children
 are too.</p>
@@ -4866,11 +4970,11 @@ are too.</p>
         </li>
         
         
-        <li id="section-182">
+        <li id="section-187">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-182">&#x00a7;</a>
+                <a class="ss" href="#section-187">&#x00a7;</a>
               </div>
               <p><code>{ [foo()] }</code> output as <code>{ [ref = foo()]: ref }</code>.</p>
 
@@ -4885,11 +4989,11 @@ are too.</p>
         </li>
         
         
-        <li id="section-183">
+        <li id="section-188">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-183">&#x00a7;</a>
+                <a class="ss" href="#section-188">&#x00a7;</a>
               </div>
               <p><code>{ [expression] }</code> output as <code>{ [expression]: expression }</code>.</p>
 
@@ -4899,7 +5003,7 @@ are too.</p>
         <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> prop.bareLiteral?(IdentifierLiteral) <span class="hljs-keyword">and</span> prop <span class="hljs-keyword">not</span> <span class="hljs-keyword">instanceof</span> Splat
           prop = <span class="hljs-keyword">new</span> Assign prop, prop, <span class="hljs-string">&#x27;object&#x27;</span>
       <span class="hljs-keyword">if</span> indent <span class="hljs-keyword">then</span> answer.push @makeCode indent
-      answer.push prop.compileToFragments(o, LEVEL_TOP)...
+      answer.push prop.compileToFragments(o, LEVEL_LIST)...
       <span class="hljs-keyword">if</span> join <span class="hljs-keyword">then</span> answer.push @makeCode join
     answer.push @makeCode <span class="hljs-keyword">if</span> isCompact <span class="hljs-keyword">then</span> <span class="hljs-string">&#x27;&#x27;</span> <span class="hljs-keyword">else</span> <span class="hljs-string">&quot;\n<span class="hljs-subst">#{@tab}</span>&quot;</span>
     answer = @wrapInBraces answer
@@ -4925,11 +5029,11 @@ are too.</p>
         </li>
         
         
-        <li id="section-184">
+        <li id="section-189">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-184">&#x00a7;</a>
+                <a class="ss" href="#section-189">&#x00a7;</a>
               </div>
               <p>Convert “bare” properties to <code>ObjectProperty</code>s (or <code>Splat</code>s).</p>
 
@@ -4975,11 +5079,11 @@ are too.</p>
         </li>
         
         
-        <li id="section-185">
+        <li id="section-190">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-185">&#x00a7;</a>
+                <a class="ss" href="#section-190">&#x00a7;</a>
               </div>
               <p>Shorthand property with default, e.g. <code>{a = 1} = b</code>.</p>
 
@@ -5015,11 +5119,11 @@ are too.</p>
         </li>
         
         
-        <li id="section-186">
+        <li id="section-191">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-186">&#x00a7;</a>
+                <a class="ss" href="#section-191">&#x00a7;</a>
               </div>
               <p>All non-shorthand properties (i.e. includes <code>:</code>).</p>
 
@@ -5031,11 +5135,11 @@ are too.</p>
         </li>
         
         
-        <li id="section-187">
+        <li id="section-192">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-187">&#x00a7;</a>
+                <a class="ss" href="#section-192">&#x00a7;</a>
               </div>
               <p>Left-hand-side shorthand with default e.g. <code>{a = 1} = b</code>.</p>
 
@@ -5049,11 +5153,11 @@ are too.</p>
         </li>
         
         
-        <li id="section-188">
+        <li id="section-193">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-188">&#x00a7;</a>
+                <a class="ss" href="#section-193">&#x00a7;</a>
               </div>
               <p>Shorthand without default e.g. <code>{a}</code> or <code>{@a}</code> or <code>{[a]}</code>.</p>
 
@@ -5081,11 +5185,11 @@ are too.</p>
         </li>
         
         
-        <li id="section-189">
+        <li id="section-194">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-189">&#x00a7;</a>
+                <a class="ss" href="#section-194">&#x00a7;</a>
               </div>
               <h3 id="arr">Arr</h3>
 
@@ -5094,11 +5198,11 @@ are too.</p>
         </li>
         
         
-        <li id="section-190">
+        <li id="section-195">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-190">&#x00a7;</a>
+                <a class="ss" href="#section-195">&#x00a7;</a>
               </div>
               <p>An array literal.</p>
 
@@ -5124,6 +5228,10 @@ are too.</p>
       <span class="hljs-keyword">return</span> <span class="hljs-literal">no</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> allowNontrailingSplat <span class="hljs-keyword">and</span> obj <span class="hljs-keyword">instanceof</span> Splat <span class="hljs-keyword">and</span> i + <span class="hljs-number">1</span> <span class="hljs-keyword">isnt</span> @objects.length
       <span class="hljs-keyword">return</span> <span class="hljs-literal">no</span> <span class="hljs-keyword">unless</span> (allowExpansion <span class="hljs-keyword">and</span> obj <span class="hljs-keyword">instanceof</span> Expansion) <span class="hljs-keyword">or</span> (obj.isAssignable(opts) <span class="hljs-keyword">and</span> (<span class="hljs-keyword">not</span> obj.isAtomic <span class="hljs-keyword">or</span> obj.isAtomic()))
     <span class="hljs-literal">yes</span>
+  isDeclarable: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
+    <span class="hljs-keyword">for</span> obj <span class="hljs-keyword">in</span> @objects
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">no</span> <span class="hljs-keyword">unless</span> obj.isDeclarable(o)
+    <span class="hljs-literal">yes</span>
 
   shouldCache: <span class="hljs-function">-&gt;</span>
     <span class="hljs-keyword">not</span> @isAssignable()
@@ -5137,11 +5245,11 @@ are too.</p>
         </li>
         
         
-        <li id="section-191">
+        <li id="section-196">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-191">&#x00a7;</a>
+                <a class="ss" href="#section-196">&#x00a7;</a>
               </div>
               <p>Detect if <code>Elision</code>s at the beginning of the array are processed (e.g. [, , , a]).</p>
 
@@ -5156,11 +5264,11 @@ are too.</p>
         </li>
         
         
-        <li id="section-192">
+        <li id="section-197">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-192">&#x00a7;</a>
+                <a class="ss" href="#section-197">&#x00a7;</a>
               </div>
               <p>Let <code>compileCommentFragments</code> know to intersperse block comments
 into the fragments created when compiling this array.</p>
@@ -5177,11 +5285,11 @@ into the fragments created when compiling this array.</p>
         </li>
         
         
-        <li id="section-193">
+        <li id="section-198">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-193">&#x00a7;</a>
+                <a class="ss" href="#section-198">&#x00a7;</a>
               </div>
               <p>If <code>compiledObjs</code> includes newlines, we will output this as a multiline
 array (i.e. with a newline and indentation after the <code>[</code>). If an element
@@ -5204,11 +5312,11 @@ first element’s line comments get output before or after the array.</p>
         </li>
         
         
-        <li id="section-194">
+        <li id="section-199">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-194">&#x00a7;</a>
+                <a class="ss" href="#section-199">&#x00a7;</a>
               </div>
               <p>Add ‘, ‘ if all <code>Elisions</code> from the beginning of the array are processed (e.g. [, , , a]) and
 element isn’t <code>Elision</code> or last element is <code>Elision</code> (e.g. [a,,b,,])</p>
@@ -5246,11 +5354,11 @@ element isn’t <code>Elision</code> or last element is <code>Elision</code> (e.
         </li>
         
         
-        <li id="section-195">
+        <li id="section-200">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-195">&#x00a7;</a>
+                <a class="ss" href="#section-200">&#x00a7;</a>
               </div>
               <p>If this array is the left-hand side of an assignment, all its children
 are too.</p>
@@ -5282,11 +5390,11 @@ are too.</p>
         </li>
         
         
-        <li id="section-196">
+        <li id="section-201">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-196">&#x00a7;</a>
+                <a class="ss" href="#section-201">&#x00a7;</a>
               </div>
               <h3 id="class">Class</h3>
 
@@ -5295,11 +5403,11 @@ are too.</p>
         </li>
         
         
-        <li id="section-197">
+        <li id="section-202">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-197">&#x00a7;</a>
+                <a class="ss" href="#section-202">&#x00a7;</a>
               </div>
               <p>The CoffeeScript class definition.
 Initialize a <strong>Class</strong> with its name, an optional superclass, and a body.</p>
@@ -5323,11 +5431,11 @@ Initialize a <strong>Class</strong> with its name, an optional superclass, and a
         </li>
         
         
-        <li id="section-198">
+        <li id="section-203">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-198">&#x00a7;</a>
+                <a class="ss" href="#section-203">&#x00a7;</a>
               </div>
               <p>Special handling to allow <code>class expr.A extends A</code> declarations</p>
 
@@ -5345,11 +5453,11 @@ Initialize a <strong>Class</strong> with its name, an optional superclass, and a
         </li>
         
         
-        <li id="section-199">
+        <li id="section-204">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-199">&#x00a7;</a>
+                <a class="ss" href="#section-204">&#x00a7;</a>
               </div>
               <p>Anonymous classes are only valid in expressions</p>
 
@@ -5398,11 +5506,11 @@ Initialize a <strong>Class</strong> with its name, an optional superclass, and a
         </li>
         
         
-        <li id="section-200">
+        <li id="section-205">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-200">&#x00a7;</a>
+                <a class="ss" href="#section-205">&#x00a7;</a>
               </div>
               <p>Figure out the appropriate name for this class</p>
 
@@ -5474,11 +5582,11 @@ Initialize a <strong>Class</strong> with its name, an optional superclass, and a
         </li>
         
         
-        <li id="section-201">
+        <li id="section-206">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-201">&#x00a7;</a>
+                <a class="ss" href="#section-206">&#x00a7;</a>
               </div>
               <p>Add an expression to the class initializer</p>
 <p>This is the key method for determining whether an expression in a class
@@ -5511,11 +5619,11 @@ opposed to the <code>Object.defineProperty</code> method).</p>
         </li>
         
         
-        <li id="section-202">
+        <li id="section-207">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-202">&#x00a7;</a>
+                <a class="ss" href="#section-207">&#x00a7;</a>
               </div>
               <p>Checks if the given node is a valid ES class initializer method.</p>
 
@@ -5529,11 +5637,11 @@ opposed to the <code>Object.defineProperty</code> method).</p>
         </li>
         
         
-        <li id="section-203">
+        <li id="section-208">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-203">&#x00a7;</a>
+                <a class="ss" href="#section-208">&#x00a7;</a>
               </div>
               <p>Returns a configured class initializer method</p>
 
@@ -5696,11 +5804,11 @@ opposed to the <code>Object.defineProperty</code> method).</p>
         </li>
         
         
-        <li id="section-204">
+        <li id="section-209">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-204">&#x00a7;</a>
+                <a class="ss" href="#section-209">&#x00a7;</a>
               </div>
               <p>Traverse the class’s children and:</p>
 <ul>
@@ -5748,11 +5856,11 @@ opposed to the <code>Object.defineProperty</code> method).</p>
         </li>
         
         
-        <li id="section-205">
+        <li id="section-210">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-205">&#x00a7;</a>
+                <a class="ss" href="#section-210">&#x00a7;</a>
               </div>
               <p>Make class/prototype assignments for invalid ES properties</p>
 
@@ -5772,11 +5880,11 @@ opposed to the <code>Object.defineProperty</code> method).</p>
         </li>
         
         
-        <li id="section-206">
+        <li id="section-211">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-206">&#x00a7;</a>
+                <a class="ss" href="#section-211">&#x00a7;</a>
               </div>
               <p>The class scope is not available yet, so return the assignment to update later</p>
 
@@ -5833,11 +5941,11 @@ opposed to the <code>Object.defineProperty</code> method).</p>
         </li>
         
         
-        <li id="section-207">
+        <li id="section-212">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-207">&#x00a7;</a>
+                <a class="ss" href="#section-212">&#x00a7;</a>
               </div>
               <h3 id="import-and-export">Import and Export</h3>
 
@@ -5864,11 +5972,11 @@ opposed to the <code>Object.defineProperty</code> method).</p>
         </li>
         
         
-        <li id="section-208">
+        <li id="section-213">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-208">&#x00a7;</a>
+                <a class="ss" href="#section-213">&#x00a7;</a>
               </div>
               <p>TODO: would be appropriate to flag this error during AST generation (as
 well as when compiling to JS). But <code>o.indent</code> isn’t tracked during AST
@@ -5942,11 +6050,11 @@ whether we’re at the “program top-level”.</p>
         </li>
         
         
-        <li id="section-209">
+        <li id="section-214">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-209">&#x00a7;</a>
+                <a class="ss" href="#section-214">&#x00a7;</a>
               </div>
               <p>The AST for <code>ImportClause</code> is the non-nested list of import specifiers
 that will be the <code>specifiers</code> property of an <code>ImportDeclaration</code> AST</p>
@@ -5967,11 +6075,13 @@ that will be the <code>specifiers</code> property of an <code>ImportDeclaration<
     code.push @makeCode <span class="hljs-string">&quot;<span class="hljs-subst">#{@tab}</span>export &quot;</span>
     code.push @makeCode <span class="hljs-string">&#x27;default &#x27;</span> <span class="hljs-keyword">if</span> @ <span class="hljs-keyword">instanceof</span> ExportDefaultDeclaration
 
-    <span class="hljs-keyword">if</span> @ <span class="hljs-keyword">not</span> <span class="hljs-keyword">instanceof</span> ExportDefaultDeclaration <span class="hljs-keyword">and</span>
+    exportDefault = @ <span class="hljs-keyword">instanceof</span> ExportDefaultDeclaration
+    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> exportDefault <span class="hljs-keyword">and</span>
        (@clause <span class="hljs-keyword">instanceof</span> Assign <span class="hljs-keyword">or</span> @clause <span class="hljs-keyword">instanceof</span> Class)
       code.push @makeCode <span class="hljs-string">&#x27;var &#x27;</span>
       @clause.moduleDeclaration = <span class="hljs-string">&#x27;export&#x27;</span>
 
+    o = merge o, undeclarable: <span class="hljs-literal">true</span>
     <span class="hljs-keyword">if</span> @clause.body? <span class="hljs-keyword">and</span> @clause.body <span class="hljs-keyword">instanceof</span> Block
       code = code.concat @clause.compileToFragments o, LEVEL_TOP
     <span class="hljs-keyword">else</span>
@@ -5989,11 +6099,11 @@ that will be the <code>specifiers</code> property of an <code>ImportDeclaration<
         </li>
         
         
-        <li id="section-210">
+        <li id="section-215">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-210">&#x00a7;</a>
+                <a class="ss" href="#section-215">&#x00a7;</a>
               </div>
               <p>Prevent exporting an anonymous class; all exported members must be named</p>
 
@@ -6075,11 +6185,11 @@ that will be the <code>specifiers</code> property of an <code>ImportDeclaration<
         </li>
         
         
-        <li id="section-211">
+        <li id="section-216">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-211">&#x00a7;</a>
+                <a class="ss" href="#section-216">&#x00a7;</a>
               </div>
               <p>The name of the variable entering the local scope</p>
 
@@ -6112,11 +6222,11 @@ that will be the <code>specifiers</code> property of an <code>ImportDeclaration<
         </li>
         
         
-        <li id="section-212">
+        <li id="section-217">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-212">&#x00a7;</a>
+                <a class="ss" href="#section-217">&#x00a7;</a>
               </div>
               <p>Per the spec, symbols can’t be imported multiple times
 (e.g. <code>import { foo, foo } from &#39;lib&#39;</code> is invalid)</p>
@@ -6178,11 +6288,11 @@ that will be the <code>specifiers</code> property of an <code>ImportDeclaration<
         </li>
         
         
-        <li id="section-213">
+        <li id="section-218">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-213">&#x00a7;</a>
+                <a class="ss" href="#section-218">&#x00a7;</a>
               </div>
               <h3 id="assign">Assign</h3>
 
@@ -6191,11 +6301,11 @@ that will be the <code>specifiers</code> property of an <code>ImportDeclaration<
         </li>
         
         
-        <li id="section-214">
+        <li id="section-219">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-214">&#x00a7;</a>
+                <a class="ss" href="#section-219">&#x00a7;</a>
               </div>
               <p>The <strong>Assign</strong> is used to assign a local variable to value, or to set the
 property of an object – including within object literals.</p>
@@ -6206,6 +6316,7 @@ property of an object – including within object literals.</p>
   constructor: <span class="hljs-function"><span class="hljs-params">(@variable, @value, @context, options = {})</span> -&gt;</span>
     super()
     {@param, @subpattern, @operatorToken, @moduleDeclaration, @originalContext = @context} = options
+    @declaration = <span class="hljs-literal">no</span>
     @propagateLhs()
 
   children: [<span class="hljs-string">&#x27;variable&#x27;</span>, <span class="hljs-string">&#x27;value&#x27;</span>]
@@ -6230,11 +6341,11 @@ property of an object – including within object literals.</p>
         </li>
         
         
-        <li id="section-215">
+        <li id="section-220">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-215">&#x00a7;</a>
+                <a class="ss" href="#section-220">&#x00a7;</a>
               </div>
               <p>During AST generation, we need to allow assignment to these constructs
 that are considered “unassignable” during compile-to-JS, while still
@@ -6267,11 +6378,11 @@ flagging things like <code>[null] = b</code>.</p>
         </li>
         
         
-        <li id="section-216">
+        <li id="section-221">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-216">&#x00a7;</a>
+                <a class="ss" href="#section-221">&#x00a7;</a>
               </div>
               <p><code>moduleDeclaration</code> can be <code>&#39;import&#39;</code> or <code>&#39;export&#39;</code>.</p>
 
@@ -6294,11 +6405,11 @@ flagging things like <code>[null] = b</code>.</p>
         </li>
         
         
-        <li id="section-217">
+        <li id="section-222">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-217">&#x00a7;</a>
+                <a class="ss" href="#section-222">&#x00a7;</a>
               </div>
               <p>If this assignment identifier has one or more herecomments
 attached, output them as part of the declarations line (unless
@@ -6309,23 +6420,45 @@ the comment to be between the class name and the <code>{</code>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> name.comments <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> o.scope.comments[name.value] <span class="hljs-keyword">and</span>
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> name.comments <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> o.scope.hasComment(name.value) <span class="hljs-keyword">and</span>
            @value <span class="hljs-keyword">not</span> <span class="hljs-keyword">instanceof</span> Class <span class="hljs-keyword">and</span>
            name.comments.every(<span class="hljs-function"><span class="hljs-params">(comment)</span> -&gt;</span> comment.here <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> comment.multiline)
           commentsNode = <span class="hljs-keyword">new</span> IdentifierLiteral name.value
           commentsNode.comments = name.comments
           commentFragments = []
           @compileCommentFragments o, commentsNode, commentFragments
-          o.scope.comments[name.value] = commentFragments</pre></div></div>
+          o.scope.comment name.value, commentFragments
+
+  makeDeclaration: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-218">
+        <li id="section-223">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-218">&#x00a7;</a>
+                <a class="ss" href="#section-223">&#x00a7;</a>
+              </div>
+              <p>Consider adding ‘var’ prefix to this assignment.  Only works at top level
+and if LHS is a valid declaration, and assignment is ‘=’ not another op.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">return</span> <span class="hljs-keyword">unless</span> o.level == LEVEL_TOP <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> o.undeclarable <span class="hljs-keyword">and</span>
+                  @variable.isDeclarable(o) <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @context?
+    @eachName (name) =&gt;
+      <span class="hljs-keyword">if</span> o.scope.laterVar name.value
+        @declaration = <span class="hljs-literal">yes</span>  <span class="hljs-comment"># at least one variable freshly declared</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-224">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-224">&#x00a7;</a>
               </div>
               <p>Compile an assignment, delegating to <code>compileDestructuring</code> or
 <code>compileSplice</code> if appropriate. Keep track of the name of the base object
@@ -6341,11 +6474,11 @@ has not been seen yet within the current scope, declare it.</p>
         </li>
         
         
-        <li id="section-219">
+        <li id="section-225">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-219">&#x00a7;</a>
+                <a class="ss" href="#section-225">&#x00a7;</a>
               </div>
               <p>If <code>@variable</code> is an array or an object, we’re destructuring;
 if it’s also <code>isAssignable()</code>, the destructuring syntax is supported
@@ -6375,6 +6508,7 @@ and convert this ES-unsupported destructuring into acceptable output.</p>
 
     val = @value.compileToFragments o, LEVEL_LIST
     compiledName = @variable.compileToFragments o, LEVEL_LIST
+    @makeDeclaration o  <span class="hljs-comment"># after compiling LHS, so has attachments</span>
 
     <span class="hljs-keyword">if</span> @context <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;object&#x27;</span>
       <span class="hljs-keyword">if</span> @variable.shouldCache()
@@ -6382,25 +6516,27 @@ and convert this ES-unsupported destructuring into acceptable output.</p>
         compiledName.push @makeCode <span class="hljs-string">&#x27;]&#x27;</span>
       <span class="hljs-keyword">return</span> compiledName.concat @makeCode(<span class="hljs-string">&#x27;: &#x27;</span>), val
 
-    answer = compiledName.concat @makeCode(<span class="hljs-string">&quot; <span class="hljs-subst">#{ @context <span class="hljs-keyword">or</span> <span class="hljs-string">&#x27;=&#x27;</span> }</span> &quot;</span>), val</pre></div></div>
+    answer = compiledName.concat @makeCode(<span class="hljs-string">&quot; <span class="hljs-subst">#{ @context <span class="hljs-keyword">or</span> <span class="hljs-string">&#x27;=&#x27;</span> }</span> &quot;</span>), val
+    <span class="hljs-keyword">if</span> @declaration
+      [@makeCode(<span class="hljs-string">&quot;var &quot;</span>), ...answer]</pre></div></div>
             
         </li>
         
         
-        <li id="section-220">
+        <li id="section-226">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-220">&#x00a7;</a>
+                <a class="ss" href="#section-226">&#x00a7;</a>
               </div>
-              <p>Per <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration">https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration</a>,
+              <p>Per <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#assignment_separate_from_declaration_2">https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#assignment_separate_from_declaration_2</a>
 if we’re destructuring without declaring, the destructuring assignment must be wrapped in parentheses.
 The assignment is wrapped in parentheses if ‘o.level’ has lower precedence than LEVEL_LIST (3)
 (i.e. LEVEL_COND (4), LEVEL_OP (5) or LEVEL_ACCESS (6)), or if we’re destructuring object, e.g. {a,b} = obj.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> o.level &gt; LEVEL_LIST <span class="hljs-keyword">or</span> isValue <span class="hljs-keyword">and</span> @variable.base <span class="hljs-keyword">instanceof</span> Obj <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @nestedLhs <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> (@param <span class="hljs-keyword">is</span> <span class="hljs-literal">yes</span>)
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> o.level &gt; LEVEL_LIST <span class="hljs-keyword">or</span> isValue <span class="hljs-keyword">and</span> @variable.base <span class="hljs-keyword">instanceof</span> Obj <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @nestedLhs <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> (@param <span class="hljs-keyword">is</span> <span class="hljs-literal">yes</span>)
       @wrapInParentheses answer
     <span class="hljs-keyword">else</span>
       answer</pre></div></div>
@@ -6408,11 +6544,11 @@ The assignment is wrapped in parentheses if ‘o.level’ has lower precedence t
         </li>
         
         
-        <li id="section-221">
+        <li id="section-227">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-221">&#x00a7;</a>
+                <a class="ss" href="#section-227">&#x00a7;</a>
               </div>
               <p>Object rest property is not assignable: <code>{{a}...}</code></p>
 
@@ -6433,11 +6569,11 @@ The assignment is wrapped in parentheses if ‘o.level’ has lower precedence t
         </li>
         
         
-        <li id="section-222">
+        <li id="section-228">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-222">&#x00a7;</a>
+                <a class="ss" href="#section-228">&#x00a7;</a>
               </div>
               <p>Brief implementation of recursive pattern matching, when assigning array or
 object literals to a value. Peeks at their properties to assign inner names.</p>
@@ -6453,11 +6589,11 @@ object literals to a value. Peeks at their properties to assign inner names.</p>
         </li>
         
         
-        <li id="section-223">
+        <li id="section-229">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-223">&#x00a7;</a>
+                <a class="ss" href="#section-229">&#x00a7;</a>
               </div>
               <p>Special-case for <code>{} = a</code> and <code>[] = a</code> (empty patterns).
 Compile to simply <code>a</code>.</p>
@@ -6491,11 +6627,11 @@ Compile to simply <code>a</code>.</p>
         </li>
         
         
-        <li id="section-224">
+        <li id="section-230">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-224">&#x00a7;</a>
+                <a class="ss" href="#section-230">&#x00a7;</a>
               </div>
               <p>At this point, there are several things to destructure. So the <code>fn()</code> in
 <code>{a, b} = fn()</code> must be cached, for example. Make vvar into a simple
@@ -6519,11 +6655,11 @@ variable if it isn’t already.</p>
         </li>
         
         
-        <li id="section-225">
+        <li id="section-231">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-225">&#x00a7;</a>
+                <a class="ss" href="#section-231">&#x00a7;</a>
               </div>
               <p>Helper which outputs <code>[].slice</code> code.</p>
 
@@ -6534,11 +6670,11 @@ variable if it isn’t already.</p>
         </li>
         
         
-        <li id="section-226">
+        <li id="section-232">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-226">&#x00a7;</a>
+                <a class="ss" href="#section-232">&#x00a7;</a>
               </div>
               <p>Helper which outputs <code>[].splice</code> code.</p>
 
@@ -6549,11 +6685,11 @@ variable if it isn’t already.</p>
         </li>
         
         
-        <li id="section-227">
+        <li id="section-233">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-227">&#x00a7;</a>
+                <a class="ss" href="#section-233">&#x00a7;</a>
               </div>
               <p>Check if <code>objects</code> array contains any instance of <code>Assign</code>, e.g. {a:1}.</p>
 
@@ -6565,11 +6701,11 @@ variable if it isn’t already.</p>
         </li>
         
         
-        <li id="section-228">
+        <li id="section-234">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-228">&#x00a7;</a>
+                <a class="ss" href="#section-234">&#x00a7;</a>
               </div>
               <p>Check if <code>objects</code> array contains any unassignable object.</p>
 
@@ -6582,11 +6718,11 @@ variable if it isn’t already.</p>
         </li>
         
         
-        <li id="section-229">
+        <li id="section-235">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-229">&#x00a7;</a>
+                <a class="ss" href="#section-235">&#x00a7;</a>
               </div>
               <p><code>objects</code> are complex when there is object assign ({a:1}),
 unassignable object, or just a single node.</p>
@@ -6599,11 +6735,11 @@ unassignable object, or just a single node.</p>
         </li>
         
         
-        <li id="section-230">
+        <li id="section-236">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-230">&#x00a7;</a>
+                <a class="ss" href="#section-236">&#x00a7;</a>
               </div>
               <p>“Complex” <code>objects</code> are processed in a loop.
 Examples: [a, b, {c, r…}, d], [a, …, {b, r…}, c, d]</p>
@@ -6616,11 +6752,11 @@ Examples: [a, b, {c, r…}, d], [a, …, {b, r…}, c, d]</p>
         </li>
         
         
-        <li id="section-231">
+        <li id="section-237">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-231">&#x00a7;</a>
+                <a class="ss" href="#section-237">&#x00a7;</a>
               </div>
               <p><code>Elision</code> can be skipped.</p>
 
@@ -6631,11 +6767,11 @@ Examples: [a, b, {c, r…}, d], [a, …, {b, r…}, c, d]</p>
         </li>
         
         
-        <li id="section-232">
+        <li id="section-238">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-232">&#x00a7;</a>
+                <a class="ss" href="#section-238">&#x00a7;</a>
               </div>
               <p>If <code>obj</code> is {a: 1}</p>
 
@@ -6656,11 +6792,11 @@ Examples: [a, b, {c, r…}, d], [a, …, {b, r…}, c, d]</p>
         </li>
         
         
-        <li id="section-233">
+        <li id="section-239">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-233">&#x00a7;</a>
+                <a class="ss" href="#section-239">&#x00a7;</a>
               </div>
               <p><code>obj</code> is [a…], {a…} or a</p>
 
@@ -6679,11 +6815,11 @@ Examples: [a, b, {c, r…}, d], [a, …, {b, r…}, c, d]</p>
         </li>
         
         
-        <li id="section-234">
+        <li id="section-240">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-234">&#x00a7;</a>
+                <a class="ss" href="#section-240">&#x00a7;</a>
               </div>
               <p>“Simple” <code>objects</code> can be split and compiled to arrays, [a, b, c] = arr, [a, b, c…] = arr</p>
 
@@ -6703,11 +6839,11 @@ Examples: [a, b, {c, r…}, d], [a, …, {b, r…}, c, d]</p>
         </li>
         
         
-        <li id="section-235">
+        <li id="section-241">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-235">&#x00a7;</a>
+                <a class="ss" href="#section-241">&#x00a7;</a>
               </div>
               <p>In case there is <code>Splat</code> or <code>Expansion</code> in <code>objects</code>,
 we can split array in two simple subarrays.
@@ -6733,11 +6869,11 @@ b) <code>Expansion</code>
         </li>
         
         
-        <li id="section-236">
+        <li id="section-242">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-236">&#x00a7;</a>
+                <a class="ss" href="#section-242">&#x00a7;</a>
               </div>
               <p>Slice or splice <code>objects</code>.</p>
 
@@ -6756,11 +6892,11 @@ b) <code>Expansion</code>
         </li>
         
         
-        <li id="section-237">
+        <li id="section-243">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-237">&#x00a7;</a>
+                <a class="ss" href="#section-243">&#x00a7;</a>
               </div>
               <p>There is no <code>Splat</code> or <code>Expansion</code> in <code>objects</code>.</p>
 
@@ -6775,11 +6911,11 @@ b) <code>Expansion</code>
         </li>
         
         
-        <li id="section-238">
+        <li id="section-244">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-238">&#x00a7;</a>
+                <a class="ss" href="#section-244">&#x00a7;</a>
               </div>
               <p>Disallow <code>[...] = a</code> for some reason. (Could be equivalent to <code>[] = a</code>?)</p>
 
@@ -6796,11 +6932,11 @@ b) <code>Expansion</code>
         </li>
         
         
-        <li id="section-239">
+        <li id="section-245">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-239">&#x00a7;</a>
+                <a class="ss" href="#section-245">&#x00a7;</a>
               </div>
               <p>Show error if there is more than one <code>Splat</code>, or <code>Expansion</code>.
 Examples: [a, b, c…, d, e, f…], [a, b, …, c, d, …], [a, b, …, c, d, e…]</p>
@@ -6814,11 +6950,11 @@ Examples: [a, b, c…, d, e, f…], [a, b, …, c, d, …], [a, b, …, c, d, e�
         </li>
         
         
-        <li id="section-240">
+        <li id="section-246">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-240">&#x00a7;</a>
+                <a class="ss" href="#section-246">&#x00a7;</a>
               </div>
               <p>Count all <code>Splats</code>: [a, b, c…, d, e]</p>
 
@@ -6829,11 +6965,11 @@ Examples: [a, b, c…, d, e, f…], [a, b, …, c, d, …], [a, b, …, c, d, e�
         </li>
         
         
-        <li id="section-241">
+        <li id="section-247">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-241">&#x00a7;</a>
+                <a class="ss" href="#section-247">&#x00a7;</a>
               </div>
               <p>Count all <code>Expansions</code>: [a, b, …, c, d]</p>
 
@@ -6844,11 +6980,11 @@ Examples: [a, b, c…, d, e, f…], [a, b, …, c, d, …], [a, b, …, c, d, e�
         </li>
         
         
-        <li id="section-242">
+        <li id="section-248">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-242">&#x00a7;</a>
+                <a class="ss" href="#section-248">&#x00a7;</a>
               </div>
               <p>Combine splats and expansions.</p>
 
@@ -6860,11 +6996,11 @@ Examples: [a, b, c…, d, e, f…], [a, b, …, c, d, …], [a, b, …, c, d, e�
         </li>
         
         
-        <li id="section-243">
+        <li id="section-249">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-243">&#x00a7;</a>
+                <a class="ss" href="#section-249">&#x00a7;</a>
               </div>
               <p>Sort ‘splatsAndExpans’ so we can show error at first disallowed token.</p>
 
@@ -6876,11 +7012,11 @@ Examples: [a, b, c…, d, e, f…], [a, b, …, c, d, …], [a, b, …, c, d, e�
         </li>
         
         
-        <li id="section-244">
+        <li id="section-250">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-244">&#x00a7;</a>
+                <a class="ss" href="#section-250">&#x00a7;</a>
               </div>
               <p>When compiling a conditional assignment, take care to ensure that the
 operands are only evaluated once, even though we have to reference them
@@ -6894,11 +7030,11 @@ more than once.</p>
         </li>
         
         
-        <li id="section-245">
+        <li id="section-251">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-245">&#x00a7;</a>
+                <a class="ss" href="#section-251">&#x00a7;</a>
               </div>
               <p>Disallow conditional assignment of undefined variables.</p>
 
@@ -6917,11 +7053,11 @@ more than once.</p>
         </li>
         
         
-        <li id="section-246">
+        <li id="section-252">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-246">&#x00a7;</a>
+                <a class="ss" href="#section-252">&#x00a7;</a>
               </div>
               <p>Convert special math assignment operators like <code>a //= b</code> to the equivalent
 extended form <code>a = a ** b</code> and then compiles that.</p>
@@ -6935,11 +7071,11 @@ extended form <code>a = a ** b</code> and then compiles that.</p>
         </li>
         
         
-        <li id="section-247">
+        <li id="section-253">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-247">&#x00a7;</a>
+                <a class="ss" href="#section-253">&#x00a7;</a>
               </div>
               <p>Compile the assignment from an array splice literal, using JavaScript’s
 <code>Array#splice</code> method.</p>
@@ -6981,11 +7117,11 @@ extended form <code>a = a ** b</code> and then compiles that.</p>
         </li>
         
         
-        <li id="section-248">
+        <li id="section-254">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-248">&#x00a7;</a>
+                <a class="ss" href="#section-254">&#x00a7;</a>
               </div>
               <p>This is the left-hand side of an assignment; let <code>Arr</code> and <code>Obj</code>
 know that, so that those nodes know that they’re assignable as
@@ -7032,11 +7168,11 @@ destructured variables.</p>
         </li>
         
         
-        <li id="section-249">
+        <li id="section-255">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-249">&#x00a7;</a>
+                <a class="ss" href="#section-255">&#x00a7;</a>
               </div>
               <h3 id="funcglyph">FuncGlyph</h3>
 
@@ -7050,11 +7186,11 @@ destructured variables.</p>
         </li>
         
         
-        <li id="section-250">
+        <li id="section-256">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-250">&#x00a7;</a>
+                <a class="ss" href="#section-256">&#x00a7;</a>
               </div>
               <h3 id="code">Code</h3>
 
@@ -7063,11 +7199,11 @@ destructured variables.</p>
         </li>
         
         
-        <li id="section-251">
+        <li id="section-257">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-251">&#x00a7;</a>
+                <a class="ss" href="#section-257">&#x00a7;</a>
               </div>
               <p>A function definition. This is the only node that creates a new Scope.
 When for the purposes of walking the contents of a function body, the Code
@@ -7107,11 +7243,11 @@ has no <em>children</em> – they’re within the inner scope.</p>
         </li>
         
         
-        <li id="section-252">
+        <li id="section-258">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-252">&#x00a7;</a>
+                <a class="ss" href="#section-258">&#x00a7;</a>
               </div>
               <p>Compilation creates a new scope unless explicitly asked to share with the
 outer scope. Handles splat parameters in the parameter list by setting
@@ -7143,11 +7279,11 @@ function body.</p>
         </li>
         
         
-        <li id="section-253">
+        <li id="section-259">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-253">&#x00a7;</a>
+                <a class="ss" href="#section-259">&#x00a7;</a>
               </div>
               <p>Separate <code>this</code> assignments.</p>
 
@@ -7162,11 +7298,11 @@ function body.</p>
         </li>
         
         
-        <li id="section-254">
+        <li id="section-260">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-254">&#x00a7;</a>
+                <a class="ss" href="#section-260">&#x00a7;</a>
               </div>
               <p><code>Param</code> is object destructuring with a default value: ({@prop = 1}) -&gt;
 In a case when the variable name is already reserved, we have to assign
@@ -7186,11 +7322,11 @@ a new variable name to the destructured variable: ({prop:prop1 = 1}) -&gt;</p>
         </li>
         
         
-        <li id="section-255">
+        <li id="section-261">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-255">&#x00a7;</a>
+                <a class="ss" href="#section-261">&#x00a7;</a>
               </div>
               <p>Parse the parameters, adding them to the list of parameters to put in the
 function definition; and dealing with splats or expansions, including
@@ -7208,11 +7344,11 @@ any non-idempotent parameters are evaluated in the correct order.</p>
         </li>
         
         
-        <li id="section-256">
+        <li id="section-262">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-256">&#x00a7;</a>
+                <a class="ss" href="#section-262">&#x00a7;</a>
               </div>
               <p>Was <code>...</code> used with this parameter? Splat/expansion parameters cannot
 have default values, so we need not worry about that.</p>
@@ -7227,11 +7363,11 @@ have default values, so we need not worry about that.</p>
         </li>
         
         
-        <li id="section-257">
+        <li id="section-263">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-257">&#x00a7;</a>
+                <a class="ss" href="#section-263">&#x00a7;</a>
               </div>
               <p>Splat arrays are treated oddly by ES; deal with them the legacy
 way in the function body. TODO: Should this be handled in the
@@ -7256,13 +7392,13 @@ function parameter list, and if so, how?</p>
         </li>
         
         
-        <li id="section-258">
+        <li id="section-264">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-258">&#x00a7;</a>
+                <a class="ss" href="#section-264">&#x00a7;</a>
               </div>
-              <p>Parse all other parameters; if a splat paramater has not yet been
+              <p>Parse all other parameters; if a splat parameter has not yet been
 encountered, add these other parameters to the list to be output in
 the function definition.</p>
 
@@ -7276,11 +7412,11 @@ the function definition.</p>
         </li>
         
         
-        <li id="section-259">
+        <li id="section-265">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-259">&#x00a7;</a>
+                <a class="ss" href="#section-265">&#x00a7;</a>
               </div>
               <p>This parameter cannot be declared or assigned in the parameter
 list. So put a reference in the parameter list and add a statement
@@ -7299,11 +7435,11 @@ to the function body assigning it, e.g.
         </li>
         
         
-        <li id="section-260">
+        <li id="section-266">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-260">&#x00a7;</a>
+                <a class="ss" href="#section-266">&#x00a7;</a>
               </div>
               <p>If this parameter comes before the splat or expansion, it will go
 in the function definition parameter list.</p>
@@ -7315,11 +7451,11 @@ in the function definition parameter list.</p>
         </li>
         
         
-        <li id="section-261">
+        <li id="section-267">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-261">&#x00a7;</a>
+                <a class="ss" href="#section-267">&#x00a7;</a>
               </div>
               <p>If this parameter has a default value, and it hasn’t already been
 set by the <code>shouldCache()</code> block above, define it as a statement in
@@ -7339,11 +7475,11 @@ so we can’t define its default value in the parameter list.</p>
         </li>
         
         
-        <li id="section-262">
+        <li id="section-268">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-262">&#x00a7;</a>
+                <a class="ss" href="#section-268">&#x00a7;</a>
               </div>
               <p>Add this parameter’s reference(s) to the function scope.</p>
 
@@ -7354,11 +7490,11 @@ so we can’t define its default value in the parameter list.</p>
         </li>
         
         
-        <li id="section-263">
+        <li id="section-269">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-263">&#x00a7;</a>
+                <a class="ss" href="#section-269">&#x00a7;</a>
               </div>
               <p>This parameter is destructured.</p>
 
@@ -7373,11 +7509,11 @@ so we can’t define its default value in the parameter list.</p>
         </li>
         
         
-        <li id="section-264">
+        <li id="section-270">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-264">&#x00a7;</a>
+                <a class="ss" href="#section-270">&#x00a7;</a>
               </div>
               <p>This compilation of the parameter is only to get its name to add
 to the scope name tracking; since the compilation output here
@@ -7396,11 +7532,11 @@ is compiled.</p>
         </li>
         
         
-        <li id="section-265">
+        <li id="section-271">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-265">&#x00a7;</a>
+                <a class="ss" href="#section-271">&#x00a7;</a>
               </div>
               <p>If this parameter had a default value, since it’s no longer in the
 function parameter list we need to assign its default value
@@ -7416,11 +7552,11 @@ function parameter list we need to assign its default value
         </li>
         
         
-        <li id="section-266">
+        <li id="section-272">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-266">&#x00a7;</a>
+                <a class="ss" href="#section-272">&#x00a7;</a>
               </div>
               <p>Add this parameter to the scope, since it wouldn’t have been added
 yet since it was skipped earlier.</p>
@@ -7432,11 +7568,11 @@ yet since it was skipped earlier.</p>
         </li>
         
         
-        <li id="section-267">
+        <li id="section-273">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-267">&#x00a7;</a>
+                <a class="ss" href="#section-273">&#x00a7;</a>
               </div>
               <p>If there were parameters after the splat or expansion parameter, those
 parameters need to be assigned in the body of the function.</p>
@@ -7448,11 +7584,11 @@ parameters need to be assigned in the body of the function.</p>
         </li>
         
         
-        <li id="section-268">
+        <li id="section-274">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-268">&#x00a7;</a>
+                <a class="ss" href="#section-274">&#x00a7;</a>
               </div>
               <p>Create a destructured assignment, e.g. <code>[a, b, c] = [args..., b, c]</code></p>
 
@@ -7465,11 +7601,11 @@ parameters need to be assigned in the body of the function.</p>
         </li>
         
         
-        <li id="section-269">
+        <li id="section-275">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-269">&#x00a7;</a>
+                <a class="ss" href="#section-275">&#x00a7;</a>
               </div>
               <p>Add new expressions to the function body</p>
 
@@ -7488,11 +7624,11 @@ parameters need to be assigned in the body of the function.</p>
         </li>
         
         
-        <li id="section-270">
+        <li id="section-276">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-270">&#x00a7;</a>
+                <a class="ss" href="#section-276">&#x00a7;</a>
               </div>
               <p>JavaScript doesn’t allow bound (<code>=&gt;</code>) functions to also be generators.
 This is usually caught via <code>Op::compileContinuation</code>, but double-check:</p>
@@ -7506,11 +7642,11 @@ This is usually caught via <code>Op::compileContinuation</code>, but double-chec
         </li>
         
         
-        <li id="section-271">
+        <li id="section-277">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-271">&#x00a7;</a>
+                <a class="ss" href="#section-277">&#x00a7;</a>
               </div>
               <p>Assemble the output</p>
 
@@ -7529,11 +7665,11 @@ This is usually caught via <code>Op::compileContinuation</code>, but double-chec
         </li>
         
         
-        <li id="section-272">
+        <li id="section-278">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-272">&#x00a7;</a>
+                <a class="ss" href="#section-278">&#x00a7;</a>
               </div>
               <p>Block comments between a function name and <code>(</code> get output between
 <code>function</code> and <code>(</code>.</p>
@@ -7549,11 +7685,11 @@ This is usually caught via <code>Op::compileContinuation</code>, but double-chec
         </li>
         
         
-        <li id="section-273">
+        <li id="section-279">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-273">&#x00a7;</a>
+                <a class="ss" href="#section-279">&#x00a7;</a>
               </div>
               <p>Compile this parameter, but if any generated variables get created
 (e.g. <code>ref</code>), shift those into the parent scope since we can’t put a
@@ -7564,18 +7700,18 @@ This is usually caught via <code>Op::compileContinuation</code>, but double-chec
             <div class="content"><div class='highlight'><pre>      scopeVariablesCount = o.scope.variables.length
       signature.push param.compileToFragments(o, LEVEL_PAREN)...
       <span class="hljs-keyword">if</span> scopeVariablesCount <span class="hljs-keyword">isnt</span> o.scope.variables.length
-        generatedVariables = o.scope.variables.splice scopeVariablesCount
-        o.scope.parent.variables.push generatedVariables...
+        generatedVariables = o.scope.spliceVariables scopeVariablesCount
+        o.scope.parent.addVariables generatedVariables
     signature.push @makeCode <span class="hljs-string">&#x27;)&#x27;</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-274">
+        <li id="section-280">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-274">&#x00a7;</a>
+                <a class="ss" href="#section-280">&#x00a7;</a>
               </div>
               <p>Block comments between <code>)</code> and <code>-&gt;</code>/<code>=&gt;</code> get output between <code>)</code> and <code>{</code>.</p>
 
@@ -7590,11 +7726,11 @@ This is usually caught via <code>Op::compileContinuation</code>, but double-chec
         </li>
         
         
-        <li id="section-275">
+        <li id="section-281">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-275">&#x00a7;</a>
+                <a class="ss" href="#section-281">&#x00a7;</a>
               </div>
               <p>We need to compile the body before method names to ensure <code>super</code>
 references are handled.</p>
@@ -7625,6 +7761,7 @@ references are handled.</p>
     o.indent        += TAB
     <span class="hljs-keyword">delete</span> o.bare
     <span class="hljs-keyword">delete</span> o.isExistentialEquals
+    <span class="hljs-keyword">delete</span> o.undeclarable
 
   checkForDuplicateParams: <span class="hljs-function">-&gt;</span>
     paramNames = []
@@ -7638,11 +7775,11 @@ references are handled.</p>
         </li>
         
         
-        <li id="section-276">
+        <li id="section-282">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-276">&#x00a7;</a>
+                <a class="ss" href="#section-282">&#x00a7;</a>
               </div>
               <p>Short-circuit <code>traverseChildren</code> method to prevent it from crossing scope
 boundaries unless <code>crossScope</code> is <code>true</code>.</p>
@@ -7655,11 +7792,11 @@ boundaries unless <code>crossScope</code> is <code>true</code>.</p>
         </li>
         
         
-        <li id="section-277">
+        <li id="section-283">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-277">&#x00a7;</a>
+                <a class="ss" href="#section-283">&#x00a7;</a>
               </div>
               <p>Short-circuit <code>replaceInContext</code> method to prevent it from crossing context boundaries. Bound
 functions have the same context.</p>
@@ -7702,11 +7839,11 @@ functions have the same context.</p>
         </li>
         
         
-        <li id="section-278">
+        <li id="section-284">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-278">&#x00a7;</a>
+                <a class="ss" href="#section-284">&#x00a7;</a>
               </div>
               <p>Was <code>...</code> used with this parameter? (Only one such parameter is allowed
 per function.)</p>
@@ -7736,11 +7873,11 @@ per function.)</p>
         </li>
         
         
-        <li id="section-279">
+        <li id="section-285">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-279">&#x00a7;</a>
+                <a class="ss" href="#section-285">&#x00a7;</a>
               </div>
               <p>Find all super calls in the given context node;
 returns <code>true</code> if <code>iterator</code> is called.</p>
@@ -7756,11 +7893,11 @@ returns <code>true</code> if <code>iterator</code> is called.</p>
         </li>
         
         
-        <li id="section-280">
+        <li id="section-286">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-280">&#x00a7;</a>
+                <a class="ss" href="#section-286">&#x00a7;</a>
               </div>
               <p><code>super</code> in a constructor (the only <code>super</code> without an accessor)
 cannot be given an argument with a reference to <code>this</code>, as that would
@@ -7781,11 +7918,11 @@ be referencing <code>this</code> before calling <code>super</code>.</p>
         </li>
         
         
-        <li id="section-281">
+        <li id="section-287">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-281">&#x00a7;</a>
+                <a class="ss" href="#section-287">&#x00a7;</a>
               </div>
               <p><code>super</code> has the same target in bound (arrow) functions, so check them too</p>
 
@@ -7873,11 +8010,11 @@ be referencing <code>this</code> before calling <code>super</code>.</p>
         </li>
         
         
-        <li id="section-282">
+        <li id="section-288">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-282">&#x00a7;</a>
+                <a class="ss" href="#section-288">&#x00a7;</a>
               </div>
               <p>We never generate named functions, so specify <code>id</code> as <code>null</code>, which
 matches the Babel AST for anonymous function expressions/arrow functions</p>
@@ -7901,11 +8038,11 @@ matches the Babel AST for anonymous function expressions/arrow functions</p>
         </li>
         
         
-        <li id="section-283">
+        <li id="section-289">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-283">&#x00a7;</a>
+                <a class="ss" href="#section-289">&#x00a7;</a>
               </div>
               <h3 id="param">Param</h3>
 
@@ -7914,11 +8051,11 @@ matches the Babel AST for anonymous function expressions/arrow functions</p>
         </li>
         
         
-        <li id="section-284">
+        <li id="section-290">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-284">&#x00a7;</a>
+                <a class="ss" href="#section-290">&#x00a7;</a>
               </div>
               <p>A parameter in a function definition. Beyond a typical JavaScript parameter,
 these parameters can also attach themselves to the context of the function,
@@ -7963,11 +8100,11 @@ as well as be a splat, gathering up a group of parameters into an array.</p>
         </li>
         
         
-        <li id="section-285">
+        <li id="section-291">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-285">&#x00a7;</a>
+                <a class="ss" href="#section-291">&#x00a7;</a>
               </div>
               <p>Iterates the name or names of a <code>Param</code>.
 In a sense, a destructured parameter represents multiple JS parameters. This
@@ -7993,11 +8130,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-286">
+        <li id="section-292">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-286">&#x00a7;</a>
+                <a class="ss" href="#section-292">&#x00a7;</a>
               </div>
               <ul>
 <li>simple literals <code>foo</code></li>
@@ -8012,11 +8149,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-287">
+        <li id="section-293">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-287">&#x00a7;</a>
+                <a class="ss" href="#section-293">&#x00a7;</a>
               </div>
               <ul>
 <li>at-params <code>@foo</code></li>
@@ -8030,11 +8167,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-288">
+        <li id="section-294">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-288">&#x00a7;</a>
+                <a class="ss" href="#section-294">&#x00a7;</a>
               </div>
               <p>Save original obj.</p>
 
@@ -8045,11 +8182,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-289">
+        <li id="section-295">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-289">&#x00a7;</a>
+                <a class="ss" href="#section-295">&#x00a7;</a>
               </div>
               <ul>
 <li>destructured parameter with default value</li>
@@ -8063,11 +8200,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-290">
+        <li id="section-296">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-290">&#x00a7;</a>
+                <a class="ss" href="#section-296">&#x00a7;</a>
               </div>
               <ul>
 <li>assignments within destructured parameters <code>{foo:bar}</code></li>
@@ -8080,11 +8217,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-291">
+        <li id="section-297">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-291">&#x00a7;</a>
+                <a class="ss" href="#section-297">&#x00a7;</a>
               </div>
               <p>… possibly with a default value</p>
 
@@ -8099,11 +8236,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-292">
+        <li id="section-298">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-292">&#x00a7;</a>
+                <a class="ss" href="#section-298">&#x00a7;</a>
               </div>
               <ul>
 <li>splats within destructured parameters <code>[xs...]</code></li>
@@ -8119,11 +8256,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-293">
+        <li id="section-299">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-293">&#x00a7;</a>
+                <a class="ss" href="#section-299">&#x00a7;</a>
               </div>
               <ul>
 <li>destructured parameters within destructured parameters <code>[{a}]</code></li>
@@ -8137,11 +8274,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-294">
+        <li id="section-300">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-294">&#x00a7;</a>
+                <a class="ss" href="#section-300">&#x00a7;</a>
               </div>
               <ul>
 <li>at-params within destructured parameters <code>{@foo}</code></li>
@@ -8155,11 +8292,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-295">
+        <li id="section-301">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-295">&#x00a7;</a>
+                <a class="ss" href="#section-301">&#x00a7;</a>
               </div>
               <ul>
 <li>simple destructured parameters {foo}</li>
@@ -8179,11 +8316,11 @@ to that name.</p>
         </li>
         
         
-        <li id="section-296">
+        <li id="section-302">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-296">&#x00a7;</a>
+                <a class="ss" href="#section-302">&#x00a7;</a>
               </div>
               <p>Rename a param by replacing the given AST node for a name with a new node.
 This needs to ensure that the the source for object destructuring does not change.</p>
@@ -8200,11 +8337,11 @@ This needs to ensure that the the source for object destructuring does not chang
         </li>
         
         
-        <li id="section-297">
+        <li id="section-303">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-297">&#x00a7;</a>
+                <a class="ss" href="#section-303">&#x00a7;</a>
               </div>
               <p>No need to assign a new variable for the destructured variable if the variable isn’t reserved.
 Examples:
@@ -8225,11 +8362,11 @@ Examples:
         </li>
         
         
-        <li id="section-298">
+        <li id="section-304">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-298">&#x00a7;</a>
+                <a class="ss" href="#section-304">&#x00a7;</a>
               </div>
               <h3 id="splat">Splat</h3>
 
@@ -8238,11 +8375,11 @@ Examples:
         </li>
         
         
-        <li id="section-299">
+        <li id="section-305">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-299">&#x00a7;</a>
+                <a class="ss" href="#section-305">&#x00a7;</a>
               </div>
               <p>A splat, either as a parameter to a function, an argument to a call,
 or as part of a destructuring assignment.</p>
@@ -8293,11 +8430,11 @@ or as part of a destructuring assignment.</p>
         </li>
         
         
-        <li id="section-300">
+        <li id="section-306">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-300">&#x00a7;</a>
+                <a class="ss" href="#section-306">&#x00a7;</a>
               </div>
               <h3 id="expansion">Expansion</h3>
 
@@ -8306,11 +8443,11 @@ or as part of a destructuring assignment.</p>
         </li>
         
         
-        <li id="section-301">
+        <li id="section-307">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-301">&#x00a7;</a>
+                <a class="ss" href="#section-307">&#x00a7;</a>
               </div>
               <p>Used to skip values inside an array destructuring (pattern matching) or
 parameter list.</p>
@@ -8347,11 +8484,11 @@ parameter list.</p>
         </li>
         
         
-        <li id="section-302">
+        <li id="section-308">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-302">&#x00a7;</a>
+                <a class="ss" href="#section-308">&#x00a7;</a>
               </div>
               <h3 id="elision">Elision</h3>
 
@@ -8360,11 +8497,11 @@ parameter list.</p>
         </li>
         
         
-        <li id="section-303">
+        <li id="section-309">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-303">&#x00a7;</a>
+                <a class="ss" href="#section-309">&#x00a7;</a>
               </div>
               <p>Array elision element (for example, [,a, , , b, , c, ,]).</p>
 
@@ -8373,6 +8510,7 @@ parameter list.</p>
             <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.Elision = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Elision</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Base</span></span>
 
   isAssignable: YES
+  isDeclarable: YES
 
   shouldCache: NO
 
@@ -8395,11 +8533,11 @@ parameter list.</p>
         </li>
         
         
-        <li id="section-304">
+        <li id="section-310">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-304">&#x00a7;</a>
+                <a class="ss" href="#section-310">&#x00a7;</a>
               </div>
               <h3 id="while">While</h3>
 
@@ -8408,11 +8546,11 @@ parameter list.</p>
         </li>
         
         
-        <li id="section-305">
+        <li id="section-311">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-305">&#x00a7;</a>
+                <a class="ss" href="#section-311">&#x00a7;</a>
               </div>
               <p>A while loop, the only sort of low-level loop exposed by CoffeeScript. From
 it, all other loops can be manufactured. Useful in cases where you need more
@@ -8449,11 +8587,11 @@ flexibility or more speed than a comprehension can provide.</p>
         </li>
         
         
-        <li id="section-306">
+        <li id="section-312">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-306">&#x00a7;</a>
+                <a class="ss" href="#section-312">&#x00a7;</a>
               </div>
               <p>The main difference from a JavaScript <em>while</em> is that the CoffeeScript
 <em>while</em> can be used as a part of a larger expression – while loops may
@@ -8500,11 +8638,11 @@ return an array containing the computed result of each iteration.</p>
         </li>
         
         
-        <li id="section-307">
+        <li id="section-313">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-307">&#x00a7;</a>
+                <a class="ss" href="#section-313">&#x00a7;</a>
               </div>
               <h3 id="op">Op</h3>
 
@@ -8513,11 +8651,11 @@ return an array containing the computed result of each iteration.</p>
         </li>
         
         
-        <li id="section-308">
+        <li id="section-314">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-308">&#x00a7;</a>
+                <a class="ss" href="#section-314">&#x00a7;</a>
               </div>
               <p>Simple Arithmetic and logical operations. Performs some conversion from
 CoffeeScript operations into their JavaScript equivalents.</p>
@@ -8551,11 +8689,11 @@ CoffeeScript operations into their JavaScript equivalents.</p>
         </li>
         
         
-        <li id="section-309">
+        <li id="section-315">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-309">&#x00a7;</a>
+                <a class="ss" href="#section-315">&#x00a7;</a>
               </div>
               <p>The map of conversions from CoffeeScript to JavaScript symbols.</p>
 
@@ -8570,11 +8708,11 @@ CoffeeScript operations into their JavaScript equivalents.</p>
         </li>
         
         
-        <li id="section-310">
+        <li id="section-316">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-310">&#x00a7;</a>
+                <a class="ss" href="#section-316">&#x00a7;</a>
               </div>
               <p>The map of invertible operators.</p>
 
@@ -8605,11 +8743,11 @@ CoffeeScript operations into their JavaScript equivalents.</p>
         </li>
         
         
-        <li id="section-311">
+        <li id="section-317">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-311">&#x00a7;</a>
+                <a class="ss" href="#section-317">&#x00a7;</a>
               </div>
               <p>Am I capable of
 <a href="https://docs.python.org/3/reference/expressions.html#not-in">Python-style comparison chaining</a>?</p>
@@ -8687,11 +8825,11 @@ CoffeeScript operations into their JavaScript equivalents.</p>
         </li>
         
         
-        <li id="section-312">
+        <li id="section-318">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-312">&#x00a7;</a>
+                <a class="ss" href="#section-318">&#x00a7;</a>
               </div>
               <p>In chains, there’s no need to wrap bare obj literals in parens,
 as the chained expression is wrapped.</p>
@@ -8716,11 +8854,11 @@ as the chained expression is wrapped.</p>
         </li>
         
         
-        <li id="section-313">
+        <li id="section-319">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-313">&#x00a7;</a>
+                <a class="ss" href="#section-319">&#x00a7;</a>
               </div>
               <p>Mimic Python’s chained comparisons when multiple comparison operators are
 used sequentially. For example:</p>
@@ -8739,11 +8877,11 @@ used sequentially. For example:</p>
         </li>
         
         
-        <li id="section-314">
+        <li id="section-320">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-314">&#x00a7;</a>
+                <a class="ss" href="#section-320">&#x00a7;</a>
               </div>
               <p>Keep reference to the left expression, unless this an existential assignment</p>
 
@@ -8761,11 +8899,11 @@ used sequentially. For example:</p>
         </li>
         
         
-        <li id="section-315">
+        <li id="section-321">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-315">&#x00a7;</a>
+                <a class="ss" href="#section-321">&#x00a7;</a>
               </div>
               <p>Compile a unary <strong>Op</strong>.</p>
 
@@ -8893,11 +9031,11 @@ used sequentially. For example:</p>
         </li>
         
         
-        <li id="section-316">
+        <li id="section-322">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-316">&#x00a7;</a>
+                <a class="ss" href="#section-322">&#x00a7;</a>
               </div>
               <h3 id="in">In</h3>
 
@@ -8920,11 +9058,11 @@ used sequentially. For example:</p>
         </li>
         
         
-        <li id="section-317">
+        <li id="section-323">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-317">&#x00a7;</a>
+                <a class="ss" href="#section-323">&#x00a7;</a>
               </div>
               <p><code>compileOrTest</code> only if we have an array literal with no splats</p>
 
@@ -8956,11 +9094,11 @@ used sequentially. For example:</p>
         </li>
         
         
-        <li id="section-318">
+        <li id="section-324">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-318">&#x00a7;</a>
+                <a class="ss" href="#section-324">&#x00a7;</a>
               </div>
               <h3 id="try">Try</h3>
 
@@ -8969,11 +9107,11 @@ used sequentially. For example:</p>
         </li>
         
         
-        <li id="section-319">
+        <li id="section-325">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-319">&#x00a7;</a>
+                <a class="ss" href="#section-325">&#x00a7;</a>
               </div>
               <p>A classic <em>try/catch/finally</em> block.</p>
 
@@ -9001,11 +9139,11 @@ used sequentially. For example:</p>
         </li>
         
         
-        <li id="section-320">
+        <li id="section-326">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-320">&#x00a7;</a>
+                <a class="ss" href="#section-326">&#x00a7;</a>
               </div>
               <p>Compilation is more or less as you would expect – the <em>finally</em> clause
 is optional, the <em>catch</em> is not.</p>
@@ -9045,11 +9183,11 @@ is optional, the <em>catch</em> is not.</p>
         </li>
         
         
-        <li id="section-321">
+        <li id="section-327">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-321">&#x00a7;</a>
+                <a class="ss" href="#section-327">&#x00a7;</a>
               </div>
               <p>Include <code>finally</code> keyword in location data.</p>
 
@@ -9112,11 +9250,11 @@ is optional, the <em>catch</em> is not.</p>
         </li>
         
         
-        <li id="section-322">
+        <li id="section-328">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-322">&#x00a7;</a>
+                <a class="ss" href="#section-328">&#x00a7;</a>
               </div>
               <h3 id="throw">Throw</h3>
 
@@ -9125,11 +9263,11 @@ is optional, the <em>catch</em> is not.</p>
         </li>
         
         
-        <li id="section-323">
+        <li id="section-329">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-323">&#x00a7;</a>
+                <a class="ss" href="#section-329">&#x00a7;</a>
               </div>
               <p>Simple node to throw an exception.</p>
 
@@ -9147,11 +9285,11 @@ is optional, the <em>catch</em> is not.</p>
         </li>
         
         
-        <li id="section-324">
+        <li id="section-330">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-324">&#x00a7;</a>
+                <a class="ss" href="#section-330">&#x00a7;</a>
               </div>
               <p>A <strong>Throw</strong> is already a return, of sorts…</p>
 
@@ -9175,11 +9313,11 @@ is optional, the <em>catch</em> is not.</p>
         </li>
         
         
-        <li id="section-325">
+        <li id="section-331">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-325">&#x00a7;</a>
+                <a class="ss" href="#section-331">&#x00a7;</a>
               </div>
               <h3 id="existence">Existence</h3>
 
@@ -9188,11 +9326,11 @@ is optional, the <em>catch</em> is not.</p>
         </li>
         
         
-        <li id="section-326">
+        <li id="section-332">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-326">&#x00a7;</a>
+                <a class="ss" href="#section-332">&#x00a7;</a>
               </div>
               <p>Checks a variable for existence – not <code>null</code> and not <code>undefined</code>. This is
 similar to <code>.nil?</code> in Ruby, and avoids having to consult a JavaScript truth
@@ -9228,11 +9366,11 @@ table. Optionally only check if a variable is not <code>undefined</code>.</p>
         </li>
         
         
-        <li id="section-327">
+        <li id="section-333">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-327">&#x00a7;</a>
+                <a class="ss" href="#section-333">&#x00a7;</a>
               </div>
               <p>We explicity want to use loose equality (<code>==</code>) when comparing against <code>null</code>,
 so that an existence check roughly corresponds to a check for truthiness.
@@ -9261,11 +9399,11 @@ which only get assigned when the variable is <code>undefined</code> (but not <co
         </li>
         
         
-        <li id="section-328">
+        <li id="section-334">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-328">&#x00a7;</a>
+                <a class="ss" href="#section-334">&#x00a7;</a>
               </div>
               <h3 id="parens">Parens</h3>
 
@@ -9274,11 +9412,11 @@ which only get assigned when the variable is <code>undefined</code> (but not <co
         </li>
         
         
-        <li id="section-329">
+        <li id="section-335">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-329">&#x00a7;</a>
+                <a class="ss" href="#section-335">&#x00a7;</a>
               </div>
               <p>An extra set of parentheses, specified explicitly in the source. At one time
 we tried to clean up the results by detecting and removing redundant
@@ -9303,11 +9441,11 @@ parentheses, but no longer – you can put in as many as you please.</p>
         </li>
         
         
-        <li id="section-330">
+        <li id="section-336">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-330">&#x00a7;</a>
+                <a class="ss" href="#section-336">&#x00a7;</a>
               </div>
               <p>If these parentheses are wrapping an <code>IdentifierLiteral</code> followed by a
 block comment, output the parentheses (or put another way, don’t optimize
@@ -9335,11 +9473,11 @@ by comment-based type annotations from JavaScript labels.</p>
         </li>
         
         
-        <li id="section-331">
+        <li id="section-337">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-331">&#x00a7;</a>
+                <a class="ss" href="#section-337">&#x00a7;</a>
               </div>
               <h3 id="stringwithinterpolations">StringWithInterpolations</h3>
 
@@ -9361,11 +9499,11 @@ by comment-based type annotations from JavaScript labels.</p>
         </li>
         
         
-        <li id="section-332">
+        <li id="section-338">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-332">&#x00a7;</a>
+                <a class="ss" href="#section-338">&#x00a7;</a>
               </div>
               <p><code>unwrap</code> returns <code>this</code> to stop ancestor nodes reaching in to grab @body,
 and using @body.compileNode. <code>StringWithInterpolations.compileNode</code> is
@@ -9382,11 +9520,11 @@ and using @body.compileNode. <code>StringWithInterpolations.compileNode</code> i
         </li>
         
         
-        <li id="section-333">
+        <li id="section-339">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-333">&#x00a7;</a>
+                <a class="ss" href="#section-339">&#x00a7;</a>
               </div>
               <p>Assumes that <code>expr</code> is <code>Block</code></p>
 
@@ -9428,11 +9566,11 @@ and using @body.compileNode. <code>StringWithInterpolations.compileNode</code> i
         </li>
         
         
-        <li id="section-334">
+        <li id="section-340">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-334">&#x00a7;</a>
+                <a class="ss" href="#section-340">&#x00a7;</a>
               </div>
               <p>This node is getting discarded, but salvage its comments.</p>
 
@@ -9476,11 +9614,11 @@ and using @body.compileNode. <code>StringWithInterpolations.compileNode</code> i
         </li>
         
         
-        <li id="section-335">
+        <li id="section-341">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-335">&#x00a7;</a>
+                <a class="ss" href="#section-341">&#x00a7;</a>
               </div>
               <p>Flag the <code>{</code> and <code>}</code> fragments as having been generated by this
 <code>StringWithInterpolations</code> node, so that <code>compileComments</code> knows
@@ -9552,11 +9690,11 @@ this compiler is minified.</p>
         </li>
         
         
-        <li id="section-336">
+        <li id="section-342">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-336">&#x00a7;</a>
+                <a class="ss" href="#section-342">&#x00a7;</a>
               </div>
               <p>Represents the contents of an empty interpolation (e.g. <code>#{}</code>).
 Only used during AST generation.</p>
@@ -9570,11 +9708,11 @@ Only used during AST generation.</p>
         </li>
         
         
-        <li id="section-337">
+        <li id="section-343">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-337">&#x00a7;</a>
+                <a class="ss" href="#section-343">&#x00a7;</a>
               </div>
               <h3 id="for">For</h3>
 
@@ -9583,11 +9721,11 @@ Only used during AST generation.</p>
         </li>
         
         
-        <li id="section-338">
+        <li id="section-344">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-338">&#x00a7;</a>
+                <a class="ss" href="#section-344">&#x00a7;</a>
               </div>
               <p>CoffeeScript’s replacement for the <em>for</em> loop is our array and object
 comprehensions, that compile into <em>for</em> loops here. They also act as an
@@ -9635,11 +9773,11 @@ you can map and filter in a single pass.</p>
         </li>
         
         
-        <li id="section-339">
+        <li id="section-345">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-339">&#x00a7;</a>
+                <a class="ss" href="#section-345">&#x00a7;</a>
               </div>
               <p>Move up any comments in the “<code>for</code> line”, i.e. the line of code with <code>for</code>,
 from any child nodes of that line up to the <code>for</code> node itself so that these
@@ -9654,11 +9792,11 @@ comments get output, and get output above the <code>for</code> loop.</p>
         </li>
         
         
-        <li id="section-340">
+        <li id="section-346">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-340">&#x00a7;</a>
+                <a class="ss" href="#section-346">&#x00a7;</a>
               </div>
               <p>These comments are buried pretty deeply, so if they happen to be
 trailing comments the line they trail will be unrecognizable when
@@ -9675,11 +9813,11 @@ output above the <code>for</code> line.</p>
         </li>
         
         
-        <li id="section-341">
+        <li id="section-347">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-341">&#x00a7;</a>
+                <a class="ss" href="#section-347">&#x00a7;</a>
               </div>
               <p>Welcome to the hairiest method in all of CoffeeScript. Handles the inner
 loop, filtering, stepping, and result saving for array, object, and range
@@ -9698,13 +9836,18 @@ some cannot.</p>
     index       = @index <span class="hljs-keyword">and</span> (@index.compile o, LEVEL_LIST)
     scope.find(name)  <span class="hljs-keyword">if</span> name <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @pattern
     scope.find(index) <span class="hljs-keyword">if</span> index <span class="hljs-keyword">and</span> @index <span class="hljs-keyword">not</span> <span class="hljs-keyword">instanceof</span> Value
-    rvar        = scope.freeVariable <span class="hljs-string">&#x27;results&#x27;</span> <span class="hljs-keyword">if</span> @returns
+    <span class="hljs-keyword">if</span> @returns
+      rvar = scope.freeVariable <span class="hljs-string">&#x27;results&#x27;</span>, laterVar: <span class="hljs-literal">true</span>
     <span class="hljs-keyword">if</span> @from
       ivar = scope.freeVariable <span class="hljs-string">&#x27;x&#x27;</span>, single: <span class="hljs-literal">true</span> <span class="hljs-keyword">if</span> @pattern
     <span class="hljs-keyword">else</span>
       ivar = (@object <span class="hljs-keyword">and</span> index) <span class="hljs-keyword">or</span> scope.freeVariable <span class="hljs-string">&#x27;i&#x27;</span>, single: <span class="hljs-literal">true</span>
-    kvar        = ((@range <span class="hljs-keyword">or</span> @from) <span class="hljs-keyword">and</span> name) <span class="hljs-keyword">or</span> index <span class="hljs-keyword">or</span> ivar
-    kvarAssign  = <span class="hljs-keyword">if</span> kvar <span class="hljs-keyword">isnt</span> ivar <span class="hljs-keyword">then</span> <span class="hljs-string">&quot;<span class="hljs-subst">#{kvar}</span> = &quot;</span> <span class="hljs-keyword">else</span> <span class="hljs-string">&quot;&quot;</span>
+    kvar = ((@range <span class="hljs-keyword">or</span> @from) <span class="hljs-keyword">and</span> name) <span class="hljs-keyword">or</span> index <span class="hljs-keyword">or</span> ivar
+    <span class="hljs-keyword">if</span> kvar <span class="hljs-keyword">isnt</span> ivar
+      kvarDeclare = <span class="hljs-string">&quot;, <span class="hljs-subst">#{kvar}</span> = <span class="hljs-subst">#{ivar}</span>&quot;</span>
+      kvarAssign  = <span class="hljs-string">&quot;<span class="hljs-subst">#{kvar}</span> = &quot;</span>
+    <span class="hljs-keyword">else</span>
+      kvarDeclare = kvarAssign = <span class="hljs-string">&#x27;&#x27;</span>
     <span class="hljs-keyword">if</span> @step <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @range
       [step, stepVar] = @cacheToCodeFragments @step.cache o, LEVEL_LIST, shouldCacheOrIsAssignable
       stepNum   = parseNumber stepVar <span class="hljs-keyword">if</span> @step.isNumber()
@@ -9719,16 +9862,26 @@ some cannot.</p>
     <span class="hljs-keyword">else</span>
       svar    = @source.compile o, LEVEL_LIST
       <span class="hljs-keyword">if</span> (name <span class="hljs-keyword">or</span> @own) <span class="hljs-keyword">and</span> @source.unwrap() <span class="hljs-keyword">not</span> <span class="hljs-keyword">instanceof</span> IdentifierLiteral
-        defPart    += <span class="hljs-string">&quot;<span class="hljs-subst">#{@tab}</span><span class="hljs-subst">#{ref = scope.freeVariable <span class="hljs-string">&#x27;ref&#x27;</span>}</span> = <span class="hljs-subst">#{svar}</span>;\n&quot;</span>
+        ref        = scope.freeVariable <span class="hljs-string">&#x27;ref&#x27;</span>, laterVar: <span class="hljs-literal">true</span>
+        defPart    += <span class="hljs-string">&quot;<span class="hljs-subst">#{@tab}</span>var <span class="hljs-subst">#{ref}</span> = <span class="hljs-subst">#{svar}</span>;\n&quot;</span>
         svar       = ref
+      canDeclare = (<span class="hljs-keyword">not</span> @step <span class="hljs-keyword">or</span> stepNum?) <span class="hljs-keyword">and</span>
+                   (<span class="hljs-keyword">not</span> @index? <span class="hljs-keyword">or</span> @index.isDeclarable(o))
       <span class="hljs-keyword">if</span> name <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @pattern <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @from
         namePart   = <span class="hljs-string">&quot;<span class="hljs-subst">#{name}</span> = <span class="hljs-subst">#{svar}</span>[<span class="hljs-subst">#{kvar}</span>]&quot;</span>
+        namePart   = <span class="hljs-string">&quot;var <span class="hljs-subst">#{namePart}</span>&quot;</span> <span class="hljs-keyword">if</span> @name.isDeclarable(o) <span class="hljs-keyword">and</span> o.scope.laterVar name
       <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> @object <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @from
         defPart += <span class="hljs-string">&quot;<span class="hljs-subst">#{@tab}</span><span class="hljs-subst">#{step}</span>;\n&quot;</span> <span class="hljs-keyword">if</span> step <span class="hljs-keyword">isnt</span> stepVar
         down = stepNum &lt; <span class="hljs-number">0</span>
-        lvar = scope.freeVariable <span class="hljs-string">&#x27;len&#x27;</span> <span class="hljs-keyword">unless</span> @step <span class="hljs-keyword">and</span> stepNum? <span class="hljs-keyword">and</span> down
-        declare = <span class="hljs-string">&quot;<span class="hljs-subst">#{kvarAssign}</span><span class="hljs-subst">#{ivar}</span> = 0, <span class="hljs-subst">#{lvar}</span> = <span class="hljs-subst">#{svar}</span>.length&quot;</span>
-        declareDown = <span class="hljs-string">&quot;<span class="hljs-subst">#{kvarAssign}</span><span class="hljs-subst">#{ivar}</span> = <span class="hljs-subst">#{svar}</span>.length - 1&quot;</span>
+        <span class="hljs-keyword">if</span> canDeclare
+          ivarLater = o.scope.laterVar ivar
+          kvarLater = o.scope.laterVar kvar
+        <span class="hljs-keyword">unless</span> @step <span class="hljs-keyword">and</span> stepNum? <span class="hljs-keyword">and</span> down
+          lvar = scope.freeVariable <span class="hljs-string">&#x27;len&#x27;</span>, laterVar: canDeclare
+          declare = <span class="hljs-string">&quot;<span class="hljs-subst">#{ivar}</span> = 0<span class="hljs-subst">#{kvarDeclare}</span>, <span class="hljs-subst">#{lvar}</span> = <span class="hljs-subst">#{svar}</span>.length&quot;</span>
+          declare = <span class="hljs-string">&quot;var <span class="hljs-subst">#{declare}</span>&quot;</span> <span class="hljs-keyword">if</span> canDeclare  <span class="hljs-comment"># declare lvar at least</span>
+        declareDown = <span class="hljs-string">&quot;<span class="hljs-subst">#{ivar}</span> = <span class="hljs-subst">#{svar}</span>.length - 1<span class="hljs-subst">#{kvarDeclare}</span>&quot;</span>
+        declareDown = <span class="hljs-string">&quot;var <span class="hljs-subst">#{declareDown}</span>&quot;</span> <span class="hljs-keyword">if</span> ivarLater <span class="hljs-keyword">or</span> kvarLater
         compare = <span class="hljs-string">&quot;<span class="hljs-subst">#{ivar}</span> &lt; <span class="hljs-subst">#{lvar}</span>&quot;</span>
         compareDown = <span class="hljs-string">&quot;<span class="hljs-subst">#{ivar}</span> &gt;= 0&quot;</span>
         <span class="hljs-keyword">if</span> @step
@@ -9744,7 +9897,7 @@ some cannot.</p>
           increment = <span class="hljs-string">&quot;<span class="hljs-subst">#{<span class="hljs-keyword">if</span> kvar <span class="hljs-keyword">isnt</span> ivar <span class="hljs-keyword">then</span> <span class="hljs-string">&quot;++<span class="hljs-subst">#{ivar}</span>&quot;</span> <span class="hljs-keyword">else</span> <span class="hljs-string">&quot;<span class="hljs-subst">#{ivar}</span>++&quot;</span>}</span>&quot;</span>
         forPartFragments = [@makeCode(<span class="hljs-string">&quot;<span class="hljs-subst">#{declare}</span>; <span class="hljs-subst">#{compare}</span>; <span class="hljs-subst">#{kvarAssign}</span><span class="hljs-subst">#{increment}</span>&quot;</span>)]
     <span class="hljs-keyword">if</span> @returns
-      resultPart   = <span class="hljs-string">&quot;<span class="hljs-subst">#{@tab}</span><span class="hljs-subst">#{rvar}</span> = [];\n&quot;</span>
+      resultPart   = <span class="hljs-string">&quot;<span class="hljs-subst">#{@tab}</span>var <span class="hljs-subst">#{rvar}</span> = [];\n&quot;</span>
       returnResult = <span class="hljs-string">&quot;\n<span class="hljs-subst">#{@tab}</span>return <span class="hljs-subst">#{rvar}</span>;&quot;</span>
       body.makeReturn rvar
     <span class="hljs-keyword">if</span> @guard
@@ -9757,14 +9910,18 @@ some cannot.</p>
 
     varPart = <span class="hljs-string">&quot;\n<span class="hljs-subst">#{idt1}</span><span class="hljs-subst">#{namePart}</span>;&quot;</span> <span class="hljs-keyword">if</span> namePart
     <span class="hljs-keyword">if</span> @object
-      forPartFragments = [@makeCode(<span class="hljs-string">&quot;<span class="hljs-subst">#{kvar}</span> in <span class="hljs-subst">#{svar}</span>&quot;</span>)]
+      forPart = <span class="hljs-string">&quot;<span class="hljs-subst">#{kvar}</span> in <span class="hljs-subst">#{svar}</span>&quot;</span>
+      forPart = <span class="hljs-string">&quot;var <span class="hljs-subst">#{forPart}</span>&quot;</span> <span class="hljs-keyword">if</span> o.scope.laterVar kvar
+      forPartFragments = [@makeCode forPart]
       guardPart = <span class="hljs-string">&quot;\n<span class="hljs-subst">#{idt1}</span>if (!<span class="hljs-subst">#{utility <span class="hljs-string">&#x27;hasProp&#x27;</span>, o}</span>.call(<span class="hljs-subst">#{svar}</span>, <span class="hljs-subst">#{kvar}</span>)) continue;&quot;</span> <span class="hljs-keyword">if</span> @own
     <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> @from
+      forPart = <span class="hljs-string">&quot;<span class="hljs-subst">#{kvar}</span> of <span class="hljs-subst">#{svar}</span>&quot;</span>
       <span class="hljs-keyword">if</span> @await
-        forPartFragments = <span class="hljs-keyword">new</span> Op <span class="hljs-string">&#x27;await&#x27;</span>, <span class="hljs-keyword">new</span> Parens <span class="hljs-keyword">new</span> Literal <span class="hljs-string">&quot;<span class="hljs-subst">#{kvar}</span> of <span class="hljs-subst">#{svar}</span>&quot;</span>
+        forPartFragments = <span class="hljs-keyword">new</span> Op <span class="hljs-string">&#x27;await&#x27;</span>, <span class="hljs-keyword">new</span> Parens <span class="hljs-keyword">new</span> Literal forPart
         forPartFragments = forPartFragments.compileToFragments o, LEVEL_TOP
       <span class="hljs-keyword">else</span>
-        forPartFragments = [@makeCode(<span class="hljs-string">&quot;<span class="hljs-subst">#{kvar}</span> of <span class="hljs-subst">#{svar}</span>&quot;</span>)]
+        forPart = <span class="hljs-string">&quot;var <span class="hljs-subst">#{forPart}</span>&quot;</span> <span class="hljs-keyword">if</span> o.scope.laterVar kvar
+        forPartFragments = [@makeCode forPart]
     bodyFragments = body.compileToFragments merge(o, indent: idt1), LEVEL_TOP
     <span class="hljs-keyword">if</span> bodyFragments <span class="hljs-keyword">and</span> bodyFragments.length &gt; <span class="hljs-number">0</span>
       bodyFragments = [].concat @makeCode(<span class="hljs-string">&#x27;\n&#x27;</span>), bodyFragments, @makeCode(<span class="hljs-string">&#x27;\n&#x27;</span>)
@@ -9809,11 +9966,11 @@ some cannot.</p>
         </li>
         
         
-        <li id="section-342">
+        <li id="section-348">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-342">&#x00a7;</a>
+                <a class="ss" href="#section-348">&#x00a7;</a>
               </div>
               <h3 id="switch">Switch</h3>
 
@@ -9822,11 +9979,11 @@ some cannot.</p>
         </li>
         
         
-        <li id="section-343">
+        <li id="section-349">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-343">&#x00a7;</a>
+                <a class="ss" href="#section-349">&#x00a7;</a>
               </div>
               <p>A JavaScript <em>switch</em> statement. Converts into a returnable expression on-demand.</p>
 
@@ -9925,11 +10082,11 @@ some cannot.</p>
         </li>
         
         
-        <li id="section-344">
+        <li id="section-350">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-344">&#x00a7;</a>
+                <a class="ss" href="#section-350">&#x00a7;</a>
               </div>
               <h3 id="if">If</h3>
 
@@ -9938,11 +10095,11 @@ some cannot.</p>
         </li>
         
         
-        <li id="section-345">
+        <li id="section-351">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-345">&#x00a7;</a>
+                <a class="ss" href="#section-351">&#x00a7;</a>
               </div>
               <p><em>If/else</em> statements. Acts as an expression by pushing down requested returns
 to the last line of each clause.</p>
@@ -9967,11 +10124,11 @@ because ternaries are already proper expressions, and don’t need conversion.</
         </li>
         
         
-        <li id="section-346">
+        <li id="section-352">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-346">&#x00a7;</a>
+                <a class="ss" href="#section-352">&#x00a7;</a>
               </div>
               <p>Rewrite a chain of <strong>Ifs</strong> to add a default case as the final <em>else</em>.</p>
 
@@ -9991,11 +10148,11 @@ because ternaries are already proper expressions, and don’t need conversion.</
         </li>
         
         
-        <li id="section-347">
+        <li id="section-353">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-347">&#x00a7;</a>
+                <a class="ss" href="#section-353">&#x00a7;</a>
               </div>
               <p>The <strong>If</strong> only compiles into a statement if either of its bodies needs
 to be a statement. Otherwise a conditional operator is safe.</p>
@@ -10027,11 +10184,11 @@ to be a statement. Otherwise a conditional operator is safe.</p>
         </li>
         
         
-        <li id="section-348">
+        <li id="section-354">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-348">&#x00a7;</a>
+                <a class="ss" href="#section-354">&#x00a7;</a>
               </div>
               <p>Compile the <code>If</code> as a regular <em>if-else</em> statement. Flattened chains
 force inner <em>else</em> bodies into statement form.</p>
@@ -10062,11 +10219,11 @@ force inner <em>else</em> bodies into statement form.</p>
         </li>
         
         
-        <li id="section-349">
+        <li id="section-355">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-349">&#x00a7;</a>
+                <a class="ss" href="#section-355">&#x00a7;</a>
               </div>
               <p>Compile the <code>If</code> as a conditional operator.</p>
 
@@ -10117,11 +10274,11 @@ force inner <em>else</em> bodies into statement form.</p>
         </li>
         
         
-        <li id="section-350">
+        <li id="section-356">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-350">&#x00a7;</a>
+                <a class="ss" href="#section-356">&#x00a7;</a>
               </div>
               <p>A sequence expression e.g. <code>(a; b)</code>.
 Currently only used during AST generation.</p>
@@ -10148,11 +10305,11 @@ Currently only used during AST generation.</p>
         </li>
         
         
-        <li id="section-351">
+        <li id="section-357">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-351">&#x00a7;</a>
+                <a class="ss" href="#section-357">&#x00a7;</a>
               </div>
               <h2 id="constants">Constants</h2>
 
@@ -10161,11 +10318,11 @@ Currently only used during AST generation.</p>
         </li>
         
         
-        <li id="section-352">
+        <li id="section-358">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-352">&#x00a7;</a>
+                <a class="ss" href="#section-358">&#x00a7;</a>
               </div>
               
             </div>
@@ -10185,11 +10342,11 @@ UTILITIES =
         </li>
         
         
-        <li id="section-353">
+        <li id="section-359">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-353">&#x00a7;</a>
+                <a class="ss" href="#section-359">&#x00a7;</a>
               </div>
               <p>Shortcuts to speed up the lookup time for native functions.</p>
 
@@ -10203,11 +10360,11 @@ UTILITIES =
         </li>
         
         
-        <li id="section-354">
+        <li id="section-360">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-354">&#x00a7;</a>
+                <a class="ss" href="#section-360">&#x00a7;</a>
               </div>
               <p>Levels indicate a node’s position in the AST. Useful for knowing if
 parens are necessary or superfluous.</p>
@@ -10224,11 +10381,11 @@ LEVEL_ACCESS = <span class="hljs-number">6</span>  <span class="hljs-comment"># 
         </li>
         
         
-        <li id="section-355">
+        <li id="section-361">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-355">&#x00a7;</a>
+                <a class="ss" href="#section-361">&#x00a7;</a>
               </div>
               <p>Tabs are two spaces for pretty printing.</p>
 
@@ -10253,11 +10410,11 @@ HEREGEX_OMIT = <span class="hljs-regexp">///
         </li>
         
         
-        <li id="section-356">
+        <li id="section-362">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-356">&#x00a7;</a>
+                <a class="ss" href="#section-362">&#x00a7;</a>
               </div>
               <h2 id="helper-functions">Helper Functions</h2>
 
@@ -10266,11 +10423,11 @@ HEREGEX_OMIT = <span class="hljs-regexp">///
         </li>
         
         
-        <li id="section-357">
+        <li id="section-363">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-357">&#x00a7;</a>
+                <a class="ss" href="#section-363">&#x00a7;</a>
               </div>
               
             </div>
@@ -10278,11 +10435,11 @@ HEREGEX_OMIT = <span class="hljs-regexp">///
         </li>
         
         
-        <li id="section-358">
+        <li id="section-364">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-358">&#x00a7;</a>
+                <a class="ss" href="#section-364">&#x00a7;</a>
               </div>
               <p>Helper for ensuring that utility functions are assigned at the top level.</p>
 
@@ -10307,11 +10464,11 @@ HEREGEX_OMIT = <span class="hljs-regexp">///
         </li>
         
         
-        <li id="section-359">
+        <li id="section-365">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-359">&#x00a7;</a>
+                <a class="ss" href="#section-365">&#x00a7;</a>
               </div>
               <p>Wherever in CoffeeScript 1 we might’ve inserted a <code>makeCode &quot;#{@tab}&quot;</code> to
 indent a line of code, now we must account for the possibility of comments
@@ -10338,11 +10495,11 @@ such comments, and <em>then</em> indent the first following line of code.</p>
         </li>
         
         
-        <li id="section-360">
+        <li id="section-366">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-360">&#x00a7;</a>
+                <a class="ss" href="#section-366">&#x00a7;</a>
               </div>
               <p>Move the <code>comments</code> property from one object to another, deleting it from
 the first object.</p>
@@ -10357,11 +10514,11 @@ the first object.</p>
         </li>
         
         
-        <li id="section-361">
+        <li id="section-367">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-361">&#x00a7;</a>
+                <a class="ss" href="#section-367">&#x00a7;</a>
               </div>
               <p>Sometimes when compiling a node, we want to insert a fragment at the start
 of an array of fragments; but if the start has one or more comment fragments,
@@ -10389,11 +10546,11 @@ we want to insert this fragment after those but before any non-comments.</p>
         </li>
         
         
-        <li id="section-362">
+        <li id="section-368">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-362">&#x00a7;</a>
+                <a class="ss" href="#section-368">&#x00a7;</a>
               </div>
               <p>Unfold a node’s child if soak, then tuck the node under created <code>If</code></p>
 
@@ -10408,11 +10565,11 @@ we want to insert this fragment after those but before any non-comments.</p>
         </li>
         
         
-        <li id="section-363">
+        <li id="section-369">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-363">&#x00a7;</a>
+                <a class="ss" href="#section-369">&#x00a7;</a>
               </div>
               <p>Constructs a string or regex by escaping certain characters.</p>
 
@@ -10465,11 +10622,11 @@ we want to insert this fragment after those but before any non-comments.</p>
         </li>
         
         
-        <li id="section-364">
+        <li id="section-370">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-364">&#x00a7;</a>
+                <a class="ss" href="#section-370">&#x00a7;</a>
               </div>
               <p>Ignore escaped backslashes.</p>
 
@@ -10514,11 +10671,11 @@ we want to insert this fragment after those but before any non-comments.</p>
         </li>
         
         
-        <li id="section-365">
+        <li id="section-371">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-365">&#x00a7;</a>
+                <a class="ss" href="#section-371">&#x00a7;</a>
               </div>
               <p>Helpers for <code>mergeLocationData</code> and <code>mergeAstLocationData</code> below.</p>
 
@@ -10545,11 +10702,11 @@ we want to insert this fragment after those but before any non-comments.</p>
         </li>
         
         
-        <li id="section-366">
+        <li id="section-372">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-366">&#x00a7;</a>
+                <a class="ss" href="#section-372">&#x00a7;</a>
               </div>
               <p>Take two nodes’ location data and return a new <code>locationData</code> object that
 encompasses the location data of both nodes. So the new <code>first_line</code> value
@@ -10611,11 +10768,11 @@ mergeLocationData(first, second, justEnding:  <span class="hljs-literal">yes</sp
         </li>
         
         
-        <li id="section-367">
+        <li id="section-373">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-367">&#x00a7;</a>
+                <a class="ss" href="#section-373">&#x00a7;</a>
               </div>
               <p>Take two AST nodes, or two AST nodes’ location data objects, and return a new
 location data object that encompasses the location data of both nodes. So the
@@ -10675,11 +10832,11 @@ mergeAstLocationData(first, second, justEnding:  <span class="hljs-literal">yes<
         </li>
         
         
-        <li id="section-368">
+        <li id="section-374">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-368">&#x00a7;</a>
+                <a class="ss" href="#section-374">&#x00a7;</a>
               </div>
               <p>Convert Jison-style node class location data to Babel-style location data</p>
 
@@ -10704,11 +10861,11 @@ mergeAstLocationData(first, second, justEnding:  <span class="hljs-literal">yes<
         </li>
         
         
-        <li id="section-369">
+        <li id="section-375">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-369">&#x00a7;</a>
+                <a class="ss" href="#section-375">&#x00a7;</a>
               </div>
               <p>Generate a zero-width location data that corresponds to the end of another node’s location.</p>
 
@@ -10747,11 +10904,11 @@ mergeAstLocationData(first, second, justEnding:  <span class="hljs-literal">yes<
         </li>
         
         
-        <li id="section-370">
+        <li id="section-376">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-370">&#x00a7;</a>
+                <a class="ss" href="#section-376">&#x00a7;</a>
               </div>
               <p>We don’t currently have a token corresponding to the empty space
 between interpolation/JSX expression braces, so piece together the location
