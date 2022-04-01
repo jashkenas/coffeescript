@@ -1,21 +1,31 @@
 # This file is running in CommonJS (in Node) or as a classic Script (in the browser tests) so it can use import() within an async function, but not at the top level; and we can’t use static import.
 test "dynamic import assertion", ->
-  if typeof process is "undefined" or process.version?.startsWith("v17")
+  try
     { default: secret } = await import('data:application/json,{"ofLife":42}', { assert: { type: 'json' } })
     eq secret.ofLife, 42
+  catch e
+    # This parses on Node 16.14.x but throws an error async so the `skipUnless` feature detection won't catch it
+    # rethrow any other erorr
+    unless e.message is 'Invalid module "data:application/json,{"ofLife":42}" has an unsupported MIME type "application/json"'
+      throw e
 
 test "assert keyword", ->
-  if typeof process is "undefined" or process.version?.startsWith("v17")
-    assert = 1
+  assert = 1
 
+  try
     { default: assert } = await import('data:application/json,{"thatIAm":42}', { assert: { type: 'json' } })
     eq assert.thatIAm, 42
+  catch e
+    # This parses on Node 16.14.x but throws an error async so the `skipUnless` feature detection won't catch it
+    # rethrow any other erorr
+    unless e.message is 'Invalid module "data:application/json,{"thatIAm":42}" has an unsupported MIME type "application/json"'
+      throw e
 
-    eqJS """
-      import assert from 'regression-test'
-    """, """
-      import assert from 'regression-test';
-    """
+  eqJS """
+    import assert from 'regression-test'
+  """, """
+    import assert from 'regression-test';
+  """
 
 test "static import assertion", ->
   eqJS """
