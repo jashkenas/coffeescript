@@ -1,20 +1,21 @@
 # This file is running in CommonJS (in Node) or as a classic Script (in the browser tests) so it can use import() within an async function, but not at the top level; and we can’t use static import.
 test "dynamic import assertion", ->
-  { default: secret } = await import('data:application/json,{"ofLife":42}', { assert: { type: 'json' } })
-  eq secret.ofLife, 42
+  if typeof process is "undefined" or process.version?.startsWith("v17")
+    { default: secret } = await import('data:application/json,{"ofLife":42}', { assert: { type: 'json' } })
+    eq secret.ofLife, 42
 
 test "assert keyword", ->
-  assert = 1
+  if typeof process is "undefined" or process.version?.startsWith("v17")
+    assert = 1
 
-  { default: assert } = await import('data:application/json,{"thatIAm":42}', { assert: { type: 'json' } })
-  eq assert.thatIAm, 42
+    { default: assert } = await import('data:application/json,{"thatIAm":42}', { assert: { type: 'json' } })
+    eq assert.thatIAm, 42
 
-  eqJS """
-    import assert from 'regression-test'
-  """, """
-    import assert from 'regression-test';
-  """
-
+    eqJS """
+      import assert from 'regression-test'
+    """, """
+      import assert from 'regression-test';
+    """
 
 test "static import assertion", ->
   eqJS """
