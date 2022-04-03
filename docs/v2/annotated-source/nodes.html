@@ -3518,7 +3518,7 @@ a child <code>Value</code> node assigned to the <code>object</code> property.</p
               <div class="sswrap ">
                 <a class="ss" href="#section-134">&#x00a7;</a>
               </div>
-              <p>Catch invalid attributes: <div {a:"b", props} {props} "value" /></p>
+              <p>Catch invalid attributes: &lt;div {a:”b”, props} {props} “value” /&gt;</p>
 
             </div>
             
@@ -8727,6 +8727,7 @@ used sequentially. For example:</p>
 <pre><code>bin/coffee -e <span class="hljs-string">&#x27;console.log 50 &lt; 65 &gt; 10&#x27;</span>
 <span class="hljs-literal">true</span>
 </code></pre>
+
             </div>
             
             <div class="content"><div class='highlight'><pre>  compileChain: <span class="hljs-function"><span class="hljs-params">(o)</span> -&gt;</span>
@@ -10563,6 +10564,7 @@ you’d get:</p>
 mergeLocationData(first, second, justLeading: <span class="hljs-literal">yes</span>).range <span class="hljs-comment"># [1, 5]</span>
 mergeLocationData(first, second, justEnding:  <span class="hljs-literal">yes</span>).range <span class="hljs-comment"># [4, 10]</span>
 </code></pre>
+
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.mergeLocationData = mergeLocationData = <span class="hljs-function"><span class="hljs-params">(locationDataA, locationDataB, {justLeading, justEnding} = {})</span> -&gt;</span>
@@ -10629,6 +10631,7 @@ you’d get:</p>
 mergeAstLocationData(first, second, justLeading: <span class="hljs-literal">yes</span>).range <span class="hljs-comment"># [1, 5]</span>
 mergeAstLocationData(first, second, justEnding:  <span class="hljs-literal">yes</span>).range <span class="hljs-comment"># [4, 10]</span>
 </code></pre>
+
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.mergeAstLocationData = mergeAstLocationData = <span class="hljs-function"><span class="hljs-params">(nodeA, nodeB, {justLeading, justEnding} = {})</span> -&gt;</span>

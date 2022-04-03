@@ -133,7 +133,8 @@
 Use it like so:</p>
 <pre><code>parser  = <span class="hljs-keyword">new</span> OptionParser switches, helpBanner
 options = parser.parse process.argv
-</code></pre><p>The first non-option is considered to be the start of the file (and file
+</code></pre>
+<p>The first non-option is considered to be the start of the file (and file
 option) list, and all subsequent arguments are left unparsed.</p>
 <p>The <code>coffee</code> command uses an instance of <strong>OptionParser</strong> to parse its
 command-line arguments in <code>src/command.coffee</code>.</p>
@@ -153,7 +154,8 @@ command-line arguments in <code>src/command.coffee</code>.</p>
               </div>
               <p>Initialize with a list of valid options, in the form:</p>
 <pre><code>[short-flag, long-flag, description]
-</code></pre><p>Along with an optional banner for the usage help.</p>
+</code></pre>
+<p>Along with an optional banner for the usage help.</p>
 
             </div>
             
