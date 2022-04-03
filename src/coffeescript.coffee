@@ -252,7 +252,7 @@ parser.yy.parseError = (message, {token}) ->
 # Use native source maps rather than monkey patching `Error.prepareStackTrace`
 # if native source maps are enabled. Do not patch `Error.prepareStackTrace`
 # if another library has patched it since that would break them.
-nativeSourceMaps = process.execArgv.includes('--enable-source-maps') or process.env.NODE_OPTIONS?.includes('--enable-source-maps')
+nativeSourceMaps = process?.execArgv.includes('--enable-source-maps') or process?.env.NODE_OPTIONS?.includes('--enable-source-maps')
 if nativeSourceMaps or Error.prepareStackTrace
   registerCompiled = ->
 else
