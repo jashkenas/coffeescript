@@ -1,5 +1,6 @@
 return if global.testingBrowser
 
+{spawn} = require('child_process')
 SourceMap = require '../src/sourcemap'
 
 vlqEncodedValues = [
@@ -63,3 +64,49 @@ test "#3075: v3 source map fields", ->
   v3SourceMap = JSON.parse v3SourceMap
   arrayEq v3SourceMap.sources, ['tempus_fugit.coffee']
   eq v3SourceMap.sourceRoot, './www_root/coffee/'
+
+test "native source maps", ->
+  new Promise (resolve, reject) ->
+    proc = spawn "node", [
+      "--enable-source-maps"
+      "-r", "./register.js"
+      "-r", "./test/integration/error.coffee"
+    ]
+
+    # proc.stdout.setEncoding('utf8')
+    # proc.stdout.on 'data', (s) -> console.log(s)
+    err = ""
+    proc.stderr.setEncoding('utf8')
+    proc.stderr.on 'data', (s) -> err += s
+    proc.on        'exit', (status) ->
+      try
+        equal status, 1
+
+        [_, line] = err.match /error\.coffee:(\d+)/
+        equal line, 3 # Mapped source line
+        resolve()
+      catch e
+        reject(e)
+
+test "don't change stack traces if another library has patched `Error.prepareStackTrace`", ->
+  new Promise (resolve, reject) ->
+    proc = spawn "node", [
+      "-r", "./test/integration/prepare_stack_trace.js",
+      "-r", "./register.js",
+      "-r", "./test/integration/error.coffee",
+    ]
+
+    # proc.stdout.setEncoding('utf8')
+    # proc.stdout.on 'data', (s) -> console.log(s)
+    err = ""
+    proc.stderr.setEncoding('utf8')
+    proc.stderr.on 'data', (s) -> err += s
+    proc.on        'exit', (status) ->
+      try
+        equal status, 1
+
+        [_, line] = err.match /error\.coffee:(\d+)/
+        equal line, 4 # Unmapped source line
+        resolve()
+      catch e
+        reject(e)

@@ -5364,27 +5364,27 @@ f = function*() {
           <h3>Classes are compiled to ES2015 classes</h3>
 <p>ES2015 classes and their methods have some restrictions beyond those on regular functions.</p>
 <p>Class constructors can’t be invoked without <code>new</code>:</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-coffee">(<span class="keyword">class</span>)()
+<blockquote class="uneditable-code-block"><pre><code class="language-coffee">(<span class="class"><span class="keyword">class</span>)()</span>
 <span class="comment"># Throws a TypeError at runtime</span>
 </code></pre>
 </blockquote><p>ES2015 classes don’t allow bound (fat arrow) methods. The CoffeeScript compiler goes through some contortions to preserve support for them, but one thing that can’t be accommodated is calling a bound method before it is bound:</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="keyword">class</span> <span class="title class_">Base</span>
+<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">Base</span></span>
   constructor: <span class="function">-&gt;</span>
     @onClick()      <span class="comment"># This works</span>
     clickHandler = @onClick
     clickHandler()  <span class="comment"># This throws a runtime error</span>
 
-<span class="keyword">class</span> <span class="title class_">Component</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Base</span>
+<span class="class"><span class="keyword">class</span> <span class="title">Component</span> <span class="keyword">extends</span> <span class="title">Base</span></span>
   onClick: <span class="function">=&gt;</span>
     console.log <span class="string">&#x27;Clicked!&#x27;</span>, @
 </code></pre>
 </blockquote><p>Class methods can’t be used with <code>new</code> (uncommon):</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="keyword">class</span> <span class="title class_">Namespace</span>
+<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">Namespace</span></span>
   @Klass = <span class="function">-&gt;</span>
 <span class="keyword">new</span> Namespace.Klass  <span class="comment"># Throws a TypeError at runtime</span>
 </code></pre>
 </blockquote><p>Due to the hoisting required to compile to ES2015 classes, dynamic keys in class methods can’t use values from the executable class body unless the methods are assigned in prototype style.</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="keyword">class</span> <span class="title class_">A</span>
+<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span>
   name = <span class="string">&#x27;method&#x27;</span>
   <span class="string">&quot;<span class="subst">#{name}</span>&quot;</span>: <span class="function">-&gt;</span>   <span class="comment"># This method will be named &#x27;undefined&#x27;</span>
   @::[name] = <span class="function">-&gt;</span>  <span class="comment"># This will work; assigns to `A.prototype.method`</span>
@@ -5394,11 +5394,11 @@ f = function*() {
         <section id="breaking-changes-super-this">
           <h3><code>super</code> and <code>this</code></h3>
 <p>In the constructor of a derived class (a class that <code>extends</code> another class), <code>this</code> cannot be used before calling <code>super</code>:</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="keyword">class</span> <span class="title class_">B</span> <span class="keyword">extends</span> <span class="title class_ inherited__">A</span>
+<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>
   constructor: <span class="function">-&gt;</span> this  <span class="comment"># Throws a compiler error</span>
 </code></pre>
 </blockquote><p>This also means you cannot pass a reference to <code>this</code> as an argument to <code>super</code> in the constructor of a derived class:</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="keyword">class</span> <span class="title class_">B</span> <span class="keyword">extends</span> <span class="title class_ inherited__">A</span>
+<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>
   constructor: <span class="function"><span class="params">(@arg)</span> -&gt;</span>
     super @arg  <span class="comment"># Throws a compiler error</span>
 </code></pre>
@@ -5447,7 +5447,7 @@ B = class B extends A {
         <section id="breaking-changes-super-extends">
           <h3><code>super</code> and <code>extends</code></h3>
 <p>Due to a syntax clash with <code>super</code> with accessors, “bare” <code>super</code> (the keyword <code>super</code> without parentheses) no longer compiles to a super call forwarding all arguments.</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="keyword">class</span> <span class="title class_">B</span> <span class="keyword">extends</span> <span class="title class_ inherited__">A</span>
+<blockquote class="uneditable-code-block"><pre><code class="language-coffee"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>
   foo: <span class="function">-&gt;</span> super
   <span class="comment"># Throws a compiler error</span>
 </code></pre>
@@ -5704,7 +5704,7 @@ x = <span class="number">2</span> + <span class="number">2</span>
 console.log x
 </code></pre>
 </blockquote><p>If this were saved as <code>executable.coffee</code>, it could be made executable and run:</p>
-<blockquote class="uneditable-code-block"><pre><code class="language-bash">▶ <span class="built_in">chmod</span> +x ./executable.coffee
+<blockquote class="uneditable-code-block"><pre><code class="language-bash">▶ chmod +x ./executable.coffee
 ▶ ./executable.coffee
 4
 </code></pre>

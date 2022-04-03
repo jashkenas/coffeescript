@@ -59,7 +59,10 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
   # Always generate a source map if no filename is passed in, since without a
   # a filename we have no way to retrieve this source later in the event that
   # we need to recompile it to get a source map for `prepareStackTrace`.
-  generateSourceMap = options.sourceMap or options.inlineMap or not options.filename?
+  generateSourceMap = options.sourceMap or
+    options.inlineMap or
+    nativeSourceMaps or
+    not options.filename?
   filename = options.filename or '<anonymous>'
 
   checkShebangLine filename, code
@@ -158,7 +161,7 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
     if v3SourceMap and transpilerOutput.map
       v3SourceMap = transpilerOutput.map
 
-  if options.inlineMap
+  if options.inlineMap or nativeSourceMaps
     encoded = base64encode JSON.stringify v3SourceMap
     sourceMapDataURI = "//# sourceMappingURL=data:application/json;base64,#{encoded}"
     sourceURL = "//# sourceURL=#{options.filename ? 'coffeescript'}"
@@ -246,7 +249,11 @@ parser.yy.parseError = (message, {token}) ->
   # from the lexer.
   helpers.throwSyntaxError "unexpected #{errorText}", errorLoc
 
-if process.execArgv.includes('--enable-source-maps') or process.env.NODE_OPTIONS?.includes('--enable-source-maps')
+# Use native source maps rather than monkey patching `Error.prepareStackTrace`
+# if native source maps are enabled. Do not patch `Error.prepareStackTrace`
+# if another library has patched it since that would break them.
+nativeSourceMaps = process.execArgv.includes('--enable-source-maps') or process.env.NODE_OPTIONS?.includes('--enable-source-maps')
+if nativeSourceMaps or Error.prepareStackTrace
   registerCompiled = ->
 else
   # For each compiled file, save its source in memory in case we need to
