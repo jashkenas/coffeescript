@@ -120,7 +120,8 @@ matches against the beginning of the source code. When a match is found,
 a token is produced, we consume the match, and start again. Tokens are in the
 form:</p>
 <pre><code>[tag, value, locationData]
-</code></pre><p>where locationData is {first_line, first_column, last_line, last_column, last_line_exclusive, last_column_exclusive}, which is a
+</code></pre>
+<p>where locationData is {first_line, first_column, last_line, last_column, last_line_exclusive, last_column_exclusive}, which is a
 format that can be fed directly into <a href="https://github.com/zaach/jison">Jison</a>.  These
 are read by jison in the <code>parser.lexer</code> function defined in coffeescript.coffee.</p>
 
@@ -974,7 +975,8 @@ then the newline is suppressed:</p>
 <pre><code>elements
   .each( ... )
   .map( ... )
-</code></pre><p>Keeps track of the level of indentation, because a single outdent token
+</code></pre>
+<p>Keeps track of the level of indentation, because a single outdent token
 can close multiple indents, so we need to know how far in we happen to be.</p>
 
             </div>
@@ -1590,7 +1592,8 @@ identifier to allow for different grammar precedence</p>
 inside it using Ruby-like notation for substitution of arbitrary
 expressions.</p>
 <pre><code><span class="hljs-string">&quot;Hello <span class="hljs-subst">#{name.capitalize()}</span>.&quot;</span>
-</code></pre><p>If it encounters an interpolation, this method will recursively create a new
+</code></pre>
+<p>If it encounters an interpolation, this method will recursively create a new
 Lexer and tokenize until the <code>{</code> of <code>#{</code> is balanced with a <code>}</code>.</p>
 <ul>
 <li><code>regex</code> matches the contents of a token (but not <code>delimiter</code>, and not
@@ -1941,6 +1944,7 @@ correctly balanced throughout the course of the token stream.</p>
 <pre><code>el.click(<span class="hljs-function"><span class="hljs-params">(event)</span> -&gt;</span>
   el.hide())
 </code></pre>
+
             </div>
             
             <div class="content"><div class='highlight'><pre>      [..., lastIndent] = @indents

@@ -738,22 +738,28 @@ Added support for spread dots on the left side: f …a</p>
 <pre><code>f
   a: b
   c: d
-</code></pre><p>Don’t accept implicit calls of this type, when on the same line
+</code></pre>
+<p>Don’t accept implicit calls of this type, when on the same line
 as the control structures below as that may misinterpret constructs like:</p>
 <pre><code><span class="hljs-keyword">if</span> f
    a: <span class="hljs-number">1</span>
-</code></pre><p>as</p>
+</code></pre>
+<p>as</p>
 <pre><code><span class="hljs-keyword">if</span> f(a: <span class="hljs-number">1</span>)
-</code></pre><p>which is probably always unintended.
-Furthermore don’t allow this in literal arrays, as
-that creates grammatical ambiguities.</p>
+</code></pre>
+<p>which is probably always unintended.
+Furthermore don’t allow this in the first line of a literal array
+or explicit object, as that creates grammatical ambiguities (#5368).</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">in</span> IMPLICIT_FUNC <span class="hljs-keyword">and</span>
          @indexOfTag(i + <span class="hljs-number">1</span>, <span class="hljs-string">&#x27;INDENT&#x27;</span>) &gt; <span class="hljs-number">-1</span> <span class="hljs-keyword">and</span> @looksObjectish(i + <span class="hljs-number">2</span>) <span class="hljs-keyword">and</span>
          <span class="hljs-keyword">not</span> @findTagsBackwards(i, [<span class="hljs-string">&#x27;CLASS&#x27;</span>, <span class="hljs-string">&#x27;EXTENDS&#x27;</span>, <span class="hljs-string">&#x27;IF&#x27;</span>, <span class="hljs-string">&#x27;CATCH&#x27;</span>,
-          <span class="hljs-string">&#x27;SWITCH&#x27;</span>, <span class="hljs-string">&#x27;LEADING_WHEN&#x27;</span>, <span class="hljs-string">&#x27;FOR&#x27;</span>, <span class="hljs-string">&#x27;WHILE&#x27;</span>, <span class="hljs-string">&#x27;UNTIL&#x27;</span>])
+          <span class="hljs-string">&#x27;SWITCH&#x27;</span>, <span class="hljs-string">&#x27;LEADING_WHEN&#x27;</span>, <span class="hljs-string">&#x27;FOR&#x27;</span>, <span class="hljs-string">&#x27;WHILE&#x27;</span>, <span class="hljs-string">&#x27;UNTIL&#x27;</span>]) <span class="hljs-keyword">and</span>
+         <span class="hljs-keyword">not</span> ((s = stackTop()?[<span class="hljs-number">0</span>]) <span class="hljs-keyword">in</span> [<span class="hljs-string">&#x27;{&#x27;</span>, <span class="hljs-string">&#x27;[&#x27;</span>] <span class="hljs-keyword">and</span>
+              <span class="hljs-keyword">not</span> isImplicit(stackTop()) <span class="hljs-keyword">and</span>
+              @findTagsBackwards(i, s))
         startImplicitCall i + <span class="hljs-number">1</span>
         stack.push [<span class="hljs-string">&#x27;INDENT&#x27;</span>, i + <span class="hljs-number">2</span>]
         <span class="hljs-keyword">return</span> forward(<span class="hljs-number">3</span>)</pre></div></div>
@@ -807,13 +813,18 @@ that creates grammatical ambiguities.</p>
               <div class="sswrap ">
                 <a class="ss" href="#section-30">&#x00a7;</a>
               </div>
-              <p>Are we just continuing an already declared object?</p>
+              <p>Are we just continuing an already declared object?
+Including the case where we indent on the line after an explicit ‘{‘.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> stackTop()
           [stackTag, stackIdx] = stackTop()
-          <span class="hljs-keyword">if</span> (stackTag <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;{&#x27;</span> <span class="hljs-keyword">or</span> stackTag <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;INDENT&#x27;</span> <span class="hljs-keyword">and</span> @tag(stackIdx - <span class="hljs-number">1</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;{&#x27;</span>) <span class="hljs-keyword">and</span>
+          stackNext = stack[stack.length - <span class="hljs-number">2</span>]
+          <span class="hljs-keyword">if</span> (stackTag <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;{&#x27;</span> <span class="hljs-keyword">or</span>
+              stackTag <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;INDENT&#x27;</span> <span class="hljs-keyword">and</span> stackNext?[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;{&#x27;</span> <span class="hljs-keyword">and</span>
+              <span class="hljs-keyword">not</span> isImplicit(stackNext) <span class="hljs-keyword">and</span>
+              @findTagsBackwards(stackIdx<span class="hljs-number">-1</span>, [<span class="hljs-string">&#x27;{&#x27;</span>])) <span class="hljs-keyword">and</span>
              (startsLine <span class="hljs-keyword">or</span> @tag(s - <span class="hljs-number">1</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;,&#x27;</span> <span class="hljs-keyword">or</span> @tag(s - <span class="hljs-number">1</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;{&#x27;</span>) <span class="hljs-keyword">and</span>
              @tag(s - <span class="hljs-number">1</span>) <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> UNFINISHED
             <span class="hljs-keyword">return</span> forward(<span class="hljs-number">1</span>)
@@ -838,11 +849,13 @@ like e.g.:</p>
 .g b, <span class="hljs-function">-&gt;</span>
   c
 .h a
-</code></pre><p>and also</p>
+</code></pre>
+<p>and also</p>
 <pre><code>f a
 .g b
 .h a
 </code></pre>
+
             </div>
             
         </li>
@@ -963,9 +976,11 @@ This is used for trailing commas and calls, like:</p>
     a: b,
     c: d,
 e = <span class="hljs-number">2</span>
-</code></pre><p>and</p>
+</code></pre>
+<p>and</p>
 <pre><code>f a, b: c, d: e, f, g: h: i, j
 </code></pre>
+
             </div>
             
             <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">if</span> tag <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;,&#x27;</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @looksObjectish(i + <span class="hljs-number">1</span>) <span class="hljs-keyword">and</span> inImplicitObject() <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> (@tag(i + <span class="hljs-number">2</span>) <span class="hljs-keyword">in</span> [<span class="hljs-string">&#x27;FOROF&#x27;</span>, <span class="hljs-string">&#x27;FORIN&#x27;</span>]) <span class="hljs-keyword">and</span>

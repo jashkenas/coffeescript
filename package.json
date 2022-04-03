@@ -40,16 +40,16 @@
     "url": "git://github.com/jashkenas/coffeescript.git"
   },
   "devDependencies": {
-    "@babel/core": "~7.15.5",
-    "@babel/preset-env": "~7.15.6",
+    "@babel/core": "~7.17.8",
+    "@babel/preset-env": "~7.16.11",
     "babel-preset-minify": "~0.5.1",
-    "codemirror": "~5.62.3",
-    "docco": "~0.8.1",
-    "highlight.js": "~11.2.0",
+    "codemirror": "~5.65.2",
+    "docco": "~0.9.1",
+    "highlight.js": "~11.5.0",
     "jison": "~0.4.18",
-    "markdown-it": "~12.2.0",
-    "puppeteer": "~10.2.0",
-    "underscore": "~1.13.1",
-    "webpack": "~5.53.0"
+    "markdown-it": "~12.3.2",
+    "puppeteer": "~13.5.2",
+    "underscore": "~1.13.2",
+    "webpack": "~5.71.0"
   }
 }
