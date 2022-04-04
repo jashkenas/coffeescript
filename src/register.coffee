@@ -73,13 +73,6 @@ unless Error.prepareStackTrace or nodeSourceMapsSupportEnabled
       sourceMap = getSourceMap filename, line, column
 
       answer = sourceMap.sourceLocation [line - 1, column - 1] if sourceMap?
-
-      # console.log """
-      #   source map for #{filename}
-      #   #{sourceMap}
-      #   #{line}:#{column} -> #{answer?[0]+1}:#{answer?[1]+1}
-      # """
-
       if answer? then [answer[0] + 1, answer[1] + 1] else null
 
     frames = for frame in stack
