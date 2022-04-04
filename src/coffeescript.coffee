@@ -19,6 +19,11 @@ exports.FILE_EXTENSIONS = FILE_EXTENSIONS = ['.coffee', '.litcoffee', '.coffee.m
 # Expose helpers for testing.
 exports.helpers = helpers
 
+# Check if Node's built-in source map stack trace transformations are enabled.
+nodeSourceMapsSupportEnabled =
+  process?.execArgv.includes('--enable-source-maps') or
+  process?.env.NODE_OPTIONS?.includes('--enable-source-maps')
+
 # Function that allows for btoa in both nodejs and the browser.
 base64encode = (src) -> switch
   when typeof Buffer is 'function'
@@ -61,7 +66,7 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
   # we need to recompile it to get a source map for `prepareStackTrace`.
   generateSourceMap = options.sourceMap or
     options.inlineMap or
-    nativeSourceMaps or
+    nodeSourceMapsSupportEnabled or
     not options.filename?
   filename = options.filename or '<anonymous>'
 
@@ -161,7 +166,7 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
     if v3SourceMap and transpilerOutput.map
       v3SourceMap = transpilerOutput.map
 
-  if options.inlineMap or nativeSourceMaps
+  if options.inlineMap or nodeSourceMapsSupportEnabled
     encoded = base64encode JSON.stringify v3SourceMap
     sourceMapDataURI = "//# sourceMappingURL=data:application/json;base64,#{encoded}"
     sourceURL = "//# sourceURL=#{options.filename ? 'coffeescript'}"
@@ -249,11 +254,10 @@ parser.yy.parseError = (message, {token}) ->
   # from the lexer.
   helpers.throwSyntaxError "unexpected #{errorText}", errorLoc
 
-# Use native source maps rather than monkey patching `Error.prepareStackTrace`
-# if native source maps are enabled. Do not patch `Error.prepareStackTrace`
+# Use Node source maps rather than monkey patching `Error.prepareStackTrace`
+# if Node source maps are enabled. Do not patch `Error.prepareStackTrace`
 # if another library has patched it since that would break them.
-nativeSourceMaps = process?.execArgv.includes('--enable-source-maps') or process?.env.NODE_OPTIONS?.includes('--enable-source-maps')
-if nativeSourceMaps or Error.prepareStackTrace
+if nodeSourceMapsSupportEnabled or Error.prepareStackTrace
   registerCompiled = ->
 else
   # For each compiled file, save its source in memory in case we need to
