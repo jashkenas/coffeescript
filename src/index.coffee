@@ -53,9 +53,8 @@ CoffeeScript.run = (code, options = {}) ->
   mainModule.options = options
 
   # Compile.
-  if not helpers.isCoffee(mainModule.filename) or require.extensions
-    answer = CoffeeScript.compile code, options
-    code = answer.js ? answer
+  answer = CoffeeScript.compile code, options
+  code = answer.js ? answer
 
   mainModule._compile code, mainModule.filename
 
