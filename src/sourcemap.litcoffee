@@ -179,9 +179,26 @@ Regular Base64 Encoding
         BASE64_CHARS[value] or throw new Error "Cannot Base64 encode value: #{value}"
 
 
-Our API for source maps is just the `SourceMap` class.
+Save source maps cache `filename`: `map`.
 
-    module.exports = SourceMap
+    sourceMaps = Object.create {}
+
+    registerCompiled = (filename, source, sourcemap) ->
+      console.log """
+        registerCompiled #{filename} #{!!sourcemap}
+      """
+      if sourcemap?
+        sourceMaps[filename] = sourcemap
+
+    getSourceMap = (filename) ->
+      sourceMaps[filename]
 
 
+Our API for source maps is just the `SourceMap` class with additional helpers
+for registering a compiled source map so that stack traces can be mapped back
+to the original source when needed.
 
+    module.exports = Object.assign SourceMap, {
+      getSourceMap
+      registerCompiled
+    }

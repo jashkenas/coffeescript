@@ -119,7 +119,6 @@ CoffeeScript._compileRawFileContent = (raw, filename, options = {}) ->
     filename: filename
     literate: helpers.isLiterate filename
     sourceFiles: [filename]
-    inlineMap: yes # Always generate a source map, so that stack traces line up.
 
   try
     answer = CoffeeScript.compile stripped, options

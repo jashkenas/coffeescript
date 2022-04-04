@@ -134,7 +134,9 @@ test "#4418: stack traces for compiled strings reference the correct line number
 
   # Make sure the line number reported is line 3 (the original Coffee source)
   # and not line 6 (the generated JavaScript).
-  eq /testCompiledStringStackTraceLineNumber.*:(\d):/.exec(error.stack.toString())[1], '3'
+  str = error.stack.toString()
+  console.log str
+  eq /testCompiledStringStackTraceLineNumber.*:(\d):/.exec(str)[1], '3'
 
 
 test "#4558: compiling a string inside a script doesn’t screw up stack trace line number", ->

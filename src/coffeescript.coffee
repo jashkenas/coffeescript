@@ -19,10 +19,8 @@ exports.FILE_EXTENSIONS = FILE_EXTENSIONS = ['.coffee', '.litcoffee', '.coffee.m
 # Expose helpers for testing.
 exports.helpers = helpers
 
-# Check if Node's built-in source map stack trace transformations are enabled.
-nodeSourceMapsSupportEnabled =
-  process?.execArgv.includes('--enable-source-maps') or
-  process?.env.NODE_OPTIONS?.includes('--enable-source-maps')
+{registerCompiled} = SourceMap
+exports.registerCompiled = registerCompiled
 
 # Function that allows for btoa in both nodejs and the browser.
 base64encode = (src) -> switch
@@ -61,13 +59,8 @@ withPrettyErrors = (fn) ->
 exports.compile = compile = withPrettyErrors (code, options = {}) ->
   # Clone `options`, to avoid mutating the `options` object passed in.
   options = Object.assign {}, options
-  # Always generate a source map if no filename is passed in, since without a
-  # a filename we have no way to retrieve this source later in the event that
-  # we need to recompile it to get a source map for `prepareStackTrace`.
-  generateSourceMap = options.sourceMap or
-    options.inlineMap or
-    nodeSourceMapsSupportEnabled or
-    not options.filename?
+
+  generateSourceMap = options.sourceMap or options.inlineMap or not options.filename
   filename = options.filename or '<anonymous>'
 
   checkShebangLine filename, code
@@ -166,13 +159,17 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
     if v3SourceMap and transpilerOutput.map
       v3SourceMap = transpilerOutput.map
 
-  if options.inlineMap or nodeSourceMapsSupportEnabled
+  if options.inlineMap
     encoded = base64encode JSON.stringify v3SourceMap
     sourceMapDataURI = "//# sourceMappingURL=data:application/json;base64,#{encoded}"
     sourceURL = "//# sourceURL=#{options.filename ? 'coffeescript'}"
     js = "#{js}\n#{sourceMapDataURI}\n#{sourceURL}"
 
   registerCompiled filename, code, map
+
+  console.log """
+  COMPILE: #{filename} #{generateSourceMap}
+  """
 
   if options.sourceMap
     {
@@ -253,145 +250,6 @@ parser.yy.parseError = (message, {token}) ->
   # (from the previous token), so we take the location information directly
   # from the lexer.
   helpers.throwSyntaxError "unexpected #{errorText}", errorLoc
-
-# Use Node source maps rather than monkey patching `Error.prepareStackTrace`
-# if Node source maps are enabled. Do not patch `Error.prepareStackTrace`
-# if another library has patched it since that would break them.
-if nodeSourceMapsSupportEnabled or Error.prepareStackTrace
-  registerCompiled = ->
-else
-  # For each compiled file, save its source in memory in case we need to
-  # recompile it later. We might need to recompile if the first compilation
-  # didn’t create a source map (faster) but something went wrong and we need
-  # a stack trace. Assuming that most of the time, code isn’t throwing
-  # exceptions, it’s probably more efficient to compile twice only when we
-  # need a stack trace, rather than always generating a source map even when
-  # it’s not likely to be used. Save in form of `filename`: [`(source)`]
-  sources = {}
-  # Also save source maps if generated, in form of `(source)`: [`(source map)`].
-  sourceMaps = {}
-
-  # This is exported to enable an external module to implement caching of
-  # compilation results. When the compiled js source is loaded from cache, the
-  # original coffee code should be added with this method in order to enable the
-  # Error.prepareStackTrace below to correctly adjust the stack trace for the
-  # corresponding file (the source map will be generated on demand).
-  registerCompiled = (filename, source, sourcemap) ->
-
-    sources[filename] ?= []
-    sources[filename].push source
-
-    if sourcemap?
-      sourceMaps[filename] ?= []
-      sourceMaps[filename].push sourcemap
-
-  # Based on http://v8.googlecode.com/svn/branches/bleeding_edge/src/messages.js
-  # Modified to handle sourceMap
-  formatSourcePosition = (frame, getSourceMapping) ->
-    filename = undefined
-    fileLocation = ''
-
-    if frame.isNative()
-      fileLocation = "native"
-    else
-      if frame.isEval()
-        filename = frame.getScriptNameOrSourceURL()
-        fileLocation = "#{frame.getEvalOrigin()}, " unless filename
-      else
-        filename = frame.getFileName()
-
-      filename or= "<anonymous>"
-
-      line = frame.getLineNumber()
-      column = frame.getColumnNumber()
-
-      # Check for a sourceMap position
-      source = getSourceMapping filename, line, column
-      fileLocation =
-        if source
-          "#{filename}:#{source[0]}:#{source[1]}"
-        else
-          "#{filename}:#{line}:#{column}"
-
-    functionName = frame.getFunctionName()
-    isConstructor = frame.isConstructor()
-    isMethodCall = not (frame.isToplevel() or isConstructor)
-
-    if isMethodCall
-      methodName = frame.getMethodName()
-      typeName = frame.getTypeName()
-
-      if functionName
-        tp = as = ''
-        if typeName and functionName.indexOf typeName
-          tp = "#{typeName}."
-        if methodName and functionName.indexOf(".#{methodName}") isnt functionName.length - methodName.length - 1
-          as = " [as #{methodName}]"
-
-        "#{tp}#{functionName}#{as} (#{fileLocation})"
-      else
-        "#{typeName}.#{methodName or '<anonymous>'} (#{fileLocation})"
-    else if isConstructor
-      "new #{functionName or '<anonymous>'} (#{fileLocation})"
-    else if functionName
-      "#{functionName} (#{fileLocation})"
-    else
-      fileLocation
-
-  getSourceMap = (filename, line, column) ->
-    # Skip files that we didn’t compile, like Node system files that appear in
-    # the stack trace, as they never have source maps.
-    return null unless filename is '<anonymous>' or filename.slice(filename.lastIndexOf('.')) in FILE_EXTENSIONS
-
-    if filename isnt '<anonymous>' and sourceMaps[filename]?
-      return sourceMaps[filename][sourceMaps[filename].length - 1]
-    # CoffeeScript compiled in a browser or via `CoffeeScript.compile` or `.run`
-    # may get compiled with `options.filename` that’s missing, which becomes
-    # `<anonymous>`; but the runtime might request the stack trace with the
-    # filename of the script file. See if we have a source map cached under
-    # `<anonymous>` that matches the error.
-    else if sourceMaps['<anonymous>']?
-      # Work backwards from the most recent anonymous source maps, until we find
-      # one that works. This isn’t foolproof; there is a chance that multiple
-      # source maps will have line/column pairs that match. But we have no other
-      # way to match them. `frame.getFunction().toString()` doesn’t always work,
-      # and it’s not foolproof either.
-      for map in sourceMaps['<anonymous>'] by -1
-        sourceLocation = map.sourceLocation [line - 1, column - 1]
-        return map if sourceLocation?[0]? and sourceLocation[1]?
-
-    # If all else fails, recompile this source to get a source map. We need the
-    # previous section (for `<anonymous>`) despite this option, because after it
-    # gets compiled we will still need to look it up from
-    # `sourceMaps['<anonymous>']` in order to find and return it. That’s why we
-    # start searching from the end in the previous block, because most of the
-    # time the source map we want is the last one.
-    if sources[filename]?
-      answer = compile sources[filename][sources[filename].length - 1],
-        filename: filename
-        sourceMap: yes
-        literate: helpers.isLiterate filename
-      answer.sourceMap
-    else
-      null
-
-  # Based on [michaelficarra/CoffeeScriptRedux](http://goo.gl/ZTx1p)
-  # NodeJS / V8 have no support for transforming positions in stack traces using
-  # sourceMap, so we must monkey-patch Error to display CoffeeScript source
-  # positions.
-  Error.prepareStackTrace = (err, stack) ->
-    getSourceMapping = (filename, line, column) ->
-      sourceMap = getSourceMap filename, line, column
-      answer = sourceMap.sourceLocation [line - 1, column - 1] if sourceMap?
-      if answer? then [answer[0] + 1, answer[1] + 1] else null
-
-    frames = for frame in stack
-      break if frame.getFunction() is exports.run
-      "    at #{formatSourcePosition frame, getSourceMapping}"
-
-    "#{err.toString()}\n#{frames.join '\n'}\n"
-
-exports.registerCompiled = registerCompiled
 
 checkShebangLine = (file, input) ->
   firstLine = input.split(/$/m)[0]
