@@ -89,30 +89,31 @@ test "node --enable-source-map built in stack trace mapping", ->
       catch e
         reject(e)
 
-test "NODE_OPTIONS=--enable-source-maps environment variable stack trace mapping", ->
-  new Promise (resolve, reject) ->
-    proc = fork "./test/importing/error.coffee", [],
-      env:
-        NODE_OPTIONS: "--enable-source-maps"
-      stdio: "pipe"
+unless process.version.slice(1, 3) is "12"
+  test "NODE_OPTIONS=--enable-source-maps environment variable stack trace mapping", ->
+    new Promise (resolve, reject) ->
+      proc = fork "./test/importing/error.coffee", [],
+        env:
+          NODE_OPTIONS: "--enable-source-maps"
+        stdio: "pipe"
 
-    err = ""
-    proc.stderr.setEncoding('utf8')
-    proc.stderr.on 'data', (s) -> err += s
-    proc.on        'exit', (status) ->
-      try
-        equal status, 1
+      err = ""
+      proc.stderr.setEncoding('utf8')
+      proc.stderr.on 'data', (s) -> err += s
+      proc.on        'exit', (status) ->
+        try
+          equal status, 1
 
-        match = err.match /error\.coffee:(\d+):(\d+)/
-        if match
-          [_, line, column] = match
-          equal line, 3 # Mapped source line
-          equal column, 9 # Mapped source column
-          resolve()
-        else
-          throw new Error err
-      catch e
-        reject(e)
+          match = err.match /error\.coffee:(\d+):(\d+)/
+          if match
+            [_, line, column] = match
+            equal line, 3 # Mapped source line
+            equal column, 9 # Mapped source column
+            resolve()
+          else
+            throw new Error err
+        catch e
+          reject(e)
 
 test "don't change stack traces if another library has patched `Error.prepareStackTrace`", ->
   new Promise (resolve, reject) ->
