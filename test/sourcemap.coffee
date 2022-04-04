@@ -71,8 +71,8 @@ if process.version.split(".")[0] != "v12"
     new Promise (resolve, reject) ->
       proc = spawn "node", [
         "--enable-source-maps"
-        "-r", "./register.js"
-        "-r", "./test/integration/error.coffee"
+        '--require', './register.js'
+        '--require', './test/importing/error.coffee'
       ]
 
       # proc.stdout.setEncoding('utf8')
