@@ -6,7 +6,9 @@ path          = require 'path'
 { getSourceMap, registerCompiled } = require "./sourcemap"
 
 # Check if Node's built-in source map stack trace transformations are enabled.
-nodeSourceMapsSupportEnabled = process?.execArgv.includes('--enable-source-maps')
+nodeSourceMapsSupportEnabled =
+  process.execArgv.includes('--enable-source-maps') or
+  process.env.NODE_OPTIONS?.includes('--enable-source-maps')
 
 unless Error.prepareStackTrace or nodeSourceMapsSupportEnabled
   cacheSourceMaps = true
