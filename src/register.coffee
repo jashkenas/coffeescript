@@ -3,7 +3,7 @@ child_process = require 'child_process'
 helpers       = require './helpers'
 path          = require 'path'
 
-{getSourceMap, registerCompiled } = require "./sourcemap"
+{ getSourceMap, registerCompiled } = require "./sourcemap"
 
 # Check if Node's built-in source map stack trace transformations are enabled.
 nodeSourceMapsSupportEnabled = process?.execArgv.includes('--enable-source-maps')
@@ -74,11 +74,11 @@ unless Error.prepareStackTrace or nodeSourceMapsSupportEnabled
 
       answer = sourceMap.sourceLocation [line - 1, column - 1] if sourceMap?
 
-      console.log """
-        source map for #{filename}
-        #{sourceMap}
-        #{line}:#{column} -> #{answer?[0]+1}:#{answer?[1]+1}
-      """
+      # console.log """
+      #   source map for #{filename}
+      #   #{sourceMap}
+      #   #{line}:#{column} -> #{answer?[0]+1}:#{answer?[1]+1}
+      # """
 
       if answer? then [answer[0] + 1, answer[1] + 1] else null
 
@@ -96,15 +96,11 @@ loadFile = (module, filename) ->
   if cacheSourceMaps
     options.sourceMap = true
     {js, sourceMap} = CoffeeScript._compileFile filename, options
+    # TODO may be redundant
     registerCompiled filename, null, sourceMap
   else
     options.inlineMap = true if nodeSourceMapsSupportEnabled
     js = CoffeeScript._compileFile filename, options
-
-  console.log """
-    loadFile #{filename}
-    #{JSON.stringify(options)}
-  """
 
   module._compile js, filename
 

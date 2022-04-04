@@ -184,9 +184,6 @@ Save source maps cache `filename`: `map`.
     sourceMaps = Object.create {}
 
     registerCompiled = (filename, source, sourcemap) ->
-      console.log """
-        registerCompiled #{filename} #{!!sourcemap}
-      """
       if sourcemap?
         sourceMaps[filename] = sourcemap
 

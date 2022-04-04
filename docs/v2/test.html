@@ -32824,6 +32824,28 @@ test "don't change stack traces if another library has patched `Error.prepareSta
       catch e
         reject e
 
+test "requiring 'CoffeeScript' doesn't change `Error.prepareStackTrace`", ->
+  new Promise (resolve, reject) ->
+    proc = spawn "node", [
+      "--eval", """
+        require('./lib/coffeescript/coffeescript.js');
+        console.log(Error.prepareStackTrace);
+      """
+    ]
+
+    out = ""
+    proc.stdout.setEncoding('utf8')
+    proc.stdout.on 'data', (s) -> out += s
+
+    proc.on        'exit', (status) ->
+      try
+        equal status, 0
+        equal out, "undefined\n"
+
+        resolve()
+      catch e
+        reject e
+
 </script>
 <script type="text/x-coffeescript" class="test" id="strict">
 # Strict Early Errors

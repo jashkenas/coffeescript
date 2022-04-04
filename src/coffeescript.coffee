@@ -60,8 +60,8 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
   # Clone `options`, to avoid mutating the `options` object passed in.
   options = Object.assign {}, options
 
-  generateSourceMap = options.sourceMap or options.inlineMap or not options.filename
-  filename = options.filename or '<anonymous>'
+  generateSourceMap = options.sourceMap or options.inlineMap
+  filename = options.filename or helpers.anonymousFileName()
 
   checkShebangLine filename, code
 
@@ -166,10 +166,6 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
     js = "#{js}\n#{sourceMapDataURI}\n#{sourceURL}"
 
   registerCompiled filename, code, map
-
-  console.log """
-  COMPILE: #{filename} #{generateSourceMap}
-  """
 
   if options.sourceMap
     {

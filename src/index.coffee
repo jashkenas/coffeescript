@@ -37,7 +37,7 @@ CoffeeScript.run = (code, options = {}) ->
 
   # Set the filename.
   mainModule.filename = process.argv[1] =
-    if options.filename then fs.realpathSync(options.filename) else '<anonymous>'
+    if options.filename then fs.realpathSync(options.filename) else helpers.anonymousFileName()
 
   # Clear the module cache.
   mainModule.moduleCache and= {}
@@ -52,10 +52,12 @@ CoffeeScript.run = (code, options = {}) ->
   # Save the options for compiling child imports.
   mainModule.options = options
 
+  options.filename = mainModule.filename
+  options.inlineMap = true
+
   # Compile.
-  if not helpers.isCoffee(mainModule.filename) or require.extensions
-    answer = CoffeeScript.compile code, options
-    code = answer.js ? answer
+  answer = CoffeeScript.compile code, options
+  code = answer.js ? answer
 
   mainModule._compile code, mainModule.filename
 
