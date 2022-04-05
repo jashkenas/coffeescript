@@ -85,7 +85,7 @@ unless Error.prepareStackTrace or nodeSourceMapsSupportEnabled
 
 # Load and run a CoffeeScript file for Node, stripping any `BOM`s.
 loadFile = (module, filename) ->
-  options = module.options or getRootModule(module).options
+  options = module.options or getRootModule(module).options or {}
 
   # Currently `CoffeeScript.compile` caches all source maps if present. They
   # are available in `getSourceMap` retrieved by `filename`.
