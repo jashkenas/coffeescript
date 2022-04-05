@@ -3,7 +3,7 @@
 # contains the main entry functions for tokenizing, parsing, and compiling
 # source CoffeeScript into JavaScript.
 
-{Lexer}       = require './lexer'
+{Lexer, LINEBREAK} = require './lexer'
 {parser}      = require './parser'
 helpers       = require './helpers'
 SourceMap     = require './sourcemap'
@@ -114,7 +114,7 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
   # `clean` function in the lexer).
   if options.ast
     nodes.allCommentTokens = helpers.extractAllCommentTokens tokens
-    sourceCodeNumberOfLines = (code.match(/\r?\n/g) or '').length + 1
+    sourceCodeNumberOfLines = (code.match(LINEBREAK) or []).length + 1
     sourceCodeLastLine = /.*$/.exec(code)[0] # `.*` matches all but line break characters.
     ast = nodes.ast options
     range = [0, code.length]
