@@ -400,8 +400,7 @@ task 'bench', 'quick benchmark of compilation time', ->
 
 
 # Run the CoffeeScript test suite.
-runTests = (CoffeeScript, pattern="") ->
-  pattern = new RegExp pattern
+runTests = (CoffeeScript) ->
   CoffeeScript.register() unless global.testingBrowser
 
   # These are attached to `global` so that they’re accessible from within
@@ -432,8 +431,6 @@ runTests = (CoffeeScript, pattern="") ->
 
   # Our test helper function for delimiting different test cases.
   global.test = (description, fn) ->
-    return unless description.match pattern
-
     try
       fn.test = {description, currentFile}
       result = fn.call(fn)
@@ -498,7 +495,7 @@ runTests = (CoffeeScript, pattern="") ->
 
 
 task 'test', 'run the CoffeeScript language test suite', ->
-  runTests(CoffeeScript, process.env.PATTERN).catch -> process.exit 1
+  runTests(CoffeeScript).catch -> process.exit 1
 
 
 task 'test:browser', 'run the test suite against the modern browser compiler in a headless browser', ->
