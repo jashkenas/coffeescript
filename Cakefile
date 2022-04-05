@@ -544,6 +544,7 @@ task 'test:browser', 'run the test suite against the modern browser compiler in 
     page.waitForSelector '#result',
       visible: yes
       polling: 'mutation'
+      timeout: 60000
   ).then((element) ->
     page.evaluate ((el) => el.textContent), element
   ).then((elementText) ->
