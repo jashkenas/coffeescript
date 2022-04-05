@@ -520,7 +520,7 @@ task 'test:browser', 'run the test suite against the modern browser compiler in 
     puppeteer = require 'puppeteer'
     browser   = await puppeteer.launch()
     page      = await browser.newPage()
-    result    = null
+    result    = ""
 
     try
       await page.goto 'http://localhost:8080/'
