@@ -499,17 +499,6 @@ task 'test', 'run the CoffeeScript language test suite', ->
 
 
 task 'test:browser', 'run the test suite against the modern browser compiler in a headless browser', ->
-  # This test uses Puppeteer to launch headless Chrome to test the ES module
-  # version of the browser compiler. There’s no reason to run this test in old
-  # versions of Node (the runtime is the headless Chrome browser, not Node),
-  # and Puppeteer 3 only supports Node >= 10.18.1, so limit this test to those
-  # versions. The code below uses `Promise.prototype.finally` because the
-  # CoffeeScript codebase currently maintains compatibility with Node 6, which
-  # did not support `async`/`await` syntax. Even though this test doesn’t run
-  # in Node 6, it needs to still _parse_ in Node 6 so that this file can load.
-  [major, minor, build] = process.versions.node.split('.').map (n) -> parseInt(n, 10)
-  return if major < 10 or (major is 10 and minor < 18) or (major is 10 and minor is 18 and build < 1)
-
   # Create very simple web server to serve the two files we need.
   http = require 'http'
   serveFile = (res, fileToServe, mimeType) ->
@@ -529,34 +518,30 @@ task 'test:browser', 'run the test suite against the modern browser compiler in 
   server.listen 8080
 
   puppeteer = require 'puppeteer'
-  browser = page = result = null
-  puppeteer.launch()
-  .then (browserHandle) ->
-    browser = browserHandle
-    browser.newPage()
-  .then (pageHandle) ->
-    page = pageHandle
-    page.goto 'http://localhost:8080/'
-  .then ->
-    page.waitForSelector '#result',
+  browser   = await puppeteer.launch()
+  page      = await browser.newPage()
+  result    = null
+
+  try
+    await page.goto 'http://localhost:8080/'
+
+    element = await page.waitForSelector '#result',
       visible: yes
       polling: 'mutation'
       timeout: 60000
-  .then (element) ->
-    page.evaluate ((el) => el.textContent), element
-  .then (elementText) ->
-    result = elementText
-  .catch (e) ->
+
+    result = await page.evaluate ((el) => el.textContent), element
+  catch e
     log e, red
-  .finally ->
-    browser.close()
-  .finally ->
+  finally
+    try browser.close()
     server.close()
-    if result and not result.includes('failed')
-      log result, green
-    else
-      log result, red
-      process.exit 1
+
+  if result and not result.includes('failed')
+    log result, green
+  else
+    log result, red
+    process.exit 1
 
 
 task 'test:browser:node', 'run the test suite against the legacy browser compiler in Node', ->
