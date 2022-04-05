@@ -74,18 +74,16 @@ test "node --enable-source-map built in stack trace mapping", ->
     err = ""
     proc.stderr.setEncoding('utf8')
     proc.stderr.on 'data', (s) -> err += s
-    proc.on        'exit', (status) ->
+    proc.stderr.on 'finish', ->
       try
-        equal status, 1
-
         match = err.match /error\.coffee:(\d+):(\d+)/
-        if match
-          [_, line, column] = match
-          equal line, 3 # Mapped source line
-          equal column, 9 # Mapped source column
-          resolve()
-        else
-          throw new Error err
+        throw new Error err unless match
+
+        [_, line, column] = match
+        equal line, 3 # Mapped source line
+        equal column, 9 # Mapped source column
+
+        resolve()
       catch e
         reject(e)
 
@@ -100,18 +98,16 @@ unless process.version.slice(1, 3) is "12"
       err = ""
       proc.stderr.setEncoding('utf8')
       proc.stderr.on 'data', (s) -> err += s
-      proc.on        'exit', (status) ->
+      proc.stderr.on 'finish', ->
         try
-          equal status, 1
-
           match = err.match /error\.coffee:(\d+):(\d+)/
-          if match
-            [_, line, column] = match
-            equal line, 3 # Mapped source line
-            equal column, 9 # Mapped source column
-            resolve()
-          else
-            throw new Error err
+          throw new Error err unless match
+
+          [_, line, column] = match
+          equal line, 3 # Mapped source line
+          equal column, 9 # Mapped source column
+
+          resolve()
         catch e
           reject(e)
 
@@ -127,17 +123,14 @@ unless process.version.slice(1, 3) is "12"
       err = ""
       proc.stderr.setEncoding('utf8')
       proc.stderr.on 'data', (s) -> err += s
-      proc.on        'exit', (status) ->
+      proc.stderr.on 'finish', ->
         try
-          equal status, 1
           match = err.match /error\.coffee:(\d+):(\d+)/
-          if match
-            [_, line, column] = match
-            equal line, 3 # Mapped source line
-            equal column, 9 # Mapped source column
-            resolve()
-          else
-            throw new Error err
+          throw new Error err unless match
+
+          [_, line, column] = match
+          equal line, 3 # Mapped source line
+          equal column, 9 # Mapped source column
 
           resolve()
         catch e
