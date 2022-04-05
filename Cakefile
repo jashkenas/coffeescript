@@ -531,23 +531,26 @@ task 'test:browser', 'run the test suite against the modern browser compiler in 
   puppeteer = require 'puppeteer'
   browser = page = result = null
   puppeteer.launch()
-  .then((browserHandle) ->
+  .then (browserHandle) ->
     browser = browserHandle
     browser.newPage()
-  ).then((pageHandle) ->
+  .then (pageHandle) ->
     page = pageHandle
     page.goto 'http://localhost:8080/'
-  ).then(->
+  .then ->
     page.waitForSelector '#result',
       visible: yes
       polling: 'mutation'
-  ).then((element) ->
+      timeout: 60000
+  .then (element) ->
     page.evaluate ((el) => el.textContent), element
-  ).then((elementText) ->
+  .then (elementText) ->
     result = elementText
-  ).finally(->
+  .catch (e) ->
+    log e, red
+  .finally ->
     browser.close()
-  ).finally ->
+  .finally ->
     server.close()
     if result and not result.includes('failed')
       log result, green
