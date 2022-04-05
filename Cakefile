@@ -515,33 +515,33 @@ task 'test:browser', 'run the test suite against the modern browser compiler in 
     else
       res.statusCode = 404
       res.end()
-  server.listen 8080
 
-  puppeteer = require 'puppeteer'
-  browser   = await puppeteer.launch()
-  page      = await browser.newPage()
-  result    = null
+  server.listen 8080, ->
+    puppeteer = require 'puppeteer'
+    browser   = await puppeteer.launch()
+    page      = await browser.newPage()
+    result    = null
 
-  try
-    await page.goto 'http://localhost:8080/'
+    try
+      await page.goto 'http://localhost:8080/'
 
-    element = await page.waitForSelector '#result',
-      visible: yes
-      polling: 'mutation'
-      timeout: 60000
+      element = await page.waitForSelector '#result',
+        visible: yes
+        polling: 'mutation'
+        timeout: 60000
 
-    result = await page.evaluate ((el) => el.textContent), element
-  catch e
-    log e, red
-  finally
-    try browser.close()
-    server.close()
+      result = await page.evaluate ((el) => el.textContent), element
+    catch e
+      log e, red
+    finally
+      try browser.close()
+      server.close()
 
-  if result and not result.includes('failed')
-    log result, green
-  else
-    log result, red
-    process.exit 1
+    if result and not result.includes('failed')
+      log result, green
+    else
+      log result, red
+      process.exit 1
 
 
 task 'test:browser:node', 'run the test suite against the legacy browser compiler in Node', ->
