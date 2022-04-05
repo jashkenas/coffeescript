@@ -61,6 +61,22 @@ code.
         line-- until (lineMap = @lines[line]) or (line <= 0)
         lineMap and lineMap.sourceLocation column
 
+Caching
+-------
+
+A static source maps cache `filename`: `map`. These are used for transforming
+stack traces and are currently set in `CoffeeScript.compile` for all files
+compiled with the source maps option.
+
+      @sourceMaps: Object.create {}
+
+      @registerCompiled: (filename, source, sourcemap) =>
+        if sourcemap?
+          @sourceMaps[filename] = sourcemap
+
+      @getSourceMap: (filename) =>
+        @sourceMaps[filename]
+
 
 V3 SourceMap Generation
 -----------------------
@@ -179,23 +195,6 @@ Regular Base64 Encoding
         BASE64_CHARS[value] or throw new Error "Cannot Base64 encode value: #{value}"
 
 
-Save source maps cache `filename`: `map`.
+Our API for source maps is just the `SourceMap` class.
 
-    sourceMaps = Object.create {}
-
-    registerCompiled = (filename, source, sourcemap) ->
-      if sourcemap?
-        sourceMaps[filename] = sourcemap
-
-    getSourceMap = (filename) ->
-      sourceMaps[filename]
-
-
-Our API for source maps is just the `SourceMap` class with additional helpers
-for registering a compiled source map so that stack traces can be mapped back
-to the original source when needed.
-
-    module.exports = Object.assign SourceMap, {
-      getSourceMap
-      registerCompiled
-    }
+    module.exports = SourceMap
