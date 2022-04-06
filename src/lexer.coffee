@@ -526,6 +526,7 @@ exports.Lexer = class Lexer
 
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()
+    noIndents = @shouldSuppressIndents()
 
     newIndentLiteral = if size > 0 then indent[-size..] else ''
     unless /^(.?)\1*$/.exec newIndentLiteral
@@ -547,6 +548,9 @@ exports.Lexer = class Lexer
         if @continuationLineAdditionalIndent
           prev.continuationLineIndent = @indent + @continuationLineAdditionalIndent
         @suppressNewlines()
+        return indent.length
+      if noIndents
+        @newlineToken 0
         return indent.length
       unless @tokens.length
         @baseIndent = @indent = size
@@ -1151,6 +1155,10 @@ exports.Lexer = class Lexer
   validateUnicodeCodePointEscapes: (str, options) ->
     replaceUnicodeCodePointEscapes str, merge options, {@error}
 
+  # Should an indent be treated as just a TERMINATOR?
+  shouldSuppressIndents: ->
+    INDENT_SUPPRESSOR.test @chunk
+
   # Validates escapes in strings and regexes.
   validateEscapes: (str, options = {}) ->
     invalidEscapeRegex =
@@ -1400,7 +1408,14 @@ POSSIBLY_DIVISION   = /// ^ /=?\s ///
 # Other regexes.
 HERECOMMENT_ILLEGAL = /\*\//
 
+# When appearing at the beginning of a line, suppresses TERMINATOR and INDENT
+# tokens. So unless the line is outdented, the line's tokens will appear (in the
+# unrewritten token stream) to be a continuation of the previous line
 LINE_CONTINUER      = /// ^ \s* (?: , | \??\.(?![.\d]) | \??:: ) ///
+
+# When appearing at the beginning of an indented line, causes a TERMINATOR token
+# to be generated rather than an INDENT
+INDENT_SUPPRESSOR   = /// ^ \s* (?: and\s+(?!:[^:])\S | or\s+(?!:[^:])\S | && | \|\| ) ///
 
 STRING_INVALID_ESCAPE = ///
   ( (?:^|[^\\]) (?:\\\\)* )        # Make sure the escape isn’t escaped.
