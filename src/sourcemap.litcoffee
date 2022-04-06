@@ -68,7 +68,7 @@ A static source maps cache `filename`: `map`. These are used for transforming
 stack traces and are currently set in `CoffeeScript.compile` for all files
 compiled with the source maps option.
 
-      @sourceMaps: Object.create {}
+      @sourceMaps: Object.create null
 
       @registerCompiled: (filename, source, sourcemap) =>
         if sourcemap?
