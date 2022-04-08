@@ -34,6 +34,9 @@ o = (patternString, action, options) ->
   patternString = patternString.replace /\s{2,}/g, ' '
   patternCount = patternString.split(' ').length
   if action
+    # This code block does string replacements in the generated `parser.js`
+    # file, replacing the calls to the `LOC` function and other strings as
+    # listed below.
     action = if match = unwrap.exec action then match[1] else "(#{action}())"
 
     # All runtime functions we need are defined on `yy`
@@ -47,8 +50,33 @@ o = (patternString, action, options) ->
     getAddDataToNodeFunctionString = (first, last, forceUpdateLocation = yes) ->
       "yy.addDataToNode(yy, @#{first}, #{if first[0] is '$' then '$$' else '$'}#{first}, #{if last then "@#{last}, #{if last[0] is '$' then '$$' else '$'}#{last}" else 'null, null'}, #{if forceUpdateLocation then 'true' else 'false'})"
 
+    # This code replaces the calls to `LOC` with the `yy.addDataToNode` string
+    # defined above. The `LOC` function, when used below in the grammar rules,
+    # is used to make sure that newly created node class objects get correct
+    # location data assigned to them. By default, the grammar will assign the
+    # location data spanned by *all* of the tokens on the left (e.g. a string
+    # such as `'Body TERMINATOR Line'`) to the “top-level” node returned by
+    # the grammar rule (the function on the right). But for “inner” node class
+    # objects created by grammar rules, they won’t get correct location data
+    # assigned to them without adding `LOC`.
+
+    # For example, consider the grammar rule `'NEW_TARGET . Property'`, which
+    # is handled by a function that returns
+    # `new MetaProperty LOC(1)(new IdentifierLiteral $1), LOC(3)(new Access $3)`.
+    # The `1` in `LOC(1)` refers to the first token (`NEW_TARGET`) and the `3`
+    # in `LOC(3)` refers to the third token (`Property`). In order for the
+    # `new IdentifierLiteral` to get assigned the location data corresponding
+    # to `new` in the source code, we use
+    # `LOC(1)(new IdentifierLiteral ...)` to mean “assign the location data of
+    # the *first* token of this grammar rule (`NEW_TARGET`) to this
+    # `new IdentifierLiteral`”. The `LOC(3)` means “assign the location data of
+    # the *third* token of this grammar rule (`Property`) to this
+    # `new Access`”.
     returnsLoc = /^LOC/.test action
     action = action.replace /LOC\(([0-9]*)\)/g, getAddDataToNodeFunctionString('$1')
+    # A call to `LOC` with two arguments, e.g. `LOC(2,4)`, sets the location
+    # data for the generated node on both of the referenced tokens  (the second
+    # and fourth in this example).
     action = action.replace /LOC\(([0-9]*),\s*([0-9]*)\)/g, getAddDataToNodeFunctionString('$1', '$2')
     performActionFunctionString = "$$ = #{getAddDataToNodeFunctionString(1, patternCount, not returnsLoc)}(#{action});"
   else
@@ -85,7 +113,7 @@ grammar =
     o 'Body TERMINATOR'
   ]
 
-  # Block and statements, which make up a line in a body. YieldReturn is a
+  # Block and statements, which make up a line in a body. FuncDirective is a
   # statement, but not included in Statement because that results in an ambiguous
   # grammar.
   Line: [
@@ -269,21 +297,15 @@ grammar =
     o 'Parenthetical'
     o 'Super'
     o 'This'
-    o 'SUPER Arguments',               -> new SuperCall LOC(1)(new Super), $2, no, $1
-    o 'DYNAMIC_IMPORT Arguments',      -> new DynamicImportCall LOC(1)(new DynamicImport), $2
-    o 'SimpleObjAssignable Arguments', -> new Call (new Value $1), $2
-    o 'ObjSpreadExpr Arguments',       -> new Call $1, $2
+    o 'SUPER OptFuncExist Arguments',               -> new SuperCall LOC(1)(new Super), $3, $2.soak, $1
+    o 'DYNAMIC_IMPORT Arguments',                   -> new DynamicImportCall LOC(1)(new DynamicImport), $2
+    o 'SimpleObjAssignable OptFuncExist Arguments', -> new Call (new Value $1), $3, $2.soak
+    o 'ObjSpreadExpr OptFuncExist Arguments',       -> new Call $1, $3, $2.soak
   ]
 
   ObjSpreadIdentifier: [
-    o 'SimpleObjAssignable ObjSpreadAccessor', -> (new Value $1).add $2
-    o 'ObjSpreadExpr ObjSpreadAccessor',       -> (new Value $1).add $2
-  ]
-
-  ObjSpreadAccessor: [
-    o '. Property',                                      -> new Access $2
-    o 'INDEX_START IndexValue INDEX_END',                -> $2
-    o 'INDEX_START INDENT IndexValue OUTDENT INDEX_END', -> $3
+    o 'SimpleObjAssignable Accessor', -> (new Value $1).add $2
+    o 'ObjSpreadExpr Accessor',       -> (new Value $1).add $2
   ]
 
   # A return statement from a function body.
@@ -303,7 +325,7 @@ grammar =
     o 'AWAIT RETURN',                           -> new AwaitReturn null, returnKeyword: LOC(2)(new Literal $2)
   ]
 
-  # The **Code** node is the function literal. It's defined by an indented block
+  # The **Code** node is the function literal. It’s defined by an indented block
   # of **Block** preceded by a function arrow, with an optional parameter list.
   Code: [
     o 'PARAM_START ParamList PARAM_END FuncGlyph Block', -> new Code $2, $5, $4, LOC(1)(new Literal $1)
@@ -399,9 +421,11 @@ grammar =
     o 'SUPER INDEX_START INDENT Expression OUTDENT INDEX_END', -> new Super LOC(4)(new Index $4),  LOC(1)(new Literal $1)
   ]
 
-  # A "meta-property" access e.g. `new.target`
+  # A “meta-property” access e.g. `new.target` or `import.meta`, where
+  # something that looks like a property is referenced on a keyword.
   MetaProperty: [
     o 'NEW_TARGET . Property',                  -> new MetaProperty LOC(1)(new IdentifierLiteral $1), LOC(3)(new Access $3)
+    o 'IMPORT_META . Property',                 -> new MetaProperty LOC(1)(new IdentifierLiteral $1), LOC(3)(new Access $3)
   ]
 
   # The general group of accessors into an object, by property, by prototype
@@ -457,13 +481,20 @@ grammar =
   ]
 
   Import: [
-    o 'IMPORT String',                                                                -> new ImportDeclaration null, $2
-    o 'IMPORT ImportDefaultSpecifier FROM String',                                    -> new ImportDeclaration new ImportClause($2, null), $4
-    o 'IMPORT ImportNamespaceSpecifier FROM String',                                  -> new ImportDeclaration new ImportClause(null, $2), $4
-    o 'IMPORT { } FROM String',                                                       -> new ImportDeclaration new ImportClause(null, new ImportSpecifierList []), $5
-    o 'IMPORT { ImportSpecifierList OptComma } FROM String',                          -> new ImportDeclaration new ImportClause(null, new ImportSpecifierList $3), $7
-    o 'IMPORT ImportDefaultSpecifier , ImportNamespaceSpecifier FROM String',         -> new ImportDeclaration new ImportClause($2, $4), $6
-    o 'IMPORT ImportDefaultSpecifier , { ImportSpecifierList OptComma } FROM String', -> new ImportDeclaration new ImportClause($2, new ImportSpecifierList $5), $9
+    o 'IMPORT String',                                                                              -> new ImportDeclaration null, $2
+    o 'IMPORT String ASSERT Object',                                                                -> new ImportDeclaration null, $2, $4
+    o 'IMPORT ImportDefaultSpecifier FROM String',                                                  -> new ImportDeclaration new ImportClause($2, null), $4
+    o 'IMPORT ImportDefaultSpecifier FROM String ASSERT Object',                                    -> new ImportDeclaration new ImportClause($2, null), $4, $6
+    o 'IMPORT ImportNamespaceSpecifier FROM String',                                                -> new ImportDeclaration new ImportClause(null, $2), $4
+    o 'IMPORT ImportNamespaceSpecifier FROM String ASSERT Object',                                  -> new ImportDeclaration new ImportClause(null, $2), $4, $6
+    o 'IMPORT { } FROM String',                                                                     -> new ImportDeclaration new ImportClause(null, new ImportSpecifierList []), $5
+    o 'IMPORT { } FROM String ASSERT Object',                                                       -> new ImportDeclaration new ImportClause(null, new ImportSpecifierList []), $5, $7
+    o 'IMPORT { ImportSpecifierList OptComma } FROM String',                                        -> new ImportDeclaration new ImportClause(null, new ImportSpecifierList $3), $7
+    o 'IMPORT { ImportSpecifierList OptComma } FROM String ASSERT Object',                          -> new ImportDeclaration new ImportClause(null, new ImportSpecifierList $3), $7, $9
+    o 'IMPORT ImportDefaultSpecifier , ImportNamespaceSpecifier FROM String',                       -> new ImportDeclaration new ImportClause($2, $4), $6
+    o 'IMPORT ImportDefaultSpecifier , ImportNamespaceSpecifier FROM String ASSERT Object',         -> new ImportDeclaration new ImportClause($2, $4), $6, $8
+    o 'IMPORT ImportDefaultSpecifier , { ImportSpecifierList OptComma } FROM String',               -> new ImportDeclaration new ImportClause($2, new ImportSpecifierList $5), $9
+    o 'IMPORT ImportDefaultSpecifier , { ImportSpecifierList OptComma } FROM String ASSERT Object', -> new ImportDeclaration new ImportClause($2, new ImportSpecifierList $5), $9, $11
   ]
 
   ImportSpecifierList: [
@@ -490,20 +521,23 @@ grammar =
   ]
 
   Export: [
-    o 'EXPORT { }',                                          -> new ExportNamedDeclaration new ExportSpecifierList []
-    o 'EXPORT { ExportSpecifierList OptComma }',             -> new ExportNamedDeclaration new ExportSpecifierList $3
-    o 'EXPORT Class',                                        -> new ExportNamedDeclaration $2
-    o 'EXPORT Identifier = Expression',                      -> new ExportNamedDeclaration LOC(2,4)(new Assign $2, $4, null,
+    o 'EXPORT { }',                                                        -> new ExportNamedDeclaration new ExportSpecifierList []
+    o 'EXPORT { ExportSpecifierList OptComma }',                           -> new ExportNamedDeclaration new ExportSpecifierList $3
+    o 'EXPORT Class',                                                      -> new ExportNamedDeclaration $2
+    o 'EXPORT Identifier = Expression',                                    -> new ExportNamedDeclaration LOC(2,4)(new Assign $2, $4, null,
                                                                                                       moduleDeclaration: 'export')
-    o 'EXPORT Identifier = TERMINATOR Expression',           -> new ExportNamedDeclaration LOC(2,5)(new Assign $2, $5, null,
+    o 'EXPORT Identifier = TERMINATOR Expression',                         -> new ExportNamedDeclaration LOC(2,5)(new Assign $2, $5, null,
                                                                                                       moduleDeclaration: 'export')
-    o 'EXPORT Identifier = INDENT Expression OUTDENT',       -> new ExportNamedDeclaration LOC(2,6)(new Assign $2, $5, null,
+    o 'EXPORT Identifier = INDENT Expression OUTDENT',                     -> new ExportNamedDeclaration LOC(2,6)(new Assign $2, $5, null,
                                                                                                       moduleDeclaration: 'export')
-    o 'EXPORT DEFAULT Expression',                           -> new ExportDefaultDeclaration $3
-    o 'EXPORT DEFAULT INDENT Object OUTDENT',                -> new ExportDefaultDeclaration new Value $4
-    o 'EXPORT EXPORT_ALL FROM String',                       -> new ExportAllDeclaration new Literal($2), $4
-    o 'EXPORT { } FROM String',                              -> new ExportNamedDeclaration new ExportSpecifierList([]), $5
-    o 'EXPORT { ExportSpecifierList OptComma } FROM String', -> new ExportNamedDeclaration new ExportSpecifierList($3), $7
+    o 'EXPORT DEFAULT Expression',                                         -> new ExportDefaultDeclaration $3
+    o 'EXPORT DEFAULT INDENT Object OUTDENT',                              -> new ExportDefaultDeclaration new Value $4
+    o 'EXPORT EXPORT_ALL FROM String',                                     -> new ExportAllDeclaration new Literal($2), $4
+    o 'EXPORT EXPORT_ALL FROM String ASSERT Object',                       -> new ExportAllDeclaration new Literal($2), $4, $6
+    o 'EXPORT { } FROM String',                                            -> new ExportNamedDeclaration new ExportSpecifierList([]), $5
+    o 'EXPORT { } FROM String ASSERT Object',                              -> new ExportNamedDeclaration new ExportSpecifierList([]), $5, $7
+    o 'EXPORT { ExportSpecifierList OptComma } FROM String',               -> new ExportNamedDeclaration new ExportSpecifierList($3), $7
+    o 'EXPORT { ExportSpecifierList OptComma } FROM String ASSERT Object', -> new ExportNamedDeclaration new ExportSpecifierList($3), $7, $9
   ]
 
   ExportSpecifierList: [
@@ -524,16 +558,16 @@ grammar =
 
   # Ordinary function invocation, or a chained series of calls.
   Invocation: [
-    o 'Value OptFuncExist String',              -> new TaggedTemplateCall $1, $3, $2
-    o 'Value OptFuncExist Arguments',           -> new Call $1, $3, $2
-    o 'SUPER OptFuncExist Arguments',           -> new SuperCall LOC(1)(new Super), $3, $2, $1
+    o 'Value OptFuncExist String',              -> new TaggedTemplateCall $1, $3, $2.soak
+    o 'Value OptFuncExist Arguments',           -> new Call $1, $3, $2.soak
+    o 'SUPER OptFuncExist Arguments',           -> new SuperCall LOC(1)(new Super), $3, $2.soak, $1
     o 'DYNAMIC_IMPORT Arguments',               -> new DynamicImportCall LOC(1)(new DynamicImport), $2
   ]
 
   # An optional existence check on a function.
   OptFuncExist: [
-    o '',                                       -> no
-    o 'FUNC_EXIST',                             -> yes
+    o '',                                       -> soak: no
+    o 'FUNC_EXIST',                             -> soak: yes
   ]
 
   # The list of arguments to a function call.
@@ -751,7 +785,7 @@ grammar =
   ]
 
   # The source of a comprehension is an array or object with an optional guard
-  # clause. If it's an array comprehension, you can also choose to step through
+  # clause. If it’s an array comprehension, you can also choose to step through
   # in fixed-size increments.
   ForSource: [
     o 'FORIN Expression',                                           -> source: $2

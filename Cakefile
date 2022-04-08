@@ -222,11 +222,11 @@ buildDocs = (watch = no) ->
     markdownRenderer = require('markdown-it')
       html: yes
       typographer: yes
-      highlight: (str, lang) ->
+      highlight: (str, language) ->
         # From https://github.com/markdown-it/markdown-it#syntax-highlighting
-        if lang and hljs.getLanguage(lang)
+        if language and hljs.getLanguage(language)
           try
-            return hljs.highlight(lang, str).value
+            return hljs.highlight(str, { language }).value
           catch ex
         return '' # No syntax highlighting
 
@@ -310,7 +310,7 @@ buildDocTests = (watch = no) ->
   # Helpers
   testsInScriptBlocks = ->
     output = ''
-    for filename in fs.readdirSync testsSourceFolder
+    for filename in fs.readdirSync(testsSourceFolder).sort()
       if filename.indexOf('.coffee') isnt -1
         type = 'coffeescript'
       else if filename.indexOf('.litcoffee') isnt -1
@@ -368,11 +368,13 @@ task 'release', 'build and test the CoffeeScript source, and build the documenta
   execSync '''
     cake build:full
     cake build:browser
+    cake doc:test
+    cake test:browser:node
     cake test:browser
     cake test:integrations
     cake doc:site
-    cake doc:test
-    cake doc:source''', stdio: 'inherit'
+    cake doc:source
+  ''', stdio: 'inherit'
 
 
 task 'bench', 'quick benchmark of compilation time', ->
@@ -474,6 +476,7 @@ runTests = (CoffeeScript) ->
   skipUnless '/foo.bar/s.test("foo\tbar")', ['regex_dotall.coffee']
   skipUnless '1_2_3', ['numeric_literal_separators.coffee']
   skipUnless '1n', ['numbers_bigint.coffee']
+  skipUnless 'async () => { await import(\'data:application/json,{"foo":"bar"}\', { assert: { type: "json" } }) }', ['import_assertions.coffee']
   files = fs.readdirSync('test').filter (filename) ->
     filename not in testFilesToSkip
 
@@ -495,7 +498,53 @@ task 'test', 'run the CoffeeScript language test suite', ->
   runTests(CoffeeScript).catch -> process.exit 1
 
 
-task 'test:browser', 'run the test suite against the merged browser script', ->
+task 'test:browser', 'run the test suite against the modern browser compiler in a headless browser', ->
+  # Create very simple web server to serve the two files we need.
+  http = require 'http'
+  serveFile = (res, fileToServe, mimeType) ->
+    res.statusCode = 200
+    res.setHeader 'Content-Type', mimeType
+    fs.createReadStream(fileToServe).pipe res
+  server = http.createServer (req, res) ->
+    if req.url is '/'
+      serveFile res, path.join(__dirname, 'docs', "v#{majorVersion}", 'test.html'), 'text/html'
+    else if req.url is '/browser-compiler-modern/coffeescript.js'
+      # The `text/javascript` MIME type is required for an ES module file to be
+      # loaded in a browser.
+      serveFile res, path.join(__dirname, 'docs', "v#{majorVersion}", 'browser-compiler-modern', 'coffeescript.js'), 'text/javascript'
+    else
+      res.statusCode = 404
+      res.end()
+
+  server.listen 8080, ->
+    puppeteer = require 'puppeteer'
+    browser   = await puppeteer.launch()
+    page      = await browser.newPage()
+    result    = ""
+
+    try
+      await page.goto 'http://localhost:8080/'
+
+      element = await page.waitForSelector '#result',
+        visible: yes
+        polling: 'mutation'
+        timeout: 60000
+
+      result = await page.evaluate ((el) => el.textContent), element
+    catch e
+      log e, red
+    finally
+      try browser.close()
+      server.close()
+
+    if result and not result.includes('failed')
+      log result, green
+    else
+      log result, red
+      process.exit 1
+
+
+task 'test:browser:node', 'run the test suite against the legacy browser compiler in Node', ->
   source = fs.readFileSync "lib/coffeescript-browser-compiler-legacy/coffeescript.js", 'utf-8'
   result = {}
   global.testingBrowser = yes
@@ -510,6 +559,9 @@ task 'test:integrations', 'test the module integrated with other libraries and e
   # can be built by such tools; if such a build succeeds, it verifies that no
   # Node modules are required as part of the compiler (as opposed to the tests)
   # and that therefore the compiler will run in a browser environment.
+  # Webpack 5 requires Node >= 10.13.0.
+  [major, minor] = process.versions.node.split('.').map (n) -> parseInt(n, 10)
+  return if major < 10 or (major is 10 and minor < 13)
   tmpdir = os.tmpdir()
   webpack = require 'webpack'
   webpack {
@@ -534,7 +586,7 @@ task 'test:integrations', 'test the module integrated with other libraries and e
       process.exit 1
 
     builtCompiler = path.join tmpdir, 'coffeescript.js'
-    CoffeeScript = require builtCompiler
+    { CoffeeScript } = require builtCompiler
     global.testingBrowser = yes
     testResults = runTests CoffeeScript
     fs.unlinkSync builtCompiler

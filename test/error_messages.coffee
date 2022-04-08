@@ -1257,14 +1257,7 @@ test "CoffeeScript keywords cannot be used as local names in import list aliases
                     ^^^^^^
   '''
 
-test "cannot have `await` outside a function", ->
-  assertErrorFormat '''
-    await 1
-  ''', '''
-    [stdin]:1:1: error: await can only occur inside functions
-    await 1
-    ^^^^^^^
-  '''
+test "cannot have `await return` outside a function", ->
   assertErrorFormat '''
     await return
   ''', '''
@@ -1967,6 +1960,15 @@ test "`new.target` is only allowed meta property", ->
        ^^^^^^^^^^^^^
   '''
 
+test "`import.meta` is only allowed meta property", ->
+  assertErrorFormat '''
+    foo = import.something
+  ''', '''
+    [stdin]:1:7: error: the only valid meta property for import is import.meta
+    foo = import.something
+          ^^^^^^^^^^^^^^^^
+  '''
+
 test "`new.target` cannot be assigned", ->
   assertErrorFormat '''
     ->
@@ -1977,21 +1979,21 @@ test "`new.target` cannot be assigned", ->
                  ^
   '''
 
-test "#4834: dynamic import requires exactly one argument", ->
+test "#4834: dynamic import accepts either one or two arguments", ->
   assertErrorFormat '''
     import()
   ''', '''
-    [stdin]:1:1: error: import() requires exactly one argument
+    [stdin]:1:1: error: import() accepts either one or two arguments
     import()
     ^^^^^^^^
   '''
 
   assertErrorFormat '''
-    import('x', {})
+    import('x', {}, 3)
   ''', '''
-    [stdin]:1:1: error: import() requires exactly one argument
-    import('x', {})
-    ^^^^^^^^^^^^^^^
+    [stdin]:1:1: error: import() accepts either one or two arguments
+    import('x', {}, 3)
+    ^^^^^^^^^^^^^^^^^^
   '''
 
 test "#4834: dynamic import requires explicit call parentheses", ->

@@ -112,8 +112,8 @@
         <li id="section-1">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-1">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-1">&#x00a7;</a>
               </div>
               <p>The <code>coffee</code> utility. Handles command-line compilation of CoffeeScript
 into various forms: saved into <code>.js</code> files or printed to stdout
@@ -129,22 +129,22 @@ interactive REPL.</p>
         <li id="section-2">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-2">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-2">&#x00a7;</a>
               </div>
               <p>External dependencies.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>fs             = <span class="hljs-built_in">require</span> <span class="hljs-string">'fs'</span>
-path           = <span class="hljs-built_in">require</span> <span class="hljs-string">'path'</span>
-helpers        = <span class="hljs-built_in">require</span> <span class="hljs-string">'./helpers'</span>
-optparse       = <span class="hljs-built_in">require</span> <span class="hljs-string">'./optparse'</span>
-CoffeeScript   = <span class="hljs-built_in">require</span> <span class="hljs-string">'./'</span>
-{spawn, exec}  = <span class="hljs-built_in">require</span> <span class="hljs-string">'child_process'</span>
-{EventEmitter} = <span class="hljs-built_in">require</span> <span class="hljs-string">'events'</span>
+            <div class="content"><div class='highlight'><pre>fs             = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;fs&#x27;</span>
+path           = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;path&#x27;</span>
+helpers        = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;./helpers&#x27;</span>
+optparse       = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;./optparse&#x27;</span>
+CoffeeScript   = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;./&#x27;</span>
+{spawn, exec}  = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;child_process&#x27;</span>
+{EventEmitter} = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;events&#x27;</span>
 
-useWinPathSep  = path.sep <span class="hljs-keyword">is</span> <span class="hljs-string">'\\'</span></pre></div></div>
+useWinPathSep  = path.sep <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;\\&#x27;</span></pre></div></div>
             
         </li>
         
@@ -152,8 +152,8 @@ useWinPathSep  = path.sep <span class="hljs-keyword">is</span> <span class="hljs
         <li id="section-3">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-3">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-3">&#x00a7;</a>
               </div>
               <p>Allow CoffeeScript to emit Node.js events.</p>
 
@@ -161,8 +161,8 @@ useWinPathSep  = path.sep <span class="hljs-keyword">is</span> <span class="hljs
             
             <div class="content"><div class='highlight'><pre>helpers.extend CoffeeScript, <span class="hljs-keyword">new</span> EventEmitter
 <span class="hljs-function">
-<span class="hljs-title">printLine</span> = <span class="hljs-params">(line)</span> -&gt;</span> process.stdout.write line + <span class="hljs-string">'\n'</span>
-<span class="hljs-function"><span class="hljs-title">printWarn</span> = <span class="hljs-params">(line)</span> -&gt;</span> process.stderr.write line + <span class="hljs-string">'\n'</span>
+<span class="hljs-title">printLine</span> = <span class="hljs-params">(line)</span> -&gt;</span> process.stdout.write line + <span class="hljs-string">&#x27;\n&#x27;</span>
+<span class="hljs-function"><span class="hljs-title">printWarn</span> = <span class="hljs-params">(line)</span> -&gt;</span> process.stderr.write line + <span class="hljs-string">&#x27;\n&#x27;</span>
 <span class="hljs-function">
 <span class="hljs-title">hidden</span> = <span class="hljs-params">(file)</span> -&gt;</span> <span class="hljs-regexp">/^\.|~$/</span>.test file</pre></div></div>
             
@@ -172,18 +172,18 @@ useWinPathSep  = path.sep <span class="hljs-keyword">is</span> <span class="hljs
         <li id="section-4">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-4">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-4">&#x00a7;</a>
               </div>
               <p>The help banner that is printed in conjunction with <code>-h</code>/<code>--help</code>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>BANNER = <span class="hljs-string">'''
+            <div class="content"><div class='highlight'><pre>BANNER = <span class="hljs-string">&#x27;&#x27;&#x27;
   Usage: coffee [options] path/to/script.coffee [args]
 
   If called without options, `coffee` will run your script.
-'''</span></pre></div></div>
+&#x27;&#x27;&#x27;</span></pre></div></div>
             
         </li>
         
@@ -191,34 +191,35 @@ useWinPathSep  = path.sep <span class="hljs-keyword">is</span> <span class="hljs
         <li id="section-5">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-5">&#x00a7;</a>
               </div>
               <p>The list of all the valid option flags that <code>coffee</code> knows how to handle.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>SWITCHES = [
-  [<span class="hljs-string">'-b'</span>, <span class="hljs-string">'--bare'</span>,              <span class="hljs-string">'compile without a top-level function wrapper'</span>]
-  [<span class="hljs-string">'-c'</span>, <span class="hljs-string">'--compile'</span>,           <span class="hljs-string">'compile to JavaScript and save as .js files'</span>]
-  [<span class="hljs-string">'-e'</span>, <span class="hljs-string">'--eval'</span>,              <span class="hljs-string">'pass a string from the command line as input'</span>]
-  [<span class="hljs-string">'-h'</span>, <span class="hljs-string">'--help'</span>,              <span class="hljs-string">'display this help message'</span>]
-  [<span class="hljs-string">'-i'</span>, <span class="hljs-string">'--interactive'</span>,       <span class="hljs-string">'run an interactive CoffeeScript REPL'</span>]
-  [<span class="hljs-string">'-j'</span>, <span class="hljs-string">'--join [FILE]'</span>,       <span class="hljs-string">'concatenate the source CoffeeScript before compiling'</span>]
-  [<span class="hljs-string">'-m'</span>, <span class="hljs-string">'--map'</span>,               <span class="hljs-string">'generate source map and save as .js.map files'</span>]
-  [<span class="hljs-string">'-M'</span>, <span class="hljs-string">'--inline-map'</span>,        <span class="hljs-string">'generate source map and include it directly in output'</span>]
-  [<span class="hljs-string">'-n'</span>, <span class="hljs-string">'--nodes'</span>,             <span class="hljs-string">'print out the parse tree that the parser produces'</span>]
-  [      <span class="hljs-string">'--nodejs [ARGS]'</span>,     <span class="hljs-string">'pass options directly to the "node" binary'</span>]
-  [      <span class="hljs-string">'--no-header'</span>,         <span class="hljs-string">'suppress the "Generated by" header'</span>]
-  [<span class="hljs-string">'-o'</span>, <span class="hljs-string">'--output [PATH]'</span>,     <span class="hljs-string">'set the output path or path/filename for compiled JavaScript'</span>]
-  [<span class="hljs-string">'-p'</span>, <span class="hljs-string">'--print'</span>,             <span class="hljs-string">'print out the compiled JavaScript'</span>]
-  [<span class="hljs-string">'-r'</span>, <span class="hljs-string">'--require [MODULE*]'</span>, <span class="hljs-string">'require the given module before eval or REPL'</span>]
-  [<span class="hljs-string">'-s'</span>, <span class="hljs-string">'--stdio'</span>,             <span class="hljs-string">'listen for and compile scripts over stdio'</span>]
-  [<span class="hljs-string">'-l'</span>, <span class="hljs-string">'--literate'</span>,          <span class="hljs-string">'treat stdio as literate style coffeescript'</span>]
-  [<span class="hljs-string">'-t'</span>, <span class="hljs-string">'--transpile'</span>,         <span class="hljs-string">'pipe generated JavaScript through Babel'</span>]
-  [      <span class="hljs-string">'--tokens'</span>,            <span class="hljs-string">'print out the tokens that the lexer/rewriter produce'</span>]
-  [<span class="hljs-string">'-v'</span>, <span class="hljs-string">'--version'</span>,           <span class="hljs-string">'display the version number'</span>]
-  [<span class="hljs-string">'-w'</span>, <span class="hljs-string">'--watch'</span>,             <span class="hljs-string">'watch scripts for changes and rerun commands'</span>]
+  [      <span class="hljs-string">&#x27;--ast&#x27;</span>,               <span class="hljs-string">&#x27;generate an abstract syntax tree of nodes&#x27;</span>]
+  [<span class="hljs-string">&#x27;-b&#x27;</span>, <span class="hljs-string">&#x27;--bare&#x27;</span>,              <span class="hljs-string">&#x27;compile without a top-level function wrapper&#x27;</span>]
+  [<span class="hljs-string">&#x27;-c&#x27;</span>, <span class="hljs-string">&#x27;--compile&#x27;</span>,           <span class="hljs-string">&#x27;compile to JavaScript and save as .js files&#x27;</span>]
+  [<span class="hljs-string">&#x27;-e&#x27;</span>, <span class="hljs-string">&#x27;--eval&#x27;</span>,              <span class="hljs-string">&#x27;pass a string from the command line as input&#x27;</span>]
+  [<span class="hljs-string">&#x27;-h&#x27;</span>, <span class="hljs-string">&#x27;--help&#x27;</span>,              <span class="hljs-string">&#x27;display this help message&#x27;</span>]
+  [<span class="hljs-string">&#x27;-i&#x27;</span>, <span class="hljs-string">&#x27;--interactive&#x27;</span>,       <span class="hljs-string">&#x27;run an interactive CoffeeScript REPL&#x27;</span>]
+  [<span class="hljs-string">&#x27;-j&#x27;</span>, <span class="hljs-string">&#x27;--join [FILE]&#x27;</span>,       <span class="hljs-string">&#x27;concatenate the source CoffeeScript before compiling&#x27;</span>]
+  [<span class="hljs-string">&#x27;-l&#x27;</span>, <span class="hljs-string">&#x27;--literate&#x27;</span>,          <span class="hljs-string">&#x27;treat stdio as literate style coffeescript&#x27;</span>]
+  [<span class="hljs-string">&#x27;-m&#x27;</span>, <span class="hljs-string">&#x27;--map&#x27;</span>,               <span class="hljs-string">&#x27;generate source map and save as .js.map files&#x27;</span>]
+  [<span class="hljs-string">&#x27;-M&#x27;</span>, <span class="hljs-string">&#x27;--inline-map&#x27;</span>,        <span class="hljs-string">&#x27;generate source map and include it directly in output&#x27;</span>]
+  [<span class="hljs-string">&#x27;-n&#x27;</span>, <span class="hljs-string">&#x27;--nodes&#x27;</span>,             <span class="hljs-string">&#x27;print out the parse tree that the parser produces&#x27;</span>]
+  [      <span class="hljs-string">&#x27;--nodejs [ARGS]&#x27;</span>,     <span class="hljs-string">&#x27;pass options directly to the &quot;node&quot; binary&#x27;</span>]
+  [      <span class="hljs-string">&#x27;--no-header&#x27;</span>,         <span class="hljs-string">&#x27;suppress the &quot;Generated by&quot; header&#x27;</span>]
+  [<span class="hljs-string">&#x27;-o&#x27;</span>, <span class="hljs-string">&#x27;--output [PATH]&#x27;</span>,     <span class="hljs-string">&#x27;set the output path or path/filename for compiled JavaScript&#x27;</span>]
+  [<span class="hljs-string">&#x27;-p&#x27;</span>, <span class="hljs-string">&#x27;--print&#x27;</span>,             <span class="hljs-string">&#x27;print out the compiled JavaScript&#x27;</span>]
+  [<span class="hljs-string">&#x27;-r&#x27;</span>, <span class="hljs-string">&#x27;--require [MODULE*]&#x27;</span>, <span class="hljs-string">&#x27;require the given module before eval or REPL&#x27;</span>]
+  [<span class="hljs-string">&#x27;-s&#x27;</span>, <span class="hljs-string">&#x27;--stdio&#x27;</span>,             <span class="hljs-string">&#x27;listen for and compile scripts over stdio&#x27;</span>]
+  [<span class="hljs-string">&#x27;-t&#x27;</span>, <span class="hljs-string">&#x27;--transpile&#x27;</span>,         <span class="hljs-string">&#x27;pipe generated JavaScript through Babel&#x27;</span>]
+  [      <span class="hljs-string">&#x27;--tokens&#x27;</span>,            <span class="hljs-string">&#x27;print out the tokens that the lexer/rewriter produce&#x27;</span>]
+  [<span class="hljs-string">&#x27;-v&#x27;</span>, <span class="hljs-string">&#x27;--version&#x27;</span>,           <span class="hljs-string">&#x27;display the version number&#x27;</span>]
+  [<span class="hljs-string">&#x27;-w&#x27;</span>, <span class="hljs-string">&#x27;--watch&#x27;</span>,             <span class="hljs-string">&#x27;watch scripts for changes and rerun commands&#x27;</span>]
 ]</pre></div></div>
             
         </li>
@@ -227,8 +228,8 @@ useWinPathSep  = path.sep <span class="hljs-keyword">is</span> <span class="hljs
         <li id="section-6">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-6">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-6">&#x00a7;</a>
               </div>
               <p>Top-level objects shared by all the functions.</p>
 
@@ -241,7 +242,7 @@ notSources   = {}
 watchedDirs  = {}
 optionParser = <span class="hljs-literal">null</span>
 
-exports.buildCSOptionParser = buildCSOptionParser = <span class="hljs-function">-&gt;</span>
+<span class="hljs-built_in">exports</span>.buildCSOptionParser = buildCSOptionParser = <span class="hljs-function">-&gt;</span>
   <span class="hljs-keyword">new</span> optparse.OptionParser SWITCHES, BANNER</pre></div></div>
             
         </li>
@@ -250,8 +251,8 @@ exports.buildCSOptionParser = buildCSOptionParser = <span class="hljs-function">
         <li id="section-7">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-7">&#x00a7;</a>
               </div>
               <p>Run <code>coffee</code> by parsing passed options and determining what action to take.
 Many flags cause us to divert before compiling anything. Flags passed after
@@ -259,22 +260,22 @@ Many flags cause us to divert before compiling anything. Flags passed after
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>exports.run = <span class="hljs-function">-&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.run = <span class="hljs-function">-&gt;</span>
   optionParser = buildCSOptionParser()
   <span class="hljs-keyword">try</span> parseOptions()
   <span class="hljs-keyword">catch</span> err
-    <span class="hljs-built_in">console</span>.error <span class="hljs-string">"option parsing error: <span class="hljs-subst">#{err.message}</span>"</span>
+    console.error <span class="hljs-string">&quot;option parsing error: <span class="hljs-subst">#{err.message}</span>&quot;</span>
     process.exit <span class="hljs-number">1</span>
 
-  <span class="hljs-keyword">if</span> (<span class="hljs-keyword">not</span> opts.doubleDashed) <span class="hljs-keyword">and</span> (opts.arguments[<span class="hljs-number">1</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">'--'</span>)
-    printWarn <span class="hljs-string">'''
-      coffee was invoked with '--' as the second positional argument, which is
-      now deprecated. To pass '--' as an argument to a script to run, put an
-      additional '--' before the path to your script.
+  <span class="hljs-keyword">if</span> (<span class="hljs-keyword">not</span> opts.doubleDashed) <span class="hljs-keyword">and</span> (opts.arguments[<span class="hljs-number">1</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;--&#x27;</span>)
+    printWarn <span class="hljs-string">&#x27;&#x27;&#x27;
+      coffee was invoked with &#x27;--&#x27; as the second positional argument, which is
+      now deprecated. To pass &#x27;--&#x27; as an argument to a script to run, put an
+      additional &#x27;--&#x27; before the path to your script.
 
-      '--' will be removed from the argument list.
-    '''</span>
-    printWarn <span class="hljs-string">"The positional arguments were: <span class="hljs-subst">#{JSON.stringify opts.arguments}</span>"</span>
+      &#x27;--&#x27; will be removed from the argument list.
+    &#x27;&#x27;&#x27;</span>
+    printWarn <span class="hljs-string">&quot;The positional arguments were: <span class="hljs-subst">#{<span class="hljs-built_in">JSON</span>.stringify opts.arguments}</span>&quot;</span>
     opts.arguments = [opts.arguments[<span class="hljs-number">0</span>]].concat opts.arguments[<span class="hljs-number">2.</span>.]</pre></div></div>
             
         </li>
@@ -283,8 +284,8 @@ Many flags cause us to divert before compiling anything. Flags passed after
         <li id="section-8">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-8">&#x00a7;</a>
               </div>
               <p>Make the REPL <em>CLI</em> use the global context so as to (a) be consistent with the
 <code>node</code> REPL CLI and, therefore, (b) make packages that modify native prototypes
@@ -299,18 +300,18 @@ Many flags cause us to divert before compiling anything. Flags passed after
   <span class="hljs-keyword">return</span> forkNode()                             <span class="hljs-keyword">if</span> opts.nodejs
   <span class="hljs-keyword">return</span> usage()                                <span class="hljs-keyword">if</span> opts.help
   <span class="hljs-keyword">return</span> version()                              <span class="hljs-keyword">if</span> opts.version
-  <span class="hljs-keyword">return</span> <span class="hljs-built_in">require</span>(<span class="hljs-string">'./repl'</span>).start(replCliOpts)   <span class="hljs-keyword">if</span> opts.interactive
+  <span class="hljs-keyword">return</span> <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./repl&#x27;</span>).start(replCliOpts)   <span class="hljs-keyword">if</span> opts.interactive
   <span class="hljs-keyword">return</span> compileStdio()                         <span class="hljs-keyword">if</span> opts.stdio
-  <span class="hljs-keyword">return</span> compileScript <span class="hljs-literal">null</span>, opts.arguments[<span class="hljs-number">0</span>]  <span class="hljs-keyword">if</span> opts.eval
-  <span class="hljs-keyword">return</span> <span class="hljs-built_in">require</span>(<span class="hljs-string">'./repl'</span>).start(replCliOpts)   <span class="hljs-keyword">unless</span> opts.arguments.length
+  <span class="hljs-keyword">return</span> compileScript <span class="hljs-literal">null</span>, opts.arguments[<span class="hljs-number">0</span>]  <span class="hljs-keyword">if</span> opts.<span class="hljs-built_in">eval</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./repl&#x27;</span>).start(replCliOpts)   <span class="hljs-keyword">unless</span> opts.arguments.length
   literals = <span class="hljs-keyword">if</span> opts.run <span class="hljs-keyword">then</span> opts.arguments.splice <span class="hljs-number">1</span> <span class="hljs-keyword">else</span> []
   process.argv = process.argv[<span class="hljs-number">0.</span><span class="hljs-number">.1</span>].concat literals
-  process.argv[<span class="hljs-number">0</span>] = <span class="hljs-string">'coffee'</span>
+  process.argv[<span class="hljs-number">0</span>] = <span class="hljs-string">&#x27;coffee&#x27;</span>
 
   <span class="hljs-keyword">if</span> opts.output
     outputBasename = path.basename opts.output
-    <span class="hljs-keyword">if</span> <span class="hljs-string">'.'</span> <span class="hljs-keyword">in</span> outputBasename <span class="hljs-keyword">and</span>
-       outputBasename <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> [<span class="hljs-string">'.'</span>, <span class="hljs-string">'..'</span>] <span class="hljs-keyword">and</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-string">&#x27;.&#x27;</span> <span class="hljs-keyword">in</span> outputBasename <span class="hljs-keyword">and</span>
+       outputBasename <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> [<span class="hljs-string">&#x27;.&#x27;</span>, <span class="hljs-string">&#x27;..&#x27;</span>] <span class="hljs-keyword">and</span>
        <span class="hljs-keyword">not</span> helpers.ends(opts.output, path.sep)</pre></div></div>
             
         </li>
@@ -319,8 +320,8 @@ Many flags cause us to divert before compiling anything. Flags passed after
         <li id="section-9">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-9">&#x00a7;</a>
               </div>
               <p>An output filename was specified, e.g. <code>/dist/scripts.js</code>.</p>
 
@@ -336,8 +337,8 @@ Many flags cause us to divert before compiling anything. Flags passed after
         <li id="section-10">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-10">&#x00a7;</a>
               </div>
               <p>An output path was specified, e.g. <code>/dist</code>.</p>
 
@@ -348,11 +349,11 @@ Many flags cause us to divert before compiling anything. Flags passed after
 
   <span class="hljs-keyword">if</span> opts.join
     opts.join = path.resolve opts.join
-    <span class="hljs-built_in">console</span>.error <span class="hljs-string">'''
+    console.error <span class="hljs-string">&#x27;&#x27;&#x27;
 
     The --join option is deprecated and will be removed in a future version.
 
-    If for some reason it's necessary to share local variables between files,
+    If for some reason it&#x27;s necessary to share local variables between files,
     replace...
 
         $ coffee --compile --join bundle.js -- a.coffee b.coffee c.coffee
@@ -361,17 +362,17 @@ Many flags cause us to divert before compiling anything. Flags passed after
 
         $ cat a.coffee b.coffee c.coffee | coffee --compile --stdio &gt; bundle.js
 
-    '''</span>
+    &#x27;&#x27;&#x27;</span>
   <span class="hljs-keyword">for</span> source <span class="hljs-keyword">in</span> opts.arguments
     source = path.resolve source
     compilePath source, <span class="hljs-literal">yes</span>, source
 <span class="hljs-function">
 <span class="hljs-title">makePrelude</span> = <span class="hljs-params">(requires)</span> -&gt;</span>
-  requires.map (<span class="hljs-built_in">module</span>) -&gt;
-    [full, name, <span class="hljs-built_in">module</span>] = match <span class="hljs-keyword">if</span> match = <span class="hljs-built_in">module</span>.match(<span class="hljs-regexp">/^(.*)=(.*)$/</span>)
-    name <span class="hljs-keyword">or</span>= helpers.baseFileName <span class="hljs-built_in">module</span>, <span class="hljs-literal">yes</span>, useWinPathSep
-    <span class="hljs-string">"global['<span class="hljs-subst">#{name}</span>'] = require('<span class="hljs-subst">#{<span class="hljs-built_in">module</span>}</span>')"</span>
-  .join <span class="hljs-string">';'</span></pre></div></div>
+  requires.map (module) -&gt;
+    [full, name, module] = match <span class="hljs-keyword">if</span> match = module.match(<span class="hljs-regexp">/^(.*)=(.*)$/</span>)
+    name <span class="hljs-keyword">or</span>= helpers.baseFileName module, <span class="hljs-literal">yes</span>, useWinPathSep
+    <span class="hljs-string">&quot;global[&#x27;<span class="hljs-subst">#{name}</span>&#x27;] = require(&#x27;<span class="hljs-subst">#{module}</span>&#x27;)&quot;</span>
+  .join <span class="hljs-string">&#x27;;&#x27;</span></pre></div></div>
             
         </li>
         
@@ -379,8 +380,8 @@ Many flags cause us to divert before compiling anything. Flags passed after
         <li id="section-11">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-11">&#x00a7;</a>
               </div>
               <p>Compile a path, which could be a script or a directory. If a directory
 is passed, recursively compile all ‘.coffee’, ‘.litcoffee’, and ‘.coffee.md’
@@ -395,12 +396,12 @@ extension source files in it and all subdirectories.</p>
   <span class="hljs-keyword">try</span>
     stats = fs.statSync source
   <span class="hljs-keyword">catch</span> err
-    <span class="hljs-keyword">if</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">'ENOENT'</span>
-      <span class="hljs-built_in">console</span>.error <span class="hljs-string">"File not found: <span class="hljs-subst">#{source}</span>"</span>
+    <span class="hljs-keyword">if</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;ENOENT&#x27;</span>
+      console.error <span class="hljs-string">&quot;File not found: <span class="hljs-subst">#{source}</span>&quot;</span>
       process.exit <span class="hljs-number">1</span>
     <span class="hljs-keyword">throw</span> err
   <span class="hljs-keyword">if</span> stats.isDirectory()
-    <span class="hljs-keyword">if</span> path.basename(source) <span class="hljs-keyword">is</span> <span class="hljs-string">'node_modules'</span>
+    <span class="hljs-keyword">if</span> path.basename(source) <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;node_modules&#x27;</span>
       notSources[source] = <span class="hljs-literal">yes</span>
       <span class="hljs-keyword">return</span>
     <span class="hljs-keyword">if</span> opts.run
@@ -410,7 +411,7 @@ extension source files in it and all subdirectories.</p>
     <span class="hljs-keyword">try</span>
       files = fs.readdirSync source
     <span class="hljs-keyword">catch</span> err
-      <span class="hljs-keyword">if</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">'ENOENT'</span> <span class="hljs-keyword">then</span> <span class="hljs-keyword">return</span> <span class="hljs-keyword">else</span> <span class="hljs-keyword">throw</span> err
+      <span class="hljs-keyword">if</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;ENOENT&#x27;</span> <span class="hljs-keyword">then</span> <span class="hljs-keyword">return</span> <span class="hljs-keyword">else</span> <span class="hljs-keyword">throw</span> err
     <span class="hljs-keyword">for</span> file <span class="hljs-keyword">in</span> files
       compilePath (path.join source, file), <span class="hljs-literal">no</span>, base
   <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> topLevel <span class="hljs-keyword">or</span> helpers.isCoffee source
@@ -421,19 +422,19 @@ extension source files in it and all subdirectories.</p>
     <span class="hljs-keyword">try</span>
       code = fs.readFileSync source
     <span class="hljs-keyword">catch</span> err
-      <span class="hljs-keyword">if</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">'ENOENT'</span> <span class="hljs-keyword">then</span> <span class="hljs-keyword">return</span> <span class="hljs-keyword">else</span> <span class="hljs-keyword">throw</span> err
+      <span class="hljs-keyword">if</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;ENOENT&#x27;</span> <span class="hljs-keyword">then</span> <span class="hljs-keyword">return</span> <span class="hljs-keyword">else</span> <span class="hljs-keyword">throw</span> err
     compileScript source, code.toString(), base
   <span class="hljs-keyword">else</span>
     notSources[source] = <span class="hljs-literal">yes</span>
 <span class="hljs-function">
 <span class="hljs-title">findDirectoryIndex</span> = <span class="hljs-params">(source)</span> -&gt;</span>
   <span class="hljs-keyword">for</span> ext <span class="hljs-keyword">in</span> CoffeeScript.FILE_EXTENSIONS
-    index = path.join source, <span class="hljs-string">"index<span class="hljs-subst">#{ext}</span>"</span>
+    index = path.join source, <span class="hljs-string">&quot;index<span class="hljs-subst">#{ext}</span>&quot;</span>
     <span class="hljs-keyword">try</span>
       <span class="hljs-keyword">return</span> index <span class="hljs-keyword">if</span> (fs.statSync index).isFile()
     <span class="hljs-keyword">catch</span> err
-      <span class="hljs-keyword">throw</span> err <span class="hljs-keyword">unless</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">'ENOENT'</span>
-  <span class="hljs-built_in">console</span>.error <span class="hljs-string">"Missing index.coffee or index.litcoffee in <span class="hljs-subst">#{source}</span>"</span>
+      <span class="hljs-keyword">throw</span> err <span class="hljs-keyword">unless</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;ENOENT&#x27;</span>
+  console.error <span class="hljs-string">&quot;Missing index.coffee or index.litcoffee in <span class="hljs-subst">#{source}</span>&quot;</span>
   process.exit <span class="hljs-number">1</span></pre></div></div>
             
         </li>
@@ -442,8 +443,8 @@ extension source files in it and all subdirectories.</p>
         <li id="section-12">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-12">&#x00a7;</a>
               </div>
               <p>Compile a single source script, containing the given code, according to the
 requested options. If evaluating the script directly, set <code>__filename</code>,
@@ -455,14 +456,17 @@ requested options. If evaluating the script directly, set <code>__filename</code
   options = compileOptions file, base
   <span class="hljs-keyword">try</span>
     task = {file, input, options}
-    CoffeeScript.emit <span class="hljs-string">'compile'</span>, task
+    CoffeeScript.emit <span class="hljs-string">&#x27;compile&#x27;</span>, task
     <span class="hljs-keyword">if</span> opts.tokens
       printTokens CoffeeScript.tokens task.input, task.options
     <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> opts.nodes
       printLine CoffeeScript.nodes(task.input, task.options).toString().trim()
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> opts.ast
+      compiled = CoffeeScript.compile task.input, task.options
+      printLine <span class="hljs-built_in">JSON</span>.stringify(compiled, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>)
     <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> opts.run
       CoffeeScript.register()
-      CoffeeScript.eval opts.prelude, task.options <span class="hljs-keyword">if</span> opts.prelude
+      CoffeeScript.<span class="hljs-built_in">eval</span> opts.prelude, task.options <span class="hljs-keyword">if</span> opts.prelude
       CoffeeScript.run task.input, task.options
     <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> opts.join <span class="hljs-keyword">and</span> task.file <span class="hljs-keyword">isnt</span> opts.join
       task.input = helpers.invertLiterate task.input <span class="hljs-keyword">if</span> helpers.isLiterate file
@@ -475,7 +479,7 @@ requested options. If evaluating the script directly, set <code>__filename</code
         task.output = compiled.js
         task.sourceMap = compiled.v3SourceMap
 
-      CoffeeScript.emit <span class="hljs-string">'success'</span>, task
+      CoffeeScript.emit <span class="hljs-string">&#x27;success&#x27;</span>, task
       <span class="hljs-keyword">if</span> opts.<span class="hljs-built_in">print</span>
         printLine task.output.trim()
       <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> opts.compile <span class="hljs-keyword">or</span> opts.map
@@ -485,11 +489,11 @@ requested options. If evaluating the script directly, set <code>__filename</code
           options.jsPath
         writeJs base, task.file, task.output, saveTo, task.sourceMap
   <span class="hljs-keyword">catch</span> err
-    CoffeeScript.emit <span class="hljs-string">'failure'</span>, err, task
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">if</span> CoffeeScript.listeners(<span class="hljs-string">'failure'</span>).length
-    message = err?.stack <span class="hljs-keyword">or</span> <span class="hljs-string">"<span class="hljs-subst">#{err}</span>"</span>
+    CoffeeScript.emit <span class="hljs-string">&#x27;failure&#x27;</span>, err, task
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">if</span> CoffeeScript.listeners(<span class="hljs-string">&#x27;failure&#x27;</span>).length
+    message = err?.stack <span class="hljs-keyword">or</span> <span class="hljs-string">&quot;<span class="hljs-subst">#{err}</span>&quot;</span>
     <span class="hljs-keyword">if</span> opts.watch
-      printLine message + <span class="hljs-string">'\x07'</span>
+      printLine message + <span class="hljs-string">&#x27;\x07&#x27;</span>
     <span class="hljs-keyword">else</span>
       printWarn message
       process.exit <span class="hljs-number">1</span></pre></div></div>
@@ -500,8 +504,8 @@ requested options. If evaluating the script directly, set <code>__filename</code
         <li id="section-13">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-13">&#x00a7;</a>
               </div>
               <p>Attach the appropriate listeners to compile scripts incoming over <strong>stdin</strong>,
 and write them back to <strong>stdout</strong>.</p>
@@ -510,13 +514,13 @@ and write them back to <strong>stdout</strong>.</p>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">compileStdio</span> = -&gt;</span>
   <span class="hljs-keyword">if</span> opts.map
-    <span class="hljs-built_in">console</span>.error <span class="hljs-string">'--stdio and --map cannot be used together'</span>
+    console.error <span class="hljs-string">&#x27;--stdio and --map cannot be used together&#x27;</span>
     process.exit <span class="hljs-number">1</span>
   buffers = []
   stdin = process.openStdin()
-  stdin.<span class="hljs-literal">on</span> <span class="hljs-string">'data'</span>, <span class="hljs-function"><span class="hljs-params">(buffer)</span> -&gt;</span>
+  stdin.<span class="hljs-literal">on</span> <span class="hljs-string">&#x27;data&#x27;</span>, <span class="hljs-function"><span class="hljs-params">(buffer)</span> -&gt;</span>
     buffers.push buffer <span class="hljs-keyword">if</span> buffer
-  stdin.<span class="hljs-literal">on</span> <span class="hljs-string">'end'</span>, <span class="hljs-function">-&gt;</span>
+  stdin.<span class="hljs-literal">on</span> <span class="hljs-string">&#x27;end&#x27;</span>, <span class="hljs-function">-&gt;</span>
     compileScript <span class="hljs-literal">null</span>, Buffer.concat(buffers).toString()</pre></div></div>
             
         </li>
@@ -525,8 +529,8 @@ and write them back to <strong>stdout</strong>.</p>
         <li id="section-14">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-14">&#x00a7;</a>
               </div>
               <p>If all of the source files are done being read, concatenate and compile
 them together.</p>
@@ -537,9 +541,9 @@ them together.</p>
 <span class="hljs-function"><span class="hljs-title">compileJoin</span> = -&gt;</span>
   <span class="hljs-keyword">return</span> <span class="hljs-keyword">unless</span> opts.join
   <span class="hljs-keyword">unless</span> sourceCode.some(<span class="hljs-function"><span class="hljs-params">(code)</span> -&gt;</span> code <span class="hljs-keyword">is</span> <span class="hljs-literal">null</span>)
-    clearTimeout joinTimeout
+    <span class="hljs-built_in">clearTimeout</span> joinTimeout
     joinTimeout = wait <span class="hljs-number">100</span>, <span class="hljs-function">-&gt;</span>
-      compileScript opts.join, sourceCode.join(<span class="hljs-string">'\n'</span>), opts.join</pre></div></div>
+      compileScript opts.join, sourceCode.join(<span class="hljs-string">&#x27;\n&#x27;</span>), opts.join</pre></div></div>
             
         </li>
         
@@ -547,8 +551,8 @@ them together.</p>
         <li id="section-15">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-15">&#x00a7;</a>
               </div>
               <p>Watch a source CoffeeScript file using <code>fs.watch</code>, recompiling it every
 time the file is updated. May be used in combination with other options,
@@ -562,7 +566,7 @@ such as <code>--print</code>.</p>
   compileTimeout = <span class="hljs-literal">null</span>
 <span class="hljs-function">
   <span class="hljs-title">watchErr</span> = <span class="hljs-params">(err)</span> -&gt;</span>
-    <span class="hljs-keyword">throw</span> err <span class="hljs-keyword">unless</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">'ENOENT'</span>
+    <span class="hljs-keyword">throw</span> err <span class="hljs-keyword">unless</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;ENOENT&#x27;</span>
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">unless</span> source <span class="hljs-keyword">in</span> sources
     <span class="hljs-keyword">try</span>
       rewatch()
@@ -572,7 +576,7 @@ such as <code>--print</code>.</p>
       compileJoin()
 <span class="hljs-function">
   <span class="hljs-title">compile</span> = -&gt;</span>
-    clearTimeout compileTimeout
+    <span class="hljs-built_in">clearTimeout</span> compileTimeout
     compileTimeout = wait <span class="hljs-number">25</span>, <span class="hljs-function">-&gt;</span>
       fs.stat source, <span class="hljs-function"><span class="hljs-params">(err, stats)</span> -&gt;</span>
         <span class="hljs-keyword">return</span> watchErr err <span class="hljs-keyword">if</span> err
@@ -587,9 +591,9 @@ such as <code>--print</code>.</p>
 <span class="hljs-function">
   <span class="hljs-title">startWatcher</span> = -&gt;</span>
     watcher = fs.watch source
-    .<span class="hljs-literal">on</span> <span class="hljs-string">'change'</span>, compile
-    .<span class="hljs-literal">on</span> <span class="hljs-string">'error'</span>, <span class="hljs-function"><span class="hljs-params">(err)</span> -&gt;</span>
-      <span class="hljs-keyword">throw</span> err <span class="hljs-keyword">unless</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">'EPERM'</span>
+    .<span class="hljs-literal">on</span> <span class="hljs-string">&#x27;change&#x27;</span>, compile
+    .<span class="hljs-literal">on</span> <span class="hljs-string">&#x27;error&#x27;</span>, <span class="hljs-function"><span class="hljs-params">(err)</span> -&gt;</span>
+      <span class="hljs-keyword">throw</span> err <span class="hljs-keyword">unless</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;EPERM&#x27;</span>
       removeSource source, base
 <span class="hljs-function">
   <span class="hljs-title">rewatch</span> = -&gt;</span>
@@ -607,8 +611,8 @@ such as <code>--print</code>.</p>
         <li id="section-16">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-16">&#x00a7;</a>
               </div>
               <p>Watch a directory of files for new additions.</p>
 
@@ -620,16 +624,16 @@ such as <code>--print</code>.</p>
 <span class="hljs-function">
   <span class="hljs-title">startWatcher</span> = -&gt;</span>
     watcher = fs.watch source
-    .<span class="hljs-literal">on</span> <span class="hljs-string">'error'</span>, <span class="hljs-function"><span class="hljs-params">(err)</span> -&gt;</span>
-      <span class="hljs-keyword">throw</span> err <span class="hljs-keyword">unless</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">'EPERM'</span>
+    .<span class="hljs-literal">on</span> <span class="hljs-string">&#x27;error&#x27;</span>, <span class="hljs-function"><span class="hljs-params">(err)</span> -&gt;</span>
+      <span class="hljs-keyword">throw</span> err <span class="hljs-keyword">unless</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;EPERM&#x27;</span>
       stopWatcher()
-    .<span class="hljs-literal">on</span> <span class="hljs-string">'change'</span>, <span class="hljs-function">-&gt;</span>
-      clearTimeout readdirTimeout
+    .<span class="hljs-literal">on</span> <span class="hljs-string">&#x27;change&#x27;</span>, <span class="hljs-function">-&gt;</span>
+      <span class="hljs-built_in">clearTimeout</span> readdirTimeout
       readdirTimeout = wait <span class="hljs-number">25</span>, <span class="hljs-function">-&gt;</span>
         <span class="hljs-keyword">try</span>
           files = fs.readdirSync source
         <span class="hljs-keyword">catch</span> err
-          <span class="hljs-keyword">throw</span> err <span class="hljs-keyword">unless</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">'ENOENT'</span>
+          <span class="hljs-keyword">throw</span> err <span class="hljs-keyword">unless</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;ENOENT&#x27;</span>
           <span class="hljs-keyword">return</span> stopWatcher()
         <span class="hljs-keyword">for</span> file <span class="hljs-keyword">in</span> files
           compilePath (path.join source, file), <span class="hljs-literal">no</span>, base
@@ -642,7 +646,7 @@ such as <code>--print</code>.</p>
   <span class="hljs-keyword">try</span>
     startWatcher()
   <span class="hljs-keyword">catch</span> err
-    <span class="hljs-keyword">throw</span> err <span class="hljs-keyword">unless</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">'ENOENT'</span>
+    <span class="hljs-keyword">throw</span> err <span class="hljs-keyword">unless</span> err.code <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;ENOENT&#x27;</span>
 <span class="hljs-function">
 <span class="hljs-title">removeSourceDir</span> = <span class="hljs-params">(source, base)</span> -&gt;</span>
   <span class="hljs-keyword">delete</span> watchedDirs[source]
@@ -658,8 +662,8 @@ such as <code>--print</code>.</p>
         <li id="section-17">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-17">&#x00a7;</a>
               </div>
               <p>Remove a file from our source list, and source code cache. Optionally remove
 the compiled JS version as well.</p>
@@ -672,14 +676,14 @@ the compiled JS version as well.</p>
   sourceCode.splice index, <span class="hljs-number">1</span>
   <span class="hljs-keyword">unless</span> opts.join
     silentUnlink outputPath source, base
-    silentUnlink outputPath source, base, <span class="hljs-string">'.js.map'</span>
-    timeLog <span class="hljs-string">"removed <span class="hljs-subst">#{source}</span>"</span>
+    silentUnlink outputPath source, base, <span class="hljs-string">&#x27;.js.map&#x27;</span>
+    timeLog <span class="hljs-string">&quot;removed <span class="hljs-subst">#{source}</span>&quot;</span>
 <span class="hljs-function">
 <span class="hljs-title">silentUnlink</span> = <span class="hljs-params">(path)</span> -&gt;</span>
   <span class="hljs-keyword">try</span>
     fs.unlinkSync path
   <span class="hljs-keyword">catch</span> err
-    <span class="hljs-keyword">throw</span> err <span class="hljs-keyword">unless</span> err.code <span class="hljs-keyword">in</span> [<span class="hljs-string">'ENOENT'</span>, <span class="hljs-string">'EPERM'</span>]</pre></div></div>
+    <span class="hljs-keyword">throw</span> err <span class="hljs-keyword">unless</span> err.code <span class="hljs-keyword">in</span> [<span class="hljs-string">&#x27;ENOENT&#x27;</span>, <span class="hljs-string">&#x27;EPERM&#x27;</span>]</pre></div></div>
             
         </li>
         
@@ -687,14 +691,14 @@ the compiled JS version as well.</p>
         <li id="section-18">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-18">&#x00a7;</a>
               </div>
               <p>Get the corresponding output JavaScript path for a source file.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">outputPath</span> = <span class="hljs-params">(source, base, extension=<span class="hljs-string">".js"</span>)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">outputPath</span> = <span class="hljs-params">(source, base, extension=<span class="hljs-string">&quot;.js&quot;</span>)</span> -&gt;</span>
   basename  = helpers.baseFileName source, <span class="hljs-literal">yes</span>, useWinPathSep
   srcDir    = path.dirname source
   dir = <span class="hljs-keyword">unless</span> opts.outputPath
@@ -711,8 +715,8 @@ the compiled JS version as well.</p>
         <li id="section-19">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-19">&#x00a7;</a>
               </div>
               <p>Recursively mkdir, like <code>mkdir -p</code>.</p>
 
@@ -737,8 +741,8 @@ the compiled JS version as well.</p>
         <li id="section-20">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-20">&#x00a7;</a>
               </div>
               <p>Write out a JavaScript source file with the compiled code. By default, files
 are written out in <code>cwd</code> as <code>.js</code> files with the same name, but the output
@@ -749,22 +753,22 @@ same directory as the <code>.js</code> file.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">writeJs</span> = <span class="hljs-params">(base, sourcePath, js, jsPath, generatedSourceMap = <span class="hljs-literal">null</span>)</span> -&gt;</span>
-  sourceMapPath = <span class="hljs-string">"<span class="hljs-subst">#{jsPath}</span>.map"</span>
+  sourceMapPath = <span class="hljs-string">&quot;<span class="hljs-subst">#{jsPath}</span>.map&quot;</span>
   jsDir  = path.dirname jsPath
 <span class="hljs-function">  <span class="hljs-title">compile</span> = -&gt;</span>
     <span class="hljs-keyword">if</span> opts.compile
-      js = <span class="hljs-string">' '</span> <span class="hljs-keyword">if</span> js.length &lt;= <span class="hljs-number">0</span>
-      <span class="hljs-keyword">if</span> generatedSourceMap <span class="hljs-keyword">then</span> js = <span class="hljs-string">"<span class="hljs-subst">#{js}</span>\n//# sourceMappingURL=<span class="hljs-subst">#{helpers.baseFileName sourceMapPath, <span class="hljs-literal">no</span>, useWinPathSep}</span>\n"</span>
+      js = <span class="hljs-string">&#x27; &#x27;</span> <span class="hljs-keyword">if</span> js.length &lt;= <span class="hljs-number">0</span>
+      <span class="hljs-keyword">if</span> generatedSourceMap <span class="hljs-keyword">then</span> js = <span class="hljs-string">&quot;<span class="hljs-subst">#{js}</span>\n//# sourceMappingURL=<span class="hljs-subst">#{helpers.baseFileName sourceMapPath, <span class="hljs-literal">no</span>, useWinPathSep}</span>\n&quot;</span>
       fs.writeFile jsPath, js, <span class="hljs-function"><span class="hljs-params">(err)</span> -&gt;</span>
         <span class="hljs-keyword">if</span> err
           printLine err.message
           process.exit <span class="hljs-number">1</span>
         <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> opts.compile <span class="hljs-keyword">and</span> opts.watch
-          timeLog <span class="hljs-string">"compiled <span class="hljs-subst">#{sourcePath}</span>"</span>
+          timeLog <span class="hljs-string">&quot;compiled <span class="hljs-subst">#{sourcePath}</span>&quot;</span>
     <span class="hljs-keyword">if</span> generatedSourceMap
       fs.writeFile sourceMapPath, generatedSourceMap, <span class="hljs-function"><span class="hljs-params">(err)</span> -&gt;</span>
         <span class="hljs-keyword">if</span> err
-          printLine <span class="hljs-string">"Could not write source map: <span class="hljs-subst">#{err.message}</span>"</span>
+          printLine <span class="hljs-string">&quot;Could not write source map: <span class="hljs-subst">#{err.message}</span>&quot;</span>
           process.exit <span class="hljs-number">1</span>
   fs.exists jsDir, <span class="hljs-function"><span class="hljs-params">(itExists)</span> -&gt;</span>
     <span class="hljs-keyword">if</span> itExists <span class="hljs-keyword">then</span> compile() <span class="hljs-keyword">else</span> mkdirp jsDir, compile</pre></div></div>
@@ -775,14 +779,14 @@ same directory as the <code>.js</code> file.</p>
         <li id="section-21">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-21">&#x00a7;</a>
               </div>
               <p>Convenience for cleaner setTimeouts.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">wait</span> = <span class="hljs-params">(milliseconds, func)</span> -&gt;</span> setTimeout func, milliseconds</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">wait</span> = <span class="hljs-params">(milliseconds, func)</span> -&gt;</span> <span class="hljs-built_in">setTimeout</span> func, milliseconds</pre></div></div>
             
         </li>
         
@@ -790,15 +794,15 @@ same directory as the <code>.js</code> file.</p>
         <li id="section-22">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-22">&#x00a7;</a>
               </div>
               <p>When watching scripts, it’s useful to log changes with the timestamp.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">timeLog</span> = <span class="hljs-params">(message)</span> -&gt;</span>
-  <span class="hljs-built_in">console</span>.log <span class="hljs-string">"<span class="hljs-subst">#{(<span class="hljs-keyword">new</span> Date).toLocaleTimeString()}</span> - <span class="hljs-subst">#{message}</span>"</span></pre></div></div>
+  console.log <span class="hljs-string">&quot;<span class="hljs-subst">#{(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>).toLocaleTimeString()}</span> - <span class="hljs-subst">#{message}</span>&quot;</span></pre></div></div>
             
         </li>
         
@@ -806,8 +810,8 @@ same directory as the <code>.js</code> file.</p>
         <li id="section-23">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-23">&#x00a7;</a>
               </div>
               <p>Pretty-print a stream of tokens, sans location data.</p>
 
@@ -816,9 +820,9 @@ same directory as the <code>.js</code> file.</p>
             <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">printTokens</span> = <span class="hljs-params">(tokens)</span> -&gt;</span>
   strings = <span class="hljs-keyword">for</span> token <span class="hljs-keyword">in</span> tokens
     tag = token[<span class="hljs-number">0</span>]
-    value = token[<span class="hljs-number">1</span>].toString().replace(<span class="hljs-regexp">/\n/</span>, <span class="hljs-string">'\\n'</span>)
-    <span class="hljs-string">"[<span class="hljs-subst">#{tag}</span> <span class="hljs-subst">#{value}</span>]"</span>
-  printLine strings.join(<span class="hljs-string">' '</span>)</pre></div></div>
+    value = token[<span class="hljs-number">1</span>].toString().replace(<span class="hljs-regexp">/\n/</span>, <span class="hljs-string">&#x27;\\n&#x27;</span>)
+    <span class="hljs-string">&quot;[<span class="hljs-subst">#{tag}</span> <span class="hljs-subst">#{value}</span>]&quot;</span>
+  printLine strings.join(<span class="hljs-string">&#x27; &#x27;</span>)</pre></div></div>
             
         </li>
         
@@ -826,8 +830,8 @@ same directory as the <code>.js</code> file.</p>
         <li id="section-24">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-24">&#x00a7;</a>
               </div>
               <p>Use the <a href="optparse.html">OptionParser module</a> to extract all options from
 <code>process.argv</code> that are specified in <code>SWITCHES</code>.</p>
@@ -838,7 +842,7 @@ same directory as the <code>.js</code> file.</p>
   o = opts      = optionParser.parse process.argv[<span class="hljs-number">2.</span>.]
   o.compile     <span class="hljs-keyword">or</span>=  !!o.output
   o.run         = <span class="hljs-keyword">not</span> (o.compile <span class="hljs-keyword">or</span> o.<span class="hljs-built_in">print</span> <span class="hljs-keyword">or</span> o.map)
-  o.<span class="hljs-built_in">print</span>       = !!  (o.<span class="hljs-built_in">print</span> <span class="hljs-keyword">or</span> (o.eval <span class="hljs-keyword">or</span> o.stdio <span class="hljs-keyword">and</span> o.compile))</pre></div></div>
+  o.<span class="hljs-built_in">print</span>       = !!  (o.<span class="hljs-built_in">print</span> <span class="hljs-keyword">or</span> (o.<span class="hljs-built_in">eval</span> <span class="hljs-keyword">or</span> o.stdio <span class="hljs-keyword">and</span> o.compile))</pre></div></div>
             
         </li>
         
@@ -846,8 +850,8 @@ same directory as the <code>.js</code> file.</p>
         <li id="section-25">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-25">&#x00a7;</a>
               </div>
               <p>The compile-time options to pass to the CoffeeScript compiler.</p>
 
@@ -862,8 +866,8 @@ same directory as the <code>.js</code> file.</p>
         <li id="section-26">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-26">&#x00a7;</a>
               </div>
               <p>The user has requested that the CoffeeScript compiler also transpile
 via Babel. We don’t include Babel as a dependency because we want to
@@ -875,10 +879,10 @@ browsers) or use a proper build chain like Gulp or Webpack.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">try</span>
-      <span class="hljs-built_in">require</span> <span class="hljs-string">'@babel/core'</span>
+      <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;@babel/core&#x27;</span>
     <span class="hljs-keyword">catch</span>
       <span class="hljs-keyword">try</span>
-        <span class="hljs-built_in">require</span> <span class="hljs-string">'babel-core'</span>
+        <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;babel-core&#x27;</span>
       <span class="hljs-keyword">catch</span></pre></div></div>
             
         </li>
@@ -887,31 +891,31 @@ browsers) or use a proper build chain like Gulp or Webpack.</p>
         <li id="section-27">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-27">&#x00a7;</a>
               </div>
               <p>Give appropriate instructions depending on whether <code>coffee</code> was run
 locally or globally.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> <span class="hljs-built_in">require</span>.resolve(<span class="hljs-string">'.'</span>).indexOf(process.cwd()) <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>
-          <span class="hljs-built_in">console</span>.error <span class="hljs-string">'''
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> <span class="hljs-built_in">require</span>.resolve(<span class="hljs-string">&#x27;.&#x27;</span>).indexOf(process.cwd()) <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>
+          console.error <span class="hljs-string">&#x27;&#x27;&#x27;
             To use --transpile, you must have @babel/core installed:
               npm install --save-dev @babel/core
             And you must save options to configure Babel in one of the places it looks to find its options.
             See https://coffeescript.org/#transpilation
-          '''</span>
+          &#x27;&#x27;&#x27;</span>
         <span class="hljs-keyword">else</span>
-          <span class="hljs-built_in">console</span>.error <span class="hljs-string">'''
+          console.error <span class="hljs-string">&#x27;&#x27;&#x27;
             To use --transpile with globally-installed CoffeeScript, you must have @babel/core installed globally:
               npm install --global @babel/core
             And you must save options to configure Babel in one of the places it looks to find its options, relative to the file being compiled or to the current folder.
             See https://coffeescript.org/#transpilation
-          '''</span>
+          &#x27;&#x27;&#x27;</span>
         process.exit <span class="hljs-number">1</span>
 
-    opts.transpile = {} <span class="hljs-keyword">unless</span> <span class="hljs-keyword">typeof</span> opts.transpile <span class="hljs-keyword">is</span> <span class="hljs-string">'object'</span></pre></div></div>
+    opts.transpile = {} <span class="hljs-keyword">unless</span> <span class="hljs-keyword">typeof</span> opts.transpile <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;object&#x27;</span></pre></div></div>
             
         </li>
         
@@ -919,8 +923,8 @@ locally or globally.</p>
         <li id="section-28">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-28">&#x00a7;</a>
               </div>
               <p>Pass a reference to Babel into the compiler, so that the transpile option
 is available for the CLI. We need to do this so that tools like Webpack
@@ -937,8 +941,8 @@ require Babel.</p>
         <li id="section-29">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-29">&#x00a7;</a>
               </div>
               <p>Babel searches for its options (a <code>.babelrc</code> file, a <code>.babelrc.js</code> file,
 a <code>package.json</code> file with a <code>babel</code> key, etc.) relative to the path
@@ -948,7 +952,7 @@ along.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">unless</span> opts.transpile.filename
-      opts.transpile.filename = filename <span class="hljs-keyword">or</span> path.resolve(base <span class="hljs-keyword">or</span> process.cwd(), <span class="hljs-string">'&lt;anonymous&gt;'</span>)
+      opts.transpile.filename = filename <span class="hljs-keyword">or</span> path.resolve(base <span class="hljs-keyword">or</span> process.cwd(), <span class="hljs-string">&#x27;&lt;anonymous&gt;&#x27;</span>)
   <span class="hljs-keyword">else</span>
     opts.transpile = <span class="hljs-literal">no</span>
 
@@ -956,10 +960,11 @@ along.</p>
     filename: filename
     literate: opts.literate <span class="hljs-keyword">or</span> helpers.isLiterate(filename)
     bare: opts.bare
-    header: opts.compile <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> opts[<span class="hljs-string">'no-header'</span>]
+    header: opts.compile <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> opts[<span class="hljs-string">&#x27;no-header&#x27;</span>]
     transpile: opts.transpile
     sourceMap: opts.map
-    inlineMap: opts[<span class="hljs-string">'inline-map'</span>]
+    inlineMap: opts[<span class="hljs-string">&#x27;inline-map&#x27;</span>]
+    ast: opts.ast
 
   <span class="hljs-keyword">if</span> filename
     <span class="hljs-keyword">if</span> base
@@ -974,9 +979,9 @@ along.</p>
       }
     <span class="hljs-keyword">else</span>
       answer = helpers.merge answer,
-        sourceRoot: <span class="hljs-string">""</span>
+        sourceRoot: <span class="hljs-string">&quot;&quot;</span>
         sourceFiles: [helpers.baseFileName filename, <span class="hljs-literal">no</span>, useWinPathSep]
-        generatedFile: helpers.baseFileName(filename, <span class="hljs-literal">yes</span>, useWinPathSep) + <span class="hljs-string">".js"</span>
+        generatedFile: helpers.baseFileName(filename, <span class="hljs-literal">yes</span>, useWinPathSep) + <span class="hljs-string">&quot;.js&quot;</span>
   answer</pre></div></div>
             
         </li>
@@ -985,8 +990,8 @@ along.</p>
         <li id="section-30">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-30">&#x00a7;</a>
               </div>
               <p>Start up a new Node.js instance with the arguments in <code>--nodejs</code> passed to
 the <code>node</code> binary, preserving the other options.</p>
@@ -996,15 +1001,15 @@ the <code>node</code> binary, preserving the other options.</p>
             <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">forkNode</span> = -&gt;</span>
   nodeArgs = opts.nodejs.split <span class="hljs-regexp">/\s+/</span>
   args     = process.argv[<span class="hljs-number">1.</span>.]
-  args.splice args.indexOf(<span class="hljs-string">'--nodejs'</span>), <span class="hljs-number">2</span>
+  args.splice args.indexOf(<span class="hljs-string">&#x27;--nodejs&#x27;</span>), <span class="hljs-number">2</span>
   p = spawn process.execPath, nodeArgs.concat(args),
     cwd:        process.cwd()
     env:        process.env
     stdio:      [<span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>]
-  <span class="hljs-keyword">for</span> signal <span class="hljs-keyword">in</span> [<span class="hljs-string">'SIGINT'</span>, <span class="hljs-string">'SIGTERM'</span>]
+  <span class="hljs-keyword">for</span> signal <span class="hljs-keyword">in</span> [<span class="hljs-string">&#x27;SIGINT&#x27;</span>, <span class="hljs-string">&#x27;SIGTERM&#x27;</span>]
     process.<span class="hljs-literal">on</span> signal, <span class="hljs-keyword">do</span> (signal) -&gt;
       -&gt; p.kill signal
-  p.<span class="hljs-literal">on</span> <span class="hljs-string">'exit'</span>, <span class="hljs-function"><span class="hljs-params">(code)</span> -&gt;</span> process.exit code</pre></div></div>
+  p.<span class="hljs-literal">on</span> <span class="hljs-string">&#x27;exit&#x27;</span>, <span class="hljs-function"><span class="hljs-params">(code)</span> -&gt;</span> process.exit code</pre></div></div>
             
         </li>
         
@@ -1012,8 +1017,8 @@ the <code>node</code> binary, preserving the other options.</p>
         <li id="section-31">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-31">&#x00a7;</a>
               </div>
               <p>Print the <code>--help</code> usage message and exit. Deprecated switches are not
 shown.</p>
@@ -1029,15 +1034,15 @@ shown.</p>
         <li id="section-32">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-32">&#x00a7;</a>
               </div>
               <p>Print the <code>--version</code> message and exit.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">version</span> = -&gt;</span>
-  printLine <span class="hljs-string">"CoffeeScript version <span class="hljs-subst">#{CoffeeScript.VERSION}</span>"</span></pre></div></div>
+  printLine <span class="hljs-string">&quot;CoffeeScript version <span class="hljs-subst">#{CoffeeScript.VERSION}</span>&quot;</span></pre></div></div>
             
         </li>
         

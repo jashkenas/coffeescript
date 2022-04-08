@@ -204,3 +204,17 @@ test "#3199: await multiline implicit object", ->
         type: 'a'
         msg: 'b'
     eq undefined, y
+
+test "top-level await", ->
+  eqJS 'await null', 'await null;'
+
+test "top-level wrapper has correct async attribute", ->
+  starts = (code, prefix) ->
+    compiled = CoffeeScript.compile code
+    unless compiled.startsWith prefix
+      fail """Expected generated JavaScript to start with:
+        #{reset}#{prefix}#{red}
+        but instead it was:
+        #{reset}#{compiled}#{red}"""
+  starts 'await null', '(async function'
+  starts 'do -> await null', '(function'

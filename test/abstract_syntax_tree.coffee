@@ -57,7 +57,7 @@ test 'Confirm functionality of `deepStrictIncludeExpectedProperties`', ->
     x: [1, 2, 3]
 
   check = (message, test, expected) ->
-    test (-> deepStrictIncludeExpectedProperties actual, expected), message
+    test (-> deepStrictIncludeExpectedProperties actual, expected), null, message
 
   check 'Expected property does not match', throws,
     name: '"Name"'
@@ -1979,6 +1979,31 @@ test "AST as expected for ModuleDeclaration node", ->
       type: 'StringLiteral'
       value: '.'
 
+  testStatement 'import X from "." assert { type: "json" }',
+    type: 'ImportDeclaration'
+    specifiers: [
+      type: 'ImportDefaultSpecifier'
+      local:
+        type: 'Identifier'
+        name: 'X'
+        declaration: no
+    ]
+    importKind: 'value'
+    source:
+      type: 'StringLiteral'
+      value: '.'
+    assertions: [
+      type: 'ImportAttribute'
+      key:
+        type: 'Identifier'
+        name: 'type'
+      value:
+        type: 'StringLiteral'
+        value: 'json'
+        extra:
+          raw: '"json"'
+    ]
+
 test "AST as expected for ImportDeclaration node", ->
   testStatement 'import React, {Component} from "react"',
     type: 'ImportDeclaration'
@@ -2128,6 +2153,26 @@ test "AST as expected for ExportAllDeclaration node", ->
       value: 'module-name'
       extra:
         raw: '"module-name"'
+    exportKind: 'value'
+
+  testStatement 'export * from "module-name" assert { type: "json" }',
+    type: 'ExportAllDeclaration'
+    source:
+      type: 'StringLiteral'
+      value: 'module-name'
+      extra:
+        raw: '"module-name"'
+    assertions: [
+      type: 'ImportAttribute'
+      key:
+        type: 'Identifier'
+        name: 'type'
+      value:
+        type: 'StringLiteral'
+        value: 'json'
+        extra:
+          raw: '"json"'
+    ]
     exportKind: 'value'
 
 test "AST as expected for ExportSpecifierList node", ->
@@ -4041,7 +4086,7 @@ test "AST as expected for If node", ->
         inverted: no
       ]
 
-test "AST as expected for MetaProperty node", ->
+test "AST as expected for `new.target` MetaProperty node", ->
   testExpression '''
     -> new.target
   ''',
@@ -4073,6 +4118,25 @@ test "AST as expected for MetaProperty node", ->
           property: ID 'name'
           computed: no
       ]
+
+test "AST as expected for `import.meta` MetaProperty node", ->
+  testExpression '''
+    import.meta
+  ''',
+    type: 'MetaProperty'
+    meta: ID 'import'
+    property: ID 'meta'
+
+  testExpression '''
+    import.meta.name
+  ''',
+    type: 'MemberExpression'
+    object:
+      type: 'MetaProperty'
+      meta: ID 'import'
+      property: ID 'meta'
+    property: ID 'name'
+    computed: no
 
 test "AST as expected for dynamic import", ->
   testExpression '''

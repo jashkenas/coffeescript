@@ -112,26 +112,26 @@
         <li id="section-1">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-1">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-1">&#x00a7;</a>
               </div>
               <p>Node.js Implementation</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>CoffeeScript  = <span class="hljs-built_in">require</span> <span class="hljs-string">'./coffeescript'</span>
-fs            = <span class="hljs-built_in">require</span> <span class="hljs-string">'fs'</span>
-vm            = <span class="hljs-built_in">require</span> <span class="hljs-string">'vm'</span>
-path          = <span class="hljs-built_in">require</span> <span class="hljs-string">'path'</span>
+            <div class="content"><div class='highlight'><pre>CoffeeScript  = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;./coffeescript&#x27;</span>
+fs            = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;fs&#x27;</span>
+vm            = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;vm&#x27;</span>
+path          = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;path&#x27;</span>
 
 helpers       = CoffeeScript.helpers
 
 CoffeeScript.transpile = <span class="hljs-function"><span class="hljs-params">(js, options)</span> -&gt;</span>
   <span class="hljs-keyword">try</span>
-    babel = <span class="hljs-built_in">require</span> <span class="hljs-string">'@babel/core'</span>
+    babel = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;@babel/core&#x27;</span>
   <span class="hljs-keyword">catch</span>
     <span class="hljs-keyword">try</span>
-      babel = <span class="hljs-built_in">require</span> <span class="hljs-string">'babel-core'</span>
+      babel = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;babel-core&#x27;</span>
     <span class="hljs-keyword">catch</span></pre></div></div>
             
         </li>
@@ -140,15 +140,15 @@ CoffeeScript.transpile = <span class="hljs-function"><span class="hljs-params">(
         <li id="section-2">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-2">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-2">&#x00a7;</a>
               </div>
               <p>This error is only for Node, as CLI users will see a different error
 earlier if they don’t have Babel installed.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">'To use the transpile option, you must have the \'@babel/core\' module installed'</span>
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span> <span class="hljs-string">&#x27;To use the transpile option, you must have the \&#x27;@babel/core\&#x27; module installed&#x27;</span>
   babel.transform js, options</pre></div></div>
             
         </li>
@@ -157,8 +157,8 @@ earlier if they don’t have Babel installed.</p>
         <li id="section-3">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-3">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-3">&#x00a7;</a>
               </div>
               <p>The <code>compile</code> method shared by the CLI, Node and browser APIs.</p>
 
@@ -172,8 +172,8 @@ earlier if they don’t have Babel installed.</p>
         <li id="section-4">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-4">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-4">&#x00a7;</a>
               </div>
               <p>The <code>compile</code> method particular to the Node API.</p>
 
@@ -187,8 +187,8 @@ earlier if they don’t have Babel installed.</p>
         <li id="section-5">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-5">&#x00a7;</a>
               </div>
               <p>Pass a reference to Babel into the compiler, so that the transpile option
 is available in the Node API. We need to do this so that tools like Webpack
@@ -207,8 +207,8 @@ require Babel.</p>
         <li id="section-6">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-6">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-6">&#x00a7;</a>
               </div>
               <p>Compile and execute a string of CoffeeScript (on the server), correctly
 setting <code>__filename</code>, <code>__dirname</code>, and relative <code>require()</code>.</p>
@@ -224,15 +224,15 @@ setting <code>__filename</code>, <code>__dirname</code>, and relative <code>requ
         <li id="section-7">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-7">&#x00a7;</a>
               </div>
               <p>Set the filename.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  mainModule.filename = process.argv[<span class="hljs-number">1</span>] =
-    <span class="hljs-keyword">if</span> options.filename <span class="hljs-keyword">then</span> fs.realpathSync(options.filename) <span class="hljs-keyword">else</span> <span class="hljs-string">'&lt;anonymous&gt;'</span></pre></div></div>
+    <span class="hljs-keyword">if</span> options.filename <span class="hljs-keyword">then</span> fs.realpathSync(options.filename) <span class="hljs-keyword">else</span> <span class="hljs-string">&#x27;&lt;anonymous&gt;&#x27;</span></pre></div></div>
             
         </li>
         
@@ -240,8 +240,8 @@ setting <code>__filename</code>, <code>__dirname</code>, and relative <code>requ
         <li id="section-8">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-8">&#x00a7;</a>
               </div>
               <p>Clear the module cache.</p>
 
@@ -255,8 +255,8 @@ setting <code>__filename</code>, <code>__dirname</code>, and relative <code>requ
         <li id="section-9">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-9">&#x00a7;</a>
               </div>
               <p>Assign paths for node_modules loading</p>
 
@@ -265,8 +265,8 @@ setting <code>__filename</code>, <code>__dirname</code>, and relative <code>requ
             <div class="content"><div class='highlight'><pre>  dir = <span class="hljs-keyword">if</span> options.filename?
     path.dirname fs.realpathSync options.filename
   <span class="hljs-keyword">else</span>
-    fs.realpathSync <span class="hljs-string">'.'</span>
-  mainModule.paths = <span class="hljs-built_in">require</span>(<span class="hljs-string">'module'</span>)._nodeModulePaths dir</pre></div></div>
+    fs.realpathSync <span class="hljs-string">&#x27;.&#x27;</span>
+  mainModule.paths = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;module&#x27;</span>)._nodeModulePaths dir</pre></div></div>
             
         </li>
         
@@ -274,8 +274,8 @@ setting <code>__filename</code>, <code>__dirname</code>, and relative <code>requ
         <li id="section-10">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-10">&#x00a7;</a>
               </div>
               <p>Save the options for compiling child imports.</p>
 
@@ -289,8 +289,8 @@ setting <code>__filename</code>, <code>__dirname</code>, and relative <code>requ
         <li id="section-11">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-11">&#x00a7;</a>
               </div>
               <p>Compile.</p>
 
@@ -308,15 +308,15 @@ setting <code>__filename</code>, <code>__dirname</code>, and relative <code>requ
         <li id="section-12">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-12">&#x00a7;</a>
               </div>
               <p>Compile and evaluate a string of CoffeeScript (in a Node.js-like environment).
 The CoffeeScript REPL uses this to run the input.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>CoffeeScript.eval = <span class="hljs-function"><span class="hljs-params">(code, options = {})</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>CoffeeScript.<span class="hljs-built_in">eval</span> = <span class="hljs-function"><span class="hljs-params">(code, options = {})</span> -&gt;</span>
   <span class="hljs-keyword">return</span> <span class="hljs-keyword">unless</span> code = code.trim()
   createContext = vm.Script.createContext ? vm.createContext
 
@@ -330,10 +330,10 @@ The CoffeeScript REPL uses this to run the input.</p>
       <span class="hljs-keyword">else</span>
         sandbox = createContext()
         sandbox[k] = v <span class="hljs-keyword">for</span> own k, v <span class="hljs-keyword">of</span> options.sandbox
-      sandbox.<span class="hljs-built_in">global</span> = sandbox.root = sandbox.GLOBAL = sandbox
+      sandbox.global = sandbox.root = sandbox.GLOBAL = sandbox
     <span class="hljs-keyword">else</span>
-      sandbox = <span class="hljs-built_in">global</span>
-    sandbox.__filename = options.filename || <span class="hljs-string">'eval'</span>
+      sandbox = global
+    sandbox.__filename = options.filename || <span class="hljs-string">&#x27;eval&#x27;</span>
     sandbox.__dirname  = path.dirname sandbox.__filename</pre></div></div>
             
         </li>
@@ -342,19 +342,19 @@ The CoffeeScript REPL uses this to run the input.</p>
         <li id="section-13">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-13">&#x00a7;</a>
               </div>
               <p>define module/require only if they chose not to specify their own</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">unless</span> sandbox <span class="hljs-keyword">isnt</span> <span class="hljs-built_in">global</span> <span class="hljs-keyword">or</span> sandbox.<span class="hljs-built_in">module</span> <span class="hljs-keyword">or</span> sandbox.<span class="hljs-built_in">require</span>
-      Module = <span class="hljs-built_in">require</span> <span class="hljs-string">'module'</span>
-      sandbox.<span class="hljs-built_in">module</span>  = _module  = <span class="hljs-keyword">new</span> Module(options.modulename || <span class="hljs-string">'eval'</span>)
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">unless</span> sandbox <span class="hljs-keyword">isnt</span> global <span class="hljs-keyword">or</span> sandbox.module <span class="hljs-keyword">or</span> sandbox.<span class="hljs-built_in">require</span>
+      Module = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;module&#x27;</span>
+      sandbox.module  = _module  = <span class="hljs-keyword">new</span> Module(options.modulename || <span class="hljs-string">&#x27;eval&#x27;</span>)
       sandbox.<span class="hljs-built_in">require</span> = _require = <span class="hljs-function"><span class="hljs-params">(path)</span> -&gt;</span>  Module._load path, _module, <span class="hljs-literal">true</span>
       _module.filename = sandbox.__filename
-      <span class="hljs-keyword">for</span> r <span class="hljs-keyword">in</span> Object.getOwnPropertyNames <span class="hljs-built_in">require</span> <span class="hljs-keyword">when</span> r <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> [<span class="hljs-string">'paths'</span>, <span class="hljs-string">'arguments'</span>, <span class="hljs-string">'caller'</span>]
+      <span class="hljs-keyword">for</span> r <span class="hljs-keyword">in</span> <span class="hljs-built_in">Object</span>.getOwnPropertyNames <span class="hljs-built_in">require</span> <span class="hljs-keyword">when</span> r <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> [<span class="hljs-string">&#x27;paths&#x27;</span>, <span class="hljs-string">&#x27;arguments&#x27;</span>, <span class="hljs-string">&#x27;caller&#x27;</span>]
         _require[r] = <span class="hljs-built_in">require</span>[r]</pre></div></div>
             
         </li>
@@ -363,8 +363,8 @@ The CoffeeScript REPL uses this to run the input.</p>
         <li id="section-14">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-14">&#x00a7;</a>
               </div>
               <p>use the same hack node currently uses for their own REPL</p>
 
@@ -376,12 +376,12 @@ The CoffeeScript REPL uses this to run the input.</p>
   o[k] = v <span class="hljs-keyword">for</span> own k, v <span class="hljs-keyword">of</span> options
   o.bare = <span class="hljs-literal">on</span> <span class="hljs-comment"># ensure return value</span>
   js = CoffeeScript.compile code, o
-  <span class="hljs-keyword">if</span> sandbox <span class="hljs-keyword">is</span> <span class="hljs-built_in">global</span>
+  <span class="hljs-keyword">if</span> sandbox <span class="hljs-keyword">is</span> global
     vm.runInThisContext js
   <span class="hljs-keyword">else</span>
     vm.runInContext js, sandbox
 
-CoffeeScript.register = <span class="hljs-function">-&gt;</span> <span class="hljs-built_in">require</span> <span class="hljs-string">'./register'</span></pre></div></div>
+CoffeeScript.register = <span class="hljs-function">-&gt;</span> <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;./register&#x27;</span></pre></div></div>
             
         </li>
         
@@ -389,8 +389,8 @@ CoffeeScript.register = <span class="hljs-function">-&gt;</span> <span class="hl
         <li id="section-15">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-15">&#x00a7;</a>
               </div>
               <p>Throw error with deprecation warning when depending upon implicit <code>require.extensions</code> registration</p>
 
@@ -399,9 +399,9 @@ CoffeeScript.register = <span class="hljs-function">-&gt;</span> <span class="hl
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">if</span> <span class="hljs-built_in">require</span>.extensions
   <span class="hljs-keyword">for</span> ext <span class="hljs-keyword">in</span> CoffeeScript.FILE_EXTENSIONS <span class="hljs-keyword">then</span> <span class="hljs-keyword">do</span> (ext) -&gt;
     <span class="hljs-built_in">require</span>.extensions[ext] ?= <span class="hljs-function">-&gt;</span>
-      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error <span class="hljs-string">"""
+      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span> <span class="hljs-string">&quot;&quot;&quot;
       Use CoffeeScript.register() or require the coffeescript/register module to require <span class="hljs-subst">#{ext}</span> files.
-      """</span>
+      &quot;&quot;&quot;</span>
 
 CoffeeScript._compileRawFileContent = <span class="hljs-function"><span class="hljs-params">(raw, filename, options = {})</span> -&gt;</span></pre></div></div>
             
@@ -411,8 +411,8 @@ CoffeeScript._compileRawFileContent = <span class="hljs-function"><span class="h
         <li id="section-16">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-16">&#x00a7;</a>
               </div>
               <p>Strip the Unicode byte order mark, if this file begins with one.</p>
 
@@ -420,7 +420,7 @@ CoffeeScript._compileRawFileContent = <span class="hljs-function"><span class="h
             
             <div class="content"><div class='highlight'><pre>  stripped = <span class="hljs-keyword">if</span> raw.charCodeAt(<span class="hljs-number">0</span>) <span class="hljs-keyword">is</span> <span class="hljs-number">0xFEFF</span> <span class="hljs-keyword">then</span> raw.substring <span class="hljs-number">1</span> <span class="hljs-keyword">else</span> raw
 
-  options = Object.assign {}, options,
+  options = <span class="hljs-built_in">Object</span>.assign {}, options,
     filename: filename
     literate: helpers.isLiterate filename
     sourceFiles: [filename]
@@ -436,8 +436,8 @@ CoffeeScript._compileRawFileContent = <span class="hljs-function"><span class="h
         <li id="section-17">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-17">&#x00a7;</a>
               </div>
               <p>As the filename and code of a dynamically loaded file will be different
 from the original file compiled with CoffeeScript.run, add that
@@ -450,11 +450,42 @@ information to error so it can be pretty-printed later.</p>
   answer
 
 CoffeeScript._compileFile = <span class="hljs-function"><span class="hljs-params">(filename, options = {})</span> -&gt;</span>
-  raw = fs.readFileSync filename, <span class="hljs-string">'utf8'</span>
+  raw = fs.readFileSync filename, <span class="hljs-string">&#x27;utf8&#x27;</span>
 
   CoffeeScript._compileRawFileContent raw, filename, options
 
-<span class="hljs-built_in">module</span>.exports = CoffeeScript</pre></div></div>
+module.<span class="hljs-built_in">exports</span> = CoffeeScript</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-18">&#x00a7;</a>
+              </div>
+              <p>Explicitly define all named exports so that Node’s automatic detection of
+named exports from CommonJS packages finds all of them. This enables consuming
+packages to write code like <code>import { compile } from &#39;coffeescript&#39;</code>.
+Don’t simplify this into a loop or similar; the <code>module.exports.name</code> part is
+essential for Node’s algorithm to successfully detect the name.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>module.<span class="hljs-built_in">exports</span>.VERSION = CoffeeScript.VERSION
+module.<span class="hljs-built_in">exports</span>.FILE_EXTENSIONS = CoffeeScript.FILE_EXTENSIONS
+module.<span class="hljs-built_in">exports</span>.helpers = CoffeeScript.helpers
+module.<span class="hljs-built_in">exports</span>.registerCompiled = CoffeeScript.registerCompiled
+module.<span class="hljs-built_in">exports</span>.compile = CoffeeScript.compile
+module.<span class="hljs-built_in">exports</span>.tokens = CoffeeScript.tokens
+module.<span class="hljs-built_in">exports</span>.nodes = CoffeeScript.nodes
+module.<span class="hljs-built_in">exports</span>.register = CoffeeScript.register
+module.<span class="hljs-built_in">exports</span>.<span class="hljs-built_in">eval</span> = CoffeeScript.<span class="hljs-built_in">eval</span>
+module.<span class="hljs-built_in">exports</span>.run = CoffeeScript.run
+module.<span class="hljs-built_in">exports</span>.transpile = CoffeeScript.transpile
+module.<span class="hljs-built_in">exports</span>._compileRawFileContent = CoffeeScript._compileRawFileContent
+module.<span class="hljs-built_in">exports</span>._compileFile = CoffeeScript._compileFile</pre></div></div>
             
         </li>
         

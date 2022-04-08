@@ -6006,7 +6006,7 @@ test "AST as expected for While node", ->
         line: 3
         column: 5
 
-test "AST location data as expected for MetaProperty node", ->
+test "AST location data as expected for `new.target` MetaProperty node", ->
   testAstLocationData '''
     -> new.target
   ''',
@@ -6057,6 +6057,44 @@ test "AST location data as expected for MetaProperty node", ->
       end:
         line: 1
         column: 13
+
+test "AST location data as expected for `import.meta` MetaProperty node", ->
+  testAstLocationData '''
+    import.meta
+  ''',
+    type: 'MetaProperty'
+    meta:
+      start: 0
+      end: 6
+      range: [0, 6]
+      loc:
+        start:
+          line: 1
+          column: 0
+        end:
+          line: 1
+          column: 6
+    property:
+      start: 7
+      end: 11
+      range: [7, 11]
+      loc:
+        start:
+          line: 1
+          column: 7
+        end:
+          line: 1
+          column: 11
+    start: 0
+    end: 11
+    range: [0, 11]
+    loc:
+      start:
+        line: 1
+        column: 0
+      end:
+        line: 1
+        column: 11
 
 test "AST location data as expected for For node", ->
   testAstLocationData 'for x, i in arr when x? then return',

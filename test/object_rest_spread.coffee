@@ -440,3 +440,27 @@ test "#5168: allow indented property index", ->
         'c'
     ]
   }.c
+
+test "#5291: soaks/prototype shorthands in object spread variables", ->
+  withPrototype =
+    prototype:
+      b: {c: 1}
+  eq {withPrototype::b...}.c, 1
+  eq {...withPrototype::b}.c, 1
+
+  withSoak =
+    b:
+      c: 2
+  eq {withSoak?.b...}.c, 2
+  eq {...withSoak?.b}.c, 2
+
+  soakedCall = ->
+    b:
+      c: 3
+  eq {soakedCall?().b...}.c, 3
+  eq {...soakedCall?().b}.c, 3
+
+  assignToPrototype =
+    prototype: {}
+  {...assignToPrototype::b} = c: 4
+  eq assignToPrototype::b.c, 4

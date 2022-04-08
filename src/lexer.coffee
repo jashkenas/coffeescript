@@ -9,7 +9,7 @@
 # format that can be fed directly into [Jison](https://github.com/zaach/jison).  These
 # are read by jison in the `parser.lexer` function defined in coffeescript.coffee.
 
-{Rewriter, INVERSES} = require './rewriter'
+{Rewriter, INVERSES, UNFINISHED} = require './rewriter'
 
 # Import the helpers we need.
 {count, starts, compact, repeat, invertLiterate, merge,
@@ -38,7 +38,7 @@ exports.Lexer = class Lexer
     @literate   = opts.literate  # Are we lexing literate CoffeeScript?
     @indent     = 0              # The current indentation level.
     @baseIndent = 0              # The overall minimum indentation level.
-    @indebt     = 0              # The over-indentation at the current level.
+    @continuationLineAdditionalIndent = 0 # The over-indentation at the current level.
     @outdebt    = 0              # The under-outdentation at the current level.
     @indents    = []             # The stack of all current indentation levels.
     @indentLiteral = ''          # The indentation.
@@ -158,6 +158,9 @@ exports.Lexer = class Lexer
     if id is 'default' and @seenExport and @tag() in ['EXPORT', 'AS']
       @token 'DEFAULT', id
       return id.length
+    if id is 'assert' and (@seenImport or @seenExport) and @tag() is 'STRING'
+      @token 'ASSERT', id
+      return id.length
     if id is 'do' and regExSuper = /^(\s*super)(?!\(\))/.exec @chunk[3...]
       @token 'SUPER', 'super'
       @token 'CALL_START', '('
@@ -182,7 +185,7 @@ exports.Lexer = class Lexer
       if tag is 'WHEN' and @tag() in LINE_BREAK
         tag = 'LEADING_WHEN'
       else if tag is 'FOR'
-        @seenFor = yes
+        @seenFor = {endsLength: @ends.length}
       else if tag is 'UNLESS'
         tag = 'IF'
       else if tag is 'IMPORT'
@@ -214,6 +217,9 @@ exports.Lexer = class Lexer
         without parentheses", prev[2]
       else if prev[0] is '.' and @tokens.length > 1 and (prevprev = @tokens[@tokens.length - 2])[0] is 'UNARY' and prevprev[1] is 'new'
         prevprev[0] = 'NEW_TARGET'
+      else if prev[0] is '.' and @tokens.length > 1 and (prevprev = @tokens[@tokens.length - 2])[0] is 'IMPORT' and prevprev[1] is 'import'
+        @seenImport = no
+        prevprev[0] = 'IMPORT_META'
       else if @tokens.length > 2
         prevprev = @tokens[@tokens.length - 2]
         if prev[0] in ['@', 'THIS'] and prevprev and prevprev.spaced and
@@ -514,7 +520,7 @@ exports.Lexer = class Lexer
 
     prev = @prev()
     backslash = prev?[0] is '\\'
-    @seenFor = no unless backslash and @seenFor
+    @seenFor = no unless (backslash or @seenFor?.endsLength < @ends.length) and @seenFor
     @seenImport = no unless (backslash and @seenImport) or @importSpecifierList
     @seenExport = no unless (backslash and @seenExport) or @exportSpecifierList
 
@@ -532,13 +538,15 @@ exports.Lexer = class Lexer
       @error 'indentation mismatch', offset: indent.length
       return indent.length
 
-    if size - @indebt is @indent
+    if size - @continuationLineAdditionalIndent is @indent
       if noNewlines then @suppressNewlines() else @newlineToken offset
       return indent.length
 
     if size > @indent
       if noNewlines
-        @indebt = size - @indent unless backslash
+        @continuationLineAdditionalIndent = size - @indent unless backslash
+        if @continuationLineAdditionalIndent
+          prev.continuationLineIndent = @indent + @continuationLineAdditionalIndent
         @suppressNewlines()
         return indent.length
       if noIndents
@@ -552,19 +560,20 @@ exports.Lexer = class Lexer
       @token 'INDENT', diff, offset: offset + indent.length - size, length: size
       @indents.push diff
       @ends.push {tag: 'OUTDENT'}
-      @outdebt = @indebt = 0
+      @outdebt = @continuationLineAdditionalIndent = 0
       @indent = size
       @indentLiteral = newIndentLiteral
     else if size < @baseIndent
       @error 'missing indentation', offset: offset + indent.length
     else
-      @indebt = 0
-      @outdentToken {moveOut: @indent - size, noNewlines, outdentLength: indent.length, offset, indentSize: size}
+      endsContinuationLineIndentation = @continuationLineAdditionalIndent > 0
+      @continuationLineAdditionalIndent = 0
+      @outdentToken {moveOut: @indent - size, noNewlines, outdentLength: indent.length, offset, indentSize: size, endsContinuationLineIndentation}
     indent.length
 
   # Record an outdent token or multiple tokens, if we happen to be moving back
   # inwards past several recorded indents. Sets new @indent value.
-  outdentToken: ({moveOut, noNewlines, outdentLength = 0, offset = 0, indentSize}) ->
+  outdentToken: ({moveOut, noNewlines, outdentLength = 0, offset = 0, indentSize, endsContinuationLineIndentation}) ->
     decreasedIndent = @indent - moveOut
     while moveOut > 0
       lastIndent = @indents[@indents.length - 1]
@@ -586,7 +595,9 @@ exports.Lexer = class Lexer
     @outdebt -= moveOut if dent
     @suppressSemicolons()
 
-    @token 'TERMINATOR', '\n', offset: offset + outdentLength, length: 0 unless @tag() is 'TERMINATOR' or noNewlines
+    unless @tag() is 'TERMINATOR' or noNewlines
+      terminatorToken = @token 'TERMINATOR', '\n', offset: offset + outdentLength, length: 0
+      terminatorToken.endsContinuationLineIndentation = {preContinuationLineIndent: @indent} if endsContinuationLineIndentation
     @indent = decreasedIndent
     @indentLiteral = @indentLiteral[...decreasedIndent]
     this
@@ -1037,14 +1048,17 @@ exports.Lexer = class Lexer
   # Compensate for the things we strip out initially (e.g. carriage returns)
   # so that location data stays accurate with respect to the original source file.
   getLocationDataCompensation: (start, end) ->
-    compensation = 0
+    totalCompensation = 0
     initialEnd = end
-    for index, length of @locationDataCompensations
-      index = parseInt index, 10
-      continue unless start <= index and (index < end or index is end and start is initialEnd)
-      compensation += length
-      end += length
-    compensation
+    current = start
+    while current <= end
+      break if current is end and start isnt initialEnd
+      compensation = @locationDataCompensations[current]
+      if compensation?
+        totalCompensation += compensation
+        end += compensation
+      current++
+    return totalCompensation
 
   # Returns the line and column number from an offset into the current chunk.
   #
@@ -1475,8 +1489,3 @@ LINE_BREAK = ['INDENT', 'OUTDENT', 'TERMINATOR']
 
 # Additional indent in front of these is ignored.
 INDENTABLE_CLOSERS = [')', '}', ']']
-
-# Tokens that, when appearing at the end of a line, suppress a following TERMINATOR/INDENT token
-UNFINISHED = ['\\', '.', '?.', '?::', 'UNARY', 'DO', 'DO_IIFE', 'MATH', 'UNARY_MATH', '+', '-',
-           '**', 'SHIFT', 'RELATION', 'COMPARE', '&', '^', '|', '&&', '||',
-           'BIN?', 'EXTENDS']

@@ -576,3 +576,45 @@ test "#3778: Consistently always cache for loop range boundaries and steps, even
   a = 3; arrayEq [1, 2, 3], (for n in [1..+a]         then a = 4; n)
   a = 1; arrayEq [1, 2, 3], (for n in [1..3] by  a    then a = 4; n)
   a = 1; arrayEq [1, 2, 3], (for n in [1..3] by +a    then a = 4; n)
+
+test "for pattern variables can linebreak/indent", ->
+  listOfObjects = [a: 1]
+  sum = 0
+  for {
+    a
+    somethingElse
+    anotherProperty
+  } in listOfObjects
+    sum += a
+  eq a, 1
+
+  sum = 0
+  sum += a for {
+    a,
+    somethingElse,
+    anotherProperty,
+  } in listOfObjects
+  eq a, 1
+
+  listOfArrays = [[2]]
+  sum = 0
+  for [
+    a
+    nonexistentElement
+    anotherNonexistentElement
+  ] in listOfArrays
+    sum += a
+  eq a, 2
+
+  sum = 0
+  sum += a for [
+    a,
+    nonexistentElement,
+    anotherNonexistentElement
+  ] in listOfArrays
+  eq a, 2
+
+test "#5309: comprehension as postfix condition", ->
+  doesNotThrowCompileError """
+    throw new Error "DOOM was called with a null element" unless elm? for elm in elms
+  """

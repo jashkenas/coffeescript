@@ -281,9 +281,16 @@ exports.Base = class Base
   # **WARNING: DO NOT OVERRIDE THIS METHOD IN CHILD CLASSES.**
   # Only override the component `ast*` methods as needed.
   ast: (o, level) ->
+    # Merge `level` into `o` and perform other universal checks.
     o = @astInitialize o, level
+    # Create serializable representation of this node.
     astNode = @astNode o
-    @astAddReturns astNode
+    # Mark AST nodes that correspond to expressions that (implicitly) return.
+    # We can’t do this as part of `astNode` because we need to assemble child
+    # nodes first before marking the parent being returned.
+    if @astNode? and @canBeReturned
+      Object.assign astNode, {returns: yes}
+    astNode
 
   astInitialize: (o, level) ->
     o = Object.assign {}, o
@@ -317,12 +324,6 @@ exports.Base = class Base
   # mutated into the structure that the Babel spec uses.
   astLocationData: ->
     jisonLocationDataToAstLocationData @locationData
-
-  # Mark AST nodes that correspond to expressions that (implicitly) return.
-  astAddReturns: (ast) ->
-    return ast unless ast?
-    ast.returns = yes if @canBeReturned
-    ast
 
   # Determines whether an AST node needs an `ExpressionStatement` wrapper.
   # Typically matches our `isStatement()` logic but this allows overriding.
@@ -391,11 +392,12 @@ exports.Base = class Base
   # has special awareness of how to handle comments within its output.
   includeCommentFragments: NO
 
-  # `jumps` tells you if an expression, or an internal part of an expression
-  # has a flow control construct (like `break`, or `continue`, or `return`,
-  # or `throw`) that jumps out of the normal flow of control and can’t be
-  # used as a value. This is important because things like this make no sense;
-  # we have to disallow them.
+  # `jumps` tells you if an expression, or an internal part of an expression,
+  # has a flow control construct (like `break`, `continue`, or `return`)
+  # that jumps out of the normal flow of control and can’t be used as a value.
+  # (Note that `throw` is not considered a flow control construct.)
+  # This is important because flow control in the middle of an expression
+  # makes no sense; we have to disallow it.
   jumps: NO
 
   # If `node.shouldCache() is false`, it is safe to use `node` more than once.
@@ -512,6 +514,8 @@ exports.Root = class Root extends Base
   constructor: (@body) ->
     super()
 
+    @isAsync = (new Code [], @body).isAsync
+
   children: ['body']
 
   # Wrap everything in a safety closure, unless requested not to. It would be
@@ -524,7 +528,8 @@ exports.Root = class Root extends Base
     @initializeScope o
     fragments = @body.compileRoot o
     return fragments if o.bare
-    [].concat @makeCode("(function() {\n"), fragments, @makeCode("\n}).call(this);\n")
+    functionKeyword = "#{if @isAsync then 'async ' else ''}function"
+    [].concat @makeCode("(#{functionKeyword}() {\n"), fragments, @makeCode("\n}).call(this);\n")
 
   initializeScope: (o) ->
     o.scope = new Scope null, @body, null, o.referencedVars ? []
@@ -1575,6 +1580,9 @@ exports.MetaProperty = class MetaProperty extends Base
           @error "new.target can only occur inside functions"
       else
         @error "the only valid meta property for new is new.target"
+    else if @meta.value is 'import'
+      unless @property instanceof Access and @property.name.value is 'meta'
+        @error "the only valid meta property for import is import.meta"
 
   compileNode: (o) ->
     @checkValid o
@@ -1704,7 +1712,7 @@ exports.JSXAttribute = class JSXAttribute extends Base
     @value =
       if value?
         value = value.base
-        if value instanceof StringLiteral
+        if value instanceof StringLiteral and not value.shouldGenerateTemplateLiteral()
           value
         else
           new JSXExpressionContainer value
@@ -3199,11 +3207,11 @@ exports.ClassPrototypeProperty = class ClassPrototypeProperty extends Base
 #### Import and Export
 
 exports.ModuleDeclaration = class ModuleDeclaration extends Base
-  constructor: (@clause, @source) ->
+  constructor: (@clause, @source, @assertions) ->
     super()
     @checkSource()
 
-  children: ['clause', 'source']
+  children: ['clause', 'source', 'assertions']
 
   isStatement: YES
   jumps:       THIS
@@ -3221,6 +3229,14 @@ exports.ModuleDeclaration = class ModuleDeclaration extends Base
     if o.indent.length isnt 0
       @error "#{moduleDeclarationType} statements must be at top-level scope"
 
+  astAssertions: (o) ->
+    if @assertions?.properties?
+      @assertions.properties.map (assertion) =>
+        { start, end, loc, left, right } = assertion.ast(o)
+        { type: 'ImportAttribute', start, end, loc, key: left, value: right }
+    else
+      []
+
 exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
   compileNode: (o) ->
     @checkScope o, 'import'
@@ -3233,6 +3249,9 @@ exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
     if @source?.value?
       code.push @makeCode ' from ' unless @clause is null
       code.push @makeCode @source.value
+      if @assertions?
+        code.push @makeCode ' assert '
+        code.push @assertions.compileToFragments(o)...
 
     code.push @makeCode ';'
     code
@@ -3245,6 +3264,7 @@ exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
     ret =
       specifiers: @clause?.ast(o) ? []
       source: @source.ast o
+      assertions: @astAssertions(o)
     ret.importKind = 'value' if @clause
     ret
 
@@ -3293,7 +3313,12 @@ exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
     else
       code = code.concat @clause.compileNode o
 
-    code.push @makeCode " from #{@source.value}" if @source?.value?
+    if @source?.value?
+      code.push @makeCode " from #{@source.value}"
+      if @assertions?
+        code.push @makeCode ' assert '
+        code.push @assertions.compileToFragments(o)...
+
     code.push @makeCode ';'
     code
 
@@ -3310,6 +3335,7 @@ exports.ExportNamedDeclaration = class ExportNamedDeclaration extends ExportDecl
   astProperties: (o) ->
     ret =
       source: @source?.ast(o) ? null
+      assertions: @astAssertions(o)
       exportKind: 'value'
     clauseAst = @clause.ast o
     if @clause instanceof ExportSpecifierList
@@ -3324,11 +3350,13 @@ exports.ExportDefaultDeclaration = class ExportDefaultDeclaration extends Export
   astProperties: (o) ->
     return
       declaration: @clause.ast o
+      assertions: @astAssertions(o)
 
 exports.ExportAllDeclaration = class ExportAllDeclaration extends ExportDeclaration
   astProperties: (o) ->
     return
       source: @source.ast o
+      assertions: @astAssertions(o)
       exportKind: 'value'
 
 exports.ModuleSpecifierList = class ModuleSpecifierList extends Base
@@ -3439,8 +3467,8 @@ exports.DynamicImportCall = class DynamicImportCall extends Call
     super o
 
   checkArguments: ->
-    unless @args.length is 1
-      @error 'import() requires exactly one argument'
+    unless 1 <= @args.length <= 2
+      @error 'import() accepts either one or two arguments'
 
   astNode: (o) ->
     @checkArguments()
@@ -4526,7 +4554,7 @@ exports.Elision = class Elision extends Base
 # it, all other loops can be manufactured. Useful in cases where you need more
 # flexibility or more speed than a comprehension can provide.
 exports.While = class While extends Base
-  constructor: (@condition, {@invert, @guard, @isLoop} = {}) ->
+  constructor: (@condition, {invert: @inverted, @guard, @isLoop} = {}) ->
     super()
 
   children: ['condition', 'guard', 'body']
@@ -4577,7 +4605,7 @@ exports.While = class While extends Base
     answer
 
   processedCondition: ->
-    @processedConditionCache ?= if @invert then @condition.invert() else @condition
+    @processedConditionCache ?= if @inverted then @condition.invert() else @condition
 
   astType: -> 'WhileStatement'
 
@@ -4586,7 +4614,7 @@ exports.While = class While extends Base
       test: @condition.ast o, LEVEL_PAREN
       body: @body.ast o, LEVEL_TOP
       guard: @guard?.ast(o) ? null
-      inverted: !!@invert
+      inverted: !!@inverted
       postfix: !!@postfix
       loop: !!@isLoop
 
@@ -4778,7 +4806,7 @@ exports.Op = class Op extends Base
   compileContinuation: (o) ->
     parts = []
     op = @operator
-    @checkContinuation o
+    @checkContinuation o unless @isAwait()
     if 'expression' in Object.keys(@first) and not (@first instanceof Throw)
       parts.push @first.expression.compileToFragments o, LEVEL_OP if @first.expression?
     else
@@ -4813,7 +4841,7 @@ exports.Op = class Op extends Base
       @error 'delete operand may not be argument or var'
 
   astNode: (o) ->
-    @checkContinuation o if @isYield() or @isAwait()
+    @checkContinuation o if @isYield()
     @checkDeleteOperand o
     super o
 
@@ -4984,7 +5012,7 @@ exports.Catch = class Catch extends Base
 
   isStatement: YES
 
-  jumps: (o) -> @recovery.jumps(o)
+  jumps: (o) -> @recovery.jumps o
 
   makeReturn: (results, mark) ->
     ret = @recovery.makeReturn results, mark
@@ -5142,13 +5170,13 @@ exports.Parens = class Parens extends Base
 #### StringWithInterpolations
 
 exports.StringWithInterpolations = class StringWithInterpolations extends Base
-  constructor: (@body, {@quote, @startQuote} = {}) ->
+  constructor: (@body, {@quote, @startQuote, @jsxAttribute} = {}) ->
     super()
 
   @fromStringLiteral: (stringLiteral) ->
     updatedString = stringLiteral.withoutQuotesInLocationData()
     updatedStringValue = new Value(updatedString).withLocationDataFrom updatedString
-    new StringWithInterpolations Block.wrap([updatedStringValue]), quote: stringLiteral.quote
+    new StringWithInterpolations Block.wrap([updatedStringValue]), quote: stringLiteral.quote, jsxAttribute: stringLiteral.jsxAttribute
     .withLocationDataFrom stringLiteral
 
   children: ['body']

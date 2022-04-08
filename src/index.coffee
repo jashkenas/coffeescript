@@ -53,9 +53,8 @@ CoffeeScript.run = (code, options = {}) ->
   mainModule.options = options
 
   # Compile.
-  if not helpers.isCoffee(mainModule.filename) or require.extensions
-    answer = CoffeeScript.compile code, options
-    code = answer.js ? answer
+  answer = CoffeeScript.compile code, options
+  code = answer.js ? answer
 
   mainModule._compile code, mainModule.filename
 
@@ -137,3 +136,22 @@ CoffeeScript._compileFile = (filename, options = {}) ->
   CoffeeScript._compileRawFileContent raw, filename, options
 
 module.exports = CoffeeScript
+
+# Explicitly define all named exports so that Node’s automatic detection of
+# named exports from CommonJS packages finds all of them. This enables consuming
+# packages to write code like `import { compile } from 'coffeescript'`.
+# Don’t simplify this into a loop or similar; the `module.exports.name` part is
+# essential for Node’s algorithm to successfully detect the name.
+module.exports.VERSION = CoffeeScript.VERSION
+module.exports.FILE_EXTENSIONS = CoffeeScript.FILE_EXTENSIONS
+module.exports.helpers = CoffeeScript.helpers
+module.exports.registerCompiled = CoffeeScript.registerCompiled
+module.exports.compile = CoffeeScript.compile
+module.exports.tokens = CoffeeScript.tokens
+module.exports.nodes = CoffeeScript.nodes
+module.exports.register = CoffeeScript.register
+module.exports.eval = CoffeeScript.eval
+module.exports.run = CoffeeScript.run
+module.exports.transpile = CoffeeScript.transpile
+module.exports._compileRawFileContent = CoffeeScript._compileRawFileContent
+module.exports._compileFile = CoffeeScript._compileFile

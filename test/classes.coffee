@@ -1917,6 +1917,10 @@ test "#4609: Support new.target", ->
   new Foo()
   eq newTarget, yes
 
+test "#5323: new.target can be the argument of a function", ->
+  fn = (arg) -> arg
+  fn new.target
+
 test "#5085: Bug: @ reference to class not maintained in do block", ->
   thisFoo = 'initial foo'
   thisBar = 'initial bar'

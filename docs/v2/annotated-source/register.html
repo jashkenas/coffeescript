@@ -112,16 +112,16 @@
         <li id="section-1">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-1">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-1">&#x00a7;</a>
               </div>
               
             </div>
             
-            <div class="content"><div class='highlight'><pre>CoffeeScript  = <span class="hljs-built_in">require</span> <span class="hljs-string">'./'</span>
-child_process = <span class="hljs-built_in">require</span> <span class="hljs-string">'child_process'</span>
-helpers       = <span class="hljs-built_in">require</span> <span class="hljs-string">'./helpers'</span>
-path          = <span class="hljs-built_in">require</span> <span class="hljs-string">'path'</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>CoffeeScript  = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;./&#x27;</span>
+child_process = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;child_process&#x27;</span>
+helpers       = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;./helpers&#x27;</span>
+path          = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;path&#x27;</span></pre></div></div>
             
         </li>
         
@@ -129,17 +129,17 @@ path          = <span class="hljs-built_in">require</span> <span class="hljs-str
         <li id="section-2">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-2">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-2">&#x00a7;</a>
               </div>
               <p>Load and run a CoffeeScript file for Node, stripping any <code>BOM</code>s.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">loadFile</span> = <span class="hljs-params">(<span class="hljs-built_in">module</span>, filename)</span> -&gt;</span>
-  options = <span class="hljs-built_in">module</span>.options <span class="hljs-keyword">or</span> getRootModule(<span class="hljs-built_in">module</span>).options
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">loadFile</span> = <span class="hljs-params">(module, filename)</span> -&gt;</span>
+  options = module.options <span class="hljs-keyword">or</span> getRootModule(module).options
   answer = CoffeeScript._compileFile filename, options
-  <span class="hljs-built_in">module</span>._compile answer, filename</pre></div></div>
+  module._compile answer, filename</pre></div></div>
             
         </li>
         
@@ -147,8 +147,8 @@ path          = <span class="hljs-built_in">require</span> <span class="hljs-str
         <li id="section-3">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-3">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-3">&#x00a7;</a>
               </div>
               <p>If the installed version of Node supports <code>require.extensions</code>, register
 CoffeeScript as an extension.</p>
@@ -165,18 +165,18 @@ CoffeeScript as an extension.</p>
         <li id="section-4">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-4">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-4">&#x00a7;</a>
               </div>
               <p>Patch Node’s module loader to be able to handle multi-dot extensions.
 This is a horrible thing that should not be required.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  Module = <span class="hljs-built_in">require</span> <span class="hljs-string">'module'</span>
+            <div class="content"><div class='highlight'><pre>  Module = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;module&#x27;</span>
 <span class="hljs-function">
   <span class="hljs-title">findExtension</span> = <span class="hljs-params">(filename)</span> -&gt;</span>
-    extensions = path.basename(filename).split <span class="hljs-string">'.'</span></pre></div></div>
+    extensions = path.basename(filename).split <span class="hljs-string">&#x27;.&#x27;</span></pre></div></div>
             
         </li>
         
@@ -184,14 +184,14 @@ This is a horrible thing that should not be required.</p>
         <li id="section-5">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-5">&#x00a7;</a>
               </div>
               <p>Remove the initial dot from dotfiles.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    extensions.shift() <span class="hljs-keyword">if</span> extensions[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">''</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>    extensions.shift() <span class="hljs-keyword">if</span> extensions[<span class="hljs-number">0</span>] <span class="hljs-keyword">is</span> <span class="hljs-string">&#x27;&#x27;</span></pre></div></div>
             
         </li>
         
@@ -199,23 +199,23 @@ This is a horrible thing that should not be required.</p>
         <li id="section-6">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-6">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-6">&#x00a7;</a>
               </div>
               <p>Start with the longest possible extension and work our way shortwards.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">while</span> extensions.shift()
-      curExtension = <span class="hljs-string">'.'</span> + extensions.join <span class="hljs-string">'.'</span>
+      curExtension = <span class="hljs-string">&#x27;.&#x27;</span> + extensions.join <span class="hljs-string">&#x27;.&#x27;</span>
       <span class="hljs-keyword">return</span> curExtension <span class="hljs-keyword">if</span> Module._extensions[curExtension]
-    <span class="hljs-string">'.js'</span>
+    <span class="hljs-string">&#x27;.js&#x27;</span>
 
   Module::load = <span class="hljs-function"><span class="hljs-params">(filename)</span> -&gt;</span>
     @filename = filename
     @paths = Module._nodeModulePaths path.dirname filename
     extension = findExtension filename
-    Module._extensions[extension](<span class="hljs-keyword">this</span>, filename)
+    Module._extensions[extension](this, filename)
     @loaded = <span class="hljs-literal">true</span></pre></div></div>
             
         </li>
@@ -224,8 +224,8 @@ This is a horrible thing that should not be required.</p>
         <li id="section-7">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-7">&#x00a7;</a>
               </div>
               <p>If we’re on Node, patch <code>child_process.fork</code> so that Coffee scripts are able
 to fork both CoffeeScript files, and JavaScript files, directly.</p>
@@ -234,10 +234,10 @@ to fork both CoffeeScript files, and JavaScript files, directly.</p>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">if</span> child_process
   {fork} = child_process
-  binary = <span class="hljs-built_in">require</span>.resolve <span class="hljs-string">'../../bin/coffee'</span>
+  binary = <span class="hljs-built_in">require</span>.resolve <span class="hljs-string">&#x27;../../bin/coffee&#x27;</span>
   child_process.fork = <span class="hljs-function"><span class="hljs-params">(path, args, options)</span> -&gt;</span>
     <span class="hljs-keyword">if</span> helpers.isCoffee path
-      <span class="hljs-keyword">unless</span> Array.isArray args
+      <span class="hljs-keyword">unless</span> <span class="hljs-built_in">Array</span>.isArray args
         options = args <span class="hljs-keyword">or</span> {}
         args = []
       args = [path].concat args
@@ -250,15 +250,15 @@ to fork both CoffeeScript files, and JavaScript files, directly.</p>
         <li id="section-8">
             <div class="annotation">
               
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
+              <div class="sswrap ">
+                <a class="ss" href="#section-8">&#x00a7;</a>
               </div>
               <p>Utility function to find the <code>options</code> object attached to the topmost module.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">getRootModule</span> = <span class="hljs-params">(<span class="hljs-built_in">module</span>)</span> -&gt;</span>
-  <span class="hljs-keyword">if</span> <span class="hljs-built_in">module</span>.parent <span class="hljs-keyword">then</span> getRootModule <span class="hljs-built_in">module</span>.parent <span class="hljs-keyword">else</span> <span class="hljs-built_in">module</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">getRootModule</span> = <span class="hljs-params">(module)</span> -&gt;</span>
+  <span class="hljs-keyword">if</span> module.parent <span class="hljs-keyword">then</span> getRootModule module.parent <span class="hljs-keyword">else</span> module</pre></div></div>
             
         </li>
         
