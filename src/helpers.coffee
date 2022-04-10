@@ -245,7 +245,7 @@ syntaxErrorToString = ->
   last_line ?= first_line
   last_column ?= first_column
 
-  if @filename?.startsWith "<anonymous"
+  if @filename?.startsWith '<anonymous'
     filename = '[stdin]'
   else
     filename = @filename or '[stdin]'
