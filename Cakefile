@@ -137,7 +137,7 @@ task 'build:browser', 'merge the built scripts into a single file for use in a b
     return #{fs.readFileSync "./package.json"};
   })();
   """
-  for name in ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'nodes', 'sourcemap', 'stacktrace', 'coffeescript', 'browser']
+  for name in ['helpers', 'rewriter', 'lexer', 'parser', 'scope', 'nodes', 'sourcemap', 'coffeescript', 'browser']
     code += """
       require['./#{name}'] = (function() {
         var exports = {}, module = {exports: exports};

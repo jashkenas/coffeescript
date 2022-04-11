@@ -3,7 +3,7 @@ child_process = require 'child_process'
 helpers       = require './helpers'
 path          = require 'path'
 
-stacktrace = require './stacktrace'
+{attachStackTrace} = CoffeeScript
 
 # Check if Node's built-in source map stack trace transformations are enabled.
 nodeSourceMapsSupportEnabled = process? and (
@@ -13,7 +13,7 @@ nodeSourceMapsSupportEnabled = process? and (
 
 unless Error.prepareStackTrace or nodeSourceMapsSupportEnabled
   cacheSourceMaps = true
-  stacktrace.attach(CoffeeScript.run)
+  attachStackTrace()
 
 # Load and run a CoffeeScript file for Node, stripping any `BOM`s.
 loadFile = (module, filename) ->
