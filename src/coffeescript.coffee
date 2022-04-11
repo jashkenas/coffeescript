@@ -22,6 +22,8 @@ exports.helpers = helpers
 {registerCompiled} = SourceMap
 exports.registerCompiled = registerCompiled
 
+exports.attachStackTrace = require('./stacktrace').attach
+
 # Function that allows for btoa in both nodejs and the browser.
 base64encode = (src) -> switch
   when typeof Buffer is 'function'
@@ -60,7 +62,7 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
   # Clone `options`, to avoid mutating the `options` object passed in.
   options = Object.assign {}, options
 
-  generateSourceMap = options.sourceMap or options.inlineMap
+  generateSourceMap = options.sourceMap or options.inlineMap or not options.filename?
   filename = options.filename or helpers.anonymousFileName()
 
   checkShebangLine filename, code
@@ -162,7 +164,7 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
   if options.inlineMap
     encoded = base64encode JSON.stringify v3SourceMap
     sourceMapDataURI = "//# sourceMappingURL=data:application/json;base64,#{encoded}"
-    sourceURL = "//# sourceURL=#{options.filename ? 'coffeescript'}"
+    sourceURL = "//# sourceURL=#{filename}"
     js = "#{js}\n#{sourceMapDataURI}\n#{sourceURL}"
 
   registerCompiled filename, code, map

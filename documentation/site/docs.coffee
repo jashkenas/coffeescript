@@ -14,6 +14,8 @@ window.gtag 'config', window.GA_TRACKING_ID
 
 # Initialize the CoffeeScript docs interactions
 $(document).ready ->
+  CoffeeScript.attachStackTrace()
+
   # Format dates for the user’s locale, e.g. 'December 24, 2009' or '24 décembre 2009'
   $('time').each (index, el) ->
     date = el.dateTime or $(el).text()
@@ -105,7 +107,7 @@ $(document).ready ->
                 if window.localStorage?
                   window.localStorage.setItem 'tryCoffeeScriptCode', coffee
               catch exception
-            output = CoffeeScript.compile coffee, bare: yes
+            output = CoffeeScript.compile coffee, bare: yes, inlineMap: true
             lastCompilationElapsedTime = Math.max(200, Date.now() - lastCompilationStartTime)
           catch exception
             output = "#{exception}"
