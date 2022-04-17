@@ -313,7 +313,7 @@ exports.patchStackTrace = ->
   # positions.
   Error.prepareStackTrace = (err, stack) ->
     frames = for frame in stack
-      # Don't display stack frames deeper than `CoffeeScript.run`
+      # Don’t display stack frames deeper than `CoffeeScript.run`.
       break if frame.getFunction() is exports.run
       "    at #{formatSourcePosition frame, getSourceMapping}"
 

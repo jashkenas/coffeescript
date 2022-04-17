@@ -71,9 +71,9 @@ test "node --enable-source-map built in stack trace mapping", ->
       "--enable-source-maps"
     ], stdio: "pipe"
 
-    err = ""
-    proc.stderr.setEncoding('utf8')
-    proc.stderr.on 'data', (s) -> err += s
+    err = ''
+    proc.stderr.setEncoding 'utf8'
+    proc.stderr.on 'data', (str) -> err += str
     proc.stderr.on 'finish', ->
       try
         match = err.match /error\.coffee:(\d+):(\d+)/
@@ -84,8 +84,8 @@ test "node --enable-source-map built in stack trace mapping", ->
         equal column, 9 # Mapped source column
 
         resolve()
-      catch e
-        reject(e)
+      catch exception
+        reject exception
 
 unless process.version.slice(1, 3) is "12"
   test "NODE_OPTIONS=--enable-source-maps environment variable stack trace mapping", ->
@@ -142,7 +142,7 @@ test "don't change stack traces if another library has patched `Error.prepareSta
       "--eval", """
         const patchedPrepareStackTrace = Error.prepareStackTrace = function() {};
         require('./register.js');
-        console.log(Error.prepareStackTrace === patchedPrepareStackTrace);
+        process.stdout.write(Error.prepareStackTrace === patchedPrepareStackTrace ? 'preserved' : 'overwritten');
       """
     ]
 
@@ -153,7 +153,7 @@ test "don't change stack traces if another library has patched `Error.prepareSta
     proc.on        'exit', (status) ->
       try
         equal status, 0
-        equal out, "true\n"
+        equal out, 'preserved'
 
         resolve()
       catch e
@@ -164,7 +164,7 @@ test "requiring 'CoffeeScript' doesn't change `Error.prepareStackTrace`", ->
     proc = spawn "node", [
       "--eval", """
         require('./lib/coffeescript/coffeescript.js');
-        console.log(Error.prepareStackTrace);
+        process.stdout.write(Error.prepareStackTrace === undefined ? 'unused' : 'defined');
       """
     ]
 
@@ -175,7 +175,7 @@ test "requiring 'CoffeeScript' doesn't change `Error.prepareStackTrace`", ->
     proc.on        'exit', (status) ->
       try
         equal status, 0
-        equal out, "undefined\n"
+        equal out, 'unused'
 
         resolve()
       catch e
