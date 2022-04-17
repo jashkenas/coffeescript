@@ -14,7 +14,7 @@ window.gtag 'config', window.GA_TRACKING_ID
 
 # Initialize the CoffeeScript docs interactions
 $(document).ready ->
-  CoffeeScript.attachStackTrace()
+  CoffeeScript.patchStackTrace()
 
   # Format dates for the user’s locale, e.g. 'December 24, 2009' or '24 décembre 2009'
   $('time').each (index, el) ->

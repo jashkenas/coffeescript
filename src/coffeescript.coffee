@@ -247,7 +247,7 @@ parser.yy.parseError = (message, {token}) ->
   # from the lexer.
   helpers.throwSyntaxError "unexpected #{errorText}", errorLoc
 
-exports.attachStackTrace = ->
+exports.patchStackTrace = ->
   # Based on http://v8.googlecode.com/svn/branches/bleeding_edge/src/messages.js
   # Modified to handle sourceMap
   formatSourcePosition = (frame, getSourceMapping) ->
