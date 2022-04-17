@@ -87,7 +87,7 @@ test "node --enable-source-map built in stack trace mapping", ->
       catch exception
         reject exception
 
-unless Number(process.version.slice(1, 3)) >= 14
+if Number(process.version.slice(1, 3)) >= 14
   test "NODE_OPTIONS=--enable-source-maps environment variable stack trace mapping", ->
     new Promise (resolve, reject) ->
       proc = fork './test/importing/error.coffee', [],
