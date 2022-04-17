@@ -1,2 +1,2 @@
-lib/ linguist-generated=true
-docs/ linguist-generated=true
+lib/** linguist-generated=true
+docs/** linguist-generated=true
