@@ -67,14 +67,14 @@ test "#3075: v3 source map fields", ->
 
 test "node --enable-source-map built in stack trace mapping", ->
   new Promise (resolve, reject) ->
-    proc = fork "./test/importing/error.coffee", [
-      "--enable-source-maps"
-    ], stdio: "pipe"
+    proc = fork './test/importing/error.coffee', [
+      '--enable-source-maps'
+    ], stdio: 'pipe'
 
     err = ''
     proc.stderr.setEncoding 'utf8'
     proc.stderr.on 'data', (str) -> err += str
-    proc.stderr.on 'finish', ->
+    proc.on 'close', ->
       try
         match = err.match /error\.coffee:(\d+):(\d+)/
         throw new Error err unless match
@@ -87,18 +87,18 @@ test "node --enable-source-map built in stack trace mapping", ->
       catch exception
         reject exception
 
-unless process.version.slice(1, 3) is "12"
+unless Number(process.version.slice(1, 3)) >= 14
   test "NODE_OPTIONS=--enable-source-maps environment variable stack trace mapping", ->
     new Promise (resolve, reject) ->
-      proc = fork "./test/importing/error.coffee", [],
+      proc = fork './test/importing/error.coffee', [],
         env:
-          NODE_OPTIONS: "--enable-source-maps"
-        stdio: "pipe"
+          NODE_OPTIONS: '--enable-source-maps'
+        stdio: 'pipe'
 
-      err = ""
-      proc.stderr.setEncoding('utf8')
-      proc.stderr.on 'data', (s) -> err += s
-      proc.stderr.on 'finish', ->
+      err = ''
+      proc.stderr.setEncoding 'utf8'
+      proc.stderr.on 'data', (str) -> err += str
+      proc.on 'close', ->
         try
           match = err.match /error\.coffee:(\d+):(\d+)/
           throw new Error err unless match
@@ -108,22 +108,19 @@ unless process.version.slice(1, 3) is "12"
           equal column, 9 # Mapped source column
 
           resolve()
-        catch e
-          reject(e)
+        catch exception
+          reject exception
 
   test "generate correct stack traces with --enable-source-maps from bin/coffee", ->
     new Promise (resolve, reject) ->
-      proc = spawn "node", [
-        "./bin/coffee"
-        "--nodejs"
-        "--enable-source-maps"
-        "test/importing/error.coffee"
-      ]
+      proc = fork 'test/importing/error.coffee',
+        ['--enable-source-maps'],
+        stdio: 'pipe'
 
       err = ""
-      proc.stderr.setEncoding('utf8')
-      proc.stderr.on 'data', (s) -> err += s
-      proc.stderr.on 'finish', ->
+      proc.stderr.setEncoding 'utf8'
+      proc.stderr.on 'data', (str) -> err += str
+      proc.on 'close', ->
         try
           match = err.match /error\.coffee:(\d+):(\d+)/
           throw new Error err unless match
@@ -133,50 +130,50 @@ unless process.version.slice(1, 3) is "12"
           equal column, 9 # Mapped source column
 
           resolve()
-        catch e
-          reject e
+        catch exception
+          reject exception
 
 test "don't change stack traces if another library has patched `Error.prepareStackTrace`", ->
   new Promise (resolve, reject) ->
-    proc = spawn "node", [
-      "--eval", """
+    proc = spawn 'node', [
+      '--eval', """
         const patchedPrepareStackTrace = Error.prepareStackTrace = function() {};
         require('./register.js');
         process.stdout.write(Error.prepareStackTrace === patchedPrepareStackTrace ? 'preserved' : 'overwritten');
       """
     ]
 
-    out = ""
-    proc.stdout.setEncoding('utf8')
-    proc.stdout.on 'data', (s) -> out += s
+    out = ''
+    proc.stdout.setEncoding 'utf8'
+    proc.stdout.on 'data', (str) -> out += str
 
-    proc.on        'exit', (status) ->
+    proc.on 'close', (status) ->
       try
         equal status, 0
         equal out, 'preserved'
 
         resolve()
-      catch e
-        reject e
+      catch exception
+        reject exception
 
 test "requiring 'CoffeeScript' doesn't change `Error.prepareStackTrace`", ->
   new Promise (resolve, reject) ->
-    proc = spawn "node", [
-      "--eval", """
+    proc = spawn 'node', [
+      '--eval', """
         require('./lib/coffeescript/coffeescript.js');
         process.stdout.write(Error.prepareStackTrace === undefined ? 'unused' : 'defined');
       """
     ]
 
-    out = ""
-    proc.stdout.setEncoding('utf8')
-    proc.stdout.on 'data', (s) -> out += s
+    out = ''
+    proc.stdout.setEncoding 'utf8'
+    proc.stdout.on 'data', (str) -> out += str
 
-    proc.on        'exit', (status) ->
+    proc.on 'close', (status) ->
       try
         equal status, 0
         equal out, 'unused'
 
         resolve()
-      catch e
-        reject e
+      catch exception
+        reject exception
