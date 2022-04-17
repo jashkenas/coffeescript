@@ -20,6 +20,9 @@ exports.FILE_EXTENSIONS = FILE_EXTENSIONS = ['.coffee', '.litcoffee', '.coffee.m
 exports.helpers = helpers
 
 {getSourceMap, registerCompiled} = SourceMap
+# This is exported to enable an external module to implement caching of
+# sourcemaps. This is used only when `patchStackTrace` has been called to adjust
+# stack traces for files with cached source maps.
 exports.registerCompiled = registerCompiled
 
 # Function that allows for btoa in both nodejs and the browser.
