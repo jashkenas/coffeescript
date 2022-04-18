@@ -32847,6 +32847,9 @@ if Number(process.versions.node.split('.')[0]) >= 14
 
 test "don't change stack traces if another library has patched `Error.prepareStackTrace`", ->
   new Promise (resolve, reject) ->
+    # This uses `spawn` rather than the preferred `fork` because `fork` requires
+    # loading code in a separate file. The `--eval` here shows exactly what is
+    # executing without indirection.
     proc = spawn 'node', [
       '--eval', """
         const patchedPrepareStackTrace = Error.prepareStackTrace = function() {};
@@ -32870,6 +32873,9 @@ test "don't change stack traces if another library has patched `Error.prepareSta
 
 test "requiring 'CoffeeScript' doesn't change `Error.prepareStackTrace`", ->
   new Promise (resolve, reject) ->
+    # This uses `spawn` rather than the preferred `fork` because `fork` requires
+    # loading code in a separate file. The `--eval` here shows exactly what is
+    # executing without indirection.
     proc = spawn 'node', [
       '--eval', """
         require('./lib/coffeescript/coffeescript.js');
