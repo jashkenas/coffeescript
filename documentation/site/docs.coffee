@@ -14,6 +14,8 @@ window.gtag 'config', window.GA_TRACKING_ID
 
 # Initialize the CoffeeScript docs interactions
 $(document).ready ->
+  CoffeeScript.patchStackTrace()
+
   # Format dates for the user’s locale, e.g. 'December 24, 2009' or '24 décembre 2009'
   $('time').each (index, el) ->
     date = el.dateTime or $(el).text()
@@ -105,11 +107,17 @@ $(document).ready ->
                 if window.localStorage?
                   window.localStorage.setItem 'tryCoffeeScriptCode', coffee
               catch exception
-            output = CoffeeScript.compile coffee, bare: yes
+
+            js = CoffeeScript.compile coffee, bare: yes, inlineMap: true
+            # Inline map is added to adjust stack trace line numbers but we strip it from the displayed JS for visual clarity.
+            output = js.replace /(\n\/\/# [^\n]*){2}$/, ""
             lastCompilationElapsedTime = Math.max(200, Date.now() - lastCompilationStartTime)
           catch exception
             output = "#{exception}"
+
+          editors[index + 1].js = js
           editors[index + 1].setValue output
+
           gtag 'event', 'edit_code',
             event_category: 'engagement'
             event_label: $textarea.closest('[data-example]').data('example')
@@ -149,7 +157,7 @@ $(document).ready ->
     run = $(@).data 'run'
     index = $("##{$(@).data('example')}-js").data 'index'
     js = if editors[index]?
-      editors[index].getValue()
+      editors[index].js
     else
       $(textareas[index]).val()
     js = "#{js}\nalert(#{unescape run});" unless run is yes

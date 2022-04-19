@@ -37,7 +37,7 @@ CoffeeScript.run = (code, options = {}) ->
 
   # Set the filename.
   mainModule.filename = process.argv[1] =
-    if options.filename then fs.realpathSync(options.filename) else '<anonymous>'
+    if options.filename then fs.realpathSync(options.filename) else helpers.anonymousFileName()
 
   # Clear the module cache.
   mainModule.moduleCache and= {}
@@ -51,6 +51,9 @@ CoffeeScript.run = (code, options = {}) ->
 
   # Save the options for compiling child imports.
   mainModule.options = options
+
+  options.filename = mainModule.filename
+  options.inlineMap = true
 
   # Compile.
   answer = CoffeeScript.compile code, options
@@ -118,7 +121,6 @@ CoffeeScript._compileRawFileContent = (raw, filename, options = {}) ->
     filename: filename
     literate: helpers.isLiterate filename
     sourceFiles: [filename]
-    inlineMap: yes # Always generate a source map, so that stack traces line up.
 
   try
     answer = CoffeeScript.compile stripped, options
