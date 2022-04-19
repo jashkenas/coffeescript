@@ -155,5 +155,6 @@ module.exports.register = CoffeeScript.register
 module.exports.eval = CoffeeScript.eval
 module.exports.run = CoffeeScript.run
 module.exports.transpile = CoffeeScript.transpile
+module.exports.patchStackTrace = CoffeeScript.patchStackTrace
 module.exports._compileRawFileContent = CoffeeScript._compileRawFileContent
 module.exports._compileFile = CoffeeScript._compileFile
