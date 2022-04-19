@@ -31455,18 +31455,22 @@ banner text
 <script type="text/x-coffeescript" class="test" id="package">
 return if window? or testingBrowser?
 
-{EventEmitter} = require 'events'
-{join}         = require 'path'
-{cwd}          = require 'process'
+{EventEmitter}  = require 'events'
+{join}          = require 'path'
+{cwd}           = require 'process'
+{pathToFileURL} = require 'url'
+
+
+packageEntryPath = join cwd(), 'lib/coffeescript/index.js'
+packageEntryUrl  = pathToFileURL packageEntryPath
 
 
 test "the coffeescript package exposes all members as named exports in Node", ->
-  packageEntry = join cwd(), 'lib/coffeescript/index.js'
 
-  requiredPackage = require packageEntry
+  requiredPackage = require packageEntryPath
   requiredKeys = Object.keys requiredPackage
 
-  importedPackage = await import(packageEntry)
+  importedPackage = await import(packageEntryUrl)
   importedKeys = new Set Object.keys(importedPackage)
 
   # In `command.coffee`, CoffeeScript extends a `new EventEmitter`;
