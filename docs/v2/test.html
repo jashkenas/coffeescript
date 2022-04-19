@@ -25716,21 +25716,30 @@ test "the `baseFileName` helper returns the file name to write to", ->
 <script type="text/x-coffeescript" class="test" id="import_assertions">
 # This file is running in CommonJS (in Node) or as a classic Script (in the browser tests) so it can use import() within an async function, but not at the top level; and we can’t use static import.
 test "dynamic import assertion", ->
-  { default: secret } = await import('data:application/json,{"ofLife":42}', { assert: { type: 'json' } })
-  eq secret.ofLife, 42
+  try
+    { default: secret } = await import('data:application/json,{"ofLife":42}', { assert: { type: 'json' } })
+    eq secret.ofLife, 42
+  catch exception
+    # This parses on Node 16.14.x but throws an error because JSON modules aren’t unflagged there yet; remove this try/catch once the unflagging of `--experimental-json-modules` is backported (see https://github.com/nodejs/node/pull/41736#issuecomment-1086738670)
+    unless exception.message is 'Invalid module "data:application/json,{"ofLife":42}" has an unsupported MIME type "application/json"'
+      throw exception
 
 test "assert keyword", ->
   assert = 1
 
-  { default: assert } = await import('data:application/json,{"thatIAm":42}', { assert: { type: 'json' } })
-  eq assert.thatIAm, 42
+  try
+    { default: assert } = await import('data:application/json,{"thatIAm":42}', { assert: { type: 'json' } })
+    eq assert.thatIAm, 42
+  catch exception
+    # This parses on Node 16.14.x but throws an error because JSON modules aren’t unflagged there yet; remove this try/catch once the unflagging of `--experimental-json-modules` is backported (see https://github.com/nodejs/node/pull/41736#issuecomment-1086738670)
+    unless exception.message is 'Invalid module "data:application/json,{"thatIAm":42}" has an unsupported MIME type "application/json"'
+      throw exception
 
   eqJS """
     import assert from 'regression-test'
   """, """
     import assert from 'regression-test';
   """
-
 
 test "static import assertion", ->
   eqJS """
@@ -30853,6 +30862,42 @@ test "#5292: implicit object after line continuer in implicit object property va
   eq 2, a.b.d
   eq 3, a.e
 
+test "#5368: continuing object and array literals", ->
+  { a
+    b: { c }
+  } = {a: 1, b: {c: 2}}
+  eq a, 1
+  eq c, 2
+
+  [d
+   e: f
+  ] = [3, {e: 4}]
+  eq d, 3
+  eq f, 4
+  A =
+    [d
+     e: f
+    ]
+  eq A[0], 3
+  eq A[1].e, 4
+
+  for obj in [
+    {a: a
+     c: c
+    }
+    {a: a
+     c
+    }
+    {a
+     c: c
+    }
+    {a
+     c
+    }
+  ]
+    eq obj.a, 1
+    eq obj.c, 2
+
 </script>
 <script type="text/x-coffeescript" class="test" id="operators">
 # Operators
@@ -32667,6 +32712,7 @@ test "soaked function invocation safe on non-functions", ->
 <script type="text/x-coffeescript" class="test" id="sourcemap">
 return if global.testingBrowser
 
+{spawn, fork} = require('child_process')
 SourceMap = require '../src/sourcemap'
 
 vlqEncodedValues = [
@@ -32730,6 +32776,125 @@ test "#3075: v3 source map fields", ->
   v3SourceMap = JSON.parse v3SourceMap
   arrayEq v3SourceMap.sources, ['tempus_fugit.coffee']
   eq v3SourceMap.sourceRoot, './www_root/coffee/'
+
+test "node --enable-source-map built in stack trace mapping", ->
+  new Promise (resolve, reject) ->
+    proc = fork './test/importing/error.coffee', [
+      '--enable-source-maps'
+    ], stdio: 'pipe'
+
+    err = ''
+    proc.stderr.setEncoding 'utf8'
+    proc.stderr.on 'data', (str) -> err += str
+    proc.on 'close', ->
+      try
+        match = err.match /error\.coffee:(\d+):(\d+)/
+        throw new Error err unless match
+
+        [_, line, column] = match
+        equal line, 3 # Mapped source line
+        equal column, 9 # Mapped source column
+
+        resolve()
+      catch exception
+        reject exception
+
+if Number(process.versions.node.split('.')[0]) >= 14
+  test "NODE_OPTIONS=--enable-source-maps environment variable stack trace mapping", ->
+    new Promise (resolve, reject) ->
+      proc = fork './test/importing/error.coffee', [],
+        env:
+          NODE_OPTIONS: '--enable-source-maps'
+        stdio: 'pipe'
+
+      err = ''
+      proc.stderr.setEncoding 'utf8'
+      proc.stderr.on 'data', (str) -> err += str
+      proc.on 'close', ->
+        try
+          match = err.match /error\.coffee:(\d+):(\d+)/
+          throw new Error err unless match
+
+          [_, line, column] = match
+          equal line, 3 # Mapped source line
+          equal column, 9 # Mapped source column
+
+          resolve()
+        catch exception
+          reject exception
+
+  test "generate correct stack traces with --enable-source-maps from bin/coffee", ->
+    new Promise (resolve, reject) ->
+      proc = fork 'test/importing/error.coffee',
+        ['--enable-source-maps'],
+        stdio: 'pipe'
+
+      err = ""
+      proc.stderr.setEncoding 'utf8'
+      proc.stderr.on 'data', (str) -> err += str
+      proc.on 'close', ->
+        try
+          match = err.match /error\.coffee:(\d+):(\d+)/
+          throw new Error err unless match
+
+          [_, line, column] = match
+          equal line, 3 # Mapped source line
+          equal column, 9 # Mapped source column
+
+          resolve()
+        catch exception
+          reject exception
+
+test "don't change stack traces if another library has patched `Error.prepareStackTrace`", ->
+  new Promise (resolve, reject) ->
+    # This uses `spawn` rather than the preferred `fork` because `fork` requires
+    # loading code in a separate file. The `--eval` here shows exactly what is
+    # executing without indirection.
+    proc = spawn 'node', [
+      '--eval', """
+        const patchedPrepareStackTrace = Error.prepareStackTrace = function() {};
+        require('./register.js');
+        process.stdout.write(Error.prepareStackTrace === patchedPrepareStackTrace ? 'preserved' : 'overwritten');
+      """
+    ]
+
+    out = ''
+    proc.stdout.setEncoding 'utf8'
+    proc.stdout.on 'data', (str) -> out += str
+
+    proc.on 'close', (status) ->
+      try
+        equal status, 0
+        equal out, 'preserved'
+
+        resolve()
+      catch exception
+        reject exception
+
+test "requiring 'CoffeeScript' doesn't change `Error.prepareStackTrace`", ->
+  new Promise (resolve, reject) ->
+    # This uses `spawn` rather than the preferred `fork` because `fork` requires
+    # loading code in a separate file. The `--eval` here shows exactly what is
+    # executing without indirection.
+    proc = spawn 'node', [
+      '--eval', """
+        require('./lib/coffeescript/coffeescript.js');
+        process.stdout.write(Error.prepareStackTrace === undefined ? 'unused' : 'defined');
+      """
+    ]
+
+    out = ''
+    proc.stdout.setEncoding 'utf8'
+    proc.stdout.on 'data', (str) -> out += str
+
+    proc.on 'close', (status) ->
+      try
+        equal status, 0
+        equal out, 'unused'
+
+        resolve()
+      catch exception
+        reject exception
 
 </script>
 <script type="text/x-coffeescript" class="test" id="strict">

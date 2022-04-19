@@ -61,6 +61,22 @@ code.
         line-- until (lineMap = @lines[line]) or (line <= 0)
         lineMap and lineMap.sourceLocation column
 
+Caching
+-------
+
+A static source maps cache `filename`: `map`. These are used for transforming
+stack traces and are currently set in `CoffeeScript.compile` for all files
+compiled with the source maps option.
+
+      @sourceMaps: Object.create null
+
+      @registerCompiled: (filename, source, sourcemap) =>
+        if sourcemap?
+          @sourceMaps[filename] = sourcemap
+
+      @getSourceMap: (filename) =>
+        @sourceMaps[filename]
+
 
 V3 SourceMap Generation
 -----------------------
@@ -182,6 +198,3 @@ Regular Base64 Encoding
 Our API for source maps is just the `SourceMap` class.
 
     module.exports = SourceMap
-
-
-

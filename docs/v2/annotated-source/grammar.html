@@ -372,7 +372,8 @@ the key to a list of alternative matches. With each match’s action, the
 dollar-sign variables are provided by Jison as references to the value of
 their numeric position, so in this rule:</p>
 <pre><code><span class="hljs-string">&#x27;Expression UNLESS Expression&#x27;</span>
-</code></pre><p><code>$1</code> would be the value of the first <code>Expression</code>, <code>$2</code> would be the token
+</code></pre>
+<p><code>$1</code> would be the value of the first <code>Expression</code>, <code>$2</code> would be the token
 for the <code>UNLESS</code> terminal, and <code>$3</code> would be the value of the second
 <code>Expression</code>.</p>
 
@@ -1975,9 +1976,11 @@ rules are necessary.</p>
               <p>Operators at the top of this list have higher precedence than the ones lower
 down. Following these rules is what makes <code>2 + 3 * 4</code> parse as:</p>
 <pre><code><span class="hljs-number">2</span> + (<span class="hljs-number">3</span> * <span class="hljs-number">4</span>)
-</code></pre><p>And not:</p>
+</code></pre>
+<p>And not:</p>
 <pre><code>(<span class="hljs-number">2</span> + <span class="hljs-number">3</span>) * <span class="hljs-number">4</span>
 </code></pre>
+
             </div>
             
             <div class="content"><div class='highlight'><pre>operators = [

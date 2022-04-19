@@ -19,6 +19,12 @@ exports.FILE_EXTENSIONS = FILE_EXTENSIONS = ['.coffee', '.litcoffee', '.coffee.m
 # Expose helpers for testing.
 exports.helpers = helpers
 
+{getSourceMap, registerCompiled} = SourceMap
+# This is exported to enable an external module to implement caching of
+# sourcemaps. This is used only when `patchStackTrace` has been called to adjust
+# stack traces for files with cached source maps.
+exports.registerCompiled = registerCompiled
+
 # Function that allows for btoa in both nodejs and the browser.
 base64encode = (src) -> switch
   when typeof Buffer is 'function'
@@ -43,31 +49,6 @@ withPrettyErrors = (fn) ->
       throw err if typeof code isnt 'string' # Support `CoffeeScript.nodes(tokens)`.
       throw helpers.updateSyntaxError err, code, options.filename
 
-# For each compiled file, save its source in memory in case we need to
-# recompile it later. We might need to recompile if the first compilation
-# didn’t create a source map (faster) but something went wrong and we need
-# a stack trace. Assuming that most of the time, code isn’t throwing
-# exceptions, it’s probably more efficient to compile twice only when we
-# need a stack trace, rather than always generating a source map even when
-# it’s not likely to be used. Save in form of `filename`: [`(source)`]
-sources = {}
-# Also save source maps if generated, in form of `(source)`: [`(source map)`].
-sourceMaps = {}
-
-# This is exported to enable an external module to implement caching of
-# compilation results. When the compiled js source is loaded from cache, the
-# original coffee code should be added with this method in order to enable the
-# Error.prepareStackTrace below to correctly adjust the stack trace for the
-# corresponding file (the source map will be generated on demand).
-exports.registerCompiled = registerCompiled = (filename, source, sourcemap) ->
-
-  sources[filename] ?= []
-  sources[filename].push source
-
-  if sourcemap?
-    sourceMaps[filename] ?= []
-    sourceMaps[filename].push sourcemap
-
 # Compile CoffeeScript code to JavaScript, using the Coffee/Jison compiler.
 #
 # If `options.sourceMap` is specified, then `options.filename` must also be
@@ -81,11 +62,9 @@ exports.registerCompiled = registerCompiled = (filename, source, sourcemap) ->
 exports.compile = compile = withPrettyErrors (code, options = {}) ->
   # Clone `options`, to avoid mutating the `options` object passed in.
   options = Object.assign {}, options
-  # Always generate a source map if no filename is passed in, since without a
-  # a filename we have no way to retrieve this source later in the event that
-  # we need to recompile it to get a source map for `prepareStackTrace`.
+
   generateSourceMap = options.sourceMap or options.inlineMap or not options.filename?
-  filename = options.filename or '<anonymous>'
+  filename = options.filename or helpers.anonymousFileName()
 
   checkShebangLine filename, code
 
@@ -181,7 +160,7 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
   if options.inlineMap
     encoded = base64encode JSON.stringify v3SourceMap
     sourceMapDataURI = "//# sourceMappingURL=data:application/json;base64,#{encoded}"
-    sourceURL = "//# sourceURL=#{options.filename ? 'coffeescript'}"
+    sourceURL = "//# sourceURL=#{filename}"
     js = "#{js}\n#{sourceMapDataURI}\n#{sourceURL}"
 
   registerCompiled filename, code, map
@@ -266,111 +245,77 @@ parser.yy.parseError = (message, {token}) ->
   # from the lexer.
   helpers.throwSyntaxError "unexpected #{errorText}", errorLoc
 
-# Based on http://v8.googlecode.com/svn/branches/bleeding_edge/src/messages.js
-# Modified to handle sourceMap
-formatSourcePosition = (frame, getSourceMapping) ->
-  filename = undefined
-  fileLocation = ''
+exports.patchStackTrace = ->
+  # Based on http://v8.googlecode.com/svn/branches/bleeding_edge/src/messages.js
+  # Modified to handle sourceMap
+  formatSourcePosition = (frame, getSourceMapping) ->
+    filename = undefined
+    fileLocation = ''
 
-  if frame.isNative()
-    fileLocation = "native"
-  else
-    if frame.isEval()
-      filename = frame.getScriptNameOrSourceURL()
-      fileLocation = "#{frame.getEvalOrigin()}, " unless filename
+    if frame.isNative()
+      fileLocation = "native"
     else
-      filename = frame.getFileName()
-
-    filename or= "<anonymous>"
-
-    line = frame.getLineNumber()
-    column = frame.getColumnNumber()
-
-    # Check for a sourceMap position
-    source = getSourceMapping filename, line, column
-    fileLocation =
-      if source
-        "#{filename}:#{source[0]}:#{source[1]}"
+      if frame.isEval()
+        filename = frame.getScriptNameOrSourceURL()
+        fileLocation = "#{frame.getEvalOrigin()}, " unless filename
       else
-        "#{filename}:#{line}:#{column}"
+        filename = frame.getFileName()
 
-  functionName = frame.getFunctionName()
-  isConstructor = frame.isConstructor()
-  isMethodCall = not (frame.isToplevel() or isConstructor)
+      filename or= "<anonymous>"
 
-  if isMethodCall
-    methodName = frame.getMethodName()
-    typeName = frame.getTypeName()
+      line = frame.getLineNumber()
+      column = frame.getColumnNumber()
 
-    if functionName
-      tp = as = ''
-      if typeName and functionName.indexOf typeName
-        tp = "#{typeName}."
-      if methodName and functionName.indexOf(".#{methodName}") isnt functionName.length - methodName.length - 1
-        as = " [as #{methodName}]"
+      # Check for a sourceMap position
+      source = getSourceMapping filename, line, column
+      fileLocation =
+        if source
+          "#{filename}:#{source[0]}:#{source[1]}"
+        else
+          "#{filename}:#{line}:#{column}"
 
-      "#{tp}#{functionName}#{as} (#{fileLocation})"
+    functionName = frame.getFunctionName()
+    isConstructor = frame.isConstructor()
+    isMethodCall = not (frame.isToplevel() or isConstructor)
+
+    if isMethodCall
+      methodName = frame.getMethodName()
+      typeName = frame.getTypeName()
+
+      if functionName
+        tp = as = ''
+        if typeName and functionName.indexOf typeName
+          tp = "#{typeName}."
+        if methodName and functionName.indexOf(".#{methodName}") isnt functionName.length - methodName.length - 1
+          as = " [as #{methodName}]"
+
+        "#{tp}#{functionName}#{as} (#{fileLocation})"
+      else
+        "#{typeName}.#{methodName or '<anonymous>'} (#{fileLocation})"
+    else if isConstructor
+      "new #{functionName or '<anonymous>'} (#{fileLocation})"
+    else if functionName
+      "#{functionName} (#{fileLocation})"
     else
-      "#{typeName}.#{methodName or '<anonymous>'} (#{fileLocation})"
-  else if isConstructor
-    "new #{functionName or '<anonymous>'} (#{fileLocation})"
-  else if functionName
-    "#{functionName} (#{fileLocation})"
-  else
-    fileLocation
+      fileLocation
 
-getSourceMap = (filename, line, column) ->
-  # Skip files that we didn’t compile, like Node system files that appear in
-  # the stack trace, as they never have source maps.
-  return null unless filename is '<anonymous>' or filename.slice(filename.lastIndexOf('.')) in FILE_EXTENSIONS
-
-  if filename isnt '<anonymous>' and sourceMaps[filename]?
-    return sourceMaps[filename][sourceMaps[filename].length - 1]
-  # CoffeeScript compiled in a browser or via `CoffeeScript.compile` or `.run`
-  # may get compiled with `options.filename` that’s missing, which becomes
-  # `<anonymous>`; but the runtime might request the stack trace with the
-  # filename of the script file. See if we have a source map cached under
-  # `<anonymous>` that matches the error.
-  else if sourceMaps['<anonymous>']?
-    # Work backwards from the most recent anonymous source maps, until we find
-    # one that works. This isn’t foolproof; there is a chance that multiple
-    # source maps will have line/column pairs that match. But we have no other
-    # way to match them. `frame.getFunction().toString()` doesn’t always work,
-    # and it’s not foolproof either.
-    for map in sourceMaps['<anonymous>'] by -1
-      sourceLocation = map.sourceLocation [line - 1, column - 1]
-      return map if sourceLocation?[0]? and sourceLocation[1]?
-
-  # If all else fails, recompile this source to get a source map. We need the
-  # previous section (for `<anonymous>`) despite this option, because after it
-  # gets compiled we will still need to look it up from
-  # `sourceMaps['<anonymous>']` in order to find and return it. That’s why we
-  # start searching from the end in the previous block, because most of the
-  # time the source map we want is the last one.
-  if sources[filename]?
-    answer = compile sources[filename][sources[filename].length - 1],
-      filename: filename
-      sourceMap: yes
-      literate: helpers.isLiterate filename
-    answer.sourceMap
-  else
-    null
-
-# Based on [michaelficarra/CoffeeScriptRedux](http://goo.gl/ZTx1p)
-# NodeJS / V8 have no support for transforming positions in stack traces using
-# sourceMap, so we must monkey-patch Error to display CoffeeScript source
-# positions.
-Error.prepareStackTrace = (err, stack) ->
   getSourceMapping = (filename, line, column) ->
     sourceMap = getSourceMap filename, line, column
+
     answer = sourceMap.sourceLocation [line - 1, column - 1] if sourceMap?
     if answer? then [answer[0] + 1, answer[1] + 1] else null
 
-  frames = for frame in stack
-    break if frame.getFunction() is exports.run
-    "    at #{formatSourcePosition frame, getSourceMapping}"
+  # Based on [michaelficarra/CoffeeScriptRedux](http://goo.gl/ZTx1p)
+  # NodeJS / V8 have no support for transforming positions in stack traces using
+  # sourceMap, so we must monkey-patch Error to display CoffeeScript source
+  # positions.
+  Error.prepareStackTrace = (err, stack) ->
+    frames = for frame in stack
+      # Don’t display stack frames deeper than `CoffeeScript.run`.
+      break if frame.getFunction() is exports.run
+      "    at #{formatSourcePosition frame, getSourceMapping}"
 
-  "#{err.toString()}\n#{frames.join '\n'}\n"
+    "#{err.toString()}\n#{frames.join '\n'}\n"
 
 checkShebangLine = (file, input) ->
   firstLine = input.split(/$/m)[0]
