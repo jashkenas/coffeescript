@@ -232,7 +232,7 @@ setting <code>__filename</code>, <code>__dirname</code>, and relative <code>requ
             </div>
             
             <div class="content"><div class='highlight'><pre>  mainModule.filename = process.argv[<span class="hljs-number">1</span>] =
-    <span class="hljs-keyword">if</span> options.filename <span class="hljs-keyword">then</span> fs.realpathSync(options.filename) <span class="hljs-keyword">else</span> <span class="hljs-string">&#x27;&lt;anonymous&gt;&#x27;</span></pre></div></div>
+    <span class="hljs-keyword">if</span> options.filename <span class="hljs-keyword">then</span> fs.realpathSync(options.filename) <span class="hljs-keyword">else</span> helpers.anonymousFileName()</pre></div></div>
             
         </li>
         
@@ -281,7 +281,10 @@ setting <code>__filename</code>, <code>__dirname</code>, and relative <code>requ
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  mainModule.options = options</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  mainModule.options = options
+
+  options.filename = mainModule.filename
+  options.inlineMap = <span class="hljs-literal">true</span></pre></div></div>
             
         </li>
         
@@ -296,9 +299,8 @@ setting <code>__filename</code>, <code>__dirname</code>, and relative <code>requ
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> helpers.isCoffee(mainModule.filename) <span class="hljs-keyword">or</span> <span class="hljs-built_in">require</span>.extensions
-    answer = CoffeeScript.compile code, options
-    code = answer.js ? answer
+            <div class="content"><div class='highlight'><pre>  answer = CoffeeScript.compile code, options
+  code = answer.js ? answer
 
   mainModule._compile code, mainModule.filename</pre></div></div>
             
@@ -424,7 +426,6 @@ CoffeeScript._compileRawFileContent = <span class="hljs-function"><span class="h
     filename: filename
     literate: helpers.isLiterate filename
     sourceFiles: [filename]
-    inlineMap: <span class="hljs-literal">yes</span> <span class="hljs-comment"># Always generate a source map, so that stack traces line up.</span>
 
   <span class="hljs-keyword">try</span>
     answer = CoffeeScript.compile stripped, options

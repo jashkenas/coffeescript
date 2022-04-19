@@ -121,7 +121,9 @@
             <div class="content"><div class='highlight'><pre>CoffeeScript  = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;./&#x27;</span>
 child_process = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;child_process&#x27;</span>
 helpers       = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;./helpers&#x27;</span>
-path          = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;path&#x27;</span></pre></div></div>
+path          = <span class="hljs-built_in">require</span> <span class="hljs-string">&#x27;path&#x27;</span>
+
+{patchStackTrace} = CoffeeScript</pre></div></div>
             
         </li>
         
@@ -132,14 +134,18 @@ path          = <span class="hljs-built_in">require</span> <span class="hljs-str
               <div class="sswrap ">
                 <a class="ss" href="#section-2">&#x00a7;</a>
               </div>
-              <p>Load and run a CoffeeScript file for Node, stripping any <code>BOM</code>s.</p>
+              <p>Check if Node’s built-in source map stack trace transformations are enabled.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">loadFile</span> = <span class="hljs-params">(module, filename)</span> -&gt;</span>
-  options = module.options <span class="hljs-keyword">or</span> getRootModule(module).options
-  answer = CoffeeScript._compileFile filename, options
-  module._compile answer, filename</pre></div></div>
+            <div class="content"><div class='highlight'><pre>nodeSourceMapsSupportEnabled = process? <span class="hljs-keyword">and</span> (
+  process.execArgv.includes(<span class="hljs-string">&#x27;--enable-source-maps&#x27;</span>) <span class="hljs-keyword">or</span>
+  process.env.NODE_OPTIONS?.includes(<span class="hljs-string">&#x27;--enable-source-maps&#x27;</span>)
+)
+
+<span class="hljs-keyword">unless</span> <span class="hljs-built_in">Error</span>.prepareStackTrace <span class="hljs-keyword">or</span> nodeSourceMapsSupportEnabled
+  cacheSourceMaps = <span class="hljs-literal">true</span>
+  patchStackTrace()</pre></div></div>
             
         </li>
         
@@ -149,6 +155,42 @@ path          = <span class="hljs-built_in">require</span> <span class="hljs-str
               
               <div class="sswrap ">
                 <a class="ss" href="#section-3">&#x00a7;</a>
+              </div>
+              <p>Load and run a CoffeeScript file for Node, stripping any <code>BOM</code>s.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-title">loadFile</span> = <span class="hljs-params">(module, filename)</span> -&gt;</span>
+  options = module.options <span class="hljs-keyword">or</span> getRootModule(module).options <span class="hljs-keyword">or</span> {}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-4">&#x00a7;</a>
+              </div>
+              <p>Currently <code>CoffeeScript.compile</code> caches all source maps if present. They
+are available in <code>getSourceMap</code> retrieved by <code>filename</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">if</span> cacheSourceMaps <span class="hljs-keyword">or</span> nodeSourceMapsSupportEnabled
+    options.inlineMap = <span class="hljs-literal">true</span>
+  js = CoffeeScript._compileFile filename, options
+
+  module._compile js, filename</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-5">&#x00a7;</a>
               </div>
               <p>If the installed version of Node supports <code>require.extensions</code>, register
 CoffeeScript as an extension.</p>
@@ -162,11 +204,11 @@ CoffeeScript as an extension.</p>
         </li>
         
         
-        <li id="section-4">
+        <li id="section-6">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-4">&#x00a7;</a>
+                <a class="ss" href="#section-6">&#x00a7;</a>
               </div>
               <p>Patch Node’s module loader to be able to handle multi-dot extensions.
 This is a horrible thing that should not be required.</p>
@@ -181,11 +223,11 @@ This is a horrible thing that should not be required.</p>
         </li>
         
         
-        <li id="section-5">
+        <li id="section-7">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-5">&#x00a7;</a>
+                <a class="ss" href="#section-7">&#x00a7;</a>
               </div>
               <p>Remove the initial dot from dotfiles.</p>
 
@@ -196,11 +238,11 @@ This is a horrible thing that should not be required.</p>
         </li>
         
         
-        <li id="section-6">
+        <li id="section-8">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-6">&#x00a7;</a>
+                <a class="ss" href="#section-8">&#x00a7;</a>
               </div>
               <p>Start with the longest possible extension and work our way shortwards.</p>
 
@@ -221,11 +263,11 @@ This is a horrible thing that should not be required.</p>
         </li>
         
         
-        <li id="section-7">
+        <li id="section-9">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-7">&#x00a7;</a>
+                <a class="ss" href="#section-9">&#x00a7;</a>
               </div>
               <p>If we’re on Node, patch <code>child_process.fork</code> so that Coffee scripts are able
 to fork both CoffeeScript files, and JavaScript files, directly.</p>
@@ -247,11 +289,11 @@ to fork both CoffeeScript files, and JavaScript files, directly.</p>
         </li>
         
         
-        <li id="section-8">
+        <li id="section-10">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-8">&#x00a7;</a>
+                <a class="ss" href="#section-10">&#x00a7;</a>
               </div>
               <p>Utility function to find the <code>options</code> object attached to the topmost module.</p>
 

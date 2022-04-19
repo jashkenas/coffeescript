@@ -584,6 +584,25 @@ built yet.</p>
               <div class="sswrap ">
                 <a class="ss" href="#section-24">&#x00a7;</a>
               </div>
+              <p>Generate a unique anonymous file name so we can distinguish source map cache
+entries for any number of anonymous scripts.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.anonymousFileName = <span class="hljs-keyword">do</span> -&gt;
+  n = <span class="hljs-number">0</span>
+  -&gt;
+    <span class="hljs-string">&quot;&lt;anonymous-<span class="hljs-subst">#{n++}</span>&gt;&quot;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-25">&#x00a7;</a>
+              </div>
               <p>A <code>.coffee.md</code> compatible version of <code>basename</code>, that returns the file sans-extension.</p>
 
             </div>
@@ -601,11 +620,11 @@ built yet.</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-25">&#x00a7;</a>
+                <a class="ss" href="#section-26">&#x00a7;</a>
               </div>
               <p>Determine if a filename represents a CoffeeScript file.</p>
 
@@ -616,11 +635,11 @@ built yet.</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-26">&#x00a7;</a>
+                <a class="ss" href="#section-27">&#x00a7;</a>
               </div>
               <p>Determine if a filename represents a Literate CoffeeScript file.</p>
 
@@ -631,11 +650,11 @@ built yet.</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-27">&#x00a7;</a>
+                <a class="ss" href="#section-28">&#x00a7;</a>
               </div>
               <p>Throws a SyntaxError from a given location.
 The error’s <code>toString</code> will return an error message following the “standard”
@@ -652,11 +671,11 @@ marker showing where the error is.</p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-28">&#x00a7;</a>
+                <a class="ss" href="#section-29">&#x00a7;</a>
               </div>
               <p>Instead of showing the compiler’s stacktrace, show our custom error message
 (this is useful when the error bubbles up in Node.js applications that
@@ -671,11 +690,11 @@ compile CoffeeScript for example).</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-29">&#x00a7;</a>
+                <a class="ss" href="#section-30">&#x00a7;</a>
               </div>
               <p>Update a compiler SyntaxError with source code information if it didn’t have
 it already.</p>
@@ -687,11 +706,11 @@ it already.</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-30">&#x00a7;</a>
+                <a class="ss" href="#section-31">&#x00a7;</a>
               </div>
               <p>Avoid screwing up the <code>stack</code> property of other errors (i.e. possible bugs).</p>
 
@@ -710,18 +729,22 @@ it already.</p>
   last_line ?= first_line
   last_column ?= first_column
 
-  filename = @filename <span class="hljs-keyword">or</span> <span class="hljs-string">&#x27;[stdin]&#x27;</span>
+  <span class="hljs-keyword">if</span> @filename?.startsWith <span class="hljs-string">&#x27;&lt;anonymous&#x27;</span>
+    filename = <span class="hljs-string">&#x27;[stdin]&#x27;</span>
+  <span class="hljs-keyword">else</span>
+    filename = @filename <span class="hljs-keyword">or</span> <span class="hljs-string">&#x27;[stdin]&#x27;</span>
+
   codeLine = @code.split(<span class="hljs-string">&#x27;\n&#x27;</span>)[first_line]
   start    = first_column</pre></div></div>
             
         </li>
         
         
-        <li id="section-31">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-31">&#x00a7;</a>
+                <a class="ss" href="#section-32">&#x00a7;</a>
               </div>
               <p>Show only the first line on multi-line errors.</p>
 
@@ -733,11 +756,11 @@ it already.</p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-32">&#x00a7;</a>
+                <a class="ss" href="#section-33">&#x00a7;</a>
               </div>
               <p>Check to see if we’re running on a color-enabled TTY.</p>
 
@@ -794,11 +817,11 @@ it already.</p>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-33">&#x00a7;</a>
+                <a class="ss" href="#section-34">&#x00a7;</a>
               </div>
               <p>surrogate pair</p>
 
@@ -811,11 +834,11 @@ it already.</p>
         </li>
         
         
-        <li id="section-34">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-34">&#x00a7;</a>
+                <a class="ss" href="#section-35">&#x00a7;</a>
               </div>
               <p>Replace <code>\u{...}</code> with <code>\uxxxx[\uxxxx]</code> in regexes without <code>u</code> flag</p>
 

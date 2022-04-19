@@ -237,7 +237,7 @@ code.</p>
               <div class="sswrap ">
                 <a class="ss" href="#section-7">&#x00a7;</a>
               </div>
-              <h2 id="v3-sourcemap-generation">V3 SourceMap Generation</h2>
+              <h2 id="caching">Caching</h2>
 
             </div>
             
@@ -249,6 +249,43 @@ code.</p>
               
               <div class="sswrap ">
                 <a class="ss" href="#section-8">&#x00a7;</a>
+              </div>
+              <p>A static source maps cache <code>filename</code>: <code>map</code>. These are used for transforming
+stack traces and are currently set in <code>CoffeeScript.compile</code> for all files
+compiled with the source maps option.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  @sourceMaps: <span class="hljs-built_in">Object</span>.create <span class="hljs-literal">null</span>
+
+  @registerCompiled: <span class="hljs-function"><span class="hljs-params">(filename, source, sourcemap)</span> =&gt;</span>
+    <span class="hljs-keyword">if</span> sourcemap?
+      @sourceMaps[filename] = sourcemap
+
+  @getSourceMap: <span class="hljs-function"><span class="hljs-params">(filename)</span> =&gt;</span>
+    @sourceMaps[filename]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-9">&#x00a7;</a>
+              </div>
+              <h2 id="v3-sourcemap-generation">V3 SourceMap Generation</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-10">&#x00a7;</a>
               </div>
               <p>Builds up a V3 source map, returning the generated JSON as a string.
 <code>options.sourceRoot</code> may be used to specify the sourceRoot written to the source
@@ -276,11 +313,11 @@ set “sources” and “file”, respectively.</p>
         </li>
         
         
-        <li id="section-9">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-9">&#x00a7;</a>
+                <a class="ss" href="#section-11">&#x00a7;</a>
               </div>
               <p>Write a comma if we’ve already written a segment on this line.</p>
 
@@ -293,11 +330,11 @@ set “sources” and “file”, respectively.</p>
         </li>
         
         
-        <li id="section-10">
+        <li id="section-12">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-10">&#x00a7;</a>
+                <a class="ss" href="#section-12">&#x00a7;</a>
               </div>
               <p>Write the next segment. Segments can be 1, 4, or 5 values.  If just one, then it
 is a generated column which doesn’t match anything in the source code.</p>
@@ -312,11 +349,11 @@ column for the current line:</p>
         </li>
         
         
-        <li id="section-11">
+        <li id="section-13">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-11">&#x00a7;</a>
+                <a class="ss" href="#section-13">&#x00a7;</a>
               </div>
               <p>The index into the list of sources:</p>
 
@@ -327,11 +364,11 @@ column for the current line:</p>
         </li>
         
         
-        <li id="section-12">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-12">&#x00a7;</a>
+                <a class="ss" href="#section-14">&#x00a7;</a>
               </div>
               <p>The starting line in the original source, relative to the previous source line.</p>
 
@@ -343,11 +380,11 @@ column for the current line:</p>
         </li>
         
         
-        <li id="section-13">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-13">&#x00a7;</a>
+                <a class="ss" href="#section-15">&#x00a7;</a>
               </div>
               <p>The starting column in the original source, relative to the previous column.</p>
 
@@ -360,11 +397,11 @@ column for the current line:</p>
         </li>
         
         
-        <li id="section-14">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-14">&#x00a7;</a>
+                <a class="ss" href="#section-16">&#x00a7;</a>
               </div>
               <p>Produce the canonical JSON object format for a “v3” source map.</p>
 
@@ -392,11 +429,11 @@ column for the current line:</p>
         </li>
         
         
-        <li id="section-15">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-15">&#x00a7;</a>
+                <a class="ss" href="#section-17">&#x00a7;</a>
               </div>
               <h2 id="base64-vlq-encoding">Base64 VLQ Encoding</h2>
 
@@ -405,11 +442,11 @@ column for the current line:</p>
         </li>
         
         
-        <li id="section-16">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-16">&#x00a7;</a>
+                <a class="ss" href="#section-18">&#x00a7;</a>
               </div>
               <p>Note that SourceMap VLQ encoding is “backwards”.  MIDI-style VLQ encoding puts
 the most-significant-bit (MSB) from the original value into the MSB of the VLQ
@@ -429,11 +466,11 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
         </li>
         
         
-        <li id="section-17">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-17">&#x00a7;</a>
+                <a class="ss" href="#section-19">&#x00a7;</a>
               </div>
               <p>Least significant bit represents the sign.</p>
 
@@ -444,11 +481,11 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
         </li>
         
         
-        <li id="section-18">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-18">&#x00a7;</a>
+                <a class="ss" href="#section-20">&#x00a7;</a>
               </div>
               <p>The next bits are the actual value.</p>
 
@@ -459,11 +496,11 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
         </li>
         
         
-        <li id="section-19">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-19">&#x00a7;</a>
+                <a class="ss" href="#section-21">&#x00a7;</a>
               </div>
               <p>Make sure we encode at least one character, even if valueToEncode is 0.</p>
 
@@ -480,11 +517,11 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
         </li>
         
         
-        <li id="section-20">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-20">&#x00a7;</a>
+                <a class="ss" href="#section-22">&#x00a7;</a>
               </div>
               <h2 id="regular-base64-encoding">Regular Base64 Encoding</h2>
 
@@ -493,11 +530,11 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
         </li>
         
         
-        <li id="section-21">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-21">&#x00a7;</a>
+                <a class="ss" href="#section-23">&#x00a7;</a>
               </div>
               
             </div>
@@ -510,11 +547,11 @@ bits of the original value encoded into the first byte of the VLQ encoded value.
         </li>
         
         
-        <li id="section-22">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-22">&#x00a7;</a>
+                <a class="ss" href="#section-24">&#x00a7;</a>
               </div>
               <p>Our API for source maps is just the <code>SourceMap</code> class.</p>
 
