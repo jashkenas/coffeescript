@@ -361,6 +361,19 @@ exports.Base = class Base
       else
         return true if children.replaceInContext match, replacement
 
+  # `findReferencedVars` recurses through the source parse tree to mark every
+  # "scope" parse node (`Root` and `Code`s) with all referenced
+  # (accessed or assigned) variables in that source scope, so that every scope
+  # knows what to avoid when generating new variable names.
+  # Specifically, it takes in an array of `scopeNodes`,
+  # each of which already has a `@referencedVars` attribute that is a `Set`.
+  # For each found reference to an identifier (see `IdentifierLiteral`'s
+  # override for `findReferencedVars`), it adds the name (as a `String`)
+  # to each scope node's `referencedVars` Set.
+  findReferencedVars: (scopeNodes) ->
+    @eachChild (child) ->
+      child.findReferencedVars scopeNodes
+
   invert: ->
     new Op '!', this
 
@@ -515,8 +528,15 @@ exports.Root = class Root extends Base
     super()
 
     @isAsync = (new Code [], @body).isAsync
+    @referencedVars = new Set  # all referenced variable names in this scope
 
   children: ['body']
+
+  findReferencedVars: (scopeNodes = []) ->
+    # This is called at the top level to start the recursion,
+    # so initialize `scopeNodes` to the empty array.
+    # Also, Root is a scope node, so add self to the (possibly empty) array.
+    super scopeNodes.concat @
 
   # Wrap everything in a safety closure, unless requested not to. It would be
   # better not to generate them in the first place, but for now, clean up
@@ -532,7 +552,7 @@ exports.Root = class Root extends Base
     [].concat @makeCode("(#{functionKeyword}() {\n"), fragments, @makeCode("\n}).call(this);\n")
 
   initializeScope: (o) ->
-    o.scope = new Scope null, @body, null, o.referencedVars ? []
+    o.scope = new Scope null, @body, null, @referencedVars
     # Mark given local variables in the root scope as parameters so they don’t
     # end up being declared on the root block.
     o.scope.parameter name for name in o.locals or []
@@ -1171,6 +1191,11 @@ exports.IdentifierLiteral = class IdentifierLiteral extends Literal
     return
       name: @value
       declaration: !!@isDeclaration
+
+  findReferencedVars: (scopeNodes) ->
+    # Add this identifier name to the `referencedVars` `Set` of all
+    # containing scopeNodes, to avoid generating a conflicting variable name.
+    scopeNode.referencedVars.add @value for scopeNode in scopeNodes
 
 exports.PropertyName = class PropertyName extends Literal
   isAssignable: YES
@@ -3904,6 +3929,7 @@ exports.Code = class Code extends Base
     @isGenerator = no
     @isAsync     = no
     @isMethod    = no
+    @referencedVars = new Set  # all referenced variable names in this scope
 
     @body.traverseChildren no, (node) =>
       if (node instanceof Op and node.isYield()) or node instanceof YieldReturn
@@ -3921,7 +3947,12 @@ exports.Code = class Code extends Base
 
   jumps: NO
 
-  makeScope: (parentScope) -> new Scope parentScope, @body, this
+  findReferencedVars: (scopeNodes) ->
+    # Code is a scope node, so add self to the `scopeNodes` array.
+    super scopeNodes.concat @
+
+  makeScope: (parentScope) ->
+    new Scope parentScope, @body, this, @referencedVars
 
   # Compilation creates a new scope unless explicitly asked to share with the
   # outer scope. Handles splat parameters in the parameter list by setting
@@ -5342,7 +5373,7 @@ exports.For = class For extends While
     @addBody body
     @addSource source
 
-  children: ['body', 'source', 'guard', 'step']
+  children: ['body', 'name', 'index', 'source', 'guard', 'step']
 
   isAwait: -> @await ? no
 

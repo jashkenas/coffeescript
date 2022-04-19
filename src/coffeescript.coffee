@@ -72,12 +72,6 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
 
   tokens = lexer.tokenize code, options
 
-  # Pass a list of referenced variables, so that generated variables won’t get
-  # the same name.
-  options.referencedVars = (
-    token[1] for token in tokens when token[0] is 'IDENTIFIER'
-  )
-
   # Check for import or export; if found, force bare mode.
   unless options.bare? and options.bare is yes
     for token in tokens
@@ -106,6 +100,7 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
     ast.tokens = tokens
     return ast
 
+  nodes.findReferencedVars()
   fragments = nodes.compileToFragments options
 
   currentLine = 0
