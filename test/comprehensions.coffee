@@ -625,4 +625,4 @@ test "#5410: for from loops shouldn't make excess refs", ->
       alert x
   """
 
-  doesNotMatch js, /ref/
+  ok !js.match /ref/
