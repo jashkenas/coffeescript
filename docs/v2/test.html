@@ -19736,6 +19736,14 @@ test "#5309: comprehension as postfix condition", ->
     throw new Error "DOOM was called with a null element" unless elm? for elm in elms
   """
 
+test "#5410: for from loops shouldn't make excess refs", ->
+  js = CoffeeScript.compile """
+    for x from fn()
+      alert x
+  """
+
+  doesNotMatch js, /ref/
+
 </script>
 <script type="text/x-coffeescript" class="test" id="control_flow">
 # Control Flow

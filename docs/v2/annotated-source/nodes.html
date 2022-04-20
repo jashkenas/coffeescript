@@ -9719,7 +9719,7 @@ some cannot.</p>
         {index: ivar, name, @step, shouldCache: shouldCacheOrIsAssignable}
     <span class="hljs-keyword">else</span>
       svar    = @source.compile o, LEVEL_LIST
-      <span class="hljs-keyword">if</span> (name <span class="hljs-keyword">or</span> @own) <span class="hljs-keyword">and</span> @source.unwrap() <span class="hljs-keyword">not</span> <span class="hljs-keyword">instanceof</span> IdentifierLiteral
+      <span class="hljs-keyword">if</span> (name <span class="hljs-keyword">or</span> @own) <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @from <span class="hljs-keyword">and</span> @source.unwrap() <span class="hljs-keyword">not</span> <span class="hljs-keyword">instanceof</span> IdentifierLiteral
         defPart    += <span class="hljs-string">&quot;<span class="hljs-subst">#{@tab}</span><span class="hljs-subst">#{ref = scope.freeVariable <span class="hljs-string">&#x27;ref&#x27;</span>}</span> = <span class="hljs-subst">#{svar}</span>;\n&quot;</span>
         svar       = ref
       <span class="hljs-keyword">if</span> name <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @pattern <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> @from

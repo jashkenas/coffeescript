@@ -618,3 +618,11 @@ test "#5309: comprehension as postfix condition", ->
   doesNotThrowCompileError """
     throw new Error "DOOM was called with a null element" unless elm? for elm in elms
   """
+
+test "#5410: for from loops shouldn't make excess refs", ->
+  js = CoffeeScript.compile """
+    for x from fn()
+      alert x
+  """
+
+  doesNotMatch js, /ref/

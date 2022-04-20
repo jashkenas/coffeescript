@@ -5418,7 +5418,7 @@ exports.For = class For extends While
         {index: ivar, name, @step, shouldCache: shouldCacheOrIsAssignable}
     else
       svar    = @source.compile o, LEVEL_LIST
-      if (name or @own) and @source.unwrap() not instanceof IdentifierLiteral
+      if (name or @own) and not @from and @source.unwrap() not instanceof IdentifierLiteral
         defPart    += "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
         svar       = ref
       if name and not @pattern and not @from
