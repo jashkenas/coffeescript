@@ -39,6 +39,6 @@ jobs:
 
     # Test
     - run: node ./bin/cake test
-    - run: node ./bin/cake test:browser
+    - run: node ./bin/cake test:browser || node ./bin/cake test:browser || node ./bin/cake test:browser
     - run: node ./bin/cake test:browser:node
     - run: node ./bin/cake test:integrations
