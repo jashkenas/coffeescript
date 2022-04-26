@@ -364,8 +364,9 @@ task 'doc:source:watch', 'watch and continually rebuild the annotated source doc
   buildAnnotatedSource yes
 
 
-task 'release', 'build and test the CoffeeScript source, and build the documentation', ->
+task 'release', 'update dependencies, build and test the CoffeeScript source, and build the documentation', ->
   execSync '''
+    npm install --silent
     cake build:full
     cake build:browser
     cake doc:test
