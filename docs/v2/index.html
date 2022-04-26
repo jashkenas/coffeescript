@@ -3469,10 +3469,9 @@ fibonacci = function*() {
 };
 
 getFibonacciNumbers = function(length) {
-  var n, ref, results;
+  var n, results;
   results = [1];
-  ref = fibonacci();
-  for (n of ref) {
+  for (n of fibonacci()) {
     results.push(n);
     if (results.length === length) {
       break;
@@ -3493,10 +3492,9 @@ getFibonacciNumbers = function(length) {
 };
 
 <span class="cm-variable">getFibonacciNumbers</span> <span class="cm-operator">=</span> <span class="cm-keyword">function</span>(<span class="cm-def">length</span>) {
-  <span class="cm-keyword">var</span> <span class="cm-def">n</span>, <span class="cm-def">ref</span>, <span class="cm-def">results</span>;
+  <span class="cm-keyword">var</span> <span class="cm-def">n</span>, <span class="cm-def">results</span>;
   <span class="cm-variable-2">results</span> <span class="cm-operator">=</span> [<span class="cm-number">1</span>];
-  <span class="cm-variable-2">ref</span> <span class="cm-operator">=</span> <span class="cm-variable">fibonacci</span>();
-  <span class="cm-keyword">for</span> (<span class="cm-variable-2">n</span> <span class="cm-keyword">of</span> <span class="cm-variable-2">ref</span>) {
+  <span class="cm-keyword">for</span> (<span class="cm-variable-2">n</span> <span class="cm-keyword">of</span> <span class="cm-variable">fibonacci</span>()) {
     <span class="cm-variable-2">results</span>.<span class="cm-property">push</span>(<span class="cm-variable-2">n</span>);
     <span class="cm-keyword">if</span> (<span class="cm-variable-2">results</span>.<span class="cm-property">length</span> <span class="cm-operator">===</span> <span class="cm-variable-2">length</span>) {
       <span class="cm-keyword">break</span>;
