@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         operating-system: [ubuntu-latest, macos-latest, windows-latest]
-        node-version: [12.x, 14.x, 16.x, 17.x]
+        node-version: [12.x, 14.x, 16.x, 17.x, 18.x]
 
     steps:
     - uses: actions/checkout@v3
@@ -39,6 +39,6 @@ jobs:
 
     # Test
     - run: node ./bin/cake test
-    - run: node ./bin/cake test:browser
+    - run: node ./bin/cake test:browser || node ./bin/cake test:browser || node ./bin/cake test:browser
     - run: node ./bin/cake test:browser:node
     - run: node ./bin/cake test:integrations
