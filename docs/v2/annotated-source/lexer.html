@@ -552,9 +552,6 @@ Be careful not to interfere with ranges in progress.</p>
     <span class="hljs-keyword">switch</span>
       <span class="hljs-keyword">when</span> <span class="hljs-regexp">/^0[BOX]/</span>.test number
         @error <span class="hljs-string">&quot;radix prefix in &#x27;<span class="hljs-subst">#{number}</span>&#x27; must be lowercase&quot;</span>, offset: <span class="hljs-number">1</span>
-      <span class="hljs-keyword">when</span> <span class="hljs-regexp">/^(?!0x).*E/</span>.test number
-        @error <span class="hljs-string">&quot;exponential notation in &#x27;<span class="hljs-subst">#{number}</span>&#x27; must be indicated with a lowercase &#x27;e&#x27;&quot;</span>,
-          offset: number.indexOf(<span class="hljs-string">&#x27;E&#x27;</span>)
       <span class="hljs-keyword">when</span> <span class="hljs-regexp">/^0\d*[89]/</span>.test number
         @error <span class="hljs-string">&quot;decimal literal &#x27;<span class="hljs-subst">#{number}</span>&#x27; must not be prefixed with &#x27;0&#x27;&quot;</span>, length: lexedLength
       <span class="hljs-keyword">when</span> <span class="hljs-regexp">/^0\d+/</span>.test number
