@@ -156,7 +156,7 @@ $(document).ready ->
   $('[data-action="run-code-example"]').click ->
     run = $(@).data 'run'
     index = $("##{$(@).data('example')}-js").data 'index'
-    js = if editors[index]?
+    js = if editors[index]?.js
       editors[index].js
     else
       $(textareas[index]).val()
