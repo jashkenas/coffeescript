@@ -166,7 +166,7 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
     encoded = base64encode JSON.stringify v3SourceMap
     sourceMapDataURI = "//# sourceMappingURL=data:application/json;base64,#{encoded}"
     sourceURL = "//# sourceURL=#{filename}"
-    js = "#{js}\n#{sourceMapDataURI}\n#{sourceURL}"
+    js = "#{js}\n#{sourceURL}\n#{sourceMapDataURI}\n"
 
   registerCompiled filename, code, map
 
