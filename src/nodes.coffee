@@ -5772,7 +5772,7 @@ LEVEL_ACCESS = 6  # ...[0]
 # Tabs are two spaces for pretty printing.
 TAB = '  '
 
-SIMPLENUM = /^[+-]?(?:\d(?:_?\d)*)+$/
+SIMPLENUM = /^[+-]?\d(?:_?\d)*$/
 SIMPLE_STRING_OMIT = /\s*\n\s*/g
 LEADING_BLANK_LINE  = /^[^\n\S]*\n/
 TRAILING_BLANK_LINE = /\n[^\n\S]*$/
