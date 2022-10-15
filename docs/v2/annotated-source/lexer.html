@@ -2605,7 +2605,7 @@ NUMBER     = <span class="hljs-regexp">///
   ^ 0b[01](?:_?[01])*n?                         | <span class="hljs-comment"># binary</span>
   ^ 0o[0-7](?:_?[0-7])*n?                       | <span class="hljs-comment"># octal</span>
   ^ 0x[\da-f](?:_?[\da-f])*n?                   | <span class="hljs-comment"># hex</span>
-  ^ \d+n                                        | <span class="hljs-comment"># decimal bigint</span>
+  ^ \d(?:_?\d)*n                                | <span class="hljs-comment"># decimal bigint</span>
   ^ (?:\d(?:_?\d)*)?    \.?   \d(?:_?\d)*    <span class="hljs-comment"># decimal</span>
                     (?:e[+-]? \d(?:_?\d)* )?
 </span></pre></div></div>
