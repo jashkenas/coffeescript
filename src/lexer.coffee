@@ -1311,8 +1311,8 @@ NUMBER     = ///
   ^ 0o[0-7](?:_?[0-7])*n?                       | # octal
   ^ 0x[\da-f](?:_?[\da-f])*n?                   | # hex
   ^ \d(?:_?\d)*n                                | # decimal bigint
-  ^ (?:\d+(?:_?\d+)*)?    \.? \d+(?:_?\d+)*       # decimal
-                    (?:e[+-]? \d+(?:_?\d+)* )?
+  ^ (?:\d(?:_?\d)*)?      \.? \d(?:_?\d)*         # decimal
+                    (?:e[+-]? \d(?:_?\d)* )?
   # decimal without support for numeric literal separators for reference:
   # \d*\.?\d+ (?:e[+-]?\d+)?
 ///i
