@@ -1388,7 +1388,7 @@ HEREGEX      = /// ^
   )*
 ///
 
-HEREGEX_COMMENT = /(\s*)(#(?!{).*)/gm
+HEREGEX_COMMENT = /(\s+)(#(?!{).*)/gm
 
 REGEX_ILLEGAL = /// ^ ( / | /{3}\s*) (\*) ///
 
