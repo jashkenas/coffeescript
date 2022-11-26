@@ -5783,7 +5783,7 @@ STRING_OMIT    = ///
 HEREGEX_OMIT = ///
     ((?:\\\\)+)     # Consume (and preserve) an even number of backslashes.
   | \\(\s)          # Preserve escaped whitespace.
-  | \s+(?:#.*)?     # Remove whitespace and comments.
+  | \s+(?:\#.*)?     # Remove whitespace and comments.
 ///g
 
 # Helper Functions
