@@ -21,6 +21,7 @@ test "Parser recognises binary numbers", ->
 test "call methods directly on numbers", ->
   eq 4, 4.valueOf()
   eq '11', 4.toString 3
+  eq '1000', 1_000.toString()
 
 eq -1, 3 -4
 
