@@ -22,7 +22,7 @@ loadFile = (module, filename) ->
   # Currently `CoffeeScript.compile` caches all source maps if present. They
   # are available in `getSourceMap` retrieved by `filename`.
   if cacheSourceMaps or nodeSourceMapsSupportEnabled
-    options.inlineMap = true
+    options = {...options, inlineMap: true}
   js = CoffeeScript._compileFile filename, options
 
   module._compile js, filename
