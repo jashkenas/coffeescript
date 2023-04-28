@@ -3,26 +3,17 @@ child_process = require 'child_process'
 helpers       = require './helpers'
 path          = require 'path'
 
-{patchStackTrace} = CoffeeScript
-
-# Check if Node's built-in source map stack trace transformations are enabled.
-nodeSourceMapsSupportEnabled = process? and (
-  process.execArgv.includes('--enable-source-maps') or
-  process.env.NODE_OPTIONS?.includes('--enable-source-maps')
-)
-
-unless Error.prepareStackTrace or nodeSourceMapsSupportEnabled
-  cacheSourceMaps = true
-  patchStackTrace()
+CoffeeScript.patchStackTrace()
 
 # Load and run a CoffeeScript file for Node, stripping any `BOM`s.
 loadFile = (module, filename) ->
-  options = module.options or getRootModule(module).options or {}
+  options = module.options or
+            CoffeeScript.helpers.getRootModule(module).options or {}
 
-  # Currently `CoffeeScript.compile` caches all source maps if present. They
+  # Currently `CoffeeScript.compile` caches all source maps if present.  They
   # are available in `getSourceMap` retrieved by `filename`.
-  if cacheSourceMaps or nodeSourceMapsSupportEnabled
-    options = {...options, inlineMap: true}
+  options = {...options, inlineMap: true}
+
   js = CoffeeScript._compileFile filename, options
 
   module._compile js, filename

@@ -1,7 +1,6 @@
 # CoffeeScript ESM loader
 #
-# Usage:
-# node --loader coffeescript/esm source.coffee
+# Usage: node --loader coffeescript/esm source.coffee
 
 CoffeeScript = require './'
 fs           = require 'fs'
@@ -9,16 +8,7 @@ module       = require 'module'
 path         = require 'path'
 {fileURLToPath, pathToFileURL} = require 'url'
 
-{patchStackTrace} = CoffeeScript
-
-nodeSourceMapsSupportEnabled = process? and (
-  process.execArgv.includes('--enable-source-maps') or
-  process.env.NODE_OPTIONS?.includes('--enable-source-maps')
-)
-
-unless Error.prepareStackTrace or nodeSourceMapsSupportEnabled
-  cacheSourceMaps = true
-  patchStackTrace()
+CoffeeScript.patchStackTrace()
 
 baseURL = pathToFileURL(process.cwd() + '/').href
 
@@ -39,12 +29,12 @@ exports.load = (url, context, next) ->
   unless context.format is "coffee" and url.startsWith 'file:'
     return next url, context
 
-  options = module.options or getRootModule(module).options or {}
+  options = module.options or
+            CoffeeScript.helpers.getRootModule(module).options or {}
 
   # Currently `CoffeeScript.compile` caches all source maps if present. They
   # are available in `getSourceMap` retrieved by `filename`.
-  if cacheSourceMaps or nodeSourceMapsSupportEnabled
-    options = {...options, inlineMap: true}
+  options = {...options, inlineMap: true}
 
   path = fileURLToPath url
   js = CoffeeScript._compileFile path, options
@@ -59,7 +49,3 @@ exports.load = (url, context, next) ->
   .replace /\.js$/, ''
 
   result
-
-# Utility function to find the `options` object attached to the topmost module.
-getRootModule = (module) ->
-  if module.parent then getRootModule module.parent else module
