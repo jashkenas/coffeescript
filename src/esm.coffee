@@ -1,11 +1,14 @@
 # CoffeeScript ESM loader
 #
 # Usage: node --loader coffeescript/esm source.coffee
+#
+# Based on https://nodejs.org/api/esm.html#esm_transpiler_loader and
+# https://github.com/DanielXMoore/Civet/blob/main/source/esm.civet
 
 CoffeeScript = require './'
 fs           = require 'fs'
 module       = require 'module'
-path         = require 'path'
+{extname}    = require 'path'
 {fileURLToPath, pathToFileURL} = require 'url'
 
 CoffeeScript.patchStackTrace()
@@ -13,7 +16,7 @@ CoffeeScript.patchStackTrace()
 baseURL = pathToFileURL(process.cwd() + '/').href
 
 exports.resolve = (specifier, context, next) ->
-  if CoffeeScript.FILE_EXTENSIONS.includes path.extname specifier
+  if CoffeeScript.FILE_EXTENSIONS.includes extname specifier
     {parentURL} = context
     parentURL ?= baseURL
 
@@ -41,6 +44,7 @@ exports.load = (url, context, next) ->
 
   # Add .js extension to enable other JavaScript ESM loaders (e.g. Babel)
   result = await next url + '.js',
+    # Currently assume that, if you're using the loader, you want ESM format.
     format: "module"
     source: js
 
