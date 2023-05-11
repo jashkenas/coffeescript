@@ -30,6 +30,7 @@
   white-space: pre-wrap;
 }
 .CodeMirror pre,
+.CodeMirror pre.CodeMirror-line,
 pre.placeholder-code {
   line-height: 1.4em;
 }
