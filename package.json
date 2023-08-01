@@ -19,6 +19,15 @@
   "main": "./lib/coffeescript/index",
   "module": "./lib/coffeescript-browser-compiler-modern/coffeescript.js",
   "browser": "./lib/coffeescript-browser-compiler-legacy/coffeescript.js",
+  "exports": {
+    ".": "./lib/coffeescript/index.js",
+    "./esm": "./lib/coffeescript/esm.js",
+    "./register": "./lib/coffeescript/register.js",
+    "./*": "./*",
+    "./lib/coffeescript/*": "./lib/coffeescript/*",
+    "./lib/coffeescript-browser-compiler-legacy/*": "./lib/coffeescript-browser-compiler-legacy/*",
+    "./lib/coffeescript-browser-compiler-modern/*": "./lib/coffeescript-browser-compiler-modern/*"
+  },
   "bin": {
     "coffee": "./bin/coffee",
     "cake": "./bin/cake"

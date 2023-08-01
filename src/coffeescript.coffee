@@ -251,6 +251,16 @@ parser.yy.parseError = (message, {token}) ->
   helpers.throwSyntaxError "unexpected #{errorText}", errorLoc
 
 exports.patchStackTrace = ->
+  # Check if Node's built-in source map stack trace transformations are enabled.
+  nodeSourceMapsSupportEnabled = process? and (
+    process.execArgv.includes('--enable-source-maps') or
+    process.env.NODE_OPTIONS?.includes('--enable-source-maps')
+  )
+
+  # Skip if node source maps are already enabled,
+  # or Error.prepareStackTrace is already defined.
+  return if Error.prepareStackTrace or nodeSourceMapsSupportEnabled
+
   # Based on http://v8.googlecode.com/svn/branches/bleeding_edge/src/messages.js
   # Modified to handle sourceMap
   formatSourcePosition = (frame, getSourceMapping) ->

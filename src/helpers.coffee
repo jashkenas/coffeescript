@@ -329,3 +329,9 @@ UNICODE_CODE_POINT_ESCAPE = ///
   |
   \\u\{ ( [\da-fA-F]+ ) \}
 ///g
+
+# Find the root of a module by repeatedly following parent points.
+# Used to find the `options` object attached to the topmost module.
+exports.getRootModule = (module) ->
+  module = module.parent while module.parent
+  module
