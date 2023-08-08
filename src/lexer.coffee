@@ -1341,10 +1341,10 @@ HERE_JSTOKEN = ///^ ```     ((?: [^`\\] | \\[\s\S] | `(?!``) )*) ``` ///
 # String-matching-regexes.
 STRING_START   = /^(?:'''|"""|'|")/
 
-STRING_SINGLE  = /// ^(?: [^\\']  | \\[\s\S]                      )* ///
-STRING_DOUBLE  = /// ^(?: [^\\"#] | \\[\s\S] |           \#(?!\{) )* ///
-HEREDOC_SINGLE = /// ^(?: [^\\']  | \\[\s\S] | '(?!'')            )* ///
-HEREDOC_DOUBLE = /// ^(?: [^\\"#] | \\[\s\S] | "(?!"") | \#(?!\{) )* ///
+STRING_SINGLE  = /// ^(?: [^\\']   | \\[\s\S]                      )* ///
+STRING_DOUBLE  = /// ^(?: [^\\"\#] | \\[\s\S] |           \#(?!\{) )* ///
+HEREDOC_SINGLE = /// ^(?: [^\\']   | \\[\s\S] | '(?!'')            )* ///
+HEREDOC_DOUBLE = /// ^(?: [^\\"\#] | \\[\s\S] | "(?!"") | \#(?!\{) )* ///
 
 INSIDE_JSX = /// ^(?:
     [^
@@ -1376,7 +1376,7 @@ VALID_FLAGS  = /^(?!.*(.).*\1)[gimsuy]*$/
 HEREGEX      = /// ^
   (?:
       # Match any character, except those that need special handling below.
-      [^\\/#\s]
+      [^\\/\#\s]
       # Match `\` followed by any character.
     | \\[\s\S]
       # Match any `/` except `///`.
@@ -1384,7 +1384,7 @@ HEREGEX      = /// ^
       # Match `#` which is not part of interpolation, e.g. `#{}`.
     | \#(?!\{)
       # Comments consume everything until the end of the line, including `///`.
-    | \s+(?:#(?!\{).*)?
+    | \s*(?:\#(?!\{).*)?
   )*
 ///
 

@@ -5782,8 +5782,8 @@ STRING_OMIT    = ///
 ///g
 HEREGEX_OMIT = ///
     ((?:\\\\)+)     # Consume (and preserve) an even number of backslashes.
-  | \\(\s)          # Preserve escaped whitespace.
-  | \s+(?:#.*)?     # Remove whitespace and comments.
+  | \\(\s|\#)       # Preserve escaped whitespace and '#'.
+  | \s*(?:\#.*)?    # Remove whitespace and comments.
 ///g
 
 # Helper Functions
