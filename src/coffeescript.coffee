@@ -323,7 +323,7 @@ exports.patchStackTrace = ->
     "#{err.toString()}\n#{frames.join '\n'}\n"
 
 checkShebangLine = (file, input) ->
-  firstLine = input.split(/$/m)[0]
+  firstLine = input.split(/$/m, 1)[0]
   rest = firstLine?.match(/^#!\s*([^\s]+\s*)(.*)/)
   args = rest?[2]?.split(/\s/).filter (s) -> s isnt ''
   if args?.length > 1
