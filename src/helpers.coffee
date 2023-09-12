@@ -48,11 +48,14 @@ extend = exports.extend = (object, properties) ->
 # Handy for getting a list of `children` from the nodes.
 exports.flatten = flatten = (array) ->
   flattened = []
-  for element in array
-    if '[object Array]' is Object::toString.call element
-      flattened = flattened.concat flatten element
-    else
-      flattened.push element
+  stack = [array]
+  while stack.length
+    current = stack.pop()
+    for element in current
+      if '[object Array]' is Object::toString.call element
+        stack.push(element)
+      else
+        flattened.push(element)
   flattened
 
 # Delete a key from an object, returning the value. Useful when a node is
