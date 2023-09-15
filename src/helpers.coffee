@@ -47,16 +47,7 @@ extend = exports.extend = (object, properties) ->
 # Return a flattened version of an array.
 # Handy for getting a list of `children` from the nodes.
 exports.flatten = flatten = (array) ->
-  flattened = []
-  stack = [array]
-  while stack.length
-    current = stack.pop()
-    for element in current
-      if '[object Array]' is Object::toString.call element
-        stack.push(element)
-      else
-        flattened.push(element)
-  flattened
+  array.flat(Infinity)
 
 # Delete a key from an object, returning the value. Useful when a node is
 # looking for a particular method in an options hash.
