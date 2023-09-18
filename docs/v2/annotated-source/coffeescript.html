@@ -824,7 +824,7 @@ positions.</p>
     <span class="hljs-string">&quot;<span class="hljs-subst">#{err.toString()}</span>\n<span class="hljs-subst">#{frames.join <span class="hljs-string">&#x27;\n&#x27;</span>}</span>\n&quot;</span>
 <span class="hljs-function">
 <span class="hljs-title">checkShebangLine</span> = <span class="hljs-params">(file, input)</span> -&gt;</span>
-  firstLine = input.split(<span class="hljs-regexp">/$/m</span>)[<span class="hljs-number">0</span>]
+  firstLine = input.split(<span class="hljs-regexp">/$/m</span>, <span class="hljs-number">1</span>)[<span class="hljs-number">0</span>]
   rest = firstLine?.match(<span class="hljs-regexp">/^#!\s*([^\s]+\s*)(.*)/</span>)
   args = rest?[<span class="hljs-number">2</span>]?.split(<span class="hljs-regexp">/\s/</span>).filter (s) -&gt; s <span class="hljs-keyword">isnt</span> <span class="hljs-string">&#x27;&#x27;</span>
   <span class="hljs-keyword">if</span> args?.length &gt; <span class="hljs-number">1</span>

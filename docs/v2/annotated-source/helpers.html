@@ -275,13 +275,7 @@ Handy for getting a list of <code>children</code> from the nodes.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-built_in">exports</span>.flatten = flatten = <span class="hljs-function"><span class="hljs-params">(array)</span> -&gt;</span>
-  flattened = []
-  <span class="hljs-keyword">for</span> element <span class="hljs-keyword">in</span> array
-    <span class="hljs-keyword">if</span> <span class="hljs-string">&#x27;[object Array]&#x27;</span> <span class="hljs-keyword">is</span> Object::toString.call element
-      flattened = flattened.concat flatten element
-    <span class="hljs-keyword">else</span>
-      flattened.push element
-  flattened</pre></div></div>
+  array.flat(<span class="hljs-literal">Infinity</span>)</pre></div></div>
             
         </li>
         
