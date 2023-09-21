@@ -2,11 +2,14 @@ fs = require 'fs'
 path = require 'path'
 vm = require 'vm'
 nodeREPL = require 'repl'
+process = require 'process'
 CoffeeScript = require './'
 {merge, updateSyntaxError} = require './helpers'
 
 sawSIGINT = no
 transpile = no
+
+hint = '\n(Press Ctrl-V again to exit multi-line mode.)'
 
 replDefaults =
   prompt: 'coffee> ',
@@ -80,6 +83,8 @@ addMultilineHandler = (repl) ->
   origPrompt = repl._prompt ? repl.prompt
 
   multiline =
+    showHint: true
+    hint: hint
     enabled: off
     initialPrompt: origPrompt.replace /^[^> ]*/, (x) -> x.replace /./g, '-'
     prompt: origPrompt.replace /^[^> ]*>?/, (x) -> x.replace /./g, '.'
@@ -121,6 +126,9 @@ addMultilineHandler = (repl) ->
       repl.emit 'line', multiline.buffer
       multiline.buffer = ''
     else
+      if multiline.showHint
+        console.log multiline.hint
+        multiline.showHint = false
       multiline.enabled = not multiline.enabled
       repl.setPrompt multiline.initialPrompt
       repl.prompt true
