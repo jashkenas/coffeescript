@@ -53,6 +53,7 @@ exports.Rewriter = class Rewriter
     @normalizeLines()
     @tagPostfixConditionals()
     @addImplicitBracesAndParens()
+    @tagLeadingLogical()
     @rescueStowawayComments()
     @addLocationDataToGeneratedTokens()
     @enforceValidJSXAttributes()
@@ -405,7 +406,7 @@ exports.Rewriter = class Rewriter
           # and the implicit object didn't start the line or the next line doesn’t look like
           # the continuation of an object.
           else if inImplicitObject() and tag is 'TERMINATOR' and prevTag isnt ',' and
-                  not (startsLine and @looksObjectish(i + 1))
+                  not (startsLine and (@looksObjectish(i + 1) or @isLeadingLogical(i)))
             endImplicitObject()
           else if inImplicitControl() and tokens[stackTop()[1]][0] is 'CLASS' and tag is 'TERMINATOR'
             stack.pop()
@@ -741,7 +742,7 @@ exports.Rewriter = class Rewriter
     condition = (token, i) ->
       [tag] = token
       [prevTag] = @tokens[i - 1]
-      tag is 'TERMINATOR' or (tag is 'INDENT' and prevTag not in SINGLE_LINERS)
+      tag is 'TERMINATOR' and not @isLeadingLogical(i) or (tag is 'INDENT' and prevTag not in SINGLE_LINERS)
 
     action = (token, i) ->
       if token[0] isnt 'INDENT' or (token.generated and not token.fromThen)
@@ -752,6 +753,30 @@ exports.Rewriter = class Rewriter
       original = token
       @detectEnd i + 1, condition, action
       return 1
+
+  # Returns `yes` if standing in front of what will become a LEADING_AND or
+  # LEADING_OR, ie TERMINATOR followed by && or ||
+  isLeadingLogical: (i) ->
+    @tag(i) is 'TERMINATOR' and @tag(i + 1) in LEADING_LOGICAL
+
+  # Convert TERMINATOR followed by && or || into a single LEADING_AND or
+  # LEADING_OR token to disambiguate grammar.
+  tagLeadingLogical: ->
+    @scanTokens (token, i, tokens) ->
+      return 1 unless token[0] is 'TERMINATOR' and tokens.length >= i + 2 and (operatorToken = tokens[i + 1])[0] in LEADING_LOGICAL
+      token[0] = "LEADING_#{LEADING_LOGICAL_NAMES[operatorToken[0]]}"
+      token[1] = operatorToken[1]
+      token[2].last_line = operatorToken[2].last_line
+      token[2].last_column = operatorToken[2].last_column
+      @mergeTokenData token, operatorToken
+      tokens.splice i + 1, 1
+      1
+
+  # Ensure that a token’s `data` gets carried over to another token.
+  # Does a simple top-level merge with the existing `data` (if any)
+  mergeTokenData: (intoToken, fromToken) ->
+    return unless fromToken.data
+    Object.assign (intoToken.data ?= {}), fromToken.data
 
   # For tokens with extra data, we want to make that data visible to the grammar
   # by wrapping the token value as a String() object and setting the data as
@@ -865,3 +890,8 @@ DISCARDED = ['(', ')', '[', ']', '{', '}', ':', '.', '..', '...', ',', '=', '++'
 exports.UNFINISHED = UNFINISHED = ['\\', '.', '?.', '?::', 'UNARY', 'DO', 'DO_IIFE', 'MATH', 'UNARY_MATH', '+', '-',
            '**', 'SHIFT', 'RELATION', 'COMPARE', '&', '^', '|', '&&', '||',
            'BIN?', 'EXTENDS']
+
+LEADING_LOGICAL_NAMES =
+  '&&': 'AND'
+  '||': 'OR'
+LEADING_LOGICAL = Object.keys LEADING_LOGICAL_NAMES
