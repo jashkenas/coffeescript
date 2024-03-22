@@ -11,7 +11,7 @@ Error.stackTraceLimit = Infinity
 # Import the helpers we plan to use.
 {compact, flatten, extend, merge, del, starts, ends, some,
 addDataToNode, attachCommentsToNode, locationDataToString,
-throwSyntaxError, replaceUnicodeCodePointEscapes,
+throwSyntaxError, replaceUnicodeCodePointEscapes, count,
 isFunction, isPlainObject, isNumber, parseNumber} = require './helpers'
 
 # Functions required by parser.
@@ -3911,6 +3911,8 @@ exports.Code = class Code extends Base
       if (node instanceof Op and node.isAwait()) or node instanceof AwaitReturn
         @isAsync = yes
       if node instanceof For and node.isAwait()
+        @isAsync = yes
+      if node instanceof Function and count @body, 'await' > 0
         @isAsync = yes
 
     @propagateLhs()
