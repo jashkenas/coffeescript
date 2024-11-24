@@ -1,14 +1,18 @@
 fs                        = require 'fs'
 os                        = require 'os'
 path                      = require 'path'
+{ performance }           = require 'perf_hooks'
 _                         = require 'underscore'
 { spawn, exec, execSync } = require 'child_process'
 CoffeeScript              = require './lib/coffeescript'
 helpers                   = require './lib/coffeescript/helpers'
+{ setupConsole }          = require './build-support/console'
+{ PatternSet }            = require './build-support/patterns'
 
 # ANSI Terminal Colors.
 bold = red = green = yellow = reset = ''
-unless process.env.NODE_DISABLE_COLORS
+USE_COLORS = process.stdout.hasColors?() and not process.env.NODE_DISABLE_COLORS
+if USE_COLORS
   bold   = '\x1B[0;1m'
   red    = '\x1B[0;31m'
   green  = '\x1B[0;32m'
@@ -29,6 +33,12 @@ header = """
 # Used in folder names like `docs/v1`.
 majorVersion = parseInt CoffeeScript.VERSION.split('.')[0], 10
 
+option '-l', '--level [LEVEL]', 'log level [debug < info < log(default) < warn < error]'
+
+task = (name, description, action) ->
+  global.task name, description, ({level = 'log', ...opts} = {}) ->
+    setupConsole {level, useColors: USE_COLORS}
+    action {...opts}
 
 # Log a message with a color.
 log = (message, color, explanation) ->
@@ -53,13 +63,32 @@ run = (args, callback) ->
 buildParser = ->
   helpers.extend global, require 'util'
   require 'jison'
+
+  startParserBuild = performance.now()
+
+  # Gather summary statistics about the grammar.
+  parser = require('./lib/coffeescript/grammar').parser
+  {symbols_, terminals_, productions_} = parser
+  countKeys = (obj) -> (Object.keys obj).length
+  numSyms = countKeys symbols_
+  numTerms = countKeys terminals_
+  numProds = countKeys productions_
+  console.info "parser created (#{numSyms} symbols, #{numTerms} terminals, #{numProds} productions)"
+
+  loadGrammar = performance.now()
+  console.info "loading grammar: #{loadGrammar - startParserBuild} ms"
+
   # We don't need `moduleMain`, since the parser is unlikely to be run standalone.
-  parser = require('./lib/coffeescript/grammar').parser.generate(moduleMain: ->)
-  fs.writeFileSync 'lib/coffeescript/parser.js', parser
+  fs.writeFileSync 'lib/coffeescript/parser.js', parser.generate(moduleMain: ->)
+
+  parserBuildComplete = performance.now()
+  console.info "parser generation: #{parserBuildComplete - loadGrammar} ms"
+  console.info "full parser build time: #{parserBuildComplete - startParserBuild} ms"
 
 buildExceptParser = (callback) ->
   files = fs.readdirSync 'src'
   files = ('src/' + file for file in files when file.match(/\.(lit)?coffee$/))
+  console.dir.debug {files}
   run ['-c', '-o', 'lib/coffeescript'].concat(files), callback
 
 build = (callback) ->
@@ -401,8 +430,14 @@ task 'bench', 'quick benchmark of compilation time', ->
 
 
 # Run the CoffeeScript test suite.
-runTests = (CoffeeScript) ->
+runTests = (CoffeeScript, {filePatterns, negFilePatterns, descPatterns, negDescPatterns} = {}) ->
   CoffeeScript.register() unless global.testingBrowser
+
+  filePatterns ?= PatternSet.empty()
+  negFilePatterns ?= PatternSet.empty {negated: yes}
+  descPatterns ?= PatternSet.empty()
+  negDescPatterns ?= PatternSet.empty {negated: yes}
+  console.dir.debug {filePatterns, negFilePatterns, descPatterns, negDescPatterns}
 
   # These are attached to `global` so that they’re accessible from within
   # `test/async.coffee`, which has an async-capable version of
@@ -410,6 +445,9 @@ runTests = (CoffeeScript) ->
   global.currentFile = null
   global.passedTests = 0
   global.failures    = []
+  global.filteredOut =
+    files: []
+    tests: []
 
   global[name] = func for name, func of require 'assert'
 
@@ -429,9 +467,22 @@ runTests = (CoffeeScript) ->
       error: err
       description: description
       source: fn.toString() if fn.toString?
+  onFilteredOut = (description, fn) ->
+    console.warn "test '#{description}' was filtered out by patterns"
+    filteredOut.tests.push
+      filename: global.currentFile
+      description: description
+      fn: fn
+  onFilteredFile = (file) ->
+    console.warn "file '#{file}' was filtered out by patterns"
+    filteredOut.files.push
+      filename: file
 
   # Our test helper function for delimiting different test cases.
   global.test = (description, fn) ->
+    unless (descPatterns.allows description) and (negDescPatterns.allows description)
+      onFilteredOut description, fn
+      return
     try
       fn.test = {description, currentFile}
       result = fn.call(fn)
@@ -445,6 +496,7 @@ runTests = (CoffeeScript) ->
         passedTests++
     catch err
       onFail description, fn, err
+    console.info "passed: #{description} in #{currentFile}"
 
   helpers.extend global, require './test/support/helpers'
 
@@ -483,6 +535,9 @@ runTests = (CoffeeScript) ->
 
   startTime = Date.now()
   for file in files when helpers.isCoffee file
+    unless (filePatterns.allows file) and (negFilePatterns.allows file)
+      onFilteredFile file
+      continue
     literate = helpers.isLiterate file
     currentFile = filename = path.join 'test', file
     code = fs.readFileSync filename
@@ -495,9 +550,23 @@ runTests = (CoffeeScript) ->
     Promise.reject() if failures.length isnt 0
 
 
-task 'test', 'run the CoffeeScript language test suite', ->
-  runTests(CoffeeScript).catch -> process.exit 1
+option '-f', '--file [REGEXP*]', 'regexp patterns to positively match against test file paths'
+option null, '--negFile [REGEXP*]', 'regexp patterns to negatively match against test file paths'
+option '-d', '--desc [REGEXP*]', 'regexp patterns to positively match against test descriptions'
+option null, '--negDesc [REGEXP*]', 'regexp patterns to negatively match against test descriptions'
 
+task 'test', 'run the CoffeeScript language test suite', ({
+  file = [],
+  negFile = [],
+  desc = [],
+  negDesc = [],
+} = {}) ->
+  testOptions =
+    filePatterns: new PatternSet file
+    negFilePatterns: new PatternSet negFile, {negated: yes}
+    descPatterns: new PatternSet desc
+    negDescPatterns: new PatternSet negDesc, {negated: yes}
+  runTests(CoffeeScript, testOptions).catch -> process.exit 1
 
 task 'test:browser', 'run the test suite against the modern browser compiler in a headless browser', ->
   # Create very simple web server to serve the two files we need.
