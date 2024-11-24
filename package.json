@@ -46,7 +46,7 @@
     "codemirror": "~5.65.3",
     "docco": "~0.9.1",
     "highlight.js": "~11.5.1",
-    "jison": "~0.4.18",
+    "jison": "cosmicexplorer/jison#7f7dcab18fd86b197d0e7ba1204af4a7c694995f",
     "markdown-it": "~13.0.0",
     "puppeteer": "~13.6.0",
     "underscore": "~1.13.3",
