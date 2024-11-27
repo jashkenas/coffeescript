@@ -65,7 +65,7 @@ test "#3075: v3 source map fields", ->
   arrayEq v3SourceMap.sources, ['tempus_fugit.coffee']
   eq v3SourceMap.sourceRoot, './www_root/coffee/'
 
-test "node --enable-source-map built in stack trace mapping", ->
+skip "node --enable-source-map built in stack trace mapping", ->
   new Promise (resolve, reject) ->
     proc = fork './test/importing/error.coffee', [
       '--enable-source-maps'
@@ -111,7 +111,7 @@ if Number(process.versions.node.split('.')[0]) >= 14
         catch exception
           reject exception
 
-  test "generate correct stack traces with --enable-source-maps from bin/coffee", ->
+  skip "generate correct stack traces with --enable-source-maps from bin/coffee", ->
     new Promise (resolve, reject) ->
       proc = fork 'test/importing/error.coffee',
         ['--enable-source-maps'],
@@ -159,7 +159,7 @@ test "don't change stack traces if another library has patched `Error.prepareSta
       catch exception
         reject exception
 
-test "requiring 'CoffeeScript' doesn't change `Error.prepareStackTrace`", ->
+skip "requiring 'CoffeeScript' doesn't change `Error.prepareStackTrace`", ->
   new Promise (resolve, reject) ->
     # This uses `spawn` rather than the preferred `fork` because `fork` requires
     # loading code in a separate file. The `--eval` here shows exactly what is

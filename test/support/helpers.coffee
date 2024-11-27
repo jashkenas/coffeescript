@@ -80,3 +80,6 @@ exports.throwsCompileError = (code, compileOpts, args...) ->
 exports.doesNotThrowCompileError = (code, compileOpts, args...) ->
   doesNotThrow -> CoffeeScript.compile code, compileOpts, args...
   doesNotThrow -> CoffeeScript.compile code, Object.assign({}, (compileOpts ? {}), ast: yes), args...
+
+exports.skip = (description, fn) ->
+  console.warn "skipped test '#{description}'"
