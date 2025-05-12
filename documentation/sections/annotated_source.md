@@ -1,4 +1,4 @@
-## Annotated Source
+### Annotated Source
 
 You can browse the CoffeeScript <%= fullVersion %> source in readable, annotated form [here](annotated-source/). You can also jump directly to a particular source file:
 
