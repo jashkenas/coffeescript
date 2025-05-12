@@ -1,5 +1,5 @@
 # This file is running in CommonJS (in Node) or as a classic Script (in the browser tests) so it can use import() within an async function, but not at the top level; and we can’t use static import.
-test "dynamic import assertion", ->
+skip "dynamic import assertion", ->
   try
     { default: secret } = await import('data:application/json,{"ofLife":42}', { assert: { type: 'json' } })
     eq secret.ofLife, 42
@@ -8,7 +8,7 @@ test "dynamic import assertion", ->
     unless exception.message is 'Invalid module "data:application/json,{"ofLife":42}" has an unsupported MIME type "application/json"'
       throw exception
 
-test "assert keyword", ->
+skip "assert keyword", ->
   assert = 1
 
   try

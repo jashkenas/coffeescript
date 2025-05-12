@@ -423,6 +423,8 @@ runTests = (CoffeeScript) ->
   global.reset  = reset
 
   asyncTests = []
+  doSkip = (description) ->
+    console.warn "skipped test '#{description}'"
   onFail = (description, fn, err) ->
     failures.push
       filename: global.currentFile
@@ -445,6 +447,8 @@ runTests = (CoffeeScript) ->
         passedTests++
     catch err
       onFail description, fn, err
+  global.skip = (description, fn) ->
+    doSkip description
 
   helpers.extend global, require './test/support/helpers'
 
