@@ -1,25 +1,64 @@
 #!/usr/bin/env node
 
-try {
-  new Function('var {a} = {a: 1}')();
-} catch (error) {
-  console.error('Your JavaScript runtime does not support some features used by the coffee command. Please use Node 6 or later.');
+// More comprehensive ES6 feature detection
+const testES6Support = () => {
+  try {
+    // Test multiple ES6 features, not just destructuring
+    new Function(`
+      let [a] = [1];
+      const {b} = {b: 2};
+      class Test {};
+      () => {};
+      for (let x of [1,2,3]) {};
+      Promise.resolve();
+    `)();
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+if (!testES6Support()) {
+  console.error('Your JavaScript runtime does not support ES6 features required by the coffee command. Please use Node 6 or later.');
   process.exit(1);
 }
 
-var path = require('path');
-var fs   = require('fs');
+const path = require('path');
+const fs = require('fs').promises;
 
-var potentialPaths = [
-  path.join(process.cwd(), 'node_modules/coffeescript/lib/coffeescript'),
-  path.join(process.cwd(), 'node_modules/coffeescript/lib/coffee-script'),
-  path.join(process.cwd(), 'node_modules/coffee-script/lib/coffee-script'),
-  path.join(__dirname, '../lib/coffeescript')
-];
+// More comprehensive search paths including global installs
+const potentialPaths = [
+  path.join(process.cwd(), 'node_modules', 'coffeescript', 'lib', 'coffeescript'),
+  path.join(process.cwd(), 'node_modules', 'coffeescript', 'lib', 'coffee-script'),
+  path.join(process.cwd(), 'node_modules', 'coffee-script', 'lib', 'coffee-script'),
+  path.join(__dirname, '..', 'lib', 'coffeescript'),
+  // Global installation paths
+  path.join(process.env.npm_config_prefix || '', 'lib', 'node_modules', 'coffeescript', 'lib', 'coffeescript'),
+  path.join(process.env.HOME || process.env.USERPROFILE, '.npm', 'lib', 'node_modules', 'coffeescript', 'lib', 'coffeescript'),
+].filter(Boolean);
 
-for (var i = 0, len = potentialPaths.length; i < len; i++) {
-  if (fs.existsSync(potentialPaths[i])) {
-    require(potentialPaths[i] + '/command').run();
-    break;
+async function findAndRunCoffee() {
+  for (const potentialPath of potentialPaths) {
+    try {
+      await fs.access(potentialPath);
+      const commandPath = path.join(potentialPath, 'command');
+      require(commandPath).run();
+      return; // Exit on success
+    } catch (error) {
+      // Continue to next path
+      continue;
+    }
   }
+  
+  // If no path was found
+  console.error('CoffeeScript not found. Please install it with:');
+  console.error('  npm install -g coffeescript');
+  console.error('  or');
+  console.error('  npm install --save-dev coffeescript');
+  process.exit(1);
 }
+
+findAndRunCoffee().catch(error => {
+  console.error('Failed to start coffee command:', error.message);
+  process.exit(1);
+});

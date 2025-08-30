@@ -1,25 +1,60 @@
 #!/usr/bin/env node
 
-try {
-  new Function('var {a} = {a: 1}')();
-} catch (error) {
-  console.error('Your JavaScript runtime does not support some features used by the cake command. Please use Node 6 or later.');
+// More comprehensive feature detection
+const testES6Support = () => {
+  try {
+    // Test multiple ES6 features
+    new Function('let [a] = [1]; const {b} = {b: 2}; class Test {};');
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+if (!testES6Support()) {
+  console.error('Your JavaScript runtime does not support ES6 features required by the cake command. Please use Node 6 or later.');
   process.exit(1);
 }
 
-var path = require('path');
-var fs   = require('fs');
+const path = require('path');
+const fs = require('fs').promises; // Use promises API for async operations
 
-var potentialPaths = [
-  path.join(process.cwd(), 'node_modules/coffeescript/lib/coffeescript'),
-  path.join(process.cwd(), 'node_modules/coffeescript/lib/coffee-script'),
-  path.join(process.cwd(), 'node_modules/coffee-script/lib/coffee-script'),
-  path.join(__dirname, '../lib/coffeescript')
-];
+// More comprehensive search paths
+const potentialPaths = [
+  path.join(process.cwd(), 'node_modules', 'coffeescript', 'lib', 'coffeescript'),
+  path.join(process.cwd(), 'node_modules', 'coffeescript', 'lib', 'coffee-script'),
+  path.join(process.cwd(), 'node_modules', 'coffee-script', 'lib', 'coffee-script'),
+  path.join(__dirname, '..', 'lib', 'coffeescript'),
+  // Also check global installations
+  path.join(process.env.NODE_PATH || '', 'coffeescript', 'lib', 'coffeescript'),
+  path.join(process.env.NODE_PATH || '', 'coffee-script', 'lib', 'coffee-script'),
+].filter(Boolean); // Remove any empty paths
 
-for (var i = 0, len = potentialPaths.length; i < len; i++) {
-  if (fs.existsSync(potentialPaths[i])) {
-    require(potentialPaths[i] + '/cake').run();
-    break;
+// Async function to find and run cake
+async function findAndRunCake() {
+  for (const potentialPath of potentialPaths) {
+    try {
+      // Use access instead of exists for better error handling
+      await fs.access(potentialPath);
+      const cakePath = path.join(potentialPath, 'cake');
+      require(cakePath).run();
+      return; // Exit on success
+    } catch (error) {
+      // Continue to next path if this one doesn't work
+      continue;
+    }
   }
+  
+  // If we get here, no path was found
+  console.error('Could not find CoffeeScript installation. Please install it with:');
+  console.error('  npm install -g coffeescript');
+  console.error('  or');
+  console.error('  npm install --save-dev coffeescript');
+  process.exit(1);
 }
+
+// Run the async function
+findAndRunCake().catch(error => {
+  console.error('Unexpected error:', error.message);
+  process.exit(1);
+});
