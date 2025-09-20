@@ -14,6 +14,7 @@ replDefaults =
     historyPath = process.env.XDG_CACHE_HOME or process.env.HOME
     path.join historyPath, '.coffee_history' if historyPath
   historyMaxInputSize: 10240
+  cs3: no
   eval: (input, context, filename, cb) ->
     # XXX: multiline hack.
     input = input.replace /\uFF00/g, '\n'
@@ -23,6 +24,21 @@ replDefaults =
     # Node's REPL v6.9.1+ sends the input wrapped in a try/catch statement.
     # Unwrap that too.
     input = input.replace /^\s*try\s*{([\s\S]*)}\s*catch.*$/m, '$1'
+
+    # Use CS3 compilation if enabled
+    if @cs3
+      try
+        # Use compileCS3 from command module
+        {compileCS3} = require './command'
+        # Wrap the input to assign to __ for REPL result display
+        wrappedInput = "__ = do -> #{input}"
+        js = compileCS3 wrappedInput, {bare: yes}
+        result = runInContext js, context, filename
+        cb null, result
+      catch err
+        updateSyntaxError err, input
+        cb err
+      return
 
     # Require AST nodes to do some AST manipulation.
     {Block, Assign, Value, Literal, Call, Code, Root} = require './nodes'
@@ -181,6 +197,10 @@ module.exports =
 
     CoffeeScript.register()
     process.argv = ['coffee'].concat process.argv[2..]
+
+    # Update prompt if CS3 mode is enabled
+    if opts.cs3
+      replDefaults.prompt = 'coffee:cs3> '
     if opts.transpile
       transpile = {}
       try

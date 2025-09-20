@@ -10,3 +10,4 @@ parser.output
 npm-debug.log*
 yarn.lock
 .DS_Store
+.tool-versions

@@ -703,19 +703,43 @@ exports.Block = class Block extends Base
       assigns = scope.hasAssignments
       if declars or assigns
         fragments.push @makeCode '\n' if i
-        fragments.push @makeCode "#{@tab}var "
-        if declars
+        if o.cs3
+          # In ES6, all hoisted variables must use 'let' (const requires initialization)
           declaredVariables = scope.declaredVariables()
-          for declaredVariable, declaredVariablesIndex in declaredVariables
-            fragments.push @makeCode declaredVariable
-            if Object::hasOwnProperty.call o.scope.comments, declaredVariable
-              fragments.push o.scope.comments[declaredVariable]...
-            if declaredVariablesIndex isnt declaredVariables.length - 1
-              fragments.push @makeCode ', '
-        if assigns
-          fragments.push @makeCode ",\n#{@tab + TAB}" if declars
-          fragments.push @makeCode scope.assignedVariables().join(",\n#{@tab + TAB}")
-        fragments.push @makeCode ";\n#{if @spaced then '\n' else ''}"
+
+          if declaredVariables.length > 0
+            fragments.push @makeCode "#{@tab}let "
+            for varName, varIndex in declaredVariables
+              fragments.push @makeCode varName
+              if Object::hasOwnProperty.call o.scope.comments, varName
+                fragments.push o.scope.comments[varName]...
+              if varIndex isnt declaredVariables.length - 1
+                fragments.push @makeCode ', '
+            fragments.push @makeCode ";\n" if not assigns
+
+          # Handle assignments (which use let in ES6)
+          if assigns
+            if declaredVariables.length > 0
+              fragments.push @makeCode ";\n#{@tab}let "
+            else
+              fragments.push @makeCode "#{@tab}let "
+            fragments.push @makeCode scope.assignedVariables().join(",\n#{@tab + TAB}")
+            fragments.push @makeCode ";\n"
+        else
+          # Original var-based output for ES5
+          fragments.push @makeCode "#{@tab}var "
+          if declars
+            declaredVariables = scope.declaredVariables()
+            for declaredVariable, declaredVariablesIndex in declaredVariables
+              fragments.push @makeCode declaredVariable
+              if Object::hasOwnProperty.call o.scope.comments, declaredVariable
+                fragments.push o.scope.comments[declaredVariable]...
+              if declaredVariablesIndex isnt declaredVariables.length - 1
+                fragments.push @makeCode ', '
+          if assigns
+            fragments.push @makeCode ",\n#{@tab + TAB}" if declars
+            fragments.push @makeCode scope.assignedVariables().join(",\n#{@tab + TAB}")
+          fragments.push @makeCode ";\n#{if @spaced then '\n' else ''}"
       else if fragments.length and post.length
         fragments.push @makeCode "\n"
     fragments.concat post
@@ -2336,9 +2360,10 @@ exports.Range = class Range extends Base
     idx      = del o, 'index'
     idxName  = del o, 'name'
     namedIndex = idxName and idxName isnt idx
+    varKeyword = if o.cs3 then 'let' else 'var'
     varPart  =
       if known and not namedIndex
-        "var #{idx} = #{@fromC}"
+        "#{varKeyword} #{idx} = #{@fromC}"
       else
         "#{idx} = #{@fromC}"
     varPart += ", #{@toC}" if @toC isnt @toVar
@@ -3305,7 +3330,8 @@ exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
 
     if @ not instanceof ExportDefaultDeclaration and
        (@clause instanceof Assign or @clause instanceof Class)
-      code.push @makeCode 'var '
+      varKeyword = if o.cs3 then 'let' else 'var'
+      code.push @makeCode "#{varKeyword} "
       @clause.moduleDeclaration = 'export'
 
     if @clause.body? and @clause.body instanceof Block
@@ -3503,13 +3529,20 @@ exports.Assign = class Assign extends Base
 
   addScopeVariables: (o, {
     # During AST generation, we need to allow assignment to these constructs
-    # that are considered “unassignable” during compile-to-JS, while still
+    # that are considered "unassignable" during compile-to-JS, while still
     # flagging things like `[null] = b`.
     allowAssignmentToExpansion = no,
     allowAssignmentToNontrailingSplat = no,
     allowAssignmentToEmptyArray = no,
     allowAssignmentToComplexSplat = no
   } = {}) ->
+    # For compound assignments (+=, -=, etc.), mark the variable as reassigned
+    if @context and @context isnt '**='
+      if @variable.unwrapAll() instanceof IdentifierLiteral
+        name = @variable.unwrapAll()
+        if o.scope.check name.value
+          o.scope.find name.value  # This will mark it as reassigned
+      return
     return unless not @context or @context is '**='
 
     varBase = @variable.unwrapAll()
@@ -3541,6 +3574,9 @@ exports.Assign = class Assign extends Base
       else
         alreadyDeclared = o.scope.find name.value
         name.isDeclaration ?= not alreadyDeclared
+        # Pass through const declaration info to scope
+        if @canBeConst and name.isDeclaration
+          o.scope.getVariable(name.value)?.alreadyDeclared = yes
         # If this assignment identifier has one or more herecomments
         # attached, output them as part of the declarations line (unless
         # other herecomments are already staged there) for compatibility
@@ -3595,9 +3631,25 @@ exports.Assign = class Assign extends Base
         compiledName.push @makeCode ']'
       return compiledName.concat @makeCode(': '), val
 
-    answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
+    # In ES6, use const for function and class assignments (they're immutable)
+    if o.cs3 and not @context and @variable.base?.isDeclaration and
+       @variable.base instanceof IdentifierLiteral and o.level <= LEVEL_LIST
+      # Check if we're assigning a function or class
+      isFunction = @value instanceof Code or @value instanceof Class
+      if isFunction and not o.scope.parent
+        # Use const for top-level function/class declarations
+        answer = [@makeCode('const ')].concat compiledName, @makeCode(' = '), val
+        # Mark variable as declared inline to avoid hoisting
+        varName = @variable.base.value
+        variable = o.scope.getVariable(varName)
+        variable.declaredInline = yes if variable
+      else
+        answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
+    else
+      answer = compiledName.concat @makeCode(" #{ @context or '=' } "), val
+
     # Per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Assignment_without_declaration,
-    # if we’re destructuring without declaring, the destructuring assignment must be wrapped in parentheses.
+    # if we're destructuring without declaring, the destructuring assignment must be wrapped in parentheses.
     # The assignment is wrapped in parentheses if 'o.level' has lower precedence than LEVEL_LIST (3)
     # (i.e. LEVEL_COND (4), LEVEL_OP (5) or LEVEL_ACCESS (6)), or if we're destructuring object, e.g. {a,b} = obj.
     if o.level > LEVEL_LIST or isValue and @variable.base instanceof Obj and not @nestedLhs and not (@param is yes)
@@ -5424,25 +5476,31 @@ exports.For = class For extends While
       if name and not @pattern and not @from
         namePart   = "#{name} = #{svar}[#{kvar}]"
       if not @object and not @from
-        defPart += "#{@tab}#{step};\n" if step isnt stepVar
-        down = stepNum < 0
-        lvar = scope.freeVariable 'len' unless @step and stepNum? and down
-        declare = "#{kvarAssign}#{ivar} = 0, #{lvar} = #{svar}.length"
-        declareDown = "#{kvarAssign}#{ivar} = #{svar}.length - 1"
-        compare = "#{ivar} < #{lvar}"
-        compareDown = "#{ivar} >= 0"
-        if @step
-          if stepNum?
-            if down
-              compare = compareDown
-              declare = declareDown
-          else
-            compare = "#{stepVar} > 0 ? #{compare} : #{compareDown}"
-            declare = "(#{stepVar} > 0 ? (#{declare}) : #{declareDown})"
-          increment = "#{ivar} += #{stepVar}"
+        # Use for...of loop in ES6 mode when no step is specified and no index/pattern is needed
+        if o.cs3 and not @step and not @index and not @pattern
+          forPartFragments = [@makeCode("#{name} of #{svar}")]
+          namePart = null  # Don't need to assign inside the loop body
         else
-          increment = "#{if kvar isnt ivar then "++#{ivar}" else "#{ivar}++"}"
-        forPartFragments = [@makeCode("#{declare}; #{compare}; #{kvarAssign}#{increment}")]
+          # Traditional C-style for loop
+          defPart += "#{@tab}#{step};\n" if step isnt stepVar
+          down = stepNum < 0
+          lvar = scope.freeVariable 'len' unless @step and stepNum? and down
+          declare = "#{kvarAssign}#{ivar} = 0, #{lvar} = #{svar}.length"
+          declareDown = "#{kvarAssign}#{ivar} = #{svar}.length - 1"
+          compare = "#{ivar} < #{lvar}"
+          compareDown = "#{ivar} >= 0"
+          if @step
+            if stepNum?
+              if down
+                compare = compareDown
+                declare = declareDown
+            else
+              compare = "#{stepVar} > 0 ? #{compare} : #{compareDown}"
+              declare = "(#{stepVar} > 0 ? (#{declare}) : #{declareDown})"
+            increment = "#{ivar} += #{stepVar}"
+          else
+            increment = "#{if kvar isnt ivar then "++#{ivar}" else "#{ivar}++"}"
+          forPartFragments = [@makeCode("#{declare}; #{compare}; #{kvarAssign}#{increment}")]
     if @returns
       resultPart   = "#{@tab}#{rvar} = [];\n"
       returnResult = "\n#{@tab}return #{rvar};"
@@ -5457,8 +5515,13 @@ exports.For = class For extends While
 
     varPart = "\n#{idt1}#{namePart};" if namePart
     if @object
-      forPartFragments = [@makeCode("#{kvar} in #{svar}")]
-      guardPart = "\n#{idt1}if (!#{utility 'hasProp', o}.call(#{svar}, #{kvar})) continue;" if @own
+      if o.cs3 and not @own
+        # Use for...of with Object.keys() in ES6 mode
+        forPartFragments = [@makeCode("#{kvar} of Object.keys(#{svar})")]
+      else
+        # Traditional for...in loop
+        forPartFragments = [@makeCode("#{kvar} in #{svar}")]
+        guardPart = "\n#{idt1}if (!#{utility 'hasProp', o}.call(#{svar}, #{kvar})) continue;" if @own
     else if @from
       if @await
         forPartFragments = new Op 'await', new Parens new Literal "#{kvar} of #{svar}"

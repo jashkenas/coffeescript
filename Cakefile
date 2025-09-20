@@ -50,21 +50,41 @@ run = (args, callback) ->
 
 
 # Build the CoffeeScript language from source.
-buildParser = ->
+buildParserCS2 = ->
   helpers.extend global, require 'util'
-  require 'jison'
-  # We don't need `moduleMain`, since the parser is unlikely to be run standalone.
-  parser = require('./lib/coffeescript/grammar').parser.generate(moduleMain: ->)
-  fs.writeFileSync 'lib/coffeescript/parser.js', parser
+  grammar = require('./src/grammar')
+  language =
+    bnf: grammar.bnf
+    operators: grammar.operators
+  {Generator} = require './solar.coffee'
+  parser = Generator(language).generate(compress: !true)
+  fs.writeFileSync 'lib/coffeescript/parser-cs2.js', parser
 
-buildExceptParser = (callback) ->
+# Build the CS3 parser from syntax.coffee using Solar
+buildParserCS3 = ->
+  helpers.extend global, require 'util'
+  syntax = require('./src/syntax')
+  language =
+    grammar: syntax.grammar    # CS3 uses 'grammar' instead of 'bnf'
+    operators: syntax.operators
+  {Generator} = require './solar.coffee'
+  parser = Generator(language).generate(compress: !true)
+  fs.writeFileSync 'lib/coffeescript/parser-cs3.js', parser
+
+buildSources = (callback) ->
+  # Compile all CoffeeScript source files (except grammar/syntax which are parser definitions)
   files = fs.readdirSync 'src'
-  files = ('src/' + file for file in files when file.match(/\.(lit)?coffee$/))
+  files = ('src/' + file for file in files when file.match(/\.(lit)?coffee$/) and file not in ['grammar.coffee', 'syntax.coffee'])
+
+  # Compile all source files (including es6.coffee)
   run ['-c', '-o', 'lib/coffeescript'].concat(files), callback
 
 build = (callback) ->
-  buildParser()
-  buildExceptParser callback
+  # Build both parsers (super fast with Solar - ~100ms each)
+  buildParserCS2()
+  buildParserCS3()
+  # Build all source files and backends
+  buildSources callback
 
 transpile = (code, options = {}) ->
   options.minify =      process.env.MINIFY    isnt 'false'
@@ -96,13 +116,12 @@ testBuiltCode = (watch = no) ->
   unless watch
     process.exit 1 unless testResults
 
-buildAndTest = (includingParser = yes, harmony = no) ->
+buildAndTest = (harmony = no) ->
   process.stdout.write '\x1Bc' # Clear terminal screen.
   execSync 'git checkout lib/*', stdio: 'inherit' # Reset the generated compiler.
 
-  buildArgs = ['bin/cake']
-  buildArgs.push if includingParser then 'build' else 'build:except-parser'
-  log "building#{if includingParser then ', including parser' else ''}...", green
+  buildArgs = ['bin/cake', 'build']
+  log "building (including both parsers)...", green
   spawnNodeProcess buildArgs, 'both', ->
     log 'testing...', green
     testArgs = if harmony then ['--harmony'] else []
@@ -110,22 +129,18 @@ buildAndTest = (includingParser = yes, harmony = no) ->
     spawnNodeProcess testArgs, 'both'
 
 watchAndBuildAndTest = (harmony = no) ->
-  buildAndTest yes, harmony
+  buildAndTest harmony
   fs.watch 'src/', interval: 200, (eventType, filename) ->
     if eventType is 'change'
       log "src/#{filename} changed, rebuilding..."
-      buildAndTest (filename is 'grammar.coffee'), harmony
+      buildAndTest harmony
   fs.watch 'test/', {interval: 200, recursive: yes}, (eventType, filename) ->
     if eventType is 'change'
       log "test/#{filename} changed, rebuilding..."
-      buildAndTest no, harmony
+      buildAndTest harmony
 
 
-task 'build', 'build the CoffeeScript compiler from source', build
-
-task 'build:parser', 'build the Jison parser only', buildParser
-
-task 'build:except-parser', 'build the CoffeeScript compiler, except for the Jison parser', buildExceptParser
+task 'build', 'build the CoffeeScript compiler from source (including both parsers)', build
 
 task 'build:full', 'build the CoffeeScript compiler from source twice, and run the tests', ->
   build ->
@@ -495,9 +510,13 @@ runTests = (CoffeeScript) ->
     Promise.reject() if failures.length isnt 0
 
 
-task 'test', 'run the CoffeeScript language test suite', ->
-  runTests(CoffeeScript).catch -> process.exit 1
+task 'test:cs3', 'run CS3/ES5 test suite', ->
+  try execSync 'cd test && coffee cs3-runner.coffee', stdio: 'inherit'
+  catch e then process.exit 1
 
+task 'test:cs2', 'run CS2/AST test suite', ->
+  try execSync 'cd test && coffee cs2-runner.coffee', stdio: 'inherit'
+  catch e then process.exit 1
 
 task 'test:browser', 'run the test suite against the modern browser compiler in a headless browser', ->
   # Create very simple web server to serve the two files we need.

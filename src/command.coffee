@@ -13,6 +13,307 @@ CoffeeScript   = require './'
 {spawn, exec}  = require 'child_process'
 {EventEmitter} = require 'events'
 
+# CS3 plumbing (lexer/parser/backends) for new CLI switches
+{Lexer}        = require './lexer'
+try parserCS3  = require './parser-cs3' catch err then parserCS3 = null
+try ES5Backend = require './es6' catch err then ES5Backend = null
+
+class CS3DebugBackend
+  constructor: (@options = {}) ->
+    @trace = @options['cs3-trace']
+    @reductions = []
+    @root = null
+
+  reduce: (ruleName, directive, frame) ->
+    # Log all reductions if tracing is enabled
+    if @trace
+      console.error "[CS3 Reduce] #{ruleName}"
+      if ruleName is 'Root'
+        console.error "[CS3 Root directive] #{JSON.stringify(directive)}"
+        console.error "[CS3 Root frame.rhs] length=#{frame.rhs?.length}, slot0=#{JSON.stringify(frame.rhs?[0])}"
+
+    # Evaluate the directive to get the node
+    node = @evaluate directive, frame, ruleName
+
+    # Track all reductions
+    @reductions.push {rule: ruleName, node}
+
+    # Capture the Root node when we see it
+    if ruleName is 'Root' or node?.type is 'Root'
+      @root = node
+      if @trace
+        console.error "[CS3 Found Root] type=#{node?.type}, node=#{JSON.stringify(node)}"
+
+    # Return the node to the parser
+    node
+
+  evaluate: (d, fr, rn=null) ->
+    return fr.rhs[d-1]?.value if typeof d is 'number'
+    return d if typeof d in ['string','boolean','undefined'] or d is null
+    if Array.isArray d
+      return d.map (x)=> @evaluate x, fr, rn
+    if d? and typeof d is 'object'
+      if d.$use?
+        v = if typeof d.$use is 'number' then fr.rhs[d.$use-1]?.value else d.$use
+        if d.method?
+          return v?[d.method]?.apply(v, (d.args or []).map((a)=>@evaluate a, fr))
+        else if d.prop?
+          return v?[d.prop]
+        else
+          return v
+      if d.$ast?
+        t = if d.$ast is '@' then rn else d.$ast
+        out = {type: t}
+        for k,v of d when k not in ['$ast','$pos']
+          out[k] = @evaluate v, fr, rn
+        if @trace and rn is 'Root'
+          console.error "[CS3 Root eval] type=#{t}, out=#{JSON.stringify(out)}"
+        return out
+      if d.$ary?
+        arr = if Array.isArray(d.$ary) then d.$ary else [d.$ary]
+        return arr.map (x)=> @evaluate x, fr, rn
+      if d.$ops?
+        # Handle $ops directives - these are operations on arrays/values/properties
+        op = d.$ops
+
+        # Array operations
+        if op is 'array'
+          if d.append?
+            # append: [target, ...items] - append items to target array
+            items = d.append.map (x)=> @evaluate x, fr, rn
+            target = items[0] or []
+            for item in items[1..]
+              target.push item if item?
+            return target
+          if d.gather?
+            # gather: [target, ...arrays] - gather arrays into target
+            arrays = d.gather.map (x)=> @evaluate x, fr, rn
+            target = arrays[0] or []
+            for arr in arrays[1..]
+              if Array.isArray(arr)
+                for item in arr
+                  target.push item
+              else if arr?
+                target.push arr
+            return target
+          return []
+
+        # Value operations - add accessors to a value
+        if op is 'value'
+          if d.add?
+            # add: [value, accessor] - add accessor to value
+            mapped = d.add.map (x)=> @evaluate x, fr, rn
+            val = mapped[0]
+            accessor = mapped[1]
+            if val? and typeof val is 'object'
+              val.properties ?= []
+              val.properties.push accessor if accessor?
+              # Also set bareLiteral for proper AST structure
+              val.bareLiteral ?= val.val if val.type is 'Value' and val.val?
+            return val
+          return null
+
+        # Property operations - set properties on objects
+        if op is 'prop'
+          if d.set?
+            # set: {target, property, value} - set property on target
+            target = @evaluate d.set.target, fr, rn
+            propName = d.set.property
+            propValue = @evaluate d.set.value, fr, rn
+            if target? and typeof target is 'object'
+              target[propName] = propValue
+            return target
+          return null
+
+        # Loop operations - add body/source to loops
+        if op is 'loop'
+          if d.addBody?
+            # addBody: [loop, body] - add body to loop
+            mapped = d.addBody.map (x)=>
+              if typeof x is 'string' and x.startsWith 'Body $'
+                # Handle special Body $N syntax
+                num = parseInt(x.replace('Body $', ''))
+                {type: 'Body', expressions: [@evaluate num, fr, rn]}
+              else
+                @evaluate x, fr, rn
+            loopNode = mapped[0]
+            bodyNode = mapped[1]
+            if loopNode? and typeof loopNode is 'object'
+              # Handle array body (for postfix loops)
+              if Array.isArray(bodyNode)
+                loopNode.body = {type: 'Body', expressions: bodyNode}
+              else
+                loopNode.body = bodyNode
+            return loopNode
+          if d.addSource?
+            # addSource: [loop, source] - add source to for loop
+            mapped = d.addSource.map (x)=> @evaluate x, fr, rn
+            loopNode = mapped[0]
+            sourceNode = mapped[1]
+            if loopNode? and sourceNode? and typeof loopNode is 'object'
+              # Merge source properties into loop
+              for k, v of sourceNode when k isnt 'type'
+                loopNode[k] = v
+            return loopNode
+          return null
+
+        # If operations - add else branches
+        if op is 'if'
+          if d.addElse?
+            # addElse: [ifBlock, elseBlock] - add else to if
+            mapped = d.addElse.map (x)=> @evaluate x, fr, rn
+            ifBlock = mapped[0]
+            elseBlock = mapped[1]
+            if ifBlock? and typeof ifBlock is 'object'
+              ifBlock.elseBody = elseBlock
+            return ifBlock
+          return null
+
+        # Unknown operation - return as-is for debugging
+        return {$ops: op, data: d}
+      # Plain object - evaluate all non-directive properties
+      o = {}
+      for k,v of d when not k.startsWith '$'
+        o[k] = @evaluate v, fr, rn
+      return o
+    d
+
+# Format converters for AST output
+toYAML = (obj, indent = 0) ->
+  return 'null' if obj is null or obj is undefined
+  return String(obj) if typeof obj in ['string', 'number', 'boolean']
+
+  spaces = '  '.repeat(indent)
+
+  if Array.isArray(obj)
+    return '[]' if obj.length is 0
+    lines = []
+    for item in obj
+      itemStr = toYAML(item, indent + 1)
+      if itemStr.includes('\n') or typeof item is 'object'
+        lines.push "#{spaces}-"
+        lines.push toYAML(item, indent + 1).split('\n').map((l) -> "  #{l}").join('\n')
+      else
+        lines.push "#{spaces}- #{itemStr}"
+    return lines.join('\n')
+
+  if typeof obj is 'object'
+    keys = Object.keys(obj)
+    return '{}' if keys.length is 0
+    lines = []
+    for key in keys
+      value = obj[key]
+      if value is null or value is undefined
+        lines.push "#{spaces}#{key}: null"
+      else if typeof value is 'object'
+        lines.push "#{spaces}#{key}:"
+        lines.push toYAML(value, indent + 1).split('\n').map((l) -> "  #{l}").join('\n')
+      else if typeof value is 'string'
+        # Quote strings that might be ambiguous in YAML
+        escaped = value.replace(/"/g, '\\"')
+        lines.push "#{spaces}#{key}: \"#{escaped}\""
+      else
+        lines.push "#{spaces}#{key}: #{value}"
+    return lines.join('\n')
+
+  String(obj)
+
+tokensCS3 = (code, options={}) ->
+  lexer = new Lexer()
+  lexer.tokenize code, options
+
+directivesCS3 = (code, options={}) ->
+  throw new Error 'CS3 parser not available' unless parserCS3?
+  tokens = tokensCS3 code, options
+  i = 0
+  lexIface =
+    lex: ->
+      return 1 if i >= tokens.length
+      t = tokens[i++]
+      @yytext = t[1]
+      @yylloc = t[2]
+      @yylineno = if t[2] then t[2].first_line else 0
+      @yyleng = String(@yytext).length
+      parserCS3.parser.symbolIds[t[0]] or parserCS3.parser.symbolIds[t[1]]
+    setInput: -> i = 0
+    upcomingInput: -> ''
+  parserCS3.parser.lexer = lexIface
+  backend = new CS3DebugBackend(options)
+  parserCS3.parser.yy = { backend }
+
+  # Parse the input
+  parserResult = parserCS3.parse()
+
+  # The parser should return the final AST value
+  # If it's an object with a type, that's our Root
+  if parserResult? and typeof parserResult is 'object'
+    if options['cs3-trace']
+      console.error "[CS3 Parser returned] type=#{parserResult.type}"
+    return parserResult
+
+  # If the backend captured a Root node, return it
+  if backend.root?
+    if options['cs3-trace']
+      console.error "[CS3 Backend Root] type=#{backend.root.type}"
+    return backend.root
+
+  # Otherwise, try to synthesize a Root from the reductions
+  body = []
+  for red in backend.reductions
+    {rule, node} = red
+    # Skip null/undefined nodes
+    continue unless node?
+    # For top-level rules, collect the nodes
+    if rule in ['Body', 'Line', 'Statement', 'Expression'] and node?.type?
+      body.push node
+
+  # If we have collected some nodes, wrap them in a Root
+  if body.length > 0
+    root = { type: 'Root', body }
+    if options['cs3-trace']
+      console.error "[CS3 Synthesized Root] with #{body.length} nodes"
+    return root
+
+  # As a last resort, see if the last reduction is meaningful
+  lastReduction = backend.reductions[backend.reductions.length - 1]
+  if lastReduction?.node?.type?
+    if options['cs3-trace']
+      console.error "[CS3 Last Reduction] rule=#{lastReduction.rule}, type=#{lastReduction.node.type}"
+    return lastReduction.node
+
+  # Return null if we couldn't find anything
+  if options['cs3-trace']
+    console.error "[CS3 No Root found]"
+  null
+
+exports.compileCS3 = compileCS3 = (code, options={}) ->
+  throw new Error 'CS3 backend not available' unless ES5Backend? and parserCS3?
+  tokens = tokensCS3 code, options
+  i = 0
+  lexIface =
+    lex: ->
+      return 1 if i >= tokens.length
+      t = tokens[i++]
+      @yytext = t[1]
+      @yylloc = t[2]
+      @yylineno = if t[2] then t[2].first_line else 0
+      @yyleng = String(@yytext).length
+      parserCS3.parser.symbolIds[t[0]] or parserCS3.parser.symbolIds[t[1]]
+    setInput: -> i = 0
+    upcomingInput: -> ''
+  backend = new ES5Backend(options)
+  parserCS3.parser.lexer = lexIface
+  parserCS3.parser.yy = { backend }
+  ast = parserCS3.parse()
+  # Generate JavaScript code from the AST
+  result = if ast?.compile
+    ast.compile(backend.compileOptions)
+  else if backend?.generate
+    backend.generate ast
+  else
+    ''
+  result or ''
+
 useWinPathSep  = path.sep is '\\'
 
 # Allow CoffeeScript to emit Node.js events.
@@ -51,6 +352,11 @@ SWITCHES = [
   ['-s', '--stdio',             'listen for and compile scripts over stdio']
   ['-t', '--transpile',         'pipe generated JavaScript through Babel']
   [      '--tokens',            'print out the tokens that the lexer/rewriter produce']
+  [      '--cs3',               'compile with CS3 pipeline']
+  [      '--cs3-tokens',        'print CS3 lexer tokens (via cs3 lexer)']
+  [      '--cs3-ast',           'print CS3 AST data nodes (Solar directives)']
+  [      '--cs3-trace',         'enable debug tracing for CS3 parser reductions']
+  [      '--format [FORMAT]',   'output format for --cs3-ast (json, yaml)']
   ['-v', '--version',           'display the version number']
   ['-w', '--watch',             'watch scripts for changes and rerun commands']
 ]
@@ -94,6 +400,7 @@ exports.run = ->
   opts.prelude = makePrelude opts.require       if opts.require
   replCliOpts.prelude = opts.prelude
   replCliOpts.transpile = opts.transpile
+  replCliOpts.cs3 = opts['cs3']
   return forkNode()                             if opts.nodejs
   return usage()                                if opts.help
   return version()                              if opts.version
@@ -204,7 +511,29 @@ compileScript = (file, input, base = null) ->
   try
     task = {file, input, options}
     CoffeeScript.emit 'compile', task
-    if opts.tokens
+    if opts['cs3-tokens']
+      tokens = tokensCS3 task.input, task.options
+      printTokens tokens
+    else if opts['cs3-ast']
+      ast = directivesCS3 task.input, task.options
+      # Format output based on --format option
+      output = switch opts.format?.toLowerCase()
+        when 'yaml', 'yml'
+          toYAML ast
+        else  # default to json
+          JSON.stringify ast, null, 2
+      printLine output
+    else if opts['cs3']
+      js = compileCS3 task.input, task.options
+      task.output = js
+      CoffeeScript.emit 'success', task
+      if opts.print
+        printLine task.output.trim()
+      else if opts.compile or opts.map
+        saveTo = if opts.outputFilename and sources.length is 1 then path.join opts.outputPath, opts.outputFilename else options.jsPath
+        writeJs base, task.file, task.output, saveTo, null
+      return  # Ensure we don't fall through to other conditions
+    else if opts.tokens
       printTokens CoffeeScript.tokens task.input, task.options
     else if opts.nodes
       printLine CoffeeScript.nodes(task.input, task.options).toString().trim()
@@ -507,6 +836,7 @@ compileOptions = (filename, base) ->
     sourceMap: opts.map
     inlineMap: opts['inline-map']
     ast: opts.ast
+    'cs3-trace': opts['cs3-trace']
 
   if filename
     if base

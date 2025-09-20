@@ -31,7 +31,7 @@ Adds a new variable or overrides an existing one.
         if Object::hasOwnProperty.call @positions, name
           @variables[@positions[name]].type = type
         else
-          @positions[name] = @variables.push({name, type}) - 1
+          @positions[name] = @variables.push({name, type, reassigned: no}) - 1
 
 When `super` is called, we need to find the name of the current method we're
 in, so that we know how to invoke the same method of the parent class. This
@@ -47,7 +47,11 @@ Look up a variable name in lexical scope, and declare it if it does not
 already exist.
 
       find: (name, type = 'var') ->
-        return yes if @check name
+        if @check name
+          # Mark as reassigned when finding an existing variable
+          if variable = @getVariable name
+            variable.reassigned = yes unless type is 'param'
+          return yes
         @add name, type
         no
 
@@ -84,6 +88,24 @@ Gets the type of a variable.
         return v.type for v in @variables when v.name is name
         null
 
+Get full variable information including reassignment status.
+
+      getVariable: (name) ->
+        # Only look in current scope, not parent scopes
+        return v for v in @variables when v.name is name
+        null
+
+Check if a variable has been reassigned (for const vs let detection).
+
+      isReassigned: (name) ->
+        @getVariable(name)?.reassigned ? false
+
+Mark that a variable's declaration has been handled (to avoid marking it as reassigned on first assignment).
+
+      markDeclarationHandled: (name) ->
+        if variable = @getVariable(name)
+          variable.declarationHandled = yes
+
 If we need to store an intermediate result, find an available name for a
 compiler-generated variable. `_var`, `_var2`, and so on...
 
@@ -111,7 +133,8 @@ Does this scope have any declared variables?
 Return the list of variables first declared in this scope.
 
       declaredVariables: ->
-        (v.name for v in @variables when v.type is 'var').sort()
+        # Exclude variables declared inline as const
+        (v.name for v in @variables when v.type is 'var' and not v.declaredInline).sort()
 
 Return the list of assignments that are supposed to be made at the top
 of this scope.

@@ -30,8 +30,9 @@
     "repl.js"
   ],
   "scripts": {
-    "test": "node ./bin/cake test",
-    "test-harmony": "node --harmony ./bin/cake test"
+    "test": "node ./bin/cake test:cs3",
+    "test:cs3": "node ./bin/cake test:cs3",
+    "test:cs2": "node ./bin/cake test:cs2"
   },
   "homepage": "https://coffeescript.org",
   "bugs": "https://github.com/jashkenas/coffeescript/issues",
@@ -46,7 +47,6 @@
     "codemirror": "~5.65.3",
     "docco": "~0.9.1",
     "highlight.js": "~11.5.1",
-    "jison": "~0.4.18",
     "markdown-it": "~13.0.0",
     "puppeteer": "~13.6.0",
     "underscore": "~1.13.3",

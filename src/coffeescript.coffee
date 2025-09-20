@@ -4,7 +4,7 @@
 # source CoffeeScript into JavaScript.
 
 {Lexer}       = require './lexer'
-{parser}      = require './parser'
+{parser}      = require './parser-cs2'
 helpers       = require './helpers'
 SourceMap     = require './sourcemap'
 # Require `package.json`, which is two levels above this file, as this file is
