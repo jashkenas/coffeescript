@@ -26,6 +26,12 @@ The accessor variant of the existential operator `?.` can be used to soak up nul
 codeFor('soaks')
 ```
 
+Unlike JavaScript’s [optional chaining](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining), which cannot appear on the left-hand side of an assignment, CoffeeScript allows the existential accessor in that position. The assignment only runs when the base value exists:
+
+```
+codeFor('soak_assignment')
+```
+
 For completeness:
 
 | Example | Definition |
@@ -35,3 +41,4 @@ For completeness:
 | `a?.b` or `a?['b']` | returns `a.b` if `a` is in scope and `a != null`; otherwise, `undefined` |
 | `a?(b, c)` or `a? b, c`&emsp; | returns the result of calling `a` (with arguments `b` and `c`) if `a` is in scope and callable; otherwise, `undefined` |
 | `a ?= b` | assigns the value of `b` to `a` if `a` is not in scope or if `a == null`; produces the new value of `a` |
+| `a?.b = c` or `a?[b] = c` | assigns `c` to `a.b` (or `a[b]`) if `a` is in scope and `a != null`; otherwise does nothing |
