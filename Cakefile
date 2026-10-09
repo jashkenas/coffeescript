@@ -521,6 +521,8 @@ task 'test:browser', 'run the test suite against the modern browser compiler in 
     puppeteer = require 'puppeteer'
     launchOptions = {}
     launchOptions.args = ['--no-sandbox', '--disable-setuid-sandbox'] if process.env.CI and process.platform is 'linux'
+    if process.env.CI and process.platform is 'darwin' and process.arch is 'arm64'
+      launchOptions.executablePath = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
     browser   = await puppeteer.launch launchOptions
     page      = await browser.newPage()
     result    = ""
