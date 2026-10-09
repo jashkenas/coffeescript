@@ -519,7 +519,9 @@ task 'test:browser', 'run the test suite against the modern browser compiler in 
 
   server.listen 8080, ->
     puppeteer = require 'puppeteer'
-    browser   = await puppeteer.launch()
+    launchOptions = {}
+    launchOptions.args = ['--no-sandbox', '--disable-setuid-sandbox'] if process.env.CI and process.platform is 'linux'
+    browser   = await puppeteer.launch launchOptions
     page      = await browser.newPage()
     result    = ""
 
