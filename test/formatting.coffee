@@ -495,3 +495,215 @@ test "#5168: allow indented property index", ->
       ]()
 
   eq 3, new B().c()
+
+test "logical and/or should continue lines", ->
+  ok not (
+    yes
+    and no
+  )
+
+  ok not (
+    1
+      and 0
+  )
+
+  ok 'abc'
+    && 123
+
+  ok 'abc'
+  && 123
+
+  ok 'abc'
+  or 123
+
+  ok 'abc'
+    or 123
+
+  ok 'abc'
+  || 123
+
+  ok 'abc'
+    || 123
+
+  a =
+    and   : 'b'
+    or    : 'a'
+  ok 'a' is a.or
+
+  b =
+    or    : 'b'
+    and   : 'a'
+  ok 'a' is b.and
+
+  yup = -> yes
+  nope = -> no
+
+  eq 3,
+    yes
+    and yup
+      c: 2
+    and 3
+
+  eq 3,
+    yes
+      and yup
+        c: 2
+      and 3
+
+  eq 3,
+    no
+    or nope
+      c: 2
+    or 3
+
+  eq 3,
+    no
+      or nope
+        c: 2
+      or 3
+
+  eq 5,
+    yes
+    and yup
+      c: 2
+      if yes
+        3
+      else
+        4
+    and 5
+
+  eq 5,
+    yes
+      and yup
+        c: 2
+        if yes
+          3
+        else
+          4
+      and 5
+
+  eq yes,
+    yes
+      and yup
+        c: 2
+        if yes
+          3
+        else
+          4
+          and 5
+
+  eq yes,
+    yes
+      and yup
+        c: 2
+        if yes
+          3
+        else
+          4
+            and 5
+
+  eq 2,
+    no
+    or nope -> 1
+    or 2
+
+  eq 2,
+    no
+      or nope -> 1
+      or 2
+
+  eq 2,
+    no
+    or nope ->
+      1
+    or 2
+
+  eq 2,
+    no
+      or nope ->
+        1
+      or 2
+
+  eq no,
+    no
+    or nope ->
+      1
+      or 2
+
+  eq no,
+    no
+      or nope ->
+        1
+        or 2
+
+  eq no,
+    no
+      or nope ->
+        1
+          or 2
+
+  f = ({c}) -> c
+  eq 3,
+    yes
+    and f
+      c:
+        no
+        or 3
+
+  eq 3,
+    yes
+    and f
+      c:
+        no
+          or 3
+
+  eq 1,
+    yes
+    and f
+      c:
+        1
+    or 3
+
+  eq 3,
+    if yes
+    and yes
+      3
+
+  eq 3,
+    if yes
+     and yes
+      3
+
+  eq 3,
+    if yes
+      and yes
+      3
+
+  eq 3,
+    if yes
+       and yes
+      3
+
+test "leading and/or should continue object property", ->
+  obj =
+    a: yes
+      and yes
+  eq yes, obj.a
+
+  obj =
+    b: 1
+    a: yes
+    and yes
+  eq yes, obj.a
+
+  obj =
+    a: yes
+        and yes
+    b: 1
+  eq yes, obj.a
+
+  # when object doesn't start line, don't treat as continuation of object property
+  f = -> no
+  eq yes,
+    f a: 1
+      or yes
