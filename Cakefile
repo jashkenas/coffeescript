@@ -477,7 +477,7 @@ runTests = (CoffeeScript) ->
   skipUnless '/foo.bar/s.test("foo\tbar")', ['regex_dotall.coffee']
   skipUnless '1_2_3', ['numeric_literal_separators.coffee']
   skipUnless '1n', ['numbers_bigint.coffee']
-  skipUnless 'async () => { await import(\'data:application/json,{"foo":"bar"}\', { assert: { type: "json" } }) }', ['import_assertions.coffee']
+  skipUnless 'async () => { await import(\'data:application/json,{"foo":"bar"}\', { with: { type: "json" } }) }', ['import_assertions.coffee']
   files = fs.readdirSync('test').filter (filename) ->
     filename not in testFilesToSkip
 
@@ -519,7 +519,17 @@ task 'test:browser', 'run the test suite against the modern browser compiler in 
 
   server.listen 8080, ->
     puppeteer = require 'puppeteer'
-    browser   = await puppeteer.launch()
+    launchOptions = {}
+    if process.env.CI
+      if process.platform is 'linux'
+        launchOptions.args = ['--no-sandbox', '--disable-setuid-sandbox']
+        launchOptions.executablePath = '/usr/bin/google-chrome'
+      else if process.platform is 'darwin' and process.arch is 'arm64'
+        launchOptions.executablePath = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+      else if process.platform is 'win32'
+        launchOptions.executablePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+
+    browser   = await puppeteer.launch launchOptions
     page      = await browser.newPage()
     result    = ""
 

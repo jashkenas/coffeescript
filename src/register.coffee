@@ -11,7 +11,14 @@ nodeSourceMapsSupportEnabled = process? and (
   process.env.NODE_OPTIONS?.includes('--enable-source-maps')
 )
 
-unless Error.prepareStackTrace or nodeSourceMapsSupportEnabled
+# Node 22+ sets its own internal `Error.prepareStackTrace` (named
+# `ErrorPrepareStackTrace`) before any user code runs.  Treat that built-in
+# handler the same as "not set" so CoffeeScript can still install its own
+# source-map translator.
+isNodeInternalHandler = Error.prepareStackTrace and
+  /^\s*function ErrorPrepareStackTrace/.test Error.prepareStackTrace.toString()
+
+unless (Error.prepareStackTrace and not isNodeInternalHandler) or nodeSourceMapsSupportEnabled
   cacheSourceMaps = true
   patchStackTrace()
 
@@ -71,3 +78,4 @@ if child_process
 # Utility function to find the `options` object attached to the topmost module.
 getRootModule = (module) ->
   if module.parent then getRootModule module.parent else module
+
