@@ -1,0 +1,35 @@
+name: Publish to npm
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write # Required for npm trusted publishing and provenance
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 24.x
+        registry-url: https://registry.npmjs.org
+
+    # Trusted publishing requires npm 11.5.1 or later
+    - run: npm install -g npm@latest
+    - run: npm ci
+
+    - run: node ./bin/cake build:full
+    - run: node ./bin/cake build:browser
+    - run: node ./bin/cake test
+
+    - name: Verify package.json version matches the release tag
+      if: github.event_name == 'release'
+      run: test "v$(node -p "require('./package.json').version")" = "${{ github.event.release.tag_name }}"
+
+    - run: npm publish
