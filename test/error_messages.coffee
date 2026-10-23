@@ -1115,7 +1115,7 @@ test "cannot export * without a module to export from", ->
   '''
 
 test "imports and exports must be top-level", ->
-  assertErrorFormatNoAst '''
+  assertErrorFormat '''
     if foo
       import { bar } from 'lib'
   ''', '''
@@ -1123,7 +1123,7 @@ test "imports and exports must be top-level", ->
       import { bar } from 'lib'
       ^^^^^^^^^^^^^^^^^^^^^^^^^
   '''
-  assertErrorFormatNoAst '''
+  assertErrorFormat '''
     foo = ->
       export { bar }
   ''', '''
@@ -1996,4 +1996,29 @@ test "#4834: dynamic import requires explicit call parentheses", ->
     [stdin]:1:23: error: unexpected end of input
     promise = import 'foo'
                           ^
+  '''
+
+test "misuse of import and export default", ->
+  assertErrorFormat '''
+    import { default } from 'lib'
+  ''', '''
+    [stdin]:1:10: error: 'default' is a reserved word for a specially registered export value. Bind it with e.g. 'import { default as x } from ...' or 'import x from ...'.
+    import { default } from 'lib'
+             ^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    export { default }
+  ''', '''
+    [stdin]:1:10: error: 'default' is a reserved word for a specially registered export. Register the default export with 'export default ...' or 'export { x as default }'. It *is* allowed to use 'export { default } from ...' to reproduce the default export from an external library.
+    export { default }
+             ^^^^^^^
+  '''
+
+  assertErrorFormat '''
+    import { default } from 'lib'
+  ''', '''
+    [stdin]:1:10: error: 'default' is a reserved word for a specially registered export value. Bind it with e.g. 'import { default as x } from ...' or 'import x from ...'.
+    import { default } from 'lib'
+             ^^^^^^^
   '''

@@ -74,16 +74,14 @@ exports.compile = compile = withPrettyErrors (code, options = {}) ->
 
   # Pass a list of referenced variables, so that generated variables won’t get
   # the same name.
-  options.referencedVars = (
-    token[1] for token in tokens when token[0] is 'IDENTIFIER'
-  )
+  options.referencedVars = helpers.extractVariableReferences tokens
 
   # Check for import or export; if found, force bare mode.
-  unless options.bare? and options.bare is yes
-    for token in tokens
-      if token[0] in ['IMPORT', 'EXPORT']
-        options.bare = yes
-        break
+  # TODO: print some sort of warning around this??? Possibly a hard error if not
+  # explicitly selected?
+  unless options.bare is yes
+    if helpers.hasESModuleTokens tokens
+      options.bare = yes
 
   nodes = parser.parse tokens
   # If all that was requested was a POJO representation of the nodes, e.g.
