@@ -8,7 +8,7 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: release
+    if: github.event_name == 'release' || github.ref == 'refs/heads/main'
     permissions:
       contents: read
       id-token: write # Required for npm trusted publishing and provenance
