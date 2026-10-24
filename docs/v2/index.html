@@ -704,7 +704,7 @@ textarea {
       <section id="introduction">
         <p><strong>CoffeeScript is a little language that compiles into JavaScript.</strong> Underneath that awkward Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.</p>
 <p>The golden rule of CoffeeScript is: <em>“It’s just JavaScript.”</em> The code compiles one-to-one into the equivalent JS, and there is no interpretation at runtime. You can use any existing JavaScript library seamlessly from CoffeeScript (and vice-versa). The compiled output is readable, pretty-printed, and tends to run as fast or faster than the equivalent handwritten JavaScript.</p>
-<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.7.0">2.7.0</a></p>
+<p><strong>Latest Version:</strong> <a href="https://github.com/jashkenas/coffeescript/tarball/2.7.1">2.7.1</a></p>
 <blockquote class="uneditable-code-block"><pre><code class="language-bash"><span class="comment"># Install locally for a project:</span>
 npm install --save-dev coffeescript
 
@@ -5036,7 +5036,7 @@ The CoffeeScript logo is available in SVG for use in presentations.</li>
         </section>
         <section id="annotated-source">
           <h2>Annotated Source</h2>
-<p>You can browse the CoffeeScript 2.7.0 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
+<p>You can browse the CoffeeScript 2.7.1 source in readable, annotated form <a href="annotated-source/">here</a>. You can also jump directly to a particular source file:</p>
 <ul>
 <li><a href="annotated-source/grammar.html">Grammar Rules — src/grammar</a></li>
 <li><a href="annotated-source/lexer.html">Lexing Tokens — src/lexer</a></li>
@@ -5714,6 +5714,18 @@ console.log x
       <section id="changelog">
         <h2>Changelog</h2>
 
+        <section id="2.7.1">
+          <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.7.0...2.7.1">2.7.1</a>
+  <span class="timestamp"> &mdash; <time datetime="2026-10-20">2026-10-20</time></span>
+</h3><ul>
+<li>Compatibility with Node 22 and later: stack trace patching and source maps now work correctly, and the new <code>with { type: 'json' }</code> import attributes syntax is supported alongside <code>assert</code>.</li>
+<li>Numeric literals now support a capital <code>E</code> in scientific notation, and method calls on numbers with underscores such as <code>1_000.toString()</code> now compile correctly.</li>
+<li>Performance improvements to the <code>flatten</code> helper (no longer recursive), <code>checkShebangLine</code> and the number-matching regular expressions.</li>
+<li>Documentation fixes: code snippets now run correctly again, and a hover line-height shift was fixed.</li>
+<li>Continuous integration now tests Node 16 through 26.</li>
+</ul>
+
+        </section>
         <section id="2.7.0">
           <h3><a href="https://github.com/jashkenas/coffeescript/compare/2.6.1...2.7.0">2.7.0</a>
   <span class="timestamp"> &mdash; <time datetime="2022-04-23">2022-04-23</time></span>

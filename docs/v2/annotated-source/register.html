@@ -141,11 +141,7 @@ path          = <span class="hljs-built_in">require</span> <span class="hljs-str
             <div class="content"><div class='highlight'><pre>nodeSourceMapsSupportEnabled = process? <span class="hljs-keyword">and</span> (
   process.execArgv.includes(<span class="hljs-string">&#x27;--enable-source-maps&#x27;</span>) <span class="hljs-keyword">or</span>
   process.env.NODE_OPTIONS?.includes(<span class="hljs-string">&#x27;--enable-source-maps&#x27;</span>)
-)
-
-<span class="hljs-keyword">unless</span> <span class="hljs-built_in">Error</span>.prepareStackTrace <span class="hljs-keyword">or</span> nodeSourceMapsSupportEnabled
-  cacheSourceMaps = <span class="hljs-literal">true</span>
-  patchStackTrace()</pre></div></div>
+)</pre></div></div>
             
         </li>
         
@@ -155,6 +151,29 @@ path          = <span class="hljs-built_in">require</span> <span class="hljs-str
               
               <div class="sswrap ">
                 <a class="ss" href="#section-3">&#x00a7;</a>
+              </div>
+              <p>Node 22+ sets its own internal <code>Error.prepareStackTrace</code> (named
+<code>ErrorPrepareStackTrace</code>) before any user code runs.  Treat that built-in
+handler the same as “not set” so CoffeeScript can still install its own
+source-map translator.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>isNodeInternalHandler = <span class="hljs-built_in">Error</span>.prepareStackTrace <span class="hljs-keyword">and</span>
+  <span class="hljs-regexp">/^\s*function ErrorPrepareStackTrace/</span>.test <span class="hljs-built_in">Error</span>.prepareStackTrace.toString()
+
+<span class="hljs-keyword">unless</span> (<span class="hljs-built_in">Error</span>.prepareStackTrace <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> isNodeInternalHandler) <span class="hljs-keyword">or</span> nodeSourceMapsSupportEnabled
+  cacheSourceMaps = <span class="hljs-literal">true</span>
+  patchStackTrace()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-4">&#x00a7;</a>
               </div>
               <p>Load and run a CoffeeScript file for Node, stripping any <code>BOM</code>s.</p>
 
@@ -166,11 +185,11 @@ path          = <span class="hljs-built_in">require</span> <span class="hljs-str
         </li>
         
         
-        <li id="section-4">
+        <li id="section-5">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-4">&#x00a7;</a>
+                <a class="ss" href="#section-5">&#x00a7;</a>
               </div>
               <p>Currently <code>CoffeeScript.compile</code> caches all source maps if present. They
 are available in <code>getSourceMap</code> retrieved by <code>filename</code>.</p>
@@ -186,11 +205,11 @@ are available in <code>getSourceMap</code> retrieved by <code>filename</code>.</
         </li>
         
         
-        <li id="section-5">
+        <li id="section-6">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-5">&#x00a7;</a>
+                <a class="ss" href="#section-6">&#x00a7;</a>
               </div>
               <p>If the installed version of Node supports <code>require.extensions</code>, register
 CoffeeScript as an extension.</p>
@@ -204,11 +223,11 @@ CoffeeScript as an extension.</p>
         </li>
         
         
-        <li id="section-6">
+        <li id="section-7">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-6">&#x00a7;</a>
+                <a class="ss" href="#section-7">&#x00a7;</a>
               </div>
               <p>Patch Node’s module loader to be able to handle multi-dot extensions.
 This is a horrible thing that should not be required.</p>
@@ -223,11 +242,11 @@ This is a horrible thing that should not be required.</p>
         </li>
         
         
-        <li id="section-7">
+        <li id="section-8">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-7">&#x00a7;</a>
+                <a class="ss" href="#section-8">&#x00a7;</a>
               </div>
               <p>Remove the initial dot from dotfiles.</p>
 
@@ -238,11 +257,11 @@ This is a horrible thing that should not be required.</p>
         </li>
         
         
-        <li id="section-8">
+        <li id="section-9">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-8">&#x00a7;</a>
+                <a class="ss" href="#section-9">&#x00a7;</a>
               </div>
               <p>Start with the longest possible extension and work our way shortwards.</p>
 
@@ -263,11 +282,11 @@ This is a horrible thing that should not be required.</p>
         </li>
         
         
-        <li id="section-9">
+        <li id="section-10">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-9">&#x00a7;</a>
+                <a class="ss" href="#section-10">&#x00a7;</a>
               </div>
               <p>If we’re on Node, patch <code>child_process.fork</code> so that Coffee scripts are able
 to fork both CoffeeScript files, and JavaScript files, directly.</p>
@@ -289,11 +308,11 @@ to fork both CoffeeScript files, and JavaScript files, directly.</p>
         </li>
         
         
-        <li id="section-10">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-10">&#x00a7;</a>
+                <a class="ss" href="#section-11">&#x00a7;</a>
               </div>
               <p>Utility function to find the <code>options</code> object attached to the topmost module.</p>
 
