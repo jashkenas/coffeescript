@@ -5,15 +5,16 @@ path = require 'path'
 
 # Get the folder containing the compiled `coffee` executable and make it the
 # PATH so that `#!/usr/bin/env coffee` resolves to our locally built file.
-coffeeBinFolder = path.dirname require.resolve '../bin/coffee'
-# For some reason, Windows requires `coffee` to be executed as `node coffee`.
-coffeeCommand = if isWindows() then 'node coffee' else 'coffee'
+coffeeBin = require.resolve '../bin/coffee'
+coffeeBinFolder = path.dirname coffeeBin
+# Windows requires the CoffeeScript executable to be run through Node.
+coffeeCommand = if isWindows() then process.execPath else 'coffee'
+coffeeArgs = if isWindows() then [coffeeBin] else []
 spawnOptions =
   cwd: coffeeBinFolder
   encoding: 'utf8'
   env: Object.assign {}, process.env,
     PATH: coffeeBinFolder + (if isWindows() then ';' else ':') + process.env.PATH
-  shell: isWindows()
 
 shebangScript = require.resolve './importing/shebang.coffee'
 initialSpaceScript = require.resolve './importing/shebang_initial_space.coffee'
@@ -34,7 +35,7 @@ test "parse arguments for shebang scripts correctly (on *nix platforms)", ->
   arrayEq expectedArgs, realArgs
 
 test "warn and remove -- if it is the second positional argument", ->
-  result = spawnSync coffeeCommand, [shebangScript, '--'], spawnOptions
+  result = spawnSync coffeeCommand, coffeeArgs.concat([shebangScript, '--']), spawnOptions
   stderr = result.stderr.toString()
   arrayEq JSON.parse(result.stdout), ['coffee', shebangScript]
   ok stderr.match /^coffee was invoked with '--'/m
@@ -42,7 +43,7 @@ test "warn and remove -- if it is the second positional argument", ->
   arrayEq JSON.parse(posArgs), [shebangScript, '--']
   ok result.status is 0
 
-  result = spawnSync coffeeCommand, ['-b', shebangScript, '--'], spawnOptions
+  result = spawnSync coffeeCommand, coffeeArgs.concat(['-b', shebangScript, '--']), spawnOptions
   stderr = result.stderr.toString()
   arrayEq JSON.parse(result.stdout), ['coffee', shebangScript]
   ok stderr.match /^coffee was invoked with '--'/m
@@ -51,7 +52,7 @@ test "warn and remove -- if it is the second positional argument", ->
   ok result.status is 0
 
   result = spawnSync(
-    coffeeCommand, ['-b', shebangScript, '--', 'ANOTHER'], spawnOptions)
+    coffeeCommand, coffeeArgs.concat(['-b', shebangScript, '--', 'ANOTHER']), spawnOptions)
   stderr = result.stderr.toString()
   arrayEq JSON.parse(result.stdout), ['coffee', shebangScript, 'ANOTHER']
   ok stderr.match /^coffee was invoked with '--'/m
@@ -60,7 +61,7 @@ test "warn and remove -- if it is the second positional argument", ->
   ok result.status is 0
 
   result = spawnSync(
-    coffeeCommand, ['--', initialSpaceScript, 'arg'], spawnOptions)
+    coffeeCommand, coffeeArgs.concat(['--', initialSpaceScript, 'arg']), spawnOptions)
   expectedArgs = ['coffee', initialSpaceScript, 'arg']
   realArgs = JSON.parse result.stdout
   arrayEq expectedArgs, realArgs
@@ -68,7 +69,7 @@ test "warn and remove -- if it is the second positional argument", ->
   ok result.status is 0
 
 test "warn about non-portable shebang lines", ->
-  result = spawnSync coffeeCommand, [extraArgsScript, 'arg'], spawnOptions
+  result = spawnSync coffeeCommand, coffeeArgs.concat([extraArgsScript, 'arg']), spawnOptions
   stderr = result.stderr.toString()
   arrayEq JSON.parse(result.stdout), ['coffee', extraArgsScript, 'arg']
   ok stderr.match /^The script to be run begins with a shebang line with more than one/m
@@ -79,14 +80,14 @@ test "warn about non-portable shebang lines", ->
   arrayEq JSON.parse(args), ['coffee', '--']
   ok result.status is 0
 
-  result = spawnSync coffeeCommand, [initialSpaceScript, 'arg'], spawnOptions
+  result = spawnSync coffeeCommand, coffeeArgs.concat([initialSpaceScript, 'arg']), spawnOptions
   stderr = result.stderr.toString()
   ok stderr is ''
   arrayEq JSON.parse(result.stdout), ['coffee', initialSpaceScript, 'arg']
   ok result.status is 0
 
   result = spawnSync(
-    coffeeCommand, [initialSpaceExtraArgsScript, 'arg'], spawnOptions)
+    coffeeCommand, coffeeArgs.concat([initialSpaceExtraArgsScript, 'arg']), spawnOptions)
   stderr = result.stderr.toString()
   arrayEq JSON.parse(result.stdout), ['coffee', initialSpaceExtraArgsScript, 'arg']
   ok stderr.match /^The script to be run begins with a shebang line with more than one/m
@@ -99,7 +100,7 @@ test "warn about non-portable shebang lines", ->
 
 test "both warnings will be shown at once", ->
   result = spawnSync(
-    coffeeCommand, [initialSpaceExtraArgsScript, '--', 'arg'], spawnOptions)
+    coffeeCommand, coffeeArgs.concat([initialSpaceExtraArgsScript, '--', 'arg']), spawnOptions)
   stderr = result.stderr.toString()
   arrayEq JSON.parse(result.stdout), ['coffee', initialSpaceExtraArgsScript, 'arg']
   ok stderr.match /^The script to be run begins with a shebang line with more than one/m
