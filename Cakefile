@@ -60,7 +60,13 @@ buildParser = ->
 buildExceptParser = (callback) ->
   files = fs.readdirSync 'src'
   files = ('src/' + file for file in files when file.match(/\.(lit)?coffee$/))
-  run ['-c', '-o', 'lib/coffeescript'].concat(files), callback
+  run ['-c', '-o', 'lib/coffeescript'].concat(files), ->
+    dir = 'lib/coffeescript/'
+    loader = dir+'loader.'
+    fs.renameSync(loader+'js',loader+'mjs')
+    index = dir+'index.'
+    fs.copyFileSync(index+'js',index+'cjs')
+    callback?.apply?(@,arguments)
 
 build = (callback) ->
   buildParser()
