@@ -30,6 +30,8 @@ jobs:
 
     - name: Verify package.json version matches the release tag
       if: github.event_name == 'release'
-      run: test "v$(node -p "require('./package.json').version")" = "${{ github.event.release.tag_name }}"
+      env:
+        TAG: ${{ github.event.release.tag_name }}
+      run: test "$(node -p "require('./package.json').version")" = "$TAG"
 
-    - run: npm publish
+    - run: npm stage publish
