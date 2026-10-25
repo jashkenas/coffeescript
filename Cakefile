@@ -92,6 +92,10 @@ testBuiltCode = (watch = no) ->
   for mod of require.cache when csDir is mod[0 ... csDir.length]
     delete require.cache[mod]
 
+  # The previous copy of `register` already patched this; clear it so the
+  # reloaded copy installs its own, otherwise stack trace line numbers are wrong.
+  Error.prepareStackTrace = undefined
+
   testResults = runTests require csPath
   unless watch
     process.exit 1 unless testResults
