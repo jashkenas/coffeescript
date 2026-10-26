@@ -756,6 +756,8 @@ exports.Lexer = class Lexer
     if match = OPERATOR.exec @chunk
       [value] = match
       @tagParameters() if CODE.test value
+    else if match = DISTINCT_DECL.exec @chunk
+      [value] = match
     else
       value = @chunk.charAt 0
     tag  = value
@@ -780,6 +782,9 @@ exports.Lexer = class Lexer
         message = isUnassignable prev[1], origin[1]
         @error message, origin[2] if message
       return value.length if skipToken
+
+    if value is '@='
+      tag = 'DECLARATION'
 
     if value is '(' and prev?[0] is 'IMPORT'
       prev[0] = 'DYNAMIC_IMPORT'
@@ -815,10 +820,18 @@ exports.Lexer = class Lexer
         tag = 'INDEX_START'
         switch prev[0]
           when '?'  then prev[0] = 'INDEX_SOAK'
-    token = @makeToken tag, value
+
+    # Match up paired delimiters.
     switch value
-      when '(', '{', '[' then @ends.push {tag: INVERSES[value], origin: token}
+      # Upon opening a pair, provide the requisite close token, and record the "origin" as
+      # a separate token.
+      when '(', '{', '['
+        # TODO: this concept of "origin" is somewhat overloaded and makes it difficult to introspect
+        #       a token stream. Is it the source of a generated token, or the "parent" node for
+        #       a context-sensitive match like paired delimiters?
+        @ends.push {tag: INVERSES[value], origin: @makeToken tag, value}
       when ')', '}', ']' then @pair value
+
     @tokens.push @makeToken tag, value
     value.length
 
@@ -1471,3 +1484,9 @@ LINE_BREAK = ['INDENT', 'OUTDENT', 'TERMINATOR']
 
 # Additional indent in front of these is ignored.
 INDENTABLE_CLOSERS = [')', '}', ']']
+
+# Proposed syntax for "declarations", which are checked to be unique in a scope and can therefore
+# have additional semantic information attached which would otherwise be erased.
+DISTINCT_DECL = /// ^ (
+  ?: @=                # distinct var decl which can have a specific comment attached.
+) ///

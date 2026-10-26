@@ -121,6 +121,7 @@ grammar =
     o 'ExpressionLine'
     o 'Statement'
     o 'FuncDirective'
+    o 'Declaration'
   ]
 
   FuncDirective: [
@@ -134,6 +135,10 @@ grammar =
     o 'STATEMENT',                              -> new StatementLiteral $1
     o 'Import'
     o 'Export'
+  ]
+
+  Declaration: [
+    o 'IDENTIFIER DECLARATION Expression',      -> new Declaration LOC(1)(new IdentifierLiteral($1)), $3
   ]
 
   # All the different types of expressions in our language. The basic unit of
