@@ -77,6 +77,10 @@ test "#5164: Allow lowercase and uppercase exponent notation", ->
   doesNotThrow -> CoffeeScript.compile "0e0", bare: yes
   doesNotThrow -> CoffeeScript.compile "0E0", bare: yes
 
+test "#5469: Allow a trailing decimal point before an exponent", ->
+  eq 10, CoffeeScript.eval "1.e1"
+  eq 0.1, CoffeeScript.eval "1.e-1"
+
 test "#2224: hex literals with 0b or B or E", ->
   eq 176, 0x0b0
   eq 177, 0x0B1
