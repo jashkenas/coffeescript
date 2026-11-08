@@ -14,6 +14,60 @@ assertErrorFormat = (code, expectedErrorFormat) ->
   assertErrorFormatNoAst code, expectedErrorFormat
   throws (-> CoffeeScript.compile code, ast: yes), errCallback(expectedErrorFormat)
 
+for jump in ['break', 'continue'] then do (jump) ->
+  message = "'#{jump}' can only be used inside a loop#{if jump is 'break' then ' or switch' else ''}"
+  underline = '^'.repeat jump.length
+
+  test "#5333: #{jump} outside a loop", ->
+    assertErrorFormat jump, """
+      [stdin]:1:1: error: #{message}
+      #{jump}
+      #{underline}
+    """
+
+  for glyph in ['->', '=>'] then do (glyph) ->
+    test "#5333: #{jump} in a function inside a loop (#{glyph})", ->
+      assertErrorFormat """
+        while yes
+          #{glyph}
+            #{jump}
+      """, """
+        [stdin]:3:5: error: #{message}
+            #{jump}
+            #{underline}
+      """
+
+  test "#5333: #{jump} in an async function inside a comprehension", ->
+    assertErrorFormat """
+      for item in iterable then do (item) ->
+        if await item
+          #{jump}
+    """, """
+      [stdin]:3:5: error: #{message}
+          #{jump}
+          #{underline}
+    """
+
+  test "#5333: #{jump} after a loop", ->
+    assertErrorFormat """
+      while no then null
+      #{jump}
+    """, """
+      [stdin]:2:1: error: #{message}
+      #{jump}
+      #{underline}
+    """
+
+test "#5333: continue in a switch outside a loop", ->
+  assertErrorFormat '''
+    switch value
+      when 1 then continue
+  ''', '''
+    [stdin]:2:15: error: 'continue' can only be used inside a loop
+      when 1 then continue
+                  ^^^^^^^^
+  '''
+
 test "lexer errors formatting", ->
   assertErrorFormat '''
     normalObject    = {}
