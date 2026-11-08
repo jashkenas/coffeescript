@@ -703,10 +703,10 @@ test "AST as expected for ComputedPropertyName node", ->
     implicit: yes
 
 test "AST as expected for StatementLiteral node", ->
-  testStatement 'break',
+  testAgainstExpected getAstStatement('break while yes').body.body[0],
     type: 'BreakStatement'
 
-  testStatement 'continue',
+  testAgainstExpected getAstStatement('continue while yes').body.body[0],
     type: 'ContinueStatement'
 
   testStatement 'debugger',

@@ -260,6 +260,26 @@ test "assignment inside the condition of a `while` loop", ->
   eq nonce, b
 
 
+test "#5333: valid loop and switch control statements", ->
+  for code in [
+    'while yes then break'
+    'continue for value in values'
+    'continue while yes'
+    'until no then continue'
+    'loop then break'
+    'for value from values then break'
+    'for own key of object then continue'
+    'for value in [1..3] when value then continue'
+    'switch value\n  when 1 then break\n  else break'
+    'while yes\n  switch value\n    when 1 then continue\n    else break'
+    'while yes\n  try\n    continue\n  finally\n    break'
+    'while yes\n  ->\n    while yes then break'
+    'switch value\n  when 1 then ->\n    switch value\n      when 1 then break'
+  ]
+    for bare in [yes, no]
+      doesNotThrow -> new Function CoffeeScript.compile code, {bare}
+    doesNotThrow -> CoffeeScript.compile code, ast: yes
+
 test "While over break.", ->
 
   i = 0

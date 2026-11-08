@@ -1202,10 +1202,16 @@ exports.StatementLiteral = class StatementLiteral extends Literal
     return this if @value is 'break' and not (o?.loop or o?.block)
     return this if @value is 'continue' and not o?.loop
 
+  checkJump: (o) ->
+    if @jumps o
+      @error "'#{@value}' can only be used inside a loop#{if @value is 'break' then ' or switch' else ''}"
+
   compileNode: (o) ->
+    @checkJump o
     [@makeCode "#{@tab}#{@value};"]
 
-  astType: ->
+  astType: (o) ->
+    @checkJump o
     switch @value
       when 'continue' then 'ContinueStatement'
       when 'break'    then 'BreakStatement'
@@ -4142,6 +4148,9 @@ exports.Code = class Code extends Base
     o.indent        += TAB
     delete o.bare
     delete o.isExistentialEquals
+    # Loop and switch control statements cannot cross function boundaries.
+    delete o.loop
+    delete o.block
 
   checkForDuplicateParams: ->
     paramNames = []
@@ -4597,7 +4606,7 @@ exports.While = class While extends Base
           body.expressions.unshift new If (new Parens @guard).invert(), new StatementLiteral "continue"
         else
           body = Block.wrap [new If @guard, body] if @guard
-      body = [].concat @makeCode("\n"), (body.compileToFragments o, LEVEL_TOP), @makeCode("\n#{@tab}")
+      body = [].concat @makeCode("\n"), (body.compileToFragments merge(o, loop: yes), LEVEL_TOP), @makeCode("\n#{@tab}")
     answer = [].concat @makeCode(set + @tab + "while ("), @processedCondition().compileToFragments(o, LEVEL_PAREN),
       @makeCode(") {"), body, @makeCode("}")
     if @returns
@@ -4612,7 +4621,7 @@ exports.While = class While extends Base
   astProperties: (o) ->
     return
       test: @condition.ast o, LEVEL_PAREN
-      body: @body.ast o, LEVEL_TOP
+      body: @body.ast merge(o, loop: yes), LEVEL_TOP
       guard: @guard?.ast(o) ? null
       inverted: !!@inverted
       postfix: !!@postfix
@@ -5465,7 +5474,7 @@ exports.For = class For extends While
         forPartFragments = forPartFragments.compileToFragments o, LEVEL_TOP
       else
         forPartFragments = [@makeCode("#{kvar} of #{svar}")]
-    bodyFragments = body.compileToFragments merge(o, indent: idt1), LEVEL_TOP
+    bodyFragments = body.compileToFragments merge(o, indent: idt1, loop: yes), LEVEL_TOP
     if bodyFragments and bodyFragments.length > 0
       bodyFragments = [].concat @makeCode('\n'), bodyFragments, @makeCode('\n')
 
@@ -5492,7 +5501,7 @@ exports.For = class For extends While
   astProperties: (o) ->
     return
       source: @source?.ast o
-      body: @body.ast o, LEVEL_TOP
+      body: @body.ast merge(o, loop: yes), LEVEL_TOP
       guard: @guard?.ast(o) ? null
       name: @name?.ast(o) ? null
       index: @index?.ast(o) ? null
@@ -5538,13 +5547,13 @@ exports.Switch = class Switch extends Base
       for cond in flatten [conditions]
         cond  = cond.invert() unless @subject
         fragments = fragments.concat @makeCode(idt1 + "case "), cond.compileToFragments(o, LEVEL_PAREN), @makeCode(":\n")
-      fragments = fragments.concat body, @makeCode('\n') if (body = block.compileToFragments o, LEVEL_TOP).length > 0
+      fragments = fragments.concat body, @makeCode('\n') if (body = block.compileToFragments merge(o, block: yes), LEVEL_TOP).length > 0
       break if i is @cases.length - 1 and not @otherwise
       expr = @lastNode block.expressions
       continue if expr instanceof Return or expr instanceof Throw or (expr instanceof Literal and expr.jumps() and expr.value isnt 'debugger')
       fragments.push cond.makeCode(idt2 + 'break;\n')
     if @otherwise and @otherwise.expressions.length
-      fragments.push @makeCode(idt1 + "default:\n"), (@otherwise.compileToFragments o, LEVEL_TOP)..., @makeCode("\n")
+      fragments.push @makeCode(idt1 + "default:\n"), (@otherwise.compileToFragments merge(o, block: yes), LEVEL_TOP)..., @makeCode("\n")
     fragments.push @makeCode @tab + '}'
     fragments
 
@@ -5590,7 +5599,7 @@ class SwitchCase extends Base
   astProperties: (o) ->
     return
       test: @test?.ast(o, LEVEL_PAREN) ? null
-      consequent: @block?.ast(o, LEVEL_TOP).body ? []
+      consequent: @block?.ast(merge(o, block: yes), LEVEL_TOP).body ? []
       trailing: !!@trailing
 
 exports.SwitchWhen = class SwitchWhen extends Base

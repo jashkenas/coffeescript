@@ -199,7 +199,7 @@ test "AST location data as expected for IdentifierLiteral node", ->
         column: 2
 
 test "AST location data as expected for StatementLiteral node", ->
-  testAstLocationData 'break',
+  testAstNodeLocationData getAstStatement('break while yes').body.body[0],
     type: 'BreakStatement'
     start: 0
     end: 5
@@ -212,7 +212,7 @@ test "AST location data as expected for StatementLiteral node", ->
         line: 1
         column: 5
 
-  testAstLocationData 'continue',
+  testAstNodeLocationData getAstStatement('continue while yes').body.body[0],
     type: 'ContinueStatement'
     start: 0
     end: 8
