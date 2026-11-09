@@ -119,6 +119,19 @@ exports.extractAllCommentTokens = (tokens) ->
   for key in sortedKeys
     allCommentsObj[key]
 
+# Extract all possible identifiers out of a list of tokens, before attempting to determine their
+# semantic meaning. This is used in variable gensymming to create non-colliding variable names.
+exports.extractVariableReferences = (tokens) ->
+  val for [tag, val] in tokens when tag is 'IDENTIFIER'
+
+# If any of the tokens include `import` or `export`, we have to place a ton of restrictions on the
+# code, including the avoidance of the standard top-level IIFE wrapper.
+exports.hasESModuleTokens = (tokens) ->
+  for [tag, ...] in tokens
+    if tag in ['IMPORT', 'EXPORT']
+      return yes
+  no
+
 # Get a lookup hash for a token based on its location data.
 # Multiple tokens might have the same location hash, but using exclusive
 # location data distinguishes e.g. zero-length generated tokens from

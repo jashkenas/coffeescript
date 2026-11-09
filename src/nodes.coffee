@@ -5,7 +5,8 @@
 
 Error.stackTraceLimit = Infinity
 
-{Scope} = require './scope'
+{BlockScope, ControlFlowScope, ClassDeclarationScope, ExecutableClassBodyScope,
+FunctionScope, TopLevelScope, VarScope} = require './scope'
 {isUnassignable, JS_FORBIDDEN} = require './lexer'
 
 # Import the helpers we plan to use.
@@ -198,7 +199,7 @@ exports.Base = class Base
   cache: (o, level, shouldCache) ->
     complex = if shouldCache? then shouldCache this else @shouldCache()
     if complex
-      ref = new IdentifierLiteral o.scope.freeVariable 'ref'
+      ref = new IdentifierLiteral o.scope.asVarScope().freeVariable 'ref'
       sub = new Assign ref, this
       if level then [sub.compileToFragments(o, level), [@makeCode(ref.value)]] else [sub, ref]
     else
@@ -532,10 +533,10 @@ exports.Root = class Root extends Base
     [].concat @makeCode("(#{functionKeyword}() {\n"), fragments, @makeCode("\n}).call(this);\n")
 
   initializeScope: (o) ->
-    o.scope = new Scope null, @body, null, o.referencedVars ? []
-    # Mark given local variables in the root scope as parameters so they don’t
-    # end up being declared on the root block.
-    o.scope.parameter name for name in o.locals or []
+    o.scope = TopLevelScope.withLocals
+      block: @body
+      referencedVars: o.referencedVars ? []
+      locals: o.locals ? []
 
   commentsAst: ->
     @allComments ?=
@@ -677,47 +678,82 @@ exports.Block = class Block extends Base
     if compiledNodes.length > 1 and o.level >= LEVEL_LIST then @wrapInParentheses answer else answer
 
   compileRoot: (o) ->
+    # This adds spaces in between each top-level declaration.
     @spaced = yes
     fragments = @compileWithDeclarations o
     HoistTarget.expand fragments
     @compileComments fragments
 
+  ### TODO: the following has weird indentation:
+f = (y) ->
+  # xxxx
+
+  # yyyy
+
+  {@x = 1} = y
+  @x
+-----
+f = function(y) {
+  // xxxx
+
+    // yyyy
+  ({x: this.x = 1} = y);
+  return this.x;
+};
+  ###
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
   compileWithDeclarations: (o) ->
     fragments = []
     post = []
-    for exp, i in @expressions
-      exp = exp.unwrap()
-      break unless exp instanceof Literal
+    # A block introduces a new top-level expression context.
     o = merge(o, level: LEVEL_TOP)
-    if i
-      rest = @expressions.splice i, 9e9
+
+    # This section will compile all the literal expressions (and comments) first
+    # (with @spaced = no), then compile the rest while accumulating all variables!
+    firstNonLiteral = @expressions.findIndex (e) -> e.unwrap() not instanceof Literal
+    hadPrefixExpressions = if firstNonLiteral is 0
+      # If the first expression is non-literal, then we don't do anything special.
+      no
+      # Note that -1 means all expressions are literal, which will pull them all into this
+      # else block.
+    else
+      # This removes spacing for comments (and literals) added to the top of the block This means
+      # that comments at the top of the block will not have extra whitespace around them, which
+      # allows them to be used to adorn e.g. external identifiers in the root block.
+      rest = @expressions.splice firstNonLiteral
       [spaced,    @spaced] = [@spaced, no]
       [fragments, @spaced] = [@compileNode(o), spaced]
       @expressions = rest
+      yes
+
+    # Now compile any non-literal expressions.
     post = @compileNode o
+
+    # Now generate code to declare any new variables in scope, placing it *after* the initial
+    # comments and/or literal expressions.
     {scope} = o
-    if scope.expressions is this
-      declars = o.scope.hasDeclarations()
-      assigns = scope.hasAssignments
-      if declars or assigns
-        fragments.push @makeCode '\n' if i
-        fragments.push @makeCode "#{@tab}var "
-        if declars
-          declaredVariables = scope.declaredVariables()
-          for declaredVariable, declaredVariablesIndex in declaredVariables
-            fragments.push @makeCode declaredVariable
-            if Object::hasOwnProperty.call o.scope.comments, declaredVariable
-              fragments.push o.scope.comments[declaredVariable]...
-            if declaredVariablesIndex isnt declaredVariables.length - 1
-              fragments.push @makeCode ', '
-        if assigns
-          fragments.push @makeCode ",\n#{@tab + TAB}" if declars
-          fragments.push @makeCode scope.assignedVariables().join(",\n#{@tab + TAB}")
-        fragments.push @makeCode ";\n#{if @spaced then '\n' else ''}"
-      else if fragments.length and post.length
-        fragments.push @makeCode "\n"
+    declars = scope.hasDeclarations()
+    assigns = scope.hasAssignments
+    if declars or assigns
+      fragments.push @makeCode '\n' if hadPrefixExpressions
+      fragments.push @makeCode "#{@tab}var "
+      if declars
+        declaredVariables = Array.from(scope.declaredVariables()).sort()
+        for declaredVariable, declaredVariablesIndex in declaredVariables
+          fragments.push @makeCode declaredVariable
+          if Object::hasOwnProperty.call scope.comments, declaredVariable
+            fragments.push scope.comments[declaredVariable]...
+          if declaredVariablesIndex isnt declaredVariables.length - 1
+            fragments.push @makeCode ', '
+      if assigns
+        fragments.push @makeCode ",\n#{@tab + TAB}" if declars
+        fragments.push @makeCode scope.assignedVariables().join(",\n#{@tab + TAB}")
+      fragments.push @makeCode ";\n#{if @spaced then '\n' else ''}"
+    else if fragments.length and post.length
+      fragments.push @makeCode '\n'
+
+    # Place the generated function body after the variable declarations and/or literal expressions.
     fragments.concat post
 
   compileComments: (fragments) ->
@@ -1168,9 +1204,12 @@ exports.IdentifierLiteral = class IdentifierLiteral extends Literal
       'Identifier'
 
   astProperties: ->
-    return
-      name: @value
-      declaration: !!@isDeclaration
+    ret = {name: @value}
+    if @forExternalConsumption
+      ret.remote = yes
+    else
+      ret.declaration = !!@isDeclaration
+    return ret
 
 exports.PropertyName = class PropertyName extends Literal
   isAssignable: YES
@@ -1217,7 +1256,8 @@ exports.ThisLiteral = class ThisLiteral extends Literal
     @shorthand = value is '@'
 
   compileNode: (o) ->
-    code = if o.scope.method?.bound then o.scope.method.context else @value
+    method = o.scope.asVarScope().method
+    code = if method?.bound then method.context else @value
     [@makeCode code]
 
   astType: -> 'ThisExpression'
@@ -1319,7 +1359,7 @@ exports.FuncDirectiveReturn = class FuncDirectiveReturn extends Return
     super o
 
   checkScope: (o) ->
-    unless o.scope.parent?
+    if o.scope instanceof TopLevelScope
       @error "#{@keyword} can only occur inside functions"
 
   isStatementAst: NO
@@ -1435,11 +1475,11 @@ exports.Value = class Value extends Base
       return [this, this]  # `a` `a.b`
     base = new Value @base, @properties[...-1]
     if base.shouldCache()  # `a().b`
-      bref = new IdentifierLiteral o.scope.freeVariable 'base'
+      bref = new IdentifierLiteral o.scope.asVarScope().freeVariable 'base'
       base = new Value new Parens new Assign bref, base
     return [base, bref] unless name  # `a()`
     if name.shouldCache()  # `a[b()]`
-      nref = new IdentifierLiteral o.scope.freeVariable 'name'
+      nref = new IdentifierLiteral o.scope.asVarScope().freeVariable 'name'
       name = new Index new Assign nref, name.index
       nref = new Index nref
     [base.add(name), new Value(bref or base.base, [nref or name])]
@@ -1480,7 +1520,7 @@ exports.Value = class Value extends Base
         fst = new Value @base, @properties[...i]
         snd = new Value @base, @properties[i..]
         if fst.shouldCache()
-          ref = new IdentifierLiteral o.scope.freeVariable 'ref'
+          ref = new IdentifierLiteral o.scope.asVarScope().freeVariable 'ref'
           fst = new Parens new Assign ref, fst
           snd.base = ref
         return new If new Existence(fst), snd, soak: on
@@ -1576,7 +1616,7 @@ exports.MetaProperty = class MetaProperty extends Base
   checkValid: (o) ->
     if @meta.value is 'new'
       if @property instanceof Access and @property.name.value is 'target'
-        unless o.scope.parent?
+        if o.scope instanceof TopLevelScope
           @error "new.target can only occur inside functions"
       else
         @error "the only valid meta property for new is new.target"
@@ -2095,7 +2135,7 @@ exports.Call = class Call extends Base
     no
 
   astNode: (o) ->
-    if @soak and @variable instanceof Super and o.scope.namedMethod()?.ctor
+    if @soak and @variable instanceof Super and o.scope.asVarScope().tryAsFunctionScope()?.namedMethod()?.ctor
       @variable.error "Unsupported reference to 'super'"
     @checkForNewSuper()
     super o
@@ -2151,11 +2191,11 @@ exports.Super = class Super extends Base
   compileNode: (o) ->
     @checkInInstanceMethod o
 
-    method = o.scope.namedMethod()
+    method = o.scope.asVarScope().tryAsFunctionScope()?.namedMethod()
     unless method.ctor? or @accessor?
       {name, variable} = method
       if name.shouldCache() or (name instanceof Index and name.index.isAssignable())
-        nref = new IdentifierLiteral o.scope.parent.freeVariable 'name'
+        nref = new IdentifierLiteral o.scope.asVarScope().varParent.freeVariable 'name'
         name.index = new Assign nref, name.index
       @accessor = if nref? then new Index nref else name
 
@@ -2176,7 +2216,7 @@ exports.Super = class Super extends Base
     fragments
 
   checkInInstanceMethod: (o) ->
-    method = o.scope.namedMethod()
+    method = o.scope.asVarScope().tryAsFunctionScope()?.namedMethod()
     @error 'cannot use super outside of an instance method' unless method?.isMethod
 
   astNode: (o) ->
@@ -2395,8 +2435,8 @@ exports.Range = class Range extends Base
       range.pop() if @exclusive
       return [@makeCode "[#{ range.join(', ') }]"]
     idt    = @tab + TAB
-    i      = o.scope.freeVariable 'i', single: true, reserve: no
-    result = o.scope.freeVariable 'results', reserve: no
+    i      = o.scope.asVarScope().freeVariable 'i', single: true, reserve: no
+    result = o.scope.asVarScope().freeVariable 'results', reserve: no
     pre    = "\n#{idt}var #{result} = [];"
     if known
       o.index = i
@@ -2799,7 +2839,12 @@ exports.Class = class Class extends Base
       @body = new Block
       @hasGeneratedBody = yes
 
+  makeClassControlFlowScope: (parentScope) -> new ClassDeclarationScope
+    parent: parentScope
+    class: @
+
   compileNode: (o) ->
+    o.scope        = @makeClassControlFlowScope o.scope
     @name          = @determineName()
     executableBody = @walkBody o
 
@@ -2816,7 +2861,7 @@ exports.Class = class Class extends Base
       node = new Parens node
 
     if @boundMethods.length and @parent
-      @variable ?= new IdentifierLiteral o.scope.freeVariable '_class'
+      @variable ?= new IdentifierLiteral o.scope.asVarScope().freeVariable '_class'
       [@variable, @variableRef] = @variable.cache o unless @variableRef?
 
     if @variable
@@ -3025,7 +3070,7 @@ exports.Class = class Class extends Base
 
   declareName: (o) ->
     return unless (name = @variable?.unwrap()) instanceof IdentifierLiteral
-    alreadyDeclared = o.scope.find name.value
+    alreadyDeclared = o.scope.asVarScope().find name.value
     name.isDeclaration = not alreadyDeclared
 
   isStatementAst: -> yes
@@ -3035,6 +3080,7 @@ exports.Class = class Class extends Base
       jumpNode.error 'Class bodies cannot contain pure statements'
     if argumentsNode = @body.contains isLiteralArguments
       argumentsNode.error "Class bodies shouldn't reference arguments"
+    o.scope = @makeClassControlFlowScope o.scope
     @declareName o
     @name = @determineName()
     @body.isClassBody = yes
@@ -3065,6 +3111,11 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
   constructor: (@class, @body = new Block) ->
     super()
 
+  makeExecutableClassScope: (parentScope, method) -> new ExecutableClassBodyScope
+    parent: parentScope
+    method: method
+    class: @
+
   compileNode: (o) ->
     if jumpNode = @body.jumps()
       jumpNode.error 'Class bodies cannot contain pure statements'
@@ -3078,7 +3129,9 @@ exports.ExecutableClassBody = class ExecutableClassBody extends Base
 
     @body.spaced = true
 
-    o.classScope = wrapper.makeScope o.scope
+    # NB: this scope is only introduced during compilation. The executable class body node is not
+    #     generated for AST nodes; it is a facade introduced during codegen.
+    o.classScope = @makeExecutableClassScope o.scope, wrapper
 
     @name      = @class.name ? o.classScope.freeVariable @defaultClassVariableName
     ident      = new IdentifierLiteral @name
@@ -3207,9 +3260,8 @@ exports.ClassPrototypeProperty = class ClassPrototypeProperty extends Base
 #### Import and Export
 
 exports.ModuleDeclaration = class ModuleDeclaration extends Base
-  constructor: (@clause, @source, @assertions) ->
+  constructor: (@clause, @source, @assertions, @moduleDeclarationType) ->
     super()
-    @checkSource()
 
   children: ['clause', 'source', 'assertions']
 
@@ -3217,17 +3269,13 @@ exports.ModuleDeclaration = class ModuleDeclaration extends Base
   jumps:       THIS
   makeReturn:  THIS
 
-  checkSource: ->
-    if @source? and @source instanceof StringWithInterpolations
-      @source.error 'the name of the module to be imported from must be an uninterpolated string'
+  checkScope: (o) ->
+    if o.scope not instanceof TopLevelScope
+      @error "#{@moduleDeclarationType} statements must be at top-level scope"
 
-  checkScope: (o, moduleDeclarationType) ->
-    # TODO: would be appropriate to flag this error during AST generation (as
-    # well as when compiling to JS). But `o.indent` isn’t tracked during AST
-    # generation, and there doesn’t seem to be a current alternative way to track
-    # whether we’re at the “program top-level”.
-    if o.indent.length isnt 0
-      @error "#{moduleDeclarationType} statements must be at top-level scope"
+  astNode: (o) ->
+    @checkScope o
+    super o
 
   astAssertions: (o) ->
     if @assertions?.properties?
@@ -3237,28 +3285,34 @@ exports.ModuleDeclaration = class ModuleDeclaration extends Base
     else
       []
 
-exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
-  compileNode: (o) ->
-    @checkScope o, 'import'
-    o.importedSymbols = []
-
+  compileAssertions: (o) ->
+    return [] unless @source?.value?
     code = []
-    code.push @makeCode "#{@tab}import "
-    code.push @clause.compileNode(o)... if @clause?
-
-    if @source?.value?
-      code.push @makeCode ' from ' unless @clause is null
-      code.push @makeCode @source.value
-      if @assertions?
-        code.push @makeCode ' assert '
-        code.push @assertions.compileToFragments(o)...
-
-    code.push @makeCode ';'
+    code.push @makeCode ' from ' unless @clause is null
+    code.push @makeCode @source.value
+    if @assertions?
+      code.push @makeCode ' assert '
+      code.push @assertions.compileToFragments(o)...
     code
 
-  astNode: (o) ->
-    o.importedSymbols = []
-    super o
+exports.ImportDeclaration = class ImportDeclaration extends ModuleDeclaration
+  constructor: (clause, source, assertions) ->
+    super clause, source, assertions, 'import'
+    @checkSource()
+
+  checkSource: ->
+    if @source? and @source instanceof StringWithInterpolations
+      @source.error 'the name of the module to be imported from must be an uninterpolated string'
+
+  compileNode: (o) ->
+    @checkScope o
+
+    [
+      @makeCode("#{@tab}import "),
+      (if @clause? then @clause.compileNode(o) else [])...,
+      @compileAssertions(o)...,
+      @makeCode(';'),
+    ]
 
   astProperties: (o) ->
     ret =
@@ -3294,65 +3348,122 @@ exports.ImportClause = class ImportClause extends Base
       @namedImports?.ast o
     ]
 
-exports.ExportDeclaration = class ExportDeclaration extends ModuleDeclaration
-  compileNode: (o) ->
-    @checkScope o, 'export'
-    @checkForAnonymousClassExport()
-
-    code = []
-    code.push @makeCode "#{@tab}export "
-    code.push @makeCode 'default ' if @ instanceof ExportDefaultDeclaration
-
-    if @ not instanceof ExportDefaultDeclaration and
-       (@clause instanceof Assign or @clause instanceof Class)
-      code.push @makeCode 'var '
-      @clause.moduleDeclaration = 'export'
-
-    if @clause.body? and @clause.body instanceof Block
-      code = code.concat @clause.compileToFragments o, LEVEL_TOP
-    else
-      code = code.concat @clause.compileNode o
-
-    if @source?.value?
-      code.push @makeCode " from #{@source.value}"
-      if @assertions?
-        code.push @makeCode ' assert '
-        code.push @assertions.compileToFragments(o)...
-
-    code.push @makeCode ';'
-    code
+exports.ExportNamedDeclaration = class ExportNamedDeclaration extends ModuleDeclaration
+  constructor: (clause, source, assertions) ->
+    super clause, source, assertions, 'export'
 
   # Prevent exporting an anonymous class; all exported members must be named
   checkForAnonymousClassExport: ->
-    if @ not instanceof ExportDefaultDeclaration and @clause instanceof Class and not @clause.variable
+    if @clause instanceof Class and not @clause.variable
       @clause.error 'anonymous classes cannot be exported'
+
+  tryAddExportToScope: (o, identifier) ->
+    return yes if o.scope.tryNewExport identifier
+    @error "Duplicate export of '#{identifier}'"
+
+  validateExports: (o) ->
+    if @clause instanceof Assign
+      @tryAddExportToScope o, @clause.variable.value
+      {exportType: 'export-var'}
+    else if @clause instanceof Class
+      @tryAddExportToScope o, @clause.variable.unwrap().value
+      {exportType: 'export-var'}
+    else
+      throw new TypeError "invalid clause: #{@clause}" unless @clause instanceof ExportSpecifierList
+      for {original, alias, identifier} in @clause.specifiers
+        # 'default as x' is ok, but that wouldn't trigger for @identifier. 'default' is not allowed.
+        if not alias? and identifier is 'default' and not @source?
+          original.error "'default' is a reserved word for a specially registered export.
+          Register the default export with 'export default ...' or 'export { x as default }'.
+          It *is* allowed to use 'export { default } from ...' to reproduce the default export from
+          an external library."
+      {exportType: 'external-only'}
+
+  compileNode: (o) ->
+    @checkScope o
+    @checkForAnonymousClassExport()
+
+    code = [@makeCode "#{@tab}export "]
+
+    {exportType} = @validateExports o
+    switch exportType
+      when 'export-var'
+        # NB: This avoids the assignment trying to mess with our symbol table for var allocation
+        # later on when it gets compiled.
+        @clause.moduleDeclaration = 'export'
+        # Classes and Assigns both get `export var` right now.
+        code.push @makeCode 'var '
+      when 'external-only'
+        # Nothing to do: these do not affect this module's internal symbol table.
+      else throw new TypeError "unrecognized export type: #{exportType}"
+
+    code.push @clause.compileToFragments(o, LEVEL_TOP)...
+    code.push @compileAssertions(o)...
+    code.push @makeCode ';'
+
+    code
 
   astNode: (o) ->
     @checkForAnonymousClassExport()
     super o
 
-exports.ExportNamedDeclaration = class ExportNamedDeclaration extends ExportDeclaration
   astProperties: (o) ->
+    {exportType} = @validateExports o
     ret =
       source: @source?.ast(o) ? null
       assertions: @astAssertions(o)
       exportKind: 'value'
     clauseAst = @clause.ast o
-    if @clause instanceof ExportSpecifierList
-      ret.specifiers = clauseAst
-      ret.declaration = null
-    else
-      ret.specifiers = []
-      ret.declaration = clauseAst
+    switch exportType
+      when 'export-var'
+        ret.specifiers = []
+        ret.declaration = clauseAst
+      when 'external-only'
+        ret.specifiers = clauseAst
+        ret.declaration = null
+      else throw new TypeError "unrecognized export type: #{exportType}"
     ret
 
-exports.ExportDefaultDeclaration = class ExportDefaultDeclaration extends ExportDeclaration
+exports.ExportDefaultDeclaration = class ExportDefaultDeclaration extends ModuleDeclaration
+  constructor: (clause, source, assertions) ->
+    super clause, source, assertions, 'export default'
+
+  tryAddDefaultExportToScope: (o) ->
+    return yes if o.scope.tryDefaultExport()
+    @error 'default export has already been declared'
+
+  compileNode: (o) ->
+    @checkScope o
+    @tryAddDefaultExportToScope o
+
+    [
+      @makeCode("#{@tab}export "),
+      @makeCode('default '),
+      @clause.compileToFragments(o, LEVEL_TOP)...,
+      @compileAssertions(o)...,
+      @makeCode(';'),
+    ]
+
   astProperties: (o) ->
+    @tryAddDefaultExportToScope o
     return
       declaration: @clause.ast o
       assertions: @astAssertions(o)
 
-exports.ExportAllDeclaration = class ExportAllDeclaration extends ExportDeclaration
+exports.ExportAllDeclaration = class ExportAllDeclaration extends ModuleDeclaration
+  constructor: (clause, source, assertions) ->
+    super clause, source, assertions, 'export *'
+
+  compileNode: (o) ->
+    @checkScope o
+
+    [
+      @makeCode("#{@tab}export "),
+      @clause.compileToFragments(o, LEVEL_TOP)...,
+      @compileAssertions(o)...,
+      @makeCode(';'),
+    ]
+
   astProperties: (o) ->
     return
       source: @source.ast o
@@ -3388,7 +3499,7 @@ exports.ImportSpecifierList = class ImportSpecifierList extends ModuleSpecifierL
 exports.ExportSpecifierList = class ExportSpecifierList extends ModuleSpecifierList
 
 exports.ModuleSpecifier = class ModuleSpecifier extends Base
-  constructor: (@original, @alias, @moduleDeclarationType) ->
+  constructor: (@original, @alias) ->
     super()
 
     if @original.comments or @alias?.comments
@@ -3401,59 +3512,126 @@ exports.ModuleSpecifier = class ModuleSpecifier extends Base
 
   children: ['original', 'alias']
 
+exports.ImportSpecifier = class ImportSpecifier extends ModuleSpecifier
+  constructor: (original, alias) ->
+    super original, alias
+
+  tryAddIdentifierToScope: (o) ->
+    switch @identifier
+      when 'default'
+        # 'default as x' is allowed, but 'default' and 'x as default' are not.
+        if not alias? or alias.value is 'default'
+          @error "'default' is a reserved word for a specially registered export value.
+          Bind it with e.g. 'import { default as x } from ...' or 'import x from ...'."
+    # Per the spec, symbols can’t be imported multiple times
+    # (e.g. `import { foo, foo } from 'lib'` is invalid)
+    return yes if o.scope.tryNewImport @identifier
+    @error "'#{@identifier}' has already been declared"
+
+  astProperties: (o) ->
+    if @alias?
+      @original.forExternalConsumption = yes
+      @alias.isDeclaration = @tryAddIdentifierToScope o
+      imported = @original.ast o
+      local = @alias.ast o
+    else
+      @original.isDeclaration = @tryAddIdentifierToScope o
+      local = @original.ast o
+      delete @original.isDeclaration
+      @original.forExternalConsumption = yes
+      imported = @original.ast o
+
+    {imported, local, importKind: null}
+
   compileNode: (o) ->
-    @addIdentifierToScope o
+    @tryAddIdentifierToScope o
     code = []
     code.push @makeCode @original.value
     code.push @makeCode " as #{@alias.value}" if @alias?
     code
 
-  addIdentifierToScope: (o) ->
-    o.scope.find @identifier, @moduleDeclarationType
+exports.ImportSingleNameSpecifier = class ImportSingleNameSpecifier extends Base
+  constructor: (@name) ->
+    super()
 
-  astNode: (o) ->
-    @addIdentifierToScope o
-    super o
+    # FIXME: comments aren't attached! try:
+    ###
+# asdf
+import CoffeeScript from "./lib/coffeescript/index.js"
+y = 3
+-----
+// asdf
+var y;
 
-exports.ImportSpecifier = class ImportSpecifier extends ModuleSpecifier
-  constructor: (imported, local) ->
-    super imported, local, 'import'
+import CoffeeScript from "./lib/coffeescript/index.js";
 
-  addIdentifierToScope: (o) ->
+y = 3;
+    ###
+    if @name.comments
+      @comments = []
+      @comments.push @name.comments... if @name.comments
+
+    @identifier = @name.value
+
+  children: ['name']
+
+  tryAddIdentifierToScope: (o) ->
     # Per the spec, symbols can’t be imported multiple times
     # (e.g. `import { foo, foo } from 'lib'` is invalid)
-    if @identifier in o.importedSymbols or o.scope.check(@identifier)
-      @error "'#{@identifier}' has already been declared"
-    else
-      o.importedSymbols.push @identifier
-    super o
+    return yes if o.scope.tryNewImport @identifier
+    @error "'#{@identifier}' has already been declared"
+
+  compileNode: (o) ->
+    @tryAddIdentifierToScope o
+    [@makeCode @name.value]
 
   astProperties: (o) ->
-    originalAst = @original.ast o
+    @name.isDeclaration = @tryAddIdentifierToScope o
     return
-      imported: originalAst
-      local: @alias?.ast(o) ? originalAst
-      importKind: null
+      local: @name.ast o
 
-exports.ImportDefaultSpecifier = class ImportDefaultSpecifier extends ImportSpecifier
-  astProperties: (o) ->
-    return
-      local: @original.ast o
+exports.ImportDefaultSpecifier = class ImportDefaultSpecifier extends ImportSingleNameSpecifier
 
-exports.ImportNamespaceSpecifier = class ImportNamespaceSpecifier extends ImportSpecifier
-  astProperties: (o) ->
-    return
-      local: @alias.ast o
+exports.ImportNamespaceSpecifier = class ImportNamespaceSpecifier extends ImportSingleNameSpecifier
+  constructor: (@star, name) ->
+    super name
+
+  compileNode: (o) ->
+    @tryAddIdentifierToScope o
+    [
+      @makeCode(@star.value),
+      @makeCode(" as #{@name.value}"),
+    ]
 
 exports.ExportSpecifier = class ExportSpecifier extends ModuleSpecifier
-  constructor: (local, exported) ->
-    super local, exported, 'export'
+  constructor: (original, alias) ->
+    super original, alias
+
+  tryAddExportToScope: (o) ->
+    nameWasNew = switch @identifier
+      when 'default'
+        o.scope.tryDefaultExport()
+      else
+        o.scope.tryNewExport @identifier
+    return yes if nameWasNew
+    @error "Duplicate export of '#{@identifier}'"
 
   astProperties: (o) ->
-    originalAst = @original.ast o
-    return
-      local: originalAst
-      exported: @alias?.ast(o) ? originalAst
+    local = @original.ast o
+    exported = if @alias?
+      @alias.forExternalConsumption = @tryAddExportToScope o
+      @alias.ast o
+    else
+      @original.forExternalConsumption = @tryAddExportToScope o
+      @original.ast o
+    {local, exported}
+
+  compileNode: (o) ->
+    @tryAddExportToScope o
+    code = []
+    code.push @makeCode @original.value
+    code.push @makeCode " as #{@alias.value}" if @alias?
+    code
 
 exports.DynamicImport = class DynamicImport extends Base
   compileNode: ->
@@ -3492,8 +3670,9 @@ exports.Assign = class Assign extends Base
     o?.level is LEVEL_TOP and @context? and (@moduleDeclaration or "?" in @context)
 
   checkNameAssignability: (o, varBase) ->
-    if o.scope.type(varBase.value) is 'import'
-      varBase.error "'#{varBase.value}' is read-only"
+    if (spec = o.scope.asVarScope().checkSpec varBase.value)?
+      if spec.type is 'import'
+        varBase.error "'#{varBase.value}' is read-only"
 
   assigns: (name) ->
     @[if @context is 'object' then 'value' else 'variable'].assigns name
@@ -3530,16 +3709,16 @@ exports.Assign = class Assign extends Base
       # `moduleDeclaration` can be `'import'` or `'export'`.
       @checkNameAssignability o, name
       if @moduleDeclaration
-        o.scope.add name.value, @moduleDeclaration
+        o.scope.asVarScope().add name.value, {type: @moduleDeclaration}
         name.isDeclaration = yes
       else if @param
-        o.scope.add name.value,
-          if @param is 'alwaysDeclare'
+        o.scope.asVarScope().add name.value,
+          type: if @param is 'alwaysDeclare'
             'var'
           else
             'param'
       else
-        alreadyDeclared = o.scope.find name.value
+        alreadyDeclared = o.scope.asVarScope().find name.value
         name.isDeclaration ?= not alreadyDeclared
         # If this assignment identifier has one or more herecomments
         # attached, output them as part of the declarations line (unless
@@ -3547,14 +3726,14 @@ exports.Assign = class Assign extends Base
         # with Flow typing. Don’t do this if this assignment is for a
         # class, e.g. `ClassName = class ClassName {`, as Flow requires
         # the comment to be between the class name and the `{`.
-        if name.comments and not o.scope.comments[name.value] and
+        if name.comments and not o.scope.asVarScope().comments[name.value] and
            @value not instanceof Class and
            name.comments.every((comment) -> comment.here and not comment.multiline)
           commentsNode = new IdentifierLiteral name.value
           commentsNode.comments = name.comments
           commentFragments = []
           @compileCommentFragments o, commentsNode, commentFragments
-          o.scope.comments[name.value] = commentFragments
+          o.scope.asVarScope().comments[name.value] = commentFragments
 
   # Compile an assignment, delegating to `compileDestructuring` or
   # `compileSplice` if appropriate. Keep track of the name of the base object
@@ -3612,7 +3791,7 @@ exports.Assign = class Assign extends Base
     [..., splat] = props
     splatProp = splat.name
     assigns = []
-    refVal = new Value new IdentifierLiteral o.scope.freeVariable 'ref'
+    refVal = new Value new IdentifierLiteral o.scope.asVarScope().freeVariable 'ref'
     props.splice -1, 1, new Splat refVal
     assigns.push new Assign(new Value(new Obj props), @value).compileToFragments o, LEVEL_LIST
     assigns.push new Assign(new Value(splatProp), refVal).compileToFragments o, LEVEL_LIST
@@ -3648,7 +3827,7 @@ exports.Assign = class Assign extends Base
     if isSplat
       splatVar = objects[splats[0]].name.unwrap()
       if splatVar instanceof Arr or splatVar instanceof Obj
-        splatVarRef = new IdentifierLiteral o.scope.freeVariable 'ref'
+        splatVarRef = new IdentifierLiteral o.scope.asVarScope().freeVariable 'ref'
         objects[splats[0]].name = splatVarRef
         splatVarAssign = -> pushAssign new Value(splatVar), splatVarRef
 
@@ -3656,7 +3835,7 @@ exports.Assign = class Assign extends Base
     # `{a, b} = fn()` must be cached, for example. Make vvar into a simple
     # variable if it isn’t already.
     if value.unwrap() not instanceof IdentifierLiteral or @variable.assigns(vvarText)
-      ref = o.scope.freeVariable 'ref'
+      ref = o.scope.asVarScope().freeVariable 'ref'
       assigns.push [@makeCode(ref + ' = '), vvar...]
       vvar = [@makeCode ref]
       vvarText = ref
@@ -3752,7 +3931,7 @@ exports.Assign = class Assign extends Base
           when isExpans then compSlice vvarText, rightObjs.length * -1
         if complexObjects rightObjs
           restVar = refExp
-          refExp = o.scope.freeVariable 'ref'
+          refExp = o.scope.asVarScope().freeVariable 'ref'
           assigns.push [@makeCode(refExp + ' = '), restVar.compileToFragments(o, LEVEL_LIST)...]
         processObjects rightObjs, vvar, refExp
     else
@@ -3796,7 +3975,13 @@ exports.Assign = class Assign extends Base
     [left, right] = @variable.cacheReference o
     # Disallow conditional assignment of undefined variables.
     if not left.properties.length and left.base instanceof Literal and
-           left.base not instanceof ThisLiteral and not o.scope.check left.base.value
+           left.base not instanceof ThisLiteral and not o.scope.asVarScope().check left.base.value
+      # TODO: probably need something like Assign#addScopeVariables()! e.g.:
+      # var full, match, name;
+      # if (match = module.match(/^(.*)=(.*)$/)) {
+      #   [full, name, module] = match;
+      # }
+      # name || (name = helpers.baseFileName(module, true, useWinPathSep));
       @throwUnassignableConditionalError left.base.value
     if "?" in @context
       o.isExistentialEquals = true
@@ -3862,7 +4047,7 @@ exports.Assign = class Assign extends Base
     @getAndCheckSplatsAndExpansions()
     if @isConditional()
       variable = @variable.unwrap()
-      if variable instanceof IdentifierLiteral and not o.scope.check variable.value
+      if variable instanceof IdentifierLiteral and not o.scope.asVarScope().check variable.value
         @throwUnassignableConditionalError variable.value
     @addScopeVariables o, allowAssignmentToExpansion: yes, allowAssignmentToNontrailingSplat: yes, allowAssignmentToEmptyArray: yes, allowAssignmentToComplexSplat: yes
     super o
@@ -3891,9 +4076,10 @@ exports.FuncGlyph = class FuncGlyph extends Base
 
 #### Code
 
-# A function definition. This is the only node that creates a new Scope.
-# When for the purposes of walking the contents of a function body, the Code
-# has no *children* -- they're within the inner scope.
+# A function definition. This **was** the only node that creates a new Scope
+# (now we also have ControlFlowScope!).  When for the purposes of walking the
+# contents of a function body, the Code has no *children* -- they're within the
+# inner scope.
 exports.Code = class Code extends Base
   constructor: (params, body, @funcGlyph, @paramStart) ->
     super()
@@ -3921,7 +4107,9 @@ exports.Code = class Code extends Base
 
   jumps: NO
 
-  makeScope: (parentScope) -> new Scope parentScope, @body, this
+  makeFunctionScope: (parentScope) -> new FunctionScope
+    parent: parentScope
+    method: @
 
   # Compilation creates a new scope unless explicitly asked to share with the
   # outer scope. Handles splat parameters in the parameter list by setting
@@ -3933,7 +4121,8 @@ exports.Code = class Code extends Base
     @checkForAsyncOrGeneratorConstructor()
 
     if @bound
-      @context = o.scope.method.context if o.scope.method?.bound
+      method = o.scope.asVarScope().method
+      @context = method.context if method?.bound
       @context = 'this' unless @context
 
     @updateOptions o
@@ -3952,7 +4141,7 @@ exports.Code = class Code extends Base
       if node.this
         name   = node.properties[0].name.value
         name   = "_#{name}" if name in JS_FORBIDDEN
-        target = new IdentifierLiteral o.scope.freeVariable name, reserve: no
+        target = new IdentifierLiteral o.scope.asVarScope().freeVariable name, reserve: no
         # `Param` is object destructuring with a default value: ({@prop = 1}) ->
         # In a case when the variable name is already reserved, we have to assign
         # a new variable name to the destructured variable: ({prop:prop1 = 1}) ->
@@ -3983,7 +4172,7 @@ exports.Code = class Code extends Base
             # Splat arrays are treated oddly by ES; deal with them the legacy
             # way in the function body. TODO: Should this be handled in the
             # function parameter list, and if so, how?
-            splatParamName = o.scope.freeVariable 'arg'
+            splatParamName = o.scope.asVarScope().freeVariable 'arg'
             params.push ref = new Value new IdentifierLiteral splatParamName
             exprs.push new Assign new Value(param.name), ref
           else
@@ -3992,10 +4181,10 @@ exports.Code = class Code extends Base
           if param.shouldCache()
             exprs.push new Assign new Value(param.name), ref
         else # `param` is an Expansion
-          splatParamName = o.scope.freeVariable 'args'
+          splatParamName = o.scope.asVarScope().freeVariable 'args'
           params.push new Value new IdentifierLiteral splatParamName
 
-        o.scope.parameter splatParamName
+        o.scope.asVarScope().parameter splatParamName
 
       # Parse all other parameters; if a splat paramater has not yet been
       # encountered, add these other parameters to the list to be output in
@@ -4035,7 +4224,7 @@ exports.Code = class Code extends Base
             param.name.lhs = yes
             unless param.shouldCache()
               param.name.eachName (prop) ->
-                o.scope.parameter prop.value
+                o.scope.asVarScope().parameter prop.value
           else
             # This compilation of the parameter is only to get its name to add
             # to the scope name tracking; since the compilation output here
@@ -4043,7 +4232,7 @@ exports.Code = class Code extends Base
             # compilation, so that they get output the “real” time this param
             # is compiled.
             paramToAddToScope = if param.value? then param else ref
-            o.scope.parameter fragmentsToText paramToAddToScope.compileToFragmentsWithoutComments o
+            o.scope.asVarScope().parameter fragmentsToText paramToAddToScope.compileToFragmentsWithoutComments o
           params.push ref
         else
           paramsAfterSplat.push param
@@ -4056,7 +4245,7 @@ exports.Code = class Code extends Base
             exprs.push new If condition, ifTrue
           # Add this parameter to the scope, since it wouldn’t have been added
           # yet since it was skipped earlier.
-          o.scope.add param.name.value, 'var', yes if param.name?.value?
+          o.scope.asVarScope().add param.name.value, {type: 'var'}, yes if param.name?.value?
 
     # If there were parameters after the splat or expansion parameter, those
     # parameters need to be assigned in the body of the function.
@@ -4103,11 +4292,10 @@ exports.Code = class Code extends Base
       # Compile this parameter, but if any generated variables get created
       # (e.g. `ref`), shift those into the parent scope since we can’t put a
       # `var` line inside a function parameter list.
-      scopeVariablesCount = o.scope.variables.length
-      signature.push param.compileToFragments(o, LEVEL_PAREN)...
-      if scopeVariablesCount isnt o.scope.variables.length
-        generatedVariables = o.scope.variables.splice scopeVariablesCount
-        o.scope.parent.variables.push generatedVariables...
+      throw new TypeError "scope must be newly generated function scope: #{o.scope}" unless o.scope instanceof VarScope
+      proxyScope = Object.assign Object.create(o.scope), {delegateToParent: yes}
+      proxyNode = Object.assign Object.create(o), {scope: proxyScope}
+      signature.push param.compileToFragments(proxyNode, LEVEL_PAREN)...
     signature.push @makeCode ')'
     # Block comments between `)` and `->`/`=>` get output between `)` and `{`.
     if @funcGlyph?.comments?
@@ -4119,10 +4307,12 @@ exports.Code = class Code extends Base
     # We need to compile the body before method names to ensure `super`
     # references are handled.
     if @isMethod
-      [methodScope, o.scope] = [o.scope, o.scope.parent]
-      name = @name.compileToFragments o
+      # Temporarily pop back a scope level in order to compile the name in the parent scope.
+      throw new TypeError "scope must be newly generated function scope: #{o.scope}" unless o.scope instanceof VarScope
+      proxyNode = Object.assign Object.create(o), {scope: o.scope.varParent}
+      name = @name.compileToFragments proxyNode
+      # TODO: what is this for? when does this occur? what does this do?
       name.shift() if name[0].code is '.'
-      o.scope = methodScope
 
     answer = @joinFragmentArrays (@makeCode m for m in modifiers), ' '
     answer.push @makeCode ' ' if modifiers.length and name
@@ -4137,7 +4327,8 @@ exports.Code = class Code extends Base
     if @front or (o.level >= LEVEL_ACCESS) then @wrapInParentheses answer else answer
 
   updateOptions: (o) ->
-    o.scope         = del(o, 'classScope') or @makeScope o.scope
+    o.scope         = del(o, 'classScope') or @makeFunctionScope o.scope
+    throw new TypeError "scope was not var scope: #{o.scope}" unless o.scope instanceof VarScope
     o.scope.shared  = del(o, 'sharedScope')
     o.indent        += TAB
     delete o.bare
@@ -4248,7 +4439,7 @@ exports.Code = class Code extends Base
 
   astAddParamsToScope: (o) ->
     @eachParamName (name) ->
-      o.scope.add name, 'param'
+      o.scope.asVarScope().add name, {type: 'param'}
 
   astNode: (o) ->
     @updateOptions o
@@ -4357,9 +4548,9 @@ exports.Param = class Param extends Base
     if node.this
       name = node.properties[0].name.value
       name = "_#{name}" if name in JS_FORBIDDEN
-      node = new IdentifierLiteral o.scope.freeVariable name
+      node = new IdentifierLiteral o.scope.asVarScope().freeVariable name
     else if node.shouldCache()
-      node = new IdentifierLiteral o.scope.freeVariable 'arg'
+      node = new IdentifierLiteral o.scope.asVarScope().freeVariable 'arg'
     node = new Value node
     node.updateLocationDataIfMissing @locationData
     @reference = node
@@ -4550,10 +4741,24 @@ exports.Elision = class Elision extends Base
 
 #### While
 
+class ControlFlowConstruct extends Base
+
+  makeBlockScope: (parentScope, block) ->
+    throw new TypeError "block was wrong type: #{block}" unless block instanceof Block
+    new BlockScope
+      parent: parentScope
+      controlFlowConstruct: @
+      block: block
+
+  makeNonBlockControlFlowScope: (parentScope) -> new ControlFlowScope
+    parent: parentScope
+    controlFlowConstruct: @
+
+
 # A while loop, the only sort of low-level loop exposed by CoffeeScript. From
 # it, all other loops can be manufactured. Useful in cases where you need more
 # flexibility or more speed than a comprehension can provide.
-exports.While = class While extends Base
+exports.While = class While extends ControlFlowConstruct
   constructor: (@condition, {invert: @inverted, @guard, @isLoop} = {}) ->
     super()
 
@@ -4569,6 +4774,7 @@ exports.While = class While extends Base
       return
     this
 
+  # This method is called by the Jison grammar actions to link up a WhileSource with a Block.
   addBody: (@body) ->
     this
 
@@ -4583,6 +4789,8 @@ exports.While = class While extends Base
   # *while* can be used as a part of a larger expression -- while loops may
   # return an array containing the computed result of each iteration.
   compileNode: (o) ->
+    {scope: originalScope} = o
+    o.scope = @makeBlockScope originalScope, @body
     o.indent += TAB
     set      = ''
     {body}   = this
@@ -4590,7 +4798,7 @@ exports.While = class While extends Base
       body = @makeCode ''
     else
       if @returns
-        body.makeReturn rvar = o.scope.freeVariable 'results'
+        body.makeReturn rvar = o.scope.asVarScope().freeVariable 'results'
         set  = "#{@tab}#{rvar} = [];\n"
       if @guard
         if body.expressions.length > 1
@@ -4610,9 +4818,12 @@ exports.While = class While extends Base
   astType: -> 'WhileStatement'
 
   astProperties: (o) ->
+    {scope: originalScope} = o
     return
       test: @condition.ast o, LEVEL_PAREN
-      body: @body.ast o, LEVEL_TOP
+      body: do =>
+        o.scope = @makeBlockScope originalScope, @body
+        @body.ast o, LEVEL_TOP
       guard: @guard?.ast(o) ? null
       inverted: !!@inverted
       postfix: !!@postfix
@@ -4777,7 +4988,7 @@ exports.Op = class Op extends Base
   # Keep reference to the left expression, unless this an existential assignment
   compileExistence: (o, checkOnlyUndefined) ->
     if @first.shouldCache()
-      ref = new IdentifierLiteral o.scope.freeVariable 'ref'
+      ref = new IdentifierLiteral o.scope.asVarScope().freeVariable 'ref'
       fst = new Parens new Assign ref, @first
     else
       fst = @first
@@ -4818,9 +5029,10 @@ exports.Op = class Op extends Base
     @joinFragmentArrays parts, ''
 
   checkContinuation: (o) ->
-    unless o.scope.parent?
+    if o.scope instanceof TopLevelScope
       @error "#{@operator} can only occur inside functions"
-    if o.scope.method?.bound and o.scope.method.isGenerator
+    method = o.scope.asVarScope().method
+    if method?.bound and method.isGenerator
       @error 'yield cannot occur inside bound (fat arrow) functions'
 
   compileFloorDivision: (o) ->
@@ -4837,7 +5049,7 @@ exports.Op = class Op extends Base
     super idt, @constructor.name + ' ' + @operator
 
   checkDeleteOperand: (o) ->
-    if @operator is 'delete' and o.scope.check(@first.unwrapAll().value)
+    if @operator is 'delete' and o.scope.asVarScope().check(@first.unwrapAll().value)
       @error 'delete operand may not be argument or var'
 
   astNode: (o) ->
@@ -4945,7 +5157,7 @@ exports.In = class In extends Base
 #### Try
 
 # A classic *try/catch/finally* block.
-exports.Try = class Try extends Base
+exports.Try = class Try extends ControlFlowConstruct
   constructor: (@attempt, @catch, @ensure, @finallyTag) ->
     super()
 
@@ -4967,33 +5179,45 @@ exports.Try = class Try extends Base
   # Compilation is more or less as you would expect -- the *finally* clause
   # is optional, the *catch* is not.
   compileNode: (o) ->
-    originalIndent = o.indent
+    {scope: originalScope, indent: originalIndent} = o
+    o.scope = @makeBlockScope originalScope, @attempt
     o.indent  += TAB
     tryPart   = @attempt.compileToFragments o, LEVEL_TOP
 
-    catchPart = if @catch
-      @catch.compileToFragments merge(o, indent: originalIndent), LEVEL_TOP
+    catchPart = []
+    if @catch
+      catchPart.push @catch.compileToFragments(merge(o, indent: originalIndent, scope: originalScope), LEVEL_TOP)...
     else unless @ensure or @catch
-      generatedErrorVariableName = o.scope.freeVariable 'error', reserve: no
-      [@makeCode(" catch (#{generatedErrorVariableName}) {}")]
-    else
-      []
+      generatedErrorVariableName = o.scope.asVarScope().freeVariable 'error', reserve: no
+      catchPart.push @makeCode(" catch (#{generatedErrorVariableName}) {}")
 
-    ensurePart = if @ensure then ([].concat @makeCode(" finally {\n"), @ensure.compileToFragments(o, LEVEL_TOP),
-      @makeCode("\n#{@tab}}")) else []
+    ensurePart = []
+    if @ensure
+      o.scope = @makeBlockScope originalScope, @ensure
+      ensurePart.push @makeCode(" finally {\n")
+      ensurePart.push @ensure.compileToFragments(o, LEVEL_TOP)...
+      ensurePart.push @makeCode("\n#{@tab}}")
 
-    [].concat @makeCode("#{@tab}try {\n"),
-      tryPart,
-      @makeCode("\n#{@tab}}"), catchPart, ensurePart
+    [
+      @makeCode("#{@tab}try {\n"),
+      tryPart...,
+      @makeCode("\n#{@tab}}"),
+      catchPart...,
+      ensurePart...
+    ]
 
   astType: -> 'TryStatement'
 
   astProperties: (o) ->
+    {scope: originalScope} = o
     return
-      block: @attempt.ast o, LEVEL_TOP
+      block: do =>
+        o.scope = @makeBlockScope originalScope, @attempt
+        @attempt.ast o, LEVEL_TOP
       handler: @catch?.ast(o) ? null
       finalizer:
         if @ensure?
+          o.scope = @makeBlockScope originalScope, @ensure
           Object.assign @ensure.ast(o, LEVEL_TOP),
             # Include `finally` keyword in location data.
             mergeAstLocationData(
@@ -5003,7 +5227,7 @@ exports.Try = class Try extends Base
         else
           null
 
-exports.Catch = class Catch extends Base
+exports.Catch = class Catch extends ControlFlowConstruct
   constructor: (@recovery, @errorVariable) ->
     super()
     @errorVariable?.unwrap().propagateLhs? yes
@@ -5021,14 +5245,23 @@ exports.Catch = class Catch extends Base
     this
 
   compileNode: (o) ->
+    {scope: originalScope} = o
     o.indent  += TAB
-    generatedErrorVariableName = o.scope.freeVariable 'error', reserve: no
+    generatedErrorVariableName = o.scope.asVarScope().freeVariable 'error', reserve: no
     placeholder = new IdentifierLiteral generatedErrorVariableName
     @checkUnassignable()
     if @errorVariable
       @recovery.unshift new Assign @errorVariable, placeholder
-    [].concat @makeCode(" catch ("), placeholder.compileToFragments(o), @makeCode(") {\n"),
-      @recovery.compileToFragments(o, LEVEL_TOP), @makeCode("\n#{@tab}}")
+
+    [
+      @makeCode(" catch ("),
+      placeholder.compileToFragments(o)...,
+      @makeCode(") {\n"),
+      (do =>
+        o.scope = @makeBlockScope originalScope, @recovery
+        @recovery.compileToFragments(o, LEVEL_TOP))...,
+      @makeCode("\n#{@tab}}"),
+    ]
 
   checkUnassignable: ->
     if @errorVariable
@@ -5038,7 +5271,7 @@ exports.Catch = class Catch extends Base
   astNode: (o) ->
     @checkUnassignable()
     @errorVariable?.eachName (name) ->
-      alreadyDeclared = o.scope.find name.value
+      alreadyDeclared = o.scope.asVarScope().find name.value
       name.isDeclaration = not alreadyDeclared
 
     super o
@@ -5046,9 +5279,12 @@ exports.Catch = class Catch extends Base
   astType: -> 'CatchClause'
 
   astProperties: (o) ->
+    {scope: originalScope} = o
     return
       param: @errorVariable?.ast(o) ? null
-      body: @recovery.ast o, LEVEL_TOP
+      body: do =>
+        o.scope = @makeBlockScope originalScope, @recovery
+        @recovery.ast o, LEVEL_TOP
 
 #### Throw
 
@@ -5103,7 +5339,7 @@ exports.Existence = class Existence extends Base
   compileNode: (o) ->
     @expression.front = @front
     code = @expression.compile o, LEVEL_OP
-    if @expression.unwrap() instanceof IdentifierLiteral and not o.scope.check code
+    if @expression.unwrap() instanceof IdentifierLiteral and not o.scope.asVarScope().check code
       [cmp, cnj] = if @negated then ['===', '||'] else ['!==', '&&']
       code = "typeof #{code} #{cmp} \"undefined\"" + if @comparisonTarget isnt 'undefined' then " #{cnj} #{code} #{cmp} #{@comparisonTarget}" else ''
     else
@@ -5389,20 +5625,22 @@ exports.For = class For extends While
   # comprehensions. Some of the generated code can be shared in common, and
   # some cannot.
   compileNode: (o) ->
+    {scope: originalScope} = o
     body        = Block.wrap [@body]
+    o.scope     = @makeBlockScope originalScope, body
     [..., last] = body.expressions
     @returns    = no if last?.jumps() instanceof Return
     source      = if @range then @source.base else @source
     scope       = o.scope
     name        = @name  and (@name.compile o, LEVEL_LIST) if not @pattern
     index       = @index and (@index.compile o, LEVEL_LIST)
-    scope.find(name)  if name and not @pattern
-    scope.find(index) if index and @index not instanceof Value
-    rvar        = scope.freeVariable 'results' if @returns
+    scope.asVarScope().find(name)  if name and not @pattern
+    scope.asVarScope().find(index) if index and @index not instanceof Value
+    rvar        = scope.asVarScope().freeVariable 'results' if @returns
     if @from
-      ivar = scope.freeVariable 'x', single: true if @pattern
+      ivar = scope.asVarScope().freeVariable 'x', single: true if @pattern
     else
-      ivar = (@object and index) or scope.freeVariable 'i', single: true
+      ivar = (@object and index) or scope.asVarScope().freeVariable 'i', single: true
     kvar        = ((@range or @from) and name) or index or ivar
     kvarAssign  = if kvar isnt ivar then "#{kvar} = " else ""
     if @step and not @range
@@ -5419,14 +5657,14 @@ exports.For = class For extends While
     else
       svar    = @source.compile o, LEVEL_LIST
       if (name or @own) and not @from and @source.unwrap() not instanceof IdentifierLiteral
-        defPart    += "#{@tab}#{ref = scope.freeVariable 'ref'} = #{svar};\n"
+        defPart    += "#{@tab}#{ref = scope.asVarScope().freeVariable 'ref'} = #{svar};\n"
         svar       = ref
       if name and not @pattern and not @from
         namePart   = "#{name} = #{svar}[#{kvar}]"
       if not @object and not @from
         defPart += "#{@tab}#{step};\n" if step isnt stepVar
         down = stepNum < 0
-        lvar = scope.freeVariable 'len' unless @step and stepNum? and down
+        lvar = scope.asVarScope().freeVariable 'len' unless @step and stepNum? and down
         declare = "#{kvarAssign}#{ivar} = 0, #{lvar} = #{svar}.length"
         declareDown = "#{kvarAssign}#{ivar} = #{svar}.length - 1"
         compare = "#{ivar} < #{lvar}"
@@ -5480,8 +5718,10 @@ exports.For = class For extends While
     fragments
 
   astNode: (o) ->
+    {scope: originalScope} = o
+    o.scope = @makeBlockScope originalScope, @body
     addToScope = (name) ->
-      alreadyDeclared = o.scope.find name.value
+      alreadyDeclared = o.scope.asVarScope().find name.value
       name.isDeclaration = not alreadyDeclared
     @name?.eachName addToScope, checkAssignability: no
     @index?.eachName addToScope, checkAssignability: no
@@ -5509,7 +5749,7 @@ exports.For = class For extends While
 #### Switch
 
 # A JavaScript *switch* statement. Converts into a returnable expression on-demand.
-exports.Switch = class Switch extends Base
+exports.Switch = class Switch extends ControlFlowConstruct
   constructor: (@subject, @cases, @otherwise) ->
     super()
 
@@ -5529,22 +5769,36 @@ exports.Switch = class Switch extends Base
     this
 
   compileNode: (o) ->
+    fragments = [
+      @makeCode(@tab + "switch ("),
+      (if @subject then @subject.compileToFragments(o, LEVEL_PAREN) else [@makeCode "false"])...,
+      @makeCode(") {\n"),
+    ]
+
+    o.scope = @makeNonBlockControlFlowScope o.scope
     idt1 = o.indent + TAB
     idt2 = o.indent = idt1 + TAB
-    fragments = [].concat @makeCode(@tab + "switch ("),
-      (if @subject then @subject.compileToFragments(o, LEVEL_PAREN) else @makeCode "false"),
-      @makeCode(") {\n")
     for {conditions, block}, i in @cases
       for cond in flatten [conditions]
         cond  = cond.invert() unless @subject
-        fragments = fragments.concat @makeCode(idt1 + "case "), cond.compileToFragments(o, LEVEL_PAREN), @makeCode(":\n")
-      fragments = fragments.concat body, @makeCode('\n') if (body = block.compileToFragments o, LEVEL_TOP).length > 0
+        fragments.push @makeCode(idt1 + "case ")
+        fragments.push cond.compileToFragments(o, LEVEL_PAREN)...
+        fragments.push @makeCode(":\n")
+      if (body = block.compileToFragments o, LEVEL_TOP).length > 0
+        fragments.push body...
+        fragments.push @makeCode('\n')
+      # TODO: what does this line mean?
       break if i is @cases.length - 1 and not @otherwise
       expr = @lastNode block.expressions
+      # TODO: what is this line doing? why does it work?
       continue if expr instanceof Return or expr instanceof Throw or (expr instanceof Literal and expr.jumps() and expr.value isnt 'debugger')
       fragments.push cond.makeCode(idt2 + 'break;\n')
+
     if @otherwise and @otherwise.expressions.length
-      fragments.push @makeCode(idt1 + "default:\n"), (@otherwise.compileToFragments o, LEVEL_TOP)..., @makeCode("\n")
+      fragments.push @makeCode(idt1 + "default:\n")
+      fragments.push @otherwise.compileToFragments(o, LEVEL_TOP)...
+      fragments.push @makeCode("\n")
+
     fragments.push @makeCode @tab + '}'
     fragments
 
@@ -5577,6 +5831,7 @@ exports.Switch = class Switch extends Base
     kase.ast(o) for kase in cases
 
   astProperties: (o) ->
+    o.scope = @makeNonBlockControlFlowScope o.scope
     return
       discriminant: @subject?.ast(o, LEVEL_PAREN) ? null
       cases: @casesAst o
@@ -5606,7 +5861,7 @@ exports.SwitchWhen = class SwitchWhen extends Base
 #
 # Single-expression **Ifs** are compiled into conditional operators if possible,
 # because ternaries are already proper expressions, and don’t need conversion.
-exports.If = class If extends Base
+exports.If = class If extends ControlFlowConstruct
   constructor: (@condition, @body, options = {}) ->
     super()
     @elseBody  = null
@@ -5664,26 +5919,49 @@ exports.If = class If extends Base
     if exeq
       return new If(@processedCondition().invert(), @elseBodyNode(), type: 'if').compileToFragments o
 
+    {scope: originalScope} = o
     indent   = o.indent + TAB
     cond     = @processedCondition().compileToFragments o, LEVEL_PAREN
-    body     = @ensureBlock(@body).compileToFragments merge o, {indent}
-    ifPart   = [].concat @makeCode("if ("), cond, @makeCode(") {\n"), body, @makeCode("\n#{@tab}}")
-    ifPart.unshift @makeCode @tab unless child
+    body     = @ensureBlock @body
+    o.scope  = @makeBlockScope originalScope, body
+    body     = body.compileToFragments merge o, {indent}
+    ifPart   = [
+      (if child then [] else [@makeCode @tab])...,
+      @makeCode('if ('),
+      cond...,
+      @makeCode(') {\n'),
+      body...,
+      @makeCode("\n#{@tab}}"),
+    ]
     return ifPart unless @elseBody
-    answer = ifPart.concat @makeCode(' else ')
+
+    answer = [ifPart..., @makeCode(' else ')]
     if @isChain
+      # NB: This is a chain of "else if", where the "else" body is itself an "if". It will get its
+      #     own subscope when we recurse into its compilation.
       o.chainChild = yes
-      answer = answer.concat @elseBody.unwrap().compileToFragments o, LEVEL_TOP
+      answer.push @elseBody.unwrap().compileToFragments(o, LEVEL_TOP)...
     else
-      answer = answer.concat @makeCode("{\n"), @elseBody.compileToFragments(merge(o, {indent}), LEVEL_TOP), @makeCode("\n#{@tab}}")
+      o.scope = @makeBlockScope originalScope, @elseBody
+      answer.push @makeCode '{\n'
+      answer.push @elseBody.compileToFragments(merge(o, {indent}), LEVEL_TOP)...
+      answer.push @makeCode "\n#{@tab}}"
     answer
 
   # Compile the `If` as a conditional operator.
   compileExpression: (o) ->
+    # NB: the expression does not create internal blocks! So no need to create a new scope.
     cond = @processedCondition().compileToFragments o, LEVEL_COND
+
     body = @bodyNode().compileToFragments o, LEVEL_LIST
-    alt  = if @elseBodyNode() then @elseBodyNode().compileToFragments(o, LEVEL_LIST) else [@makeCode('void 0')]
-    fragments = cond.concat @makeCode(" ? "), body, @makeCode(" : "), alt
+
+    elseBodyNode = @elseBodyNode()
+    alt  = if elseBodyNode
+      elseBodyNode.compileToFragments(o, LEVEL_LIST)
+    else
+      [@makeCode('void 0')]
+
+    fragments = [cond..., @makeCode(' ? '), body..., @makeCode(' : '), alt...]
     if o.level >= LEVEL_COND then @wrapInParentheses fragments else fragments
 
   unfoldSoak: ->
@@ -5702,12 +5980,14 @@ exports.If = class If extends Base
       'ConditionalExpression'
 
   astProperties: (o) ->
+    {scope: originalScope} = o
     isStatement = @isStatementAst o
 
     return
       test: @condition.ast o, if isStatement then LEVEL_PAREN else LEVEL_COND
       consequent:
         if isStatement
+          o.scope = @makeBlockScope originalScope, @body
           @body.ast o, LEVEL_TOP
         else
           @bodyNode().ast o, LEVEL_TOP
@@ -5716,8 +5996,10 @@ exports.If = class If extends Base
           @elseBody.unwrap().ast o, if isStatement then LEVEL_TOP else LEVEL_COND
         else if not isStatement and @elseBody?.expressions?.length is 1
           @elseBody.expressions[0].ast o, LEVEL_TOP
-        else
-          @elseBody?.ast(o, LEVEL_TOP) ? null
+        else if @elseBody?
+          o.scope = @makeBlockScope originalScope, @elseBody
+          @elseBody.ast o, LEVEL_TOP
+        else null
       postfix: !!@postfix
       inverted: @type is 'unless'
 

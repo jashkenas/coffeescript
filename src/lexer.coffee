@@ -815,10 +815,18 @@ exports.Lexer = class Lexer
         tag = 'INDEX_START'
         switch prev[0]
           when '?'  then prev[0] = 'INDEX_SOAK'
-    token = @makeToken tag, value
+
+    # Match up paired delimiters.
     switch value
-      when '(', '{', '[' then @ends.push {tag: INVERSES[value], origin: token}
+      # Upon opening a pair, provide the requisite close token, and record the "origin" as
+      # a separate token.
+      when '(', '{', '['
+        # TODO: this concept of "origin" is somewhat overloaded and makes it difficult to introspect
+        #       a token stream. Is it the source of a generated token, or the "parent" node for
+        #       a context-sensitive match like paired delimiters?
+        @ends.push {tag: INVERSES[value], origin: @makeToken tag, value}
       when ')', '}', ']' then @pair value
+
     @tokens.push @makeToken tag, value
     value.length
 
