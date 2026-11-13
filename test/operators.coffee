@@ -451,3 +451,26 @@ test "'new' target", ->
 
   # classes must be called with `new`. In this case `new` applies to `get` only
   throws -> new get()()
+
+test "#5480: 'when a not in b'", ->
+  needle      = "needle"
+  hayStack    = []
+  needleStack = [needle]
+
+  switch
+    when needle     in    hayStack then ok false
+  switch
+    when needle not in    hayStack then ok true
+  switch
+    when needle     in needleStack then ok true
+  switch
+    when needle not in needleStack then ok false
+
+  switch "with subject" and true
+    when needle     in    hayStack then ok false
+  switch "with subject" and true
+    when needle not in    hayStack then ok true
+  switch "with subject" and true
+    when needle     in needleStack then ok true
+  switch "with subject" and true
+    when needle not in needleStack then ok false

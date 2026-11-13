@@ -4686,7 +4686,10 @@ exports.Op = class Op extends Base
 
   invert: ->
     if @isInOperator()
-      @invertOperator = '!'
+      if @invertOperator
+        @invertOperator = undefined
+      else
+        @invertOperator = '!'
       return @
     if @isChain()
       allInvertable = yes
